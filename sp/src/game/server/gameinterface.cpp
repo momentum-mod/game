@@ -246,6 +246,20 @@ static void UpdateChapterRestrictions( const char *mapname );
 
 static void UpdateRichPresence ( void );
 
+static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue) {
+	float toCheck = ((ConVar*)var)->GetFloat();
+	//Msg("Trail length change: new %i | old: %i\n", toCheck, (int)fOldValue);
+	if (toCheck == fOldValue) return;
+	if (toCheck < 0.01 || toCheck > 0.015) {
+		var->SetValue(((ConVar*)var)->GetDefault());
+	}
+	gpGlobals->interval_per_tick = ((ConVar*)var)->GetFloat();
+}
+
+static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT, "Changes the tickrate of the game. Recommended to change this when not in a server.", onTickRateChange);
+
+
+
 
 #if !defined( _XBOX ) // Don't doubly define this symbol.
 CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
@@ -825,6 +839,7 @@ bool CServerGameDLL::ReplayInit( CreateInterfaceFn fnReplayFactory )
 //-----------------------------------------------------------------------------
 float CServerGameDLL::GetTickInterval( void ) const
 {
+	//float tickinterval = gpGlobals->interval_per_tick
 	float tickinterval = DEFAULT_TICK_INTERVAL;
 
 //=============================================================================

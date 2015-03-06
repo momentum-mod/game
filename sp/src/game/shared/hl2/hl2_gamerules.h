@@ -96,7 +96,7 @@ private:
 	void AdjustPlayerDamageTaken( CTakeDamageInfo *pInfo );
 	float AdjustPlayerDamageInflicted( float damage );
 
-	int						DefaultFOV( void ) { return 75; }
+	int						DefaultFOV( void ) { return 90; }
 #endif
 };
 

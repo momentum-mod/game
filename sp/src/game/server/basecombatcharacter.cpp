@@ -2493,7 +2493,7 @@ int CBaseCombatCharacter::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		if ( flIntegerDamage <= 0 )
 			return 0;
 
-		m_iHealth -= flIntegerDamage;
+		//m_iHealth -= flIntegerDamage;
 	}
 
 	return 1;
@@ -2510,7 +2510,7 @@ int CBaseCombatCharacter::OnTakeDamage_Dead( const CTakeDamageInfo &info )
 	// do the damage
 	if ( m_takedamage != DAMAGE_EVENTS_ONLY )
 	{
-		m_iHealth -= info.GetDamage();
+		//m_iHealth -= info.GetDamage();
 	}
 
 	return 1;

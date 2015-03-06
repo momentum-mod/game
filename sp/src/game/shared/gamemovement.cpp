@@ -2432,13 +2432,20 @@ bool CGameMovement::CheckJumpButton( void )
 	float flMul;
 	if ( g_bMovementOptimizations )
 	{
-#if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
+		/*
+		old code:
+
+		#if defined(HL2_DLL) || defined(HL2_CLIENT_DLL)
 		Assert( GetCurrentGravity() == 600.0f );
 		flMul = 160.0f;	// approx. 21 units.
-#else
+		#else
 		Assert( GetCurrentGravity() == 800.0f );
 		flMul = 268.3281572999747f;
-#endif
+		#endif
+
+		*/
+		Assert(GetCurrentGravity() == 800.0f);
+		flMul = 268.3281572999747f;
 
 	}
 	else
@@ -2465,7 +2472,7 @@ bool CGameMovement::CheckJumpButton( void )
 	}
 
 	// Add a little forward velocity based on your current forward velocity - if you are not sprinting.
-#if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
+/*#if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
 	if ( gpGlobals->maxClients == 1 )
 	{
 		CHLMoveData *pMoveData = ( CHLMoveData* )mv;
@@ -2493,7 +2500,7 @@ bool CGameMovement::CheckJumpButton( void )
 		// Add it on
 		VectorAdd( (vecForward*flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity );
 	}
-#endif
+#endif*/
 
 	FinishGravity();
 
@@ -2511,7 +2518,7 @@ bool CGameMovement::CheckJumpButton( void )
 		player->m_Local.m_bInDuckJump = true;
 	}
 
-#if defined( HL2_DLL )
+/*#if defined( HL2_DLL )
 
 	if ( xc_uncrouch_on_jump.GetBool() )
 	{
@@ -2522,7 +2529,7 @@ bool CGameMovement::CheckJumpButton( void )
 		}
 	}
 
-#endif
+#endif*/
 
 	// Flag that we jumped.
 	mv->m_nOldButtons |= IN_JUMP;	// don't jump again until released

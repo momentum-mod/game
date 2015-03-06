@@ -43,6 +43,16 @@ public:
 	virtual int GetCheckInterval( IntervalType_t type );
 	virtual void	SetGroundEntity( trace_t *pm );
 	virtual bool CanAccelerate( void );
+	virtual bool CheckJumpButton(void);
+	virtual void PlayerMove(void);
+
+	// Duck
+	virtual void Duck(void);
+	virtual void FinishUnDuck(void);
+	virtual void FinishDuck(void);
+	virtual bool CanUnduck();
+	virtual void HandleDuckingSpeedCrop();
+	virtual void CheckParameters(void);
 
 private:
 

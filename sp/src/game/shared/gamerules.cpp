@@ -46,11 +46,11 @@ static CViewVectors g_DefaultViewVectors(
 	Vector( 0, 0, 64 ),			//VEC_VIEW (m_vView)
 								
 	Vector(-16, -16, 0 ),		//VEC_HULL_MIN (m_vHullMin)
-	Vector( 16,  16,  72 ),		//VEC_HULL_MAX (m_vHullMax)
+	Vector( 16,  16,  62 ),		//VEC_HULL_MAX (m_vHullMax)
 													
 	Vector(-16, -16, 0 ),		//VEC_DUCK_HULL_MIN (m_vDuckHullMin)
-	Vector( 16,  16,  36 ),		//VEC_DUCK_HULL_MAX	(m_vDuckHullMax)
-	Vector( 0, 0, 28 ),			//VEC_DUCK_VIEW		(m_vDuckView)
+	Vector( 16,  16,  45 ),		//VEC_DUCK_HULL_MAX	(m_vDuckHullMax)
+	Vector( 0, 0, 47 ),			//VEC_DUCK_VIEW		(m_vDuckView)
 													
 	Vector(-10, -10, -10 ),		//VEC_OBS_HULL_MIN	(m_vObsHullMin)
 	Vector( 10,  10,  10 ),		//VEC_OBS_HULL_MAX	(m_vObsHullMax)

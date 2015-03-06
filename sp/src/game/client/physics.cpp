@@ -178,6 +178,7 @@ void PhysicsLevelInit( void )
 	// 15 ms per tick
 	// NOTE: Always run client physics at this rate - helps keep ragdolls stable
 	physenv->SetSimulationTimestep( IsXbox() ? DEFAULT_XBOX_CLIENT_VPHYSICS_TICK : DEFAULT_TICK_INTERVAL );
+	//physenv->SetSimulationTimestep((gpGlobals) ? gpGlobals->interval_per_tick : DEFAULT_TICK_INTERVAL);
 	physenv->SetCollisionEventHandler( &g_Collisions );
 	physenv->SetCollisionSolver( &g_Collisions );
 

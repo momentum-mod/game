@@ -68,7 +68,8 @@ extern ConVar autoaim_max_dist;
 // preventing headshots and other such things. Also, game difficulty will
 // not change if the model changes. This is the value by which to scale
 // the X/Y of the player's hull to get the volume to trace bullets against.
-#define PLAYER_HULL_REDUCTION	0.70
+//#define PLAYER_HULL_REDUCTION	0.70
+#define PLAYER_HULL_REDUCTION	1
 
 // This switches between the single primary weapon, and multiple weapons with buckets approach (jdw)
 #define	HL2_SINGLE_PRIMARY_WEAPON_MODE	0
@@ -79,8 +80,8 @@ extern int gEvilImpulse101;
 
 ConVar sv_autojump( "sv_autojump", "0" );
 
-ConVar hl2_walkspeed( "hl2_walkspeed", "150" );
-ConVar hl2_normspeed( "hl2_normspeed", "190" );
+ConVar hl2_walkspeed( "hl2_walkspeed", "130" );
+ConVar hl2_normspeed( "hl2_normspeed", "260" );
 ConVar hl2_sprintspeed( "hl2_sprintspeed", "320" );
 
 ConVar hl2_darkness_flashlight_factor ( "hl2_darkness_flashlight_factor", "1" );
@@ -101,7 +102,7 @@ ConVar player_showpredictedposition_timestep( "player_showpredictedposition_time
 ConVar player_squad_transient_commands( "player_squad_transient_commands", "1", FCVAR_REPLICATED );
 ConVar player_squad_double_tap_time( "player_squad_double_tap_time", "0.25" );
 
-ConVar sv_infinite_aux_power( "sv_infinite_aux_power", "0", FCVAR_CHEAT );
+ConVar sv_infinite_aux_power( "sv_infinite_aux_power", "1", FCVAR_HIDDEN );
 
 ConVar autoaim_unlock_target( "autoaim_unlock_target", "0.8666" );
 
@@ -391,7 +392,7 @@ CHL2_Player::CHL2_Player()
 {
 	m_nNumMissPositions	= 0;
 	m_pPlayerAISquad = 0;
-	m_bSprintEnabled = true;
+	m_bSprintEnabled = false;
 
 	m_flArmorReductionTime = 0.0f;
 	m_iArmorReductionFrom = 0;
@@ -516,14 +517,14 @@ void CHL2_Player::HandleSpeedChanges( void )
 	// have suit, pressing button, not sprinting or ducking
 	bool bWantWalking;
 	
-	if( IsSuitEquipped() )
-	{
+	/*if( IsSuitEquipped() )
+	{*/
 		bWantWalking = (m_nButtons & IN_WALK) && !IsSprinting() && !(m_nButtons & IN_DUCK);
-	}
+	/*}
 	else
 	{
 		bWantWalking = true;
-	}
+	}*/
 	
 	if( bIsWalking != bWantWalking )
 	{
@@ -1123,8 +1124,7 @@ void CHL2_Player::Spawn(void)
 	//
 	//m_flMaxspeed = 320;
 
-	if ( !IsSuitEquipped() )
-		 StartWalking();
+	StopWalking();
 
 	SuitPower_SetCharge( 100 );
 
@@ -1229,15 +1229,7 @@ void CHL2_Player::StopSprinting( void )
 		SuitPower_RemoveDevice( SuitDeviceSprint );
 	}
 
-	if( IsSuitEquipped() )
-	{
-		SetMaxSpeed( HL2_NORM_SPEED );
-	}
-	else
-	{
-		SetMaxSpeed( HL2_WALK_SPEED );
-	}
-
+	SetMaxSpeed( HL2_NORM_SPEED );
 	m_fIsSprinting = false;
 
 	if ( sv_stickysprint.GetBool() )
@@ -1254,12 +1246,13 @@ void CHL2_Player::StopSprinting( void )
 //-----------------------------------------------------------------------------
 void CHL2_Player::EnableSprint( bool bEnable )
 {
-	if ( !bEnable && IsSprinting() )
+	return;
+	/*if ( !bEnable && IsSprinting() )
 	{
 		StopSprinting();
 	}
 
-	m_bSprintEnabled = bEnable;
+	m_bSprintEnabled = bEnable;*/
 }
 
 
@@ -2033,10 +2026,6 @@ void CHL2_Player::FlashlightTurnOn( void )
 		if( !SuitPower_AddDevice( SuitDeviceFlashlight ) )
 			return;
 	}
-#ifdef HL2_DLL
-	if( !IsSuitEquipped() )
-		return;
-#endif
 
 	AddEffects( EF_DIMLIGHT );
 	EmitSound( "HL2Player.FlashLightOn" );
