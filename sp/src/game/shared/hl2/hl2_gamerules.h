@@ -45,6 +45,8 @@ public:
 	virtual float			GetAutoAimScale( CBasePlayer *pPlayer );
 	virtual float			GetAmmoQuantityScale( int iAmmoIndex );
 	virtual void			LevelInitPreEntity();
+	virtual bool			IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer);
+	virtual CBaseEntity*    GetPlayerSpawnSpot(CBasePlayer *pPlayer);
 #endif
 
 private:

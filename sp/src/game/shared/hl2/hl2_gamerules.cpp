@@ -41,6 +41,12 @@ END_NETWORK_TABLE()
 LINK_ENTITY_TO_CLASS( hl2_gamerules, CHalfLife2Proxy );
 IMPLEMENT_NETWORKCLASS_ALIASED( HalfLife2Proxy, DT_HalfLife2Proxy )
 
+#ifndef CLIENT_DLL
+LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
+#endif
+
 
 #ifdef CLIENT_DLL
 	void RecvProxy_HL2GameRules( const RecvProp *pProp, void **pOut, void *pData, int objectID )
@@ -1478,6 +1484,50 @@ ConVar  alyx_darkness_force( "alyx_darkness_force", "0", FCVAR_CHEAT | FCVAR_REP
 	void CHalfLife2::NPC_DroppedGrenade( void )
 	{
 		m_flLastGrenadeDropTime = gpGlobals->curtime + sk_plr_grenade_drop_time.GetFloat();
+	}
+
+	Vector DropToGround(
+		CBaseEntity *pMainEnt,
+		const Vector &vPos,
+		const Vector &vMins,
+		const Vector &vMaxs)
+	{
+		trace_t trace;
+		UTIL_TraceHull(vPos, vPos + Vector(0, 0, -500), vMins, vMaxs, MASK_SOLID, pMainEnt, COLLISION_GROUP_NONE, &trace);
+		return trace.endpos;
+	}
+
+	CBaseEntity *CHalfLife2::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
+	{
+		// gat valid spwan point
+		CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
+
+		// drop down to ground
+		Vector GroundPos = DropToGround(pPlayer, pSpawnSpot->GetAbsOrigin(), VEC_HULL_MIN, VEC_HULL_MAX);
+
+		// Move the player to the place it said.
+		pPlayer->Teleport(&pSpawnSpot->GetAbsOrigin(), &pSpawnSpot->GetLocalAngles(), &vec3_origin);
+		pPlayer->m_Local.m_vecPunchAngle = vec3_angle;
+
+		return pSpawnSpot;
+	}
+
+	// checks if the spot is clear of players
+	bool CHalfLife2::IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer)
+	{
+		if (!pSpot->IsTriggered(pPlayer))
+		{
+			return false;
+		}
+
+		Vector mins = GetViewVectors()->m_vHullMin;
+		Vector maxs = GetViewVectors()->m_vHullMax;
+
+		Vector vTestMins = pSpot->GetAbsOrigin() + mins;
+		Vector vTestMaxs = pSpot->GetAbsOrigin() + maxs;
+
+		// First test the starting origin.
+		return UTIL_IsSpaceEmpty(pPlayer, vTestMins, vTestMaxs);
 	}
 
 #endif //} !CLIENT_DLL

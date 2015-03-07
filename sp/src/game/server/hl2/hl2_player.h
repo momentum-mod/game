@@ -284,6 +284,21 @@ public:
 	CSoundPatch *m_sndLeeches;
 	CSoundPatch *m_sndWaterSplashes;
 
+	// LADDERS
+	void SurpressLadderChecks(const Vector& pos, const Vector& normal);
+	bool CanGrabLadder(const Vector& pos, const Vector& normal);
+	Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
+
+	//SPAWNING
+	CBaseEntity* EntSelectSpawnPoint();
+
+private:
+	CountdownTimer m_ladderSurpressionTimer;
+	Vector m_lastLadderNormal;
+	Vector m_lastLadderPos;
+
+	EHANDLE g_pLastSpawn;
+
 protected:
 	virtual void		PreThink( void );
 	virtual	void		PostThink( void );
@@ -293,6 +308,8 @@ protected:
 
 	virtual void		ItemPostFrame();
 	virtual void		PlayUseDenySound();
+
+	bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &pSpot);
 
 private:
 	bool				CommanderExecuteOne( CAI_BaseNPC *pNpc, const commandgoal_t &goal, CAI_BaseNPC **Allies, int numAllies );
