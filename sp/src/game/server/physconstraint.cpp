@@ -16,11 +16,6 @@
 #include "fmtstr.h"
 #include "physics_prop_ragdoll.h"
 
-#define HINGE_NOTIFY HL2_EPISODIC
-#if HINGE_NOTIFY
-#include "physconstraint_sounds.h"
-#endif
-
 #include "physconstraint.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -572,10 +567,6 @@ void CPhysConstraint::GetConstraintObjects( hl_constraint_info_t &info )
 		if ( Q_strlen(STRING(m_nameAttach1)) )
 		{
 			Warning("Bogus constraint %s (attaches ENTITY NOT FOUND:%s to %s)\n", GetDebugName(), STRING(m_nameAttach1), STRING(m_nameAttach2));
-#ifdef HL2_EPISODIC
-			info.pObjects[0] = info.pObjects[1] = NULL;
-			return;
-#endif	// HL2_EPISODIC
 		}
 		info.pObjects[0] = g_PhysWorldObject;
 		info.massScale[0] = info.massScale[1] = 1.0f; // no mass scale on world constraint
@@ -585,10 +576,6 @@ void CPhysConstraint::GetConstraintObjects( hl_constraint_info_t &info )
 		if ( Q_strlen(STRING(m_nameAttach2)) )
 		{
 			Warning("Bogus constraint %s (attaches %s to ENTITY NOT FOUND:%s)\n", GetDebugName(), STRING(m_nameAttach1), STRING(m_nameAttach2));
-#ifdef HL2_EPISODIC
-			info.pObjects[0] = info.pObjects[1] = NULL;
-			return;
-#endif	// HL2_EPISODIC
 		}
 		info.pObjects[1] = info.pObjects[0];
 		info.pObjects[0] = g_PhysWorldObject;		// Try to make the world object consistently object0 for ease of implementation

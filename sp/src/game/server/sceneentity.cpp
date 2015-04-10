@@ -34,10 +34,6 @@
 #include "scripted.h"
 #include "env_debughistory.h"
 
-#ifdef HL2_EPISODIC
-#include "npc_alyx_episodic.h"
-#endif // HL2_EPISODIC
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -2313,18 +2309,6 @@ bool CSceneEntity::CheckActors()
 					{
 						bShouldWait = true;
 					}
-					
-#ifdef HL2_EPISODIC
-					// HACK: Alyx cannot play scenes when she's in the middle of transitioning					
-					if ( pActor->IsInAVehicle() )
-					{
-						CNPC_Alyx *pAlyx = dynamic_cast<CNPC_Alyx *>(pActor);
-						if ( pAlyx != NULL && ( pAlyx->GetPassengerState() == PASSENGER_STATE_ENTERING || pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING ) )
-						{
-							bShouldWait = true;
-						}
-					}
-#endif // HL2_EPISODIC
 				}
 
 				if ( pActor->GetExpresser() && pActor->GetExpresser()->IsSpeaking() )

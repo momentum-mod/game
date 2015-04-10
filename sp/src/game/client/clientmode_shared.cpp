@@ -37,6 +37,7 @@
 #include "hud_vote.h"
 #include "ienginevgui.h"
 #include "sourcevr/isourcevirtualreality.h"
+#include "clienteffectprecachesystem.h"
 #if defined( _X360 )
 #include "xbox/xbox_console.h"
 #endif
@@ -143,6 +144,11 @@ CON_COMMAND( hud_reloadscheme, "Reloads hud layout and animation scripts." )
 
 	mode->ReloadScheme();
 }
+
+CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffectsGlow )
+CLIENTEFFECT_MATERIAL( "dev/glow_color" )
+CLIENTEFFECT_MATERIAL( "dev/halo_add_to_screen" )
+CLIENTEFFECT_REGISTER_END_CONDITIONAL( (engine->GetDXSupportLevel() >= 90) )
 
 #ifdef _DEBUG
 CON_COMMAND_F( crash, "Crash the client. Optional parameter -- type of crash:\n 0: read from NULL\n 1: write to NULL\n 2: DmCrashDump() (xbox360 only)", FCVAR_CHEAT )
@@ -768,6 +774,7 @@ bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 			return false;
 	}
 #endif 
+	g_GlowObjectManager.RenderGlowEffects(pSetup, 0);
 	return true;
 }
 

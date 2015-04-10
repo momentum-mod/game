@@ -1,5 +1,40 @@
 "Resource/HudLayout.res"
 {
+	HudSpeedMeter
+	{
+		"fieldName" "HudSpeedMeter"
+		"xpos"        "c-57"
+                "ypos"        "432"
+                "wide"        "114"
+                "tall"  "36"
+                "visible" "1"
+                "enabled" "1"
+
+                "PaintBackgroundType"        "2"
+                
+                "text_xpos" "8"
+                "text_ypos" "20"
+                "digit_xpos" "50"
+                "digit_ypos" "2"
+		
+	}
+	HudTimer
+        {
+          "fieldName" "HudTimer"
+                "xpos"        "15"//change this to center left, fix sizes too
+                "ypos"        "115"
+                "wide"        "176"
+                "tall"        "36"
+                "visible" "1"
+                "enabled" "1"
+
+                "PaintBackgroundType"        "2"
+                
+                "text_xpos" "8"
+                "text_ypos" "2"
+                "digit_xpos" "50"
+                "digit_ypos" "10"
+        }
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"

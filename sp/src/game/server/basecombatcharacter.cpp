@@ -1502,21 +1502,6 @@ bool CBaseCombatCharacter::BecomeRagdoll( const CTakeDamageInfo &info, const Vec
 			pos.z = flAbsMinsZ + 24;
 			info2.SetDamagePosition( pos );
 		}
-
-// UNDONE: Put in a real sound cue here, don't do this bogus hack anymore
-#if 0
-		Vector soundOrigin = info.GetDamagePosition();
-		CPASAttenuationFilter filter( soundOrigin );
-
-		EmitSound_t ep;
-		ep.m_nChannel = CHAN_STATIC;
-		ep.m_pSoundName = "NPC_MetroPolice.HitByVehicle";
-		ep.m_flVolume = 1.0f;
-		ep.m_SoundLevel = SNDLVL_NORM;
-		ep.m_pOrigin = &soundOrigin;
-
-		EmitSound( filter, SOUND_FROM_WORLD, ep );
-#endif
 		// in single player create ragdolls on the server when the player hits someone
 		// with their vehicle - for more dramatic death/collisions
 		CBaseEntity *pRagdoll = CreateServerRagdoll( this, m_nForceBone, info2, COLLISION_GROUP_INTERACTIVE_DEBRIS, true );
@@ -1528,17 +1513,6 @@ bool CBaseCombatCharacter::BecomeRagdoll( const CTakeDamageInfo &info, const Vec
 	//Fix up the force applied to server side ragdolls. This fixes magnets not affecting them.
 	CTakeDamageInfo newinfo = info;
 	newinfo.SetDamageForce( forceVector );
-
-#ifdef HL2_EPISODIC
-	// Burning corpses are server-side in episodic, if we're in darkness mode
-	if ( IsOnFire() && HL2GameRules()->IsAlyxInDarknessMode() )
-	{
-		CBaseEntity *pRagdoll = CreateServerRagdoll( this, m_nForceBone, newinfo, COLLISION_GROUP_DEBRIS );
-		FixupBurningServerRagdoll( pRagdoll );
-		RemoveDeferred();
-		return true;
-	}
-#endif
 
 #ifdef HL2_DLL	
 
@@ -1663,14 +1637,6 @@ void CBaseCombatCharacter::Event_Killed( const CTakeDamageInfo &info )
 	
 	// no longer standing on a nav area
 	ClearLastKnownArea();
-
-#if 0
-	// L4D specific hack for zombie commentary mode
-	if( GetOwnerEntity() != NULL )
-	{
-		GetOwnerEntity()->DeathNotice( this );
-	}
-#endif
 	
 #ifdef NEXT_BOT
 	// inform bots

@@ -1,9 +1,15 @@
 "GameInfo"
 {
-	game 		"My First HL2 Mod"
-	title 		"HALF-LIFE'"
+	game 		"Momentum Mod"
+	title 		""
 	title2		""
 	supportsvr	1
+	nodifficulty    1
+	developer	"Gocnak"
+	developer_url   "http://twitch.tv/gocnak"
+	gamelogo	1
+
+	icon		"resource/icon"
 
 	type		singleplayer_only
 
@@ -67,6 +73,7 @@
 
 			// Last, mount in shared HL2 loose files
 			game				|all_source_engine_paths|hl2
+			game 	 			"|all_source_engine_paths|../Counter-Strike Source/cstrike/cstrike_pak.vpk"
 			platform			|all_source_engine_paths|platform
 		}
 	}

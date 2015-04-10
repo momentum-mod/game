@@ -369,19 +369,6 @@ bool CAI_ScriptConditions::EvalPlayerBlockingActor( const EvalArgs_t &args )
 	if ( m_fPlayerBlockingActor == TRS_NONE )
 		return true;
 
-#if 0
-	CAI_BaseNPC *pNpc = args.pActor->MyNPCPointer();
-
-	const float testDist = 30.0;
-
-	Vector origin = args.pActor->WorldSpaceCenter();
-	Vector delta  = UTIL_YawToVector( args.pActor->GetAngles().y ) * testDist;
-
-	Vector vecAbsMins, vecAbsMaxs;
-	args.pActor->CollisionProp()->WorldSpaceAABB( &vecAbsMins, &vecAbsMaxs );
-	bool intersect = IsBoxIntersectingRay( vecAbsMins, vecAbsMaxs, origin, delta );
-#endif
-
 	if ( m_fPlayerBlockingActor == TRS_FALSE )
 		return true;
 

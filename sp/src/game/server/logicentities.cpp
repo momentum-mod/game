@@ -916,14 +916,6 @@ void CEnvGlobal::Spawn( void )
 		return;
 	}
 
-#ifdef HL2_EPISODIC
-	// if we modify the state of the physics cannon, make sure we precache the ragdoll boogie zap sound
-	if ( ( m_globalstate != NULL_STRING ) && ( stricmp( STRING( m_globalstate ), "super_phys_gun" ) == 0 ) )
-	{
-		PrecacheScriptSound( "RagdollBoogie.Zap" );
-	}
-#endif
-
 	if ( FBitSet( m_spawnflags, SF_GLOBAL_SET ) )
 	{
 		if ( !GlobalEntity_IsInTable( m_globalstate ) )

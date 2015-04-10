@@ -123,25 +123,6 @@ void CPointTeleport::InputTeleport( inputdata_t &inputdata )
 		Warning("ERROR: (%s) can't teleport object (%s) as it has a parent (%s)!\n",GetDebugName(),pTarget->GetDebugName(),pTarget->GetMoveParent()->GetDebugName());
 		return;
 	}
-
-	// in episodic, we have a special spawn flag that forces Gordon into a duck
-#ifdef HL2_EPISODIC
-	if ( (m_spawnflags & SF_TELEPORT_INTO_DUCK) && pTarget->IsPlayer() ) 
-	{
-		CBasePlayer *pPlayer = ToBasePlayer( pTarget );
-		if ( pPlayer != NULL )
-		{
-			pPlayer->m_nButtons |= IN_DUCK;
-			pPlayer->AddFlag( FL_DUCKING );
-			pPlayer->m_Local.m_bDucked = true;
-			pPlayer->m_Local.m_bDucking = true;
-			pPlayer->m_Local.m_flDucktime = 0.0f;
-			pPlayer->SetViewOffset( VEC_DUCK_VIEW_SCALED( pPlayer ) );
-			pPlayer->SetCollisionBounds( VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
-		}
-	}		
-#endif
-
 	pTarget->Teleport( &m_vSaveOrigin, &m_vSaveAngles, NULL );
 }
 

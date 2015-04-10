@@ -30,10 +30,8 @@ obj*/
 
 # Specific Source build products
 client.pdb
-client.dll
 client.lib
 server.pdb
-server.dll
 server.lib
 
 client.so

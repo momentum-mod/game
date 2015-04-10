@@ -31,10 +31,6 @@
 #include "particle_parse.h"
 #include "ai_tacticalservices.h"
 
-#ifdef HL2_EPISODIC
-#include "grenade_spit.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -46,22 +42,6 @@ ConVar	sk_antlion_health( "sk_antlion_health", "0" );
 ConVar	sk_antlion_swipe_damage( "sk_antlion_swipe_damage", "0" );
 ConVar	sk_antlion_jump_damage( "sk_antlion_jump_damage", "0" );
 ConVar  sk_antlion_air_attack_dmg( "sk_antlion_air_attack_dmg", "0" );
-
-
-#ifdef HL2_EPISODIC
-
-// workers
-#define ANTLION_WORKERS_BURST() (true)
-#define ANTLION_WORKER_BURST_IS_POISONOUS() (true)
-
-ConVar  sk_antlion_worker_burst_damage( "sk_antlion_worker_burst_damage", "50", FCVAR_NONE, "How much damage is inflicted by an antlion worker's death explosion." );
-ConVar	sk_antlion_worker_health( "sk_antlion_worker_health", "0", FCVAR_NONE, "Hitpoints of an antlion worker. If 0, will use base antlion hitpoints."   );
-ConVar  sk_antlion_worker_spit_speed( "sk_antlion_worker_spit_speed", "0", FCVAR_NONE, "Speed at which an antlion spit grenade travels." );
-
-// This must agree with the AntlionWorkerBurstRadius() function!
-ConVar  sk_antlion_worker_burst_radius( "sk_antlion_worker_burst_radius", "160", FCVAR_NONE, "Effect radius of an antlion worker's death explosion."  );
-
-#endif
 
 ConVar  g_test_new_antlion_jump( "g_test_new_antlion_jump", "1", FCVAR_ARCHIVE );
 ConVar	antlion_easycrush( "antlion_easycrush", "1" );

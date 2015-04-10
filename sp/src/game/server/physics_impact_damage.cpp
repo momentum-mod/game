@@ -316,12 +316,6 @@ float CalculatePhysicsImpactDamage( int index, gamevcollisionevent_t *pEvent, co
 		allowStaticDamage = false;
 	}
 
-#if 0
-	{
-		PhysGetDamageInflictorVelocityStartOfFrame( pEvent->pObjects[otherIndex], pEvent->preVelocity[otherIndex], pEvent->preAngularVelocity[otherIndex] );
-	}
-#endif
-
 	float otherSpeedSqr = pEvent->preVelocity[otherIndex].LengthSqr();
 	float otherAngSqr = 0;
 	

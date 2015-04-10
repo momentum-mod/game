@@ -46,6 +46,12 @@
     <Filter Include="VPC Scripts">
       <UniqueIdentifier>{A40EE377-781A-C6B9-0C7C-B3BE118D248E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Mometum">
+      <UniqueIdentifier>{b56fdc02-0d15-4bdd-8258-f018855d7eef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Mometum\Timer">
+      <UniqueIdentifier>{8d8301fd-4e6f-487b-8ebe-8de0a8fbcb56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\bitmap.lib">
@@ -3366,6 +3372,12 @@
     </ClCompile>
     <ClCompile Include="toolframework_client.cpp">
       <Filter>Tool Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="speedometer.cpp">
+      <Filter>Source Files\Mometum</Filter>
+    </ClCompile>
+    <ClCompile Include="timer.cpp">
+      <Filter>Source Files\Mometum\Timer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

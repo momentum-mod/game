@@ -33,10 +33,6 @@ class C_BaseEntity;
 struct WriteReplayScreenshotParams_t;
 class CReplayScreenshotTaker;
 
-#ifdef HL2_EPISODIC
-	class CStunEffect;
-#endif // HL2_EPISODIC
-
 //-----------------------------------------------------------------------------
 // Data specific to intro mode to control rendering.
 //-----------------------------------------------------------------------------

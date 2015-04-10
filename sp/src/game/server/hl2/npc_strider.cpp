@@ -1332,19 +1332,7 @@ int CNPC_Strider::SelectSchedule()
 
 	if( HasPendingTargetPath() )
 	{
-#if 0
-		if( IsInCrouchedPosture() && !m_bCrouchLocked )
-		{
-			// Make the strider stand!
-			return SCHED_STRIDER_STAND;
-		}
-		else
-		{
-			SetTargetPath();
-		}
-#else
 		SetTargetPath();
-#endif
 	}
 
 	//---------------------------------

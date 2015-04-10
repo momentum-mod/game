@@ -1038,16 +1038,6 @@ IMotionEvent::simresult_e CKeepUpright::Simulate( IPhysicsMotionController *pCon
 	angular = ComputeRotSpeedToAlignAxes( m_localTestAxis, currentLocalTargetAxis, angVel, 1.0, invDeltaTime, m_angularLimit );
 	angular *= invDeltaTime;
 
-#if 0
-	Vector position, out, worldAxis;
-	MatrixGetColumn( matrix, 3, position );
-	out = angular * 0.1;
-	VectorRotate( m_localTestAxis, matrix, worldAxis );
-	NDebugOverlay::Line( position, position + worldAxis * 100, 255, 0, 0, 0, 0 );
-	NDebugOverlay::Line( position, position + m_worldGoalAxis * 100, 255, 0, 0, 0, 0 );
-	NDebugOverlay::Line( position, position + out, 255, 255, 0, 0, 0 );
-#endif
-
 	return SIM_LOCAL_ACCELERATION;
 }
 

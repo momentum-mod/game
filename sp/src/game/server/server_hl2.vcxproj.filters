@@ -31,6 +31,15 @@
     <Filter Include="VPC Scripts">
       <UniqueIdentifier>{A40EE377-781A-C6B9-0C7C-B3BE118D248E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Momentum">
+      <UniqueIdentifier>{ba420043-3126-4507-a225-d68184da0eb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Momentum\Timer">
+      <UniqueIdentifier>{27321342-6053-452d-99d8-45c59eed4280}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Momentum\Util">
+      <UniqueIdentifier>{569441a5-0b51-4df2-a3a9-1e925b63c241}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\choreoobjects.lib">
@@ -1766,6 +1775,15 @@
     <ClInclude Include="toolframework_server.h">
       <Filter>Tools Framework</Filter>
     </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Source Files\Momentum\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="tickset.h">
+      <Filter>Source Files\Momentum\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Momentum_Util.h">
+      <Filter>Source Files\Momentum\Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gamedll_replay.cpp">
@@ -3432,6 +3450,9 @@
     </ClCompile>
     <ClCompile Include="toolframework_server.cpp">
       <Filter>Tools Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="tickset.cpp">
+      <Filter>Source Files\Momentum\Util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

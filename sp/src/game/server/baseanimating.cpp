@@ -1151,43 +1151,6 @@ void CBaseAnimating::HandleAnimEvent( animevent_t *pEvent )
 			BecomeRagdollOnClient( vec3_origin );
 			return;
 		}
-#ifdef HL2_EPISODIC
-		else if ( pEvent->event == AE_SV_DUSTTRAIL )
-		{
-			char szAttachment[128];
-			float flDuration;
-			float flSize;
-			if (sscanf( pEvent->options, "%s %f %f", szAttachment, &flDuration, &flSize ) == 3)
-			{
-				CHandle<DustTrail>	hDustTrail;
-
-				hDustTrail = DustTrail::CreateDustTrail();
-
-				if( hDustTrail )
-				{
-					hDustTrail->m_SpawnRate = 4;    // Particles per second
-					hDustTrail->m_ParticleLifetime = 1.5;   // Lifetime of each particle, In seconds
-					hDustTrail->m_Color.Init(0.5f, 0.46f, 0.44f);
-					hDustTrail->m_StartSize = flSize;
-					hDustTrail->m_EndSize = hDustTrail->m_StartSize * 8;
-					hDustTrail->m_SpawnRadius = 3;    // Each particle randomly offset from the center up to this many units
-					hDustTrail->m_MinSpeed = 4;    // u/sec
-					hDustTrail->m_MaxSpeed = 10;    // u/sec
-					hDustTrail->m_Opacity = 0.5f;  
-					hDustTrail->SetLifetime(flDuration);  // Lifetime of the spawner, in seconds
-					hDustTrail->m_StopEmitTime = gpGlobals->curtime + flDuration;
-					hDustTrail->SetParent( this, LookupAttachment( szAttachment ) );
-					hDustTrail->SetLocalOrigin( vec3_origin );
-				}
-			}
-			else
-			{
-				DevWarning( 1, "%s unable to parse AE_SV_DUSTTRAIL event \"%s\"\n", STRING( GetModelName() ), pEvent->options );
-			}
-
-			return;
-		}
-#endif
 	}
 
 	// Failed to find a handler

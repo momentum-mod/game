@@ -588,7 +588,7 @@ void CPropCombineBall::InputSocketed( inputdata_t &inputdata )
 	CHL2_Player *pPlayer = dynamic_cast<CHL2_Player *>( pOwner );
 	if ( pPlayer )
 	{
-		pPlayer->CombineBallSocketed( this );
+		//pPlayer->CombineBallSocketed( this );
 	}
 
 	UTIL_Remove( this );

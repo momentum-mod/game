@@ -47,14 +47,6 @@
 #include "filters.h"
 #include "tier0/icommandline.h"
 
-#ifdef HL2_EPISODIC
-#include "npc_alyx_episodic.h"
-#endif
-
-#ifdef PORTAL
-#include "portal_player.h"
-#endif // PORTAL
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -403,17 +395,9 @@ CHL2_Player::CHL2_Player()
 //
 #define SUITPOWER_CHARGE_RATE	12.5											// 100 units in 8 seconds
 
-#ifdef HL2MP
-CSuitPowerDevice SuitDeviceSprint( bits_SUIT_DEVICE_SPRINT, 25.0f );				// 100 units in 4 seconds
-#else
 CSuitPowerDevice SuitDeviceSprint(bits_SUIT_DEVICE_SPRINT, 12.5f);				// 100 units in 8 seconds
-#endif
 
-#ifdef HL2_EPISODIC
-CSuitPowerDevice SuitDeviceFlashlight( bits_SUIT_DEVICE_FLASHLIGHT, 1.111 );	// 100 units in 90 second
-#else
 CSuitPowerDevice SuitDeviceFlashlight(bits_SUIT_DEVICE_FLASHLIGHT, 2.222);	// 100 units in 45 second
-#endif
 CSuitPowerDevice SuitDeviceBreather(bits_SUIT_DEVICE_BREATHER, 6.7f);		// 100 units in 15 seconds (plus three padded seconds)
 
 
@@ -571,18 +555,6 @@ void CHL2_Player::PreThink(void)
 		NDebugOverlay::Box(predPos, NAI_Hull::Mins(GetHullType()), NAI_Hull::Maxs(GetHullType()), 0, 255, 0, 0, 0.01f);
 		NDebugOverlay::Line(GetAbsOrigin(), predPos, 0, 255, 0, 0, 0.01f);
 	}
-
-#ifdef HL2_EPISODIC
-	if( m_hLocatorTargetEntity != NULL )
-	{
-		// Keep track of the entity here, the client will pick up the rest of the work
-		m_HL2Local.m_vecLocatorOrigin = m_hLocatorTargetEntity->WorldSpaceCenter();
-	}
-	else
-	{
-		m_HL2Local.m_vecLocatorOrigin = vec3_invalid; // This tells the client we have no locator target.
-	}
-#endif//HL2_EPISODIC
 
 	// Riding a vehicle?
 	if (IsInAVehicle())
@@ -878,12 +850,7 @@ void CHL2_Player::PreThink(void)
 		if (m_nButtons & IN_ZOOM)
 		{
 			//FIXME: Held weapons like the grenade get sad when this happens
-#ifdef HL2_EPISODIC
-			// Episodic allows players to zoom while using a func_tank
-			CBaseCombatWeapon* pWep = GetActiveWeapon();
-			if ( !m_hUseEntity || ( pWep && pWep->IsWeaponVisible() ) )
-#endif
-				m_nButtons &= ~(IN_ATTACK | IN_ATTACK2);
+			m_nButtons &= ~(IN_ATTACK | IN_ATTACK2);
 		}
 	}
 }
@@ -1092,23 +1059,9 @@ void CHL2_Player::Spawn(void)
 
 	InitSprinting();
 
-	// Setup our flashlight values
-#ifdef HL2_EPISODIC
-	m_HL2Local.m_flFlashBattery = 100.0f;
-#endif 
-
 	GetPlayerProxy();
 
 	SetFlashlightPowerDrainScale(1.0f);
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void CHL2_Player::UpdateLocatorPosition(const Vector &vecPosition)
-{
-#ifdef HL2_EPISODIC
-	m_HL2Local.m_vecLocatorOrigin = vecPosition;
-#endif//HL2_EPISODIC 
 }
 
 //-----------------------------------------------------------------------------
@@ -2441,42 +2394,6 @@ bool CHL2_Player::ShouldShootMissTarget(CBaseCombatCharacter *pAttacker)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Notifies Alyx that player has put a combine ball into a socket so she can comment on it.
-// Input  : pCombineBall - ball the was socketed
-//-----------------------------------------------------------------------------
-void CHL2_Player::CombineBallSocketed(CPropCombineBall *pCombineBall)
-{
-#ifdef HL2_EPISODIC
-	CNPC_Alyx *pAlyx = CNPC_Alyx::GetAlyx();
-	if (pAlyx)
-	{
-		pAlyx->CombineBallSocketed(pCombineBall->NumBounces());
-	}
-#endif
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void CHL2_Player::Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &info )
-{
-	BaseClass::Event_KilledOther( pVictim, info );
-
-#ifdef HL2_EPISODIC
-
-	CAI_BaseNPC **ppAIs = g_AI_Manager.AccessAIs();
-
-	for (int i = 0; i < g_AI_Manager.NumAIs(); i++)
-	{
-		if (ppAIs[i] && ppAIs[i]->IRelationType(this) == D_LI)
-		{
-			ppAIs[i]->OnPlayerKilledOther(pVictim, info);
-		}
-	}
-
-#endif
-}
-
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CHL2_Player::Event_Killed( const CTakeDamageInfo &info )
 {
@@ -3225,17 +3142,6 @@ void CHL2_Player::ForceDropOfCarriedPhysObjects(CBaseEntity *pOnlyIfHoldingThis)
 		g_EventQueue.AddEvent(this, "ForceDropPhysObjects", value, 0.01f, pOnlyIfHoldingThis, this);
 		return;
 	}
-
-#ifdef HL2_EPISODIC
-	if (hl2_episodic.GetBool())
-	{
-		CBaseEntity *pHeldEntity = PhysCannonGetHeldEntity(GetActiveWeapon());
-		if (pHeldEntity && pHeldEntity->ClassMatches("grenade_helicopter"))
-		{
-			return;
-		}
-	}
-#endif
 
 	// Drop any objects being handheld.
 	ClearUseEntity();

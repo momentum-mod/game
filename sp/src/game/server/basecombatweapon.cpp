@@ -123,14 +123,6 @@ void CBaseCombatWeapon::Operator_FrameUpdate( CBaseCombatCharacter *pOperator )
 				ResetSequence( iSequence );	// Set to new anim (if it's there)
 			}
 		}
-#if 0
-		else
-		{
-			// animation that just ended doesn't loop! That means we just finished a fidget
-			// and should return to our heaviest weighted idle (the subtle one)
-			SelectHeaviestSequence( GetActivity() );
-		}
-#endif
 	}
 
 	// Animation events are passed back to the weapon's owner/operator

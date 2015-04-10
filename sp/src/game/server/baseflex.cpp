@@ -371,15 +371,6 @@ bool CBaseFlex::ClearSceneEvent( CSceneEventInfo *info, bool fastKill, bool canc
 			if ( canceled )
 			{
 				StopSound( info->m_pEvent->GetParameters() );
-
-#ifdef HL2_EPISODIC
-				// If we were holding the semaphore because of this speech, release it
-				CAI_BaseActor *pBaseActor = dynamic_cast<CAI_BaseActor*>(this);
-				if ( pBaseActor )
-				{
-					pBaseActor->GetExpresser()->ForceNotSpeaking();
-				}
-#endif
 			}
 		}
 		return true;
@@ -2588,26 +2579,6 @@ void CFlexCycler::Think( void )
 					SetFlexTarget( m_flexnum );
 				}
 			}
-
-#if 0
-			char szWhat[256];
-			szWhat[0] = '\0';
-			for (int i = 0; i < GetNumFlexControllers(); i++)
-			{
-				if (m_flextarget[i] == 1.0)
-				{
-					if (stricmp( GetFlexFacs( i ), "upper") != 0 && stricmp( GetFlexFacs( i ), "lower") != 0)
-					{
-						if (szWhat[0] == '\0')
-							Q_strncat( szWhat, "-", sizeof( szWhat ), COPY_ALL_CHARACTERS );
-						else
-							Q_strncat( szWhat, "+", sizeof( szWhat ), COPY_ALL_CHARACTERS );
-						Q_strncat( szWhat, GetFlexFacs( i ), sizeof( szWhat ), COPY_ALL_CHARACTERS );
-					}
-				}
-			}
-			Msg( "%s\n", szWhat );
-#endif
 		}
 
 		// slide it up.
@@ -2623,7 +2594,6 @@ void CFlexCycler::Think( void )
 			SetFlexWeight( i, weight );
 		}
 
-#if 1
 		if (flex_talk.GetInt() == -1)
 		{
 			m_istalking = 1;
@@ -2653,52 +2623,6 @@ void CFlexCycler::Think( void )
 			}
 			flex_talk.SetValue( "0" );
 		}
-#else
-		if (flex_talk.GetInt())
-		{
-			if (m_speaktime < gpGlobals->curtime)
-			{
-				if (m_phoneme == 0)
-				{
-					for (m_phoneme = 0; m_phoneme < GetNumFlexControllers(); m_phoneme++)
-					{
-						if (stricmp( GetFlexFacs( m_phoneme ), "27") == 0)
-							break;
-					}
-				}
-				m_istalking = !m_istalking;
-				if (m_istalking)
-				{
-					m_looktime = gpGlobals->curtime - 1.0;
-					m_speaktime = gpGlobals->curtime + random->RandomFloat( 0.5, 2.0 );
-				}
-				else
-				{
-					m_speaktime = gpGlobals->curtime + random->RandomFloat( 1.0, 3.0 );
-				}
-			}
-
-			for (i = m_phoneme; i < GetNumFlexControllers(); i++)
-			{
-				SetFlexWeight( i, 0.0f );
-			}
-
-			if (m_istalking)
-			{
-				m_flextime = gpGlobals->curtime + random->RandomFloat( 0.0, 0.2 );
-				m_flexWeight[random->RandomInt(m_phoneme, GetNumFlexControllers()-1)] = random->RandomFloat( 0.5, 1.0 );
-				float mouth = random->RandomFloat( 0.0, 1.0 );
-				float jaw = random->RandomFloat( 0.0, 1.0 );
-
-				m_flexWeight[m_phoneme - 2] = jaw * (mouth);
-				m_flexWeight[m_phoneme - 1] = jaw * (1.0 - mouth);
-			}
-		}
-		else
-		{
-			m_istalking = 0;
-		}
-#endif
 
 		// blink
 		if (m_blinktime < gpGlobals->curtime)
@@ -2738,16 +2662,6 @@ void CFlexCycler::Think( void )
 				m_looktime = gpGlobals->curtime + random->RandomFloat(1.0,4.0);
 			}
 		}
-
-#if 0
-		float dt = acos( DotProduct( (m_lookTarget - EyePosition()).Normalize(), (m_viewtarget - EyePosition()).Normalize() ) );
-
-		if (dt > M_PI / 4)
-		{
-			dt = (M_PI / 4) * dt;
-			m_viewtarget = ((1 - dt) * m_viewtarget + dt * m_lookTarget);
-		}
-#endif
 
 		SetViewtarget( m_lookTarget );
 	}

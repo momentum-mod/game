@@ -145,8 +145,8 @@ private:
 	void LevelInit_ParseAllEntities( const char *pMapEntities );
 	void LoadMessageOfTheDay();
 	void LoadSpecificMOTDMsg( const ConVar &convar, const char *pszStringName );
+	
 };
-
 
 // Normally, when the engine calls ClientPutInServer, it calls a global function in the game DLL
 // by the same name. Use this to override the function that it calls. This is used for bots.

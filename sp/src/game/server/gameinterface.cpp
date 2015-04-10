@@ -70,6 +70,7 @@
 #include "engine/iserverplugin.h"
 #ifdef _WIN32
 #include "ienginevgui.h"
+#include "tickset.h"
 #endif
 #include "ragdoll_shared.h"
 #include "toolframework/iserverenginetools.h"
@@ -90,19 +91,6 @@
 #include "serverbenchmark_base.h"
 #include "querycache.h"
 
-
-#ifdef TF_DLL
-#include "gc_clientsystem.h"
-#include "econ_item_inventory.h"
-#include "steamworks_gamestats.h"
-#include "tf/tf_gc_server.h"
-#include "tf_gamerules.h"
-#include "tf_lobby.h"
-#include "player_vs_environment/tf_population_manager.h"
-
-extern ConVar tf_mm_trusted;
-extern ConVar tf_mm_servermode;
-#endif
 
 #ifdef USE_NAV_MESH
 #include "nav_mesh.h"
@@ -246,17 +234,7 @@ static void UpdateChapterRestrictions( const char *mapname );
 
 static void UpdateRichPresence ( void );
 
-static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue) {
-	float toCheck = ((ConVar*)var)->GetFloat();
-	//Msg("Trail length change: new %i | old: %i\n", toCheck, (int)fOldValue);
-	if (toCheck == fOldValue) return;
-	if (toCheck < 0.01 || toCheck > 0.015) {
-		var->SetValue(((ConVar*)var)->GetDefault());
-	}
-	gpGlobals->interval_per_tick = ((ConVar*)var)->GetFloat();
-}
 
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT, "Changes the tickrate of the game. Recommended to change this when not in a server.", onTickRateChange);
 
 
 
@@ -356,71 +334,6 @@ void			DrawMessageEntities();
 // For now just using one big AI network
 extern ConVar think_limit;
 
-
-#if 0
-//-----------------------------------------------------------------------------
-// Purpose: Draw output overlays for any measure sections
-// Input  : 
-//-----------------------------------------------------------------------------
-void DrawMeasuredSections(void)
-{
-	int		row = 1;
-	float	rowheight = 0.025;
-
-	CMeasureSection *p = CMeasureSection::GetList();
-	while ( p )
-	{
-		char str[256];
-		Q_snprintf(str,sizeof(str),"%s",p->GetName());
-		NDebugOverlay::ScreenText( 0.01,0.51+(row*rowheight),str, 255,255,255,255, 0.0 );
-		
-		Q_snprintf(str,sizeof(str),"%5.2f\n",p->GetTime().GetMillisecondsF());
-		//Q_snprintf(str,sizeof(str),"%3.3f\n",p->GetTime().GetSeconds() * 100.0 / engine->Time());
-		NDebugOverlay::ScreenText( 0.28,0.51+(row*rowheight),str, 255,255,255,255, 0.0 );
-
-		Q_snprintf(str,sizeof(str),"%5.2f\n",p->GetMaxTime().GetMillisecondsF());
-		//Q_snprintf(str,sizeof(str),"%3.3f\n",p->GetTime().GetSeconds() * 100.0 / engine->Time());
-		NDebugOverlay::ScreenText( 0.34,0.51+(row*rowheight),str, 255,255,255,255, 0.0 );
-
-
-		row++;
-
-		p = p->GetNext();
-	}
-
-	bool sort_reset = false;
-
-	// Time to redo sort?
-	if ( measure_resort.GetFloat() > 0.0 &&
-		engine->Time() >= CMeasureSection::m_dNextResort )
-	{
-		// Redo it
-		CMeasureSection::SortSections();
-		// Set next time
-		CMeasureSection::m_dNextResort = engine->Time() + measure_resort.GetFloat();
-		// Flag to reset sort accumulator, too
-		sort_reset = true;
-	}
-
-	// Iterate through the sections now
-	p = CMeasureSection::GetList();
-	while ( p )
-	{
-		// Update max 
-		p->UpdateMax();
-
-		// Reset regular accum.
-		p->Reset();
-		// Reset sort accum less often
-		if ( sort_reset )
-		{
-			p->SortReset();
-		}
-		p = p->GetNext();
-	}
-
-}
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -583,6 +496,8 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 		CreateInterfaceFn physicsFactory, CreateInterfaceFn fileSystemFactory, 
 		CGlobalVars *pGlobals)
 {
+	TickSet::TickInit();
+
 	ConnectTier1Libraries( &appSystemFactory, 1 );
 	ConnectTier2Libraries( &appSystemFactory, 1 );
 	ConnectTier3Libraries( &appSystemFactory, 1 );
@@ -766,7 +681,6 @@ void CServerGameDLL::PostInit()
 
 void CServerGameDLL::DLLShutdown( void )
 {
-
 	// Due to dependencies, these are not autogamesystems
 	ModelSoundsCacheShutdown();
 
@@ -833,6 +747,9 @@ bool CServerGameDLL::ReplayInit( CreateInterfaceFn fnReplayFactory )
 #endif
 }
 
+
+
+
 //-----------------------------------------------------------------------------
 // Purpose: See shareddefs.h for redefining this.  Don't even think about it, though, for HL2.  Or you will pay.  ywb 9/22/03
 // Output : float
@@ -859,9 +776,27 @@ float CServerGameDLL::GetTickInterval( void ) const
 			tickinterval = 1.0f / tickrate;
 	}
 #endif
-
 	return tickinterval;
 }
+
+static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue) {
+	float toCheck = ((ConVar*)var)->GetFloat();
+	if (toCheck == fOldValue) return;
+	if (toCheck < 0.01f || toCheck > 0.015f) {
+		Warning("Cannot set a tickrate any lower than 66 or higher than 100!");
+		var->SetValue(((ConVar*)var)->GetDefault());
+		return;
+	}
+	bool result = TickSet::SetTickrate(toCheck);
+	if (result)	{
+		Msg("Successfully changed the tickrate to %f!\n", toCheck);
+		gpGlobals->interval_per_tick = toCheck;
+	}
+	else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
+
+}
+
+static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT, "Changes the tickrate of the game. Recommended to change this when not in a server.", onTickRateChange);
 
 // This is called when a new game is started. (restart, map)
 bool CServerGameDLL::GameInit( void )
@@ -870,7 +805,6 @@ bool CServerGameDLL::GameInit( void )
 	engine->ServerCommand( "exec game.cfg\n" );
 	engine->ServerExecute( );
 	CBaseEntity::sm_bAccurateTriggerBboxChecks = true;
-
 	IGameEvent *event = gameeventmanager->CreateEvent( "game_init" );
 	if ( event )
 	{

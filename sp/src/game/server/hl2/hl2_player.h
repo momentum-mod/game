@@ -201,9 +201,9 @@ public:
 	virtual void		OnDamagedByExplosion( const CTakeDamageInfo &info );
 	bool				ShouldShootMissTarget( CBaseCombatCharacter *pAttacker );
 
-	void				CombineBallSocketed( CPropCombineBall *pCombineBall );
+	//void				CombineBallSocketed( CPropCombineBall *pCombineBall );
 
-	virtual void		Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &info );
+	//virtual void		Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &info );
 
 	virtual void		GetAutoaimVector( autoaim_params_t &params );
 	bool				ShouldKeepLockedAutoaimTarget( EHANDLE hLockedTarget );

@@ -1302,28 +1302,6 @@ int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szgroupname,
 	return -1;
 }
 
-
-#if 0
-// for this entity, for the given sentence within the sentence group, stop
-// the sentence.
-
-void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
-{
-	char buffer[64];
-	char sznum[8];
-	
-	if (!fSentencesInit)
-		return;
-
-	if (isentenceg < 0 || ipick < 0)
-		return;
-
-	Q_snprintf(buffer,sizeof(buffer),"!%s%d", engine->SentenceGroupNameFromIndex( isentenceg ), ipick );
-
-	UTIL_StopSound(entity, CHAN_VOICE, buffer);
-}
-#endif
-
 // open sentences.txt, scan for groups, build rgsentenceg
 // Should be called from world spawn, only works on the
 // first call and is ignored subsequently.
