@@ -3454,6 +3454,9 @@
     <ClCompile Include="tickset.cpp">
       <Filter>Source Files\Momentum\Util</Filter>
     </ClCompile>
+    <ClCompile Include="TimerTriggers.cpp">
+      <Filter>Source Files\Momentum\Timer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

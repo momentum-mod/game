@@ -292,6 +292,10 @@ public:
 	//SPAWNING
 	CBaseEntity* EntSelectSpawnPoint();
 
+	//CHECKPOINT
+	void SetCurrentCheckpoint(int);
+	int GetCurrentCheckpoint();
+
 private:
 	CountdownTimer m_ladderSurpressionTimer;
 	Vector m_lastLadderNormal;
@@ -379,6 +383,8 @@ private:
 	float				m_flTimeNextLadderHint;	// Next time we're eligible to display a HUD hint about a ladder.
 	
 	friend class CHL2GameMovement;
+
+	int currentCheckpoint;
 };
 
 

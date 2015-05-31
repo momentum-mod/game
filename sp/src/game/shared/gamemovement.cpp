@@ -2652,7 +2652,7 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
 				TracePlayerBBox( pm.endpos, pm.endpos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, stuck );
 				if ( stuck.startsolid || stuck.fraction != 1.0f )
 				{
-					//Msg( "Player will become stuck!!!\n" );
+					Msg( "Player will become stuck!!!\n" );
 					VectorCopy (vec3_origin, mv->m_vecVelocity);
 					break;
 				}
@@ -2791,7 +2791,7 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
 			if (d <= 0)
 			{
 				//Con_DPrintf("Back\n");
-				VectorCopy (vec3_origin, mv->m_vecVelocity);
+				//VectorCopy (vec3_origin, mv->m_vecVelocity);
 				break;
 			}
 		}
@@ -2799,7 +2799,8 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
 
 	if ( allFraction == 0 )
 	{
-		VectorCopy (vec3_origin, mv->m_vecVelocity);
+		//Msg("ISSUE 2\n");
+		//VectorCopy (vec3_origin, mv->m_vecVelocity); RAMPBUG FIX
 	}
 
 	// Check if they slammed into a wall

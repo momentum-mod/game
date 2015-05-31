@@ -27,7 +27,7 @@ public:
 		m_vGoal.Init();
 	}
 	~Timer() {}
-
+	
 	static Timer *timer()
 	{
 		static Timer *timer = new Timer();
@@ -162,6 +162,7 @@ public:
 	float GetOffsetBefore() {
 		return offsetBefore;
 	}
+	float curTime;
 
 private:
 	Vector m_vStart;
@@ -174,7 +175,6 @@ private:
 	float m_flSecondsRecord;
 	float offset;
 	float offsetBefore;
-	float curTime;
 	float startTime;
 
 	float totalTicks;//to be sent to the hud and converted into HH:MM:SS

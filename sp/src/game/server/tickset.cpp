@@ -1,4 +1,3 @@
-//#include "cbase.h"
 #include "Windows.h"
 #include "Psapi.h"
 #pragma comment(lib, "psapi.lib")

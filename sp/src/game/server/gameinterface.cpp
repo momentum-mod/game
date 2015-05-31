@@ -117,6 +117,8 @@
 #include "replay/ireplaysystem.h"
 #endif
 
+#include "Timer.h"
+
 extern IToolFrameworkServer *g_pToolFrameworkServer;
 extern IParticleSystemQuery *g_pParticleSystemQuery;
 
@@ -1159,7 +1161,19 @@ void CServerGameDLL::GameFrame( bool simulating )
 	// For profiling.. let them enable/disable the networkvar manual mode stuff.
 	g_bUseNetworkVars = s_UseNetworkVars.GetBool();
 #endif
-
+	if (Timer::timer()->IsRunning()) {
+		if (Timer::timer()->InLevelLoad()) {
+			CBasePlayer* player = UTIL_GetLocalPlayer();
+			if (player) {
+				//Msg("Found the player at tick %f!\n", (float) gpGlobals->tickcount);
+				Timer::timer()->Init((float)gpGlobals->tickcount);
+				Timer::timer()->SetRunning(true);
+			}
+		}
+		else {
+			Timer::timer()->DispatchTimeMessage();
+		}
+	}
 	extern void GameStartFrame( void );
 	extern void ServiceEventQueue( void );
 	extern void Physics_RunThinkFunctions( bool simulating );
@@ -1324,6 +1338,10 @@ void CServerGameDLL::LevelShutdown( void )
 	g_pServerBenchmark->EndBenchmark();
 
 	MDLCACHE_CRITICAL_SECTION();
+	if (Timer::timer()->IsRunning()) {
+		Timer::timer()->SetLevelLoad(true);
+	}
+
 	IGameSystem::LevelShutdownPreEntityAllSystems();
 
 	// YWB:

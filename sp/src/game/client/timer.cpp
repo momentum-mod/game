@@ -27,9 +27,10 @@ static ConVar timer_mode("gh_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE |
 
 class CHudTimer : public CHudElement, public Panel
 {
-	DECLARE_CLASS_SIMPLE(CHudTimer, Panel);
+	
 
 public:
+	CHudTimer();
 	CHudTimer(const char *pElementName);
 	virtual void Init();
 	virtual void Reset();
@@ -42,9 +43,9 @@ public:
 	void MsgFunc_Timer_StateChange(bf_read &msg);
 
 	//int getPos(const char*);
-
+	DECLARE_CLASS_SIMPLE(CHudTimer, Panel);
 	virtual void Paint();
-
+	float curTime;
 private:
 	int initialTall;
 	float m_flSecondsRecord;
