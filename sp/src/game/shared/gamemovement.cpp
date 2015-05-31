@@ -797,124 +797,6 @@ CBaseHandle CGameMovement::TestPlayerPosition( const Vector& pos, int collisionG
 }
 
 
-/*
-
-// FIXME FIXME:  Does this need to be hooked up?
-bool CGameMovement::IsWet() const
-{
-	return ((pev->flags & FL_INRAIN) != 0) || (m_WetTime >= gpGlobals->time);
-}
-
-//-----------------------------------------------------------------------------
-// Plants player footprint decals
-//-----------------------------------------------------------------------------
-
-#define PLAYER_HALFWIDTH 12
-void CGameMovement::PlantFootprint( surfacedata_t *psurface )
-{
-	// Can't plant footprints on fake materials (ladders, wading)
-	if ( psurface->gameMaterial != 'X' )
-	{
-		int footprintDecal = -1;
-
-		// Figure out which footprint type to plant...
-		// Use the wet footprint if we're wet...
-		if (IsWet())
-		{
-			footprintDecal = DECAL_FOOTPRINT_WET;
-		}
-		else
-		{	   
-			// FIXME: Activate this once we decide to pull the trigger on it.
-			// NOTE: We could add in snow, mud, others here
-//			switch(psurface->gameMaterial)
-//			{
-//			case 'D':
-//				footprintDecal = DECAL_FOOTPRINT_DIRT;
-//				break;
-//			}
-		}
-
-		if (footprintDecal != -1)
-		{
-			Vector right;
-			AngleVectors( pev->angles, 0, &right, 0 );
-
-			// Figure out where the top of the stepping leg is 
-			trace_t tr;
-			Vector hipOrigin;
-			VectorMA( pev->origin, 
-				m_IsFootprintOnLeft ? -PLAYER_HALFWIDTH : PLAYER_HALFWIDTH,
-				right, hipOrigin );
-
-			// Find where that leg hits the ground
-			UTIL_TraceLine( hipOrigin, hipOrigin + Vector(0, 0, -COORD_EXTENT * 1.74), 
-							MASK_SOLID_BRUSHONLY, edict(), COLLISION_GROUP_NONE, &tr);
-
-			unsigned char mType = TEXTURETYPE_Find( &tr );
-
-			// Splat a decal
-			CPVSFilter filter( tr.endpos );
-			te->FootprintDecal( filter, 0.0f, &tr.endpos, &right, ENTINDEX(tr.u.ent), 
-							   gDecals[footprintDecal].index, mType );
-
-		}
-	}
-
-	// Switch feet for next time
-	m_IsFootprintOnLeft = !m_IsFootprintOnLeft;
-}
-
-#define WET_TIME			    5.f	// how many seconds till we're completely wet/dry
-#define DRY_TIME			   20.f	// how many seconds till we're completely wet/dry
-
-void CBasePlayer::UpdateWetness()
-{
-	// BRJ 1/7/01
-	// Check for whether we're in a rainy area....
-	// Do this by tracing a line straight down with a size guaranteed to
-	// be larger than the map
-	// Update wetness based on whether we're in rain or not...
-
-	trace_t tr;
-	UTIL_TraceLine( pev->origin, pev->origin + Vector(0, 0, -COORD_EXTENT * 1.74), 
-					MASK_SOLID_BRUSHONLY, edict(), COLLISION_GROUP_NONE, &tr);
-	if (tr.surface.flags & SURF_WET)
-	{
-		if (! (pev->flags & FL_INRAIN) )
-		{
-			// Transition...
-			// Figure out how wet we are now (we were drying off...)
-			float wetness = (m_WetTime - gpGlobals->time) / DRY_TIME;
-			if (wetness < 0.0f)
-				wetness = 0.0f;
-
-			// Here, wet time represents the time at which we get totally wet
-			m_WetTime = gpGlobals->time + (1.0 - wetness) * WET_TIME; 
-
-			pev->flags |= FL_INRAIN;
-		}
-	}
-	else
-	{
-		if ((pev->flags & FL_INRAIN) != 0)
-		{
-			// Transition...
-			// Figure out how wet we are now (we were getting more wet...)
-			float wetness = 1.0f + (gpGlobals->time - m_WetTime) / WET_TIME;
-			if (wetness > 1.0f)
-				wetness = 1.0f;
-
-			// Here, wet time represents the time at which we get totally dry
-			m_WetTime = gpGlobals->time + wetness * DRY_TIME; 
-
-			pev->flags &= ~FL_INRAIN;
-		}
-	}
-}
-*/
-
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -929,8 +811,8 @@ void CGameMovement::CategorizeGroundSurface( trace_t &pm )
 	// A value of 0.8f feels pretty normal for vphysics, whereas 1.0f is normal for players.
 	// This scaling trivially makes them equivalent.  REVISIT if this affects low friction surfaces too much.
 	player->m_surfaceFriction *= 1.25f;
-	if ( player->m_surfaceFriction > 1.0f )
-		player->m_surfaceFriction = 1.0f;
+	if (player->m_surfaceFriction > 1.0f || (player->m_pSurfaceData->game.material == 'D'&& player->m_pSurfaceData->physics.friction == 0.35f))
+		player->m_surfaceFriction = 1.0f;//fix for snow friction
 
 	player->m_chTextureType = player->m_pSurfaceData->game.material;
 }
@@ -2517,19 +2399,6 @@ bool CGameMovement::CheckJumpButton( void )
 		player->m_Local.m_flJumpTime = GAMEMOVEMENT_JUMP_TIME;
 		player->m_Local.m_bInDuckJump = true;
 	}
-
-/*#if defined( HL2_DLL )
-
-	if ( xc_uncrouch_on_jump.GetBool() )
-	{
-		// Uncrouch when jumping
-		if ( player->GetToggledDuckState() )
-		{
-			player->ToggleDuck();
-		}
-	}
-
-#endif*/
 
 	// Flag that we jumped.
 	mv->m_nOldButtons |= IN_JUMP;	// don't jump again until released
