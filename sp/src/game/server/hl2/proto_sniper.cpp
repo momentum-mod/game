@@ -31,7 +31,6 @@
 #include "engine/IEngineSound.h"
 #include "IEffects.h"
 #include "effect_color_tables.h"
-#include "npc_rollermine.h"
 #include "eventqueue.h"
 
 #include "effect_dispatch_data.h"

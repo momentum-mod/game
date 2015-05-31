@@ -592,27 +592,6 @@ bool CNPC_FloorTurret::OnAttemptPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGu
 //-----------------------------------------------------------------------------
 bool CNPC_FloorTurret::HandleInteraction(int interactionType, void *data, CBaseCombatCharacter *sourceEnt)
 {
-	if ( interactionType == g_interactionCombineBash )
-	{
-		// We've been bashed by a combine soldier. Remember who it was, if we haven't got an active kicker
-		if ( !m_hLastNPCToKickMe )
-		{
-			m_hLastNPCToKickMe = sourceEnt;
-			m_flKnockOverFailedTime = gpGlobals->curtime + 3.0;
-		}
-
-		// Get knocked away
-		Vector forward, up;
-		AngleVectors( sourceEnt->GetLocalAngles(), &forward, NULL, &up );
-		ApplyAbsVelocityImpulse( forward * 100 + up * 50 );
-		CTakeDamageInfo info( sourceEnt, sourceEnt, 30, DMG_CLUB );
-		CalculateMeleeDamageForce( &info, forward, GetAbsOrigin() );
-		TakeDamage( info );
-
-		EmitSound( "NPC_Combine.WeaponBash" );
-		return true;
-	}
-
 	return BaseClass::HandleInteraction( interactionType, data, sourceEnt );
 }
 

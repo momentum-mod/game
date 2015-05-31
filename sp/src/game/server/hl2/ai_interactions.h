@@ -20,18 +20,9 @@
 //Antlion
 extern int	g_interactionAntlionKilled;
 
-//Barnacle
-extern int	g_interactionBarnacleVictimDangle;
-extern int	g_interactionBarnacleVictimReleased;
-extern int	g_interactionBarnacleVictimGrab;
-
 //Bullsquid
 //extern int	g_interactionBullsquidPlay;
 //extern int	g_interactionBullsquidThrow;
-
-//Combine
-extern int	g_interactionCombineBash;
-extern int	g_interactionCombineRequestCover;
 
 //Houndeye
 //extern int	g_interactionHoundeyeGroupAttack;
@@ -53,16 +44,6 @@ extern int	g_interactionMetrocopStartedStitch;
 
 //ScriptedTarget
 extern int  g_interactionScriptedTarget;
-
-//Stalker
-extern int	g_interactionStalkerBurn;
-
-//Vortigaunt
-extern int	g_interactionVortigauntStomp;
-extern int	g_interactionVortigauntStompFail;
-extern int	g_interactionVortigauntStompHit;
-extern int	g_interactionVortigauntKick;
-extern int	g_interactionVortigauntClaw;
 
 //Floor turret
 extern int	g_interactionTurretStillStanding;

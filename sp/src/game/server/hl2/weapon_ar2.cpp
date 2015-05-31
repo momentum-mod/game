@@ -24,7 +24,6 @@
 #include "te_effect_dispatch.h"
 #include "prop_combine_ball.h"
 #include "beam_shared.h"
-#include "npc_combine.h"
 #include "rumble_shared.h"
 #include "gamestats.h"
 
@@ -382,21 +381,12 @@ void CWeaponAR2::FireNPCSecondaryAttack( CBaseCombatCharacter *pOperator, bool b
 		
 		Vector vecTarget;
 
-		CNPC_Combine *pSoldier = dynamic_cast<CNPC_Combine *>( pNPC );
-		if ( pSoldier )
-		{
-			// In the distant misty past, elite soldiers tried to use bank shots.
-			// Therefore, we must ask them specifically what direction they are shooting.
-			vecTarget = pSoldier->GetAltFireTarget();
-		}
-		else
-		{
-			// All other users of the AR2 alt-fire shoot directly at their enemy.
-			if ( !pNPC->GetEnemy() )
-				return;
+
+		// All other users of the AR2 alt-fire shoot directly at their enemy.
+		if ( !pNPC->GetEnemy() )
+			return;
 				
-			vecTarget = pNPC->GetEnemy()->BodyTarget( vecSrc );
-		}
+		vecTarget = pNPC->GetEnemy()->BodyTarget( vecSrc );
 
 		vecAiming = vecTarget - vecSrc;
 		VectorNormalize( vecAiming );

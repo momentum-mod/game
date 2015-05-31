@@ -1335,31 +1335,6 @@ void CNPC_Crow::FlapSound( void )
 //-----------------------------------------------------------------------------
 bool CNPC_Crow::HandleInteraction( int interactionType, void *data, CBaseCombatCharacter *sourceEnt )
 {
-	if ( interactionType == g_interactionBarnacleVictimDangle )
-	{
-		// Die instantly
-		return false;
-	}
-	else if ( interactionType == g_interactionBarnacleVictimGrab )
-	{
-		if ( GetFlags() & FL_ONGROUND )
-		{
-			SetGroundEntity( NULL );
-		}
-
-		// return ideal grab position
-		if (data)
-		{
-			// FIXME: need a good way to ensure this contract
-			*((Vector *)data) = GetAbsOrigin() + Vector( 0, 0, 5 );
-		}
-
-		StopLoopingSounds();
-
-		SetThink( NULL );
-		return true;
-	}
-
 	return BaseClass::HandleInteraction( interactionType, data, sourceEnt );
 }
 

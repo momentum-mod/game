@@ -32,10 +32,6 @@
 	#include "portal_util_shared.h"
 #endif
 
-#ifdef HL2_DLL
-	extern int g_interactionPlayerLaunchedRPG;
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1647,22 +1643,6 @@ void CWeaponRPG::PrimaryAttack( void )
 			if ( FClassnameIs( g_hWeaponFireTriggers[i], "trigger_rpgfire" ) )
 			{
 				g_hWeaponFireTriggers[i]->ActivateMultiTrigger( pOwner );
-			}
-		}
-	}
-
-	if( hl2_episodic.GetBool() )
-	{
-		CAI_BaseNPC **ppAIs = g_AI_Manager.AccessAIs();
-		int nAIs = g_AI_Manager.NumAIs();
-
-		string_t iszStriderClassname = AllocPooledString( "npc_strider" );
-
-		for ( int i = 0; i < nAIs; i++ )
-		{
-			if( ppAIs[ i ]->m_iClassname == iszStriderClassname )
-			{
-				ppAIs[ i ]->DispatchInteraction( g_interactionPlayerLaunchedRPG, NULL, m_hMissile );
 			}
 		}
 	}

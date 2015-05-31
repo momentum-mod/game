@@ -18,7 +18,6 @@
 #include "te_effect_dispatch.h"
 #include "physics_saverestore.h"
 #include "movevars_shared.h"
-#include "npc_attackchopper.h"
 #include "weapon_rpg.h"
 #include "vphysics/constraints.h"
 #include "world.h"
@@ -374,7 +373,6 @@ void CPropAirboat::Precache( void )
 void CPropAirboat::Spawn( void )
 {
 	m_nAmmoCount = m_bHasGun ? 0 : -1;
-	m_hAvoidSphere = CreateHelicopterAvoidanceSphere( this, 0, 50.0f, false );
 	m_flLastImpactEffectTime = -1;
 	m_iNumberOfEntries = 0;
 

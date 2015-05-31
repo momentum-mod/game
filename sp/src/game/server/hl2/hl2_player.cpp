@@ -36,7 +36,6 @@
 #include "te_effect_dispatch.h" 
 #include "ai_basenpc.h"
 #include "AI_Criteria.h"
-#include "npc_barnacle.h"
 #include "entitylist.h"
 #include "env_zoom.h"
 #include "hl2_gamerules.h"
@@ -809,34 +808,6 @@ void CHL2_Player::PreThink(void)
 		m_Local.m_flFallVelocity = -GetAbsVelocity().z;
 	}
 
-	if (m_afPhysicsFlags & PFLAG_ONBARNACLE)
-	{
-		bool bOnBarnacle = false;
-		CNPC_Barnacle *pBarnacle = NULL;
-		do
-		{
-			// FIXME: Not a good or fast solution, but maybe it will catch the bug!
-			pBarnacle = (CNPC_Barnacle*)gEntList.FindEntityByClassname(pBarnacle, "npc_barnacle");
-			if (pBarnacle)
-			{
-				if (pBarnacle->GetEnemy() == this)
-				{
-					bOnBarnacle = true;
-				}
-			}
-		} while (pBarnacle);
-
-		if (!bOnBarnacle)
-		{
-			Warning("Attached to barnacle?\n");
-			Assert(0);
-			m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
-		}
-		else
-		{
-			SetAbsVelocity(vec3_origin);
-		}
-	}
 	// StudioFrameAdvance( );//!!!HACKHACK!!! Can't be hit by traceline when not animating?
 
 	// Update weapon's ready status
@@ -963,21 +934,6 @@ Class_T  CHL2_Player::Classify(void)
 //-----------------------------------------------------------------------------
 bool CHL2_Player::HandleInteraction(int interactionType, void *data, CBaseCombatCharacter* sourceEnt)
 {
-	if (interactionType == g_interactionBarnacleVictimDangle)
-		return false;
-
-	if (interactionType == g_interactionBarnacleVictimReleased)
-	{
-		m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
-		SetMoveType(MOVETYPE_WALK);
-		return true;
-	}
-	else if (interactionType == g_interactionBarnacleVictimGrab)
-	{
-		m_afPhysicsFlags |= PFLAG_ONBARNACLE;
-		ClearUseEntity();
-		return true;
-	}
 	return false;
 }
 

@@ -57,10 +57,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifdef HL2_DLL
-extern int	g_interactionBarnacleVictimReleased;
-#endif //HL2_DLL
-
 extern ConVar weapon_showproficiency;
 
 ConVar ai_show_hull_attacks( "ai_show_hull_attacks", "0" );
@@ -691,14 +687,6 @@ bool CBaseCombatCharacter::FInAimCone( const Vector &vecSpot )
 //-----------------------------------------------------------------------------
 bool CBaseCombatCharacter::HandleInteraction( int interactionType, void *data, CBaseCombatCharacter* sourceEnt )
 {
-#ifdef HL2_DLL
-	if ( interactionType == g_interactionBarnacleVictimReleased )
-	{
-		// For now, throw away the NPC and leave the ragdoll.
-		UTIL_Remove( this );
-		return true;
-	}
-#endif // HL2_DLL
 	return false;
 }
 

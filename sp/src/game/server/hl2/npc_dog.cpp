@@ -13,7 +13,6 @@
 #include "ai_hull.h"
 #include "beam_shared.h"
 #include "ai_baseactor.h"
-#include "npc_rollermine.h"
 #include "saverestore_utlvector.h"
 #include "physics_bone_follower.h"
 #include "Sprite.h"
@@ -247,12 +246,6 @@ bool CNPC_Dog::CreateBehaviors( void )
 
 Disposition_t CNPC_Dog::IRelationType( CBaseEntity *pTarget )
 {
-	if ( NPC_Rollermine_IsRollermine( pTarget ) )
-	{
-		if ( pTarget->HasSpawnFlags( SF_ROLLERMINE_FRIENDLY ) )
-			 return D_LI;
-	}
-
 	return BaseClass::IRelationType( pTarget );
 }
 
