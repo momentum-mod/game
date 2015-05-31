@@ -28,6 +28,16 @@ $Project "Client (HL2)"
 		$File	"c_team_objectiveresource.cpp"
 		$File	"c_team_objectiveresource.h"
 
+		$Folder "Momentum"
+		{
+			$File	"speedometer.cpp"
+
+			$Folder "Timer"
+			{
+				$File	"timer.cpp"
+			}
+		}
+
 		$Folder	"HL2 DLL"
 		{
 			$File	"$SRCDIR\game\shared\hl2\basehlcombatweapon_shared.cpp"

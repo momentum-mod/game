@@ -50,6 +50,32 @@ $Project "Server (HL2)"
 		$File	"$SRCDIR\game\shared\vehicle_choreo_generic_shared.h"
 		$File	"$SRCDIR\game\shared\weapon_parse_default.cpp"
 
+		$Folder "Momentum"
+		{
+			$Folder "Util"
+			{
+				$File	"Momentum_Util.h"
+				$File	"tickset.h"
+
+				$File	"tickset.cpp"
+				{
+					$Configuration
+					{
+						$Compiler
+						{
+							$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+						}
+					}
+				}
+			}
+
+			$Folder "Timer"
+			{
+				$File	"Timer.h"
+				$File	"TimerTriggers.cpp"
+			}
+		}
+
 		$Folder	"HL2 DLL"
 		{
 			$File	"$SRCDIR\game\shared\hl2\achievements_hl2.cpp"
