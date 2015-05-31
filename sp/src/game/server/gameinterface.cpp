@@ -498,7 +498,7 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 		CreateInterfaceFn physicsFactory, CreateInterfaceFn fileSystemFactory, 
 		CGlobalVars *pGlobals)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	TickSet::TickInit();
 #endif
 
@@ -784,7 +784,7 @@ float CServerGameDLL::GetTickInterval( void ) const
 }
 
 static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue) {
-#if WIN32
+#ifdef _WIN32
 	float toCheck = ((ConVar*)var)->GetFloat();
 	if (toCheck == fOldValue) return;
 	if (toCheck < 0.01f || toCheck > 0.015f) {

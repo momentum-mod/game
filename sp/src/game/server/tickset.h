@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef WIN32
+#ifdef _WIN32
 
 class TickSet {
 public:
@@ -13,4 +13,4 @@ private:
 	static float* interval_per_tick;
 };
 
-#endif // WIN32
+#endif // _WIN32

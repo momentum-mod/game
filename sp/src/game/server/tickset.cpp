@@ -1,4 +1,4 @@
-#ifdef WIN32
+#ifdef _WIN32
 
 #include "Windows.h"
 #include "Psapi.h"
@@ -58,4 +58,4 @@ bool TickSet::SetTickrate(float tickrate)
 	}
 }
 
-#endif // WIN32
+#endif // _WIN32
