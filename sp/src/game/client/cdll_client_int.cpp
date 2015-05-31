@@ -1085,6 +1085,10 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	HookHapticMessages(); // Always hook the messages
 #endif
 
+	// TODO: find a better place to put this
+	ConVarRef con_enable("con_enable");
+	con_enable.SetValue(true);
+
 	return true;
 }
 
