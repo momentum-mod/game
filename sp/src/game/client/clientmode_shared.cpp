@@ -774,7 +774,9 @@ bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 			return false;
 	}
 #endif 
+#if GLOWS_ENABLE
 	g_GlowObjectManager.RenderGlowEffects(pSetup, 0);
+#endif
 	return true;
 }
 
