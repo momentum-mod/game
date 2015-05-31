@@ -665,8 +665,6 @@ $Project
 		$File	"$SRCDIR\public\haptics\haptic_msgs.cpp"
 		$File	"$SRCDIR\public\haptics\haptic_utils.cpp"	[$WIN32]
 
-		$File	"tickset.h"
-
 		// Not using precompiled header cbase.h
 
 		$File	"$SRCDIR\public\bone_setup.cpp"					\
@@ -695,8 +693,7 @@ $Project
 				"$SRCDIR\public\simple_physics.cpp"					\
 				"$SRCDIR\public\stringregistry.cpp"					\
 				"$SRCDIR\public\studio.cpp"							\
-				"GameStats_BasicStatsFunctions.cpp"					\
-				"tickset.cpp"
+				"GameStats_BasicStatsFunctions.cpp"
 		{
 			$Configuration
 			{
