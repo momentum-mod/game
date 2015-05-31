@@ -498,7 +498,9 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 		CreateInterfaceFn physicsFactory, CreateInterfaceFn fileSystemFactory, 
 		CGlobalVars *pGlobals)
 {
+#ifdef WIN32
 	TickSet::TickInit();
+#endif
 
 	ConnectTier1Libraries( &appSystemFactory, 1 );
 	ConnectTier2Libraries( &appSystemFactory, 1 );
@@ -782,6 +784,7 @@ float CServerGameDLL::GetTickInterval( void ) const
 }
 
 static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue) {
+#if WIN32
 	float toCheck = ((ConVar*)var)->GetFloat();
 	if (toCheck == fOldValue) return;
 	if (toCheck < 0.01f || toCheck > 0.015f) {
@@ -795,6 +798,9 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
 		gpGlobals->interval_per_tick = toCheck;
 	}
 	else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
+#else
+	Msg("Changing tickrate is not yet supported on Linux.\n");
+#endif
 
 }
 

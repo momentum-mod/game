@@ -1,3 +1,5 @@
+#ifdef WIN32
+
 #include "Windows.h"
 #include "Psapi.h"
 #pragma comment(lib, "psapi.lib")
@@ -55,3 +57,5 @@ bool TickSet::SetTickrate(float tickrate)
 		return false;
 	}
 }
+
+#endif // WIN32

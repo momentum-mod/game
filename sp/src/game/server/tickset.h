@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef WIN32
+
 class TickSet {
 public:
 	static bool TickInit();
@@ -10,3 +12,5 @@ private:
 	static void* FindPattern(const void*, size_t, const unsigned char*, const char*);
 	static float* interval_per_tick;
 };
+
+#endif // WIN32
