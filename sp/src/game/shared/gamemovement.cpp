@@ -2429,6 +2429,9 @@ void CGameMovement::FullLadderMove()
 	VectorSubtract (mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 }
 
+// remove this eventually
+ConVar sv_ramp_fix("sv_ramp_fix", "1");
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Output : int
@@ -2660,7 +2663,8 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
 			if (d <= 0)
 			{
 				//Con_DPrintf("Back\n");
-				//VectorCopy (vec3_origin, mv->m_vecVelocity);
+				if ( !sv_ramp_fix.GetBool() )
+					VectorCopy (vec3_origin, mv->m_vecVelocity); // RAMPBUG FIX #2
 				break;
 			}
 		}
@@ -2668,8 +2672,8 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
 
 	if ( allFraction == 0 )
 	{
-		//Msg("ISSUE 2\n");
-		//VectorCopy (vec3_origin, mv->m_vecVelocity); RAMPBUG FIX
+		if ( !sv_ramp_fix.GetBool() )
+			VectorCopy (vec3_origin, mv->m_vecVelocity); // RAMPBUG FIX #1
 	}
 
 	// Check if they slammed into a wall
