@@ -90,6 +90,7 @@
 #include "tier3/tier3.h"
 #include "serverbenchmark_base.h"
 #include "querycache.h"
+#include "movevars_shared.h"
 
 
 #ifdef USE_NAV_MESH
@@ -1022,6 +1023,13 @@ bool CServerGameDLL::LevelInit( const char *pMapName, char const *pMapEntities, 
 	// clear any pending autosavedangerous
 	m_fAutoSaveDangerousTime = 0.0f;
 	m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
+
+	// TODO(fatalis): find a better place to put this
+	if ( !Q_strnicmp(pMapName, "surf_", strlen("surf_")) )
+		sv_maxvelocity.SetValue(3500);
+	else
+		sv_maxvelocity.SetValue(10000000);
+
 	return true;
 }
 
