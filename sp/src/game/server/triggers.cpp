@@ -2313,6 +2313,7 @@ public:
 	void Touch( CBaseEntity *pOther );
 
 	string_t m_iLandmark;
+	bool m_bZeroVelocity;
 
 	DECLARE_DATADESC();
 };
@@ -2322,6 +2323,7 @@ LINK_ENTITY_TO_CLASS( trigger_teleport, CTriggerTeleport );
 BEGIN_DATADESC( CTriggerTeleport )
 
 	DEFINE_KEYFIELD( m_iLandmark, FIELD_STRING, "landmark" ),
+	DEFINE_KEYFIELD( m_bDisabled, FIELD_BOOLEAN, "ZeroVelocity" ),
 
 END_DATADESC()
 
@@ -2391,9 +2393,7 @@ void CTriggerTeleport::Touch( CBaseEntity *pOther )
 	const QAngle *pAngles = NULL;
 	Vector *pVelocity = NULL;
 
-#ifdef HL1_DLL
 	Vector vecZero(0,0,0);		
-#endif
 
 	if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES) )
 	{
@@ -2405,6 +2405,9 @@ void CTriggerTeleport::Touch( CBaseEntity *pOther )
 		pVelocity = NULL;	//BUGBUG - This does not set the player's velocity to zero!!!
 #endif
 	}
+
+	if ( m_bZeroVelocity )
+		pVelocity = &vecZero;
 
 	tmp += vecLandmarkOffset;
 	pOther->Teleport( &tmp, pAngles, pVelocity );
