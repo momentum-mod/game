@@ -1,41 +1,11 @@
-#include "cbase.h"
-#include "triggers.h"
-#include "Timer.h"
-#include "hl2_player.h"
-
-
-
+#include "TimerTriggers.h"
 #include "memdbgon.h"
-
-
-class CTriggerStart : public CTriggerMultiple {
-
-	DECLARE_CLASS(CTriggerStart, CTriggerMultiple);
-public:
-	void EndTouch(CBaseEntity*);
-};
-
-LINK_ENTITY_TO_CLASS(trigger_start, CTriggerStart);
-
 
 void CTriggerStart::EndTouch(CBaseEntity* other) {
 	BaseClass::EndTouch(other);
 	Timer::timer()->Start();
+	TriggerCommands::SetStartTrigger(this);
 }
-
-
-
-class CTriggerEnd : public CTriggerMultiple {
-
-	DECLARE_CLASS(CTriggerEnd, CTriggerMultiple);
-
-public:
-	void StartTouch(CBaseEntity*);
-
-
-};
-
-LINK_ENTITY_TO_CLASS(trigger_end, CTriggerEnd);
 
 void CTriggerEnd::StartTouch(CBaseEntity* ent) {
 	BaseClass::EndTouch(ent);
@@ -43,33 +13,34 @@ void CTriggerEnd::StartTouch(CBaseEntity* ent) {
 }
 
 
-class CTriggerCheckpoint : public CTriggerMultiple {
-
-	DECLARE_CLASS(CTriggerCheckpoint, CTriggerMultiple);
-	DECLARE_DATADESC();
-public:
-	void StartTouch(CBaseEntity*);
-	int getCheckpointNumber();
-
-private:
-	int checkpointNumber = 0;
-
-
-
-
-};
-
-BEGIN_DATADESC(CTriggerCheckpoint)
-
-	DEFINE_KEYFIELD(checkpointNumber, FIELD_INTEGER, "number")
-
-END_DATADESC()
-
-
-
-LINK_ENTITY_TO_CLASS(trigger_checkpoint, CTriggerCheckpoint);
-
 void CTriggerCheckpoint::StartTouch(CBaseEntity* ent) {
 	BaseClass::StartTouch(ent);
 	((CHL2_Player*)ent)->SetCurrentCheckpoint(checkpointNumber);
+	TriggerCommands::SetCheckpointTrigger(this);
+}
+
+void TriggerCommands::ResetToStart()
+{
+	if (startTrigger)
+	{
+		UTIL_SetOrigin(UTIL_GetLocalPlayer(), startTrigger->WorldSpaceCenter(), true);
+	}
+}
+
+void TriggerCommands::ResetToCheckpoint()
+{
+	if (startTrigger)
+	{
+		UTIL_SetOrigin(UTIL_GetLocalPlayer(), lastCheckpointTrigger->WorldSpaceCenter(), true);
+	}
+}
+
+void TriggerCommands::SetStartTrigger(CTriggerStart* trigger)
+{
+	startTrigger = trigger;
+}
+
+void TriggerCommands::SetCheckpointTrigger(CTriggerCheckpoint* trigger)
+{
+	lastCheckpointTrigger = trigger;
 }

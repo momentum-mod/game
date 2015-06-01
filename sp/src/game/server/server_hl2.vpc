@@ -72,6 +72,7 @@ $Project "Server (HL2)"
 			$Folder "Timer"
 			{
 				$File	"Timer.h"
+				$File   "TimerTriggers.h"
 				$File	"TimerTriggers.cpp"
 			}
 		}
