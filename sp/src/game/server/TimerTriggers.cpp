@@ -1,5 +1,6 @@
+#include "cbase.h"
 #include "TimerTriggers.h"
-#include "memdbgon.h"
+#include "tier0/memdbgon.h"
 
 void CTriggerStart::EndTouch(CBaseEntity* other) {
 	BaseClass::EndTouch(other);
