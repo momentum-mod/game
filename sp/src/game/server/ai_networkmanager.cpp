@@ -68,7 +68,7 @@ CON_COMMAND( ai_debug_node_connect, "Debug the attempted connection between two 
 // always defaults to 0 and must be set at the command
 // line to properly override the node graph building.
 
-ConVar g_ai_norebuildgraph( "ai_norebuildgraph", "0" );
+ConVar g_ai_norebuildgraph( "ai_norebuildgraph", "1" );
 
 
 //-----------------------------------------------------------------------------
