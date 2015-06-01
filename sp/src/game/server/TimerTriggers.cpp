@@ -3,13 +3,13 @@
 
 void CTriggerStart::EndTouch(CBaseEntity* other) {
 	BaseClass::EndTouch(other);
-	Timer::timer()->Start();
+	CTimer::timer()->Start(gpGlobals->tickcount);
 	TriggerCommands::SetStartTrigger(this);
 }
 
 void CTriggerEnd::StartTouch(CBaseEntity* ent) {
 	BaseClass::EndTouch(ent);
-	Timer::timer()->Stop(); 
+	CTimer::timer()->Stop(); 
 }
 
 

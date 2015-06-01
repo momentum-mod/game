@@ -1,2 +1,2 @@
 devtools\bin\vpc.exe /hl2 +game /mksln momentum.sln
-pause
+copy momentum.sln+sln_hack.txt momentum.sln
