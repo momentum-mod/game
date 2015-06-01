@@ -20,7 +20,7 @@ LINK_ENTITY_TO_CLASS(trigger_start, CTriggerStart);
 
 void CTriggerStart::EndTouch(CBaseEntity* other) {
 	BaseClass::EndTouch(other);
-	Timer::timer()->Start();
+	CTimer::timer()->Start(gpGlobals->tickcount);
 }
 
 
@@ -39,7 +39,7 @@ LINK_ENTITY_TO_CLASS(trigger_end, CTriggerEnd);
 
 void CTriggerEnd::StartTouch(CBaseEntity* ent) {
 	BaseClass::EndTouch(ent);
-	Timer::timer()->Stop(); 
+	CTimer::timer()->Stop(); 
 }
 
 

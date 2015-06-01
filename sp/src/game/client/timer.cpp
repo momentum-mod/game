@@ -25,35 +25,35 @@ static ConVar bla_timer("gh_timer", "1",
 static ConVar timer_mode("gh_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
 	"Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Chapter\n2 = Splits by Level");
 
-class CHudTimer : public CHudElement, public Panel
+class C_Timer : public CHudElement, public Panel
 {
-	
-
+	DECLARE_CLASS_SIMPLE(C_Timer, Panel);
 public:
-	CHudTimer();
-	CHudTimer(const char *pElementName);
+	C_Timer();
+	C_Timer(const char *pElementName);
 	virtual void Init();
 	virtual void Reset();
 	virtual bool ShouldDraw()
 	{
 		return bla_timer.GetBool() && CHudElement::ShouldDraw();
 	}
-	void MsgFunc_Timer_TimeToBeat(bf_read &msg);
+	void MsgFunc_Timer_State(bf_read &msg);
 	void MsgFunc_Timer_Time(bf_read &msg);
 	void MsgFunc_Timer_StateChange(bf_read &msg);
 
 	//int getPos(const char*);
-	DECLARE_CLASS_SIMPLE(CHudTimer, Panel);
+
 	virtual void Paint();
-	float curTime;
+	int GetCurrentTime();
+	bool m_bIsRunning;
+	int m_iStartTick;
+
 private:
 	int initialTall;
-	float m_flSecondsRecord;
-	float m_flSecondsTime;
-	float totalTicks;
 	wchar_t m_pwCurrentTime[BUFSIZE];
 	char m_pszString[BUFSIZE];
 	CUtlMap<const char*, float> map;
+	int m_iTotalTicks;
 
 protected:
 	CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -81,30 +81,28 @@ protected:
 		"proportional_float");
 };
 
-DECLARE_HUDELEMENT(CHudTimer);
-DECLARE_HUD_MESSAGE(CHudTimer, Timer_TimeToBeat);
-DECLARE_HUD_MESSAGE(CHudTimer, Timer_Time);
-DECLARE_HUD_MESSAGE(CHudTimer, Timer_StateChange);
+DECLARE_HUDELEMENT(C_Timer);
 
-CHudTimer::CHudTimer(const char *pElementName) :
+DECLARE_HUD_MESSAGE(C_Timer, Timer_State);//TODO add more for checkpoints and ending
+
+C_Timer::C_Timer(const char *pElementName) :
 CHudElement(pElementName), Panel(NULL, "HudTimer")
 {
 	SetParent(g_pClientMode->GetViewport());
 }
 
-void CHudTimer::Init()
+void C_Timer::Init()
 {
-	HOOK_HUD_MESSAGE(CHudTimer, Timer_TimeToBeat);
-	HOOK_HUD_MESSAGE(CHudTimer, Timer_Time);
-	HOOK_HUD_MESSAGE(CHudTimer, Timer_StateChange);
+	HOOK_HUD_MESSAGE(C_Timer, Timer_State);
 	initialTall = 48;
+	m_iTotalTicks = 0;
 	//Reset();
 }
 
-void CHudTimer::Reset()
+void C_Timer::Reset()
 {
-	m_flSecondsTime = 0.0f;
-	totalTicks = 0;
+	m_bIsRunning = false;
+	m_iTotalTicks = 0;
 }
 
 /*int CHudTimer::getPos(const char* map) {
@@ -121,22 +119,11 @@ return 0;
 }
 }*/
 
-void CHudTimer::MsgFunc_Timer_TimeToBeat(bf_read &msg)
-{
-	m_flSecondsRecord = msg.ReadFloat();
-	DevMsg("CHudTimer: map record is %03d:%02d.%04d\n",
-		(int)(m_flSecondsRecord / 60), ((int)m_flSecondsRecord) % 60,
-		(int)((m_flSecondsRecord - (int)m_flSecondsRecord) * 10000));
-}
-
-void CHudTimer::MsgFunc_Timer_Time(bf_read &msg)
-{
-	totalTicks = msg.ReadFloat();
-}
-
-void CHudTimer::MsgFunc_Timer_StateChange(bf_read &msg)
+void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
 	bool started = msg.ReadOneBit();
+	m_bIsRunning = started;
+	m_iStartTick = (int)msg.ReadLong();
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	if (!pPlayer)
 		return;
@@ -145,23 +132,29 @@ void CHudTimer::MsgFunc_Timer_StateChange(bf_read &msg)
 	if (started)
 	{
 		//VGUI_ANIMATE("TimerStart");
-		pPlayer->EmitSound("blamod.StartTimer");
+		//pPlayer->EmitSound("blamod.StartTimer");
 	}
 	else // stopped
 	{
 		// Compare times.
 		//VGUI_ANIMATE("TimerStop");
-		pPlayer->EmitSound("blamod.StopTimer");
+		//pPlayer->EmitSound("blamod.StopTimer");
 	}
 }
 
-void CHudTimer::Paint(void)
+int C_Timer::GetCurrentTime() {
+	m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
+	return (m_bIsRunning ? m_iTotalTicks : 0);
+}
+
+void C_Timer::Paint(void)
 {
-	m_flSecondsTime = totalTicks * gpGlobals->interval_per_tick;
-	int hours = (int)(m_flSecondsTime / 3600.0f);
-	int minutes = (int)(((m_flSecondsTime / 3600.0f) - hours) * 60.0f);
-	int seconds = (int)(((((m_flSecondsTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f);
-	int millis = (int)(((((((m_flSecondsTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f) - seconds) * 10000.0f);
+	float m_flSecondsTime = ((float)GetCurrentTime()) * gpGlobals->interval_per_tick;
+
+	int hours = m_flSecondsTime / 3600.0f;
+	int minutes = (((m_flSecondsTime / 3600.0f) - hours) * 60.0f);
+	int seconds = (((((m_flSecondsTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f);
+	int millis = (((((((m_flSecondsTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f) - seconds) * 10000.0f);
 
 	Q_snprintf(m_pszString, sizeof(m_pszString), "%02d:%02d:%02d.%04d",
 		hours,//hours
