@@ -70,7 +70,7 @@
 #include "engine/iserverplugin.h"
 #ifdef _WIN32
 #include "ienginevgui.h"
-#include "tickset.h"
+#include "momentum/tickset.h"
 #endif
 #include "ragdoll_shared.h"
 #include "toolframework/iserverenginetools.h"
@@ -90,7 +90,7 @@
 #include "tier3/tier3.h"
 #include "serverbenchmark_base.h"
 #include "querycache.h"
-#include "server_events.h"
+#include "momentum/server_events.h"
 
 
 #ifdef USE_NAV_MESH
@@ -118,7 +118,7 @@
 #include "replay/ireplaysystem.h"
 #endif
 
-#include "Timer.h"
+#include "momentum/Timer.h"
 
 extern IToolFrameworkServer *g_pToolFrameworkServer;
 extern IParticleSystemQuery *g_pParticleSystemQuery;

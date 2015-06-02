@@ -124,7 +124,7 @@
 #include "sourcevr/isourcevirtualreality.h"
 #include "client_virtualreality.h"
 #include "mumble.h"
-#include "client_events.h"
+#include "momentum/client_events.h"
 
 // NVNT includes
 #include "hud_macros.h"

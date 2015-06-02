@@ -30,15 +30,15 @@ $Project "Client (HL2)"
 
 		$Folder "Momentum"
 		{
-			$File	"speedometer.cpp"
+			$File	"momentum\speedometer.cpp"
 
 			$Folder "Timer"
 			{
-				$File	"timer.cpp"
+				$File	"momentum\timer.cpp"
 			}
 
-			$File	"client_events.h"
-			$File	"client_events.cpp"
+			$File	"momentum\client_events.h"
+			$File	"momentum\client_events.cpp"
 		}
 
 		$Folder	"HL2 DLL"

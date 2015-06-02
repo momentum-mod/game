@@ -52,10 +52,10 @@ $Project "Server (HL2)"
 		{
 			$Folder "Util"
 			{
-				$File	"Momentum_Util.h"
-				$File	"tickset.h"
+				$File	"momentum\Momentum_Util.h"
+				$File	"momentum\tickset.h"
 
-				$File	"tickset.cpp"
+				$File	"momentum\tickset.cpp"
 				{
 					$Configuration
 					{
@@ -69,13 +69,13 @@ $Project "Server (HL2)"
 
 			$Folder "Timer"
 			{
-				$File	"Timer.h"
-				$File   "TimerTriggers.h"
-				$File	"TimerTriggers.cpp"
+				$File	"momentum\Timer.h"
+				$File   "momentum\TimerTriggers.h"
+				$File	"momentum\TimerTriggers.cpp"
 			}
 
-			$File	"server_events.h"
-			$File	"server_events.cpp"
+			$File	"momentum\server_events.h"
+			$File	"momentum\server_events.cpp"
 		}
 
 		$Folder	"HL2 DLL"
