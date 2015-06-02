@@ -124,6 +124,7 @@
 #include "sourcevr/isourcevirtualreality.h"
 #include "client_virtualreality.h"
 #include "mumble.h"
+#include "client_events.h"
 
 // NVNT includes
 #include "hud_macros.h"
@@ -1085,9 +1086,7 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	HookHapticMessages(); // Always hook the messages
 #endif
 
-	// TODO: find a better place to put this
-	ConVarRef con_enable("con_enable");
-	con_enable.SetValue(true);
+	Momentum::OnClientDLLInit();
 
 	return true;
 }

@@ -73,6 +73,9 @@ $Project "Server (HL2)"
 				$File   "TimerTriggers.h"
 				$File	"TimerTriggers.cpp"
 			}
+
+			$File	"server_events.h"
+			$File	"server_events.cpp"
 		}
 
 		$Folder	"HL2 DLL"

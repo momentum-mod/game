@@ -6,8 +6,9 @@
 
 namespace Momentum {
 
-void OnMapStart();
-void OnMapEnd();
+void OnServerDLLInit();
+void OnMapStart(const char *pMapName);
+void OnMapEnd(const char *pMapName);
 
 } // namespace Momentum
 

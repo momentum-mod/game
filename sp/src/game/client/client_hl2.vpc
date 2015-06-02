@@ -36,6 +36,9 @@ $Project "Client (HL2)"
 			{
 				$File	"timer.cpp"
 			}
+
+			$File	"client_events.h"
+			$File	"client_events.cpp"
 		}
 
 		$Folder	"HL2 DLL"

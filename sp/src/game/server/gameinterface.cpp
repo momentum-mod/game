@@ -90,7 +90,6 @@
 #include "tier3/tier3.h"
 #include "serverbenchmark_base.h"
 #include "querycache.h"
-#include "movevars_shared.h"
 #include "server_events.h"
 
 
@@ -1025,12 +1024,6 @@ bool CServerGameDLL::LevelInit( const char *pMapName, char const *pMapEntities, 
 	m_fAutoSaveDangerousTime = 0.0f;
 	m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
 
-	// TODO(fatalis): find a better place to put this
-	if ( !Q_strnicmp(pMapName, "surf_", strlen("surf_")) )
-		sv_maxvelocity.SetValue(3500);
-	else
-		sv_maxvelocity.SetValue(10000000);
-
 	return true;
 }
 
@@ -1128,7 +1121,7 @@ void CServerGameDLL::GameServerSteamAPIActivated( void )
 	InventoryManager()->GameServerSteamAPIActivated();
 #endif
 
-	Momentum::OnMapStart();
+	Momentum::OnMapStart(gpGlobals->mapname.ToCStr());
 }
 
 //-----------------------------------------------------------------------------
@@ -1333,7 +1326,7 @@ void CServerGameDLL::OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_
 // Called when a level is shutdown (including changing levels)
 void CServerGameDLL::LevelShutdown( void )
 {
-	Momentum::OnMapEnd();
+	Momentum::OnMapEnd(gpGlobals->mapname.ToCStr());
 
 #ifndef NO_STEAM
 	IGameSystem::LevelShutdownPreClearSteamAPIContextAllSystems();
