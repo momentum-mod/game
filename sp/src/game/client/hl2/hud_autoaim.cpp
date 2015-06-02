@@ -216,41 +216,6 @@ void CHUDAutoAim::OnThink()
 	{
 	case AUTOAIM_METHOD_RETICLE:
 		{
-			if( pLocalPlayer->m_HL2Local.m_hAutoAimTarget.Get() && pLocalPlayer->m_HL2Local.m_bStickyAutoAim )
-			{
-				if( !pLocalPlayer->IsInAVehicle() )
-				{
-					Vector vecLook;
-					pLocalPlayer->EyeVectors( &vecLook, NULL, NULL );
-
-					Vector vecMove = pLocalPlayer->GetAbsVelocity();
-					float flSpeed = VectorNormalize( vecMove );
-					float flDot = DotProduct( vecLook, vecMove );
-
-					if( flSpeed >= 100 && fabs(flDot) <= 0.707f )
-					{
-						QAngle viewangles;
-						QAngle targetangles;
-						QAngle delta;
-
-						engine->GetViewAngles( viewangles );
-
-						Vector vecDir = pLocalPlayer->m_HL2Local.m_vecAutoAimPoint - pLocalPlayer->EyePosition();
-						VectorNormalize(vecDir);
-						VectorAngles( vecDir, targetangles );
-
-						float magnetism = hud_magnetism.GetFloat();
-
-						delta[0] = ApproachAngle( targetangles[0], viewangles[0], magnetism );
-						delta[1] = ApproachAngle( targetangles[1], viewangles[1], magnetism );
-						delta[2] = targetangles[2];
-
-						//viewangles[PITCH] = clamp( viewangles[ PITCH ], -cl_pitchup.GetFloat(), cl_pitchdown.GetFloat() );
-						engine->SetViewAngles( delta );
-					}
-				}
-			}
-
 #if 0
 			bool doScaling = hud_autoaim_scale_icon.GetBool();
 

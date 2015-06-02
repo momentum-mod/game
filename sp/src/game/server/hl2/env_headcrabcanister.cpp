@@ -29,7 +29,6 @@
 
 ConVar sk_env_headcrabcanister_shake_amplitude( "sk_env_headcrabcanister_shake_amplitude", "50" );
 ConVar sk_env_headcrabcanister_shake_radius( "sk_env_headcrabcanister_shake_radius", "1024" );
-ConVar sk_env_headcrabcanister_shake_radius_vehicle( "sk_env_headcrabcanister_shake_radius_vehicle", "2500" );
 
 #define ENV_HEADCRABCANISTER_TRAIL_TIME	3.0f
 
@@ -682,7 +681,7 @@ void CEnvHeadcrabCanister::TestForCollisionsAgainstWorld( const Vector &vecEndPo
 			pEntity->TakeDamage( info );
 		}
 
-		if ( pEntity->IsPlayer() && !(static_cast<CBasePlayer*>(pEntity)->IsInAVehicle()) )
+		if ( pEntity->IsPlayer() )
 		{
 			if (vecSegment.z < 0.1f)
 			{
@@ -904,10 +903,8 @@ void CEnvHeadcrabCanister::Detonate( )
 	// Shake the screen unless flagged otherwise
 	if ( !HasSpawnFlags( SF_NO_SHAKE ) )
 	{
-		CBasePlayer *pPlayer = UTIL_PlayerByIndex( 1 );
-
 		// If the player is on foot, then do a more limited shake
-		float shakeRadius = ( pPlayer && pPlayer->IsInAVehicle() ) ? sk_env_headcrabcanister_shake_radius_vehicle.GetFloat() : sk_env_headcrabcanister_shake_radius.GetFloat();
+		float shakeRadius = sk_env_headcrabcanister_shake_radius.GetFloat();
 
 		UTIL_ScreenShake( m_vecImpactPosition, sk_env_headcrabcanister_shake_amplitude.GetFloat(), 150.0, 1.0, shakeRadius, SHAKE_START );
 	}

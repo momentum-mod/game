@@ -37,20 +37,4 @@ protected:
 	DECLARE_DATADESC();
 };
 
-//-----------------------------------------------------------------------------
-// Purpose: points at which vehicles can spawn, restricted by team
-//-----------------------------------------------------------------------------
-class CTeamVehicleSpawnPoint : public CTeamSpawnPoint
-{
-	DECLARE_CLASS( CTeamVehicleSpawnPoint, CTeamSpawnPoint );
-public:
-	void	Activate( void );
-	bool	IsValid( void );
-
-	COutputEvent m_OnVehicleSpawn;
-
-	DECLARE_DATADESC();
-};
-
-
 #endif // TF_TEAMSPAWNPOINT_H

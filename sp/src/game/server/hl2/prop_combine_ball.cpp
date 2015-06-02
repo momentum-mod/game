@@ -18,7 +18,6 @@
 #include "soundenvelope.h"
 #include "te_effect_dispatch.h"
 #include "ai_basenpc.h"
-#include "npc_bullseye.h"
 #include "filters.h"
 #include "SpriteTrail.h"
 #include "decals.h"
@@ -2138,26 +2137,6 @@ void CPointCombineBallLauncher::SpawnBall()
 	if ( HasSpawnFlags( SF_COMBINE_BALL_LAUNCHER_COLLIDE_PLAYER ) )
 	{
 		pBall->SetCollisionGroup( HL2COLLISION_GROUP_COMBINE_BALL_NPC );
-	}
-
-	if( GetSpawnFlags() & SF_COMBINE_BALL_LAUNCHER_ATTACH_BULLSEYE )
-	{
-		CNPC_Bullseye *pBullseye = static_cast<CNPC_Bullseye*>( CreateEntityByName( "npc_bullseye" ) );
-
-		if( pBullseye )
-		{
-			pBullseye->SetAbsOrigin( pBall->GetAbsOrigin() );
-			pBullseye->SetAbsAngles( QAngle( 0, 0, 0 ) );
-			pBullseye->KeyValue( "solid", "6" );
-			pBullseye->KeyValue( "targetname", STRING(m_iszBullseyeName) );
-			pBullseye->Spawn();
-
-			DispatchSpawn(pBullseye);
-			pBullseye->Activate();
-
-			pBullseye->SetParent(pBall);
-			pBullseye->SetHealth(10);
-		}
 	}
 }
 

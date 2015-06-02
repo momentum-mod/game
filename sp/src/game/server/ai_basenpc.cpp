@@ -68,10 +68,8 @@
 #include "globals.h"
 #include "saverestore_bitstring.h"
 #include "checksum_crc.h"
-#include "iservervehicle.h"
 #include "filters.h"
 #ifdef HL2_DLL
-#include "npc_bullseye.h"
 #include "hl2_player.h"
 #include "weapon_physcannon.h"
 #endif
@@ -669,16 +667,8 @@ bool CAI_BaseNPC::PassesDamageFilter( const CTakeDamageInfo &info )
 	{
 		// check attackers relationship with me
 		CBaseCombatCharacter *npcEnemy = info.GetAttacker()->MyCombatCharacterPointer();
-		bool bHitByVehicle = false;
-		if ( !npcEnemy )
-		{
-			if ( info.GetAttacker()->GetServerVehicle() )
-			{
-				bHitByVehicle = true;
-			}
-		}
 
-		if ( bHitByVehicle || (npcEnemy && npcEnemy->IRelationType( this ) == D_LI) )
+		if ( (npcEnemy && npcEnemy->IRelationType( this ) == D_LI) )
 		{
 			m_fNoDamageDecal = true;
 
@@ -1438,21 +1428,6 @@ void CAI_BaseNPC::MakeTracer( const Vector &vecTracerSrc, const trace_t &tr, int
 //-----------------------------------------------------------------------------
 void CAI_BaseNPC::FireBullets( const FireBulletsInfo_t &info )
 {
-#ifdef HL2_DLL
-	// If we're shooting at a bullseye, become perfectly accurate if the bullseye demands it
-	if ( GetEnemy() && GetEnemy()->Classify() == CLASS_BULLSEYE )
-	{
-		CNPC_Bullseye *pBullseye = dynamic_cast<CNPC_Bullseye*>(GetEnemy()); 
-		if ( pBullseye && pBullseye->UsePerfectAccuracy() )
-		{
-			FireBulletsInfo_t accurateInfo = info;
-			accurateInfo.m_vecSpread = vec3_origin;
-			BaseClass::FireBullets( accurateInfo );
-			return;
-		}
-	}
-#endif
-
 	BaseClass::FireBullets( info );
 }
 
@@ -2823,10 +2798,6 @@ void CAI_BaseNPC::MaintainLookTargets ( float flInterval )
 
 void CAI_BaseNPC::MaintainTurnActivity( )
 {
-	// Don't bother if we're in a vehicle
-	if ( IsInAVehicle() )
-		return;
-
 	AI_PROFILE_SCOPE( CAI_BaseNPC_MaintainTurnActivity );
 	GetMotor()->MaintainTurnActivity( );
 }
@@ -5365,21 +5336,6 @@ bool CAI_BaseNPC::InnateWeaponLOSCondition( const Vector &ownerPos, const Vector
 	
 	CBaseEntity	*pHitEntity = tr.m_pEnt;
 	
-	// Translate a hit vehicle into its passenger if found
-	if ( GetEnemy() != NULL )
-	{
-		CBaseCombatCharacter *pCCEnemy = GetEnemy()->MyCombatCharacterPointer();
-		if ( pCCEnemy != NULL && pCCEnemy->IsInAVehicle() )
-		{
-			// Ok, player in vehicle, check if vehicle is target we're looking at, fire if it is
-			// Also, check to see if the owner of the entity is the vehicle, in which case it's valid too.
-			// This catches vehicles that use bone followers.
-			CBaseEntity *pVehicleEnt = pCCEnemy->GetVehicleEntity();
-			if ( pHitEntity == pVehicleEnt || pHitEntity->GetOwnerEntity() == pVehicleEnt )
-				return true;
-		}
-	}
-
 	if ( pHitEntity == GetEnemy() )
 	{
 		return true;
@@ -5879,29 +5835,7 @@ void CAI_BaseNPC::CheckTarget( CBaseEntity *pTarget )
 //-----------------------------------------------------------------------------
 CAI_BaseNPC *CAI_BaseNPC::CreateCustomTarget( const Vector &vecOrigin, float duration )
 {
-#ifdef HL2_DLL
-	CNPC_Bullseye *pTarget = (CNPC_Bullseye*)CreateEntityByName( "npc_bullseye" );
-
-	ASSERT( pTarget != NULL );
-
-	// Build a nonsolid bullseye and place it in the desired location
-	// The bullseye must take damage or the SetHealth 0 call will not be able
-	pTarget->AddSpawnFlags( SF_BULLSEYE_NONSOLID );
-	pTarget->SetAbsOrigin( vecOrigin );
-	pTarget->Spawn();
-
-	// Set it up to remove itself, unless told to be infinite (-1)
-	if( duration > -1 )
-	{
-		variant_t value;
-		value.SetFloat(0);
-		g_EventQueue.AddEvent( pTarget, "SetHealth", value, duration, this, this );
-	}
-
-	return pTarget;
-#else
 	return NULL;
-#endif// HL2_DLL
 }
 
 //-----------------------------------------------------------------------------
@@ -6623,7 +6557,7 @@ void CAI_BaseNPC::CheckPhysicsContacts()
 				float otherMass = PhysGetEntityMass(pOtherEntity);
 
 				if ( pOtherEntity->GetMoveType() == MOVETYPE_VPHYSICS &&  pOther->IsMoveable() && 
-					otherMass < VPHYSICS_LARGE_OBJECT_MASS  && !pOtherEntity->GetServerVehicle() )
+					otherMass < VPHYSICS_LARGE_OBJECT_MASS )
 				{
 					m_bCheckContacts = true;
 					Vector vel, point;
@@ -9417,10 +9351,6 @@ CanPlaySequence_t CAI_BaseNPC::CanPlaySequence( bool fDisregardNPCState, int int
 		return CANNOT_PLAY;
 	}
 
-	// An NPC in a vehicle cannot play a scripted sequence
-	if ( IsInAVehicle() )
-		return CANNOT_PLAY;
-
 	if ( fDisregardNPCState )
 	{
 		// ok to go, no matter what the npc state. (scripted AI)
@@ -9740,14 +9670,6 @@ Vector CAI_BaseNPC::GetActualShootTrajectory( const Vector &shootOrigin )
 
 	// Apply appropriate accuracy.
 	bool bUsePerfectAccuracy = false;
-	if ( GetEnemy() && GetEnemy()->Classify() == CLASS_BULLSEYE )
-	{
-		CNPC_Bullseye *pBullseye = dynamic_cast<CNPC_Bullseye*>(GetEnemy()); 
-		if ( pBullseye && pBullseye->UsePerfectAccuracy() )
-		{
-			bUsePerfectAccuracy = true;
-		}
-	}
 
 	if ( !bUsePerfectAccuracy )
 	{
@@ -12569,13 +12491,6 @@ bool CAI_BaseNPC::IsCoverPosition( const Vector &vecThreat, const Vector &vecPos
 		bool bThreatPosIsEnemy = ( (vecThreat - GetEnemy()->EyePosition()).LengthSqr() < 0.1f );
 		if ( bThreatPosIsEnemy )
 		{
-			CBaseCombatCharacter *pCCEnemy = GetEnemy()->MyCombatCharacterPointer();
-			if ( pCCEnemy != NULL && pCCEnemy->IsInAVehicle() )
-			{
-				// Ignore the vehicle
-				filter.SetPassEntity( pCCEnemy->GetVehicleEntity() );
-			}
-
 			if ( !filter.GetPassEntity() )
 			{
 				filter.SetPassEntity( pEnemy );

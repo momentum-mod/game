@@ -30,7 +30,6 @@
 #include "ai_behavior_functank.h"
 #include "weapon_rpg.h"
 #include "effects.h"
-#include "iservervehicle.h"
 #include "soundenvelope.h"
 #include "effect_dispatch_data.h"
 #include "te_effect_dispatch.h"
@@ -1912,7 +1911,6 @@ void CFuncTank::AimFuncTankAtTarget( void )
 	QAngle angles;
 	bool bUpdateTime = false;
 
-	CBaseEntity *pTargetVehicle = NULL;
 	Vector barrelEnd = WorldBarrelPosition();
 	Vector worldTargetPosition;
 	if (m_spawnflags & SF_TANK_AIM_AT_POS)
@@ -1937,15 +1935,6 @@ void CFuncTank::AimFuncTankAtTarget( void )
 
 		// Calculate angle needed to aim at target
 		worldTargetPosition = pEntity->EyePosition();
-		if ( pEntity->IsPlayer() )
-		{
-			CBasePlayer *pPlayer = assert_cast<CBasePlayer*>(pEntity);
-			pTargetVehicle = pPlayer->GetVehicleEntity();
-			if ( pTargetVehicle )
-			{
-				worldTargetPosition = pTargetVehicle->BodyTarget( GetAbsOrigin(), false );
-			}
-		}
 	}
 
 	float range2 = worldTargetPosition.DistToSqr( barrelEnd );
@@ -1979,14 +1968,14 @@ void CFuncTank::AimFuncTankAtTarget( void )
 		}
 
 		// No line of sight, don't track
-		if ( tr.fraction == 1.0 || tr.m_pEnt == pTarget || (pTargetVehicle && (tr.m_pEnt == pTargetVehicle)) )
+		if ( tr.fraction == 1.0 || tr.m_pEnt == pTarget )
 		{
 			if ( InRange2( range2 ) && pTarget && pTarget->IsAlive() )
 			{
 				bUpdateTime = true;
 
 				// Sight position is BodyTarget with no noise (so gun doesn't bob up and down)
-				CBaseEntity *pInstance = pTargetVehicle ? pTargetVehicle : pTarget;
+				CBaseEntity *pInstance = pTarget;
 				m_hFuncTankTarget = pInstance;
 
 				m_sightOrigin = pInstance->BodyTarget( GetAbsOrigin(), false );
@@ -2403,20 +2392,6 @@ bool CFuncTank::HasLOSTo( CBaseEntity *pEntity )
 	// UNDONE: Should this hit BLOCKLOS brushes?
 	AI_TraceLine( vecBarrelEnd, vecTarget, MASK_BLOCKLOS_AND_NPCS, &traceFilter, &tr );
 	
-	CBaseEntity	*pHitEntity = tr.m_pEnt;
-	
-	// Is entity in a vehicle? if so, verify vehicle is target and return if so (so npc shoots at vehicle)
-	CBaseCombatCharacter *pCCEntity = pEntity->MyCombatCharacterPointer();
-	if ( pCCEntity != NULL && pCCEntity->IsInAVehicle() )
-	{
-		// Ok, player in vehicle, check if vehicle is target we're looking at, fire if it is
-		// Also, check to see if the owner of the entity is the vehicle, in which case it's valid too.
-		// This catches vehicles that use bone followers.
-		CBaseEntity	*pVehicle  = pCCEntity->GetVehicle()->GetVehicleEnt();
-		if ( pHitEntity == pVehicle || ( pHitEntity != NULL && pHitEntity->GetOwnerEntity() == pVehicle ) )
-			return true;
-	}
-
 	return ( tr.fraction == 1.0 || tr.m_pEnt == pEntity );
 }
 

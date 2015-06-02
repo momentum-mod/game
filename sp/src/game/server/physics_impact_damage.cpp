@@ -60,50 +60,6 @@ impactdamagetable_t gDefaultPlayerImpactDamageTable =
 };
 
 //==============================================================================================
-// PLAYER-IN-VEHICLE PHYSICS DAMAGE TABLE
-//==============================================================================================
-static impactentry_t playerVehicleLinearTable[] =
-{
-	{ 450*450, 5 },
-	{ 600*600, 10 },
-	{ 700*700, 25 },
-	{ 1000*1000, 50 },
-	{ 1500*1500, 100 },
-	{ 2000*2000, 500 },
-};
-
-static impactentry_t playerVehicleAngularTable[] =
-{
-	{ 100*100, 10 },
-	{ 150*150, 20 },
-	{ 200*200, 50 },
-	{ 300*300, 500 },
-};
-
-impactdamagetable_t gDefaultPlayerVehicleImpactDamageTable =
-{
-	playerVehicleLinearTable,
-	playerVehicleAngularTable,
-
-	ARRAYSIZE(playerVehicleLinearTable),
-	ARRAYSIZE(playerVehicleAngularTable),
-
-	24*24,		// minimum linear speed
-	360*360,	// minimum angular speed
-	80,			// can't take damage from anything under 80 kg
-
-	150,		// anything less than 150kg is "small"
-	5,			// never take more than 5 pts of damage from anything under 150kg
-	36*36,		// <150kg objects must go faster than 36 in/s to do damage
-
-	0,			// large mass in kg (no large mass effects)
-	1.0f,		// large mass scale
-	1.0f,		// large mass falling scale
-	0.0f,		// min vel
-};
-
-
-//==============================================================================================
 // NPC PHYSICS DAMAGE TABLE
 //==============================================================================================
 static impactentry_t npcLinearTable[] =
@@ -201,10 +157,6 @@ static damagetable_t gDamageTableRegistry[] =
 	{
 		"player",
 		&gDefaultPlayerImpactDamageTable,
-	},
-	{
-		"player_vehicle",
-		&gDefaultPlayerVehicleImpactDamageTable,
 	},
 	{
 		"npc",

@@ -46,7 +46,6 @@
 #include "game.h"
 #include "tier0/vprof.h"
 #include "ai_basenpc.h"
-#include "iservervehicle.h"
 #include "eventlist.h"
 #include "scriptevent.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
@@ -71,7 +70,6 @@
 #include "tier0/memdbgon.h"
 
 extern bool g_bTestMoveTypeStepSimulation;
-extern ConVar sv_vehicle_autoaim_scale;
 
 // Init static class variables
 bool CBaseEntity::m_bInDebugSelect = false;	// Used for selection in debug overlays
@@ -968,11 +966,6 @@ void CBaseEntity::DrawDebugGeometryOverlays(void)
 			{
 				g = 255;
 			}
-		}
-
-		if( pPlayer->IsInAVehicle() )
-		{
-			radius *= sv_vehicle_autoaim_scale.GetFloat();
 		}
 
 		NDebugOverlay::Line( vecCenter, vecCenter + vecRight * radius, r, g, b, true, 0.1 );
@@ -2814,14 +2807,6 @@ bool CBaseEntity::FVisible( CBaseEntity *pEntity, int traceMask, CBaseEntity **p
 		// If we hit the entity we're looking for, it's visible
 		if ( tr.m_pEnt == pEntity )
 			return true;
-
-		// Got line of sight on the vehicle the player is driving!
-		if ( pEntity && pEntity->IsPlayer() )
-		{
-			CBasePlayer *pPlayer = assert_cast<CBasePlayer*>( pEntity );
-			if ( tr.m_pEnt == pPlayer->GetVehicleEntity() )
-				return true;
-		}
 
 		if (ppBlocker)
 		{

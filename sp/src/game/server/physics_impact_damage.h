@@ -45,7 +45,6 @@ struct impactdamagetable_t
 
 extern impactdamagetable_t gDefaultNPCImpactDamageTable;
 extern impactdamagetable_t gDefaultPlayerImpactDamageTable;
-extern impactdamagetable_t gDefaultPlayerVehicleImpactDamageTable;
 
 // NOTE Default uses default NPC table
 float CalculateDefaultPhysicsDamage( int index, gamevcollisionevent_t *pEvent, float energyScale, bool allowStaticDamage, int &damageTypeOut, string_t iszDamageTableName = NULL_STRING, bool bDamageFromHeldObjects = false );

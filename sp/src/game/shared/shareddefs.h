@@ -546,19 +546,6 @@ enum
 };
 
 //-----------------------------------------------------------------------------
-// Vehicles may have more than one passenger.
-// This enum may be expanded by derived classes
-//-----------------------------------------------------------------------------
-enum PassengerRole_t
-{
-	VEHICLE_ROLE_NONE = -1,
-
-	VEHICLE_ROLE_DRIVER = 0,	// Only one driver
-	
-	LAST_SHARED_VEHICLE_ROLE,
-};
-
-//-----------------------------------------------------------------------------
 // Water splash effect flags
 //-----------------------------------------------------------------------------
 enum

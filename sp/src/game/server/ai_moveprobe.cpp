@@ -7,7 +7,6 @@
 #include "cbase.h"
 
 #include "modelentities.h"
-#include "iservervehicle.h"
 #include "movevars_shared.h"
 
 #include "ai_moveprobe.h"
@@ -709,21 +708,7 @@ void CAI_MoveProbe::GroundMoveLimit( const Vector &vecStart, const Vector &vecEn
 	// Let's try to avoid invalid routes
 	TestGroundMove( vecActualStart, vecDesiredEnd, collisionMask, pctToCheckStandPositions, testGroundMoveFlags, pTrace );
 
-	// Check to see if the target is in a vehicle and the vehicle is blocking our way
-	bool bVehicleMatchesObstruction = false;
-
-	if ( pTarget != NULL )
-	{
-		CBaseCombatCharacter *pCCTarget = ((CBaseEntity *)pTarget)->MyCombatCharacterPointer();
-		if ( pCCTarget != NULL && pCCTarget->IsInAVehicle() )
-		{
-			CBaseEntity *pVehicleEnt = pCCTarget->GetVehicleEntity();
-			if ( pVehicleEnt == pTrace->pObstruction )
-				bVehicleMatchesObstruction = true;
-		}
-	}
-
-	if ( (pTarget && (pTarget == pTrace->pObstruction)) || bVehicleMatchesObstruction )
+	if ( (pTarget && (pTarget == pTrace->pObstruction)) )
 	{
 		// Collided with target entity, return there was no collision!!
 		// but leave the end trace position

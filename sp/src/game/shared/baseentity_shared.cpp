@@ -25,7 +25,6 @@
 #else
 	#include "te_effect_dispatch.h"
 	#include "soundent.h"
-	#include "iservervehicle.h"
 	#include "player_pickup.h"
 	#include "waterbullet.h"
 	#include "func_break.h"
@@ -1868,15 +1867,6 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 				{
 					flActualDamage = iPlayerDamage;
 				}
-#ifdef GAME_DLL
-				else if ( tr.m_pEnt->GetServerVehicle() )
-				{
-					if ( tr.m_pEnt->GetServerVehicle()->GetPassenger() && tr.m_pEnt->GetServerVehicle()->GetPassenger()->IsPlayer() )
-					{
-						flActualDamage = iPlayerDamage;
-					}
-				}
-#endif
 			}
 
 			int nActualDamageType = nDamageType;

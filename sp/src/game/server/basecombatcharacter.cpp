@@ -23,7 +23,6 @@
 #include "EntityFlame.h"
 #include "CRagdollMagnet.h"
 #include "IEffects.h"
-#include "iservervehicle.h"
 #include "igamesystem.h"
 #include "globals.h"
 #include "physics_prop_ragdoll.h"
@@ -158,19 +157,6 @@ void *SendProxy_SendBaseCombatCharacterLocalDataTable( const SendProp *pProp, co
 		if ( pBCC->IsPlayer() )
 		{
 			pRecipients->SetOnly( pBCC->entindex() - 1 );
-		}
-		else
-		{
-			// If it's a vehicle, send to "driver" (e.g., operator of tf2 manned guns)
-			IServerVehicle *pVehicle = pBCC->GetServerVehicle();
-			if ( pVehicle != NULL )
-			{
-				CBaseCombatCharacter *pDriver = pVehicle->GetPassenger();
-				if ( pDriver != NULL )
-				{
-					pRecipients->SetOnly( pDriver->entindex() - 1 );
-				}
-			}
 		}
 	}
 	return ( void * )pVarData;
@@ -3079,34 +3065,6 @@ void CBaseCombatCharacter::VPhysicsShadowCollision( int index, gamevcollisioneve
 	// inertia tensor to get torque?
 	Vector damageForce = pEvent->postVelocity[index] * pEvent->pObjects[index]->GetMass() * phys_impactforcescale.GetFloat();
 	
-	IServerVehicle *vehicleOther = pOther->GetServerVehicle();
-	if ( vehicleOther )
-	{
-		CBaseCombatCharacter *pPassenger = vehicleOther->GetPassenger();
-		if ( pPassenger != NULL )
-		{
-			// flag as vehicle damage
-			damageType |= DMG_VEHICLE;
-			// if hit by vehicle driven by player, add some upward velocity to force
-			float len = damageForce.Length();
-			damageForce.z += len*phys_upimpactforcescale.GetFloat();
-			//Msg("Force %.1f / %.1f\n", damageForce.Length(), damageForce.z );
-
-			if ( pPassenger->IsPlayer() )
-			{
-				CBasePlayer *pPlayer = assert_cast<CBasePlayer *>(pPassenger);
-				if( damage >= GetMaxHealth() )
-				{
-					pPlayer->RumbleEffect( RUMBLE_357, 0, RUMBLE_FLAG_RESTART );
-				}
-				else
-				{
-					pPlayer->RumbleEffect( RUMBLE_PISTOL, 0, RUMBLE_FLAG_RESTART );
-				}
-			}
-		}
-	}
-
 	Vector damagePos;
 	pEvent->pInternalData->GetContactPoint( damagePos );
 	CTakeDamageInfo dmgInfo( pOther, pOther, damageForce, damagePos, damage, damageType );

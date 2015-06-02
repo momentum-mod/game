@@ -14,7 +14,6 @@
 #include "cdll_util.h"
 #include "kbutton.h"
 #include "usercmd.h"
-#include "iclientvehicle.h"
 #include "input.h"
 #include "iviewrender.h"
 #include "convar.h"
@@ -70,7 +69,6 @@ static ConVar joy_yawsensitivity( "joy_yawsensitivity", "-1", FCVAR_ARCHIVE | FC
 
 // Advanced sensitivity and response
 static ConVar joy_response_move( "joy_response_move", "1", FCVAR_ARCHIVE, "'Movement' stick response mode: 0=Linear, 1=quadratic, 2=cubic, 3=quadratic extreme, 4=power function(i.e., pow(x,1/sensitivity)), 5=two-stage" );
-ConVar joy_response_move_vehicle("joy_response_move_vehicle", "6");
 static ConVar joy_response_look( "joy_response_look", "0", FCVAR_ARCHIVE, "'Look' stick response mode: 0=Default, 1=Acceleration Promotion" );
 static ConVar joy_lowend( "joy_lowend", "1", FCVAR_ARCHIVE );
 static ConVar joy_lowmap( "joy_lowmap", "1", FCVAR_ARCHIVE );
@@ -78,9 +76,6 @@ static ConVar joy_accelscale( "joy_accelscale", "0.6", FCVAR_ARCHIVE);
 static ConVar joy_accelmax( "joy_accelmax", "1.0", FCVAR_ARCHIVE);
 static ConVar joy_autoaimdampenrange( "joy_autoaimdampenrange", "0", FCVAR_ARCHIVE, "The stick range where autoaim dampening is applied. 0 = off" );
 static ConVar joy_autoaimdampen( "joy_autoaimdampen", "0", FCVAR_ARCHIVE, "How much to scale user stick input when the gun is pointing at a valid target." );
-
-static ConVar joy_vehicle_turn_lowend("joy_vehicle_turn_lowend", "0.7");
-static ConVar joy_vehicle_turn_lowmap("joy_vehicle_turn_lowmap", "0.4");
 
 
 // Misc
@@ -192,32 +187,6 @@ static float ResponseCurve( int curve, float x, int axis, float sensitivity )
 			return out;
 		}
 		break;
-	case 6: // Custom for driving a vehicle!
-		{
-			if( axis == YAW )
-			{
-				// This code only wants to affect YAW axis (the left and right axis), which 
-				// is used for turning in the car. We fall-through and use a linear curve on 
-				// the PITCH axis, which is the vehicle's throttle. REALLY, these are the 'forward'
-				// and 'side' axes, but we don't have constants for those, so we re-use the same
-				// axis convention as the look stick. (sjb)
-				float sign = 1;
-
-				if( x  < 0.0 )
-					sign = -1;
-
-				x = fabs(x);
-
-				if( x <= joy_vehicle_turn_lowend.GetFloat() )
-					x = RemapVal( x, 0.0f, joy_vehicle_turn_lowend.GetFloat(), 0.0f, joy_vehicle_turn_lowmap.GetFloat() );
-				else
-					x = RemapVal( x, joy_vehicle_turn_lowend.GetFloat(), 1.0f, joy_vehicle_turn_lowmap.GetFloat(), 1.0f );
-
-				return x * sensitivity * sign;
-			}
-			//else
-			//	fall through and just return x*sensitivity below (as if using default curve)
-		}
 	}
 
 	// linear
@@ -814,17 +783,8 @@ void CInput::JoyStickMove( float frametime, CUserCmd *cmd )
 	float   aspeed = frametime * gHUD.GetFOVSensitivityAdjust();
 
 	// apply forward and side control
-	C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
 	
-	int iResponseCurve = 0;
-	if ( pLocalPlayer && pLocalPlayer->IsInAVehicle() )
-	{
-		iResponseCurve = pLocalPlayer->GetVehicle() ? pLocalPlayer->GetVehicle()->GetJoystickResponseCurve() : joy_response_move_vehicle.GetInt();
-	}
-	else
-	{
-		iResponseCurve = joy_response_move.GetInt();
-	}	
+	int iResponseCurve = joy_response_move.GetInt();
 	
 	float val = ResponseCurve( iResponseCurve, m_flPreviousJoystickForward, PITCH, joy_forwardsensitivity.GetFloat() );
 	joyForwardMove	+= val * cl_forwardspeed.GetFloat();

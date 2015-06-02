@@ -137,8 +137,6 @@ bool PhysIsFinalTick();
 bool PhysGetTriggerEvent( triggerevent_t *pEvent, CBaseEntity *pTrigger );
 // note: pErrorEntity is used to report errors (object not found, more than one found).  It can be NULL
 IPhysicsObject *FindPhysicsObjectByName( const char *pName, CBaseEntity *pErrorEntity );
-bool PhysFindOrAddVehicleScript( const char *pScriptName, struct vehicleparams_t *pParams, struct vehiclesounds_t *pSounds );
-void PhysFlushVehicleScripts();
 
 // this is called to flush all queues when the delete list is cleared
 void PhysOnCleanupDeleteList();

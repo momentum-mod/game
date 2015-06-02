@@ -15,7 +15,6 @@
 #include <vgui/ISurface.h>
 #include <vgui/IScheme.h>
 #include "hud.h"
-#include "iclientvehicle.h"
 #include "in_buttons.h"
 #include "con_nprint.h"
 #include "hud_pdump.h"
@@ -646,12 +645,6 @@ void CPrediction::SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *
 		move->m_flUpMove			= ucmd->upmove;
 	}
 		
-	IClientVehicle *pVehicle = player->GetVehicle();
-	if (pVehicle)
-	{
-		pVehicle->SetupMove( player, ucmd, pHelper, move ); 
-	}
-
 	// Copy constraint information
 	if ( player->m_hConstraintEntity )
 		move->m_vecConstraintCenter = player->m_hConstraintEntity->GetAbsOrigin();
@@ -700,12 +693,6 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 	m_hLastGround = player->GetGroundEntity();
  
 	player->SetLocalOrigin( move->GetAbsOrigin() );
-
-	IClientVehicle *pVehicle = player->GetVehicle();
-	if (pVehicle)
-	{
-		pVehicle->FinishMove( player, ucmd, move ); 
-	}
 
 	// Sanity checks
 	if ( player->m_hConstraintEntity )
@@ -852,19 +839,6 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		}
 	}
 
-	// Latch in impulse.
-	IClientVehicle *pVehicle = player->GetVehicle();
-	if ( ucmd->impulse )
-	{
-		// Discard impulse commands unless the vehicle allows them.
-		// FIXME: UsingStandardWeapons seems like a bad filter for this. 
-		// The flashlight is an impulse command, for example.
-		if ( !pVehicle || player->UsingStandardWeaponsInVehicle() )
-		{
-			player->m_nImpulse = ucmd->impulse;
-		}
-	}
-
 	// Get button states
 	player->UpdateButtonState( ucmd->buttons );
 
@@ -892,16 +866,8 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		SetupMove( player, ucmd, moveHelper, g_pMoveData );
 	}
 
-	// RUN MOVEMENT
-	if ( !pVehicle )
-	{
-		Assert( g_pGameMovement );
-		g_pGameMovement->ProcessMovement( player, g_pMoveData );
-	}
-	else
-	{
-		pVehicle->ProcessMovement( player, g_pMoveData );
-	}
+	Assert( g_pGameMovement );
+	g_pGameMovement->ProcessMovement( player, g_pMoveData );
 
 	FinishMove( player, ucmd, g_pMoveData );
 

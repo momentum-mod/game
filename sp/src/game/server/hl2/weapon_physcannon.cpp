@@ -1862,13 +1862,6 @@ void CWeaponPhysCannon::PuntVPhysics( CBaseEntity *pEntity, const Vector &vecFor
 		// Tell the object it's been punted
 		Physgun_OnPhysGunPickup( pEntity, pOwner, PUNTED_BY_CANNON );
 
-		// don't push vehicles that are attached to the world via fixed constraints
-		// they will just wiggle...
-		if ( (pList[0]->GetGameFlags() & FVPHYSICS_CONSTRAINT_STATIC) && pEntity->GetServerVehicle() )
-		{
-			forward.Init();
-		}
-
 		if ( !IsMegaPhysCannon() && !Pickup_ShouldPuntUseLaunchForces( pEntity, PHYSGUN_FORCE_PUNTED ) )
 		{
 			int i;
@@ -1880,11 +1873,6 @@ void CWeaponPhysCannon::PuntVPhysics( CBaseEntity *pEntity, const Vector &vecFor
 				totalMass += pList[i]->GetMass();
 			}
 			float maxMass = 250;
-			IServerVehicle *pVehicle = pEntity->GetServerVehicle();
-			if ( pVehicle )
-			{
-				maxMass *= 2.5;	// 625 for vehicles
-			}
 			float mass = MIN(totalMass, maxMass); // max 250kg of additional force
 
 			// Put some spin on the object

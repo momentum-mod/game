@@ -10,7 +10,6 @@
 #include "hud_macros.h"
 #include "hud_numericdisplay.h"
 #include "iclientmode.h"
-#include "iclientvehicle.h"
 #include <vgui_controls/AnimationController.h>
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
@@ -43,11 +42,9 @@ protected:
 
 	void UpdateAmmoDisplays();
 	void UpdatePlayerAmmo( C_BasePlayer *player );
-	void UpdateVehicleAmmo( C_BasePlayer *player, IClientVehicle *pVehicle );
 	
 private:
 	CHandle< C_BaseCombatWeapon > m_hCurrentActiveWeapon;
-	CHandle< C_BaseEntity > m_hCurrentVehicle;
 	int		m_iAmmo;
 	int		m_iAmmo2;
 	CHudTexture *m_iconPrimaryAmmo;
@@ -104,7 +101,6 @@ void CHudAmmo::Reset()
 	BaseClass::Reset();
 
 	m_hCurrentActiveWeapon = NULL;
-	m_hCurrentVehicle = NULL;
 	m_iAmmo = 0;
 	m_iAmmo2 = 0;
 
@@ -116,9 +112,6 @@ void CHudAmmo::Reset()
 //-----------------------------------------------------------------------------
 void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 {
-	// Clear out the vehicle entity
-	m_hCurrentVehicle = NULL;
-
 	C_BaseCombatWeapon *wpn = GetActiveWeapon();
 
 	hudlcd->SetGlobalStat( "(weapon_print_name)", wpn ? wpn->GetPrintName() : " " );
@@ -187,65 +180,6 @@ void CHudAmmo::UpdatePlayerAmmo( C_BasePlayer *player )
 	}
 }
 
-void CHudAmmo::UpdateVehicleAmmo( C_BasePlayer *player, IClientVehicle *pVehicle )
-{
-	m_hCurrentActiveWeapon = NULL;
-	CBaseEntity *pVehicleEnt = pVehicle->GetVehicleEnt();
-
-	if ( !pVehicleEnt || pVehicle->GetPrimaryAmmoType() < 0 )
-	{
-		SetPaintEnabled(false);
-		SetPaintBackgroundEnabled(false);
-		return;
-	}
-
-	SetPaintEnabled(true);
-	SetPaintBackgroundEnabled(true);
-
-	// get the ammo in our clip
-	int ammo1 = pVehicle->GetPrimaryAmmoClip();
-	int ammo2;
-	if (ammo1 < 0)
-	{
-		// we don't use clip ammo, just use the total ammo count
-		ammo1 = pVehicle->GetPrimaryAmmoCount();
-		ammo2 = 0;
-	}
-	else
-	{
-		// we use clip ammo, so the second ammo is the total ammo
-		ammo2 = pVehicle->GetPrimaryAmmoCount();
-	}
-
-	if (pVehicleEnt == m_hCurrentVehicle)
-	{
-		// same weapon, just update counts
-		SetAmmo(ammo1, true);
-		SetAmmo2(ammo2, true);
-	}
-	else
-	{
-		// diferent weapon, change without triggering
-		SetAmmo(ammo1, false);
-		SetAmmo2(ammo2, false);
-
-		// update whether or not we show the total ammo display
-		if (pVehicle->PrimaryAmmoUsesClips())
-		{
-			SetShouldDisplaySecondaryValue(true);
-			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponUsesClips");
-		}
-		else
-		{
-			g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponDoesNotUseClips");
-			SetShouldDisplaySecondaryValue(false);
-		}
-
-		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("WeaponChanged");
-		m_hCurrentVehicle = pVehicleEnt;
-	}
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: called every frame to get ammo info from the weapon
 //-----------------------------------------------------------------------------
@@ -260,16 +194,7 @@ void CHudAmmo::OnThink()
 void CHudAmmo::UpdateAmmoDisplays()
 {
 	C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
-	IClientVehicle *pVehicle = player ? player->GetVehicle() : NULL;
-
-	if ( !pVehicle )
-	{
-		UpdatePlayerAmmo( player );
-	}
-	else
-	{
-		UpdateVehicleAmmo( player, pVehicle );
-	}
+	UpdatePlayerAmmo( player );
 }
 
 //-----------------------------------------------------------------------------
@@ -336,7 +261,7 @@ void CHudAmmo::Paint( void )
 	BaseClass::Paint();
 
 #ifndef HL2MP
-	if ( m_hCurrentVehicle == NULL && m_iconPrimaryAmmo )
+	if ( m_iconPrimaryAmmo )
 	{
 		int nLabelHeight;
 		int nLabelWidth;
@@ -446,8 +371,7 @@ protected:
 		// set whether or not the panel draws based on if we have a weapon that supports secondary ammo
 		C_BaseCombatWeapon *wpn = GetActiveWeapon();
 		C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
-		IClientVehicle *pVehicle = player ? player->GetVehicle() : NULL;
-		if (!wpn || !player || pVehicle)
+		if (!wpn || !player)
 		{
 			m_hCurrentActiveWeapon = NULL;
 			SetPaintEnabled(false);

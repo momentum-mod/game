@@ -2,14 +2,12 @@
 #include "hudelement.h"
 #include "hud_numericdisplay.h"
 #include "iclientmode.h"
-#include "iclientvehicle.h"
 
 #include <vgui_controls/Panel.h>
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
 
 #include "vphysics_interface.h"
-#include "c_prop_vehicle.h"
 
 using namespace vgui;
 

@@ -22,7 +22,6 @@
 //-----------------------------------------------------------------------------
 class ConVar;
 class CClientRenderablesList;
-class IClientVehicle;
 class C_PointCamera;
 class C_EnvProjectedTexture;
 class IScreenSpaceEffect;

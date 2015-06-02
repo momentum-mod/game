@@ -1073,33 +1073,6 @@ void CInput::ExtraMouseSample( float frametime, bool active )
 		engine->SetViewAngles( cmd->viewangles );
 		prediction->SetLocalViewAngles( cmd->viewangles );
 	}
-
-	// Let the headtracker override the view at the very end of the process so
-	// that vehicles and other stuff in g_pClientMode->CreateMove can override 
-	// first
-	if ( active && UseVR() )
-	{
-		C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-		if( pPlayer && !pPlayer->GetVehicle() )
-		{
-			QAngle curViewangles, newViewangles;
-			Vector curMotion, newMotion;
-			engine->GetViewAngles( curViewangles );
-			curMotion.Init ( 
-				cmd->forwardmove,
-				cmd->sidemove,
-				cmd->upmove );
-			g_ClientVirtualReality.OverridePlayerMotion ( frametime, originalViewangles, curViewangles, curMotion, &newViewangles, &newMotion );
-			engine->SetViewAngles( newViewangles );
-			cmd->forwardmove = newMotion[0];
-			cmd->sidemove = newMotion[1];
-			cmd->upmove = newMotion[2];
-
-			cmd->viewangles = newViewangles;
-			prediction->SetLocalViewAngles( cmd->viewangles );
-		}
-	}
-
 }
 
 void CInput::CreateMove ( int sequence_number, float input_sample_frametime, bool active )
@@ -1235,29 +1208,9 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 
 		if ( UseVR() )
 		{
-			C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-			if( pPlayer && !pPlayer->GetVehicle() )
-			{
-				QAngle curViewangles, newViewangles;
-				Vector curMotion, newMotion;
-				engine->GetViewAngles( curViewangles );
-				curMotion.Init ( 
-					cmd->forwardmove,
-					cmd->sidemove,
-					cmd->upmove );
-				g_ClientVirtualReality.OverridePlayerMotion ( input_sample_frametime, originalViewangles, curViewangles, curMotion, &newViewangles, &newMotion );
-				engine->SetViewAngles( newViewangles );
-				cmd->forwardmove = newMotion[0];
-				cmd->sidemove = newMotion[1];
-				cmd->upmove = newMotion[2];
-				cmd->viewangles = newViewangles;
-			}
-			else
-			{
-				Vector vPos;
-				g_ClientVirtualReality.GetTorsoRelativeAim( &vPos, &cmd->viewangles );
-				engine->SetViewAngles( cmd->viewangles );
-			}
+			Vector vPos;
+			g_ClientVirtualReality.GetTorsoRelativeAim( &vPos, &cmd->viewangles );
+			engine->SetViewAngles( cmd->viewangles );
 		}
 	}
 

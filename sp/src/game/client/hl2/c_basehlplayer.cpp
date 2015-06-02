@@ -629,11 +629,8 @@ bool C_BaseHLPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 {
 	bool bResult = BaseClass::CreateMove( flInputSampleTime, pCmd );
 
-	if ( !IsInAVehicle() )
-	{
-		PerformClientSideObstacleAvoidance( TICK_INTERVAL, pCmd );
-		PerformClientSideNPCSpeedModifiers( TICK_INTERVAL, pCmd );
-	}
+	PerformClientSideObstacleAvoidance( TICK_INTERVAL, pCmd );
+	PerformClientSideNPCSpeedModifiers( TICK_INTERVAL, pCmd );
 
 	return bResult;
 }

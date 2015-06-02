@@ -50,8 +50,6 @@ const char * g_ppszGoalTypes[] =
 
 #define AIGetGoalTypeText(type)	(g_ppszGoalTypes[(type)])
 
-ConVar ai_vehicle_avoidance("ai_vehicle_avoidance", "1", FCVAR_CHEAT );
-
 #ifdef DEBUG_AI_NAVIGATION
 ConVar ai_debug_nav("ai_debug_nav", "0");
 #endif

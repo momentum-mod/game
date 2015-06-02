@@ -90,8 +90,6 @@ void HapticProcessSound(const char* soundname, int entIndex);
 	void DisconnectHaptics();
 
 	void UpdateAvatarEffect(void);
-	void HapticsExitedVehicle(C_BaseEntity* vehicle, C_BaseCombatCharacter *pPassenger );
-	void HapticsEnteredVehicle(C_BaseEntity* vehicle, C_BaseCombatCharacter *pPassenger );
 	
 	//bool value true if user is using a haptic device.
 	extern ConVar hap_HasDevice;

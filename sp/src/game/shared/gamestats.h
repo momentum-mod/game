@@ -40,7 +40,6 @@ void UpdatePerfStats( void );
 void SetGameStatsHandler( CGameStats *pGameStats );
 
 class CBasePlayer;
-class CPropVehicleDriveable;
 class CTakeDamageInfo;
 
 #ifdef GAME_DLL
@@ -213,7 +212,6 @@ public:
 	virtual void Event_PlayerTraveled( CBasePlayer *pBasePlayer, float distanceInInches, bool bInVehicle, bool bSprinting );
 	virtual void Event_WeaponFired( CBasePlayer *pShooter, bool bPrimary, char const *pchWeaponName );
 	virtual void Event_WeaponHit( CBasePlayer *pShooter, bool bPrimary, char const *pchWeaponName, const CTakeDamageInfo &info );
-	virtual void Event_FlippedVehicle( CBasePlayer *pDriver, CPropVehicleDriveable *pVehicle );
 	virtual void Event_PreSaveGameLoaded( char const *pSaveName, bool bInGame );
 	virtual void Event_PlayerEnteredGodMode( CBasePlayer *pBasePlayer );
 	virtual void Event_PlayerEnteredNoClip( CBasePlayer *pBasePlayer );

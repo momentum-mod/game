@@ -18,10 +18,6 @@
 #include "globalstate.h"
 #include "datacache/imdlcache.h"
 
-#ifdef HL2_DLL
-#include "npc_playercompanion.h"
-#endif // HL2_DLL
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1401,9 +1397,6 @@ public:
 		g_TouchManager.LevelInitPreEntity();
 		g_AimManager.LevelInitPreEntity();
 		g_SimThinkManager.LevelInitPreEntity();
-#ifdef HL2_DLL
-		OverrideMoveCache_LevelInitPreEntity();
-#endif	// HL2_DLL
 	}
 	void LevelShutdownPreEntity()
 	{
@@ -1414,9 +1407,6 @@ public:
 		g_TouchManager.LevelShutdownPostEntity();
 		g_AimManager.LevelShutdownPostEntity();
 		g_SimThinkManager.LevelShutdownPostEntity();
-#ifdef HL2_DLL
-		OverrideMoveCache_LevelShutdownPostEntity();
-#endif // HL2_DLL
 		CBaseEntityClassList *pClassList = s_pClassLists;
 		while ( pClassList )
 		{

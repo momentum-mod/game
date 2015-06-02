@@ -15,10 +15,6 @@
 #include "ai_network.h"
 #include "ai_networkmanager.h"
 
-#ifdef HL2_DLL
-#include "npc_playercompanion.h"
-#endif // HL2_DLL
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -167,10 +163,7 @@ public:
 
 	void PostRestore( void )
 	{
-#ifdef HL2_DLL
-		// We need this list to be regenerated
-		OverrideMoveCache_ForceRepopulateList();
-#endif // HL2_DLL
+
 	}
 
 private:

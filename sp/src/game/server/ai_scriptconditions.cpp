@@ -102,9 +102,6 @@ BEGIN_DATADESC( CAI_ScriptConditions )
 
 	DEFINE_KEYFIELD(m_fActorInPVS,					FIELD_INTEGER,  "ActorInPVS"		),
 
-	DEFINE_KEYFIELD(m_fActorInVehicle,				FIELD_INTEGER,	 "ActorInVehicle" ),
-	DEFINE_KEYFIELD(m_fPlayerInVehicle,				FIELD_INTEGER,	 "PlayerInVehicle" ),
-
 	DEFINE_UTLVECTOR( m_ElementList,				FIELD_EMBEDDED ),
 	DEFINE_FIELD( m_bLeaveAsleep,					FIELD_BOOLEAN ),
 
@@ -373,42 +370,6 @@ bool CAI_ScriptConditions::EvalPlayerBlockingActor( const EvalArgs_t &args )
 		return true;
 
 	return false; // for now, never say player is blocking
-}
-
-//-----------------------------------------------------------------------------
-
-bool CAI_ScriptConditions::EvalPlayerInVehicle( const EvalArgs_t &args )
-{
-	// We don't care
-	if ( m_fPlayerInVehicle == TRS_NONE )
-		return true;
-
-	// Need a player to test
-	if ( args.pPlayer == NULL )
-		return false;
-
-	// Desired states must match
-	return ( !!args.pPlayer->IsInAVehicle() == m_fPlayerInVehicle );
-}
-
-//-----------------------------------------------------------------------------
-
-bool CAI_ScriptConditions::EvalActorInVehicle( const EvalArgs_t &args )
-{
-	// We don't care
-	if ( m_fActorInVehicle == TRS_NONE )
-		return true;
-
-	if ( !args.pActor )
-		return true;
-
-	// Must be able to be in a vehicle at all
-	CBaseCombatCharacter *pBCC = args.pActor->MyCombatCharacterPointer();
-	if ( pBCC == NULL )
-		return false;
-
-	// Desired states must match
-	return ( !!pBCC->IsInAVehicle() == m_fActorInVehicle );
 }
 
 //-----------------------------------------------------------------------------

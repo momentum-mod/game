@@ -19,7 +19,6 @@
 
 #include "player.h"
 #include "entitylist.h"
-#include "iservervehicle.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -419,26 +418,7 @@ void CAPCController::TrackTarget( void )
 
 	if ( lineOfSight == TRUE )
 	{
-		// FIXME: This will ultimately have to deal with NPCs being in the vehicle as well
-		// See if the target is in a vehicle. If so, check its relationship
-		CBasePlayer *pPlayer = ToBasePlayer( pTarget );
-		if ( pPlayer && pPlayer->IsInAVehicle() )
-		{
-			IServerVehicle *pVehicle = pPlayer->GetVehicle();
-			if ( pVehicle->ClassifyPassenger( pPlayer, CLASS_PLAYER ) == CLASS_PLAYER)
-			{
-				if ( !m_bFireDelayed )
-				{
-					m_bFireDelayed = true;
-					m_flFiringDelay = gpGlobals->curtime + 1.5;	// setup delay time before we start firing
-					return;
-				}
-				if ( gpGlobals->curtime > m_flFiringDelay )
-				{
-					m_OnFireAtTarget.Set(forward, this, this);		// tell apc to fire rockets, and what direction
-				}
-			}
-		}
+
 	}
 	else
 	{

@@ -1299,10 +1299,6 @@ void CAI_AssaultBehavior::ClearSchedule( const char *szReason )
 	if ( GetOuter()->ClassMatches( "npc_monk" ) && GetOuter()->GetState() == NPC_STATE_SCRIPT )
 		return;
 
-	// Don't allow it if we're in a vehicle
-	if ( GetOuter()->IsInAVehicle() )
-		return;
-
 	GetOuter()->ClearSchedule( szReason );
 }
 

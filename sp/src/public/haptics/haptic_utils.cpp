@@ -9,8 +9,6 @@
 	#include "c_baseplayer.h"
 	#include "haptics/ihaptics.h"
 	#include "hud_macros.h"
-	#include "iclientvehicle.h"
-	#include "c_prop_vehicle.h"
 	#include "prediction.h"
 	#include "activitylist.h"
 #ifdef TERROR
@@ -229,28 +227,12 @@ void UpdateAvatarEffect(void)
 
 	eye = pPlayer->GetAbsAngles();
 
-	if(pPlayer->IsInAVehicle() && pPlayer->GetVehicle())
-	{
-		pPlayer->GetVehicle()->GetVehicleEnt()->EstimateAbsVelocity(vvel);
-		eye = pPlayer->GetVehicle()->GetVehicleEnt()->EyeAngles();
-
-		if(!Q_stristr(pPlayer->GetVehicle()->GetVehicleEnt()->GetClassname(),"choreo"))
-		{
-			eye[YAW] += 90;
-		}
-		
-
-
-	}
-	else
-	{
-		vel = pPlayer->GetAbsVelocity();
-	}
+	vel = pPlayer->GetAbsVelocity();
 
 	Vector PlayerVel = pPlayer->GetAbsVelocity();
 
 	//Choreo vehicles use player avatar and don't produce their own velocity
-	if(!pPlayer->GetVehicle() || abs(vvel.Length()) == 0 )
+	if( abs(vvel.Length()) == 0 )
 	{
 		vel = PlayerVel;
 	}
@@ -360,84 +342,3 @@ void HapticProcessSound(const char* soundname, int entIndex)
 	}
 #endif
 }
-
-#ifdef CLIENT_DLL
-
-// NVNT add || defined(OTHER_DEFINITION) if your game uses vehicles.
-#if defined( HL2_CLIENT_DLL )
-#define HAPTIC_VEHICLE_DEFAULT "1"
-#else
-#define HAPTIC_VEHICLE_DEFAULT "0"
-#endif
-
-// determines weather the vehicles control box option is faded
-ConVar hap_ui_vehicles( "hap_ui_vehicles", 
-						   HAPTIC_VEHICLE_DEFAULT,
-						   0
-						   );
-
-#undef HAPTIC_VEHICLE_DEFAULT
-
-void HapticsEnteredVehicle(C_BaseEntity* vehicle, C_BaseCombatCharacter *pPassenger )
-{
-	if(!vehicle)
-		return;
-
-	// NVNT notify haptics system of navigation change.
-
-	C_PropVehicleDriveable* drivable = dynamic_cast<C_PropVehicleDriveable*>(vehicle);
-	bool hasgun = false;
-	if(drivable)
-		hasgun = drivable->HasGun();
-
-
-
-
-
-	if(Q_stristr(vehicle->GetClassname(),"airboat"))
-	{
-		haptics->ProcessHapticEvent(2,"Movement","airboat");
-		if(hasgun)
-			haptics->SetNavigationClass("vehicle_gun");
-		else
-			haptics->SetNavigationClass("vehicle_airboat");
-	}
-	else if(Q_stristr(vehicle->GetClassname(),"jeepepisodic"))
-	{
-		haptics->ProcessHapticEvent(2,"Movement","BaseVehicle");
-		haptics->SetNavigationClass("vehicle_nogun");
-	}
-	else if(Q_stristr(vehicle->GetClassname(),"jeep"))
-	{
-		haptics->ProcessHapticEvent(2,"Movement","BaseVehicle");
-		haptics->SetNavigationClass("vehicle_gun");
-	}
-	else if(Q_stristr(vehicle->GetClassname(),"choreo"))
-	{
-		haptics->ProcessHapticEvent(2,"Movement","ChoreoVehicle");
-		haptics->SetNavigationClass("vehicle_gun_nofix");//Give this a bit of aiming
-	}
-	else
-	{
-		haptics->ProcessHapticEvent(2,"Movement","BaseVehicle");
-		haptics->SetNavigationClass("vehicle_nogun");
-	}
-
-	Msg("VehicleType:%s:\n",vehicle->GetClassname());
-}
-
-void HapticsExitedVehicle(C_BaseEntity* vehicle, C_BaseCombatCharacter *pPassenger )
-{
-	// NVNT notify haptics system of navigation change.
-	haptics->SetNavigationClass("on_foot");
-	haptics->ProcessHapticEvent(2,"Movement","BasePlayer");
-}
-#endif
-
-
-
-
-
-
-
-

@@ -22,8 +22,6 @@
 #include "point_camera.h"
 #include "engine/IEngineSound.h"
 #include "ndebugoverlay.h"
-#include "iservervehicle.h"
-#include "IVehicle.h"
 #include "globals.h"
 #include "collisionutils.h"
 #include "coordsize.h"
@@ -564,23 +562,6 @@ void CHL2_Player::PreThink(void)
 		NDebugOverlay::Line(GetAbsOrigin(), predPos, 0, 255, 0, 0, 0.01f);
 	}
 
-	// Riding a vehicle?
-	if (IsInAVehicle())
-	{
-		VPROF("CHL2_Player::PreThink-Vehicle");
-		// make sure we update the client, check for timed damage and update suit even if we are in a vehicle
-		UpdateClientData();
-		CheckTimeBasedDamage();
-
-		// Allow the suit to recharge when in the vehicle.
-		SuitPower_Update();
-		CheckSuitUpdate();
-		CheckSuitZoom();
-
-		WaterMove();
-		return;
-	}
-
 	// This is an experiment of mine- autojumping! 
 	// only affects you if sv_autojump is nonzero.
 	if ((GetFlags() & FL_ONGROUND) && sv_autojump.GetFloat() != 0)
@@ -912,15 +893,7 @@ Class_T  CHL2_Player::Classify(void)
 	}
 	else
 	{
-		if (IsInAVehicle())
-		{
-			IServerVehicle *pVehicle = GetVehicle();
-			return pVehicle->ClassifyPassenger(this, CLASS_PLAYER);
-		}
-		else
-		{
-			return CLASS_PLAYER;
-		}
+		return CLASS_PLAYER;
 	}
 }
 
@@ -2272,14 +2245,6 @@ int	CHL2_Player::OnTakeDamage(const CTakeDamageInfo &info)
 		bAdjustForSkillLevel = false;
 	}
 
-	if (GetVehicleEntity() != NULL && GlobalEntity_GetState("gordon_protect_driver") == GLOBAL_ON)
-	{
-		if (playerDamage.GetDamage() > test_massive_dmg.GetFloat() && playerDamage.GetInflictor() == GetVehicleEntity() && (playerDamage.GetDamageType() & DMG_CRUSH))
-		{
-			playerDamage.ScaleDamage(test_massive_dmg_clip.GetFloat() / playerDamage.GetDamage());
-		}
-	}
-
 	if (bAdjustForSkillLevel)
 	{
 		playerDamage.AdjustPlayerDamageTakenForSkillLevel();
@@ -2401,32 +2366,6 @@ void CHL2_Player::GetAutoaimVector(autoaim_params_t &params)
 
 	if (IsX360())
 	{
-		if (IsInAVehicle())
-		{
-			if (m_hLockedAutoAimEntity && m_hLockedAutoAimEntity->IsAlive() && ShouldKeepLockedAutoaimTarget(m_hLockedAutoAimEntity))
-			{
-				if (params.m_hAutoAimEntity && params.m_hAutoAimEntity != m_hLockedAutoAimEntity)
-				{
-					// Autoaim has picked a new target. Switch.
-					m_hLockedAutoAimEntity = params.m_hAutoAimEntity;
-				}
-
-				// Ignore autoaim and just keep aiming at this target.
-				params.m_hAutoAimEntity = m_hLockedAutoAimEntity;
-				Vector vecTarget = m_hLockedAutoAimEntity->BodyTarget(EyePosition(), false);
-				Vector vecDir = vecTarget - EyePosition();
-				VectorNormalize(vecDir);
-
-				params.m_vecAutoAimDir = vecDir;
-				params.m_vecAutoAimPoint = vecTarget;
-				return;
-			}
-			else
-			{
-				m_hLockedAutoAimEntity = NULL;
-			}
-		}
-
 		// If the player manually gets his crosshair onto a target, make that target sticky
 		if (params.m_fScale != AUTOAIM_SCALE_DIRECT_ONLY)
 		{
@@ -2436,11 +2375,6 @@ void CHL2_Player::GetAutoaimVector(autoaim_params_t &params)
 			{
 				// Turn on sticky.
 				m_HL2Local.m_bStickyAutoAim = true;
-
-				if (IsInAVehicle())
-				{
-					m_hLockedAutoAimEntity = params.m_hAutoAimEntity;
-				}
 			}
 			else if (!params.m_hAutoAimEntity)
 			{
@@ -3028,15 +2962,6 @@ bool CHL2_Player::Weapon_Ready(void)
 //-----------------------------------------------------------------------------
 bool CHL2_Player::Weapon_CanSwitchTo(CBaseCombatWeapon *pWeapon)
 {
-	CBasePlayer *pPlayer = (CBasePlayer *)this;
-#if !defined( CLIENT_DLL )
-	IServerVehicle *pVehicle = pPlayer->GetVehicle();
-#else
-	IClientVehicle *pVehicle = pPlayer->GetVehicle();
-#endif
-	if (pVehicle && !pPlayer->UsingStandardWeaponsInVehicle())
-		return false;
-
 	if (!pWeapon->HasAnyAmmo() && !GetAmmoCount(pWeapon->m_iPrimaryAmmoType))
 		return false;
 
@@ -3201,14 +3126,6 @@ Vector CHL2_Player::EyeDirection2D(void)
 Vector CHL2_Player::EyeDirection3D(void)
 {
 	Vector vecForward;
-
-	// Return the vehicle angles if we request them
-	if (GetVehicle() != NULL)
-	{
-		CacheVehicleView();
-		EyeVectors(&vecForward);
-		return vecForward;
-	}
 
 	AngleVectors(EyeAngles(), &vecForward);
 	return vecForward;

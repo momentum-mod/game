@@ -651,10 +651,6 @@ bool CAI_ActBusyBehavior::IsCurScheduleOverridable( void )
 		return (GetOuter()->GetState() != NPC_STATE_SCRIPT);
 	}
 
-	// Act busies are not valid inside of a vehicle
-	if ( GetOuter()->IsInAVehicle() )
-		return false;
-
 	// Only if we're about to idle (or SCHED_NONE to catch newly spawned guys)		
 	return ( IsCurSchedule( SCHED_IDLE_STAND ) || IsCurSchedule( SCHED_NONE ) );
 }

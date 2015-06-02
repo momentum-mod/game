@@ -37,17 +37,4 @@ extern ConVar sv_specaccelerate;
 extern ConVar sv_specspeed;
 extern ConVar sv_specnoclip;
 
-// Vehicle convars
-extern ConVar r_VehicleViewDampen;
-
-// Jeep convars
-extern ConVar r_JeepViewDampenFreq;
-extern ConVar r_JeepViewDampenDamp;
-extern ConVar r_JeepViewZHeight;
-
-// Airboat convars
-extern ConVar r_AirboatViewDampenFreq;
-extern ConVar r_AirboatViewDampenDamp;
-extern ConVar r_AirboatViewZHeight;
-
 #endif // MOVEVARS_SHARED_H

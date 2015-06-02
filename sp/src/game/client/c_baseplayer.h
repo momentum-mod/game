@@ -173,7 +173,6 @@ public:
 
 	// Returns eye vectors
 	void			EyeVectors( Vector *pForward, Vector *pRight = NULL, Vector *pUp = NULL );
-	void			CacheVehicleView( void );	// Calculate and cache the position of the player in the vehicle
 
 
 	bool			IsSuitEquipped( void ) { return m_Local.m_bWearingSuit; };
@@ -298,15 +297,6 @@ public:
 	bool				IsPoisoned( void ) { return m_Local.m_bPoisoned; }
 
 	C_BaseEntity				*GetUseEntity();
-
-	// Vehicles...
-	IClientVehicle			*GetVehicle();
-
-	bool			IsInAVehicle() const	{ return ( NULL != m_hVehicle.Get() ) ? true : false; }
-	virtual void	SetVehicleRole( int nRole );
-	void					LeaveVehicle( void );
-
-	bool					UsingStandardWeaponsInVehicle( void );
 
 	virtual void			SetAnimation( PLAYER_ANIM playerAnim );
 
@@ -446,8 +436,6 @@ public:
 protected:
 
 	void				CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );
-	void				CalcVehicleView(IClientVehicle *pVehicle, Vector& eyeOrigin, QAngle& eyeAngles,
-							float& zNear, float& zFar, float& fov );
 	virtual void		CalcObserverView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );
 	virtual Vector		GetChaseCamViewOffset( CBaseEntity *target );
 	void				CalcChaseCamView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov );
@@ -472,9 +460,6 @@ protected:
 	virtual void	FireGameEvent( IGameEvent *event );
 
 protected:
-	// Did we just enter a vehicle this frame?
-	bool			JustEnteredVehicle();
-
 // DATA
 	int				m_iObserverMode;	// if in spectator mode != 0
 	EHANDLE			m_hObserverTarget;	// current observer target
@@ -493,9 +478,6 @@ private:
 	C_BasePlayer& operator=( const C_BasePlayer& src );
 	C_BasePlayer( const C_BasePlayer & ); // not defined, not accessible
 
-	// Vehicle stuff.
-	EHANDLE			m_hVehicle;
-	EHANDLE			m_hOldVehicle;
 	EHANDLE			m_hUseEntity;
 	
 	float			m_flMaxspeed;
@@ -542,11 +524,6 @@ private:
 	float					m_flOldPlayerZ;
 	float					m_flOldPlayerViewOffsetZ;
 	
-	Vector	m_vecVehicleViewOrigin;		// Used to store the calculated view of the player while riding in a vehicle
-	QAngle	m_vecVehicleViewAngles;		// Vehicle angles
-	float	m_flVehicleViewFOV;
-	int		m_nVehicleViewSavedFrame;	// Used to mark which frame was the last one the view was calculated for
-
 	// For UI purposes...
 	int				m_iOldAmmo[ MAX_AMMO_TYPES ];
 
@@ -658,13 +635,6 @@ inline C_BasePlayer *ToBasePlayer( C_BaseEntity *pEntity )
 inline C_BaseEntity *C_BasePlayer::GetUseEntity() 
 { 
 	return m_hUseEntity;
-}
-
-
-inline IClientVehicle *C_BasePlayer::GetVehicle() 
-{ 
-	C_BaseEntity *pVehicleEnt = m_hVehicle.Get();
-	return pVehicleEnt ? pVehicleEnt->GetClientVehicle() : NULL;
 }
 
 inline bool C_BasePlayer::IsObserver() const 
