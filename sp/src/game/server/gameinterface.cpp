@@ -91,6 +91,7 @@
 #include "serverbenchmark_base.h"
 #include "querycache.h"
 #include "movevars_shared.h"
+#include "server_events.h"
 
 
 #ifdef USE_NAV_MESH
@@ -1126,6 +1127,8 @@ void CServerGameDLL::GameServerSteamAPIActivated( void )
 	GCClientSystem()->GameServerActivate();
 	InventoryManager()->GameServerSteamAPIActivated();
 #endif
+
+	Momentum::OnMapStart();
 }
 
 //-----------------------------------------------------------------------------
@@ -1330,6 +1333,8 @@ void CServerGameDLL::OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_
 // Called when a level is shutdown (including changing levels)
 void CServerGameDLL::LevelShutdown( void )
 {
+	Momentum::OnMapEnd();
+
 #ifndef NO_STEAM
 	IGameSystem::LevelShutdownPreClearSteamAPIContextAllSystems();
 
