@@ -13,7 +13,7 @@
 
 void CServerGameClients::GetPlayerLimits( int& minplayers, int& maxplayers, int &defaultMaxPlayers ) const
 {
-	minplayers = defaultMaxPlayers = 1; 
+	minplayers = defaultMaxPlayers = 2; 
 	maxplayers = MAX_PLAYERS;
 }
 
