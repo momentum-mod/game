@@ -37,6 +37,12 @@
 	}
 	"6"
 	{
+		"label" ""
+		"command" ""
+		"InGameOrder" "90"
+	}
+	"7"
+	{
 		"label" "#GameUI_GameMenu_Quit"
 		"command" "QuitNoConfirm"
 		"InGameOrder" "100"
