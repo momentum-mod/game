@@ -69,7 +69,7 @@
 			game+game_write		hl2
 
 			// Where the game's binaries are
-			gamebin				hl2_mod/bin
+			gamebin				momentum/bin
 
 			// Last, mount in shared HL2 loose files
 			game				|all_source_engine_paths|hl2
