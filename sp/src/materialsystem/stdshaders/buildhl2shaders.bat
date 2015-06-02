@@ -5,7 +5,7 @@ rem ================================
 rem ==== MOD PATH CONFIGURATIONS ===
 
 rem == Set the absolute path to your mod's game directory here ==
-set GAMEDIR=%cd%\..\..\..\game\mod_hl2
+set GAMEDIR=%cd%\..\..\..\game\momentum
 
 rem == Set the relative or absolute path to Source SDK Base 2013 Singleplayer\bin ==
 set SDKBINDIR=D:\SteamBeta\SteamApps\common\Source SDK Base 2013 Singleplayer\bin
