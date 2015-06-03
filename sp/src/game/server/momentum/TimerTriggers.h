@@ -1,67 +1,55 @@
-#include "cbase.h"
+#ifndef TIMERTRIGGERS_H
+#define TIMERTRIGGERS_H
+#ifdef _WIN32
+#pragma once
+#endif
+
 #include "triggers.h"
-#include "Timer.h"
-#include "hl2_player.h"
+
+// CBaseMomentumTrigger
+class CBaseMomentumTrigger: public CTriggerMultiple
+{
+	DECLARE_CLASS(CBaseMomentumTrigger, CTriggerMultiple);
+
+public:
+	virtual void Spawn();
+};
 
 
-class CTriggerStart : public CTriggerMultiple {
+// CTriggerTimerStart
+class CTriggerTimerStart : public CBaseMomentumTrigger
+{
+	DECLARE_CLASS(CTriggerTimerStart, CBaseMomentumTrigger);
 
-	DECLARE_CLASS(CTriggerStart, CTriggerMultiple);
 public:
 	void EndTouch(CBaseEntity*);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_start, CTriggerStart);
 
-
-class CTriggerEnd : public CTriggerMultiple {
-
-	DECLARE_CLASS(CTriggerEnd, CTriggerMultiple);
+// CTriggerTimerStop
+class CTriggerTimerStop : public CBaseMomentumTrigger
+{
+	DECLARE_CLASS(CTriggerTimerStop, CBaseMomentumTrigger);
 
 public:
 	void StartTouch(CBaseEntity*);
-
-
 };
 
-LINK_ENTITY_TO_CLASS(trigger_end, CTriggerEnd);
 
-
-class CTriggerCheckpoint : public CTriggerMultiple {
-
+// CTriggerCheckpoint
+class CTriggerCheckpoint : public CBaseMomentumTrigger
+{
 	DECLARE_CLASS(CTriggerCheckpoint, CTriggerMultiple);
 	DECLARE_DATADESC();
+
 public:
 	void StartTouch(CBaseEntity*);
-	int getCheckpointNumber();
+
+	int GetCheckpointNumber();
 
 private:
-	int checkpointNumber = 0;
-
-
-
-
+	int m_iCheckpointNumber;
 };
 
-BEGIN_DATADESC(CTriggerCheckpoint)
 
-DEFINE_KEYFIELD(checkpointNumber, FIELD_INTEGER, "number")
-
-END_DATADESC()
-
-LINK_ENTITY_TO_CLASS(trigger_checkpoint, CTriggerCheckpoint);
-
-
-class TriggerCommands
-{
-public:
-	static void ResetToStart();
-	static void ResetToCheckpoint();
-	static void SetStartTrigger(CTriggerStart* trigger);
-	static void SetCheckpointTrigger(CTriggerCheckpoint* trigger);
-};
-CTriggerStart* startTrigger;
-CTriggerCheckpoint* lastCheckpointTrigger;
-
-static ConCommand mom_reset_to_start("mom_reset_to_start", TriggerCommands::ResetToStart);
-static ConCommand mom_reset_to_checkpoint("mom_reset_to_checkpoint", TriggerCommands::ResetToCheckpoint);
+#endif // TIMERTRIGGERS_H

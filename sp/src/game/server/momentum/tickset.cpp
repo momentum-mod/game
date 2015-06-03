@@ -26,7 +26,7 @@ void* TickSet::FindPattern(const void* start, size_t length, const unsigned char
 			return const_cast<void*>(reinterpret_cast<const void*>(addr));
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 bool TickSet::TickInit()

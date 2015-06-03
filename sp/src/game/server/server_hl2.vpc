@@ -70,6 +70,7 @@ $Project "Server (HL2)"
 			$Folder "Timer"
 			{
 				$File	"momentum\Timer.h"
+				$File	"momentum\Timer.cpp"
 				$File   "momentum\TimerTriggers.h"
 				$File	"momentum\TimerTriggers.cpp"
 			}

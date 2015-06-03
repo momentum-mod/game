@@ -385,15 +385,6 @@ CHL2_Player::CHL2_Player()
 
 	m_flArmorReductionTime = 0.0f;
 	m_iArmorReductionFrom = 0;
-	currentCheckpoint = 0;
-}
-
-void CHL2_Player::SetCurrentCheckpoint(int newCheckpoint) {
-	currentCheckpoint = newCheckpoint;
-}
-
-int CHL2_Player::GetCurrentCheckpoint() {
-	return currentCheckpoint;
 }
 
 //

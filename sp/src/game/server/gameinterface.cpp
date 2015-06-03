@@ -118,8 +118,6 @@
 #include "replay/ireplaysystem.h"
 #endif
 
-#include "momentum/Timer.h"
-
 extern IToolFrameworkServer *g_pToolFrameworkServer;
 extern IParticleSystemQuery *g_pParticleSystemQuery;
 
@@ -446,7 +444,7 @@ void DrawAllDebugOverlays( void )
 	}
 
 	// PERFORMANCE: only do this in developer mode
-	if ( g_pDeveloper->GetInt() && !engine->IsDedicatedServer() )
+	if ( /*g_pDeveloper->GetInt() &&*/ !engine->IsDedicatedServer() )
 	{
 		// iterate through all objects for debug overlays
 		const CEntInfo *pInfo = gEntList.FirstEntInfo();

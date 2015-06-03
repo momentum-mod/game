@@ -1,61 +1,74 @@
 #include "cbase.h"
+#include "Timer.h"
 #include "TimerTriggers.h"
 #include "tier0/memdbgon.h"
 
-void CTriggerStart::EndTouch(CBaseEntity* other) {
-	Msg("dbg: CTriggerStart::EndTouch");
-	BaseClass::EndTouch(other);
-	CTimer::timer()->Start(gpGlobals->tickcount);
-	TriggerCommands::SetStartTrigger(this);
-}
-
-void CTriggerEnd::StartTouch(CBaseEntity* ent) {
-	BaseClass::EndTouch(ent);
-	CTimer::timer()->Stop(); 
-}
-
-
-void CTriggerCheckpoint::StartTouch(CBaseEntity* ent) {
-	BaseClass::StartTouch(ent);
-	((CHL2_Player*)ent)->SetCurrentCheckpoint(checkpointNumber);
-	TriggerCommands::SetCheckpointTrigger(this);
-}
-
-void TriggerCommands::ResetToStart()
+// CBaseMomentumTrigger
+void CBaseMomentumTrigger::Spawn()
 {
-	if (startTrigger)
+	BaseClass::Spawn();
+	m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+}
+
+
+// CTriggerTimerStart
+void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
+{
+	BaseClass::EndTouch(pOther);
+
+	if (pOther->IsPlayer())
 	{
-		UTIL_SetOrigin(UTIL_GetLocalPlayer(), startTrigger->WorldSpaceCenter(), true);
+		g_Timer.Start(gpGlobals->tickcount);
+		g_Timer.SetStartTrigger(this);
 	}
 }
 
-void TriggerCommands::ResetToCheckpoint()
+LINK_ENTITY_TO_CLASS(trigger_timer_start, CTriggerTimerStart);
+
+
+// CTriggerTimerStop
+void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
-	if (startTrigger)
-	{
-		UTIL_SetOrigin(UTIL_GetLocalPlayer(), lastCheckpointTrigger->WorldSpaceCenter(), true);
-	}
+	BaseClass::EndTouch(pOther);
+
+	if (pOther->IsPlayer())
+		g_Timer.Stop();
 }
 
-void TriggerCommands::SetStartTrigger(CTriggerStart* trigger)
+LINK_ENTITY_TO_CLASS(trigger_timer_stop, CTriggerTimerStop);
+
+
+// CTriggerCheckpoint
+void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 {
-	startTrigger = trigger;
+	BaseClass::StartTouch(pOther);
+
+	if (pOther->IsPlayer())
+		g_Timer.SetCurrentCheckpoint(this);
 }
 
-void TriggerCommands::SetCheckpointTrigger(CTriggerCheckpoint* trigger)
+int CTriggerCheckpoint::GetCheckpointNumber()
 {
-	lastCheckpointTrigger = trigger;
+	return m_iCheckpointNumber;
 }
+
+LINK_ENTITY_TO_CLASS(trigger_checkpoint, CTriggerCheckpoint);
+
+BEGIN_DATADESC(CTriggerCheckpoint)
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "number")
+END_DATADESC()
+
 
 static void TestCreateTriggerStart(void)
 {
-	CTriggerStart *pTrigger = (CTriggerStart *)CreateEntityByName("trigger_start");
+	CTriggerTimerStart *pTrigger = (CTriggerTimerStart *)CreateEntityByName("trigger_timer_start");
 	if (pTrigger)
 	{
 		pTrigger->Spawn();
-		pTrigger->SetAbsOrigin( UTIL_GetLocalPlayer()->GetAbsOrigin() );
-		pTrigger->SetSize( Vector(-256, -256, -256), Vector(256, 256, 256) );
-		pTrigger->SetSolid( SOLID_BBOX );
+		pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
+		pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
+		pTrigger->SetSolid(SOLID_BBOX);
+		pTrigger->SetName(MAKE_STRING("test123"));
 		// now use mom_reset_to_start
 	}
 }

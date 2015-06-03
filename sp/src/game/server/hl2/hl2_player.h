@@ -292,10 +292,6 @@ public:
 	//SPAWNING
 	CBaseEntity* EntSelectSpawnPoint();
 
-	//CHECKPOINT
-	void SetCurrentCheckpoint(int);
-	int GetCurrentCheckpoint();
-
 private:
 	CountdownTimer m_ladderSurpressionTimer;
 	Vector m_lastLadderNormal;
