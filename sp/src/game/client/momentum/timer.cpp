@@ -151,12 +151,12 @@ void C_Timer::Paint(void)
 {
 	float m_flSecondsTime = ((float)GetCurrentTime()) * gpGlobals->interval_per_tick;
 
-	int hours = m_flSecondsTime / 3600.0f;
-	int minutes = (((m_flSecondsTime / 3600.0f) - hours) * 60.0f);
-	int seconds = (((((m_flSecondsTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f);
-	int millis = (((((((m_flSecondsTime / 3600.0f) - hours) * 60.0f) - minutes) * 60.0f) - seconds) * 10000.0f);
+	int hours =        m_flSecondsTime / (60.0f * 60.0f);
+	int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
+	int seconds = fmod(m_flSecondsTime, 60.0f);
+	int millis =  fmod(m_flSecondsTime, 1.0f) * 10000.0f;
 
-	Q_snprintf(m_pszString, sizeof(m_pszString), "%02d:%02d:%02d.%04d",
+	Q_snprintf(m_pszString, sizeof(m_pszString), "%02d:%02d:%02d.%03d",
 		hours,//hours
 		minutes, //minutes
 		seconds,//seconds
