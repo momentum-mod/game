@@ -38,7 +38,17 @@ $Project "Client (HL2)"
 			}
 
 			$File	"momentum\client_events.h"
+
 			$File	"momentum\client_events.cpp"
+			{
+				$Configuration
+				{
+					$Compiler
+					{
+						$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+					}
+				}
+			}
 		}
 
 		$Folder	"HL2 DLL"

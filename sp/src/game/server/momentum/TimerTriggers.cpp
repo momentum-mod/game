@@ -7,6 +7,7 @@
 void CBaseMomentumTrigger::Spawn()
 {
 	BaseClass::Spawn();
+	// temporary
 	m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
 

@@ -52,7 +52,6 @@ $Project "Server (HL2)"
 		{
 			$Folder "Util"
 			{
-				$File	"momentum\Momentum_Util.h"
 				$File	"momentum\tickset.h"
 
 				$File	"momentum\tickset.cpp"
