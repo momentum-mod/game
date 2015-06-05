@@ -1,8 +1,8 @@
 #ifdef _WIN32
 #include <windows.h>
-#include "filesystem.h"
 #endif
 
+#include "filesystem.h"
 #include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
