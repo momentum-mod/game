@@ -20,6 +20,14 @@ void CTimer::Stop()
 	DispatchStateMessage();
 }
 
+void CTimer::DispatchResetMessage()
+{
+	CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+	user.MakeReliable();
+	UserMessageBegin(user, "Timer_Reset");
+	MessageEnd();
+}
+
 void CTimer::DispatchStateMessage()
 {
 	CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());

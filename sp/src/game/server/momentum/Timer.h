@@ -14,6 +14,7 @@ public:
 	void Start(int startTick);
 	void Stop();
 	void DispatchStateMessage();
+	void DispatchResetMessage();
 	bool IsRunning();
 	void SetRunning(bool running);
 	CTriggerTimerStart *GetStartTrigger();

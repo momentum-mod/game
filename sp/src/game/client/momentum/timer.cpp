@@ -38,10 +38,7 @@ public:
 		return bla_timer.GetBool() && CHudElement::ShouldDraw();
 	}
 	void MsgFunc_Timer_State(bf_read &msg);
-	void MsgFunc_Timer_Time(bf_read &msg);
-	void MsgFunc_Timer_StateChange(bf_read &msg);
-
-	//int getPos(const char*);
+	void MsgFunc_Timer_Reset(bf_read&);
 
 	virtual void Paint();
 	int GetCurrentTime();
@@ -84,6 +81,7 @@ protected:
 DECLARE_HUDELEMENT(C_Timer);
 
 DECLARE_HUD_MESSAGE(C_Timer, Timer_State);//TODO add more for checkpoints and ending
+DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
 
 C_Timer::C_Timer(const char *pElementName) :
 CHudElement(pElementName), Panel(NULL, "HudTimer")
@@ -94,6 +92,7 @@ CHudElement(pElementName), Panel(NULL, "HudTimer")
 void C_Timer::Init()
 {
 	HOOK_HUD_MESSAGE(C_Timer, Timer_State);
+	HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
 	initialTall = 48;
 	m_iTotalTicks = 0;
 	//Reset();
@@ -104,20 +103,6 @@ void C_Timer::Reset()
 	m_bIsRunning = false;
 	m_iTotalTicks = 0;
 }
-
-/*int CHudTimer::getPos(const char* map) {
-switch (timer_mode.GetInt())
-{
-case 0://generic timer
-break;
-case 1://splits by chapter
-break;
-case 2://splits by level
-break;
-default:
-return 0;
-}
-}*/
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
@@ -142,6 +127,11 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 	}
 }
 
+void C_Timer::MsgFunc_Timer_Reset(bf_read &msg) 
+{
+	Reset();
+}
+
 int C_Timer::GetCurrentTime() {
 	m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
 	return (m_bIsRunning ? m_iTotalTicks : 0);
@@ -154,7 +144,7 @@ void C_Timer::Paint(void)
 	int hours =        m_flSecondsTime / (60.0f * 60.0f);
 	int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
 	int seconds = fmod(m_flSecondsTime, 60.0f);
-	int millis =  fmod(m_flSecondsTime, 1.0f) * 10000.0f;
+	int millis =  fmod(m_flSecondsTime, 1.0f) * 1000.0f;
 
 	Q_snprintf(m_pszString, sizeof(m_pszString), "%02d:%02d:%02d.%03d",
 		hours,//hours

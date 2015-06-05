@@ -15,13 +15,24 @@ void CBaseMomentumTrigger::Spawn()
 // CTriggerTimerStart
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-	BaseClass::EndTouch(pOther);
-
 	if (pOther->IsPlayer())
 	{
 		g_Timer.Start(gpGlobals->tickcount);
 		g_Timer.SetStartTrigger(this);
 	}
+	BaseClass::EndTouch(pOther);
+}
+
+void CTriggerTimerStart::StartTouch(CBaseEntity *pOther) {
+	if (pOther->IsPlayer())
+	{
+		if (g_Timer.IsRunning())
+		{
+			g_Timer.Stop();
+			g_Timer.DispatchResetMessage();
+		}
+	}
+	BaseClass::StartTouch(pOther);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_timer_start, CTriggerTimerStart);
@@ -30,7 +41,7 @@ LINK_ENTITY_TO_CLASS(trigger_timer_start, CTriggerTimerStart);
 // CTriggerTimerStop
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
-	BaseClass::EndTouch(pOther);
+	BaseClass::StartTouch(pOther);
 
 	if (pOther->IsPlayer())
 		g_Timer.Stop();

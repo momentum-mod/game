@@ -23,6 +23,7 @@ class CTriggerTimerStart : public CBaseMomentumTrigger
 
 public:
 	void EndTouch(CBaseEntity*);
+	void StartTouch(CBaseEntity*);
 };
 
 
