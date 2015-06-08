@@ -76,6 +76,7 @@ $Project "Server (HL2)"
 
 			$File	"momentum\server_events.h"
 			$File	"momentum\server_events.cpp"
+			$File   "momentum\weapon_momentum_gun.cpp"
 		}
 
 		$Folder	"HL2 DLL"

@@ -49,6 +49,8 @@ $Project "Client (HL2)"
 					}
 				}
 			}
+
+			$File "momentum\weapon_momentum_gun.cpp"
 		}
 
 		$Folder	"HL2 DLL"

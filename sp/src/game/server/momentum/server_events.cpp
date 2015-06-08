@@ -16,9 +16,9 @@ void OnMapStart(const char *pMapName)
 	if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
 		sv_maxvelocity.SetValue(3500);
 	else
-		sv_maxvelocity.SetValue(10000000);
+		sv_maxvelocity.SetValue(10000);
 
-	// do stuff like creating zones here
+	// TODO do stuff like creating zones here
 }
 
 void OnMapEnd(const char *pMapName)

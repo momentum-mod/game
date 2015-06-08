@@ -839,6 +839,15 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		}
 	}
 
+	// Latch in impulse.
+	if (ucmd->impulse)
+	{
+				// Discard impulse commands unless the vehicle allows them.
+					// FIXME: UsingStandardWeapons seems like a bad filter for this. 
+					// The flashlight is an impulse command, for example.
+			player->m_nImpulse = ucmd->impulse;
+	}
+
 	// Get button states
 	player->UpdateButtonState( ucmd->buttons );
 

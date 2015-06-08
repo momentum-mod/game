@@ -1924,21 +1924,19 @@ int CHL2_Player::FlashlightIsOn(void)
 {
 	return IsEffectActive(EF_DIMLIGHT);
 }
-
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CHL2_Player::FlashlightTurnOn(void)
 {
-	if (m_bFlashlightDisabled)
-		return;
+	//if (m_bFlashlightDisabled)
+	//	return;
 
-	if (Flashlight_UseLegacyVersion())
+	/*if (Flashlight_UseLegacyVersion())
 	{
 		if (!SuitPower_AddDevice(SuitDeviceFlashlight))
 			return;
-	}
-
+	}*/
+	Msg("TURNING FLASHLIGHT ON\n");
 	AddEffects(EF_DIMLIGHT);
 	EmitSound("HL2Player.FlashLightOn");
 
