@@ -77,20 +77,20 @@ void CThirdPersonManager::Update( void )
 {
 
 #ifdef CLIENT_DLL
-	if ( !sv_cheats )
-	{
-		sv_cheats = cvar->FindVar( "sv_cheats" );
-	}
+	//if ( !sv_cheats )
+	//{
+	//	sv_cheats = cvar->FindVar( "sv_cheats" );
+	//}
 
-	// If cheats have been disabled, pull us back out of third-person view.
-	if ( sv_cheats && !sv_cheats->GetBool() && GameRules() && GameRules()->AllowThirdPersonCamera() == false )
-	{
-		if ( (bool)input->CAM_IsThirdPerson() == true )
-		{
-			input->CAM_ToFirstPerson();
-		}
-		return;
-	}
+	//// If cheats have been disabled, pull us back out of third-person view.
+	//if ( sv_cheats && !sv_cheats->GetBool() && GameRules() && GameRules()->AllowThirdPersonCamera() == false )
+	//{
+	//	if ( (bool)input->CAM_IsThirdPerson() == true )
+	//	{
+	//		input->CAM_ToFirstPerson();
+	//	}
+	//	return;
+	//}
 
 	if ( IsOverridingThirdPerson() == false )
 	{

@@ -68,9 +68,6 @@ private:
 
 	virtual bool			ClientCommand( CBaseEntity *pEdict, const CCommand &args );
 	virtual void			PlayerSpawn( CBasePlayer *pPlayer );
-
-	virtual void			InitDefaultAIRelationships( void );
-	virtual const char*		AIClassText(int classType);
 	virtual const char *GetGameDescription( void ) { return "Half-Life 2"; }
 
 	// Ammo

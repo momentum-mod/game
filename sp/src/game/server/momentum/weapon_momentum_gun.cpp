@@ -159,7 +159,6 @@ void CWeaponMomentumGun::PrimaryAttack(void)
 
 		WeaponSound(SINGLE);
 		pPlayer->DoMuzzleFlash();
-
 		SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 		pPlayer->SetAnimation(PLAYER_ATTACK1);
 		//ToHL2Player(pPlayer)->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
@@ -217,7 +216,7 @@ void CWeaponMomentumGun::ItemPostFrame(void)
 
 	if (pOwner->m_nButtons & IN_ATTACK)
 	{
-		if (m_flAttackEnds<gpGlobals->curtime)
+		if (m_flAttackEnds < gpGlobals->curtime)
 		{
 			SendWeaponAnim(ACT_VM_IDLE);
 		}
@@ -422,5 +421,13 @@ void CWeaponMomentumGun::DoImpactEffect(trace_t &tr, int nDamageType)
 		te->GaussExplosion(filter, 0.0f, tr.endpos, tr.plane.normal, 0);
 		//m_nBulletType = GetAmmoDef()->Index("GaussEnergy");
 		//UTIL_ImpactTrace(&tr, m_nBulletType);
+	}
+}
+
+CON_COMMAND(holster_weapon, "Holster test.") {
+	CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+	if (pPlayer) {
+		CBaseCombatWeapon* active = pPlayer->GetActiveWeapon();
+		active->SetWeaponVisible(!active->IsWeaponVisible());
 	}
 }
