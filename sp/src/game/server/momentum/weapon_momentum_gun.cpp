@@ -398,7 +398,7 @@ void CWeaponMomentumGun::DrawBeam(const Vector &startPos, const Vector &endPos, 
 	pBeam->PointEntInit(endPos, this);
 
 	// This makes it so that the laser appears to come from the muzzle of the pistol
-	pBeam->SetEndAttachment(LookupAttachment("Muzzle"));
+	pBeam->SetEndAttachment(LookupAttachment("1"));
 	pBeam->SetWidth(width);
 	//	pBeam->SetEndWidth( 0.05f );
 
