@@ -359,7 +359,8 @@ void CWeaponMomentumGun::CheckZoomToggle(void)
 
 const Vector& CWeaponMomentumGun::GetBulletSpread(void)
 {
-	Vector& cone = VECTOR_CONE_1DEGREES;
+	static Vector cone;
+	cone = VECTOR_CONE_1DEGREES;
 	//TODO override this with CSS weapon pickups ingame
 
 
