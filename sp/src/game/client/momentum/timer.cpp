@@ -18,11 +18,11 @@ using namespace vgui;
 
 #define BUFSIZE (sizeof("00:00:00.0000")+1)
 
-static ConVar bla_timer("gh_timer", "1",
+static ConVar bla_timer("mom_timer", "1",
 	FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
 	"Turn the timer display on/off");
 
-static ConVar timer_mode("gh_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
+static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
 	"Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Chapter\n2 = Splits by Level");
 
 class C_Timer : public CHudElement, public Panel

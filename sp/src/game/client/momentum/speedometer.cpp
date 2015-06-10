@@ -13,11 +13,11 @@
 
 using namespace vgui;
 
-static ConVar gh_speedmeter_hvel("gh_speedmeter_hvel", "0", (FCVAR_CLIENTDLL | FCVAR_ARCHIVE), "If set to 1, doesn't take the vertical velocity component into account.");
+static ConVar speedmeter_hvel("mom_speedmeter_hvel", "0", (FCVAR_CLIENTDLL | FCVAR_ARCHIVE), "If set to 1, doesn't take the vertical velocity component into account.");
 
 //Would be better if a callback function was added (To change the Label text if it's changed in-game), maybe reusing Reset()?
 //Until I figure out how callback functions work (or until someone adds it), I'll set the label text at each Think cycle. It's not optimal, and must be removed sometime
-static ConVar gh_speedmeter_units("gh_speedmeter_units", "1",(FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL),"Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.",true, 1, true, 3);
+static ConVar speedmeter_units("mom_speedmeter_units", "1",(FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL),"Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.",true, 1, true, 3);
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
@@ -37,7 +37,7 @@ public:
 	virtual void Reset()
 	{
 		//We set the proper LabelText based on gh_speedmeter_units value
-		switch ((int)gh_speedmeter_units.GetFloat()) 
+		switch ((int)speedmeter_units.GetFloat()) 
 		{
 		case 1:
 			SetLabelText(L"UPS");
@@ -76,18 +76,18 @@ void CHudSpeedMeter::OnThink()
 		velocity = player->GetLocalVelocity();
 
 		// Remove the vertical component if necessary
-		if (gh_speedmeter_hvel.GetBool())
+		if (speedmeter_hvel.GetBool())
 		{
 			velocity.z = 0;
 		}
 
 		//Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
 		float vel = (float)velocity.Length();
-		switch ((int)gh_speedmeter_units.GetFloat())
+		switch ((int)speedmeter_units.GetFloat())
 		{
 		case 1:
 			//We do nothing but break out of the switch, as default vel is already in UPS
-			SetLabelText(L"USP");
+			SetLabelText(L"UPS");
 			break;
 		case 2:
 			//1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
@@ -101,7 +101,7 @@ void CHudSpeedMeter::OnThink()
 			break;
 		default:
 			//We do nothing but break out of the switch, as default vel is already in UPS
-			SetLabelText(L"USP");
+			SetLabelText(L"UPS");
 			break;
 		}
 		//With this round we ensure that the speed is as precise as possible, insetad of taking the floor value of the float
