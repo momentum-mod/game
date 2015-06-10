@@ -3,6 +3,8 @@
 #include "hud_numericdisplay.h"
 #include "iclientmode.h"
 
+#include <math.h>
+
 #include <vgui_controls/Panel.h>
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
@@ -14,7 +16,8 @@ using namespace vgui;
 static ConVar gh_speedmeter_hvel("gh_speedmeter_hvel", "0", (FCVAR_CLIENTDLL | FCVAR_ARCHIVE), "If set to 1, doesn't take the vertical velocity component into account.");
 
 //Would be better if a callback function was added (To change the Label text if it's changed in-game), maybe reusing Reset()?
-static ConVar gh_speedmeter_units("gh_speedmeter_units", "1",(FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL),"Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Meters per second. \n 3: Inches per second.",true, 1, true, 3);
+//Until I figure out how callback functions work (or until someone adds it), I'll set the label text at each Think cycle. It's not optimal, and must be removed sometime
+static ConVar gh_speedmeter_units("gh_speedmeter_units", "1",(FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL),"Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.",true, 1, true, 3);
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
@@ -40,10 +43,10 @@ public:
 			SetLabelText(L"UPS");
 			break;
 		case 2:
-			SetLabelText(L"m/s");
+			SetLabelText(L"KM/H");
 			break;
 		case 3:
-			SetLabelText(L"in/s");
+			SetLabelText(L"MPH");
 			break;
 		default:
 			//If its value is not supported, USP is assumed (Even though this shouln't happen as Max and Min values are set)
@@ -84,21 +87,25 @@ void CHudSpeedMeter::OnThink()
 		{
 		case 1:
 			//We do nothing but break out of the switch, as default vel is already in UPS
+			SetLabelText(L"USP");
 			break;
 		case 2:
-			//1 unit = 19.05mm -> 0.01905m --Small enough to approximate to 0.02--
-			vel = vel * 0.02;
+			//1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
+			vel = vel * 0.06858;
+			SetLabelText(L"KM/H");
 			break;
 		case 3:
-			//1 unit = 0.75"
-			//I'm not very used to imperial system.Maybe other scale but inches would be better?
-			vel = vel * 0.75;
+			//1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH 
+			vel = vel * 0.04262;
+			SetLabelText(L"MPH");
 			break;
 		default:
 			//We do nothing but break out of the switch, as default vel is already in UPS
+			SetLabelText(L"USP");
 			break;
 		}
-		SetDisplayValue((int)vel);
+		//With this round we ensure that the speed is as precise as possible, insetad of taking the floor value of the float
+		SetDisplayValue(round(vel));
 	}
 }
 
