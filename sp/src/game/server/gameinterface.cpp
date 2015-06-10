@@ -1099,6 +1099,8 @@ void CServerGameDLL::ServerActivate( edict_t *pEdictList, int edictCount, int cl
 #ifdef NEXT_BOT
 	TheNextBots().OnMapLoaded();
 #endif
+
+	Momentum::OnMapStart(gpGlobals->mapname.ToCStr());
 }
 
 //-----------------------------------------------------------------------------
@@ -1118,8 +1120,6 @@ void CServerGameDLL::GameServerSteamAPIActivated( void )
 	GCClientSystem()->GameServerActivate();
 	InventoryManager()->GameServerSteamAPIActivated();
 #endif
-
-	Momentum::OnMapStart(gpGlobals->mapname.ToCStr());
 }
 
 //-----------------------------------------------------------------------------
