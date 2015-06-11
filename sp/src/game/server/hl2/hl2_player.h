@@ -380,7 +380,8 @@ private:
 	
 	friend class CHL2GameMovement;
 
-	int currentCheckpoint;
+	// momentum
+	float				m_flLastAutoAttack;
 };
 
 
