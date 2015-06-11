@@ -16,12 +16,10 @@ void OnServerDLLInit()
 void OnMapStart(const char *pMapName)
 {
 	// temporary
-	if (!Q_strnicmp(pMapName, "surf_", Q_strlen("surf_") + 1)) {
+	if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
 		sv_maxvelocity.SetValue(3500);
-	}
-	else {
+	else
 		sv_maxvelocity.SetValue(10000);
-	}
 
 	// (Re-)Load zones
 	if (zones)
