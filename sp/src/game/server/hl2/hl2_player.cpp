@@ -813,8 +813,6 @@ void CHL2_Player::PreThink(void)
 
 	if (gpGlobals->curtime - m_flLastAutoAttack > 1.0f) // once per sec
 	{
-		m_flLastAutoAttack = gpGlobals->curtime;
-
 		for (int i = 0; i < sizeof(targets); i++)
 		{
 			CBaseEntity *target = FindEntityClassForward(this, targets[i]);
@@ -822,6 +820,7 @@ void CHL2_Player::PreThink(void)
 			{
 				CTakeDamageInfo dmg(this, this, 9001.0f, DMG_GENERIC);
 				target->TakeDamage(dmg);
+				m_flLastAutoAttack = gpGlobals->curtime;
 				break;
 			}
 		}
