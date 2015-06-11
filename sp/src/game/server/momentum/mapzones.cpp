@@ -6,11 +6,10 @@
 CMapzoneData::CMapzoneData(const char *pMapName)
 {
 	// Generate file path for zone file
-	int pathLength = strlen(mapPath) + strlen(pMapName) + strlen(zoneFileEnding) + 1;
-	char* zoneFilePath = new char[pathLength];
+	char zoneFilePath[MAX_PATH];
 	Q_strcpy(zoneFilePath, mapPath);
-	Q_strcat(zoneFilePath, pMapName, pathLength);
-	Q_strncat(zoneFilePath, zoneFileEnding, pathLength);
+	Q_strcat(zoneFilePath, pMapName, MAX_PATH);
+	Q_strncat(zoneFilePath, zoneFileEnding, MAX_PATH);
 
 	Log("Looking for zone file: ");
 	Log(zoneFilePath);
