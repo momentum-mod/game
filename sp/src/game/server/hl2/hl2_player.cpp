@@ -805,26 +805,6 @@ void CHL2_Player::PreThink(void)
 			m_nButtons &= ~(IN_ATTACK | IN_ATTACK2);
 		}
 	}
-
-	// momentum: break stuff and shoot targets by looking at them
-	extern CBaseEntity *FindEntityClassForward(CBasePlayer *pMe, char *classname); // player.cpp
-
-	static char *targets[] = { "func_breakable", "func_guntarget" };
-
-	if (gpGlobals->curtime - m_flLastAutoAttack > 1.0f) // once per sec
-	{
-		for (int i = 0; i < sizeof(targets); i++)
-		{
-			CBaseEntity *target = FindEntityClassForward(this, targets[i]);
-			if (target)
-			{
-				CTakeDamageInfo dmg(this, this, 9001.0f, DMG_GENERIC);
-				target->TakeDamage(dmg);
-				m_flLastAutoAttack = gpGlobals->curtime;
-				break;
-			}
-		}
-	}
 }
 
 void CHL2_Player::PostThink(void)
