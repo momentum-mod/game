@@ -904,7 +904,7 @@
 		"leftText"		"0.00"
 		"rightText"		"1.00"
 		"minvalue"		"90"
-		"maxvalue"		"180"
+		"maxvalue"		"179"
 		"cvar_name"		"fov_desired"
 		"allowoutofrange"		"0"
 	}
