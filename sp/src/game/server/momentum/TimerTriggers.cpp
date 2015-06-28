@@ -19,9 +19,9 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
 	if (pOther->IsPlayer())
 	{
-		sv_maxvelocity.SetValue(CBaseMomentumTrigger::PreMaxVel);
 		g_Timer.Start(gpGlobals->tickcount);
 		g_Timer.SetStartTrigger(this);
+		UTIL_GetLocalPlayer()->SetLocalVelocity(Vector(0));
 	}
 	BaseClass::EndTouch(pOther);
 }
@@ -29,8 +29,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther) {
 	if (pOther->IsPlayer())
 	{
-		CBaseMomentumTrigger::PreMaxVel = sv_maxvelocity.GetInt();
-		sv_maxvelocity.SetValue(260);
 		if (g_Timer.IsRunning())
 		{
 			g_Timer.Stop();

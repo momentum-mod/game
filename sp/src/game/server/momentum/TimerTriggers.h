@@ -13,7 +13,6 @@ class CBaseMomentumTrigger: public CTriggerMultiple
 
 public:
 	virtual void Spawn();
-	int PreMaxVel;
 };
 
 
