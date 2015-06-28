@@ -37,7 +37,7 @@ public:
 	virtual void Reset()
 	{
 		//We set the proper LabelText based on gh_speedmeter_units value
-		switch ((int)speedmeter_units.GetFloat()) 
+		switch (speedmeter_units.GetInt()) 
 		{
 		case 1:
 			SetLabelText(L"UPS");
@@ -83,7 +83,7 @@ void CHudSpeedMeter::OnThink()
 
 		//Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
 		float vel = (float)velocity.Length();
-		switch ((int)speedmeter_units.GetFloat())
+		switch (speedmeter_units.GetInt())
 		{
 		case 1:
 			//We do nothing but break out of the switch, as default vel is already in UPS
