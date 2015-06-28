@@ -21,7 +21,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 	{
 		g_Timer.Start(gpGlobals->tickcount);
 		g_Timer.SetStartTrigger(this);
-		UTIL_GetLocalPlayer()->SetLocalVelocity(Vector(0));
+		UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
 	}
 	BaseClass::EndTouch(pOther);
 }
