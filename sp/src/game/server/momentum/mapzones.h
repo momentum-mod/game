@@ -4,34 +4,32 @@ class CMapzone
 {
 public:
 	CMapzone::CMapzone();
-	CMapzone::CMapzone(const int type, const Vector pos, const Vector rot, const Vector scale);
-	CMapzone::CMapzone(const int type, const Vector pos, const Vector rot, const Vector scale, int index);
+	CMapzone::CMapzone(const int type, Vector* pos, Vector* rot, Vector* scale, const int index);
 	~CMapzone();
 
 	void SpawnZone();
 	void RemoveZone();
 
 private:
-	int type; // 0 = start, 1 = checkpoint, 2 = end
-	int index;
-	Vector pos;
-	Vector rot;
-	Vector scale;
+	int m_type; // 0 = start, 1 = checkpoint, 2 = end
+	int m_index; // Ignored when not a checkpoint
+	Vector* m_pos;
+	Vector* m_rot;
+	Vector* m_scale;
 };
 
 class CMapzoneData
 {
 public:
-	CMapzoneData(const char *pMapName);
+	CMapzoneData(const char *szMapName);
 	~CMapzoneData();
 
 	void SpawnMapZones();
 	void RemoveMapZones();
 
 private:
-	const char* mapPath = "maps/";
-	const char* zoneFileEnding = ".zon";
+	const char* c_mapPath = "maps/";
+	const char* c_zoneFileEnding = ".zon";
 
-	int zoneCount = 4;
-	CMapzone* zones;
+	CUtlVector<CMapzone*> m_zones;
 };
