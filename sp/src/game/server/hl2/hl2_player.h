@@ -380,8 +380,6 @@ private:
 	
 	friend class CHL2GameMovement;
 
-	// momentum
-	float				m_flLastAutoAttack;
 };
 
 

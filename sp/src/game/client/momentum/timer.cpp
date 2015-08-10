@@ -20,10 +20,10 @@ using namespace vgui;
 
 static ConVar bla_timer("mom_timer", "1",
 	FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-	"Turn the timer display on/off");
+	"Turn the timer display on/off\n");
 
 static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-	"Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Chapter\n2 = Splits by Level");
+	"Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Chapter\n");
 
 class C_Timer : public CHudElement, public Panel
 {
@@ -33,12 +33,14 @@ public:
 	C_Timer(const char *pElementName);
 	virtual void Init();
 	virtual void Reset();
+	virtual void OnThink();
 	virtual bool ShouldDraw()
 	{
 		return bla_timer.GetBool() && CHudElement::ShouldDraw();
 	}
 	void MsgFunc_Timer_State(bf_read &msg);
 	void MsgFunc_Timer_Reset(bf_read&);
+	ConVar *pCheats = cvar->FindVar("sv_cheats");
 
 	virtual void Paint();
 	int GetCurrentTime();
@@ -51,6 +53,7 @@ private:
 	char m_pszString[BUFSIZE];
 	CUtlMap<const char*, float> map;
 	int m_iTotalTicks;
+	bool m_bWereCheatsActivated=false;
 
 protected:
 	CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -104,6 +107,15 @@ void C_Timer::Reset()
 	m_iTotalTicks = 0;
 }
 
+void C_Timer::OnThink() 
+{
+	if (!m_bWereCheatsActivated && pCheats && (pCheats->GetInt() == 1))
+	{
+		m_bWereCheatsActivated = true;
+		DevMsg("CHEATS ENEABLED");
+	}
+}
+
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
 	bool started = msg.ReadOneBit();
@@ -112,7 +124,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	if (!pPlayer)
 		return;
-	DevMsg("TODO: run fancy effects for state `%s'\n",
+	DevMsg("TODO: run fancy effects for state '%s'\n",
 		started ? "started" : "stopped");
 	if (started)
 	{
@@ -122,6 +134,15 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 	else // stopped
 	{
 		// Compare times.
+		if (m_bWereCheatsActivated) //EY, CHEATER, STOP
+		{
+			DevMsg("sv_cheats was set to 1, thus making the run not valid \n");
+		}
+		else //He didn't cheat, we can carry on
+		{
+			DevMsg("%s \n", m_pszString);
+		}
+
 		//VGUI_ANIMATE("TimerStop");
 		//pPlayer->EmitSound("blamod.StopTimer");
 	}
@@ -139,6 +160,7 @@ int C_Timer::GetCurrentTime() {
 
 void C_Timer::Paint(void)
 {
+
 	float m_flSecondsTime = ((float)GetCurrentTime()) * gpGlobals->interval_per_tick;
 
 	int hours =        m_flSecondsTime / (60.0f * 60.0f);
