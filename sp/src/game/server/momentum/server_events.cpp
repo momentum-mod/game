@@ -27,7 +27,7 @@ void OnMapStart(const char *pMapName)
 		delete zones;
 		zones = NULL;
 	}
-
+	
 	zones = new CMapzoneData(pMapName);
 	zones->SpawnMapZones();
 }

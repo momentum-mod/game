@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "mapzones.h"
+#include "Timer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -14,10 +15,9 @@ CMapzoneData::CMapzoneData(const char *pMapName)
 	Log("Looking for zone file: ");
 	Log(zoneFilePath);
 	Log("\n");
-
+	
 	if (g_pFullFileSystem->FileExists(pMapName, "GAME"))
 		Log("Found file!\n");
-
 	// TODO: Load zone file and store info in memory
 }
 

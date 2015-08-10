@@ -123,7 +123,7 @@ public:
 	}
 };
 
-static ConCommand mom_reset_to_start("mom_reset", CTimerCommands::ResetToStart);
-static ConCommand mom_reset_to_checkpoint("mom_restart", CTimerCommands::ResetToCheckpoint);
+static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart);
+static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint);
 
 CTimer g_Timer;

@@ -80,6 +80,7 @@ static void TestCreateTriggerStart(void)
 		pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
 		pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
 		pTrigger->SetSolid(SOLID_BBOX);
+		pTrigger->AddEffects(0x020);
 		pTrigger->SetName(MAKE_STRING("test123"));
 		// now use mom_reset_to_start
 	}

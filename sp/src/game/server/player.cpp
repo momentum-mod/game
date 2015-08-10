@@ -3776,7 +3776,7 @@ void CBasePlayer::HandleFuncTrain(void)
 		m_iTrain |= TRAIN_ACTIVE|TRAIN_NEW;
 	}
 }
-
+static float m_flLastAutoAttack = 0;
 
 void CBasePlayer::PreThink(void)
 {						
