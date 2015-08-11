@@ -1341,9 +1341,7 @@ void CServerGameDLL::LevelShutdown( void )
 	// YWB:
 	// This entity pointer is going away now and is corrupting memory on level transitions/restarts
 	CSoundEnt::ShutdownSoundEnt();
-
 	gEntList.Clear();
-
 	InvalidateQueryCache();
 
 	IGameSystem::LevelShutdownPostEntityAllSystems();

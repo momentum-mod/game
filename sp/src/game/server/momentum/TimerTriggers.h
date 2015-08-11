@@ -47,6 +47,7 @@ public:
 	void StartTouch(CBaseEntity*);
 
 	int GetCheckpointNumber();
+	void SetCheckpointNumber(int);
 
 private:
 	int m_iCheckpointNumber;

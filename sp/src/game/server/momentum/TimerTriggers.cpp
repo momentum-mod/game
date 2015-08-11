@@ -21,7 +21,10 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 	{
 		g_Timer.Start(gpGlobals->tickcount);
 		g_Timer.SetStartTrigger(this);
-		UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
+		//TODO re-enable after more thought (Gocnak)
+		//Maybe count pre-hops and limit it to 4 like KSF does
+		//anyhow, the implementation below is too ignorant and ugly
+		//UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
 	}
 	BaseClass::EndTouch(pOther);
 }
@@ -67,7 +70,12 @@ int CTriggerCheckpoint::GetCheckpointNumber()
 	return m_iCheckpointNumber;
 }
 
-LINK_ENTITY_TO_CLASS(trigger_checkpoint, CTriggerCheckpoint);
+void CTriggerCheckpoint::SetCheckpointNumber(int newInt)
+{
+	m_iCheckpointNumber = newInt;
+}
+
+LINK_ENTITY_TO_CLASS(trigger_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
 DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "number")
@@ -84,14 +92,13 @@ static void TestCreateTriggerStart(void)
 		pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
 		pTrigger->SetSolid(SOLID_BBOX);
 		pTrigger->AddEffects(0x020);
-		pTrigger->SetName(MAKE_STRING("test123"));
 		pTrigger->SetName(MAKE_STRING("Start Trigger"));
 		// now use mom_reset_to_start
 	}
 }
 
 //Commented until further test
-/*static void TestCreateTriggerStop(void)
+static void TestCreateTriggerStop(void)
 {
 	CTriggerTimerStop *pTrigger = (CTriggerTimerStop *)CreateEntityByName("trigger_timer_stop");
 	if (pTrigger)
@@ -104,6 +111,26 @@ static void TestCreateTriggerStart(void)
 		// now use mom_reset_to_start
 	}
 }
-*/
+
+static void TestCreateTriggerCheckpoint(const CCommand &args)
+{
+	CTriggerCheckpoint *pTrigger = (CTriggerCheckpoint *)CreateEntityByName("trigger_timer_checkpoint");
+	if (pTrigger)
+	{
+		if (args.ArgC() > 0)
+		{
+			int index = Q_atoi(args.Arg(1));
+			pTrigger->Spawn();
+			pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
+			pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
+			pTrigger->SetSolid(SOLID_BBOX);
+			pTrigger->SetName(MAKE_STRING("Checkpoint Trigger"));
+			pTrigger->SetCheckpointNumber(index);
+		}
+		// now use mom_reset_to_start
+	}
+}
+
 static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test");
-//static ConCommand mom_createstop("mom_createstop", TestCreateTriggerStop, "Create StopTrigger test");
+static ConCommand mom_createstop("mom_createstop", TestCreateTriggerStop, "Create StopTrigger test");
+static ConCommand mom_createcheckpoint("mom_createcheckpoint", TestCreateTriggerCheckpoint, "Create CheckpointTrigger test");

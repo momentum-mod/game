@@ -5,8 +5,8 @@
 	title2		""
 	supportsvr	1
 	nodifficulty    1
-	developer	"Gocnak"
-	developer_url   "http://twitch.tv/gocnak"
+	developer	"Gocnak & Fatalis & TheAsuro & RabsRincon"
+	developer_url   "http://momentum-mod.org"
 	gamelogo	1
 
 	icon		"resource/icon"

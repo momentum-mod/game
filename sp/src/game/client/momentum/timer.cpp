@@ -23,7 +23,7 @@ static ConVar bla_timer("mom_timer", "1",
 	"Turn the timer display on/off\n");
 
 static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-	"Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Chapter\n");
+	"Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Checkpoint\n");
 
 class C_Timer : public CHudElement, public Panel
 {
@@ -40,8 +40,6 @@ public:
 	}
 	void MsgFunc_Timer_State(bf_read &msg);
 	void MsgFunc_Timer_Reset(bf_read&);
-	ConVar *pCheats = cvar->FindVar("sv_cheats");
-
 	virtual void Paint();
 	int GetCurrentTime();
 	bool m_bIsRunning;
@@ -109,6 +107,7 @@ void C_Timer::Reset()
 
 void C_Timer::OnThink() 
 {
+	ConVar *pCheats = cvar->FindVar("sv_cheats");
 	if (!m_bWereCheatsActivated && pCheats && (pCheats->GetInt() == 1))
 	{
 		m_bWereCheatsActivated = true;
@@ -154,8 +153,8 @@ void C_Timer::MsgFunc_Timer_Reset(bf_read &msg)
 }
 
 int C_Timer::GetCurrentTime() {
-	m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
-	return (m_bIsRunning ? m_iTotalTicks : 0);
+	if (m_bIsRunning) m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
+	return m_iTotalTicks;
 }
 
 void C_Timer::Paint(void)
