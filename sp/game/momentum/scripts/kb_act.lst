@@ -9,6 +9,11 @@
 "+jump"					"#Valve_Jump"
 "+duck"					"#Valve_Duck"
 "blank"			"=========================="
+"blank"			"#MOM_Controls_Title"
+"blank"			"=========================="
+"mom_restart"		"#MOM_Controls_Restart"
+"mom_reset"		"#MOM_Controls_Reset"
+"blank"			"=========================="
 "blank"			"#Valve_Combat_Title"
 "blank"			"=========================="
 "+attack"				"#Valve_Primary_Attack"
@@ -23,3 +28,4 @@
 "jpeg"					"#Valve_Take_Screen_Shot"
 "quit"					"#Valve_Quit_Game"
 "toggleconsole"			"#Valve_Console_Toggle"
+
