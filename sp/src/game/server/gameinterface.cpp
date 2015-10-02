@@ -787,7 +787,7 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
 	float toCheck = ((ConVar*)var)->GetFloat();
 	if (toCheck == fOldValue) return;
 	if (toCheck < 0.01f || toCheck > 0.015f) {
-		Warning("Cannot set a tickrate any lower than 66 or higher than 100!");
+		Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
 		var->SetValue(((ConVar*)var)->GetDefault());
 		return;
 	}

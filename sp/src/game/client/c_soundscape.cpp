@@ -39,7 +39,7 @@ struct loopingsound_t
 	bool		isAmbient;		// Ambient sounds have no spatialization - they play from everywhere
 };
 
-ConVar soundscape_fadetime( "soundscape_fadetime", "3.0", FCVAR_CHEAT, "Time to crossfade sound effects between soundscapes" );
+ConVar soundscape_fadetime( "soundscape_fadetime", "0.0", FCVAR_CHEAT, "Time to crossfade sound effects between soundscapes" );
 
 #include "interval.h"
 
