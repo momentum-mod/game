@@ -422,7 +422,6 @@ void CHudMenu::ShowMenu_KeyValueItems( KeyValues *pKV )
 	{
 		// Set this slot valid
 		m_bitsValidSlots |= (1<<i);
-
 		const char *pszItem = item->GetName();
 		const wchar_t *wLocalizedItem = g_pVGuiLocalize->Find( pszItem );
 
@@ -432,7 +431,6 @@ void CHudMenu::ShowMenu_KeyValueItems( KeyValues *pKV )
 
 		i++;
 	}
-
 	// put a cancel on the end
 	m_bitsValidSlots |= (1<<9);
 

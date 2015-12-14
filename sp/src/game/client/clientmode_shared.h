@@ -18,6 +18,7 @@
 
 class CBaseHudChat;
 class CBaseHudWeaponSelection;
+class C_CP_Menu;
 class CViewSetup;
 class C_BaseEntity;
 class C_BasePlayer;
@@ -155,6 +156,7 @@ private:
 	CBaseHudChat			*m_pChatElement;
 	vgui::HCursor			m_CursorNone;
 	CBaseHudWeaponSelection *m_pWeaponSelection;
+	C_CP_Menu               *m_CP_Menu;
 	int						m_nRootSize[2];
 };
 

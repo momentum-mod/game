@@ -48,6 +48,7 @@ void CMapzone::SpawnZone()
 	case 0://start
 		m_trigger = (CTriggerTimerStart *)CreateEntityByName("trigger_timer_start");
 		m_trigger->SetName(MAKE_STRING("Start Trigger"));
+		g_Timer.SetStartTrigger((CTriggerTimerStart *)m_trigger);
 		break;
 	case 1://checkpoint
 		m_trigger = (CTriggerCheckpoint *)CreateEntityByName("trigger_timer_checkpoint");

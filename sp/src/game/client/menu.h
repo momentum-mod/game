@@ -39,11 +39,10 @@ public:
 
 private:
 	virtual void OnThink();
-	virtual void Paint();
 	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
-private:
+protected:
 	void		ProcessText( void );
-
+	virtual void Paint();
 	void PaintString( const wchar_t *text, int textlen, vgui::HFont& font, int x, int y );
 
 	struct ProcessedLine

@@ -36,6 +36,7 @@
 #include <vgui/ILocalize.h>
 #include "hud_vote.h"
 #include "ienginevgui.h"
+#include "hud_cp_menu.h"
 #include "sourcevr/isourcevirtualreality.h"
 #include "clienteffectprecachesystem.h"
 #if defined( _X360 )
@@ -280,6 +281,7 @@ ClientModeShared::ClientModeShared()
 {
 	m_pViewport = NULL;
 	m_pChatElement = NULL;
+	m_CP_Menu = NULL;
 	m_pWeaponSelection = NULL;
 	m_nRootSize[ 0 ] = m_nRootSize[ 1 ] = -1;
 
@@ -325,6 +327,9 @@ void ClientModeShared::Init()
 {
 	m_pChatElement = ( CBaseHudChat * )GET_HUDELEMENT( CHudChat );
 	Assert( m_pChatElement );
+
+	m_CP_Menu = (C_CP_Menu *)GET_HUDELEMENT(C_CP_Menu);
+	Assert(m_CP_Menu);
 
 	m_pWeaponSelection = ( CBaseHudWeaponSelection * )GET_HUDELEMENT( CHudWeaponSelection );
 	Assert( m_pWeaponSelection );
@@ -748,6 +753,13 @@ int ClientModeShared::HudElementKeyInput( int down, ButtonCode_t keynum, const c
 		}
 	}
 
+	if (m_CP_Menu)
+	{
+		if (!m_CP_Menu->KeyInput(down, keynum, pszCurrentBinding))
+		{
+			return 0;
+		}
+	}
 #if defined( REPLAY_ENABLED )
 	if ( m_pReplayReminderPanel )
 	{

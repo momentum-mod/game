@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "movevars_shared.h"
 #include "mapzones.h"
+#include "Timer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -10,7 +11,7 @@ namespace Momentum {
 
 	void OnServerDLLInit()
 	{
-
+		//TODO connect to site
 	}
 
 	void OnMapStart(const char *pMapName)
@@ -39,6 +40,9 @@ namespace Momentum {
 			delete zones;
 			zones = NULL;
 		}
+		g_Timer.SetCurrentCheckpointTrigger(NULL);
+		g_Timer.SetStartTrigger(NULL);
+		g_Timer.RemoveAllCheckpoints();
 	}
 
 } // namespace Momentum

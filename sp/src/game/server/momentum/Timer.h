@@ -4,6 +4,8 @@
 #pragma once
 #endif
 
+#include "utlvector.h"
+
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
 
@@ -20,22 +22,53 @@ public:
 	CTriggerTimerStart *GetStartTrigger();
 	CTriggerCheckpoint *GetCurrentCheckpoint();
 	void SetStartTrigger(CTriggerTimerStart *pTrigger);
-	void SetCurrentCheckpoint(CTriggerCheckpoint *pTrigger);
+	void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger);
+	int GetCurrentCPMenuStep()
+	{
+		return m_iCurrentStepCP;
+	}
+	
+	//For leaderboard use later on
+	bool IsUsingCPMenu() 
+	{
+		return m_bUsingCPMenu;
+	}
+
+	void CreateCheckpoint(CBasePlayer*);
+	void RemoveLastCheckpoint();
+	void RemoveAllCheckpoints() 
+	{
+		checkpoints.RemoveAll();
+		m_iCurrentStepCP = -1;
+		m_bUsingCPMenu = false;
+	}
+	void TeleportToCP(CBasePlayer*, int);
+	void SetCurrentCPMenuStep(int newNum) 
+	{
+		m_iCurrentStepCP = newNum;
+	}
+	int GetCPCount() 
+	{
+		return checkpoints.Size();
+	}
 
 private:
-	void WriteMapFile();
-	// Caller is responsible for delete[]'ing the array.
-	char *GetMapFilePath();
 
 	int m_iStartTick;
 	bool m_bIsRunning;
-	Vector m_vStart;
-	Vector m_vGoal;
 	bool m_bIsPaused;
-	float m_flSecondsRecord;
 
 	CTriggerTimerStart *m_pStartTrigger;
 	CTriggerCheckpoint *m_pCurrentCheckpoint;
+
+	struct Checkpoint {
+		Vector pos;
+		Vector vel;
+		QAngle ang;
+	};
+	CUtlVector<Checkpoint> checkpoints;
+	int m_iCurrentStepCP = 0;
+	bool m_bUsingCPMenu = false;
 };
 
 extern CTimer g_Timer;

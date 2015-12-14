@@ -4,6 +4,7 @@
 #include "hud_macros.h"
 #include "iclientmode.h"
 #include "view.h"
+#include "menu.h"
 
 using namespace vgui;
 
@@ -176,10 +177,12 @@ void C_Timer::Paint(void)
 	// msg.ReadString(m_pszString, sizeof(m_pszString));
 	g_pVGuiLocalize->ConvertANSIToUnicode(
 		m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
-
 	// Draw the text label.
 	surface()->DrawSetTextFont(m_hTextFont);
 	surface()->DrawSetTextColor(GetFgColor());
+	/*surface()->DrawSetTextPos(digit2_xpos, digit2_ypos);
+	surface()->DrawUnicodeString(L"TEST");*/
+	
 	//current map can be found with:    g_pGameRules->MapName()
 
 	//surface()->DrawPrintText(L"TIME", wcslen(L"TIME"));

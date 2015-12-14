@@ -63,38 +63,34 @@ void CTimer::SetStartTrigger(CTriggerTimerStart *pTrigger)
 	m_pStartTrigger = pTrigger;
 }
 
-void CTimer::SetCurrentCheckpoint(CTriggerCheckpoint *pTrigger)
+void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
 {
 	m_pCurrentCheckpoint = pTrigger;
 }
 
-void CTimer::WriteMapFile()
+void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
 {
-	char *pszPath = GetMapFilePath();
-	FileHandle_t fh = filesystem->Open(pszPath, "w", "MOD");
-	if (fh)
-	{
-		filesystem->FPrintf(fh, "%f %f %f\n",
-			m_vStart.x, m_vStart.y, m_vStart.z);
-		filesystem->FPrintf(fh, "%f %f %f\n",
-			m_vGoal.x, m_vGoal.y, m_vGoal.z);
-		filesystem->FPrintf(fh, "%f", m_flSecondsRecord);
-		filesystem->Close(fh);
-	}
-	delete[] pszPath;
+	if (!pPlayer) return;
+	Checkpoint c;
+	c.ang = pPlayer->GetAbsAngles();
+	c.pos = pPlayer->GetAbsOrigin();
+	c.vel = pPlayer->GetAbsVelocity();
+	checkpoints.AddToTail(c);
+	m_iCurrentStepCP++;
 }
 
-// Caller is responsible for delete[]'ing the array.
-char *CTimer::GetMapFilePath()
+void CTimer::RemoveLastCheckpoint()
 {
-	const char *pszMapname = (gpGlobals->mapname).ToCStr();
-	size_t sz = Q_strlen("maps/") + strlen(pszMapname) + Q_strlen(".bla") + 1;
-	char *pszPath = new char[sz];
-	Q_strncpy(pszPath, "maps/", sz);
-	Q_strncat(pszPath, pszMapname, sz);
-	Q_strncat(pszPath, ".bla", sz);
-	Q_FixSlashes(pszPath);
-	return pszPath;
+	if (checkpoints.IsEmpty()) return;
+	checkpoints.Remove(m_iCurrentStepCP);
+	m_iCurrentStepCP--;//If there's one element left, we still need to decrease currentStep to -1
+}
+
+void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
+{
+	if (checkpoints.IsEmpty() || !cPlayer) return;
+	Checkpoint c = checkpoints[cpNum];
+	cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
 }
 
 
@@ -110,6 +106,7 @@ public:
 		if ((start = g_Timer.GetStartTrigger()) != NULL)
 		{
 			UTIL_SetOrigin(UTIL_GetLocalPlayer(), start->WorldSpaceCenter(), true);
+			UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
 		}
 	}
 
@@ -119,11 +116,63 @@ public:
 		if ((checkpoint = g_Timer.GetCurrentCheckpoint()) != NULL)
 		{
 			UTIL_SetOrigin(UTIL_GetLocalPlayer(), checkpoint->WorldSpaceCenter(), true);
+			UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
+		}
+	}
+
+	static void CPMenu(const CCommand &args)
+	{
+		if (g_Timer.IsRunning())
+		{
+			//TODO consider having a local timer running,
+			//as people may want to time their routes they're using CP menu for
+			//TODO consider KZ (lol)
+			//g_Timer.SetRunning(false);
+		}
+		if (args.ArgC() > 0)
+		{
+			int sel = Q_atoi(args[1]);
+			CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
+			switch (sel)
+			{
+			case 1://create a checkpoint
+				g_Timer.CreateCheckpoint(cPlayer);
+				break;
+
+			case 2://load previous checkpoint
+				g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+				break;
+
+			case 3://cycle through checkpoints forwards (+1 % length)
+				if (g_Timer.GetCPCount() > 0) 
+				{
+					g_Timer.SetCurrentCPMenuStep((g_Timer.GetCurrentCPMenuStep() + 1) % g_Timer.GetCPCount());
+					g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+				}
+				break;
+
+			case 4://cycle backwards through checkpoints
+				if (g_Timer.GetCPCount() > 0)
+				{
+					g_Timer.SetCurrentCPMenuStep(g_Timer.GetCurrentCPMenuStep() == 0 ? g_Timer.GetCPCount() - 1 : g_Timer.GetCurrentCPMenuStep() - 1);
+					g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+				}
+				break;
+
+			case 5://remove current checkpoint
+				g_Timer.RemoveLastCheckpoint();
+				break;
+
+			default:
+				//TODO emit a noise?
+				break;
+			}
 		}
 	}
 };
 
 static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart);
 static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint);
+static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE);
 
 CTimer g_Timer;

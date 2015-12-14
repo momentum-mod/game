@@ -37,6 +37,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther) {
 			g_Timer.Stop();
 			g_Timer.DispatchResetMessage();
 		}
+		g_Timer.SetCurrentCheckpointTrigger(NULL);
 	}
 	BaseClass::StartTouch(pOther);
 }
@@ -62,7 +63,14 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 	BaseClass::StartTouch(pOther);
 
 	if (pOther->IsPlayer())
-		g_Timer.SetCurrentCheckpoint(this);
+		g_Timer.SetCurrentCheckpointTrigger(this);
+}
+
+void CTriggerCheckpoint::EndTouch(CBaseEntity *pOther)
+{
+	if (pOther->IsPlayer())
+		g_Timer.SetCurrentCheckpointTrigger(this);
+	BaseClass::EndTouch(pOther);
 }
 
 int CTriggerCheckpoint::GetCheckpointNumber()

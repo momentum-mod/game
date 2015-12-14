@@ -45,7 +45,7 @@ class CTriggerCheckpoint : public CBaseMomentumTrigger
 
 public:
 	void StartTouch(CBaseEntity*);
-
+	void EndTouch(CBaseEntity*);
 	int GetCheckpointNumber();
 	void SetCheckpointNumber(int);
 

@@ -45,7 +45,14 @@
 	{
 		"label" "#GameUI_GameMenu_Quit"
 		"command" "QuitNoConfirm"
-		"InGameOrder" "100"
+		"InGameOrder" "110"
+	}
+	"8"
+	{
+		"label" "#GameUI_GameMenu_Disconnect"
+		"command" "engine disconnect"
+		"InGameOrder" "20"
+		"OnlyInGame" "1"
 	}
 }
 

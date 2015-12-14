@@ -35,6 +35,14 @@
                 "digit_xpos" "50"
                 "digit_ypos" "10"
         }
+	CPMenu
+	{
+		"fieldName" "CPMenu"
+		"PaintBackgroundType" "2"
+		"enabled" "1"
+		"visible" "1"
+		"MenuItemColor" "255 220 0 100"
+	}
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"
