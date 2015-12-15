@@ -76,6 +76,7 @@ void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
 	c.pos = pPlayer->GetAbsOrigin();
 	c.vel = pPlayer->GetAbsVelocity();
 	checkpoints.AddToTail(c);
+	//TODO: Create a decal to show where the checkpoint is?
 	m_iCurrentStepCP++;
 }
 
@@ -92,7 +93,6 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
 	Checkpoint c = checkpoints[cpNum];
 	cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
 }
-
 
 class CTimerCommands
 {
@@ -161,6 +161,10 @@ public:
 
 			case 5://remove current checkpoint
 				g_Timer.RemoveLastCheckpoint();
+				break;
+
+			case 6://remove every checkpoint
+				g_Timer.RemoveAllCheckpoints();
 				break;
 
 			default:

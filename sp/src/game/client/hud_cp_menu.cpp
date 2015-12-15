@@ -60,12 +60,14 @@ CON_COMMAND(showCPmenu, "Opens the Checkpoint Menu.\n")
 	if (!cpMenu || cpMenu->ShouldDraw()) return;
 	else {
 		KeyValues* pKv = new KeyValues("CP Menu");
-		pKv->AddSubKey(new KeyValues("Create Checkpoint"));
-		pKv->AddSubKey(new KeyValues("Teleport to Previous Checkpoint"));
-		pKv->AddSubKey(new KeyValues("Next Checkpoint"));
-		pKv->AddSubKey(new KeyValues("Last Checkpoint"));
-		pKv->AddSubKey(new KeyValues("Remove Current Checkpoint"));
-		//TODO clear all checkpoints option?
+		pKv->AddSubKey(new KeyValues("#MOM_Menu_CreateCP"));
+		pKv->AddSubKey(new KeyValues("#MOM_Menu_ToPreviousCP"));
+		pKv->AddSubKey(new KeyValues("#MOM_Menu_ToNextCP"));
+		pKv->AddSubKey(new KeyValues("#MOM_Menu_ToLastCP"));
+		pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveCurrentCP"));
+		//DONE: clear all checkpoints option?
+		// It was coded already, but not implemented. Any reason?
+		pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveEveryCP"));
 		cpMenu->ShowMenu_KeyValueItems(pKv);
 		pKv->deleteThis();
 	}
@@ -198,12 +200,12 @@ void C_CP_Menu::PaintString(const wchar_t *text, int textlen, vgui::HFont& font,
 {
 	vgui::surface()->DrawSetTextFont(font);
 	vgui::surface()->DrawSetTextPos(x, y);
-	
-	//vgui::surface()->DrawUnicodeString(text); TODO look into this method rather than below
-	for (int ch = 0; ch < textlen; ch++)
+	//This seems to work just fine
+	vgui::surface()->DrawUnicodeString(text);
+	/*for (int ch = 0; ch < textlen; ch++)
 	{
 		vgui::surface()->DrawUnicodeChar(text[ch]);
-	}
+	}*/
 }
 
 void C_CP_Menu::ProcessText(void)
@@ -336,10 +338,18 @@ void C_CP_Menu::ShowMenu_KeyValueItems(KeyValues *pKV)
 		// Set this slot valid
 		m_bitsValidSlots |= (1 << i);
 		const char *pszItem = item->GetName();
-		wchar_t wLocalizedItem[256];
-		g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));
-		//const wchar_t *wLocalizedItem = g_pVGuiLocalize->Find(pszItem);
-		//TODO if implementing localization, check the above statement for nulls!
+		/*wchar_t wLocalizedItem[256];
+		g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));*/
+
+		// TODO: Make this realiable. Sometimes, it bugs out and prints every Item per line
+		wchar_t *wLocalizedItem = g_pVGuiLocalize->Find(pszItem);
+		if (wLocalizedItem == NULL)
+		{
+			//TODO: We should do something here.
+			// Something like this so we don't only output "(null)"?
+			// g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));
+			DevWarning("Missing localization for %s\n", pszItem);
+		}
 		nCount = _snwprintf(pWritePosition, nRemaining, L"%d. %ls\n", i + 1, wLocalizedItem);
 		nRemaining -= nCount;
 		pWritePosition += nCount;
@@ -349,7 +359,7 @@ void C_CP_Menu::ShowMenu_KeyValueItems(KeyValues *pKV)
 	// put a cancel on the end
 	m_bitsValidSlots |= (1 << 9);
 
-	nCount = _snwprintf(pWritePosition, nRemaining, L"0. %ls\n", L"Cancel");//g_pVGuiLocalize->Find("#Cancel"));
+	nCount = _snwprintf(pWritePosition, nRemaining, L"0. %ls\n", g_pVGuiLocalize->Find("#MOM_Menu_Cancel"));
 	nRemaining -= nCount;
 	pWritePosition += nCount;
 
