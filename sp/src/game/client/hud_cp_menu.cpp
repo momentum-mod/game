@@ -31,6 +31,7 @@ bool C_CP_Menu::ShouldDraw() {
 void C_CP_Menu::Init(void)
 {
 	//pKv->AddSubKey(new KeyValues("Create Checkpoint"));
+    m_nSelectedItem = -1;
 	m_bMenuTakesInput = false;
 	m_bMenuDisplayed = false;
 	m_bitsValidSlots = 0;
@@ -65,8 +66,6 @@ CON_COMMAND(showCPmenu, "Opens the Checkpoint Menu.\n")
 		pKv->AddSubKey(new KeyValues("#MOM_Menu_ToNextCP"));
 		pKv->AddSubKey(new KeyValues("#MOM_Menu_ToLastCP"));
 		pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveCurrentCP"));
-		//DONE: clear all checkpoints option?
-		// It was coded already, but not implemented. Any reason?
 		pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveEveryCP"));
 		cpMenu->ShowMenu_KeyValueItems(pKv);
 		pKv->deleteThis();
@@ -75,6 +74,20 @@ CON_COMMAND(showCPmenu, "Opens the Checkpoint Menu.\n")
 
 void C_CP_Menu::OnThink() 
 {
+    if (m_bMenuDisplayed)
+    {
+        if (m_nSelectedItem > 0)
+        {
+            if (gpGlobals->realtime - m_flSelectionTime >= 1.0f)
+                m_nSelectedItem = -1;//reset the selection so colors are fine
+        }
+
+        if (m_flShutoffTime > 0 && m_flShutoffTime <= gpGlobals->realtime)
+        {
+            m_bMenuDisplayed = false;
+        }
+    }
+
 	if (m_bMenuDisplayed && m_flShutoffTime > 0 && m_flShutoffTime <= gpGlobals->realtime) {
 		m_bMenuDisplayed = false;
 	}
@@ -87,10 +100,10 @@ void C_CP_Menu::HideMenu(void)
 	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuClose");
 }
 
-//OVERRIDE
 //Overridden because we want the menu to stay up after selection
 void C_CP_Menu::SelectMenuItem(int menu_item) 
 {
+	m_nSelectedItem = menu_item;
 	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
 	switch (menu_item)
 	{
@@ -98,7 +111,7 @@ void C_CP_Menu::SelectMenuItem(int menu_item)
 		HideMenu();
 		break;
 	default:
-		engine->ServerCmd(VarArgs("cpmenu %i", menu_item));
+		engine->ServerCmd(VarArgs("cpmenu %i", menu_item));//it was either this or a hudmessage
 		break;
 	}
 }
@@ -109,6 +122,7 @@ int	C_CP_Menu::KeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBin
 	if (down >= 1 && keynum >= KEY_0 && keynum <= KEY_9)
 	{
 		SelectMenuItem(keynum - KEY_0);
+        m_flSelectionTime = gpGlobals->realtime;
 		return 0;
 	}
 	else {
@@ -145,7 +159,6 @@ void C_CP_Menu::Paint()
 	for (int i = 0; i < c; i++)
 	{
 		ProcessedLine *line = &m_Processed[i];
-		//Assert(line);
 		if (!line) continue;
 
 		Color clr = line->menuitem != 0 ? itemColor : menuColor;
@@ -166,7 +179,6 @@ void C_CP_Menu::Paint()
 			drawLen *= m_flTextScan;
 		}
 
-		//vgui::surface()->DrawSetTextFont(line->menuitem != 0 ? m_hItemFont : m_hTextFont);
 		vgui::surface()->DrawSetTextFont(textFont);
 
 		PaintString(&g_szMenuString[line->startchar], drawLen,
@@ -200,12 +212,10 @@ void C_CP_Menu::PaintString(const wchar_t *text, int textlen, vgui::HFont& font,
 {
 	vgui::surface()->DrawSetTextFont(font);
 	vgui::surface()->DrawSetTextPos(x, y);
-	//This seems to work just fine
-	vgui::surface()->DrawUnicodeString(text);
-	/*for (int ch = 0; ch < textlen; ch++)
+	for (int ch = 0; ch < textlen; ch++)
 	{
 		vgui::surface()->DrawUnicodeChar(text[ch]);
-	}*/
+	}
 }
 
 void C_CP_Menu::ProcessText(void)
@@ -216,23 +226,24 @@ void C_CP_Menu::ProcessText(void)
 
 	int i = 0;
 	int startpos = i;
-	int menuitem = 0;
+    //int menuitem = 0;
+	int menuitem = 1;
 	while (i < 512)
 	{
 		wchar_t ch = g_szMenuString[i];
 		if (ch == 0)
 			break;
 
-		if (i == startpos &&
-			(ch == L'-' && g_szMenuString[i + 1] == L'>'))
-		{
-			// Special handling for menu item specifiers
-			swscanf(&g_szMenuString[i + 2], L"%d", &menuitem);
-			i += 2;
-			startpos += 2;
-
-			continue;
-		}
+        //the following code is defunct
+		//if (i == startpos &&
+		//	(ch == L'-' && g_szMenuString[i + 1] == L'>'))
+  //      {
+		//	// Special handling for menu item specifiers
+		//	swscanf(&g_szMenuString[i + 2], L"%d", &menuitem);
+		//	i += 2;
+		//	startpos += 2;
+		//	continue;
+		//}
 
 		// Skip to end of line
 		while (i < 512 && g_szMenuString[i] != 0 && g_szMenuString[i] != L'\n')
@@ -253,8 +264,8 @@ void C_CP_Menu::ProcessText(void)
 			m_Processed.AddToTail(line);
 		}
 
-		menuitem = 0;
-
+		//menuitem = 0;
+        menuitem++;
 		// Skip delimiter
 		if (g_szMenuString[i] == '\n')
 		{
@@ -262,7 +273,7 @@ void C_CP_Menu::ProcessText(void)
 		}
 		startpos = i;
 	}
-
+    menuitem = 0;
 	// Add final block
 	if (i - startpos >= 1)
 	{
@@ -313,7 +324,6 @@ void C_CP_Menu::ApplySchemeSettings(vgui::IScheme *pScheme)
 	Log("Y is %i\n", y);
 	GetHudSize(screenWide, screenTall);
 	SetBounds(0, y, screenWide, screenTall - y);
-	//Log("New bounds: %i %i %i %i\n", 0, y, screenWide, screenTall - y);
 
 	ProcessText();
 }
@@ -338,16 +348,13 @@ void C_CP_Menu::ShowMenu_KeyValueItems(KeyValues *pKV)
 		// Set this slot valid
 		m_bitsValidSlots |= (1 << i);
 		const char *pszItem = item->GetName();
-		/*wchar_t wLocalizedItem[256];
-		g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));*/
-
-		// TODO: Make this realiable. Sometimes, it bugs out and prints every Item per line
+		
 		wchar_t *wLocalizedItem = g_pVGuiLocalize->Find(pszItem);
 		if (wLocalizedItem == NULL)
 		{
 			//TODO: We should do something here.
 			// Something like this so we don't only output "(null)"?
-			// g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));
+			g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));
 			DevWarning("Missing localization for %s\n", pszItem);
 		}
 		nCount = _snwprintf(pWritePosition, nRemaining, L"%d. %ls\n", i + 1, wLocalizedItem);
@@ -367,6 +374,4 @@ void C_CP_Menu::ShowMenu_KeyValueItems(KeyValues *pKV)
 
 	m_bMenuDisplayed = true;
 	m_bMenuTakesInput = true;
-
-	//m_flSelectionTime = gpGlobals->curtime;
 }

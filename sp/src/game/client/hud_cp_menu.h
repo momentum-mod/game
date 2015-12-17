@@ -70,6 +70,7 @@ private:
 	int				m_fWaitingForMore;
 	int				m_nSelectedItem;
 	bool			m_bMenuTakesInput;
+    float           m_flSelectionTime;
 
 protected:
 	CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
@@ -83,7 +84,7 @@ protected:
 	CPanelAnimationVar(float, m_flSelectionAlphaOverride, "SelectionAlpha", "255.0");
 
 	CPanelAnimationVar(vgui::HFont, m_hItemFont, "ItemFont", "Default");
-	CPanelAnimationVar(vgui::HFont, m_hItemFontPulsing, "ItemFontPulsing", "MenuItemFontPulsing");
+    CPanelAnimationVar(vgui::HFont, m_hItemFontPulsing, "ItemFontPulsing", "Default");//"MenuItemFontPulsing");
 
 	CPanelAnimationVar(Color, m_MenuColor, "MenuColor", "BgColor");
 	CPanelAnimationVar(Color, m_ItemColor, "MenuItemColor", "FgColor");

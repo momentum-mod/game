@@ -153,7 +153,8 @@ void C_Timer::MsgFunc_Timer_Reset(bf_read &msg)
 	Reset();
 }
 
-int C_Timer::GetCurrentTime() {
+int C_Timer::GetCurrentTime() 
+{
 	if (m_bIsRunning) m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
 	return m_iTotalTicks;
 }
