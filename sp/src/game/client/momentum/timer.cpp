@@ -132,7 +132,11 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 	if (started)
 	{
 		//VGUI_ANIMATE("TimerStart");
-		pPlayer->EmitSound("Momentum.StartTimer");
+		// Checking again, even if we just checked 8 lines before
+		if (pPlayer != NULL)
+		{
+			pPlayer->EmitSound("Momentum.StartTimer");
+		}
 	}
 	else // stopped
 	{
@@ -147,7 +151,10 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 		}
 
 		//VGUI_ANIMATE("TimerStop");
-		pPlayer->EmitSound("Momentum.StopTimer");
+		if (pPlayer != NULL)
+		{
+			pPlayer->EmitSound("Momentum.StopTimer");
+		}
 	}
 }
 

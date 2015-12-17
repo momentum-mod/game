@@ -168,7 +168,10 @@ public:
 				break;
 
 			default:
-				cPlayer->EmitSound("UI.MissingMenuSelection");
+				if (cPlayer != NULL)
+				{
+					cPlayer->EmitSound("Momentum.UIMissingMenuSelection");
+				}
 				break;
 			}
 		}

@@ -100,7 +100,11 @@ void C_CP_Menu::SelectMenuItem(int menu_item)
 {
 	m_nSelectedItem = menu_item;
 	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
-	C_BasePlayer::GetLocalPlayer()->EmitSound("Momentum.UIMenuSelection");
+	C_BasePlayer *cPlayer = C_BasePlayer::GetLocalPlayer();
+	if (cPlayer != NULL)
+	{
+		cPlayer->EmitSound("Momentum.UIMenuSelection");
+	}
 	switch (menu_item)
 	{
 	case 0://exit
