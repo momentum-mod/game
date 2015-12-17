@@ -131,14 +131,13 @@ CMapzoneData::CMapzoneData(const char *szMapName)
 {
 	// Generate file path for zone file
 	bool recursive = false;
+	// MOM_TODO: Do we really need gotos? Spaghetti code will end civilizations
 	top:
 	char zoneFilePath[MAX_PATH];
 	Q_strcpy(zoneFilePath, c_mapPath);
 	Q_strcat(zoneFilePath, szMapName, MAX_PATH);
 	Q_strncat(zoneFilePath, c_zoneFileEnding, MAX_PATH);
-	Log("Looking for zone file: ");
-	Log(zoneFilePath);
-	Log("\n");
+	Log("Looking for zone file: %s \n",zoneFilePath);
 	KeyValues* zoneKV = new KeyValues(szMapName);
 	if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))
 	{
@@ -151,7 +150,7 @@ CMapzoneData::CMapzoneData(const char *szMapName)
 			Vector* scaleMins = new Vector(cp->GetFloat("xScaleMins"), cp->GetFloat("yScaleMins"), cp->GetFloat("zScaleMins"));
 			Vector* scaleMaxs = new Vector(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
 
-			// TODO: Load zone file and store info in memory
+			// MOM_TODO: Load zone file and store info in memory
 			// Do specific things for different types of checkpoints
 			int zoneType = -1;
 			int index = -1;

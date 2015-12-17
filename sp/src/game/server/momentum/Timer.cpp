@@ -76,7 +76,7 @@ void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
 	c.pos = pPlayer->GetAbsOrigin();
 	c.vel = pPlayer->GetAbsVelocity();
 	checkpoints.AddToTail(c);
-	//TODO: Create a decal to show where the checkpoint is?
+	// MOM_TODO: Create a decal to show where the checkpoint is?
 	m_iCurrentStepCP++;
 }
 
@@ -99,7 +99,7 @@ class CTimerCommands
 public:
 	static void ResetToStart()
 	{
-		// TODO(fatalis):
+		// MOM_TODO(fatalis):
 		// if the ent no longer exists this will crash
 		// should probably use a handle or something
 		CTriggerTimerStart *start;
@@ -109,7 +109,7 @@ public:
 			UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
 		}
 	}
-
+	
 	static void ResetToCheckpoint()
 	{
 		CTriggerCheckpoint *checkpoint;
@@ -124,9 +124,9 @@ public:
 	{
 		if (g_Timer.IsRunning())
 		{
-			//TODO consider having a local timer running,
+			// MOM_TODO consider having a local timer running,
 			//as people may want to time their routes they're using CP menu for
-			//TODO consider KZ (lol)
+			// MOM_TODO consider KZ (lol)
 			//g_Timer.SetRunning(false);
 		}
 		if (args.ArgC() > 0)
@@ -168,15 +168,16 @@ public:
 				break;
 
 			default:
-				//TODO emit a noise?
+				// MOM_TODO emit a noise
+				// cPlayer->EmitSound("UI.MissingMenuSelection");
 				break;
 			}
 		}
 	}
 };
 
-static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart);
-static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint);
+static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart,"Restarts the run");
+static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint,"Teleports the player back to the last checkpoint");
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE);
 
 CTimer g_Timer;

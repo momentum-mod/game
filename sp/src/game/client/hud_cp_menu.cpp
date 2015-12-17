@@ -8,9 +8,9 @@ We override the class here, and to be honest, this can
 probably be created into a sub-menu class if we need
 other similar menus in the future.
 
-TODO:
+MOM_TODO:
 make creating a checkpoint stop your timer
-make checkpoints available for output to files?
+make checkpoints available for output to files
 */
 using namespace vgui;
 
@@ -237,7 +237,7 @@ void C_CP_Menu::ProcessText(void)
         //the following code is defunct
 		//if (i == startpos &&
 		//	(ch == L'-' && g_szMenuString[i + 1] == L'>'))
-  //      {
+		//{
 		//	// Special handling for menu item specifiers
 		//	swscanf(&g_szMenuString[i + 2], L"%d", &menuitem);
 		//	i += 2;
@@ -348,12 +348,10 @@ void C_CP_Menu::ShowMenu_KeyValueItems(KeyValues *pKV)
 		// Set this slot valid
 		m_bitsValidSlots |= (1 << i);
 		const char *pszItem = item->GetName();
-		
+		// Try to find the localized string of the token. If null, we display pszItem instead.
 		wchar_t *wLocalizedItem = g_pVGuiLocalize->Find(pszItem);
 		if (wLocalizedItem == NULL)
 		{
-			//TODO: We should do something here.
-			// Something like this so we don't only output "(null)"?
 			g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));
 			DevWarning("Missing localization for %s\n", pszItem);
 		}

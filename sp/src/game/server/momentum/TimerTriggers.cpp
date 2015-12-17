@@ -13,6 +13,7 @@ void CBaseMomentumTrigger::Spawn()
 	m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
 
+// MOM_TODO Limit speed inside Start Trigger
 
 // CTriggerTimerStart
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
@@ -21,10 +22,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 	{
 		g_Timer.Start(gpGlobals->tickcount);
 		g_Timer.SetStartTrigger(this);
-		//TODO re-enable after more thought (Gocnak)
-		//Maybe count pre-hops and limit it to 4 like KSF does
-		//anyhow, the implementation below is too ignorant and ugly
-		//UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
 	}
 	BaseClass::EndTouch(pOther);
 }
@@ -105,7 +102,6 @@ static void TestCreateTriggerStart(void)
 	}
 }
 
-//Commented until further test
 static void TestCreateTriggerStop(void)
 {
 	CTriggerTimerStop *pTrigger = (CTriggerTimerStop *)CreateEntityByName("trigger_timer_stop");
