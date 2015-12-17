@@ -30,7 +30,6 @@ bool C_CP_Menu::ShouldDraw() {
 //OVERRIDE
 void C_CP_Menu::Init(void)
 {
-	//pKv->AddSubKey(new KeyValues("Create Checkpoint"));
     m_nSelectedItem = -1;
 	m_bMenuTakesInput = false;
 	m_bMenuDisplayed = false;
@@ -87,10 +86,6 @@ void C_CP_Menu::OnThink()
             m_bMenuDisplayed = false;
         }
     }
-
-	if (m_bMenuDisplayed && m_flShutoffTime > 0 && m_flShutoffTime <= gpGlobals->realtime) {
-		m_bMenuDisplayed = false;
-	}
 }
 
 void C_CP_Menu::HideMenu(void)
@@ -105,6 +100,7 @@ void C_CP_Menu::SelectMenuItem(int menu_item)
 {
 	m_nSelectedItem = menu_item;
 	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
+    //TODO Sound Design: emit some sort of beep sound?
 	switch (menu_item)
 	{
 	case 0://exit
@@ -234,17 +230,6 @@ void C_CP_Menu::ProcessText(void)
 		if (ch == 0)
 			break;
 
-        //the following code is defunct
-		//if (i == startpos &&
-		//	(ch == L'-' && g_szMenuString[i + 1] == L'>'))
-  //      {
-		//	// Special handling for menu item specifiers
-		//	swscanf(&g_szMenuString[i + 2], L"%d", &menuitem);
-		//	i += 2;
-		//	startpos += 2;
-		//	continue;
-		//}
-
 		// Skip to end of line
 		while (i < 512 && g_szMenuString[i] != 0 && g_szMenuString[i] != L'\n')
 		{
@@ -321,7 +306,6 @@ void C_CP_Menu::ApplySchemeSettings(vgui::IScheme *pScheme)
 	int screenWide, screenTall;
 	int x, y;
 	GetPos(x, y);
-	Log("Y is %i\n", y);
 	GetHudSize(screenWide, screenTall);
 	SetBounds(0, y, screenWide, screenTall - y);
 
@@ -349,14 +333,15 @@ void C_CP_Menu::ShowMenu_KeyValueItems(KeyValues *pKV)
 		m_bitsValidSlots |= (1 << i);
 		const char *pszItem = item->GetName();
 		
-		wchar_t *wLocalizedItem = g_pVGuiLocalize->Find(pszItem);
-		if (wLocalizedItem == NULL)
+        wchar_t wLocalizedItem[512];
+		wchar_t *wLocalizedItemPtr = g_pVGuiLocalize->Find(pszItem);
+		if (!wLocalizedItemPtr)
 		{
-			//TODO: We should do something here.
-			// Something like this so we don't only output "(null)"?
-			g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, sizeof(wLocalizedItem));
+			g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, 512);
 			DevWarning("Missing localization for %s\n", pszItem);
-		}
+        }
+        else Q_wcsncpy(wLocalizedItem, wLocalizedItemPtr, 512);
+
 		nCount = _snwprintf(pWritePosition, nRemaining, L"%d. %ls\n", i + 1, wLocalizedItem);
 		nRemaining -= nCount;
 		pWritePosition += nCount;
