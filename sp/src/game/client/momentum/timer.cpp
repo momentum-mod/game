@@ -110,8 +110,8 @@ void C_Timer::OnThink()
 {
 	// MOM_TODO: We probably want to change this into a fancier solution
 
-	ConVarRef pCheats("sv_cheats");
-	if (!m_bWereCheatsActivated && (pCheats.GetInt() == 1))
+	ConVar *pCheats = cvar->FindVar("sv_cheats");
+	if (!m_bWereCheatsActivated && pCheats && (pCheats->GetInt() == 1))
 	{
 		m_bWereCheatsActivated = true;
 		DevMsg("CHEATS ENEABLED");
@@ -132,7 +132,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 	if (started)
 	{
 		//VGUI_ANIMATE("TimerStart");
-		//pPlayer->EmitSound("Momentum.StartTimer");
+		pPlayer->EmitSound("Momentum.StartTimer");
 	}
 	else // stopped
 	{
@@ -147,7 +147,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 		}
 
 		//VGUI_ANIMATE("TimerStop");
-		//pPlayer->EmitSound("Momentum.StopTimer");
+		pPlayer->EmitSound("Momentum.StopTimer");
 	}
 }
 

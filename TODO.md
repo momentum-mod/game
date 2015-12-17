@@ -1,16 +1,16 @@
-[ ] Custom .FGD creation
+[-] Custom .FGD creation
  
  
 ## timer.cpp (Client) 
-[ ] Play effects for run states
+[-] Play effects for run states
 
 [ ] Add more HUD message states
 
 [ ] Better method to avoid sv_cheats 1 runs
 
 
-### Timer.cpp (Server)
-[ ] Play sound on invalid menu input
+## Timer.cpp (Server)
+[X] Play sound on invalid menu input
 
 [ ] Create a decal to show where the checkpoint has been created
 
@@ -22,6 +22,8 @@
 
 [ ] Avoid crash if the entity no longer exists
 
+[X] Play sound for menu input
+
 [ ] Consider local timer
 
 [ ] Consider KZ
@@ -31,9 +33,9 @@
 [ ] Limit speed inside Start Trigger
 
 
-### mapzones.cpp (Server)
+## mapzones.cpp (Server)
 [ ] Remove goto usage
 
 
 ## game_sounds_manifest.txt 
-[ ] Create it (So we can add our own sounds)
+[X] Create it (So we can add our own sounds)

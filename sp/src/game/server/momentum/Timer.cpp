@@ -168,8 +168,7 @@ public:
 				break;
 
 			default:
-				// MOM_TODO emit a noise
-				// cPlayer->EmitSound("UI.MissingMenuSelection");
+				cPlayer->EmitSound("UI.MissingMenuSelection");
 				break;
 			}
 		}

@@ -1,0 +1,19 @@
+@include "base.fgd"
+ 
+@SolidClass base(Targetname) = trigger_timer_start : "Trigger that starts the timer."
+[
+		output StartTouch(CBaseEntity)
+		output EndTouch(CBaseEntity)
+]
+
+@SolidClass base(Targetname) = trigger_timer_stop : "Trigger that stops the timer."
+[
+		output StartTouch(CBaseEntity)
+		output EndTouch(CBaseEntity)
+]
+
+@SolidClass base(Targetname) = trigger_timer_checkpoint : "Trigger that saves current position."
+[
+		output StartTouch(CBaseEntity)
+		output EndTouch(CBaseEntity)
+]

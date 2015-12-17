@@ -100,12 +100,12 @@ void C_CP_Menu::SelectMenuItem(int menu_item)
 {
 	m_nSelectedItem = menu_item;
 	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
-    //TODO Sound Design: emit some sort of beep sound?
+	C_BasePlayer::GetLocalPlayer()->EmitSound("Momentum.UIMenuSelection");
 	switch (menu_item)
 	{
 	case 0://exit
 		HideMenu();
-		break;
+		break; 
 	default:
 		engine->ServerCmd(VarArgs("cpmenu %i", menu_item));//it was either this or a hudmessage
 		break;
