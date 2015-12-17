@@ -81,8 +81,8 @@ protected:
 };
 
 DECLARE_HUDELEMENT(C_Timer);
-
-DECLARE_HUD_MESSAGE(C_Timer, Timer_State);//TODO add more for checkpoints and ending
+// MOM_TODO add more for checkpoints and ending
+DECLARE_HUD_MESSAGE(C_Timer, Timer_State);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
 
 C_Timer::C_Timer(const char *pElementName) :
@@ -108,8 +108,10 @@ void C_Timer::Reset()
 
 void C_Timer::OnThink() 
 {
-	ConVar *pCheats = cvar->FindVar("sv_cheats");
-	if (!m_bWereCheatsActivated && pCheats && (pCheats->GetInt() == 1))
+	// MOM_TODO: We probably want to change this into a fancier solution
+
+	ConVarRef pCheats("sv_cheats");
+	if (!m_bWereCheatsActivated && (pCheats.GetInt() == 1))
 	{
 		m_bWereCheatsActivated = true;
 		DevMsg("CHEATS ENEABLED");
@@ -124,12 +126,13 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	if (!pPlayer)
 		return;
+	// MOM_TODO: Run fancy effects for the states
 	DevMsg("TODO: run fancy effects for state '%s'\n",
 		started ? "started" : "stopped");
 	if (started)
 	{
 		//VGUI_ANIMATE("TimerStart");
-		//pPlayer->EmitSound("blamod.StartTimer");
+		//pPlayer->EmitSound("Momentum.StartTimer");
 	}
 	else // stopped
 	{
@@ -144,7 +147,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 		}
 
 		//VGUI_ANIMATE("TimerStop");
-		//pPlayer->EmitSound("blamod.StopTimer");
+		//pPlayer->EmitSound("Momentum.StopTimer");
 	}
 }
 

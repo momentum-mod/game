@@ -15,8 +15,7 @@ using namespace vgui;
 
 static ConVar speedmeter_hvel("mom_speedmeter_hvel", "0", (FCVAR_CLIENTDLL | FCVAR_ARCHIVE), "If set to 1, doesn't take the vertical velocity component into account.");
 
-//Would be better if a callback function was added (To change the Label text if it's changed in-game), maybe reusing Reset()?
-//Until I figure out how callback functions work (or until someone adds it), I'll set the label text at each Think cycle. It's not optimal, and must be removed sometime
+//(Ruben): We could use a callback function, but it is not needed.
 static ConVar speedmeter_units("mom_speedmeter_units", "1",(FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL),"Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.",true, 1, true, 3);
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
@@ -36,7 +35,7 @@ public:
 
 	virtual void Reset()
 	{
-		//We set the proper LabelText based on gh_speedmeter_units value
+		//We set the proper LabelText based on mom_speedmeter_units value
 		switch (speedmeter_units.GetInt()) 
 		{
 		case 1:
@@ -59,7 +58,6 @@ public:
 };
 
 DECLARE_HUDELEMENT(CHudSpeedMeter);
-
 
 
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName) :
@@ -104,8 +102,9 @@ void CHudSpeedMeter::OnThink()
 			SetLabelText(L"UPS");
 			break;
 		}
-		//With this round we ensure that the speed is as precise as possible, insetad of taking the floor value of the float
+		//With this round we ensure that the speed is as precise as possible, instead of taking the floor value of the float
 		SetDisplayValue(round(vel));
 	}
 }
+
 

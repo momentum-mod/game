@@ -8,9 +8,9 @@ We override the class here, and to be honest, this can
 probably be created into a sub-menu class if we need
 other similar menus in the future.
 
-TODO:
+MOM_TODO:
 make creating a checkpoint stop your timer
-make checkpoints available for output to files?
+make checkpoints available for output to files
 */
 using namespace vgui;
 
@@ -337,6 +337,7 @@ void C_CP_Menu::ShowMenu_KeyValueItems(KeyValues *pKV)
 		wchar_t *wLocalizedItemPtr = g_pVGuiLocalize->Find(pszItem);
 		if (!wLocalizedItemPtr)
 		{
+            // Try to find the localized string of the token. If null, we display pszItem instead.
 			g_pVGuiLocalize->ConvertANSIToUnicode(pszItem, wLocalizedItem, 512);
 			DevWarning("Missing localization for %s\n", pszItem);
         }
