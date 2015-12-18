@@ -22,26 +22,20 @@
 
 @SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer."
 [
-		output StartTouch(void)
-		output EndTouch(void)
 ]
 
 @SolidClass base(Trigger) = trigger_timer_stop : "Trigger that stops the timer."
 [
-		output StartTouch(void)
-		output EndTouch(void)
+
 ]
 
 @SolidClass base(Trigger) = trigger_timer_checkpoint : "Trigger that saves current position."
 [
-		output StartTouch(void)
-		output EndTouch(void)
 		checkpoint(integer) : "Checkpoint Number" : 1 : "The checkpoint number (stage) that this trigger correlates to. (0 is automatically the start trigger!)"
 ]
 
 @SolidClass base(Trigger) = trigger_timer_checkpoint_teleport : "Trigger that teleports to the desired checkpoint."
 [
-		output StartTouch(void)
 		checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint."
 		stop(choices) : "Stop player on teleport" : "0" = 
 		[
@@ -52,12 +46,11 @@
 
 @SolidClass base(Trigger) = trigger_timer_resetonehop : "Trigger that resets one hops."
 [
-		output StartTouch(void)
+
 ]
 
 @SolidClass base(Trigger) = trigger_timer_onehop : "Trigger that only allows for one hop."
 [
-		output StartTouch(void)
 		checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint. If -2, it teleports to the StartTrigger"
 		hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoin Number checkpoint"
 		stop(choices) : "Stop player on teleport" : "0" = 
