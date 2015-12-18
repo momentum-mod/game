@@ -5,9 +5,10 @@
 #endif
 
 #include "triggers.h"
+#include "filters.h"
 
 // CBaseMomentumTrigger
-class CBaseMomentumTrigger: public CTriggerMultiple
+class CBaseMomentumTrigger : public CTriggerMultiple
 {
 	DECLARE_CLASS(CBaseMomentumTrigger, CTriggerMultiple);
 
@@ -53,5 +54,17 @@ private:
 	int m_iCheckpointNumber;
 };
 
+class CFilterCheckpoint : public CBaseFilter
+{
+    DECLARE_CLASS(CFilterCheckpoint, CBaseFilter);
+    DECLARE_DATADESC();
+
+public:
+    bool PassesFilterImpl(CBaseEntity*, CBaseEntity*);
+
+private:
+    int m_iCheckpointNumber;
+
+};
 
 #endif // TIMERTRIGGERS_H

@@ -83,8 +83,23 @@ void CTriggerCheckpoint::SetCheckpointNumber(int newInt)
 LINK_ENTITY_TO_CLASS(trigger_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
-DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "number")
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint")
 END_DATADESC()
+
+
+LINK_ENTITY_TO_CLASS(filter_activator_checkpoint, CFilterCheckpoint);
+
+BEGIN_DATADESC(CFilterCheckpoint)
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint")
+END_DATADESC()
+
+bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
+{
+    return (g_Timer.GetCurrentCheckpoint() &&
+        g_Timer.GetCurrentCheckpoint()->GetCheckpointNumber() >= m_iCheckpointNumber);
+}
+
+
 
 
 static void TestCreateTriggerStart(void)

@@ -16,4 +16,10 @@
 [
 		output StartTouch(CBaseEntity)
 		output EndTouch(CBaseEntity)
+		checkpoint(integer) : "Checkpoint Number" : 1 : "The checkpoint number (stage) that this trigger correlates to. (0 is automatically the start trigger!)"
+]
+
+@FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at the given checkpoint or not."
+[
+		checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"
 ]

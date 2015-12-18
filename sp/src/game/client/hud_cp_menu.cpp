@@ -135,7 +135,7 @@ void C_CP_Menu::Paint()
 	if (!m_bMenuDisplayed) {
 		return;
 	}
-
+    
 	// center it
 	int x = 20;
 
@@ -249,7 +249,7 @@ void C_CP_Menu::ProcessText(void)
 			line.length = i - startpos;
 			line.pixels = 0;
 			line.height = 0;
-
+            
 			m_Processed.AddToTail(line);
 		}
 
