@@ -8,6 +8,7 @@
 
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
+class CTriggerOnehop;
 
 class CTimer
 {
@@ -21,6 +22,8 @@ public:
 	void SetRunning(bool running);
 	CTriggerTimerStart *GetStartTrigger();
 	CTriggerCheckpoint *GetCurrentCheckpoint();
+	CTriggerCheckpoint *GetCheckpointAt(int checkpointNumber);
+	CTriggerOnehop *GetLastOnehop();
 	void SetStartTrigger(CTriggerTimerStart *pTrigger);
 	void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger);
 	int GetCurrentCPMenuStep()
@@ -33,6 +36,7 @@ public:
 	{
 		return m_bUsingCPMenu;
 	}
+	// CheckpointMenu stuff
 
 	void CreateCheckpoint(CBasePlayer*);
 	void RemoveLastCheckpoint();
@@ -51,6 +55,13 @@ public:
 	{
 		return checkpoints.Size();
 	}
+	// Trigger_Onehop stuff
+
+	void SetLastOnehop(CTriggerOnehop* pTrigger);
+	void ResetLastOnehop()
+	{
+		m_pLastOnehop = NULL;
+	}
 
 private:
 
@@ -60,6 +71,7 @@ private:
 
 	CTriggerTimerStart *m_pStartTrigger;
 	CTriggerCheckpoint *m_pCurrentCheckpoint;
+	CTriggerOnehop *m_pLastOnehop;
 
 	struct Checkpoint {
 		Vector pos;

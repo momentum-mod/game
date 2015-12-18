@@ -14,8 +14,8 @@ class CBaseMomentumTrigger : public CTriggerMultiple
 
 public:
 	virtual void Spawn();
+	virtual void ResetCheckpoints();
 };
-
 
 // CTriggerTimerStart
 class CTriggerTimerStart : public CBaseMomentumTrigger
@@ -27,7 +27,6 @@ public:
 	void StartTouch(CBaseEntity*);
 };
 
-
 // CTriggerTimerStop
 class CTriggerTimerStop : public CBaseMomentumTrigger
 {
@@ -36,7 +35,6 @@ class CTriggerTimerStop : public CBaseMomentumTrigger
 public:
 	void StartTouch(CBaseEntity*);
 };
-
 
 // CTriggerCheckpoint
 class CTriggerCheckpoint : public CBaseMomentumTrigger
@@ -54,6 +52,7 @@ private:
 	int m_iCheckpointNumber;
 };
 
+// CFilterCheckpoint
 class CFilterCheckpoint : public CBaseFilter
 {
     DECLARE_CLASS(CFilterCheckpoint, CBaseFilter);
@@ -64,6 +63,49 @@ public:
 
 private:
     int m_iCheckpointNumber;
+
+};
+
+// CTriggerTeleportCheckpoint
+class CTriggerTeleportCheckpoint : public CBaseMomentumTrigger
+{
+	DECLARE_CLASS(CTriggerTeleportCheckpoint, CTriggerMultiple);
+	DECLARE_DATADESC();
+
+public:
+	void StartTouch(CBaseEntity*);
+
+private:
+	int m_iCheckpointNumber;
+	// Stop player after teleporting him?
+	bool m_bResetVelocity = false;
+	void Think();
+
+};
+
+class CTriggerOnehop : public CBaseMomentumTrigger
+{
+	DECLARE_CLASS(CTriggerOnehop, CTriggerMultiple);
+	DECLARE_DATADESC();
+
+public:
+	void StartTouch(CBaseEntity*);
+
+private:
+	// Have we hopped in it?
+	bool m_bHoppedIn = false;
+	bool m_bResetVelocity = true;
+	float m_fMaxHoldSeconds = 0.2f;
+	// Where to go if it becomes active
+	int m_iDestinationCheckpointNumber;
+};
+
+class CTriggerResetOnehop : public CBaseMomentumTrigger
+{
+	DECLARE_CLASS(CTriggerResetOnehop, CTriggerMultiple);
+
+public:
+	void StartTouch(CBaseEntity*);
 
 };
 

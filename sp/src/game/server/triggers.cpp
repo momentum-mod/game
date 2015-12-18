@@ -2292,6 +2292,7 @@ BEGIN_DATADESC( CTriggerTeleport )
 
 	DEFINE_KEYFIELD( m_iLandmark, FIELD_STRING, "landmark" ),
 	DEFINE_KEYFIELD( m_bDisabled, FIELD_BOOLEAN, "ZeroVelocity" ),
+	DEFINE_KEYFIELD( m_bZeroVelocity, FIELD_BOOLEAN, "stop"),
 
 END_DATADESC()
 

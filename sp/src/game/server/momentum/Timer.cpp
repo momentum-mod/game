@@ -53,6 +53,26 @@ CTriggerTimerStart *CTimer::GetStartTrigger()
 	return m_pStartTrigger;
 }
 
+// Im not sure if this leaks memory or not
+CTriggerCheckpoint *CTimer::GetCheckpointAt(int checkpointNumber)
+{
+	CBaseEntity* pEnt = gEntList.FindEntityByClassname(NULL, "trigger_timer_checkpoint");
+	while (pEnt)
+	{
+		// Just making sure...
+		if (pEnt->ClassMatches("trigger_timer_checkpoint"))
+		{
+			CTriggerCheckpoint* pTrigger = dynamic_cast<CTriggerCheckpoint*>(pEnt);
+			if (pTrigger->GetCheckpointNumber() == checkpointNumber)
+			{
+				return pTrigger;
+			}
+		}
+		pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_timer_checkpoint");
+	}
+	return NULL;
+}
+
 CTriggerCheckpoint *CTimer::GetCurrentCheckpoint()
 {
 	return m_pCurrentCheckpoint;
@@ -92,6 +112,17 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
 	if (checkpoints.IsEmpty() || !cPlayer) return;
 	Checkpoint c = checkpoints[cpNum];
 	cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
+}
+
+void CTimer::SetLastOnehop(CTriggerOnehop *pTrigger)
+{
+	// MOM_TODO: First set the former Onehop hopped status to false if the flag is set to that
+	m_pLastOnehop = pTrigger;
+}
+
+CTriggerOnehop *CTimer::GetLastOnehop()
+{
+	return m_pLastOnehop;
 }
 
 class CTimerCommands

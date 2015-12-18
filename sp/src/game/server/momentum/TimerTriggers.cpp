@@ -13,6 +13,14 @@ void CBaseMomentumTrigger::Spawn()
 	m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
 
+// MOM_TODO Base for func_resetcheckpoints. Not implemented yet
+void CBaseMomentumTrigger::ResetCheckpoints()
+{
+	g_Timer.SetCurrentCheckpointTrigger(NULL);
+	UTIL_GetLocalPlayer()->SetAbsOrigin(g_Timer.GetStartTrigger()->GetAbsOrigin());
+	UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
+}
+
 // MOM_TODO Limit speed inside Start Trigger
 
 // CTriggerTimerStart
@@ -61,6 +69,7 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 
 	if (pOther->IsPlayer())
 		g_Timer.SetCurrentCheckpointTrigger(this);
+		g_Timer.ResetLastOnehop();
 }
 
 void CTriggerCheckpoint::EndTouch(CBaseEntity *pOther)
@@ -93,6 +102,7 @@ BEGIN_DATADESC(CFilterCheckpoint)
 DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint")
 END_DATADESC()
 
+// CFilterCheckpoint
 bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
     return (g_Timer.GetCurrentCheckpoint() &&
@@ -100,7 +110,115 @@ bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEnt
 }
 
 
+LINK_ENTITY_TO_CLASS(trigger_timer_checkpoint_teleport, CTriggerTeleportCheckpoint);
 
+BEGIN_DATADESC(CTriggerTeleportCheckpoint)
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"),
+DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop")
+END_DATADESC()
+
+// CTriggerTeleportCheckpoint
+void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
+{
+	BaseClass::StartTouch(pOther);
+	if (pOther->IsPlayer())
+	{
+		CTriggerCheckpoint *desiredCP;
+		if (m_iCheckpointNumber == (-1))
+		{
+			// Get the current checkpoint
+			desiredCP = g_Timer.GetCurrentCheckpoint();
+		}
+		else
+		{
+			// Search for the checkpoint with that index
+			desiredCP = g_Timer.GetCheckpointAt(m_iCheckpointNumber);
+		}
+		if (desiredCP != NULL)
+		{
+			UTIL_GetLocalPlayer()->SetAbsOrigin(desiredCP->GetAbsOrigin());
+			if (m_bResetVelocity)
+			{
+				UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
+			}
+		}
+	}
+}
+
+// Hack? Stops an assertion on BaseThinkFun from appearing
+void CTriggerTeleportCheckpoint::Think()
+{
+
+}
+
+
+LINK_ENTITY_TO_CLASS(trigger_timer_onehop, CTriggerOnehop);
+
+BEGIN_DATADESC(CTriggerOnehop)
+DEFINE_KEYFIELD(m_iDestinationCheckpointNumber, FIELD_INTEGER, "checkpoint"),
+DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
+DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
+END_DATADESC()
+
+// MOM_TODO: Add teleport after delay m_fMaxHoldSeconds has passed
+// CTriggerOnehop
+void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
+{
+	if (pOther->IsPlayer())
+	{
+		if (m_bHoppedIn)
+		{ 
+			// (-2): Go to TriggerStart
+			// (-1): Last activated checkpoint
+			// default: Desired checkpoint with this index
+			switch (m_iDestinationCheckpointNumber)
+			{
+			case (-2) :
+			{
+				CTriggerTimerStart *desiredCP = g_Timer.GetStartTrigger();
+				if (desiredCP != NULL)
+					pOther->SetAbsOrigin(desiredCP->GetAbsOrigin());
+				break;
+			}
+			case (-1) :
+			{
+				CTriggerCheckpoint *desiredCP = g_Timer.GetCurrentCheckpoint();
+				if (desiredCP != NULL)
+					pOther->SetAbsOrigin(desiredCP->GetAbsOrigin());
+				break;
+			}
+			default:
+			{
+				CTriggerCheckpoint *desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+				if (desiredCP != NULL)
+					pOther->SetAbsOrigin(desiredCP->GetAbsOrigin());
+			}
+			}
+			if (m_bResetVelocity)
+				pOther->SetAbsVelocity(Vector(0));
+		}
+		else
+		{
+			g_Timer.SetLastOnehop(this);
+			m_bHoppedIn = true;
+		}
+	}
+}
+
+
+LINK_ENTITY_TO_CLASS(trigger_timer_resetonehop, CTriggerResetOnehop);
+
+// CTriggerResetOnehop
+void CTriggerResetOnehop::StartTouch(CBaseEntity *pOther)
+{
+	if (pOther->IsPlayer())
+		g_Timer.ResetLastOnehop();
+}
+
+
+//////
+// Test Functions
+//////
 
 static void TestCreateTriggerStart(void)
 {
