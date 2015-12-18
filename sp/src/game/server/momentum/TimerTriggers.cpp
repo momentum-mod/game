@@ -46,8 +46,8 @@ LINK_ENTITY_TO_CLASS(trigger_timer_start, CTriggerTimerStart);
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
 	BaseClass::StartTouch(pOther);
-
-	if (pOther->IsPlayer())
+	// If timer is already stopped, there's nothing to stop (No run state effect to play)
+	if (pOther->IsPlayer() && g_Timer.IsRunning())
 		g_Timer.Stop();
 }
 
