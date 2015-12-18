@@ -92,12 +92,11 @@ public:
 	void StartTouch(CBaseEntity*);
 
 private:
-	// Have we hopped in it?
-	bool m_bHoppedIn = false;
 	bool m_bResetVelocity = true;
-	float m_fMaxHoldSeconds = 0.2f;
+	float m_fMaxHoldSeconds = 1;
 	// Where to go if it becomes active
 	int m_iDestinationCheckpointNumber;
+
 };
 
 class CTriggerResetOnehop : public CBaseMomentumTrigger

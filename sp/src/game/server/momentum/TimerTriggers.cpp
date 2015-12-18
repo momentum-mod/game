@@ -166,7 +166,7 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
 	if (pOther->IsPlayer())
 	{
-		if (m_bHoppedIn)
+		if (g_Timer.GetLastOnehop() != NULL && (g_Timer.GetLastOnehop() == this))
 		{ 
 			// (-2): Go to TriggerStart
 			// (-1): Last activated checkpoint
@@ -196,11 +196,13 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 			}
 			if (m_bResetVelocity)
 				pOther->SetAbsVelocity(Vector(0));
+			// And we reset the lastOnehop to NULL so if next one the player steps in (after being teleported) is this, he has a chance and it doesn't auto teleports the player
+			g_Timer.ResetLastOnehop();
 		}
 		else
 		{
 			g_Timer.SetLastOnehop(this);
-			m_bHoppedIn = true;
+			// MOM_TODO: Add the delay here?
 		}
 	}
 }
