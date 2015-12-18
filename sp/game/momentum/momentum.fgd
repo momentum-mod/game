@@ -10,6 +10,7 @@
 [
 		output StartTouch(void)
 		output EndTouch(void)
+]
 
 @SolidClass base(Trigger) = trigger_timer_checkpoint : "Trigger that saves current position."
 [
