@@ -16,10 +16,11 @@ void CBaseMomentumTrigger::Spawn()
 // MOM_TODO Base for func_resetcheckpoints. Not implemented yet
 void CBaseMomentumTrigger::ResetCheckpoints()
 {
-    //TODO null checks
+
 	g_Timer.SetCurrentCheckpointTrigger(NULL);
-	UTIL_GetLocalPlayer()->SetAbsOrigin(g_Timer.GetStartTrigger()->GetAbsOrigin());
-	UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
+	if (g_Timer.GetStartTrigger() != NULL && UTIL_GetLocalPlayer() != NULL)
+		UTIL_GetLocalPlayer()->SetAbsOrigin(g_Timer.GetStartTrigger()->GetAbsOrigin());
+		UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
 }
 
 // MOM_TODO Limit speed inside Start Trigger
@@ -132,20 +133,14 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 		}
 		if (desiredCP != NULL)
 		{
-			UTIL_GetLocalPlayer()->SetAbsOrigin(desiredCP->GetAbsOrigin());
+			pOther->SetAbsOrigin(desiredCP->GetAbsOrigin());
 			if (m_bResetVelocity)
 			{
-				UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
+				pOther->SetAbsVelocity(vec3_origin);
 			}
 		}
 	}
 }
-
-//// Hack? Stops an assertion on BaseThinkFun from appearing
-//void CTriggerTeleportCheckpoint::Think()
-//{
-//
-//}
 
 
 LINK_ENTITY_TO_CLASS(trigger_timer_onehop, CTriggerOnehop);
@@ -191,7 +186,7 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 			}
 			}
 			if (m_bResetVelocity)
-				pOther->SetAbsVelocity(Vector(0));
+				pOther->SetAbsVelocity(vec3_origin);
 			// And we reset the lastOnehop to NULL so if next one the player steps in (after being teleported) is this, he has a chance and it doesn't auto teleports the player
 			g_Timer.ResetLastOnehop();
 		}
