@@ -11,6 +11,12 @@ public:
 	void SpawnZone();
 	void RemoveZone();
 
+    int GetType() { return m_type; }
+    Vector* GetPosition() { return m_pos; }
+    QAngle* GetRotation() { return m_rot; }
+    Vector* GetScaleMins() { return m_scaleMins; }
+    Vector* GetScaleMaxs() { return m_scaleMaxs; }
+
 private:
 	int m_type; // 0 = start, 1 = checkpoint, 2 = end
 	int m_index; // Ignored when not a checkpoint
@@ -29,6 +35,8 @@ public:
 
 	void SpawnMapZones();
 	void RemoveMapZones();
+    bool MapZoneSpawned(CMapzone*);
+    bool LoadFromFile(const char*);
 
 private:
 	const char* c_mapPath = "maps/";

@@ -129,71 +129,15 @@ static void saveZonFile(const char* szMapName)
 
 CMapzoneData::CMapzoneData(const char *szMapName)
 {
-	// Generate file path for zone file
-	bool recursive = false;
-	// MOM_TODO: Do we really need gotos? Spaghetti code will end civilizations
-	top:
-	char zoneFilePath[MAX_PATH];
-	Q_strcpy(zoneFilePath, c_mapPath);
-	Q_strcat(zoneFilePath, szMapName, MAX_PATH);
-	Q_strncat(zoneFilePath, c_zoneFileEnding, MAX_PATH);
-	Log("Looking for zone file: %s \n",zoneFilePath);
-	KeyValues* zoneKV = new KeyValues(szMapName);
-	if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))
-	{
-		// Go through checkpoints
-		for (KeyValues *cp = zoneKV->GetFirstSubKey(); cp; cp = cp->GetNextKey())
-		{
-			// Load position information (will default to 0 if the keys don't exist)
-			Vector* pos = new Vector(cp->GetFloat("xPos"), cp->GetFloat("yPos"), cp->GetFloat("zPos"));
-			QAngle* rot = new QAngle(cp->GetFloat("xRot"), cp->GetFloat("yRot"), cp->GetFloat("zRot"));
-			Vector* scaleMins = new Vector(cp->GetFloat("xScaleMins"), cp->GetFloat("yScaleMins"), cp->GetFloat("zScaleMins"));
-			Vector* scaleMaxs = new Vector(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
-
-			// MOM_TODO: Load zone file and store info in memory
-			// Do specific things for different types of checkpoints
-			int zoneType = -1;
-			int index = -1;
-
-			if (Q_strcmp(cp->GetName(), "start") == 0)
-			{
-				zoneType = 0;
-			}
-			else if (Q_strcmp(cp->GetName(), "checkpoint") == 0)
-			{
-				zoneType = 1;
-				index = cp->GetInt("index");
-			}
-			else if (Q_strcmp(cp->GetName(), "end") == 0)
-			{
-				zoneType = 2;
-			}
-			else
-			{
-				Log("Error while reading zone file! Unknown checkpoint type.\n");
-			}
-
-			// Add element
-			m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index));
-		}
-	}
-	else
-	{
-		if (!recursive) 
-		{
-			Log("Unable to find map zones! Creating it...\n");
-			saveZonFile(szMapName);
-			zoneKV->deleteThis();
-			zoneKV = NULL;
-			recursive = true;
-			goto top;
-		}	
-	}
-
-	zoneKV->deleteThis();
-	zoneKV = NULL;
+    if (!LoadFromFile(szMapName))
+    {
+        Log("Unable to find map zones! Trying to create them...\n");
+        saveZonFile(szMapName);//try making the zon file if the map has the entities
+        LoadFromFile(szMapName);
+    }
 }
 
+//MOM_TODO: Get rid of the following method and ConCommand
 static void saveZonFile_f() {
 	saveZonFile(gpGlobals->mapname.ToCStr());
 }
@@ -208,11 +152,109 @@ CMapzoneData::~CMapzoneData()
 	}	
 }
 
+bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
+{
+    bool toReturn = false;
+    if (!mZone) return false;
+
+    char name[128];
+    switch (mZone->GetType())
+    {
+    case 0:
+        Q_strcpy(name, "trigger_timer_start");
+        break;
+    case 1:
+        Q_strcpy(name, "trigger_timer_checkpoint");
+        break;
+    case 2:
+        Q_strcpy(name, "trigger_timer_stop");
+        break;
+    default:
+        return false;
+    }
+
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname(NULL, name);
+    while (pEnt)
+    {
+        if (pEnt->GetAbsOrigin() == *mZone->GetPosition()
+            && pEnt->GetAbsAngles() == *mZone->GetRotation()
+            && pEnt->WorldAlignMaxs() == *mZone->GetScaleMaxs()
+            && pEnt->WorldAlignMins() == *mZone->GetScaleMins())
+        {
+            DevLog("Already found a %s spawned on the map! Not spawning it from zone file...\n", name);
+            toReturn = true;
+            break;
+        }
+
+        pEnt = gEntList.FindEntityByClassname(pEnt, name);
+    }
+
+    return toReturn;
+}
+
 void CMapzoneData::SpawnMapZones()
 {
-	for (int i = 0; i < m_zones.Count(); i++)
+    int count = m_zones.Count();
+	for (int i = 0; i < count; i++)
 	{
-		if (m_zones[i])
-			m_zones[i]->SpawnZone();
+        if (m_zones[i])
+        {
+            //if the zone already exists (placed in map by Hammer), don't spawn it
+            if (!MapZoneSpawned(m_zones[i]))
+                m_zones[i]->SpawnZone();
+        }	
 	}
+}
+
+bool CMapzoneData::LoadFromFile(const char *szMapName)
+{
+    bool toReturn = false;
+    char zoneFilePath[MAX_PATH];
+    Q_strcpy(zoneFilePath, c_mapPath);
+    Q_strcat(zoneFilePath, szMapName, MAX_PATH);
+    Q_strncat(zoneFilePath, c_zoneFileEnding, MAX_PATH);
+    DevLog("Looking for zone file: %s \n", zoneFilePath);
+    KeyValues* zoneKV = new KeyValues(szMapName);
+    if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))
+    {
+        // Go through checkpoints
+        for (KeyValues *cp = zoneKV->GetFirstSubKey(); cp; cp = cp->GetNextKey())
+        {
+            // Load position information (will default to 0 if the keys don't exist)
+            Vector* pos = new Vector(cp->GetFloat("xPos"), cp->GetFloat("yPos"), cp->GetFloat("zPos"));
+            QAngle* rot = new QAngle(cp->GetFloat("xRot"), cp->GetFloat("yRot"), cp->GetFloat("zRot"));
+            Vector* scaleMins = new Vector(cp->GetFloat("xScaleMins"), cp->GetFloat("yScaleMins"), cp->GetFloat("zScaleMins"));
+            Vector* scaleMaxs = new Vector(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
+
+            // Do specific things for different types of checkpoints
+            int zoneType = -1;
+            int index = -1;
+
+            if (Q_strcmp(cp->GetName(), "start") == 0)
+            {
+                zoneType = 0;
+            }
+            else if (Q_strcmp(cp->GetName(), "checkpoint") == 0)
+            {
+                zoneType = 1;
+                index = cp->GetInt("index");
+            }
+            else if (Q_strcmp(cp->GetName(), "end") == 0)
+            {
+                zoneType = 2;
+            }
+            else
+            {
+                Warning("Error while reading zone file: Unknown mapzone type!\n");
+                continue;
+            }
+
+            // Add element
+            m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index));
+        }
+        DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
+        toReturn = true;
+    }
+    zoneKV->deleteThis();
+    return toReturn;
 }
