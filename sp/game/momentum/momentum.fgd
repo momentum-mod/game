@@ -52,7 +52,7 @@
 @SolidClass base(Trigger) = trigger_timer_onehop : "Trigger that only allows for one hop."
 [
 		checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint. If -2, it teleports to the StartTrigger"
-		hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoin Number checkpoint"
+		hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
 		stop(choices) : "Stop player on teleport" : "0" = 
 		[
 			0 : "False"

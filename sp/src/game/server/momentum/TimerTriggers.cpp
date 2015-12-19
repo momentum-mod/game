@@ -16,6 +16,7 @@ void CBaseMomentumTrigger::Spawn()
 // MOM_TODO Base for func_resetcheckpoints. Not implemented yet
 void CBaseMomentumTrigger::ResetCheckpoints()
 {
+    //TODO null checks
 	g_Timer.SetCurrentCheckpointTrigger(NULL);
 	UTIL_GetLocalPlayer()->SetAbsOrigin(g_Timer.GetStartTrigger()->GetAbsOrigin());
 	UTIL_GetLocalPlayer()->SetAbsVelocity(Vector(0));
@@ -42,7 +43,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther) {
 			g_Timer.Stop();
 			g_Timer.DispatchResetMessage();
 		}
-		g_Timer.SetCurrentCheckpointTrigger(NULL);
+		//g_Timer.SetCurrentCheckpointTrigger(NULL);
 	}
 	BaseClass::StartTouch(pOther);
 }
@@ -67,16 +68,11 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 {
 	BaseClass::StartTouch(pOther);
 
-	if (pOther->IsPlayer())
-		g_Timer.SetCurrentCheckpointTrigger(this);
-		g_Timer.ResetLastOnehop();
-}
-
-void CTriggerCheckpoint::EndTouch(CBaseEntity *pOther)
-{
-	if (pOther->IsPlayer())
-		g_Timer.SetCurrentCheckpointTrigger(this);
-	BaseClass::EndTouch(pOther);
+    if (pOther->IsPlayer())
+    {
+        g_Timer.SetCurrentCheckpointTrigger(this);
+        g_Timer.ResetLastOnehop();
+    }
 }
 
 int CTriggerCheckpoint::GetCheckpointNumber()
@@ -145,11 +141,11 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 	}
 }
 
-// Hack? Stops an assertion on BaseThinkFun from appearing
-void CTriggerTeleportCheckpoint::Think()
-{
-
-}
+//// Hack? Stops an assertion on BaseThinkFun from appearing
+//void CTriggerTeleportCheckpoint::Think()
+//{
+//
+//}
 
 
 LINK_ENTITY_TO_CLASS(trigger_timer_onehop, CTriggerOnehop);

@@ -17,16 +17,6 @@ public:
 	virtual void ResetCheckpoints();
 };
 
-// CTriggerTimerStart
-class CTriggerTimerStart : public CBaseMomentumTrigger
-{
-	DECLARE_CLASS(CTriggerTimerStart, CBaseMomentumTrigger);
-
-public:
-	void EndTouch(CBaseEntity*);
-	void StartTouch(CBaseEntity*);
-};
-
 // CTriggerTimerStop
 class CTriggerTimerStop : public CBaseMomentumTrigger
 {
@@ -39,17 +29,27 @@ public:
 // CTriggerCheckpoint
 class CTriggerCheckpoint : public CBaseMomentumTrigger
 {
-	DECLARE_CLASS(CTriggerCheckpoint, CTriggerMultiple);
+	DECLARE_CLASS(CTriggerCheckpoint, CBaseMomentumTrigger);
 	DECLARE_DATADESC();
 
 public:
 	void StartTouch(CBaseEntity*);
-	void EndTouch(CBaseEntity*);
 	int GetCheckpointNumber();
 	void SetCheckpointNumber(int);
 
 private:
 	int m_iCheckpointNumber;
+};
+
+// CTriggerTimerStart
+class CTriggerTimerStart : public CTriggerCheckpoint
+{
+    DECLARE_CLASS(CTriggerTimerStart, CTriggerCheckpoint);
+
+public:
+    void EndTouch(CBaseEntity*);
+    void StartTouch(CBaseEntity*);
+    int GetCheckpointNumber() { return 0; }
 };
 
 // CFilterCheckpoint
@@ -69,7 +69,7 @@ private:
 // CTriggerTeleportCheckpoint
 class CTriggerTeleportCheckpoint : public CBaseMomentumTrigger
 {
-	DECLARE_CLASS(CTriggerTeleportCheckpoint, CTriggerMultiple);
+	DECLARE_CLASS(CTriggerTeleportCheckpoint, CBaseMomentumTrigger);
 	DECLARE_DATADESC();
 
 public:
@@ -79,13 +79,13 @@ private:
 	int m_iCheckpointNumber;
 	// Stop player after teleporting him?
 	bool m_bResetVelocity = false;
-	void Think();
+	//void Think();
 
 };
 
 class CTriggerOnehop : public CBaseMomentumTrigger
 {
-	DECLARE_CLASS(CTriggerOnehop, CTriggerMultiple);
+	DECLARE_CLASS(CTriggerOnehop, CBaseMomentumTrigger);
 	DECLARE_DATADESC();
 
 public:
@@ -101,7 +101,7 @@ private:
 
 class CTriggerResetOnehop : public CBaseMomentumTrigger
 {
-	DECLARE_CLASS(CTriggerResetOnehop, CTriggerMultiple);
+	DECLARE_CLASS(CTriggerResetOnehop, CBaseMomentumTrigger);
 
 public:
 	void StartTouch(CBaseEntity*);
