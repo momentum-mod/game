@@ -5,7 +5,7 @@ class CMapzone
 {
 public:
 	CMapzone::CMapzone();
-	CMapzone::CMapzone(const int, Vector*, QAngle*, Vector*, Vector*, const int);
+	CMapzone::CMapzone(const int, Vector*, QAngle*, Vector*, Vector*, const int,const bool, const float,const int);
 	~CMapzone();
 
 	void SpawnZone();
@@ -18,8 +18,11 @@ public:
     Vector* GetScaleMaxs() { return m_scaleMaxs; }
 
 private:
-	int m_type; // 0 = start, 1 = checkpoint, 2 = end
+	int m_type; // 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport
 	int m_index; // Ignored when not a checkpoint
+	bool m_shouldStopOnTeleport; // Ignored when not teleporting
+	float m_holdTimeBeforeTeleport; // Ignored when not a teleport
+	int m_destinationIndex; // Ignored when not a Onehop or Checkpoint_teleport
 	Vector* m_pos;
 	QAngle* m_rot;
 	Vector* m_scaleMins;

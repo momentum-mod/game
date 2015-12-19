@@ -58,6 +58,10 @@
 			0 : "False"
 			1 : "True"
 		]
+		spawnflags(flags) =
+		[
+			2 : "Reset hop state if player hops onto another different onehop" : 1
+		]
 ]
 
 @FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at the given checkpoint or not."

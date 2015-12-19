@@ -72,7 +72,7 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         g_Timer.SetCurrentCheckpointTrigger(this);
-        g_Timer.ResetLastOnehop();
+		g_Timer.RemoveAllOnehopsFromList();
     }
 }
 
@@ -142,6 +142,16 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 	}
 }
 
+void CTriggerTeleportCheckpoint::SetDestinationCheckpointNumber(int pNewNumber)
+{
+	m_iCheckpointNumber = pNewNumber;
+}
+
+void CTriggerTeleportCheckpoint::SetShouldStopPlayer(bool pShouldStop)
+{
+	m_bResetVelocity = pShouldStop;
+}
+
 
 LINK_ENTITY_TO_CLASS(trigger_timer_onehop, CTriggerOnehop);
 
@@ -151,13 +161,16 @@ DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
 END_DATADESC()
 
+const int SF_TELEPORT_RESET_ONEHOP = 0x2;	// Reset hop state if player hops onto another different onehop
+
 // MOM_TODO: Add teleport after delay m_fMaxHoldSeconds has passed
 // CTriggerOnehop
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
 	if (pOther->IsPlayer())
 	{
-		if (g_Timer.GetLastOnehop() != NULL && (g_Timer.GetLastOnehop() == this))
+
+		if (g_Timer.FindOnehopOnList(this) != (-1))
 		{ 
 			// (-2): Go to TriggerStart
 			// (-1): Last activated checkpoint
@@ -187,15 +200,42 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 			}
 			if (m_bResetVelocity)
 				pOther->SetAbsVelocity(vec3_origin);
-			// And we reset the lastOnehop to NULL so if next one the player steps in (after being teleported) is this, he has a chance and it doesn't auto teleports the player
-			g_Timer.ResetLastOnehop();
+			// And we reset the lastOnehop to NULL so the player has a chance and it doesn't auto teleports again
+			g_Timer.RemoveAllOnehopsFromList();
 		}
 		else
 		{
-			g_Timer.SetLastOnehop(this);
+			if (g_Timer.GetOnehopListCount() > 0)
+			{
+				// I don't know if Count gets updated for each for, so better be safe than sorry
+				// This method shouldn't be slow. Isn't it?
+				int c_MaxCount = g_Timer.GetOnehopListCount();
+				for (int iIndex = 0; iIndex < c_MaxCount; iIndex++)
+				{
+					CTriggerOnehop *thisOnehop = g_Timer.FindOnehopOnList(iIndex);
+					if (thisOnehop != NULL && thisOnehop->HasSpawnFlags(SF_TELEPORT_RESET_ONEHOP))
+						g_Timer.RemoveOnehopFromList(thisOnehop);
+				}
+			}
+			g_Timer.AddOnehopToListTail(this);
 			// MOM_TODO: Add the delay here?
 		}
 	}
+}
+
+void CTriggerOnehop::SetDestinationIndex(int pNewIndex)
+{
+	m_iDestinationCheckpointNumber = pNewIndex;
+}
+
+void CTriggerOnehop::SetShouldStopPlayer(bool pShouldStop)
+{
+	m_bResetVelocity = pShouldStop;
+}
+
+void CTriggerOnehop::SetHoldTeleportTime(float pHoldTime)
+{
+	m_fMaxHoldSeconds = pHoldTime;
 }
 
 
@@ -205,7 +245,7 @@ LINK_ENTITY_TO_CLASS(trigger_timer_resetonehop, CTriggerResetOnehop);
 void CTriggerResetOnehop::StartTouch(CBaseEntity *pOther)
 {
 	if (pOther->IsPlayer())
-		g_Timer.ResetLastOnehop();
+		g_Timer.RemoveAllOnehopsFromList();
 }
 
 

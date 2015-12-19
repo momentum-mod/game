@@ -49,6 +49,7 @@ class CTriggerTimerStart : public CTriggerCheckpoint
 public:
     void EndTouch(CBaseEntity*);
     void StartTouch(CBaseEntity*);
+	// The start is always the first checkpoint: 0
     int GetCheckpointNumber() { return 0; }
 };
 
@@ -74,15 +75,24 @@ class CTriggerTeleportCheckpoint : public CBaseMomentumTrigger
 
 public:
 	void StartTouch(CBaseEntity*);
+	int GetDestinationCheckpointNumber() { return m_iCheckpointNumber; }
+	bool GetShouldStopPlayer() { return m_bResetVelocity; };
+	// -1: Current checkpoint
+	// default: Checkpoint with pNewNumber index
+	void SetDestinationCheckpointNumber(int);
+	void SetShouldStopPlayer(bool);
 
 private:
+	// Where to teleport the player.
+	// -1: Current checkpoint
+	// Default: Checkpoint with that index
 	int m_iCheckpointNumber;
-	// Stop player after teleporting him?
+	// Should the player be stopped after teleport?
 	bool m_bResetVelocity = false;
-	//void Think();
 
 };
 
+// CTriggerOnehop
 class CTriggerOnehop : public CBaseMomentumTrigger
 {
 	DECLARE_CLASS(CTriggerOnehop, CBaseMomentumTrigger);
@@ -90,15 +100,23 @@ class CTriggerOnehop : public CBaseMomentumTrigger
 
 public:
 	void StartTouch(CBaseEntity*);
+	int GetDestinationIndex() { return m_iDestinationCheckpointNumber; }
+	bool GetShouldStopPlayer() { return m_bResetVelocity; }
+	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
+	void SetDestinationIndex(int pNewIndex);
+	void SetShouldStopPlayer(bool pShouldStop);
+	void SetHoldTeleportTime(float pHoldTime);
 
 private:
+	// Should the player be stopped after teleport?
 	bool m_bResetVelocity = true;
+	// Seconds to hold before activating the teleport
 	float m_fMaxHoldSeconds = 1;
-	// Where to go if it becomes active
-	int m_iDestinationCheckpointNumber;
-
+	// Where to teleport the player if it becomes active
+	int m_iDestinationCheckpointNumber = -1;
 };
 
+// CTriggerResetOnehop
 class CTriggerResetOnehop : public CBaseMomentumTrigger
 {
 	DECLARE_CLASS(CTriggerResetOnehop, CBaseMomentumTrigger);

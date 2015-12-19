@@ -23,7 +23,6 @@ public:
 	CTriggerTimerStart *GetStartTrigger();
 	CTriggerCheckpoint *GetCurrentCheckpoint();
 	CTriggerCheckpoint *GetCheckpointAt(int checkpointNumber);
-	CTriggerOnehop *GetLastOnehop();
 	void SetStartTrigger(CTriggerTimerStart *pTrigger);
 	void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger);
 	int GetCurrentCPMenuStep()
@@ -57,11 +56,18 @@ public:
 	}
 	// Trigger_Onehop stuff
 
-	void SetLastOnehop(CTriggerOnehop* pTrigger);
-	void ResetLastOnehop()
-	{
-		m_pLastOnehop = NULL;
-	}
+	// Removes the given Onehop form the hopped list.
+	// Returns: True if deleted, False if not found.
+	bool RemoveOnehopFromList(CTriggerOnehop* pTrigger);
+	// Adds the give Onehop to the hopped list.
+	// Returns: Its new index.
+	int AddOnehopToListTail(CTriggerOnehop* pTrigger);
+	// Finds a Onehop on the hopped list.
+	// Returns: Its index. -1 if not found
+	int FindOnehopOnList(CTriggerOnehop* pTrigger);
+	void RemoveAllOnehopsFromList() { onehops.RemoveAll(); }
+	int GetOnehopListCount() { return onehops.Count(); }
+	CTriggerOnehop* FindOnehopOnList(int pIndexOnList);
 
 private:
 
@@ -71,7 +77,6 @@ private:
 
 	CTriggerTimerStart *m_pStartTrigger;
 	CTriggerCheckpoint *m_pCurrentCheckpoint;
-	CTriggerOnehop *m_pLastOnehop;
 
 	struct Checkpoint {
 		Vector pos;
@@ -79,6 +84,7 @@ private:
 		QAngle ang;
 	};
 	CUtlVector<Checkpoint> checkpoints;
+	CUtlVector<CTriggerOnehop*> onehops;
 	int m_iCurrentStepCP = 0;
 	bool m_bUsingCPMenu = false;
 };

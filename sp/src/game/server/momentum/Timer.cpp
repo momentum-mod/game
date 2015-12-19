@@ -114,16 +114,31 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
 	cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
 }
 
-void CTimer::SetLastOnehop(CTriggerOnehop *pTrigger)
+
+// CTriggerOnehop
+int CTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger)
 {
-	// MOM_TODO: First set the former Onehop hopped status to false if the flag is set to that
-	m_pLastOnehop = pTrigger;
+	return onehops.AddToTail(pTrigger);
 }
 
-CTriggerOnehop *CTimer::GetLastOnehop()
+// CTriggerOnehop
+bool CTimer::RemoveOnehopFromList(CTriggerOnehop *pTrigger)
 {
-	return m_pLastOnehop;
+	return onehops.FindAndRemove(pTrigger);
 }
+
+// CTriggerOnehop
+int CTimer::FindOnehopOnList(CTriggerOnehop *pTrigger)
+{
+	return onehops.Find(pTrigger);
+}
+
+// CTriggerOnehop
+CTriggerOnehop *CTimer::FindOnehopOnList(int pIndexOnList)
+{
+	return onehops.Element(pIndexOnList);
+}
+
 
 class CTimerCommands
 {
@@ -133,11 +148,15 @@ public:
 		// MOM_TODO(fatalis):
 		// if the ent no longer exists this will crash
 		// should probably use a handle or something
-		CTriggerTimerStart *start;
-		if ((start = g_Timer.GetStartTrigger()) != NULL)
+		CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
+		if (cPlayer != NULL)
 		{
-			UTIL_SetOrigin(UTIL_GetLocalPlayer(), start->WorldSpaceCenter(), true);
-			UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
+			CTriggerTimerStart *start;
+			if ((start = g_Timer.GetStartTrigger()) != NULL)
+			{
+				UTIL_SetOrigin(cPlayer, start->WorldSpaceCenter(), true);
+				cPlayer->SetAbsVelocity(vec3_origin);
+			}
 		}
 	}
 	

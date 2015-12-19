@@ -31,7 +31,7 @@ CMapzone::~CMapzone()
 	}
 }
 
-CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins, Vector* pScaleMaxs, const int pIndex)
+CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins, Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, const float pHoldTime, const int pDestinationIndex)
 {
 	m_type = pType;
 	m_pos = pPos;
@@ -39,6 +39,9 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
 	m_scaleMins = pScaleMins;
 	m_scaleMaxs = pScaleMaxs;
 	m_index = pIndex;
+	m_shouldStopOnTeleport = pShouldStop;
+	m_holdTimeBeforeTeleport = pHoldTime;
+	m_destinationIndex = pDestinationIndex;
 }
 
 void CMapzone::SpawnZone()
@@ -59,6 +62,22 @@ void CMapzone::SpawnZone()
 		m_trigger = (CTriggerTimerStop *)CreateEntityByName("trigger_timer_stop");
 		m_trigger->SetName(MAKE_STRING("Ending Trigger"));
 		break;
+	case 3://onehop
+		m_trigger = (CTriggerOnehop *)CreateEntityByName("trigger_timer_onehop");
+		m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
+		((CTriggerOnehop *)m_trigger)->SetDestinationIndex(m_destinationIndex);
+		((CTriggerOnehop *)m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
+		((CTriggerOnehop *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
+		break;
+	case 4://resetonehop
+		m_trigger = (CTriggerResetOnehop *)CreateEntityByName("trigger_timer_resetonehop");
+		m_trigger->SetName(MAKE_STRING("ResetOnehop Trigger"));
+		break;
+	case 5://checkpoint_teleport
+		m_trigger = (CTriggerTeleportCheckpoint *)CreateEntityByName("trigger_timer_checkpoint_teleport");
+		m_trigger->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
+		((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointNumber(m_destinationIndex);
+		((CTriggerTeleportCheckpoint *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
 	default:
 		break;
 	}
@@ -96,6 +115,32 @@ static void saveZonFile(const char* szMapName)
 			{
 				subKey = new KeyValues("checkpoint");
 				subKey->SetInt("number", pTrigger->GetCheckpointNumber());
+			}
+		}
+		else if (pEnt->ClassMatches("trigger_timer_onehop"))
+		{
+			CTriggerOnehop* pTrigger = dynamic_cast<CTriggerOnehop*>(pEnt);
+			if (pTrigger)
+			{
+				subKey = new KeyValues("onehop");
+				subKey->SetInt("destination", pTrigger->GetDestinationIndex());
+				subKey->SetBool("stop", pTrigger->GetShouldStopPlayer());
+				subKey->SetFloat("hold", pTrigger->GetHoldTeleportTime());
+			}
+		}
+		else if (pEnt->ClassMatches("trigger_timer_resetonehop"))
+		{
+			subKey = new KeyValues("resetonehop");
+		}
+		else if (pEnt->ClassMatches("trigger_timer_checkpoint_teleport"))
+		{
+			
+			CTriggerTeleportCheckpoint* pTrigger = dynamic_cast<CTriggerTeleportCheckpoint*>(pEnt);
+			if (pTrigger)
+			{
+				subKey = new KeyValues("checkpoint_teleport");
+				subKey->SetInt("destination", pTrigger->GetDestinationCheckpointNumber());
+				subKey->SetBool("stop", pTrigger->GetShouldStopPlayer());
 			}
 		}
 		if (subKey)
@@ -169,6 +214,15 @@ bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
     case 2:
         Q_strcpy(name, "trigger_timer_stop");
         break;
+	case 3:
+		Q_strcpy(name, "trigger_timer_onehop");
+		break;
+	case 4:
+		Q_strcpy(name, "trigger_timer_resetonehop");
+		break;
+	case 5:
+		Q_strcpy(name, "trigger_timer_checkpoint_teleport");
+		break;
     default:
         return false;
     }
@@ -227,8 +281,12 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             Vector* scaleMaxs = new Vector(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
 
             // Do specific things for different types of checkpoints
+			// 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport
             int zoneType = -1;
             int index = -1;
+			bool shouldStop = false;
+			float holdTime = 1;
+			int destinationIndex = -1;
 
             if (Q_strcmp(cp->GetName(), "start") == 0)
             {
@@ -242,15 +300,32 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             else if (Q_strcmp(cp->GetName(), "end") == 0)
             {
                 zoneType = 2;
-            }
+			}
+			else if (Q_strcmp(cp->GetName(), "onehop") == 0)
+			{
+				zoneType = 3;
+				shouldStop = cp->GetBool("stop", false);
+				holdTime = cp->GetFloat("hold", 1);
+				destinationIndex = cp->GetInt("destination", 1);
+			}
+			else if (Q_strcmp(cp->GetName(), "resetonehop") == 0)
+			{
+				zoneType = 4;
+			}
+			else if (Q_strcmp(cp->GetName(), "checkpoint_teleport") == 0)
+			{
+				zoneType = 5;
+				destinationIndex = cp->GetInt("destination", -1);
+				shouldStop = cp->GetBool("stop", false);
+			}
             else
             {
-                Warning("Error while reading zone file: Unknown mapzone type!\n");
+                Warning("Error while reading zone file: Unknown mapzone type %s!\n",cp->GetName());
                 continue;
             }
 
             // Add element
-            m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index));
+			m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, holdTime, destinationIndex));
         }
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
         toReturn = true;
