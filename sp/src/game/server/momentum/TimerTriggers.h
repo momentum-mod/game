@@ -106,14 +106,21 @@ public:
 	void SetDestinationIndex(int pNewIndex);
 	void SetShouldStopPlayer(bool pShouldStop);
 	void SetHoldTeleportTime(float pHoldTime);
+    void Think();
+    void HandleTeleport(CBaseEntity*);
 
 private:
 	// Should the player be stopped after teleport?
 	bool m_bResetVelocity = true;
+    // The time that the player initally touched the trigger
+    float m_fStartTouchedTime = 0;
 	// Seconds to hold before activating the teleport
 	float m_fMaxHoldSeconds = 1;
 	// Where to teleport the player if it becomes active
 	int m_iDestinationCheckpointNumber = -1;
+    // Reset hop state if player hops onto another different onehop
+    const int SF_TELEPORT_RESET_ONEHOP = 0x2;	
+
 };
 
 // CTriggerResetOnehop

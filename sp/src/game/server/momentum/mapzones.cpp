@@ -31,7 +31,9 @@ CMapzone::~CMapzone()
 	}
 }
 
-CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins, Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, const float pHoldTime, const int pDestinationIndex)
+CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins, 
+    Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, 
+    const float pHoldTime, const int pDestinationIndex)
 {
 	m_type = pType;
 	m_pos = pPos;
@@ -285,7 +287,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             int zoneType = -1;
             int index = -1;
 			bool shouldStop = false;
-			float holdTime = 1;
+			float holdTime = 1.0f;
 			int destinationIndex = -1;
 
             if (Q_strcmp(cp->GetName(), "start") == 0)
@@ -325,7 +327,8 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             }
 
             // Add element
-			m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, holdTime, destinationIndex));
+			m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, 
+                holdTime, destinationIndex));
         }
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
         toReturn = true;
