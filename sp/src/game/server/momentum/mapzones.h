@@ -18,11 +18,11 @@ public:
     Vector* GetScaleMaxs() { return m_scaleMaxs; }
 
 private:
-	int m_type; // 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport
+	int m_type; // 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport, 6 = multihop
 	int m_index; // Ignored when not a checkpoint
-	bool m_shouldStopOnTeleport; // Ignored when not teleporting
-	float m_holdTimeBeforeTeleport; // Ignored when not a teleport
-	int m_destinationIndex; // Ignored when not a Onehop or Checkpoint_teleport
+	bool m_shouldStopOnTeleport; // Stop player on teleport?
+	float m_holdTimeBeforeTeleport; // How much to wait for before teleporting
+	int m_destinationIndex; // Where to teleport to
 	Vector* m_pos;
 	QAngle* m_rot;
 	Vector* m_scaleMins;

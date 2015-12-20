@@ -1,4 +1,4 @@
-- [ ] Custom .FGD creation
+- [x] Custom .FGD creation
     -  [x] filter_activator_checkpoint
     -  [x] trigger_checkpoint:
         -  [x] Hitting this trigger will set your checkpoint to this checkpoint IF you are on a lower checkpoint

@@ -80,6 +80,13 @@ void CMapzone::SpawnZone()
 		m_trigger->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
 		((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointNumber(m_destinationIndex);
 		((CTriggerTeleportCheckpoint *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
+	case 6://multihop
+		m_trigger = (CTriggerOnehop *)CreateEntityByName("trigger_timer_onehop");
+		m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
+		((CTriggerMultihop *)m_trigger)->SetDestinationIndex(m_destinationIndex);
+		((CTriggerMultihop *)m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
+		((CTriggerMultihop *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
+		break;
 	default:
 		break;
 	}
@@ -143,6 +150,17 @@ static void saveZonFile(const char* szMapName)
 				subKey = new KeyValues("checkpoint_teleport");
 				subKey->SetInt("destination", pTrigger->GetDestinationCheckpointNumber());
 				subKey->SetBool("stop", pTrigger->GetShouldStopPlayer());
+			}
+		}
+		else if (pEnt->ClassMatches("trigger_timer_multihop"))
+		{
+			CTriggerMultihop* pTrigger = dynamic_cast<CTriggerMultihop*>(pEnt);
+			if (pTrigger)
+			{
+				subKey = new KeyValues("multihop");
+				subKey->SetInt("destination", pTrigger->GetDestinationIndex());
+				subKey->SetBool("stop", pTrigger->GetShouldStopPlayer());
+				subKey->SetFloat("hold", pTrigger->GetHoldTeleportTime());
 			}
 		}
 		if (subKey)
@@ -225,6 +243,9 @@ bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
 	case 5:
 		Q_strcpy(name, "trigger_timer_checkpoint_teleport");
 		break;
+	case 6:
+		Q_strcpy(name, "trigger_timer_multihop");
+		break;
     default:
         return false;
     }
@@ -283,7 +304,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             Vector* scaleMaxs = new Vector(cp->GetFloat("xScaleMaxs"), cp->GetFloat("yScaleMaxs"), cp->GetFloat("zScaleMaxs"));
 
             // Do specific things for different types of checkpoints
-			// 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport
+			// 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport, 6 = Multihop
             int zoneType = -1;
             int index = -1;
 			bool shouldStop = false;
@@ -319,6 +340,13 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 				zoneType = 5;
 				destinationIndex = cp->GetInt("destination", -1);
 				shouldStop = cp->GetBool("stop", false);
+			}
+			else if (Q_strcmp(cp->GetName(), "multihop") == 0)
+			{
+				zoneType = 6;
+				shouldStop = cp->GetBool("stop", false);
+				holdTime = cp->GetFloat("hold", 1);
+				destinationIndex = cp->GetInt("destination", 1);
 			}
             else
             {
