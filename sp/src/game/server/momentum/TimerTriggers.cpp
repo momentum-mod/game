@@ -277,7 +277,6 @@ void CTriggerMultihop::StartTouch(CBaseEntity *pOther)
 	if (pOther->IsPlayer())
 	{
 		m_fStartTouchedTime = gpGlobals->realtime;
-		HandleTeleport(pOther);
 	}
 }
 
