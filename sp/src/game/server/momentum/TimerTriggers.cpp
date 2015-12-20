@@ -134,11 +134,7 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 		}
 		if (desiredCP != NULL)
 		{
-			pOther->SetAbsOrigin(desiredCP->GetAbsOrigin());
-			if (m_bResetVelocity)
-			{
-				pOther->SetAbsVelocity(vec3_origin);
-			}
+			pOther->Teleport(&desiredCP->GetAbsOrigin(), NULL, m_bResetVelocity ? &vec3_origin : NULL);
 		}
 	}
 }

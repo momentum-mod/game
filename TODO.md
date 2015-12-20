@@ -5,6 +5,7 @@
         -  [x] Reset any onehop can jump here things
     -  [x] trigger_teleport_checkpoint
     -  [ ] func_shootboost: (Potential entity not needed that handles shootboosts but is an idea)
+    -  [x] momentum_gun
     -  [x] trigger_onehop_reset
     -  [x] trigger_onehop:
         -  [x] **flags**: something about allowing to hop on it again after hitting another.
@@ -32,7 +33,7 @@
     -  [ ] Limit speed inside Start Trigger
     -  [ ] Output to fire on the player (!activator) that resets checkpoint like ResetCheckpoint or something.
     -  [x] OneHops needs polishment and getting finished
-        -  [ ] ~~Add teleport after delay m_fMaxHoldSeconds has passed to Onehops~~
+        -  [x] ~~Add teleport after delay m_fMaxHoldSeconds has passed to Onehops~~
 
 -  [x] mapzones.cpp (Server)
     -  [x] Remove goto usage

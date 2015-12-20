@@ -19,15 +19,20 @@
 	]
 ] 
 
-
-@SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer."
+@BaseClass color(0 0 200) base(Targetname, Angles) = Weapon
 [
+	spawnflags(Flags) =
+	[
+		1 : "Start constrained" : 0
+	]
+
+	output OnPlayerUse(void) : "Fires when the player +uses this weapon"
+	output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
 ]
 
-@SolidClass base(Trigger) = trigger_timer_stop : "Trigger that stops the timer."
-[
+@SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer." []
 
-]
+@SolidClass base(Trigger) = trigger_timer_stop : "Trigger that stops the timer." []
 
 @SolidClass base(Trigger) = trigger_timer_checkpoint : "Trigger that saves current position."
 [
@@ -44,10 +49,7 @@
 		]
 ]
 
-@SolidClass base(Trigger) = trigger_timer_resetonehop : "Trigger that resets one hops."
-[
-
-]
+@SolidClass base(Trigger) = trigger_timer_resetonehop : "Trigger that resets one hops." []
 
 @SolidClass base(Trigger) = trigger_timer_onehop : "Trigger that only allows for one hop."
 [
@@ -79,3 +81,5 @@
 [
 		checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"
 ]
+
+@PointClass base(Weapon) studio("models/weapons/w_rif_ak47.mdl") = weapon_momentum_gun : "Base Momentum Gun" []
