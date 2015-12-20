@@ -85,7 +85,31 @@ void CTimer::SetStartTrigger(CTriggerTimerStart *pTrigger)
 
 void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
 {
-	m_pCurrentCheckpoint = pTrigger;
+	// Maybe find a better logic for this one?
+	// It works, but it's not pretty
+	if (m_pCurrentCheckpoint == NULL)
+	{
+		m_pCurrentCheckpoint = pTrigger;
+	}
+	else //pointer is not null
+	{
+		if (pTrigger != NULL)
+		{
+			// Is this the starting trigger?
+			if (pTrigger->GetCheckpointNumber() == 0)
+			{
+				// Then set it, even if its index is lower than current's one
+				m_pCurrentCheckpoint = pTrigger;
+			}
+			else if (pTrigger->GetCheckpointNumber() > m_pCurrentCheckpoint->GetCheckpointNumber())
+			{
+				m_pCurrentCheckpoint = pTrigger;
+			}
+		}
+		else {
+			m_pCurrentCheckpoint = pTrigger;
+		}
+	}
 }
 
 void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
