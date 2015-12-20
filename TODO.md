@@ -8,7 +8,7 @@
     -  [x] trigger_onehop_reset
     -  [x] trigger_onehop:
         -  [x] **flags**: something about allowing to hop on it again after hitting another.
-    -  [ ] trigger_multihop
+    -  [x] trigger_multihop
 
 -  [ ] timer.cpp (Client) 
     -  [ ] Play effects for run states

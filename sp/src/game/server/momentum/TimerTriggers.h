@@ -133,4 +133,33 @@ public:
 
 };
 
+// CTriggerMultihop
+class CTriggerMultihop : public CBaseMomentumTrigger
+{
+	DECLARE_CLASS(CTriggerMultihop, CBaseMomentumTrigger);
+	DECLARE_DATADESC();
+
+public:
+	void StartTouch(CBaseEntity*);
+	void EndTouch(CBaseEntity*);
+	int GetDestinationIndex() { return m_iDestinationCheckpointNumber; }
+	bool GetShouldStopPlayer() { return m_bResetVelocity; }
+	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
+	void SetDestinationIndex(int pNewIndex);
+	void SetShouldStopPlayer(bool pShouldStop);
+	void SetHoldTeleportTime(float pHoldTime);
+	void Think();
+	void HandleTeleport(CBaseEntity*);
+
+private:
+	// Should the player be stopped after teleport?
+	bool m_bResetVelocity = true;
+	// The time that the player initally touched the trigger. -1 if not checking for teleport
+	float m_fStartTouchedTime = 0;
+	// Seconds to hold before activating the teleport
+	float m_fMaxHoldSeconds = 1;
+	// Where to teleport the player if it becomes active.
+	int m_iDestinationCheckpointNumber = -1;
+};
+
 #endif // TIMERTRIGGERS_H

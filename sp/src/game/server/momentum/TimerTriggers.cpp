@@ -162,7 +162,6 @@ DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
 END_DATADESC()
 
-// MOM_TODO: Add teleport after delay m_fMaxHoldSeconds has passed
 // CTriggerOnehop
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
@@ -187,7 +186,6 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 				}
 			}
 			g_Timer.AddOnehopToListTail(this);
-			// MOM_TODO: Add the delay here?
 		}
 	}
 }
@@ -219,13 +217,8 @@ void CTriggerOnehop::HandleTeleport(CBaseEntity *pOther)
     if (desiredCP != NULL)
     {
         pOther->Teleport(&desiredCP->GetAbsOrigin(), NULL, m_bResetVelocity ? &vec3_origin : NULL);
-        //pOther->SetAbsOrigin(desiredCP->GetAbsOrigin());
-        // And we reset the lastOnehop to NULL so the player has a chance and it doesn't auto teleports again
-        g_Timer.RemoveAllOnehopsFromList();
-
-        //if (m_bResetVelocity)
-        //    pOther->SetAbsVelocity(vec3_origin);
-        
+        // And we reset the lastOnehop to NULL so the player has a chance and it doesn't auto teleports again   
+		g_Timer.RemoveAllOnehopsFromList();
         m_fStartTouchedTime = -1.0f;
     }
 }
@@ -266,6 +259,91 @@ void CTriggerResetOnehop::StartTouch(CBaseEntity *pOther)
     BaseClass::StartTouch(pOther);
 	if (pOther->IsPlayer())
 		g_Timer.RemoveAllOnehopsFromList();
+}
+
+
+LINK_ENTITY_TO_CLASS(trigger_timer_multihop, CTriggerMultihop);
+
+BEGIN_DATADESC(CTriggerMultihop)
+DEFINE_KEYFIELD(m_iDestinationCheckpointNumber, FIELD_INTEGER, "checkpoint"),
+DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
+DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
+END_DATADESC()
+
+// CTriggerMultihop
+void CTriggerMultihop::StartTouch(CBaseEntity *pOther)
+{
+	BaseClass::StartTouch(pOther);
+	if (pOther->IsPlayer())
+	{
+		m_fStartTouchedTime = gpGlobals->realtime;
+		HandleTeleport(pOther);
+	}
+}
+
+void CTriggerMultihop::EndTouch(CBaseEntity* pOther)
+{
+	// We don't want to keep checking for tp
+	m_fStartTouchedTime = -1.0f;
+	BaseClass::EndTouch(pOther);
+}
+
+void CTriggerMultihop::HandleTeleport(CBaseEntity *pOther)
+{
+	// (-2): Go to TriggerStart
+	// (-1): Last activated checkpoint
+	// default: Desired checkpoint with this index
+	CBaseMomentumTrigger* desiredCP;
+	switch (m_iDestinationCheckpointNumber)
+	{
+	case (-2) :
+	{
+		desiredCP = g_Timer.GetStartTrigger();
+		break;
+	}
+	case (-1) :
+	{
+		desiredCP = g_Timer.GetCurrentCheckpoint();
+		break;
+	}
+	default:
+	{
+		desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+		break;
+	}
+	}
+	if (desiredCP != NULL)
+	{
+		pOther->Teleport(&desiredCP->GetAbsOrigin(), NULL, m_bResetVelocity ? &vec3_origin : NULL);
+		m_fStartTouchedTime = -1.0f;
+	}
+}
+
+void CTriggerMultihop::SetDestinationIndex(int pNewIndex)
+{
+	m_iDestinationCheckpointNumber = pNewIndex;
+}
+
+void CTriggerMultihop::SetShouldStopPlayer(bool pShouldStop)
+{
+	m_bResetVelocity = pShouldStop;
+}
+
+void CTriggerMultihop::SetHoldTeleportTime(float pHoldTime)
+{
+	m_fMaxHoldSeconds = pHoldTime;
+}
+
+void CTriggerMultihop::Think()
+{
+	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+	if (pPlayer != NULL && m_fStartTouchedTime > 0)
+	{
+		if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
+		{
+			HandleTeleport(pPlayer);
+		}
+	}
 }
 
 
