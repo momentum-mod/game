@@ -32,6 +32,14 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 	{
 		g_Timer.Start(gpGlobals->tickcount);
 		g_Timer.SetStartTrigger(this);
+		if (GetIsLimitingSpeed() && pOther != NULL)
+		{
+			Vector velocity = pOther->GetAbsVelocity();
+			if (velocity.IsLengthGreaterThan(m_fMaxLeaveSpeed))
+			{
+				pOther->SetAbsVelocity(velocity.Normalized() * m_fMaxLeaveSpeed);
+			}
+		}
 	}
 	BaseClass::EndTouch(pOther);
 }
@@ -50,7 +58,43 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 	BaseClass::StartTouch(pOther);
 }
 
+void CTriggerTimerStart::Spawn()
+{
+	BaseClass::Spawn();
+	// We don't want negative velocities (We're checking against an absolute value)
+	if (m_fMaxLeaveSpeed < 0)
+		m_fMaxLeaveSpeed *= (-1);
+}
+
+void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed)
+{
+	if (pMaxLeaveSpeed < 0)
+		pMaxLeaveSpeed *= (-1);
+	m_fMaxLeaveSpeed = pMaxLeaveSpeed;
+}
+
+void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
+{
+	if (pIsLimitingSpeed)
+	{
+		if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
+		{
+			AddSpawnFlags(SF_LIMIT_LEAVE_SPEED);
+		}
+	}
+	else {
+		if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
+		{
+			RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED);
+		}
+	}
+}
+
 LINK_ENTITY_TO_CLASS(trigger_timer_start, CTriggerTimerStart);
+
+BEGIN_DATADESC(CTriggerTimerStart)
+DEFINE_KEYFIELD(m_fMaxLeaveSpeed, FIELD_FLOAT, "leavespeed")
+END_DATADESC()
 
 
 // CTriggerTimerStop
@@ -69,11 +113,11 @@ LINK_ENTITY_TO_CLASS(trigger_timer_stop, CTriggerTimerStop);
 void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 {
 	BaseClass::StartTouch(pOther);
-
     if (pOther->IsPlayer())
     {
         g_Timer.SetCurrentCheckpointTrigger(this);
 		g_Timer.RemoveAllOnehopsFromList();
+		g_Timer.DispatchCheckpointMessage();
     }
 }
 
@@ -346,17 +390,27 @@ void CTriggerMultihop::Think()
 // Test Functions
 //////
 
-static void TestCreateTriggerStart(void)
+static void TestCreateTriggerStart(const CCommand &args)
 {
 	CTriggerTimerStart *pTrigger = (CTriggerTimerStart *)CreateEntityByName("trigger_timer_start");
 	if (pTrigger)
 	{
 		pTrigger->Spawn();
 		pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-		pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
+		pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
+		if (Q_atoi(args.Arg(4)))
+		{
+			pTrigger->SetIsLimitingSpeed(true);
+			pTrigger->SetMaxLeaveSpeed(Q_atoi(args.Arg(4)));
+		}
+		else {
+			pTrigger->SetIsLimitingSpeed(false);
+		}
 		pTrigger->SetSolid(SOLID_BBOX);
 		pTrigger->AddEffects(0x020);
 		pTrigger->SetName(MAKE_STRING("Start Trigger"));
+		
+		
 		// now use mom_reset_to_start
 	}
 }
@@ -394,6 +448,6 @@ static void TestCreateTriggerCheckpoint(const CCommand &args)
 	}
 }
 
-static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test");
+static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test\nUsage: mom_createstart <SizeX> <SizeY> <SizeZ> <MaxLeaveSpeed>");
 static ConCommand mom_createstop("mom_createstop", TestCreateTriggerStop, "Create StopTrigger test");
 static ConCommand mom_createcheckpoint("mom_createcheckpoint", TestCreateTriggerCheckpoint, "Create CheckpointTrigger test");

@@ -38,6 +38,14 @@ void CTimer::DispatchStateMessage()
 	MessageEnd();
 }
 
+void CTimer::DispatchCheckpointMessage()
+{
+	CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+	user.MakeReliable();
+	UserMessageBegin(user, "Timer_Checkpoint");
+	MessageEnd();
+}
+
 bool CTimer::IsRunning()
 {
 	return m_bIsRunning;
@@ -103,6 +111,8 @@ void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
 			}
 			else if (pTrigger->GetCheckpointNumber() > m_pCurrentCheckpoint->GetCheckpointNumber())
 			{
+				// This is why we want to separate this if:
+				DispatchCheckpointMessage();
 				m_pCurrentCheckpoint = pTrigger;
 			}
 		}

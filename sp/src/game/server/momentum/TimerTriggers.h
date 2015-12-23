@@ -45,12 +45,25 @@ private:
 class CTriggerTimerStart : public CTriggerCheckpoint
 {
     DECLARE_CLASS(CTriggerTimerStart, CTriggerCheckpoint);
+	DECLARE_DATADESC();
 
 public:
     void EndTouch(CBaseEntity*);
     void StartTouch(CBaseEntity*);
+	void Spawn();
 	// The start is always the first checkpoint: 0
     int GetCheckpointNumber() { return 0; }
+	float GetMaxLeaveSpeed() { return m_fMaxLeaveSpeed; }
+	void SetMaxLeaveSpeed(float pMaxSpeed);
+	bool GetIsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
+	void SetIsLimitingSpeed(bool pIsLimitingSpeed);
+
+private:
+	// How fast can the player leave the start trigger?
+	float m_fMaxLeaveSpeed = 260;
+	// Limit max leave speed to m_fMaxLeaveSpeed?
+	const int SF_LIMIT_LEAVE_SPEED = 0x2;
+
 };
 
 // CFilterCheckpoint

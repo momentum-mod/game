@@ -5,7 +5,7 @@ class CMapzone
 {
 public:
 	CMapzone::CMapzone();
-	CMapzone::CMapzone(const int, Vector*, QAngle*, Vector*, Vector*, const int,const bool, const float,const int);
+	CMapzone::CMapzone(const int, Vector*, QAngle*, Vector*, Vector*, const int,const bool, const float,const int,const bool,const float);
 	~CMapzone();
 
 	void SpawnZone();
@@ -23,6 +23,9 @@ private:
 	bool m_shouldStopOnTeleport; // Stop player on teleport?
 	float m_holdTimeBeforeTeleport; // How much to wait for before teleporting
 	int m_destinationIndex; // Where to teleport to
+	// startTrigger
+	bool m_limitingspeed; // Limit leave speed?
+	float m_maxleavespeed; // Max speed allowed
 	Vector* m_pos;
 	QAngle* m_rot;
 	Vector* m_scaleMins;

@@ -33,7 +33,8 @@ CMapzone::~CMapzone()
 
 CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins, 
     Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, 
-    const float pHoldTime, const int pDestinationIndex)
+    const float pHoldTime, const int pDestinationIndex, const bool pLimitSpeed,
+	const float pMaxLeaveSpeed)
 {
 	m_type = pType;
 	m_pos = pPos;
@@ -44,6 +45,8 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
 	m_shouldStopOnTeleport = pShouldStop;
 	m_holdTimeBeforeTeleport = pHoldTime;
 	m_destinationIndex = pDestinationIndex;
+	m_limitingspeed = pLimitSpeed;
+	m_maxleavespeed = pMaxLeaveSpeed;
 }
 
 void CMapzone::SpawnZone()
@@ -52,6 +55,8 @@ void CMapzone::SpawnZone()
 	{
 	case 0://start
 		m_trigger = (CTriggerTimerStart *)CreateEntityByName("trigger_timer_start");
+		((CTriggerTimerStart *)m_trigger)->SetIsLimitingSpeed(m_limitingspeed);
+		((CTriggerTimerStart *)m_trigger)->SetMaxLeaveSpeed(m_maxleavespeed);
 		m_trigger->SetName(MAKE_STRING("Start Trigger"));
 		g_Timer.SetStartTrigger((CTriggerTimerStart *)m_trigger);
 		break;
@@ -111,7 +116,13 @@ static void saveZonFile(const char* szMapName)
 		KeyValues* subKey = NULL;
 		if (pEnt->ClassMatches("trigger_timer_start"))
 		{
+			CTriggerTimerStart* pTrigger = dynamic_cast<CTriggerTimerStart*>(pEnt);
 			subKey = new KeyValues("start");
+			if (pTrigger)
+			{
+				subKey->SetFloat("leavespeed", pTrigger->GetMaxLeaveSpeed());
+				subKey->SetBool("limitingspeed", pTrigger->GetIsLimitingSpeed());
+			}
 		}
 		else if (pEnt->ClassMatches("trigger_timer_stop"))
 		{
@@ -310,10 +321,14 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 			bool shouldStop = false;
 			float holdTime = 1.0f;
 			int destinationIndex = -1;
+			bool limitingspeed = true;
+			float maxleavespeed = 260;
 
             if (Q_strcmp(cp->GetName(), "start") == 0)
             {
                 zoneType = 0;
+				limitingspeed = cp->GetBool("limitingspeed");
+				maxleavespeed = cp->GetFloat("leavespeed");
             }
             else if (Q_strcmp(cp->GetName(), "checkpoint") == 0)
             {
@@ -356,7 +371,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 
             // Add element
 			m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, 
-                holdTime, destinationIndex));
+                holdTime, destinationIndex,limitingspeed,maxleavespeed));
         }
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
         toReturn = true;

@@ -30,56 +30,63 @@
 	output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
 ]
 
-@SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer." []
+@SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer." 
+[
+	leavespeed(integer) : "Max leave speed" : 260 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
+	spawnflags(flags) =
+	[
+		2 : "Limit leave speed" : 1
+	]
+]
 
 @SolidClass base(Trigger) = trigger_timer_stop : "Trigger that stops the timer." []
 
 @SolidClass base(Trigger) = trigger_timer_checkpoint : "Trigger that saves current position."
 [
-		checkpoint(integer) : "Checkpoint Number" : 1 : "The checkpoint number (stage) that this trigger correlates to. (0 is automatically the start trigger!)"
+	checkpoint(integer) : "Checkpoint Number" : 1 : "The checkpoint number (stage) that this trigger correlates to. (0 is automatically the start trigger!)"
 ]
 
 @SolidClass base(Trigger) = trigger_timer_checkpoint_teleport : "Trigger that teleports to the desired checkpoint."
 [
-		checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint."
-		stop(choices) : "Stop player on teleport" : "0" = 
-		[
-			0 : "False"
-			1 : "True"
-		]
+	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint."
+	stop(choices) : "Stop player on teleport" : "0" = 
+	[
+		0 : "False"
+		1 : "True"
+	]
 ]
 
 @SolidClass base(Trigger) = trigger_timer_resetonehop : "Trigger that resets one hops." []
 
 @SolidClass base(Trigger) = trigger_timer_onehop : "Trigger that only allows for one hop."
 [
-		checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
-		hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
-		stop(choices) : "Stop player on teleport" : "0" = 
-		[
-			0 : "False"
-			1 : "True"
-		]
-		spawnflags(flags) =
-		[
-			2 : "Reset hop state if player hops onto another different onehop" : 1
-		]
+	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
+	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
+	stop(choices) : "Stop player on teleport" : "0" = 
+	[
+		0 : "False"
+		1 : "True"
+	]
+	spawnflags(flags) =
+	[
+		2 : "Reset hop state if player hops onto another different onehop" : 1
+	]
 ]
 
 @SolidClass base(Trigger) = trigger_timer_multihop : "Trigger that allows for multiple hops, as long as the player hops."
 [
-		checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
-		hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
-		stop(choices) : "Stop player on teleport" : "0" = 
-		[
-			0 : "False"
-			1 : "True"
-		]
+	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
+	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
+	stop(choices) : "Stop player on teleport" : "0" = 
+	[
+		0 : "False"
+		1 : "True"
+	]
 ]
 
 @FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at the given checkpoint or not."
 [
-		checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"
+	checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"
 ]
 
 @PointClass base(Weapon) studio("models/weapons/w_rif_ak47.mdl") = weapon_momentum_gun : "Base Momentum Gun" []

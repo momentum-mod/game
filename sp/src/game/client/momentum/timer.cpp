@@ -40,7 +40,8 @@ public:
 		return bla_timer.GetBool() && CHudElement::ShouldDraw();
 	}
 	void MsgFunc_Timer_State(bf_read &msg);
-	void MsgFunc_Timer_Reset(bf_read&);
+	void MsgFunc_Timer_Reset(bf_read &msg);
+	void MsgFunc_Timer_Checkpoint(bf_read &msg);
 	virtual void Paint();
 	int GetCurrentTime();
 	bool m_bIsRunning;
@@ -84,6 +85,7 @@ DECLARE_HUDELEMENT(C_Timer);
 // MOM_TODO add more for checkpoints and ending
 DECLARE_HUD_MESSAGE(C_Timer, Timer_State);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
+DECLARE_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
 
 C_Timer::C_Timer(const char *pElementName) :
 CHudElement(pElementName), Panel(NULL, "HudTimer")
@@ -95,6 +97,7 @@ void C_Timer::Init()
 {
 	HOOK_HUD_MESSAGE(C_Timer, Timer_State);
 	HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
+	HOOK_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
 	initialTall = 48;
 	m_iTotalTicks = 0;
 	//Reset();
@@ -108,8 +111,8 @@ void C_Timer::Reset()
 
 void C_Timer::OnThink() 
 {
-	// MOM_TODO: We probably want to change this into a fancier solution
-
+	
+	// This is how achievements are handled, so..
 	ConVar *pCheats = cvar->FindVar("sv_cheats");
 	if (!m_bWereCheatsActivated && pCheats && (pCheats->GetInt() == 1))
 	{
@@ -126,9 +129,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	if (!pPlayer)
 		return;
-	// MOM_TODO: Run fancy effects for the states
-	DevMsg("TODO: run fancy effects for state '%s'\n",
-		started ? "started" : "stopped");
+	// MOM_TODO: Create HUD animations for states
 	if (started)
 	{
 		//VGUI_ANIMATE("TimerStart");
@@ -161,6 +162,11 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 void C_Timer::MsgFunc_Timer_Reset(bf_read &msg) 
 {
 	Reset();
+}
+
+void C_Timer::MsgFunc_Timer_Checkpoint(bf_read &msg)
+{
+	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
 }
 
 int C_Timer::GetCurrentTime() 
