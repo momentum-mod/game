@@ -16,4 +16,4 @@
 
 - [ ] TimeTriggers.cpp (Server)
     -  [x] Limit speed inside Start Trigger
-    -  [ ] Output to fire on the player (!activator) that resets checkpoint like ResetCheckpoint or something.
+    -  [x] Output to fire on the player (!player) that resets checkpoint (ResetCheckpoint)

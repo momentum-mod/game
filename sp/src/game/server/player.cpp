@@ -67,6 +67,7 @@
 #include "dt_utlvector_send.h"
 #include "vote_controller.h"
 #include "ai_speech.h"
+#include "momentum\Timer.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -439,6 +440,7 @@ BEGIN_DATADESC( CBasePlayer )
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "SetHUDVisibility", InputSetHUDVisibility ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "SetFogController", InputSetFogController ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "HandleMapEvent", InputHandleMapEvent ),
+	DEFINE_INPUTFUNC( FIELD_VOID, "ResetCheckpoints", InputResetCheckpoints ),
 
 	DEFINE_FIELD( m_nNumCrouches, FIELD_INTEGER ),
 	DEFINE_FIELD( m_bDuckToggled, FIELD_BOOLEAN ),
@@ -8170,6 +8172,14 @@ void CBasePlayer::InputSetHealth( inputdata_t &inputdata )
 void CBasePlayer::InputHandleMapEvent( inputdata_t &inputdata )
 {
 	Internal_HandleMapEvent( inputdata );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Input to reset player's checkpoints
+//-----------------------------------------------------------------------------
+void CBasePlayer::InputResetCheckpoints(inputdata_t &inputdata)
+{
+	g_Timer.SetCurrentCheckpointTrigger( NULL );
 }
 
 //-----------------------------------------------------------------------------

@@ -19,6 +19,7 @@
 	]
 ] 
 
+// Do we really need this one?
 @BaseClass color(0 0 200) base(Targetname, Angles) = Weapon
 [
 	spawnflags(Flags) =
@@ -32,7 +33,7 @@
 
 @SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer." 
 [
-	leavespeed(integer) : "Max leave speed" : 260 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
+	leavespeed(integer) : "Max leave speed" : 300 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
 	spawnflags(flags) =
 	[
 		2 : "Limit leave speed" : 1
@@ -87,6 +88,13 @@
 @FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at the given checkpoint or not."
 [
 	checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"
+]
+
+// NOT IMPLEMENTED YET
+@SolidClass base(Targetname, Parentname, Origin, RenderFields) = func_shootboost :
+	"Entity that pushes the player when hit by the momentum_gun."
+[
+	onTrigger(target_destination) : "Trigger name" : "" : "Trigger name the player should be in to get boosted."
 ]
 
 @PointClass base(Weapon) studio("models/weapons/w_rif_ak47.mdl") = weapon_momentum_gun : "Base Momentum Gun" []

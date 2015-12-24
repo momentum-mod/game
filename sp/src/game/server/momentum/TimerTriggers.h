@@ -14,7 +14,6 @@ class CBaseMomentumTrigger : public CTriggerMultiple
 
 public:
 	virtual void Spawn();
-	virtual void ResetCheckpoints();
 };
 
 // CTriggerTimerStop
@@ -60,7 +59,7 @@ public:
 
 private:
 	// How fast can the player leave the start trigger?
-	float m_fMaxLeaveSpeed = 260;
+	float m_fMaxLeaveSpeed = 300;
 	// Limit max leave speed to m_fMaxLeaveSpeed?
 	const int SF_LIMIT_LEAVE_SPEED = 0x2;
 

@@ -13,18 +13,6 @@ void CBaseMomentumTrigger::Spawn()
 	m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
 
-// MOM_TODO Base for func_resetcheckpoints. Not implemented yet
-void CBaseMomentumTrigger::ResetCheckpoints()
-{
-
-	g_Timer.SetCurrentCheckpointTrigger(NULL);
-	if (g_Timer.GetStartTrigger() != NULL && UTIL_GetLocalPlayer() != NULL)
-		UTIL_GetLocalPlayer()->SetAbsOrigin(g_Timer.GetStartTrigger()->GetAbsOrigin());
-		UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
-}
-
-// MOM_TODO Limit speed inside Start Trigger
-
 // CTriggerTimerStart
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
