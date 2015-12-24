@@ -28,9 +28,9 @@ WeaponData
 	{
 		"special1"		"Weapon_CombineGuard.Special1"
 		"empty"			"Weapon_IRifle.Empty"
-		"double_shot"		"Weapon_AK47.Single"
-		"reload"		"Weapon_AK47.Reload" // Sound triggered when reloading. Activate this in the game_sounds_weapons.
-		"single_shot"		"Weapon_AK47.Single" // Sound triggered when shooting.  -=-
+		"double_shot"		"Weapon_MOMGUN.Single"
+		"reload"		"Weapon_MOMGUN.Reload" // Sound triggered when reloading. Activate this in the game_sounds_weapons.
+		"single_shot"		"Weapon_MOMGUN.Single" // Sound triggered when shooting.  -=-
  
 		// NPC SECTION
 		"single_shot_npc"	"Weapon_AK47.NPC_Single"

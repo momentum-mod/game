@@ -91,10 +91,42 @@
 ]
 
 // NOT IMPLEMENTED YET
-@SolidClass base(Targetname, Parentname, Origin, RenderFields) = func_shootboost :
+@SolidClass base(func_brush) = func_shootboost : 
 	"Entity that pushes the player when hit by the momentum_gun."
 [
 	onTrigger(target_destination) : "Trigger name" : "" : "Trigger name the player should be in to get boosted."
-]
+	spawnflags(flags) =
+	[
+		2: "Ignore player +USE" : 1
+	]
+	
+	_minlight(string) : "Minimum Light Level" : : "The minimum level of ambient light that hits this brush."
+	Solidity(choices) : "Solidity" : 2 : "Used to control the solidity/collision of these brushes." =
+	[
+		0 : "Toggle"
+		1 : "Never Solid"
+		2 : "Always Solid"
+	]
+	excludednpc(string) : "NPC class excluded from collisions" : "" : "If an NPC classname is specified here, NPCs of that type won't collide with these brushes. In Episodic, you may also specify an individual entity's name."
+	invert_exclusion(choices) : "Invert NPC class exclusion" : 0 : "If set, then the excluded NPC class will consider this brush solid, and all other NPC classes will consider it non-solid." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
 
+	solidbsp(choices) : "Solid BSP" : 0 : "Set this if this brush is in heirarchy with a moving object of some kind, and the player can stand on this brush." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush casts lightmap shadows." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	
+	input Alpha(integer) : "Sets the brush's alpha value."
+	input SetExcluded( string ) : "Change the NPC class excluded from collisions"
+	input SetInvert( integer ) : "Set the state of invversion for NPC class exclusion (0 or 1)"
+]
 @PointClass base(Weapon) studio("models/weapons/w_rif_ak47.mdl") = weapon_momentum_gun : "Base Momentum Gun" []
