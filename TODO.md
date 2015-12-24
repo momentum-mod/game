@@ -14,6 +14,6 @@
     -  [ ] Consider local timer
     -  [ ] Consider KZ
 
-- [ ] TimeTriggers.cpp (Server)
+- [x] TimeTriggers.cpp (Server)
     -  [x] Limit speed inside Start Trigger
     -  [x] Output to fire on the player (!player) that resets checkpoint (ResetCheckpoint)
