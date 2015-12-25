@@ -508,7 +508,10 @@ static void TestCreateTriggerStart(const CCommand &args)
 	{
 		pTrigger->Spawn();
 		pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-		pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
+        if (Q_atoi(args.Arg(3))) // At least 3 Args?
+		    pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
+        else
+            pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
 		if (Q_atoi(args.Arg(4)))
 		{
 			pTrigger->SetIsLimitingSpeed(true);

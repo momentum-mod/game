@@ -1,6 +1,6 @@
 ## BETA
 - [ ] Implement CEF
-- [ ] Make checkpoints use target_destination instead of string in Hammer, for an easier use
+- [x] Make checkpoints be able to use target_destination
 - [ ] func_shootboost: (Potential entity not needed that handles shootboosts but is an idea)
 
 ## ALPHA

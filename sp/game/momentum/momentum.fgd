@@ -33,7 +33,7 @@
 
 @SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer." 
 [
-	leavespeed(integer) : "Max leave speed" : 300 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
+	leavespeed(integer) : "Max leave speed" : 280 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
 	spawnflags(flags) =
 	[
 		2 : "Limit leave speed" : 1
