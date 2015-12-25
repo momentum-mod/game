@@ -50,7 +50,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 	{
 		if (g_Timer.IsRunning())
 		{
-			g_Timer.Stop();
+			g_Timer.Stop(false);
 			g_Timer.DispatchResetMessage();
 		}
 		//g_Timer.SetCurrentCheckpointTrigger(NULL);
@@ -103,7 +103,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 	BaseClass::StartTouch(pOther);
 	// If timer is already stopped, there's nothing to stop (No run state effect to play)
 	if (pOther->IsPlayer() && g_Timer.IsRunning())
-		g_Timer.Stop();
+		g_Timer.Stop(true);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_timer_stop, CTriggerTimerStop);

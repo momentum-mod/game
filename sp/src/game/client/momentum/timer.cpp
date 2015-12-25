@@ -148,7 +148,10 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 		}
 		else //He didn't cheat, we can carry on
 		{
-			DevMsg("%s \n", m_pszString);
+            m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
+            //DevMsg("Ticks upon exit: %i and total seconds: %f\n", m_iTotalTicks, gpGlobals->interval_per_tick);
+            //Paint();
+			//DevMsg("%s \n", m_pszString);
 		}
 
 		//VGUI_ANIMATE("TimerStop");
@@ -156,6 +159,8 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 		{
 			pPlayer->EmitSound("Momentum.StopTimer");
 		}
+
+        //MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
 	}
 }
 

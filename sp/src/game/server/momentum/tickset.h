@@ -6,6 +6,7 @@ class TickSet {
 public:
 	static bool TickInit();
 	static bool SetTickrate(float);
+    static float GetTickrate() { return *interval_per_tick; }
 
 private:
 	static inline bool DataCompare(const unsigned char*, const unsigned char*, const char*);

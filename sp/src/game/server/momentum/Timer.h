@@ -5,6 +5,7 @@
 #endif
 
 #include "utlvector.h"
+#include "tickset.h"
 
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
@@ -15,7 +16,7 @@ class CTimer
 	//DECLARE_CLASS_NOBASE(CTimer);
 public:
 	void Start(int startTick);
-	void Stop();
+	void Stop(bool);
 	void DispatchStateMessage();
 	void DispatchResetMessage();
 	void DispatchCheckpointMessage();
@@ -69,6 +70,10 @@ public:
 	void RemoveAllOnehopsFromList() { onehops.RemoveAll(); }
 	int GetOnehopListCount() { return onehops.Count(); }
 	CTriggerOnehop* FindOnehopOnList(int pIndexOnList);
+
+    void OnTimeSubmitted(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CTimer, HTTPRequestCompleted_t> OnTimeSubmittedCallback;
+    void PostTime();
 
 private:
 
