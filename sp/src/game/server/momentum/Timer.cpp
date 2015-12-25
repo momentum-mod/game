@@ -41,7 +41,13 @@ void CTimer::PostTime()
         int ticks = gpGlobals->tickcount - m_iStartTick;
         char ticksString[64];
         Q_snprintf(ticksString, 64, "%i", ticks);
+        
+        // TODO: make tickrate code crossplatform
+#ifdef _WIN32
         float tickRate = TickSet::GetTickrate();
+#else
+        float tickRate = 0.015;
+#endif
 
         //Build URL
         char webURL[512];
@@ -52,7 +58,7 @@ void CTimer::PostTime()
         Q_strcat(webURL, "/", 512);
         Q_strcat(webURL, ticksString, 512);
         Q_strcat(webURL, "/", 512);
-        Q_strcat(webURL, tickRate == 0.01f ? "100" : "66", 512);
+        Q_strcat(webURL, tickRate == 0.01f ? "100" : "66", 512); // FIXME
         DevLog("Ticks sent to server: %i\n", ticks);
 
         //Build request
