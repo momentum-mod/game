@@ -187,14 +187,15 @@ void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
 
 void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
 {
-    if (!pPlayer) return;
-    Checkpoint c;
-    c.ang = pPlayer->GetAbsAngles();
-    c.pos = pPlayer->GetAbsOrigin();
-    c.vel = pPlayer->GetAbsVelocity();
-    checkpoints.AddToTail(c);
-    // MOM_TODO: Create a decal to show where the checkpoint is?
-    m_iCurrentStepCP++;
+	if (!pPlayer) return;
+	Checkpoint c;
+	c.ang = pPlayer->GetAbsAngles();
+	c.pos = pPlayer->GetAbsOrigin();
+	c.vel = pPlayer->GetAbsVelocity();
+	checkpoints.AddToTail(c);
+	// MOM_TODO: Check what gametype we're in, so we can determine if we should stop the timer or not
+	g_Timer.SetRunning(false);
+	m_iCurrentStepCP++;
 }
 
 void CTimer::RemoveLastCheckpoint()

@@ -150,7 +150,6 @@ void CWeaponMomentumGun::PrimaryAttack(void)
 	//do we have any bullets left from the current burst cycle? 
 	if (m_iBurst != 0)
 	{
-		CBasePlayer *pOwner = ToBasePlayer(GetOwner());
 		CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
 		if (!pPlayer)
 		{
@@ -161,13 +160,9 @@ void CWeaponMomentumGun::PrimaryAttack(void)
 		pPlayer->DoMuzzleFlash();
 		SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 		pPlayer->SetAnimation(PLAYER_ATTACK1);
-		//ToHL2Player(pPlayer)->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
 
 		// Each time the player fires the gun, reset the view punch.  
-		if (pOwner)
-		{
-			pOwner->ViewPunchReset();
-		}
+		pPlayer->ViewPunchReset();
 
 		BaseClass::PrimaryAttack();
 

@@ -19,6 +19,7 @@
 	]
 ] 
 
+// Do we really need this one?
 @BaseClass color(0 0 200) base(Targetname, Angles) = Weapon
 [
 	spawnflags(Flags) =
@@ -32,7 +33,7 @@
 
 @SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer." 
 [
-	leavespeed(integer) : "Max leave speed" : 260 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
+	leavespeed(integer) : "Max leave speed" : 300 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
 	spawnflags(flags) =
 	[
 		2 : "Limit leave speed" : 1
@@ -48,6 +49,7 @@
 
 @SolidClass base(Trigger) = trigger_timer_checkpoint_teleport : "Trigger that teleports to the desired checkpoint."
 [
+	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
 	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint."
 	stop(choices) : "Stop player on teleport" : "0" = 
 	[
@@ -60,6 +62,7 @@
 
 @SolidClass base(Trigger) = trigger_timer_onehop : "Trigger that only allows for one hop."
 [
+	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
 	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
 	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
 	stop(choices) : "Stop player on teleport" : "0" = 
@@ -75,6 +78,7 @@
 
 @SolidClass base(Trigger) = trigger_timer_multihop : "Trigger that allows for multiple hops, as long as the player hops."
 [
+	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
 	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
 	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
 	stop(choices) : "Stop player on teleport" : "0" = 
@@ -89,4 +93,43 @@
 	checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"
 ]
 
+// NOT IMPLEMENTED YET
+@SolidClass base(func_brush) = func_shootboost : 
+	"Entity that pushes the player when hit by the momentum_gun."
+[
+	onTrigger(target_destination) : "Trigger name" : "" : "Trigger name the player should be in to get boosted."
+	spawnflags(flags) =
+	[
+		2: "Ignore player +USE" : 1
+	]
+	
+	_minlight(string) : "Minimum Light Level" : : "The minimum level of ambient light that hits this brush."
+	Solidity(choices) : "Solidity" : 2 : "Used to control the solidity/collision of these brushes." =
+	[
+		0 : "Toggle"
+		1 : "Never Solid"
+		2 : "Always Solid"
+	]
+	excludednpc(string) : "NPC class excluded from collisions" : "" : "If an NPC classname is specified here, NPCs of that type won't collide with these brushes. In Episodic, you may also specify an individual entity's name."
+	invert_exclusion(choices) : "Invert NPC class exclusion" : 0 : "If set, then the excluded NPC class will consider this brush solid, and all other NPC classes will consider it non-solid." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+
+	solidbsp(choices) : "Solid BSP" : 0 : "Set this if this brush is in heirarchy with a moving object of some kind, and the player can stand on this brush." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush casts lightmap shadows." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]	
+	
+	input Alpha(integer) : "Sets the brush's alpha value."
+	input SetExcluded( string ) : "Change the NPC class excluded from collisions"
+	input SetInvert( integer ) : "Set the state of invversion for NPC class exclusion (0 or 1)"
+]
 @PointClass base(Weapon) studio("models/weapons/w_rif_ak47.mdl") = weapon_momentum_gun : "Base Momentum Gun" []

@@ -1,19 +1,19 @@
 ## BETA
 - [ ] Implement CEF
+- [ ] Make checkpoints use target_destination instead of string in Hammer, for an easier use
+- [ ] func_shootboost: (Potential entity not needed that handles shootboosts but is an idea)
 
 ## ALPHA
-- [ ] func_shootboost: (Potential entity not needed that handles shootboosts but is an idea)
+- [ ] Use mom_player and mom_gamerules inseatd of generic ones
 
 - [ ] timer.cpp (Client) 
     -  [ ] Play effects for run states
-    -  [x] Add more HUD message states
     
 - [ ] hud_cp_menu.cpp (Client) 
-    -  [ ] ~~Make creating a checkpoint stop your timer~~
+    -  [x] Make creating a checkpoint stop your timer
     -  [ ] Make checkpoints available for output to files
     -  [ ] Consider local timer
     -  [ ] Consider KZ
 
 - [ ] TimeTriggers.cpp (Server)
-    -  [x] Limit speed inside Start Trigger
-    -  [ ] Output to fire on the player (!activator) that resets checkpoint like ResetCheckpoint or something.
+    -  [ ] Tweak limit speed method

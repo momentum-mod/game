@@ -14,7 +14,6 @@ class CBaseMomentumTrigger : public CTriggerMultiple
 
 public:
 	virtual void Spawn();
-	virtual void ResetCheckpoints();
 };
 
 // CTriggerTimerStop
@@ -60,7 +59,7 @@ public:
 
 private:
 	// How fast can the player leave the start trigger?
-	float m_fMaxLeaveSpeed = 260;
+	float m_fMaxLeaveSpeed = 300;
 	// Limit max leave speed to m_fMaxLeaveSpeed?
 	const int SF_LIMIT_LEAVE_SPEED = 0x2;
 
@@ -91,9 +90,12 @@ public:
 	int GetDestinationCheckpointNumber() { return m_iCheckpointNumber; }
 	bool GetShouldStopPlayer() { return m_bResetVelocity; };
 	// -1: Current checkpoint
-	// default: Checkpoint with pNewNumber index
+	// Default: Checkpoint with pNewNumber index
 	void SetDestinationCheckpointNumber(int);
+	void SetDestinationCheckpointName(string_t);
+	string_t GetDestinationCheckpointName() { return m_sLinkedTriggerName; };
 	void SetShouldStopPlayer(bool);
+	void Spawn();
 
 private:
 	// Where to teleport the player.
@@ -102,6 +104,15 @@ private:
 	int m_iCheckpointNumber;
 	// Should the player be stopped after teleport?
 	bool m_bResetVelocity = false;
+	// Linked Trigger (If desired trigger is not dynamic)
+	CBaseMomentumTrigger *m_eLinkedTrigger;
+	// Name of the linked trigger (We search for the one with this name if it's set)
+	// If it's not set, m_iCheckpointNumber is used
+	string_t m_sLinkedTriggerName;
+
+protected:
+	// Are we using the linked entity variable?
+	bool m_bUsingLinked = false;
 
 };
 
@@ -117,10 +128,13 @@ public:
 	bool GetShouldStopPlayer() { return m_bResetVelocity; }
 	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
 	void SetDestinationIndex(int pNewIndex);
+	void SetDestinationName(string_t);
+	string_t GetDestinationName() { return m_sLinkedTriggerName; };
 	void SetShouldStopPlayer(bool pShouldStop);
 	void SetHoldTeleportTime(float pHoldTime);
     void Think();
     void HandleTeleport(CBaseEntity*);
+	void Spawn();
 
 private:
 	// Should the player be stopped after teleport?
@@ -133,6 +147,15 @@ private:
 	int m_iDestinationCheckpointNumber = -1;
     // Reset hop state if player hops onto another different onehop
     const int SF_TELEPORT_RESET_ONEHOP = 0x2;	
+	// Linked Trigger (If desired trigger is not dynamic)
+	CBaseMomentumTrigger *m_eLinkedTrigger;
+	// Name of the linked trigger (We search for the one with this name if it's set)
+	// If it's not set, m_iDestinationCheckpointNumber is used
+	string_t m_sLinkedTriggerName;
+
+protected:
+	// Are we using the linked entity variable?
+	bool m_bUsingLinked = false;
 
 };
 
@@ -159,10 +182,13 @@ public:
 	bool GetShouldStopPlayer() { return m_bResetVelocity; }
 	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
 	void SetDestinationIndex(int pNewIndex);
+	void SetDestinationName(string_t);
+	string_t GetDestinationName() { return m_sLinkedTriggerName; };
 	void SetShouldStopPlayer(bool pShouldStop);
 	void SetHoldTeleportTime(float pHoldTime);
 	void Think();
 	void HandleTeleport(CBaseEntity*);
+	void Spawn();
 
 private:
 	// Should the player be stopped after teleport?
@@ -173,6 +199,16 @@ private:
 	float m_fMaxHoldSeconds = 1;
 	// Where to teleport the player if it becomes active.
 	int m_iDestinationCheckpointNumber = -1;
+	// Linked Trigger (If desired trigger is not dynamic)
+	CBaseMomentumTrigger *m_eLinkedTrigger;
+	// Name of the linked trigger (We search for the one with this name if it's set)
+	// If it's not set, m_iDestinationCheckpointNumber is used
+	string_t m_sLinkedTriggerName;
+
+protected:
+	// Are we using the linked entity variable?
+	bool m_bUsingLinked = false;
+
 };
 
 #endif // TIMERTRIGGERS_H

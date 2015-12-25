@@ -13,18 +13,6 @@ void CBaseMomentumTrigger::Spawn()
 	m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
 
-// MOM_TODO Base for func_resetcheckpoints. Not implemented yet
-void CBaseMomentumTrigger::ResetCheckpoints()
-{
-
-	g_Timer.SetCurrentCheckpointTrigger(NULL);
-	if (g_Timer.GetStartTrigger() != NULL && UTIL_GetLocalPlayer() != NULL)
-		UTIL_GetLocalPlayer()->SetAbsOrigin(g_Timer.GetStartTrigger()->GetAbsOrigin());
-		UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
-}
-
-// MOM_TODO Limit speed inside Start Trigger
-
 // CTriggerTimerStart
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
@@ -131,10 +119,11 @@ void CTriggerCheckpoint::SetCheckpointNumber(int newInt)
 	m_iCheckpointNumber = newInt;
 }
 
+
 LINK_ENTITY_TO_CLASS(trigger_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
-DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint")
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"),
 END_DATADESC()
 
 
@@ -165,17 +154,30 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 	BaseClass::StartTouch(pOther);
 	if (pOther->IsPlayer())
 	{
-		CTriggerCheckpoint *desiredCP;
-		if (m_iCheckpointNumber == (-1))
+		CBaseMomentumTrigger *desiredCP;
+		if (!m_bUsingLinked)
 		{
-			// Get the current checkpoint
-			desiredCP = g_Timer.GetCurrentCheckpoint();
+			if (m_iCheckpointNumber == (-1))
+			{
+				// Get the current checkpoint
+				desiredCP = g_Timer.GetCurrentCheckpoint();
+			}
+			else // If we're here it means we couldn't find that checkpoint onSpawn
+				// So we try again, see if there is better luck now
+			{
+				// Search for the checkpoint with that index
+				desiredCP = g_Timer.GetCheckpointAt(m_iCheckpointNumber);
+				if (desiredCP != NULL)
+				{
+					// If we've found it this time, save it so we can use it later if needed
+					m_eLinkedTrigger = desiredCP;
+					// Use linked one instean next time:
+					m_bUsingLinked = true;
+				}// If it's not found this time, then it doesn't exist
+			}
 		}
 		else
-		{
-			// Search for the checkpoint with that index
-			desiredCP = g_Timer.GetCheckpointAt(m_iCheckpointNumber);
-		}
+			desiredCP = m_eLinkedTrigger;
 		if (desiredCP != NULL)
 		{
 			pOther->Teleport(&desiredCP->GetAbsOrigin(), NULL, m_bResetVelocity ? &vec3_origin : NULL);
@@ -188,11 +190,36 @@ void CTriggerTeleportCheckpoint::SetDestinationCheckpointNumber(int pNewNumber)
 	m_iCheckpointNumber = pNewNumber;
 }
 
+void CTriggerTeleportCheckpoint::SetDestinationCheckpointName(string_t pNewName)
+{
+	m_sLinkedTriggerName = pNewName;
+}
+
 void CTriggerTeleportCheckpoint::SetShouldStopPlayer(bool pShouldStop)
 {
 	m_bResetVelocity = pShouldStop;
 }
 
+void CTriggerTeleportCheckpoint::Spawn()
+{
+	BaseClass::Spawn();
+	if (m_sLinkedTriggerName != NULL_STRING)
+	{
+		m_eLinkedTrigger = (CBaseMomentumTrigger *)gEntList.FindEntityByName(NULL, m_sLinkedTriggerName);
+		if (m_eLinkedTrigger != NULL)
+		{
+			m_bUsingLinked = true;
+		}
+	}
+	else if (m_iCheckpointNumber >= 0)
+	{
+		m_eLinkedTrigger = g_Timer.GetCheckpointAt(m_iCheckpointNumber);
+		if (m_eLinkedTrigger != NULL)
+		{
+			m_bUsingLinked = true;
+		}// If null, maybe we haven't spawned it yet. We'll be searching for it again when the player touches us, so it's not a problem
+	}
+}
 
 LINK_ENTITY_TO_CLASS(trigger_timer_onehop, CTriggerOnehop);
 
@@ -200,6 +227,7 @@ BEGIN_DATADESC(CTriggerOnehop)
 DEFINE_KEYFIELD(m_iDestinationCheckpointNumber, FIELD_INTEGER, "checkpoint"),
 DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
+DEFINE_KEYFIELD(m_sLinkedTriggerName,FIELD_STRING,"checkpointname"),
 END_DATADESC()
 
 // CTriggerOnehop
@@ -234,26 +262,40 @@ void CTriggerOnehop::HandleTeleport(CBaseEntity *pOther)
 {
     // (-2): Go to TriggerStart
     // (-1): Last activated checkpoint
-    // default: Desired checkpoint with this index
+    // Default: Desired checkpoint with this index
     CBaseMomentumTrigger* desiredCP;
-    switch (m_iDestinationCheckpointNumber)
-    {
-    case (-2) :
-    {
-        desiredCP = g_Timer.GetStartTrigger();
-        break;
-    }
-    case (-1) :
-    {
-        desiredCP = g_Timer.GetCurrentCheckpoint();
-        break;
-    }
-    default:
-    {
-        desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
-        break;
-    }
-    }
+	if (!m_bUsingLinked)
+	{
+		switch (m_iDestinationCheckpointNumber)
+		{
+		case (-2) :
+		{
+			desiredCP = g_Timer.GetStartTrigger();
+			break;
+		}
+		case (-1) :
+		{
+			desiredCP = g_Timer.GetCurrentCheckpoint();
+			break;
+		}
+		default:// If we're here it means we couldn't find that checkpoint onSpawn
+				// So we try again, see if there is better luck now
+		{
+			desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+			if (desiredCP != NULL)
+			{
+				// If we've found it this time, save it so we can use it later if needed
+				m_eLinkedTrigger = desiredCP;
+				// Use linked one instean next time:
+				m_bUsingLinked = true;
+			}// If it's not found this time, then it doesn't exist
+			break;
+		}
+		}
+	}
+	else {
+		desiredCP = m_eLinkedTrigger;
+	}
     if (desiredCP != NULL)
     {
         pOther->Teleport(&desiredCP->GetAbsOrigin(), NULL, m_bResetVelocity ? &vec3_origin : NULL);
@@ -266,6 +308,11 @@ void CTriggerOnehop::HandleTeleport(CBaseEntity *pOther)
 void CTriggerOnehop::SetDestinationIndex(int pNewIndex)
 {
 	m_iDestinationCheckpointNumber = pNewIndex;
+}
+
+void CTriggerOnehop::SetDestinationName(string_t pNewName)
+{
+	m_sLinkedTriggerName = pNewName;
 }
 
 void CTriggerOnehop::SetShouldStopPlayer(bool pShouldStop)
@@ -290,6 +337,27 @@ void CTriggerOnehop::Think()
     }
 }
 
+void CTriggerOnehop::Spawn()
+{
+	BaseClass::Spawn();
+	if (m_sLinkedTriggerName != NULL_STRING)
+	{
+		m_eLinkedTrigger = (CBaseMomentumTrigger *)gEntList.FindEntityByName(NULL, m_sLinkedTriggerName);
+		if (m_eLinkedTrigger != NULL)
+		{
+			m_bUsingLinked = true;
+		}
+	}
+	else if (m_iDestinationCheckpointNumber >= 0)
+	{
+		m_eLinkedTrigger = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+		if (m_eLinkedTrigger != NULL)
+		{
+			m_bUsingLinked = true;
+		}// If null, maybe we haven't spawned it yet. We'll be searching for it again when the player touches us, so it's not a problem
+	}
+}
+
 
 LINK_ENTITY_TO_CLASS(trigger_timer_resetonehop, CTriggerResetOnehop);
 
@@ -308,6 +376,7 @@ BEGIN_DATADESC(CTriggerMultihop)
 DEFINE_KEYFIELD(m_iDestinationCheckpointNumber, FIELD_INTEGER, "checkpoint"),
 DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
+DEFINE_KEYFIELD(m_sLinkedTriggerName, FIELD_STRING, "checkpointname"),
 END_DATADESC()
 
 // CTriggerMultihop
@@ -333,23 +402,37 @@ void CTriggerMultihop::HandleTeleport(CBaseEntity *pOther)
 	// (-1): Last activated checkpoint
 	// default: Desired checkpoint with this index
 	CBaseMomentumTrigger* desiredCP;
-	switch (m_iDestinationCheckpointNumber)
+	if (!m_bUsingLinked)
 	{
-	case (-2) :
-	{
-		desiredCP = g_Timer.GetStartTrigger();
-		break;
+		switch (m_iDestinationCheckpointNumber)
+		{
+		case (-2) :
+		{
+			desiredCP = g_Timer.GetStartTrigger();
+			break;
+		}
+		case (-1) :
+		{
+			desiredCP = g_Timer.GetCurrentCheckpoint();
+			break;
+		}
+		default:// If we're here it means we couldn't find that checkpoint onSpawn
+				// So we try again, see if there is better luck now
+		{
+			desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+			if (desiredCP != NULL)
+			{
+				// If we've found it this time, save it so we can use it later if needed
+				m_eLinkedTrigger = desiredCP;
+				// Use linked one instean next time:
+				m_bUsingLinked = true;
+			}// If it's not found this time, then it doesn't exist
+			break;
+		}
+		}
 	}
-	case (-1) :
-	{
-		desiredCP = g_Timer.GetCurrentCheckpoint();
-		break;
-	}
-	default:
-	{
-		desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
-		break;
-	}
+	else {
+		desiredCP = m_eLinkedTrigger;
 	}
 	if (desiredCP != NULL)
 	{
@@ -361,6 +444,11 @@ void CTriggerMultihop::HandleTeleport(CBaseEntity *pOther)
 void CTriggerMultihop::SetDestinationIndex(int pNewIndex)
 {
 	m_iDestinationCheckpointNumber = pNewIndex;
+}
+
+void CTriggerMultihop::SetDestinationName(string_t pNewName)
+{
+	m_sLinkedTriggerName = pNewName;
 }
 
 void CTriggerMultihop::SetShouldStopPlayer(bool pShouldStop)
@@ -385,10 +473,33 @@ void CTriggerMultihop::Think()
 	}
 }
 
+void CTriggerMultihop::Spawn()
+{
+	BaseClass::Spawn();
+	if (m_sLinkedTriggerName != NULL_STRING)
+	{
+		m_eLinkedTrigger = (CBaseMomentumTrigger *)gEntList.FindEntityByName(NULL, m_sLinkedTriggerName);
+		if (m_eLinkedTrigger != NULL)
+		{
+			m_bUsingLinked = true;
+		}
+	}
+	else if (m_iDestinationCheckpointNumber >= 0)
+	{
+		m_eLinkedTrigger = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+		if (m_eLinkedTrigger != NULL)
+		{
+			m_bUsingLinked = true;
+		}// If null, maybe we haven't spawned it yet. We'll be searching for it again when the player touches us, so it's not a problem
+	}
+}
+
 
 //////
 // Test Functions
 //////
+
+// MOM_TODO: Limit who can acces these commands.
 
 static void TestCreateTriggerStart(const CCommand &args)
 {
