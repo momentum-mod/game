@@ -26,6 +26,7 @@ private:
 	// startTrigger
 	bool m_limitingspeed; // Limit leave speed?
 	float m_maxleavespeed; // Max speed allowed
+	string_t m_linkedtrigger; // Checkpoint name linked to this entity (YESYES, It can be null!)
 	Vector* m_pos;
 	QAngle* m_rot;
 	Vector* m_scaleMins;

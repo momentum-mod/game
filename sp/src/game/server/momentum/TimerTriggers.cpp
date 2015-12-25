@@ -154,7 +154,7 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 	BaseClass::StartTouch(pOther);
 	if (pOther->IsPlayer())
 	{
-		CTriggerCheckpoint *desiredCP;
+		CBaseMomentumTrigger *desiredCP;
 		if (!m_bUsingLinked)
 		{
 			if (m_iCheckpointNumber == (-1))
@@ -188,6 +188,11 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 void CTriggerTeleportCheckpoint::SetDestinationCheckpointNumber(int pNewNumber)
 {
 	m_iCheckpointNumber = pNewNumber;
+}
+
+void CTriggerTeleportCheckpoint::SetDestinationCheckpointName(string_t pNewName)
+{
+	m_sLinkedTriggerName = pNewName;
 }
 
 void CTriggerTeleportCheckpoint::SetShouldStopPlayer(bool pShouldStop)
@@ -277,6 +282,13 @@ void CTriggerOnehop::HandleTeleport(CBaseEntity *pOther)
 				// So we try again, see if there is better luck now
 		{
 			desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+			if (desiredCP != NULL)
+			{
+				// If we've found it this time, save it so we can use it later if needed
+				m_eLinkedTrigger = desiredCP;
+				// Use linked one instean next time:
+				m_bUsingLinked = true;
+			}// If it's not found this time, then it doesn't exist
 			break;
 		}
 		}
@@ -296,6 +308,11 @@ void CTriggerOnehop::HandleTeleport(CBaseEntity *pOther)
 void CTriggerOnehop::SetDestinationIndex(int pNewIndex)
 {
 	m_iDestinationCheckpointNumber = pNewIndex;
+}
+
+void CTriggerOnehop::SetDestinationName(string_t pNewName)
+{
+	m_sLinkedTriggerName = pNewName;
 }
 
 void CTriggerOnehop::SetShouldStopPlayer(bool pShouldStop)
@@ -337,7 +354,7 @@ void CTriggerOnehop::Spawn()
 		if (m_eLinkedTrigger != NULL)
 		{
 			m_bUsingLinked = true;
-		}
+		}// If null, maybe we haven't spawned it yet. We'll be searching for it again when the player touches us, so it's not a problem
 	}
 }
 
@@ -403,6 +420,13 @@ void CTriggerMultihop::HandleTeleport(CBaseEntity *pOther)
 				// So we try again, see if there is better luck now
 		{
 			desiredCP = g_Timer.GetCheckpointAt(m_iDestinationCheckpointNumber);
+			if (desiredCP != NULL)
+			{
+				// If we've found it this time, save it so we can use it later if needed
+				m_eLinkedTrigger = desiredCP;
+				// Use linked one instean next time:
+				m_bUsingLinked = true;
+			}// If it's not found this time, then it doesn't exist
 			break;
 		}
 		}
@@ -420,6 +444,11 @@ void CTriggerMultihop::HandleTeleport(CBaseEntity *pOther)
 void CTriggerMultihop::SetDestinationIndex(int pNewIndex)
 {
 	m_iDestinationCheckpointNumber = pNewIndex;
+}
+
+void CTriggerMultihop::SetDestinationName(string_t pNewName)
+{
+	m_sLinkedTriggerName = pNewName;
 }
 
 void CTriggerMultihop::SetShouldStopPlayer(bool pShouldStop)
@@ -461,7 +490,7 @@ void CTriggerMultihop::Spawn()
 		if (m_eLinkedTrigger != NULL)
 		{
 			m_bUsingLinked = true;
-		}
+		}// If null, maybe we haven't spawned it yet. We'll be searching for it again when the player touches us, so it's not a problem
 	}
 }
 
@@ -469,6 +498,8 @@ void CTriggerMultihop::Spawn()
 //////
 // Test Functions
 //////
+
+// MOM_TODO: Limit who can acces these commands.
 
 static void TestCreateTriggerStart(const CCommand &args)
 {

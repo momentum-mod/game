@@ -92,6 +92,8 @@ public:
 	// -1: Current checkpoint
 	// Default: Checkpoint with pNewNumber index
 	void SetDestinationCheckpointNumber(int);
+	void SetDestinationCheckpointName(string_t);
+	string_t GetDestinationCheckpointName() { return m_sLinkedTriggerName; };
 	void SetShouldStopPlayer(bool);
 	void Spawn();
 
@@ -103,7 +105,7 @@ private:
 	// Should the player be stopped after teleport?
 	bool m_bResetVelocity = false;
 	// Linked Trigger (If desired trigger is not dynamic)
-	CTriggerCheckpoint *m_eLinkedTrigger;
+	CBaseMomentumTrigger *m_eLinkedTrigger;
 	// Name of the linked trigger (We search for the one with this name if it's set)
 	// If it's not set, m_iCheckpointNumber is used
 	string_t m_sLinkedTriggerName;
@@ -126,6 +128,8 @@ public:
 	bool GetShouldStopPlayer() { return m_bResetVelocity; }
 	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
 	void SetDestinationIndex(int pNewIndex);
+	void SetDestinationName(string_t);
+	string_t GetDestinationName() { return m_sLinkedTriggerName; };
 	void SetShouldStopPlayer(bool pShouldStop);
 	void SetHoldTeleportTime(float pHoldTime);
     void Think();
@@ -178,6 +182,8 @@ public:
 	bool GetShouldStopPlayer() { return m_bResetVelocity; }
 	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
 	void SetDestinationIndex(int pNewIndex);
+	void SetDestinationName(string_t);
+	string_t GetDestinationName() { return m_sLinkedTriggerName; };
 	void SetShouldStopPlayer(bool pShouldStop);
 	void SetHoldTeleportTime(float pHoldTime);
 	void Think();

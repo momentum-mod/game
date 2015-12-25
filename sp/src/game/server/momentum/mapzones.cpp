@@ -34,7 +34,7 @@ CMapzone::~CMapzone()
 CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins, 
     Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, 
     const float pHoldTime, const int pDestinationIndex, const bool pLimitSpeed,
-	const float pMaxLeaveSpeed, const string_t linkedtrigger)
+	const float pMaxLeaveSpeed, const string_t pLinkedtrigger)
 {
 	m_type = pType;
 	m_pos = pPos;
@@ -47,6 +47,7 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
 	m_destinationIndex = pDestinationIndex;
 	m_limitingspeed = pLimitSpeed;
 	m_maxleavespeed = pMaxLeaveSpeed;
+	m_linkedtrigger = pLinkedtrigger;
 }
 
 void CMapzone::SpawnZone()
@@ -73,6 +74,7 @@ void CMapzone::SpawnZone()
 		m_trigger = (CTriggerOnehop *)CreateEntityByName("trigger_timer_onehop");
 		m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
 		((CTriggerOnehop *)m_trigger)->SetDestinationIndex(m_destinationIndex);
+		((CTriggerOnehop *)m_trigger)->SetDestinationName(m_linkedtrigger);
 		((CTriggerOnehop *)m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
 		((CTriggerOnehop *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
 		break;
@@ -84,11 +86,13 @@ void CMapzone::SpawnZone()
 		m_trigger = (CTriggerTeleportCheckpoint *)CreateEntityByName("trigger_timer_checkpoint_teleport");
 		m_trigger->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
 		((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointNumber(m_destinationIndex);
+		((CTriggerTeleportCheckpoint *)m_trigger)->SetDestinationCheckpointName(m_linkedtrigger);
 		((CTriggerTeleportCheckpoint *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
 	case 6://multihop
 		m_trigger = (CTriggerOnehop *)CreateEntityByName("trigger_timer_onehop");
 		m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
 		((CTriggerMultihop *)m_trigger)->SetDestinationIndex(m_destinationIndex);
+		((CTriggerMultihop *)m_trigger)->SetDestinationName(m_linkedtrigger);
 		((CTriggerMultihop *)m_trigger)->SetHoldTeleportTime(m_holdTimeBeforeTeleport);
 		((CTriggerMultihop *)m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
 		break;
@@ -146,6 +150,7 @@ static void saveZonFile(const char* szMapName)
 				subKey->SetInt("destination", pTrigger->GetDestinationIndex());
 				subKey->SetBool("stop", pTrigger->GetShouldStopPlayer());
 				subKey->SetFloat("hold", pTrigger->GetHoldTeleportTime());
+				subKey->SetString("destinationname", pTrigger->GetDestinationName().ToCStr());
 			}
 		}
 		else if (pEnt->ClassMatches("trigger_timer_resetonehop"))
@@ -161,6 +166,7 @@ static void saveZonFile(const char* szMapName)
 				subKey = new KeyValues("checkpoint_teleport");
 				subKey->SetInt("destination", pTrigger->GetDestinationCheckpointNumber());
 				subKey->SetBool("stop", pTrigger->GetShouldStopPlayer());
+				subKey->SetString("destinationname", pTrigger->GetDestinationCheckpointName().ToCStr());
 			}
 		}
 		else if (pEnt->ClassMatches("trigger_timer_multihop"))
@@ -172,6 +178,7 @@ static void saveZonFile(const char* szMapName)
 				subKey->SetInt("destination", pTrigger->GetDestinationIndex());
 				subKey->SetBool("stop", pTrigger->GetShouldStopPlayer());
 				subKey->SetFloat("hold", pTrigger->GetHoldTeleportTime());
+				subKey->SetString("destinationname", pTrigger->GetDestinationName().ToCStr());
 			}
 		}
 		if (subKey)
@@ -323,6 +330,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 			int destinationIndex = -1;
 			bool limitingspeed = true;
 			float maxleavespeed = 260;
+			const char * linkedtrigger = NULL;
 
             if (Q_strcmp(cp->GetName(), "start") == 0)
             {
@@ -345,6 +353,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 				shouldStop = cp->GetBool("stop", false);
 				holdTime = cp->GetFloat("hold", 1);
 				destinationIndex = cp->GetInt("destination", 1);
+				linkedtrigger = cp->GetString("destinationname", NULL);
 			}
 			else if (Q_strcmp(cp->GetName(), "resetonehop") == 0)
 			{
@@ -355,6 +364,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 				zoneType = 5;
 				destinationIndex = cp->GetInt("destination", -1);
 				shouldStop = cp->GetBool("stop", false);
+				linkedtrigger = cp->GetString("destinationname", NULL);
 			}
 			else if (Q_strcmp(cp->GetName(), "multihop") == 0)
 			{
@@ -362,6 +372,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 				shouldStop = cp->GetBool("stop", false);
 				holdTime = cp->GetFloat("hold", 1);
 				destinationIndex = cp->GetInt("destination", 1);
+				linkedtrigger = cp->GetString("destinationname", NULL);
 			}
             else
             {
@@ -371,7 +382,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 
             // Add element
 			m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, 
-                holdTime, destinationIndex,limitingspeed,maxleavespeed));
+                holdTime, destinationIndex,limitingspeed,maxleavespeed,MAKE_STRING(linkedtrigger)));
         }
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
         toReturn = true;
