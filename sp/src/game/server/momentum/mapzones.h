@@ -5,7 +5,7 @@ class CMapzone
 {
 public:
 	CMapzone::CMapzone();
-	CMapzone::CMapzone(const int, Vector*, QAngle*, Vector*, Vector*, const int,const bool, const float,const int,const bool,const float);
+	CMapzone::CMapzone(const int, Vector*, QAngle*, Vector*, Vector*, const int,const bool, const float,const int,const bool,const float,const string_t);
 	~CMapzone();
 
 	void SpawnZone();

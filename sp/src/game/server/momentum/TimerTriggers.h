@@ -90,9 +90,10 @@ public:
 	int GetDestinationCheckpointNumber() { return m_iCheckpointNumber; }
 	bool GetShouldStopPlayer() { return m_bResetVelocity; };
 	// -1: Current checkpoint
-	// default: Checkpoint with pNewNumber index
+	// Default: Checkpoint with pNewNumber index
 	void SetDestinationCheckpointNumber(int);
 	void SetShouldStopPlayer(bool);
+	void Spawn();
 
 private:
 	// Where to teleport the player.
@@ -101,6 +102,15 @@ private:
 	int m_iCheckpointNumber;
 	// Should the player be stopped after teleport?
 	bool m_bResetVelocity = false;
+	// Linked Trigger (If desired trigger is not dynamic)
+	CTriggerCheckpoint *m_eLinkedTrigger;
+	// Name of the linked trigger (We search for the one with this name if it's set)
+	// If it's not set, m_iCheckpointNumber is used
+	string_t m_sLinkedTriggerName;
+
+protected:
+	// Are we using the linked entity variable?
+	bool m_bUsingLinked = false;
 
 };
 
@@ -120,6 +130,7 @@ public:
 	void SetHoldTeleportTime(float pHoldTime);
     void Think();
     void HandleTeleport(CBaseEntity*);
+	void Spawn();
 
 private:
 	// Should the player be stopped after teleport?
@@ -132,6 +143,15 @@ private:
 	int m_iDestinationCheckpointNumber = -1;
     // Reset hop state if player hops onto another different onehop
     const int SF_TELEPORT_RESET_ONEHOP = 0x2;	
+	// Linked Trigger (If desired trigger is not dynamic)
+	CBaseMomentumTrigger *m_eLinkedTrigger;
+	// Name of the linked trigger (We search for the one with this name if it's set)
+	// If it's not set, m_iDestinationCheckpointNumber is used
+	string_t m_sLinkedTriggerName;
+
+protected:
+	// Are we using the linked entity variable?
+	bool m_bUsingLinked = false;
 
 };
 
@@ -162,6 +182,7 @@ public:
 	void SetHoldTeleportTime(float pHoldTime);
 	void Think();
 	void HandleTeleport(CBaseEntity*);
+	void Spawn();
 
 private:
 	// Should the player be stopped after teleport?
@@ -172,6 +193,16 @@ private:
 	float m_fMaxHoldSeconds = 1;
 	// Where to teleport the player if it becomes active.
 	int m_iDestinationCheckpointNumber = -1;
+	// Linked Trigger (If desired trigger is not dynamic)
+	CBaseMomentumTrigger *m_eLinkedTrigger;
+	// Name of the linked trigger (We search for the one with this name if it's set)
+	// If it's not set, m_iDestinationCheckpointNumber is used
+	string_t m_sLinkedTriggerName;
+
+protected:
+	// Are we using the linked entity variable?
+	bool m_bUsingLinked = false;
+
 };
 
 #endif // TIMERTRIGGERS_H

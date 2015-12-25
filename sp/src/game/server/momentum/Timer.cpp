@@ -130,7 +130,8 @@ void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
 	c.pos = pPlayer->GetAbsOrigin();
 	c.vel = pPlayer->GetAbsVelocity();
 	checkpoints.AddToTail(c);
-	// MOM_TODO: Create a decal to show where the checkpoint is?
+	// MOM_TODO: Check what gametype we're in, so we can determine if we should stop the timer or not
+	g_Timer.SetRunning(false);
 	m_iCurrentStepCP++;
 }
 

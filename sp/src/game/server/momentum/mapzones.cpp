@@ -34,7 +34,7 @@ CMapzone::~CMapzone()
 CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins, 
     Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, 
     const float pHoldTime, const int pDestinationIndex, const bool pLimitSpeed,
-	const float pMaxLeaveSpeed)
+	const float pMaxLeaveSpeed, const string_t linkedtrigger)
 {
 	m_type = pType;
 	m_pos = pPos;
