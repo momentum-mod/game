@@ -6,7 +6,7 @@
 
 #include "utlvector.h"
 #include "tickset.h"
-#include "keyvalues.h"
+#include "KeyValues.h"
 #include <ctime>
 
 class CTriggerTimerStart;
