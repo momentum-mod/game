@@ -41,7 +41,7 @@ void CTimer::PostTime()
         int ticks = gpGlobals->tickcount - m_iStartTick;
         char ticksString[64];
         Q_snprintf(ticksString, 64, "%i", ticks);
-        
+
         // TODO: make tickrate code crossplatform
 #ifdef _WIN32
         float tickRate = TickSet::GetTickrate();
@@ -58,7 +58,7 @@ void CTimer::PostTime()
         Q_strcat(webURL, "/", 512);
         Q_strcat(webURL, ticksString, 512);
         Q_strcat(webURL, "/", 512);
-        Q_strcat(webURL, tickRate == 0.01f ? "100" : "66", 512); // FIXME
+        Q_strncat(webURL, tickRate == 0.01f ? "100" : "66", 512); // FIXME
         DevLog("Ticks sent to server: %i\n", ticks);
 
         //Build request
@@ -81,15 +81,89 @@ void CTimer::PostTime()
     }
 }
 
+//Called upon map load, loads any and all times stored in the <mapname>.tim file
+void CTimer::LoadLocalTimes(const char *szMapname)
+{
+    char timesFilePath[MAX_PATH];
+    Q_strcpy(timesFilePath, c_mapDir);
+    Q_strcat(timesFilePath, szMapname, MAX_PATH);
+    Q_strncat(timesFilePath, c_timesExt, MAX_PATH);
+    KeyValues *timesKV = new KeyValues(szMapname);
+    if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD"))
+    {
+        for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
+        {
+            Time t;
+            t.ticks = Q_atoi(kv->GetName());
+            t.tickrate = kv->GetFloat("rate");
+            t.date = (time_t) kv->GetInt("date");
+            localTimes.AddToTail(t);
+        }
+    }
+    else
+    {
+        DevLog("Failed to load local times; no local file was able to be loaded!\n");
+    }
+    timesKV->deleteThis();
+}
+
+//Called every time a new time is achieved
+void CTimer::SaveTime()
+{
+    const char *szMapName = gpGlobals->mapname.ToCStr();
+    KeyValues *timesKV = new KeyValues(szMapName);
+    int count = localTimes.Count();
+
+    for (int i = 0; i < count; i++)
+    {
+        Time t = localTimes[i];
+        char timeName[512];
+        Q_snprintf(timeName, 512, "%i", t.ticks);
+        KeyValues *pSubkey = new KeyValues(timeName);
+        pSubkey->SetFloat("rate", t.tickrate);
+        pSubkey->SetInt("date", t.date);
+        timesKV->AddSubKey(pSubkey);
+    }
+
+    char file[MAX_PATH];
+    Q_strcpy(file, c_mapDir);
+    Q_strcat(file, szMapName, MAX_PATH);
+    Q_strncat(file, c_timesExt, MAX_PATH);
+
+    if (timesKV->SaveToFile(filesystem, file, "MOD", true))
+        Log("Successfully saved new time!\n");
+
+    timesKV->deleteThis();
+}
+
 void CTimer::Stop(bool endTrigger)
 {
     if (endTrigger)
     {
+        //Post time to leaderboards if they're online
         if (SteamAPI_IsSteamRunning())
-            PostTime();//TODO rename this
+            PostTime();
+
+        //Save times locally too, regardless of SteamAPI condition
+        Time t;
+        t.ticks = gpGlobals->tickcount - m_iStartTick;
+        t.tickrate = gpGlobals->interval_per_tick;
+        time(&t.date);
+        localTimes.AddToTail(t);
+
+        SaveTime();
     }
     SetRunning(false);
     DispatchStateMessage();
+}
+
+void CTimer::OnMapEnd(const char *pMapName)
+{
+    SetCurrentCheckpointTrigger(NULL);
+    SetStartTrigger(NULL);
+    RemoveAllCheckpoints();
+    localTimes.Purge();
+    //MOM_TODO: onlineTimes.RemoveAll();
 }
 
 void CTimer::DispatchResetMessage()
@@ -193,15 +267,15 @@ void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
 
 void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
 {
-	if (!pPlayer) return;
-	Checkpoint c;
-	c.ang = pPlayer->GetAbsAngles();
-	c.pos = pPlayer->GetAbsOrigin();
-	c.vel = pPlayer->GetAbsVelocity();
-	checkpoints.AddToTail(c);
-	// MOM_TODO: Check what gametype we're in, so we can determine if we should stop the timer or not
-	g_Timer.SetRunning(false);
-	m_iCurrentStepCP++;
+    if (!pPlayer) return;
+    Checkpoint c;
+    c.ang = pPlayer->GetAbsAngles();
+    c.pos = pPlayer->GetAbsOrigin();
+    c.vel = pPlayer->GetAbsVelocity();
+    checkpoints.AddToTail(c);
+    // MOM_TODO: Check what gametype we're in, so we can determine if we should stop the timer or not
+    g_Timer.SetRunning(false);
+    m_iCurrentStepCP++;
 }
 
 void CTimer::RemoveLastCheckpoint()
