@@ -1,9 +1,10 @@
 #include "cbase.h"
 #include "mom_util.h"
+#include "filesystem.h"
 
 #include "memdbgon.h"
 
-
+extern IFileSystem* filesystem;
 
 void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
