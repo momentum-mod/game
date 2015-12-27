@@ -43,7 +43,7 @@
 #include "commentary_modelviewer.h"
 
 // sub momentum dialogs
-#include "../ClientTimesDisplay.h"
+#include "../momentum/ClientTimesDisplay.h"
 
 // our definition
 #include "baseviewport.h"

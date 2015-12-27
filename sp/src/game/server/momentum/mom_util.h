@@ -1,4 +1,9 @@
-#include "cbase.h"
+#ifndef MOM_UTIL_H
+#define MOM_UTIL_H
+#ifdef _WIN32
+#pragma once
+#endif
+
 #include "filesystem.h"
 
 class MomentumUtil
@@ -19,3 +24,5 @@ public:
 };
 
 extern MomentumUtil mom_UTIL;
+
+#endif //MOM_UTIL_H

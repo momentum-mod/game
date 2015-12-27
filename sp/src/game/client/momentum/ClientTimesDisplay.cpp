@@ -571,8 +571,3 @@ void CClientTimesDisplay::MoveToCenterOfScreen()
     surface()->GetWorkspaceBounds(wx, wy, ww, wt);
     SetPos((ww - GetWide()) / 2, (wt - GetTall()) / 2);
 }
-
->>>>>>> First implementation of ClientTimesDisplay. Not even functional. Added cheat detection for timer upload
-
-//MOM_TODO: Implement a VGUI panel that displays current bests,
-//local times, as well as maybe leaderboard position?

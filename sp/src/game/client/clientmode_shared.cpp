@@ -36,7 +36,7 @@
 #include <vgui/ILocalize.h>
 #include "hud_vote.h"
 #include "ienginevgui.h"
-#include "hud_cp_menu.h"
+#include "momentum/hud_cp_menu.h"
 #include "sourcevr/isourcevirtualreality.h"
 #include "clienteffectprecachesystem.h"
 #if defined( _X360 )
