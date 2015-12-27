@@ -2,7 +2,7 @@
 #include "mom_util.h"
 #include "filesystem.h"
 
-#include "memdbgon.h"
+#include "tier0/memdbgon.h"
 
 extern IFileSystem* filesystem;
 

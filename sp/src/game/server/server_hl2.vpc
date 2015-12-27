@@ -64,6 +64,9 @@ $Project "Server (HL2)"
 						}
 					}
 				}
+
+				$File   "momentum\mom_util.cpp"
+				$File   "momentum\mom_util.h"
 			}
 
 			$Folder "Timer"

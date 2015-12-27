@@ -32,6 +32,11 @@ $Project "Client (HL2)"
 		{
 			$File	"momentum\speedometer.cpp"
 
+			$File   "momentum\hud_cp_menu.cpp"
+			$File   "momentum\hud_cp_menu.h"
+			$File   "momentum\ClientTimesDisplay.cpp"
+			$File   "momentum\ClientTimesDisplay.h"
+
 			$Folder "Timer"
 			{
 				$File	"momentum\timer.cpp"
