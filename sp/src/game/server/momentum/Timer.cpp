@@ -14,26 +14,12 @@ void CTimer::Start(int start)
     DispatchStateMessage();
 }
 
-void CTimer::OnTimeSubmitted(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    if (bIOFailure) return;
-    DevLog("Recieved callback request!\n");
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    DevLog("It is: %s\n", reinterpret_cast<char*>(pData));
-    //MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
-
-    //Last but not least, free resources
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
-}
-
 void CTimer::PostTime()
 {
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser())
     {
+        //Get required info 
+        //MOM_TODO include the extra security measures for beta+
         uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
         char steamIDString[21];
         Q_snprintf(steamIDString, 21, "%llu", steamID);
@@ -42,7 +28,7 @@ void CTimer::PostTime()
         char ticksString[64];
         Q_snprintf(ticksString, 64, "%i", ticks);
 
-        // TODO: make tickrate code crossplatform
+        // MOM_TODO: make tickrate code crossplatform
 #ifdef _WIN32
         float tickRate = TickSet::GetTickrate();
 #else
@@ -62,18 +48,7 @@ void CTimer::PostTime()
         DevLog("Ticks sent to server: %i\n", ticks);
 
         //Build request
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, webURL);
-        SteamAPICall_t apiHandle;
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            OnTimeSubmittedCallback.Set(apiHandle, this, &CTimer::OnTimeSubmitted);
-            DevLog("Successfully posted time!\n");
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to post scores online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle);//GC
-        }
+        mom_UTIL.PostTime(webURL);
     }
     else
     {

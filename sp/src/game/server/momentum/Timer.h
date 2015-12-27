@@ -7,6 +7,7 @@
 #include "utlvector.h"
 #include "tickset.h"
 #include "KeyValues.h"
+#include "mom_util.h"
 #include <ctime>
 
 class CTriggerTimerStart;
@@ -74,8 +75,6 @@ public:
     CTriggerOnehop* FindOnehopOnList(int pIndexOnList);
 
     //Online-related timer commands
-    void OnTimeSubmitted(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    CCallResult<CTimer, HTTPRequestCompleted_t> OnTimeSubmittedCallback;
     void PostTime();
     //MOM_TODO: void LoadOnlineTimes();
     
