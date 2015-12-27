@@ -563,7 +563,7 @@ static void TestCreateTriggerCheckpoint(const CCommand &args)
         }
         else
         {
-            DevWarning("Can't create a checkpoint without an index.\nPlease see mom_createcheckpoint usage")
+            DevWarning("Can't create a checkpoint without an index.\nPlease see mom_createcheckpoint usage");
         }
 	}
 }
