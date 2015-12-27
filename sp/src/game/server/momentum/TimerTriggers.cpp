@@ -508,22 +508,20 @@ static void TestCreateTriggerStart(const CCommand &args)
 	{
 		pTrigger->Spawn();
 		pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-        if (Q_atoi(args.Arg(3))) // At least 3 Args?
+        if (args.ArgC() >= 3) // At least 3 Args?
 		    pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
         else
             pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-		if (Q_atoi(args.Arg(4)))
-		{
-			pTrigger->SetIsLimitingSpeed(true);
-			pTrigger->SetMaxLeaveSpeed(Q_atoi(args.Arg(4)));
-		}
-		else {
+        if (args.ArgC() >= 4)
+        {
+            pTrigger->SetIsLimitingSpeed(true);
+            pTrigger->SetMaxLeaveSpeed(Q_atoi(args.Arg(4)));
+        }
+		else 
 			pTrigger->SetIsLimitingSpeed(false);
-		}
 		pTrigger->SetSolid(SOLID_BBOX);
 		pTrigger->AddEffects(0x020);
 		pTrigger->SetName(MAKE_STRING("Start Trigger"));
-		
 		
 		// now use mom_reset_to_start
 	}
@@ -546,22 +544,30 @@ static void TestCreateTriggerStop(void)
 static void TestCreateTriggerCheckpoint(const CCommand &args)
 {
 	CTriggerCheckpoint *pTrigger = (CTriggerCheckpoint *)CreateEntityByName("trigger_timer_checkpoint");
-	if (pTrigger)
+    if (pTrigger)
 	{
-		if (args.ArgC() > 0)
-		{
-			int index = Q_atoi(args.Arg(1));
-			pTrigger->Spawn();
-			pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-			pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-			pTrigger->SetSolid(SOLID_BBOX);
-			pTrigger->SetName(MAKE_STRING("Checkpoint Trigger"));
-			pTrigger->SetCheckpointNumber(index);
-		}
-		// now use mom_reset_to_start
+        if (args.ArgC() > 0)
+        {
+            int index = Q_atoi(args.Arg(1));
+            pTrigger->Spawn();
+            pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
+            if (args.ArgC() >= 3) // At least 3 Args?
+                pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
+            else
+                pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
+            pTrigger->SetSolid(SOLID_BBOX);
+            pTrigger->SetName(MAKE_STRING("Checkpoint Trigger"));
+            pTrigger->SetCheckpointNumber(index);
+
+            // now use mom_reset_to_start
+        }
+        else
+        {
+            DevWarning("Can't create a checkpoint without an index.\nPlease see mom_createcheckpoint usage")
+        }
 	}
 }
 
-static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test\nUsage: mom_createstart <SizeX> <SizeY> <SizeZ> <MaxLeaveSpeed>");
+static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test\nUsage: mom_createstart <SizeX> <SizeY> <SizeZ> [<MaxLeaveSpeed>]\n");
 static ConCommand mom_createstop("mom_createstop", TestCreateTriggerStop, "Create StopTrigger test");
-static ConCommand mom_createcheckpoint("mom_createcheckpoint", TestCreateTriggerCheckpoint, "Create CheckpointTrigger test");
+static ConCommand mom_createcheckpoint("mom_createcheckpoint", TestCreateTriggerCheckpoint, "Create CheckpointTrigger test\nUsage: mom_createcheckpoint <Index> [<SizeX> <SizeY> <SizeZ>]\n");
