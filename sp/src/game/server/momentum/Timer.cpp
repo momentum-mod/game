@@ -16,7 +16,7 @@ void CTimer::Start(int start)
 
 void CTimer::PostTime()
 {
-    if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser())
+    if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
         //Get required info 
         //MOM_TODO include the extra security measures for beta+

@@ -32,7 +32,7 @@
 #include <igameresources.h>
 
 // sub dialogs
-#include "clientscoreboarddialog.h"
+//#include "clientscoreboarddialog.h"
 #include "spectatorgui.h"
 #include "teammenu.h"
 #include "vguitextwindow.h"
@@ -41,6 +41,9 @@
 #include "hud.h"
 #include "NavProgress.h"
 #include "commentary_modelviewer.h"
+
+// sub momentum dialogs
+#include "../ClientTimesDisplay.h"
 
 // our definition
 #include "baseviewport.h"
@@ -259,7 +262,8 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 #ifndef _XBOX
 	if ( Q_strcmp(PANEL_SCOREBOARD, szPanelName) == 0 )
 	{
-		newpanel = new CClientScoreBoardDialog( this );
+        // Using custom Momentum's scoreboard
+		newpanel = new CClientTimesDisplay( this );
 	}
 	else if ( Q_strcmp(PANEL_INFO, szPanelName) == 0 )
 	{
