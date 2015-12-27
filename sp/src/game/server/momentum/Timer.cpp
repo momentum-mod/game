@@ -2,6 +2,7 @@
 #include "Timer.h"
 #include "filesystem.h"
 #include "TimerTriggers.h"
+#include "../shared/GameEventListener.h"
 
 #include "tier0/memdbgon.h"
 
@@ -18,6 +19,9 @@ void CTimer::PostTime()
 {
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
+        // Necesary so TimeDisplay scoreboard knows it has to update;
+        IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
+        gameeventmanager->FireEvent(postEvent);
         //Get required info 
         //MOM_TODO include the extra security measures for beta+
         uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();

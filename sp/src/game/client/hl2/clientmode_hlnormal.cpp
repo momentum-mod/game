@@ -52,8 +52,8 @@ protected:
 
 		SetPaintBackgroundEnabled( false );
 	}
-
-	virtual void CreateDefaultPanels( void ) { /* don't create any panels yet*/ };
+    // MOM_TODO: HACHACK. Do it the fancy way
+    //virtual void CreateDefaultPanels(void) { /* don't create any panels yet */ };
 };
 
 

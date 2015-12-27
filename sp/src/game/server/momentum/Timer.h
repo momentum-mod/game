@@ -20,6 +20,8 @@ class CTimer
 public:
     void Start(int startTick);
     void Stop(bool);
+    // MOM_TODO
+    // Timer does not think. We'll have to "hack" it
     void Think();
     void DispatchStateMessage();
     void DispatchResetMessage();
