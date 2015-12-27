@@ -92,7 +92,7 @@ private:
     bool m_bIsRunning;
     bool m_bIsPaused;
     bool m_bWereCheatsActivated;
-    ConVar *m_cCheats = cvar->FindVar("sv_cheats");
+    ConVar *m_cCheats;
     CTriggerTimerStart *m_pStartTrigger;
     CTriggerCheckpoint *m_pCurrentCheckpoint;
 

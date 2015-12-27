@@ -268,8 +268,11 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
     cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
 }
 
+//MOM_TODO: This function isn't called, CTimer is not an entity
+//Rethink cheat detection
 void CTimer::Think()
 {
+    m_cCheats = cvar->FindVar("sv_cheats");
     if (!m_bWereCheatsActivated && m_cCheats && (m_cCheats->GetInt() == 1))
     {
         m_bWereCheatsActivated = true;
