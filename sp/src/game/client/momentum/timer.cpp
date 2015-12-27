@@ -111,14 +111,7 @@ void C_Timer::Reset()
 
 void C_Timer::OnThink() 
 {
-	
-	// This is how achievements are handled, so..
-	ConVar *pCheats = cvar->FindVar("sv_cheats");
-	if (!m_bWereCheatsActivated && pCheats && (pCheats->GetInt() == 1))
-	{
-		m_bWereCheatsActivated = true;
-		DevMsg("CHEATS ENEABLED");
-	}
+    // Cheat detection moved to server Timer.cpp
 }
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)

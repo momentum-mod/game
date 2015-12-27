@@ -115,8 +115,9 @@ void CTimer::Stop(bool endTrigger)
 {
     if (endTrigger)
     {
-        //Post time to leaderboards if they're online
-        if (SteamAPI_IsSteamRunning())
+        // Post time to leaderboards if they're online
+        // and if cheats haven't been turned on this session
+        if (SteamAPI_IsSteamRunning() && !m_bWereCheatsActivated)
             PostTime();
 
         //Save times locally too, regardless of SteamAPI condition
@@ -267,6 +268,14 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
     cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
 }
 
+void CTimer::Think()
+{
+    if (!m_bWereCheatsActivated && m_cCheats && (m_cCheats->GetInt() == 1))
+    {
+        m_bWereCheatsActivated = true;
+        DevMsg("CHEATS ENEABLED");
+    }
+}
 
 // CTriggerOnehop
 int CTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger)

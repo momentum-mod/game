@@ -20,6 +20,7 @@ class CTimer
 public:
     void Start(int startTick);
     void Stop(bool);
+    void Think();
     void DispatchStateMessage();
     void DispatchResetMessage();
     void DispatchCheckpointMessage();
@@ -34,7 +35,6 @@ public:
     {
         return m_iCurrentStepCP;
     }
-
     //For leaderboard use later on
     bool IsUsingCPMenu()
     {
@@ -81,16 +81,18 @@ public:
     //Local-related timer commands
     void LoadLocalTimes(const char*);
     void SaveTime();
-
-
     void OnMapEnd(const char *);
+
+    // Cheat detection
+    bool GotCaughtCheating() { return m_bWereCheatsActivated; };
 
 private:
 
     int m_iStartTick;
     bool m_bIsRunning;
     bool m_bIsPaused;
-
+    bool m_bWereCheatsActivated;
+    ConVar *m_cCheats = cvar->FindVar("sv_cheats");
     CTriggerTimerStart *m_pStartTrigger;
     CTriggerCheckpoint *m_pCurrentCheckpoint;
 
