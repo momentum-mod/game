@@ -32,7 +32,7 @@
 #include <igameresources.h>
 
 // sub dialogs
-//#include "clientscoreboarddialog.h"
+#include "clientscoreboarddialog.h"
 #include "spectatorgui.h"
 #include "teammenu.h"
 #include "vguitextwindow.h"
@@ -43,7 +43,7 @@
 #include "commentary_modelviewer.h"
 
 // sub momentum dialogs
-#include "../momentum/ClientTimesDisplay.h"
+//#include "../momentum/ClientTimesDisplay.h"
 
 // our definition
 #include "baseviewport.h"
@@ -263,7 +263,7 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
     if (Q_strcmp(PANEL_SCOREBOARD, szPanelName) == 0)
     {
         // Using custom Momentum's scoreboard
-        newpanel = new CClientTimesDisplay(this);
+        newpanel = new CClientScoreBoardDialog(this);
     }
     else if (Q_strcmp(PANEL_INFO, szPanelName) == 0)
     {
