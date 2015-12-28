@@ -1,4 +1,4 @@
-#include "cbase.h"
+//#include "cbase.h"
 //#include "ClientTimesDisplay.h"
 //#include <stdio.h>
 //
@@ -26,52 +26,64 @@
 //
 //#include "vgui_avatarimage.h"
 //
-// memdbgon must be the last include file in a .cpp file!!!
+//// memdbgon must be the last include file in a .cpp file!!!
 //#include "tier0/memdbgon.h"
 //
 //using namespace vgui;
 //
-//bool AvatarIndexLessFunc(const int &lhs, const int &rhs)
-//{
-//    return lhs < rhs;
-//}
-//
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
+////-----------------------------------------------------------------------------
+//// Purpose: Constructor
+////-----------------------------------------------------------------------------
 //CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(NULL, PANEL_SCOREBOARD)
 //{
-//    m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
+//    
 //    m_nCloseKey = BUTTON_CODE_INVALID;
 //
-//    memset(s_VoiceImage, 0x0, sizeof( s_VoiceImage ));
+//    //memset(s_VoiceImage, 0x0, sizeof( s_VoiceImage ));
 //    TrackerImage = 0;
 //    m_pViewPort = pViewPort;
 //
-//     initialize dialog
+//    //initialize dialog
 //    SetProportional(true);
 //    SetKeyBoardInputEnabled(false);
 //    SetMouseInputEnabled(false);
 //
-//     set the scheme before any child control is created
+//    //set the scheme before any child control is created
 //    SetScheme("ClientScheme");
+//    
+//    // load scoreboard components
 //
-//     load scoreboard components
-//    m_pHeader = new Panel(this, "Header");
-//    m_lMapSummary = new Label(m_pHeader, "MapSummary", "MAP NAME (GAMEMODE)");
-//    m_pPlayerStats = new Panel(this, "PlayerStats");
-//    m_pPlayerAvatar = new ImagePanel(m_pPlayerStats, "PlayerAvatar");
-//    m_lPlayerName = new Label(m_pPlayerStats, "PlayerName", "PLAYER NAME");
-//    m_lPlayerMapRank = new Label(m_pPlayerStats, "PlayerMapRank", "MAP RANK: X/Y");
-//    m_lPlayerGlobalRank = new Label(m_pPlayerStats, "PlayerGlobalRank", "GLOBAL RANK: X/Y");
-//    m_pLeaderboards = new Panel(this, "Leaderboards");
-//    m_pOnlineLeaderboards = new SectionedListPanel(m_pLeaderboards, "OnlineNearbyLeaderboard");
-//    m_pLocalBests = new SectionedListPanel(m_pLeaderboards, "LocalPersonalBest");
+//    LoadControlSettings("Resource/UI/timesdisplay.res");
+//
+//    m_pHeader = FindControl<Panel>("Header", true);
+//    m_lMapSummary = FindControl<Label>("MapSummary", true);
+//    m_pPlayerStats = FindControl<Panel>("PlayerStats", true);
+//    m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar",true);
+//    m_lPlayerName = FindControl<Label>("PlayerName", true);
+//    m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
+//    m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
+//    m_pLeaderboards = FindControl<Panel>("Leaderboards", true);
+//    m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineNearbyLeaderboard", true);
+//    m_pLocalBests = FindControl<SectionedListPanel>("LocalPersonalBest", true);
+//    
+//    if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName ||
+//        !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards || !m_pLocalBests)
+//    {
+//        Assert("Null pointer(s) on scoreboards");
+//    }
+//    
+//
+//    m_lMapSummary->SetParent(m_pHeader);
+//    m_pPlayerAvatar->SetParent(m_pPlayerStats);
+//    m_lPlayerName->SetParent(m_pPlayerStats);
+//    m_lPlayerMapRank->SetParent(m_pPlayerStats);
+//    m_lPlayerGlobalRank->SetParent(m_pPlayerStats);
+//    m_pOnlineLeaderboards->SetParent(m_pLeaderboards);
+//    m_pLocalBests->SetParent(m_pLeaderboards);
 //
 //    m_pOnlineLeaderboards->SetVerticalScrollbar(false);
 //    m_pLocalBests->SetVerticalScrollbar(false);
 //
-//    LoadControlSettings("Resource/UI/timesdisplay.res");
 //    m_iDesiredHeight = GetTall();
 //    m_pHeader->SetVisible(false); // hide this until we load everything in applyschemesettings
 //    m_pPlayerStats->SetVisible(false); // hide this until we load everything in applyschemesettings
@@ -80,10 +92,10 @@
 //    m_HLTVSpectators = 0;
 //    m_ReplaySpectators = 0;
 //
-//     update scoreboard instantly if on of these events occure
+//    // update scoreboard instantly if on of these events occure
 //    ListenForGameEvent("hltv_status");
 //    ListenForGameEvent("server_spawn");
-//     Momentum specific
+//    //Momentum specific
 //    ListenForGameEvent("runtime_posted");
 //
 //    m_pImageList = NULL;
@@ -92,9 +104,9 @@
 //    m_mapAvatarsToImageList.RemoveAll();
 //}
 //
-//-----------------------------------------------------------------------------
-// Purpose: Constructor
-//-----------------------------------------------------------------------------
+////-----------------------------------------------------------------------------
+//// Purpose: Constructor
+////-----------------------------------------------------------------------------
 //CClientTimesDisplay::~CClientTimesDisplay()
 //{
 //    if (NULL != m_pImageList)
@@ -102,63 +114,64 @@
 //        delete m_pImageList;
 //        m_pImageList = NULL;
 //    }
-//     Kill children before parents
 //
-//    if (NULL != m_lMapSummary)
-//    {
-//        delete m_lMapSummary;
-//        m_lMapSummary = NULL;
-//    }
-//    if (NULL != m_pHeader)
-//    {
-//        delete m_pHeader;
-//        m_pHeader = NULL;
-//    }
+//    //// Kill children before parents
 //
-//    if (NULL != m_lPlayerName)
-//    {
-//        delete m_lPlayerName;
-//        m_lPlayerName = NULL;
-//    }
-//    if (NULL != m_lPlayerMapRank)
-//    {
-//        delete m_lPlayerMapRank;
-//        m_lPlayerMapRank = NULL;
-//    }
-//    if (NULL != m_lPlayerGlobalRank)
-//    {
-//        delete m_lPlayerGlobalRank;
-//        m_lPlayerGlobalRank = NULL;
-//    }
-//    if (NULL != m_pPlayerStats)
-//    {
-//        delete m_pPlayerStats;
-//        m_pPlayerStats = NULL;
-//    }
+//    //if (NULL != m_lMapSummary)
+//    //{
+//    //    delete m_lMapSummary;
+//    //    m_lMapSummary = NULL;
+//    //}
+//    //if (NULL != m_pHeader)
+//    //{
+//    //    delete m_pHeader;
+//    //    m_pHeader = NULL;
+//    //}
 //
-//    if (NULL != m_pOnlineLeaderboards)
-//    {
-//        delete m_pOnlineLeaderboards;
-//        m_pOnlineLeaderboards = NULL;
-//        
-//    }
-//    if (NULL != m_pLocalBests)
-//    {
-//        delete m_pLocalBests;
-//        m_pLocalBests = NULL;
-//    }
-//    if (NULL != m_pLeaderboards)
-//    {
-//        delete m_pLeaderboards;
-//        m_pLeaderboards = NULL;
-//    }
+//    //if (NULL != m_lPlayerName)
+//    //{
+//    //    delete m_lPlayerName;
+//    //    m_lPlayerName = NULL;
+//    //}
+//    //if (NULL != m_lPlayerMapRank)
+//    //{
+//    //    delete m_lPlayerMapRank;
+//    //    m_lPlayerMapRank = NULL;
+//    //}
+//    //if (NULL != m_lPlayerGlobalRank)
+//    //{
+//    //    delete m_lPlayerGlobalRank;
+//    //    m_lPlayerGlobalRank = NULL;
+//    //}
+//    //if (NULL != m_pPlayerStats)
+//    //{
+//    //    delete m_pPlayerStats;
+//    //    m_pPlayerStats = NULL;
+//    //}
 //
-//     And now the KV for the data.
-//    if (NULL != m_kvPlayerData)
-//    {
-//        m_kvPlayerData->deleteThis();
-//        m_kvPlayerData = NULL;
-//    }
+//    //if (NULL != m_pOnlineLeaderboards)
+//    //{
+//    //    delete m_pOnlineLeaderboards;
+//    //    m_pOnlineLeaderboards = NULL;
+//    //    
+//    //}
+//    //if (NULL != m_pLocalBests)
+//    //{
+//    //    delete m_pLocalBests;
+//    //    m_pLocalBests = NULL;
+//    //}
+//    //if (NULL != m_pLeaderboards)
+//    //{
+//    //    delete m_pLeaderboards;
+//    //    m_pLeaderboards = NULL;
+//    //}
+//
+//    //// And now the KV for the data.
+//    //if (NULL != m_kvPlayerData)
+//    //{
+//    //    m_kvPlayerData->deleteThis();
+//    //    m_kvPlayerData = NULL;
+//    //}
 //}
 //
 ////-----------------------------------------------------------------------------
@@ -210,10 +223,16 @@
 //    if (pUpdateLists)
 //    {
 //        // clear
-//        m_pOnlineLeaderboards->DeleteAllItems();
-//        m_pLocalBests->DeleteAllItems();
-//        m_pOnlineLeaderboards->RemoveAll();
-//        m_pLocalBests->RemoveAll();
+//        if (m_pOnlineLeaderboards)
+//        {
+//            m_pOnlineLeaderboards->DeleteAllItems();
+//            m_pOnlineLeaderboards->RemoveAll();
+//        }
+//        if (m_pLocalBests)
+//        {
+//            m_pLocalBests->DeleteAllItems();
+//            m_pLocalBests->RemoveAll();
+//        }
 //        // add all the sections
 //        InitScoreboardSections();
 //    }
@@ -240,21 +259,22 @@
 ////-----------------------------------------------------------------------------
 //void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 //{
+//    
 //    BaseClass::ApplySchemeSettings(pScheme);
-//
+//    
 //    if (m_pImageList)
 //        delete m_pImageList;
 //    m_pImageList = new ImageList(false);
-//
+//    
 //    m_mapAvatarsToImageList.RemoveAll();
-//
+//    
 //    PostApplySchemeSettings(pScheme);
 //}
 //
 ////-----------------------------------------------------------------------------
 //// Purpose: Does dialog-specific customization after applying scheme settings.
 ////-----------------------------------------------------------------------------
-//void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
+//void CClientTimesDisplay::PostApplySchemeSettings(IScheme *pScheme)
 //{
 //    // resize the images to our resolution
 //    for (int i = 0; i < m_pImageList->GetImageCount(); i++)
@@ -263,14 +283,16 @@
 //        m_pImageList->GetImage(i)->GetSize(wide, tall);
 //        m_pImageList->GetImage(i)->SetSize(scheme()->GetProportionalScaledValueEx(GetScheme(), wide), scheme()->GetProportionalScaledValueEx(GetScheme(), tall));
 //    }
-//
-//    m_pPlayerAvatar->SetImage(m_pImageList->GetImage(1));
+//    // MOM_TODO: Which one is the Player's avatar?
+//    m_pPlayerAvatar->SetImage(m_pImageList->GetImage(0));
 //    // Now that the image is loaded, we display the whole thing
-//
-//    m_pHeader->SetVisible(true); // hide this until we load everything in applyschemesettings
-//    m_pPlayerStats->SetVisible(true); // hide this until we load everything in applyschemesettings
-//    m_pLeaderboards->SetVisible(true); // hide this until we load everything in applyschemesettings
-//
+//    if (m_pHeader)
+//     m_pHeader->SetVisible(true); // hide this until we load everything in applyschemesettings
+//    if (m_pPlayerStats)
+//        m_pPlayerStats->SetVisible(true); // hide this until we load everything in applyschemesettings
+//    if (m_pLeaderboards)
+//        m_pLeaderboards->SetVisible(true); // hide this until we load everything in applyschemesettings
+//    
 //    // light up scoreboard a bit
 //    SetBgColor(Color(0, 0, 0, 0));
 //}
@@ -421,14 +443,17 @@
 ////-----------------------------------------------------------------------------
 //void CClientTimesDisplay::AddHeader()
 //{
-//    char *ch = "mapname";
 //    //// MOM_TODO: Implement map & gamemode detection
 //    //Q_strcat(ch, "(", 512);
 //    //Q_strcat(ch, "Gamemode", 512);
 //    //Q_strcat(ch, ")", 512);
-//    m_lMapSummary->SetText(ch);
-//    // add the top header
-//    m_lMapSummary->SetVisible(true);
+//    if (m_lMapSummary)
+//    {
+//        char *ch = "mapname";
+//        m_lMapSummary->SetText(ch);
+//        // add the top header
+//        m_lMapSummary->SetVisible(true);
+//    }
 //}
 //
 ////-----------------------------------------------------------------------------
@@ -580,18 +605,26 @@
 //    // update player info
 //    if (pFullUpdate)
 //        UpdatePlayerInfo();
-//    m_lPlayerName->SetText(m_kvPlayerData->GetString("name","Undefined"));
-//    char *mapRank = "Map rank:";
-//   /* Q_strcat(mapRank,(const char *)m_kvPlayerData->GetInt("mapRank", -1), 50);
-//    Q_strcat(mapRank, "/", 50);
-//    Q_strcat(mapRank, (const char *)m_kvPlayerData->GetInt("mapCount", -1), 50);*/
-//    m_lPlayerMapRank->SetText(mapRank);
+//    if (m_lPlayerName)
+//        m_lPlayerName->SetText(m_kvPlayerData->GetString("name","Undefined"));
 //
-//    char *globalRank = "Global rank:";
-//    /*Q_strcat(mapRank, (const char *)m_kvPlayerData->GetInt("globalRank", -1), 50);
-//    Q_strcat(mapRank, "/", 50);
-//    Q_strcat(mapRank, (const char *)m_kvPlayerData->GetInt("globalCount", -1), 50);*/
-//    m_lPlayerGlobalRank->SetText(globalRank);
+//    if (m_lPlayerMapRank)
+//    {
+//        char *mapRank = "Map rank:";
+//        /* Q_strcat(mapRank,(const char *)m_kvPlayerData->GetInt("mapRank", -1), 50);
+//        Q_strcat(mapRank, "/", 50);
+//        Q_strcat(mapRank, (const char *)m_kvPlayerData->GetInt("mapCount", -1), 50);*/
+//        m_lPlayerMapRank->SetText(mapRank);
+//    }
+//
+//    if (m_lPlayerGlobalRank)
+//    {
+//        char *globalRank = "Global rank:";
+//        /*Q_strcat(mapRank, (const char *)m_kvPlayerData->GetInt("globalRank", -1), 50);
+//        Q_strcat(mapRank, "/", 50);
+//        Q_strcat(mapRank, (const char *)m_kvPlayerData->GetInt("globalCount", -1), 50);*/
+//        m_lPlayerGlobalRank->SetText(globalRank);
+//    }
 //    if (pFullUpdate)
 //        Reset(true);
 //}
