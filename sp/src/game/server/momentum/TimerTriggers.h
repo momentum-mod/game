@@ -221,14 +221,11 @@ public:
     key m_eKey;
 
     void Think();
-    void StartTouch(CBaseEntity*);
-    void EndTouch(CBaseEntity*);
     void Spawn();
 
     COutputEvent m_OnKeyPressed;
 
 private:
-    bool m_bPlayerInside;
     int m_ButtonRep;
     
 };

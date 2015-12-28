@@ -504,46 +504,12 @@ DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"),
 END_DATADESC()
 
 // CTriggerUserInput
-void CTriggerUserInput::StartTouch(CBaseEntity *pOther)
-{
-    BaseClass::StartTouch(pOther);
-    if (pOther->IsPlayer())
-    {
-        m_bPlayerInside = true;
-    }
-}
-
-void CTriggerUserInput::EndTouch(CBaseEntity* pOther)
-{
-    BaseClass::EndTouch(pOther);
-    if (pOther->IsPlayer())
-    {
-        m_bPlayerInside = false;
-    }
-}
-
 void CTriggerUserInput::Think()
 {
-    if (m_bPlayerInside)
+    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+    if (pPlayer != NULL && IsTouching(pPlayer) && (pPlayer->m_nButtons & m_ButtonRep))
     {
-        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-        if (pPlayer != NULL)
-        {
-            if (IsTouching(pPlayer))
-            {
-                if (pPlayer->m_nButtons & m_ButtonRep)
-                {
-                    m_OnKeyPressed.FireOutput(pPlayer, this);
-                }
-            }
-            else
-            {
-                // If player is not touching, then he is not inside us
-                // He might have teleported without firing triggers
-                // This is why we nest this if
-                m_bPlayerInside = false;
-            }
-        }
+        m_OnKeyPressed.FireOutput(pPlayer, this);
     }
 }
 
