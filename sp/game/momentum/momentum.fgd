@@ -8,7 +8,7 @@
 [
 	target(target_destination) : "Remote Destination" : : "The entity specifying the point to which entities should be teleported."
 	landmark(target_destination) : "Local Destination Landmark" : : "If specified, then teleported entities are offset from the target by their initial offset from the landmark."
-	stop(choices) : "Stop player on teleport" : "0" = 
+	stop(choices) : "Stop player on teleport" : 0 = 
 	[
 		0 : "False"
 		1 : "True"
@@ -51,7 +51,7 @@
 [
 	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
 	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint."
-	stop(choices) : "Stop player on teleport" : "0" = 
+	stop(choices) : "Stop player on teleport" : 0 = 
 	[
 		0 : "False"
 		1 : "True"
@@ -65,7 +65,7 @@
 	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
 	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
 	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
-	stop(choices) : "Stop player on teleport" : "0" = 
+	stop(choices) : "Stop player on teleport" : 0 = 
 	[
 		0 : "False"
 		1 : "True"
@@ -81,7 +81,7 @@
 	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
 	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
 	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
-	stop(choices) : "Stop player on teleport" : "0" = 
+	stop(choices) : "Stop player on teleport" : 0 = 
 	[
 		0 : "False"
 		1 : "True"
@@ -90,15 +90,14 @@
 
 @SolidClass base(Trigger) = trigger_userinput : "Trigger that fires on user KeyPress if inside trigger."
 [
-	key(choices) : "Key that fires" : "0" = 
+	output OnKeyPressed(void) : "Fires when the desired key is pressed"
+	lookedkey(choices) : "Key that fires" : "Forward" =
 	[
 		0 : "Forward"
 		1 : "Back"
 		2 : "Move Left"
-		3 : "Move Right"
-		
+		3 : "Move Right"	
 	]
-	output OnKeyPressed(void) : "Fires when the desired key is pressed"
 ]
 
 @FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at the given checkpoint or not."

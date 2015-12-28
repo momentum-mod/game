@@ -224,7 +224,8 @@ public:
     void StartTouch(CBaseEntity*);
     void EndTouch(CBaseEntity*);
     void Spawn();
-    void KeyPressed();
+
+    COutputEvent m_OnKeyPressed;
 
 private:
     bool m_bPlayerInside;

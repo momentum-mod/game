@@ -499,8 +499,8 @@ void CTriggerMultihop::Spawn()
 LINK_ENTITY_TO_CLASS(trigger_userinput, CTriggerUserInput);
 
 BEGIN_DATADESC(CTriggerUserInput)
-DEFINE_KEYFIELD(m_eKey,FIELD_INTEGER,"key"),
-DEFINE_OUTPUT(KeyPressed, "OnKeyPressed"),
+DEFINE_KEYFIELD(m_eKey,FIELD_INTEGER,"lookedkey"),
+DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"),
 END_DATADESC()
 
 // CTriggerUserInput
@@ -533,7 +533,7 @@ void CTriggerUserInput::Think()
             {
                 if (pPlayer->m_nButtons & m_ButtonRep)
                 {
-                    KeyPressed();
+                    m_OnKeyPressed.FireOutput(pPlayer, this);
                 }
             }
             else
@@ -568,11 +568,6 @@ void CTriggerUserInput::Spawn()
             break;
     }
     BaseClass::Spawn();
-}
-
-void CTriggerUserInput::KeyPressed()
-{
-
 }
 
 
