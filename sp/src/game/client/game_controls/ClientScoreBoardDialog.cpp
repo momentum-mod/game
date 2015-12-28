@@ -46,41 +46,72 @@ bool AvatarIndexLessFunc( const int &lhs, const int &rhs )
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : EditablePanel( NULL, PANEL_SCOREBOARD )
+CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : EditablePanel(NULL, PANEL_SCOREBOARD)
 {
-	m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
-	m_nCloseKey = BUTTON_CODE_INVALID;
+    m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
+    m_nCloseKey = BUTTON_CODE_INVALID;
 
-	//memset(s_VoiceImage, 0x0, sizeof( s_VoiceImage ));
-	TrackerImage = 0;
-	m_pViewPort = pViewPort;
+    //memset(s_VoiceImage, 0x0, sizeof( s_VoiceImage ));
+    TrackerImage = 0;
+    m_pViewPort = pViewPort;
 
-	// initialize dialog
-	SetProportional(true);
-	SetKeyBoardInputEnabled(false);
-	SetMouseInputEnabled(false);
+    // initialize dialog
+    SetProportional(true);
+    SetKeyBoardInputEnabled(false);
+    SetMouseInputEnabled(false);
 
-	// set the scheme before any child control is created
-	SetScheme("ClientScheme");
+    // set the scheme before any child control is created
+    SetScheme("ClientScheme");
 
-	m_pPlayerList = new SectionedListPanel(this, "PlayerList");
-	m_pPlayerList->SetVerticalScrollbar(false);
+    m_pPlayerList = new SectionedListPanel(this, "PlayerList");
+    m_pPlayerList->SetVerticalScrollbar(false);
 
-	LoadControlSettings("Resource/UI/ScoreBoard.res");
-	m_iDesiredHeight = GetTall();
-	m_pPlayerList->SetVisible( false ); // hide this until we load the images in applyschemesettings
+    LoadControlSettings("Resource/UI/timesdisplay.res");
 
-	m_HLTVSpectators = 0;
-	m_ReplaySpectators = 0;
-	
-	// update scoreboard instantly if on of these events occure
-	ListenForGameEvent( "hltv_status" );
-	ListenForGameEvent( "server_spawn" );
+    m_pHeader = FindControl<Panel>("Header", true);
+    m_lMapSummary = FindControl<Label>("MapSummary", true);
+    m_pPlayerStats = FindControl<Panel>("PlayerStats", true);
+    m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
+    m_lPlayerName = FindControl<Label>("PlayerName", true);
+    m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
+    m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
+    m_pLeaderboards = FindControl<Panel>("Leaderboards", true);
+    m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineNearbyLeaderboard", true);
+    m_pLocalBests = FindControl<SectionedListPanel>("LocalPersonalBest", true);
 
-	m_pImageList = NULL;
+    if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName ||
+        !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards || !m_pLocalBests)
+    {
+        Assert("Null pointer(s) on scoreboards");
+    }
+    SetSize(scheme()->GetProportionalScaledValue(640), scheme()->GetProportionalScaledValue(480));
+    m_pHeader->SetParent(this);
+    m_pPlayerStats->SetParent(this);
+    m_pLeaderboards->SetParent(this);
+    m_lMapSummary->SetParent(m_pHeader);
+    m_pPlayerAvatar->SetParent(m_pPlayerStats);
+    m_lPlayerName->SetParent(m_pPlayerStats);
+    m_lPlayerMapRank->SetParent(m_pPlayerStats);
+    m_lPlayerGlobalRank->SetParent(m_pPlayerStats);
+    m_pOnlineLeaderboards->SetParent(m_pLeaderboards);
+    m_pLocalBests->SetParent(m_pLeaderboards);
 
-	m_mapAvatarsToImageList.SetLessFunc( DefLessFunc( CSteamID ) );
-	m_mapAvatarsToImageList.RemoveAll();
+    m_pOnlineLeaderboards->SetVerticalScrollbar(false);
+    m_pLocalBests->SetVerticalScrollbar(false);
+
+    m_iDesiredHeight = GetTall();
+    m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
+
+    m_HLTVSpectators = 0;
+    m_ReplaySpectators = 0;
+
+    // update scoreboard instantly if on of these events occure
+    ListenForGameEvent("hltv_status");
+    ListenForGameEvent("server_spawn");
+
+    m_pImageList = NULL;
+    m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
+    m_mapAvatarsToImageList.RemoveAll();
 }
 
 //-----------------------------------------------------------------------------
@@ -93,6 +124,7 @@ CClientScoreBoardDialog::~CClientScoreBoardDialog()
 		delete m_pImageList;
 		m_pImageList = NULL;
 	}
+    // MOM_TODO: Ensure a good destructor
 }
 
 //-----------------------------------------------------------------------------
@@ -141,14 +173,24 @@ void CClientScoreBoardDialog::OnPollHideCode( int code )
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::Reset()
 {
-	// clear
-	m_pPlayerList->DeleteAllItems();
-	m_pPlayerList->RemoveAllSections();
+    Reset(false);
+}
 
-	m_iSectionId = 0;
-	m_fNextUpdateTime = 0;
-	// add all the sections
-	InitScoreboardSections();
+void CClientScoreBoardDialog::Reset(bool pFullReset)
+{
+    if (pFullReset)
+    {
+        FillScoreBoard(true);
+        Update(true);
+    }
+    // clear
+    m_pPlayerList->DeleteAllItems();
+    m_pPlayerList->RemoveAllSections();
+
+    m_iSectionId = 0;
+    m_fNextUpdateTime = 0;
+    // add all the sections
+    InitScoreboardSections();
 }
 
 //-----------------------------------------------------------------------------
@@ -216,9 +258,10 @@ void CClientScoreBoardDialog::ShowPanel(bool bShow)
 
 	if ( bShow )
 	{
-		Reset();
-		Update();
-		SetVisible( true );
+		Reset(true);
+        //// MOM_TODO: I think this update is not necessary, as there is an update on Reset(true)
+		Update(false);
+        SetVisible(true);
 		MoveToFront();
 	}
 	else
@@ -253,7 +296,7 @@ void CClientScoreBoardDialog::FireGameEvent( IGameEvent *event )
 	}
 
 	if( IsVisible() )
-		Update();
+		Update(true);
 
 }
 
@@ -267,33 +310,40 @@ bool CClientScoreBoardDialog::NeedsUpdate( void )
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::Update( void )
 {
-	// Set the title
-	
-	// Reset();
-	m_pPlayerList->DeleteAllItems();
-	
-	FillScoreBoard();
+    Update(false);
+}
 
-	// grow the scoreboard to fit all the players
-	int wide, tall;
-	m_pPlayerList->GetContentSize(wide, tall);
-	tall += GetAdditionalHeight();
-	wide = GetWide();
-	if (m_iDesiredHeight < tall)
-	{
-		SetSize(wide, tall);
-		m_pPlayerList->SetSize(wide, tall);
-	}
-	else
-	{
-		SetSize(wide, m_iDesiredHeight);
-		m_pPlayerList->SetSize(wide, m_iDesiredHeight);
-	}
+void CClientScoreBoardDialog::Update(bool pFullUpdate)
+{
+    // Set the title
 
-	MoveToCenterOfScreen();
+    // Reset();
+    m_pPlayerList->DeleteAllItems();
+    if (pFullUpdate)
+        FillScoreBoard();
 
-	// update every second
-	m_fNextUpdateTime = gpGlobals->curtime + 1.0f; 
+    // grow the scoreboard to fit all the players
+    int wide, tall;
+    m_pPlayerList->GetContentSize(wide, tall);
+    tall += GetAdditionalHeight();
+    wide = GetWide();
+    if (m_iDesiredHeight < tall)
+    {
+        SetSize(wide, tall);
+        m_pPlayerList->SetSize(wide, tall);
+    }
+    else
+    {
+        SetSize(wide, m_iDesiredHeight);
+        m_pPlayerList->SetSize(wide, m_iDesiredHeight);
+    }
+
+    MoveToCenterOfScreen();
+
+    // update every second
+    // we don't need to update this too often. (Player is not finish a run every second, so...)
+    // MOM_TODO: Discuss update interval
+    m_fNextUpdateTime = gpGlobals->curtime + 3.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -310,64 +360,31 @@ void CClientScoreBoardDialog::UpdateTeamInfo()
 void CClientScoreBoardDialog::UpdatePlayerInfo()
 {
 	m_iSectionId = 0; // 0'th row is a header
-	int selectedRow = -1;
 
 	// walk all the players and make sure they're in the scoreboard
 	for ( int i = 1; i <= gpGlobals->maxClients; ++i )
 	{
 		IGameResources *gr = GameResources();
+        if (gr && gr->IsConnected(i))
+        {
+            // add the player to the list
+            KeyValues *playerData = new KeyValues("data");
+            UpdatePlayerAvatar(i, playerData);
 
-		if ( gr && gr->IsConnected( i ) )
-		{
-			// add the player to the list
-			KeyValues *playerData = new KeyValues("data");
-			GetPlayerScoreInfo( i, playerData );
-			UpdatePlayerAvatar( i, playerData );
+            const char *oldName = playerData->GetString("name", "Unknown");
+            char newName[MAX_PLAYER_NAME_LENGTH];
+            UTIL_MakeSafeName(oldName, newName, MAX_PLAYER_NAME_LENGTH);
+            playerData->SetString("name", newName);
 
-			const char *oldName = playerData->GetString("name","");
-			char newName[MAX_PLAYER_NAME_LENGTH];
-
-			UTIL_MakeSafeName( oldName, newName, MAX_PLAYER_NAME_LENGTH );
-
-			playerData->SetString("name", newName);
-
-			int itemID = FindItemIDForPlayerIndex( i );
-  			int sectionID = gr->GetTeam( i );
-			
-			if ( gr->IsLocalPlayer( i ) )
-			{
-				selectedRow = itemID;
-			}
-			if (itemID == -1)
-			{
-				// add a new row
-				itemID = m_pPlayerList->AddItem( sectionID, playerData );
-			}
-			else
-			{
-				// modify the current row
-				m_pPlayerList->ModifyItem( itemID, sectionID, playerData );
-			}
-
-			// set the row color based on the players team
-			m_pPlayerList->SetItemFgColor( itemID, gr->GetTeamColor( sectionID ) );
-
-			playerData->deleteThis();
-		}
-		else
-		{
-			// remove the player
-			int itemID = FindItemIDForPlayerIndex( i );
-			if (itemID != -1)
-			{
-				m_pPlayerList->RemoveItem(itemID);
-			}
-		}
-	}
-
-	if ( selectedRow != -1 )
-	{
-		m_pPlayerList->SetSelectedItem(selectedRow);
+            // MOM_TODO: Get real data from the API
+            playerData->SetInt("globalRank", -1);
+            playerData->SetInt("globalCount", -1);
+            playerData->SetInt("mapRank", -1);
+            playerData->SetInt("mapCount", -1);
+            // BUGBUG: MOM_TODO: CRASH
+            //m_kvPlayerData->AddSubKey(playerData);
+            //playerData->deleteThis();
+        }
 	}
 }
 
@@ -377,12 +394,8 @@ void CClientScoreBoardDialog::UpdatePlayerInfo()
 void CClientScoreBoardDialog::AddHeader()
 {
 	// add the top header
-	m_pPlayerList->AddSection(m_iSectionId, "");
-	m_pPlayerList->SetSectionAlwaysVisible(m_iSectionId);
-	m_pPlayerList->AddColumnToSection(m_iSectionId, "name", "#PlayerName", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),NAME_WIDTH) );
-	m_pPlayerList->AddColumnToSection(m_iSectionId, "frags", "#PlayerScore", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),SCORE_WIDTH) );
-	m_pPlayerList->AddColumnToSection(m_iSectionId, "deaths", "#PlayerDeath", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),DEATH_WIDTH) );
-	m_pPlayerList->AddColumnToSection(m_iSectionId, "ping", "#PlayerPing", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),PING_WIDTH) );
+    if (m_lMapSummary)
+        m_lMapSummary->SetText("Mapname (Gamemode)");
 }
 
 //-----------------------------------------------------------------------------
@@ -390,51 +403,6 @@ void CClientScoreBoardDialog::AddHeader()
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::AddSection(int teamType, int teamNumber)
 {
-	if ( teamType == TYPE_TEAM )
-	{
-		IGameResources *gr = GameResources();
-
-		if ( !gr )
-			return;
-
-		// setup the team name
-		wchar_t *teamName = g_pVGuiLocalize->Find( gr->GetTeamName(teamNumber) );
-		wchar_t name[64];
-		wchar_t string1[1024];
-		
-		if (!teamName)
-		{
-			g_pVGuiLocalize->ConvertANSIToUnicode(gr->GetTeamName(teamNumber), name, sizeof(name));
-			teamName = name;
-		}
-
-		g_pVGuiLocalize->ConstructString( string1, sizeof( string1 ), g_pVGuiLocalize->Find("#Player"), 2, teamName );
-		
-		m_pPlayerList->AddSection(m_iSectionId, "", StaticPlayerSortFunc);
-
-		// Avatars are always displayed at 32x32 regardless of resolution
-		if ( ShowAvatars() )
-		{
-			m_pPlayerList->AddColumnToSection( m_iSectionId, "avatar", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_RIGHT, m_iAvatarWidth );
-		}
-
-		m_pPlayerList->AddColumnToSection(m_iSectionId, "name", string1, 0, scheme()->GetProportionalScaledValueEx( GetScheme(),NAME_WIDTH) - m_iAvatarWidth );
-		m_pPlayerList->AddColumnToSection(m_iSectionId, "frags", "", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),SCORE_WIDTH) );
-		m_pPlayerList->AddColumnToSection(m_iSectionId, "deaths", "", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),DEATH_WIDTH) );
-		m_pPlayerList->AddColumnToSection(m_iSectionId, "ping", "", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),PING_WIDTH) );
-	}
-	else if ( teamType == TYPE_SPECTATORS )
-	{
-		m_pPlayerList->AddSection(m_iSectionId, "");
-
-		// Avatars are always displayed at 32x32 regardless of resolution
-		if ( ShowAvatars() )
-		{
-			m_pPlayerList->AddColumnToSection( m_iSectionId, "avatar", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_RIGHT, m_iAvatarWidth );
-		}
-		m_pPlayerList->AddColumnToSection(m_iSectionId, "name", "#Spectators", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),NAME_WIDTH) - m_iAvatarWidth );
-		m_pPlayerList->AddColumnToSection(m_iSectionId, "frags", "", 0, scheme()->GetProportionalScaledValueEx( GetScheme(),SCORE_WIDTH) );
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -467,7 +435,7 @@ bool CClientScoreBoardDialog::StaticPlayerSortFunc(vgui::SectionedListPanel *lis
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Adds a new row to the scoreboard, from the playerinfo structure
+// Purpose: Updates the leaderboard lists
 //-----------------------------------------------------------------------------
 bool CClientScoreBoardDialog::GetPlayerScoreInfo(int playerIndex, KeyValues *kv)
 {
@@ -475,13 +443,19 @@ bool CClientScoreBoardDialog::GetPlayerScoreInfo(int playerIndex, KeyValues *kv)
 
 	if (!gr )
 		return false;
-
-	kv->SetInt("deaths", gr->GetDeaths( playerIndex ) );
-	kv->SetInt("frags", gr->GetFrags( playerIndex ) );
-	kv->SetInt("ping", gr->GetPing( playerIndex ) ) ;
-	kv->SetString("name", gr->GetPlayerName( playerIndex ) );
-	kv->SetInt("playerIndex", playerIndex);
-
+    // MOM_TODO: QUERY THE API AND FILL THE LEADERBOARD LISTS
+    KeyValues *pLeaderboards = new KeyValues("leaderboards");
+    KeyValues *pLocal = new KeyValues("local");
+    // Fill local times:
+    pLeaderboards->AddSubKey(pLocal);
+    KeyValues *pOnline = new KeyValues("online");
+    // Fill online times (global)
+    pLeaderboards->AddSubKey(pOnline);
+    KeyValues *pFriends = new KeyValues("friends");
+    // Fill online times (friends)
+    pLeaderboards->AddSubKey(pFriends);
+    // BUGBUG: MOM_TODO: CRASH
+    //kv->AddSubKey(pLeaderboards);
 	return true;
 }
 
@@ -531,12 +505,54 @@ void CClientScoreBoardDialog::UpdatePlayerAvatar( int playerIndex, KeyValues *kv
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::FillScoreBoard()
 {
-	// update totals information
-	UpdateTeamInfo();
+    // update player info
+    FillScoreBoard(false);
+}
 
-	// update player info
-	UpdatePlayerInfo();
-} 
+void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
+{
+    if (pFullUpdate)
+    {
+        UpdatePlayerInfo();
+        AddHeader();
+    }
+
+    // Player Stats panel:
+    if (m_pPlayerStats && m_pPlayerAvatar && m_lPlayerName && m_lPlayerGlobalRank && m_lPlayerMapRank && m_kvPlayerData)
+    {
+        m_pPlayerStats->SetVisible(false); // Hidden so it is not seen being changed
+        if (pFullUpdate)
+            m_pPlayerAvatar->SetImage(m_pImageList->GetImage(m_kvPlayerData->GetInt("avatar", 0)));
+
+
+        m_lPlayerName->SetText(m_kvPlayerData->FindKey("data")->GetString("name", "Unknown"));
+
+        char *mapRank = "Map rank: ";
+        Q_strcat(mapRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("mapRank", -1), 50);
+        Q_strcat(mapRank, "/", 50);
+        Q_strcat(mapRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("mapCount", -1), 50);
+        m_lPlayerMapRank->SetText(mapRank);
+
+        char *globalRank = "Global rank: ";
+        Q_strcat(globalRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("globalRank", -1), 50);
+        Q_strcat(globalRank, "/", 50);
+        Q_strcat(globalRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("globalCount", -1), 50);
+        m_lPlayerGlobalRank->SetText(globalRank);
+        m_pPlayerStats->SetVisible(true); // And seen again!
+    }
+
+    // Leaderboards
+    // MOM_TODO: Discuss if this should always update (Api overload?)
+    GetPlayerScoreInfo(0, m_kvPlayerData);
+    if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalBests && m_kvPlayerData)
+    {
+        m_pLeaderboards->SetVisible(false);
+        // MOM_TODO: Fill with the new data
+
+        m_pLeaderboards->SetVisible(true);
+    }
+
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: searches for the player in the scoreboard

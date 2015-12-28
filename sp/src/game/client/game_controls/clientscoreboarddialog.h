@@ -43,6 +43,8 @@ public:
 	virtual void SetData(KeyValues *data) {};
 	virtual void Reset();
 	virtual void Update();
+    void Update(bool pFullUpdate);
+    void Reset(bool pFullReset);
 	virtual bool NeedsUpdate( void );
 	virtual bool HasInputElements( void ) { return true; }
 	virtual void ShowPanel( bool bShow );
@@ -103,6 +105,13 @@ protected:
 	void MoveToCenterOfScreen();
 
 	vgui::ImageList				*m_pImageList;
+    vgui::Panel *m_pHeader, *m_pPlayerStats, *m_pLeaderboards;
+    vgui::Label *m_lMapSummary, *m_lPlayerName, *m_lPlayerMapRank, *m_lPlayerGlobalRank;
+    vgui::SectionedListPanel *m_pOnlineLeaderboards, *m_pLocalBests;
+    vgui::ImagePanel *m_pPlayerAvatar;
+    
+    KeyValues *m_kvPlayerData;
+
 	CUtlMap<CSteamID,int>		m_mapAvatarsToImageList;
 
 	CPanelAnimationVar( int, m_iAvatarWidth, "avatar_width", "34" );		// Avatar width doesn't scale with resolution
@@ -121,6 +130,7 @@ private:
 
 	// methods
 	void FillScoreBoard();
+    void FillScoreBoard(bool pFullUpdate);
 };
 
 
