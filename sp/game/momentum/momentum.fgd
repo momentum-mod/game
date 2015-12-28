@@ -88,6 +88,19 @@
 	]
 ]
 
+@SolidClass base(Trigger) = trigger_userinput : "Trigger that fires on user KeyPress if inside trigger."
+[
+	key(choices) : "Key that fires" : "0" = 
+	[
+		0 : "Forward"
+		1 : "Back"
+		2 : "Move Left"
+		3 : "Move Right"
+		
+	]
+	output OnKeyPressed(void) : "Fires when the desired key is pressed"
+]
+
 @FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at the given checkpoint or not."
 [
 	checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"

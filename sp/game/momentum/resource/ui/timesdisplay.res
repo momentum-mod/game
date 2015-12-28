@@ -41,6 +41,7 @@ Resource/ui/timesdisplay.res
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"	"0"
+		"paintborder"	"1"
 	}
 	"MapSummary"
 	{
@@ -58,7 +59,7 @@ Resource/ui/timesdisplay.res
 		"textAlignment"	"west"
 		"dulltext"		"0"
 		"brighttext"	"1"
-		"Font"			"MenuTitle"
+		"Font"			"Default"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"
@@ -90,6 +91,7 @@ Resource/ui/timesdisplay.res
 		"pinCorner"		"0"
 		"visible"		"1"
 		"enabled"		"1"
+		"border"		"White"
 	}
 	"PlayerName"
 	{
@@ -107,7 +109,7 @@ Resource/ui/timesdisplay.res
 		"textAlignment"	"west"
 		"dulltext"		"0"
 		"brighttext"	"1"
-		"Font"			"MenuTitle"
+		"Font"			"Default"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"
@@ -129,7 +131,7 @@ Resource/ui/timesdisplay.res
 		"textAlignment"	"west"
 		"dulltext"		"0"
 		"brighttext"	"1"
-		"Font"			"MenuTitle"
+		"Font"			"Default"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"
@@ -151,7 +153,7 @@ Resource/ui/timesdisplay.res
 		"textAlignment"	"west"
 		"dulltext"		"0"
 		"brighttext"	"1"
-		"Font"			"MenuTitle"
+		"Font"			"Default"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"

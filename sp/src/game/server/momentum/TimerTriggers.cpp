@@ -2,6 +2,7 @@
 #include "Timer.h"
 #include "TimerTriggers.h"
 #include "movevars_shared.h"
+#include "../shared/in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
@@ -492,6 +493,86 @@ void CTriggerMultihop::Spawn()
 			m_bUsingLinked = true;
 		}// If null, maybe we haven't spawned it yet. We'll be searching for it again when the player touches us, so it's not a problem
 	}
+}
+
+
+LINK_ENTITY_TO_CLASS(trigger_userinput, CTriggerUserInput);
+
+BEGIN_DATADESC(CTriggerUserInput)
+DEFINE_KEYFIELD(m_eKey,FIELD_INTEGER,"key"),
+DEFINE_OUTPUT(KeyPressed, "OnKeyPressed"),
+END_DATADESC()
+
+// CTriggerUserInput
+void CTriggerUserInput::StartTouch(CBaseEntity *pOther)
+{
+    BaseClass::StartTouch(pOther);
+    if (pOther->IsPlayer())
+    {
+        m_bPlayerInside = true;
+    }
+}
+
+void CTriggerUserInput::EndTouch(CBaseEntity* pOther)
+{
+    BaseClass::EndTouch(pOther);
+    if (pOther->IsPlayer())
+    {
+        m_bPlayerInside = false;
+    }
+}
+
+void CTriggerUserInput::Think()
+{
+    if (m_bPlayerInside)
+    {
+        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+        if (pPlayer != NULL)
+        {
+            if (IsTouching(pPlayer))
+            {
+                if (pPlayer->m_nButtons & m_ButtonRep)
+                {
+                    KeyPressed();
+                }
+            }
+            else
+            {
+                // If player is not touching, then he is not inside us
+                // He might have teleported without firing triggers
+                // This is why we nest this if
+                m_bPlayerInside = false;
+            }
+        }
+    }
+}
+
+void CTriggerUserInput::Spawn()
+{
+    switch (m_eKey)
+    {
+        case forward:
+            m_ButtonRep = IN_FORWARD;
+            break;
+        case back:
+            m_ButtonRep = IN_BACK;
+            break;
+        case moveleft:
+            m_ButtonRep = IN_MOVELEFT;
+            break;
+        case moveright:
+            m_ButtonRep = IN_MOVERIGHT;
+            break;
+        default:
+            DevWarning("Passed unhandled key press");
+            break;
+    }
+    BaseClass::Spawn();
+}
+
+void CTriggerUserInput::KeyPressed()
+{
+
 }
 
 

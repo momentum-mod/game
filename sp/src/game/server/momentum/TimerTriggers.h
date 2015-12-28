@@ -211,4 +211,25 @@ protected:
 
 };
 
+// CTriggerUserInput
+class CTriggerUserInput : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerUserInput, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+public:
+    enum key { forward, back, moveleft, moveright };
+    key m_eKey;
+
+    void Think();
+    void StartTouch(CBaseEntity*);
+    void EndTouch(CBaseEntity*);
+    void Spawn();
+    void KeyPressed();
+
+private:
+    bool m_bPlayerInside;
+    int m_ButtonRep;
+    
+};
+
 #endif // TIMERTRIGGERS_H
