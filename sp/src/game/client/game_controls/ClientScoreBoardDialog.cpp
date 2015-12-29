@@ -232,9 +232,6 @@ void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
     m_pPlayerList->SetImageList(m_pImageList, false);
     m_pPlayerList->SetVisible(true);
 
-    //MOM_TODO: m_lMapSummary needs a bigger font
-    HFont ftMapSummary = pScheme->GetFont("HudHintTextLarge");
-    if (ftMapSummary) m_lMapSummary->SetFont(ftMapSummary);
     m_lMapSummary->SetVisible(true);
 
 
@@ -274,7 +271,7 @@ void CClientScoreBoardDialog::ShowPanel(bool bShow)
     if (bShow)
     {
         Reset(true);
-        //// MOM_TODO: I think this update is not necessary, as there is an update on Reset(true)
+        // Updating twice...
         Update(false);
         SetVisible(true);
         MoveToFront();
@@ -321,9 +318,6 @@ void CClientScoreBoardDialog::Update(void)
 
 void CClientScoreBoardDialog::Update(bool pFullUpdate)
 {
-    // Set the title
-
-    // Reset();
     m_pPlayerList->DeleteAllItems();
     if (pFullUpdate)
         FillScoreBoard();
@@ -410,6 +404,7 @@ void CClientScoreBoardDialog::AddHeader()
     // add the top header
     if (m_lMapSummary)
         m_lMapSummary->SetText(mapSummary);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -470,7 +465,6 @@ bool CClientScoreBoardDialog::StaticPlayerSortFunc(vgui::SectionedListPanel *lis
 
 void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
 {
-    //MOM_TODO: Make it just do kv->LoadFromFile instead of the manual copy?
     KeyValues *pLoaded = new KeyValues("local");
     char fileName[MAX_PATH];
     Q_strcpy(fileName, "maps/");
@@ -585,8 +579,9 @@ void CClientScoreBoardDialog::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
                 if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
                 {
                     CAvatarImage *pImage = new CAvatarImage();
-                    pImage->SetAvatarSteamID(steamIDForPlayer);
-                    pImage->SetAvatarSize(32, 32);	// Deliberately non scaling
+                    // 64 is enough until full HD resolutions.
+                    pImage->SetAvatarSteamID(steamIDForPlayer,k_EAvatarSize64x64);
+                    pImage->SetAvatarSize(64, 64);	// Deliberately non scaling
                     iImageIndex = m_pImageList->AddImage(pImage);
 
                     m_mapAvatarsToImageList.Insert(steamIDForPlayer, iImageIndex);
@@ -600,6 +595,8 @@ void CClientScoreBoardDialog::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
 
                 CAvatarImage *pAvIm = (CAvatarImage *) m_pImageList->GetImage(iImageIndex);
                 pAvIm->UpdateFriendStatus();
+                // Set friend draw to false, so the offset is not set
+                pAvIm->SetDrawFriend(false);
             }
         }
     }
@@ -628,21 +625,33 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
         && !m_kvPlayerData->IsEmpty())
     {
         m_pPlayerStats->SetVisible(false); // Hidden so it is not seen being changed
-        if (pFullUpdate)
-            m_pPlayerAvatar->SetImage(m_pImageList->GetImage(m_kvPlayerData->GetInt("avatar", 0)));
+        
 
         KeyValues *playdata = m_kvPlayerData->FindKey("data");
         if (playdata)
         {
             m_lPlayerName->SetText(playdata->GetString("name", "Unknown"));
+            if (pFullUpdate)
+            {
+                int pAvatarIndex = playdata->GetInt("avatar", 0);
+                if (pAvatarIndex == 0)
+                {
+                    m_pPlayerAvatar->SetImage("default_steam");
+                }
+                else {
+                    m_pPlayerAvatar->SetImage(m_pImageList->GetImage(pAvatarIndex));    
+                }
+                m_pPlayerAvatar->GetImage()->SetSize(scheme()->GetProportionalScaledValue(32), scheme()->GetProportionalScaledValue(32));
+            }
 
+            // MOM_TODO: Localize this
             char mapRank[50];
-            Q_snprintf(mapRank, 50, "Map rank: %i/%i", playdata->GetInt("mapRank", -1),
+            Q_snprintf(mapRank, 50, "%s %i/%i", "Map Rank:", playdata->GetInt("mapRank", -1),
                 playdata->GetInt("mapCount", -1));
             m_lPlayerMapRank->SetText(mapRank);
-
+            
             char globalRank[50];
-            Q_snprintf(globalRank, 50, "Global rank: %i/%i", playdata->GetInt("globalRank", -1),
+            Q_snprintf(globalRank, 50, "%s %i/%i", "Global Rank:", playdata->GetInt("globalRank", -1),
                 playdata->GetInt("globalCount", -1));
             m_lPlayerGlobalRank->SetText(globalRank);
         }
@@ -664,7 +673,6 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
     if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalBests && m_kvPlayerData && !m_kvPlayerData->IsEmpty())
     {
         m_pLeaderboards->SetVisible(false);
-        // MOM_TODO: Fill with the new data
 
         //MOM_TODO: switch (currentFilter)
         //case (ONLINE):
@@ -683,8 +691,6 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
                     m_pLocalBests->AddItem(m_iSectionId, kvLocalTime);
                 else
                     m_pLocalBests->ModifyItem(itemID, m_iSectionId, kvLocalTime);
-                //MOM_TODO: it'll be limited to only 10 local bests
-                //we're going to want to modifyitem if only one changed
             }
         }
 
@@ -721,7 +727,6 @@ int CClientScoreBoardDialog::FindItemIDForLocalTime(KeyValues *kvRef)
             KeyValues *kv = m_pLocalBests->GetItemData(i);
             if (kv && (kv->GetInt("date_t") == kvRef->GetInt("date_t")))
             {
-                //DevLog("FOUND A MATCH OF A TIME!\n");
                 return i;
             }
         }
@@ -735,7 +740,6 @@ int CClientScoreBoardDialog::FindItemIDForLocalTime(KeyValues *kvRef)
 void CClientScoreBoardDialog::MoveLabelToFront(const char *textEntryName)
 {
     Label *entry = FindControl<Label>(textEntryName, true);
-    //Label *entry = dynamic_cast<Label *>(FindChildByName(textEntryName));
     if (entry)
     {
         entry->MoveToFront();

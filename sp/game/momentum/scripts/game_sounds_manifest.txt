@@ -6,7 +6,6 @@ game_sounds_manifest
 
 	// Weapon sounds
 	"precache_file"		"scripts/game_sounds_weapons.txt"
-	"precache_file"		"scripts/game_sounds_momentum_weapons.txt"
 
 	// HL2 World, Ambient Generic, Items, Physics, Vehicles
 	"precache_file"		"scripts/game_sounds_world.txt"
@@ -77,4 +76,5 @@ game_sounds_manifest
 
 	// Momentum specific
 	"precache_file"		"scripts/game_sounds_momentum.txt"
+	"precache_file"		"scripts/game_sounds_momentum_weapons.txt"
 }

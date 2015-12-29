@@ -58,7 +58,7 @@ Resource/ui/timesdisplay.res
 		"labelText"		"MAPNAME (Gamemode)"
 		"textAlignment"	"west"
 		"brighttext"	"1"
-		"Font"			"Default"
+		"Font"			"HudHintTextLarge"
 		"wrap"			"0"
 		"centerwrap"	"0"
 		"textinsetx"	"0"
@@ -83,7 +83,7 @@ Resource/ui/timesdisplay.res
 		"ControlName"	"ImagePanel"
 		"fieldName"		"PlayerAvatar"
 		"xpos"			"12"
-		"ypos"			"3"
+		"ypos"			"12"
 		"wide"			"32"
 		"tall"			"32"
 		"autoResize"	"0"
@@ -91,6 +91,7 @@ Resource/ui/timesdisplay.res
 		"visible"		"1"
 		"enabled"		"1"
 		"border"		"White"
+		"image"			"default_steam"
 	}
 	"PlayerName"
 	{
