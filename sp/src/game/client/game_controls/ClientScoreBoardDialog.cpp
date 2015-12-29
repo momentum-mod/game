@@ -242,7 +242,7 @@ void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
     m_pLocalBests->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
     m_pLocalBests->SetSectionAlwaysVisible(m_iSectionId);
     m_pLocalBests->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH);
-    m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH);
+    m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
 
     //MOM_TODO: online needs rank, name, time, date achieved?
 
@@ -511,8 +511,7 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
             local = localtime(&date);
             if (local)
             {
-                // Why Y/m/d and not d/m/Y?
-                strftime(dateString, sizeof(dateString), "%Y/%m/%d %H:%M:%S", local);
+                strftime(dateString, sizeof(dateString), "%d/%m/%Y %H:%M:%S", local);
                 kvLocalTimeFormatted->SetString("date", dateString);
             }
             else
