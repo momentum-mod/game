@@ -10,6 +10,7 @@
     - [x] Localize rank tokens
     - [ ] Make FindItemIDForPlayerIndex(int) return an ItemID for another person's time
     - [ ] Sort function for online times
+    - [ ] Change the seconds localization when the bug with the scoreboard is sorted out
     
 - [ ] MenuMapSelection.cpp (Client)
     - [ ] Parse data from API, compare to already existing/downloaded maps
@@ -40,6 +41,9 @@
 
 - [ ] TimeTriggers.cpp (Server)
     - [ ] Tweak limit speed method
+
+- [ ] Timer.cpp (Server)
+    - [ ] Add hash checking
     
 ## BETA
 - [ ] Implement CEF
@@ -68,3 +72,6 @@
 
 ## BETA+ (Official Release)
 - [ ] Get greenlit
+
+- [ ] Timer.cpp (Server)
+    - [ ] Include the extra security measures

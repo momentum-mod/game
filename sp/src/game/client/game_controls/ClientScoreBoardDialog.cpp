@@ -497,7 +497,14 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
             else if (minutes > 0)
                 Q_snprintf(timeString, sizeof(timeString), "%02d:%02d.%03d", minutes, seconds, millis);
             else
-                Q_snprintf(timeString, sizeof(timeString), "%02d.%03d", seconds, millis);
+            {
+                // This localized token is "s.", but only because if the string is too big, the text will be chopped
+                // MOM_TODO: Change the seconds localization when the bug with the scoreboard is sorted out
+                char mrLocalized[50];
+                wchar_t *uSecondsUnicode = g_pVGuiLocalize->Find("#MOM_seconds");
+                g_pVGuiLocalize->ConvertUnicodeToANSI(uSecondsUnicode ? uSecondsUnicode : L"#MOM_seconds", mrLocalized, 50);
+                Q_snprintf(timeString, sizeof(timeString), "%02d.%03d %s", seconds, millis, mrLocalized);
+            }
 
             kvLocalTimeFormatted->SetString("time", timeString);
 
@@ -506,6 +513,7 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
             local = localtime(&date);
             if (local)
             {
+                // Why Y/m/d and not d/m/Y?
                 strftime(dateString, sizeof(dateString), "%Y/%m/%d %H:%M:%S", local);
                 kvLocalTimeFormatted->SetString("date", dateString);
             }
