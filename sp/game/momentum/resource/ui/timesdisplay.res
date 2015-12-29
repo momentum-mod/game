@@ -57,7 +57,6 @@ Resource/ui/timesdisplay.res
 		"enabled"		"1"
 		"labelText"		"MAPNAME (Gamemode)"
 		"textAlignment"	"west"
-		"dulltext"		"0"
 		"brighttext"	"1"
 		"Font"			"Default"
 		"wrap"			"0"

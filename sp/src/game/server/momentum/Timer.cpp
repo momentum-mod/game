@@ -21,7 +21,8 @@ void CTimer::PostTime()
     {
         // Necesary so TimeDisplay scoreboard knows it has to update;
         IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
-        gameeventmanager->FireEvent(postEvent);
+        if (postEvent)
+            gameeventmanager->FireEvent(postEvent);
         //Get required info 
         //MOM_TODO include the extra security measures for beta+
         uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
@@ -101,7 +102,12 @@ void CTimer::SaveTime()
     Q_strncat(file, c_timesExt, MAX_PATH);
 
     if (timesKV->SaveToFile(filesystem, file, "MOD", true))
+    {
         Log("Successfully saved new time!\n");
+        IGameEvent *savedEvent = gameeventmanager->CreateEvent("runtime_saved");
+        if (savedEvent)
+            gameeventmanager->FireEvent(savedEvent);
+    }
 
     timesKV->deleteThis();
 }
