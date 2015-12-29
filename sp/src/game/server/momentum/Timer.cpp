@@ -3,6 +3,7 @@
 #include "filesystem.h"
 #include "TimerTriggers.h"
 #include "../shared/GameEventListener.h"
+#include "tier1/checksum_sha1.h"
 
 #include "tier0/memdbgon.h"
 
@@ -40,7 +41,7 @@ void CTimer::PostTime()
         char webURL[512];
         Q_snprintf(webURL, 512, "http://momentum-mod.org/postscore/%llu/%s/%i/%s", steamID, map,
             ticks, tickRate == 0.01f ? "100" : "66");//FIXME
-
+        
         DevLog("Ticks sent to server: %i\n", ticks);
 
         //Build request
@@ -52,6 +53,27 @@ void CTimer::PostTime()
     }
 }
 
+CON_COMMAND(mom_test_hash, "Tests SHA1 Hashing\n")
+{
+    char pathToZone[MAX_PATH];
+    char mapName[MAX_PATH];
+    V_ComposeFileName("maps", gpGlobals->mapname.ToCStr(), mapName, MAX_PATH);
+    Q_strncat(mapName, ".zon", MAX_PATH);
+    filesystem->RelativePathToFullPath(mapName, "MOD", pathToZone, MAX_PATH);
+    Log("File path is: %s\n", pathToZone);
+
+    CSHA1 sha1;
+    sha1.HashFile(pathToZone);
+    sha1.Final();
+    unsigned char hash[20];
+    sha1.GetHash(hash);
+    Log("The hash for %s is: ", mapName);
+    for (int i = 0; i < 20; i++)
+    {
+        Log("%02x", hash[i]);
+    }
+    Log("\n");
+}
 //Called upon map load, loads any and all times stored in the <mapname>.tim file
 void CTimer::LoadLocalTimes(const char *szMapname)
 {

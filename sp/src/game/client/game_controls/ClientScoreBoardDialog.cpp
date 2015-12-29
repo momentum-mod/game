@@ -394,7 +394,8 @@ void CClientScoreBoardDialog::AddHeader()
 
     else if (!Q_strnicmp(g_pGameRules->MapName(), "bhop_", Q_strlen("bhop_")))
         Q_strcpy(gameMode, "BHOP");
-
+    else
+        Q_strcpy(gameMode, "????");
     //MOM_TODO: There'll probably be official gametypes later on in mod development
     //We'll have some sort of shared class or global setting that we will use to determine
     //what game mode we're on (mom_UTIL.GameMode() or something)
@@ -644,14 +645,20 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
                 m_pPlayerAvatar->GetImage()->SetSize(scheme()->GetProportionalScaledValue(32), scheme()->GetProportionalScaledValue(32));
             }
 
-            // MOM_TODO: Localize this
             char mapRank[50];
-            Q_snprintf(mapRank, 50, "%s %i/%i", "Map Rank:", playdata->GetInt("mapRank", -1),
-                playdata->GetInt("mapCount", -1));
+            char mrLocalized[50];
+            wchar_t *uMapRankUnicode = g_pVGuiLocalize->Find("#MOM_MapRank");
+            g_pVGuiLocalize->ConvertUnicodeToANSI(uMapRankUnicode ? uMapRankUnicode : L"#MOM_MapRank", mrLocalized, 50);
+
+            Q_snprintf(mapRank, 50, "%s: %i/%i", mrLocalized, playdata->GetInt("mapRank", -1), playdata->GetInt("mapCount", -1));
             m_lPlayerMapRank->SetText(mapRank);
             
             char globalRank[50];
-            Q_snprintf(globalRank, 50, "%s %i/%i", "Global Rank:", playdata->GetInt("globalRank", -1),
+            char grLocalized[50];
+            wchar_t *wGlobalLocal = g_pVGuiLocalize->Find("#MOM_GlobalRank");
+            g_pVGuiLocalize->ConvertUnicodeToANSI(wGlobalLocal ? wGlobalLocal : L"#MOM_GlobalRank", grLocalized, 50);
+
+            Q_snprintf(globalRank, 50, "%s: %i/%i", grLocalized, playdata->GetInt("globalRank", -1),
                 playdata->GetInt("globalCount", -1));
             m_lPlayerGlobalRank->SetText(globalRank);
         }
