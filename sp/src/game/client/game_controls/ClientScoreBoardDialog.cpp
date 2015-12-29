@@ -32,6 +32,9 @@
 #include <igameresources.h>
 
 #include "vgui_avatarimage.h"
+#include "filesystem.h"
+
+extern IFileSystem *filesystem;
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -123,7 +126,7 @@ CClientScoreBoardDialog::~CClientScoreBoardDialog()
 	{
 		delete m_pImageList;
 		m_pImageList = NULL;
-	}
+	} 
     // MOM_TODO: Ensure a good destructor
 }
 
@@ -186,7 +189,7 @@ void CClientScoreBoardDialog::Reset(bool pFullReset)
     // clear
     m_pPlayerList->DeleteAllItems();
     m_pPlayerList->RemoveAllSections();
-
+    
     m_iSectionId = 0;
     m_fNextUpdateTime = 0;
     // add all the sections
@@ -247,7 +250,7 @@ void CClientScoreBoardDialog::ShowPanel(bool bShow)
 	{
 		InvalidateLayout( true, true );
 	}
-
+    
 	if ( !bShow )
 	{
 		m_nCloseKey = BUTTON_CODE_INVALID;
@@ -275,7 +278,9 @@ void CClientScoreBoardDialog::ShowPanel(bool bShow)
 void CClientScoreBoardDialog::FireGameEvent( IGameEvent *event )
 {
 	const char * type = event->GetName();
+    //MOM_TODO: catch the "local time beaten" which turns bLocalTimeNeedsUpdate to true
 
+    //MOM_TODO: other events can be showing how they rank compared to others etc
 	if ( Q_strcmp(type, "hltv_status") == 0 )
 	{
 		// spectators = clients - proxies
@@ -357,11 +362,12 @@ void CClientScoreBoardDialog::UpdateTeamInfo()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CClientScoreBoardDialog::UpdatePlayerInfo()
+void CClientScoreBoardDialog::UpdatePlayerInfo(KeyValues *kv)
 {
 	m_iSectionId = 0; // 0'th row is a header
-
+    //if (!m_kvPlayerData) return;
 	// walk all the players and make sure they're in the scoreboard
+    //MOM_TODO: Since we're singleplayer, this going to just be one client, so this for loop won't be necessary
 	for ( int i = 1; i <= gpGlobals->maxClients; ++i )
 	{
 		IGameResources *gr = GameResources();
@@ -382,7 +388,8 @@ void CClientScoreBoardDialog::UpdatePlayerInfo()
             playerData->SetInt("mapRank", -1);
             playerData->SetInt("mapCount", -1);
             // BUGBUG: MOM_TODO: CRASH
-            //m_kvPlayerData->AddSubKey(playerData);
+            
+            kv->AddSubKey(playerData);
             //playerData->deleteThis();
         }
 	}
@@ -393,6 +400,17 @@ void CClientScoreBoardDialog::UpdatePlayerInfo()
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::AddHeader()
 {
+    //MOM_TODO: we need a column for rank, time, and date achieved for local
+    m_pLocalBests->AddSection(m_iSectionId, "");
+    m_pLocalBests->SetSectionAlwaysVisible(m_iSectionId);
+    m_pLocalBests->AddColumnToSection(m_iSectionId, "time", "#PlayerName", 0, NAME_WIDTH);
+    //MOM_TODO: make the following localized "#MOM_Date" or whatever
+    m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "Date", 0, NAME_WIDTH);
+
+    //MOM_TODO: online needs rank, name, time, date achieved?
+
+    //MOM_TODO: friends follows online format
+
 	// add the top header
     if (m_lMapSummary)
         m_lMapSummary->SetText("Mapname (Gamemode)");
@@ -410,6 +428,7 @@ void CClientScoreBoardDialog::AddSection(int teamType, int teamNumber)
 //-----------------------------------------------------------------------------
 bool CClientScoreBoardDialog::StaticPlayerSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2)
 {
+    //MOM_TODO: change this to sort by times?
 	KeyValues *it1 = list->GetItemData(itemID1);
 	KeyValues *it2 = list->GetItemData(itemID2);
 	Assert(it1 && it2);
@@ -434,19 +453,55 @@ bool CClientScoreBoardDialog::StaticPlayerSortFunc(vgui::SectionedListPanel *lis
 	return itemID1 < itemID2;
 }
 
+void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
+{
+    //MOM_TODO: Make it just do kv->LoadFromFile instead of the manual copy?
+    KeyValues *pLoaded = new KeyValues("local");
+    char fileName[MAX_PATH];
+    Q_strcpy(fileName, "maps/");
+    Q_strcat(fileName, g_pGameRules->MapName(), MAX_PATH);
+    Q_strncat(fileName, ".tim", MAX_PATH);
+    DevLog("Loading from file %s...\n", fileName);
+    if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
+    {
+        for (KeyValues* subKey = pLoaded->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
+        {
+            int ticks = Q_atoi(subKey->GetName());
+            float rate = subKey->GetFloat("rate");
+            time_t date = (time_t) subKey->GetInt("date");
+            float seconds = ((float) ticks) * rate;
+            //MOM_TODO: consider adding a "100 tick" column?
+            //MOM_TODO: format time to a string HH:MM:SS (see timer panel for the method)
+            KeyValues *subKeyToPut = new KeyValues("localtime");
+            subKeyToPut->SetFloat("time", seconds);
+            //MOM_TODO: format date to string "YY-MM-DD HH:MM:SS"
+            subKeyToPut->SetInt("date", date);
+            kv->AddSubKey(subKeyToPut);
+            //kv->AddSubKey(subKey);
+        }
+        bLocalTimesLoaded = true;
+    }
+    pLoaded->deleteThis();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Updates the leaderboard lists
 //-----------------------------------------------------------------------------
 bool CClientScoreBoardDialog::GetPlayerScoreInfo(int playerIndex, KeyValues *kv)
 {
 	IGameResources *gr = GameResources();
-
-	if (!gr )
+    
+	if (!gr || !kv)
 		return false;
     // MOM_TODO: QUERY THE API AND FILL THE LEADERBOARD LISTS
     KeyValues *pLeaderboards = new KeyValues("leaderboards");
     KeyValues *pLocal = new KeyValues("local");
     // Fill local times:
+    
+    if (!bLocalTimesLoaded || bLocalTimesNeedUpdate)
+        LoadLocalTimes(pLocal);
+    //MOM_TODO: cache the local times in some UtilVector or something
+
     pLeaderboards->AddSubKey(pLocal);
     KeyValues *pOnline = new KeyValues("online");
     // Fill online times (global)
@@ -455,7 +510,7 @@ bool CClientScoreBoardDialog::GetPlayerScoreInfo(int playerIndex, KeyValues *kv)
     // Fill online times (friends)
     pLeaderboards->AddSubKey(pFriends);
     // BUGBUG: MOM_TODO: CRASH
-    //kv->AddSubKey(pLeaderboards);
+    kv->AddSubKey(pLeaderboards);
 	return true;
 }
 
@@ -511,47 +566,93 @@ void CClientScoreBoardDialog::FillScoreBoard()
 
 void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
 {
+    KeyValues *m_kvPlayerData = new KeyValues("playdata");
+    UpdatePlayerInfo(m_kvPlayerData);
     if (pFullUpdate)
     {
-        UpdatePlayerInfo();
         AddHeader();
     }
 
     // Player Stats panel:
-    if (m_pPlayerStats && m_pPlayerAvatar && m_lPlayerName && m_lPlayerGlobalRank && m_lPlayerMapRank && m_kvPlayerData)
+    if (m_pPlayerStats && m_pPlayerAvatar && m_lPlayerName && m_lPlayerGlobalRank && m_lPlayerMapRank && m_kvPlayerData
+        && !m_kvPlayerData->IsEmpty())
     {
         m_pPlayerStats->SetVisible(false); // Hidden so it is not seen being changed
         if (pFullUpdate)
             m_pPlayerAvatar->SetImage(m_pImageList->GetImage(m_kvPlayerData->GetInt("avatar", 0)));
 
+        KeyValues *playdata = m_kvPlayerData->FindKey("data");
+        if (playdata)
+        {
+            m_lPlayerName->SetText(playdata->GetString("name", "Unknown"));
 
-        m_lPlayerName->SetText(m_kvPlayerData->FindKey("data")->GetString("name", "Unknown"));
+            char mapRank[50];
+            //char *mapRank = "Map rank: ";
+            Q_snprintf(mapRank, 50, "Map rank: %i/%i", playdata->GetInt("mapRank", -1), 
+                playdata->GetInt("mapCount", -1));
 
-        char *mapRank = "Map rank: ";
-        Q_strcat(mapRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("mapRank", -1), 50);
-        Q_strcat(mapRank, "/", 50);
-        Q_strcat(mapRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("mapCount", -1), 50);
-        m_lPlayerMapRank->SetText(mapRank);
+            //MOM_TODO: the below casting is awful, use Q_snprintf() instead
+            /*Q_strcat(mapRank, (const char *) playdata->GetInt("mapRank", -1), 50);
+            Q_strcat(mapRank, "/", 50);
+            Q_strncat(mapRank, (const char *) playdata->GetInt("mapCount", -1), 50);*/
+            m_lPlayerMapRank->SetText(mapRank);
 
-        char *globalRank = "Global rank: ";
-        Q_strcat(globalRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("globalRank", -1), 50);
-        Q_strcat(globalRank, "/", 50);
-        Q_strcat(globalRank, (const char *)m_kvPlayerData->FindKey("data")->GetInt("globalCount", -1), 50);
-        m_lPlayerGlobalRank->SetText(globalRank);
+            //char *globalRank = "Global rank: ";
+            char globalRank[50];
+            Q_snprintf(globalRank, 50, "Global rank: %i/%i", playdata->GetInt("globalRank", -1),
+                playdata->GetInt("globalCount", -1));
+
+            /*Q_strcpy(globalRank, "Global rank: ");
+            Q_strcat(globalRank, (const char *) playdata->GetInt("globalRank", -1), 50);
+            Q_strcat(globalRank, "/", 50);
+            Q_strncat(globalRank, (const char *) playdata->GetInt("globalCount", -1), 50);*/
+            m_lPlayerGlobalRank->SetText(globalRank);
+        }  
         m_pPlayerStats->SetVisible(true); // And seen again!
     }
 
     // Leaderboards
     // MOM_TODO: Discuss if this should always update (Api overload?)
+
+    // @Gocnak: If we use event-driven updates and caching, it shouldn't overload the API.
+    // The idea is to cache things to show, which will be called every FillScoreBoard call,
+    // but it will only call the methods to update the data if booleans are set to.
+    // For example, if a local time was saved, the event "timer_timesaved" or something is passed here,
+    // and on the GetPlayerScoreInfo passthrough, we'd update the local times, which then gets stored in
+    // the Panel object until next update
+
     GetPlayerScoreInfo(0, m_kvPlayerData);
-    if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalBests && m_kvPlayerData)
+
+    if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalBests && m_kvPlayerData && !m_kvPlayerData->IsEmpty())
     {
         m_pLeaderboards->SetVisible(false);
         // MOM_TODO: Fill with the new data
 
+        //MOM_TODO: switch (currentFilter)
+        //case (ONLINE):
+        //etc
+
+        //Just doing local times for reference now
+        KeyValues *kvLeaderboards = m_kvPlayerData->FindKey("leaderboards");
+        KeyValues *kvLocalTimes = kvLeaderboards->FindKey("local");
+        if (kvLocalTimes && !kvLocalTimes->IsEmpty())
+        {
+            for (KeyValues *kvLocalTime = kvLocalTimes->GetFirstSubKey(); kvLocalTime; 
+                kvLocalTime = kvLocalTime->GetNextKey())
+            {
+                int itemID = FindItemIDForLocalTime(kvLocalTime);
+                if (itemID == -1)
+                    m_pLocalBests->AddItem(m_iSectionId, kvLocalTime);
+                else
+                    m_pLocalBests->ModifyItem(itemID, m_iSectionId, kvLocalTime);
+                //MOM_TODO: it'll be limited to only 10 local bests
+                //we're going to want to modifyitem if only one changed
+            }
+        }
+
         m_pLeaderboards->SetVisible(true);
     }
-
+    m_kvPlayerData->deleteThis();
 }
 
 //-----------------------------------------------------------------------------
@@ -559,6 +660,7 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
 //-----------------------------------------------------------------------------
 int CClientScoreBoardDialog::FindItemIDForPlayerIndex(int playerIndex)
 {
+    //MOM_TODO: edit this to return the itemID for a time, not a player
 	for (int i = 0; i <= m_pPlayerList->GetHighestItemID(); i++)
 	{
 		if (m_pPlayerList->IsItemIDValid(i))
@@ -570,6 +672,23 @@ int CClientScoreBoardDialog::FindItemIDForPlayerIndex(int playerIndex)
 		}
 	}
 	return -1;
+}
+
+int CClientScoreBoardDialog::FindItemIDForLocalTime(KeyValues *kvRef)
+{
+    for (int i = 0; i <= m_pLocalBests->GetHighestItemID(); i++)
+    {
+        if (m_pLocalBests->IsItemIDValid(i))
+        {
+            KeyValues *kv = m_pLocalBests->GetItemData(i);
+            if (kv && kv->GetInt("date") == kvRef->GetInt("date"))
+            {
+                DevLog("FOUND A MATCH OF A TIME!\n");
+                return i;
+            }
+        }
+    }
+    return -1;
 }
 
 //-----------------------------------------------------------------------------

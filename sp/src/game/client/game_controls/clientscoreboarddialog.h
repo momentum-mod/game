@@ -74,7 +74,7 @@ protected:
 	virtual bool GetPlayerScoreInfo(int playerIndex, KeyValues *outPlayerInfo);
 	virtual void InitScoreboardSections();
 	virtual void UpdateTeamInfo();
-	virtual void UpdatePlayerInfo();
+	virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo);
 	virtual void OnThink();
 	virtual void AddHeader(); // add the start header of the scoreboard
 	virtual void AddSection(int teamType, int teamNumber); // add a new section header for a team
@@ -89,6 +89,8 @@ protected:
 
 	// finds the player in the scoreboard
 	int FindItemIDForPlayerIndex(int playerIndex);
+    // finds a local time in the scoreboard
+    int FindItemIDForLocalTime(KeyValues *kvRef);
 
 	int m_iNumTeams;
 
@@ -110,7 +112,7 @@ protected:
     vgui::SectionedListPanel *m_pOnlineLeaderboards, *m_pLocalBests;
     vgui::ImagePanel *m_pPlayerAvatar;
     
-    KeyValues *m_kvPlayerData;
+    //KeyValues *m_kvPlayerData;
 
 	CUtlMap<CSteamID,int>		m_mapAvatarsToImageList;
 
@@ -127,10 +129,13 @@ private:
 	IViewPort	*m_pViewPort;
 	ButtonCode_t m_nCloseKey;
 
+    bool bLocalTimesLoaded = false;
+    bool bLocalTimesNeedUpdate = false;//MOM_TODO: hook this up to the game event "timer_savedtime"
 
 	// methods
 	void FillScoreBoard();
     void FillScoreBoard(bool pFullUpdate);
+    void LoadLocalTimes(KeyValues *kv);
 };
 
 

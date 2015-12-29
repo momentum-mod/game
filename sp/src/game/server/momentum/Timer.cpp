@@ -25,12 +25,8 @@ void CTimer::PostTime()
         //Get required info 
         //MOM_TODO include the extra security measures for beta+
         uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
-        char steamIDString[21];
-        Q_snprintf(steamIDString, 21, "%llu", steamID);
         const char* map = gpGlobals->mapname.ToCStr();
         int ticks = gpGlobals->tickcount - m_iStartTick;
-        char ticksString[64];
-        Q_snprintf(ticksString, 64, "%i", ticks);
 
         // MOM_TODO: make tickrate code crossplatform
 #ifdef _WIN32
@@ -41,14 +37,9 @@ void CTimer::PostTime()
 
         //Build URL
         char webURL[512];
-        Q_strcpy(webURL, "http://momentum-mod.org/postscore/");
-        Q_strcat(webURL, steamIDString, 512);
-        Q_strcat(webURL, "/", 512);
-        Q_strcat(webURL, map, 512);
-        Q_strcat(webURL, "/", 512);
-        Q_strcat(webURL, ticksString, 512);
-        Q_strcat(webURL, "/", 512);
-        Q_strncat(webURL, tickRate == 0.01f ? "100" : "66", 512); // FIXME
+        Q_snprintf(webURL, 512, "http://momentum-mod.org/postscore/%llu/%s/%i/%s", steamID, map,
+            ticks, tickRate == 0.01f ? "100" : "66");//FIXME
+
         DevLog("Ticks sent to server: %i\n", ticks);
 
         //Build request
