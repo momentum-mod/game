@@ -107,7 +107,7 @@ protected:
     vgui::Panel *m_pHeader, *m_pPlayerStats, *m_pLeaderboards;
     vgui::Label *m_lMapSummary, *m_lPlayerName, *m_lPlayerMapRank, *m_lPlayerGlobalRank;
     vgui::SectionedListPanel *m_pOnlineLeaderboards, *m_pLocalBests;
-    vgui::ImagePanel *m_pPlayerAvatar;
+    vgui::ImagePanel *m_pPlayerAvatar, *m_pMomentumLogo;
     
 
 	CUtlMap<CSteamID,int>		m_mapAvatarsToImageList;

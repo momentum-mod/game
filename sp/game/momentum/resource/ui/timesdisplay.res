@@ -78,6 +78,21 @@ Resource/ui/timesdisplay.res
 		"enabled"		"1"
 		"tabPosition"	"1"
 	}
+	"MomentumLogo"
+	{
+		"ControlName"	"ImagePanel"
+		"fieldName"		"MomentumLogo"
+		"xpos"			"376"
+		"ypos"			"0"
+		"wide"			"256"
+		"tall"			"64"
+		"autoResize"	"0"
+		"pinCorner"		"0"
+		"visible"		"1"
+		"enabled"		"1"
+		"border"		""
+		"image"			"logo"
+	}
 	"PlayerAvatar"
 	{
 		"ControlName"	"ImagePanel"
@@ -121,7 +136,7 @@ Resource/ui/timesdisplay.res
 		"fieldName"		"PlayerMapRank"
 		"xpos"			"67"
 		"ypos"			"35"
-		"wide"			"251"
+		"wide"			"151"
 		"tall"			"13"
 		"autoResize"	"0"
 		"pinCorner"		"0"
@@ -141,9 +156,9 @@ Resource/ui/timesdisplay.res
 	{
 		"ControlName"	"Label"
 		"fieldName"		"PlayerGlobalRank"
-		"xpos"			"321"
+		"xpos"			"221"
 		"ypos"			"35"
-		"wide"			"251"
+		"wide"			"151"
 		"tall"			"13"
 		"autoResize"	"0"
 		"pinCorner"		"0"

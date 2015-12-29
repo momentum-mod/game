@@ -72,6 +72,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
 
     m_pHeader = FindControl<Panel>("Header", true);
     m_lMapSummary = FindControl<Label>("MapSummary", true);
+    m_pMomentumLogo = FindControl<ImagePanel>("MomentumLogo", true);
     m_pPlayerStats = FindControl<Panel>("PlayerStats", true);
     m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
     m_lPlayerName = FindControl<Label>("PlayerName", true);
@@ -81,7 +82,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
     m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineNearbyLeaderboard", true);
     m_pLocalBests = FindControl<SectionedListPanel>("LocalPersonalBest", true);
 
-    if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName ||
+    if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName || !m_pMomentumLogo ||
         !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards || !m_pLocalBests)
     {
         Assert("Null pointer(s) on scoreboards");
@@ -91,6 +92,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
     m_pPlayerStats->SetParent(this);
     m_pLeaderboards->SetParent(this);
     m_lMapSummary->SetParent(m_pHeader);
+    m_pMomentumLogo->SetParent(m_pPlayerStats);
     m_pPlayerAvatar->SetParent(m_pPlayerStats);
     m_lPlayerName->SetParent(m_pPlayerStats);
     m_lPlayerMapRank->SetParent(m_pPlayerStats);
@@ -100,6 +102,8 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
 
     m_pOnlineLeaderboards->SetVerticalScrollbar(false);
     m_pLocalBests->SetVerticalScrollbar(false);
+
+    m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 
     m_iDesiredHeight = GetTall();
     m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
@@ -320,7 +324,7 @@ void CClientScoreBoardDialog::Update(bool pFullUpdate)
 {
     m_pPlayerList->DeleteAllItems();
     if (pFullUpdate)
-        FillScoreBoard();
+        FillScoreBoard(true);
 
     // grow the scoreboard to fit all the players
     int wide, tall;
@@ -405,7 +409,6 @@ void CClientScoreBoardDialog::AddHeader()
     // add the top header
     if (m_lMapSummary)
         m_lMapSummary->SetText(mapSummary);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -498,12 +501,7 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
                 Q_snprintf(timeString, sizeof(timeString), "%02d:%02d.%03d", minutes, seconds, millis);
             else
             {
-                // This localized token is "s.", but only because if the string is too big, the text will be chopped
-                // MOM_TODO: Change the seconds localization when the bug with the scoreboard is sorted out
-                char mrLocalized[50];
-                wchar_t *uSecondsUnicode = g_pVGuiLocalize->Find("#MOM_seconds");
-                g_pVGuiLocalize->ConvertUnicodeToANSI(uSecondsUnicode ? uSecondsUnicode : L"#MOM_seconds", mrLocalized, 50);
-                Q_snprintf(timeString, sizeof(timeString), "%02d.%03d %s", seconds, millis, mrLocalized);
+                Q_snprintf(timeString, sizeof(timeString), "%02d.%03d", seconds, millis);
             }
 
             kvLocalTimeFormatted->SetString("time", timeString);
@@ -625,9 +623,7 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
     KeyValues *m_kvPlayerData = new KeyValues("playdata");
     UpdatePlayerInfo(m_kvPlayerData);
     if (pFullUpdate)
-    {
         AddHeader();
-    }
 
     // Player Stats panel:
     if (m_pPlayerStats && m_pPlayerAvatar && m_lPlayerName && m_lPlayerGlobalRank && m_lPlayerMapRank && m_kvPlayerData
