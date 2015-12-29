@@ -10,7 +10,8 @@
     - [x] Localize rank tokens
     - [ ] Make FindItemIDForPlayerIndex(int) return an ItemID for another person's time
     - [ ] Sort function for online times
-    - [ ] Change the seconds localization when the bug with the scoreboard is sorted out
+    - [ ] Fix bugs: Lines being chopped down & mapsummary not being set
+    - [ ] Change the "seconds" localization when the bug with the scoreboard lines is sorted out
     
 - [ ] MenuMapSelection.cpp (Client)
     - [ ] Parse data from API, compare to already existing/downloaded maps
