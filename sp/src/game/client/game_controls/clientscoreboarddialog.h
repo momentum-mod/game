@@ -71,7 +71,7 @@ protected:
 	MESSAGE_FUNC_INT( OnPollHideCode, "PollHideCode", code );
 
 	// functions to override
-	virtual bool GetPlayerScoreInfo(int playerIndex, KeyValues *outPlayerInfo);
+	virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
 	virtual void InitScoreboardSections();
 	virtual void UpdateTeamInfo();
 	virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo);
@@ -82,6 +82,7 @@ protected:
 
 	// sorts players within a section
 	static bool StaticPlayerSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
+    static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
 
 	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 
@@ -97,10 +98,6 @@ protected:
 	vgui::SectionedListPanel *m_pPlayerList;
 	int				m_iSectionId; // the current section we are entering into
 
-	int s_VoiceImage[5];
-	int TrackerImage;
-	int	m_HLTVSpectators;
-	int m_ReplaySpectators;
 	float m_fNextUpdateTime;
 
 	void MoveLabelToFront(const char *textEntryName);
@@ -112,7 +109,6 @@ protected:
     vgui::SectionedListPanel *m_pOnlineLeaderboards, *m_pLocalBests;
     vgui::ImagePanel *m_pPlayerAvatar;
     
-    //KeyValues *m_kvPlayerData;
 
 	CUtlMap<CSteamID,int>		m_mapAvatarsToImageList;
 
@@ -130,7 +126,7 @@ private:
 	ButtonCode_t m_nCloseKey;
 
     bool bLocalTimesLoaded = false;
-    bool bLocalTimesNeedUpdate = false;//MOM_TODO: hook this up to the game event "timer_savedtime"
+    bool bLocalTimesNeedUpdate = false;
 
 	// methods
 	void FillScoreBoard();

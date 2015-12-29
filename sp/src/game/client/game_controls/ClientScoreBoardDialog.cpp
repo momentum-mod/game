@@ -33,6 +33,7 @@
 
 #include "vgui_avatarimage.h"
 #include "filesystem.h"
+#include <time.h>
 
 extern IFileSystem *filesystem;
 
@@ -54,8 +55,6 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
 
-    //memset(s_VoiceImage, 0x0, sizeof( s_VoiceImage ));
-    TrackerImage = 0;
     m_pViewPort = pViewPort;
 
     // initialize dialog
@@ -104,9 +103,6 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
 
     m_iDesiredHeight = GetTall();
     m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
-
-    m_HLTVSpectators = 0;
-    m_ReplaySpectators = 0;
 
     // update scoreboard instantly if on of these events occure
     ListenForGameEvent("runtime_saved");
@@ -229,21 +225,23 @@ void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
     {
         int wide, tall;
         m_pImageList->GetImage(i)->GetSize(wide, tall);
-        m_pImageList->GetImage(i)->SetSize(scheme()->GetProportionalScaledValueEx(GetScheme(), wide), scheme()->GetProportionalScaledValueEx(GetScheme(), tall));
+        m_pImageList->GetImage(i)->SetSize(scheme()->GetProportionalScaledValueEx(GetScheme(), wide),
+            scheme()->GetProportionalScaledValueEx(GetScheme(), tall));
     }
 
     m_pPlayerList->SetImageList(m_pImageList, false);
     m_pPlayerList->SetVisible(true);
 
+    //MOM_TODO: m_lMapSummary needs a bigger font
+    HFont ftMapSummary = pScheme->GetFont("HudHintTextLarge");
+    if (ftMapSummary) m_lMapSummary->SetFont(ftMapSummary);
     m_lMapSummary->SetVisible(true);
 
 
-    //MOM_TODO: we need a column for rank, time, and date achieved for local
-    m_pLocalBests->AddSection(m_iSectionId, "");
+    m_pLocalBests->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
     m_pLocalBests->SetSectionAlwaysVisible(m_iSectionId);
-    m_pLocalBests->AddColumnToSection(m_iSectionId, "time", "#PlayerName", 0, NAME_WIDTH);
-    //MOM_TODO: make the following localized "#MOM_Date" or whatever
-    m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "Date", 0, NAME_WIDTH);
+    m_pLocalBests->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH);
+    m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH);
 
     //MOM_TODO: online needs rank, name, time, date achieved?
 
@@ -375,7 +373,6 @@ void CClientScoreBoardDialog::UpdatePlayerInfo(KeyValues *kv)
 
     player_info_t pi;
     engine->GetPlayerInfo(engine->GetLocalPlayer(), &pi);
-    pi.name;
     const char *oldName = playerData->GetString("name", pi.name);
 
     char newName[MAX_PLAYER_NAME_LENGTH];
@@ -397,10 +394,17 @@ void CClientScoreBoardDialog::UpdatePlayerInfo(KeyValues *kv)
 void CClientScoreBoardDialog::AddHeader()
 {
     char gameMode[4];
+
     if (!Q_strnicmp(g_pGameRules->MapName(), "surf_", Q_strlen("surf_")))
         Q_strcpy(gameMode, "SURF");
+
     else if (!Q_strnicmp(g_pGameRules->MapName(), "bhop_", Q_strlen("bhop_")))
         Q_strcpy(gameMode, "BHOP");
+
+    //MOM_TODO: There'll probably be official gametypes later on in mod development
+    //We'll have some sort of shared class or global setting that we will use to determine
+    //what game mode we're on (mom_UTIL.GameMode() or something)
+
     char mapSummary[64];
     Q_snprintf(mapSummary, 64, "%s || %s", gameMode, g_pGameRules->MapName());
     // add the top header
@@ -414,6 +418,25 @@ void CClientScoreBoardDialog::AddHeader()
 void CClientScoreBoardDialog::AddSection(int teamType, int teamNumber)
 {
 }
+
+
+bool CClientScoreBoardDialog::StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2)
+{
+    KeyValues *it1 = list->GetItemData(itemID1);
+    KeyValues *it2 = list->GetItemData(itemID2);
+    Assert(it1 && it2);
+
+    float t1 = it1->GetFloat("time_f");
+    float t2 = it2->GetFloat("time_f");
+    //Ascending order
+    if (t1 < t2)
+        return true;//this time is faster, place it up higher
+    else if (t1 > t2)
+        return false;
+
+    return itemID1 < itemID2;
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Used for sorting players
@@ -456,20 +479,47 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
     DevLog("Loading from file %s...\n", fileName);
     if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
     {
-        for (KeyValues* subKey = pLoaded->GetFirstSubKey(); subKey; subKey = subKey->GetNextKey())
+        for (KeyValues* kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime; kvLocalTime = kvLocalTime->GetNextKey())
         {
-            int ticks = Q_atoi(subKey->GetName());
-            float rate = subKey->GetFloat("rate");
-            time_t date = (time_t) subKey->GetInt("date");
-            float seconds = ((float) ticks) * rate;
+            int ticks = Q_atoi(kvLocalTime->GetName());
+            float rate = kvLocalTime->GetFloat("rate");
+            time_t date = (time_t) kvLocalTime->GetInt("date");
+            float secondsF = ((float) ticks) * rate;
             //MOM_TODO: consider adding a "100 tick" column?
-            //MOM_TODO: format time to a string HH:MM:SS (see timer panel for the method)
-            KeyValues *subKeyToPut = new KeyValues("localtime");
-            subKeyToPut->SetFloat("time", seconds);
-            //MOM_TODO: format date to string "YY-MM-DD HH:MM:SS"
-            subKeyToPut->SetInt("date", date);
-            kv->AddSubKey(subKeyToPut);
-            //kv->AddSubKey(subKey);
+
+            KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
+            kvLocalTimeFormatted->SetFloat("time_f", secondsF);//Used for static compare
+            kvLocalTimeFormatted->SetInt("date_t", date);//Used for finding
+            char timeString[15];
+            
+            int hours = secondsF / (60.0f * 60.0f);
+            int minutes = fmod(secondsF / 60.0f, 60.0f);
+            int seconds = fmod(secondsF, 60.0f);
+            int millis = fmod(secondsF, 1.0f) * 1000.0f;
+            
+            if (hours > 0)
+                Q_snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+            else if (minutes > 0)
+                Q_snprintf(timeString, sizeof(timeString), "%02d:%02d.%03d", minutes, seconds, millis);
+            else
+                Q_snprintf(timeString, sizeof(timeString), "%02d.%03d", seconds, millis);
+
+            kvLocalTimeFormatted->SetString("time", timeString);
+
+            char dateString[64];
+            tm * local;
+            local = localtime(&date);
+            if (local)
+            {
+                strftime(dateString, sizeof(dateString), "%Y/%m/%d %H:%M:%S", local);
+                kvLocalTimeFormatted->SetString("date", dateString);
+            }
+            else
+            {
+                kvLocalTimeFormatted->SetInt("date", date);
+            }
+
+            kv->AddSubKey(kvLocalTimeFormatted);
         }
         bLocalTimesLoaded = true;
         bLocalTimesNeedUpdate = false;
@@ -480,8 +530,13 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
 //-----------------------------------------------------------------------------
 // Purpose: Updates the leaderboard lists
 //-----------------------------------------------------------------------------
-bool CClientScoreBoardDialog::GetPlayerScoreInfo(int playerIndex, KeyValues *kv)
+bool CClientScoreBoardDialog::GetPlayerTimes(KeyValues *kv)
 {
+    //We're going to need to update all three of these, even if only two are shown,
+    //because the user can change the panels at any time
+
+    //We could also make it update based on when players change their leaderboard
+    //to show something else, to reduce 
     if (!kv)
         return false;
     // MOM_TODO: QUERY THE API AND FILL THE LEADERBOARD LISTS
@@ -601,10 +656,10 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
     // The idea is to cache things to show, which will be called every FillScoreBoard call,
     // but it will only call the methods to update the data if booleans are set to.
     // For example, if a local time was saved, the event "timer_timesaved" or something is passed here,
-    // and on the GetPlayerScoreInfo passthrough, we'd update the local times, which then gets stored in
+    // and on the GetPlayerTimes passthrough, we'd update the local times, which then gets stored in
     // the Panel object until next update
 
-    GetPlayerScoreInfo(0, m_kvPlayerData);
+    GetPlayerTimes(m_kvPlayerData);
 
     if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalBests && m_kvPlayerData && !m_kvPlayerData->IsEmpty())
     {
@@ -664,9 +719,9 @@ int CClientScoreBoardDialog::FindItemIDForLocalTime(KeyValues *kvRef)
         if (m_pLocalBests->IsItemIDValid(i))
         {
             KeyValues *kv = m_pLocalBests->GetItemData(i);
-            if (kv && kv->GetInt("date") == kvRef->GetInt("date"))
+            if (kv && (kv->GetInt("date_t") == kvRef->GetInt("date_t")))
             {
-                DevLog("FOUND A MATCH OF A TIME!\n");
+                //DevLog("FOUND A MATCH OF A TIME!\n");
                 return i;
             }
         }
