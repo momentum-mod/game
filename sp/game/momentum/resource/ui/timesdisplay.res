@@ -55,7 +55,7 @@ Resource/ui/timesdisplay.res
 		"pinCorner"		"0"
 		"visible"		"1"
 		"enabled"		"1"
-		"labelText"		"MAPNAME (Gamemode)"
+		"labelText"		"MAPNAME || Gamemode"
 		"textAlignment"	"west"
 		"brighttext"	"1"
 		"Font"			"HudHintTextLarge"

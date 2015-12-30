@@ -76,7 +76,7 @@ protected:
 	virtual void UpdateTeamInfo();
 	virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo);
 	virtual void OnThink();
-	virtual void AddHeader(); // add the start header of the scoreboard
+    virtual void AddHeader(vgui::Label *pMapSummary); // add the start header of the scoreboard
 	virtual void AddSection(int teamType, int teamNumber); // add a new section header for a team
 	virtual int GetAdditionalHeight() { return 0; }
 

@@ -88,6 +88,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
         Assert("Null pointer(s) on scoreboards");
     }
     SetSize(scheme()->GetProportionalScaledValue(640), scheme()->GetProportionalScaledValue(480));
+
     m_pHeader->SetParent(this);
     m_pPlayerStats->SetParent(this);
     m_pLeaderboards->SetParent(this);
@@ -182,10 +183,8 @@ void CClientScoreBoardDialog::Reset()
 void CClientScoreBoardDialog::Reset(bool pFullReset)
 {
     if (pFullReset)
-    {
-        FillScoreBoard(true);
         Update(true);
-    }
+
     // clear
     m_pPlayerList->DeleteAllItems();
     m_pPlayerList->RemoveAllSections();
@@ -235,14 +234,16 @@ void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
 
     m_pPlayerList->SetImageList(m_pImageList, false);
     m_pPlayerList->SetVisible(true);
+    if (m_lMapSummary)
+        m_lMapSummary->SetVisible(true);
 
-    m_lMapSummary->SetVisible(true);
-
-
-    m_pLocalBests->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
-    m_pLocalBests->SetSectionAlwaysVisible(m_iSectionId);
-    m_pLocalBests->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH);
-    m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+    if (m_pLocalBests)
+    {
+        m_pLocalBests->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
+        m_pLocalBests->SetSectionAlwaysVisible(m_iSectionId);
+        m_pLocalBests->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH);
+        m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+    }
 
     //MOM_TODO: online needs rank, name, time, date achieved?
 
@@ -275,8 +276,6 @@ void CClientScoreBoardDialog::ShowPanel(bool bShow)
     if (bShow)
     {
         Reset(true);
-        // Updating twice...
-        Update(false);
         SetVisible(true);
         MoveToFront();
     }
@@ -345,8 +344,8 @@ void CClientScoreBoardDialog::Update(bool pFullUpdate)
     MoveToCenterOfScreen();
 
     // update every second
-    // we don't need to update this too often. (Player is not finish a run every second, so...)
-    // MOM_TODO: Discuss update interval
+    // we don't need to update this too often. (Player is not finishing a run every second, so...)
+
     m_fNextUpdateTime = gpGlobals->curtime + 3.0f;
 }
 
@@ -389,26 +388,31 @@ void CClientScoreBoardDialog::UpdatePlayerInfo(KeyValues *kv)
 //-----------------------------------------------------------------------------
 // Purpose: adds the top header of the scoreboars
 //-----------------------------------------------------------------------------
-void CClientScoreBoardDialog::AddHeader()
+void CClientScoreBoardDialog::AddHeader(Label *pMapSummary)
 {
-    char gameMode[4];
+    // @Rabs:
+    // MOM_TODO: This is a very very very ugly hack I had to do because
+    // the pointer to m_lMapSummary was not valid inside the function, but it is outside it.
+    // We have to get rid of it, or at least discover why it was working for some (Goc) and not to me
+    if (pMapSummary)
+    {
+        char gameMode[4];
 
-    if (!Q_strnicmp(g_pGameRules->MapName(), "surf_", Q_strlen("surf_")))
-        Q_strcpy(gameMode, "SURF");
+        if (!Q_strnicmp(g_pGameRules->MapName(), "surf_", Q_strlen("surf_")))
+            Q_strcpy(gameMode, "SURF");
+        else if (!Q_strnicmp(g_pGameRules->MapName(), "bhop_", Q_strlen("bhop_")))
+            Q_strcpy(gameMode, "BHOP");
+        else
+            Q_strcpy(gameMode, "????");
 
-    else if (!Q_strnicmp(g_pGameRules->MapName(), "bhop_", Q_strlen("bhop_")))
-        Q_strcpy(gameMode, "BHOP");
-    else
-        Q_strcpy(gameMode, "????");
-    //MOM_TODO: There'll probably be official gametypes later on in mod development
-    //We'll have some sort of shared class or global setting that we will use to determine
-    //what game mode we're on (mom_UTIL.GameMode() or something)
+        //MOM_TODO: There'll probably be official gametypes later on in mod development
+        //We'll have some sort of shared class or global setting that we will use to determine
+        //what game mode we're on (mom_UTIL.GameMode() or something)
 
-    char mapSummary[64];
-    Q_snprintf(mapSummary, 64, "%s || %s", gameMode, g_pGameRules->MapName());
-    // add the top header
-    if (m_lMapSummary)
-        m_lMapSummary->SetText(mapSummary);
+        char mapSummary[64];
+        Q_snprintf(mapSummary, 64, "%s || %s", gameMode, g_pGameRules->MapName());
+        pMapSummary->SetText(mapSummary);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -417,7 +421,6 @@ void CClientScoreBoardDialog::AddHeader()
 void CClientScoreBoardDialog::AddSection(int teamType, int teamNumber)
 {
 }
-
 
 bool CClientScoreBoardDialog::StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2)
 {
@@ -435,7 +438,6 @@ bool CClientScoreBoardDialog::StaticLocalTimeSortFunc(vgui::SectionedListPanel *
 
     return itemID1 < itemID2;
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Used for sorting players
@@ -622,7 +624,7 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
     KeyValues *m_kvPlayerData = new KeyValues("playdata");
     UpdatePlayerInfo(m_kvPlayerData);
     if (pFullUpdate)
-        AddHeader();
+        AddHeader(m_lMapSummary);
 
     // Player Stats panel:
     if (m_pPlayerStats && m_pPlayerAvatar && m_lPlayerName && m_lPlayerGlobalRank && m_lPlayerMapRank && m_kvPlayerData
@@ -639,12 +641,9 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
             {
                 int pAvatarIndex = playdata->GetInt("avatar", 0);
                 if (pAvatarIndex == 0)
-                {
                     m_pPlayerAvatar->SetImage("default_steam");
-                }
-                else {
+                else 
                     m_pPlayerAvatar->SetImage(m_pImageList->GetImage(pAvatarIndex));    
-                }
                 m_pPlayerAvatar->GetImage()->SetSize(scheme()->GetProportionalScaledValue(32), scheme()->GetProportionalScaledValue(32));
             }
 
