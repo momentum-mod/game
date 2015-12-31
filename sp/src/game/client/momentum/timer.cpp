@@ -17,13 +17,15 @@ using namespace vgui;
 
 #include "vgui_helpers.h"
 
-#define BUFSIZE (sizeof("00:00:00.0000")+1)
+#define BUFSIZETIME (sizeof("00:00:00.0000")+1)
+#define BUFSIZECPS (sizeof("Checkpoint 0000 of 0000")+1)
+#define BUFSIZESTAGE (sizeof("Stage 000")+1)
 
 static ConVar bla_timer("mom_timer", "1",
-	FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
+    FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
 	"Turn the timer display on/off\n");
 
-static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
+static ConVar timer_mode("mom_timer_mode", "0", FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
 	"Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Checkpoint\n");
 
 class C_Timer : public CHudElement, public Panel
@@ -49,8 +51,12 @@ public:
 
 private:
 	int initialTall;
-	wchar_t m_pwCurrentTime[BUFSIZE];
-	char m_pszString[BUFSIZE];
+	wchar_t m_pwCurrentTime[BUFSIZETIME];
+    char m_pszString[BUFSIZETIME];
+    wchar_t m_pwCurrentCheckpoints[BUFSIZECPS];
+    char m_pszStringCps[BUFSIZECPS];
+    wchar_t m_pwCurrentStages[BUFSIZESTAGE];
+    char m_pszStringStages[BUFSIZESTAGE];
 	CUtlMap<const char*, float> map;
 	int m_iTotalTicks;
 	bool m_bWereCheatsActivated=false;
@@ -67,18 +73,24 @@ protected:
 		"HudNumbersSmall");
 	CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
 
-	CPanelAnimationVarAliasType(float, text_xpos, "text_xpos", "8",
+    CPanelAnimationVarAliasType(bool, center_time, "centerTime", "1",
+        "BOOL");
+    CPanelAnimationVarAliasType(float, time_xpos, "time_xpos", "50",
 		"proportional_float");
-	CPanelAnimationVarAliasType(float, text_ypos, "text_ypos", "20",
+    CPanelAnimationVarAliasType(float, time_ypos, "time_ypos", "2",
 		"proportional_float");
-	CPanelAnimationVarAliasType(float, digit_xpos, "digit_xpos", "50",
+    CPanelAnimationVarAliasType(bool, center_cps, "centerCps", "1",
+        "BOOL");
+	CPanelAnimationVarAliasType(float, cps_xpos, "cps_xpos", "50",
 		"proportional_float");
-	CPanelAnimationVarAliasType(float, digit_ypos, "digit_ypos", "2",
+    CPanelAnimationVarAliasType(float, cps_ypos, "cps_ypos", "25",
 		"proportional_float");
-	CPanelAnimationVarAliasType(float, digit2_xpos, "digit2_xpos", "98",
-		"proportional_float");
-	CPanelAnimationVarAliasType(float, digit2_ypos, "digit2_ypos", "16",
-		"proportional_float");
+    CPanelAnimationVarAliasType(bool, center_stage, "centerStage", "1",
+        "BOOL");
+    CPanelAnimationVarAliasType(float, stage_xpos, "stage_xpos", "50",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, stage_ypos, "stage_ypos", "40",
+        "proportional_float");
 };
 
 DECLARE_HUDELEMENT(C_Timer);
@@ -88,9 +100,12 @@ DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
 
 C_Timer::C_Timer(const char *pElementName) :
-CHudElement(pElementName), Panel(NULL, "HudTimer")
+CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
 {
-	SetParent(g_pClientMode->GetViewport());
+    // This is already set for HUD elements, but still...
+    SetProportional(true);
+    SetKeyBoardInputEnabled(false);
+    SetMouseInputEnabled(false);
 }
 
 void C_Timer::Init()
@@ -137,7 +152,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 		// Compare times.
 		if (m_bWereCheatsActivated) //EY, CHEATER, STOP
 		{
-			DevMsg("sv_cheats was set to 1, thus making the run not valid \n");
+			Msg("sv_cheats was set to 1, thus making the run not valid \n");
 		}
 		else //He didn't cheat, we can carry on
 		{
@@ -184,25 +199,81 @@ void C_Timer::Paint(void)
 	int millis =  fmod(m_flSecondsTime, 1.0f) * 1000.0f;
 
 	Q_snprintf(m_pszString, sizeof(m_pszString), "%02d:%02d:%02d.%03d",
-		hours,//hours
+		hours, //hours
 		minutes, //minutes
-		seconds,//seconds
-		millis);//millis
+		seconds, //seconds
+		millis //millis
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 
-	// msg.ReadString(m_pszString, sizeof(m_pszString));
-	g_pVGuiLocalize->ConvertANSIToUnicode(
-		m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
+    // MOM_TODO: Feed real data here
+    Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "Checkpoint %i of %i",
+        -1, //CurrentCP
+        -1 //CPCount
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszStringCps, m_pwCurrentCheckpoints, sizeof(m_pwCurrentCheckpoints));
+
+    Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "Stage %i",
+        -1 //Current stage
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszStringStages, m_pwCurrentStages, sizeof(m_pwCurrentStages));
+	
 	// Draw the text label.
 	surface()->DrawSetTextFont(m_hTextFont);
 	surface()->DrawSetTextColor(GetFgColor());
-	/*surface()->DrawSetTextPos(digit2_xpos, digit2_ypos);
-	surface()->DrawUnicodeString(L"TEST");*/
 	
-	//current map can be found with:    g_pGameRules->MapName()
+	//current map can be found with: g_pGameRules->MapName()
 
-	//surface()->DrawPrintText(L"TIME", wcslen(L"TIME"));
 	// Draw current time.
-	surface()->DrawSetTextFont(surface()->GetFontTall(m_hTextFont));
-	surface()->DrawSetTextPos(digit_xpos, digit_ypos);
+
+    int dummy, totalWide;
+
+    GetSize(totalWide, dummy);
+    //surface()->DrawSetTextFont(surface()->GetFontTall(m_hTextFont));
+
+    //
+    if (center_time)
+    {
+        int timeWide;
+        surface()->GetTextSize(m_hTextFont, m_pwCurrentTime, timeWide, dummy);
+        int offsetToCenter = ((totalWide - timeWide) / 2);
+        surface()->DrawSetTextPos(offsetToCenter, time_ypos);
+    }
+    else
+    {
+        surface()->DrawSetTextPos(time_xpos, time_ypos);
+    }
 	surface()->DrawPrintText(m_pwCurrentTime, wcslen(m_pwCurrentTime));
+
+    // MOM_TODO: Print this only if using CPmenu
+    if (center_cps)
+    {
+        int cpsWide;
+        surface()->GetTextSize(m_hTextFont, m_pwCurrentCheckpoints, cpsWide, dummy);
+        int offsetToCenter = ((totalWide - cpsWide) / 2);
+        surface()->DrawSetTextPos(offsetToCenter, cps_ypos);
+    }
+    else
+    {
+        surface()->DrawSetTextPos(cps_xpos, cps_ypos);
+    }
+    surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
+
+    // MOM_TODO: Print this only if map gamemode is supported
+    if (center_stage)
+    {
+        int stageWide;
+        surface()->GetTextSize(m_hTextFont, m_pwCurrentStages, stageWide, dummy);
+        int offsetToCenter = ((totalWide - stageWide) / 2);
+        surface()->DrawSetTextPos(offsetToCenter, stage_ypos);
+    }
+    else
+    {
+        surface()->DrawSetTextPos(stage_xpos, stage_ypos);
+    }
+    surface()->DrawPrintText(m_pwCurrentStages, wcslen(m_pwCurrentStages));
+
 }

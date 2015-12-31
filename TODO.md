@@ -5,12 +5,12 @@
     - [ ] Add format for online & friends leaderboard lists
     - [ ] Fill the lists with API data
     - [ ] Update rank for event runtime_posted
-    - [x] ] Discuss update interval time
+    - [x] Discuss update interval time
     - [ ] Consider adding a "100 tick" column
     - [x] Localize rank tokens
     - [ ] Make FindItemIDForPlayerIndex(int) return an ItemID for another person's time
     - [ ] Sort function for online times
-    - [ ] Fix bugs: Lines being chopped down & mapsummary not being set
+    - [x] Fix bugs: Lines being chopped down & mapsummary not being set
     
 - [ ] MenuMapSelection.cpp (Client)
     - [ ] Parse data from API, compare to already existing/downloaded maps
@@ -28,9 +28,11 @@
 
 - [ ] timer.cpp (Client) 
     - [ ] Play effects (animations) for run states
-    - [ ] Move to bottom center (above speedometer)
-    - [ ] Utilize the .res file variables for position/color/etc
+    - [x] Move to bottom center (above speedometer)
+    - [x] Utilize the .res file variables for position/color/etc
+    - [ ] Feed real data for the hud
     - [ ] Have more info (checkpoints, current stage/total stages, etc)
+    - [ ] Only display relevant info (Per gamemode basis)
     
 - [ ] hud_cp_menu.cpp (Client) 
     - [x] Make creating a checkpoint stop your timer
@@ -38,7 +40,7 @@
     - [ ] Consider local timer for routing
     - [ ] Consider KZ game mode basically requiring checkpoints
     - [ ] Extract underlying menu class and make hud_cp_menu create one
-    - [ ] Use .res files
+    - [x] Use .res files
 
 - [ ] TimeTriggers.cpp (Server)
     - [ ] Tweak limit speed method

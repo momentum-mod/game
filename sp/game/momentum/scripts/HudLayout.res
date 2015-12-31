@@ -1,40 +1,41 @@
 "Resource/HudLayout.res"
 {
 	HudSpeedMeter
-	{
-		"fieldName" "HudSpeedMeter"
-		"xpos"        "c-57"
-                "ypos"        "432"
-                "wide"        "114"
-                "tall"  "36"
-                "visible" "1"
-                "enabled" "1"
-
-                "PaintBackgroundType"        "2"
-                
-                "text_xpos" "8"
-                "text_ypos" "20"
-                "digit_xpos" "50"
-                "digit_ypos" "2"
-		
-	}
+		{
+				"fieldName"		"HudSpeedMeter"
+				"xpos"			"c-57"
+                "ypos"			"432"
+                "wide"			"114"
+                "tall"			"36"
+                "visible"		"1"
+                "enabled"		"1"
+                "PaintBackgroundType" "2"
+                "text_xpos"		"8"
+                "text_ypos"		"20"
+                "digit_xpos"	"50"
+                "digit_ypos"	"2"
+				}
 	HudTimer
-        {
-          "fieldName" "HudTimer"
-                "xpos"        "15"//change this to center left, fix sizes too
-                "ypos"        "115"
-                "wide"        "176"
-                "tall"        "36"
-                "visible" "1"
-                "enabled" "1"
-
-                "PaintBackgroundType"        "2"
-                
-                "text_xpos" "8"
-                "text_ypos" "2"
-                "digit_xpos" "50"
-                "digit_ypos" "10"
-        }
+		{
+				"fieldName"		"HudTimer"
+                "xpos"			"c-68"
+                "ypos"			"c+75"
+                "wide"			"136"
+                "tall"			"50"
+                "visible"		"1"
+                "enabled"		"1"
+                "PaintBackgroundType" "2"
+				"TextFont"		"HudHintTextLarge"
+				"centerTime"	"1" //If true, won't use time_xpos, centering the text instead
+                "time_xpos"		"58"
+                "time_ypos"		"3"
+				"centerCps"		"1" //If true, won't use cps_xpos, centering the text instead
+				"cps_xpos"		"50"
+				"cps_ypos"		"19"
+				"centerStage"	"1" //If true, won't use stage_xpos, centering the text instead
+				"stage_xpos"	"50"
+				"stage_ypos"	"34"
+				}
 	CPMenu
 	{
 		"fieldName" "CPMenu"

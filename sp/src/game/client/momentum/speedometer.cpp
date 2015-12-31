@@ -2,21 +2,16 @@
 #include "hudelement.h"
 #include "hud_numericdisplay.h"
 #include "iclientmode.h"
-
 #include <math.h>
-
-#include <vgui_controls/Panel.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
-
 #include "vphysics_interface.h"
 
 using namespace vgui;
 
-static ConVar speedmeter_hvel("mom_speedmeter_hvel", "0", (FCVAR_CLIENTDLL | FCVAR_ARCHIVE), "If set to 1, doesn't take the vertical velocity component into account.");
+static ConVar speedmeter_hvel("mom_speedmeter_hvel", "0", (FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE),
+    "If set to 1, doesn't take the vertical velocity component into account.", true, 0, true, 1);
 
-//(Ruben): We could use a callback function, but it is not needed.
-static ConVar speedmeter_units("mom_speedmeter_units", "1",(FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL),"Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.",true, 1, true, 3);
+static ConVar speedmeter_units("mom_speedmeter_units", "1",(FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL),
+    "Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.",true, 1, true, 3);
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
@@ -32,7 +27,6 @@ public:
 	{
 		Reset();
 	}
-
 	virtual void Reset()
 	{
 		//We set the proper LabelText based on mom_speedmeter_units value
@@ -60,15 +54,17 @@ public:
 DECLARE_HUDELEMENT(CHudSpeedMeter);
 
 
-CHudSpeedMeter::CHudSpeedMeter(const char *pElementName) :
-CHudElement(pElementName), CHudNumericDisplay(NULL, "HudSpeedMeter")
+CHudSpeedMeter::CHudSpeedMeter(const char *pElementName) : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
-	SetParent(g_pClientMode->GetViewport());
+    // This is already set for HUD elements, but still...
+    SetProportional(true);
+    SetKeyBoardInputEnabled(false);
+    SetMouseInputEnabled(false);
 }
 
 void CHudSpeedMeter::OnThink()
 {
-	Vector velocity(0, 0, 0);
+	Vector velocity = vec3_origin;
 	C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
 	if (player) {
 		velocity = player->GetLocalVelocity();
