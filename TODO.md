@@ -20,7 +20,7 @@
     - [ ] Use mom_player and mom_gamerules instead of generic ones (Server)
     - [ ] Remove any and all unnecessary HL2/generic code that doesn't pertain to the mod
 
-- [ ] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
+- [x] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
 
 - [ ] weapon_momentum_gun (Client/Server)
     - [ ] Import CS:S weapon entities over as proxy weapons to change the gun's behavior
