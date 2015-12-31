@@ -14,9 +14,8 @@ make checkpoints available for output to files
 */
 using namespace vgui;
 
-C_CP_Menu::C_CP_Menu(const char *pElementName) : CHudElement(pElementName), Panel(NULL, "CPMenu")
+C_CP_Menu::C_CP_Menu(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CPMenu")
 {
-	SetParent(g_pClientMode->GetViewport());
 	//SetHiddenBits(HIDEHUD_MISCSTATUS);
 };
 

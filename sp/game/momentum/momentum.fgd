@@ -25,18 +25,6 @@
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
     "The entity can have its Angles and Velocity reset by boolean settings." []
 
-// Do we really need this one?
-@BaseClass color(0 0 200) base(Targetname, Angles) = Weapon
-[
-	spawnflags(Flags) =
-	[
-		1 : "Start constrained" : 0
-	]
-
-	output OnPlayerUse(void) : "Fires when the player +uses this weapon"
-	output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
-]
-
 @SolidClass base(Trigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
 [
 	leavespeed(float) : "Max leave speed" : 290 : "Max speed (Units Per Second) the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set."

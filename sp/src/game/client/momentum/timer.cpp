@@ -19,7 +19,7 @@ using namespace vgui;
 
 #define BUFSIZETIME (sizeof("00:00:00.0000")+1)
 #define BUFSIZECPS (sizeof("Checkpoint 0000 of 0000")+1)
-#define BUFSIZESTAGE (sizeof("Stage 000")+1)
+#define BUFSIZESTAGE (sizeof("Stage 0000 of 0000")+1)
 
 static ConVar bla_timer("mom_timer", "1",
     FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
@@ -44,12 +44,14 @@ public:
 	void MsgFunc_Timer_State(bf_read &msg);
 	void MsgFunc_Timer_Reset(bf_read &msg);
 	void MsgFunc_Timer_Checkpoint(bf_read &msg);
+    void MsgFunc_Timer_Stage(bf_read &msg);
 	virtual void Paint();
 	int GetCurrentTime();
 	bool m_bIsRunning;
 	int m_iStartTick;
 
 private:
+    int m_iStageCurrent;
 	int initialTall;
 	wchar_t m_pwCurrentTime[BUFSIZETIME];
     char m_pszString[BUFSIZETIME];
@@ -60,6 +62,9 @@ private:
 	CUtlMap<const char*, float> map;
 	int m_iTotalTicks;
 	bool m_bWereCheatsActivated=false;
+    bool m_bShowCheckpoints;
+    bool m_iCheckpointCount;
+    bool m_iCheckpointCurrent;
 
 protected:
 	CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -98,6 +103,7 @@ DECLARE_HUDELEMENT(C_Timer);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_State);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
+DECLARE_HUD_MESSAGE(C_Timer, Timer_Stage);
 
 C_Timer::C_Timer(const char *pElementName) :
 CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
@@ -113,6 +119,7 @@ void C_Timer::Init()
 	HOOK_HUD_MESSAGE(C_Timer, Timer_State);
 	HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
 	HOOK_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
+    HOOK_HUD_MESSAGE(C_Timer, Timer_Stage);
 	initialTall = 48;
 	m_iTotalTicks = 0;
 	//Reset();
@@ -179,7 +186,15 @@ void C_Timer::MsgFunc_Timer_Reset(bf_read &msg)
 
 void C_Timer::MsgFunc_Timer_Checkpoint(bf_read &msg)
 {
-	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
+    m_bShowCheckpoints = msg.ReadOneBit();
+    m_iCheckpointCurrent = (int)msg.ReadLong();
+    m_iCheckpointCount = (int)msg.ReadLong();
+}
+
+void C_Timer::MsgFunc_Timer_Stage(bf_read &msg)
+{
+    m_iStageCurrent = (int)msg.ReadLong();
+    //g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
 }
 
 int C_Timer::GetCurrentTime() 
@@ -207,16 +222,20 @@ void C_Timer::Paint(void)
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 
-    // MOM_TODO: Feed real data here
-    Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "Checkpoint %i of %i",
-        -1, //CurrentCP
-        -1 //CPCount
-        );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringCps, m_pwCurrentCheckpoints, sizeof(m_pwCurrentCheckpoints));
+    // MOM_TODO: Localize this
+
+    if (m_bShowCheckpoints)
+    {
+        Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "Checkpoint %i of %i",
+            m_iCheckpointCount, //CurrentCP
+            m_iCheckpointCurrent //CPCount
+            );
+        g_pVGuiLocalize->ConvertANSIToUnicode(
+            m_pszStringCps, m_pwCurrentCheckpoints, sizeof(m_pwCurrentCheckpoints));
+    }
 
     Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "Stage %i",
-        -1 //Current stage
+        m_iStageCurrent // Current Stage
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringStages, m_pwCurrentStages, sizeof(m_pwCurrentStages));
@@ -234,7 +253,6 @@ void C_Timer::Paint(void)
     GetSize(totalWide, dummy);
     //surface()->DrawSetTextFont(surface()->GetFontTall(m_hTextFont));
 
-    //
     if (center_time)
     {
         int timeWide;
@@ -248,19 +266,22 @@ void C_Timer::Paint(void)
     }
 	surface()->DrawPrintText(m_pwCurrentTime, wcslen(m_pwCurrentTime));
 
-    // MOM_TODO: Print this only if using CPmenu
-    if (center_cps)
+    // MOM_TODO: CPCount is not reporting correctly. Hidden until it's fixed
+   /* if (m_bShowCheckpoints)
     {
-        int cpsWide;
-        surface()->GetTextSize(m_hTextFont, m_pwCurrentCheckpoints, cpsWide, dummy);
-        int offsetToCenter = ((totalWide - cpsWide) / 2);
-        surface()->DrawSetTextPos(offsetToCenter, cps_ypos);
-    }
-    else
-    {
-        surface()->DrawSetTextPos(cps_xpos, cps_ypos);
-    }
-    surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
+        if (center_cps)
+        {
+            int cpsWide;
+            surface()->GetTextSize(m_hTextFont, m_pwCurrentCheckpoints, cpsWide, dummy);
+            int offsetToCenter = ((totalWide - cpsWide) / 2);
+            surface()->DrawSetTextPos(offsetToCenter, cps_ypos);
+        }
+        else
+        {
+            surface()->DrawSetTextPos(cps_xpos, cps_ypos);
+        }
+        surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
+    }*/
 
     // MOM_TODO: Print this only if map gamemode is supported
     if (center_stage)

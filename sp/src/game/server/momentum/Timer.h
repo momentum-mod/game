@@ -23,6 +23,11 @@ public:
     void Start(int startTick);
     // Stops the timer
     void Stop(bool);
+    // Calculates the stage count
+    // Stores the result on m_iStageCount
+    void RequestStageCount();
+    // Gets the total stage count
+    int GetStageCount() { return m_iStageCount; };
     // MOM_TODO
     // Timer does not think. We'll have to "hack" it
     void Think();
@@ -66,14 +71,17 @@ public:
     {
         checkpoints.RemoveAll();
         m_iCurrentStepCP = -1;
-        m_bUsingCPMenu = false;
+        SetUsingCPMenu(false);
     }
     // Teleports the entity to the checkpoint (menu) with the given index
     void TeleportToCP(CBasePlayer*, int);
     // Sets the current checkpoint (menu) to the desired one with that index
-    void SetCurrentCPMenuStep(int newNum) { m_iCurrentStepCP = newNum; }
-    // gets the total amount of menu checkpoints
+    void SetCurrentCPMenuStep(int pNewNum);
+    // Gets the total amount of menu checkpoints
     int GetCPCount() { return checkpoints.Size(); }
+    // Sets wheter or not we're using the CPMenu
+    // WARNING! No verification is done. It is up to the caller to don't give false information
+    void SetUsingCPMenu(bool pIsUsingCPMenu);
 
     //----- Trigger_Onehop stuff -----------------------------------------
     // Removes the given Onehop form the hopped list.
@@ -104,16 +112,15 @@ public:
     void LoadLocalTimes(const char*);
     // Saves current time to a local file
     void SaveTime();
-
     void OnMapEnd(const char *);
-
-
     // MOM_TODO: Cheat detection
+
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() { return m_bWereCheatsActivated; };
 
 private:
 
+    int m_iStageCount;
     int m_iStartTick;
     bool m_bIsRunning;
     bool m_bIsPaused;

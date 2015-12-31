@@ -34,6 +34,7 @@
     - [ ] Have more info (checkpoints, current stage/total stages, etc)
     - [ ] Only display relevant info (Per gamemode basis)
     - [ ] Implement Hud Messaging system to interact with Timer.cpp (server)
+    - [ ] Localization
     
 - [ ] hud_cp_menu.cpp (Client) 
     - [x] Make creating a checkpoint stop your timer
@@ -49,6 +50,7 @@
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking
+    - [ ] GetCPCount seems to return wrongly
     
 - [ ] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 

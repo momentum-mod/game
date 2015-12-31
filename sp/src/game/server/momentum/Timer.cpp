@@ -162,6 +162,18 @@ void CTimer::OnMapEnd(const char *pMapName)
     //MOM_TODO: onlineTimes.RemoveAll();
 }
 
+void CTimer::RequestStageCount()
+{
+    CTriggerStage *stage = (CTriggerStage *)gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
+    int iCount = 0;
+    while (stage)
+    {
+        iCount++;
+        stage = (CTriggerStage *)gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
+    }
+    m_iStageCount = iCount;
+}
+
 void CTimer::DispatchResetMessage()
 {
     CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
@@ -172,30 +184,41 @@ void CTimer::DispatchResetMessage()
 
 void CTimer::DispatchStageMessage()
 {
-    CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
-    user.MakeReliable();
-    UserMessageBegin(user, "Timer_Stage");
-    WRITE_LONG(m_pCurrentStage->GetStageNumber());
-    MessageEnd();
+    if (UTIL_GetLocalPlayer())
+    {
+        CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_Stage");
+        WRITE_LONG(m_pCurrentStage->GetStageNumber());
+        MessageEnd();
+    }
 }
 
 void CTimer::DispatchStateMessage()
 {
-    CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
-    user.MakeReliable();
-    UserMessageBegin(user, "Timer_State");
-    WRITE_BOOL(m_bIsRunning);
-    //MOM_TODO: WRITE_LONG(m_iStageCount);
-    WRITE_LONG(m_iStartTick);
-    MessageEnd();
+    if (UTIL_GetLocalPlayer())
+    {
+        CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_State");
+        WRITE_BOOL(m_bIsRunning);
+        WRITE_LONG(m_iStartTick);
+        MessageEnd();
+    }
 }
 
 void CTimer::DispatchCheckpointMessage()
 {
-    CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
-    user.MakeReliable();
-    UserMessageBegin(user, "Timer_Checkpoint");
-    MessageEnd();
+    if (UTIL_GetLocalPlayer())
+    {
+        CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_Checkpoint");
+        WRITE_BOOL(m_bUsingCPMenu);
+        WRITE_LONG(m_iCurrentStepCP);
+        WRITE_LONG(GetCPCount());
+        MessageEnd();
+    }
 }
 
 bool CTimer::IsRunning()
@@ -212,6 +235,8 @@ CTriggerTimerStart *CTimer::GetStartTrigger()
 {
     return m_pStartTrigger;
 }
+
+//--------- CPMenu stuff --------------------------------
 
 void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
 {
@@ -234,7 +259,7 @@ void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
             else if (pTrigger->GetCheckpointNumber() > m_pCurrentCheckpoint->GetCheckpointNumber())
             {
                 // This is why we want to separate this if:
-                DispatchCheckpointMessage();
+                // DispatchCheckpointMessage();
                 m_pCurrentCheckpoint = pTrigger;
             }
         }
@@ -255,6 +280,7 @@ void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
     checkpoints.AddToTail(c);
     // MOM_TODO: Check what gametype we're in, so we can determine if we should stop the timer or not
     g_Timer.SetRunning(false);
+    SetUsingCPMenu(true);
     m_iCurrentStepCP++;
 }
 
@@ -263,6 +289,8 @@ void CTimer::RemoveLastCheckpoint()
     if (checkpoints.IsEmpty()) return;
     checkpoints.Remove(m_iCurrentStepCP);
     m_iCurrentStepCP--;//If there's one element left, we still need to decrease currentStep to -1
+    if (m_iCurrentStepCP <= -1)
+        SetUsingCPMenu(false);
 }
 
 void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
@@ -270,6 +298,7 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
     if (checkpoints.IsEmpty() || !cPlayer) return;
     Checkpoint c = checkpoints[cpNum];
     cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
+    DispatchCheckpointMessage();
 }
 
 //MOM_TODO: This function isn't called, CTimer is not an entity
@@ -284,30 +313,43 @@ void CTimer::Think()
     }
 }
 
-// CTriggerOnehop
+void CTimer::SetUsingCPMenu(bool pIsUsingCPMenu)
+{
+    m_bUsingCPMenu = pIsUsingCPMenu;
+    // We notify the HUD that we've changed the status
+    // (Or attemped to)
+    DispatchCheckpointMessage();
+}
+
+void CTimer::SetCurrentCPMenuStep(int pNewNum)
+{
+    m_iCurrentStepCP = pNewNum;
+    DispatchCheckpointMessage();
+}
+
+//--------- CTriggerOnehop stuff --------------------------------
+
 int CTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger)
 {
     return onehops.AddToTail(pTrigger);
 }
 
-// CTriggerOnehop
 bool CTimer::RemoveOnehopFromList(CTriggerOnehop *pTrigger)
 {
     return onehops.FindAndRemove(pTrigger);
 }
 
-// CTriggerOnehop
 int CTimer::FindOnehopOnList(CTriggerOnehop *pTrigger)
 {
     return onehops.Find(pTrigger);
 }
 
-// CTriggerOnehop
 CTriggerOnehop *CTimer::FindOnehopOnList(int pIndexOnList)
 {
     return onehops.Element(pIndexOnList);
 }
 
+//--------- Commands --------------------------------
 
 class CTimerCommands
 {
