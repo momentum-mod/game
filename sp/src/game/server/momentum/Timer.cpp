@@ -20,10 +20,7 @@ void CTimer::PostTime()
 {
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
-        // Necesary so TimeDisplay scoreboard knows it has to update;
-        IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
-        if (postEvent)
-            gameeventmanager->FireEvent(postEvent);
+        
         //Get required info 
         //MOM_TODO include the extra security measures for beta+
         uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
@@ -41,7 +38,7 @@ void CTimer::PostTime()
         char webURL[512];
         Q_snprintf(webURL, 512, "http://momentum-mod.org/postscore/%llu/%s/%i/%s", steamID, map,
             ticks, tickRate == 0.01f ? "100" : "66");//FIXME
-        
+
         DevLog("Ticks sent to server: %i\n", ticks);
 
         //Build request
@@ -173,12 +170,22 @@ void CTimer::DispatchResetMessage()
     MessageEnd();
 }
 
+void CTimer::DispatchStageMessage()
+{
+    CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+    user.MakeReliable();
+    UserMessageBegin(user, "Timer_Stage");
+    WRITE_LONG(m_pCurrentStage->GetStageNumber());
+    MessageEnd();
+}
+
 void CTimer::DispatchStateMessage()
 {
     CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
     user.MakeReliable();
     UserMessageBegin(user, "Timer_State");
     WRITE_BOOL(m_bIsRunning);
+    //MOM_TODO: WRITE_LONG(m_iStageCount);
     WRITE_LONG(m_iStartTick);
     MessageEnd();
 }
@@ -204,32 +211,6 @@ void CTimer::SetRunning(bool running)
 CTriggerTimerStart *CTimer::GetStartTrigger()
 {
     return m_pStartTrigger;
-}
-
-// Im not sure if this leaks memory or not
-CTriggerCheckpoint *CTimer::GetCheckpointAt(int checkpointNumber)
-{
-    CBaseEntity* pEnt = gEntList.FindEntityByClassname(NULL, "trigger_timer_checkpoint");
-    while (pEnt)
-    {
-        CTriggerCheckpoint* pTrigger = dynamic_cast<CTriggerCheckpoint*>(pEnt);
-        if (pTrigger->GetCheckpointNumber() == checkpointNumber)
-        {
-            return pTrigger;
-        }
-        pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_timer_checkpoint");
-    }
-    return NULL;
-}
-
-CTriggerCheckpoint *CTimer::GetCurrentCheckpoint()
-{
-    return m_pCurrentCheckpoint;
-}
-
-void CTimer::SetStartTrigger(CTriggerTimerStart *pTrigger)
-{
-    m_pStartTrigger = pTrigger;
 }
 
 void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
@@ -337,24 +318,20 @@ public:
         // if the ent no longer exists this will crash
         // should probably use a handle or something
         CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-        if (cPlayer != NULL)
+        CTriggerTimerStart *start;
+        if ((start = g_Timer.GetStartTrigger()) != NULL && cPlayer)
         {
-            CTriggerTimerStart *start;
-            if ((start = g_Timer.GetStartTrigger()) != NULL)
-            {
-                UTIL_SetOrigin(cPlayer, start->WorldSpaceCenter(), true);
-                cPlayer->SetAbsVelocity(vec3_origin);
-            }
+            cPlayer->Teleport(&start->WorldSpaceCenter(), NULL, &vec3_origin);
         }
     }
 
     static void ResetToCheckpoint()
     {
-        CTriggerCheckpoint *checkpoint;
-        if ((checkpoint = g_Timer.GetCurrentCheckpoint()) != NULL)
+        CTriggerStage *stage;
+        CBaseEntity* pPlayer = UTIL_GetLocalPlayer();
+        if ((stage = g_Timer.GetCurrentStage()) != NULL && pPlayer)
         {
-            UTIL_SetOrigin(UTIL_GetLocalPlayer(), checkpoint->WorldSpaceCenter(), true);
-            UTIL_GetLocalPlayer()->SetAbsVelocity(vec3_origin);
+            pPlayer->Teleport(&stage->WorldSpaceCenter(), NULL, &vec3_origin);
         }
     }
 
@@ -416,8 +393,8 @@ public:
     }
 };
 
-static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the run");
-static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the last checkpoint");
+static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n");
+static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n");
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE);
 
 CTimer g_Timer;

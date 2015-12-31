@@ -10,58 +10,101 @@
 // CBaseMomentumTrigger
 class CBaseMomentumTrigger : public CTriggerMultiple
 {
-	DECLARE_CLASS(CBaseMomentumTrigger, CTriggerMultiple);
+    DECLARE_CLASS(CBaseMomentumTrigger, CTriggerMultiple);
 
 public:
-	virtual void Spawn();
+    virtual void Spawn();
 };
 
 // CTriggerTimerStop
 class CTriggerTimerStop : public CBaseMomentumTrigger
 {
-	DECLARE_CLASS(CTriggerTimerStop, CBaseMomentumTrigger);
+    DECLARE_CLASS(CTriggerTimerStop, CBaseMomentumTrigger);
 
 public:
-	void StartTouch(CBaseEntity*);
+    void StartTouch(CBaseEntity*);
 };
 
-// CTriggerCheckpoint
-class CTriggerCheckpoint : public CBaseMomentumTrigger
+// CTriggerTeleportEnt
+class CTriggerTeleportEnt : public CBaseMomentumTrigger
 {
-	DECLARE_CLASS(CTriggerCheckpoint, CBaseMomentumTrigger);
-	DECLARE_DATADESC();
+    DECLARE_CLASS(CTriggerTeleportEnt, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
 
 public:
-	void StartTouch(CBaseEntity*);
-	int GetCheckpointNumber();
-	void SetCheckpointNumber(int);
+    //This void teleports the touching entity!
+    void StartTouch(CBaseEntity*);
+    // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
+    void SetDestinationEnt(CBaseEntity *ent) { pDestinationEnt = ent; }
+    bool ShouldStopPlayer() { return m_bResetVelocity; }
+    bool ShouldResetAngles() { return m_bResetAngles; }
+    void SetShouldStopPlayer(bool newB) { m_bResetVelocity = newB; }
+    void SetShouldResetAngles(bool newB) { m_bResetAngles = newB; }
 
 private:
-	int m_iCheckpointNumber;
+    bool m_bResetVelocity;
+    bool m_bResetAngles;
+    CBaseEntity *pDestinationEnt;
+};
+
+// CTriggerCheckpoint, used by mappers for teleporting 
+class CTriggerCheckpoint : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerCheckpoint, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+public:
+    void StartTouch(CBaseEntity*);
+    // the following is only used by CFilterCheckpoint
+    int GetCheckpointNumber() { return m_iCheckpointNumber; }
+    // The following is used by mapzones.cpp
+    void SetCheckpointNumber(int newInt) { m_iCheckpointNumber = newInt; }
+
+private:
+    int m_iCheckpointNumber;
+};
+
+// CTriggerStage
+// used to declare which major part of the map the player has gotten to
+class CTriggerStage : public CTriggerCheckpoint
+{
+    DECLARE_CLASS(CTriggerStage, CTriggerCheckpoint);
+    DECLARE_DATADESC();
+
+public:
+    void StartTouch(CBaseEntity*);
+    //Used by CTimer and CStageFilter
+    int GetStageNumber() { return m_iStageNumber; }
+    void SetStageNumber(int newInt) { m_iStageNumber = newInt; }
+    int GetCheckpointNumber() { return -1; }//Override, use GetStageNumber()
+
+private:
+    int m_iStageNumber;
 };
 
 // CTriggerTimerStart
-class CTriggerTimerStart : public CTriggerCheckpoint
+class CTriggerTimerStart : public CTriggerStage
 {
-    DECLARE_CLASS(CTriggerTimerStart, CTriggerCheckpoint);
-	DECLARE_DATADESC();
+    DECLARE_CLASS(CTriggerTimerStart, CTriggerStage);
+    DECLARE_DATADESC();
 
 public:
     void EndTouch(CBaseEntity*);
     void StartTouch(CBaseEntity*);
-	void Spawn();
-	// The start is always the first checkpoint: 0
-    int GetCheckpointNumber() { return 0; }
-	float GetMaxLeaveSpeed() { return m_fMaxLeaveSpeed; }
-	void SetMaxLeaveSpeed(float pMaxSpeed);
-	bool GetIsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
-	void SetIsLimitingSpeed(bool pIsLimitingSpeed);
+    void Spawn();
+    // The start is always the first stage/checkpoint
+    int GetCheckpointNumber() { return -1; }//Override
+    int GetStageNumber() { return 1; }
+    float GetMaxLeaveSpeed() { return m_fMaxLeaveSpeed; }
+    void SetMaxLeaveSpeed(float pMaxSpeed);
+    bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
+    void SetIsLimitingSpeed(bool pIsLimitingSpeed);
 
 private:
-	// How fast can the player leave the start trigger?
-	float m_fMaxLeaveSpeed = 280;
-	// Limit max leave speed to m_fMaxLeaveSpeed?
-	const int SF_LIMIT_LEAVE_SPEED = 0x2;
+    // How fast can the player leave the start trigger?
+    float m_fMaxLeaveSpeed = 280;
+    // Limit max leave speed to m_fMaxLeaveSpeed?
+    const int SF_LIMIT_LEAVE_SPEED = 0x2;
 
 };
 
@@ -80,134 +123,64 @@ private:
 };
 
 // CTriggerTeleportCheckpoint
-class CTriggerTeleportCheckpoint : public CBaseMomentumTrigger
+class CTriggerTeleportCheckpoint : public CTriggerTeleportEnt
 {
-	DECLARE_CLASS(CTriggerTeleportCheckpoint, CBaseMomentumTrigger);
-	DECLARE_DATADESC();
+    DECLARE_CLASS(CTriggerTeleportCheckpoint, CTriggerTeleportEnt);
 
 public:
-	void StartTouch(CBaseEntity*);
-	int GetDestinationCheckpointNumber() { return m_iCheckpointNumber; }
-	bool GetShouldStopPlayer() { return m_bResetVelocity; };
-	// -1: Current checkpoint
-	// Default: Checkpoint with pNewNumber index
-	void SetDestinationCheckpointNumber(int);
-	void SetDestinationCheckpointName(string_t);
-	string_t GetDestinationCheckpointName() { return m_sLinkedTriggerName; };
-	void SetShouldStopPlayer(bool);
-	void Spawn();
-
-private:
-	// Where to teleport the player.
-	// -1: Current checkpoint
-	// Default: Checkpoint with that index
-	int m_iCheckpointNumber;
-	// Should the player be stopped after teleport?
-	bool m_bResetVelocity = false;
-	// Linked Trigger (If desired trigger is not dynamic)
-	CBaseMomentumTrigger *m_eLinkedTrigger;
-	// Name of the linked trigger (We search for the one with this name if it's set)
-	// If it's not set, m_iCheckpointNumber is used
-	string_t m_sLinkedTriggerName;
-
-protected:
-	// Are we using the linked entity variable?
-	bool m_bUsingLinked = false;
-
+    void StartTouch(CBaseEntity*);
 };
 
 // CTriggerOnehop
-class CTriggerOnehop : public CBaseMomentumTrigger
+class CTriggerOnehop : public CTriggerTeleportEnt
 {
-	DECLARE_CLASS(CTriggerOnehop, CBaseMomentumTrigger);
-	DECLARE_DATADESC();
+    DECLARE_CLASS(CTriggerOnehop, CTriggerTeleportEnt);
+    DECLARE_DATADESC();
 
 public:
-	void StartTouch(CBaseEntity*);
-	int GetDestinationIndex() { return m_iDestinationCheckpointNumber; }
-	bool GetShouldStopPlayer() { return m_bResetVelocity; }
-	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
-	void SetDestinationIndex(int pNewIndex);
-	void SetDestinationName(string_t);
-	string_t GetDestinationName() { return m_sLinkedTriggerName; };
-	void SetShouldStopPlayer(bool pShouldStop);
-	void SetHoldTeleportTime(float pHoldTime);
+    void StartTouch(CBaseEntity*);
+    float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
+    void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think();
-    void HandleTeleport(CBaseEntity*);
-	void Spawn();
 
 private:
-	// Should the player be stopped after teleport?
-	bool m_bResetVelocity = true;
     // The time that the player initally touched the trigger
-    float m_fStartTouchedTime = 0;
-	// Seconds to hold before activating the teleport
-	float m_fMaxHoldSeconds = 1;
-	// Where to teleport the player if it becomes active
-	int m_iDestinationCheckpointNumber = -1;
+    float m_fStartTouchedTime = 0.0f;
+    // Seconds to hold before activating the teleport
+    float m_fMaxHoldSeconds = 1;
     // Reset hop state if player hops onto another different onehop
-    const int SF_TELEPORT_RESET_ONEHOP = 0x2;	
-	// Linked Trigger (If desired trigger is not dynamic)
-	CBaseMomentumTrigger *m_eLinkedTrigger;
-	// Name of the linked trigger (We search for the one with this name if it's set)
-	// If it's not set, m_iDestinationCheckpointNumber is used
-	string_t m_sLinkedTriggerName;
-
-protected:
-	// Are we using the linked entity variable?
-	bool m_bUsingLinked = false;
+    const int SF_TELEPORT_RESET_ONEHOP = 0x2;
 
 };
 
 // CTriggerResetOnehop
 class CTriggerResetOnehop : public CBaseMomentumTrigger
 {
-	DECLARE_CLASS(CTriggerResetOnehop, CBaseMomentumTrigger);
+    DECLARE_CLASS(CTriggerResetOnehop, CBaseMomentumTrigger);
 
 public:
-	void StartTouch(CBaseEntity*);
+    void StartTouch(CBaseEntity*);
 
 };
 
 // CTriggerMultihop
-class CTriggerMultihop : public CBaseMomentumTrigger
+class CTriggerMultihop : public CTriggerTeleportEnt
 {
-	DECLARE_CLASS(CTriggerMultihop, CBaseMomentumTrigger);
-	DECLARE_DATADESC();
+    DECLARE_CLASS(CTriggerMultihop, CTriggerTeleportEnt);
+    DECLARE_DATADESC();
 
 public:
-	void StartTouch(CBaseEntity*);
-	void EndTouch(CBaseEntity*);
-	int GetDestinationIndex() { return m_iDestinationCheckpointNumber; }
-	bool GetShouldStopPlayer() { return m_bResetVelocity; }
-	float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
-	void SetDestinationIndex(int pNewIndex);
-	void SetDestinationName(string_t);
-	string_t GetDestinationName() { return m_sLinkedTriggerName; };
-	void SetShouldStopPlayer(bool pShouldStop);
-	void SetHoldTeleportTime(float pHoldTime);
-	void Think();
-	void HandleTeleport(CBaseEntity*);
-	void Spawn();
+    void StartTouch(CBaseEntity*);
+    void EndTouch(CBaseEntity*);
+    float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
+    void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
+    void Think();
 
 private:
-	// Should the player be stopped after teleport?
-	bool m_bResetVelocity = true;
-	// The time that the player initally touched the trigger. -1 if not checking for teleport
-	float m_fStartTouchedTime = 0;
-	// Seconds to hold before activating the teleport
-	float m_fMaxHoldSeconds = 1;
-	// Where to teleport the player if it becomes active.
-	int m_iDestinationCheckpointNumber = -1;
-	// Linked Trigger (If desired trigger is not dynamic)
-	CBaseMomentumTrigger *m_eLinkedTrigger;
-	// Name of the linked trigger (We search for the one with this name if it's set)
-	// If it's not set, m_iDestinationCheckpointNumber is used
-	string_t m_sLinkedTriggerName;
-
-protected:
-	// Are we using the linked entity variable?
-	bool m_bUsingLinked = false;
+    // The time that the player initally touched the trigger. -1 if not checking for teleport
+    float m_fStartTouchedTime = 0.0f;
+    // Seconds to hold before activating the teleport
+    float m_fMaxHoldSeconds = 1;
 
 };
 
@@ -227,7 +200,7 @@ public:
 
 private:
     int m_ButtonRep;
-    
+
 };
 
 #endif // TIMERTRIGGERS_H

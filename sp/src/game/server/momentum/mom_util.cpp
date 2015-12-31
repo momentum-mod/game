@@ -39,6 +39,11 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     DevLog("PostTimeCallback response: %s\n", reinterpret_cast<char*>(pData));
     //MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
 
+    // Necesary so TimeDisplay scoreboard knows it has to update;
+    IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
+    if (postEvent)
+        gameeventmanager->FireEvent(postEvent);
+
     //Last but not least, free resources
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }

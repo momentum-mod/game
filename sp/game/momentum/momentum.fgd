@@ -1,23 +1,29 @@
 @include "base.fgd"
 
-// Override trigger_teleport to allow showing the field "Stop player?"
-@SolidClass base(Trigger) = trigger_teleport : 
-	"A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination, and have their angles "+
-	"set to that of the Remote Destination's. If a Local Destination Landmark is specified, teleported entities are offset from the target "+
-	"by their initial offset from the landmark, and their angles are left alone."
+@BaseClass base(Trigger) = TeleTrigger
 [
-	target(target_destination) : "Remote Destination" : : "The entity specifying the point to which entities should be teleported."
-	landmark(target_destination) : "Local Destination Landmark" : : "If specified, then teleported entities are offset from the target by their initial offset from the landmark."
-	stop(choices) : "Stop player on teleport" : 0 = 
-	[
-		0 : "False"
-		1 : "True"
-	]
-	spawnflags(flags) =
-	[
-		32: "Preserve angles even when a local landmark is not specified" : 0
-	]
-] 
+    target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
+    
+    stop(choices) : "Stop player on teleport" : 1 = 
+    [
+        0 : "False"
+        1 : "True"
+    ]
+    
+    resetang(choices) : "Reset the player angles on teleport" : 1 =
+    [
+        0 : "False"
+        1 : "True"
+    ]
+]
+
+@BaseClass base(TeleTrigger) = HopTrigger
+[
+    hold(float) : "Time teleport delay" : 1.0 : "If the player is in this trigger for longer than this (in seconds), teleport them to the most recent checkpoint."
+]
+
+@SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
+    "The entity can have its Angles and Velocity reset by boolean settings." []
 
 // Do we really need this one?
 @BaseClass color(0 0 200) base(Targetname, Angles) = Weapon
@@ -31,64 +37,42 @@
 	output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
 ]
 
-@SolidClass base(Trigger) = trigger_timer_start : "Trigger that starts the timer." 
+@SolidClass base(Trigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
 [
-	leavespeed(integer) : "Max leave speed" : 280 : "Max speed the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set"
+	leavespeed(float) : "Max leave speed" : 290 : "Max speed (Units Per Second) the player will be able to leave the trigger if LIMIT LEAVE SPEED flag is set."
 	spawnflags(flags) =
 	[
 		2 : "Limit leave speed" : 1
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_timer_stop : "Trigger that stops the timer." []
+@SolidClass base(Trigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." []
 
-@SolidClass base(Trigger) = trigger_timer_checkpoint : "Trigger that saves current position."
+@SolidClass base(Trigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!"
 [
-	checkpoint(integer) : "Checkpoint Number" : 1 : "The checkpoint number (stage) that this trigger correlates to. (0 is automatically the start trigger!)"
+    stage(integer) : "Stage Number" : 2 : "The stage number that correlates to the part of map. 1 is automatically set by "
 ]
 
-@SolidClass base(Trigger) = trigger_timer_checkpoint_teleport : "Trigger that teleports to the desired checkpoint."
+@SolidClass base(Trigger) = trigger_momentum_timer_checkpoint : "Trigger that saves current position. Used by trigger_momentum_teleport_checkpoint." 
 [
-	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
-	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint."
-	stop(choices) : "Stop player on teleport" : 0 = 
-	[
-		0 : "False"
-		1 : "True"
-	]
+    checkpoint(integer) : "Checkpoint Number" : -1 : "An optional number to assign to this checkpoint, used by filter_activator_checkpoint."
 ]
 
-@SolidClass base(Trigger) = trigger_timer_resetonehop : "Trigger that resets one hops." []
+@SolidClass base(TeleTrigger) = trigger_momentum_teleport_checkpoint : "Trigger that teleports to the last trigger_momentum_timer_checkpoint." []
 
-@SolidClass base(Trigger) = trigger_timer_onehop : "Trigger that only allows for one hop."
+@SolidClass base(Trigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." []
+
+@SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that only allows for one hop."
 [
-	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
-	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
-	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
-	stop(choices) : "Stop player on teleport" : 0 = 
-	[
-		0 : "False"
-		1 : "True"
-	]
 	spawnflags(flags) =
 	[
 		2 : "Reset hop state if player hops onto another different onehop" : 1
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_timer_multihop : "Trigger that allows for multiple hops, as long as the player hops."
-[
-	checkpointname(target_destination) : "Checkpoint to teleport to" : "" : "The checkpoint (stage) that this trigger correlates to. If empty, it fall backs to Checkpoint Number method"
-	checkpoint(integer) : "Checkpoint Number" : -1 : "The checkpoint number (stage) that this trigger correlates to. If -1, it teleports to the latest checkpoint.(0 (-2 also works) for StartTrigger)"
-	hold(float) : "Time teleport delay" : 1 : "If the player is in this trigger for longer than this, teleport him to Checkpoint Number checkpoint"
-	stop(choices) : "Stop player on teleport" : 0 = 
-	[
-		0 : "False"
-		1 : "True"
-	]
-]
+@SolidClass base(HopTrigger) = trigger_momentum_multihop : "Trigger that allows for multiple hops, as long as the player hops." []
 
-@SolidClass base(Trigger) = trigger_userinput : "Trigger that fires on user KeyPress if inside trigger."
+@SolidClass base(Trigger) = trigger_momentum_userinput : "Trigger that fires on user KeyPress if inside trigger."
 [
 	output OnKeyPressed(void) : "Fires when the desired key is pressed"
 	lookedkey(choices) : "Key that fires" : "Forward" =
@@ -100,9 +84,9 @@
 	]
 ]
 
-@FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at the given checkpoint or not."
+@FilterClass base(Targetname) = filter_activator_checkpoint : "Filter that checks to see if the player is at or above the given checkpoint number."
 [
-	checkpoint(integer) : "Minimum req. checkpoint" : 0 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator. (0 is start!)"
+	checkpoint(integer) : "Minimum req. checkpoint" : -2 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator."
 ]
 
 // NOT IMPLEMENTED YET
@@ -144,4 +128,4 @@
 	input SetExcluded( string ) : "Change the NPC class excluded from collisions"
 	input SetInvert( integer ) : "Set the state of invversion for NPC class exclusion (0 or 1)"
 ]
-@PointClass base(Weapon) studio("models/weapons/w_rif_ak47.mdl") = weapon_momentum_gun : "Base Momentum Gun" []
+

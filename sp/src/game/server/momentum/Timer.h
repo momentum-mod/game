@@ -13,6 +13,7 @@
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
 class CTriggerOnehop;
+class CTriggerStage;
 
 class CTimer
 {
@@ -28,31 +29,34 @@ public:
     void DispatchStateMessage();
     void DispatchResetMessage();
     void DispatchCheckpointMessage();
+    void DispatchStageMessage();
     // Is the timer running?
     bool IsRunning();
     // Set the running status of the timer
     void SetRunning(bool running);
     // Gets the current starting trigger
     CTriggerTimerStart *GetStartTrigger();
-    // Gets the current stage checkpoint
-    CTriggerCheckpoint *GetCurrentCheckpoint();
-    CTriggerCheckpoint *GetCheckpointAt(int checkpointNumber);
-    // Seths the given trigger as the start trigger
-    void SetStartTrigger(CTriggerTimerStart *pTrigger);
-    // Sets the current checkpoint (stage) as the current checkpoint
-    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger);
-    // gets the current menu checkpoint index
-    int GetCurrentCPMenuStep()
-    {
-        return m_iCurrentStepCP;
-    }
-    //For leaderboard use later on
-    bool IsUsingCPMenu()
-    {
-        return m_bUsingCPMenu;
-    }
-    // CheckpointMenu stuff
+    // Gets the current checkpoint
+    CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint; }
 
+    // Sets the given trigger as the start trigger
+    void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger = pTrigger; }
+
+    // Sets the current checkpoint
+    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger);
+
+    void SetCurrentStage(CTriggerStage *pTrigger) 
+    { 
+        m_pCurrentStage = pTrigger; 
+        DispatchStageMessage();
+    }
+    CTriggerStage *GetCurrentStage() { return m_pCurrentStage; }
+
+    //--------- CheckpointMenu stuff --------------------------------
+    // Gets the current menu checkpoint index
+    int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
+    // MOM_TODO: For leaderboard use later on
+    bool IsUsingCPMenu() { return m_bUsingCPMenu; }
     // Creates a checkpoint (menu) on the location of the given Entity
     void CreateCheckpoint(CBasePlayer*);
     // Removes last checkpoint (menu) form the checkpoint lists
@@ -67,17 +71,11 @@ public:
     // Teleports the entity to the checkpoint (menu) with the given index
     void TeleportToCP(CBasePlayer*, int);
     // Sets the current checkpoint (menu) to the desired one with that index
-    void SetCurrentCPMenuStep(int newNum)
-    {
-        m_iCurrentStepCP = newNum;
-    }
+    void SetCurrentCPMenuStep(int newNum) { m_iCurrentStepCP = newNum; }
     // gets the total amount of menu checkpoints
-    int GetCPCount()
-    {
-        return checkpoints.Size();
-    }
-    // Trigger_Onehop stuff
+    int GetCPCount() { return checkpoints.Size(); }
 
+    //----- Trigger_Onehop stuff -----------------------------------------
     // Removes the given Onehop form the hopped list.
     // Returns: True if deleted, False if not found.
     bool RemoveOnehopFromList(CTriggerOnehop* pTrigger);
@@ -93,20 +91,24 @@ public:
     int GetOnehopListCount() { return onehops.Count(); }
     // Finds the onehop with the given index on the list
     CTriggerOnehop* FindOnehopOnList(int pIndexOnList);
-    //Online-related timer commands
 
+
+    //-------- Online-related timer commands -----------------------------
     // Tries to post the current time.
     void PostTime();
     //MOM_TODO: void LoadOnlineTimes();
-    //Local-related timer commands
 
+
+    //------- Local-related timer commands -------------------------------
     // Loads local times from given map name
     void LoadLocalTimes(const char*);
     // Saves current time to a local file
     void SaveTime();
-    void OnMapEnd(const char *);
-    // Cheat detection
 
+    void OnMapEnd(const char *);
+
+
+    // MOM_TODO: Cheat detection
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() { return m_bWereCheatsActivated; };
 
@@ -119,6 +121,7 @@ private:
     ConVar *m_cCheats;
     CTriggerTimerStart *m_pStartTrigger;
     CTriggerCheckpoint *m_pCurrentCheckpoint;
+    CTriggerStage      *m_pCurrentStage;
 
     struct Time
     {
