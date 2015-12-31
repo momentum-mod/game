@@ -33,6 +33,7 @@
     - [ ] Feed real data for the hud
     - [ ] Have more info (checkpoints, current stage/total stages, etc)
     - [ ] Only display relevant info (Per gamemode basis)
+    - [ ] Implement Hud Messaging system to interact with Timer.cpp (server)
     
 - [ ] hud_cp_menu.cpp (Client) 
     - [x] Make creating a checkpoint stop your timer
@@ -44,6 +45,7 @@
 
 - [ ] TimeTriggers.cpp (Server)
     - [ ] Tweak limit speed method
+    - [ ] Implement Hud Messaging system to interact with timer.cpp (client)
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking
