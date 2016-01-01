@@ -45,12 +45,12 @@ void RegisterUserMessages( void )
 	usermessages->Register( "LogoTimeMsg", 4 );
 	usermessages->Register( "AchievementEvent", -1 );
 	usermessages->Register( "UpdateJalopyRadar", -1 );
-	usermessages->Register( "Timer_State", 5);
+	usermessages->Register( "Timer_State", -1);
 	usermessages->Register( "Timer_PauseTime", -1);
-	usermessages->Register( "Timer_Reset", 0);
-	usermessages->Register( "Timer_Checkpoint", 9);
-    usermessages->Register( "Timer_Stage", 4);
-    usermessages->Register( "Timer_StageCount", 4);
+	usermessages->Register( "Timer_Reset", -1);
+	usermessages->Register( "Timer_Checkpoint", -1);
+    usermessages->Register( "Timer_Stage", -1);
+    usermessages->Register("Timer_StageCount", -1);
 
 #ifndef _X360
 	// NVNT register haptic user messages

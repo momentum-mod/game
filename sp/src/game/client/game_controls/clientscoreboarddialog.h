@@ -81,8 +81,8 @@ protected:
 	virtual int GetAdditionalHeight() { return 0; }
 
 	// sorts players within a section
+	static bool StaticPlayerSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
-    static bool StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
 
 	virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 
@@ -103,19 +103,11 @@ protected:
 	void MoveLabelToFront(const char *textEntryName);
 	void MoveToCenterOfScreen();
 
-	vgui::ImageList	*m_pImageList;
-    vgui::Panel *m_pHeader;
-    vgui::Panel *m_pPlayerStats;
-    vgui::Panel *m_pLeaderboards;
-    vgui::Label *m_lMapSummary;
-    vgui::Label *m_lPlayerName;
-    vgui::Label *m_lPlayerMapRank;
-    vgui::Label *m_lPlayerGlobalRank;
-    vgui::SectionedListPanel *m_pOnlineLeaderboards;
-    vgui::SectionedListPanel *m_pLocalLeaderboards;
-    vgui::SectionedListPanel *m_pFriendsLeaderboards;
-    vgui::ImagePanel *m_pPlayerAvatar;
-    vgui::ImagePanel *m_pMomentumLogo;
+	vgui::ImageList				*m_pImageList;
+    vgui::Panel *m_pHeader, *m_pPlayerStats, *m_pLeaderboards;
+    vgui::Label *m_lMapSummary, *m_lPlayerName, *m_lPlayerMapRank, *m_lPlayerGlobalRank;
+    vgui::SectionedListPanel *m_pOnlineLeaderboards, *m_pLocalBests;
+    vgui::ImagePanel *m_pPlayerAvatar, *m_pMomentumLogo;
     
 
 	CUtlMap<CSteamID,int>		m_mapAvatarsToImageList;

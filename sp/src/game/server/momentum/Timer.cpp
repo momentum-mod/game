@@ -180,6 +180,7 @@ void CTimer::RequestStageCount()
         stage = (CTriggerStage *) gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
     }
     m_iStageCount = iCount;
+    Log("The m_iStageCount is %i\n", m_iStageCount);
 }
 
 void CTimer::DispatchResetMessage()
@@ -222,6 +223,7 @@ void CTimer::DispatchCheckpointMessage()
     CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
     if (cPlayer)
     {
+        Log("SENDING CHECKPOINT MESSAGE! %s %i %i\n", m_bUsingCPMenu ? "t" : "f", m_iCurrentStepCP + 1, GetCPCount());
         CSingleUserRecipientFilter user(cPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "Timer_Checkpoint");
@@ -245,7 +247,7 @@ void CTimer::DispatchStageCountMessage()
     }
 }
 
-CON_COMMAND_F(hud_timer_request_stages, "",FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
 {
     g_Timer.DispatchStageCountMessage();
 }
@@ -438,10 +440,9 @@ public:
         g_Timer.DispatchCheckpointMessage();
     }
 };
-// MOM_TODO: Command flags?
 
-static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n", FCVAR_NONE);
-static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n", FCVAR_NONE);
+static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n");
+static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n");
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE);
 
 CTimer g_Timer;
