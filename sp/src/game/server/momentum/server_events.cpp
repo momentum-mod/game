@@ -32,9 +32,9 @@ namespace Momentum
         zones = new CMapzoneData(pMapName);
         zones->SpawnMapZones();
 
-        //Load times
-        g_Timer.LoadLocalTimes(pMapName);
-        //MOM_TODO: g_Timer.LoadOnlineTimes();
+        //Setup timer
+        g_Timer.OnMapStart(pMapName);
+        
     }
 
     void OnMapEnd(const char *pMapName)

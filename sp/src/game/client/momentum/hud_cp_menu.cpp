@@ -58,6 +58,7 @@ CON_COMMAND(showCPmenu, "Opens the Checkpoint Menu.\n")
 	C_CP_Menu *cpMenu = (C_CP_Menu *)gHUD.FindElement("C_CP_Menu");
 	if (!cpMenu || cpMenu->ShouldDraw()) return;
 	else {
+        engine->ServerCmd("cpmenu");
 		KeyValues* pKv = new KeyValues("CP Menu");
 		pKv->AddSubKey(new KeyValues("#MOM_Menu_CreateCP"));
 		pKv->AddSubKey(new KeyValues("#MOM_Menu_ToPreviousCP"));
@@ -104,15 +105,10 @@ void C_CP_Menu::SelectMenuItem(int menu_item)
 	{
 		cPlayer->EmitSound("Momentum.UIMenuSelection");
 	}
-	switch (menu_item)
-	{
-	case 0://exit
-		HideMenu();
-		break; 
-	default:
-		engine->ServerCmd(VarArgs("cpmenu %i", menu_item));//it was either this or a hudmessage
-		break;
-	}
+    if (menu_item == 0)
+        HideMenu();
+
+    engine->ServerCmd(VarArgs("cpmenu %i", menu_item));
 }
 
 int	C_CP_Menu::KeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)

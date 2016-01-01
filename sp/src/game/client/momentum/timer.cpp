@@ -18,8 +18,8 @@ using namespace vgui;
 #include "vgui_helpers.h"
 
 #define BUFSIZETIME (sizeof("00:00:00.0000")+1)
-#define BUFSIZECPS (sizeof("Checkpoint 0000 of 0000")+1)
-#define BUFSIZESTAGE (sizeof("Stage 0000 of 0000")+1)
+#define BUFSIZECPS (sizeof("Checkpoint 000/000")+1)
+#define BUFSIZESTAGE (sizeof("Stage 000/000")+1)
 
 static ConVar bla_timer("mom_timer", "1",
     FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
@@ -45,6 +45,7 @@ public:
 	void MsgFunc_Timer_Reset(bf_read &msg);
 	void MsgFunc_Timer_Checkpoint(bf_read &msg);
     void MsgFunc_Timer_Stage(bf_read &msg);
+    void MsgFunc_Timer_StageCount(bf_read&);
 	virtual void Paint();
 	int GetCurrentTime();
 	bool m_bIsRunning;
@@ -52,6 +53,7 @@ public:
 
 private:
     int m_iStageCurrent;
+    int m_iStageCount;
 	int initialTall;
 	wchar_t m_pwCurrentTime[BUFSIZETIME];
     char m_pszString[BUFSIZETIME];
@@ -104,6 +106,7 @@ DECLARE_HUD_MESSAGE(C_Timer, Timer_State);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Stage);
+DECLARE_HUD_MESSAGE(C_Timer, Timer_StageCount);
 
 C_Timer::C_Timer(const char *pElementName) :
 CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
@@ -120,6 +123,7 @@ void C_Timer::Init()
 	HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
 	HOOK_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Stage);
+    HOOK_HUD_MESSAGE(C_Timer, Timer_StageCount);
 	initialTall = 48;
 	m_iTotalTicks = 0;
 	//Reset();
@@ -133,6 +137,8 @@ void C_Timer::Reset()
 
 void C_Timer::OnThink() 
 {
+    if (m_iStageCount == 0)
+        engine->ServerCmd("hud_timer_request_stages");
     // Cheat detection moved to server Timer.cpp
 }
 
@@ -140,7 +146,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
 	bool started = msg.ReadOneBit();
 	m_bIsRunning = started;
-	m_iStartTick = (int)msg.ReadLong();
+	m_iStartTick = (int) msg.ReadLong();
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	if (!pPlayer)
 		return;
@@ -189,12 +195,18 @@ void C_Timer::MsgFunc_Timer_Checkpoint(bf_read &msg)
     m_bShowCheckpoints = msg.ReadOneBit();
     m_iCheckpointCurrent = (int)msg.ReadLong();
     m_iCheckpointCount = (int)msg.ReadLong();
+    Log("RECIEVED MSGFUNC! %s %i %i\n", m_bShowCheckpoints ? "t" : "f", m_iCheckpointCurrent, m_iCheckpointCount);
 }
 
 void C_Timer::MsgFunc_Timer_Stage(bf_read &msg)
 {
     m_iStageCurrent = (int)msg.ReadLong();
     //g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
+}
+
+void C_Timer::MsgFunc_Timer_StageCount(bf_read &msg)
+{
+    m_iStageCount = (int) msg.ReadLong();
 }
 
 int C_Timer::GetCurrentTime() 
@@ -223,20 +235,27 @@ void C_Timer::Paint(void)
         m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 
     // MOM_TODO: Localize this
-
     if (m_bShowCheckpoints)
     {
-        Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "Checkpoint %i of %i",
-            m_iCheckpointCount, //CurrentCP
-            m_iCheckpointCurrent //CPCount
+        Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "Checkpoint %i/%i",
+            m_iCheckpointCurrent, //CurrentCP
+            m_iCheckpointCount //CPCount
             );
         g_pVGuiLocalize->ConvertANSIToUnicode(
             m_pszStringCps, m_pwCurrentCheckpoints, sizeof(m_pwCurrentCheckpoints));
     }
-
-    Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "Stage %i",
-        m_iStageCurrent // Current Stage
-        );
+    if (m_iStageCount > 1)
+    {
+        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "Stage %i/%i",
+            m_iStageCurrent, // Current Stage
+            m_iStageCount // Total number of stages
+            );
+    }
+    else
+    {
+        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "Linear map");
+    }
+    
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringStages, m_pwCurrentStages, sizeof(m_pwCurrentStages));
 	
@@ -266,8 +285,8 @@ void C_Timer::Paint(void)
     }
 	surface()->DrawPrintText(m_pwCurrentTime, wcslen(m_pwCurrentTime));
 
-    // MOM_TODO: CPCount is not reporting correctly. Hidden until it's fixed
-   /* if (m_bShowCheckpoints)
+    // MOM_TODO: CPCount is not reporting correctly.
+   if (m_bShowCheckpoints)
     {
         if (center_cps)
         {
@@ -281,7 +300,7 @@ void C_Timer::Paint(void)
             surface()->DrawSetTextPos(cps_xpos, cps_ypos);
         }
         surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
-    }*/
+    }
 
     // MOM_TODO: Print this only if map gamemode is supported
     if (center_stage)

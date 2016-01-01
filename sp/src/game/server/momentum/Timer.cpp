@@ -20,7 +20,7 @@ void CTimer::PostTime()
 {
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
-        
+
         //Get required info 
         //MOM_TODO include the extra security measures for beta+
         uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
@@ -162,16 +162,25 @@ void CTimer::OnMapEnd(const char *pMapName)
     //MOM_TODO: onlineTimes.RemoveAll();
 }
 
+void CTimer::OnMapStart(const char *pMapName)
+{
+    RequestStageCount();
+    //DispatchMapStartMessage();
+    LoadLocalTimes(pMapName);
+    //MOM_TODO: g_Timer.LoadOnlineTimes();
+}
+
 void CTimer::RequestStageCount()
 {
-    CTriggerStage *stage = (CTriggerStage *)gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
-    int iCount = 0;
+    CTriggerStage *stage = (CTriggerStage *) gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
+    int iCount = 1;//CTriggerStart counts as one
     while (stage)
     {
         iCount++;
-        stage = (CTriggerStage *)gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
+        stage = (CTriggerStage *) gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
     }
     m_iStageCount = iCount;
+    Log("The m_iStageCount is %i\n", m_iStageCount);
 }
 
 void CTimer::DispatchResetMessage()
@@ -184,9 +193,10 @@ void CTimer::DispatchResetMessage()
 
 void CTimer::DispatchStageMessage()
 {
-    if (UTIL_GetLocalPlayer())
+    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
+    if (cPlayer)
     {
-        CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+        CSingleUserRecipientFilter user(cPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "Timer_Stage");
         WRITE_LONG(m_pCurrentStage->GetStageNumber());
@@ -196,9 +206,10 @@ void CTimer::DispatchStageMessage()
 
 void CTimer::DispatchStateMessage()
 {
-    if (UTIL_GetLocalPlayer())
+    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
+    if (cPlayer)
     {
-        CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+        CSingleUserRecipientFilter user(cPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "Timer_State");
         WRITE_BOOL(m_bIsRunning);
@@ -209,16 +220,36 @@ void CTimer::DispatchStateMessage()
 
 void CTimer::DispatchCheckpointMessage()
 {
-    if (UTIL_GetLocalPlayer())
+    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
+    if (cPlayer)
     {
-        CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
+        Log("SENDING CHECKPOINT MESSAGE! %s %i %i\n", m_bUsingCPMenu ? "t" : "f", m_iCurrentStepCP + 1, GetCPCount());
+        CSingleUserRecipientFilter user(cPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "Timer_Checkpoint");
         WRITE_BOOL(m_bUsingCPMenu);
-        WRITE_LONG(m_iCurrentStepCP);
-        WRITE_LONG(GetCPCount());
+        WRITE_LONG(m_iCurrentStepCP + 1);
+        WRITE_LONG(checkpoints.Count());
         MessageEnd();
     }
+}
+
+void CTimer::DispatchStageCountMessage()
+{
+    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
+    if (cPlayer)
+    {
+        CSingleUserRecipientFilter user(cPlayer);
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_StageCount");
+        WRITE_LONG(m_iStageCount);
+        MessageEnd();
+    }
+}
+
+CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+{
+    g_Timer.DispatchStageCountMessage();
 }
 
 bool CTimer::IsRunning()
@@ -238,38 +269,6 @@ CTriggerTimerStart *CTimer::GetStartTrigger()
 
 //--------- CPMenu stuff --------------------------------
 
-void CTimer::SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger)
-{
-    // Maybe find a better logic for this one?
-    // It works, but it's not pretty
-    if (m_pCurrentCheckpoint == NULL)
-    {
-        m_pCurrentCheckpoint = pTrigger;
-    }
-    else //pointer is not null
-    {
-        if (pTrigger != NULL)
-        {
-            // Is this the starting trigger?
-            if (pTrigger->GetCheckpointNumber() == 0)
-            {
-                // Then set it, even if its index is lower than current's one
-                m_pCurrentCheckpoint = pTrigger;
-            }
-            else if (pTrigger->GetCheckpointNumber() > m_pCurrentCheckpoint->GetCheckpointNumber())
-            {
-                // This is why we want to separate this if:
-                // DispatchCheckpointMessage();
-                m_pCurrentCheckpoint = pTrigger;
-            }
-        }
-        else
-        {
-            m_pCurrentCheckpoint = pTrigger;
-        }
-    }
-}
-
 void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
 {
     if (!pPlayer) return;
@@ -279,9 +278,10 @@ void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
     c.vel = pPlayer->GetAbsVelocity();
     checkpoints.AddToTail(c);
     // MOM_TODO: Check what gametype we're in, so we can determine if we should stop the timer or not
-    g_Timer.SetRunning(false);
-    SetUsingCPMenu(true);
+    g_Timer.Stop(false);
+    //SetUsingCPMenu(true);
     m_iCurrentStepCP++;
+    //  DispatchCheckpointMessage();
 }
 
 void CTimer::RemoveLastCheckpoint()
@@ -289,8 +289,9 @@ void CTimer::RemoveLastCheckpoint()
     if (checkpoints.IsEmpty()) return;
     checkpoints.Remove(m_iCurrentStepCP);
     m_iCurrentStepCP--;//If there's one element left, we still need to decrease currentStep to -1
-    if (m_iCurrentStepCP <= -1)
-        SetUsingCPMenu(false);
+    // DispatchCheckpointMessage();
+    //if (m_iCurrentStepCP <= -1)
+    //    SetUsingCPMenu(false);
 }
 
 void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
@@ -298,7 +299,7 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
     if (checkpoints.IsEmpty() || !cPlayer) return;
     Checkpoint c = checkpoints[cpNum];
     cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
-    DispatchCheckpointMessage();
+    // DispatchCheckpointMessage();
 }
 
 //MOM_TODO: This function isn't called, CTimer is not an entity
@@ -318,13 +319,13 @@ void CTimer::SetUsingCPMenu(bool pIsUsingCPMenu)
     m_bUsingCPMenu = pIsUsingCPMenu;
     // We notify the HUD that we've changed the status
     // (Or attemped to)
-    DispatchCheckpointMessage();
+
 }
 
 void CTimer::SetCurrentCPMenuStep(int pNewNum)
 {
     m_iCurrentStepCP = pNewNum;
-    DispatchCheckpointMessage();
+    //  DispatchCheckpointMessage();
 }
 
 //--------- CTriggerOnehop stuff --------------------------------
@@ -379,6 +380,9 @@ public:
 
     static void CPMenu(const CCommand &args)
     {
+        if (!g_Timer.IsUsingCPMenu())
+            g_Timer.SetUsingCPMenu(true);
+
         if (g_Timer.IsRunning())
         {
             // MOM_TODO consider having a local timer running,
@@ -386,7 +390,7 @@ public:
             // MOM_TODO consider KZ (lol)
             //g_Timer.SetRunning(false);
         }
-        if (args.ArgC() > 0)
+        if (args.ArgC() > 1)
         {
             int sel = Q_atoi(args[1]);
             CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
@@ -419,11 +423,12 @@ public:
             case 5://remove current checkpoint
                 g_Timer.RemoveLastCheckpoint();
                 break;
-
             case 6://remove every checkpoint
                 g_Timer.RemoveAllCheckpoints();
                 break;
-
+            case 0://They closed the menu
+                g_Timer.SetUsingCPMenu(false);
+                break;
             default:
                 if (cPlayer != NULL)
                 {
@@ -432,6 +437,7 @@ public:
                 break;
             }
         }
+        g_Timer.DispatchCheckpointMessage();
     }
 };
 

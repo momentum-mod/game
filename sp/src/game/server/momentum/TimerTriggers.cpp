@@ -23,6 +23,7 @@ END_DATADESC()
 
 void CTriggerStage::StartTouch(CBaseEntity *pOther)
 {
+    BaseClass::StartTouch(pOther);
     if (pOther->IsPlayer())
     {
         g_Timer.SetCurrentStage(this);
@@ -56,14 +57,10 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer())
+    if (pOther->IsPlayer() && g_Timer.IsRunning())
     {
-        if (g_Timer.IsRunning())
-        {
-            g_Timer.Stop(false);
-            g_Timer.DispatchResetMessage();
-        }
-        //g_Timer.SetCurrentCheckpointTrigger(NULL);
+        g_Timer.Stop(false);
+        g_Timer.DispatchResetMessage();
     }
     BaseClass::StartTouch(pOther);
 }
@@ -115,7 +112,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 //----------------------------------------------------------------------------------------------
 
 //---------- CTriggerCheckpoint ----------------------------------------------------------------
-LINK_ENTITY_TO_CLASS(trigger_momentum_checkpoint, CTriggerCheckpoint);
+LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
 DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"),
@@ -128,7 +125,6 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
     {
         g_Timer.SetCurrentCheckpointTrigger(this);
         g_Timer.RemoveAllOnehopsFromList();
-        g_Timer.DispatchCheckpointMessage();
     }
 }
 //----------------------------------------------------------------------------------------------
@@ -159,13 +155,14 @@ END_DATADESC()
 
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
+    BaseClass::StartTouch(pOther);
     if (!pDestinationEnt)
     {
         if (m_target != NULL_STRING)
             pDestinationEnt = gEntList.FindEntityByName(NULL, m_target, NULL, pOther, pOther);
         else
         {
-            Warning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+            DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
             return;
         }
     }
@@ -203,7 +200,11 @@ END_DATADESC()
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
+    SetDestinationEnt(NULL);
     BaseClass::StartTouch(pOther);
+    //The above is needed for the Think() function of this class,
+    //it's very HACKHACK but it works
+
     if (pOther->IsPlayer())
     {
         m_fStartTouchedTime = gpGlobals->realtime;
@@ -384,7 +385,7 @@ static void TestCreateTriggerStop(void)
 
 static void TestCreateTriggerCheckpoint(const CCommand &args)
 {
-    CTriggerStage *pTrigger = (CTriggerStage *)CreateEntityByName("trigger_momentum_timer_stage");
+    CTriggerStage *pTrigger = (CTriggerStage *) CreateEntityByName("trigger_momentum_timer_stage");
     if (pTrigger)
     {
         pTrigger->Spawn();

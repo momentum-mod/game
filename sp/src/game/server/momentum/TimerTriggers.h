@@ -56,7 +56,7 @@ class CTriggerCheckpoint : public CBaseMomentumTrigger
 public:
     void StartTouch(CBaseEntity*);
     // the following is only used by CFilterCheckpoint
-    int GetCheckpointNumber() { return m_iCheckpointNumber; }
+    virtual int GetCheckpointNumber() { return m_iCheckpointNumber; }
     // The following is used by mapzones.cpp
     void SetCheckpointNumber(int newInt) { m_iCheckpointNumber = newInt; }
 
@@ -73,8 +73,13 @@ class CTriggerStage : public CTriggerCheckpoint
 
 public:
     void StartTouch(CBaseEntity*);
+    void Spawn()
+    {
+        SetCheckpointNumber(-1);
+        BaseClass::Spawn();
+    }
     //Used by CTimer and CStageFilter
-    int GetStageNumber() { return m_iStageNumber; }
+    virtual int GetStageNumber() { return m_iStageNumber; }
     void SetStageNumber(int newInt) { m_iStageNumber = newInt; }
     int GetCheckpointNumber() { return -1; }//Override, use GetStageNumber()
 

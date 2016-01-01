@@ -35,6 +35,7 @@ public:
     void DispatchResetMessage();
     void DispatchCheckpointMessage();
     void DispatchStageMessage();
+    void DispatchStageCountMessage();
     // Is the timer running?
     bool IsRunning();
     // Set the running status of the timer
@@ -48,11 +49,11 @@ public:
     void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger = pTrigger; }
 
     // Sets the current checkpoint
-    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger);
+    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint = pTrigger; }
 
-    void SetCurrentStage(CTriggerStage *pTrigger) 
-    { 
-        m_pCurrentStage = pTrigger; 
+    void SetCurrentStage(CTriggerStage *pTrigger)
+    {
+        m_pCurrentStage = pTrigger;
         DispatchStageMessage();
     }
     CTriggerStage *GetCurrentStage() { return m_pCurrentStage; }
@@ -71,7 +72,8 @@ public:
     {
         checkpoints.RemoveAll();
         m_iCurrentStepCP = -1;
-        SetUsingCPMenu(false);
+        //SetUsingCPMenu(false);
+        DispatchCheckpointMessage();
     }
     // Teleports the entity to the checkpoint (menu) with the given index
     void TeleportToCP(CBasePlayer*, int);
@@ -113,6 +115,7 @@ public:
     // Saves current time to a local file
     void SaveTime();
     void OnMapEnd(const char *);
+    void OnMapStart(const char *);
     // MOM_TODO: Cheat detection
 
     // Have the cheats been turned on in this session?
