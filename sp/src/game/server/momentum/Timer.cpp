@@ -180,7 +180,6 @@ void CTimer::RequestStageCount()
         stage = (CTriggerStage *) gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
     }
     m_iStageCount = iCount;
-    Log("The m_iStageCount is %i\n", m_iStageCount);
 }
 
 void CTimer::DispatchResetMessage()

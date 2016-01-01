@@ -188,10 +188,10 @@ Resource/ui/timesdisplay.res
 		"enabled"		"1"
 		"tabPosition"	"1"
 	}
-	"OnlineNearbyLeaderboard"
+	"OnlineLeaderboards"
 	{
 		"ControlName"	"SectionedListPanel"
-		"fieldName"		"OnlineNearbyLeaderboard"
+		"fieldName"		"OnlineLeaderboards"
 		"xpos"			"3"
 		"ypos"			"3"
 		"wide"			"226"
@@ -202,10 +202,10 @@ Resource/ui/timesdisplay.res
 		"enabled"		"1"
 		"tabPosition"	"2"
 	}
-	"LocalPersonalBest"
+	"LocalLeaderboards"
 	{
 		"ControlName"	"SectionedListPanel"
-		"fieldName"		"LocalPersonalBest"
+		"fieldName"		"LocalLeaderboards"
 		"xpos"			"233"
 		"ypos"			"3"
 		"wide"			"220"
@@ -216,4 +216,18 @@ Resource/ui/timesdisplay.res
 		"enabled"		"1"
 		"tabPosition"	"3"
 	}	
+	"FriendsLeaderboards"
+	{
+		"ControlName"	"SectionedListPanel"
+		"fieldName"		"FriendsLeaderboards"
+		"xpos"			"233"
+		"ypos"			"3"
+		"wide"			"220"
+		"tall"			"301"
+		"autoResize"	"0"
+		"pinCorner"		"0"
+		"visible"		"0"
+		"enabled"		"0"
+		"tabPosition"	"4"
+	}
 }

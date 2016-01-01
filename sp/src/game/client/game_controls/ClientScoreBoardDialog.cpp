@@ -79,11 +79,12 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
     m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
     m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
     m_pLeaderboards = FindControl<Panel>("Leaderboards", true);
-    m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineNearbyLeaderboard", true);
-    m_pLocalBests = FindControl<SectionedListPanel>("LocalPersonalBest", true);
+    m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineLeaderboards", true);
+    m_pLocalLeaderboards = FindControl<SectionedListPanel>("LocalLeaderboards", true);
+    m_pFriendsLeaderboards = FindControl<SectionedListPanel>("FriendsLeaderboards", true);
 
     if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName || !m_pMomentumLogo ||
-        !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards || !m_pLocalBests)
+        !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards || !m_pLocalLeaderboards || !m_pFriendsLeaderboards)
     {
         Assert("Null pointer(s) on scoreboards");
     }
@@ -99,10 +100,11 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
     m_lPlayerMapRank->SetParent(m_pPlayerStats);
     m_lPlayerGlobalRank->SetParent(m_pPlayerStats);
     m_pOnlineLeaderboards->SetParent(m_pLeaderboards);
-    m_pLocalBests->SetParent(m_pLeaderboards);
+    m_pLocalLeaderboards->SetParent(m_pLeaderboards);
+    m_pFriendsLeaderboards->SetParent(m_pLeaderboards);
 
     m_pOnlineLeaderboards->SetVerticalScrollbar(false);
-    m_pLocalBests->SetVerticalScrollbar(false);
+    m_pLocalLeaderboards->SetVerticalScrollbar(false);
 
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 
@@ -237,17 +239,36 @@ void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
     if (m_lMapSummary)
         m_lMapSummary->SetVisible(true);
 
-    if (m_pLocalBests)
+    if (m_pLocalLeaderboards)
     {
-        m_pLocalBests->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
-        m_pLocalBests->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalBests->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH);
-        m_pLocalBests->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+        m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
+        m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH - 40);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
     }
 
-    //MOM_TODO: online needs rank, name, time, date achieved?
+    // MOM_TODO: Discuss scoreboard size. It's really small for so many columns
 
-    //MOM_TODO: friends follows online format
+    if (m_pOnlineLeaderboards)
+    {
+        m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
+        m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCORE_WIDTH - 10);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH - 80);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH - 80);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+    }
+
+    if (m_pFriendsLeaderboards)
+    {
+        // We use online timer srot func as it's the same type of data
+        m_pFriendsLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
+        m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCORE_WIDTH - 10);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH - 80);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH - 80);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+    }
 
     // light up scoreboard a bit
     SetBgColor(Color(0, 0, 0, 0));
@@ -422,6 +443,9 @@ void CClientScoreBoardDialog::AddSection(int teamType, int teamNumber)
 {
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Used for sorting local times
+//-----------------------------------------------------------------------------
 bool CClientScoreBoardDialog::StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2)
 {
     KeyValues *it1 = list->GetItemData(itemID1);
@@ -436,36 +460,17 @@ bool CClientScoreBoardDialog::StaticLocalTimeSortFunc(vgui::SectionedListPanel *
     else if (t1 > t2)
         return false;
 
+    // If the same, use IDs
     return itemID1 < itemID2;
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Used for sorting players
 //-----------------------------------------------------------------------------
-bool CClientScoreBoardDialog::StaticPlayerSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2)
+bool CClientScoreBoardDialog::StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2)
 {
-    //MOM_TODO: change this to sort by times?
-    KeyValues *it1 = list->GetItemData(itemID1);
-    KeyValues *it2 = list->GetItemData(itemID2);
-    Assert(it1 && it2);
-
-    // first compare frags
-    int v1 = it1->GetInt("frags");
-    int v2 = it2->GetInt("frags");
-    if (v1 > v2)
-        return true;
-    else if (v1 < v2)
-        return false;
-
-    // next compare deaths
-    v1 = it1->GetInt("deaths");
-    v2 = it2->GetInt("deaths");
-    if (v1 > v2)
-        return false;
-    else if (v1 < v2)
-        return true;
-
-    // the same, so compare itemID's (as a sentinel value to get deterministic sorts)
+    // This will behave almost identically to StaticLocalTimeSortFunc, 
+    // but using rank insetad of time (Momentum page will handle players with same times)
     return itemID1 < itemID2;
 }
 
@@ -670,8 +675,6 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
     }
 
     // Leaderboards
-    // MOM_TODO: Discuss if this should always update (Api overload?)
-
     // @Gocnak: If we use event-driven updates and caching, it shouldn't overload the API.
     // The idea is to cache things to show, which will be called every FillScoreBoard call,
     // but it will only call the methods to update the data if booleans are set to.
@@ -681,7 +684,7 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
 
     GetPlayerTimes(m_kvPlayerData);
 
-    if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalBests && m_kvPlayerData && !m_kvPlayerData->IsEmpty())
+    if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalLeaderboards && m_pFriendsLeaderboards && m_kvPlayerData && !m_kvPlayerData->IsEmpty())
     {
         m_pLeaderboards->SetVisible(false);
 
@@ -699,12 +702,11 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
             {
                 int itemID = FindItemIDForLocalTime(kvLocalTime);
                 if (itemID == -1)
-                    m_pLocalBests->AddItem(m_iSectionId, kvLocalTime);
+                    m_pLocalLeaderboards->AddItem(m_iSectionId, kvLocalTime);
                 else
-                    m_pLocalBests->ModifyItem(itemID, m_iSectionId, kvLocalTime);
+                    m_pLocalLeaderboards->ModifyItem(itemID, m_iSectionId, kvLocalTime);
             }
         }
-
         m_pLeaderboards->SetVisible(true);
     }
     m_kvPlayerData->deleteThis();
@@ -731,11 +733,11 @@ int CClientScoreBoardDialog::FindItemIDForPlayerIndex(int playerIndex)
 
 int CClientScoreBoardDialog::FindItemIDForLocalTime(KeyValues *kvRef)
 {
-    for (int i = 0; i <= m_pLocalBests->GetHighestItemID(); i++)
+    for (int i = 0; i <= m_pLocalLeaderboards->GetHighestItemID(); i++)
     {
-        if (m_pLocalBests->IsItemIDValid(i))
+        if (m_pLocalLeaderboards->IsItemIDValid(i))
         {
-            KeyValues *kv = m_pLocalBests->GetItemData(i);
+            KeyValues *kv = m_pLocalLeaderboards->GetItemData(i);
             if (kv && (kv->GetInt("date_t") == kvRef->GetInt("date_t")))
             {
                 return i;

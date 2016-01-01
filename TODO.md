@@ -1,8 +1,8 @@
 ## ALPHA
 - [ ] ClientScoreboardDialog.cpp (Client)
     - [ ] Get online data from the API
-    - [ ] Add friends leaderboard list
-    - [ ] Add format for online & friends leaderboard lists
+    - [x] Add friends leaderboard list
+    - [x] Add format for online & friends leaderboard lists
     - [ ] Fill the lists with API data
     - [ ] Update rank for event runtime_posted
     - [x] Discuss update interval time
@@ -11,6 +11,7 @@
     - [ ] Make FindItemIDForPlayerIndex(int) return an ItemID for another person's time
     - [ ] Sort function for online times
     - [x] Fix bugs: Lines being chopped down & mapsummary not being set
+    - [ ] Discuss columns widths
     
 - [ ] MenuMapSelection.cpp (Client)
     - [ ] Parse data from API, compare to already existing/downloaded maps

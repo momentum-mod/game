@@ -213,7 +213,6 @@ void C_Timer::MsgFunc_Timer_Stage(bf_read &msg)
 void C_Timer::MsgFunc_Timer_StageCount(bf_read &msg)
 {
     m_iStageCount = (int) msg.ReadLong();
-    DevMsg("%i",m_iStageCount);
 }
 
 int C_Timer::GetCurrentTime() 
@@ -241,7 +240,6 @@ void C_Timer::Paint(void)
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 
-    // MOM_TODO: Localize this
     if (m_bShowCheckpoints)
     {
         char cpLocalized[25];
@@ -289,7 +287,6 @@ void C_Timer::Paint(void)
     int dummy, totalWide;
 
     GetSize(totalWide, dummy);
-    //surface()->DrawSetTextFont(surface()->GetFontTall(m_hTextFont));
 
     if (center_time)
     {
@@ -304,7 +301,6 @@ void C_Timer::Paint(void)
     }
 	surface()->DrawPrintText(m_pwCurrentTime, wcslen(m_pwCurrentTime));
 
-    // MOM_TODO: CPCount is not reporting correctly.
    if (m_bShowCheckpoints)
     {
         if (center_cps)
