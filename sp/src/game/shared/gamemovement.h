@@ -100,7 +100,7 @@ protected:
 
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
-	virtual void	AirMove( void );
+	virtual bool	AirMove( void );
 	virtual float	GetAirSpeedCap( void ) { return 30.f; }
 	
 	virtual bool	CanAccelerate();
@@ -163,7 +163,7 @@ protected:
 	virtual void	FullLadderMove();
 
 	// The basic solid body movement clip that slides along multiple planes
-	virtual int		TryPlayerMove( Vector *pFirstDest=NULL, trace_t *pFirstTrace=NULL );
+	virtual int		TryPlayerMove( Vector *pFirstDest=NULL, trace_t *pFirstTrace=NULL, bool *bDidReflect=NULL );
 	
 	virtual bool	LadderMove( void );
 	virtual bool	OnLadder( trace_t &trace );
@@ -194,8 +194,10 @@ protected:
 	// If in water, applies current to baseVelocity, and returns true.
 	virtual bool			CheckWater( void );
 	
+	void					DoLateReflect( void );
+
 	// Determine if player is in water, on ground, etc.
-	virtual void CategorizePosition( void );
+	virtual void CategorizePosition( bool bDidReflect = true );
 
 	virtual void	CheckParameters( void );
 

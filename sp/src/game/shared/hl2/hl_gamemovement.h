@@ -43,7 +43,7 @@ public:
 	virtual bool CanAccelerate( void );
 	virtual bool CheckJumpButton(void);
 	virtual void PlayerMove(void);
-	virtual void AirMove(void);
+	virtual bool AirMove(void);
 	virtual void WalkMove(void);
 
 	//added ladder
