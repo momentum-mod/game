@@ -12,7 +12,7 @@ namespace Momentum
 
     void OnServerDLLInit()
     {
-        //TODO connect to site
+        // MOM_TODO: connect to site
     }
 
     void OnMapStart(const char *pMapName)

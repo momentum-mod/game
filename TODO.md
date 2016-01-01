@@ -1,8 +1,8 @@
 ## ALPHA
 - [ ] ClientScoreboardDialog.cpp (Client)
     - [ ] Get online data from the API
-    - [ ] Add friends leaderboard list
-    - [ ] Add format for online & friends leaderboard lists
+    - [x] Add friends leaderboard list
+    - [x] Add format for online & friends leaderboard lists
     - [ ] Fill the lists with API data
     - [ ] Update rank for event runtime_posted
     - [x] Discuss update interval time
@@ -11,6 +11,7 @@
     - [ ] Make FindItemIDForPlayerIndex(int) return an ItemID for another person's time
     - [ ] Sort function for online times
     - [x] Fix bugs: Lines being chopped down & mapsummary not being set
+    - [ ] Discuss columns widths
     
 - [ ] MenuMapSelection.cpp (Client)
     - [ ] Parse data from API, compare to already existing/downloaded maps
@@ -21,6 +22,8 @@
     - [ ] Remove any and all unnecessary HL2/generic code that doesn't pertain to the mod
 
 - [x] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
+    - [ ] Create global enumeration for gamemodes
+    - [ ] Store current gamemdoe on a global variable
 
 - [ ] weapon_momentum_gun (Client/Server)
     - [ ] Import CS:S weapon entities over as proxy weapons to change the gun's behavior
@@ -30,11 +33,13 @@
     - [ ] Play effects (animations) for run states
     - [x] Move to bottom center (above speedometer)
     - [x] Utilize the .res file variables for position/color/etc
-    - [ ] Feed real data for the hud
-    - [ ] Have more info (checkpoints, current stage/total stages, etc)
-    - [ ] Only display relevant info (Per gamemode basis)
-    - [ ] Implement Hud Messaging system to interact with Timer.cpp (server)
-    - [ ] Localization
+    - [x] Feed real data for the hud
+    - [x] Have more info (checkpoints, current stage/total stages, etc)
+    - [x] Only display relevant info
+    - [ ] Act accordingly to gamemode
+    - [x] Implement Hud Messaging system to interact with Timer.cpp (server)
+    - [x] Localization
+    - [ ] Discuss bufsize for strings taking intoa count localizations
     
 - [ ] hud_cp_menu.cpp (Client) 
     - [x] Make creating a checkpoint stop your timer
@@ -46,16 +51,18 @@
 
 - [ ] TimeTriggers.cpp (Server)
     - [ ] Tweak limit speed method
-    - [ ] Implement Hud Messaging system to interact with timer.cpp (client)
+    - [x] Implement Hud Messaging system to interact with timer.cpp (client)
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking
-    - [ ] GetCPCount seems to return wrongly
+    - [x] (FIXED) GetCPCount seems to return wrongly
+    - [ ] Are command flags needed?
     
 - [ ] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 
 - [ ] mapzones.cpp (Server)
     - [ ] Add support for trigger_momentum_teleport and trigger_momentum_userinput
+    - [ ] Make sure it works correctly after that before releasing Alpha!
     
 ## BETA
 - [ ] Implement CEF
