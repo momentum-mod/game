@@ -587,7 +587,7 @@ void CClientScoreBoardDialog::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
                 if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
                 {
                     CAvatarImage *pImage = new CAvatarImage();
-                    // 64 is enough until full HD resolutions.
+                    // 64 is enough up to full HD resolutions.
                     pImage->SetAvatarSteamID(steamIDForPlayer,k_EAvatarSize64x64);
                     pImage->SetAvatarSize(64, 64);	// Deliberately non scaling
                     iImageIndex = m_pImageList->AddImage(pImage);
@@ -650,7 +650,8 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
             char mapRank[50];
             char mrLocalized[50];
             wchar_t *uMapRankUnicode = g_pVGuiLocalize->Find("#MOM_MapRank");
-            g_pVGuiLocalize->ConvertUnicodeToANSI(uMapRankUnicode ? uMapRankUnicode : L"#MOM_MapRank", mrLocalized, 50);
+            // If localization is not found, we fall back to english!
+            g_pVGuiLocalize->ConvertUnicodeToANSI(uMapRankUnicode ? uMapRankUnicode : L"Map Rank", mrLocalized, 50);
 
             Q_snprintf(mapRank, 50, "%s: %i/%i", mrLocalized, playdata->GetInt("mapRank", -1), playdata->GetInt("mapCount", -1));
             m_lPlayerMapRank->SetText(mapRank);
@@ -658,7 +659,8 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
             char globalRank[50];
             char grLocalized[50];
             wchar_t *wGlobalLocal = g_pVGuiLocalize->Find("#MOM_GlobalRank");
-            g_pVGuiLocalize->ConvertUnicodeToANSI(wGlobalLocal ? wGlobalLocal : L"#MOM_GlobalRank", grLocalized, 50);
+            // If localization is not found, we fall back to english!
+            g_pVGuiLocalize->ConvertUnicodeToANSI(wGlobalLocal ? wGlobalLocal : L"Global Rank", grLocalized, 50);
 
             Q_snprintf(globalRank, 50, "%s: %i/%i", grLocalized, playdata->GetInt("globalRank", -1),
                 playdata->GetInt("globalCount", -1));
