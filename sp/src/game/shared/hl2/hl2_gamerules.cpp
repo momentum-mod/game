@@ -41,12 +41,6 @@ END_NETWORK_TABLE()
 LINK_ENTITY_TO_CLASS( hl2_gamerules, CHalfLife2Proxy );
 IMPLEMENT_NETWORKCLASS_ALIASED( HalfLife2Proxy, DT_HalfLife2Proxy )
 
-#ifndef CLIENT_DLL
-LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
-LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
-LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
-#endif
-
 
 #ifdef CLIENT_DLL
 	void RecvProxy_HL2GameRules( const RecvProp *pProp, void **pOut, void *pData, int objectID )

@@ -132,6 +132,5 @@ void GameStartFrame(void)
 //=========================================================
 void InstallGameRules()
 {
-    //MOM_TODO: Create a gamerules object
-    CreateGameRulesObject("CHalfLife2");
+    CreateGameRulesObject("CMomentum");
 }
