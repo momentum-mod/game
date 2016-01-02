@@ -1987,7 +1987,7 @@ void CGameMovement::FullWalkMove( )
 		CheckVelocity();
 
 		// By default assume we did the reflect for WalkMove()
-		float flReflectNormal = NO_REFL_NORMAL_CHANGE;
+		float flReflectNormal = 1.0f;
 
 		if (player->GetGroundEntity() != NULL)
 		{
