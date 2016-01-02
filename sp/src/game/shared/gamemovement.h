@@ -25,6 +25,8 @@
 #define GAMEMOVEMENT_TIME_TO_UNDUCK			( TIME_TO_UNDUCK * 1000.0f )		// ms
 #define GAMEMOVEMENT_TIME_TO_UNDUCK_INV		( GAMEMOVEMENT_DUCK_TIME - GAMEMOVEMENT_TIME_TO_UNDUCK )
 
+#define NO_REFL_NORMAL_CHANGE				-2.0f
+
 enum
 {
 	SPEED_CROPPED_RESET = 0,
@@ -100,7 +102,7 @@ protected:
 
 	virtual void	AirAccelerate( Vector& wishdir, float wishspeed, float accel );
 
-	virtual bool	AirMove( void );
+	virtual float	AirMove( void );
 	virtual float	GetAirSpeedCap( void ) { return 30.f; }
 	
 	virtual bool	CanAccelerate();
@@ -163,7 +165,7 @@ protected:
 	virtual void	FullLadderMove();
 
 	// The basic solid body movement clip that slides along multiple planes
-	virtual int		TryPlayerMove( Vector *pFirstDest=NULL, trace_t *pFirstTrace=NULL, bool *bDidReflect=NULL );
+	virtual int		TryPlayerMove( Vector *pFirstDest=NULL, trace_t *pFirstTrace=NULL, float *flReflectNormal=NULL );
 	
 	virtual bool	LadderMove( void );
 	virtual bool	OnLadder( trace_t &trace );
@@ -197,7 +199,7 @@ protected:
 	void					DoLateReflect( void );
 
 	// Determine if player is in water, on ground, etc.
-	virtual void CategorizePosition( bool bDidReflect = true );
+	virtual void CategorizePosition( float flReflectNormal = NO_REFL_NORMAL_CHANGE );
 
 	virtual void	CheckParameters( void );
 

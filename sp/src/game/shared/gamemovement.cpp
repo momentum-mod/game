@@ -1632,7 +1632,7 @@ void CGameMovement::AirAccelerate( Vector& wishdir, float wishspeed, float accel
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CGameMovement::AirMove( void )
+float CGameMovement::AirMove( void )
 {
 	int			i;
 	Vector		wishvel;
@@ -1674,13 +1674,13 @@ bool CGameMovement::AirMove( void )
 	// Add in any base velocity to the current velocity.
 	VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 
-	bool bDidReflect = false;
-	TryPlayerMove( NULL, NULL, &bDidReflect );
+	float flReflectNormal = NO_REFL_NORMAL_CHANGE;
+	TryPlayerMove( NULL, NULL, &flReflectNormal );
 
 	// Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
 	VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 
-	return bDidReflect;
+	return flReflectNormal;
 }
 
 
@@ -1987,7 +1987,7 @@ void CGameMovement::FullWalkMove( )
 		CheckVelocity();
 
 		// By default assume we did the reflect for WalkMove()
-		bool bDidReflect = true;
+		float flReflectNormal = NO_REFL_NORMAL_CHANGE;
 
 		if (player->GetGroundEntity() != NULL)
 		{
@@ -1995,11 +1995,11 @@ void CGameMovement::FullWalkMove( )
 		}
 		else
 		{
-			bDidReflect = AirMove();  // Take into account movement when in air.
+			flReflectNormal = AirMove();  // Take into account movement when in air.
 		}
 
 		// Set final flags.
-		CategorizePosition( bDidReflect );
+		CategorizePosition( flReflectNormal );
 
 		// Make sure velocity is valid.
 		CheckVelocity();
@@ -2442,7 +2442,7 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 // Purpose: 
 // Output : int
 //-----------------------------------------------------------------------------
-int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace, bool *bDidReflect )
+int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace, float *flReflectNormal )
 {
 	int			bumpcount, numbumps;
 	Vector		dir;
@@ -2604,9 +2604,9 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace, bool
 			player->GetMoveType() == MOVETYPE_WALK &&
 			player->GetGroundEntity() == NULL )	
 		{
-			if ( bDidReflect != NULL )
+			if ( flReflectNormal != NULL )
 			{
-				*bDidReflect = true;
+				*flReflectNormal = planes[0][2];
 			}
 
 			for ( i = 0; i < numplanes; i++ )
@@ -3669,32 +3669,29 @@ void CGameMovement::TryTouchGroundInQuadrants( const Vector& start, const Vector
 */
 void CGameMovement::DoLateReflect( void )
 {
-	if ( mv->m_vecVelocity.Length() == 0.0 || player->GetGroundEntity() != NULL )
+	if ( mv->m_vecVelocity.Length() == 0.0f || player->GetGroundEntity() != NULL )
 		return;
 
 
-	Vector prevpos = mv->m_vecAbsOrigin;
+	Vector prevpos = mv->GetAbsOrigin();
 	Vector prevvel = mv->m_vecVelocity;
-	bool bDidReflect = false;
-
-
+	float flReflectNormal = 1.0f;
+	
 	VectorAdd( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 
 	// Since we're doing two moves in one frame, only apply changes if we did the reflect.
-	TryPlayerMove( NULL, NULL, &bDidReflect );
+	TryPlayerMove( NULL, NULL, &flReflectNormal );
 
-	if ( !bDidReflect )
+	if ( flReflectNormal == 1.0f )
 	{
 		VectorCopy( prevpos, mv->m_vecAbsOrigin );
 		VectorCopy( prevvel, mv->m_vecVelocity );
-
-		DevMsg( "Late reflect failed!\n" );
 	}
 	else
 	{
 		VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 
-		DevMsg( "Successful late reflect!\n" );
+		DevMsg( "Successful late reflect! Normal: %.2f\n", flReflectNormal );
 	}
 }
 
@@ -3702,7 +3699,7 @@ void CGameMovement::DoLateReflect( void )
 // Purpose: 
 // Input  : &input - 
 //-----------------------------------------------------------------------------
-void CGameMovement::CategorizePosition( bool bDidReflect )
+void CGameMovement::CategorizePosition( float flReflectNormal )
 {
 	Vector point;
 	trace_t pm;
@@ -3789,11 +3786,11 @@ void CGameMovement::CategorizePosition( bool bDidReflect )
 			}
 			else
 			{
-				if ( !bDidReflect )
+				if ( flReflectNormal == -2.0f )
 				{
 					DoLateReflect();
 
-					CategorizePosition( true );
+					CategorizePosition( 1.0f );
 
 					return;
 				}
@@ -3803,11 +3800,11 @@ void CGameMovement::CategorizePosition( bool bDidReflect )
 		}
 		else
 		{
-			if ( !bDidReflect )
+			if ( flReflectNormal == -2.0f )
 			{
 				DoLateReflect();
 
-				CategorizePosition( true );
+				CategorizePosition( 1.0f );
 
 				return;
 			}
