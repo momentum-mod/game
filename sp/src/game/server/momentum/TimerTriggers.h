@@ -195,7 +195,7 @@ class CTriggerUserInput : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerUserInput, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 public:
-    enum key { forward, back, moveleft, moveright };
+    enum key { forward, back, moveleft, moveright, jump, duck, attack, attack2, reload };
     key m_eKey;
 
     void Think();

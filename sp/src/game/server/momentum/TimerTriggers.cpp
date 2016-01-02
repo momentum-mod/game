@@ -329,6 +329,21 @@ void CTriggerUserInput::Spawn()
     case moveright:
         m_ButtonRep = IN_MOVERIGHT;
         break;
+    case jump:
+        m_ButtonRep = IN_JUMP;
+        break;
+    case duck:
+        m_ButtonRep = IN_DUCK;
+        break;
+    case attack:
+        m_ButtonRep = IN_ATTACK;
+        break;
+    case attack2:
+        m_ButtonRep = IN_ATTACK2;
+        break;
+    case reload:
+        m_ButtonRep = IN_RELOAD;
+        break;
     default:
         DevWarning("Passed unhandled key press");
         break;

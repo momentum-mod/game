@@ -68,7 +68,12 @@
 		0 : "Forward"
 		1 : "Back"
 		2 : "Move Left"
-		3 : "Move Right"	
+		3 : "Move Right"
+		4 : "Jump"
+		5 : "Duck"
+		6 : "Attack"
+		7 : "Attack 2"
+		8 : "Reload"	
 	]
 ]
 
