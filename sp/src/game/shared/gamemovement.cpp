@@ -3786,7 +3786,7 @@ void CGameMovement::CategorizePosition( float flReflectNormal )
 			}
 			else
 			{
-				if ( flReflectNormal == -2.0f )
+				if ( flReflectNormal == NO_REFL_NORMAL_CHANGE )
 				{
 					DoLateReflect();
 
@@ -3800,7 +3800,7 @@ void CGameMovement::CategorizePosition( float flReflectNormal )
 		}
 		else
 		{
-			if ( flReflectNormal == -2.0f )
+			if ( flReflectNormal == NO_REFL_NORMAL_CHANGE )
 			{
 				DoLateReflect();
 
