@@ -123,9 +123,11 @@ void CHL2GameMovement::WalkMove() {
 	CheckForLadders(player->GetGroundEntity() != NULL);
 }
 
-void CHL2GameMovement::AirMove() {
-	BaseClass::AirMove();
+float CHL2GameMovement::AirMove() {
+	float flReflectNormal = BaseClass::AirMove();
 	CheckForLadders(false);
+
+	return flReflectNormal;
 }
 
 void CHL2GameMovement::PlayerMove()

@@ -1632,7 +1632,7 @@ void CGameMovement::AirAccelerate( Vector& wishdir, float wishspeed, float accel
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CGameMovement::AirMove( void )
+float CGameMovement::AirMove( void )
 {
 	int			i;
 	Vector		wishvel;
@@ -1674,10 +1674,13 @@ void CGameMovement::AirMove( void )
 	// Add in any base velocity to the current velocity.
 	VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 
-	TryPlayerMove();
+	float flReflectNormal = NO_REFL_NORMAL_CHANGE;
+	TryPlayerMove( NULL, NULL, &flReflectNormal );
 
 	// Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
 	VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+
+	return flReflectNormal;
 }
 
 
@@ -1983,17 +1986,20 @@ void CGameMovement::FullWalkMove( )
 		// Make sure velocity is valid.
 		CheckVelocity();
 
+		// By default assume we did the reflect for WalkMove()
+		float flReflectNormal = 1.0f;
+
 		if (player->GetGroundEntity() != NULL)
 		{
 			WalkMove();
 		}
 		else
 		{
-			AirMove();  // Take into account movement when in air.
+			flReflectNormal = AirMove();  // Take into account movement when in air.
 		}
 
 		// Set final flags.
-		CategorizePosition();
+		CategorizePosition( flReflectNormal );
 
 		// Make sure velocity is valid.
 		CheckVelocity();
@@ -2436,7 +2442,7 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 // Purpose: 
 // Output : int
 //-----------------------------------------------------------------------------
-int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
+int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace, float *flReflectNormal )
 {
 	int			bumpcount, numbumps;
 	Vector		dir;
@@ -2598,6 +2604,11 @@ int CGameMovement::TryPlayerMove( Vector *pFirstDest, trace_t *pFirstTrace )
 			player->GetMoveType() == MOVETYPE_WALK &&
 			player->GetGroundEntity() == NULL )	
 		{
+			if ( flReflectNormal != NULL )
+			{
+				*flReflectNormal = planes[0][2];
+			}
+
 			for ( i = 0; i < numplanes; i++ )
 			{
 				if ( planes[i][2] > 0.7  )
@@ -3648,11 +3659,47 @@ void CGameMovement::TryTouchGroundInQuadrants( const Vector& start, const Vector
 	pm.endpos = endpos;
 }
 
+/*
+	CategorizePosition will trace two units down to check for ground.
+	If ground is detected and previous TryPlayerMove() didn't reflect our velocity, do a late move.
+
+	This fixes the seemingly random rampboosts.
+
+	NOTE: Previously, standing still and jumping on a ramp wouldn't actually boost you unless you kept jumping. Now it happens every time.
+*/
+void CGameMovement::DoLateReflect( void )
+{
+	if ( mv->m_vecVelocity.Length() == 0.0f || player->GetGroundEntity() != NULL )
+		return;
+
+
+	Vector prevpos = mv->GetAbsOrigin();
+	Vector prevvel = mv->m_vecVelocity;
+	float flReflectNormal = 1.0f;
+	
+	VectorAdd( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+
+	// Since we're doing two moves in one frame, only apply changes if we did the reflect.
+	TryPlayerMove( NULL, NULL, &flReflectNormal );
+
+	if ( flReflectNormal == 1.0f )
+	{
+		VectorCopy( prevpos, mv->m_vecAbsOrigin );
+		VectorCopy( prevvel, mv->m_vecVelocity );
+	}
+	else
+	{
+		VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
+
+		DevMsg( "Successful late reflect! Normal: %.2f\n", flReflectNormal );
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : &input - 
 //-----------------------------------------------------------------------------
-void CGameMovement::CategorizePosition( void )
+void CGameMovement::CategorizePosition( float flReflectNormal )
 {
 	Vector point;
 	trace_t pm;
@@ -3739,11 +3786,29 @@ void CGameMovement::CategorizePosition( void )
 			}
 			else
 			{
+				if ( flReflectNormal == NO_REFL_NORMAL_CHANGE )
+				{
+					DoLateReflect();
+
+					CategorizePosition( 1.0f );
+
+					return;
+				}
+
 				SetGroundEntity( &pm );
 			}
 		}
 		else
 		{
+			if ( flReflectNormal == NO_REFL_NORMAL_CHANGE )
+			{
+				DoLateReflect();
+
+				CategorizePosition( 1.0f );
+
+				return;
+			}
+
 			SetGroundEntity( &pm );  // Otherwise, point to index of ent under us.
 		}
 
