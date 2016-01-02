@@ -17,9 +17,11 @@ using namespace vgui;
 
 #include "vgui_helpers.h"
 
+// @Ruben: Boosted the size of the bufs to allow for localizations
+// MOM_TODO: Discuss the buf size, taking into acount localizations
 #define BUFSIZETIME (sizeof("00:00:00.0000")+1)
-#define BUFSIZECPS (sizeof("Checkpoint 000/000")+1)
-#define BUFSIZESTAGE (sizeof("Stage 000/000")+1)
+#define BUFSIZECPS (sizeof("Checkpoint 000/000")+6)
+#define BUFSIZESTAGE (sizeof("Stage 000/000")+11)
 
 static ConVar bla_timer("mom_timer", "1",
     FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
@@ -65,8 +67,8 @@ private:
 	int m_iTotalTicks;
 	bool m_bWereCheatsActivated=false;
     bool m_bShowCheckpoints;
-    bool m_iCheckpointCount;
-    bool m_iCheckpointCurrent;
+    int m_iCheckpointCount;
+    int m_iCheckpointCurrent;
 
 protected:
 	CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -133,6 +135,11 @@ void C_Timer::Reset()
 {
 	m_bIsRunning = false;
 	m_iTotalTicks = 0;
+    m_iStageCount = 0;
+    m_iStageCurrent = 0;
+    m_bShowCheckpoints = false;
+    m_iCheckpointCount = 0;
+    m_iCheckpointCurrent = 0;
 }
 
 void C_Timer::OnThink() 
@@ -195,7 +202,6 @@ void C_Timer::MsgFunc_Timer_Checkpoint(bf_read &msg)
     m_bShowCheckpoints = msg.ReadOneBit();
     m_iCheckpointCurrent = (int)msg.ReadLong();
     m_iCheckpointCount = (int)msg.ReadLong();
-    Log("RECIEVED MSGFUNC! %s %i %i\n", m_bShowCheckpoints ? "t" : "f", m_iCheckpointCurrent, m_iCheckpointCount);
 }
 
 void C_Timer::MsgFunc_Timer_Stage(bf_read &msg)
@@ -234,10 +240,14 @@ void C_Timer::Paint(void)
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 
-    // MOM_TODO: Localize this
     if (m_bShowCheckpoints)
     {
-        Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "Checkpoint %i/%i",
+        char cpLocalized[25];
+        wchar_t *uCPUnicode = g_pVGuiLocalize->Find("#MOM_Checkpoint");
+        g_pVGuiLocalize->ConvertUnicodeToANSI(uCPUnicode ? uCPUnicode : L"Checkpoint", cpLocalized, 25);
+
+        Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "%s %i/%i",
+            cpLocalized, // Checkpoint localization
             m_iCheckpointCurrent, //CurrentCP
             m_iCheckpointCount //CPCount
             );
@@ -246,14 +256,21 @@ void C_Timer::Paint(void)
     }
     if (m_iStageCount > 1)
     {
-        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "Stage %i/%i",
+        char stLocalized[25];
+        wchar_t *uStageUnicode = g_pVGuiLocalize->Find("#MOM_Stage");
+        g_pVGuiLocalize->ConvertUnicodeToANSI(uStageUnicode ? uStageUnicode : L"Stage", stLocalized, 25);
+        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
+            stLocalized, // Stage localization
             m_iStageCurrent, // Current Stage
             m_iStageCount // Total number of stages
             );
     }
     else
     {
-        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "Linear map");
+        char linearLocalized[25];
+        wchar_t *uLinearUnicode = g_pVGuiLocalize->Find("#MOM_LinearMap");
+        g_pVGuiLocalize->ConvertUnicodeToANSI(uLinearUnicode ? uLinearUnicode : L"Linear map", linearLocalized, 25);
+        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), linearLocalized);
     }
     
     g_pVGuiLocalize->ConvertANSIToUnicode(
@@ -270,7 +287,6 @@ void C_Timer::Paint(void)
     int dummy, totalWide;
 
     GetSize(totalWide, dummy);
-    //surface()->DrawSetTextFont(surface()->GetFontTall(m_hTextFont));
 
     if (center_time)
     {
@@ -285,7 +301,6 @@ void C_Timer::Paint(void)
     }
 	surface()->DrawPrintText(m_pwCurrentTime, wcslen(m_pwCurrentTime));
 
-    // MOM_TODO: CPCount is not reporting correctly.
    if (m_bShowCheckpoints)
     {
         if (center_cps)
