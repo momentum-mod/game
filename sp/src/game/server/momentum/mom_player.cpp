@@ -26,8 +26,6 @@ CMomentumPlayer::~CMomentumPlayer()
 
 }
 
-
-
 void CMomentumPlayer::SurpressLadderChecks(const Vector& pos, const Vector& normal)
 {
     m_ladderSurpressionTimer.Start(1.0f);
@@ -55,7 +53,6 @@ bool CMomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
 
     return false;
 }
-
 
 //MOM_TODO: clean this method up
 CBaseEntity* CMomentumPlayer::EntSelectSpawnPoint()

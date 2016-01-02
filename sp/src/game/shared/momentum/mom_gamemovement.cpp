@@ -59,7 +59,6 @@ void CMomentumGameMovement::WalkMove()
 
 void CMomentumGameMovement::CheckForLadders(bool wasOnGround)
 {
-#ifndef CLIENT_DLL
     if (!wasOnGround)
     {
         // If we're higher than the last place we were on the ground, bail - obviously we're not dropping
@@ -116,18 +115,17 @@ void CMomentumGameMovement::CheckForLadders(bool wasOnGround)
     {
         player->m_lastStandingPos = mv->GetAbsOrigin();
     }
-#endif
 }
 
 bool CMomentumGameMovement::LadderMove(void)
 {
     bool isOnLadder = BaseClass::LadderMove();
-#ifndef CLIENT_DLL
+//#ifndef CLIENT_DLL
     if (isOnLadder && player)
     {
         player->SurpressLadderChecks(mv->GetAbsOrigin(), player->m_vecLadderNormal);
     }
-#endif
+//#endif
     return isOnLadder;
 
 }

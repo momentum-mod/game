@@ -82,6 +82,13 @@
 	checkpoint(integer) : "Minimum req. checkpoint" : -2 : "The minimum checkpoint the player needs to be at in order for the filter to accept the activator."
 ]
 
+@SolidClass = func_ladder : 
+	"Ladder. Players will be able to freely along this brush, as if it was a ladder. If you are using a model prop " +
+	"for the visual representation of the ladder in the map, apply the toolsinvisibleladder material to the " +
+	"func_ladder brush."
+[
+]
+
 // NOT IMPLEMENTED YET
 @SolidClass base(func_brush) = func_shootboost : 
 	"Entity that pushes the player when hit by the momentum_gun."
