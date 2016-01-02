@@ -11,7 +11,7 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
+#ifdef BLAH
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -116,11 +116,6 @@ bool CHL2GameMovement::OnLadder(trace_t &trace)
 static bool NearbyDismountLessFunc(const NearbyDismount_t& lhs, const NearbyDismount_t& rhs)
 {
 	return lhs.distSqr < rhs.distSqr;
-}
-
-void CHL2GameMovement::WalkMove() {
-	BaseClass::WalkMove();
-	CheckForLadders(player->GetGroundEntity() != NULL);
 }
 
 void CHL2GameMovement::AirMove() {
@@ -667,4 +662,5 @@ static CHL2GameMovement g_GameMovement;
 IGameMovement *g_pGameMovement = (IGameMovement *)&g_GameMovement;
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);
+#endif
 #endif

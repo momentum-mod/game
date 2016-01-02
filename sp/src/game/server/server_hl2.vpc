@@ -82,6 +82,12 @@ $Project "Server (HL2)"
 			$File   "momentum\weapon_momentum_gun.cpp"
 			$File	"momentum\mapzones.h"
 			$File	"momentum\mapzones.cpp"
+			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
+			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.h"
+			$File   "$SRCDIR\game\shared\momentum\mom_player_shared.h"
+			$File   "momentum\mom_client.cpp"
+			$File   "momentum\mom_player.cpp"
+			$File   "momentum\mom_player.h"
 		}
 
 		$Folder	"HL2 DLL"

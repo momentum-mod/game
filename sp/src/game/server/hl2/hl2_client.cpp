@@ -14,6 +14,7 @@
 */
 
 #include "cbase.h"
+/*
 #include "hl2_player.h"
 #include "hl2_gamerules.h"
 #include "gamerules.h"
@@ -40,7 +41,6 @@ ClientPutInServer
 
 called each time a player is spawned into the game
 ============
-*/
 void ClientPutInServer( edict_t *pEdict, const char *playername )
 {
 	// Allocate a CBasePlayer for pev, and call spawn
@@ -70,11 +70,11 @@ void ClientActive( edict_t *pEdict, bool bLoadGame )
 
 /*
 ===============
-const char *GetGameDescription()
+//const char *GetGameDescription()
 
-Returns the descriptive name of this .dll.  E.g., Half-Life, or Team Fortress 2
-===============
-*/
+//Returns the descriptive name of this .dll.  E.g., Half-Life, or Team Fortress 2
+//===============
+
 const char *GetGameDescription()
 {
 	if ( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
@@ -158,5 +158,5 @@ void GameStartFrame( void )
 void InstallGameRules()
 {
 	CreateGameRulesObject( "CHalfLife2" );
-}
+}*/
 

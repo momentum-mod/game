@@ -1114,7 +1114,8 @@ protected:
 	friend class CTFGameMovement;
 	friend class CHL1GameMovement;
 	friend class CCSGameMovement;	
-	friend class CHL2GameMovement;
+	//friend class CHL2GameMovement;
+    friend class CMomentumGameMovement;
 	friend class CDODGameMovement;
 	friend class CPortalGameMovement;
 	

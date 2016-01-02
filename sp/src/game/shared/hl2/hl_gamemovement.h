@@ -44,7 +44,7 @@ public:
 	virtual bool CheckJumpButton(void);
 	virtual void PlayerMove(void);
 	virtual void AirMove(void);
-	virtual void WalkMove(void);
+	//virtual void WalkMove(void);
 
 	//added ladder
 	virtual float LadderDistance(void) const

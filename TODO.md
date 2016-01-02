@@ -12,13 +12,22 @@
     - [ ] Sort function for online times
     - [x] Fix bugs: Lines being chopped down & mapsummary not being set
     - [x] Discuss columns widths
+    - [ ] De-hardcode the font used on size checking
+    - [ ] Find where to place friends leaderboards
+    - [ ] A lot of variables are not necessary. Ensure which are and remove the rest
+    - [ ] Use GetTextSize instead of calculating it per character
     
 - [ ] MenuMapSelection.cpp (Client)
     - [ ] Parse data from API, compare to already existing/downloaded maps
     - [ ] Download a selected map and its zone file
     
 - [ ] The "mom"-ification and refactoring
-    - [ ] Use mom_player and mom_gamerules instead of generic ones (Server)
+    - [ ] mom_player (Server/Client)
+         - [ ] Copy valuable snippets from HL2/CS Player classes
+    - [ ] mom_gamerules (Shared)
+         - [ ] Follow the hl2_gamerules.cpp file for creation
+    - [x] mom_gamemovement (Shared)
+        - [x] Implement rampboost fix by TotallyMehis
     - [ ] Remove any and all unnecessary HL2/generic code that doesn't pertain to the mod
 
 - [x] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
@@ -56,7 +65,7 @@
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking
     - [x] GetCPCount seems to return wrongly
-    - [ ] Are command flags needed?
+    - [x] Are command flags needed?
     
 - [ ] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 
