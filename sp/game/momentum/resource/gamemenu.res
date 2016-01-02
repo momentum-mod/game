@@ -9,9 +9,12 @@
 	}
 	"2"
 	{
+	//TODO change this to "Start Game" which opens map selection
 		"label" "#GameUI_GameMenu_CreateServer"
 		"command" "OpenCreateMultiplayerGameDialog"
 		"InGameOrder" "30"
+		"notmulti" "1"
+		"notsingle" "1"
 	}
 	"3"
 	{

@@ -50,6 +50,7 @@ void CTimer::PostTime()
     }
 }
 
+//MOM_TODO: REMOVEME
 CON_COMMAND(mom_test_hash, "Tests SHA1 Hashing\n")
 {
     char pathToZone[MAX_PATH];
@@ -157,6 +158,7 @@ void CTimer::OnMapEnd(const char *pMapName)
 {
     SetCurrentCheckpointTrigger(NULL);
     SetStartTrigger(NULL);
+    SetCurrentStage(NULL);
     RemoveAllCheckpoints();
     localTimes.Purge();
     //MOM_TODO: onlineTimes.RemoveAll();
@@ -193,7 +195,7 @@ void CTimer::DispatchResetMessage()
 void CTimer::DispatchStageMessage()
 {
     CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer)
+    if (cPlayer && m_pCurrentStage)
     {
         CSingleUserRecipientFilter user(cPlayer);
         user.MakeReliable();
@@ -245,7 +247,7 @@ void CTimer::DispatchStageCountMessage()
     }
 }
 
-CON_COMMAND_F(hud_timer_request_stages, "",FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
 {
     g_Timer.DispatchStageCountMessage();
 }
@@ -383,10 +385,11 @@ public:
 
         if (g_Timer.IsRunning())
         {
-            // MOM_TODO consider having a local timer running,
-            //as people may want to time their routes they're using CP menu for
-            // MOM_TODO consider KZ (lol)
-            //g_Timer.SetRunning(false);
+            g_Timer.Stop(false); //Following original intentions of stopping, see MOM_TODO below
+
+            // MOM_TODO: consider
+            // 1. having a local timer running, as people may want to time their routes they're using CP menu for
+            // 2. gamemodes (KZ) where this is allowed
         }
         if (args.ArgC() > 1)
         {

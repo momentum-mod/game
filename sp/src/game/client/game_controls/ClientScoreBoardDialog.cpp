@@ -42,6 +42,10 @@ extern IFileSystem *filesystem;
 
 using namespace vgui;
 
+#define RANKSTRING "00000"//A max of 99999 ranks (too generous)
+#define DATESTRING "00/00/0000 00:00:00" //Entire date string
+#define TIMESTRING "00:00:00.000"//Entire time string
+
 bool AvatarIndexLessFunc(const int &lhs, const int &rhs)
 {
     return lhs < rhs;
@@ -56,7 +60,6 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
     m_nCloseKey = BUTTON_CODE_INVALID;
 
     m_pViewPort = pViewPort;
-
     // initialize dialog
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
@@ -114,6 +117,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
     // update scoreboard instantly if on of these events occure
     ListenForGameEvent("runtime_saved");
     ListenForGameEvent("runtime_posted");
+    ListenForGameEvent("game_newmap");
 
     m_pImageList = NULL;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
@@ -184,17 +188,30 @@ void CClientScoreBoardDialog::Reset()
 
 void CClientScoreBoardDialog::Reset(bool pFullReset)
 {
-    if (pFullReset)
-        Update(true);
-
     // clear
     m_pPlayerList->DeleteAllItems();
     m_pPlayerList->RemoveAllSections();
+
+    if (m_pLocalLeaderboards)
+    {
+        m_pLocalLeaderboards->DeleteAllItems();
+        m_pLocalLeaderboards->RemoveAllSections();
+    }
+
+    if (m_pOnlineLeaderboards)
+    {
+        m_pOnlineLeaderboards->DeleteAllItems();
+        m_pOnlineLeaderboards->RemoveAllSections();
+    }
 
     m_iSectionId = 0;
     m_fNextUpdateTime = 0;
     // add all the sections
     InitScoreboardSections();
+
+    Update(pFullReset);
+    //if (pFullReset)
+    //    Update(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -202,6 +219,36 @@ void CClientScoreBoardDialog::Reset(bool pFullReset)
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::InitScoreboardSections()
 {
+    if (m_pLocalLeaderboards)
+    {
+        m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
+        m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, m_aiColumnWidths[0]);
+    }
+
+    // MOM_TODO: Discuss scoreboard size. It's really small for so many columns
+    // @Goc: I think we're just going to leave the "Date" off of these, it seems sort of unneccessary
+    if (m_pOnlineLeaderboards)
+    {
+        m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
+        m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, m_aiColumnWidths[1]);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
+        //m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+    }
+
+    if (m_pFriendsLeaderboards)
+    {
+        // We use online timer srot func as it's the same type of data
+        m_pFriendsLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
+        m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, m_aiColumnWidths[1]);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
+        //m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -234,41 +281,29 @@ void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
             scheme()->GetProportionalScaledValueEx(GetScheme(), tall));
     }
 
+    const char *columnNames[] = { DATESTRING, RANKSTRING, TIMESTRING };
+
+    HFont font = pScheme->GetFont("Default", true);
+    for (int i = 0; i < 3; i++)
+    {
+        const char *currName = columnNames[i];
+        const int len = Q_strlen(currName);
+        int pixels = 0;
+        for (int currentChar = 0; currentChar < len; currentChar++)
+        {
+            pixels += surface()->GetCharacterWidth(font, currName[currentChar]);
+        }
+        m_aiColumnWidths[i] = pixels + 20;//Arbitrary padding
+    }
+    //DevLog("Widths %i %i %i \n", m_aiColumnWidths[0], m_aiColumnWidths[1], m_aiColumnWidths[2]);
+
     m_pPlayerList->SetImageList(m_pImageList, false);
     m_pPlayerList->SetVisible(true);
+
     if (m_lMapSummary)
         m_lMapSummary->SetVisible(true);
 
-    if (m_pLocalLeaderboards)
-    {
-        m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
-        m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH - 40);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
-    }
 
-    // MOM_TODO: Discuss scoreboard size. It's really small for so many columns
-
-    if (m_pOnlineLeaderboards)
-    {
-        m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
-        m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCORE_WIDTH - 10);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH - 80);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH - 80);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
-    }
-
-    if (m_pFriendsLeaderboards)
-    {
-        // We use online timer srot func as it's the same type of data
-        m_pFriendsLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
-        m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCORE_WIDTH - 10);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH - 80);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, NAME_WIDTH - 80);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
-    }
 
     // light up scoreboard a bit
     SetBgColor(Color(0, 0, 0, 0));
@@ -310,6 +345,8 @@ void CClientScoreBoardDialog::ShowPanel(bool bShow)
 
 void CClientScoreBoardDialog::FireGameEvent(IGameEvent *event)
 {
+    if (!event) return;
+
     const char * type = event->GetName();
 
     if (Q_strcmp(type, "runtime_saved") == 0)
@@ -321,9 +358,14 @@ void CClientScoreBoardDialog::FireGameEvent(IGameEvent *event)
     {
         //MOM_TODO: this updates your rank (friends/online panel)
     }
+    else if (Q_strcmp(type, "game_newmap") == 0)
+    {
+        bLocalTimesLoaded = false;
+    }
 
-    if (IsVisible())
-        Update(true);
+    //MOM_TODO: there's a crash here if you uncomment it, 
+    //if (IsVisible())
+    //    Update(true);
 
 }
 
@@ -342,9 +384,9 @@ void CClientScoreBoardDialog::Update(void)
 
 void CClientScoreBoardDialog::Update(bool pFullUpdate)
 {
-    m_pPlayerList->DeleteAllItems();
-    if (pFullUpdate)
-        FillScoreBoard(true);
+    //m_pPlayerList->DeleteAllItems();
+
+    FillScoreBoard(pFullUpdate);
 
     // grow the scoreboard to fit all the players
     int wide, tall;
@@ -476,62 +518,77 @@ bool CClientScoreBoardDialog::StaticOnlineTimeSortFunc(vgui::SectionedListPanel 
 
 void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
 {
-    KeyValues *pLoaded = new KeyValues("local");
-    char fileName[MAX_PATH];
-    Q_strcpy(fileName, "maps/");
-    Q_strcat(fileName, g_pGameRules->MapName(), MAX_PATH);
-    Q_strncat(fileName, ".tim", MAX_PATH);
-    DevLog("Loading from file %s...\n", fileName);
-    if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
+    if (!bLocalTimesLoaded || bLocalTimesNeedUpdate)
     {
-        for (KeyValues* kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime; kvLocalTime = kvLocalTime->GetNextKey())
+        //Clear the local times for a refresh
+        m_vLocalTimes.RemoveAll();
+
+        //Load from .tim file
+        KeyValues *pLoaded = new KeyValues("local");
+        char fileName[MAX_PATH];
+        Q_strcpy(fileName, "maps/");
+        Q_strcat(fileName, g_pGameRules->MapName(), MAX_PATH);
+        Q_strncat(fileName, ".tim", MAX_PATH);
+        if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
         {
-            int ticks = Q_atoi(kvLocalTime->GetName());
-            float rate = kvLocalTime->GetFloat("rate");
-            time_t date = (time_t) kvLocalTime->GetInt("date");
-            float secondsF = ((float) ticks) * rate;
-            //MOM_TODO: consider adding a "100 tick" column?
-
-            KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
-            kvLocalTimeFormatted->SetFloat("time_f", secondsF);//Used for static compare
-            kvLocalTimeFormatted->SetInt("date_t", date);//Used for finding
-            char timeString[15];
-            
-            int hours = secondsF / (60.0f * 60.0f);
-            int minutes = fmod(secondsF / 60.0f, 60.0f);
-            int seconds = fmod(secondsF, 60.0f);
-            int millis = fmod(secondsF, 1.0f) * 1000.0f;
-            
-            if (hours > 0)
-                Q_snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
-            else if (minutes > 0)
-                Q_snprintf(timeString, sizeof(timeString), "%02d:%02d.%03d", minutes, seconds, millis);
-            else
+            DevLog("Loading from file %s...\n", fileName);
+            for (KeyValues* kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime; kvLocalTime = kvLocalTime->GetNextKey())
             {
-                Q_snprintf(timeString, sizeof(timeString), "%02d.%03d", seconds, millis);
+                Time t = Time(kvLocalTime);
+                m_vLocalTimes.AddToTail(t);
             }
-
-            kvLocalTimeFormatted->SetString("time", timeString);
-
-            char dateString[64];
-            tm * local;
-            local = localtime(&date);
-            if (local)
-            {
-                strftime(dateString, sizeof(dateString), "%d/%m/%Y %H:%M:%S", local);
-                kvLocalTimeFormatted->SetString("date", dateString);
-            }
-            else
-            {
-                kvLocalTimeFormatted->SetInt("date", date);
-            }
-
-            kv->AddSubKey(kvLocalTimeFormatted);
+            bLocalTimesLoaded = true;
+            bLocalTimesNeedUpdate = false;
         }
-        bLocalTimesLoaded = true;
-        bLocalTimesNeedUpdate = false;
+        pLoaded->deleteThis();
     }
-    pLoaded->deleteThis();
+
+    //Convert
+    if (!m_vLocalTimes.IsEmpty())
+        ConvertLocalTimes(kv);
+}
+
+
+void CClientScoreBoardDialog::ConvertLocalTimes(KeyValues *kvInto)
+{
+    FOR_EACH_VEC(m_vLocalTimes, i)
+    {
+        Time t = m_vLocalTimes[i];
+        float secondsF = ((float) t.ticks) * t.rate;
+        //MOM_TODO: consider adding a "100 tick" column?
+
+        KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
+        kvLocalTimeFormatted->SetFloat("time_f", secondsF);//Used for static compare
+        kvLocalTimeFormatted->SetInt("date_t", t.date);//Used for finding
+        char timeString[15];
+
+        int hours = secondsF / (60.0f * 60.0f);
+        int minutes = fmod(secondsF / 60.0f, 60.0f);
+        int seconds = fmod(secondsF, 60.0f);
+        int millis = fmod(secondsF, 1.0f) * 1000.0f;
+
+        if (hours > 0)
+            Q_snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+        else if (minutes > 0)
+            Q_snprintf(timeString, sizeof(timeString), "%02d:%02d.%03d", minutes, seconds, millis);
+        else
+            Q_snprintf(timeString, sizeof(timeString), "%02d.%03d", seconds, millis);
+
+        kvLocalTimeFormatted->SetString("time", timeString);
+
+        char dateString[64];
+        tm *local;
+        local = localtime(&t.date);
+        if (local)
+        {
+            strftime(dateString, sizeof(dateString), "%d/%m/%Y %H:%M:%S", local);
+            kvLocalTimeFormatted->SetString("date", dateString);
+        }
+        else
+            kvLocalTimeFormatted->SetInt("date", t.date);
+
+        kvInto->AddSubKey(kvLocalTimeFormatted);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -539,11 +596,6 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
 //-----------------------------------------------------------------------------
 bool CClientScoreBoardDialog::GetPlayerTimes(KeyValues *kv)
 {
-    //We're going to need to update all three of these, even if only two are shown,
-    //because the user can change the panels at any time
-
-    //We could also make it update based on when players change their leaderboard
-    //to show something else, to reduce 
     if (!kv)
         return false;
     // MOM_TODO: QUERY THE API AND FILL THE LEADERBOARD LISTS
@@ -551,18 +603,17 @@ bool CClientScoreBoardDialog::GetPlayerTimes(KeyValues *kv)
 
     KeyValues *pLocal = new KeyValues("local");
     // Fill local times:
-    if (!bLocalTimesLoaded || bLocalTimesNeedUpdate)
-        LoadLocalTimes(pLocal);
+    LoadLocalTimes(pLocal);
 
     pLeaderboards->AddSubKey(pLocal);
 
     KeyValues *pOnline = new KeyValues("online");
-    // Fill online times (global)
+    // MOM_TODO: Fill online times (global)
 
     pLeaderboards->AddSubKey(pOnline);
 
     KeyValues *pFriends = new KeyValues("friends");
-    // Fill online times (friends)
+    // MOM_TODO: Fill online times (friends)
 
 
     pLeaderboards->AddSubKey(pFriends);
@@ -593,7 +644,7 @@ void CClientScoreBoardDialog::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
                 {
                     CAvatarImage *pImage = new CAvatarImage();
                     // 64 is enough up to full HD resolutions.
-                    pImage->SetAvatarSteamID(steamIDForPlayer,k_EAvatarSize64x64);
+                    pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
                     pImage->SetAvatarSize(64, 64);	// Deliberately non scaling
                     iImageIndex = m_pImageList->AddImage(pImage);
 
@@ -636,7 +687,7 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
         && !m_kvPlayerData->IsEmpty())
     {
         m_pPlayerStats->SetVisible(false); // Hidden so it is not seen being changed
-        
+
 
         KeyValues *playdata = m_kvPlayerData->FindKey("data");
         if (playdata)
@@ -647,8 +698,8 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
                 int pAvatarIndex = playdata->GetInt("avatar", 0);
                 if (pAvatarIndex == 0)
                     m_pPlayerAvatar->SetImage("default_steam");
-                else 
-                    m_pPlayerAvatar->SetImage(m_pImageList->GetImage(pAvatarIndex));    
+                else
+                    m_pPlayerAvatar->SetImage(m_pImageList->GetImage(pAvatarIndex));
                 m_pPlayerAvatar->GetImage()->SetSize(scheme()->GetProportionalScaledValue(32), scheme()->GetProportionalScaledValue(32));
             }
 
@@ -660,7 +711,7 @@ void CClientScoreBoardDialog::FillScoreBoard(bool pFullUpdate)
 
             Q_snprintf(mapRank, 50, "%s: %i/%i", mrLocalized, playdata->GetInt("mapRank", -1), playdata->GetInt("mapCount", -1));
             m_lPlayerMapRank->SetText(mapRank);
-            
+
             char globalRank[50];
             char grLocalized[50];
             wchar_t *wGlobalLocal = g_pVGuiLocalize->Find("#MOM_GlobalRank");

@@ -11,7 +11,7 @@
     - [ ] Make FindItemIDForPlayerIndex(int) return an ItemID for another person's time
     - [ ] Sort function for online times
     - [x] Fix bugs: Lines being chopped down & mapsummary not being set
-    - [ ] Discuss columns widths
+    - [x] Discuss columns widths
     
 - [ ] MenuMapSelection.cpp (Client)
     - [ ] Parse data from API, compare to already existing/downloaded maps
@@ -23,7 +23,7 @@
 
 - [x] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
     - [ ] Create global enumeration for gamemodes
-    - [ ] Store current gamemdoe on a global variable
+    - [ ] Store current gamemode on a global variable
 
 - [ ] weapon_momentum_gun (Client/Server)
     - [ ] Import CS:S weapon entities over as proxy weapons to change the gun's behavior
@@ -39,7 +39,7 @@
     - [ ] Act accordingly to gamemode
     - [x] Implement Hud Messaging system to interact with Timer.cpp (server)
     - [x] Localization
-    - [ ] Discuss bufsize for strings taking intoa count localizations
+    - [x] Discuss bufsize for strings taking intoa count localizations
     
 - [ ] hud_cp_menu.cpp (Client) 
     - [x] Make creating a checkpoint stop your timer
@@ -55,7 +55,7 @@
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking
-    - [x] (FIXED) GetCPCount seems to return wrongly
+    - [x] GetCPCount seems to return wrongly
     - [ ] Are command flags needed?
     
 - [ ] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
