@@ -219,24 +219,23 @@ void CClientScoreBoardDialog::Reset(bool pFullReset)
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::InitScoreboardSections()
 {
+#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
+
     if (m_pLocalLeaderboards)
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
         m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, m_aiColumnWidths[0]);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, SCALE(m_aiColumnWidths[0]));
     }
 
-    // MOM_TODO: Discuss scoreboard size. It's really small for so many columns
-    // @Goc: I think we're just going to leave the "Date" off of these, it seems sort of unneccessary
     if (m_pOnlineLeaderboards)
     {
         m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, m_aiColumnWidths[1]);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]));
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
-        //m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
     }
 
     if (m_pFriendsLeaderboards)
@@ -244,11 +243,11 @@ void CClientScoreBoardDialog::InitScoreboardSections()
         // We use online timer srot func as it's the same type of data
         m_pFriendsLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, m_aiColumnWidths[1]);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]));
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, m_aiColumnWidths[2]);
-        //m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, NAME_WIDTH + 60);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
     }
+#undef SCALE
 }
 
 //-----------------------------------------------------------------------------
@@ -293,7 +292,7 @@ void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
         {
             pixels += surface()->GetCharacterWidth(font, currName[currentChar]);
         }
-        m_aiColumnWidths[i] = pixels + 20;//Arbitrary padding
+        m_aiColumnWidths[i] = pixels;
     }
     //DevLog("Widths %i %i %i \n", m_aiColumnWidths[0], m_aiColumnWidths[1], m_aiColumnWidths[2]);
 
