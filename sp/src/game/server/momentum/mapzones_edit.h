@@ -23,7 +23,7 @@ public:
     void IncreaseZoom( float dist ) { m_flReticleDist = fminf( m_flReticleDist + dist, 2048.0f ); };
     void DecreaseZoom( float dist ) { m_flReticleDist = fmaxf( m_flReticleDist - dist, 16.0f ); };
     float GetZoom() { return m_flReticleDist; };
-    float SetZoom( float dist ) { m_flReticleDist = fmaxf( fminf( dist, 2048.0f ), 16.0f ); };
+    void SetZoom( float dist ) { m_flReticleDist = fmaxf( fminf( dist, 2048.0f ), 16.0f ); };
     
     // Placeholder, move this somewhere else if other files start using the zone types.
     int GetEntityZoneType( CBaseEntity *pEnt );
