@@ -66,3 +66,4 @@ voice_ban.dt
 # shader files
 *.tmp
 
+*.cache
