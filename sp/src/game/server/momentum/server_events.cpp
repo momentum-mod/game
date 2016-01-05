@@ -2,6 +2,7 @@
 #include "movevars_shared.h"
 #include "mapzones.h"
 #include "Timer.h"
+#include "mapzones_edit.h"
 
 #include "tier0/memdbgon.h"
 
@@ -35,6 +36,8 @@ namespace Momentum
         //Setup timer
         g_Timer.OnMapStart(pMapName);
         
+        // Reset zone editing
+        g_MapzoneEdit.Reset();
     }
 
     void OnMapEnd(const char *pMapName)
@@ -47,5 +50,14 @@ namespace Momentum
         }
         g_Timer.OnMapEnd(pMapName);
     }
+
+    void OnGameFrameStart()
+    {
+        g_MapzoneEdit.Update();
+    }
+
+    /*void OnGameFrameEnd()
+    {
+    }*/
 
 } // namespace Momentum

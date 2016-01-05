@@ -91,7 +91,6 @@
 #include "serverbenchmark_base.h"
 #include "querycache.h"
 #include "momentum/server_events.h"
-#include "momentum/mapzones_edit.h"
 
 
 #ifdef USE_NAV_MESH
@@ -1105,9 +1104,6 @@ void CServerGameDLL::ServerActivate(edict_t *pEdictList, int edictCount, int cli
 #endif
 
     Momentum::OnMapStart(gpGlobals->mapname.ToCStr());
-
-
-    g_MapzoneEdit.Reset();
 }
 
 //-----------------------------------------------------------------------------
@@ -1187,6 +1183,10 @@ void CServerGameDLL::GameFrame(bool simulating)
     IGameSystem::FrameUpdatePreEntityThinkAllSystems();
     GameStartFrame();
 
+
+    Momentum::OnGameFrameStart();
+
+
 #ifndef _XBOX
 #ifdef USE_NAV_MESH
     TheNavMesh->Update();
@@ -1198,8 +1198,6 @@ void CServerGameDLL::GameFrame(bool simulating)
 
     gamestatsuploader->UpdateConnection();
 #endif
-
-    g_MapzoneEdit.Update();
 
     UpdateQueryCache();
     g_pServerBenchmark->UpdateBenchmark();
@@ -1243,6 +1241,9 @@ void CServerGameDLL::GameFrame(bool simulating)
 
     // Any entities that detect network state changes on a timer do it here.
     g_NetworkPropertyEventMgr.FireEvents();
+
+
+    //Momentum::OnGameFrameEnd();
 
     gpGlobals->frametime = oldframetime;
 }
