@@ -15,24 +15,21 @@ public:
     // Draw lines and update the zone height.
     void Update();
 
-    void Reset() { mom_zone_edit.SetValue( "0" ); m_nBuildStage = BUILDSTAGE_NONE; m_bEditing = false; };
+    void Reset();
 
-    int GetBuildStage() { return m_nBuildStage; };
-    void SetBuildStage( int stage ) { m_nBuildStage = stage; };
+    int GetBuildStage() { return m_nBuildStage; }
+    void SetBuildStage( int stage ) { m_nBuildStage = stage; }
 
-    void IncreaseZoom( float dist ) { m_flReticleDist = fminf( m_flReticleDist + dist, 2048.0f ); };
-    void DecreaseZoom( float dist ) { m_flReticleDist = fmaxf( m_flReticleDist - dist, 16.0f ); };
-    float GetZoom() { return m_flReticleDist; };
-    void SetZoom( float dist ) { m_flReticleDist = fmaxf( fminf( dist, 2048.0f ), 16.0f ); };
+    void IncreaseZoom( float dist ) { m_flReticleDist = fminf( m_flReticleDist + dist, 2048.0f ); }
+    void DecreaseZoom( float dist ) { m_flReticleDist = fmaxf( m_flReticleDist - dist, 16.0f ); }
+    float GetZoom() { return m_flReticleDist; }
+    void SetZoom( float dist ) { m_flReticleDist = fmaxf( fminf( dist, 2048.0f ), 16.0f ); }
     
     // Placeholder, move this somewhere else if other files start using the zone types.
     int GetEntityZoneType( CBaseEntity *pEnt );
     
     // start/stop/stage
     int ShortNameToZoneType( const char *in );
-
-    // Placeholder
-    bool ZoneTypeToClass( int type, char *dest );
 
 private:
     int m_nBuildStage = BUILDSTAGE_NONE;

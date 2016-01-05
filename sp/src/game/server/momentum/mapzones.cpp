@@ -54,23 +54,23 @@ void CMapzone::SpawnZone()
 {
     switch (m_type)
     {
-    case 0://start
+    case MOMZONETYPE_START:
         m_trigger = (CTriggerTimerStart *) CreateEntityByName("trigger_momentum_timer_start");
         ((CTriggerTimerStart *) m_trigger)->SetIsLimitingSpeed(m_limitingspeed);
         ((CTriggerTimerStart *) m_trigger)->SetMaxLeaveSpeed(m_maxleavespeed);
         m_trigger->SetName(MAKE_STRING("Start Trigger"));
         g_Timer.SetStartTrigger((CTriggerTimerStart *) m_trigger);
         break;
-    case 1://checkpoint
+    case MOMZONETYPE_CP:
         m_trigger = (CTriggerCheckpoint *) CreateEntityByName("trigger_momentum_timer_checkpoint");
         m_trigger->SetName(MAKE_STRING("Checkpoint Trigger"));
         ((CTriggerCheckpoint *) m_trigger)->SetCheckpointNumber(m_index);
         break;
-    case 2://end
+    case MOMZONETYPE_STOP:
         m_trigger = (CTriggerTimerStop *) CreateEntityByName("trigger_momentum_timer_stop");
         m_trigger->SetName(MAKE_STRING("Ending Trigger"));
         break;
-    case 3://onehop
+    case MOMZONETYPE_ONEHOP:
         m_trigger = (CTriggerOnehop *) CreateEntityByName("trigger_momentum_onehop");
         m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
         m_trigger->m_target = m_linkedent;
@@ -80,11 +80,11 @@ void CMapzone::SpawnZone()
         ((CTriggerOnehop *) m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
         ((CTriggerOnehop *) m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
         break;
-    case 4://resetonehop
+    case MOMZONETYPE_RESETONEHOP:
         m_trigger = (CTriggerResetOnehop *) CreateEntityByName("trigger_momentum_resetonehop");
         m_trigger->SetName(MAKE_STRING("ResetOnehop Trigger"));
         break;
-    case 5://checkpoint_teleport
+    case MOMZONETYPE_CPTELE:
         m_trigger = (CTriggerTeleportCheckpoint *) CreateEntityByName("trigger_momentum_teleport_checkpoint");
         m_trigger->SetName(MAKE_STRING("TeleportToCheckpoint Trigger"));
         m_trigger->m_target = m_linkedent;
@@ -93,7 +93,7 @@ void CMapzone::SpawnZone()
         ((CTriggerTeleportCheckpoint *) m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
         ((CTriggerTeleportCheckpoint *) m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
         break;
-    case 6://multihop
+    case MOMZONETYPE_MULTIHOP:
         m_trigger = (CTriggerOnehop *) CreateEntityByName("trigger_momentum_onehop");
         m_trigger->SetName(MAKE_STRING("Onehop Trigger"));
         m_trigger->m_target = m_linkedent;
@@ -103,7 +103,7 @@ void CMapzone::SpawnZone()
         ((CTriggerMultihop *) m_trigger)->SetShouldStopPlayer(m_shouldStopOnTeleport);
         ((CTriggerMultihop *) m_trigger)->SetShouldResetAngles(m_shouldResetAngles);
         break;
-    case 7://stage
+    case MOMZONETYPE_STAGE:
         m_trigger = (CTriggerStage *) CreateEntityByName("trigger_momentum_timer_stage");
         m_trigger->SetName(MAKE_STRING("Stage Trigger"));
         ((CTriggerStage *) m_trigger)->SetStageNumber(m_index);
@@ -267,35 +267,8 @@ bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
     if (!mZone) return false;
 
     char name[128];
-    switch (mZone->GetType())
-    {
-    case 0:
-        Q_strcpy(name, "trigger_momentum_timer_start");
-        break;
-    case 1:
-        Q_strcpy(name, "trigger_momentum_timer_checkpoint");
-        break;
-    case 2:
-        Q_strcpy(name, "trigger_momentum_timer_stop");
-        break;
-    case 3:
-        Q_strcpy(name, "trigger_momentum_onehop");
-        break;
-    case 4:
-        Q_strcpy(name, "trigger_momentum_timer_resetonehop");
-        break;
-    case 5:
-        Q_strcpy(name, "trigger_momentum_teleport_checkpoint");
-        break;
-    case 6:
-        Q_strcpy(name, "trigger_momentum_multihop");
-        break;
-    case 7:
-        Q_strcpy(name, "trigger_momentum_timer_stage");
-        break;
-    default:
-        return false;
-    }
+    if ( !ZoneTypeToClass( mZone->GetType(), name ) ) return false;
+
 
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(NULL, name);
     while (pEnt)
@@ -364,22 +337,22 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 
             if (Q_strcmp(cp->GetName(), "start") == 0)
             {
-                zoneType = 0;
+                zoneType = MOMZONETYPE_START;
                 limitingspeed = cp->GetBool("limitingspeed");
                 maxleavespeed = cp->GetFloat("leavespeed");
             }
             else if (Q_strcmp(cp->GetName(), "checkpoint") == 0)
             {
-                zoneType = 1;
+                zoneType = MOMZONETYPE_CP;
                 index = cp->GetInt("number", -1);
             }
             else if (Q_strcmp(cp->GetName(), "end") == 0)
             {
-                zoneType = 2;
+                zoneType = MOMZONETYPE_STOP;
             }
             else if (Q_strcmp(cp->GetName(), "onehop") == 0)
             {
-                zoneType = 3;
+                zoneType = MOMZONETYPE_ONEHOP;
                 shouldStop = cp->GetBool("stop", false);
                 shouldTilt = cp->GetBool("resetang", true);
                 holdTime = cp->GetFloat("hold", 1);
@@ -388,11 +361,11 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             }
             else if (Q_strcmp(cp->GetName(), "resetonehop") == 0)
             {
-                zoneType = 4;
+                zoneType = MOMZONETYPE_RESETONEHOP;
             }
             else if (Q_strcmp(cp->GetName(), "checkpoint_teleport") == 0)
             {
-                zoneType = 5;
+                zoneType = MOMZONETYPE_CPTELE;
                 //destinationIndex = cp->GetInt("destination", -1);
                 shouldStop = cp->GetBool("stop", false);
                 shouldTilt = cp->GetBool("resetang", true);
@@ -400,7 +373,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             }
             else if (Q_strcmp(cp->GetName(), "multihop") == 0)
             {
-                zoneType = 6;
+                zoneType = MOMZONETYPE_MULTIHOP;
                 shouldStop = cp->GetBool("stop", false);
                 shouldTilt = cp->GetBool("resetang", true);
                 holdTime = cp->GetFloat("hold", 1);
@@ -409,7 +382,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             }
             else if (Q_strcmp(cp->GetName(), "stage") == 0)
             {
-                zoneType = 7;
+                zoneType = MOMZONETYPE_STAGE;
                 index = cp->GetInt("number", 0);
             }
             else
@@ -427,4 +400,37 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
     }
     zoneKV->deleteThis();
     return toReturn;
+}
+
+bool ZoneTypeToClass( int type, char *dest )
+{
+    switch (type)
+    {
+    case MOMZONETYPE_START:
+        Q_strcpy(dest, "trigger_momentum_timer_start");
+        return true;
+    case MOMZONETYPE_CP:
+        Q_strcpy(dest, "trigger_momentum_timer_checkpoint");
+        return true;
+    case MOMZONETYPE_STOP:
+        Q_strcpy(dest, "trigger_momentum_timer_stop");
+        return true;
+    case MOMZONETYPE_ONEHOP:
+        Q_strcpy(dest, "trigger_momentum_onehop");
+        return true;
+    case MOMZONETYPE_RESETONEHOP:
+        Q_strcpy(dest, "trigger_momentum_timer_resetonehop");
+        return true;
+    case MOMZONETYPE_CPTELE:
+        Q_strcpy(dest, "trigger_momentum_teleport_checkpoint");
+        return true;
+    case MOMZONETYPE_MULTIHOP:
+        Q_strcpy(dest, "trigger_momentum_multihop");
+        return true;
+    case MOMZONETYPE_STAGE:
+        Q_strcpy(dest, "trigger_momentum_timer_stage");
+        return true;
+    }
+
+    return false;
 }

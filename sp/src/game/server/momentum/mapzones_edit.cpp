@@ -1,10 +1,7 @@
 #include "cbase.h"
-#include "in_buttons.h"
 #include "TimerTriggers.h"
-#include "Timer.h"
 #include "mapzones.h"
 #include "mapzones_edit.h"
-#include "server_events.h"
 
 #include "tier0/memdbgon.h"
 
@@ -58,7 +55,7 @@ void CC_Mom_ZoneDelete( const CCommand &args )
         else
         {
             char szDelete[64];
-            if ( g_MapzoneEdit.ZoneTypeToClass( g_MapzoneEdit.ShortNameToZoneType( args[1] ), szDelete ) )
+            if ( ZoneTypeToClass( g_MapzoneEdit.ShortNameToZoneType( args[1] ), szDelete ) )
             {
                 CBaseEntity *pEnt = gEntList.FindEntityByClassname( NULL, szDelete );
                 while ( pEnt )
@@ -99,7 +96,7 @@ void CC_Mom_ZoneMark( const CCommand &args )
             zonetype = g_MapzoneEdit.ShortNameToZoneType( mom_zone_defzone.GetString() );
         }
 
-        if ( zonetype == 0 || zonetype == 2 )
+        if ( zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP )
         {
             // Count zones to make sure we don't create multiple instances.
             int startnum = 0;
@@ -133,7 +130,7 @@ void CC_Mom_ZoneMark( const CCommand &args )
             }
 
             // Switch between start and end.
-            zonetype = ( startnum <= endnum ) ? 0 : 2; 
+            zonetype = ( startnum <= endnum ) ? MOMZONETYPE_START : MOMZONETYPE_STOP; 
         }
     }
     
@@ -218,7 +215,7 @@ void CMapzoneEdit::SetZoneProps( CBaseEntity *pEnt )
         
         return;
     }
-
+    
     CTriggerStage *pStage = dynamic_cast<CTriggerStage *>( pEnt );
     if ( pStage )
     {
@@ -397,6 +394,12 @@ void CMapzoneEdit::Update()
         }
     }
     
+    // Draw surface normal. Makes it a bit easier to see where reticle is hitting.
+    if ( tr.DidHit() )
+    {
+        DebugDrawLine( vecAim, vecAim + tr.plane.normal * 24.0f, 0, 0, 255, true, -1.0f );
+    }
+    
     DrawReticle( &vecAim, ( mom_zone_grid.GetInt() > 0 ) ? ( (float)mom_zone_grid.GetInt() / 2.0f ) : 8.0f );
 }
 
@@ -471,38 +474,26 @@ int CMapzoneEdit::ShortNameToZoneType( const char *in )
 {
     if ( Q_stricmp( in, "start" ) == 0 )
     {
-        return 0;
+        return MOMZONETYPE_START;
     }
     else if ( Q_stricmp( in, "end" ) == 0 || Q_stricmp( in, "stop" ) == 0 )
     {
-        return 2;
+        return MOMZONETYPE_STOP;
     }
     else if ( Q_stricmp( in, "stage" ) == 0 )
     {
-        return 7;
+        return MOMZONETYPE_STAGE;
     }
 
     return -1;
 }
 
-bool CMapzoneEdit::ZoneTypeToClass( int type, char *dest )
+void CMapzoneEdit::Reset()
 {
-    switch ( type )
-    {
-    case 0:
-        Q_strcpy( dest, "trigger_momentum_timer_start" );
-        return true;
-    case 2:
-        Q_strcpy( dest, "trigger_momentum_timer_stop" );
-        return true;
-    case 7:
-        Q_strcpy( dest, "trigger_momentum_timer_stage" );
-        return true;
-    default:
-        Warning( "Invalid zone type: %i!\n", type );
-    }
+    mom_zone_edit.SetValue( 0 );
 
-    return false;
+    m_nBuildStage = BUILDSTAGE_NONE;
+    m_bEditing = false;
 }
 
 CMapzoneEdit g_MapzoneEdit;

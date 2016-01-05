@@ -1,6 +1,15 @@
 #include "filesystem.h"
 #include "TimerTriggers.h"
 
+#define MOMZONETYPE_START       0
+#define MOMZONETYPE_CP          1
+#define MOMZONETYPE_STOP        2
+#define MOMZONETYPE_ONEHOP      3
+#define MOMZONETYPE_RESETONEHOP 4
+#define MOMZONETYPE_CPTELE      5
+#define MOMZONETYPE_MULTIHOP    6
+#define MOMZONETYPE_STAGE       7
+
 class CMapzone
 {
 public:
@@ -20,7 +29,7 @@ public:
     Vector* GetScaleMaxs() { return m_scaleMaxs; }
 
 private:
-    int m_type; // 0 = start, 1 = checkpoint, 2 = end, 3 = Onehop, 4 = OnehopReset, 5 = Checkpoint_teleport, 6 = multihop
+    int m_type; // Zone type, look above
     int m_index; // Ignored when not a checkpoint
     bool m_shouldStopOnTeleport; // Stop player on teleport?
     bool m_shouldResetAngles; // Reset the player's angles?
@@ -42,6 +51,7 @@ public:
     CMapzoneData(const char *szMapName);
     ~CMapzoneData();
 
+    
     void SpawnMapZones();
     void RemoveMapZones();
     bool MapZoneSpawned(CMapzone*);
@@ -53,3 +63,5 @@ private:
 
     CUtlVector<CMapzone*> m_zones;
 };
+
+bool ZoneTypeToClass(int type, char *dest);
