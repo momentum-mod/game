@@ -83,5 +83,3 @@ inline CMomentumPlayer	*CMomentumGameMovement::GetMomentumPlayer()
 {
     return static_cast<CMomentumPlayer *>(player);
 }
-
-#define player GetMomentumPlayer()

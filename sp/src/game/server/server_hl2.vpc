@@ -19,7 +19,7 @@ $Configuration
 	}
 }
 
-$Project "Server (HL2)"
+$Project "Server (Momentum)"
 {
 	$Folder	"Source Files"
 	{
@@ -89,6 +89,7 @@ $Project "Server (HL2)"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamerules.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamerules.h"
 			$File   "$SRCDIR\game\shared\momentum\mom_player_shared.h"
+			$File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
 			$File   "momentum\mom_client.cpp"
 			$File   "momentum\mom_player.cpp"
 			$File   "momentum\mom_player.h"
@@ -153,9 +154,6 @@ $Project "Server (HL2)"
 			$File	"hl2\hl2_playerlocaldata.h"
 			$File	"$SRCDIR\game\shared\hl2\hl2_shareddefs.h"
 			$File	"hl2\hl2_triggers.cpp"
-			$File	"$SRCDIR\game\shared\hl2\hl2_usermessages.cpp"
-			$File	"$SRCDIR\game\shared\hl2\hl_gamemovement.cpp"
-			$File	"$SRCDIR\game\shared\hl2\hl_gamemovement.h"
 			$File	"$SRCDIR\game\shared\hl2\hl_movedata.h"
 			$File	"hl2\hl_playermove.cpp"
 			$File	"hl2\info_darknessmode_lightsource.cpp"

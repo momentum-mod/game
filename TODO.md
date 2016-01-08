@@ -24,13 +24,26 @@
 - [ ] The "mom"-ification and refactoring
     - [ ] mom_player (Server/Client)
          - [ ] Copy valuable snippets from HL2/CS Player classes
+         - [ ] Clean up the EntSelectSpawnPoint() method
     - [ ] mom_gamerules (Shared)
          - [ ] Follow the hl2_gamerules.cpp file for creation
-    - [x] mom_gamemovement (Shared)
+    - [x] mom_gamemovement.cpp (Shared)
         - [x] Implement rampboost fix by TotallyMehis
+    - [ ] mom_usermessages.cpp (Shared)
+        - [ ] Remove the usermessages that aren't necessary
+    - [ ] mom_client.cpp (Server)
+        - [ ] Precache all necessary sounds/models for the mod
+    - [ ] VPC Scripts
+        - [ ] Add the new mom files to the proper VPC scripts
+        - [ ] Verify & remove the files we deleted from the appropriate VPC scripts
     - [ ] Remove any and all unnecessary HL2/generic code that doesn't pertain to the mod
+        - [ ] Remove all ifdef (SIXENSE) code segments
+        - [ ] Remove all ifdef (_XBOX/X360 etc) code segments
+        - [ ] Remove all ifdef (TF/PORTAL/DOD) code segments
+        - [ ] Remove all ifdef (HL2_EPISODIC) code segments
+        - [ ] Remove any unused files
 
-- [x] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
+- [ ] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
     - [ ] Create global enumeration for gamemodes
     - [ ] Store current gamemode on a global variable
 

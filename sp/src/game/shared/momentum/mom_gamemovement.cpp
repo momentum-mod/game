@@ -22,6 +22,9 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
 #endif
 
+#ifndef player
+#define player GetMomentumPlayer()
+
 CMomentumGameMovement::CMomentumGameMovement()
 {
 
@@ -120,12 +123,10 @@ void CMomentumGameMovement::CheckForLadders(bool wasOnGround)
 bool CMomentumGameMovement::LadderMove(void)
 {
     bool isOnLadder = BaseClass::LadderMove();
-//#ifndef CLIENT_DLL
     if (isOnLadder && player)
     {
         player->SurpressLadderChecks(mv->GetAbsOrigin(), player->m_vecLadderNormal);
     }
-//#endif
     return isOnLadder;
 
 }
@@ -1195,3 +1196,5 @@ static CMomentumGameMovement g_GameMovement;
 IGameMovement *g_pGameMovement = (IGameMovement *) &g_GameMovement;
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);
+
+#endif

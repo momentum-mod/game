@@ -5,7 +5,7 @@
 	title2		""
 	supportsvr	1
 	nodifficulty    1
-	developer	"Gocnak & Fatalis & TheAsuro & RabsRincon"
+	developer	"Team Momentum"
 	developer_url   "http://momentum-mod.org"
 	gamelogo	1
 

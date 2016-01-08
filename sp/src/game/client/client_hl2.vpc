@@ -20,7 +20,7 @@ $Configuration
 	}
 }
 
-$Project "Client (HL2)"
+$Project "Client (Momentum)"
 {
 	$Folder	"Source Files"
 	{
@@ -55,14 +55,15 @@ $Project "Client (HL2)"
 				}
 			}
 
-			$File "momentum\weapon_momentum_gun.cpp"
+			$File   "momentum\weapon_momentum_gun.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.h"
 			$File   "$SRCDIR\game\shared\momentum\mom_player_shared.h"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamerules.cpp"
+			$File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamerules.h"
 			$File   "momentum\c_mom_player.cpp"
-			$File  "momentum\c_mom_player.h"
+			$File   "momentum\c_mom_player.h"
 		}
 
 		$Folder	"HL2 DLL"
@@ -107,9 +108,6 @@ $Project "Client (HL2)"
 			$File	"$SRCDIR\game\shared\hl2\hl2_gamerules.cpp"
 			$File	"$SRCDIR\game\shared\hl2\hl2_gamerules.h"
 			$File	"$SRCDIR\game\shared\hl2\hl2_shareddefs.h"
-			$File	"$SRCDIR\game\shared\hl2\hl2_usermessages.cpp"
-			$File	"$SRCDIR\game\shared\hl2\hl_gamemovement.cpp"
-			$File	"$SRCDIR\game\shared\hl2\hl_gamemovement.h"
 			$File	"hl2\hl_in_main.cpp"
 			$File	"hl2\hl_prediction.cpp"
 			$File	"hl2\hud_ammo.cpp"
