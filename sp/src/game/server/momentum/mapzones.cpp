@@ -7,6 +7,9 @@
 
 #include "tier0/memdbgon.h"
 
+
+#define NO_LOOK -190.0f
+
 CMapzone::~CMapzone()
 {
     if (m_pos)
@@ -34,7 +37,7 @@ CMapzone::~CMapzone()
 CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins,
     Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, const bool pShouldTilt,
     const float pHoldTime, const bool pLimitSpeed,
-    const float pMaxLeaveSpeed, const string_t pLinkedEnt)
+    const float pMaxLeaveSpeed, const float flYaw, const string_t pLinkedEnt)
 {
     m_type = pType;
     m_pos = pPos;
@@ -47,6 +50,7 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
     m_holdTimeBeforeTeleport = pHoldTime;
     m_limitingspeed = pLimitSpeed;
     m_maxleavespeed = pMaxLeaveSpeed;
+    m_yaw = flYaw;
     m_linkedent = pLinkedEnt;
 }
 
@@ -58,6 +62,17 @@ void CMapzone::SpawnZone()
         m_trigger = (CTriggerTimerStart *) CreateEntityByName("trigger_momentum_timer_start");
         ((CTriggerTimerStart *) m_trigger)->SetIsLimitingSpeed(m_limitingspeed);
         ((CTriggerTimerStart *) m_trigger)->SetMaxLeaveSpeed(m_maxleavespeed);
+
+        if ( m_yaw != NO_LOOK )
+        {
+            ((CTriggerTimerStart *) m_trigger)->SetHasLookAngles(true);
+            ((CTriggerTimerStart *) m_trigger)->SetLookAngles(QAngle( 0, m_yaw, 0 ));
+        }
+        else
+        {
+            ((CTriggerTimerStart *) m_trigger)->SetHasLookAngles(false);
+        }
+        
         m_trigger->SetName(MAKE_STRING("Start Trigger"));
         g_Timer.SetStartTrigger((CTriggerTimerStart *) m_trigger);
         break;
@@ -139,6 +154,9 @@ static void saveZonFile(const char* szMapName)
             {
                 subKey->SetFloat("leavespeed", pTrigger->GetMaxLeaveSpeed());
                 subKey->SetBool("limitingspeed", pTrigger->IsLimitingSpeed());
+
+                if (pTrigger->GetHasLookAngles())
+                    subKey->SetFloat("yaw", pTrigger->GetLookAngles()[YAW] );
             }
         }
         else if (pEnt->ClassMatches("trigger_momentum_timer_stop"))
@@ -335,11 +353,14 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             float maxleavespeed = 290.0f;
             const char * linkedtrigger = NULL;
 
+            float start_yaw = NO_LOOK;
+
             if (Q_strcmp(cp->GetName(), "start") == 0)
             {
                 zoneType = MOMZONETYPE_START;
                 limitingspeed = cp->GetBool("limitingspeed");
                 maxleavespeed = cp->GetFloat("leavespeed");
+                start_yaw = cp->GetFloat("yaw", NO_LOOK);
             }
             else if (Q_strcmp(cp->GetName(), "checkpoint") == 0)
             {
@@ -393,7 +414,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 
             // Add element
             m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, shouldTilt,
-                holdTime, limitingspeed, maxleavespeed, MAKE_STRING(linkedtrigger)));
+                holdTime, limitingspeed, maxleavespeed, start_yaw, MAKE_STRING(linkedtrigger)));
         }
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
         toReturn = true;

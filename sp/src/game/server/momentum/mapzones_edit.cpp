@@ -74,6 +74,35 @@ void CC_Mom_ZoneDelete( const CCommand &args )
 static ConCommand mom_zone_delete( "mom_zone_delete", CC_Mom_ZoneDelete, "Delete zone types. Accepts start/stop/stage or an entity index.", FCVAR_CHEAT );
 
 
+void CC_Mom_ZoneSetLook()
+{
+    if ( !mom_zone_edit.GetBool() ) return;
+
+    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+    if ( !pPlayer ) return;
+
+
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname( NULL, "trigger_momentum_timer_start" );
+    CTriggerTimerStart *pStart;
+
+    while ( pEnt )
+    {
+        pStart = dynamic_cast<CTriggerTimerStart *>( pEnt );
+
+        if ( pStart )
+        {
+            pStart->SetHasLookAngles( true );
+            pStart->SetLookAngles( QAngle(0, pPlayer->EyeAngles()[1], 0) );
+
+            DevMsg( "Set start zone angles to: %.1f, %.1f, %.1f\n", pStart->GetLookAngles()[0], pStart->GetLookAngles()[1], pStart->GetLookAngles()[2] );
+        }
+
+        pEnt = gEntList.FindEntityByClassname( pEnt, "trigger_momentum_timer_start" );
+    }
+}
+
+static ConCommand mom_zone_start_setlook( "mom_zone_start_setlook", CC_Mom_ZoneSetLook, "Sets the direction where players will look when teleported to start.", FCVAR_CHEAT );
+
 void CC_Mom_ZoneMark( const CCommand &args )
 {
     if ( !mom_zone_edit.GetBool() ) return;

@@ -364,7 +364,17 @@ public:
         CTriggerTimerStart *start;
         if ((start = g_Timer.GetStartTrigger()) != NULL && cPlayer)
         {
-            cPlayer->Teleport(&start->WorldSpaceCenter(), NULL, &vec3_origin);
+            // Don't set angles if still in start zone.
+            if ( g_Timer.IsRunning() && start->GetHasLookAngles() )
+            {
+                QAngle ang = start->GetLookAngles();
+
+                cPlayer->Teleport(&start->WorldSpaceCenter(), &ang, &vec3_origin);
+            }
+            else
+            {
+                cPlayer->Teleport(&start->WorldSpaceCenter(), NULL, &vec3_origin);
+            }
         }
     }
 

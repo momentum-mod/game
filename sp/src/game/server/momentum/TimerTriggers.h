@@ -105,11 +105,23 @@ public:
     bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
     void SetIsLimitingSpeed(bool pIsLimitingSpeed);
 
+    void SetHasLookAngles( bool bHasLook );
+    bool GetHasLookAngles() { return HasSpawnFlags(SF_USE_LOOKANGLES); }
+    void SetLookAngles( QAngle newang );
+    QAngle GetLookAngles() { return m_angLook; }
+
 private:
+    QAngle m_angLook = QAngle( 0, 0, 0 );
+
     // How fast can the player leave the start trigger?
     float m_fMaxLeaveSpeed = 280;
+
+    // MOM_TODO: Why aren't these defines?
+
     // Limit max leave speed to m_fMaxLeaveSpeed?
     const int SF_LIMIT_LEAVE_SPEED = 0x2;
+    // Use look angles?
+    const int SF_USE_LOOKANGLES = 0x4;
 
 };
 

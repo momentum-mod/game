@@ -34,7 +34,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-DEFINE_KEYFIELD(m_fMaxLeaveSpeed, FIELD_FLOAT, "leavespeed")
+DEFINE_KEYFIELD(m_fMaxLeaveSpeed, FIELD_FLOAT, "leavespeed"),
+DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles")
 END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
@@ -71,6 +72,8 @@ void CTriggerTimerStart::Spawn()
     // We don't want negative velocities (We're checking against an absolute value)
     if (m_fMaxLeaveSpeed < 0)
         m_fMaxLeaveSpeed *= (-1);
+
+    m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
 }
 
 void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed)
@@ -96,6 +99,29 @@ void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
             RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED);
         }
     }
+}
+
+void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
+{
+    if (bHasLook)
+    {
+        if (!HasSpawnFlags(SF_USE_LOOKANGLES))
+        {
+            AddSpawnFlags(SF_USE_LOOKANGLES);
+        }
+    }
+    else
+    {
+        if (HasSpawnFlags(SF_USE_LOOKANGLES))
+        {
+            RemoveSpawnFlags(SF_USE_LOOKANGLES);
+        }
+    }
+}
+
+void CTriggerTimerStart::SetLookAngles( QAngle newang )
+{
+    m_angLook = newang;
 }
 //----------------------------------------------------------------------------------------------
 
