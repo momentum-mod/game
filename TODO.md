@@ -61,6 +61,7 @@
 - [ ] TimeTriggers.cpp (Server)
     - [ ] Tweak limit speed method
     - [x] Implement Hud Messaging system to interact with timer.cpp (client)
+    - [ ] Add the option to define what angles should the player have after being teleported
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking

@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6412"
-	"mapversion" "17"
+	"mapversion" "19"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -12,7 +12,7 @@ visgroups
 viewsettings
 {
 	"bSnapToGrid" "1"
-	"bShowGrid" "0"
+	"bShowGrid" "1"
 	"bShowLogicalGrid" "0"
 	"nGridSpacing" "32"
 	"bShow3DGrid" "0"
@@ -20,7 +20,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "17"
+	"mapversion" "19"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -2464,7 +2464,7 @@ world
 		side
 		{
 			"id" "695"
-			"plane" "(-288 576 -448) (-32 576 -448) (-32 2240 -448)"
+			"plane" "(-32 2240 -384) (-288 2240 -384) (-288 576 -384)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[-1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
@@ -2475,7 +2475,7 @@ world
 		side
 		{
 			"id" "694"
-			"plane" "(-288 2240 -448) (-32 2240 -448) (-160 2240 -160)"
+			"plane" "(-160 2240 -160) (-288 2240 -384) (-32 2240 -384)"
 			"material" "DEV/DEV_MEASURECRATE01"
 			"uaxis" "[-1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2486,7 +2486,7 @@ world
 		side
 		{
 			"id" "693"
-			"plane" "(-32 576 -448) (-288 576 -448) (-160 576 -160)"
+			"plane" "(-32 576 -384) (-288 576 -384) (-160 576 -160)"
 			"material" "DEV/DEV_MEASURECRATE01"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2497,10 +2497,10 @@ world
 		side
 		{
 			"id" "692"
-			"plane" "(-288 576 -448) (-288 2240 -448) (-160 2240 -160)"
+			"plane" "(-160 576 -160) (-288 576 -384) (-288 2240 -384)"
 			"material" "DEV/DEV_MEASUREWALL01D"
 			"uaxis" "[0 -1 0 0] 0.25"
-			"vaxis" "[-0.406138 0 -0.913812 0] 0.25"
+			"vaxis" "[-0.496138 0 -0.868244 0] 0.25"
 			"rotation" "0"
 			"lightmapscale" "16"
 			"smoothing_groups" "0"
@@ -2508,10 +2508,10 @@ world
 		side
 		{
 			"id" "691"
-			"plane" "(-32 2240 -448) (-32 576 -448) (-160 576 -160)"
+			"plane" "(-160 2240 -160) (-32 2240 -384) (-32 576 -384)"
 			"material" "DEV/DEV_MEASUREWALL01D"
 			"uaxis" "[0 1 0 0] 0.25"
-			"vaxis" "[0.406138 0 -0.913812 0] 0.25"
+			"vaxis" "[0.496138 0 -0.868244 0] 0.25"
 			"rotation" "0"
 			"lightmapscale" "16"
 			"smoothing_groups" "0"
@@ -5821,13 +5821,12 @@ entity
 entity
 {
 	"id" "1475"
-	"classname" "trigger_momentum_teleport"
+	"classname" "trigger_momentum_teleport_checkpoint"
 	"origin" "-160 2336 -304"
 	"resetang" "1"
 	"spawnflags" "1"
 	"StartDisabled" "0"
 	"stop" "1"
-	"target" "target"
 	solid
 	{
 		"id" "1473"
@@ -5992,6 +5991,108 @@ entity
 			"visgroupautoshown" "1"
 		}
 	}
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 2500]"
+	}
+}
+entity
+{
+	"id" "2025"
+	"classname" "light"
+	"_light" "255 255 255 200"
+	"_lightHDR" "-1 -1 -1 1"
+	"_lightscaleHDR" "1"
+	"_quadratic_attn" "1"
+	"origin" "-160 480 32"
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 0]"
+	}
+}
+entity
+{
+	"id" "2030"
+	"classname" "light"
+	"_light" "255 255 255 200"
+	"_lightHDR" "-1 -1 -1 1"
+	"_lightscaleHDR" "1"
+	"_quadratic_attn" "1"
+	"origin" "-160 2336 -160"
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 500]"
+	}
+}
+entity
+{
+	"id" "2035"
+	"classname" "light"
+	"_light" "255 255 255 200"
+	"_lightHDR" "-1 -1 -1 1"
+	"_lightscaleHDR" "1"
+	"_quadratic_attn" "1"
+	"origin" "-130.808 1439.4 215"
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 1000]"
+	}
+}
+entity
+{
+	"id" "2060"
+	"classname" "light"
+	"_light" "255 255 255 200"
+	"_lightHDR" "-1 -1 -1 1"
+	"_lightscaleHDR" "1"
+	"_quadratic_attn" "1"
+	"origin" "-206.169 2231 -555.38"
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 1500]"
+	}
+}
+entity
+{
+	"id" "2065"
+	"classname" "light"
+	"_light" "255 255 255 200"
+	"_lightHDR" "-1 -1 -1 1"
+	"_lightscaleHDR" "1"
+	"_quadratic_attn" "1"
+	"origin" "-161.474 585 -557.871"
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 2000]"
+	}
+}
+entity
+{
+	"id" "2070"
+	"classname" "light"
+	"_light" "255 255 255 200"
+	"_lightHDR" "-1 -1 -1 1"
+	"_lightscaleHDR" "1"
+	"_quadratic_attn" "1"
+	"origin" "-160 1280 -32"
 	editor
 	{
 		"color" "220 30 220"
