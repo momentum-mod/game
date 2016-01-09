@@ -70,7 +70,6 @@
 #include "engine/iserverplugin.h"
 #ifdef _WIN32
 #include "ienginevgui.h"
-#include "momentum/tickset.h"
 #endif
 #include "ragdoll_shared.h"
 #include "toolframework/iserverenginetools.h"
@@ -91,6 +90,7 @@
 #include "serverbenchmark_base.h"
 #include "querycache.h"
 #include "momentum/server_events.h"
+#include "momentum/tickset.h"
 
 #ifdef CSTRIKE_DLL // BOTPORT: TODO: move these ifdefs out
 #include "bot/bot.h"

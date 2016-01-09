@@ -1,9 +1,7 @@
 #ifndef TICKSET_H
 #define TICKSET_H
 
-#ifdef _WIN32
-#pragma once
-#endif
+#include "cbase.h"
 
 class TickSet {
 public:
