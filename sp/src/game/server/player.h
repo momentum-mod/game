@@ -1108,16 +1108,8 @@ private:
 	char					m_szNetname[MAX_PLAYER_NAME_LENGTH];
 
 protected:
-	// HACK FOR TF2 Prediction
-	friend class CTFGameMovementRecon;
 	friend class CGameMovement;
-	friend class CTFGameMovement;
-	friend class CHL1GameMovement;
-	friend class CCSGameMovement;	
-	//friend class CHL2GameMovement;
     friend class CMomentumGameMovement;
-	friend class CDODGameMovement;
-	friend class CPortalGameMovement;
 	
 	// Accessors for gamemovement
 	bool IsDucked( void ) const { return m_Local.m_bDucked; }

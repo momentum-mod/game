@@ -9,9 +9,6 @@
 #include "movevars_shared.h"
 #include "util_shared.h"
 #include "datacache/imdlcache.h"
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-#include "tf_gamerules.h"
-#endif
 
 #if defined( CLIENT_DLL )
 
@@ -45,9 +42,6 @@
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "decals.h"
 #include "obstacle_pushaway.h"
-#ifdef SIXENSE
-#include "sixense/in_sixense.h"
-#endif
 
 // NVNT haptic utils
 #include "haptics/haptic_utils.h"
@@ -420,13 +414,6 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 	bool movingalongground = ( groundspeed > 0.0001f );
 	bool moving_fast_enough =  ( speed >= velwalk );
 
-#ifdef PORTAL
-	// In Portal we MUST play footstep sounds even when the player is moving very slowly
-	// This is used to count the number of footsteps they take in the challenge mode
-	// -Jeep
-	moving_fast_enough = true;
-#endif
-
 	// To hear step sounds you must be either on a ladder or moving along the ground AND
 	// You must be moving fast enough
 
@@ -599,18 +586,7 @@ void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, flo
 	EmitSound_t ep;
 	ep.m_nChannel = CHAN_BODY;
 	ep.m_pSoundName = params.soundname;
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-	if( TFGameRules()->IsMannVsMachineMode() )
-	{
-		ep.m_flVolume = params.volume;
-	}
-	else
-	{
-		ep.m_flVolume = fvol;
-	}
-#else
 	ep.m_flVolume = fvol;
-#endif
 	ep.m_SoundLevel = params.soundlevel;
 	ep.m_nFlags = 0;
 	ep.m_nPitch = params.pitch;
@@ -1445,18 +1421,7 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 #endif
 
 	VectorCopy( EyePosition(), eyeOrigin );
-#ifdef SIXENSE
-	if ( g_pSixenseInput->IsEnabled() )
-	{
-		VectorCopy( EyeAngles() + GetEyeAngleOffset(), eyeAngles );
-	}
-	else
-	{
-		VectorCopy( EyeAngles(), eyeAngles );
-	}
-#else
 	VectorCopy( EyeAngles(), eyeAngles );
-#endif
 
 #if defined( CLIENT_DLL )
 	if ( !prediction->InPrediction() )

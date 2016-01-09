@@ -199,9 +199,6 @@ public:
 	void InputEnableCappedPhysicsDamage(inputdata_t &inputdata);
 	void InputDisableCappedPhysicsDamage(inputdata_t &inputdata);
 	void InputSetLocatorTargetEntity(inputdata_t &inputdata);
-#ifdef PORTAL
-	void InputSuppressCrosshair( inputdata_t &inputdata );
-#endif // PORTAL2
 
 	void Activate(void);
 

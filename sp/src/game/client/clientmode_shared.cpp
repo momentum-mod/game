@@ -62,11 +62,6 @@ extern ConVar replay_rendersetting_renderglow;
 #include "econ_item_view.h"
 #endif
 
-#if defined( TF_CLIENT_DLL )
-#include "c_tf_player.h"
-#include "econ_item_description.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -353,10 +348,6 @@ void ClientModeShared::Init()
 	ListenForGameEvent( "player_changename" );
 	ListenForGameEvent( "teamplay_broadcast_audio" );
 	ListenForGameEvent( "achievement_earned" );
-
-#if defined( TF_CLIENT_DLL )
-	ListenForGameEvent( "item_found" );
-#endif 
 
 #if defined( REPLAY_ENABLED )
 	ListenForGameEvent( "replay_startrecord" );
@@ -1227,58 +1218,6 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 		}
 	}
-#if defined( TF_CLIENT_DLL )
-	else if ( Q_strcmp( "item_found", eventname ) == 0 )
-	{
-		int iPlayerIndex = event->GetInt( "player" );
-		entityquality_t iItemQuality = event->GetInt( "quality" );
-		int iMethod = event->GetInt( "method" );
-		int iItemDef = event->GetInt( "itemdef" );
-		C_BasePlayer *pPlayer = UTIL_PlayerByIndex( iPlayerIndex );
-		const GameItemDefinition_t *pItemDefinition = dynamic_cast<GameItemDefinition_t *>( GetItemSchema()->GetItemDefinition( iItemDef ) );
-
-		if ( !pPlayer || !pItemDefinition )
-			return;
-
-		if ( g_PR )
-		{
-			wchar_t wszPlayerName[MAX_PLAYER_NAME_LENGTH];
-			g_pVGuiLocalize->ConvertANSIToUnicode( g_PR->GetPlayerName( iPlayerIndex ), wszPlayerName, sizeof( wszPlayerName ) );
-
-			if ( iMethod < 0 || iMethod >= ARRAYSIZE( g_pszItemFoundMethodStrings ) )
-			{
-				iMethod = 0;
-			}
-
-			const char *pszLocString = g_pszItemFoundMethodStrings[iMethod];
-			if ( pszLocString )
-			{
-				wchar_t wszItemFound[256];
-				_snwprintf( wszItemFound, ARRAYSIZE( wszItemFound ), L"%ls", g_pVGuiLocalize->Find( pszLocString ) );
-
-				wchar_t *colorMarker = wcsstr( wszItemFound, L"::" );
-				if ( colorMarker )
-				{
-					const char *pszQualityColorString = EconQuality_GetColorString( (EEconItemQuality)iItemQuality );
-					if ( pszQualityColorString )
-					{
-						hudChat->SetCustomColor( pszQualityColorString );
-						*(colorMarker+1) = COLOR_CUSTOM;
-					}
-				}
-
-				// TODO: Update the localization strings to only have two format parameters since that's all we need.
-				wchar_t wszLocalizedString[256];
-				g_pVGuiLocalize->ConstructString( wszLocalizedString, sizeof( wszLocalizedString ), wszItemFound, 3, wszPlayerName, CEconItemLocalizedFullNameGenerator( GLocalizationProvider(), pItemDefinition, iItemQuality ).GetFullName(), L"" );
-
-				char szLocalized[256];
-				g_pVGuiLocalize->ConvertUnicodeToANSI( wszLocalizedString, szLocalized, sizeof( szLocalized ) );
-
-				hudChat->ChatPrintf( iPlayerIndex, CHAT_FILTER_SERVERMSG, "%s", szLocalized );
-			}
-		}		
-	}
-#endif
 #if defined( REPLAY_ENABLED )
 	else if ( !V_strcmp( "replay_servererror", eventname ) )
 	{
@@ -1376,9 +1315,6 @@ void ClientModeShared::DisplayReplayMessage( const char *pLocalizeName, float fl
 			pPanel->MoveToFront();
 			pPanel->SetKeyBoardInputEnabled( true );
 			pPanel->SetMouseInputEnabled( true );
-#if defined( TF_CLIENT_DLL )
-			TFModalStack()->PushModal( pPanel );
-#endif
 		}
 		else
 		{

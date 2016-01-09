@@ -129,12 +129,6 @@ void CBaseGrenade::Explode( trace_t *pTrace, int bitsDamageType )
 	Vector vecAbsOrigin = GetAbsOrigin();
 	int contents = UTIL_PointContents ( vecAbsOrigin );
 
-#if defined( TF_DLL )
-	// Since this code only runs on the server, make sure it shows the tempents it creates.
-	// This solves a problem with remote detonating the pipebombs (client wasn't seeing the explosion effect)
-	CDisablePredictionFiltering disabler;
-#endif
-
 	if ( pTrace->fraction != 1.0 )
 	{
 		Vector vecNormal = pTrace->plane.normal;

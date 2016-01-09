@@ -10,9 +10,6 @@
 #include "fx.h"
 #include "fx_impact.h"
 #include "view.h"
-#ifdef TF_CLIENT_DLL
-#include "cdll_util.h"
-#endif
 #include "engine/IStaticPropMgr.h"
 #include "c_impact_effects.h"
 #include "tier0/vprof.h"
@@ -131,17 +128,6 @@ bool Impact( Vector &vecOrigin, Vector &vecStart, int iMaterial, int iDamageType
 			return false;
 
 		bool bSkipDecal = false;
-
-#ifdef TF_CLIENT_DLL
-		// Don't show blood decals if we're filtering them out (Pyro Goggles)
-		if ( IsLocalPlayerUsingVisionFilterFlags( TF_VISION_FILTER_PYRO ) || UTIL_IsLowViolence() )
-		{
-			if ( V_strstr( pchDecalName, "Flesh" ) )
-			{
-				bSkipDecal = true;
-			}
-		}
-#endif
 
 		if ( !bSkipDecal )
 		{

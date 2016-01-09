@@ -18,14 +18,6 @@
 #include "client_virtualreality.h"
 #include "sourcevr/isourcevirtualreality.h"
 
-#ifdef SIXENSE
-#include "sixense/in_sixense.h"
-#endif
-
-#ifdef PORTAL
-#include "c_portal_player.h"
-#endif // PORTAL
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -36,11 +28,7 @@ using namespace vgui;
 
 int ScreenTransform( const Vector& point, Vector& screen );
 
-#ifdef TF_CLIENT_DLL
-// If running TF, we use CHudTFCrosshair instead (which is derived from CHudCrosshair)
-#else
 DECLARE_HUDELEMENT( CHudCrosshair );
-#endif
 
 CHudCrosshair::CHudCrosshair( const char *pElementName ) :
 		CHudElement( pElementName ), BaseClass( NULL, "HudCrosshair" )
@@ -93,12 +81,6 @@ bool CHudCrosshair::ShouldDraw( void )
 	if ( pWeapon && !pWeapon->ShouldDrawCrosshair() )
 		return false;
 
-#ifdef PORTAL
-	C_Portal_Player *portalPlayer = ToPortalPlayer(pPlayer);
-	if ( portalPlayer && portalPlayer->IsSuppressingCrosshair() )
-		return false;
-#endif // PORTAL
-
 	/* disabled to avoid assuming it's an HL2 player.
 	// suppress crosshair in zoom.
 	if ( pPlayer->m_HL2Local.m_bZooming )
@@ -132,13 +114,6 @@ bool CHudCrosshair::ShouldDraw( void )
 
 	return ( bNeedsDraw && CHudElement::ShouldDraw() );
 }
-
-#ifdef TF_CLIENT_DLL
-extern ConVar cl_crosshair_red;
-extern ConVar cl_crosshair_green;
-extern ConVar cl_crosshair_blue;
-extern ConVar cl_crosshair_scale;
-#endif
 
 
 void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera, QAngle angleCrosshairOffset )
@@ -176,20 +151,6 @@ void CHudCrosshair::GetDrawPosition ( float *pX, float *pY, bool *pbBehindCamera
 
 			bUseOffset = true;
 		}
-
-#ifdef SIXENSE
-		// TODO: actually test this Sixsense code interaction with things like HMDs & stereo.
-        if ( g_pSixenseInput->IsEnabled() && !UseVR() )
-		{
-			// Never autoaim a predicted weapon (for now)
-			vecStart = pPlayer->Weapon_ShootPosition();
-			Vector aimVector;
-			AngleVectors( CurrentViewAngles() - g_pSixenseInput->GetViewAngleOffset(), &aimVector );
-			// calculate where the bullet would go so we can draw the cross appropriately
-			vecEnd = vecStart + aimVector * MAX_TRACE_LENGTH;
-			bUseOffset = true;
-		}
-#endif
 
 		if ( bUseOffset )
 		{
@@ -259,12 +220,7 @@ void CHudCrosshair::Paint( void )
 	}
 
 	float flPlayerScale = 1.0f;
-#ifdef TF_CLIENT_DLL
-	Color clr( cl_crosshair_red.GetInt(), cl_crosshair_green.GetInt(), cl_crosshair_blue.GetInt(), 255 );
-	flPlayerScale = cl_crosshair_scale.GetFloat() / 32.0f;  // the player can change the scale in the options/multiplayer tab
-#else
 	Color clr = m_clrCrosshair;
-#endif
 	float flWidth = flWeaponScale * flPlayerScale * (float)iTextureW;
 	float flHeight = flWeaponScale * flPlayerScale * (float)iTextureH;
 	int iWidth = (int)( flWidth + 0.5f );

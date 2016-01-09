@@ -636,27 +636,6 @@ bool CSpriteTrail::ValidateEntityAttachedToPlayer( bool &bShouldRetry )
 {
 	bShouldRetry = false;
 	return true;
-
-	/*
-#if defined( TF_CLIENT_DLL )
-
-	const char *pszModelName = modelinfo->GetModelName( GetModel() );
-	if ( pszModelName && pszModelName[0] )
-	{
-		// We attach sprites directly to players in some cases, such as phase trails on an evading scout
-		for ( int i=0; i<ARRAYSIZE( g_spriteWhiteList ); ++i )
-		{
-			if ( FStrEq( pszModelName, g_spriteWhiteList[i] ) )
-				return true;
-		}
-	}
-	
-	return false;
-
-#else
-	return false;
-#endif
-	*/
 }
 
 #endif

@@ -89,11 +89,7 @@ void CTEWorldDecal::Test( const Vector& current_origin, const QAngle& current_an
 }
 
 IMPLEMENT_SERVERCLASS_ST(CTEWorldDecal, DT_TEWorldDecal)
-#if defined( TF_DLL )
-	SendPropVector( SENDINFO(m_vecOrigin), -1, SPROP_COORD_MP_INTEGRAL ),
-#else
 	SendPropVector( SENDINFO(m_vecOrigin), -1, SPROP_COORD),
-#endif
 	SendPropInt( SENDINFO(m_nIndex), 9, SPROP_UNSIGNED ),
 END_SEND_TABLE()
 

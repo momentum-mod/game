@@ -1345,14 +1345,10 @@ bool C_BasePlayer::ShouldDraw()
 
 int C_BasePlayer::DrawModel( int flags )
 {
-#ifndef PORTAL
-	// In Portal this check is already performed as part of
-	// C_Portal_Player::DrawModel()
 	if ( !ShouldDrawThisPlayer() )
 	{
 		return 0;
 	}
-#endif
 	return BaseClass::DrawModel( flags );
 }
 

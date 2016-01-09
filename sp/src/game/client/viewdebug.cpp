@@ -14,12 +14,6 @@
 #include "smoke_fog_overlay.h"
 #include "materialsystem/imaterialvar.h"
 
-#ifdef PORTAL
-//#include "C_Portal_Player.h"
-#include "portal_render_targets.h"
-#include "PortalRender.h"
-#endif
-
 //-----------------------------------------------------------------------------
 // debugging overlays
 //-----------------------------------------------------------------------------
@@ -588,11 +582,7 @@ void CDebugViewRender::Draw2DDebuggingInfo( const CViewSetup &view )
 	{
 		float w = mat_wateroverlaysize.GetFloat();
 		float h = mat_wateroverlaysize.GetFloat();
-#ifdef PORTAL
-		g_pPortalRender->OverlayPortalRenderTargets( w, h );
-#else
 		OverlayCameraRenderTarget( "debug/debugcamerarendertarget", 0, 0, w, h );
-#endif
 	}
 
 	if ( mat_showframebuffertexture.GetBool() )

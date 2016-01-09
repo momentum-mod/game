@@ -14,10 +14,6 @@
 #include "c_pixel_visibility.h"
 #endif
 
-#ifdef TF_CLIENT_DLL
-#include "tf_shareddefs.h"
-#endif
-
 #ifdef GAME_DLL
 #include "ai_utils.h"
 #endif
@@ -550,10 +546,7 @@ static CollisionGroupNameRecord_t s_NameMap[]={
 	{ "INTERACTIVE", COLLISION_GROUP_INTERACTIVE },
 	{ "NPC", COLLISION_GROUP_NPC },
 	{ "ACTOR", COLLISION_GROUP_NPC_ACTOR },
-	{ "PASSABLE", COLLISION_GROUP_PASSABLE_DOOR },	
-#if defined( TF_CLIENT_DLL )
-	{ "ROCKETS", TFCOLLISION_GROUP_ROCKETS },
-#endif
+	{ "PASSABLE", COLLISION_GROUP_PASSABLE_DOOR },
 };
 
 

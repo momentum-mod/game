@@ -85,14 +85,6 @@
 #include "datacache/imdlcache.h"
 #include "vstdlib/jobthread.h"
 
-#ifdef HL2_EPISODIC
-#include "npc_alyx_episodic.h"
-#endif
-
-#ifdef PORTAL
-	#include "prop_portal_shared.h"
-#endif
-
 #include "env_debughistory.h"
 #include "collisionutils.h"
 
@@ -9405,19 +9397,6 @@ Vector CAI_BaseNPC::GetShootEnemyDir( const Vector &shootOrigin, bool bNoisy )
 
 		Vector vecEnemyOffset = pEnemy->BodyTarget( shootOrigin, bNoisy ) - pEnemy->GetAbsOrigin();
 
-#ifdef PORTAL
-		// Translate the enemy's position across the portals if it's only seen in the portal view cone
-		if ( !FInViewCone( vecEnemyLKP ) || !FVisible( vecEnemyLKP ) )
-		{
-			CProp_Portal *pPortal = FInViewConeThroughPortal( vecEnemyLKP );
-			if ( pPortal )
-			{
-				UTIL_Portal_VectorTransform( pPortal->m_hLinkedPortal->MatrixThisToLinked(), vecEnemyOffset, vecEnemyOffset );
-				UTIL_Portal_PointTransform( pPortal->m_hLinkedPortal->MatrixThisToLinked(), vecEnemyLKP, vecEnemyLKP );
-			}
-		}
-#endif
-
 		Vector retval = vecEnemyOffset + vecEnemyLKP - shootOrigin;
 		VectorNormalize( retval );
 		return retval;
@@ -9487,31 +9466,6 @@ Vector CAI_BaseNPC::GetActualShootPosition( const Vector &shootOrigin )
 	Vector vecEnemyLKP = GetEnemyLKP();
 	Vector vecEnemyOffset = GetEnemy()->BodyTarget( shootOrigin ) - GetEnemy()->GetAbsOrigin();
 	Vector vecTargetPosition = vecEnemyOffset + vecEnemyLKP;
-
-#ifdef PORTAL
-	// Check if it's also visible through portals
-	CProp_Portal *pPortal = FInViewConeThroughPortal( vecEnemyLKP );
-	if ( pPortal )
-	{
-		// Get the target's position through portals
-		Vector vecEnemyOffsetTransformed;
-		Vector vecEnemyLKPTransformed;
-		UTIL_Portal_VectorTransform( pPortal->m_hLinkedPortal->MatrixThisToLinked(), vecEnemyOffset, vecEnemyOffsetTransformed );
-		UTIL_Portal_PointTransform( pPortal->m_hLinkedPortal->MatrixThisToLinked(), vecEnemyLKP, vecEnemyLKPTransformed );
-		Vector vecTargetPositionTransformed = vecEnemyOffsetTransformed + vecEnemyLKPTransformed;
-
-		// Get the distance to the target with and without portals
-		float fDistanceToEnemyThroughPortalSqr = GetAbsOrigin().DistToSqr( vecTargetPositionTransformed );
-		float fDistanceToEnemySqr = GetAbsOrigin().DistToSqr( vecTargetPosition );
-
-		if ( fDistanceToEnemyThroughPortalSqr < fDistanceToEnemySqr || !FInViewCone( vecEnemyLKP ) || !FVisible( vecEnemyLKP ) )
-		{
-			// We're better off shooting through the portals
-			vecTargetPosition = vecTargetPositionTransformed;
-		}
-	}
-#endif
-
 	// lead for some fraction of a second.
 	return (vecTargetPosition + ( GetEnemy()->GetSmoothedVelocity() * ai_lead_time.GetFloat() ));
 }

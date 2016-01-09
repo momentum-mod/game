@@ -19,11 +19,7 @@
 #define ROUND_TO_TICKS( t )		( TICK_INTERVAL * TIME_TO_TICKS( t ) )
 #define TICK_NEVER_THINK		(-1)
 
-#if defined( TF_DLL )
-#define ANIMATION_CYCLE_BITS		10
-#else
 #define ANIMATION_CYCLE_BITS		15
-#endif
 #define ANIMATION_CYCLE_MINFRAC		(1.0f / (1<<ANIMATION_CYCLE_BITS))
 
 // Each mod defines these for itself.
@@ -102,13 +98,9 @@ public:
 
 #define MAX_CLIMB_SPEED		200
 
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
-	#define TIME_TO_DUCK		0.2
-	#define TIME_TO_DUCK_MS		200.0f
-#else
+
 	#define TIME_TO_DUCK		0.4
 	#define TIME_TO_DUCK_MS		400.0f
-#endif 
 #define TIME_TO_UNDUCK		0.2
 #define TIME_TO_UNDUCK_MS	200.0f
 
@@ -537,12 +529,6 @@ enum
 	BLOOD_COLOR_YELLOW,
 	BLOOD_COLOR_GREEN,
 	BLOOD_COLOR_MECH,
-
-#if defined( HL2_EPISODIC )
-	BLOOD_COLOR_ANTLION,		// FIXME: Move to Base HL2
-	BLOOD_COLOR_ZOMBIE,			// FIXME: Move to Base HL2
-	BLOOD_COLOR_ANTLION_WORKER,
-#endif // HL2_EPISODIC
 };
 
 //-----------------------------------------------------------------------------
@@ -868,23 +854,10 @@ enum
 //-----------------------------------------------------------------------------
 // Commentary Mode
 //-----------------------------------------------------------------------------
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
-#define GAME_HAS_NO_USE_KEY
 
-#if defined( SPROP_COORD )
-#undef SPROP_COORD
-#endif
-
-#define SPROP_COORD SPROP_COORD_MP
-
-#endif
 
 // The player's method of starting / stopping commentary
-#ifdef GAME_HAS_NO_USE_KEY
-#define COMMENTARY_BUTTONS		(IN_ATTACK | IN_ATTACK2 | IN_USE)
-#else
 #define COMMENTARY_BUTTONS		(IN_USE)
-#endif
 
 #define TEAM_TRAIN_MAX_TEAMS			4
 #define TEAM_TRAIN_MAX_HILLS			5
@@ -909,27 +882,5 @@ enum
 	kActivityLookup_Unknown = -2,			// hasn't been searched for
 	kActivityLookup_Missing = -1,			// has been searched for but wasn't found
 };
-
-#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
-//-----------------------------------------------------------------------------
-// Vision Filters.
-//-----------------------------------------------------------------------------
-// Also used in the item schema to define vision filter or vision mode opt in
-#define TF_VISION_FILTER_NONE			0
-#define TF_VISION_FILTER_PYRO			(1<<0)		// 1
-#define TF_VISION_FILTER_HALLOWEEN		(1<<1)		// 2
-#define TF_VISION_FILTER_ROME			(1<<2)		// 4
-
-// THIS ENUM SHOULD MATCH THE ORDER OF THE FLAGS ABOVE
-enum
-{
-	VISION_MODE_NONE = 0,
-	VISION_MODE_PYRO,
-	VISION_MODE_HALLOWEEN,
-	VISION_MODE_ROME,
-
-	MAX_VISION_MODES
-};
-#endif // TF_DLL || TF_CLIENT_DLL
 
 #endif // SHAREDDEFS_H

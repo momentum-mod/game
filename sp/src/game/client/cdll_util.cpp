@@ -1206,11 +1206,7 @@ bool UTIL_GetMapLoadCountFileName( const char *pszFilePrependName, char *pszBuff
 	return true;
 }
 
-#ifdef TF_CLIENT_DLL
-#define MAP_KEY_FILE "viewed.res"
-#else
 #define MAP_KEY_FILE "mapkeys.res"
-#endif	
 
 void UTIL_IncrementMapKey( const char *pszCustomKey )
 {

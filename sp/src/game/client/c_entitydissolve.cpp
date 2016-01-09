@@ -508,14 +508,10 @@ void C_EntityDissolve::ClientThink( void )
 		return;
 
 	bool bIsRagdoll;
-#ifdef TF_CLIENT_DLL
-	bIsRagdoll = true;
-#else
 	C_BaseAnimating *pAnimating = GetMoveParent() ? GetMoveParent()->GetBaseAnimating() : NULL;
 	if (!pAnimating)
 		return;
 	bIsRagdoll = pAnimating->IsRagdoll();
-#endif
 
 	// NOTE: IsRagdoll means *client-side* ragdoll. We shouldn't be trying to fight
 	// the server ragdoll (or any server physics) on the client
@@ -572,12 +568,6 @@ void C_EntityDissolve::ClientThink( void )
 			{
 				pRagdoll->ReleaseRagdoll();
 			}
-#ifdef TF_CLIENT_DLL
-			else
-			{
-				pEnt->Release();
-			}
-#endif
 		}
 	}
 }

@@ -13,10 +13,6 @@
 #include "particle_parse.h"
 #include "rendertexture.h"
 
-#ifdef PORTAL
-	#include "PortalRender.h"
-#endif
-
 #pragma warning( disable: 4355 )  // warning C4355: 'this' : used in base member initializer list
 
 class CClientTools;
@@ -744,20 +740,6 @@ void CClientTools::PostToolMessage( KeyValues *pKeyValues )
 		pKeyValues->SetPtr( "texture", GetCameraTexture() );
 		return;
 	}
-
-#ifdef PORTAL
-	if ( !Q_stricmp( pKeyValues->GetName(), "portals" ) )
-	{
-		g_pPortalRender->HandlePortalPlaybackMessage( pKeyValues );
-		return;
-	}
-	
-	if ( !Q_stricmp( pKeyValues->GetName(), "query CPortalRenderer" ) )
-	{
-		pKeyValues->SetInt( "IsRenderingPortal", g_pPortalRender->IsRenderingPortal() ? 1 : 0 );
-		return;
-	}
-#endif
 }
 
 

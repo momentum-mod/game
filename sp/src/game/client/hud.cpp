@@ -239,11 +239,6 @@ CHudElement::CHudElement( const char *pElementName )
 	m_pElementName = pElementName;
 	SetNeedsRemove( false );
 	m_bIsParentedToClientDLLRootPanel = false;
-
-	// Make this for all hud elements, but when its a bit safer
-#if defined( TF_CLIENT_DLL ) || defined( DOD_DLL )
-	RegisterForRenderGroup( "global" );
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -974,15 +969,6 @@ bool CHud::IsHidden( int iHudFlags )
 	// Need the HEV suit ( HL2 )
 	if ( ( iHudFlags & HIDEHUD_NEEDSUIT ) && ( !pPlayer->IsSuitEquipped() ) )
 		return true;
-
-	// Hide all HUD elements during screenshot if the user's set hud_freezecamhide ( TF2 )
-#if defined( TF_CLIENT_DLL )
-	extern bool IsTakingAFreezecamScreenshot();
-	extern ConVar hud_freezecamhide;
-
-	if ( IsTakingAFreezecamScreenshot() && hud_freezecamhide.GetBool() )
-		return true;
-#endif
 
 	return ( ( iHudFlags & iHideHud ) != 0);
 }

@@ -164,9 +164,6 @@ void PhysicsLevelInit( void )
 {
 	physenv = physics->CreateEnvironment();
 	assert( physenv );
-#ifdef PORTAL
-	physenv_main = physenv;
-#endif
 	{
 	MEM_ALLOC_CREDIT();
 	g_EntityCollisionHash = physics->CreateObjectPairHash();

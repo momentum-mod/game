@@ -29,11 +29,6 @@ extern ConVar mp_clan_ready_signal;
 extern ConVar nextlevel;
 extern INetworkStringTable *g_pStringTableServerMapCycle;
 
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-extern INetworkStringTable *g_pStringTableServerPopFiles;
-extern INetworkStringTable *g_pStringTableServerMapCycleMvM;
-#endif
-
 #define VOICE_COMMAND_MAX_SUBTITLE_DIST	1900
 
 class CBaseMultiplayerPlayer;

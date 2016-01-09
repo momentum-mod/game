@@ -35,14 +35,6 @@ extern const ConVar *sv_cheats;
 #endif
 #endif
 
-
-#if !defined(NO_STEAM) && defined(CLIENT_DLL)
-#if defined(TF_CLIENT_DLL) ||  defined(CSTRIKE_DLL)
-#define STEAMWORKS_GAMESTATS_ACTIVE
-#include "steamworks_gamestats.h"
-#endif
-#endif
-
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"
 
@@ -1418,11 +1410,6 @@ void CBaseGameStats::SetHL2UnlockedChapterStatistic( void )
 
 static void CC_ResetGameStats( const CCommand &args )
 {
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-	// Disabled this until we fix the TF gamestat crashes that result
-	return;
-#endif
-
 	if ( !UTIL_IsCommandIssuedByServerAdmin() )
 		return;
 

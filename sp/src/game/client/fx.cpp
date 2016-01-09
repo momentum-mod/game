@@ -30,7 +30,6 @@
 #include "tier0/memdbgon.h"
 
 //Precahce the effects
-#ifndef TF_CLIENT_DLL
 CLIENTEFFECT_REGISTER_BEGIN( PrecacheMuzzleFlash )
 CLIENTEFFECT_MATERIAL( "effects/muzzleflash1" )
 CLIENTEFFECT_MATERIAL( "effects/muzzleflash2" )
@@ -49,7 +48,6 @@ CLIENTEFFECT_MATERIAL( "effects/combinemuzzle2" )
 CLIENTEFFECT_MATERIAL( "effects/combinemuzzle2_nocull" )
 #endif
 CLIENTEFFECT_REGISTER_END()
-#endif
 
 //Whether or not we should emit a dynamic light
 ConVar muzzleflash_light( "muzzleflash_light", "1", FCVAR_ARCHIVE );

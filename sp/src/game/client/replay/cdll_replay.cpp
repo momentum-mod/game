@@ -22,9 +22,6 @@
 #include "iviewrender.h"
 #include "igameevents.h"
 #include "replaycamera.h"
-#if defined( TF_CLIENT_DLL )
-#include "c_tf_gamestats.h"
-#endif
 #include "steamworks_gamestats.h"
 #include "replay_gamestats_shared.h"
 
@@ -177,11 +174,7 @@ public:
 
 	virtual bool ShouldCompletePendingReplay( IGameEvent *pEvent )
 	{
-#if defined( TF_CLIENT_DLL )
-		return !( pEvent->GetInt( "death_flags" ) & TF_DEATH_FEIGN_DEATH );
-#else
 		return true;
-#endif
 	}
 
 	virtual void OnPlaybackComplete( ReplayHandle_t hReplay, int iPerformance )

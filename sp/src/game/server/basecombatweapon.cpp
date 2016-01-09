@@ -68,7 +68,6 @@ void W_Precache(void)
 	g_sModelIndexLaserDot = CBaseEntity::PrecacheModel("sprites/laserdot.vmt");
 #endif // HL1_DLL
 
-#ifndef TF_DLL
 	g_sModelIndexFireball = CBaseEntity::PrecacheModel ("sprites/zerogxplode.vmt");// fireball
 
 	g_sModelIndexSmoke = CBaseEntity::PrecacheModel ("sprites/steam1.vmt");// smoke
@@ -82,7 +81,6 @@ void W_Precache(void)
 	CBaseEntity::PrecacheModel ("effects/bubble.vmt");//bubble trails
 
 	CBaseEntity::PrecacheModel("models/weapons/w_bullet.mdl");
-#endif
 
 	CBaseEntity::PrecacheScriptSound( "BaseCombatWeapon.WeaponDrop" );
 	CBaseEntity::PrecacheScriptSound( "BaseCombatWeapon.WeaponMaterialize" );

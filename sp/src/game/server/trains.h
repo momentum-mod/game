@@ -114,13 +114,6 @@ public:
 
 	static CFuncTrackTrain *Instance( edict_t *pent );
 
-#ifdef TF_DLL
-	int UpdateTransmitState()
-	{
-		return SetTransmitState( FL_EDICT_ALWAYS );
-	}
-#endif
-
 	DECLARE_DATADESC();
 
 	virtual int	ObjectCaps( void ) { return BaseClass::ObjectCaps() | FCAP_DIRECTIONAL_USE | FCAP_USE_ONGROUND; }

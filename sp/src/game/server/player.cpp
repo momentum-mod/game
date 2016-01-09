@@ -1026,11 +1026,6 @@ bool CBasePlayer::ShouldTakeDamageInCommentaryMode( const CTakeDamageInfo &input
 	if ( inputInfo.GetInflictor() == this && inputInfo.GetAttacker() == this )
 		return true;
 
-#ifdef PORTAL
-	if ( inputInfo.GetDamageType() & DMG_ACID )
-		return true;
-#endif
-
 	// In commentary, ignore all damage except for falling and leeches
 	if ( !(inputInfo.GetDamageType() & (DMG_BURN | DMG_PLASMA | DMG_FALL | DMG_CRUSH)) && inputInfo.GetDamageType() != DMG_GENERIC )
 		return false;
@@ -4490,10 +4485,7 @@ void CBasePlayer::PostThink()
 				// if they've moved too far from the gun, or deployed another weapon, unuse the gun
 				if ( m_hUseEntity->OnControls( this ) && 
 					( !GetActiveWeapon() || GetActiveWeapon()->IsEffectActive( EF_NODRAW ) ||
-					( GetActiveWeapon()->GetActivity() == ACT_VM_HOLSTER ) 
-	#ifdef PORTAL // Portalgun view model stays up when holding an object -Jeep
-					|| FClassnameIs( GetActiveWeapon(), "weapon_portalgun" ) 
-	#endif //#ifdef PORTAL			
+					( GetActiveWeapon()->GetActivity() == ACT_VM_HOLSTER ) 			
 					) )
 				{  
 					m_hUseEntity->Use( this, this, USE_SET, 2 );	// try fire the gun
@@ -4975,7 +4967,6 @@ void CBasePlayer::Spawn( void )
 	m_vecSmoothedVelocity = vec3_origin;
 	InitVCollision( GetAbsOrigin(), GetAbsVelocity() );
 
-#if !defined( TF_DLL )
 	IGameEvent *event = gameeventmanager->CreateEvent( "player_spawn" );
 	
 	if ( event )
@@ -4983,7 +4974,6 @@ void CBasePlayer::Spawn( void )
 		event->SetInt("userid", GetUserID() );
 		gameeventmanager->FireEvent( event );
 	}
-#endif
 
 	RumbleEffect( RUMBLE_STOP_ALL, 0, RUMBLE_FLAGS_NONE );
 
@@ -5023,11 +5013,9 @@ void CBasePlayer::Precache( void )
 	enginesound->PrecacheSentenceGroup( "HEV" );
 
 	// These are always needed
-#ifndef TF_DLL
 	PrecacheParticleSystem( "slime_splash_01" );
 	PrecacheParticleSystem( "slime_splash_02" );
 	PrecacheParticleSystem( "slime_splash_03" );
-#endif
 
 	// in the event that the player JUST spawned, and the level node graph
 	// was loaded, fix all of the node graph pointers before the game starts.
@@ -8536,12 +8524,7 @@ bool CPlayerInfo::IsHLTV()
 
 bool CPlayerInfo::IsReplay()
 {
-#ifdef TF_DLL // FIXME: Need run-time check for whether replay is enabled
-	Assert( m_pParent );
-	return m_pParent->IsReplay();
-#else
 	return false;
-#endif
 }
 
 bool CPlayerInfo::IsPlayer() 

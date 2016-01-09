@@ -80,11 +80,7 @@ void C_BaseCombatWeapon::NotifyShouldTransmit( ShouldTransmitState_t state )
 //-----------------------------------------------------------------------------
 static inline bool ShouldDrawLocalPlayerViewModel( void )
 {
-#if defined( PORTAL )
-	return false;
-#else
-	return !C_BasePlayer::ShouldDrawLocalPlayer();
-#endif
+    return !C_BasePlayer::ShouldDrawLocalPlayer();
 }
 
 //-----------------------------------------------------------------------------

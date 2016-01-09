@@ -291,11 +291,6 @@ private:
 	void InputStopSweeping( inputdata_t &inputdata );
 	void InputProtectTarget( inputdata_t &inputdata );
 
-#if HL2_EPISODIC
-	void InputSetPaintInterval( inputdata_t &inputdata );
-	void InputSetPaintIntervalVariance( inputdata_t &inputdata );
-#endif
-
 	void LaserOff( void );
 	void LaserOn( const Vector &vecTarget, const Vector &vecDeviance );
 
@@ -448,11 +443,6 @@ BEGIN_DATADESC( CProtoSniper )
 	DEFINE_INPUTFUNC( FIELD_STRING, "SweepGroupRandomly", InputSweepGroupRandomly ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "StopSweeping", InputStopSweeping ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "ProtectTarget", InputProtectTarget ),
-
-#if HL2_EPISODIC
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetPaintInterval", InputSetPaintInterval ),
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetPaintIntervalVariance", InputSetPaintIntervalVariance ),
-#endif
 
 	// Outputs
 	DEFINE_OUTPUT( m_OnShotFired, "OnShotFired" ),
@@ -1120,25 +1110,6 @@ void CProtoSniper::InputProtectTarget( inputdata_t &inputdata )
 
 	m_flDangerEnemyDistance = 0;
 }
-
-
-
-#if HL2_EPISODIC
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void CProtoSniper::InputSetPaintInterval( inputdata_t &inputdata )
-{
-	m_flKeyfieldPaintTime = inputdata.value.Float();
-}
-
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void CProtoSniper::InputSetPaintIntervalVariance( inputdata_t &inputdata )
-{
-	m_flKeyfieldPaintTimeNoise = inputdata.value.Float();
-}
-#endif
 
 
 //-----------------------------------------------------------------------------
@@ -3229,11 +3200,7 @@ void CSniperBullet::BulletThink( void )
 		GetOwnerEntity()->FireBullets( 1, vecStart, m_vecDir, vec3_origin, flDist, m_AmmoType, 0 );
 		m_iImpacts++;
 
-#ifdef HL2_EPISODIC
-		if( tr.m_pEnt->IsNPC() || m_iImpacts == NUM_PENETRATIONS )
-#else	 
 		if( tr.m_pEnt->m_takedamage == DAMAGE_YES || m_iImpacts == NUM_PENETRATIONS )
-#endif//HL2_EPISODIC
 		{
 			// Bullet stops when it hits an NPC, or when it has penetrated enough times.
 			

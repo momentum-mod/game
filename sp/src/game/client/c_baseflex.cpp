@@ -350,52 +350,6 @@ bool CFlexSceneFileManager::Init()
 	FindSceneFile( NULL, "random", true );
 	FindSceneFile( NULL, "randomAlert", true );
 #endif
-
-#if defined( TF_CLIENT_DLL )
-	// HACK TO ALL TF TO HAVE PER CLASS OVERRIDES
-	char const *pTFClasses[] = 
-	{
-		"scout",
-		"sniper",
-		"soldier",
-		"demo",
-		"medic",
-		"heavy",
-		"pyro",
-		"spy",
-		"engineer",
-	};
-
-	char fn[ MAX_PATH ];
-	for ( int i = 0; i < ARRAYSIZE( pTFClasses ); ++i )
-	{
-		Q_snprintf( fn, sizeof( fn ), "player/%s/phonemes/phonemes", pTFClasses[i] );
-		FindSceneFile( NULL, fn, true );
-		Q_snprintf( fn, sizeof( fn ), "player/%s/phonemes/phonemes_weak", pTFClasses[i] );
-		FindSceneFile( NULL, fn, true );
-		Q_snprintf( fn, sizeof( fn ), "player/%s/phonemes/phonemes_strong", pTFClasses[i] );
-		FindSceneFile( NULL, fn, true );
-
-		if ( !IsX360() )
-		{
-			Q_snprintf( fn, sizeof( fn ), "player/hwm/%s/phonemes/phonemes", pTFClasses[i] );
-			FindSceneFile( NULL, fn, true );
-			Q_snprintf( fn, sizeof( fn ), "player/hwm/%s/phonemes/phonemes_weak", pTFClasses[i] );
-			FindSceneFile( NULL, fn, true );
-			Q_snprintf( fn, sizeof( fn ), "player/hwm/%s/phonemes/phonemes_strong", pTFClasses[i] );
-			FindSceneFile( NULL, fn, true );
-		}
-
-		Q_snprintf( fn, sizeof( fn ), "player/%s/emotion/emotion", pTFClasses[i] );
-		FindSceneFile( NULL, fn, true );
-		if ( !IsX360() )
-		{
-			Q_snprintf( fn, sizeof( fn ), "player/hwm/%s/emotion/emotion", pTFClasses[i] );
-			FindSceneFile( NULL, fn, true );
-		}
-	}
-#endif
-
 	return true;
 }
 
@@ -432,14 +386,6 @@ void *CFlexSceneFileManager::FindSceneFile( IHasLocalToGlobalFlexSettings *insta
 	char szFilename[MAX_PATH];
 	Assert( V_strlen( filename ) < MAX_PATH );
 	V_strcpy( szFilename, filename );
-	
-#if defined( TF_CLIENT_DLL )	
-	char szHWMFilename[MAX_PATH];
-	if ( GetHWMExpressionFileName( szFilename, szHWMFilename ) )
-	{
-		V_strcpy( szFilename, szHWMFilename );
-	}
-#endif
 
 	Q_FixSlashes( szFilename );
 

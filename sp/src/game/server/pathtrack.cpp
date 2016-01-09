@@ -566,15 +566,6 @@ CPathTrack *CPathTrack::Instance( edict_t *pent )
 void CPathTrack::InputPass( inputdata_t &inputdata )
 {
 	m_OnPass.FireOutput( inputdata.pActivator, this );
-
-#ifdef TF_DLL
-	IGameEvent * event = gameeventmanager->CreateEvent( "path_track_passed" );
-	if ( event )
-	{
-		event->SetInt( "index", entindex() );
-		gameeventmanager->FireEvent( event, true );
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------

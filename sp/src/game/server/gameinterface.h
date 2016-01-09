@@ -19,10 +19,6 @@ class IReplayFactory;
 extern INetworkStringTable *g_pStringTableInfoPanel;
 extern INetworkStringTable *g_pStringTableServerMapCycle;
 
-#ifdef TF_DLL
-extern INetworkStringTable *g_pStringTableServerPopFiles;
-#endif
-
 // Player / Client related functions
 // Most of this is implemented in gameinterface.cpp, but some of it is per-mod in files like cs_gameinterface.cpp, etc.
 class CServerGameClients : public IServerGameClients

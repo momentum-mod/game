@@ -539,16 +539,8 @@ private:
 
 	friend class CPrediction;
 
-	// HACK FOR TF2 Prediction
-	friend class CTFGameMovementRecon;
 	friend class CGameMovement;
-	friend class CTFGameMovement;
-	friend class CHL1GameMovement;
-	friend class CCSGameMovement;
-	//friend class CHL2GameMovement;
     friend class CMomentumGameMovement;
-	friend class CDODGameMovement;
-	friend class CPortalGameMovement;
 	
 	// Accessors for gamemovement
 	float GetStepSize( void ) const { return m_Local.m_flStepSize; }

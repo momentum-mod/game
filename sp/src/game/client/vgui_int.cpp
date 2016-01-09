@@ -24,14 +24,6 @@
 #include "filesystem.h"
 #include "matsys_controls/matsyscontrols.h"
 
-#ifdef SIXENSE
-#include "sixense/in_sixense.h"
-#endif
-
-#if defined( TF_CLIENT_DLL )
-#include "tf_gamerules.h"
-#endif
-
 using namespace vgui;
 
 void MP3Player_Create( vgui::VPANEL parent );
@@ -217,9 +209,6 @@ void VGui_CreateGlobalPanels( void )
 	// Create mp3 player off of tool parent panel
 	MP3Player_Create( toolParent );
 #endif
-#ifdef SIXENSE
-	g_pSixenseInput->CreateGUI( gameToolParent );
-#endif
 }
 
 void VGui_Shutdown()
@@ -265,12 +254,7 @@ void VGui_PreRender()
 	if ( IsPC() )
 	{
 		loadingdisc->SetLoadingVisible( engine->IsDrawingLoadingImage() && !engine->IsPlayingDemo() );
-#if !defined( TF_CLIENT_DLL )
 		loadingdisc->SetPausedVisible( !enginevgui->IsGameUIVisible() && cl_showpausedimage.GetBool() && engine->IsPaused() && !engine->IsTakingScreenshot() && !engine->IsPlayingDemo() );
-#else
-		bool bShowPausedImage = cl_showpausedimage.GetBool() && ( TFGameRules() && !TFGameRules()->IsInTraining() );
-		loadingdisc->SetPausedVisible( !enginevgui->IsGameUIVisible() && bShowPausedImage && engine->IsPaused() && !engine->IsTakingScreenshot() && !engine->IsPlayingDemo() );
-#endif
 	}
 }
 

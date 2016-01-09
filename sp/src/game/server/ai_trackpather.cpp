@@ -917,15 +917,7 @@ void CAI_TrackPather::SelectNewDestTarget()
 	if ( !m_bPatrolling )
 		return;
 
-	// NOTE: This version is bugged, but I didn't want to make the fix
-	// here for fear of breaking a lot of maps late in the day.
-	// So, only the chopper does the "right" thing.
-#ifdef HL2_EPISODIC 
-	// Episodic uses the fixed logic for all trackpathers
-	if ( 1 )
-#else
 	if ( ShouldUseFixedPatrolLogic() )
-#endif
 	{
 		CPathTrack *pOldDest = m_pDestPathTarget;
 

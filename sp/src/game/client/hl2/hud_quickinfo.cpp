@@ -17,12 +17,6 @@
 #include "../hud_crosshair.h"
 #include "VGuiMatSurface/IMatSystemSurface.h"
 
-#ifdef SIXENSE
-#include "sixense/in_sixense.h"
-#include "view.h"
-int ScreenTransform( const Vector& point, Vector& screen );
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 

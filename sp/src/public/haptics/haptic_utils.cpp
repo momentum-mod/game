@@ -30,14 +30,7 @@ extern vgui::IInputInternal *g_InputInternal;
 
 #ifdef CLIENT_DLL 
 ConVar hap_HasDevice	( "hap_HasDevice", "0", FCVAR_USERINFO/*|FCVAR_HIDDEN*/, "falcon is connected" );
-// damage scale on a title basis. Convar referenced in the haptic dll.
-#ifdef PORTAL
-#define HAP_DEFAULT_DAMAGE_SCALE_GAME "0.75"
-#elif TF_CLIENT_DLL
-#define HAP_DEFAULT_DAMAGE_SCALE_GAME "0.3"
-#else
 #define HAP_DEFAULT_DAMAGE_SCALE_GAME "1.0"
-#endif
 ConVar hap_damagescale_game("hap_damagescale_game", HAP_DEFAULT_DAMAGE_SCALE_GAME);
 #undef HAP_DEFAULT_DAMAGE_SCALE_GAME
 
@@ -263,7 +256,7 @@ void UpdateAvatarEffect(void)
 #ifndef CLIENT_DLL
 void HapticsDamage(CBasePlayer* pPlayer, const CTakeDamageInfo &info)
 {
-#if !defined(TF_DLL) && !defined(CSTRIKE_DLL)
+#if !defined(CSTRIKE_DLL)
 	if(!pPlayer->HasHaptics())
 		return;// do not send to non haptic users.
 

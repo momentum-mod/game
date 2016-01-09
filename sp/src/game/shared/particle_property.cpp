@@ -26,12 +26,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#ifdef STAGING_ONLY
-#ifdef TF_CLIENT_DLL
-extern ConVar tf_unusual_effect_offset;
-#endif
-#endif
-
 //-----------------------------------------------------------------------------
 // Save/load
 //-----------------------------------------------------------------------------
@@ -558,43 +552,6 @@ void CParticleProperty::UpdateControlPoint( ParticleEffectList_t *pEffect, int i
 
 	float flOffset = 0.0f;
 	bool bUsingHeadOrigin = false;
-
-#ifdef TF_CLIENT_DLL
-
-	CBaseEntity *pWearable = (CBaseEntity*) pPoint->hEntity.Get();
-	if ( pWearable && dynamic_cast<IHasAttributes*>( pWearable ) && !pWearable->IsPlayer() )
-	{
-		C_BaseAnimating *pAnimating = pPoint->hEntity->GetBaseAnimating();
-		if ( pAnimating )
-		{
-			int bUseHeadOrigin = 0;
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pAnimating, bUseHeadOrigin, particle_effect_use_head_origin );
-			if ( bUseHeadOrigin > 0 )
-			{
-				int iBone = Studio_BoneIndexByName( pAnimating->GetModelPtr(), "bip_head" );
-				if ( iBone < 0 )
-				{
-					iBone = Studio_BoneIndexByName( pAnimating->GetModelPtr(), "prp_helmet" );
-					if ( iBone < 0 )
-					{
-						iBone = Studio_BoneIndexByName( pAnimating->GetModelPtr(), "prp_hat" );
-					}
-				}
-				if ( iBone < 0 )
-				{
-					iBone = 0;
-				}
-
-				bUsingHeadOrigin = true;
-				const matrix3x4_t headBone = pAnimating->GetBone( iBone );
-				MatrixVectors( headBone, &vecForward, &vecRight, &vecUp );
-				MatrixPosition( headBone, vecOrigin );
-
-				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pAnimating, flOffset, particle_effect_vertical_offset );	
-			}
-		}
-	}
-#endif
 
 	if ( !bUsingHeadOrigin )
 	{

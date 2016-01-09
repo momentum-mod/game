@@ -8,40 +8,20 @@
 #include "cbase.h"
 #include "movevars_shared.h"
 
-#if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
-#include "tf_gamerules.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 // some cvars used by player movement system
-#if defined( HL2_DLL ) || defined( HL2_CLIENT_DLL )
-//old #define DEFAULT_GRAVITY_STRING	"600"
 #define DEFAULT_GRAVITY_STRING	"800"
-#else
-#define DEFAULT_GRAVITY_STRING	"800"
-#endif
 
 float GetCurrentGravity( void )
 {
-#if defined( TF_CLIENT_DLL ) || defined( TF_DLL )
-	if ( TFGameRules() )
-	{
-		return ( sv_gravity.GetFloat() * TFGameRules()->GetGravityMultiplier() );
-	}
-#endif 
-
 	return sv_gravity.GetFloat();
 }
 
 ConVar	sv_gravity		( "sv_gravity", DEFAULT_GRAVITY_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED, "World gravity." );
 
-#if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
-ConVar	sv_stopspeed	( "sv_stopspeed","75", FCVAR_NOTIFY | FCVAR_REPLICATED, "Minimum stopping speed when on ground." );
-#else
 ConVar	sv_stopspeed	( "sv_stopspeed","75", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "Minimum stopping speed when on ground." );
-#endif // DOD_DLL || CSTRIKE_DLL
 
 ConVar	sv_noclipaccelerate( "sv_noclipaccelerate", "5", FCVAR_NOTIFY | FCVAR_ARCHIVE | FCVAR_REPLICATED);
 ConVar	sv_noclipspeed	( "sv_noclipspeed", "5", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVAR_REPLICATED);
@@ -83,11 +63,8 @@ ConVar	sv_rollspeed	( "sv_rollspeed", "200", FCVAR_NOTIFY | FCVAR_REPLICATED | F
 ConVar	sv_rollangle	( "sv_rollangle", "0", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "Max view roll angle");
 #endif // CSTRIKE_DLL
 
-#if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
-ConVar	sv_friction		( "sv_friction","4", FCVAR_NOTIFY | FCVAR_REPLICATED, "World friction." );
-#else
+
 ConVar	sv_friction		( "sv_friction","4", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "World friction." );
-#endif // DOD_DLL || CSTRIKE_DLL
 
 #if defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_bounce		( "sv_bounce","0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Bounce multiplier for when physically simulated objects collide with other objects." );

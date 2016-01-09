@@ -47,12 +47,6 @@
 #include "hl2_gamerules.h"
 #endif
 
-#ifdef PORTAL
-	#include "portal_util_shared.h"
-	#include "prop_portal_shared.h"
-	#include "portal_shareddefs.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -423,69 +417,6 @@ void CBaseCombatCharacter::ResetVisibilityCache( CBaseCombatCharacter *pBCC )
 	}
 }
 
-#ifdef PORTAL
-bool CBaseCombatCharacter::FVisibleThroughPortal( const CProp_Portal *pPortal, CBaseEntity *pEntity, int traceMask, CBaseEntity **ppBlocker )
-{
-	VPROF( "CBaseCombatCharacter::FVisible" );
-
-	if ( pEntity->GetFlags() & FL_NOTARGET )
-		return false;
-
-#if HL1_DLL
-	// FIXME: only block LOS through opaque water
-	// don't look through water
-	if ((m_nWaterLevel != 3 && pEntity->m_nWaterLevel == 3) 
-		|| (m_nWaterLevel == 3 && pEntity->m_nWaterLevel == 0))
-		return false;
-#endif
-
-	Vector vecLookerOrigin = EyePosition();//look through the caller's 'eyes'
-	Vector vecTargetOrigin = pEntity->EyePosition();
-
-	// Use the custom LOS trace filter
-	CTraceFilterLOS traceFilter( this, COLLISION_GROUP_NONE, pEntity );
-
-	Vector vecTranslatedTargetOrigin;
-	UTIL_Portal_PointTransform( pPortal->m_hLinkedPortal->MatrixThisToLinked(), vecTargetOrigin, vecTranslatedTargetOrigin );
-	Ray_t ray;
-	ray.Init( vecLookerOrigin, vecTranslatedTargetOrigin );
-
-	trace_t tr;
-
-	// If we're doing an opaque search, include NPCs.
-	if ( traceMask == MASK_BLOCKLOS )
-	{
-		traceMask = MASK_BLOCKLOS_AND_NPCS;
-	}
-
-	UTIL_Portal_TraceRay_Bullets( pPortal, ray, traceMask, &traceFilter, &tr );
-
-	if (tr.fraction != 1.0 || tr.startsolid )
-	{
-		// If we hit the entity we're looking for, it's visible
-		if ( tr.m_pEnt == pEntity )
-			return true;
-
-		// Got line of sight on the vehicle the player is driving!
-		if ( pEntity && pEntity->IsPlayer() )
-		{
-			CBasePlayer *pPlayer = assert_cast<CBasePlayer*>( pEntity );
-			if ( tr.m_pEnt == pPlayer->GetVehicleEntity() )
-				return true;
-		}
-
-		if (ppBlocker)
-		{
-			*ppBlocker = tr.m_pEnt;
-		}
-
-		return false;// Line of sight is not established
-	}
-
-	return true;// line of sight is valid.
-}
-#endif
-
 //-----------------------------------------------------------------------------
 
 //=========================================================
@@ -520,112 +451,6 @@ bool CBaseCombatCharacter::FInViewCone( const Vector &vecSpot )
 
 	return false;
 }
-
-#ifdef PORTAL
-//=========================================================
-// FInViewCone - returns true is the passed ent is in
-// the caller's forward view cone. The dot product is performed
-// in 2d, making the view cone infinitely tall. 
-//=========================================================
-CProp_Portal* CBaseCombatCharacter::FInViewConeThroughPortal( CBaseEntity *pEntity )
-{
-	return FInViewConeThroughPortal( pEntity->WorldSpaceCenter() );
-}
-
-//=========================================================
-// FInViewCone - returns true is the passed Vector is in
-// the caller's forward view cone. The dot product is performed
-// in 2d, making the view cone infinitely tall. 
-//=========================================================
-CProp_Portal* CBaseCombatCharacter::FInViewConeThroughPortal( const Vector &vecSpot )
-{
-	int iPortalCount = CProp_Portal_Shared::AllPortals.Count();
-	if( iPortalCount == 0 )
-		return NULL;
-
-	const Vector ptEyePosition = EyePosition();
-
-	float fDistToBeat = 1e20; //arbitrarily high number
-	CProp_Portal *pBestPortal = NULL;
-
-	CProp_Portal **pPortals = CProp_Portal_Shared::AllPortals.Base();
-
-	// Check through both portals
-	for ( int iPortal = 0; iPortal < iPortalCount; ++iPortal )
-	{
-		CProp_Portal *pPortal = pPortals[iPortal];
-
-		// Check if this portal is active, linked, and in the view cone
-		if( pPortal->IsActivedAndLinked() && FInViewCone( pPortal ) )
-		{
-			// The facing direction is the eye to the portal to set up a proper FOV through the relatively small portal hole
-			Vector facingDir = pPortal->GetAbsOrigin() - ptEyePosition;
-
-			// If the portal isn't facing the eye, bail
-			if ( facingDir.Dot( pPortal->m_plane_Origin.normal ) > 0.0f )
-				continue;
-
-			// If the point is behind the linked portal, bail
-			if ( ( vecSpot - pPortal->m_hLinkedPortal->GetAbsOrigin() ).Dot( pPortal->m_hLinkedPortal->m_plane_Origin.normal ) < 0.0f )
-				continue;
-
-			// Remove height from the equation
-			facingDir.z = 0.0f;
-			float fPortalDist = VectorNormalize( facingDir );
-
-			// Translate the target spot across the portal
-			Vector vTranslatedVecSpot;
-			UTIL_Portal_PointTransform( pPortal->m_hLinkedPortal->MatrixThisToLinked(), vecSpot, vTranslatedVecSpot );
-
-			// do this in 2D
-			Vector los = ( vTranslatedVecSpot - ptEyePosition );
-			los.z = 0.0f;
-			float fSpotDist = VectorNormalize( los );
-
-			if( fSpotDist > fDistToBeat )
-				continue; //no point in going further, we already have a better portal
-
-			// If the target point is closer than the portal (banana juice), bail
-			// HACK: Extra 32 is a fix for the player who's origin can be on one side of a portal while his center mirrored across is closer than the portal.
-			if ( fPortalDist > fSpotDist + 32.0f )
-				continue;
-
-			// Get the worst case FOV from the portal's corners
-			float fFOVThroughPortal = 1.0f;
-
-			for ( int i = 0; i < 4; ++i )
-			{
-				//Vector vPortalCorner = pPortal->GetAbsOrigin() + vPortalRight * PORTAL_HALF_WIDTH * ( ( i / 2 == 0 ) ? ( 1.0f ) : ( -1.0f ) ) + 
-				//												 vPortalUp * PORTAL_HALF_HEIGHT * ( ( i % 2 == 0 ) ? ( 1.0f ) : ( -1.0f ) );
-
-				Vector vEyeToCorner = pPortal->m_vPortalCorners[i] - ptEyePosition;
-				vEyeToCorner.z = 0.0f;
-				VectorNormalize( vEyeToCorner );
-
-				float flCornerDot = DotProduct( vEyeToCorner, facingDir );
-
-				if ( flCornerDot < fFOVThroughPortal )
-					fFOVThroughPortal = flCornerDot;
-			}
-
-			float flDot = DotProduct( los, facingDir );
-
-			// Use the tougher FOV of either the standard FOV or FOV clipped to the portal hole
-			if ( flDot > MAX( fFOVThroughPortal, m_flFieldOfView ) )
-			{
-				float fActualDist = ptEyePosition.DistToSqr( vTranslatedVecSpot );
-				if( fActualDist < fDistToBeat )
-				{
-					fDistToBeat = fActualDist;
-					pBestPortal = pPortal;
-				}
-			}
-		}
-	}
-
-	return pBestPortal;
-}
-#endif
 
 
 //=========================================================

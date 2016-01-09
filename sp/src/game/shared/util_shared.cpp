@@ -13,9 +13,6 @@
 #include "vphysics/object_hash.h"
 #include "mathlib/IceKey.H"
 #include "checksum_crc.h"
-#ifdef TF_CLIENT_DLL
-#include "cdll_util.h"
-#endif
 #include "particle_parse.h"
 #include "KeyValues.h"
 #include "time.h"
@@ -631,12 +628,7 @@ void UTIL_TraceEntity( CBaseEntity *pEntity, const Vector &vecAbsStart, const Ve
 	Assert( pCollision->GetCollisionAngles() == vec3_angle );
 
 	CTraceFilterEntity traceFilter( pEntity, pCollision->GetCollisionGroup() );
-
-#ifdef PORTAL
-	UTIL_Portal_TraceEntity( pEntity, vecAbsStart, vecAbsEnd, mask, &traceFilter, ptr );
-#else
 	enginetrace->SweepCollideable( pCollision, vecAbsStart, vecAbsEnd, pCollision->GetCollisionAngles(), mask, &traceFilter, ptr );
-#endif
 }
 
 void UTIL_TraceEntity( CBaseEntity *pEntity, const Vector &vecAbsStart, const Vector &vecAbsEnd, 
@@ -650,12 +642,7 @@ void UTIL_TraceEntity( CBaseEntity *pEntity, const Vector &vecAbsStart, const Ve
 	Assert( pCollision->GetCollisionAngles() == vec3_angle );
 
 	CTraceFilterEntityIgnoreOther traceFilter( pEntity, pIgnore, nCollisionGroup );
-
-#ifdef PORTAL
- 	UTIL_Portal_TraceEntity( pEntity, vecAbsStart, vecAbsEnd, mask, &traceFilter, ptr );
-#else
 	enginetrace->SweepCollideable( pCollision, vecAbsStart, vecAbsEnd, pCollision->GetCollisionAngles(), mask, &traceFilter, ptr );
-#endif
 }
 
 void UTIL_TraceEntity( CBaseEntity *pEntity, const Vector &vecAbsStart, const Vector &vecAbsEnd, 
@@ -668,11 +655,7 @@ void UTIL_TraceEntity( CBaseEntity *pEntity, const Vector &vecAbsStart, const Ve
 	// because one day, rotated collideables will work!
 	Assert( pCollision->GetCollisionAngles() == vec3_angle );
 
-#ifdef PORTAL
-	UTIL_Portal_TraceEntity( pEntity, vecAbsStart, vecAbsEnd, mask, pFilter, ptr );
-#else
 	enginetrace->SweepCollideable( pCollision, vecAbsStart, vecAbsEnd, pCollision->GetCollisionAngles(), mask, pFilter, ptr );
-#endif
 }
 
 // ----
@@ -823,14 +806,6 @@ bool UTIL_IsLowViolence( void )
 	// violence when the engine is in normal violence mode.
 	if ( !violence_hblood.GetBool() || !violence_ablood.GetBool() || !violence_hgibs.GetBool() || !violence_agibs.GetBool() )
 		return true;
-
-#ifdef TF_CLIENT_DLL
-	// Use low violence if the local player has an item that allows them to see it (Pyro Goggles)
-	if ( IsLocalPlayerUsingVisionFilterFlags( TF_VISION_FILTER_PYRO ) )
-	{
-		return true;
-	}
-#endif
 
 	return engine->IsLowViolence();
 }

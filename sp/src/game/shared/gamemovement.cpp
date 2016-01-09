@@ -1528,11 +1528,7 @@ void CGameMovement::Friction( void )
 			}
 			else
 			{
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-				control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
-#else
 				control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
-#endif
 			}
 		}
 		else

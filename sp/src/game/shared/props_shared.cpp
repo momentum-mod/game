@@ -879,16 +879,7 @@ EHANDLE g_hGameGibManager;
 
 CGameGibManager *GetGibManager( void )
 {
-#ifndef HL2_EPISODIC
 	return NULL;
-#endif
-
-	if ( g_hGameGibManager == NULL )
-	{
-		g_hGameGibManager = (CGameGibManager *)gEntList.FindEntityByClassname( NULL, "game_gib_manager" );
-	}
-
-	return (CGameGibManager *)g_hGameGibManager.Get();
 }
 
 #endif

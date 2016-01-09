@@ -62,10 +62,6 @@ enum InvalidatePhysicsBits_t
 #else
 #include "baseentity.h"
 
-#ifdef HL2_EPISODIC
-	#include "info_darknessmode_lightsource.h"
-#endif // HL2_EPISODIC
-
 #endif
 
 #if !defined( NO_ENTITY_PREDICTION )

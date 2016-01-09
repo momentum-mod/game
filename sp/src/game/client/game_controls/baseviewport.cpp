@@ -286,12 +286,10 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
     {
         newpanel = new CSpectatorGUI(this);
     }
-#if !defined( TF_CLIENT_DLL )
     else if (Q_strcmp(PANEL_NAV_PROGRESS, szPanelName) == 0)
     {
         newpanel = new CNavProgress(this);
     }
-#endif	// TF_CLIENT_DLL
 #endif
 
     if (Q_strcmp(PANEL_COMMENTARY_MODELVIEWER, szPanelName) == 0)

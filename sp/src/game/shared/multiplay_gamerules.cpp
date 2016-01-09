@@ -15,9 +15,7 @@
 #include "mp_shareddefs.h"
 #include "utlbuffer.h"
 
-#ifdef CLIENT_DLL
-
-#else
+#ifndef CLIENT_DLL
 
 	#include "eventqueue.h"
 	#include "player.h"
@@ -117,9 +115,7 @@ void cc_GotoNextMapInCycle()
 ConCommand skip_next_map( "skip_next_map", cc_SkipNextMapInCycle, "Skips the next map in the map rotation for the server." );
 ConCommand changelevel_next( "changelevel_next", cc_GotoNextMapInCycle, "Immediately changes to the next map in the map rotation for the server." );
 
-#ifndef TF_DLL		// TF overrides the default value of this convar
 ConVar mp_waitingforplayers_time( "mp_waitingforplayers_time", "0", FCVAR_GAMEDLL, "WaitingForPlayers time length in seconds" );
-#endif
 
 ConVar mp_waitingforplayers_restart( "mp_waitingforplayers_restart", "0", FCVAR_GAMEDLL, "Set to 1 to start or restart the WaitingForPlayers period." );
 ConVar mp_waitingforplayers_cancel( "mp_waitingforplayers_cancel", "0", FCVAR_GAMEDLL, "Set to 1 to end the WaitingForPlayers period." );
@@ -129,11 +125,7 @@ ConVar mp_clan_ready_signal( "mp_clan_ready_signal", "ready", FCVAR_GAMEDLL, "Te
 ConVar nextlevel( "nextlevel", 
 				  "", 
 				  FCVAR_GAMEDLL | FCVAR_NOTIFY,
-#if defined( CSTRIKE_DLL ) || defined( TF_DLL )
-				  "If set to a valid map name, will trigger a changelevel to the specified map at the end of the round" );
-#else
 				  "If set to a valid map name, will change to this map during the next changelevel" );
-#endif // CSTRIKE_DLL || TF_DLL
 					  					  
 #endif
 
@@ -289,7 +281,6 @@ CMultiplayRules::CMultiplayRules()
 	{
 		// listen server
 		const char *cfgfile = lservercfgfile.GetString();
-
 		if ( cfgfile && cfgfile[0] )
 		{
 			char szCommand[256];
@@ -342,7 +333,7 @@ bool CMultiplayRules::Init()
 	// override some values for multiplay.
 
 		// suitcharger
-#ifndef TF_DLL
+
 //=============================================================================
 // HPE_BEGIN:
 // [menglish] CS doesn't have the suitcharger either
@@ -354,7 +345,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 //=============================================================================
 // HPE_END
 //=============================================================================
-#endif
+
 	}
 
 
@@ -1371,98 +1362,6 @@ ConVarRef suitcharger( "sk_suitcharger" );
 
 			g_pStringTableServerMapCycle->AddString( CBaseEntity::IsServer(), "ServerMapCycle", sFileList.Length() + 1, sFileList.String() );
 		}
-
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
-		if ( g_pStringTableServerPopFiles )
-		{
-			// Search for all pop files that are prefixed with the current map name
-			CUtlString sFileList;
-
-			char szBaseName[_MAX_PATH];
-			V_snprintf( szBaseName, sizeof( szBaseName ), "scripts/population/%s*.pop", STRING(gpGlobals->mapname) );
-
-			FileFindHandle_t popHandle;
-			const char *pPopFileName = filesystem->FindFirst( szBaseName, &popHandle );
-
-			while ( pPopFileName && pPopFileName[ 0 ] != '\0' )
-			{
-				// Skip it if it's a directory or is the folder info
-				if ( filesystem->FindIsDirectory( popHandle ) )
-				{
-					pPopFileName = filesystem->FindNext( popHandle );
-					continue;
-				}
-
-				const char *pchPopPostfix = StringAfterPrefix( pPopFileName, STRING(gpGlobals->mapname) );
-				if ( pchPopPostfix )
-				{
-					char szShortName[_MAX_PATH];
-					V_strncpy( szShortName, ( ( pchPopPostfix[ 0 ] == '_' ) ? ( pchPopPostfix + 1 ) : "normal" ), sizeof( szShortName ) ); // skip the '_'
-					V_StripExtension( szShortName, szShortName, sizeof( szShortName ) );
-
-					sFileList += szShortName;
-					sFileList += '\n';
-				}
-
-				pPopFileName = filesystem->FindNext( popHandle );
-			}
-
-			filesystem->FindClose( popHandle );
-
-			if ( sFileList.Length() > 0 )
-			{
-				g_pStringTableServerPopFiles->AddString( CBaseEntity::IsServer(), "ServerPopFiles", sFileList.Length() + 1, sFileList.String() );
-			}
-		}
-
-		if ( g_pStringTableServerMapCycleMvM )
-		{
-			ConVarRef tf_mvm_missioncyclefile( "tf_mvm_missioncyclefile" );
-			KeyValues *pKV = new KeyValues( tf_mvm_missioncyclefile.GetString() );
-			if ( pKV->LoadFromFile( g_pFullFileSystem, tf_mvm_missioncyclefile.GetString(), "MOD" ) )
-			{
-				CUtlVector<CUtlString> mapList;
-
-				// Parse the maps and send a list to each client for vote options
-				int iMaxCat = pKV->GetInt( "categories", 0 );
-				for ( int iCat = 1; iCat <= iMaxCat; iCat++ )
-				{
-					KeyValues *pCategory = pKV->FindKey( UTIL_VarArgs( "%d", iCat ), false );
-					if ( pCategory )
-					{
-						int iMapCount = pCategory->GetInt( "count", 0 );
-						for ( int iMap = 1; iMap <= iMapCount; ++iMap )
-						{
-							KeyValues *pMission = pCategory->FindKey( UTIL_VarArgs( "%d", iMap ), false );
-							if ( pMission )
-							{
-								const char *pszMap = pMission->GetString( "map", "" );
-								int iIdx = mapList.Find( pszMap );
-								if ( !mapList.IsValidIndex( iIdx ) )
-								{
-									mapList.AddToTail( pszMap );
-								}
-							}
-						}
-					}
-				}
-
-				if ( mapList.Count() )
-				{
-					CUtlString sFileList;
-					for ( int i = 0; i < mapList.Count(); i++ )
-					{
-						sFileList += mapList[i];
-						sFileList += '\n';
-					}
-
-					g_pStringTableServerMapCycleMvM->AddString( CBaseEntity::IsServer(), "ServerMapCycleMvM", sFileList.Length() + 1, sFileList.String() );
-				}
-
-				pKV->deleteThis();
-			}
-		}
-#endif
 
 		// If the current map selection is in the list, set m_nMapCycleindex to the map that follows it.
 		for ( int i = 0; i < m_MapList.Count(); i++ )

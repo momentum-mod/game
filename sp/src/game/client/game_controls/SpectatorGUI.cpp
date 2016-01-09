@@ -39,11 +39,6 @@
 #include <shareddefs.h>
 #include <igameresources.h>
 
-#ifdef TF_CLIENT_DLL
-#include "tf_gamerules.h"
-void AddSubKeyNamed( KeyValues *pKeys, const char *pszName );
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -456,14 +451,6 @@ CSpectatorGUI::~CSpectatorGUI()
 void CSpectatorGUI::ApplySchemeSettings(IScheme *pScheme)
 {
 	KeyValues *pConditions = NULL;
-
-#ifdef TF_CLIENT_DLL
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
-	{
-		pConditions = new KeyValues( "conditions" );
-		AddSubKeyNamed( pConditions, "if_mvm" );
-	}
-#endif
 
 	LoadControlSettings( GetResFile(), NULL, NULL, pConditions );
 
