@@ -466,9 +466,7 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
     CreateInterfaceFn physicsFactory, CreateInterfaceFn fileSystemFactory,
     CGlobalVars *pGlobals)
 {
-#ifdef _WIN32
     TickSet::TickInit();
-#endif
 
     ConnectTier1Libraries(&appSystemFactory, 1);
     ConnectTier2Libraries(&appSystemFactory, 1);
@@ -626,11 +624,6 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
     // try to get debug overlay, may be NULL if on HLDS
     debugoverlay = (IVDebugOverlay *) appSystemFactory(VDEBUG_OVERLAY_INTERFACE_VERSION, NULL);
 
-#ifdef USE_NAV_MESH
-    // create the Navigation Mesh interface
-    TheNavMesh = NavMeshFactory();
-#endif
-
     // init the gamestatsupload connection
     gamestatsuploader->InitConnection();
 
@@ -667,15 +660,6 @@ void CServerGameDLL::DLLShutdown(void)
 
 #ifdef CSTRIKE_DLL // BOTPORT: TODO: move these ifdefs out
     RemoveBotControl();
-#endif
-
-#ifdef USE_NAV_MESH
-    // destroy the Navigation Mesh interface
-    if (TheNavMesh)
-    {
-        delete TheNavMesh;
-        TheNavMesh = NULL;
-    }
 #endif
     // reset (shutdown) the gamestatsupload connection
     gamestatsuploader->InitConnection();
@@ -740,7 +724,6 @@ float CServerGameDLL::GetTickInterval(void) const
 
 static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
 {
-#ifdef _WIN32
     float toCheck = ((ConVar*) var)->GetFloat();
     if (toCheck == fOldValue) return;
     if (toCheck < 0.01f || toCheck > 0.015f)
@@ -756,10 +739,6 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
         gpGlobals->interval_per_tick = toCheck;
     }
     else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
-#else
-    Msg("Changing tickrate is not yet supported on Linux.\n");
-#endif
-
 }
 
 static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT, "Changes the tickrate of the game. Recommended to change this when not in a server.", onTickRateChange);
@@ -1277,14 +1256,6 @@ void CServerGameDLL::LevelShutdown(void)
     CBaseEntity::SetAllowPrecache(false);
 
     g_nCurrentChapterIndex = -1;
-
-#ifdef USE_NAV_MESH
-    // reset the Navigation Mesh
-    if (TheNavMesh)
-    {
-        TheNavMesh->Reset();
-    }
-#endif
 }
 
 //-----------------------------------------------------------------------------

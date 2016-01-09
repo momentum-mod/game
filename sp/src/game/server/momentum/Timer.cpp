@@ -28,16 +28,12 @@ void CTimer::PostTime()
         int ticks = gpGlobals->tickcount - m_iStartTick;
 
         // MOM_TODO: make tickrate code crossplatform
-#ifdef _WIN32
-        float tickRate = TickSet::GetTickrate();
-#else
-        float tickRate = 0.015;
-#endif
+        TickSet::Tickrate tickRate = TickSet::GetCurrentTickrate();
 
         //Build URL
         char webURL[512];
         Q_snprintf(webURL, 512, "http://momentum-mod.org/postscore/%llu/%s/%i/%s", steamID, map,
-            ticks, tickRate == 0.01f ? "100" : "66");//FIXME
+            ticks, tickRate.sType);
 
         DevLog("Ticks sent to server: %i\n", ticks);
 

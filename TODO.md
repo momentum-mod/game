@@ -46,6 +46,9 @@
         - [ ] Inspect and cherry pick ifdef (CSTRIKE_DLL) code segments
         - [ ] Format (CTRL + K, CTRL + D) every class to follow the tabs->spaces and other spacing style for code
         - [ ] Remove any unused files
+            - [ ] hud_posture.cpp
+            - [ ] hud_flashlight.cpp
+            - [ ] teamplayroundbased_gamerules.h/cpp
         - [ ] Eventually undefine HL2_DLL and remove corresponding code
 
 - [ ] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
@@ -85,6 +88,8 @@
     - [ ] Add hash checking
     - [x] GetCPCount seems to return wrongly
     - [x] Are command flags needed?
+    
+- [ ] tickset.cpp (Server) Make tick-setting crossplatform
     
 - [ ] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 

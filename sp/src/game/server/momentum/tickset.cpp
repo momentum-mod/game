@@ -1,11 +1,18 @@
 #ifdef _WIN32
-
 #include "Windows.h"
 #include "Psapi.h"
 #pragma comment(lib, "psapi.lib")
-#include "tickset.h"
+#elif defined (POSIX)
+//#include <dlfcn.h> // ?
+#endif
 
-float* TickSet::interval_per_tick;
+#include "tickset.h"
+#include "tier0/platform.h"
+
+float* TickSet::interval_per_tick = NULL;
+TickSet::Tickrate TickSet::TICKRATE_100 { 0.01f, "100" };
+TickSet::Tickrate TickSet::TICKRATE_66 { 0.015f, "66" };
+TickSet::Tickrate TickSet::m_trCurrent = TICKRATE_66;
 
 inline bool TickSet::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
 {
@@ -31,6 +38,7 @@ void* TickSet::FindPattern(const void* start, size_t length, const unsigned char
 
 bool TickSet::TickInit()
 {
+#ifdef _WIN32
 	HMODULE handle = GetModuleHandleA("engine.dll");
 	if (!handle)
 		return false;	
@@ -44,18 +52,30 @@ bool TickSet::TickInit()
 	unsigned char pattern[] = { 0x8B, 0x0D, '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 0xFF, '?', 0xD9, 0x15, '?', '?', '?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
 	auto p = reinterpret_cast<uintptr_t>(FindPattern(moduleBase, moduleSize, pattern, "xx????????????x?xx????xx????xxxx????xxxxxxxxxx"));
 	interval_per_tick = *reinterpret_cast<float**>(p + 18);
+    // MOM_TODO: do we need to unload/close the module handle?
+#elif defined (POSIX)
+    //void *handle = dlopen("engine.so", RTLD_LAZY); // or something
+
+    //auto p = reinterpret_cast<unsigned int>(FindPattern(base, size, pattern, "xxpatternstringxx"));//or something
+
+#endif
+
 	return (interval_per_tick ? true : false);
 }
 
 bool TickSet::SetTickrate(float tickrate)
 {
-	if (interval_per_tick) {
-		*interval_per_tick = tickrate;
-		return true;
-	}
-	else {
-		return false;
-	}
+    if (m_trCurrent.fTickRate != tickrate)
+    {
+        Tickrate tr;
+        if (tickrate == 0.01f) tr = TICKRATE_100;
+        else if (tickrate == 0.015f) tr = TICKRATE_66;
+        else
+        {
+            tr.fTickRate = tickrate;
+            tr.sType = "CUSTOM";
+        }
+        return SetTickrate(tr);
+    }
+    else return false;
 }
-
-#endif // _WIN32

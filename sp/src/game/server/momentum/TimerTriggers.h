@@ -41,6 +41,8 @@ public:
     void SetShouldStopPlayer(bool newB) { m_bResetVelocity = newB; }
     void SetShouldResetAngles(bool newB) { m_bResetAngles = newB; }
 
+    virtual void AfterTeleport() {};//base class does nothing
+
 private:
     bool m_bResetVelocity;
     bool m_bResetAngles;
@@ -160,6 +162,8 @@ public:
     void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think();
 
+    void AfterTeleport() { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
+
 private:
     // The time that the player initally touched the trigger
     float m_fStartTouchedTime = 0.0f;
@@ -192,6 +196,8 @@ public:
     float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think();
+
+    void AfterTeleport() { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
 
 private:
     // The time that the player initally touched the trigger. -1 if not checking for teleport
