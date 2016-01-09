@@ -41,169 +41,164 @@
 
 enum TrainVelocityType_t
 {
-        TrainVelocity_Instantaneous = 0,
-        TrainVelocity_LinearBlend,
-        TrainVelocity_EaseInEaseOut,
+    TrainVelocity_Instantaneous = 0,
+    TrainVelocity_LinearBlend,
+    TrainVelocity_EaseInEaseOut,
 };
 
 
 enum TrainOrientationType_t
 {
-        TrainOrientation_Fixed = 0,
-        TrainOrientation_AtPathTracks,
-        TrainOrientation_LinearBlend,
-        TrainOrientation_EaseInEaseOut,
+    TrainOrientation_Fixed = 0,
+    TrainOrientation_AtPathTracks,
+    TrainOrientation_LinearBlend,
+    TrainOrientation_EaseInEaseOut,
 };
 
 class CFuncTrackTrain : public CBaseEntity
 {
-	DECLARE_CLASS( CFuncTrackTrain, CBaseEntity );
-	DECLARE_SERVERCLASS();
+    DECLARE_CLASS(CFuncTrackTrain, CBaseEntity);
+    DECLARE_SERVERCLASS();
 
 public:
-	CFuncTrackTrain();
+    CFuncTrackTrain();
 
-	void Spawn( void );
-	bool CreateVPhysics( void );
-	void Precache( void );
-	void UpdateOnRemove();
-	void MoveDone();
+    void Spawn(void);
+    bool CreateVPhysics(void);
+    void Precache(void);
+    void UpdateOnRemove();
+    void MoveDone();
 
-	virtual int OnTakeDamage( const CTakeDamageInfo &info );
+    virtual int OnTakeDamage(const CTakeDamageInfo &info);
 
-	void Blocked( CBaseEntity *pOther );
-	bool KeyValue( const char *szKeyName, const char *szValue );
+    void Blocked(CBaseEntity *pOther);
+    bool KeyValue(const char *szKeyName, const char *szValue);
 
-	virtual int DrawDebugTextOverlays();
-	void DrawDebugGeometryOverlays();
+    virtual int DrawDebugTextOverlays();
+    void DrawDebugGeometryOverlays();
 
-	void Next( void );
-	void Find( void );
-	void NearestPath( void );
-	void DeadEnd( void );
+    void Next(void);
+    void Find(void);
+    void NearestPath(void);
+    void DeadEnd(void);
 
-	void SetTrack( CPathTrack *track ) { m_ppath = track->Nearest(GetLocalOrigin()); }
-	void SetControls( CBaseEntity *pControls );
-	bool OnControls( CBaseEntity *pControls );
+    void SetTrack(CPathTrack *track) { m_ppath = track->Nearest(GetLocalOrigin()); }
+    void SetControls(CBaseEntity *pControls);
+    bool OnControls(CBaseEntity *pControls);
 
-	void SoundStop( void );
-	void SoundUpdate( void );
+    void SoundStop(void);
+    void SoundUpdate(void);
 
-	void Start( void );
-	void Stop( void );
+    void Start(void);
+    void Stop(void);
 
-	bool IsDirForward();
-	void SetDirForward( bool bForward );
-	void SetSpeed( float flSpeed, bool bAccel = false );
-	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void SetSpeedDirAccel( float flNewSpeed );
-	
-	// Input handlers
-	void InputSetSpeed( inputdata_t &inputdata );
-	void InputSetSpeedDir( inputdata_t &inputdata );
-	void InputSetSpeedReal( inputdata_t &inputdata );
-	void InputStop( inputdata_t &inputdata );
-	void InputResume( inputdata_t &inputdata );
-	void InputReverse( inputdata_t &inputdata );
-	void InputStartForward( inputdata_t &inputdata );
-	void InputStartBackward( inputdata_t &inputdata );
-	void InputToggle( inputdata_t &inputdata );
-	void InputSetSpeedDirAccel( inputdata_t &inputdata );
-	void InputTeleportToPathTrack( inputdata_t &inputdata );
-	void InputSetSpeedForwardModifier( inputdata_t &inputdata );
+    bool IsDirForward();
+    void SetDirForward(bool bForward);
+    void SetSpeed(float flSpeed, bool bAccel = false);
+    void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+    void SetSpeedDirAccel(float flNewSpeed);
 
-	static CFuncTrackTrain *Instance( edict_t *pent );
+    // Input handlers
+    void InputSetSpeed(inputdata_t &inputdata);
+    void InputSetSpeedDir(inputdata_t &inputdata);
+    void InputSetSpeedReal(inputdata_t &inputdata);
+    void InputStop(inputdata_t &inputdata);
+    void InputResume(inputdata_t &inputdata);
+    void InputReverse(inputdata_t &inputdata);
+    void InputStartForward(inputdata_t &inputdata);
+    void InputStartBackward(inputdata_t &inputdata);
+    void InputToggle(inputdata_t &inputdata);
+    void InputSetSpeedDirAccel(inputdata_t &inputdata);
+    void InputTeleportToPathTrack(inputdata_t &inputdata);
+    void InputSetSpeedForwardModifier(inputdata_t &inputdata);
 
-	DECLARE_DATADESC();
+    static CFuncTrackTrain *Instance(edict_t *pent);
 
-	virtual int	ObjectCaps( void ) { return BaseClass::ObjectCaps() | FCAP_DIRECTIONAL_USE | FCAP_USE_ONGROUND; }
+    DECLARE_DATADESC();
 
-	virtual void	OnRestore( void );
+    virtual int	ObjectCaps(void) { return BaseClass::ObjectCaps() | FCAP_DIRECTIONAL_USE | FCAP_USE_ONGROUND; }
 
-	float GetMaxSpeed() const { return m_maxSpeed; }
-	float GetCurrentSpeed() const { return m_flSpeed; }
-	float GetDesiredSpeed() const { return m_flDesiredSpeed;}
+    virtual void	OnRestore(void);
 
-	virtual bool IsBaseTrain( void ) const { return true; }
+    float GetMaxSpeed() const { return m_maxSpeed; }
+    float GetCurrentSpeed() const { return m_flSpeed; }
+    float GetDesiredSpeed() const { return m_flDesiredSpeed; }
 
-	void SetSpeedForwardModifier( float flModifier );
-	void SetBlockDamage( float flDamage ) { m_flBlockDamage = flDamage; }
-	void SetDamageChild( bool bDamageChild ) { m_bDamageChild = bDamageChild; }
+    virtual bool IsBaseTrain(void) const { return true; }
+
+    void SetSpeedForwardModifier(float flModifier);
+    void SetBlockDamage(float flDamage) { m_flBlockDamage = flDamage; }
+    void SetDamageChild(bool bDamageChild) { m_bDamageChild = bDamageChild; }
 
 private:
 
-	void ArriveAtNode( CPathTrack *pNode );
-	void FirePassInputs( CPathTrack *pStart, CPathTrack *pEnd, bool forward );
+    void ArriveAtNode(CPathTrack *pNode);
+    void FirePassInputs(CPathTrack *pStart, CPathTrack *pEnd, bool forward);
 
 public:
 
-	// UNDONE: Add accessors?
-	CPathTrack	*m_ppath;
-	float		m_length;
-	
-#ifdef HL1_DLL	
-	bool		m_bOnTrackChange;		// we don't want to find a new node if we restore while 
-										// riding on a func_trackchange
-#endif
+    // UNDONE: Add accessors?
+    CPathTrack	*m_ppath;
+    float		m_length;
 
 private:
 
-	TrainVelocityType_t GetTrainVelocityType();
-	void UpdateTrainVelocity( CPathTrack *pnext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval );
+    TrainVelocityType_t GetTrainVelocityType();
+    void UpdateTrainVelocity(CPathTrack *pnext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval);
 
-	TrainOrientationType_t GetTrainOrientationType();
-	void UpdateTrainOrientation( CPathTrack *pnext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval );
-	void UpdateOrientationAtPathTracks( CPathTrack *pnext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval );
-	void UpdateOrientationBlend( TrainOrientationType_t eOrientationType, CPathTrack *pPrev, CPathTrack *pNext, const Vector &nextPos, float flInterval );
-	void DoUpdateOrientation( const QAngle &curAngles, const QAngle &angles, float flInterval );
+    TrainOrientationType_t GetTrainOrientationType();
+    void UpdateTrainOrientation(CPathTrack *pnext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval);
+    void UpdateOrientationAtPathTracks(CPathTrack *pnext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval);
+    void UpdateOrientationBlend(TrainOrientationType_t eOrientationType, CPathTrack *pPrev, CPathTrack *pNext, const Vector &nextPos, float flInterval);
+    void DoUpdateOrientation(const QAngle &curAngles, const QAngle &angles, float flInterval);
 
-	void TeleportToPathTrack( CPathTrack *pTeleport );
-
-
-	Vector		m_controlMins;
-	Vector		m_controlMaxs;
-	Vector		m_lastBlockPos;				// These are used to build a heuristic decision about being temporarily blocked by physics objects
-	int			m_lastBlockTick;			// ^^^^^^^
-	float		m_flVolume;
-	float		m_flBank;
-	float		m_oldSpeed;
-	float		m_flBlockDamage;			// Damage to inflict when blocked.
-	float		m_height;
-	float		m_maxSpeed;
-	float		m_dir;
+    void TeleportToPathTrack(CPathTrack *pTeleport);
 
 
-	string_t	m_iszSoundMove;				// Looping sound to play while moving. Pitch shifted based on speed.
-	string_t	m_iszSoundMovePing;			// Ping sound to play while moving. Interval decreased based on speed.
-	string_t	m_iszSoundStart;			// Sound to play when starting to move.
-	string_t	m_iszSoundStop;				// Sound to play when stopping.
+    Vector		m_controlMins;
+    Vector		m_controlMaxs;
+    Vector		m_lastBlockPos;				// These are used to build a heuristic decision about being temporarily blocked by physics objects
+    int			m_lastBlockTick;			// ^^^^^^^
+    float		m_flVolume;
+    float		m_flBank;
+    float		m_oldSpeed;
+    float		m_flBlockDamage;			// Damage to inflict when blocked.
+    float		m_height;
+    float		m_maxSpeed;
+    float		m_dir;
 
-	float		m_flMoveSoundMinTime;		// The most often to play the move 'ping' sound (used at max speed)
-	float		m_flMoveSoundMaxTime;		// The least often to play the move 'ping' sound (used approaching zero speed)
-	float		m_flNextMoveSoundTime;
 
-	int			m_nMoveSoundMinPitch;		// The sound pitch to approach as we come to a stop
-	int			m_nMoveSoundMaxPitch;		// The sound pitch to approach as we approach our max speed (actually, it's hardcoded to 1000 in/sec)
+    string_t	m_iszSoundMove;				// Looping sound to play while moving. Pitch shifted based on speed.
+    string_t	m_iszSoundMovePing;			// Ping sound to play while moving. Interval decreased based on speed.
+    string_t	m_iszSoundStart;			// Sound to play when starting to move.
+    string_t	m_iszSoundStop;				// Sound to play when stopping.
 
-	TrainOrientationType_t m_eOrientationType;
-	TrainVelocityType_t m_eVelocityType;
-	bool		m_bSoundPlaying;
+    float		m_flMoveSoundMinTime;		// The most often to play the move 'ping' sound (used at max speed)
+    float		m_flMoveSoundMaxTime;		// The least often to play the move 'ping' sound (used approaching zero speed)
+    float		m_flNextMoveSoundTime;
 
-	COutputEvent m_OnStart,m_OnNext; 
+    int			m_nMoveSoundMinPitch;		// The sound pitch to approach as we come to a stop
+    int			m_nMoveSoundMaxPitch;		// The sound pitch to approach as we approach our max speed (actually, it's hardcoded to 1000 in/sec)
 
-	bool		m_bManualSpeedChanges;		// set when we want to send entity IO to govern speed and obey our TrainVelocityType_t
-	float		m_flDesiredSpeed;			// target speed, when m_bManualSpeedChanges is set
-	float		m_flSpeedChangeTime;
-	float		m_flAccelSpeed;
-	float		m_flDecelSpeed;
-	bool		m_bAccelToSpeed;
+    TrainOrientationType_t m_eOrientationType;
+    TrainVelocityType_t m_eVelocityType;
+    bool		m_bSoundPlaying;
 
-	float		m_flNextMPSoundTime;
-	
-	float		m_flSpeedForwardModifier;
-	float		m_flUnmodifiedDesiredSpeed;
+    COutputEvent m_OnStart, m_OnNext;
 
-	bool		m_bDamageChild;
+    bool		m_bManualSpeedChanges;		// set when we want to send entity IO to govern speed and obey our TrainVelocityType_t
+    float		m_flDesiredSpeed;			// target speed, when m_bManualSpeedChanges is set
+    float		m_flSpeedChangeTime;
+    float		m_flAccelSpeed;
+    float		m_flDecelSpeed;
+    bool		m_bAccelToSpeed;
+
+    float		m_flNextMPSoundTime;
+
+    float		m_flSpeedForwardModifier;
+    float		m_flUnmodifiedDesiredSpeed;
+
+    bool		m_bDamageChild;
 };
 
 

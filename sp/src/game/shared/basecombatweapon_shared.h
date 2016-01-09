@@ -113,12 +113,7 @@ namespace vgui2
 //-----------------------------------------------------------------------------
 // Purpose: Base weapon class, shared on client and server
 //-----------------------------------------------------------------------------
-
-#if defined USES_ECON_ITEMS
-#define BASECOMBATWEAPON_DERIVED_FROM		CEconEntity
-#else 
 #define BASECOMBATWEAPON_DERIVED_FROM		CBaseAnimating
-#endif 
 
 //-----------------------------------------------------------------------------
 // Collect trace attacks for weapons that fire multiple projectiles per attack that also penetrate
@@ -445,11 +440,7 @@ public:
 
 	virtual bool			OnFireEvent( C_BaseViewModel *pViewModel, const Vector& origin, const QAngle& angles, int event, const char *options ) 
 	{ 
-#if defined USES_ECON_ITEMS
-		return BaseClass::OnFireEvent( pViewModel, origin, angles, event, options );
-#else
 		return false; 
-#endif
 	}
 
 	// Should this object cast shadows?
@@ -498,14 +489,12 @@ public:
 
 	virtual void			GetWeaponCrosshairScale( float &flScale ) { flScale = 1.f; }
 
-#if !defined USES_ECON_ITEMS
 	// Viewmodel overriding
 	virtual bool			ViewModel_IsTransparent( void ) { return IsTransparent(); }
 	virtual bool			ViewModel_IsUsingFBTexture( void ) { return UsesPowerOfTwoFrameBufferTexture(); }
 	virtual bool			IsOverridingViewmodel( void ) { return false; };
 	virtual int				DrawOverriddenViewmodel( C_BaseViewModel *pViewmodel, int flags ) { return 0; };
 	bool					WantsToOverrideViewmodelAttachments( void ) { return false; }
-#endif
 
 #endif // End client-only methods
 

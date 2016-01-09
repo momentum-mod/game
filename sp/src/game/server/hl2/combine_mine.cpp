@@ -1108,11 +1108,6 @@ void CBounceBomb::OpenHooks( bool bSilent )
 	}
 
 	SetPoseParameter( m_iAllHooks, BOUNCEBOMB_HOOK_RANGE );
-
-#ifdef _XBOX 
-	RemoveEffects( EF_NOSHADOW );
-#endif
-
 }
 
 //---------------------------------------------------------
@@ -1139,10 +1134,6 @@ void CBounceBomb::CloseHooks()
 
 	// Once I lock down, forget how many tries it took.
 	m_iFlipAttempts = 0;
-
-#ifdef _XBOX 
-	AddEffects( EF_NOSHADOW );
-#endif
 }
 
 //---------------------------------------------------------

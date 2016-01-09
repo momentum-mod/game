@@ -98,7 +98,7 @@
 // CBaseEntity::m_fFlags
 // PLAYER SPECIFIC FLAGS FIRST BECAUSE WE USE ONLY A FEW BITS OF NETWORK PRECISION
 // This top block is for singleplayer games only....no HL2:DM (which defines HL2_DLL)
-#if !defined( HL2MP ) && ( defined( PORTAL ) || defined( HL2_EPISODIC ) || defined ( HL2_DLL ) || defined( HL2_LOSTCOAST ) )
+#if !defined( HL2MP ) && ( defined( PORTAL ) || defined ( HL2_DLL ) )
 #define	FL_ONGROUND				(1<<0)	// At rest / on the ground
 #define FL_DUCKING				(1<<1)	// Player flag -- Player is fully crouched
 #define	FL_WATERJUMP			(1<<2)	// player jumping out of water
@@ -182,39 +182,39 @@
 // edict->movetype values
 enum MoveType_t
 {
-	MOVETYPE_NONE		= 0,	// never moves
-	MOVETYPE_ISOMETRIC,			// For players -- in TF2 commander view, etc.
-	MOVETYPE_WALK,				// Player only - moving on the ground
-	MOVETYPE_STEP,				// gravity, special edge handling -- monsters use this
-	MOVETYPE_FLY,				// No gravity, but still collides with stuff
-	MOVETYPE_FLYGRAVITY,		// flies through the air + is affected by gravity
-	MOVETYPE_VPHYSICS,			// uses VPHYSICS for simulation
-	MOVETYPE_PUSH,				// no clip to world, push and crush
-	MOVETYPE_NOCLIP,			// No gravity, no collisions, still do velocity/avelocity
-	MOVETYPE_LADDER,			// Used by players only when going onto a ladder
-	MOVETYPE_OBSERVER,			// Observer movement, depends on player's observer mode
-	MOVETYPE_CUSTOM,			// Allows the entity to describe its own physics
+    MOVETYPE_NONE = 0,	// never moves
+    MOVETYPE_ISOMETRIC,			// For players -- in TF2 commander view, etc.
+    MOVETYPE_WALK,				// Player only - moving on the ground
+    MOVETYPE_STEP,				// gravity, special edge handling -- monsters use this
+    MOVETYPE_FLY,				// No gravity, but still collides with stuff
+    MOVETYPE_FLYGRAVITY,		// flies through the air + is affected by gravity
+    MOVETYPE_VPHYSICS,			// uses VPHYSICS for simulation
+    MOVETYPE_PUSH,				// no clip to world, push and crush
+    MOVETYPE_NOCLIP,			// No gravity, no collisions, still do velocity/avelocity
+    MOVETYPE_LADDER,			// Used by players only when going onto a ladder
+    MOVETYPE_OBSERVER,			// Observer movement, depends on player's observer mode
+    MOVETYPE_CUSTOM,			// Allows the entity to describe its own physics
 
-	// should always be defined as the last item in the list
-	MOVETYPE_LAST		= MOVETYPE_CUSTOM,
+    // should always be defined as the last item in the list
+    MOVETYPE_LAST = MOVETYPE_CUSTOM,
 
-	MOVETYPE_MAX_BITS	= 4
+    MOVETYPE_MAX_BITS = 4
 };
 
 // edict->movecollide values
 enum MoveCollide_t
 {
-	MOVECOLLIDE_DEFAULT = 0,
+    MOVECOLLIDE_DEFAULT = 0,
 
-	// These ones only work for MOVETYPE_FLY + MOVETYPE_FLYGRAVITY
-	MOVECOLLIDE_FLY_BOUNCE,	// bounces, reflects, based on elasticity of surface and object - applies friction (adjust velocity)
-	MOVECOLLIDE_FLY_CUSTOM,	// Touch() will modify the velocity however it likes
-	MOVECOLLIDE_FLY_SLIDE,  // slides along surfaces (no bounce) - applies friciton (adjusts velocity)
+    // These ones only work for MOVETYPE_FLY + MOVETYPE_FLYGRAVITY
+    MOVECOLLIDE_FLY_BOUNCE,	// bounces, reflects, based on elasticity of surface and object - applies friction (adjust velocity)
+    MOVECOLLIDE_FLY_CUSTOM,	// Touch() will modify the velocity however it likes
+    MOVECOLLIDE_FLY_SLIDE,  // slides along surfaces (no bounce) - applies friciton (adjusts velocity)
 
-	MOVECOLLIDE_COUNT,		// Number of different movecollides
+    MOVECOLLIDE_COUNT,		// Number of different movecollides
 
-	// When adding new movecollide types, make sure this is correct
-	MOVECOLLIDE_MAX_BITS = 3
+    // When adding new movecollide types, make sure this is correct
+    MOVECOLLIDE_MAX_BITS = 3
 };
 
 // edict->solid values
@@ -226,39 +226,39 @@ enum MoveCollide_t
 // NOTE: These numerical values are used in the FGD by the prop code (see prop_dynamic)
 enum SolidType_t
 {
-	SOLID_NONE			= 0,	// no solid model
-	SOLID_BSP			= 1,	// a BSP tree
-	SOLID_BBOX			= 2,	// an AABB
-	SOLID_OBB			= 3,	// an OBB (not implemented yet)
-	SOLID_OBB_YAW		= 4,	// an OBB, constrained so that it can only yaw
-	SOLID_CUSTOM		= 5,	// Always call into the entity for tests
-	SOLID_VPHYSICS		= 6,	// solid vphysics object, get vcollide from the model and collide with that
-	SOLID_LAST,
+    SOLID_NONE = 0,	// no solid model
+    SOLID_BSP = 1,	// a BSP tree
+    SOLID_BBOX = 2,	// an AABB
+    SOLID_OBB = 3,	// an OBB (not implemented yet)
+    SOLID_OBB_YAW = 4,	// an OBB, constrained so that it can only yaw
+    SOLID_CUSTOM = 5,	// Always call into the entity for tests
+    SOLID_VPHYSICS = 6,	// solid vphysics object, get vcollide from the model and collide with that
+    SOLID_LAST,
 };
 
 enum SolidFlags_t
 {
-	FSOLID_CUSTOMRAYTEST		= 0x0001,	// Ignore solid type + always call into the entity for ray tests
-	FSOLID_CUSTOMBOXTEST		= 0x0002,	// Ignore solid type + always call into the entity for swept box tests
-	FSOLID_NOT_SOLID			= 0x0004,	// Are we currently not solid?
-	FSOLID_TRIGGER				= 0x0008,	// This is something may be collideable but fires touch functions
-											// even when it's not collideable (when the FSOLID_NOT_SOLID flag is set)
-	FSOLID_NOT_STANDABLE		= 0x0010,	// You can't stand on this
-	FSOLID_VOLUME_CONTENTS		= 0x0020,	// Contains volumetric contents (like water)
-	FSOLID_FORCE_WORLD_ALIGNED	= 0x0040,	// Forces the collision rep to be world-aligned even if it's SOLID_BSP or SOLID_VPHYSICS
-	FSOLID_USE_TRIGGER_BOUNDS	= 0x0080,	// Uses a special trigger bounds separate from the normal OBB
-	FSOLID_ROOT_PARENT_ALIGNED	= 0x0100,	// Collisions are defined in root parent's local coordinate space
-	FSOLID_TRIGGER_TOUCH_DEBRIS	= 0x0200,	// This trigger will touch debris objects
+    FSOLID_CUSTOMRAYTEST = 0x0001,	// Ignore solid type + always call into the entity for ray tests
+    FSOLID_CUSTOMBOXTEST = 0x0002,	// Ignore solid type + always call into the entity for swept box tests
+    FSOLID_NOT_SOLID = 0x0004,	// Are we currently not solid?
+    FSOLID_TRIGGER = 0x0008,	// This is something may be collideable but fires touch functions
+    // even when it's not collideable (when the FSOLID_NOT_SOLID flag is set)
+    FSOLID_NOT_STANDABLE = 0x0010,	// You can't stand on this
+    FSOLID_VOLUME_CONTENTS = 0x0020,	// Contains volumetric contents (like water)
+    FSOLID_FORCE_WORLD_ALIGNED = 0x0040,	// Forces the collision rep to be world-aligned even if it's SOLID_BSP or SOLID_VPHYSICS
+    FSOLID_USE_TRIGGER_BOUNDS = 0x0080,	// Uses a special trigger bounds separate from the normal OBB
+    FSOLID_ROOT_PARENT_ALIGNED = 0x0100,	// Collisions are defined in root parent's local coordinate space
+    FSOLID_TRIGGER_TOUCH_DEBRIS = 0x0200,	// This trigger will touch debris objects
 
-	FSOLID_MAX_BITS	= 10
+    FSOLID_MAX_BITS = 10
 };
 
 //-----------------------------------------------------------------------------
 // A couple of inline helper methods
 //-----------------------------------------------------------------------------
-inline bool IsSolid( SolidType_t solidType, int nSolidFlags )
+inline bool IsSolid(SolidType_t solidType, int nSolidFlags)
 {
-	return (solidType != SOLID_NONE) && ((nSolidFlags & FSOLID_NOT_SOLID) == 0);
+    return (solidType != SOLID_NONE) && ((nSolidFlags & FSOLID_NOT_SOLID) == 0);
 }
 
 
@@ -272,21 +272,21 @@ inline bool IsSolid( SolidType_t solidType, int nSolidFlags )
 // entity effects
 enum
 {
-	EF_BONEMERGE			= 0x001,	// Performs bone merge on client side
-	EF_BRIGHTLIGHT 			= 0x002,	// DLIGHT centered at entity origin
-	EF_DIMLIGHT 			= 0x004,	// player flashlight
-	EF_NOINTERP				= 0x008,	// don't interpolate the next frame
-	EF_NOSHADOW				= 0x010,	// Don't cast no shadow
-	EF_NODRAW				= 0x020,	// don't draw entity
-	EF_NORECEIVESHADOW		= 0x040,	// Don't receive no shadow
-	EF_BONEMERGE_FASTCULL	= 0x080,	// For use with EF_BONEMERGE. If this is set, then it places this ent's origin at its
-										// parent and uses the parent's bbox + the max extents of the aiment.
-										// Otherwise, it sets up the parent's bones every frame to figure out where to place
-										// the aiment, which is inefficient because it'll setup the parent's bones even if
-										// the parent is not in the PVS.
-	EF_ITEM_BLINK			= 0x100,	// blink an item so that the user notices it.
-	EF_PARENT_ANIMATES		= 0x200,	// always assume that the parent entity is animating
-	EF_MAX_BITS = 10
+    EF_BONEMERGE = 0x001,	// Performs bone merge on client side
+    EF_BRIGHTLIGHT = 0x002,	// DLIGHT centered at entity origin
+    EF_DIMLIGHT = 0x004,	// player flashlight
+    EF_NOINTERP = 0x008,	// don't interpolate the next frame
+    EF_NOSHADOW = 0x010,	// Don't cast no shadow
+    EF_NODRAW = 0x020,	// don't draw entity
+    EF_NORECEIVESHADOW = 0x040,	// Don't receive no shadow
+    EF_BONEMERGE_FASTCULL = 0x080,	// For use with EF_BONEMERGE. If this is set, then it places this ent's origin at its
+    // parent and uses the parent's bbox + the max extents of the aiment.
+    // Otherwise, it sets up the parent's bones every frame to figure out where to place
+    // the aiment, which is inefficient because it'll setup the parent's bones even if
+    // the parent is not in the PVS.
+    EF_ITEM_BLINK = 0x100,	// blink an item so that the user notices it.
+    EF_PARENT_ANIMATES = 0x200,	// always assume that the parent entity is animating
+    EF_MAX_BITS = 10
 };
 
 #define EF_PARITY_BITS	3
@@ -340,78 +340,78 @@ enum
 // Rendering constants
 // if this is changed, update common/MaterialSystem/Sprite.cpp
 enum RenderMode_t
-{	
-	kRenderNormal = 0,		// src
-	kRenderTransColor,		// c*a+dest*(1-a)
-	kRenderTransTexture,	// src*a+dest*(1-a)
-	kRenderGlow,			// src*a+dest -- No Z buffer checks -- Fixed size in screen space
-	kRenderTransAlpha,		// src*srca+dest*(1-srca)
-	kRenderTransAdd,		// src*a+dest
-	kRenderEnvironmental,	// not drawn, used for environmental effects
-	kRenderTransAddFrameBlend, // use a fractional frame value to blend between animation frames
-	kRenderTransAlphaAdd,	// src + dest*(1-a)
-	kRenderWorldGlow,		// Same as kRenderGlow but not fixed size in screen space
-	kRenderNone,			// Don't render.
+{
+    kRenderNormal = 0,		// src
+    kRenderTransColor,		// c*a+dest*(1-a)
+    kRenderTransTexture,	// src*a+dest*(1-a)
+    kRenderGlow,			// src*a+dest -- No Z buffer checks -- Fixed size in screen space
+    kRenderTransAlpha,		// src*srca+dest*(1-srca)
+    kRenderTransAdd,		// src*a+dest
+    kRenderEnvironmental,	// not drawn, used for environmental effects
+    kRenderTransAddFrameBlend, // use a fractional frame value to blend between animation frames
+    kRenderTransAlphaAdd,	// src + dest*(1-a)
+    kRenderWorldGlow,		// Same as kRenderGlow but not fixed size in screen space
+    kRenderNone,			// Don't render.
 
-	kRenderModeCount,		// must be last
+    kRenderModeCount,		// must be last
 };
 
 enum RenderFx_t
-{	
-	kRenderFxNone = 0, 
-	kRenderFxPulseSlow, 
-	kRenderFxPulseFast, 
-	kRenderFxPulseSlowWide, 
-	kRenderFxPulseFastWide, 
-	kRenderFxFadeSlow, 
-	kRenderFxFadeFast, 
-	kRenderFxSolidSlow, 
-	kRenderFxSolidFast, 	   
-	kRenderFxStrobeSlow, 
-	kRenderFxStrobeFast, 
-	kRenderFxStrobeFaster, 
-	kRenderFxFlickerSlow, 
-	kRenderFxFlickerFast,
-	kRenderFxNoDissipation,
-	kRenderFxDistort,			// Distort/scale/translate flicker
-	kRenderFxHologram,			// kRenderFxDistort + distance fade
-	kRenderFxExplode,			// Scale up really big!
-	kRenderFxGlowShell,			// Glowing Shell
-	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
-	kRenderFxEnvRain,			// for environmental rendermode, make rain
-	kRenderFxEnvSnow,			//  "        "            "    , make snow
-	kRenderFxSpotlight,			// TEST CODE for experimental spotlight
-	kRenderFxRagdoll,			// HACKHACK: TEST CODE for signalling death of a ragdoll character
-	kRenderFxPulseFastWider,
-	kRenderFxMax
+{
+    kRenderFxNone = 0,
+    kRenderFxPulseSlow,
+    kRenderFxPulseFast,
+    kRenderFxPulseSlowWide,
+    kRenderFxPulseFastWide,
+    kRenderFxFadeSlow,
+    kRenderFxFadeFast,
+    kRenderFxSolidSlow,
+    kRenderFxSolidFast,
+    kRenderFxStrobeSlow,
+    kRenderFxStrobeFast,
+    kRenderFxStrobeFaster,
+    kRenderFxFlickerSlow,
+    kRenderFxFlickerFast,
+    kRenderFxNoDissipation,
+    kRenderFxDistort,			// Distort/scale/translate flicker
+    kRenderFxHologram,			// kRenderFxDistort + distance fade
+    kRenderFxExplode,			// Scale up really big!
+    kRenderFxGlowShell,			// Glowing Shell
+    kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
+    kRenderFxEnvRain,			// for environmental rendermode, make rain
+    kRenderFxEnvSnow,			//  "        "            "    , make snow
+    kRenderFxSpotlight,			// TEST CODE for experimental spotlight
+    kRenderFxRagdoll,			// HACKHACK: TEST CODE for signalling death of a ragdoll character
+    kRenderFxPulseFastWider,
+    kRenderFxMax
 };
 
 enum Collision_Group_t
 {
-	COLLISION_GROUP_NONE  = 0,
-	COLLISION_GROUP_DEBRIS,			// Collides with nothing but world and static stuff
-	COLLISION_GROUP_DEBRIS_TRIGGER, // Same as debris, but hits triggers
-	COLLISION_GROUP_INTERACTIVE_DEBRIS,	// Collides with everything except other interactive debris or debris
-	COLLISION_GROUP_INTERACTIVE,	// Collides with everything except interactive debris or debris
-	COLLISION_GROUP_PLAYER,
-	COLLISION_GROUP_BREAKABLE_GLASS,
-	COLLISION_GROUP_VEHICLE,
-	COLLISION_GROUP_PLAYER_MOVEMENT,  // For HL2, same as Collision_Group_Player, for
-										// TF2, this filters out other players and CBaseObjects
-	COLLISION_GROUP_NPC,			// Generic NPC group
-	COLLISION_GROUP_IN_VEHICLE,		// for any entity inside a vehicle
-	COLLISION_GROUP_WEAPON,			// for any weapons that need collision detection
-	COLLISION_GROUP_VEHICLE_CLIP,	// vehicle clip brush to restrict vehicle movement
-	COLLISION_GROUP_PROJECTILE,		// Projectiles!
-	COLLISION_GROUP_DOOR_BLOCKER,	// Blocks entities not permitted to get near moving doors
-	COLLISION_GROUP_PASSABLE_DOOR,	// Doors that the player shouldn't collide with
-	COLLISION_GROUP_DISSOLVING,		// Things that are dissolving are in this group
-	COLLISION_GROUP_PUSHAWAY,		// Nonsolid on client and server, pushaway in player code
+    COLLISION_GROUP_NONE = 0,
+    COLLISION_GROUP_DEBRIS,			// Collides with nothing but world and static stuff
+    COLLISION_GROUP_DEBRIS_TRIGGER, // Same as debris, but hits triggers
+    COLLISION_GROUP_INTERACTIVE_DEBRIS,	// Collides with everything except other interactive debris or debris
+    COLLISION_GROUP_INTERACTIVE,	// Collides with everything except interactive debris or debris
+    COLLISION_GROUP_PLAYER,
+    COLLISION_GROUP_BREAKABLE_GLASS,
+    COLLISION_GROUP_VEHICLE,
+    COLLISION_GROUP_PLAYER_MOVEMENT,  // For HL2, same as Collision_Group_Player, for
+    // TF2, this filters out other players and CBaseObjects
+    COLLISION_GROUP_NPC,			// Generic NPC group
+    COLLISION_GROUP_IN_VEHICLE,		// for any entity inside a vehicle
+    COLLISION_GROUP_WEAPON,			// for any weapons that need collision detection
+    COLLISION_GROUP_VEHICLE_CLIP,	// vehicle clip brush to restrict vehicle movement
+    COLLISION_GROUP_PROJECTILE,		// Projectiles!
+    COLLISION_GROUP_DOOR_BLOCKER,	// Blocks entities not permitted to get near moving doors
+    COLLISION_GROUP_PASSABLE_DOOR,	// Doors that the player shouldn't collide with
+    COLLISION_GROUP_DISSOLVING,		// Things that are dissolving are in this group
+    COLLISION_GROUP_PUSHAWAY,		// Nonsolid on client and server, pushaway in player code
 
-	COLLISION_GROUP_NPC_ACTOR,		// Used so NPCs in scripts ignore the player.
-	COLLISION_GROUP_NPC_SCRIPTED,	// USed for NPCs in scripts that should not collide with each other
+    COLLISION_GROUP_NPC_ACTOR,		// Used so NPCs in scripts ignore the player.
+    COLLISION_GROUP_NPC_SCRIPTED,	// USed for NPCs in scripts that should not collide with each other
 
-	LAST_SHARED_COLLISION_GROUP
+    LAST_SHARED_COLLISION_GROUP
 };
 
 #include "basetypes.h"

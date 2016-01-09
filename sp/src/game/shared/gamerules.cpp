@@ -116,22 +116,22 @@ ConVar	old_radius_damage("old_radiusdamage", "0.0", FCVAR_REPLICATED);
 
 #ifdef CLIENT_DLL //{
 
-bool CGameRules::IsBonusChallengeTimeBased( void )
+bool CGameRules::IsBonusChallengeTimeBased(void)
 {
     return true;
 }
 
-bool CGameRules::IsLocalPlayer( int nEntIndex )
+bool CGameRules::IsLocalPlayer(int nEntIndex)
 {
     C_BasePlayer *pLocalPlayer = C_BasePlayer::GetLocalPlayer();
-    return ( pLocalPlayer && pLocalPlayer == ClientEntityList().GetEnt( nEntIndex ) );
+    return (pLocalPlayer && pLocalPlayer == ClientEntityList().GetEnt(nEntIndex));
 }
 
-CGameRules::CGameRules() : CAutoGameSystemPerFrame( "CGameRules" )
+CGameRules::CGameRules() : CAutoGameSystemPerFrame("CGameRules")
 {
-    Assert( !g_pGameRules );
+    Assert(!g_pGameRules);
     g_pGameRules = this;
-}	
+}
 
 #else //}{
 
@@ -666,13 +666,11 @@ bool CGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
         ::V_swap(collisionGroup0, collisionGroup1);
     }
 
-#ifndef HL2MP
     if ((collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT) &&
         collisionGroup1 == COLLISION_GROUP_PUSHAWAY)
     {
         return false;
     }
-#endif
 
     if (collisionGroup0 == COLLISION_GROUP_DEBRIS && collisionGroup1 == COLLISION_GROUP_PUSHAWAY)
     {
@@ -713,12 +711,10 @@ bool CGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
     if (collisionGroup0 == COLLISION_GROUP_INTERACTIVE_DEBRIS && collisionGroup1 == COLLISION_GROUP_INTERACTIVE_DEBRIS)
         return false;
 
-#ifndef HL2MP
     // This change was breaking HL2DM
     // Adrian: TEST! Interactive Debris doesn't collide with the player.
     if (collisionGroup0 == COLLISION_GROUP_INTERACTIVE_DEBRIS && (collisionGroup1 == COLLISION_GROUP_PLAYER_MOVEMENT || collisionGroup1 == COLLISION_GROUP_PLAYER))
         return false;
-#endif
 
     if (collisionGroup0 == COLLISION_GROUP_BREAKABLE_GLASS && collisionGroup1 == COLLISION_GROUP_BREAKABLE_GLASS)
         return false;

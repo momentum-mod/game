@@ -19,13 +19,7 @@
 class CBaseHLCombatWeapon : public CBaseCombatWeapon
 {
 #if !defined( CLIENT_DLL )
-#ifndef _XBOX
 	DECLARE_DATADESC();
-#else
-protected:
-	DECLARE_DATADESC();
-private:
-#endif
 #endif
 
 	DECLARE_CLASS( CBaseHLCombatWeapon, CBaseCombatWeapon );

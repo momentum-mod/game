@@ -92,19 +92,6 @@
 #include "querycache.h"
 #include "momentum/server_events.h"
 
-
-#ifdef USE_NAV_MESH
-#include "nav_mesh.h"
-#endif
-
-#ifdef NEXT_BOT
-#include "NextBotManager.h"
-#endif
-
-#ifdef USES_ECON_ITEMS
-#include "econ_item_system.h"
-#endif // USES_ECON_ITEMS
-
 #ifdef CSTRIKE_DLL // BOTPORT: TODO: move these ifdefs out
 #include "bot/bot.h"
 #endif
@@ -225,15 +212,7 @@ static void UpdateChapterRestrictions(const char *mapname);
 
 static void UpdateRichPresence(void);
 
-
-
-
-
-
-#if !defined( _XBOX ) // Don't doubly define this symbol.
 CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
-
-#endif
 
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 {
@@ -498,11 +477,8 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
     // Connected in ConnectTier1Libraries
     if (cvar == NULL)
         return false;
-
-#ifndef _X360
     s_SteamAPIContext.Init();
     s_SteamGameServerAPIContext.Init();
-#endif
 
     // init each (seperated for ease of debugging)
     if ((engine = (IVEngineServer*) appSystemFactory(INTERFACEVERSION_VENGINESERVER, NULL)) == NULL)
@@ -531,10 +507,8 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
         return false;
     if ((soundemitterbase = (ISoundEmitterSystemBase *) appSystemFactory(SOUNDEMITTERSYSTEM_INTERFACE_VERSION, NULL)) == NULL)
         return false;
-#ifndef _XBOX
     if ((gamestatsuploader = (IUploadGameStats *) appSystemFactory(INTERFACEVERSION_UPLOADGAMESTATS, NULL)) == NULL)
         return false;
-#endif
     if (!mdlcache)
         return false;
     if ((serverpluginhelpers = (IServerPluginHelpers *) appSystemFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL)) == NULL)
@@ -615,10 +589,8 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
 
     // Add game log system
     IGameSystem::Add(GameLogSystem());
-#ifndef _XBOX
     // Add HLTV director 
     IGameSystem::Add(HLTVDirectorSystem());
-#endif
     // Add sound emitter
     IGameSystem::Add(SoundEmitterSystem());
 
@@ -633,7 +605,7 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
         return false;
 
 #if defined( REPLAY_ENABLED )
-    if ( gameeventmanager->LoadEventsFromFile( "resource/replayevents.res" ) <= 0 )
+    if (gameeventmanager->LoadEventsFromFile("resource/replayevents.res") <= 0)
     {
         Warning( "\n*\n* replayevents.res MISSING.\n*\n\n" );
         return false;
@@ -654,7 +626,6 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
     // try to get debug overlay, may be NULL if on HLDS
     debugoverlay = (IVDebugOverlay *) appSystemFactory(VDEBUG_OVERLAY_INTERFACE_VERSION, NULL);
 
-#ifndef _XBOX
 #ifdef USE_NAV_MESH
     // create the Navigation Mesh interface
     TheNavMesh = NavMeshFactory();
@@ -662,7 +633,6 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
 
     // init the gamestatsupload connection
     gamestatsuploader->InitConnection();
-#endif
 
     return true;
 }
@@ -699,10 +669,9 @@ void CServerGameDLL::DLLShutdown(void)
     RemoveBotControl();
 #endif
 
-#ifndef _XBOX
 #ifdef USE_NAV_MESH
     // destroy the Navigation Mesh interface
-    if ( TheNavMesh )
+    if (TheNavMesh)
     {
         delete TheNavMesh;
         TheNavMesh = NULL;
@@ -710,12 +679,9 @@ void CServerGameDLL::DLLShutdown(void)
 #endif
     // reset (shutdown) the gamestatsupload connection
     gamestatsuploader->InitConnection();
-#endif
 
-#ifndef _X360
     s_SteamAPIContext.Clear(); // Steam API context shutdown
     s_SteamGameServerAPIContext.Clear();
-#endif	
 
     gameeventmanager = NULL;
 
@@ -728,9 +694,9 @@ void CServerGameDLL::DLLShutdown(void)
 bool CServerGameDLL::ReplayInit(CreateInterfaceFn fnReplayFactory)
 {
 #if defined( REPLAY_ENABLED )
-    if ( !IsPC() )
+    if (!IsPC())
         return false;
-    if ( (g_pReplay = ( IReplaySystem *)fnReplayFactory( REPLAY_INTERFACE_VERSION, NULL )) == NULL )
+    if ((g_pReplay = (IReplaySystem *) fnReplayFactory(REPLAY_INTERFACE_VERSION, NULL)) == NULL)
         return false;
     if ( (g_pReplayServerContext = g_pReplay->SV_GetContext()) == NULL )
         return false;
@@ -902,14 +868,6 @@ bool CServerGameDLL::LevelInit(const char *pMapName, char const *pMapEntities, c
 {
     VPROF("CServerGameDLL::LevelInit");
 
-#ifdef USES_ECON_ITEMS
-    GameItemSchema_t *pItemSchema = ItemSystem()->GetItemSchema();
-    if ( pItemSchema )
-    {
-        pItemSchema->BInitFromDelayedBuffer();
-    }
-#endif // USES_ECON_ITEMS
-
     ResetWindspeed();
     UpdateChapterRestrictions(pMapName);
 
@@ -1028,15 +986,15 @@ bool g_bCheckForChainedActivate;
 #define BeginCheckChainedActivate() if (0) ; else { g_bCheckForChainedActivate = true; g_bReceivedChainedActivate = false; }
 #define EndCheckChainedActivate( bCheck )	\
 	if (0) ; else \
-    	{ \
+                        	{ \
 		if ( bCheck ) \
-        		{ \
+                                                		{ \
 			char msg[ 1024 ];	\
 			Q_snprintf( msg, sizeof( msg ),  "Entity (%i/%s/%s) failed to call base class Activate()\n", pClass->entindex(), pClass->GetClassname(), STRING( pClass->GetEntityName() ) );	\
 			AssertMsg( g_bReceivedChainedActivate == true, msg ); \
-        		} \
+                                                		} \
 		g_bCheckForChainedActivate = false; \
-    	}
+                        	}
 #else
 #define BeginCheckChainedActivate()			((void)0)
 #define EndCheckChainedActivate( bCheck )	((void)0)
@@ -1077,20 +1035,8 @@ void CServerGameDLL::ServerActivate(edict_t *pEdictList, int edictCount, int cli
         think_limit.SetValue(0);
     }
 
-#ifndef _XBOX
-#ifdef USE_NAV_MESH
-    // load the Navigation Mesh for this map
-    TheNavMesh->Load();
-    TheNavMesh->OnServerActivate();
-#endif
-#endif
-
 #ifdef CSTRIKE_DLL // BOTPORT: TODO: move these ifdefs out
     TheBots->ServerActivate();
-#endif
-
-#ifdef NEXT_BOT
-    TheNextBots().OnMapLoaded();
 #endif
 
     Momentum::OnMapStart(gpGlobals->mapname.ToCStr());
@@ -1168,18 +1114,7 @@ void CServerGameDLL::GameFrame(bool simulating)
 
     Momentum::OnGameFrameStart();
 
-
-#ifndef _XBOX
-#ifdef USE_NAV_MESH
-    TheNavMesh->Update();
-#endif
-
-#ifdef NEXT_BOT
-    TheNextBots().Update();
-#endif
-
     gamestatsuploader->UpdateConnection();
-#endif
 
     UpdateQueryCache();
     g_pServerBenchmark->UpdateBenchmark();
@@ -1253,10 +1188,10 @@ void CServerGameDLL::PreClientUpdate(bool simulating)
     IGameSystem::PreClientUpdateAllSystems();
 
 #ifdef _DEBUG
-    if ( sv_showhitboxes.GetInt() == -1 )
+    if (sv_showhitboxes.GetInt() == -1)
         return;
 
-    if ( sv_showhitboxes.GetInt() == 0 )
+    if (sv_showhitboxes.GetInt() == 0)
     {
         // assume it's text
         CBaseEntity *pEntity = NULL;
@@ -1343,14 +1278,12 @@ void CServerGameDLL::LevelShutdown(void)
 
     g_nCurrentChapterIndex = -1;
 
-#ifndef _XBOX
 #ifdef USE_NAV_MESH
     // reset the Navigation Mesh
-    if ( TheNavMesh )
+    if (TheNavMesh)
     {
         TheNavMesh->Reset();
     }
-#endif
 #endif
 }
 
@@ -1529,35 +1462,6 @@ typedef struct
 // this list gets searched for the first partial match, so some are out of order
 static TITLECOMMENT gTitleComments[] =
 {
-#ifdef HL1_DLL
-    { "t0a0", "#T0A0TITLE" },
-    { "c0a0", "#HL1_Chapter1_Title" },
-    { "c1a0", "#HL1_Chapter2_Title" },
-    { "c1a1", "#HL1_Chapter3_Title" },
-    { "c1a2", "#HL1_Chapter4_Title" },
-    { "c1a3", "#HL1_Chapter5_Title" },
-    { "c1a4", "#HL1_Chapter6_Title" },
-    { "c2a1", "#HL1_Chapter7_Title" },
-    { "c2a2", "#HL1_Chapter8_Title" },
-    { "c2a3", "#HL1_Chapter9_Title" },
-    { "c2a4d", "#HL1_Chapter11_Title" },	// These must appear before "C2A4" so all other map names starting with C2A4 get that title
-    { "c2a4e", "#HL1_Chapter11_Title" },
-    { "c2a4f", "#HL1_Chapter11_Title" },
-    { "c2a4g", "#HL1_Chapter11_Title" },
-    { "c2a4", "#HL1_Chapter10_Title" },
-    { "c2a5", "#HL1_Chapter12_Title" },
-    { "c3a1", "#HL1_Chapter13_Title" },
-    { "c3a2", "#HL1_Chapter14_Title" },
-    { "c4a1a", "#HL1_Chapter17_Title"  },	// Order is important, see above
-    { "c4a1b", "#HL1_Chapter17_Title"  },
-    { "c4a1c", "#HL1_Chapter17_Title"  },
-    { "c4a1d", "#HL1_Chapter17_Title"  },
-    { "c4a1e", "#HL1_Chapter17_Title"  },
-    { "c4a1", "#HL1_Chapter15_Title" },
-    { "c4a2", "#HL1_Chapter16_Title"  },
-    { "c4a3", "#HL1_Chapter18_Title"  },
-    { "c5a1", "#HL1_Chapter19_Title"  },
-#else
     { "intro", "#HL2_Chapter1_Title" },
 
     { "d1_trainstation_05", "#HL2_Chapter2_Title" },
@@ -1636,24 +1540,7 @@ static TITLECOMMENT gTitleComments[] =
 
     { "ep2_outland_12a", "#ep2_Chapter7_Title" },
     { "ep2_outland_12", "#ep2_Chapter6_Title" },
-#endif
 };
-
-#ifdef _XBOX
-void CServerGameDLL::GetTitleName( const char *pMapName, char* pTitleBuff, int titleBuffSize )
-{
-    // Try to find a matching title comment for this mapname
-    for ( int i = 0; i < ARRAYSIZE(gTitleComments); i++ )
-    {
-        if ( !Q_strnicmp( pMapName, gTitleComments[i].pBSPName, strlen(gTitleComments[i].pBSPName) ) )
-        {
-            Q_strncpy( pTitleBuff, gTitleComments[i].pTitleName, titleBuffSize );
-            return;
-        }
-    }
-    Q_strncpy( pTitleBuff, pMapName, titleBuffSize );
-}
-#endif
 
 void CServerGameDLL::GetSaveComment(char *text, int maxlength, float flMinutes, float flSeconds, bool bNoTime)
 {
@@ -1774,7 +1661,7 @@ void CServerGameDLL::InvalidateMdlCache()
 
 // interface to the new GC based lobby system
 IServerGCLobby *CServerGameDLL::GetServerGCLobby()
-{	
+{
     return NULL;
 }
 
@@ -1849,7 +1736,6 @@ void CServerGameDLL::LoadMessageOfTheDay()
 
 void CServerGameDLL::LoadSpecificMOTDMsg(const ConVar &convar, const char *pszStringName)
 {
-#ifndef _XBOX
     CUtlBuffer buf;
 
     // Generate preferred filename, which is in the cfg folder.
@@ -1902,7 +1788,6 @@ void CServerGameDLL::LoadSpecificMOTDMsg(const ConVar &convar, const char *pszSt
     }
 
     g_pStringTableInfoPanel->AddString(CBaseEntity::IsServer(), pszStringName, buf.TellPut(), buf.Base());
-#endif
 }
 
 // keeps track of which chapters the user has unlocked
@@ -2051,48 +1936,6 @@ void UpdateRichPresence(void)
     {
         Warning("UpdateRichPresence failed in GameInterface. Didn't recognize -game parameter.");
     }
-
-#if defined( _X360 )
-
-    // Set chapter context based on mapname
-    if ( !xboxsystem->UserSetContext( XBX_GetPrimaryUserId(), iChapterID, iChapterIndex, true ) )
-    {
-        Warning( "GameInterface: UserSetContext failed.\n" );
-    }
-
-    if ( commentary.GetBool() )
-    {
-        // Set presence to show the user is playing developer commentary
-        if ( !xboxsystem->UserSetContext( XBX_GetPrimaryUserId(), X_CONTEXT_PRESENCE, CONTEXT_PRESENCE_COMMENTARY, true ) )
-        {
-            Warning( "GameInterface: UserSetContext failed.\n" );
-        }
-    }
-    else
-    {
-        // Set presence to show the user is in-game
-        if ( !xboxsystem->UserSetContext( XBX_GetPrimaryUserId(), X_CONTEXT_PRESENCE, iGamePresenceID, true ) )
-        {
-            Warning( "GameInterface: UserSetContext failed.\n" );
-        }
-    }
-
-    // Set which game the user is playing
-    if ( !xboxsystem->UserSetContext( XBX_GetPrimaryUserId(), CONTEXT_GAME, iGameID, true ) )
-    {
-        Warning( "GameInterface: UserSetContext failed.\n" );
-    }
-
-    if ( !xboxsystem->UserSetContext( XBX_GetPrimaryUserId(), X_CONTEXT_GAME_TYPE, X_CONTEXT_GAME_TYPE_STANDARD, true ) )
-    {
-        Warning( "GameInterface: UserSetContext failed.\n" );
-    }
-
-    if ( !xboxsystem->UserSetContext( XBX_GetPrimaryUserId(), X_CONTEXT_GAME_MODE, CONTEXT_GAME_MODE_SINGLEPLAYER, true ) )
-    {
-        Warning( "GameInterface: UserSetContext failed.\n" );
-    }
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2281,14 +2124,12 @@ void CServerGameEnts::CheckTransmit(CCheckTransmitInfo *pInfo, const unsigned sh
     CBasePlayer *pRecipientPlayer = static_cast<CBasePlayer*>(pRecipientEntity);
     const int skyBoxArea = pRecipientPlayer->m_Local.m_skybox3d.area;
 
-#ifndef _X360
     const bool bIsHLTV = pRecipientPlayer->IsHLTV();
     const bool bIsReplay = pRecipientPlayer->IsReplay();
 
     // m_pTransmitAlways must be set if HLTV client
     Assert(bIsHLTV == (pInfo->m_pTransmitAlways != NULL) ||
         bIsReplay == (pInfo->m_pTransmitAlways != NULL));
-#endif
 
     for (int i = 0; i < nEdicts; i++)
     {
@@ -2315,12 +2156,10 @@ void CServerGameEnts::CheckTransmit(CCheckTransmitInfo *pInfo, const unsigned sh
                 // mark entity for sending
                 pInfo->m_pTransmitEdict->Set(iEdict);
 
-#ifndef _X360
                 if (bIsHLTV || bIsReplay)
                 {
                     pInfo->m_pTransmitAlways->Set(iEdict);
                 }
-#endif	
                 CServerNetworkProperty *pEnt = static_cast<CServerNetworkProperty*>(pEdict->GetNetworkable());
                 if (!pEnt)
                     break;
@@ -2359,7 +2198,6 @@ void CServerGameEnts::CheckTransmit(CCheckTransmitInfo *pInfo, const unsigned sh
 
         CServerNetworkProperty *netProp = static_cast<CServerNetworkProperty*>(pEdict->GetNetworkable());
 
-#ifndef _X360
         if (bIsHLTV || bIsReplay)
         {
             // for the HLTV/Replay we don't cull against PVS
@@ -2373,7 +2211,6 @@ void CServerGameEnts::CheckTransmit(CCheckTransmitInfo *pInfo, const unsigned sh
             }
             continue;
         }
-#endif
 
         // Always send entities in the player's 3d skybox.
         // Sidenote: call of AreaNum() ensures that PVS data is up to date for this entity

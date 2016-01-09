@@ -161,9 +161,7 @@ CBaseViewport::CBaseViewport() : vgui::EditablePanel(NULL, "CBaseViewport")
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
 
-#ifndef _XBOX
     m_pBackGround = NULL;
-#endif
     m_bHasParent = false;
     m_pActivePanel = NULL;
     m_pLastActivePanel = NULL;
@@ -206,15 +204,11 @@ void CBaseViewport::OnScreenSizeChanged(int iOldWide, int iOldTall)
 
     // recreate all the default panels
     RemoveAllPanels();
-#ifndef _XBOX
     m_pBackGround = new CBackGroundPanel(NULL);
     m_pBackGround->SetZPos(-20); // send it to the back 
     m_pBackGround->SetVisible(false);
-#endif
     CreateDefaultPanels();
-#ifndef _XBOX
     vgui::ipanel()->MoveToBack(m_pBackGround->GetVPanel()); // really send it to the back 
-#endif
 
     // hide all panels when reconnecting 
     ShowPanel(PANEL_ALL, false);
@@ -228,7 +222,6 @@ void CBaseViewport::OnScreenSizeChanged(int iOldWide, int iOldTall)
 
 void CBaseViewport::CreateDefaultPanels(void)
 {
-#ifndef _XBOX
     AddNewPanel(CreatePanelByName(PANEL_SCOREBOARD), "PANEL_SCOREBOARD");
     AddNewPanel(CreatePanelByName(PANEL_INFO), "PANEL_INFO");
     AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
@@ -237,7 +230,6 @@ void CBaseViewport::CreateDefaultPanels(void)
     // AddNewPanel( CreatePanelByName( PANEL_TEAM ), "PANEL_TEAM" );
     // AddNewPanel( CreatePanelByName( PANEL_CLASS ), "PANEL_CLASS" );
     // AddNewPanel( CreatePanelByName( PANEL_BUY ), "PANEL_BUY" );
-#endif
 }
 
 void CBaseViewport::UpdateAllPanels(void)
@@ -259,7 +251,7 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 {
     IViewPortPanel* newpanel = NULL;
 
-#ifndef _XBOX
+
     if (Q_strcmp(PANEL_SCOREBOARD, szPanelName) == 0)
     {
         // Using custom Momentum's scoreboard
@@ -290,7 +282,7 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
     {
         newpanel = new CNavProgress(this);
     }
-#endif
+
 
     if (Q_strcmp(PANEL_COMMENTARY_MODELVIEWER, szPanelName) == 0)
     {
@@ -408,7 +400,7 @@ void CBaseViewport::ShowPanel(IViewPortPanel* pPanel, bool state)
         {
             // don't show input panels during normal demo playback
 #if defined( REPLAY_ENABLED )
-            if ( engine->IsPlayingDemo() && !engine->IsHLTV() && !g_pEngineClientReplay->IsPlayingReplayDemo() )
+            if (engine->IsPlayingDemo() && !engine->IsHLTV() && !g_pEngineClientReplay->IsPlayingReplayDemo())
 #else
             if (engine->IsPlayingDemo() && !engine->IsHLTV())
 #endif
@@ -462,13 +454,11 @@ void CBaseViewport::RemoveAllPanels(void)
         vgui::VPANEL vPanel = m_Panels[i]->GetVPanel();
         vgui::ipanel()->DeletePanel(vPanel);
     }
-#ifndef _XBOX
     if (m_pBackGround)
     {
         m_pBackGround->MarkForDeletion();
         m_pBackGround = NULL;
     }
-#endif
     m_Panels.Purge();
     m_pActivePanel = NULL;
     m_pLastActivePanel = NULL;
@@ -478,13 +468,11 @@ CBaseViewport::~CBaseViewport()
 {
     m_bInitialized = false;
 
-#ifndef _XBOX
     if (!m_bHasParent && m_pBackGround)
     {
         m_pBackGround->MarkForDeletion();
     }
     m_pBackGround = NULL;
-#endif
     RemoveAllPanels();
 
     gameeventmanager->RemoveListener(this);
@@ -499,11 +487,9 @@ void CBaseViewport::Start(IGameUIFuncs *pGameUIFuncs, IGameEventManager2 * pGame
 {
     m_GameuiFuncs = pGameUIFuncs;
     m_GameEventManager = pGameEventManager;
-#ifndef _XBOX
     m_pBackGround = new CBackGroundPanel(NULL);
     m_pBackGround->SetZPos(-20); // send it to the back 
     m_pBackGround->SetVisible(false);
-#endif
     CreateDefaultPanels();
 
     m_GameEventManager->AddListener(this, "game_newmap", false);
@@ -617,9 +603,7 @@ void CBaseViewport::SetParent(vgui::VPANEL parent)
     // slammed to be nonproportional
     EditablePanel::SetProportional(true);
 
-#ifndef _XBOX
     m_pBackGround->SetParent((vgui::VPANEL)parent);
-#endif
 
     // set proportionality on animation controller
     m_pAnimController->SetProportional(true);

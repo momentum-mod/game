@@ -61,10 +61,6 @@
 #include "viewpostprocess.h"
 #include "viewdebug.h"
 
-#if defined USES_ECON_ITEMS
-#include "econ_wearable.h"
-#endif
-
 #ifdef USE_MONITORS
 #include "c_point_camera.h"
 #endif // USE_MONITORS
@@ -136,9 +132,7 @@ static ConVar fog_maxdensity("fog_maxdensity", "-1", FCVAR_CHEAT);
 // Water-related convars
 //-----------------------------------------------------------------------------
 static ConVar r_debugcheapwater("r_debugcheapwater", "0", FCVAR_CHEAT);
-#ifndef _X360
 static ConVar r_waterforceexpensive("r_waterforceexpensive", "0", FCVAR_ARCHIVE);
-#endif
 static ConVar r_waterforcereflectentities("r_waterforcereflectentities", "0");
 static ConVar r_WaterDrawRefraction("r_WaterDrawRefraction", "1", 0, "Enable water refraction");
 static ConVar r_WaterDrawReflection("r_WaterDrawReflection", "1", 0, "Enable water reflection");
@@ -2362,11 +2356,7 @@ void CViewRender::DetermineWaterRenderInfo(const VisibleFogVolumeInfo_t &fogVolu
 
     // Unless expensive water is active, reflections are off.
     bool bLocalReflection;
-#ifdef _X360
-    if( !r_WaterDrawReflection.GetBool() )
-#else
     if (!bForceExpensive || !r_WaterDrawReflection.GetBool())
-#endif
     {
         bLocalReflection = false;
     }
@@ -2387,15 +2377,8 @@ void CViewRender::DetermineWaterRenderInfo(const VisibleFogVolumeInfo_t &fogVolu
     // Gary says: I'm reverting this change so that water LOD works on dx9 for ep2.
 
     // Check if the water is out of the cheap water LOD range; if so, use cheap water
-#ifdef _X360
-    if ( !bForceExpensive && ( bForceCheap || ( fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance ) ) )
-    {
-        return;
-    }
-#else
     if (((fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance) && !bLocalReflection) || bForceCheap)
         return;
-#endif
     // Get the material that is for the water surface that is visible and check to see
     // what render targets need to be rendered, if any.
     if (!r_WaterDrawRefraction.GetBool())
@@ -4218,7 +4201,7 @@ void CRendering3dView::DrawTranslucentRenderables(bool bInSkybox, bool bShadowDe
             }
 
             nDetailLeafCount = 0;
-}
+        }
     }
 
     // Draw the rest of the surfaces in world leaves
@@ -4424,12 +4407,6 @@ void CSkyboxView::DrawInternal(view_id_t iSkyBoxViewID, bool bInvokePreAndPostRe
     // Store off view origin and angles
     SetupCurrentView(origin, angles, iSkyBoxViewID);
 
-#if defined( _X360 )
-    CMatRenderContextPtr pRenderContext(materials);
-    pRenderContext->PushVertexShaderGPRAllocation(32);
-    pRenderContext.SafeRelease();
-#endif
-
     // Invoke pre-render methods
     if (bInvokePreAndPostRender)
     {
@@ -4469,11 +4446,6 @@ void CSkyboxView::DrawInternal(view_id_t iSkyBoxViewID, bool bInvokePreAndPostRe
     }
 
     render->PopView(GetFrustum());
-
-#if defined( _X360 )
-    pRenderContext.GetFrom(materials);
-    pRenderContext->PopVertexShaderGPRAllocation();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4564,10 +4536,6 @@ void CShadowDepthView::Draw()
 
     pRenderContext->ClearColor3ub(0xFF, 0xFF, 0xFF);
 
-#if defined( _X360 )
-    pRenderContext->PushVertexShaderGPRAllocation(112); //almost all work is done in vertex shaders for depth rendering, max out their threads
-#endif
-
     pRenderContext.SafeRelease();
 
     if (IsPC())
@@ -4628,10 +4596,6 @@ void CShadowDepthView::Draw()
     }
     pRenderContext->PopRenderTargetAndViewport();
     render->PopView(GetFrustum());
-
-#if defined( _X360 )
-    pRenderContext->PopVertexShaderGPRAllocation();
-#endif
 }
 
 
@@ -4660,10 +4624,6 @@ void CFreezeFrameView::Setup(const CViewSetup &shadowViewIn)
 void CFreezeFrameView::Draw(void)
 {
     CMatRenderContextPtr pRenderContext(materials);
-
-#if defined( _X360 )
-    pRenderContext->PushVertexShaderGPRAllocation(16); //max out pixel shader threads
-#endif
 
     // we might only need half of the texture if we're rendering in stereo
     int nTexX0 = 0, nTexY0 = 0;
@@ -4704,10 +4664,6 @@ void CFreezeFrameView::Draw(void)
 
         pRenderContext->DrawScreenSpaceRectangle(pMaterial, x, y, width, height, 0, 0, width - 1, height - 1, width, height);
     }
-
-#if defined( _X360 )
-    pRenderContext->PopVertexShaderGPRAllocation();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -4923,20 +4879,6 @@ void MaybeInvalidateLocalPlayerAnimation()
         {
             pWeapon->InvalidateBoneCache();
         }
-
-#if defined USES_ECON_ITEMS
-        // ...and all the things you're wearing/holding/etc
-        int NumWearables = pPlayer->GetNumWearables();
-        for (int i = 0; i < NumWearables; ++i)
-        {
-            CEconWearable* pItem = pPlayer->GetWearable(i);
-            if (pItem != NULL)
-            {
-                pItem->InvalidateBoneCache();
-            }
-        }
-#endif // USES_ECON_ITEMS
-
     }
 }
 
@@ -4962,10 +4904,6 @@ void CBaseWorldView::DrawExecute(float waterHeight, view_id_t viewID, float wate
     PushView(waterHeight);
 
     CMatRenderContextPtr pRenderContext(materials);
-
-#if defined( _X360 )
-    pRenderContext->PushVertexShaderGPRAllocation(32);
-#endif
 
     ITexture *pSaveFrameBufferCopyTexture = pRenderContext->GetFrameBufferCopyTexture(0);
     if (engine->GetDXSupportLevel() >= 80)
@@ -5004,10 +4942,6 @@ void CBaseWorldView::DrawExecute(float waterHeight, view_id_t viewID, float wate
     m_DrawFlags = iDrawFlagsBackup;
 
     g_CurrentViewID = savedViewID;
-
-#if defined( _X360 )
-    pRenderContext->PopVertexShaderGPRAllocation();
-#endif
 }
 
 
@@ -5030,11 +4964,6 @@ void CBaseWorldView::SSAO_DepthPass()
 
     pRenderContext->ClearColor4ub(255, 255, 255, 255);
 
-#if defined( _X360 )
-    Assert(0); // rebalance this if we ever use this on 360
-    pRenderContext->PushVertexShaderGPRAllocation(112); //almost all work is done in vertex shaders for depth rendering, max out their threads
-#endif
-
     pRenderContext.SafeRelease();
 
     if (IsPC())
@@ -5044,7 +4973,7 @@ void CBaseWorldView::SSAO_DepthPass()
     else if (IsX360())
     {
         render->Push3DView((*this), VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR, pSSAO, GetFrustum());
-}
+    }
 
     MDLCACHE_CRITICAL_SECTION();
 
@@ -5088,15 +5017,11 @@ void CBaseWorldView::SSAO_DepthPass()
 
     render->PopView(GetFrustum());
 
-#if defined( _X360 )
-    pRenderContext->PopVertexShaderGPRAllocation();
-#endif
-
     pRenderContext.SafeRelease();
 
     g_CurrentViewID = savedViewID;
 #endif
-    }
+}
 
 
 void CBaseWorldView::DrawDepthOfField()
@@ -5150,7 +5075,7 @@ void CSimpleWorldView::Setup(const CViewSetup &view, int nClearFlags, bool bDraw
     if (!waterInfo.m_bOpaqueWater)
     {
         m_DrawFlags |= DF_RENDER_UNDERWATER | DF_RENDER_ABOVEWATER;
-}
+    }
     else
     {
         bool bViewIntersectsWater = DoesViewPlaneIntersectWater(fogInfo.m_flWaterHeight, fogInfo.m_nVisibleFogVolume);
@@ -5180,7 +5105,7 @@ void CSimpleWorldView::Setup(const CViewSetup &view, int nClearFlags, bool bDraw
 
     m_pCustomVisibility = pCustomVisibility;
     m_fogInfo = fogInfo;
-        }
+}
 
 
 //-----------------------------------------------------------------------------
@@ -5192,10 +5117,6 @@ void CSimpleWorldView::Draw()
 
     CMatRenderContextPtr pRenderContext(materials);
     PIXEVENT(pRenderContext, "CSimpleWorldView::Draw");
-
-#if defined( _X360 )
-    pRenderContext->PushVertexShaderGPRAllocation(32); //lean toward pixel shader threads
-#endif
 
     pRenderContext.SafeRelease();
 
@@ -5224,10 +5145,6 @@ void CSimpleWorldView::Draw()
 
     pRenderContext.GetFrom(materials);
     pRenderContext->ClearColor4ub(0, 0, 0, 255);
-
-#if defined( _X360 )
-    pRenderContext->PopVertexShaderGPRAllocation();
-#endif
 }
 
 

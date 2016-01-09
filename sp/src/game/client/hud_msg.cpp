@@ -37,11 +37,9 @@ void CHud::ResetHUD()
 	}
 
 	g_pClientMode->GetViewportAnimationController()->RunAllAnimationsToCompletion();
-#ifndef _XBOX
 	// reset sensitivity
 	m_flMouseSensitivity = 0;
 	m_flMouseSensitivityFactor = 0;
-#endif
 }
 
 //-----------------------------------------------------------------------------

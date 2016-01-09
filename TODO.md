@@ -38,15 +38,15 @@
         - [ ] Verify & remove the files we deleted from the appropriate VPC scripts
     - [ ] Remove any and all unnecessary HL2/generic code that doesn't pertain to the mod
         - [x] Remove all ifdef (SIXENSE) code segments
-        - [ ] Remove all ifdef (_XBOX/X360 etc) & IsX360() code segments
+        - [x] Remove all ifdef (_XBOX/_X360 etc) & IsX360() code segments
         - [x] Remove all ifdef (TF/PORTAL/DOD) code segments
-        - [ ] Remove all ifdef (HL2_EPISODIC/HL2_LOSTCOAST/HL2MP) code segments
-        - [ ] Remove all ifdef (INFESTED_DLL) code segments
-        - [ ] Remove all ifdef (HL1_DLL) code segments
-        - [ ] Remove all ifdef INVASION_DLL/NEXT_BOT/TERROR/USES_ECON_ITEMS code segments
+        - [x] Remove all ifdef (HL2_EPISODIC/HL2_LOSTCOAST/HL2MP) code segments
+        - [x] Remove all ifdef (HL1_DLL/CSPORT_DLL) code segments
+        - [x] Remove all ifdef (INVASION_DLL/NEXT_BOT/TERROR/USES_ECON_ITEMS) code segments
         - [ ] Inspect and cherry pick ifdef (CSTRIKE_DLL) code segments
         - [ ] Format (CTRL + K, CTRL + D) every class to follow the tabs->spaces and other spacing style for code
         - [ ] Remove any unused files
+        - [ ] Eventually undefine HL2_DLL and remove corresponding code
 
 - [ ] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
     - [ ] Create global enumeration for gamemodes

@@ -679,17 +679,6 @@ void CMissile::SeekThink( void )
 
 	// Think as soon as possible
 	SetNextThink( gpGlobals->curtime );
-
-#ifdef HL2_EPISODIC
-
-	if ( m_bCreateDangerSounds == true )
-	{
-		trace_t tr;
-		UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() + GetAbsVelocity() * 0.5, MASK_SOLID, this, COLLISION_GROUP_NONE, &tr );
-
-		CSoundEnt::InsertSound( SOUND_DANGER, tr.endpos, 100, 0.2, this, SOUNDENT_CHANNEL_REPEATED_DANGER );
-	}
-#endif
 }
 
 

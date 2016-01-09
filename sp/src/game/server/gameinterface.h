@@ -89,9 +89,6 @@ public:
 	virtual void			PreSave( CSaveRestoreData * );
 	virtual void			Save( CSaveRestoreData * );
 	virtual void			GetSaveComment( char *comment, int maxlength, float flMinutes, float flSeconds, bool bNoTime = false );
-#ifdef _XBOX
-	virtual void			GetTitleName( const char *pMapName, char* pTitleBuff, int titleBuffSize );
-#endif
 	virtual void			WriteSaveHeaders( CSaveRestoreData * );
 
 	virtual void			ReadRestoreHeaders( CSaveRestoreData * );

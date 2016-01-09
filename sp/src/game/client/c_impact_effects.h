@@ -18,90 +18,71 @@
 class CDustParticle : public CSimpleEmitter
 {
 public:
-	
-	CDustParticle( const char *pDebugName ) : CSimpleEmitter( pDebugName ) {}
-	
-	//Create
-	static CDustParticle *Create( const char *pDebugName="dust" )
-	{
-		return new CDustParticle( pDebugName );
-	}
 
-	//Roll
-	virtual	float UpdateRoll( SimpleParticle *pParticle, float timeDelta )
-	{
-		pParticle->m_flRoll += pParticle->m_flRollDelta * timeDelta;
-		
-		pParticle->m_flRollDelta += pParticle->m_flRollDelta * ( timeDelta * -8.0f );
+    CDustParticle(const char *pDebugName) : CSimpleEmitter(pDebugName) {}
 
-#ifdef _XBOX
-		//Cap the minimum roll
-		if ( fabs( pParticle->m_flRollDelta ) < 0.1f )
-		{
-			pParticle->m_flRollDelta = ( pParticle->m_flRollDelta > 0.0f ) ? 0.1f : -0.1f;
-		}
-#else
-		if ( fabs( pParticle->m_flRollDelta ) < 0.5f )
-		{
-			pParticle->m_flRollDelta = ( pParticle->m_flRollDelta > 0.0f ) ? 0.5f : -0.5f;
-		}
-#endif // _XBOX
+    //Create
+    static CDustParticle *Create(const char *pDebugName = "dust")
+    {
+        return new CDustParticle(pDebugName);
+    }
 
-		return pParticle->m_flRoll;
-	}
+    //Roll
+    virtual	float UpdateRoll(SimpleParticle *pParticle, float timeDelta)
+    {
+        pParticle->m_flRoll += pParticle->m_flRollDelta * timeDelta;
 
-	//Velocity
-	virtual void UpdateVelocity( SimpleParticle *pParticle, float timeDelta )
-	{
-		Vector	saveVelocity = pParticle->m_vecVelocity;
+        pParticle->m_flRollDelta += pParticle->m_flRollDelta * (timeDelta * -8.0f);
+        if (fabs(pParticle->m_flRollDelta) < 0.5f)
+        {
+            pParticle->m_flRollDelta = (pParticle->m_flRollDelta > 0.0f) ? 0.5f : -0.5f;
+        }
 
-		//Decellerate
-		static float dtime;
-		static float decay;
+        return pParticle->m_flRoll;
+    }
 
-		if ( dtime != timeDelta )
-		{
-			dtime = timeDelta;
-			float expected = 0.5;
-			decay = exp( log( 0.0001f ) * dtime / expected );
-		}
+    //Velocity
+    virtual void UpdateVelocity(SimpleParticle *pParticle, float timeDelta)
+    {
+        Vector	saveVelocity = pParticle->m_vecVelocity;
 
-		pParticle->m_vecVelocity = pParticle->m_vecVelocity * decay;
+        //Decellerate
+        static float dtime;
+        static float decay;
 
-#ifdef _XBOX
-		//Cap the minimum speed
-		if ( pParticle->m_vecVelocity.LengthSqr() < (8.0f*8.0f) )
-		{
-			VectorNormalize( saveVelocity );
-			pParticle->m_vecVelocity = saveVelocity * 8.0f;
-		}
-#else
-		if ( pParticle->m_vecVelocity.LengthSqr() < (32.0f*32.0f) )
-		{
-			VectorNormalize( saveVelocity );
-			pParticle->m_vecVelocity = saveVelocity * 32.0f;
-		}
-#endif // _XBOX
-	}
+        if (dtime != timeDelta)
+        {
+            dtime = timeDelta;
+            float expected = 0.5;
+            decay = exp(log(0.0001f) * dtime / expected);
+        }
+        pParticle->m_vecVelocity = pParticle->m_vecVelocity * decay;
 
-	//Alpha
-	virtual float UpdateAlpha( const SimpleParticle *pParticle )
-	{
-		float	tLifetime = pParticle->m_flLifetime / pParticle->m_flDieTime;
-		float	ramp = 1.0f - tLifetime;
+        if (pParticle->m_vecVelocity.LengthSqr() < (32.0f*32.0f))
+        {
+            VectorNormalize(saveVelocity);
+            pParticle->m_vecVelocity = saveVelocity * 32.0f;
+        }
+    }
 
-		//Non-linear fade
-		if ( ramp < 0.75f )
-			ramp *= ramp;
+    //Alpha
+    virtual float UpdateAlpha(const SimpleParticle *pParticle)
+    {
+        float	tLifetime = pParticle->m_flLifetime / pParticle->m_flDieTime;
+        float	ramp = 1.0f - tLifetime;
 
-		return ramp;
-	}
+        //Non-linear fade
+        if (ramp < 0.75f)
+            ramp *= ramp;
+
+        return ramp;
+    }
 
 private:
-	CDustParticle( const CDustParticle & ); // not defined, not accessible
+    CDustParticle(const CDustParticle &); // not defined, not accessible
 };
 
-void GetColorForSurface( trace_t *trace, Vector *color );
+void GetColorForSurface(trace_t *trace, Vector *color);
 
 #include "tier0/memdbgoff.h"
 

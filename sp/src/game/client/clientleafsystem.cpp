@@ -1588,25 +1588,6 @@ void CClientLeafSystem::CollateRenderablesInLeaf( int leaf, int worldListLeafInd
 				continue;
 		}
 
-#ifdef INVASION_CLIENT_DLL
-		if (info.m_flRenderDistSq != 0.0f)
-		{
-			Vector mins, maxs;
-			renderable.m_pRenderable->GetRenderBounds( mins, maxs );
-
-			if ((maxs.z - mins.z) < 100)
-			{
-				Vector vCenter;
-				VectorLerp( mins, maxs, 0.5f, vCenter );
-				vCenter += renderable.m_pRenderable->GetRenderOrigin();
-
-				float flDistSq = info.m_vecRenderOrigin.DistToSqr( vCenter );
-				if (info.m_flRenderDistSq <= flDistSq)
-					continue;
-			}
-		}
-#endif
-
 		if( renderable.m_RenderGroup != RENDER_GROUP_TRANSLUCENT_ENTITY )
 		{
 			RenderGroup_t group = (RenderGroup_t)renderable.m_RenderGroup;

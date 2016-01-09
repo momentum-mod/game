@@ -34,8 +34,6 @@ public:
 
 #if defined( HL2_DLL )
 	virtual Class_T Classify( void ) { return CLASS_MILITARY; }
-#elif defined( HL1_DLL )
-	virtual Class_T Classify( void ) { return CLASS_MACHINE; }
 #else
 	virtual Class_T Classify( void ) { return CLASS_NONE; }
 #endif

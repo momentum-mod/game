@@ -847,9 +847,6 @@ struct dleaf_t
 //	CompressedLightCube m_AmbientLighting;
 };
 #pragma warning( default:4201 )	// C4201: nonstandard extension used: nameless struct/union
-#if defined( _X360 )
-#pragma bitfield_order( pop )
-#endif
 
 // each leaf contains N samples of the ambient lighting
 // each sample contains a cube of ambient light projected on to each axis

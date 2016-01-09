@@ -200,11 +200,7 @@ public:
 
 	// NOTE: this is in the edict instead of being accessed by a virtual because the engine needs fast access to it.
 	// NOTE: YOU CAN'T CHANGE THE LAYOUT OR SIZE OF CBASEEDICT AND REMAIN COMPATIBLE WITH HL2_VC6!!!!!
-#ifdef _XBOX
-	unsigned short m_fStateFlags;	
-#else
-	int	m_fStateFlags;	
-#endif	
+	int	m_fStateFlags;
 
 	// NOTE: this is in the edict instead of being accessed by a virtual because the engine needs fast access to it.
 	// int m_NetworkSerialNumber;

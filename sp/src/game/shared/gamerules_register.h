@@ -22,11 +22,6 @@
 	static CGameRulesRegister __g_GameRulesRegister_##className( #className, MAKE_NAME_UNIQUE(__CreateGameRules_)##className );
 #endif
 
-#ifdef _XBOX
-// force symbol expansion
-#define REGISTER_GAMERULES_CLASS2( className ) REGISTER_GAMERULES_CLASS( className )
-#endif
-
 class CGameRulesRegister
 {
 public:

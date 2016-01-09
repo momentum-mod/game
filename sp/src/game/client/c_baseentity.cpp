@@ -1345,13 +1345,6 @@ void C_BaseEntity::UpdateVisibility()
 //-----------------------------------------------------------------------------
 bool C_BaseEntity::ShouldDraw()
 {
-    // Only test this in tf2
-#if defined( INVASION_CLIENT_DLL )
-    // Let the client mode (like commander mode) reject drawing entities.
-    if (g_pClientMode && !g_pClientMode->ShouldDrawEntity(this) )
-        return false;
-#endif
-
     // Some rendermodes prevent rendering
     if (m_nRenderMode == kRenderNone)
         return false;

@@ -185,7 +185,6 @@ bool C_BasePropDoor::TestCollision( const Ray_t &ray, unsigned int mask, trace_t
 // ------------------------------------------------------------------------------------------ //
 // Special version of func_physbox.
 // ------------------------------------------------------------------------------------------ //
-#ifndef _XBOX
 class CPhysBoxMultiplayer : public CPhysBox, public IMultiplayerPhysics
 {
 public:
@@ -264,4 +263,3 @@ IMPLEMENT_CLIENTCLASS_DT( CPhysicsPropMultiplayer, DT_PhysicsPropMultiplayer, CP
 	RecvPropVector( RECVINFO( m_collisionMins ) ),
 	RecvPropVector( RECVINFO( m_collisionMaxs ) ),
 END_RECV_TABLE()
-#endif

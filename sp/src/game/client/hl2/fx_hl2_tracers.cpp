@@ -501,7 +501,6 @@ void MuzzleFlash_Airboat( ClientEntityHandle_t hEntity, int attachmentIndex )
 	pParticle->m_flRoll			= (360.0/6.0f)*spokePos;
 	pParticle->m_flRollDelta	= 0.0f;
 	
-#ifndef _XBOX
 	// Grab the origin out of the transform for the attachment
 	if ( muzzleflash_light.GetInt() )
 	{
@@ -514,7 +513,6 @@ void MuzzleFlash_Airboat( ClientEntityHandle_t hEntity, int attachmentIndex )
 			CreateMuzzleflashELight( origin, 5, 64, 128, hEntity );
 		}
 	}
-#endif
 }
 
 //-----------------------------------------------------------------------------

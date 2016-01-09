@@ -421,7 +421,6 @@ void CHL2_Player::Precache(void)
 //-----------------------------------------------------------------------------
 void CHL2_Player::CheckSuitZoom(void)
 {
-	//#ifndef _XBOX 
 	//Adrian - No zooming without a suit!
 	if (IsSuitEquipped())
 	{
@@ -434,7 +433,6 @@ void CHL2_Player::CheckSuitZoom(void)
 			StartZooming();
 		}
 	}
-	//#endif//_XBOX
 }
 
 void CHL2_Player::EquipSuit(bool bPlayEffects)

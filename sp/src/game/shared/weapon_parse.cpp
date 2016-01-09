@@ -212,7 +212,6 @@ KeyValues* ReadEncryptedKVFile(IFileSystem *filesystem, const char *szFilenameWi
 
     if (bForceReadEncryptedFile || !pKV->LoadFromFile(filesystem, szFullName, pSearchPath)) // try to load the normal .txt file first
     {
-#ifndef _XBOX
         if (pICEKey)
         {
             Q_snprintf(szFullName, sizeof(szFullName), "%s.ctx", szFilenameWithoutExtension); // fall back to the .ctx file
@@ -251,10 +250,6 @@ KeyValues* ReadEncryptedKVFile(IFileSystem *filesystem, const char *szFilenameWi
             pKV->deleteThis();
             return NULL;
         }
-#else
-        pKV->deleteThis();
-        return NULL;
-#endif
     }
 
     return pKV;
@@ -287,7 +282,7 @@ bool ReadWeaponDataFromFileForSlot(IFileSystem* filesystem, const char *szWeapon
 
     KeyValues *pKV = ReadEncryptedKVFile(filesystem, sz, pICEKey, false);
 
-    if ( !pKV )
+    if (!pKV)
         return false;
 
     pFileInfo->Parse(pKV, szWeaponName);
@@ -373,7 +368,7 @@ void FileWeaponInfo_t::Parse(KeyValues *pKeyValuesData, const char *szWeaponName
         iSlot = pKeyValuesData->GetInt("bucket_360", iSlot);
         iPosition = pKeyValuesData->GetInt("bucket_position_360", iPosition);
     }
-    iMaxClip1 = pKeyValuesData->GetInt( "clip_size", WEAPON_NOCLIP );					// Max primary clips gun can hold (assume they don't use clips by default)
+    iMaxClip1 = pKeyValuesData->GetInt("clip_size", WEAPON_NOCLIP);					// Max primary clips gun can hold (assume they don't use clips by default)
     iMaxClip2 = pKeyValuesData->GetInt("clip2_size", WEAPON_NOCLIP);					// Max secondary clips gun can hold (assume they don't use clips by default)
     iDefaultClip1 = pKeyValuesData->GetInt("default_clip", iMaxClip1);		// amount of primary ammo placed in the primary clip when it's picked up
     iDefaultClip2 = pKeyValuesData->GetInt("default_clip2", iMaxClip2);		// amount of secondary ammo placed in the secondary clip when it's picked up
@@ -427,7 +422,7 @@ void FileWeaponInfo_t::Parse(KeyValues *pKeyValuesData, const char *szWeaponName
     // Primary ammo used
     const char *pAmmo = pKeyValuesData->GetString( "primary_ammo", "None" );
     if ( strcmp("None", pAmmo) == 0 )
-        Q_strncpy( szAmmo1, "", sizeof( szAmmo1 ) );
+        Q_strncpy(szAmmo1, "", sizeof(szAmmo1));
     else
         Q_strncpy(szAmmo1, pAmmo, sizeof(szAmmo1));
     iAmmoType = GetAmmoDef()->Index(szAmmo1);
