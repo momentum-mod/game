@@ -526,7 +526,8 @@ void CClientScoreBoardDialog::LoadLocalTimes(KeyValues *kv)
         KeyValues *pLoaded = new KeyValues("local");
         char fileName[MAX_PATH];
         Q_strcpy(fileName, "maps/");
-        Q_strcat(fileName, g_pGameRules->MapName(), MAX_PATH);
+        //Q_strncat(fileName, g_pGameRules->MapName(), MAX_PATH);
+        Q_strncat(fileName, g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME", MAX_PATH);
         Q_strncat(fileName, ".tim", MAX_PATH);
         if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
         {
