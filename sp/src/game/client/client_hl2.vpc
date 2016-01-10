@@ -30,15 +30,11 @@ $Project "Client (Momentum)"
 
 		$Folder "Momentum"
 		{
-			$File	"momentum\speedometer.cpp"
-
-			$File   "momentum\hud_cp_menu.cpp"
-			$File   "momentum\hud_cp_menu.h"
-			$File   "momentum\ClientTimesDisplay.cpp"
-			$File   "momentum\ClientTimesDisplay.h"
-
-			$Folder "Timer"
+		    $Folder "UI"
 			{
+			    $File	"momentum\speedometer.cpp"
+			    $File   "momentum\hud_cp_menu.cpp"
+			    $File   "momentum\hud_cp_menu.h"
 				$File	"momentum\timer.cpp"
 			}
 
@@ -55,7 +51,25 @@ $Project "Client (Momentum)"
 				}
 			}
 
-			$File   "momentum\weapon_momentum_gun.cpp"
+			$Folder "Weapons"
+			{
+			    $File "$SRCDIR\game\shared\momentum\weapon_momentum_gun.cpp"
+				//MOM_TODO: Add the rest of the weapon files here
+				$File "$SRCDIR\game\shared\momentum\cs_ammodef.cpp"
+				$File "$SRCDIR\game\shared\momentum\cs_ammodef.h"
+				$File "$SRCDIR\game\shared\momentum\cs_playeranimstate.cpp"
+				$File "$SRCDIR\game\shared\momentum\cs_playeranimstate.h"
+				$File "$SRCDIR\game\shared\momentum\cs_weapon_parse.cpp"
+				$File "$SRCDIR\game\shared\momentum\cs_weapon_parse.h"
+				$File "$SRCDIR\game\shared\momentum\fx_cs_shared.h"
+				$File "$SRCDIR\game\shared\momentum\fx_cs_shared.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbase.h"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbase.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbasegun.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbasegun.h"
+				$File "$SRCDIR\game\shared\momentum\weapon_deagle.cpp"
+			}
+
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.h"
 			$File   "$SRCDIR\game\shared\momentum\mom_player_shared.h"

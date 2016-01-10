@@ -76,9 +76,27 @@ $Project "Server (Momentum)"
 				$File	"momentum\TimerTriggers.cpp"
 			}
 
+			$Folder "Weapons"
+			{
+			    $File "$SRCDIR\game\shared\momentum\weapon_momentum_gun.cpp"
+				//MOM_TODO: Add the rest of the weapon files here
+				$File "$SRCDIR\game\shared\momentum\cs_ammodef.cpp"
+				$File "$SRCDIR\game\shared\momentum\cs_ammodef.h"
+				$File "$SRCDIR\game\shared\momentum\cs_playeranimstate.cpp"
+				$File "$SRCDIR\game\shared\momentum\cs_playeranimstate.h"
+				$File "$SRCDIR\game\shared\momentum\cs_weapon_parse.cpp"
+				$File "$SRCDIR\game\shared\momentum\cs_weapon_parse.h"
+				$File "$SRCDIR\game\shared\momentum\fx_cs_shared.h"
+				$File "$SRCDIR\game\shared\momentum\fx_cs_shared.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbase.h"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbase.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbasegun.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_csbasegun.h"
+				$File "$SRCDIR\game\shared\momentum\weapon_deagle.cpp"
+			}
+
 			$File	"momentum\server_events.h"
 			$File	"momentum\server_events.cpp"
-			$File   "momentum\weapon_momentum_gun.cpp"
 			$File	"momentum\mapzones.h"
 			$File	"momentum\mapzones.cpp"
 			$File	"momentum\mapzones_edit.h"

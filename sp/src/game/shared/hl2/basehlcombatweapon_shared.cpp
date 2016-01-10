@@ -226,8 +226,9 @@ void CBaseHLCombatWeapon::WeaponIdle( void )
 	}
 }
 
-float	g_lateralBob;
-float	g_verticalBob;
+
+//float	g_lateralBob;
+//float	g_verticalBob;
 
 #if defined( CLIENT_DLL ) && ( !defined( HL2MP ) && !defined( PORTAL ) )
 
@@ -255,6 +256,7 @@ static ConVar	v_ipitch_level( "v_ipitch_level", "0.3"/*, FCVAR_UNREGISTERED*/ );
 //-----------------------------------------------------------------------------
 float CBaseHLCombatWeapon::CalcViewmodelBob( void )
 {
+    /*
 	static	float bobtime;
 	static	float lastbobtime;
 	float	cycle;
@@ -317,7 +319,7 @@ float CBaseHLCombatWeapon::CalcViewmodelBob( void )
 	g_lateralBob = speed*0.005f;
 	g_lateralBob = g_lateralBob*0.3 + g_lateralBob*0.7*sin(cycle);
 	g_lateralBob = clamp( g_lateralBob, -7.0f, 4.0f );
-	
+	*/
 	//NOTENOTE: We don't use this return value in our case (need to restructure the calculation function setup!)
 	return 0.0f;
 }
@@ -330,6 +332,7 @@ float CBaseHLCombatWeapon::CalcViewmodelBob( void )
 //-----------------------------------------------------------------------------
 void CBaseHLCombatWeapon::AddViewmodelBob( CBaseViewModel *viewmodel, Vector &origin, QAngle &angles )
 {
+    /*
 	Vector	forward, right;
 	AngleVectors( angles, &forward, &right, NULL );
 
@@ -347,7 +350,7 @@ void CBaseHLCombatWeapon::AddViewmodelBob( CBaseViewModel *viewmodel, Vector &or
 
 	angles[ YAW ]	-= g_lateralBob  * 0.3f;
 
-	VectorMA( origin, g_lateralBob * 0.8f, right, origin );
+	VectorMA( origin, g_lateralBob * 0.8f, right, origin );*/
 }
 
 //-----------------------------------------------------------------------------

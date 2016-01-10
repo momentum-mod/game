@@ -10,9 +10,11 @@
 #include "tier0/platform.h"
 
 float* TickSet::interval_per_tick = NULL;
-TickSet::Tickrate TickSet::TICKRATE_100 { 0.01f, "100" };
-TickSet::Tickrate TickSet::TICKRATE_66 { 0.015f, "66" };
-TickSet::Tickrate TickSet::m_trCurrent = TICKRATE_66;
+const TickSet::Tickrate TickSet::s_DefinedRates[] = {
+    { 0.015f, "66" },
+    { 0.01f, "100" }
+};
+TickSet::Tickrate TickSet::m_trCurrent = TickSet::s_DefinedRates[TickSet::TICKRATE_66];
 
 inline bool TickSet::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
 {
@@ -68,8 +70,8 @@ bool TickSet::SetTickrate(float tickrate)
     if (m_trCurrent.fTickRate != tickrate)
     {
         Tickrate tr;
-        if (tickrate == 0.01f) tr = TICKRATE_100;
-        else if (tickrate == 0.015f) tr = TICKRATE_66;
+        if (tickrate == 0.01f) tr = s_DefinedRates[TICKRATE_100];
+        else if (tickrate == 0.015f) tr = s_DefinedRates[TICKRATE_66];
         else
         {
             tr.fTickRate = tickrate;

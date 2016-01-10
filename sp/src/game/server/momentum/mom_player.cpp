@@ -6,7 +6,10 @@
 
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-
+SendPropInt(SENDINFO(m_iShotsFired)),
+SendPropInt(SENDINFO(m_iDirection)),
+SendPropBool(SENDINFO(m_bResumeZoom)),
+SendPropInt(SENDINFO(m_iLastZoom)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -130,4 +133,47 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &p
     DevMsg("CCSPlayer::SelectSpawnSpot: couldn't find valid spawn point.\n");
 
     return false;
+}
+
+void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modifier,
+    float lateral_modifier, float up_max, float lateral_max, int direction_change)
+{
+    float flKickUp;
+    float flKickLateral;
+
+    if (m_iShotsFired == 1) // This is the first round fired
+    {
+        flKickUp = up_base;
+        flKickLateral = lateral_base;
+    }
+    else
+    {
+        flKickUp = up_base + m_iShotsFired*up_modifier;
+        flKickLateral = lateral_base + m_iShotsFired*lateral_modifier;
+    }
+
+
+    QAngle angle = GetPunchAngle();
+
+    angle.x -= flKickUp;
+    if (angle.x < -1 * up_max)
+        angle.x = -1 * up_max;
+
+    if (m_iDirection == 1)
+    {
+        angle.y += flKickLateral;
+        if (angle.y > lateral_max)
+            angle.y = lateral_max;
+    }
+    else
+    {
+        angle.y -= flKickLateral;
+        if (angle.y < -1 * lateral_max)
+            angle.y = -1 * lateral_max;
+    }
+
+    if (!SharedRandomInt("KickBack", 0, direction_change))
+        m_iDirection = 1 - m_iDirection;
+
+    SetPunchAngle(angle);
 }

@@ -19,7 +19,6 @@ struct model_t;
 #include "mempool.h"
 #include "utllinkedlist.h"
 
-#if defined( CSTRIKE_DLL ) || defined( SDK_DLL )
 enum
 {
 	CS_SHELL_9MM = 0,
@@ -29,7 +28,6 @@ enum
 	CS_SHELL_762NATO,
 	CS_SHELL_338MAG
 };
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Interface for lecacy temp entities
@@ -149,19 +147,12 @@ private:
 	struct model_t			*m_pShells[3];
 	struct model_t			*m_pSpriteCombineFlash[2];
 
-#if defined( HL1_CLIENT_DLL )
-	struct model_t			*m_pHL1Shell;
-	struct model_t			*m_pHL1ShotgunShell;
-#endif
-
-#if defined( CSTRIKE_DLL ) || defined ( SDK_DLL )
 	struct model_t			*m_pCS_9MMShell;
 	struct model_t			*m_pCS_57Shell;
 	struct model_t			*m_pCS_12GaugeShell;
 	struct model_t			*m_pCS_556Shell;
 	struct model_t			*m_pCS_762NATOShell;
 	struct model_t			*m_pCS_338MAGShell;
-#endif
 
 // Internal methods also available to children
 protected:

@@ -1,13 +1,10 @@
 #include "cbase.h"
 #include "npcevent.h"
 #include "in_buttons.h"
-#include "c_basehlcombatweapon.h"
+#include "basecombatweapon_shared.h"
+#include "beam_shared.h"
 
-#ifdef CLIENT_DLL
-//#include "c_hl2mp_player.h"
-#else
-#include "hl2_player.h"
-#endif
+#include "mom_player_shared.h"
 
 //#include "weapon_hl2mpbasehlmpcombatweapon.h"
 
@@ -26,11 +23,11 @@
 // CWeaponMomentumGun
 //-----------------------------------------------------------------------------
 
-class CWeaponMomentumGun : public C_BaseHLCombatWeapon
+class CWeaponMomentumGun : public CBaseCombatWeapon
 {
 public:
 
-	DECLARE_CLASS(CWeaponMomentumGun, C_BaseHLCombatWeapon);
+	DECLARE_CLASS(CWeaponMomentumGun, CBaseCombatWeapon);
 	CWeaponMomentumGun(void);
 	DECLARE_NETWORKCLASS();
 	DECLARE_PREDICTABLE();
@@ -42,11 +39,12 @@ public:
 	void PrimaryAttack(void);
 	void AddViewKick(void);
 	void DryFire(void);
+	void DrawBeam(const Vector&, const Vector&, float);
 	bool Holster(CBaseCombatWeapon *pSwitchingTo = NULL); // Required so that you un-zoom when switching weapons
 	Activity GetPrimaryAttackActivity(void);
+	void DoImpactEffect(trace_t &tr, int nDamageType);
 
 	virtual bool Reload(void);
-	virtual const Vector& GetBulletSpread(void);
 
 	int GetMinBurst() { return 2; }
 	int GetMaxBurst() { return 5; }
@@ -54,7 +52,7 @@ public:
 
 	//modify this part to control the general accuracy of the gun
 
-
+	virtual const Vector& GetBulletSpread(void);
 
 	void ToggleZoom(void);
 	void CheckZoomToggle(void);
@@ -148,7 +146,6 @@ void CWeaponMomentumGun::PrimaryAttack(void)
 	//do we have any bullets left from the current burst cycle? 
 	if (m_iBurst != 0)
 	{
-		CBasePlayer *pOwner = ToBasePlayer(GetOwner());
 		CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
 		if (!pPlayer)
 		{
@@ -157,16 +154,11 @@ void CWeaponMomentumGun::PrimaryAttack(void)
 
 		WeaponSound(SINGLE);
 		pPlayer->DoMuzzleFlash();
-
 		SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 		pPlayer->SetAnimation(PLAYER_ATTACK1);
-		//ToHL2Player(pPlayer)->DoAnimationEvent(PLAYERANIMEVENT_ATTACK_PRIMARY);
 
 		// Each time the player fires the gun, reset the view punch.  
-		if (pOwner)
-		{
-			pOwner->ViewPunchReset();
-		}
+		pPlayer->ViewPunchReset();
 
 		BaseClass::PrimaryAttack();
 
@@ -215,7 +207,7 @@ void CWeaponMomentumGun::ItemPostFrame(void)
 
 	if (pOwner->m_nButtons & IN_ATTACK)
 	{
-		if (m_flAttackEnds<gpGlobals->curtime)
+		if (m_flAttackEnds < gpGlobals->curtime)
 		{
 			SendWeaponAnim(ACT_VM_IDLE);
 		}
@@ -380,4 +372,59 @@ const Vector& CWeaponMomentumGun::GetBulletSpread(void)
 	}
 
 	return cone;
+}
+
+void CWeaponMomentumGun::DrawBeam(const Vector &startPos, const Vector &endPos, float width)
+{
+	//Tracer down the middle
+	UTIL_Tracer(startPos, endPos, 0, TRACER_DONT_USE_ATTACHMENT, 6500, false, "GaussTracer");
+
+	//Draw the main beam shaft
+	CBeam *pBeam = CBeam::BeamCreate("sprites/orangelight1.vmt", 15.5);
+
+	// It starts at startPos
+	pBeam->SetStartPos(startPos);
+
+	// This sets up some things that the beam uses to figure out where
+	// it should start and end
+	pBeam->PointEntInit(endPos, this);
+
+	// This makes it so that the laser appears to come from the muzzle of the pistol
+	pBeam->SetEndAttachment(LookupAttachment("1"));
+	pBeam->SetWidth(width);
+	//	pBeam->SetEndWidth( 0.05f );
+
+	// Higher brightness means less transparent
+	pBeam->SetBrightness(255);
+	pBeam->SetColor(255, 185 + random->RandomInt(-16, 16), 40);
+	pBeam->RelinkBeam();
+
+	// The beam should only exist for a very short time
+	pBeam->LiveForTime(0.1f);
+}
+
+void CWeaponMomentumGun::DoImpactEffect(trace_t &tr, int nDamageType)
+{
+	//Draw our beam
+	DrawBeam(tr.startpos, tr.endpos, 15.5);
+	if ((tr.surface.flags & SURF_SKY) == false)
+	{
+		CPVSFilter filter(tr.endpos);
+		te->GaussExplosion(filter, 0.0f, tr.endpos, tr.plane.normal, 0);
+		//m_nBulletType = GetAmmoDef()->Index("GaussEnergy");
+		//UTIL_ImpactTrace(&tr, m_nBulletType);
+	}
+}
+
+CON_COMMAND(holster_weapon, "Holster test.") {
+    CBasePlayer* pPlayer; 
+#ifndef CLIENT_DLL
+    pPlayer = UTIL_GetLocalPlayer();
+#else
+    pPlayer = CBasePlayer::GetLocalPlayer();
+#endif
+	if (pPlayer) {
+		CBaseCombatWeapon* active = pPlayer->GetActiveWeapon();
+		active->SetWeaponVisible(!active->IsWeaponVisible());
+	}
 }

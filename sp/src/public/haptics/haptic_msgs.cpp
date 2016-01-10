@@ -104,6 +104,7 @@ void HapticMsg_MeleeContact(CBasePlayer* pPlayer)
 #ifdef CLIENT_DLL
 void HookHapticMessages(void)
 {
+    //MOM_TODO: do we need this?
     HOOK_MESSAGE(SPHapWeapEvent);
     HOOK_MESSAGE(HapDmg);
     HOOK_MESSAGE(HapPunch);

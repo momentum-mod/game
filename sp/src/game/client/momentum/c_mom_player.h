@@ -23,14 +23,47 @@ public:
 
     void SurpressLadderChecks(const Vector& pos, const Vector& normal);
     bool CanGrabLadder(const Vector& pos, const Vector& normal);
+    
+    CNetworkVar(int, m_iShotsFired);
+    CNetworkVar(int, m_iDirection);
+    CNetworkVar(bool, m_bResumeZoom);
+    CNetworkVar(int, m_iLastZoom);
+
+    /*void GetBulletTypeParameters(
+        int iBulletType,
+        float &fPenetrationPower,
+        float &flPenetrationDistance);
+
+    void FireBullet(
+        Vector vecSrc,
+        const QAngle &shootAngles,
+        float vecSpread,
+        float flDistance,
+        int iPenetration,
+        int iBulletType,
+        int iDamage,
+        float flRangeModifier,
+        CBaseEntity *pevAttacker,
+        bool bDoEffects,
+        float x,
+        float y);*/
+
+    void KickBack(
+        float up_base,
+        float lateral_base,
+        float up_modifier,
+        float lateral_modifier,
+        float up_max,
+        float lateral_max,
+        int direction_change);
 
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
 
-    friend class CMomentumGameMovement;
 
+    friend class CMomentumGameMovement;
 };
 
 #endif

@@ -23,9 +23,15 @@ public:
         }
     };
 
-    static Tickrate TICKRATE_100, TICKRATE_66;
+    static const Tickrate s_DefinedRates[];
 
-    static Tickrate GetCurrentTickrate() { return (m_trCurrent.fTickRate > 0.0f ? m_trCurrent : TICKRATE_66); }
+    static const enum
+    {
+        TICKRATE_66 = 0,
+        TICKRATE_100 = 1    
+    };
+
+    static Tickrate GetCurrentTickrate() { return (m_trCurrent.fTickRate > 0.0f ? m_trCurrent : s_DefinedRates[TICKRATE_66]); }
 	static bool TickInit();
     static bool SetTickrate(Tickrate trNew)
     {

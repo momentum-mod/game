@@ -611,7 +611,7 @@ void CMomentumGameMovement::CategorizePosition(float flReflectNormal)
             }
             else
             {
-                if ( flReflectNormal == NO_REFL_NORMAL_CHANGE)
+                if (flReflectNormal == NO_REFL_NORMAL_CHANGE)
                 {
                     DoLateReflect();
 
@@ -625,7 +625,7 @@ void CMomentumGameMovement::CategorizePosition(float flReflectNormal)
         }
         else
         {
-            if ( flReflectNormal == NO_REFL_NORMAL_CHANGE )
+            if (flReflectNormal == NO_REFL_NORMAL_CHANGE)
             {
                 DoLateReflect();
 
@@ -848,7 +848,6 @@ void CMomentumGameMovement::DoLateReflect(void)
 
     // Since we're doing two moves in one frame, only apply changes if we did the reflect.
     TryPlayerMove(NULL, NULL);
-
     if (flReflectNormal == 1.0f)
     {
         VectorCopy(prevpos, mv->m_vecAbsOrigin);
@@ -1026,8 +1025,11 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             player->GetMoveType() == MOVETYPE_WALK &&
             player->GetGroundEntity() == NULL)
         {
-            //if ((float*) flReflectNormal)
-                flReflectNormal = planes[0][2];
+            Vector cross = mv->m_vecVelocity.Cross(planes[0]);
+            if (cross[1] > 0)//Are we going up a slope?
+                flReflectNormal = 1.0f;//Don't bother trying to do a LateReflect
+            else
+                flReflectNormal = planes[0][2];//Determine in CategorizePosition
 
             for (i = 0; i < numplanes; i++)
             {
