@@ -13,8 +13,8 @@
 class CMapzone
 {
 public:
-    CMapzone::CMapzone();
-    CMapzone::CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
+    CMapzone();
+    CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
         const int, const bool, const bool, const float,
         const bool, const float, const float, const string_t);
     ~CMapzone();

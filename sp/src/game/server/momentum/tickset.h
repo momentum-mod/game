@@ -25,7 +25,7 @@ public:
 
     static const Tickrate s_DefinedRates[];
 
-    static const enum
+    enum
     {
         TICKRATE_66 = 0,
         TICKRATE_100 = 1    
