@@ -94,9 +94,9 @@
     - [x] GetCPCount seems to return wrongly
     - [x] Are command flags needed?
     
-- [ ] tickset.cpp (Server) Make tick-setting crossplatform
+- [x] tickset.cpp (Server) Make tick-setting crossplatform
     
-- [ ] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
+- [x] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 
 - [ ] mapzones.cpp (Server)
     - [ ] Add support for trigger_momentum_teleport and trigger_momentum_userinput
