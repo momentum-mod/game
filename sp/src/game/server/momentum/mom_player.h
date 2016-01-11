@@ -1,4 +1,3 @@
-
 #ifndef MOMPLAYER_H
 #define MOMPLAYER_H
 #ifdef WIN32
@@ -7,7 +6,6 @@
 
 #include "cbase.h"
 #include "player.h"
-
 
 class CMomentumPlayer : public CBasePlayer
 {
@@ -41,7 +39,6 @@ public:
         EmitSound("HL2Player.FlashLightOff");//MOM_TODO: change this?
     }
 
-
     // LADDERS
     void SurpressLadderChecks(const Vector& pos, const Vector& normal);
     bool CanGrabLadder(const Vector& pos, const Vector& normal);
@@ -55,7 +52,7 @@ public:
     CNetworkVar(bool, m_bResumeZoom);
     CNetworkVar(int, m_iLastZoom);
 
-    /*void GetBulletTypeParameters(
+    void GetBulletTypeParameters(
         int iBulletType,
         float &fPenetrationPower,
         float &flPenetrationDistance);
@@ -72,7 +69,7 @@ public:
         CBaseEntity *pevAttacker,
         bool bDoEffects,
         float x,
-        float y);*/
+        float y);
 
     void KickBack(
         float up_base,

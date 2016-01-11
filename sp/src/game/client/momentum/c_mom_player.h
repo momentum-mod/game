@@ -6,8 +6,6 @@
 
 #include "cbase.h"
 
-
-
 class C_MomentumPlayer : public C_BasePlayer
 {
 public:
@@ -18,18 +16,19 @@ public:
 
     DECLARE_CLIENTCLASS();
 
-
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 
     void SurpressLadderChecks(const Vector& pos, const Vector& normal);
     bool CanGrabLadder(const Vector& pos, const Vector& normal);
-    
-    CNetworkVar(int, m_iShotsFired);
-    CNetworkVar(int, m_iDirection);
-    CNetworkVar(bool, m_bResumeZoom);
-    CNetworkVar(int, m_iLastZoom);
 
-    /*void GetBulletTypeParameters(
+
+
+    int m_iShotsFired;
+    int m_iDirection;
+    bool m_bResumeZoom;
+    int m_iLastZoom;
+
+    void GetBulletTypeParameters(
         int iBulletType,
         float &fPenetrationPower,
         float &flPenetrationDistance);
@@ -46,7 +45,7 @@ public:
         CBaseEntity *pevAttacker,
         bool bDoEffects,
         float x,
-        float y);*/
+        float y);
 
     void KickBack(
         float up_base,
@@ -61,7 +60,6 @@ private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
-
 
     friend class CMomentumGameMovement;
 };

@@ -31,6 +31,10 @@ extern int GetShellForAmmoType( const char *ammoname );
 #define SHIELD_VIEW_MODEL "models/weapons/v_shield.mdl"
 #define SHIELD_WORLD_MODEL "models/weapons/w_shield.mdl"
 
+#define CS_MUZZLEFLASH_NONE -1
+#define CS_MUZZLEFLASH_NORM	0
+#define CS_MUZZLEFLASH_X	1
+
 // These are the names of the ammo types that go in the CAmmoDefs and that the 
 // weapon script files reference.
 #define BULLET_PLAYER_50AE		"BULLET_PLAYER_50AE"
@@ -118,7 +122,7 @@ public:
 	// Is this an awp?
 	virtual bool	IsAwp() const;
 
-	CMomentumPlayer* GetPlayerOwner() const;
+	CMomentumPlayer *GetPlayerOwner() const;
 
 	virtual float GetMaxSpeed() const;	// What's the player's max speed while holding this weapon.
 

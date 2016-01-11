@@ -92,7 +92,38 @@ $Project "Server (Momentum)"
 				$File "$SRCDIR\game\shared\momentum\weapon_csbase.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_csbasegun.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_csbasegun.h"
+				$File "$SRCDIR\game\shared\momentum\weapon_ak47.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_aug.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_awp.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_deagle.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_elite.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_famas.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_fiveseven.cpp"
+				//$File "$SRCDIR\game\shared\momentum\weapon_flashbang.h" MOM_TODO: @Gocnak next push
+				//$File "$SRCDIR\game\shared\momentum\weapon_flashbang.cpp" @Gocnak next push
+				$File "$SRCDIR\game\shared\momentum\weapon_g3sg1.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_galil.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_glock.cpp"
+				//$File "$SRCDIR\game\shared\momentum\weapon_hegrenade.cpp" @Gocnak next push
+				//$File "$SRCDIR\game\shared\momentum\weapon_hegrenade.h" @Gocnak next push
+				//$File "$SRCDIR\game\shared\momentum\weapon_knife.cpp" @Gocnak next push
+				//$File "$SRCDIR\game\shared\momentum\weapon_knife.h" @Gocnak next push
+				$File "$SRCDIR\game\shared\momentum\weapon_m249.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_m3.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_m4a1.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_mac10.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_mp5navy.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_p228.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_p90.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_scout.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_sg550.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_sg552.cpp"
+				//$File "$SRCDIR\game\shared\momentum\weapon_smokegrenade.h" @Gocnak next push
+				//$File "$SRCDIR\game\shared\momentum\weapon_smokegrenade.cpp" @Gocnak next push
+				$File "$SRCDIR\game\shared\momentum\weapon_tmp.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_ump45.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_usp.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_xm1014.cpp"
 			}
 
 			$File	"momentum\server_events.h"
@@ -106,10 +137,15 @@ $Project "Server (Momentum)"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamerules.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamerules.h"
 			$File   "$SRCDIR\game\shared\momentum\mom_player_shared.h"
+			$File   "$SRCDIR\game\shared\momentum\mom_player_shared.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
 			$File   "momentum\mom_client.cpp"
 			$File   "momentum\mom_player.cpp"
 			$File   "momentum\mom_player.h"
+			$File   "momentum\te_shotgun_shot.cpp"
+			$File   "momentum\te_shotgun_shot.h"
+			$File   "$SRCDIR\game\shared\momentum\fx_cs_shared.h"
+			$File   "$SRCDIR\game\shared\momentum\fx_cs_shared.cpp"
 		}
 
 		$Folder	"HL2 DLL"

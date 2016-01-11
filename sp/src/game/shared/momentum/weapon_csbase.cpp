@@ -1032,10 +1032,6 @@ void CWeaponCSBase::ProcessMuzzleFlashEvent()
     // This is handled from the player's animstate, so it can match up to the beginning of the fire animation
 }
 
-#define CS_MUZZLEFLASH_NONE -1
-#define CS_MUZZLEFLASH_NORM	0
-#define CS_MUZZLEFLASH_X	1
-
 bool CWeaponCSBase::OnFireEvent(C_BaseViewModel *pViewModel, const Vector& origin, const QAngle& angles, int event, const char *options)
 {
     if (event == 5001)
@@ -1254,7 +1250,7 @@ bool CWeaponCSBase::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
 {
     if ( BaseClass::DefaultReload( iClipSize1, iClipSize2, iActivity ) )
     {
-        SendReloadEvents();
+        //SendReloadEvents(); MOM_TODO: will this be needed? (it sends it to other players)
         return true;
     }
     else
@@ -1265,17 +1261,9 @@ bool CWeaponCSBase::DefaultReload( int iClipSize1, int iClipSize2, int iActivity
 
 void CWeaponCSBase::SendReloadEvents()
 {
-    CMomentumPlayer *pPlayer = GetPlayerOwner();
-    if ( !pPlayer )
-        return;
-
-    // Send a message to any clients that have this entity to play the reload.
-    CPASFilter filter( pPlayer->GetAbsOrigin() );
-    filter.RemoveRecipient( pPlayer );
-
-    UserMessageBegin( filter, "ReloadEffect" );
-    WRITE_SHORT( pPlayer->entindex() );
-    MessageEnd();
+    //CMomentumPlayer *pPlayer = GetPlayerOwner();
+    //if ( !pPlayer )
+    //    return;
 
     // Make the player play his reload animation.
     //pPlayer->DoAnimationEvent( PLAYERANIMEVENT_RELOAD );

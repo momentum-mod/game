@@ -6,7 +6,7 @@
 
 #include "mom_player_shared.h"
 
-//#include "weapon_hl2mpbasehlmpcombatweapon.h"
+#include "tier0/memdbgon.h"
 
 //modify this to alter the rate of fire
 #define ROF 0.075f //RPS, 60 Sec / 800 Rounds = 0.075f
@@ -22,52 +22,52 @@
 //-----------------------------------------------------------------------------
 // CWeaponMomentumGun
 //-----------------------------------------------------------------------------
-
 class CWeaponMomentumGun : public CBaseCombatWeapon
 {
 public:
 
-	DECLARE_CLASS(CWeaponMomentumGun, CBaseCombatWeapon);
-	CWeaponMomentumGun(void);
-	DECLARE_NETWORKCLASS();
-	DECLARE_PREDICTABLE();
+    DECLARE_CLASS(CWeaponMomentumGun, CBaseCombatWeapon);
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
-	void Precache(void);
-	void ItemPostFrame(void);
-	void ItemPreFrame(void);
-	void ItemBusyFrame(void);
-	void PrimaryAttack(void);
-	void AddViewKick(void);
-	void DryFire(void);
-	void DrawBeam(const Vector&, const Vector&, float);
-	bool Holster(CBaseCombatWeapon *pSwitchingTo = NULL); // Required so that you un-zoom when switching weapons
-	Activity GetPrimaryAttackActivity(void);
-	void DoImpactEffect(trace_t &tr, int nDamageType);
+    CWeaponMomentumGun(void);
 
-	virtual bool Reload(void);
+    CNetworkVar(int, m_iBurst);
+    CNetworkVar(bool, m_bInZoom);
+    CNetworkVar(float, m_flAttackEnds);
+    CNetworkVar(int, m_iStance);
 
-	int GetMinBurst() { return 2; }
-	int GetMaxBurst() { return 5; }
-	float GetFireRate(void) { return ROF; }
+    void Precache(void);
+    void ItemPostFrame(void);
+    //void ItemPreFrame(void);
+    void ItemBusyFrame(void);
+    void PrimaryAttack(void);
+    void AddViewKick(void);
+    void DryFire(void);
+    void DrawBeam(const Vector&, const Vector&, float);
+    bool Holster(CBaseCombatWeapon *pSwitchingTo = NULL); // Required so that you un-zoom when switching weapons
+    Activity GetPrimaryAttackActivity(void);
+    void DoImpactEffect(trace_t &tr, int nDamageType);
 
-	//modify this part to control the general accuracy of the gun
+    virtual bool Reload(void);
 
-	virtual const Vector& GetBulletSpread(void);
+    int GetMinBurst() { return 2; }
+    int GetMaxBurst() { return 5; }
+    float GetFireRate(void) { return ROF; }
 
-	void ToggleZoom(void);
-	void CheckZoomToggle(void);
+    //modify this part to control the general accuracy of the gun
 
-	DECLARE_ACTTABLE();
+    virtual const Vector& GetBulletSpread(void);
+
+    void ToggleZoom(void);
+    void CheckZoomToggle(void);
+
+    DECLARE_ACTTABLE();
 
 private:
-	CNetworkVar(int, m_iBurst);
-	CNetworkVar(bool, m_bInZoom);
-	CNetworkVar(float, m_flAttackEnds);
-	CNetworkVar(int, m_iStance);
-
-private:
-	CWeaponMomentumGun(const CWeaponMomentumGun &);
+    CWeaponMomentumGun(const CWeaponMomentumGun &);
 };
+
 
 IMPLEMENT_NETWORKCLASS_ALIASED(WeaponMomentumGun, DT_WeaponMomentumGun)
 
@@ -93,15 +93,15 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_gun);
 
 acttable_t CWeaponMomentumGun::m_acttable[] =
 {
-	{ ACT_MP_STAND_IDLE, ACT_HL2MP_IDLE_AR2, false },
-	{ ACT_MP_CROUCH_IDLE, ACT_HL2MP_IDLE_CROUCH_AR2, false },
-	{ ACT_MP_RUN, ACT_HL2MP_RUN_AR2, false },
-	{ ACT_MP_CROUCHWALK, ACT_HL2MP_WALK_CROUCH_AR2, false },
-	{ ACT_MP_ATTACK_STAND_PRIMARYFIRE, ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2, false },
-	{ ACT_MP_ATTACK_CROUCH_PRIMARYFIRE, ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2, false },
-	{ ACT_MP_RELOAD_STAND, ACT_HL2MP_GESTURE_RELOAD_AR2, false },
-	{ ACT_MP_RELOAD_CROUCH, ACT_HL2MP_GESTURE_RELOAD_AR2, false },
-	{ ACT_MP_JUMP, ACT_HL2MP_JUMP_AR2, false },
+    { ACT_MP_STAND_IDLE, ACT_HL2MP_IDLE_AR2, false },
+    { ACT_MP_CROUCH_IDLE, ACT_HL2MP_IDLE_CROUCH_AR2, false },
+    { ACT_MP_RUN, ACT_HL2MP_RUN_AR2, false },
+    { ACT_MP_CROUCHWALK, ACT_HL2MP_WALK_CROUCH_AR2, false },
+    { ACT_MP_ATTACK_STAND_PRIMARYFIRE, ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2, false },
+    { ACT_MP_ATTACK_CROUCH_PRIMARYFIRE, ACT_HL2MP_GESTURE_RANGE_ATTACK_AR2, false },
+    { ACT_MP_RELOAD_STAND, ACT_HL2MP_GESTURE_RELOAD_AR2, false },
+    { ACT_MP_RELOAD_CROUCH, ACT_HL2MP_GESTURE_RELOAD_AR2, false },
+    { ACT_MP_JUMP, ACT_HL2MP_JUMP_AR2, false },
 };
 
 IMPLEMENT_ACTTABLE(CWeaponMomentumGun);
@@ -111,13 +111,13 @@ IMPLEMENT_ACTTABLE(CWeaponMomentumGun);
 //-----------------------------------------------------------------------------
 CWeaponMomentumGun::CWeaponMomentumGun(void)
 {
-	m_iBurst = BURST;
-	m_iStance = 10;
-	m_fMinRange1 = 1;
-	m_fMaxRange1 = 1500;
-	m_fMinRange2 = 1;
-	m_fMaxRange2 = 200;
-	m_bFiresUnderwater = false;
+    m_iBurst = BURST;
+    m_iStance = 10;
+    m_fMinRange1 = 1;
+    m_fMaxRange1 = 1500;
+    m_fMinRange2 = 1;
+    m_fMaxRange2 = 200;
+    m_bFiresUnderwater = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ CWeaponMomentumGun::CWeaponMomentumGun(void)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::Precache(void)
 {
-	BaseClass::Precache();
+    BaseClass::Precache();
 }
 
 //-----------------------------------------------------------------------------
@@ -133,9 +133,9 @@ void CWeaponMomentumGun::Precache(void)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::DryFire(void)
 {
-	WeaponSound(EMPTY);
-	SendWeaponAnim(ACT_VM_DRYFIRE);
-	m_flNextPrimaryAttack = gpGlobals->curtime + SequenceDuration();
+    WeaponSound(EMPTY);
+    SendWeaponAnim(ACT_VM_DRYFIRE);
+    m_flNextPrimaryAttack = gpGlobals->curtime + SequenceDuration();
 }
 
 //-----------------------------------------------------------------------------
@@ -143,38 +143,30 @@ void CWeaponMomentumGun::DryFire(void)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::PrimaryAttack(void)
 {
-	//do we have any bullets left from the current burst cycle? 
-	if (m_iBurst != 0)
-	{
-		CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
-		if (!pPlayer)
-		{
-			return;
-		}
+    //do we have any bullets left from the current burst cycle? 
+    if (m_iBurst != 0)
+    {
+        CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+        if (!pPlayer)
+        {
+            return;
+        }
 
-		WeaponSound(SINGLE);
-		pPlayer->DoMuzzleFlash();
-		SendWeaponAnim(ACT_VM_PRIMARYATTACK);
-		pPlayer->SetAnimation(PLAYER_ATTACK1);
+        WeaponSound(SINGLE);
+        pPlayer->DoMuzzleFlash();
+        SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+        pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-		// Each time the player fires the gun, reset the view punch.  
-		pPlayer->ViewPunchReset();
+        // Each time the player fires the gun, reset the view punch.  
+        pPlayer->ViewPunchReset();
 
-		BaseClass::PrimaryAttack();
+        BaseClass::PrimaryAttack();
 
-		// We fired one shot, decrease the number of bullets available for this burst cycle 
-		m_iBurst--;
-		m_flNextPrimaryAttack = gpGlobals->curtime + ROF;
-		m_flAttackEnds = gpGlobals->curtime + SequenceDuration();
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CWeaponMomentumGun::ItemPreFrame(void)
-{
-	BaseClass::ItemPreFrame();
+        // We fired one shot, decrease the number of bullets available for this burst cycle 
+        m_iBurst--;
+        m_flNextPrimaryAttack = gpGlobals->curtime + ROF;
+        m_flAttackEnds = gpGlobals->curtime + SequenceDuration();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -182,9 +174,9 @@ void CWeaponMomentumGun::ItemPreFrame(void)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::ItemBusyFrame(void)
 {
-	// Allow zoom toggling even when we're reloading
-	CheckZoomToggle();
-	BaseClass::ItemBusyFrame();
+    // Allow zoom toggling even when we're reloading
+    CheckZoomToggle();
+    BaseClass::ItemBusyFrame();
 }
 
 //-----------------------------------------------------------------------------
@@ -192,37 +184,37 @@ void CWeaponMomentumGun::ItemBusyFrame(void)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::ItemPostFrame(void)
 {
-	BaseClass::ItemPostFrame();
-	if (m_bInReload)
-	{
-		return;
-	}
+    BaseClass::ItemPostFrame();
+    if (m_bInReload)
+    {
+        return;
+    }
 
-	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+    CBasePlayer *pOwner = ToBasePlayer(GetOwner());
 
-	if (pOwner == NULL)
-	{
-		return;
-	}
+    if (pOwner == NULL)
+    {
+        return;
+    }
 
-	if (pOwner->m_nButtons & IN_ATTACK)
-	{
-		if (m_flAttackEnds < gpGlobals->curtime)
-		{
-			SendWeaponAnim(ACT_VM_IDLE);
-		}
-	}
-	else
-	{
-		//The firing cycle ended. Reset the burst counter to the max value
-		m_iBurst = BURST;
-		if ((pOwner->m_nButtons & IN_ATTACK) && (m_flNextPrimaryAttack < gpGlobals->curtime) && (m_iClip1 <= 0))
-		{
-			DryFire();
-		}
-	}
-	CheckZoomToggle();
-	//check the character's current stance for the accuracy calculation
+    if (pOwner->m_nButtons & IN_ATTACK)
+    {
+        if (m_flAttackEnds < gpGlobals->curtime)
+        {
+            SendWeaponAnim(ACT_VM_IDLE);
+        }
+    }
+    else
+    {
+        //The firing cycle ended. Reset the burst counter to the max value
+        m_iBurst = BURST;
+        if ((pOwner->m_nButtons & IN_ATTACK) && (m_flNextPrimaryAttack < gpGlobals->curtime) && (m_iClip1 <= 0))
+        {
+            DryFire();
+        }
+    }
+    CheckZoomToggle();
+    //check the character's current stance for the accuracy calculation
 }
 
 //-----------------------------------------------------------------------------
@@ -231,14 +223,14 @@ void CWeaponMomentumGun::ItemPostFrame(void)
 //-----------------------------------------------------------------------------
 Activity CWeaponMomentumGun::GetPrimaryAttackActivity(void)
 {
-	if (m_iBurst != 0)
-	{
-		return ACT_VM_PRIMARYATTACK;
-	}
-	else
-	{
-		return ACT_VM_IDLE;
-	}
+    if (m_iBurst != 0)
+    {
+        return ACT_VM_PRIMARYATTACK;
+    }
+    else
+    {
+        return ACT_VM_IDLE;
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -246,15 +238,15 @@ Activity CWeaponMomentumGun::GetPrimaryAttackActivity(void)
 //-----------------------------------------------------------------------------
 bool CWeaponMomentumGun::Reload(void)
 {
-	bool fRet = DefaultReload(GetMaxClip1(), GetMaxClip2(), ACT_VM_RELOAD);
-	if (fRet)
-	{
-		WeaponSound(RELOAD);
-		//ToBaseCombatCharacter(GetOwner())->DoAnimationEvent(PLAYERANIMEVENT_RELOAD);
-		//reset the burst counter to the default
-		m_iBurst = BURST;
-	}
-	return fRet;
+    bool fRet = DefaultReload(GetMaxClip1(), GetMaxClip2(), ACT_VM_RELOAD);
+    if (fRet)
+    {
+        WeaponSound(RELOAD);
+        //ToBaseCombatCharacter(GetOwner())->DoAnimationEvent(PLAYERANIMEVENT_RELOAD);
+        //reset the burst counter to the default
+        m_iBurst = BURST;
+    }
+    return fRet;
 }
 
 //-----------------------------------------------------------------------------
@@ -262,11 +254,11 @@ bool CWeaponMomentumGun::Reload(void)
 //----------------------------------------------------------------------------- 
 bool CWeaponMomentumGun::Holster(CBaseCombatWeapon *pSwitchingTo /* = NULL */)
 {
-	if (m_bInZoom)
-	{
-		ToggleZoom();
-	}
-	return BaseClass::Holster(pSwitchingTo);
+    if (m_bInZoom)
+    {
+        ToggleZoom();
+    }
+    return BaseClass::Holster(pSwitchingTo);
 }
 
 //-----------------------------------------------------------------------------
@@ -274,23 +266,23 @@ bool CWeaponMomentumGun::Holster(CBaseCombatWeapon *pSwitchingTo /* = NULL */)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::AddViewKick(void)
 {
-	CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
-	if (pPlayer == NULL)
-	{
-		return;
-	}
+    CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+    if (pPlayer == NULL)
+    {
+        return;
+    }
 
-	int iSeed = CBaseEntity::GetPredictionRandomSeed() & 255;
-	RandomSeed(iSeed);
+    int iSeed = CBaseEntity::GetPredictionRandomSeed() & 255;
+    RandomSeed(iSeed);
 
-	QAngle viewPunch;
+    QAngle viewPunch;
 
-	viewPunch.x = random->RandomFloat(0.25f, 0.5f);
-	viewPunch.y = random->RandomFloat(-.6f, .6f);
-	viewPunch.z = 0.0f;
+    viewPunch.x = random->RandomFloat(0.25f, 0.5f);
+    viewPunch.y = random->RandomFloat(-.6f, .6f);
+    viewPunch.z = 0.0f;
 
-	//Add it to the view punch
-	pPlayer->ViewPunch(viewPunch);
+    //Add it to the view punch
+    pPlayer->ViewPunch(viewPunch);
 }
 
 
@@ -299,41 +291,41 @@ void CWeaponMomentumGun::AddViewKick(void)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::ToggleZoom(void)
 {
-	CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+    CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
 
-	if (pPlayer == NULL)
-	{
-		return;
-	}
+    if (pPlayer == NULL)
+    {
+        return;
+    }
 
 #ifndef CLIENT_DLL
-	if (m_bInZoom)
-	{
-		// Narrowing the Field Of View here is what gives us the zoomed effect
-		if (pPlayer->SetFOV(this, 0, 0.2f))
-		{
-			m_bInZoom = false;
+    if (m_bInZoom)
+    {
+        // Narrowing the Field Of View here is what gives us the zoomed effect
+        if (pPlayer->SetFOV(this, 0, 0.2f))
+        {
+            m_bInZoom = false;
 
-			// Send a message to hide the scope
-			/* CSingleUserRecipientFilter filter(pPlayer);
-			UserMessageBegin(filter, "ShowScope");
-			WRITE_BYTE(0);
-			MessageEnd();*/
-		}
-	}
-	else
-	{
-		if (pPlayer->SetFOV(this, 45, 0.1f))
-		{
-			m_bInZoom = true;
+            // Send a message to hide the scope
+            /* CSingleUserRecipientFilter filter(pPlayer);
+            UserMessageBegin(filter, "ShowScope");
+            WRITE_BYTE(0);
+            MessageEnd();*/
+        }
+    }
+    else
+    {
+        if (pPlayer->SetFOV(this, 45, 0.1f))
+        {
+            m_bInZoom = true;
 
-			// Send a message to Show the scope
-			/* CSingleUserRecipientFilter filter(pPlayer);
-			UserMessageBegin(filter, "ShowScope");
-			WRITE_BYTE(1);
-			MessageEnd();*/
-		}
-	}
+            // Send a message to Show the scope
+            /* CSingleUserRecipientFilter filter(pPlayer);
+            UserMessageBegin(filter, "ShowScope");
+            WRITE_BYTE(1);
+            MessageEnd();*/
+        }
+    }
 #endif
 }
 
@@ -342,89 +334,91 @@ void CWeaponMomentumGun::ToggleZoom(void)
 //-----------------------------------------------------------------------------
 void CWeaponMomentumGun::CheckZoomToggle(void)
 {
-	CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
-	if (pPlayer && (pPlayer->m_afButtonPressed & IN_ATTACK2))
-	{
-		ToggleZoom();
-	}
+    CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+    if (pPlayer && (pPlayer->m_afButtonPressed & IN_ATTACK2))
+    {
+        ToggleZoom();
+    }
 }
 
 const Vector& CWeaponMomentumGun::GetBulletSpread(void)
 {
-	static Vector cone;
-	cone = VECTOR_CONE_1DEGREES;
-	//TODO override this with CSS weapon pickups ingame
+    static Vector cone;
+    cone = VECTOR_CONE_1DEGREES;
+    //TODO override this with CSS weapon pickups ingame
 
 
-	//This part simlates recoil. Each successive shot will have increased spread.
-	if (m_iBurst != BURST)
-	{
-		for (int i = m_iBurst; i < BURST; i++)
-		{
-			cone += VECTOR_CONE_1DEGREES;
-		}
-	}
+    //This part simlates recoil. Each successive shot will have increased spread.
+    if (m_iBurst != BURST)
+    {
+        for (int i = m_iBurst; i < BURST; i++)
+        {
+            cone += VECTOR_CONE_1DEGREES;
+        }
+    }
 
-	//This part is the zoom modifier. If in zoom, lower the bullet spread.
-	if (m_bInZoom)
-	{
-		cone -= VECTOR_CONE_1DEGREES;
-	}
+    //This part is the zoom modifier. If in zoom, lower the bullet spread.
+    if (m_bInZoom)
+    {
+        cone -= VECTOR_CONE_1DEGREES;
+    }
 
-	return cone;
+    return cone;
 }
 
 void CWeaponMomentumGun::DrawBeam(const Vector &startPos, const Vector &endPos, float width)
 {
-	//Tracer down the middle
-	UTIL_Tracer(startPos, endPos, 0, TRACER_DONT_USE_ATTACHMENT, 6500, false, "GaussTracer");
+    //Tracer down the middle
+    UTIL_Tracer(startPos, endPos, 0, TRACER_DONT_USE_ATTACHMENT, 6500, false, "GaussTracer");
 
-	//Draw the main beam shaft
-	CBeam *pBeam = CBeam::BeamCreate("sprites/orangelight1.vmt", 15.5);
+    //Draw the main beam shaft
+    CBeam *pBeam = CBeam::BeamCreate("sprites/orangelight1.vmt", 15.5);
 
-	// It starts at startPos
-	pBeam->SetStartPos(startPos);
+    // It starts at startPos
+    pBeam->SetStartPos(startPos);
 
-	// This sets up some things that the beam uses to figure out where
-	// it should start and end
-	pBeam->PointEntInit(endPos, this);
+    // This sets up some things that the beam uses to figure out where
+    // it should start and end
+    pBeam->PointEntInit(endPos, this);
 
-	// This makes it so that the laser appears to come from the muzzle of the pistol
-	pBeam->SetEndAttachment(LookupAttachment("1"));
-	pBeam->SetWidth(width);
-	//	pBeam->SetEndWidth( 0.05f );
+    // This makes it so that the laser appears to come from the muzzle of the pistol
+    pBeam->SetEndAttachment(LookupAttachment("1"));
+    pBeam->SetWidth(width);
+    //	pBeam->SetEndWidth( 0.05f );
 
-	// Higher brightness means less transparent
-	pBeam->SetBrightness(255);
-	pBeam->SetColor(255, 185 + random->RandomInt(-16, 16), 40);
-	pBeam->RelinkBeam();
+    // Higher brightness means less transparent
+    pBeam->SetBrightness(255);
+    pBeam->SetColor(255, 185 + random->RandomInt(-16, 16), 40);
+    pBeam->RelinkBeam();
 
-	// The beam should only exist for a very short time
-	pBeam->LiveForTime(0.1f);
+    // The beam should only exist for a very short time
+    pBeam->LiveForTime(0.1f);
 }
 
 void CWeaponMomentumGun::DoImpactEffect(trace_t &tr, int nDamageType)
 {
-	//Draw our beam
-	DrawBeam(tr.startpos, tr.endpos, 15.5);
-	if ((tr.surface.flags & SURF_SKY) == false)
-	{
-		CPVSFilter filter(tr.endpos);
-		te->GaussExplosion(filter, 0.0f, tr.endpos, tr.plane.normal, 0);
-		//m_nBulletType = GetAmmoDef()->Index("GaussEnergy");
-		//UTIL_ImpactTrace(&tr, m_nBulletType);
-	}
+    //Draw our beam
+    DrawBeam(tr.startpos, tr.endpos, 15.5);
+    if ((tr.surface.flags & SURF_SKY) == false)
+    {
+        CPVSFilter filter(tr.endpos);
+        te->GaussExplosion(filter, 0.0f, tr.endpos, tr.plane.normal, 0);
+        //m_nBulletType = GetAmmoDef()->Index("GaussEnergy");
+        //UTIL_ImpactTrace(&tr, m_nBulletType);
+    }
 }
 
-CON_COMMAND(holster_weapon, "Holster test.") {
-    CBasePlayer* pPlayer; 
+CON_COMMAND(holster_weapon, "Holster test.")
+{
+    CBasePlayer* pPlayer;
 #ifndef CLIENT_DLL
     pPlayer = UTIL_GetLocalPlayer();
 #else
     pPlayer = CBasePlayer::GetLocalPlayer();
 #endif
-	if (pPlayer) {
-		CBaseCombatWeapon* active = pPlayer->GetActiveWeapon();
-		active->SetWeaponVisible(!active->IsWeaponVisible());
-	}
+    if (pPlayer)
+    {
+        CBaseCombatWeapon* active = pPlayer->GetActiveWeapon();
+        active->SetWeaponVisible(!active->IsWeaponVisible());
+    }
 }

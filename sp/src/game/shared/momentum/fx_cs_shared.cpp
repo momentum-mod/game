@@ -88,7 +88,7 @@ void EndGroupingSounds()
 
 #else
 
-//#include "te_shotgun_shot.h"
+#include "momentum/te_shotgun_shot.h"
 
 // Server doesn't play sounds anyway.
 void StartGroupingSounds() {}
@@ -99,12 +99,6 @@ void FX_WeaponSound ( int iPlayerIndex,
     CCSWeaponInfo *pWeaponInfo ) {};
 
 #endif
-
-
-inline CMomentumPlayer *ToCMOMPlayer(CBaseEntity* pEnt)
-{
-    return static_cast<CMomentumPlayer*>(pEnt);
-}
 
 // This runs on both the client and the server.
 // On the server, it only does the damage calculations.
@@ -160,7 +154,7 @@ void FX_FireBullets(
     // if this is server code, send the effect over to client as temp entity
     // Dispatch one message for all the bullet impacts and sounds.
     //MOM_TODO: look into this
-    /*TE_FireBullets( 
+    TE_FireBullets( 
         iPlayerIndex,
         vOrigin, 
         vAngles, 
@@ -168,7 +162,7 @@ void FX_FireBullets(
         iMode,
         iSeed,
         flSpread
-        );*/
+        );
 
 
     // Let the player remember the usercmd he fired a weapon on. Assists in making decisions about lag compensation.
@@ -179,18 +173,18 @@ void FX_FireBullets(
 
     iSeed++;
 
-    /*bool	bPrimaryMode = (iMode == Primary_Mode);
+    bool	bPrimaryMode = (iMode == Primary_Mode);
     int		iDamage = pWeaponInfo->m_iDamage;
     float	flRange = pWeaponInfo->m_flRange;
     int		iPenetration = pWeaponInfo->m_iPenetration;
     float	flRangeModifier = pWeaponInfo->m_flRangeModifier;
-    int		iAmmoType = pWeaponInfo->iAmmoType;*/
+    int		iAmmoType = pWeaponInfo->iAmmoType;
 
     WeaponSound_t sound_type = SINGLE;
 
     // CS HACK, tweak some weapon values based on primary/secondary mode
 
-    /*if (iWeaponID == WEAPON_GLOCK)
+    if (iWeaponID == WEAPON_GLOCK)
     {
         if (!bPrimaryMode)
         {
@@ -213,7 +207,7 @@ void FX_FireBullets(
             iDamage = 30; // reduced damage in silenced mode
             sound_type = SPECIAL1;
         }
-    }*/
+    }
 
 
     if (bDoEffects)
@@ -235,10 +229,10 @@ void FX_FireBullets(
 
 #if !defined (CLIENT_DLL)
     // Move other players back to history positions based on local player's lag
-    lagcompensation->StartLagCompensation( pPlayer, pPlayer->GetCurrentCommand() );
+    //lagcompensation->StartLagCompensation( pPlayer, pPlayer->GetCurrentCommand() );
 #endif
 
-    /*for (int iBullet = 0; iBullet < pWeaponInfo->m_iBullets; iBullet++)
+    for (int iBullet = 0; iBullet < pWeaponInfo->m_iBullets; iBullet++)
     {
         RandomSeed(iSeed);	// init random system with this seed
 
@@ -250,7 +244,7 @@ void FX_FireBullets(
         iSeed++; // use new seed for next bullet
 
         //MOM_TODO: look into effects
-        /*pPlayer->FireBullet(
+        pPlayer->FireBullet(
             vOrigin,
             vAngles,
             flSpread,
@@ -262,10 +256,10 @@ void FX_FireBullets(
             pPlayer,
             bDoEffects,
             x, y);
-    }*/
+    }
 
 #if !defined (CLIENT_DLL)
-    lagcompensation->FinishLagCompensation( pPlayer );
+    //lagcompensation->FinishLagCompensation( pPlayer );
 #endif
 
     EndGroupingSounds();

@@ -38,7 +38,7 @@
         - [ ] Verify & remove the files we deleted from the appropriate VPC scripts
     - [ ] Remove any and all unnecessary HL2/generic code that doesn't pertain to the mod
         - [x] Remove all ifdef (SIXENSE) code segments
-        - [x] Remove all ifdef (_XBOX/_X360 etc) & IsX360() code segments
+        - [x] Remove all ifdef (XBOX/X360 etc) & IsX360() code segments
         - [x] Remove all ifdef (TF/PORTAL/DOD) code segments
         - [x] Remove all ifdef (HL2_EPISODIC/HL2_LOSTCOAST/HL2MP) code segments
         - [x] Remove all ifdef (HL1_DLL/CSPORT_DLL) code segments
@@ -47,17 +47,22 @@
         - [ ] Format (CTRL + K, CTRL + D) every class to follow the tabs->spaces and other spacing style for code
         - [ ] Remove any unused files
             - [ ] hud_posture.cpp
-            - [ ] hud_flashlight.cpp
+            - [ ] hud_flashlight.cpp (the hud element)
             - [ ] teamplayroundbased_gamerules.h/cpp
+            - [ ] Entire hl2/ subfolder in client/server/shared
+            - [ ] Entire sdk/ subfolder in client/server/shared
         - [ ] Eventually undefine HL2_DLL and remove corresponding code
 
 - [ ] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
     - [ ] Create global enumeration for gamemodes
     - [ ] Store current gamemode on a global variable
 
-- [ ] weapon_momentum_gun (Client/Server)
-    - [ ] Import CS:S weapon entities over as proxy weapons to change the gun's behavior
-    - [ ] Make the gun toggleable (the player spawns with it, presses button to use/hide it)
+- [ ] weapon_momentum_gun.cpp (Shared) and CS:S weapon entities
+    - [x] Import CS:S weapon entities over
+    - [ ] Import extra CS:S weapon entities (Knife and Grenades)
+    - [ ] Make the main gun toggleable (the player spawns with it, presses button to use/hide it)
+    - [ ] Look into removing the crosshair? Customization?
+    - [ ] Consider keeping the hud_ammo.cpp HUD element for displaying how many bullets the player has in the clip
 
 - [ ] timer.cpp (Client) 
     - [ ] Play effects (animations) for run states
@@ -101,8 +106,8 @@
 - [ ] Implement CEF
     - [ ] Create custom HTML HUD
     - [ ] Create custom HTML menu
-    - [ ] Incorporate (precompiled/source?) into project
-    
+    - [ ] Incorporate (precompiled/source?) into project  
+
 - [ ] Replays
     - [ ] Use ghostingmod as an example of how to make/read the files
     - [ ] Make map selection/leaderboards be able to download replays

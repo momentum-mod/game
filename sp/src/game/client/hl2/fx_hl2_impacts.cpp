@@ -83,7 +83,7 @@ DECLARE_CLIENT_EFFECT("ImpactGauss", ImpactGaussCallback);
 //-----------------------------------------------------------------------------
 // Purpose: Handle weapon impacts
 //-----------------------------------------------------------------------------
-void ImpactCallback(const CEffectData &data)
+/*void ImpactCallback(const CEffectData &data)
 {
     VPROF_BUDGET("ImpactCallback", VPROF_BUDGETGROUP_PARTICLE_RENDERING);
 
@@ -112,7 +112,7 @@ void ImpactCallback(const CEffectData &data)
     PlayImpactSound(pEntity, tr, vecOrigin, nSurfaceProp);
 }
 
-DECLARE_CLIENT_EFFECT("Impact", ImpactCallback);
+DECLARE_CLIENT_EFFECT("Impact", ImpactCallback);*/
 
 //-----------------------------------------------------------------------------
 // Purpose: 

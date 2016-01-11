@@ -31,7 +31,7 @@ public:
     //virtual void			Think(void);
 
     virtual bool			ClientCommand(CBaseEntity *pEdict, const CCommand &args);
-    //virtual void			PlayerSpawn(CBasePlayer *pPlayer);
+    virtual void			PlayerSpawn(CBasePlayer *pPlayer);
     virtual bool			IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer);
     virtual CBaseEntity*    GetPlayerSpawnSpot(CBasePlayer *pPlayer);
     virtual const char *GetGameDescription(void) { return "Momentum"; }

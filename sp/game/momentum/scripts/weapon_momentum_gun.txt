@@ -14,7 +14,7 @@ WeaponData
 	"clip2_size"			"-1"
 	"default_clip2"			"-1"
  
-	"primary_ammo"			"Rifle" // The ammotype for the weapon, this can be found in hl2mp_gamerules.cpp: def.AddAmmoType(
+	"primary_ammo"			"BULLET_PLAYER_762MM"// The ammotype for the weapon, this can be found in mom_gamerules
 	"secondary_ammo"		"None"
  
 	"weight"				"6" // If the weight is higher than your current weapon you will automatically switch to that weapon when you pick it up.

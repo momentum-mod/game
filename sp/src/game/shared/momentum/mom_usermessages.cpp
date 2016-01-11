@@ -38,6 +38,10 @@ void RegisterUserMessages(void)
     usermessages->Register("LogoTimeMsg", 4);
     usermessages->Register("AchievementEvent", -1);
     usermessages->Register("UpdateJalopyRadar", -1);
+
+    usermessages->Register("ReloadEffect", 2);			// a player reloading..
+    usermessages->Register("PlayerAnimEvent", -1);	// jumping, firing, reload, etc.
+
     usermessages->Register("Timer_State", 5);
     usermessages->Register("Timer_PauseTime", -1);
     usermessages->Register("Timer_Reset", 0);

@@ -286,15 +286,15 @@ void CCSWeaponInfo::Parse( KeyValues *pKeyValuesData, const char *szWeaponName )
 	{
 		if ( Q_stricmp( pMuzzleFlashStyle, "CS_MUZZLEFLASH_X" ) == 0 )
 		{
-            m_iMuzzleFlashStyle = -1; // CS_MUZZLEFLASH_X;
+            m_iMuzzleFlashStyle = CS_MUZZLEFLASH_X;
 		}
 		else if ( Q_stricmp( pMuzzleFlashStyle, "CS_MUZZLEFLASH_NONE" ) == 0 )
 		{
-            m_iMuzzleFlashStyle = 0;//CS_MUZZLEFLASH_NONE;
+            m_iMuzzleFlashStyle = CS_MUZZLEFLASH_NONE;
 		}
 		else
 		{
-            m_iMuzzleFlashStyle = 1;//CS_MUZZLEFLASH_NORM;
+            m_iMuzzleFlashStyle = CS_MUZZLEFLASH_NORM;
 		}
 	}
 	else
