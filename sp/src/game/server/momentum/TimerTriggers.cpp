@@ -119,7 +119,7 @@ void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
     }
 }
 
-void CTriggerTimerStart::SetLookAngles( QAngle newang )
+void CTriggerTimerStart::SetLookAngles(QAngle newang)
 {
     m_angLook = newang;
 }
@@ -381,72 +381,71 @@ void CTriggerUserInput::Spawn()
 
 //////-------------------------------------------------------------------------------------------
 // Test Functions
+// These are now deprecated
 //////
-
-// MOM_TODO: Limit who can acces these commands.
-
-static void TestCreateTriggerStart(const CCommand &args)
-{
-    CTriggerTimerStart *pTrigger = (CTriggerTimerStart *) CreateEntityByName("trigger_momentum_timer_start");
-    if (pTrigger)
-    {
-        pTrigger->Spawn();
-        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-        if (args.ArgC() >= 3) // At least 3 Args?
-            pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
-        else
-            pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-        if (args.ArgC() >= 4)
-        {
-            pTrigger->SetIsLimitingSpeed(true);
-            pTrigger->SetMaxLeaveSpeed(Q_atoi(args.Arg(4)));
-        }
-        else
-            pTrigger->SetIsLimitingSpeed(false);
-        pTrigger->SetSolid(SOLID_BBOX);
-        pTrigger->AddEffects(0x020);
-        pTrigger->SetName(MAKE_STRING("Start Trigger"));
-
-        // now use mom_reset_to_start
-    }
-}
-
-static void TestCreateTriggerStop(void)
-{
-    CTriggerTimerStop *pTrigger = (CTriggerTimerStop *) CreateEntityByName("trigger_momentum_timer_stop");
-    if (pTrigger)
-    {
-        pTrigger->Spawn();
-        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-        pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-        pTrigger->SetSolid(SOLID_BBOX);
-        pTrigger->SetName(MAKE_STRING("Stop Trigger"));
-        // now use mom_reset_to_start
-    }
-}
-
-static void TestCreateTriggerCheckpoint(const CCommand &args)
-{
-    CTriggerStage *pTrigger = (CTriggerStage *) CreateEntityByName("trigger_momentum_timer_stage");
-    if (pTrigger)
-    {
-        pTrigger->Spawn();
-        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-        if (args.ArgC() >= 3) // At least 3 Args?
-            pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
-        else
-            pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-        pTrigger->SetSolid(SOLID_BBOX);
-        pTrigger->SetName(MAKE_STRING("Stage Trigger"));
-        if (args.ArgC() >= 4) // At last 4 Args?
-            pTrigger->SetStageNumber(Q_atoi(args.Arg(4)));
-        else
-            pTrigger->SetStageNumber(g_Timer.GetStageCount() + 1);
-        g_Timer.RequestStageCount();
-        // now use mom_reset_to_start
-    }
-}
-
-static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test\nUsage: mom_createstart <SizeX> <SizeY> <SizeZ> [<MaxLeaveSpeed>]\n");
-static ConCommand mom_createstop("mom_createstop", TestCreateTriggerStop, "Create StopTrigger test");
-static ConCommand mom_createcheckpoint("mom_createstage", TestCreateTriggerCheckpoint, "Create Stage test\nUsage: mom_createstage [<SizeX> <SizeY> <SizeZ>]\n");
+//
+//static void TestCreateTriggerStart(const CCommand &args)
+//{
+//    CTriggerTimerStart *pTrigger = (CTriggerTimerStart *) CreateEntityByName("trigger_momentum_timer_start");
+//    if (pTrigger)
+//    {
+//        pTrigger->Spawn();
+//        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
+//        if (args.ArgC() >= 3) // At least 3 Args?
+//            pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
+//        else
+//            pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
+//        if (args.ArgC() >= 4)
+//        {
+//            pTrigger->SetIsLimitingSpeed(true);
+//            pTrigger->SetMaxLeaveSpeed(Q_atoi(args.Arg(4)));
+//        }
+//        else
+//            pTrigger->SetIsLimitingSpeed(false);
+//        pTrigger->SetSolid(SOLID_BBOX);
+//        pTrigger->AddEffects(0x020);
+//        pTrigger->SetName(MAKE_STRING("Start Trigger"));
+//
+//        // now use mom_reset_to_start
+//    }
+//}
+//
+//static void TestCreateTriggerStop(void)
+//{
+//    CTriggerTimerStop *pTrigger = (CTriggerTimerStop *) CreateEntityByName("trigger_momentum_timer_stop");
+//    if (pTrigger)
+//    {
+//        pTrigger->Spawn();
+//        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
+//        pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
+//        pTrigger->SetSolid(SOLID_BBOX);
+//        pTrigger->SetName(MAKE_STRING("Stop Trigger"));
+//        // now use mom_reset_to_start
+//    }
+//}
+//
+//static void TestCreateTriggerCheckpoint(const CCommand &args)
+//{
+//    CTriggerStage *pTrigger = (CTriggerStage *) CreateEntityByName("trigger_momentum_timer_stage");
+//    if (pTrigger)
+//    {
+//        pTrigger->Spawn();
+//        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
+//        if (args.ArgC() >= 3) // At least 3 Args?
+//            pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
+//        else
+//            pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
+//        pTrigger->SetSolid(SOLID_BBOX);
+//        pTrigger->SetName(MAKE_STRING("Stage Trigger"));
+//        if (args.ArgC() >= 4) // At last 4 Args?
+//            pTrigger->SetStageNumber(Q_atoi(args.Arg(4)));
+//        else
+//            pTrigger->SetStageNumber(g_Timer.GetStageCount() + 1);
+//        g_Timer.RequestStageCount();
+//        // now use mom_reset_to_start
+//    }
+//}
+//
+//static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test\nUsage: mom_createstart <SizeX> <SizeY> <SizeZ> [<MaxLeaveSpeed>]\n");
+//static ConCommand mom_createstop("mom_createstop", TestCreateTriggerStop, "Create StopTrigger test");
+//static ConCommand mom_createcheckpoint("mom_createstage", TestCreateTriggerCheckpoint, "Create Stage test\nUsage: mom_createstage [<SizeX> <SizeY> <SizeZ>]\n");
