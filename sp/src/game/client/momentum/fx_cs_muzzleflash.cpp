@@ -2,7 +2,7 @@
 #include "particles_simple.h"
 #include "particles_localspace.h"
 #include "c_te_effect_dispatch.h"
-#include "ClientEffectPrecacheSystem.h"
+#include "clienteffectprecachesystem.h"
 
 // Precache our effects
 CLIENTEFFECT_REGISTER_BEGIN(PrecacheEffect_CS_MuzzleFlash)
