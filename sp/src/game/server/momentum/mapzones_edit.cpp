@@ -6,13 +6,14 @@
 #include "tier0/memdbgon.h"
 
 
-ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.", true, 0, true, 1);
-static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.", true, 0, true, 1);
+ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n", true, 0, true, 1);
+static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n", true, 0, true, 1);
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
-static ConVar mom_zone_defzone("mom_zone_defzone", "start", FCVAR_CHEAT, "If no zone type is passed to mom_zone_mark, use this.");
-
-static ConVar mom_zone_stagenum("mom_zone_stagenum", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.", true, 0, false, 0);
-static ConVar mom_zone_maxleavespeed("mom_zone_maxleavespeed", "290", FCVAR_CHEAT, "Max leave speed. 0 to disable.", true, 0, false, 0);
+static ConVar mom_zone_defzone("mom_zone_defzone", "start", FCVAR_CHEAT, "If no zone type is passed to mom_zone_mark, use this.\n");
+// MOM_TODO: Create a way to tell user how many methods each trigger has. Update the description to better fit pourpose
+static ConVar mom_zone_defmethod("mom_zone_defmethod", "0", FCVAR_CHEAT, "Which method the trigger will use when created.\n");
+static ConVar mom_zone_stagenum("mom_zone_stagenum", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
+static ConVar mom_zone_maxleavespeed("mom_zone_maxleavespeed", "290", FCVAR_CHEAT, "Max leave speed. 0 to disable.\n", true, 0, false, 0);
 //static ConVar mom_zone_cpnum( "mom_zone_cpnum", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
 
 
@@ -21,7 +22,7 @@ void CC_Mom_ZoneZoomIn()
     g_MapzoneEdit.DecreaseZoom((float)mom_zone_grid.GetInt());
 }
 
-static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.", FCVAR_CHEAT);
+static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n", FCVAR_CHEAT);
 
 
 void CC_Mom_ZoneZoomOut()
@@ -29,7 +30,7 @@ void CC_Mom_ZoneZoomOut()
     g_MapzoneEdit.IncreaseZoom((float)mom_zone_grid.GetInt());
 }
 
-static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.", FCVAR_CHEAT);
+static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n", FCVAR_CHEAT);
 
 
 void CC_Mom_ZoneDelete(const CCommand &args)
@@ -66,12 +67,9 @@ void CC_Mom_ZoneDelete(const CCommand &args)
             }
         }
     }
-    /*else
-    {
-    }*/
 }
 
-static ConCommand mom_zone_delete("mom_zone_delete", CC_Mom_ZoneDelete, "Delete zone types. Accepts start/stop/stage or an entity index.", FCVAR_CHEAT);
+static ConCommand mom_zone_delete("mom_zone_delete", CC_Mom_ZoneDelete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT);
 
 
 void CC_Mom_ZoneSetLook()
@@ -101,7 +99,7 @@ void CC_Mom_ZoneSetLook()
     }
 }
 
-static ConCommand mom_zone_start_setlook("mom_zone_start_setlook", CC_Mom_ZoneSetLook, "Sets the direction where players will look when teleported to start.", FCVAR_CHEAT);
+static ConCommand mom_zone_start_setlook("mom_zone_start_setlook", CC_Mom_ZoneSetLook, "Sets the direction where players will look when teleported to start.\n", FCVAR_CHEAT);
 
 void CC_Mom_ZoneMark(const CCommand &args)
 {
@@ -174,7 +172,7 @@ void CC_Mom_ZoneMark(const CCommand &args)
     g_MapzoneEdit.Build(&tr.endpos, zonetype);
 }
 
-static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.", FCVAR_CHEAT);
+static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.\n", FCVAR_CHEAT);
 
 void CMapzoneEdit::Build(Vector *aimpos, int type, int forcestage)
 {
@@ -240,6 +238,14 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
         else
         {
             pStart->SetIsLimitingSpeed(false);
+        }
+        if (mom_zone_defzone.GetInt() == 0)
+        {
+            pStart->SetIsLimitingSpeedOnlyXY(true);
+        }
+        else
+        {
+            pStart->SetIsLimitingSpeedOnlyXY(false);
         }
 
         return;

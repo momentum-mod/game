@@ -99,8 +99,12 @@
 - [x] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 
 - [ ] mapzones.cpp (Server)
-    - [ ] Add support for trigger_momentum_teleport and trigger_momentum_userinput
+    - [ ] ~~Add support for trigger_momentum_teleport and trigger_momentum_userinput~~
     - [ ] Make sure it works correctly after that before releasing Alpha!
+
+- [ ] mapzones_edit.cpp (Server)
+	- [ ] Change description for mom_zone_defmethod
+	- [ ] Improve methods of triggers (Probbably also find a better suitting name)
     
 ## BETA
 - [ ] Implement CEF

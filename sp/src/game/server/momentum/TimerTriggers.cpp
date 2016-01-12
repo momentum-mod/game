@@ -47,9 +47,23 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         if (IsLimitingSpeed())
         {
             Vector velocity = pOther->GetAbsVelocity();
-            if (velocity.IsLengthGreaterThan(m_fMaxLeaveSpeed))
+            if (IsLimitingSpeedOnlyXY())
             {
-                pOther->SetAbsVelocity(velocity.Normalized() * m_fMaxLeaveSpeed);
+                Vector2D vel2D = velocity.AsVector2D();
+                if (velocity.AsVector2D().IsLengthGreaterThan(m_fMaxLeaveSpeed))
+                {
+                    // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
+                    // It only has a NormalizeInPlace... Not simple enough for me
+                    vel2D = ((vel2D / vel2D.Length()) * m_fMaxLeaveSpeed);
+                    pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
+                }
+            }
+            else
+            {
+                if (velocity.IsLengthGreaterThan(m_fMaxLeaveSpeed))
+                {
+                    pOther->SetAbsVelocity(velocity.Normalized() * m_fMaxLeaveSpeed);
+                }
             }
         }
     }
@@ -97,6 +111,24 @@ void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
         if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
         {
             RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED);
+        }
+    }
+}
+
+void CTriggerTimerStart::SetIsLimitingSpeedOnlyXY(bool pIsLimitingSpeedOnlyXY)
+{
+    if (pIsLimitingSpeedOnlyXY)
+    {
+        if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY))
+        {
+            AddSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY);
+        }
+    }
+    else
+    {
+        if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY))
+        {
+            RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY);
         }
     }
 }

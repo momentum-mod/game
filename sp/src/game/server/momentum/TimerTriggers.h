@@ -106,14 +106,16 @@ public:
     void SetMaxLeaveSpeed(float pMaxSpeed);
     bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
     void SetIsLimitingSpeed(bool pIsLimitingSpeed);
+    bool IsLimitingSpeedOnlyXY() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY); }
+    void SetIsLimitingSpeedOnlyXY(bool pIsLimitingSpeedOnlyXY);
 
-    void SetHasLookAngles( bool bHasLook );
+    void SetHasLookAngles(bool bHasLook);
     bool GetHasLookAngles() { return HasSpawnFlags(SF_USE_LOOKANGLES); }
-    void SetLookAngles( QAngle newang );
+    void SetLookAngles(QAngle newang);
     QAngle GetLookAngles() { return m_angLook; }
 
 private:
-    QAngle m_angLook = QAngle( 0, 0, 0 );
+    QAngle m_angLook = QAngle(0, 0, 0);
 
     // How fast can the player leave the start trigger?
     float m_fMaxLeaveSpeed = 280;
@@ -124,7 +126,8 @@ private:
     const int SF_LIMIT_LEAVE_SPEED = 0x2;
     // Use look angles?
     const int SF_USE_LOOKANGLES = 0x4;
-
+    // Limit speed without taking into account hvel (Z axis)
+    const int SF_LIMIT_LEAVE_SPEED_ONLYXY = 0x8;
 };
 
 // CFilterCheckpoint

@@ -37,7 +37,8 @@ CMapzone::~CMapzone()
 CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins,
     Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, const bool pShouldTilt,
     const float pHoldTime, const bool pLimitSpeed,
-    const float pMaxLeaveSpeed, const float flYaw, const string_t pLinkedEnt)
+    const float pMaxLeaveSpeed, const float flYaw,
+    const string_t pLinkedEnt, const bool pCheckOnlyXY)
 {
     m_type = pType;
     m_pos = pPos;
@@ -52,6 +53,7 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
     m_maxleavespeed = pMaxLeaveSpeed;
     m_yaw = flYaw;
     m_linkedent = pLinkedEnt;
+    m_onlyxycheck = pCheckOnlyXY;
 }
 
 void CMapzone::SpawnZone()
@@ -62,7 +64,7 @@ void CMapzone::SpawnZone()
         m_trigger = (CTriggerTimerStart *) CreateEntityByName("trigger_momentum_timer_start");
         ((CTriggerTimerStart *) m_trigger)->SetIsLimitingSpeed(m_limitingspeed);
         ((CTriggerTimerStart *) m_trigger)->SetMaxLeaveSpeed(m_maxleavespeed);
-
+        ((CTriggerTimerStart *) m_trigger)->SetIsLimitingSpeedOnlyXY(m_onlyxycheck);
         if ( m_yaw != NO_LOOK )
         {
             ((CTriggerTimerStart *) m_trigger)->SetHasLookAngles(true);
@@ -154,7 +156,7 @@ static void saveZonFile(const char* szMapName)
             {
                 subKey->SetFloat("leavespeed", pTrigger->GetMaxLeaveSpeed());
                 subKey->SetBool("limitingspeed", pTrigger->IsLimitingSpeed());
-
+                subKey->SetBool("onlyxy", pTrigger->IsLimitingSpeedOnlyXY());
                 if (pTrigger->GetHasLookAngles())
                     subKey->SetFloat("yaw", pTrigger->GetLookAngles()[YAW] );
             }
@@ -350,6 +352,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             float holdTime = 1.0f;
             //int destinationIndex = -1;
             bool limitingspeed = true;
+            bool checkonlyxy = true;
             float maxleavespeed = 290.0f;
             const char * linkedtrigger = NULL;
 
@@ -361,6 +364,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
                 limitingspeed = cp->GetBool("limitingspeed");
                 maxleavespeed = cp->GetFloat("leavespeed");
                 start_yaw = cp->GetFloat("yaw", NO_LOOK);
+                checkonlyxy = cp->GetBool("onlyxy", true);
             }
             else if (Q_strcmp(cp->GetName(), "checkpoint") == 0)
             {
@@ -414,7 +418,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 
             // Add element
             m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, shouldTilt,
-                holdTime, limitingspeed, maxleavespeed, start_yaw, MAKE_STRING(linkedtrigger)));
+                holdTime, limitingspeed, maxleavespeed, start_yaw, MAKE_STRING(linkedtrigger),checkonlyxy));
         }
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
         toReturn = true;

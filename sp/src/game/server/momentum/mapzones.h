@@ -16,7 +16,7 @@ public:
     CMapzone();
     CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
         const int, const bool, const bool, const float,
-        const bool, const float, const float, const string_t);
+        const bool, const float, const float, const string_t, const bool);
     ~CMapzone();
 
     void SpawnZone();
@@ -36,6 +36,7 @@ private:
     float m_holdTimeBeforeTeleport; // How much to wait for before teleporting
     // startTrigger
     bool m_limitingspeed; // Limit leave speed?
+    bool m_onlyxycheck; // Only checking speed in XY?
     float m_maxleavespeed; // Max speed allowed
     float m_yaw; // Teleport yaw for start zone.
     string_t m_linkedent; // Entity name for teleporting to this entity (YESYES, It can be null!)
