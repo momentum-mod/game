@@ -191,12 +191,12 @@ void CTimer::DispatchResetMessage()
 void CTimer::DispatchStageMessage()
 {
     CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer && m_pCurrentStage)
+    if (cPlayer && GetCurrentStage())
     {
         CSingleUserRecipientFilter user(cPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "Timer_Stage");
-        WRITE_LONG(m_pCurrentStage->GetStageNumber());
+		WRITE_LONG(GetCurrentStage()->GetStageNumber());
         MessageEnd();
     }
 }
@@ -260,7 +260,7 @@ void CTimer::SetRunning(bool running)
 
 CTriggerTimerStart *CTimer::GetStartTrigger()
 {
-    return m_pStartTrigger;
+    return m_pStartTrigger.Get();
 }
 
 //--------- CPMenu stuff --------------------------------
@@ -353,9 +353,6 @@ class CTimerCommands
 public:
     static void ResetToStart()
     {
-        // MOM_TODO(fatalis):
-        // if the ent no longer exists this will crash
-        // should probably use a handle or something
         CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
         CTriggerTimerStart *start;
         if ((start = g_Timer.GetStartTrigger()) != NULL && cPlayer)

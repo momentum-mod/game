@@ -43,20 +43,20 @@ public:
     // Gets the current starting trigger
     CTriggerTimerStart *GetStartTrigger();
     // Gets the current checkpoint
-    CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint; }
+    CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint.Get(); }
 
     // Sets the given trigger as the start trigger
-    void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger = pTrigger; }
+	void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger.Set(pTrigger); }
 
     // Sets the current checkpoint
-    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint = pTrigger; }
+    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint.Set(pTrigger); }
 
     void SetCurrentStage(CTriggerStage *pTrigger)
     {
-        m_pCurrentStage = pTrigger;
+        m_pCurrentStage.Set(pTrigger);
         DispatchStageMessage();
     }
-    CTriggerStage *GetCurrentStage() { return m_pCurrentStage; }
+    CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
 
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
@@ -129,9 +129,9 @@ private:
     bool m_bIsPaused;
     bool m_bWereCheatsActivated;
     ConVar *m_cCheats;
-    CTriggerTimerStart *m_pStartTrigger;
-    CTriggerCheckpoint *m_pCurrentCheckpoint;
-    CTriggerStage      *m_pCurrentStage;
+	CHandle<CTriggerTimerStart> m_pStartTrigger;
+	CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
+	CHandle<CTriggerStage> m_pCurrentStage;
 
     struct Time
     {
