@@ -66,9 +66,12 @@ voice_ban.dt
 # shader files
 *.tmp
 
-*.cache
+# Momentum
+*.tim
 *.zon
+
+# Others
+*.cache
 *.jpg
 *.prt
 *.vmx
-*.tim
