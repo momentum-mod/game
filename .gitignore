@@ -69,3 +69,6 @@ voice_ban.dt
 *.cache
 *.zon
 *.jpg
+*.prt
+*.vmx
+*.tim

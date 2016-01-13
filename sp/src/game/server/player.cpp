@@ -6385,14 +6385,14 @@ void CBasePlayer::RumbleEffect(unsigned char index, unsigned char rumbleData, un
     if (!IsAlive())
         return;
 
-    CSingleUserRecipientFilter filter(this);
+   /* CSingleUserRecipientFilter filter(this);
     filter.MakeReliable();
 
     UserMessageBegin(filter, "Rumble");
     WRITE_BYTE(index);
     WRITE_BYTE(rumbleData);
     WRITE_BYTE(rumbleFlags);
-    MessageEnd();
+    MessageEnd();*/
 }
 
 void CBasePlayer::EnableControl(bool fControl)

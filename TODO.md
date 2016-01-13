@@ -24,13 +24,14 @@
 - [ ] The "mom"-ification and refactoring
     - [ ] mom_player (Server/Client)
          - [ ] Copy valuable snippets from HL2/CS Player classes
-         - [ ] Clean up the EntSelectSpawnPoint() method
+         - [x] Clean up the EntSelectSpawnPoint() method
     - [ ] mom_gamerules (Shared)
          - [ ] Follow the hl2_gamerules.cpp file for creation
     - [x] mom_gamemovement.cpp (Shared)
         - [x] Implement rampboost fix by TotallyMehis
     - [ ] mom_usermessages.cpp (Shared)
-        - [ ] Remove the usermessages that aren't necessary
+        - [x] Remove the usermessages that aren't necessary
+        - [ ] Remove even more messages
     - [ ] mom_client.cpp (Server)
         - [ ] Precache all necessary sounds/models for the mod
     - [ ] VPC Scripts
@@ -46,6 +47,7 @@
         - [ ] Inspect and cherry pick ifdef (CSTRIKE_DLL) code segments
         - [ ] Format (CTRL + K, CTRL + D) every class to follow the tabs->spaces and other spacing style for code
         - [ ] Remove any unused files
+        	- [x] hud_squadstatus.cpp
             - [ ] hud_posture.cpp
             - [ ] hud_flashlight.cpp (the hud element)
             - [ ] teamplayroundbased_gamerules.h/cpp
@@ -98,13 +100,13 @@
     
 - [x] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 
-- [ ] mapzones.cpp (Server)
+- [x] mapzones.cpp (Server)
     - [ ] ~~Add support for trigger_momentum_teleport and trigger_momentum_userinput~~
-    - [ ] Make sure it works correctly after that before releasing Alpha!
+    - [ ] ~~Make sure it works correctly after that before releasing Alpha!~~
 
-- [ ] mapzones_edit.cpp (Server)
-	- [ ] Change description for mom_zone_defmethod
-	- [ ] Improve methods of triggers (Probbably also find a better suitting name)
+- [x] mapzones_edit.cpp (Server)
+	- [x] Change description for mom_zone_defmethod
+	- [x] Improve methods of triggers (Probbably also find a better suitting name)
     
 ## BETA
 - [ ] Implement CEF

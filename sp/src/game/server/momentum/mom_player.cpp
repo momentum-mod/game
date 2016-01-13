@@ -60,49 +60,35 @@ bool CMomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
 //MOM_TODO: clean this method up
 CBaseEntity* CMomentumPlayer::EntSelectSpawnPoint()
 {
-    CBaseEntity *pSpot;
-    pSpot = NULL;
+#define SF_PLAYER_START_MASTER 1
 
-    pSpot = g_pLastSpawn;
-    if (SelectSpawnSpot("info_player_counterterrorist", pSpot))
+    CBaseEntity *pStart = gEntList.FindEntityByClassname(NULL, "info_player_start");
+    CBaseEntity *pStartFirst = pStart;
+    while (pStart != NULL)
     {
-        g_pLastSpawn = pSpot;
-        goto ReturnSpot;
-    }
-    else if (SelectSpawnSpot("info_player_terrorist", pSpot))
-    {
-        g_pLastSpawn = pSpot;
-        goto ReturnSpot;
-    }
+        if (pStart->HasSpawnFlags(SF_PLAYER_START_MASTER))
+        {
+            g_pLastSpawn = pStart;
+            return pStart;
+        }
 
-    // If startspot is set, (re)spawn there.
-    if (!gpGlobals->startspot || !strlen(STRING(gpGlobals->startspot)))
+        pStart = gEntList.FindEntityByClassname(pStart, "info_player_start");
+    }
+    if (!pStartFirst)
     {
-        pSpot = gEntList.FindEntityByClassname(NULL, "info_player_terrorist");
-        if (pSpot)
-            goto ReturnSpot;
+        DevMsg("PutClientInServer: no info_player_start on level\n");
+        return CBaseEntity::Instance(INDEXENT(0));
     }
     else
     {
-        pSpot = gEntList.FindEntityByTarget(NULL, STRING(gpGlobals->startspot));
-        if (pSpot)
-            goto ReturnSpot;
+        g_pLastSpawn = pStartFirst;
+        return pStartFirst;
     }
-
-ReturnSpot:
-    if (!pSpot)
-    {
-        Warning("PutClientInServer: no info_player_start on level\n");
-        return CBaseEntity::Instance(INDEXENT(0));
-    }
-
-    return pSpot;
 }
 
 
 bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &pSpot)
 {
-    // Find the next spawn spot.
     pSpot = gEntList.FindEntityByClassname(pSpot, pEntClassName);
 
     if (pSpot == NULL) // skip over the null point
@@ -131,6 +117,5 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &p
     } while (pSpot != pFirstSpot); // loop if we're not back to the start
 
     DevMsg("CCSPlayer::SelectSpawnSpot: couldn't find valid spawn point.\n");
-
     return false;
 }
