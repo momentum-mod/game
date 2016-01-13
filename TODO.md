@@ -48,8 +48,9 @@
         - [ ] Format (CTRL + K, CTRL + D) every class to follow the tabs->spaces and other spacing style for code
         - [ ] Remove any unused files
         	- [x] hud_squadstatus.cpp
-            - [ ] hud_posture.cpp
-            - [ ] hud_flashlight.cpp (the hud element)
+            - [x] hud_posture.cpp
+            - [x] hud_flashlight.cpp (the hud element)
+            - [ ] hud_battery.cpp
             - [ ] teamplayroundbased_gamerules.h/cpp
             - [ ] Entire hl2/ subfolder in client/server/shared
             - [ ] Entire sdk/ subfolder in client/server/shared
