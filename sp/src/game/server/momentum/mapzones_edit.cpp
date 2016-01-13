@@ -10,11 +10,10 @@ ConVar mom_zone_edit("mom_zone_edit", "0", FCVAR_CHEAT, "Toggle zone editing.\n"
 static ConVar mom_zone_ignorewarning("mom_zone_ignorewarning", "0", FCVAR_CHEAT, "Lets you create zones despite map already having start and end.\n", true, 0, true, 1);
 static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0 to disable.", true, 0, false, 0);
 static ConVar mom_zone_defzone("mom_zone_defzone", "start", FCVAR_CHEAT, "If no zone type is passed to mom_zone_mark, use this.\n");
-// MOM_TODO: Create a way to tell user how many methods each trigger has. Update the description to better fit pourpose
-static ConVar mom_zone_defmethod("mom_zone_defmethod", "0", FCVAR_CHEAT, "Which method the trigger will use when created.\n");
-static ConVar mom_zone_stagenum("mom_zone_stagenum", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
-static ConVar mom_zone_maxleavespeed("mom_zone_maxleavespeed", "290", FCVAR_CHEAT, "Max leave speed. 0 to disable.\n", true, 0, false, 0);
-//static ConVar mom_zone_cpnum( "mom_zone_cpnum", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
+static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT, "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true, 0, true, 1);
+static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
+static ConVar mom_zone_start_maxleavespeed("mom_zone_start_maxleavespeed", "290", FCVAR_CHEAT, "Max leave speed. 0 to disable.\n", true, 0, false, 0);
+//static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
 
 
 void CC_Mom_ZoneZoomIn()
@@ -72,7 +71,7 @@ void CC_Mom_ZoneDelete(const CCommand &args)
 static ConCommand mom_zone_delete("mom_zone_delete", CC_Mom_ZoneDelete, "Delete zone types. Accepts start/stop/stage or an entity index.\n", FCVAR_CHEAT);
 
 
-void CC_Mom_ZoneSetLook()
+void CC_Mom_ZoneSetLook(const CCommand &args)
 {
     if (!mom_zone_edit.GetBool()) return;
 
@@ -80,17 +79,28 @@ void CC_Mom_ZoneSetLook()
     if (!pPlayer) return;
 
 
+    float yaw;
+
+    if (args.ArgC() > 1)
+    {
+        yaw = atof(args[1]);
+    }
+    else
+    {
+        yaw = pPlayer->EyeAngles()[1];
+    }
+
     CBaseEntity *pEnt = gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_start");
     CTriggerTimerStart *pStart;
 
     while (pEnt)
     {
-        pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
+        pStart = static_cast<CTriggerTimerStart *>(pEnt);
 
         if (pStart)
         {
             pStart->SetHasLookAngles(true);
-            pStart->SetLookAngles(QAngle(0, pPlayer->EyeAngles()[1], 0));
+            pStart->SetLookAngles(QAngle(0, yaw, 0));
 
             DevMsg("Set start zone angles to: %.1f, %.1f, %.1f\n", pStart->GetLookAngles()[0], pStart->GetLookAngles()[1], pStart->GetLookAngles()[2]);
         }
@@ -99,7 +109,8 @@ void CC_Mom_ZoneSetLook()
     }
 }
 
-static ConCommand mom_zone_start_setlook("mom_zone_start_setlook", CC_Mom_ZoneSetLook, "Sets the direction where players will look when teleported to start.\n", FCVAR_CHEAT);
+static ConCommand mom_zone_start_setlook("mom_zone_start_setlook", CC_Mom_ZoneSetLook, "Sets start zone teleport look angles. Will take yaw in degrees or use your angles if no arguments given.\n", FCVAR_CHEAT);
+
 
 void CC_Mom_ZoneMark(const CCommand &args)
 {
@@ -174,6 +185,22 @@ void CC_Mom_ZoneMark(const CCommand &args)
 
 static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.\n", FCVAR_CHEAT);
 
+
+void CC_Mom_ZoneCancel()
+{
+    if (!mom_zone_edit.GetBool()) return;
+
+    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+
+    if (!pPlayer) return;
+
+
+    g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
+}
+
+static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel the zone building.\n", FCVAR_CHEAT);
+
+
 void CMapzoneEdit::Build(Vector *aimpos, int type, int forcestage)
 {
     if (mom_zone_grid.GetInt() > 0)
@@ -230,23 +257,17 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
     CTriggerTimerStart *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
     if (pStart)
     {
-        if (mom_zone_maxleavespeed.GetFloat() > 0.0)
+        if (mom_zone_start_maxleavespeed.GetFloat() > 0.0)
         {
-            pStart->SetMaxLeaveSpeed(mom_zone_maxleavespeed.GetFloat());
+            pStart->SetMaxLeaveSpeed(mom_zone_start_maxleavespeed.GetFloat());
             pStart->SetIsLimitingSpeed(true);
         }
         else
         {
             pStart->SetIsLimitingSpeed(false);
         }
-        if (mom_zone_defzone.GetInt() == 0)
-        {
-            pStart->SetIsLimitingSpeedOnlyXY(true);
-        }
-        else
-        {
-            pStart->SetIsLimitingSpeedOnlyXY(false);
-        }
+
+        pStart->SetIsLimitingSpeedOnlyXY(mom_zone_start_limitspdmethod.GetBool());
 
         return;
     }
@@ -254,9 +275,9 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
     CTriggerStage *pStage = dynamic_cast<CTriggerStage *>(pEnt);
     if (pStage)
     {
-        if (mom_zone_stagenum.GetInt() > 0)
+        if (mom_zone_stage_num.GetInt() > 0)
         {
-            pStage->SetStageNumber(mom_zone_stagenum.GetInt());
+            pStage->SetStageNumber(mom_zone_stage_num.GetInt());
         }
         else
         {
@@ -266,7 +287,7 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
             CBaseEntity *pTemp = gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
             while (pTemp)
             {
-                pTempStage = dynamic_cast<CTriggerStage *>(pTemp);
+                pTempStage = static_cast<CTriggerStage *>(pTemp);
 
                 if (pTempStage && pTempStage->GetStageNumber() > higheststage)
                 {
