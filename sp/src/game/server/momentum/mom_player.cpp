@@ -57,65 +57,56 @@ bool CMomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
     return false;
 }
 
-//MOM_TODO: clean this method up
 CBaseEntity* CMomentumPlayer::EntSelectSpawnPoint()
 {
-#define SF_PLAYER_START_MASTER 1
-
-    CBaseEntity *pStart = gEntList.FindEntityByClassname(NULL, "info_player_start");
-    CBaseEntity *pStartFirst = pStart;
-    while (pStart != NULL)
+    CBaseEntity *pStart;
+    pStart = NULL;
+    if (SelectSpawnSpot("info_player_counterterrorist", pStart))
     {
-        if (pStart->HasSpawnFlags(SF_PLAYER_START_MASTER))
-        {
-            g_pLastSpawn = pStart;
-            return pStart;
-        }
-
-        pStart = gEntList.FindEntityByClassname(pStart, "info_player_start");
+        return pStart;
     }
-    if (!pStartFirst)
+    else if (SelectSpawnSpot("info_player_terrorist", pStart))
     {
-        DevMsg("PutClientInServer: no info_player_start on level\n");
-        return CBaseEntity::Instance(INDEXENT(0));
+        return pStart;
+    }
+    else if (SelectSpawnSpot("info_player_start", pStart))
+    {
+        return pStart;
     }
     else
     {
-        g_pLastSpawn = pStartFirst;
-        return pStartFirst;
+        DevMsg("No valid spawn point found.\n");
+        return BaseClass::Instance(INDEXENT(0));
     }
 }
 
-
-bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &pSpot)
+bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &pStart)
 {
-    pSpot = gEntList.FindEntityByClassname(pSpot, pEntClassName);
-
-    if (pSpot == NULL) // skip over the null point
-        pSpot = gEntList.FindEntityByClassname(pSpot, pEntClassName);
-
-    CBaseEntity *pFirstSpot = pSpot;
-    do
+#define SF_PLAYER_START_MASTER 1
+    pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
+    if (pStart == NULL) // skip over the null point
+        pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
+    CBaseEntity *pLast;
+    pLast = NULL;
+    while (pStart != NULL)
     {
-        if (pSpot)
+        if (g_pGameRules->IsSpawnPointValid(pStart, this))
         {
-            // check if pSpot is valid
-            if (g_pGameRules->IsSpawnPointValid(pSpot, this))
+            if (pStart->HasSpawnFlags(SF_PLAYER_START_MASTER))
             {
-                if (pSpot->GetAbsOrigin() == Vector(0, 0, 0))
-                {
-                    pSpot = gEntList.FindEntityByClassname(pSpot, pEntClassName);
-                    continue;
-                }
-
-                // if so, go to pSpot
+                g_pLastSpawn = pStart;
                 return true;
             }
         }
-        // increment pSpot
-        pSpot = gEntList.FindEntityByClassname(pSpot, pEntClassName);
-    } while (pSpot != pFirstSpot); // loop if we're not back to the start
+        pLast = pStart;
+        pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
+    }
+    if (pLast)
+    {
+        g_pLastSpawn = pLast;
+        pStart = pLast;
+        return true;
+    }
 
-    DevMsg("CCSPlayer::SelectSpawnSpot: couldn't find valid spawn point.\n");
     return false;
 }

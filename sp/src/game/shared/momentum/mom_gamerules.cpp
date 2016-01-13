@@ -114,16 +114,21 @@ Vector CMomentum::DropToGround(
 CBaseEntity *CMomentum::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 {
     // gat valid spwan point
-    CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
+    if (pPlayer)
+    {
+        CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
+        if (pSpawnSpot)
+        {
+            // drop down to ground
+            Vector GroundPos = DropToGround(pPlayer, pSpawnSpot->GetAbsOrigin(), VEC_HULL_MIN, VEC_HULL_MAX);
 
-    // drop down to ground
-    Vector GroundPos = DropToGround(pPlayer, pSpawnSpot->GetAbsOrigin(), VEC_HULL_MIN, VEC_HULL_MAX);
-
-    // Move the player to the place it said.
-    pPlayer->Teleport(&pSpawnSpot->GetAbsOrigin(), &pSpawnSpot->GetLocalAngles(), &vec3_origin);
-    pPlayer->m_Local.m_vecPunchAngle = vec3_angle;
-
-    return pSpawnSpot;
+            // Move the player to the place it said.
+            pPlayer->Teleport(&pSpawnSpot->GetAbsOrigin(), &pSpawnSpot->GetLocalAngles(), &vec3_origin);
+            pPlayer->m_Local.m_vecPunchAngle = vec3_angle;
+            return pSpawnSpot;
+        }
+    }
+    return NULL;
 }
 
 // checks if the spot is clear of players
