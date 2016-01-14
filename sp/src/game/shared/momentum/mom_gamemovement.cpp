@@ -524,7 +524,7 @@ bool CMomentumGameMovement::CheckJumpButton()
 
 }
 
-void CMomentumGameMovement::CategorizePosition(float flReflectNormal)
+void CMomentumGameMovement::CategorizePosition()
 {
     Vector point;
     trace_t pm;
@@ -611,11 +611,10 @@ void CMomentumGameMovement::CategorizePosition(float flReflectNormal)
             }
             else
             {
-                if (flReflectNormal == NO_REFL_NORMAL_CHANGE)
+                if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
                 {
                     DoLateReflect();
-
-                    CategorizePosition(1.0f);
+                    CategorizePosition();
 
                     return;
                 }
@@ -625,11 +624,10 @@ void CMomentumGameMovement::CategorizePosition(float flReflectNormal)
         }
         else
         {
-            if (flReflectNormal == NO_REFL_NORMAL_CHANGE)
+            if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
             {
                 DoLateReflect();
-
-                CategorizePosition(1.0f);
+                CategorizePosition();
 
                 return;
             }
@@ -739,7 +737,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckVelocity();
 
         // By default assume we did the reflect for WalkMove()
-        flReflectNormal = 1.0f;
+        m_flReflectNormal = 1.0f;
 
         if (player->GetGroundEntity() != NULL)
         {
@@ -751,7 +749,7 @@ void CMomentumGameMovement::FullWalkMove()
         }
 
         // Set final flags.
-        CategorizePosition(flReflectNormal);
+        CategorizePosition();
 
         // Make sure velocity is valid.
         CheckVelocity();
@@ -823,7 +821,7 @@ void CMomentumGameMovement::AirMove(void)
     // Add in any base velocity to the current velocity.
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
-    flReflectNormal = NO_REFL_NORMAL_CHANGE;
+    m_flReflectNormal = NO_REFL_NORMAL_CHANGE;
     TryPlayerMove(NULL, NULL);
 
     // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
@@ -841,25 +839,24 @@ void CMomentumGameMovement::DoLateReflect(void)
 
     Vector prevpos = mv->m_vecAbsOrigin;
     Vector prevvel = mv->m_vecVelocity;
-    flReflectNormal = 1.0f;
+    // Don't attempt to reflect after this.
+    m_flReflectNormal = 1.0f;
 
 
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
-    // Since we're doing two moves in one frame, only apply changes if we did the reflect.
-    TryPlayerMove(NULL, NULL);
-    if (flReflectNormal == 1.0f)
+    // Since we're doing two moves in one frame, only apply changes if we did the reflect and we gained speed.
+    TryPlayerMove();
+    if (m_flReflectNormal == 1.0f || prevvel.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
     {
         VectorCopy(prevpos, mv->m_vecAbsOrigin);
         VectorCopy(prevvel, mv->m_vecVelocity);
-
-        //DevMsg("Late reflect failed!\n");
     }
     else
     {
         VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
-        DevMsg("Successful late reflect! Normal: %.2f\n", flReflectNormal);
+        DevMsg("Successful late reflect! Normal: %.2f\n", m_flReflectNormal);
     }
 }
 
@@ -1025,11 +1022,13 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             player->GetMoveType() == MOVETYPE_WALK &&
             player->GetGroundEntity() == NULL)
         {
-            Vector cross = mv->m_vecVelocity.Cross(planes[0]);
-            if (cross[1] > 0)//Are we going up a slope?
-                flReflectNormal = 1.0f;//Don't bother trying to do a LateReflect
-            else
-                flReflectNormal = planes[0][2];//Determine in CategorizePosition
+            //Vector cross = mv->m_vecVelocity.Cross(planes[0]);
+
+            //if (cross[1] > 0)//Are we going up a slope?
+            //    flReflectNormal = 1.0f;//Don't bother trying to do a LateReflect
+            //else
+            m_flReflectNormal = planes[0][2];//Determine in CategorizePosition
+            
 
             for (i = 0; i < numplanes; i++)
             {

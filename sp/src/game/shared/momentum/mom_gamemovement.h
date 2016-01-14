@@ -53,8 +53,7 @@ public:
     virtual int TryPlayerMove(Vector *pFirstDest = NULL, trace_t *pFirstTrace = NULL);
     virtual void FullWalkMove();
     void DoLateReflect();
-    //void CategorizePosition();
-    void CategorizePosition(float = NO_REFL_NORMAL_CHANGE);
+    void CategorizePosition();
 
 
     // Duck
@@ -67,7 +66,7 @@ public:
 
 private:
 
-    float flReflectNormal = 1.0f;//Used by rampboost fix
+    float m_flReflectNormal = NO_REFL_NORMAL_CHANGE;//Used by rampboost fix
 
     // Given a list of nearby ladders, find the best ladder and the "mount" origin
     void		Findladder(float maxdist, CFuncLadder **ppLadder, Vector& ladderOrigin, const CFuncLadder *skipLadder);
