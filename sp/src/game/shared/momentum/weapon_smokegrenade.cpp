@@ -10,15 +10,12 @@
 #include "npcevent.h"
 #include "engine/IEngineSound.h"
 #include "weapon_smokegrenade.h"
+#include "mom_player_shared.h"
 
-
-#ifdef CLIENT_DLL
-	
-#else
-
-	#include "cs_player.h"
+#ifndef CLIENT_DLL
+	//#include "cs_player.h"
 	#include "items.h"
-	#include "smokegrenade_projectile.h"
+	#include "momentum/smokegrenade_projectile.h"
 
 #endif
 

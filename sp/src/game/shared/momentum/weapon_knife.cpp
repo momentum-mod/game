@@ -6,12 +6,9 @@
 
 #include "cbase.h"
 #include "weapon_knife.h"
-#include "cs_gamerules.h"
+#include "mom_player_shared.h"
 
-#if defined( CLIENT_DLL )
-	#include "c_cs_player.h"
-#else
-	#include "cs_player.h"
+#ifndef CLIENT_DLL 
 	#include "ilagcompensationmanager.h"
 #endif
 
@@ -215,7 +212,7 @@ void FindHullIntersection( const Vector &vecSrc, trace_t &tr, const Vector &mins
 
 void CKnife::PrimaryAttack()
 {
-	CCSPlayer *pPlayer = GetPlayerOwner();
+	CMomentumPlayer *pPlayer = GetPlayerOwner();
 	if ( pPlayer )
 	{
 #if !defined (CLIENT_DLL)
@@ -231,8 +228,8 @@ void CKnife::PrimaryAttack()
 
 void CKnife::SecondaryAttack()
 {
-	CCSPlayer *pPlayer = GetPlayerOwner();
-	if ( pPlayer && !pPlayer->m_bIsDefusing && !CSGameRules()->IsFreezePeriod() )
+	CMomentumPlayer *pPlayer = GetPlayerOwner();
+	if ( pPlayer /*&& !pPlayer->m_bIsDefusing && !CSGameRules()->IsFreezePeriod()*/ )
 	{
 #if !defined (CLIENT_DLL)
 		// Move other players back to history positions based on local player's lag
@@ -303,12 +300,12 @@ void CKnife::WeaponIdle()
 	if (m_flTimeWeaponIdle > gpGlobals->curtime)
 		return;
 
-	CCSPlayer *pPlayer = GetPlayerOwner();
+	CMomentumPlayer *pPlayer = GetPlayerOwner();
 	if ( !pPlayer )
 		return;
 
-	if ( pPlayer->IsShieldDrawn() )
-		 return;
+	//if ( pPlayer->IsShieldDrawn() )
+	//	 return;
 
 	SetWeaponIdleTime( gpGlobals->curtime + 20 );
 
@@ -321,7 +318,7 @@ void CKnife::WeaponIdle()
 
 bool CKnife::SwingOrStab( bool bStab )
 {
-	CCSPlayer *pPlayer = GetPlayerOwner();
+	CMomentumPlayer *pPlayer = GetPlayerOwner();
 	if ( !pPlayer )
 		return false;
 
@@ -368,7 +365,7 @@ bool CKnife::SwingOrStab( bool bStab )
 
 		fPrimDelay = fSecDelay = bDidHit ? 1.1f : 1.0f;
 
-		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_PRIMARY );
+		//pPlayer->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_PRIMARY );
 	}
 	else // swing
 	{
@@ -377,14 +374,14 @@ bool CKnife::SwingOrStab( bool bStab )
 		fPrimDelay = bDidHit ? 0.5f : 0.4f;
 		fSecDelay = bDidHit ? 0.5f : 0.5f;
 
-		pPlayer->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_SECONDARY );
+		//pPlayer->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_SECONDARY );
 	}
 
-	if ( pPlayer->HasShield() )
-	{
-		fPrimDelay += 0.7f; // 0.7 seconds slower if we carry a shield
-		fSecDelay += 0.7f;
-	}
+	//if ( pPlayer->HasShield() )
+	//{
+	//	fPrimDelay += 0.7f; // 0.7 seconds slower if we carry a shield
+	//	fSecDelay += 0.7f;
+	//}
 
 	m_flNextPrimaryAttack = gpGlobals->curtime + fPrimDelay;
 	m_flNextSecondaryAttack = gpGlobals->curtime + fSecDelay;

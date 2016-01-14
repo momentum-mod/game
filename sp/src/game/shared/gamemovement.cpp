@@ -2711,10 +2711,10 @@ inline bool CGameMovement::OnLadder(trace_t &trace)
 // HPE_BEGIN
 // [sbodenbender] make ladders easier to climb in cstrike
 //=============================================================================
-#if defined (CSTRIKE_DLL)
+//#if defined (CSTRIKE_DLL)
 ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED, "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
 ConVar sv_ladder_angle( "sv_ladder_angle", "-0.707", FCVAR_REPLICATED, "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f, true, 1.0f );
-#endif
+//#endif
 //=============================================================================
 // HPE_END
 //=============================================================================
@@ -2848,7 +2848,7 @@ bool CGameMovement::LadderMove(void)
             // HPE_BEGIN
             // [sbodenbender] make ladders easier to climb in cstrike
             //=============================================================================
-#if defined (CSTRIKE_DLL)
+//#if defined (CSTRIKE_DLL)
             // break lateral into direction along tmp (up the ladder) and direction along perp (perpendicular to ladder)
             float tmpDist = DotProduct ( tmp, lateral );
             float perpDist = DotProduct ( perp, lateral );
@@ -2862,7 +2862,7 @@ bool CGameMovement::LadderMove(void)
 
             if (angleDot < sv_ladder_angle.GetFloat())
                 lateral = (tmp * tmpDist) + (perp * sv_ladder_dampen.GetFloat() * perpDist);
-#endif // CSTRIKE_DLL
+//#endif // CSTRIKE_DLL
             //=============================================================================
             // HPE_END
             //=============================================================================

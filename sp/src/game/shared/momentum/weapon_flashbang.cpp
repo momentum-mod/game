@@ -12,14 +12,11 @@
 #include "weapon_flashbang.h"
 
 
-#ifdef CLIENT_DLL
+#ifndef CLIENT_DLL
 
-
-#else
-
-	#include "cs_player.h"
+	//#include "cs_player.h"
 	#include "items.h"
-	#include "flashbang_projectile.h"
+	#include "momentum/flashbang_projectile.h"
 
 #endif
 

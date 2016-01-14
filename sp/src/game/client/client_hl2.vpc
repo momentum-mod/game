@@ -55,6 +55,8 @@ $Project "Client (Momentum)"
 			{
 			    $File "$SRCDIR\game\shared\momentum\weapon_momentum_gun.cpp"
 				//MOM_TODO: Add the rest of the weapon files here
+				$File "$SRCDIR\game\shared\momentum\basecsgrenade_projectile.cpp"
+				$File "$SRCDIR\game\shared\momentum\basecsgrenade_projectile.h"
 				$File "$SRCDIR\game\shared\momentum\cs_ammodef.cpp"
 				$File "$SRCDIR\game\shared\momentum\cs_ammodef.h"
 				$File "$SRCDIR\game\shared\momentum\cs_playeranimstate.cpp"
@@ -68,19 +70,21 @@ $Project "Client (Momentum)"
 				$File "$SRCDIR\game\shared\momentum\weapon_ak47.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_aug.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_awp.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_basecsgrenade.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_basecsgrenade.h"
 				$File "$SRCDIR\game\shared\momentum\weapon_deagle.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_elite.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_famas.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_fiveseven.cpp"
-				//$File "$SRCDIR\game\shared\momentum\weapon_flashbang.h" MOM_TODO: @Gocnak next push
-				//$File "$SRCDIR\game\shared\momentum\weapon_flashbang.cpp" @Gocnak next push
+				$File "$SRCDIR\game\shared\momentum\weapon_flashbang.h" 
+				$File "$SRCDIR\game\shared\momentum\weapon_flashbang.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_g3sg1.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_galil.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_glock.cpp"
-				//$File "$SRCDIR\game\shared\momentum\weapon_hegrenade.cpp" @Gocnak next push
-				//$File "$SRCDIR\game\shared\momentum\weapon_hegrenade.h" @Gocnak next push
-				//$File "$SRCDIR\game\shared\momentum\weapon_knife.cpp" @Gocnak next push
-				//$File "$SRCDIR\game\shared\momentum\weapon_knife.h" @Gocnak next push
+				$File "$SRCDIR\game\shared\momentum\weapon_hegrenade.cpp" 
+				$File "$SRCDIR\game\shared\momentum\weapon_hegrenade.h" 
+				$File "$SRCDIR\game\shared\momentum\weapon_knife.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon_knife.h"
 				$File "$SRCDIR\game\shared\momentum\weapon_m249.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_m3.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_m4a1.cpp"
@@ -91,8 +95,8 @@ $Project "Client (Momentum)"
 				$File "$SRCDIR\game\shared\momentum\weapon_scout.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_sg550.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_sg552.cpp"
-				//$File "$SRCDIR\game\shared\momentum\weapon_smokegrenade.h" @Gocnak next push
-				//$File "$SRCDIR\game\shared\momentum\weapon_smokegrenade.cpp" @Gocnak next push
+				$File "$SRCDIR\game\shared\momentum\weapon_smokegrenade.h"
+				$File "$SRCDIR\game\shared\momentum\weapon_smokegrenade.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_tmp.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_ump45.cpp"
 				$File "$SRCDIR\game\shared\momentum\weapon_usp.cpp"

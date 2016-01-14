@@ -12,13 +12,10 @@
 #include "weapon_hegrenade.h"
 
 
-#ifdef CLIENT_DLL
-	
-#else
+#ifndef CLIENT_DLL
 
-	#include "cs_player.h"
-	#include "items.h"
-	#include "hegrenade_projectile.h"
+#include "items.h"
+#include "momentum/hegrenade_projectile.h"
 
 #endif
 
@@ -27,27 +24,27 @@
 
 
 
-IMPLEMENT_NETWORKCLASS_ALIASED( HEGrenade, DT_HEGrenade )
+IMPLEMENT_NETWORKCLASS_ALIASED(HEGrenade, DT_HEGrenade)
 
 BEGIN_NETWORK_TABLE(CHEGrenade, DT_HEGrenade)
 END_NETWORK_TABLE()
 
-BEGIN_PREDICTION_DATA( CHEGrenade )
+BEGIN_PREDICTION_DATA(CHEGrenade)
 END_PREDICTION_DATA()
 
-LINK_ENTITY_TO_CLASS( weapon_hegrenade, CHEGrenade );
-PRECACHE_WEAPON_REGISTER( weapon_hegrenade );
+LINK_ENTITY_TO_CLASS(weapon_hegrenade, CHEGrenade);
+PRECACHE_WEAPON_REGISTER(weapon_hegrenade);
 
 
 #ifndef CLIENT_DLL
 
-	BEGIN_DATADESC( CHEGrenade )
-	END_DATADESC()
+BEGIN_DATADESC(CHEGrenade)
+END_DATADESC()
 
-	void CHEGrenade::EmitGrenade( Vector vecSrc, QAngle vecAngles, Vector vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer )
-	{
-		CHEGrenadeProjectile::Create( vecSrc, vecAngles, vecVel, angImpulse, pPlayer, GRENADE_TIMER );
-	}
-	
+void CHEGrenade::EmitGrenade(Vector vecSrc, QAngle vecAngles, Vector vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer)
+{
+    CHEGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pPlayer, GRENADE_TIMER);
+}
+
 #endif
 

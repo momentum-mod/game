@@ -44,7 +44,7 @@
         - [x] Remove all ifdef (HL2_EPISODIC/HL2_LOSTCOAST/HL2MP) code segments
         - [x] Remove all ifdef (HL1_DLL/CSPORT_DLL) code segments
         - [x] Remove all ifdef (INVASION_DLL/NEXT_BOT/TERROR/USES_ECON_ITEMS) code segments
-        - [ ] Inspect and cherry pick ifdef (CSTRIKE_DLL) code segments
+        - [x] Inspect and cherry pick ifdef (CSTRIKE_DLL) code segments
         - [ ] Format (CTRL + K, CTRL + D) every class to follow the tabs->spaces and other spacing style for code
         - [ ] Remove any unused files
         	- [x] hud_squadstatus.cpp
@@ -62,7 +62,8 @@
 
 - [ ] weapon_momentum_gun.cpp (Shared) and CS:S weapon entities
     - [x] Import CS:S weapon entities over
-    - [ ] Import extra CS:S weapon entities (Knife and Grenades)
+    - [x] Import extra CS:S weapon entities (Knife and Grenades)
+    - [ ] Cleanup CS:S weapon entities/reduce class clutter
     - [ ] Make the main gun toggleable (the player spawns with it, presses button to use/hide it)
     - [ ] Look into removing the crosshair? Customization?
     - [ ] Consider keeping the hud_ammo.cpp HUD element for displaying how many bullets the player has in the clip

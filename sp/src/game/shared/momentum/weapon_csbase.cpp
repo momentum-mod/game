@@ -272,8 +272,8 @@ BEGIN_NETWORK_TABLE(CWeaponCSBase, DT_WeaponCSBase)
 
 #else
 // world weapon models have no aminations
-SendPropExclude( "DT_AnimTimeMustBeFirst", "m_flAnimTime" ),
-SendPropExclude( "DT_BaseAnimating", "m_nSequence" ),
+SendPropExclude("DT_AnimTimeMustBeFirst", "m_flAnimTime"),
+SendPropExclude("DT_BaseAnimating", "m_nSequence"),
 //	SendPropExclude( "DT_LocalActiveWeaponData", "m_flTimeWeaponIdle" ),
 #endif
 
@@ -291,10 +291,10 @@ LINK_ENTITY_TO_CLASS(weapon_cs_base, CWeaponCSBase);
 
 #ifdef GAME_DLL
 
-BEGIN_DATADESC( CWeaponCSBase )
+BEGIN_DATADESC(CWeaponCSBase)
 
 //DEFINE_FUNCTION( DefaultTouch ),
-DEFINE_FUNCTION( FallThink )
+DEFINE_FUNCTION(FallThink)
 
 END_DATADESC()
 
@@ -332,14 +332,14 @@ CWeaponCSBase::CWeaponCSBase()
 
 
 #ifndef CLIENT_DLL
-bool CWeaponCSBase::KeyValue( const char *szKeyName, const char *szValue )
+bool CWeaponCSBase::KeyValue(const char *szKeyName, const char *szValue)
 {
-    if ( !BaseClass::KeyValue( szKeyName, szValue ) )
+    if (!BaseClass::KeyValue(szKeyName, szValue))
     {
-        if ( FStrEq( szKeyName, "ammo" ) )
+        if (FStrEq(szKeyName, "ammo"))
         {
-            int bullets = atoi( szValue );
-            if ( bullets < 0 )
+            int bullets = atoi(szValue);
+            if (bullets < 0)
                 return false;
 
             m_iDefaultExtraAmmo = bullets;
@@ -475,20 +475,20 @@ void CWeaponCSBase::ItemPostFrame()
         {
 #ifndef CLIENT_DLL
             // allow the bots to react to the gunfire
-            if ( GetCSWpnData().m_WeaponType != WEAPONTYPE_GRENADE )
+            if (GetCSWpnData().m_WeaponType != WEAPONTYPE_GRENADE)
             {
-                IGameEvent * event = gameeventmanager->CreateEvent( (HasAmmo()) ? "weapon_fire" : "weapon_fire_on_empty" );
-                if( event )
+                IGameEvent * event = gameeventmanager->CreateEvent((HasAmmo()) ? "weapon_fire" : "weapon_fire_on_empty");
+                if (event)
                 {
-                    const char *weaponName = STRING( m_iClassname );
-                    if ( strncmp( weaponName, "weapon_", 7 ) == 0 )
+                    const char *weaponName = STRING(m_iClassname);
+                    if (strncmp(weaponName, "weapon_", 7) == 0)
                     {
                         weaponName += 7;
                     }
 
-                    event->SetInt( "userid", pPlayer->GetUserID() );
-                    event->SetString( "weapon", weaponName );
-                    gameeventmanager->FireEvent( event );
+                    event->SetInt("userid", pPlayer->GetUserID());
+                    event->SetString("weapon", weaponName);
+                    gameeventmanager->FireEvent(event);
                 }
             }
 #endif
@@ -722,8 +722,8 @@ bool CWeaponCSBase::Holster(CBaseCombatWeapon *pSwitchingTo)
         return false;
 
 #ifndef CLIENT_DLL
-    if ( pPlayer )
-        pPlayer->SetFOV( pPlayer, 0 ); // reset the default FOV.
+    if (pPlayer)
+        pPlayer->SetFOV(pPlayer, 0); // reset the default FOV.
 #endif
 
     //if ( pPlayer )
@@ -742,12 +742,12 @@ bool CWeaponCSBase::Deploy()
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
-    if ( pPlayer )
+    if (pPlayer)
     {
         pPlayer->m_iShotsFired = 0;
         pPlayer->m_bResumeZoom = false;
         pPlayer->m_iLastZoom = 0;
-        pPlayer->SetFOV( pPlayer, 0 );
+        pPlayer->SetFOV(pPlayer, 0);
     }
 #endif
 
@@ -757,9 +757,9 @@ bool CWeaponCSBase::Deploy()
 #ifndef CLIENT_DLL
 bool CWeaponCSBase::IsRemoveable()
 {
-    if ( BaseClass::IsRemoveable() == true )
+    if (BaseClass::IsRemoveable() == true)
     {
-        if ( m_nextPrevOwnerTouchTime > gpGlobals->curtime )
+        if (m_nextPrevOwnerTouchTime > gpGlobals->curtime)
         {
             return false;
         }
@@ -780,41 +780,41 @@ void CWeaponCSBase::Drop(const Vector &vecVelocity)
     // Once somebody drops a gun, it's fair game for removal when/if
     // a game_weapon_manager does a cleanup on surplus weapons in the
     // world.
-    SetRemoveable( true );
+    SetRemoveable(true);
 
     StopAnimation();
-    StopFollowingEntity( );
-    SetMoveType( MOVETYPE_FLYGRAVITY );
+    StopFollowingEntity();
+    SetMoveType(MOVETYPE_FLYGRAVITY);
     // clear follow stuff, setup for collision
     SetGravity(1.0);
     m_iState = WEAPON_NOT_CARRIED;
-    RemoveEffects( EF_NODRAW );
+    RemoveEffects(EF_NODRAW);
     FallInit();
-    SetGroundEntity( NULL );
+    SetGroundEntity(NULL);
 
     m_bInReload = false; // stop reloading 
 
-    SetThink( NULL );
+    SetThink(NULL);
     m_nextPrevOwnerTouchTime = gpGlobals->curtime + 0.8f;
     m_prevOwner = GetPlayerOwner();
 
     SetTouch(&CWeaponCSBase::DefaultTouch);
 
     IPhysicsObject *pObj = VPhysicsGetObject();
-    if ( pObj != NULL )
+    if (pObj != NULL)
     {
-        AngularImpulse	angImp( 200, 200, 200 );
-        pObj->AddVelocity( &vecVelocity, &angImp );
+        AngularImpulse	angImp(200, 200, 200);
+        pObj->AddVelocity(&vecVelocity, &angImp);
     }
     else
     {
-        SetAbsVelocity( vecVelocity );
+        SetAbsVelocity(vecVelocity);
     }
 
-    SetNextThink( gpGlobals->curtime );
+    SetNextThink(gpGlobals->curtime);
 
-    SetOwnerEntity( NULL );
-    SetOwner( NULL );
+    SetOwnerEntity(NULL);
+    SetOwner(NULL);
 #endif
 }
 
@@ -1099,14 +1099,14 @@ float CWeaponCSBase::GetDefaultAnimSpeed()
 //-----------------------------------------------------------------------------
 // Purpose: Draw the laser rifle effect
 //-----------------------------------------------------------------------------
-void CWeaponCSBase::BulletWasFired( const Vector &vecStart, const Vector &vecEnd )
+void CWeaponCSBase::BulletWasFired(const Vector &vecStart, const Vector &vecEnd)
 {
 }
 
 
 bool CWeaponCSBase::ShouldRemoveOnRoundRestart()
 {
-    if ( GetPlayerOwner() )
+    if (GetPlayerOwner())
         return false;
     else
         return true;
@@ -1118,18 +1118,18 @@ bool CWeaponCSBase::ShouldRemoveOnRoundRestart()
 //=========================================================
 void CWeaponCSBase::Materialize()
 {
-    if ( IsEffectActive( EF_NODRAW ) )
+    if (IsEffectActive(EF_NODRAW))
     {
         // changing from invisible state to visible.
-        RemoveEffects( EF_NODRAW );
+        RemoveEffects(EF_NODRAW);
         DoMuzzleFlash();
     }
 
-    AddSolidFlags( FSOLID_TRIGGER );
+    AddSolidFlags(FSOLID_TRIGGER);
 
     //SetTouch( &CWeaponCSBase::DefaultTouch );
 
-    SetThink( NULL );
+    SetThink(NULL);
 
 }
 
@@ -1139,15 +1139,15 @@ void CWeaponCSBase::Materialize()
 //=========================================================
 void CWeaponCSBase::AttemptToMaterialize()
 {
-    float time = g_pGameRules->FlWeaponTryRespawn( this );
+    float time = g_pGameRules->FlWeaponTryRespawn(this);
 
-    if ( time == 0 )
+    if (time == 0)
     {
         Materialize();
         return;
     }
 
-    SetNextThink( gpGlobals->curtime + time );
+    SetNextThink(gpGlobals->curtime + time);
 }
 
 //=========================================================
@@ -1169,23 +1169,23 @@ CBaseEntity* CWeaponCSBase::Respawn()
 {
     // make a copy of this weapon that is invisible and inaccessible to players (no touch function). The weapon spawn/respawn code
     // will decide when to make the weapon visible and touchable.
-    CBaseEntity *pNewWeapon = CBaseEntity::Create( GetClassname(), g_pGameRules->VecWeaponRespawnSpot( this ), GetAbsAngles(), GetOwner() );
+    CBaseEntity *pNewWeapon = CBaseEntity::Create(GetClassname(), g_pGameRules->VecWeaponRespawnSpot(this), GetAbsAngles(), GetOwner());
 
-    if ( pNewWeapon )
+    if (pNewWeapon)
     {
-        pNewWeapon->AddEffects( EF_NODRAW );// invisible for now
-        pNewWeapon->SetTouch( NULL );// no touch
-        pNewWeapon->SetThink( &CWeaponCSBase::AttemptToMaterialize );
+        pNewWeapon->AddEffects(EF_NODRAW);// invisible for now
+        pNewWeapon->SetTouch(NULL);// no touch
+        pNewWeapon->SetThink(&CWeaponCSBase::AttemptToMaterialize);
 
-        UTIL_DropToFloor( this, MASK_SOLID );
+        UTIL_DropToFloor(this, MASK_SOLID);
 
         // not a typo! We want to know when the weapon the player just picked up should respawn! This new entity we created is the replacement,
         // but when it should respawn is based on conditions belonging to the weapon that was taken.
-        pNewWeapon->SetNextThink( gpGlobals->curtime + g_pGameRules->FlWeaponRespawnTime( this ) );
+        pNewWeapon->SetNextThink(gpGlobals->curtime + g_pGameRules->FlWeaponRespawnTime(this));
     }
     else
     {
-        Msg( "Respawn failed to create %s!\n", GetClassname() );
+        Msg("Respawn failed to create %s!\n", GetClassname());
     }
 
     return pNewWeapon;
@@ -1194,20 +1194,20 @@ CBaseEntity* CWeaponCSBase::Respawn()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponCSBase::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+void CWeaponCSBase::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-    CBasePlayer *pPlayer = ToBasePlayer( pActivator );
+    CBasePlayer *pPlayer = ToBasePlayer(pActivator);
 
-    if ( pPlayer )
+    if (pPlayer)
     {
-        pPlayer->Weapon_Equip( this );
+        pPlayer->Weapon_Equip(this);
     }
 }
 
 bool CWeaponCSBase::Reload()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
-    if ( !pPlayer )
+    if (!pPlayer)
         return false;
 
     pPlayer->m_iShotsFired = 0;
@@ -1231,12 +1231,12 @@ void CWeaponCSBase::Spawn()
     // Override the bloat that our base class sets as it's a little bit bigger than we want.
     // If it's too big, you drop a weapon and its box is so big that you're still touching it
     // when it falls and you pick it up again right away.
-    CollisionProp()->UseTriggerBounds( true, 30 );
+    CollisionProp()->UseTriggerBounds(true, 30);
 
     // Set this here to allow players to shoot dropped weapons
-    SetCollisionGroup( COLLISION_GROUP_WEAPON );
+    SetCollisionGroup(COLLISION_GROUP_WEAPON);
 
-    SetExtraAmmoCount( m_iDefaultExtraAmmo );	//Start with no additional ammo
+    SetExtraAmmoCount(m_iDefaultExtraAmmo);	//Start with no additional ammo
 
     m_nextPrevOwnerTouchTime = 0.0;
     m_prevOwner = NULL;
@@ -1246,9 +1246,9 @@ void CWeaponCSBase::Spawn()
 #endif
 }
 
-bool CWeaponCSBase::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
+bool CWeaponCSBase::DefaultReload(int iClipSize1, int iClipSize2, int iActivity)
 {
-    if ( BaseClass::DefaultReload( iClipSize1, iClipSize2, iActivity ) )
+    if (BaseClass::DefaultReload(iClipSize1, iClipSize2, iActivity))
     {
         //SendReloadEvents(); MOM_TODO: will this be needed? (it sends it to other players)
         return true;
@@ -1442,7 +1442,7 @@ void CWeaponCSBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, Q
 
 }
 
-float CWeaponCSBase::CalcViewmodelBob( void )
+float CWeaponCSBase::CalcViewmodelBob(void)
 {
     return 0.0f;
 }
@@ -1450,29 +1450,29 @@ float CWeaponCSBase::CalcViewmodelBob( void )
 #endif
 
 #ifndef CLIENT_DLL
-bool CWeaponCSBase::PhysicsSplash( const Vector &centerPoint, const Vector &normal, float rawSpeed, float scaledSpeed )
+bool CWeaponCSBase::PhysicsSplash(const Vector &centerPoint, const Vector &normal, float rawSpeed, float scaledSpeed)
 {
     if (rawSpeed > 20)
     {
 
         float size = 4.0f;
-        if ( !IsPistol() )
+        if (!IsPistol())
             size += 2.0f;
 
         // adjust splash size based on speed
-        size += RemapValClamped( rawSpeed, 0, 400, 0, 3 );
+        size += RemapValClamped(rawSpeed, 0, 400, 0, 3);
 
         CEffectData	data;
         data.m_vOrigin = centerPoint;
         data.m_vNormal = normal;
-        data.m_flScale = random->RandomFloat( size, size + 1.0f );
+        data.m_flScale = random->RandomFloat(size, size + 1.0f);
 
-        if ( GetWaterType() & CONTENTS_SLIME )
+        if (GetWaterType() & CONTENTS_SLIME)
         {
             data.m_fFlags |= FX_WATER_IN_SLIME;
         }
 
-        DispatchEffect( "gunshotsplash", data );
+        DispatchEffect("gunshotsplash", data);
 
         return true;
     }
@@ -1494,26 +1494,26 @@ void CWeaponCSBase::OnPickedUp(CBaseCombatCharacter *pNewOwner)
     {
         // Play the pickup sound for 1st-person observers
         CRecipientFilter filter;
-        for ( int i=0; i<gpGlobals->maxClients; ++i )
+        for (int i = 0; i < gpGlobals->maxClients; ++i)
         {
             CBasePlayer *player = UTIL_PlayerByIndex(i);
-            if ( player && !player->IsAlive() && player->GetObserverMode() == OBS_MODE_IN_EYE )
+            if (player && !player->IsAlive() && player->GetObserverMode() == OBS_MODE_IN_EYE)
             {
-                filter.AddRecipient( player );
+                filter.AddRecipient(player);
             }
         }
-        if ( filter.GetRecipientCount() )
+        if (filter.GetRecipientCount())
         {
-            CBaseEntity::EmitSound( filter, pNewOwner->entindex(), "Player.PickupWeapon" );
+            CBaseEntity::EmitSound(filter, pNewOwner->entindex(), "Player.PickupWeapon");
         }
 
         // Robin: We don't want to delete weapons the player has picked up, so 
         // clear the name of the weapon. This prevents wildcards that are meant 
         // to find NPCs finding weapons dropped by the NPCs as well.
-        SetName( NULL_STRING );
+        SetName(NULL_STRING);
     }
 
     // Someone picked me up, so make it so that I can't be removed.
-    SetRemoveable( false );
+    SetRemoveable(false);
 #endif
 }
