@@ -176,7 +176,7 @@ extern ConVar sv_noclipduringpause;
 ConVar sv_massreport("sv_massreport", "0");
 ConVar sv_force_transmit_ents("sv_force_transmit_ents", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Will transmit all entities to client, regardless of PVS conditions (will still skip based on transmit flags, however).");
 
-ConVar sv_autosave("sv_autosave", "1", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers.");
+ConVar sv_autosave("sv_autosave", "0", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers.");
 ConVar *sv_maxreplay = NULL;
 static ConVar  *g_pcv_commentary = NULL;
 static ConVar *g_pcv_ThreadMode = NULL;
@@ -700,26 +700,7 @@ bool CServerGameDLL::ReplayInit(CreateInterfaceFn fnReplayFactory)
 float CServerGameDLL::GetTickInterval(void) const
 {
     //float tickinterval = gpGlobals->interval_per_tick
-    float tickinterval = DEFAULT_TICK_INTERVAL;
-
-    //=============================================================================
-    // HPE_BEGIN:
-    // [Forrest] For Counter-Strike, set default tick rate of 66 and removed -tickrate command line parameter.
-    //=============================================================================
-    // Ignoring this for now, server ops are abusing it
-#if 0 // MOM_TODO: once tickset is crossplatform, remove this
-    //=============================================================================
-    // HPE_END
-    //=============================================================================
-    // override if tick rate specified in command line
-    if (CommandLine()->CheckParm("-tickrate"))
-    {
-        float tickrate = CommandLine()->ParmValue("-tickrate", 0);
-        if (tickrate > 10)
-            tickinterval = 1.0f / tickrate;
-    }
-#endif
-    return tickinterval;
+    return DEFAULT_TICK_INTERVAL;
 }
 
 static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)

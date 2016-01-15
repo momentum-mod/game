@@ -1674,14 +1674,14 @@ class CThinkContextsSaveDataOps : public CDefSaveRestoreOps
                 SaveRestoreRecordHeader_t header;
                 pRestore->ReadHeader(&header);
                 pRestore->ReadFunction(pOwner->GetDataDescMap(), (inputfunc_t **) ppV, 1, header.size);
-        }
+            }
             else
             {
                 *ppV = NULL;
             }
-    }
+        }
         pRestore->EndBlock();
-}
+    }
 
     virtual bool IsEmpty(const SaveRestoreFieldInfo_t &fieldInfo)
     {
@@ -2284,7 +2284,7 @@ static void CheckPushedEntity(CBaseEntity *pEntity, pushblock_t &params)
                         float localTargetAmt = DotProduct(pEntity->GetLocalOrigin(), localVel);
                         movementAmount = targetAmount + DotProduct(params.pList->localOrigin, localVel) - localTargetAmt;
                     }
-            }
+                }
                 else
                 {
                     matrix3x4_t start;
@@ -2304,7 +2304,7 @@ static void CheckPushedEntity(CBaseEntity *pEntity, pushblock_t &params)
                     fraction = dist / expectedDist;
                     fraction = clamp(fraction, 0.f, 1.f);
                 }
-    }
+            }
         }
     }
 
@@ -2338,7 +2338,7 @@ static void CheckPushedEntity(CBaseEntity *pEntity, pushblock_t &params)
                 if (pEntity == params.pRootParent)
                 {
                     expectedDist = pEntity->GetLocalAngularVelocity().Length() * params.movetime;
-            }
+                }
                 else
                 {
                     matrix3x4_t start;
@@ -2355,7 +2355,7 @@ static void CheckPushedEntity(CBaseEntity *pEntity, pushblock_t &params)
                 float t = expectedDist != 0.0f ? fabsf(deltaAngle / expectedDist) : 1.0f;
                 t = clamp(t, 0.f, 1.f);
                 fraction = MAX(fraction, t);
-        }
+            }
             else
             {
                 pEntity->UpdatePhysicsShadowToCurrentPosition(0);
@@ -2370,7 +2370,7 @@ static void CheckPushedEntity(CBaseEntity *pEntity, pushblock_t &params)
         params.moveBackFraction = fraction;
         params.pBlockedEntity = pEntity;
     }
-    }
+}
 
 void CBaseEntity::VPhysicsUpdatePusher(IPhysicsObject *pPhysics)
 {
@@ -2739,7 +2739,7 @@ bool CBaseEntity::FVisible(CBaseEntity *pEntity, int traceMask, CBaseEntity **pp
         // Use the custom LOS trace filter
         CTraceFilterLOS traceFilter(this, COLLISION_GROUP_NONE, pEntity);
         UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, traceMask, &traceFilter, &tr);
-}
+    }
 
     if (tr.fraction != 1.0 || tr.startsolid)
     {
@@ -2756,7 +2756,7 @@ bool CBaseEntity::FVisible(CBaseEntity *pEntity, int traceMask, CBaseEntity **pp
     }
 
     return true;// line of sight is valid.
-    }
+}
 
 //=========================================================
 // FVisible - returns true if a line can be traced from
@@ -2789,7 +2789,7 @@ bool CBaseEntity::FVisible(const Vector &vecTarget, int traceMask, CBaseEntity *
         // Use the custom LOS trace filter
         CTraceFilterLOS traceFilter(this, COLLISION_GROUP_NONE);
         UTIL_TraceLine(vecLookerOrigin, vecTarget, traceMask, &traceFilter, &tr);
-        }
+    }
 
     if (tr.fraction != 1.0)
     {
@@ -2801,7 +2801,7 @@ bool CBaseEntity::FVisible(const Vector &vecTarget, int traceMask, CBaseEntity *
     }
 
     return true;// line of sight is valid.
-    }
+}
 
 extern ConVar ai_debug_los;
 //-----------------------------------------------------------------------------
@@ -3214,8 +3214,8 @@ void CBaseEntity::OnRestore()
 #endif
             // We only need to be back in the parent's list because we're already in the right place and with the right data
             LinkChild(m_pParent, this);
+        }
     }
-}
 
     // We're not save/loading the PVS dirty state. Assume everything is dirty after a restore
     NetworkProp()->MarkPVSInformationDirty();
@@ -3308,7 +3308,7 @@ void CBaseEntity::SetOwnerEntity(CBaseEntity* pOwner)
         m_hOwnerEntity = pOwner;
 
         CollisionRulesChanged();
-}
+    }
 }
 
 void CBaseEntity::SetMoveType(MoveType_t val, MoveCollide_t moveCollide)
@@ -4623,7 +4623,7 @@ void CBaseEntity::PrecacheSoundHelper(const char *pName)
     if (!pName || !pName[0])
     {
         return;
-}
+    }
 
     if (UTL_INVAL_SYMBOL == g_ModelSoundsSymbolHelper.Find(pName))
     {
@@ -5994,7 +5994,7 @@ void CBaseEntity::SetLocalAngles(const QAngle& angles)
         if (CheckEmitReasonablePhysicsSpew())
         {
             Warning("Bad SetLocalAngles(%f,%f,%f) on %s\n", angles.x, angles.y, angles.z, GetDebugName());
-}
+        }
         Assert(false);
         return;
     }

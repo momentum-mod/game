@@ -39,6 +39,8 @@ public:
         EmitSound("HL2Player.FlashLightOff");//MOM_TODO: change this?
     }
 
+    bool CanBreatheUnderwater() const { return true; }
+
     // LADDERS
     void SurpressLadderChecks(const Vector& pos, const Vector& normal);
     bool CanGrabLadder(const Vector& pos, const Vector& normal);

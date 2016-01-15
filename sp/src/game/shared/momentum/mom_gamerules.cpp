@@ -21,12 +21,7 @@ REGISTER_GAMERULES_CLASS(CMomentum);
 // convert a velocity in ft/sec and a mass in grains to an impulse in kg in/s
 #define BULLET_IMPULSE(grains, ftpersec)	((ftpersec)*12*BULLET_MASS_GRAINS_TO_KG(grains)*BULLET_IMPULSE_EXAGGERATION)
 
-static CCSAmmoDef ammoDef;
-CCSAmmoDef* GetCSAmmoDef()
-{
-    GetAmmoDef(); // to initialize the ammo info
-    return &ammoDef;
-}
+static CAmmoDef ammoDef;
 
 CAmmoDef* GetAmmoDef()
 {

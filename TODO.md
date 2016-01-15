@@ -69,7 +69,7 @@
 - [ ] weapon_momentum_gun.cpp (Shared) and CS:S weapon entities
     - [x] Import CS:S weapon entities over
     - [x] Import extra CS:S weapon entities (Knife and Grenades)
-    - [ ] Cleanup CS:S weapon entities/reduce class clutter
+    - [x] Cleanup CS:S weapon entities/reduce class clutter
     - [ ] Make the main gun toggleable (the player spawns with it, presses button to use/hide it)
     - [ ] Look into removing the crosshair? Customization?
     - [ ] Consider keeping the hud_ammo.cpp HUD element for displaying how many bullets the player has in the clip

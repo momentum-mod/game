@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "mom_player.h"
-#include "hl2_gamerules.h"
+#include "momentum/mom_gamerules.h"
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
 #include "entitylist.h"

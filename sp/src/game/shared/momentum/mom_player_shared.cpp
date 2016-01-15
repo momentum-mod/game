@@ -287,10 +287,12 @@ void CMomentumPlayer::FireBullet(
                 {
                     CBaseEntity *pEntity = tr.m_pEnt;
                     //MOM_TODO: question the 
-                    if (!(pEntity && pEntity->GetTeamNumber() == GetTeamNumber()))
-                    {
+                    if (pEntity)
                         UTIL_ImpactTrace(&tr, iDamageType);
-                    }
+                    //if (!(pEntity && pEntity->GetTeamNumber() == GetTeamNumber()))
+                    //{
+                    //    UTIL_ImpactTrace(&tr, iDamageType);
+                    //}
                 }
             }
         } // bDoEffects

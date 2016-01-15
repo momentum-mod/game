@@ -10,18 +10,18 @@
 #include "npcevent.h"
 #include "engine/IEngineSound.h"
 #include "weapon_hegrenade.h"
+#include "basegrenade_shared.h"
 
 
 #ifndef CLIENT_DLL
 
+#include "hierarchy.h"
 #include "items.h"
 #include "momentum/hegrenade_projectile.h"
 
 #endif
 
-
 #define GRENADE_TIMER	3.0f //Seconds
-
 
 
 IMPLEMENT_NETWORKCLASS_ALIASED(HEGrenade, DT_HEGrenade)

@@ -153,7 +153,6 @@ void FX_FireBullets(
 #ifndef CLIENT_DLL
     // if this is server code, send the effect over to client as temp entity
     // Dispatch one message for all the bullet impacts and sounds.
-    //MOM_TODO: look into this
     TE_FireBullets( 
         iPlayerIndex,
         vOrigin, 
@@ -243,7 +242,6 @@ void FX_FireBullets(
 
         iSeed++; // use new seed for next bullet
 
-        //MOM_TODO: look into effects
         pPlayer->FireBullet(
             vOrigin,
             vAngles,

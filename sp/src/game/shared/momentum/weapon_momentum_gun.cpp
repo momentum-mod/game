@@ -3,6 +3,8 @@
 #include "in_buttons.h"
 #include "basecombatweapon_shared.h"
 #include "beam_shared.h"
+#include "mom_gamerules.h"
+#include "fx_cs_shared.h"
 
 #include "mom_player_shared.h"
 
@@ -42,6 +44,7 @@ public:
     //void ItemPreFrame(void);
     void ItemBusyFrame(void);
     void PrimaryAttack(void);
+    //void SecondaryAttack();
     void AddViewKick(void);
     void DryFire(void);
     void DrawBeam(const Vector&, const Vector&, float);
@@ -397,28 +400,38 @@ void CWeaponMomentumGun::DrawBeam(const Vector &startPos, const Vector &endPos, 
 
 void CWeaponMomentumGun::DoImpactEffect(trace_t &tr, int nDamageType)
 {
+    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(GetOwner());
+
+    FX_FireBullets(
+        1,
+        pPlayer->Weapon_ShootPosition(),
+        pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(),
+        27,//GetWeaponID(),//WEAPON_AK47
+        0,
+        CBaseEntity::GetPredictionRandomSeed() & 255, // wrap it for network traffic so it's the same between client and server
+        0.05);
+
     //Draw our beam
     DrawBeam(tr.startpos, tr.endpos, 15.5);
     if ((tr.surface.flags & SURF_SKY) == false)
     {
         CPVSFilter filter(tr.endpos);
         te->GaussExplosion(filter, 0.0f, tr.endpos, tr.plane.normal, 0);
+        //UTIL_ImpactTrace(&tr, DMG_BULLET);
         //m_nBulletType = GetAmmoDef()->Index("GaussEnergy");
         //UTIL_ImpactTrace(&tr, m_nBulletType);
     }
 }
 
+#ifdef GAME_DLL
 CON_COMMAND(holster_weapon, "Holster test.")
 {
-    CBasePlayer* pPlayer;
-#ifndef CLIENT_DLL
-    pPlayer = UTIL_GetLocalPlayer();
-#else
-    pPlayer = CBasePlayer::GetLocalPlayer();
-#endif
+    CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
     if (pPlayer)
     {
         CBaseCombatWeapon* active = pPlayer->GetActiveWeapon();
-        active->SetWeaponVisible(!active->IsWeaponVisible());
+        if (active)
+            active->SetWeaponVisible(!active->IsWeaponVisible());
     }
 }
+#endif // GAME_DLL
