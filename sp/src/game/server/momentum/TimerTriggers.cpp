@@ -213,28 +213,31 @@ END_DATADESC()
 
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
-    BaseClass::StartTouch(pOther);
-    if (!pDestinationEnt)
+    if (pOther)
     {
-        if (m_target != NULL_STRING)
-            pDestinationEnt = gEntList.FindEntityByName(NULL, m_target, NULL, pOther, pOther);
-        else
+        BaseClass::StartTouch(pOther);
+        if (!pDestinationEnt)
         {
-            DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
-            return;
+            if (m_target != NULL_STRING)
+                pDestinationEnt = gEntList.FindEntityByName(NULL, m_target, NULL, pOther, pOther);
+            else
+            {
+                DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+                return;
+            }
         }
-    }
 
-    if (!PassesTriggerFilters(pOther)) return;
+        if (!PassesTriggerFilters(pOther)) return;
 
-    if (pOther->IsPlayer() && pDestinationEnt)//ensuring not null
-    {
-        Vector tmp = pDestinationEnt->GetAbsOrigin();
-        // make origin adjustments. (origin in center, not at feet)
-        tmp.z -= pOther->WorldAlignMins().z;
+        if (pDestinationEnt)//ensuring not null
+        {
+            Vector tmp = pDestinationEnt->GetAbsOrigin();
+            // make origin adjustments. (origin in center, not at feet)
+            tmp.z -= pOther->WorldAlignMins().z;
 
-        pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : NULL, m_bResetVelocity ? &vec3_origin : NULL);
-        AfterTeleport();
+            pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : NULL, m_bResetVelocity ? &vec3_origin : NULL);
+            AfterTeleport();
+        }
     }
 }
 //----------------------------------------------------------------------------------------------

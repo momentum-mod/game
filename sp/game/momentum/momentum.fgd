@@ -1,5 +1,11 @@
 @include "base.fgd"
 
+//-------------------------------------------------------------------------
+//
+// CUSTOM MOMENTUM TRIGGERS
+//
+//-------------------------------------------------------------------------
+
 @BaseClass base(Trigger) = TeleTrigger
 [
     target(target_destination) : "Remote Destination" : : "The entity specifying the point to which the player should be teleported."
@@ -92,7 +98,11 @@
 [
 ]
 
-// NOT IMPLEMENTED YET
+//-------------------------------------------------------------------------
+//
+// NOT YET IMPLEMENTED
+//
+//-------------------------------------------------------------------------
 @SolidClass base(func_brush) = func_shootboost : 
 	"Entity that pushes the player when hit by the momentum_gun."
 [
