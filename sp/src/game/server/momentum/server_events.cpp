@@ -3,6 +3,7 @@
 #include "mapzones.h"
 #include "Timer.h"
 #include "mapzones_edit.h"
+#include "momentum/mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 
@@ -20,9 +21,17 @@ namespace Momentum
     {
         // temporary
         if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
-            sv_maxvelocity.SetValue(3500);
+        {
+            g_Timer.SetGameMode(MOMGM_SURF);
+        }
         else
-            sv_maxvelocity.SetValue(10000);
+        {
+            g_Timer.SetGameMode(MOMGM_BHOP);
+        }
+        
+        g_Timer.SetGameModeConVars();
+
+        DevMsg("sv_maxvelocity: %i\n", sv_maxvelocity.GetInt());
 
         // (Re-)Load zones
         if (zones)

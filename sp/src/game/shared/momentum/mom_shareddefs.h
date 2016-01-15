@@ -1,0 +1,9 @@
+#ifndef MOM_SHAREDDEFS_H
+#define MOM_SHAREDDEFS_H
+enum
+{
+    MOMGM_BHOP = 0,
+    MOMGM_SURF,
+    MOMGM_SCROLL
+};
+#endif // MOM_SHAREDDEFS_H

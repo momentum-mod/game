@@ -36,6 +36,7 @@ public:
     void DispatchCheckpointMessage();
     void DispatchStageMessage();
     void DispatchStageCountMessage();
+    void DispatchGameModeMessage();
     // Is the timer running?
     bool IsRunning();
     // Set the running status of the timer
@@ -121,8 +122,14 @@ public:
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() { return m_bWereCheatsActivated; };
 
+    int GetGameMode() { return m_iGameMode; }
+    void SetGameMode(int gm);
+
+    void SetGameModeConVars();
+
 private:
 
+    int m_iGameMode;
     int m_iStageCount;
     int m_iStartTick;
     bool m_bIsRunning;
