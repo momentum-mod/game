@@ -20,7 +20,7 @@ using namespace vgui;
 #define BUFSIZETIME (sizeof("00:00:00.0000")+1)
 #define BUFSIZELOCL (73)
 
-static ConVar bla_timer("mom_timer", "1",
+static ConVar mom_timer("mom_timer", "1",
     FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
     "Turn the timer display on/off\n");
 
@@ -38,7 +38,7 @@ public:
     virtual void OnThink();
     virtual bool ShouldDraw()
     {
-        return bla_timer.GetBool() && CHudElement::ShouldDraw();
+        return mom_timer.GetBool() && CHudElement::ShouldDraw();
     }
     void MsgFunc_Timer_State(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);

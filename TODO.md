@@ -50,15 +50,21 @@
         	- [x] hud_squadstatus.cpp
             - [x] hud_posture.cpp
             - [x] hud_flashlight.cpp (the hud element)
-            - [ ] hud_battery.cpp
+            - [x] hud_battery.cpp
             - [ ] teamplayroundbased_gamerules.h/cpp
             - [ ] Entire hl2/ subfolder in client/server/shared
-            - [ ] Entire sdk/ subfolder in client/server/shared
+            - [x] Entire sdk/ subfolder in client/server/shared
         - [ ] Eventually undefine HL2_DLL and remove corresponding code
 
-- [ ] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
-    - [ ] Create global enumeration for gamemodes
-    - [ ] Store current gamemode on a global variable
+- [x] Creation of a shared (Client/Server) utils class with useful methods/data (gamemode, tickrate etc)
+    - [x] Create global enumeration for gamemodes
+    - [x] Store current gamemode on a global variable
+
+- [ ] Gamemodes
+    - [ ] *BHOP* -> 100 tick, no stamina, autojump/no autojump (Cvar so people can manual scroll if they want)
+    - [ ] *SURF* -> 66 (default)/100 , no stamina, autojump
+    - [ ] *KZ* -> 100 tick, stamina, no autojump
+    - [ ] *LongJump* -> 100 tick, stamina, no autojump (basically ties in to KZ)
 
 - [ ] weapon_momentum_gun.cpp (Shared) and CS:S weapon entities
     - [x] Import CS:S weapon entities over
@@ -135,6 +141,8 @@
     - [ ] "Wire-frame" models for each gun override
     - [ ] Edited gun sounds that reference original sounds?
 
+- [ ] Gamemodes (Ideas)
+    -[ ] RocketJump -> 100 tick?, no stamina?, autojump?
 ## BETA+ (Official Release)
 - [ ] Get greenlit
 

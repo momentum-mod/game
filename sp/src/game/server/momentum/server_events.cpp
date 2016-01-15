@@ -24,9 +24,12 @@ namespace Momentum
         {
             g_Timer.SetGameMode(MOMGM_SURF);
         }
-        else
+        else if(!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
         {
             g_Timer.SetGameMode(MOMGM_BHOP);
+        }
+        else {
+            g_Timer.SetGameMode(MOMGM_UNKNOWN);
         }
         
         g_Timer.SetGameModeConVars();

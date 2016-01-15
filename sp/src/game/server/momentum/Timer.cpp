@@ -48,28 +48,28 @@ void CTimer::PostTime()
     }
 }
 
-//MOM_TODO: REMOVEME
-CON_COMMAND(mom_test_hash, "Tests SHA1 Hashing\n")
-{
-    char pathToZone[MAX_PATH];
-    char mapName[MAX_PATH];
-    V_ComposeFileName("maps", gpGlobals->mapname.ToCStr(), mapName, MAX_PATH);
-    Q_strncat(mapName, ".zon", MAX_PATH);
-    filesystem->RelativePathToFullPath(mapName, "MOD", pathToZone, MAX_PATH);
-    Log("File path is: %s\n", pathToZone);
-
-    CSHA1 sha1;
-    sha1.HashFile(pathToZone);
-    sha1.Final();
-    unsigned char hash[20];
-    sha1.GetHash(hash);
-    Log("The hash for %s is: ", mapName);
-    for (int i = 0; i < 20; i++)
-    {
-        Log("%02x", hash[i]);
-    }
-    Log("\n");
-}
+////MOM_TODO: REMOVEME
+//CON_COMMAND(mom_test_hash, "Tests SHA1 Hashing\n")
+//{
+//    char pathToZone[MAX_PATH];
+//    char mapName[MAX_PATH];
+//    V_ComposeFileName("maps", gpGlobals->mapname.ToCStr(), mapName, MAX_PATH);
+//    Q_strncat(mapName, ".zon", MAX_PATH);
+//    filesystem->RelativePathToFullPath(mapName, "MOD", pathToZone, MAX_PATH);
+//    Log("File path is: %s\n", pathToZone);
+//
+//    CSHA1 sha1;
+//    sha1.HashFile(pathToZone);
+//    sha1.Final();
+//    unsigned char hash[20];
+//    sha1.GetHash(hash);
+//    Log("The hash for %s is: ", mapName);
+//    for (int i = 0; i < 20; i++)
+//    {
+//        Log("%02x", hash[i]);
+//    }
+//    Log("\n");
+//}
 //Called upon map load, loads any and all times stored in the <mapname>.tim file
 void CTimer::LoadLocalTimes(const char *szMapname)
 {
@@ -296,6 +296,12 @@ void CTimer::SetGameModeConVars()
         break;
     case MOMGM_SCROLL:
         sv_maxvelocity.SetValue(3500);
+        break;
+    case MOMGM_UNKNOWN:
+        sv_maxvelocity.SetValue(10000);
+        break;
+    default:
+        DevWarning("[%i] GameMode not defined.\n", m_iGameMode);
         break;
     }
 }
