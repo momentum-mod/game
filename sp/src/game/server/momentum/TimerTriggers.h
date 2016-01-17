@@ -6,6 +6,7 @@
 
 #include "triggers.h"
 #include "filters.h"
+#include "func_break.h"
 
 // CBaseMomentumTrigger
 class CBaseMomentumTrigger : public CTriggerMultiple
@@ -40,6 +41,7 @@ public:
     bool ShouldResetAngles() { return m_bResetAngles; }
     void SetShouldStopPlayer(bool newB) { m_bResetVelocity = newB; }
     void SetShouldResetAngles(bool newB) { m_bResetAngles = newB; }
+    void Spawn();
 
     virtual void AfterTeleport() {};//base class does nothing
 
@@ -164,7 +166,6 @@ public:
     float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think();
-
     void AfterTeleport() { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
 
 private:
@@ -199,7 +200,6 @@ public:
     float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think();
-
     void AfterTeleport() { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
 
 private:
@@ -215,18 +215,34 @@ class CTriggerUserInput : public CBaseMomentumTrigger
 {
     DECLARE_CLASS(CTriggerUserInput, CBaseMomentumTrigger);
     DECLARE_DATADESC();
+
 public:
     enum key { forward, back, moveleft, moveright, jump, duck, attack, attack2, reload };
     key m_eKey;
-
     void Think();
     void Spawn();
-
     COutputEvent m_OnKeyPressed;
 
 private:
     int m_ButtonRep;
 
+};
+
+// CFuncShootBoost
+class CFuncShootBoost : public CBreakable
+{
+    DECLARE_CLASS(CFuncShootBoost, CBreakable);
+    DECLARE_DATADESC();
+
+public:
+    void Spawn();
+    int OnTakeDamage(const CTakeDamageInfo &info);
+
+    float m_fPushForce;
+    // 1: No, 2: Yes, 3: Only if the player's velocity is lower than the push velocity"
+    int m_iIncrease;
+    Vector m_vPushDir;
+    CBaseEntity *m_Destination;
 };
 
 #endif // TIMERTRIGGERS_H

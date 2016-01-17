@@ -135,7 +135,7 @@
 - [ ] Global chat
     - [ ] Simple general and map chat via IRC or something
     
-- [ ] func_shootboost: (Potential entity that handles shootboosts (not needed))
+- [x] func_shootboost: (Potential entity that handles shootboosts (not needed))
 
 - [ ] weapon_momentum_gun (Client/Server)
     - [ ] "Wire-frame" models for each gun override

@@ -211,21 +211,24 @@ DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
 DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang")
 END_DATADESC()
 
+void CTriggerTeleportEnt::Spawn()
+{
+
+    if (m_target != NULL_STRING)
+        pDestinationEnt = gEntList.FindEntityByName(NULL, m_target);
+    else
+    {
+        DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+        return;
+    }
+
+}
+
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
     if (pOther)
     {
         BaseClass::StartTouch(pOther);
-        if (!pDestinationEnt)
-        {
-            if (m_target != NULL_STRING)
-                pDestinationEnt = gEntList.FindEntityByName(NULL, m_target, NULL, pOther, pOther);
-            else
-            {
-                DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
-                return;
-            }
-        }
 
         if (!PassesTriggerFilters(pOther)) return;
 
@@ -414,73 +417,58 @@ void CTriggerUserInput::Spawn()
 }
 //-----------------------------------------------------------------------------------------------
 
-//////-------------------------------------------------------------------------------------------
-// Test Functions
-// These are now deprecated
-//////
-//
-//static void TestCreateTriggerStart(const CCommand &args)
-//{
-//    CTriggerTimerStart *pTrigger = (CTriggerTimerStart *) CreateEntityByName("trigger_momentum_timer_start");
-//    if (pTrigger)
-//    {
-//        pTrigger->Spawn();
-//        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-//        if (args.ArgC() >= 3) // At least 3 Args?
-//            pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
-//        else
-//            pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-//        if (args.ArgC() >= 4)
-//        {
-//            pTrigger->SetIsLimitingSpeed(true);
-//            pTrigger->SetMaxLeaveSpeed(Q_atoi(args.Arg(4)));
-//        }
-//        else
-//            pTrigger->SetIsLimitingSpeed(false);
-//        pTrigger->SetSolid(SOLID_BBOX);
-//        pTrigger->AddEffects(0x020);
-//        pTrigger->SetName(MAKE_STRING("Start Trigger"));
-//
-//        // now use mom_reset_to_start
-//    }
-//}
-//
-//static void TestCreateTriggerStop(void)
-//{
-//    CTriggerTimerStop *pTrigger = (CTriggerTimerStop *) CreateEntityByName("trigger_momentum_timer_stop");
-//    if (pTrigger)
-//    {
-//        pTrigger->Spawn();
-//        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-//        pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-//        pTrigger->SetSolid(SOLID_BBOX);
-//        pTrigger->SetName(MAKE_STRING("Stop Trigger"));
-//        // now use mom_reset_to_start
-//    }
-//}
-//
-//static void TestCreateTriggerCheckpoint(const CCommand &args)
-//{
-//    CTriggerStage *pTrigger = (CTriggerStage *) CreateEntityByName("trigger_momentum_timer_stage");
-//    if (pTrigger)
-//    {
-//        pTrigger->Spawn();
-//        pTrigger->SetAbsOrigin(UTIL_GetLocalPlayer()->GetAbsOrigin());
-//        if (args.ArgC() >= 3) // At least 3 Args?
-//            pTrigger->SetSize(Vector(-Q_atoi(args.Arg(1)), -Q_atoi(args.Arg(2)), -Q_atoi(args.Arg(3))), Vector(Q_atoi(args.Arg(1)), Q_atoi(args.Arg(2)), Q_atoi(args.Arg(3))));
-//        else
-//            pTrigger->SetSize(Vector(-256, -256, -256), Vector(256, 256, 256));
-//        pTrigger->SetSolid(SOLID_BBOX);
-//        pTrigger->SetName(MAKE_STRING("Stage Trigger"));
-//        if (args.ArgC() >= 4) // At last 4 Args?
-//            pTrigger->SetStageNumber(Q_atoi(args.Arg(4)));
-//        else
-//            pTrigger->SetStageNumber(g_Timer.GetStageCount() + 1);
-//        g_Timer.RequestStageCount();
-//        // now use mom_reset_to_start
-//    }
-//}
-//
-//static ConCommand mom_createstart("mom_createstart", TestCreateTriggerStart, "Create StartTrigger test\nUsage: mom_createstart <SizeX> <SizeY> <SizeZ> [<MaxLeaveSpeed>]\n");
-//static ConCommand mom_createstop("mom_createstop", TestCreateTriggerStop, "Create StopTrigger test");
-//static ConCommand mom_createcheckpoint("mom_createstage", TestCreateTriggerCheckpoint, "Create Stage test\nUsage: mom_createstage [<SizeX> <SizeY> <SizeZ>]\n");
+//---------- CFuncShootBoost ----------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
+
+BEGIN_DATADESC(CFuncShootBoost)
+DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
+DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+END_DATADESC()
+
+void CFuncShootBoost::Spawn()
+{
+    BaseClass::Spawn();
+    // temporary
+    m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+    if (m_target != NULL_STRING)
+        m_Destination = gEntList.FindEntityByName(NULL, m_target);
+}
+
+int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
+{
+    CBaseEntity *pInflictor = info.GetAttacker();
+    if (pInflictor)
+    {
+        Vector finalVel = m_vPushDir.Normalized() * m_fPushForce;
+        switch (m_iIncrease)
+        {
+        case 0:
+            break;
+        case 1:
+            finalVel += pInflictor->GetAbsVelocity();
+            break;
+        case 2:
+            if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
+                finalVel = pInflictor->GetAbsVelocity();
+            break;
+        default:
+            DevWarning("%i not recognised as valid for m_iIncrease", m_iIncrease);
+            break;
+        }
+        if (m_Destination)
+        {
+            if (((CBaseTrigger *)m_Destination)->IsTouching(pInflictor))
+            {
+                pInflictor->SetAbsVelocity(finalVel);
+            }
+        }
+        else
+        {
+            pInflictor->SetAbsVelocity(finalVel);
+        }
+    }
+    // As we don't want to break it, we don't call BaseClass::OnTakeDamage(info);
+    return info.GetDamage();
+}
+//-----------------------------------------------------------------------------------------------
