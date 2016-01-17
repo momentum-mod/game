@@ -2,8 +2,10 @@
 #undef CreateDialog
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef _WIN32
 #include <direct.h>
 #include <io.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -35,7 +37,7 @@
 //#include "modlist.h"
 //#include "IRunGameEngine.h"
 
-#include "offlinemode.h"
+#include "OfflineMode.h"
 
 //VGUI
 #include <vgui_controls/pch_vgui_controls.h>

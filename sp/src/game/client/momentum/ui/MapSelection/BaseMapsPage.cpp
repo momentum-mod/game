@@ -785,7 +785,7 @@ void CBaseMapsPage::UpdateStatus()
         wchar_t header[256];
         wchar_t count[128];
 
-        _itow(m_pGameList->GetItemCount(), count, 10);
+        V_snwprintf(count, ARRAYSIZE(count), L"%d", m_pGameList->GetItemCount());
         g_pVGuiLocalize->ConstructString(header, sizeof(header), g_pVGuiLocalize->Find("#ServerBrowser_ServersCount"), 1, count);
         m_pGameList->SetColumnHeaderText(3, header);
     }
@@ -967,7 +967,7 @@ void CBaseMapsPage::RecalculateFilterString()
     if (m_iPingFilter)
     {
         char tmpBuf[16];
-        _itoa(m_iPingFilter, tmpBuf, 10);
+        Q_snprintf(tmpBuf, sizeof(tmpBuf), "%d", m_iPingFilter);
 
         wcscat(unicode, g_pVGuiLocalize->Find("#ServerBrowser_FilterDescLatency"));
         Q_UTF8ToUnicode(" < ", tempUnicode, iTempUnicodeSize);

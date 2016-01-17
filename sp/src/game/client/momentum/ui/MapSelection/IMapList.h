@@ -9,7 +9,7 @@ class gameserveritem_t;
 #include "steam2common.h"
 #include "FindSteam2Servers.h"
 #else
-#include "steamcommon.h"
+#include "SteamCommon.h"
 //#include "FindSteamServers.h"
 #endif
 //#include "tier1/netadr.h"
