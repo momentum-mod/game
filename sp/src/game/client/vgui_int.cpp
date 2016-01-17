@@ -24,6 +24,9 @@
 #include "filesystem.h"
 #include "matsys_controls/matsyscontrols.h"
 
+//Momentum
+#include "momentum/ui/MapSelection/IMapSelector.h"
+
 using namespace vgui;
 
 void MP3Player_Create(vgui::VPANEL parent);
@@ -187,6 +190,7 @@ bool VGui_Startup(CreateInterfaceFn appSystemFactory)
 //-----------------------------------------------------------------------------
 void VGui_CreateGlobalPanels(void)
 {
+    VPANEL gameMenu = enginevgui->GetPanel(PANEL_GAMEUIDLL);
     VPANEL gameToolParent = enginevgui->GetPanel(PANEL_CLIENTDLL_TOOLS);
     VPANEL toolParent = enginevgui->GetPanel(PANEL_TOOLS);
 #if defined( TRACK_BLOCKING_IO )
@@ -207,6 +211,9 @@ void VGui_CreateGlobalPanels(void)
 
     // Create mp3 player off of tool parent panel
     MP3Player_Create(toolParent);
+
+    //Momentum
+    mapselector->Create(gameMenu);
 }
 
 void VGui_Shutdown()
@@ -225,6 +232,9 @@ void VGui_Shutdown()
     messagechars->Destroy();
     loadingdisc->Destroy();
     internalCenterPrint->Destroy();
+
+    //Momentum
+    mapselector->Destroy();
 
     if (g_pClientMode)
     {

@@ -5,6 +5,7 @@
 #endif
 
 #include "cbase.h"
+#include "momentum/mom_shareddefs.h"
 
 class C_MomentumPlayer : public C_BasePlayer
 {

@@ -17,9 +17,25 @@
     - [ ] A lot of variables are not necessary. Ensure which are and remove the rest
     - [ ] Use GetTextSize instead of calculating it per character
     
-- [ ] MenuMapSelection.cpp (Client)
-    - [ ] Parse data from API, compare to already existing/downloaded maps
-    - [ ] Download a selected map and its zone file
+- [ ] MapSelector.cpp (Client)
+    - [ ] Localize strings (remove #ServerBrowser)
+    - [ ] Make the panel display from menu selection (edit GameMenu.res and do "engine ToggleMapsPanel")
+    - [ ] Remove references to Server Browser
+    - [ ] Cleanup classes to remove useless/commented code
+    - [ ] Local Maps tab
+        - [ ] Header columns: Map name | Game type | Difficulty | Best time?
+        - [ ] Populate with maps already on disk (parse .mom files?)
+    - [ ] Change filters
+        - [ ] Map name
+        - [ ] Gametype (bhop/surf/etc)
+        - [ ] Difficulty        
+    - [ ] "Online Maps" Tab
+        - [ ] Apply filters to API searches
+        - [ ] Parse data from API and apply to list
+    - [ ] Start the selected map
+        - [ ] Download a selected map, and its .zon and .mom file (if not exist)
+        - [ ] Set the correct gamemode type, tickrate, etc based on .mom file
+    
     
 - [ ] The "mom"-ification and refactoring
     - [ ] mom_player (Server/Client)
@@ -122,6 +138,8 @@
     - [ ] Create custom HTML menu
     - [ ] Incorporate (precompiled/source?) into project  
 
+- [ ] Consider importing Portal-like entities for non-euclidean geometry
+    
 - [ ] Replays
     - [ ] Use ghostingmod as an example of how to make/read the files
     - [ ] Make map selection/leaderboards be able to download replays

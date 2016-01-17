@@ -3,6 +3,7 @@
 #include "cs_ammodef.h"
 #include "weapon_csbase.h"
 #include "voice_gamemgr.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 

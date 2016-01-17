@@ -6,6 +6,7 @@
 
 #include "cbase.h"
 #include "player.h"
+#include "momentum/mom_shareddefs.h"
 
 class CMomentumPlayer : public CBasePlayer
 {
