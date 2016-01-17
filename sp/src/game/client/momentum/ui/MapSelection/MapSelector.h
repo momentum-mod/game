@@ -23,6 +23,7 @@ public:
 
 private:
     vgui::DHANDLE<CMapSelectorDialog> m_hMapsDlg;
+    bool m_bfirstTimeOpening;
 };
 
 extern IMapSelector* mapselector;

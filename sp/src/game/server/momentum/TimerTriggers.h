@@ -41,7 +41,6 @@ public:
     bool ShouldResetAngles() { return m_bResetAngles; }
     void SetShouldStopPlayer(bool newB) { m_bResetVelocity = newB; }
     void SetShouldResetAngles(bool newB) { m_bResetAngles = newB; }
-    void Spawn();
 
     virtual void AfterTeleport() {};//base class does nothing
 

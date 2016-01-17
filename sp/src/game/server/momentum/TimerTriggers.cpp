@@ -211,19 +211,6 @@ DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
 DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang")
 END_DATADESC()
 
-void CTriggerTeleportEnt::Spawn()
-{
-
-    if (m_target != NULL_STRING)
-        pDestinationEnt = gEntList.FindEntityByName(NULL, m_target);
-    else
-    {
-        DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
-        return;
-    }
-
-}
-
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
     if (pOther)
@@ -231,6 +218,14 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
         BaseClass::StartTouch(pOther);
 
         if (!PassesTriggerFilters(pOther)) return;
+
+        if (m_target != NULL_STRING)
+            pDestinationEnt = gEntList.FindEntityByName(NULL, m_target);
+        else
+        {
+            DevWarning("CTriggerTeleport cannot teleport, no target set to teleport to!\n");
+            return;
+        }
 
         if (pDestinationEnt)//ensuring not null
         {
@@ -240,6 +235,11 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 
             pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : NULL, m_bResetVelocity ? &vec3_origin : NULL);
             AfterTeleport();
+        }
+        else
+        {
+            DevWarning("CTriggerTeleport cannot teleport, target not found!\n");
+            return;
         }
     }
 }
@@ -276,6 +276,7 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
         if (g_Timer.FindOnehopOnList(this) != (-1))
         {
             SetDestinationEnt(g_Timer.GetCurrentCheckpoint());
+            //
             BaseClass::StartTouch(pOther);
         }
         else

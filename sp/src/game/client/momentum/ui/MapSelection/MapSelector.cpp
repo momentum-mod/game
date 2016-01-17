@@ -1,11 +1,12 @@
 #include "pch_mapselection.h"
 
 
-static CMapSelector g_MyPanel;
-IMapSelector* mapselector = (CMapSelector*) &g_MyPanel;
+static CMapSelector g_MapSelectorPanel;
+IMapSelector* mapselector = (CMapSelector*)&g_MapSelectorPanel;
 
 CMapSelector::CMapSelector()
 {
+    m_bfirstTimeOpening = true;
 }
 
 
@@ -16,14 +17,20 @@ CMapSelector::~CMapSelector()
 {
 }
 
-ConVar cl_showmypanel("cl_showmypanel", "0", FCVAR_CLIENTDLL, "Sets the state of myPanel <state>");
+ConVar cl_showmapselection("cl_showmapselection", "0", FCVAR_CLIENTDLL, "Sets the state of mapselection panel <state>", true, 0, true, 1);
 
-CON_COMMAND(OpenTestPanel, "Toggles testpanelfenix on or off")
+CON_COMMAND(ToggleMapSelectionPanel, "Toggles MapSelectorPanel")
 {
-    if (cl_showmypanel.GetBool())
+    if (!cl_showmapselection.GetBool())
+    {
         mapselector->Activate();
+        cl_showmapselection.SetValue(1);
+    }
     else
+    {
+        cl_showmapselection.SetValue(0);
         mapselector->Destroy();
+    }
 };
 
 
@@ -47,17 +54,15 @@ void CMapSelector::Create(vgui::VPANEL parent)
 //-----------------------------------------------------------------------------
 void CMapSelector::Activate()
 {
-    static bool firstTimeOpening = true;
-    if (firstTimeOpening)
+    if (m_bfirstTimeOpening)
     {
         m_hMapsDlg->LoadUserData(); // reload the user data the first time the dialog is made visible, helps with the lag between module load and
         // steamui getting Deactivate() call
-        firstTimeOpening = false;
+        m_bfirstTimeOpening = false;
     }
 
     Open();
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: called when the server browser gets used in the game
