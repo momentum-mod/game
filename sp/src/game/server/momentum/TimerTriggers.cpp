@@ -29,6 +29,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         g_Timer.SetCurrentStage(this);
     }
 }
+//------------------------------------------------------------------------------------------
 
 //---------- CTriggerTimerStart ------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
@@ -187,8 +188,7 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 }
 //----------------------------------------------------------------------------------------------
 
-
-// ------------- CFilterCheckpoint -------------------------------------------------------------
+//------------- CFilterCheckpoint --------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(filter_activator_checkpoint, CFilterCheckpoint);
 
 BEGIN_DATADESC(CFilterCheckpoint)
@@ -312,7 +312,6 @@ void CTriggerOnehop::Think()
 }
 //-----------------------------------------------------------------------------------------------
 
-
 //------- CTriggerResetOnehop -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_resetonehop, CTriggerResetOnehop);
 
@@ -323,7 +322,6 @@ void CTriggerResetOnehop::StartTouch(CBaseEntity *pOther)
         g_Timer.RemoveAllOnehopsFromList();
 }
 //-----------------------------------------------------------------------------------------------
-
 
 //---------- CTriggerMultihop -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_multihop, CTriggerMultihop);
@@ -418,7 +416,7 @@ void CTriggerUserInput::Spawn()
 }
 //-----------------------------------------------------------------------------------------------
 
-//---------- CFuncShootBoost ----------------------------------------------------------------
+//---------- CFuncShootBoost --------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
 
 BEGIN_DATADESC(CFuncShootBoost)
@@ -453,8 +451,16 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel = pInflictor->GetAbsVelocity();
             break;
+        case 3: // The description of this method says the player velocity is increaed by final velocity,
+                // but we're just adding one vec to the other, which is not quite the same
+            if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
+                finalVel += pInflictor->GetAbsVelocity();
+            break;
+        case 4:
+            pInflictor->SetBaseVelocity(finalVel);
+            break;
         default:
-            DevWarning("%i not recognised as valid for m_iIncrease", m_iIncrease);
+            DevWarning("CFuncShootBoost:: %i not recognised as valid for m_iIncrease", m_iIncrease);
             break;
         }
         if (m_Destination)
@@ -470,6 +476,62 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
         }
     }
     // As we don't want to break it, we don't call BaseClass::OnTakeDamage(info);
+    // OnTakeDamage returns the damage dealt
     return info.GetDamage();
 }
+//-----------------------------------------------------------------------------------------------
+
+//---------- CTriggerMomentumPush ---------------------------------------------------------------
+LINK_ENTITY_TO_CLASS(trigger_momentum_push, CTriggerMomentumPush);
+
+BEGIN_DATADESC(CTriggerMomentumPush)
+DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
+DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+END_DATADESC()
+
+void CTriggerMomentumPush::StartTouch(CBaseEntity *pOther)
+{
+    if (pOther && HasSpawnFlags(SF_PUSH_ONSTART) && pOther->IsPlayer())
+        OnSuccessfulTouch(pOther);
+}
+
+void CTriggerMomentumPush::EndTouch(CBaseEntity *pOther)
+{
+    if (pOther && HasSpawnFlags(SF_PUSH_ONEND) && pOther->IsPlayer())
+        OnSuccessfulTouch(pOther);
+}
+
+void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
+{
+    if (pOther)
+    {
+        Vector finalVel;
+        if (HasSpawnFlags(SF_PUSH_DIRECTION_AS_FINAL_FORCE))
+            finalVel = m_vPushDir;
+        else
+            finalVel = m_vPushDir.Normalized() * m_fPushForce;
+        switch (m_iIncrease)
+        {
+        case 0:
+            break;
+        case 1:
+            finalVel += pOther->GetAbsVelocity();
+            break;
+        case 2:
+            if (finalVel.LengthSqr() < pOther->GetAbsVelocity().LengthSqr())
+                finalVel = pOther->GetAbsVelocity();
+            break;
+        case 3:
+            pOther->SetBaseVelocity(finalVel);
+            break;
+        default:
+            DevWarning("CTriggerMomentumPush:: %i not recognised as valid for m_iIncrease", m_iIncrease);
+            break;
+        }
+
+        pOther->SetAbsVelocity(finalVel);
+    }
+}
+
 //-----------------------------------------------------------------------------------------------

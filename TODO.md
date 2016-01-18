@@ -35,8 +35,7 @@
     - [ ] Start the selected map
         - [ ] Download a selected map, and its .zon and .mom file (if not exist)
         - [ ] Set the correct gamemode type, tickrate, etc based on .mom file
-    
-    
+       
 - [ ] The "mom"-ification and refactoring
     - [ ] mom_player (Server/Client)
          - [ ] Copy valuable snippets from HL2/CS Player classes
@@ -114,6 +113,7 @@
     - [ ] Tweak limit speed method
     - [x] Implement Hud Messaging system to interact with timer.cpp (client)
     - [x] Add the option to define what angles should the player have after being teleported
+    - [ ] Move the custom entities that are not part of the timer outside this file 
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking

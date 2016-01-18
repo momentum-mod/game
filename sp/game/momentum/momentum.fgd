@@ -98,20 +98,48 @@
 [
 ]
 
-
 @SolidClass base(func_breakable) = func_shootboost : 
 	"Entity that pushes the player when hit by the momentum_gun."
 [
-	target(target_destination) : "Inside trigger" : : "If specified, the player must be inside this trigger for the func to work"
-	pushdir(angle) : "Push direction" : "0 0 0" : "Where player will be pushed."
-	force(integer) : "Force of the push" : 300 : "General force of the push"
-	increase(choices) : "Handling of player's velocity" : 1 =
+	target(target_destination) : "Inside trigger" : : "If specified, the player must be inside this trigger for the func to work."
+	pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed."
+	force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
+	"Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
+	increase(choices) : "Handling of player's velocity" : 4 =
     [
         0 : "Set player's velocity to push final force"
         1 : "Increase player's velocity by push final force"
-        2 : "Only increase player velocity if it's lower than the push final force"
+        2 : "Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity"
+        3 : "Only if the player's velocity is lower than the push velocity, increase player's velocity by final push velocity"
+        4 : "Act as basevelocity"
     ]
+    spawnflags(flags) = 
+	[ 
+		2: "Use the direction vector as final force instead of calculating it by force amount" : 0
+	]
+
     // THIS THROWS AN ERROR, BUT AS IT HIDES IT-> WE STAY WITH IT FOR NOW
     health(float) : "Strength" : 1 : "Number of points of damage to take before breaking. IT HAS TO BE ABOVE 0."
 ]
 
+@SolidClass base(Trigger) = trigger_momentum_push : 
+	"A trigger volume that modifies velocity of players that touch it."
+[
+	pushdir(angle) : "Push Direction (Pitch Yaw Roll)" : "0 0 0" : "Where player will be pushed. (Check flags for controlling its behaviour)."
+	force(integer) : "Force of the push" : 300 : "General force of the push (Player final velocity in Units per seconds) " +
+	"Ignored if -Use the direction vector as final force instead of calculating it by force amount- flag is set."
+	increase(choices) : "Handling of player's velocity" : 3 =
+    [
+        0 : "Set player velocity to final push force"
+        1 : "Increase player's current velocity by push final foce ammount"
+        2 : "Only set the player's velocity to the final push velocity if player's velocity is lower than final push velocity"
+        3 : "Act as basevelocity"
+    ]
+	spawnflags(flags) = 
+	[ 
+		2 : "Only allow for one touch before reseting" : 1
+		4 : "Modify player velocity on StartTouch" : 0
+		8 : "Modify player velocity on EndTouch" : 1
+		16 : "Use the direction vector as final force instead of calculating it by force amount" : 1
+	]
+]

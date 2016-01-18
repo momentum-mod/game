@@ -236,12 +236,58 @@ class CFuncShootBoost : public CBreakable
 public:
     void Spawn();
     int OnTakeDamage(const CTakeDamageInfo &info);
-
+    // Force in units per seconds applied to the player
     float m_fPushForce;
-    // 1: No, 2: Yes, 3: Only if the player's velocity is lower than the push velocity"
+    // 0: No
+    // 1: Yes
+    // 2: Only if the player's velocity is lower than the push velocity, set player's velocity to final push velocity
+    // 3: Only if the player's velocity is lower than the push velocity, increase player's velocity by final push velocity
     int m_iIncrease;
+    // Dictates the direction of push
     Vector m_vPushDir;
+    // If not null, dictates which entity the attacker must be touching for the func to work
     CBaseEntity *m_Destination;
+    // Use the direction vector as final force instead of calculating it by force amount
+    const int SF_PUSH_DIRECTION_AS_FINAL_FORCE = 0x2;
 };
 
+// CTriggerMomentumPush
+class CTriggerMomentumPush : public CTriggerTeleportEnt
+{
+    DECLARE_CLASS(CTriggerMomentumPush, CTriggerTeleportEnt);
+    DECLARE_DATADESC();
+
+public:
+    void StartTouch(CBaseEntity*);
+    void EndTouch(CBaseEntity*);
+    // Called when (and by) either a StartTouch() or EndTouch() event happens and their requisites are met
+    void OnSuccessfulTouch(CBaseEntity*);
+    float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
+    void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
+    void AfterTeleport() { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
+
+private:
+    // The time that the player initally touched the trigger
+    float m_fStartTouchedTime = 0.0f;
+    // Seconds to hold before activating the teleport
+    float m_fMaxHoldSeconds = 1;
+    // Force in units per seconds applied to the player
+    float m_fPushForce;
+    // 1: SetPlayerVelocity to final push force
+    // 2: Increase player's current velocity by push final foce ammount // This is almost like the default trigger_push behaviour
+    // 3: Only set the player's velocity to the final push velocity if player's velocity is lower than final push velocity
+    int m_iIncrease;
+    // Dictates the direction of push
+    Vector m_vPushDir;
+    // Pointer to the destination entity if a teleport is needed
+    CBaseEntity *m_Destination;
+    // Only allow for one touch
+    const int SF_PUSH_ONETOUCH = 0x2;
+    // Modify player velocity on StartTouch
+    const int SF_PUSH_ONSTART = 0x4;
+    // Modify player velocity on EndTouch
+    const int SF_PUSH_ONEND = 0x8;
+    // Use the direction vector as final force instead of calculating it by force amount
+    const int SF_PUSH_DIRECTION_AS_FINAL_FORCE = 0x16;
+};
 #endif // TIMERTRIGGERS_H
