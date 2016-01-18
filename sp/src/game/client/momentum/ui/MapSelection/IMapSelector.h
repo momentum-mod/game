@@ -12,6 +12,7 @@ public:
     virtual void Create(vgui::VPANEL) = 0;
     virtual void Destroy() = 0;
     virtual void Activate() = 0;
+    virtual void Deactivate() = 0;
 };
 
 extern IMapSelector* mapselector;

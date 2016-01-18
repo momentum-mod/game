@@ -4,9 +4,9 @@
 static CMapSelector g_MapSelectorPanel;
 IMapSelector* mapselector = (CMapSelector*)&g_MapSelectorPanel;
 
+//
 CMapSelector::CMapSelector()
 {
-    m_bfirstTimeOpening = true;
 }
 
 
@@ -17,7 +17,7 @@ CMapSelector::~CMapSelector()
 {
 }
 
-ConVar cl_showmapselection("cl_showmapselection", "0", FCVAR_CLIENTDLL, "Sets the state of mapselection panel <state>", true, 0, true, 1);
+static ConVar cl_showmapselection("cl_showmapselection", "0", FCVAR_CLIENTDLL | FCVAR_HIDDEN, "Sets the state of mapselection panel <state>");
 
 CON_COMMAND(ToggleMapSelectionPanel, "Toggles MapSelectorPanel")
 {
@@ -29,7 +29,7 @@ CON_COMMAND(ToggleMapSelectionPanel, "Toggles MapSelectorPanel")
     else
     {
         cl_showmapselection.SetValue(0);
-        mapselector->Destroy();
+        mapselector->Deactivate();
     }
 };
 
@@ -54,6 +54,7 @@ void CMapSelector::Create(vgui::VPANEL parent)
 //-----------------------------------------------------------------------------
 void CMapSelector::Activate()
 {
+    static bool m_bfirstTimeOpening = true;
     if (m_bfirstTimeOpening)
     {
         m_hMapsDlg->LoadUserData(); // reload the user data the first time the dialog is made visible, helps with the lag between module load and
@@ -65,13 +66,15 @@ void CMapSelector::Activate()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: called when the server browser gets used in the game
+// Purpose: called when the server browser gets closed by the enduser
 //-----------------------------------------------------------------------------
-/*void CMapSelector::Deactivate()
+void CMapSelector::Deactivate()
 {
-    if (m_hInternetDlg.Get())
+    if (m_hMapsDlg.Get())
     {
-        m_hInternetDlg->SaveUserData();
+        m_hMapsDlg->SaveUserData();
+        m_hMapsDlg->Close();
+        CloseAllMapInfoDialogs();
     }
 }
 
@@ -79,7 +82,7 @@ void CMapSelector::Activate()
 //-----------------------------------------------------------------------------
 // Purpose: called when the server browser is no longer being used in the game
 //-----------------------------------------------------------------------------
-void CMapSelector::Reactivate()
+/*void CMapSelector::Reactivate()
 {
     if (m_hInternetDlg.Get())
     {

@@ -34,21 +34,27 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: Base property page for all the games lists (internet/favorites/lan/etc.)
 //-----------------------------------------------------------------------------
-class CBaseMapsPage : public vgui::PropertyPage, public IMapList//, public ISteamMatchmakingServerListResponse, public ISteamMatchmakingPingResponse
+class CBaseMapsPage : public vgui::PropertyPage, public IMapList
 {
     DECLARE_CLASS_SIMPLE(CBaseMapsPage, vgui::PropertyPage);
 
 public:
-    CBaseMapsPage(vgui::Panel *parent, const char *name, /*EMatchMakingType eType,*/ const char *pCustomResFilename = NULL);
+    CBaseMapsPage(vgui::Panel *parent, const char *name, const char *pCustomResFilename = NULL);
     ~CBaseMapsPage();
 
     virtual void PerformLayout();
     virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
 
-    // gets information about specified server
-    virtual gameserveritem_t *GetServer(unsigned int serverID);
+    // gets information about specified map
+    //MOM_TODO: consider how we're going to ID maps for handling 
+    //(creating CMapInfoDialog and actually starting/downloading map)
+    //PropertyPages have some sort of unsigned int IDs assigned to
+    //things added into the list (see , and ServerBrowser used the Matchmaking ID of the
+    //server as the handle, but since we don't have that, all we have is map name?
+    virtual mapstruct_t *GetMap(unsigned int serverID);
 
-    uint32 GetServerFilters(MatchMakingKeyValuePair_t **pFilters);
+    //uint32 GetServerFilters(MatchMakingKeyValuePair_t **pFilters); Used by server browser, this will translate
+    //into API call filters
 
     virtual void SetRefreshing(bool state);
 
@@ -84,6 +90,8 @@ protected:
     void UpdateStatus();
 
 
+    //LocalMap addition
+    void UpdateLocalMaps();
     //MOM_TODO: Look into custom HTTP callbacks for the below
 
     // ISteamMatchmakingServerListResponse callbacks
@@ -97,17 +105,17 @@ protected:
     virtual void ServerResponded(gameserveritem_t &server);
     virtual void ServerFailedToRespond() {}*/
 
-    // Removes server from list
-    void RemoveServer(serverdisplay_t &server);
+    // Removes map from list
+    void RemoveMap(mapdisplay_t&);
 
-    virtual bool BShowServer(serverdisplay_t &server) { return server.m_bDoNotRefresh; }
+    virtual bool BShowServer(mapdisplay_t &server) { return server.m_bDoNotRefresh; }
     void ClearServerList();
 
     // filtering methods
     // returns true if filters passed; false if failed
-    virtual bool CheckPrimaryFilters(gameserveritem_t &server);
-    virtual bool CheckSecondaryFilters(gameserveritem_t &server);
-    virtual bool CheckTagFilter(gameserveritem_t &server) { return true; }
+    virtual bool CheckPrimaryFilters(mapstruct_t &server);
+    virtual bool CheckSecondaryFilters(mapstruct_t &server);
+    virtual bool CheckTagFilter(mapstruct_t &server) { return true; }
     virtual int GetInvalidServerListID();
 
     virtual void OnSaveFilter(KeyValues *filter);
@@ -124,7 +132,7 @@ protected:
     virtual void OnPageHide();
 
     // called when Connect button is pressed
-    MESSAGE_FUNC(OnBeginConnect, "ConnectToServer");
+    MESSAGE_FUNC(OnMapStart, "StartMap");
     // called to look at game info
     MESSAGE_FUNC(OnViewGameInfo, "ViewGameInfo");
     // refreshes a single server
@@ -134,10 +142,10 @@ protected:
     bool m_bAutoSelectFirstItemInGameList;
 
     CGameListPanel *m_pGameList;
-    vgui::ComboBox *m_pLocationFilter;
+    //vgui::ComboBox *m_pLocationFilter;
 
     // command buttons
-    vgui::Button *m_pConnect;
+    vgui::Button *m_pStartMap;
     vgui::Button *m_pRefreshAll;
     vgui::Button *m_pRefreshQuick;
     vgui::Button *m_pAddServer;
@@ -145,17 +153,11 @@ protected:
     vgui::Button *m_pAddToFavoritesButton;
     vgui::ToggleButton *m_pFilter;
 
-    struct Map
-    {
-        char m_cMapName[MAX_PATH];
+    CUtlVector<mapdisplay_t> m_vecMaps;
 
-    };
-
-    CUtlMap<Map, int> m_mMaps;
-
-    CUtlMap<int, serverdisplay_t> m_mapServers;
+    //CUtlMap<int, serverdisplay_t> m_mapServers;
     //CUtlMap<netadr_t, int> m_mapServerIP;
-    CUtlVector<MatchMakingKeyValuePair_t> m_vecServerFilters;
+    //CUtlVector<MatchMakingKeyValuePair_t> m_vecServerFilters;
     int m_iServerRefreshCount;
 
     //EMatchMakingType m_eMatchMakingType;
@@ -176,13 +178,14 @@ private:
     const char *m_pCustomResFilename;
 
     // filter controls
-    vgui::ComboBox *m_pGameFilter;
+    vgui::ComboBox *m_pGameModeFilter;
     vgui::TextEntry *m_pMapFilter;
-    vgui::ComboBox *m_pPingFilter;
-    vgui::ComboBox *m_pSecureFilter;
-    vgui::CheckButton *m_pNoFullServersFilterCheck;
-    vgui::CheckButton *m_pNoEmptyServersFilterCheck;
-    vgui::CheckButton *m_pNoPasswordFilterCheck;
+    vgui::ComboBox *m_pDifficultyFilter;
+    //vgui::CheckButton *m_pNoFullServersFilterCheck;
+    //vgui::CheckButton *m_pNoEmptyServersFilterCheck;
+    //vgui::CheckButton *m_pNoPasswordFilterCheck;
+    vgui::CheckButton *m_pHideCompletedFilterCheck;
+    vgui::CheckButton *m_pMapHasStagesFilterCheck;
     vgui::Label *m_pFilterString;
     char m_szComboAllText[64];
 
@@ -191,13 +194,16 @@ private:
     vgui::HFont m_hFont;
 
     // filter data
-    char m_szGameFilter[32];
+    int m_iGameModeFilter;
     char m_szMapFilter[32];
-    int	m_iPingFilter;
-    bool m_bFilterNoFullServers;
-    bool m_bFilterNoEmptyServers;
-    bool m_bFilterNoPasswordedServers;
-    int m_iSecureFilter;
+    int	m_iDifficultyFilter;//What tier the map should be under
+    bool m_bFilterHideCompleted;//Hide completed maps
+    bool m_bFilterMapHasStages;//Map is non-linear (has stages)
+
+   // bool m_bFilterNoFullServers;
+    //bool m_bFilterNoEmptyServers;
+    //bool m_bFilterNoPasswordedServers;
+    //int m_iSecureFilter;
 
     int m_iLimitToAppID;
 };

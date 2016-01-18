@@ -19,7 +19,7 @@
     
 - [ ] MapSelector.cpp (Client)
     - [ ] Localize strings (remove #ServerBrowser)
-    - [ ] Make the panel display from menu selection (edit GameMenu.res and do "engine ToggleMapsPanel")
+    - [x] Make the panel display from menu selection (edit GameMenu.res and do "engine ToggleMapsPanel")
     - [ ] Remove references to Server Browser
     - [ ] Cleanup classes to remove useless/commented code
     - [ ] Local Maps tab

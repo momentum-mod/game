@@ -15,7 +15,7 @@ class CLocalMaps : public CBaseMapsPage
 
 public: 
 
-    CLocalMaps(vgui::Panel *parent, bool bAutoRefresh = true, const char *pCustomResFilename = NULL);
+    CLocalMaps(vgui::Panel *parent, bool bAutoRefresh = false, const char *pCustomResFilename = NULL);
     ~CLocalMaps();
 
     // property page handlers
@@ -31,13 +31,12 @@ public:
     // If you pass NULL for pSpecificAddresses, it will broadcast on certain points.
     // If you pass a non-null value, then it will send info queries directly to those ports.
     //void InternalGetNewServerList(CUtlVector<netadr_t> *pSpecificAddresses);
-
+    virtual void OnLoadFilter(KeyValues*);
     virtual void StartRefresh();
-
     // stops current refresh/GetNewServerList()
     virtual void StopRefresh();
 
-
+    virtual void OnMapStart() { BaseClass::OnMapStart(); }
     // IServerRefreshResponse handlers
     // called when a server response has timed out
     //virtual void ServerFailedToRespond(int iServer);
@@ -48,7 +47,7 @@ public:
     // Tell the game list what to put in there when there are no games found.
     virtual void SetEmptyListText();
 
-    virtual void LoadFilterSettings() {};//MOM_TODO: Make this sort by name/gametype/difficulty?
+    //virtual void LoadFilterSettings() {};//MOM_TODO: Make this sort by name/gametype/difficulty?
 
     // ISteamMatchmakingServerListResponse callbacks
     virtual void ServerResponded(HServerListRequest hReq, int iServer) {}

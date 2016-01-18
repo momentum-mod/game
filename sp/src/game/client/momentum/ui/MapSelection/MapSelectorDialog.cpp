@@ -138,7 +138,7 @@ CMapSelectorDialog::~CMapSelectorDialog()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::Initialize()
 {
-    SetTitle("#ServerBrowser_Servers", true);
+    SetTitle("#MOM_MapSelector_Maps", true);
     SetVisible(false);
 }
 
@@ -146,9 +146,9 @@ void CMapSelectorDialog::Initialize()
 //-----------------------------------------------------------------------------
 // Purpose: returns a server in the list
 //-----------------------------------------------------------------------------
-gameserveritem_t *CMapSelectorDialog::GetServer(unsigned int serverID)
+mapstruct_t *CMapSelectorDialog::GetMap(unsigned int serverID)
 {
-    return m_pGameList->GetServer(serverID);
+    return m_pGameList->GetMap(serverID);
 }
 
 
@@ -184,6 +184,7 @@ void CMapSelectorDialog::LoadUserData()
     }
 
     m_pSavedData = new KeyValues("Filters");
+    //MOM_TODO: Update this to be "MapSelector.vdf"
     if (!m_pSavedData->LoadFromFile(g_pFullFileSystem, "ServerBrowser.vdf", "CONFIG"))
     {
         // doesn't matter if the file is not found, defaults will work successfully and file will be created on exit
@@ -269,6 +270,7 @@ void CMapSelectorDialog::SaveUserData()
 
     m_pSavedData->RemoveSubKey(m_pSavedData->FindKey("Filters")); // remove the saved subkey and add our subkey
     m_pSavedData->AddSubKey(m_pFilterData->MakeCopy());
+    //MOM_TODO: Update this to also be "MapSelector.vdf"
     m_pSavedData->SaveToFile(g_pFullFileSystem, "ServerBrowser.vdf", "CONFIG");
 
     // save per-page config
@@ -430,17 +432,18 @@ CDialogMapInfo *CMapSelectorDialog::JoinGame(int serverIP, int serverPort)
 //-----------------------------------------------------------------------------
 CDialogMapInfo *CMapSelectorDialog::OpenGameInfoDialog(IMapList *gameList, unsigned int serverIndex)
 {
-    gameserveritem_t *pServer = gameList->GetServer(serverIndex);
-    if (!pServer)
-        return NULL;
+    //mapstruct_t *pServer = gameList->GetMap(serverIndex);
+    //if (!pServer)
+    return NULL;
 
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, pServer->m_NetAdr.GetIP(), pServer->m_NetAdr.GetQueryPort(), pServer->m_NetAdr.GetConnectionPort());
+    //MOM_TODO: complete the following so people can see information on the map 
+    /*CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, pServer->m_NetAdr.GetIP(), pServer->m_NetAdr.GetQueryPort(), pServer->m_NetAdr.GetConnectionPort());
     gameDialog->SetParent(GetVParent());
     gameDialog->AddActionSignalTarget(this);
     gameDialog->Run(pServer->GetName());
     int i = m_GameInfoDialogs.AddToTail();
     m_GameInfoDialogs[i] = gameDialog;
-    return gameDialog;
+    return gameDialog;*/
 }
 
 //-----------------------------------------------------------------------------

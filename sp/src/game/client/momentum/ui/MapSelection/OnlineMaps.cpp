@@ -21,7 +21,7 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
     m_bNoServersListedOnMaster = false;
     m_bAnyServersRespondedToQuery = false;
 
-    m_pLocationFilter->DeleteAllItems();
+    //m_pLocationFilter->DeleteAllItems();
     KeyValues *kv = new KeyValues("Regions");
     if (kv->LoadFromFile(g_pFullFileSystem, "servers/Regions.vdf", NULL))
     {
@@ -33,7 +33,7 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
             region.name = srv->GetString("text");
             region.code = srv->GetInt("code");
             KeyValues *regionKV = new KeyValues("region", "code", region.code);
-            m_pLocationFilter->AddItem(region.name.String(), regionKV);
+            //m_pLocationFilter->AddItem(region.name.String(), regionKV);
             regionKV->deleteThis();
             m_Regions.AddToTail(region);
         }
@@ -69,7 +69,7 @@ void COnlineMaps::PerformLayout()
     if (m_bOfflineMode)
     {
         m_pGameList->SetEmptyListText("#ServerBrowser_OfflineMode");
-        m_pConnect->SetEnabled(false);
+        m_pStartMap->SetEnabled(false);
         m_pRefreshAll->SetEnabled(false);
         m_pRefreshQuick->SetEnabled(false);
         m_pAddServer->SetEnabled(false);
@@ -77,7 +77,7 @@ void COnlineMaps::PerformLayout()
     }
 
     BaseClass::PerformLayout();
-    m_pLocationFilter->SetEnabled(true);
+    //m_pLocationFilter->SetEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -284,10 +284,10 @@ void COnlineMaps::OnRefreshServer(int serverID)
 //-----------------------------------------------------------------------------
 int COnlineMaps::GetRegionCodeToFilter()
 {
-    KeyValues *kv = m_pLocationFilter->GetActiveItemUserData();
-    if (kv)
-        return kv->GetInt("code");
-    else
+    //KeyValues *kv = m_pLocationFilter->GetActiveItemUserData();
+    //if (kv)
+     //   return kv->GetInt("code");
+    //else
         return 255;
 }
 

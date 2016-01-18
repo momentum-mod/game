@@ -33,7 +33,7 @@ public:
 
     virtual int GetRegionCodeToFilter();
     virtual bool CheckTagFilter(gameserveritem_t &server);
-    virtual void LoadFilterSettings() {};//MOM_TODO: make this filter online maps (by name/gametype/difficulty?)
+    //virtual void LoadFilterSettings() {};//MOM_TODO: make this filter online maps (by name/gametype/difficulty?)
 
 protected:
     // vgui overrides

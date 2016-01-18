@@ -23,9 +23,15 @@ public:
 
     // displays the dialog, moves it into focus, updates if it has to
     void		Open(void);
+    void        Close(void)
+    {
+        ConVar *pCvar = g_pCVar->FindVar("cl_showmapselection");
+        if (pCvar) pCvar->SetValue(0);
+        BaseClass::Close();
+    }
 
     // gets server info
-    gameserveritem_t *GetServer(unsigned int serverID);
+    mapstruct_t *GetMap(unsigned int serverID);
     // called every frame
     virtual void OnTick();
 
