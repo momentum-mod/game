@@ -19,7 +19,6 @@ public:
     void Deactivate();
 
     void Open();
-
     void CloseAllMapInfoDialogs();
 
 private:

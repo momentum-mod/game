@@ -4,24 +4,6 @@
 #pragma once
 #endif
 
-class gameserveritem_t;
-#if defined( STEAM )
-#include "steam2common.h"
-#include "FindSteam2Servers.h"
-#else
-#include "SteamCommon.h"
-//#include "FindSteamServers.h"
-#endif
-//#include "tier1/netadr.h"
-
-
-typedef enum
-{
-    SERVERVERSION_SAME_VERSION = 0,
-    SERVERVERSION_SERVER_OLD,
-    SERVERVERSION_SERVER_NEWER
-} SERVERVERSION;
-
 typedef enum
 {
     GAMEMODE_UNKNOWN = 0,//Or "All" if the map doesn't have a gametype
@@ -67,9 +49,9 @@ public:
     enum InterfaceItem_e
     {
         FILTERS,
-        GETNEWLIST,
-        ADDSERVER,
-        ADDCURRENTSERVER,
+        GETNEWLIST,//MOM_TODO: Change this to be "MAPSEARCH" ? Local uses its own update methods
+        ADDSERVER,//MOM_TODO: remove?
+        ADDCURRENTSERVER,//MOM_TODO: remove?
     };
 
     // returns true if the game list supports the specified ui elements
@@ -78,8 +60,8 @@ public:
     // starts the servers refreshing
     virtual void StartRefresh() = 0;
 
-    // gets a new server list
-    virtual void GetNewServerList() = 0;
+    // gets a new map list
+    virtual void GetNewMapList() = 0;
 
     // stops current refresh/GetNewServerList()
     virtual void StopRefresh() = 0;
@@ -94,7 +76,7 @@ public:
     virtual void OnMapStart() = 0;
 
     // invalid server index
-    virtual int GetInvalidServerListID() = 0;
+    virtual int GetInvalidMapListID() = 0;
 };
 
 

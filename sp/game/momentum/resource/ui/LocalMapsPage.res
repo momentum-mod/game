@@ -147,7 +147,6 @@
         "textAlignment"     "west"
         "wrap"      "0"
     }
-    //ACTUAL GAMEMODE FILTER
     "GameModeFilter"
     {
         "ControlName"       "ComboBox"
@@ -208,27 +207,6 @@
         "NumericInputOnly"      "0"
         "unicode"       "0"
     }
-    //"Latency"
-    "PingFilter"
-    {
-        "ControlName"       "ComboBox"
-        "fieldName"     "PingFilter"
-        "xpos"      "311"
-        "ypos"      "210"
-        "wide"      "112"
-        "tall"      "24"
-        "AutoResize"        "0"
-        "PinCorner"     "2"
-        "visible"       "0"
-        "enabled"       "1"
-        "tabPosition"       "0"
-        "paintbackground"       "1"
-        "textHidden"        "0"
-        "editable"      "0"
-        "maxchars"      "-1"
-        "NumericInputOnly"      "0"
-        "unicode"       "0"
-    }
     "HasStagesFilterCheck"
     {
         "ControlName"       "CheckButton"
@@ -263,25 +241,6 @@
         "tabPosition"       "6"
         "paintbackground"       "1"
         "labelText"     "#MOM_MapSelector_FilterCompletedMaps"
-        "textAlignment"     "west"
-        "wrap"      "0"
-        "Default"       "0"
-    }
-    "NoPasswordFilterCheck"
-    {
-        "ControlName"       "CheckButton"
-        "fieldName"     "NoPasswordFilterCheck"
-        "xpos"      "436"
-        "ypos"      "198"
-        "wide"      "222"
-        "tall"      "24"
-        "AutoResize"        "0"
-        "PinCorner"     "2"
-        "visible"       "0"
-        "enabled"       "1"
-        "tabPosition"       "8"
-        "paintbackground"       "1"
-        "labelText"     "#ServerBrowser_IsNotPasswordProtected"
         "textAlignment"     "west"
         "wrap"      "0"
         "Default"       "0"

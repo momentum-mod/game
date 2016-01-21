@@ -4,10 +4,8 @@
 #pragma once
 #endif
 
-//class CLanBroadcastMsgHandler;
-
 //-----------------------------------------------------------------------------
-// Purpose: Favorite games list
+// Purpose: Local maps list
 //-----------------------------------------------------------------------------
 class CLocalMaps : public CBaseMapsPage
 {
@@ -15,7 +13,7 @@ class CLocalMaps : public CBaseMapsPage
 
 public: 
 
-    CLocalMaps(vgui::Panel *parent, bool bAutoRefresh = false, const char *pCustomResFilename = NULL);
+    CLocalMaps(vgui::Panel *parent, bool bAutoRefresh = true, const char *pCustomResFilename = NULL);
     ~CLocalMaps();
 
     // property page handlers
@@ -35,6 +33,7 @@ public:
     virtual void StartRefresh();
     // stops current refresh/GetNewServerList()
     virtual void StopRefresh();
+    void GetNewMapList();//called upon loading
 
     virtual void OnMapStart() { BaseClass::OnMapStart(); }
     // IServerRefreshResponse handlers
@@ -68,11 +67,8 @@ private:
     // context menu message handlers
     MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
 
-    // number of servers refreshed
-    int m_iServerRefreshCount;
-
     // true if we're broadcasting for servers
-    bool m_bRequesting;
+    bool m_bLoadedMaps;
 
     // time at which we last broadcasted
     double m_fRequestTime;

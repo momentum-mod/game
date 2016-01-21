@@ -72,7 +72,6 @@ void COnlineMaps::PerformLayout()
         m_pStartMap->SetEnabled(false);
         m_pRefreshAll->SetEnabled(false);
         m_pRefreshQuick->SetEnabled(false);
-        m_pAddServer->SetEnabled(false);
         m_pFilter->SetEnabled(false);
     }
 
@@ -189,9 +188,9 @@ void COnlineMaps::RefreshComplete(EMatchMakingServerResponse response)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void COnlineMaps::GetNewServerList()
+void COnlineMaps::GetNewMapList()
 {
-    BaseClass::GetNewServerList();
+    BaseClass::GetNewMapList();
     UpdateStatus();
 
     m_bRequireUpdate = false;

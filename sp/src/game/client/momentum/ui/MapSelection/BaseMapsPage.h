@@ -56,7 +56,7 @@ public:
     //uint32 GetServerFilters(MatchMakingKeyValuePair_t **pFilters); Used by server browser, this will translate
     //into API call filters
 
-    virtual void SetRefreshing(bool state);
+    
 
     // loads filter settings from disk
     virtual void LoadFilterSettings();
@@ -68,20 +68,16 @@ public:
 
     int GetSelectedItemsCount();
 
-    // adds a server to the favorites
-    MESSAGE_FUNC(OnAddToFavorites, "AddToFavorites");
-
-    virtual void StartRefresh();
+    
 
     virtual void UpdateDerivedLayouts(void);
-#ifndef NO_STEAM
-    STEAM_CALLBACK(CBaseMapsPage, OnFavoritesMsg, FavoritesListChanged_t, m_CallbackFavoritesMsg);
-#endif
+    //STEAM_CALLBACK(CBaseMapsPage, OnFavoritesMsg, FavoritesListChanged_t, m_CallbackFavoritesMsg);
+    //MOM_TODO: STEAM_CALLBACK for the HTTP requests for maps
 protected:
     virtual void OnCommand(const char *command);
     virtual void OnKeyCodePressed(vgui::KeyCode code);
     virtual int GetRegionCodeToFilter() { return -1; }
-
+    
     MESSAGE_FUNC(OnItemSelected, "ItemSelected");
 
     // applies games filters to current list
@@ -89,9 +85,6 @@ protected:
     // updates server count UI
     void UpdateStatus();
 
-
-    //LocalMap addition
-    void UpdateLocalMaps();
     //MOM_TODO: Look into custom HTTP callbacks for the below
 
     // ISteamMatchmakingServerListResponse callbacks
@@ -108,26 +101,29 @@ protected:
     // Removes map from list
     void RemoveMap(mapdisplay_t&);
 
-    virtual bool BShowServer(mapdisplay_t &server) { return server.m_bDoNotRefresh; }
-    void ClearServerList();
+    //MOM_TODO: Correlate this to online maps
+    virtual bool BShowMap(mapdisplay_t &server) { return server.m_bDoNotRefresh; }
+
+    //Clears the list of maps
+    void ClearMapList();
 
     // filtering methods
     // returns true if filters passed; false if failed
-    virtual bool CheckPrimaryFilters(mapstruct_t &server);
-    virtual bool CheckSecondaryFilters(mapstruct_t &server);
-    virtual bool CheckTagFilter(mapstruct_t &server) { return true; }
-    virtual int GetInvalidServerListID();
+    virtual bool CheckPrimaryFilters(mapstruct_t &);
+    virtual bool CheckSecondaryFilters(mapstruct_t &);
+    virtual bool CheckTagFilter(mapstruct_t &) { return true; }
+    virtual int GetInvalidMapListID();
 
     virtual void OnSaveFilter(KeyValues *filter);
     virtual void OnLoadFilter(KeyValues *filter);
     virtual void UpdateFilterSettings();
 
-    // whether filter settings limit which master server to query
-    uint32 GetFilterAppID() { return m_iLimitToAppID; }
-
-    virtual void GetNewServerList();
+    virtual void GetNewMapList();
+    //MOM_TODO: Make these methods "search" for maps based on filter data
+    virtual void StartRefresh();
     virtual void StopRefresh();
     virtual bool IsRefreshing();
+    virtual void SetRefreshing(bool state);
     virtual void OnPageShow();
     virtual void OnPageHide();
 
@@ -142,29 +138,20 @@ protected:
     bool m_bAutoSelectFirstItemInGameList;
 
     CGameListPanel *m_pGameList;
-    //vgui::ComboBox *m_pLocationFilter;
 
     // command buttons
     vgui::Button *m_pStartMap;
-    vgui::Button *m_pRefreshAll;
+    vgui::Button *m_pRefreshAll;//MOM_TODO: change to "m_pSearchMaps"
     vgui::Button *m_pRefreshQuick;
-    vgui::Button *m_pAddServer;
-    vgui::Button *m_pAddCurrentServer;
-    vgui::Button *m_pAddToFavoritesButton;
     vgui::ToggleButton *m_pFilter;
 
     CUtlVector<mapdisplay_t> m_vecMaps;
 
-    //CUtlMap<int, serverdisplay_t> m_mapServers;
-    //CUtlMap<netadr_t, int> m_mapServerIP;
-    //CUtlVector<MatchMakingKeyValuePair_t> m_vecServerFilters;
-    int m_iServerRefreshCount;
+    int m_iServerRefreshCount;//MOM_TODO: change this to "maps found online" ?
 
-    //EMatchMakingType m_eMatchMakingType;
 
 protected:
     virtual void CreateFilters();
-    virtual void UpdateGameFilter();
 
     MESSAGE_FUNC_PTR_CHARPTR(OnTextChanged, "TextChanged", panel, text);
     MESSAGE_FUNC_PTR_INT(OnButtonToggled, "ButtonToggled", panel, state);
@@ -181,12 +168,9 @@ private:
     vgui::ComboBox *m_pGameModeFilter;
     vgui::TextEntry *m_pMapFilter;
     vgui::ComboBox *m_pDifficultyFilter;
-    //vgui::CheckButton *m_pNoFullServersFilterCheck;
-    //vgui::CheckButton *m_pNoEmptyServersFilterCheck;
-    //vgui::CheckButton *m_pNoPasswordFilterCheck;
-    vgui::CheckButton *m_pHideCompletedFilterCheck;
-    vgui::CheckButton *m_pMapHasStagesFilterCheck;
-    vgui::Label *m_pFilterString;
+    vgui::CheckButton *m_pHideCompletedFilterCheck;//Used for local maps only
+    vgui::CheckButton *m_pMapHasStagesFilterCheck;//MOM_TODO: change this to a ComboBox, 0 = ALL, 1 = LINEAR ONLY, 2 = STAGED ONLY
+    vgui::Label *m_pFilterString;//MOM_TODO: determine what this is and if we need it
     char m_szComboAllText[64];
 
     KeyValues *m_pFilters; // base filter data
@@ -200,12 +184,6 @@ private:
     bool m_bFilterHideCompleted;//Hide completed maps
     bool m_bFilterMapHasStages;//Map is non-linear (has stages)
 
-   // bool m_bFilterNoFullServers;
-    //bool m_bFilterNoEmptyServers;
-    //bool m_bFilterNoPasswordedServers;
-    //int m_iSecureFilter;
-
-    int m_iLimitToAppID;
 };
 
 #endif // BASEGAMESPAGE_H

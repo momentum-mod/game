@@ -11,8 +11,6 @@ using namespace vgui;
 
 #undef wcscat
 
-
-//MOM_TODO: Consider removing CGameListPanel (since we don't use it)
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -40,29 +38,18 @@ void CGameListPanel::OnKeyCodeTyped(vgui::KeyCode code)
 //-----------------------------------------------------------------------------
 CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *pCustomResFilename)
     : PropertyPage(parent, name), m_pCustomResFilename(pCustomResFilename)
-#ifndef NO_STEAM
-    ,//MOM_TODO: probably remove this (we won't have favorites)
-    m_CallbackFavoritesMsg(this, &CBaseMapsPage::OnFavoritesMsg)
-#endif
 {
     SetSize(624, 278);
-    //m_szGameFilter[0] = 0;
 
+    
     m_iGameModeFilter = 0;
     m_szMapFilter[0] = 0;
     m_iDifficultyFilter = 0;
     m_bFilterHideCompleted = false;
     m_bFilterMapHasStages = false;
     m_iServerRefreshCount = 0;
-    //m_bFilterNoFullServers = false;
-    //m_bFilterNoEmptyServers = false;
-    //m_bFilterNoPasswordedServers = false;
-    //m_iSecureFilter = FILTER_ALLSERVERS;
-    m_iLimitToAppID = 0;
+
     m_hFont = NULL;
-    //m_eMatchMakingType = eType;
-    //SetDefLessFunc(m_mapServers);
-    //SetDefLessFunc(m_mapServerIP);
 
     // get the 'all' text
     wchar_t *all = g_pVGuiLocalize->Find("#MOM_MapSelector_All");
@@ -73,39 +60,34 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
     m_pStartMap->SetEnabled(false);
     m_pRefreshAll = new Button(this, "RefreshButton", "#ServerBrowser_Refresh");//Needed for online maps
     m_pRefreshQuick = new Button(this, "RefreshQuickButton", "#ServerBrowser_RefreshQuick");//Needed for online maps
-    m_pAddServer = new Button(this, "AddServerButton", "#ServerBrowser_AddServer");//MOM_TODO: This could be repurposed to "download map"
-    m_pAddCurrentServer = new Button(this, "AddCurrentServerButton", "#ServerBrowser_AddCurrentServer");
     m_pGameList = new CGameListPanel(this, "gamelist");
     m_pGameList->SetAllowUserModificationOfColumns(true);
-
-    m_pAddToFavoritesButton = new vgui::Button(this, "AddToFavoritesButton", "");
-    m_pAddToFavoritesButton->SetEnabled(false);
-    m_pAddToFavoritesButton->SetVisible(false);
-
+    
     // Add the column headers
-    m_pGameList->AddColumnHeader(0, "Password", "#ServerBrowser_Password", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);//Don't need
-    m_pGameList->AddColumnHeader(1, "Bots", "#ServerBrowser_Bots", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_HIDDEN);//Don't need
-    m_pGameList->AddColumnHeader(2, "Secure", "#ServerBrowser_Secure", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);//Don't need
-    m_pGameList->AddColumnHeader(3, "Name", "#ServerBrowser_Servers", 50, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);
-    m_pGameList->AddColumnHeader(4, "IPAddr", "#ServerBrowser_IPAddress", 64, ListPanel::COLUMN_HIDDEN);
-    m_pGameList->AddColumnHeader(5, "GameDesc", "#ServerBrowser_Game", 112,
+    m_pGameList->AddColumnHeader(0, "HasCompleted", "#MOM_MapSelector_Completed", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
+    //m_pGameList->AddColumnHeader(1, "Bots", "#ServerBrowser_Bots", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_HIDDEN);//Don't need
+    //m_pGameList->AddColumnHeader(2, "Secure", "#ServerBrowser_Secure", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);//Don't need
+    m_pGameList->AddColumnHeader(1, "Name", "#MOM_MapSelector_Maps", 50, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);//Map name column
+    //m_pGameList->AddColumnHeader(4, "IPAddr", "#ServerBrowser_IPAddress", 64, ListPanel::COLUMN_HIDDEN);
+    m_pGameList->AddColumnHeader(2, "gamemode", "#MOM_MapSelector_GameMode", 112,
         112,	// minwidth
         300,	// maxwidth
         0		// flags
         );
-    m_pGameList->AddColumnHeader(6, "Players", "#ServerBrowser_Players", 55, ListPanel::COLUMN_FIXEDSIZE);
-    m_pGameList->AddColumnHeader(7, "Map", "#ServerBrowser_Map", 90,
+    m_pGameList->AddColumnHeader(3, "difficulty", "#MOM_MapSelector_Difficulty", 55, 0);//ListPanel::COLUMN_FIXEDSIZE);
+    m_pGameList->AddColumnHeader(4, "time", "#MOM_MapSelector_BestTime", 90,
         90,		// minwidth
         300,	// maxwidth
         0		// flags
         );
-    m_pGameList->AddColumnHeader(8, "Ping", "#ServerBrowser_Latency", 55, ListPanel::COLUMN_FIXEDSIZE);
-
+    //m_pGameList->AddColumnHeader(8, "Ping", "#ServerBrowser_Latency", 55, ListPanel::COLUMN_FIXEDSIZE);
+    
     //Tooltips
-    m_pGameList->SetColumnHeaderTooltip(0, "#ServerBrowser_PasswordColumn_Tooltip");
-    m_pGameList->SetColumnHeaderTooltip(1, "#ServerBrowser_BotColumn_Tooltip");
-    m_pGameList->SetColumnHeaderTooltip(2, "#ServerBrowser_SecureColumn_Tooltip");
-
+    m_pGameList->SetColumnHeaderTooltip(0, "#MOM_MapSelector_Completed_Tooltip");
+    //MOM_TODO: do we want more tooltips?
+    //m_pGameList->SetColumnHeaderTooltip(1, "#ServerBrowser_BotColumn_Tooltip");
+    //m_pGameList->SetColumnHeaderTooltip(2, "#ServerBrowser_SecureColumn_Tooltip");
+    
     // setup fast sort functions
     //MOM_TODO: Make sorting by map names, difficulty, all of the columns
     /*
@@ -138,7 +120,7 @@ CBaseMapsPage::~CBaseMapsPage()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int CBaseMapsPage::GetInvalidServerListID()
+int CBaseMapsPage::GetInvalidMapListID()
 {
     return m_pGameList->InvalidItemID();
 }
@@ -168,26 +150,8 @@ void CBaseMapsPage::PerformLayout()
     else
     {
         m_pRefreshQuick->SetVisible(false);
+        m_pRefreshAll->SetVisible(false);//Because local maps won't be searching
         m_pRefreshAll->SetText("#ServerBrowser_Refresh");
-    }
-
-    if (SupportsItem(IMapList::ADDSERVER))
-    {
-        m_pFilterString->SetWide(90); // shrink the filter label to fix the add current server button
-        m_pAddServer->SetVisible(true);
-    }
-    else
-    {
-        m_pAddServer->SetVisible(false);
-    }
-
-    if (SupportsItem(IMapList::ADDCURRENTSERVER))
-    {
-        m_pAddCurrentServer->SetVisible(true);
-    }
-    else
-    {
-        m_pAddCurrentServer->SetVisible(false);
     }
 
     if (IsRefreshing())
@@ -203,16 +167,14 @@ void CBaseMapsPage::PerformLayout()
     {
         m_pRefreshQuick->SetEnabled(false);
     }
+    m_pGameList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 #ifndef NO_STEAM
     //if (!SteamMatchmakingServers() || !SteamMatchmaking())
     {
-        m_pAddCurrentServer->SetVisible(false);
         m_pRefreshQuick->SetEnabled(false);
-        m_pAddServer->SetEnabled(false);
         m_pStartMap->SetEnabled(false);
         m_pRefreshAll->SetEnabled(false);
-        m_pAddToFavoritesButton->SetEnabled(false);
-        m_pGameList->SetEmptyListText("#ServerBrowser_SteamRunning");
+        //m_pGameList->SetEmptyListText("#ServerBrowser_SteamRunning");
     }
 #endif
     Repaint();
@@ -230,32 +192,35 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 
     // load the password icon
     ImageList *imageList = new ImageList(false);
+    //MOM_TODO: Load custom images for the map selector
     imageList->AddImage(scheme()->GetImage("servers/icon_password", false));
-    imageList->AddImage(scheme()->GetImage("servers/icon_bots", false));
-    imageList->AddImage(scheme()->GetImage("servers/icon_robotron", false));
-    imageList->AddImage(scheme()->GetImage("servers/icon_secure_deny", false));
+    //imageList->AddImage(scheme()->GetImage("servers/icon_bots", false));
+    //imageList->AddImage(scheme()->GetImage("servers/icon_robotron", false));
+    //imageList->AddImage(scheme()->GetImage("servers/icon_secure_deny", false));
 
     int passwordColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_password_column", false));
-    int botColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_bots_column", false));
-    int secureColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_robotron_column", false));
-
+    ///int botColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_bots_column", false));
+    ///int secureColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_robotron_column", false));
     m_pGameList->SetImageList(imageList, true);
+    m_pGameList->SetColumnHeaderImage(0, passwordColumnImage);
+
+    //Font
     m_hFont = pScheme->GetFont("ListSmall", IsProportional());
     if (!m_hFont)
         m_hFont = pScheme->GetFont("DefaultSmall", IsProportional());
 
     m_pGameList->SetFont(m_hFont);
-    m_pGameList->SetColumnHeaderImage(0, passwordColumnImage);
-    m_pGameList->SetColumnHeaderImage(1, botColumnImage);
-    m_pGameList->SetColumnHeaderImage(2, secureColumnImage);
+    
+    //m_pGameList->SetColumnHeaderImage(1, botColumnImage);
+    //m_pGameList->SetColumnHeaderImage(2, secureColumnImage);
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: gets information about specified server
+// Purpose: gets information about specified map
 //-----------------------------------------------------------------------------
 mapstruct_t *CBaseMapsPage::GetMap(unsigned int serverID)
 {
-    //MOM_TODO: Update this to be GetMap()
+    //MOM_TODO: This may not be needed
     /*
 #ifndef NO_STEAM
     if (!SteamMatchmakingServers())
@@ -289,10 +254,9 @@ void CBaseMapsPage::CreateFilters()
     m_pGameModeFilter->AddItem("#MOM_MapSelector_All", NULL);//All
     m_pGameModeFilter->AddItem("#MOM_MapSelector_SurfOnly", NULL);//Surf only
     m_pGameModeFilter->AddItem("#MOM_MapSelector_BhopOnly", NULL);//Bhop only
+    m_pGameModeFilter->AddActionSignalTarget(this);
     //MOM_TODO: add extra game mode filter types
 
-    //m_pLocationFilter = new ComboBox(this, "LocationFilter", 6, false);//Not needed?
-    //m_pLocationFilter->AddItem("", NULL);
 
     m_pMapFilter = new TextEntry(this, "MapFilter");//As-is, people can search by map name
     m_pMapFilter->AddActionSignalTarget(this);
@@ -304,11 +268,13 @@ void CBaseMapsPage::CreateFilters()
     m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff4", NULL);//etc
     m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff5", NULL);//etc
     m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff6", NULL);//MOM_TODO: Is "tier 6" difficulty the highest?
-
+    m_pDifficultyFilter->AddActionSignalTarget(this);
 
     //MOM_TODO: 
     m_pHideCompletedFilterCheck = new CheckButton(this, "HideCompletedFilterCheck", ""); //for Maps the player has not completed
-    m_pMapHasStagesFilterCheck = new CheckButton(this, "HasStagesFilterCheck", ""); //for maps that have stages
+    m_pHideCompletedFilterCheck->AddActionSignalTarget(this);
+    m_pMapHasStagesFilterCheck = new CheckButton(this, "HasStagesFilterCheck", ""); //TODO update to ComboBox
+    m_pMapHasStagesFilterCheck->AddActionSignalTarget(this);
     //Remove the below
     //m_pNoEmptyServersFilterCheck = new CheckButton(this, "ServerEmptyFilterCheck", "");
     //m_pNoFullServersFilterCheck = new CheckButton(this, "ServerFullFilterCheck", "");
@@ -334,19 +300,8 @@ void CBaseMapsPage::LoadFilterSettings()
     KeyValues *filter = MapSelectorDialog().GetFilterSaveData(GetName());
 
     //Game-mode selection
-    m_iGameModeFilter = m_pGameModeFilter->GetActiveItem();
-
-    //MOM_TODO: This is old Game selection, remove this code upon tab completion!
-    /*if (MapSelectorDialog().GetActiveModName())
-    {
-    Q_strncpy(m_szGameFilter, MapSelectorDialog().GetActiveModName(), sizeof(m_szGameFilter));
-    m_iLimitToAppID = MapSelectorDialog().GetActiveAppID();
-    }
-    else
-    {
-    Q_strncpy(m_szGameFilter, filter->GetString("game"), sizeof(m_szGameFilter));
-    m_iLimitToAppID = filter->GetInt("appid", 0);
-    }*/
+    m_iGameModeFilter = filter->GetInt("gamemode", 0);
+    m_pGameModeFilter->ActivateItemByRow(m_iGameModeFilter);
 
     //"Map"
     Q_strncpy(m_szMapFilter, filter->GetString("map"), sizeof(m_szMapFilter));
@@ -360,18 +315,6 @@ void CBaseMapsPage::LoadFilterSettings()
     m_bFilterHideCompleted = filter->GetBool("HideCompleted", false);
     m_pHideCompletedFilterCheck->SetSelected(m_bFilterHideCompleted);
 
-    //m_bFilterNoEmptyServers = filter->GetInt("NoEmpty");
-    //m_bFilterNoPasswordedServers = filter->GetInt("NoPassword");
-
-    //int secureFilter = filter->GetInt("Secure");
-    //m_pSecureFilter->ActivateItem(secureFilter);
-
-    // apply to the controls
-    UpdateGameFilter();
-
-
-    //m_pLocationFilter->ActivateItem(filter->GetInt("location"));
-
     //Difficulty
     m_iDifficultyFilter = filter->GetInt("difficulty");
     if (m_iDifficultyFilter)
@@ -381,53 +324,10 @@ void CBaseMapsPage::LoadFilterSettings()
         m_pDifficultyFilter->SetText(buf);
     }
 
-    //m_pNoFullServersFilterCheck->SetSelected(m_bFilterNoFullServers);
-    //m_pNoEmptyServersFilterCheck->SetSelected(m_bFilterNoEmptyServers);
-    //m_pNoPasswordFilterCheck->SetSelected(m_bFilterNoPasswordedServers);
-
+    // apply to the controls
     OnLoadFilter(filter);
     UpdateFilterSettings();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Sets the game filter combo box to be the saved setting
-//-----------------------------------------------------------------------------
-//MOM_TODO: The old "Game" filter was changed to be "Game Mode" (all/surf/bhop/etc), 
-//so remove/update this method to accurately fit!
-void CBaseMapsPage::UpdateGameFilter()
-{
-    /*bool bFound = false;
-    for (int i = 0; i < m_pGameFilter->GetItemCount(); i++)
-    {
-    KeyValues *kv = m_pGameFilter->GetItemUserData(i);
-    int iAppID = kv->GetInt("appID", 0);
-    const char *pchGameDir = kv->GetString("gamedir");
-    if (iAppID == m_iLimitToAppID && (!m_szGameFilter[0] || !Q_strncmp(pchGameDir, m_szGameFilter, Q_strlen(pchGameDir))))
-    {
-    if (i != m_pGameFilter->GetActiveItem())
-    {
-    m_pGameFilter->ActivateItem(i);
-    }
-    bFound = true;
-    break;
-    }
-    }
-    if (!bFound)
-    {
-    // default to empty
-    if (0 != m_pGameFilter->GetActiveItem())
-    {
-    m_pGameFilter->ActivateItem(0);
-    }
-    }
-
-    // only one mod is allowed in the game
-    //MOM_TODO: THIS IS IMPLIED! Remove the below!
-    /*if (MapSelectorDialog().GetActiveModName())
-    {
-    m_pGameFilter->SetEnabled(false);
-    m_pGameFilter->SetText(MapSelectorDialog().GetActiveGameName());
-    }*/
+    ApplyGameFilters();
 }
 
 //-----------------------------------------------------------------------------
@@ -460,144 +360,6 @@ ServerResponded(iServer, pServerItem);
 #endif
 }*/
 
-//Used by LocalMaps.cpp to show maps on the page,
-//Usually only called once per lifetime of a MapSelectorDialog being opened
-void CBaseMapsPage::UpdateLocalMaps()
-{
-    FOR_EACH_VEC(m_vecMaps, i)
-    {
-        mapdisplay_t *pMap = &m_vecMaps[0];
-        if (!pMap) continue;
-        mapstruct_t pMapInfo = pMap->m_mMap;
-        // check filters
-        bool removeItem = false;
-        if (!CheckPrimaryFilters(pMapInfo))
-        {
-            // server has been filtered at a primary level
-            // remove from lists
-            pMap->m_bDoNotRefresh = true;
-
-            // remove from UI list
-            removeItem = true;
-        }
-        else if (!CheckSecondaryFilters(pMapInfo))
-        {
-            // we still ping this server in the future; however it is removed from UI list
-            removeItem = true;
-        }
-
-        if (removeItem)
-        {
-            if (m_pGameList->IsValidItemID(pMap->m_iListID))
-            {
-                m_pGameList->RemoveItem(pMap->m_iListID);
-                pMap->m_iListID = GetInvalidServerListID();
-            }
-            return;
-        }
-
-        // update UI
-        KeyValues *kv;
-        if (m_pGameList->IsValidItemID(pMap->m_iListID))
-        {
-            // we're updating an existing entry
-            kv = m_pGameList->GetItem(pMap->m_iListID);
-            //m_pGameList->SetUserData(pMap->m_iListID, pMap->m_iServerID);
-        }
-        else
-        {
-            // new entry
-            kv = new KeyValues("Map");
-        }
-
-        kv->SetString("Name", pMapInfo.m_szMapName);//MOM_TODO: eventually remove one of these "name" or "map"
-        kv->SetString("Map", pMapInfo.m_szMapName);
-        //MOM_TODO: have these correspond to columns
-        kv->SetBool("HasStages", pMapInfo.m_bHasStages);
-        kv->SetBool("completed", pMapInfo.m_bCompleted);
-        kv->SetInt("difficulty", pMapInfo.m_iDifficulty);
-        kv->SetInt("gamemode", pMapInfo.m_iGameMode);
-        kv->SetString("time", pMapInfo.m_szBestTime);
-
-        //kv->SetString("GameDir", pServerItem->m_szGameDir);
-        //kv->SetString("GameDesc", pServerItem->m_szGameDescription);
-        //kv->SetInt("password", pServerItem->m_bPassword ? 1 : 0);
-
-        //if (pServerItem->m_nBotPlayers > 0)
-        //    kv->SetInt("bots", pServerItem->m_nBotPlayers);
-        //else
-        //    kv->SetString("bots", "");
-
-        //if (pServerItem->m_bSecure)
-        //{
-        // show the denied icon if banned from secure servers, the secure icon otherwise
-        //    kv->SetInt("secure", ServerBrowser().IsVACBannedFromGame(pServerItem->m_nAppID) ? 4 : 3);
-        //}
-        //else
-        //{
-        //    kv->SetInt("secure", 0);
-        //}
-
-        //kv->SetString("IPAddr", pServerItem->m_NetAdr.GetConnectionAddressString());
-
-        /*int nAdjustedForBotsPlayers = max(0, pServerItem->m_nPlayers - pServerItem->m_nBotPlayers);
-        int nAdjustedForBotsMaxPlayers = max(0, pServerItem->m_nMaxPlayers - pServerItem->m_nBotPlayers);
-
-        char buf[32];
-        Q_snprintf(buf, sizeof(buf), "%d / %d", nAdjustedForBotsPlayers, nAdjustedForBotsMaxPlayers);
-        kv->SetString("Players", buf);
-
-        kv->SetInt("Ping", pServerItem->m_nPing);
-
-        kv->SetString("Tags", pServerItem->m_szGameTags);
-
-        if (pServerItem->m_ulTimeLastPlayed)
-        {
-            // construct a time string for last played time
-            struct tm *now;
-            now = localtime((time_t*) &pServerItem->m_ulTimeLastPlayed);
-
-            if (now)
-            {
-                char buf[64];
-                strftime(buf, sizeof(buf), "%a %d %b %I:%M%p", now);
-                Q_strlower(buf + strlen(buf) - 4);
-                kv->SetString("LastPlayed", buf);
-            }
-        }*/
-
-        if (pMap->m_bDoNotRefresh)
-        {
-            // clear out the vars
-            kv->SetString("Ping", "");
-            kv->SetWString("GameDesc", g_pVGuiLocalize->Find("#ServerBrowser_NotResponding"));
-            kv->SetString("Players", "");
-            //kv->SetString("Map", "");
-        }
-
-        if (!m_pGameList->IsValidItemID(pMap->m_iListID))
-        {
-            // new server, add to list
-           // pMap->m_iServerID = (int) pMapInfo.m_szMapName;
-            pMap->m_iListID = m_pGameList->AddItem(kv, /*pMap->m_iServerID*/ 0, false, false);
-            if (m_bAutoSelectFirstItemInGameList && m_pGameList->GetItemCount() == 1)
-            {
-                m_pGameList->AddSelectedItem(pMap->m_iListID);
-            }
-
-            kv->deleteThis();
-        }
-        else
-        {
-            // tell the list that we've changed the data
-            m_pGameList->ApplyItemChanges(pMap->m_iListID);
-            m_pGameList->SetItemVisible(pMap->m_iListID, true);
-        }
-
-    }
-
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Handles incoming server refresh data
@@ -613,155 +375,155 @@ void CBaseMapsPage::UpdateLocalMaps()
 //********
 /*void CBaseMapsPage::ServerResponded(int iServer, gameserveritem_t *pServerItem)
 {
-    int iServerMap = m_mapServers.Find(iServer);
-    if (iServerMap == m_mapServers.InvalidIndex())
-    {
-        netadr_t netAdr(pServerItem->m_NetAdr.GetIP(), pServerItem->m_NetAdr.GetQueryPort());
-        int iServerIP = m_mapServerIP.Find(netAdr);
-        if (iServerIP != m_mapServerIP.InvalidIndex())
-        {
-            // if we already had this entry under another index remove the old entry
-            int iServerMap = m_mapServers.Find(m_mapServerIP[iServerIP]);
-            if (iServerMap != m_mapServers.InvalidIndex())
-            {
-                serverdisplay_t &server = m_mapServers[iServerMap];
-                if (m_pGameList->IsValidItemID(server.m_iListID))
-                    m_pGameList->RemoveItem(server.m_iListID);
-                m_mapServers.RemoveAt(iServerMap);
-            }
-            m_mapServerIP.RemoveAt(iServerIP);
-        }
+int iServerMap = m_mapServers.Find(iServer);
+if (iServerMap == m_mapServers.InvalidIndex())
+{
+netadr_t netAdr(pServerItem->m_NetAdr.GetIP(), pServerItem->m_NetAdr.GetQueryPort());
+int iServerIP = m_mapServerIP.Find(netAdr);
+if (iServerIP != m_mapServerIP.InvalidIndex())
+{
+// if we already had this entry under another index remove the old entry
+int iServerMap = m_mapServers.Find(m_mapServerIP[iServerIP]);
+if (iServerMap != m_mapServers.InvalidIndex())
+{
+serverdisplay_t &server = m_mapServers[iServerMap];
+if (m_pGameList->IsValidItemID(server.m_iListID))
+m_pGameList->RemoveItem(server.m_iListID);
+m_mapServers.RemoveAt(iServerMap);
+}
+m_mapServerIP.RemoveAt(iServerIP);
+}
 
-        serverdisplay_t serverFind;
-        serverFind.m_iListID = -1;
-        serverFind.m_bDoNotRefresh = false;
-        iServerMap = m_mapServers.Insert(iServer, serverFind); // MOM_TODO : ADDS TO
-            m_mapServerIP.Insert(netAdr, iServer);
-    }
+serverdisplay_t serverFind;
+serverFind.m_iListID = -1;
+serverFind.m_bDoNotRefresh = false;
+iServerMap = m_mapServers.Insert(iServer, serverFind); // MOM_TODO : ADDS TO
+m_mapServerIP.Insert(netAdr, iServer);
+}
 
-    serverdisplay_t *pServer = &m_mapServers[iServerMap];
-    pServer->m_iServerID = iServer;
-    Assert(pServerItem->m_NetAdr.GetIP() != 0);
+serverdisplay_t *pServer = &m_mapServers[iServerMap];
+pServer->m_iServerID = iServer;
+Assert(pServerItem->m_NetAdr.GetIP() != 0);
 
-    // check filters
-    bool removeItem = false;
-    if (!CheckPrimaryFilters(*pServerItem))
-    {
-        // server has been filtered at a primary level
-        // remove from lists
-        pServer->m_bDoNotRefresh = true;
+// check filters
+bool removeItem = false;
+if (!CheckPrimaryFilters(*pServerItem))
+{
+// server has been filtered at a primary level
+// remove from lists
+pServer->m_bDoNotRefresh = true;
 
-        // remove from UI list
-        removeItem = true;
-    }
-    else if (!CheckSecondaryFilters(*pServerItem))
-    {
-        // we still ping this server in the future; however it is removed from UI list
-        removeItem = true;
-    }
+// remove from UI list
+removeItem = true;
+}
+else if (!CheckSecondaryFilters(*pServerItem))
+{
+// we still ping this server in the future; however it is removed from UI list
+removeItem = true;
+}
 
-    if (removeItem)
-    {
-        if (m_pGameList->IsValidItemID(pServer->m_iListID))
-        {
-            m_pGameList->RemoveItem(pServer->m_iListID);
-            pServer->m_iListID = GetInvalidServerListID();
-        }
-        return;
-    }
+if (removeItem)
+{
+if (m_pGameList->IsValidItemID(pServer->m_iListID))
+{
+m_pGameList->RemoveItem(pServer->m_iListID);
+pServer->m_iListID = GetInvalidServerListID();
+}
+return;
+}
 
-    // update UI
-    KeyValues *kv;
-    if (m_pGameList->IsValidItemID(pServer->m_iListID))
-    {
-        // we're updating an existing entry
-        kv = m_pGameList->GetItem(pServer->m_iListID);
-        m_pGameList->SetUserData(pServer->m_iListID, pServer->m_iServerID);
-    }
-    else
-    {
-        // new entry
-        kv = new KeyValues("Server");
-    }
+// update UI
+KeyValues *kv;
+if (m_pGameList->IsValidItemID(pServer->m_iListID))
+{
+// we're updating an existing entry
+kv = m_pGameList->GetItem(pServer->m_iListID);
+m_pGameList->SetUserData(pServer->m_iListID, pServer->m_iServerID);
+}
+else
+{
+// new entry
+kv = new KeyValues("Server");
+}
 
-    kv->SetString("name", pServerItem->GetName());
-    kv->SetString("map", pServerItem->m_szMap);
-    kv->SetString("GameDir", pServerItem->m_szGameDir);
-    kv->SetString("GameDesc", pServerItem->m_szGameDescription);
-    kv->SetInt("password", pServerItem->m_bPassword ? 1 : 0);
+kv->SetString("name", pServerItem->GetName());
+kv->SetString("map", pServerItem->m_szMap);
+kv->SetString("GameDir", pServerItem->m_szGameDir);
+kv->SetString("GameDesc", pServerItem->m_szGameDescription);
+kv->SetInt("password", pServerItem->m_bPassword ? 1 : 0);
 
-    if (pServerItem->m_nBotPlayers > 0)
-        kv->SetInt("bots", pServerItem->m_nBotPlayers);
-    else
-        kv->SetString("bots", "");
+if (pServerItem->m_nBotPlayers > 0)
+kv->SetInt("bots", pServerItem->m_nBotPlayers);
+else
+kv->SetString("bots", "");
 
-    //if (pServerItem->m_bSecure)
-    //{
-    // show the denied icon if banned from secure servers, the secure icon otherwise
-    //    kv->SetInt("secure", ServerBrowser().IsVACBannedFromGame(pServerItem->m_nAppID) ? 4 : 3);
-    //}
-    //else
-    {
-        kv->SetInt("secure", 0);
-    }
+//if (pServerItem->m_bSecure)
+//{
+// show the denied icon if banned from secure servers, the secure icon otherwise
+//    kv->SetInt("secure", ServerBrowser().IsVACBannedFromGame(pServerItem->m_nAppID) ? 4 : 3);
+//}
+//else
+{
+kv->SetInt("secure", 0);
+}
 
-    kv->SetString("IPAddr", pServerItem->m_NetAdr.GetConnectionAddressString());
+kv->SetString("IPAddr", pServerItem->m_NetAdr.GetConnectionAddressString());
 
-    int nAdjustedForBotsPlayers = max(0, pServerItem->m_nPlayers - pServerItem->m_nBotPlayers);
-    int nAdjustedForBotsMaxPlayers = max(0, pServerItem->m_nMaxPlayers - pServerItem->m_nBotPlayers);
+int nAdjustedForBotsPlayers = max(0, pServerItem->m_nPlayers - pServerItem->m_nBotPlayers);
+int nAdjustedForBotsMaxPlayers = max(0, pServerItem->m_nMaxPlayers - pServerItem->m_nBotPlayers);
 
-    char buf[32];
-    Q_snprintf(buf, sizeof(buf), "%d / %d", nAdjustedForBotsPlayers, nAdjustedForBotsMaxPlayers);
-    kv->SetString("Players", buf);
+char buf[32];
+Q_snprintf(buf, sizeof(buf), "%d / %d", nAdjustedForBotsPlayers, nAdjustedForBotsMaxPlayers);
+kv->SetString("Players", buf);
 
-    kv->SetInt("Ping", pServerItem->m_nPing);
+kv->SetInt("Ping", pServerItem->m_nPing);
 
-    kv->SetString("Tags", pServerItem->m_szGameTags);
+kv->SetString("Tags", pServerItem->m_szGameTags);
 
-    if (pServerItem->m_ulTimeLastPlayed)
-    {
-        // construct a time string for last played time
-        struct tm *now;
-        now = localtime((time_t*) &pServerItem->m_ulTimeLastPlayed);
+if (pServerItem->m_ulTimeLastPlayed)
+{
+// construct a time string for last played time
+struct tm *now;
+now = localtime((time_t*) &pServerItem->m_ulTimeLastPlayed);
 
-        if (now)
-        {
-            char buf[64];
-            strftime(buf, sizeof(buf), "%a %d %b %I:%M%p", now);
-            Q_strlower(buf + strlen(buf) - 4);
-            kv->SetString("LastPlayed", buf);
-        }
-    }
+if (now)
+{
+char buf[64];
+strftime(buf, sizeof(buf), "%a %d %b %I:%M%p", now);
+Q_strlower(buf + strlen(buf) - 4);
+kv->SetString("LastPlayed", buf);
+}
+}
 
-    if (pServer->m_bDoNotRefresh)
-    {
-        // clear out the vars
-        kv->SetString("Ping", "");
-        kv->SetWString("GameDesc", g_pVGuiLocalize->Find("#ServerBrowser_NotResponding"));
-        kv->SetString("Players", "");
-        kv->SetString("map", "");
-    }
+if (pServer->m_bDoNotRefresh)
+{
+// clear out the vars
+kv->SetString("Ping", "");
+kv->SetWString("GameDesc", g_pVGuiLocalize->Find("#ServerBrowser_NotResponding"));
+kv->SetString("Players", "");
+kv->SetString("map", "");
+}
 
-    if (!m_pGameList->IsValidItemID(pServer->m_iListID))
-    {
-        // new server, add to list
-        pServer->m_iListID = m_pGameList->AddItem(kv, pServer->m_iServerID, false, false);
-        if (m_bAutoSelectFirstItemInGameList && m_pGameList->GetItemCount() == 1)
-        {
-            m_pGameList->AddSelectedItem(pServer->m_iListID);
-        }
+if (!m_pGameList->IsValidItemID(pServer->m_iListID))
+{
+// new server, add to list
+pServer->m_iListID = m_pGameList->AddItem(kv, pServer->m_iServerID, false, false);
+if (m_bAutoSelectFirstItemInGameList && m_pGameList->GetItemCount() == 1)
+{
+m_pGameList->AddSelectedItem(pServer->m_iListID);
+}
 
-        kv->deleteThis();
-    }
-    else
-    {
-        // tell the list that we've changed the data
-        m_pGameList->ApplyItemChanges(pServer->m_iListID);
-        m_pGameList->SetItemVisible(pServer->m_iListID, true);
-    }
+kv->deleteThis();
+}
+else
+{
+// tell the list that we've changed the data
+m_pGameList->ApplyItemChanges(pServer->m_iListID);
+m_pGameList->SetItemVisible(pServer->m_iListID, true);
+}
 
-    UpdateStatus();
-    m_iServerRefreshCount++;
+UpdateStatus();
+m_iServerRefreshCount++;
 }*/
 
 //-----------------------------------------------------------------------------
@@ -794,7 +556,6 @@ void CBaseMapsPage::OnButtonToggled(Panel *panel, int state)
 
         UpdateDerivedLayouts();
         m_pFilter->SetSelected(m_bFiltersVisible);
-        UpdateGameFilter();
 
         if (m_hFont)
         {
@@ -806,7 +567,7 @@ void CBaseMapsPage::OnButtonToggled(Panel *panel, int state)
 
         InvalidateLayout();
     }
-    else if (panel == m_pMapHasStagesFilterCheck || panel == m_pHideCompletedFilterCheck)// || panel == m_pNoPasswordFilterCheck)
+    else if (panel == m_pMapHasStagesFilterCheck || panel == m_pHideCompletedFilterCheck)
     {
         // treat changing these buttons like any other filter has changed
         OnTextChanged(panel, "");
@@ -819,7 +580,7 @@ void CBaseMapsPage::OnButtonToggled(Panel *panel, int state)
 void CBaseMapsPage::UpdateDerivedLayouts(void)
 {
     char rgchControlSettings[MAX_PATH];
-    if (m_pCustomResFilename)
+    if (m_pCustomResFilename)//MOM_TODO: this will never be custom, look into removing this?
     {
         Q_snprintf(rgchControlSettings, sizeof(rgchControlSettings), "%s", m_pCustomResFilename);
     }
@@ -828,12 +589,12 @@ void CBaseMapsPage::UpdateDerivedLayouts(void)
         if (m_pFilter->IsSelected())
         {
             // drop down
-            Q_snprintf(rgchControlSettings, sizeof(rgchControlSettings), "resource/ui/%sPage_Filters.res", "LocalMaps");
+            Q_snprintf(rgchControlSettings, sizeof(rgchControlSettings), "resource/ui/%sPage_Filters.res", GetName());
         }
         else
         {
             // hide filter area
-            Q_snprintf(rgchControlSettings, sizeof(rgchControlSettings), "resource/ui/%sPage.res", "LocalMaps");
+            Q_snprintf(rgchControlSettings, sizeof(rgchControlSettings), "resource/ui/%sPage.res", GetName());
         }
     }
 
@@ -857,16 +618,16 @@ void CBaseMapsPage::OnTextChanged(Panel *panel, const char *text)
 
     // get filter settings from controls
     UpdateFilterSettings();
-
     // apply settings
     ApplyGameFilters();
 
     if (m_bFiltersVisible && (panel == m_pGameModeFilter || panel == m_pDifficultyFilter || panel == m_pMapFilter))
     {
-        // if they changed games and/or region then cancel the refresh because the old list they are getting
-        // will be for the wrong game, so stop and start a refresh
+        // if they changed filter settings then cancel the refresh because the old list they are getting
+        // will be for the wrong map or gametype, so stop and start a refresh
         StopRefresh();
-        GetNewServerList();
+        //If the filters have changed, we'll want to send a new request with the new data
+        //MOM_TODO: uncomment this: StartRefresh()
     }
 }
 
@@ -875,12 +636,12 @@ void CBaseMapsPage::OnTextChanged(Panel *panel, const char *text)
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::ApplyGameFilters()
 {
-    // loop through all the servers checking filters
+    // loop through all the maps checking filters
     FOR_EACH_VEC(m_vecMaps, i)
     {
         mapdisplay_t &map = m_vecMaps[i];
         mapstruct_t* mapinfo = &map.m_mMap;
-        Log("CURRENTLY FILTERING %s\n", mapinfo->m_szMapName);
+        DevLog("CURRENTLY FILTERING %s\n", mapinfo->m_szMapName);
         if (!CheckPrimaryFilters(*mapinfo) || !CheckSecondaryFilters(*mapinfo))//MOM_TODO: change this to just one filter check?
         {
             //Failed filters, remove the map
@@ -890,114 +651,28 @@ void CBaseMapsPage::ApplyGameFilters()
                 m_pGameList->SetItemVisible(map.m_iListID, false);
             }
         }
-        else if (BShowServer(map))//MOM_TODO: Rename to BShowMap (if we even need this function?)
+        else if (BShowMap(map))
         {
             map.m_bDoNotRefresh = false;
             if (!m_pGameList->IsValidItemID(map.m_iListID))
             {
-                Log("ADDING MAP TO LIST! %s\n ", mapinfo->m_szMapName);
+                DevLog("ADDING MAP TO LIST! %s\n ", mapinfo->m_szMapName);
                 KeyValues *kv = new KeyValues("Map");
                 kv->SetString("name", mapinfo->m_szMapName);
                 kv->SetString("map", mapinfo->m_szMapName);
                 kv->SetInt("gamemode", mapinfo->m_iGameMode);
+                kv->SetInt("difficulty", mapinfo->m_iDifficulty);
                 kv->SetBool("HasStages", mapinfo->m_bHasStages);
+                kv->SetBool("HasCompleted", mapinfo->m_bCompleted);
                 kv->SetString("time", mapinfo->m_szBestTime); //or something
-                //MOM_TODO: Fill the kv with all of mapstruct_t's info EXCLUDING the filter terms!
 
-                //kv->SetString("GameDir", pServer->m_szGameDir);
-                //MOM_TODO: Do we want some sort of description for the map?
-                /*if (pServer->m_szGameDescription[0])
-                {
-                kv->SetString("GameDesc", pServer->m_szGameDescription);
-                }
-                else
-                {
-                kv->SetWString("GameDesc", g_pVGuiLocalize->Find("#ServerBrowser_PendingPing"));
-                }
-
-                int nAdjustedForBotsPlayers = max(0, pServer->m_nPlayers - pServer->m_nBotPlayers);
-                int nAdjustedForBotsMaxPlayers = max(0, pServer->m_nMaxPlayers - pServer->m_nBotPlayers);
-
-                char buf[256];
-                Q_snprintf(buf, sizeof(buf), "%d / %d", nAdjustedForBotsPlayers, nAdjustedForBotsMaxPlayers);
-                kv->SetString("Players", buf);
-                kv->SetInt("Ping", pServer->m_nPing);
-                kv->SetInt("password", pServer->m_bPassword ? 1 : 0);
-                if (pServer->m_nBotPlayers > 0)
-                kv->SetInt("bots", pServer->m_nBotPlayers);
-                else
-                kv->SetString("bots", "");*/
-                //map.m_iServerID = (int) mapinfo->m_szMapName;
-                //Log("m_iServerID IS %i\n", map.m_iServerID);
-                map.m_iListID = m_pGameList->AddItem(kv, 0/*map.m_iServerID*/, false, false);
+                map.m_iListID = m_pGameList->AddItem(kv, NULL, false, false);
                 kv->deleteThis();
             }
             // make sure the map is visible
             m_pGameList->SetItemVisible(map.m_iListID, true);
         }
     }
-
-
-    /*FOR_EACH_MAP_FAST(m_mapServers, i)
-    {
-    serverdisplay_t &server = m_mapServers[i];
-    gameserveritem_t *pServer = SteamMatchmakingServers()->GetServerDetails(m_eMatchMakingType, server.m_iServerID);
-    if (!pServer)
-    continue;
-
-    if (!CheckPrimaryFilters(*pServer) || !CheckSecondaryFilters(*pServer))
-    {
-    // server failed filtering, remove it
-    server.m_bDoNotRefresh = true;
-    if (m_pGameList->IsValidItemID(server.m_iListID))
-    {
-    // don't remove the server from list, just hide since this is a lot faster
-    m_pGameList->SetItemVisible(server.m_iListID, false);
-    }
-    }
-    else if (BShowServer(server))
-    {
-    // server passed filters, so it can be refreshed again
-    server.m_bDoNotRefresh = false;
-    gameserveritem_t *pServer = SteamMatchmakingServers()->GetServerDetails(m_eMatchMakingType, server.m_iServerID);
-
-    // re-add item to list
-    if (!m_pGameList->IsValidItemID(server.m_iListID))
-    {
-    KeyValues *kv = new KeyValues("Server");
-    kv->SetString("name", pServer->GetName());
-    kv->SetString("map", pServer->m_szMap);
-    kv->SetString("GameDir", pServer->m_szGameDir);
-    if (pServer->m_szGameDescription[0])
-    {
-    kv->SetString("GameDesc", pServer->m_szGameDescription);
-    }
-    else
-    {
-    kv->SetWString("GameDesc", g_pVGuiLocalize->Find("#ServerBrowser_PendingPing"));
-    }
-
-    int nAdjustedForBotsPlayers = max(0, pServer->m_nPlayers - pServer->m_nBotPlayers);
-    int nAdjustedForBotsMaxPlayers = max(0, pServer->m_nMaxPlayers - pServer->m_nBotPlayers);
-
-    char buf[256];
-    Q_snprintf(buf, sizeof(buf), "%d / %d", nAdjustedForBotsPlayers, nAdjustedForBotsMaxPlayers);
-    kv->SetString("Players", buf);
-    kv->SetInt("Ping", pServer->m_nPing);
-    kv->SetInt("password", pServer->m_bPassword ? 1 : 0);
-    if (pServer->m_nBotPlayers > 0)
-    kv->SetInt("bots", pServer->m_nBotPlayers);
-    else
-    kv->SetString("bots", "");
-
-    server.m_iListID = m_pGameList->AddItem(kv, server.m_iServerID, false, false);
-    kv->deleteThis();
-    }
-
-    // make sure the server is visible
-    m_pGameList->SetItemVisible(server.m_iListID, true);
-    }
-    }*/
 
     UpdateStatus();
     m_pGameList->SortList();
@@ -1006,7 +681,7 @@ void CBaseMapsPage::ApplyGameFilters()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Resets UI server count
+// Purpose: Resets UI map count
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::UpdateStatus()
 {
@@ -1017,11 +692,11 @@ void CBaseMapsPage::UpdateStatus()
 
         V_snwprintf(count, ARRAYSIZE(count), L"%d", m_pGameList->GetItemCount());
         g_pVGuiLocalize->ConstructString(header, sizeof(header), g_pVGuiLocalize->Find("#MOM_MapSelector_MapCount"), 1, count);
-        m_pGameList->SetColumnHeaderText(3, header);
+        m_pGameList->SetColumnHeaderText(1, header);
     }
     else
     {
-        m_pGameList->SetColumnHeaderText(3, g_pVGuiLocalize->Find("#MOM_MapSelector_Maps"));
+        m_pGameList->SetColumnHeaderText(1, g_pVGuiLocalize->Find("#MOM_MapSelector_Maps"));
     }
 }
 
@@ -1030,38 +705,6 @@ void CBaseMapsPage::UpdateStatus()
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::UpdateFilterSettings()
 {
-    // game
-    /*if (MapSelectorDialog().GetActiveModName())
-    {
-    // overriding the game filter
-    Q_strncpy(m_szGameFilter, MapSelectorDialog().GetActiveModName(), sizeof(m_szGameFilter));
-    m_iLimitToAppID = MapSelectorDialog().GetActiveAppID();
-    RecalculateFilterString();
-    UpdateGameFilter();
-    }
-    else
-    {
-    KeyValues *data = m_pGameModeFilter->GetActiveItemUserData();
-    if (data)
-    {
-    Q_strncpy(m_szGameFilter, data->GetString("gamedir"), sizeof(m_szGameFilter));
-    if (Q_strlen(m_szGameFilter) > 0) // if there is a gamedir
-    {
-    m_iLimitToAppID = data->GetInt("appid", 0);
-    }
-    else
-    {
-    m_iLimitToAppID = 0;
-    }
-    }
-    else
-    {
-    m_iLimitToAppID = 0;
-    }
-    m_pGameFilter->SetEnabled(true);
-    }
-    Q_strlower(m_szGameFilter);*/
-
     //Gamemode
     m_iGameModeFilter = m_pGameModeFilter->GetActiveItem();
 
@@ -1088,49 +731,8 @@ void CBaseMapsPage::UpdateFilterSettings()
     // Does the map have stages?
     m_bFilterMapHasStages = m_pMapHasStagesFilterCheck->IsSelected();
 
-
-    //m_bFilterNoFullServers = m_pNoFullServersFilterCheck->IsSelected();
-    //m_bFilterNoEmptyServers = m_pNoEmptyServersFilterCheck->IsSelected();
-    //m_bFilterNoPasswordedServers = m_pNoPasswordFilterCheck->IsSelected();
-    //m_iSecureFilter = m_pSecureFilter->GetActiveItem();
-
-    //m_vecServerFilters.RemoveAll();
-
-    // update master filter string text
-    /*if (m_szGameFilter[0] && m_iLimitToAppID != 1002) // HACKHACK: Alfred - don't use a dir filter for RDKF
-    {
-    m_vecServerFilters.AddToTail(MatchMakingKeyValuePair_t("gamedir", m_szGameFilter));
-    }
-    if (m_bFilterNoEmptyServers)
-    {
-    m_vecServerFilters.AddToTail(MatchMakingKeyValuePair_t("empty", "1"));
-    }
-    if (m_bFilterNoFullServers)
-    {
-    m_vecServerFilters.AddToTail(MatchMakingKeyValuePair_t("full", "1"));
-    }
-    if (m_iSecureFilter == FILTER_SECURESERVERSONLY)
-    {
-    m_vecServerFilters.AddToTail(MatchMakingKeyValuePair_t("secure", "1"));
-    }
-    int regCode = GetRegionCodeToFilter();
-    if (regCode > 0)
-    {
-    char szRegCode[32];
-    Q_snprintf(szRegCode, sizeof(szRegCode), "%i", regCode);
-    m_vecServerFilters.AddToTail(MatchMakingKeyValuePair_t("region", szRegCode));
-    }*/
-
     // copy filter settings into filter file
     KeyValues *filter = MapSelectorDialog().GetFilterSaveData(GetName());
-
-    // only save the game filter if we're not overriding it
-    // Which we aren't, MOM_TODO delete the following
-    /*if (!MapSelectorDialog().GetActiveModName())
-    {
-    filter->SetString("game", m_szGameFilter);
-    filter->SetInt("appid", m_iLimitToAppID);
-    }*/
 
     filter->SetInt("gamemode", m_iGameModeFilter);
     filter->SetString("map", m_szMapFilter);
@@ -1138,23 +740,7 @@ void CBaseMapsPage::UpdateFilterSettings()
     filter->SetBool("HideCompleted", m_bFilterHideCompleted);
     filter->SetBool("HasStages", m_bFilterMapHasStages);
 
-    //MOM_TODO: not using location either
-    //if (m_pLocationFilter->GetItemCount() > 1)
-    //{
-    //    // only save this if there are options to choose from
-    //    filter->SetInt("location", m_pLocationFilter->GetActiveItem());
-    //}
-
-
-
-    //filter->SetInt("NoFull", m_bFilterNoFullServers);
-    //filter->SetInt("NoEmpty", m_bFilterNoEmptyServers);
-    //filter->SetInt("NoPassword", m_bFilterNoPasswordedServers);
-    //filter->SetInt("Secure", m_iSecureFilter);
-
-    //filter->SetString("gametype", "notags");
-    //m_vecServerFilters.AddToTail(MatchMakingKeyValuePair_t("gametype", "notags"));
-
+    MapSelectorDialog().SaveUserData();
     OnSaveFilter(filter);
 
     RecalculateFilterString();
@@ -1261,30 +847,26 @@ void CBaseMapsPage::RecalculateFilterString()
 bool CBaseMapsPage::CheckPrimaryFilters(mapstruct_t &map)
 {
     // Needs to pass map name filter
-    // compare the first few characters of the filter name
+    // compare the first few characters of the filter
     int count = Q_strlen(m_szMapFilter);
     if (count && Q_strnicmp(map.m_szMapName, m_szMapFilter, count))
     {
+        DevLog("Map %s does not pass filter %s \n", map.m_szMapName, m_szMapFilter);
         return false;
     }
 
     //Difficulty needs to pass as well
-    if (map.m_iDifficulty >= m_iDifficultyFilter)
+    if (m_iDifficultyFilter != 0 && map.m_iDifficulty >= m_iDifficultyFilter)
+    {
+        DevLog("Map %s's difficulty %i is greater than difficulty %i !\n", map.m_szMapName, map.m_iDifficulty, m_iDifficultyFilter);
         return false;
-
+    }
     //Game mode (if it's a surf/bhop/etc map or not)
     if (m_iGameModeFilter != 0 && m_iGameModeFilter != map.m_iGameMode)
-        return false;
-
-    //MOM_TODO: We don't use Game defines anymore, consider removing this code:
-    /*if (m_szGameFilter[0] && (server.m_szGameDir[0] || server.m_nPing) && Q_stricmp(m_szGameFilter, server.m_szGameDir)
-    && server.m_nAppID != 1002) // HACKHACK Alfred - don't apply gamedir filter to rdkf
     {
-    return false;
+        DevLog("Map %s's gamemode %i is not filter gamemode %i !\n", map.m_szMapName, map.m_iGameMode, m_iGameModeFilter);
+        return false;
     }
-
-    if (server.m_nAppID < 200 || (server.m_nAppID > 900 && server.m_nAppID != 4000))
-    return false;*/
 
     return true;
 }
@@ -1296,6 +878,7 @@ bool CBaseMapsPage::CheckPrimaryFilters(mapstruct_t &map)
 //-----------------------------------------------------------------------------
 bool CBaseMapsPage::CheckSecondaryFilters(mapstruct_t &map)
 {
+    DevLog("Map is completed %i and the player is filtering maps %i \n", map.m_bCompleted, m_bFilterHideCompleted);
     //Completion is only secondary
     if (m_bFilterHideCompleted && map.m_bCompleted)//If we're HIDING completed maps and we've completed it
     {
@@ -1305,71 +888,31 @@ bool CBaseMapsPage::CheckSecondaryFilters(mapstruct_t &map)
     //Linear?
     if (m_bFilterMapHasStages && !map.m_bHasStages)
     {
+        DevLog("Map has stages %i and the user is filtering maps %i\n", map.m_bHasStages, m_bFilterMapHasStages); 
         return false;
     }
-
-    /*if (m_bFilterNoEmptyServers && (server.m_nPlayers - server.m_nBotPlayers) < 1)
-    {
-    return false;
-    }
-
-    if (m_bFilterNoFullServers && server.m_nPlayers >= server.m_nMaxPlayers)
-    {
-    return false;
-    }
-
-    if (m_iPingFilter && server.m_nPing > m_iPingFilter)
-    {
-    return false;
-    }
-
-    if (m_bFilterNoPasswordedServers && server.m_bPassword)
-    {
-    return false;
-    }
-
-    if (m_iSecureFilter == FILTER_SECURESERVERSONLY && !server.m_bSecure)
-    {
-    return false;
-    }
-
-    if (m_iSecureFilter == FILTER_INSECURESERVERSONLY && server.m_bSecure)
-    {
-    return false;
-    }
-
-    // compare the first few characters of the filter name
-    int count = Q_strlen(m_szMapFilter);
-    if (count && Q_strnicmp(server.m_szMap, m_szMapFilter, count))
-    {
-    return false;
-    }*/
 
     return CheckTagFilter(map);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-/*uint32 CBaseMapsPage::GetServerFilters(MatchMakingKeyValuePair_t **pFilters)
-{
-*pFilters = m_vecServerFilters.Base();
-return m_vecServerFilters.Count();
-}*/
-
 
 //-----------------------------------------------------------------------------
 // Purpose: call to let the UI now whether the game list is currently refreshing
+// MOM_TODO: Use this method for OnlineMaps
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::SetRefreshing(bool state)
 {
+    //MOM_TODO: The OnlineMaps tab will have its own "search" using the filter
+    // that is the same filter as the one in LocalMaps, asking the API (using filter data)
+    // and populating the list with the map data from API.
+
     if (state)
     {
-        MapSelectorDialog().UpdateStatusText("#ServerBrowser_RefreshingServerList");
+        MapSelectorDialog().UpdateStatusText("#MOM_MapSelector_SearchingForMaps");
 
         // clear message in panel
         m_pGameList->SetEmptyListText("");
-        m_pRefreshAll->SetText("#ServerBrowser_StopRefreshingList");
+        m_pRefreshAll->SetText("#MOM_MapSelector_StopSearching");
         m_pRefreshAll->SetCommand("stoprefresh");
         m_pRefreshQuick->SetEnabled(false);
     }
@@ -1378,11 +921,13 @@ void CBaseMapsPage::SetRefreshing(bool state)
         MapSelectorDialog().UpdateStatusText("");
         if (SupportsItem(IMapList::GETNEWLIST))
         {
-            m_pRefreshAll->SetText("#ServerBrowser_RefreshAll");
+            m_pRefreshAll->SetText("#MOM_MapSelector_Search");
         }
         else
         {
-            m_pRefreshAll->SetText("#ServerBrowser_Refresh");
+            //MOM_TODO: hide the button? This else branch is specifically the LocalMaps one
+            m_pRefreshAll->SetVisible(false);
+            //m_pRefreshAll->SetText("#ServerBrowser_Refresh");
         }
         m_pRefreshAll->SetCommand("GetNewList");
 
@@ -1423,7 +968,7 @@ void CBaseMapsPage::OnCommand(const char *command)
     }
     else if (!Q_stricmp(command, "GetNewList"))
     {
-        GetNewServerList();
+        GetNewMapList();
     }
     else
     {
@@ -1478,33 +1023,6 @@ bool CBaseMapsPage::OnGameListEnterPressed()
 int CBaseMapsPage::GetSelectedItemsCount()
 {
     return m_pGameList->GetSelectedItemsCount();
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: adds a server to the favorites
-//-----------------------------------------------------------------------------
-void CBaseMapsPage::OnAddToFavorites()
-{
-    /*
-#ifndef NO_STEAM
-    if (!SteamMatchmakingServers())
-    return;
-
-    // loop through all the selected favorites
-    for (int i = 0; i < m_pGameList->GetSelectedItemsCount(); i++)
-    {
-    int serverID = m_pGameList->GetItemUserData(m_pGameList->GetSelectedItem(i));
-
-    gameserveritem_t *pServer = SteamMatchmakingServers()->GetServerDetails(m_eMatchMakingType, serverID);
-    if (pServer)
-    {
-    // add to favorites list
-    ServerBrowserDialog().AddServerToFavorites(*pServer);
-    }
-    }
-    #endif
-    */
 }
 
 
@@ -1567,8 +1085,8 @@ void CBaseMapsPage::OnRefreshServer(int serverID)
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::StartRefresh()
 {
-    ClearServerList();
-    SetRefreshing(true);
+    //ClearServerList();
+    //SetRefreshing(true);
     //MOM_TODO: Update this to request maps from main server
     /*
 #ifndef NO_STEAM
@@ -1612,9 +1130,9 @@ void CBaseMapsPage::StartRefresh()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: Remove all the servers we currently have
+// Purpose: Remove all the maps we currently have
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::ClearServerList()
+void CBaseMapsPage::ClearMapList()
 {
     m_vecMaps.RemoveAll();
 
@@ -1625,16 +1143,16 @@ void CBaseMapsPage::ClearServerList()
 
 
 //-----------------------------------------------------------------------------
-// Purpose: get a new list of servers from the backend
+// Purpose: get a new list of maps from the backend
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::GetNewServerList()
+void CBaseMapsPage::GetNewMapList()
 {
     StartRefresh();
 }
 
 
 //-----------------------------------------------------------------------------
-// Purpose: stops current refresh/GetNewServerList()
+// Purpose: stops current refresh/GetNewMapList()
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::StopRefresh()
 {
@@ -1653,19 +1171,12 @@ void CBaseMapsPage::StopRefresh()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: returns true if the list is currently refreshing servers
+// Purpose: returns true if the list is currently searching for maps
 //-----------------------------------------------------------------------------
 bool CBaseMapsPage::IsRefreshing()
 {
-#ifndef NO_STEAM
     //MOM_TODO: 
     // steamapicontext->SteamUtils()->IsAPICallCompleted() on the HTTP request for the online
-
-
-    //return SteamMatchmakingServers() && SteamMatchmakingServers()->IsRefreshing(m_eMatchMakingType);
-#else
-    return false;
-#endif
     return false;
 }
 
@@ -1692,19 +1203,18 @@ void CBaseMapsPage::OnMapStart()
 {
     if (!m_pGameList->GetSelectedItemsCount())
         return;
-    
+
     // get the map
     KeyValues *kv = m_pGameList->GetItem(m_pGameList->GetSelectedItem(0));
     // Stop the current refresh
     StopRefresh();
-
-    engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString("Map")));
-    // join the game
-    //MapSelectorDialog().JoinGame(this, serverID);
+    // Start the map
+    //MOM_TODO: set global gamemode, tick settings etc
+    engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString("map")));
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Displays the current game info without connecting
+// Purpose: Displays the current map info (from contextmenu)
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::OnViewGameInfo()
 {
@@ -1712,64 +1222,12 @@ void CBaseMapsPage::OnViewGameInfo()
         return;
 
     // get the server
-    int serverID = m_pGameList->GetItemUserData(m_pGameList->GetSelectedItem(0));
+    KeyValues *pMap = m_pGameList->GetItem(m_pGameList->GetSelectedItem(0));
+    //int serverID = m_pGameList->GetItemUserData(m_pGameList->GetSelectedItem(0));
 
     // Stop the current refresh
     StopRefresh();
 
-    // join the game
-    MapSelectorDialog().OpenGameInfoDialog(this, serverID);
+    // View the map info
+    MapSelectorDialog().OpenMapInfoDialog(this, pMap);
 }
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Refresh if our favorites list changed
-//MOM_TODO: Probably remove this
-//-----------------------------------------------------------------------------
-#ifndef NO_STEAM
-void CBaseMapsPage::OnFavoritesMsg(FavoritesListChanged_t *pFavListChanged)
-{
-    /*
-    switch (m_eMatchMakingType)
-    {
-    case eInternetServer:
-    case eLANServer:
-    case eSpectatorServer:
-    case eFriendsServer:
-    break;
-    case eFavoritesServer:
-    case eHistoryServer:
-    {
-    int iIPServer = m_mapServerIP.Find(netadr_t(pFavListChanged->m_nIP, pFavListChanged->m_nQueryPort));
-    if (iIPServer == m_mapServerIP.InvalidIndex())
-    {
-    if (pFavListChanged->m_bAdd)
-    {
-    #ifndef NO_STEAM
-    if (SteamMatchmakingServers())
-    SteamMatchmakingServers()->PingServer(pFavListChanged->m_nIP, pFavListChanged->m_nQueryPort, this);
-    #endif
-    }
-    // ignore deletes of fav's we didn't have
-    }
-    else
-    {
-    if (pFavListChanged->m_bAdd)
-    {
-    if (m_mapServerIP[iIPServer] > 0)
-    ServerResponded(m_mapServerIP[iIPServer]);
-    }
-    else
-    {
-    int iServer = m_mapServers.Find(m_mapServerIP[iIPServer]);
-    serverdisplay_t &server = m_mapServers[iServer];
-    RemoveServer(server);
-    }
-    }
-    }
-    break;
-    default:
-    Assert(!"unknown matchmaking type");
-    };*/
-}
-#endif

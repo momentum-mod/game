@@ -13,7 +13,7 @@ class COnlineMaps : public CBaseMapsPage
     DECLARE_CLASS_SIMPLE(COnlineMaps, CBaseMapsPage);
 
 public:
-    COnlineMaps(vgui::Panel *parent, const char *panelName = "InternetGames");
+    COnlineMaps(vgui::Panel *parent, const char *panelName = "OnlineMaps");
     ~COnlineMaps();
 
     // property page handlers
@@ -23,7 +23,7 @@ public:
     virtual bool SupportsItem(IMapList::InterfaceItem_e item);
 
     // gets a new server list
-    MESSAGE_FUNC(GetNewServerList, "GetNewServerList");
+    MESSAGE_FUNC(GetNewMapList, "GetNewMapList");
 
     // serverlist refresh responses
     virtual void ServerResponded(int iServer);
@@ -48,7 +48,7 @@ private:
     // Called once per frame to see if sorting needs to occur again
     void CheckRedoSort();
     // Called once per frame to check re-send request to master server
-    void CheckRetryRequest(ESteamServerType serverType);
+    //void CheckRetryRequest(ESteamServerType serverType);
     // opens context menu (user right clicked on a server)
     MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
 

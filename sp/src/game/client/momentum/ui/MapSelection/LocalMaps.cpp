@@ -10,9 +10,8 @@ const float BROADCAST_LIST_TIMEOUT = 0.4f;
 CLocalMaps::CLocalMaps(vgui::Panel *parent, bool bAutoRefresh, const char *pCustomResFilename) :
 CBaseMapsPage(parent, "LocalMaps", pCustomResFilename)
 {
-    m_iServerRefreshCount = 0;
-    m_bRequesting = false;
-    m_bAutoRefresh = bAutoRefresh;//MOM_TODO: Consider making this false
+    m_bLoadedMaps = false;
+    m_bAutoRefresh = bAutoRefresh;
 }
 
 //-----------------------------------------------------------------------------
@@ -28,6 +27,8 @@ CLocalMaps::~CLocalMaps()
 //-----------------------------------------------------------------------------
 void CLocalMaps::OnPageShow()
 {
+    if (!m_bLoadedMaps)
+        GetNewMapList();
     if (m_bAutoRefresh)
         StartRefresh();
 }
@@ -58,20 +59,16 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: starts the servers refreshing
-//-----------------------------------------------------------------------------
-void CLocalMaps::StartRefresh()
+void CLocalMaps::GetNewMapList()
 {
-    Log("STARTING REFRESH!\n");
-    BaseClass::StartRefresh();
+    ClearMapList();
     //Populate the main list
     FileFindHandle_t found;
     //MOM_TODO: make this by *.mom
     const char *pMapName = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "MOD", &found);
     while (pMapName)
     {
-        Log("FOUND MAP %s!\n", pMapName);
+        DevLog("FOUND MAP %s!\n", pMapName);
         //MOM_TODO: Read the .mom file and create the struct based off of it
         //KeyValues* kv = new KeyValues("Map");
         //kv->LoadFromFile(g_pFullFileSystem, pMapName, "MOD");
@@ -83,11 +80,11 @@ void CLocalMaps::StartRefresh()
         map.m_bDoNotRefresh = true;
 
         Q_FileBase(pMapName, m.m_szMapName, MAX_PATH);
-        Log("Stripped name: %s\n", m.m_szMapName);
+        DevLog("Stripped name: %s\n", m.m_szMapName);
         m.m_iGameMode = GAMEMODE_SURF;//Temp to show data, MOM_TODO change this upon reading .mom file
         m.m_iDifficulty = 1;
         m.m_bHasStages = false;
-        m.m_bCompleted = false;
+        m.m_bCompleted = RandomInt(0, 2) == 1;
         Q_strcpy(m.m_szBestTime, "10 seconds");
         map.m_mMap = m;
         m_vecMaps.AddToTail(map);
@@ -95,8 +92,85 @@ void CLocalMaps::StartRefresh()
         pMapName = g_pFullFileSystem->FindNext(found);
     }
     g_pFullFileSystem->FindClose(found);
-    BaseClass::UpdateLocalMaps();
-    //m_fRequestTime = Plat_FloatTime();
+
+    ApplyGameFilters();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: starts the maps refreshing
+//-----------------------------------------------------------------------------
+void CLocalMaps::StartRefresh()
+{
+    FOR_EACH_VEC(m_vecMaps, i)
+    {
+        mapdisplay_t *pMap = &m_vecMaps[0];
+        if (!pMap) continue;
+        mapstruct_t pMapInfo = pMap->m_mMap;
+        // check filters
+        bool removeItem = false;
+        if (!CheckPrimaryFilters(pMapInfo))
+        {
+            // map has been filtered at a primary level
+            // remove from lists
+            pMap->m_bDoNotRefresh = true;
+
+            // remove from UI list
+            removeItem = true;
+        }
+        else if (!CheckSecondaryFilters(pMapInfo))
+        {
+            // we still ping this server in the future; however it is removed from UI list
+            removeItem = true;
+        }
+
+        if (removeItem)
+        {
+            if (m_pGameList->IsValidItemID(pMap->m_iListID))
+            {
+                m_pGameList->RemoveItem(pMap->m_iListID);
+                pMap->m_iListID = GetInvalidMapListID();
+            }
+            return;
+        }
+
+        // update UI
+        KeyValues *kv;
+        if (m_pGameList->IsValidItemID(pMap->m_iListID))
+        {
+            // we're updating an existing entry
+            kv = m_pGameList->GetItem(pMap->m_iListID);
+        }
+        else
+        {
+            // new entry
+            kv = new KeyValues("Map");
+        }
+
+        kv->SetString("name", pMapInfo.m_szMapName);
+        kv->SetBool("HasStages", pMapInfo.m_bHasStages);
+        kv->SetBool("completed", pMapInfo.m_bCompleted);
+        kv->SetInt("difficulty", pMapInfo.m_iDifficulty);
+        kv->SetInt("gamemode", pMapInfo.m_iGameMode);
+        kv->SetString("time", pMapInfo.m_szBestTime);
+
+        if (!m_pGameList->IsValidItemID(pMap->m_iListID))
+        {
+            // new map, add to list
+            pMap->m_iListID = m_pGameList->AddItem(kv, NULL, false, false);
+            if (m_bAutoSelectFirstItemInGameList && m_pGameList->GetItemCount() == 1)
+            {
+                m_pGameList->AddSelectedItem(pMap->m_iListID);
+            }
+
+            kv->deleteThis();
+        }
+        else
+        {
+            // tell the list that we've changed the data
+            m_pGameList->ApplyItemChanges(pMap->m_iListID);
+            m_pGameList->SetItemVisible(pMap->m_iListID, true);
+        }
+    }
 }
 
 
@@ -124,7 +198,7 @@ void CLocalMaps::StopRefresh()
 {
     BaseClass::StopRefresh();
     // clear update states
-    m_bRequesting = false;
+    //m_bRequesting = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -132,8 +206,8 @@ void CLocalMaps::StopRefresh()
 //-----------------------------------------------------------------------------
 void CLocalMaps::CheckRetryRequest()
 {
-    if (!m_bRequesting)
-        return;
+    //if (!m_bRequesting)
+    //    return;
 
     double curtime = Plat_FloatTime();
     if (curtime - m_fRequestTime <= BROADCAST_LIST_TIMEOUT)
@@ -142,7 +216,7 @@ void CLocalMaps::CheckRetryRequest()
     }
 
     // time has elapsed, finish up
-    m_bRequesting = false;
+    //m_bRequesting = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -162,14 +236,13 @@ void CLocalMaps::RefreshComplete(HServerListRequest hReq, EMatchMakingServerResp
 {
     SetRefreshing(false);
     m_pGameList->SortList();
-    m_iServerRefreshCount = 0;
-    m_pGameList->SetEmptyListText("#ServerBrowser_NoLanServers");
+    m_pGameList->SetEmptyListText("#MOM_MapSelector_NoMaps");
     SetEmptyListText();
 }
 
 void CLocalMaps::SetEmptyListText()
 {
-    m_pGameList->SetEmptyListText("#ServerBrowser_NoLanServers");
+    m_pGameList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 }
 
 //-----------------------------------------------------------------------------

@@ -42,10 +42,10 @@ void CMapContextMenu::ShowMenu(
         AddMenuItem("RefreshServer", "#ServerBrowser_RefreshServer", new KeyValues("RefreshServer", "serverID", serverID), target);
     }
 
-    if (showAddToFavorites)
-    {
-        AddMenuItem("AddToFavorites", "#ServerBrowser_AddServerToFavorites", new KeyValues("AddToFavorites", "serverID", serverID), target);
-    }
+    //if (showAddToFavorites)
+    //{
+        //AddMenuItem("AddToFavorites", "#ServerBrowser_AddServerToFavorites", new KeyValues("AddToFavorites", "serverID", serverID), target);
+    //}
 
     int x, y, gx, gy;
     input()->GetCursorPos(x, y);

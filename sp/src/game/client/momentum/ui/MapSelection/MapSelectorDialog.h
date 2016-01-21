@@ -48,9 +48,6 @@ public:
     // valid for use only in sort functions
     static CMapSelectorDialog *GetInstance();
 
-    // Adds a server to the list of favorites
-    void AddServerToFavorites(gameserveritem_t &server);
-
     // begins the process of joining a server from a game list
     // the game info dialog it opens will also update the game list
     CDialogMapInfo *JoinGame(IMapList *gameList, unsigned int serverIndex);
@@ -59,22 +56,17 @@ public:
     CDialogMapInfo *JoinGame(int serverIP, int serverPort);
 
     // opens a game info dialog from a game list
-    CDialogMapInfo *OpenGameInfoDialog(IMapList *gameList, unsigned int serverIndex);
+    CDialogMapInfo *OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap);
 
     // opens a game info dialog by a specified IP, not attached to any game list
-    CDialogMapInfo *OpenGameInfoDialog(int serverIP, uint16 connPort, uint16 queryPort);
+    CDialogMapInfo *OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort);
 
     // closes all the game info dialogs
-    void CloseAllGameInfoDialogs();
+    void CloseAllMapInfoDialogs();
     CDialogMapInfo *GetDialogGameInfoForFriend(uint64 ulSteamIDFriend);
 
     // accessor to the filter save data
     KeyValues *GetFilterSaveData(const char *filterSet);
-
-    // gets the name of the mod directory we're restricted to accessing, NULL if none
-    const char *GetActiveModName();
-    int GetActiveAppID();
-    const char *GetActiveGameName();
 
     // load/saves filter & favorites settings from disk
     void		LoadUserData();
@@ -94,9 +86,6 @@ private:
     MESSAGE_FUNC(OnGameListChanged, "PageChanged");
     void ReloadFilterSettings();
 
-    // receives a specified game is active, so no other game types can be displayed in server list
-    MESSAGE_FUNC_PARAMS(OnActiveGameName, "ActiveGameName", name);
-
     // notification that we connected / disconnected
     MESSAGE_FUNC_PARAMS(OnConnectToGame, "ConnectedToGame", kv);
     MESSAGE_FUNC(OnDisconnectFromGame, "DisconnectedFromGame");
@@ -106,7 +95,7 @@ private:
 
 private:
     // list of all open game info dialogs
-    CUtlVector<vgui::DHANDLE<CDialogMapInfo> > m_GameInfoDialogs;
+    CUtlVector<vgui::DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
 
     // pointer to current game list
     IMapList *m_pGameList;
@@ -117,30 +106,16 @@ private:
     // property sheet
     vgui::PropertySheet *m_pTabPanel;
 
-    //CCampaignMaps *m_pCampaign;
+    //Map tabs
     CLocalMaps *m_pLocal;
     COnlineMaps *m_pOnline;
 
-    //Old server browser tabs
-    /*
-    CFavoriteGames *m_pFavorites;
-    CHistoryGames *m_pHistory;
-    CInternetGames *m_pInternetGames;
-    CSpectateGames *m_pSpectateGames;
-    CLanGames *m_pLanGames;
-    CFriendsGames *m_pFriendsGames;
-    CCustomGames	*m_pCustomGames;*/
-
-    KeyValues *m_pSavedData;
-    KeyValues *m_pFilterData;
+    //Filter data
+    KeyValues *m_pSavedData;//Saved on disk filter data
+    KeyValues *m_pFilterData;//Current filter data in the Dialog
 
     // context menu
     CMapContextMenu *m_pContextMenu;
-
-    // active game
-    char m_szGameName[128];
-    char m_szModDir[128];
-    int m_iLimitAppID;
 
     // currently connected game
     bool m_bCurrentlyConnected;

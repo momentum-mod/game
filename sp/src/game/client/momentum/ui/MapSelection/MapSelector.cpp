@@ -19,7 +19,7 @@ CMapSelector::~CMapSelector()
 
 static ConVar cl_showmapselection("cl_showmapselection", "0", FCVAR_CLIENTDLL | FCVAR_HIDDEN, "Sets the state of mapselection panel <state>");
 
-CON_COMMAND(ToggleMapSelectionPanel, "Toggles MapSelectorPanel")
+CON_COMMAND_F(ToggleMapSelectionPanel, "Toggles MapSelectorPanel", FCVAR_CLIENTDLL | FCVAR_HIDDEN)
 {
     if (!cl_showmapselection.GetBool())
     {
@@ -43,8 +43,6 @@ void CMapSelector::Create(vgui::VPANEL parent)
     {
         m_hMapsDlg = new CMapSelectorDialog(parent); // SetParent() call below fills this in
         m_hMapsDlg->Initialize();
-        //MOM_TODO: load localization file?
-        //g_pVGuiLocalize->AddFile("servers/serverbrowser_%language%.txt");
     }
 }
 
@@ -57,8 +55,8 @@ void CMapSelector::Activate()
     static bool m_bfirstTimeOpening = true;
     if (m_bfirstTimeOpening)
     {
-        m_hMapsDlg->LoadUserData(); // reload the user data the first time the dialog is made visible, helps with the lag between module load and
-        // steamui getting Deactivate() call
+        m_hMapsDlg->LoadUserData(); // reload the user data the first time the dialog is made visible, 
+        //helps with the lag between module load and steamui getting Deactivate() call
         m_bfirstTimeOpening = false;
     }
 
@@ -221,6 +219,6 @@ void CMapSelector::CloseAllMapInfoDialogs()
 {
     if (m_hMapsDlg.Get())
     {
-        m_hMapsDlg->CloseAllGameInfoDialogs();
+        m_hMapsDlg->CloseAllMapInfoDialogs();
     }
 }

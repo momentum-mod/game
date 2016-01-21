@@ -18,23 +18,31 @@
     - [ ] Use GetTextSize instead of calculating it per character
     
 - [ ] MapSelector.cpp (Client)
-    - [ ] Localize strings (remove #ServerBrowser)
+    - [ ] Localize strings (remove ServerBrowser)
     - [x] Make the panel display from menu selection (edit GameMenu.res and do "engine ToggleMapsPanel")
     - [ ] Remove references to Server Browser
     - [ ] Cleanup classes to remove useless/commented code
     - [ ] Local Maps tab
-        - [ ] Header columns: Map name | Game type | Difficulty | Best time?
-        - [ ] Populate with maps already on disk (parse .mom files?)
+        - [x] Header columns: Completed | Map name | Game type | Difficulty | Best time
+        - [x] Populate with maps already on disk (parse .mom files?)
+        - [ ] Parse .mom files to fill the Dialog with information
     - [ ] Change filters
-        - [ ] Map name
-        - [ ] Gametype (bhop/surf/etc)
-        - [ ] Difficulty        
+        - [x] Map name
+        - [x] Gametype (bhop/surf/etc)
+        - [x] Difficulty 
+        - [ ] Linear/Staged        
     - [ ] "Online Maps" Tab
         - [ ] Apply filters to API searches
         - [ ] Parse data from API and apply to list
     - [ ] Start the selected map
         - [ ] Download a selected map, and its .zon and .mom file (if not exist)
+        - [ ] Open a MapInfoDialog to show progress on download?
         - [ ] Set the correct gamemode type, tickrate, etc based on .mom file
+        
+- [ ] MapInfoDialog.cpp (Client)
+    - [ ] Localize (remove ServerBrowser)
+    - [ ] Show information about the map (basic, Beta+ will have leaderboards, replays, etc)
+    - [ ] Make the user able to start the map from the Dialog
        
 - [ ] The "mom"-ification and refactoring
     - [ ] mom_player (Server/Client)
