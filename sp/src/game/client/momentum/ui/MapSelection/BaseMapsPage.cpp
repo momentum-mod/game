@@ -1210,6 +1210,7 @@ void CBaseMapsPage::OnMapStart()
     StopRefresh();
     // Start the map
     //MOM_TODO: set global gamemode, tick settings etc
+    engine->ExecuteClientCmd("progress_enable\n");
     engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString("map")));
 }
 

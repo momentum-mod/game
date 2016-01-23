@@ -591,6 +591,13 @@ void CMomentumGameMovement::CategorizePosition()
     else
     {
         // Try and move down.
+        // MOM_TODO: BUGBUGBUG. This seems to be causing crashes on map startup since:
+        /*
+        commit 136cae7d3378b41d3fd066d8a62eeca1dab57b94
+        Author: TotallyMehis
+        Date:   Thu Jan 14 12:23:21 2016 +0200
+        We have to take a deeper look
+        */
         TryTouchGround(bumpOrigin, point, GetPlayerMins(), GetPlayerMaxs(), MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
         // Was on ground, but now suddenly am not.  If we hit a steep plane, we are not on ground

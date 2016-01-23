@@ -659,7 +659,7 @@ void CBasePlayer::SetStepSoundTime(stepsoundtimes_t iStepSoundTime, bool bWalkin
     // UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!	
     if ((GetFlags() & FL_DUCKING) || (GetMoveType() == MOVETYPE_LADDER))
     {
-        m_flStepSoundTime += 100;
+        m_flStepSoundTime *= 1.8;
     }
 }
 

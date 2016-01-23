@@ -204,14 +204,18 @@ void CClientScoreBoardDialog::Reset(bool pFullReset)
         m_pOnlineLeaderboards->RemoveAllSections();
     }
 
+    if (m_pFriendsLeaderboards)
+    {
+        m_pFriendsLeaderboards->DeleteAllItems();
+        m_pFriendsLeaderboards->RemoveAllSections();
+    }
+
     m_iSectionId = 0;
     m_fNextUpdateTime = 0;
     // add all the sections
     InitScoreboardSections();
 
     Update(pFullReset);
-    //if (pFullReset)
-    //    Update(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -240,12 +244,12 @@ void CClientScoreBoardDialog::InitScoreboardSections()
 
     if (m_pFriendsLeaderboards)
     {
-        // We use online timer srot func as it's the same type of data
+        // We use online timer sort func as it's the same type of data
         m_pFriendsLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]));
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]*1.8));
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH*1.8);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]*1.8));
     }
 #undef SCALE
 }
@@ -271,13 +275,13 @@ void CClientScoreBoardDialog::ApplySchemeSettings(IScheme *pScheme)
 //-----------------------------------------------------------------------------
 void CClientScoreBoardDialog::PostApplySchemeSettings(vgui::IScheme *pScheme)
 {
+#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
     // resize the images to our resolution
     for (int i = 0; i < m_pImageList->GetImageCount(); i++)
     {
         int wide, tall;
         m_pImageList->GetImage(i)->GetSize(wide, tall);
-        m_pImageList->GetImage(i)->SetSize(scheme()->GetProportionalScaledValueEx(GetScheme(), wide),
-            scheme()->GetProportionalScaledValueEx(GetScheme(), tall));
+        m_pImageList->GetImage(i)->SetSize(SCALE(wide),SCALE(tall));
     }
 
     const char *columnNames[] = { DATESTRING, RANKSTRING, TIMESTRING };
