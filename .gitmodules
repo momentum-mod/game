@@ -1,0 +1,3 @@
+[submodule "sp/src/thirdparty/gason"]
+	path = sp/src/thirdparty/gason
+	url = https://github.com/vivkin/gason

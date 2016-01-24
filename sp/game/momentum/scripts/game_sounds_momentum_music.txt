@@ -1,0 +1,8 @@
+"MOMsong.TiagreAtDawn" //This is song #17 of the HL2 OST, but I'm adding it as an example for future music
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"0.7"
+	"pitch"			"100"
+	"soundlevel"	"0"
+	"wave"			"*#music/triageatdawn.mp3"
+}

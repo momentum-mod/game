@@ -29,35 +29,41 @@
 
 //Outro Parameters
 // When setting scrolltime value, don't make it too slow/too fast!
-	"scrolltime" "30"
+	"scrolltime" "35"
 	"separation"  "10"
 }
 
-//==================================================================
-//These are the names used in the credits.
-//If you contribute to the project, feel free to add yourself
-//in the contriutors section. 
-//(Add a new "YOUR NAME HERE" "CreditsOutroText" after the last one)
-//==================================================================
+//================================================================================
+//	These are the names used in the credits.
+//	If you contribute to the project, feel free to add yourself
+//	in the contributors section. 
+//	(Add a new "YOUR NAME/USERNAME HERE" "CreditsOutroText" after the last one.)
+//================================================================================
 "OutroCreditsNames"
 {
 	"MOMENTUM MOD"	"CreditsOutroTextExtraLarge"
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	"Momentum Team" "CreditsOutroTextLarge"
-	"Nick"	"CreditsOutroText"
-	"Rubén Rincón"   "CreditsOutroText"
-	" "	"CreditsOutroText"
-	" "	"CreditsOutroText"
+	"Nick K. (Gocnak)" "CreditsOutroText"
+	"Rubén Rincón (RabsRincon)"   "CreditsOutroText"
+	"Gus Naughton" "CreditsOutroText"
+	"fatalis"	"CreditsOutroText"
+	"Gus Naughton" "CreditsOutroText"
+	"flipybitz"	"CreditsOutroText"
+	"pcpie"	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	"Contributors" "CreditsOutroTextLarge"
+	// Add yourself here
 
+	//-----------------
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	"Special thanks to:"   "CreditsOutroTextLarge"
-	"Open Source Parsers for their JsonCpp"   "CreditsOutroText"
+	"Ivan Vashchaev for his JSON parser GASON"   "CreditsOutroText"
+	"Slack App" "CreditsOutroText"
 	"everyone who has ever contributed"   "CreditsOutroText"
 	"and"	"CreditsOutroText"
 	" "	"CreditsOutroText"

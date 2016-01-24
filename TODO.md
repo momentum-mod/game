@@ -60,6 +60,7 @@
          - [x] Clean up the EntSelectSpawnPoint() method
     - [ ] mom_gamerules (Shared)
          - [ ] Follow the hl2_gamerules.cpp file for creation
+         - [ ] Improve mom_spawn_with_weapons implementation
     - [x] mom_gamemovement.cpp (Shared)
         - [x] Implement rampboost fix by TotallyMehis
     - [ ] mom_usermessages.cpp (Shared)
@@ -149,6 +150,11 @@
 - [x] mapzones_edit.cpp (Server)
 	- [x] Change description for mom_zone_defmethod
 	- [x] Improve methods of triggers (Probbably also find a better suitting name)
+	- [ ] Improve binding (Add more build binds for things like mom_zone_defzone variations)
+
+- [ ] Credits
+	- [ ] Few values are set to default when the map ends, we have to set it to how the user had it before going to the credits
+	- [ ] If the user disconnects before the credits ending, hud convar values will not be set back to how they were before
     
 ## BETA
 - [ ] Implement CEF

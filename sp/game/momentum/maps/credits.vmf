@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6412"
-	"mapversion" "17"
+	"mapversion" "23"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -20,12 +20,12 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "17"
+	"mapversion" "23"
 	"classname" "worldspawn"
-	"skyname" "sky_day01_01"
-	"maxpropscreenwidth" "-1"
-	"detailvbsp" "detail.vbsp"
 	"detailmaterial" "detail/detailsprites"
+	"detailvbsp" "detail.vbsp"
+	"maxpropscreenwidth" "-1"
+	"skyname" "sky_day01_01"
 	solid
 	{
 		"id" "23"
@@ -544,6 +544,7 @@ entity
 		"OnMapSpawn" "commander,Command,mom_drawspeedmeter 0,0,-1"
 		"OnMapSpawn" "commander,Command,mom_timer 0,0,-1"
 		"OnMapSpawn" "commander,Command,mom_spawn_with_weapon 0,0,-1"
+		"OnMapSpawn" "ambienter,PlaySound,,0,-1"
 	}
 	"origin" "32 -80 32"
 	editor
@@ -579,12 +580,12 @@ entity
 	"cspinup" "0"
 	"fadeinsecs" "0"
 	"fadeoutsecs" "0"
-	"health" "2"
+	"health" "1"
 	"lfomodpitch" "0"
 	"lfomodvol" "0"
 	"lforate" "0"
 	"lfotype" "0"
-	"message" "music/hl2_song2.mp3"
+	"message" "MOMsong.TiagreAtDawn"
 	"pitch" "100"
 	"pitchstart" "100"
 	"preset" "0"
