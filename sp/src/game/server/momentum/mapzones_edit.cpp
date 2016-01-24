@@ -16,7 +16,7 @@ static ConVar mom_zone_start_maxleavespeed("mom_zone_start_maxleavespeed", "290"
 
 void CC_Mom_ZoneZoomIn()
 {
-    g_MapzoneEdit.DecreaseZoom((float)mom_zone_grid.GetInt());
+    g_MapzoneEdit.DecreaseZoom((float) mom_zone_grid.GetInt());
 }
 
 static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n", FCVAR_CHEAT);
@@ -24,7 +24,7 @@ static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decreas
 
 void CC_Mom_ZoneZoomOut()
 {
-    g_MapzoneEdit.IncreaseZoom((float)mom_zone_grid.GetInt());
+    g_MapzoneEdit.IncreaseZoom((float) mom_zone_grid.GetInt());
 }
 
 static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n", FCVAR_CHEAT);
@@ -165,8 +165,13 @@ void CC_Mom_ZoneMark(const CCommand &args)
                 return;
             }
 
-            // Switch between start and end.
-            zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
+            //The user is trying to make multiple starts?
+            if (zonetype == MOMZONETYPE_START)
+            {
+                 // Switch between start and end.
+                 zonetype = (startnum <= endnum) ? MOMZONETYPE_START : MOMZONETYPE_STOP;
+            }
+            //else the zonetype can be STOP, allowing for multiple stop triggers to be created
         }
     }
 
@@ -202,7 +207,7 @@ static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel 
 void CMapzoneEdit::Build(Vector *aimpos, int type, int forcestage)
 {
     if (mom_zone_grid.GetInt() > 0)
-        VectorSnapToGrid(aimpos, (float)mom_zone_grid.GetInt());
+        VectorSnapToGrid(aimpos, (float) mom_zone_grid.GetInt());
 
 
     switch ((forcestage != BUILDSTAGE_NONE) ? forcestage : ++m_nBuildStage)
@@ -337,16 +342,16 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
 int CMapzoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
 {
     CTriggerTimerStart *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
-    if (pStart) return 0;
+    if (pStart) return MOMZONETYPE_START;
 
     /*CTriggerTeleportCheckpoint *pCP = dynamic_cast<CTriggerTeleportCheckpoint *>( pEnt );
     if ( pCP ) return 1;*/
 
     CTriggerTimerStop *pStop = dynamic_cast<CTriggerTimerStop *>(pEnt);
-    if (pStop) return 2;
+    if (pStop) return MOMZONETYPE_STOP;
 
     CTriggerStage *pStage = dynamic_cast<CTriggerStage *>(pEnt);
-    if (pStage) return 7;
+    if (pStage) return MOMZONETYPE_STAGE;
 
     return -1;
 }
@@ -387,7 +392,7 @@ void CMapzoneEdit::Update()
     Vector vecAim = tr.endpos;
 
     if (mom_zone_grid.GetInt() > 0)
-        VectorSnapToGrid(&vecAim, (float)mom_zone_grid.GetInt());
+        VectorSnapToGrid(&vecAim, (float) mom_zone_grid.GetInt());
 
 
     if (m_nBuildStage >= BUILDSTAGE_START)
@@ -423,7 +428,7 @@ void CMapzoneEdit::Update()
         {
             Vector vecP5, vecP6, vecP8;
 
-            m_vecBuildEnd[2] = SnapToGrid(m_vecBuildStart[2] + GetZoneHeightToPlayer(pPlayer), (float)mom_zone_grid.GetInt());
+            m_vecBuildEnd[2] = SnapToGrid(m_vecBuildStart[2] + GetZoneHeightToPlayer(pPlayer), (float) mom_zone_grid.GetInt());
 
             // Top
             vecP5 = m_vecBuildStart;
@@ -454,7 +459,7 @@ void CMapzoneEdit::Update()
         DebugDrawLine(vecAim, vecAim + tr.plane.normal * 24.0f, 0, 0, 255, true, -1.0f);
     }
 
-    DrawReticle(&vecAim, (mom_zone_grid.GetInt() > 0) ? ((float)mom_zone_grid.GetInt() / 2.0f) : 8.0f);
+    DrawReticle(&vecAim, (mom_zone_grid.GetInt() > 0) ? ((float) mom_zone_grid.GetInt() / 2.0f) : 8.0f);
 }
 
 void CMapzoneEdit::VectorSnapToGrid(Vector *dest, float gridsize)

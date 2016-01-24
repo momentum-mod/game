@@ -209,6 +209,7 @@ $Project "Client (Momentum)"
 				$Compiler
 				{
 					$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+					$TreatWarningsAsErrors "No"
 				}
 			}
 		}
