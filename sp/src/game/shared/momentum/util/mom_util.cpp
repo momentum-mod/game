@@ -6,6 +6,7 @@
 
 extern IFileSystem* filesystem;
 
+#ifdef GAME_DLL
 void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     if (bIOFailure) return;
@@ -91,6 +92,25 @@ void MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<MomentumU
         Warning("Failed to send HTTP Request to post scores online!\n");
         steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle);//GC
     }
+}
+
+#endif
+
+void MomentumUtil::FormatTime(float ticks, float rate, char *pOut)
+{
+    float m_flSecondsTime = ticks * rate;
+
+    int hours = m_flSecondsTime / (60.0f * 60.0f);
+    int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
+    int seconds = fmod(m_flSecondsTime, 60.0f);
+    int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
+
+    Q_snprintf(pOut, 15, "%02d:%02d:%02d.%03d",
+        hours,
+        minutes,
+        seconds,
+        millis
+        );
 }
 
 MomentumUtil mom_UTIL;

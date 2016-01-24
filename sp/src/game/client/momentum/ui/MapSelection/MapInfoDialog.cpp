@@ -35,7 +35,7 @@ extern "C"
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, int serverIP, int queryPort, unsigned short connectionPort) :
+CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) :
 Frame(parent, "DialogMapInfo")
 #ifndef NO_STEAM
 , m_CallbackPersonaStateChange(this, &CDialogMapInfo::OnPersonaStateChange)
@@ -87,8 +87,8 @@ Frame(parent, "DialogMapInfo")
     m_iRequestRetry = 0;
 
     // create a new server to watch
-    memset(&m_Server, 0, sizeof(m_Server));
-    m_Server.m_NetAdr.Init(serverIP, queryPort, connectionPort);
+    //memset(&m_Server, 0, sizeof(m_Server));
+    //m_Server.m_NetAdr.Init(serverIP, queryPort, connectionPort);
 
     // refresh immediately
     RequestInfo();
@@ -155,7 +155,8 @@ void CDialogMapInfo::Run(const char *titleName)
     SetDialogVariable("game", titleName);
 
     // get the info from the user
-    RequestInfo();
+    //RequestInfo();
+    //MOM_TODO: LoadLocalInfo(); //Loads the local information (local PBs, local replays)
     Activate();
 }
 

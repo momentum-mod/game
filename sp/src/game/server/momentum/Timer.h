@@ -5,9 +5,16 @@
 #endif
 
 #include "utlvector.h"
-#include "tickset.h"
+#include "momentum/tickset.h"
 #include "KeyValues.h"
-#include "mom_util.h"
+#include "momentum/util/mom_util.h"
+#include "filesystem.h"
+#include "mom_triggers.h"
+#include "../shared/GameEventListener.h"
+#include "tier1/checksum_sha1.h"
+#include "momentum/mom_shareddefs.h"
+#include "momentum/mom_gamerules.h"
+#include "movevars_shared.h"
 #include <ctime>
 
 class CTriggerTimerStart;
@@ -122,14 +129,10 @@ public:
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() { return m_bWereCheatsActivated; };
 
-    int GetGameMode() { return m_iGameMode; }
-    void SetGameMode(int gm);
-
     void SetGameModeConVars();
 
 private:
 
-    int m_iGameMode;
     int m_iStageCount;
     int m_iStartTick;
     bool m_bIsRunning;

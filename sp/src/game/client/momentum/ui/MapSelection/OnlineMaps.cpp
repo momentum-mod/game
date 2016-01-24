@@ -259,11 +259,11 @@ void COnlineMaps::OnOpenContextMenu(int itemID)
         return;
 
     // get the server
-    int serverID = m_pGameList->GetItemData(m_pGameList->GetSelectedItem(0))->userData;
+    //int serverID = m_pGameList->GetItemData(m_pGameList->GetSelectedItem(0))->userData;
 
     // Activate context menu
     CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pGameList);
-    menu->ShowMenu(this, serverID, true, true, true, true);
+    menu->ShowMenu(this, true, true);
 }
 
 //-----------------------------------------------------------------------------

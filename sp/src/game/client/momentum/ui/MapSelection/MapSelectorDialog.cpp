@@ -326,21 +326,23 @@ CDialogMapInfo *CMapSelectorDialog::JoinGame(int serverIP, int serverPort)
 //-----------------------------------------------------------------------------
 CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyValues *pMap)
 {
-    //MOM_TODO: uncomment: mapstruct_t *pMap = gameList->GetMap(index);
-
     //mapstruct_t *pServer = gameList->GetMap(serverIndex);
     //if (!pServer)
-    return NULL;
+    
 
     //MOM_TODO: complete the following so people can see information on the map 
 
-    /*CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, pServer->m_NetAdr.GetIP(), pServer->m_NetAdr.GetQueryPort(), pServer->m_NetAdr.GetConnectionPort());
+    //We're going to send just the map name to the CDialogMapInfo() constructor,
+    //then to the server and populate it with leaderboard times, replays, personal bests, etc
+    const char *pMapName = pMap->GetString("name", "");
+    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, pMapName);
     gameDialog->SetParent(GetVParent());
     gameDialog->AddActionSignalTarget(this);
-    gameDialog->Run(pServer->GetName());
-    int i = m_GameInfoDialogs.AddToTail();
-    m_GameInfoDialogs[i] = gameDialog;
-    return gameDialog;*/
+    gameDialog->Run(pMapName);
+    int i = m_vecMapInfoDialogs.AddToTail();
+    m_vecMapInfoDialogs[i] = gameDialog;
+    return gameDialog;
+    return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -348,7 +350,7 @@ CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyVal
 //-----------------------------------------------------------------------------
 CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort)
 {
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, serverIP, queryPort, connPort);
+    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, "");
     gameDialog->AddActionSignalTarget(this);
     gameDialog->SetParent(GetVParent());
     gameDialog->Run("");

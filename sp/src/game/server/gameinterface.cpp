@@ -466,8 +466,6 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
     CreateInterfaceFn physicsFactory, CreateInterfaceFn fileSystemFactory,
     CGlobalVars *pGlobals)
 {
-    TickSet::TickInit();
-
     ConnectTier1Libraries(&appSystemFactory, 1);
     ConnectTier2Libraries(&appSystemFactory, 1);
     ConnectTier3Libraries(&appSystemFactory, 1);
@@ -627,6 +625,8 @@ bool CServerGameDLL::DLLInit(CreateInterfaceFn appSystemFactory,
     // init the gamestatsupload connection
     gamestatsuploader->InitConnection();
 
+    Momentum::OnServerDLLInit();
+
     return true;
 }
 
@@ -728,6 +728,7 @@ static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_NOT_CONNECTED
 bool CServerGameDLL::GameInit(void)
 {
     ResetGlobalState();
+    Momentum::GameInit();
     engine->ServerCommand("exec game.cfg\n");
     engine->ServerExecute();
     CBaseEntity::sm_bAccurateTriggerBboxChecks = true;

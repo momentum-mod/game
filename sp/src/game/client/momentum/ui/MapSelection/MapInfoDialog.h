@@ -14,12 +14,12 @@
 //-----------------------------------------------------------------------------
 // Purpose: Dialog for displaying information about a game server
 //-----------------------------------------------------------------------------
-class CDialogMapInfo : public vgui::Frame, public ISteamMatchmakingPlayersResponse, public ISteamMatchmakingPingResponse
+class CDialogMapInfo : public vgui::Frame//, public ISteamMatchmakingPlayersResponse, public ISteamMatchmakingPingResponse
 {
     DECLARE_CLASS_SIMPLE(CDialogMapInfo, vgui::Frame);
 
 public:
-    CDialogMapInfo(vgui::Panel *parent, int serverIP, int queryPort, unsigned short connectionPort);
+    CDialogMapInfo(vgui::Panel *parent, const char*);
     ~CDialogMapInfo();
 
     void Run(const char *titleName);

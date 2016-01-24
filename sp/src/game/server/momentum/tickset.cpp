@@ -117,6 +117,14 @@ bool TickSet::TickInit()
 
 bool TickSet::SetTickrate(float tickrate)
 {
+    /*if (interval_per_tick)
+    {
+        *interval_per_tick = tickrate;
+        gpGlobals->interval_per_tick = tickrate;
+        
+        return true;
+    }
+    else return false;*/
     if (m_trCurrent.fTickRate != tickrate)
     {
         Tickrate tr;

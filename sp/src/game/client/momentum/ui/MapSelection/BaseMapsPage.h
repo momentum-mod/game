@@ -130,7 +130,7 @@ protected:
     // called when Connect button is pressed
     MESSAGE_FUNC(OnMapStart, "StartMap");
     // called to look at game info
-    MESSAGE_FUNC(OnViewGameInfo, "ViewGameInfo");
+    MESSAGE_FUNC(OnViewMapInfo, "ViewMapInfo");
     // refreshes a single server
     MESSAGE_FUNC_INT(OnRefreshServer, "RefreshServer", serverID);
 
@@ -169,7 +169,7 @@ private:
     vgui::TextEntry *m_pMapFilter;
     vgui::ComboBox *m_pDifficultyFilter;
     vgui::CheckButton *m_pHideCompletedFilterCheck;//Used for local maps only
-    vgui::CheckButton *m_pMapHasStagesFilterCheck;//MOM_TODO: change this to a ComboBox, 0 = ALL, 1 = LINEAR ONLY, 2 = STAGED ONLY
+    vgui::ComboBox *m_pMapLayoutFilter;//0 = ALL, 1 = LINEAR ONLY, 2 = STAGED ONLY
     vgui::Label *m_pFilterString;//MOM_TODO: determine what this is and if we need it
     char m_szComboAllText[64];
 
@@ -182,7 +182,18 @@ private:
     char m_szMapFilter[32];
     int	m_iDifficultyFilter;//What tier the map should be under
     bool m_bFilterHideCompleted;//Hide completed maps
-    bool m_bFilterMapHasStages;//Map is non-linear (has stages)
+    int m_iMapLayoutFilter;//Map is non-linear (has stages)
+
+    typedef enum
+    {
+        HEADER_COMPLETED =0,
+        HEADER_MAPLAYOUT,
+        //HEADER_STAGEDMAP,
+        HEADER_MAPNAME,
+        HEADER_GAMEMODE,
+        HEADER_DIFFICULTY,
+        HEADER_BESTTIME
+    } HEADERS;
 
 };
 

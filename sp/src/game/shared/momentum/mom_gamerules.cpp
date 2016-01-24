@@ -80,21 +80,21 @@ ConVar ammo_hegrenade_max("ammo_hegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_flashbang_max("ammo_flashbang_max", "2", FCVAR_REPLICATED);
 ConVar ammo_smokegrenade_max("ammo_smokegrenade_max", "1", FCVAR_REPLICATED);
 
+CMomentum::CMomentum()
+{
+    //m_iGameMode = 0;
+}
+
+CMomentum::~CMomentum()
+{
+}
 
 #ifndef CLIENT_DLL
 LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
 
-CMomentum::CMomentum()
-{
 
-}
-
-CMomentum::~CMomentum()
-{
-
-}
 
 Vector CMomentum::DropToGround(
     CBaseEntity *pMainEnt,
@@ -155,9 +155,36 @@ bool CMomentum::ClientCommand(CBaseEntity *pEdict, const CCommand &args)
     return pPlayer->ClientCommand(args);
 }
 
+static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldValue)
+{
+    int toCheck = ((ConVar*) var)->GetInt();
+    if (toCheck == fOldValue) return;
+    if (toCheck < 0)
+    {
+        Warning("Cannot set a game mode under 0!\n");
+        var->SetValue(((ConVar*) var)->GetDefault());
+        return;
+    }
+    bool result = TickSet::SetTickrate(toCheck);
+    if (result)
+    {
+        Msg("Successfully changed the tickrate to %f!\n", TickSet::GetTickrate());
+        gpGlobals->interval_per_tick = TickSet::GetTickrate();
+    }
+    else Warning("Failed to change interval per tick, cannot set tick rate!\n");
+}
+
+static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", OnGamemodeChanged);
+
+static ConVar allow_custom("mom_allow_custom_maps", "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Allow loading custom maps that aren't of an official gametype.");
+
 void CMomentum::PlayerSpawn(CBasePlayer* pPlayer)
 {
-    //pPlayer->Weapon_Create("weapon_momentum_gun"); MOM_TODO: debug this
+    if (gamemode.GetInt() == 0 && !allow_custom.GetBool())
+        engine->ServerCommand("disconnect\n");
+
+    pPlayer->Weapon_Create("weapon_momentum_gun");
+    //MOM_TODO: keep track of holstering (convar?)
 }
 
 

@@ -4,14 +4,6 @@
 #pragma once
 #endif
 
-typedef enum
-{
-    GAMEMODE_UNKNOWN = 0,//Or "All" if the map doesn't have a gametype
-    GAMEMODE_SURF,
-    GAMEMODE_BHOP
-    //MOM_TODO: add more game mode
-} GAMEMODE;
-
 //Used by mapdisplay_t, holds map information for filtering and displaying
 struct mapstruct_t
 {

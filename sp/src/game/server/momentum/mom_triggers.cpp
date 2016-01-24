@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "Timer.h"
-#include "TimerTriggers.h"
+#include "mom_triggers.h"
 #include "movevars_shared.h"
 #include "../shared/in_buttons.h"
 
@@ -217,15 +217,18 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
     {
         BaseClass::StartTouch(pOther);
 
-        if (!PassesTriggerFilters(pOther)) return;
-
-        if (m_target != NULL_STRING)
-            pDestinationEnt = gEntList.FindEntityByName(NULL, m_target);
-        else
+        if (!pDestinationEnt)
         {
-            DevWarning("CTriggerTeleport cannot teleport, no target set to teleport to!\n");
-            return;
+            if (m_target != NULL_STRING)
+                pDestinationEnt = gEntList.FindEntityByName(NULL, m_target, NULL, pOther, pOther);
+            else
+            {
+                DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
+                return;
+            }
         }
+
+        if (!PassesTriggerFilters(pOther)) return;
 
         if (pDestinationEnt)//ensuring not null
         {
@@ -235,11 +238,6 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 
             pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : NULL, m_bResetVelocity ? &vec3_origin : NULL);
             AfterTeleport();
-        }
-        else
-        {
-            DevWarning("CTriggerTeleport cannot teleport, target not found!\n");
-            return;
         }
     }
 }
@@ -276,7 +274,6 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
         if (g_Timer.FindOnehopOnList(this) != (-1))
         {
             SetDestinationEnt(g_Timer.GetCurrentCheckpoint());
-            //
             BaseClass::StartTouch(pOther);
         }
         else
@@ -452,7 +449,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
                 finalVel = pInflictor->GetAbsVelocity();
             break;
         case 3: // The description of this method says the player velocity is increaed by final velocity,
-                // but we're just adding one vec to the other, which is not quite the same
+            // but we're just adding one vec to the other, which is not quite the same
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel += pInflictor->GetAbsVelocity();
             break;
@@ -465,7 +462,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
         }
         if (m_Destination)
         {
-            if (((CBaseTrigger *)m_Destination)->IsTouching(pInflictor))
+            if (((CBaseTrigger *) m_Destination)->IsTouching(pInflictor))
             {
                 pInflictor->SetAbsVelocity(finalVel);
             }

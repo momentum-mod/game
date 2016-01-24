@@ -46,7 +46,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
     m_szMapFilter[0] = 0;
     m_iDifficultyFilter = 0;
     m_bFilterHideCompleted = false;
-    m_bFilterMapHasStages = false;
+    m_iMapLayoutFilter = 0;
     m_iServerRefreshCount = 0;
 
     m_hFont = NULL;
@@ -64,26 +64,28 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
     m_pGameList->SetAllowUserModificationOfColumns(true);
     
     // Add the column headers
-    m_pGameList->AddColumnHeader(0, "HasCompleted", "#MOM_MapSelector_Completed", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
+    m_pGameList->AddColumnHeader(HEADER_COMPLETED, "HasCompleted", "#MOM_MapSelector_Completed", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
+    m_pGameList->AddColumnHeader(HEADER_MAPLAYOUT, "MapLayout", "#MOM_MapSelector_MapLayout", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
+    //m_pGameList->AddColumnHeader(HEADER_STAGEDMAP, "IsStaged", "#MOM_MapSelector_IsStaged", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
     //m_pGameList->AddColumnHeader(1, "Bots", "#ServerBrowser_Bots", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_HIDDEN);//Don't need
     //m_pGameList->AddColumnHeader(2, "Secure", "#ServerBrowser_Secure", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);//Don't need
-    m_pGameList->AddColumnHeader(1, "Name", "#MOM_MapSelector_Maps", 50, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);//Map name column
+    m_pGameList->AddColumnHeader(HEADER_MAPNAME, "Name", "#MOM_MapSelector_Maps", 50, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);//Map name column
     //m_pGameList->AddColumnHeader(4, "IPAddr", "#ServerBrowser_IPAddress", 64, ListPanel::COLUMN_HIDDEN);
-    m_pGameList->AddColumnHeader(2, "gamemode", "#MOM_MapSelector_GameMode", 112,
+    m_pGameList->AddColumnHeader(HEADER_GAMEMODE, "gamemode", "#MOM_MapSelector_GameMode", 112,
         112,	// minwidth
         300,	// maxwidth
         0		// flags
         );
-    m_pGameList->AddColumnHeader(3, "difficulty", "#MOM_MapSelector_Difficulty", 55, 0);//ListPanel::COLUMN_FIXEDSIZE);
-    m_pGameList->AddColumnHeader(4, "time", "#MOM_MapSelector_BestTime", 90,
+    m_pGameList->AddColumnHeader(HEADER_DIFFICULTY, "difficulty", "#MOM_MapSelector_Difficulty", 55, 0);//ListPanel::COLUMN_FIXEDSIZE);
+    m_pGameList->AddColumnHeader(HEADER_BESTTIME, "time", "#MOM_MapSelector_BestTime", 90,
         90,		// minwidth
         300,	// maxwidth
         0		// flags
         );
-    //m_pGameList->AddColumnHeader(8, "Ping", "#ServerBrowser_Latency", 55, ListPanel::COLUMN_FIXEDSIZE);
     
     //Tooltips
-    m_pGameList->SetColumnHeaderTooltip(0, "#MOM_MapSelector_Completed_Tooltip");
+    m_pGameList->SetColumnHeaderTooltip(HEADER_COMPLETED, "#MOM_MapSelector_Completed_Tooltip");
+    m_pGameList->SetColumnHeaderTooltip(HEADER_MAPLAYOUT, "#MOM_MapSelector_MapLayout_Tooltip");
     //MOM_TODO: do we want more tooltips?
     //m_pGameList->SetColumnHeaderTooltip(1, "#ServerBrowser_BotColumn_Tooltip");
     //m_pGameList->SetColumnHeaderTooltip(2, "#ServerBrowser_SecureColumn_Tooltip");
@@ -151,7 +153,7 @@ void CBaseMapsPage::PerformLayout()
     {
         m_pRefreshQuick->SetVisible(false);
         m_pRefreshAll->SetVisible(false);//Because local maps won't be searching
-        m_pRefreshAll->SetText("#ServerBrowser_Refresh");
+        //m_pRefreshAll->SetText("#ServerBrowser_Refresh");
     }
 
     if (IsRefreshing())
@@ -190,29 +192,27 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
 
     OnButtonToggled(m_pFilter, false);
 
-    // load the password icon
+    // Images
     ImageList *imageList = new ImageList(false);
     //MOM_TODO: Load custom images for the map selector
-    imageList->AddImage(scheme()->GetImage("servers/icon_password", false));
-    //imageList->AddImage(scheme()->GetImage("servers/icon_bots", false));
-    //imageList->AddImage(scheme()->GetImage("servers/icon_robotron", false));
+    imageList->AddImage(scheme()->GetImage("servers/icon_password", false));//Completed icon (index 1)
+    imageList->AddImage(scheme()->GetImage("servers/icon_bots", false));//Linear map icon (index 2)
+    imageList->AddImage(scheme()->GetImage("servers/icon_robotron", false));//Staged map icon (index 3)
     //imageList->AddImage(scheme()->GetImage("servers/icon_secure_deny", false));
 
-    int passwordColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_password_column", false));
-    ///int botColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_bots_column", false));
-    ///int secureColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_robotron_column", false));
+    int passwordColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_password_column", false));//Completed column header image
+    int botColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_bots_column", false));//Map layout (staged/linear) column header image
+    //int secureColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_robotron_column", false));
     m_pGameList->SetImageList(imageList, true);
-    m_pGameList->SetColumnHeaderImage(0, passwordColumnImage);
+    m_pGameList->SetColumnHeaderImage(HEADER_COMPLETED, passwordColumnImage);
+    m_pGameList->SetColumnHeaderImage(HEADER_MAPLAYOUT, botColumnImage);
+    //m_pGameList->SetColumnHeaderImage(HEADER_STAGEDMAP, secureColumnImage);
 
     //Font
     m_hFont = pScheme->GetFont("ListSmall", IsProportional());
     if (!m_hFont)
         m_hFont = pScheme->GetFont("DefaultSmall", IsProportional());
-
     m_pGameList->SetFont(m_hFont);
-    
-    //m_pGameList->SetColumnHeaderImage(1, botColumnImage);
-    //m_pGameList->SetColumnHeaderImage(2, secureColumnImage);
 }
 
 //-----------------------------------------------------------------------------
@@ -255,12 +255,13 @@ void CBaseMapsPage::CreateFilters()
     m_pGameModeFilter->AddItem("#MOM_MapSelector_SurfOnly", NULL);//Surf only
     m_pGameModeFilter->AddItem("#MOM_MapSelector_BhopOnly", NULL);//Bhop only
     m_pGameModeFilter->AddActionSignalTarget(this);
-    //MOM_TODO: add extra game mode filter types
+    //MOM_TODO: add extra game mode filter types?
 
 
     m_pMapFilter = new TextEntry(this, "MapFilter");//As-is, people can search by map name
     m_pMapFilter->AddActionSignalTarget(this);
 
+    //Difficulty filter
     m_pDifficultyFilter = new ComboBox(this, "DifficultyFilter", 6, false);
     m_pDifficultyFilter->AddItem("#MOM_MapSelector_All", NULL);
     m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff2", NULL);//"Less than Tier 2"
@@ -270,24 +271,16 @@ void CBaseMapsPage::CreateFilters()
     m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff6", NULL);//MOM_TODO: Is "tier 6" difficulty the highest?
     m_pDifficultyFilter->AddActionSignalTarget(this);
 
-    //MOM_TODO: 
+    //Hide completed maps
     m_pHideCompletedFilterCheck = new CheckButton(this, "HideCompletedFilterCheck", ""); //for Maps the player has not completed
     m_pHideCompletedFilterCheck->AddActionSignalTarget(this);
-    m_pMapHasStagesFilterCheck = new CheckButton(this, "HasStagesFilterCheck", ""); //TODO update to ComboBox
-    m_pMapHasStagesFilterCheck->AddActionSignalTarget(this);
-    //Remove the below
-    //m_pNoEmptyServersFilterCheck = new CheckButton(this, "ServerEmptyFilterCheck", "");
-    //m_pNoFullServersFilterCheck = new CheckButton(this, "ServerFullFilterCheck", "");
-    //m_pNoPasswordFilterCheck = new CheckButton(this, "NoPasswordFilterCheck", "");
 
-    /*pkv = new KeyValues("mod");
-    for (int i = 0; i < ModList().ModCount(); i++)
-    {
-    pkv->SetString("gamedir", ModList().GetModDir(i));
-    pkv->SetInt("appid", ModList().GetAppID(i));
-    m_pGameFilter->AddItem(ModList().GetModName(i), pkv);
-    }
-    pkv->deleteThis();*/
+    //Filter staged/linear
+    m_pMapLayoutFilter = new ComboBox(this, "MapLayoutFilter", 3, false);
+    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_All", NULL);
+    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_StagedOnly", NULL);
+    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_LinearOnly", NULL);
+    m_pMapLayoutFilter->AddActionSignalTarget(this);
 }
 
 
@@ -307,9 +300,9 @@ void CBaseMapsPage::LoadFilterSettings()
     Q_strncpy(m_szMapFilter, filter->GetString("map"), sizeof(m_szMapFilter));
     m_pMapFilter->SetText(m_szMapFilter);
 
-    //HasStages
-    m_bFilterMapHasStages = filter->GetBool("HasStages", false);
-    m_pMapHasStagesFilterCheck->SetSelected(m_bFilterMapHasStages);
+    //Map layout
+    m_iMapLayoutFilter = filter->GetInt("maplayout", 0);
+    m_pMapLayoutFilter->ActivateItemByRow(m_iMapLayoutFilter);
 
     //HideCompleted maps
     m_bFilterHideCompleted = filter->GetBool("HideCompleted", false);
@@ -536,7 +529,7 @@ void CBaseMapsPage::OnButtonToggled(Panel *panel, int state)
         int wide, tall;
         GetSize(wide, tall);
         SetSize(624, 278);
-        if (m_pCustomResFilename)
+        if (m_pCustomResFilename)//MOM_TODO: this will never happen, consider removing?
         {
             m_bFiltersVisible = false;
         }
@@ -567,7 +560,7 @@ void CBaseMapsPage::OnButtonToggled(Panel *panel, int state)
 
         InvalidateLayout();
     }
-    else if (panel == m_pMapHasStagesFilterCheck || panel == m_pHideCompletedFilterCheck)
+    else if (panel == m_pHideCompletedFilterCheck)
     {
         // treat changing these buttons like any other filter has changed
         OnTextChanged(panel, "");
@@ -621,7 +614,8 @@ void CBaseMapsPage::OnTextChanged(Panel *panel, const char *text)
     // apply settings
     ApplyGameFilters();
 
-    if (m_bFiltersVisible && (panel == m_pGameModeFilter || panel == m_pDifficultyFilter || panel == m_pMapFilter))
+    if (m_bFiltersVisible && (panel == m_pGameModeFilter || panel == m_pDifficultyFilter || panel == m_pMapFilter
+         || panel == m_pMapLayoutFilter))
     {
         // if they changed filter settings then cancel the refresh because the old list they are getting
         // will be for the wrong map or gametype, so stop and start a refresh
@@ -641,7 +635,7 @@ void CBaseMapsPage::ApplyGameFilters()
     {
         mapdisplay_t &map = m_vecMaps[i];
         mapstruct_t* mapinfo = &map.m_mMap;
-        DevLog("CURRENTLY FILTERING %s\n", mapinfo->m_szMapName);
+        //DevLog("CURRENTLY FILTERING %s\n", mapinfo->m_szMapName);
         if (!CheckPrimaryFilters(*mapinfo) || !CheckSecondaryFilters(*mapinfo))//MOM_TODO: change this to just one filter check?
         {
             //Failed filters, remove the map
@@ -656,15 +650,15 @@ void CBaseMapsPage::ApplyGameFilters()
             map.m_bDoNotRefresh = false;
             if (!m_pGameList->IsValidItemID(map.m_iListID))
             {
-                DevLog("ADDING MAP TO LIST! %s\n ", mapinfo->m_szMapName);
+                //DevLog("ADDING MAP TO LIST! %s\n ", mapinfo->m_szMapName);
                 KeyValues *kv = new KeyValues("Map");
                 kv->SetString("name", mapinfo->m_szMapName);
                 kv->SetString("map", mapinfo->m_szMapName);
                 kv->SetInt("gamemode", mapinfo->m_iGameMode);
                 kv->SetInt("difficulty", mapinfo->m_iDifficulty);
-                kv->SetBool("HasStages", mapinfo->m_bHasStages);
+                kv->SetInt("MapLayout", ((int)mapinfo->m_bHasStages) + 2);//+ 2 so the picture sets correctly
                 kv->SetBool("HasCompleted", mapinfo->m_bCompleted);
-                kv->SetString("time", mapinfo->m_szBestTime); //or something
+                kv->SetString("time", mapinfo->m_szBestTime);
 
                 map.m_iListID = m_pGameList->AddItem(kv, NULL, false, false);
                 kv->deleteThis();
@@ -692,11 +686,11 @@ void CBaseMapsPage::UpdateStatus()
 
         V_snwprintf(count, ARRAYSIZE(count), L"%d", m_pGameList->GetItemCount());
         g_pVGuiLocalize->ConstructString(header, sizeof(header), g_pVGuiLocalize->Find("#MOM_MapSelector_MapCount"), 1, count);
-        m_pGameList->SetColumnHeaderText(1, header);
+        m_pGameList->SetColumnHeaderText(HEADER_MAPNAME, header);
     }
     else
     {
-        m_pGameList->SetColumnHeaderText(1, g_pVGuiLocalize->Find("#MOM_MapSelector_Maps"));
+        m_pGameList->SetColumnHeaderText(HEADER_MAPNAME, g_pVGuiLocalize->Find("#MOM_MapSelector_Maps"));
     }
 }
 
@@ -728,8 +722,8 @@ void CBaseMapsPage::UpdateFilterSettings()
 
     // Hide completed maps
     m_bFilterHideCompleted = m_pHideCompletedFilterCheck->IsSelected();
-    // Does the map have stages?
-    m_bFilterMapHasStages = m_pMapHasStagesFilterCheck->IsSelected();
+    // Showing specfic map layouts?
+    m_iMapLayoutFilter = m_pMapLayoutFilter->GetActiveItem();
 
     // copy filter settings into filter file
     KeyValues *filter = MapSelectorDialog().GetFilterSaveData(GetName());
@@ -738,7 +732,7 @@ void CBaseMapsPage::UpdateFilterSettings()
     filter->SetString("map", m_szMapFilter);
     filter->SetInt("difficulty", m_iDifficultyFilter);
     filter->SetBool("HideCompleted", m_bFilterHideCompleted);
-    filter->SetBool("HasStages", m_bFilterMapHasStages);
+    filter->SetInt("maplayout", m_iMapLayoutFilter);
 
     MapSelectorDialog().SaveUserData();
     OnSaveFilter(filter);
@@ -878,17 +872,17 @@ bool CBaseMapsPage::CheckPrimaryFilters(mapstruct_t &map)
 //-----------------------------------------------------------------------------
 bool CBaseMapsPage::CheckSecondaryFilters(mapstruct_t &map)
 {
-    DevLog("Map is completed %i and the player is filtering maps %i \n", map.m_bCompleted, m_bFilterHideCompleted);
     //Completion is only secondary
     if (m_bFilterHideCompleted && map.m_bCompleted)//If we're HIDING completed maps and we've completed it
     {
+        DevLog("Map is completed %i and the player is filtering maps %i \n", map.m_bCompleted, m_bFilterHideCompleted);
         return false;//It fails the filter, hide it
     }
 
-    //Linear?
-    if (m_bFilterMapHasStages && !map.m_bHasStages)
+    // Map layout (0 = all, 1 = show staged maps only, 2 = show linear maps only)
+    if (m_iMapLayoutFilter && ((int) map.m_bHasStages) + 1 == m_iMapLayoutFilter)
     {
-        DevLog("Map has stages %i and the user is filtering maps %i\n", map.m_bHasStages, m_bFilterMapHasStages); 
+        DevLog("Map has stages %i and the user is filtering maps %i\n", map.m_bHasStages, m_iMapLayoutFilter);
         return false;
     }
 
@@ -1197,7 +1191,7 @@ void CBaseMapsPage::OnPageHide()
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: initiates server connection
+// Purpose: initiates map loading
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::OnMapStart()
 {
@@ -1205,29 +1199,40 @@ void CBaseMapsPage::OnMapStart()
         return;
 
     // get the map
+
+    //MOM_TODO: get the mapstruct_t data instead of KVs here
     KeyValues *kv = m_pGameList->GetItem(m_pGameList->GetSelectedItem(0));
-    // Stop the current refresh
+    // Stop the current search (online maps)
     StopRefresh();
+    
+    //MOM_TODO: set global gamemode, which sets tick settings etc
+    //TickSet::SetTickrate(MOMGM_BHOP);
+    //engine->ServerCmd(VarArgs("mom_gamemode %i", MOMGM_BHOP));//MOM_TODO this is testing, replace with m.m_iGamemode
+
     // Start the map
-    //MOM_TODO: set global gamemode, tick settings etc
     engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString("map")));
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Displays the current map info (from contextmenu)
 //-----------------------------------------------------------------------------
-void CBaseMapsPage::OnViewGameInfo()
+void CBaseMapsPage::OnViewMapInfo()
 {
     if (!m_pGameList->GetSelectedItemsCount())
         return;
 
-    // get the server
+    // get the map
     KeyValues *pMap = m_pGameList->GetItem(m_pGameList->GetSelectedItem(0));
+
+    //MOM_TODO: pass mapstruct_t data over to the map info dialog!
+    //m_vecMaps.
+
+    //This is how the ServerBrowser did it, they used UserData from the list,
+    //and called the CUtlMap<int <---(ID), mapstruct_t> Get() method
     //int serverID = m_pGameList->GetItemUserData(m_pGameList->GetSelectedItem(0));
 
     // Stop the current refresh
     StopRefresh();
-
     // View the map info
     MapSelectorDialog().OpenMapInfoDialog(this, pMap);
 }

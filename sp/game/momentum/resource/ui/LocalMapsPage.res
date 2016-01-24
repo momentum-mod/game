@@ -207,10 +207,10 @@
         "NumericInputOnly"      "0"
         "unicode"       "0"
     }
-    "HasStagesFilterCheck"
+    "MapLayoutFilter"
     {
-        "ControlName"       "CheckButton"
-        "fieldName"     "HasStagesFilterCheck"
+        "ControlName"       "ComboBox"
+        "fieldName"     "MapLayoutFilter"
         "xpos"      "436"
         "ypos"      "174"
         "wide"      "184"
@@ -219,12 +219,13 @@
         "PinCorner"     "2"
         "visible"       "0"
         "enabled"       "1"
-        "tabPosition"       "7"
+        "tabPosition"       "0"
         "paintbackground"       "1"
-        "labelText"     "#MOM_MapSelector_FilterHasStages"
-        "textAlignment"     "west"
-        "wrap"      "0"
-        "Default"       "0"
+        "textHidden"        "0"
+        "editable"      "0"
+        "maxchars"      "-1"
+        "NumericInputOnly"      "0"
+        "unicode"       "0"
     }
     "HideCompletedFilterCheck"
     {

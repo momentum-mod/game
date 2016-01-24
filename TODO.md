@@ -25,24 +25,34 @@
     - [ ] Local Maps tab
         - [x] Header columns: Completed | Map name | Game type | Difficulty | Best time
         - [x] Populate with maps already on disk (parse .mom files?)
-        - [ ] Parse .mom files to fill the Dialog with information
-    - [ ] Change filters
+        - [ ] Parse .mom/zon/bsp files to fill the Dialog with information
+    - [x] Change filters
         - [x] Map name
         - [x] Gametype (bhop/surf/etc)
         - [x] Difficulty 
-        - [ ] Linear/Staged        
+        - [x] Linear/Staged        
     - [ ] "Online Maps" Tab
         - [ ] Apply filters to API searches
         - [ ] Parse data from API and apply to list
     - [ ] Start the selected map
         - [ ] Download a selected map, and its .zon and .mom file (if not exist)
         - [ ] Open a MapInfoDialog to show progress on download?
-        - [ ] Set the correct gamemode type, tickrate, etc based on .mom file
+        - [x] Set the correct gamemode type, tickrate, etc based on .mom file
         
 - [ ] MapInfoDialog.cpp (Client)
     - [ ] Localize (remove ServerBrowser)
-    - [ ] Show information about the map (basic, Beta+ will have leaderboards, replays, etc)
+    - [ ] Show information about the map
+        - [ ] Local info
+            - [ ] Local PBs
+            - [ ] Link replays to each local time
+            - [ ] Other local info/stats (how many total runs)
+        - [ ] Online info
+            - [ ] Top 10 times for the map
+            - [ ] Link replays to each online time
+            - [ ] Other online info/stats
     - [ ] Make the user able to start the map from the Dialog
+        - [ ] Online maps need to be downloaded
+        - [ ] Local maps simply start like normal
        
 - [ ] The "mom"-ification and refactoring
     - [ ] mom_player (Server/Client)

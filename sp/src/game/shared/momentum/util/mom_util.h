@@ -10,6 +10,7 @@ class MomentumUtil
 {
 public:
 
+#ifdef GAME_DLL
     void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
     void PostTime(const char* URL);
@@ -20,7 +21,13 @@ public:
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
+#endif
 
+    //Formats time in ticks by a given tickrate into
+    //"HH:MM:SS.mmmm"
+    void FormatTime(float ticks, float rate, char *pOut);
+
+    
 };
 
 extern MomentumUtil mom_UTIL;

@@ -11,6 +11,8 @@
 
 #ifdef CLIENT_DLL
 #define CMomentum C_Momentum
+#else
+#include "momentum/tickset.h"
 #endif
 
 
@@ -25,8 +27,7 @@ public:
 
 #else
     DECLARE_SERVERCLASS_NOBASE();
-    CMomentum();
-    ~CMomentum();
+    
 
     //virtual void			Think(void);
 
@@ -51,6 +52,12 @@ private:
         const Vector &vMaxs);
     int DefaultFOV(void) { return 90; }
 #endif
+
+public:
+
+    CMomentum();
+    ~CMomentum();
+
 };
 
 inline CMomentum *GetMomentumGamerules()

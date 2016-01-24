@@ -9,11 +9,12 @@
 #include "shareddefs.h"
 
 // naming this enum would be helpfull
-enum
+typedef enum
 {
-    MOMGM_BHOP = 0,
+    MOMGM_UNKNOWN = 0,
     MOMGM_SURF,
+    MOMGM_BHOP,
     MOMGM_SCROLL,
-    MOMGM_UNKNOWN
-};
+    
+} GAMEMODES;
 #endif // MOM_SHAREDDEFS_H

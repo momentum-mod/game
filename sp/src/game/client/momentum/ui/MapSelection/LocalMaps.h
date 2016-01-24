@@ -13,7 +13,7 @@ class CLocalMaps : public CBaseMapsPage
 
 public: 
 
-    CLocalMaps(vgui::Panel *parent, bool bAutoRefresh = true, const char *pCustomResFilename = NULL);
+    CLocalMaps(vgui::Panel *parent);
     ~CLocalMaps();
 
     // property page handlers
@@ -26,56 +26,36 @@ public:
     // Control which button are visible.
     void ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool bShowFilter);
 
-    // If you pass NULL for pSpecificAddresses, it will broadcast on certain points.
-    // If you pass a non-null value, then it will send info queries directly to those ports.
-    //void InternalGetNewServerList(CUtlVector<netadr_t> *pSpecificAddresses);
-    virtual void OnLoadFilter(KeyValues*);
+    //Filters based on the filter data
     virtual void StartRefresh();
-    // stops current refresh/GetNewServerList()
-    virtual void StopRefresh();
     void GetNewMapList();//called upon loading
 
     virtual void OnMapStart() { BaseClass::OnMapStart(); }
-    // IServerRefreshResponse handlers
-    // called when a server response has timed out
-    //virtual void ServerFailedToRespond(int iServer);
-
-    // called when the current refresh list is complete
-    //virtual void RefreshComplete(EMatchMakingServerResponse response);
 
     // Tell the game list what to put in there when there are no games found.
     virtual void SetEmptyListText();
 
     //virtual void LoadFilterSettings() {};//MOM_TODO: Make this sort by name/gametype/difficulty?
 
-    // ISteamMatchmakingServerListResponse callbacks
-    virtual void ServerResponded(HServerListRequest hReq, int iServer) {}
-    virtual void ServerFailedToRespond(HServerListRequest hRequest, int iServer);
-    virtual void RefreshComplete(HServerListRequest hRequest, EMatchMakingServerResponse response);
-
-    // ISteamMatchmakingPingResponse callbacks
-    virtual void ServerResponded(gameserveritem_t &server) {}
-    virtual void ServerFailedToRespond() {}
-
 private:
-    // vgui message handlers
-    virtual void OnTick();
-
-    // lan timeout checking
-    virtual void CheckRetryRequest();
-
     // context menu message handlers
     MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
 
     // true if we're broadcasting for servers
     bool m_bLoadedMaps;
 
-    // time at which we last broadcasted
-    double m_fRequestTime;
-
-    bool m_bAutoRefresh;
+    //Fills a mapstruct with data read from local files
+    void FillMapstruct(mapstruct_t *);
 };
 
-
+class CTimeSortFunc
+{
+public:
+    bool Less(KeyValues* lhs, KeyValues* rhs, void *)
+    {
+        return (((float) Q_atoi(lhs->GetName())) * lhs->GetFloat("rate") <
+            (float) Q_atoi(rhs->GetName()) * rhs->GetFloat("rate"));
+    }
+};
 
 #endif // LOCALMAPS_H

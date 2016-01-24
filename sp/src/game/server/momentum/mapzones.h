@@ -1,5 +1,11 @@
+#ifndef MAPZONES_H
+#define MAPZONES_H
+#ifdef _WIN32
+#pragma once
+#endif
+
 #include "filesystem.h"
-#include "TimerTriggers.h"
+#include "mom_triggers.h"
 
 #define MOMZONETYPE_START       0
 #define MOMZONETYPE_CP          1
@@ -67,3 +73,5 @@ private:
 };
 
 bool ZoneTypeToClass(int type, char *dest);
+
+#endif

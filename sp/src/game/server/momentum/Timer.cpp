@@ -1,11 +1,5 @@
 #include "cbase.h"
 #include "Timer.h"
-#include "filesystem.h"
-#include "TimerTriggers.h"
-#include "../shared/GameEventListener.h"
-#include "tier1/checksum_sha1.h"
-#include "momentum/mom_shareddefs.h"
-#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -29,7 +23,6 @@ void CTimer::PostTime()
         const char* map = gpGlobals->mapname.ToCStr();
         int ticks = gpGlobals->tickcount - m_iStartTick;
 
-        // MOM_TODO: make tickrate code crossplatform
         TickSet::Tickrate tickRate = TickSet::GetCurrentTickrate();
 
         //Build URL
@@ -245,19 +238,6 @@ void CTimer::DispatchStageCountMessage()
     }
 }
 
-void CTimer::DispatchGameModeMessage()
-{
-    CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer)
-    {
-        CSingleUserRecipientFilter user(pPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_GameMode");
-        WRITE_LONG(m_iGameMode);
-        MessageEnd();
-    }
-}
-
 CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
 {
     g_Timer.DispatchStageCountMessage();
@@ -278,15 +258,10 @@ CTriggerTimerStart *CTimer::GetStartTrigger()
     return m_pStartTrigger.Get();
 }
 
-void CTimer::SetGameMode(int gm)
-{
-    m_iGameMode = gm;
-    DispatchGameModeMessage();
-}
-
 void CTimer::SetGameModeConVars()
 {
-    switch (m_iGameMode)
+    ConVarRef gm("mom_gamemode");
+    switch (gm.GetInt())
     {
     case MOMGM_SURF:
         sv_maxvelocity.SetValue(3500);
@@ -298,10 +273,10 @@ void CTimer::SetGameModeConVars()
         sv_maxvelocity.SetValue(3500);
         break;
     case MOMGM_UNKNOWN:
-        sv_maxvelocity.SetValue(10000);
-        break;
+        //sv_maxvelocity.SetValue(10000);
+        //break;
     default:
-        DevWarning("[%i] GameMode not defined.\n", m_iGameMode);
+        DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;
     }
 }

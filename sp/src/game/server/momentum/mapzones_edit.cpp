@@ -1,6 +1,4 @@
 #include "cbase.h"
-#include "TimerTriggers.h"
-#include "mapzones.h"
 #include "mapzones_edit.h"
 
 #include "tier0/memdbgon.h"

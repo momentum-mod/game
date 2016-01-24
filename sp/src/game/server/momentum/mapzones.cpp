@@ -3,7 +3,7 @@
 #include "Timer.h"
 #include "filesystem.h"
 #include "KeyValues.h"
-#include "TimerTriggers.h"
+#include "mom_triggers.h"
 
 #include "tier0/memdbgon.h"
 

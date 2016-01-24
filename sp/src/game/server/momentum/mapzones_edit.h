@@ -1,9 +1,17 @@
+#ifndef MAPZONES_EDIT_H
+#define MAPZONES_EDIT_H
+#ifdef _WIN32
+#pragma once
+#endif
+
 #define BUILDSTAGE_NONE         0
 #define BUILDSTAGE_START        1
 //#define BUILDSTAGE_ROTATE     2
 #define BUILDSTAGE_END          2
 #define BUILDSTAGE_HEIGHT       3
 
+#include "mapzones.h"
+#include "mom_triggers.h"
 
 extern ConVar mom_zone_edit;
 
@@ -46,3 +54,5 @@ private:
 };
 
 extern CMapzoneEdit g_MapzoneEdit;
+
+#endif // MAPZONES_EDIT_H

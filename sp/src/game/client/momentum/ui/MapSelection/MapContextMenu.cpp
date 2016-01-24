@@ -21,30 +21,22 @@ CMapContextMenu::~CMapContextMenu()
 //-----------------------------------------------------------------------------
 void CMapContextMenu::ShowMenu(
     Panel *target,
-    unsigned int serverID,
-    bool showConnect,
-    bool showViewGameInfo,
-    bool showRefresh,
-    bool showAddToFavorites)
+    bool showStart,
+    bool showViewGameInfo)
 {
-    if (showConnect)
+    if (showStart)
     {
-        AddMenuItem("ConnectToServer", "#ServerBrowser_ConnectToServer", new KeyValues("ConnectToServer", "serverID", serverID), target);
+        AddMenuItem("StartMap", "#MOM_MapSelector_StartMap", new KeyValues("StartMap"), target);
     }
 
     if (showViewGameInfo)
     {
-        AddMenuItem("ViewGameInfo", "#ServerBrowser_ViewServerInfo", new KeyValues("ViewGameInfo", "serverID", serverID), target);
+        AddMenuItem("ViewMapInfo", "#MOM_MapSelector_ShowMapInfo", new KeyValues("ViewMapInfo"), target);
     }
 
-    if (showRefresh)
-    {
-        AddMenuItem("RefreshServer", "#ServerBrowser_RefreshServer", new KeyValues("RefreshServer", "serverID", serverID), target);
-    }
-
-    //if (showAddToFavorites)
+    //if (showRefresh)
     //{
-        //AddMenuItem("AddToFavorites", "#ServerBrowser_AddServerToFavorites", new KeyValues("AddToFavorites", "serverID", serverID), target);
+    //    AddMenuItem("RefreshServer", "#ServerBrowser_RefreshServer", new KeyValues("RefreshServer", "serverID", serverID), target);
     //}
 
     int x, y, gx, gy;

@@ -51,9 +51,9 @@ $Project "Server (Momentum)"
 		{
 			$Folder "Util"
 			{
-				$File	"momentum\tickset.h"
+				$File "momentum\tickset.h"
 
-				$File	"momentum\tickset.cpp"
+				$File "momentum\tickset.cpp"
 				{
 					$Configuration
 					{
@@ -64,17 +64,18 @@ $Project "Server (Momentum)"
 					}
 				}
 
-				$File   "momentum\mom_util.cpp"
-				$File   "momentum\mom_util.h"
+				$File "$SRCDIR\game\shared\momentum\util\mom_util.cpp"
+				$File "$SRCDIR\game\shared\momentum\util\mom_util.h"
 			}
 
 			$Folder "Timer"
 			{
 				$File	"momentum\Timer.h"
 				$File	"momentum\Timer.cpp"
-				$File   "momentum\TimerTriggers.h"
-				$File	"momentum\TimerTriggers.cpp"
 			}
+
+			$File   "momentum\mom_triggers.h"
+			$File	"momentum\mom_triggers.cpp"
 
 			$Folder "Weapons"
 			{

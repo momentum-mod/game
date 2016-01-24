@@ -2,16 +2,13 @@
 
 using namespace vgui;
 
-const float BROADCAST_LIST_TIMEOUT = 0.4f;
-
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CLocalMaps::CLocalMaps(vgui::Panel *parent, bool bAutoRefresh, const char *pCustomResFilename) :
-CBaseMapsPage(parent, "LocalMaps", pCustomResFilename)
+CLocalMaps::CLocalMaps(vgui::Panel *parent) :
+CBaseMapsPage(parent, "LocalMaps")
 {
     m_bLoadedMaps = false;
-    m_bAutoRefresh = bAutoRefresh;
 }
 
 //-----------------------------------------------------------------------------
@@ -29,18 +26,8 @@ void CLocalMaps::OnPageShow()
 {
     if (!m_bLoadedMaps)
         GetNewMapList();
-    if (m_bAutoRefresh)
-        StartRefresh();
-}
 
-
-//-----------------------------------------------------------------------------
-// Purpose: Called every frame
-//-----------------------------------------------------------------------------
-void CLocalMaps::OnTick()
-{
-    BaseClass::OnTick();
-    CheckRetryRequest();
+    StartRefresh();
 }
 
 //-----------------------------------------------------------------------------
@@ -59,6 +46,68 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
     }
 }
 
+
+inline bool MapHasStages(const char* szMap)
+{
+    bool found = false;
+    KeyValues *kvMap = new KeyValues("Map");
+    if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
+    {
+        found = (kvMap->FindKey("stage") != NULL);
+    }
+    kvMap->deleteThis();
+    return found;
+}
+
+void CLocalMaps::FillMapstruct(mapstruct_t *m)
+{
+    //Game mode
+    m->m_iGameMode = MOMGM_UNKNOWN;
+    if (!Q_strnicmp(m->m_szMapName, "surf_", 5))
+    {
+        m->m_iGameMode = MOMGM_SURF;
+    }
+    else if (!Q_strnicmp(m->m_szMapName, "bhop_", 5))
+    {
+        m->m_iGameMode = MOMGM_BHOP;
+    }
+
+    // MOM_TODO: Determine difficulty
+    m->m_iDifficulty = 1;
+
+    //Map layout (liner/staged)
+    m->m_bHasStages = MapHasStages(m->m_szMapName);
+
+    //Completed/Best time
+    KeyValues *kvMap = new KeyValues("Map");
+    if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.tim", m->m_szMapName), "MOD"))
+    {
+        if (!kvMap->IsEmpty())
+        {
+            m->m_bCompleted = true;
+
+            CUtlSortVector<KeyValues*, CTimeSortFunc> sortedTimes;
+            for (KeyValues *kv = kvMap->GetFirstSubKey(); kv; kv = kv->GetNextKey())
+            {
+                sortedTimes.InsertNoSort(kv);
+            }
+
+            sortedTimes.RedoSort();
+
+            KeyValues *pBestTime = sortedTimes[0];
+            if (pBestTime)
+                mom_UTIL.FormatTime(Q_atoi(pBestTime->GetName()), pBestTime->GetFloat("rate"), m->m_szBestTime);
+
+            //FOR_EACH_VEC(sortedTimes, i)
+            //{
+            //
+            //}
+        }
+    }
+    kvMap->deleteThis();
+}
+
+
 void CLocalMaps::GetNewMapList()
 {
     ClearMapList();
@@ -68,6 +117,7 @@ void CLocalMaps::GetNewMapList()
     const char *pMapName = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "MOD", &found);
     while (pMapName)
     {
+        
         DevLog("FOUND MAP %s!\n", pMapName);
         //MOM_TODO: Read the .mom file and create the struct based off of it
         //KeyValues* kv = new KeyValues("Map");
@@ -79,13 +129,12 @@ void CLocalMaps::GetNewMapList()
         mapstruct_t m;
         map.m_bDoNotRefresh = true;
 
+        //Map name
         Q_FileBase(pMapName, m.m_szMapName, MAX_PATH);
         DevLog("Stripped name: %s\n", m.m_szMapName);
-        m.m_iGameMode = GAMEMODE_SURF;//Temp to show data, MOM_TODO change this upon reading .mom file
-        m.m_iDifficulty = 1;
-        m.m_bHasStages = false;
-        m.m_bCompleted = RandomInt(0, 2) == 1;
-        Q_strcpy(m.m_szBestTime, "10 seconds");
+
+        FillMapstruct(&m);
+
         map.m_mMap = m;
         m_vecMaps.AddToTail(map);
 
@@ -147,7 +196,7 @@ void CLocalMaps::StartRefresh()
         }
 
         kv->SetString("name", pMapInfo.m_szMapName);
-        kv->SetBool("HasStages", pMapInfo.m_bHasStages);
+        kv->SetInt("MapLayout", ((int)pMapInfo.m_bHasStages) + 2);//+ 2 so the picture sets correctly
         kv->SetBool("completed", pMapInfo.m_bCompleted);
         kv->SetInt("difficulty", pMapInfo.m_iDifficulty);
         kv->SetInt("gamemode", pMapInfo.m_iGameMode);
@@ -174,12 +223,6 @@ void CLocalMaps::StartRefresh()
 }
 
 
-void CLocalMaps::OnLoadFilter(KeyValues *kv)
-{
-
-}
-
-
 //-----------------------------------------------------------------------------
 // Purpose: Control which button are visible.
 //-----------------------------------------------------------------------------
@@ -190,72 +233,20 @@ void CLocalMaps::ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool
     m_pFilter->SetVisible(bShowFilter);
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: stops current refresh/GetNewServerList()
-//-----------------------------------------------------------------------------
-void CLocalMaps::StopRefresh()
-{
-    BaseClass::StopRefresh();
-    // clear update states
-    //m_bRequesting = false;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Check to see if we've finished looking for local servers
-//-----------------------------------------------------------------------------
-void CLocalMaps::CheckRetryRequest()
-{
-    //if (!m_bRequesting)
-    //    return;
-
-    double curtime = Plat_FloatTime();
-    if (curtime - m_fRequestTime <= BROADCAST_LIST_TIMEOUT)
-    {
-        return;
-    }
-
-    // time has elapsed, finish up
-    //m_bRequesting = false;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: called when a server response has timed out, remove it
-//-----------------------------------------------------------------------------
-void CLocalMaps::ServerFailedToRespond(HServerListRequest hReq, int iServer)
-{
-    //int iServerMap = m_mapServers.Find(iServer);
-    //if (iServerMap != m_mapServers.InvalidIndex())
-    //    RemoveMap(m_mapServers[iServerMap]);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: called when the current refresh list is complete
-//-----------------------------------------------------------------------------
-void CLocalMaps::RefreshComplete(HServerListRequest hReq, EMatchMakingServerResponse response)
-{
-    SetRefreshing(false);
-    m_pGameList->SortList();
-    m_pGameList->SetEmptyListText("#MOM_MapSelector_NoMaps");
-    SetEmptyListText();
-}
-
 void CLocalMaps::SetEmptyListText()
 {
     m_pGameList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: opens context menu (user right clicked on a server)
+// Purpose: opens context menu (user right clicked on a map)
 //-----------------------------------------------------------------------------
 void CLocalMaps::OnOpenContextMenu(int row)
 {
     if (!m_pGameList->GetSelectedItemsCount())
         return;
 
-    // get the server
-    int serverID = m_pGameList->GetItemUserData(m_pGameList->GetSelectedItem(0));
     // Activate context menu
     CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pGameList);
-    menu->ShowMenu(this, serverID, true, true, true, false);
+    menu->ShowMenu(this, true, true);
 }

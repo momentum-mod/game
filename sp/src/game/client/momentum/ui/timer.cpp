@@ -16,6 +16,9 @@ using namespace vgui;
 #include <vgui_controls/AnimationController.h>
 
 #include "vgui_helpers.h"
+#include "momentum/util/mom_util.h"
+
+#include "tier0/memdbgon.h"
 
 #define BUFSIZETIME (sizeof("00:00:00.0000")+1)
 #define BUFSIZELOCL (73)
@@ -220,9 +223,11 @@ int C_Timer::GetCurrentTime()
 
 void C_Timer::Paint(void)
 {
-    float m_flSecondsTime = ((float) GetCurrentTime()) * gpGlobals->interval_per_tick;
+    mom_UTIL.FormatTime(GetCurrentTime(), gpGlobals->interval_per_tick, m_pszString);
+    
+    //float m_flSecondsTime = ((float) GetCurrentTime()) * gpGlobals->interval_per_tick;
 
-    int hours = m_flSecondsTime / (60.0f * 60.0f);
+    /*int hours = m_flSecondsTime / (60.0f * 60.0f);
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
     int seconds = fmod(m_flSecondsTime, 60.0f);
     int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
@@ -232,7 +237,9 @@ void C_Timer::Paint(void)
         minutes, //minutes
         seconds, //seconds
         millis //millis
-        );
+        );*/
+
+
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 

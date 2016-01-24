@@ -4,6 +4,7 @@
 
 #include "filesystem.h"
 #include "movevars_shared.h"
+#include "client_events.h"
 
 #include "tier0/memdbgon.h"
 
@@ -16,7 +17,6 @@ namespace Momentum {
 		// enable console by default
 		ConVarRef con_enable("con_enable");
 		con_enable.SetValue(true);
-
 		// mount CSS content even if it's on a different drive than SDK
 #ifdef _WIN32
 		HKEY hKey;
