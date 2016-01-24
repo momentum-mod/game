@@ -192,7 +192,7 @@ $fadein 0.00
 // This is the amount of time the highlight lags behind the leading edge of the text
 $fxtime 0.15
 // How long to hold the message on the screen (after it scans out)
-$holdtime 1.0
+$holdtime 10.0
 // How long it takes to fade out the message after holding
 $fadeout 0.25
 
@@ -202,6 +202,13 @@ $boxcolor 31 31 31 127
 GAMESAVING_360
 {
 #HL2_Saved
+}
+
+$position 0.65 -1
+
+CHEATER
+{
+#MOM_Cheater_Message
 }
 
 $position -1 0.65

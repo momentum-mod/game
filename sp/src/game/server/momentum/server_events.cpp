@@ -51,10 +51,6 @@ namespace Momentum
 
     void OnMapStart(const char *pMapName)
     { 
-        g_Timer.SetGameModeConVars();
-
-        DevMsg("sv_maxvelocity: %i\n", sv_maxvelocity.GetInt());
-
         // (Re-)Load zones
         if (zones)
         {
@@ -89,6 +85,13 @@ namespace Momentum
     void OnGameFrameStart()
     {
         g_MapzoneEdit.Update();
+
+        if (!g_Timer.GotCaughtCheating())
+        {
+            ConVarRef cheatsRef = ConVarRef("sv_cheats");
+            if (cheatsRef.GetBool())
+                g_Timer.SetCheating(true);
+        }
     }
 
     /*void OnGameFrameEnd()

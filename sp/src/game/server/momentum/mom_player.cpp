@@ -3,8 +3,6 @@
 
 #include "tier0/memdbgon.h"
 
-
-
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
 SendPropInt(SENDINFO(m_iShotsFired)),
 SendPropInt(SENDINFO(m_iDirection)),

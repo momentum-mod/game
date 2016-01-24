@@ -16,7 +16,6 @@ void CTimer::PostTime()
 {
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
-
         //Get required info 
         //MOM_TODO include the extra security measures for beta+
         uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
@@ -63,6 +62,7 @@ void CTimer::PostTime()
 //    }
 //    Log("\n");
 //}
+
 //Called upon map load, loads any and all times stored in the <mapname>.tim file
 void CTimer::LoadLocalTimes(const char *szMapname)
 {
@@ -125,11 +125,11 @@ void CTimer::SaveTime()
 
 void CTimer::Stop(bool endTrigger)
 {
-    if (endTrigger)
+    if (endTrigger && !m_bWereCheatsActivated)
     {
         // Post time to leaderboards if they're online
         // and if cheats haven't been turned on this session
-        if (SteamAPI_IsSteamRunning() && !m_bWereCheatsActivated)
+        if (SteamAPI_IsSteamRunning())
             PostTime();
 
         //Save times locally too, regardless of SteamAPI condition
@@ -147,6 +147,9 @@ void CTimer::Stop(bool endTrigger)
 
 void CTimer::OnMapEnd(const char *pMapName)
 {
+    if (IsRunning()) 
+        Stop(false);
+    m_bWereCheatsActivated = false;
     SetCurrentCheckpointTrigger(NULL);
     SetStartTrigger(NULL);
     SetCurrentStage(NULL);
@@ -157,6 +160,8 @@ void CTimer::OnMapEnd(const char *pMapName)
 
 void CTimer::OnMapStart(const char *pMapName)
 {
+    SetGameModeConVars();
+    m_bWereCheatsActivated = false;
     RequestStageCount();
     //DispatchMapStartMessage();
     LoadLocalTimes(pMapName);
@@ -243,21 +248,6 @@ CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_C
     g_Timer.DispatchStageCountMessage();
 }
 
-bool CTimer::IsRunning()
-{
-    return m_bIsRunning;
-}
-
-void CTimer::SetRunning(bool running)
-{
-    m_bIsRunning = running;
-}
-
-CTriggerTimerStart *CTimer::GetStartTrigger()
-{
-    return m_pStartTrigger.Get();
-}
-
 void CTimer::SetGameModeConVars()
 {
     ConVarRef gm("mom_gamemode");
@@ -279,6 +269,7 @@ void CTimer::SetGameModeConVars()
         DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;
     }
+    DevMsg("CTimer set sv_maxvelocity: %i\n", sv_maxvelocity.GetInt());
 }
 
 //--------- CPMenu stuff --------------------------------
@@ -291,11 +282,7 @@ void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
     c.pos = pPlayer->GetAbsOrigin();
     c.vel = pPlayer->GetAbsVelocity();
     checkpoints.AddToTail(c);
-    // MOM_TODO: Check what gametype we're in, so we can determine if we should stop the timer or not
-    g_Timer.Stop(false);
-    //SetUsingCPMenu(true);
     m_iCurrentStepCP++;
-    //  DispatchCheckpointMessage();
 }
 
 void CTimer::RemoveLastCheckpoint()
@@ -303,9 +290,6 @@ void CTimer::RemoveLastCheckpoint()
     if (checkpoints.IsEmpty()) return;
     checkpoints.Remove(m_iCurrentStepCP);
     m_iCurrentStepCP--;//If there's one element left, we still need to decrease currentStep to -1
-    // DispatchCheckpointMessage();
-    //if (m_iCurrentStepCP <= -1)
-    //    SetUsingCPMenu(false);
 }
 
 void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
@@ -313,33 +297,16 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
     if (checkpoints.IsEmpty() || !cPlayer) return;
     Checkpoint c = checkpoints[cpNum];
     cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
-    // DispatchCheckpointMessage();
-}
-
-//MOM_TODO: This function isn't called, CTimer is not an entity
-//Rethink cheat detection
-void CTimer::Think()
-{
-    m_cCheats = cvar->FindVar("sv_cheats");
-    if (!m_bWereCheatsActivated && m_cCheats && (m_cCheats->GetInt() == 1))
-    {
-        m_bWereCheatsActivated = true;
-        DevMsg("CHEATS ENEABLED");
-    }
 }
 
 void CTimer::SetUsingCPMenu(bool pIsUsingCPMenu)
 {
     m_bUsingCPMenu = pIsUsingCPMenu;
-    // We notify the HUD that we've changed the status
-    // (Or attemped to)
-
 }
 
 void CTimer::SetCurrentCPMenuStep(int pNewNum)
 {
     m_iCurrentStepCP = pNewNum;
-    //  DispatchCheckpointMessage();
 }
 
 //--------- CTriggerOnehop stuff --------------------------------
@@ -406,11 +373,22 @@ public:
 
         if (g_Timer.IsRunning())
         {
-            g_Timer.Stop(false); //Following original intentions of stopping, see MOM_TODO below
-
             // MOM_TODO: consider
             // 1. having a local timer running, as people may want to time their routes they're using CP menu for
             // 2. gamemodes (KZ) where this is allowed
+
+            ConVarRef gm("mom_gamemode");
+            switch (gm.GetInt())
+            {
+            case MOMGM_SURF:
+            case MOMGM_BHOP:
+            case MOMGM_SCROLL:
+                g_Timer.Stop(false);
+
+                //case MOMGM_KZ:
+            default:
+                break;
+            }
         }
         if (args.ArgC() > 1)
         {
@@ -462,10 +440,11 @@ public:
         g_Timer.DispatchCheckpointMessage();
     }
 };
-// MOM_TODO: Command flags?
 
-static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n", FCVAR_NONE);
-static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n", FCVAR_NONE);
+static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n", 
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n", 
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE);
 
 CTimer g_Timer;

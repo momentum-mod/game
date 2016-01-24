@@ -165,6 +165,7 @@ void C_CP_Menu::Paint()
         bool canblur = false;
         if (line->menuitem != 0 &&
             m_nSelectedItem >= 0 &&
+            m_nSelectedItem != m_Processed.Count() &&//Saves the zero from flashing
             (line->menuitem == m_nSelectedItem))
         {
             canblur = true;

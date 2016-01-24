@@ -89,7 +89,6 @@ private:
     Vector m_lastLadderPos;
     EHANDLE g_pLastSpawn;
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &pSpot);
-
     friend class CMomentumGameMovement;
 
 };

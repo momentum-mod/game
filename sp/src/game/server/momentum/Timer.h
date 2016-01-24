@@ -24,37 +24,34 @@ class CTriggerStage;
 
 class CTimer
 {
-    //DECLARE_CLASS_NOBASE(CTimer);
 public:
-    // Strats the timer for the given starting tick
-    void Start(int startTick);
-    // Stops the timer
-    void Stop(bool);
-    // Calculates the stage count
-    // Stores the result on m_iStageCount
-    void RequestStageCount();
-    // Gets the total stage count
-    int GetStageCount() { return m_iStageCount; };
-    // MOM_TODO
-    // Timer does not think. We'll have to "hack" it
-    void Think();
+
+    //-------- HUD Messages --------------------
     void DispatchStateMessage();
     void DispatchResetMessage();
     void DispatchCheckpointMessage();
     void DispatchStageMessage();
     void DispatchStageCountMessage();
-    void DispatchGameModeMessage();
+
+
+    // ------------- Timer state related messages --------------------------
+    // Strats the timer for the given starting tick
+    void Start(int startTick);
+    // Stops the timer
+    void Stop(bool);
     // Is the timer running?
-    bool IsRunning();
+    bool IsRunning() { return m_bIsRunning; }
     // Set the running status of the timer
-    void SetRunning(bool running);
+    void SetRunning(bool running) { m_bIsRunning = running; }
+
+    // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
-    CTriggerTimerStart *GetStartTrigger();
+    CTriggerTimerStart *GetStartTrigger() { return m_pStartTrigger.Get(); }
     // Gets the current checkpoint
     CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint.Get(); }
 
     // Sets the given trigger as the start trigger
-	void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger.Set(pTrigger); }
+    void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger.Set(pTrigger); }
 
     // Sets the current checkpoint
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint.Set(pTrigger); }
@@ -65,6 +62,12 @@ public:
         DispatchStageMessage();
     }
     CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
+
+    // Calculates the stage count
+    // Stores the result on m_iStageCount
+    void RequestStageCount();
+    // Gets the total stage count
+    int GetStageCount() { return m_iStageCount; };
 
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
@@ -124,10 +127,15 @@ public:
     void SaveTime();
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
-    // MOM_TODO: Cheat detection
 
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() { return m_bWereCheatsActivated; };
+    void SetCheating(bool newBool)
+    {
+        UTIL_ShowMessage("CHEATER", UTIL_GetLocalPlayer());
+        Stop(false);
+        m_bWereCheatsActivated = newBool;
+    }
 
     void SetGameModeConVars();
 
@@ -136,12 +144,10 @@ private:
     int m_iStageCount;
     int m_iStartTick;
     bool m_bIsRunning;
-    bool m_bIsPaused;
     bool m_bWereCheatsActivated;
-    ConVar *m_cCheats;
-	CHandle<CTriggerTimerStart> m_pStartTrigger;
-	CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
-	CHandle<CTriggerStage> m_pCurrentStage;
+    CHandle<CTriggerTimerStart> m_pStartTrigger;
+    CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
+    CHandle<CTriggerStage> m_pCurrentStage;
 
     struct Time
     {

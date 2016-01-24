@@ -1199,7 +1199,6 @@ void CBaseMapsPage::OnMapStart()
         return;
 
     // get the map
-
     //MOM_TODO: get the mapstruct_t data instead of KVs here
     KeyValues *kv = m_pGameList->GetItem(m_pGameList->GetSelectedItem(0));
     // Stop the current search (online maps)
