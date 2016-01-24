@@ -13,7 +13,7 @@
     - [x] Fix bugs: Lines being chopped down & mapsummary not being set
     - [x] Discuss columns widths
     - [ ] De-hardcode the font used on size checking
-    - [ ] Find where to place friends leaderboards
+    - [x] Find where to place friends leaderboards
     - [ ] A lot of variables are not necessary. Ensure which are and remove the rest
     - [ ] Use GetTextSize instead of calculating it per character
     
