@@ -914,6 +914,26 @@ Scheme
 				"antialias" "1"
 			}
 		}
+		CreditsOutroTextLarge
+		{
+			"1"
+			{
+				"name"		"Verdana"
+				"tall"		"16"
+				"weight"	"900"
+				"antialias" "1"
+			}
+		}
+		CreditsOutroTextExtraLarge
+		{
+			"1"
+			{
+				"name"		"Verdana"
+				"tall"		"48"
+				"weight"	"900"
+				"antialias" "1"
+			}
+		}
 		CenterPrintText
 		{
 			// note that this scales with the screen resolution

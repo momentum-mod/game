@@ -9,7 +9,6 @@
 	}
 	"2"
 	{
-	//TODO change this to "Start Game" which opens map selection
 		"label" "#MOM_MapSelector_MainMenuOption"
 		"command" "engine ToggleMapSelectionPanel"
 		"InGameOrder" "30"
@@ -40,17 +39,25 @@
 	}
 	"6"
 	{
+		"label" "#MOM_Credits"
+		"command" "engine mom_spawn_with_weapon 0 \n mom_allow_custom_maps 1 \n progress_enable \n map credits"
+		"InGameOrder" "30"
+		"notmulti" "1"
+		"notsingle" "1"
+	}
+	"7"
+	{
 		"label" ""
 		"command" ""
 		"InGameOrder" "90"
 	}
-	"7"
+	"8"
 	{
 		"label" "#GameUI_GameMenu_Quit"
 		"command" "QuitNoConfirm"
 		"InGameOrder" "110"
 	}
-	"8"
+	"9"
 	{
 		"label" "#GameUI_GameMenu_Disconnect"
 		"command" "engine disconnect"
