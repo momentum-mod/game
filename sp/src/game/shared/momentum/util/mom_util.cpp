@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "mom_util.h"
 #include "filesystem.h"
+#include "../../gason/src/gason.h"
 
 #include "tier0/memdbgon.h"
 
@@ -37,18 +38,46 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    DevLog("PostTimeCallback response: %s\n", reinterpret_cast<char*>(pData));
-    //MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
 
-    // Necesary so TimeDisplay scoreboard knows it has to update;
-    IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
-    if (postEvent)
-        gameeventmanager->FireEvent(postEvent);
+    JsonValue val;//Outer object
+    JsonAllocator alloc;
+    char* pDataPtr = reinterpret_cast<char*>(pData);
+    DevLog("pDataPtr: %s\n", pDataPtr);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
 
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT)//Outer should be a JSON Object
+        {
+            //toNode() returns the >>payload<< of the JSON object !!!
+
+            DevLog("Outer is JSON OBJECT!\n");
+            DevLog("Outer has key %s with value %s\n", val.toNode()->key, val.toNode()->value.toString());
+
+            if (val.toNode() && val.toNode()->value.getTag() == JSON_TRUE)
+                //BUGBUG: until the web site changes its value to all lowercase,
+                //this will never be true (site response: "True", parser wants "true"
+            {
+                DevLog("RESPONSE WAS TRUE!\n");
+                // Necesary so TimeDisplay scoreboard knows it has to update;
+                IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
+                if (postEvent)
+                    gameeventmanager->FireEvent(postEvent);
+
+                //MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
+            }
+        }
+    }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
     //Last but not least, free resources
+    alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
 
 void MomentumUtil::PostTime(const char* szURL)
 {
