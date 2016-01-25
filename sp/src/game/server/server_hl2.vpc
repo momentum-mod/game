@@ -14,7 +14,7 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;.\hl2"
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;.\hl2;$SRCDIR\thirdparty\gason\src"
 		$PreprocessorDefinitions		"$BASE;HL2_DLL;USES_SAVERESTORE"
 	}
 }

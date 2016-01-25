@@ -5,6 +5,7 @@
 #endif
 
 #include "filesystem.h"
+#include "gason.h"
 
 class MomentumUtil
 {
