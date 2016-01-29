@@ -16,7 +16,7 @@ of the ideas for whatever reason)
 
 
 ## Contact
-You can contact us either via github, or [our moddb page](http://www.moddb.com/mods/momentum2)
+You can contact us [at our website](http://momentum-mod.org/contact)
 
 <sub><sub>The licenses and legal notices can be found at [SDK LICENSE](LICENSE) and [THIRD PARTY LEGAL NOTICES](thirdpartylegalnotices.txt)</sub></sub>
 

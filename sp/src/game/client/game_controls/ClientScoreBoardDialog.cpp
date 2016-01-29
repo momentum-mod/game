@@ -108,6 +108,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
 
     m_pOnlineLeaderboards->SetVerticalScrollbar(false);
     m_pLocalLeaderboards->SetVerticalScrollbar(false);
+    m_pFriendsLeaderboards->SetVerticalScrollbar(false);
 
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 

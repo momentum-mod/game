@@ -843,6 +843,13 @@ bool CBaseMapsPage::CheckPrimaryFilters(mapstruct_t &map)
     // Needs to pass map name filter
     // compare the first few characters of the filter
     int count = Q_strlen(m_szMapFilter);
+
+    if (!Q_strnicmp(map.m_szMapName, "credits", Q_strlen(map.m_szMapName)))
+    {
+        DevLog("Ignoring credits map\n");
+        return false;
+    }
+
     if (count && Q_strnicmp(map.m_szMapName, m_szMapFilter, count))
     {
         DevLog("Map %s does not pass filter %s \n", map.m_szMapName, m_szMapFilter);

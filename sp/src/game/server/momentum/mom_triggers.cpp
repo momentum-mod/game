@@ -2,7 +2,7 @@
 #include "Timer.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
-#include "../shared/in_buttons.h"
+#include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
