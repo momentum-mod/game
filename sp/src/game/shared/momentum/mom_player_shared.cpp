@@ -179,10 +179,6 @@ void CMomentumPlayer::FireBullet(
         if (tr.fraction == 1.0f)
             break; // we didn't hit anything, stop tracing shoot
 
-#ifdef _DEBUG		
-        if (bFirstHit)
-            AddBulletStat(gpGlobals->realtime, VectorLength(vecSrc - tr.endpos), tr.endpos);
-#endif
 
         bFirstHit = false;
 
