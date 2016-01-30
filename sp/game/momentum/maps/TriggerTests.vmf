@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6412"
-	"mapversion" "21"
+	"mapversion" "24"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -20,7 +20,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "21"
+	"mapversion" "24"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -164,7 +164,7 @@ world
 		{
 			"id" "13"
 			"plane" "(-480 -448 -160) (-480 384 -160) (480 384 -160)"
-			"material" "DE_TRAIN/TRAIN_OFFICETILE_01"
+			"material" "DEV/DEV_BLENDMEASURE"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
 			"rotation" "0"
@@ -2292,7 +2292,7 @@ world
 		{
 			"id" "672"
 			"plane" "(96 384 -704) (-416 384 -704) (-416 384 -160)"
-			"material" "DEV/DEV_MEASURECRATE01"
+			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -2312,7 +2312,7 @@ world
 		side
 		{
 			"id" "673"
-			"plane" "(-448 2432 224) (-416 2432 224) (-416 387.254 224)"
+			"plane" "(-448 384 224) (-448 2432 224) (-416 2432 224)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
@@ -2323,7 +2323,7 @@ world
 		side
 		{
 			"id" "674"
-			"plane" "(-448 387.254 -704) (-416 387.254 -704) (-416 2432 -704)"
+			"plane" "(-448 2432 -704) (-448 384 -704) (-416 384 -704)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[-1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
@@ -2334,7 +2334,7 @@ world
 		side
 		{
 			"id" "675"
-			"plane" "(-448 2432 224) (-448 387.254 224) (-448 387.254 -704)"
+			"plane" "(-448 384 -704) (-448 2432 -704) (-448 2432 224)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2345,7 +2345,7 @@ world
 		side
 		{
 			"id" "676"
-			"plane" "(-416 2432 -704) (-416 387.254 -704) (-416 387.254 224)"
+			"plane" "(-416 2432 -704) (-416 384 -704) (-416 384 224)"
 			"material" "DEV/DEV_MEASURECRATE01"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2356,7 +2356,7 @@ world
 		side
 		{
 			"id" "677"
-			"plane" "(-416 2432 224) (-448 2432 224) (-448 2432 -704)"
+			"plane" "(-448 2432 -704) (-416 2432 -704) (-416 2432 224)"
 			"material" "DEV/DEV_MEASURECRATE01"
 			"uaxis" "[-1 0 0 -128] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2367,7 +2367,7 @@ world
 		side
 		{
 			"id" "678"
-			"plane" "(-416 387.254 -704) (-448 387.254 -704) (-448 387.254 224)"
+			"plane" "(-416 384 -704) (-448 384 -704) (-448 384 224)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2388,7 +2388,7 @@ world
 		side
 		{
 			"id" "679"
-			"plane" "(96 2432 224) (128 2432 224) (128 387.254 224)"
+			"plane" "(96 384 224) (96 2432 224) (128 2432 224)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
@@ -2399,7 +2399,7 @@ world
 		side
 		{
 			"id" "680"
-			"plane" "(96 387.254 -704) (128 387.254 -704) (128 2432 -704)"
+			"plane" "(96 2432 -704) (96 384 -704) (128 384 -704)"
 			"material" "DEV/DEV_MEASURECRATE01"
 			"uaxis" "[-1 0 0 128] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
@@ -2410,7 +2410,7 @@ world
 		side
 		{
 			"id" "681"
-			"plane" "(96 2432 224) (96 387.254 224) (96 387.254 -704)"
+			"plane" "(96 384 -704) (96 2432 -704) (96 2432 224)"
 			"material" "DEV/DEV_MEASURECRATE01"
 			"uaxis" "[0 -1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2421,7 +2421,7 @@ world
 		side
 		{
 			"id" "682"
-			"plane" "(128 2432 -704) (128 387.254 -704) (128 387.254 224)"
+			"plane" "(128 2432 -704) (128 384 -704) (128 384 224)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2432,7 +2432,7 @@ world
 		side
 		{
 			"id" "683"
-			"plane" "(128 2432 224) (96 2432 224) (96 2432 -704)"
+			"plane" "(96 2432 -704) (128 2432 -704) (128 2432 224)"
 			"material" "DEV/DEV_MEASURECRATE01"
 			"uaxis" "[-1 0 0 128] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2443,7 +2443,7 @@ world
 		side
 		{
 			"id" "684"
-			"plane" "(128 387.254 -704) (96 387.254 -704) (96 387.254 224)"
+			"plane" "(128 384 -704) (96 384 -704) (96 384 224)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
@@ -2661,7 +2661,7 @@ world
 		{
 			"id" "707"
 			"plane" "(128 384 -704) (-448 384 -704) (-448 384 -672)"
-			"material" "DEV/DEV_MEASURECRATE01"
+			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
