@@ -8,8 +8,8 @@
 #include "const.h"
 #include "shareddefs.h"
 
-// naming this enum would be helpfull
-typedef enum
+// Gamemode for momentum
+typedef enum MOMGM
 {
     MOMGM_UNKNOWN = 0,
     MOMGM_SURF,

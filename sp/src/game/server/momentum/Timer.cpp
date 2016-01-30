@@ -247,24 +247,29 @@ CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_C
 {
     g_Timer.DispatchStageCountMessage();
 }
-
+//set ConVars according to Gamemode. Tickrate is by in tickset.h
 void CTimer::SetGameModeConVars()
 {
     ConVarRef gm("mom_gamemode");
+    ConVarRef aa("sv_airaccelerate");
     switch (gm.GetInt())
     {
     case MOMGM_SURF:
         sv_maxvelocity.SetValue(3500);
+        aa.SetValue(150);
         break;
     case MOMGM_BHOP:
         sv_maxvelocity.SetValue(10000);
+        aa.SetValue(1000);
         break;
     case MOMGM_SCROLL:
         sv_maxvelocity.SetValue(3500);
+        aa.SetValue(100);
         break;
     case MOMGM_UNKNOWN:
-        //sv_maxvelocity.SetValue(10000);
-        //break;
+        sv_maxvelocity.SetValue(3500);
+        aa.SetValue(150);
+        break;
     default:
         DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;

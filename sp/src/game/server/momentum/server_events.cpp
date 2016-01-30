@@ -24,7 +24,6 @@ namespace Momentum
     {
         ConVarRef gm("mom_gamemode");
         ConVarRef map("host_map");
-        ConVarRef aa("sv_airaccelerate");
         const char *pMapName = map.GetString();
         // This will only happen if the user didn't use the map selector to start a map
 
@@ -49,24 +48,13 @@ namespace Momentum
                DevLog("SETTING THE GAMEMODE!\n");
                gm.SetValue(MOMGM_SCROLL);
             }
+            
             else
             {
                 gm.SetValue(MOMGM_UNKNOWN);
                 //g_Timer.SetGameMode(MOMGM_UNKNOWN);
             }
-        }
-        switch (gm.GetInt()) //set aa or other values depending on gamemode 
-        {
-        case MOMGM_BHOP:
-            return aa.SetValue(1000);
-            //MOM_TODO : add other possible gm-dependant values to each
-        case MOMGM_SCROLL:
-            return aa.SetValue(100);
-
-        case MOMGM_SURF:
-        case MOMGM_UNKNOWN:
-        default:
-           return aa.SetValue(150);
+            
         }
     }
 
