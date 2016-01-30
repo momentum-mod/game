@@ -128,11 +128,11 @@
     - [ ] Extract underlying menu class and make hud_cp_menu create one
     - [x] Use .res files
 
-- [ ] TimeTriggers.cpp (Server)
+- [ ] mom_triggers.cpp (Server)
     - [ ] Tweak limit speed method
     - [x] Implement Hud Messaging system to interact with timer.cpp (client)
     - [x] Add the option to define what angles should the player have after being teleported
-    - [ ] Move the custom entities that are not part of the timer outside this file 
+    - [ ] Unify every spawnflag (So each one has an unique 'id') 
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking
@@ -143,9 +143,8 @@
     
 - [x] In-game mapzone editor (Server/Client) allows for creation of zone files (on older CS maps) without using Hammer
 
-- [x] mapzones.cpp (Server)
-    - [ ] ~~Add support for trigger_momentum_teleport and trigger_momentum_userinput~~
-    - [ ] ~~Make sure it works correctly after that before releasing Alpha!~~
+- [ ] mapzones.cpp (Server)
+    - [ ] Add support for the new custom triggers
 
 - [x] mapzones_edit.cpp (Server)
 	- [x] Change description for mom_zone_defmethod

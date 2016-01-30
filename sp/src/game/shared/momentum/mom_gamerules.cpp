@@ -183,7 +183,10 @@ static ConVar give_weapon("mom_spawn_with_weapon", "1", FCVAR_NONE, "Spawn the p
 void CMomentum::PlayerSpawn(CBasePlayer* pPlayer)
 {
     if (gamemode.GetInt() == 0 && !allow_custom.GetBool())
-        engine->ServerCommand("disconnect\n");
+    {
+        engine->ServerCommand("disconnect\n"); 
+        Warning("\n\nBeware, beware!\nYou have been disconnected from the map because custom maps are not allowed if %s is 0.\nPlease set it to 1 in order to play custom maps.\n\n", allow_custom.GetName());
+    }
     if (give_weapon.GetBool())
         pPlayer->Weapon_Create("weapon_momentum_gun");
     //MOM_TODO: keep track of holstering (convar?)

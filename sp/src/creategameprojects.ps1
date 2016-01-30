@@ -1,8 +1,15 @@
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+{
+	Write-Warning "You do not have Administrator rights to run this script!`nPlease re-run this script as an Administrator!"
+	pause
+	exit
+}
+
 $path = (Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 243730" -Name InstallLocation).InstallLocation
 
 if (!$path)
 {
-	echo "You should install Source SDK Base 2013 Singleplayer."
+	Write-Warning "You should install Source SDK Base 2013 Singleplayer."
 	pause
 	exit
 }

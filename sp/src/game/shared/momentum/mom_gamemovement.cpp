@@ -621,7 +621,9 @@ void CMomentumGameMovement::CategorizePosition()
                 if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
                 {
                     DoLateReflect();
-                    CategorizePosition();
+                    // @Ruben: @fatalis found that this is the reason for the crash on some maps.
+                    // Commenting it for the time being.
+                    //CategorizePosition();
 
                     return;
                 }
