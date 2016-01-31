@@ -276,7 +276,15 @@ void CTimer::SetGameModeConVars()
     }
     DevMsg("CTimer set sv_maxvelocity: %i\n", sv_maxvelocity.GetInt());
 }
-
+//Practice mode that stops the timer and allows the player to noclip.
+void CTimer::EnablePractice(CBasePlayer *pPlayer) 
+{
+   pPlayer->SetParent(NULL);
+   pPlayer->SetMoveType(MOVETYPE_NOCLIP);
+   ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode on!\n");
+   pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
+   g_Timer.Stop(true);
+}
 //--------- CPMenu stuff --------------------------------
 
 void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
@@ -444,8 +452,35 @@ public:
         }
         g_Timer.DispatchCheckpointMessage();
     }
+
+    static void PracticeMove()
+    {
+       CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+       if (!pPlayer)
+          return;
+
+      // CPlayerState *pl = pPlayer->PlayerData();
+     //  Assert(pl);
+
+       if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
+       {
+          g_Timer.EnablePractice(pPlayer);
+          return;
+       }
+
+       pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
+       pPlayer->SetMoveType(MOVETYPE_WALK);
+
+       Vector oldorigin = pPlayer->GetAbsOrigin();
+       ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");   
+    }
+
 };
 
+
+  
+static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove, "Toggle. Stops timer and allows player to fly around in noclip.",
+   FCVAR_CLIENTCMD_CAN_EXECUTE);
 static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n", 
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n", 
