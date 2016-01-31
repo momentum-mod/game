@@ -636,7 +636,7 @@ void CMomentumGameMovement::CategorizePosition()
             if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
             {
                 DoLateReflect();
-                CategorizePosition();
+                //CategorizePosition();
 
                 return;
             }
