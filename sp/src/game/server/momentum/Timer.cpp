@@ -78,7 +78,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             Time t;
             t.ticks = Q_atoi(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
-            t.date = (time_t) kv->GetInt("date");
+            t.date = (time_t)kv->GetInt("date");
             localTimes.AddToTail(t);
         }
     }
@@ -147,7 +147,7 @@ void CTimer::Stop(bool endTrigger)
 
 void CTimer::OnMapEnd(const char *pMapName)
 {
-    if (IsRunning()) 
+    if (IsRunning())
         Stop(false);
     m_bWereCheatsActivated = false;
     SetCurrentCheckpointTrigger(NULL);
@@ -170,12 +170,12 @@ void CTimer::OnMapStart(const char *pMapName)
 
 void CTimer::RequestStageCount()
 {
-    CTriggerStage *stage = (CTriggerStage *) gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
+    CTriggerStage *stage = (CTriggerStage *)gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
     int iCount = 1;//CTriggerStart counts as one
     while (stage)
     {
         iCount++;
-        stage = (CTriggerStage *) gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
+        stage = (CTriggerStage *)gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
     }
     m_iStageCount = iCount;
 }
@@ -196,7 +196,7 @@ void CTimer::DispatchStageMessage()
         CSingleUserRecipientFilter user(cPlayer);
         user.MakeReliable();
         UserMessageBegin(user, "Timer_Stage");
-		WRITE_LONG(GetCurrentStage()->GetStageNumber());
+        WRITE_LONG(GetCurrentStage()->GetStageNumber());
         MessageEnd();
     }
 }
@@ -277,13 +277,13 @@ void CTimer::SetGameModeConVars()
     DevMsg("CTimer set sv_maxvelocity: %i\n", sv_maxvelocity.GetInt());
 }
 //Practice mode that stops the timer and allows the player to noclip.
-void CTimer::EnablePractice(CBasePlayer *pPlayer) 
+void CTimer::EnablePractice(CBasePlayer *pPlayer)
 {
-   pPlayer->SetParent(NULL);
-   pPlayer->SetMoveType(MOVETYPE_NOCLIP);
-   ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode on!\n");
-   pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-   g_Timer.Stop(true);
+    pPlayer->SetParent(NULL);
+    pPlayer->SetMoveType(MOVETYPE_NOCLIP);
+    ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode on!\n");
+    pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
+    g_Timer.Stop(true);
 }
 //--------- CPMenu stuff --------------------------------
 
@@ -356,7 +356,7 @@ public:
         if ((start = g_Timer.GetStartTrigger()) != NULL && cPlayer)
         {
             // Don't set angles if still in start zone.
-            if ( g_Timer.IsRunning() && start->GetHasLookAngles() )
+            if (g_Timer.IsRunning() && start->GetHasLookAngles())
             {
                 QAngle ang = start->GetLookAngles();
 
@@ -455,35 +455,35 @@ public:
 
     static void PracticeMove()
     {
-       CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
-       if (!pPlayer)
-          return;
+        CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+        if (!pPlayer)
+            return;
 
-      // CPlayerState *pl = pPlayer->PlayerData();
-     //  Assert(pl);
+        // CPlayerState *pl = pPlayer->PlayerData();
+        //  Assert(pl);
 
-       if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
-       {
-          g_Timer.EnablePractice(pPlayer);
-          return;
-       }
+        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
+        {
+            g_Timer.EnablePractice(pPlayer);
+            return;
+        }
 
-       pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
-       pPlayer->SetMoveType(MOVETYPE_WALK);
+        pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
+        pPlayer->SetMoveType(MOVETYPE_WALK);
 
-       Vector oldorigin = pPlayer->GetAbsOrigin();
-       ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");   
+        Vector oldorigin = pPlayer->GetAbsOrigin();
+        ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     }
 
 };
 
 
-  
+
 static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove, "Toggle. Stops timer and allows player to fly around in noclip.",
-   FCVAR_CLIENTCMD_CAN_EXECUTE);
-static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n", 
+    FCVAR_CLIENTCMD_CAN_EXECUTE);
+static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
-static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n", 
+static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE);
 
