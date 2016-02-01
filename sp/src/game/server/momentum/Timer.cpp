@@ -123,7 +123,7 @@ void CTimer::SaveTime()
     timesKV->deleteThis();
 }
 
-void CTimer::Stop(bool endTrigger)
+void CTimer::Stop(bool endTrigger /* = false */)
 {
     if (endTrigger && !m_bWereCheatsActivated)
     {
@@ -283,7 +283,7 @@ void CTimer::EnablePractice(CBasePlayer *pPlayer)
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode on!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    g_Timer.Stop(true);
+    g_Timer.Stop(false);
 }
 void CTimer::DisablePractice(CBasePlayer *pPlayer)
 {
@@ -291,7 +291,7 @@ void CTimer::DisablePractice(CBasePlayer *pPlayer)
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
     //Vector oldorigin = pPlayer->GetAbsOrigin();
-    g_Timer.Stop(true);
+    g_Timer.Stop(false);
 }
 bool CTimer::IsPracticeMode(CBaseEntity *pOther)
 {

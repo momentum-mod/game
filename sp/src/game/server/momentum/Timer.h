@@ -38,7 +38,7 @@ public:
     // Strats the timer for the given starting tick
     void Start(int startTick);
     // Stops the timer
-    void Stop(bool);
+    void Stop(bool = false);
     // Is the timer running?
     bool IsRunning() { return m_bIsRunning; }
     // Set the running status of the timer
