@@ -1,7 +1,8 @@
-"MOMsong.TiagreAtDawn" //This is song #17 of the HL2 OST, but I'm adding it as an example for future music
+"MOMsong.TiagreAtDawn"
 {
+// Thanks to The Rhino Burger http://therhinoburger.bandcamp.com/
 	"channel"		"CHAN_STATIC"
-	"volume"		"0.7"
+	"volume"		"0.5" // Really loud, take care!
 	"pitch"			"100"
 	"soundlevel"	"0"
 	"wave"			"*#music/triageatdawn.mp3"

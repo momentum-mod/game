@@ -65,6 +65,7 @@
 	"Special thanks to:"   "CreditsOutroTextLarge"
 	"Ivan Vashchaev for his JSON parser GASON"   "CreditsOutroText"
 	"Slack Technologies Inc." "CreditsOutroText"
+	"The Rhino Burger for their cover of Tiagre at Dawn" "CreditsOutroText"
 	"everyone who has ever contributed"   "CreditsOutroText"
 	"and"	"CreditsOutroText"
 	" "	"CreditsOutroText"
