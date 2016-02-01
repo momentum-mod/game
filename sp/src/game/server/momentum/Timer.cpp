@@ -290,8 +290,6 @@ void CTimer::DisablePractice(CBasePlayer *pPlayer)
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
-    //Vector oldorigin = pPlayer->GetAbsOrigin();
-    g_Timer.Stop(false);
 }
 bool CTimer::IsPracticeMode(CBaseEntity *pOther)
 {
@@ -492,5 +490,4 @@ static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart
 static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE);
-
 CTimer g_Timer;
