@@ -78,7 +78,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             Time t;
             t.ticks = Q_atoi(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
-            t.date = (time_t)kv->GetInt("date");
+            t.date = (time_t) kv->GetInt("date");
             localTimes.AddToTail(t);
         }
     }
@@ -170,12 +170,12 @@ void CTimer::OnMapStart(const char *pMapName)
 
 void CTimer::RequestStageCount()
 {
-    CTriggerStage *stage = (CTriggerStage *)gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
+    CTriggerStage *stage = (CTriggerStage *) gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
     int iCount = 1;//CTriggerStart counts as one
     while (stage)
     {
         iCount++;
-        stage = (CTriggerStage *)gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
+        stage = (CTriggerStage *) gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
     }
     m_iStageCount = iCount;
 }
@@ -287,18 +287,15 @@ void CTimer::EnablePractice(CBasePlayer *pPlayer)
 }
 void CTimer::DisablePractice(CBasePlayer *pPlayer)
 {
-   pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
-   ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
-   pPlayer->SetMoveType(MOVETYPE_WALK);
-   Vector oldorigin = pPlayer->GetAbsOrigin();
-   g_Timer.Stop(true);
+    pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
+    ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
+    pPlayer->SetMoveType(MOVETYPE_WALK);
+    //Vector oldorigin = pPlayer->GetAbsOrigin();
+    g_Timer.Stop(true);
 }
-bool CTimer::IsPractiaceMode(CBaseEntity *pOther)
+bool CTimer::IsPracticeMode(CBaseEntity *pOther)
 {
-    if (pOther->GetMoveType() == MOVETYPE_NOCLIP)
-        return true;
-    else
-        return false;
+    return pOther->GetMoveType() == MOVETYPE_NOCLIP && (pOther->GetEFlags() & EFL_NOCLIP_ACTIVE);
 }
 //--------- CPMenu stuff --------------------------------
 
@@ -476,25 +473,19 @@ public:
         if (!pPlayer)
             return;
 
-        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
+        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP && velocity.Length() == 0)
         {
-            if (velocity.x == 0 && velocity.y == 0 && velocity.z == 0) //stop player from enabling practice mode unless they are not moving
-            {
-                g_Timer.EnablePractice(pPlayer); 
-                return;  
-            }
+            g_Timer.EnablePractice(pPlayer);
         }
         else //player is either already in practice mode or currently moving.
             g_Timer.DisablePractice(pPlayer);
-      
-        
     }
 
 };
 
 
 
-static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove, "Toggle. Stops timer and allows player to fly around in noclip.",
+static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove, "Toggle. Stops timer and allows player to fly around in noclip.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE);
 static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);

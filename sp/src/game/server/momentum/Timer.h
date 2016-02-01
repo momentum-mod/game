@@ -132,7 +132,7 @@ public:
     void PracticeMove();
     void EnablePractice(CBasePlayer *pPlayer);
     void DisablePractice(CBasePlayer *pPlayer);
-    bool IsPractiaceMode(CBaseEntity *pOther);
+    bool IsPracticeMode(CBaseEntity *pOther);
 
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() { return m_bWereCheatsActivated; };

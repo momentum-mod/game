@@ -41,7 +41,7 @@ END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer() && !g_Timer.IsPractiaceMode(pOther)) //do not start timer if player is in practice mode.
+    if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) //do not start timer if player is in practice mode.
     {
         g_Timer.Start(gpGlobals->tickcount);
 
