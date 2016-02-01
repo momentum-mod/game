@@ -473,7 +473,7 @@ public:
         if (!pPlayer)
             return;
 
-        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP && velocity.Length() == 0)
+        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP && velocity.Length2D() == 0)
         {
             g_Timer.EnablePractice(pPlayer);
         }
