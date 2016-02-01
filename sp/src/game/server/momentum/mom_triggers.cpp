@@ -41,10 +41,10 @@ END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer())
+    if (pOther->IsPlayer() && !g_Timer.IsPractiaceMode(pOther)) //do not start timer if player is in practice mode.
     {
         g_Timer.Start(gpGlobals->tickcount);
-        g_Timer.SetStartTrigger(this);
+
         if (IsLimitingSpeed())
         {
             Vector velocity = pOther->GetAbsVelocity();
@@ -73,6 +73,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
+    g_Timer.SetStartTrigger(this);
     if (pOther->IsPlayer() && g_Timer.IsRunning())
     {
         g_Timer.Stop(false);

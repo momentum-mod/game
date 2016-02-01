@@ -128,9 +128,12 @@ public:
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
 
-    // Noclip mode that stops timer
+    // Practice mode- noclip mode that stops timer
     void PracticeMove();
     void EnablePractice(CBasePlayer *pPlayer);
+    void DisablePractice(CBasePlayer *pPlayer);
+    bool IsPractiaceMode(CBaseEntity *pOther);
+
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() { return m_bWereCheatsActivated; };
     void SetCheating(bool newBool)

@@ -285,6 +285,21 @@ void CTimer::EnablePractice(CBasePlayer *pPlayer)
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
     g_Timer.Stop(true);
 }
+void CTimer::DisablePractice(CBasePlayer *pPlayer)
+{
+   pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
+   ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
+   pPlayer->SetMoveType(MOVETYPE_WALK);
+   Vector oldorigin = pPlayer->GetAbsOrigin();
+   g_Timer.Stop(true);
+}
+bool CTimer::IsPractiaceMode(CBaseEntity *pOther)
+{
+    if (pOther->GetMoveType() == MOVETYPE_NOCLIP)
+        return true;
+    else
+        return false;
+}
 //--------- CPMenu stuff --------------------------------
 
 void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
@@ -456,23 +471,23 @@ public:
     static void PracticeMove()
     {
         CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+        Vector velocity = pPlayer->GetAbsVelocity();
+
         if (!pPlayer)
             return;
 
-        // CPlayerState *pl = pPlayer->PlayerData();
-        //  Assert(pl);
-
         if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
         {
-            g_Timer.EnablePractice(pPlayer);
-            return;
+            if (velocity.x == 0 && velocity.y == 0 && velocity.z == 0) //stop player from enabling practice mode unless they are not moving
+            {
+                g_Timer.EnablePractice(pPlayer); 
+                return;  
+            }
         }
-
-        pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
-        pPlayer->SetMoveType(MOVETYPE_WALK);
-
-        Vector oldorigin = pPlayer->GetAbsOrigin();
-        ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
+        else //player is either already in practice mode or currently moving.
+            g_Timer.DisablePractice(pPlayer);
+      
+        
     }
 
 };

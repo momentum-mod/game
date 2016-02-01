@@ -95,10 +95,9 @@
     - [x] Store current gamemode on a global variable
 
 - [ ] Gamemodes
-    - [ ] *BHOP* -> 100 tick, no stamina, autojump/no autojump (Cvar so people can manual scroll if they want)
+    - [x] *BHOP* -> 100 tick, no stamina, autojump/no autojump (Cvar so people can manual scroll if they want)
     - [ ] *SURF* -> 66 (default)/100 , no stamina, autojump
     - [ ] *KZ* -> 100 tick, stamina, no autojump
-    - [ ] *LongJump* -> 100 tick, stamina, no autojump (basically ties in to KZ)
 
 - [ ] weapon_momentum_gun.cpp (Shared) and CS:S weapon entities
     - [x] Import CS:S weapon entities over
@@ -107,6 +106,8 @@
     - [ ] Make the main gun toggleable (the player spawns with it, presses button to use/hide it)
     - [ ] Look into removing the crosshair? Customization?
     - [ ] Consider keeping the hud_ammo.cpp HUD element for displaying how many bullets the player has in the clip
+	- [ ] Change model
+	- [ ] Tone down or remove view-bob 
 
 - [ ] timer.cpp (Client) 
     - [ ] Play effects (animations) for run states
@@ -116,6 +117,7 @@
     - [x] Have more info (checkpoints, current stage/total stages, etc)
     - [x] Only display relevant info
     - [ ] Act accordingly to gamemode
+		- [ ] Add stamina settings for kz/scroll modes
     - [x] Implement Hud Messaging system to interact with Timer.cpp (server)
     - [x] Localization
     - [x] Discuss bufsize for strings taking intoa count localizations
@@ -133,6 +135,7 @@
     - [x] Implement Hud Messaging system to interact with timer.cpp (client)
     - [x] Add the option to define what angles should the player have after being teleported
     - [ ] Unify every spawnflag (So each one has an unique 'id') 
+	- [ ] Bonus stages (either flags added to existing triggers or child entites)
 
 - [ ] Timer.cpp (Server)
     - [ ] Add hash checking
@@ -155,6 +158,9 @@
 	- [ ] Few values are set to default when the map ends, we have to set it to how the user had it before going to the credits
 	- [ ] If the user disconnects before the credits ending, hud convar values will not be set back to how they were before
     
+- [ ] GUI changes
+	- [ ] Add practice mode state to timer VGUI panel 
+	
 ## BETA
 - [ ] Implement CEF
     - [ ] Create custom HTML HUD
@@ -172,6 +178,7 @@
     - [ ] Racing system (like spectating but you can move around)
         - [ ] Synchronize start, notified ends
         - [ ] Allow disqualifications, drop outs, disconnections
+	- [ ] Free play online ghosts (Similar to current bhop/surf servers. Community is important.)
 
 - [ ] Global chat
     - [ ] Simple general and map chat via IRC or something
@@ -183,7 +190,8 @@
     - [ ] Edited gun sounds that reference original sounds?
 
 - [ ] Gamemodes (Ideas)
-    -[ ] RocketJump -> 100 tick?, no stamina?, autojump?
+    - [ ] RocketJump -> 100 tick?, no stamina?, autojump?
+	
 ## BETA+ (Official Release)
 - [ ] Get greenlit
 
