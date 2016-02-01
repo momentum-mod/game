@@ -97,11 +97,6 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
             KeyValues *pBestTime = sortedTimes[0];
             if (pBestTime)
                 mom_UTIL.FormatTime(Q_atoi(pBestTime->GetName()), pBestTime->GetFloat("rate"), m->m_szBestTime);
-
-            //FOR_EACH_VEC(sortedTimes, i)
-            //{
-            //
-            //}
         }
     }
     kvMap->deleteThis();
@@ -116,17 +111,11 @@ void CLocalMaps::GetNewMapList()
     //MOM_TODO: make this by *.mom
     const char *pMapName = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "MOD", &found);
     while (pMapName)
-    {
-        
+    {       
         DevLog("FOUND MAP %s!\n", pMapName);
-        //MOM_TODO: Read the .mom file and create the struct based off of it
-        //KeyValues* kv = new KeyValues("Map");
-        //kv->LoadFromFile(g_pFullFileSystem, pMapName, "MOD");
-        //Q_FileBase() can be used to strip the maps/ and .mom, returns file name
-
-        //Q_SetExtension can set the extension for the maps file
-        mapdisplay_t map;
-        mapstruct_t m;
+        
+        mapdisplay_t map = mapdisplay_t();
+        mapstruct_t m = mapstruct_t();
         map.m_bDoNotRefresh = true;
 
         //Map name

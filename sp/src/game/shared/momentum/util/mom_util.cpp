@@ -53,11 +53,10 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
             //toNode() returns the >>payload<< of the JSON object !!!
 
             DevLog("Outer is JSON OBJECT!\n");
-            DevLog("Outer has key %s with value %s\n", val.toNode()->key, val.toNode()->value.toString());
+            JsonNode *node = val.toNode();
+            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
 
-            if (val.toNode() && val.toNode()->value.getTag() == JSON_TRUE)
-                //BUGBUG: until the web site changes its value to all lowercase,
-                //this will never be true (site response: "True", parser wants "true"
+            if (node && node->value.getTag() == JSON_TRUE)
             {
                 DevLog("RESPONSE WAS TRUE!\n");
                 // Necesary so TimeDisplay scoreboard knows it has to update;
