@@ -48,7 +48,10 @@ namespace Momentum
                DevLog("SETTING THE GAMEMODE!\n");
                gm.SetValue(MOMGM_SCROLL);
             }
-            
+            else if (!Q_strnicmp(pMapName, "background", strlen("background")))
+            {
+                gm.SetValue(MOMGM_ALLOWED);
+            }
             else
             {
                 gm.SetValue(MOMGM_UNKNOWN);

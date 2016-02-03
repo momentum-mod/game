@@ -849,6 +849,11 @@ bool CBaseMapsPage::CheckPrimaryFilters(mapstruct_t &map)
         DevLog("Ignoring credits map\n");
         return false;
     }
+    if (!Q_strnicmp(map.m_szMapName, "background_01", Q_strlen(map.m_szMapName)))
+    {
+        DevLog("Ignoring background map\n");
+        return false;
+    }
 
     if (count && Q_strnicmp(map.m_szMapName, m_szMapFilter, count))
     {

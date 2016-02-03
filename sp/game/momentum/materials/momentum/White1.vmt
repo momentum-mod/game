@@ -1,0 +1,13 @@
+"LightmappedGeneric"
+{
+"$basetexture" "RealWorldTextures/Floor/MixTile/Solid/White1"
+"$bumpmap" "RealWorldTextures/Floor/MixTile/Bump/512"
+"$surfaceprop" "tile"
+$envmap "env_cubemap"
+$envmaptint "[.8 .8 .8]"
+$envmapcontrast "1"
+}
+//Texture Made By TopHATTwaffle
+//Steam Account: Doogiehoogie
+//Xfire: Rocketrascal34
+//E-Mail: Doug@tophattwaffle.com

@@ -15,6 +15,7 @@ typedef enum MOMGM
     MOMGM_SURF,
     MOMGM_BHOP,
     MOMGM_SCROLL,
+    MOMGM_ALLOWED, //not "official gamemode" but must be allowed for other reasons
     
 } GAMEMODES;
 #endif // MOM_SHAREDDEFS_H
