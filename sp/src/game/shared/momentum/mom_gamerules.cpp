@@ -161,6 +161,7 @@ static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldVal
     if (toCheck == fOldValue) return;
     if (toCheck < 0)
     {
+        // This will never happen. but better be safe than sorry, right?
         Warning("Cannot set a game mode under 0!\n");
         var->SetValue(((ConVar*) var)->GetDefault());
         return;
@@ -187,7 +188,10 @@ void CMomentum::PlayerSpawn(CBasePlayer* pPlayer)
         engine->ServerCommand("disconnect\n"); 
         Warning("\n\nBeware, beware!\nYou have been disconnected from the map because custom maps are not allowed if %s is 0.\nPlease set it to 1 in order to play custom maps.\n\n", allow_custom.GetName());
     }
-    if (give_weapon.GetBool())
+
+    ConVarRef map("host_map");
+    const char *pMapName = map.GetString();
+    if (give_weapon.GetBool() && !Q_strnicmp(pMapName, "credits.bps", strlen("credits.bps")))
         pPlayer->Weapon_Create("weapon_momentum_gun");
     //MOM_TODO: keep track of holstering (convar?)
 }

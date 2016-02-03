@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6412"
-	"mapversion" "28"
+	"mapversion" "30"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -20,7 +20,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "28"
+	"mapversion" "30"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -541,9 +541,6 @@ entity
 	{
 		"OnMapSpawn" "fader,Fade,,0,-1"
 		"OnMapSpawn" "credits,RollOutroCredits,,0,-1"
-		"OnMapSpawn" "commander,Command,mom_drawspeedmeter 0,0,-1"
-		"OnMapSpawn" "commander,Command,mom_timer 0,0,-1"
-		"OnMapSpawn" "commander,Command,mom_spawn_with_weapon 0,0,-1"
 		"OnMapSpawn" "ambienter,PlaySound,,0,-1"
 	}
 	"origin" "32 -80 32"
@@ -625,11 +622,7 @@ entity
 	"targetname" "credits"
 	connections
 	{
-		"OnCreditsDone" "commander,Command,mom_drawspeedmeter 1,0,-1"
-		"OnCreditsDone" "commander,Command,mom_timer 1,0,-1"
 		"OnCreditsDone" "commander,Command,disconnect,0,-1"
-		"OnCreditsDone" "commander,Command,mom_allow_custom_maps 0,0,-1"
-		"OnCreditsDone" "commander,Command,mom_spawn_with_weapon 1,0,-1"
 	}
 	"origin" "0 -112 32"
 	editor

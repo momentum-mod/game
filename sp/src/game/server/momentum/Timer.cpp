@@ -267,6 +267,7 @@ void CTimer::SetGameModeConVars()
         aa.SetValue(100);
         break;
     case MOMGM_UNKNOWN:
+    case MOMGM_ALLOWED:
         sv_maxvelocity.SetValue(3500);
         aa.SetValue(150);
         break;
@@ -274,7 +275,7 @@ void CTimer::SetGameModeConVars()
         DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;
     }
-    DevMsg("CTimer set sv_maxvelocity: %i\n", sv_maxvelocity.GetInt());
+    DevMsg("CTimer set ::\nsv_maxvelocity: %i\nsv_airaccelerate: %i", sv_maxvelocity.GetInt(), aa.GetInt());
 }
 //Practice mode that stops the timer and allows the player to noclip.
 void CTimer::EnablePractice(CBasePlayer *pPlayer)
@@ -466,19 +467,15 @@ public:
     static void PracticeMove()
     {
         CBasePlayer *pPlayer = ToBasePlayer(UTIL_GetCommandClient());
-        Vector velocity = pPlayer->GetAbsVelocity();
-
         if (!pPlayer)
             return;
+        Vector velocity = pPlayer->GetAbsVelocity();
 
-        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP && velocity.Length2D() == 0)
-        {
+        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP && velocity.Length2DSqr() == 0)
             g_Timer.EnablePractice(pPlayer);
-        }
         else //player is either already in practice mode or currently moving.
             g_Timer.DisablePractice(pPlayer);
     }
-
 };
 
 

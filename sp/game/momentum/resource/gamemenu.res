@@ -40,7 +40,7 @@
 	"6"
 	{
 		"label" "#MOM_Credits"
-		"command" "engine mom_spawn_with_weapon 0 \n mom_allow_custom_maps 1 \n progress_enable \n map credits"
+		"command" "engine progress_enable \n map credits"
 		"InGameOrder" "30"
 		"notmulti" "1"
 		"notsingle" "1"

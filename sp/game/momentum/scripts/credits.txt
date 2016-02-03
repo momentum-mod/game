@@ -29,7 +29,7 @@
 
 //Outro Parameters
 // When setting scrolltime value, don't make it too slow/too fast!
-	"scrolltime" "35"
+	"scrolltime" "40"
 	"separation"  "10"
 }
 
@@ -50,9 +50,10 @@
 	"Gus Naughton" "CreditsOutroText"
 	"Fatalis"	"CreditsOutroText"
 	"Flipybitz"	"CreditsOutroText"
+	"Tuxxi"	"CreditsOutroText"
 	"Juxtapo" "CreditsOutroText"
 	"Pcpie"	"CreditsOutroText"
-	"Tuxxi"	"CreditsOutroText"
+	"Mehis" "CreditsOutroText"
 	" "	"CreditsOutroText"
 	"Contributors" "CreditsOutroTextLarge"
 	// Add yourself here

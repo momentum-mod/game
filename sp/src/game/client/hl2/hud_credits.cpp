@@ -273,6 +273,9 @@ void CHudCredits::DrawOutroCreditsName( void )
 	GetHudSize(iWidth, iTall);
 	SetSize( iWidth, iTall );
 
+    SetHiddenBits(HIDEHUD_ALL);
+    
+
 	for ( int i = 0; i < m_CreditsList.Count(); i++ )
 	{
 		creditname_t *pCredit = &m_CreditsList[i];
@@ -302,7 +305,7 @@ void CHudCredits::DrawOutroCreditsName( void )
 		{
 			if ( m_bLastOneInPlace == false )
 			{
-				pCredit->flYPos -= gpGlobals->frametime * ( (float)g_iCreditsPixelHeight / m_flScrollTime );
+                pCredit->flYPos -= gpGlobals->frametime * ((float)g_iCreditsPixelHeight / m_flScrollTime);
 		
 				if ( (int)pCredit->flYPos + ( iFontTall / 2 ) <= iTall / 2 )
 				{
@@ -318,7 +321,7 @@ void CHudCredits::DrawOutroCreditsName( void )
 				{
 					if ( m_Alpha > 0 )
 					{
-						m_Alpha -= gpGlobals->frametime * ( m_flScrollTime * 2 );
+                        m_Alpha -= gpGlobals->frametime * (m_flScrollTime * 2);
 
 						if ( m_Alpha <= 0 )
 						{
@@ -333,7 +336,7 @@ void CHudCredits::DrawOutroCreditsName( void )
 		}
 		else
 		{
-			pCredit->flYPos -= gpGlobals->frametime * ( (float)g_iCreditsPixelHeight / m_flScrollTime );
+            pCredit->flYPos -= gpGlobals->frametime * ((float)g_iCreditsPixelHeight / m_flScrollTime);
 		}
 		
 		if ( pCredit->bActive == false )
