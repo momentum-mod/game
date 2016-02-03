@@ -1,10 +1,7 @@
 "LightmappedGeneric"
 {
-"$basetexture" "RealWorldTextures/Floor/MixTile/Solid/White1"
-"$bumpmap" "RealWorldTextures/Floor/MixTile/Bump/512"
+"$basetexture" "momentum/White1"
 "$surfaceprop" "tile"
-$envmap "env_cubemap"
-$envmaptint "[.8 .8 .8]"
 $envmapcontrast "1"
 }
 //Texture Made By TopHATTwaffle
