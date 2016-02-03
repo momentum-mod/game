@@ -591,13 +591,6 @@ void CMomentumGameMovement::CategorizePosition()
     else
     {
         // Try and move down.
-        // MOM_TODO: BUGBUGBUG. This seems to be causing crashes on map startup since:
-        /*
-        commit 136cae7d3378b41d3fd066d8a62eeca1dab57b94
-        Author: TotallyMehis
-        Date:   Thu Jan 14 12:23:21 2016 +0200
-        We have to take a deeper look
-        */
         TryTouchGround(bumpOrigin, point, GetPlayerMins(), GetPlayerMaxs(), MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
         // Was on ground, but now suddenly am not.  If we hit a steep plane, we are not on ground
@@ -621,9 +614,7 @@ void CMomentumGameMovement::CategorizePosition()
                 if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
                 {
                     DoLateReflect();
-                    // @Ruben: @fatalis found that this is the reason for the crash on some maps.
-                    // Commenting it for the time being.
-                    //CategorizePosition();
+                    CategorizePosition();
 
                     return;
                 }
@@ -636,7 +627,7 @@ void CMomentumGameMovement::CategorizePosition()
             if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
             {
                 DoLateReflect();
-                //CategorizePosition();
+                CategorizePosition();
 
                 return;
             }
@@ -842,14 +833,17 @@ void CMomentumGameMovement::AirMove(void)
 
 void CMomentumGameMovement::DoLateReflect(void)
 {
+    // Don't attempt to reflect after this.
+    // Return below was causing recursion.
+    m_flReflectNormal = 1.0f;
+
+
     if (mv->m_vecVelocity.Length() == 0.0f || player->GetGroundEntity() != NULL)
         return;
 
 
     Vector prevpos = mv->m_vecAbsOrigin;
     Vector prevvel = mv->m_vecVelocity;
-    // Don't attempt to reflect after this.
-    m_flReflectNormal = 1.0f;
 
 
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
