@@ -191,7 +191,7 @@ void CMomentum::PlayerSpawn(CBasePlayer* pPlayer)
 
     ConVarRef map("host_map");
     const char *pMapName = map.GetString();
-    if (give_weapon.GetBool() && !Q_strnicmp(pMapName, "credits.bps", strlen("credits.bps")))
+    if (give_weapon.GetBool() && !Q_strcmp(pMapName, "credits.bsp"))
         pPlayer->Weapon_Create("weapon_momentum_gun");
     //MOM_TODO: keep track of holstering (convar?)
 }
