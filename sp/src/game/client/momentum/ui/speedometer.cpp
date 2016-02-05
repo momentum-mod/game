@@ -8,13 +8,13 @@
 using namespace vgui;
 
 static ConVar speedmeter_hvel("mom_speedmeter_hvel", "0", FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "If set to 1, doesn't take the vertical velocity component into account.", true, 0, true, 1);
+    "If set to 1, doesn't take the vertical velocity component into account.\n", true, 0, true, 1);
 
 static ConVar speedmeter_units("mom_speedmeter_units", "1",FCVAR_DONTRECORD | FCVAR_ARCHIVE | FCVAR_CLIENTDLL,
-    "Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.",true, 1, true, 3);
+    "Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.\n",true, 1, true, 3);
 
 static ConVar speedmeter_draw("mom_drawspeedmeter", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Draw speedmeter?", true, 0, true, 1);
+    "Toggles displaying the speedmeter.\n", true, 0, true, 1);
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
@@ -67,6 +67,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName) : CHudElement(pElementN
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 
 void CHudSpeedMeter::OnThink()

@@ -59,8 +59,8 @@
 	}
 	"9"
 	{
-		"label" "#GameUI_GameMenu_Disconnect"
-		"command" "engine disconnect"
+		"label" "#MOM_QuitToMenu"
+		"command" "engine startupmenu"
 		"InGameOrder" "20"
 		"OnlyInGame" "1"
 	}

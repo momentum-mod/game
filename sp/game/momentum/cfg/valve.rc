@@ -12,4 +12,5 @@ exec autoexec.cfg
 // stuff command line statements
 //
 stuffcmds
-map_background background_01
+sv_unlockedchapters 99 //Random background selection
+startupmenu

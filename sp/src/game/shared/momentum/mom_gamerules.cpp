@@ -189,9 +189,21 @@ void CMomentum::PlayerSpawn(CBasePlayer* pPlayer)
         Warning("\n\nBeware, beware!\nYou have been disconnected from the map because custom maps are not allowed if %s is 0.\nPlease set it to 1 in order to play custom maps.\n\n", allow_custom.GetName());
     }
 
+    if (gpGlobals->eLoadType == MapLoad_Background)
+    {
+        //Hide timer/speedometer on background maps
+        pPlayer->m_Local.m_iHideHUD |= HIDEHUD_WEAPONSELECTION;
+    }
+    else
+    {
+        // Turn them back on
+        pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
+    }
+
     ConVarRef map("host_map");
     const char *pMapName = map.GetString();
-    if (give_weapon.GetBool() && !Q_strcmp(pMapName, "credits.bsp"))
+    //MOM_TODO: could this change to gamemode != ALLOWED ?
+    if (give_weapon.GetBool() && !Q_strcmp(pMapName, "credits.bsp") && !(Q_strnicmp(pMapName, "background", Q_strlen("background"))))
         pPlayer->Weapon_Create("weapon_momentum_gun");
     //MOM_TODO: keep track of holstering (convar?)
 }

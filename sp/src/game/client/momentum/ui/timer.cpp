@@ -117,6 +117,7 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 
 void C_Timer::Init()
