@@ -14,8 +14,6 @@
 #include <vgui/ISurface.h>
 #include <vgui/ILocalize.h>
 #include <vgui/VGUI.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
 #include <KeyValues.h>
 #include <vgui_controls/AnimationController.h>
 

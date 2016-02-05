@@ -16,7 +16,7 @@ using namespace vgui;
 
 C_CP_Menu::C_CP_Menu(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CPMenu")
 {
-    //SetHiddenBits(HIDEHUD_MISCSTATUS);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 };
 
 DECLARE_HUDELEMENT(C_CP_Menu);
