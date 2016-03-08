@@ -1,0 +1,12 @@
+"VertexlitGeneric"
+{
+	"$baseTexture" "models\props_japan\sakura_branch01"
+	"$nocull" "1"
+	"$alphatest" "1"
+	
+  "$blendtintbybasealpha" "0"
+  "$blendtintcoloroverbase" "0"
+
+  "$color2" "{255 200 170}" // Salmon
+  //"$color2" "{170 225 255}" // Lavender
+}

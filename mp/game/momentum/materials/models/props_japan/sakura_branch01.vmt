@@ -1,0 +1,6 @@
+"VertexlitGeneric"
+{
+	"$baseTexture" "models\props_japan\sakura_branch01"
+	"$nocull" "1"
+	"$alphatest" "1"
+}
