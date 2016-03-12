@@ -94,9 +94,7 @@ void CTriggerTimerStart::Spawn()
 
 void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed)
 {
-    if (pMaxLeaveSpeed < 0)
-        pMaxLeaveSpeed *= (-1.0f);
-    m_fMaxLeaveSpeed = pMaxLeaveSpeed;
+    m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed);
 }
 
 void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
