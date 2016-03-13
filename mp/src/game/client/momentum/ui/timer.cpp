@@ -271,9 +271,9 @@ void C_Timer::Paint(void)
     }
     else //it's a linear map
     {
-        char linearLocalized[25];
+        char linearLocalized[BUFSIZELOCL];
         wchar_t *uLinearUnicode = g_pVGuiLocalize->Find("#MOM_Linear");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(uLinearUnicode ? uLinearUnicode : L"#MOM_Linear", linearLocalized, 25);
+        g_pVGuiLocalize->ConvertUnicodeToANSI(uLinearUnicode ? uLinearUnicode : L"#MOM_Linear", linearLocalized, BUFSIZELOCL);
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), linearLocalized);
     }
 
