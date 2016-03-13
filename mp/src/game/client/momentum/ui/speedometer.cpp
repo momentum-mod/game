@@ -65,10 +65,13 @@ public:
         return speedmeter_colorize.GetBool();
     }
 
-    Color GetColorFromVariation(float variation, float midvalue, float maxvalue, float minvalue, Color midcolor, Color maxcolor, Color mincolor);
+    Color GetColorFromVariation(float variation, Color normalcolor, Color increasecolor, Color decreasecolor);
 private:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
+    const Color m_WHITE = Color::Color(255, 255, 255, 255);
+    const Color m_RED = Color::Color(255, 0, 0, 255);
+    const Color m_BLUE = Color::Color(0, 0, 255, 255);
 };
 
 DECLARE_HUDELEMENT(CHudSpeedMeter);
@@ -126,21 +129,19 @@ void CHudSpeedMeter::OnThink()
             {
                 if (m_flLastVelocity != 0)
                 {
-
-                    Color fgColor = GetColorFromVariation(abs(vel) / abs(m_flLastVelocity), 1, 2, 0, Color::Color(225, 225, 225, 225), Color::Color(0, 0, 225, 225), Color::Color(225, 0, 0, 225));
+                    Color fgColor = GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), m_WHITE, m_BLUE, m_RED);
                     DevMsg("R %i  G %i  B %i\n", fgColor.r(), fgColor.g(), fgColor.b());
                     SetFgColor(fgColor);
                 }
-                else {
-                    SetFgColor(Color::Color(225, 225, 225, 225));
-                }
+                else
+                    SetFgColor(m_WHITE);
             }
             else
             {
-                SetFgColor(Color::Color(225, 225, 225, 225));
+                SetFgColor(m_WHITE);
             }
             m_flLastVelocity = vel;
-            m_flNextColorizeCheck = gpGlobals->curtime + 0.1;
+            m_flNextColorizeCheck = gpGlobals->curtime + 0.1f;
 
         }
 
@@ -149,24 +150,30 @@ void CHudSpeedMeter::OnThink()
     }
 }
 
-Color CHudSpeedMeter::GetColorFromVariation(float variation, float midvalue, float maxvalue, float minvalue, Color midcolor, Color maxcolor, Color mincolor)
+Color CHudSpeedMeter::GetColorFromVariation(float variation, Color normalcolor, Color increasecolor, Color decreasecolor)
 {
-    Color pFinalColor = midcolor;
+    //variation is current velocity minus previous velocity. 
+    Color pFinalColor = normalcolor;
     int r, g, b;
-    if (variation < midvalue)
+
+    //our velocity decreased
+    if (variation < 0)
     {
-        r = midcolor.r() * variation + (mincolor.r() * (midvalue - variation));
-        g = midcolor.g() * variation + (mincolor.g() * (midvalue - variation));
-        b = midcolor.b() * variation + (mincolor.b() * (midvalue - variation));
-        pFinalColor.SetColor(r, g, b, 225);
+        r = normalcolor.r() * (1 / variation) + (decreasecolor.r() * (1 - 1 / variation));
+        g = normalcolor.g() * (1 / variation) + (decreasecolor.g() * (1 - 1 / variation));
+        b = normalcolor.b() * (1 / variation) + (decreasecolor.b() * (1 - 1 / variation));
+        pFinalColor.SetColor(r, g, b, 255);
     }
-    else if (variation > midvalue)
+    //our velocity increased
+    else if (variation > 0)
     {
-        r = midcolor.r() * variation + (maxcolor.r() * (midvalue - variation));
-        g = midcolor.g() * variation + (maxcolor.g() * (midvalue - variation));
-        b = midcolor.b() * variation + (maxcolor.b() * (midvalue - variation));
-        pFinalColor.SetColor(r, g, b, 225);
+        r = normalcolor.r() * (1 / variation) + (increasecolor.r() * (1 - 1 / variation));
+        g = normalcolor.g() * (1 / variation) + (increasecolor.g() * (1 - 1 / variation));
+        b = normalcolor.b() * (1 / variation) + (increasecolor.b() * (1 - 1 / variation));
+        pFinalColor.SetColor(r, g, b, 255);
     }
+    else
+        pFinalColor.SetColor(255,255,255,255);
     return pFinalColor;
 }
 
