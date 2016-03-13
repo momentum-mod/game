@@ -69,8 +69,8 @@ public:
     void FindBhopBlocks();
 
     void AlterBhopBlocks();
-    CBaseEntity *FindTeleport(const float startpos[3], float endheight, float step = 1.0f);
-    void GetAbsBoundingBox(CBaseEntity* ent, float mins[3], float maxs[3]);
+    CBaseEntity *FindTeleport(float endheight, float step = 1.0f);
+    void GetAbsBoundingBox(CBaseEntity *ent, Vector &mins, Vector &maxs);
 
 private:
     bool m_bInitted;
