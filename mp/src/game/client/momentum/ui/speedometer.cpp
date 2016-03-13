@@ -38,17 +38,14 @@ public:
         //We set the proper LabelText based on mom_speedmeter_units value
         switch (speedmeter_units.GetInt())
         {
-        case 1:
-            SetLabelText(L"UPS");
-            break;
         case 2:
             SetLabelText(L"KM/H");
             break;
         case 3:
             SetLabelText(L"MPH");
             break;
+        case 1:
         default:
-            //If its value is not supported, USP is assumed (Even though this shouln't happen as Max and Min values are set)
             SetLabelText(L"UPS");
             break;
         }
@@ -103,10 +100,6 @@ void CHudSpeedMeter::OnThink()
         float vel = (float)velocity.Length();
         switch (speedmeter_units.GetInt())
         {
-        case 1:
-            //We do nothing but break out of the switch, as default vel is already in UPS
-            SetLabelText(L"UPS");
-            break;
         case 2:
             //1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
             vel *= 0.06858;
@@ -117,6 +110,7 @@ void CHudSpeedMeter::OnThink()
             vel *= 0.04262;
             SetLabelText(L"MPH");
             break;
+        case 1:
         default:
             //We do nothing but break out of the switch, as default vel is already in UPS
             SetLabelText(L"UPS");
@@ -172,8 +166,7 @@ Color CHudSpeedMeter::GetColorFromVariation(float variation, Color normalcolor, 
         b = normalcolor.b() * (1 / variation) + (increasecolor.b() * (1 - 1 / variation));
         pFinalColor.SetColor(r, g, b, 255);
     }
-    else
-        pFinalColor.SetColor(255,255,255,255);
+
     return pFinalColor;
 }
 
