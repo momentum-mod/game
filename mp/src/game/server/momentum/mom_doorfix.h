@@ -22,37 +22,37 @@ class CMOMBhopBlockFixSystem : CAutoGameSystem
     virtual void LevelInitPostEntity()
     {
         FindBhopBlocks();
-        AlterBhopBlocks();
     }
 
     virtual void LevelShutdownPostEntity() { m_mapBlocks.RemoveAll(); }
 
-    bool IsBhopBlock(int index) { return (m_mapBlocks.Find(index) != m_mapBlocks.InvalidIndex()); }
+    bool IsBhopBlock(int entIndex) { return (m_mapBlocks.Find(entIndex) != m_mapBlocks.InvalidIndex()); }
 
     void PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *pBlock);
 
     void FindBhopBlocks();
-    void AlterBhopBlocks();
 
     void FindTeleport(CBaseEntity *, bool);
 
     void AddBhopBlock(CBaseEntity *pBlockEnt, CBaseEntity *pTeleportEnt, bool isDoor)
     {
         bhop_block_t block = bhop_block_t();
-        block.m_hBlockEntity.Set(pBlockEnt);
-        block.m_hTeleportTrigger.Set(pTeleportEnt);
+        block.m_pBlockEntity = pBlockEnt;
+        block.m_pTeleportTrigger = pTeleportEnt;
         block.m_bIsDoor = isDoor;
+        AlterBhopBlock(block);
         m_mapBlocks.Insert(pBlockEnt->entindex(), block);
     }
 
   private:
     struct bhop_block_t
     {
-        CHandle<CBaseEntity> m_hBlockEntity; // func_door or func_button
-        CHandle<CBaseEntity> m_hTeleportTrigger;
+        CBaseEntity* m_pBlockEntity;// func_door or func_button
+        CBaseEntity* m_pTeleportTrigger;// trigger_teleport under it
         bool m_bIsDoor;
     };
     CUtlMap<int, bhop_block_t> m_mapBlocks;
+    void AlterBhopBlock(bhop_block_t);
 };
 
 class CTeleportTriggerTraceEnum : public IEntityEnumerator

@@ -41,41 +41,36 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
         }
     }
 }
-void CMOMBhopBlockFixSystem::AlterBhopBlocks()
+void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
 {
-    FOR_EACH_MAP_FAST(m_mapBlocks, i)
+    if (block.m_bIsDoor)
     {
-        bhop_block_t block = m_mapBlocks.Element(i);
+        // And now the settings begin
+        CBaseDoor *pDoorEnt = static_cast<CBaseDoor *>(block.m_pBlockEntity); //(block.m_hBlockEntity.Get());
 
-        if (block.m_bIsDoor)
-        {
-            // And now the settings begin
-            CBaseDoor *pDoorEnt = static_cast<CBaseDoor *>(block.m_hBlockEntity.Get());
+        pDoorEnt->m_vecPosition2 = pDoorEnt->m_vecPosition1; // Set the end position to start (not allowed to move)
 
-            pDoorEnt->m_vecPosition2 = pDoorEnt->m_vecPosition1; // Set the end position to start (not allowed to move)
+        pDoorEnt->m_flSpeed = 0.0; // set speed to 0 (further not allowed to move)
 
-            pDoorEnt->m_flSpeed = 0.0; // set speed to 0 (further not allowed to move)
+        pDoorEnt->ClearSpawnFlags();
+        pDoorEnt->AddSpawnFlags(SF_DOOR_PTOUCH); // Player touch affects this
 
-            pDoorEnt->ClearSpawnFlags();
-            pDoorEnt->AddSpawnFlags(SF_DOOR_PTOUCH); // Player touch affects this
+        variant_t emptyvarient;
+        pDoorEnt->AcceptInput("Lock", NULL, NULL, emptyvarient, 0); // Lock the door bhop block
 
-            variant_t emptyvarient;
-            pDoorEnt->AcceptInput("Lock", NULL, NULL, emptyvarient, 0); // Lock the door bhop block
+        pDoorEnt->m_ls.sLockedSound =
+            pDoorEnt->m_NoiseMoving; // Plays the sound like normal (makes the player aware they jumped it)
+    }
+    else
+    { // func_button block
 
-            pDoorEnt->m_ls.sLockedSound =
-                pDoorEnt->m_NoiseMoving; // Plays the sound like normal (makes the player aware they jumped it)
-        }
-        else
-        { // func_button block
+        CBaseButton *pEntButton = static_cast<CBaseButton *>(block.m_pBlockEntity); //(block.m_hBlockEntity.Get());
+        pEntButton->m_vecPosition2 = pEntButton->m_vecPosition1;
 
-            CBaseDoor *pEntDoor = static_cast<CBaseDoor *>(block.m_hBlockEntity.Get());
-            pEntDoor->m_vecPosition2 = pEntDoor->m_vecPosition1;
+        pEntButton->m_flSpeed = 0.0f;
+        pEntButton->ClearSpawnFlags();
 
-            pEntDoor->m_flSpeed = 0.0f;
-            pEntDoor->ClearSpawnFlags();
-
-            pEntDoor->AddSpawnFlags(SF_BUTTON_DONTMOVE | SF_BUTTON_TOUCH_ACTIVATES);
-        }
+        pEntButton->AddSpawnFlags(SF_BUTTON_DONTMOVE | SF_BUTTON_TOUCH_ACTIVATES);
     }
 }
 
@@ -91,9 +86,10 @@ void CMOMBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *p
     }
     else if (diff > BLOCK_TELEPORT) // We need to teleport the player.
     {
-        if (m_mapBlocks.IsValidIndex(pBlock->entindex()))
+        int idx = m_mapBlocks.Find(pBlock->entindex());
+        if (m_mapBlocks.IsValidIndex(idx))
         {
-            CBaseEntity *pEntTeleport = m_mapBlocks.Element(pBlock->entindex()).m_hTeleportTrigger.Get();
+            CBaseEntity *pEntTeleport = m_mapBlocks.Element(idx).m_pTeleportTrigger;
             if (pEntTeleport)
             {
                 pEntTeleport->Touch(pPlayer);
@@ -122,48 +118,6 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
     enginetrace->EnumerateEntities(ray, true, &triggerTraceEnum);
 }
 
-// CON_COMMAND(mom_trace_test, "BLAH")
-//{
-//    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-//    if (!pPlayer)
-//        return; //Always validate a pointer
-//
-//    //Create our trace_t class to hold the end result
-//    trace_t tr;
-//
-//    //Create Vectors for the start, stop, and direction
-//    Vector vecAbsStart, vecAbsEnd, vecDir;
-//
-//    //Take the Player's EyeAngles and turn it into a direction
-//    AngleVectors(pPlayer->EyeAngles(), &vecDir);
-//
-//    //Get the Start/End
-//    vecAbsStart = pPlayer->EyePosition();
-//    vecAbsEnd = vecAbsStart + (vecDir * MAX_TRACE_LENGTH);
-//
-//    //Do the TraceLine, and write our results to our trace_t class, tr.
-//    //UTIL_TraceLine(vecAbsStart, vecAbsEnd, MASK_ALL, pPlayer, COLLISION_GROUP_NONE, &tr);
-//    Ray_t ray;
-//    ray.Init(vecAbsStart, vecAbsEnd);
-//    CTriggerTraceEnumBlah triggerTraceEnum(&ray, vecDir, MASK_ALL);
-//
-//    enginetrace->EnumerateEntities(ray, true, &triggerTraceEnum);
-//
-//    //Do something with the end results
-//    /*if (tr.m_pEnt)
-//    {
-//        if (tr.m_pEnt->IsNPC())
-//        {
-//            Msg("TraceLine hit an NPC!\n");
-//        }
-//        if (tr.m_pEnt->IsPlayer())
-//        {
-//            Msg("TraceLine hit a Player!\n");
-//        }
-//        DevLog("Traceline ent: %s\n", tr.m_pEnt->GetClassname());
-//    }  */
-//}
-
 bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 {
     trace_t tr;
@@ -174,11 +128,10 @@ bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
         return true;
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
+
     if (tr.fraction < 1.0f)
-    {
-        DevLog("HIT A TRIGGER: %s\n", pEnt->GetClassname());
         g_MOMBlockFixer->AddBhopBlock(pEntBlock, pEnt, bIsDoor);
-    }
+
     return true;
 }
 
