@@ -21,7 +21,8 @@ PRECACHE_REGISTER(player);
 
 CMomentumPlayer::CMomentumPlayer()
 {
-
+    m_flPunishTime = -1;
+    m_iLastBlock = -1;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -142,6 +143,16 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &p
 
     return false;
 }
+
+void CMomentumPlayer::Touch(CBaseEntity* pOther)
+{
+    BaseClass::Touch(pOther);
+
+    if (g_MOMBlockFixer->IsBhopBlock(pOther->entindex()))
+        g_MOMBlockFixer->PlayerTouch(this, pOther);
+
+}
+
 void CMomentumPlayer::EnableAutoBhop()
 {
     m_bAutoBhop = true;
@@ -166,5 +177,6 @@ void CMomentumPlayer::CheckForBhop()
     }
     else
         m_flTicksOnGround = 0;
-    SetNextThink(gpGlobals->curtime);
+
+    SetNextThink(gpGlobals->curtime + 0.05f);
 }

@@ -20,17 +20,6 @@
 void PlayLockSounds( CBaseEntity *pEdict, locksound_t *pls, int flocked, int fbutton );
 string_t MakeButtonSound( int sound );				// get string of button sound number
 
-
-#define SF_BUTTON_DONTMOVE				1
-#define SF_ROTBUTTON_NOTSOLID			1
-#define	SF_BUTTON_TOGGLE				32		// button stays pushed until reactivated
-#define SF_BUTTON_TOUCH_ACTIVATES		256		// Button fires when touched.
-#define SF_BUTTON_DAMAGE_ACTIVATES		512		// Button fires when damaged.
-#define SF_BUTTON_USE_ACTIVATES			1024	// Button fires when used.
-#define SF_BUTTON_LOCKED				2048	// Whether the button is initially locked.
-#define	SF_BUTTON_SPARK_IF_OFF			4096	// button sparks in OFF state
-#define	SF_BUTTON_JIGGLE_ON_USE_LOCKED	8192	// whether to jiggle if someone uses us when we're locked
-
 BEGIN_DATADESC( CBaseButton )
 
 	DEFINE_KEYFIELD( m_vecMoveDir, FIELD_VECTOR, "movedir" ),

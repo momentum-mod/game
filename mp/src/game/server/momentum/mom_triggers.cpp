@@ -70,7 +70,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         }
     }
     //stop thinking on end touch
-    SetNextThink(NULL);
+    SetNextThink(-1);
     BaseClass::EndTouch(pOther);
 }
 
