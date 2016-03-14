@@ -178,5 +178,5 @@ void CMomentumPlayer::CheckForBhop()
     else
         m_flTicksOnGround = 0;
 
-    SetNextThink(gpGlobals->curtime);
+    SetNextThink(gpGlobals->curtime + 0.05f);
 }
