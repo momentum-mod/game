@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "player.h"
 #include "momentum/mom_shareddefs.h"
+#include "mom_doorfix.h"
 
 class CMomentumPlayer : public CBasePlayer
 {
@@ -42,6 +43,7 @@ public:
 
     void Spawn();
     void Precache();
+    void Touch(CBaseEntity*);
 
     virtual void CommitSuicide(bool bExplode = false, bool bForce = false) {};
     virtual void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false) {};
@@ -93,6 +95,19 @@ public:
         float lateral_max,
         int direction_change);
 
+    void SetPunishTime(float newTime)
+    {
+        m_flPunishTime = newTime;
+    }
+
+    void SetLastBlock(int lastBlock)
+    {
+        m_iLastBlock = lastBlock;
+    }
+
+    int GetLastBlock() { return m_iLastBlock; }
+    float GetPunishTime() { return m_flPunishTime; }
+
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
@@ -100,6 +115,8 @@ private:
     EHANDLE g_pLastSpawn;
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &pSpot);
     friend class CMomentumGameMovement;
+    float m_flPunishTime;
+    int m_iLastBlock;
 
 };
 #endif //MOMPLAYER_H

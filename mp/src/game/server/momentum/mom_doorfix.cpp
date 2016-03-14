@@ -3,8 +3,10 @@
 
 #include "tier0/memdbgon.h"
 
+
 void CMOMBhopBlockFixSystem::FindBhopBlocks()
 {
+    SetDefLessFunc(m_mapBlocks);
     // func_doors
     CBaseEntity *ent = NULL;
     while ((ent = gEntList.FindEntityByClassname(ent, "func_door")) != NULL)
@@ -31,7 +33,7 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
                 block.m_hBlockEntity.Set(pEntDoor);
                 block.m_hTeleportTrigger.Set(pEntTeleport);
                 block.m_bIsDoor = true;
-
+                //Assert(m_mapBlocks.Find(pEntDoor->entindex()) == m_mapBlocks.InvalidIndex());
                 m_mapBlocks.Insert(pEntDoor->entindex(), block);
                 
                 if (m_mapBlocks.Count() == MAX_BHOPBLOCKS)
@@ -166,4 +168,29 @@ void CMOMBhopBlockFixSystem::GetAbsBoundingBox(CBaseEntity *ent, Vector &mins, V
     maxs.y += origin.y;
     maxs.z += origin.z;
 
+}
+
+
+void CMOMBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity* pBlock)
+{
+    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(pPlayerEnt);
+    DevLog("ENTERING PLAYERTOUCH!\n");
+    float diff = gpGlobals->curtime - pPlayer->GetPunishTime();
+
+    if (pPlayer->GetLastBlock() != pBlock->entindex() || diff > BLOCK_COOLDOWN)
+    {
+        pPlayer->SetLastBlock(pBlock->entindex());
+        pPlayer->SetPunishTime(gpGlobals->curtime + BLOCK_TELEPORT);
+    }
+    else if (diff > BLOCK_TELEPORT)//We need to teleport the player.
+    {
+        if (m_mapBlocks.IsValidIndex(pBlock->entindex()))
+        {
+            CBaseEntity *pEntTeleport = m_mapBlocks.Element(pBlock->entindex()).m_hTeleportTrigger.Get();
+            if (pEntTeleport)
+            {
+                pEntTeleport->Touch(pPlayer);
+            }
+        }
+    }
 }

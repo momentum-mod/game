@@ -7,6 +7,11 @@
 #include "cbase.h"
 #include "buttons.h"
 #include "doors.h"
+#include "mom_player.h"
+
+#define MAX_BHOPBLOCKS   1024
+#define BLOCK_TELEPORT   0.11
+#define BLOCK_COOLDOWN   1.0
 
 class CMOMBhopBlockFixSystem : CAutoGameSystem
 {
@@ -40,44 +45,17 @@ public:
         return (m_mapBlocks.Find(index) != m_mapBlocks.InvalidIndex());
     }
 
-    void PlayerTouch(CBaseEntity *pPlayer, CBaseEntity* pBlock)
-    {
-        //MOM_TODO: should these move to mom_player ?
-        static float flPunishTime = -1;
-        static int iLastBlock = -1;
-
-        float diff = gpGlobals->curtime - flPunishTime;
-
-        if (iLastBlock != pBlock->entindex() || diff > BLOCK_COOLDOWN)
-        {
-            iLastBlock = pBlock->entindex();
-            flPunishTime = gpGlobals->curtime + BLOCK_TELEPORT;
-        }
-        else if (diff > BLOCK_TELEPORT)//We need to teleport the player.
-        {
-            if (m_mapBlocks.IsValidIndex(pBlock->entindex()))
-            {
-                CBaseEntity *pEntTeleport = m_mapBlocks.Element(pBlock->entindex()).m_hTeleportTrigger.Get();
-                if (pEntTeleport)
-                {
-                    pEntTeleport->Touch(pPlayer);
-                }
-            }
-        }
-    }
+    void PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity* pBlock);
 
     void FindBhopBlocks();
-
+    
     void AlterBhopBlocks();
     CBaseEntity *FindTeleport(float endheight, float step = 1.0f);
     void GetAbsBoundingBox(CBaseEntity *ent, Vector &mins, Vector &maxs);
 
 private:
     bool m_bInitted;
-    const unsigned int       MAX_BHOPBLOCKS = 1024;
-    const double             BLOCK_TELEPORT = 0.11;
-    const double             BLOCK_COOLDOWN = 1.0;
-
+    
     struct bhop_block_t
     {
         CHandle<CBaseEntity> m_hBlockEntity;//func_door or func_button

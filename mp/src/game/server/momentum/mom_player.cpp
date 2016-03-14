@@ -19,7 +19,8 @@ PRECACHE_REGISTER(player);
 
 CMomentumPlayer::CMomentumPlayer()
 {
-
+    m_flPunishTime = -1;
+    m_iLastBlock = -1;
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -123,4 +124,10 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &p
     }
 
     return false;
+}
+
+void CMomentumPlayer::Touch(CBaseEntity* pOther)
+{
+    if (g_MOMBlockFixer.IsBhopBlock(pOther->entindex()))
+        g_MOMBlockFixer.PlayerTouch(this, pOther);
 }
