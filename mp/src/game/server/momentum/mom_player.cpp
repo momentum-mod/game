@@ -128,6 +128,6 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &p
 
 void CMomentumPlayer::Touch(CBaseEntity* pOther)
 {
-    if (g_MOMBlockFixer.IsBhopBlock(pOther->entindex()))
-        g_MOMBlockFixer.PlayerTouch(this, pOther);
+    if (g_MOMBlockFixer->IsBhopBlock(pOther->entindex()))
+        g_MOMBlockFixer->PlayerTouch(this, pOther);
 }

@@ -66,6 +66,6 @@ private:
 
 };
 
-static CMOMBhopBlockFixSystem g_MOMBlockFixer("CMOMBhopBlockFixSystem");
+extern CMOMBhopBlockFixSystem* g_MOMBlockFixer;
 
 #endif // DOORFIX_H

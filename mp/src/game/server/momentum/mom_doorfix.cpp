@@ -3,7 +3,6 @@
 
 #include "tier0/memdbgon.h"
 
-
 void CMOMBhopBlockFixSystem::FindBhopBlocks()
 {
     SetDefLessFunc(m_mapBlocks);
@@ -174,7 +173,6 @@ void CMOMBhopBlockFixSystem::GetAbsBoundingBox(CBaseEntity *ent, Vector &mins, V
 void CMOMBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity* pBlock)
 {
     CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer*>(pPlayerEnt);
-    DevLog("ENTERING PLAYERTOUCH!\n");
     float diff = gpGlobals->curtime - pPlayer->GetPunishTime();
 
     if (pPlayer->GetLastBlock() != pBlock->entindex() || diff > BLOCK_COOLDOWN)
@@ -194,3 +192,7 @@ void CMOMBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity* p
         }
     }
 }
+
+
+static CMOMBhopBlockFixSystem s_MOMBlockFixer("CMOMBhopBlockFixSystem");
+CMOMBhopBlockFixSystem *g_MOMBlockFixer = &s_MOMBlockFixer;
