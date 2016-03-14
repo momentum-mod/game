@@ -10,6 +10,8 @@ RecvPropInt(RECVINFO(m_iShotsFired)),
 RecvPropInt(RECVINFO(m_iDirection)),
 RecvPropBool(RECVINFO(m_bResumeZoom)),
 RecvPropInt(RECVINFO(m_iLastZoom)),
+RecvPropBool(RECVINFO(m_bAutoBhop)),
+RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
 //RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
 //RecvPropBool(RECVINFO(m_fIsSprinting)),
 END_RECV_TABLE()
@@ -52,4 +54,8 @@ bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
     }
 
     return false;
+}
+bool C_MomentumPlayer::HasAutoBhop()
+{
+    return m_bAutoBhop;
 }
