@@ -6,13 +6,12 @@
 void CMOMBhopBlockFixSystem::FindBhopBlocks()
 {
     SetDefLessFunc(m_mapBlocks);
-    // func_doors
+    //  ---- func_door ----
     CBaseEntity *ent = NULL;
     while ((ent = gEntList.FindEntityByClassname(ent, "func_door")) != NULL)
     {
         CBaseDoor *pEntDoor = static_cast<CBaseDoor*>(ent);
-        DevLog("FOUND A DOOR!\n");
-        
+
         Vector startpos (pEntDoor->m_vecPosition1);
         Vector endpos (pEntDoor->m_vecPosition2);
         Vector mins = ent->WorldAlignMins();
@@ -20,14 +19,11 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
 
         if (startpos.z > endpos.z)
         {
-            DevLog("CHECKING ABS BOX!\n");
-
             GetAbsBoundingBox(pEntDoor, mins, maxs);
 
             CBaseEntity *pEntTeleport;
             if ((pEntTeleport = FindTeleport(endpos.z + maxs.z)) != NULL)//Finds a teleport
             {
-                DevLog("FOUND TELEPORT!\n");
                 bhop_block_t block = bhop_block_t();
                 block.m_hBlockEntity.Set(pEntDoor);
                 block.m_hTeleportTrigger.Set(pEntTeleport);
@@ -47,21 +43,17 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
     {
         Vector mins, maxs;
         CBaseButton* pEntButton = static_cast<CBaseButton*>(ent);
-        DevLog("FOUND A BUTTON!\n");
-
         Vector startpos(pEntButton->m_vecPosition1);
         Vector endpos(pEntButton->m_vecPosition2);
 
 
         if (startpos.z > endpos.z && (pEntButton->HasSpawnFlags(SF_BUTTON_TOUCH_ACTIVATES)))
         {
-            DevLog("FOUND BUTTON 2\n");
             GetAbsBoundingBox(pEntButton, mins, maxs);
 
             CBaseEntity *pEntTeleport;
             if ((pEntTeleport = FindTeleport(endpos.z + maxs.z)) != NULL)
             {
-                DevLog("FOUND TELEPORT!\n");
                 bhop_block_t block = bhop_block_t();
                 block.m_hBlockEntity.Set(pEntButton);
                 block.m_hTeleportTrigger.Set(pEntTeleport);
@@ -74,8 +66,6 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
             }
         }
     }
-
-    AlterBhopBlocks();
 }
 void CMOMBhopBlockFixSystem::AlterBhopBlocks()
 {
@@ -85,7 +75,6 @@ void CMOMBhopBlockFixSystem::AlterBhopBlocks()
 
         if (block.m_bIsDoor)
         {
-
             //And now the settings begin
             CBaseDoor *pDoorEnt = static_cast<CBaseDoor*>(block.m_hBlockEntity.Get());
 
@@ -100,8 +89,6 @@ void CMOMBhopBlockFixSystem::AlterBhopBlocks()
             pDoorEnt->AcceptInput("Lock", NULL, NULL, emptyvarient, 0);//Lock the door bhop block
 
             pDoorEnt->m_ls.sLockedSound = pDoorEnt->m_NoiseMoving;//Plays the sound like normal (makes the player aware they jumped it)
-
-            //SDKHook(ent, SDKHook_Touch, Entity_Touch) handled by mom_player
         }
         else
         {//func_button block
@@ -113,8 +100,6 @@ void CMOMBhopBlockFixSystem::AlterBhopBlocks()
             pEntDoor->ClearSpawnFlags();
 
             pEntDoor->AddSpawnFlags(SF_BUTTON_DONTMOVE | SF_BUTTON_TOUCH_ACTIVATES);
-
-            //SDKHook(ent, SDKHook_Touch, Entity_Touch) handled by mom_player
         }
     }
 }

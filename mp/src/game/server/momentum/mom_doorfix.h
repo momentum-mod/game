@@ -26,12 +26,10 @@ public:
     {
         if (!m_bInitted)
         {
-            DevLog("LOOKING FOR THEM!\n");
             FindBhopBlocks();
+            AlterBhopBlocks();
             m_bInitted = true;
         }
-        //FindBhopBlocks();
-        //which calls alterBhopBlocks();
     }
 
     virtual void LevelShutdownPostEntity()
