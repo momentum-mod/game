@@ -50,8 +50,8 @@ $Project "Server (Momentum)"
 				$File	"momentum\Timer.cpp"
 			}
 			
-			$File	"momentum\mom_doorfix.h"
-			$File	"momentum\mom_doorfix.cpp"
+			$File	"momentum\mom_blockfix.h"
+			$File	"momentum\mom_blockfix.cpp"
 			$File   "momentum\mom_triggers.h"
 			$File	"momentum\mom_triggers.cpp"
 

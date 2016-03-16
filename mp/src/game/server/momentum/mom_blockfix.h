@@ -16,7 +16,7 @@
 class CMOMBhopBlockFixSystem : CAutoGameSystem
 {
 
-public:
+  public:
     CMOMBhopBlockFixSystem(const char *pName) : CAutoGameSystem(pName) {}
 
     virtual void LevelInitPostEntity() { FindBhopBlocks(); }
@@ -41,11 +41,11 @@ public:
         m_mapBlocks.Insert(pBlockEnt->entindex(), block);
     }
 
-private:
+  private:
     struct bhop_block_t
     {
-        CBaseEntity* m_pBlockEntity;// func_door or func_button
-        CBaseEntity* m_pTeleportTrigger;// trigger_teleport under it
+        CBaseEntity *m_pBlockEntity;     // func_door or func_button
+        CBaseEntity *m_pTeleportTrigger; // trigger_teleport under it
         bool m_bIsDoor;
     };
     CUtlMap<int, bhop_block_t> m_mapBlocks;
@@ -54,7 +54,7 @@ private:
 
 class CTeleportTriggerTraceEnum : public IEntityEnumerator
 {
-public:
+  public:
     CTeleportTriggerTraceEnum(Ray_t *pRay, CBaseEntity *block, bool isDoor)
         : m_pRay(pRay), pEntBlock(block), bIsDoor(isDoor)
     {
@@ -62,7 +62,7 @@ public:
 
     virtual bool EnumEntity(IHandleEntity *pHandleEntity);
 
-private:
+  private:
     bool bIsDoor;
     CBaseEntity *pEntBlock;
     Ray_t *m_pRay;

@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "mom_doorfix.h"
+#include "mom_blockfix.h"
 
 #include "tier0/memdbgon.h"
 
@@ -107,10 +107,10 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
 
     // Get the Start/End
     vecAbsStart = pBlockEnt->WorldSpaceCenter();
-    //move vector to top of bhop block
+    // move vector to top of bhop block
     vecAbsStart.z += pBlockEnt->WorldAlignMaxs().z;
 
-    //ray is as long as the bhop block is tall
+    // ray is as long as the bhop block is tall
     vecAbsEnd = vecAbsStart + (vecDir * (pBlockEnt->WorldAlignMaxs().z - pBlockEnt->WorldAlignMins().z));
 
     // Do the TraceLine, and write our results to our trace_t class, tr.
@@ -120,11 +120,11 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
 
     enginetrace->EnumerateEntities(ray, true, &triggerTraceEnum);
 }
-//override of IEntityEnumerator's EnumEntity() for our trigger teleport filter
+// override of IEntityEnumerator's EnumEntity() for our trigger teleport filter
 bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 {
     trace_t tr;
-    //store entity that we found on the trace
+    // store entity that we found on the trace
     CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
 
     // Done to avoid hitting an entity that's both solid & a trigger.
@@ -133,9 +133,9 @@ bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
 
-    if (tr.fraction < 1.0f) //tr.fraction = 1.0 means the trace completed
+    if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
-        //arguments are initilized in the constructor of CTeleportTriggerTraceEnum
+        // arguments are initilized in the constructor of CTeleportTriggerTraceEnum
         g_MOMBlockFixer->AddBhopBlock(pEntBlock, pEnt, bIsDoor);
         return true;
     }
