@@ -1,0 +1,25 @@
+"VertexlitGeneric"
+{
+	"$baseTexture" "models\props_japan\sakura_branch02"
+	"$nocull" "1"
+	"$alphatest" "1"
+	
+	// for tree sway  (does not work yet)
+  $vertexfog 1
+  $treeSway 1 
+  $treeSwayHeight 100 
+  $treeSwayStartHeight "0.8" 
+  $treeSwayRadius 100 
+  $treeSwayStartRadius "0.85" 
+  $treeSwaySpeed "0.2" 
+  $treeSwayStrength "0.8" 
+  $treeSwayScrumbleSpeed 2 
+  $treeSwayScrumbleStrength "0.05" 
+  $treeSwayScrumbleFrequency 16 
+  $treeSwayFalloffExp 2 
+  $treeSwayScrumbleFalloffExp 10 
+  $treeSwaySpeedHighWindMultiplier 6 
+  $treeSwaySpeedLerpStart "2.0" 
+  $treeSwaySpeedLerpEnd "6.0" 
+
+}

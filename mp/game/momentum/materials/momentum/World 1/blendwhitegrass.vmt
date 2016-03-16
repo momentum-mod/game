@@ -1,0 +1,10 @@
+"WorldVertexTransition"
+{
+	"$basetexture" "momentum/World 1//White1"
+	"$basetexture2" "momentum/World 1/w1_grass"
+	"%tooltexture" "momentum/World 1/w1_grass"
+        "$basetexturetransform" "center .5 .5 scale 1 1 rotate 0  translate 0 0"
+        "$basetexturetransform2" "center .5 .5 scale 4 4 rotate 0 translate 0 0"
+	//"%detailtype" "grassland1"
+	"$surfaceprop" "grass"
+}
