@@ -127,7 +127,7 @@ private:
 
     //for detecting bhop
     float m_flTicksOnGround;
-    const int NUM_TICKS_TO_BHOP = 4;
+    const int NUM_TICKS_TO_BHOP = 10;
     friend class CMomentumGameMovement;
     float m_flPunishTime;
     int m_iLastBlock;

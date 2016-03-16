@@ -172,11 +172,10 @@ void CMomentumPlayer::CheckForBhop()
     if (GetGroundEntity() != NULL)
     {
         m_flTicksOnGround += gpGlobals->interval_per_tick;
-        //true is player is on ground for less than 4 ticks, false if they are on ground for more
+        //true is player is on ground for less than 10 ticks, false if they are on ground for more s
         m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
     }
     else
         m_flTicksOnGround = 0;
-
-    SetNextThink(gpGlobals->curtime + 0.05f);
+    SetNextThink(gpGlobals->curtime);
 }
