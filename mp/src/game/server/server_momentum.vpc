@@ -49,7 +49,9 @@ $Project "Server (Momentum)"
 				$File	"momentum\Timer.h"
 				$File	"momentum\Timer.cpp"
 			}
-
+			
+			$File	"momentum\mom_blockfix.h"
+			$File	"momentum\mom_blockfix.cpp"
 			$File   "momentum\mom_triggers.h"
 			$File	"momentum\mom_triggers.cpp"
 
