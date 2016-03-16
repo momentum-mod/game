@@ -120,25 +120,26 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
 
     enginetrace->EnumerateEntities(ray, true, &triggerTraceEnum);
 }
-
+//override of IEntityEnumerator's EnumEntity() for our trigger teleport filter
 bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 {
     trace_t tr;
+    //store entity that we found on the trace
     CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
 
     // Done to avoid hitting an entity that's both solid & a trigger.
     if (pEnt->IsSolid())
-        return true;
+        return false;
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
 
-    if (tr.fraction < 1.0f)
+    if (tr.fraction < 1.0f) //tr.fraction = 1.0 means the trace completed
     {
-        DevLog("Entindex of TP: %i", pEnt->entindex());
-        DevLog("Entindex of door: %i", pEntBlock->entindex());
+        //arguments are initilized in the constructor of CTeleportTriggerTraceEnum
         g_MOMBlockFixer->AddBhopBlock(pEntBlock, pEnt, bIsDoor);
+        return true;
     }
-    return true;
+    return false;
 }
 
 static CMOMBhopBlockFixSystem s_MOMBlockFixer("CMOMBhopBlockFixSystem");

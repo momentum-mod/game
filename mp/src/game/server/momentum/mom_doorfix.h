@@ -19,10 +19,7 @@ class CMOMBhopBlockFixSystem : CAutoGameSystem
 public:
     CMOMBhopBlockFixSystem(const char *pName) : CAutoGameSystem(pName) {}
 
-    virtual void LevelInitPostEntity()
-    {
-        FindBhopBlocks();
-    }
+    virtual void LevelInitPostEntity() { FindBhopBlocks(); }
 
     virtual void LevelShutdownPostEntity() { m_mapBlocks.RemoveAll(); }
 
@@ -32,7 +29,7 @@ public:
 
     void FindBhopBlocks();
 
-    void FindTeleport(CBaseEntity *, bool);
+    void FindTeleport(CBaseEntity *pBlockEnt, bool isDoor);
 
     void AddBhopBlock(CBaseEntity *pBlockEnt, CBaseEntity *pTeleportEnt, bool isDoor)
     {
