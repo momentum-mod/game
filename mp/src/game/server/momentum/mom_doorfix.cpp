@@ -3,7 +3,7 @@
 
 #include "tier0/memdbgon.h"
 
-       void CMOMBhopBlockFixSystem::FindBhopBlocks()
+void CMOMBhopBlockFixSystem::FindBhopBlocks()
 {
     SetDefLessFunc(m_mapBlocks);
     //  ---- func_door ----
@@ -107,10 +107,11 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
 
     // Get the Start/End
     vecAbsStart = pBlockEnt->GetAbsOrigin();
-    //move vector to top of door
+    //move vector to top of bhop block
     vecAbsStart.z += pBlockEnt->WorldAlignMaxs().z;
 
-    vecAbsEnd = vecAbsStart + (vecDir * MAX_TRACE_LENGTH);
+    //ray is as long as the bhop block is tall
+    vecAbsEnd = vecAbsStart + (vecDir * (pBlockEnt->WorldAlignMaxs().z - pBlockEnt->WorldAlignMins().z));
 
     // Do the TraceLine, and write our results to our trace_t class, tr.
     Ray_t ray;
