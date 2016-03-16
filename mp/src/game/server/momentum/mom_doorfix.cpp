@@ -106,7 +106,7 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
     vecDir = Vector(0, 0, -1); // Straight down
 
     // Get the Start/End
-    vecAbsStart = pBlockEnt->GetAbsOrigin();
+    vecAbsStart = pBlockEnt->WorldSpaceCenter();
     //move vector to top of bhop block
     vecAbsStart.z += pBlockEnt->WorldAlignMaxs().z;
 
