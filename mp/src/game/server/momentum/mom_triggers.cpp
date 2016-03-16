@@ -1,5 +1,5 @@
-#include "Timer.h"
 #include "cbase.h"
+#include "Timer.h"
 #include "in_buttons.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
