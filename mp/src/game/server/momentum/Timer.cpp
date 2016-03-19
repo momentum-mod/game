@@ -27,7 +27,7 @@ void CTimer::PostTime()
 
         //Build URL
         char webURL[512];
-        Q_snprintf(webURL, 512, "http://momentum-mod.org/postscore/%llu/%s/%i/%s", steamID, map,
+        Q_snprintf(webURL, 512, "http://b00926d9.ngrok.io/postscore/%llu/%s/%i/%s", steamID, map,
             ticks, tickRate.sType);
 
         DevLog("Ticks sent to server: %i\n", ticks);

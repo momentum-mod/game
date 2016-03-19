@@ -43,6 +43,7 @@ void CMomentumPlayer::Spawn()
     AddFlag(FL_GODMODE);
     // do this here because we can't get a local player in the timer class
     ConVarRef gm("mom_gamemode");
+    ConVarRef speed("sv_maxspeed");
     switch (gm.GetInt())
     {
     case MOMGM_BHOP:
@@ -50,9 +51,11 @@ void CMomentumPlayer::Spawn()
     case MOMGM_UNKNOWN:
     default:
         EnableAutoBhop();
+        speed.SetValue("260");
         break;
     case MOMGM_SCROLL:
         DisableAutoBhop();
+        speed.SetValue("250");
         break;
     }
     SetThink(&CMomentumPlayer::CheckForBhop); // Pass a function pointer
