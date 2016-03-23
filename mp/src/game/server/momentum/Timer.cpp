@@ -252,31 +252,35 @@ CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_C
 void CTimer::SetGameModeConVars()
 {
     ConVarRef gm("mom_gamemode");
-    ConVarRef aa("sv_airaccelerate");
     switch (gm.GetInt())
     {
     case MOMGM_SURF:
         sv_maxvelocity.SetValue(3500);
-        aa.SetValue(150);
+        sv_airaccelerate.SetValue(150);
+        sv_maxspeed.SetValue(260);
         break;
     case MOMGM_BHOP:
-        sv_maxvelocity.SetValue(10000);
-        aa.SetValue(1000);
+        sv_maxvelocity.SetValue(100000);
+        sv_airaccelerate.SetValue(1000);
+        sv_maxspeed.SetValue(260);
         break;
     case MOMGM_SCROLL:
         sv_maxvelocity.SetValue(3500);
-        aa.SetValue(100);
+        sv_airaccelerate.SetValue(100);
+        sv_maxspeed.SetValue(250);
         break;
     case MOMGM_UNKNOWN:
     case MOMGM_ALLOWED:
         sv_maxvelocity.SetValue(3500);
-        aa.SetValue(150);
+        sv_airaccelerate.SetValue(150);
+        sv_maxspeed.SetValue(260);
         break;
     default:
         DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;
     }
-    DevMsg("CTimer set ::\nsv_maxvelocity: %i\nsv_airaccelerate: %i", sv_maxvelocity.GetInt(), aa.GetInt());
+    DevMsg("CTimer set values:\nsv_maxvelocity: %i\nsv_airaccelerate: %i \nsv_maxspeed: %i\n",
+        sv_maxvelocity.GetInt(), sv_airaccelerate.GetInt(), sv_maxspeed.GetInt());
 }
 //Practice mode that stops the timer and allows the player to noclip.
 void CTimer::EnablePractice(CBasePlayer *pPlayer)
