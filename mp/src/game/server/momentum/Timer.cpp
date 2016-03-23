@@ -279,7 +279,8 @@ void CTimer::SetGameModeConVars()
         DevWarning("[%i] GameMode not defined.\n", gm.GetInt());
         break;
     }
-    DevMsg("CTimer set ::\nsv_maxvelocity: %i\nsv_airaccelerate: %i \nsv_maxspeed: %i", sv_maxvelocity.GetInt(), sv_airaccelerate.GetInt(), sv_maxspeed.GetInt());
+    DevMsg("CTimer set values:\nsv_maxvelocity: %i\nsv_airaccelerate: %i \nsv_maxspeed: %i\n",
+        sv_maxvelocity.GetInt(), sv_airaccelerate.GetInt(), sv_maxspeed.GetInt());
 }
 //Practice mode that stops the timer and allows the player to noclip.
 void CTimer::EnablePractice(CBasePlayer *pPlayer)
