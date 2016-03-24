@@ -62,28 +62,30 @@ float CMomentumGameMovement::ClimbSpeed(void) const
 
 void CMomentumGameMovement::WalkMove()
 {
-    //MOM_TODO: enable this via some timer command or something so we can have stamina for scroll/kz modes
-    /*
-    if (player->m_flStamina > 0)
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == MOMGM_SCROLL)
     {
-        float flRatio;
+        if (player->m_flStamina > 0)
+        {
+            float flRatio;
 
-        flRatio = (STAMINA_MAX - ((player->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
+            flRatio = (STAMINA_MAX - ((player->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
 
-        // This Goldsrc code was run with variable timesteps and it had framerate dependencies.
-        // People looking at Goldsrc for reference are usually 
-        // (these days) measuring the stoppage at 60fps or greater, so we need
-        // to account for the fact that Goldsrc was applying more stopping power
-        // since it applied the slowdown across more frames.
-        float flReferenceFrametime = 1.0f / 70.0f;
-        float flFrametimeRatio = gpGlobals->frametime / flReferenceFrametime;
+            // This Goldsrc code was run with variable timesteps and it had framerate dependencies.
+            // People looking at Goldsrc for reference are usually 
+            // (these days) measuring the stoppage at 60fps or greater, so we need
+            // to account for the fact that Goldsrc was applying more stopping power
+            // since it applied the slowdown across more frames.
+            float flReferenceFrametime = 1.0f / 70.0f;
+            float flFrametimeRatio = gpGlobals->frametime / flReferenceFrametime;
 
-        flRatio = pow(flRatio, flFrametimeRatio);
+            flRatio = pow(flRatio, flFrametimeRatio);
 
-        mv->m_vecVelocity.x *= flRatio;
-        mv->m_vecVelocity.y *= flRatio;
+            mv->m_vecVelocity.x *= flRatio;
+            mv->m_vecVelocity.y *= flRatio;
+        }
     }
-    */
+   
     BaseClass::WalkMove();
     CheckForLadders(player->GetGroundEntity() != NULL);
 }
@@ -564,6 +566,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         if (mv->m_nOldButtons & IN_JUMP)
             return false;		// don't pogo stick
     }
+    
     // In the air now.
     SetGroundEntity(NULL);
 
@@ -596,19 +599,23 @@ bool CMomentumGameMovement::CheckJumpButton()
     {
         mv->m_vecVelocity[2] += flGroundFactor * sqrt(2 * 800 * 57.0);  // 2 * gravity * height
     }
-    //MOM_TODO: enable this via command or something for scroll/kz modes
-    /*
-    if (player->m_flStamina > 0)
+
+    //stamina stuff (scroll gamemode only)
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == MOMGM_SCROLL)
     {
-        float flRatio;
+        if (player->m_flStamina > 0)
+        {
+            float flRatio;
 
-        flRatio = (STAMINA_MAX - ((player->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
+            flRatio = (STAMINA_MAX - ((player->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
 
-        mv->m_vecVelocity[2] *= flRatio;
+            mv->m_vecVelocity[2] *= flRatio;
+        }
+
+        player->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0;
     }
 
-    player->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0;
-    */
     FinishGravity();
 
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;

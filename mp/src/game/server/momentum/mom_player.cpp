@@ -8,11 +8,12 @@ SendPropInt(SENDINFO(m_iShotsFired)),
 SendPropInt(SENDINFO(m_iDirection)),
 SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iLastZoom)),
-SendPropInt(SENDINFO(m_bAutoBhop)),
+SendPropBool(SENDINFO(m_bAutoBhop)),
+SendPropBool(SENDINFO(m_bDidPlayerBhop)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
-
+DEFINE_THINKFUNC(CheckForBhop),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -20,18 +21,16 @@ PRECACHE_REGISTER(player);
 
 CMomentumPlayer::CMomentumPlayer()
 {
-
+    m_flPunishTime = -1;
+    m_iLastBlock = -1;
 }
 
-CMomentumPlayer::~CMomentumPlayer()
-{
-
-}
+CMomentumPlayer::~CMomentumPlayer() {}
 
 void CMomentumPlayer::Precache()
 {
-    // Name of our entity's model
-#define	ENTITY_MODEL	"models/gibs/airboat_broken_engine.mdl"
+// Name of our entity's model
+#define ENTITY_MODEL "models/gibs/airboat_broken_engine.mdl"
     PrecacheModel(ENTITY_MODEL);
 
     BaseClass::Precache();
@@ -42,32 +41,32 @@ void CMomentumPlayer::Spawn()
     SetModel(ENTITY_MODEL);
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
-    //do this here because we can't get a local player in the timer class
+    // do this here because we can't get a local player in the timer class
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
     {
-        case MOMGM_BHOP:
-        case MOMGM_SURF:
-        case MOMGM_UNKNOWN:
-        default:
-            EnableAutoBhop();
-            break;
-        case MOMGM_SCROLL:
-            DisableAutoBhop();
-            break;
+    case MOMGM_BHOP:
+    case MOMGM_SURF:
+    case MOMGM_UNKNOWN:
+    default:
+        EnableAutoBhop();
+        break;
+    case MOMGM_SCROLL:
+        DisableAutoBhop();
+        break;
     }
-        
-
+    SetThink(&CMomentumPlayer::CheckForBhop); // Pass a function pointer
+    SetNextThink(gpGlobals->curtime);
 }
 
-void CMomentumPlayer::SurpressLadderChecks(const Vector& pos, const Vector& normal)
+void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
 {
     m_ladderSurpressionTimer.Start(1.0f);
     m_lastLadderPos = pos;
     m_lastLadderNormal = normal;
 }
 
-bool CMomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
+bool CMomentumPlayer::CanGrabLadder(const Vector &pos, const Vector &normal)
 {
     if (m_ladderSurpressionTimer.GetRemainingTime() <= 0.0f)
     {
@@ -88,7 +87,7 @@ bool CMomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
     return false;
 }
 
-CBaseEntity* CMomentumPlayer::EntSelectSpawnPoint()
+CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 {
     CBaseEntity *pStart;
     pStart = NULL;
@@ -111,7 +110,7 @@ CBaseEntity* CMomentumPlayer::EntSelectSpawnPoint()
     }
 }
 
-bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &pStart)
+bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pStart)
 {
 #define SF_PLAYER_START_MASTER 1
     pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
@@ -141,6 +140,15 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity* &p
 
     return false;
 }
+
+void CMomentumPlayer::Touch(CBaseEntity *pOther)
+{
+    BaseClass::Touch(pOther);
+
+    if (g_MOMBlockFixer->IsBhopBlock(pOther->entindex()))
+        g_MOMBlockFixer->PlayerTouch(this, pOther);
+}
+
 void CMomentumPlayer::EnableAutoBhop()
 {
     m_bAutoBhop = true;
@@ -151,7 +159,16 @@ void CMomentumPlayer::DisableAutoBhop()
     m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
 }
-bool CMomentumPlayer::HasAutoBhop()
+bool CMomentumPlayer::HasAutoBhop() { return m_bAutoBhop; }
+void CMomentumPlayer::CheckForBhop()
 {
-    return m_bAutoBhop;
+    if (GetGroundEntity() != NULL)
+    {
+        m_flTicksOnGround += gpGlobals->interval_per_tick;
+        // true is player is on ground for less than 10 ticks, false if they are on ground for more s
+        m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
+    }
+    else
+        m_flTicksOnGround = 0;
+    SetNextThink(gpGlobals->curtime);
 }
