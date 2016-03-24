@@ -1,8 +1,8 @@
 #include "cbase.h"
 #include "Timer.h"
+#include "in_buttons.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
-#include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
@@ -37,16 +37,16 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 BEGIN_DATADESC(CTriggerTimerStart)
 DEFINE_KEYFIELD(m_fMaxLeaveSpeed, FIELD_FLOAT, "leavespeed"),
 DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
-DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles")
+DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") 
 END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) //do not start timer if player is in practice mode.
+    if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) // do not start timer if player is in practice mode.
     {
         g_Timer.Start(gpGlobals->tickcount);
 
-       if (IsLimitingSpeed())
+        if (IsLimitingSpeed())
         {
             Vector velocity = pOther->GetAbsVelocity();
             if (IsLimitingSpeedOnlyXY())
@@ -61,16 +61,17 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                     pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                 }
             }
-            //XYZ limit (this is likely never going to be used, or at least, it shouldn't be)
+            // XYZ limit (this is likely never going to be used, or at least, it shouldn't be)
             else
             {
                 if (velocity.IsLengthGreaterThan((m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed)))
-                    pOther->SetAbsVelocity(velocity.Normalized() * (m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
+                    pOther->SetAbsVelocity(velocity.Normalized() *
+                                           (m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
             }
         }
     }
-    //stop thinking on end touch
-    SetNextThink(NULL);
+    // stop thinking on end touch
+    SetNextThink(-1);
     BaseClass::EndTouch(pOther);
 }
 
@@ -82,7 +83,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         g_Timer.Stop(false);
         g_Timer.DispatchResetMessage();
     }
-    //start thinking
+    // start thinking
     SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);
 }
@@ -97,15 +98,9 @@ void CTriggerTimerStart::Spawn()
     BaseClass::Spawn();
 }
 
-void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed)
-{
-    m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed);
-}
+void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed) { m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed); }
 
-void CTriggerTimerStart::SetBhopLeaveSpeed(float pBhopMaxLeaveSpeed)
-{
-    m_fBhopLeaveSpeed = abs(pBhopMaxLeaveSpeed);
-}
+void CTriggerTimerStart::SetBhopLeaveSpeed(float pBhopMaxLeaveSpeed) { m_fBhopLeaveSpeed = abs(pBhopMaxLeaveSpeed); }
 
 void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
 {
@@ -178,16 +173,13 @@ void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
         }
     }
 }
-void CTriggerTimerStart::SetLookAngles(QAngle newang)
-{
-    m_angLook = newang;
-}
+void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
 void CTriggerTimerStart::Think()
 {
-    //for limit bhop in start zone
+    // for limit bhop in start zone
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    //We don't check for player inside trigger here since the Think() function
-    //is only called if we are inside (see StartTouch & EndTouch defined above)
+    // We don't check for player inside trigger here since the Think() function
+    // is only called if we are inside (see StartTouch & EndTouch defined above)
     if (pPlayer && IsLimitingBhop())
     {
         if (pPlayer->DidPlayerBhop())
@@ -217,7 +209,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
-DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"),
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"), 
 END_DATADESC()
 
 void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
@@ -241,13 +233,12 @@ END_DATADESC()
 bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
     return (g_Timer.GetCurrentCheckpoint() &&
-        g_Timer.GetCurrentCheckpoint()->GetCheckpointNumber() >= m_iCheckpointNumber);
+            g_Timer.GetCurrentCheckpoint()->GetCheckpointNumber() >= m_iCheckpointNumber);
 }
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTeleport -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerTeleportEnt);
-
 
 BEGIN_DATADESC(CTriggerTeleportEnt)
 DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"),
@@ -271,15 +262,17 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
             }
         }
 
-        if (!PassesTriggerFilters(pOther)) return;
+        if (!PassesTriggerFilters(pOther))
+            return;
 
-        if (pDestinationEnt)//ensuring not null
+        if (pDestinationEnt) // ensuring not null
         {
             Vector tmp = pDestinationEnt->GetAbsOrigin();
             // make origin adjustments. (origin in center, not at feet)
             tmp.z -= pOther->WorldAlignMins().z;
 
-            pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : NULL, m_bResetVelocity ? &vec3_origin : NULL);
+            pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : NULL,
+                             m_bResetVelocity ? &vec3_origin : NULL);
             AfterTeleport();
         }
     }
@@ -288,7 +281,6 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 
 //----------- CTriggerTeleportCheckpoint -------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport_checkpoint, CTriggerTeleportCheckpoint);
-
 
 void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 {
@@ -308,8 +300,8 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
     SetDestinationEnt(NULL);
     BaseClass::StartTouch(pOther);
-    //The above is needed for the Think() function of this class,
-    //it's very HACKHACK but it works
+    // The above is needed for the Think() function of this class,
+    // it's very HACKHACK but it works
 
     if (pOther->IsPlayer())
     {
@@ -379,7 +371,7 @@ void CTriggerMultihop::StartTouch(CBaseEntity *pOther)
     }
 }
 
-void CTriggerMultihop::EndTouch(CBaseEntity* pOther)
+void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 {
     // We don't want to keep checking for tp
     m_fStartTouchedTime = -1.0f;
@@ -468,14 +460,14 @@ void CTriggerLimitMovement::Think()
         if (HasSpawnFlags(LIMIT_BHOP))
         {
             pPlayer->DisableButtons(IN_JUMP);
-            //if player in air
+            // if player in air
             if (pPlayer->GetGroundEntity() != NULL)
             {
-                //only start timer if we havent already started
+                // only start timer if we havent already started
                 if (!m_BhopTimer.HasStarted())
                     m_BhopTimer.Start(FL_BHOP_TIMER);
 
-                //when finished
+                // when finished
                 if (m_BhopTimer.IsElapsed())
                 {
                     pPlayer->EnableButtons(IN_JUMP);
@@ -484,14 +476,14 @@ void CTriggerLimitMovement::Think()
             }
         }
     }
-    //figure out if timer elapsed or not
+    // figure out if timer elapsed or not
     if (m_BhopTimer.GetRemainingTime() <= 0)
         m_BhopTimer.Invalidate();
-    //DevLog("Bhop Timer Remaining Time:%f\n", m_BhopTimer.GetRemainingTime());
+    // DevLog("Bhop Timer Remaining Time:%f\n", m_BhopTimer.GetRemainingTime());
 
-    //HACKHACK - this prevents think from running too fast, breaking the timer
-    //and preventing the player from jumping until the timer runs out
-    //Thinking every 0.25 seconds seems to feel good, but we can adjust this later
+    // HACKHACK - this prevents think from running too fast, breaking the timer
+    // and preventing the player from jumping until the timer runs out
+    // Thinking every 0.25 seconds seems to feel good, but we can adjust this later
     SetNextThink(gpGlobals->curtime + 0.25);
     BaseClass::Think();
 }
@@ -535,7 +527,6 @@ void CTriggerLimitMovement::EndTouch(CBaseEntity *pOther)
     BaseClass::EndTouch(pOther);
 }
 //-----------------------------------------------------------------------------------------------
-
 
 //---------- CFuncShootBoost --------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
