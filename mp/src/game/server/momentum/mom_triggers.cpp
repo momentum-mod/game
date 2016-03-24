@@ -98,16 +98,8 @@ void CTriggerTimerStart::Spawn()
     BaseClass::Spawn();
 }
 
-<<<<<<< HEAD
-void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed)
-{
-    m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed);
-}
-=======
-void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed) { m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed); }
-
+void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed) { m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed);  }
 void CTriggerTimerStart::SetBhopLeaveSpeed(float pBhopMaxLeaveSpeed) { m_fBhopLeaveSpeed = abs(pBhopMaxLeaveSpeed); }
->>>>>>> master
 
 void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
 {
