@@ -268,10 +268,10 @@ void CHudMenuStatic::ProcessText(void)
 
 void CHudMenuStatic::ApplySchemeSettings(vgui::IScheme *pScheme)
 {
-    BaseClass::ApplySchemeSettings(pScheme);
-
     SetPaintBackgroundEnabled(false);
     textFont = pScheme->GetFont("Default", true);
+    SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
+    SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
     // set our size
     int screenWide, screenTall;
     int x, y;

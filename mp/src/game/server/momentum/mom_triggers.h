@@ -44,6 +44,7 @@ class CTriggerTimerStop : public CBaseMomentumTrigger
 
 public:
     void StartTouch(CBaseEntity*);
+    void EndTouch(CBaseEntity*);
 };
 
 // CTriggerTeleportEnt

@@ -71,6 +71,8 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         }
     }
     // stop thinking on end touch
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    pPlayer->m_bPlayerInsideStartZone = false;
     SetNextThink(-1);
     BaseClass::EndTouch(pOther);
 }
@@ -83,6 +85,8 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         g_Timer.Stop(false);
         g_Timer.DispatchResetMessage();
     }
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    pPlayer->m_bPlayerInsideStartZone = true;
     // start thinking
     SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);
@@ -197,10 +201,21 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     BaseClass::StartTouch(pOther);
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
     if (pOther->IsPlayer() && g_Timer.IsRunning())
+    {
         g_Timer.Stop(true);
+        pPlayer->m_bPlayerFinishedMap = true;
+    }
+    pPlayer->m_bPlayerInsideEndZone = true;
+}
+void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    pPlayer->m_bPlayerInsideEndZone = false;
+    pPlayer->m_bPlayerFinishedMap = false;
 }
 //----------------------------------------------------------------------------------------------
 

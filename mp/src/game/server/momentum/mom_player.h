@@ -63,7 +63,7 @@ class CMomentumPlayer : public CBasePlayer
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop();
+    bool HasAutoBhop() { return m_bAutoBhop; }
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void CheckForBhop();
@@ -74,6 +74,10 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(int, m_iLastZoom);
     CNetworkVar(bool, m_bAutoBhop);
     CNetworkVar(bool, m_bDidPlayerBhop);
+    CNetworkVar(bool, m_bPlayerInsideStartZone);
+    CNetworkVar(bool, m_bPlayerInsideEndZone);
+    CNetworkVar(bool, m_bHasPracticeMode);
+    CNetworkVar(bool, m_bPlayerFinishedMap);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 

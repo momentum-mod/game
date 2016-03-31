@@ -21,8 +21,8 @@ public:
 
     void SurpressLadderChecks(const Vector& pos, const Vector& normal);
     bool CanGrabLadder(const Vector& pos, const Vector& normal);
-    bool HasAutoBhop();
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
+    bool HasAutoBhop() { return m_bAutoBhop; }
 
     int m_iShotsFired;
     int m_iDirection;
@@ -30,6 +30,10 @@ public:
     int m_iLastZoom;
     bool m_bAutoBhop;
     bool m_bDidPlayerBhop;
+    bool m_bPlayerInsideStartZone;
+    bool m_bPlayerInsideEndZone;
+    bool m_bHasPracticeMode;
+    bool m_bPlayerFinishedMap;
 
     void GetBulletTypeParameters(
         int iBulletType,

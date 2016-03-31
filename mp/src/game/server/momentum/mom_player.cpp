@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "mom_player.h"
+#include "mom_triggers.h"
 
 #include "tier0/memdbgon.h"
 
@@ -10,6 +11,10 @@ SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iLastZoom)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
+SendPropBool(SENDINFO(m_bPlayerInsideStartZone)),
+SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
+SendPropBool(SENDINFO(m_bHasPracticeMode)), 
+SendPropBool(SENDINFO(m_bPlayerFinishedMap)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -159,7 +164,6 @@ void CMomentumPlayer::DisableAutoBhop()
     m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
 }
-bool CMomentumPlayer::HasAutoBhop() { return m_bAutoBhop; }
 void CMomentumPlayer::CheckForBhop()
 {
     if (GetGroundEntity() != NULL)

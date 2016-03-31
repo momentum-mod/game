@@ -5,6 +5,7 @@
 #include "iclientmode.h"
 #include "view.h"
 #include "menu.h"
+#include "mom_player_shared.h"
 
 using namespace vgui;
 
@@ -43,6 +44,11 @@ public:
     {
         return mom_timer.GetBool() && CHudElement::ShouldDraw();
     }
+    virtual void ApplySchemeSettings(IScheme *pScheme)
+    {
+        Panel::ApplySchemeSettings(pScheme);
+        SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
+    }
     void MsgFunc_Timer_State(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);
     void MsgFunc_Timer_Checkpoint(bf_read &msg);
@@ -51,6 +57,7 @@ public:
     virtual void Paint();
     int GetCurrentTime();
     bool m_bIsRunning;
+    bool m_bTimerRan;
     int m_iStartTick;
 
 private:
@@ -63,12 +70,15 @@ private:
     char m_pszStringCps[BUFSIZELOCL];
     wchar_t m_pwCurrentStages[BUFSIZELOCL];
     char m_pszStringStages[BUFSIZELOCL];
+    wchar_t m_pwCurrentStatus[BUFSIZELOCL];
+    char m_pszStringStatus[BUFSIZELOCL];
     CUtlMap<const char*, float> map;
     int m_iTotalTicks;
     bool m_bWereCheatsActivated = false;
     bool m_bShowCheckpoints;
     int m_iCheckpointCount;
     int m_iCheckpointCurrent;
+    Color panelColor;
 
 protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -135,6 +145,7 @@ void C_Timer::Init()
 void C_Timer::Reset()
 {
     m_bIsRunning = false;
+    m_bTimerRan = false;
     m_iTotalTicks = 0;
     m_iStageCount = 0;
     m_iStageCurrent = 0;
@@ -158,7 +169,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
     if (!pPlayer)
         return;
-    // MOM_TODO: Create HUD animations for states
+    
     if (started)
     {
         //VGUI_ANIMATE("TimerStart");
@@ -166,6 +177,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         if (pPlayer != NULL)
         {
             pPlayer->EmitSound("Momentum.StartTimer");
+            m_bTimerRan = true;
         }
     }
     else // stopped
@@ -173,7 +185,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         // Compare times.
         if (m_bWereCheatsActivated) //EY, CHEATER, STOP
         {
-            Msg("sv_cheats was set to 1, thus making the run not valid \n");
+            DevWarning("sv_cheats was set to 1, thus making the run not valid \n");
         }
         else //He didn't cheat, we can carry on
         {
@@ -215,7 +227,6 @@ void C_Timer::MsgFunc_Timer_StageCount(bf_read &msg)
 {
     m_iStageCount = (int) msg.ReadLong();
 }
-
 int C_Timer::GetCurrentTime()
 {
     if (m_bIsRunning) m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
@@ -224,26 +235,11 @@ int C_Timer::GetCurrentTime()
 
 void C_Timer::Paint(void)
 {
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+
     mom_UTIL.FormatTime(GetCurrentTime(), gpGlobals->interval_per_tick, m_pszString);
-    
-    //float m_flSecondsTime = ((float) GetCurrentTime()) * gpGlobals->interval_per_tick;
 
-    /*int hours = m_flSecondsTime / (60.0f * 60.0f);
-    int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
-    int seconds = fmod(m_flSecondsTime, 60.0f);
-    int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
-
-    Q_snprintf(m_pszString, sizeof(m_pszString), "%02d:%02d:%02d.%03d",
-        hours, //hours
-        minutes, //minutes
-        seconds, //seconds
-        millis //millis
-        );*/
-
-
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
-
+    //find out status of checkpoints (linear vs checkpoints)
     if (m_bShowCheckpoints)
     {
         char cpLocalized[BUFSIZELOCL];
@@ -277,6 +273,42 @@ void C_Timer::Paint(void)
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), linearLocalized);
     }
 
+    //find out status of timer (start zone/end zone/practice mode)
+    if (pPlayer->m_bPlayerInsideStartZone)
+    {
+        char localized[BUFSIZELOCL];
+        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_InsideStartZone");
+        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_InsideStartZone", localized, BUFSIZELOCL);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+    }
+    else if (pPlayer->m_bPlayerInsideEndZone && pPlayer->m_bPlayerFinishedMap) //player finished map with timer running
+    {
+        char localized[BUFSIZELOCL];
+        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_MapFinished");
+        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_MapFinished", localized, BUFSIZELOCL);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+    }
+    else if (pPlayer->m_bHasPracticeMode)
+    {
+        char localized[BUFSIZELOCL];
+        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_PracticeMode");
+        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_PracticeMode", localized, BUFSIZELOCL);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+    }
+    else
+    {
+        char localized[BUFSIZELOCL];
+        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_NoTimer");
+        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_NoTimer", localized, BUFSIZELOCL);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+    }
+
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszStringStatus, m_pwCurrentStatus, sizeof(m_pwCurrentStatus));
+
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
+
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringStages, m_pwCurrentStages, sizeof(m_pwCurrentStages));
 
@@ -284,15 +316,14 @@ void C_Timer::Paint(void)
     surface()->DrawSetTextFont(m_hTextFont);
     surface()->DrawSetTextColor(GetFgColor());
 
-    // Draw current time.
     int dummy, totalWide;
-
+    // Draw current time.
     GetSize(totalWide, dummy);
 
     if (center_time)
     {
         int timeWide;
-        surface()->GetTextSize(m_hTextFont, m_pwCurrentTime, timeWide, dummy);
+        surface()->GetTextSize(m_hTextFont, m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, timeWide, dummy);
         int offsetToCenter = ((totalWide - timeWide) / 2);
         surface()->DrawSetTextPos(offsetToCenter, time_ypos);
     }
@@ -300,7 +331,9 @@ void C_Timer::Paint(void)
     {
         surface()->DrawSetTextPos(time_xpos, time_ypos);
     }
-    surface()->DrawPrintText(m_pwCurrentTime, wcslen(m_pwCurrentTime));
+
+    //draw either timer display or the timer status
+    surface()->DrawPrintText(m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, m_bIsRunning ? wcslen(m_pwCurrentTime) : wcslen(m_pwCurrentStatus));
 
     if (m_bShowCheckpoints)
     {

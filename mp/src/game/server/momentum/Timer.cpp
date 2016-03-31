@@ -287,15 +287,19 @@ void CTimer::EnablePractice(CBasePlayer *pPlayer)
 {
     pPlayer->SetParent(NULL);
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
-    ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode on!\n");
+    ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
     g_Timer.Stop(false);
+    CMomentumPlayer *mPlayer = ToCMOMPlayer(pPlayer);
+    mPlayer->m_bHasPracticeMode = true;
 }
 void CTimer::DisablePractice(CBasePlayer *pPlayer)
 {
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
+    CMomentumPlayer *mPlayer = ToCMOMPlayer(pPlayer);
+    mPlayer->m_bHasPracticeMode = false;
 }
 bool CTimer::IsPracticeMode(CBaseEntity *pOther)
 {
@@ -476,8 +480,13 @@ public:
             return;
         Vector velocity = pPlayer->GetAbsVelocity();
 
-        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP && velocity.Length2DSqr() == 0)
-            g_Timer.EnablePractice(pPlayer);
+        if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
+        {
+            DevLog("You cannot enable practice mode while moving!\n");
+            if (velocity.Length2DSqr() == 0)
+                g_Timer.EnablePractice(pPlayer);
+        }
+           
         else //player is either already in practice mode or currently moving.
             g_Timer.DisablePractice(pPlayer);
     }
