@@ -15,19 +15,11 @@ Scheme
 	Colors
 	{
 		// base colors
-		"Orange"			"255 176 0 255"
-		"OrangeDim"			"255 176 0 120"
-		"LightOrange"		"188 112 0 128"
-		
-		"Red"				"192 28 0 140"
-		"Black"				"0 0 0 196"
-		"TransparentBlack"	"0 0 0 196"
-		"TransparentLightBlack"	"0 0 0 90"
-
-		"Blank"				"0 0 0 0"
-		"ForTesting"		"255 0 0 32"
-		"ForTesting_Magenta"	"255 0 255 255"
-		"ForTesting_MagentaDim"	"255 0 255 120"
+		"MOM.Panel.Fg"				"255 255 255 255"
+		"MOM.Panel.Bg"				"0 0 0 76"
+		"MOM.Speedometer.Normal"	"255 255 255 255"
+		"MOM.Speedometer.Increase"	"0 128 255 255"
+		"MOM.Speedometer.Decrease"	"255 0 0 255"
 	}
 	
 	///////////////////// BASE SETTINGS ////////////////////////
@@ -36,10 +28,10 @@ Scheme
 	// controls use these to determine their settings
 	BaseSettings
 	{
-		"FgColor"			"0 128 255 255"
+		"FgColor"			"255 255 255 255"
 		"BgColor"			"0 0 0 76"
 
-		"Panel.FgColor"			"0 128 255 100"
+		"Panel.FgColor"			"255 255 255 255"
 		"Panel.BgColor"			"0 0 0 76"
 		
 		"BrightFg"		"128 255 255 255"

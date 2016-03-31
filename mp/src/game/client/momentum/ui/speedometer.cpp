@@ -50,25 +50,34 @@ public:
             break;
         }
         SetDisplayValue(0);
+        m_flNextColorizeCheck = 0;
     }
     virtual void OnThink();
     virtual bool ShouldDraw()
     {
         return speedmeter_draw.GetBool() && CHudElement::ShouldDraw();
     }
-
+    virtual void ApplySchemeSettings(IScheme *pScheme)
+    {
+        Panel::ApplySchemeSettings(pScheme);
+        normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
+        increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
+        decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
+    }
     bool ShouldColorize()
     {
         return speedmeter_colorize.GetBool();
     }
-
     Color GetColorFromVariation(float variation, Color normalcolor, Color increasecolor, Color decreasecolor);
 private:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
-    const Color m_WHITE = Color::Color(255, 255, 255, 255);
-    const Color m_RED = Color::Color(255, 0, 0, 255);
-    const Color m_BLUE = Color::Color(0, 0, 255, 255);
+    float m_flLocalLastVel;
+
+    Color m_lastColor;
+    Color m_currentColor;
+    Color normalColor, increaseColor, decreaseColor;
+
 };
 
 DECLARE_HUDELEMENT(CHudSpeedMeter);
@@ -116,27 +125,31 @@ void CHudSpeedMeter::OnThink()
             SetLabelText(L"UPS");
             break;
         }
-        
-        if (m_flNextColorizeCheck <= gpGlobals->curtime)
+
+        //only called if we need to update color
+        if (ShouldColorize())
         {
-            if (ShouldColorize())
+            if (m_flNextColorizeCheck <= gpGlobals->curtime)
             {
                 if (m_flLastVelocity != 0)
                 {
-                    Color fgColor = GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), m_WHITE, m_BLUE, m_RED);
-                    DevMsg("R %i  G %i  B %i\n", fgColor.r(), fgColor.g(), fgColor.b());
-                    SetFgColor(fgColor);
+                    m_currentColor = GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), normalColor, increaseColor, decreaseColor);
+                    SetFgColor(m_currentColor);
+                    m_lastColor = m_currentColor;
                 }
                 else
-                    SetFgColor(m_WHITE);
+                {
+                    m_currentColor = normalColor;
+                    SetFgColor(m_currentColor);
+                    m_lastColor = m_currentColor;
+                }
+                m_flLastVelocity = vel;
+                m_flNextColorizeCheck = gpGlobals->curtime + 0.1f; //we need to update color every 0.1 seconds
             }
-            else
-            {
-                SetFgColor(m_WHITE);
-            }
-            m_flLastVelocity = vel;
-            m_flNextColorizeCheck = gpGlobals->curtime + 0.1f;
-
+        }
+        else
+        {
+            SetFgColor(normalColor);
         }
 
         //With this round we ensure that the speed is as precise as possible, instead of taking the floor value of the float
@@ -148,26 +161,12 @@ Color CHudSpeedMeter::GetColorFromVariation(float variation, Color normalcolor, 
 {
     //variation is current velocity minus previous velocity. 
     Color pFinalColor = normalcolor;
-    int r, g, b;
+    float deadZone = 2.0f; //if variation is inside this range (+/-), do not update color
 
-    //our velocity decreased
-    if (variation < 0)
-    {
-        r = normalcolor.r() * (1 / variation) + (decreasecolor.r() * (1 - 1 / variation));
-        g = normalcolor.g() * (1 / variation) + (decreasecolor.g() * (1 - 1 / variation));
-        b = normalcolor.b() * (1 / variation) + (decreasecolor.b() * (1 - 1 / variation));
-        pFinalColor.SetColor(r, g, b, 255);
-    }
-    //our velocity increased
-    else if (variation > 0)
-    {
-        r = normalcolor.r() * (1 / variation) + (increasecolor.r() * (1 - 1 / variation));
-        g = normalcolor.g() * (1 / variation) + (increasecolor.g() * (1 - 1 / variation));
-        b = normalcolor.b() * (1 / variation) + (increasecolor.b() * (1 - 1 / variation));
-        pFinalColor.SetColor(r, g, b, 255);
-    }
+    if (variation < -deadZone)    //our velocity decreased
+        pFinalColor = decreasecolor;
+    else if (variation > deadZone) //our velocity increased
+        pFinalColor = increasecolor;
 
     return pFinalColor;
 }
-
-
