@@ -30,6 +30,7 @@ public:
     {
         Panel::ApplySchemeSettings(pScheme);
         SetFgColor(GetSchemeColor("White", pScheme));
+        SetShouldDisplaySecondaryValue(true);
     }
     void Paint();
 };
@@ -47,6 +48,8 @@ void CHudStrafeSyncDisplay::OnThink()
 
     //MOM_TODO: Make this value float with 2 digits precision. IDK how to do this for CHudNumericDisplay
     SetDisplayValue((pPlayer->m_flStrafeSync));
+    SetDisplayValue(clampedStrafeSync);
+    SetSecondaryValue((clampedStrafeSync - Floor2Int(clampedStrafeSync)) * 100);
 }
 void CHudStrafeSyncDisplay::Paint()
 {

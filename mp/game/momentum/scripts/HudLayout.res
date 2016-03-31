@@ -50,11 +50,14 @@
                 "enabled"		"1"
 				"TextFont"		"HudHintTextSmall"
 				"NumberFont"	"HudNumbersSmall"
+				"SmallNumberFont" "HudNumbersVerySmall"
                 "PaintBackgroundType" "2"
                 "text_xpos"		"15"
                 "text_ypos"		"2"
-                "digit_xpos"	"15"
+                "digit_xpos"	"12"
                 "digit_ypos"	"12"
+				"digit2_xpos"	"30"
+                "digit2_ypos"	"17"
 		}
     //The design for in-game menus            
     CHudMenuStatic
@@ -77,7 +80,7 @@
 	CHudSyncBar
 	{
 		"fieldName"		"CHudSyncBar"
-		"xpos"			"c-50"
+		"xpos"			"c-75"
 		"ypos"			"c+170"
 		"wide"			"200"
 		"tall"			"20"
