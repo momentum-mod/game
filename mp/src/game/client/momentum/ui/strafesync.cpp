@@ -13,8 +13,8 @@ using namespace vgui;
 static ConVar strafesync_draw("mom_showstrafesync", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Toggles displaying the strafesync data.\n", true, 0, true, 1);
 
-static ConVar strafesync_colorize("mom_strafesync_colorize", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Toggles strafesync data colorization based on acceleration.\n", true, 0, true, 1);
+static ConVar strafesync_colorize("mom_strafesync_colorize", "2", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Toggles strafesync data colorization type based on acceleration. 0 to disable\n", true, 0, true, 2);
 
 //////////////////////////////////////////
 //           CHudStrafeSyncDisplay        //
@@ -41,7 +41,7 @@ public:
     }
     bool ShouldColorize()
     {
-        return strafesync_colorize.GetBool();
+        return strafesync_colorize.GetInt() > 0;
     }
     void Paint();
 
@@ -66,34 +66,48 @@ void CHudStrafeSyncDisplay::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     float clampedStrafeSync = clamp(pPlayer->m_flStrafeSync, 0, 100);
 
-    if (ShouldColorize())
+    switch (strafesync_colorize.GetInt())
     {
+    case 1:
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
             if (m_flLastStrafeSync != 0)
             {
-                m_currentColor = mom_UTIL.GetColorFromVariation(clampedStrafeSync - m_flLastStrafeSync, 0.0f, normalColor, increaseColor, decreaseColor);
-                SetFgColor(m_currentColor);
+                m_currentColor = mom_UTIL.GetColorFromVariation(pPlayer->m_flStrafeSync - m_flLastStrafeSync, 1.0f, normalColor, increaseColor, decreaseColor);
                 m_lastColor = m_currentColor;
             }
             else
             {
                 m_currentColor = normalColor;
-                SetFgColor(m_currentColor);
                 m_lastColor = m_currentColor;
             }
-            m_flLastStrafeSync = clampedStrafeSync;
+            m_flLastStrafeSync = pPlayer->m_flStrafeSync;
             m_flNextColorizeCheck = gpGlobals->curtime + 0.1f; //we need to update color every 0.1 seconds
         }
-    }
-    else
-    {
+        break;
+    case 2:
+        if (pPlayer->m_flStrafeSync > 90)
+        {
+            m_currentColor = increaseColor;
+        }
+        else if (pPlayer->m_flStrafeSync < 75)
+        {
+            m_currentColor = decreaseColor;
+        }
+        else
+        {
+            m_currentColor = normalColor;
+        }
+        break;
+    case 0:
+    default:
         SetFgColor(normalColor);
+        m_currentColor = normalColor;
+        break;
     }
-
-    //MOM_TODO: Make this value float with 2 digits precision. IDK how to do this for CHudNumericDisplay
     SetDisplayValue(clampedStrafeSync);
     SetSecondaryValue((clampedStrafeSync - Floor2Int(clampedStrafeSync)) * 100);
+    SetFgColor(m_currentColor);
 
 }
 void CHudStrafeSyncDisplay::Paint()
@@ -121,7 +135,7 @@ public:
     }
     bool ShouldColorize()
     {
-        return strafesync_colorize.GetBool();
+        return strafesync_colorize.GetInt() > 0;
     }
 
 private:
@@ -147,13 +161,14 @@ void CHudStrafeSyncBar::Paint()
 void CHudStrafeSyncBar::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (ShouldColorize())
+    switch (strafesync_colorize.GetInt())
     {
+    case 1:
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
             if (m_flLastStrafeSync != 0)
             {
-                m_currentColor = mom_UTIL.GetColorFromVariation(pPlayer->m_flStrafeSync - m_flLastStrafeSync, 0.0f, normalColor, increaseColor, decreaseColor);
+                m_currentColor = mom_UTIL.GetColorFromVariation(pPlayer->m_flStrafeSync - m_flLastStrafeSync, 1.0f, normalColor, increaseColor, decreaseColor);
                 m_lastColor = m_currentColor;
             }
             else
@@ -164,10 +179,26 @@ void CHudStrafeSyncBar::OnThink()
             m_flLastStrafeSync = pPlayer->m_flStrafeSync;
             m_flNextColorizeCheck = gpGlobals->curtime + 0.1f; //we need to update color every 0.1 seconds
         }
-    }
-    else
-    {
+        break;
+    case 2:
+        if (pPlayer->m_flStrafeSync > 90)
+        {
+            m_currentColor = increaseColor;
+        }
+        else if (pPlayer->m_flStrafeSync < 75)
+        {
+            m_currentColor = decreaseColor;
+        }
+        else
+        {
+            m_currentColor = normalColor;
+        }
+        break;
+    case 0:
+    default:
         SetFgColor(normalColor);
+        m_currentColor = normalColor;
+        break;
     }
     SetValue(pPlayer->m_flStrafeSync);
 }
