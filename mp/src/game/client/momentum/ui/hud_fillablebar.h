@@ -37,7 +37,10 @@ public:
 
     void Paint()
     {
-        DrawBox(m_flxPos, m_flyPos, m_flWide * (m_flValue / 100), m_flTall, m_FillColor, 1);
+        if (GetCurrentValue() != 0)
+        {
+            DrawBox(m_flxPos, m_flyPos, m_flWide * (GetCurrentValue() / 100), m_flTall, m_FillColor, 1);
+        }
         DrawHollowBox(m_flxPos, m_flyPos, m_flWide, m_flTall, m_BackgroundColor, 1, 2, 2);
     }
     virtual void OnThink()
@@ -50,13 +53,9 @@ public:
             }
             else if (m_flInterpFromTime != gpGlobals->curtime)
             {
-                float newvalue = m_flInterpTime / (gpGlobals->curtime - m_flInterpFromTime);
+                float newvalue = (gpGlobals->curtime - m_flInterpFromTime) / m_flInterpTime;
                 SetValue(m_flDesiredValue * newvalue);
             }
-        }
-        else
-        {
-            //SetValue(RandomFloat(0, 100), 2);
         }
     }
     void PaintString(const wchar_t *text, int textlen, vgui::HFont& font, int x, int y);
@@ -94,7 +93,7 @@ private:
     CPanelAnimationVar(float, m_flyPos, "ypos", "0.0");
     CPanelAnimationVar(float, m_flTall, "tall", "200.0");
     CPanelAnimationVar(float, m_flWide, "wide", "20.0");
-    CPanelAnimationVar(float, m_flInitialValue, "InitialValue", "50.0");
+    CPanelAnimationVar(float, m_flInitialValue, "InitialValue", "100.0");
     CPanelAnimationVar(Color, m_BackgroundColor, "BackgroundColor", "FgColor");
     CPanelAnimationVar(Color, m_FillColor, "FillColor", "FgColor");
 
@@ -108,13 +107,3 @@ private:
     float m_flInterpFromTime;
     
 };
-CON_COMMAND(barValue, "new value")
-{
-    CHudFillableBar *Bar = GET_HUDELEMENT(CHudFillableBar);
-    if (!Bar)
-        return;
-    else
-    {
-        Bar->SetValue(_tstoi(args[1]), 2);
-    }
-}
