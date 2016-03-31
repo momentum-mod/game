@@ -37,9 +37,14 @@ public:
 
     void Paint()
     {
+        Paint(m_FillColor);
+    }
+
+    void Paint(Color BoxColor)
+    {
         if (GetCurrentValue() != 0)
         {
-            DrawBox(m_flxPos, m_flyPos, m_flWide * (GetCurrentValue() / 100), m_flTall, m_FillColor, 1);
+            DrawBox(m_flxPos, m_flyPos, m_flWide * (GetCurrentValue() / 100), m_flTall, BoxColor, 1);
         }
         DrawHollowBox(m_flxPos, m_flyPos, m_flWide, m_flTall, m_BackgroundColor, 1, 2, 2);
     }
