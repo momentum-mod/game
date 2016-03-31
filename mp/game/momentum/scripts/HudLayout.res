@@ -55,6 +55,19 @@
 		"wide"			"200"
 		"tall"			"20"
 		"TextFont"		"Default"
+	}
+	CHudFillableBar
+	{
+		"fieldName"		"CHudFillableBar"
+		"xpos"			"0"
+		"ypos"			"0"
+		"wide"			"200"
+		"tall"			"20"
+		"InitialValue"	"50"
+		"BackgroundColor" "0 0 0 255"
+		"FillColor"		"255 255 255 225"
+		"visible"		"1"
+		"enabled"		"1"
 	}    
 	HudHealth [$WIN32]
 	{
