@@ -73,6 +73,8 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
     // stop thinking on end touch
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     pPlayer->m_bPlayerInsideStartZone = false;
+    //reset strafe sync ratio
+    pPlayer->ResetStrafeSync();
     SetNextThink(-1);
     BaseClass::EndTouch(pOther);
 }

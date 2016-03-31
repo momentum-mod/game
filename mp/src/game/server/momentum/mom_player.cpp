@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "mom_player.h"
 #include "mom_triggers.h"
+#include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
@@ -15,6 +16,7 @@ SendPropBool(SENDINFO(m_bPlayerInsideStartZone)),
 SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)), 
 SendPropBool(SENDINFO(m_bPlayerFinishedMap)),
+SendPropFloat(SENDINFO(m_flStrafeSync)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -61,6 +63,7 @@ void CMomentumPlayer::Spawn()
         break;
     }
     SetThink(&CMomentumPlayer::CheckForBhop); // Pass a function pointer
+    SetThink(&CMomentumPlayer::CalculateStrafeSync);
     SetNextThink(gpGlobals->curtime);
 }
 
@@ -175,4 +178,30 @@ void CMomentumPlayer::CheckForBhop()
     else
         m_flTicksOnGround = 0;
     SetNextThink(gpGlobals->curtime);
+}
+void CMomentumPlayer::CalculateStrafeSync()
+{
+    //we only want 2d velocity to calculate strafe sync
+    float velocity = GetLocalVelocity().Length2D();
+    //we can only airstrafe if we are in the air
+    if (GetGroundEntity() == NULL)
+    {
+        if (m_nButtons & IN_MOVELEFT || m_nButtons & IN_MOVERIGHT)
+            m_nStrafeTicks++;
+        if (velocity > m_flLastVelocity)
+            m_nAccelTicks++;
+
+        m_flLastVelocity = velocity;
+    }
+    if (m_nStrafeTicks && m_nAccelTicks)
+        m_flStrafeSync = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100;
+
+    //think once per tick   
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+}
+void CMomentumPlayer::ResetStrafeSync()
+{
+    m_nStrafeTicks = 0;
+    m_nAccelTicks = 0;
+    m_flStrafeSync = 0;
 }

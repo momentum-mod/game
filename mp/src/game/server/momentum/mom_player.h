@@ -67,6 +67,8 @@ class CMomentumPlayer : public CBasePlayer
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void CheckForBhop();
+    void CalculateStrafeSync();
+    void ResetStrafeSync();
 
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
@@ -78,6 +80,7 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bPlayerInsideEndZone);
     CNetworkVar(bool, m_bHasPracticeMode);
     CNetworkVar(bool, m_bPlayerFinishedMap);
+    CNetworkVar(float, m_flStrafeSync);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -108,5 +111,12 @@ class CMomentumPlayer : public CBasePlayer
     friend class CMomentumGameMovement;
     float m_flPunishTime;
     int m_iLastBlock;
+
+    //for strafe sync
+    float m_flNextSyncCheck;
+    float m_flLastVelocity;
+    float m_vecVelocity;
+    int m_nStrafeTicks;
+    int m_nAccelTicks;
 };
 #endif // MOMPLAYER_H

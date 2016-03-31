@@ -15,7 +15,8 @@ RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
 RecvPropBool(RECVINFO(m_bPlayerInsideStartZone)),
 RecvPropBool(RECVINFO(m_bPlayerInsideEndZone)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
-RecvPropBool(RECVINFO(m_bPlayerFinishedMap))
+RecvPropBool(RECVINFO(m_bPlayerFinishedMap)),
+RecvPropFloat(RECVINFO(m_flStrafeSync)),
 //RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
 //RecvPropBool(RECVINFO(m_fIsSprinting)),
 END_RECV_TABLE()

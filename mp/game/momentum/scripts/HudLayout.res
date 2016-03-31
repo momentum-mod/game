@@ -15,7 +15,7 @@
                 "text_ypos"		"20"
                 "digit_xpos"	"50"
                 "digit_ypos"	"2"
-				}
+		}
     //Timer
 	HudTimer
 		{
@@ -37,7 +37,25 @@
 				"centerStage"	"1" //If true, won't use stage_xpos, centering the text instead
 				"stage_xpos"	"50"
 				"stage_ypos"	"34"
-				}
+		}
+	//Strafe Sync Meter
+	CHudSyncMeter
+		{
+				"fieldName"		"CHudSyncMeter"
+				"xpos"			"c-25"
+                "ypos"			"c+140"
+                "wide"			"50"
+                "tall"			"30"
+                "visible"		"1"
+                "enabled"		"1"
+				"TextFont"		"HudHintTextSmall"
+				"NumberFont"	"HudNumbersSmall"
+                "PaintBackgroundType" "2"
+                "text_xpos"		"15"
+                "text_ypos"		"2"
+                "digit_xpos"	"15"
+                "digit_ypos"	"12"
+		}
     //The design for in-game menus            
     CHudMenuStatic
     {
@@ -56,11 +74,11 @@
 		"tall"			"20"
 		"TextFont"		"Default"
 	}
-	CHudFillableBar
+	CHudSyncBar
 	{
-		"fieldName"		"CHudFillableBar"
-		"xpos"			"0"
-		"ypos"			"0"
+		"fieldName"		"CHudSyncBar"
+		"xpos"			"c-50"
+		"ypos"			"c+170"
 		"wide"			"200"
 		"tall"			"20"
 		"InitialValue"	"50"

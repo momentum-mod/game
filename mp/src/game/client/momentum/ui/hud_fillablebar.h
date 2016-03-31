@@ -18,29 +18,73 @@
 #include <KeyValues.h>
 #include <vgui_controls/AnimationController.h>
 
+
 class CHudFillableBar : public CHudElement, public vgui::Panel
 {
-
     DECLARE_CLASS_SIMPLE(CHudFillableBar, vgui::Panel);
 
 public:
-    CHudFillableBar(const char*);
 
-    void Init(void);
-    void Reset(void) {};
-    bool ShouldDraw(void) { return CHudElement::ShouldDraw(); }
-    void Paint();
-    void OnThink();
+    CHudFillableBar(const char* pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName){}
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void Init(void) 
+    {
+        SetPaintBackgroundEnabled(false);
+        SetValue(m_flInitialValue);
+    };
+    virtual void Reset(void) {};
+    virtual bool ShouldDraw(void) { return CHudElement::ShouldDraw(); }
+
+    void Paint()
+    {
+        DrawBox(m_flxPos, m_flyPos, m_flWide * (m_flValue / 100), m_flTall, m_FillColor, 1);
+        DrawHollowBox(m_flxPos, m_flyPos, m_flWide, m_flTall, m_BackgroundColor, 1, 2, 2);
+    }
+    virtual void OnThink()
+    {
+        if (m_flInterpTime > 0 && m_flInterpFromTime > 0)
+        {
+            if (m_flInterpTime + m_flInterpFromTime < gpGlobals->curtime)
+            {
+                SetValue(m_flDesiredValue, 0);
+            }
+            else if (m_flInterpFromTime != gpGlobals->curtime)
+            {
+                float newvalue = m_flInterpTime / (gpGlobals->curtime - m_flInterpFromTime);
+                SetValue(m_flDesiredValue * newvalue);
+            }
+        }
+        else
+        {
+            //SetValue(RandomFloat(0, 100), 2);
+        }
+    }
     void PaintString(const wchar_t *text, int textlen, vgui::HFont& font, int x, int y);
 
-    // Sets the new % value of the filled box. If pInterpTime > 0, a interpolation is made.
-    // @pPercent: max->100 , min->0
-    void SetValue(float pPercent, float pInterpTime);
     // Direct setvalue. Use override for interpolation
     // @pPercent: max->100 , min->0
-    void SetValue(float pPercent);
+    void SetValue(float pPercent)
+    {
+        m_flValue = clamp(pPercent, 0, 100);
+    }
+    // Sets the new % value of the filled box. If pInterpTime > 0, a interpolation is made.
+    // @pPercent: max->100 , min->0
+    void SetValue(float pPercent, float pInterpTime)
+    {
+        m_flDesiredValue = clamp(pPercent, 0, 100);
+        if (pInterpTime > 0)
+        {
+            m_flInterpTime = pInterpTime;
+            m_flInterpFromTime = gpGlobals->curtime;
+        }
+        else
+        {
+            m_flInterpTime = 0;
+            m_flInterpFromTime = 0;
+            m_flValue = m_flDesiredValue;
+            m_flDesiredValue = -1;
+        }
+    }
     float GetCurrentValue() { return m_flValue; }
     void InterpolateValues(float pNewPercent);
 
@@ -62,4 +106,15 @@ private:
     float m_flInterpTime;
     // When did we start interpolating?
     float m_flInterpFromTime;
+    
 };
+CON_COMMAND(barValue, "new value")
+{
+    CHudFillableBar *Bar = GET_HUDELEMENT(CHudFillableBar);
+    if (!Bar)
+        return;
+    else
+    {
+        Bar->SetValue(_tstoi(args[1]), 2);
+    }
+}

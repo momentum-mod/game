@@ -23,6 +23,7 @@ public:
     bool CanGrabLadder(const Vector& pos, const Vector& normal);
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
     bool HasAutoBhop() { return m_bAutoBhop; }
+    void ResetStrafeSync();
 
     int m_iShotsFired;
     int m_iDirection;
@@ -34,6 +35,8 @@ public:
     bool m_bPlayerInsideEndZone;
     bool m_bHasPracticeMode;
     bool m_bPlayerFinishedMap;
+
+    float m_flStrafeSync;
 
     void GetBulletTypeParameters(
         int iBulletType,
