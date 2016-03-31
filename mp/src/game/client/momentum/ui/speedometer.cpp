@@ -4,6 +4,7 @@
 #include "iclientmode.h"
 #include <math.h>
 #include "vphysics_interface.h"
+#include "momentum/util/mom_util.h"
 
 using namespace vgui;
 
@@ -11,13 +12,13 @@ static ConVar speedmeter_hvel("mom_speedmeter_hvel", "0", FCVAR_CLIENTDLL | FCVA
     "If set to 1, doesn't take the vertical velocity component into account.\n", true, 0, true, 1);
 
 static ConVar speedmeter_units("mom_speedmeter_units", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Changes the units of measure of the speedmeter. \n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.\n", true, 1, true, 3);
+    "Changes the units of measure of the speedmeter.\n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.\n", true, 1, true, 3);
 
 static ConVar speedmeter_draw("mom_drawspeedmeter", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Toggles displaying the speedmeter.\n", true, 0, true, 1);
 
 static ConVar speedmeter_colorize("mom_speedmeter_colorize", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Toggles speedmeter colorization based on acceleration\n", true, 0, true, 1);
+    "Toggles speedmeter colorization based on acceleration.\n", true, 0, true, 1);
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
@@ -68,11 +69,9 @@ public:
     {
         return speedmeter_colorize.GetBool();
     }
-    Color GetColorFromVariation(float variation, Color normalcolor, Color increasecolor, Color decreasecolor);
 private:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
-    float m_flLocalLastVel;
 
     Color m_lastColor;
     Color m_currentColor;
@@ -133,7 +132,7 @@ void CHudSpeedMeter::OnThink()
             {
                 if (m_flLastVelocity != 0)
                 {
-                    m_currentColor = GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), normalColor, increaseColor, decreaseColor);
+                    m_currentColor = mom_UTIL.GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f, normalColor, increaseColor, decreaseColor);
                     SetFgColor(m_currentColor);
                     m_lastColor = m_currentColor;
                 }
@@ -157,16 +156,3 @@ void CHudSpeedMeter::OnThink()
     }
 }
 
-Color CHudSpeedMeter::GetColorFromVariation(float variation, Color normalcolor, Color increasecolor, Color decreasecolor)
-{
-    //variation is current velocity minus previous velocity. 
-    Color pFinalColor = normalcolor;
-    float deadZone = 2.0f; //if variation is inside this range (+/-), do not update color
-
-    if (variation < -deadZone)    //our velocity decreased
-        pFinalColor = decreasecolor;
-    else if (variation > deadZone) //our velocity increased
-        pFinalColor = increasecolor;
-
-    return pFinalColor;
-}

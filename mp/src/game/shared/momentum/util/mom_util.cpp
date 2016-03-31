@@ -140,4 +140,18 @@ void MomentumUtil::FormatTime(float ticks, float rate, char *pOut)
         );
 }
 
+Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor)
+{
+    //variation is current velocity minus previous velocity. 
+    Color pFinalColor = normalcolor;
+    deadZone = abs(deadZone);
+
+    if (variation < -deadZone)    //our velocity decreased
+        pFinalColor = decreasecolor;
+    else if (variation > deadZone) //our velocity increased
+        pFinalColor = increasecolor;
+
+    return pFinalColor;
+}
+
 MomentumUtil mom_UTIL;

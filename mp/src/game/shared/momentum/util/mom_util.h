@@ -17,12 +17,16 @@ public:
     void PostTime(const char* URL);
     void DownloadMap(const char*);
 
+    
+
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
 #endif
+
+    Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
 
     //Formats time in ticks by a given tickrate into
     //"HH:MM:SS.mmmm"
