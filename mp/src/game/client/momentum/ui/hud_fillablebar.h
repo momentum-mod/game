@@ -85,7 +85,6 @@ public:
         }
     }
     float GetCurrentValue() { return m_flValue; }
-    void InterpolateValues(float pNewPercent);
 
 private:
     void(*SelectFunc)(int);
