@@ -15,6 +15,17 @@ Scheme
 	Colors
 	{
 		// base colors
+		"White"				"255 255 255 255"
+		"Gray" 				"255 255 255 170"
+		"Dark Gray" 		"255 255 255 100"
+		
+		"Red"                "192 28 0 140"
+		"Black"                "0 0 0 196"
+		"TransparentBlack"    "0 0 0 196"
+		"TransparentLightBlack"    "0 0 0 90"
+	
+		"Blank"                "0 0 0 0"
+
 		"MOM.Panel.Fg"				"255 255 255 255"
 		"MOM.Panel.Bg"				"0 0 0 76"
 		"MOM.Speedometer.Normal"	"255 255 255 255"
@@ -73,26 +84,26 @@ Scheme
 
 ///HERE
 				// vgui_controls color specifications
-		Border.Bright					"LightOrange"		// the lit side of a control
-		Border.Dark						"LightOrange"		// the dark/unlit side of a control
+		Border.Bright					"Gray"		// the lit side of a control
+		Border.Dark						"Gray"		// the dark/unlit side of a control
 		Border.Selection				"Blank"				// the additional border color for displaying the default/selected button
 
-		Button.TextColor				"Orange"
+		Button.TextColor				"White"
 		Button.BgColor					"Blank"
-		Button.ArmedTextColor			"Orange"
+		Button.ArmedTextColor			"White"
 		Button.ArmedBgColor				"Red"
-		Button.DepressedTextColor		"Orange"
+		Button.DepressedTextColor		"White"
 		Button.DepressedBgColor			"Red"
 
-		CheckButton.TextColor			"Orange"
-		CheckButton.SelectedTextColor	"Orange"
+		CheckButton.TextColor			"White"
+		CheckButton.SelectedTextColor	"White"
 		CheckButton.BgColor				"TransparentBlack"
 		CheckButton.Border1  			"Border.Dark" 		// the left checkbutton border
 		CheckButton.Border2  			"Border.Bright"		// the right checkbutton border
-		CheckButton.Check				"Orange"				// color of the check itself
+		CheckButton.Check				"White"				// color of the check itself
 
-		ComboBoxButton.ArrowColor		"Orange"
-		ComboBoxButton.ArmedArrowColor	"Orange"
+		ComboBoxButton.ArrowColor		"White"
+		ComboBoxButton.ArmedArrowColor	"White"
 		ComboBoxButton.BgColor			"TransparentBlack"
 		ComboBoxButton.DisabledBgColor	"Blank"
 
@@ -111,70 +122,70 @@ Scheme
 		FrameSystemButton.BgColor		"Blank"
 		FrameSystemButton.Icon			""
 		FrameSystemButton.DisabledIcon	""
-		FrameTitleBar.TextColor			"Orange"
+		FrameTitleBar.TextColor			"White"
 		FrameTitleBar.BgColor			"Blank"
-		FrameTitleBar.DisabledTextColor	"Orange"
+		FrameTitleBar.DisabledTextColor	"White"
 		FrameTitleBar.DisabledBgColor	"Blank"
 
-		GraphPanel.FgColor				"Orange"
+		GraphPanel.FgColor				"White"
 		GraphPanel.BgColor				"TransparentBlack"
 
-		Label.TextDullColor				"Orange"
-		Label.TextColor					"Orange"
-		Label.TextBrightColor			"Orange"
-		Label.SelectedTextColor			"Orange"
+		Label.TextDullColor				"White"
+		Label.TextColor					"White"
+		Label.TextBrightColor			"White"
+		Label.SelectedTextColor			"White"
 		Label.BgColor					"Blank"
 		Label.DisabledFgColor1			"Blank"
-		Label.DisabledFgColor2			"LightOrange"
+		Label.DisabledFgColor2			"Gray"
 
-		ListPanel.TextColor					"Orange"
+		ListPanel.TextColor					"White"
 		ListPanel.BgColor					"TransparentBlack"
 		ListPanel.SelectedTextColor			"Black"
 		ListPanel.SelectedBgColor			"Red"
 		ListPanel.SelectedOutOfFocusBgColor	"Red"
-		ListPanel.EmptyListInfoTextColor	"Orange"
+		ListPanel.EmptyListInfoTextColor	"White"
 
-		Menu.TextColor					"Orange"
+		Menu.TextColor					"White"
 		Menu.BgColor					"TransparentBlack"
-		Menu.ArmedTextColor				"Orange"
+		Menu.ArmedTextColor				"White"
 		Menu.ArmedBgColor				"Red"
 		Menu.TextInset					"6"
 
-		Chat.TypingText					"Orange"
+		Chat.TypingText					"White"
 
-		Panel.FgColor					"OrangeDim"
+		Panel.FgColor					"WhiteDim"
 		Panel.BgColor					"blank"
 
-		ProgressBar.FgColor				"Orange"
+		ProgressBar.FgColor				"White"
 		ProgressBar.BgColor				"TransparentBlack"
 
-		PropertySheet.TextColor			"Orange"
-		PropertySheet.SelectedTextColor	"Orange"
+		PropertySheet.TextColor			"White"
+		PropertySheet.SelectedTextColor	"White"
 		PropertySheet.TransitionEffectTime	"0.25"	// time to change from one tab to another
 
-		RadioButton.TextColor			"Orange"
-		RadioButton.SelectedTextColor	"Orange"
+		RadioButton.TextColor			"White"
+		RadioButton.SelectedTextColor	"White"
 
-		RichText.TextColor				"Orange"
+		RichText.TextColor				"White"
 		RichText.BgColor				"Blank"
-		RichText.SelectedTextColor		"Orange"
+		RichText.SelectedTextColor		"White"
 		RichText.SelectedBgColor		"Blank"
 
-				ScrollBarButton.FgColor				"Orange"
+		ScrollBarButton.FgColor				"White"
 		ScrollBarButton.BgColor				"Blank"
-		ScrollBarButton.ArmedFgColor		"Orange"
+		ScrollBarButton.ArmedFgColor		"White"
 		ScrollBarButton.ArmedBgColor		"Blank"
-		ScrollBarButton.DepressedFgColor	"Orange"
+		ScrollBarButton.DepressedFgColor	"White"
 		ScrollBarButton.DepressedBgColor	"Blank"
 
 		ScrollBarSlider.FgColor				"Blank"		// nob color
 		ScrollBarSlider.BgColor				"Blank"		// slider background color
 
-		SectionedListPanel.HeaderTextColor	"Orange"
+		SectionedListPanel.HeaderTextColor	"White"
 		SectionedListPanel.HeaderBgColor	"Blank"
 		SectionedListPanel.DividerColor		"Black"
-		SectionedListPanel.TextColor		"Orange"
-		SectionedListPanel.BrightTextColor	"Orange"
+		SectionedListPanel.TextColor		"White"
+		SectionedListPanel.BrightTextColor	"White"
 		SectionedListPanel.BgColor			"TransparentLightBlack"
 		SectionedListPanel.SelectedTextColor			"Black"
 		SectionedListPanel.SelectedBgColor				"Red"
@@ -187,17 +198,17 @@ Scheme
 		Slider.DisabledTextColor1	"117 117 117 255"
 		Slider.DisabledTextColor2	"30 30 30 255"
 
-		TextEntry.TextColor			"Orange"
+		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"TransparentBlack"
-		TextEntry.CursorColor		"Orange"
-		TextEntry.DisabledTextColor	"Orange"
+		TextEntry.CursorColor		"White"
+		TextEntry.DisabledTextColor	"White"
 		TextEntry.DisabledBgColor	"Blank"
 		TextEntry.SelectedTextColor	"Black"
 		TextEntry.SelectedBgColor	"Red"
 		TextEntry.OutOfFocusSelectedBgColor	"Red"
 		TextEntry.FocusEdgeColor	"TransparentBlack"
 
-		ToggleButton.SelectedTextColor	"Orange"
+		ToggleButton.SelectedTextColor	"White"
 
 		Tooltip.TextColor			"TransparentBlack"
 		Tooltip.BgColor				"Red"
@@ -207,7 +218,7 @@ Scheme
 		WizardSubPanel.BgColor		"Blank"
 
 		// scheme-specific colors
-		"FgColor"		"Orange"
+		"FgColor"		"White"
 		"BgColor"		"TransparentBlack"
 
 		"ViewportBG"		"Blank"
@@ -215,7 +226,7 @@ Scheme
 		"team1"			"255 64 64 255" // CT's
 		"team2"			"153 204 255 255" // T's
 
-		"MapDescriptionText"	"Orange" // the text used in the map description window
+		"MapDescriptionText"	"White" // the text used in the map description window
 		"CT_Blue"			"153 204 255 255"
 		"T_Red"				"255 64 64 255"
 		"Hostage_Yellow"	"Panel.FgColor"
