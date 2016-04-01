@@ -186,11 +186,11 @@ void CMomentumPlayer::CalculateStrafeSync()
     //we can only airstrafe if we are in the air
     if (GetGroundEntity() == NULL)
     {
+        //MOM_TODO: make this better. 
         if (m_nButtons & IN_MOVELEFT || m_nButtons & IN_MOVERIGHT)
             m_nStrafeTicks++;
-        if (velocity > m_flLastVelocity)
+        if (velocity > m_flLastVelocity && !(m_nButtons & IN_FORWARD || m_nButtons & IN_BACK)) //dont add to accel ticks if we strafe sideways
             m_nAccelTicks++;
-
         m_flLastVelocity = velocity;
     }
     if (m_nStrafeTicks && m_nAccelTicks)

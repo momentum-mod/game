@@ -89,6 +89,8 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     }
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     pPlayer->m_bPlayerInsideStartZone = true;
+    //reset strafe sync ratio
+    pPlayer->ResetStrafeSync();
     // start thinking
     SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);

@@ -57,7 +57,7 @@
                 "digit_xpos"	"12"
                 "digit_ypos"	"12"
 				"digit2_xpos"	"30"
-                "digit2_ypos"	"17"
+                "digit2_ypos"	"16"
 		}
     //The design for in-game menus            
     CHudMenuStatic
@@ -80,7 +80,7 @@
 	CHudSyncBar
 	{
 		"fieldName"		"CHudSyncBar"
-		"xpos"			"c-75"
+		"xpos"			"c-50"
 		"ypos"			"c+170"
 		"wide"			"200"
 		"tall"			"20"

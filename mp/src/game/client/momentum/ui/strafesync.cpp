@@ -86,7 +86,11 @@ void CHudStrafeSyncDisplay::OnThink()
         }
         break;
     case 2:
-        if (pPlayer->m_flStrafeSync > 90)
+        if (pPlayer->m_flStrafeSync == 0)
+        {
+            m_currentColor = normalColor;
+        }
+        else if (pPlayer->m_flStrafeSync > 90)
         {
             m_currentColor = increaseColor;
         }
@@ -181,6 +185,10 @@ void CHudStrafeSyncBar::OnThink()
         }
         break;
     case 2:
+        if (pPlayer->m_flStrafeSync == 0)
+        {
+            m_currentColor = normalColor;
+        }
         if (pPlayer->m_flStrafeSync > 90)
         {
             m_currentColor = increaseColor;
