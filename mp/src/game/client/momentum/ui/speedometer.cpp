@@ -5,20 +5,24 @@
 #include <math.h>
 #include "vphysics_interface.h"
 #include "momentum/util/mom_util.h"
+#include "mom_player_shared.h"
 
 using namespace vgui;
 
-static ConVar speedmeter_hvel("mom_speedmeter_hvel", "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+static ConVar speedometer_hvel("mom_speedometer_hvel", "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "If set to 1, doesn't take the vertical velocity component into account.\n", true, 0, true, 1);
 
-static ConVar speedmeter_units("mom_speedmeter_units", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+static ConVar speedometer_units("mom_speedometer_units", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Changes the units of measure of the speedmeter.\n 1: Units per second. \n 2: Kilometers per hour. \n 3: Milles per hour.\n", true, 1, true, 3);
 
-static ConVar speedmeter_draw("mom_drawspeedmeter", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Toggles displaying the speedmeter.\n", true, 0, true, 1);
+static ConVar speedometer_draw("mom_drawspeedometer", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Toggles displaying the speedometer.\n", true, 0, true, 1);
 
-static ConVar speedmeter_colorize("mom_speedmeter_colorize", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Toggles speedmeter colorization based on acceleration.\n", true, 0, true, 1);
+static ConVar speedometer_colorize("mom_speedometer_colorize", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Toggles speedometer colorization based on acceleration.\n", true, 0, true, 1);
+
+static ConVar speedometer_lastjump("mom_speedometer_showlastjumpvel", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Toggles showing player velocity at last jump (XY only). \n", true, 0, true, 1);
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
@@ -37,7 +41,7 @@ public:
     virtual void Reset()
     {
         //We set the proper LabelText based on mom_speedmeter_units value
-        switch (speedmeter_units.GetInt())
+        switch (speedometer_units.GetInt())
         {
         case 2:
             SetLabelText(L"KM/H");
@@ -51,12 +55,13 @@ public:
             break;
         }
         SetDisplayValue(0);
+        SetSecondaryValue(0);
         m_flNextColorizeCheck = 0;
     }
     virtual void OnThink();
     virtual bool ShouldDraw()
     {
-        return speedmeter_draw.GetBool() && CHudElement::ShouldDraw();
+        return speedometer_draw.GetBool() && CHudElement::ShouldDraw();
     }
     virtual void ApplySchemeSettings(IScheme *pScheme)
     {
@@ -67,7 +72,7 @@ public:
     }
     bool ShouldColorize()
     {
-        return speedmeter_colorize.GetBool();
+        return speedometer_colorize.GetBool();
     }
 private:
     float m_flNextColorizeCheck;
@@ -94,19 +99,19 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName) : CHudElement(pElementN
 void CHudSpeedMeter::OnThink()
 {
     Vector velocity = vec3_origin;
-    C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
-    if (player) {
-        velocity = player->GetLocalVelocity();
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (pPlayer) {
+        velocity = pPlayer->GetLocalVelocity();
 
         // Remove the vertical component if necessary
-        if (!speedmeter_hvel.GetBool())
+        if (!speedometer_hvel.GetBool())
         {
             velocity.z = 0;
         }
 
         //Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
         float vel = (float)velocity.Length();
-        switch (speedmeter_units.GetInt())
+        switch (speedometer_units.GetInt())
         {
         case 2:
             //1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
@@ -153,6 +158,9 @@ void CHudSpeedMeter::OnThink()
 
         //With this round we ensure that the speed is as precise as possible, instead of taking the floor value of the float
         SetDisplayValue(round(vel));
+
+        SetShouldDisplaySecondaryValue(speedometer_lastjump.GetBool());
+        SetSecondaryValue(round(pPlayer->m_flLastJumpVel));
     }
 }
 

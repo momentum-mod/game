@@ -82,6 +82,7 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bPlayerFinishedMap);
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
+    CNetworkVar(float, m_flLastJumpVel);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 

@@ -17,12 +17,13 @@ SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)), 
 SendPropBool(SENDINFO(m_bPlayerFinishedMap)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
-SendPropFloat(SENDINFO(m_flStrafeSync2))
+SendPropFloat(SENDINFO(m_flStrafeSync2)),
+SendPropFloat(SENDINFO(m_flLastJumpVel)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop),
-DEFINE_THINKFUNC(CalculateStrafeSync)
+DEFINE_THINKFUNC(CalculateStrafeSync),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -64,9 +65,11 @@ void CMomentumPlayer::Spawn()
         DisableAutoBhop();
         break;
     }
-    SetThink(&CMomentumPlayer::CheckForBhop); // Pass a function pointer
-    SetThink(&CMomentumPlayer::CalculateStrafeSync);
     SetNextThink(gpGlobals->curtime);
+    RegisterThinkContext("THINK_EVERY_TICK");
+    RegisterThinkContext("CURTIME");
+    SetContextThink(&CMomentumPlayer::CalculateStrafeSync, gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+    SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
 }
 
 void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
@@ -176,10 +179,12 @@ void CMomentumPlayer::CheckForBhop()
         m_flTicksOnGround += gpGlobals->interval_per_tick;
         // true is player is on ground for less than 10 ticks, false if they are on ground for more s
         m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
+        if (m_nButtons & IN_JUMP)
+            m_flLastJumpVel = GetLocalVelocity().Length2D();
     }
     else
         m_flTicksOnGround = 0;
-    SetNextThink(gpGlobals->curtime);
+    SetNextThink(gpGlobals->curtime, "CURTIME");
 }
 void CMomentumPlayer::CalculateStrafeSync()
 {
@@ -211,7 +216,7 @@ void CMomentumPlayer::CalculateStrafeSync()
     m_qangLastAngle = EyeAngles();
     m_flLastVelocity = velocity;
     //think once per tick   
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
 }
 void CMomentumPlayer::ResetStrafeSync()
 {

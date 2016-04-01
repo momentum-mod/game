@@ -38,6 +38,7 @@ public:
 
     float m_flStrafeSync;
     float m_flStrafeSync2;
+    float m_flLastJumpVel;
 
     void GetBulletTypeParameters(
         int iBulletType,

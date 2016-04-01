@@ -4,17 +4,20 @@
 	HudSpeedMeter
 		{
 				"fieldName"		"HudSpeedMeter"
-				"xpos"			"c-57"
+				"xpos"			"c-60"
                 "ypos"			"432"
-                "wide"			"114"
+                "wide"			"120"
                 "tall"			"36"
                 "visible"		"1"
                 "enabled"		"1"
+				"SmallNumberFont" "HudNumbersVerySmall"
                 "PaintBackgroundType" "2"
                 "text_xpos"		"8"
                 "text_ypos"		"20"
-                "digit_xpos"	"50"
+                "digit_xpos"	"30"
                 "digit_ypos"	"2"
+				"digit2_xpos"	"90"
+                "digit2_ypos"	"16"
 		}
     //Timer
 	HudTimer
