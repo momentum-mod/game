@@ -13,6 +13,9 @@ using namespace vgui;
 static ConVar strafesync_draw("mom_showstrafesync", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Toggles displaying the strafesync data.\n", true, 0, true, 1);
 
+static ConVar strafesync_type("mom_strafesync_type", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "1: Sync1 (perfect strafe ticks / total strafe ticks)\n 2: Sync2 (accel ticks / total strafe ticks)\n", true, 1, true, 2);
+
 static ConVar strafesync_colorize("mom_strafesync_colorize", "2", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Toggles strafesync data colorization type based on acceleration. 0 to disable\n", true, 0, true, 2);
 
@@ -49,6 +52,7 @@ private:
     float m_flNextColorizeCheck;
     float m_flLastStrafeSync;
 
+    float m_localStrafeSync;
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
@@ -64,7 +68,13 @@ CHudStrafeSyncDisplay::CHudStrafeSyncDisplay(const char *pElementName) : CHudEle
 void CHudStrafeSyncDisplay::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    float clampedStrafeSync = clamp(pPlayer->m_flStrafeSync, 0, 100);
+    //DevLog("sync2: %f\n", pPlayer->m_flStrafeSync2);
+    if (strafesync_type.GetInt() == 1) //sync1
+        m_localStrafeSync = pPlayer->m_flStrafeSync;
+    else if (strafesync_type.GetInt() == 2) //sync2
+        m_localStrafeSync = pPlayer->m_flStrafeSync2;
+
+    float clampedStrafeSync = clamp(m_localStrafeSync, 0, 100);
 
     switch (strafesync_colorize.GetInt())
     {
@@ -73,7 +83,7 @@ void CHudStrafeSyncDisplay::OnThink()
         {
             if (m_flLastStrafeSync != 0)
             {
-                m_currentColor = mom_UTIL.GetColorFromVariation(pPlayer->m_flStrafeSync - m_flLastStrafeSync, 1.0f, normalColor, increaseColor, decreaseColor);
+                m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, 1.0f, normalColor, increaseColor, decreaseColor);
                 m_lastColor = m_currentColor;
             }
             else
@@ -81,20 +91,20 @@ void CHudStrafeSyncDisplay::OnThink()
                 m_currentColor = normalColor;
                 m_lastColor = m_currentColor;
             }
-            m_flLastStrafeSync = pPlayer->m_flStrafeSync;
+            m_flLastStrafeSync = m_localStrafeSync;
             m_flNextColorizeCheck = gpGlobals->curtime + 0.1f; //we need to update color every 0.1 seconds
         }
         break;
     case 2:
-        if (pPlayer->m_flStrafeSync == 0)
+        if (m_localStrafeSync == 0)
         {
             m_currentColor = normalColor;
         }
-        else if (pPlayer->m_flStrafeSync > 90)
+        else if (m_localStrafeSync > 90)
         {
             m_currentColor = increaseColor;
         }
-        else if (pPlayer->m_flStrafeSync < 75)
+        else if (m_localStrafeSync < 75)
         {
             m_currentColor = decreaseColor;
         }
@@ -146,6 +156,7 @@ private:
     float m_flNextColorizeCheck;
     float m_flLastStrafeSync;
 
+    float m_localStrafeSync;
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
@@ -165,6 +176,10 @@ void CHudStrafeSyncBar::Paint()
 void CHudStrafeSyncBar::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (strafesync_type.GetInt() == 1) //sync1
+        m_localStrafeSync = pPlayer->m_flStrafeSync;
+    else if (strafesync_type.GetInt() == 2) //sync2
+        m_localStrafeSync = pPlayer->m_flStrafeSync2;
     switch (strafesync_colorize.GetInt())
     {
     case 1:
@@ -172,7 +187,7 @@ void CHudStrafeSyncBar::OnThink()
         {
             if (m_flLastStrafeSync != 0)
             {
-                m_currentColor = mom_UTIL.GetColorFromVariation(pPlayer->m_flStrafeSync - m_flLastStrafeSync, 1.0f, normalColor, increaseColor, decreaseColor);
+                m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, 1.0f, normalColor, increaseColor, decreaseColor);
                 m_lastColor = m_currentColor;
             }
             else
@@ -180,20 +195,20 @@ void CHudStrafeSyncBar::OnThink()
                 m_currentColor = normalColor;
                 m_lastColor = m_currentColor;
             }
-            m_flLastStrafeSync = pPlayer->m_flStrafeSync;
+            m_flLastStrafeSync = m_localStrafeSync;
             m_flNextColorizeCheck = gpGlobals->curtime + 0.1f; //we need to update color every 0.1 seconds
         }
         break;
     case 2:
-        if (pPlayer->m_flStrafeSync == 0)
+        if (m_localStrafeSync == 0)
         {
             m_currentColor = normalColor;
         }
-        if (pPlayer->m_flStrafeSync > 90)
+        if (m_localStrafeSync > 90)
         {
             m_currentColor = increaseColor;
         }
-        else if (pPlayer->m_flStrafeSync < 75)
+        else if (m_localStrafeSync < 75)
         {
             m_currentColor = decreaseColor;
         }
@@ -208,5 +223,5 @@ void CHudStrafeSyncBar::OnThink()
         m_currentColor = normalColor;
         break;
     }
-    SetValue(pPlayer->m_flStrafeSync);
+    SetValue(m_localStrafeSync);
 }

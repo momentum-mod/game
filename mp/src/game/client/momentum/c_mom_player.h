@@ -37,6 +37,7 @@ public:
     bool m_bPlayerFinishedMap;
 
     float m_flStrafeSync;
+    float m_flStrafeSync2;
 
     void GetBulletTypeParameters(
         int iBulletType,

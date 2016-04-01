@@ -17,10 +17,12 @@ SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)), 
 SendPropBool(SENDINFO(m_bPlayerFinishedMap)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
+SendPropFloat(SENDINFO(m_flStrafeSync2))
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop),
+DEFINE_THINKFUNC(CalculateStrafeSync)
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -181,27 +183,41 @@ void CMomentumPlayer::CheckForBhop()
 }
 void CMomentumPlayer::CalculateStrafeSync()
 {
-    //we only want 2d velocity to calculate strafe sync
-    float velocity = GetLocalVelocity().Length2D();
-    //we can only airstrafe if we are in the air
-    if (GetGroundEntity() == NULL)
+    float velocity = GetLocalVelocity().Length2DSqr();
+    if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
     {
-        //MOM_TODO: make this better. 
-        if (m_nButtons & IN_MOVELEFT || m_nButtons & IN_MOVERIGHT)
+        if (EyeAngles().y > m_qangLastAngle.y) //player turned left 
+        {
             m_nStrafeTicks++;
-        if (velocity > m_flLastVelocity && !(m_nButtons & IN_FORWARD || m_nButtons & IN_BACK)) //dont add to accel ticks if we strafe sideways
-            m_nAccelTicks++;
-        m_flLastVelocity = velocity;
+            if ((m_nButtons & IN_MOVELEFT) && !(m_nButtons & IN_MOVERIGHT))
+                m_nPerfectSyncTicks++;
+            if (velocity > m_flLastVelocity)
+                m_nAccelTicks++;
+        }
+        else if (EyeAngles().y < m_qangLastAngle.y) //player turned right 
+        {
+            m_nStrafeTicks++;
+            if ((m_nButtons & IN_MOVERIGHT) && !(m_nButtons & IN_MOVELEFT))
+                m_nPerfectSyncTicks++;
+            if (velocity > m_flLastVelocity)
+                m_nAccelTicks++;
+        }
     }
-    if (m_nStrafeTicks && m_nAccelTicks)
-        m_flStrafeSync = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100;
-
+    if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
+    {
+        m_flStrafeSync = ((float)m_nPerfectSyncTicks / (float)m_nStrafeTicks) * 100; // ticks strafing perfectly / ticks strafing
+        m_flStrafeSync2 = ((float)m_nAccelTicks / (float)m_nStrafeTicks) * 100; // ticks gaining speed / ticks strafing
+    }
+    m_qangLastAngle = EyeAngles();
+    m_flLastVelocity = velocity;
     //think once per tick   
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
 }
 void CMomentumPlayer::ResetStrafeSync()
 {
+    m_nPerfectSyncTicks = 0;
     m_nStrafeTicks = 0;
     m_nAccelTicks = 0;
     m_flStrafeSync = 0;
+    m_flStrafeSync2 = 0;
 }
