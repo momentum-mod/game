@@ -75,6 +75,8 @@ void CHudStrafeSyncDisplay::OnThink()
         m_localStrafeSync = pPlayer->m_flStrafeSync;
     else if (strafesync_type.GetInt() == 2) //sync2
         m_localStrafeSync = pPlayer->m_flStrafeSync2;
+    else
+        m_localStrafeSync = 0;
 
     float clampedStrafeSync = clamp(m_localStrafeSync, 0, 100);
 

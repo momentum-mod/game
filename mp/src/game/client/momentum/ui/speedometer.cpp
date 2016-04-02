@@ -101,7 +101,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName) : CHudElement(pElementN
 void CHudSpeedMeter::OnThink()
 {
     Vector velocity = vec3_origin;
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer) {
         velocity = pPlayer->GetLocalVelocity();
 
