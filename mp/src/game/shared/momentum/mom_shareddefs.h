@@ -26,4 +26,6 @@ typedef enum MOMGM
 // If you have any doubts, please refer to http://semver.org/
 #define MOM_CURRENT_VERSION "0.2.5"
 
+#define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
+
 #endif // MOM_SHAREDDEFS_H
