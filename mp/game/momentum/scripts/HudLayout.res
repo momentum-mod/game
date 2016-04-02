@@ -87,7 +87,7 @@
 		"ypos"			"c+170"
 		"wide"			"200"
 		"tall"			"20"
-		"InitialValue"	"100"
+		"InitialValue"	"0"
 		"BackgroundColor" "0 0 0 255"
 		"FillColor"		"255 255 255 225"
 		"visible"		"1"

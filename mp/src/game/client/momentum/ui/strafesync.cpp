@@ -40,7 +40,7 @@ public:
         normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
         increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
         decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
-        SetShouldDisplaySecondaryValue(true);
+        digit_xpos_initial = digit_xpos;
     }
     bool ShouldColorize()
     {
@@ -56,6 +56,8 @@ private:
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
+
+    float digit_xpos_initial;
 };
 
 DECLARE_HUDELEMENT(CHudStrafeSyncDisplay);
@@ -120,7 +122,20 @@ void CHudStrafeSyncDisplay::OnThink()
         break;
     }
     SetDisplayValue(clampedStrafeSync);
+
     SetSecondaryValue((clampedStrafeSync - Floor2Int(clampedStrafeSync)) * 100);
+
+    SetShouldDisplaySecondaryValue(clampedStrafeSync != 0 && clampedStrafeSync != 100);
+
+    if (clampedStrafeSync == 0)
+    {
+        digit_xpos = GetWide() / 2 - 5;
+    }
+    else
+    {
+        digit_xpos = digit_xpos_initial;
+    }
+
     SetFgColor(m_currentColor);
 
 }

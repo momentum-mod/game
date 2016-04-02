@@ -97,7 +97,7 @@ private:
     CPanelAnimationVar(float, m_flyPos, "ypos", "0.0");
     CPanelAnimationVar(float, m_flTall, "tall", "200.0");
     CPanelAnimationVar(float, m_flWide, "wide", "20.0");
-    CPanelAnimationVar(float, m_flInitialValue, "InitialValue", "100.0");
+    CPanelAnimationVar(float, m_flInitialValue, "InitialValue", "0.0");
     CPanelAnimationVar(Color, m_BackgroundColor, "BackgroundColor", "FgColor");
     CPanelAnimationVar(Color, m_FillColor, "FillColor", "FgColor");
 
