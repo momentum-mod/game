@@ -42,6 +42,7 @@ protected:
 	virtual void PaintLabel();
 
 	virtual void PaintNumbers(vgui::HFont font, int xpos, int ypos, int value);
+    virtual void PaintNumbers(vgui::HFont font, int xpos, int ypos, int value, bool atLeast2Digits);
 
 protected:
 
