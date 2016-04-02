@@ -31,7 +31,8 @@ public:
     void OnThink();
     bool ShouldDraw()
     {
-        return strafesync_draw.GetBool() && CHudElement::ShouldDraw();
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+        return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && pPlayer->m_bTimerIsRunning;
     }
     void ApplySchemeSettings(IScheme *pScheme)
     {
@@ -135,7 +136,7 @@ void CHudStrafeSyncDisplay::OnThink()
         digit_xpos = digit_xpos_initial;
     }
 
-    m_PrimaryValueColor = m_SecondaryValueColor = normalColor;
+    m_PrimaryValueColor = m_SecondaryValueColor = m_currentColor;
 
 }
 void CHudStrafeSyncDisplay::Paint()
@@ -184,7 +185,8 @@ CHudStrafeSyncBar::CHudStrafeSyncBar(const char *pElementName) : CHudFillableBar
 }
 void CHudStrafeSyncBar::Paint()
 {
-    if (strafesync_draw.GetBool())
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    if (pPlayer && strafesync_draw.GetBool() && pPlayer->m_bTimerIsRunning)
         BaseClass::Paint(m_currentColor);
 }
 void CHudStrafeSyncBar::OnThink()

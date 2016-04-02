@@ -2,6 +2,7 @@
 #include "mom_player.h"
 #include "mom_triggers.h"
 #include "in_buttons.h"
+#include "Timer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -19,6 +20,7 @@ SendPropBool(SENDINFO(m_bPlayerFinishedMap)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
+SendPropBool(SENDINFO(m_bTimerIsRunning)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -225,4 +227,10 @@ void CMomentumPlayer::ResetStrafeSync()
     m_nAccelTicks = 0;
     m_flStrafeSync = 0;
     m_flStrafeSync2 = 0;
+}
+void CMomentumPlayer::Think()
+{
+    //USE: send info about timer to client class
+    m_bTimerIsRunning = g_Timer.IsRunning();
+    SetNextThink(gpGlobals->curtime);
 }

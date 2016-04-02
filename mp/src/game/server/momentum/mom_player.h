@@ -43,6 +43,7 @@ class CMomentumPlayer : public CBasePlayer
     void Spawn();
     void Precache();
     void Touch(CBaseEntity *);
+    void Think();
 
     virtual void CommitSuicide(bool bExplode = false, bool bForce = false){};
     virtual void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false){};
@@ -83,6 +84,8 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
     CNetworkVar(float, m_flLastJumpVel);
+    CNetworkVar(bool , m_bTimerIsRunning);
+
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 

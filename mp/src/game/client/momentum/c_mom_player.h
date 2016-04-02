@@ -35,6 +35,7 @@ public:
     bool m_bPlayerInsideEndZone;
     bool m_bHasPracticeMode;
     bool m_bPlayerFinishedMap;
+    bool m_bTimerIsRunning;
 
     float m_flStrafeSync;
     float m_flStrafeSync2;

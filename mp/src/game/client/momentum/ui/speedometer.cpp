@@ -160,8 +160,8 @@ void CHudSpeedMeter::OnThink()
         SetShouldDisplaySecondaryValue(speedometer_lastjump.GetBool());
         SetSecondaryValue(round(pPlayer->m_flLastJumpVel));
         // Test colors. Please lets not use this ones. They are just here to show that you can now change each number's color.
-        m_SecondaryValueColor = Color(0, 255, 0,255);
-        m_LabelColor = Color(50, 175, 80,255);
+        m_SecondaryValueColor = normalColor;
+        m_LabelColor = normalColor;
     }
 }
 
