@@ -69,6 +69,7 @@ public:
         normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
         increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
         decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
+        m_LabelColor = normalColor;
     }
     bool ShouldColorize()
     {
@@ -77,6 +78,7 @@ public:
 private:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
+    float m_flLastJumpVelocity;
 
     Color m_lastColor;
     Color m_currentColor;
@@ -148,20 +150,24 @@ void CHudSpeedMeter::OnThink()
                 m_flLastVelocity = vel;
                 m_flNextColorizeCheck = gpGlobals->curtime + 0.1f; //we need to update color every 0.1 seconds
             }
+            if (pPlayer->m_flLastJumpVel == 0)
+            {
+                m_SecondaryValueColor = normalColor;
+            }
+            else if (m_flLastJumpVelocity != pPlayer->m_flLastJumpVel)
+            {
+                m_SecondaryValueColor = mom_UTIL.GetColorFromVariation(abs(pPlayer->m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f, normalColor, increaseColor, decreaseColor);
+                m_flLastJumpVelocity = pPlayer->m_flLastJumpVel;
+            }
         }
         else
         {
-            m_PrimaryValueColor = m_currentColor;
+            m_SecondaryValueColor = m_PrimaryValueColor = normalColor;
         }
 
-        //With this round we ensure that the speed is as precise as possible, instead of taking the floor value of the float
         SetDisplayValue(round(vel));
-
         SetShouldDisplaySecondaryValue(speedometer_lastjump.GetBool());
         SetSecondaryValue(round(pPlayer->m_flLastJumpVel));
-        // Test colors. Please lets not use this ones. They are just here to show that you can now change each number's color.
-        m_SecondaryValueColor = normalColor;
-        m_LabelColor = normalColor;
     }
 }
 

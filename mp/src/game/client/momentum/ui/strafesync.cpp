@@ -10,7 +10,7 @@
 
 using namespace vgui;
 
-static ConVar strafesync_draw("mom_showstrafesync", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+static ConVar strafesync_draw("mom_drawstrafesync", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Toggles displaying the strafesync data.\n", true, 0, true, 1);
 
 static ConVar strafesync_type("mom_strafesync_type", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -70,8 +70,7 @@ CHudStrafeSyncDisplay::CHudStrafeSyncDisplay(const char *pElementName) : CHudEle
 }
 void CHudStrafeSyncDisplay::OnThink()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    //DevLog("sync2: %f\n", pPlayer->m_flStrafeSync2);
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (strafesync_type.GetInt() == 1) //sync1
         m_localStrafeSync = pPlayer->m_flStrafeSync;
     else if (strafesync_type.GetInt() == 2) //sync2
@@ -153,6 +152,11 @@ class CHudStrafeSyncBar : public CHudFillableBar
 public:
     CHudStrafeSyncBar(const char *pElementName);
     void OnThink();
+    bool ShouldDraw()
+    {
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+        return (pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && pPlayer->m_bTimerIsRunning);
+    }
     void Paint();
     void ApplySchemeSettings(IScheme *pScheme)
     {
@@ -185,13 +189,12 @@ CHudStrafeSyncBar::CHudStrafeSyncBar(const char *pElementName) : CHudFillableBar
 }
 void CHudStrafeSyncBar::Paint()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (pPlayer && strafesync_draw.GetBool() && pPlayer->m_bTimerIsRunning)
+    if (ShouldDraw())
         BaseClass::Paint(m_currentColor);
 }
 void CHudStrafeSyncBar::OnThink()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (strafesync_type.GetInt() == 1) //sync1
         m_localStrafeSync = pPlayer->m_flStrafeSync;
     else if (strafesync_type.GetInt() == 2) //sync2
