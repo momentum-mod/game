@@ -18,6 +18,9 @@
                 "digit_ypos"	"2"
 				"digit2_xpos"	"90"
                 "digit2_ypos"	"16"
+				"PrimaryValueColor" "White"
+				"SecondaryValueColor" "White"
+				"LabelColor"	"White"
 		}
     //Timer
 	HudTimer
@@ -61,6 +64,9 @@
                 "digit_ypos"	"12"
 				"digit2_xpos"	"30"
                 "digit2_ypos"	"16"
+				"PrimaryValueColor" "White"
+				"SecondaryValueColor" "White"
+				"LabelColor"	"White"
 		}
     //The design for in-game menus            
     CHudMenuStatic

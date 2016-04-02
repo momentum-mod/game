@@ -117,7 +117,6 @@ void CHudStrafeSyncDisplay::OnThink()
         break;
     case 0:
     default:
-        SetFgColor(normalColor);
         m_currentColor = normalColor;
         break;
     }
@@ -136,7 +135,7 @@ void CHudStrafeSyncDisplay::OnThink()
         digit_xpos = digit_xpos_initial;
     }
 
-    SetFgColor(m_currentColor);
+    m_PrimaryValueColor = m_SecondaryValueColor = normalColor;
 
 }
 void CHudStrafeSyncDisplay::Paint()

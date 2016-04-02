@@ -138,22 +138,20 @@ void CHudSpeedMeter::OnThink()
                 if (m_flLastVelocity != 0)
                 {
                     m_currentColor = mom_UTIL.GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f, normalColor, increaseColor, decreaseColor);
-                    SetFgColor(m_currentColor);
-                    m_lastColor = m_currentColor;
                 }
                 else
                 {
                     m_currentColor = normalColor;
-                    SetFgColor(m_currentColor);
-                    m_lastColor = m_currentColor;
                 }
+                m_PrimaryValueColor = m_currentColor;
+                m_lastColor = m_currentColor;
                 m_flLastVelocity = vel;
                 m_flNextColorizeCheck = gpGlobals->curtime + 0.1f; //we need to update color every 0.1 seconds
             }
         }
         else
         {
-            SetFgColor(normalColor);
+            m_PrimaryValueColor = m_currentColor;
         }
 
         //With this round we ensure that the speed is as precise as possible, instead of taking the floor value of the float
@@ -161,6 +159,9 @@ void CHudSpeedMeter::OnThink()
 
         SetShouldDisplaySecondaryValue(speedometer_lastjump.GetBool());
         SetSecondaryValue(round(pPlayer->m_flLastJumpVel));
+        // Test colors. Please lets not use this ones. They are just here to show that you can now change each number's color.
+        m_SecondaryValueColor = Color(0, 255, 0,255);
+        m_LabelColor = Color(50, 175, 80,255);
     }
 }
 
