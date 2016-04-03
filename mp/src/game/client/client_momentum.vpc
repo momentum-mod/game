@@ -63,18 +63,21 @@ $Project "Client (Momentum)"
                 }          
             
 			    $File	"momentum\ui\speedometer.cpp"
-			    $File 	"momentum\ui\versionwarn.cpp"
+				$File	"momentum\ui\strafesync.cpp"
+				$File	"momentum\ui\timer.cpp"
 			    $File   "momentum\ui\hud_cp_menu.cpp"
 				$File 	"momentum\ui\hud_menu_static.h"
 				$File 	"momentum\ui\hud_menu_static.cpp"
 				$File 	"momentum\ui\hud_fillablebar.h"
-				$File	"momentum\ui\timer.cpp"
                 $File   "momentum\ui\ClientTimesDisplay.h"
                 $File   "momentum\ui\ClientTimesDisplay.cpp"
+				$File	"momentum\ui\IVersionWarnPanel.h"
+				$File	"momentum\ui\VersionWarnPanel.cpp"
+				$File 	"momentum\ui\hud_versionwarn.cpp"
                 $File	"hl2\hud_credits.cpp"
 				$File   "hl2\hud_weaponselection.cpp"
                 $File	"hud_chat.cpp"
-				$File	"momentum\ui\strafesync.cpp"
+				
 			}
 
 			$File	"momentum\client_events.h"
