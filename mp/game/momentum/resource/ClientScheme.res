@@ -16,8 +16,9 @@ Scheme
 	{
 		// base colors
 		"White"				"255 255 255 255"
-		"Gray" 				"255 255 255 170"
-		"Dark Gray" 		"255 255 255 100"
+		"Light Gray"		"211 211 211 100"
+		"Gray" 				"128 128 128 150"
+		"Dark Gray" 		"64 64 64 200"
 		
 		"Red"                "192 28 0 140"
 		"Black"                "0 0 0 196"

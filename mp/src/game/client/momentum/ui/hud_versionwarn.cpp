@@ -45,7 +45,6 @@ private:
 
 DECLARE_HUDELEMENT(CHudVersionWarn);
 
-
 CHudVersionWarn::CHudVersionWarn(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudVersionWarn")
 {
     SetProportional(true);
@@ -59,7 +58,7 @@ void CHudVersionWarn::Init()
     char strVersion[BUFSIZELOCL];
     wchar_t *uVersionUnicode = g_pVGuiLocalize->Find("#MOM_BuildVersion");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uVersionUnicode ? uVersionUnicode : L"#MOM_BuildVersion", strVersion, BUFSIZELOCL);
-   
+
     Q_snprintf(m_pszStringVersion, sizeof(m_pszStringVersion), "%s %s",
         strVersion, // BuildVerison localization
         MOM_CURRENT_VERSION

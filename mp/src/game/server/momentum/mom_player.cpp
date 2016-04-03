@@ -15,7 +15,7 @@ SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
 SendPropBool(SENDINFO(m_bPlayerInsideStartZone)),
 SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
-SendPropBool(SENDINFO(m_bHasPracticeMode)), 
+SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPlayerFinishedMap)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
@@ -41,7 +41,7 @@ CMomentumPlayer::~CMomentumPlayer() {}
 
 void CMomentumPlayer::Precache()
 {
-// Name of our entity's model
+    // Name of our entity's model
 #define ENTITY_MODEL "models/gibs/airboat_broken_engine.mdl"
     PrecacheModel(ENTITY_MODEL);
 
