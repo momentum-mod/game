@@ -10,8 +10,11 @@
 
 using namespace vgui;
 
-static ConVar strafesync_draw("mom_drawstrafesync", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+static ConVar strafesync_draw("mom_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                               "Toggles displaying the strafesync data.\n", true, 0, true, 1);
+
+static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Toggles displaying the visual strafesync bar.\n", true, 0, true, 1);
 
 static ConVar strafesync_type(
     "mom_strafesync_type", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -23,6 +26,7 @@ static ConVar strafesync_colorize("mom_strafesync_colorize", "2",
                                   "Toggles strafesync data colorization type based on acceleration. 0 to disable\n",
                                   true, 0, true, 2);
 
+#define SYNC_COLORIZE_DEADZONE 0
 //////////////////////////////////////////
 //           CHudStrafeSyncDisplay        //
 //////////////////////////////////////////
@@ -37,6 +41,14 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
         return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && pPlayer->m_bTimerIsRunning;
+    }
+    virtual void Reset()
+    {
+        m_flNextColorizeCheck = 0;
+        m_flLastStrafeSync = 0;
+        m_localStrafeSync = 0;
+        m_lastColor = normalColor;
+        m_currentColor = normalColor;
     }
     void ApplySchemeSettings(IScheme *pScheme)
     {
@@ -68,7 +80,6 @@ CHudStrafeSyncDisplay::CHudStrafeSyncDisplay(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "CHudSyncMeter")
 {
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    SetLabelText(L"Sync");
 }
 void CHudStrafeSyncDisplay::OnThink()
 {
@@ -87,15 +98,11 @@ void CHudStrafeSyncDisplay::OnThink()
     case 1:
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
-            if (m_flLastStrafeSync != 0)
-            {
-                m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, 1.0f,
-                                                                normalColor, increaseColor, decreaseColor);
-            }
-            else
-            {
-                m_currentColor = normalColor;
-            }
+            m_flLastStrafeSync != 0
+                ? m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                normalColor, increaseColor, decreaseColor)
+                : m_currentColor = normalColor;
+            DevLog("Variation: %f\n", m_localStrafeSync - m_flLastStrafeSync);
             m_lastColor = m_currentColor;
             m_flLastStrafeSync = m_localStrafeSync;
             m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
@@ -145,6 +152,17 @@ void CHudStrafeSyncDisplay::Paint()
 {
     if (ShouldDraw())
         BaseClass::Paint();
+    if (strafesync_type.GetInt() == 2)
+    {
+        SetLabelText(L"Sync 2");
+        text_xpos = 25;
+    }
+    else
+    {
+        SetLabelText(L"Sync");
+        text_xpos = 35;
+    }
+
 }
 //////////////////////////////////////////
 //           CHudStrafeSyncBar          //
@@ -159,9 +177,16 @@ class CHudStrafeSyncBar : public CHudFillableBar
     bool ShouldDraw()
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return (pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && pPlayer->m_bTimerIsRunning);
+        return (pPlayer && strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && pPlayer->m_bTimerIsRunning);
     }
-    void Paint();
+    virtual void Reset()
+    {
+        m_flNextColorizeCheck = 0;
+        m_flLastStrafeSync = 0;
+        m_localStrafeSync = 0;
+        m_lastColor = normalColor;
+        m_currentColor = normalColor;
+    }
     void ApplySchemeSettings(IScheme *pScheme)
     {
         Panel::ApplySchemeSettings(pScheme);
@@ -170,6 +195,7 @@ class CHudStrafeSyncBar : public CHudFillableBar
         increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
         decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
     }
+    void Paint();
     bool ShouldColorize() { return strafesync_colorize.GetInt() > 0; }
 
   private:
@@ -205,15 +231,11 @@ void CHudStrafeSyncBar::OnThink()
     case 1:
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
-            if (m_flLastStrafeSync != 0)
-            {
-                m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, 1.0f,
-                                                                normalColor, increaseColor, decreaseColor);
-            }
-            else
-            {
-                m_currentColor = normalColor;
-            }
+            m_flLastStrafeSync != 0 
+                ? m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                normalColor, increaseColor, decreaseColor) 
+                : m_currentColor = normalColor;
+
             m_lastColor = m_currentColor;
             m_flLastStrafeSync = m_localStrafeSync;
             m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;

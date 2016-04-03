@@ -146,6 +146,9 @@ void CHudSpeedMeter::OnThink()
                 m_flLastVelocity = vel;
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
+            //reset last jump velocity when we restart a run by entering the start zone 
+            if (pPlayer->m_bPlayerInsideStartZone)
+                m_flLastJumpVelocity = 0;
             if (pPlayer->m_flLastJumpVel == 0)
             {
                 m_SecondaryValueColor = normalColor;

@@ -91,6 +91,8 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     pPlayer->m_bPlayerInsideStartZone = true;
     //reset strafe sync ratio
     pPlayer->ResetStrafeSync();
+    //also reset last jump velocity when we enter the start zone
+    pPlayer->m_flLastJumpVel = 0;
     // start thinking
     SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);
