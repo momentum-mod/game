@@ -93,10 +93,10 @@ public:
 
 private:
     void(*SelectFunc)(int);
-    CPanelAnimationVar(float, m_flxPos, "xpos", "0.0");
-    CPanelAnimationVar(float, m_flyPos, "ypos", "0.0");
-    CPanelAnimationVar(float, m_flTall, "tall", "200.0");
-    CPanelAnimationVar(float, m_flWide, "wide", "20.0");
+    CPanelAnimationVarAliasType(float, m_flxPos, "xpos", "0.0", "proportional_float");
+    CPanelAnimationVarAliasType(float, m_flyPos, "ypos", "0.0", "proportional_float");
+    CPanelAnimationVarAliasType(float, m_flTall, "tall", "0", "proportional_float");
+    CPanelAnimationVarAliasType(float, m_flWide, "wide", "0", "proportional_float");
     CPanelAnimationVar(float, m_flInitialValue, "InitialValue", "0.0");
     CPanelAnimationVar(Color, m_BackgroundColor, "BackgroundColor", "FgColor");
     CPanelAnimationVar(Color, m_FillColor, "FillColor", "FgColor");

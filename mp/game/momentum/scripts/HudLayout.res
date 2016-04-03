@@ -89,10 +89,10 @@
 	CHudSyncBar
 	{
 		"fieldName"		"CHudSyncBar"
-		"xpos"			"c-50"
-		"ypos"			"c+170"
-		"wide"			"200"
-		"tall"			"20"
+		"xpos"			"c-60"
+		"ypos"			"c+175"
+		"wide"			"120"
+		"tall"			"10"
 		"InitialValue"	"0"
 		"BackgroundColor" "0 0 0 255"
 		"FillColor"		"255 255 255 225"
