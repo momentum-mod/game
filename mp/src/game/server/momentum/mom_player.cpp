@@ -13,6 +13,7 @@ SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iLastZoom)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
+SendPropInt(SENDINFO(m_iSuccessiveBhops)),
 SendPropBool(SENDINFO(m_bPlayerInsideStartZone)),
 SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
@@ -204,14 +205,14 @@ void CMomentumPlayer::UpdateRunStats()
     {
         if (!m_bPrevTimerRunning)
         {
+            //Reset old run stats
+            m_nTotalStrafes = 0;
+            m_nTotalJumps = 0;
+
             m_flStartSpeed = GetLocalVelocity().Length2D();
             //Comapre against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
             if (GetGroundEntity() == NULL && m_iSuccessiveBhops)
                 m_nTotalJumps++;
-
-            //Reset old run stats
-            m_nTotalStrafes = 0;
-            m_nTotalJumps = 0;
         }
         if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
             m_nTotalStrafes++;
