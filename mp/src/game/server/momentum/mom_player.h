@@ -43,7 +43,6 @@ class CMomentumPlayer : public CBasePlayer
     void Spawn();
     void Precache();
     void Touch(CBaseEntity *);
-    void Think();
 
     virtual void CommitSuicide(bool bExplode = false, bool bForce = false){};
     virtual void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false){};
@@ -69,7 +68,8 @@ class CMomentumPlayer : public CBasePlayer
     // think function for detecting if player bhopped
     void CheckForBhop();
     void UpdateRunStats();
-    void ResetStrafeSync();
+    void ResetRunStats();
+    void CalculateAverageStats();
 
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
@@ -90,7 +90,10 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(float, m_flEndSpeed);
     CNetworkVar(int, m_nTotalJumps);
     CNetworkVar(int, m_nTotalStrafes);
-
+    CNetworkVar(float, m_flStrafeSyncAvg); 
+    CNetworkVar(float, m_flStrafeSync2Avg);
+    CNetworkVar(float, m_flVelocityAvg);
+    CNetworkVar(float, m_flVelocityMax);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -123,7 +126,7 @@ class CMomentumPlayer : public CBasePlayer
     int m_iLastBlock;
 
     //for strafe sync
-    float m_flLastVelocity;
+    float m_flLastVelocity, m_flLastSyncVelocity;
     QAngle m_qangLastAngle;
 
     int m_nPerfectSyncTicks;
@@ -132,5 +135,9 @@ class CMomentumPlayer : public CBasePlayer
 
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
+
+    //for average stats
+    int m_nAvgCount;
+    float m_flTotalSync, m_flTotalSync2, m_flTotalVelocity;
 };
 #endif // MOMPLAYER_H

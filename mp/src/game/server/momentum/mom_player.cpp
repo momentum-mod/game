@@ -6,6 +6,8 @@
 
 #include "tier0/memdbgon.h"
 
+#define AVERAGE_STATS_INTERVAL 0.1
+
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
 SendPropInt(SENDINFO(m_iShotsFired)),
 SendPropInt(SENDINFO(m_iDirection)),
@@ -26,15 +28,22 @@ SendPropFloat(SENDINFO(m_flStartSpeed)),
 SendPropFloat(SENDINFO(m_flEndSpeed)),
 SendPropInt(SENDINFO(m_nTotalJumps)),
 SendPropInt(SENDINFO(m_nTotalStrafes)),
+SendPropFloat(SENDINFO(m_flStrafeSyncAvg)),
+SendPropFloat(SENDINFO(m_flStrafeSync2Avg)),
+SendPropFloat(SENDINFO(m_flVelocityAvg)),
+SendPropFloat(SENDINFO(m_flVelocityMax)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop),
 DEFINE_THINKFUNC(UpdateRunStats),
+DEFINE_THINKFUNC(CalculateAverageStats),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
+
+ConVarRef hvel("mom_speedometer_hvel");
 
 CMomentumPlayer::CMomentumPlayer()
 {
@@ -75,8 +84,10 @@ void CMomentumPlayer::Spawn()
     SetNextThink(gpGlobals->curtime);
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
+    RegisterThinkContext("THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
+    SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
 }
 
 void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
@@ -201,15 +212,16 @@ void CMomentumPlayer::CheckForBhop()
 }
 void CMomentumPlayer::UpdateRunStats()
 {
+    //should velocity be XY or XYZ?
+    float velocity = hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+
     if (g_Timer.IsRunning())
     {
-        if (!m_bPrevTimerRunning)
-        {
+        if (!m_bPrevTimerRunning) //timer started on this tick
+        {    
             //Reset old run stats
-            m_nTotalStrafes = 0;
-            m_nTotalJumps = 0;
-
-            m_flStartSpeed = GetLocalVelocity().Length2D();
+            ResetRunStats();
+            m_flStartSpeed = GetLocalVelocity().Length2D(); //prestrafe should always be XY
             //Comapre against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
             if (GetGroundEntity() == NULL && m_iSuccessiveBhops)
                 m_nTotalJumps++;
@@ -218,17 +230,23 @@ void CMomentumPlayer::UpdateRunStats()
             m_nTotalStrafes++;
         else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
             m_nTotalStrafes++;
+
+        //  ---- MAX VELOCITY ----
+        if (velocity > m_flLastVelocity)
+            m_flVelocityMax = velocity;
+        // ----------
     }
     else
     {
         if (m_bPrevTimerRunning)
         {
             //Will be set on re-entry of start zone too. Shouldn't be an issue though.
-            m_flEndSpeed = GetLocalVelocity().Length2D();
+            m_flEndSpeed = velocity; //end velocity can be XY or XYZ 
         }
     }
-
-    float velocity = GetLocalVelocity().Length2DSqr();
+    
+    //  ---- STRAFE SYNC -----
+    float SyncVelocity = GetLocalVelocity().Length2D(); //we always want HVEL for checking velocity sync
     if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
     {
         if (EyeAngles().y > m_qangLastAngle.y) //player turned left 
@@ -236,7 +254,7 @@ void CMomentumPlayer::UpdateRunStats()
             m_nStrafeTicks++;
             if ((m_nButtons & IN_MOVELEFT) && !(m_nButtons & IN_MOVERIGHT))
                 m_nPerfectSyncTicks++;
-            if (velocity > m_flLastVelocity)
+            if (SyncVelocity > m_flLastSyncVelocity)
                 m_nAccelTicks++;
         }
         else if (EyeAngles().y < m_qangLastAngle.y) //player turned right 
@@ -244,7 +262,7 @@ void CMomentumPlayer::UpdateRunStats()
             m_nStrafeTicks++;
             if ((m_nButtons & IN_MOVERIGHT) && !(m_nButtons & IN_MOVELEFT))
                 m_nPerfectSyncTicks++;
-            if (velocity > m_flLastVelocity)
+            if (SyncVelocity > m_flLastSyncVelocity)
                 m_nAccelTicks++;
         }
     }
@@ -253,26 +271,56 @@ void CMomentumPlayer::UpdateRunStats()
         m_flStrafeSync = ((float)m_nPerfectSyncTicks / (float)m_nStrafeTicks) * 100; // ticks strafing perfectly / ticks strafing
         m_flStrafeSync2 = ((float)m_nAccelTicks / (float)m_nStrafeTicks) * 100; // ticks gaining speed / ticks strafing
     }
+    // ----------
+
+
     m_qangLastAngle = EyeAngles();
+    m_flLastSyncVelocity = SyncVelocity;
     m_flLastVelocity = velocity;
-    //think once per tick   
 
     m_bPrevTimerRunning = g_Timer.IsRunning();
     m_nPrevButtons = m_nButtons;
 
+    //USE: send info about timer to client class
+    m_bTimerIsRunning = g_Timer.IsRunning();
+
+    //think once per tick   
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
 }
-void CMomentumPlayer::ResetStrafeSync()
+void CMomentumPlayer::ResetRunStats()
 {
     m_nPerfectSyncTicks = 0;
     m_nStrafeTicks = 0;
     m_nAccelTicks = 0;
     m_flStrafeSync = 0;
     m_flStrafeSync2 = 0;
+    m_nTotalStrafes = 0;
+    m_nTotalJumps = 0;
+    m_flTotalSync = 0;
+    m_flTotalSync2 = 0;
+    m_flTotalVelocity = 0;
+    m_flStrafeSyncAvg = 0;
+    m_flStrafeSync2Avg = 0;
+    m_flVelocityAvg = 0;
+    m_flVelocityMax = 0;
+    m_nAvgCount = 1; //start counting from 1
 }
-void CMomentumPlayer::Think()
+void CMomentumPlayer::CalculateAverageStats()
 {
-    //USE: send info about timer to client class
-    m_bTimerIsRunning = g_Timer.IsRunning();
-    SetNextThink(gpGlobals->curtime);
+    if (g_Timer.IsRunning())
+    {
+        m_flTotalSync += m_flStrafeSync;
+        m_flTotalSync2 += m_flStrafeSync2;
+        m_flTotalVelocity += hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+        //increment avg counter
+        m_nAvgCount++;
+
+        m_flStrafeSyncAvg = m_flTotalSync / float(m_nAvgCount);
+        m_flStrafeSync2Avg = m_flTotalSync2 / float(m_nAvgCount);
+        m_flVelocityAvg = m_flTotalVelocity / float(m_nAvgCount);
+        // ---
+    }
+
+    // think once per 0.1 second interval so we avoid making the totals extremely large
+    SetNextThink(gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
 }

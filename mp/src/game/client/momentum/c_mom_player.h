@@ -37,9 +37,10 @@ public:
     bool m_bPlayerFinishedMap;
     bool m_bTimerIsRunning;
 
-    float m_flStrafeSync;
-    float m_flStrafeSync2;
+    float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;
+    float m_flStrafeSyncAvg, m_flStrafeSync2Avg;
+    float m_flVelocityAvg, m_flVelocityMax;
 
     char m_pszLastRunTime[sizeof("00:00:00.000") + 1];
 

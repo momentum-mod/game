@@ -74,7 +74,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     pPlayer->m_bPlayerInsideStartZone = false;
     //reset strafe sync ratio
-    pPlayer->ResetStrafeSync();
     SetNextThink(-1);
     BaseClass::EndTouch(pOther);
 }
@@ -89,8 +88,6 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     }
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     pPlayer->m_bPlayerInsideStartZone = true;
-    //reset strafe sync ratio
-    pPlayer->ResetStrafeSync();
     //also reset last jump velocity when we enter the start zone
     pPlayer->m_flLastJumpVel = 0;
     // start thinking

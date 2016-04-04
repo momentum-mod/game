@@ -40,11 +40,10 @@ public:
     virtual void Init();
     virtual void Reset()
     {
-        //MOM_TODO : TEMP VALUES.
-        m_flAvgSync = 91.257342f;
-        m_iTotalStrafes = 5;
-        m_iTotalJumps = 2;
-        //default value
+        //default values
+        m_flAvgSync = 0;
+        m_iTotalStrafes = 0;
+        m_iTotalJumps = 0;
         strcpy(m_pszRunTime, "00:00:00.000"); 
     }
     virtual void ApplySchemeSettings(IScheme *pScheme)
@@ -70,6 +69,26 @@ protected:
         "proportional_float");
     CPanelAnimationVarAliasType(float, sync_ypos, "sync_ypos", "65",
         "proportional_float");
+    CPanelAnimationVarAliasType(float, sync2_xpos, "sync2_xpos", "30",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, sync2_ypos, "sync2_ypos", "85",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, startvel_xpos, "startvel_xpos", "30",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, startvel_ypos, "startvel_ypos", "65",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, endvel_xpos, "endvel_xpos", "30",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, endvel_ypos, "endvel_ypos", "65",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, avgvel_xpos, "avgvel_xpos", "30",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, avgvel_ypos, "avgvel_ypos", "65",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, maxvel_xpos, "maxvel_xpos", "30",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, maxvel_ypos, "maxvel_ypos", "65",
+        "proportional_float");
 
 private:
     wchar_t m_pwTimeLabel[BUFSIZELOCL];
@@ -80,13 +99,22 @@ private:
     char m_pszStringJumpsLabel[BUFSIZELOCL];
     wchar_t m_pwSyncLabel[BUFSIZELOCL];
     char m_pszStringSyncLabel[BUFSIZELOCL];
+    wchar_t m_pwSync2Label[BUFSIZELOCL];
+    char m_pszStringSync2Label[BUFSIZELOCL];
+    wchar_t m_pwStartSpeedLabel[BUFSIZELOCL];
+    char m_pszStartSpeedLabel[BUFSIZELOCL];
+    wchar_t m_pwEndSpeedLabel[BUFSIZELOCL];
+    char m_pszEndSpeedLabel[BUFSIZELOCL];
+    wchar_t m_pwAvgSpeedLabel[BUFSIZELOCL];
+    char m_pszAvgSpeedLabel[BUFSIZELOCL];
+    wchar_t m_pwMaxSpeedLabel[BUFSIZELOCL];
+    char m_pszMaxSpeedLabel[BUFSIZELOCL];
 
     char m_pszRunTime[BUFSIZETIME];
-    char m_pszAvgSync[BUFSIZELOCL];
-    int m_iTotalJumps;
-    int m_iTotalStrafes;
-    float m_flAvgSync;
-
+    char m_pszAvgSync[BUFSIZELOCL], m_pszAvgSync2[BUFSIZELOCL];
+    int m_iTotalJumps, m_iTotalStrafes;
+    float m_flAvgSync, m_flAvgSync2;
+    float m_flStartSpeed, m_flEndSpeed, m_flAvgSpeed, m_flMaxSpeed;
 };
 
 DECLARE_HUDELEMENT(CHudMapFinishedDialog);
@@ -134,6 +162,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_JumpCount");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uJumpUnicode ? uJumpUnicode : L"#MOM_JumpCount", jumpLocalized, BUFSIZELOCL);
 
+    m_iTotalJumps = pPlayer->m_nTotalJumps;
     Q_snprintf(m_pszStringJumpsLabel, sizeof(m_pszStringJumpsLabel), "%s %i",
         jumpLocalized, // total jump localization 
         m_iTotalJumps  // total jump int
@@ -149,6 +178,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uStrafeUnicode = g_pVGuiLocalize->Find("#MOM_StrafeCount");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uStrafeUnicode ? uStrafeUnicode : L"#MOM_StrafeCount", strafeLocalized, BUFSIZELOCL);
 
+    m_iTotalStrafes = pPlayer->m_nTotalStrafes;
     Q_snprintf(m_pszStringStrafesLabel, sizeof(m_pszStringStrafesLabel), "%s %i",
         strafeLocalized, // total strafe localization 
         m_iTotalStrafes  //total strafes int
@@ -164,6 +194,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uSyncUnicode = g_pVGuiLocalize->Find("#MOM_AvgSync");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uSyncUnicode ? uSyncUnicode : L"#MOM_AvgSync", syncLocalized, BUFSIZELOCL);
 
+    m_flAvgSync = pPlayer->m_flStrafeSyncAvg;
     Q_snprintf(m_pszAvgSync, sizeof(m_pszStringSyncLabel), "%.2f", m_flAvgSync); //convert floating point avg sync to 2 decimal place string
     Q_snprintf(m_pszStringSyncLabel, sizeof(m_pszStringSyncLabel), "%s %s",
         syncLocalized, // avg sync localization 
@@ -175,4 +206,84 @@ void CHudMapFinishedDialog::Paint()
     surface()->DrawPrintText(m_pwSyncLabel, wcslen(m_pwSyncLabel));
     // ---------------------
 
+    // --- AVG SYNC 2---
+    char sync2Localized[BUFSIZELOCL];
+    wchar_t *uSync2Unicode = g_pVGuiLocalize->Find("#MOM_AvgSync2");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uSync2Unicode ? uSync2Unicode : L"#MOM_AvgSync2", sync2Localized, BUFSIZELOCL);
+
+    m_flAvgSync2 = pPlayer->m_flStrafeSync2Avg;
+    Q_snprintf(m_pszAvgSync2, sizeof(m_pszStringSync2Label), "%.2f", m_flAvgSync2); //convert floating point avg sync to 2 decimal place string
+    Q_snprintf(m_pszStringSync2Label, sizeof(m_pszStringSync2Label), "%s %s",
+        sync2Localized, // avg sync localization 
+        m_pszAvgSync2    // avg sync float
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszStringSync2Label, m_pwSync2Label, sizeof(m_pwSync2Label));
+    surface()->DrawSetTextPos(sync2_xpos, sync2_ypos);
+    surface()->DrawPrintText(m_pwSync2Label, wcslen(m_pwSync2Label));
+    // ---------------------
+
+    // --- STARTING VELOCITY---
+    char startVelLocalized[BUFSIZELOCL];
+    wchar_t *uStartVelUnicode = g_pVGuiLocalize->Find("#MOM_StartVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uStartVelUnicode ? uStartVelUnicode : L"#MOM_StartVel", startVelLocalized, BUFSIZELOCL);
+
+    m_flStartSpeed = pPlayer->m_flStartSpeed;
+    Q_snprintf(m_pszStartSpeedLabel, sizeof(m_pszStartSpeedLabel), "%s %f",
+        startVelLocalized, // avg sync localization 
+        m_flStartSpeed    // avg sync float
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszStartSpeedLabel, m_pwStartSpeedLabel, sizeof(m_pwStartSpeedLabel));
+    surface()->DrawSetTextPos(startvel_xpos, startvel_ypos);
+    surface()->DrawPrintText(m_pwStartSpeedLabel, wcslen(m_pwStartSpeedLabel));
+    // ---------------------
+
+    // --- ENDING VELOCITY---
+    char endVelLocalized[BUFSIZELOCL];
+    wchar_t *uendVelUnicode = g_pVGuiLocalize->Find("#MOM_EndVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uendVelUnicode ? uendVelUnicode : L"#MOM_EndVel", endVelLocalized, BUFSIZELOCL);
+
+    m_flEndSpeed = pPlayer->m_flEndSpeed;
+    Q_snprintf(m_pszEndSpeedLabel, sizeof(m_pszEndSpeedLabel), "%s %f",
+        endVelLocalized, // avg sync localization 
+        m_flEndSpeed    // avg sync float
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszEndSpeedLabel, m_pwEndSpeedLabel, sizeof(m_pwEndSpeedLabel));
+    surface()->DrawSetTextPos(endvel_xpos, endvel_ypos);
+    surface()->DrawPrintText(m_pwEndSpeedLabel, wcslen(m_pwEndSpeedLabel));
+    // ---------------------
+
+    // --- AVG VELOCITY---
+    char avgVelLocalized[BUFSIZELOCL];
+    wchar_t *uavgVelUnicode = g_pVGuiLocalize->Find("#MOM_AvgVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uavgVelUnicode ? uavgVelUnicode : L"#MOM_AvgVel", avgVelLocalized, BUFSIZELOCL);
+
+    m_flAvgSpeed = pPlayer->m_flVelocityAvg;
+    Q_snprintf(m_pszAvgSpeedLabel, sizeof(m_pszAvgSpeedLabel), "%s %f",
+        avgVelLocalized, // avg sync localization 
+        m_flAvgSpeed    // avg sync float
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszAvgSpeedLabel, m_pwAvgSpeedLabel, sizeof(m_pwAvgSpeedLabel));
+    surface()->DrawSetTextPos(avgvel_xpos, avgvel_ypos);
+    surface()->DrawPrintText(m_pwAvgSpeedLabel, wcslen(m_pwAvgSpeedLabel));
+    // ---------------------
+
+    // --- MAX VELOCITY---
+    char maxVelLocalized[BUFSIZELOCL];
+    wchar_t *umaxVelUnicode = g_pVGuiLocalize->Find("#MOM_MaxVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(umaxVelUnicode ? umaxVelUnicode : L"#MOM_MaxVel", maxVelLocalized, BUFSIZELOCL);
+
+    m_flMaxSpeed = pPlayer->m_flVelocityMax;
+    Q_snprintf(m_pszMaxSpeedLabel, sizeof(m_pszMaxSpeedLabel), "%s %f",
+        maxVelLocalized, // max sync localization 
+        m_flMaxSpeed    // max sync float
+        );
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszMaxSpeedLabel, m_pwMaxSpeedLabel, sizeof(m_pwMaxSpeedLabel));
+    surface()->DrawSetTextPos(maxvel_xpos, maxvel_ypos);
+    surface()->DrawPrintText(m_pwMaxSpeedLabel, wcslen(m_pwAvgSpeedLabel));
+    // ---------------------
 }

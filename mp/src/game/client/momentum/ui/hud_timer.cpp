@@ -229,7 +229,7 @@ void C_Timer::MsgFunc_Timer_StageCount(bf_read &msg)
 }
 int C_Timer::GetCurrentTime()
 {
-    if (m_bIsRunning) m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
+    m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
     return m_iTotalTicks;
 }
 
