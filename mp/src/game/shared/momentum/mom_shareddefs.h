@@ -28,4 +28,8 @@ typedef enum MOMGM
 
 #define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
 
+//buffers for cstr variables
+#define BUFSIZETIME (sizeof("00:00:00.000")+1)
+#define BUFSIZELOCL (73)
+
 #endif // MOM_SHAREDDEFS_H

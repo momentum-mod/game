@@ -6,7 +6,6 @@
 #include "view.h"
 #include "menu.h"
 #include "time.h"
-#define BUFSIZELOCL (73)
 using namespace vgui;
 
 #include <vgui_controls/Panel.h>

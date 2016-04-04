@@ -5,9 +5,7 @@
 #include "iclientmode.h"
 #include "view.h"
 #include "menu.h"
-#include "mom_player_shared.h"
-
-using namespace vgui;
+#include "vgui_helpers.h"
 
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/Frame.h>
@@ -16,13 +14,14 @@ using namespace vgui;
 #include <vgui/ILocalize.h>
 #include <vgui_controls/AnimationController.h>
 
-#include "vgui_helpers.h"
+
 #include "momentum/util/mom_util.h"
+#include "mom_player_shared.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 
-#define BUFSIZETIME (sizeof("00:00:00.000")+1)
-#define BUFSIZELOCL (73)
+using namespace vgui;
 
 static ConVar mom_timer("mom_timer", "1",
     FCVAR_DONTRECORD | FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
@@ -92,9 +91,9 @@ protected:
         "HudNumbersSmall");
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
 
-    CPanelAnimationVarAliasType(bool, center_time, "centerTime", "1",
+    CPanelAnimationVarAliasType(bool, center_time, "centerTime", "0",
         "BOOL");
-    CPanelAnimationVarAliasType(float, time_xpos, "time_xpos", "50",
+    CPanelAnimationVarAliasType(float, time_xpos, "time_xpos", "0",
         "proportional_float");
     CPanelAnimationVarAliasType(float, time_ypos, "time_ypos", "2",
         "proportional_float");

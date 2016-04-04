@@ -17,18 +17,18 @@
 #include "vgui_helpers.h"
 #include "mom_shareddefs.h"
 #include "mom_player_shared.h"
+#include "mom_shareddefs.h"
 #include "util\mom_util.h"
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
-#define BUFSIZELOCL (73)
-#define BUFSIZETIME (sizeof("00:00:00.000")+1)
 
 class CHudMapFinishedDialog : public CHudElement, public Panel
 {
     DECLARE_CLASS_SIMPLE(CHudMapFinishedDialog, Panel);
 
 public:
+    CHudMapFinishedDialog();
     CHudMapFinishedDialog(const char *pElementName);
     virtual bool ShouldDraw()
     {
@@ -38,10 +38,14 @@ public:
     virtual void Paint();
 
     virtual void Init();
-    virtual void OnThink();
     virtual void Reset()
     {
-
+        //MOM_TODO : TEMP VALUES.
+        m_flAvgSync = 91.257342f;
+        m_iTotalStrafes = 5;
+        m_iTotalJumps = 2;
+        //default value
+        strcpy(m_pszRunTime, "00:00:00.000"); 
     }
     virtual void ApplySchemeSettings(IScheme *pScheme)
     {
@@ -50,53 +54,50 @@ public:
     }
 protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
-    CPanelAnimationVarAliasType(float, time_xpos, "time_xpos", "50",
+    CPanelAnimationVarAliasType(float, time_xpos, "time_xpos", "30",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, time_ypos, "time_ypos", "2",
+    CPanelAnimationVarAliasType(float, time_ypos, "time_ypos", "5",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, strafes_xpos, "strafes_xpos", "50",
+    CPanelAnimationVarAliasType(float, strafes_xpos, "strafes_xpos", "30",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, strafes_ypos, "strafes_ypos", "22",
+    CPanelAnimationVarAliasType(float, strafes_ypos, "strafes_ypos", "25",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, jumps_xpos, "jumps_xpos", "50",
+    CPanelAnimationVarAliasType(float, jumps_xpos, "jumps_xpos", "30",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, jumps_ypos, "jumps_ypos", "42",
+    CPanelAnimationVarAliasType(float, jumps_ypos, "jumps_ypos", "45",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, sync_xpos, "sync_xpos", "50",
+    CPanelAnimationVarAliasType(float, sync_xpos, "sync_xpos", "30",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, sync_ypos, "sync_ypos", "62",
+    CPanelAnimationVarAliasType(float, sync_ypos, "sync_ypos", "65",
         "proportional_float");
 
 private:
-    float m_flOpenCloseTime;
-    float m_flShutoffTime = 0.5f;
-
-    wchar_t m_pwTime[BUFSIZELOCL];
-    char m_pszStringTime[BUFSIZELOCL];
-    wchar_t m_pwStrafes[BUFSIZELOCL];
-    char m_pszStringStrafes[BUFSIZELOCL];
-    wchar_t m_pwJumps[BUFSIZELOCL];
-    char m_pszStringJumps[BUFSIZELOCL];
-    wchar_t m_pwSync[BUFSIZELOCL];
-    char m_pszStringSync[BUFSIZELOCL];
+    wchar_t m_pwTimeLabel[BUFSIZELOCL];
+    char m_pszStringTimeLabel[BUFSIZELOCL];
+    wchar_t m_pwStrafesLabel[BUFSIZELOCL];
+    char m_pszStringStrafesLabel[BUFSIZELOCL];
+    wchar_t m_pwJumpsLabel[BUFSIZELOCL];
+    char m_pszStringJumpsLabel[BUFSIZELOCL];
+    wchar_t m_pwSyncLabel[BUFSIZELOCL];
+    char m_pszStringSyncLabel[BUFSIZELOCL];
 
     char m_pszRunTime[BUFSIZETIME];
-    //MOM_TODO: temp values, change when we have run stats
-    int m_iTotalJumps = 5;
-    int m_iTotalStrafes = 14;
-    int m_flAvgSync = 92.35f;
+    char m_pszAvgSync[BUFSIZELOCL];
+    int m_iTotalJumps;
+    int m_iTotalStrafes;
+    float m_flAvgSync;
 
 };
 
 DECLARE_HUDELEMENT(CHudMapFinishedDialog);
 
-CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
+CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
+CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
-    SetScheme("ClientScheme");
-
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 void CHudMapFinishedDialog::Init()
 {
@@ -104,6 +105,7 @@ void CHudMapFinishedDialog::Init()
 }
 void CHudMapFinishedDialog::Paint()
 {
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     //text color
     surface()->DrawSetTextFont(m_hTextFont);
     surface()->DrawSetTextColor(GetFgColor());
@@ -112,15 +114,19 @@ void CHudMapFinishedDialog::Paint()
     char timeLocalized[BUFSIZELOCL];
     wchar_t *uTimeUnicode = g_pVGuiLocalize->Find("#MOM_RunTime");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uTimeUnicode ? uTimeUnicode : L"#MOM_RunTime", timeLocalized, BUFSIZELOCL);
-
-        Q_snprintf(m_pszStringTime, sizeof(m_pszStringTime), "%s %s",
+    if (pPlayer)
+    {
+        //copy player's last run time to our local variable
+        strcpy(m_pszRunTime, pPlayer->m_pszLastRunTime);
+    }
+    Q_snprintf(m_pszStringTimeLabel, sizeof(m_pszStringTimeLabel), "%s %s",
         timeLocalized, // run time localization 
         m_pszRunTime    // run time string
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringTime, m_pwTime, sizeof(m_pwTime));
+        m_pszStringTimeLabel, m_pwTimeLabel, sizeof(m_pwTimeLabel));
     surface()->DrawSetTextPos(time_xpos, time_ypos);
-    surface()->DrawPrintText(m_pwTime, wcslen(m_pwTime));
+    surface()->DrawPrintText(m_pwTimeLabel, wcslen(m_pwTimeLabel));
     // ---------------------
 
     // --- JUMP COUNT ---
@@ -128,14 +134,14 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_JumpCount");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uJumpUnicode ? uJumpUnicode : L"#MOM_JumpCount", jumpLocalized, BUFSIZELOCL);
 
-    Q_snprintf(m_pszStringJumps, sizeof(m_pszStringJumps), "%s %i",
+    Q_snprintf(m_pszStringJumpsLabel, sizeof(m_pszStringJumpsLabel), "%s %i",
         jumpLocalized, // total jump localization 
         m_iTotalJumps  // total jump int
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringJumps, m_pwJumps, sizeof(m_pwJumps));
+        m_pszStringJumpsLabel, m_pwJumpsLabel, sizeof(m_pwJumpsLabel));
     surface()->DrawSetTextPos(jumps_xpos, jumps_ypos);
-    surface()->DrawPrintText(m_pwJumps, wcslen(m_pwJumps));
+    surface()->DrawPrintText(m_pwJumpsLabel, wcslen(m_pwJumpsLabel));
     // ---------------------
 
     // --- STRAFE COUNT ---
@@ -143,14 +149,14 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uStrafeUnicode = g_pVGuiLocalize->Find("#MOM_StrafeCount");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uStrafeUnicode ? uStrafeUnicode : L"#MOM_StrafeCount", strafeLocalized, BUFSIZELOCL);
 
-    Q_snprintf(m_pszStringStrafes, sizeof(m_pszStringStrafes), "%s %i",
+    Q_snprintf(m_pszStringStrafesLabel, sizeof(m_pszStringStrafesLabel), "%s %i",
         strafeLocalized, // total strafe localization 
         m_iTotalStrafes  //total strafes int
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringStrafes, m_pwStrafes, sizeof(m_pwStrafes));
+        m_pszStringStrafesLabel, m_pwStrafesLabel, sizeof(m_pwStrafesLabel));
     surface()->DrawSetTextPos(strafes_xpos, strafes_ypos);
-    surface()->DrawPrintText(m_pwStrafes, wcslen(m_pwStrafes));
+    surface()->DrawPrintText(m_pwStrafesLabel, wcslen(m_pwStrafesLabel));
     // ---------------------
 
     // --- AVG SYNC ---
@@ -158,23 +164,15 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uSyncUnicode = g_pVGuiLocalize->Find("#MOM_AvgSync");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uSyncUnicode ? uSyncUnicode : L"#MOM_AvgSync", syncLocalized, BUFSIZELOCL);
 
-    Q_snprintf(m_pszStringSync, sizeof(m_pszStringSync), "%s %f",
+    Q_snprintf(m_pszAvgSync, sizeof(m_pszStringSyncLabel), "%.2f", m_flAvgSync); //convert floating point avg sync to 2 decimal place string
+    Q_snprintf(m_pszStringSyncLabel, sizeof(m_pszStringSyncLabel), "%s %s",
         syncLocalized, // avg sync localization 
-        m_flAvgSync    // avg sync float
+        m_pszAvgSync    // avg sync float
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringSync, m_pwSync, sizeof(m_pwSync));
+        m_pszStringSyncLabel, m_pwSyncLabel, sizeof(m_pwSyncLabel));
     surface()->DrawSetTextPos(sync_xpos, sync_ypos);
-    surface()->DrawPrintText(m_pwSync, wcslen(m_pwSync));
+    surface()->DrawPrintText(m_pwSyncLabel, wcslen(m_pwSyncLabel));
     // ---------------------
 
-}
-void CHudMapFinishedDialog::OnThink()
-{
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (pPlayer)
-    {
-        //copy player's last run time to our local variable
-        strcpy(m_pszRunTime, pPlayer->m_pszLastRunTime);
-    }
 }

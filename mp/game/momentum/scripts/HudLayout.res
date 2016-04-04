@@ -35,7 +35,7 @@
                 "PaintBackgroundType" "2"
 				"TextFont"		"HudHintTextLarge"
 				"centerTime"	"1" //If true, won't use time_xpos, centering the text instead
-                "time_xpos"		"58"
+                "time_xpos"		"50"
                 "time_ypos"		"3"
 				"centerCps"		"1" //If true, won't use cps_xpos, centering the text instead
 				"cps_xpos"		"50"
@@ -102,21 +102,21 @@
 	CHudMapFinishedDialog
 	{
 		"fieldName"		"CHudMapFinishedDialog"
-		"xpos"			"c-150"
-		"ypos"			"c-150"
-		"wide"			"300"
-		"tall"			"300"
+		"xpos"			"c-75"
+		"ypos"			"c-100"
+		"wide"			"150"
+		"tall"			"90"
 		"visible"		"1"
 		"enabled"		"1"
 		"TextFont"		"Default"
-		"time_xpos"		"50"
-		"time_ypos"		"2"
-		"strafes_xpos"	"50"
-		"strafes_xpos"	"22"
-		"jumps_xpos"	"50"
-		"jumps_xpos"	"42"
-		"sync_xpos"		"50"
-		"sync_xpos"		"62"
+		"time_xpos"		"30"
+		"time_ypos"		"5"
+		"strafes_xpos"	"30"
+		"strafes_xpos"	"25"
+		"jumps_xpos"	"30"
+		"jumps_xpos"	"45"
+		"sync_xpos"		"30"
+		"sync_xpos"		"65"
 	}      
 	HudHealth [$WIN32]
 	{
