@@ -13,6 +13,7 @@ SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iLastZoom)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
+SendPropInt(SENDINFO(m_iSuccessiveBhops)),
 SendPropBool(SENDINFO(m_bPlayerInsideStartZone)),
 SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
@@ -21,11 +22,15 @@ SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
 SendPropBool(SENDINFO(m_bTimerIsRunning)),
+SendPropFloat(SENDINFO(m_flStartSpeed)),
+SendPropFloat(SENDINFO(m_flEndSpeed)),
+SendPropInt(SENDINFO(m_nTotalJumps)),
+SendPropInt(SENDINFO(m_nTotalStrafes)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop),
-DEFINE_THINKFUNC(CalculateStrafeSync),
+DEFINE_THINKFUNC(UpdateRunStats),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -70,7 +75,7 @@ void CMomentumPlayer::Spawn()
     SetNextThink(gpGlobals->curtime);
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
-    SetContextThink(&CMomentumPlayer::CalculateStrafeSync, gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+    SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
 }
 
@@ -181,15 +186,48 @@ void CMomentumPlayer::CheckForBhop()
         m_flTicksOnGround += gpGlobals->interval_per_tick;
         // true is player is on ground for less than 10 ticks, false if they are on ground for more s
         m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
+        if (!m_bDidPlayerBhop)
+            m_iSuccessiveBhops = 0;
         if (m_nButtons & IN_JUMP)
+        {
             m_flLastJumpVel = GetLocalVelocity().Length2D();
+            m_iSuccessiveBhops++;
+            m_nTotalJumps++;
+        }
     }
     else
         m_flTicksOnGround = 0;
     SetNextThink(gpGlobals->curtime, "CURTIME");
 }
-void CMomentumPlayer::CalculateStrafeSync()
+void CMomentumPlayer::UpdateRunStats()
 {
+    if (g_Timer.IsRunning())
+    {
+        if (!m_bPrevTimerRunning)
+        {
+            //Reset old run stats
+            m_nTotalStrafes = 0;
+            m_nTotalJumps = 0;
+
+            m_flStartSpeed = GetLocalVelocity().Length2D();
+            //Comapre against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
+            if (GetGroundEntity() == NULL && m_iSuccessiveBhops)
+                m_nTotalJumps++;
+        }
+        if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
+            m_nTotalStrafes++;
+        else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
+            m_nTotalStrafes++;
+    }
+    else
+    {
+        if (m_bPrevTimerRunning)
+        {
+            //Will be set on re-entry of start zone too. Shouldn't be an issue though.
+            m_flEndSpeed = GetLocalVelocity().Length2D();
+        }
+    }
+
     float velocity = GetLocalVelocity().Length2DSqr();
     if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
     {
@@ -218,6 +256,10 @@ void CMomentumPlayer::CalculateStrafeSync()
     m_qangLastAngle = EyeAngles();
     m_flLastVelocity = velocity;
     //think once per tick   
+
+    m_bPrevTimerRunning = g_Timer.IsRunning();
+    m_nPrevButtons = m_nButtons;
+
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
 }
 void CMomentumPlayer::ResetStrafeSync()
