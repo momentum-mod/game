@@ -139,7 +139,7 @@ void CHudStrafeSyncDisplay::OnThink()
 
     if (clampedStrafeSync == 0)
     {
-        digit_xpos = GetWide() / 2 - 5;
+        digit_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hNumberFont,"0") / 2;
     }
     else
     {
@@ -155,14 +155,12 @@ void CHudStrafeSyncDisplay::Paint()
     if (strafesync_type.GetInt() == 2)
     {
         SetLabelText(L"Sync 2");
-        text_xpos = 25;
     }
     else
     {
         SetLabelText(L"Sync");
-        text_xpos = 35;
     }
-
+    text_xpos = GetWide() / 2 -  UTIL_ComputeStringWidth(m_hTextFont, m_LabelText) / 2;
 }
 //////////////////////////////////////////
 //           CHudStrafeSyncBar          //
