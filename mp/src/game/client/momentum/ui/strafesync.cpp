@@ -102,7 +102,7 @@ void CHudStrafeSyncDisplay::OnThink()
                 ? m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
                 normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
-            DevLog("Variation: %f\n", m_localStrafeSync - m_flLastStrafeSync);
+
             m_lastColor = m_currentColor;
             m_flLastStrafeSync = m_localStrafeSync;
             m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;

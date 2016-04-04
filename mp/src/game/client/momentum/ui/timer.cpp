@@ -21,7 +21,7 @@ using namespace vgui;
 
 #include "tier0/memdbgon.h"
 
-#define BUFSIZETIME (sizeof("00:00:00.0000")+1)
+#define BUFSIZETIME (sizeof("00:00:00.000")+1)
 #define BUFSIZELOCL (73)
 
 static ConVar mom_timer("mom_timer", "1",
@@ -166,7 +166,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     bool started = msg.ReadOneBit();
     m_bIsRunning = started;
     m_iStartTick = (int) msg.ReadLong();
-    C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (!pPlayer)
         return;
     
@@ -199,6 +199,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         if (pPlayer != NULL)
         {
             pPlayer->EmitSound("Momentum.StopTimer");
+            strcpy(pPlayer->m_pszLastRunTime, m_pszString); //copy local ending time to player member so we can use it for other VGUI elements.
         }
 
         //MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?

@@ -25,7 +25,7 @@ using namespace vgui;
 class CHudVersionWarn : public CHudElement, public Panel
 {
     DECLARE_CLASS_SIMPLE(CHudVersionWarn, Panel);
-
+    
 public:
     CHudVersionWarn(const char *pElementName);
     virtual bool ShouldDraw()

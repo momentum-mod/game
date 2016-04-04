@@ -98,7 +98,26 @@
 		"FillColor"		"255 255 255 225"
 		"visible"		"1"
 		"enabled"		"1"
-	}    
+	}
+	CHudMapFinishedDialog
+	{
+		"fieldName"		"CHudMapFinishedDialog"
+		"xpos"			"c-150"
+		"ypos"			"c-150"
+		"wide"			"300"
+		"tall"			"300"
+		"visible"		"1"
+		"enabled"		"1"
+		"TextFont"		"Default"
+		"time_xpos"		"50"
+		"time_ypos"		"2"
+		"strafes_xpos"	"50"
+		"strafes_xpos"	"22"
+		"jumps_xpos"	"50"
+		"jumps_xpos"	"42"
+		"sync_xpos"		"50"
+		"sync_xpos"		"62"
+	}      
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"

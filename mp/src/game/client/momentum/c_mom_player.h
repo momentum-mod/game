@@ -41,6 +41,8 @@ public:
     float m_flStrafeSync2;
     float m_flLastJumpVel;
 
+    char m_pszLastRunTime[sizeof("00:00:00.000") + 1];
+
     void GetBulletTypeParameters(
         int iBulletType,
         float &fPenetrationPower,
@@ -76,6 +78,8 @@ private:
 
     bool m_duckUntilOnGround;
     float m_flStamina;
+
+
 
     friend class CMomentumGameMovement;
 };
