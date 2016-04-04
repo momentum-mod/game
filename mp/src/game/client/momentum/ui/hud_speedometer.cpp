@@ -102,7 +102,7 @@ void CHudSpeedMeter::OnThink()
         velocity = pPlayer->GetLocalVelocity();
 
         // Remove the vertical component if necessary
-        if (!speedometer_hvel.GetBool())
+        if (speedometer_hvel.GetBool())
         {
             velocity.z = 0;
         }
