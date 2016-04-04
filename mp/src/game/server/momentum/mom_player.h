@@ -94,6 +94,8 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(float, m_flStrafeSync2Avg);
     CNetworkVar(float, m_flVelocityAvg);
     CNetworkVar(float, m_flVelocityMax);
+    CNetworkVar(bool, m_bRunSaved);
+    CNetworkVar(bool, m_bRunUploaded);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 

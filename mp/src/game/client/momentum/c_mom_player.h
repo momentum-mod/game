@@ -42,6 +42,8 @@ public:
     float m_flStrafeSyncAvg, m_flStrafeSync2Avg;
     float m_flVelocityAvg, m_flVelocityMax;
 
+    bool m_bRunSaved, m_bRunUploaded;
+
     char m_pszLastRunTime[sizeof("00:00:00.000") + 1];
 
     void GetBulletTypeParameters(

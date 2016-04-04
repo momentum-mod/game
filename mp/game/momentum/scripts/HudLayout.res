@@ -105,7 +105,7 @@
 		"xpos"			"c-125"
 		"ypos"			"c-100"
 		"wide"			"250"
-		"tall"			"100"
+		"tall"			"120"
 		"visible"		"1"
 		"enabled"		"1"
 		"TextFont"		"Default"
@@ -127,6 +127,8 @@
 		"avgvel_ypos"	"45"
 		"maxvel_xpos"	"120"
 		"maxvel_ypos"	"65"
+		"runsave_ypos"	"95"
+		"runupload_ypos""105"
 	}
 	HudHealth [$WIN32]
 	{

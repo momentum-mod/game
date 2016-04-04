@@ -72,6 +72,9 @@ void CTimer::LoadLocalTimes(const char *szMapname)
     Q_strcat(timesFilePath, szMapname, MAX_PATH);
     Q_strncat(timesFilePath, c_timesExt, MAX_PATH);
     KeyValues *timesKV = new KeyValues(szMapname);
+
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
     if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD"))
     {
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
@@ -81,11 +84,13 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.tickrate = kv->GetFloat("rate");
             t.date = (time_t) kv->GetInt("date");
             localTimes.AddToTail(t);
+            if (pPlayer) pPlayer->m_bRunUploaded = true;      
         }
     }
     else
     {
         DevLog("Failed to load local times; no local file was able to be loaded!\n");
+        if (pPlayer) pPlayer->m_bRunUploaded = false;
     }
     timesKV->deleteThis();
 }
@@ -113,14 +118,20 @@ void CTimer::SaveTime()
     Q_strcat(file, szMapName, MAX_PATH);
     Q_strncat(file, c_timesExt, MAX_PATH);
 
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
     if (timesKV->SaveToFile(filesystem, file, "MOD", true))
     {
         Log("Successfully saved new time!\n");
         IGameEvent *savedEvent = gameeventmanager->CreateEvent("runtime_saved");
         if (savedEvent)
             gameeventmanager->FireEvent(savedEvent);
+        if (pPlayer) pPlayer->m_bRunSaved = true;
     }
-
+    else
+    {
+        if (pPlayer) pPlayer->m_bRunSaved = false;
+    }
     timesKV->deleteThis();
 }
 

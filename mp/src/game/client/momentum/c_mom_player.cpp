@@ -29,6 +29,8 @@ RecvPropFloat(RECVINFO(m_flStrafeSyncAvg)),
 RecvPropFloat(RECVINFO(m_flStrafeSync2Avg)),
 RecvPropFloat(RECVINFO(m_flVelocityAvg)),
 RecvPropFloat(RECVINFO(m_flVelocityMax)),
+RecvPropBool(RECVINFO(m_bRunSaved)),
+RecvPropBool(RECVINFO(m_bRunUploaded)),
 //RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
 //RecvPropBool(RECVINFO(m_fIsSprinting)),
 END_RECV_TABLE()

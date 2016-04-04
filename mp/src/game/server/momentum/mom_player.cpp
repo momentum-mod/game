@@ -32,6 +32,8 @@ SendPropFloat(SENDINFO(m_flStrafeSyncAvg)),
 SendPropFloat(SENDINFO(m_flStrafeSync2Avg)),
 SendPropFloat(SENDINFO(m_flVelocityAvg)),
 SendPropFloat(SENDINFO(m_flVelocityMax)),
+SendPropBool(SENDINFO(m_bRunSaved)),
+SendPropBool(SENDINFO(m_bRunUploaded)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -203,7 +205,8 @@ void CMomentumPlayer::CheckForBhop()
         {
             m_flLastJumpVel = GetLocalVelocity().Length2D();
             m_iSuccessiveBhops++;
-            m_nTotalJumps++;
+            if (g_Timer.IsRunning())
+                m_nTotalJumps++;
         }
     }
     else

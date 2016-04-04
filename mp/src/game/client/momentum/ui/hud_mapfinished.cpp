@@ -89,6 +89,10 @@ protected:
         "proportional_float");
     CPanelAnimationVarAliasType(float, maxvel_ypos, "maxvel_ypos", "65",
         "proportional_float");
+    CPanelAnimationVarAliasType(float, runsave_ypos, "runsave_ypos", "65",
+        "proportional_float");
+    CPanelAnimationVarAliasType(float, runupload_ypos, "runupload_ypos", "65",
+        "proportional_float");
 
 private:
     wchar_t m_pwTimeLabel[BUFSIZELOCL];
@@ -109,6 +113,15 @@ private:
     char m_pszAvgSpeedLabel[BUFSIZELOCL];
     wchar_t m_pwMaxSpeedLabel[BUFSIZELOCL];
     char m_pszMaxSpeedLabel[BUFSIZELOCL];
+
+    wchar_t m_pwRunSavedLabel[BUFSIZELOCL];
+    char m_pszRunSavedLabel[BUFSIZELOCL];
+    wchar_t m_pwRunNotSavedLabel[BUFSIZELOCL];
+    char m_pszRunNotSavedLabel[BUFSIZELOCL];
+    wchar_t m_pwRunUploadedLabel[BUFSIZELOCL];
+    char m_pszRunUploadedLabel[BUFSIZELOCL];
+    wchar_t m_pwRunNotUploadedLabel[BUFSIZELOCL];
+    char m_pszRunNotUploadedLabel[BUFSIZELOCL];
 
     char m_pszRunTime[BUFSIZETIME];
     char m_pszAvgSync[BUFSIZELOCL], m_pszAvgSync2[BUFSIZELOCL];
@@ -230,8 +243,8 @@ void CHudMapFinishedDialog::Paint()
 
     m_flStartSpeed = pPlayer->m_flStartSpeed;
     Q_snprintf(m_pszStartSpeedLabel, sizeof(m_pszStartSpeedLabel), "%s %f",
-        startVelLocalized, // avg sync localization 
-        m_flStartSpeed    // avg sync float
+        startVelLocalized,
+        m_flStartSpeed    
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStartSpeedLabel, m_pwStartSpeedLabel, sizeof(m_pwStartSpeedLabel));
@@ -246,8 +259,8 @@ void CHudMapFinishedDialog::Paint()
 
     m_flEndSpeed = pPlayer->m_flEndSpeed;
     Q_snprintf(m_pszEndSpeedLabel, sizeof(m_pszEndSpeedLabel), "%s %f",
-        endVelLocalized, // avg sync localization 
-        m_flEndSpeed    // avg sync float
+        endVelLocalized,
+        m_flEndSpeed    
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszEndSpeedLabel, m_pwEndSpeedLabel, sizeof(m_pwEndSpeedLabel));
@@ -262,8 +275,8 @@ void CHudMapFinishedDialog::Paint()
 
     m_flAvgSpeed = pPlayer->m_flVelocityAvg;
     Q_snprintf(m_pszAvgSpeedLabel, sizeof(m_pszAvgSpeedLabel), "%s %f",
-        avgVelLocalized, // avg sync localization 
-        m_flAvgSpeed    // avg sync float
+        avgVelLocalized, 
+        m_flAvgSpeed    
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszAvgSpeedLabel, m_pwAvgSpeedLabel, sizeof(m_pwAvgSpeedLabel));
@@ -278,12 +291,67 @@ void CHudMapFinishedDialog::Paint()
 
     m_flMaxSpeed = pPlayer->m_flVelocityMax;
     Q_snprintf(m_pszMaxSpeedLabel, sizeof(m_pszMaxSpeedLabel), "%s %f",
-        maxVelLocalized, // max sync localization 
-        m_flMaxSpeed    // max sync float
+        maxVelLocalized, 
+        m_flMaxSpeed    
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszMaxSpeedLabel, m_pwMaxSpeedLabel, sizeof(m_pwMaxSpeedLabel));
     surface()->DrawSetTextPos(maxvel_xpos, maxvel_ypos);
     surface()->DrawPrintText(m_pwMaxSpeedLabel, wcslen(m_pwAvgSpeedLabel));
     // ---------------------
+
+    // --- RUN SAVING NOTIFICATION ---
+    char runSaveLocalized[BUFSIZELOCL];
+    wchar_t *urunSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunSaved");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunSaveUnicode ? urunSaveUnicode : L"#MOM_RunSaved", runSaveLocalized, BUFSIZELOCL);
+
+    char runNotSaveLocalized[BUFSIZELOCL];
+    wchar_t *urunNotSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunNotSaved");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotSaveUnicode ? urunNotSaveUnicode : L"#MOM_RunNotSaved", runNotSaveLocalized, BUFSIZELOCL);
+
+    char runUploadLocalized[BUFSIZELOCL];
+    wchar_t *urunUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunUploaded");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunUploadUnicode ? urunUploadUnicode : L"#MOM_RunUploaded", runUploadLocalized, BUFSIZELOCL);
+
+    char runNotUploadLocalized[BUFSIZELOCL];
+    wchar_t *urunNotUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunNotUploaded");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotUploadUnicode ? urunNotUploadUnicode : L"#MOM_RunNotUploaded", runNotUploadLocalized, BUFSIZELOCL);
+
+    // -- run save --
+    Q_snprintf(pPlayer->m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
+        pPlayer->m_bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
+        pPlayer->m_bRunSaved ? runSaveLocalized : runNotSaveLocalized);
+
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        pPlayer->m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
+        pPlayer->m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
+        pPlayer->m_bRunSaved ? sizeof(m_pwRunSavedLabel) : sizeof(m_pwRunNotSavedLabel));
+
+    int save_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, 
+        pPlayer->m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel) / 2; //center label
+
+    surface()->DrawSetTextPos(save_text_xpos, runsave_ypos);
+    surface()->DrawSetTextColor(pPlayer->m_bRunSaved ? GetFgColor() : COLOR_RED);
+    surface()->DrawPrintText(pPlayer->m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
+        pPlayer->m_bRunSaved ? wcslen(m_pwRunSavedLabel) : wcslen(m_pwRunNotSavedLabel));
+    // ----------------
+    // -- run upload --
+    Q_snprintf(pPlayer->m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel, 
+        pPlayer->m_bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
+        pPlayer->m_bRunUploaded ? runUploadLocalized : runNotUploadLocalized);
+
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        pPlayer->m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
+        pPlayer->m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
+        pPlayer->m_bRunUploaded ? sizeof(m_pwRunUploadedLabel) : sizeof(m_pwRunNotUploadedLabel));
+
+    int upload_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont,
+        pPlayer->m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel) / 2; //center label
+
+    surface()->DrawSetTextPos(upload_text_xpos, runupload_ypos);
+    surface()->DrawSetTextColor(pPlayer->m_bRunUploaded ? GetFgColor() : COLOR_RED);
+    surface()->DrawPrintText(pPlayer->m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
+        pPlayer->m_bRunUploaded ? wcslen(m_pwRunUploadedLabel) : wcslen(m_pwRunNotUploadedLabel));
+    // ----------------
+    // ------------------------------
 }
