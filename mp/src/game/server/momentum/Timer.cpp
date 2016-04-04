@@ -15,6 +15,7 @@ void CTimer::Start(int start)
 
 void CTimer::PostTime()
 {
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
         //Get required info 
@@ -24,19 +25,19 @@ void CTimer::PostTime()
         int ticks = gpGlobals->tickcount - m_iStartTick;
 
         TickSet::Tickrate tickRate = TickSet::GetCurrentTickrate();
-
+        
         //Build URL
         char webURL[512];
         Q_snprintf(webURL, 512, "http://momentum-mod.org/postscore/%llu/%s/%i/%s", steamID, map,
             ticks, tickRate.sType);
 
         DevLog("Ticks sent to server: %i\n", ticks);
-
         //Build request
         mom_UTIL.PostTime(webURL);
     }
     else
     {
+        if (pPlayer) pPlayer->m_bRunUploaded = false;
         Warning("Failed to post scores online: Cannot access STEAM HTTP or Steam User!\n");
     }
 }
@@ -73,8 +74,6 @@ void CTimer::LoadLocalTimes(const char *szMapname)
     Q_strncat(timesFilePath, c_timesExt, MAX_PATH);
     KeyValues *timesKV = new KeyValues(szMapname);
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
     if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD"))
     {
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
@@ -84,13 +83,11 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.tickrate = kv->GetFloat("rate");
             t.date = (time_t) kv->GetInt("date");
             localTimes.AddToTail(t);
-            if (pPlayer) pPlayer->m_bRunUploaded = true;      
         }
     }
     else
     {
         DevLog("Failed to load local times; no local file was able to be loaded!\n");
-        if (pPlayer) pPlayer->m_bRunUploaded = false;
     }
     timesKV->deleteThis();
 }
@@ -102,12 +99,22 @@ void CTimer::SaveTime()
     KeyValues *timesKV = new KeyValues(szMapName);
     int count = localTimes.Count();
 
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
     for (int i = 0; i < count; i++)
     {
         Time t = localTimes[i];
         char timeName[512];
         Q_snprintf(timeName, 512, "%i", t.ticks);
         KeyValues *pSubkey = new KeyValues(timeName);
+        pSubkey->SetInt("jumps", pPlayer->m_nTotalJumps);
+        pSubkey->SetInt("strafes", pPlayer->m_nTotalStrafes);
+        pSubkey->SetFloat("avgsync", pPlayer->m_flStrafeSyncAvg);
+        pSubkey->SetFloat("avgsync2", pPlayer->m_flStrafeSync2Avg);
+        pSubkey->SetFloat("startvel", pPlayer->m_flStartSpeed);
+        pSubkey->SetFloat("endvel", pPlayer->m_flEndSpeed);
+        pSubkey->SetFloat("avgvel", pPlayer->m_flVelocityAvg);
+        pSubkey->SetFloat("maxvel", pPlayer->m_flVelocityMax);
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
         timesKV->AddSubKey(pSubkey);
@@ -117,8 +124,6 @@ void CTimer::SaveTime()
     Q_strcpy(file, c_mapDir);
     Q_strcat(file, szMapName, MAX_PATH);
     Q_strncat(file, c_timesExt, MAX_PATH);
-
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     if (timesKV->SaveToFile(filesystem, file, "MOD", true))
     {
