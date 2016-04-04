@@ -31,6 +31,7 @@ public:
     int m_iLastZoom;
     bool m_bAutoBhop;
     bool m_bDidPlayerBhop;
+	int m_iSuccessiveBhops;
     bool m_bPlayerInsideStartZone;
     bool m_bPlayerInsideEndZone;
     bool m_bHasPracticeMode;

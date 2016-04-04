@@ -77,6 +77,7 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(int, m_iLastZoom);
     CNetworkVar(bool, m_bAutoBhop);
     CNetworkVar(bool, m_bDidPlayerBhop);
+	CNetworkVar(int, m_iSuccessiveBhops);
     CNetworkVar(bool, m_bPlayerInsideStartZone);
     CNetworkVar(bool, m_bPlayerInsideEndZone);
     CNetworkVar(bool, m_bHasPracticeMode);
@@ -120,7 +121,6 @@ class CMomentumPlayer : public CBasePlayer
     //for strafe sync
     float m_flLastVelocity;
     QAngle m_qangLastAngle;
-
     int m_nPerfectSyncTicks;
     int m_nStrafeTicks;
     int m_nAccelTicks;

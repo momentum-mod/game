@@ -13,6 +13,7 @@ SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iLastZoom)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
+SendPropBool(SENDINFO(m_iSuccessiveBhops)),
 SendPropBool(SENDINFO(m_bPlayerInsideStartZone)),
 SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
@@ -176,13 +177,18 @@ void CMomentumPlayer::DisableAutoBhop()
 }
 void CMomentumPlayer::CheckForBhop()
 {
-    if (GetGroundEntity() != NULL)
-    {
-        m_flTicksOnGround += gpGlobals->interval_per_tick;
-        // true is player is on ground for less than 10 ticks, false if they are on ground for more s
-        m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
-        if (m_nButtons & IN_JUMP)
-            m_flLastJumpVel = GetLocalVelocity().Length2D();
+	if (GetGroundEntity() != NULL)
+	{
+		m_flTicksOnGround += gpGlobals->interval_per_tick;
+		// true is player is on ground for less than 10 ticks, false if they are on ground for more s
+		m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
+		if (!m_bDidPlayerBhop)
+			m_iSuccessiveBhops = 0;
+		if (m_nButtons & IN_JUMP)
+		{
+			m_flLastJumpVel = GetLocalVelocity().Length2D();
+			m_iSuccessiveBhops++;
+		}
     }
     else
         m_flTicksOnGround = 0;
