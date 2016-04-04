@@ -75,6 +75,7 @@ public:
     float m_flEndSpeed;
     int m_nTotalJumps;
     int m_nTotalStrafes;
+    int m_iSuccessiveBhops;
 
 private:
     CountdownTimer m_ladderSurpressionTimer;
