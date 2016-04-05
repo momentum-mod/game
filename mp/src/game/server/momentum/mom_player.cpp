@@ -249,7 +249,7 @@ void CMomentumPlayer::UpdateRunStats()
     }
     
     //  ---- STRAFE SYNC -----
-    float SyncVelocity = GetLocalVelocity().Length2D(); //we always want HVEL for checking velocity sync
+    float SyncVelocity = GetLocalVelocity().Length2DSqr(); //we always want HVEL for checking velocity sync
     if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
     {
         if (EyeAngles().y > m_qangLastAngle.y) //player turned left 

@@ -41,9 +41,14 @@ public:
     virtual void Reset()
     {
         //default values
-        m_flAvgSync = 0;
         m_iTotalStrafes = 0;
         m_iTotalJumps = 0;
+        m_flAvgSpeed = 0;
+        m_flEndSpeed = 0;
+        m_flStartSpeed = 0;
+        m_flMaxSpeed = 0;
+        m_flAvgSync = 0;
+        m_flAvgSync2 = 0;
         strcpy(m_pszRunTime, "00:00:00.000"); 
     }
     virtual void ApplySchemeSettings(IScheme *pScheme)

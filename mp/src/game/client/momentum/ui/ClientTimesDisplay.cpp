@@ -458,21 +458,19 @@ void CClientTimesDisplay::AddHeader(Label *pMapSummary)
     // We have to get rid of it, or at least discover why it was working for some (Goc) and not to me
     if (pMapSummary)
     {
-        char gameMode[4];
-
-        if (!Q_strnicmp(g_pGameRules->MapName(), "surf_", Q_strlen("surf_")))
+        char gameMode[5];
+        ConVarRef gm("mom_gamemode");
+        if (gm.GetInt() == MOMGM_SURF)
             Q_strcpy(gameMode, "SURF");
-        else if (!Q_strnicmp(g_pGameRules->MapName(), "bhop_", Q_strlen("bhop_")))
+        else if (gm.GetInt() == MOMGM_BHOP)
             Q_strcpy(gameMode, "BHOP");
+        else if (gm.GetInt() == MOMGM_SCROLL)
+            Q_strcpy(gameMode, "SCROLL");
         else
             Q_strcpy(gameMode, "????");
 
-        //MOM_TODO: There'll probably be official gametypes later on in mod development
-        //We'll have some sort of shared class or global setting that we will use to determine
-        //what game mode we're on (mom_UTIL.GameMode() or something)
-
         char mapSummary[64];
-        Q_snprintf(mapSummary, 64, "%s || %s", gameMode, g_pGameRules->MapName());
+        Q_snprintf(mapSummary, 64, "%s | %s", gameMode, g_pGameRules->MapName());
         pMapSummary->SetText(mapSummary);
     }
 }
