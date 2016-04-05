@@ -6,6 +6,7 @@
 #include "mom_player_shared.h"
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
+#include "mom_event_listener.h"
 #include <math.h>
 
 using namespace vgui;
@@ -40,7 +41,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     bool ShouldDraw()
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && pPlayer->m_bTimerIsRunning;
+        return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && m_eventListener->m_bTimerIsRunning;
     }
     virtual void Reset()
     {
@@ -72,6 +73,8 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     Color normalColor, increaseColor, decreaseColor;
 
     float digit_xpos_initial;
+    C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
+
 };
 
 DECLARE_HUDELEMENT(CHudStrafeSyncDisplay);
@@ -175,7 +178,7 @@ class CHudStrafeSyncBar : public CHudFillableBar
     bool ShouldDraw()
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return (pPlayer && strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && pPlayer->m_bTimerIsRunning);
+        return (pPlayer && strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && m_eventListener->m_bTimerIsRunning);
     }
     virtual void Reset()
     {
@@ -204,6 +207,8 @@ class CHudStrafeSyncBar : public CHudFillableBar
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
+    C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
+
 };
 
 DECLARE_HUDELEMENT(CHudStrafeSyncBar);

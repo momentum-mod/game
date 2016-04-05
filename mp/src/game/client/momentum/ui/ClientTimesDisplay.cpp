@@ -110,9 +110,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     m_iDesiredHeight = GetTall();
     m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
 
-    // update scoreboard instantly if on of these events occure
-    ListenForGameEvent("runtime_saved");
-    ListenForGameEvent("runtime_posted");
+    // update scoreboard instantly if on of these events occur
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+    ListenForGameEvent("map_finished");
     ListenForGameEvent("game_newmap");
 
     m_pImageList = NULL;

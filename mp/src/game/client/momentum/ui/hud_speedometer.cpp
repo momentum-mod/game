@@ -5,6 +5,7 @@
 #include "mom_player_shared.h"
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
+#include "mom_event_listener.h"
 #include <math.h>
 
 using namespace vgui;
@@ -79,6 +80,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
+    //C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
 };
 
 DECLARE_HUDELEMENT(CHudSpeedMeter);
@@ -147,8 +149,8 @@ void CHudSpeedMeter::OnThink()
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
             //reset last jump velocity when we restart a run by entering the start zone 
-            if (pPlayer->m_bPlayerInsideStartZone)
-                m_flLastJumpVelocity = 0;
+            //if (m_eventListener->m_bPlayerInsideStartZone)
+               // m_flLastJumpVelocity = 0;
             if (pPlayer->m_flLastJumpVel == 0)
             {
                 m_SecondaryValueColor = normalColor;

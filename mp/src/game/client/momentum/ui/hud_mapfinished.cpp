@@ -18,7 +18,9 @@
 #include "mom_shareddefs.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
+#include "mom_event_listener.h"
 #include "util\mom_util.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -33,7 +35,7 @@ public:
     virtual bool ShouldDraw()
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && pPlayer->m_bPlayerFinishedMap;
+        return pPlayer && m_EventListener->m_bMapFinished;
     }
     virtual void Paint();
 
@@ -133,6 +135,7 @@ private:
     int m_iTotalJumps, m_iTotalStrafes;
     float m_flAvgSync, m_flAvgSync2;
     float m_flStartSpeed, m_flEndSpeed, m_flAvgSpeed, m_flMaxSpeed;
+    C_Momentum_EventListener *m_EventListener = new C_Momentum_EventListener();
 };
 
 DECLARE_HUDELEMENT(CHudMapFinishedDialog);
@@ -212,7 +215,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uSyncUnicode = g_pVGuiLocalize->Find("#MOM_AvgSync");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uSyncUnicode ? uSyncUnicode : L"#MOM_AvgSync", syncLocalized, BUFSIZELOCL);
 
-    m_flAvgSync = pPlayer->m_flStrafeSyncAvg;
+    m_flAvgSync = m_EventListener->m_flStrafeSyncAvg;
     Q_snprintf(m_pszAvgSync, sizeof(m_pszStringSyncLabel), "%.2f", m_flAvgSync); //convert floating point avg sync to 2 decimal place string
     Q_snprintf(m_pszStringSyncLabel, sizeof(m_pszStringSyncLabel), "%s %s",
         syncLocalized, // avg sync localization 
@@ -229,7 +232,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uSync2Unicode = g_pVGuiLocalize->Find("#MOM_AvgSync2");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uSync2Unicode ? uSync2Unicode : L"#MOM_AvgSync2", sync2Localized, BUFSIZELOCL);
 
-    m_flAvgSync2 = pPlayer->m_flStrafeSync2Avg;
+    m_flAvgSync2 = m_EventListener->m_flStrafeSync2Avg;
     Q_snprintf(m_pszAvgSync2, sizeof(m_pszStringSync2Label), "%.2f", m_flAvgSync2); //convert floating point avg sync to 2 decimal place string
     Q_snprintf(m_pszStringSync2Label, sizeof(m_pszStringSync2Label), "%s %s",
         sync2Localized, // avg sync localization 
@@ -246,7 +249,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uStartVelUnicode = g_pVGuiLocalize->Find("#MOM_StartVel");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uStartVelUnicode ? uStartVelUnicode : L"#MOM_StartVel", startVelLocalized, BUFSIZELOCL);
 
-    m_flStartSpeed = pPlayer->m_flStartSpeed;
+    m_flStartSpeed = m_EventListener->m_flStartSpeed;
     Q_snprintf(m_pszStartSpeedLabel, sizeof(m_pszStartSpeedLabel), "%s %f",
         startVelLocalized,
         m_flStartSpeed    
@@ -262,7 +265,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uendVelUnicode = g_pVGuiLocalize->Find("#MOM_EndVel");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uendVelUnicode ? uendVelUnicode : L"#MOM_EndVel", endVelLocalized, BUFSIZELOCL);
 
-    m_flEndSpeed = pPlayer->m_flEndSpeed;
+    m_flEndSpeed = m_EventListener->m_flEndSpeed;
     Q_snprintf(m_pszEndSpeedLabel, sizeof(m_pszEndSpeedLabel), "%s %f",
         endVelLocalized,
         m_flEndSpeed    
@@ -278,7 +281,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *uavgVelUnicode = g_pVGuiLocalize->Find("#MOM_AvgVel");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uavgVelUnicode ? uavgVelUnicode : L"#MOM_AvgVel", avgVelLocalized, BUFSIZELOCL);
 
-    m_flAvgSpeed = pPlayer->m_flVelocityAvg;
+    m_flAvgSpeed = m_EventListener->m_flVelocityAvg;
     Q_snprintf(m_pszAvgSpeedLabel, sizeof(m_pszAvgSpeedLabel), "%s %f",
         avgVelLocalized, 
         m_flAvgSpeed    
@@ -294,7 +297,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t *umaxVelUnicode = g_pVGuiLocalize->Find("#MOM_MaxVel");
     g_pVGuiLocalize->ConvertUnicodeToANSI(umaxVelUnicode ? umaxVelUnicode : L"#MOM_MaxVel", maxVelLocalized, BUFSIZELOCL);
 
-    m_flMaxSpeed = pPlayer->m_flVelocityMax;
+    m_flMaxSpeed = m_EventListener->m_flVelocityMax;
     Q_snprintf(m_pszMaxSpeedLabel, sizeof(m_pszMaxSpeedLabel), "%s %f",
         maxVelLocalized, 
         m_flMaxSpeed    
@@ -323,40 +326,42 @@ void CHudMapFinishedDialog::Paint()
     g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotUploadUnicode ? urunNotUploadUnicode : L"#MOM_RunNotUploaded", runNotUploadLocalized, BUFSIZELOCL);
 
     // -- run save --
-    Q_snprintf(pPlayer->m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
-        pPlayer->m_bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
-        pPlayer->m_bRunSaved ? runSaveLocalized : runNotSaveLocalized);
+    bool bRunSaved = m_EventListener->m_bRunSaved;
+    Q_snprintf(bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
+        bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
+        bRunSaved ? runSaveLocalized : runNotSaveLocalized);
 
     g_pVGuiLocalize->ConvertANSIToUnicode(
-        pPlayer->m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
-        pPlayer->m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
-        pPlayer->m_bRunSaved ? sizeof(m_pwRunSavedLabel) : sizeof(m_pwRunNotSavedLabel));
+        bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
+        bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
+        bRunSaved ? sizeof(m_pwRunSavedLabel) : sizeof(m_pwRunNotSavedLabel));
 
     int save_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, 
-        pPlayer->m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel) / 2; //center label
+        bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel) / 2; //center label
 
     surface()->DrawSetTextPos(save_text_xpos, runsave_ypos);
-    surface()->DrawSetTextColor(pPlayer->m_bRunSaved ? GetFgColor() : COLOR_RED);
-    surface()->DrawPrintText(pPlayer->m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
-        pPlayer->m_bRunSaved ? wcslen(m_pwRunSavedLabel) : wcslen(m_pwRunNotSavedLabel));
+    surface()->DrawSetTextColor(bRunSaved ? GetFgColor() : COLOR_RED);
+    surface()->DrawPrintText(bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
+        bRunSaved ? wcslen(m_pwRunSavedLabel) : wcslen(m_pwRunNotSavedLabel));
     // ----------------
     // -- run upload --
-    Q_snprintf(pPlayer->m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel, 
-        pPlayer->m_bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
-        pPlayer->m_bRunUploaded ? runUploadLocalized : runNotUploadLocalized);
+    bool bRunUploaded = m_EventListener->m_bRunUploaded;
+    Q_snprintf(bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel, 
+        bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
+        bRunUploaded ? runUploadLocalized : runNotUploadLocalized);
 
     g_pVGuiLocalize->ConvertANSIToUnicode(
-        pPlayer->m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
-        pPlayer->m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
-        pPlayer->m_bRunUploaded ? sizeof(m_pwRunUploadedLabel) : sizeof(m_pwRunNotUploadedLabel));
+        bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
+        bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
+        bRunUploaded ? sizeof(m_pwRunUploadedLabel) : sizeof(m_pwRunNotUploadedLabel));
 
     int upload_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont,
-        pPlayer->m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel) / 2; //center label
+        bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel) / 2; //center label
 
     surface()->DrawSetTextPos(upload_text_xpos, runupload_ypos);
-    surface()->DrawSetTextColor(pPlayer->m_bRunUploaded ? GetFgColor() : COLOR_RED);
-    surface()->DrawPrintText(pPlayer->m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
-        pPlayer->m_bRunUploaded ? wcslen(m_pwRunUploadedLabel) : wcslen(m_pwRunNotUploadedLabel));
+    surface()->DrawSetTextColor(bRunUploaded ? GetFgColor() : COLOR_RED);
+    surface()->DrawPrintText(bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel, 
+        bRunUploaded ? wcslen(m_pwRunUploadedLabel) : wcslen(m_pwRunNotUploadedLabel));
     // ----------------
     // ------------------------------
 }

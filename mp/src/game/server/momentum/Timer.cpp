@@ -15,7 +15,6 @@ void CTimer::Start(int start)
 
 void CTimer::PostTime()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
         //Get required info 
@@ -37,7 +36,6 @@ void CTimer::PostTime()
     }
     else
     {
-        if (pPlayer) pPlayer->m_bRunUploaded = false;
         Warning("Failed to post scores online: Cannot access STEAM HTTP or Steam User!\n");
     }
 }
@@ -103,11 +101,11 @@ void CTimer::LoadLocalTimes(const char *szMapname)
 //Called every time a new time is achieved
 void CTimer::SaveTime()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
     const char *szMapName = gpGlobals->mapname.ToCStr();
     KeyValues *timesKV = new KeyValues(szMapName);
     int count = localTimes.Count();
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("map_finished");
 
     for (int i = 0; i < count; i++)
     {
@@ -133,17 +131,17 @@ void CTimer::SaveTime()
     Q_strcat(file, szMapName, MAX_PATH);
     Q_strncat(file, c_timesExt, MAX_PATH);
 
-    if (timesKV->SaveToFile(filesystem, file, "MOD", true))
+    if (timesKV->SaveToFile(filesystem, file, "MOD", true) && timerStopEvent)
     {
+        timerStopEvent->SetBool("did_save", true);
+        gameeventmanager->FireEvent(timerStopEvent);
         Log("Successfully saved new time!\n");
-        IGameEvent *savedEvent = gameeventmanager->CreateEvent("runtime_saved");
-        if (savedEvent)
-            gameeventmanager->FireEvent(savedEvent);
-        if (pPlayer) pPlayer->m_bRunSaved = true;
+        //initialize events resource file
     }
-    else
+    else if (timerStopEvent)
     {
-        if (pPlayer) pPlayer->m_bRunSaved = false;
+        timerStopEvent->SetBool("did_save", false);
+        gameeventmanager->FireEvent(timerStopEvent);
     }
     timesKV->deleteThis();
 }

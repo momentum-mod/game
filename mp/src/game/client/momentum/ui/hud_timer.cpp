@@ -229,7 +229,10 @@ void C_Timer::MsgFunc_Timer_StageCount(bf_read &msg)
 }
 int C_Timer::GetCurrentTime()
 {
-    m_iTotalTicks = gpGlobals->tickcount - m_iStartTick;
+    //HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
+    //so we add an extra tick here to make them line up again
+    if (m_bIsRunning)
+        m_iTotalTicks = gpGlobals->tickcount - m_iStartTick + 1;
     return m_iTotalTicks;
 }
 

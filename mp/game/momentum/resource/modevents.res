@@ -27,25 +27,25 @@
 
 "modevents"
 {
-	"player_death"				// a game event, name may be 32 charaters long
+	"map_finished"
 	{
-		"userid"	"short"   	// user ID who died				
-		"attacker"	"short"	 	// user ID who killed
-		"weapon"	"string" 	// weapon name killed used 
+		"avg_sync"	"float"
+		"avg_sync2"	"float"
+		"avg_vel"	"float"
+		"max_vel"	"float"
+		"start_vel"	"float"
+		"end_vel"	"float"
+		"did_save"	"bool"
+		"did_post"	"bool"
 	}
-	
-	"teamplay_round_start"			// round restart
+	"timer_started"
 	{
-		"full_reset"	"bool"		// is this a full reset of the map
+		"timer_isrunning"	"bool"
 	}
-	
-	"spec_target_updated"
+	"player_inside_mapzone"
 	{
-	}
-	
-	"achievement_earned"
-	{
-		"player"	"byte"		// entindex of the player
-		"achievement"	"short"		// achievement ID
+		"inside_startzone"	"bool"
+		"inside_endzone"	"bool"
+		"map_finished"	"bool"
 	}
 }

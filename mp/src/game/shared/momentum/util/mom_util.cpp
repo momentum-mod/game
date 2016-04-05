@@ -39,8 +39,6 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
     JsonValue val;//Outer object
     JsonAllocator alloc;
     char* pDataPtr = reinterpret_cast<char*>(pData);
@@ -63,10 +61,14 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
             {
                 DevLog("RESPONSE WAS TRUE!\n");
                 // Necesary so TimeDisplay scoreboard knows it has to update;
-                IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
-                pPlayer->m_bRunUploaded = true;
-                if (postEvent)
-                    gameeventmanager->FireEvent(postEvent);
+                gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+                IGameEvent *mapFinishedEvent = gameeventmanager->CreateEvent("map_finished");
+                if (mapFinishedEvent)
+                {
+                    mapFinishedEvent->SetBool("did_post", true);
+                    gameeventmanager->FireEvent(mapFinishedEvent);
+                }
+                    
 
                 //MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
             }
@@ -75,7 +77,6 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     else
     {
         Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-        pPlayer->m_bRunUploaded = false;
     }
     //Last but not least, free resources
     alloc.deallocate();
@@ -114,7 +115,6 @@ void MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<MomentumU
 {
     HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
     SteamAPICall_t apiHandle;
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
     {
@@ -122,7 +122,6 @@ void MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<MomentumU
     }
     else
     {
-        pPlayer->m_bRunUploaded = false;
         Warning("Failed to send HTTP Request to post scores online!\n");
         steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle);//GC
     }

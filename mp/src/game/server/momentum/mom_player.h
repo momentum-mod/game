@@ -78,24 +78,12 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bAutoBhop);
     CNetworkVar(bool, m_bDidPlayerBhop);
     CNetworkVar(int, m_iSuccessiveBhops);
-    CNetworkVar(bool, m_bPlayerInsideStartZone);
-    CNetworkVar(bool, m_bPlayerInsideEndZone);
     CNetworkVar(bool, m_bHasPracticeMode);
-    CNetworkVar(bool, m_bPlayerFinishedMap);
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
     CNetworkVar(float, m_flLastJumpVel);
-    CNetworkVar(bool , m_bTimerIsRunning);
-    CNetworkVar(float, m_flStartSpeed);
-    CNetworkVar(float, m_flEndSpeed);
     CNetworkVar(int, m_nTotalJumps);
     CNetworkVar(int, m_nTotalStrafes);
-    CNetworkVar(float, m_flStrafeSyncAvg); 
-    CNetworkVar(float, m_flStrafeSync2Avg);
-    CNetworkVar(float, m_flVelocityAvg);
-    CNetworkVar(float, m_flVelocityMax);
-    CNetworkVar(bool, m_bRunSaved);
-    CNetworkVar(bool, m_bRunUploaded);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -113,7 +101,10 @@ class CMomentumPlayer : public CBasePlayer
     int GetLastBlock() { return m_iLastBlock; }
     float GetPunishTime() { return m_flPunishTime; }
 
-  private:
+    //stats: gets transmitted via IGameEvent
+    float m_flStartSpeed, m_flEndSpeed, m_flVelocityMax, m_flVelocityAvg, m_flStrafeSyncAvg, m_flStrafeSync2Avg;
+
+private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
@@ -141,5 +132,6 @@ class CMomentumPlayer : public CBasePlayer
     //for average stats
     int m_nAvgCount;
     float m_flTotalSync, m_flTotalSync2, m_flTotalVelocity;
+
 };
 #endif // MOMPLAYER_H

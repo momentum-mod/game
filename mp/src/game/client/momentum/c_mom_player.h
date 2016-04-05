@@ -31,18 +31,10 @@ public:
     int m_iLastZoom;
     bool m_bAutoBhop;
     bool m_bDidPlayerBhop;
-    bool m_bPlayerInsideStartZone;
-    bool m_bPlayerInsideEndZone;
     bool m_bHasPracticeMode;
-    bool m_bPlayerFinishedMap;
-    bool m_bTimerIsRunning;
 
     float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;
-    float m_flStrafeSyncAvg, m_flStrafeSync2Avg;
-    float m_flVelocityAvg, m_flVelocityMax;
-
-    bool m_bRunSaved, m_bRunUploaded;
 
     char m_pszLastRunTime[sizeof("00:00:00.000") + 1];
 

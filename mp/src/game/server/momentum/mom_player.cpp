@@ -16,24 +16,12 @@ SendPropInt(SENDINFO(m_iLastZoom)),
 SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
 SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-SendPropBool(SENDINFO(m_bPlayerInsideStartZone)),
-SendPropBool(SENDINFO(m_bPlayerInsideEndZone)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
-SendPropBool(SENDINFO(m_bPlayerFinishedMap)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
-SendPropBool(SENDINFO(m_bTimerIsRunning)),
-SendPropFloat(SENDINFO(m_flStartSpeed)),
-SendPropFloat(SENDINFO(m_flEndSpeed)),
 SendPropInt(SENDINFO(m_nTotalJumps)),
 SendPropInt(SENDINFO(m_nTotalStrafes)),
-SendPropFloat(SENDINFO(m_flStrafeSyncAvg)),
-SendPropFloat(SENDINFO(m_flStrafeSync2Avg)),
-SendPropFloat(SENDINFO(m_flVelocityAvg)),
-SendPropFloat(SENDINFO(m_flVelocityMax)),
-SendPropBool(SENDINFO(m_bRunSaved)),
-SendPropBool(SENDINFO(m_bRunUploaded)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -283,9 +271,6 @@ void CMomentumPlayer::UpdateRunStats()
 
     m_bPrevTimerRunning = g_Timer.IsRunning();
     m_nPrevButtons = m_nButtons;
-
-    //USE: send info about timer to client class
-    m_bTimerIsRunning = g_Timer.IsRunning();
 
     //think once per tick   
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");

@@ -28,6 +28,7 @@ enum {
     SF_PUSH_ONSTART = 0x0400,                // Modify player velocity on StartTouch
     SF_PUSH_ONEND = 0x0800,                  // Modify player velocity on EndTouch
 };
+
 // CBaseMomentumTrigger
 class CBaseMomentumTrigger : public CTriggerMultiple
 {
