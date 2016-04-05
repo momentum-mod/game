@@ -235,6 +235,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
     IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
+    ConVarRef hvel("mom_speedometer_hvel");
 
     BaseClass::StartTouch(pOther);
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
@@ -249,7 +250,8 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             timerStopEvent->SetFloat("avg_vel", pPlayer->m_flVelocityAvg);
             timerStopEvent->SetFloat("max_vel", pPlayer->m_flVelocityMax);
             timerStopEvent->SetFloat("start_vel", pPlayer->m_flStartSpeed);
-            timerStopEvent->SetFloat("end_vel", pPlayer->GetLocalVelocity().Length2D()); //set end speed to whatever our velocity is on this tick
+            timerStopEvent->SetFloat("end_vel", 
+                hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length()); 
             gameeventmanager->FireEvent(timerStopEvent);
         }
         if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running

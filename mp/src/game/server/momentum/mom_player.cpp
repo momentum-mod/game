@@ -33,7 +33,6 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
-ConVarRef hvel("mom_speedometer_hvel");
 
 CMomentumPlayer::CMomentumPlayer()
 {
@@ -204,6 +203,7 @@ void CMomentumPlayer::CheckForBhop()
 void CMomentumPlayer::UpdateRunStats()
 {
     //should velocity be XY or XYZ?
+    ConVarRef hvel("mom_speedometer_hvel");
     float velocity = hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
 
     if (g_Timer.IsRunning())
@@ -212,7 +212,7 @@ void CMomentumPlayer::UpdateRunStats()
         {    
             //Reset old run stats
             ResetRunStats();
-            m_flStartSpeed = GetLocalVelocity().Length2D(); //prestrafe should always be XY
+            m_flStartSpeed = GetLocalVelocity().Length2D(); //prestrafe should always be XY only
             //Comapre against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
             if (GetGroundEntity() == NULL && m_iSuccessiveBhops)
                 m_nTotalJumps++;
@@ -287,6 +287,8 @@ void CMomentumPlayer::ResetRunStats()
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
+    ConVarRef hvel("mom_speedometer_hvel");
+
     if (g_Timer.IsRunning())
     {
         m_flTotalSync += m_flStrafeSync;
