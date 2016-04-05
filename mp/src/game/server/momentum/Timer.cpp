@@ -105,7 +105,7 @@ void CTimer::SaveTime()
     KeyValues *timesKV = new KeyValues(szMapName);
     int count = localTimes.Count();
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
-    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("map_finished");
+    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
 
     for (int i = 0; i < count; i++)
     {
@@ -131,17 +131,12 @@ void CTimer::SaveTime()
     Q_strcat(file, szMapName, MAX_PATH);
     Q_strncat(file, c_timesExt, MAX_PATH);
 
-    if (timesKV->SaveToFile(filesystem, file, "MOD", true) && timerStopEvent)
+    if (timesKV->SaveToFile(filesystem, file, "MOD", true) && runSaveEvent)
     {
-        timerStopEvent->SetBool("did_save", true);
-        gameeventmanager->FireEvent(timerStopEvent);
+        runSaveEvent->SetBool("run_saved", true);
+        gameeventmanager->FireEvent(runSaveEvent);
         Log("Successfully saved new time!\n");
         //initialize events resource file
-    }
-    else if (timerStopEvent)
-    {
-        timerStopEvent->SetBool("did_save", false);
-        gameeventmanager->FireEvent(timerStopEvent);
     }
     timesKV->deleteThis();
 }
@@ -149,6 +144,8 @@ void CTimer::SaveTime()
 void CTimer::Stop(bool endTrigger /* = false */)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -173,6 +170,11 @@ void CTimer::Stop(bool endTrigger /* = false */)
         localTimes.AddToTail(t);
 
         SaveTime();
+    }
+    else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
+    {  
+        runSaveEvent->SetBool("run_saved", false);
+        gameeventmanager->FireEvent(runSaveEvent);
     }
     SetRunning(false);
     DispatchStateMessage();

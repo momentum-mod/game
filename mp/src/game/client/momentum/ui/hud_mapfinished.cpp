@@ -326,7 +326,7 @@ void CHudMapFinishedDialog::Paint()
     g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotUploadUnicode ? urunNotUploadUnicode : L"#MOM_RunNotUploaded", runNotUploadLocalized, BUFSIZELOCL);
 
     // -- run save --
-    bool bRunSaved = m_EventListener->m_bRunSaved;
+    bool bRunSaved = m_EventListener->m_bTimeDidSave;
     Q_snprintf(bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
         bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
         bRunSaved ? runSaveLocalized : runNotSaveLocalized);
@@ -345,7 +345,7 @@ void CHudMapFinishedDialog::Paint()
         bRunSaved ? wcslen(m_pwRunSavedLabel) : wcslen(m_pwRunNotSavedLabel));
     // ----------------
     // -- run upload --
-    bool bRunUploaded = m_EventListener->m_bRunUploaded;
+    bool bRunUploaded = m_EventListener->m_bTimeDidUpload;
     Q_snprintf(bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel, 
         bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
         bRunUploaded ? runUploadLocalized : runNotUploadLocalized);

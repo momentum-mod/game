@@ -27,7 +27,7 @@
 
 "modevents"
 {
-	"map_finished"
+	"timer_stopped"
 	{
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
@@ -35,8 +35,11 @@
 		"max_vel"	"float"
 		"start_vel"	"float"
 		"end_vel"	"float"
-		"did_save"	"bool"
-		"did_post"	"bool"
+	}
+	"run_save"	
+	{
+		"run_saved"	"bool"
+		"run_posted"	"bool"
 	}
 	"timer_started"
 	{

@@ -39,6 +39,9 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+    IGameEvent *mapFinishedEvent = gameeventmanager->CreateEvent("run_save");
+
     JsonValue val;//Outer object
     JsonAllocator alloc;
     char* pDataPtr = reinterpret_cast<char*>(pData);
@@ -61,17 +64,24 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
             {
                 DevLog("RESPONSE WAS TRUE!\n");
                 // Necesary so TimeDisplay scoreboard knows it has to update;
-                gameeventmanager->LoadEventsFromFile("resource/modevents.res");
-                IGameEvent *mapFinishedEvent = gameeventmanager->CreateEvent("map_finished");
                 if (mapFinishedEvent)
                 {
-                    mapFinishedEvent->SetBool("did_post", true);
+                    mapFinishedEvent->SetBool("run_posted", true);
                     gameeventmanager->FireEvent(mapFinishedEvent);
                 }
                     
 
                 //MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
             }
+            //  @tuxx: this bit of code SHOULD be changing the bool for run_posted only, but for some reason it seems to 
+            //  change the bool for run_saved as well. I can guess it's because they are in the same event, and the value was changed for
+            //  run_saved but not fired. Either way, still really annoying. 
+
+            //else if (mapFinishedEvent)
+            //{
+            //    mapFinishedEvent->SetBool("run_posted", false);
+            //    gameeventmanager->FireEvent(mapFinishedEvent);
+            //}
         }
     }
     else

@@ -112,7 +112,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
 
     // update scoreboard instantly if on of these events occur
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
-    ListenForGameEvent("map_finished");
+    ListenForGameEvent("run_save");
     ListenForGameEvent("game_newmap");
 
     m_pImageList = NULL;

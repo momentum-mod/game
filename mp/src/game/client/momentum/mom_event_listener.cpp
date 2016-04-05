@@ -6,16 +6,20 @@
 C_Momentum_EventListener::C_Momentum_EventListener()
 {
     //add listeners for all of our custom events
-    gameeventmanager->AddListener(this, "map_finished", false);
+    gameeventmanager->AddListener(this, "timer_stopped", false);
     gameeventmanager->AddListener(this, "timer_started", false);
     gameeventmanager->AddListener(this, "player_inside_mapzone", false);
+    gameeventmanager->AddListener(this, "run_save", false);
 }
 void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 {
-    if (!strcmp("map_finished", pEvent->GetName()))
+    if (!strcmp("run_save", pEvent->GetName()))
     {
-        m_bRunSaved = pEvent->GetBool("did_save");
-        m_bRunUploaded = pEvent->GetBool("did_post");
+        m_bTimeDidSave = pEvent->GetBool("run_saved");
+        m_bTimeDidUpload = pEvent->GetBool("run_posted");
+    }
+    if (!strcmp("timer_stopped", pEvent->GetName()))
+    {
         m_flStartSpeed = pEvent->GetFloat("start_vel");
         m_flEndSpeed = pEvent->GetFloat("end_vel");
         m_flStrafeSyncAvg = pEvent->GetFloat("avg_sync");
