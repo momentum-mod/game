@@ -232,7 +232,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
-    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("map_finished");
+    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
 
@@ -249,19 +249,20 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             timerStopEvent->SetFloat("avg_vel", pPlayer->m_flVelocityAvg);
             timerStopEvent->SetFloat("max_vel", pPlayer->m_flVelocityMax);
             timerStopEvent->SetFloat("start_vel", pPlayer->m_flStartSpeed);
-            timerStopEvent->SetFloat("end_vel", pPlayer->m_flEndSpeed);
+            timerStopEvent->SetFloat("end_vel", pPlayer->GetLocalVelocity().Length2D()); //set end speed to whatever our velocity is on this tick
             gameeventmanager->FireEvent(timerStopEvent);
         }
+        if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
+
     }
     if (mapZoneEvent)
     {
-        mapZoneEvent->SetBool("map_finished", true);
         mapZoneEvent->SetBool("inside_endzone", true);
         gameeventmanager->FireEvent(mapZoneEvent);
     }
     if (timerStartEvent)
     {
-        timerStartEvent->SetBool("timer_isrunning", false);
+        timerStartEvent->SetBool("timer_isrunning", false); //stop timer event
         gameeventmanager->FireEvent(timerStartEvent);
     }
         
@@ -273,7 +274,7 @@ void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     if (mapZoneEvent)
     {
-        mapZoneEvent->SetBool("map_finished", false);
+        mapZoneEvent->SetBool("map_finished", false); //once we leave endzone, we no longer want to display end stats again
         mapZoneEvent->SetBool("inside_endzone", false);
         gameeventmanager->FireEvent(mapZoneEvent);
     }    

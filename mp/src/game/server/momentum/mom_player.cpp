@@ -226,16 +226,7 @@ void CMomentumPlayer::UpdateRunStats()
         if (velocity > m_flVelocityMax)
             m_flVelocityMax = velocity;
         // ----------
-    }
-    else
-    {
-        if (m_bPrevTimerRunning)
-        {
-            //Will be set on re-entry of start zone too. Shouldn't be an issue though.
-            m_flEndSpeed = velocity; //end velocity can be XY or XYZ 
-        }
-    }
-    
+    }   
     //  ---- STRAFE SYNC -----
     float SyncVelocity = GetLocalVelocity().Length2DSqr(); //we always want HVEL for checking velocity sync
     if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
