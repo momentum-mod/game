@@ -14,7 +14,7 @@
 #include <vgui/ILocalize.h>
 #include <vgui_controls/AnimationController.h>
 
-
+#include "mom_event_listener.h"
 #include "momentum/util/mom_util.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
@@ -109,6 +109,8 @@ protected:
         "proportional_float");
     CPanelAnimationVarAliasType(float, stage_ypos, "stage_ypos", "40",
         "proportional_float");
+    C_Momentum_EventListener *m_EventListener = new C_Momentum_EventListener();
+
 };
 
 DECLARE_HUDELEMENT(C_Timer);
@@ -277,14 +279,14 @@ void C_Timer::Paint(void)
     }
 
     //find out status of timer (start zone/end zone/practice mode)
-    if (pPlayer->m_bPlayerInsideStartZone)
+    if (m_EventListener->m_bPlayerInsideStartZone)
     {
         char localized[BUFSIZELOCL];
         wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_InsideStartZone");
         g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_InsideStartZone", localized, BUFSIZELOCL);
         Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
     }
-    else if (pPlayer->m_bPlayerInsideEndZone && pPlayer->m_bPlayerFinishedMap) //player finished map with timer running
+    else if (m_EventListener->m_bPlayerInsideEndZone && m_EventListener->m_bMapFinished) //player finished map with timer running
     {
         char localized[BUFSIZELOCL];
         wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_MapFinished");
