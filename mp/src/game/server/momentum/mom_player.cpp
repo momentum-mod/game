@@ -223,7 +223,7 @@ void CMomentumPlayer::UpdateRunStats()
             m_nTotalStrafes++;
 
         //  ---- MAX VELOCITY ----
-        if (velocity > m_flLastVelocity)
+        if (velocity > m_flVelocityMax)
             m_flVelocityMax = velocity;
         // ----------
     }
@@ -267,7 +267,8 @@ void CMomentumPlayer::UpdateRunStats()
 
     m_qangLastAngle = EyeAngles();
     m_flLastSyncVelocity = SyncVelocity;
-    m_flLastVelocity = velocity;
+    //this might be used in a later update
+    //m_flLastVelocity = velocity;
 
     m_bPrevTimerRunning = g_Timer.IsRunning();
     m_nPrevButtons = m_nButtons;
