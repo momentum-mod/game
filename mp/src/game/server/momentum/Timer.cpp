@@ -82,6 +82,14 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.ticks = Q_atoi(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
             t.date = (time_t) kv->GetInt("date");
+            t.jumps = kv->GetInt("jumps");
+            t.strafes = kv->GetInt("strafes");
+            t.avgsync = kv->GetFloat("avgsync");
+            t.avgsync2 = kv->GetFloat("avgsync2");
+            t.avgvel = kv->GetFloat("avgvel");
+            t.maxvel = kv->GetFloat("maxvel");
+            t.startvel = kv->GetFloat("startvel");
+            t.endvel = kv->GetFloat("endvel");
             localTimes.AddToTail(t);
         }
     }
@@ -95,11 +103,11 @@ void CTimer::LoadLocalTimes(const char *szMapname)
 //Called every time a new time is achieved
 void CTimer::SaveTime()
 {
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
     const char *szMapName = gpGlobals->mapname.ToCStr();
     KeyValues *timesKV = new KeyValues(szMapName);
     int count = localTimes.Count();
-
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     for (int i = 0; i < count; i++)
     {
@@ -107,14 +115,14 @@ void CTimer::SaveTime()
         char timeName[512];
         Q_snprintf(timeName, 512, "%i", t.ticks);
         KeyValues *pSubkey = new KeyValues(timeName);
-        pSubkey->SetInt("jumps", pPlayer->m_nTotalJumps);
-        pSubkey->SetInt("strafes", pPlayer->m_nTotalStrafes);
-        pSubkey->SetFloat("avgsync", pPlayer->m_flStrafeSyncAvg);
-        pSubkey->SetFloat("avgsync2", pPlayer->m_flStrafeSync2Avg);
-        pSubkey->SetFloat("startvel", pPlayer->m_flStartSpeed);
-        pSubkey->SetFloat("endvel", pPlayer->m_flEndSpeed);
-        pSubkey->SetFloat("avgvel", pPlayer->m_flVelocityAvg);
-        pSubkey->SetFloat("maxvel", pPlayer->m_flVelocityMax);
+        pSubkey->SetInt("jumps", t.jumps);
+        pSubkey->SetInt("strafes", t.strafes);
+        pSubkey->SetFloat("avgsync", t.avgsync);
+        pSubkey->SetFloat("avgsync2", t.avgsync2);
+        pSubkey->SetFloat("startvel", t.startvel);
+        pSubkey->SetFloat("endvel", t.endvel);
+        pSubkey->SetFloat("avgvel", t.avgvel);
+        pSubkey->SetFloat("maxvel", t.maxvel);
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
         timesKV->AddSubKey(pSubkey);
@@ -142,7 +150,9 @@ void CTimer::SaveTime()
 
 void CTimer::Stop(bool endTrigger /* = false */)
 {
-    if (endTrigger && !m_bWereCheatsActivated)
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
         // Post time to leaderboards if they're online
         // and if cheats haven't been turned on this session
@@ -154,6 +164,14 @@ void CTimer::Stop(bool endTrigger /* = false */)
         t.ticks = gpGlobals->tickcount - m_iStartTick;
         t.tickrate = gpGlobals->interval_per_tick;
         time(&t.date);
+        t.jumps = pPlayer->m_nTotalJumps;
+        t.strafes = pPlayer->m_nTotalStrafes;
+        t.avgsync = pPlayer->m_flStrafeSyncAvg;
+        t.avgsync2 = pPlayer->m_flStrafeSync2Avg;
+        t.avgvel = pPlayer->m_flVelocityAvg;
+        t.maxvel = pPlayer->m_flVelocityMax;
+        t.startvel = pPlayer->m_flStartSpeed;
+        t.endvel = pPlayer->m_flEndSpeed;
         localTimes.AddToTail(t);
 
         SaveTime();

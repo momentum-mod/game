@@ -163,6 +163,9 @@ private:
         float tickrate;
         //Date achieved
         time_t date;
+        int jumps, strafes;
+        float maxvel, avgvel, startvel, endvel;
+        float avgsync, avgsync2;
     };
 
     struct Checkpoint
