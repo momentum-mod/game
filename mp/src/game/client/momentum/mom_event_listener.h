@@ -11,5 +11,5 @@ public:
 
     bool m_bPlayerInsideStartZone = false , m_bPlayerInsideEndZone = false;
 
-    float m_flStartSpeed, m_flEndSpeed, m_flVelocityMax, m_flVelocityAvg, m_flStrafeSyncAvg, m_flStrafeSync2Avg;
+    float m_flStartSpeed = 0, m_flEndSpeed, m_flVelocityMax, m_flVelocityAvg, m_flStrafeSyncAvg, m_flStrafeSync2Avg;
 };
