@@ -69,13 +69,43 @@ void CMomentumPlayer::Spawn()
         DisableAutoBhop();
         break;
     }
-    SetNextThink(gpGlobals->curtime);
+    // Reset all bool gameevents 
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
+    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
+    IGameEvent *practiceModeEvent = gameeventmanager->CreateEvent("practice_mode");
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetBool("inside_startzone", false);
+        mapZoneEvent->SetBool("inside_endzone", false);
+        mapZoneEvent->SetBool("map_finished", false);
+        gameeventmanager->FireEvent(mapZoneEvent);
+    }
+    if (runSaveEvent)
+    {
+        runSaveEvent->SetBool("run_saved", false);
+        runSaveEvent->SetBool("run_posted", false);
+        gameeventmanager->FireEvent(runSaveEvent);
+    }
+    if (timerStartEvent)
+    {
+        timerStartEvent->SetBool("timer_isrunning", false);
+        gameeventmanager->FireEvent(timerStartEvent);
+    }
+    if (practiceModeEvent)
+    {
+        practiceModeEvent->SetBool("has_practicemode", false);
+        gameeventmanager->FireEvent(practiceModeEvent);
+    }
+
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
+    SetNextThink(gpGlobals->curtime);
 }
 
 void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
