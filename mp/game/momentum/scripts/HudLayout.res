@@ -94,7 +94,7 @@
 		"wide"			"120"
 		"tall"			"10"
 		"InitialValue"	"0"
-		"BackgroundColor" "0 0 0 255"
+		"BackgroundColor" "MOM.Panel.Bg"
 		"FillColor"		"255 255 255 225"
 		"visible"		"1"
 		"enabled"		"1"
