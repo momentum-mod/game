@@ -59,26 +59,6 @@ public:
     bool m_bTimerRan;
     int m_iStartTick;
 
-private:
-    int m_iStageCurrent;
-    int m_iStageCount;
-    int initialTall;
-    wchar_t m_pwCurrentTime[BUFSIZETIME];
-    char m_pszString[BUFSIZETIME];
-    wchar_t m_pwCurrentCheckpoints[BUFSIZELOCL];
-    char m_pszStringCps[BUFSIZELOCL];
-    wchar_t m_pwCurrentStages[BUFSIZELOCL];
-    char m_pszStringStages[BUFSIZELOCL];
-    wchar_t m_pwCurrentStatus[BUFSIZELOCL];
-    char m_pszStringStatus[BUFSIZELOCL];
-    CUtlMap<const char*, float> map;
-    int m_iTotalTicks;
-    bool m_bWereCheatsActivated = false;
-    bool m_bShowCheckpoints;
-    int m_iCheckpointCount;
-    int m_iCheckpointCurrent;
-    Color panelColor;
-
 protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
     CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
@@ -110,6 +90,29 @@ protected:
     CPanelAnimationVarAliasType(float, stage_ypos, "stage_ypos", "40",
         "proportional_float");
     C_Momentum_EventListener *m_EventListener = new C_Momentum_EventListener();
+private:
+    int m_iStageCurrent;
+    int m_iStageCount;
+    int initialTall;
+    wchar_t m_pwCurrentTime[BUFSIZETIME];
+    char m_pszString[BUFSIZETIME];
+    wchar_t m_pwCurrentCheckpoints[BUFSIZELOCL];
+    char m_pszStringCps[BUFSIZELOCL];
+    wchar_t m_pwCurrentStages[BUFSIZELOCL];
+    char m_pszStringStages[BUFSIZELOCL];
+    wchar_t m_pwCurrentStatus[BUFSIZELOCL];
+    char m_pszStringStatus[BUFSIZELOCL];
+    CUtlMap<const char*, float> map;
+    int m_iTotalTicks;
+    bool m_bWereCheatsActivated = false;
+    bool m_bShowCheckpoints;
+    int m_iCheckpointCount;
+    int m_iCheckpointCurrent;
+    Color panelColor;
+    char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
+        startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL], 
+        noTimerLocalized[BUFSIZELOCL];
+
 
 };
 
@@ -141,6 +144,28 @@ void C_Timer::Init()
     initialTall = 48;
     m_iTotalTicks = 0;
     //Reset();
+
+    //cache localization strings
+    wchar_t *uCPUnicode = g_pVGuiLocalize->Find("#MOM_Checkpoint");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uCPUnicode ? uCPUnicode : L"#MOM_Checkpoint", cpLocalized, BUFSIZELOCL);
+
+    wchar_t *uStageUnicode = g_pVGuiLocalize->Find("#MOM_Stage");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uStageUnicode ? uStageUnicode : L"#MOM_Stage", stLocalized, BUFSIZELOCL);
+
+    wchar_t *uLinearUnicode = g_pVGuiLocalize->Find("#MOM_Linear");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uLinearUnicode ? uLinearUnicode : L"#MOM_Linear", linearLocalized, BUFSIZELOCL);
+
+    wchar_t *uStartZoneUnicode = g_pVGuiLocalize->Find("#MOM_InsideStartZone");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uStartZoneUnicode ? uStartZoneUnicode : L"#MOM_InsideStartZone", startZoneLocalized, BUFSIZELOCL);
+
+    wchar_t *uMapFinishedUnicode = g_pVGuiLocalize->Find("#MOM_MapFinished");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uMapFinishedUnicode ? uMapFinishedUnicode : L"#MOM_MapFinished", mapFinishedLocalized, BUFSIZELOCL);
+
+    wchar_t *uPracticeModeUnicode = g_pVGuiLocalize->Find("#MOM_PracticeMode");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uPracticeModeUnicode ? uPracticeModeUnicode : L"#MOM_PracticeMode", practiceModeLocalized, BUFSIZELOCL);
+
+    wchar_t *uNoTimerUnicode = g_pVGuiLocalize->Find("#MOM_NoTimer");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uNoTimerUnicode ? uNoTimerUnicode : L"#MOM_NoTimer", noTimerLocalized, BUFSIZELOCL);
 }
 
 void C_Timer::Reset()
@@ -243,14 +268,12 @@ void C_Timer::Paint(void)
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
 
     mom_UTIL.FormatTime(GetCurrentTime(), gpGlobals->interval_per_tick, m_pszString);
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 
     //find out status of checkpoints (linear vs checkpoints)
     if (m_bShowCheckpoints)
     {
-        char cpLocalized[BUFSIZELOCL];
-        wchar_t *uCPUnicode = g_pVGuiLocalize->Find("#MOM_Checkpoint");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(uCPUnicode ? uCPUnicode : L"#MOM_Checkpoint", cpLocalized, BUFSIZELOCL);
-
         Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "%s %i/%i",
             cpLocalized, // Checkpoint localization
             m_iCheckpointCurrent, //CurrentCP
@@ -261,9 +284,6 @@ void C_Timer::Paint(void)
     }
     if (m_iStageCount > 1)
     {
-        char stLocalized[BUFSIZELOCL];
-        wchar_t *uStageUnicode = g_pVGuiLocalize->Find("#MOM_Stage");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(uStageUnicode ? uStageUnicode : L"#MOM_Stage", stLocalized, BUFSIZELOCL);
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
             stLocalized, // Stage localization
             m_iStageCurrent, // Current Stage
@@ -272,50 +292,30 @@ void C_Timer::Paint(void)
     }
     else //it's a linear map
     {
-        char linearLocalized[BUFSIZELOCL];
-        wchar_t *uLinearUnicode = g_pVGuiLocalize->Find("#MOM_Linear");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(uLinearUnicode ? uLinearUnicode : L"#MOM_Linear", linearLocalized, BUFSIZELOCL);
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), linearLocalized);
     }
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_pszStringStages, m_pwCurrentStages, sizeof(m_pwCurrentStages));
 
     //find out status of timer (start zone/end zone/practice mode)
     if (m_EventListener->m_bPlayerInsideStartZone)
     {
-        char localized[BUFSIZELOCL];
-        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_InsideStartZone");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_InsideStartZone", localized, BUFSIZELOCL);
-        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), startZoneLocalized);
     }
     else if (m_EventListener->m_bPlayerInsideEndZone && m_EventListener->m_bMapFinished) //player finished map with timer running
     {
-        char localized[BUFSIZELOCL];
-        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_MapFinished");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_MapFinished", localized, BUFSIZELOCL);
-        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), mapFinishedLocalized);
     }
     else if (pPlayer->m_bHasPracticeMode)
     {
-        char localized[BUFSIZELOCL];
-        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_PracticeMode");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_PracticeMode", localized, BUFSIZELOCL);
-        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), practiceModeLocalized);
     }
-    else
+    else //no timer
     {
-        char localized[BUFSIZELOCL];
-        wchar_t *unicode = g_pVGuiLocalize->Find("#MOM_NoTimer");
-        g_pVGuiLocalize->ConvertUnicodeToANSI(unicode ? unicode : L"#MOM_NoTimer", localized, BUFSIZELOCL);
-        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), localized);
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), noTimerLocalized);
     }
-
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringStatus, m_pwCurrentStatus, sizeof(m_pwCurrentStatus));
-
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
-
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringStages, m_pwCurrentStages, sizeof(m_pwCurrentStages));
 
     // Draw the text label.
     surface()->DrawSetTextFont(m_hTextFont);
