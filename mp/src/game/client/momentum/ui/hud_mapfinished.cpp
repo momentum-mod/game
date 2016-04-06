@@ -38,7 +38,7 @@ public:
         return pPlayer && m_EventListener->m_bMapFinished;
     }
     virtual void Paint();
-
+    virtual void OnThink();
     virtual void Init();
     virtual void Reset()
     {
@@ -135,6 +135,16 @@ private:
     int m_iTotalJumps, m_iTotalStrafes;
     float m_flAvgSync, m_flAvgSync2;
     float m_flStartSpeed, m_flEndSpeed, m_flAvgSpeed, m_flMaxSpeed;
+
+    char runSaveLocalized[BUFSIZELOCL], runNotSaveLocalized[BUFSIZELOCL], 
+        runUploadLocalized[BUFSIZELOCL], runNotUploadLocalized[BUFSIZELOCL];
+
+    char maxVelLocalized[BUFSIZELOCL], avgVelLocalized[BUFSIZELOCL], endVelLocalized[BUFSIZELOCL], 
+        startVelLocalized[BUFSIZELOCL], sync2Localized[BUFSIZELOCL], syncLocalized[BUFSIZELOCL], 
+        strafeLocalized[BUFSIZELOCL], jumpLocalized[BUFSIZELOCL], timeLocalized[BUFSIZELOCL];
+
+
+    bool m_bRunSaved, m_bRunUploaded;
     C_Momentum_EventListener *m_EventListener = new C_Momentum_EventListener();
 };
 
@@ -151,71 +161,91 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapFinishedD
 void CHudMapFinishedDialog::Init()
 {
     Reset();
+    //cache localization files
+
+    wchar_t *uTimeUnicode = g_pVGuiLocalize->Find("#MOM_RunTime");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uTimeUnicode ? uTimeUnicode : L"#MOM_RunTime", timeLocalized, BUFSIZELOCL);
+
+    wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_JumpCount");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uJumpUnicode ? uJumpUnicode : L"#MOM_JumpCount", jumpLocalized, BUFSIZELOCL);
+
+    wchar_t *uStrafeUnicode = g_pVGuiLocalize->Find("#MOM_StrafeCount");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uStrafeUnicode ? uStrafeUnicode : L"#MOM_StrafeCount", strafeLocalized, BUFSIZELOCL);
+
+    wchar_t *uSyncUnicode = g_pVGuiLocalize->Find("#MOM_AvgSync");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uSyncUnicode ? uSyncUnicode : L"#MOM_AvgSync", syncLocalized, BUFSIZELOCL);
+
+    wchar_t *uSync2Unicode = g_pVGuiLocalize->Find("#MOM_AvgSync2");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uSync2Unicode ? uSync2Unicode : L"#MOM_AvgSync2", sync2Localized, BUFSIZELOCL);
+
+    wchar_t *uStartVelUnicode = g_pVGuiLocalize->Find("#MOM_StartVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uStartVelUnicode ? uStartVelUnicode : L"#MOM_StartVel", startVelLocalized, BUFSIZELOCL);
+
+    wchar_t *uendVelUnicode = g_pVGuiLocalize->Find("#MOM_EndVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uendVelUnicode ? uendVelUnicode : L"#MOM_EndVel", endVelLocalized, BUFSIZELOCL);
+
+    wchar_t *uavgVelUnicode = g_pVGuiLocalize->Find("#MOM_AvgVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(uavgVelUnicode ? uavgVelUnicode : L"#MOM_AvgVel", avgVelLocalized, BUFSIZELOCL);
+
+    wchar_t *umaxVelUnicode = g_pVGuiLocalize->Find("#MOM_MaxVel");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(umaxVelUnicode ? umaxVelUnicode : L"#MOM_MaxVel", maxVelLocalized, BUFSIZELOCL);
+
+    // --- RUN SAVING NOTIFICATION ---
+    wchar_t *urunSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunSaved");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunSaveUnicode ? urunSaveUnicode : L"#MOM_RunSaved", runSaveLocalized, BUFSIZELOCL);
+
+    wchar_t *urunNotSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunNotSaved");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotSaveUnicode ? urunNotSaveUnicode : L"#MOM_RunNotSaved", runNotSaveLocalized, BUFSIZELOCL);
+
+    wchar_t *urunUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunUploaded");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunUploadUnicode ? urunUploadUnicode : L"#MOM_RunUploaded", runUploadLocalized, BUFSIZELOCL);
+
+    wchar_t *urunNotUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunNotUploaded");
+    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotUploadUnicode ? urunNotUploadUnicode : L"#MOM_RunNotUploaded", runNotUploadLocalized, BUFSIZELOCL);
 }
 void CHudMapFinishedDialog::Paint()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     //text color
     surface()->DrawSetTextFont(m_hTextFont);
     surface()->DrawSetTextColor(GetFgColor());
 
     // --- RUN TIME ---
-    char timeLocalized[BUFSIZELOCL];
-    wchar_t *uTimeUnicode = g_pVGuiLocalize->Find("#MOM_RunTime");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uTimeUnicode ? uTimeUnicode : L"#MOM_RunTime", timeLocalized, BUFSIZELOCL);
-    if (pPlayer)
-    {
-        //copy player's last run time to our local variable
-        strcpy(m_pszRunTime, pPlayer->m_pszLastRunTime);
-    }
     Q_snprintf(m_pszStringTimeLabel, sizeof(m_pszStringTimeLabel), "%s %s",
         timeLocalized, // run time localization 
         m_pszRunTime    // run time string
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringTimeLabel, m_pwTimeLabel, sizeof(m_pwTimeLabel));
+
     surface()->DrawSetTextPos(time_xpos, time_ypos);
     surface()->DrawPrintText(m_pwTimeLabel, wcslen(m_pwTimeLabel));
     // ---------------------
 
     // --- JUMP COUNT ---
-    char jumpLocalized[BUFSIZELOCL];
-    wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_JumpCount");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uJumpUnicode ? uJumpUnicode : L"#MOM_JumpCount", jumpLocalized, BUFSIZELOCL);
-
-    m_iTotalJumps = pPlayer->m_nTotalJumps;
     Q_snprintf(m_pszStringJumpsLabel, sizeof(m_pszStringJumpsLabel), "%s %i",
         jumpLocalized, // total jump localization 
         m_iTotalJumps  // total jump int
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringJumpsLabel, m_pwJumpsLabel, sizeof(m_pwJumpsLabel));
+
     surface()->DrawSetTextPos(jumps_xpos, jumps_ypos);
     surface()->DrawPrintText(m_pwJumpsLabel, wcslen(m_pwJumpsLabel));
     // ---------------------
 
     // --- STRAFE COUNT ---
-    char strafeLocalized[BUFSIZELOCL];
-    wchar_t *uStrafeUnicode = g_pVGuiLocalize->Find("#MOM_StrafeCount");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uStrafeUnicode ? uStrafeUnicode : L"#MOM_StrafeCount", strafeLocalized, BUFSIZELOCL);
-
-    m_iTotalStrafes = pPlayer->m_nTotalStrafes;
     Q_snprintf(m_pszStringStrafesLabel, sizeof(m_pszStringStrafesLabel), "%s %i",
         strafeLocalized, // total strafe localization 
         m_iTotalStrafes  //total strafes int
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringStrafesLabel, m_pwStrafesLabel, sizeof(m_pwStrafesLabel));
+
     surface()->DrawSetTextPos(strafes_xpos, strafes_ypos);
     surface()->DrawPrintText(m_pwStrafesLabel, wcslen(m_pwStrafesLabel));
     // ---------------------
 
     // --- AVG SYNC ---
-    char syncLocalized[BUFSIZELOCL];
-    wchar_t *uSyncUnicode = g_pVGuiLocalize->Find("#MOM_AvgSync");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uSyncUnicode ? uSyncUnicode : L"#MOM_AvgSync", syncLocalized, BUFSIZELOCL);
-
-    m_flAvgSync = m_EventListener->m_flStrafeSyncAvg;
     Q_snprintf(m_pszAvgSync, sizeof(m_pszStringSyncLabel), "%.2f", m_flAvgSync); //convert floating point avg sync to 2 decimal place string
     Q_snprintf(m_pszStringSyncLabel, sizeof(m_pszStringSyncLabel), "%s %s",
         syncLocalized, // avg sync localization 
@@ -223,16 +253,12 @@ void CHudMapFinishedDialog::Paint()
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringSyncLabel, m_pwSyncLabel, sizeof(m_pwSyncLabel));
+
     surface()->DrawSetTextPos(sync_xpos, sync_ypos);
     surface()->DrawPrintText(m_pwSyncLabel, wcslen(m_pwSyncLabel));
     // ---------------------
 
     // --- AVG SYNC 2---
-    char sync2Localized[BUFSIZELOCL];
-    wchar_t *uSync2Unicode = g_pVGuiLocalize->Find("#MOM_AvgSync2");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uSync2Unicode ? uSync2Unicode : L"#MOM_AvgSync2", sync2Localized, BUFSIZELOCL);
-
-    m_flAvgSync2 = m_EventListener->m_flStrafeSync2Avg;
     Q_snprintf(m_pszAvgSync2, sizeof(m_pszStringSync2Label), "%.2f", m_flAvgSync2); //convert floating point avg sync to 2 decimal place string
     Q_snprintf(m_pszStringSync2Label, sizeof(m_pszStringSync2Label), "%s %s",
         sync2Localized, // avg sync localization 
@@ -240,128 +266,117 @@ void CHudMapFinishedDialog::Paint()
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringSync2Label, m_pwSync2Label, sizeof(m_pwSync2Label));
+
     surface()->DrawSetTextPos(sync2_xpos, sync2_ypos);
     surface()->DrawPrintText(m_pwSync2Label, wcslen(m_pwSync2Label));
     // ---------------------
 
     // --- STARTING VELOCITY---
-    char startVelLocalized[BUFSIZELOCL];
-    wchar_t *uStartVelUnicode = g_pVGuiLocalize->Find("#MOM_StartVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uStartVelUnicode ? uStartVelUnicode : L"#MOM_StartVel", startVelLocalized, BUFSIZELOCL);
-
-    m_flStartSpeed = m_EventListener->m_flStartSpeed;
     Q_snprintf(m_pszStartSpeedLabel, sizeof(m_pszStartSpeedLabel), "%s %f",
         startVelLocalized,
-        m_flStartSpeed    
+        m_flStartSpeed
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStartSpeedLabel, m_pwStartSpeedLabel, sizeof(m_pwStartSpeedLabel));
+
     surface()->DrawSetTextPos(startvel_xpos, startvel_ypos);
     surface()->DrawPrintText(m_pwStartSpeedLabel, wcslen(m_pwStartSpeedLabel));
     // ---------------------
 
     // --- ENDING VELOCITY---
-    char endVelLocalized[BUFSIZELOCL];
-    wchar_t *uendVelUnicode = g_pVGuiLocalize->Find("#MOM_EndVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uendVelUnicode ? uendVelUnicode : L"#MOM_EndVel", endVelLocalized, BUFSIZELOCL);
-
-    m_flEndSpeed = m_EventListener->m_flEndSpeed;
     Q_snprintf(m_pszEndSpeedLabel, sizeof(m_pszEndSpeedLabel), "%s %f",
         endVelLocalized,
-        m_flEndSpeed    
+        m_flEndSpeed
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszEndSpeedLabel, m_pwEndSpeedLabel, sizeof(m_pwEndSpeedLabel));
+
     surface()->DrawSetTextPos(endvel_xpos, endvel_ypos);
     surface()->DrawPrintText(m_pwEndSpeedLabel, wcslen(m_pwEndSpeedLabel));
     // ---------------------
 
     // --- AVG VELOCITY---
-    char avgVelLocalized[BUFSIZELOCL];
-    wchar_t *uavgVelUnicode = g_pVGuiLocalize->Find("#MOM_AvgVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uavgVelUnicode ? uavgVelUnicode : L"#MOM_AvgVel", avgVelLocalized, BUFSIZELOCL);
-
-    m_flAvgSpeed = m_EventListener->m_flVelocityAvg;
     Q_snprintf(m_pszAvgSpeedLabel, sizeof(m_pszAvgSpeedLabel), "%s %f",
-        avgVelLocalized, 
-        m_flAvgSpeed    
+        avgVelLocalized,
+        m_flAvgSpeed
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszAvgSpeedLabel, m_pwAvgSpeedLabel, sizeof(m_pwAvgSpeedLabel));
+
     surface()->DrawSetTextPos(avgvel_xpos, avgvel_ypos);
     surface()->DrawPrintText(m_pwAvgSpeedLabel, wcslen(m_pwAvgSpeedLabel));
     // ---------------------
 
     // --- MAX VELOCITY---
-    char maxVelLocalized[BUFSIZELOCL];
-    wchar_t *umaxVelUnicode = g_pVGuiLocalize->Find("#MOM_MaxVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(umaxVelUnicode ? umaxVelUnicode : L"#MOM_MaxVel", maxVelLocalized, BUFSIZELOCL);
-
-    m_flMaxSpeed = m_EventListener->m_flVelocityMax;
     Q_snprintf(m_pszMaxSpeedLabel, sizeof(m_pszMaxSpeedLabel), "%s %f",
-        maxVelLocalized, 
-        m_flMaxSpeed    
+        maxVelLocalized,
+        m_flMaxSpeed
         );
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszMaxSpeedLabel, m_pwMaxSpeedLabel, sizeof(m_pwMaxSpeedLabel));
+
     surface()->DrawSetTextPos(maxvel_xpos, maxvel_ypos);
     surface()->DrawPrintText(m_pwMaxSpeedLabel, wcslen(m_pwAvgSpeedLabel));
     // ---------------------
 
-    // --- RUN SAVING NOTIFICATION ---
-    char runSaveLocalized[BUFSIZELOCL];
-    wchar_t *urunSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunSaved");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunSaveUnicode ? urunSaveUnicode : L"#MOM_RunSaved", runSaveLocalized, BUFSIZELOCL);
-
-    char runNotSaveLocalized[BUFSIZELOCL];
-    wchar_t *urunNotSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunNotSaved");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotSaveUnicode ? urunNotSaveUnicode : L"#MOM_RunNotSaved", runNotSaveLocalized, BUFSIZELOCL);
-
-    char runUploadLocalized[BUFSIZELOCL];
-    wchar_t *urunUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunUploaded");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunUploadUnicode ? urunUploadUnicode : L"#MOM_RunUploaded", runUploadLocalized, BUFSIZELOCL);
-
-    char runNotUploadLocalized[BUFSIZELOCL];
-    wchar_t *urunNotUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunNotUploaded");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotUploadUnicode ? urunNotUploadUnicode : L"#MOM_RunNotUploaded", runNotUploadLocalized, BUFSIZELOCL);
+    // ---- RUN SAVING AND UPLOADING ----
 
     // -- run save --
-    bool bRunSaved = m_EventListener->m_bTimeDidSave;
-    Q_snprintf(bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
-        bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
-        bRunSaved ? runSaveLocalized : runNotSaveLocalized);
+    Q_snprintf(m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel,
+        m_bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
+        m_bRunSaved ? runSaveLocalized : runNotSaveLocalized);
 
     g_pVGuiLocalize->ConvertANSIToUnicode(
-        bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel, 
-        bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
-        bRunSaved ? sizeof(m_pwRunSavedLabel) : sizeof(m_pwRunNotSavedLabel));
+        m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel,
+        m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel,
+        m_bRunSaved ? sizeof(m_pwRunSavedLabel) : sizeof(m_pwRunNotSavedLabel));
+
+    // -- run upload --
+    Q_snprintf(m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
+        m_bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
+        m_bRunUploaded ? runUploadLocalized : runNotUploadLocalized);
+
+    g_pVGuiLocalize->ConvertANSIToUnicode(
+        m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
+        m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
+        m_bRunUploaded ? sizeof(m_pwRunUploadedLabel) : sizeof(m_pwRunNotUploadedLabel));
 
     int save_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, 
-        bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel) / 2; //center label
+        m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel) / 2; //center label
 
     surface()->DrawSetTextPos(save_text_xpos, runsave_ypos);
-    surface()->DrawSetTextColor(bRunSaved ? GetFgColor() : COLOR_RED);
-    surface()->DrawPrintText(bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
-        bRunSaved ? wcslen(m_pwRunSavedLabel) : wcslen(m_pwRunNotSavedLabel));
-    // ----------------
-    // -- run upload --
-    bool bRunUploaded = m_EventListener->m_bTimeDidUpload;
-    Q_snprintf(bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel, 
-        bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
-        bRunUploaded ? runUploadLocalized : runNotUploadLocalized);
-
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
-        bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
-        bRunUploaded ? sizeof(m_pwRunUploadedLabel) : sizeof(m_pwRunNotUploadedLabel));
+    surface()->DrawSetTextColor(m_bRunSaved ? GetFgColor() : COLOR_RED);
+    surface()->DrawPrintText(m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
+        m_bRunSaved ? wcslen(m_pwRunSavedLabel) : wcslen(m_pwRunNotSavedLabel));
 
     int upload_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont,
-        bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel) / 2; //center label
+        m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel) / 2; //center label
 
     surface()->DrawSetTextPos(upload_text_xpos, runupload_ypos);
-    surface()->DrawSetTextColor(bRunUploaded ? GetFgColor() : COLOR_RED);
-    surface()->DrawPrintText(bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel, 
-        bRunUploaded ? wcslen(m_pwRunUploadedLabel) : wcslen(m_pwRunNotUploadedLabel));
+    surface()->DrawSetTextColor(m_bRunUploaded ? GetFgColor() : COLOR_RED);
+    surface()->DrawPrintText(m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel, 
+        m_bRunUploaded ? wcslen(m_pwRunUploadedLabel) : wcslen(m_pwRunNotUploadedLabel));
     // ----------------
     // ------------------------------
+}
+void CHudMapFinishedDialog::OnThink()
+{
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+
+    m_bRunSaved = m_EventListener->m_bTimeDidSave;
+    m_bRunUploaded = m_EventListener->m_bTimeDidUpload;
+    m_flAvgSpeed = m_EventListener->m_flVelocityAvg;
+    m_flMaxSpeed = m_EventListener->m_flVelocityMax;
+    m_flStartSpeed = m_EventListener->m_flStartSpeed;
+    m_flEndSpeed = m_EventListener->m_flEndSpeed;
+    m_flAvgSync2 = m_EventListener->m_flStrafeSync2Avg;
+    m_flAvgSync = m_EventListener->m_flStrafeSyncAvg;
+
+    if (pPlayer)
+    {
+        //copy player's last run time to our local variable
+        strcpy(m_pszRunTime, pPlayer->m_pszLastRunTime);
+        m_iTotalJumps = pPlayer->m_nTotalJumps;
+        m_iTotalStrafes = pPlayer->m_nTotalStrafes;
+    }
 }
