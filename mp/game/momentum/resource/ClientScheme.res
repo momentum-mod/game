@@ -280,6 +280,18 @@ Scheme
 	// describes all the fonts
 	Fonts
 	{
+		MomentumIcons
+		{
+			"1"
+			{
+				"name"		"mom"
+				"tall"		"12"
+				"weight"	"0"
+				"antialias" "1"
+				"additive"	"1"
+				"custom"	"1"
+			}
+		}
 		Icons
 		{
 			"1"
@@ -1704,14 +1716,12 @@ Scheme
 	//
 	// specifies all the custom (non-system) font files that need to be loaded to service the above described fonts
 	CustomFontFiles
-	{		
+	{
 		"1"		"resource/HALFLIFE2.ttf"
-		"1"		"resource/HL2MP.ttf"
-		"1"		"resource/obsidian.ttf"
-		"1"		"resource/obsidianweaps.ttf"
-		"1"		"resource/custom.ttf"
-		"2"		"resource/HL2crosshairs.ttf"
-		"2"		"resource/cs.ttf"
+		"2"		"resource/HL2MP.ttf"
+		"3"		"resource/HL2crosshairs.ttf"
+		"4"		"resource/cs.ttf"
+		"5"		"resource/mom.ttf"
 	}
 
 }
