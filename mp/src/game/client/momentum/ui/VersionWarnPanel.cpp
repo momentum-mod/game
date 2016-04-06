@@ -116,7 +116,7 @@ void CVersionWarnPanel::OnTick()
         char m_cReleaseF[225];
 
         Q_snprintf(m_cReleaseF, 225, m_cReleaseText, MOM_CURRENT_VERSION, cl_showversionwarnpanel.GetString());
-        cl_showversionwarnpanel.SetValue(cl_showversionwarnpanel.GetDefault());
+        cl_showversionwarnpanel.Revert();
         m_pReleaseText->SetText(m_cReleaseF);
         m_pReleaseText->SetURL("https://github.com/momentum-mod/game/releases");
         SetSize(UTIL_ComputeStringWidth(m_hfReleaseFont, m_cReleaseF) + m_pReleaseText->GetXPos() * 2, GetTall());
