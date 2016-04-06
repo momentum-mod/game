@@ -107,7 +107,7 @@ ConVar cl_showversionwarnpanel("cl_showversionwarnpanel", "0", FCVAR_CLIENTDLL |
 void CVersionWarnPanel::OnTick()
 {
     BaseClass::OnTick();
-    if (Q_strcmp(cl_showversionwarnpanel.GetString(), "0") != 0)
+    if (Q_strcmp(cl_showversionwarnpanel.GetString(), cl_showversionwarnpanel.GetDefault()) != 0)
     {
         SetVisible(true);        
         HFont m_hfReleaseFont = m_pReleaseText->GetFont();
@@ -116,7 +116,7 @@ void CVersionWarnPanel::OnTick()
         char m_cReleaseF[225];
 
         Q_snprintf(m_cReleaseF, 225, m_cReleaseText, MOM_CURRENT_VERSION, cl_showversionwarnpanel.GetString());
-        cl_showversionwarnpanel.SetValue("0");
+        cl_showversionwarnpanel.SetValue(cl_showversionwarnpanel.GetDefault());
         m_pReleaseText->SetText(m_cReleaseF);
         m_pReleaseText->SetURL("https://github.com/momentum-mod/game/releases");
         SetSize(UTIL_ComputeStringWidth(m_hfReleaseFont, m_cReleaseF) + m_pReleaseText->GetXPos() * 2, GetTall());
