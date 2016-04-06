@@ -11,6 +11,14 @@ void CTimer::Start(int start)
     m_iStartTick = start;
     SetRunning(true);
     DispatchStateMessage();
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+    IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_started");
+
+    if (timeStartEvent)
+    {
+        timeStartEvent->SetBool("timer_isrunning", true);
+        gameeventmanager->FireEvent(timeStartEvent);
+    }
 }
 
 void CTimer::PostTime()
@@ -146,6 +154,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
+    IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_started");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -175,6 +184,11 @@ void CTimer::Stop(bool endTrigger /* = false */)
     {  
         runSaveEvent->SetBool("run_saved", false);
         gameeventmanager->FireEvent(runSaveEvent);
+    }
+    if (timeStopEvent)
+    {
+        timeStopEvent->SetBool("timer_isrunning", false);
+        gameeventmanager->FireEvent(timeStopEvent);
     }
     SetRunning(false);
     DispatchStateMessage();

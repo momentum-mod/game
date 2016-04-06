@@ -74,13 +74,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
     // stop thinking on end touch
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
-
-    if (timerStartEvent)
-    {
-        timerStartEvent->SetBool("timer_isrunning", true);
-        gameeventmanager->FireEvent(timerStartEvent);
-    }
     if (mapZoneEvent)
     {
         mapZoneEvent->SetBool("inside_startzone", false);
@@ -103,18 +96,11 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
-
     if (mapZoneEvent)
     {
         mapZoneEvent->SetBool("inside_startzone", true);
         mapZoneEvent->SetBool("map_finished", false);
         gameeventmanager->FireEvent(mapZoneEvent);
-    }
-    if (timerStartEvent)
-    {
-        timerStartEvent->SetBool("timer_isrunning", false);
-        gameeventmanager->FireEvent(timerStartEvent);
     }
     // start thinking
     SetNextThink(gpGlobals->curtime);
@@ -234,7 +220,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
     gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
     ConVarRef hvel("mom_speedometer_hvel");
 
     BaseClass::StartTouch(pOther);
@@ -261,13 +246,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
     {
         mapZoneEvent->SetBool("inside_endzone", true);
         gameeventmanager->FireEvent(mapZoneEvent);
-    }
-    if (timerStartEvent)
-    {
-        timerStartEvent->SetBool("timer_isrunning", false); //stop timer event
-        gameeventmanager->FireEvent(timerStartEvent);
-    }
-        
+    }       
 }
 void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
 {
