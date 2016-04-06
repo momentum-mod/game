@@ -130,6 +130,25 @@
 		"runsave_ypos"	"95"
 		"runupload_ypos""105"
 	}
+	CHudKeyPressDisplay
+	{
+		"fieldName"		"CHudKeyPressDisplay"
+		"xpos"			"c-75"
+		"ypos"			"c-50"
+		"wide"			"150"
+		"tall"			"100"
+		"visible"		"1"
+		"enabled"		"1"
+		"top_row_ypos"	"5"
+		"mid_row_ypos"	"20"
+		"lower_row_ypos"	"35"
+		"bottom_row_ypos"	"45"
+		"strafe_count_xpos" "100"
+		"jump_count_xpos"	"100"
+		"TextFont"		"HudNumbersSmall"
+		"CounterTextFont"		"HudNumbersVerySmall"
+		"WordTextFont"	"HudNumbersVerySmall"
+	}
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"
