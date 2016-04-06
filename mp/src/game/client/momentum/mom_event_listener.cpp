@@ -10,6 +10,7 @@ C_Momentum_EventListener::C_Momentum_EventListener()
     gameeventmanager->AddListener(this, "timer_started", false);
     gameeventmanager->AddListener(this, "player_inside_mapzone", false);
     gameeventmanager->AddListener(this, "run_save", false);
+    gameeventmanager->AddListener(this, "practice_mode", false);
 }
 void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 {
@@ -36,5 +37,9 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         m_bPlayerInsideStartZone = pEvent->GetBool("inside_startzone");
         m_bPlayerInsideEndZone = pEvent->GetBool("inside_endzone");
         m_bMapFinished = pEvent->GetBool("map_finished"); //different from "inside endzone", this is only fired if the player finished when their timer was running
+    }
+    if (!strcmp("practice_mode", pEvent->GetName()))
+    {
+        m_bPlayerHasPracticeMode = pEvent->GetBool("has_practicemode");
     }
 }

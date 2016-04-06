@@ -13,6 +13,7 @@ public:
     bool m_bTimeDidSave, m_bTimeDidUpload;
 
     bool m_bPlayerInsideStartZone = false , m_bPlayerInsideEndZone = false;
+    bool m_bPlayerHasPracticeMode = false;
 
     float m_flStartSpeed = 0, m_flEndSpeed, m_flVelocityMax, m_flVelocityAvg, m_flStrafeSyncAvg, m_flStrafeSync2Avg;
 };

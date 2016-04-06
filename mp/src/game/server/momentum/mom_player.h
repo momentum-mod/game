@@ -78,7 +78,6 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bAutoBhop);
     CNetworkVar(bool, m_bDidPlayerBhop);
     CNetworkVar(int, m_iSuccessiveBhops);
-    CNetworkVar(bool, m_bHasPracticeMode);
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
     CNetworkVar(float, m_flLastJumpVel);

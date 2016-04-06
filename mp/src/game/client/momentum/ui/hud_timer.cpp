@@ -265,8 +265,6 @@ int C_Timer::GetCurrentTime()
 
 void C_Timer::Paint(void)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-
     mom_UTIL.FormatTime(GetCurrentTime(), gpGlobals->interval_per_tick, m_pszString);
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
@@ -306,7 +304,7 @@ void C_Timer::Paint(void)
     {
         Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), mapFinishedLocalized);
     }
-    else if (pPlayer->m_bHasPracticeMode)
+    else if (m_EventListener->m_bPlayerHasPracticeMode)
     {
         Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), practiceModeLocalized);
     }

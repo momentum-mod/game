@@ -51,4 +51,8 @@
 		"inside_endzone"	"bool"
 		"map_finished"	"bool"
 	}
+	"practice_mode"
+	{
+		"has_practicemode"	"bool"
+	}
 }
