@@ -33,6 +33,7 @@
 
 #include "vgui_avatarimage.h"
 #include "filesystem.h"
+#include "util\mom_util.h"
 #include <time.h>
 
 extern IFileSystem *filesystem;
@@ -558,20 +559,9 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
         kvLocalTimeFormatted->SetFloat("time_f", secondsF);//Used for static compare
         kvLocalTimeFormatted->SetInt("date_t", t.date);//Used for finding
-        char timeString[15];
+        char timeString[BUFSIZETIME];
 
-        int hours = secondsF / (60.0f * 60.0f);
-        int minutes = fmod(secondsF / 60.0f, 60.0f);
-        int seconds = fmod(secondsF, 60.0f);
-        int millis = fmod(secondsF, 1.0f) * 1000.0f;
-
-        if (hours > 0)
-            Q_snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
-        else if (minutes > 0)
-            Q_snprintf(timeString, sizeof(timeString), "%02d:%02d.%03d", minutes, seconds, millis);
-        else
-            Q_snprintf(timeString, sizeof(timeString), "%02d.%03d", seconds, millis);
-
+        mom_UTIL.FormatTime(t.ticks, t.rate, timeString);
         kvLocalTimeFormatted->SetString("time", timeString);
 
         char dateString[64];
