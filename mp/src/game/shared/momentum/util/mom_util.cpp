@@ -182,11 +182,11 @@ void MomentumUtil::FormatTime(float ticks, float rate, char *pOut)
     int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
 
     if (hours > 0)
-        Q_snprintf(pOut, BUFSIZETIME, "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+        Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%03d", hours, minutes, seconds, millis);
     else if (minutes > 0)
-        Q_snprintf(pOut, BUFSIZETIME, "%02d:%02d.%03d", minutes, seconds, millis);
+        Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%03d", minutes, seconds, millis);
     else
-        Q_snprintf(pOut, BUFSIZETIME, "%02i.%03i", seconds, millis);
+        Q_snprintf(pOut, BUFSIZETIME, "%d.%03d", seconds, millis);
 }
 
 Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor)
