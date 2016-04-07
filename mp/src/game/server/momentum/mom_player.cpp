@@ -37,6 +37,7 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
 }
 
 CMomentumPlayer::~CMomentumPlayer() {}
@@ -70,7 +71,6 @@ void CMomentumPlayer::Spawn()
         break;
     }
     // Reset all bool gameevents 
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");

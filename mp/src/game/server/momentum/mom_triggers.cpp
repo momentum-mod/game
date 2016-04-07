@@ -13,6 +13,7 @@ void CBaseMomentumTrigger::Spawn()
     BaseClass::Spawn();
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+    
 }
 
 //---------- CTriggerStage -----------------------------------------------------------------
@@ -72,7 +73,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         }
     }
     // stop thinking on end touch
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     if (mapZoneEvent)
     {
@@ -94,7 +94,6 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         g_Timer.DispatchResetMessage();
     }
     pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     if (mapZoneEvent)
     {
@@ -217,7 +216,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+
     IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     ConVarRef hvel("mom_speedometer_hvel");
@@ -240,7 +239,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             gameeventmanager->FireEvent(timerStopEvent);
         }
         if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
-
     }
     if (mapZoneEvent)
     {
@@ -251,8 +249,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
 {
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     if (mapZoneEvent)
     {
         mapZoneEvent->SetBool("map_finished", false); //once we leave endzone, we no longer want to display end stats again

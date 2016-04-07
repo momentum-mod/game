@@ -11,7 +11,7 @@ void CTimer::Start(int start)
     m_iStartTick = start;
     SetRunning(true);
     DispatchStateMessage();
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+
     IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_started");
 
     if (timeStartEvent)
@@ -112,7 +112,7 @@ void CTimer::SaveTime()
     const char *szMapName = gpGlobals->mapname.ToCStr();
     KeyValues *timesKV = new KeyValues(szMapName);
     int count = localTimes.Count();
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
 
     for (int i = 0; i < count; i++)
@@ -152,7 +152,7 @@ void CTimer::SaveTime()
 void CTimer::Stop(bool endTrigger /* = false */)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_started");
 
@@ -339,7 +339,6 @@ void CTimer::EnablePractice(CBasePlayer *pPlayer)
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
     g_Timer.Stop(false);
 
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *pracModeEvent = gameeventmanager->CreateEvent("practice_mode");
     if (pracModeEvent)
     {
@@ -354,7 +353,6 @@ void CTimer::DisablePractice(CBasePlayer *pPlayer)
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
 
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *pracModeEvent = gameeventmanager->CreateEvent("practice_mode");
     if (pracModeEvent)
     {
