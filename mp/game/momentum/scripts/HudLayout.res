@@ -150,6 +150,8 @@
 		"TextFont"		"HudNumbersSmall"
 		"CounterTextFont"		"HudNumbersVerySmall"
 		"WordTextFont"	"HudNumbersVerySmall"
+		"KeyPressedColor"	"MOM.Panel.Fg"
+		"KeyOutlineColor"	"Dark Gray"
 	}
 	HudHealth [$WIN32]
 	{
