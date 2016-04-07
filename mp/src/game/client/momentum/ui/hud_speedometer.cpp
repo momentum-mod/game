@@ -65,7 +65,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
             break;
         case 1:
         default:
-            SetLabelText(L"UPS");
+            SetLabelText(L""); //don't draw label if we are on UPS mode (it's a bit redundant)
             break;
         }
         SetDisplayValue(0);
@@ -117,7 +117,7 @@ void CHudSpeedMeter::OnThink()
     if (pPlayer)
     {
         velocity = pPlayer->GetLocalVelocity();
-
+        float lastJumpVel = pPlayer->m_flLastJumpVel;
         // Remove the vertical component if necessary
         if (speedometer_hvel.GetBool())
         {
@@ -131,17 +131,19 @@ void CHudSpeedMeter::OnThink()
         case 2:
             // 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
             vel *= 0.06858;
+            lastJumpVel *= 0.06858;
             SetLabelText(L"KM/H");
             break;
         case 3:
             // 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
             vel *= 0.04262;
+            lastJumpVel *= 0.04262;
             SetLabelText(L"MPH");
             break;
         case 1:
         default:
             // We do nothing but break out of the switch, as default vel is already in UPS
-            SetLabelText(L"UPS");
+            SetLabelText(L"");
             break;
         }
 
@@ -185,7 +187,7 @@ void CHudSpeedMeter::OnThink()
         //center text
         
         m_iRoundedVel = round(vel);
-        m_iRoundedLastJump = round(pPlayer->m_flLastJumpVel);
+        m_iRoundedLastJump = round(lastJumpVel);
         SetDisplayValue(m_iRoundedVel);
         SetShouldDisplaySecondaryValue(speedometer_lastjump.GetBool());
         SetSecondaryValue(m_iRoundedLastJump);

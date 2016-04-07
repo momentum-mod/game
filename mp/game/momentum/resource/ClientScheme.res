@@ -690,6 +690,18 @@ Scheme
 				"custom"	"1"
 			}
 		}
+		HudNumbersExtremelySmall
+		{
+			"1"
+			{
+				"name"		"obsidian"
+				"tall"		"9"
+				"weight"	"600"
+				"additive"	"1"
+				"antialias" "1"
+				"custom"	"1"
+			}
+		}
 		HudNumbersSmallGlow
 		{
 			"1"
