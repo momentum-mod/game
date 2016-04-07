@@ -37,7 +37,6 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
 }
 
 CMomentumPlayer::~CMomentumPlayer() {}

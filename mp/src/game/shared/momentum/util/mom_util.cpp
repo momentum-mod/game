@@ -39,7 +39,6 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     IGameEvent *mapFinishedEvent = gameeventmanager->CreateEvent("run_save");
 
     JsonValue val;//Outer object
