@@ -97,11 +97,13 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.startvel = kv->GetFloat("startvel");
             t.endvel = kv->GetFloat("endvel");
 
-            char stageFormat[64];
+            char stageFormat[64], stageVelFormat[64];
             for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
             {
                 Q_snprintf(stageFormat, sizeof(stageFormat), "stage %d ticks", i);
+                Q_snprintf(stageVelFormat, sizeof(stageVelFormat), "stage %d velocity", i);
                 t.stageticks[i] = kv->GetInt(stageFormat);
+                t.stagevel[i] = kv->GetInt(stageVelFormat);
             }
 
             localTimes.AddToTail(t);
@@ -140,11 +142,13 @@ void CTimer::SaveTime()
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
 
-        char stageFormat[64];
+        char stageFormat[64], stageVelFormat[64];
         for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
         {
             Q_snprintf(stageFormat, sizeof(stageFormat), "stage %d ticks", i);
+            Q_snprintf(stageVelFormat, sizeof(stageVelFormat), "stage %d velocity", i);
             pSubkey->SetInt(stageFormat, t.stageticks[i]);
+            pSubkey->SetFloat(stageVelFormat, t.stagevel[i]);
         }
         timesKV->AddSubKey(pSubkey);
     }
@@ -193,7 +197,11 @@ void CTimer::Stop(bool endTrigger /* = false */)
         t.startvel = pPlayer->m_flStartSpeed;
         t.endvel = pPlayer->m_flEndSpeed;
         for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+        {
             t.stageticks[i] = m_iStageEnterTick[i]; //add each stage's total time in ticks
+            t.stagevel[i] = m_iStageVel[i];
+        }
+            
 
         localTimes.AddToTail(t);
 
@@ -253,14 +261,21 @@ void CTimer::RequestStageCount()
     m_iStageCount = iCount;
 }
 //This function is called every time CTriggerStage::StartTouch is called
-int CTimer::GetStageTicks(int stage)
+int CTimer::GetStageStats(int stage)
 {
     if (stage == 1)
         m_iStageEnterTick[stage] = m_iStartTick; //stage "enter" for start zone is actually exit tick
     else if (stage > 1) //only compare pb/show time for stages after start zone
     {
         if (stage > m_iLastStage)
+        {
+            CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+            ConVarRef hvel("mom_speedometer_hvel");
             m_iStageEnterTick[stage] = gpGlobals->tickcount - m_iStartTick; //compare stage time diff
+            if (pPlayer) 
+                m_iStageVel[stage] = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
+        }
+            
     }
     DevLog("Stage: %i Ticks: %i LastStage: %i Ticks: %i\n", stage, m_iStageEnterTick[stage], m_iLastStage, m_iStageEnterTick[m_iLastStage]);
     m_iLastStage = stage;

@@ -70,7 +70,7 @@ public:
     void RequestStageCount();
     // Gets the total stage count
     int GetStageCount() { return m_iStageCount; };
-    int GetStageTicks(int stageNum);
+    int GetStageStats(int stageNum);
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
     int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
@@ -153,6 +153,7 @@ private:
     int m_iStartTick;
     int m_iLastStage = 0;
     int m_iStageEnterTick[MAX_STAGES];
+    float m_iStageVel[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
     CHandle<CTriggerTimerStart> m_pStartTrigger;
@@ -171,6 +172,7 @@ private:
         float maxvel, avgvel, startvel, endvel;
         float avgsync, avgsync2;
         int stageticks[MAX_STAGES];
+        float stagevel[MAX_STAGES];
     };
 
     struct Checkpoint

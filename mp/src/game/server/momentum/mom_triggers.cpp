@@ -37,7 +37,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             if (mapZoneEvent)
             {
                 mapZoneEvent->SetInt("current_stage", stageNum);
-                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageStats(stageNum));
                 gameeventmanager->FireEvent(mapZoneEvent);
             }
         }
@@ -55,7 +55,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
             if (mapZoneEvent)
             {
                 mapZoneEvent->SetInt("current_stage", stageNum);
-                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageStats(stageNum));
                 gameeventmanager->FireEvent(mapZoneEvent);
             }
         }
@@ -255,7 +255,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
     if (pOther->IsPlayer() && g_Timer.IsRunning())
     {
-        g_Timer.Stop(true);
         //send run stats via GameEventManager
         if (timerStopEvent)
         {
@@ -264,11 +263,13 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             timerStopEvent->SetFloat("avg_vel", pPlayer->m_flVelocityAvg);
             timerStopEvent->SetFloat("max_vel", pPlayer->m_flVelocityMax);
             timerStopEvent->SetFloat("start_vel", pPlayer->m_flStartSpeed);
-            timerStopEvent->SetFloat("end_vel", 
-                hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length()); 
+            float endvel = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
+            timerStopEvent->SetFloat("end_vel", endvel);
+            pPlayer->m_flEndSpeed = endvel; //we have to set end speed here or else it will be saved as 0 
             gameeventmanager->FireEvent(timerStopEvent);
         }
         if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
+        g_Timer.Stop(true);
     }
     if (mapZoneEvent)
     {

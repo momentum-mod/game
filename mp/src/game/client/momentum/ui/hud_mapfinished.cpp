@@ -210,6 +210,11 @@ void CHudMapFinishedDialog::Paint()
     surface()->DrawSetTextColor(GetFgColor());
 
     // --- RUN TIME ---
+
+    // MOM_TODO: This time string is just the hud timer string when it stops. 
+    // Since the hud timer has 2 digits precision this one only has 2 digits
+    // of precision as well. This will likely be changed when we switch to float
+    // based time.
     Q_snprintf(m_pszStringTimeLabel, sizeof(m_pszStringTimeLabel), "%s %s",
         timeLocalized, // run time localization 
         m_pszRunTime    // run time string
