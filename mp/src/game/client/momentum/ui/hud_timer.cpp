@@ -102,6 +102,11 @@ private:
     char m_pszStringStages[BUFSIZELOCL];
     wchar_t m_pwCurrentStatus[BUFSIZELOCL];
     char m_pszStringStatus[BUFSIZELOCL];
+    wchar_t m_pwStageTime[BUFSIZETIME];
+    char m_pszStageTimeString[BUFSIZETIME];
+    wchar_t m_pwStageTimeLabel[BUFSIZELOCL];
+    char m_pszStageTimeLabelString[BUFSIZELOCL];
+
     CUtlMap<const char*, float> map;
     int m_iTotalTicks;
     bool m_bWereCheatsActivated = false;
@@ -287,6 +292,16 @@ void C_Timer::Paint(void)
             m_iStageCurrent, // Current Stage
             m_iStageCount // Total number of stages
             );
+        if (m_iStageCurrent > 1)
+        { 
+            mom_UTIL.FormatTime(m_EventListener->m_iStageTicks, gpGlobals->interval_per_tick, m_pszStageTimeString);
+            Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
+                m_pszStageTimeString,
+                m_pszStageTimeLabelString
+                );
+            g_pVGuiLocalize->ConvertANSIToUnicode(
+                m_pszStageTimeLabelString, m_pwStageTimeLabel, sizeof(m_pwStageTimeLabel));
+        }
     }
     else //it's a linear map
     {
@@ -352,18 +367,26 @@ void C_Timer::Paint(void)
 
         surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
     }
-
-    // MOM_TODO: Print this only if map gamemode is supported
-    if (center_stage)
+    else //don't draw stages when drawing checkpoints, and vise versa
     {
-        int stageWide;
-        surface()->GetTextSize(m_hTextFont, m_pwCurrentStages, stageWide, dummy);
-        int offsetToCenter = ((totalWide - stageWide) / 2);
-        surface()->DrawSetTextPos(offsetToCenter, stage_ypos);
+        // MOM_TODO: Print this only if map gamemode is supported
+        if (center_stage)
+        {
+            int stageWide;
+            surface()->GetTextSize(m_hTextFont, m_pwCurrentStages, stageWide, dummy);
+            int offsetToCenter = ((totalWide - stageWide) / 2);
+            surface()->DrawSetTextPos(offsetToCenter, stage_ypos);
+        }
+        else
+            surface()->DrawSetTextPos(stage_xpos, stage_ypos);
+
+        surface()->DrawPrintText(m_pwCurrentStages, wcslen(m_pwCurrentStages));
+
+        if (m_iStageCurrent > 1) //only draw stage timer if we are on stage 2 or above.
+        {
+            int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, m_pwStageTimeLabel) / 2;
+            surface()->DrawSetTextPos(text_xpos, cps_ypos);
+            surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
+        }
     }
-    else
-        surface()->DrawSetTextPos(stage_xpos, stage_ypos);
-
-    surface()->DrawPrintText(m_pwCurrentStages, wcslen(m_pwCurrentStages));
-
 }

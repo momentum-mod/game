@@ -50,6 +50,8 @@
 		"inside_startzone"	"bool"
 		"inside_endzone"	"bool"
 		"map_finished"	"bool"
+		"current_stage"	"byte"
+		"stage_ticks"	"long" //time is in ticks
 	}
 	"practice_mode"
 	{

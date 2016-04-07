@@ -22,6 +22,8 @@ class CTriggerCheckpoint;
 class CTriggerOnehop;
 class CTriggerStage;
 
+#define MAX_STAGES 64
+
 class CTimer
 {
 public:
@@ -68,7 +70,7 @@ public:
     void RequestStageCount();
     // Gets the total stage count
     int GetStageCount() { return m_iStageCount; };
-
+    int GetStageTicks(int stageNum);
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
     int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
@@ -149,6 +151,8 @@ private:
 
     int m_iStageCount;
     int m_iStartTick;
+    int m_iLastStage = 0;
+    int m_iStageEnterTick[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
     CHandle<CTriggerTimerStart> m_pStartTrigger;

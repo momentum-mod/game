@@ -29,6 +29,36 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         g_Timer.SetCurrentStage(this);
+
+        int stageNum = this->GetStageNumber();
+        if (stageNum > 1) //send event on end touch if its the first zone instead of on start touch
+        {
+            IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+            if (mapZoneEvent)
+            {
+                mapZoneEvent->SetInt("current_stage", stageNum);
+                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                gameeventmanager->FireEvent(mapZoneEvent);
+            }
+        }
+    }
+}
+void CTriggerStage::EndTouch(CBaseEntity *pOther)
+{
+    BaseClass::EndTouch(pOther);
+    if (pOther->IsPlayer())
+    {
+        int stageNum = this->GetStageNumber();
+        if (stageNum == 1) //redundant check
+        {
+            IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+            if (mapZoneEvent)
+            {
+                mapZoneEvent->SetInt("current_stage", stageNum);
+                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                gameeventmanager->FireEvent(mapZoneEvent);
+            }
+        }
     }
 }
 //------------------------------------------------------------------------------------------

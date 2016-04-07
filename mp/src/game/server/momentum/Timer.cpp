@@ -193,7 +193,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
     SetRunning(false);
     DispatchStateMessage();
 }
-
 void CTimer::OnMapEnd(const char *pMapName)
 {
     if (IsRunning())
@@ -228,7 +227,20 @@ void CTimer::RequestStageCount()
     }
     m_iStageCount = iCount;
 }
-
+//This function is called every time CTriggerStage::StartTouch is called
+int CTimer::GetStageTicks(int stage)
+{
+    if (stage == 1)
+        m_iStageEnterTick[stage] = m_iStartTick; //stage "enter" for start zone is actually exit tick
+    else if (stage > 1) //only compare pb/show time for stages after start zone
+    {
+        if (stage > m_iLastStage)
+            m_iStageEnterTick[stage] = gpGlobals->tickcount - m_iStageEnterTick[m_iLastStage]; //compare stage time diff
+    }
+    DevLog("Stage: %i Ticks: %i LastStage: %i Ticks: %i\n", stage, m_iStageEnterTick[stage], m_iLastStage, m_iStageEnterTick[m_iLastStage]);
+    m_iLastStage = stage;
+    return m_iStageEnterTick[stage];
+}
 void CTimer::DispatchResetMessage()
 {
     CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());

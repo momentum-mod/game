@@ -37,6 +37,8 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         m_bPlayerInsideStartZone = pEvent->GetBool("inside_startzone");
         m_bPlayerInsideEndZone = pEvent->GetBool("inside_endzone");
         m_bMapFinished = pEvent->GetBool("map_finished"); //different from "inside endzone", this is only fired if the player finished when their timer was running
+        m_iCurrentStage = pEvent->GetInt("current_stage");
+        m_iStageTicks = pEvent->GetInt("stage_ticks");
     }
     if (!strcmp("practice_mode", pEvent->GetName()))
     {

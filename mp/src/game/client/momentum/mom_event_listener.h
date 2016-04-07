@@ -16,4 +16,5 @@ public:
     bool m_bPlayerHasPracticeMode = false;
 
     float m_flStartSpeed = 0, m_flEndSpeed, m_flVelocityMax, m_flVelocityAvg, m_flStrafeSyncAvg, m_flStrafeSync2Avg;
+    int m_iCurrentStage, m_iStageTicks;
 };

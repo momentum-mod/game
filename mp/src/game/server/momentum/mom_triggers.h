@@ -98,6 +98,7 @@ class CTriggerStage : public CTriggerCheckpoint
 
 public:
     void StartTouch(CBaseEntity*);
+    void EndTouch(CBaseEntity*);
     void Spawn()
     {
         SetCheckpointNumber(-1);
