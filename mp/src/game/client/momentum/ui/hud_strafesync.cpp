@@ -55,6 +55,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     {
         Panel::ApplySchemeSettings(pScheme);
         SetFgColor(GetSchemeColor("White", pScheme));
+        SetBgColor(_bgColor);
         normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
         increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
         decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
@@ -74,7 +75,8 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
 
     float digit_xpos_initial;
     C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
-
+protected:
+    CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
 };
 
 DECLARE_HUDELEMENT(CHudStrafeSyncDisplay);

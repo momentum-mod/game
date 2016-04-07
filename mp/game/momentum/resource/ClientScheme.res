@@ -25,13 +25,13 @@ Scheme
 		"TransparentBlack"    "0 0 0 196"
 		"TransparentLightBlack"    "0 0 0 90"
 	
-		"Blank"                "0 0 0 0"
+		"Blank"                "0 0 0 1"
 
-		"MOM.Panel.Fg"				"255 255 255 255"
+		"MOM.Panel.Fg"				"255 255 255 125"
 		"MOM.Panel.Bg"				"0 0 0 76"
-		"MOM.Speedometer.Normal"	"255 255 255 255"
-		"MOM.Speedometer.Increase"	"0 128 255 255"
-		"MOM.Speedometer.Decrease"	"255 0 0 255"
+		"MOM.Speedometer.Normal"	"255 255 255 125"
+		"MOM.Speedometer.Increase"	"30 150 210 255"
+		"MOM.Speedometer.Decrease"	"255 75 75 255"
 	}
 	
 	///////////////////// BASE SETTINGS ////////////////////////
@@ -663,6 +663,19 @@ Scheme
 				"additive"	"1"
 				"antialias" "1"
 				"custom"	"1"
+			}
+		}
+		HudNumbersSmallBold
+		{
+			"1"
+			{
+				"name"		"obsidian"
+				"tall"		"16"
+				"weight"	"1000"
+				"additive"	"1"
+				"antialias" "1"
+				"custom"	"1"
+				"bold"	"1"
 			}
 		}
 		HudNumbersVerySmall

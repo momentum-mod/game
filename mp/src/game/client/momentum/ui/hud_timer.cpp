@@ -64,12 +64,9 @@ protected:
     CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
     CPanelAnimationVar(Color, m_Ammo2Color, "Ammo2Color", "FgColor");
 
-    CPanelAnimationVar(HFont, m_hNumberFont, "NumberFont", "HudNumbers");
-    CPanelAnimationVar(HFont, m_hNumberGlowFont, "NumberGlowFont",
-        "HudNumbersGlow");
-    CPanelAnimationVar(HFont, m_hSmallNumberFont, "SmallNumberFont",
-        "HudNumbersSmall");
-    CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
+    CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "HudHintTextLarge");
+    CPanelAnimationVar(HFont, m_hTimerFont, "TimerFont", "HudNumbersSmallBold");
+    CPanelAnimationVar(HFont, m_hSmallTextFont, "SmallTextFont", "HudNumbersSmall");
 
     CPanelAnimationVarAliasType(bool, center_time, "centerTime", "0",
         "BOOL");
@@ -331,7 +328,7 @@ void C_Timer::Paint(void)
         m_pszStringStatus, m_pwCurrentStatus, sizeof(m_pwCurrentStatus));
 
     // Draw the text label.
-    surface()->DrawSetTextFont(m_hTextFont);
+    surface()->DrawSetTextFont(m_bIsRunning ? m_hTimerFont : m_hTextFont);
     surface()->DrawSetTextColor(GetFgColor());
 
     int dummy, totalWide;
@@ -341,7 +338,7 @@ void C_Timer::Paint(void)
     if (center_time)
     {
         int timeWide;
-        surface()->GetTextSize(m_hTextFont, m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, timeWide, dummy);
+        surface()->GetTextSize(m_bIsRunning ? m_hTimerFont : m_hTextFont, m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, timeWide, dummy);
         int offsetToCenter = ((totalWide - timeWide) / 2);
         surface()->DrawSetTextPos(offsetToCenter, time_ypos);
     }
@@ -353,12 +350,13 @@ void C_Timer::Paint(void)
     //draw either timer display or the timer status
     surface()->DrawPrintText(m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, m_bIsRunning ? wcslen(m_pwCurrentTime) : wcslen(m_pwCurrentStatus));
 
+    surface()->DrawSetTextFont(m_hSmallTextFont);
     if (m_bShowCheckpoints)
     {
         if (center_cps)
         {
             int cpsWide;
-            surface()->GetTextSize(m_hTextFont, m_pwCurrentCheckpoints, cpsWide, dummy);
+            surface()->GetTextSize(m_hSmallTextFont, m_pwCurrentCheckpoints, cpsWide, dummy);
             int offsetToCenter = ((totalWide - cpsWide) / 2);
             surface()->DrawSetTextPos(offsetToCenter, cps_ypos);
         }
@@ -373,7 +371,7 @@ void C_Timer::Paint(void)
         if (center_stage)
         {
             int stageWide;
-            surface()->GetTextSize(m_hTextFont, m_pwCurrentStages, stageWide, dummy);
+            surface()->GetTextSize(m_hSmallTextFont, m_pwCurrentStages, stageWide, dummy);
             int offsetToCenter = ((totalWide - stageWide) / 2);
             surface()->DrawSetTextPos(offsetToCenter, stage_ypos);
         }
@@ -384,7 +382,7 @@ void C_Timer::Paint(void)
 
         if (m_iStageCurrent > 1) //only draw stage timer if we are on stage 2 or above.
         {
-            int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, m_pwStageTimeLabel) / 2;
+            int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
             surface()->DrawSetTextPos(text_xpos, cps_ypos);
             surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
         }

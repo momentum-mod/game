@@ -2,6 +2,15 @@
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
+#include "vgui_helpers.h"
+
+#include <vgui_controls/Panel.h>
+#include <vgui_controls/Frame.h>
+#include <vgui/IScheme.h>
+#include <vgui/ISurface.h>
+#include <vgui/ILocalize.h>
+#include <vgui_controls/AnimationController.h>
+
 #include "mom_player_shared.h"
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
@@ -41,6 +50,8 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     CHudSpeedMeter(const char *pElementName);
     virtual void Init() { Reset(); }
     virtual void VidInit() { Reset(); }
+    virtual void Paint();
+    virtual void PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits);
     virtual void Reset()
     {
         // We set the proper LabelText based on mom_speedmeter_units value
@@ -69,6 +80,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
         normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
         increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
         decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
+        SetBgColor(_bgColor);
         m_LabelColor = normalColor;
     }
     bool ShouldColorize() { return speedometer_colorize.GetBool(); }
@@ -77,10 +89,13 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     float m_flLastVelocity;
     float m_flLastJumpVelocity;
 
+    int m_iRoundedVel, m_iRoundedLastJump;
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
     //C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
+protected:
+    CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
 };
 
 DECLARE_HUDELEMENT(CHudSpeedMeter);
@@ -167,9 +182,70 @@ void CHudSpeedMeter::OnThink()
         {
             m_SecondaryValueColor = m_PrimaryValueColor = normalColor;
         }
-
-        SetDisplayValue(round(vel));
+        //center text
+        
+        m_iRoundedVel = round(vel);
+        m_iRoundedLastJump = round(pPlayer->m_flLastJumpVel);
+        SetDisplayValue(m_iRoundedVel);
         SetShouldDisplaySecondaryValue(speedometer_lastjump.GetBool());
-        SetSecondaryValue(round(pPlayer->m_flLastJumpVel));
+        SetSecondaryValue(m_iRoundedLastJump);
     }
+}
+void CHudSpeedMeter::Paint()
+{
+    char speedoValue[BUFSIZELOCL], lastJumpvValue[BUFSIZELOCL];
+    wchar_t pw_SpeedoValue[BUFSIZELOCL], pw_LastJumpvValue[BUFSIZELOCL];
+    Q_snprintf(speedoValue, sizeof(speedoValue), "%d", m_iRoundedVel);
+    Q_snprintf(lastJumpvValue, sizeof(lastJumpvValue), "%d", m_iRoundedLastJump);
+
+    g_pVGuiLocalize->ConvertANSIToUnicode(speedoValue, pw_SpeedoValue, sizeof(pw_SpeedoValue));
+    g_pVGuiLocalize->ConvertANSIToUnicode(lastJumpvValue, pw_LastJumpvValue, sizeof(pw_LastJumpvValue));
+
+    text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, m_LabelText) / 2;
+    digit_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hNumberFont, pw_SpeedoValue) / 2;
+    digit2_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallNumberFont, pw_LastJumpvValue) / 2;
+
+    BaseClass::Paint();
+}
+//we override this here so the last jump vel display doesnt have a double 0
+void CHudSpeedMeter::PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits)
+{
+   
+    surface()->DrawSetTextFont(font);
+    wchar_t unicode[6];
+    if (!m_bIsTime)
+    {
+        if (atLeast2Digits && value < 10)
+        {
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d", value);
+        }
+        else
+        {
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d", value);
+        }
+    }
+    else
+    {
+        int iMinutes = value / 60;
+        int iSeconds = value - iMinutes * 60;
+
+        if (iSeconds < 10)
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d`0%d", iMinutes, iSeconds);
+        else
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d`%d", iMinutes, iSeconds);
+    }
+
+    // adjust the position to take into account 3 characters
+    int charWidth = surface()->GetCharacterWidth(font, '0');
+    if (value < 100 && m_bIndent)
+    {
+        xpos += charWidth;
+    }
+    if (value < 10 && m_bIndent)
+    {
+        xpos += charWidth;
+    }
+
+    surface()->DrawSetTextPos(xpos, ypos);
+    surface()->DrawUnicodeString(unicode);
 }
