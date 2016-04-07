@@ -32,10 +32,9 @@ public:
 
     Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
 
-    //Formats time in ticks by a given tickrate into
-    //"HH:MM:SS.mmmm"
-    void FormatTime(float ticks, float rate, char *pOut);
- 
+    //Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours, etc
+    //Precision is miliseconds by default
+    void FormatTime(float ticks, float rate, char *pOut, int precision = 3);
 };
 
 extern MomentumUtil mom_UTIL;

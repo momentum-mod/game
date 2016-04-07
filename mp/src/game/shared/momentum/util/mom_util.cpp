@@ -172,7 +172,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
 #endif
 
-void MomentumUtil::FormatTime(float ticks, float rate, char *pOut)
+void MomentumUtil::FormatTime(float ticks, float rate, char *pOut, int precision)
 {
     float m_flSecondsTime = ticks * rate;
 
@@ -180,13 +180,45 @@ void MomentumUtil::FormatTime(float ticks, float rate, char *pOut)
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
     int seconds = fmod(m_flSecondsTime, 60.0f);
     int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
+    int hundredths = millis / 10;
+    int tenths = millis / 100;
 
-    if (hours > 0)
-        Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%03d", hours, minutes, seconds, millis);
-    else if (minutes > 0)
-        Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%03d", minutes, seconds, millis);
-    else
-        Q_snprintf(pOut, BUFSIZETIME, "%d.%03d", seconds, millis);
+    switch (precision)
+    {
+    case 0:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d", hours, minutes, seconds);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d", minutes, seconds);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d", seconds);
+        break;
+    case 1:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%d", hours, minutes, seconds, tenths);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%d", minutes, seconds, tenths);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%d", seconds, tenths);
+        break;
+    case 2:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%02d", hours, minutes, seconds, hundredths);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%02d", minutes, seconds, hundredths);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%02d", seconds, hundredths);
+        break;
+    case 3:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%03d", minutes, seconds, millis);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%03d", seconds, millis);
+        break;
+    }
+    
 }
 
 Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor)
