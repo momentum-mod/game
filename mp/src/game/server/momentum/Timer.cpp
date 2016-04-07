@@ -96,6 +96,14 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.maxvel = kv->GetFloat("maxvel");
             t.startvel = kv->GetFloat("startvel");
             t.endvel = kv->GetFloat("endvel");
+
+            char stageFormat[64];
+            for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+            {
+                Q_snprintf(stageFormat, sizeof(stageFormat), "stage %d ticks", i);
+                t.stageticks[i] = kv->GetInt(stageFormat);
+            }
+
             localTimes.AddToTail(t);
         }
     }
@@ -131,6 +139,13 @@ void CTimer::SaveTime()
         pSubkey->SetFloat("maxvel", t.maxvel);
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
+
+        char stageFormat[64];
+        for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+        {
+            Q_snprintf(stageFormat, sizeof(stageFormat), "stage %d ticks", i);
+            pSubkey->SetInt(stageFormat, t.stageticks[i]);
+        }
         timesKV->AddSubKey(pSubkey);
     }
 
@@ -155,6 +170,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_started");
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -176,6 +192,9 @@ void CTimer::Stop(bool endTrigger /* = false */)
         t.maxvel = pPlayer->m_flVelocityMax;
         t.startvel = pPlayer->m_flStartSpeed;
         t.endvel = pPlayer->m_flEndSpeed;
+        for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+            t.stageticks[i] = m_iStageEnterTick[i]; //add each stage's total time in ticks
+
         localTimes.AddToTail(t);
 
         SaveTime();
@@ -189,6 +208,12 @@ void CTimer::Stop(bool endTrigger /* = false */)
     {
         timeStopEvent->SetBool("timer_isrunning", false);
         gameeventmanager->FireEvent(timeStopEvent);
+    }
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetInt("current_stage", 0);
+        mapZoneEvent->SetInt("stage_ticks", 0);
+        gameeventmanager->FireEvent(mapZoneEvent);
     }
     SetRunning(false);
     DispatchStateMessage();
@@ -235,7 +260,7 @@ int CTimer::GetStageTicks(int stage)
     else if (stage > 1) //only compare pb/show time for stages after start zone
     {
         if (stage > m_iLastStage)
-            m_iStageEnterTick[stage] = gpGlobals->tickcount - m_iStageEnterTick[m_iLastStage]; //compare stage time diff
+            m_iStageEnterTick[stage] = gpGlobals->tickcount - m_iStartTick; //compare stage time diff
     }
     DevLog("Stage: %i Ticks: %i LastStage: %i Ticks: %i\n", stage, m_iStageEnterTick[stage], m_iLastStage, m_iStageEnterTick[m_iLastStage]);
     m_iLastStage = stage;

@@ -79,6 +79,8 @@ void CMomentumPlayer::Spawn()
         mapZoneEvent->SetBool("inside_startzone", false);
         mapZoneEvent->SetBool("inside_endzone", false);
         mapZoneEvent->SetBool("map_finished", false);
+        mapZoneEvent->SetInt("current_stage", 0);
+        mapZoneEvent->SetInt("stage_ticks", 0);
         gameeventmanager->FireEvent(mapZoneEvent);
     }
     if (runSaveEvent)

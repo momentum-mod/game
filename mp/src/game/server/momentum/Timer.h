@@ -170,6 +170,7 @@ private:
         int jumps, strafes;
         float maxvel, avgvel, startvel, endvel;
         float avgsync, avgsync2;
+        int stageticks[MAX_STAGES];
     };
 
     struct Checkpoint
