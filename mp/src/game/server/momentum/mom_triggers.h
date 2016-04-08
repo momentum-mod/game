@@ -123,7 +123,6 @@ public:
     void EndTouch(CBaseEntity*);
     void StartTouch(CBaseEntity*);
     void Spawn();
-    void Think();
 
     // The start is always the first stage/checkpoint
     int GetCheckpointNumber() { return -1; }//Override
@@ -153,8 +152,6 @@ private:
 
     //limitbhop stuff
     float m_fBhopLeaveSpeed = 250;
-    //default false, so if SF_LIMIT_BHOP is not set we don't do any bhop limit stuff
-    bool m_bDidPlayerBhop {false};
 };
 
 // CFilterCheckpoint

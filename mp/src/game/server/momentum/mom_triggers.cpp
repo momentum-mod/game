@@ -76,6 +76,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
     if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) // do not start timer if player is in practice mode.
     {
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
         g_Timer.Start(gpGlobals->tickcount);
 
         if (IsLimitingSpeed())
@@ -87,18 +88,18 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 // It only has a NormalizeInPlace... Not simple enough for me
                 Vector2D vel2D = velocity.AsVector2D();
 
-                if (velocity.AsVector2D().IsLengthGreaterThan(m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed))
+                if (velocity.AsVector2D().IsLengthGreaterThan(pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed))
                 {
-                    vel2D = ((vel2D / vel2D.Length()) * (m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
+                    vel2D = ((vel2D / vel2D.Length()) * (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
                     pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                 }
             }
             // XYZ limit (this is likely never going to be used, or at least, it shouldn't be)
             else
             {
-                if (velocity.IsLengthGreaterThan((m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed)))
+                if (velocity.IsLengthGreaterThan((pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed)))
                     pOther->SetAbsVelocity(velocity.Normalized() *
-                                           (m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
+                    (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
             }
         }
     }
@@ -221,23 +222,6 @@ void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
     }
 }
 void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
-void CTriggerTimerStart::Think()
-{
-    // for limit bhop in start zone
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    // We don't check for player inside trigger here since the Think() function
-    // is only called if we are inside (see StartTouch & EndTouch defined above)
-    if (pPlayer && IsLimitingBhop())
-    {
-        if (pPlayer->DidPlayerBhop())
-            m_bDidPlayerBhop = true;
-        else
-            m_bDidPlayerBhop = false;
-    }
-
-    SetNextThink(gpGlobals->curtime);
-    BaseClass::Think();
-}
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTimerStop ----------------------------------------------------------------
