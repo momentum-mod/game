@@ -31,14 +31,25 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         g_Timer.SetCurrentStage(this);
 
         int stageNum = this->GetStageNumber();
-        if (stageNum > 1) //send event on end touch if its the first zone instead of on start touch
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+        if (stageNum > 1) //Only for stages other than the first one; first stage stats NEED to be OnEndTouch
         {
-            IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-            if (mapZoneEvent)
+            IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage");
+            if (stageEvent)
             {
-                mapZoneEvent->SetInt("current_stage", stageNum);
-                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageStats(stageNum));
-                gameeventmanager->FireEvent(mapZoneEvent);
+                stageEvent->SetInt("stage_num", stageNum);
+                stageEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
+                stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum]);
+                stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum]);
+                stageEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[stageNum]);
+                stageEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[stageNum]);
+                stageEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[stageNum]);
+
+                ConVarRef hvel("mom_speedometer_hvel");
+                pPlayer->m_flStageEnterVelocity[stageNum] = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum]);
+                gameeventmanager->FireEvent(stageEvent);
             }
         }
     }
@@ -49,14 +60,25 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         int stageNum = this->GetStageNumber();
-        if (stageNum == 1) //redundant check
+        if (stageNum == 1) //redundant check for this being the first stage so we have to save stats on on EXIT rather than enter
         {
-            IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-            if (mapZoneEvent)
+            CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+            IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage");
+            if (stageEvent)
             {
-                mapZoneEvent->SetInt("current_stage", stageNum);
-                mapZoneEvent->SetInt("stage_ticks", g_Timer.GetStageStats(stageNum));
-                gameeventmanager->FireEvent(mapZoneEvent);
+                stageEvent->SetInt("stage_num", stageNum);
+                stageEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
+                stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum]);
+                stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum]);
+                stageEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[stageNum]);
+                stageEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[stageNum]);
+                stageEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[stageNum]);
+
+                ConVarRef hvel("mom_speedometer_hvel");
+                pPlayer->m_flStageEnterVelocity[stageNum] = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum]);
+                gameeventmanager->FireEvent(stageEvent);
             }
         }
     }
@@ -242,14 +264,16 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         //send run stats via GameEventManager
         if (timerStopEvent)
         {
-            timerStopEvent->SetFloat("avg_sync", pPlayer->m_flStrafeSyncAvg);
-            timerStopEvent->SetFloat("avg_sync2", pPlayer->m_flStrafeSync2Avg);
-            timerStopEvent->SetFloat("avg_vel", pPlayer->m_flVelocityAvg);
-            timerStopEvent->SetFloat("max_vel", pPlayer->m_flVelocityMax);
+            timerStopEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[0]);
+            timerStopEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[0]);
+            timerStopEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[0]);
+            timerStopEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[0]);
             timerStopEvent->SetFloat("start_vel", pPlayer->m_flStartSpeed);
             float endvel = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
             timerStopEvent->SetFloat("end_vel", endvel);
             pPlayer->m_flEndSpeed = endvel; //we have to set end speed here or else it will be saved as 0 
+            timerStopEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[0]);
+            timerStopEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[0]);
             gameeventmanager->FireEvent(timerStopEvent);
         }
         if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running

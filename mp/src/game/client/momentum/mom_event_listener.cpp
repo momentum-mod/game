@@ -7,19 +7,16 @@ C_Momentum_EventListener::C_Momentum_EventListener()
 {
     //add listeners for all of our custom events
     gameeventmanager->AddListener(this, "timer_stopped", false);
+    gameeventmanager->AddListener(this, "new_stage", false);
+    gameeventmanager->AddListener(this, "run_save", false);
     gameeventmanager->AddListener(this, "timer_started", false);
     gameeventmanager->AddListener(this, "player_inside_mapzone", false);
-    gameeventmanager->AddListener(this, "run_save", false);
     gameeventmanager->AddListener(this, "practice_mode", false);
+    gameeventmanager->AddListener(this, "keypress", false);
 }
 void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 {
-    if (!strcmp("run_save", pEvent->GetName()))
-    {
-        m_bTimeDidSave = pEvent->GetBool("run_saved");
-        m_bTimeDidUpload = pEvent->GetBool("run_posted");
-    }
-    if (!strcmp("timer_stopped", pEvent->GetName()))
+    if (!Q_strcmp("timer_stopped", pEvent->GetName()))
     {
         m_flStartSpeed = pEvent->GetFloat("start_vel");
         m_flEndSpeed = pEvent->GetFloat("end_vel");
@@ -28,20 +25,38 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         m_flVelocityAvg = pEvent->GetFloat("avg_vel");
         m_flVelocityMax = pEvent->GetFloat("max_vel");
     }
-    if (!strcmp("timer_started", pEvent->GetName()))
+    if (!Q_strcmp("new_stage", pEvent->GetName()))
+    {
+        m_iCurrentStage = pEvent->GetInt("stage_num");
+        m_iStageTicks[m_iCurrentStage] = pEvent->GetInt("stage_ticks");
+        m_flStageStrafeSyncAvg[m_iCurrentStage] = pEvent->GetFloat("avg_sync");
+        m_flStageStrafeSync2Avg[m_iCurrentStage] = pEvent->GetFloat("avg_sync2");
+        m_flStageStartSpeed[m_iCurrentStage] = pEvent->GetFloat("start_vel");
+        m_flStageVelocityAvg[m_iCurrentStage] = pEvent->GetFloat("avg_vel");
+        m_flStageVelocityMax[m_iCurrentStage] = pEvent->GetFloat("max_vel");
+    }
+    if (!Q_strcmp("run_save", pEvent->GetName()))
+    {
+        m_bTimeDidSave = pEvent->GetBool("run_saved");
+        m_bTimeDidUpload = pEvent->GetBool("run_posted");
+    }
+    if (!Q_strcmp("timer_started", pEvent->GetName()))
     {
         m_bTimerIsRunning = pEvent->GetBool("timer_isrunning");
     }
-    if (!strcmp("player_inside_mapzone", pEvent->GetName()))
+    if (!Q_strcmp("player_inside_mapzone", pEvent->GetName()))
     {
         m_bPlayerInsideStartZone = pEvent->GetBool("inside_startzone");
         m_bPlayerInsideEndZone = pEvent->GetBool("inside_endzone");
         m_bMapFinished = pEvent->GetBool("map_finished"); //different from "inside endzone", this is only fired if the player finished when their timer was running
-        m_iCurrentStage = pEvent->GetInt("current_stage");
-        m_iStageTicks = pEvent->GetInt("stage_ticks");
     }
-    if (!strcmp("practice_mode", pEvent->GetName()))
+    if (!Q_strcmp("practice_mode", pEvent->GetName()))
     {
         m_bPlayerHasPracticeMode = pEvent->GetBool("has_practicemode");
+    }
+    if (!Q_strcmp("keypress", pEvent->GetName()))
+    {
+        m_iTotalJumps = pEvent->GetInt("num_jumps");
+        m_iTotalStrafes = pEvent->GetInt("num_strafes");
     }
 }

@@ -16,8 +16,6 @@ RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
 RecvPropFloat(RECVINFO(m_flStrafeSync)),
 RecvPropFloat(RECVINFO(m_flStrafeSync2)),
 RecvPropFloat(RECVINFO(m_flLastJumpVel)),
-RecvPropInt(RECVINFO(m_nTotalJumps)),
-RecvPropInt(RECVINFO(m_nTotalStrafes)),
 //RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
 //RecvPropBool(RECVINFO(m_fIsSprinting)),
 END_RECV_TABLE()

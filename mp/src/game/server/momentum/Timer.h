@@ -22,8 +22,6 @@ class CTriggerCheckpoint;
 class CTriggerOnehop;
 class CTriggerStage;
 
-#define MAX_STAGES 64
-
 class CTimer
 {
 public:
@@ -64,13 +62,14 @@ public:
         DispatchStageMessage();
     }
     CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
+    int GetCurrentStageNumber() { return m_pCurrentStage.Get()->GetStageNumber(); }
 
     // Calculates the stage count
     // Stores the result on m_iStageCount
     void RequestStageCount();
     // Gets the total stage count
     int GetStageCount() { return m_iStageCount; };
-    int GetStageStats(int stageNum);
+    int GetStageTicks(int stageNum);
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
     int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
@@ -153,7 +152,6 @@ private:
     int m_iStartTick;
     int m_iLastStage = 0;
     int m_iStageEnterTick[MAX_STAGES];
-    float m_iStageVel[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
     CHandle<CTriggerTimerStart> m_pStartTrigger;
@@ -162,17 +160,19 @@ private:
 
     struct Time
     {
-        //The amount of ticks took to complete
-        int ticks;
-        //Tickrate the run was done on
-        float tickrate;
-        //Date achieved
-        time_t date;
+        //overall run stats:
+        int ticks;  //The amount of ticks took to complete
+        float tickrate;  //Tickrate the run was done on
+        time_t date;    //Date achieved
         int jumps, strafes;
         float maxvel, avgvel, startvel, endvel;
         float avgsync, avgsync2;
-        int stageticks[MAX_STAGES];
-        float stagevel[MAX_STAGES];
+
+        //stage specific stats:
+        int stageticks[MAX_STAGES]; //time in ticks for that stage
+        float stagevel[MAX_STAGES], stageavgvel[MAX_STAGES], stagemaxvel[MAX_STAGES], 
+            stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES]; //no stage end vel since it's the same as the next stage start vel
+        int stagejumps[MAX_STAGES], stagestrafes[MAX_STAGES];
     };
 
     struct Checkpoint

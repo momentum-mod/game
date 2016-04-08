@@ -35,8 +35,22 @@
 		"max_vel"	"float"
 		"start_vel"	"float"
 		"end_vel"	"float"
+		"num_strafes"	"short"
+		"num_jumps"	"short"
 	}
-	"run_save"	
+	"new_stage"
+	{
+		"stage_num"	"byte"
+		"stage_ticks"	"long" //time is in ticks
+		"avg_sync"	"float"
+		"avg_sync2"	"float"
+		"avg_vel"	"float"
+		"max_vel"	"float"
+		"stage_enter_vel"	"float"
+		"num_strafes"	"short"
+		"num_jumps"	"short"
+	}
+	"run_save"
 	{
 		"run_saved"	"bool"
 		"run_posted"	"bool"
@@ -50,8 +64,11 @@
 		"inside_startzone"	"bool"
 		"inside_endzone"	"bool"
 		"map_finished"	"bool"
-		"current_stage"	"byte"
-		"stage_ticks"	"long" //time is in ticks
+	}
+	"keypress"
+	{
+		"num_jumps"	"short"
+		"num_strafes"	"short"
 	}
 	"practice_mode"
 	{

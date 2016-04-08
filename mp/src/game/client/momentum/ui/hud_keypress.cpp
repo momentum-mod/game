@@ -162,15 +162,11 @@ void CHudKeyPressDisplay::Paint()
 void CHudKeyPressDisplay::OnThink()
 {
     m_nButtons = ::input->GetButtonBits(0);
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (pPlayer)
-    {
-        m_nStrafes = pPlayer->m_nTotalStrafes;
-        m_nJumps = pPlayer->m_nTotalJumps;
-    }
     if (m_EventListener)
     {   //we should only draw the strafe/jump counters when the timer is running
         m_bShouldDrawCounts = m_EventListener->m_bTimerIsRunning;
+        m_nStrafes = m_EventListener->m_iTotalStrafes;
+        m_nJumps = m_EventListener->m_iTotalJumps;
     }
 }
 void CHudKeyPressDisplay::Reset()

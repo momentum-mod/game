@@ -97,7 +97,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.startvel = kv->GetFloat("startvel");
             t.endvel = kv->GetFloat("endvel");
 
-            for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+            for (int i = 1; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
             {
                 KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey();
                 t.stageticks[i] = subKv->GetInt("ticks");
@@ -142,13 +142,19 @@ void CTimer::SaveTime()
         pOverallKey->SetInt("date", t.date);
 
         char stageName[9]; // "stage 999"
-        for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+        for (int i = 1; i <= GetStageCount(); i++) //start at 1, since stage 0 doesnt really exist
         {
             Q_snprintf(stageName, sizeof(stageName), "stage %d", i);
 
             KeyValues *pStageKey = new KeyValues(stageName);
             pStageKey->SetInt("ticks", t.stageticks[i]);
-            pStageKey->SetFloat("startvel", t.stagevel[i]);
+            pStageKey->SetInt("num_jumps", t.stagejumps[i]);
+            pStageKey->SetInt("num_strafes", t.stagestrafes[i]);
+            pStageKey->SetFloat("avg_sync", t.stageavgsync[i]);
+            pStageKey->SetFloat("avg_sync2", t.stageavgsync2[i]);
+            pStageKey->SetFloat("avg_vel", t.stageavgvel[i]);
+            pStageKey->SetFloat("max_vel", t.stagemaxvel[i]);
+            pStageKey->SetFloat("stage_enter_vel", t.stagevel[i]);
             pSubkey->AddSubKey(pStageKey);
         }
         timesKV->AddSubKey(pSubkey);
@@ -190,18 +196,26 @@ void CTimer::Stop(bool endTrigger /* = false */)
         t.ticks = gpGlobals->tickcount - m_iStartTick;
         t.tickrate = gpGlobals->interval_per_tick;
         time(&t.date);
-        t.jumps = pPlayer->m_nTotalJumps;
-        t.strafes = pPlayer->m_nTotalStrafes;
-        t.avgsync = pPlayer->m_flStrafeSyncAvg;
-        t.avgsync2 = pPlayer->m_flStrafeSync2Avg;
-        t.avgvel = pPlayer->m_flVelocityAvg;
-        t.maxvel = pPlayer->m_flVelocityMax;
+
+        //stage 0 is overall stats
+        t.jumps = pPlayer->m_nStageJumps[0];
+        t.strafes = pPlayer->m_nStageStrafes[0];
+        t.avgsync = pPlayer->m_flStageStrafeSyncAvg[0];
+        t.avgsync2 = pPlayer->m_flStageStrafeSync2Avg[0];
+        t.avgvel = pPlayer->m_flStageVelocityAvg[0];
+        t.maxvel = pPlayer->m_flStageVelocityMax[0];
         t.startvel = pPlayer->m_flStartSpeed;
         t.endvel = pPlayer->m_flEndSpeed;
-        for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+        for (int i = 1; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
         {
             t.stageticks[i] = m_iStageEnterTick[i]; //add each stage's total time in ticks
-            t.stagevel[i] = m_iStageVel[i];
+            t.stagejumps[i] = pPlayer->m_nStageJumps[i];
+            t.stagestrafes[i] = pPlayer->m_nStageStrafes[i];
+            t.stageavgsync[i] = pPlayer->m_flStageStrafeSyncAvg[i];
+            t.stageavgsync2[i] = pPlayer->m_flStageStrafeSync2Avg[i];
+            t.stageavgvel[i] = pPlayer->m_flStageVelocityAvg[i];
+            t.stagemaxvel[i] = pPlayer->m_flStageVelocityMax[i];
+            t.stagevel[i] = pPlayer->m_flStageEnterVelocity[i];
         }
             
 
@@ -263,7 +277,7 @@ void CTimer::RequestStageCount()
     m_iStageCount = iCount;
 }
 //This function is called every time CTriggerStage::StartTouch is called
-int CTimer::GetStageStats(int stage)
+int CTimer::GetStageTicks(int stage)
 {
     if (stage == 1)
         m_iStageEnterTick[stage] = m_iStartTick; //stage "enter" for start zone is actually exit tick
@@ -271,15 +285,10 @@ int CTimer::GetStageStats(int stage)
     {
         if (stage > m_iLastStage)
         {
-            CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-            ConVarRef hvel("mom_speedometer_hvel");
             m_iStageEnterTick[stage] = gpGlobals->tickcount - m_iStartTick; //compare stage time diff
-            if (pPlayer) 
-                m_iStageVel[stage] = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
         }
             
     }
-    DevLog("Stage: %i Ticks: %i LastStage: %i Ticks: %i\n", stage, m_iStageEnterTick[stage], m_iLastStage, m_iStageEnterTick[m_iLastStage]);
     m_iLastStage = stage;
     return m_iStageEnterTick[stage];
 }

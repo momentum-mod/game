@@ -291,7 +291,7 @@ void C_Timer::Paint(void)
             );
         if (m_iStageCurrent > 1)
         { 
-            mom_UTIL.FormatTime(m_EventListener->m_iStageTicks, gpGlobals->interval_per_tick, m_pszStageTimeString);
+            mom_UTIL.FormatTime(m_EventListener->m_iStageTicks[m_EventListener->m_iCurrentStage], gpGlobals->interval_per_tick, m_pszStageTimeString);
             Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
                 m_pszStageTimeString,
                 m_pszStageTimeLabelString

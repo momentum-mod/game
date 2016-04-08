@@ -81,8 +81,6 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
     CNetworkVar(float, m_flLastJumpVel);
-    CNetworkVar(int, m_nTotalJumps);
-    CNetworkVar(int, m_nTotalStrafes);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -101,7 +99,16 @@ class CMomentumPlayer : public CBasePlayer
     float GetPunishTime() { return m_flPunishTime; }
 
     //stats: gets transmitted via IGameEvent
-    float m_flStartSpeed, m_flEndSpeed, m_flVelocityMax, m_flVelocityAvg, m_flStrafeSyncAvg, m_flStrafeSync2Avg;
+    float m_flStartSpeed, m_flEndSpeed;
+
+    //stage stats. index 0 is overall stats
+    int m_nStageJumps[MAX_STAGES], m_nStageStrafes[MAX_STAGES];
+    float m_flStageVelocityMax[MAX_STAGES], m_flStageVelocityAvg[MAX_STAGES], 
+        m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES], m_flStageEnterVelocity[MAX_STAGES];
+
+    //for calc avg
+    int m_nStageAvgCount[MAX_STAGES];
+    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES];
 
 private:
     CountdownTimer m_ladderSurpressionTimer;
@@ -127,10 +134,6 @@ private:
 
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
-
-    //for average stats
-    int m_nAvgCount;
-    float m_flTotalSync, m_flTotalSync2, m_flTotalVelocity;
 
 };
 #endif // MOMPLAYER_H

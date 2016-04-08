@@ -376,12 +376,12 @@ void CHudMapFinishedDialog::OnThink()
     m_flEndSpeed = m_EventListener->m_flEndSpeed;
     m_flAvgSync2 = m_EventListener->m_flStrafeSync2Avg;
     m_flAvgSync = m_EventListener->m_flStrafeSyncAvg;
+    m_iTotalJumps = m_EventListener->m_iTotalJumps;
+    m_iTotalStrafes = m_EventListener->m_iTotalStrafes;
 
     if (pPlayer)
     {
         //copy player's last run time to our local variable
         strcpy(m_pszRunTime, pPlayer->m_pszLastRunTime);
-        m_iTotalJumps = pPlayer->m_nTotalJumps;
-        m_iTotalStrafes = pPlayer->m_nTotalStrafes;
     }
 }
