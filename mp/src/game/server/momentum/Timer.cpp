@@ -97,13 +97,11 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.startvel = kv->GetFloat("startvel");
             t.endvel = kv->GetFloat("endvel");
 
-            char stageFormat[64], stageVelFormat[64];
             for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
             {
-                Q_snprintf(stageFormat, sizeof(stageFormat), "stage %d ticks", i);
-                Q_snprintf(stageVelFormat, sizeof(stageVelFormat), "stage %d velocity", i);
-                t.stageticks[i] = kv->GetInt(stageFormat);
-                t.stagevel[i] = kv->GetInt(stageVelFormat);
+                KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey();
+                t.stageticks[i] = subKv->GetInt("ticks");
+                t.stagevel[i] = subKv->GetInt("startvel");
             }
 
             localTimes.AddToTail(t);
@@ -131,26 +129,30 @@ void CTimer::SaveTime()
         char timeName[512];
         Q_snprintf(timeName, 512, "%i", t.ticks);
         KeyValues *pSubkey = new KeyValues(timeName);
-        pSubkey->SetInt("jumps", t.jumps);
-        pSubkey->SetInt("strafes", t.strafes);
-        pSubkey->SetFloat("avgsync", t.avgsync);
-        pSubkey->SetFloat("avgsync2", t.avgsync2);
-        pSubkey->SetFloat("startvel", t.startvel);
-        pSubkey->SetFloat("endvel", t.endvel);
-        pSubkey->SetFloat("avgvel", t.avgvel);
-        pSubkey->SetFloat("maxvel", t.maxvel);
-        pSubkey->SetFloat("rate", t.tickrate);
-        pSubkey->SetInt("date", t.date);
+        KeyValues *pOverallKey = new KeyValues("total");
+        pOverallKey->SetInt("jumps", t.jumps);
+        pOverallKey->SetInt("strafes", t.strafes);
+        pOverallKey->SetFloat("avgsync", t.avgsync);
+        pOverallKey->SetFloat("avgsync2", t.avgsync2);
+        pOverallKey->SetFloat("startvel", t.startvel);
+        pOverallKey->SetFloat("endvel", t.endvel);
+        pOverallKey->SetFloat("avgvel", t.avgvel);
+        pOverallKey->SetFloat("maxvel", t.maxvel);
+        pOverallKey->SetFloat("rate", t.tickrate);
+        pOverallKey->SetInt("date", t.date);
 
-        char stageFormat[64], stageVelFormat[64];
+        char stageName[9]; // "stage 999"
         for (int i = 2; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
         {
-            Q_snprintf(stageFormat, sizeof(stageFormat), "stage %d ticks", i);
-            Q_snprintf(stageVelFormat, sizeof(stageVelFormat), "stage %d velocity", i);
-            pSubkey->SetInt(stageFormat, t.stageticks[i]);
-            pSubkey->SetFloat(stageVelFormat, t.stagevel[i]);
+            Q_snprintf(stageName, sizeof(stageName), "stage %d", i);
+
+            KeyValues *pStageKey = new KeyValues(stageName);
+            pStageKey->SetInt("ticks", t.stageticks[i]);
+            pStageKey->SetFloat("startvel", t.stagevel[i]);
+            pSubkey->AddSubKey(pStageKey);
         }
         timesKV->AddSubKey(pSubkey);
+        pSubkey->AddSubKey(pOverallKey);
     }
 
     char file[MAX_PATH];
