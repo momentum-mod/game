@@ -142,21 +142,25 @@ void CTimer::SaveTime()
         pOverallKey->SetInt("date", t.date);
 
         char stageName[9]; // "stage 999"
-        for (int i = 1; i <= GetStageCount(); i++) //start at 1, since stage 0 doesnt really exist
+        if (GetStageCount() > 1)
         {
-            Q_snprintf(stageName, sizeof(stageName), "stage %d", i);
+            for (int i = 1; i <= GetStageCount(); i++) 
+            {
+                Q_snprintf(stageName, sizeof(stageName), "stage %d", i);
 
-            KeyValues *pStageKey = new KeyValues(stageName);
-            pStageKey->SetInt("ticks", t.stageticks[i]);
-            pStageKey->SetInt("num_jumps", t.stagejumps[i]);
-            pStageKey->SetInt("num_strafes", t.stagestrafes[i]);
-            pStageKey->SetFloat("avg_sync", t.stageavgsync[i]);
-            pStageKey->SetFloat("avg_sync2", t.stageavgsync2[i]);
-            pStageKey->SetFloat("avg_vel", t.stageavgvel[i]);
-            pStageKey->SetFloat("max_vel", t.stagemaxvel[i]);
-            pStageKey->SetFloat("stage_enter_vel", t.stagevel[i]);
-            pSubkey->AddSubKey(pStageKey);
+                KeyValues *pStageKey = new KeyValues(stageName);
+                pStageKey->SetInt("ticks", t.stageticks[i]);
+                pStageKey->SetInt("num_jumps", t.stagejumps[i]);
+                pStageKey->SetInt("num_strafes", t.stagestrafes[i]);
+                pStageKey->SetFloat("avg_sync", t.stageavgsync[i]);
+                pStageKey->SetFloat("avg_sync2", t.stageavgsync2[i]);
+                pStageKey->SetFloat("avg_vel", t.stageavgvel[i]);
+                pStageKey->SetFloat("max_vel", t.stagemaxvel[i]);
+                pStageKey->SetFloat("stage_enter_vel", t.stagevel[i]);
+                pSubkey->AddSubKey(pStageKey);
+            }
         }
+
         timesKV->AddSubKey(pSubkey);
         pSubkey->AddSubKey(pOverallKey);
     }
@@ -206,18 +210,20 @@ void CTimer::Stop(bool endTrigger /* = false */)
         t.maxvel = pPlayer->m_flStageVelocityMax[0];
         t.startvel = pPlayer->m_flStartSpeed;
         t.endvel = pPlayer->m_flEndSpeed;
-        for (int i = 1; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+        if (GetStageCount() > 1) //don't save stage specific stats if we are on a linear map
         {
-            t.stageticks[i] = m_iStageEnterTick[i]; //add each stage's total time in ticks
-            t.stagejumps[i] = pPlayer->m_nStageJumps[i];
-            t.stagestrafes[i] = pPlayer->m_nStageStrafes[i];
-            t.stageavgsync[i] = pPlayer->m_flStageStrafeSyncAvg[i];
-            t.stageavgsync2[i] = pPlayer->m_flStageStrafeSync2Avg[i];
-            t.stageavgvel[i] = pPlayer->m_flStageVelocityAvg[i];
-            t.stagemaxvel[i] = pPlayer->m_flStageVelocityMax[i];
-            t.stagevel[i] = pPlayer->m_flStageEnterVelocity[i];
-        }
-            
+            for (int i = 1; i <= GetStageCount(); i++) //stages start at 1 since stage 0 is overall stats
+            {
+                t.stageticks[i] = m_iStageEnterTick[i]; //add each stage's total time in ticks
+                t.stagejumps[i] = pPlayer->m_nStageJumps[i];
+                t.stagestrafes[i] = pPlayer->m_nStageStrafes[i];
+                t.stageavgsync[i] = pPlayer->m_flStageStrafeSyncAvg[i];
+                t.stageavgsync2[i] = pPlayer->m_flStageStrafeSync2Avg[i];
+                t.stageavgvel[i] = pPlayer->m_flStageVelocityAvg[i];
+                t.stagemaxvel[i] = pPlayer->m_flStageVelocityMax[i];
+                t.stagevel[i] = pPlayer->m_flStageEnterVelocity[i];
+            }
+        }   
 
         localTimes.AddToTail(t);
 
