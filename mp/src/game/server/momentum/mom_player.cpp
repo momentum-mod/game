@@ -390,7 +390,7 @@ void CMomentumPlayer::StartTimerBhopOnly()
         CTriggerTimerStart *startTrigger = g_Timer.GetStartTrigger();
         if (m_bInsideStartZone)
         {
-            if (GetGroundEntity() == NULL && m_nButtons & IN_JUMP && 
+            if (GetGroundEntity() != NULL && m_nButtons & IN_JUMP && 
                 !m_bPlayerJumped && !g_Timer.IsRunning() && !g_Timer.IsPracticeMode(this))
             {
                 m_bPlayerJumped = true;
@@ -413,6 +413,7 @@ void CMomentumPlayer::StartTimerBhopOnly()
             }
             if (!g_Timer.IsRunning())
             {
+                m_bPlayerJumped = false;
                 Vector velocity = GetLocalVelocity();
                 if (velocity.Length2D() > startTrigger->GetMaxLeaveSpeed())
                 {
