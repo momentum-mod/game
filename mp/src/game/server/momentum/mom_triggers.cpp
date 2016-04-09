@@ -97,15 +97,14 @@ END_DATADESC()
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
     ConVarRef gm("mom_gamemode");
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-
-    //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
-    if (gm.GetInt() != MOMGM_BHOP && gm.GetInt() != MOMGM_SCROLL)
+    if (pOther->IsPlayer())
     {
-        if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) // do not start timer if player is in practice mode.
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+
+        //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
+        if (!g_Timer.IsPracticeMode(pOther) && !g_Timer.IsRunning()) // do not start timer if player is in practice mode or it's already running.
         {
-            g_Timer.Start(gpGlobals->tickcount);
             if (IsLimitingSpeed())
             {
                 Vector velocity = pOther->GetAbsVelocity();
@@ -128,15 +127,17 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                         pOther->SetAbsVelocity(velocity.Normalized() *
                         (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
                 }
+                g_Timer.Start(gpGlobals->tickcount);
             }
+            
         }
-    }    
-    if (mapZoneEvent)
-    {
-        mapZoneEvent->SetBool("inside_startzone", false);
-        gameeventmanager->FireEvent(mapZoneEvent);
+        if (mapZoneEvent)
+        {
+            mapZoneEvent->SetBool("inside_startzone", false);
+            gameeventmanager->FireEvent(mapZoneEvent);
+        }
+        pPlayer->m_bInsideStartZone = false;
     }
-    if (pPlayer) pPlayer->m_bInsideStartZone = false;
     // stop thinking on end touch
     SetNextThink(-1);
     BaseClass::EndTouch(pOther);
@@ -158,11 +159,13 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             mapZoneEvent->SetBool("map_finished", false);
             gameeventmanager->FireEvent(mapZoneEvent);
         }
+        Vector velocity = pOther->GetAbsVelocity();
 
         if (g_Timer.IsRunning())
         {
             g_Timer.Stop(false);
             g_Timer.DispatchResetMessage();
+            //lower the player's speed if they try to jump back into the start zone
         }
     }
     // start thinking
@@ -181,7 +184,8 @@ void CTriggerTimerStart::Spawn()
 }
 void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed) { m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed);  }
 void CTriggerTimerStart::SetBhopLeaveSpeed(float pBhopMaxLeaveSpeed) { m_fBhopLeaveSpeed = abs(pBhopMaxLeaveSpeed); }
-
+void CTriggerTimerStart::SetPunishSpeed(float pPunishSpeed) { m_fPunishSpeed = abs(pPunishSpeed); }
+void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
 void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
 {
     if (pIsLimitingSpeed)
@@ -199,7 +203,6 @@ void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
         }
     }
 }
-
 void CTriggerTimerStart::SetIsLimitingSpeedOnlyXY(bool pIsLimitingSpeedOnlyXY)
 {
     if (pIsLimitingSpeedOnlyXY)
@@ -217,7 +220,6 @@ void CTriggerTimerStart::SetIsLimitingSpeedOnlyXY(bool pIsLimitingSpeedOnlyXY)
         }
     }
 }
-
 void CTriggerTimerStart::SetIsLimitingBhop(bool bIsLimitBhop)
 {
     if (bIsLimitBhop)
@@ -235,7 +237,6 @@ void CTriggerTimerStart::SetIsLimitingBhop(bool bIsLimitBhop)
         }
     }
 }
-
 void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
 {
     if (bHasLook)
@@ -253,7 +254,6 @@ void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
         }
     }
 }
-void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTimerStop ----------------------------------------------------------------

@@ -133,6 +133,8 @@ public:
     void SetBhopLeaveSpeed(float pBhopLeaveSpeed);
     void SetLookAngles(QAngle newang);
     QAngle GetLookAngles() { return m_angLook; }
+    void SetPunishSpeed(float pPunishSpeed);
+    float GetPunishSpeed() { return m_fPunishSpeed; }
 
     //spawnflags
     bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
@@ -152,6 +154,7 @@ private:
 
     //limitbhop stuff
     float m_fBhopLeaveSpeed = 250;
+    float m_fPunishSpeed = 200;
 };
 
 // CFilterCheckpoint

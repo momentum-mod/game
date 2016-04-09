@@ -387,6 +387,7 @@ void CMomentumPlayer::StartTimerBhopOnly()
     ConVarRef gm("mom_gamemode");
     if (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL)
     {
+        CTriggerTimerStart *startTrigger = g_Timer.GetStartTrigger();
         if (m_bInsideStartZone)
         {
             if (GetGroundEntity() == NULL && m_nButtons & IN_JUMP && 
@@ -410,6 +411,18 @@ void CMomentumPlayer::StartTimerBhopOnly()
                     gameeventmanager->FireEvent(mapZoneEvent);
                 }
             }
+            if (!g_Timer.IsRunning())
+            {
+                Vector velocity = GetLocalVelocity();
+                if (velocity.Length2D() > startTrigger->GetMaxLeaveSpeed())
+                {
+                    if (velocity.AsVector2D().IsLengthGreaterThan(startTrigger->GetPunishSpeed()))
+                    {
+                        velocity = ((velocity / velocity.Length()) * startTrigger->GetPunishSpeed());
+                        SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
+                    }
+                }
+            }      
         }
         SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
     }
