@@ -25,6 +25,7 @@ BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop),
 DEFINE_THINKFUNC(UpdateRunStats),
 DEFINE_THINKFUNC(CalculateAverageStats),
+DEFINE_THINKFUNC(StartTimerBhopOnly),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -101,10 +102,11 @@ void CMomentumPlayer::Spawn()
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
+    RegisterThinkContext("CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
-
+    SetContextThink(&CMomentumPlayer::StartTimerBhopOnly, gpGlobals->curtime, "CURTIME_FOR_START");
     SetNextThink(gpGlobals->curtime);
 }
 
@@ -376,4 +378,39 @@ void CMomentumPlayer::CalculateAverageStats()
 
     // think once per 0.1 second interval so we avoid making the totals extremely large
     SetNextThink(gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
+}
+//this starts the timer when the player jumps inside the start zone, stopping
+//their timer again when they land and are not jumping.
+void CMomentumPlayer::StartTimerBhopOnly()
+{
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    ConVarRef gm("mom_gamemode");
+    if (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL)
+    {
+        if (m_bInsideStartZone)
+        {
+            if (GetGroundEntity() == NULL && m_nButtons & IN_JUMP && 
+                !m_bPlayerJumped && !g_Timer.IsRunning() && !g_Timer.IsPracticeMode(this))
+            {
+                m_bPlayerJumped = true;
+                g_Timer.Start(gpGlobals->tickcount);
+                if (mapZoneEvent)
+                {
+                    mapZoneEvent->SetBool("inside_startzone", false);
+                    gameeventmanager->FireEvent(mapZoneEvent);
+                }
+            }
+            else if (GetGroundEntity() != NULL && !(m_nButtons & IN_JUMP))
+            {
+                g_Timer.Stop(false, false);
+                m_bPlayerJumped = false;
+                if (mapZoneEvent)
+                {
+                    mapZoneEvent->SetBool("inside_startzone", true);
+                    gameeventmanager->FireEvent(mapZoneEvent);
+                }
+            }
+        }
+        SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
+    }
 }

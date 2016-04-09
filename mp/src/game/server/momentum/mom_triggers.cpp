@@ -96,63 +96,74 @@ END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) // do not start timer if player is in practice mode.
+    ConVarRef gm("mom_gamemode");
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+
+    //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
+    if (gm.GetInt() != MOMGM_BHOP && gm.GetInt() != MOMGM_SCROLL)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        g_Timer.Start(gpGlobals->tickcount);
-
-        if (IsLimitingSpeed())
+        if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) // do not start timer if player is in practice mode.
         {
-            Vector velocity = pOther->GetAbsVelocity();
-            if (IsLimitingSpeedOnlyXY())
+            g_Timer.Start(gpGlobals->tickcount);
+            if (IsLimitingSpeed())
             {
-                // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
-                // It only has a NormalizeInPlace... Not simple enough for me
-                Vector2D vel2D = velocity.AsVector2D();
-
-                if (velocity.AsVector2D().IsLengthGreaterThan(pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed))
+                Vector velocity = pOther->GetAbsVelocity();
+                if (IsLimitingSpeedOnlyXY())
                 {
-                    vel2D = ((vel2D / vel2D.Length()) * (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
-                    pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
+                    // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
+                    // It only has a NormalizeInPlace... Not simple enough for me
+                    Vector2D vel2D = velocity.AsVector2D();
+
+                    if (velocity.AsVector2D().IsLengthGreaterThan(pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed))
+                    {
+                        vel2D = ((vel2D / vel2D.Length()) * (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
+                        pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
+                    }
+                }
+                // XYZ limit (this is likely never going to be used, or at least, it shouldn't be)
+                else
+                {
+                    if (velocity.IsLengthGreaterThan((pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed)))
+                        pOther->SetAbsVelocity(velocity.Normalized() *
+                        (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
                 }
             }
-            // XYZ limit (this is likely never going to be used, or at least, it shouldn't be)
-            else
-            {
-                if (velocity.IsLengthGreaterThan((pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed)))
-                    pOther->SetAbsVelocity(velocity.Normalized() *
-                    (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
-            }
         }
-    }
-    // stop thinking on end touch
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    }    
     if (mapZoneEvent)
     {
         mapZoneEvent->SetBool("inside_startzone", false);
         gameeventmanager->FireEvent(mapZoneEvent);
     }
-    //reset strafe sync ratio
+    if (pPlayer) pPlayer->m_bInsideStartZone = false;
+    // stop thinking on end touch
     SetNextThink(-1);
     BaseClass::EndTouch(pOther);
 }
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     g_Timer.SetStartTrigger(this);
-    if (pOther->IsPlayer() && g_Timer.IsRunning())
+    if (pOther->IsPlayer())
     {
-        g_Timer.Stop(false);
-        g_Timer.DispatchResetMessage();
-    }
-    pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    if (mapZoneEvent)
-    {
-        mapZoneEvent->SetBool("inside_startzone", true);
-        mapZoneEvent->SetBool("map_finished", false);
-        gameeventmanager->FireEvent(mapZoneEvent);
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+        pPlayer->m_bInsideStartZone = true;
+        pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
+
+        IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+        if (mapZoneEvent)
+        {
+            mapZoneEvent->SetBool("inside_startzone", true);
+            mapZoneEvent->SetBool("map_finished", false);
+            gameeventmanager->FireEvent(mapZoneEvent);
+        }
+
+        if (g_Timer.IsRunning())
+        {
+            g_Timer.Stop(false);
+            g_Timer.DispatchResetMessage();
+        }
     }
     // start thinking
     SetNextThink(gpGlobals->curtime);
@@ -168,7 +179,6 @@ void CTriggerTimerStart::Spawn()
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
 }
-
 void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed) { m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed);  }
 void CTriggerTimerStart::SetBhopLeaveSpeed(float pBhopMaxLeaveSpeed) { m_fBhopLeaveSpeed = abs(pBhopMaxLeaveSpeed); }
 

@@ -70,6 +70,7 @@ class CMomentumPlayer : public CBasePlayer
     void UpdateRunStats();
     void ResetRunStats();
     void CalculateAverageStats();
+    void StartTimerBhopOnly();
 
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
@@ -110,6 +111,7 @@ class CMomentumPlayer : public CBasePlayer
     int m_nStageAvgCount[MAX_STAGES];
     float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES];
 
+    bool m_bInsideStartZone;
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
@@ -135,5 +137,6 @@ private:
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
 
+    bool m_bPlayerJumped;
 };
 #endif // MOMPLAYER_H
