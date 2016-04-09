@@ -114,7 +114,7 @@ private:
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL], 
         noTimerLocalized[BUFSIZELOCL];
 
-
+    bool m_bPlayStartSound, m_bPlayStopSound;
 };
 
 DECLARE_HUDELEMENT(C_Timer);
@@ -193,6 +193,8 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     bool started = msg.ReadOneBit();
     m_bIsRunning = started;
     m_iStartTick = (int) msg.ReadLong();
+    m_bPlayStartSound = msg.ReadOneBit();
+    m_bPlayStopSound = msg.ReadOneBit();
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (!pPlayer)
         return;
@@ -203,7 +205,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         // Checking again, even if we just checked 8 lines before
         if (pPlayer != NULL)
         {
-            pPlayer->EmitSound("Momentum.StartTimer");
+            if (m_bPlayStartSound) pPlayer->EmitSound("Momentum.StartTimer");
             m_bTimerRan = true;
         }
     }
@@ -225,7 +227,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         //VGUI_ANIMATE("TimerStop");
         if (pPlayer != NULL)
         {
-            pPlayer->EmitSound("Momentum.StopTimer");
+            if (m_bPlayStopSound) pPlayer->EmitSound("Momentum.StopTimer");
             strcpy(pPlayer->m_pszLastRunTime, m_pszString); //copy local ending time to player member so we can use it for other VGUI elements.
         }
 

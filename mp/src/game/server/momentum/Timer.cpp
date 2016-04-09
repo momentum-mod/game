@@ -5,8 +5,9 @@
 
 extern IFileSystem *filesystem;
 
-void CTimer::Start(int start)
+void CTimer::Start(int start, bool playSound)
 {
+    m_bPlayStartSound = playSound;
     if (m_bUsingCPMenu) return;
     m_iStartTick = start;
     SetRunning(true);
@@ -101,7 +102,13 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             {
                 KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey();
                 t.stageticks[i] = subKv->GetInt("ticks");
-                t.stagevel[i] = subKv->GetInt("startvel");
+                t.stagejumps[i] = subKv->GetInt("num_jumps");
+                t.stagestrafes[i] = subKv->GetInt("num_strafes");
+                t.stageavgsync[i] = subKv->GetFloat("avg_sync");
+                t.stageavgsync2[i] = subKv->GetFloat("avg_sync2");
+                t.stageavgvel[i] = subKv->GetFloat("avg_vel");
+                t.stagemaxvel[i] = subKv->GetFloat("max_vel");
+                t.stagevel[i] = subKv->GetFloat("stage_enter_vel");
             }
 
             localTimes.AddToTail(t);
@@ -180,8 +187,9 @@ void CTimer::SaveTime()
     timesKV->deleteThis();
 }
 
-void CTimer::Stop(bool endTrigger /* = false */)
+void CTimer::Stop(bool endTrigger /* = false */, bool playSound)
 {
+    m_bPlayEndSound = playSound;
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
@@ -329,6 +337,8 @@ void CTimer::DispatchStateMessage()
         UserMessageBegin(user, "Timer_State");
         WRITE_BOOL(m_bIsRunning);
         WRITE_LONG(m_iStartTick);
+        WRITE_BOOL(m_bPlayStartSound);
+        WRITE_BOOL(m_bPlayEndSound);
         MessageEnd();
     }
 }
