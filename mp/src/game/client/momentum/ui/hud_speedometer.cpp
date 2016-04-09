@@ -93,7 +93,6 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
-    //C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
 protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
 };

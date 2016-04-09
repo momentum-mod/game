@@ -35,7 +35,7 @@ public:
     virtual bool ShouldDraw()
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && m_EventListener->m_bMapFinished;
+        return pPlayer && g_MOMEventListener && g_MOMEventListener->m_bMapFinished;
     }
     virtual void Paint();
     virtual void OnThink();
@@ -145,7 +145,6 @@ private:
 
 
     bool m_bRunSaved, m_bRunUploaded;
-    C_Momentum_EventListener *m_EventListener = new C_Momentum_EventListener();
 };
 
 DECLARE_HUDELEMENT(CHudMapFinishedDialog);
@@ -368,16 +367,19 @@ void CHudMapFinishedDialog::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
 
-    m_bRunSaved = m_EventListener->m_bTimeDidSave;
-    m_bRunUploaded = m_EventListener->m_bTimeDidUpload;
-    m_flAvgSpeed = m_EventListener->m_flVelocityAvg;
-    m_flMaxSpeed = m_EventListener->m_flVelocityMax;
-    m_flStartSpeed = m_EventListener->m_flStartSpeed;
-    m_flEndSpeed = m_EventListener->m_flEndSpeed;
-    m_flAvgSync2 = m_EventListener->m_flStrafeSync2Avg;
-    m_flAvgSync = m_EventListener->m_flStrafeSyncAvg;
-    m_iTotalJumps = m_EventListener->m_iTotalJumps;
-    m_iTotalStrafes = m_EventListener->m_iTotalStrafes;
+    if (g_MOMEventListener)
+    {
+        m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
+        m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
+        m_flAvgSpeed = g_MOMEventListener->m_flVelocityAvg;
+        m_flMaxSpeed = g_MOMEventListener->m_flVelocityMax;
+        m_flStartSpeed = g_MOMEventListener->m_flStartSpeed;
+        m_flEndSpeed = g_MOMEventListener->m_flEndSpeed;
+        m_flAvgSync2 = g_MOMEventListener->m_flStrafeSync2Avg;
+        m_flAvgSync = g_MOMEventListener->m_flStrafeSyncAvg;
+        m_iTotalJumps = g_MOMEventListener->m_iTotalJumps;
+        m_iTotalStrafes = g_MOMEventListener->m_iTotalStrafes;
+    }
 
     if (pPlayer)
     {

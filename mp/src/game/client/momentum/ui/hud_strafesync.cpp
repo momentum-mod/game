@@ -41,7 +41,8 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     bool ShouldDraw()
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && m_eventListener->m_bTimerIsRunning;
+        return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && g_MOMEventListener
+            && g_MOMEventListener->m_bTimerIsRunning;
     }
     virtual void Reset()
     {
@@ -74,7 +75,6 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     Color normalColor, increaseColor, decreaseColor;
 
     float digit_xpos_initial;
-    C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
 protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
 };
@@ -180,7 +180,8 @@ class CHudStrafeSyncBar : public CHudFillableBar
     bool ShouldDraw()
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return (pPlayer && strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && m_eventListener->m_bTimerIsRunning);
+        return (pPlayer && strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && g_MOMEventListener
+            && g_MOMEventListener->m_bTimerIsRunning);
     }
     virtual void Reset()
     {
@@ -209,7 +210,6 @@ class CHudStrafeSyncBar : public CHudFillableBar
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
-    C_Momentum_EventListener *m_eventListener = new C_Momentum_EventListener();
 
 };
 

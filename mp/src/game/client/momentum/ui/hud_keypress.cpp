@@ -31,7 +31,7 @@ public:
     CHudKeyPressDisplay(const char *pElementName);
     virtual bool ShouldDraw()
     {
-        return showkeys.GetBool() && !m_EventListener->m_bMapFinished; //don't show during map finished dialog
+        return showkeys.GetBool() && g_MOMEventListener && !g_MOMEventListener->m_bMapFinished; //don't show during map finished dialog
     }
     virtual void OnThink();
     virtual void Paint();
@@ -72,7 +72,6 @@ private:
     wchar_t m_pwright[BUFSIZESHORT];
     wchar_t m_pwjump[BUFSIZESHORT];
     wchar_t m_pwduck[BUFSIZESHORT];
-    C_Momentum_EventListener *m_EventListener = new C_Momentum_EventListener();
 };
 
 DECLARE_HUDELEMENT(CHudKeyPressDisplay);
@@ -162,11 +161,11 @@ void CHudKeyPressDisplay::Paint()
 void CHudKeyPressDisplay::OnThink()
 {
     m_nButtons = ::input->GetButtonBits(0);
-    if (m_EventListener)
+    if (g_MOMEventListener)
     {   //we should only draw the strafe/jump counters when the timer is running
-        m_bShouldDrawCounts = m_EventListener->m_bTimerIsRunning;
-        m_nStrafes = m_EventListener->m_iTotalStrafes;
-        m_nJumps = m_EventListener->m_iTotalJumps;
+        m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;
+        m_nStrafes = g_MOMEventListener->m_iTotalStrafes;
+        m_nJumps = g_MOMEventListener->m_iTotalJumps;
     }
 }
 void CHudKeyPressDisplay::Reset()

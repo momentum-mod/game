@@ -86,7 +86,6 @@ protected:
         "proportional_float");
     CPanelAnimationVarAliasType(float, stage_ypos, "stage_ypos", "40",
         "proportional_float");
-    C_Momentum_EventListener *m_EventListener = new C_Momentum_EventListener();
 private:
     int m_iStageCurrent;
     int m_iStageCount;
@@ -291,7 +290,7 @@ void C_Timer::Paint(void)
             );
         if (m_iStageCurrent > 1)
         { 
-            mom_UTIL.FormatTime(m_EventListener->m_iStageTicks[m_EventListener->m_iCurrentStage], gpGlobals->interval_per_tick, m_pszStageTimeString);
+            mom_UTIL.FormatTime(g_MOMEventListener->m_iStageTicks[g_MOMEventListener->m_iCurrentStage], gpGlobals->interval_per_tick, m_pszStageTimeString);
             Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
                 m_pszStageTimeString,
                 m_pszStageTimeLabelString
@@ -308,15 +307,15 @@ void C_Timer::Paint(void)
         m_pszStringStages, m_pwCurrentStages, sizeof(m_pwCurrentStages));
 
     //find out status of timer (start zone/end zone/practice mode)
-    if (m_EventListener->m_bPlayerInsideStartZone)
+    if (g_MOMEventListener->m_bPlayerInsideStartZone)
     {
         Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), startZoneLocalized);
     }
-    else if (m_EventListener->m_bPlayerInsideEndZone && m_EventListener->m_bMapFinished) //player finished map with timer running
+    else if (g_MOMEventListener->m_bPlayerInsideEndZone && g_MOMEventListener->m_bMapFinished) //player finished map with timer running
     {
         Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), mapFinishedLocalized);
     }
-    else if (m_EventListener->m_bPlayerHasPracticeMode)
+    else if (g_MOMEventListener->m_bPlayerHasPracticeMode)
     {
         Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), practiceModeLocalized);
     }
