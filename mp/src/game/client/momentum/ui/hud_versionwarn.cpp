@@ -27,7 +27,7 @@ public:
     CHudVersionWarn(const char *pElementName);
     virtual bool ShouldDraw()
     {
-        return true;
+        return CHudElement::ShouldDraw();
     }
     virtual void Paint();
 
@@ -47,6 +47,7 @@ CHudVersionWarn::CHudVersionWarn(const char *pElementName) : CHudElement(pElemen
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 
 void CHudVersionWarn::Init()

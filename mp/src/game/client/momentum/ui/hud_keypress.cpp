@@ -31,7 +31,7 @@ public:
     CHudKeyPressDisplay(const char *pElementName);
     virtual bool ShouldDraw()
     {
-        return showkeys.GetBool() && g_MOMEventListener && !g_MOMEventListener->m_bMapFinished; //don't show during map finished dialog
+        return showkeys.GetBool() && g_MOMEventListener && !g_MOMEventListener->m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
     }
     virtual void OnThink();
     virtual void Paint();
