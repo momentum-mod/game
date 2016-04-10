@@ -85,7 +85,7 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     m_pSpeedometerShowLastJump = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", 
         "mom_speedometer_showlastjumpvel", false);
     m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
-    m_pSpeedometerShowVerticalVel = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowVertical", "#MOM_Settings_Speedometer_Show_Vertical",
+    m_pSpeedometerShowVerticalVel = new CvarToggleCheckButton<ConVarRef>(this, "ShowSpeedoHvel", "#MOM_Settings_Speedometer_Show_Hvel",
         "mom_speedometer_hvel", false);
     m_pSpeedometerShowVerticalVel->AddActionSignalTarget(this);
     m_pSpeedometerColorize = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowColor", "#MOM_Settings_Speedometer_Show_Color", 
