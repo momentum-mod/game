@@ -86,7 +86,7 @@
 		"enabled"		"1"
 		"wide"			"200"
 		"tall"			"20"
-		"TextFont"		"MomentumFontSmall"
+		"TextFont"		"MomentumFont"
 	}
 	CHudSyncBar
 	{
