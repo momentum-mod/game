@@ -72,7 +72,6 @@ protected:
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
 
         BaseClass::CreateDefaultPanels();// MOM_TODO: do we want the other panels?
-        /* don't create any panels yet*/
     };
 };
 

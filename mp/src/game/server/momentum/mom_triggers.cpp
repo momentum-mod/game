@@ -140,22 +140,25 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    g_Timer.SetStartTrigger(this);
-    if (pOther->IsPlayer() && g_Timer.IsRunning())
+    if (pPlayer)
     {
-        g_Timer.Stop(false);
-        g_Timer.DispatchResetMessage();
+        g_Timer.SetStartTrigger(this);
+        if (g_Timer.IsRunning())
+        {
+            g_Timer.Stop(false);
+            g_Timer.DispatchResetMessage();
+        }
+        pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
+        IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+        if (mapZoneEvent)
+        {
+            mapZoneEvent->SetBool("inside_startzone", true);
+            mapZoneEvent->SetBool("map_finished", false);
+            gameeventmanager->FireEvent(mapZoneEvent);
+        }
+        // start thinking
+        SetNextThink(gpGlobals->curtime);
     }
-    pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    if (mapZoneEvent)
-    {
-        mapZoneEvent->SetBool("inside_startzone", true);
-        mapZoneEvent->SetBool("map_finished", false);
-        gameeventmanager->FireEvent(mapZoneEvent);
-    }
-    // start thinking
-    SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);
 }
 

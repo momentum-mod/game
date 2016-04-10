@@ -141,7 +141,7 @@ void CTimer::SaveTime()
         pOverallKey->SetFloat("rate", t.tickrate);
         pOverallKey->SetInt("date", t.date);
 
-        char stageName[9]; // "stage 999"
+        char stageName[10]; // "stage 999"
         if (GetStageCount() > 1)
         {
             for (int i = 1; i <= GetStageCount(); i++) 

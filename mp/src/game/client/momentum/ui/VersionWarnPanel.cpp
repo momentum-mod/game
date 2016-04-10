@@ -9,6 +9,8 @@ using namespace vgui;
 
 #include "momentum/mom_shareddefs.h"
 
+#include "tier0/memdbgon.h"
+
 //CVersionWarnPanel class: Tutorial example class
 class CVersionWarnPanel : public vgui::Frame
 {
@@ -31,7 +33,7 @@ private:
 
 // Constuctor: Initializes the Panel
 CVersionWarnPanel::CVersionWarnPanel(vgui::VPANEL parent)
-    : BaseClass(NULL, "VersionWarnPanel")
+    : BaseClass(nullptr, "VersionWarnPanel")
 {
     SetParent(parent);
 
@@ -70,7 +72,7 @@ private:
 public:
     CVersionWarnPanelInterface()
     {
-        MyPanel = NULL;
+        MyPanel = nullptr;
     }
     void Create(vgui::VPANEL parent)
     {
@@ -80,7 +82,7 @@ public:
     {
         if (MyPanel)
         {
-            MyPanel->SetParent((vgui::Panel *)NULL);
+            MyPanel->SetParent(nullptr);
             delete MyPanel;
         }
     }
@@ -99,8 +101,8 @@ public:
         }
     }
 };
-static CVersionWarnPanelInterface g_MyPanel;
-VersionWarnPanel* versionwarnpanel = (VersionWarnPanel*)&g_MyPanel;
+static CVersionWarnPanelInterface g_VersionWarn;
+VersionWarnPanel* versionwarnpanel = (VersionWarnPanel*)&g_VersionWarn;
 
 ConVar cl_showversionwarnpanel("cl_showversionwarnpanel", "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN, "Sets the state of versionwarnpanel");
 

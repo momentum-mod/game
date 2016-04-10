@@ -27,7 +27,7 @@ static ConVar speedometer_hvel("mom_speedometer_hvel", "0",
 static ConVar speedometer_units("mom_speedometer_units", "1",
                                 FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                 "Changes the units of measure of the speedmeter.\n 1: Units per second. \n 2: "
-                                "Kilometers per hour. \n 3: Milles per hour.\n",
+                                "Kilometers per hour. \n 3: Miles per hour.\n",
                                 true, 1, true, 3);
 
 static ConVar speedometer_draw("mom_drawspeedometer", "1",

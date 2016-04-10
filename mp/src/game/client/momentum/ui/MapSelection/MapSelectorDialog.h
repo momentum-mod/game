@@ -25,8 +25,8 @@ public:
     void		Open(void);
     void        Close(void)
     {
-        ConVar *pCvar = g_pCVar->FindVar("cl_showmapselection");
-        if (pCvar) pCvar->SetValue(0);
+        ConVarRef pCvar = ConVarRef("cl_showmapselection");
+        pCvar.SetValue(0);
         BaseClass::Close();
     }
 

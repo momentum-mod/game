@@ -15,11 +15,9 @@ using namespace vgui;
 #include <vgui/ILocalize.h>
 
 #include "vgui_helpers.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
-#include "mom_shareddefs.h"
-using namespace vgui;
-
 
 class CHudVersionWarn : public CHudElement, public Panel
 {

@@ -97,7 +97,6 @@ void CMomentumPlayer::Spawn()
         practiceModeEvent->SetBool("has_practicemode", false);
         gameeventmanager->FireEvent(practiceModeEvent);
     }
-
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
