@@ -25,6 +25,11 @@ protected:
     //VGUI overrides:
     void OnTick() override;
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
+    MESSAGE_FUNC_PTR(OnCheckboxChecked, "CheckButtonChecked", panel);
+    MESSAGE_FUNC(OnApplyChanges, "ApplyChanges")
+    {
+        m_pApplyButton->SetEnabled(false);
+    }
 
 private:
     void LoadSettings();
@@ -44,7 +49,8 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     : BaseClass(nullptr, "CMomentumSettingsPanel")
 {
     SetParent(parent);
-
+    SetPaintBackgroundType(1);
+    SetRoundedCorners(PANEL_ROUND_CORNER_ALL);
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
 
@@ -75,17 +81,24 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     m_pSyncColorize->AddActionSignalTarget(this);
 
     m_pSpeedometerShow = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_drawspeedometer", false);
+    m_pSpeedometerShow->AddActionSignalTarget(this);
     m_pSpeedometerShowLastJump = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", 
         "mom_speedometer_showlastjumpvel", false);
+    m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
     m_pSpeedometerShowVerticalVel = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowVertical", "#MOM_Settings_Speedometer_Show_Vertical",
         "mom_speedometer_hvel", false);
+    m_pSpeedometerShowVerticalVel->AddActionSignalTarget(this);
     m_pSpeedometerColorize = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowColor", "#MOM_Settings_Speedometer_Show_Color", 
         "mom_speedometer_colorize", false);
+    m_pSpeedometerColorize->AddActionSignalTarget(this);
 
     m_pSyncShow = new CvarToggleCheckButton<ConVarRef>(this, "SyncShow", "#MOM_Settings_Sync_Show", "mom_strafesync_draw", false);
+    m_pSyncShow->AddActionSignalTarget(this);
     m_pSyncShowBar = new CvarToggleCheckButton<ConVarRef>(this, "SyncShowBar", "#MOM_Settings_Sync_Show_Bar", "mom_strafesync_drawbar", false);
+    m_pSyncShowBar->AddActionSignalTarget(this);
 
     m_pButtonsShow = new CvarToggleCheckButton<ConVarRef>(this, "ButtonsShow", "#MOM_Settings_Buttons_Show", "mom_showkeypresses", false);
+    m_pButtonsShow->AddActionSignalTarget(this);
     //MOM_TODO: have one for hud_versionwarn? 
 
     m_pApplyButton = new Button(this, "ApplyButton", "#GameUI_Apply", this);
@@ -104,7 +117,6 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
 
     LoadControlSettings("resource/ui/MomentumSettingsPanel.res");
     LoadSettings();
-    SetRoundedCorners(PANEL_ROUND_CORNER_ALL);
 
     ivgui()->AddTickSignal(GetVPanel());
 }
@@ -189,4 +201,27 @@ void CMomentumSettingsPanel::Activate()
 {
     LoadSettings();
     BaseClass::Activate();
+}
+
+void CMomentumSettingsPanel::OnCheckboxChecked(vgui::Panel* panel)
+{
+    m_pApplyButton->SetEnabled(true);
+
+    CheckButton *button = dynamic_cast<CheckButton *>(panel);
+    if (button)
+    {
+        if (!Q_stricmp(button->GetName(), "SpeedoShow"))
+        {
+            m_pSpeedometerShowLastJump->SetEnabled(button->IsSelected());
+            m_pSpeedometerShowVerticalVel->SetEnabled(button->IsSelected());
+            m_pSpeedometerUnits->SetEnabled(button->IsSelected());
+            m_pSpeedometerColorize->SetEnabled(button->IsSelected());
+        }
+        else if (!Q_stricmp(button->GetName(), "SyncShow"))
+        {
+            m_pSyncType->SetEnabled(button->IsSelected());
+            m_pSyncShowBar->SetEnabled(button->IsSelected());
+            m_pSyncColorize->SetEnabled(button->IsSelected());
+        }
+    }
 }
