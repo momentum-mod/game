@@ -321,7 +321,7 @@ Scheme
 			"1"
 			{
 				name "TypoGraphica"
-				"tall"		"17"
+				"tall"		"20"
 				"weight"	"0"
 				"antialias" "1"
 				"additive"	"1"
@@ -333,7 +333,7 @@ Scheme
 			"1"
 			{
 				name "TypoGraphica"
-				"tall"		"19"
+				"tall"		"24"
 				"weight"	"0"
 				"antialias" "1"
 				"additive"	"1"

@@ -20,8 +20,6 @@ using namespace vgui;
 static ConVar showkeys("mom_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
     "Toggles showing keypresses and strafe/jump counter\n");
 
-#define BUFSIZESHORT 10
-
 class CHudKeyPressDisplay : public CHudElement, public Panel
 {
     DECLARE_CLASS_SIMPLE(CHudKeyPressDisplay, Panel);
@@ -55,8 +53,10 @@ protected:
         "proportional_float");
     CPanelAnimationVarAliasType(float, lower_row_ypos, "lower_row_ypos", "35",
         "proportional_float");
-    CPanelAnimationVarAliasType(float, bottom_row_ypos, "bottom_row_ypos", "50",
+    CPanelAnimationVarAliasType(float, jump_row_ypos, "jump_row_ypos", "60",
         "proportional_float");    
+    CPanelAnimationVarAliasType(float, duck_row_ypos, "duck_row_ypos", "70",
+        "proportional_float");
     CPanelAnimationVarAliasType(float, strafe_count_xpos, "strafe_count_xpos", "80",
         "proportional_float");
     CPanelAnimationVarAliasType(float, jump_count_xpos, "jump_count_xpos", "80",
@@ -70,8 +70,8 @@ private:
     wchar_t m_pwleft[BUFSIZESHORT];
     wchar_t m_pwback[BUFSIZESHORT];
     wchar_t m_pwright[BUFSIZESHORT];
-    wchar_t m_pwjump[BUFSIZESHORT];
-    wchar_t m_pwduck[BUFSIZESHORT];
+    wchar_t m_pwjump[BUFSIZELOCL];
+    wchar_t m_pwduck[BUFSIZELOCL];
 };
 
 DECLARE_HUDELEMENT(CHudKeyPressDisplay);
@@ -91,8 +91,12 @@ void CHudKeyPressDisplay::Init()
     wcscpy(m_pwleft, L"A");
     wcscpy(m_pwback, L"S");
     wcscpy(m_pwright, L"D");
-    wcscpy(m_pwjump, L"JUMP");
-    wcscpy(m_pwduck, L"DUCK");
+
+    //localize jump and duck strings
+    wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_Jump");
+    wcscpy(m_pwjump, uJumpUnicode);
+    wchar_t *uDuckUnicode = g_pVGuiLocalize->Find("#MOM_Duck");
+    wcscpy(m_pwduck, uDuckUnicode);
 }
 void CHudKeyPressDisplay::Paint()
 {
@@ -114,7 +118,7 @@ void CHudKeyPressDisplay::Paint()
     }
     if (m_nButtons & IN_BACK)
     {
-        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), mid_row_ypos);
+        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), lower_row_ypos);
         surface()->DrawPrintText(m_pwback, wcslen(m_pwback));
     }
     if (m_nButtons & IN_MOVERIGHT)
@@ -128,12 +132,12 @@ void CHudKeyPressDisplay::Paint()
 
     if (m_nButtons & IN_JUMP)
     {
-        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), lower_row_ypos);
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), jump_row_ypos);
         surface()->DrawPrintText(m_pwjump, wcslen(m_pwjump));
     }
     if (m_nButtons & IN_DUCK)
     {
-        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), bottom_row_ypos);
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), duck_row_ypos);
         surface()->DrawPrintText(m_pwduck, wcslen(m_pwduck));
     }
     // ---------- 
@@ -154,7 +158,7 @@ void CHudKeyPressDisplay::Paint()
         Q_snprintf(cstr_jumps, sizeof(cstr_jumps), "( %i )", m_nJumps);
         g_pVGuiLocalize->ConvertANSIToUnicode(cstr_jumps, jumps, sizeof(jumps));
 
-        surface()->DrawSetTextPos(jump_count_xpos, lower_row_ypos);
+        surface()->DrawSetTextPos(jump_count_xpos, jump_row_ypos);
         surface()->DrawPrintText(jumps, wcslen(jumps));
     }
 }
@@ -190,7 +194,7 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     surface()->DrawSetTextPos(text_left, mid_row_ypos);
     surface()->DrawPrintText(m_pwleft, wcslen(m_pwleft));
     //back
-    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), mid_row_ypos);
+    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), lower_row_ypos);
     surface()->DrawPrintText(m_pwback, wcslen(m_pwback));
     //right
     int text_right = GetTextCenter(m_hTextFont, m_pwright) + UTIL_ComputeStringWidth(m_hTextFont, m_pwright);
@@ -199,9 +203,9 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     //reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
     //jump
-    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), lower_row_ypos);
+    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), jump_row_ypos);
     surface()->DrawPrintText(m_pwjump, wcslen(m_pwjump));
     //duck
-    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), bottom_row_ypos);
+    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), duck_row_ypos);
     surface()->DrawPrintText(m_pwduck, wcslen(m_pwduck));
 }
