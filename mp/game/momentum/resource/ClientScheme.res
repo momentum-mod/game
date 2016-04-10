@@ -280,6 +280,66 @@ Scheme
 	// describes all the fonts
 	Fonts
 	{
+		MomentumFont
+		{
+			"1"
+			{
+				name "Counter-Strike"
+				"tall"		"9"
+				"weight"	"0"
+				"antialias" "1"
+				"additive"	"1"
+				"custom"	"1"
+			}
+		}
+		MomentumFontVerySmall
+		{
+			"1"
+			{
+				name "Counter-Strike"
+				"tall"		"5"
+				"weight"	"0"
+				"antialias" "1"
+				"additive"	"1"
+				"custom"	"1"
+			}
+		}
+		MomentumFontSmall
+		{
+			"1"
+			{
+				name "Counter-Strike"
+				"tall"		"7"
+				"weight"	"0"
+				"antialias" "1"
+				"additive"	"1"
+				"custom"	"1"
+			}
+		}
+		MomentumFontLarge
+		{
+			"1"
+			{
+				name "Counter-Strike"
+				"tall"		"13"
+				"weight"	"0"
+				"antialias" "1"
+				"additive"	"1"
+				"custom"	"1"
+			}
+		}
+		MomentumFontVeryLarge
+		{
+			"1"
+			{
+				name "Counter-Strike"
+				"tall"		"18"
+				"weight"	"0"
+				"antialias" "1"
+				"additive"	"1"
+				"custom"	"1"
+			}
+		}
 		MomentumIcons
 		{
 			"1"
@@ -1743,6 +1803,7 @@ Scheme
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
+		"1"		"resource/cs_regular.ttf"
 		"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
 		"4"		"resource/cs.ttf"
