@@ -300,13 +300,17 @@ bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
     while (pEnt)
     {
         if (pEnt->GetAbsOrigin() == *mZone->GetPosition()
-            && pEnt->GetAbsAngles() == *mZone->GetRotation()
-            && pEnt->WorldAlignMaxs() == *mZone->GetScaleMaxs()
-            && pEnt->WorldAlignMins() == *mZone->GetScaleMins())
+            && pEnt->GetAbsAngles() == *mZone->GetRotation())
         {
-            DevLog("Already found a %s spawned on the map! Not spawning it from zone file...\n", name);
-            toReturn = true;
-            break;
+			// Only check WorldAlignMaxs/Mins if collision prop bounds are not in entity space, to avoid assertions
+			if (pEnt->CollisionProp()->IsBoundsDefinedInEntitySpace()
+				|| (pEnt->WorldAlignMaxs() == *mZone->GetScaleMaxs()
+				&& pEnt->WorldAlignMins() == *mZone->GetScaleMins()))
+			{
+				DevLog("Already found a %s spawned on the map! Not spawning it from zone file...\n", name);
+				toReturn = true;
+				break;
+			}
         }
 
         pEnt = gEntList.FindEntityByClassname(pEnt, name);
