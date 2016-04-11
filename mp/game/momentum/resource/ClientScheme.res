@@ -284,7 +284,7 @@ Scheme
 		{
 			"1"
 			{
-				name "TypoGraphica"
+				name "Montserratr"
 				"tall"		"14"
 				"weight"	"0"
 				"antialias" "1"
@@ -296,7 +296,7 @@ Scheme
 		{
 			"1"
 			{
-				name "TypoGraphica"
+				name "Montserratr"
 				"tall"		"11"
 				"weight"	"0"
 				"antialias" "1"
@@ -308,7 +308,7 @@ Scheme
 		{
 			"1"
 			{
-				name "TypoGraphica"
+				name "Montserratr"
 				"tall"		"13"
 				"weight"	"0"
 				"antialias" "1"
@@ -320,7 +320,7 @@ Scheme
 		{
 			"1"
 			{
-				name "TypoGraphica"
+				name "Montserratr"
 				"tall"		"20"
 				"weight"	"0"
 				"antialias" "1"
@@ -332,7 +332,7 @@ Scheme
 		{
 			"1"
 			{
-				name "TypoGraphica"
+				name "Montserratr"
 				"tall"		"24"
 				"weight"	"0"
 				"antialias" "1"
@@ -1805,6 +1805,7 @@ Scheme
 		"1"		"resource/HALFLIFE2.ttf"
 		"1"		"resource/TypoGraphica.ttf"
 		"1"		"resource/MomIcons.ttf"
+		"1"		"resource/Montserratr.ttf"
 		"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
 		"4"		"resource/cs.ttf"
