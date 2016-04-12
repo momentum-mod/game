@@ -227,6 +227,8 @@ void CHudStrafeSyncBar::Paint()
 void CHudStrafeSyncBar::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    if (pPlayer == nullptr)
+        return;
     if (strafesync_type.GetInt() == 1) // sync1
         m_localStrafeSync = pPlayer->m_flStrafeSync;
     else if (strafesync_type.GetInt() == 2) // sync2

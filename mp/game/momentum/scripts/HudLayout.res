@@ -86,7 +86,7 @@
 		"enabled"		"1"
 		"wide"			"200"
 		"tall"			"20"
-		"TextFont"		"Default"
+		"TextFont"		"HudHintTextSmall"
 	}
 	CHudSyncBar
 	{
@@ -144,10 +144,11 @@
 		"top_row_ypos"	"5"
 		"mid_row_ypos"	"20"
 		"lower_row_ypos"	"35"
-		"bottom_row_ypos"	"45"
+		"jump_row_ypos"	"45"
+		"duck_row_ypos" "55"
 		"strafe_count_xpos" "100"
 		"jump_count_xpos"	"100"
-		"TextFont"		"HudNumbersSmall"
+		"TextFont"		"MomentumIcons"
 		"CounterTextFont"		"HudNumbersVerySmall"
 		"WordTextFont"	"HudNumbersVerySmall"
 		"KeyPressedColor"	"MOM.Panel.Fg"

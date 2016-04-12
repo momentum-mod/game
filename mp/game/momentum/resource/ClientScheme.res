@@ -284,7 +284,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"mom"
+				"name"		"MomIcons"
 				"tall"		"12"
 				"weight"	"0"
 				"antialias" "1"
@@ -1743,10 +1743,10 @@ Scheme
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
+		"1"		"resource/MomIcons.ttf"
 		"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
 		"4"		"resource/cs.ttf"
-		"5"		"resource/mom.ttf"
 	}
 
 }
