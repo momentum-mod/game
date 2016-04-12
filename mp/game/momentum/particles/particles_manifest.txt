@@ -1,0 +1,3 @@
+particles_manifest
+{
+}

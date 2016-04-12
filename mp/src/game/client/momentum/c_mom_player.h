@@ -35,7 +35,7 @@ public:
     float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;
 
-    char m_pszLastRunTime[sizeof("00:00:00.000") + 1];
+    int m_nLastRunTime;
 
     void GetBulletTypeParameters(
         int iBulletType,

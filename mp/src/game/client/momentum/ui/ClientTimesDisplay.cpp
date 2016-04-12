@@ -303,8 +303,6 @@ void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
     if (m_lMapSummary)
         m_lMapSummary->SetVisible(true);
 
-
-
     // light up scoreboard a bit
     SetBgColor(Color(0, 0, 0, 0));
 }

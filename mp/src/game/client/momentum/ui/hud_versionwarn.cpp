@@ -15,11 +15,9 @@ using namespace vgui;
 #include <vgui/ILocalize.h>
 
 #include "vgui_helpers.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
-#include "mom_shareddefs.h"
-using namespace vgui;
-
 
 class CHudVersionWarn : public CHudElement, public Panel
 {
@@ -29,7 +27,7 @@ public:
     CHudVersionWarn(const char *pElementName);
     virtual bool ShouldDraw()
     {
-        return true;
+        return CHudElement::ShouldDraw();
     }
     virtual void Paint();
 
@@ -49,6 +47,7 @@ CHudVersionWarn::CHudVersionWarn(const char *pElementName) : CHudElement(pElemen
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 
 void CHudVersionWarn::Init()

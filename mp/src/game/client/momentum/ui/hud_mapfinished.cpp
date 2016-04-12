@@ -209,11 +209,6 @@ void CHudMapFinishedDialog::Paint()
     surface()->DrawSetTextColor(GetFgColor());
 
     // --- RUN TIME ---
-
-    // MOM_TODO: This time string is just the hud timer string when it stops. 
-    // Since the hud timer has 2 digits precision this one only has 2 digits
-    // of precision as well. This will likely be changed when we switch to float
-    // based time.
     Q_snprintf(m_pszStringTimeLabel, sizeof(m_pszStringTimeLabel), "%s %s",
         timeLocalized, // run time localization 
         m_pszRunTime    // run time string
@@ -380,10 +375,6 @@ void CHudMapFinishedDialog::OnThink()
         m_iTotalJumps = g_MOMEventListener->m_iTotalJumps;
         m_iTotalStrafes = g_MOMEventListener->m_iTotalStrafes;
     }
-
-    if (pPlayer)
-    {
-        //copy player's last run time to our local variable
-        strcpy(m_pszRunTime, pPlayer->m_pszLastRunTime);
-    }
+    if (pPlayer != nullptr)
+        mom_UTIL.FormatTime(pPlayer->m_nLastRunTime, gpGlobals->interval_per_tick, m_pszRunTime);
 }

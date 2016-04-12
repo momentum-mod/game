@@ -22,7 +22,7 @@ if (!$path)
 }
 
 $hl2exe = Join-Path $path hl2.exe
-$hl2args = "-game momentum -novid +developer 2 +sv_cheats 1 -console"
+$hl2args = "-game momentum -window -w 1600 -h 900 -novid +developer 2 -console"
 
 $momentum_sym = Join-Path $path momentum
 $momentum = [System.IO.Path]::GetFullPath("..\game\momentum")

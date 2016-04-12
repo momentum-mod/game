@@ -145,6 +145,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
+<<<<<<< HEAD
     g_Timer.SetStartTrigger(this);
     if (pOther->IsPlayer())
     {
@@ -152,6 +153,18 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         pPlayer->m_bInsideStartZone = true;
         pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
 
+=======
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+    {
+        g_Timer.SetStartTrigger(this);
+        if (g_Timer.IsRunning())
+        {
+            g_Timer.Stop(false);
+            g_Timer.DispatchResetMessage();
+        }
+        pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
+>>>>>>> vguiruninfo_wip
         IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
         if (mapZoneEvent)
         {
@@ -159,6 +172,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             mapZoneEvent->SetBool("map_finished", false);
             gameeventmanager->FireEvent(mapZoneEvent);
         }
+<<<<<<< HEAD
         Vector velocity = pOther->GetAbsVelocity();
 
         if (g_Timer.IsRunning())
@@ -167,9 +181,11 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             g_Timer.DispatchResetMessage();
             //lower the player's speed if they try to jump back into the start zone
         }
+=======
+        // start thinking
+        SetNextThink(gpGlobals->curtime);
+>>>>>>> vguiruninfo_wip
     }
-    // start thinking
-    SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);
 }
 
@@ -277,10 +293,15 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             timerStopEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[0]);
             timerStopEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[0]);
             timerStopEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[0]);
-            timerStopEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[0]);
             timerStopEvent->SetFloat("start_vel", pPlayer->m_flStartSpeed);
             float endvel = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
             timerStopEvent->SetFloat("end_vel", endvel);
+
+            if (endvel > pPlayer->m_flStageVelocityMax[0])
+                timerStopEvent->SetFloat("max_vel", endvel);
+            else
+                timerStopEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[0]);
+
             pPlayer->m_flEndSpeed = endvel; //we have to set end speed here or else it will be saved as 0 
             timerStopEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[0]);
             timerStopEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[0]);

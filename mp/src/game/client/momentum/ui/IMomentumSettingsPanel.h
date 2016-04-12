@@ -2,13 +2,13 @@
 
 #include "vgui/IVGui.h"
 
-class VersionWarnPanel
+class MomentumSettingsPanel
 {
-  public:
+public:
     virtual void Create(vgui::VPANEL parent) = 0;
     virtual void Destroy(void) = 0;
     virtual void Activate(void) = 0;
     virtual void Close() = 0;
 };
 
-extern VersionWarnPanel *versionwarnpanel;
+extern MomentumSettingsPanel *momentum_settings;

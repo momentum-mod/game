@@ -39,6 +39,12 @@
 	}
 	"6"
 	{
+	    "label" "#MOM_Settings"
+		"command" "engine mom_settings_show"
+		"InGameOrder" "100"
+	}
+	"6"
+	{
 		"label" "#MOM_Credits"
 		"command" "engine progress_enable \n map credits"
 		"InGameOrder" "30"
@@ -49,20 +55,20 @@
 	{
 		"label" "#MOM_QuitToMenu"
 		"command" "engine disconnect"
-		"InGameOrder" "90"
+		"InGameOrder" "100"
 		"OnlyInGame" "1"
 	}
 	"8"
 	{
 		"label" ""
 		"command" ""
-		"InGameOrder" "100"
+		"InGameOrder" "110"
 	}
 	"9"
 	{
 		"label" "#GameUI_GameMenu_Quit"
 		"command" "QuitNoConfirm"
-		"InGameOrder" "110"
+		"InGameOrder" "200"
 	}
 }
 

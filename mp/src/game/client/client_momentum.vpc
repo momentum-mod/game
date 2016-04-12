@@ -60,8 +60,10 @@ $Project "Client (Momentum)"
 						    }
 					    }
 				    }
-                }          
-            
+                }  
+                
+                $File "momentum\ui\MomentumSettingsDialog.cpp"
+                $File "momentum\ui\IMomentumSettingsPanel.h"
 			    $File	"momentum\ui\hud_speedometer.cpp"
 				$File	"momentum\ui\hud_strafesync.cpp"
 				$File	"momentum\ui\hud_timer.cpp"
