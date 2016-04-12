@@ -145,7 +145,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
-<<<<<<< HEAD
     g_Timer.SetStartTrigger(this);
     if (pOther->IsPlayer())
     {
@@ -153,18 +152,6 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         pPlayer->m_bInsideStartZone = true;
         pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
 
-=======
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer)
-    {
-        g_Timer.SetStartTrigger(this);
-        if (g_Timer.IsRunning())
-        {
-            g_Timer.Stop(false);
-            g_Timer.DispatchResetMessage();
-        }
-        pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
->>>>>>> vguiruninfo_wip
         IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
         if (mapZoneEvent)
         {
@@ -172,8 +159,6 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             mapZoneEvent->SetBool("map_finished", false);
             gameeventmanager->FireEvent(mapZoneEvent);
         }
-<<<<<<< HEAD
-        Vector velocity = pOther->GetAbsVelocity();
 
         if (g_Timer.IsRunning())
         {
@@ -181,11 +166,9 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             g_Timer.DispatchResetMessage();
             //lower the player's speed if they try to jump back into the start zone
         }
-=======
-        // start thinking
-        SetNextThink(gpGlobals->curtime);
->>>>>>> vguiruninfo_wip
     }
+    // start thinking
+    SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);
 }
 
@@ -193,7 +176,6 @@ void CTriggerTimerStart::Spawn()
 {
     // We don't want negative velocities (We're checking against an absolute value)
     m_fMaxLeaveSpeed = abs(m_fMaxLeaveSpeed);
-
     m_fBhopLeaveSpeed = abs(m_fBhopLeaveSpeed);
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();

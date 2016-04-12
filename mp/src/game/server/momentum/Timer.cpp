@@ -92,17 +92,6 @@ void CTimer::LoadLocalTimes(const char *szMapname)
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {
-<<<<<<< HEAD
-                KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey();
-                t.stageticks[i] = subKv->GetInt("ticks");
-                t.stagejumps[i] = subKv->GetInt("num_jumps");
-                t.stagestrafes[i] = subKv->GetInt("num_strafes");
-                t.stageavgsync[i] = subKv->GetFloat("avg_sync");
-                t.stageavgsync2[i] = subKv->GetFloat("avg_sync2");
-                t.stageavgvel[i] = subKv->GetFloat("avg_vel");
-                t.stagemaxvel[i] = subKv->GetFloat("max_vel");
-                t.stagevel[i] = subKv->GetFloat("stage_enter_vel");
-=======
                 if (!Q_strnicmp(subKv->GetName(), "stage", strlen("stage")))
                 {
                     int i = Q_atoi(subKv->GetName()); //atoi will ignore "stage" and only return the stage number
@@ -126,7 +115,6 @@ void CTimer::LoadLocalTimes(const char *szMapname)
                     t.startvel = subKv->GetFloat("startvel");
                     t.endvel = subKv->GetFloat("endvel");
                 }
->>>>>>> vguiruninfo_wip
             }
             localTimes.AddToTail(t);
         }
