@@ -89,7 +89,7 @@ Scheme
 		FrameSystemButton.BgColor		"Blank"
 		FrameSystemButton.Icon			""
 		FrameSystemButton.DisabledIcon	""
-		FrameTitleBar.Font				"MomentumFont"		
+		FrameTitleBar.Font				"Verdana"		
 		FrameTitleBar.TextColor			"255 255 255 204"
 		FrameTitleBar.BgColor			"Blank"
 		FrameTitleBar.DisabledTextColor	"255 255 255 91"
@@ -210,78 +210,6 @@ Scheme
 		// fonts listed later in the order will only be used if they fulfill a range not already filled
 		// if a font fails to load then the subsequent fonts will replace
 		// fonts are used in order that they are listed
-		MomentumFont
-		{
-			"1"
-			{
-				name "TypoGraphica"
-				"tall"		"14"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		MomentumFontVerySmall
-		{
-			"1"
-			{
-				name "TypoGraphica"
-				"tall"		"11"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		MomentumFontSmall
-		{
-			"1"
-			{
-				name "TypoGraphica"
-				"tall"		"13"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		MomentumFontLarge
-		{
-			"1"
-			{
-				name "TypoGraphica"
-				"tall"		"20"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		MomentumFontVeryLarge
-		{
-			"1"
-			{
-				name "TypoGraphica"
-				"tall"		"24"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		MomentumIcons
-		{
-			"1"
-			{
-				"name"		"MomIcons"
-				"tall"		"12"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
 		"DebugFixed"
 		{
 			"1"
@@ -437,11 +365,10 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"TypoGraphica" 
-				"tall"		"24" 
-				"weight"	"600"
+				"name"		"Verdana" 
+				"tall"		"16" 
+				"weight"	"1000"
 				"antialias" "1"
-				"custom"	"1"
 			}
 		}
 		"AchievementTitleFont"
