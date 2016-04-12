@@ -94,9 +94,9 @@ void CHudKeyPressDisplay::Init()
 
     //localize jump and duck strings
     wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_Jump");
-    wcscpy(m_pwjump, uJumpUnicode);
+    Q_wcsncpy(m_pwjump, uJumpUnicode, sizeof(m_pwjump)); //use buffer-safe wcscpy so we don't crash on startup if localization file is corrupted
     wchar_t *uDuckUnicode = g_pVGuiLocalize->Find("#MOM_Duck");
-    wcscpy(m_pwduck, uDuckUnicode);
+    Q_wcsncpy(m_pwduck, uDuckUnicode, sizeof(m_pwduck));
 }
 void CHudKeyPressDisplay::Paint()
 {

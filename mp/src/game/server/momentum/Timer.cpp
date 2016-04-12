@@ -88,22 +88,33 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.ticks = Q_atoi(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
             t.date = (time_t) kv->GetInt("date");
-            t.jumps = kv->GetInt("jumps");
-            t.strafes = kv->GetInt("strafes");
-            t.avgsync = kv->GetFloat("avgsync");
-            t.avgsync2 = kv->GetFloat("avgsync2");
-            t.avgvel = kv->GetFloat("avgvel");
-            t.maxvel = kv->GetFloat("maxvel");
-            t.startvel = kv->GetFloat("startvel");
-            t.endvel = kv->GetFloat("endvel");
 
-            for (int i = 1; i <= GetStageCount(); i++) //start at 2, since we dont need the starting tick
+            for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {
-                KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey();
-                t.stageticks[i] = subKv->GetInt("ticks");
-                t.stagevel[i] = subKv->GetInt("startvel");
+                if (!Q_strnicmp(subKv->GetName(), "stage", strlen("stage")))
+                {
+                    int i = Q_atoi(subKv->GetName()); //atoi will ignore "stage" and only return the stage number
+                    t.stageticks[i] = subKv->GetInt("ticks");
+                    t.stagevel[i] = subKv->GetInt("stage_enter_vel");
+                    t.stageavgsync[i] = subKv->GetFloat("avg_sync");
+                    t.stageavgsync2[i] = subKv->GetFloat("avg_sync2");
+                    t.stageavgvel[i] = subKv->GetFloat("avg_vel");
+                    t.stagemaxvel[i] = subKv->GetFloat("max_vel");
+                    t.stagejumps[i] = subKv->GetInt("num_jumps");
+                    t.stagestrafes[i] = subKv->GetInt("num_strafes");
+                }
+                if (!Q_strcmp(subKv->GetName(), "total"))
+                {
+                    t.jumps = subKv->GetInt("jumps");
+                    t.strafes = subKv->GetInt("strafes");
+                    t.avgsync = subKv->GetFloat("avgsync");
+                    t.avgsync2 = subKv->GetFloat("avgsync2");
+                    t.avgvel = subKv->GetFloat("avgvel");
+                    t.maxvel = subKv->GetFloat("maxvel");
+                    t.startvel = subKv->GetFloat("startvel");
+                    t.endvel = subKv->GetFloat("endvel");
+                }
             }
-
             localTimes.AddToTail(t);
         }
     }
@@ -129,6 +140,9 @@ void CTimer::SaveTime()
         char timeName[512];
         Q_snprintf(timeName, 512, "%i", t.ticks);
         KeyValues *pSubkey = new KeyValues(timeName);
+        pSubkey->SetFloat("rate", t.tickrate);
+        pSubkey->SetInt("date", t.date);
+
         KeyValues *pOverallKey = new KeyValues("total");
         pOverallKey->SetInt("jumps", t.jumps);
         pOverallKey->SetInt("strafes", t.strafes);
@@ -138,10 +152,8 @@ void CTimer::SaveTime()
         pOverallKey->SetFloat("endvel", t.endvel);
         pOverallKey->SetFloat("avgvel", t.avgvel);
         pOverallKey->SetFloat("maxvel", t.maxvel);
-        pOverallKey->SetFloat("rate", t.tickrate);
-        pOverallKey->SetInt("date", t.date);
 
-        char stageName[10]; // "stage 999"
+        char stageName[9]; // "stage 64\0"
         if (GetStageCount() > 1)
         {
             for (int i = 1; i <= GetStageCount(); i++) 

@@ -226,7 +226,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         if (pPlayer != NULL)
         {
             pPlayer->EmitSound("Momentum.StopTimer");
-            strcpy(pPlayer->m_pszLastRunTime, m_pszString); //copy local ending time to player member so we can use it for other VGUI elements.
+            pPlayer->m_nLastRunTime = gpGlobals->tickcount - m_iStartTick;
         }
 
         //MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?

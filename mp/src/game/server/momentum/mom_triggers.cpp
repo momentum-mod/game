@@ -270,10 +270,15 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             timerStopEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[0]);
             timerStopEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[0]);
             timerStopEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[0]);
-            timerStopEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[0]);
             timerStopEvent->SetFloat("start_vel", pPlayer->m_flStartSpeed);
             float endvel = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
             timerStopEvent->SetFloat("end_vel", endvel);
+
+            if (endvel > pPlayer->m_flStageVelocityMax[0])
+                timerStopEvent->SetFloat("max_vel", endvel);
+            else
+                timerStopEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[0]);
+
             pPlayer->m_flEndSpeed = endvel; //we have to set end speed here or else it will be saved as 0 
             timerStopEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[0]);
             timerStopEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[0]);
