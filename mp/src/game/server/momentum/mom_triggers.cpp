@@ -89,14 +89,12 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-DEFINE_KEYFIELD(m_fMaxLeaveSpeed, FIELD_FLOAT, "leavespeed"),
 DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
 DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") 
 END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    ConVarRef gm("mom_gamemode");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     if (pOther->IsPlayer())
     {
@@ -108,24 +106,17 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             if (IsLimitingSpeed())
             {
                 Vector velocity = pOther->GetAbsVelocity();
-                if (IsLimitingSpeedOnlyXY())
-                {
                     // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
                     // It only has a NormalizeInPlace... Not simple enough for me
-                    Vector2D vel2D = velocity.AsVector2D();
+                Vector2D vel2D = velocity.AsVector2D();
 
-                    if (velocity.AsVector2D().IsLengthGreaterThan(pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed))
+                if (pPlayer->DidPlayerBhop())
+                {
+                    if (velocity.AsVector2D().IsLengthGreaterThan(m_fBhopLeaveSpeed))
                     {
-                        vel2D = ((vel2D / vel2D.Length()) * (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
+                        vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));
                         pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                     }
-                }
-                // XYZ limit (this is likely never going to be used, or at least, it shouldn't be)
-                else
-                {
-                    if (velocity.IsLengthGreaterThan((pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed)))
-                        pOther->SetAbsVelocity(velocity.Normalized() *
-                        (pPlayer->DidPlayerBhop() ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
                 }
                 g_Timer.Start(gpGlobals->tickcount);
             }
@@ -175,18 +166,16 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 void CTriggerTimerStart::Spawn()
 {
     // We don't want negative velocities (We're checking against an absolute value)
-    m_fMaxLeaveSpeed = abs(m_fMaxLeaveSpeed);
     m_fBhopLeaveSpeed = abs(m_fBhopLeaveSpeed);
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
 }
-void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed) { m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed);  }
-void CTriggerTimerStart::SetBhopLeaveSpeed(float pBhopMaxLeaveSpeed) { m_fBhopLeaveSpeed = abs(pBhopMaxLeaveSpeed); }
+void CTriggerTimerStart::SetMaxLeaveSpeed(float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
 void CTriggerTimerStart::SetPunishSpeed(float pPunishSpeed) { m_fPunishSpeed = abs(pPunishSpeed); }
 void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
-void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
+void CTriggerTimerStart::SetIsLimitingSpeed(bool bIsLimitSpeed)
 {
-    if (pIsLimitingSpeed)
+    if (bIsLimitSpeed)
     {
         if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
         {
@@ -198,40 +187,6 @@ void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
         if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
         {
             RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED);
-        }
-    }
-}
-void CTriggerTimerStart::SetIsLimitingSpeedOnlyXY(bool pIsLimitingSpeedOnlyXY)
-{
-    if (pIsLimitingSpeedOnlyXY)
-    {
-        if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY))
-        {
-            AddSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY);
-        }
-    }
-    else
-    {
-        if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY))
-        {
-            RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY);
-        }
-    }
-}
-void CTriggerTimerStart::SetIsLimitingBhop(bool bIsLimitBhop)
-{
-    if (bIsLimitBhop)
-    {
-        if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP))
-        {
-            AddSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP);
-        }
-    }
-    else
-    {
-        if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP))
-        {
-            RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP);
         }
     }
 }

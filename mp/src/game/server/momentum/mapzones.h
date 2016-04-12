@@ -22,8 +22,8 @@ public:
     CMapzone();
     CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
         const int, const bool, const bool, const float, 
-        const bool, const float, const float, const float, 
-        const string_t, const bool, const bool);
+        const bool, const float, const float, 
+        const string_t, const bool);
     ~CMapzone();
 
     void SpawnZone();

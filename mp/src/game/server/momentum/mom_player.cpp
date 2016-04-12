@@ -382,51 +382,23 @@ void CMomentumPlayer::CalculateAverageStats()
 //their timer again when they land and are not jumping.
 void CMomentumPlayer::StartTimerBhopOnly()
 {
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     ConVarRef gm("mom_gamemode");
     CTriggerTimerStart *startTrigger = g_Timer.GetStartTrigger();
     bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
+    //limit prespeed in the same way even if we aren't on a bhop gamemode.
     if (m_bInsideStartZone)
     {
-        //we want to start the timer when the player jumps only on scroll/bhop gamemodes
-        if (bhopGameMode)
+        if (bhopGameMode ? (!g_Timer.IsRunning() && GetGroundEntity() == NULL) : g_Timer.IsPracticeMode(this))
         {
-            if (GetGroundEntity() != NULL && m_nButtons & IN_JUMP && 
-                !m_bPlayerJumped && !g_Timer.IsRunning() && !g_Timer.IsPracticeMode(this))
-            {
-                m_bPlayerJumped = true;
-                g_Timer.Start(gpGlobals->tickcount);
-                if (mapZoneEvent)
-                {
-                    mapZoneEvent->SetBool("inside_startzone", false);
-                    gameeventmanager->FireEvent(mapZoneEvent);
-                }
-            }
-            else if (GetGroundEntity() != NULL && !(m_nButtons & IN_JUMP))
-            {
-                g_Timer.Stop(false, false);
-                m_bPlayerJumped = false;
-                if (mapZoneEvent)
-                {
-                    mapZoneEvent->SetBool("inside_startzone", true);
-                    gameeventmanager->FireEvent(mapZoneEvent);
-                }
-            }
-        }
-        //limit prespeed in the same way even if we aren't on a bhop gamemode.
-        if (bhopGameMode ? !g_Timer.IsRunning() : g_Timer.IsPracticeMode(this))
-        {
-            m_bPlayerJumped = false;
             Vector velocity = GetLocalVelocity();
-            if (velocity.Length2D() > startTrigger->GetMaxLeaveSpeed())
+            if (velocity.Length2D() > startTrigger->GetPunishSpeed())
             {
-                if (velocity.AsVector2D().IsLengthGreaterThan(startTrigger->GetPunishSpeed()))
-                {
-                    velocity = ((velocity / velocity.Length()) * startTrigger->GetPunishSpeed());
-                    SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
-                }
+                velocity = ((velocity / velocity.Length()) * (bhopGameMode ? startTrigger->GetPunishSpeed() : startTrigger->GetPunishSpeed()/2));
+                SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
             }
         }
     }
+
+    
     SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
 }
