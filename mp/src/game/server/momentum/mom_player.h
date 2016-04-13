@@ -137,6 +137,8 @@ private:
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
 
-    bool m_bPlayerJumped;
+    //Start zone thinkfunc
+    int m_nTicksInAir;
+    const int MAX_AIRTIME_TICKS = 15; //The player can spend this many ticks in the air inside the start zone before their speed is limited
 };
 #endif // MOMPLAYER_H

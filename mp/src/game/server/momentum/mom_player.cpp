@@ -388,7 +388,12 @@ void CMomentumPlayer::StartTimerBhopOnly()
     //limit prespeed in the same way even if we aren't on a bhop gamemode.
     if (m_bInsideStartZone)
     {
-        if (bhopGameMode ? (!g_Timer.IsRunning() && GetGroundEntity() == NULL) : g_Timer.IsPracticeMode(this))
+        if (GetGroundEntity() == NULL)
+            m_nTicksInAir++;
+        else
+            m_nTicksInAir = 0;
+        
+        if (bhopGameMode ? ((!g_Timer.IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS) || g_Timer.IsPracticeMode(this)) : g_Timer.IsPracticeMode(this))
         {
             Vector velocity = GetLocalVelocity();
             if (velocity.Length2D() > startTrigger->GetPunishSpeed())
@@ -398,7 +403,5 @@ void CMomentumPlayer::StartTimerBhopOnly()
             }
         }
     }
-
-    
     SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
 }
