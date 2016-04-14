@@ -70,6 +70,7 @@ class CMomentumPlayer : public CBasePlayer
     void UpdateRunStats();
     void ResetRunStats();
     void CalculateAverageStats();
+    void LimitSpeedInStartZone();
 
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
@@ -110,6 +111,7 @@ class CMomentumPlayer : public CBasePlayer
     int m_nStageAvgCount[MAX_STAGES];
     float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES];
 
+    bool m_bInsideStartZone;
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
@@ -135,5 +137,8 @@ private:
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
 
+    //Start zone thinkfunc
+    int m_nTicksInAir;
+    const int MAX_AIRTIME_TICKS = 15; //The player can spend this many ticks in the air inside the start zone before their speed is limited
 };
 #endif // MOMPLAYER_H

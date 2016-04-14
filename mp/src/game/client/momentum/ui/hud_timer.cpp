@@ -114,7 +114,7 @@ private:
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL], 
         noTimerLocalized[BUFSIZELOCL];
 
-
+    bool m_bPlayStartSound, m_bPlayStopSound;
 };
 
 DECLARE_HUDELEMENT(C_Timer);

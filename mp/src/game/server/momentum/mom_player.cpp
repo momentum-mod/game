@@ -25,6 +25,7 @@ BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop),
 DEFINE_THINKFUNC(UpdateRunStats),
 DEFINE_THINKFUNC(CalculateAverageStats),
+DEFINE_THINKFUNC(LimitSpeedInStartZone),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
@@ -100,10 +101,11 @@ void CMomentumPlayer::Spawn()
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
+    RegisterThinkContext("CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
-
+    SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetNextThink(gpGlobals->curtime);
 }
 
@@ -375,4 +377,33 @@ void CMomentumPlayer::CalculateAverageStats()
 
     // think once per 0.1 second interval so we avoid making the totals extremely large
     SetNextThink(gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
+}
+//This limits the player's speed in the start zone, depending on which gamemode the player is currently playing.
+//On surf/other, it only limits practice mode speed. On bhop/scroll, it limits the movement speed above a certain threshhold, and 
+//clamps the player's velocity if they go above it. This is to prevent prespeeding and is different per gamemode due to the different
+//respective playstyles of surf and bhop.
+void CMomentumPlayer::LimitSpeedInStartZone()
+{
+    ConVarRef gm("mom_gamemode");
+    CTriggerTimerStart *startTrigger = g_Timer.GetStartTrigger();
+    bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
+    if (m_bInsideStartZone)
+    {
+        if (GetGroundEntity() == NULL)
+            m_nTicksInAir++;
+        else
+            m_nTicksInAir = 0;
+        //depending on gamemode, limit speed either outright or only when player is in practice mode
+        if (bhopGameMode ? ((!g_Timer.IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS) || g_Timer.IsPracticeMode(this)) : g_Timer.IsPracticeMode(this))
+        {
+            Vector velocity = GetLocalVelocity();
+            float PunishVelSquared = startTrigger->GetPunishSpeed()*startTrigger->GetPunishSpeed();
+            if (velocity.Length2DSqr() > PunishVelSquared) //more efficent to check agaisnt the square of velocity
+            {
+                velocity = ((velocity / velocity.Length()) * (gpGlobals->interval_per_tick == 0.01 ? startTrigger->GetPunishSpeed() : startTrigger->GetPunishSpeed() / 2));
+                SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
+            }
+        }
+    }
+    SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
 }

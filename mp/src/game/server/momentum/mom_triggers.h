@@ -11,10 +11,8 @@
 // spawnflags 
 enum {
     //CTriggerTimerStart
-    SF_LIMIT_LEAVE_SPEED = 0x0001,          // Limit max leave speed to m_fMaxLeaveSpeed?
+    SF_LIMIT_LEAVE_SPEED = 0x0001,           // Limit speed if player bhopped in start zone?
     SF_USE_LOOKANGLES = 0x0002,             // Use look angles?
-    SF_LIMIT_LEAVE_SPEED_ONLYXY = 0x0004,   // Limit speed without taking into account hvel (Z axis)
-    SF_LIMIT_LEAVE_SPEED_BHOP = 0x0008,     // Limit bhop in start zone?
     //CTriggerOneHop
     SF_TELEPORT_RESET_ONEHOP = 0x0010,      // Reset hop state if player hops onto another different onehop
     //CTriggerLimitMove
@@ -127,31 +125,25 @@ public:
     // The start is always the first stage/checkpoint
     int GetCheckpointNumber() { return -1; }//Override
     int GetStageNumber() { return 1; }
-    float GetMaxLeaveSpeed() { return m_fMaxLeaveSpeed; }
-    void SetMaxLeaveSpeed(float pMaxSpeed);
-    float GetBhopLeaveSpeed() { return m_fBhopLeaveSpeed; }
-    void SetBhopLeaveSpeed(float pBhopLeaveSpeed);
+    float GetMaxLeaveSpeed() { return m_fBhopLeaveSpeed; }
+    void SetMaxLeaveSpeed(float maxLeaveSpeed);
     void SetLookAngles(QAngle newang);
     QAngle GetLookAngles() { return m_angLook; }
+    void SetPunishSpeed(float pPunishSpeed);
+    float GetPunishSpeed() { return m_fPunishSpeed; }
 
     //spawnflags
     bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
     void SetIsLimitingSpeed(bool pIsLimitingSpeed);
     void SetHasLookAngles(bool bHasLook);
     bool GetHasLookAngles() { return HasSpawnFlags(SF_USE_LOOKANGLES); }
-    bool IsLimitingSpeedOnlyXY() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY); }
-    void SetIsLimitingSpeedOnlyXY(bool pIsLimitingSpeedOnlyXY);
-    bool IsLimitingBhop() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP); }
-    void SetIsLimitingBhop(bool bIsLimitBhop);
 
 private:
     QAngle m_angLook = QAngle(0, 0, 0);
 
-    // How fast can the player leave the start trigger?
-    float m_fMaxLeaveSpeed = 290;
-
-    //limitbhop stuff
+    //How fast can player leave start trigger if they bhopped?
     float m_fBhopLeaveSpeed = 250;
+    float m_fPunishSpeed = 200;
 };
 
 // CFilterCheckpoint

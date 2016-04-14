@@ -154,6 +154,7 @@ private:
     int m_iStageEnterTick[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
+
     CHandle<CTriggerTimerStart> m_pStartTrigger;
     CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
     CHandle<CTriggerStage> m_pCurrentStage;

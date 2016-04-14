@@ -10,7 +10,6 @@ static ConVar mom_zone_grid("mom_zone_grid", "8", FCVAR_CHEAT, "Set grid size. 0
 static ConVar mom_zone_defzone("mom_zone_defzone", "start", FCVAR_CHEAT, "If no zone type is passed to mom_zone_mark, use this.\n");
 static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1", FCVAR_CHEAT, "0 = Take into account player z-velocity, 1 = Ignore z-velocity.\n", true, 0, true, 1);
 static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
-static ConVar mom_zone_start_maxleavespeed("mom_zone_start_maxleavespeed", "290", FCVAR_CHEAT, "Max leave speed. 0 to disable.\n", true, 0, false, 0);
 static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT, "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
 //static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
 
@@ -262,27 +261,16 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
     //validate pointers
     if (pStart)
     {
-        if (mom_zone_start_maxleavespeed.GetFloat() > 0.0)
+        //bhop speed limit
+        if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
         {
-            pStart->SetMaxLeaveSpeed(mom_zone_start_maxleavespeed.GetFloat());
+            pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
             pStart->SetIsLimitingSpeed(true);
         }
         else
         {
             pStart->SetIsLimitingSpeed(false);
         }
-        //bhop speed limit
-        if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
-        {
-            pStart->SetBhopLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
-            pStart->SetIsLimitingBhop(true);
-        }
-        else
-        {
-            pStart->SetIsLimitingBhop(false);
-        }
-        pStart->SetIsLimitingSpeedOnlyXY(mom_zone_start_limitspdmethod.GetBool());
-
         return;
     }
 
