@@ -396,9 +396,10 @@ void CMomentumPlayer::StartTimerBhopOnly()
         if (bhopGameMode ? ((!g_Timer.IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS) || g_Timer.IsPracticeMode(this)) : g_Timer.IsPracticeMode(this))
         {
             Vector velocity = GetLocalVelocity();
-            if (velocity.Length2D() > startTrigger->GetPunishSpeed())
+            float PunishVelSquared = startTrigger->GetPunishSpeed()*startTrigger->GetPunishSpeed();
+            if (velocity.Length2DSqr() > PunishVelSquared) //more efficent to check agaisnt the square of velocity
             {
-                velocity = ((velocity / velocity.Length()) * (bhopGameMode ? startTrigger->GetPunishSpeed() : startTrigger->GetPunishSpeed()/2));
+                velocity = ((velocity / velocity.Length()) * (gpGlobals->interval_per_tick == 0.01 ? startTrigger->GetPunishSpeed() : startTrigger->GetPunishSpeed() / 2));
                 SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
             }
         }

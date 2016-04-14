@@ -5,9 +5,8 @@
 
 extern IFileSystem *filesystem;
 
-void CTimer::Start(int start, bool playSound)
+void CTimer::Start(int start)
 {
-    m_bPlayStartSound = playSound;
     if (m_bUsingCPMenu) return;
     m_iStartTick = start;
     SetRunning(true);
@@ -193,9 +192,8 @@ void CTimer::SaveTime()
     timesKV->deleteThis();
 }
 
-void CTimer::Stop(bool endTrigger /* = false */, bool playSound)
+void CTimer::Stop(bool endTrigger /* = false */)
 {
-    m_bPlayEndSound = playSound;
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
@@ -343,8 +341,6 @@ void CTimer::DispatchStateMessage()
         UserMessageBegin(user, "Timer_State");
         WRITE_BOOL(m_bIsRunning);
         WRITE_LONG(m_iStartTick);
-        WRITE_BOOL(m_bPlayStartSound);
-        WRITE_BOOL(m_bPlayEndSound);
         MessageEnd();
     }
 }

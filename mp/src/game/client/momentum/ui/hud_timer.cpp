@@ -193,8 +193,6 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     bool started = msg.ReadOneBit();
     m_bIsRunning = started;
     m_iStartTick = (int) msg.ReadLong();
-    m_bPlayStartSound = msg.ReadOneBit();
-    m_bPlayStopSound = msg.ReadOneBit();
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (!pPlayer)
         return;
@@ -205,7 +203,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         // Checking again, even if we just checked 8 lines before
         if (pPlayer != NULL)
         {
-            if (m_bPlayStartSound) pPlayer->EmitSound("Momentum.StartTimer");
+            pPlayer->EmitSound("Momentum.StartTimer");
             m_bTimerRan = true;
         }
     }
@@ -227,7 +225,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         //VGUI_ANIMATE("TimerStop");
         if (pPlayer != NULL)
         {
-            if (m_bPlayStopSound) pPlayer->EmitSound("Momentum.StopTimer");
+            pPlayer->EmitSound("Momentum.StopTimer");
             pPlayer->m_nLastRunTime = gpGlobals->tickcount - m_iStartTick;
         }
 

@@ -36,9 +36,9 @@ public:
 
     // ------------- Timer state related messages --------------------------
     // Strats the timer for the given starting tick
-    void Start(int startTick, bool playSound = true);
+    void Start(int startTick);
     // Stops the timer
-    void Stop(bool = false, bool playSound = true);
+    void Stop(bool = false);
     // Is the timer running?
     bool IsRunning() { return m_bIsRunning; }
     // Set the running status of the timer
@@ -155,7 +155,6 @@ private:
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
 
-    bool m_bPlayStartSound, m_bPlayEndSound;
     CHandle<CTriggerTimerStart> m_pStartTrigger;
     CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
     CHandle<CTriggerStage> m_pCurrentStage;
