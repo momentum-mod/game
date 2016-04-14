@@ -95,7 +95,6 @@ END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     if (pOther->IsPlayer())
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
@@ -122,12 +121,13 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             }
             
         }
-        if (mapZoneEvent)
-        {
-            mapZoneEvent->SetBool("inside_startzone", false);
-            gameeventmanager->FireEvent(mapZoneEvent);
-        }
         pPlayer->m_bInsideStartZone = false;
+    }
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetBool("inside_startzone", false);
+        gameeventmanager->FireEvent(mapZoneEvent);
     }
     // stop thinking on end touch
     SetNextThink(-1);
@@ -137,19 +137,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
     g_Timer.SetStartTrigger(this);
+
     if (pOther->IsPlayer())
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
         pPlayer->m_bInsideStartZone = true;
         pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
-
-        IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-        if (mapZoneEvent)
-        {
-            mapZoneEvent->SetBool("inside_startzone", true);
-            mapZoneEvent->SetBool("map_finished", false);
-            gameeventmanager->FireEvent(mapZoneEvent);
-        }
 
         if (g_Timer.IsRunning())
         {
@@ -157,6 +150,13 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             g_Timer.DispatchResetMessage();
             //lower the player's speed if they try to jump back into the start zone
         }
+    }
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetBool("inside_startzone", true);
+        mapZoneEvent->SetBool("map_finished", false);
+        gameeventmanager->FireEvent(mapZoneEvent);
     }
     // start thinking
     SetNextThink(gpGlobals->curtime);

@@ -389,18 +389,22 @@ void CMomentumPlayer::LimitSpeedInStartZone()
     bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
     if (m_bInsideStartZone)
     {
-        if (GetGroundEntity() == NULL)
+        if (GetGroundEntity() == NULL && !g_Timer.IsPracticeMode(this)) //don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
         else
             m_nTicksInAir = 0;
-        //depending on gamemode, limit speed either outright or only when player is in practice mode
-        if (bhopGameMode ? ((!g_Timer.IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS) || g_Timer.IsPracticeMode(this)) : g_Timer.IsPracticeMode(this))
+
+        //set bhop flag to true so we can't prespeed with practice mode
+        if (g_Timer.IsPracticeMode(this)) m_bDidPlayerBhop = true; 
+
+        //depending on gamemode, limit speed outright when player exceeds punish vel
+        if (bhopGameMode  && ((!g_Timer.IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetPunishSpeed()*startTrigger->GetPunishSpeed();
             if (velocity.Length2DSqr() > PunishVelSquared) //more efficent to check agaisnt the square of velocity
             {
-                velocity = ((velocity / velocity.Length()) * (gpGlobals->interval_per_tick == 0.01 ? startTrigger->GetPunishSpeed() : startTrigger->GetPunishSpeed() / 2));
+                velocity = (velocity / velocity.Length()) * startTrigger->GetPunishSpeed();
                 SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
             }
         }
