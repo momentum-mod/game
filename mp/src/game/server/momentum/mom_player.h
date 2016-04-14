@@ -70,7 +70,7 @@ class CMomentumPlayer : public CBasePlayer
     void UpdateRunStats();
     void ResetRunStats();
     void CalculateAverageStats();
-    void StartTimerBhopOnly();
+    void LimitSpeedInStartZone();
 
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
