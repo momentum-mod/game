@@ -27,25 +27,51 @@
 
 "modevents"
 {
-	"player_death"				// a game event, name may be 32 charaters long
+	"timer_stopped"
 	{
-		"userid"	"short"   	// user ID who died				
-		"attacker"	"short"	 	// user ID who killed
-		"weapon"	"string" 	// weapon name killed used 
+		"avg_sync"	"float"
+		"avg_sync2"	"float"
+		"avg_vel"	"float"
+		"max_vel"	"float"
+		"start_vel"	"float"
+		"end_vel"	"float"
+		"num_strafes"	"short"
+		"num_jumps"	"short"
 	}
-	
-	"teamplay_round_start"			// round restart
+	"new_stage"
 	{
-		"full_reset"	"bool"		// is this a full reset of the map
+		"stage_num"	"byte"
+		"stage_ticks"	"long" //time is in ticks
+		"avg_sync"	"float"
+		"avg_sync2"	"float"
+		"avg_vel"	"float"
+		"max_vel"	"float"
+		"stage_enter_vel"	"float"
+		"num_strafes"	"short"
+		"num_jumps"	"short"
 	}
-	
-	"spec_target_updated"
+	"run_save"
 	{
+		"run_saved"	"bool"
+		"run_posted"	"bool"
 	}
-	
-	"achievement_earned"
+	"timer_started"
 	{
-		"player"	"byte"		// entindex of the player
-		"achievement"	"short"		// achievement ID
+		"timer_isrunning"	"bool"
+	}
+	"player_inside_mapzone"
+	{
+		"inside_startzone"	"bool"
+		"inside_endzone"	"bool"
+		"map_finished"	"bool"
+	}
+	"keypress"
+	{
+		"num_jumps"	"short"
+		"num_strafes"	"short"
+	}
+	"practice_mode"
+	{
+		"has_practicemode"	"bool"
 	}
 }

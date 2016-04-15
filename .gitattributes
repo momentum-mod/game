@@ -43,9 +43,11 @@ README text
 CONTRIBUTING text
 LICENSE text
 
+momentum_*.txt text
+gameui_*.txt text
+
 *.exe binary
 protoc binary
 ccache binary
 
 gtest_output_test_golden_lin.txt binary
-mod_*_english.txt binary

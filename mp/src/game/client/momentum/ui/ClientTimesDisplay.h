@@ -141,7 +141,7 @@ private:
         Time(KeyValues* kv)
         {
             ticks = Q_atoi(kv->GetName());
-            rate = kv->GetFloat("rate", 0.015);
+            rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
             date = (time_t) kv->GetInt("date", 0);
         };
     };

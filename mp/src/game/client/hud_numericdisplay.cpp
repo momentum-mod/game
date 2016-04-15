@@ -101,48 +101,60 @@ void CHudNumericDisplay::SetIsTime(bool state)
 	m_bIsTime = state;
 }
 
+void CHudNumericDisplay::PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits)
+{
+    surface()->DrawSetTextFont(font);
+    wchar_t unicode[6];
+    if (!m_bIsTime)
+    {
+        if (atLeast2Digits && value < 10)
+        {
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"0%d", value);   
+        }
+        else
+        {
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d", value);
+        }
+    }
+    else
+    {
+        int iMinutes = value / 60;
+        int iSeconds = value - iMinutes * 60;
+#ifdef PORTAL
+        // portal uses a normal font for numbers so we need the seperate to be a renderable ':' char
+        if (iSeconds < 10)
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d:0%d", iMinutes, iSeconds);
+        else
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d:%d", iMinutes, iSeconds);
+#else
+        if (iSeconds < 10)
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d`0%d", iMinutes, iSeconds);
+        else
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d`%d", iMinutes, iSeconds);
+#endif
+    }
+
+    // adjust the position to take into account 3 characters
+    int charWidth = surface()->GetCharacterWidth(font, '0');
+    if (value < 100 && m_bIndent)
+    {
+        xpos += charWidth;
+    }
+    if (value < 10 && m_bIndent)
+    {
+        xpos += charWidth;
+    }
+
+    surface()->DrawSetTextPos(xpos, ypos);
+    surface()->DrawUnicodeString(unicode);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: paints a number at the specified position
 //-----------------------------------------------------------------------------
 void CHudNumericDisplay::PaintNumbers(HFont font, int xpos, int ypos, int value)
 {
-	surface()->DrawSetTextFont(font);
-	wchar_t unicode[6];
-	if ( !m_bIsTime )
-	{
-		V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d", value);
-	}
-	else
-	{
-		int iMinutes = value / 60;
-		int iSeconds = value - iMinutes * 60;
-#ifdef PORTAL
-		// portal uses a normal font for numbers so we need the seperate to be a renderable ':' char
-		if ( iSeconds < 10 )
-			V_snwprintf( unicode, ARRAYSIZE(unicode), L"%d:0%d", iMinutes, iSeconds );
-		else
-			V_snwprintf( unicode, ARRAYSIZE(unicode), L"%d:%d", iMinutes, iSeconds );		
-#else
-		if ( iSeconds < 10 )
-			V_snwprintf( unicode, ARRAYSIZE(unicode), L"%d`0%d", iMinutes, iSeconds );
-		else
-			V_snwprintf( unicode, ARRAYSIZE(unicode), L"%d`%d", iMinutes, iSeconds );
-#endif
-	}
-
-	// adjust the position to take into account 3 characters
-	int charWidth = surface()->GetCharacterWidth(font, '0');
-	if (value < 100 && m_bIndent)
-	{
-		xpos += charWidth;
-	}
-	if (value < 10 && m_bIndent)
-	{
-		xpos += charWidth;
-	}
-
-	surface()->DrawSetTextPos(xpos, ypos);
-	surface()->DrawUnicodeString( unicode );
+    PaintNumbers(font, xpos, ypos, value, false);
 }
 
 //-----------------------------------------------------------------------------
@@ -151,7 +163,7 @@ void CHudNumericDisplay::PaintNumbers(HFont font, int xpos, int ypos, int value)
 void CHudNumericDisplay::PaintLabel( void )
 {
 	surface()->DrawSetTextFont(m_hTextFont);
-	surface()->DrawSetTextColor(GetFgColor());
+    surface()->DrawSetTextColor(m_LabelColor);
 	surface()->DrawSetTextPos(text_xpos, text_ypos);
 	surface()->DrawUnicodeString( m_LabelText );
 }
@@ -164,7 +176,7 @@ void CHudNumericDisplay::Paint()
 	if (m_bDisplayValue)
 	{
 		// draw our numbers
-		surface()->DrawSetTextColor(GetFgColor());
+        surface()->DrawSetTextColor(m_PrimaryValueColor);
 		PaintNumbers(m_hNumberFont, digit_xpos, digit_ypos, m_iValue);
 
 		// draw the overbright blur
@@ -177,7 +189,7 @@ void CHudNumericDisplay::Paint()
 			else
 			{
 				// draw a percentage of the last one
-				Color col = GetFgColor();
+                Color col = m_PrimaryValueColor;
 				col[3] *= fl;
 				surface()->DrawSetTextColor(col);
 				PaintNumbers(m_hNumberGlowFont, digit_xpos, digit_ypos, m_iValue);
@@ -188,8 +200,8 @@ void CHudNumericDisplay::Paint()
 	// total ammo
 	if (m_bDisplaySecondaryValue)
 	{
-		surface()->DrawSetTextColor(GetFgColor());
-		PaintNumbers(m_hSmallNumberFont, digit2_xpos, digit2_ypos, m_iSecondaryValue);
+        surface()->DrawSetTextColor(m_SecondaryValueColor);
+		PaintNumbers(m_hSmallNumberFont, digit2_xpos, digit2_ypos, m_iSecondaryValue, true);
 	}
 
 	PaintLabel();

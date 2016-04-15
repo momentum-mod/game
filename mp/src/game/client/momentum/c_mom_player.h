@@ -21,8 +21,9 @@ public:
 
     void SurpressLadderChecks(const Vector& pos, const Vector& normal);
     bool CanGrabLadder(const Vector& pos, const Vector& normal);
-    bool HasAutoBhop();
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
+    bool HasAutoBhop() { return m_bAutoBhop; }
+    void ResetStrafeSync();
 
     int m_iShotsFired;
     int m_iDirection;
@@ -30,6 +31,11 @@ public:
     int m_iLastZoom;
     bool m_bAutoBhop;
     bool m_bDidPlayerBhop;
+
+    float m_flStrafeSync, m_flStrafeSync2;
+    float m_flLastJumpVel;
+
+    int m_nLastRunTime;
 
     void GetBulletTypeParameters(
         int iBulletType,
@@ -59,6 +65,10 @@ public:
         float lateral_max,
         int direction_change);
 
+    float m_flStartSpeed;
+    float m_flEndSpeed;
+    int m_iSuccessiveBhops;
+
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
@@ -66,6 +76,8 @@ private:
 
     bool m_duckUntilOnGround;
     float m_flStamina;
+
+
 
     friend class CMomentumGameMovement;
 };

@@ -4,32 +4,39 @@
 	HudSpeedMeter
 		{
 				"fieldName"		"HudSpeedMeter"
-				"xpos"			"c-57"
-                "ypos"			"432"
-                "wide"			"114"
-                "tall"			"36"
+				"xpos"			"c-60"
+                "ypos"			"310"
+                "wide"			"120"
+                "tall"			"40"
                 "visible"		"1"
                 "enabled"		"1"
-                "PaintBackgroundType" "2"
-                "text_xpos"		"8"
-                "text_ypos"		"20"
-                "digit_xpos"	"50"
-                "digit_ypos"	"2"
-				}
+				"NumberFont"	"HudNumbersSmallBold"
+				"SmallNumberFont" "HudNumbersExtremelySmall"
+				"text_ypos"		"5"
+                "digit_ypos"	"15"
+                "digit2_ypos"	"30"
+				"PrimaryValueColor" "MOM.Panel.Fg"
+				"SecondaryValueColor" "Light Gray"
+				"LabelColor"	"MOM.Panel.Fg"
+				"BgColor"	"Blank"
+		}
     //Timer
 	HudTimer
 		{
 				"fieldName"		"HudTimer"
-                "xpos"			"c-68"
-                "ypos"			"c+75"
-                "wide"			"136"
+                "xpos"			"c-50"
+                "ypos"			"c+150"
+                "wide"			"100"
                 "tall"			"50"
                 "visible"		"1"
                 "enabled"		"1"
                 "PaintBackgroundType" "2"
+				"TimerFont"	"HudNumbersSmallBold"
 				"TextFont"		"HudHintTextLarge"
+				"SmallTextFont"	"HudHintTextSmall"
+				"TextColor"	"MOM.Panel.Fg"
 				"centerTime"	"1" //If true, won't use time_xpos, centering the text instead
-                "time_xpos"		"58"
+                "time_xpos"		"50"
                 "time_ypos"		"3"
 				"centerCps"		"1" //If true, won't use cps_xpos, centering the text instead
 				"cps_xpos"		"50"
@@ -37,7 +44,32 @@
 				"centerStage"	"1" //If true, won't use stage_xpos, centering the text instead
 				"stage_xpos"	"50"
 				"stage_ypos"	"34"
-				}
+		}
+	//Strafe Sync Meter
+	CHudSyncMeter
+		{
+				"fieldName"		"CHudSyncMeter"
+				"xpos"			"c-25"
+                "ypos"			"c+198"
+                "wide"			"50"
+                "tall"			"30"
+                "visible"		"1"
+                "enabled"		"1"
+				"TextFont"		"HudNumbersVerySmall"
+				"NumberFont"	"HudNumbersSmall"
+				"SmallNumberFont" "HudNumbersVerySmall"
+                "PaintBackgroundType" "2"
+                "text_xpos"		"15"
+                "text_ypos"		"2"
+                "digit_xpos"	"12"
+                "digit_ypos"	"12"
+				"digit2_xpos"	"30"
+                "digit2_ypos"	"16"
+				"PrimaryValueColor" "MOM.Panel.Fg"
+				"SecondaryValueColor" "MOM.Panel.Fg"
+				"LabelColor"	"White"
+				"BgColor"	"Blank"
+		}
     //The design for in-game menus            
     CHudMenuStatic
     {
@@ -54,8 +86,74 @@
 		"enabled"		"1"
 		"wide"			"200"
 		"tall"			"20"
+		"TextFont"		"HudHintTextSmall"
+	}
+	CHudSyncBar
+	{
+		"fieldName"		"CHudSyncBar"
+		"xpos"			"c-60"
+		"ypos"			"c+227"
+		"wide"			"120"
+		"tall"			"10"
+		"InitialValue"	"0"
+		"BackgroundColor" "MOM.Panel.Bg"
+		"FillColor"		"255 255 255 225"
+		"visible"		"1"
+		"enabled"		"1"
+	}
+	CHudMapFinishedDialog
+	{
+		"fieldName"		"CHudMapFinishedDialog"
+		"xpos"			"c-125"
+		"ypos"			"c-100"
+		"wide"			"250"
+		"tall"			"120"
+		"visible"		"1"
+		"enabled"		"1"
 		"TextFont"		"Default"
-	}    
+		"time_xpos"		"20"
+		"time_ypos"		"5"
+		"strafes_xpos"	"20"
+		"strafes_xpos"	"25"
+		"jumps_xpos"	"20"
+		"jumps_xpos"	"45"
+		"sync_xpos"		"20"
+		"sync_xpos"		"65"
+		"sync2_xpos" 	"20"
+		"sync2_ypos" 	"85"
+		"startvel_xpos" "120"
+		"startvel_ypos" "5"
+		"endvel_xpos" 	"120"
+		"endvel_ypos" 	"25"
+		"avgvel_xpos" 	"120"
+		"avgvel_ypos"	"45"
+		"maxvel_xpos"	"120"
+		"maxvel_ypos"	"65"
+		"runsave_ypos"	"95"
+		"runupload_ypos""105"
+	}
+	CHudKeyPressDisplay
+	{
+		"fieldName"		"CHudKeyPressDisplay"
+		"xpos"			"c+265"
+		"ypos"			"c+150"
+		"wide"			"150"
+		"tall"			"100"
+		"visible"		"1"
+		"enabled"		"1"
+		"top_row_ypos"	"5"
+		"mid_row_ypos"	"20"
+		"lower_row_ypos"	"35"
+		"jump_row_ypos"	"45"
+		"duck_row_ypos" "55"
+		"strafe_count_xpos" "100"
+		"jump_count_xpos"	"100"
+		"TextFont"		"MomentumIcons"
+		"CounterTextFont"		"HudNumbersVerySmall"
+		"WordTextFont"	"HudNumbersVerySmall"
+		"KeyPressedColor"	"MOM.Panel.Fg"
+		"KeyOutlineColor"	"Dark Gray"
+	}
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"

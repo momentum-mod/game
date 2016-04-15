@@ -6,12 +6,14 @@
 
 #include "tier0/memdbgon.h"
 
+
 // CBaseMomentumTrigger
 void CBaseMomentumTrigger::Spawn()
 {
     BaseClass::Spawn();
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+    
 }
 
 //---------- CTriggerStage -----------------------------------------------------------------
@@ -27,6 +29,58 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         g_Timer.SetCurrentStage(this);
+
+        int stageNum = this->GetStageNumber();
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+        if (stageNum > 1) //Only for stages other than the first one; first stage stats NEED to be OnEndTouch
+        {
+            IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage");
+            if (stageEvent)
+            {
+                stageEvent->SetInt("stage_num", stageNum);
+                stageEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
+                stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum]);
+                stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum]);
+                stageEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[stageNum]);
+                stageEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[stageNum]);
+                stageEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[stageNum]);
+
+                ConVarRef hvel("mom_speedometer_hvel");
+                pPlayer->m_flStageEnterVelocity[stageNum] = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum]);
+                gameeventmanager->FireEvent(stageEvent);
+            }
+        }
+    }
+}
+void CTriggerStage::EndTouch(CBaseEntity *pOther)
+{
+    BaseClass::EndTouch(pOther);
+    if (pOther->IsPlayer())
+    {
+        int stageNum = this->GetStageNumber();
+        if (stageNum == 1) //redundant check for this being the first stage so we have to save stats on on EXIT rather than enter
+        {
+            CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+            IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage");
+            if (stageEvent)
+            {
+                stageEvent->SetInt("stage_num", stageNum);
+                stageEvent->SetInt("stage_ticks", g_Timer.GetStageTicks(stageNum));
+                stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
+                stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum]);
+                stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum]);
+                stageEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[stageNum]);
+                stageEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[stageNum]);
+                stageEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[stageNum]);
+
+                ConVarRef hvel("mom_speedometer_hvel");
+                pPlayer->m_flStageEnterVelocity[stageNum] = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum]);
+                gameeventmanager->FireEvent(stageEvent);
+            }
+        }
     }
 }
 //------------------------------------------------------------------------------------------
@@ -35,40 +89,45 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-DEFINE_KEYFIELD(m_fMaxLeaveSpeed, FIELD_FLOAT, "leavespeed"),
 DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
 DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") 
 END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer() && !g_Timer.IsPracticeMode(pOther)) // do not start timer if player is in practice mode.
+    if (pOther->IsPlayer())
     {
-        g_Timer.Start(gpGlobals->tickcount);
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
-        if (IsLimitingSpeed())
+        //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
+        if (!g_Timer.IsPracticeMode(pOther) && !g_Timer.IsRunning()) // do not start timer if player is in practice mode or it's already running.
         {
-            Vector velocity = pOther->GetAbsVelocity();
-            if (IsLimitingSpeedOnlyXY())
+            if (IsLimitingSpeed())
             {
-                // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
-                // It only has a NormalizeInPlace... Not simple enough for me
+                Vector velocity = pOther->GetAbsVelocity();
+                    // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
+                    // It only has a NormalizeInPlace... Not simple enough for me
                 Vector2D vel2D = velocity.AsVector2D();
 
-                if (velocity.AsVector2D().IsLengthGreaterThan(m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed))
+                if (pPlayer->DidPlayerBhop())
                 {
-                    vel2D = ((vel2D / vel2D.Length()) * (m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
-                    pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
+                    if (velocity.AsVector2D().IsLengthGreaterThan(m_fBhopLeaveSpeed))
+                    {
+                        vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));
+                        pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
+                    }
                 }
+                g_Timer.Start(gpGlobals->tickcount);
             }
-            // XYZ limit (this is likely never going to be used, or at least, it shouldn't be)
-            else
-            {
-                if (velocity.IsLengthGreaterThan((m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed)))
-                    pOther->SetAbsVelocity(velocity.Normalized() *
-                                           (m_bDidPlayerBhop ? m_fBhopLeaveSpeed : m_fMaxLeaveSpeed));
-            }
+            
         }
+        pPlayer->m_bInsideStartZone = false;
+    }
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetBool("inside_startzone", false);
+        gameeventmanager->FireEvent(mapZoneEvent);
     }
     // stop thinking on end touch
     SetNextThink(-1);
@@ -78,10 +137,26 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
     g_Timer.SetStartTrigger(this);
-    if (pOther->IsPlayer() && g_Timer.IsRunning())
+
+    if (pOther->IsPlayer())
     {
-        g_Timer.Stop(false);
-        g_Timer.DispatchResetMessage();
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+        pPlayer->m_bInsideStartZone = true;
+        pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
+
+        if (g_Timer.IsRunning())
+        {
+            g_Timer.Stop(false);
+            g_Timer.DispatchResetMessage();
+            //lower the player's speed if they try to jump back into the start zone
+        }
+    }
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetBool("inside_startzone", true);
+        mapZoneEvent->SetBool("map_finished", false);
+        gameeventmanager->FireEvent(mapZoneEvent);
     }
     // start thinking
     SetNextThink(gpGlobals->curtime);
@@ -91,20 +166,16 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 void CTriggerTimerStart::Spawn()
 {
     // We don't want negative velocities (We're checking against an absolute value)
-    m_fMaxLeaveSpeed = abs(m_fMaxLeaveSpeed);
-
     m_fBhopLeaveSpeed = abs(m_fBhopLeaveSpeed);
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
 }
-
-void CTriggerTimerStart::SetMaxLeaveSpeed(float pMaxLeaveSpeed) { m_fMaxLeaveSpeed = abs(pMaxLeaveSpeed); }
-
-void CTriggerTimerStart::SetBhopLeaveSpeed(float pBhopMaxLeaveSpeed) { m_fBhopLeaveSpeed = abs(pBhopMaxLeaveSpeed); }
-
-void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
+void CTriggerTimerStart::SetMaxLeaveSpeed(float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
+void CTriggerTimerStart::SetPunishSpeed(float pPunishSpeed) { m_fPunishSpeed = abs(pPunishSpeed); }
+void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
+void CTriggerTimerStart::SetIsLimitingSpeed(bool bIsLimitSpeed)
 {
-    if (pIsLimitingSpeed)
+    if (bIsLimitSpeed)
     {
         if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
         {
@@ -119,43 +190,6 @@ void CTriggerTimerStart::SetIsLimitingSpeed(bool pIsLimitingSpeed)
         }
     }
 }
-
-void CTriggerTimerStart::SetIsLimitingSpeedOnlyXY(bool pIsLimitingSpeedOnlyXY)
-{
-    if (pIsLimitingSpeedOnlyXY)
-    {
-        if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY))
-        {
-            AddSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY);
-        }
-    }
-    else
-    {
-        if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY))
-        {
-            RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED_ONLYXY);
-        }
-    }
-}
-
-void CTriggerTimerStart::SetIsLimitingBhop(bool bIsLimitBhop)
-{
-    if (bIsLimitBhop)
-    {
-        if (!HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP))
-        {
-            AddSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP);
-        }
-    }
-    else
-    {
-        if (HasSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP))
-        {
-            RemoveSpawnFlags(SF_LIMIT_LEAVE_SPEED_BHOP);
-        }
-    }
-}
-
 void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
 {
     if (bHasLook)
@@ -173,24 +207,6 @@ void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
         }
     }
 }
-void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
-void CTriggerTimerStart::Think()
-{
-    // for limit bhop in start zone
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    // We don't check for player inside trigger here since the Think() function
-    // is only called if we are inside (see StartTouch & EndTouch defined above)
-    if (pPlayer && IsLimitingBhop())
-    {
-        if (pPlayer->DidPlayerBhop())
-            m_bDidPlayerBhop = true;
-        else
-            m_bDidPlayerBhop = false;
-    }
-
-    SetNextThink(gpGlobals->curtime);
-    BaseClass::Think();
-}
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTimerStop ----------------------------------------------------------------
@@ -198,10 +214,54 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    ConVarRef hvel("mom_speedometer_hvel");
+
     BaseClass::StartTouch(pOther);
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
     if (pOther->IsPlayer() && g_Timer.IsRunning())
+    {
+        //send run stats via GameEventManager
+        if (timerStopEvent)
+        {
+            timerStopEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[0]);
+            timerStopEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[0]);
+            timerStopEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[0]);
+            timerStopEvent->SetFloat("start_vel", pPlayer->m_flStartSpeed);
+            float endvel = hvel.GetBool() ? pPlayer->GetLocalVelocity().Length2D() : pPlayer->GetLocalVelocity().Length();
+            timerStopEvent->SetFloat("end_vel", endvel);
+
+            if (endvel > pPlayer->m_flStageVelocityMax[0])
+                timerStopEvent->SetFloat("max_vel", endvel);
+            else
+                timerStopEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[0]);
+
+            pPlayer->m_flEndSpeed = endvel; //we have to set end speed here or else it will be saved as 0 
+            timerStopEvent->SetInt("num_strafes", pPlayer->m_nStageStrafes[0]);
+            timerStopEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[0]);
+            gameeventmanager->FireEvent(timerStopEvent);
+        }
+        if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
         g_Timer.Stop(true);
+    }
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetBool("inside_endzone", true);
+        gameeventmanager->FireEvent(mapZoneEvent);
+    }       
+}
+void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
+{
+    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    if (mapZoneEvent)
+    {
+        mapZoneEvent->SetBool("map_finished", false); //once we leave endzone, we no longer want to display end stats again
+        mapZoneEvent->SetBool("inside_endzone", false);
+        gameeventmanager->FireEvent(mapZoneEvent);
+    }    
 }
 //----------------------------------------------------------------------------------------------
 

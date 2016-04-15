@@ -33,6 +33,7 @@
 
 #include "vgui_avatarimage.h"
 #include "filesystem.h"
+#include "util\mom_util.h"
 #include <time.h>
 
 extern IFileSystem *filesystem;
@@ -110,9 +111,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     m_iDesiredHeight = GetTall();
     m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
 
-    // update scoreboard instantly if on of these events occure
-    ListenForGameEvent("runtime_saved");
-    ListenForGameEvent("runtime_posted");
+    // update scoreboard instantly if on of these events occur
+    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
+    ListenForGameEvent("run_save");
     ListenForGameEvent("game_newmap");
 
     m_pImageList = NULL;
@@ -302,8 +303,6 @@ void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
     if (m_lMapSummary)
         m_lMapSummary->SetVisible(true);
 
-
-
     // light up scoreboard a bit
     SetBgColor(Color(0, 0, 0, 0));
 }
@@ -458,21 +457,19 @@ void CClientTimesDisplay::AddHeader(Label *pMapSummary)
     // We have to get rid of it, or at least discover why it was working for some (Goc) and not to me
     if (pMapSummary)
     {
-        char gameMode[4];
-
-        if (!Q_strnicmp(g_pGameRules->MapName(), "surf_", Q_strlen("surf_")))
+        char gameMode[5];
+        ConVarRef gm("mom_gamemode");
+        if (gm.GetInt() == MOMGM_SURF)
             Q_strcpy(gameMode, "SURF");
-        else if (!Q_strnicmp(g_pGameRules->MapName(), "bhop_", Q_strlen("bhop_")))
+        else if (gm.GetInt() == MOMGM_BHOP)
             Q_strcpy(gameMode, "BHOP");
+        else if (gm.GetInt() == MOMGM_SCROLL)
+            Q_strcpy(gameMode, "SCROLL");
         else
             Q_strcpy(gameMode, "????");
 
-        //MOM_TODO: There'll probably be official gametypes later on in mod development
-        //We'll have some sort of shared class or global setting that we will use to determine
-        //what game mode we're on (mom_UTIL.GameMode() or something)
-
         char mapSummary[64];
-        Q_snprintf(mapSummary, 64, "%s || %s", gameMode, g_pGameRules->MapName());
+        Q_snprintf(mapSummary, 64, "%s | %s", gameMode, g_pGameRules->MapName());
         pMapSummary->SetText(mapSummary);
     }
 }
@@ -560,20 +557,9 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
         kvLocalTimeFormatted->SetFloat("time_f", secondsF);//Used for static compare
         kvLocalTimeFormatted->SetInt("date_t", t.date);//Used for finding
-        char timeString[15];
+        char timeString[BUFSIZETIME];
 
-        int hours = secondsF / (60.0f * 60.0f);
-        int minutes = fmod(secondsF / 60.0f, 60.0f);
-        int seconds = fmod(secondsF, 60.0f);
-        int millis = fmod(secondsF, 1.0f) * 1000.0f;
-
-        if (hours > 0)
-            Q_snprintf(timeString, sizeof(timeString), "%02d:%02d:%02d.%03d", hours, minutes, seconds, millis);
-        else if (minutes > 0)
-            Q_snprintf(timeString, sizeof(timeString), "%02d:%02d.%03d", minutes, seconds, millis);
-        else
-            Q_snprintf(timeString, sizeof(timeString), "%02d.%03d", seconds, millis);
-
+        mom_UTIL.FormatTime(t.ticks, t.rate, timeString);
         kvLocalTimeFormatted->SetString("time", timeString);
 
         char dateString[64];

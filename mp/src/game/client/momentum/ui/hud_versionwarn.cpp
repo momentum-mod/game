@@ -6,7 +6,6 @@
 #include "view.h"
 #include "menu.h"
 #include "time.h"
-#define BUFSIZELOCL (73)
 using namespace vgui;
 
 #include <vgui_controls/Panel.h>
@@ -16,21 +15,19 @@ using namespace vgui;
 #include <vgui/ILocalize.h>
 
 #include "vgui_helpers.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
-#include "mom_shareddefs.h"
-using namespace vgui;
-
 
 class CHudVersionWarn : public CHudElement, public Panel
 {
     DECLARE_CLASS_SIMPLE(CHudVersionWarn, Panel);
-
+    
 public:
     CHudVersionWarn(const char *pElementName);
     virtual bool ShouldDraw()
     {
-        return true;
+        return CHudElement::ShouldDraw();
     }
     virtual void Paint();
 
@@ -45,12 +42,12 @@ private:
 
 DECLARE_HUDELEMENT(CHudVersionWarn);
 
-
 CHudVersionWarn::CHudVersionWarn(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudVersionWarn")
 {
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 
 void CHudVersionWarn::Init()
@@ -59,7 +56,7 @@ void CHudVersionWarn::Init()
     char strVersion[BUFSIZELOCL];
     wchar_t *uVersionUnicode = g_pVGuiLocalize->Find("#MOM_BuildVersion");
     g_pVGuiLocalize->ConvertUnicodeToANSI(uVersionUnicode ? uVersionUnicode : L"#MOM_BuildVersion", strVersion, BUFSIZELOCL);
-   
+
     Q_snprintf(m_pszStringVersion, sizeof(m_pszStringVersion), "%s %s",
         strVersion, // BuildVerison localization
         MOM_CURRENT_VERSION

@@ -1,7 +1,8 @@
 #include "cbase.h"
 #include "mom_util.h"
 #include "filesystem.h"
-
+#include "momentum/mom_shareddefs.h"
+#include "mom_player_shared.h"
 #include "tier0/memdbgon.h"
 
 extern IFileSystem* filesystem;
@@ -38,6 +39,8 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
+    IGameEvent *mapFinishedEvent = gameeventmanager->CreateEvent("run_save");
+
     JsonValue val;//Outer object
     JsonAllocator alloc;
     char* pDataPtr = reinterpret_cast<char*>(pData);
@@ -60,12 +63,24 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
             {
                 DevLog("RESPONSE WAS TRUE!\n");
                 // Necesary so TimeDisplay scoreboard knows it has to update;
-                IGameEvent *postEvent = gameeventmanager->CreateEvent("runtime_posted");
-                if (postEvent)
-                    gameeventmanager->FireEvent(postEvent);
+                if (mapFinishedEvent)
+                {
+                    mapFinishedEvent->SetBool("run_posted", true);
+                    gameeventmanager->FireEvent(mapFinishedEvent);
+                }
+                    
 
                 //MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
             }
+            //  @tuxx: this bit of code SHOULD be changing the bool for run_posted only, but for some reason it seems to 
+            //  change the bool for run_saved as well. I can guess it's because they are in the same event, and the value was changed for
+            //  run_saved but not fired. Either way, still really annoying. 
+
+            //else if (mapFinishedEvent)
+            //{
+            //    mapFinishedEvent->SetBool("run_posted", false);
+            //    gameeventmanager->FireEvent(mapFinishedEvent);
+            //}
         }
     }
     else
@@ -104,12 +119,12 @@ void MomentumUtil::DownloadMap(const char* szMapname)
     //CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
 }
 
-
 void MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t>* callback,
     CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {
     HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
     SteamAPICall_t apiHandle;
+
     if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
     {
         callback->Set(apiHandle, this, func);
@@ -121,9 +136,43 @@ void MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<MomentumU
     }
 }
 
+void MomentumUtil::GetRemoteRepoModVersion()
+{
+    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback, &MomentumUtil::VersionCallback);
+}
+
+void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+    if (bIOFailure) return;
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    char* pDataPtr = reinterpret_cast<char*>(pData);
+    const char separator[2] = ".";
+    CSplitString storedVersion = CSplitString(MOM_CURRENT_VERSION, separator);
+    CSplitString repoVersion = CSplitString(pDataPtr, separator);
+
+    char versionValue[15];
+    Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
+    if (Q_atoi(repoVersion.Element(0)) > Q_atoi(storedVersion.Element(0)))
+    {       
+        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
+    }
+    else if (Q_atoi(repoVersion.Element(1)) > Q_atoi(storedVersion.Element(1)))
+    {
+        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
+    }
+    else if (Q_atoi(repoVersion.Element(2)) > Q_atoi(storedVersion.Element(2)))
+    {
+        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
+    }
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+}
+
 #endif
 
-void MomentumUtil::FormatTime(float ticks, float rate, char *pOut)
+void MomentumUtil::FormatTime(float ticks, float rate, char *pOut, int precision)
 {
     float m_flSecondsTime = ticks * rate;
 
@@ -131,13 +180,59 @@ void MomentumUtil::FormatTime(float ticks, float rate, char *pOut)
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
     int seconds = fmod(m_flSecondsTime, 60.0f);
     int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
+    int hundredths = millis / 10;
+    int tenths = millis / 100;
 
-    Q_snprintf(pOut, 15, "%02d:%02d:%02d.%03d",
-        hours,
-        minutes,
-        seconds,
-        millis
-        );
+    switch (precision)
+    {
+    case 0:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d", hours, minutes, seconds);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d", minutes, seconds);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d", seconds);
+        break;
+    case 1:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%d", hours, minutes, seconds, tenths);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%d", minutes, seconds, tenths);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%d", seconds, tenths);
+        break;
+    case 2:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%02d", hours, minutes, seconds, hundredths);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%02d", minutes, seconds, hundredths);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%02d", seconds, hundredths);
+        break;
+    case 3:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%03d", minutes, seconds, millis);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%03d", seconds, millis);
+        break;
+    }
+    
+}
+
+Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor)
+{
+    //variation is current velocity minus previous velocity. 
+    Color pFinalColor = normalcolor;
+    deadZone = abs(deadZone);
+
+    if (variation < -deadZone)    //our velocity decreased 
+        pFinalColor = decreasecolor;
+    else if (variation > deadZone) //our velocity increased
+        pFinalColor = increasecolor;
+
+    return pFinalColor;
 }
 
 MomentumUtil mom_UTIL;

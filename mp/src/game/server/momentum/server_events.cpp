@@ -3,7 +3,7 @@
 #include "mapzones.h"
 #include "Timer.h"
 #include "mapzones_edit.h"
-#include "momentum/mom_shareddefs.h"
+
 
 #include "tier0/memdbgon.h"
 
@@ -16,6 +16,10 @@ namespace Momentum
     {
         TickSet::TickInit();
         // MOM_TODO: connect to site
+        if (SteamAPI_IsSteamRunning())
+        {
+            mom_UTIL.GetRemoteRepoModVersion();
+        }
     }
 
     //This is only called when "map ____" is called, if the user uses changelevel then...

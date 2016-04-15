@@ -63,10 +63,14 @@ class CMomentumPlayer : public CBasePlayer
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop();
+    bool HasAutoBhop() { return m_bAutoBhop; }
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void CheckForBhop();
+    void UpdateRunStats();
+    void ResetRunStats();
+    void CalculateAverageStats();
+    void LimitSpeedInStartZone();
 
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
@@ -74,6 +78,10 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(int, m_iLastZoom);
     CNetworkVar(bool, m_bAutoBhop);
     CNetworkVar(bool, m_bDidPlayerBhop);
+    CNetworkVar(int, m_iSuccessiveBhops);
+    CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
+    CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
+    CNetworkVar(float, m_flLastJumpVel);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -91,7 +99,20 @@ class CMomentumPlayer : public CBasePlayer
     int GetLastBlock() { return m_iLastBlock; }
     float GetPunishTime() { return m_flPunishTime; }
 
-  private:
+    //stats: gets transmitted via IGameEvent
+    float m_flStartSpeed, m_flEndSpeed;
+
+    //stage stats. index 0 is overall stats
+    int m_nStageJumps[MAX_STAGES], m_nStageStrafes[MAX_STAGES];
+    float m_flStageVelocityMax[MAX_STAGES], m_flStageVelocityAvg[MAX_STAGES], 
+        m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES], m_flStageEnterVelocity[MAX_STAGES];
+
+    //for calc avg
+    int m_nStageAvgCount[MAX_STAGES];
+    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES];
+
+    bool m_bInsideStartZone;
+private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
@@ -104,5 +125,20 @@ class CMomentumPlayer : public CBasePlayer
     friend class CMomentumGameMovement;
     float m_flPunishTime;
     int m_iLastBlock;
+
+    //for strafe sync
+    float m_flLastVelocity, m_flLastSyncVelocity;
+    QAngle m_qangLastAngle;
+
+    int m_nPerfectSyncTicks;
+    int m_nStrafeTicks;
+    int m_nAccelTicks;
+
+    bool m_bPrevTimerRunning;
+    int m_nPrevButtons;
+
+    //Start zone thinkfunc
+    int m_nTicksInAir;
+    const int MAX_AIRTIME_TICKS = 15; //The player can spend this many ticks in the air inside the start zone before their speed is limited
 };
 #endif // MOMPLAYER_H
