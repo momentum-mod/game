@@ -3,7 +3,7 @@
 #include "in_buttons.h"
 #include "mom_triggers.h"
 #include "movevars_shared.h"
-
+#include "mom_replay.h"
 #include "tier0/memdbgon.h"
 
 
@@ -150,6 +150,9 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             g_Timer.DispatchResetMessage();
             //lower the player's speed if they try to jump back into the start zone
         }
+        //begin recording demo
+        engine->ClientCommand(pPlayer->edict(), "record tempdemo");
+        g_ReplaySystem->BeginRecording(pPlayer);
     }
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     if (mapZoneEvent)
@@ -247,6 +250,9 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
         g_Timer.Stop(true);
     }
+    //stop demo recording
+    engine->ClientCommand(UTIL_GetLocalPlayer()->edict(), "stop");
+    g_ReplaySystem->StopRecording(ToCMOMPlayer(pOther));
     if (mapZoneEvent)
     {
         mapZoneEvent->SetBool("inside_endzone", true);

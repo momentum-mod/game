@@ -117,6 +117,8 @@ $Project "Server (Momentum)"
             $File   "momentum\mom_gameinterface.cpp"
             $File   "momentum\mom_eventlog.cpp"
             $File   "momentum\mom_playermove.cpp"
+            $File   "momentum\mom_replay.cpp"
+            $File   "momentum\mom_replay.h"
 		}
 
 		$Folder	"JSON Parser"

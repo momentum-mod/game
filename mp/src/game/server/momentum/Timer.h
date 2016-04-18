@@ -128,7 +128,7 @@ public:
     void SaveTime();
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
-
+    float GetLastRunTime() { return (gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; }
     // Practice mode- noclip mode that stops timer
     void PracticeMove();
     void EnablePractice(CBasePlayer *pPlayer);

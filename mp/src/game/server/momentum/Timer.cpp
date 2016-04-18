@@ -240,6 +240,21 @@ void CTimer::Stop(bool endTrigger /* = false */)
         localTimes.AddToTail(t);
 
         SaveTime();
+        /*@tuxxi: we cannot rename a file to a different location, and I don't know how to move a file using IFileStream. disabling this for now
+        char* recordingPath = "";
+        //rename temp demo file to "playername_mapname_time"
+        char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH];
+        Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%f.dem", pPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr());
+        V_ComposeFileName(recordingPath, newRecordingName, newRecordingPath, MAX_PATH);
+        V_FixSlashes(newRecordingName);
+        if (filesystem->FileExists("tempdemo.dem", "MOD"))
+        {
+            filesystem->RenameFile("tempdemo.dem", newRecordingPath, "MOD");
+        }
+        else
+            Warning("Recording file doesn't exist, cannot rename!");
+            */
+
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {  
