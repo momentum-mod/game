@@ -151,8 +151,13 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             //lower the player's speed if they try to jump back into the start zone
         }
         //begin recording demo
-        engine->ClientCommand(pPlayer->edict(), "record tempdemo");
-        g_ReplaySystem->BeginRecording(pPlayer);
+        if (!g_ReplaySystem->IsRecording(pPlayer))
+            g_ReplaySystem->BeginRecording(pPlayer);
+        else
+        {
+            g_ReplaySystem->StopRecording(pPlayer, true);
+            g_ReplaySystem->BeginRecording(pPlayer);
+        }
     }
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     if (mapZoneEvent)
@@ -249,10 +254,10 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         }
         if (mapZoneEvent) mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
         g_Timer.Stop(true);
+        //stop demo recording
+        if (g_ReplaySystem->IsRecording(pPlayer))
+            g_ReplaySystem->StopRecording(ToCMOMPlayer(pOther), false);
     }
-    //stop demo recording
-    engine->ClientCommand(UTIL_GetLocalPlayer()->edict(), "stop");
-    g_ReplaySystem->StopRecording(ToCMOMPlayer(pOther));
     if (mapZoneEvent)
     {
         mapZoneEvent->SetBool("inside_endzone", true);

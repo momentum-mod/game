@@ -19,7 +19,7 @@ public:
         }
     }
     void BeginRecording(CBasePlayer *pPlayer);
-    void StopRecording(CBasePlayer *pPlayer);
+    void StopRecording(CBasePlayer *pPlayer, bool throwaway);
     bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
     void WriteRecordingToFile();
 

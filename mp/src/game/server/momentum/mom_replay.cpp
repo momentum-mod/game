@@ -15,8 +15,13 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     m_bIsRecording = true;
 
 }
-void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer)
+void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway)
 {
+    if (throwaway)
+    {
+        m_bIsRecording = false;
+        return;
+    }
     Log("Recording Stopped! Ticks: %i\n", m_nRecordingTicks);
     m_bIsRecording = false;
 
