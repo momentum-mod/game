@@ -8,9 +8,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     m_player = pPlayer;
     //delete old temp recording
     V_ComposeFileName(recordingPath, "temprecording.momrec", tempRecordingName, MAX_PATH); //we only need to do this once!
-    if (filesystem->FileExists(tempRecordingName, "MOD"))
-        filesystem->RemoveFile(tempRecordingName, "MOD");
-
+    fh = filesystem->Open(tempRecordingName, "w+", "MOD");
     Log("Recording began!\n");
     m_bIsRecording = true;
 
@@ -22,6 +20,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway)
         m_bIsRecording = false;
         return;
     }
+    filesystem->Close(fh);
     Log("Recording Stopped! Ticks: %i\n", m_nRecordingTicks);
     m_bIsRecording = false;
 
@@ -47,7 +46,7 @@ void CMomentumReplaySystem::UpdateRecordingParams()
 }
 void CMomentumReplaySystem::WriteRecordingToFile()
 {
-    FileHandle_t fh = filesystem->Open(tempRecordingName, "a", "MOD");
+    
     if (fh)
     {
         //buttons, eyeangles XYZ, velocity XYZ, origin XYZ
@@ -57,7 +56,6 @@ void CMomentumReplaySystem::WriteRecordingToFile()
             m_currentFrame.m_vPlayerVelocity.x, m_currentFrame.m_vPlayerVelocity.y, m_currentFrame.m_vPlayerVelocity.z,
             m_currentFrame.m_vPlayerOrigin.x, m_currentFrame.m_vPlayerOrigin.y, m_currentFrame.m_vPlayerOrigin.z
             );
-        filesystem->Close(fh);
     }
 }
 class CMOMReplayCommands

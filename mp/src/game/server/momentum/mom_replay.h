@@ -43,6 +43,8 @@ private:
     char* recordingPath = "recordings";
     char tempRecordingName[BUFSIZELOCL];
     int m_nRecordingTicks;
+
+    FileHandle_t fh;
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;
