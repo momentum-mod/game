@@ -49,6 +49,14 @@ $Project "Server (Momentum)"
 				$File	"momentum\Timer.h"
 				$File	"momentum\Timer.cpp"
 			}
+            
+            $Folder "Replays"
+            {
+                $File   "momentum\mom_replay.cpp"
+                $File   "momentum\mom_replay.h"
+                $File   "momentum\mom_replay_entity.cpp"
+                $File   "momentum\mom_replay_entity.h"
+            }
 			
 			$File	"momentum\mom_blockfix.h"
 			$File	"momentum\mom_blockfix.cpp"
