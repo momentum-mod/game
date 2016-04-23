@@ -8,7 +8,6 @@
 #include "mom_shareddefs.h"
 
 #define RECORDING_PATH "recordings"
-
 //describes a single frame of a replay
 struct replay_frame_t
 {
@@ -18,14 +17,31 @@ struct replay_frame_t
     int m_nPlayerButtons;
     int m_nCurrentTick;
 };
+inline void ByteSwap_replay_frame_t(replay_frame_t &swap)
+{
+    for (int i = 0; i < 2; i++) {
+        LittleFloat(&swap.m_qEyeAngles[i], &swap.m_qEyeAngles[i]);
+        LittleFloat(&swap.m_vPlayerOrigin[i], &swap.m_vPlayerOrigin[i]);
+        LittleFloat(&swap.m_vPlayerVelocity[i], &swap.m_vPlayerVelocity[i]);
+    }
+    swap.m_nPlayerButtons = LittleDWord(swap.m_nPlayerButtons);
+    swap.m_nCurrentTick = LittleDWord(swap.m_nCurrentTick);
+}
 //the replay header
 struct replay_header_t
 {
-    const char* mapName;
-    const char* playerName;
+    char mapName[MAX_PATH];
+    char playerName[MAX_PATH];
     uint64 steamID64;
     float interval_per_tick;
 };
+//byteswap for int and float members of header
+inline void ByteSwap_replay_header_t(replay_header_t &swap) 
+{
+    LittleFloat(&swap.interval_per_tick, &swap.interval_per_tick);
+    swap.steamID64 = LittleLong(swap.steamID64);
+}
+
 class CMomentumReplaySystem : CAutoGameSystemPerFrame
 {
 public:
@@ -44,8 +60,8 @@ public:
     replay_header_t CreateHeader();
     void WriteRecordingToFile();
 
-    static replay_frame_t ReadSingleFrame(FileHandle_t file);
-    static replay_header_t ReadHeader(FileHandle_t file);
+    replay_frame_t ReadSingleFrame(FileHandle_t file);
+    replay_header_t ReadHeader(FileHandle_t file);
 
     void StartRun();
     void EndRun();
@@ -62,6 +78,7 @@ private:
 
     FileHandle_t m_fhFileHandle;
     CUtlBuffer *m_buf;
+    const static char CONTROL_CHAR = '\u001F'; //CONTROL CHAR = UNICODE 001F (37) [00011111]
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;

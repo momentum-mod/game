@@ -38,81 +38,65 @@ CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
 {
     //TODO: figure out why we have to declare the buffer in this scope, and maybe change it
     static CUtlBuffer buf;
+    m_currentFrame.m_nCurrentTick++;
+    m_currentFrame.m_nPlayerButtons = m_player->m_nButtons;
+    m_currentFrame.m_qEyeAngles = m_player->EyeAngles();
+    m_currentFrame.m_vPlayerOrigin = m_player->GetAbsOrigin();
+    m_currentFrame.m_vPlayerVelocity = m_player->GetAbsVelocity();
 
-    buf.PutInt(m_player->m_nButtons);
-    buf.PutInt(++m_currentFrame.m_nCurrentTick);
-    buf.PutFloat(m_player->EyeAngles().x);
-    buf.PutFloat(m_player->EyeAngles().y);
-    buf.PutFloat(m_player->EyeAngles().z);
-    buf.PutFloat(m_player->GetLocalVelocity().x);
-    buf.PutFloat(m_player->GetLocalVelocity().y);
-    buf.PutFloat(m_player->GetLocalVelocity().z);
-    buf.PutFloat(m_player->GetLocalOrigin().x);
-    buf.PutFloat(m_player->GetLocalOrigin().y);
-    buf.PutFloat(m_player->GetLocalOrigin().z);
+    ByteSwap_replay_frame_t(m_currentFrame); //We need to byteswap all of our data first in order to write each byte in the correct order
+
+    Assert(buf.IsValid());
+    buf.Put(&m_currentFrame, sizeof(replay_frame_t)); //stick all the frame info into the buffer
     return &buf;
 }
 replay_header_t CMomentumReplaySystem::CreateHeader()
 {
     replay_header_t header;
-    header.interval_per_tick = gpGlobals->interval_per_tick;
-    header.mapName = gpGlobals->mapname.ToCStr();
-    header.playerName = m_player->GetPlayerName();
+    Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
+    Q_strcpy(header.playerName, m_player->GetPlayerName());
     header.steamID64 = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
+    header.interval_per_tick = gpGlobals->interval_per_tick;
     return header;
 }
 void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)
 {
     if (m_fhFileHandle)
     {
-        replay_header_t header = CreateHeader();
         //write header: Mapname, Playername, steam64, interval per tick
-        filesystem->FPrintf(m_fhFileHandle, "|| %s %s %llu %f\n",
-            header.mapName,
-            header.playerName,
-            header.steamID64,
-            header.interval_per_tick
-            );
-        //buttons, eyeangles XYZ, velocity XYZ, origin XYZ
+        replay_header_t littleEndianHeader = CreateHeader();
+        ByteSwap_replay_header_t(littleEndianHeader); //byteswap again
+
+        filesystem->Seek(m_fhFileHandle, 0, FILESYSTEM_SEEK_HEAD);
+        filesystem->Write(&littleEndianHeader, sizeof(replay_header_t), m_fhFileHandle);
+
+        Assert(buf.IsValid());
+        //write write from the CUtilBuffer to our filehandle:
         filesystem->Write(buf.Base(), buf.TellPut(), m_fhFileHandle);
         buf.Purge();
     }
 }
-//read a single frame of a recording
+//read a single frame (or tick) of a recording
 replay_frame_t CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file)
 {
     replay_frame_t frame;
+    Assert(file != FILESYSTEM_INVALID_HANDLE);
+    filesystem->Read(&frame, sizeof(replay_frame_t), file);
+    ByteSwap_replay_frame_t(frame);
 
-    char cmp[256];
-    filesystem->ReadLine(cmp, 256, file);
-
-    if (Q_strncmp(cmp, "||", sizeof(cmp)) != 0) //check to see that we're not trying to read the header
-    {
-        filesystem->Read(&frame.m_nCurrentTick, sizeof(frame.m_nCurrentTick), file);
-        filesystem->Read(&frame.m_nPlayerButtons, sizeof(frame.m_nPlayerButtons), file);
-
-        for (int i = 0; i < 2; i++) //loop through XYZ
-            filesystem->Read(&frame.m_qEyeAngles[i], sizeof(frame.m_qEyeAngles[i]), file);
-        for (int i = 0; i < 2; i++)
-            filesystem->Read(&frame.m_vPlayerVelocity[i], sizeof(frame.m_vPlayerVelocity[i]), file);
-        for (int i = 0; i < 2; i++)
-            filesystem->Read(&frame.m_vPlayerOrigin[i], sizeof(frame.m_vPlayerOrigin[i]), file);
-    }
     return frame;
 }
 replay_header_t CMomentumReplaySystem::ReadHeader(FileHandle_t file)
 {
     replay_header_t header;
+    Q_memset(&header, 0, sizeof(header));
 
-    char cmp[256];
-    filesystem->ReadLine(cmp, 256, file);
-    if (Q_strncmp(cmp, "||", sizeof(cmp)) == 0)
-    {
-        filesystem->Read(&header.interval_per_tick, sizeof(header.interval_per_tick), file);
-        filesystem->Read(&header.mapName, sizeof(header.mapName), file);
-        filesystem->Read(&header.playerName, sizeof(header.playerName), file);
-        filesystem->Read(&header.steamID64, sizeof(header.steamID64), file);
-    }
+    Assert(file != FILESYSTEM_INVALID_HANDLE);
+    filesystem->Seek(file, 0, FILESYSTEM_SEEK_HEAD);
+    filesystem->Read(&header, sizeof(replay_header_t), file);
+
+    ByteSwap_replay_header_t(header);
+
     return header;
 }
 void CMomentumReplaySystem::LoadRun(const char* filename)
@@ -120,19 +104,20 @@ void CMomentumReplaySystem::LoadRun(const char* filename)
     m_vecRunData.RemoveAll();
     char recordingName[BUFSIZELOCL];
     V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
-    FileHandle_t replayFile = filesystem->Open(recordingName, "r+b", "MOD");
+    m_fhFileHandle = filesystem->Open(recordingName, "r+b", "MOD");
 
-    if (replayFile != nullptr && filename != NULL)
+    if (m_fhFileHandle != nullptr && filename != NULL)
     {
         //NNOM_TODO: Do something with the run header data
-        //replay_header_t header = CMomentumReplaySystem::ReadHeader(replayFile); 
-        while (!filesystem->EndOfFile(replayFile))
+        replay_header_t header = CMomentumReplaySystem::ReadHeader(m_fhFileHandle);
+        DevLog("playername: %s mapname: %s steamid: %llu tickrate: %f", header.playerName, header.mapName, header.steamID64, header.interval_per_tick);
+        while (!filesystem->EndOfFile(m_fhFileHandle))
         {
-            replay_frame_t frame = CMomentumReplaySystem::ReadSingleFrame(replayFile);
+            replay_frame_t frame = CMomentumReplaySystem::ReadSingleFrame(m_fhFileHandle);
             m_vecRunData.AddToTail(frame);
         }
     }
-    filesystem->Close(replayFile);
+    filesystem->Close(m_fhFileHandle);
 }
 void CMomentumReplaySystem::StartRun()
 {
