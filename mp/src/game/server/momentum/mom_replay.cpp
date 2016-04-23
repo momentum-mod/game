@@ -103,7 +103,7 @@ void CMomentumReplaySystem::LoadRun(const char* filename)
 {
     m_vecRunData.RemoveAll();
     char recordingName[BUFSIZELOCL];
-    V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
+    V_ComposeFileName(RECORDING_PATH, filename, recordingName, BUFSIZELOCL);
     m_fhFileHandle = filesystem->Open(recordingName, "r+b", "MOD");
 
     if (m_fhFileHandle != nullptr && filename != NULL)
