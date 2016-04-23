@@ -3,23 +3,24 @@
 #include "mom_replay.h"
 #include "mom_replay_entity.h"
 #include "Timer.h"
+#include "util/mom_util.h"
 
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
-    m_player = pPlayer;
+    m_player = ToCMOMPlayer( pPlayer);
     m_bIsRecording = true;
     Log("Recording began!\n");
 }
 void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway)
 {
-    if (throwaway)
-    {
-        m_bIsRecording = false;
+    m_bIsRecording = false;
+    if (throwaway) {
         return;
     }
     CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
-    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH];
-    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%.3f.momrec", pMOMPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr(), g_Timer.GetLastRunTime());
+    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
+    mom_UTIL.FormatTime(g_Timer.GetLastRunTimeTicks(), gpGlobals->interval_per_tick, runTime);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", pMOMPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr(), runTime);
     V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); //V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
 
     V_FixSlashes(RECORDING_PATH);
@@ -31,7 +32,6 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway)
 
     filesystem->Close(m_fhFileHandle);
     Log("Recording Stopped! Ticks: %i\n", m_currentFrame.m_nCurrentTick);
-    m_bIsRecording = false;
     LoadRun(newRecordingName); //load the last run that we did in case we want to watch it
 }
 CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
@@ -53,10 +53,27 @@ CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
 replay_header_t CMomentumReplaySystem::CreateHeader()
 {
     replay_header_t header;
+    Q_strcpy(header.demofilestamp, DEMO_HEADER_ID);
+    header.demoProtoVersion = DEMO_PROTOCOL_VERSION;
     Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
     Q_strcpy(header.playerName, m_player->GetPlayerName());
     header.steamID64 = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
     header.interval_per_tick = gpGlobals->interval_per_tick;
+    header.runTimeTicks = g_Timer.GetLastRunTimeTicks();
+    time(&header.unixEpocDate);
+
+    // --- RUN STATS ---
+    header.m_flEndSpeed = m_player->m_flEndSpeed;
+    header.m_flStartSpeed = m_player->m_flStartSpeed;
+    for (int i = 0; i < MAX_STAGES; i++) {
+        header.m_flStageEnterVelocity[i] = m_player->m_flStageEnterVelocity[i];
+        header.m_flStageVelocityAvg[i] = m_player->m_flStageVelocityAvg[i];
+        header.m_flStageVelocityMax[i] = m_player->m_flStageVelocityMax[i];
+        header.m_flStageStrafeSyncAvg[i] = m_player->m_flStageStrafeSyncAvg[i];
+        header.m_flStageStrafeSync2Avg[i] = m_player->m_flStageStrafeSync2Avg[i];
+        header.m_nStageJumps[i] = m_player->m_nStageJumps[i];
+        header.m_nStageStrafes[i] = m_player->m_nStageStrafes[i];
+    }
     return header;
 }
 void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)
@@ -77,55 +94,61 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)
     }
 }
 //read a single frame (or tick) of a recording
-replay_frame_t CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file)
+replay_frame_t* CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const char* filename)
 {
-    replay_frame_t frame;
     Assert(file != FILESYSTEM_INVALID_HANDLE);
-    filesystem->Read(&frame, sizeof(replay_frame_t), file);
-    ByteSwap_replay_frame_t(frame);
+    filesystem->Read(&m_currentFrame, sizeof(replay_frame_t), file);
+    ByteSwap_replay_frame_t(m_currentFrame);
 
-    return frame;
+    return &m_currentFrame;
 }
-replay_header_t CMomentumReplaySystem::ReadHeader(FileHandle_t file)
+replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char* filename)
 {
-    replay_header_t header;
-    Q_memset(&header, 0, sizeof(header));
+    Q_memset(&m_replayHeader, 0, sizeof(m_replayHeader));
 
     Assert(file != FILESYSTEM_INVALID_HANDLE);
     filesystem->Seek(file, 0, FILESYSTEM_SEEK_HEAD);
-    filesystem->Read(&header, sizeof(replay_header_t), file);
+    filesystem->Read(&m_replayHeader, sizeof(replay_header_t), file);
 
-    ByteSwap_replay_header_t(header);
+    ByteSwap_replay_header_t(m_replayHeader);
 
-    return header;
+    if (Q_strcmp(m_replayHeader.demofilestamp, DEMO_HEADER_ID)) {
+        ConMsg("%s has invalid replay header ID.\n", filename);
+        return nullptr;
+    }
+    if ((m_replayHeader.demoProtoVersion > DEMO_PROTOCOL_VERSION) || (m_replayHeader.demoProtoVersion < 2)) {
+        ConMsg("ERROR: replay file protocol %i outdated, engine version is %i \n",
+            m_replayHeader.demoProtoVersion, DEMO_PROTOCOL_VERSION);
+
+        return nullptr;
+    }
+    return &m_replayHeader;
 }
 void CMomentumReplaySystem::LoadRun(const char* filename)
 {
     m_vecRunData.RemoveAll();
-    char recordingName[BUFSIZELOCL];
-    V_ComposeFileName(RECORDING_PATH, filename, recordingName, BUFSIZELOCL);
+    char recordingName[MAX_PATH];
+    V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
     m_fhFileHandle = filesystem->Open(recordingName, "r+b", "MOD");
 
     if (m_fhFileHandle != nullptr && filename != NULL)
     {
-        //NNOM_TODO: Do something with the run header data
-        replay_header_t header = CMomentumReplaySystem::ReadHeader(m_fhFileHandle);
-        DevLog("playername: %s mapname: %s steamid: %llu tickrate: %f", header.playerName, header.mapName, header.steamID64, header.interval_per_tick);
+        //NOM_TODO: Do something with the run header data 
+        //replay_header_t* header = ReadHeader(m_fhFileHandle, filename);
         while (!filesystem->EndOfFile(m_fhFileHandle))
         {
-            replay_frame_t frame = CMomentumReplaySystem::ReadSingleFrame(m_fhFileHandle);
+            replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
             m_vecRunData.AddToTail(frame);
         }
+        filesystem->Close(m_fhFileHandle);
     }
-    filesystem->Close(m_fhFileHandle);
 }
 void CMomentumReplaySystem::StartRun()
 {
     CMomentumReplayGhostEntity *ghost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
     if (ghost != nullptr)
     {
-        FOR_EACH_VEC(m_vecRunData, i)
-        {
+        FOR_EACH_VEC(m_vecRunData, i) {
             ghost->m_entRunData[i] = m_vecRunData[i];
         }
         ghost->StartRun();

@@ -18,7 +18,7 @@ public:
 	void clearRunData();
 
     bool m_bIsActive;
-    CUtlVector<replay_frame_t> m_entRunData;
+    CUtlVector<replay_frame_t*> m_entRunData;
     int m_nStartTick;
 protected:
 	virtual void Think( void );

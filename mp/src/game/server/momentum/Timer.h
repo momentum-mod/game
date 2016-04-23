@@ -128,7 +128,8 @@ public:
     void SaveTime();
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
-    float GetLastRunTime() { return (gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; }
+    // returns last runtime in ticks
+    int GetLastRunTimeTicks() { return m_iEndTick - m_iStartTick;  }
     // Practice mode- noclip mode that stops timer
     void PracticeMove();
     void EnablePractice(CBasePlayer *pPlayer);
@@ -149,7 +150,7 @@ public:
 private:
 
     int m_iStageCount;
-    int m_iStartTick;
+    int m_iStartTick, m_iEndTick;
     int m_iLastStage = 0;
     int m_iStageEnterTick[MAX_STAGES];
     bool m_bIsRunning;

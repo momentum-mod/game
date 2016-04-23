@@ -273,6 +273,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
         gameeventmanager->FireEvent(mapZoneEvent);
     }
     SetRunning(false);
+    m_iEndTick = gpGlobals->tickcount;
     DispatchStateMessage();
 }
 void CTimer::OnMapEnd(const char *pMapName)

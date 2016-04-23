@@ -42,9 +42,7 @@ void CMomentumReplayGhostEntity::StartRun()
     m_nStartTick = gpGlobals->curtime;
     m_bIsActive = true;
     step = 0;
-    SetAbsOrigin(Vector(m_entRunData[0].m_vPlayerOrigin.x,
-        m_entRunData[0].m_vPlayerOrigin.y,
-        m_entRunData[0].m_vPlayerOrigin.z));
+    SetAbsOrigin(m_entRunData[0]->m_vPlayerOrigin);
 
 	SetNextThink(gpGlobals->curtime);
 }
@@ -56,7 +54,7 @@ void CMomentumReplayGhostEntity::updateStep()
 		currentStep = nextStep = NULL;
 		return;
 	}
-    currentStep = &m_entRunData[step];
+    currentStep = m_entRunData[step];
     int currentTick = gpGlobals->tickcount - m_nStartTick;
 
     //catching up to a fast ghost, you came in late
@@ -65,13 +63,13 @@ void CMomentumReplayGhostEntity::updateStep()
 		unsigned int x = step + 1;
         while (++x < numTicks)
         {
-            if (currentTick < m_entRunData[x].m_nCurrentTick) {
+            if (currentTick < m_entRunData[x]->m_nCurrentTick) {
 				break;
 			}
 		}
 		step = x - 1;
 	}
-    currentStep = &m_entRunData[step];//update it to the new step
+    currentStep = m_entRunData[step];//update it to the new step
     currentTick = gpGlobals->tickcount - m_nStartTick;//update to new time
 
     if (step == (numTicks - 1)) //if it's on the last step
@@ -80,7 +78,7 @@ void CMomentumReplayGhostEntity::updateStep()
 	} 
     else 
     {
-        nextStep = &m_entRunData[step + 1];
+        nextStep = m_entRunData[step + 1];
 	}
 }
 //-----------------------------------------------------------------------------
