@@ -10,8 +10,9 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     m_player = ToCMOMPlayer( pPlayer);
     m_bIsRecording = true;
     Log("Recording began!\n");
+    m_nCurrentTick = 1; //recoring begins at 1 ;)
 }
-void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway)
+void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, float delay)
 {
     m_bIsRecording = false;
     if (throwaway) {
@@ -31,18 +32,18 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway)
     WriteRecordingToFile(*m_buf);
 
     filesystem->Close(m_fhFileHandle);
-    Log("Recording Stopped! Ticks: %i\n", m_currentFrame.m_nCurrentTick);
-    LoadRun(newRecordingName); //load the last run that we did in case we want to watch it
+    Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
+    if( LoadRun(newRecordingName) ) //load the last run that we did in case we want to watch it
+        StartReplay();
 }
 CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
 {
-    //TODO: figure out why we have to declare the buffer in this scope, and maybe change it
+    m_nCurrentTick++; //increment recording tick
+
     static CUtlBuffer buf;
-    m_currentFrame.m_nCurrentTick++;
     m_currentFrame.m_nPlayerButtons = m_player->m_nButtons;
     m_currentFrame.m_qEyeAngles = m_player->EyeAngles();
     m_currentFrame.m_vPlayerOrigin = m_player->GetAbsOrigin();
-    m_currentFrame.m_vPlayerVelocity = m_player->GetAbsVelocity();
 
     ByteSwap_replay_frame_t(m_currentFrame); //We need to byteswap all of our data first in order to write each byte in the correct order
 
@@ -124,7 +125,7 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
     }
     return &m_replayHeader;
 }
-void CMomentumReplaySystem::LoadRun(const char* filename)
+bool CMomentumReplaySystem::LoadRun(const char* filename)
 {
     m_vecRunData.RemoveAll();
     char recordingName[MAX_PATH];
@@ -133,24 +134,29 @@ void CMomentumReplaySystem::LoadRun(const char* filename)
 
     if (m_fhFileHandle != nullptr && filename != NULL)
     {
-        //NOM_TODO: Do something with the run header data 
-        //replay_header_t* header = ReadHeader(m_fhFileHandle, filename);
-        while (!filesystem->EndOfFile(m_fhFileHandle))
+        replay_header_t* header = ReadHeader(m_fhFileHandle, filename);
+        if (header == nullptr) {
+            return false;
+        }
+        else
         {
-            replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
-            m_vecRunData.AddToTail(frame);
+            while (!filesystem->EndOfFile(m_fhFileHandle))
+            {
+                replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
+                m_vecRunData.AddToTail(frame);
+            }
+            return true;
         }
         filesystem->Close(m_fhFileHandle);
     }
+    else
+        return false;
 }
-void CMomentumReplaySystem::StartRun()
+void CMomentumReplaySystem::StartReplay()
 {
     CMomentumReplayGhostEntity *ghost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
     if (ghost != nullptr)
     {
-        FOR_EACH_VEC(m_vecRunData, i) {
-            ghost->m_entRunData[i] = m_vecRunData[i];
-        }
         ghost->StartRun();
     }
 }
@@ -159,8 +165,11 @@ class CMOMReplayCommands
 public:
     static void PlayRecording(const CCommand &args)
     {
-        g_ReplaySystem->LoadRun(args.ArgS());
-        g_ReplaySystem->StartRun();
+        if (args.ArgC() > 1) { //we passed any argument at all
+            if (g_ReplaySystem->LoadRun(args.ArgS())) {
+                g_ReplaySystem->StartReplay();
+            }
+        }
     }
 };
 

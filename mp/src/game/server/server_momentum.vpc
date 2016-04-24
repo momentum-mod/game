@@ -56,6 +56,7 @@ $Project "Server (Momentum)"
                 $File   "momentum\mom_replay.h"
                 $File   "momentum\mom_replay_entity.cpp"
                 $File   "momentum\mom_replay_entity.h"
+                $File   "momentum\replayformat.h"
             }
 			
 			$File	"momentum\mom_blockfix.h"
