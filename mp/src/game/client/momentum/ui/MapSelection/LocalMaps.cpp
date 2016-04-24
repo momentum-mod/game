@@ -79,27 +79,17 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     m->m_bHasStages = MapHasStages(m->m_szMapName);
 
     //Completed/Best time
-    KeyValues *kvMap = new KeyValues("Map");
-    if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.tim", m->m_szMapName), "MOD"))
+    KeyValues *kvMapWrapper = new KeyValues(m->m_szMapName);
+    //MOM_TODO: have the tickrate and run flags as filters, load actual values
+    KeyValues *kvMap = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, m->m_iGameMode == MOMGM_BHOP ? 0.010f : 0.015f, 0);
+    if (kvMap)
     {
-        if (!kvMap->IsEmpty())
-        {
-            m->m_bCompleted = true;
+        m->m_bCompleted = true;
+        mom_UTIL->FormatTime(Q_atof(kvMap->GetName()), m->m_szBestTime);
+    } 
 
-            CUtlSortVector<KeyValues*, CTimeSortFunc> sortedTimes;
-            for (KeyValues *kv = kvMap->GetFirstSubKey(); kv; kv = kv->GetNextKey())
-            {
-                sortedTimes.InsertNoSort(kv);
-            }
-
-            sortedTimes.RedoSort();
-
-            KeyValues *pBestTime = sortedTimes[0];
-            if (pBestTime)
-                mom_UTIL.FormatTime(Q_atoi(pBestTime->GetName()), pBestTime->GetFloat("rate"), m->m_szBestTime);
-        }
-    }
-    kvMap->deleteThis();
+    kvMapWrapper->deleteThis();
+    if (kvMap) kvMap->deleteThis();
 }
 
 

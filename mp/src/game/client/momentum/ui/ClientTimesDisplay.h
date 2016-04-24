@@ -134,13 +134,12 @@ private:
     ButtonCode_t m_nCloseKey;
     struct Time
     {
-        int ticks;
-        float rate;
+        float time, rate;
         time_t date;
 
         Time(KeyValues* kv)
         {
-            ticks = Q_atoi(kv->GetName());
+            time = Q_atof(kv->GetName());
             rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
             date = (time_t) kv->GetInt("date", 0);
         };

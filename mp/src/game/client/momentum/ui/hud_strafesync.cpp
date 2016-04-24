@@ -104,7 +104,7 @@ void CHudStrafeSyncDisplay::OnThink()
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
             m_flLastStrafeSync != 0
-                ? m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                ? m_currentColor = mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
                 normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
 
@@ -239,7 +239,7 @@ void CHudStrafeSyncBar::OnThink()
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
             m_flLastStrafeSync != 0 
-                ? m_currentColor = mom_UTIL.GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                ? m_currentColor = mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
                 normalColor, increaseColor, decreaseColor) 
                 : m_currentColor = normalColor;
 

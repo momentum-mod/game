@@ -6,6 +6,7 @@
 
 #include "filesystem.h"
 #include "gason.h"
+#include "UtlSortVector.h"
 
 class MomentumUtil
 {
@@ -34,9 +35,21 @@ public:
 
     //Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours, etc
     //Precision is miliseconds by default
-    void FormatTime(float ticks, float rate, char *pOut, int precision = 3);
+    void FormatTime(float seconds, char *pOut, int precision = 3);
+
+    KeyValues *GetBestTime(KeyValues *, const char *, float tickrate, int flags = 0);
+
 };
 
-extern MomentumUtil mom_UTIL;
+class CTimeSortFunc
+{
+public:
+    bool Less(KeyValues* lhs, KeyValues* rhs, void *)
+    {
+        return (Q_atof(lhs->GetName())) < Q_atof(rhs->GetName());
+    }
+};
+
+extern MomentumUtil *mom_UTIL;
 
 #endif //MOM_UTIL_H

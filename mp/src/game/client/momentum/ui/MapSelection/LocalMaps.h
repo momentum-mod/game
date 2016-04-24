@@ -48,14 +48,4 @@ private:
     void FillMapstruct(mapstruct_t *);
 };
 
-class CTimeSortFunc
-{
-public:
-    bool Less(KeyValues* lhs, KeyValues* rhs, void *)
-    {
-        return (((float) Q_atoi(lhs->GetName())) * lhs->GetFloat("rate") <
-            (float) Q_atoi(rhs->GetName()) * rhs->GetFloat("rate"));
-    }
-};
-
 #endif // LOCALMAPS_H

@@ -32,7 +32,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     if (!Q_strcmp("new_stage", pEvent->GetName()))
     {
         m_iCurrentStage = pEvent->GetInt("stage_num");
-        m_iStageTicks[m_iCurrentStage] = pEvent->GetInt("stage_ticks");
+        m_flStageTime[m_iCurrentStage] = pEvent->GetFloat("stage_time");
         m_flStageStrafeSyncAvg[m_iCurrentStage] = pEvent->GetFloat("avg_sync");
         m_flStageStrafeSync2Avg[m_iCurrentStage] = pEvent->GetFloat("avg_sync2");
         m_flStageStartSpeed[m_iCurrentStage] = pEvent->GetFloat("start_vel");

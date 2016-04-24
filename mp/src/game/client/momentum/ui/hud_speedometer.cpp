@@ -153,7 +153,7 @@ void CHudSpeedMeter::OnThink()
             {
                 if (m_flLastVelocity != 0)
                 {
-                    m_currentColor = mom_UTIL.GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f, normalColor,
+                    m_currentColor = mom_UTIL->GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f, normalColor,
                                                                     increaseColor, decreaseColor);
                 }
                 else
@@ -174,7 +174,7 @@ void CHudSpeedMeter::OnThink()
             else if (m_flLastJumpVelocity != pPlayer->m_flLastJumpVel)
             {
                 m_SecondaryValueColor =
-                    mom_UTIL.GetColorFromVariation(abs(pPlayer->m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
+                    mom_UTIL->GetColorFromVariation(abs(pPlayer->m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
                                                    normalColor, increaseColor, decreaseColor);
                 m_flLastJumpVelocity = pPlayer->m_flLastJumpVel;
             }

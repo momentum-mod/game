@@ -172,9 +172,9 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
 #endif
 
-void MomentumUtil::FormatTime(float ticks, float rate, char *pOut, int precision)
+void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision)
 {
-    float m_flSecondsTime = ticks * rate;
+    //float m_flSecondsTime = ticks * rate;
 
     int hours = m_flSecondsTime / (60.0f * 60.0f);
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
@@ -235,4 +235,43 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
     return pFinalColor;
 }
 
-MomentumUtil mom_UTIL;
+
+KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, float tickrate, int flags)
+{
+    if (kvMap)
+    {
+        char path[MAX_PATH];
+        Q_snprintf(path, MAX_PATH, "maps/%s.tim", szMapName);
+
+        if (kvMap->LoadFromFile(g_pFullFileSystem, path, "MOD"))
+        {
+            if (!kvMap->IsEmpty())
+            {
+                CUtlSortVector<KeyValues*, CTimeSortFunc> sortedTimes;
+                for (KeyValues *kv = kvMap->GetFirstSubKey(); kv; kv = kv->GetNextKey())
+                {
+                    sortedTimes.InsertNoSort(kv);
+                }
+
+                sortedTimes.RedoSort();
+
+                FOR_EACH_VEC(sortedTimes, i)
+                {
+                    KeyValues *kvTime = sortedTimes[i];
+                    float rate = kvTime->GetFloat("rate");
+                    int runFlags = kvTime->GetInt("flags");
+                    //MOM_TODO: should we compare strings instead of float so that rate comparison always returns correctly?
+                    if (rate == tickrate && ((flags & runFlags) == flags))
+                    {
+                        return sortedTimes[i];
+                    }
+                }
+            }
+        }
+    }    
+    return nullptr;
+}
+
+
+static MomentumUtil s_momentum_util;
+MomentumUtil *mom_UTIL = &s_momentum_util;

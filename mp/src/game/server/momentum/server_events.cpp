@@ -18,7 +18,7 @@ namespace Momentum
         // MOM_TODO: connect to site
         if (SteamAPI_IsSteamRunning())
         {
-            mom_UTIL.GetRemoteRepoModVersion();
+            mom_UTIL->GetRemoteRepoModVersion();
         }
     }
 

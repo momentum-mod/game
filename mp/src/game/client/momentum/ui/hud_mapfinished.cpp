@@ -376,5 +376,5 @@ void CHudMapFinishedDialog::OnThink()
         m_iTotalStrafes = g_MOMEventListener->m_iTotalStrafes;
     }
     if (pPlayer != nullptr)
-        mom_UTIL.FormatTime(pPlayer->m_nLastRunTime, gpGlobals->interval_per_tick, m_pszRunTime);
+        mom_UTIL->FormatTime(pPlayer->m_flLastRunTime, m_pszRunTime);
 }

@@ -54,7 +54,7 @@ public:
     void MsgFunc_Timer_Stage(bf_read &msg);
     void MsgFunc_Timer_StageCount(bf_read&);
     virtual void Paint();
-    int GetCurrentTime();
+    float GetCurrentTime();
     bool m_bIsRunning;
     bool m_bTimerRan;
     int m_iStartTick;
@@ -103,7 +103,8 @@ private:
     wchar_t m_pwStageTimeLabel[BUFSIZELOCL];
     char m_pszStageTimeLabelString[BUFSIZELOCL];
 
-    CUtlMap<const char*, float> map;
+    KeyValues *m_kvBestTime;
+
     int m_iTotalTicks;
     bool m_bWereCheatsActivated = false;
     bool m_bShowCheckpoints;
@@ -131,6 +132,7 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    m_kvBestTime = nullptr;
 }
 
 void C_Timer::Init()
@@ -188,18 +190,24 @@ void C_Timer::OnThink()
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
-    bool started = msg.ReadOneBit();
-    m_bIsRunning = started;
-    m_iStartTick = (int) msg.ReadLong();
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (!pPlayer)
         return;
+
+    const char* szMapName = g_pGameRules->MapName();
+    m_kvBestTime = new KeyValues(szMapName);
+    m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTime, szMapName, gpGlobals->interval_per_tick, pPlayer->)
+
+    bool started = msg.ReadOneBit();
+    m_bIsRunning = started;
+    m_iStartTick = (int) msg.ReadLong();
+    
     
     if (started)
     {
         //VGUI_ANIMATE("TimerStart");
         // Checking again, even if we just checked 8 lines before
-        if (pPlayer != NULL)
+        if (pPlayer != nullptr)
         {
             pPlayer->EmitSound("Momentum.StartTimer");
             m_bTimerRan = true;
@@ -221,10 +229,10 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         }
 
         //VGUI_ANIMATE("TimerStop");
-        if (pPlayer != NULL)
+        if (pPlayer != nullptr)
         {
             pPlayer->EmitSound("Momentum.StopTimer");
-            pPlayer->m_nLastRunTime = gpGlobals->tickcount - m_iStartTick;
+            pPlayer->m_flLastRunTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         }
 
         //MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
@@ -253,18 +261,18 @@ void C_Timer::MsgFunc_Timer_StageCount(bf_read &msg)
 {
     m_iStageCount = (int) msg.ReadLong();
 }
-int C_Timer::GetCurrentTime()
+float C_Timer::GetCurrentTime()
 {
     //HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     //so we add an extra tick here to make them line up again
     if (m_bIsRunning)
         m_iTotalTicks = gpGlobals->tickcount - m_iStartTick + 1;
-    return m_iTotalTicks;
+    return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }
 
 void C_Timer::Paint(void)
 {
-    mom_UTIL.FormatTime(GetCurrentTime(), gpGlobals->interval_per_tick, m_pszString, 2);
+    mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszString, m_pwCurrentTime, sizeof(m_pwCurrentTime));
 
@@ -288,7 +296,7 @@ void C_Timer::Paint(void)
             );
         if (m_iStageCurrent > 1)
         { 
-            mom_UTIL.FormatTime(g_MOMEventListener->m_iStageTicks[g_MOMEventListener->m_iCurrentStage], gpGlobals->interval_per_tick, m_pszStageTimeString);
+            mom_UTIL->FormatTime(g_MOMEventListener->m_flStageTime[g_MOMEventListener->m_iCurrentStage], m_pszStageTimeString);
             Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
                 m_pszStageTimeString,
                 m_pszStageTimeLabelString

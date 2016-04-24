@@ -69,7 +69,7 @@ public:
     void RequestStageCount();
     // Gets the total stage count
     int GetStageCount() { return m_iStageCount; };
-    int GetStageTicks(int stageNum);
+    float GetStageTime(int stageNum);
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
     int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
@@ -151,7 +151,7 @@ private:
     int m_iStageCount;
     int m_iStartTick;
     int m_iLastStage = 0;
-    int m_iStageEnterTick[MAX_STAGES];
+    float m_iStageEnterTime[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
 
@@ -162,15 +162,15 @@ private:
     struct Time
     {
         //overall run stats:
-        int ticks;  //The amount of ticks took to complete
+        float time;  //The amount of seconds taken to complete
         float tickrate;  //Tickrate the run was done on
         time_t date;    //Date achieved
-        int jumps, strafes;
+        int jumps, strafes, flags;
         float maxvel, avgvel, startvel, endvel;
         float avgsync, avgsync2;
 
         //stage specific stats:
-        int stageticks[MAX_STAGES]; //time in ticks for that stage
+        float stagetime[MAX_STAGES]; //time in seconds for that stage
         float stagevel[MAX_STAGES], stageavgvel[MAX_STAGES], stagemaxvel[MAX_STAGES], 
             stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES]; //no stage end vel since it's the same as the next stage start vel
         int stagejumps[MAX_STAGES], stagestrafes[MAX_STAGES];

@@ -41,7 +41,7 @@
 	"new_stage"
 	{
 		"stage_num"	"byte"
-		"stage_ticks"	"long" //time is in ticks
+		"stage_time"	"float" //time is in seconds
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
 		"avg_vel"	"float"

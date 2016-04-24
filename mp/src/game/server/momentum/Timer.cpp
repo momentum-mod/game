@@ -40,7 +40,7 @@ void CTimer::PostTime()
 
         DevLog("Ticks sent to server: %i\n", ticks);
         //Build request
-        mom_UTIL.PostTime(webURL);
+        mom_UTIL->PostTime(webURL);
     }
     else
     {
@@ -85,16 +85,17 @@ void CTimer::LoadLocalTimes(const char *szMapname)
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
         {
             Time t;
-            t.ticks = Q_atoi(kv->GetName());
+            t.time = Q_atof(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
             t.date = (time_t) kv->GetInt("date");
+            t.flags = kv->GetInt("flags");
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {
                 if (!Q_strnicmp(subKv->GetName(), "stage", strlen("stage")))
                 {
                     int i = Q_atoi(subKv->GetName()); //atoi will ignore "stage" and only return the stage number
-                    t.stageticks[i] = subKv->GetInt("ticks");
+                    t.stagetime[i] = subKv->GetFloat("time");
                     t.stagevel[i] = subKv->GetInt("stage_enter_vel");
                     t.stageavgsync[i] = subKv->GetFloat("avg_sync");
                     t.stageavgsync2[i] = subKv->GetFloat("avg_sync2");
@@ -138,10 +139,11 @@ void CTimer::SaveTime()
     {
         Time t = localTimes[i];
         char timeName[512];
-        Q_snprintf(timeName, 512, "%i", t.ticks);
+        Q_snprintf(timeName, 512, "%.6f", t.time);
         KeyValues *pSubkey = new KeyValues(timeName);
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
+        pSubkey->SetInt("flags", t.flags);
 
         KeyValues *pOverallKey = new KeyValues("total");
         pOverallKey->SetInt("jumps", t.jumps);
@@ -161,7 +163,7 @@ void CTimer::SaveTime()
                 Q_snprintf(stageName, sizeof(stageName), "stage %d", i);
 
                 KeyValues *pStageKey = new KeyValues(stageName);
-                pStageKey->SetInt("ticks", t.stageticks[i]);
+                pStageKey->SetFloat("time", t.stagetime[i]);
                 pStageKey->SetInt("num_jumps", t.stagejumps[i]);
                 pStageKey->SetInt("num_strafes", t.stagestrafes[i]);
                 pStageKey->SetFloat("avg_sync", t.stageavgsync[i]);
@@ -209,8 +211,9 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         //Save times locally too, regardless of SteamAPI condition
         Time t;
-        t.ticks = gpGlobals->tickcount - m_iStartTick;
+        t.time = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         t.tickrate = gpGlobals->interval_per_tick;
+        t.flags = pPlayer->m_iRunFlags;
         time(&t.date);
 
         //stage 0 is overall stats
@@ -226,7 +229,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
         {
             for (int i = 1; i <= GetStageCount(); i++) //stages start at 1 since stage 0 is overall stats
             {
-                t.stageticks[i] = m_iStageEnterTick[i]; //add each stage's total time in ticks
+                t.stagetime[i] = m_iStageEnterTime[i]; //add each stage's total time in ticks
                 t.stagejumps[i] = pPlayer->m_nStageJumps[i];
                 t.stagestrafes[i] = pPlayer->m_nStageStrafes[i];
                 t.stageavgsync[i] = pPlayer->m_flStageStrafeSyncAvg[i];
@@ -295,20 +298,22 @@ void CTimer::RequestStageCount()
     m_iStageCount = iCount;
 }
 //This function is called every time CTriggerStage::StartTouch is called
-int CTimer::GetStageTicks(int stage)
+float CTimer::GetStageTime(int stage)
 {
+    //MOM_TODO: Is the below value even necessary?
     if (stage == 1)
-        m_iStageEnterTick[stage] = m_iStartTick; //stage "enter" for start zone is actually exit tick
+        m_iStageEnterTime[stage] = (m_iStartTick * gpGlobals->interval_per_tick); //stage "enter" for start zone is actually exit tick
+
     else if (stage > 1) //only compare pb/show time for stages after start zone
     {
         if (stage > m_iLastStage)
         {
-            m_iStageEnterTick[stage] = gpGlobals->tickcount - m_iStartTick; //compare stage time diff
+            m_iStageEnterTime[stage] = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; //compare stage time diff
         }
-            
+         
     }
     m_iLastStage = stage;
-    return m_iStageEnterTick[stage];
+    return m_iStageEnterTime[stage];
 }
 void CTimer::DispatchResetMessage()
 {

@@ -551,15 +551,14 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
     FOR_EACH_VEC(m_vLocalTimes, i)
     {
         Time t = m_vLocalTimes[i];
-        float secondsF = ((float) t.ticks) * t.rate;
         //MOM_TODO: consider adding a "100 tick" column?
 
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
-        kvLocalTimeFormatted->SetFloat("time_f", secondsF);//Used for static compare
+        kvLocalTimeFormatted->SetFloat("time_f", t.time);//Used for static compare
         kvLocalTimeFormatted->SetInt("date_t", t.date);//Used for finding
         char timeString[BUFSIZETIME];
 
-        mom_UTIL.FormatTime(t.ticks, t.rate, timeString);
+        mom_UTIL->FormatTime(t.time, timeString);
         kvLocalTimeFormatted->SetString("time", timeString);
 
         char dateString[64];

@@ -19,6 +19,7 @@ SendPropInt(SENDINFO(m_iSuccessiveBhops)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
+SendPropInt(SENDINFO(m_iRunFlags)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
