@@ -137,11 +137,11 @@ private:
         float time_sec, rate;
         time_t date;
 
-        Time(KeyValues* kv)
+        explicit Time(KeyValues* kv)
         {
             time_sec = Q_atof(kv->GetName());
             rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
-            date = (time_t) kv->GetInt("date", 0);
+            date = static_cast<time_t>(kv->GetInt("date", 0));
         };
     };
     CUtlVector<Time> m_vLocalTimes;

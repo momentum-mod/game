@@ -38,7 +38,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             if (stageEvent)
             {
                 stageEvent->SetInt("stage_num", stageNum);
-                stageEvent->SetInt("stage_time", g_Timer.GetStageTime(stageNum));
+                stageEvent->SetFloat("stage_time", g_Timer.GetStageTime(stageNum));
                 stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
                 stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum]);
                 stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum]);
@@ -67,7 +67,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
             if (stageEvent)
             {
                 stageEvent->SetInt("stage_num", stageNum);
-                stageEvent->SetInt("stage_time", g_Timer.GetStageTime(stageNum));
+                stageEvent->SetFloat("stage_time", g_Timer.GetStageTime(stageNum));
                 stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
                 stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum]);
                 stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum]);

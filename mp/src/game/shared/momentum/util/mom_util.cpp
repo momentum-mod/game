@@ -175,6 +175,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision)
 {
     //float m_flSecondsTime = ticks * rate;
+    m_flSecondsTime = abs(m_flSecondsTime);
 
     int hours = m_flSecondsTime / (60.0f * 60.0f);
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
@@ -248,10 +249,15 @@ KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, fl
             if (!kvMap->IsEmpty())
             {
                 CUtlSortVector<KeyValues*, CTimeSortFunc> sortedTimes;
-                for (KeyValues *kv = kvMap->GetFirstSubKey(); kv; kv = kv->GetNextKey())
+      
+                FOR_EACH_SUBKEY(kvMap, kv)
                 {
                     sortedTimes.InsertNoSort(kv);
                 }
+                /*for (KeyValues *kv = kvMap->GetFirstSubKey(); kv; kv = kv->GetNextKey())
+                {
+                    sortedTimes.InsertNoSort(kv);
+                }*/
 
                 sortedTimes.RedoSort();
 

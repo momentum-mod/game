@@ -38,19 +38,19 @@ public:
     //Precision is miliseconds by default
     void FormatTime(float seconds, char *pOut, int precision = 3);
 
-    KeyValues *GetBestTime(KeyValues *, const char *, float tickrate, int flags = 0);
+    KeyValues *GetBestTime(KeyValues *kvInput, const char *szMapName, float tickrate, int flags = 0);
 
     void GetBestStageTimes(KeyValues*, CUtlVector<float>*);
 
-};
-
-class CTimeSortFunc
-{
-public:
-    bool Less(KeyValues* lhs, KeyValues* rhs, void *)
+    class CTimeSortFunc
     {
-        return (Q_atof(lhs->GetName())) < Q_atof(rhs->GetName());
-    }
+    public:
+        bool Less(KeyValues* lhs, KeyValues* rhs, void *)
+        {
+            return (Q_atof(lhs->GetName())) < Q_atof(rhs->GetName());
+        }
+    };
+
 };
 
 extern MomentumUtil *mom_UTIL;

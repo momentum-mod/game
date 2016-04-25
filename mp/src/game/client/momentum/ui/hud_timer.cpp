@@ -145,12 +145,10 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_kvBestTime = nullptr;
     m_kvBestTimeBuffer = nullptr;
-    DevLog("C_TIMER CONSTRUCTED!!!!!!!!!!!!!\n");
 }
 
 void C_Timer::Init()
 {
-    DevLog("C_TIME INITTED!!!!!!!!!!!!!!!!!!!!!!\n");
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
@@ -277,19 +275,19 @@ void C_Timer::MsgFunc_Timer_Reset(bf_read &msg)
 void C_Timer::MsgFunc_Timer_Checkpoint(bf_read &msg)
 {
     m_bShowCheckpoints = msg.ReadOneBit();
-    m_iCheckpointCurrent = (int) msg.ReadLong();
-    m_iCheckpointCount = (int) msg.ReadLong();
+    m_iCheckpointCurrent = static_cast<int>(msg.ReadLong());
+    m_iCheckpointCount = static_cast<int>(msg.ReadLong());
 }
 
 void C_Timer::MsgFunc_Timer_Stage(bf_read &msg)
 {
-    m_iStageCurrent = (int) msg.ReadLong();
+    m_iStageCurrent = static_cast<int>(msg.ReadLong());
     //g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
 }
 
 void C_Timer::MsgFunc_Timer_StageCount(bf_read &msg)
 {
-    m_iStageCount = (int) msg.ReadLong();
+    m_iStageCount = static_cast<int>(msg.ReadLong());
 }
 float C_Timer::GetCurrentTime()
 {
@@ -448,6 +446,7 @@ void C_Timer::Paint(void)
             surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
             if (hasComparison)
             {
+                text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeComparison) / 2;
                 int tall = surface()->GetFontTall(m_hSmallTextFont);
                 surface()->DrawSetTextColor(losingTime ? m_TimeLoss : m_TimeGain);//MOM_TODO: possibly handle ties?
                 surface()->DrawSetTextPos(text_xpos, cps_ypos + tall);

@@ -85,7 +85,7 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     //Completed/Best time
     KeyValues *kvMapWrapper = new KeyValues(m->m_szMapName);
     //MOM_TODO: have the tickrate and run flags as filters, load actual values
-    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, m->m_iGameMode == MOMGM_BHOP ? 0.010f : 0.015f, 0);
+    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, m->m_iGameMode == MOMGM_BHOP ? 0.010f : 0.015f);
     if (kvMapTime)
     {
         m->m_bCompleted = true;
