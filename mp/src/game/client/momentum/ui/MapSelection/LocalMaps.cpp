@@ -50,12 +50,17 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
 inline bool MapHasStages(const char* szMap)
 {
     bool found = false;
-    KeyValues *kvMap = new KeyValues("Map");
-    if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
+    if (g_pFullFileSystem)
     {
-        found = (kvMap->FindKey("stage") != NULL);
+        KeyValues *kvMap = new KeyValues("Map");
+        //if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
+        if (kvMap->LoadFromFile(g_pFullFileSystem, "maps/triggertests.zon", "MOD"))
+        {
+            found = (kvMap->FindKey("stage") != NULL);
+        }
+        kvMap->deleteThis();
     }
-    kvMap->deleteThis();
+
     return found;
 }
 

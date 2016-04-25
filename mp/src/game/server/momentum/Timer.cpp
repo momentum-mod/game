@@ -87,7 +87,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             Time t;
             t.time = Q_atof(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
-            t.date = (time_t) kv->GetInt("date");
+            t.date = static_cast<time_t>(kv->GetInt("date"));
             t.flags = kv->GetInt("flags");
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 

@@ -37,6 +37,7 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
+    m_iRunFlags = 0;
 }
 
 CMomentumPlayer::~CMomentumPlayer() {}

@@ -4,9 +4,10 @@
 #pragma once
 #endif
 
+#include "UtlSortVector.h"
+#include "cbase.h"
 #include "filesystem.h"
 #include "gason.h"
-#include "UtlSortVector.h"
 
 class MomentumUtil
 {
@@ -38,6 +39,8 @@ public:
     void FormatTime(float seconds, char *pOut, int precision = 3);
 
     KeyValues *GetBestTime(KeyValues *, const char *, float tickrate, int flags = 0);
+
+    void GetBestStageTimes(KeyValues*, CUtlVector<float>*);
 
 };
 

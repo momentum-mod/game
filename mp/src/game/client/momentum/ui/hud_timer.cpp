@@ -2,6 +2,8 @@
 #include "hudelement.h"
 #include "hud_numericdisplay.h"
 #include "hud_macros.h"
+#include "utlvector.h"
+#include "KeyValues.h"
 #include "iclientmode.h"
 #include "view.h"
 #include "menu.h"
@@ -104,6 +106,7 @@ private:
     char m_pszStageTimeLabelString[BUFSIZELOCL];
 
     KeyValues *m_kvBestTime;
+    CUtlVector<float> m_vecBestTimes;
 
     int m_iTotalTicks;
     bool m_bWereCheatsActivated = false;
@@ -133,10 +136,12 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_kvBestTime = nullptr;
+    DevLog("C_TIMER CONSTRUCTED!!!!!!!!!!!!!\n");
 }
 
 void C_Timer::Init()
 {
+    DevLog("C_TIME INITTED!!!!!!!!!!!!!!!!!!!!!!\n");
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
@@ -190,17 +195,28 @@ void C_Timer::OnThink()
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (!pPlayer)
-        return;
-
-    const char* szMapName = g_pGameRules->MapName();
-    m_kvBestTime = new KeyValues(szMapName);
-    m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTime, szMapName, gpGlobals->interval_per_tick, pPlayer->)
-
     bool started = msg.ReadOneBit();
     m_bIsRunning = started;
     m_iStartTick = (int) msg.ReadLong();
+
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (!pPlayer)
+        return;
+    
+    if (started)
+    {
+        const char* szMapName = g_pGameRules->MapName();
+        m_kvBestTime = new KeyValues(szMapName);
+        m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTime, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
+        if (m_kvBestTime)
+            mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
+        
+    } else
+    {
+        if (m_kvBestTime) m_kvBestTime->deleteThis();
+        m_kvBestTime = nullptr;
+        m_vecBestTimes.RemoveAll();
+    }
     
     
     if (started)
@@ -296,6 +312,7 @@ void C_Timer::Paint(void)
             );
         if (m_iStageCurrent > 1)
         { 
+            //float diff = g_MOMEventListener->m_flStageTime[g_MOMEventListener->m_iCurrentStage];
             mom_UTIL->FormatTime(g_MOMEventListener->m_flStageTime[g_MOMEventListener->m_iCurrentStage], m_pszStageTimeString);
             Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
                 m_pszStageTimeString,

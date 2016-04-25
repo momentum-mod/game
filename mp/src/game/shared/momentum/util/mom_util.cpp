@@ -272,6 +272,20 @@ KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, fl
     return nullptr;
 }
 
+void MomentumUtil::GetBestStageTimes(KeyValues *pKvBestTime, CUtlVector<float> *vecInto)
+{
+    if (pKvBestTime && vecInto)
+    {
+        for (KeyValues *kv = pKvBestTime->GetFirstSubKey(); kv; kv = kv->GetNextKey())
+        {
+            if (!Q_strnicmp(kv->GetName(), "stage", strlen("stage")))
+            {
+                vecInto->AddToTail(kv->GetFloat("time"));
+            }
+        }
+    }
+}
+
 
 static MomentumUtil s_momentum_util;
 MomentumUtil *mom_UTIL = &s_momentum_util;
