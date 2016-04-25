@@ -53,8 +53,7 @@ inline bool MapHasStages(const char* szMap)
     if (g_pFullFileSystem)
     {
         KeyValues *kvMap = new KeyValues("Map");
-        //if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
-        if (kvMap->LoadFromFile(g_pFullFileSystem, "maps/triggertests.zon", "MOD"))
+        if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
         {
             found = (kvMap->FindKey("stage") != NULL);
         }

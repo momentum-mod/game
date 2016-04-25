@@ -312,7 +312,7 @@ void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
             DevWarning("Missing localization for %s\n", pszItem);
         }
         else Q_wcsncpy(wLocalizedItem, wLocalizedItemPtr, 512);
-
+        
         nCount = _snwprintf(pWritePosition, nRemaining, L"%d. %ls\n", i + 1, wLocalizedItem);
         nRemaining -= nCount;
         pWritePosition += nCount;

@@ -35,6 +35,8 @@
 				"TextFont"		"HudHintTextLarge"
 				"SmallTextFont"	"HudHintTextSmall"
 				"TextColor"	"MOM.Panel.Fg"
+                "TimeGainColor" "MOM.Timer.Gain"
+                "TimeLossColor" "MOM.Timer.Loss"
 				"centerTime"	"1" //If true, won't use time_xpos, centering the text instead
                 "time_xpos"		"50"
                 "time_ypos"		"3"

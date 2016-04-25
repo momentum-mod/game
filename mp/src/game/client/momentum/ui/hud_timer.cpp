@@ -49,6 +49,8 @@ public:
     {
         Panel::ApplySchemeSettings(pScheme);
         SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
+        m_TimeGain = GetSchemeColor("MOM.Timer.Gain", pScheme);
+        m_TimeLoss = GetSchemeColor("MOM.Timer.Loss", pScheme);
     }
     void MsgFunc_Timer_State(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);
@@ -65,6 +67,8 @@ protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
     CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
     CPanelAnimationVar(Color, m_Ammo2Color, "Ammo2Color", "FgColor");
+    CPanelAnimationVar(Color, m_TimeGain, "TimeGainColor", "FgColor");
+    CPanelAnimationVar(Color, m_TimeLoss, "TimeLossColor", "FgColor");
 
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "HudHintTextLarge");
     CPanelAnimationVar(HFont, m_hTimerFont, "TimerFont", "HudNumbersSmallBold");
@@ -92,6 +96,7 @@ private:
     int m_iStageCurrent;
     int m_iStageCount;
     int initialTall;
+
     wchar_t m_pwCurrentTime[BUFSIZETIME];
     char m_pszString[BUFSIZETIME];
     wchar_t m_pwCurrentCheckpoints[BUFSIZELOCL];
@@ -104,6 +109,9 @@ private:
     char m_pszStageTimeString[BUFSIZETIME];
     wchar_t m_pwStageTimeLabel[BUFSIZELOCL];
     char m_pszStageTimeLabelString[BUFSIZELOCL];
+
+    wchar_t m_pwStageTimeComparison[BUFSIZETIME];
+    char m_pszStageTimeComparisonANSI[BUFSIZETIME], m_pszStageTimeComparisonLabel[BUFSIZETIME];
 
     KeyValues *m_kvBestTime;
     CUtlVector<float> m_vecBestTimes;
@@ -303,6 +311,10 @@ void C_Timer::Paint(void)
         g_pVGuiLocalize->ConvertANSIToUnicode(
             m_pszStringCps, m_pwCurrentCheckpoints, sizeof(m_pwCurrentCheckpoints));
     }
+
+    bool losingTime = false, hasComparison = false;
+    float diff = 0;
+
     if (m_iStageCount > 1)
     {
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
@@ -311,8 +323,28 @@ void C_Timer::Paint(void)
             m_iStageCount // Total number of stages
             );
         if (m_iStageCurrent > 1)
-        { 
-            //float diff = g_MOMEventListener->m_flStageTime[g_MOMEventListener->m_iCurrentStage];
+        {            
+            //Local PB comparison
+            if (!m_vecBestTimes.IsEmpty())
+            {
+                hasComparison = true;
+                diff = g_MOMEventListener->m_flStageTime[g_MOMEventListener->m_iCurrentStage] - m_vecBestTimes[g_MOMEventListener->m_iCurrentStage - 1];
+
+                //MOM_TODO: what if the diff == 0? (probably unlikely)
+                losingTime = (diff > 0);//If diff > 0, that means you're falling behind your PB!
+
+                mom_UTIL->FormatTime(diff, m_pszStageTimeComparisonANSI);
+
+                Q_snprintf(m_pszStageTimeComparisonLabel, sizeof(m_pszStageTimeComparisonLabel),
+                    "(%c %s)", losingTime ? '+' : '-', m_pszStageTimeComparisonANSI);
+
+                g_pVGuiLocalize->ConvertANSIToUnicode(m_pszStageTimeComparisonLabel, m_pwStageTimeComparison, 
+                    sizeof(m_pwStageTimeComparison));
+            }
+            //MOM_TODO: calculate diff from WR (online)
+            
+
+            //MOM_TODO: FIXME: The following produces a truncated float
             mom_UTIL->FormatTime(g_MOMEventListener->m_flStageTime[g_MOMEventListener->m_iCurrentStage], m_pszStageTimeString);
             Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
                 m_pszStageTimeString,
@@ -348,7 +380,7 @@ void C_Timer::Paint(void)
     }
     g_pVGuiLocalize->ConvertANSIToUnicode(
         m_pszStringStatus, m_pwCurrentStatus, sizeof(m_pwCurrentStatus));
-
+    
     // Draw the text label.
     surface()->DrawSetTextFont(m_bIsRunning ? m_hTimerFont : m_hTextFont);
     surface()->DrawSetTextColor(GetFgColor());
@@ -405,8 +437,16 @@ void C_Timer::Paint(void)
         if (m_iStageCurrent > 1) //only draw stage timer if we are on stage 2 or above.
         {
             int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
+            
             surface()->DrawSetTextPos(text_xpos, cps_ypos);
             surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
+            if (hasComparison)
+            {
+                int tall = surface()->GetFontTall(m_hSmallTextFont);
+                surface()->DrawSetTextColor(losingTime ? m_TimeLoss : m_TimeGain);//MOM_TODO: possibly handle ties?
+                surface()->DrawSetTextPos(text_xpos, cps_ypos + tall);
+                surface()->DrawPrintText(m_pwStageTimeComparison, wcslen(m_pwStageTimeComparison));
+            }
         }
     }
 }
