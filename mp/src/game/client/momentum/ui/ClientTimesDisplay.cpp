@@ -525,10 +525,6 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 
         Q_snprintf(fileName, MAX_PATH, "maps/%s.tim", g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME");
 
-        //Q_strcpy(fileName, "maps/");
-        //Q_strncat(fileName, g_pGameRules->MapName(), MAX_PATH);
-        //Q_strncat(fileName, , MAX_PATH);
-        //Q_strncat(fileName, ".tim", MAX_PATH);
         if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
         {
             DevLog("Loading from file %s...\n", fileName);

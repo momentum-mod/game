@@ -347,8 +347,6 @@ void C_Timer::Paint(void)
             }
             //MOM_TODO: calculate diff from WR (online)
             
-
-            //MOM_TODO: FIXME: The following produces a truncated float
             mom_UTIL->FormatTime(g_MOMEventListener->m_flStageTime[g_MOMEventListener->m_iCurrentStage], m_pszStageTimeString);
             Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
                 m_pszStageTimeString,

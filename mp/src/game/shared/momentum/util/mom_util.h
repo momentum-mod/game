@@ -5,6 +5,7 @@
 #endif
 
 #include "cbase.h"
+#include "KeyValues.h"
 #include "UtlSortVector.h"
 #include "filesystem.h"
 #include "gason.h"

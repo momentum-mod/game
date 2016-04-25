@@ -36,6 +36,7 @@
 //#include "proto_oob.h"
 //#include "modlist.h"
 //#include "IRunGameEngine.h"
+#include "KeyValues.h"
 #include "momentum/mom_shareddefs.h"
 #include "momentum/mom_gamerules.h"
 #include "momentum/util/mom_util.h"
