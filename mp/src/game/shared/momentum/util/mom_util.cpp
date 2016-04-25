@@ -241,9 +241,9 @@ KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, fl
     if (kvMap && szMapName)
     {
         char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "maps/%s.tim", szMapName);
+        V_ComposeFileName("maps", "*.tim", path, MAX_PATH);
 
-        if (kvMap->LoadFromFile(g_pFullFileSystem, path, "MOD"))
+        if (kvMap->LoadFromFile(filesystem, path, "MOD"))
         {
             if (!kvMap->IsEmpty())
             {
@@ -260,8 +260,7 @@ KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, fl
                     KeyValues *kvTime = sortedTimes[i];
                     float rate = kvTime->GetFloat("rate");
                     int runFlags = kvTime->GetInt("flags");
-                    //MOM_TODO: should we compare strings instead of float so that rate comparison always returns correctly?
-                    if (rate == tickrate && ((flags & runFlags) == flags))
+                    if (FloatEquals(tickrate, rate, 0.0001f) && ((flags & runFlags) == flags))
                     {
                         return sortedTimes[i];
                     }

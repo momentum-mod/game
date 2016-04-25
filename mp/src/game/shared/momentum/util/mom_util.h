@@ -41,7 +41,10 @@ public:
     KeyValues *GetBestTime(KeyValues *, const char *, float tickrate, int flags = 0);
 
     void GetBestStageTimes(KeyValues*, CUtlVector<float>*);
-
+    bool FloatEquals(float a, float b, float epsilon)
+    {
+        return fabs(a - b) < epsilon;
+    }
 };
 
 class CTimeSortFunc
