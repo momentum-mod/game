@@ -113,7 +113,7 @@ private:
     wchar_t m_pwStageTimeComparison[BUFSIZETIME];
     char m_pszStageTimeComparisonANSI[BUFSIZETIME], m_pszStageTimeComparisonLabel[BUFSIZETIME];
 
-    KeyValues *m_kvBestTime;
+    KeyValues *m_kvBestTimeBuffer, *m_kvBestTime;
     CUtlVector<float> m_vecBestTimes;
 
     int m_iTotalTicks;
@@ -144,6 +144,7 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_kvBestTime = nullptr;
+    m_kvBestTimeBuffer = nullptr;
     DevLog("C_TIMER CONSTRUCTED!!!!!!!!!!!!!\n");
 }
 
@@ -203,26 +204,31 @@ void C_Timer::OnThink()
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (!pPlayer)
+        return;
+
     bool started = msg.ReadOneBit();
     m_bIsRunning = started;
     m_iStartTick = (int) msg.ReadLong();
 
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (!pPlayer)
-        return;
     
-    if (started)
+    if (started && g_pGameRules)
     {
         const char* szMapName = g_pGameRules->MapName();
-        m_kvBestTime = new KeyValues(szMapName);
-        m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTime, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
-        if (m_kvBestTime)
-            mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
-        
+        if (szMapName)
+        {
+            m_kvBestTimeBuffer = new KeyValues(szMapName);
+            m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTimeBuffer, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
+            if (m_kvBestTime)
+                mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
+        }            
     } else
     {
+        if (m_kvBestTimeBuffer) m_kvBestTimeBuffer->deleteThis();
         if (m_kvBestTime) m_kvBestTime->deleteThis();
         m_kvBestTime = nullptr;
+        m_kvBestTimeBuffer = nullptr;
         m_vecBestTimes.RemoveAll();
     }
     

@@ -319,7 +319,8 @@ void CMomentumPlayer::UpdateRunStats()
     {
         playerMoveEvent->SetInt("num_strafes", m_nStageStrafes[0]);
         playerMoveEvent->SetInt("num_jumps", m_nStageJumps[0]);
-        if ((m_nButtons & IN_JUMP && GetGroundEntity() != NULL) || m_nButtons & IN_MOVELEFT | IN_MOVERIGHT)
+        bool onGround = GetFlags() & FL_ONGROUND;
+        if ((m_nButtons & IN_JUMP && onGround) || m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT))
             gameeventmanager->FireEvent(playerMoveEvent);
     }
 

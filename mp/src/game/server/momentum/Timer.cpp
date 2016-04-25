@@ -85,7 +85,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
         {
             Time t;
-            t.time = Q_atof(kv->GetName());
+            t.time_sec = Q_atof(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
             t.date = static_cast<time_t>(kv->GetInt("date"));
             t.flags = kv->GetInt("flags");
@@ -139,7 +139,7 @@ void CTimer::SaveTime()
     {
         Time t = localTimes[i];
         char timeName[512];
-        Q_snprintf(timeName, 512, "%.6f", t.time);
+        Q_snprintf(timeName, 512, "%.6f", t.time_sec);
         KeyValues *pSubkey = new KeyValues(timeName);
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
@@ -158,25 +158,25 @@ void CTimer::SaveTime()
         char stageName[9]; // "stage 64\0"
         if (GetStageCount() > 1)
         {
-            for (int i = 1; i <= GetStageCount(); i++) 
+            for (int i2 = 1; i2 <= GetStageCount(); i2++) 
             {
-                Q_snprintf(stageName, sizeof(stageName), "stage %d", i);
+                Q_snprintf(stageName, sizeof(stageName), "stage %d", i2);
 
                 KeyValues *pStageKey = new KeyValues(stageName);
-                pStageKey->SetFloat("time", t.stagetime[i]);
-                pStageKey->SetInt("num_jumps", t.stagejumps[i]);
-                pStageKey->SetInt("num_strafes", t.stagestrafes[i]);
-                pStageKey->SetFloat("avg_sync", t.stageavgsync[i]);
-                pStageKey->SetFloat("avg_sync2", t.stageavgsync2[i]);
-                pStageKey->SetFloat("avg_vel", t.stageavgvel[i]);
-                pStageKey->SetFloat("max_vel", t.stagemaxvel[i]);
-                pStageKey->SetFloat("stage_enter_vel", t.stagevel[i]);
+                pStageKey->SetFloat("time", t.stagetime[i2]);
+                pStageKey->SetInt("num_jumps", t.stagejumps[i2]);
+                pStageKey->SetInt("num_strafes", t.stagestrafes[i2]);
+                pStageKey->SetFloat("avg_sync", t.stageavgsync[i2]);
+                pStageKey->SetFloat("avg_sync2", t.stageavgsync2[i2]);
+                pStageKey->SetFloat("avg_vel", t.stageavgvel[i2]);
+                pStageKey->SetFloat("max_vel", t.stagemaxvel[i2]);
+                pStageKey->SetFloat("stage_enter_vel", t.stagevel[i2]);
                 pSubkey->AddSubKey(pStageKey);
             }
         }
 
-        timesKV->AddSubKey(pSubkey);
         pSubkey->AddSubKey(pOverallKey);
+        timesKV->AddSubKey(pSubkey);
     }
 
     char file[MAX_PATH];
@@ -211,7 +211,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         //Save times locally too, regardless of SteamAPI condition
         Time t;
-        t.time = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+        t.time_sec = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         t.tickrate = gpGlobals->interval_per_tick;
         t.flags = pPlayer->m_iRunFlags;
         time(&t.date);
@@ -256,8 +256,9 @@ void CTimer::Stop(bool endTrigger /* = false */)
     }
     if (mapZoneEvent)
     {
-        mapZoneEvent->SetInt("current_stage", 0);
-        mapZoneEvent->SetInt("stage_ticks", 0);
+        mapZoneEvent->SetBool("inside_startzone", false);
+        mapZoneEvent->SetBool("inside_endzone", endTrigger);
+        mapZoneEvent->SetBool("map_finished", endTrigger);
         gameeventmanager->FireEvent(mapZoneEvent);
     }
     SetRunning(false);

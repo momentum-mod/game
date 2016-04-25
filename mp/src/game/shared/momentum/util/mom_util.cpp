@@ -238,7 +238,7 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
 
 KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, float tickrate, int flags)
 {
-    if (kvMap)
+    if (kvMap && szMapName)
     {
         char path[MAX_PATH];
         Q_snprintf(path, MAX_PATH, "maps/%s.tim", szMapName);

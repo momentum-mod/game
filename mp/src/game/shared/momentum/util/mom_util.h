@@ -4,8 +4,8 @@
 #pragma once
 #endif
 
-#include "UtlSortVector.h"
 #include "cbase.h"
+#include "UtlSortVector.h"
 #include "filesystem.h"
 #include "gason.h"
 

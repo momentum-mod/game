@@ -554,11 +554,11 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         //MOM_TODO: consider adding a "100 tick" column?
 
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
-        kvLocalTimeFormatted->SetFloat("time_f", t.time);//Used for static compare
+        kvLocalTimeFormatted->SetFloat("time_f", t.time_sec);//Used for static compare
         kvLocalTimeFormatted->SetInt("date_t", t.date);//Used for finding
         char timeString[BUFSIZETIME];
 
-        mom_UTIL->FormatTime(t.time, timeString);
+        mom_UTIL->FormatTime(t.time_sec, timeString);
         kvLocalTimeFormatted->SetString("time", timeString);
 
         char dateString[64];

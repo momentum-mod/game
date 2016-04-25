@@ -50,9 +50,9 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
 inline bool MapHasStages(const char* szMap)
 {
     bool found = false;
-    if (g_pFullFileSystem)
+    if (g_pFullFileSystem && szMap)
     {
-        KeyValues *kvMap = new KeyValues("Map");
+        KeyValues *kvMap = new KeyValues(szMap);
         if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
         {
             found = (kvMap->FindKey("stage") != NULL);
@@ -85,15 +85,15 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     //Completed/Best time
     KeyValues *kvMapWrapper = new KeyValues(m->m_szMapName);
     //MOM_TODO: have the tickrate and run flags as filters, load actual values
-    KeyValues *kvMap = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, m->m_iGameMode == MOMGM_BHOP ? 0.010f : 0.015f, 0);
-    if (kvMap)
+    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, m->m_iGameMode == MOMGM_BHOP ? 0.010f : 0.015f, 0);
+    if (kvMapTime)
     {
         m->m_bCompleted = true;
-        mom_UTIL->FormatTime(Q_atof(kvMap->GetName()), m->m_szBestTime);
+        mom_UTIL->FormatTime(Q_atof(kvMapTime->GetName()), m->m_szBestTime);
     } 
 
     kvMapWrapper->deleteThis();
-    if (kvMap) kvMap->deleteThis();
+    if (kvMapTime) kvMapTime->deleteThis();
 }
 
 

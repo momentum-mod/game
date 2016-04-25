@@ -162,7 +162,7 @@ private:
     struct Time
     {
         //overall run stats:
-        float time;  //The amount of seconds taken to complete
+        float time_sec;  //The amount of seconds taken to complete
         float tickrate;  //Tickrate the run was done on
         time_t date;    //Date achieved
         int jumps, strafes, flags;
