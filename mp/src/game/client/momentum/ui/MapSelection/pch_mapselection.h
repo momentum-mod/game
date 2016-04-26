@@ -31,7 +31,7 @@
 //#include "vgui_controls/Controls.h"
 
 //#include "tier1/netadr.h"
-//#include "FileSystem.h"
+#include "FileSystem.h"
 //#include "iappinformation.h"
 //#include "proto_oob.h"
 //#include "modlist.h"

@@ -2,6 +2,8 @@
 
 using namespace vgui;
 
+extern IFileSystem *filesystem;
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -47,13 +49,19 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
 }
 
 
-inline bool MapHasStages(const char* szMap)
+bool MapHasStages(const char* szMap)
 {
     bool found = false;
-    if (g_pFullFileSystem && szMap)
+    if (filesystem && szMap)
     {
         KeyValues *kvMap = new KeyValues(szMap);
-        if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
+        char path[MAX_PATH];
+        char fileName[FILENAME_MAX];
+        Q_snprintf(fileName, FILENAME_MAX, "%s.tim", szMap);
+        V_ComposeFileName("maps", fileName, path, MAX_PATH);
+
+
+        if (kvMap->LoadFromFile(filesystem, path, "MOD"))
         {
             found = (kvMap->FindKey("stage") != NULL);
         }
