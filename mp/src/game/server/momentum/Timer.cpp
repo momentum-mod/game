@@ -75,16 +75,16 @@ void CTimer::PostTime()
 void CTimer::LoadLocalTimes(const char *szMapname)
 {
     char timesFilePath[MAX_PATH];
-    Q_strcpy(timesFilePath, c_mapDir);
-    Q_strcat(timesFilePath, szMapname, MAX_PATH);
-    Q_strncat(timesFilePath, c_timesExt, MAX_PATH);
+
+    V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapname, EXT_TIME_FILE), timesFilePath, MAX_PATH);
+
     KeyValues *timesKV = new KeyValues(szMapname);
 
     if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD"))
     {
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
         {
-            Time t;
+            Time t = Time();
             t.time_sec = Q_atof(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
             t.date = static_cast<time_t>(kv->GetInt("date"));
@@ -180,9 +180,8 @@ void CTimer::SaveTime()
     }
 
     char file[MAX_PATH];
-    Q_strcpy(file, c_mapDir);
-    Q_strcat(file, szMapName, MAX_PATH);
-    Q_strncat(file, c_timesExt, MAX_PATH);
+
+    V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapName, EXT_TIME_FILE), file, MAX_PATH);
 
     if (timesKV->SaveToFile(filesystem, file, "MOD", true) && runSaveEvent)
     {
@@ -210,7 +209,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
             PostTime();
 
         //Save times locally too, regardless of SteamAPI condition
-        Time t;
+        Time t = Time();
         t.time_sec = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         t.tickrate = gpGlobals->interval_per_tick;
         t.flags = pPlayer->m_iRunFlags;
@@ -269,9 +268,9 @@ void CTimer::OnMapEnd(const char *pMapName)
     if (IsRunning())
         Stop(false);
     m_bWereCheatsActivated = false;
-    SetCurrentCheckpointTrigger(NULL);
-    SetStartTrigger(NULL);
-    SetCurrentStage(NULL);
+    SetCurrentCheckpointTrigger(nullptr);
+    SetStartTrigger(nullptr);
+    SetCurrentStage(nullptr);
     RemoveAllCheckpoints();
     localTimes.Purge();
     //MOM_TODO: onlineTimes.RemoveAll();

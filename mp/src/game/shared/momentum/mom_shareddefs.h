@@ -35,4 +35,8 @@ typedef enum MOMGM
 
 #define MAX_STAGES 64
 
+#define MAP_FOLDER "maps"
+#define EXT_TIME_FILE ".tim"
+#define EXT_ZONE_FILE ".zon"
+
 #endif // MOM_SHAREDDEFS_H

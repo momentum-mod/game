@@ -189,10 +189,6 @@ private:
 
     int m_iCurrentStepCP = 0;
     bool m_bUsingCPMenu = false;
-
-    const char* c_mapDir = "maps/";
-    // Extension used for storing local map times
-    const char* c_timesExt = ".tim";
 };
 
 extern CTimer g_Timer;

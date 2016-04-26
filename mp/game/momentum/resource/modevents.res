@@ -55,6 +55,10 @@
 		"run_saved"	"bool"
 		"run_posted"	"bool"
 	}
+    "run_upload"
+    {
+        "web_msg" "string"//MOM_TODO: fill this with more stuff?
+    }
 	"timer_started"
 	{
 		"timer_isrunning"	"bool"

@@ -286,6 +286,20 @@ void MomentumUtil::GetBestStageTimes(KeyValues *pKvBestTime, CUtlVector<float> *
     }
 }
 
+void MomentumUtil::GetBestStageSpeeds(KeyValues *pKvBestTime, CUtlVector<float> *vecInto)
+{
+    if (pKvBestTime && vecInto)
+    {
+        FOR_EACH_SUBKEY(pKvBestTime, kv)
+        {
+            if (!Q_strnicmp(kv->GetName(), "stage", strlen("stage")))
+            {
+                vecInto->AddToTail(kv->GetFloat("stage_enter_vel"));
+            }
+        }
+    }
+}
+
 
 static MomentumUtil s_momentum_util;
 MomentumUtil *mom_UTIL = &s_momentum_util;

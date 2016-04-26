@@ -347,12 +347,12 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
 
     const char * type = event->GetName();
 
-    if (Q_strcmp(type, "runtime_saved") == 0)
+    if (Q_strcmp(type, "run_save") == 0)
     {
         //this updates the local times file, needing a reload of it
         bLocalTimesNeedUpdate = true;
     }
-    else if (Q_strcmp(type, "runtime_posted") == 0)
+    else if (Q_strcmp(type, "run_upload") == 0)
     {
         //MOM_TODO: this updates your rank (friends/online panel)
     }

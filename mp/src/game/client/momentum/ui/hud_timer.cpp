@@ -114,7 +114,7 @@ private:
     char m_pszStageTimeComparisonANSI[BUFSIZETIME], m_pszStageTimeComparisonLabel[BUFSIZETIME];
 
     KeyValues *m_kvBestTimeBuffer, *m_kvBestTime;
-    CUtlVector<float> m_vecBestTimes;
+    CUtlVector<float> m_vecBestTimes, m_vecBestSpeeds;
 
     int m_iTotalTicks;
     bool m_bWereCheatsActivated = false;
@@ -209,16 +209,6 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     bool started = msg.ReadOneBit();
     m_bIsRunning = started;
     m_iStartTick = (int) msg.ReadLong();
-
-    
-    if (started)
-    {
-        
-    } 
-    else
-    {
-
-    }
     
     
     if (started)
@@ -236,7 +226,10 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
             m_kvBestTimeBuffer = new KeyValues(szMapName);
             m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTimeBuffer, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
             if (m_kvBestTime)
+            {
                 mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
+                mom_UTIL->GetBestStageSpeeds(m_kvBestTime, &m_vecBestSpeeds);
+            }
         }
     }
     else // stopped
@@ -246,6 +239,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         m_kvBestTime = nullptr;
         m_kvBestTimeBuffer = nullptr;
         m_vecBestTimes.RemoveAll();
+        m_vecBestSpeeds.RemoveAll();
 
         if (m_bWereCheatsActivated) //EY, CHEATER, STOP
         {
