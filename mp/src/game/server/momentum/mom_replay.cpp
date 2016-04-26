@@ -58,9 +58,8 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
     header.demoProtoVersion = DEMO_PROTOCOL_VERSION;
     Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
     Q_strcpy(header.playerName, m_player->GetPlayerName());
-
-    Assert(steamapicontext);
-    header.steamID64 = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
+  
+    header.steamID64 = steamapicontext->SteamUser() ? steamapicontext->SteamUser()->GetSteamID().ConvertToUint64() : 0;
 
     header.interval_per_tick = gpGlobals->interval_per_tick;
     header.runTimeTicks = g_Timer.GetLastRunTimeTicks();
