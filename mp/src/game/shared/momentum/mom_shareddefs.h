@@ -30,7 +30,7 @@ typedef enum MOMGM
 
 //buffers for cstr variables
 #define BUFSIZETIME (sizeof("00:00:00.000")+1)
-#define BUFSIZELOCL (73)
+#define BUFSIZELOCL 73
 #define BUFSIZESHORT 10
 
 #define MAX_STAGES 64

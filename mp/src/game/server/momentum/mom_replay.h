@@ -34,7 +34,7 @@ public:
     void StartReplay();
     void EndRun();
     bool LoadRun(const char* fileName);
-    CUtlVector<replay_frame_t*> m_vecRunData;
+    CUtlVector<replay_frame_t> m_vecRunData;
 
 
 private:

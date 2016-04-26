@@ -1,7 +1,28 @@
 #include "cbase.h"
 #include "mom_replay.h"
-
 #pragma once
+
+#define GHOST_MODEL "models/player/player_shape_base.mdl"
+enum ghostModelBodyGroup
+{
+    BODY_THREE_SIDED_PYRAMID = 0,
+    BODY_FOUR_SIDED_PYRAMID,
+    BODY_SIX_SIDED_PYRAMID,
+    BODY_CUBE,
+    BODY_FOUR_SIDED_PRISM,
+    BODY_THREE_SIDED_PRISM,
+    BODY_KITE,
+    BODY_FIVE_SIDED_PRISM,
+    BODY_SIX_SIDED_PRISM,
+    BODY_PENTAGON_BALL,
+    BODY_BALL,
+    BODY_PROLATE_ELLIPSE,
+    BODY_TRIANGLE_BALL,
+    BODY_CONE,
+    BODY_CYLINDER
+
+};
+
 class CMomentumReplayGhostEntity : public CBaseAnimating
 {
     DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
@@ -9,6 +30,8 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 public:
 	const char* GetGhostModel();
 	void SetGhostModel(const char* model);
+    void SetGhostBodyGroup(int bodyGroup);
+    void SetGhostColor(Color newColor, int alpha = 75);
 	//Increments the steps intelligently.
 	void updateStep();
 
@@ -27,9 +50,10 @@ protected:
 
 private:
     char m_pszModel[256], m_pszMapName[256];
-	replay_frame_t* currentStep; 
-    replay_frame_t* nextStep;	
+	replay_frame_t currentStep; 
+    replay_frame_t nextStep;	
 
     int step;
+    int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
     Color m_ghostColor;
 };

@@ -58,7 +58,10 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
     header.demoProtoVersion = DEMO_PROTOCOL_VERSION;
     Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
     Q_strcpy(header.playerName, m_player->GetPlayerName());
+
+    Assert(steamapicontext);
     header.steamID64 = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
+
     header.interval_per_tick = gpGlobals->interval_per_tick;
     header.runTimeTicks = g_Timer.GetLastRunTimeTicks();
     time(&header.unixEpocDate);
@@ -117,7 +120,7 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
         ConMsg("%s has invalid replay header ID.\n", filename);
         return nullptr;
     }
-    if ((m_replayHeader.demoProtoVersion > DEMO_PROTOCOL_VERSION) || (m_replayHeader.demoProtoVersion < 2)) {
+    if (m_replayHeader.demoProtoVersion != DEMO_PROTOCOL_VERSION) {
         ConMsg("ERROR: replay file protocol %i outdated, engine version is %i \n",
             m_replayHeader.demoProtoVersion, DEMO_PROTOCOL_VERSION);
 
@@ -143,7 +146,7 @@ bool CMomentumReplaySystem::LoadRun(const char* filename)
             while (!filesystem->EndOfFile(m_fhFileHandle))
             {
                 replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
-                m_vecRunData.AddToTail(frame);
+                m_vecRunData.AddToTail(*frame);
             }
             return true;
         }
