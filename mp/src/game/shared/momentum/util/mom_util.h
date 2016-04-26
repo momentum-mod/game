@@ -47,16 +47,14 @@ public:
         return fabs(a - b) < epsilon;
     }
 };
-    bool Less(KeyValues* lhs, KeyValues* rhs, void *);
-
-    class CTimeSortFunc
+class CTimeSortFunc
+{
+public:
+    bool Less(KeyValues* lhs, KeyValues* rhs, void *)
     {
-    public:
-        bool Less(KeyValues* lhs, KeyValues* rhs, void *)
-        {
-            return (Q_atof(lhs->GetName())) < Q_atof(rhs->GetName());
-        }
-    };
+        return (Q_atof(lhs->GetName())) < Q_atof(rhs->GetName());
+    }
+};
 
 
 extern MomentumUtil *mom_UTIL;

@@ -241,39 +241,29 @@ KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, fl
 {
     if (kvMap && szMapName)
     {
-        char path[MAX_PATH];
-        V_ComposeFileName("maps", "*.tim", path, MAX_PATH);
+        char path[MAX_PATH], mapName[MAX_PATH];
+        Q_snprintf(mapName, MAX_PATH, "%s.tim", szMapName);
+        V_ComposeFileName("maps", mapName, path, MAX_PATH);
 
         if (kvMap->LoadFromFile(filesystem, path, "MOD"))
         {
             if (!kvMap->IsEmpty())
             {
                 CUtlSortVector<KeyValues*, CTimeSortFunc> sortedTimes;
-      
+
                 FOR_EACH_SUBKEY(kvMap, kv)
                 {
-                    sortedTimes.InsertNoSort(kv);
-                }
-                /*for (KeyValues *kv = kvMap->GetFirstSubKey(); kv; kv = kv->GetNextKey())
-                {
-                    sortedTimes.InsertNoSort(kv);
-                }*/
-
-                sortedTimes.RedoSort();
-
-                FOR_EACH_VEC(sortedTimes, i)
-                {
-                    KeyValues *kvTime = sortedTimes[i];
-                    float rate = kvTime->GetFloat("rate");
-                    int runFlags = kvTime->GetInt("flags");
-                    if (FloatEquals(tickrate, rate, 0.0001f) && ((flags & runFlags) == flags))
-                    {
-                        return sortedTimes[i];
+                    int kvflags = kv->GetInt("flags");
+                    float kvrate = kv->GetFloat("rate");
+                    if (kvflags == flags && FloatEquals(kvrate, tickrate, 0.001f)){
+                        sortedTimes.InsertNoSort(kv);
                     }
                 }
+                sortedTimes.RedoSort();
+                return sortedTimes.Element(0);
             }
         }
-    }    
+    }
     return nullptr;
 }
 
