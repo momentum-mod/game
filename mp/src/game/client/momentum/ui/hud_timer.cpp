@@ -213,21 +213,11 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     
     if (started)
     {
-        const char* szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
-        if (szMapName)
-        {
-            m_kvBestTimeBuffer = new KeyValues(szMapName);
-            m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTimeBuffer, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
-            if (m_kvBestTime)
-                mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
-        }            
-    } else
+        
+    } 
+    else
     {
-        if (m_kvBestTimeBuffer) m_kvBestTimeBuffer->deleteThis();
-        if (m_kvBestTime) m_kvBestTime->deleteThis();
-        m_kvBestTime = nullptr;
-        m_kvBestTimeBuffer = nullptr;
-        m_vecBestTimes.RemoveAll();
+
     }
     
     
@@ -240,10 +230,23 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
             pPlayer->EmitSound("Momentum.StartTimer");
             m_bTimerRan = true;
         }
+        const char* szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
+        if (szMapName)
+        {
+            m_kvBestTimeBuffer = new KeyValues(szMapName);
+            m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTimeBuffer, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
+            if (m_kvBestTime)
+                mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
+        }
     }
     else // stopped
     {
         // Compare times.
+        if (m_kvBestTimeBuffer) m_kvBestTimeBuffer->deleteThis();
+        m_kvBestTime = nullptr;
+        m_kvBestTimeBuffer = nullptr;
+        m_vecBestTimes.RemoveAll();
+
         if (m_bWereCheatsActivated) //EY, CHEATER, STOP
         {
             DevWarning("sv_cheats was set to 1, thus making the run not valid \n");
