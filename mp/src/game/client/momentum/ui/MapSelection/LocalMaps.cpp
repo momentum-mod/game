@@ -75,6 +75,7 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
 {
     //Game mode
     m->m_iGameMode = MOMGM_UNKNOWN;
+    float tickRate = 0.015f;
     if (!Q_strnicmp(m->m_szMapName, "surf_", 5))
     {
         m->m_iGameMode = MOMGM_SURF;
@@ -82,6 +83,7 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     else if (!Q_strnicmp(m->m_szMapName, "bhop_", 5))
     {
         m->m_iGameMode = MOMGM_BHOP;
+        tickRate = 0.01f;
     }
 
     // MOM_TODO: Determine difficulty
@@ -93,7 +95,8 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     //Completed/Best time
     KeyValues *kvMapWrapper = new KeyValues(m->m_szMapName);
     //MOM_TODO: have the tickrate and run flags as filters, load actual values
-    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, m->m_iGameMode == (MOMGM_BHOP | MOMGM_SCROLL) ? 0.010f : 0.015f);
+    
+    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, tickRate);
     if (kvMapTime)
     {
         m->m_bCompleted = true;

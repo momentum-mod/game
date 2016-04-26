@@ -211,9 +211,9 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     m_iStartTick = (int) msg.ReadLong();
 
     
-    if (started && g_pGameRules)
+    if (started)
     {
-        const char* szMapName = g_pGameRules->MapName();
+        const char* szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
         if (szMapName)
         {
             m_kvBestTimeBuffer = new KeyValues(szMapName);

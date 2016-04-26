@@ -259,8 +259,13 @@ KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, fl
                         sortedTimes.InsertNoSort(kv);
                     }
                 }
-                sortedTimes.RedoSort();
-                return sortedTimes.Element(0);
+                if (!sortedTimes.IsEmpty())
+                {
+                    sortedTimes.RedoSort();
+                    KeyValues *toReturn = kvMap->FindKey(sortedTimes[0]->GetName());
+                    sortedTimes.Purge();
+                    return toReturn;
+                }           
             }
         }
     }

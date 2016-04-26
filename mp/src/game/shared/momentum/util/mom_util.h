@@ -42,7 +42,7 @@ public:
     KeyValues *GetBestTime(KeyValues *kvInput, const char *szMapName, float tickrate, int flags = 0);
 
     void GetBestStageTimes(KeyValues*, CUtlVector<float>*);
-    bool FloatEquals(float a, float b, float epsilon)
+    bool FloatEquals(float a, float b, float epsilon = FLT_EPSILON)
     {
         return fabs(a - b) < epsilon;
     }
