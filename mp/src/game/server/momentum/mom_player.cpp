@@ -73,6 +73,7 @@ void CMomentumPlayer::Spawn()
     // Reset all bool gameevents 
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
+    IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
     IGameEvent *practiceModeEvent = gameeventmanager->CreateEvent("practice_mode");
     if (mapZoneEvent)
@@ -87,8 +88,13 @@ void CMomentumPlayer::Spawn()
     if (runSaveEvent)
     {
         runSaveEvent->SetBool("run_saved", false);
-        runSaveEvent->SetBool("run_posted", false);
         gameeventmanager->FireEvent(runSaveEvent);
+    }
+    if (runUploadEvent)
+    {
+        runUploadEvent->SetBool("run_posted", false);
+        runUploadEvent->SetString("web_msg", "");
+        gameeventmanager->FireEvent(runUploadEvent);
     }
     if (timerStartEvent)
     {

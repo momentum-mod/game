@@ -159,26 +159,13 @@ void C_Timer::Init()
     //Reset();
 
     //cache localization strings
-    wchar_t *uCPUnicode = g_pVGuiLocalize->Find("#MOM_Checkpoint");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uCPUnicode ? uCPUnicode : L"#MOM_Checkpoint", cpLocalized, BUFSIZELOCL);
-
-    wchar_t *uStageUnicode = g_pVGuiLocalize->Find("#MOM_Stage");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uStageUnicode ? uStageUnicode : L"#MOM_Stage", stLocalized, BUFSIZELOCL);
-
-    wchar_t *uLinearUnicode = g_pVGuiLocalize->Find("#MOM_Linear");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uLinearUnicode ? uLinearUnicode : L"#MOM_Linear", linearLocalized, BUFSIZELOCL);
-
-    wchar_t *uStartZoneUnicode = g_pVGuiLocalize->Find("#MOM_InsideStartZone");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uStartZoneUnicode ? uStartZoneUnicode : L"#MOM_InsideStartZone", startZoneLocalized, BUFSIZELOCL);
-
-    wchar_t *uMapFinishedUnicode = g_pVGuiLocalize->Find("#MOM_MapFinished");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uMapFinishedUnicode ? uMapFinishedUnicode : L"#MOM_MapFinished", mapFinishedLocalized, BUFSIZELOCL);
-
-    wchar_t *uPracticeModeUnicode = g_pVGuiLocalize->Find("#MOM_PracticeMode");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uPracticeModeUnicode ? uPracticeModeUnicode : L"#MOM_PracticeMode", practiceModeLocalized, BUFSIZELOCL);
-
-    wchar_t *uNoTimerUnicode = g_pVGuiLocalize->Find("#MOM_NoTimer");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uNoTimerUnicode ? uNoTimerUnicode : L"#MOM_NoTimer", noTimerLocalized, BUFSIZELOCL);
+    LOCALIZE_TOKEN(Checkpoint, "#MOM_Checkpoint", cpLocalized);
+    LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
+    LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
+    LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
+    LOCALIZE_TOKEN(MapFinished, "#MOM_MapFinished", mapFinishedLocalized);
+    LOCALIZE_TOKEN(PracticeMode, "#MOM_PracticeMode", practiceModeLocalized);
+    LOCALIZE_TOKEN(NoTimer, "#MOM_NoTimer", noTimerLocalized);
 }
 
 void C_Timer::Reset()

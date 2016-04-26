@@ -147,8 +147,9 @@ private:
     CUtlVector<Time> m_vLocalTimes;
     // MOM_TODO: CUtlVector<SomeStruct> m_vOnlineTimes;
 
-    bool bLocalTimesLoaded = false;
-    bool bLocalTimesNeedUpdate = false;
+    bool m_bLocalTimesLoaded = false;
+    bool m_bLocalTimesNeedUpdate = false;
+    bool m_bOnlineNeedUpdate = false;
     //widths[0] == WIDTH FOR DATE
     //widths[1] == WIDTH FOR RANK
     //widths[2] == WIDTH FOR TIME

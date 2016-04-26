@@ -53,10 +53,10 @@
 	"run_save"
 	{
 		"run_saved"	"bool"
-		"run_posted"	"bool"
 	}
     "run_upload"
     {
+        "run_posted" "bool"
         "web_msg" "string"//MOM_TODO: fill this with more stuff?
     }
 	"timer_started"

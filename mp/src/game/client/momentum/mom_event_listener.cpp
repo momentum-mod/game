@@ -42,7 +42,12 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     if (!Q_strcmp("run_save", pEvent->GetName()))
     {
         m_bTimeDidSave = pEvent->GetBool("run_saved");
+    }
+    if (!Q_strcmp("run_upload", pEvent->GetName()))
+    {
         m_bTimeDidUpload = pEvent->GetBool("run_posted");
+        Q_strncpy(m_szRunUploadStatus, pEvent->GetString("web_msg"), sizeof(m_szRunUploadStatus));
+        //MOM_TODO: potentially have stuff like new rank or something?
     }
     if (!Q_strcmp("timer_started", pEvent->GetName()))
     {

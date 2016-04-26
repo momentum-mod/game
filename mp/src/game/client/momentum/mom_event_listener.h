@@ -30,6 +30,8 @@ public:
         m_flStageVelocityAvg[MAX_STAGES], m_flStageStrafeSyncAvg[MAX_STAGES], 
         m_flStageStrafeSync2Avg[MAX_STAGES];
 
+    char m_szRunUploadStatus[512];//MOM_TODO: determine best (max) size for this
+
 };
 
 extern C_Momentum_EventListener *g_MOMEventListener;

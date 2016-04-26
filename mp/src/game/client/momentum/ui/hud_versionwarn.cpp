@@ -54,8 +54,7 @@ void CHudVersionWarn::Init()
 {
     char m_pszStringVersion[BUFSIZELOCL];
     char strVersion[BUFSIZELOCL];
-    wchar_t *uVersionUnicode = g_pVGuiLocalize->Find("#MOM_BuildVersion");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uVersionUnicode ? uVersionUnicode : L"#MOM_BuildVersion", strVersion, BUFSIZELOCL);
+    LOCALIZE_TOKEN(BuildVersion, "#MOM_BuildVersion", strVersion);
 
     Q_snprintf(m_pszStringVersion, sizeof(m_pszStringVersion), "%s %s",
         strVersion, // BuildVerison localization

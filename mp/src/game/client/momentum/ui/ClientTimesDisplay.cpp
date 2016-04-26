@@ -112,11 +112,11 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
 
     // update scoreboard instantly if on of these events occur
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     ListenForGameEvent("run_save");
+    ListenForGameEvent("run_upload");
     ListenForGameEvent("game_newmap");
 
-    m_pImageList = NULL;
+    m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
 }
@@ -126,10 +126,10 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
 //-----------------------------------------------------------------------------
 CClientTimesDisplay::~CClientTimesDisplay()
 {
-    if (NULL != m_pImageList)
+    if (m_pImageList)
     {
         delete m_pImageList;
-        m_pImageList = NULL;
+        m_pImageList = nullptr;
     }
     // MOM_TODO: Ensure a good destructor
 }
@@ -314,7 +314,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 {
     // Catch the case where we call ShowPanel before ApplySchemeSettings, eg when
     // going from windowed <-> fullscreen
-    if (m_pImageList == NULL)
+    if (m_pImageList == nullptr)
     {
         InvalidateLayout(true, true);
     }
@@ -350,15 +350,16 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
     if (Q_strcmp(type, "run_save") == 0)
     {
         //this updates the local times file, needing a reload of it
-        bLocalTimesNeedUpdate = true;
+        m_bLocalTimesNeedUpdate = true;
     }
     else if (Q_strcmp(type, "run_upload") == 0)
     {
         //MOM_TODO: this updates your rank (friends/online panel)
+        m_bOnlineNeedUpdate = event->GetBool("run_posted");
     }
     else if (Q_strcmp(type, "game_newmap") == 0)
     {
-        bLocalTimesLoaded = false;
+        m_bLocalTimesLoaded = false;
     }
 
     //MOM_TODO: there's a crash here if you uncomment it, 
@@ -514,7 +515,7 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(vgui::SectionedListPanel *lis
 
 void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 {
-    if (!bLocalTimesLoaded || bLocalTimesNeedUpdate)
+    if (!m_bLocalTimesLoaded || m_bLocalTimesNeedUpdate)
     {
         //Clear the local times for a refresh
         m_vLocalTimes.RemoveAll();
@@ -533,8 +534,8 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
                 Time t = Time(kvLocalTime);
                 m_vLocalTimes.AddToTail(t);
             }
-            bLocalTimesLoaded = true;
-            bLocalTimesNeedUpdate = false;
+            m_bLocalTimesLoaded = true;
+            m_bLocalTimesNeedUpdate = false;
         }
         pLoaded->deleteThis();
     }

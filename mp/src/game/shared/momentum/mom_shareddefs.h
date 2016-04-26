@@ -33,6 +33,11 @@ typedef enum MOMGM
 #define BUFSIZELOCL (73)
 #define BUFSIZESHORT 10
 
+//Localization of tokens
+#define LOCALIZE_TOKEN(name, token, output)\
+    wchar_t *unicode_##name = g_pVGuiLocalize->Find(token);\
+    g_pVGuiLocalize->ConvertUnicodeToANSI(unicode_##name ? unicode_##name : L##token, output, BUFSIZELOCL);
+
 #define MAX_STAGES 64
 
 #define MAP_FOLDER "maps"

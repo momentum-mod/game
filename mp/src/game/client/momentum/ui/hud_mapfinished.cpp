@@ -157,50 +157,27 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapFinishedD
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
+
 void CHudMapFinishedDialog::Init()
 {
     Reset();
     //cache localization files
-
-    wchar_t *uTimeUnicode = g_pVGuiLocalize->Find("#MOM_RunTime");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uTimeUnicode ? uTimeUnicode : L"#MOM_RunTime", timeLocalized, BUFSIZELOCL);
-
-    wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_JumpCount");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uJumpUnicode ? uJumpUnicode : L"#MOM_JumpCount", jumpLocalized, BUFSIZELOCL);
-
-    wchar_t *uStrafeUnicode = g_pVGuiLocalize->Find("#MOM_StrafeCount");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uStrafeUnicode ? uStrafeUnicode : L"#MOM_StrafeCount", strafeLocalized, BUFSIZELOCL);
-
-    wchar_t *uSyncUnicode = g_pVGuiLocalize->Find("#MOM_AvgSync");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uSyncUnicode ? uSyncUnicode : L"#MOM_AvgSync", syncLocalized, BUFSIZELOCL);
-
-    wchar_t *uSync2Unicode = g_pVGuiLocalize->Find("#MOM_AvgSync2");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uSync2Unicode ? uSync2Unicode : L"#MOM_AvgSync2", sync2Localized, BUFSIZELOCL);
-
-    wchar_t *uStartVelUnicode = g_pVGuiLocalize->Find("#MOM_StartVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uStartVelUnicode ? uStartVelUnicode : L"#MOM_StartVel", startVelLocalized, BUFSIZELOCL);
-
-    wchar_t *uendVelUnicode = g_pVGuiLocalize->Find("#MOM_EndVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uendVelUnicode ? uendVelUnicode : L"#MOM_EndVel", endVelLocalized, BUFSIZELOCL);
-
-    wchar_t *uavgVelUnicode = g_pVGuiLocalize->Find("#MOM_AvgVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(uavgVelUnicode ? uavgVelUnicode : L"#MOM_AvgVel", avgVelLocalized, BUFSIZELOCL);
-
-    wchar_t *umaxVelUnicode = g_pVGuiLocalize->Find("#MOM_MaxVel");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(umaxVelUnicode ? umaxVelUnicode : L"#MOM_MaxVel", maxVelLocalized, BUFSIZELOCL);
-
-    // --- RUN SAVING NOTIFICATION ---
-    wchar_t *urunSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunSaved");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunSaveUnicode ? urunSaveUnicode : L"#MOM_RunSaved", runSaveLocalized, BUFSIZELOCL);
-
-    wchar_t *urunNotSaveUnicode = g_pVGuiLocalize->Find("#MOM_RunNotSaved");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotSaveUnicode ? urunNotSaveUnicode : L"#MOM_RunNotSaved", runNotSaveLocalized, BUFSIZELOCL);
-
-    wchar_t *urunUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunUploaded");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunUploadUnicode ? urunUploadUnicode : L"#MOM_RunUploaded", runUploadLocalized, BUFSIZELOCL);
-
-    wchar_t *urunNotUploadUnicode = g_pVGuiLocalize->Find("#MOM_RunNotUploaded");
-    g_pVGuiLocalize->ConvertUnicodeToANSI(urunNotUploadUnicode ? urunNotUploadUnicode : L"#MOM_RunNotUploaded", runNotUploadLocalized, BUFSIZELOCL);
+    
+    //Stats
+    LOCALIZE_TOKEN(RunTime, "#MOM_RunTime", timeLocalized);
+    LOCALIZE_TOKEN(JumpCount, "#MOM_JumpCount", jumpLocalized);
+    LOCALIZE_TOKEN(StrafeCount, "#MOM_StrafeCount", strafeLocalized);
+    LOCALIZE_TOKEN(AvgSync, "#MOM_AvgSync", syncLocalized);
+    LOCALIZE_TOKEN(AvgSync2, "#MOM_AvgSync2", sync2Localized);
+    LOCALIZE_TOKEN(StartVel, "#MOM_StartVel", startVelLocalized);
+    LOCALIZE_TOKEN(EndVel, "#MOM_EndVel", endVelLocalized);
+    LOCALIZE_TOKEN(AvgVel, "#MOM_AvgVel", avgVelLocalized);
+    LOCALIZE_TOKEN(MaxVel, "#MOM_MaxVel", maxVelLocalized);
+    //Saving/Uploading
+    LOCALIZE_TOKEN(RunSaved, "#MOM_RunSaved", runSaveLocalized);
+    LOCALIZE_TOKEN(RunNotSaved, "#MOM_RunNotSaved", runNotSaveLocalized);
+    LOCALIZE_TOKEN(RunUploaded, "#MOM_RunUploaded", runUploadLocalized);
+    LOCALIZE_TOKEN(RunNotUploaded, "#MOM_RunNotUploaded", runNotUploadLocalized);
 }
 void CHudMapFinishedDialog::Paint()
 {
@@ -366,6 +343,8 @@ void CHudMapFinishedDialog::OnThink()
     {
         m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
         m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
+        //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
+        //Is it going to be a localized string, except for errors that have to be specific?
         m_flAvgSpeed = g_MOMEventListener->m_flVelocityAvg;
         m_flMaxSpeed = g_MOMEventListener->m_flVelocityMax;
         m_flStartSpeed = g_MOMEventListener->m_flStartSpeed;
