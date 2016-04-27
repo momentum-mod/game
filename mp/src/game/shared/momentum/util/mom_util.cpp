@@ -233,8 +233,7 @@ KeyValues* MomentumUtil::GetBestTime(KeyValues *kvMap, const char* szMapName, fl
     {
         char path[MAX_PATH], mapName[MAX_PATH];
         Q_snprintf(mapName, MAX_PATH, "%s.tim", szMapName);
-        V_ComposeFileName("maps", mapName, path, MAX_PATH);
-
+        V_ComposeFileName(MAP_FOLDER, mapName, path, MAX_PATH);
         if (kvMap->LoadFromFile(filesystem, path, "MOD"))
         {
             if (!kvMap->IsEmpty())

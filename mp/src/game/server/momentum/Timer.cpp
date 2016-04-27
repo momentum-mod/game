@@ -94,7 +94,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             {
                 if (!Q_strnicmp(subKv->GetName(), "stage", strlen("stage")))
                 {
-                    int i = Q_atoi(subKv->GetName()); //atoi will ignore "stage" and only return the stage number
+                    int i = Q_atoi(subKv->GetName() + 6); //atoi will ignore "stage" and only return the stage number
                     t.stagetime[i] = subKv->GetFloat("time");
                     t.stagevel[i] = subKv->GetInt("stage_enter_vel");
                     t.stageavgsync[i] = subKv->GetFloat("avg_sync");
