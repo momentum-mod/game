@@ -77,7 +77,7 @@ namespace Momentum
         zones->SpawnMapZones();
 
         //Setup timer
-        g_Timer.OnMapStart(pMapName);
+        g_Timer->OnMapStart(pMapName);
         
         // Reset zone editing
         g_MapzoneEdit.Reset();
@@ -95,20 +95,20 @@ namespace Momentum
         ConVarRef gm("mom_gamemode");
         gm.SetValue(gm.GetDefault());
 
-        g_Timer.OnMapEnd(pMapName);
+        g_Timer->OnMapEnd(pMapName);
     }
 
     void OnGameFrameStart()
     {
         g_MapzoneEdit.Update();
 
-        if (!g_Timer.GotCaughtCheating())
+        if (!g_Timer->GotCaughtCheating())
         {
             ConVarRef cheatsRef = ConVarRef("sv_cheats");
             if (cheatsRef.GetBool())
             {
-                g_Timer.SetCheating(true);
-                g_Timer.Stop(false);
+                g_Timer->SetCheating(true);
+                g_Timer->Stop(false);
             }
 
         }

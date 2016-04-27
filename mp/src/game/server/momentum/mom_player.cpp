@@ -207,6 +207,11 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
         g_MOMBlockFixer->PlayerTouch(this, pOther);
 }
 
+void CMomentumPlayer::InitHUD()
+{
+    g_Timer->DispatchStageCountMessage();
+}
+
 void CMomentumPlayer::EnableAutoBhop()
 {
     m_bAutoBhop = true;
@@ -230,9 +235,9 @@ void CMomentumPlayer::CheckForBhop()
         {
             m_flLastJumpVel = GetLocalVelocity().Length2D();
             m_iSuccessiveBhops++;
-            if (g_Timer.IsRunning())
+            if (g_Timer->IsRunning())
             {
-                int currentStage = g_Timer.GetCurrentStageNumber();
+                int currentStage = g_Timer->GetCurrentStageNumber();
                 m_nStageJumps[0]++;
                 m_nStageJumps[currentStage]++;
             }
@@ -250,9 +255,9 @@ void CMomentumPlayer::UpdateRunStats()
     float velocity =  GetLocalVelocity().Length();
     float velocity2D = GetLocalVelocity().Length2D();
 
-    if (g_Timer.IsRunning())
+    if (g_Timer->IsRunning())
     {
-        int currentStage = g_Timer.GetCurrentStageNumber();
+        int currentStage = g_Timer->GetCurrentStageNumber();
         if (!m_bPrevTimerRunning) //timer started on this tick
         {    
             //Reset old run stats
@@ -323,7 +328,7 @@ void CMomentumPlayer::UpdateRunStats()
     //this might be used in a later update
     //m_flLastVelocity = velocity;
 
-    m_bPrevTimerRunning = g_Timer.IsRunning();
+    m_bPrevTimerRunning = g_Timer->IsRunning();
     m_nPrevButtons = m_nButtons;
 
     if (playerMoveEvent)
@@ -368,9 +373,9 @@ void CMomentumPlayer::ResetRunStats()
 void CMomentumPlayer::CalculateAverageStats()
 {
 
-    if (g_Timer.IsRunning())
+    if (g_Timer->IsRunning())
     {
-        int currentStage = g_Timer.GetCurrentStageNumber();
+        int currentStage = g_Timer->GetCurrentStageNumber();
 
         m_flStageTotalSync[currentStage] += m_flStrafeSync;
         m_flStageTotalSync2[currentStage] += m_flStrafeSync2;
@@ -407,20 +412,20 @@ void CMomentumPlayer::CalculateAverageStats()
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
     ConVarRef gm("mom_gamemode");
-    CTriggerTimerStart *startTrigger = g_Timer.GetStartTrigger();
+    CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
     bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
     if (m_bInsideStartZone)
     {
-        if (GetGroundEntity() == NULL && !g_Timer.IsPracticeMode(this)) //don't count ticks in air if we're in practice mode
+        if (GetGroundEntity() == nullptr && !g_Timer->IsPracticeMode(this)) //don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
         else
             m_nTicksInAir = 0;
 
         //set bhop flag to true so we can't prespeed with practice mode
-        if (g_Timer.IsPracticeMode(this)) m_bDidPlayerBhop = true; 
+        if (g_Timer->IsPracticeMode(this)) m_bDidPlayerBhop = true;
 
         //depending on gamemode, limit speed outright when player exceeds punish vel
-        if (bhopGameMode  && ((!g_Timer.IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        if (bhopGameMode && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetPunishSpeed()*startTrigger->GetPunishSpeed();

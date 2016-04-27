@@ -205,6 +205,6 @@ private:
 
     float GetTickIntervalOffset(Vector velocity, Vector origin, int stage);
 };
-extern CTimer g_Timer;
+extern CTimer *g_Timer;
 
 #endif // TIMER_H

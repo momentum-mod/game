@@ -28,7 +28,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
     BaseClass::StartTouch(pOther);
     if (pOther->IsPlayer())
     {
-        g_Timer.SetCurrentStage(this);
+        g_Timer->SetCurrentStage(this);
 
         int stageNum = this->GetStageNumber();
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
@@ -36,7 +36,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         if (stageEvent && pPlayer)
         {
             stageEvent->SetInt("stage_num", stageNum);
-            stageEvent->SetFloat("stage_time", g_Timer.CalculateStageTime(stageNum));
+            stageEvent->SetFloat("stage_time", g_Timer->CalculateStageTime(stageNum));
             stageEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[stageNum]);
             stageEvent->SetFloat("num_strafes", pPlayer->m_nStageStrafes[stageNum]);
             stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
@@ -96,7 +96,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
         //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
-        if (!g_Timer.IsPracticeMode(pOther) && !g_Timer.IsRunning()) // do not start timer if player is in practice mode or it's already running.
+        if (!g_Timer->IsPracticeMode(pOther) && !g_Timer->IsRunning()) // do not start timer if player is in practice mode or it's already running.
         {
             if (IsLimitingSpeed())
             {
@@ -113,7 +113,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                         pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                     }
                 }
-                g_Timer.Start(gpGlobals->tickcount);
+                g_Timer->Start(gpGlobals->tickcount);
             }
             
         }
@@ -132,7 +132,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
-    g_Timer.SetStartTrigger(this);
+    g_Timer->SetStartTrigger(this);
 
     if (pOther->IsPlayer())
     {
@@ -140,10 +140,10 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         pPlayer->m_bInsideStartZone = true;
         pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
 
-        if (g_Timer.IsRunning())
+        if (g_Timer->IsRunning())
         {
-            g_Timer.Stop(false);
-            g_Timer.DispatchResetMessage();
+            g_Timer->Stop(false);
+            g_Timer->DispatchResetMessage();
             //lower the player's speed if they try to jump back into the start zone
         }
     }
@@ -214,13 +214,15 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 
     IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage");
+    IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage_enter");
 
-    g_Timer.SetEndTrigger(this);
+    g_Timer->SetEndTrigger(this);
 
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
-    if (pOther->IsPlayer() && g_Timer.IsRunning())
+    if (pOther->IsPlayer() && g_Timer->IsRunning())
     {
+        g_Timer->Stop(true);
+
         //send run stats via GameEventManager
         if (timerStopEvent)
         {
@@ -257,12 +259,12 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
         }
         if (stageEvent) {
-            float lastStageTime = g_Timer.GetLastRunTime();
-            stageEvent->SetInt("stage_num", g_Timer.GetCurrentStageNumber()+1);
+            float lastStageTime = g_Timer->GetLastRunTime();
+            stageEvent->SetInt("stage_num", g_Timer->GetCurrentStageNumber() + 1);
             stageEvent->SetFloat("stage_time", lastStageTime);
             gameeventmanager->FireEvent(stageEvent);
         }
-        g_Timer.Stop(true);
+        
     }
     if (mapZoneEvent)
     {
@@ -296,8 +298,8 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
     BaseClass::StartTouch(pOther);
     if (pOther->IsPlayer())
     {
-        g_Timer.SetCurrentCheckpointTrigger(this);
-        g_Timer.RemoveAllOnehopsFromList();
+        g_Timer->SetCurrentCheckpointTrigger(this);
+        g_Timer->RemoveAllOnehopsFromList();
     }
 }
 //----------------------------------------------------------------------------------------------
@@ -311,8 +313,8 @@ END_DATADESC()
 
 bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
-    return (g_Timer.GetCurrentCheckpoint() &&
-            g_Timer.GetCurrentCheckpoint()->GetCheckpointNumber() >= m_iCheckpointNumber);
+    return (g_Timer->GetCurrentCheckpoint() &&
+        g_Timer->GetCurrentCheckpoint()->GetCheckpointNumber() >= m_iCheckpointNumber);
 }
 //----------------------------------------------------------------------------------------------
 
@@ -363,7 +365,7 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_teleport_checkpoint, CTriggerTeleportCheck
 
 void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 {
-    SetDestinationEnt(g_Timer.GetCurrentCheckpoint());
+    SetDestinationEnt(g_Timer->GetCurrentCheckpoint());
     BaseClass::StartTouch(pOther);
 }
 //-----------------------------------------------------------------------------------------------
@@ -385,26 +387,26 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
     if (pOther->IsPlayer())
     {
         m_fStartTouchedTime = gpGlobals->realtime;
-        if (g_Timer.FindOnehopOnList(this) != (-1))
+        if (g_Timer->FindOnehopOnList(this) != (-1))
         {
-            SetDestinationEnt(g_Timer.GetCurrentCheckpoint());
+            SetDestinationEnt(g_Timer->GetCurrentCheckpoint());
             BaseClass::StartTouch(pOther);
         }
         else
         {
-            if (g_Timer.GetOnehopListCount() > 0)
+            if (g_Timer->GetOnehopListCount() > 0)
             {
                 // I don't know if Count gets updated for each for, so better be safe than sorry
                 // This method shouldn't be slow. Isn't it?
-                int c_MaxCount = g_Timer.GetOnehopListCount();
+                int c_MaxCount = g_Timer->GetOnehopListCount();
                 for (int iIndex = 0; iIndex < c_MaxCount; iIndex++)
                 {
-                    CTriggerOnehop *thisOnehop = g_Timer.FindOnehopOnList(iIndex);
+                    CTriggerOnehop *thisOnehop = g_Timer->FindOnehopOnList(iIndex);
                     if (thisOnehop != NULL && thisOnehop->HasSpawnFlags(SF_TELEPORT_RESET_ONEHOP))
-                        g_Timer.RemoveOnehopFromList(thisOnehop);
+                        g_Timer->RemoveOnehopFromList(thisOnehop);
                 }
             }
-            g_Timer.AddOnehopToListTail(this);
+            g_Timer->AddOnehopToListTail(this);
         }
     }
 }
@@ -416,7 +418,7 @@ void CTriggerOnehop::Think()
     {
         if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
         {
-            SetDestinationEnt(g_Timer.GetCurrentCheckpoint());
+            SetDestinationEnt(g_Timer->GetCurrentCheckpoint());
             BaseClass::StartTouch(pPlayer);
         }
     }
@@ -430,7 +432,7 @@ void CTriggerResetOnehop::StartTouch(CBaseEntity *pOther)
 {
     BaseClass::StartTouch(pOther);
     if (pOther->IsPlayer())
-        g_Timer.RemoveAllOnehopsFromList();
+        g_Timer->RemoveAllOnehopsFromList();
 }
 //-----------------------------------------------------------------------------------------------
 
@@ -464,7 +466,7 @@ void CTriggerMultihop::Think()
     {
         if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
         {
-            SetDestinationEnt(g_Timer.GetCurrentCheckpoint());
+            SetDestinationEnt(g_Timer->GetCurrentCheckpoint());
             BaseClass::StartTouch(pPlayer);
         }
     }

@@ -40,7 +40,7 @@ public:
     C_Timer(const char *pElementName);
     virtual void Init();
     virtual void Reset();
-    virtual void OnThink();
+    //virtual void OnThink();
     virtual bool ShouldDraw()
     {
         return mom_timer.GetBool() && CHudElement::ShouldDraw();
@@ -174,18 +174,19 @@ void C_Timer::Reset()
     m_bTimerRan = false;
     m_iTotalTicks = 0;
     m_iStageCount = 0;
-    m_iStageCurrent = 0;
+    m_iStageCurrent = 1;
     m_bShowCheckpoints = false;
     m_iCheckpointCount = 0;
     m_iCheckpointCurrent = 0;
 }
 
-void C_Timer::OnThink()
+/*void C_Timer::OnThink()
 {
     if (m_iStageCount == 0)
-        engine->ServerCmd("hud_timer_request_stages");
+        DevLog("Stage count is 0!!!\n");
+    //    engine->ServerCmd("hud_timer_request_stages");
     // Cheat detection moved to server Timer.cpp
-}
+}*/
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {

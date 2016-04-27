@@ -326,7 +326,7 @@ void CTimer::OnMapStart(const char *pMapName)
     RequestStageCount();
     //DispatchMapStartMessage();
     LoadLocalTimes(pMapName);
-    //MOM_TODO: g_Timer.LoadOnlineTimes();
+    //MOM_TODO: g_Timer->LoadOnlineTimes();
 }
 
 void CTimer::RequestStageCount()
@@ -418,10 +418,10 @@ void CTimer::DispatchStageCountMessage()
     }
 }
 
-CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
-{
-    g_Timer.DispatchStageCountMessage();
-}
+//CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+//{
+//    g_Timer->DispatchStageCountMessage();
+//}
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
 void CTimer::SetGameModeConVars()
 {
@@ -463,7 +463,7 @@ void CTimer::EnablePractice(CBasePlayer *pPlayer)
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    g_Timer.Stop(false);
+    g_Timer->Stop(false);
 
     IGameEvent *pracModeEvent = gameeventmanager->CreateEvent("practice_mode");
     if (pracModeEvent)
@@ -559,10 +559,10 @@ public:
     {
         CBasePlayer* cPlayer = UTIL_GetCommandClient();
         CTriggerTimerStart *start;
-        if ((start = g_Timer.GetStartTrigger()) != NULL && cPlayer)
+        if ((start = g_Timer->GetStartTrigger()) != NULL && cPlayer)
         {
             // Don't set angles if still in start zone.
-            if (g_Timer.IsRunning() && start->GetHasLookAngles())
+            if (g_Timer->IsRunning() && start->GetHasLookAngles())
             {
                 QAngle ang = start->GetLookAngles();
 
@@ -579,7 +579,7 @@ public:
     {
         CTriggerStage *stage;
         CBaseEntity* pPlayer = UTIL_GetCommandClient();
-        if ((stage = g_Timer.GetCurrentStage()) != NULL && pPlayer)
+        if ((stage = g_Timer->GetCurrentStage()) != NULL && pPlayer)
         {
             pPlayer->Teleport(&stage->WorldSpaceCenter(), NULL, &vec3_origin);
         }
@@ -587,10 +587,10 @@ public:
 
     static void CPMenu(const CCommand &args)
     {
-        if (!g_Timer.IsUsingCPMenu())
-            g_Timer.SetUsingCPMenu(true);
+        if (!g_Timer->IsUsingCPMenu())
+            g_Timer->SetUsingCPMenu(true);
 
-        if (g_Timer.IsRunning())
+        if (g_Timer->IsRunning())
         {
             // MOM_TODO: consider
             // 1. having a local timer running, as people may want to time their routes they're using CP menu for
@@ -602,7 +602,7 @@ public:
             case MOMGM_SURF:
             case MOMGM_BHOP:
             case MOMGM_SCROLL:
-                g_Timer.Stop(false);
+                g_Timer->Stop(false);
 
                 //case MOMGM_KZ:
             default:
@@ -616,37 +616,37 @@ public:
             switch (sel)
             {
             case 1://create a checkpoint
-                g_Timer.CreateCheckpoint(cPlayer);
+                g_Timer->CreateCheckpoint(cPlayer);
                 break;
 
             case 2://load previous checkpoint
-                g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+                g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
                 break;
 
             case 3://cycle through checkpoints forwards (+1 % length)
-                if (g_Timer.GetCPCount() > 0)
+                if (g_Timer->GetCPCount() > 0)
                 {
-                    g_Timer.SetCurrentCPMenuStep((g_Timer.GetCurrentCPMenuStep() + 1) % g_Timer.GetCPCount());
-                    g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+                    g_Timer->SetCurrentCPMenuStep((g_Timer->GetCurrentCPMenuStep() + 1) % g_Timer->GetCPCount());
+                    g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
                 }
                 break;
 
             case 4://cycle backwards through checkpoints
-                if (g_Timer.GetCPCount() > 0)
+                if (g_Timer->GetCPCount() > 0)
                 {
-                    g_Timer.SetCurrentCPMenuStep(g_Timer.GetCurrentCPMenuStep() == 0 ? g_Timer.GetCPCount() - 1 : g_Timer.GetCurrentCPMenuStep() - 1);
-                    g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+                    g_Timer->SetCurrentCPMenuStep(g_Timer->GetCurrentCPMenuStep() == 0 ? g_Timer->GetCPCount() - 1 : g_Timer->GetCurrentCPMenuStep() - 1);
+                    g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
                 }
                 break;
 
             case 5://remove current checkpoint
-                g_Timer.RemoveLastCheckpoint();
+                g_Timer->RemoveLastCheckpoint();
                 break;
             case 6://remove every checkpoint
-                g_Timer.RemoveAllCheckpoints();
+                g_Timer->RemoveAllCheckpoints();
                 break;
             case 0://They closed the menu
-                g_Timer.SetUsingCPMenu(false);
+                g_Timer->SetUsingCPMenu(false);
                 break;
             default:
                 if (cPlayer != NULL)
@@ -656,7 +656,7 @@ public:
                 break;
             }
         }
-        g_Timer.DispatchCheckpointMessage();
+        g_Timer->DispatchCheckpointMessage();
     }
 
     static void PracticeMove()
@@ -666,15 +666,15 @@ public:
             return;
         Vector velocity = pPlayer->GetAbsVelocity();
 
-        if (!g_Timer.IsPracticeMode(pPlayer))
+        if (!g_Timer->IsPracticeMode(pPlayer))
         {
             if (velocity.Length2DSqr() != 0)
                 DevLog("You cannot enable practice mode while moving!\n");
             else
-                g_Timer.EnablePractice(pPlayer);
+                g_Timer->EnablePractice(pPlayer);
         }
         else //player is either already in practice mode
-            g_Timer.DisablePractice(pPlayer);
+            g_Timer->DisablePractice(pPlayer);
     }
 };
 
@@ -688,4 +688,5 @@ static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCh
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE | FCVAR_CLIENTCMD_CAN_EXECUTE);
 
-CTimer g_Timer;
+static CTimer s_Timer;
+CTimer *g_Timer = &s_Timer;

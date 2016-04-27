@@ -40,9 +40,11 @@ class CMomentumPlayer : public CBasePlayer
         EmitSound("HL2Player.FlashLightOff"); // MOM_TODO: change this?
     }
 
-    void Spawn();
-    void Precache();
-    void Touch(CBaseEntity *);
+    void Spawn() override;
+    void Precache() override;
+    void Touch(CBaseEntity *) override;
+
+    void InitHUD() override;
 
     virtual void CommitSuicide(bool bExplode = false, bool bForce = false){};
     virtual void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false){};
