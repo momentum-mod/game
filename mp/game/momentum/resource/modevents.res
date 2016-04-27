@@ -42,8 +42,6 @@
 		"max_vel_2D"	"float"
 		"start_vel_2D"	"float"
 		"end_vel_2D"	"float"
-
-
 	}
 	"new_stage_enter"
 	{
@@ -66,7 +64,6 @@
     {
         "stage_exit_vel"    "float"
         "stage_exit_vel_2D"    "float"
-
     }
 	"run_save"
 	{

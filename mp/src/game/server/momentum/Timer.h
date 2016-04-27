@@ -171,9 +171,7 @@ private:
         float time_sec;  //The amount of seconds taken to complete
         float tickrate;  //Tickrate the run was done on
         time_t date;    //Date achieved
-        int jumps, strafes, flags;
-        float maxvel[2], avgvel[2], startvel[2], endvel[2];
-        float avgsync, avgsync2;
+        int flags;
 
         //stage specific stats:
         float stagetime[MAX_STAGES], stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES];
@@ -198,10 +196,6 @@ private:
 
     int m_iCurrentStepCP = 0;
     bool m_bUsingCPMenu = false;
-
-    const char* c_mapDir = "maps/";
-    // Extension used for storing local map times
-    const char* c_timesExt = ".tim";
 
     //PRECISION FIX
 

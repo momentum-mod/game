@@ -345,14 +345,16 @@ void CHudMapFinishedDialog::OnThink()
         m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
         //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
         //Is it going to be a localized string, except for errors that have to be specific?
-        m_flAvgSpeed = g_MOMEventListener->m_flVelocityAvg;
-        m_flMaxSpeed = g_MOMEventListener->m_flVelocityMax;
-        m_flStartSpeed = g_MOMEventListener->m_flStartSpeed;
-        m_flEndSpeed = g_MOMEventListener->m_flEndSpeed;
-        m_flAvgSync2 = g_MOMEventListener->m_flStrafeSync2Avg;
-        m_flAvgSync = g_MOMEventListener->m_flStrafeSyncAvg;
-        m_iTotalJumps = g_MOMEventListener->m_iTotalJumps;
-        m_iTotalStrafes = g_MOMEventListener->m_iTotalStrafes;
+
+        ConVarRef hvel("mom_speedometer_hvel");
+        m_flAvgSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageVelocityAvg[0][1] : g_MOMEventListener->m_flStageVelocityAvg[0][0];
+        m_flMaxSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageVelocityMax[0][1] : g_MOMEventListener->m_flStageVelocityMax[0][0];
+        m_flStartSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageExitSpeed[0][1] : g_MOMEventListener->m_flStageExitSpeed[0][0];
+        m_flEndSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageStartSpeed[0][1] : g_MOMEventListener->m_flStageStartSpeed[0][0];
+        m_flAvgSync2 = g_MOMEventListener->m_flStageStrafeSyncAvg[0];
+        m_flAvgSync = g_MOMEventListener->m_flStageStrafeSync2Avg[0];
+        m_iTotalJumps = g_MOMEventListener->m_iStageJumps[0];
+        m_iTotalStrafes = g_MOMEventListener->m_iStageStrafes[0];
     }
     if (pPlayer != nullptr)
         mom_UTIL->FormatTime(pPlayer->m_flLastRunTime, m_pszRunTime);

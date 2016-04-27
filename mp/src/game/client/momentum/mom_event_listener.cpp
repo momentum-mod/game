@@ -12,6 +12,7 @@ void C_Momentum_EventListener::Init()
         gameeventmanager->AddListener(this, "new_stage_enter", false);
         gameeventmanager->AddListener(this, "new_stage_exit", false);
         gameeventmanager->AddListener(this, "run_save", false);
+        gameeventmanager->AddListener(this, "run_upload", false);
         gameeventmanager->AddListener(this, "timer_started", false);
         gameeventmanager->AddListener(this, "player_inside_mapzone", false);
         gameeventmanager->AddListener(this, "practice_mode", false);
@@ -23,12 +24,18 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp("timer_stopped", pEvent->GetName()))
     {
-        m_flStartSpeed = pEvent->GetFloat("start_vel");
-        m_flEndSpeed = pEvent->GetFloat("end_vel");
-        m_flStrafeSyncAvg = pEvent->GetFloat("avg_sync");
-        m_flStrafeSync2Avg = pEvent->GetFloat("avg_sync2");
-        m_flVelocityAvg = pEvent->GetFloat("avg_vel");
-        m_flVelocityMax = pEvent->GetFloat("max_vel");
+        m_flStageStrafeSyncAvg[0] = pEvent->GetFloat("avg_sync");
+        m_flStageStrafeSync2Avg[0] = pEvent->GetFloat("avg_sync2");
+        //3D
+        m_flStageExitSpeed[0][0] = pEvent->GetFloat("start_vel");
+        m_flStageStartSpeed[0][0] = pEvent->GetFloat("end_vel");
+        m_flStageVelocityAvg[0][0] = pEvent->GetFloat("avg_vel");
+        m_flStageVelocityMax[0][0] = pEvent->GetFloat("max_vel");
+        //2D
+        m_flStageExitSpeed[0][1] = pEvent->GetFloat("start_vel_2D");
+        m_flStageStartSpeed[0][1] = pEvent->GetFloat("end_vel_2D");
+        m_flStageVelocityAvg[0][1] = pEvent->GetFloat("avg_vel_2D");
+        m_flStageVelocityMax[0][1] = pEvent->GetFloat("max_vel_2D");
     }
     if (!Q_strcmp("new_stage_enter", pEvent->GetName()))
     {
@@ -76,8 +83,8 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     }
     if (!Q_strcmp("keypress", pEvent->GetName()))
     {
-        m_iTotalJumps = pEvent->GetInt("num_jumps");
-        m_iTotalStrafes = pEvent->GetInt("num_strafes");
+        m_iStageJumps[0] = pEvent->GetInt("num_jumps");
+        m_iStageStrafes[0] = pEvent->GetInt("num_strafes");
     }
 }
 

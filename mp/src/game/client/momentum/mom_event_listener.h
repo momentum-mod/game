@@ -22,9 +22,6 @@ public:
     bool m_bPlayerInsideStartZone, m_bPlayerInsideEndZone;
     bool m_bPlayerHasPracticeMode;
 
-    int m_iTotalStrafes, m_iTotalJumps;
-    float m_flStartSpeed, m_flEndSpeed, m_flVelocityMax, m_flVelocityAvg, m_flStrafeSyncAvg, m_flStrafeSync2Avg;
-
     int m_iCurrentStage, m_iStageJumps[MAX_STAGES], m_iStageStrafes[MAX_STAGES];
     float m_flStageTime[MAX_STAGES], m_flStageStrafeSyncAvg[MAX_STAGES], 
         m_flStageStrafeSync2Avg[MAX_STAGES];
@@ -33,7 +30,6 @@ public:
         m_flStageVelocityAvg[MAX_STAGES][2], m_flStageExitSpeed[MAX_STAGES][2];
 
     char m_szRunUploadStatus[512];//MOM_TODO: determine best (max) size for this
-
 };
 
 extern C_Momentum_EventListener *g_MOMEventListener;
