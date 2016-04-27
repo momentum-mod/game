@@ -1,10 +1,22 @@
 #include "cbase.h"
 #include "mom_replay_entity.h"
+#include "util/mom_util.h"
+
+static ConVar mom_replay_firstperson("mom_replay_firstperson", "0", 
+    FCVAR_CLIENTCMD_CAN_EXECUTE, "Watch replay in first-person", true, 0, true, 1);
+static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11", 
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Replay ghost's body group (model)", true, 0, true, 14);
+static ConCommand mom_replay_ghost_color("mom_replay_ghost_color",
+    CMomentumReplayGhostEntity::SetGhostColor, "Set the ghost's color. Accepts HEX color value in format RRGGBBAA", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE);
+static ConVar mom_replay_ghost_alpha("mom_replay_ghost_alpha", "75",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Sets the ghost's transparency, integer between 0 and 255,", true, 0, true, 255);
 
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
 END_DATADESC()
+
+Color CMomentumReplayGhostEntity::m_newGhostColor = COLOR_GREEN;
 
 const char* CMomentumReplayGhostEntity::GetGhostModel() 
 {
@@ -33,7 +45,7 @@ void CMomentumReplayGhostEntity::Spawn(void)
 	SetMoveType(MOVETYPE_NOCLIP);
     m_bIsActive = true; 
     SetModel(GHOST_MODEL);
-    SetBodygroup(1, m_iBodyGroup);
+    SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 }
 
 void CMomentumReplayGhostEntity::StartRun() 
@@ -65,59 +77,57 @@ void CMomentumReplayGhostEntity::Think(void)
     else {
         EndRun();
     }
-    DevLog("Ghost X: %f Y: %f Z: %f\n", 
-        currentStep.m_vPlayerOrigin.x, currentStep.m_vPlayerOrigin.y, currentStep.m_vPlayerOrigin.z);
-	SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
 }
 
 void CMomentumReplayGhostEntity::HandleGhost() {
-    if (!m_bIsActive) {
+    if (!m_bIsActive) 
+    {
         if (!Q_strcmp(m_pszMapName, STRING(gpGlobals->mapname)) == 0) {
 			DispatchSpawn(this);
         }
-	} 
+	}
 	else 
     {
-        float x = currentStep.m_vPlayerOrigin.x;
-        float y = currentStep.m_vPlayerOrigin.y;
-        float z = currentStep.m_vPlayerOrigin.z;
-        float angleX = currentStep.m_qEyeAngles.x;
-        float angleY = currentStep.m_qEyeAngles.y;
-        float angleZ = currentStep.m_qEyeAngles.z;
-
-        if (x == 0.0f)
+        if (currentStep.m_vPlayerOrigin.x == 0.0f)
             return;
-        /*
-		if (nextStep != NULL) // we have to be at least 2 ticks into the replay to interpolate
+
+        if (mom_replay_firstperson.GetBool())
         {
-			if (IsEffectActive(EF_NODRAW)) 
-                RemoveEffects(EF_NODRAW);
+            CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+            if (pPlayer) {
+                //MOM_TODO: interpolate eyeangles and origin somehow so playback doesn't look so jerky
+                pPlayer->SnapEyeAngles(currentStep.m_qEyeAngles);
+                pPlayer->SetAbsOrigin(currentStep.m_vPlayerOrigin);
 
-            float x2 = nextStep->m_vPlayerOrigin.x;
-            float y2 = nextStep->m_vPlayerOrigin.y;
-            float z2 = nextStep->m_vPlayerOrigin.z;
-            float angleX2 = nextStep->m_qEyeAngles.x;
-            float angleY2 = nextStep->m_qEyeAngles.y;
-            float angleZ2 = nextStep->m_qEyeAngles.z;
-
-            //interpolate position
-			float scalar = (((gpGlobals->tickcount - m_nStartTick) - t1) / (t2 - t1)); //time difference scalar value used to interpolate
-
-			float xfinal = x + (scalar * (x2 - x));
-			float yfinal = y + (scalar * (y2 - y));
-			float zfinal = z + (scalar * (z2 - z));
-			SetAbsOrigin(Vector(xfinal, yfinal, (zfinal - 15.0f))); //@tuxxi: @Gocnak, why are we subtracting 15.0 here?
-            float angleXFinal = angleX + (scalar * (angleX2 - angleX));
-            float angleYFinal = angleY + (scalar * (angleY2 - angleY));
-            float angleZFinal = angleZ + (scalar * (angleZ2 - angleZ));
-            SetAbsAngles(QAngle(angleXFinal, angleYFinal, angleZFinal));
-		}
-        else { //we cant interpolate 
+                pPlayer->m_nButtons &= currentStep.m_nPlayerButtons; // MOM_TODO: make this actually work
+                pPlayer->AddFlag(FL_ATCONTROLS); //prevent keypress from affecting the replay playback 
+            }
         }
-        */
-        SetAbsOrigin(Vector(x, y, z));
-        SetAbsAngles(QAngle(angleX, angleY, angleZ));
+        else
+        {
+            SetAbsOrigin(currentStep.m_vPlayerOrigin);
+            SetAbsAngles(QAngle(currentStep.m_qEyeAngles.x / 10, //we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                currentStep.m_qEyeAngles.y, currentStep.m_qEyeAngles.z)); 
+        }
 	}
+    //update color, bodygroup, and other params if they change
+    if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
+    {
+        m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
+        SetBodygroup(1, m_iBodyGroup);
+    }
+    if (m_ghostColor != m_newGhostColor)
+    {
+        m_ghostColor = m_newGhostColor;
+        SetRenderColor(m_ghostColor.r(), m_ghostColor.g(), m_ghostColor.b());
+    }
+    if (mom_replay_ghost_alpha.GetInt() != m_ghostColor.a())
+    {
+        m_ghostColor.SetColor(m_ghostColor.r(), m_ghostColor.g(), m_ghostColor.b(), //we have to set the previous colors in order to change alpha...
+            mom_replay_ghost_alpha.GetInt());
+        SetRenderColorA(mom_replay_ghost_alpha.GetInt());
+    }
 }
 
 void CMomentumReplayGhostEntity::SetGhostModel(const char * newmodel)
@@ -142,18 +152,23 @@ void CMomentumReplayGhostEntity::SetGhostBodyGroup(int bodyGroup)
         SetBodygroup(1, bodyGroup);
     }
 }
-void CMomentumReplayGhostEntity::SetGhostColor(Color newColor, int alpha)
+void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
 {
-    SetRenderColor(newColor.r(), newColor.g(), newColor.b());
-    SetRenderColorA(alpha);
+    if (mom_UTIL.GetColorFromHex(args.ArgS()))
+        CMomentumReplayGhostEntity::m_newGhostColor = *mom_UTIL.GetColorFromHex(args.ArgS());
 }
 void CMomentumReplayGhostEntity::EndRun()
 {
 	SetNextThink(-1);
 	Remove();
     m_bIsActive = false;
+    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+    if (pPlayer) {
+        pPlayer->EnableControl(true);
+    }
 }
 void CMomentumReplayGhostEntity::clearRunData()
 {
     g_ReplaySystem->m_vecRunData.RemoveAll();
 }
+

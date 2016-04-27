@@ -234,5 +234,23 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
 
     return pFinalColor;
 }
+Color* MomentumUtil::GetColorFromHex(const char* hexColor)
+{
+    long hex = strtol(hexColor, NULL, 16);
+    int length = Q_strlen(hexColor);
+    if (length == 6)
+    {
+        int r = ((hex >> 16) & 0xFF);  //extract RR byte
+        int g = ((hex >> 8) & 0xFF);   //extract GG byte
+        int b = ((hex) & 0xFF);         //extract BB byte
+        m_newColor.SetColor(r, g, b, 75);
+        return &m_newColor;
+    }
+    else {
+        Msg("Error: Color format incorrect! Use hex code in format \"RRGGBB\"\n");
+        return nullptr;
+    }
+}
+
 
 MomentumUtil mom_UTIL;

@@ -1,8 +1,11 @@
 #include "cbase.h"
 #include "mom_replay.h"
+#include "in_buttons.h"
+
 #pragma once
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
+#define ALL_BUTTONS IN_LEFT & IN_RIGHT & IN_MOVELEFT & IN_MOVERIGHT & IN_FORWARD & IN_BACK & IN_JUMP & IN_DUCK
 enum ghostModelBodyGroup
 {
     BODY_THREE_SIDED_PYRAMID = 0,
@@ -20,7 +23,6 @@ enum ghostModelBodyGroup
     BODY_TRIANGLE_BALL,
     BODY_CONE,
     BODY_CYLINDER
-
 };
 
 class CMomentumReplayGhostEntity : public CBaseAnimating
@@ -31,7 +33,7 @@ public:
 	const char* GetGhostModel();
 	void SetGhostModel(const char* model);
     void SetGhostBodyGroup(int bodyGroup);
-    void SetGhostColor(Color newColor, int alpha = 75);
+    static void SetGhostColor(const CCommand &args);
 	//Increments the steps intelligently.
 	void updateStep();
 
@@ -56,4 +58,5 @@ private:
     int step;
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
     Color m_ghostColor;
+    static Color m_newGhostColor;
 };

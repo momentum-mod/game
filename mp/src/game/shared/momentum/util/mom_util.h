@@ -31,12 +31,12 @@ public:
 #endif
 
     Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
-
+    Color* GetColorFromHex(const char* hexColor); //in hex color format RRGGBB
+    Color m_newColor;
     //Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours, etc
     //Precision is miliseconds by default
     void FormatTime(float ticks, float rate, char *pOut, int precision = 3);
 };
-
 extern MomentumUtil mom_UTIL;
 
 #endif //MOM_UTIL_H
