@@ -246,9 +246,9 @@ void CMomentumPlayer::CheckForBhop()
 void CMomentumPlayer::UpdateRunStats()
 {
     //should velocity be XY or XYZ?
-    ConVarRef hvel("mom_speedometer_hvel");
     IGameEvent *playerMoveEvent = gameeventmanager->CreateEvent("keypress");
-    float velocity = hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+    float velocity =  GetLocalVelocity().Length();
+    float velocity2D = GetLocalVelocity().Length2D();
 
     if (g_Timer.IsRunning())
     {
@@ -257,7 +257,8 @@ void CMomentumPlayer::UpdateRunStats()
         {    
             //Reset old run stats
             ResetRunStats();
-            m_flStartSpeed = GetLocalVelocity().Length2D(); //prestrafe should always be XY only
+            m_flStageExitVelocity[0][0] = GetLocalVelocity().Length();
+            m_flStageExitVelocity[0][1] = GetLocalVelocity().Length2D();
             //Comapre against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
             if (GetGroundEntity() == NULL && m_iSuccessiveBhops)
             {
@@ -275,11 +276,15 @@ void CMomentumPlayer::UpdateRunStats()
             m_nStageStrafes[currentStage]++;
         }
         //  ---- MAX VELOCITY ----
-        if (velocity > m_flStageVelocityMax[0])
-            m_flStageVelocityMax[0] = velocity;
+        if (velocity > m_flStageVelocityMax[0][0])
+            m_flStageVelocityMax[0][0] = velocity;
+        if (velocity2D > m_flStageVelocityMax[0][1])
+            m_flStageVelocityMax[0][1] = velocity;
         //also do max velocity per stage
-        if (velocity > m_flStageVelocityMax[currentStage])
-            m_flStageVelocityMax[currentStage] = velocity;
+        if (velocity > m_flStageVelocityMax[currentStage][0])
+            m_flStageVelocityMax[currentStage][0] = velocity;
+        if (velocity2D > m_flStageVelocityMax[currentStage][1])
+            m_flStageVelocityMax[currentStage][1] = velocity2D;
         // ----------
 
         // --- STAGE ENTER VELOCITY ---
@@ -348,16 +353,20 @@ void CMomentumPlayer::ResetRunStats()
         m_nStageStrafes[i] = 0;
         m_flStageTotalSync[i] = 0; 
         m_flStageTotalSync2[i] = 0;
-        m_flStageTotalVelocity[i] = 0;
-        m_flStageVelocityMax[i] = 0; 
-        m_flStageVelocityAvg[i] = 0;
         m_flStageStrafeSyncAvg[i] = 0;
         m_flStageStrafeSync2Avg[i] = 0;
+        for (int k = 0; k < 2; k++)
+        {
+            m_flStageVelocityMax[i][k] = 0;
+            m_flStageVelocityAvg[i][k] = 0;
+            m_flStageEnterVelocity[i][k] = 0;
+            m_flStageExitVelocity[i][k] = 0;
+            m_flStageTotalVelocity[i][k] = 0;
+        }
     }
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
-    ConVarRef hvel("mom_speedometer_hvel");
 
     if (g_Timer.IsRunning())
     {
@@ -365,23 +374,27 @@ void CMomentumPlayer::CalculateAverageStats()
 
         m_flStageTotalSync[currentStage] += m_flStrafeSync;
         m_flStageTotalSync2[currentStage] += m_flStrafeSync2;
-        m_flStageTotalVelocity[currentStage] += hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+        m_flStageTotalVelocity[currentStage][0] += GetLocalVelocity().Length();
+        m_flStageTotalVelocity[currentStage][1] += GetLocalVelocity().Length2D();
 
         m_nStageAvgCount[currentStage]++;
 
         m_flStageStrafeSyncAvg[currentStage] = m_flStageTotalSync[currentStage] / float(m_nStageAvgCount[currentStage]);
         m_flStageStrafeSync2Avg[currentStage] = m_flStageTotalSync2[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_flStageVelocityAvg[currentStage] = m_flStageTotalVelocity[currentStage] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[currentStage][0] = m_flStageTotalVelocity[currentStage][0] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[currentStage][1] = m_flStageTotalVelocity[currentStage][1] / float(m_nStageAvgCount[currentStage]);
 
         //stage 0 is "overall" - also update these as well, no matter which stage we are on
         m_flStageTotalSync[0] += m_flStrafeSync;
         m_flStageTotalSync2[0] += m_flStrafeSync2;
-        m_flStageTotalVelocity[0] += hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+        m_flStageTotalVelocity[0][0] += GetLocalVelocity().Length();
+        m_flStageTotalVelocity[0][1] += GetLocalVelocity().Length2D();
         m_nStageAvgCount[0]++;
 
         m_flStageStrafeSyncAvg[0] = m_flStageTotalSync[currentStage] / float(m_nStageAvgCount[currentStage]);
         m_flStageStrafeSync2Avg[0] = m_flStageTotalSync2[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_flStageVelocityAvg[0] = m_flStageTotalVelocity[currentStage] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[0][0] = m_flStageTotalVelocity[currentStage][0] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[0][1] = m_flStageTotalVelocity[currentStage][1] / float(m_nStageAvgCount[currentStage]);
     }
 
     // think once per 0.1 second interval so we avoid making the totals extremely large

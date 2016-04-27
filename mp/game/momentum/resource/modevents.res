@@ -31,25 +31,43 @@
 	{
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
-		"avg_vel"	"float"
+		"num_strafes"	"short"
+		"num_jumps"	"short"
+        
+        "avg_vel"	"float"
 		"max_vel"	"float"
 		"start_vel"	"float"
 		"end_vel"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
+        "avg_vel_2D"	"float"
+		"max_vel_2D"	"float"
+		"start_vel_2D"	"float"
+		"end_vel_2D"	"float"
+
+
 	}
-	"new_stage"
+	"new_stage_enter"
 	{
 		"stage_num"	"byte"
 		"stage_time"	"float" //time is in seconds
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
-		"avg_vel"	"float"
-		"max_vel"	"float"
-		"stage_enter_vel"	"float"
 		"num_strafes"	"short"
 		"num_jumps"	"short"
+        
+        "avg_vel"	"float"
+		"max_vel"	"float"
+		"stage_enter_vel"	"float"
+        //we save both XY and XYZ, so we can look at both if need be...
+        "avg_vel_2D"	"float"
+		"max_vel_2D"	"float"
+		"stage_enter_vel_2D"	"float"
 	}
+    "new_stage_exit"
+    {
+        "stage_exit_vel"    "float"
+        "stage_exit_vel_2D"    "float"
+
+    }
 	"run_save"
 	{
 		"run_saved"	"bool"

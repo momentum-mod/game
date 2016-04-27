@@ -49,6 +49,9 @@ public:
     CTriggerTimerStart *GetStartTrigger() { return m_pStartTrigger.Get(); }
     // Gets the current checkpoint
     CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint.Get(); }
+    
+    CTriggerTimerStop *GetEndTrtigger() { return m_pEndTrigger.Get(); }
+    CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
 
     // Sets the given trigger as the start trigger
     void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger.Set(pTrigger); }
@@ -56,12 +59,12 @@ public:
     // Sets the current checkpoint
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint.Set(pTrigger); }
 
+    void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger.Set(pTrigger); }
     void SetCurrentStage(CTriggerStage *pTrigger)
     {
         m_pCurrentStage.Set(pTrigger);
         DispatchStageMessage();
     }
-    CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
     int GetCurrentStageNumber() { return m_pCurrentStage.Get()->GetStageNumber(); }
 
     // Calculates the stage count
@@ -69,7 +72,9 @@ public:
     void RequestStageCount();
     // Gets the total stage count
     int GetStageCount() { return m_iStageCount; };
-    float GetStageTime(int stageNum);
+    float CalculateStageTime(int stageNum);
+    float GetLastRunTime() { return (m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick; }
+
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
     int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
@@ -149,13 +154,14 @@ public:
 private:
 
     int m_iStageCount;
-    int m_iStartTick;
+    int m_iStartTick, m_iEndTick;
     int m_iLastStage = 0;
     float m_iStageEnterTime[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
 
     CHandle<CTriggerTimerStart> m_pStartTrigger;
+    CHandle<CTriggerTimerStop> m_pEndTrigger;
     CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
     CHandle<CTriggerStage> m_pCurrentStage;
 
@@ -166,13 +172,16 @@ private:
         float tickrate;  //Tickrate the run was done on
         time_t date;    //Date achieved
         int jumps, strafes, flags;
-        float maxvel, avgvel, startvel, endvel;
+        float maxvel[2], avgvel[2], startvel[2], endvel[2];
         float avgsync, avgsync2;
 
         //stage specific stats:
-        float stagetime[MAX_STAGES]; //time in seconds for that stage
-        float stagevel[MAX_STAGES], stageavgvel[MAX_STAGES], stagemaxvel[MAX_STAGES], 
-            stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES]; //no stage end vel since it's the same as the next stage start vel
+        float stagetime[MAX_STAGES], stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES];
+
+        //These members are 2D arrays which store the XYZ velocity length in index 0 and XY velocity in index 1
+        float stagestartvel[MAX_STAGES][2], stageendvel[MAX_STAGES][2],
+            stageavgvel[MAX_STAGES][2], stagemaxvel[MAX_STAGES][2];
+
         int stagejumps[MAX_STAGES], stagestrafes[MAX_STAGES];
     };
 
@@ -189,8 +198,19 @@ private:
 
     int m_iCurrentStepCP = 0;
     bool m_bUsingCPMenu = false;
-};
 
+    const char* c_mapDir = "maps/";
+    // Extension used for storing local map times
+    const char* c_timesExt = ".tim";
+
+    //PRECISION FIX
+
+    //index 1 is start, stage 2 is stage 2 enter, etc. index 0 is endzone
+    Vector m_vecVelocityAtSpecificTick[MAX_STAGES], m_vecOriginAtSpecificTick[MAX_STAGES];
+    float m_flTickOffsetFix[MAX_STAGES];
+
+    float GetTickIntervalOffset(Vector velocity, Vector origin, int stage);
+};
 extern CTimer g_Timer;
 
 #endif // TIMER_H

@@ -100,17 +100,18 @@ class CMomentumPlayer : public CBasePlayer
     int GetLastBlock() { return m_iLastBlock; }
     float GetPunishTime() { return m_flPunishTime; }
 
-    //stats: gets transmitted via IGameEvent
-    float m_flStartSpeed, m_flEndSpeed;
-
     //stage stats. index 0 is overall stats
     int m_nStageJumps[MAX_STAGES], m_nStageStrafes[MAX_STAGES];
-    float m_flStageVelocityMax[MAX_STAGES], m_flStageVelocityAvg[MAX_STAGES], 
-        m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES], m_flStageEnterVelocity[MAX_STAGES];
+    float m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES];
+
+    //These members are 2D arrays so we can store both 2D and 3D velocities in them. Index 0 is 3D and index 1 is 2D
+    float m_flStageVelocityMax[MAX_STAGES][2], m_flStageVelocityAvg[MAX_STAGES][2], 
+        m_flStageEnterVelocity[MAX_STAGES][2], m_flStageExitVelocity[MAX_STAGES][2];
 
     //for calc avg
     int m_nStageAvgCount[MAX_STAGES];
-    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES];
+    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES],
+        m_flStageTotalVelocity[MAX_STAGES][2];
 
     bool m_bInsideStartZone;
 private:
