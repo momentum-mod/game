@@ -16,6 +16,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 {
     m_bIsRecording = false;
     if (throwaway) {
+        m_buf->Purge();
         return;
     }
     CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
@@ -129,7 +130,7 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
 }
 bool CMomentumReplaySystem::LoadRun(const char* filename)
 {
-    m_vecRunData.RemoveAll();
+    m_vecRunData.Purge();
     char recordingName[MAX_PATH];
     V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
     m_fhFileHandle = filesystem->Open(recordingName, "r+b", "MOD");
