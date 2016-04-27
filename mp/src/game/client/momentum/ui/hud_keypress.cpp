@@ -164,7 +164,8 @@ void CHudKeyPressDisplay::Paint()
 }
 void CHudKeyPressDisplay::OnThink()
 {
-    m_nButtons = ::input->GetButtonBits(0);
+    m_nButtons = ::input->GetButtonBits(1);
+
     if (g_MOMEventListener)
     {   //we should only draw the strafe/jump counters when the timer is running
         m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;

@@ -94,7 +94,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             {
                 if (!Q_strnicmp(subKv->GetName(), "stage", strlen("stage")))
                 {
-                    int i = Q_atoi(subKv->GetName() + 6); //atoi will ignore "stage" and only return the stage number
+                    int i = Q_atoi(subKv->GetName() + 6); //atoi will need to ignore "stage " and only return the stage number
                     t.stagetime[i] = subKv->GetFloat("time");
                     t.stagevel[i] = subKv->GetInt("stage_enter_vel");
                     t.stageavgsync[i] = subKv->GetFloat("avg_sync");
@@ -144,7 +144,7 @@ void CTimer::SaveTime()
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
         pSubkey->SetInt("flags", t.flags);
-
+        
         KeyValues *pOverallKey = new KeyValues("total");
         pOverallKey->SetInt("jumps", t.jumps);
         pOverallKey->SetInt("strafes", t.strafes);
@@ -188,7 +188,6 @@ void CTimer::SaveTime()
         runSaveEvent->SetBool("run_saved", true);
         gameeventmanager->FireEvent(runSaveEvent);
         Log("Successfully saved new time!\n");
-        //initialize events resource file
     }
     timesKV->deleteThis();
 }
