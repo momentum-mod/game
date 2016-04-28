@@ -4,17 +4,17 @@
 #include "iclientmode.h"
 #include "vgui_helpers.h"
 
-#include <vgui_controls/Panel.h>
-#include <vgui_controls/Frame.h>
+#include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
 #include <vgui_controls/AnimationController.h>
+#include <vgui_controls/Frame.h>
+#include <vgui_controls/Panel.h>
 
+#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
-#include "mom_event_listener.h"
 #include <math.h>
 
 using namespace vgui;
@@ -48,11 +48,15 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 
   public:
     CHudSpeedMeter(const char *pElementName);
-    virtual void Init() { Reset(); }
-    virtual void VidInit() { Reset(); }
-    virtual void Paint();
-    virtual void PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits);
-    virtual void Reset()
+
+    void Init() override { Reset(); }
+
+    void VidInit() override { Reset(); }
+
+    void Paint() override;
+    void PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits) override;
+
+    void Reset() override
     {
         // We set the proper LabelText based on mom_speedmeter_units value
         switch (speedometer_units.GetInt())
@@ -65,16 +69,19 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
             break;
         case 1:
         default:
-            SetLabelText(L""); //don't draw label if we are on UPS mode (it's a bit redundant)
+            SetLabelText(L""); // don't draw label if we are on UPS mode (it's a bit redundant)
             break;
         }
         SetDisplayValue(0);
         SetSecondaryValue(0);
         m_flNextColorizeCheck = 0;
     }
-    virtual void OnThink();
-    virtual bool ShouldDraw() { return speedometer_draw.GetBool() && CHudElement::ShouldDraw(); }
-    virtual void ApplySchemeSettings(IScheme *pScheme)
+
+    void OnThink() override;
+
+    bool ShouldDraw() override { return speedometer_draw.GetBool() && CHudElement::ShouldDraw(); }
+
+    void ApplySchemeSettings(IScheme *pScheme) override
     {
         Panel::ApplySchemeSettings(pScheme);
         normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
@@ -93,7 +100,8 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
-protected:
+
+  protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
 };
 
@@ -124,7 +132,7 @@ void CHudSpeedMeter::OnThink()
         }
 
         // Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
-        float vel = (float)velocity.Length();
+        float vel = static_cast<float>(velocity.Length());
         switch (speedometer_units.GetInt())
         {
         case 2:
@@ -153,8 +161,8 @@ void CHudSpeedMeter::OnThink()
             {
                 if (m_flLastVelocity != 0)
                 {
-                    m_currentColor = mom_UTIL->GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f, normalColor,
-                                                                    increaseColor, decreaseColor);
+                    m_currentColor = mom_UTIL->GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f,
+                                                                     normalColor, increaseColor, decreaseColor);
                 }
                 else
                 {
@@ -164,9 +172,9 @@ void CHudSpeedMeter::OnThink()
                 m_flLastVelocity = vel;
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
-            //reset last jump velocity when we restart a run by entering the start zone 
-            //if (m_eventListener->m_bPlayerInsideStartZone)
-               // m_flLastJumpVelocity = 0;
+            // reset last jump velocity when we restart a run by entering the start zone
+            // if (m_eventListener->m_bPlayerInsideStartZone)
+            // m_flLastJumpVelocity = 0;
             if (pPlayer->m_flLastJumpVel == 0)
             {
                 m_SecondaryValueColor = normalColor;
@@ -175,7 +183,7 @@ void CHudSpeedMeter::OnThink()
             {
                 m_SecondaryValueColor =
                     mom_UTIL->GetColorFromVariation(abs(pPlayer->m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
-                                                   normalColor, increaseColor, decreaseColor);
+                                                    normalColor, increaseColor, decreaseColor);
                 m_flLastJumpVelocity = pPlayer->m_flLastJumpVel;
             }
         }
@@ -183,8 +191,8 @@ void CHudSpeedMeter::OnThink()
         {
             m_SecondaryValueColor = m_PrimaryValueColor = normalColor;
         }
-        //center text
-        
+        // center text
+
         m_iRoundedVel = round(vel);
         m_iRoundedLastJump = round(lastJumpVel);
         SetDisplayValue(m_iRoundedVel);
@@ -208,10 +216,10 @@ void CHudSpeedMeter::Paint()
 
     BaseClass::Paint();
 }
-//we override this here so the last jump vel display doesnt have a double 0
+// we override this here so the last jump vel display doesnt have a double 0
 void CHudSpeedMeter::PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits)
 {
-   
+
     surface()->DrawSetTextFont(font);
     wchar_t unicode[6];
     if (!m_bIsTime)

@@ -74,17 +74,22 @@ class CMomentumPlayer : public CBasePlayer
     void CalculateAverageStats();
     void LimitSpeedInStartZone();
 
+    //These are used for weapon code, MOM_TODO: potentially remove?
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
     CNetworkVar(bool, m_bResumeZoom);
     CNetworkVar(int, m_iLastZoom);
-    CNetworkVar(bool, m_bAutoBhop);
-    CNetworkVar(bool, m_bDidPlayerBhop);
-    CNetworkVar(int, m_iSuccessiveBhops);
+
+    CNetworkVar(bool, m_bAutoBhop);// Is the player using auto bhop?
+    CNetworkVar(bool, m_bDidPlayerBhop);// Did the player bunnyhop successfully?
+    CNetworkVar(int, m_iSuccessiveBhops); //How many successive bhops this player has
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
-    CNetworkVar(float, m_flLastJumpVel);
-    CNetworkVar(int, m_iRunFlags);
+    CNetworkVar(float, m_flLastJumpVel); //Last jump velocity of the player
+    CNetworkVar(int, m_iRunFlags);//The run flags (W only/HSW/Scroll etc) of the player
+    CNetworkVar(bool, m_bIsInZone);//This is true if the player is in a CTriggerTimerStage zone
+    CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
+    CNetworkVar(int, m_iCurrentStage);//Current stage the player is on
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -115,7 +120,7 @@ class CMomentumPlayer : public CBasePlayer
     float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES],
         m_flStageTotalVelocity[MAX_STAGES][2];
 
-    bool m_bInsideStartZone;
+    //bool m_bInsideStartZone;
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;

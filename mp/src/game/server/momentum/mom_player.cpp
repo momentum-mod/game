@@ -20,6 +20,9 @@ SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
 SendPropInt(SENDINFO(m_iRunFlags)),
+SendPropBool(SENDINFO(m_bIsInZone)),
+SendPropInt(SENDINFO(m_iCurrentStage)),
+SendPropBool(SENDINFO(m_bMapFinished)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -54,6 +57,7 @@ void CMomentumPlayer::Precache()
 void CMomentumPlayer::Spawn()
 {
     SetModel(ENTITY_MODEL);
+    //BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
     // do this here because we can't get a local player in the timer class
@@ -71,20 +75,23 @@ void CMomentumPlayer::Spawn()
         break;
     }
     // Reset all bool gameevents 
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    //IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
     IGameEvent *practiceModeEvent = gameeventmanager->CreateEvent("practice_mode");
-    if (mapZoneEvent)
-    {
-        mapZoneEvent->SetBool("inside_startzone", false);
-        mapZoneEvent->SetBool("inside_endzone", false);
-        mapZoneEvent->SetBool("map_finished", false);
-        mapZoneEvent->SetInt("current_stage", 0);
-        mapZoneEvent->SetInt("stage_ticks", 0);
-        gameeventmanager->FireEvent(mapZoneEvent);
-    }
+    m_bIsInZone = false;
+    m_bMapFinished = false;
+    m_iCurrentStage = 0;
+    //if (mapZoneEvent)
+    //{
+    //    mapZoneEvent->SetBool("inside_startzone", false);
+    //    mapZoneEvent->SetBool("inside_endzone", false);
+    //    mapZoneEvent->SetBool("map_finished", false);
+    //    //mapZoneEvent->SetInt("current_stage", 0);
+    //    //mapZoneEvent->SetInt("stage_ticks", 0);
+    //    gameeventmanager->FireEvent(mapZoneEvent);
+    //}
     if (runSaveEvent)
     {
         runSaveEvent->SetBool("run_saved", false);
@@ -115,6 +122,7 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetNextThink(gpGlobals->curtime);
+    DevLog("Finished spawn!\n");
 }
 
 void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
@@ -414,7 +422,7 @@ void CMomentumPlayer::LimitSpeedInStartZone()
     ConVarRef gm("mom_gamemode");
     CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
     bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-    if (m_bInsideStartZone)
+    if (m_bIsInZone && m_iCurrentStage == 1)
     {
         if (GetGroundEntity() == nullptr && !g_Timer->IsPracticeMode(this)) //don't count ticks in air if we're in practice mode
             m_nTicksInAir++;

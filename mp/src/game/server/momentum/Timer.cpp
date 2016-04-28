@@ -101,6 +101,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
                     t.stagejumps[i] = subKv->GetInt("num_jumps");
                     t.stagestrafes[i] = subKv->GetInt("num_strafes");
                     t.stagetime[i] = subKv->GetFloat("time");
+                    t.stageentertime[i] = subKv->GetFloat("enter_time");
                     t.stageavgsync[i] = subKv->GetFloat("avg_sync");
                     t.stageavgsync2[i] = subKv->GetFloat("avg_sync2");
 
@@ -188,6 +189,7 @@ void CTimer::SaveTime()
 
                 KeyValues *pStageKey = new KeyValues(stageName);
                 pStageKey->SetFloat("time", t.stagetime[i2]);
+                pStageKey->SetFloat("enter_time", t.stageentertime[i2]);
                 pStageKey->SetInt("num_jumps", t.stagejumps[i2]);
                 pStageKey->SetInt("num_strafes", t.stagestrafes[i2]);
                 pStageKey->SetFloat("avg_sync", t.stageavgsync[i2]);
@@ -230,7 +232,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_started");
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    //IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -263,7 +265,9 @@ void CTimer::Stop(bool endTrigger /* = false */)
         {
             for (int i = 1; i <= GetStageCount(); i++) //stages start at 1 since stage 0 is overall stats
             {
-                t.stagetime[i] = m_iStageEnterTime[i+1]; //each stage's total time is the time from the previous stage to this one
+                t.stageentertime[i] = m_iStageEnterTime[i];
+                t.stagetime[i] = i == GetStageCount() ? (t.time_sec - m_iStageEnterTime[i]) :
+                    m_iStageEnterTime[i+1] - m_iStageEnterTime[i]; //each stage's total time is the time from the previous stage to this one
                 t.stagejumps[i] = pPlayer->m_nStageJumps[i];
                 t.stagestrafes[i] = pPlayer->m_nStageStrafes[i];
                 t.stageavgsync[i] = pPlayer->m_flStageStrafeSyncAvg[i];
@@ -295,13 +299,20 @@ void CTimer::Stop(bool endTrigger /* = false */)
         timeStopEvent->SetBool("timer_isrunning", false);
         gameeventmanager->FireEvent(timeStopEvent);
     }
-    if (mapZoneEvent)
+    
+    if (pPlayer)
     {
+        pPlayer->m_bIsInZone = endTrigger;
+        pPlayer->m_bMapFinished = endTrigger;
+    }
+    /*if (mapZoneEvent)
+    {
+        DevLog("Firing this one right here!\n");
         mapZoneEvent->SetBool("inside_startzone", false);
         mapZoneEvent->SetBool("inside_endzone", endTrigger);
         mapZoneEvent->SetBool("map_finished", endTrigger);
         gameeventmanager->FireEvent(mapZoneEvent);
-    }
+    }*/
     SetRunning(false);
     DispatchStateMessage();
     m_iEndTick = gpGlobals->tickcount;
@@ -345,7 +356,9 @@ float CTimer::CalculateStageTime(int stage)
 {
     if (stage > m_iLastStage)
     {
-        m_iStageEnterTime[stage] = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; //compare stage time diff
+        //If the stage is a new one, we store the time we entered this stage in
+        m_iStageEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
+            static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
         if (pPlayer) {
             m_vecVelocityAtSpecificTick[stage] = pPlayer->GetLocalVelocity();

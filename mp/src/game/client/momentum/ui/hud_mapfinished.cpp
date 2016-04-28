@@ -32,28 +32,19 @@ class CHudMapFinishedDialog : public CHudElement, public Panel
 public:
     CHudMapFinishedDialog();
     CHudMapFinishedDialog(const char *pElementName);
-    virtual bool ShouldDraw()
+
+    bool ShouldDraw() override
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && g_MOMEventListener && g_MOMEventListener->m_bMapFinished;
+        return pPlayer && pPlayer->m_bMapFinished;
     }
-    virtual void Paint();
-    virtual void OnThink();
-    virtual void Init();
-    virtual void Reset()
-    {
-        //default values
-        m_iTotalStrafes = 0;
-        m_iTotalJumps = 0;
-        m_flAvgSpeed = 0;
-        m_flEndSpeed = 0;
-        m_flStartSpeed = 0;
-        m_flMaxSpeed = 0;
-        m_flAvgSync = 0;
-        m_flAvgSync2 = 0;
-        strcpy(m_pszRunTime, "00:00:00.000"); 
-    }
-    virtual void ApplySchemeSettings(IScheme *pScheme)
+
+    void Paint() override;
+    void OnThink() override;
+    void Init() override;
+    void Reset() override;
+
+    void ApplySchemeSettings(IScheme *pScheme) override
     {
         Panel::ApplySchemeSettings(pScheme);
         SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
@@ -179,6 +170,21 @@ void CHudMapFinishedDialog::Init()
     LOCALIZE_TOKEN(RunUploaded, "#MOM_RunUploaded", runUploadLocalized);
     LOCALIZE_TOKEN(RunNotUploaded, "#MOM_RunNotUploaded", runNotUploadLocalized);
 }
+
+void CHudMapFinishedDialog::Reset()
+{
+    //default values
+    m_iTotalStrafes = 0;
+    m_iTotalJumps = 0;
+    m_flAvgSpeed = 0;
+    m_flEndSpeed = 0;
+    m_flStartSpeed = 0;
+    m_flMaxSpeed = 0;
+    m_flAvgSync = 0;
+    m_flAvgSync2 = 0;
+    strcpy(m_pszRunTime, "00:00:00.000"); 
+}
+
 void CHudMapFinishedDialog::Paint()
 {
     //text color
@@ -190,8 +196,8 @@ void CHudMapFinishedDialog::Paint()
         timeLocalized, // run time localization 
         m_pszRunTime    // run time string
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringTimeLabel, m_pwTimeLabel, sizeof(m_pwTimeLabel));
+
+    ANSI_TO_UNICODE(m_pszStringTimeLabel, m_pwTimeLabel);
 
     surface()->DrawSetTextPos(time_xpos, time_ypos);
     surface()->DrawPrintText(m_pwTimeLabel, wcslen(m_pwTimeLabel));
@@ -202,8 +208,8 @@ void CHudMapFinishedDialog::Paint()
         jumpLocalized, // total jump localization 
         m_iTotalJumps  // total jump int
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringJumpsLabel, m_pwJumpsLabel, sizeof(m_pwJumpsLabel));
+
+    ANSI_TO_UNICODE(m_pszStringJumpsLabel, m_pwJumpsLabel);
 
     surface()->DrawSetTextPos(jumps_xpos, jumps_ypos);
     surface()->DrawPrintText(m_pwJumpsLabel, wcslen(m_pwJumpsLabel));
@@ -214,8 +220,8 @@ void CHudMapFinishedDialog::Paint()
         strafeLocalized, // total strafe localization 
         m_iTotalStrafes  //total strafes int
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringStrafesLabel, m_pwStrafesLabel, sizeof(m_pwStrafesLabel));
+
+    ANSI_TO_UNICODE(m_pszStringStrafesLabel, m_pwStrafesLabel);
 
     surface()->DrawSetTextPos(strafes_xpos, strafes_ypos);
     surface()->DrawPrintText(m_pwStrafesLabel, wcslen(m_pwStrafesLabel));
@@ -227,8 +233,8 @@ void CHudMapFinishedDialog::Paint()
         syncLocalized, // avg sync localization 
         m_pszAvgSync    // avg sync float
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringSyncLabel, m_pwSyncLabel, sizeof(m_pwSyncLabel));
+
+    ANSI_TO_UNICODE(m_pszStringSyncLabel, m_pwSyncLabel);
 
     surface()->DrawSetTextPos(sync_xpos, sync_ypos);
     surface()->DrawPrintText(m_pwSyncLabel, wcslen(m_pwSyncLabel));
@@ -240,8 +246,8 @@ void CHudMapFinishedDialog::Paint()
         sync2Localized, // avg sync localization 
         m_pszAvgSync2    // avg sync float
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStringSync2Label, m_pwSync2Label, sizeof(m_pwSync2Label));
+
+    ANSI_TO_UNICODE(m_pszStringSync2Label, m_pwSync2Label);
 
     surface()->DrawSetTextPos(sync2_xpos, sync2_ypos);
     surface()->DrawPrintText(m_pwSync2Label, wcslen(m_pwSync2Label));
@@ -252,8 +258,7 @@ void CHudMapFinishedDialog::Paint()
         startVelLocalized,
         m_flStartSpeed
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszStartSpeedLabel, m_pwStartSpeedLabel, sizeof(m_pwStartSpeedLabel));
+    ANSI_TO_UNICODE(m_pszStartSpeedLabel, m_pwStartSpeedLabel);
 
     surface()->DrawSetTextPos(startvel_xpos, startvel_ypos);
     surface()->DrawPrintText(m_pwStartSpeedLabel, wcslen(m_pwStartSpeedLabel));
@@ -264,8 +269,7 @@ void CHudMapFinishedDialog::Paint()
         endVelLocalized,
         m_flEndSpeed
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszEndSpeedLabel, m_pwEndSpeedLabel, sizeof(m_pwEndSpeedLabel));
+    ANSI_TO_UNICODE(m_pszEndSpeedLabel, m_pwEndSpeedLabel);
 
     surface()->DrawSetTextPos(endvel_xpos, endvel_ypos);
     surface()->DrawPrintText(m_pwEndSpeedLabel, wcslen(m_pwEndSpeedLabel));
@@ -276,8 +280,7 @@ void CHudMapFinishedDialog::Paint()
         avgVelLocalized,
         m_flAvgSpeed
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszAvgSpeedLabel, m_pwAvgSpeedLabel, sizeof(m_pwAvgSpeedLabel));
+    ANSI_TO_UNICODE(m_pszAvgSpeedLabel, m_pwAvgSpeedLabel);
 
     surface()->DrawSetTextPos(avgvel_xpos, avgvel_ypos);
     surface()->DrawPrintText(m_pwAvgSpeedLabel, wcslen(m_pwAvgSpeedLabel));
@@ -288,8 +291,8 @@ void CHudMapFinishedDialog::Paint()
         maxVelLocalized,
         m_flMaxSpeed
         );
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_pszMaxSpeedLabel, m_pwMaxSpeedLabel, sizeof(m_pwMaxSpeedLabel));
+
+    ANSI_TO_UNICODE(m_pszMaxSpeedLabel, m_pwMaxSpeedLabel);
 
     surface()->DrawSetTextPos(maxvel_xpos, maxvel_ypos);
     surface()->DrawPrintText(m_pwMaxSpeedLabel, wcslen(m_pwAvgSpeedLabel));
@@ -302,20 +305,16 @@ void CHudMapFinishedDialog::Paint()
         m_bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
         m_bRunSaved ? runSaveLocalized : runNotSaveLocalized);
 
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel,
-        m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel,
-        m_bRunSaved ? sizeof(m_pwRunSavedLabel) : sizeof(m_pwRunNotSavedLabel));
+    ANSI_TO_UNICODE(m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel,
+        m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel);
 
     // -- run upload --
     Q_snprintf(m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
         m_bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
         m_bRunUploaded ? runUploadLocalized : runNotUploadLocalized);
 
-    g_pVGuiLocalize->ConvertANSIToUnicode(
-        m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
-        m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel,
-        m_bRunUploaded ? sizeof(m_pwRunUploadedLabel) : sizeof(m_pwRunNotUploadedLabel));
+    ANSI_TO_UNICODE(m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
+        m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel);
 
     int save_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, 
         m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel) / 2; //center label

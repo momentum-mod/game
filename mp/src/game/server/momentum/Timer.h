@@ -54,7 +54,11 @@ public:
     CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
 
     // Sets the given trigger as the start trigger
-    void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger.Set(pTrigger); }
+    void SetStartTrigger(CTriggerTimerStart *pTrigger)
+    {
+        m_iLastStage = 0;//Allows us to overwrite previous runs
+        m_pStartTrigger.Set(pTrigger);
+    }
 
     // Sets the current checkpoint
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint.Set(pTrigger); }
@@ -63,7 +67,7 @@ public:
     void SetCurrentStage(CTriggerStage *pTrigger)
     {
         m_pCurrentStage.Set(pTrigger);
-        DispatchStageMessage();
+        //DispatchStageMessage();
     }
     int GetCurrentStageNumber() { return m_pCurrentStage.Get()->GetStageNumber(); }
 
@@ -174,7 +178,7 @@ private:
         int flags;
 
         //stage specific stats:
-        float stagetime[MAX_STAGES], stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES];
+        float stagetime[MAX_STAGES], stageentertime[MAX_STAGES], stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES];
 
         //These members are 2D arrays which store the XYZ velocity length in index 0 and XY velocity in index 1
         float stagestartvel[MAX_STAGES][2], stageendvel[MAX_STAGES][2],

@@ -6,7 +6,8 @@
 class C_Momentum_EventListener : public IGameEventListener2
 {
 public:
-    C_Momentum_EventListener() {};
+    C_Momentum_EventListener(): m_bTimerIsRunning(false)
+    {};
     ~C_Momentum_EventListener(){
         if (gameeventmanager)
             gameeventmanager->RemoveListener(this);
@@ -16,14 +17,14 @@ public:
 
     void FireGameEvent(IGameEvent* pEvent);
 
-    bool m_bTimerIsRunning, m_bMapFinished;
+    bool m_bTimerIsRunning;// , m_bMapFinished;
     bool m_bTimeDidSave, m_bTimeDidUpload;
 
-    bool m_bPlayerInsideStartZone, m_bPlayerInsideEndZone;
+    //bool m_bPlayerInsideStartZone, m_bPlayerInsideEndZone;
     bool m_bPlayerHasPracticeMode;
 
     int m_iCurrentStage, m_iStageJumps[MAX_STAGES], m_iStageStrafes[MAX_STAGES];
-    float m_flStageTime[MAX_STAGES], m_flStageStrafeSyncAvg[MAX_STAGES], 
+    float m_flStageTime[MAX_STAGES], m_flStageEnterTime[MAX_STAGES], m_flStageStrafeSyncAvg[MAX_STAGES], 
         m_flStageStrafeSync2Avg[MAX_STAGES];
 
     float m_flStageStartSpeed[MAX_STAGES][2], m_flStageVelocityMax[MAX_STAGES][2],

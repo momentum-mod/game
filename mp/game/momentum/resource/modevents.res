@@ -27,7 +27,7 @@
 
 "modevents"
 {
-	"timer_stopped"
+	"timer_stopped"//NEEDED
 	{
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
@@ -43,10 +43,10 @@
 		"start_vel_2D"	"float"
 		"end_vel_2D"	"float"
 	}
-	"new_stage_enter"
+	"new_stage_enter"//NEEDED
 	{
 		"stage_num"	"byte"
-		"stage_time"	"float" //time is in seconds
+		"stage_enter_time"	"float" //time is in seconds
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
 		"num_strafes"	"short"
@@ -60,16 +60,16 @@
 		"max_vel_2D"	"float"
 		"stage_enter_vel_2D"	"float"
 	}
-    "new_stage_exit"
+    "new_stage_exit"//NEEDED
     {
         "stage_exit_vel"    "float"
         "stage_exit_vel_2D"    "float"
     }
-	"run_save"
+	"run_save"//NEEED
 	{
 		"run_saved"	"bool"
 	}
-    "run_upload"
+    "run_upload"//NEEDED
     {
         "run_posted" "bool"
         "web_msg" "string"//MOM_TODO: fill this with more stuff?
@@ -78,18 +78,12 @@
 	{
 		"timer_isrunning"	"bool"
 	}
-	"player_inside_mapzone"
-	{
-		"inside_startzone"	"bool"
-		"inside_endzone"	"bool"
-		"map_finished"	"bool"
-	}
-	"keypress"
+	"keypress"//NEEDED
 	{
 		"num_jumps"	"short"
 		"num_strafes"	"short"
 	}
-	"practice_mode"
+	"practice_mode"//NEEDED
 	{
 		"has_practicemode"	"bool"
 	}
