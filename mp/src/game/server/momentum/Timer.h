@@ -199,12 +199,30 @@ private:
 
     //PRECISION FIX
 
-    //index 1 is start, stage 2 is stage 2 enter, etc. index 0 is endzone
-    Vector m_vecVelocityAtSpecificTick[MAX_STAGES], m_vecOriginAtSpecificTick[MAX_STAGES];
-    float m_flTickOffsetFix[MAX_STAGES];
+    float m_flTickOffsetFix[MAX_STAGES]; //index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
 
-    float GetTickIntervalOffset(Vector velocity, Vector origin, int stage);
+    //creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.  
+    //zone type: 0: endzone, 1: startzone, 2: stage
+    float GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType);
+public:
+    float m_flTickIntervalOffsetOut;
+    class CTriggerTraceEnum : public IEntityEnumerator
+    {
+    public:
+        CTriggerTraceEnum(Ray_t *pRay, Vector velocity, Vector currOrigin)
+            : m_pRay(pRay), m_currVelocity(velocity), m_currOrigin(currOrigin)
+        {
+        }
+
+        virtual bool EnumEntity(IHandleEntity *pHandleEntity);
+    private:
+        Ray_t *m_pRay;
+        Vector m_currOrigin;
+        Vector m_currVelocity;
+    };
 };
+
+
 extern CTimer *g_Timer;
 
 #endif // TIMER_H
