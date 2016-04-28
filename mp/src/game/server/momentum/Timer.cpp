@@ -418,10 +418,6 @@ void CTimer::DispatchStageCountMessage()
     }
 }
 
-//CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
-//{
-//    g_Timer->DispatchStageCountMessage();
-//}
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
 void CTimer::SetGameModeConVars()
 {

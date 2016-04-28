@@ -35,11 +35,6 @@ public:
     virtual bool			IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer);
     virtual CBaseEntity*    GetPlayerSpawnSpot(CBasePlayer *pPlayer);
     virtual const char *GetGameDescription(void) { return "Momentum"; }
-    
-    void InitHUD(CBasePlayer *pl) { 
-        //g_Timer->DispatchStageCountMessage();
-        //DevLog("Init_HUD CALLED!!!!!!!!!!!!!!!!!\n");
-    }
 
     // Ammo
     virtual void			PlayerThink(CBasePlayer *pPlayer) {}
