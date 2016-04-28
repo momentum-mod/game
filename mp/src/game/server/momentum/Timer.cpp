@@ -19,8 +19,7 @@ void CTimer::Start(int start)
     }
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
     if (pPlayer) {
-        m_vecVelocityAtSpecificTick[1] = pPlayer->GetLocalVelocity();
-        m_vecOriginAtSpecificTick[1] = pPlayer->GetLocalOrigin();
+        m_flTickOffsetFix[1] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 1);
     }
 }
 
@@ -286,8 +285,10 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         SaveTime();
 
-        m_vecVelocityAtSpecificTick[0] = pPlayer->GetLocalVelocity();
-        m_vecOriginAtSpecificTick[0] = pPlayer->GetLocalOrigin();
+        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+        if (pPlayer) {
+            m_flTickOffsetFix[0] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 0);
+        }
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {  
@@ -361,8 +362,7 @@ float CTimer::CalculateStageTime(int stage)
             static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
         if (pPlayer) {
-            m_vecVelocityAtSpecificTick[stage] = pPlayer->GetLocalVelocity();
-            m_vecOriginAtSpecificTick[stage] = pPlayer->GetLocalOrigin();
+            m_flTickOffsetFix[stage] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 2);
         }
     }
     m_iLastStage = stage;
@@ -430,6 +430,74 @@ void CTimer::DispatchStageCountMessage()
         MessageEnd();
     }
 }
+float CTimer::GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType)
+{
+    Ray_t ray;
+    Vector prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
+        origin.y - (velocity.y * gpGlobals->interval_per_tick),
+        origin.z - (velocity.z * gpGlobals->interval_per_tick));
+
+    DevLog("Origin X:%f Y:%f Z:%f\n", origin.x, origin.y, origin.z);
+    DevLog("Prev Origin: X:%f Y:%f Z:%f\n", prevOrigin[0], prevOrigin[1], prevOrigin[2]);
+    if (zoneType == 0){
+        //endzone has to have the ray _start_ before we entered the end zone, hence why we start with prevOrigin
+        //and trace "forwards" to our current origin, hitting the end trigger on the way.
+        CTriggerTraceEnum endTriggerTraceEnum(&ray, velocity, origin);
+        ray.Init(prevOrigin, origin);
+        enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
+    }
+    else if (zoneType == 1)
+    {
+        //on the other hand, start zones start the ray _after_ we exited the start zone, 
+        //so we start at our current origin and trace backwards to our prev origin
+        CTriggerTraceEnum startTriggerTraceEnum(&ray, velocity, origin);
+        ray.Init(origin, prevOrigin);
+        enginetrace->EnumerateEntities(ray, true, &startTriggerTraceEnum);
+    }
+    else if (zoneType == 2)
+    {
+        //same as endzone here
+        CTriggerTraceEnum stageTriggerTraceEnum(&ray, velocity, origin);
+        ray.Init(prevOrigin, origin);
+        enginetrace->EnumerateEntities(ray, true, &stageTriggerTraceEnum);
+    }
+    else
+    {
+        Warning("CTimer::GetTickIntervalOffset: Incorrect Zone Type!");
+        return -1;
+    }
+    return m_flTickIntervalOffsetOut; //HACKHACK Lol
+}
+// override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
+// member of CTimer to avoid linker errors
+bool CTimer::CTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
+{
+    trace_t tr;
+    // store entity that we found on the trace
+    CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
+
+    if (pEnt->IsSolid())
+        return false;
+    enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
+
+    if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
+    {
+        float dist = m_currOrigin.DistTo(tr.endpos);
+        DevLog("DIST: %f\n", dist);
+        DevLog("Time offset: %f\n", dist / m_currVelocity.Length()); //velocity = dist/time, so it follows that time = distance / velocity.
+        g_Timer->m_flTickIntervalOffsetOut = dist / m_currVelocity.Length();
+        return true;
+    }
+    else
+    {
+        DevLog("Didn't hit a zone trigger.\n");
+        return false;
+    }
+}
+//CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+//{
+//    g_Timer->DispatchStageCountMessage();
+//}
 
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
 void CTimer::SetGameModeConVars()
