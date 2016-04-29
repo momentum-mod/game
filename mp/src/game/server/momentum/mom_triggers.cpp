@@ -147,6 +147,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
+        pPlayer->ResetRunStats();//Reset run stats
         pPlayer->m_bIsInZone = true;
         pPlayer->m_bMapFinished = false;
         pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone

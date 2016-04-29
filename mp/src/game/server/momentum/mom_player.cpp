@@ -267,12 +267,11 @@ void CMomentumPlayer::UpdateRunStats()
     {
         int currentStage = g_Timer->GetCurrentStageNumber();
         if (!m_bPrevTimerRunning) //timer started on this tick
-        {    
-            //Reset old run stats
-            ResetRunStats();
+        {
+            //Reset old run stats -- moved to on start's touch
             m_flStageExitVelocity[0][0] = GetLocalVelocity().Length();
             m_flStageExitVelocity[0][1] = GetLocalVelocity().Length2D();
-            //Comapre against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
+            //Compare against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
             if (GetGroundEntity() == NULL && m_iSuccessiveBhops)
             {
                 m_nStageJumps[0]++;

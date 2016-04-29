@@ -256,8 +256,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
         {
             t.stageavgvel[0][j] = pPlayer->m_flStageVelocityAvg[0][j];
             t.stagemaxvel[0][j] = pPlayer->m_flStageVelocityMax[0][j];
-            t.stagestartvel[0][j] = pPlayer->m_flStageExitVelocity[0][j];
-            t.stageendvel[0][j] = pPlayer->m_flStageEnterVelocity[0][j];
+            t.stagestartvel[0][j] = pPlayer->m_flStageEnterVelocity[0][j];
+            t.stageendvel[0][j] =  pPlayer->m_flStageExitVelocity[0][j];
         }
         // --------
         if (GetStageCount() > 1) //don't save stage specific stats if we are on a linear map
@@ -275,8 +275,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
                 {
                     t.stageavgvel[i][k] = pPlayer->m_flStageVelocityAvg[i][k];
                     t.stagemaxvel[i][k] = pPlayer->m_flStageVelocityMax[i][k];
-                    t.stagestartvel[i][k] = pPlayer->m_flStageExitVelocity[i][k];
-                    t.stageendvel[i][k] = pPlayer->m_flStageEnterVelocity[i][k];
+                    t.stagestartvel[i][k] = pPlayer->m_flStageEnterVelocity[i][k];
+                    t.stageendvel[i][k] = pPlayer->m_flStageExitVelocity[i][k]; 
                 } 
             }
         }   
@@ -285,10 +285,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         SaveTime();
 
-        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-        if (pPlayer) {
-            m_flTickOffsetFix[0] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 0);
-        }
+        m_flTickOffsetFix[0] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 0);
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {  

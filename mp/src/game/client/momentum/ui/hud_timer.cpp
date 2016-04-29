@@ -159,6 +159,7 @@ void C_Timer::Init()
     HOOK_HUD_MESSAGE(C_Timer, Timer_StageCount);
     initialTall = 48;
     m_iTotalTicks = 0;
+    m_iStageCount = 0;
     //Reset();
 
     //cache localization strings
@@ -177,7 +178,6 @@ void C_Timer::Reset()
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iTotalTicks = 0;
-    m_iStageCount = 0;
     m_iStageCurrent = 1;
     m_bShowCheckpoints = false;
     m_bPlayerInZone = false;
