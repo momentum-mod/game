@@ -27,7 +27,7 @@
 
 "modevents"
 {
-	"timer_stopped"//NEEDED
+	"timer_stopped"
 	{
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
@@ -43,7 +43,7 @@
 		"start_vel_2D"	"float"
 		"end_vel_2D"	"float"
 	}
-	"new_stage_enter"//NEEDED
+	"new_stage_enter"
 	{
 		"stage_num"	"byte"
 		"stage_enter_time"	"float" //time is in seconds
@@ -60,16 +60,16 @@
 		"max_vel_2D"	"float"
 		"stage_enter_vel_2D"	"float"
 	}
-    "new_stage_exit"//NEEDED
+    "new_stage_exit"
     {
         "stage_exit_vel"    "float"
         "stage_exit_vel_2D"    "float"
     }
-	"run_save"//NEEED
+	"run_save"
 	{
 		"run_saved"	"bool"
 	}
-    "run_upload"//NEEDED
+    "run_upload"
     {
         "run_posted" "bool"
         "web_msg" "string"//MOM_TODO: fill this with more stuff?
@@ -78,12 +78,12 @@
 	{
 		"timer_isrunning"	"bool"
 	}
-	"keypress"//NEEDED
+	"keypress"
 	{
 		"num_jumps"	"short"
 		"num_strafes"	"short"
 	}
-	"practice_mode"//NEEDED
+	"practice_mode"
 	{
 		"has_practicemode"	"bool"
 	}

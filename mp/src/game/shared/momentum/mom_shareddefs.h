@@ -29,24 +29,24 @@ typedef enum MOMGM
 
 //buffers for cstr variables
 #define BUFSIZETIME (sizeof("00:00:00.000")+1)
-#define BUFSIZELOCL (73)
+#define BUFSIZELOCL (73)//Buffer size for localization/Max length for localized string
 #define BUFSIZESHORT 10
 
 //Localization of tokens
 //Checks to see if the token exists, and if so, localizes it into output. Otherwise
 //it's just the token value. This exists to prevent null localization tokens.
 #define FIND_LOCALIZATION(output, token) \
-    V_snwprintf(output, sizeof(output), L"%ls", g_pVGuiLocalize->Find(token) ? g_pVGuiLocalize->Find(token) : L##token);
+    V_snwprintf(output, BUFSIZELOCL, L"%ls", g_pVGuiLocalize->Find(token) ? g_pVGuiLocalize->Find(token) : L##token);
 
 //Localizes a token to an ansi output array, under a name macro
 #define LOCALIZE_TOKEN(name, token, output)\
     wchar_t *unicode_##name = g_pVGuiLocalize->Find(token);\
-    g_pVGuiLocalize->ConvertUnicodeToANSI(unicode_##name ? unicode_##name : L##token, output, BUFSIZELOCL);
+    g_pVGuiLocalize->ConvertUnicodeToANSI(unicode_##name ? unicode_##name : L##token, output, sizeof(output));
 
 
 //Takes input ansi and converts, using g_pVGuiLocalize, to unicode
 #define ANSI_TO_UNICODE(ansi, unicode) \
-    g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof( unicode ))
+    g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof(unicode));
 
 #define MAX_STAGES 64
 

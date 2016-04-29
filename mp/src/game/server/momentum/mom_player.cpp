@@ -75,7 +75,6 @@ void CMomentumPlayer::Spawn()
         break;
     }
     // Reset all bool gameevents 
-    //IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
@@ -83,15 +82,7 @@ void CMomentumPlayer::Spawn()
     m_bIsInZone = false;
     m_bMapFinished = false;
     m_iCurrentStage = 0;
-    //if (mapZoneEvent)
-    //{
-    //    mapZoneEvent->SetBool("inside_startzone", false);
-    //    mapZoneEvent->SetBool("inside_endzone", false);
-    //    mapZoneEvent->SetBool("map_finished", false);
-    //    //mapZoneEvent->SetInt("current_stage", 0);
-    //    //mapZoneEvent->SetInt("stage_ticks", 0);
-    //    gameeventmanager->FireEvent(mapZoneEvent);
-    //}
+
     if (runSaveEvent)
     {
         runSaveEvent->SetBool("run_saved", false);

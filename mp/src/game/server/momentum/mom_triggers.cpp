@@ -129,12 +129,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         }
         pPlayer->m_bIsInZone = false;
         pPlayer->m_bMapFinished = false;
-        /*IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-        if (mapZoneEvent)
-        {
-            mapZoneEvent->SetBool("inside_startzone", false);
-            gameeventmanager->FireEvent(mapZoneEvent);
-        }*/
     }
     // stop thinking on end touch
     SetNextThink(-1);
@@ -159,13 +153,6 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             //lower the player's speed if they try to jump back into the start zone
         }
     }
-    /*IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    if (mapZoneEvent)
-    {
-        mapZoneEvent->SetBool("inside_startzone", true);
-        mapZoneEvent->SetBool("map_finished", false);
-        gameeventmanager->FireEvent(mapZoneEvent);
-    }*/
     // start thinking
     SetNextThink(gpGlobals->curtime);
     BaseClass::StartTouch(pOther);
@@ -225,7 +212,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
-    //IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage_enter");
 
     g_Timer->SetEndTrigger(this);
@@ -269,11 +255,9 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 
                 gameeventmanager->FireEvent(timerStopEvent);
             }
+
             pPlayer->m_bMapFinished = true;
-            //if (mapZoneEvent)
-            //{
-            //    mapZoneEvent->SetBool("map_finished", true); //broadcast that we finished the map with a timer running
-            //}
+
             if (stageEvent)
             {
                 //The last stage is a bit of a doozy.
@@ -287,14 +271,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             }
         }
         pPlayer->m_bIsInZone = true;
-        //pPlayer->m_bMapFinished = true;
     }
-    //if (mapZoneEvent)
-    //{
-        //mapZoneEvent->SetBool("inside_endzone", true);
-        //mapZoneEvent->SetBool("inside_startzone", false);
-        //gameeventmanager->FireEvent(mapZoneEvent);
-    //}
     BaseClass::StartTouch(pOther);
 }
 void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
@@ -305,13 +282,6 @@ void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
         pMomPlayer->m_bMapFinished = false;//Close the hud_mapfinished panel
         pMomPlayer->m_bIsInZone = false;//Update status
     }
-    //IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
-    //if (mapZoneEvent)
-    //{
-    //    mapZoneEvent->SetBool("map_finished", false); //once we leave endzone, we no longer want to display end stats again
-    //    mapZoneEvent->SetBool("inside_endzone", false);
-    //    gameeventmanager->FireEvent(mapZoneEvent);
-    //}
     BaseClass::EndTouch(pOther);
 }
 //----------------------------------------------------------------------------------------------

@@ -231,7 +231,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_started");
-    //IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -303,14 +302,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
         pPlayer->m_bIsInZone = endTrigger;
         pPlayer->m_bMapFinished = endTrigger;
     }
-    /*if (mapZoneEvent)
-    {
-        DevLog("Firing this one right here!\n");
-        mapZoneEvent->SetBool("inside_startzone", false);
-        mapZoneEvent->SetBool("inside_endzone", endTrigger);
-        mapZoneEvent->SetBool("map_finished", endTrigger);
-        gameeventmanager->FireEvent(mapZoneEvent);
-    }*/
     SetRunning(false);
     DispatchStateMessage();
     m_iEndTick = gpGlobals->tickcount;

@@ -113,22 +113,15 @@ private:
     char m_pszMaxSpeedLabel[BUFSIZELOCL];
 
     wchar_t m_pwRunSavedLabel[BUFSIZELOCL];
-    char m_pszRunSavedLabel[BUFSIZELOCL];
     wchar_t m_pwRunNotSavedLabel[BUFSIZELOCL];
-    char m_pszRunNotSavedLabel[BUFSIZELOCL];
     wchar_t m_pwRunUploadedLabel[BUFSIZELOCL];
-    char m_pszRunUploadedLabel[BUFSIZELOCL];
     wchar_t m_pwRunNotUploadedLabel[BUFSIZELOCL];
-    char m_pszRunNotUploadedLabel[BUFSIZELOCL];
 
     char m_pszRunTime[BUFSIZETIME];
     char m_pszAvgSync[BUFSIZELOCL], m_pszAvgSync2[BUFSIZELOCL];
     int m_iTotalJumps, m_iTotalStrafes;
     float m_flAvgSync, m_flAvgSync2;
     float m_flStartSpeed, m_flEndSpeed, m_flAvgSpeed, m_flMaxSpeed;
-
-    char runSaveLocalized[BUFSIZELOCL], runNotSaveLocalized[BUFSIZELOCL], 
-        runUploadLocalized[BUFSIZELOCL], runNotUploadLocalized[BUFSIZELOCL];
 
     char maxVelLocalized[BUFSIZELOCL], avgVelLocalized[BUFSIZELOCL], endVelLocalized[BUFSIZELOCL], 
         startVelLocalized[BUFSIZELOCL], sync2Localized[BUFSIZELOCL], syncLocalized[BUFSIZELOCL], 
@@ -165,10 +158,10 @@ void CHudMapFinishedDialog::Init()
     LOCALIZE_TOKEN(AvgVel, "#MOM_AvgVel", avgVelLocalized);
     LOCALIZE_TOKEN(MaxVel, "#MOM_MaxVel", maxVelLocalized);
     //Saving/Uploading
-    LOCALIZE_TOKEN(RunSaved, "#MOM_RunSaved", runSaveLocalized);
-    LOCALIZE_TOKEN(RunNotSaved, "#MOM_RunNotSaved", runNotSaveLocalized);
-    LOCALIZE_TOKEN(RunUploaded, "#MOM_RunUploaded", runUploadLocalized);
-    LOCALIZE_TOKEN(RunNotUploaded, "#MOM_RunNotUploaded", runNotUploadLocalized);
+    FIND_LOCALIZATION(m_pwRunSavedLabel, "#MOM_RunSaved");
+    FIND_LOCALIZATION(m_pwRunNotSavedLabel, "#MOM_RunNotSaved");
+    FIND_LOCALIZATION(m_pwRunUploadedLabel, "#MOM_RunUploaded");
+    FIND_LOCALIZATION(m_pwRunNotUploadedLabel, "#MOM_RunNotUploaded");
 }
 
 void CHudMapFinishedDialog::Reset()
@@ -192,7 +185,7 @@ void CHudMapFinishedDialog::Paint()
     surface()->DrawSetTextColor(GetFgColor());
 
     // --- RUN TIME ---
-    Q_snprintf(m_pszStringTimeLabel, sizeof(m_pszStringTimeLabel), "%s %s",
+    Q_snprintf(m_pszStringTimeLabel, BUFSIZELOCL, "%s %s",
         timeLocalized, // run time localization 
         m_pszRunTime    // run time string
         );
@@ -204,7 +197,7 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- JUMP COUNT ---
-    Q_snprintf(m_pszStringJumpsLabel, sizeof(m_pszStringJumpsLabel), "%s %i",
+    Q_snprintf(m_pszStringJumpsLabel, BUFSIZELOCL, "%s %i",
         jumpLocalized, // total jump localization 
         m_iTotalJumps  // total jump int
         );
@@ -216,7 +209,7 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- STRAFE COUNT ---
-    Q_snprintf(m_pszStringStrafesLabel, sizeof(m_pszStringStrafesLabel), "%s %i",
+    Q_snprintf(m_pszStringStrafesLabel, BUFSIZELOCL, "%s %i",
         strafeLocalized, // total strafe localization 
         m_iTotalStrafes  //total strafes int
         );
@@ -228,8 +221,8 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- AVG SYNC ---
-    Q_snprintf(m_pszAvgSync, sizeof(m_pszStringSyncLabel), "%.2f", m_flAvgSync); //convert floating point avg sync to 2 decimal place string
-    Q_snprintf(m_pszStringSyncLabel, sizeof(m_pszStringSyncLabel), "%s %s",
+    Q_snprintf(m_pszAvgSync, BUFSIZELOCL, "%.2f", m_flAvgSync); //convert floating point avg sync to 2 decimal place string
+    Q_snprintf(m_pszStringSyncLabel, BUFSIZELOCL, "%s %s",
         syncLocalized, // avg sync localization 
         m_pszAvgSync    // avg sync float
         );
@@ -241,8 +234,8 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- AVG SYNC 2---
-    Q_snprintf(m_pszAvgSync2, sizeof(m_pszStringSync2Label), "%.2f", m_flAvgSync2); //convert floating point avg sync to 2 decimal place string
-    Q_snprintf(m_pszStringSync2Label, sizeof(m_pszStringSync2Label), "%s %s",
+    Q_snprintf(m_pszAvgSync2, BUFSIZELOCL, "%.2f", m_flAvgSync2); //convert floating point avg sync to 2 decimal place string
+    Q_snprintf(m_pszStringSync2Label, BUFSIZELOCL, "%s %s",
         sync2Localized, // avg sync localization 
         m_pszAvgSync2    // avg sync float
         );
@@ -254,7 +247,7 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- STARTING VELOCITY---
-    Q_snprintf(m_pszStartSpeedLabel, sizeof(m_pszStartSpeedLabel), "%s %f",
+    Q_snprintf(m_pszStartSpeedLabel, BUFSIZELOCL, "%s %f",
         startVelLocalized,
         m_flStartSpeed
         );
@@ -265,10 +258,7 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- ENDING VELOCITY---
-    Q_snprintf(m_pszEndSpeedLabel, sizeof(m_pszEndSpeedLabel), "%s %f",
-        endVelLocalized,
-        m_flEndSpeed
-        );
+    Q_snprintf(m_pszEndSpeedLabel, BUFSIZELOCL, "%s %f", endVelLocalized, m_flEndSpeed);
     ANSI_TO_UNICODE(m_pszEndSpeedLabel, m_pwEndSpeedLabel);
 
     surface()->DrawSetTextPos(endvel_xpos, endvel_ypos);
@@ -276,7 +266,7 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- AVG VELOCITY---
-    Q_snprintf(m_pszAvgSpeedLabel, sizeof(m_pszAvgSpeedLabel), "%s %f",
+    Q_snprintf(m_pszAvgSpeedLabel, BUFSIZELOCL, "%s %f",
         avgVelLocalized,
         m_flAvgSpeed
         );
@@ -287,11 +277,11 @@ void CHudMapFinishedDialog::Paint()
     // ---------------------
 
     // --- MAX VELOCITY---
-    Q_snprintf(m_pszMaxSpeedLabel, sizeof(m_pszMaxSpeedLabel), "%s %f",
+    Q_snprintf(m_pszMaxSpeedLabel, BUFSIZELOCL, "%s %f",
         maxVelLocalized,
         m_flMaxSpeed
         );
-
+    
     ANSI_TO_UNICODE(m_pszMaxSpeedLabel, m_pwMaxSpeedLabel);
 
     surface()->DrawSetTextPos(maxvel_xpos, maxvel_ypos);
@@ -301,36 +291,24 @@ void CHudMapFinishedDialog::Paint()
     // ---- RUN SAVING AND UPLOADING ----
 
     // -- run save --
-    Q_snprintf(m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel,
-        m_bRunSaved ? sizeof(m_pszRunSavedLabel) : sizeof(m_pszRunNotSavedLabel), "%s",
-        m_bRunSaved ? runSaveLocalized : runNotSaveLocalized);
-
-    ANSI_TO_UNICODE(m_bRunSaved ? m_pszRunSavedLabel : m_pszRunNotSavedLabel,
-        m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel);
+    wchar_t *runSaveUni = m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel;
 
     // -- run upload --
-    Q_snprintf(m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
-        m_bRunUploaded ? sizeof(m_pszRunUploadedLabel) : sizeof(m_pszRunNotUploadedLabel), "%s",
-        m_bRunUploaded ? runUploadLocalized : runNotUploadLocalized);
+    wchar_t *runUploadUni = m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel;
 
-    ANSI_TO_UNICODE(m_bRunUploaded ? m_pszRunUploadedLabel : m_pszRunNotUploadedLabel,
-        m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel);
-
-    int save_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, 
-        m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel) / 2; //center label
+    // -- draw run save --
+    int save_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, runSaveUni) / 2; //center label
 
     surface()->DrawSetTextPos(save_text_xpos, runsave_ypos);
-    surface()->DrawSetTextColor(m_bRunSaved ? GetFgColor() : COLOR_RED);
-    surface()->DrawPrintText(m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel, 
-        m_bRunSaved ? wcslen(m_pwRunSavedLabel) : wcslen(m_pwRunNotSavedLabel));
+    surface()->DrawSetTextColor(m_bRunSaved ? GetFgColor() : COLOR_RED);//MOM_TODO: should the success color be green?
+    surface()->DrawPrintText(runSaveUni, wcslen(runSaveUni));
 
-    int upload_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont,
-        m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel) / 2; //center label
+    // -- draw run upload --
+    int upload_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, runUploadUni) / 2; //center label
 
     surface()->DrawSetTextPos(upload_text_xpos, runupload_ypos);
-    surface()->DrawSetTextColor(m_bRunUploaded ? GetFgColor() : COLOR_RED);
-    surface()->DrawPrintText(m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel, 
-        m_bRunUploaded ? wcslen(m_pwRunUploadedLabel) : wcslen(m_pwRunNotUploadedLabel));
+    surface()->DrawSetTextColor(m_bRunUploaded ? GetFgColor() : COLOR_RED);//MOM_TODO: should the success color be green?
+    surface()->DrawPrintText(runUploadUni, wcslen(runUploadUni));
     // ----------------
     // ------------------------------
 }
