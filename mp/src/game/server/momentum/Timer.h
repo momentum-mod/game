@@ -181,7 +181,7 @@ private:
         float stagetime[MAX_STAGES], stageentertime[MAX_STAGES], stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES];
 
         //These members are 2D arrays which store the XYZ velocity length in index 0 and XY velocity in index 1
-        float stagestartvel[MAX_STAGES][2], stageendvel[MAX_STAGES][2],
+        float stagestartvel[MAX_STAGES][2], stageexitvel[MAX_STAGES][2],
             stageavgvel[MAX_STAGES][2], stagemaxvel[MAX_STAGES][2];
 
         int stagejumps[MAX_STAGES], stagestrafes[MAX_STAGES];

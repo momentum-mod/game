@@ -108,13 +108,13 @@ void CTimer::LoadLocalTimes(const char *szMapname)
                     t.stageavgvel[i][0] = subKv->GetFloat("avg_vel");
                     t.stagemaxvel[i][0] = subKv->GetFloat("max_vel");
                     t.stagestartvel[i][0] = subKv->GetFloat("stage_enter_vel");
-                    t.stageendvel[i][0] = subKv->GetFloat("stage_exit_vel");
+                    t.stageexitvel[i][0] = subKv->GetFloat("stage_exit_vel");
 
                     //2D Velocity Stats
                     t.stageavgvel[i][1] = subKv->GetFloat("avg_vel_2D");
                     t.stagemaxvel[i][1] = subKv->GetFloat("max_vel_2D");
                     t.stagestartvel[i][1] = subKv->GetFloat("stage_enter_vel_2D");
-                    t.stageendvel[i][1] = subKv->GetFloat("stage_exit_vel_2D");
+                    t.stageexitvel[i][1] = subKv->GetFloat("stage_exit_vel_2D");
                 }
                 if (!Q_strcmp(subKv->GetName(), "total"))
                 {
@@ -125,13 +125,13 @@ void CTimer::LoadLocalTimes(const char *szMapname)
                     //3D
                     t.stageavgvel[0][0] = subKv->GetFloat("avg_vel");
                     t.stagemaxvel[0][0] = subKv->GetFloat("max_vel");
-                    t.stagestartvel[0][0] = subKv->GetFloat("star_tvel");
-                    t.stageendvel[0][0] = subKv->GetFloat("end_vel");
+                    t.stagestartvel[0][0] = subKv->GetFloat("start_vel");
+                    t.stageexitvel[0][0] = subKv->GetFloat("end_vel");
                     //2D
                     t.stageavgvel[0][1] = subKv->GetFloat("avg_vel_2D");
                     t.stagemaxvel[0][1] = subKv->GetFloat("max_vel_2D");
                     t.stagestartvel[0][1] = subKv->GetFloat("start_vel_2D");
-                    t.stageendvel[0][1] = subKv->GetFloat("end_vel_2D");
+                    t.stageexitvel[0][1] = subKv->GetFloat("end_vel_2D");
                 }     
             }
             localTimes.AddToTail(t);
@@ -170,12 +170,12 @@ void CTimer::SaveTime()
         pOverallKey->SetFloat("avgsync2", t.stageavgsync2[0]);
 
         pOverallKey->SetFloat("start_vel", t.stagestartvel[0][0]);
-        pOverallKey->SetFloat("end_vel", t.stageendvel[0][0]);
+        pOverallKey->SetFloat("end_vel", t.stageexitvel[0][0]);
         pOverallKey->SetFloat("avg_vel", t.stageavgvel[0][0]);
         pOverallKey->SetFloat("max_vel", t.stagemaxvel[0][0]);
 
         pOverallKey->SetFloat("start_vel_2D", t.stagestartvel[0][1]);
-        pOverallKey->SetFloat("end_vel_2D", t.stageendvel[0][1]);
+        pOverallKey->SetFloat("end_vel_2D", t.stageexitvel[0][1]);
         pOverallKey->SetFloat("avg_vel_2D", t.stageavgvel[0][1]);
         pOverallKey->SetFloat("max_vel_2D", t.stagemaxvel[0][1]);
 
@@ -197,12 +197,12 @@ void CTimer::SaveTime()
                 pStageKey->SetFloat("avg_vel", t.stageavgvel[i2][0]);
                 pStageKey->SetFloat("max_vel", t.stagemaxvel[i2][0]);
                 pStageKey->SetFloat("stage_enter_vel", t.stagestartvel[i2][0]);
-                pStageKey->SetFloat("stage_exit_vel", t.stageendvel[i2][0]);
+                pStageKey->SetFloat("stage_exit_vel", t.stageexitvel[i2][0]);
 
                 pStageKey->SetFloat("avg_vel_2D", t.stageavgvel[i2][1]);
                 pStageKey->SetFloat("max_vel_2D", t.stagemaxvel[i2][1]);
                 pStageKey->SetFloat("stage_enter_vel_2D", t.stagestartvel[i2][1]);
-                pStageKey->SetFloat("stage_exit_vel_2D", t.stageendvel[i2][1]);
+                pStageKey->SetFloat("stage_exit_vel_2D", t.stageexitvel[i2][1]);
 
                 pSubkey->AddSubKey(pStageKey);
             }
@@ -257,7 +257,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
             t.stageavgvel[0][j] = pPlayer->m_flStageVelocityAvg[0][j];
             t.stagemaxvel[0][j] = pPlayer->m_flStageVelocityMax[0][j];
             t.stagestartvel[0][j] = pPlayer->m_flStageEnterVelocity[0][j];
-            t.stageendvel[0][j] =  pPlayer->m_flStageExitVelocity[0][j];
+            t.stageexitvel[0][j] =  pPlayer->m_flStageExitVelocity[0][j];
         }
         // --------
         if (GetStageCount() > 1) //don't save stage specific stats if we are on a linear map
@@ -276,7 +276,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
                     t.stageavgvel[i][k] = pPlayer->m_flStageVelocityAvg[i][k];
                     t.stagemaxvel[i][k] = pPlayer->m_flStageVelocityMax[i][k];
                     t.stagestartvel[i][k] = pPlayer->m_flStageEnterVelocity[i][k];
-                    t.stageendvel[i][k] = pPlayer->m_flStageExitVelocity[i][k]; 
+                    t.stageexitvel[i][k] = pPlayer->m_flStageExitVelocity[i][k]; 
                 } 
             }
         }   

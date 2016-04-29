@@ -333,7 +333,8 @@ void C_Timer::Paint(void)
             if (!m_vecBestTimes.IsEmpty())
             {
                 hasComparison = true;
-                diff = g_MOMEventListener->m_flStageTime[m_iStageCurrent - 1] - m_vecBestTimes[m_iStageCurrent - 1];
+                //Has to be m_vecBestTimes[m_iStageCurrent - 2<----] because of array indexing
+                diff = g_MOMEventListener->m_flStageTime[m_iStageCurrent - 1] - m_vecBestTimes[m_iStageCurrent - 2];
 
                 //MOM_TODO: what if the diff == 0? (probably unlikely)
                 losingTime = (diff > 0);//If diff > 0, that means you're falling behind your PB!
