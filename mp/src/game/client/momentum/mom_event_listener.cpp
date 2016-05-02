@@ -27,13 +27,13 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         m_flStageStrafeSyncAvg[0] = pEvent->GetFloat("avg_sync");
         m_flStageStrafeSync2Avg[0] = pEvent->GetFloat("avg_sync2");
         //3D
-        m_flStageExitSpeed[0][0] = pEvent->GetFloat("start_vel");
-        m_flStageStartSpeed[0][0] = pEvent->GetFloat("end_vel");
+        m_flStageStartSpeed[0][0] = pEvent->GetFloat("start_vel");
+        m_flStageExitSpeed[0][0] = pEvent->GetFloat("end_vel");
         m_flStageVelocityAvg[0][0] = pEvent->GetFloat("avg_vel");
         m_flStageVelocityMax[0][0] = pEvent->GetFloat("max_vel");
         //2D
-        m_flStageExitSpeed[0][1] = pEvent->GetFloat("start_vel_2D");
-        m_flStageStartSpeed[0][1] = pEvent->GetFloat("end_vel_2D");
+        m_flStageStartSpeed[0][1] = pEvent->GetFloat("start_vel_2D");
+        m_flStageExitSpeed[0][1] = pEvent->GetFloat("end_vel_2D");
         m_flStageVelocityAvg[0][1] = pEvent->GetFloat("avg_vel_2D");
         m_flStageVelocityMax[0][1] = pEvent->GetFloat("max_vel_2D");
     }

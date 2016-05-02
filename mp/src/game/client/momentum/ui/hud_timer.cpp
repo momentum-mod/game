@@ -124,7 +124,6 @@ private:
     bool m_bShowCheckpoints;
     bool m_bMapFinished;
     int m_iCheckpointCount, m_iCheckpointCurrent;
-    Color panelColor;
     char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL], 
         noTimerLocalized[BUFSIZELOCL];
@@ -333,8 +332,8 @@ void C_Timer::Paint(void)
             if (!m_vecBestTimes.IsEmpty())
             {
                 hasComparison = true;
-                //Has to be m_vecBestTimes[m_iStageCurrent - 2<----] because of array indexing
-                diff = g_MOMEventListener->m_flStageTime[m_iStageCurrent - 1] - m_vecBestTimes[m_iStageCurrent - 2];
+                //Has to be m_vecBestTimes[m_iStageCurrent - 1] because of array indexing
+                diff = g_MOMEventListener->m_flStageEnterTime[m_iStageCurrent] - m_vecBestTimes[m_iStageCurrent - 1];
 
                 //MOM_TODO: what if the diff == 0? (probably unlikely)
                 losingTime = (diff > 0);//If diff > 0, that means you're falling behind your PB!
@@ -348,9 +347,9 @@ void C_Timer::Paint(void)
             }
             //MOM_TODO: calculate diff from WR (online)
             
-            //Draw the time taken on the previous stage
-            mom_UTIL->FormatTime(g_MOMEventListener->m_flStageTime[m_iStageCurrent - 1], m_pszStageTimeString);
-            Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "(%s)",
+            //Draw the timer split
+            mom_UTIL->FormatTime(g_MOMEventListener->m_flStageEnterTime[m_iStageCurrent], m_pszStageTimeString);
+            Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "%s",
                 m_pszStageTimeString,
                 m_pszStageTimeLabelString
                 );
@@ -374,9 +373,8 @@ void C_Timer::Paint(void)
             Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), startZoneLocalized);
             ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
         }
-        else if (m_iStageCurrent == m_iStageCount && m_bMapFinished)
+        else if (m_bPlayerInZone && m_bMapFinished) //don't check for zone # in case the player skipped one somehow
         {
-            
             //End zone
             Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), mapFinishedLocalized);
             ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
@@ -446,7 +444,7 @@ void C_Timer::Paint(void)
 
         surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
     }
-    else //don't draw stages when drawing checkpoints, and vise versa
+    else //don't draw stages when drawing checkpoints, and vise versa.
     {
         // MOM_TODO: Print this only if map gamemode is supported
         if (center_stage)
@@ -464,19 +462,33 @@ void C_Timer::Paint(void)
             wcslen(m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages));
 
         //MOM_TODO: Overhaul comparisons (stage PB, vs WR, velocities...)
-        if (m_iStageCurrent > 1) //only draw stage timer if we are on stage 2 or above.
+        if (m_iStageCurrent > 1 && m_bIsRunning) //only draw stage timer if we are on stage 2 or above.
         {
-            int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
-            
-            surface()->DrawSetTextPos(text_xpos, cps_ypos);
-            surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
+
             if (hasComparison)
             {
-                text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeComparison) / 2;
-                int tall = surface()->GetFontTall(m_hSmallTextFont);
+                //find the length of the entire comparison string
+                char tempComparisonLabel[BUFSIZELOCL];
+                wchar_t tempComparisonWChar[BUFSIZELOCL];
+                Q_snprintf(tempComparisonLabel, 260, "%s %s", m_pszStageTimeLabelString, m_pszStageTimeComparisonLabel);
+                ANSI_TO_UNICODE(tempComparisonLabel, tempComparisonWChar);
+                int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, tempComparisonWChar) / 2;
+
+                surface()->DrawSetTextColor(m_TextColor);
+                surface()->DrawSetTextPos(text_xpos, cps_ypos);
+                surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
+
+                int lengthOfTime = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeComparison) / 2;
                 surface()->DrawSetTextColor(losingTime ? m_TimeLoss : m_TimeGain);//MOM_TODO: possibly handle ties?
-                surface()->DrawSetTextPos(text_xpos, cps_ypos + tall);
+                surface()->DrawSetTextPos(text_xpos + lengthOfTime + 2, cps_ypos); //add 2 px margin so our times dont overlap each other so much 
                 surface()->DrawPrintText(m_pwStageTimeComparison, wcslen(m_pwStageTimeComparison));
+
+            }
+            else
+            {
+                int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
+                surface()->DrawSetTextPos(text_xpos, cps_ypos);
+                surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
             }
         }
     }

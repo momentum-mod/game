@@ -270,7 +270,7 @@ void MomentumUtil::GetBestStageTimes(KeyValues *pKvBestTime, CUtlVector<float> *
         {
             if (!Q_strnicmp(kv->GetName(), "stage", strlen("stage")))
             {
-                vecInto->AddToTail(kv->GetFloat("time"));
+                vecInto->AddToTail(kv->GetFloat("enter_time"));
             }
         }
     }
