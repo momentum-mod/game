@@ -92,24 +92,31 @@ void CMomentumReplayGhostEntity::HandleGhost() {
         if (currentStep.m_vPlayerOrigin.x == 0.0f)
             return;
 
-        if (mom_replay_firstperson.GetBool())
-        {
-            CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-            if (pPlayer) {
-                //MOM_TODO: interpolate eyeangles and origin somehow so playback doesn't look so jerky
-                pPlayer->SnapEyeAngles(currentStep.m_qEyeAngles);
-                pPlayer->SetAbsOrigin(currentStep.m_vPlayerOrigin);
+        SetAbsOrigin(currentStep.m_vPlayerOrigin); //always set our origin
 
-                pPlayer->m_nButtons &= currentStep.m_nPlayerButtons; // MOM_TODO: make this actually work
-                pPlayer->AddFlag(FL_ATCONTROLS); //prevent keypress from affecting the replay playback 
+        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+        if (pPlayer)
+        {
+            if (mom_replay_firstperson.GetBool())
+            {
+                SetAbsAngles(currentStep.m_qEyeAngles);
+                pPlayer->StartObserverMode(OBS_MODE_CHASE);
+                pPlayer->SetObserverTarget(this);
+                pPlayer->m_nButtons = currentStep.m_nPlayerButtons;
+            }
+            else
+            {
+                SetAbsAngles(QAngle(currentStep.m_qEyeAngles.x / 10, //we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                    currentStep.m_qEyeAngles.y, currentStep.m_qEyeAngles.z));
+                if (pPlayer->IsObserver())
+                {
+                    pPlayer->StopObserverMode();
+                    pPlayer->ForceRespawn();
+                    pPlayer->SetMoveType(MOVETYPE_WALK);
+                }
             }
         }
-        else
-        {
-            SetAbsOrigin(currentStep.m_vPlayerOrigin);
-            SetAbsAngles(QAngle(currentStep.m_qEyeAngles.x / 10, //we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-                currentStep.m_qEyeAngles.y, currentStep.m_qEyeAngles.z)); 
-        }
+
 	}
     //update color, bodygroup, and other params if they change
     if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)

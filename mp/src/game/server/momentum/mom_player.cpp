@@ -54,6 +54,7 @@ void CMomentumPlayer::Spawn()
     SetModel(ENTITY_MODEL);
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
+    RemoveSolidFlags(FSOLID_NOT_SOLID); //this removes the flag that was added while switching to spectator mode which prevented the player from activating triggers
     // do this here because we can't get a local player in the timer class
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
