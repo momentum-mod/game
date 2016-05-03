@@ -249,13 +249,12 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                 timerStopEvent->SetFloat("avg_vel_2D", pPlayer->m_flStageVelocityAvg[0][1]);
                 timerStopEvent->SetFloat("start_vel_2D", pPlayer->m_flStageEnterVelocity[0][1]);
                 float endvel2D = pPlayer->GetLocalVelocity().Length2D();
-                timerStopEvent->SetFloat("end_vel_2D", endvel);
+                timerStopEvent->SetFloat("end_vel_2D", endvel2D);
                 if (endvel2D > pPlayer->m_flStageVelocityMax[0][1])
                     timerStopEvent->SetFloat("max_vel_2D", endvel2D);
                 else
                     timerStopEvent->SetFloat("max_vel_2D", pPlayer->m_flStageVelocityMax[0][1]);
                 pPlayer->m_flStageExitVelocity[0][1] = endvel2D;
-
                 gameeventmanager->FireEvent(timerStopEvent);
             }
             g_Timer->Stop(true);
