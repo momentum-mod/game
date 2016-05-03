@@ -31,6 +31,7 @@ public:
     int m_iLastZoom;
     bool m_bAutoBhop;
     bool m_bDidPlayerBhop;
+    bool m_bIsWatchingReplay;
 
     float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;

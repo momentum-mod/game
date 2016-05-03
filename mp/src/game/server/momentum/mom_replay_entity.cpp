@@ -94,17 +94,27 @@ void CMomentumReplayGhostEntity::HandleGhost() {
 
         SetAbsOrigin(currentStep.m_vPlayerOrigin); //always set our origin
 
-        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
         if (pPlayer)
         {
             if (mom_replay_firstperson.GetBool())
             {
+                pPlayer->m_bIsWatchingReplay = true;
+                if (!pPlayer->IsObserver())
+                {
+                    pPlayer->SetObserverTarget(this);
+                    pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+                }
                 SetAbsAngles(currentStep.m_qEyeAngles);
-                pPlayer->StartObserverMode(OBS_MODE_CHASE);
-                pPlayer->SetObserverTarget(this);
+                SetAbsOrigin(Vector(currentStep.m_vPlayerOrigin.x, currentStep.m_vPlayerOrigin.y, currentStep.m_vPlayerOrigin.z + VEC_VIEW.z));
                 pPlayer->m_nButtons = currentStep.m_nPlayerButtons;
+                if (currentStep.m_nPlayerButtons & IN_DUCK)
+                {
+                    //MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
+                    SetAbsOrigin(Vector(currentStep.m_vPlayerOrigin.x, currentStep.m_vPlayerOrigin.y, currentStep.m_vPlayerOrigin.z + VEC_DUCK_VIEW.z));
+                }
             }
-            else
+            else //we're watching/racing with a ghost
             {
                 SetAbsAngles(QAngle(currentStep.m_qEyeAngles.x / 10, //we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
                     currentStep.m_qEyeAngles.y, currentStep.m_qEyeAngles.z));
@@ -169,9 +179,14 @@ void CMomentumReplayGhostEntity::EndRun()
 	SetNextThink(-1);
 	Remove();
     m_bIsActive = false;
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer) {
-        pPlayer->EnableControl(true);
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer->IsObserver() && pPlayer)
+    {
+        pPlayer->StopObserverMode();
+        pPlayer->ForceRespawn();
+        pPlayer->SetMoveType(MOVETYPE_WALK);
+        pPlayer->m_bIsWatchingReplay = false;
     }
 }
 void CMomentumReplayGhostEntity::clearRunData()

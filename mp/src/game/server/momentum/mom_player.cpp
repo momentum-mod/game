@@ -19,6 +19,8 @@ SendPropInt(SENDINFO(m_iSuccessiveBhops)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
+SendPropBool(SENDINFO(m_bIsWatchingReplay)),
+SendPropInt(SENDINFO(m_nButtons)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
