@@ -40,15 +40,14 @@ public:
 	void EndRun();
 	void StartRun();
 	void HandleGhost();
-	void clearRunData();
 
     bool m_bIsActive;
     int m_nStartTick;
 
 protected:
-	virtual void Think(void);
-    virtual void Spawn(void);
-    virtual void Precache(void);
+	void Think(void) override;
+    void Spawn(void) override;
+    void Precache(void) override;
 
 private:
     char m_pszModel[256], m_pszMapName[256];

@@ -167,7 +167,7 @@ void CHudKeyPressDisplay::OnThink()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer->m_bIsWatchingReplay)
     {
-        m_nButtons = pPlayer->m_nButtons;
+        m_nButtons = pPlayer->m_nReplayButtons;
     }
     else
     {

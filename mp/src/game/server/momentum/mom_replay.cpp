@@ -8,9 +8,12 @@
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     m_player = ToCMOMPlayer( pPlayer);
-    m_bIsRecording = true;
-    Log("Recording began!\n");
-    m_nCurrentTick = 1; //recoring begins at 1 ;)
+    if (!m_bIsWatchingReplay) //don't record if we're watching a preexisting replay
+    {
+        m_bIsRecording = true;
+        Log("Recording began!\n");
+        m_nCurrentTick = 1; //recoring begins at 1 ;)
+    }
 }
 void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, float delay)
 {
@@ -161,6 +164,7 @@ void CMomentumReplaySystem::StartReplay()
     if (ghost != nullptr)
     {
         ghost->StartRun();
+        m_bIsWatchingReplay = true;
     }
 }
 class CMOMReplayCommands

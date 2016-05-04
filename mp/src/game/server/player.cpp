@@ -2661,13 +2661,12 @@ bool CBasePlayer::IsValidObserverTarget(CBaseEntity * target)
 
 	// MOD AUTHORS: Add checks on target here or in derived method
 
-    /*
 	if ( !target->IsPlayer() )	// only track players
 		return false;
 
 	CBasePlayer * player = ToBasePlayer( target );
 
-	/* Don't spec observers or players who haven't picked a class yet
+	/* Don't spec observers or players who haven't picked a class yet */
  	if ( player->IsObserver() )
 		return false;	
 
@@ -2687,7 +2686,7 @@ bool CBasePlayer::IsValidObserverTarget(CBaseEntity * target)
 			return false;	// allow watching until 3 seconds after death to see death animation
 		}
 	}
-    */
+
 	// check forcecamera settings for active players
 	if ( GetTeamNumber() != TEAM_SPECTATOR )
 	{

@@ -32,6 +32,7 @@ public:
     bool m_bAutoBhop;
     bool m_bDidPlayerBhop;
     bool m_bIsWatchingReplay;
+    int m_nReplayButtons; //networked var that allows the replay system to control keypress display on the client
 
     float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;

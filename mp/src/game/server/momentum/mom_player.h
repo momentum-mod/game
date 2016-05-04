@@ -83,7 +83,7 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
     CNetworkVar(float, m_flLastJumpVel);
     CNetworkVar(bool, m_bIsWatchingReplay);
-    CNetworkVar(int, m_nButtons);
+    CNetworkVar(int, m_nReplayButtons);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -97,6 +97,7 @@ class CMomentumPlayer : public CBasePlayer
     void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
 
     void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
+    bool IsValidObserverTarget(CBaseEntity *target) override;
 
     int GetLastBlock() { return m_iLastBlock; }
     float GetPunishTime() { return m_flPunishTime; }

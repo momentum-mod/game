@@ -23,7 +23,6 @@ public:
     }
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, float delay = 1.0f);
-    bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
     void WriteRecordingToFile(CUtlBuffer &buf);
     replay_header_t CreateHeader();
     void WriteRecordingToFile();
@@ -32,15 +31,16 @@ public:
     replay_header_t* ReadHeader(FileHandle_t file, const char* filename);
 
     void StartReplay();
-    void EndRun();
     bool LoadRun(const char* fileName);
     CUtlVector<replay_frame_t> m_vecRunData;
 
+    bool IsWatchingReplay(bool isWatching) { return m_bIsWatchingReplay; }
+    bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
 
 private:
     CUtlBuffer *UpdateRecordingParams(); //called every game frame after entities think and update
 
-    bool m_bIsRecording;
+    bool m_bIsRecording, m_bIsWatchingReplay;
     int m_nCurrentTick;
 
     CMomentumPlayer *m_player;

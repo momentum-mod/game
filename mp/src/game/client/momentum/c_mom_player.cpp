@@ -17,7 +17,7 @@ RecvPropFloat(RECVINFO(m_flStrafeSync)),
 RecvPropFloat(RECVINFO(m_flStrafeSync2)),
 RecvPropFloat(RECVINFO(m_flLastJumpVel)),
 RecvPropBool(RECVINFO(m_bIsWatchingReplay)),
-RecvPropInt(RECVINFO(m_nButtons)),
+RecvPropInt(RECVINFO(m_nReplayButtons)),
 //RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
 //RecvPropBool(RECVINFO(m_fIsSprinting)),
 END_RECV_TABLE()

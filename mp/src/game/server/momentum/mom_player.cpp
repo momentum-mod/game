@@ -20,7 +20,7 @@ SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
 SendPropBool(SENDINFO(m_bIsWatchingReplay)),
-SendPropInt(SENDINFO(m_nButtons)),
+SendPropInt(SENDINFO(m_nReplayButtons)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -413,4 +413,47 @@ void CMomentumPlayer::LimitSpeedInStartZone()
         }
     }
     SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
+}
+//override of CBasePlayer::IsValidObserverTarget that allows us to spectate replay ghosts
+bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
+{
+    if (target == NULL)
+        return false;
+
+    if (!target->IsPlayer())
+    {
+        if (!Q_strcmp(target->GetClassname(), "mom_replay_ghost")) //target is a replay ghost
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    CMomentumPlayer *player = ToCMOMPlayer( target );
+
+    /* Don't spec observers or players who haven't picked a class yet */
+    if ( player->IsObserver() )
+        return false;
+
+    if( player == this )
+        return false; // We can't observe ourselves.
+
+    if ( player->IsEffectActive( EF_NODRAW ) ) // don't watch invisible players
+        return false;
+
+    if ( player->m_lifeState == LIFE_RESPAWNABLE ) // target is dead, waiting for respawn
+        return false;
+
+    if ( player->m_lifeState == LIFE_DEAD || player->m_lifeState == LIFE_DYING )
+    {
+        if ( (player->m_flDeathTime + DEATH_ANIMATION_TIME ) < gpGlobals->curtime )
+        {
+            return false;	// allow watching until 3 seconds after death to see death animation
+        }
+    }
+
+    return true;	// passed all tests
 }

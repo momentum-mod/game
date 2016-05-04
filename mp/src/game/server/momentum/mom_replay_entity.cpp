@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "mom_replay_entity.h"
 #include "util/mom_util.h"
+#include "Timer.h"
 
 static ConVar mom_replay_firstperson("mom_replay_firstperson", "0", 
     FCVAR_CLIENTCMD_CAN_EXECUTE, "Watch replay in first-person", true, 0, true, 1);
@@ -56,13 +57,12 @@ void CMomentumReplayGhostEntity::StartRun()
     m_bIsActive = true;
     step = 1;
     SetAbsOrigin(g_ReplaySystem->m_vecRunData[0].m_vPlayerOrigin);
-
 	SetNextThink(gpGlobals->curtime);
 }
 void CMomentumReplayGhostEntity::updateStep() 
 {
     currentStep = g_ReplaySystem->m_vecRunData[step];
-    step++;
+    nextStep = g_ReplaySystem->m_vecRunData[++step];
 }
 //-----------------------------------------------------------------------------
 // Purpose: Think function to move the ghost
@@ -93,7 +93,6 @@ void CMomentumReplayGhostEntity::HandleGhost() {
             return;
 
         SetAbsOrigin(currentStep.m_vPlayerOrigin); //always set our origin
-
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
         if (pPlayer)
         {
@@ -104,21 +103,34 @@ void CMomentumReplayGhostEntity::HandleGhost() {
                 {
                     pPlayer->SetObserverTarget(this);
                     pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+                    pPlayer->RemoveSolidFlags(FSOLID_NOT_SOLID); //allow the player to trigger the timer start/zones/etc
                 }
+                pPlayer->ForceObserverMode(OBS_MODE_IN_EYE); //don't allow other observer modes...
+                
+                //interpolate vel from difference in origin
+                float distX = fabs(currentStep.m_vPlayerOrigin.x - nextStep.m_vPlayerOrigin.x);
+                float distY= fabs(currentStep.m_vPlayerOrigin.y - nextStep.m_vPlayerOrigin.y);
+                float distZ = fabs(currentStep.m_vPlayerOrigin.z - nextStep.m_vPlayerOrigin.z);
+                Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+
                 SetAbsAngles(currentStep.m_qEyeAngles);
-                SetAbsOrigin(Vector(currentStep.m_vPlayerOrigin.x, currentStep.m_vPlayerOrigin.y, currentStep.m_vPlayerOrigin.z + VEC_VIEW.z));
-                pPlayer->m_nButtons = currentStep.m_nPlayerButtons;
+                SetAbsVelocity(interpolatedVel);
+                SetAbsOrigin(currentStep.m_vPlayerOrigin + VEC_VIEW); 
+
+                pPlayer->m_nReplayButtons = currentStep.m_nPlayerButtons; //networked var that allows the replay to control keypress display on the client
+                pPlayer->SnapEyeAngles(currentStep.m_qEyeAngles);
+
                 if (currentStep.m_nPlayerButtons & IN_DUCK)
                 {
                     //MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
-                    SetAbsOrigin(Vector(currentStep.m_vPlayerOrigin.x, currentStep.m_vPlayerOrigin.y, currentStep.m_vPlayerOrigin.z + VEC_DUCK_VIEW.z));
+                    SetAbsOrigin(currentStep.m_vPlayerOrigin + VEC_DUCK_VIEW);
                 }
             }
             else //we're watching/racing with a ghost
             {
                 SetAbsAngles(QAngle(currentStep.m_qEyeAngles.x / 10, //we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
                     currentStep.m_qEyeAngles.y, currentStep.m_qEyeAngles.z));
-                if (pPlayer->IsObserver())
+                if (pPlayer->IsObserver()) //bring the player out of obs mode if theyre current observing
                 {
                     pPlayer->StopObserverMode();
                     pPlayer->ForceRespawn();
@@ -179,6 +191,8 @@ void CMomentumReplayGhostEntity::EndRun()
 	SetNextThink(-1);
 	Remove();
     m_bIsActive = false;
+    g_ReplaySystem->IsWatchingReplay(false);
+    g_Timer.Stop(false);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     if (pPlayer->IsObserver() && pPlayer)
@@ -187,10 +201,6 @@ void CMomentumReplayGhostEntity::EndRun()
         pPlayer->ForceRespawn();
         pPlayer->SetMoveType(MOVETYPE_WALK);
         pPlayer->m_bIsWatchingReplay = false;
+        pPlayer->m_flLastJumpVel = 0;
     }
 }
-void CMomentumReplayGhostEntity::clearRunData()
-{
-    g_ReplaySystem->m_vecRunData.RemoveAll();
-}
-
