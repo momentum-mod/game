@@ -8,7 +8,7 @@
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     m_player = ToCMOMPlayer( pPlayer);
-    if (!m_bIsWatchingReplay) //don't record if we're watching a preexisting replay
+    if (!m_player->m_bIsWatchingReplay) //don't record if we're watching a preexisting replay
     {
         m_bIsRecording = true;
         Log("Recording began!\n");
@@ -146,6 +146,7 @@ bool CMomentumReplaySystem::LoadRun(const char* filename)
         }
         else
         {
+            Q_strncpy(loadedReplayMapName, header->mapName, MAX_MAP_NAME);
             while (!filesystem->EndOfFile(m_fhFileHandle))
             {
                 replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
@@ -164,7 +165,6 @@ void CMomentumReplaySystem::StartReplay()
     if (ghost != nullptr)
     {
         ghost->StartRun();
-        m_bIsWatchingReplay = true;
     }
 }
 class CMOMReplayCommands
@@ -174,7 +174,14 @@ public:
     {
         if (args.ArgC() > 1) { //we passed any argument at all
             if (g_ReplaySystem->LoadRun(args.ArgS())) {
-                g_ReplaySystem->StartReplay();
+                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->loadedReplayMapName))
+                {
+                    g_ReplaySystem->StartReplay();
+                }
+                else
+                {
+                    Warning("Error: Tried to start replay on incorrect map! Please load map %s", g_ReplaySystem->loadedReplayMapName);
+                }
             }
         }
     }

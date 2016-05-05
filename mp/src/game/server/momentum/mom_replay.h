@@ -34,13 +34,12 @@ public:
     bool LoadRun(const char* fileName);
     CUtlVector<replay_frame_t> m_vecRunData;
 
-    bool IsWatchingReplay(bool isWatching) { return m_bIsWatchingReplay; }
     bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
-
+    char loadedReplayMapName[MAX_MAP_NAME];
 private:
     CUtlBuffer *UpdateRecordingParams(); //called every game frame after entities think and update
 
-    bool m_bIsRecording, m_bIsWatchingReplay;
+    bool m_bIsRecording, m_bTimerRunning;
     int m_nCurrentTick;
 
     CMomentumPlayer *m_player;

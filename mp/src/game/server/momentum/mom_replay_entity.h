@@ -40,6 +40,7 @@ public:
 	void EndRun();
 	void StartRun();
 	void HandleGhost();
+    void UpdateStats(Vector ghostVel, CMomentumPlayer *pPlayer); //for hud display..
 
     bool m_bIsActive;
     int m_nStartTick;
@@ -58,4 +59,9 @@ private:
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
     Color m_ghostColor;
     static Color m_newGhostColor;
+
+    //for faking strafe sync calculations
+    QAngle m_qLastEyeAngle;
+    float m_flLastSyncVelocity;
+    int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;
 };

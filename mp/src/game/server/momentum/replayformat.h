@@ -50,7 +50,6 @@ struct replay_header_t
     int m_nStageJumps[MAX_STAGES], m_nStageStrafes[MAX_STAGES];
     float m_flStageVelocityMax[MAX_STAGES], m_flStageVelocityAvg[MAX_STAGES],
         m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES], m_flStageEnterVelocity[MAX_STAGES];
-
 };
 //byteswap for int and float members of header, swaps the endianness (byte order) in order to read correctly
 inline void ByteSwap_replay_header_t(replay_header_t &swap)
