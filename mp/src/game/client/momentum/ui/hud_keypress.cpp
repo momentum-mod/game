@@ -15,6 +15,8 @@
 #include "mom_player_shared.h"
 #include "mom_event_listener.h"
 
+#define KEYDRAW_MIN 0.05f
+
 using namespace vgui; 
 
 static ConVar showkeys("mom_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
@@ -72,6 +74,12 @@ private:
     wchar_t m_pwright[BUFSIZESHORT];
     wchar_t m_pwjump[BUFSIZELOCL];
     wchar_t m_pwduck[BUFSIZELOCL];
+    float m_fFwdColorUntil;
+    float m_fLeftColorUntil;
+    float m_fBackColorUntil;
+    float m_fRightColorUntil;
+    float m_fJumpColorUntil;
+    float m_fDuckColorUntil;
 };
 
 DECLARE_HUDELEMENT(CHudKeyPressDisplay);
@@ -97,6 +105,8 @@ void CHudKeyPressDisplay::Init()
     Q_wcsncpy(m_pwjump, uJumpUnicode, sizeof(m_pwjump)); //use buffer-safe wcscpy so we don't crash on startup if localization file is corrupted
     wchar_t *uDuckUnicode = g_pVGuiLocalize->Find("#MOM_Duck");
     Q_wcsncpy(m_pwduck, uDuckUnicode, sizeof(m_pwduck));
+
+    m_fFwdColorUntil = m_fLeftColorUntil = m_fBackColorUntil = m_fRightColorUntil = m_fJumpColorUntil = m_fDuckColorUntil = 0;
 }
 void CHudKeyPressDisplay::Paint()
 {
@@ -105,24 +115,40 @@ void CHudKeyPressDisplay::Paint()
     //then, color the key in if it's pressed
     surface()->DrawSetTextColor(m_Normal);
     surface()->DrawSetTextFont(m_hTextFont);
-    if (m_nButtons & IN_FORWARD)
+    if (m_nButtons & IN_FORWARD || gpGlobals->curtime < m_fFwdColorUntil)
     {
+        if (m_nButtons & IN_FORWARD)
+        {
+            m_fFwdColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwfwd), top_row_ypos);
         surface()->DrawPrintText(m_pwfwd, wcslen(m_pwfwd));
     }
-    if (m_nButtons & IN_MOVELEFT)
+    if (m_nButtons & IN_MOVELEFT || gpGlobals->curtime < m_fLeftColorUntil)
     {
+        if (m_nButtons & IN_MOVELEFT)
+        {
+            m_fLeftColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         int text_left = GetTextCenter(m_hTextFont, m_pwleft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwleft);
         surface()->DrawSetTextPos(text_left, mid_row_ypos);
         surface()->DrawPrintText(m_pwleft, wcslen(m_pwleft));
     }
-    if (m_nButtons & IN_BACK)
+    if (m_nButtons & IN_BACK || gpGlobals->curtime < m_fBackColorUntil)
     {
+        if (m_nButtons & IN_BACK)
+        {
+            m_fBackColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), lower_row_ypos);
         surface()->DrawPrintText(m_pwback, wcslen(m_pwback));
     }
-    if (m_nButtons & IN_MOVERIGHT)
+    if (m_nButtons & IN_MOVERIGHT || gpGlobals->curtime < m_fRightColorUntil)
     {
+        if (m_nButtons & IN_MOVERIGHT)
+        {
+            m_fRightColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         int text_right = GetTextCenter(m_hTextFont, m_pwright) + UTIL_ComputeStringWidth(m_hTextFont, m_pwright);
         surface()->DrawSetTextPos(text_right, mid_row_ypos);
         surface()->DrawPrintText(m_pwright, wcslen(m_pwright));
@@ -130,13 +156,21 @@ void CHudKeyPressDisplay::Paint()
     //reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
-    if (m_nButtons & IN_JUMP)
+    if (m_nButtons & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
     {
+        if (m_nButtons & IN_JUMP)
+        {
+            m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), jump_row_ypos);
         surface()->DrawPrintText(m_pwjump, wcslen(m_pwjump));
     }
-    if (m_nButtons & IN_DUCK)
+    if (m_nButtons & IN_DUCK || gpGlobals->curtime < m_fDuckColorUntil)
     {
+        if (m_nButtons & IN_DUCK)
+        {
+            m_fDuckColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), duck_row_ypos);
         surface()->DrawPrintText(m_pwduck, wcslen(m_pwduck));
     }
