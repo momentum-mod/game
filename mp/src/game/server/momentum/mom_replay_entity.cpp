@@ -4,7 +4,7 @@
 #include "Timer.h"
 
 static ConVar mom_replay_firstperson("mom_replay_firstperson", "0", 
-    FCVAR_CLIENTCMD_CAN_EXECUTE, "Watch replay in first-person", true, 0, true, 1);
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Watch replay in first-person", true, 0, true, 1);
 static ConVar mom_replay_reverse("mom_replay_reverse", "0",
     FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay", true, 0, true, 1);
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11", 
@@ -258,7 +258,7 @@ void CMomentumReplayGhostEntity::EndRun()
     g_Timer.Stop(false);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
-    if (pPlayer->IsObserver() && pPlayer)
+    if (pPlayer && pPlayer->IsObserver())
     {
         pPlayer->StopObserverMode();
         pPlayer->ForceRespawn();
