@@ -15,7 +15,7 @@
 #include "mom_player_shared.h"
 #include "mom_event_listener.h"
 
-#define KEYDRAW_MIN 0.05f
+#define KEYDRAW_MIN 0.07f
 
 using namespace vgui; 
 
@@ -102,7 +102,7 @@ void CHudKeyPressDisplay::Init()
     wchar_t *uDuckUnicode = g_pVGuiLocalize->Find("#MOM_Duck");
     Q_wcsncpy(m_pwduck, uDuckUnicode, sizeof(m_pwduck));
 
-    m_fFwdColorUntil = m_fLeftColorUntil = m_fBackColorUntil = m_fRightColorUntil = m_fJumpColorUntil = m_fDuckColorUntil = 0;
+    m_fJumpColorUntil = m_fDuckColorUntil = 0;
 }
 void CHudKeyPressDisplay::Paint()
 {
