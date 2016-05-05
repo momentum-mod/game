@@ -74,10 +74,6 @@ private:
     wchar_t m_pwright[BUFSIZESHORT];
     wchar_t m_pwjump[BUFSIZELOCL];
     wchar_t m_pwduck[BUFSIZELOCL];
-    float m_fFwdColorUntil;
-    float m_fLeftColorUntil;
-    float m_fBackColorUntil;
-    float m_fRightColorUntil;
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
 };
@@ -115,40 +111,24 @@ void CHudKeyPressDisplay::Paint()
     //then, color the key in if it's pressed
     surface()->DrawSetTextColor(m_Normal);
     surface()->DrawSetTextFont(m_hTextFont);
-    if (m_nButtons & IN_FORWARD || gpGlobals->curtime < m_fFwdColorUntil)
+    if (m_nButtons & IN_FORWARD)
     {
-        if (m_nButtons & IN_FORWARD)
-        {
-            m_fFwdColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
-        }
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwfwd), top_row_ypos);
         surface()->DrawPrintText(m_pwfwd, wcslen(m_pwfwd));
     }
-    if (m_nButtons & IN_MOVELEFT || gpGlobals->curtime < m_fLeftColorUntil)
+    if (m_nButtons & IN_MOVELEFT)
     {
-        if (m_nButtons & IN_MOVELEFT)
-        {
-            m_fLeftColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
-        }
         int text_left = GetTextCenter(m_hTextFont, m_pwleft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwleft);
         surface()->DrawSetTextPos(text_left, mid_row_ypos);
         surface()->DrawPrintText(m_pwleft, wcslen(m_pwleft));
     }
-    if (m_nButtons & IN_BACK || gpGlobals->curtime < m_fBackColorUntil)
+    if (m_nButtons & IN_BACK)
     {
-        if (m_nButtons & IN_BACK)
-        {
-            m_fBackColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
-        }
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), lower_row_ypos);
         surface()->DrawPrintText(m_pwback, wcslen(m_pwback));
     }
-    if (m_nButtons & IN_MOVERIGHT || gpGlobals->curtime < m_fRightColorUntil)
+    if (m_nButtons & IN_MOVERIGHT)
     {
-        if (m_nButtons & IN_MOVERIGHT)
-        {
-            m_fRightColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
-        }
         int text_right = GetTextCenter(m_hTextFont, m_pwright) + UTIL_ComputeStringWidth(m_hTextFont, m_pwright);
         surface()->DrawSetTextPos(text_right, mid_row_ypos);
         surface()->DrawPrintText(m_pwright, wcslen(m_pwright));
