@@ -15,30 +15,40 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
         m_nCurrentTick = 1; //recoring begins at 1 ;)
     }
 }
-void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, float delay)
+void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay)
 {
-    m_bIsRecording = false;
     if (throwaway) {
+        m_bIsRecording = false;
         m_buf->Purge();
         return;
     }
-    CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
-    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
-    mom_UTIL.FormatTime(g_Timer.GetLastRunTimeTicks(), gpGlobals->interval_per_tick, runTime);
-    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", pMOMPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr(), runTime);
-    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); //V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
+    if (delay)
+    {
+        m_bShouldStopRec = true;
+        m_fRecEndTime = gpGlobals->curtime;
+    }
+    else
+    {
+        m_bIsRecording = false;
+        m_bShouldStopRec = false;
+        CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
+        char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
+        mom_UTIL.FormatTime(g_Timer.GetLastRunTimeTicks(), gpGlobals->interval_per_tick, runTime);
+        Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", pMOMPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr(), runTime);
+        V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); //V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
 
-    V_FixSlashes(RECORDING_PATH);
-    filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD"); //we have to create the directory here just in case it doesnt exist yet
+        V_FixSlashes(RECORDING_PATH);
+        filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD"); //we have to create the directory here just in case it doesnt exist yet
 
-    m_fhFileHandle = filesystem->Open(newRecordingPath, "w+b", "MOD");
+        m_fhFileHandle = filesystem->Open(newRecordingPath, "w+b", "MOD");
 
-    WriteRecordingToFile(*m_buf);
+        WriteRecordingToFile(*m_buf);
 
-    filesystem->Close(m_fhFileHandle);
-    Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
-    if( LoadRun(newRecordingName) ) //load the last run that we did in case we want to watch it
-        StartReplay();
+        filesystem->Close(m_fhFileHandle);
+        Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
+        if( LoadRun(newRecordingName) ) //load the last run that we did in case we want to watch it
+            StartReplay();
+    }
 }
 CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
 {
@@ -50,6 +60,10 @@ CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
     m_currentFrame.m_vPlayerOrigin = m_player->GetAbsOrigin();
 
     ByteSwap_replay_frame_t(m_currentFrame); //We need to byteswap all of our data first in order to write each byte in the correct order
+
+    if(m_bShouldStopRec)
+        if (gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
+            StopRecording(UTIL_GetLocalPlayer(), false, false);
 
     Assert(buf.IsValid());
     buf.Put(&m_currentFrame, sizeof(replay_frame_t)); //stick all the frame info into the buffer

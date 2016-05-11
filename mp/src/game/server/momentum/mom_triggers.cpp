@@ -155,7 +155,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             g_ReplaySystem->BeginRecording(pPlayer);
         else
         {
-            g_ReplaySystem->StopRecording(pPlayer, true);
+            g_ReplaySystem->StopRecording(pPlayer, true, false);
             g_ReplaySystem->BeginRecording(pPlayer);
         }
     }
@@ -256,7 +256,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         g_Timer.Stop(true);
         //stop demo recording
         if (g_ReplaySystem->IsRecording(pPlayer))
-            g_ReplaySystem->StopRecording(ToCMOMPlayer(pOther), false);
+            g_ReplaySystem->StopRecording(ToCMOMPlayer(pOther), false, true);
     }
     if (mapZoneEvent)
     {

@@ -30,6 +30,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
 	DECLARE_DATADESC();
 public:
+    ~CMomentumReplayGhostEntity(){ g_ReplaySystem->m_bIsWatchingReplay = false;}
 	const char* GetGhostModel();
 	void SetGhostModel(const char* model);
     void SetGhostBodyGroup(int bodyGroup);

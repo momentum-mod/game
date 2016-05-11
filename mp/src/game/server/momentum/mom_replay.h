@@ -9,6 +9,7 @@
 #include "replayformat.h"
 
 #define RECORDING_PATH "recordings"
+#define END_RECORDING_PAUSE 1.0
 
 class CMomentumReplaySystem : CAutoGameSystemPerFrame
 {
@@ -22,7 +23,7 @@ public:
         }
     }
     void BeginRecording(CBasePlayer *pPlayer);
-    void StopRecording(CBasePlayer *pPlayer, bool throwaway, float delay = 1.0f);
+    void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
     void WriteRecordingToFile(CUtlBuffer &buf);
     replay_header_t CreateHeader();
     void WriteRecordingToFile();
@@ -35,12 +36,17 @@ public:
     CUtlVector<replay_frame_t> m_vecRunData;
 
     bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
+
     char loadedReplayMapName[MAX_MAP_NAME];
+    bool m_bIsWatchingReplay;
+
 private:
     CUtlBuffer *UpdateRecordingParams(); //called every game frame after entities think and update
 
-    bool m_bIsRecording, m_bTimerRunning;
+    bool m_bIsRecording;
+    bool m_bShouldStopRec;
     int m_nCurrentTick;
+    float m_fRecEndTime;
 
     CMomentumPlayer *m_player;
 
