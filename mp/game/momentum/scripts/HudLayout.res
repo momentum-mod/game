@@ -35,8 +35,6 @@
 				"TextFont"		"HudHintTextLarge"
 				"SmallTextFont"	"HudHintTextSmall"
 				"TextColor"	"MOM.Panel.Fg"
-                "TimeGainColor" "MOM.Timer.Gain"
-                "TimeLossColor" "MOM.Timer.Loss"
 				"centerTime"	"1" //If true, won't use time_xpos, centering the text instead
                 "time_xpos"		"50"
                 "time_ypos"		"3"
@@ -156,6 +154,20 @@
 		"KeyPressedColor"	"MOM.Panel.Fg"
 		"KeyOutlineColor"	"Dark Gray"
 	}
+    
+    CHudCompare
+    {
+        "fieldName" "CHudCompare"
+        "xpos" "100"
+        "ypos" "100"
+        "wide" "100"
+        "tall" "300"
+        "visible" "1"
+        "enabled" "1"
+        "TimeGainColor" "MOM.Timer.Gain"
+        "TimeLossColor" "MOM.Timer.Loss"
+    }
+    
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"

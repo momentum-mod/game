@@ -7,7 +7,7 @@
 
 extern IFileSystem* filesystem;
 
-#ifdef GAME_DLL
+//#ifdef GAME_DLL
 void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     if (bIOFailure) return;
@@ -161,7 +161,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
-#endif
+//#endif
 
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision)
 {

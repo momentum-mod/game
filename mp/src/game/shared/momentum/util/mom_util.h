@@ -6,6 +6,7 @@
 
 #include "cbase.h"
 #include "KeyValues.h"
+#include "steam/steam_api.h"
 #include "UtlSortVector.h"
 #include "filesystem.h"
 #include "gason.h"
@@ -14,7 +15,7 @@ class MomentumUtil
 {
 public:
 
-#ifdef GAME_DLL
+//#ifdef GAME_DLL
     void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
     void PostTime(const char* URL);
@@ -31,7 +32,7 @@ public:
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
     void VersionCallback(HTTPRequestCompleted_t*, bool);
         
-#endif
+//#endif
 
     Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
 
