@@ -25,9 +25,9 @@ enum ghostModelBodyGroup
     BODY_CYLINDER
 };
 
-class CMomentumReplayGhostEntity : public CBaseAnimating
+class CMomentumReplayGhostEntity : public CBaseCombatCharacter
 {
-    DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
+    DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseCombatCharacter);
 	DECLARE_DATADESC();
 public:
     ~CMomentumReplayGhostEntity(){ g_ReplaySystem->m_bIsWatchingReplay = false;}
@@ -39,7 +39,7 @@ public:
 	void updateStep();
 
 	void EndRun();
-	void StartRun();
+	void StartRun(bool firstPerson = false);
 	void HandleGhost();
     void UpdateStats(Vector ghostVel, CMomentumPlayer *pPlayer); //for hud display..
 

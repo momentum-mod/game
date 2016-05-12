@@ -132,6 +132,9 @@ $Project "Client (Momentum)"
 			{
 			    $File "$SRCDIR\game\shared\momentum\util\mom_util.cpp"
 				$File "$SRCDIR\game\shared\momentum\util\mom_util.h"
+                $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.cpp"
+				$File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.h"
+
 			}
 
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"

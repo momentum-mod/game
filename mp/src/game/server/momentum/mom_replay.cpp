@@ -4,6 +4,7 @@
 #include "mom_replay_entity.h"
 #include "Timer.h"
 #include "util/mom_util.h"
+#include "util/baseautocompletefilelist.h"
 
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
@@ -133,7 +134,7 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
 
     ByteSwap_replay_header_t(m_replayHeader);
 
-    if (Q_strcmp(m_replayHeader.demofilestamp, DEMO_HEADER_ID)) {
+    if (Q_strcmp(m_replayHeader.demofilestamp, DEMO_HEADER_ID)) { //DEMO_HEADER_ID is __NOT__ the same as the stamp from the header we read from file
         ConMsg("%s has invalid replay header ID.\n", filename);
         return nullptr;
     }
@@ -160,48 +161,68 @@ bool CMomentumReplaySystem::LoadRun(const char* filename)
         }
         else
         {
-            Q_strncpy(loadedReplayMapName, header->mapName, MAX_MAP_NAME);
+            m_loadedHeader = *header;
             while (!filesystem->EndOfFile(m_fhFileHandle))
             {
                 replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
                 m_vecRunData.AddToTail(*frame);
             }
-            return true;
         }
         filesystem->Close(m_fhFileHandle);
+        return true;
     }
     else
         return false;
 }
-void CMomentumReplaySystem::StartReplay()
+void CMomentumReplaySystem::StartReplay(bool firstperson)
 {
     CMomentumReplayGhostEntity *ghost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
     if (ghost != nullptr)
     {
-        ghost->StartRun();
+        ghost->StartRun(firstperson);
     }
 }
 class CMOMReplayCommands
 {
 public:
-    static void PlayRecording(const CCommand &args)
+    static void StartReplay(const CCommand &args, bool firstperson)
     {
-        if (args.ArgC() > 1) { //we passed any argument at all
-            if (g_ReplaySystem->LoadRun(args.ArgS())) {
-                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->loadedReplayMapName))
+        if (args.ArgC() > 0) //we passed any argument at all
+        {
+            char filename[MAX_PATH];
+            if (Q_strstr(args.ArgS(), ".momrec"))
+            {
+                Q_snprintf(filename, MAX_PATH, "%s", args.ArgS());
+            }
+            else
+            {
+                Q_snprintf(filename, MAX_PATH, "%s.momrec", args.ArgS());
+            }
+            if (g_ReplaySystem->LoadRun(filename))
+            {
+                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->m_loadedHeader.mapName))
                 {
-                    g_ReplaySystem->StartReplay();
+                    g_ReplaySystem->StartReplay(firstperson);
                 }
                 else
                 {
-                    Warning("Error: Tried to start replay on incorrect map! Please load map %s", g_ReplaySystem->loadedReplayMapName);
+                    Warning("Error: Tried to start replay on incorrect map! Please load map %s", g_ReplaySystem->m_loadedHeader.mapName);
                 }
             }
         }
     }
+    static void PlayReplayGhost(const CCommand &args)
+    {
+        StartReplay(args, false);
+    }
+    static void PlayReplayFirstPerson(const CCommand &args)
+    {
+        StartReplay(args, true);
+    }
 };
 
-static ConCommand playrecording("playrecording", CMOMReplayCommands::PlayRecording, "plays a recording", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+CON_COMMAND_AUTOCOMPLETEFILE(playreplay_ghost, CMOMReplayCommands::PlayReplayGhost, "begins playback of a replay ghost", "recordings", momrec);
+CON_COMMAND_AUTOCOMPLETEFILE(playreplay, CMOMReplayCommands::PlayReplayFirstPerson, "plays back a replay in first-person", "recordings", momrec);
 
 static CMomentumReplaySystem s_ReplaySystem("MOMReplaySystem");
 CMomentumReplaySystem *g_ReplaySystem = &s_ReplaySystem;

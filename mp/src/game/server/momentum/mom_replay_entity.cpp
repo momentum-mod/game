@@ -51,14 +51,16 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 }
 
-void CMomentumReplayGhostEntity::StartRun() 
+void CMomentumReplayGhostEntity::StartRun(bool firstPerson) 
 {
+    mom_replay_firstperson.SetValue(firstPerson ? "1" : "0");
     Spawn();
     m_nStartTick = gpGlobals->curtime;
     m_bIsActive = true;
     step = 1;
     SetAbsOrigin(g_ReplaySystem->m_vecRunData[0].m_vPlayerOrigin);
 	SetNextThink(gpGlobals->curtime);
+
 }
 void CMomentumReplayGhostEntity::updateStep() 
 {
@@ -114,19 +116,17 @@ void CMomentumReplayGhostEntity::HandleGhost() {
                     pPlayer->SetObserverTarget(this);
                     pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
                 }
-                pPlayer->RemoveSolidFlags(FSOLID_NOT_SOLID);
 
                 if (pPlayer->GetObserverMode() != (OBS_MODE_IN_EYE | OBS_MODE_CHASE)) {
                     //we don't want to allow any other obs modes, only IN EYE and CHASE
                     pPlayer->ForceObserverMode(OBS_MODE_IN_EYE);
                 }
+                pPlayer->SetViewOffset(VEC_VIEW);
+                SetAbsOrigin(currentStep.m_vPlayerOrigin);
                 if (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE) {
-                    //for some reason we can't change the view offset so we have to modify the origin when spectating in first person.
-                    SetAbsOrigin(currentStep.m_vPlayerOrigin + VEC_VIEW);
                     SetAbsAngles(currentStep.m_qEyeAngles);
                 }
                 else {
-                    SetAbsOrigin(currentStep.m_vPlayerOrigin);
                     SetAbsAngles(QAngle(currentStep.m_qEyeAngles.x / 10, //we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
                         currentStep.m_qEyeAngles.y, currentStep.m_qEyeAngles.z));
                 }
@@ -137,7 +137,6 @@ void CMomentumReplayGhostEntity::HandleGhost() {
                 float distZ = fabs(currentStep.m_vPlayerOrigin.z - nextStep.m_vPlayerOrigin.z);
                 Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
                 SetAbsVelocity(interpolatedVel);
-
                 pPlayer->m_nReplayButtons = currentStep.m_nPlayerButtons; //networked var that allows the replay to control keypress display on the client
 
                 if (g_Timer.IsRunning())
@@ -146,8 +145,9 @@ void CMomentumReplayGhostEntity::HandleGhost() {
                 if (currentStep.m_nPlayerButtons & IN_DUCK)
                 {
                     //MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
-                    SetAbsOrigin(currentStep.m_vPlayerOrigin + VEC_DUCK_VIEW);
+                    pPlayer->SetViewOffset(VEC_DUCK_VIEW);
                 }
+
             }
             else //we're watching/racing with a ghost
             {
@@ -248,15 +248,15 @@ void CMomentumReplayGhostEntity::SetGhostBodyGroup(int bodyGroup)
 }
 void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
 {
-    if (mom_UTIL.GetColorFromHex(args.ArgS()))
+    if (mom_UTIL.GetColorFromHex(args.ArgS())) {
         CMomentumReplayGhostEntity::m_newGhostColor = *mom_UTIL.GetColorFromHex(args.ArgS());
+    }
 }
 void CMomentumReplayGhostEntity::EndRun()
 {
 	SetNextThink(-1);
 	Remove();
     m_bIsActive = false;
-    g_Timer.Stop(false);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     if (pPlayer && pPlayer->IsObserver())
@@ -265,6 +265,5 @@ void CMomentumReplayGhostEntity::EndRun()
         pPlayer->ForceRespawn();
         pPlayer->SetMoveType(MOVETYPE_WALK);
         pPlayer->m_bIsWatchingReplay = false;
-        pPlayer->m_flLastJumpVel = 0;
     }
 }

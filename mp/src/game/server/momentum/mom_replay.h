@@ -31,15 +31,14 @@ public:
     replay_frame_t* ReadSingleFrame(FileHandle_t file, const char* filename);
     replay_header_t* ReadHeader(FileHandle_t file, const char* filename);
 
-    void StartReplay();
+    void StartReplay(bool firstperson = false);
     bool LoadRun(const char* fileName);
     CUtlVector<replay_frame_t> m_vecRunData;
 
     bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
 
-    char loadedReplayMapName[MAX_MAP_NAME];
+    replay_header_t m_loadedHeader;
     bool m_bIsWatchingReplay;
-
 private:
     CUtlBuffer *UpdateRecordingParams(); //called every game frame after entities think and update
 
