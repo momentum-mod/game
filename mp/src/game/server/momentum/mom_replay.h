@@ -39,6 +39,7 @@ public:
 
     replay_header_t m_loadedHeader;
     bool m_bIsWatchingReplay;
+    void DispatchTimerStateMessage(CBasePlayer *pPlayer, bool started);
 private:
     CUtlBuffer *UpdateRecordingParams(); //called every game frame after entities think and update
 

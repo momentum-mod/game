@@ -117,12 +117,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                         pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                     }
                 }
-                g_Timer.Start(gpGlobals->tickcount);
             }
-            
+            g_Timer.Start(gpGlobals->tickcount);
         }
         pPlayer->m_bInsideStartZone = false;
     }
+
     IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     if (mapZoneEvent)
     {

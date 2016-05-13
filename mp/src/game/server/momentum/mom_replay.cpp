@@ -179,7 +179,20 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
     CMomentumReplayGhostEntity *ghost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
     if (ghost != nullptr)
     {
+        g_Timer.Stop(false); //stop the timer just in case we started a replay while it was running...
         ghost->StartRun(firstperson);
+    }
+}
+void CMomentumReplaySystem::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool started)
+{
+    if (pPlayer)
+    {
+        CSingleUserRecipientFilter user(pPlayer);
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_State");
+        WRITE_BOOL(started);
+        WRITE_LONG(gpGlobals->tickcount);
+        MessageEnd();
     }
 }
 class CMOMReplayCommands

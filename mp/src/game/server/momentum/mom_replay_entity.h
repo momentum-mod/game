@@ -41,6 +41,7 @@ public:
 	void EndRun();
 	void StartRun(bool firstPerson = false);
 	void HandleGhost();
+    void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel, CMomentumPlayer *pPlayer); //for hud display..
 
     bool m_bIsActive;
