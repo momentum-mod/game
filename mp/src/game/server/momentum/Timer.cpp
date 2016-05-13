@@ -8,13 +8,21 @@ void CTimer::Start(int start)
     if (m_bUsingCPMenu) return;
     m_iStartTick = start;
     SetRunning(true);
-    DispatchStateMessage();
 
-    IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_started");
+    //MOM_TODO: IDEA START:
+    //Move this to mom_triggers.cpp, and make it take a CBasePlayer
+    //as an argument, to pass into the RecipientFilter, so that
+    //anyone who spectates a replay can start their hud_timer, but not
+    //the server timer.
+    DispatchStateMessage();
+    //--- IDEA END
+
+
+    IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (timeStartEvent)
     {
-        timeStartEvent->SetBool("timer_isrunning", true);
+        timeStartEvent->SetBool("is_running", true);
         gameeventmanager->FireEvent(timeStartEvent);
     }
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
@@ -230,7 +238,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
-    IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_started");
+    IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -293,7 +301,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
     }
     if (timeStopEvent)
     {
-        timeStopEvent->SetBool("timer_isrunning", false);
+        timeStopEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timeStopEvent);
     }
     
@@ -379,6 +387,9 @@ void CTimer::DispatchStageMessage()
 
 void CTimer::DispatchStateMessage()
 {
+    //MOM_TODO: after replay merge: change cPlayer to be an argument 
+    //of this method, and make that the Recipient, so that the hud_timer
+    //can start if you're spectating a replay in first person
     CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
     if (cPlayer)
     {

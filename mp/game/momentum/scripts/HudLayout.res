@@ -158,14 +158,17 @@
     CHudCompare
     {
         "fieldName" "CHudCompare"
-        "xpos" "100"
-        "ypos" "100"
-        "wide" "100"
-        "tall" "300"
+        "xpos" "50"
+        "ypos" "c+50"
+        "wide" "150"
+        "tall" "150"
         "visible" "1"
         "enabled" "1"
         "TimeGainColor" "MOM.Timer.Gain"
         "TimeLossColor" "MOM.Timer.Loss"
+        "TextFont" "HudHintTextSmall"
+        "text_xpos" "1"
+        "text_ypos" "2"
     }
     
 	HudHealth [$WIN32]

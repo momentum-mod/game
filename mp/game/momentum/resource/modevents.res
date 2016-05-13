@@ -74,9 +74,9 @@
         "run_posted" "bool"
         "web_msg" "string"//MOM_TODO: fill this with more stuff?
     }
-	"timer_started"
+	"timer_state"
 	{
-		"timer_isrunning"	"bool"
+		"is_running"	"bool"
 	}
 	"keypress"
 	{

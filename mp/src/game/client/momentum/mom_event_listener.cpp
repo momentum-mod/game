@@ -7,17 +7,14 @@
 void C_Momentum_EventListener::Init()
 {
     //add listeners for all of our custom events
-    if (gameeventmanager)
-    {
-        gameeventmanager->AddListener(this, "timer_stopped", false);
-        gameeventmanager->AddListener(this, "new_stage_enter", false);
-        gameeventmanager->AddListener(this, "new_stage_exit", false);
-        gameeventmanager->AddListener(this, "run_save", false);
-        gameeventmanager->AddListener(this, "run_upload", false);
-        gameeventmanager->AddListener(this, "timer_started", false);
-        gameeventmanager->AddListener(this, "practice_mode", false);
-        gameeventmanager->AddListener(this, "keypress", false);
-    }
+    ListenForGameEvent("timer_stopped");
+    ListenForGameEvent("new_stage_enter");
+    ListenForGameEvent("new_stage_exit");
+    ListenForGameEvent("run_save");
+    ListenForGameEvent("run_upload");
+    ListenForGameEvent("timer_state");
+    ListenForGameEvent("practice_mode");
+    ListenForGameEvent("keypress");
 }
 
 void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
@@ -76,9 +73,9 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         Q_strncpy(m_szRunUploadStatus, pEvent->GetString("web_msg"), sizeof(m_szRunUploadStatus));
         //MOM_TODO: potentially have stuff like new rank or something?
     }
-    else if (!Q_strcmp("timer_started", pEvent->GetName()))
+    else if (!Q_strcmp("timer_state", pEvent->GetName()))
     {
-        m_bTimerIsRunning = pEvent->GetBool("timer_isrunning");
+        m_bTimerIsRunning = pEvent->GetBool("is_running");
     }
     else if (!Q_strcmp("practice_mode", pEvent->GetName()))
     {

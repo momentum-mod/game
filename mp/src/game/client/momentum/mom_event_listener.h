@@ -3,19 +3,20 @@
 #include "mom_shareddefs.h"
 
 
-class C_Momentum_EventListener : public IGameEventListener2
+class C_Momentum_EventListener : public CGameEventListener
 {
 public:
-    C_Momentum_EventListener(): m_bTimerIsRunning(false)
-    {};
-    ~C_Momentum_EventListener(){
-        if (gameeventmanager)
-            gameeventmanager->RemoveListener(this);
-    }
+    C_Momentum_EventListener() : 
+        m_bTimerIsRunning(false),
+        m_bTimeDidSave(false),
+        m_bTimeDidUpload(false),
+        m_bPlayerHasPracticeMode(false),
+        m_iCurrentStage(0)
+    { }
 
     void Init();
 
-    void FireGameEvent(IGameEvent* pEvent);
+    void FireGameEvent(IGameEvent* pEvent) override;
 
     bool m_bTimerIsRunning;// , m_bMapFinished;
     bool m_bTimeDidSave, m_bTimeDidUpload;

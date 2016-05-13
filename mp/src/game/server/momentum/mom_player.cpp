@@ -77,7 +77,7 @@ void CMomentumPlayer::Spawn()
     // Reset all bool gameevents 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
+    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     IGameEvent *practiceModeEvent = gameeventmanager->CreateEvent("practice_mode");
     m_bIsInZone = false;
     m_bMapFinished = false;
@@ -96,7 +96,7 @@ void CMomentumPlayer::Spawn()
     }
     if (timerStartEvent)
     {
-        timerStartEvent->SetBool("timer_isrunning", false);
+        timerStartEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timerStartEvent);
     }
     if (practiceModeEvent)

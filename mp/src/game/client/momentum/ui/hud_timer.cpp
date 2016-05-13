@@ -115,8 +115,7 @@ private:
 
     wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL];
 
-    KeyValues *m_kvBestTimeBuffer, *m_kvBestTime;
-    CUtlVector<float> m_vecBestTimes, m_vecBestSpeeds;
+    
 
     int m_iTotalTicks;
     bool m_bPlayerInZone;
@@ -145,8 +144,6 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    m_kvBestTime = nullptr;
-    m_kvBestTimeBuffer = nullptr;
 }
 
 void C_Timer::Init()
@@ -193,7 +190,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 
     bool started = msg.ReadOneBit();
     m_bIsRunning = started;
-    m_iStartTick = (int) msg.ReadLong();
+    m_iStartTick = (int) msg.ReadLong();//MOM_TODO: should this be gpGlobals->tickcount ?
     
     
     if (started)
@@ -205,27 +202,10 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
             pPlayer->EmitSound("Momentum.StartTimer");
             m_bTimerRan = true;
         }
-        const char* szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
-        if (szMapName)
-        {
-            m_kvBestTimeBuffer = new KeyValues(szMapName);
-            m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTimeBuffer, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
-            if (m_kvBestTime)
-            {
-                mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
-                mom_UTIL->GetBestStageSpeeds(m_kvBestTime, &m_vecBestSpeeds);
-            }
-        }
     }
     else // stopped
     {
         // Compare times.
-        if (m_kvBestTimeBuffer) m_kvBestTimeBuffer->deleteThis();
-        m_kvBestTime = nullptr;
-        m_kvBestTimeBuffer = nullptr;
-        m_vecBestTimes.RemoveAll();
-        m_vecBestSpeeds.RemoveAll();
-
         if (m_bWereCheatsActivated) //EY, CHEATER, STOP
         {
             DevWarning("sv_cheats was set to 1, thus making the run not valid \n");
@@ -316,9 +296,6 @@ void C_Timer::Paint(void)
         ANSI_TO_UNICODE(m_pszStringCps, m_pwCurrentCheckpoints);
     }
 
-    bool losingTime = false, hasComparison = false;
-    float diff = 0;
-    const char *comp = "PB";//"PB" or "WR" 
     char prevStageString[BUFSIZELOCL];
 
     if (m_iStageCount > 1)
@@ -337,26 +314,7 @@ void C_Timer::Paint(void)
                 stLocalized, // Stage localization
                 m_iStageCurrent - 1); // Last stage number
 
-            //Local PB comparison
-            if (!m_vecBestTimes.IsEmpty())
-            {
-                comp = "PB";
-                hasComparison = true;
-                //Has to be m_vecBestTimes[m_iStageCurrent - 1] because of array indexing
-                diff = g_MOMEventListener->m_flStageEnterTime[m_iStageCurrent] - m_vecBestTimes[m_iStageCurrent - 1];
-
-                //MOM_TODO: what if the diff == 0? (probably unlikely)
-                losingTime = (diff > 0);//If diff > 0, that means you're falling behind your PB!
-
-                mom_UTIL->FormatTime(diff, m_pszStageTimeComparisonANSI);
-
-                Q_snprintf(m_pszStageTimeComparisonLabel, sizeof(m_pszStageTimeComparisonLabel),
-                    "(%c %s)",
-                    losingTime ? '+' : '-', //Self explanatory
-                    m_pszStageTimeComparisonANSI);//Stage comparison time
-
-                ANSI_TO_UNICODE(m_pszStageTimeComparisonLabel, m_pwStageTimeComparison);
-            }
+            
             //MOM_TODO: calculate diff from WR (online)
             
             //Draw the timer split
@@ -476,7 +434,7 @@ void C_Timer::Paint(void)
         //MOM_TODO: Overhaul comparisons (stage PB, vs WR, velocities...)
         if (m_iStageCurrent > 1 && m_bIsRunning) //only draw stage timer if we are on stage 2 or above.
         {
-
+#if 0//MOM_TODO: REMOVE ME!
             if (hasComparison)
             {
                 
@@ -510,8 +468,9 @@ void C_Timer::Paint(void)
                 surface()->DrawPrintText(m_pwStageTimeComparison, wcslen(m_pwStageTimeComparison));
 
             }
-            else
-            {
+           else
+#endif            
+           {
                 int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
                 surface()->DrawSetTextPos(text_xpos, cps_ypos);
                 surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));

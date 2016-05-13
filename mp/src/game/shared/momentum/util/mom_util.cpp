@@ -165,7 +165,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision)
 {
-    //float m_flSecondsTime = ticks * rate;
+    //We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = abs(m_flSecondsTime);
 
     int hours = m_flSecondsTime / (60.0f * 60.0f);
