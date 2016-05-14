@@ -149,9 +149,6 @@ protected:
 
 
 private:
-    //KeyValues *m_kvBestTimeBuffer, *m_kvBestTime;
-    //CUtlVector<float> m_vecBestTimes, m_vecBestSpeeds;
-
     char stLocalized[BUFSIZELOCL], compareLocalized[BUFSIZELOCL],
         stageTimeLocalized[BUFSIZELOCL], overallTimeLocalized[BUFSIZELOCL],
         velocityAvgLocalized[BUFSIZELOCL], velocityMaxLocalized[BUFSIZELOCL],
@@ -176,8 +173,6 @@ Panel(g_pClientMode->GetViewport(), "CHudCompare")
     SetKeyBoardInputEnabled(false);//MOM_TODO: will we want keybinds? Hotkeys?
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    //m_kvBestTime = nullptr;
-    //m_kvBestTimeBuffer = nullptr;
     m_iCurrentStage = 0;
 }
 
@@ -281,24 +276,11 @@ void C_RunComparisons::LoadComparisons()
     {
         m_rcCurrentComparison = new RunCompare_t();
         GetRunComparison(szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags, m_rcCurrentComparison);
-
-        /*m_kvBestTimeBuffer = new KeyValues(szMapName);
-        m_kvBestTime = mom_UTIL->GetBestTime(m_kvBestTimeBuffer, szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags);
-        if (m_kvBestTime)
-        {
-            mom_UTIL->GetBestStageTimes(m_kvBestTime, &m_vecBestTimes);
-            mom_UTIL->GetBestStageSpeeds(m_kvBestTime, &m_vecBestSpeeds);
-        }*/
     }
 }
 
 void C_RunComparisons::UnloadComparisons()
 {
-    /*if (m_kvBestTimeBuffer) m_kvBestTimeBuffer->deleteThis();
-    m_kvBestTime = nullptr;
-    m_kvBestTimeBuffer = nullptr;
-    m_vecBestTimes.RemoveAll();
-    m_vecBestSpeeds.RemoveAll();*/
     if (m_rcCurrentComparison)
     {
         delete m_rcCurrentComparison;
@@ -401,7 +383,7 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
             m_rcCurrentComparison->stageStrafes[stage - 1];
         break;
     default: 
-        return;//MOM_TODO: should this just be return?
+        return;
     }
 
     //Time, jumps, and strafe comparison are where positive is bad.
@@ -473,7 +455,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     }
 
     //Copy the value to the compareTypeANSI char, needed for the spacing.
-    V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %", localized);
+    V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s", localized);
 
     //Convert compare type to Unicode
     ANSI_TO_UNICODE(compareTypeANSI, compareTypeUnicode);
