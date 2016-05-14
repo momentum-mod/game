@@ -258,7 +258,6 @@ void C_RunComparisons::GetRunComparison(const char* szMapName, float tickRate, i
                         }
                     }
                     DevLog("Loaded run comparisons for %s !\n", into->runName);
-                    bestRun->deleteThis();
                 }
             }
         }
