@@ -112,8 +112,10 @@ class CMomentumPlayer : public CBasePlayer
     float m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES];
 
     //These members are 2D arrays so we can store both 2D and 3D velocities in them. Index 0 is 3D and index 1 is 2D
-    float m_flStageVelocityMax[MAX_STAGES][2], m_flStageVelocityAvg[MAX_STAGES][2], 
-        m_flStageEnterVelocity[MAX_STAGES][2], m_flStageExitVelocity[MAX_STAGES][2];
+    float m_flStageVelocityMax[MAX_STAGES][2], 
+        m_flStageVelocityAvg[MAX_STAGES][2], 
+        m_flStageEnterVelocity[MAX_STAGES][2],//The velocity with which you enter the stage (leave the stage start trigger)
+        m_flStageExitVelocity[MAX_STAGES][2];//The velocity with which you exit this stage (this stage -> next)
 
     //for calc avg
     int m_nStageAvgCount[MAX_STAGES];

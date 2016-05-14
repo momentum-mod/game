@@ -324,10 +324,10 @@ void CHudMapFinishedDialog::OnThink()
         //Is it going to be a localized string, except for errors that have to be specific?
 
         ConVarRef hvel("mom_speedometer_hvel");
-        m_flAvgSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageVelocityAvg[0][1] : g_MOMEventListener->m_flStageVelocityAvg[0][0];
-        m_flMaxSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageVelocityMax[0][1] : g_MOMEventListener->m_flStageVelocityMax[0][0];
-        m_flEndSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageExitSpeed[0][1] : g_MOMEventListener->m_flStageExitSpeed[0][0];
-        m_flStartSpeed = hvel.GetBool() ? g_MOMEventListener->m_flStageStartSpeed[0][1] : g_MOMEventListener->m_flStageStartSpeed[0][0];
+        m_flAvgSpeed = g_MOMEventListener->m_flStageVelocityAvg[0][hvel.GetBool()];
+        m_flMaxSpeed = g_MOMEventListener->m_flStageVelocityMax[0][hvel.GetBool()];
+        m_flEndSpeed = g_MOMEventListener->m_flStageExitSpeed[0][hvel.GetBool()];
+        m_flStartSpeed = g_MOMEventListener->m_flStageEnterSpeed[0][hvel.GetBool()];
         m_flAvgSync2 = g_MOMEventListener->m_flStageStrafeSyncAvg[0];
         m_flAvgSync = g_MOMEventListener->m_flStageStrafeSync2Avg[0];
         m_iTotalJumps = g_MOMEventListener->m_iStageJumps[0];

@@ -81,8 +81,8 @@ private:
             stageSplits,//Times spent on stages (stage time)
             stageAvgVels[2],//Average velocities for stages, 0 = 3D vels, 1 = horizontal vels
             stageMaxVels[2],//Maximum velocities for stages, 0 = 3D vels, 1 = horizontal vels
-            stageEnterVels[2],//Start velocities for stages, 0 = 3D vels, 1 = horizontal vels
-            stageExitVels[2],//End velocities for stages, 0 = 3D vels, 1 = horizontal vels
+            stageEnterVels[2],//Velocity with which you enter this stage, 0 = 3D vels, 1 = horizontal vels
+            stageExitVels[2],//Velocity with which you leave the stage's start, 0 = 3D vels, 1 = horizontal vels
             stageAvgSync1,//Average stage sync1
             stageAvgSync2;//Average stage sync2
         CUtlVector<int> stageJumps,//Number of jumps on this stage
@@ -114,7 +114,7 @@ public:
     void Paint() override;
     bool ShouldDraw() override
     {
-        return mom_comparisons.GetBool() && CHudElement::ShouldDraw() && 
+        return mom_comparisons.GetBool() && m_bLoadedComparison && CHudElement::ShouldDraw() && 
             g_MOMEventListener && g_MOMEventListener->m_bTimerIsRunning;
     }
 
@@ -124,7 +124,7 @@ public:
     void UnloadComparisons();
     void DrawComparisonString(ComparisonString_t, int stage, int Ypos);
     void GetComparisonString(ComparisonString_t type, int stage, char *ansiBufferOut, Color *compareColorOut);
-    void GetRunComparison(const char* szMapName, float tickRate, int flags, RunCompare_t *into);
+    bool GetRunComparison(const char* szMapName, float tickRate, int flags, RunCompare_t *into);
     void GetDiffColor(float diff, Color *into, bool positiveIsGain);
 
 
@@ -157,7 +157,7 @@ private:
         jumpsLocalized[BUFSIZELOCL], strafesLocalized[BUFSIZELOCL];
 
     int m_iCurrentStage;
-
+    bool m_bLoadedComparison;
     RunCompare_t *m_rcCurrentComparison;
 
 };
@@ -174,6 +174,7 @@ Panel(g_pClientMode->GetViewport(), "CHudCompare")
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_iCurrentStage = 0;
+    m_bLoadedComparison = false;
 }
 
 C_RunComparisons::~C_RunComparisons()
@@ -197,8 +198,9 @@ void C_RunComparisons::FireGameEvent(IGameEvent* event)
 }
 
 //MOM_TODO: If this will be needed elsewhere, we will move it to mom_UTIL
-void C_RunComparisons::GetRunComparison(const char* szMapName, float tickRate, int flags, RunCompare_t *into)
+bool C_RunComparisons::GetRunComparison(const char* szMapName, float tickRate, int flags, RunCompare_t *into)
 {
+    bool toReturn = false;
     if (into && szMapName)
     {
         char path[MAX_PATH], mapName[MAX_PATH];
@@ -258,11 +260,13 @@ void C_RunComparisons::GetRunComparison(const char* szMapName, float tickRate, i
                         }
                     }
                     DevLog("Loaded run comparisons for %s !\n", into->runName);
+                    toReturn = true;
                 }
             }
         }
         kvMap->deleteThis();
     }
+    return toReturn;
 }
 
 void C_RunComparisons::LoadComparisons()
@@ -274,7 +278,7 @@ void C_RunComparisons::LoadComparisons()
     if (szMapName && pPlayer)
     {
         m_rcCurrentComparison = new RunCompare_t();
-        GetRunComparison(szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags, m_rcCurrentComparison);
+        m_bLoadedComparison = GetRunComparison(szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags, m_rcCurrentComparison);
     }
 }
 
@@ -285,6 +289,7 @@ void C_RunComparisons::UnloadComparisons()
         delete m_rcCurrentComparison;
         m_rcCurrentComparison = nullptr;
     }
+    m_bLoadedComparison = false;
 }
 
 void C_RunComparisons::OnThink()
@@ -362,7 +367,7 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
             m_rcCurrentComparison->stageMaxVels[velType][stage - 1];
         break;
     case VELOCITY_ENTER:
-        diff = g_MOMEventListener->m_flStageStartSpeed[stage][velType] -
+        diff = g_MOMEventListener->m_flStageEnterSpeed[stage][velType] -
             m_rcCurrentComparison->stageEnterVels[velType][stage - 1];
         break;
     case STAGE_SYNC1: 

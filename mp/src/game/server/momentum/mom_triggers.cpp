@@ -51,14 +51,14 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
                 //3D VELOCITY
                 stageEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[stageNum - 1][0]);
                 stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum - 1][0]);
-                pPlayer->m_flStageEnterVelocity[stageNum - 1][0] = pPlayer->GetLocalVelocity().Length();
-                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum - 1][0]);
+                pPlayer->m_flStageExitVelocity[stageNum - 1][0] = pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_exit_vel", pPlayer->m_flStageExitVelocity[stageNum - 1][0]);
 
                 //2D VELOCITY
                 stageEvent->SetFloat("max_vel_2D", pPlayer->m_flStageVelocityMax[stageNum - 1][1]);
                 stageEvent->SetFloat("avg_vel_2D", pPlayer->m_flStageVelocityAvg[stageNum - 1][1]);
-                pPlayer->m_flStageEnterVelocity[stageNum - 1][1] = pPlayer->GetLocalVelocity().Length2D();
-                stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_flStageEnterVelocity[stageNum - 1][1]);
+                pPlayer->m_flStageExitVelocity[stageNum - 1][1] = pPlayer->GetLocalVelocity().Length2D();
+                stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_flStageExitVelocity[stageNum - 1][1]);
 
                 gameeventmanager->FireEvent(stageEvent);
             }
@@ -78,13 +78,16 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
             //Status
             pPlayer->m_bIsInZone = false;
 
+            //Stage num
+            stageEvent->SetInt("stage_num", GetStageNumber());
+
             //3D VELOCITY
-            pPlayer->m_flStageExitVelocity[stageNum][0] = pPlayer->GetLocalVelocity().Length();
-            stageEvent->SetFloat("stage_exit_vel", pPlayer->m_flStageExitVelocity[stageNum][0]);
+            pPlayer->m_flStageEnterVelocity[stageNum][0] = pPlayer->GetLocalVelocity().Length();
+            stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum][0]);
 
             //2D VELOCITY
-            pPlayer->m_flStageExitVelocity[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
-            stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_flStageExitVelocity[stageNum][1]);
+            pPlayer->m_flStageEnterVelocity[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
+            stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_flStageEnterVelocity[stageNum][1]);
 
             gameeventmanager->FireEvent(stageEvent);
         }
@@ -257,8 +260,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                 pPlayer->m_flStageExitVelocity[0][1] = endvel2D;
                 gameeventmanager->FireEvent(timerStopEvent);
             }
-            g_Timer->Stop(true);
-            pPlayer->m_bMapFinished = true;
 
             if (stageEvent)
             {
@@ -266,11 +267,22 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                 //We need to store it in totalstages + 1 so that comparisons can 
                 //call forward for determining time spent on the last stage.
                 //We set the stage_num one higher so the last stage can still compare against it
-                stageEvent->SetInt("stage_num", g_Timer->GetCurrentStageNumber() + 1);
+                int stageNum = g_Timer->GetCurrentStageNumber();
+                stageEvent->SetInt("stage_num", stageNum + 1);
                 //And then put the time we finished at as the enter time for the end trigger
                 stageEvent->SetFloat("stage_enter_time", g_Timer->GetLastRunTime());
+
+                //This is needed so we have an ending velocity.
+                pPlayer->m_flStageExitVelocity[stageNum][0] = pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_exit_vel", pPlayer->m_flStageExitVelocity[stageNum][0]);
+                pPlayer->m_flStageExitVelocity[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
+                stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_flStageExitVelocity[stageNum][1]);
                 gameeventmanager->FireEvent(stageEvent);
             }
+
+            g_Timer->Stop(true);
+            pPlayer->m_bMapFinished = true;
+            //MOM_TODO: SLOW DOWN/STOP THE PLAYER HERE!
         }
         pPlayer->m_bIsInZone = true;
     }

@@ -54,16 +54,17 @@
         
         "avg_vel"	"float"
 		"max_vel"	"float"
-		"stage_enter_vel"	"float"
+		"stage_exit_vel"	"float"//previous stage's exit velocity
         //we save both XY and XYZ, so we can look at both if need be...
         "avg_vel_2D"	"float"
 		"max_vel_2D"	"float"
-		"stage_enter_vel_2D"	"float"
+		"stage_exit_vel_2D"	"float"//previous stage's horizontal exit velocity
 	}
-    "new_stage_exit"
+    "new_stage_exit"//When the player exits the start trigger for the stage
     {
-        "stage_exit_vel"    "float"
-        "stage_exit_vel_2D"    "float"
+        "stage_num" "byte"
+        "stage_enter_vel"    "float"//velocity in which the player starts the stage (exits the stage trigger)
+        "stage_enter_vel_2D"    "float"
     }
 	"run_save"
 	{

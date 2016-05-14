@@ -28,8 +28,10 @@ public:
     float m_flStageTime[MAX_STAGES], m_flStageEnterTime[MAX_STAGES], m_flStageStrafeSyncAvg[MAX_STAGES], 
         m_flStageStrafeSync2Avg[MAX_STAGES];
 
-    float m_flStageStartSpeed[MAX_STAGES][2], m_flStageVelocityMax[MAX_STAGES][2],
-        m_flStageVelocityAvg[MAX_STAGES][2], m_flStageExitSpeed[MAX_STAGES][2];
+    float m_flStageEnterSpeed[MAX_STAGES][2],//The velocity with which you started the stage (exit this stage's start trigger)
+        m_flStageVelocityMax[MAX_STAGES][2],//Max velocity for a stage
+        m_flStageVelocityAvg[MAX_STAGES][2],//Average velocity in a stage
+        m_flStageExitSpeed[MAX_STAGES][2];//The velocity with which you exit the stage (this stage -> next)
 
     char m_szRunUploadStatus[512];//MOM_TODO: determine best (max) size for this
 };

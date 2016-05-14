@@ -24,12 +24,12 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         m_flStageStrafeSyncAvg[0] = pEvent->GetFloat("avg_sync");
         m_flStageStrafeSync2Avg[0] = pEvent->GetFloat("avg_sync2");
         //3D
-        m_flStageStartSpeed[0][0] = pEvent->GetFloat("start_vel");
+        m_flStageEnterSpeed[0][0] = pEvent->GetFloat("start_vel");
         m_flStageExitSpeed[0][0] = pEvent->GetFloat("end_vel");
         m_flStageVelocityAvg[0][0] = pEvent->GetFloat("avg_vel");
         m_flStageVelocityMax[0][0] = pEvent->GetFloat("max_vel");
         //2D
-        m_flStageStartSpeed[0][1] = pEvent->GetFloat("start_vel_2D");
+        m_flStageEnterSpeed[0][1] = pEvent->GetFloat("start_vel_2D");
         m_flStageExitSpeed[0][1] = pEvent->GetFloat("end_vel_2D");
         m_flStageVelocityAvg[0][1] = pEvent->GetFloat("avg_vel_2D");
         m_flStageVelocityMax[0][1] = pEvent->GetFloat("max_vel_2D");
@@ -53,12 +53,12 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         m_flStageStrafeSyncAvg[m_iCurrentStage - 1] = pEvent->GetFloat("avg_sync");
         m_flStageStrafeSync2Avg[m_iCurrentStage - 1] = pEvent->GetFloat("avg_sync2");
 
-        m_flStageStartSpeed[m_iCurrentStage - 1][0] = pEvent->GetFloat("stage_enter_vel");
+        m_flStageExitSpeed[m_iCurrentStage - 1][0] = pEvent->GetFloat("stage_exit_vel");
         m_flStageVelocityAvg[m_iCurrentStage - 1][0] = pEvent->GetFloat("avg_vel");
-        DevLog("m_flStageVelAvg = %.3f\n", m_flStageVelocityAvg[m_iCurrentStage - 1]);
+        DevLog("m_flStageExitSpeed[%i] = %.3f\n", (m_iCurrentStage - 1), m_flStageExitSpeed[m_iCurrentStage - 1]);
         m_flStageVelocityMax[m_iCurrentStage - 1][0] = pEvent->GetFloat("max_vel");
 
-        m_flStageStartSpeed[m_iCurrentStage - 1][1] = pEvent->GetFloat("stage_enter_vel_2D");
+        m_flStageExitSpeed[m_iCurrentStage - 1][1] = pEvent->GetFloat("stage_exit_vel_2D");
         m_flStageVelocityAvg[m_iCurrentStage - 1][1] = pEvent->GetFloat("avg_vel_2D");
         m_flStageVelocityMax[m_iCurrentStage - 1][1] = pEvent->GetFloat("max_vel_2D");
 
@@ -68,8 +68,9 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     }
     else if (!Q_strcmp("new_stage_exit", pEvent->GetName()))
     {
-        m_flStageExitSpeed[m_iCurrentStage][0] = pEvent->GetFloat("stage_exit_vel");
-        m_flStageExitSpeed[m_iCurrentStage][1] = pEvent->GetFloat("stage_exit_vel_2D");
+        m_iCurrentStage = pEvent->GetInt("stage_num");
+        m_flStageEnterSpeed[m_iCurrentStage][0] = pEvent->GetFloat("stage_enter_vel");
+        m_flStageEnterSpeed[m_iCurrentStage][1] = pEvent->GetFloat("stage_enter_vel_2D");
     }
     else if (!Q_strcmp("run_save", pEvent->GetName()))
     {
