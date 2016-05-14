@@ -81,8 +81,8 @@ private:
             stageSplits,//Times spent on stages (stage time)
             stageAvgVels[2],//Average velocities for stages, 0 = 3D vels, 1 = horizontal vels
             stageMaxVels[2],//Maximum velocities for stages, 0 = 3D vels, 1 = horizontal vels
-            stageEnterVels[2],//Velocity with which you enter this stage, 0 = 3D vels, 1 = horizontal vels
-            stageExitVels[2],//Velocity with which you leave the stage's start, 0 = 3D vels, 1 = horizontal vels
+            stageEnterVels[2],//Velocity with which you enter a stage (exit a stage start trigger), 0 = 3D vels, 1 = horizontal vels
+            stageExitVels[2],//Velocity with which you leave a stage (one stage -> next), 0 = 3D vels, 1 = horizontal vels
             stageAvgSync1,//Average stage sync1
             stageAvgSync2;//Average stage sync2
         CUtlVector<int> stageJumps,//Number of jumps on this stage
