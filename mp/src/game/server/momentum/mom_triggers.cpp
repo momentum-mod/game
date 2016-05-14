@@ -43,22 +43,22 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             {
                 stageEvent->SetInt("stage_num", stageNum);
                 stageEvent->SetFloat("stage_enter_time", g_Timer->CalculateStageTime(stageNum));
-                stageEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[stageNum]);
-                stageEvent->SetFloat("num_strafes", pPlayer->m_nStageStrafes[stageNum]);
-                stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum]);
-                stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum]);
+                stageEvent->SetInt("num_jumps", pPlayer->m_nStageJumps[stageNum - 1]);
+                stageEvent->SetFloat("num_strafes", pPlayer->m_nStageStrafes[stageNum - 1]);
+                stageEvent->SetFloat("avg_sync", pPlayer->m_flStageStrafeSyncAvg[stageNum - 1]);
+                stageEvent->SetFloat("avg_sync2", pPlayer->m_flStageStrafeSync2Avg[stageNum - 1]);
 
                 //3D VELOCITY
-                stageEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[stageNum][0]);
-                stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum][0]);
-                pPlayer->m_flStageEnterVelocity[stageNum][0] = pPlayer->GetLocalVelocity().Length();
-                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum][0]);
+                stageEvent->SetFloat("max_vel", pPlayer->m_flStageVelocityMax[stageNum - 1][0]);
+                stageEvent->SetFloat("avg_vel", pPlayer->m_flStageVelocityAvg[stageNum - 1][0]);
+                pPlayer->m_flStageEnterVelocity[stageNum - 1][0] = pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_flStageEnterVelocity[stageNum - 1][0]);
 
                 //2D VELOCITY
-                stageEvent->SetFloat("max_vel_2D", pPlayer->m_flStageVelocityMax[stageNum][1]);
-                stageEvent->SetFloat("avg_vel_2D", pPlayer->m_flStageVelocityAvg[stageNum][1]);
-                pPlayer->m_flStageEnterVelocity[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
-                stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_flStageEnterVelocity[stageNum][1]);
+                stageEvent->SetFloat("max_vel_2D", pPlayer->m_flStageVelocityMax[stageNum - 1][1]);
+                stageEvent->SetFloat("avg_vel_2D", pPlayer->m_flStageVelocityAvg[stageNum - 1][1]);
+                pPlayer->m_flStageEnterVelocity[stageNum - 1][1] = pPlayer->GetLocalVelocity().Length2D();
+                stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_flStageEnterVelocity[stageNum - 1][1]);
 
                 gameeventmanager->FireEvent(stageEvent);
             }

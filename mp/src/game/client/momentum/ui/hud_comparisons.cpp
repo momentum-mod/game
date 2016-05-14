@@ -392,6 +392,8 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
 
     char diffChar = diff > 0.0f ? '+' : '-';
 
+    diff = abs(diff);
+
     if (type == TIME_OVERALL || type == STAGE_TIME)
     {
         V_snprintf(ansiBufferOut, BUFSIZELOCL, "(%c %s)", diffChar, tempANSITimeOutput);

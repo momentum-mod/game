@@ -36,6 +36,9 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     }
     else if (!Q_strcmp("new_stage_enter", pEvent->GetName()))
     {
+        //NOTE: THE ONLY STAT BELOW THAT REQUIRES THE CURRENT STAGE GIVEN IN "stage_num" IS THE ENTER TIME!
+        //EVERYTHING ELSE IS m_iCurrentStage - 1 !
+
         //MOM_TODO: we do not need to store m_iCurrentStage anymore?
         m_iCurrentStage = pEvent->GetInt("stage_num");
         //Note: stage_enter_time will NOT change upon multiple entries to the same stage trigger (only set once per run)
@@ -47,16 +50,21 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
             m_flStageTime[m_iCurrentStage - 1] = m_flStageEnterTime[m_iCurrentStage] - m_flStageEnterTime[m_iCurrentStage - 1];
         } 
 
-        m_flStageStrafeSyncAvg[m_iCurrentStage] = pEvent->GetFloat("avg_sync");
-        m_flStageStrafeSync2Avg[m_iCurrentStage] = pEvent->GetFloat("avg_sync2");
+        m_flStageStrafeSyncAvg[m_iCurrentStage - 1] = pEvent->GetFloat("avg_sync");
+        m_flStageStrafeSync2Avg[m_iCurrentStage - 1] = pEvent->GetFloat("avg_sync2");
 
-        m_flStageStartSpeed[m_iCurrentStage][0] = pEvent->GetFloat("stage_enter_vel");
-        m_flStageVelocityAvg[m_iCurrentStage][0] = pEvent->GetFloat("avg_vel");
-        m_flStageVelocityMax[m_iCurrentStage][0] = pEvent->GetFloat("max_vel");
+        m_flStageStartSpeed[m_iCurrentStage - 1][0] = pEvent->GetFloat("stage_enter_vel");
+        m_flStageVelocityAvg[m_iCurrentStage - 1][0] = pEvent->GetFloat("avg_vel");
+        DevLog("m_flStageVelAvg = %.3f\n", m_flStageVelocityAvg[m_iCurrentStage - 1]);
+        m_flStageVelocityMax[m_iCurrentStage - 1][0] = pEvent->GetFloat("max_vel");
 
-        m_flStageStartSpeed[m_iCurrentStage][1] = pEvent->GetFloat("stage_enter_vel_2D");
-        m_flStageVelocityAvg[m_iCurrentStage][1] = pEvent->GetFloat("avg_vel_2D");
-        m_flStageVelocityMax[m_iCurrentStage][1] = pEvent->GetFloat("max_vel_2D");
+        m_flStageStartSpeed[m_iCurrentStage - 1][1] = pEvent->GetFloat("stage_enter_vel_2D");
+        m_flStageVelocityAvg[m_iCurrentStage - 1][1] = pEvent->GetFloat("avg_vel_2D");
+        m_flStageVelocityMax[m_iCurrentStage - 1][1] = pEvent->GetFloat("max_vel_2D");
+
+        m_iStageJumps[m_iCurrentStage - 1] = pEvent->GetInt("num_jumps");
+        m_iStageStrafes[m_iCurrentStage - 1] = pEvent->GetInt("num_strafes");
+
     }
     else if (!Q_strcmp("new_stage_exit", pEvent->GetName()))
     {
