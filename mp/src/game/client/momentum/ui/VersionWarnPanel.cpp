@@ -1,4 +1,4 @@
-//The following include files are necessary to allow your MyPanel.cpp to compile.
+//The following include files are necessary to allow The Panel .cpp to compile.
 #include "cbase.h"
 #include "IVersionWarnPanel.h"
 using namespace vgui;
@@ -11,7 +11,7 @@ using namespace vgui;
 
 #include "tier0/memdbgon.h"
 
-//CVersionWarnPanel class: Tutorial example class
+//CVersionWarnPanel class
 class CVersionWarnPanel : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CVersionWarnPanel, vgui::Frame);
