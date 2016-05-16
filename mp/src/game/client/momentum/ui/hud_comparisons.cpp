@@ -126,7 +126,8 @@ public:
     void GetComparisonString(ComparisonString_t type, int stage, char *ansiBufferOut, Color *compareColorOut);
     bool GetRunComparison(const char* szMapName, float tickRate, int flags, RunCompare_t *into);
     void GetDiffColor(float diff, Color *into, bool positiveIsGain);
-
+    int GetMaximumTall();
+    int GetMaximumWide();
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {
@@ -134,6 +135,7 @@ public:
         SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
         m_cGain = GetSchemeColor("MOM.Compare.Gain", pScheme);
         m_cLoss = GetSchemeColor("MOM.Compare.Loss", pScheme);
+        GetSize(m_iDefaultWidth, m_iDefaultTall);
     }
 
 protected:
@@ -156,6 +158,8 @@ private:
         sync1Localized[BUFSIZELOCL], sync2Localized[BUFSIZELOCL],
         jumpsLocalized[BUFSIZELOCL], strafesLocalized[BUFSIZELOCL];
 
+    int m_iDefaultWidth, m_iDefaultTall;
+
     int m_iCurrentStage;
     bool m_bLoadedComparison;
     RunCompare_t *m_rcCurrentComparison;
@@ -163,7 +167,6 @@ private:
 };
 
 DECLARE_HUDELEMENT(C_RunComparisons);
-
 
 C_RunComparisons::C_RunComparisons(const char* pElementName) : CHudElement(pElementName),
 Panel(g_pClientMode->GetViewport(), "CHudCompare")
@@ -180,6 +183,30 @@ Panel(g_pClientMode->GetViewport(), "CHudCompare")
 C_RunComparisons::~C_RunComparisons()
 {
     UnloadComparisons();
+}
+
+void C_RunComparisons::Init()
+{
+    //LOCALIZE STUFF HERE
+    LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
+    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Stage", stageTimeLocalized);
+    LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
+    LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
+    LOCALIZE_TOKEN(VelAvg, "#MOM_Compare_Velocity_Avg", velocityAvgLocalized);
+    LOCALIZE_TOKEN(VelMax, "#MOM_Compare_Velocity_Max", velocityMaxLocalized);
+    LOCALIZE_TOKEN(VelEnter, "#MOM_Compare_Velocity_Enter", velocityStartLocalized);
+    LOCALIZE_TOKEN(VelExit, "#MOM_Compare_Velocity_Exit", velocityExitLocalized);
+    LOCALIZE_TOKEN(Sync1, "#MOM_Compare_Sync1", sync1Localized);
+    LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
+    LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
+    LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
+}
+
+void C_RunComparisons::Reset()
+{
+    //I don't know what to do here, this is called each spawn?
+
+    //MOM_TODO: UnloadComparisons() ?
 }
 
 void C_RunComparisons::FireGameEvent(IGameEvent* event)
@@ -297,30 +324,95 @@ void C_RunComparisons::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pPlayer)
         m_iCurrentStage = pPlayer->m_iCurrentStage;
+
+    if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perstage.GetBool())
+    {
+        //Uh oh, both overall and perstage were turned off, let's turn back on the one they want to compare
+        bool showStage = mom_comparisons_time_type.GetBool();//0 = overall, 1 = perstage
+        if (showStage)
+        {
+            mom_comparisons_time_show_perstage.SetValue(1);
+        } else
+        {
+            mom_comparisons_time_show_overall.SetValue(1);
+        }
+    }
 }
 
-void C_RunComparisons::Init()
+int C_RunComparisons::GetMaximumWide()
 {
-    //LOCALIZE STUFF HERE
-    LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
-    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Stage", stageTimeLocalized);
-    LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
-    LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
-    LOCALIZE_TOKEN(VelAvg, "#MOM_Compare_Velocity_Avg", velocityAvgLocalized);
-    LOCALIZE_TOKEN(VelMax, "#MOM_Compare_Velocity_Max", velocityMaxLocalized);
-    LOCALIZE_TOKEN(VelEnter, "#MOM_Compare_Velocity_Enter", velocityStartLocalized);
-    LOCALIZE_TOKEN(VelExit, "#MOM_Compare_Velocity_Exit", velocityExitLocalized);
-    LOCALIZE_TOKEN(Sync1, "#MOM_Compare_Sync1", sync1Localized);
-    LOCALIZE_TOKEN(Sync2, "#MOM_Compare_Sync2", sync2Localized);
-    LOCALIZE_TOKEN(Jumps, "#MOM_Compare_Jumps", jumpsLocalized);
-    LOCALIZE_TOKEN(Strafes, "#MOM_Compare_Strafes", strafesLocalized);
+    int toReturn = m_iDefaultWidth;
+    if (m_bLoadedComparison)
+    {
+        char fullCompareString[BUFSIZELOCL];
+        Q_snprintf(fullCompareString, BUFSIZELOCL, "%s%s",
+            compareLocalized, //"Compare against: "
+            m_rcCurrentComparison->runName);
+        toReturn = UTIL_ComputeStringWidth(m_hTextFont, fullCompareString) + 4;
+    }
+    return toReturn;
 }
 
-void C_RunComparisons::Reset()
-{
-    //I don't know what to do here, this is called each spawn?
 
-    //MOM_TODO: UnloadComparisons() ?
+//Gets the maximum tall that is currently possible. (Dynamic sizing)
+int C_RunComparisons::GetMaximumTall()
+{
+    int toReturn = 0;
+    int fontTall = surface()->GetFontTall(m_hTextFont) + 2;//font tall and padding
+    toReturn += fontTall;//Comparing against: (run)
+    int stageBuffer = mom_comparisons_max_stages.GetInt();
+    int lowerBound = m_iCurrentStage - stageBuffer;
+
+    //MOM_TODO: Do we want this panel sized without regards to the current stage?
+    for (int i = 1; i < m_iCurrentStage; i++)
+    {
+        //Note: Say our current stage is 5 and our buffer is 4. We don't look at stage 5,
+        //and the lower bound becomes 1. If the check was i > lowerBound, stage 1 would be ignored,
+        //and the panel would thus only show 3 stages (2, 3, and 4). So it must be >=.
+        if (i >= lowerBound)
+        {
+            if (i == (m_iCurrentStage - 1))
+            {
+                //Add everything that the user compares.
+                //Time 
+                //Note: They actually could show both, but one is always on
+                if (mom_comparisons_time_show_overall.GetBool())
+                    toReturn += fontTall;
+                if (mom_comparisons_time_show_perstage.GetBool())
+                    toReturn += fontTall;
+                //Vel
+                if (mom_comparisons_vel_show.GetBool())
+                {
+                    if (mom_comparisons_vel_show_avg.GetBool())
+                        toReturn += fontTall;
+                    if (mom_comparisons_vel_show_max.GetBool())
+                        toReturn += fontTall;
+                    if (mom_comparisons_vel_show_enter.GetBool())
+                        toReturn += fontTall;
+                    if (mom_comparisons_vel_show_exit.GetBool())
+                        toReturn += fontTall;
+                }
+                //Sync
+                if (mom_comparisons_sync_show.GetBool())
+                {
+                    if (mom_comparisons_sync_show_sync1.GetBool())
+                        toReturn += fontTall;
+                    if (mom_comparisons_sync_show_sync2.GetBool())
+                        toReturn += fontTall;
+                }
+                //Keypress
+                if (mom_comparisons_jumps_show.GetBool())
+                    toReturn += fontTall;
+                if (mom_comparisons_strafe_show.GetBool())
+                    toReturn += fontTall;
+
+            }
+            //Stage ## (every stage on the panel has this)
+            toReturn += fontTall;
+        }
+    }
+
+    return toReturn + 2;
 }
 
 void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain = true)
@@ -334,7 +426,7 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
 void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, char *ansiBufferOut, Color *compareColorOut)
 {
     int velType = mom_comparisons_vel_type.GetInt();//Type of velocity comparison we're making (3D vs Horizontal)
-    float diff = 0.0f;//Difference between the current and the compared-to.
+    float diff;//Difference between the current and the compared-to.
     char tempANSITimeOutput[BUFSIZETIME];//Only used for time comparisons, ignored otherwise.
     //Calculate diff
     switch (type)
@@ -488,7 +580,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
 void C_RunComparisons::Paint()
 {
     if (!m_rcCurrentComparison) return;
-
+    SetSize(GetMaximumWide(), GetMaximumTall());//MOM_TODO: Should this really be calculated every Paint call?
     //MOM_TODO: Determine dynamic size of panel, affected by how many stages can be shown.
     //MOM_TODO: Make panel scale to amount of stages. Linear maps will have checkpoints.
 

@@ -160,7 +160,7 @@
         "fieldName" "CHudCompare"
         "xpos" "50"
         "ypos" "c+50"
-        "wide" "150"
+        "wide" "200"
         "tall" "150"
         "visible" "1"
         "enabled" "1"
