@@ -7,11 +7,9 @@
 
 #include "tier0/memdbgon.h"
 
+
 namespace Momentum
 {
-
-    CMapzoneData* zones;
-
     void OnServerDLLInit()
     {
         TickSet::TickInit();
@@ -37,15 +35,11 @@ namespace Momentum
             if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
             {
                 gm.SetValue(MOMGM_SURF);
-                //g_Timer.SetGameMode(MOMGM_SURF);
             }
             else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
             {
                 DevLog("SETTING THE GAMEMODE!\n");
                 gm.SetValue(MOMGM_BHOP);
-                //DevLog("GOT TO #2 %i\n", m_iGameMode);
-
-                //g_Timer.SetGameMode(MOMGM_BHOP);
             }
             else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
             {
@@ -59,37 +53,44 @@ namespace Momentum
             else
             {
                 gm.SetValue(MOMGM_UNKNOWN);
-                //g_Timer.SetGameMode(MOMGM_UNKNOWN);
             }
-            
         }
     }
+} // namespace Momentum
 
-    void OnMapStart(const char *pMapName)
-    { 
+class CMOMServerEvents : CAutoGameSystemPerFrame
+{
+public:
+    CMOMServerEvents(const char *pName) : CAutoGameSystemPerFrame(pName)
+    {}
+
+    void LevelInitPostEntity() override
+    {
+        const char *pMapName = gpGlobals->mapname.ToCStr();
         // (Re-)Load zones
         if (zones)
         {
             delete zones;
-            zones = NULL;
+            zones = nullptr;
         }
         zones = new CMapzoneData(pMapName);
         zones->SpawnMapZones();
 
         //Setup timer
         g_Timer->OnMapStart(pMapName);
-        
+
         // Reset zone editing
         g_MapzoneEdit.Reset();
     }
 
-    void OnMapEnd(const char *pMapName)
+    void LevelShutdownPreEntity() override
     {
+        const char *pMapName = gpGlobals->mapname.ToCStr();
         // Unload zones
         if (zones)
         {
             delete zones;
-            zones = NULL;
+            zones = nullptr;
         }
 
         ConVarRef gm("mom_gamemode");
@@ -98,7 +99,7 @@ namespace Momentum
         g_Timer->OnMapEnd(pMapName);
     }
 
-    void OnGameFrameStart()
+    void FrameUpdatePreEntityThink() override
     {
         g_MapzoneEdit.Update();
 
@@ -110,12 +111,11 @@ namespace Momentum
                 g_Timer->SetCheating(true);
                 g_Timer->Stop(false);
             }
-
         }
     }
 
-    /*void OnGameFrameEnd()
-    {
-    }*/
+private:
+    CMapzoneData* zones;
+};
 
-} // namespace Momentum
+CMOMServerEvents g_MOMServerEvents("MOMServerEvents");

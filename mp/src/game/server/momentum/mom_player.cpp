@@ -104,6 +104,9 @@ void CMomentumPlayer::Spawn()
         practiceModeEvent->SetBool("has_practicemode", false);
         gameeventmanager->FireEvent(practiceModeEvent);
     }
+    //Linear/etc map
+    g_Timer->DispatchMapInfo();
+
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
@@ -208,7 +211,7 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 
 void CMomentumPlayer::InitHUD()
 {
-    g_Timer->DispatchStageCountMessage();
+    //g_Timer->DispatchStageCountMessage(); this was moved to spawn, under DispatchMapInfo
 }
 
 void CMomentumPlayer::EnableAutoBhop()

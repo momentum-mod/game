@@ -327,24 +327,38 @@ void CTimer::OnMapEnd(const char *pMapName)
     //MOM_TODO: onlineTimes.RemoveAll();
 }
 
+void CTimer::DispatchMapInfo()
+{
+    IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init", true);
+    if (mapInitEvent)
+    {
+        //MOM_TODO: for now it's assuming stages are on staged maps, load this from
+        //either the RequestStageCount() method, or something else (map info file?)
+        mapInitEvent->SetBool("is_linear", m_iStageCount == 0);
+        mapInitEvent->SetInt("num_checkpoints", m_iStageCount);
+        gameeventmanager->FireEvent(mapInitEvent);
+    }
+}
+
 void CTimer::OnMapStart(const char *pMapName)
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
     RequestStageCount();
-    //DispatchMapStartMessage();
     LoadLocalTimes(pMapName);
     //MOM_TODO: g_Timer->LoadOnlineTimes();
 }
 
+//MOM_TODO: This needs to update to include checkpoint triggers placed in linear
+//maps to allow players to compare at certain points.
 void CTimer::RequestStageCount()
 {
-    CTriggerStage *stage = (CTriggerStage *) gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
+    CTriggerStage *stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage"));
     int iCount = 1;//CTriggerStart counts as one
     while (stage)
     {
         iCount++;
-        stage = (CTriggerStage *) gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
+        stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage"));
     }
     m_iStageCount = iCount;
 }
@@ -370,19 +384,6 @@ void CTimer::DispatchResetMessage()
     user.MakeReliable();
     UserMessageBegin(user, "Timer_Reset");
     MessageEnd();
-}
-
-void CTimer::DispatchStageMessage()
-{
-    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer && GetCurrentStage())
-    {
-        CSingleUserRecipientFilter user(cPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_Stage");
-        WRITE_LONG(GetCurrentStage()->GetStageNumber());
-        MessageEnd();
-    }
 }
 
 void CTimer::DispatchStateMessage()
@@ -417,18 +418,6 @@ void CTimer::DispatchCheckpointMessage()
     }
 }
 
-void CTimer::DispatchStageCountMessage()
-{
-    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer)
-    {
-        CSingleUserRecipientFilter user(cPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_StageCount");
-        WRITE_LONG(m_iStageCount);
-        MessageEnd();
-    }
-}
 float CTimer::GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType)
 {
     Ray_t ray;
@@ -493,10 +482,6 @@ bool CTimer::CTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
         return false;
     }
 }
-//CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
-//{
-//    g_Timer->DispatchStageCountMessage();
-//}
 
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
 void CTimer::SetGameModeConVars()
@@ -535,7 +520,7 @@ void CTimer::SetGameModeConVars()
 //Practice mode that stops the timer and allows the player to noclip.
 void CTimer::EnablePractice(CBasePlayer *pPlayer)
 {
-    pPlayer->SetParent(NULL);
+    pPlayer->SetParent(nullptr);
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
@@ -635,7 +620,7 @@ public:
     {
         CBasePlayer* cPlayer = UTIL_GetCommandClient();
         CTriggerTimerStart *start;
-        if ((start = g_Timer->GetStartTrigger()) != NULL && cPlayer)
+        if ((start = g_Timer->GetStartTrigger()) != nullptr && cPlayer)
         {
             // Don't set angles if still in start zone.
             if (g_Timer->IsRunning() && start->GetHasLookAngles())
@@ -646,7 +631,7 @@ public:
             }
             else
             {
-                cPlayer->Teleport(&start->WorldSpaceCenter(), NULL, &vec3_origin);
+                cPlayer->Teleport(&start->WorldSpaceCenter(), nullptr, &vec3_origin);
             }
         }
     }
@@ -655,9 +640,9 @@ public:
     {
         CTriggerStage *stage;
         CBaseEntity* pPlayer = UTIL_GetCommandClient();
-        if ((stage = g_Timer->GetCurrentStage()) != NULL && pPlayer)
+        if ((stage = g_Timer->GetCurrentStage()) != nullptr && pPlayer)
         {
-            pPlayer->Teleport(&stage->WorldSpaceCenter(), NULL, &vec3_origin);
+            pPlayer->Teleport(&stage->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
     }
 
@@ -725,7 +710,7 @@ public:
                 g_Timer->SetUsingCPMenu(false);
                 break;
             default:
-                if (cPlayer != NULL)
+                if (cPlayer != nullptr)
                 {
                     cPlayer->EmitSound("Momentum.UIMissingMenuSelection");
                 }

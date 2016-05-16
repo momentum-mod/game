@@ -171,6 +171,18 @@
         "text_ypos" "2"
     }
     
+    CHudMapInfo
+    {
+        "fieldName" "CHudMapInfo"
+        "visible" "1"
+        "enabled" "1"
+        "centerStatus" "1"//If this is 1, the status will be centered above the timer, otherwise the status_xpos will be used
+        "status_xpos" "0"
+        "status_ypos" "c+135"//y-pos for the map status 
+        "StatusFont" "HudHintTextSmall"//Font for the current map area/status
+        "MapInfoFont" "HudHintTextSmall"//Font for the map information
+    }
+    
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"

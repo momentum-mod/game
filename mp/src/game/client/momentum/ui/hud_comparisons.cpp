@@ -17,58 +17,51 @@
 
 using namespace vgui;
 
-#define CONVARFLAG (FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED)
-
-#define MAKE_CONVAR(name, defaultval, desc, minVal, maxVal)                                                            \
-    ConVar name(#name, defaultval, CONVARFLAG, desc, true, minVal, true, maxVal)
-
-#define MAKE_TOGGLE_CONVAR(name, defaultval, desc) MAKE_CONVAR(name, defaultval, desc, 0, 1)
-
 // Overall visibility
-static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", "Shows the run comparison panel. 0 = OFF, 1 = ON");
+static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run comparison panel. 0 = OFF, 1 = ON");
 
 // Max stages
 // MOM_TODO: 64 stages max is a lot, perhaps reduce it to like 10? But you know people and their customization
 // options...
-static MAKE_CONVAR(mom_comparisons_max_stages, "4", "Max number of stages to show on the comparison panel.", 0, 64);
+static MAKE_CONVAR(mom_comparisons_max_stages, "4", FLAG_HUD_CVAR, "Max number of stages to show on the comparison panel.", 0, 64);
 
 // Time
-static MAKE_TOGGLE_CONVAR(mom_comparisons_time_type, "0", "Time comparison type: \n0 = overall split time (compare "
+static MAKE_TOGGLE_CONVAR(mom_comparisons_time_type, "0", FLAG_HUD_CVAR, "Time comparison type: \n0 = overall split time (compare "
                                                           "against time taken to get to the stage)\n1 = stage time "
                                                           "(compare against time spent on stage)");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_overall, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_overall, "1", FLAG_HUD_CVAR,
                           "Toggle showing comparison to overall time for the run. 0 = OFF, 1 = ON");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perstage, "0",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perstage, "0", FLAG_HUD_CVAR,
                           "Toggle showing comparison to time spent on stage. 0 = OFF, 1 = ON");
 
 // Velocity
-static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show, "1", FLAG_HUD_CVAR,
                           "Toggle showing velocity comparisons: 0 = OFF, 1 = ON"); // Overall vis
-static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_type, "0",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_type, "0", FLAG_HUD_CVAR,
                           "Velocity comparison type: \n0 = Velocity including Z-axis (3D)\n1 = Velocity without Z axis "
                           "(horizontal velocity)"); // Horizontal/3D
-static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_avg, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_avg, "1", FLAG_HUD_CVAR,
                           "Toggle showing average velocity. 0 = OFF, 1 = ON"); // avg vel
-static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_max, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_max, "1", FLAG_HUD_CVAR,
                           "Toggle showing max stage velocity. 0 = OFF, 1 = ON"); // max vel
-static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_enter, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_enter, "1", FLAG_HUD_CVAR,
                           "Toggle showing stage enter velocity. 0 = OFF, 1 = ON"); // enter vel
-static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_exit, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_exit, "1", FLAG_HUD_CVAR,
                           "Toggle showing stage exit velocity. 0 = OFF, 1 = ON"); // exit vel
 
 // Sync
-static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show, "0",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show, "0", FLAG_HUD_CVAR,
                           "Toggle showing sync comparisons: 0 = OFF, 1 = ON"); // Overall vis
 static MAKE_TOGGLE_CONVAR(
-    mom_comparisons_sync_show_sync1, "0",
+    mom_comparisons_sync_show_sync1, "0", FLAG_HUD_CVAR,
     "Toggle showing average stage Sync1 (perfect strafe ticks / total strafe ticks). 0 = OFF, 1 = ON");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show_sync2, "0",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show_sync2, "0", FLAG_HUD_CVAR,
                           "Toggle showing average stage Sync2 (accel ticks / total strafe ticks). 0 = OFF, 1 = ON");
 
 // Keypress
-static MAKE_TOGGLE_CONVAR(mom_comparisons_jumps_show, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_jumps_show, "1", FLAG_HUD_CVAR,
                           "Toggle showing total stage jumps comparison. 0 = OFF, 1 = ON");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1",
+static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1", FLAG_HUD_CVAR,
                           "Toggle showing total stage strafes comparison. 0 = OFF, 1 = ON");
 
 DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
@@ -266,12 +259,9 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
             // Get the time difference in seconds.
             act = type == TIME_OVERALL ? g_MOMEventListener->m_flStageEnterTime[stage + 1]
                                        : g_MOMEventListener->m_flStageTime[stage];
+
             diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[stage]
                                                : m_rcCurrentComparison->stageSplits[stage - 1]);
-
-            // diff = type == TIME_OVERALL ?
-            //    g_MOMEventListener->m_flStageEnterTime[stage + 1] - m_rcCurrentComparison->overallSplits[stage] :
-            //    g_MOMEventListener->m_flStageTime[stage] - m_rcCurrentComparison->stageSplits[stage - 1];
 
             // Are we losing time compared to the run?
             // If diff > 0, that means you're falling behind (losing time to) your PB!

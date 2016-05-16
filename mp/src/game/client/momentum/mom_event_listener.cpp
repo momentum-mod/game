@@ -15,6 +15,7 @@ void C_Momentum_EventListener::Init()
     ListenForGameEvent("timer_state");
     ListenForGameEvent("practice_mode");
     ListenForGameEvent("keypress");
+    ListenForGameEvent("map_init");
 }
 
 void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
@@ -92,6 +93,11 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     {
         m_iStageJumps[0] = pEvent->GetInt("num_jumps");
         m_iStageStrafes[0] = pEvent->GetInt("num_strafes");
+    }
+    else if (!Q_strcmp("map_init", pEvent->GetName()))
+    {
+        m_bMapIsLinear = pEvent->GetBool("is_linear");
+        m_iMapCheckpointCount = pEvent->GetInt("num_checkpoints");
     }
 }
 

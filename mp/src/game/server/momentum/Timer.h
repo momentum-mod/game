@@ -30,8 +30,6 @@ public:
     void DispatchStateMessage();
     void DispatchResetMessage();
     void DispatchCheckpointMessage();
-    void DispatchStageMessage();
-    void DispatchStageCountMessage();
 
 
     // ------------- Timer state related messages --------------------------
@@ -137,7 +135,7 @@ public:
     void SaveTime();
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
-
+    void DispatchMapInfo();
     // Practice mode- noclip mode that stops timer
     void PracticeMove();
     void EnablePractice(CBasePlayer *pPlayer);
@@ -145,7 +143,8 @@ public:
     bool IsPracticeMode(CBaseEntity *pOther);
 
     // Have the cheats been turned on in this session?
-    bool GotCaughtCheating() { return m_bWereCheatsActivated; };
+    bool GotCaughtCheating() const
+    { return m_bWereCheatsActivated; };
     void SetCheating(bool newBool)
     {
         UTIL_ShowMessage("CHEATER", UTIL_GetLocalPlayer());

@@ -88,4 +88,9 @@
 	{
 		"has_practicemode"	"bool"
 	}
+    "map_init"
+    {
+        "is_linear" "bool"
+        "num_checkpoints" "byte"
+    }
 }
