@@ -4,7 +4,6 @@
 #include "Timer.h"
 #include "mapzones_edit.h"
 
-
 #include "tier0/memdbgon.h"
 
 
@@ -61,7 +60,7 @@ namespace Momentum
 class CMOMServerEvents : CAutoGameSystemPerFrame
 {
 public:
-    CMOMServerEvents(const char *pName) : CAutoGameSystemPerFrame(pName)
+    CMOMServerEvents(const char *pName) : CAutoGameSystemPerFrame(pName), zones(nullptr)
     {}
 
     void LevelInitPostEntity() override

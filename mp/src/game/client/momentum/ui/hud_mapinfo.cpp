@@ -25,8 +25,14 @@
 
 using namespace vgui;
 
-static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_mapname, "0", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_mapname, "1", FLAG_HUD_CVAR,
                           "Toggles showing the map name. 0 = OFF, 1 = ON");
+
+static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_author, "0", FLAG_HUD_CVAR,
+    "Toggles showing the map author. 0 = OFF, 1 = ON");
+
+static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR,
+    "Toggles showing the map difficulty. 0 = OFF, 1 = ON");
 
 class C_HudMapInfo : public CHudElement, public Panel
 {
@@ -54,8 +60,10 @@ class C_HudMapInfo : public CHudElement, public Panel
     CPanelAnimationVar(HFont, m_hMapInfoFont, "MapInfoFont", "Default");
 
     CPanelAnimationVarAliasType(bool, center_status, "centerStatus", "1", "BOOL");
-    CPanelAnimationVarAliasType(int, status_ypos, "status_ypos", "c+135", "proportional_ypos");
     CPanelAnimationVarAliasType(int, status_xpos, "status_xpos", "0", "proportional_xpos");
+    CPanelAnimationVarAliasType(int, status_ypos, "status_ypos", "c+135", "proportional_ypos");
+    CPanelAnimationVarAliasType(int, mapinfo_xpos, "mapinfo_xpos", "0", "proportional_xpos");
+    CPanelAnimationVarAliasType(int, mapinfo_ypos, "mapinfo_ypos", "0", "proportional_ypos");
 
   private:
     wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL], m_pwCurrentStages[BUFSIZELOCL],
@@ -63,7 +71,8 @@ class C_HudMapInfo : public CHudElement, public Panel
 
     char stageLocalized[BUFSIZELOCL], checkpointLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL], 
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], m_pszStringStatus[BUFSIZELOCL], 
-        m_pszStringStages[BUFSIZELOCL], noStagesLocalized[BUFSIZELOCL], noCPLocalized[BUFSIZELOCL];
+        m_pszStringStages[BUFSIZELOCL], noStagesLocalized[BUFSIZELOCL], noCPLocalized[BUFSIZELOCL],
+        mapNameLabelLocalized[BUFSIZELOCL], mapAuthorLabelLocalized[BUFSIZELOCL], mapDiffLabelLocalized[BUFSIZELOCL];
 
     int m_iStageCount, m_iStageCurrent;
     bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
@@ -99,7 +108,6 @@ void C_HudMapInfo::OnThink()
 
 void C_HudMapInfo::Init()
 {
-    SetBgColor(Color(0, 0, 0, 0));
     // LOCALIZE STUFF HERE:
     FIND_LOCALIZATION(m_pwStageStartString, "#MOM_Stage_Start");
     LOCALIZE_TOKEN(Stage, "#MOM_Stage", stageLocalized);
@@ -109,6 +117,9 @@ void C_HudMapInfo::Init()
     LOCALIZE_TOKEN(MapFinished, "#MOM_MapFinished", mapFinishedLocalized);
     LOCALIZE_TOKEN(NoCheckpoint, "#MOM_Status_NoCheckpoints", noCPLocalized);
     LOCALIZE_TOKEN(NoStages, "#MOM_Status_NoStages", noStagesLocalized);
+    LOCALIZE_TOKEN(MapName, "#MOM_Map_Name", mapNameLabelLocalized);
+    LOCALIZE_TOKEN(MapAuthor, "#MOM_Map_Author", mapAuthorLabelLocalized);
+    LOCALIZE_TOKEN(MapDifficulty, "#MOM_Map_Difficulty", mapDiffLabelLocalized);
 }
 
 void C_HudMapInfo::Reset()
@@ -123,9 +134,9 @@ void C_HudMapInfo::Paint()
     {
         // Current stage(checkpoint)/total stages(checkpoints)
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
-            m_bMapLinear ? checkpointLocalized : stageLocalized,     // "Stage" / MOM_TODO: "Checkpoint"
-            m_iStageCurrent, // Current stage / MOM_TODO: Current checkpoint
-            m_iStageCount    // Total number of stages / MOM_TODO: checkpoints
+            m_bMapLinear ? checkpointLocalized : stageLocalized,     // "Stage" / "Checkpoint"
+            m_iStageCurrent, // Current stage/checkpoint
+            m_iStageCount    // Total number of stages/checkpoints
             );
     } 
     else
@@ -189,4 +200,40 @@ void C_HudMapInfo::Paint()
     // current number of stages/MOM_TODO: checkpoints
     surface()->DrawPrintText(m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages,
                              wcslen(m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages));
+
+    int yPos = mapinfo_ypos;
+    int toIncrement = surface()->GetFontTall(m_hMapInfoFont) + 2;
+    surface()->DrawSetTextFont(m_hMapInfoFont);
+    if (mom_mapinfo_show_mapname.GetBool())
+    {
+        const char *pMapName = g_pGameRules->MapName();
+        if (pMapName)
+        {
+            char mapStringANSI[BUFSIZELOCL];
+            wchar_t mapStringUnicode[BUFSIZELOCL];
+            Q_snprintf(mapStringANSI, sizeof(mapStringANSI), "%s%s", mapNameLabelLocalized, pMapName);
+            ANSI_TO_UNICODE(mapStringANSI, mapStringUnicode);
+            surface()->DrawSetTextPos(mapinfo_xpos, yPos);
+            surface()->DrawPrintText(mapStringUnicode, wcslen(mapStringUnicode));
+            yPos += toIncrement;
+        }
+    }
+
+    if (mom_mapinfo_show_author.GetBool())
+    {
+        //MOM_TODO: Map author(s)
+
+        //char mapAuthorANSI[BUFSIZELOCL];
+        //wchar_t mapAuthorUnicode[BUFSIZELOCL];
+        //surface()->DrawSetTextPos(mapinfo_xpos, yPos);
+        //surface()->DrawPrintText(mapAuthorUnicode, wcslen(mapAuthorUnicode));
+
+    }
+
+    if (mom_mapinfo_show_difficulty.GetBool())
+    {
+        //MOM_TODO: We need to determine difficulty of a map.
+    }
+
+
 }
