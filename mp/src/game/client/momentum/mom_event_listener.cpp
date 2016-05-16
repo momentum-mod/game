@@ -39,38 +39,36 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         //NOTE: THE ONLY STAT BELOW THAT REQUIRES THE CURRENT STAGE GIVEN IN "stage_num" IS THE ENTER TIME!
         //EVERYTHING ELSE IS m_iCurrentStage - 1 !
 
-        //MOM_TODO: we do not need to store m_iCurrentStage anymore?
-        m_iCurrentStage = pEvent->GetInt("stage_num");
+        int currentStage = pEvent->GetInt("stage_num");
         //Note: stage_enter_time will NOT change upon multiple entries to the same stage trigger (only set once per run)
-        m_flStageEnterTime[m_iCurrentStage] = pEvent->GetFloat("stage_enter_time");
+        m_flStageEnterTime[currentStage] = pEvent->GetFloat("stage_enter_time");
         
-        if (m_iCurrentStage > 1) //MOM_TODO: || m_iStageCount < 2 (linear maps use checkpoints?)
+        if (currentStage > 1) //MOM_TODO: || m_iStageCount < 2 (linear maps use checkpoints?)
         {
             //The first stage doesn't have its time yet, we calculate it upon going into stage 2+
-            m_flStageTime[m_iCurrentStage - 1] = m_flStageEnterTime[m_iCurrentStage] - m_flStageEnterTime[m_iCurrentStage - 1];
+            m_flStageTime[currentStage - 1] = m_flStageEnterTime[currentStage] - m_flStageEnterTime[currentStage - 1];
         } 
 
-        m_flStageStrafeSyncAvg[m_iCurrentStage - 1] = pEvent->GetFloat("avg_sync");
-        m_flStageStrafeSync2Avg[m_iCurrentStage - 1] = pEvent->GetFloat("avg_sync2");
+        m_flStageStrafeSyncAvg[currentStage - 1] = pEvent->GetFloat("avg_sync");
+        m_flStageStrafeSync2Avg[currentStage - 1] = pEvent->GetFloat("avg_sync2");
 
-        m_flStageExitSpeed[m_iCurrentStage - 1][0] = pEvent->GetFloat("stage_exit_vel");
-        m_flStageVelocityAvg[m_iCurrentStage - 1][0] = pEvent->GetFloat("avg_vel");
-        DevLog("m_flStageExitSpeed[%i] = %.3f\n", (m_iCurrentStage - 1), m_flStageExitSpeed[m_iCurrentStage - 1]);
-        m_flStageVelocityMax[m_iCurrentStage - 1][0] = pEvent->GetFloat("max_vel");
+        m_flStageExitSpeed[currentStage - 1][0] = pEvent->GetFloat("stage_exit_vel");
+        m_flStageVelocityAvg[currentStage - 1][0] = pEvent->GetFloat("avg_vel");
+        m_flStageVelocityMax[currentStage - 1][0] = pEvent->GetFloat("max_vel");
 
-        m_flStageExitSpeed[m_iCurrentStage - 1][1] = pEvent->GetFloat("stage_exit_vel_2D");
-        m_flStageVelocityAvg[m_iCurrentStage - 1][1] = pEvent->GetFloat("avg_vel_2D");
-        m_flStageVelocityMax[m_iCurrentStage - 1][1] = pEvent->GetFloat("max_vel_2D");
+        m_flStageExitSpeed[currentStage - 1][1] = pEvent->GetFloat("stage_exit_vel_2D");
+        m_flStageVelocityAvg[currentStage - 1][1] = pEvent->GetFloat("avg_vel_2D");
+        m_flStageVelocityMax[currentStage - 1][1] = pEvent->GetFloat("max_vel_2D");
 
-        m_iStageJumps[m_iCurrentStage - 1] = pEvent->GetInt("num_jumps");
-        m_iStageStrafes[m_iCurrentStage - 1] = pEvent->GetInt("num_strafes");
+        m_iStageJumps[currentStage - 1] = pEvent->GetInt("num_jumps");
+        m_iStageStrafes[currentStage - 1] = pEvent->GetInt("num_strafes");
 
     }
     else if (!Q_strcmp("new_stage_exit", pEvent->GetName()))
     {
-        m_iCurrentStage = pEvent->GetInt("stage_num");
-        m_flStageEnterSpeed[m_iCurrentStage][0] = pEvent->GetFloat("stage_enter_vel");
-        m_flStageEnterSpeed[m_iCurrentStage][1] = pEvent->GetFloat("stage_enter_vel_2D");
+        int currentStage = pEvent->GetInt("stage_num");
+        m_flStageEnterSpeed[currentStage][0] = pEvent->GetFloat("stage_enter_vel");
+        m_flStageEnterSpeed[currentStage][1] = pEvent->GetFloat("stage_enter_vel_2D");
     }
     else if (!Q_strcmp("run_save", pEvent->GetName()))
     {

@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "hudelement.h"
 #include "hud_numericdisplay.h"
+#include "hud_comparisons.h"
 #include "hud_macros.h"
 #include "utlvector.h"
 #include "KeyValues.h"
@@ -27,7 +28,7 @@ using namespace vgui;
 
 static ConVar mom_timer("mom_timer", "1",
     FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
-    "Turn the timer display on/off\n");
+    "Toggle displaying the timer. 0 = OFF, 1 = ON\n", true, 0, true, 1);
 
 static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
     "Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Checkpoint\n");
@@ -296,7 +297,8 @@ void C_Timer::Paint(void)
         ANSI_TO_UNICODE(m_pszStringCps, m_pwCurrentCheckpoints);
     }
 
-    char prevStageString[BUFSIZELOCL];
+    char prevStageString[BUFSIZELOCL], comparisonANSI[BUFSIZELOCL];
+    Color compareColor = GetFgColor();
 
     if (m_iStageCount > 1)
     {
@@ -309,17 +311,18 @@ void C_Timer::Paint(void)
 
         if (m_iStageCurrent > 1)
         {
-
-            Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i",
+            Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i: ",
                 stLocalized, // Stage localization
                 m_iStageCurrent - 1); // Last stage number
 
-            
-            //MOM_TODO: calculate diff from WR (online)
-            
-            //Draw the timer split
-            mom_UTIL->FormatTime(g_MOMEventListener->m_flStageEnterTime[m_iStageCurrent], m_pszStageTimeString);
-            Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "%s (%s)",
+            ConVarRef timeType("mom_comparisons_time_type");
+            //This void works even if there is no comparison loaded
+            g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? STAGE_TIME : TIME_OVERALL,
+                m_iStageCurrent - 1, m_pszStageTimeString, comparisonANSI, &compareColor);
+
+            //Format the split
+            //mom_UTIL->FormatTime(g_MOMEventListener->m_flStageEnterTime[m_iStageCurrent], m_pszStageTimeString);
+            Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "%s%s",
                 prevStageString,
                 m_pszStageTimeString
                 );
@@ -426,55 +429,29 @@ void C_Timer::Paint(void)
         }
         else
             surface()->DrawSetTextPos(stage_xpos, stage_ypos);
-
+        
         //If we're inside a stage trigger, print that stage's start label
         surface()->DrawPrintText(m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages, 
             wcslen(m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages));
 
-        //MOM_TODO: Overhaul comparisons (stage PB, vs WR, velocities...)
         if (m_iStageCurrent > 1 && m_bIsRunning) //only draw stage timer if we are on stage 2 or above.
-        {
-#if 0//MOM_TODO: REMOVE ME!
-            if (hasComparison)
-            {
-                
-                char tempStageChar[BUFSIZELOCL];
-                wchar_t tempStageWChar[BUFSIZELOCL];
-                Q_snprintf(tempStageChar, BUFSIZELOCL, "%s %s",
-                    prevStageString,//Previous stage
-                    comp);//WR/PB
-                ANSI_TO_UNICODE(tempStageChar, tempStageWChar);
-                
-                //find the length of the entire comparison string
-                char tempComparisonLabel[260];
-                wchar_t tempComparisonWChar[260];
-                Q_snprintf(tempComparisonLabel, 260, "%s %s", 
-                    tempStageChar,
-                    m_pszStageTimeComparisonLabel);
-                ANSI_TO_UNICODE(tempComparisonLabel, tempComparisonWChar);
-                int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, tempComparisonWChar) / 2;
+        {       
+             int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
+             surface()->DrawSetTextPos(text_xpos, cps_ypos);
+             surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
 
-                //And now break the string up into chunks so we can color just the time loss/gain
+             if (g_MOMRunCompare->LoadedComparison())
+             {
+                 //Convert to unicode.
+                 wchar_t comparisonUnicode[BUFSIZELOCL];
+                 ANSI_TO_UNICODE(comparisonANSI, comparisonUnicode);
 
-                //Draw "Stage ##"
-                surface()->DrawSetTextColor(m_TextColor);
-                surface()->DrawSetTextPos(text_xpos, cps_ypos);
-                surface()->DrawPrintText(tempStageWChar, wcslen(tempStageWChar));
-
-                //Draw the comparison after "Stage ##"
-                int lengthOfStage = UTIL_ComputeStringWidth(m_hSmallTextFont, tempStageWChar);
-                surface()->DrawSetTextColor(losingTime ? m_TimeLoss : m_TimeGain);//MOM_TODO: possibly handle ties?
-                surface()->DrawSetTextPos(text_xpos + lengthOfStage + 2, cps_ypos); //add 2 px margin so our times dont overlap each other so much 
-                surface()->DrawPrintText(m_pwStageTimeComparison, wcslen(m_pwStageTimeComparison));
-
-            }
-           else
-#endif            
-           {
-                int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
-                surface()->DrawSetTextPos(text_xpos, cps_ypos);
-                surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
-            }
+                 //This will be right below where the time begins to print
+                 int compare_xpos = GetWide() - (UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) + 2);
+                 surface()->DrawSetTextPos(compare_xpos, cps_ypos + surface()->GetFontTall(m_hSmallTextFont));
+                 surface()->DrawSetTextColor(compareColor);
+                 surface()->DrawPrintText(comparisonUnicode, wcslen(comparisonUnicode));
+             }
         }
     }
 }

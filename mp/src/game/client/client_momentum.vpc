@@ -82,7 +82,7 @@ $Project "Client (Momentum)"
 				$File   "hl2\hud_weaponselection.cpp"
                 $File	"hud_chat.cpp"
                 $File "momentum\ui\hud_comparisons.cpp"
-				
+				$File "momentum\ui\hud_comparisons.h"
 			}
 
 			$File	"momentum\client_events.h"
@@ -133,6 +133,7 @@ $Project "Client (Momentum)"
 			{
 			    $File "$SRCDIR\game\shared\momentum\util\mom_util.cpp"
 				$File "$SRCDIR\game\shared\momentum\util\mom_util.h"
+                $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
 			}
 
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
