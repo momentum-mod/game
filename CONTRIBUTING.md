@@ -1,6 +1,6 @@
 # About contributing
 Contributing to the mod is very easy. Just fork the repo, make your desired changes
-and then send us a pull request and we'll happly revise it.
+and then send us a pull request and we'll happily revise it.
 
 
 When writing the Pull Request comment, don't forget to ask to get listed in the contributors section of the web by providing a name/alias that will be displayed in the credits section of the mod. If you don't provide a name, we'll use your GitHub username
@@ -8,7 +8,7 @@ When writing the Pull Request comment, don't forget to ask to get listed in the 
 **Every help we can get is welcomed**
 
 
-Also, *as this is a Soruce mod*, VALVe's contributing conditions apply here as well:
+Also, *as this is a Source mod*, VALVe's contributing conditions apply here as well:
 
 
 *As a condition of providing a Contribution, you agree that:* 

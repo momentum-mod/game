@@ -5,6 +5,8 @@
 "+back"			"#Valve_Move_Back"
 "+moveleft"		"#Valve_Move_Left"
 "+moveright"	"#Valve_Move_Right"
+"+right"		"#Valve_Turn_Right"
+"+left"			"#Valve_Turn_Left"
 "+walk"         "#Valve_Walk"
 "+jump"			"#Valve_Jump"
 "+duck"			"#Valve_Duck"
