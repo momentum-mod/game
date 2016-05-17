@@ -1,7 +1,9 @@
 #include "cbase.h"
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
+#include "hud_comparisons.h"
 #include "iclientmode.h"
+#include "mom_shareddefs.h"
 #include "vgui_helpers.h"
 
 #include <vgui/ILocalize.h>
@@ -19,28 +21,23 @@
 
 using namespace vgui;
 
-static ConVar speedometer_hvel("mom_speedometer_hvel", "0",
-                               FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                               "If set to 1, doesn't take the vertical velocity component into account.\n", true, 0,
-                               true, 1);
+static MAKE_TOGGLE_CONVAR(
+    mom_speedometer_hvel, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Toggles showing only the horizontal component of player speed. 0 = OFF (XYZ), 1 = ON (XY)\n");
 
-static ConVar speedometer_units("mom_speedometer_units", "1",
-                                FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                "Changes the units of measure of the speedmeter.\n 1: Units per second. \n 2: "
-                                "Kilometers per hour. \n 3: Miles per hour.\n",
-                                true, 1, true, 3);
+static MAKE_CONVAR(mom_speedometer_units, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
+                   "Changes the units of measurement of the speedometer.\n 1 = Units per second\n 2 = "
+                   "Kilometers per hour\n 3 = Miles per hour.",
+                   1, 3);
 
-static ConVar speedometer_draw("mom_drawspeedometer", "1",
-                               FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                               "Toggles displaying the speedometer.\n", true, 0, true, 1);
+static MAKE_TOGGLE_CONVAR(mom_speedometer, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
+                          "Toggles displaying the speedometer. 0 = OFF, 1 = ON\n");
 
-static ConVar speedometer_colorize("mom_speedometer_colorize", "1",
-                                   FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                   "Toggles speedometer colorization based on acceleration.\n", true, 0, true, 1);
+static MAKE_TOGGLE_CONVAR(mom_speedometer_colorize, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
+                          "Toggles speedometer colorization based on acceleration. 0 = OFF, 1 = ON\n");
 
-static ConVar speedometer_lastjump("mom_speedometer_showlastjumpvel", "1",
-                                   FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                   "Toggles showing player velocity at last jump (XY only). \n", true, 0, true, 1);
+static MAKE_TOGGLE_CONVAR(mom_speedometer_showlastjumpvel, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
+                          "Toggles showing player velocity at last jump (XY only). 0 = OFF, 1 = ON\n");
 
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
@@ -59,7 +56,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     void Reset() override
     {
         // We set the proper LabelText based on mom_speedmeter_units value
-        switch (speedometer_units.GetInt())
+        switch (mom_speedometer_units.GetInt())
         {
         case 2:
             SetLabelText(L"KM/H");
@@ -79,7 +76,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 
     void OnThink() override;
 
-    bool ShouldDraw() override { return speedometer_draw.GetBool() && CHudElement::ShouldDraw(); }
+    bool ShouldDraw() override { return mom_speedometer.GetBool() && CHudElement::ShouldDraw(); }
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {
@@ -90,7 +87,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
         SetBgColor(_bgColor);
         m_LabelColor = normalColor;
     }
-    bool ShouldColorize() { return speedometer_colorize.GetBool(); }
+    bool ShouldColorize() { return mom_speedometer_colorize.GetBool(); }
   private:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
@@ -103,6 +100,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 
   protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
+    CPanelAnimationVar(Color, stageStartVelColor, "StageColor", "MOM.Panel.Fg")
 };
 
 DECLARE_HUDELEMENT(CHudSpeedMeter);
@@ -126,25 +124,25 @@ void CHudSpeedMeter::OnThink()
         velocity = pPlayer->GetLocalVelocity();
         float lastJumpVel = pPlayer->m_flLastJumpVel;
         // Remove the vertical component if necessary
-        if (speedometer_hvel.GetBool())
+        if (mom_speedometer_hvel.GetBool())
         {
             velocity.z = 0;
         }
 
         // Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
         float vel = static_cast<float>(velocity.Length());
-        switch (speedometer_units.GetInt())
+        switch (mom_speedometer_units.GetInt())
         {
         case 2:
             // 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
-            vel *= 0.06858;
-            lastJumpVel *= 0.06858;
+            vel *= 0.06858f;
+            lastJumpVel *= 0.06858f;
             SetLabelText(L"KM/H");
             break;
         case 3:
             // 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
-            vel *= 0.04262;
-            lastJumpVel *= 0.04262;
+            vel *= 0.04262f;
+            lastJumpVel *= 0.04262f;
             SetLabelText(L"MPH");
             break;
         case 1:
@@ -174,7 +172,7 @@ void CHudSpeedMeter::OnThink()
             }
             // reset last jump velocity when we restart a run by entering the start zone
             if (pPlayer->m_bIsInZone && pPlayer->m_iCurrentStage == 1)
-                 m_flLastJumpVelocity = 0;
+                m_flLastJumpVelocity = 0;
 
             if (pPlayer->m_flLastJumpVel == 0)
             {
@@ -197,7 +195,7 @@ void CHudSpeedMeter::OnThink()
         m_iRoundedVel = round(vel);
         m_iRoundedLastJump = round(lastJumpVel);
         SetDisplayValue(m_iRoundedVel);
-        SetShouldDisplaySecondaryValue(speedometer_lastjump.GetBool());
+        SetShouldDisplaySecondaryValue(mom_speedometer_showlastjumpvel.GetBool());
         SetSecondaryValue(m_iRoundedLastJump);
     }
 }
@@ -208,8 +206,10 @@ void CHudSpeedMeter::Paint()
     Q_snprintf(speedoValue, sizeof(speedoValue), "%d", m_iRoundedVel);
     Q_snprintf(lastJumpvValue, sizeof(lastJumpvValue), "%d", m_iRoundedLastJump);
 
-    g_pVGuiLocalize->ConvertANSIToUnicode(speedoValue, pw_SpeedoValue, sizeof(pw_SpeedoValue));
-    g_pVGuiLocalize->ConvertANSIToUnicode(lastJumpvValue, pw_LastJumpvValue, sizeof(pw_LastJumpvValue));
+    ANSI_TO_UNICODE(speedoValue, pw_SpeedoValue);
+    ANSI_TO_UNICODE(lastJumpvValue, pw_LastJumpvValue);
+    //g_pVGuiLocalize->ConvertANSIToUnicode(speedoValue, pw_SpeedoValue, sizeof(pw_SpeedoValue));
+    //g_pVGuiLocalize->ConvertANSIToUnicode(lastJumpvValue, pw_LastJumpvValue, sizeof(pw_LastJumpvValue));
 
     text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, m_LabelText) / 2;
     digit_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hNumberFont, pw_SpeedoValue) / 2;
@@ -220,7 +220,6 @@ void CHudSpeedMeter::Paint()
 // we override this here so the last jump vel display doesnt have a double 0
 void CHudSpeedMeter::PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits)
 {
-
     surface()->DrawSetTextFont(font);
     wchar_t unicode[6];
     if (!m_bIsTime)

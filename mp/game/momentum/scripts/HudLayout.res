@@ -19,6 +19,7 @@
 				"SecondaryValueColor" "Light Gray"
 				"LabelColor"	"MOM.Panel.Fg"
 				"BgColor"	"Blank"
+                "StageColor" "MOM.Panel.Fg"
 		}
     //Timer
 	HudTimer
