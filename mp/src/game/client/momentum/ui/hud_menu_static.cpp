@@ -15,7 +15,8 @@ CHudMenuStatic::CHudMenuStatic(const char *pElementName) : CHudElement(pElementN
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 };
 
-DECLARE_HUDELEMENT(CHudMenuStatic);
+//Deeper because otherwise the animations mess with hud_mapinfo (weird)
+DECLARE_HUDELEMENT_DEPTH(CHudMenuStatic, 60);
 
 bool CHudMenuStatic::ShouldDraw()
 {

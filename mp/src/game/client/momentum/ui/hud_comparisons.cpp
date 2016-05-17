@@ -23,12 +23,18 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run co
 // Max stages
 // MOM_TODO: 64 stages max is a lot, perhaps reduce it to like 10? But you know people and their customization
 // options...
-static MAKE_CONVAR(mom_comparisons_max_stages, "4", FLAG_HUD_CVAR, "Max number of stages to show on the comparison panel.", 0, 64);
+static MAKE_CONVAR(mom_comparisons_max_stages, "4", FLAG_HUD_CVAR,
+                   "Max number of stages to show on the comparison panel.", 0, 64);
+
+// Format the output to look pretty?
+static MAKE_TOGGLE_CONVAR(mom_comparisons_format_output, "1", FLAG_HUD_CVAR,
+                          "Toggles formatting the comparisons panel to look nice. 0 = OFF, 1 = ON");
 
 // Time
-static MAKE_TOGGLE_CONVAR(mom_comparisons_time_type, "0", FLAG_HUD_CVAR, "Time comparison type: \n0 = overall split time (compare "
-                                                          "against time taken to get to the stage)\n1 = stage time "
-                                                          "(compare against time spent on stage)");
+static MAKE_TOGGLE_CONVAR(mom_comparisons_time_type, "0", FLAG_HUD_CVAR,
+                          "Time comparison type: \n0 = overall split time (compare "
+                          "against time taken to get to the stage)\n1 = stage time "
+                          "(compare against time spent on stage)");
 static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_overall, "1", FLAG_HUD_CVAR,
                           "Toggle showing comparison to overall time for the run. 0 = OFF, 1 = ON");
 static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perstage, "0", FLAG_HUD_CVAR,
@@ -76,6 +82,8 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_iCurrentStage = 0;
     m_bLoadedComparison = false;
+    m_iWidestLabel = 0;
+    m_iWidestValue = 0;
 }
 
 C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
@@ -105,9 +113,10 @@ bool C_RunComparisons::ShouldDraw()
 
 void C_RunComparisons::Reset()
 {
-    // I don't know what to do here, this is called each spawn?
-
-    // MOM_TODO: UnloadComparisons() ?
+    UnloadComparisons();
+    m_iMaxWide = m_iDefaultWidth;
+    m_iWidestLabel = 0;
+    m_iWidestValue = 0;
 }
 
 void C_RunComparisons::FireGameEvent(IGameEvent *event)
@@ -180,7 +189,6 @@ int C_RunComparisons::GetMaximumTall()
     int stageBuffer = mom_comparisons_max_stages.GetInt();
     int lowerBound = m_iCurrentStage - stageBuffer;
 
-    // MOM_TODO: Do we want this panel sized without regards to the current stage?
     for (int i = 1; i < m_iCurrentStage; i++)
     {
         // Note: Say our current stage is 5 and our buffer is 4. We don't look at stage 5,
@@ -235,7 +243,15 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
 {
     int gainColor = positiveIsGain ? m_cGain.GetRawColor() : m_cLoss.GetRawColor();
     int lossColor = positiveIsGain ? m_cLoss.GetRawColor() : m_cGain.GetRawColor();
-    into->SetRawColor(diff > 0 ? gainColor : lossColor);
+    int rawColor;
+    if (mom_UTIL->FloatEquals(diff, 0.0f))
+        rawColor = m_cTie.GetRawColor();
+    else if (diff > 0.0f)
+        rawColor = gainColor;
+    else
+        rawColor = lossColor;
+
+    into->SetRawColor(rawColor);
 }
 
 // If you pass null to any of the pointer args, they will not be touched. This allows for
@@ -265,7 +281,6 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
 
             // Are we losing time compared to the run?
             // If diff > 0, that means you're falling behind (losing time to) your PB!
-            // MOM_TODO: what if the diff == 0? (probably unlikely)
 
             // Format the time for displaying
             mom_UTIL->FormatTime(act, tempANSITimeActual);
@@ -310,13 +325,19 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
         }
 
         // Time and jump comparison are where positive is bad.
-        bool positiveIsLoss =
-            (type == TIME_OVERALL || type == STAGE_TIME || type == STAGE_JUMPS);
+        bool positiveIsLoss = (type == TIME_OVERALL || type == STAGE_TIME || type == STAGE_JUMPS);
 
         diffChar = diff > 0.0f ? '+' : '-';
+
+        if (compareColorOut)
+        {
+            if (type == STAGE_STRAFES)// Since strafes aren't really important to be above/below on
+                compareColorOut->SetRawColor(m_cTie.GetRawColor());
+            else
+                GetDiffColor(diff, compareColorOut, !positiveIsLoss);
+        }
+
         diff = abs(diff);
-        if (compareColorOut && type != STAGE_STRAFES) // Since strafes aren't really important to be above/below on
-            GetDiffColor(diff, compareColorOut, !positiveIsLoss);
     }
 
     if (type == TIME_OVERALL || type == STAGE_TIME)
@@ -344,9 +365,13 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
 
 void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage, int Ypos)
 {
-    Color compareColor = GetFgColor();
-    char actualValueANSI[BUFSIZELOCL], compareTypeANSI[BUFSIZELOCL], compareValueANSI[BUFSIZELOCL];
-    wchar_t compareTypeUnicode[BUFSIZELOCL], compareValueUnicode[BUFSIZELOCL];
+    Color compareColor = Color(GetFgColor());
+    char actualValueANSI[BUFSIZELOCL], //The actual value of the run 
+        compareTypeANSI[BUFSIZELOCL], //The label of the comparison "Velocity: " etc
+        compareValueANSI[BUFSIZELOCL];// The comparison string (+/- XX)
+    wchar_t actualValueUnicode [BUFSIZELOCL], //Unicode of actual value
+        compareTypeUnicode[BUFSIZELOCL], //Unicode of the label of the comparison type
+        compareValueUnicode[BUFSIZELOCL];//Unicode of the comparison value
     char *localized = nullptr;
     switch (string)
     {
@@ -391,29 +416,62 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
 
     // Obtain the actual value, comparison string, and corresponding color
     GetComparisonString(string, stage, actualValueANSI, compareValueANSI, &compareColor);
-
-    // Copy the comparison label and current run value.
-    V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s%s", localized, actualValueANSI);
+    
+    //Pad the compare type with a couple spaces in front.
+    V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s", localized);
 
     // Convert compare type to Unicode
     ANSI_TO_UNICODE(compareTypeANSI, compareTypeUnicode);
-    // Print the string
+
+    // Print the compare type "Velocity:"/"Stage Time:" etc
     surface()->DrawSetTextColor(GetFgColor());  // Standard text color
     surface()->DrawSetTextPos(text_xpos, Ypos); // Standard position
     surface()->DrawPrintText(compareTypeUnicode, wcslen(compareTypeUnicode));
 
-    // Get new X position for comparison string
-    int newXPos = text_xpos                                               // Base starting X pos
-                  + UTIL_ComputeStringWidth(m_hTextFont, compareTypeANSI) // Width of the label + actual value
-                  + 2;                                                    // Padding
+    //Convert actual value ANSI to unicode
+    ANSI_TO_UNICODE(actualValueANSI, actualValueUnicode);
 
-    // See if this changes our max width
-    SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, compareValueANSI) + 2);
+    //Find the x position for the actual value and comparison value
+    int newXPosActual, newXPosComparison;
+    int widthOfCompareType = UTIL_ComputeStringWidth(m_hTextFont, compareTypeANSI);
+    int widthOfActualValue = UTIL_ComputeStringWidth(m_hTextFont, actualValueANSI);
 
-    // Convert to unicode
+    //Now we need to decide if we're formatting or not.
+    if (mom_comparisons_format_output.GetBool())
+    {
+        //We want to space the strings on the same X pos, which
+        //is the highest X pos possible by normal printing standards.
+        
+        if (widthOfCompareType > m_iWidestLabel)
+            m_iWidestLabel = widthOfCompareType;
+        if (widthOfActualValue > m_iWidestValue)
+            m_iWidestValue = widthOfActualValue;
+
+        newXPosActual = text_xpos + m_iWidestLabel + format_spacing;//padding
+        newXPosComparison = newXPosActual + m_iWidestValue + format_spacing;
+    }
+    else
+    {
+        newXPosActual = widthOfCompareType + 2;//default padding
+        newXPosComparison = newXPosActual + widthOfActualValue + 2;
+    }
+
+    //Draw the actual value
+    surface()->DrawSetTextPos(newXPosActual, Ypos);
+    surface()->DrawPrintText(actualValueUnicode, wcslen(actualValueUnicode));
+
+    //Draw the comparison value
+    //But first see if this changes our max width for the panel
+    SetMaxWide(newXPosComparison //X pos for the comparison 
+        + UTIL_ComputeStringWidth(m_hTextFont, compareValueANSI) //Width of the compare string
+        + 2);//Padding
+
+    //Convert the comparison value to unicode
     ANSI_TO_UNICODE(compareValueANSI, compareValueUnicode);
+    
+    //Print the 
     surface()->DrawSetTextColor(compareColor);                                  // Set the color to gain/loss color
-    surface()->DrawSetTextPos(newXPos, Ypos);                                   // Set pos to calculated width X
+    surface()->DrawSetTextPos(newXPosComparison, Ypos);                                   // Set pos to calculated width X
     surface()->DrawPrintText(compareValueUnicode, wcslen(compareValueUnicode)); // print string
 }
 
@@ -431,7 +489,7 @@ void C_RunComparisons::Paint()
     int newY = m_iDefaultYPos + (m_iDefaultTall - maxTall);
     SetPos(m_iDefaultXPos, newY); // Dynamic placement
     SetSize(m_iMaxWide, maxTall); // Dynamic sizing
-    // MOM_TODO: Make panel scale to amount of stages. Linear maps will have checkpoints.
+    //MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat?
 
     // Get player current stage
     int currentStage = m_iCurrentStage;
@@ -490,7 +548,7 @@ void C_RunComparisons::Paint()
             surface()->DrawSetTextPos(text_xpos, Y);
             surface()->DrawPrintText(stageStringUnicode, wcslen(stageStringUnicode));
 
-            Color comparisonColor = GetFgColor();
+            Color comparisonColor = Color(GetFgColor());
 
             if (i == (currentStage - 1))
             {
@@ -579,13 +637,13 @@ void C_RunComparisons::Paint()
                 int newXPos = text_xpos                                           // Base starting X pos
                               + UTIL_ComputeStringWidth(m_hTextFont, stageString) //"Stage ## "
                               + 2;                                                // Padding
-
-                // MOM_TODO: Does this want the actual value? It would become what the timer displays.
+                
+                //Get just the comparison value, no actual value needed as it clutters up the panel
                 GetComparisonString(timeType, i, nullptr, timeComparisonString, &comparisonColor);
 
                 // See if this updates our max width.
                 SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, timeComparisonString) + 2);
-                
+
                 ANSI_TO_UNICODE(timeComparisonString, timeComparisonStringUnicode);
                 surface()->DrawSetTextColor(comparisonColor);
                 surface()->DrawSetTextPos(newXPos, Y);

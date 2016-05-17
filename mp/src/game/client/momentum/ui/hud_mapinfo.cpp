@@ -48,6 +48,7 @@ class C_HudMapInfo : public CHudElement, public Panel
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {
+        
         Panel::ApplySchemeSettings(pScheme);
         int wide, tall;
         surface()->GetScreenSize(wide, tall);

@@ -68,10 +68,15 @@ public:
     }
 
 protected:
-    CPanelAnimationVar(Color, m_cGain, "GainColor", "FgColor");
-    CPanelAnimationVar(Color, m_cLoss, "LossColor", "FgColor");
+    CPanelAnimationVar(Color, m_cGain, "GainColor", "MOM.Compare.Gain");
+    CPanelAnimationVar(Color, m_cLoss, "LossColor", "MOM.Compare.Loss");
+    CPanelAnimationVar(Color, m_cTie, "TieColor", "MOM.Compare.Tie")
 
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "HudHintTextSmall");
+
+    //Number of pixels between each component of the comparison panel,
+    //given mom_comparisons_format_output is 1
+    CPanelAnimationVar(int, format_spacing, "format_spacing", "2");
 
     CPanelAnimationVarAliasType(float, text_xpos, "text_xpos", "1",
         "proportional_float");
@@ -88,7 +93,7 @@ private:
         jumpsLocalized[BUFSIZELOCL], strafesLocalized[BUFSIZELOCL];
 
     int m_iDefaultWidth, m_iDefaultTall, m_iDefaultXPos, m_iDefaultYPos;
-    int m_iMaxWide;
+    int m_iMaxWide, m_iWidestLabel, m_iWidestValue;
     int m_iCurrentStage;
     bool m_bLoadedComparison;
     RunCompare_t *m_rcCurrentComparison;
