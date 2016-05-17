@@ -39,11 +39,11 @@
                 "time_xpos"		"50"
                 "time_ypos"		"3"
 				"centerCps"		"1" //If true, won't use cps_xpos, centering the text instead
-				"cps_xpos"		"50"
+				"cps_xpos"		"50"//Note: checkpoints only show when there's no run (and therefore splits) 
 				"cps_ypos"		"19"
-				"centerStage"	"1" //If true, won't use stage_xpos, centering the text instead
-				"stage_xpos"	"50"
-				"stage_ypos"	"34"
+				"centerSplit"	"1" //If true, won't use stage_xpos, centering the stage split
+				"split_xpos"	"50"
+				"split_ypos"	"19"
 		}
 	//Strafe Sync Meter
 	CHudSyncMeter
@@ -164,6 +164,7 @@
         "tall" "150"
         "visible" "1"
         "enabled" "1"
+        "PaintBackgroundType" "2"
         "GainColor" "MOM.Compare.Gain"
         "LossColor" "MOM.Compare.Loss"
         "TieColor" "MOM.Compare.Tie"

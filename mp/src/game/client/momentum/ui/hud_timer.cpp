@@ -70,14 +70,14 @@ class C_Timer : public CHudElement, public Panel
     CPanelAnimationVar(HFont, m_hSmallTextFont, "SmallTextFont", "HudNumbersSmall");
 
     CPanelAnimationVarAliasType(bool, center_time, "centerTime", "0", "BOOL");
-    CPanelAnimationVarAliasType(float, time_xpos, "time_xpos", "0", "proportional_float");
-    CPanelAnimationVarAliasType(float, time_ypos, "time_ypos", "2", "proportional_float");
+    CPanelAnimationVarAliasType(int, time_xpos, "time_xpos", "0", "proportional_xpos");
+    CPanelAnimationVarAliasType(int, time_ypos, "time_ypos", "2", "proportional_ypos");
     CPanelAnimationVarAliasType(bool, center_cps, "centerCps", "1", "BOOL");
-    CPanelAnimationVarAliasType(float, cps_xpos, "cps_xpos", "50", "proportional_float");
-    CPanelAnimationVarAliasType(float, cps_ypos, "cps_ypos", "25", "proportional_float");
-    CPanelAnimationVarAliasType(bool, center_stage, "centerStage", "1", "BOOL");
-    CPanelAnimationVarAliasType(float, stage_xpos, "stage_xpos", "50", "proportional_float");
-    CPanelAnimationVarAliasType(float, stage_ypos, "stage_ypos", "40", "proportional_float");
+    CPanelAnimationVarAliasType(int, cps_xpos, "cps_xpos", "50", "proportional_xpos");
+    CPanelAnimationVarAliasType(int, cps_ypos, "cps_ypos", "19", "proportional_ypos");
+    CPanelAnimationVarAliasType(bool, center_split, "centerSplit", "1", "BOOL");
+    CPanelAnimationVarAliasType(int, split_xpos, "split_xpos", "50", "proportional_xpos");
+    CPanelAnimationVarAliasType(int, split_ypos, "split_ypos", "19", "proportional_ypos");
 
   private:
     int m_iStageCurrent, m_iStageCount;
@@ -240,6 +240,7 @@ void C_Timer::OnThink()
 
 void C_Timer::Paint(void)
 {
+    // Format the run's time
     mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);
     ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
 
@@ -256,26 +257,26 @@ void C_Timer::Paint(void)
     }
 
     char prevStageString[BUFSIZELOCL], comparisonANSI[BUFSIZELOCL];
+    wchar_t prevStageStringUnicode[BUFSIZELOCL];
     Color compareColor = GetFgColor();
 
     // MOM_TODO: this will have to handle checkpoints as well!
     if (m_iStageCurrent > 1)
     {
-        //MOM_TODO: m_bMapIsLinear needs to be passed here
-        Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i: ",
-                   stLocalized,          // Stage localization (MOM_TODO: "Checkpoint:")
+        // MOM_TODO: m_bMapIsLinear needs to be passed here
+        Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i",
+                   stLocalized,          // Stage localization (MOM_TODO: "Checkpoint:" if linear)
                    m_iStageCurrent - 1); // Last stage number
+
+        ANSI_TO_UNICODE(prevStageString, prevStageStringUnicode);
 
         ConVarRef timeType("mom_comparisons_time_type");
         // This void works even if there is no comparison loaded
         g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? STAGE_TIME : TIME_OVERALL, m_iStageCurrent - 1,
                                              m_pszStageTimeString, comparisonANSI, &compareColor);
 
-        // Format the split
-        // mom_UTIL->FormatTime(g_MOMEventListener->m_flStageEnterTime[m_iStageCurrent], m_pszStageTimeString);
-        Q_snprintf(m_pszStageTimeLabelString, sizeof(m_pszStageTimeLabelString), "%s%s", prevStageString,
-                   m_pszStageTimeString);
-        ANSI_TO_UNICODE(m_pszStageTimeLabelString, m_pwStageTimeLabel);
+        // Convert the split to Unicode
+        ANSI_TO_UNICODE(m_pszStageTimeString, m_pwStageTimeLabel);
     }
 
     // find out status of timer (no timer/practice mode)
@@ -336,21 +337,45 @@ void C_Timer::Paint(void)
     // don't draw stages when drawing checkpoints, and vise versa.
     else if (m_iStageCurrent > 1 && m_bIsRunning)
     {
-        // only draw stage timer if we are on stage 2 or above.
+        // only draw split timer if we are on stage/checkpoint 2 (not start, which is 1) or above.
+        bool hasComparison = g_MOMRunCompare->LoadedComparison();
+        int prevStageXPos = split_xpos, stageSplitXPos = split_xpos, splitY = split_ypos;
+        int yToIncrement = surface()->GetFontTall(m_hSmallTextFont);
+        if (center_split)
+        {
+            prevStageXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, prevStageString) / 2;
 
-        int text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pwStageTimeLabel) / 2;
-        surface()->DrawSetTextPos(text_xpos, cps_ypos);
+            //Inline the comparison (affects split xpos)
+            int extra = hasComparison ? UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) : 0;
+            stageSplitXPos = GetWide() / 2 - (UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + extra) / 2;
+        }
+
+        //Print the previous stage
+        surface()->DrawSetTextPos(prevStageXPos, splitY);
+        surface()->DrawPrintText(prevStageStringUnicode, wcslen(prevStageStringUnicode));
+
+        //Go down a line
+        splitY += yToIncrement;
+
+        //Print the split
+        surface()->DrawSetTextPos(stageSplitXPos, splitY);
         surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
 
-        if (g_MOMRunCompare->LoadedComparison())
+        //Draw the comparison to the split, if existent
+        if (hasComparison)
         {
             // Convert to unicode.
             wchar_t comparisonUnicode[BUFSIZELOCL];
             ANSI_TO_UNICODE(comparisonANSI, comparisonUnicode);
 
-            // This will be right below where the time begins to print
-            int compare_xpos = GetWide() - (UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) + 2);
-            surface()->DrawSetTextPos(compare_xpos, cps_ypos + surface()->GetFontTall(m_hSmallTextFont));
+            // This will be right below where the time begins to print, but is unwanted
+            //int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
+            //splitY += yToIncrement;
+
+            //Find the xpos of the comparison string
+            int compare_xpos = stageSplitXPos + UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + 2;
+            //Print the comparison
+            surface()->DrawSetTextPos(compare_xpos, splitY);
             surface()->DrawSetTextColor(compareColor);
             surface()->DrawPrintText(comparisonUnicode, wcslen(comparisonUnicode));
         }
