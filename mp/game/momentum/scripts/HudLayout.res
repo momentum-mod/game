@@ -169,7 +169,7 @@
         "TieColor" "MOM.Compare.Tie"
         "TextFont" "HudHintTextSmall"
         "format_spacing" "2"//Number of pixels between each component of the comparison panel, only if mom_comparisons_format_output has value 1
-        "text_xpos" "1"
+        "text_xpos" "5"
         "text_ypos" "2"
     }
     

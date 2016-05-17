@@ -236,7 +236,7 @@ int C_RunComparisons::GetMaximumTall()
         }
     }
 
-    return toReturn + 2;
+    return toReturn + 5;//extra padding
 }
 
 void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain = true)
