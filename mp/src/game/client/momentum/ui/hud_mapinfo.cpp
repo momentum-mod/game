@@ -29,10 +29,10 @@ static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_mapname, "1", FLAG_HUD_CVAR,
                           "Toggles showing the map name. 0 = OFF, 1 = ON");
 
 static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_author, "0", FLAG_HUD_CVAR,
-    "Toggles showing the map author. 0 = OFF, 1 = ON");
+                          "Toggles showing the map author. 0 = OFF, 1 = ON");
 
 static MAKE_TOGGLE_CONVAR(mom_mapinfo_show_difficulty, "0", FLAG_HUD_CVAR,
-    "Toggles showing the map difficulty. 0 = OFF, 1 = ON");
+                          "Toggles showing the map difficulty. 0 = OFF, 1 = ON");
 
 class C_HudMapInfo : public CHudElement, public Panel
 {
@@ -48,7 +48,7 @@ class C_HudMapInfo : public CHudElement, public Panel
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {
-        
+
         Panel::ApplySchemeSettings(pScheme);
         int wide, tall;
         surface()->GetScreenSize(wide, tall);
@@ -70,8 +70,8 @@ class C_HudMapInfo : public CHudElement, public Panel
     wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL], m_pwCurrentStages[BUFSIZELOCL],
         m_pwCurrentStatus[BUFSIZELOCL];
 
-    char stageLocalized[BUFSIZELOCL], checkpointLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL], 
-        startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], m_pszStringStatus[BUFSIZELOCL], 
+    char stageLocalized[BUFSIZELOCL], checkpointLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
+        startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], m_pszStringStatus[BUFSIZELOCL],
         m_pszStringStages[BUFSIZELOCL], noStagesLocalized[BUFSIZELOCL], noCPLocalized[BUFSIZELOCL],
         mapNameLabelLocalized[BUFSIZELOCL], mapAuthorLabelLocalized[BUFSIZELOCL], mapDiffLabelLocalized[BUFSIZELOCL];
 
@@ -79,7 +79,10 @@ class C_HudMapInfo : public CHudElement, public Panel
     bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
 };
 
-DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
+// DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
+
+static CHudElement *Create_C_HudMapInfo(void) { return new C_HudMapInfo("CHudMapInfo"); }
+static CHudElementHelper g_C_HudMapInfo_Helper(Create_C_HudMapInfo, 10);
 
 C_HudMapInfo::C_HudMapInfo(const char *pElementName)
     : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapInfo")
@@ -135,15 +138,14 @@ void C_HudMapInfo::Paint()
     {
         // Current stage(checkpoint)/total stages(checkpoints)
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
-            m_bMapLinear ? checkpointLocalized : stageLocalized,     // "Stage" / "Checkpoint"
-            m_iStageCurrent, // Current stage/checkpoint
-            m_iStageCount    // Total number of stages/checkpoints
-            );
-    } 
+                   m_bMapLinear ? checkpointLocalized : stageLocalized, // "Stage" / "Checkpoint"
+                   m_iStageCurrent,                                     // Current stage/checkpoint
+                   m_iStageCount                                        // Total number of stages/checkpoints
+                   );
+    }
     else
-    {//No stages/checkpoints found
-        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), 
-            m_bMapLinear ? noCPLocalized : noStagesLocalized);
+    { // No stages/checkpoints found
+        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), m_bMapLinear ? noCPLocalized : noStagesLocalized);
     }
 
     ANSI_TO_UNICODE(m_pszStringStages, m_pwCurrentStages);
@@ -182,7 +184,7 @@ void C_HudMapInfo::Paint()
         int dummy, totalWide;
         // Draw current time.
         surface()->GetScreenSize(totalWide, dummy);
-        //GetSize(totalWide, dummy);
+        // GetSize(totalWide, dummy);
         int stageWide;
 
         surface()->GetTextSize(m_hStatusFont, m_bPlayerInZone ? m_pwStageStartLabel : m_pwCurrentStages, stageWide,
@@ -222,19 +224,16 @@ void C_HudMapInfo::Paint()
 
     if (mom_mapinfo_show_author.GetBool())
     {
-        //MOM_TODO: Map author(s)
+        // MOM_TODO: Map author(s)
 
-        //char mapAuthorANSI[BUFSIZELOCL];
-        //wchar_t mapAuthorUnicode[BUFSIZELOCL];
-        //surface()->DrawSetTextPos(mapinfo_xpos, yPos);
-        //surface()->DrawPrintText(mapAuthorUnicode, wcslen(mapAuthorUnicode));
-
+        // char mapAuthorANSI[BUFSIZELOCL];
+        // wchar_t mapAuthorUnicode[BUFSIZELOCL];
+        // surface()->DrawSetTextPos(mapinfo_xpos, yPos);
+        // surface()->DrawPrintText(mapAuthorUnicode, wcslen(mapAuthorUnicode));
     }
 
     if (mom_mapinfo_show_difficulty.GetBool())
     {
-        //MOM_TODO: We need to determine difficulty of a map.
+        // MOM_TODO: We need to determine difficulty of a map.
     }
-
-
 }

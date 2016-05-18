@@ -43,7 +43,7 @@
 		"start_vel_2D"	"float"
 		"end_vel_2D"	"float"
 	}
-	"new_stage_enter"
+	"stage_enter"
 	{
 		"stage_num"	"byte"
 		"stage_enter_time"	"float" //time is in seconds
@@ -60,7 +60,7 @@
 		"max_vel_2D"	"float"
 		"stage_exit_vel_2D"	"float"//previous stage's horizontal exit velocity
 	}
-    "new_stage_exit"//When the player exits the start trigger for the stage
+    "stage_exit"//When the player exits the start trigger for the stage
     {
         "stage_num" "byte"
         "stage_enter_vel"    "float"//velocity in which the player starts the stage (exits the stage trigger)

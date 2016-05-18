@@ -23,6 +23,7 @@ SendPropInt(SENDINFO(m_iRunFlags)),
 SendPropBool(SENDINFO(m_bIsInZone)),
 SendPropInt(SENDINFO(m_iCurrentStage)),
 SendPropBool(SENDINFO(m_bMapFinished)),
+SendPropFloat(SENDINFO(m_flLastJumpTime)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -250,6 +251,7 @@ void CMomentumPlayer::CheckForBhop()
 
     SetNextThink(gpGlobals->curtime, "CURTIME");
 }
+
 void CMomentumPlayer::UpdateRunStats()
 {
     //should velocity be XY or XYZ?
@@ -343,7 +345,7 @@ void CMomentumPlayer::UpdateRunStats()
         playerMoveEvent->SetInt("num_strafes", m_nStageStrafes[0]);
         playerMoveEvent->SetInt("num_jumps", m_nStageJumps[0]);
         bool onGround = GetFlags() & FL_ONGROUND;
-        if ((m_nButtons & IN_JUMP && onGround) || m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT))
+        if ((m_nButtons & IN_JUMP) && onGround || m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT))
             gameeventmanager->FireEvent(playerMoveEvent);
     }
 

@@ -35,6 +35,7 @@ public:
     bool m_bMapFinished;
     int m_iRunFlags;
     int m_iCurrentStage;
+    float m_flLastJumpTime;
 
     float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;

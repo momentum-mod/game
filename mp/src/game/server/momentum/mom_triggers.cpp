@@ -36,10 +36,10 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             pPlayer->m_iCurrentStage = stageNum;
         }
         g_Timer->SetCurrentStage(this);
-        if (g_Timer->IsRunning())
+        IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_enter");
+        if (stageEvent && pPlayer)
         {
-            IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage_enter");
-            if (stageEvent && pPlayer)
+            if (g_Timer->IsRunning())
             {
                 stageEvent->SetInt("stage_num", stageNum);
                 stageEvent->SetFloat("stage_enter_time", g_Timer->CalculateStageTime(stageNum));
@@ -62,7 +62,12 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
 
                 gameeventmanager->FireEvent(stageEvent);
             }
-        }      
+            else
+            {
+                stageEvent->SetInt("stage_num", stageNum);//It's 1, and this resets the stats
+                gameeventmanager->FireEvent(stageEvent);
+            }
+        }
     }
 }
 void CTriggerStage::EndTouch(CBaseEntity *pOther)
@@ -72,14 +77,14 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer && (stageNum == 1 || g_Timer->IsRunning()))//Timer won't be running if it's the start trigger
     {     
-        IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage_exit");
-        if (stageEvent && pPlayer)
+        IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_exit");
+        if (stageEvent)
         {
             //Status
             pPlayer->m_bIsInZone = false;
 
             //Stage num
-            stageEvent->SetInt("stage_num", GetStageNumber());
+            stageEvent->SetInt("stage_num", stageNum);
 
             //3D VELOCITY
             pPlayer->m_flStageEnterVelocity[stageNum][0] = pPlayer->GetLocalVelocity().Length();
@@ -220,7 +225,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
-    IGameEvent *stageEvent = gameeventmanager->CreateEvent("new_stage_enter");
+    IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_enter");
 
     g_Timer->SetEndTrigger(this);
 

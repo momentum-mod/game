@@ -7,7 +7,7 @@
 				"xpos"			"c-60"
                 "ypos"			"310"
                 "wide"			"120"
-                "tall"			"40"
+                "tall"			"80"
                 "visible"		"1"
                 "enabled"		"1"
 				"NumberFont"	"HudNumbersSmallBold"
@@ -19,7 +19,8 @@
 				"SecondaryValueColor" "Light Gray"
 				"LabelColor"	"MOM.Panel.Fg"
 				"BgColor"	"Blank"
-                "StageColor" "MOM.Panel.Fg"
+                "SplitAlpha" "255"//Used for fading
+                "JumpAlpha" "255"//Used for fading
 		}
     //Timer
 	HudTimer

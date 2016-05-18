@@ -1,9 +1,12 @@
 #include "cbase.h"
+#include "hud_comparisons.h"
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
-#include "hud_comparisons.h"
 #include "iclientmode.h"
+#include "iinput.h"
+#include "in_buttons.h"
 #include "mom_shareddefs.h"
+#include "util/run_compare.h"
 #include "vgui_helpers.h"
 
 #include <vgui/ILocalize.h>
@@ -39,6 +42,10 @@ static MAKE_TOGGLE_CONVAR(mom_speedometer_colorize, "1", FLAG_HUD_CVAR | FCVAR_C
 static MAKE_TOGGLE_CONVAR(mom_speedometer_showlastjumpvel, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                           "Toggles showing player velocity at last jump (XY only). 0 = OFF, 1 = ON\n");
 
+static MAKE_TOGGLE_CONVAR(
+    mom_speedometer_showenterspeed, "1", FLAG_HUD_CVAR,
+    "Toggles showing the stage/checkpoint enter speed (and comparison, if existent). 0 = OFF, 1 = ON\n");
+
 class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 {
     DECLARE_CLASS_SIMPLE(CHudSpeedMeter, CHudNumericDisplay);
@@ -72,6 +79,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
         SetDisplayValue(0);
         SetSecondaryValue(0);
         m_flNextColorizeCheck = 0;
+        stageStartAlpha = 255;
     }
 
     void OnThink() override;
@@ -81,13 +89,29 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     void ApplySchemeSettings(IScheme *pScheme) override
     {
         Panel::ApplySchemeSettings(pScheme);
+        secondaryColor = GetSchemeColor("SecondaryValueColor", pScheme);
         normalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
         increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
         decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
         SetBgColor(_bgColor);
         m_LabelColor = normalColor;
     }
-    bool ShouldColorize() { return mom_speedometer_colorize.GetBool(); }
+    bool ShouldColorize() const { return mom_speedometer_colorize.GetBool(); }
+
+    void FireGameEvent(IGameEvent *pEvent) override
+    {
+        if (!Q_strcmp(pEvent->GetName(), "stage_exit"))
+        {
+            // Fade the enter speed after 5 seconds (in event)
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutEnterSpeed");
+        }
+        else if (!Q_strcmp(pEvent->GetName(), "stage_enter"))
+        {
+            // Reset the alpha if we hit a stage enter again
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("ResetEnterSpeed");
+        }
+    }
+
   private:
     float m_flNextColorizeCheck;
     float m_flLastVelocity;
@@ -97,22 +121,29 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
+    Color secondaryColor;
+
+    bool m_bRanFadeOutJumpSpeed;
 
   protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
-    CPanelAnimationVar(Color, stageStartVelColor, "StageColor", "MOM.Panel.Fg")
+    // NOTE: These need to be floats because of animations (thanks volvo)
+    CPanelAnimationVar(float, stageStartAlpha, "StageAlpha", "255.0"); // Used for fading
+    CPanelAnimationVar(float, lastJumpAlpha, "JumpAlpha", "255.0");
 };
 
-DECLARE_HUDELEMENT(CHudSpeedMeter);
+DECLARE_NAMED_HUDELEMENT(CHudSpeedMeter, HudSpeedMeter);
 
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
-    // This is already set for HUD elements, but still...
+    ListenForGameEvent("stage_exit");
+    ListenForGameEvent("stage_enter");
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    m_bRanFadeOutJumpSpeed = false;
 }
 
 void CHudSpeedMeter::OnThink()
@@ -123,8 +154,21 @@ void CHudSpeedMeter::OnThink()
     {
         velocity = pPlayer->GetLocalVelocity();
         float lastJumpVel = pPlayer->m_flLastJumpVel;
+        int velType = mom_speedometer_hvel.GetBool(); // 1 is horizontal velocity
+
+        if (gpGlobals->curtime - pPlayer->m_flLastJumpTime > 5.0f)
+        {
+            if (!m_bRanFadeOutJumpSpeed)
+                m_bRanFadeOutJumpSpeed =
+                    g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutJumpSpeed");
+        }
+        else
+        {
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("ResetJumpSpeed");
+            m_bRanFadeOutJumpSpeed = false;
+        }
         // Remove the vertical component if necessary
-        if (mom_speedometer_hvel.GetBool())
+        if (velType)
         {
             velocity.z = 0;
         }
@@ -199,24 +243,95 @@ void CHudSpeedMeter::OnThink()
         SetSecondaryValue(m_iRoundedLastJump);
     }
 }
+
 void CHudSpeedMeter::Paint()
 {
     char speedoValue[BUFSIZELOCL], lastJumpvValue[BUFSIZELOCL];
-    wchar_t pw_SpeedoValue[BUFSIZELOCL], pw_LastJumpvValue[BUFSIZELOCL];
     Q_snprintf(speedoValue, sizeof(speedoValue), "%d", m_iRoundedVel);
     Q_snprintf(lastJumpvValue, sizeof(lastJumpvValue), "%d", m_iRoundedLastJump);
 
-    ANSI_TO_UNICODE(speedoValue, pw_SpeedoValue);
-    ANSI_TO_UNICODE(lastJumpvValue, pw_LastJumpvValue);
-    //g_pVGuiLocalize->ConvertANSIToUnicode(speedoValue, pw_SpeedoValue, sizeof(pw_SpeedoValue));
-    //g_pVGuiLocalize->ConvertANSIToUnicode(lastJumpvValue, pw_LastJumpvValue, sizeof(pw_LastJumpvValue));
-
     text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, m_LabelText) / 2;
-    digit_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hNumberFont, pw_SpeedoValue) / 2;
-    digit2_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallNumberFont, pw_LastJumpvValue) / 2;
+    digit_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hNumberFont, speedoValue) / 2;
+    digit2_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallNumberFont, lastJumpvValue) / 2;
+
+    // Fade out the secondary value (last jump speed) based on the lastJumpAlpha value
+    Color newSecondary =
+        Color(m_SecondaryValueColor.r(), m_SecondaryValueColor.g(), m_SecondaryValueColor.b(), lastJumpAlpha);
+    m_SecondaryValueColor = newSecondary;
 
     BaseClass::Paint();
+
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+
+    // Draw the enter speed split, if toggled on
+    if (mom_speedometer_showenterspeed.GetBool() && pPlayer && !pPlayer->m_bIsInZone &&
+        g_MOMEventListener->m_bTimerIsRunning)
+    {
+        int split_xpos; // Dynamically set
+        int split_ypos = mom_speedometer_showlastjumpvel.GetBool()
+                             ? digit2_ypos + surface()->GetFontTall(m_hSmallNumberFont)
+                             : digit2_ypos;
+
+        char enterVelANSITemp[BUFSIZELOCL], enterVelANSICompTemp[BUFSIZELOCL];
+        char enterVelANSI[BUFSIZELOCL], enterVelCompareANSI[BUFSIZELOCL];
+        wchar_t enterVelUnicode[BUFSIZELOCL], enterVelCompareUnicode[BUFSIZELOCL];
+
+        Color compareColorFade = Color(0, 0, 0, 0);
+        Color compareColor = Color(0, 0, 0, 0);
+
+        Color fg = GetFgColor();
+        Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), stageStartAlpha);
+
+        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, pPlayer->m_iCurrentStage, enterVelANSITemp,
+                                             enterVelANSICompTemp, &compareColor);
+
+        Q_snprintf(enterVelANSI, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelANSITemp))));
+
+        ANSI_TO_UNICODE(enterVelANSI, enterVelUnicode);
+
+        // Get the width of the split velocity
+        int enterVelANSIWidth = UTIL_ComputeStringWidth(m_hSmallNumberFont, enterVelANSI);
+
+        bool loadedComparison = g_MOMRunCompare->LoadedComparison();
+        int increaseX = 0;
+
+        // Calculate the split comparison string
+        if (loadedComparison)
+        {
+            // Really gross way of ripping apart this string and
+            // making some sort of quasi-frankenstein string of the float as a rounded int
+            char firstThree[3];
+            Q_strncpy(firstThree, enterVelANSICompTemp, 3);
+            const char *compFloat = enterVelANSICompTemp;
+            Q_snprintf(enterVelCompareANSI, BUFSIZELOCL, " %s %i)", firstThree,
+                       static_cast<int>(round(atof(compFloat + 3))));
+            ANSI_TO_UNICODE(enterVelCompareANSI, enterVelCompareUnicode);
+
+            // Update the compare color to have the alpha defined by animations (fade out if 5+ sec)
+            compareColorFade.SetColor(compareColor.r(), compareColor.g(), compareColor.b(), stageStartAlpha);
+
+            increaseX = UTIL_ComputeStringWidth(m_hSmallNumberFont, enterVelCompareANSI);
+        }
+
+        // Our X pos is based on both the split and compare string
+        split_xpos = GetWide() / 2 - (enterVelANSIWidth + increaseX) / 2;
+
+        // Print the split vel
+        surface()->DrawSetTextFont(m_hSmallNumberFont);
+        surface()->DrawSetTextPos(split_xpos, split_ypos);
+        surface()->DrawSetTextColor(actualColorFade);
+        surface()->DrawPrintText(enterVelUnicode, wcslen(enterVelUnicode));
+
+        if (loadedComparison)
+        {
+            // Print the comparison
+            surface()->DrawSetTextPos(split_xpos + enterVelANSIWidth, split_ypos);
+            surface()->DrawSetTextColor(compareColorFade);
+            surface()->DrawPrintText(enterVelCompareUnicode, wcslen(enterVelCompareUnicode));
+        }
+    }
 }
+
 // we override this here so the last jump vel display doesnt have a double 0
 void CHudSpeedMeter::PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits)
 {

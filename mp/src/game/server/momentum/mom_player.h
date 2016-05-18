@@ -90,6 +90,7 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bIsInZone);//This is true if the player is in a CTriggerTimerStage zone
     CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
     CNetworkVar(int, m_iCurrentStage);//Current stage the player is on
+    CNetworkVar(float, m_flLastJumpTime);//The last time that the player jumped
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 

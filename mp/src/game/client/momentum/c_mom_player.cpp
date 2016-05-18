@@ -20,6 +20,7 @@ RecvPropInt(RECVINFO(m_iRunFlags)),
 RecvPropBool(RECVINFO(m_bIsInZone)),
 RecvPropInt(RECVINFO(m_iCurrentStage)),
 RecvPropBool(RECVINFO(m_bMapFinished)),
+RecvPropFloat(RECVINFO(m_flLastJumpTime)),
 //RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
 //RecvPropBool(RECVINFO(m_fIsSprinting)),
 END_RECV_TABLE()
@@ -30,6 +31,7 @@ C_MomentumPlayer::C_MomentumPlayer()
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
     m_bMapFinished = false;
+    m_flLastJumpTime = 0.0f;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()

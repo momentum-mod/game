@@ -236,7 +236,7 @@ int C_RunComparisons::GetMaximumTall()
         }
     }
 
-    return toReturn + 5;//extra padding
+    return toReturn + 5; // extra padding
 }
 
 void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain = true)
@@ -261,69 +261,79 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
 {
     int velType = mom_comparisons_vel_type.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
     float diff = 0.0f;                               // Difference between the current and the compared-to.
-    float act = 0.0f;                                // Actual value that the player has for this stage.
+    float act;                                // Actual value that the player has for this stage.
     char tempANSITimeOutput[BUFSIZETIME],
         tempANSITimeActual[BUFSIZETIME]; // Only used for time comparisons, ignored otherwise.
     char diffChar = '\0';                // The character used for showing the diff: + or -
-    // Calculate diff only if we loaded a comparison
-    if (m_bLoadedComparison)
+                                         // Calculate diffs only if we loaded a comparison
+    switch (type)
     {
-        switch (type)
-        {
-        case TIME_OVERALL:
-        case STAGE_TIME:
-            // Get the time difference in seconds.
-            act = type == TIME_OVERALL ? g_MOMEventListener->m_flStageEnterTime[stage + 1]
-                                       : g_MOMEventListener->m_flStageTime[stage];
+    case TIME_OVERALL:
+    case STAGE_TIME:
+        // Get the time difference in seconds.
+        act = type == TIME_OVERALL ? g_MOMEventListener->m_flStageEnterTime[stage + 1]
+                                   : g_MOMEventListener->m_flStageTime[stage];
 
+        if (m_bLoadedComparison)
             diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[stage]
                                                : m_rcCurrentComparison->stageSplits[stage - 1]);
 
-            // Are we losing time compared to the run?
-            // If diff > 0, that means you're falling behind (losing time to) your PB!
+        // Are we losing time compared to the run?
+        // If diff > 0, that means you're falling behind (losing time to) your PB!
 
-            // Format the time for displaying
-            mom_UTIL->FormatTime(act, tempANSITimeActual);
+        // Format the time for displaying
+        mom_UTIL->FormatTime(act, tempANSITimeActual);
+        if (m_bLoadedComparison)
             mom_UTIL->FormatTime(diff, tempANSITimeOutput);
-            break;
-        case VELOCITY_AVERAGE:
-            // Get the vel difference
-            act = g_MOMEventListener->m_flStageVelocityAvg[stage][velType];
+        break;
+    case VELOCITY_AVERAGE:
+        // Get the vel difference
+        act = g_MOMEventListener->m_flStageVelocityAvg[stage][velType];
+        if (m_bLoadedComparison)
             diff = act -
                    m_rcCurrentComparison->stageAvgVels[velType][stage - 1]; //- 1 due to array indexing (0 is stage 1)
-            break;
-        case VELOCITY_EXIT:
-            act = g_MOMEventListener->m_flStageExitSpeed[stage][velType];
+        break;
+    case VELOCITY_EXIT:
+        act = g_MOMEventListener->m_flStageExitSpeed[stage][velType];
+        if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageExitVels[velType][stage - 1];
-            break;
-        case VELOCITY_MAX:
-            act = g_MOMEventListener->m_flStageVelocityMax[stage][velType];
+        break;
+    case VELOCITY_MAX:
+        act = g_MOMEventListener->m_flStageVelocityMax[stage][velType];
+        if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageMaxVels[velType][stage - 1];
-            break;
-        case VELOCITY_ENTER:
-            act = g_MOMEventListener->m_flStageEnterSpeed[stage][velType];
+        break;
+    case VELOCITY_ENTER:
+        act = g_MOMEventListener->m_flStageEnterSpeed[stage][velType];
+        if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageEnterVels[velType][stage - 1];
-            break;
-        case STAGE_SYNC1:
-            act = g_MOMEventListener->m_flStageStrafeSyncAvg[stage];
+        break;
+    case STAGE_SYNC1:
+        act = g_MOMEventListener->m_flStageStrafeSyncAvg[stage];
+        if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageAvgSync1[stage - 1];
-            break;
-        case STAGE_SYNC2:
-            act = g_MOMEventListener->m_flStageStrafeSync2Avg[stage];
+        break;
+    case STAGE_SYNC2:
+        act = g_MOMEventListener->m_flStageStrafeSync2Avg[stage];
+        if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageAvgSync2[stage - 1];
-            break;
-        case STAGE_JUMPS:
-            act = g_MOMEventListener->m_iStageJumps[stage];
+        break;
+    case STAGE_JUMPS:
+        act = g_MOMEventListener->m_iStageJumps[stage];
+        if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageJumps[stage - 1];
-            break;
-        case STAGE_STRAFES:
-            act = g_MOMEventListener->m_iStageStrafes[stage];
+        break;
+    case STAGE_STRAFES:
+        act = g_MOMEventListener->m_iStageStrafes[stage];
+        if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageStrafes[stage - 1];
-            break;
-        default:
-            return;
-        }
+        break;
+    default:
+        return;
+    }
 
+    if (m_bLoadedComparison)
+    {
         // Time and jump comparison are where positive is bad.
         bool positiveIsLoss = (type == TIME_OVERALL || type == STAGE_TIME || type == STAGE_JUMPS);
 
@@ -331,7 +341,7 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
 
         if (compareColorOut)
         {
-            if (type == STAGE_STRAFES)// Since strafes aren't really important to be above/below on
+            if (type == STAGE_STRAFES) // Since strafes aren't really important to be above/below on
                 compareColorOut->SetRawColor(m_cTie.GetRawColor());
             else
                 GetDiffColor(diff, compareColorOut, !positiveIsLoss);
@@ -366,12 +376,12 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
 void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage, int Ypos)
 {
     Color compareColor = Color(GetFgColor());
-    char actualValueANSI[BUFSIZELOCL], //The actual value of the run 
-        compareTypeANSI[BUFSIZELOCL], //The label of the comparison "Velocity: " etc
-        compareValueANSI[BUFSIZELOCL];// The comparison string (+/- XX)
-    wchar_t actualValueUnicode [BUFSIZELOCL], //Unicode of actual value
-        compareTypeUnicode[BUFSIZELOCL], //Unicode of the label of the comparison type
-        compareValueUnicode[BUFSIZELOCL];//Unicode of the comparison value
+    char actualValueANSI[BUFSIZELOCL],       // The actual value of the run
+        compareTypeANSI[BUFSIZELOCL],        // The label of the comparison "Velocity: " etc
+        compareValueANSI[BUFSIZELOCL];       // The comparison string (+/- XX)
+    wchar_t actualValueUnicode[BUFSIZELOCL], // Unicode of actual value
+        compareTypeUnicode[BUFSIZELOCL],     // Unicode of the label of the comparison type
+        compareValueUnicode[BUFSIZELOCL];    // Unicode of the comparison value
     char *localized = nullptr;
     switch (string)
     {
@@ -416,8 +426,8 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
 
     // Obtain the actual value, comparison string, and corresponding color
     GetComparisonString(string, stage, actualValueANSI, compareValueANSI, &compareColor);
-    
-    //Pad the compare type with a couple spaces in front.
+
+    // Pad the compare type with a couple spaces in front.
     V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s", localized);
 
     // Convert compare type to Unicode
@@ -428,50 +438,50 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     surface()->DrawSetTextPos(text_xpos, Ypos); // Standard position
     surface()->DrawPrintText(compareTypeUnicode, wcslen(compareTypeUnicode));
 
-    //Convert actual value ANSI to unicode
+    // Convert actual value ANSI to unicode
     ANSI_TO_UNICODE(actualValueANSI, actualValueUnicode);
 
-    //Find the x position for the actual value and comparison value
+    // Find the x position for the actual value and comparison value
     int newXPosActual, newXPosComparison;
     int widthOfCompareType = UTIL_ComputeStringWidth(m_hTextFont, compareTypeANSI);
     int widthOfActualValue = UTIL_ComputeStringWidth(m_hTextFont, actualValueANSI);
 
-    //Now we need to decide if we're formatting or not.
+    // Now we need to decide if we're formatting or not.
     if (mom_comparisons_format_output.GetBool())
     {
-        //We want to space the strings on the same X pos, which
-        //is the highest X pos possible by normal printing standards.
-        
+        // We want to space the strings on the same X pos, which
+        // is the highest X pos possible by normal printing standards.
+
         if (widthOfCompareType > m_iWidestLabel)
             m_iWidestLabel = widthOfCompareType;
         if (widthOfActualValue > m_iWidestValue)
             m_iWidestValue = widthOfActualValue;
 
-        newXPosActual = text_xpos + m_iWidestLabel + format_spacing;//padding
+        newXPosActual = text_xpos + m_iWidestLabel + format_spacing; // padding
         newXPosComparison = newXPosActual + m_iWidestValue + format_spacing;
     }
     else
     {
-        newXPosActual = widthOfCompareType + 2;//default padding
+        newXPosActual = widthOfCompareType + 2; // default padding
         newXPosComparison = newXPosActual + widthOfActualValue + 2;
     }
 
-    //Draw the actual value
+    // Draw the actual value
     surface()->DrawSetTextPos(newXPosActual, Ypos);
     surface()->DrawPrintText(actualValueUnicode, wcslen(actualValueUnicode));
 
-    //Draw the comparison value
-    //But first see if this changes our max width for the panel
-    SetMaxWide(newXPosComparison //X pos for the comparison 
-        + UTIL_ComputeStringWidth(m_hTextFont, compareValueANSI) //Width of the compare string
-        + 2);//Padding
+    // Draw the comparison value
+    // But first see if this changes our max width for the panel
+    SetMaxWide(newXPosComparison                                        // X pos for the comparison
+               + UTIL_ComputeStringWidth(m_hTextFont, compareValueANSI) // Width of the compare string
+               + 2);                                                    // Padding
 
-    //Convert the comparison value to unicode
+    // Convert the comparison value to unicode
     ANSI_TO_UNICODE(compareValueANSI, compareValueUnicode);
-    
-    //Print the 
+
+    // Print the
     surface()->DrawSetTextColor(compareColor);                                  // Set the color to gain/loss color
-    surface()->DrawSetTextPos(newXPosComparison, Ypos);                                   // Set pos to calculated width X
+    surface()->DrawSetTextPos(newXPosComparison, Ypos);                         // Set pos to calculated width X
     surface()->DrawPrintText(compareValueUnicode, wcslen(compareValueUnicode)); // print string
 }
 
@@ -489,7 +499,7 @@ void C_RunComparisons::Paint()
     int newY = m_iDefaultYPos + (m_iDefaultTall - maxTall);
     SetPos(m_iDefaultXPos, newY); // Dynamic placement
     SetSize(m_iMaxWide, maxTall); // Dynamic sizing
-    //MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat?
+    // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat?
 
     // Get player current stage
     int currentStage = m_iCurrentStage;
@@ -637,8 +647,8 @@ void C_RunComparisons::Paint()
                 int newXPos = text_xpos                                           // Base starting X pos
                               + UTIL_ComputeStringWidth(m_hTextFont, stageString) //"Stage ## "
                               + 2;                                                // Padding
-                
-                //Get just the comparison value, no actual value needed as it clutters up the panel
+
+                // Get just the comparison value, no actual value needed as it clutters up the panel
                 GetComparisonString(timeType, i, nullptr, timeComparisonString, &comparisonColor);
 
                 // See if this updates our max width.
