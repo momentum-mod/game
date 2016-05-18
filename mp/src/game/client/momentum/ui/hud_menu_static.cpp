@@ -15,7 +15,8 @@ CHudMenuStatic::CHudMenuStatic(const char *pElementName) : CHudElement(pElementN
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 };
 
-DECLARE_HUDELEMENT(CHudMenuStatic);
+//Deeper because otherwise the animations mess with hud_mapinfo (weird)
+DECLARE_HUDELEMENT_DEPTH(CHudMenuStatic, 60);
 
 bool CHudMenuStatic::ShouldDraw()
 {
@@ -312,7 +313,7 @@ void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
             DevWarning("Missing localization for %s\n", pszItem);
         }
         else Q_wcsncpy(wLocalizedItem, wLocalizedItemPtr, 512);
-
+        
         nCount = _snwprintf(pWritePosition, nRemaining, L"%d. %ls\n", i + 1, wLocalizedItem);
         nRemaining -= nCount;
         pWritePosition += nCount;

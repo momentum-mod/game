@@ -32,6 +32,9 @@ Scheme
 		"MOM.Speedometer.Normal"	"255 255 255 125"
 		"MOM.Speedometer.Increase"	"30 150 210 255"
 		"MOM.Speedometer.Decrease"	"255 75 75 255"
+        "MOM.Compare.Gain" "30 150 210 255"
+        "MOM.Compare.Loss" "255 75 75 255"
+        "MOM.Compare.Tie" "255 255 255 255"
 	}
 	
 	///////////////////// BASE SETTINGS ////////////////////////

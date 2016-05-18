@@ -13,6 +13,16 @@ struct mapstruct_t
     bool m_bCompleted;//If the player has completed this map or not (read .tim files to set this)
     int m_iDifficulty;//Difficulty of map (Tier 1, 2 etc)
     char m_szBestTime[64];//Best time for the map (MOM_TODO: determine best size for this)
+
+    mapstruct_t()
+    {
+        m_iGameMode = MOMGM_UNKNOWN;
+        m_bHasStages = false;
+        m_bCompleted = false;
+        m_iDifficulty = 1;
+        m_szBestTime[0] = '\0';
+        m_szMapName[0] = '\0';
+    }
 };
 
 //Used by the MapSelectorDialog, encapsulates a map object for the list
@@ -23,6 +33,7 @@ struct mapdisplay_t
         m_iListID = -1;
         m_iServerID = -1;
         m_bDoNotRefresh = true;
+        m_mMap = mapstruct_t();
     }
     mapstruct_t m_mMap;         // the map struct, containing the information for the map
     int			m_iListID;		// the VGUI2 list panel index for displaying this server

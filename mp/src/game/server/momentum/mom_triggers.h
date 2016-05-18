@@ -7,6 +7,7 @@
 #include "triggers.h"
 #include "filters.h"
 #include "func_break.h"
+#include "mom_gamerules.h"
 
 // spawnflags 
 enum {

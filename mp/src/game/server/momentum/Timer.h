@@ -30,8 +30,6 @@ public:
     void DispatchStateMessage();
     void DispatchResetMessage();
     void DispatchCheckpointMessage();
-    void DispatchStageMessage();
-    void DispatchStageCountMessage();
 
 
     // ------------- Timer state related messages --------------------------
@@ -49,19 +47,26 @@ public:
     CTriggerTimerStart *GetStartTrigger() { return m_pStartTrigger.Get(); }
     // Gets the current checkpoint
     CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint.Get(); }
+    
+    CTriggerTimerStop *GetEndTrtigger() { return m_pEndTrigger.Get(); }
+    CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
 
     // Sets the given trigger as the start trigger
-    void SetStartTrigger(CTriggerTimerStart *pTrigger) { m_pStartTrigger.Set(pTrigger); }
+    void SetStartTrigger(CTriggerTimerStart *pTrigger)
+    {
+        m_iLastStage = 0;//Allows us to overwrite previous runs
+        m_pStartTrigger.Set(pTrigger);
+    }
 
     // Sets the current checkpoint
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint.Set(pTrigger); }
 
+    void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger.Set(pTrigger); }
     void SetCurrentStage(CTriggerStage *pTrigger)
     {
         m_pCurrentStage.Set(pTrigger);
-        DispatchStageMessage();
+        //DispatchStageMessage();
     }
-    CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
     int GetCurrentStageNumber() { return m_pCurrentStage.Get()->GetStageNumber(); }
 
     // Calculates the stage count
@@ -69,7 +74,9 @@ public:
     void RequestStageCount();
     // Gets the total stage count
     int GetStageCount() { return m_iStageCount; };
-    int GetStageTicks(int stageNum);
+    float CalculateStageTime(int stageNum);
+    float GetLastRunTime() { return (m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick; }
+
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
     int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
@@ -128,7 +135,7 @@ public:
     void SaveTime();
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
-
+    void DispatchMapInfo();
     // Practice mode- noclip mode that stops timer
     void PracticeMove();
     void EnablePractice(CBasePlayer *pPlayer);
@@ -136,7 +143,8 @@ public:
     bool IsPracticeMode(CBaseEntity *pOther);
 
     // Have the cheats been turned on in this session?
-    bool GotCaughtCheating() { return m_bWereCheatsActivated; };
+    bool GotCaughtCheating() const
+    { return m_bWereCheatsActivated; };
     void SetCheating(bool newBool)
     {
         UTIL_ShowMessage("CHEATER", UTIL_GetLocalPlayer());
@@ -149,30 +157,34 @@ public:
 private:
 
     int m_iStageCount;
-    int m_iStartTick;
+    int m_iStartTick, m_iEndTick;
     int m_iLastStage = 0;
-    int m_iStageEnterTick[MAX_STAGES];
+    float m_iStageEnterTime[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
 
     CHandle<CTriggerTimerStart> m_pStartTrigger;
+    CHandle<CTriggerTimerStop> m_pEndTrigger;
     CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
     CHandle<CTriggerStage> m_pCurrentStage;
 
     struct Time
     {
         //overall run stats:
-        int ticks;  //The amount of ticks took to complete
+        float time_sec;  //The amount of seconds taken to complete
         float tickrate;  //Tickrate the run was done on
         time_t date;    //Date achieved
-        int jumps, strafes;
-        float maxvel, avgvel, startvel, endvel;
-        float avgsync, avgsync2;
+        int flags;
 
         //stage specific stats:
-        int stageticks[MAX_STAGES]; //time in ticks for that stage
-        float stagevel[MAX_STAGES], stageavgvel[MAX_STAGES], stagemaxvel[MAX_STAGES], 
-            stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES]; //no stage end vel since it's the same as the next stage start vel
+        float stagetime[MAX_STAGES], stageentertime[MAX_STAGES], stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES];
+
+        //These members are 2D arrays which store the XYZ velocity length in index 0 and XY velocity in index 1
+        float stagestartvel[MAX_STAGES][2], //The velocity that you start the stage with (exit the stage start trigger)
+            stageexitvel[MAX_STAGES][2], //The velocity with which you exit the stage (this stage -> next)
+            stageavgvel[MAX_STAGES][2], 
+            stagemaxvel[MAX_STAGES][2];
+
         int stagejumps[MAX_STAGES], stagestrafes[MAX_STAGES];
     };
 
@@ -190,11 +202,32 @@ private:
     int m_iCurrentStepCP = 0;
     bool m_bUsingCPMenu = false;
 
-    const char* c_mapDir = "maps/";
-    // Extension used for storing local map times
-    const char* c_timesExt = ".tim";
+    //PRECISION FIX
+
+    float m_flTickOffsetFix[MAX_STAGES]; //index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
+
+    //creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.  
+    //zone type: 0: endzone, 1: startzone, 2: stage
+    float GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType);
+public:
+    float m_flTickIntervalOffsetOut;
+    class CTriggerTraceEnum : public IEntityEnumerator
+    {
+    public:
+        CTriggerTraceEnum(Ray_t *pRay, Vector velocity, Vector currOrigin)
+            : m_pRay(pRay), m_currVelocity(velocity), m_currOrigin(currOrigin)
+        {
+        }
+
+        virtual bool EnumEntity(IHandleEntity *pHandleEntity);
+    private:
+        Ray_t *m_pRay;
+        Vector m_currOrigin;
+        Vector m_currVelocity;
+    };
 };
 
-extern CTimer g_Timer;
+
+extern CTimer *g_Timer;
 
 #endif // TIMER_H

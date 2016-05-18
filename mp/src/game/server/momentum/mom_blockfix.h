@@ -19,9 +19,11 @@ class CMOMBhopBlockFixSystem : CAutoGameSystem
   public:
     CMOMBhopBlockFixSystem(const char *pName) : CAutoGameSystem(pName) {}
 
-    virtual void LevelInitPostEntity() { FindBhopBlocks(); }
+    void LevelInitPostEntity() override
+    { FindBhopBlocks(); }
 
-    virtual void LevelShutdownPostEntity() { m_mapBlocks.RemoveAll(); }
+    void LevelShutdownPostEntity() override
+    { m_mapBlocks.RemoveAll(); }
 
     bool IsBhopBlock(int entIndex) { return (m_mapBlocks.Find(entIndex) != m_mapBlocks.InvalidIndex()); }
 

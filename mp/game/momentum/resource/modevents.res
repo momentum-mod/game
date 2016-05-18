@@ -31,39 +31,53 @@
 	{
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
-		"avg_vel"	"float"
+		"num_strafes"	"short"
+		"num_jumps"	"short"
+        
+        "avg_vel"	"float"
 		"max_vel"	"float"
 		"start_vel"	"float"
 		"end_vel"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
+        "avg_vel_2D"	"float"
+		"max_vel_2D"	"float"
+		"start_vel_2D"	"float"
+		"end_vel_2D"	"float"
 	}
-	"new_stage"
+	"stage_enter"
 	{
 		"stage_num"	"byte"
-		"stage_ticks"	"long" //time is in ticks
+		"stage_enter_time"	"float" //time is in seconds
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
-		"avg_vel"	"float"
-		"max_vel"	"float"
-		"stage_enter_vel"	"float"
 		"num_strafes"	"short"
 		"num_jumps"	"short"
+        
+        "avg_vel"	"float"
+		"max_vel"	"float"
+		"stage_exit_vel"	"float"//previous stage's exit velocity
+        //we save both XY and XYZ, so we can look at both if need be...
+        "avg_vel_2D"	"float"
+		"max_vel_2D"	"float"
+		"stage_exit_vel_2D"	"float"//previous stage's horizontal exit velocity
 	}
+    "stage_exit"//When the player exits the start trigger for the stage
+    {
+        "stage_num" "byte"
+        "stage_enter_vel"    "float"//velocity in which the player starts the stage (exits the stage trigger)
+        "stage_enter_vel_2D"    "float"
+    }
 	"run_save"
 	{
 		"run_saved"	"bool"
-		"run_posted"	"bool"
 	}
-	"timer_started"
+    "run_upload"
+    {
+        "run_posted" "bool"
+        "web_msg" "string"//MOM_TODO: fill this with more stuff?
+    }
+	"timer_state"
 	{
-		"timer_isrunning"	"bool"
-	}
-	"player_inside_mapzone"
-	{
-		"inside_startzone"	"bool"
-		"inside_endzone"	"bool"
-		"map_finished"	"bool"
+		"is_running"	"bool"
 	}
 	"keypress"
 	{
@@ -74,4 +88,9 @@
 	{
 		"has_practicemode"	"bool"
 	}
+    "map_init"
+    {
+        "is_linear" "bool"
+        "num_checkpoints" "byte"
+    }
 }

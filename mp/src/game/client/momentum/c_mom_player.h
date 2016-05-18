@@ -31,11 +31,16 @@ public:
     int m_iLastZoom;
     bool m_bAutoBhop;
     bool m_bDidPlayerBhop;
+    bool m_bIsInZone;
+    bool m_bMapFinished;
+    int m_iRunFlags;
+    int m_iCurrentStage;
+    float m_flLastJumpTime;
 
     float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;
 
-    int m_nLastRunTime;
+    float m_flLastRunTime;
 
     void GetBulletTypeParameters(
         int iBulletType,

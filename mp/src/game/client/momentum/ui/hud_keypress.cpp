@@ -27,16 +27,20 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
 public:
     CHudKeyPressDisplay();
     CHudKeyPressDisplay(const char *pElementName);
-    virtual bool ShouldDraw()
+
+    bool ShouldDraw() override
     {
-        return showkeys.GetBool() && g_MOMEventListener && !g_MOMEventListener->m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
+        C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        return showkeys.GetBool() && pMom && !pMom->m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
     }
-    virtual void OnThink();
-    virtual void Paint();
-    virtual void Init();
-    virtual void Reset();
+
+    void OnThink() override;
+    void Paint() override;
+    void Init() override;
+    void Reset() override;
     void DrawKeyTemplates();
-    virtual void ApplySchemeSettings(IScheme *pScheme)
+
+    void ApplySchemeSettings(IScheme *pScheme) override
     {
         Panel::ApplySchemeSettings(pScheme);
         SetBgColor(Color::Color(0,0,0,1)); //empty background, 1 alpha (out of 255) so game text doesnt obscure our text
@@ -164,12 +168,13 @@ void CHudKeyPressDisplay::Paint()
 }
 void CHudKeyPressDisplay::OnThink()
 {
-    m_nButtons = ::input->GetButtonBits(0);
+    m_nButtons = ::input->GetButtonBits(1);
+
     if (g_MOMEventListener)
     {   //we should only draw the strafe/jump counters when the timer is running
         m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;
-        m_nStrafes = g_MOMEventListener->m_iTotalStrafes;
-        m_nJumps = g_MOMEventListener->m_iTotalJumps;
+        m_nStrafes = g_MOMEventListener->m_iStageStrafes[0];
+        m_nJumps = g_MOMEventListener->m_iStageJumps[0];
     }
 }
 void CHudKeyPressDisplay::Reset()

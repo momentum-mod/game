@@ -40,9 +40,11 @@ class CMomentumPlayer : public CBasePlayer
         EmitSound("HL2Player.FlashLightOff"); // MOM_TODO: change this?
     }
 
-    void Spawn();
-    void Precache();
-    void Touch(CBaseEntity *);
+    void Spawn() override;
+    void Precache() override;
+    void Touch(CBaseEntity *) override;
+
+    void InitHUD() override;
 
     virtual void CommitSuicide(bool bExplode = false, bool bForce = false){};
     virtual void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false){};
@@ -72,16 +74,23 @@ class CMomentumPlayer : public CBasePlayer
     void CalculateAverageStats();
     void LimitSpeedInStartZone();
 
+    //These are used for weapon code, MOM_TODO: potentially remove?
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
     CNetworkVar(bool, m_bResumeZoom);
     CNetworkVar(int, m_iLastZoom);
-    CNetworkVar(bool, m_bAutoBhop);
-    CNetworkVar(bool, m_bDidPlayerBhop);
-    CNetworkVar(int, m_iSuccessiveBhops);
+
+    CNetworkVar(bool, m_bAutoBhop);// Is the player using auto bhop?
+    CNetworkVar(bool, m_bDidPlayerBhop);// Did the player bunnyhop successfully?
+    CNetworkVar(int, m_iSuccessiveBhops); //How many successive bhops this player has
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
-    CNetworkVar(float, m_flLastJumpVel);
+    CNetworkVar(float, m_flLastJumpVel); //Last jump velocity of the player
+    CNetworkVar(int, m_iRunFlags);//The run flags (W only/HSW/Scroll etc) of the player
+    CNetworkVar(bool, m_bIsInZone);//This is true if the player is in a CTriggerTimerStage zone
+    CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
+    CNetworkVar(int, m_iCurrentStage);//Current stage the player is on
+    CNetworkVar(float, m_flLastJumpTime);//The last time that the player jumped
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -99,19 +108,22 @@ class CMomentumPlayer : public CBasePlayer
     int GetLastBlock() { return m_iLastBlock; }
     float GetPunishTime() { return m_flPunishTime; }
 
-    //stats: gets transmitted via IGameEvent
-    float m_flStartSpeed, m_flEndSpeed;
-
     //stage stats. index 0 is overall stats
     int m_nStageJumps[MAX_STAGES], m_nStageStrafes[MAX_STAGES];
-    float m_flStageVelocityMax[MAX_STAGES], m_flStageVelocityAvg[MAX_STAGES], 
-        m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES], m_flStageEnterVelocity[MAX_STAGES];
+    float m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES];
+
+    //These members are 2D arrays so we can store both 2D and 3D velocities in them. Index 0 is 3D and index 1 is 2D
+    float m_flStageVelocityMax[MAX_STAGES][2], 
+        m_flStageVelocityAvg[MAX_STAGES][2], 
+        m_flStageEnterVelocity[MAX_STAGES][2],//The velocity with which you enter the stage (leave the stage start trigger)
+        m_flStageExitVelocity[MAX_STAGES][2];//The velocity with which you exit this stage (this stage -> next)
 
     //for calc avg
     int m_nStageAvgCount[MAX_STAGES];
-    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES];
+    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES],
+        m_flStageTotalVelocity[MAX_STAGES][2];
 
-    bool m_bInsideStartZone;
+    //bool m_bInsideStartZone;
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;

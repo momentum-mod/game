@@ -19,6 +19,11 @@ SendPropInt(SENDINFO(m_iSuccessiveBhops)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
+SendPropInt(SENDINFO(m_iRunFlags)),
+SendPropBool(SENDINFO(m_bIsInZone)),
+SendPropInt(SENDINFO(m_iCurrentStage)),
+SendPropBool(SENDINFO(m_bMapFinished)),
+SendPropFloat(SENDINFO(m_flLastJumpTime)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -36,6 +41,7 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
+    m_iRunFlags = 0;
 }
 
 CMomentumPlayer::~CMomentumPlayer() {}
@@ -52,6 +58,7 @@ void CMomentumPlayer::Precache()
 void CMomentumPlayer::Spawn()
 {
     SetModel(ENTITY_MODEL);
+    //BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
     // do this here because we can't get a local player in the timer class
@@ -69,28 +76,28 @@ void CMomentumPlayer::Spawn()
         break;
     }
     // Reset all bool gameevents 
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
-    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_started");
+    IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
+    IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     IGameEvent *practiceModeEvent = gameeventmanager->CreateEvent("practice_mode");
-    if (mapZoneEvent)
-    {
-        mapZoneEvent->SetBool("inside_startzone", false);
-        mapZoneEvent->SetBool("inside_endzone", false);
-        mapZoneEvent->SetBool("map_finished", false);
-        mapZoneEvent->SetInt("current_stage", 0);
-        mapZoneEvent->SetInt("stage_ticks", 0);
-        gameeventmanager->FireEvent(mapZoneEvent);
-    }
+    m_bIsInZone = false;
+    m_bMapFinished = false;
+    m_iCurrentStage = 0;
+
     if (runSaveEvent)
     {
         runSaveEvent->SetBool("run_saved", false);
-        runSaveEvent->SetBool("run_posted", false);
         gameeventmanager->FireEvent(runSaveEvent);
+    }
+    if (runUploadEvent)
+    {
+        runUploadEvent->SetBool("run_posted", false);
+        runUploadEvent->SetString("web_msg", "");
+        gameeventmanager->FireEvent(runUploadEvent);
     }
     if (timerStartEvent)
     {
-        timerStartEvent->SetBool("timer_isrunning", false);
+        timerStartEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timerStartEvent);
     }
     if (practiceModeEvent)
@@ -98,6 +105,9 @@ void CMomentumPlayer::Spawn()
         practiceModeEvent->SetBool("has_practicemode", false);
         gameeventmanager->FireEvent(practiceModeEvent);
     }
+    //Linear/etc map
+    g_Timer->DispatchMapInfo();
+
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
@@ -107,6 +117,7 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL, "THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetNextThink(gpGlobals->curtime);
+    DevLog("Finished spawn!\n");
 }
 
 void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
@@ -199,6 +210,11 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
         g_MOMBlockFixer->PlayerTouch(this, pOther);
 }
 
+void CMomentumPlayer::InitHUD()
+{
+    //g_Timer->DispatchStageCountMessage(); this was moved to spawn, under DispatchMapInfo
+}
+
 void CMomentumPlayer::EnableAutoBhop()
 {
     m_bAutoBhop = true;
@@ -222,9 +238,9 @@ void CMomentumPlayer::CheckForBhop()
         {
             m_flLastJumpVel = GetLocalVelocity().Length2D();
             m_iSuccessiveBhops++;
-            if (g_Timer.IsRunning())
+            if (g_Timer->IsRunning())
             {
-                int currentStage = g_Timer.GetCurrentStageNumber();
+                int currentStage = g_Timer->GetCurrentStageNumber();
                 m_nStageJumps[0]++;
                 m_nStageJumps[currentStage]++;
             }
@@ -235,25 +251,32 @@ void CMomentumPlayer::CheckForBhop()
 
     SetNextThink(gpGlobals->curtime, "CURTIME");
 }
+
 void CMomentumPlayer::UpdateRunStats()
 {
     //should velocity be XY or XYZ?
-    ConVarRef hvel("mom_speedometer_hvel");
     IGameEvent *playerMoveEvent = gameeventmanager->CreateEvent("keypress");
-    float velocity = hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+    float velocity =  GetLocalVelocity().Length();
+    float velocity2D = GetLocalVelocity().Length2D();
 
-    if (g_Timer.IsRunning())
+    if (g_Timer->IsRunning())
     {
-        int currentStage = g_Timer.GetCurrentStageNumber();
+        int currentStage = g_Timer->GetCurrentStageNumber();
         if (!m_bPrevTimerRunning) //timer started on this tick
-        {    
-            //Reset old run stats
-            ResetRunStats();
-            m_flStartSpeed = GetLocalVelocity().Length2D(); //prestrafe should always be XY only
-            //Comapre against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
+        {
+            //Reset old run stats -- moved to on start's touch
+            m_flStageEnterVelocity[0][0] = velocity;
+            m_flStageEnterVelocity[0][1] = velocity2D;
+            //Compare against successive bhops to avoid incrimenting when the player was in the air without jumping (for surf)
             if (GetGroundEntity() == NULL && m_iSuccessiveBhops)
             {
                 m_nStageJumps[0]++;
+                m_nStageJumps[currentStage]++;
+            }
+            if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
+            {
+                m_nStageStrafes[0]++;
+                m_nStageStrafes[currentStage]++;
             }
         }
         if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
@@ -267,11 +290,15 @@ void CMomentumPlayer::UpdateRunStats()
             m_nStageStrafes[currentStage]++;
         }
         //  ---- MAX VELOCITY ----
-        if (velocity > m_flStageVelocityMax[0])
-            m_flStageVelocityMax[0] = velocity;
+        if (velocity > m_flStageVelocityMax[0][0])
+            m_flStageVelocityMax[0][0] = velocity;
+        if (velocity2D > m_flStageVelocityMax[0][1])
+            m_flStageVelocityMax[0][1] = velocity;
         //also do max velocity per stage
-        if (velocity > m_flStageVelocityMax[currentStage])
-            m_flStageVelocityMax[currentStage] = velocity;
+        if (velocity > m_flStageVelocityMax[currentStage][0])
+            m_flStageVelocityMax[currentStage][0] = velocity;
+        if (velocity2D > m_flStageVelocityMax[currentStage][1])
+            m_flStageVelocityMax[currentStage][1] = velocity2D;
         // ----------
 
         // --- STAGE ENTER VELOCITY ---
@@ -310,14 +337,15 @@ void CMomentumPlayer::UpdateRunStats()
     //this might be used in a later update
     //m_flLastVelocity = velocity;
 
-    m_bPrevTimerRunning = g_Timer.IsRunning();
+    m_bPrevTimerRunning = g_Timer->IsRunning();
     m_nPrevButtons = m_nButtons;
 
     if (playerMoveEvent)
     {
         playerMoveEvent->SetInt("num_strafes", m_nStageStrafes[0]);
         playerMoveEvent->SetInt("num_jumps", m_nStageJumps[0]);
-        if ((m_nButtons & IN_JUMP && GetGroundEntity() != NULL) || m_nButtons & IN_MOVELEFT | IN_MOVERIGHT)
+        bool onGround = GetFlags() & FL_ONGROUND;
+        if ((m_nButtons & IN_JUMP) && onGround || m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT))
             gameeventmanager->FireEvent(playerMoveEvent);
     }
 
@@ -339,40 +367,48 @@ void CMomentumPlayer::ResetRunStats()
         m_nStageStrafes[i] = 0;
         m_flStageTotalSync[i] = 0; 
         m_flStageTotalSync2[i] = 0;
-        m_flStageTotalVelocity[i] = 0;
-        m_flStageVelocityMax[i] = 0; 
-        m_flStageVelocityAvg[i] = 0;
         m_flStageStrafeSyncAvg[i] = 0;
         m_flStageStrafeSync2Avg[i] = 0;
+        for (int k = 0; k < 2; k++)
+        {
+            m_flStageVelocityMax[i][k] = 0;
+            m_flStageVelocityAvg[i][k] = 0;
+            m_flStageEnterVelocity[i][k] = 0;
+            m_flStageExitVelocity[i][k] = 0;
+            m_flStageTotalVelocity[i][k] = 0;
+        }
     }
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
-    ConVarRef hvel("mom_speedometer_hvel");
 
-    if (g_Timer.IsRunning())
+    if (g_Timer->IsRunning())
     {
-        int currentStage = g_Timer.GetCurrentStageNumber();
+        int currentStage = g_Timer->GetCurrentStageNumber();
 
         m_flStageTotalSync[currentStage] += m_flStrafeSync;
         m_flStageTotalSync2[currentStage] += m_flStrafeSync2;
-        m_flStageTotalVelocity[currentStage] += hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+        m_flStageTotalVelocity[currentStage][0] += GetLocalVelocity().Length();
+        m_flStageTotalVelocity[currentStage][1] += GetLocalVelocity().Length2D();
 
         m_nStageAvgCount[currentStage]++;
 
         m_flStageStrafeSyncAvg[currentStage] = m_flStageTotalSync[currentStage] / float(m_nStageAvgCount[currentStage]);
         m_flStageStrafeSync2Avg[currentStage] = m_flStageTotalSync2[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_flStageVelocityAvg[currentStage] = m_flStageTotalVelocity[currentStage] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[currentStage][0] = m_flStageTotalVelocity[currentStage][0] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[currentStage][1] = m_flStageTotalVelocity[currentStage][1] / float(m_nStageAvgCount[currentStage]);
 
         //stage 0 is "overall" - also update these as well, no matter which stage we are on
         m_flStageTotalSync[0] += m_flStrafeSync;
         m_flStageTotalSync2[0] += m_flStrafeSync2;
-        m_flStageTotalVelocity[0] += hvel.GetBool() ? GetLocalVelocity().Length2D() : GetLocalVelocity().Length();
+        m_flStageTotalVelocity[0][0] += GetLocalVelocity().Length();
+        m_flStageTotalVelocity[0][1] += GetLocalVelocity().Length2D();
         m_nStageAvgCount[0]++;
 
         m_flStageStrafeSyncAvg[0] = m_flStageTotalSync[currentStage] / float(m_nStageAvgCount[currentStage]);
         m_flStageStrafeSync2Avg[0] = m_flStageTotalSync2[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_flStageVelocityAvg[0] = m_flStageTotalVelocity[currentStage] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[0][0] = m_flStageTotalVelocity[currentStage][0] / float(m_nStageAvgCount[currentStage]);
+        m_flStageVelocityAvg[0][1] = m_flStageTotalVelocity[currentStage][1] / float(m_nStageAvgCount[currentStage]);
     }
 
     // think once per 0.1 second interval so we avoid making the totals extremely large
@@ -385,20 +421,20 @@ void CMomentumPlayer::CalculateAverageStats()
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
     ConVarRef gm("mom_gamemode");
-    CTriggerTimerStart *startTrigger = g_Timer.GetStartTrigger();
+    CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
     bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-    if (m_bInsideStartZone)
+    if (m_bIsInZone && m_iCurrentStage == 1)
     {
-        if (GetGroundEntity() == NULL && !g_Timer.IsPracticeMode(this)) //don't count ticks in air if we're in practice mode
+        if (GetGroundEntity() == nullptr && !g_Timer->IsPracticeMode(this)) //don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
         else
             m_nTicksInAir = 0;
 
         //set bhop flag to true so we can't prespeed with practice mode
-        if (g_Timer.IsPracticeMode(this)) m_bDidPlayerBhop = true; 
+        if (g_Timer->IsPracticeMode(this)) m_bDidPlayerBhop = true;
 
         //depending on gamemode, limit speed outright when player exceeds punish vel
-        if (bhopGameMode  && ((!g_Timer.IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        if (bhopGameMode && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetPunishSpeed()*startTrigger->GetPunishSpeed();

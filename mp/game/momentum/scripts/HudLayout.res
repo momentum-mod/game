@@ -7,7 +7,7 @@
 				"xpos"			"c-60"
                 "ypos"			"310"
                 "wide"			"120"
-                "tall"			"40"
+                "tall"			"80"
                 "visible"		"1"
                 "enabled"		"1"
 				"NumberFont"	"HudNumbersSmallBold"
@@ -19,6 +19,8 @@
 				"SecondaryValueColor" "Light Gray"
 				"LabelColor"	"MOM.Panel.Fg"
 				"BgColor"	"Blank"
+                "SplitAlpha" "255"//Used for fading
+                "JumpAlpha" "255"//Used for fading
 		}
     //Timer
 	HudTimer
@@ -39,11 +41,11 @@
                 "time_xpos"		"50"
                 "time_ypos"		"3"
 				"centerCps"		"1" //If true, won't use cps_xpos, centering the text instead
-				"cps_xpos"		"50"
+				"cps_xpos"		"50"//Note: checkpoints only show when there's no run (and therefore splits) 
 				"cps_ypos"		"19"
-				"centerStage"	"1" //If true, won't use stage_xpos, centering the text instead
-				"stage_xpos"	"50"
-				"stage_ypos"	"34"
+				"centerSplit"	"1" //If true, won't use stage_xpos, centering the stage split
+				"split_xpos"	"50"
+				"split_ypos"	"19"
 		}
 	//Strafe Sync Meter
 	CHudSyncMeter
@@ -154,6 +156,40 @@
 		"KeyPressedColor"	"MOM.Panel.Fg"
 		"KeyOutlineColor"	"Dark Gray"
 	}
+    
+    CHudCompare
+    {
+        "fieldName" "CHudCompare"
+        "xpos" "50"
+        "ypos" "c+50"
+        "wide" "200"
+        "tall" "150"
+        "visible" "1"
+        "enabled" "1"
+        "PaintBackgroundType" "2"
+        "GainColor" "MOM.Compare.Gain"
+        "LossColor" "MOM.Compare.Loss"
+        "TieColor" "MOM.Compare.Tie"
+        "TextFont" "HudHintTextSmall"
+        "format_spacing" "2"//Number of pixels between each component of the comparison panel, only if mom_comparisons_format_output has value 1
+        "text_xpos" "5"
+        "text_ypos" "2"
+    }
+    
+    CHudMapInfo
+    {
+        "fieldName" "CHudMapInfo"
+        "visible" "1"
+        "enabled" "1"
+        "centerStatus" "1"//If this is 1, the status will be centered above the timer, otherwise the status_xpos will be used
+        "status_xpos" "0"
+        "status_ypos" "c+135"//y-pos for the map status 
+        "mapinfo_xpos" "10"//xpos for the map info (author/difficulty/etc)
+        "mapinfo_ypos" "10"//ypos for the map info
+        "StatusFont" "HudHintTextSmall"//Font for the current map area/status
+        "MapInfoFont" "HudHintTextSmall"//Font for the map information
+    }
+    
 	HudHealth [$WIN32]
 	{
 		"fieldName"		"HudHealth"

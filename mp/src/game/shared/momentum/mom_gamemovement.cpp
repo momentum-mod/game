@@ -570,6 +570,9 @@ bool CMomentumGameMovement::CheckJumpButton()
     // In the air now.
     SetGroundEntity(NULL);
 
+    //Set the last jump time
+    player->m_flLastJumpTime = gpGlobals->curtime;
+
     player->PlayStepSound((Vector &) mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
 
     //MoveHelper()->PlayerSetAnimation( PLAYER_JUMP );

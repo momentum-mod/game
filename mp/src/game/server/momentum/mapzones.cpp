@@ -74,7 +74,7 @@ void CMapzone::SpawnZone()
         }
         
         m_trigger->SetName(MAKE_STRING("Start Trigger"));
-        g_Timer.SetStartTrigger((CTriggerTimerStart *) m_trigger);
+        g_Timer->SetStartTrigger((CTriggerTimerStart *) m_trigger);
         break;
     case MOMZONETYPE_CP:
         m_trigger = (CTriggerCheckpoint *) CreateEntityByName("trigger_momentum_timer_checkpoint");
@@ -262,13 +262,12 @@ CMapzoneData::CMapzoneData(const char *szMapName)
     }
 }
 
-//MOM_TODO: Get rid of the following method and ConCommand
 static void saveZonFile_f()
 {
     saveZonFile(gpGlobals->mapname.ToCStr());
 }
 
-static ConCommand mom_generate_zone_file("mom_generate_zone_file", saveZonFile_f, "Generates a zone file.");
+static ConCommand mom_generate_zone_file("mom_zone_generate", saveZonFile_f, "Generates a zone file.");
 
 CMapzoneData::~CMapzoneData()
 {
