@@ -1,4 +1,4 @@
-//The following include files are necessary to allow your MyPanel.cpp to compile.
+//The following include files are necessary to allow your  the panel .cpp to compile.
 #include "cbase.h"
 #include "IMomentumSettingsPanel.h"
 using namespace vgui;
