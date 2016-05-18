@@ -153,7 +153,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         SetAbsVelocity(interpolatedVel);
         pPlayer->m_nReplayButtons = currentStep.m_nPlayerButtons; //networked var that allows the replay to control keypress display on the client
 
-        if (g_Timer.IsRunning())
+        if (g_Timer->IsRunning())
             UpdateStats(interpolatedVel, pPlayer);
 
         if (currentStep.m_nPlayerButtons & IN_DUCK)
@@ -246,8 +246,8 @@ void CMomentumReplayGhostEntity::SetGhostBodyGroup(int bodyGroup)
 }
 void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
 {
-    if (mom_UTIL.GetColorFromHex(args.ArgS())) {
-        CMomentumReplayGhostEntity::m_newGhostColor = *mom_UTIL.GetColorFromHex(args.ArgS());
+    if (mom_UTIL->GetColorFromHex(args.ArgS())) {
+        CMomentumReplayGhostEntity::m_newGhostColor = *mom_UTIL->GetColorFromHex(args.ArgS());
     }
 }
 void CMomentumReplayGhostEntity::EndRun()

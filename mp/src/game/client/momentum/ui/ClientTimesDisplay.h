@@ -134,22 +134,22 @@ private:
     ButtonCode_t m_nCloseKey;
     struct Time
     {
-        int ticks;
-        float rate;
+        float time_sec, rate;
         time_t date;
 
-        Time(KeyValues* kv)
+        explicit Time(KeyValues* kv)
         {
-            ticks = Q_atoi(kv->GetName());
+            time_sec = Q_atof(kv->GetName());
             rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
-            date = (time_t) kv->GetInt("date", 0);
+            date = static_cast<time_t>(kv->GetInt("date", 0));
         };
     };
     CUtlVector<Time> m_vLocalTimes;
     // MOM_TODO: CUtlVector<SomeStruct> m_vOnlineTimes;
 
-    bool bLocalTimesLoaded = false;
-    bool bLocalTimesNeedUpdate = false;
+    bool m_bLocalTimesLoaded = false;
+    bool m_bLocalTimesNeedUpdate = false;
+    bool m_bOnlineNeedUpdate = false;
     //widths[0] == WIDTH FOR DATE
     //widths[1] == WIDTH FOR RANK
     //widths[2] == WIDTH FOR TIME

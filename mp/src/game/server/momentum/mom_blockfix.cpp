@@ -7,8 +7,8 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
 {
     SetDefLessFunc(m_mapBlocks);
     //  ---- func_door ----
-    CBaseEntity *ent = NULL;
-    while ((ent = gEntList.FindEntityByClassname(ent, "func_door")) != NULL)
+    CBaseEntity *ent = nullptr;
+    while ((ent = gEntList.FindEntityByClassname(ent, "func_door")) != nullptr)
     {
         CBaseDoor *pEntDoor = static_cast<CBaseDoor *>(ent);
 
@@ -23,10 +23,10 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
                 break;
         }
     }
-    ent = NULL;
+    ent = nullptr;
 
     // ---- func_button ----
-    while ((ent = gEntList.FindEntityByClassname(ent, "func_button")) != NULL)
+    while ((ent = gEntList.FindEntityByClassname(ent, "func_button")) != nullptr)
     {
         CBaseButton *pEntButton = static_cast<CBaseButton *>(ent);
         Vector startpos(pEntButton->m_vecPosition1);
@@ -56,7 +56,7 @@ void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
         pDoorEnt->AddSpawnFlags(SF_DOOR_PTOUCH); // Player touch affects this
 
         variant_t emptyvarient;
-        pDoorEnt->AcceptInput("Lock", NULL, NULL, emptyvarient, 0); // Lock the door bhop block
+        pDoorEnt->AcceptInput("Lock", nullptr, nullptr, emptyvarient, 0); // Lock the door bhop block
 
         pDoorEnt->m_ls.sLockedSound =
             pDoorEnt->m_NoiseMoving; // Plays the sound like normal (makes the player aware they jumped it)
@@ -100,6 +100,8 @@ void CMOMBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *p
 
 void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
 {
+    if (!pBlockEnt->CollisionProp()->IsBoundsDefinedInEntitySpace())
+        return;
     // Create Vectors for the start, stop, and direction
     Vector vecAbsStart, vecAbsEnd, vecDir;
 
@@ -108,10 +110,10 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
     // Get the Start/End
     vecAbsStart = pBlockEnt->WorldSpaceCenter();
     // move vector to top of bhop block
-    vecAbsStart.z += pBlockEnt->WorldAlignMaxs().z;
+    vecAbsStart.z += pBlockEnt->CollisionProp()->OBBMaxs().z;
 
     // ray is as long as the bhop block is tall
-    vecAbsEnd = vecAbsStart + (vecDir * (pBlockEnt->WorldAlignMaxs().z - pBlockEnt->WorldAlignMins().z));
+    vecAbsEnd = vecAbsStart + (vecDir * (pBlockEnt->CollisionProp()->OBBMaxs().z - pBlockEnt->CollisionProp()->OBBMins().z));
 
     // Do the TraceLine, and write our results to our trace_t class, tr.
     Ray_t ray;

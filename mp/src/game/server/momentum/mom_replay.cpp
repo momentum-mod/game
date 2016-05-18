@@ -34,7 +34,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
         m_bShouldStopRec = false;
         CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
         char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
-        mom_UTIL.FormatTime(g_Timer.GetLastRunTimeTicks(), gpGlobals->interval_per_tick, runTime);
+        mom_UTIL->FormatTime(g_Timer->GetLastRunTimeTicks() * gpGlobals->interval_per_tick, runTime);
         Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", pMOMPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr(), runTime);
         V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); //V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
 
@@ -81,16 +81,21 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
     header.steamID64 = steamapicontext->SteamUser() ? steamapicontext->SteamUser()->GetSteamID().ConvertToUint64() : 0;
 
     header.interval_per_tick = gpGlobals->interval_per_tick;
-    header.runTimeTicks = g_Timer.GetLastRunTimeTicks();
+    header.runTimeTicks = g_Timer->GetLastRunTimeTicks();
     time(&header.unixEpocDate);
 
     // --- RUN STATS ---
-    header.m_flEndSpeed = m_player->m_flEndSpeed;
-    header.m_flStartSpeed = m_player->m_flStartSpeed;
+    //MOM_TODO: we just get one velocity here, for now. UPDATE THIS WHEN "runstats.h" is a thing!
+    header.m_flEndSpeed = m_player->m_flStageExitVelocity[0][0];
+    header.m_flStartSpeed = m_player->m_flStageEnterVelocity[0][0];
     for (int i = 0; i < MAX_STAGES; i++) {
-        header.m_flStageEnterVelocity[i] = m_player->m_flStageEnterVelocity[i];
-        header.m_flStageVelocityAvg[i] = m_player->m_flStageVelocityAvg[i];
-        header.m_flStageVelocityMax[i] = m_player->m_flStageVelocityMax[i];
+        for (int k = 0; i < 2; k++)
+        {
+            header.m_flStageEnterVelocity[i] = m_player->m_flStageEnterVelocity[i][k];
+            header.m_flStageVelocityAvg[i] = m_player->m_flStageVelocityAvg[i][k];
+            header.m_flStageVelocityMax[i] = m_player->m_flStageVelocityMax[i][k];
+        }
+        
         header.m_flStageStrafeSyncAvg[i] = m_player->m_flStageStrafeSyncAvg[i];
         header.m_flStageStrafeSync2Avg[i] = m_player->m_flStageStrafeSync2Avg[i];
         header.m_nStageJumps[i] = m_player->m_nStageJumps[i];
@@ -179,7 +184,7 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
     CMomentumReplayGhostEntity *ghost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
     if (ghost != nullptr)
     {
-        g_Timer.Stop(false); //stop the timer just in case we started a replay while it was running...
+        g_Timer->Stop(false); //stop the timer just in case we started a replay while it was running...
         ghost->StartRun(firstperson);
     }
 }

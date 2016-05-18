@@ -29,14 +29,14 @@ public:
     wchar_t g_szMenuString[512];
     char g_szPrelocalisedMenuString[512];
 
-    void Init(void);
-    void VidInit(void);
-    void Reset(void);
-    virtual bool ShouldDraw(void);
+    void Init(void) override;
+    void VidInit(void) override;
+    void Reset(void) override;
+    bool ShouldDraw(void) override;
     virtual bool IsMenuDisplayed();
     void HideMenu(void);
-    virtual void Paint();
-    void OnThink();
+    void Paint() override;
+    void OnThink() override;
 
     //Overrides
     //Called from a CON_COMMAND most likely.
@@ -50,7 +50,7 @@ public:
     
     void		ProcessText(void);
     void ShowMenu_KeyValueItems(KeyValues *pKV);
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
     void PaintString(const wchar_t *text, int textlen, vgui::HFont& font, int x, int y);
 
 private:

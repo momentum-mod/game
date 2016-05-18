@@ -3,21 +3,31 @@
 
 #include "tier0/memdbgon.h"
 
-extern IFileSystem *filesystem;
-
 void CTimer::Start(int start)
 {
     if (m_bUsingCPMenu) return;
     m_iStartTick = start;
     SetRunning(true);
-    DispatchStateMessage();
 
-    IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_started");
+    //MOM_TODO: IDEA START:
+    //Move this to mom_triggers.cpp, and make it take a CBasePlayer
+    //as an argument, to pass into the RecipientFilter, so that
+    //anyone who spectates a replay can start their hud_timer, but not
+    //the server timer.
+    DispatchStateMessage();
+    //--- IDEA END
+
+
+    IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (timeStartEvent)
     {
-        timeStartEvent->SetBool("timer_isrunning", true);
+        timeStartEvent->SetBool("is_running", true);
         gameeventmanager->FireEvent(timeStartEvent);
+    }
+    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+    if (pPlayer) {
+        m_flTickOffsetFix[1] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 1);
     }
 }
 
@@ -40,7 +50,7 @@ void CTimer::PostTime()
 
         DevLog("Ticks sent to server: %i\n", ticks);
         //Build request
-        mom_UTIL.PostTime(webURL);
+        mom_UTIL->PostTime(webURL);
     }
     else
     {
@@ -75,45 +85,62 @@ void CTimer::PostTime()
 void CTimer::LoadLocalTimes(const char *szMapname)
 {
     char timesFilePath[MAX_PATH];
-    Q_strcpy(timesFilePath, c_mapDir);
-    Q_strcat(timesFilePath, szMapname, MAX_PATH);
-    Q_strncat(timesFilePath, c_timesExt, MAX_PATH);
+
+    V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapname, EXT_TIME_FILE), timesFilePath, MAX_PATH);
+
     KeyValues *timesKV = new KeyValues(szMapname);
 
     if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD"))
     {
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
         {
-            Time t;
-            t.ticks = Q_atoi(kv->GetName());
+            Time t = Time();
+            t.time_sec = Q_atof(kv->GetName());
             t.tickrate = kv->GetFloat("rate");
-            t.date = (time_t) kv->GetInt("date");
+            t.date = static_cast<time_t>(kv->GetInt("date"));
+            t.flags = kv->GetInt("flags");
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {
                 if (!Q_strnicmp(subKv->GetName(), "stage", strlen("stage")))
                 {
-                    int i = Q_atoi(subKv->GetName()); //atoi will ignore "stage" and only return the stage number
-                    t.stageticks[i] = subKv->GetInt("ticks");
-                    t.stagevel[i] = subKv->GetInt("stage_enter_vel");
-                    t.stageavgsync[i] = subKv->GetFloat("avg_sync");
-                    t.stageavgsync2[i] = subKv->GetFloat("avg_sync2");
-                    t.stageavgvel[i] = subKv->GetFloat("avg_vel");
-                    t.stagemaxvel[i] = subKv->GetFloat("max_vel");
+                    int i = Q_atoi(subKv->GetName() + 6); //atoi will need to ignore "stage " and only return the stage number
                     t.stagejumps[i] = subKv->GetInt("num_jumps");
                     t.stagestrafes[i] = subKv->GetInt("num_strafes");
+                    t.stagetime[i] = subKv->GetFloat("time");
+                    t.stageentertime[i] = subKv->GetFloat("enter_time");
+                    t.stageavgsync[i] = subKv->GetFloat("avg_sync");
+                    t.stageavgsync2[i] = subKv->GetFloat("avg_sync2");
+
+                    //3D Velocity Stats
+                    t.stageavgvel[i][0] = subKv->GetFloat("avg_vel");
+                    t.stagemaxvel[i][0] = subKv->GetFloat("max_vel");
+                    t.stagestartvel[i][0] = subKv->GetFloat("stage_enter_vel");
+                    t.stageexitvel[i][0] = subKv->GetFloat("stage_exit_vel");
+
+                    //2D Velocity Stats
+                    t.stageavgvel[i][1] = subKv->GetFloat("avg_vel_2D");
+                    t.stagemaxvel[i][1] = subKv->GetFloat("max_vel_2D");
+                    t.stagestartvel[i][1] = subKv->GetFloat("stage_enter_vel_2D");
+                    t.stageexitvel[i][1] = subKv->GetFloat("stage_exit_vel_2D");
                 }
                 if (!Q_strcmp(subKv->GetName(), "total"))
                 {
-                    t.jumps = subKv->GetInt("jumps");
-                    t.strafes = subKv->GetInt("strafes");
-                    t.avgsync = subKv->GetFloat("avgsync");
-                    t.avgsync2 = subKv->GetFloat("avgsync2");
-                    t.avgvel = subKv->GetFloat("avgvel");
-                    t.maxvel = subKv->GetFloat("maxvel");
-                    t.startvel = subKv->GetFloat("startvel");
-                    t.endvel = subKv->GetFloat("endvel");
-                }
+                    t.stagejumps[0] = subKv->GetInt("jumps");
+                    t.stagestrafes[0] = subKv->GetInt("strafes");
+                    t.stageavgsync[0] = subKv->GetFloat("avgsync");
+                    t.stageavgsync2[0] = subKv->GetFloat("avgsync2");
+                    //3D
+                    t.stageavgvel[0][0] = subKv->GetFloat("avg_vel");
+                    t.stagemaxvel[0][0] = subKv->GetFloat("max_vel");
+                    t.stagestartvel[0][0] = subKv->GetFloat("start_vel");
+                    t.stageexitvel[0][0] = subKv->GetFloat("end_vel");
+                    //2D
+                    t.stageavgvel[0][1] = subKv->GetFloat("avg_vel_2D");
+                    t.stagemaxvel[0][1] = subKv->GetFloat("max_vel_2D");
+                    t.stagestartvel[0][1] = subKv->GetFloat("start_vel_2D");
+                    t.stageexitvel[0][1] = subKv->GetFloat("end_vel_2D");
+                }     
             }
             localTimes.AddToTail(t);
         }
@@ -138,58 +165,72 @@ void CTimer::SaveTime()
     {
         Time t = localTimes[i];
         char timeName[512];
-        Q_snprintf(timeName, 512, "%i", t.ticks);
+        Q_snprintf(timeName, 512, "%.6f", t.time_sec);
         KeyValues *pSubkey = new KeyValues(timeName);
         pSubkey->SetFloat("rate", t.tickrate);
         pSubkey->SetInt("date", t.date);
-
+        pSubkey->SetInt("flags", t.flags);
+        
         KeyValues *pOverallKey = new KeyValues("total");
-        pOverallKey->SetInt("jumps", t.jumps);
-        pOverallKey->SetInt("strafes", t.strafes);
-        pOverallKey->SetFloat("avgsync", t.avgsync);
-        pOverallKey->SetFloat("avgsync2", t.avgsync2);
-        pOverallKey->SetFloat("startvel", t.startvel);
-        pOverallKey->SetFloat("endvel", t.endvel);
-        pOverallKey->SetFloat("avgvel", t.avgvel);
-        pOverallKey->SetFloat("maxvel", t.maxvel);
+        pOverallKey->SetInt("jumps", t.stagejumps[0]);
+        pOverallKey->SetInt("strafes", t.stagestrafes[0]);
+        pOverallKey->SetFloat("avgsync", t.stageavgsync[0]);
+        pOverallKey->SetFloat("avgsync2", t.stageavgsync2[0]);
+
+        pOverallKey->SetFloat("start_vel", t.stagestartvel[0][0]);
+        pOverallKey->SetFloat("end_vel", t.stageexitvel[0][0]);
+        pOverallKey->SetFloat("avg_vel", t.stageavgvel[0][0]);
+        pOverallKey->SetFloat("max_vel", t.stagemaxvel[0][0]);
+
+        pOverallKey->SetFloat("start_vel_2D", t.stagestartvel[0][1]);
+        pOverallKey->SetFloat("end_vel_2D", t.stageexitvel[0][1]);
+        pOverallKey->SetFloat("avg_vel_2D", t.stageavgvel[0][1]);
+        pOverallKey->SetFloat("max_vel_2D", t.stagemaxvel[0][1]);
 
         char stageName[9]; // "stage 64\0"
         if (GetStageCount() > 1)
         {
-            for (int i = 1; i <= GetStageCount(); i++) 
+            for (int i2 = 1; i2 <= GetStageCount(); i2++) 
             {
-                Q_snprintf(stageName, sizeof(stageName), "stage %d", i);
+                Q_snprintf(stageName, sizeof(stageName), "stage %d", i2);
 
                 KeyValues *pStageKey = new KeyValues(stageName);
-                pStageKey->SetInt("ticks", t.stageticks[i]);
-                pStageKey->SetInt("num_jumps", t.stagejumps[i]);
-                pStageKey->SetInt("num_strafes", t.stagestrafes[i]);
-                pStageKey->SetFloat("avg_sync", t.stageavgsync[i]);
-                pStageKey->SetFloat("avg_sync2", t.stageavgsync2[i]);
-                pStageKey->SetFloat("avg_vel", t.stageavgvel[i]);
-                pStageKey->SetFloat("max_vel", t.stagemaxvel[i]);
-                pStageKey->SetFloat("stage_enter_vel", t.stagevel[i]);
+                pStageKey->SetFloat("time", t.stagetime[i2]);
+                pStageKey->SetFloat("enter_time", t.stageentertime[i2]);
+                pStageKey->SetInt("num_jumps", t.stagejumps[i2]);
+                pStageKey->SetInt("num_strafes", t.stagestrafes[i2]);
+                pStageKey->SetFloat("avg_sync", t.stageavgsync[i2]);
+                pStageKey->SetFloat("avg_sync2", t.stageavgsync2[i2]);
+
+                pStageKey->SetFloat("avg_vel", t.stageavgvel[i2][0]);
+                pStageKey->SetFloat("max_vel", t.stagemaxvel[i2][0]);
+                pStageKey->SetFloat("stage_enter_vel", t.stagestartvel[i2][0]);
+                pStageKey->SetFloat("stage_exit_vel", t.stageexitvel[i2][0]);
+
+                pStageKey->SetFloat("avg_vel_2D", t.stageavgvel[i2][1]);
+                pStageKey->SetFloat("max_vel_2D", t.stagemaxvel[i2][1]);
+                pStageKey->SetFloat("stage_enter_vel_2D", t.stagestartvel[i2][1]);
+                pStageKey->SetFloat("stage_exit_vel_2D", t.stageexitvel[i2][1]);
+
                 pSubkey->AddSubKey(pStageKey);
             }
         }
 
-        timesKV->AddSubKey(pSubkey);
         pSubkey->AddSubKey(pOverallKey);
+        timesKV->AddSubKey(pSubkey);
     }
 
     char file[MAX_PATH];
-    Q_strcpy(file, c_mapDir);
-    Q_strcat(file, szMapName, MAX_PATH);
-    Q_strncat(file, c_timesExt, MAX_PATH);
+
+    V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapName, EXT_TIME_FILE), file, MAX_PATH);
 
     if (timesKV->SaveToFile(filesystem, file, "MOD", true) && runSaveEvent)
     {
         runSaveEvent->SetBool("run_saved", true);
         gameeventmanager->FireEvent(runSaveEvent);
         Log("Successfully saved new time!\n");
-        //initialize events resource file
     }
-    timesKV->deleteThis();
+    timesKV->deleteThis(); //We don't need to delete sub KV pointers e.g. pSubkey because this destructor deletes all child nodes
 }
 
 void CTimer::Stop(bool endTrigger /* = false */)
@@ -197,8 +238,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
-    IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_started");
-    IGameEvent *mapZoneEvent = gameeventmanager->CreateEvent("player_inside_mapzone");
+    IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -208,38 +248,50 @@ void CTimer::Stop(bool endTrigger /* = false */)
             PostTime();
 
         //Save times locally too, regardless of SteamAPI condition
-        Time t;
-        t.ticks = gpGlobals->tickcount - m_iStartTick;
+        Time t = Time();
+        t.time_sec = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         t.tickrate = gpGlobals->interval_per_tick;
+        t.flags = pPlayer->m_iRunFlags;
         time(&t.date);
 
-        //stage 0 is overall stats
-        t.jumps = pPlayer->m_nStageJumps[0];
-        t.strafes = pPlayer->m_nStageStrafes[0];
-        t.avgsync = pPlayer->m_flStageStrafeSyncAvg[0];
-        t.avgsync2 = pPlayer->m_flStageStrafeSync2Avg[0];
-        t.avgvel = pPlayer->m_flStageVelocityAvg[0];
-        t.maxvel = pPlayer->m_flStageVelocityMax[0];
-        t.startvel = pPlayer->m_flStartSpeed;
-        t.endvel = pPlayer->m_flEndSpeed;
+        //OVERALL STATS - STAGE 0
+        t.stagejumps[0] = pPlayer->m_nStageJumps[0];
+        t.stagestrafes[0] = pPlayer->m_nStageStrafes[0];
+        t.stageavgsync[0] = pPlayer->m_flStageStrafeSyncAvg[0];
+        t.stageavgsync2[0] = pPlayer->m_flStageStrafeSync2Avg[0];
+        for (int j = 0; j < 2; j++)
+        {
+            t.stageavgvel[0][j] = pPlayer->m_flStageVelocityAvg[0][j];
+            t.stagemaxvel[0][j] = pPlayer->m_flStageVelocityMax[0][j];
+            t.stagestartvel[0][j] = pPlayer->m_flStageEnterVelocity[0][j];
+            t.stageexitvel[0][j] =  pPlayer->m_flStageExitVelocity[0][j];
+        }
+        // --------
         if (GetStageCount() > 1) //don't save stage specific stats if we are on a linear map
         {
             for (int i = 1; i <= GetStageCount(); i++) //stages start at 1 since stage 0 is overall stats
             {
-                t.stageticks[i] = m_iStageEnterTick[i]; //add each stage's total time in ticks
+                t.stageentertime[i] = m_iStageEnterTime[i];
+                t.stagetime[i] = i == GetStageCount() ? (t.time_sec - m_iStageEnterTime[i]) :
+                    m_iStageEnterTime[i+1] - m_iStageEnterTime[i]; //each stage's total time is the time from the previous stage to this one
                 t.stagejumps[i] = pPlayer->m_nStageJumps[i];
                 t.stagestrafes[i] = pPlayer->m_nStageStrafes[i];
                 t.stageavgsync[i] = pPlayer->m_flStageStrafeSyncAvg[i];
                 t.stageavgsync2[i] = pPlayer->m_flStageStrafeSync2Avg[i];
-                t.stageavgvel[i] = pPlayer->m_flStageVelocityAvg[i];
-                t.stagemaxvel[i] = pPlayer->m_flStageVelocityMax[i];
-                t.stagevel[i] = pPlayer->m_flStageEnterVelocity[i];
+                for (int k = 0; k < 2; k++)
+                {
+                    t.stageavgvel[i][k] = pPlayer->m_flStageVelocityAvg[i][k];
+                    t.stagemaxvel[i][k] = pPlayer->m_flStageVelocityMax[i][k];
+                    t.stagestartvel[i][k] = pPlayer->m_flStageEnterVelocity[i][k];
+                    t.stageexitvel[i][k] = pPlayer->m_flStageExitVelocity[i][k]; 
+                } 
             }
         }   
 
         localTimes.AddToTail(t);
 
         SaveTime();
+        
         /*@tuxxi: we cannot rename a file to a different location, and I don't know how to move a file using IFileStream. disabling this for now
         char* recordingPath = "";
         //rename temp demo file to "playername_mapname_time"
@@ -255,6 +307,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
             Warning("Recording file doesn't exist, cannot rename!");
             */
 
+
+        m_flTickOffsetFix[0] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 0);
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {  
@@ -263,30 +317,44 @@ void CTimer::Stop(bool endTrigger /* = false */)
     }
     if (timeStopEvent)
     {
-        timeStopEvent->SetBool("timer_isrunning", false);
+        timeStopEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timeStopEvent);
     }
-    if (mapZoneEvent)
+    
+    if (pPlayer)
     {
-        mapZoneEvent->SetInt("current_stage", 0);
-        mapZoneEvent->SetInt("stage_ticks", 0);
-        gameeventmanager->FireEvent(mapZoneEvent);
+        pPlayer->m_bIsInZone = endTrigger;
+        pPlayer->m_bMapFinished = endTrigger;
     }
     SetRunning(false);
     m_iEndTick = gpGlobals->tickcount;
     DispatchStateMessage();
+    m_iEndTick = gpGlobals->tickcount;
 }
 void CTimer::OnMapEnd(const char *pMapName)
 {
     if (IsRunning())
         Stop(false);
     m_bWereCheatsActivated = false;
-    SetCurrentCheckpointTrigger(NULL);
-    SetStartTrigger(NULL);
-    SetCurrentStage(NULL);
+    SetCurrentCheckpointTrigger(nullptr);
+    SetStartTrigger(nullptr);
+    SetCurrentStage(nullptr);
     RemoveAllCheckpoints();
     localTimes.Purge();
     //MOM_TODO: onlineTimes.RemoveAll();
+}
+
+void CTimer::DispatchMapInfo()
+{
+    IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init", true);
+    if (mapInitEvent)
+    {
+        //MOM_TODO: for now it's assuming stages are on staged maps, load this from
+        //either the RequestStageCount() method, or something else (map info file?)
+        mapInitEvent->SetBool("is_linear", m_iStageCount == 0);
+        mapInitEvent->SetInt("num_checkpoints", m_iStageCount);
+        gameeventmanager->FireEvent(mapInitEvent);
+    }
 }
 
 void CTimer::OnMapStart(const char *pMapName)
@@ -294,37 +362,38 @@ void CTimer::OnMapStart(const char *pMapName)
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
     RequestStageCount();
-    //DispatchMapStartMessage();
     LoadLocalTimes(pMapName);
-    //MOM_TODO: g_Timer.LoadOnlineTimes();
+    //MOM_TODO: g_Timer->LoadOnlineTimes();
 }
 
+//MOM_TODO: This needs to update to include checkpoint triggers placed in linear
+//maps to allow players to compare at certain points.
 void CTimer::RequestStageCount()
 {
-    CTriggerStage *stage = (CTriggerStage *) gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
+    CTriggerStage *stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage"));
     int iCount = 1;//CTriggerStart counts as one
     while (stage)
     {
         iCount++;
-        stage = (CTriggerStage *) gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage");
+        stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage"));
     }
     m_iStageCount = iCount;
 }
 //This function is called every time CTriggerStage::StartTouch is called
-int CTimer::GetStageTicks(int stage)
+float CTimer::CalculateStageTime(int stage)
 {
-    if (stage == 1)
-        m_iStageEnterTick[stage] = m_iStartTick; //stage "enter" for start zone is actually exit tick
-    else if (stage > 1) //only compare pb/show time for stages after start zone
+    if (stage > m_iLastStage)
     {
-        if (stage > m_iLastStage)
-        {
-            m_iStageEnterTick[stage] = gpGlobals->tickcount - m_iStartTick; //compare stage time diff
+        //If the stage is a new one, we store the time we entered this stage in
+        m_iStageEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
+            static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+        if (pPlayer) {
+            m_flTickOffsetFix[stage] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 2);
         }
-            
     }
     m_iLastStage = stage;
-    return m_iStageEnterTick[stage];
+    return m_iStageEnterTime[stage];
 }
 void CTimer::DispatchResetMessage()
 {
@@ -334,21 +403,11 @@ void CTimer::DispatchResetMessage()
     MessageEnd();
 }
 
-void CTimer::DispatchStageMessage()
-{
-    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer && GetCurrentStage())
-    {
-        CSingleUserRecipientFilter user(cPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_Stage");
-        WRITE_LONG(GetCurrentStage()->GetStageNumber());
-        MessageEnd();
-    }
-}
-
 void CTimer::DispatchStateMessage()
 {
+    //MOM_TODO: after replay merge: change cPlayer to be an argument 
+    //of this method, and make that the Recipient, so that the hud_timer
+    //can start if you're spectating a replay in first person
     CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
     if (cPlayer)
     {
@@ -376,23 +435,71 @@ void CTimer::DispatchCheckpointMessage()
     }
 }
 
-void CTimer::DispatchStageCountMessage()
+float CTimer::GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType)
 {
-    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer)
+    Ray_t ray;
+    Vector prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
+        origin.y - (velocity.y * gpGlobals->interval_per_tick),
+        origin.z - (velocity.z * gpGlobals->interval_per_tick));
+
+    DevLog("Origin X:%f Y:%f Z:%f\n", origin.x, origin.y, origin.z);
+    DevLog("Prev Origin: X:%f Y:%f Z:%f\n", prevOrigin[0], prevOrigin[1], prevOrigin[2]);
+    if (zoneType == 0){
+        //endzone has to have the ray _start_ before we entered the end zone, hence why we start with prevOrigin
+        //and trace "forwards" to our current origin, hitting the end trigger on the way.
+        CTriggerTraceEnum endTriggerTraceEnum(&ray, velocity, origin);
+        ray.Init(prevOrigin, origin);
+        enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
+    }
+    else if (zoneType == 1)
     {
-        CSingleUserRecipientFilter user(cPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_StageCount");
-        WRITE_LONG(m_iStageCount);
-        MessageEnd();
+        //on the other hand, start zones start the ray _after_ we exited the start zone, 
+        //so we start at our current origin and trace backwards to our prev origin
+        CTriggerTraceEnum startTriggerTraceEnum(&ray, velocity, origin);
+        ray.Init(origin, prevOrigin);
+        enginetrace->EnumerateEntities(ray, true, &startTriggerTraceEnum);
+    }
+    else if (zoneType == 2)
+    {
+        //same as endzone here
+        CTriggerTraceEnum stageTriggerTraceEnum(&ray, velocity, origin);
+        ray.Init(prevOrigin, origin);
+        enginetrace->EnumerateEntities(ray, true, &stageTriggerTraceEnum);
+    }
+    else
+    {
+        Warning("CTimer::GetTickIntervalOffset: Incorrect Zone Type!");
+        return -1;
+    }
+    return m_flTickIntervalOffsetOut; //HACKHACK Lol
+}
+// override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
+// member of CTimer to avoid linker errors
+bool CTimer::CTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
+{
+    trace_t tr;
+    // store entity that we found on the trace
+    CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
+
+    if (pEnt->IsSolid())
+        return false;
+    enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
+
+    if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
+    {
+        float dist = m_currOrigin.DistTo(tr.endpos);
+        DevLog("DIST: %f\n", dist);
+        DevLog("Time offset: %f\n", dist / m_currVelocity.Length()); //velocity = dist/time, so it follows that time = distance / velocity.
+        g_Timer->m_flTickIntervalOffsetOut = dist / m_currVelocity.Length();
+        return true;
+    }
+    else
+    {
+        DevLog("Didn't hit a zone trigger.\n");
+        return false;
     }
 }
 
-CON_COMMAND_F(hud_timer_request_stages, "", FCVAR_DONTRECORD | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
-{
-    g_Timer.DispatchStageCountMessage();
-}
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
 void CTimer::SetGameModeConVars()
 {
@@ -430,11 +537,11 @@ void CTimer::SetGameModeConVars()
 //Practice mode that stops the timer and allows the player to noclip.
 void CTimer::EnablePractice(CBasePlayer *pPlayer)
 {
-    pPlayer->SetParent(NULL);
+    pPlayer->SetParent(nullptr);
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    g_Timer.Stop(false);
+    g_Timer->Stop(false);
 
     IGameEvent *pracModeEvent = gameeventmanager->CreateEvent("practice_mode");
     if (pracModeEvent)
@@ -530,10 +637,10 @@ public:
     {
         CBasePlayer* cPlayer = UTIL_GetCommandClient();
         CTriggerTimerStart *start;
-        if ((start = g_Timer.GetStartTrigger()) != NULL && cPlayer)
+        if ((start = g_Timer->GetStartTrigger()) != nullptr && cPlayer)
         {
             // Don't set angles if still in start zone.
-            if (g_Timer.IsRunning() && start->GetHasLookAngles())
+            if (g_Timer->IsRunning() && start->GetHasLookAngles())
             {
                 QAngle ang = start->GetLookAngles();
 
@@ -541,7 +648,7 @@ public:
             }
             else
             {
-                cPlayer->Teleport(&start->WorldSpaceCenter(), NULL, &vec3_origin);
+                cPlayer->Teleport(&start->WorldSpaceCenter(), nullptr, &vec3_origin);
             }
         }
     }
@@ -550,18 +657,18 @@ public:
     {
         CTriggerStage *stage;
         CBaseEntity* pPlayer = UTIL_GetCommandClient();
-        if ((stage = g_Timer.GetCurrentStage()) != NULL && pPlayer)
+        if ((stage = g_Timer->GetCurrentStage()) != nullptr && pPlayer)
         {
-            pPlayer->Teleport(&stage->WorldSpaceCenter(), NULL, &vec3_origin);
+            pPlayer->Teleport(&stage->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
     }
 
     static void CPMenu(const CCommand &args)
     {
-        if (!g_Timer.IsUsingCPMenu())
-            g_Timer.SetUsingCPMenu(true);
+        if (!g_Timer->IsUsingCPMenu())
+            g_Timer->SetUsingCPMenu(true);
 
-        if (g_Timer.IsRunning())
+        if (g_Timer->IsRunning())
         {
             // MOM_TODO: consider
             // 1. having a local timer running, as people may want to time their routes they're using CP menu for
@@ -573,7 +680,7 @@ public:
             case MOMGM_SURF:
             case MOMGM_BHOP:
             case MOMGM_SCROLL:
-                g_Timer.Stop(false);
+                g_Timer->Stop(false);
 
                 //case MOMGM_KZ:
             default:
@@ -587,47 +694,47 @@ public:
             switch (sel)
             {
             case 1://create a checkpoint
-                g_Timer.CreateCheckpoint(cPlayer);
+                g_Timer->CreateCheckpoint(cPlayer);
                 break;
 
             case 2://load previous checkpoint
-                g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+                g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
                 break;
 
             case 3://cycle through checkpoints forwards (+1 % length)
-                if (g_Timer.GetCPCount() > 0)
+                if (g_Timer->GetCPCount() > 0)
                 {
-                    g_Timer.SetCurrentCPMenuStep((g_Timer.GetCurrentCPMenuStep() + 1) % g_Timer.GetCPCount());
-                    g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+                    g_Timer->SetCurrentCPMenuStep((g_Timer->GetCurrentCPMenuStep() + 1) % g_Timer->GetCPCount());
+                    g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
                 }
                 break;
 
             case 4://cycle backwards through checkpoints
-                if (g_Timer.GetCPCount() > 0)
+                if (g_Timer->GetCPCount() > 0)
                 {
-                    g_Timer.SetCurrentCPMenuStep(g_Timer.GetCurrentCPMenuStep() == 0 ? g_Timer.GetCPCount() - 1 : g_Timer.GetCurrentCPMenuStep() - 1);
-                    g_Timer.TeleportToCP(cPlayer, g_Timer.GetCurrentCPMenuStep());
+                    g_Timer->SetCurrentCPMenuStep(g_Timer->GetCurrentCPMenuStep() == 0 ? g_Timer->GetCPCount() - 1 : g_Timer->GetCurrentCPMenuStep() - 1);
+                    g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
                 }
                 break;
 
             case 5://remove current checkpoint
-                g_Timer.RemoveLastCheckpoint();
+                g_Timer->RemoveLastCheckpoint();
                 break;
             case 6://remove every checkpoint
-                g_Timer.RemoveAllCheckpoints();
+                g_Timer->RemoveAllCheckpoints();
                 break;
             case 0://They closed the menu
-                g_Timer.SetUsingCPMenu(false);
+                g_Timer->SetUsingCPMenu(false);
                 break;
             default:
-                if (cPlayer != NULL)
+                if (cPlayer != nullptr)
                 {
                     cPlayer->EmitSound("Momentum.UIMissingMenuSelection");
                 }
                 break;
             }
         }
-        g_Timer.DispatchCheckpointMessage();
+        g_Timer->DispatchCheckpointMessage();
     }
 
     static void PracticeMove()
@@ -637,15 +744,15 @@ public:
             return;
         Vector velocity = pPlayer->GetAbsVelocity();
 
-        if (!g_Timer.IsPracticeMode(pPlayer))
+        if (!g_Timer->IsPracticeMode(pPlayer))
         {
             if (velocity.Length2DSqr() != 0)
                 DevLog("You cannot enable practice mode while moving!\n");
             else
-                g_Timer.EnablePractice(pPlayer);
+                g_Timer->EnablePractice(pPlayer);
         }
         else //player is either already in practice mode
-            g_Timer.DisablePractice(pPlayer);
+            g_Timer->DisablePractice(pPlayer);
     }
 };
 
@@ -658,4 +765,6 @@ static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart
 static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE | FCVAR_CLIENTCMD_CAN_EXECUTE);
-CTimer g_Timer;
+
+static CTimer s_Timer;
+CTimer *g_Timer = &s_Timer;

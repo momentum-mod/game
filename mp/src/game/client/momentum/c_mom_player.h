@@ -33,11 +33,16 @@ public:
     bool m_bDidPlayerBhop;
     bool m_bIsWatchingReplay;
     int m_nReplayButtons; //networked var that allows the replay system to control keypress display on the client
+    bool m_bIsInZone;
+    bool m_bMapFinished;
+    int m_iRunFlags;
+    int m_iCurrentStage;
+    float m_flLastJumpTime;
 
     float m_flStrafeSync, m_flStrafeSync2;
     float m_flLastJumpVel;
 
-    int m_nLastRunTime;
+    float m_flLastRunTime;
 
     void GetBulletTypeParameters(
         int iBulletType,

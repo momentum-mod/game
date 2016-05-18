@@ -35,11 +35,14 @@ public:
     virtual bool			IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer);
     virtual CBaseEntity*    GetPlayerSpawnSpot(CBasePlayer *pPlayer);
     virtual const char *GetGameDescription(void) { return "Momentum"; }
-    
 
     // Ammo
     virtual void			PlayerThink(CBasePlayer *pPlayer) {}
    // virtual float			GetAmmoDamage(CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType);
+    
+    //Players take no damage
+    float FlPlayerFallDamage(CBasePlayer *pPlayer) override {return 0;}
+    virtual bool AllowDamage( CBaseEntity *pVictim, const CTakeDamageInfo &info ) {return !pVictim->IsPlayer();}
 
 private:
 
