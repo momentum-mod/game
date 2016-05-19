@@ -164,11 +164,18 @@ bool CMomentumReplaySystem::LoadRun(const char* filename)
 }
 void CMomentumReplaySystem::StartReplay(bool firstperson)
 {
-    CMomentumReplayGhostEntity *ghost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
-    if (ghost != nullptr)
+    m_CurrentReplayGhost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
+    if (m_CurrentReplayGhost != nullptr)
     {
         g_Timer->Stop(false); //stop the timer just in case we started a replay while it was running...
-        ghost->StartRun(firstperson);
+        m_CurrentReplayGhost->StartRun(firstperson);
+    }
+}
+void CMomentumReplaySystem::EndReplay()
+{
+    if (m_CurrentReplayGhost != nullptr)
+    {
+        m_CurrentReplayGhost->EndRun();
     }
 }
 void CMomentumReplaySystem::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool started)
@@ -224,6 +231,9 @@ public:
 
 CON_COMMAND_AUTOCOMPLETEFILE(playreplay_ghost, CMOMReplayCommands::PlayReplayGhost, "begins playback of a replay ghost", "recordings", momrec);
 CON_COMMAND_AUTOCOMPLETEFILE(playreplay, CMOMReplayCommands::PlayReplayFirstPerson, "plays back a replay in first-person", "recordings", momrec);
-
+CON_COMMAND(stop_replay, "Stops playing the current replay")
+{
+    g_ReplaySystem->EndReplay();
+}
 static CMomentumReplaySystem s_ReplaySystem("MOMReplaySystem");
 CMomentumReplaySystem *g_ReplaySystem = &s_ReplaySystem;

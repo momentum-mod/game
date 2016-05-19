@@ -5,9 +5,9 @@
 #include "filesystem.h"
 #include "utlbuffer.h"
 
-#include "mom_player_shared.h"
-#include "mom_shareddefs.h"
 #include "replayformat.h"
+#include "mom_player_shared.h"
+#include "mom_replay_entity.h"
 
 #define RECORDING_PATH "recordings"
 #define END_RECORDING_PAUSE 1.0
@@ -39,6 +39,7 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     replay_header_t *ReadHeader(FileHandle_t file, const char *filename);
 
     void StartReplay(bool firstperson = false);
+    void EndReplay();
     bool LoadRun(const char *fileName);
     CUtlVector<replay_frame_t> m_vecRunData;
 
@@ -58,6 +59,7 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     float m_fRecEndTime;
 
     CMomentumPlayer *m_player;
+    CMomentumReplayGhostEntity *m_CurrentReplayGhost;
 
     replay_frame_t m_currentFrame;
     replay_header_t m_replayHeader;

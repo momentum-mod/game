@@ -1,6 +1,10 @@
+#ifndef MOM_REPLAY_GHOST_H
+#define MOM_REPLAY_GHOST_H
+
 #include "cbase.h"
-#include "mom_replay.h"
 #include "in_buttons.h"
+#include "replayformat.h"
+#include "mom_player_shared.h"
 
 #pragma once
 
@@ -30,7 +34,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
 	DECLARE_DATADESC();
 public:
-    ~CMomentumReplayGhostEntity(){ g_ReplaySystem->m_bIsWatchingReplay = false;}
+    ~CMomentumReplayGhostEntity();
 	const char* GetGhostModel();
 	void SetGhostModel(const char* model);
     void SetGhostBodyGroup(int bodyGroup);
@@ -39,7 +43,7 @@ public:
 	void UpdateStep();
 
 	void EndRun();
-	void StartRun(bool firstPerson = false);
+	void StartRun(bool firstPerson = false, bool shouldLoop = false);
 	void HandleGhost();
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel, CMomentumPlayer *pPlayer); //for hud display..
@@ -66,4 +70,7 @@ private:
     QAngle m_qLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;
+    bool m_bReplayShouldLoop;
 };
+
+#endif // MOM_REPLAY_GHOST_H

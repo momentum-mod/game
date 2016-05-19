@@ -2,12 +2,12 @@
 #include "mom_replay_entity.h"
 #include "util/mom_util.h"
 #include "Timer.h"
+#include "mom_replay.h"
+#include "mom_shareddefs.h"
 
-
-static ConVar mom_replay_firstperson("mom_replay_firstperson", "1",
-    FCVAR_CLIENTCMD_CAN_EXECUTE, "Watch replay in first-person", true, 0, true, 1);
-static ConVar mom_replay_reverse("mom_replay_reverse", "0",
-    FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay", true, 0, true, 1);
+MAKE_TOGGLE_CONVAR(mom_replay_firstperson, "1", FCVAR_CLIENTCMD_CAN_EXECUTE, "Watch replay in first-person");
+MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
+MAKE_TOGGLE_CONVAR(mom_replay_loop, "1", FCVAR_CLIENTCMD_CAN_EXECUTE, "Loop playback of replay ghost");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11", 
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Replay ghost's body group (model)", true, 0, true, 14);
 static ConCommand mom_replay_ghost_color("mom_replay_ghost_color",
@@ -27,7 +27,10 @@ const char* CMomentumReplayGhostEntity::GetGhostModel()
 {
 	return m_pszModel;
 }
-
+CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity()
+{
+    g_ReplaySystem->m_bIsWatchingReplay = false;
+}
 void CMomentumReplayGhostEntity::Precache(void)
 {
 	BaseClass::Precache();
@@ -51,13 +54,15 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 }
 
-void CMomentumReplayGhostEntity::StartRun(bool firstPerson) 
+void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop) 
 {
     mom_replay_firstperson.SetValue(firstPerson ? "1" : "0");
+    mom_replay_loop.SetValue(shouldLoop ? "1" : "0");
+
     Spawn();
     m_nStartTick = gpGlobals->curtime;
     m_bIsActive = true;
-    step = 1;
+    step = 0;
     SetAbsOrigin(g_ReplaySystem->m_vecRunData[0].m_vPlayerOrigin);
 	SetNextThink(gpGlobals->curtime);
 
@@ -65,26 +70,29 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 void CMomentumReplayGhostEntity::UpdateStep() 
 {
     currentStep = g_ReplaySystem->m_vecRunData[step];
-    ++step;
     if (mom_replay_reverse.GetBool())
     {
         nextStep = g_ReplaySystem->m_vecRunData[--step];
     }
     else if (step < g_ReplaySystem->m_vecRunData.Size())
     {
-        nextStep = g_ReplaySystem->m_vecRunData[step];
+        nextStep = g_ReplaySystem->m_vecRunData[++step];
     }
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
 	BaseClass::Think();
-    if (step >= 1)
+    if (step >= 0)
     {
-        if (step < g_ReplaySystem->m_vecRunData.Size())
+        if (step+1 < g_ReplaySystem->m_vecRunData.Size())
         {
             UpdateStep();
             mom_replay_firstperson.GetBool() ? HandleGhostFirstPerson() : HandleGhost();
         } 
+        else if (step+1 == g_ReplaySystem->m_vecRunData.Size() && mom_replay_loop.GetBool())
+        {
+            step = 0; //reset us to the start
+        }
         else
         {
             EndRun();
