@@ -43,9 +43,6 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perstage, "0", FLAG_HUD_CVAR
 // Velocity
 static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show, "1", FLAG_HUD_CVAR,
                           "Toggle showing velocity comparisons: 0 = OFF, 1 = ON"); // Overall vis
-static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_type, "0", FLAG_HUD_CVAR,
-                          "Velocity comparison type: \n0 = Velocity including Z-axis (3D)\n1 = Velocity without Z axis "
-                          "(horizontal velocity)"); // Horizontal/3D
 static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_avg, "1", FLAG_HUD_CVAR,
                           "Toggle showing average velocity. 0 = OFF, 1 = ON"); // avg vel
 static MAKE_TOGGLE_CONVAR(mom_comparisons_vel_show_max, "1", FLAG_HUD_CVAR,
@@ -259,7 +256,8 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
 void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, char *ansiActualBufferOut,
                                            char *ansiCompareBufferOut, Color *compareColorOut)
 {
-    int velType = mom_comparisons_vel_type.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
+    ConVarRef velTypeVar("mom_speedometer_hvel");
+    int velType = velTypeVar.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
     float diff = 0.0f;                               // Difference between the current and the compared-to.
     float act;                                // Actual value that the player has for this stage.
     char tempANSITimeOutput[BUFSIZETIME],
