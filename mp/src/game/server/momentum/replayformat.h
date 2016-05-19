@@ -3,6 +3,7 @@
 
 #include "cbase.h"
 #include "mom_shareddefs.h"
+#include "util/run_stats.h"
 
 #define DEMO_HEADER_ID "MOMREPLAY"
 #define DEMO_PROTOCOL_VERSION 2
@@ -46,10 +47,11 @@ struct replay_header_t
     float interval_per_tick;
     int runTimeTicks;           //Total run time in ticks
 
-    float m_flStartSpeed, m_flEndSpeed;
+    RunStats_t stats;
+    /*float m_flStartSpeed, m_flEndSpeed;
     int m_nStageJumps[MAX_STAGES], m_nStageStrafes[MAX_STAGES];
     float m_flStageVelocityMax[MAX_STAGES], m_flStageVelocityAvg[MAX_STAGES],
-        m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES], m_flStageEnterVelocity[MAX_STAGES];
+        m_flStageStrafeSyncAvg[MAX_STAGES], m_flStageStrafeSync2Avg[MAX_STAGES], m_flStageEnterVelocity[MAX_STAGES];*/
 };
 //byteswap for int and float members of header, swaps the endianness (byte order) in order to read correctly
 inline void ByteSwap_replay_header_t(replay_header_t &swap)
@@ -59,18 +61,28 @@ inline void ByteSwap_replay_header_t(replay_header_t &swap)
     swap.unixEpocDate = LittleLong(swap.unixEpocDate);
     swap.steamID64 = LittleLong(swap.steamID64);
     LittleFloat(&swap.interval_per_tick, &swap.interval_per_tick);
-
+    //MOM_TODO: Do we want to also have a float time?
     // --- run stats ---
-    LittleFloat(&swap.m_flEndSpeed, &swap.m_flEndSpeed);
-    LittleFloat(&swap.m_flStartSpeed, &swap.m_flStartSpeed);
+    for (int i = 0; i < 2; i++)
+    {
+        LittleFloat(&swap.stats.m_flStageExitSpeed[0][i], &swap.stats.m_flStageExitSpeed[0][i]);
+        LittleFloat(&swap.stats.m_flStageEnterSpeed[0][i], &swap.stats.m_flStageEnterSpeed[0][i]);
+    }
+    
     for (int i = 0; i < MAX_STAGES; i++) {
-        LittleFloat(&swap.m_flStageVelocityMax[i], &swap.m_flStageVelocityMax[i]);
-        LittleFloat(&swap.m_flStageVelocityAvg[i], &swap.m_flStageVelocityAvg[i]);
-        LittleFloat(&swap.m_flStageStrafeSyncAvg[i], &swap.m_flStageStrafeSyncAvg[i]);
-        LittleFloat(&swap.m_flStageStrafeSync2Avg[i], &swap.m_flStageStrafeSync2Avg[i]);
-        LittleFloat(&swap.m_flStageEnterVelocity[i], &swap.m_flStageEnterVelocity[i]);
-        swap.m_nStageJumps[i] = LittleDWord(swap.m_nStageJumps[i]);
-        swap.m_nStageStrafes[i] = LittleDWord(swap.m_nStageStrafes[i]);
+
+        for (int k = 0; k < 2; k++)
+        {
+            LittleFloat(&swap.stats.m_flStageEnterSpeed[i][k], &swap.stats.m_flStageEnterSpeed[i][k]);
+            LittleFloat(&swap.stats.m_flStageExitSpeed[i][k], &swap.stats.m_flStageExitSpeed[i][k]);
+            LittleFloat(&swap.stats.m_flStageVelocityAvg[i][k], &swap.stats.m_flStageVelocityAvg[i][k]);
+            LittleFloat(&swap.stats.m_flStageVelocityMax[i][k], &swap.stats.m_flStageVelocityMax[i][k]);
+        }
+
+        LittleFloat(&swap.stats.m_flStageStrafeSyncAvg[i], &swap.stats.m_flStageStrafeSyncAvg[i]);
+        LittleFloat(&swap.stats.m_flStageStrafeSync2Avg[i], &swap.stats.m_flStageStrafeSync2Avg[i]);
+        swap.stats.m_iStageJumps[i] = LittleDWord(swap.stats.m_iStageJumps[i]);
+        swap.stats.m_iStageStrafes[i] = LittleDWord(swap.stats.m_iStageStrafes[i]);
     }
 }
 #endif //REPLAYFORMAT_H

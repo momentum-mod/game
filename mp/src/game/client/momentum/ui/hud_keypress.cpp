@@ -195,8 +195,8 @@ void CHudKeyPressDisplay::OnThink()
     if (g_MOMEventListener)
     {   //we should only draw the strafe/jump counters when the timer is running
         m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;
-        m_nStrafes = g_MOMEventListener->m_iStageStrafes[0];
-        m_nJumps = g_MOMEventListener->m_iStageJumps[0];
+        m_nStrafes = g_MOMEventListener->stats.m_iStageStrafes[0];
+        m_nJumps = g_MOMEventListener->stats.m_iStageJumps[0];
     }
 }
 void CHudKeyPressDisplay::Reset()

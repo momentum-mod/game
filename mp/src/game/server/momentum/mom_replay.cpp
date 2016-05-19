@@ -85,21 +85,25 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
     time(&header.unixEpocDate);
 
     // --- RUN STATS ---
-    //MOM_TODO: we just get one velocity here, for now. UPDATE THIS WHEN "runstats.h" is a thing!
-    header.m_flEndSpeed = m_player->m_flStageExitVelocity[0][0];
-    header.m_flStartSpeed = m_player->m_flStageEnterVelocity[0][0];
+    for (int i = 0; i < 2; i++)
+    {
+        header.stats.m_flStageExitSpeed[0][i] = m_player->m_flStageExitVelocity[0][i];
+        header.stats.m_flStageEnterSpeed[0][i] = m_player->m_flStageEnterVelocity[0][i];
+    }
+
     for (int i = 0; i < MAX_STAGES; i++) {
         for (int k = 0; i < 2; k++)
         {
-            header.m_flStageEnterVelocity[i] = m_player->m_flStageEnterVelocity[i][k];
-            header.m_flStageVelocityAvg[i] = m_player->m_flStageVelocityAvg[i][k];
-            header.m_flStageVelocityMax[i] = m_player->m_flStageVelocityMax[i][k];
+            header.stats.m_flStageEnterSpeed[i][k] = m_player->m_flStageEnterVelocity[i][k];
+            header.stats.m_flStageExitSpeed[i][k] = m_player->m_flStageExitVelocity[i][k];
+            header.stats.m_flStageVelocityAvg[i][k] = m_player->m_flStageVelocityAvg[i][k];
+            header.stats.m_flStageVelocityMax[i][k] = m_player->m_flStageVelocityMax[i][k];
         }
         
-        header.m_flStageStrafeSyncAvg[i] = m_player->m_flStageStrafeSyncAvg[i];
-        header.m_flStageStrafeSync2Avg[i] = m_player->m_flStageStrafeSync2Avg[i];
-        header.m_nStageJumps[i] = m_player->m_nStageJumps[i];
-        header.m_nStageStrafes[i] = m_player->m_nStageStrafes[i];
+        header.stats.m_flStageStrafeSyncAvg[i] = m_player->m_flStageStrafeSyncAvg[i];
+        header.stats.m_flStageStrafeSync2Avg[i] = m_player->m_flStageStrafeSync2Avg[i];
+        header.stats.m_iStageJumps[i] = m_player->m_nStageJumps[i];
+        header.stats.m_iStageStrafes[i] = m_player->m_nStageStrafes[i];
     }
     return header;
 }

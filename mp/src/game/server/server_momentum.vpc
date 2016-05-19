@@ -44,6 +44,8 @@ $Project "Server (Momentum)"
 				$File "$SRCDIR\game\shared\momentum\util\mom_util.h"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.cpp"
 				$File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.h"
+                $File "$SRCDIR\game\shared\momentum\util\run_stats.h"
+                $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
 
 			}
 

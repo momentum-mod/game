@@ -137,6 +137,7 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.cpp"
 				$File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.h"
                 $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
+                $File "$SRCDIR\game\shared\momentum\util\run_stats.h"
 			}
 
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
