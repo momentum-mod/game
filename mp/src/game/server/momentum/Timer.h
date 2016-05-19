@@ -135,8 +135,6 @@ public:
     void SaveTime();
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
-    // returns last runtime in ticks
-    int GetLastRunTimeTicks() { return m_iEndTick - m_iStartTick;  }
     void DispatchMapInfo();
     // Practice mode- noclip mode that stops timer
     void PracticeMove();
@@ -179,15 +177,7 @@ private:
         int flags;
 
         //stage specific stats:
-        float stagetime[MAX_STAGES], stageentertime[MAX_STAGES], stageavgsync[MAX_STAGES], stageavgsync2[MAX_STAGES];
-
-        //These members are 2D arrays which store the XYZ velocity length in index 0 and XY velocity in index 1
-        float stagestartvel[MAX_STAGES][2], //The velocity that you start the stage with (exit the stage start trigger)
-            stageexitvel[MAX_STAGES][2], //The velocity with which you exit the stage (this stage -> next)
-            stageavgvel[MAX_STAGES][2], 
-            stagemaxvel[MAX_STAGES][2];
-
-        int stagejumps[MAX_STAGES], stagestrafes[MAX_STAGES];
+        RunStats_t *RunStats = new RunStats_t();
     };
 
     struct Checkpoint

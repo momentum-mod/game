@@ -5,6 +5,45 @@
 
 struct RunStats_t
 {
+    RunStats_t()
+    {
+        for (int i = 0; i < MAX_STAGES; i++)
+        {
+            m_iStageJumps[i] = 0;
+            m_iStageStrafes[i] = 0;
+            m_flStageStrafeSyncAvg[i] = 0;
+            m_flStageStrafeSync2Avg[i] = 0;
+            m_flStageEnterTime[i] = 0;
+            m_flStageTime[i] = 0;
+            for (int k = 0; k < 2; k++)
+            {
+                m_flStageVelocityMax[i][k] = 0;
+                m_flStageVelocityAvg[i][k] = 0;
+                m_flStageEnterSpeed[i][k] = 0;
+                m_flStageExitSpeed[i][k] = 0;
+            }
+        }
+    }
+    RunStats_t& operator=(const RunStats_t& other)
+    {
+        for (int i = 0; i < MAX_STAGES; i++)
+        {
+            m_iStageJumps[i] = other.m_iStageJumps[i];
+            m_iStageStrafes[i] = other.m_iStageStrafes[i];
+            m_flStageStrafeSyncAvg[i] = other.m_flStageStrafeSyncAvg[i];
+            m_flStageStrafeSync2Avg[i] = other.m_flStageStrafeSync2Avg[i];
+            m_flStageEnterTime[i] = other.m_flStageEnterTime[i];
+            m_flStageTime[i] = other.m_flStageTime[i];
+            for (int k = 0; k < 2; k++)
+            {
+                m_flStageVelocityMax[i][k] = other.m_flStageVelocityMax[i][k];
+                m_flStageVelocityAvg[i][k] = other.m_flStageVelocityAvg[i][k];
+                m_flStageEnterSpeed[i][k] = other.m_flStageEnterSpeed[i][k];
+                m_flStageExitSpeed[i][k] = other.m_flStageExitSpeed[i][k];
+            }
+        }
+        return *this;
+    }
     //MOM_TODO: We're going to hold an unbiased view at both
     //checkpoint and stages. If a map is linear yet has checkpoints,
     //it can be free to use these below to display stats for the player to compare against.

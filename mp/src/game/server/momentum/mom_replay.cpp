@@ -34,7 +34,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
         m_bShouldStopRec = false;
         CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
         char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
-        mom_UTIL->FormatTime(g_Timer->GetLastRunTimeTicks() * gpGlobals->interval_per_tick, runTime);
+        mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime);
         Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", pMOMPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr(), runTime);
         V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); //V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
 
@@ -73,38 +73,18 @@ CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
 replay_header_t CMomentumReplaySystem::CreateHeader()
 {
     replay_header_t header;
-    Q_strcpy(header.demofilestamp, DEMO_HEADER_ID);
-    header.demoProtoVersion = DEMO_PROTOCOL_VERSION;
+    Q_strcpy(header.demofilestamp, REPLAY_HEADER_ID);
+    header.demoProtoVersion = REPLAY_PROTOCOL_VERSION;
     Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
     Q_strcpy(header.playerName, m_player->GetPlayerName());
   
     header.steamID64 = steamapicontext->SteamUser() ? steamapicontext->SteamUser()->GetSteamID().ConvertToUint64() : 0;
 
     header.interval_per_tick = gpGlobals->interval_per_tick;
-    header.runTimeTicks = g_Timer->GetLastRunTimeTicks();
+    header.runTime = g_Timer->GetLastRunTime();
     time(&header.unixEpocDate);
 
-    // --- RUN STATS ---
-    for (int i = 0; i < 2; i++)
-    {
-        header.stats.m_flStageExitSpeed[0][i] = m_player->m_flStageExitVelocity[0][i];
-        header.stats.m_flStageEnterSpeed[0][i] = m_player->m_flStageEnterVelocity[0][i];
-    }
-
-    for (int i = 0; i < MAX_STAGES; i++) {
-        for (int k = 0; i < 2; k++)
-        {
-            header.stats.m_flStageEnterSpeed[i][k] = m_player->m_flStageEnterVelocity[i][k];
-            header.stats.m_flStageExitSpeed[i][k] = m_player->m_flStageExitVelocity[i][k];
-            header.stats.m_flStageVelocityAvg[i][k] = m_player->m_flStageVelocityAvg[i][k];
-            header.stats.m_flStageVelocityMax[i][k] = m_player->m_flStageVelocityMax[i][k];
-        }
-        
-        header.stats.m_flStageStrafeSyncAvg[i] = m_player->m_flStageStrafeSyncAvg[i];
-        header.stats.m_flStageStrafeSync2Avg[i] = m_player->m_flStageStrafeSync2Avg[i];
-        header.stats.m_iStageJumps[i] = m_player->m_nStageJumps[i];
-        header.stats.m_iStageStrafes[i] = m_player->m_nStageStrafes[i];
-    }
+    //header.stats = m_player->m_PlayerRunStats; //copy ALL run stats using operator overload
     return header;
 }
 void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)
@@ -117,6 +97,7 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)
 
         filesystem->Seek(m_fhFileHandle, 0, FILESYSTEM_SEEK_HEAD);
         filesystem->Write(&littleEndianHeader, sizeof(replay_header_t), m_fhFileHandle);
+        DevLog("\n\nreplay header size: %i\n", sizeof(replay_header_t));
 
         Assert(buf.IsValid());
         //write write from the CUtilBuffer to our filehandle:
@@ -143,13 +124,13 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
 
     ByteSwap_replay_header_t(m_replayHeader);
 
-    if (Q_strcmp(m_replayHeader.demofilestamp, DEMO_HEADER_ID)) { //DEMO_HEADER_ID is __NOT__ the same as the stamp from the header we read from file
+    if (Q_strcmp(m_replayHeader.demofilestamp, REPLAY_HEADER_ID)) { //DEMO_HEADER_ID is __NOT__ the same as the stamp from the header we read from file
         ConMsg("%s has invalid replay header ID.\n", filename);
         return nullptr;
     }
-    if (m_replayHeader.demoProtoVersion != DEMO_PROTOCOL_VERSION) {
+    if (m_replayHeader.demoProtoVersion != REPLAY_PROTOCOL_VERSION) {
         ConMsg("ERROR: replay file protocol %i outdated, engine version is %i \n",
-            m_replayHeader.demoProtoVersion, DEMO_PROTOCOL_VERSION);
+            m_replayHeader.demoProtoVersion, REPLAY_PROTOCOL_VERSION);
 
         return nullptr;
     }
