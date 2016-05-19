@@ -17,6 +17,8 @@
 #include <vgui/ILocalize.h>
 #include "KeyValues.h"
 #include "filesystem.h"
+#include "in_buttons.h"
+#include "input.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -273,6 +275,12 @@ void CHudCredits::DrawOutroCreditsName( void )
 	GetHudSize(iWidth, iTall);
 	SetSize( iWidth, iTall );
 
+    float p_flDesiedScrollTime = m_flScrollTime;
+    if (::input->GetButtonBits(1) & IN_ATTACK2)
+    {
+        p_flDesiedScrollTime = m_flScrollTime * 0.27f;
+    }
+
 	for ( int i = 0; i < m_CreditsList.Count(); i++ )
 	{
 		creditname_t *pCredit = &m_CreditsList[i];
@@ -302,14 +310,14 @@ void CHudCredits::DrawOutroCreditsName( void )
 		{
 			if ( m_bLastOneInPlace == false )
 			{
-				pCredit->flYPos -= gpGlobals->frametime * ( (float)g_iCreditsPixelHeight / m_flScrollTime );
+                pCredit->flYPos -= gpGlobals->frametime * ((float)g_iCreditsPixelHeight / p_flDesiedScrollTime);
 		
 				if ( (int)pCredit->flYPos + ( iFontTall / 2 ) <= iTall / 2 )
 				{
 					m_bLastOneInPlace = true;
 					
 					// 360 certification requires that we not hold a static image too long.
-					m_flFadeTime = gpGlobals->curtime + ( IsConsole() ? 2.0f : 10.0f );
+					m_flFadeTime = gpGlobals->curtime + ( IsConsole() ? 2.0f : 5.0f );
 				}
 			}
 			else
@@ -318,7 +326,7 @@ void CHudCredits::DrawOutroCreditsName( void )
 				{
 					if ( m_Alpha > 0 )
 					{
-						m_Alpha -= gpGlobals->frametime * ( m_flScrollTime * 2 );
+                        m_Alpha -= gpGlobals->frametime * (p_flDesiedScrollTime * 2);
 
 						if ( m_Alpha <= 0 )
 						{
@@ -333,7 +341,7 @@ void CHudCredits::DrawOutroCreditsName( void )
 		}
 		else
 		{
-			pCredit->flYPos -= gpGlobals->frametime * ( (float)g_iCreditsPixelHeight / m_flScrollTime );
+            pCredit->flYPos -= gpGlobals->frametime * ((float)g_iCreditsPixelHeight / p_flDesiedScrollTime);
 		}
 		
 		if ( pCredit->bActive == false )
