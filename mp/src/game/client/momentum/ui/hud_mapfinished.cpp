@@ -131,7 +131,7 @@ private:
     bool m_bRunSaved, m_bRunUploaded;
 };
 
-DECLARE_HUDELEMENT(CHudMapFinishedDialog);
+DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
 CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
