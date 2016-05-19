@@ -62,30 +62,33 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 	SetNextThink(gpGlobals->curtime);
 
 }
-void CMomentumReplayGhostEntity::updateStep() 
+void CMomentumReplayGhostEntity::UpdateStep() 
 {
     currentStep = g_ReplaySystem->m_vecRunData[step];
-
+    ++step;
     if (mom_replay_reverse.GetBool())
     {
         nextStep = g_ReplaySystem->m_vecRunData[--step];
     }
-    else
+    else if (step < g_ReplaySystem->m_vecRunData.Size())
     {
-        nextStep = g_ReplaySystem->m_vecRunData[++step];
+        nextStep = g_ReplaySystem->m_vecRunData[step];
     }
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
 	BaseClass::Think();
-    if (step < g_ReplaySystem->m_vecRunData.Count() && step >= 1) 
+    if (step >= 1)
     {
-        updateStep();
-        mom_replay_firstperson.GetBool() ? HandleGhostFirstPerson() : HandleGhost();
-	}
-    else
-    {
-        EndRun();
+        if (step < g_ReplaySystem->m_vecRunData.Size())
+        {
+            UpdateStep();
+            mom_replay_firstperson.GetBool() ? HandleGhostFirstPerson() : HandleGhost();
+        } 
+        else
+        {
+            EndRun();
+        }
     }
 
     //update color, bodygroup, and other params if they change
@@ -161,7 +164,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             //MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
             pPlayer->SetViewOffset(VEC_DUCK_VIEW);
         }
-
     }
 }
 void CMomentumReplayGhostEntity::HandleGhost() 
@@ -247,7 +249,7 @@ void CMomentumReplayGhostEntity::SetGhostBodyGroup(int bodyGroup)
 void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
 {
     if (mom_UTIL->GetColorFromHex(args.ArgS())) {
-        CMomentumReplayGhostEntity::m_newGhostColor = *mom_UTIL->GetColorFromHex(args.ArgS());
+        m_newGhostColor = *mom_UTIL->GetColorFromHex(args.ArgS());
     }
 }
 void CMomentumReplayGhostEntity::EndRun()

@@ -20,7 +20,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 {
     if (throwaway) {
         m_bIsRecording = false;
-        m_buf->Purge();
+        m_buf.Purge();
         return;
     }
     if (delay)
@@ -43,7 +43,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 
         m_fhFileHandle = filesystem->Open(newRecordingPath, "w+b", "MOD");
 
-        WriteRecordingToFile(*m_buf);
+        WriteRecordingToFile(&m_buf);
 
         filesystem->Close(m_fhFileHandle);
         Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
@@ -51,11 +51,10 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
             StartReplay();
     }
 }
-CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
+void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
 {
     m_nCurrentTick++; //increment recording tick
 
-    static CUtlBuffer buf;
     m_currentFrame.m_nPlayerButtons = m_player->m_nButtons;
     m_currentFrame.m_qEyeAngles = m_player->EyeAngles();
     m_currentFrame.m_vPlayerOrigin = m_player->GetAbsOrigin();
@@ -66,9 +65,8 @@ CUtlBuffer *CMomentumReplaySystem::UpdateRecordingParams()
         if (gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
             StopRecording(UTIL_GetLocalPlayer(), false, false);
 
-    Assert(buf.IsValid());
-    buf.Put(&m_currentFrame, sizeof(replay_frame_t)); //stick all the frame info into the buffer
-    return &buf;
+    Assert(buf && buf->IsValid());
+    buf->Put(&m_currentFrame, sizeof(replay_frame_t)); //stick all the frame info into the buffer
 }
 replay_header_t CMomentumReplaySystem::CreateHeader()
 {
@@ -87,7 +85,7 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
     header.stats = m_player->m_PlayerRunStats; //copy ALL run stats using operator overload
     return header;
 }
-void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)
+void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 {
     if (m_fhFileHandle)
     {
@@ -99,10 +97,10 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)
         filesystem->Write(&littleEndianHeader, sizeof(replay_header_t), m_fhFileHandle);
         DevLog("\n\nreplay header size: %i\n", sizeof(replay_header_t));
 
-        Assert(buf.IsValid());
+        Assert(buf && buf->IsValid());
         //write write from the CUtilBuffer to our filehandle:
-        filesystem->Write(buf.Base(), buf.TellPut(), m_fhFileHandle);
-        buf.Purge();
+        filesystem->Write(buf->Base(), buf->TellPut(), m_fhFileHandle);
+        buf->Purge();
     }
 }
 //read a single frame (or tick) of a recording
@@ -143,7 +141,7 @@ bool CMomentumReplaySystem::LoadRun(const char* filename)
     V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
     m_fhFileHandle = filesystem->Open(recordingName, "r+b", "MOD");
 
-    if (m_fhFileHandle != nullptr && filename != NULL)
+    if (m_fhFileHandle != nullptr && filename != nullptr)
     {
         replay_header_t* header = ReadHeader(m_fhFileHandle, filename);
         if (header == nullptr) {

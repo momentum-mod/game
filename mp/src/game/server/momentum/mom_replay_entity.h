@@ -36,7 +36,7 @@ public:
     void SetGhostBodyGroup(int bodyGroup);
     static void SetGhostColor(const CCommand &args);
 	//Increments the steps intelligently.
-	void updateStep();
+	void UpdateStep();
 
 	void EndRun();
 	void StartRun(bool firstPerson = false);

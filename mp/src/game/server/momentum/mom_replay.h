@@ -1,5 +1,6 @@
 #ifndef MOM_REPLAY_H
 #define MOM_REPLAY_H
+
 #include "cbase.h"
 #include "filesystem.h"
 #include "utlbuffer.h"
@@ -13,35 +14,43 @@
 
 class CMomentumReplaySystem : CAutoGameSystemPerFrame
 {
-public:
-    CMomentumReplaySystem(const char *pName) : CAutoGameSystemPerFrame(pName) {}
-    virtual void FrameUpdatePostEntityThink() //inherited member from CAutoGameSystemPerFrame
+  public:
+    CMomentumReplaySystem(const char *pName)
+        : CAutoGameSystemPerFrame(pName), m_bIsWatchingReplay(false), m_bIsRecording(false), m_bShouldStopRec(false),
+          m_nCurrentTick(0), m_fRecEndTime(0), m_player(nullptr), m_fhFileHandle(nullptr), m_buf()
+    {
+    }
+
+    // inherited member from CAutoGameSystemPerFrame
+    void FrameUpdatePostEntityThink() override
     {
         if (m_bIsRecording)
         {
-            m_buf = UpdateRecordingParams();
+            UpdateRecordingParams(&m_buf);
         }
     }
+
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
-    void WriteRecordingToFile(CUtlBuffer &buf);
+    void WriteRecordingToFile(CUtlBuffer *buf);
     replay_header_t CreateHeader();
-    void WriteRecordingToFile();
 
-    replay_frame_t* ReadSingleFrame(FileHandle_t file, const char* filename);
-    replay_header_t* ReadHeader(FileHandle_t file, const char* filename);
+    replay_frame_t *ReadSingleFrame(FileHandle_t file, const char *filename);
+    replay_header_t *ReadHeader(FileHandle_t file, const char *filename);
 
     void StartReplay(bool firstperson = false);
-    bool LoadRun(const char* fileName);
+    bool LoadRun(const char *fileName);
     CUtlVector<replay_frame_t> m_vecRunData;
 
+    //MOM_TODO: Handle the pPlayer pointer passed here or get rid of it
     bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
 
     replay_header_t m_loadedHeader;
     bool m_bIsWatchingReplay;
     void DispatchTimerStateMessage(CBasePlayer *pPlayer, bool started);
-private:
-    CUtlBuffer *UpdateRecordingParams(); //called every game frame after entities think and update
+
+  private:
+    void UpdateRecordingParams(CUtlBuffer *); // called every game frame after entities think and update
 
     bool m_bIsRecording;
     bool m_bShouldStopRec;
@@ -54,9 +63,9 @@ private:
     replay_header_t m_replayHeader;
 
     FileHandle_t m_fhFileHandle;
-    CUtlBuffer *m_buf;
+    CUtlBuffer m_buf;
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;
 
-#endif //MOM_REPLAY_H
+#endif // MOM_REPLAY_H
