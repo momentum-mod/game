@@ -87,7 +87,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
             stageEvent->SetInt("stage_num", stageNum);
 
             //3D VELOCITY
-            pPlayer->m_PlayerRunStats->m_flStageExitSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
+            pPlayer->m_PlayerRunStats->m_flStageEnterSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
             stageEvent->SetFloat("stage_enter_vel", pPlayer->m_PlayerRunStats->m_flStageEnterSpeed[stageNum][0]);
 
             //2D VELOCITY
