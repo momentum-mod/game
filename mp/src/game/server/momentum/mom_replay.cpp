@@ -84,7 +84,7 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
     header.runTime = g_Timer->GetLastRunTime();
     time(&header.unixEpocDate);
 
-    //header.stats = m_player->m_PlayerRunStats; //copy ALL run stats using operator overload
+    header.stats = m_player->m_PlayerRunStats; //copy ALL run stats using operator overload
     return header;
 }
 void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer &buf)

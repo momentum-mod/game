@@ -20,22 +20,23 @@ class CMomentumPlayer : public CBasePlayer
 
     static CMomentumPlayer *CreatePlayer(const char *className, edict_t *ed)
     {
-        CMomentumPlayer::s_PlayerEdict = ed;
-        return (CMomentumPlayer *)CreateEntityByName(className);
+        s_PlayerEdict = ed;
+        return static_cast<CMomentumPlayer *>(CreateEntityByName(className));
     }
 
     DECLARE_SERVERCLASS();
     DECLARE_DATADESC();
 
-    int FlashlightIsOn() { return IsEffectActive(EF_DIMLIGHT); }
+    int FlashlightIsOn() override
+    { return IsEffectActive(EF_DIMLIGHT); }
 
-    void FlashlightTurnOn()
+    void FlashlightTurnOn() override
     {
         AddEffects(EF_DIMLIGHT);
         EmitSound("HL2Player.FlashLightOn"); // MOM_TODO: change this?
     }
 
-    void FlashlightTurnOff()
+    void FlashlightTurnOff() override
     {
         RemoveEffects(EF_DIMLIGHT);
         EmitSound("HL2Player.FlashLightOff"); // MOM_TODO: change this?
@@ -47,10 +48,14 @@ class CMomentumPlayer : public CBasePlayer
 
     void InitHUD() override;
 
-    virtual void CommitSuicide(bool bExplode = false, bool bForce = false){};
-    virtual void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false){};
+    void CommitSuicide(bool bExplode = false, bool bForce = false) override
+    {};
 
-    bool CanBreatheUnderwater() const { return true; }
+    void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false) override
+    {};
+
+    bool CanBreatheUnderwater() const override
+    { return true; }
 
     // LADDERS
     void SurpressLadderChecks(const Vector &pos, const Vector &normal);
@@ -113,7 +118,7 @@ class CMomentumPlayer : public CBasePlayer
     float GetPunishTime() { return m_flPunishTime; }
 
     //Run Stats
-    RunStats_t *m_PlayerRunStats = new RunStats_t();
+    RunStats_t m_PlayerRunStats;
 
     //for calc avg
     int m_nStageAvgCount[MAX_STAGES];

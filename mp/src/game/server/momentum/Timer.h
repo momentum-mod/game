@@ -177,7 +177,7 @@ private:
         int flags;
 
         //stage specific stats:
-        RunStats_t *RunStats = new RunStats_t();
+        RunStats_t RunStats = RunStats_t();
     };
 
     struct Checkpoint

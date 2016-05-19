@@ -25,9 +25,9 @@ enum ghostModelBodyGroup
     BODY_CYLINDER
 };
 
-class CMomentumReplayGhostEntity : public CBaseCombatCharacter
+class CMomentumReplayGhostEntity : public CBaseAnimating
 {
-    DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseCombatCharacter);
+    DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
 	DECLARE_DATADESC();
 public:
     ~CMomentumReplayGhostEntity(){ g_ReplaySystem->m_bIsWatchingReplay = false;}

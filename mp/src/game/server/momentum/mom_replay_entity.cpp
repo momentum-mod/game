@@ -213,10 +213,10 @@ void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel, CMomentumPlayer *p
     }
     // --- JUMP AND STRAFE COUNTER ---
     if (GetGroundEntity() != NULL && currentStep.m_nPlayerButtons & IN_JUMP)
-        pPlayer->m_PlayerRunStats->m_iStageJumps[0]++;
+        pPlayer->m_PlayerRunStats.m_iStageJumps[0]++;
     if ((currentStep.m_nPlayerButtons & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) 
         || (currentStep.m_nPlayerButtons & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)) )
-        pPlayer->m_PlayerRunStats->m_iStageStrafes[0]++;
+        pPlayer->m_PlayerRunStats.m_iStageStrafes[0]++;
 
     m_flLastSyncVelocity = SyncVelocity;
     m_qLastEyeAngle = EyeAngles();

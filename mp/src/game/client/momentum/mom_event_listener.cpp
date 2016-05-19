@@ -70,8 +70,15 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     {
         int currentStage = pEvent->GetInt("stage_num");
         //Set the stage enter speed upon exiting the trigger
-        stats.m_flStageEnterSpeed[currentStage][0] = pEvent->GetFloat("stage_enter_vel");
-        stats.m_flStageEnterSpeed[currentStage][1] = pEvent->GetFloat("stage_enter_vel_2D");
+        float enterVel = pEvent->GetFloat("stage_enter_vel");
+        float enterVel2D = pEvent->GetFloat("stage_enter_vel_2D");
+        for (int i = 0; i < 2; i++)
+        {
+            float vel = i == 0 ? enterVel : enterVel2D;
+            stats.m_flStageEnterSpeed[currentStage][i] = vel;
+            if (currentStage == 1)
+                stats.m_flStageEnterSpeed[currentStage - 1][i] = vel;//Set overall enter vel
+        }
     }
     else if (!Q_strcmp("run_save", pEvent->GetName()))
     {
