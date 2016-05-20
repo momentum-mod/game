@@ -62,8 +62,13 @@ void CMomentumReplayGhostEntity::Spawn(void)
 	RemoveEffects(EF_NODRAW);
 	SetRenderMode(kRenderTransColor);
     SetRenderColor(m_ghostColor.r(), m_ghostColor.g(), m_ghostColor.b(), 75);
-	SetMoveType(MOVETYPE_NOCLIP);
+    //~~~The magic combo~~~ (collides with triggers, not with players)
+    ClearSolidFlags();
+    SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
+	SetMoveType(MOVETYPE_STEP);
+    SetSolid(SOLID_BBOX);
     RemoveSolidFlags(FSOLID_NOT_SOLID);
+    
     SetModel(GHOST_MODEL);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 }

@@ -55,7 +55,7 @@ class C_Timer : public CHudElement, public Panel
     void MsgFunc_Timer_Checkpoint(bf_read &msg);
     float GetCurrentTime();
     bool m_bIsRunning;
-    bool m_bTimerRan;
+    bool m_bTimerRan;//MOM_TODO: What is this used for?
     int m_iStartTick;
 
   protected:

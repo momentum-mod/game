@@ -110,7 +110,7 @@ END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer())
+    if (pOther->IsPlayer())//MOM_TODO: pOther->IsReplay or dynamic cast idk I'm tired
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
@@ -151,6 +151,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
+    //MOM_TODO: Set replay entity stuff too
     g_Timer->SetStartTrigger(this);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
