@@ -251,7 +251,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
         Time t = Time();
         t.time_sec = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         t.tickrate = gpGlobals->interval_per_tick;
-        t.flags = pPlayer->m_iRunFlags;
+        t.flags = pPlayer->m_RunData.m_iRunFlags;
         time(&t.date);
 
         t.RunStats = pPlayer->m_PlayerRunStats; //copy all the run stats
@@ -291,8 +291,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
     
     if (pPlayer)
     {
-        pPlayer->m_bIsInZone = endTrigger;
-        pPlayer->m_bMapFinished = endTrigger;
+        pPlayer->m_RunData.m_bIsInZone = endTrigger;
+        pPlayer->m_RunData.m_bMapFinished = endTrigger;
     }
     SetRunning(false);
     m_iEndTick = gpGlobals->tickcount;

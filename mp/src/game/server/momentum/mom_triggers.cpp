@@ -32,8 +32,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
         if (pPlayer)
         {
-            pPlayer->m_bIsInZone = true;
-            pPlayer->m_iCurrentStage = stageNum;
+            pPlayer->m_RunData.m_bIsInZone = true;
+            pPlayer->m_RunData.m_iCurrentZone = stageNum;
         }
         g_Timer->SetCurrentStage(this);
         IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_enter");
@@ -81,7 +81,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
         if (stageEvent)
         {
             //Status
-            pPlayer->m_bIsInZone = false;
+            pPlayer->m_RunData.m_bIsInZone = false;
 
             //Stage num
             stageEvent->SetInt("stage_num", stageNum);
@@ -135,8 +135,8 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             } 
             g_Timer->Start(gpGlobals->tickcount);
         }
-        pPlayer->m_bIsInZone = false;
-        pPlayer->m_bMapFinished = false;
+        pPlayer->m_RunData.m_bIsInZone = false;
+        pPlayer->m_RunData.m_bMapFinished = false;
     }
 
     IGameEvent *movementCountsResetEvent = gameeventmanager->CreateEvent("keypress");
@@ -156,9 +156,9 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         pPlayer->ResetRunStats();//Reset run stats
-        pPlayer->m_bIsInZone = true;
-        pPlayer->m_bMapFinished = false;
-        pPlayer->m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
+        pPlayer->m_RunData.m_bIsInZone = true;
+        pPlayer->m_RunData.m_bMapFinished = false;
+        pPlayer->m_RunData.m_flLastJumpVel = 0; //also reset last jump velocity when we enter the start zone
 
         if (g_Timer->IsRunning())
         {
@@ -295,7 +295,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             }
 
             g_Timer->Stop(true);
-            pPlayer->m_bMapFinished = true;
+            pPlayer->m_RunData.m_bMapFinished = true;
             //MOM_TODO: SLOW DOWN/STOP THE PLAYER HERE!
         }
         
@@ -303,7 +303,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         if (g_ReplaySystem->IsRecording(pPlayer))
             g_ReplaySystem->StopRecording(ToCMOMPlayer(pOther), false, true);
         
-        pPlayer->m_bIsInZone = true;
+        pPlayer->m_RunData.m_bIsInZone = true;
     }
     BaseClass::StartTouch(pOther);
 }
@@ -312,8 +312,8 @@ void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
     CMomentumPlayer *pMomPlayer = ToCMOMPlayer(pOther);
     if (pMomPlayer)
     {
-        pMomPlayer->m_bMapFinished = false;//Close the hud_mapfinished panel
-        pMomPlayer->m_bIsInZone = false;//Update status
+        pMomPlayer->m_RunData.m_bMapFinished = false;//Close the hud_mapfinished panel
+        pMomPlayer->m_RunData.m_bIsInZone = false;//Update status
     }
     BaseClass::EndTouch(pOther);
 }

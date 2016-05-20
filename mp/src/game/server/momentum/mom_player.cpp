@@ -13,19 +13,10 @@ SendPropInt(SENDINFO(m_iShotsFired)),
 SendPropInt(SENDINFO(m_iDirection)),
 SendPropBool(SENDINFO(m_bResumeZoom)),
 SendPropInt(SENDINFO(m_iLastZoom)),
-SendPropBool(SENDINFO(m_bAutoBhop)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
 SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-SendPropFloat(SENDINFO(m_flStrafeSync)),
-SendPropFloat(SENDINFO(m_flStrafeSync2)),
-SendPropFloat(SENDINFO(m_flLastJumpVel)),
-SendPropBool(SENDINFO(m_bIsWatchingReplay)),
-SendPropInt(SENDINFO(m_nReplayButtons)),
-SendPropInt(SENDINFO(m_iRunFlags)),
-SendPropBool(SENDINFO(m_bIsInZone)),
-SendPropInt(SENDINFO(m_iCurrentStage)),
-SendPropBool(SENDINFO(m_bMapFinished)),
 SendPropFloat(SENDINFO(m_flLastJumpTime)),
+SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -43,7 +34,7 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
-    m_iRunFlags = 0;
+    m_RunData.m_iRunFlags = 0;
 }
 
 CMomentumPlayer::~CMomentumPlayer() 
@@ -86,9 +77,9 @@ void CMomentumPlayer::Spawn()
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     IGameEvent *practiceModeEvent = gameeventmanager->CreateEvent("practice_mode");
-    m_bIsInZone = false;
-    m_bMapFinished = false;
-    m_iCurrentStage = 0;
+    m_RunData.m_bIsInZone = false;
+    m_RunData.m_bMapFinished = false;
+    m_RunData.m_iCurrentZone = 0;
     ResetRunStats();
     if (runSaveEvent)
     {
@@ -223,12 +214,12 @@ void CMomentumPlayer::InitHUD()
 
 void CMomentumPlayer::EnableAutoBhop()
 {
-    m_bAutoBhop = true;
+    m_RunData.m_bAutoBhop = true;
     DevLog("Enabled autobhop\n");
 }
 void CMomentumPlayer::DisableAutoBhop()
 {
-    m_bAutoBhop = false;
+    m_RunData.m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
 }
 void CMomentumPlayer::CheckForBhop()
@@ -242,7 +233,7 @@ void CMomentumPlayer::CheckForBhop()
             m_iSuccessiveBhops = 0;
         if (m_nButtons & IN_JUMP)
         {
-            m_flLastJumpVel = GetLocalVelocity().Length2D();
+            m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
             m_iSuccessiveBhops++;
             if (g_Timer->IsRunning())
             {
@@ -332,8 +323,8 @@ void CMomentumPlayer::UpdateRunStats()
     }
     if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
     {
-        m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100; // ticks strafing perfectly / ticks strafing
-        m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100; // ticks gaining speed / ticks strafing
+        m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks strafing perfectly / ticks strafing
+        m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
     // ----------
 
@@ -363,8 +354,8 @@ void CMomentumPlayer::ResetRunStats()
     m_nPerfectSyncTicks = 0;
     m_nStrafeTicks = 0;
     m_nAccelTicks = 0;
-    m_flStrafeSync = 0;
-    m_flStrafeSync2 = 0;
+    m_RunData.m_flStrafeSync = 0;
+    m_RunData.m_flStrafeSync2 = 0;
 
     m_PlayerRunStats = RunStats_t();
 }
@@ -375,8 +366,8 @@ void CMomentumPlayer::CalculateAverageStats()
     {
         int currentStage = g_Timer->GetCurrentStageNumber();
 
-        m_flStageTotalSync[currentStage] += m_flStrafeSync;
-        m_flStageTotalSync2[currentStage] += m_flStrafeSync2;
+        m_flStageTotalSync[currentStage] += m_RunData.m_flStrafeSync;
+        m_flStageTotalSync2[currentStage] += m_RunData.m_flStrafeSync2;
         m_flStageTotalVelocity[currentStage][0] += GetLocalVelocity().Length();
         m_flStageTotalVelocity[currentStage][1] += GetLocalVelocity().Length2D();
 
@@ -388,8 +379,8 @@ void CMomentumPlayer::CalculateAverageStats()
         m_PlayerRunStats.m_flStageVelocityAvg[currentStage][1] = m_flStageTotalVelocity[currentStage][1] / float(m_nStageAvgCount[currentStage]);
 
         //stage 0 is "overall" - also update these as well, no matter which stage we are on
-        m_flStageTotalSync[0] += m_flStrafeSync;
-        m_flStageTotalSync2[0] += m_flStrafeSync2;
+        m_flStageTotalSync[0] += m_RunData.m_flStrafeSync;
+        m_flStageTotalSync2[0] += m_RunData.m_flStrafeSync2;
         m_flStageTotalVelocity[0][0] += GetLocalVelocity().Length();
         m_flStageTotalVelocity[0][1] += GetLocalVelocity().Length2D();
         m_nStageAvgCount[0]++;
@@ -407,12 +398,13 @@ void CMomentumPlayer::CalculateAverageStats()
 //On surf/other, it only limits practice mode speed. On bhop/scroll, it limits the movement speed above a certain threshhold, and 
 //clamps the player's velocity if they go above it. This is to prevent prespeeding and is different per gamemode due to the different
 //respective playstyles of surf and bhop.
+//MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
     ConVarRef gm("mom_gamemode");
     CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
     bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-    if (m_bIsInZone && m_iCurrentStage == 1)
+    if (m_RunData.m_bIsInZone && m_RunData.m_iCurrentZone == 1)
     {
         if (GetGroundEntity() == nullptr && !g_Timer->IsPracticeMode(this)) //don't count ticks in air if we're in practice mode
             m_nTicksInAir++;

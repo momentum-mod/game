@@ -12,8 +12,11 @@
 #include <vgui/ILocalize.h>
 
 #include "mom_shareddefs.h"
+#include "c_mom_replay_entity.h"
 #include "mom_player_shared.h"
 #include "mom_event_listener.h"
+
+#include "tier0/memdbgon.h"
 
 #define KEYDRAW_MIN 0.07f
 
@@ -33,7 +36,7 @@ public:
     bool ShouldDraw() override
     {
         C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        return showkeys.GetBool() && pMom && !pMom->m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
+        return showkeys.GetBool() && pMom && !pMom->m_RunData.m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
     }
 
     void OnThink() override;
@@ -183,21 +186,30 @@ void CHudKeyPressDisplay::Paint()
 void CHudKeyPressDisplay::OnThink()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (pPlayer->m_bIsWatchingReplay)
+    if (pPlayer)
     {
-        m_nButtons = pPlayer->m_nReplayButtons;
-    }
-    else
-    {
-        m_nButtons = ::input->GetButtonBits(1);
-    }
-    
-    if (g_MOMEventListener)
-    {   //we should only draw the strafe/jump counters when the timer is running
-        m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;
-        m_nStrafes = g_MOMEventListener->stats.m_iStageStrafes[0];
-        m_nJumps = g_MOMEventListener->stats.m_iStageJumps[0];
-    }
+        if (pPlayer->IsWatchingReplay())
+        {
+            C_MomentumReplayGhostEntity *pReplayEnt = dynamic_cast<C_MomentumReplayGhostEntity*>(pPlayer->GetObserverTarget());
+            if (pReplayEnt)
+            {
+                m_bShouldDrawCounts = true;
+                m_nButtons = pReplayEnt->m_nReplayButtons;
+                m_nStrafes = pReplayEnt->m_iTotalStrafes;
+                m_nJumps = 0;//MOM_TODO: Calculate jumps
+            }
+        } else
+        {
+            m_nButtons = ::input->GetButtonBits(1);
+            if (g_MOMEventListener)
+            {   //we should only draw the strafe/jump counters when the timer is running
+                //MOM_TODO: Update this so that the replay ent also correctly sets these
+                m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;
+                m_nStrafes = g_MOMEventListener->stats.m_iStageStrafes[0];
+                m_nJumps = g_MOMEventListener->stats.m_iStageJumps[0];
+            }
+        }
+    } 
 }
 void CHudKeyPressDisplay::Reset()
 {

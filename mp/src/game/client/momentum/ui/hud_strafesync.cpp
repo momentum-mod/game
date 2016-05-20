@@ -5,6 +5,7 @@
 #include "iclientmode.h"
 #include "mom_player_shared.h"
 #include "momentum/util/mom_util.h"
+#include "c_mom_replay_entity.h"
 #include "vphysics_interface.h"
 #include "mom_event_listener.h"
 #include <math.h>
@@ -94,12 +95,33 @@ void CHudStrafeSyncDisplay::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (!pPlayer) return;
 
-    if (strafesync_type.GetInt() == 1) // sync1
-        m_localStrafeSync = pPlayer->m_flStrafeSync;
-    else if (strafesync_type.GetInt() == 2) // sync2
-        m_localStrafeSync = pPlayer->m_flStrafeSync2;
-    else
-        m_localStrafeSync = 0;
+    m_localStrafeSync = 0;
+
+    if (pPlayer->IsWatchingReplay())
+    {
+        C_MomentumReplayGhostEntity *pReplayEnt = dynamic_cast<C_MomentumReplayGhostEntity*>(pPlayer->GetObserverTarget());
+        if (pReplayEnt)
+        {
+            if (strafesync_type.GetInt() == 1) // sync1
+                m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync;
+            else if (strafesync_type.GetInt() == 2) // sync2
+                m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync2;
+        }
+    } else
+    {
+        if (strafesync_type.GetInt() == 1) // sync1
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+        else if (strafesync_type.GetInt() == 2) // sync2
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+    }
+
+
+    //if (strafesync_type.GetInt() == 1) // sync1
+    //    m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+    //else if (strafesync_type.GetInt() == 2) // sync2
+    //    m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+    //else
+    //    m_localStrafeSync = 0;
 
     float clampedStrafeSync = clamp(m_localStrafeSync, 0, 100);
 
@@ -235,10 +257,31 @@ void CHudStrafeSyncBar::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer == nullptr)
         return;
-    if (strafesync_type.GetInt() == 1) // sync1
-        m_localStrafeSync = pPlayer->m_flStrafeSync;
-    else if (strafesync_type.GetInt() == 2) // sync2
-        m_localStrafeSync = pPlayer->m_flStrafeSync2;
+
+    if (pPlayer->IsWatchingReplay())
+    {
+        C_MomentumReplayGhostEntity *pReplayEnt = dynamic_cast<C_MomentumReplayGhostEntity*>(pPlayer->GetObserverTarget());
+        if (pReplayEnt)
+        {
+            if (strafesync_type.GetInt() == 1) // sync1
+                m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync;
+            else if (strafesync_type.GetInt() == 2) // sync2
+                m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync2;
+        }
+    }
+    else
+    {
+        if (strafesync_type.GetInt() == 1) // sync1
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+        else if (strafesync_type.GetInt() == 2) // sync2
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+    }
+
+    //if (strafesync_type.GetInt() == 1) // sync1
+    //    m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+    //else if (strafesync_type.GetInt() == 2) // sync2
+    //    m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+
     switch (strafesync_colorize.GetInt())
     {
     case 1:

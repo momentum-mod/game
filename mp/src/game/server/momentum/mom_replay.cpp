@@ -9,7 +9,7 @@
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     m_player = ToCMOMPlayer( pPlayer);
-    if (!m_player->m_bIsWatchingReplay) //don't record if we're watching a preexisting replay
+    if (!m_player->IsWatchingReplay()) //don't record if we're watching a preexisting replay
     {
         m_bIsRecording = true;
         Log("Recording began!\n");
@@ -167,7 +167,7 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
     m_CurrentReplayGhost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
     if (m_CurrentReplayGhost != nullptr)
     {
-        g_Timer->Stop(false); //stop the timer just in case we started a replay while it was running...
+        if (firstperson) g_Timer->Stop(false); //stop the timer just in case we started a replay while it was running...
         m_CurrentReplayGhost->StartRun(firstperson);
     }
 }

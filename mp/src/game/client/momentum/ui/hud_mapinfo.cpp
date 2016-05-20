@@ -102,9 +102,9 @@ void C_HudMapInfo::OnThink()
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pLocal && g_MOMEventListener)
     {
-        m_iStageCurrent = pLocal->m_iCurrentStage;
-        m_bPlayerInZone = pLocal->m_bIsInZone;
-        m_bMapFinished = pLocal->m_bMapFinished;
+        m_iStageCurrent = pLocal->m_RunData.m_iCurrentZone;
+        m_bPlayerInZone = pLocal->m_RunData.m_bIsInZone;
+        m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
         m_iStageCount = g_MOMEventListener->m_iMapCheckpointCount;
         m_bMapLinear = g_MOMEventListener->m_bMapIsLinear;
     }

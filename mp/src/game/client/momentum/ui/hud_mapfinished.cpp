@@ -36,7 +36,7 @@ public:
     bool ShouldDraw() override
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && pPlayer->m_bMapFinished;
+        return pPlayer && pPlayer->m_RunData.m_bMapFinished;
     }
 
     void Paint() override;
@@ -324,6 +324,7 @@ void CHudMapFinishedDialog::OnThink()
         //Is it going to be a localized string, except for errors that have to be specific?
 
         ConVarRef hvel("mom_speedometer_hvel");
+        //MOM_TODO: Are we going to update to read replay file stats?
         m_flAvgSpeed = g_MOMEventListener->stats.m_flStageVelocityAvg[0][hvel.GetBool()];
         m_flMaxSpeed = g_MOMEventListener->stats.m_flStageVelocityMax[0][hvel.GetBool()];
         m_flEndSpeed = g_MOMEventListener->stats.m_flStageExitSpeed[0][hvel.GetBool()];

@@ -4,27 +4,15 @@
 #include "tier0/memdbgon.h"
 
 
-
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
 RecvPropInt(RECVINFO(m_iShotsFired)),
 RecvPropInt(RECVINFO(m_iDirection)),
 RecvPropBool(RECVINFO(m_bResumeZoom)),
 RecvPropInt(RECVINFO(m_iLastZoom)),
-RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
 RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
-RecvPropFloat(RECVINFO(m_flStrafeSync)),
-RecvPropFloat(RECVINFO(m_flStrafeSync2)),
-RecvPropFloat(RECVINFO(m_flLastJumpVel)),
-RecvPropBool(RECVINFO(m_bIsWatchingReplay)),
-RecvPropInt(RECVINFO(m_nReplayButtons)),
-RecvPropInt(RECVINFO(m_iRunFlags)),
-RecvPropBool(RECVINFO(m_bIsInZone)),
-RecvPropInt(RECVINFO(m_iCurrentStage)),
-RecvPropBool(RECVINFO(m_bMapFinished)),
 RecvPropFloat(RECVINFO(m_flLastJumpTime)),
-//RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
-//RecvPropBool(RECVINFO(m_fIsSprinting)),
+RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
 END_RECV_TABLE()
 
 
@@ -32,7 +20,7 @@ C_MomentumPlayer::C_MomentumPlayer()
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
-    m_bMapFinished = false;
+    m_RunData.m_bMapFinished = false;
     m_flLastJumpTime = 0.0f;
 }
 

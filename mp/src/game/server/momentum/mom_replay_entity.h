@@ -4,7 +4,7 @@
 #include "cbase.h"
 #include "in_buttons.h"
 #include "replayformat.h"
-#include "mom_player_shared.h"
+#include "mom_entity_run_data.h"
 
 #pragma once
 
@@ -33,9 +33,11 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 {
     DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
 	DECLARE_DATADESC();
+    DECLARE_SERVERCLASS();
 public:
+    CMomentumReplayGhostEntity();
     ~CMomentumReplayGhostEntity();
-	const char* GetGhostModel();
+	const char* GetGhostModel() const;
 	void SetGhostModel(const char* model);
     void SetGhostBodyGroup(int bodyGroup);
     static void SetGhostColor(const CCommand &args);
@@ -46,10 +48,14 @@ public:
 	void StartRun(bool firstPerson = false, bool shouldLoop = false);
 	void HandleGhost();
     void HandleGhostFirstPerson();
-    void UpdateStats(Vector ghostVel, CMomentumPlayer *pPlayer); //for hud display..
+    void UpdateStats(Vector ghostVel); //for hud display..
 
     bool m_bIsActive;
     int m_nStartTick;
+
+    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
+    CNetworkVar(int, m_nReplayButtons);
+    CNetworkVar(int, m_iTotalStrafes);
 
 protected:
 	void Think(void) override;
@@ -60,6 +66,8 @@ private:
     char m_pszModel[256], m_pszMapName[256];
 	replay_frame_t currentStep; 
     replay_frame_t nextStep;	
+
+    //MOM_TODO: CUtlVector<CMomentumPlayer*> spectators;
 
     int step;
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;

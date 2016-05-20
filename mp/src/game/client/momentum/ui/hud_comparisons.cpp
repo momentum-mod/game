@@ -141,7 +141,7 @@ void C_RunComparisons::LoadComparisons()
     if (szMapName && pPlayer)
     {
         m_rcCurrentComparison = new RunCompare_t();
-        m_bLoadedComparison = mom_UTIL->GetRunComparison(szMapName, gpGlobals->interval_per_tick, pPlayer->m_iRunFlags,
+        m_bLoadedComparison = mom_UTIL->GetRunComparison(szMapName, gpGlobals->interval_per_tick, pPlayer->m_RunData.m_iRunFlags,
                                                          m_rcCurrentComparison);
     }
 }
@@ -160,7 +160,7 @@ void C_RunComparisons::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pPlayer)
-        m_iCurrentStage = pPlayer->m_iCurrentStage;
+        m_iCurrentStage = pPlayer->m_RunData.m_iCurrentZone;
 
     if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perstage.GetBool())
     {

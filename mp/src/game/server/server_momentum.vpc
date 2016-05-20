@@ -133,6 +133,8 @@ $Project "Server (Momentum)"
             $File   "momentum\mom_playermove.cpp"
             $File   "momentum\mom_replay.cpp"
             $File   "momentum\mom_replay.h"
+            $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
+            $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
 		}
 
 		$Folder	"JSON Parser"

@@ -18,12 +18,26 @@ static ConVar mom_replay_ghost_alpha("mom_replay_ghost_alpha", "75",
 
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
+IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
+//MOM_TODO: Network other variables that the UI will need to reference
+SendPropInt(SENDINFO(m_nReplayButtons)),
+SendPropInt(SENDINFO(m_iTotalStrafes)),
+SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+END_SEND_TABLE()
+
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
 END_DATADESC()
 
 Color CMomentumReplayGhostEntity::m_newGhostColor = COLOR_GREEN;
 
-const char* CMomentumReplayGhostEntity::GetGhostModel() 
+CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
+{
+    m_nReplayButtons = 0;
+    m_iTotalStrafes = 0;
+}
+
+
+const char* CMomentumReplayGhostEntity::GetGhostModel() const
 {
 	return m_pszModel;
 }
@@ -60,6 +74,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop)
     mom_replay_loop.SetValue(shouldLoop ? "1" : "0");
 
     Spawn();
+    m_iTotalStrafes = 0;
     m_nStartTick = gpGlobals->curtime;
     m_bIsActive = true;
     step = 0;
@@ -128,7 +143,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        pPlayer->m_bIsWatchingReplay = true;
+        //pPlayer->IsWatchingReplay() = true;
         if (!pPlayer->IsObserver())
         {
             pPlayer->SetObserverTarget(this);
@@ -162,10 +177,10 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         float distZ = fabs(currentStep.m_vPlayerOrigin.z - nextStep.m_vPlayerOrigin.z);
         Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
         SetAbsVelocity(interpolatedVel);
-        pPlayer->m_nReplayButtons = currentStep.m_nPlayerButtons; //networked var that allows the replay to control keypress display on the client
+        m_nReplayButtons = currentStep.m_nPlayerButtons; //networked var that allows the replay to control keypress display on the client
 
         if (g_Timer->IsRunning())
-            UpdateStats(interpolatedVel, pPlayer);
+            UpdateStats(interpolatedVel);
 
         if (currentStep.m_nPlayerButtons & IN_DUCK)
         {
@@ -174,6 +189,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         }
     }
 }
+
 void CMomentumReplayGhostEntity::HandleGhost() 
 {
     SetAbsOrigin(currentStep.m_vPlayerOrigin);
@@ -186,12 +202,13 @@ void CMomentumReplayGhostEntity::HandleGhost()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && pPlayer->IsObserver()) //bring the player out of obs mode if theyre currently observing
     {
-        pPlayer->m_bIsWatchingReplay = false;
+        //pPlayer->m_bIsWatchingReplay = false;
         pPlayer->StopObserverMode();
         pPlayer->ForceRespawn();
     }
 }
-void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel, CMomentumPlayer *pPlayer)
+
+void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
 {
     // --- STRAFE SYNC ---
     //calculate strafe sync based on replay ghost's movement, in order to update the player's HUD
@@ -218,15 +235,18 @@ void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel, CMomentumPlayer *p
     }
     if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
     {
-        pPlayer->m_flStrafeSync = ((float)m_nPerfectSyncTicks / (float)m_nStrafeTicks) * 100; // ticks strafing perfectly / ticks strafing
-        pPlayer->m_flStrafeSync2 = ((float)m_nAccelTicks / (float)m_nStrafeTicks) * 100; // ticks gaining speed / ticks strafing
+        m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks strafing perfectly / ticks strafing
+        m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
+
     // --- JUMP AND STRAFE COUNTER ---
-    if (GetGroundEntity() != NULL && currentStep.m_nPlayerButtons & IN_JUMP)
-        pPlayer->m_PlayerRunStats.m_iStageJumps[0]++;
+    //MOM_TODO: GetGroundEntity is never not null (the replay ghost never "jumps")
+    //if (GetGroundEntity() != NULL && currentStep.m_nPlayerButtons & IN_JUMP)
+    //    pPlayer->m_PlayerRunStats.m_iStageJumps[0]++;
+
     if ((currentStep.m_nPlayerButtons & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) 
         || (currentStep.m_nPlayerButtons & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)) )
-        pPlayer->m_PlayerRunStats.m_iStageStrafes[0]++;
+        m_iTotalStrafes++;
 
     m_flLastSyncVelocity = SyncVelocity;
     m_qLastEyeAngle = EyeAngles();
@@ -272,6 +292,6 @@ void CMomentumReplayGhostEntity::EndRun()
         pPlayer->StopObserverMode();
         pPlayer->ForceRespawn();
         pPlayer->SetMoveType(MOVETYPE_WALK);
-        pPlayer->m_bIsWatchingReplay = false;
+        //pPlayer->m_bIsWatchingReplay = false;
     }
 }

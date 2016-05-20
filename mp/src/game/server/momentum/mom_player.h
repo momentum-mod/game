@@ -9,6 +9,8 @@
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
 #include "util/run_stats.h"
+#include "mom_replay_entity.h"
+#include "mom_entity_run_data.h"
 
 class CMomentumPlayer : public CBasePlayer
 {
@@ -71,7 +73,7 @@ class CMomentumPlayer : public CBasePlayer
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop() { return m_bAutoBhop; }
+    bool HasAutoBhop() { return m_RunData.m_bAutoBhop; }
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void CheckForBhop();
@@ -86,19 +88,12 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bResumeZoom);
     CNetworkVar(int, m_iLastZoom);
 
-    CNetworkVar(bool, m_bAutoBhop);// Is the player using auto bhop?
     CNetworkVar(bool, m_bDidPlayerBhop);// Did the player bunnyhop successfully?
     CNetworkVar(int, m_iSuccessiveBhops); //How many successive bhops this player has
-    CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
-    CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
-    CNetworkVar(bool, m_bIsWatchingReplay);
-    CNetworkVar(int, m_nReplayButtons);
-    CNetworkVar(float, m_flLastJumpVel); //Last jump velocity of the player
-    CNetworkVar(int, m_iRunFlags);//The run flags (W only/HSW/Scroll etc) of the player
-    CNetworkVar(bool, m_bIsInZone);//This is true if the player is in a CTriggerTimerStage zone
-    CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
-    CNetworkVar(int, m_iCurrentStage);//Current stage the player is on
+    //CNetworkVar(bool, m_bIsWatchingReplay);
     CNetworkVar(float, m_flLastJumpTime);//The last time that the player jumped
+
+    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);//Current run data, used for hud elements
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -110,12 +105,17 @@ class CMomentumPlayer : public CBasePlayer
                   float lateral_max, int direction_change);
 
     void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
-
+    
     void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
     bool IsValidObserverTarget(CBaseEntity *target) override;
 
     int GetLastBlock() { return m_iLastBlock; }
     float GetPunishTime() { return m_flPunishTime; }
+
+    bool IsWatchingReplay()
+    {
+        return m_hObserverTarget.Get() && dynamic_cast<CMomentumReplayGhostEntity*>(m_hObserverTarget.Get());
+    }
 
     //Run Stats
     RunStats_t m_PlayerRunStats;
@@ -125,7 +125,6 @@ class CMomentumPlayer : public CBasePlayer
     float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES],
         m_flStageTotalVelocity[MAX_STAGES][2];
 
-    //bool m_bInsideStartZone;
 private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;

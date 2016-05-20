@@ -152,8 +152,9 @@ void CHudSpeedMeter::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
+        //MOM_TODO: Update to read replay ent's stuff
         velocity = pPlayer->GetLocalVelocity();
-        float lastJumpVel = pPlayer->m_flLastJumpVel;
+        float lastJumpVel = pPlayer->m_RunData.m_flLastJumpVel;
         int velType = mom_speedometer_hvel.GetBool(); // 1 is horizontal velocity
 
         if (gpGlobals->curtime - pPlayer->m_flLastJumpTime > 5.0f)
@@ -215,19 +216,19 @@ void CHudSpeedMeter::OnThink()
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
             // reset last jump velocity when we restart a run by entering the start zone
-            if (pPlayer->m_bIsInZone && pPlayer->m_iCurrentStage == 1)
+            if (pPlayer->m_RunData.m_bIsInZone && pPlayer->m_RunData.m_iCurrentZone == 1)
                 m_flLastJumpVelocity = 0;
 
-            if (pPlayer->m_flLastJumpVel == 0)
+            if (pPlayer->m_RunData.m_flLastJumpVel == 0)
             {
                 m_SecondaryValueColor = normalColor;
             }
-            else if (m_flLastJumpVelocity != pPlayer->m_flLastJumpVel)
+            else if (m_flLastJumpVelocity != pPlayer->m_RunData.m_flLastJumpVel)
             {
                 m_SecondaryValueColor =
-                    mom_UTIL->GetColorFromVariation(abs(pPlayer->m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
+                    mom_UTIL->GetColorFromVariation(abs(pPlayer->m_RunData.m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
                                                     normalColor, increaseColor, decreaseColor);
-                m_flLastJumpVelocity = pPlayer->m_flLastJumpVel;
+                m_flLastJumpVelocity = pPlayer->m_RunData.m_flLastJumpVel;
             }
         }
         else
@@ -264,7 +265,7 @@ void CHudSpeedMeter::Paint()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
 
     // Draw the enter speed split, if toggled on
-    if (mom_speedometer_showenterspeed.GetBool() && pPlayer && !pPlayer->m_bIsInZone &&
+    if (mom_speedometer_showenterspeed.GetBool() && pPlayer && !pPlayer->m_RunData.m_bIsInZone &&
         g_MOMEventListener->m_bTimerIsRunning)
     {
         int split_xpos; // Dynamically set
@@ -282,7 +283,7 @@ void CHudSpeedMeter::Paint()
         Color fg = GetFgColor();
         Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), stageStartAlpha);
 
-        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, pPlayer->m_iCurrentStage, enterVelANSITemp,
+        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, pPlayer->m_RunData.m_iCurrentZone, enterVelANSITemp,
                                              enterVelANSICompTemp, &compareColor);
 
         Q_snprintf(enterVelANSI, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelANSITemp))));
