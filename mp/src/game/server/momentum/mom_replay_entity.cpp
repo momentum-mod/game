@@ -65,7 +65,7 @@ void CMomentumReplayGhostEntity::Spawn(void)
     //~~~The magic combo~~~ (collides with triggers, not with players)
     ClearSolidFlags();
     SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
-	SetMoveType(MOVETYPE_STEP);
+    SetMoveType(MOVETYPE_STEP);
     SetSolid(SOLID_BBOX);
     RemoveSolidFlags(FSOLID_NOT_SOLID);
     

@@ -16,4 +16,9 @@ public:
     int m_nReplayButtons;
     int m_iTotalStrafes;
 
+    bool ShouldInterpolate() override
+    {
+        return true;
+    }
+
 };
