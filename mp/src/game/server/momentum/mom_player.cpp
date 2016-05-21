@@ -298,44 +298,42 @@ void CMomentumPlayer::UpdateRunStats()
             m_PlayerRunStats.m_flStageVelocityMax[currentStage][1] = velocity2D;
         // ----------
 
-        // --- STAGE ENTER VELOCITY ---
+        //  ---- STRAFE SYNC -----
+        float SyncVelocity = GetLocalVelocity().Length2DSqr(); //we always want HVEL for checking velocity sync
+        if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
+        {
+            if (EyeAngles().y > m_qangLastAngle.y) //player turned left 
+            {
+                m_nStrafeTicks++;
+                if ((m_nButtons & IN_MOVELEFT) && !(m_nButtons & IN_MOVERIGHT))
+                    m_nPerfectSyncTicks++;
+                if (SyncVelocity > m_flLastSyncVelocity)
+                    m_nAccelTicks++;
+            }
+            else if (EyeAngles().y < m_qangLastAngle.y) //player turned right 
+            {
+                m_nStrafeTicks++;
+                if ((m_nButtons & IN_MOVERIGHT) && !(m_nButtons & IN_MOVELEFT))
+                    m_nPerfectSyncTicks++;
+                if (SyncVelocity > m_flLastSyncVelocity)
+                    m_nAccelTicks++;
+            }
+        }
+        if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
+        {
+            m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks strafing perfectly / ticks strafing
+            m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
+        }
+        // ----------
+
+        m_qangLastAngle = EyeAngles();
+        m_flLastSyncVelocity = SyncVelocity;
+        //this might be used in a later update
+        //m_flLastVelocity = velocity;
+
+        m_bPrevTimerRunning = g_Timer->IsRunning();
+        m_nPrevButtons = m_nButtons;
     }   
-    //  ---- STRAFE SYNC -----
-    float SyncVelocity = GetLocalVelocity().Length2DSqr(); //we always want HVEL for checking velocity sync
-    if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
-    {
-        if (EyeAngles().y > m_qangLastAngle.y) //player turned left 
-        {
-            m_nStrafeTicks++;
-            if ((m_nButtons & IN_MOVELEFT) && !(m_nButtons & IN_MOVERIGHT))
-                m_nPerfectSyncTicks++;
-            if (SyncVelocity > m_flLastSyncVelocity)
-                m_nAccelTicks++;
-        }
-        else if (EyeAngles().y < m_qangLastAngle.y) //player turned right 
-        {
-            m_nStrafeTicks++;
-            if ((m_nButtons & IN_MOVERIGHT) && !(m_nButtons & IN_MOVELEFT))
-                m_nPerfectSyncTicks++;
-            if (SyncVelocity > m_flLastSyncVelocity)
-                m_nAccelTicks++;
-        }
-    }
-    if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
-    {
-        m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks strafing perfectly / ticks strafing
-        m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
-    }
-    // ----------
-
-
-    m_qangLastAngle = EyeAngles();
-    m_flLastSyncVelocity = SyncVelocity;
-    //this might be used in a later update
-    //m_flLastVelocity = velocity;
-
-    m_bPrevTimerRunning = g_Timer->IsRunning();
-    m_nPrevButtons = m_nButtons;
 
     if (playerMoveEvent)
     {
