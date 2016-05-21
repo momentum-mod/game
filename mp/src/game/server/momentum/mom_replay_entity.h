@@ -56,6 +56,7 @@ public:
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     CNetworkVar(int, m_nReplayButtons);
     CNetworkVar(int, m_iTotalStrafes);
+    CNetworkVar(int, m_iTotalJumps);
 
 protected:
 	void Think(void) override;

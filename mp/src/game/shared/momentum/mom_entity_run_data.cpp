@@ -11,6 +11,7 @@ SendPropInt(SENDINFO(m_iSuccessiveBhops)),
 SendPropFloat(SENDINFO(m_flStrafeSync)),
 SendPropFloat(SENDINFO(m_flStrafeSync2)),
 SendPropFloat(SENDINFO(m_flLastJumpVel)),
+SendPropFloat(SENDINFO(m_flLastJumpTime)),
 SendPropInt(SENDINFO(m_iRunFlags)),
 SendPropBool(SENDINFO(m_bIsInZone)),
 SendPropInt(SENDINFO(m_iCurrentZone)),
@@ -24,6 +25,7 @@ RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
 RecvPropFloat(RECVINFO(m_flStrafeSync)),
 RecvPropFloat(RECVINFO(m_flStrafeSync2)),
 RecvPropFloat(RECVINFO(m_flLastJumpVel)),
+RecvPropFloat(RECVINFO(m_flLastJumpTime)),
 RecvPropInt(RECVINFO(m_iRunFlags)),
 RecvPropBool(RECVINFO(m_bIsInZone)),
 RecvPropInt(RECVINFO(m_iCurrentZone)),
@@ -38,6 +40,7 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_flStrafeSync = 0.0f;
     m_flStrafeSync2 = 0.0f;
     m_flLastJumpVel = 0.0f;
+    m_flLastJumpTime = 0.0f;
     m_iRunFlags = 0;
     m_bIsInZone = false;
     m_iCurrentZone = 0;

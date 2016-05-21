@@ -90,8 +90,6 @@ class CMomentumPlayer : public CBasePlayer
 
     CNetworkVar(bool, m_bDidPlayerBhop);// Did the player bunnyhop successfully?
     CNetworkVar(int, m_iSuccessiveBhops); //How many successive bhops this player has
-    //CNetworkVar(bool, m_bIsWatchingReplay);
-    CNetworkVar(float, m_flLastJumpTime);//The last time that the player jumped
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);//Current run data, used for hud elements
 
@@ -112,9 +110,14 @@ class CMomentumPlayer : public CBasePlayer
     int GetLastBlock() { return m_iLastBlock; }
     float GetPunishTime() { return m_flPunishTime; }
 
-    bool IsWatchingReplay()
+    bool IsWatchingReplay() const
     {
-        return m_hObserverTarget.Get() && dynamic_cast<CMomentumReplayGhostEntity*>(m_hObserverTarget.Get());
+        return m_hObserverTarget.Get() && GetReplayEnt();
+    }
+
+    CMomentumReplayGhostEntity *GetReplayEnt() const
+    {
+        return dynamic_cast<CMomentumReplayGhostEntity*>(m_hObserverTarget.Get());
     }
 
     //Run Stats

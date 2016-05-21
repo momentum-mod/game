@@ -102,9 +102,20 @@ void C_HudMapInfo::OnThink()
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pLocal && g_MOMEventListener)
     {
-        m_iStageCurrent = pLocal->m_RunData.m_iCurrentZone;
-        m_bPlayerInZone = pLocal->m_RunData.m_bIsInZone;
-        m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
+        C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
+        if (pGhost)
+        {
+            m_iStageCurrent = pGhost->m_RunData.m_iCurrentZone;
+            m_bPlayerInZone = pGhost->m_RunData.m_bIsInZone;
+            m_bMapFinished = pGhost->m_RunData.m_bMapFinished;
+        }
+        else
+        {
+            m_iStageCurrent = pLocal->m_RunData.m_iCurrentZone;
+            m_bPlayerInZone = pLocal->m_RunData.m_bIsInZone;
+            m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
+        }
+
         m_iStageCount = g_MOMEventListener->m_iMapCheckpointCount;
         m_bMapLinear = g_MOMEventListener->m_bMapIsLinear;
     }

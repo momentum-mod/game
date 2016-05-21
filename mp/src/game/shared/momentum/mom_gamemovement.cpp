@@ -568,12 +568,12 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
     
     // In the air now.
-    SetGroundEntity(NULL);
+    SetGroundEntity(nullptr);
 
     //Set the last jump time
-    player->m_flLastJumpTime = gpGlobals->curtime;
+    player->m_RunData.m_flLastJumpTime = gpGlobals->curtime;
 
-    player->PlayStepSound((Vector &) mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
+    player->PlayStepSound(const_cast<Vector &>(mv->GetAbsOrigin()), player->m_pSurfaceData, 1.0, true);
 
     //MoveHelper()->PlayerSetAnimation( PLAYER_JUMP );
     //player->DoAnimationEvent(PLAYERANIMEVENT_JUMP);
@@ -603,7 +603,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         mv->m_vecVelocity[2] += flGroundFactor * sqrt(2 * 800 * 57.0);  // 2 * gravity * height
     }
 
-    //stamina stuff (scroll gamemode only)
+    //stamina stuff (scroll/kz gamemode only)
     ConVarRef gm("mom_gamemode");
     if (gm.GetInt() == MOMGM_SCROLL)
     {

@@ -20,28 +20,25 @@ public:
     CMOMRunEntityData();
 
 #ifdef GAME_DLL
-    //DECLARE_SERVERCLASS();
-    
 
     CNetworkVar(bool, m_bAutoBhop);// Is the player using auto bhop?
     CNetworkVar(int, m_iSuccessiveBhops); //How many successive bhops this player has
     CNetworkVar(float, m_flStrafeSync); //eyeangle based, perfect strafes / total strafes
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
+    CNetworkVar(float, m_flLastJumpTime); //The last time that the player jumped
     CNetworkVar(float, m_flLastJumpVel); //Last jump velocity of the player
     CNetworkVar(int, m_iRunFlags);//The run flags (W only/HSW/Scroll etc) of the player
     CNetworkVar(bool, m_bIsInZone);//This is true if the player is in a CTriggerTimerStage zone
     CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
     CNetworkVar(int, m_iCurrentZone);//Current stage/checkpoint the player is on
 
-
 #elif defined CLIENT_DLL
-    //DECLARE_CLIENTCLASS();
 
     bool m_bAutoBhop, m_bIsInZone, m_bMapFinished;
-    float m_flStrafeSync, m_flStrafeSync2, m_flLastJumpVel;
+    float m_flStrafeSync, m_flStrafeSync2, m_flLastJumpVel, m_flLastJumpTime;
     int m_iSuccessiveBhops, m_iRunFlags, m_iCurrentZone;
-#endif
 
+#endif
 };
 
 #ifdef GAME_DLL

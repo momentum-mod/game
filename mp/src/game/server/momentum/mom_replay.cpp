@@ -35,7 +35,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
         CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
         char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
         mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime);
-        Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", pMOMPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr(), runTime);
+        Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
         V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); //V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
 
         V_FixSlashes(RECORDING_PATH);
@@ -147,20 +147,18 @@ bool CMomentumReplaySystem::LoadRun(const char* filename)
         if (header == nullptr) {
             return false;
         }
-        else
+
+        m_loadedHeader = *header;
+        while (!filesystem->EndOfFile(m_fhFileHandle))
         {
-            m_loadedHeader = *header;
-            while (!filesystem->EndOfFile(m_fhFileHandle))
-            {
-                replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
-                m_vecRunData.AddToTail(*frame);
-            }
+            replay_frame_t* frame = ReadSingleFrame(m_fhFileHandle, filename);
+            m_vecRunData.AddToTail(*frame);
         }
         filesystem->Close(m_fhFileHandle);
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 void CMomentumReplaySystem::StartReplay(bool firstperson)
 {
@@ -186,6 +184,7 @@ void CMomentumReplaySystem::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool
         user.MakeReliable();
         UserMessageBegin(user, "Timer_State");
         WRITE_BOOL(started);
+        //MOM_TODO: This should be an offset # of ticks so the hud_timer can sync with the replay
         WRITE_LONG(gpGlobals->tickcount);
         MessageEnd();
     }

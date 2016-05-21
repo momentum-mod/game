@@ -24,10 +24,17 @@ public:
     bool CanGrabLadder(const Vector& pos, const Vector& normal);
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
     bool HasAutoBhop() { return m_RunData.m_bAutoBhop; }
-    void ResetStrafeSync();
-    bool IsWatchingReplay()
+    //void ResetStrafeSync();
+    //Returns true if the player is watching a replay (first person)
+    bool IsWatchingReplay() const
     {
-        return m_hObserverTarget.Get() && dynamic_cast<C_MomentumReplayGhostEntity*>(m_hObserverTarget.Get());
+        return m_hObserverTarget.Get() && GetReplayEnt();
+    }
+
+    //Returns the replay entity that the player is watching (first person only)
+    C_MomentumReplayGhostEntity *GetReplayEnt() const
+    {
+        return dynamic_cast<C_MomentumReplayGhostEntity*>(m_hObserverTarget.Get());
     }
 
     int m_iShotsFired;
@@ -35,12 +42,9 @@ public:
     bool m_bResumeZoom;
     int m_iLastZoom;
     bool m_bDidPlayerBhop;
-    float m_flLastJumpTime;//Used for the speedometer panel
 
     CMOMRunEntityData m_RunData;
 
-    //float m_flStrafeSync, m_flStrafeSync2;
-    //float m_flLastJumpVel;
 
     float m_flLastRunTime;
 
@@ -83,8 +87,6 @@ private:
 
     bool m_duckUntilOnGround;
     float m_flStamina;
-
-
 
     friend class CMomentumGameMovement;
 };

@@ -196,9 +196,10 @@ void CHudKeyPressDisplay::OnThink()
                 m_bShouldDrawCounts = true;
                 m_nButtons = pReplayEnt->m_nReplayButtons;
                 m_nStrafes = pReplayEnt->m_iTotalStrafes;
-                m_nJumps = 0;//MOM_TODO: Calculate jumps
+                m_nJumps = pReplayEnt->m_iTotalJumps;
             }
-        } else
+        } 
+        else
         {
             m_nButtons = ::input->GetButtonBits(1);
             if (g_MOMEventListener)

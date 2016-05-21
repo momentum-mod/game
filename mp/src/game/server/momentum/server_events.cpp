@@ -29,6 +29,7 @@ namespace Momentum
         // This will only happen if the user didn't use the map selector to start a map
 
         //set gamemode depending on map name
+        //MOM_TODO: This needs to read map entity/momfile data and set accordingly
         if (gm.GetInt() == MOMGM_UNKNOWN)
         {
             if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))

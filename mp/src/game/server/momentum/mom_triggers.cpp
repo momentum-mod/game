@@ -26,19 +26,18 @@ END_DATADESC()
 void CTriggerStage::StartTouch(CBaseEntity *pOther)
 {
     BaseClass::StartTouch(pOther);
+    int stageNum = GetStageNumber();
     if (pOther->IsPlayer())
     {
-        int stageNum = GetStageNumber();
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        if (pPlayer)
-        {
-            pPlayer->m_RunData.m_bIsInZone = true;
-            pPlayer->m_RunData.m_iCurrentZone = stageNum;
-        }
-        g_Timer->SetCurrentStage(this);
         IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_enter");
         if (stageEvent && pPlayer)
         {
+            //Set the current stage to this
+            g_Timer->SetCurrentStage(this);
+            //Set player run data
+            pPlayer->m_RunData.m_bIsInZone = true;
+            pPlayer->m_RunData.m_iCurrentZone = stageNum;
             if (g_Timer->IsRunning())
             {
                 stageEvent->SetInt("stage_num", stageNum);
@@ -69,32 +68,52 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             }
         }
     }
+    else
+    {
+        CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity*>(pOther);
+        if (pGhost)
+        {
+            pGhost->m_RunData.m_iCurrentZone = stageNum;
+            pGhost->m_RunData.m_bIsInZone = true;
+        }
+    }
 }
 void CTriggerStage::EndTouch(CBaseEntity *pOther)
 {
     BaseClass::EndTouch(pOther);
     int stageNum = this->GetStageNumber();
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer && (stageNum == 1 || g_Timer->IsRunning()))//Timer won't be running if it's the start trigger
-    {     
-        IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_exit");
-        if (stageEvent)
+    if (pPlayer)
+    {
+        if (stageNum == 1 || g_Timer->IsRunning())//Timer won't be running if it's the start trigger
         {
-            //Status
-            pPlayer->m_RunData.m_bIsInZone = false;
+            IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_exit");
+            if (stageEvent)
+            {
+                //Status
+                pPlayer->m_RunData.m_bIsInZone = false;
 
-            //Stage num
-            stageEvent->SetInt("stage_num", stageNum);
+                //Stage num
+                stageEvent->SetInt("stage_num", stageNum);
 
-            //3D VELOCITY
-            pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
-            stageEvent->SetFloat("stage_enter_vel", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][0]);
+                //3D VELOCITY
+                pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][0]);
 
-            //2D VELOCITY
-            pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
-            stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][1]);
+                //2D VELOCITY
+                pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
+                stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][1]);
 
-            gameeventmanager->FireEvent(stageEvent);
+                gameeventmanager->FireEvent(stageEvent);
+            }
+        }
+    }
+    else
+    {
+        CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity*>(pOther);
+        if (pGhost)
+        {
+            pGhost->m_RunData.m_bIsInZone = false;
         }
     }
 }
@@ -138,6 +157,17 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         pPlayer->m_RunData.m_bIsInZone = false;
         pPlayer->m_RunData.m_bMapFinished = false;
     }
+    else
+    {
+        CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity*>(pOther);
+        if (pGhost)
+        {
+            pGhost->m_RunData.m_bIsInZone = false;
+            pGhost->m_RunData.m_bMapFinished = false;
+            //MOM_TODO: Make the spectator's timer start
+            //pGhost->SetStartTick(gpGlobals->tickcount)
+        }
+    }
 
     IGameEvent *movementCountsResetEvent = gameeventmanager->CreateEvent("keypress");
     if (movementCountsResetEvent)
@@ -174,6 +204,15 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         {
             g_ReplaySystem->StopRecording(pPlayer, true, false);
             g_ReplaySystem->BeginRecording(pPlayer);
+        }
+    }
+    else
+    {
+        CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity*>(pOther);
+        if (pGhost)
+        {
+            pGhost->m_RunData.m_bIsInZone = true;
+            pGhost->m_RunData.m_bMapFinished = false;
         }
     }
     // start thinking
@@ -232,17 +271,16 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
     IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
     IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_enter");
 
-    g_Timer->SetEndTrigger(this);
-
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
     if (pPlayer)
     {
-        if (g_Timer->IsRunning())
+        g_Timer->SetEndTrigger(this);
+        if (g_Timer->IsRunning() && !pPlayer->IsWatchingReplay())
         {
             //send run stats via GameEventManager
             if (timerStopEvent)
@@ -306,6 +344,17 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         
         pPlayer->m_RunData.m_bIsInZone = true;
     }
+    else
+    {
+        CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity*>(pOther);
+        if (pGhost)
+        {
+            pGhost->m_RunData.m_bMapFinished = true;
+            pGhost->m_RunData.m_bIsInZone = true;
+            //MOM_TODO: pGhost->EndRunHud(); //sends a hud timer state message to each spectator
+            //MOM_TODO: Maybe also play effects if the player is racing against us and lost?
+        }
+    }
     BaseClass::StartTouch(pOther);
 }
 void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
@@ -315,6 +364,15 @@ void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
     {
         pMomPlayer->m_RunData.m_bMapFinished = false;//Close the hud_mapfinished panel
         pMomPlayer->m_RunData.m_bIsInZone = false;//Update status
+    }
+    else
+    {
+        CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity*>(pOther);
+        if (pGhost)
+        {
+            pGhost->m_RunData.m_bMapFinished = false;
+            pGhost->m_RunData.m_bIsInZone = false;
+        }
     }
     BaseClass::EndTouch(pOther);
 }

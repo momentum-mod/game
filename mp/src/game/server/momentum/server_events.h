@@ -7,12 +7,7 @@
 namespace Momentum {
 
 void OnServerDLLInit();
-void OnMapStart(const char *pMapName);
-void OnMapEnd(const char *pMapName);
-void OnGameFrameStart();
 void GameInit();
-//void OnGameFrameEnd();
-
 } // namespace Momentum
 
 #endif // SERVER_EVENTS_H

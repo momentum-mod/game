@@ -11,7 +11,6 @@ RecvPropBool(RECVINFO(m_bResumeZoom)),
 RecvPropInt(RECVINFO(m_iLastZoom)),
 RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
 RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
-RecvPropFloat(RECVINFO(m_flLastJumpTime)),
 RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
 END_RECV_TABLE()
 
@@ -21,7 +20,7 @@ C_MomentumPlayer::C_MomentumPlayer()
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
     m_RunData.m_bMapFinished = false;
-    m_flLastJumpTime = 0.0f;
+    m_RunData.m_flLastJumpTime = 0.0f;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()

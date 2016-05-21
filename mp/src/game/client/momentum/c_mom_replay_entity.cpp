@@ -8,6 +8,7 @@ IMPLEMENT_CLIENTCLASS_DT(C_MomentumReplayGhostEntity, DT_MOM_ReplayEnt, CMomentu
 //MOM_TODO: Network the rest of the variables that the ghost entity will be sending
 RecvPropInt(RECVINFO(m_nReplayButtons)),
 RecvPropInt(RECVINFO(m_iTotalStrafes)),
+RecvPropInt(RECVINFO(m_iTotalJumps)),
 RecvPropDataTable(RECVINFO_DT(m_RunData), 0, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData))
 END_RECV_TABLE();
 

@@ -22,6 +22,7 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 //MOM_TODO: Network other variables that the UI will need to reference
 SendPropInt(SENDINFO(m_nReplayButtons)),
 SendPropInt(SENDINFO(m_iTotalStrafes)),
+SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
 END_SEND_TABLE()
 
@@ -57,8 +58,8 @@ void CMomentumReplayGhostEntity::Precache(void)
 //-----------------------------------------------------------------------------
 void CMomentumReplayGhostEntity::Spawn(void)
 {
+    Precache();
     BaseClass::Spawn();
-	Precache();
 	RemoveEffects(EF_NODRAW);
 	SetRenderMode(kRenderTransColor);
     SetRenderColor(m_ghostColor.r(), m_ghostColor.g(), m_ghostColor.b(), 75);
@@ -219,7 +220,7 @@ void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
     //calculate strafe sync based on replay ghost's movement, in order to update the player's HUD
 
     float SyncVelocity = ghostVel.Length2DSqr(); //we always want HVEL for checking velocity sync
-    if (GetGroundEntity() == NULL)
+    if (GetGroundEntity() == nullptr)
     {
         if (EyeAngles().y > m_qLastEyeAngle.y) //player turned left 
         {
@@ -245,9 +246,13 @@ void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
     }
 
     // --- JUMP AND STRAFE COUNTER ---
-    //MOM_TODO: GetGroundEntity is never not null (the replay ghost never "jumps")
-    //if (GetGroundEntity() != NULL && currentStep.m_nPlayerButtons & IN_JUMP)
-    //    pPlayer->m_PlayerRunStats.m_iStageJumps[0]++;
+    //MOM_TODO: This needs to calculate better. It currently counts every other jump, and sometimes spams (player on ground for a while)
+    if (GetGroundEntity() != nullptr && currentStep.m_nPlayerButtons & IN_JUMP)
+    {
+        m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
+        m_RunData.m_flLastJumpTime = gpGlobals->curtime;
+        m_iTotalJumps++;
+    }
 
     if ((currentStep.m_nPlayerButtons & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) 
         || (currentStep.m_nPlayerButtons & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)) )
@@ -270,8 +275,7 @@ void CMomentumReplayGhostEntity::SetGhostBodyGroup(int bodyGroup)
 {
     if (bodyGroup > sizeof(ghostModelBodyGroup) || bodyGroup < 0) 
     {
-        Msg("Error: Could not set bodygroup!");
-        return;
+        Warning("CMomentumReplayGhostEntity::SetGhostBodyGroup() Error: Could not set bodygroup!");
     }
     else
     {

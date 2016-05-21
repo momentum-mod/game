@@ -18,6 +18,7 @@
 
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
+#include "c_mom_replay_entity.h"
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
 #include <math.h>
@@ -152,12 +153,23 @@ void CHudSpeedMeter::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
-        //MOM_TODO: Update to read replay ent's stuff
+        //This will be null if the player is not watching a replay first person
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+
+        //Note: Velocity is also set to the player when watching first person
         velocity = pPlayer->GetLocalVelocity();
-        float lastJumpVel = pPlayer->m_RunData.m_flLastJumpVel;
+
+        //The last jump velocity
+        float lastJumpVel = (pGhost ? pGhost->m_RunData.m_flLastJumpVel : 
+            pPlayer->m_RunData.m_flLastJumpVel);
+
+        //The last jump time is also important if the player is watching a replay
+        float lastJumpTime = (pGhost ? pGhost->m_RunData.m_flLastJumpTime :
+            pPlayer->m_RunData.m_flLastJumpTime);
+
         int velType = mom_speedometer_hvel.GetBool(); // 1 is horizontal velocity
 
-        if (gpGlobals->curtime - pPlayer->m_flLastJumpTime > 5.0f)
+        if (gpGlobals->curtime - lastJumpTime > 5.0f)
         {
             if (!m_bRanFadeOutJumpSpeed)
                 m_bRanFadeOutJumpSpeed =
@@ -215,20 +227,29 @@ void CHudSpeedMeter::OnThink()
                 m_flLastVelocity = vel;
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
-            // reset last jump velocity when we restart a run by entering the start zone
-            if (pPlayer->m_RunData.m_bIsInZone && pPlayer->m_RunData.m_iCurrentZone == 1)
-                m_flLastJumpVelocity = 0;
+            // reset last jump velocity when we (or a ghost ent) restart a run by entering the start zone
+            if (pGhost)
+            {
+                if (pGhost->m_RunData.m_bIsInZone && pGhost->m_RunData.m_iCurrentZone == 1)
+                    m_flLastJumpVelocity = 0;
+            } 
+            else
+            {
+                if (pPlayer->m_RunData.m_bIsInZone && pPlayer->m_RunData.m_iCurrentZone == 1)
+                    m_flLastJumpVelocity = 0;
+            }
 
-            if (pPlayer->m_RunData.m_flLastJumpVel == 0)
+
+            if (lastJumpVel == 0)
             {
                 m_SecondaryValueColor = normalColor;
             }
-            else if (m_flLastJumpVelocity != pPlayer->m_RunData.m_flLastJumpVel)
+            else if (m_flLastJumpVelocity != lastJumpVel)
             {
                 m_SecondaryValueColor =
-                    mom_UTIL->GetColorFromVariation(abs(pPlayer->m_RunData.m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
+                    mom_UTIL->GetColorFromVariation(abs(lastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
                                                     normalColor, increaseColor, decreaseColor);
-                m_flLastJumpVelocity = pPlayer->m_RunData.m_flLastJumpVel;
+                m_flLastJumpVelocity = lastJumpVel;
             }
         }
         else

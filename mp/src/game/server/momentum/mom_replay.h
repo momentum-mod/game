@@ -30,6 +30,13 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
         }
     }
 
+    void LevelShutdownPostEntity() override
+    {
+        //Stop a recording if there is one while the level shuts down
+        if (m_bIsRecording)
+            StopRecording(nullptr, true, 0.0f);
+    }
+
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
     void WriteRecordingToFile(CUtlBuffer *buf);
@@ -44,7 +51,8 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     CUtlVector<replay_frame_t> m_vecRunData;
 
     //MOM_TODO: Handle the pPlayer pointer passed here or get rid of it
-    bool IsRecording(CBasePlayer *pPlayer) { return m_bIsRecording; }
+    bool IsRecording(CBasePlayer *pPlayer) const
+    { return m_bIsRecording; }
 
     replay_header_t m_loadedHeader;
     bool m_bIsWatchingReplay;
