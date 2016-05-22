@@ -84,10 +84,6 @@
 		"num_jumps"	"short"
 		"num_strafes"	"short"
 	}
-	"practice_mode"
-	{
-		"has_practicemode"	"bool"
-	}
     "map_init"
     {
         "is_linear" "bool"

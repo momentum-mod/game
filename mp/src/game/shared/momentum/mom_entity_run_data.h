@@ -32,6 +32,8 @@ public:
     CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
     CNetworkVar(int, m_iCurrentZone);//Current stage/checkpoint the player is on
 
+    //MOM_TODO: CNetworkEmbedded(CMOMRunStats, m_RunStats);
+
 #elif defined CLIENT_DLL
 
     bool m_bAutoBhop, m_bIsInZone, m_bMapFinished;

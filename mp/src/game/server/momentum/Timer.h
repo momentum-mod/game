@@ -14,6 +14,7 @@
 #include "tier1/checksum_sha1.h"
 #include "momentum/mom_shareddefs.h"
 #include "momentum/mom_gamerules.h"
+#include "mom_replay.h"
 #include "movevars_shared.h"
 #include <ctime>
 
@@ -137,10 +138,9 @@ public:
     void OnMapStart(const char *);
     void DispatchMapInfo();
     // Practice mode- noclip mode that stops timer
-    void PracticeMove();
-    void EnablePractice(CBasePlayer *pPlayer);
-    void DisablePractice(CBasePlayer *pPlayer);
-    bool IsPracticeMode(CBaseEntity *pOther);
+    //void PracticeMove(); MOM_TODO: NOT IMPLEMENTED
+    void EnablePractice(CMomentumPlayer *pPlayer);
+    void DisablePractice(CMomentumPlayer *pPlayer);
 
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() const
@@ -195,30 +195,37 @@ private:
     bool m_bUsingCPMenu = false;
 
     //PRECISION FIX
-
     float m_flTickOffsetFix[MAX_STAGES]; //index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
+
+
+public:
+    float m_flTickIntervalOffsetOut;
 
     //creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.  
     //zone type: 0: endzone, 1: startzone, 2: stage
-    float GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType);
-public:
-    float m_flTickIntervalOffsetOut;
-    class CTriggerTraceEnum : public IEntityEnumerator
-    {
-    public:
-        CTriggerTraceEnum(Ray_t *pRay, Vector velocity, Vector currOrigin)
-            : m_pRay(pRay), m_currVelocity(velocity), m_currOrigin(currOrigin)
-        {
-        }
+    //void GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType);
+    void GetTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
 
-        virtual bool EnumEntity(IHandleEntity *pHandleEntity);
-    private:
-        Ray_t *m_pRay;
-        Vector m_currOrigin;
-        Vector m_currVelocity;
-    };
+    void SetIntervalOffset(int stage, float offset)
+    {
+        m_flTickOffsetFix[stage] = offset;
+    }
 };
 
+class CTimeTriggerTraceEnum : public IEntityEnumerator
+{
+public:
+    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity, int zoneType)
+        : m_iZoneType(zoneType), m_pRay(pRay), m_currVelocity(velocity)
+    {
+    }
+
+    bool EnumEntity(IHandleEntity *pHandleEntity) override;
+private:
+    int m_iZoneType;
+    Ray_t *m_pRay;
+    Vector m_currVelocity;
+};
 
 extern CTimer *g_Timer;
 

@@ -42,6 +42,7 @@ public:
     bool m_bResumeZoom;
     int m_iLastZoom;
     bool m_bDidPlayerBhop;
+    bool m_bHasPracticeMode;
 
     CMOMRunEntityData m_RunData;
 

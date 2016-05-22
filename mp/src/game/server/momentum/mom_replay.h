@@ -34,7 +34,7 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     {
         //Stop a recording if there is one while the level shuts down
         if (m_bIsRecording)
-            StopRecording(nullptr, true, 0.0f);
+            StopRecording(nullptr, true, false);
     }
 
     void BeginRecording(CBasePlayer *pPlayer);
@@ -67,7 +67,7 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     float m_fRecEndTime;
 
     CMomentumPlayer *m_player;
-    CMomentumReplayGhostEntity *m_CurrentReplayGhost;
+    CMomentumReplayGhostEntity *m_CurrentReplayGhost;//MOM_TODO: Update this to be a CUtlVector so multiple ghosts can be kept track of
 
     replay_frame_t m_currentFrame;
     replay_header_t m_replayHeader;

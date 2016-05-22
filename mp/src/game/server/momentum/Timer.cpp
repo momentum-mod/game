@@ -25,10 +25,6 @@ void CTimer::Start(int start)
         timeStartEvent->SetBool("is_running", true);
         gameeventmanager->FireEvent(timeStartEvent);
     }
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer) {
-        m_flTickOffsetFix[1] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 1);
-    }
 }
 
 void CTimer::PostTime()
@@ -253,7 +249,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
         t.tickrate = gpGlobals->interval_per_tick;
         t.flags = pPlayer->m_RunData.m_iRunFlags;
         time(&t.date);
-
         t.RunStats = pPlayer->m_PlayerRunStats; //copy all the run stats
 
         localTimes.AddToTail(t);
@@ -274,9 +269,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
         else
             Warning("Recording file doesn't exist, cannot rename!");
             */
-
-
-        m_flTickOffsetFix[0] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 0);
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {  
@@ -294,6 +286,11 @@ void CTimer::Stop(bool endTrigger /* = false */)
         pPlayer->m_RunData.m_bIsInZone = endTrigger;
         pPlayer->m_RunData.m_bMapFinished = endTrigger;
     }
+
+    //stop replay recording
+    if (g_ReplaySystem->IsRecording(pPlayer))
+        g_ReplaySystem->StopRecording(pPlayer, !endTrigger, true);
+
     SetRunning(false);
     m_iEndTick = gpGlobals->tickcount;
     DispatchStateMessage();
@@ -355,10 +352,6 @@ float CTimer::CalculateStageTime(int stage)
         //If the stage is a new one, we store the time we entered this stage in
         m_iStageEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
             static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
-        CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-        if (pPlayer) {
-            m_flTickOffsetFix[stage] = GetTickIntervalOffset(pPlayer->GetAbsVelocity(), pPlayer->GetAbsOrigin(), 2);
-        }
     }
     m_iLastStage = stage;
     return m_iStageEnterTime[stage];
@@ -403,47 +396,49 @@ void CTimer::DispatchCheckpointMessage()
     }
 }
 
-float CTimer::GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType)
+void CTimer::GetTickIntervalOffset(CMomentumPlayer* pPlayer, const int zoneType)
 {
+    if (!pPlayer) return;
     Ray_t ray;
-    Vector prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
-        origin.y - (velocity.y * gpGlobals->interval_per_tick),
-        origin.z - (velocity.z * gpGlobals->interval_per_tick));
-
-    DevLog("Origin X:%f Y:%f Z:%f\n", origin.x, origin.y, origin.z);
-    DevLog("Prev Origin: X:%f Y:%f Z:%f\n", prevOrigin[0], prevOrigin[1], prevOrigin[2]);
-    if (zoneType == 0){
+    Vector vecForward, start, end, origin = pPlayer->EyePosition(), velocity = pPlayer->GetAbsVelocity();
+    float len = velocity.Length2D();//Go forwards/backwards X units, not too far though (multiple triggers)
+    QAngle eyes = pPlayer->EyeAngles();
+    eyes.x = 0;//We don't look at if they're looking up/down, we only care about horizontal direction here
+    AngleVectors(eyes, &vecForward); //Get the direction the player is looking
+    if (zoneType == 0)
+    {
         //endzone has to have the ray _start_ before we entered the end zone, hence why we start with prevOrigin
         //and trace "forwards" to our current origin, hitting the end trigger on the way.
-        CTriggerTraceEnum endTriggerTraceEnum(&ray, velocity, origin);
-        ray.Init(prevOrigin, origin);
+        start = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
+            origin.y - (velocity.y * gpGlobals->interval_per_tick),
+            origin.z - (velocity.z * gpGlobals->interval_per_tick));
+        //MOM_TODO: Check to see if this start is still in the trigger or not, some maps teleport the player to the stop trigger!
+        end = start + vecForward * len;//Trace forward to the end trigger
+        ray.Init(start, end);
+        CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
     }
     else if (zoneType == 1)
     {
-        //on the other hand, start zones start the ray _after_ we exited the start zone, 
-        //so we start at our current origin and trace backwards to our prev origin
-        CTriggerTraceEnum startTriggerTraceEnum(&ray, velocity, origin);
-        ray.Init(origin, prevOrigin);
+        vecForward.Negate();//We want the opposite direction the player is facing, we're tracing backwards to the trigger!
+        start = origin;//The start for this is the eye pos
+        float len = pPlayer->GetAbsVelocity().Length2D();//Go backwards X units, not too far though (multiple triggers)
+        end = start + vecForward * len;//Trace backwards to the start/stage trigger
+        ray.Init(start, end);
+        CTimeTriggerTraceEnum startTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
         enginetrace->EnumerateEntities(ray, true, &startTriggerTraceEnum);
+        //debugoverlay->AddLineOverlay(start, end, 255, 0, 0, true, 10.0f);
     }
     else if (zoneType == 2)
     {
-        //same as endzone here
-        CTriggerTraceEnum stageTriggerTraceEnum(&ray, velocity, origin);
-        ray.Init(prevOrigin, origin);
-        enginetrace->EnumerateEntities(ray, true, &stageTriggerTraceEnum);
+        //MOM_TODO: Shouldn't this be bundled with the start trigger logic?
     }
-    else
-    {
-        Warning("CTimer::GetTickIntervalOffset: Incorrect Zone Type!");
-        return -1;
-    }
-    return m_flTickIntervalOffsetOut; //HACKHACK Lol
+    
+
 }
+
 // override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
-// member of CTimer to avoid linker errors
-bool CTimer::CTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
+bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 {
     trace_t tr;
     // store entity that we found on the trace
@@ -451,21 +446,24 @@ bool CTimer::CTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 
     if (pEnt->IsSolid())
         return false;
+
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
 
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
-        float dist = m_currOrigin.DistTo(tr.endpos);
+        debugoverlay->AddLineOverlay(tr.startpos, tr.endpos, 255, 0, 0, true, 10.0f);//Draw a pretty line to further show
+        float dist = tr.startpos.DistTo(tr.endpos);
         DevLog("DIST: %f\n", dist);
-        DevLog("Time offset: %f\n", dist / m_currVelocity.Length()); //velocity = dist/time, so it follows that time = distance / velocity.
-        g_Timer->m_flTickIntervalOffsetOut = dist / m_currVelocity.Length();
+        float offset = dist / m_currVelocity.Length2D();//velocity = dist/time, so it follows that time = distance / velocity.
+        DevLog("Time offset: %f\n", offset); 
+        int stage = m_iZoneType;
+        if (m_iZoneType == 2) stage = g_Timer->GetCurrentStageNumber();
+        g_Timer->SetIntervalOffset(stage, offset);
         return true;
     }
-    else
-    {
-        DevLog("Didn't hit a zone trigger.\n");
-        return false;
-    }
+
+    DevLog("Didn't hit a zone trigger.\n");
+    return false;
 }
 
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
@@ -503,40 +501,23 @@ void CTimer::SetGameModeConVars()
         sv_maxvelocity.GetInt(), sv_airaccelerate.GetInt(), sv_maxspeed.GetInt());
 }
 //Practice mode that stops the timer and allows the player to noclip.
-void CTimer::EnablePractice(CBasePlayer *pPlayer)
+void CTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {
     pPlayer->SetParent(nullptr);
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    g_Timer->Stop(false);
-
-    IGameEvent *pracModeEvent = gameeventmanager->CreateEvent("practice_mode");
-    if (pracModeEvent)
-    {
-        pracModeEvent->SetBool("has_practicemode", true);
-        gameeventmanager->FireEvent(pracModeEvent);
-    }
-
+    pPlayer->m_bHasPracticeMode = true;
+    Stop(false);
 }
-void CTimer::DisablePractice(CBasePlayer *pPlayer)
+void CTimer::DisablePractice(CMomentumPlayer *pPlayer)
 {
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
-
-    IGameEvent *pracModeEvent = gameeventmanager->CreateEvent("practice_mode");
-    if (pracModeEvent)
-    {
-        pracModeEvent->SetBool("has_practicemode", false);
-        gameeventmanager->FireEvent(pracModeEvent);
-    }
-
+    pPlayer->m_bHasPracticeMode = false;
 }
-bool CTimer::IsPracticeMode(CBaseEntity *pOther)
-{
-    return pOther->GetMoveType() == MOVETYPE_NOCLIP && (pOther->GetEFlags() & EFL_NOCLIP_ACTIVE);
-}
+
 //--------- CPMenu stuff --------------------------------
 
 void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
@@ -707,12 +688,12 @@ public:
 
     static void PracticeMove()
     {
-        CBasePlayer *pPlayer = UTIL_GetCommandClient();
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
         if (!pPlayer)
             return;
         Vector velocity = pPlayer->GetAbsVelocity();
 
-        if (!g_Timer->IsPracticeMode(pPlayer))
+        if (!pPlayer->m_bHasPracticeMode)
         {
             if (velocity.Length2DSqr() != 0)
                 DevLog("You cannot enable practice mode while moving!\n");

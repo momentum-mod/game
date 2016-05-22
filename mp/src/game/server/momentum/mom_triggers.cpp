@@ -40,6 +40,10 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             pPlayer->m_RunData.m_iCurrentZone = stageNum;
             if (g_Timer->IsRunning())
             {
+                //MOM_TODO: Shouldn't this (also?) be called upon stage exit?
+                if (stageNum != 1) 
+                    g_Timer->GetTickIntervalOffset(pPlayer, 2);
+
                 stageEvent->SetInt("stage_num", stageNum);
                 stageEvent->SetFloat("stage_enter_time", g_Timer->CalculateStageTime(stageNum));
                 stageEvent->SetInt("num_jumps", pPlayer->m_PlayerRunStats.m_iStageJumps[stageNum - 1]);
@@ -129,12 +133,12 @@ END_DATADESC()
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther->IsPlayer())//MOM_TODO: pOther->IsReplay or dynamic cast idk I'm tired
+    if (pOther->IsPlayer())
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
         //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
-        if (!g_Timer->IsPracticeMode(pOther) && !g_Timer->IsRunning()) // do not start timer if player is in practice mode or it's already running.
+        if (!pPlayer->m_bHasPracticeMode && !g_Timer->IsRunning()) // do not start timer if player is in practice mode or it's already running.
         {
             if (IsLimitingSpeed())
             {
@@ -153,6 +157,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 }
             } 
             g_Timer->Start(gpGlobals->tickcount);
+            g_Timer->GetTickIntervalOffset(pPlayer, 1);
         }
         pPlayer->m_RunData.m_bIsInZone = false;
         pPlayer->m_RunData.m_bMapFinished = false;
@@ -181,7 +186,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
 void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 {
-    //MOM_TODO: Set replay entity stuff too
     g_Timer->SetStartTrigger(this);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
@@ -193,11 +197,11 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
 
         if (g_Timer->IsRunning())
         {
-            g_Timer->Stop(false);
+            g_Timer->Stop(false);//Handles stopping replay recording as well
             g_Timer->DispatchResetMessage();
             //lower the player's speed if they try to jump back into the start zone
         }
-        //begin recording demo
+        //begin recording replay
         if (!g_ReplaySystem->IsRecording(pPlayer))
             g_ReplaySystem->BeginRecording(pPlayer);
         else
@@ -332,15 +336,22 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                 stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum][1]);
                 gameeventmanager->FireEvent(stageEvent);
             }
+            
+            //MOM_TODO: BUG: If we teleport into the stop trigger, this will still try to get the offset! We need some
+            //check or something, you can see my idea below:
+            //    if (pPlayer->GetAbsOrigin().AsVector2D().DistTo(CollisionProp()->OBBCenter().AsVector2D()) > 5.0f)
+            //However if the ending trigger is very small, this may end up returning true!
+            //My idea was to check if the player is very close to the outside edges (using model/size bounds)
+            //Or to just check to see if the previous origin was even in the end trigger or not
+            //So I (or somebody who wants to) will probably implement that eventually
+            
+            g_Timer->GetTickIntervalOffset(pPlayer, 0);
 
             g_Timer->Stop(true);
             pPlayer->m_RunData.m_bMapFinished = true;
+
             //MOM_TODO: SLOW DOWN/STOP THE PLAYER HERE!
         }
-        
-        //stop demo recording
-        if (g_ReplaySystem->IsRecording(pPlayer))
-            g_ReplaySystem->StopRecording(ToCMOMPlayer(pOther), false, true);
         
         pPlayer->m_RunData.m_bIsInZone = true;
     }
@@ -427,7 +438,7 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
         if (!pDestinationEnt)
         {
             if (m_target != NULL_STRING)
-                pDestinationEnt = gEntList.FindEntityByName(NULL, m_target, NULL, pOther, pOther);
+                pDestinationEnt = gEntList.FindEntityByName(nullptr, m_target, nullptr, pOther, pOther);
             else
             {
                 DevWarning("CTriggerTeleport cannot teleport, pDestinationEnt and m_target are null!\n");
@@ -471,7 +482,7 @@ END_DATADESC()
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
-    SetDestinationEnt(NULL);
+    SetDestinationEnt(nullptr);
     BaseClass::StartTouch(pOther);
     // The above is needed for the Think() function of this class,
     // it's very HACKHACK but it works
@@ -494,7 +505,7 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
                 for (int iIndex = 0; iIndex < c_MaxCount; iIndex++)
                 {
                     CTriggerOnehop *thisOnehop = g_Timer->FindOnehopOnList(iIndex);
-                    if (thisOnehop != NULL && thisOnehop->HasSpawnFlags(SF_TELEPORT_RESET_ONEHOP))
+                    if (thisOnehop != nullptr && thisOnehop->HasSpawnFlags(SF_TELEPORT_RESET_ONEHOP))
                         g_Timer->RemoveOnehopFromList(thisOnehop);
                 }
             }
@@ -506,7 +517,7 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 void CTriggerOnehop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != NULL && m_fStartTouchedTime > 0)
+    if (pPlayer != nullptr && m_fStartTouchedTime > 0)
     {
         if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
         {
@@ -554,7 +565,7 @@ void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 void CTriggerMultihop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != NULL && m_fStartTouchedTime > 0)
+    if (pPlayer != nullptr && m_fStartTouchedTime > 0)
     {
         if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
         {
@@ -576,7 +587,7 @@ END_DATADESC()
 void CTriggerUserInput::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != NULL && IsTouching(pPlayer) && (pPlayer->m_nButtons & m_ButtonRep))
+    if (pPlayer != nullptr && IsTouching(pPlayer) && (pPlayer->m_nButtons & m_ButtonRep))
     {
         m_OnKeyPressed.FireOutput(pPlayer, this);
     }
@@ -634,7 +645,7 @@ void CTriggerLimitMovement::Think()
         {
             pPlayer->DisableButtons(IN_JUMP);
             // if player in air
-            if (pPlayer->GetGroundEntity() != NULL)
+            if (pPlayer->GetGroundEntity() != nullptr)
             {
                 // only start timer if we havent already started
                 if (!m_BhopTimer.HasStarted())
@@ -716,7 +727,7 @@ void CFuncShootBoost::Spawn()
     // temporary
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
     if (m_target != NULL_STRING)
-        m_Destination = gEntList.FindEntityByName(NULL, m_target);
+        m_Destination = gEntList.FindEntityByName(nullptr, m_target);
 }
 
 int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
@@ -750,7 +761,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
         }
         if (m_Destination)
         {
-            if (((CBaseTrigger *)m_Destination)->IsTouching(pInflictor))
+            if (static_cast<CBaseTrigger *>(m_Destination)->IsTouching(pInflictor))
             {
                 pInflictor->SetAbsVelocity(finalVel);
             }

@@ -10,7 +10,6 @@ public:
         m_bTimerIsRunning(false),
         m_bTimeDidSave(false),
         m_bTimeDidUpload(false),
-        m_bPlayerHasPracticeMode(false),
         stats()
     { }
 
@@ -24,9 +23,7 @@ public:
 
     int m_iMapCheckpointCount;
 
-    bool m_bPlayerHasPracticeMode;
-
-    RunStats_t stats;
+    RunStats_t stats;//MOM_TODO: Move this to the player and ghost ent send/recv table
 
     char m_szRunUploadStatus[512];//MOM_TODO: determine best (max) size for this
 };

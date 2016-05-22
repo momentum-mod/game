@@ -35,6 +35,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
 {
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
+    m_bHasJumped = false;
 }
 
 
@@ -74,7 +75,7 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 }
 
-void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop) 
+void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */) 
 {
     mom_replay_firstperson.SetValue(firstPerson ? "1" : "0");
     mom_replay_loop.SetValue(shouldLoop ? "1" : "0");
@@ -83,11 +84,12 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop)
     m_iTotalStrafes = 0;
     m_nStartTick = gpGlobals->curtime;
     m_bIsActive = true;
-    step = 0;
-    SetAbsOrigin(g_ReplaySystem->m_vecRunData[0].m_vPlayerOrigin);
+    m_bHasJumped = false;
+    step = mom_replay_reverse.GetBool() ? g_ReplaySystem->m_vecRunData.Size() - 1 : 0;
+    SetAbsOrigin(g_ReplaySystem->m_vecRunData[step].m_vPlayerOrigin);
 	SetNextThink(gpGlobals->curtime);
-
 }
+
 void CMomentumReplayGhostEntity::UpdateStep() 
 {
     currentStep = g_ReplaySystem->m_vecRunData[step];
@@ -105,14 +107,14 @@ void CMomentumReplayGhostEntity::Think(void)
 	BaseClass::Think();
     if (step >= 0)
     {
-        if (step+1 < g_ReplaySystem->m_vecRunData.Size())
+        if (step+1 < g_ReplaySystem->m_vecRunData.Size() || mom_replay_reverse.GetBool() && step - 1 > -1)
         {
             UpdateStep();
             mom_replay_firstperson.GetBool() ? HandleGhostFirstPerson() : HandleGhost();
         } 
         else if (step+1 == g_ReplaySystem->m_vecRunData.Size() && mom_replay_loop.GetBool())
         {
-            step = 0; //reset us to the start
+            step = mom_replay_reverse.GetBool() ? g_ReplaySystem->m_vecRunData.Size() - 1 : 0; //reset us to the start
         }
         else
         {
@@ -149,7 +151,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        //pPlayer->IsWatchingReplay() = true;
         if (!pPlayer->IsObserver())
         {
             pPlayer->SetObserverTarget(this);
@@ -161,7 +162,9 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             pPlayer->ForceObserverMode(OBS_MODE_IN_EYE);
         }
         pPlayer->SetViewOffset(VEC_VIEW);
-        SetAbsOrigin(currentStep.m_vPlayerOrigin);
+        Vector origin = currentStep.m_vPlayerOrigin;
+        origin.z -= 3.5f;
+        SetAbsOrigin(origin);
 
         if (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE) {
             SetAbsAngles(currentStep.m_qEyeAngles);
@@ -220,8 +223,9 @@ void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
     //calculate strafe sync based on replay ghost's movement, in order to update the player's HUD
 
     float SyncVelocity = ghostVel.Length2DSqr(); //we always want HVEL for checking velocity sync
-    if (GetGroundEntity() == nullptr)
+    if (GetGroundEntity() == nullptr)//The ghost is in the air
     {
+        m_bHasJumped = false;
         if (EyeAngles().y > m_qLastEyeAngle.y) //player turned left 
         {
             m_nStrafeTicks++;
@@ -247,8 +251,9 @@ void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
 
     // --- JUMP AND STRAFE COUNTER ---
     //MOM_TODO: This needs to calculate better. It currently counts every other jump, and sometimes spams (player on ground for a while)
-    if (GetGroundEntity() != nullptr && currentStep.m_nPlayerButtons & IN_JUMP)
+    if (!m_bHasJumped && GetGroundEntity() != nullptr && GetFlags() & FL_ONGROUND && currentStep.m_nPlayerButtons & IN_JUMP)
     {
+        m_bHasJumped = true;
         m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
         m_RunData.m_flLastJumpTime = gpGlobals->curtime;
         m_iTotalJumps++;

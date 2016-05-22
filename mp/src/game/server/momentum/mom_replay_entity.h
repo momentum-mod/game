@@ -74,7 +74,7 @@ private:
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
     Color m_ghostColor;
     static Color m_newGhostColor;
-
+    bool m_bHasJumped;
     //for faking strafe sync calculations
     QAngle m_qLastEyeAngle;
     float m_flLastSyncVelocity;

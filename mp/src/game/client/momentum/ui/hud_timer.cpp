@@ -103,7 +103,8 @@ class C_Timer : public CHudElement, public Panel
 
     int m_iTotalTicks;
     bool m_bPlayerInZone;
-    bool m_bWereCheatsActivated = false;
+    bool m_bWereCheatsActivated;
+    bool m_bPlayerHasPracticeMode;
     bool m_bShowCheckpoints;
     bool m_bMapFinished;
     int m_iCheckpointCount, m_iCheckpointCurrent;
@@ -154,6 +155,8 @@ void C_Timer::Reset()
     m_iTotalTicks = 0;
     m_iStageCurrent = 1;
     m_bShowCheckpoints = false;
+    m_bWereCheatsActivated = false;
+    m_bPlayerHasPracticeMode = false;
     m_bPlayerInZone = false;
     m_bMapFinished = false;
     m_iCheckpointCount = 0;
@@ -234,6 +237,7 @@ void C_Timer::OnThink()
         m_iStageCurrent = pLocal->m_RunData.m_iCurrentZone;
         m_bPlayerInZone = pLocal->m_RunData.m_bIsInZone;
         m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
+        m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
         m_iStageCount = g_MOMEventListener->m_iMapCheckpointCount;
     }
 }
@@ -282,7 +286,7 @@ void C_Timer::Paint(void)
     // find out status of timer (no timer/practice mode)
     if (!m_bIsRunning)
     {
-        if (g_MOMEventListener->m_bPlayerHasPracticeMode) // In practice mode
+        if (m_bPlayerHasPracticeMode) // In practice mode
         {
             Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), practiceModeLocalized);
         }

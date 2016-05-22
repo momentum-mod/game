@@ -9,7 +9,8 @@
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     m_player = ToCMOMPlayer( pPlayer);
-    if (!m_player->IsWatchingReplay()) //don't record if we're watching a preexisting replay
+    //don't record if we're watching a preexisting replay or in practice mode
+    if (!m_player->IsWatchingReplay() && !m_player->m_bHasPracticeMode) 
     {
         m_bIsRecording = true;
         Log("Recording began!\n");
@@ -34,7 +35,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
         m_bShouldStopRec = false;
         CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
         char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
-        mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime);
+        mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime, 3, true);
         Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec", (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
         V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); //V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
 

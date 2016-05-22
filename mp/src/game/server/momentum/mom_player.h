@@ -6,11 +6,11 @@
 
 #include "cbase.h"
 #include "mom_blockfix.h"
+#include "mom_entity_run_data.h"
+#include "mom_replay_entity.h"
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
 #include "util/run_stats.h"
-#include "mom_replay_entity.h"
-#include "mom_entity_run_data.h"
 
 class CMomentumPlayer : public CBasePlayer
 {
@@ -29,8 +29,7 @@ class CMomentumPlayer : public CBasePlayer
     DECLARE_SERVERCLASS();
     DECLARE_DATADESC();
 
-    int FlashlightIsOn() override
-    { return IsEffectActive(EF_DIMLIGHT); }
+    int FlashlightIsOn() override { return IsEffectActive(EF_DIMLIGHT); }
 
     void FlashlightTurnOn() override
     {
@@ -46,18 +45,15 @@ class CMomentumPlayer : public CBasePlayer
 
     void Spawn() override;
     void Precache() override;
-    void Touch(CBaseEntity *) override;
 
-    void InitHUD() override;
+    //MOM_TODO: This is called when the player spawns so that HUD elements can be updated
+    //void InitHUD() override;
 
-    void CommitSuicide(bool bExplode = false, bool bForce = false) override
-    {};
+    void CommitSuicide(bool bExplode = false, bool bForce = false) override{};
 
-    void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false) override
-    {};
+    void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false) override{};
 
-    bool CanBreatheUnderwater() const override
-    { return true; }
+    bool CanBreatheUnderwater() const override { return true; }
 
     // LADDERS
     void SurpressLadderChecks(const Vector &pos, const Vector &normal);
@@ -65,7 +61,7 @@ class CMomentumPlayer : public CBasePlayer
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 
     // SPAWNING
-    CBaseEntity *EntSelectSpawnPoint();
+    CBaseEntity *EntSelectSpawnPoint() override;
 
     // used by CMomentumGameMovement
     bool m_duckUntilOnGround;
@@ -73,8 +69,8 @@ class CMomentumPlayer : public CBasePlayer
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop() { return m_RunData.m_bAutoBhop; }
-    bool DidPlayerBhop() { return m_bDidPlayerBhop; }
+    bool HasAutoBhop() const { return m_RunData.m_bAutoBhop; }
+    bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void CheckForBhop();
     void UpdateRunStats();
@@ -82,16 +78,17 @@ class CMomentumPlayer : public CBasePlayer
     void CalculateAverageStats();
     void LimitSpeedInStartZone();
 
-    //These are used for weapon code, MOM_TODO: potentially remove?
+    // These are used for weapon code, MOM_TODO: potentially remove?
     CNetworkVar(int, m_iShotsFired);
     CNetworkVar(int, m_iDirection);
     CNetworkVar(bool, m_bResumeZoom);
     CNetworkVar(int, m_iLastZoom);
 
-    CNetworkVar(bool, m_bDidPlayerBhop);// Did the player bunnyhop successfully?
-    CNetworkVar(int, m_iSuccessiveBhops); //How many successive bhops this player has
+    CNetworkVar(bool, m_bDidPlayerBhop);  // Did the player bunnyhop successfully?
+    CNetworkVar(int, m_iSuccessiveBhops); // How many successive bhops this player has
+    CNetworkVar(bool, m_bHasPracticeMode); //Is the player in practice mode?
 
-    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);//Current run data, used for hud elements
+    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -102,33 +99,30 @@ class CMomentumPlayer : public CBasePlayer
     void KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max,
                   float lateral_max, int direction_change);
 
-    void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
-    
-    void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
     bool IsValidObserverTarget(CBaseEntity *target) override;
 
-    int GetLastBlock() { return m_iLastBlock; }
-    float GetPunishTime() { return m_flPunishTime; }
+    // Used by g_MOMBlockFix door/button fix code
+    void Touch(CBaseEntity *) override;
+    int GetLastBlock() const { return m_iLastBlock; }
+    float GetPunishTime() const { return m_flPunishTime; }
+    void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
+    void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
 
-    bool IsWatchingReplay() const
-    {
-        return m_hObserverTarget.Get() && GetReplayEnt();
-    }
+    bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
 
     CMomentumReplayGhostEntity *GetReplayEnt() const
     {
-        return dynamic_cast<CMomentumReplayGhostEntity*>(m_hObserverTarget.Get());
+        return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
     }
 
-    //Run Stats
+    // Run Stats
     RunStats_t m_PlayerRunStats;
 
-    //for calc avg
+    // for calc avg
     int m_nStageAvgCount[MAX_STAGES];
-    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES],
-        m_flStageTotalVelocity[MAX_STAGES][2];
+    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES][2];
 
-private:
+  private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
@@ -142,7 +136,7 @@ private:
     float m_flPunishTime;
     int m_iLastBlock;
 
-    //for strafe sync
+    // for strafe sync
     float m_flLastVelocity, m_flLastSyncVelocity;
     QAngle m_qangLastAngle;
 
@@ -153,8 +147,9 @@ private:
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
 
-    //Start zone thinkfunc
+    // Start zone thinkfunc
     int m_nTicksInAir;
-    const int MAX_AIRTIME_TICKS = 15; //The player can spend this many ticks in the air inside the start zone before their speed is limited
+    const int MAX_AIRTIME_TICKS =
+        15; // The player can spend this many ticks in the air inside the start zone before their speed is limited
 };
 #endif // MOMPLAYER_H

@@ -12,7 +12,6 @@ void C_Momentum_EventListener::Init()
     ListenForGameEvent("run_save");
     ListenForGameEvent("run_upload");
     ListenForGameEvent("timer_state");
-    ListenForGameEvent("practice_mode");
     ListenForGameEvent("keypress");
     ListenForGameEvent("map_init");
 }
@@ -93,10 +92,6 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     else if (!Q_strcmp("timer_state", pEvent->GetName()))
     {
         m_bTimerIsRunning = pEvent->GetBool("is_running");
-    }
-    else if (!Q_strcmp("practice_mode", pEvent->GetName()))
-    {
-        m_bPlayerHasPracticeMode = pEvent->GetBool("has_practicemode");
     }
     else if (!Q_strcmp("keypress", pEvent->GetName()))
     {
