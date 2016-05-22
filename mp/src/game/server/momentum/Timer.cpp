@@ -400,7 +400,7 @@ void CTimer::GetTickIntervalOffset(CMomentumPlayer* pPlayer, const int zoneType)
 {
     if (!pPlayer) return;
     Ray_t ray;
-    Vector vecForward, start, end, origin = pPlayer->EyePosition(), velocity = pPlayer->GetAbsVelocity();
+    Vector vecForward, start, end, origin = pPlayer->GetAbsOrigin(), velocity = pPlayer->GetAbsVelocity();
     float len = velocity.Length2D();//Go forwards/backwards X units, not too far though (multiple triggers)
     QAngle eyes = pPlayer->EyeAngles();
     eyes.x = 0;//We don't look at if they're looking up/down, we only care about horizontal direction here
@@ -412,29 +412,22 @@ void CTimer::GetTickIntervalOffset(CMomentumPlayer* pPlayer, const int zoneType)
         start = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
             origin.y - (velocity.y * gpGlobals->interval_per_tick),
             origin.z - (velocity.z * gpGlobals->interval_per_tick));
-        //MOM_TODO: Check to see if this start is still in the trigger or not, some maps teleport the player to the stop trigger!
+
         end = start + vecForward * len;//Trace forward to the end trigger
         ray.Init(start, end);
         CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
     }
-    else if (zoneType == 1)
+    else if (zoneType == 1 || zoneType == 2)
     {
+        //Start/stage zones trace from outside the trigger, backwards
         vecForward.Negate();//We want the opposite direction the player is facing, we're tracing backwards to the trigger!
-        start = origin;//The start for this is the eye pos
-        float len = pPlayer->GetAbsVelocity().Length2D();//Go backwards X units, not too far though (multiple triggers)
+        start = origin;//The start for this is the player pos
         end = start + vecForward * len;//Trace backwards to the start/stage trigger
         ray.Init(start, end);
-        CTimeTriggerTraceEnum startTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
-        enginetrace->EnumerateEntities(ray, true, &startTriggerTraceEnum);
-        //debugoverlay->AddLineOverlay(start, end, 255, 0, 0, true, 10.0f);
+        CTimeTriggerTraceEnum stageTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
+        enginetrace->EnumerateEntities(ray, true, &stageTriggerTraceEnum);
     }
-    else if (zoneType == 2)
-    {
-        //MOM_TODO: Shouldn't this be bundled with the start trigger logic?
-    }
-    
-
 }
 
 // override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers

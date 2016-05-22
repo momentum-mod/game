@@ -40,10 +40,6 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             pPlayer->m_RunData.m_iCurrentZone = stageNum;
             if (g_Timer->IsRunning())
             {
-                //MOM_TODO: Shouldn't this (also?) be called upon stage exit?
-                if (stageNum != 1) 
-                    g_Timer->GetTickIntervalOffset(pPlayer, 2);
-
                 stageEvent->SetInt("stage_num", stageNum);
                 stageEvent->SetFloat("stage_enter_time", g_Timer->CalculateStageTime(stageNum));
                 stageEvent->SetInt("num_jumps", pPlayer->m_PlayerRunStats.m_iStageJumps[stageNum - 1]);
@@ -91,6 +87,9 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     {
         if (stageNum == 1 || g_Timer->IsRunning())//Timer won't be running if it's the start trigger
         {
+            //This handles both the start and stage triggers
+            g_Timer->GetTickIntervalOffset(pPlayer, stageNum);
+
             IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_exit");
             if (stageEvent)
             {
@@ -157,7 +156,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 }
             } 
             g_Timer->Start(gpGlobals->tickcount);
-            g_Timer->GetTickIntervalOffset(pPlayer, 1);
         }
         pPlayer->m_RunData.m_bIsInZone = false;
         pPlayer->m_RunData.m_bMapFinished = false;
@@ -337,15 +335,22 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                 gameeventmanager->FireEvent(stageEvent);
             }
             
-            //MOM_TODO: BUG: If we teleport into the stop trigger, this will still try to get the offset! We need some
-            //check or something, you can see my idea below:
-            //    if (pPlayer->GetAbsOrigin().AsVector2D().DistTo(CollisionProp()->OBBCenter().AsVector2D()) > 5.0f)
-            //However if the ending trigger is very small, this may end up returning true!
-            //My idea was to check if the player is very close to the outside edges (using model/size bounds)
-            //Or to just check to see if the previous origin was even in the end trigger or not
-            //So I (or somebody who wants to) will probably implement that eventually
-            
-            g_Timer->GetTickIntervalOffset(pPlayer, 0);
+            //Check to see if we should calculate the timer offset fix
+            Vector origin = pPlayer->GetAbsOrigin(), velocity = pPlayer->GetAbsVelocity();
+            Vector prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
+                origin.y - (velocity.y * gpGlobals->interval_per_tick),
+                origin.z - (velocity.z * gpGlobals->interval_per_tick));
+            Vector bottomLeft = GetAbsOrigin() + CollisionProp()->OBBMins();
+            Vector topRight = GetAbsOrigin() + CollisionProp()->OBBMaxs();
+
+            if ((prevOrigin.x > bottomLeft.x && prevOrigin.x < topRight.x) &&
+                (prevOrigin.y > bottomLeft.y && prevOrigin.y < topRight.y))
+                DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
+            else
+            {
+                DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
+                g_Timer->GetTickIntervalOffset(pPlayer, 0);
+            }          
 
             g_Timer->Stop(true);
             pPlayer->m_RunData.m_bMapFinished = true;
