@@ -41,7 +41,7 @@ public:
    // virtual float			GetAmmoDamage(CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType);
     
     //Players take no damage
-    float FlPlayerFallDamage(CBasePlayer *pPlayer) override {return 0;}
+    float FlPlayerFallDamage(CBasePlayer *pPlayer) override {return 0.0f;}
     virtual bool AllowDamage( CBaseEntity *pVictim, const CTakeDamageInfo &info ) {return !pVictim->IsPlayer();}
 
 private:

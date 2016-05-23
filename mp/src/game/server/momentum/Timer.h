@@ -185,6 +185,7 @@ private:
         Vector pos;
         Vector vel;
         QAngle ang;
+        char targetName[MAX_PLAYER_NAME_LENGTH];
     };
     CUtlVector<Checkpoint> checkpoints;
     CUtlVector<CTriggerOnehop*> onehops;

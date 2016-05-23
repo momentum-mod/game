@@ -520,6 +520,7 @@ void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
     c.ang = pPlayer->GetAbsAngles();
     c.pos = pPlayer->GetAbsOrigin();
     c.vel = pPlayer->GetAbsVelocity();
+    Q_strncpy(c.targetName, pPlayer->GetEntityName().ToCStr(), MAX_PLAYER_NAME_LENGTH);
     checkpoints.AddToTail(c);
     m_iCurrentStepCP++;
 }
@@ -535,6 +536,7 @@ void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
 {
     if (checkpoints.IsEmpty() || !cPlayer) return;
     Checkpoint c = checkpoints[cpNum];
+    cPlayer->SetName(MAKE_STRING(c.targetName));
     cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
 }
 
