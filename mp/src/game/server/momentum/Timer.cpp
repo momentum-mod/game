@@ -245,11 +245,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         //Save times locally too, regardless of SteamAPI condition
         Time t = Time();
-
-        float originalTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
-        //apply precision fix, adding offset from start as well as subtracting offset from end.
-        t.time_sec = originalTime + m_flTickOffsetFix[1] - m_flTickOffsetFix[0];
-        DevLog("Original time: %f\n Precision-Fixed time: %f\n", originalTime, t.time_sec);
+        t.time_sec = GetLastRunTime();
 
         t.tickrate = gpGlobals->interval_per_tick;
         t.flags = pPlayer->m_RunData.m_iRunFlags;
@@ -340,9 +336,11 @@ float CTimer::CalculateStageTime(int stage)
 {
     if (stage > m_iLastStage)
     {
+        float originalTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         //If the stage is a new one, we store the time we entered this stage in
         m_iStageEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
-            static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+            originalTime + m_flTickOffsetFix[stage-1];
+        DevLog("Original Time: %f\n New Time: %f", originalTime, m_iStageEnterTime[stage]);
     }
     m_iLastStage = stage;
     return m_iStageEnterTime[stage];

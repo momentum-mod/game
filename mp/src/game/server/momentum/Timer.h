@@ -76,7 +76,13 @@ public:
     // Gets the total stage count
     int GetStageCount() { return m_iStageCount; };
     float CalculateStageTime(int stageNum);
-    float GetLastRunTime() { return (m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick; }
+    float GetLastRunTime() 
+    {
+        float originalTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+        // apply precision fix, adding offset from start as well as subtracting offset from end.
+        // offset from end is 1 tick - fraction offset, since we started trace outside of the end zone.
+        return originalTime + m_flTickOffsetFix[1] - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
+    }
 
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
