@@ -245,7 +245,12 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         //Save times locally too, regardless of SteamAPI condition
         Time t = Time();
-        t.time_sec = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+
+        float originalTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+        //apply precision fix, adding offset from start as well as subtracting offset from end.
+        t.time_sec = originalTime + m_flTickOffsetFix[1] - m_flTickOffsetFix[0];
+        DevLog("Original time: %f\n Precision-Fixed time: %f\n", originalTime, t.time_sec);
+
         t.tickrate = gpGlobals->interval_per_tick;
         t.flags = pPlayer->m_RunData.m_iRunFlags;
         time(&t.date);
@@ -255,20 +260,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         SaveTime();
         
-        /*@tuxxi: we cannot rename a file to a different location, and I don't know how to move a file using IFileStream. disabling this for now
-        char* recordingPath = "";
-        //rename temp demo file to "playername_mapname_time"
-        char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH];
-        Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%f.dem", pPlayer->GetPlayerName(), gpGlobals->mapname.ToCStr());
-        V_ComposeFileName(recordingPath, newRecordingName, newRecordingPath, MAX_PATH);
-        V_FixSlashes(newRecordingName);
-        if (filesystem->FileExists("tempdemo.dem", "MOD"))
-        {
-            filesystem->RenameFile("tempdemo.dem", newRecordingPath, "MOD");
-        }
-        else
-            Warning("Recording file doesn't exist, cannot rename!");
-            */
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {  
@@ -396,37 +387,54 @@ void CTimer::DispatchCheckpointMessage()
     }
 }
 
-void CTimer::GetTickIntervalOffset(CMomentumPlayer* pPlayer, const int zoneType)
+void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zoneType)
 {
     if (!pPlayer) return;
     Ray_t ray;
-    Vector vecForward, start, end, origin = pPlayer->GetAbsOrigin(), velocity = pPlayer->GetAbsVelocity();
-    float len = velocity.Length2D();//Go forwards/backwards X units, not too far though (multiple triggers)
-    QAngle eyes = pPlayer->EyeAngles();
-    eyes.x = 0;//We don't look at if they're looking up/down, we only care about horizontal direction here
-    AngleVectors(eyes, &vecForward); //Get the direction the player is looking
-    if (zoneType == 0)
+    Vector prevOrigin, origin, velocity = pPlayer->GetLocalVelocity();
+    // Because trigger touch is calculated using colission hull rather than the player's origin (which is their world space center,
+    // this origin is actually the player's local origin offset by their colission hull (depending on which direction they are moving), 
+    // so that we trace from the point in space where the player actually exited touch with the trigger, rather than their world center.
+
+    if (zoneType == ZONETYPE_END) //ending zone or ending a stage
     {
-        //endzone has to have the ray _start_ before we entered the end zone, hence why we start with prevOrigin
-        //and trace "forwards" to our current origin, hitting the end trigger on the way.
-        start = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
+        if (velocity.x > 0 || velocity.y > 0)
+            origin = Vector (pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x, 
+            pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y, 
+            pPlayer->GetLocalOrigin().z );
+        else
+            origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
+
+        // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
+        prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
             origin.y - (velocity.y * gpGlobals->interval_per_tick),
             origin.z - (velocity.z * gpGlobals->interval_per_tick));
 
-        end = start + vecForward * len;//Trace forward to the end trigger
-        ray.Init(start, end);
+        //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with prevOrigin
+        //and trace "forwards" to our current origin, hitting the trigger on the way.
+        ray.Init(prevOrigin, origin);
+        debugoverlay->AddLineOverlay(prevOrigin, origin, 0, 255, 0, true, 10.0f);
         CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
     }
-    else if (zoneType == 1 || zoneType == 2)
+    else if (zoneType == ZONETYPE_START )//start zone and stages
     {
-        //Start/stage zones trace from outside the trigger, backwards
-        vecForward.Negate();//We want the opposite direction the player is facing, we're tracing backwards to the trigger!
-        start = origin;//The start for this is the player pos
-        end = start + vecForward * len;//Trace backwards to the start/stage trigger
-        ray.Init(start, end);
-        CTimeTriggerTraceEnum stageTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
-        enginetrace->EnumerateEntities(ray, true, &stageTriggerTraceEnum);
+        if (velocity.x > 0 || velocity.y > 0)
+            origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
+        else
+            origin = Vector(pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x,
+            pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y,
+            pPlayer->GetLocalOrigin().z);
+
+        // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
+        prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
+            origin.y - (velocity.y * gpGlobals->interval_per_tick),
+            origin.z - (velocity.z * gpGlobals->interval_per_tick));
+
+        //Start/stage zones trace from outside the trigger, backwards, hitting the zone along the way
+        ray.Init(origin, prevOrigin);
+        CTimeTriggerTraceEnum startTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
+        enginetrace->EnumerateEntities(ray, true, &startTriggerTraceEnum);
     }
 }
 
@@ -440,22 +448,25 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     if (pEnt->IsSolid())
         return false;
 
+    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_"))) //if we aren't hitting a momentum trigger
+        return false;
+
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
 
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
-        debugoverlay->AddLineOverlay(tr.startpos, tr.endpos, 255, 0, 0, true, 10.0f);//Draw a pretty line to further show
+        debugoverlay->AddLineOverlay(tr.startpos, tr.endpos, 255, 0, 0, true, 10.0f);
         float dist = tr.startpos.DistTo(tr.endpos);
-        DevLog("DIST: %f\n", dist);
-        float offset = dist / m_currVelocity.Length2D();//velocity = dist/time, so it follows that time = distance / velocity.
-        DevLog("Time offset: %f\n", offset); 
+        DevLog("Distance to zone: %f\n", dist);
+        float offset = dist / m_currVelocity.Length();//velocity = dist/time, so it follows that time = distance / velocity.
+        DevLog("Time offset: %f\n", offset);
         int stage = m_iZoneType;
-        if (m_iZoneType == 2) stage = g_Timer->GetCurrentStageNumber();
+        if (m_iZoneType == g_Timer->ZONETYPE_START) stage = g_Timer->GetCurrentStageNumber();
         g_Timer->SetIntervalOffset(stage, offset);
         return true;
     }
 
-    DevLog("Didn't hit a zone trigger.\n");
+    DevWarning("Didn't hit a zone trigger.\n");
     return false;
 }
 

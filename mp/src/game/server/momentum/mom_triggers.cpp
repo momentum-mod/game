@@ -60,6 +60,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
                 stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum - 1][1]);
 
                 gameeventmanager->FireEvent(stageEvent);
+
+                g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_END);
             }
             else
             {
@@ -88,7 +90,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
         if (stageNum == 1 || g_Timer->IsRunning())//Timer won't be running if it's the start trigger
         {
             //This handles both the start and stage triggers
-            g_Timer->GetTickIntervalOffset(pPlayer, stageNum);
+            g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_START);
 
             IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_exit");
             if (stageEvent)
@@ -349,7 +351,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             else
             {
                 DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
-                g_Timer->GetTickIntervalOffset(pPlayer, 0);
+                g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_END);
             }          
 
             g_Timer->Stop(true);

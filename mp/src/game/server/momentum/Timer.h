@@ -195,22 +195,23 @@ private:
     int m_iCurrentStepCP = 0;
     bool m_bUsingCPMenu = false;
 
-    //PRECISION FIX
+    //PRECISION FIX:
+    // this works by adding the starting offset to the final time, since the timer starts after we actually exit the start trigger
+    // also, subtract the ending offset from the time, since we end after we actually enter the ending trigger 
     float m_flTickOffsetFix[MAX_STAGES]; //index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
 
-
 public:
-    float m_flTickIntervalOffsetOut;
-
-    //creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.  
-    //zone type: 0: endzone, 1: startzone, 2: stage
-    //void GetTickIntervalOffset(const Vector velocity, const Vector origin, const int zoneType);
-    void GetTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
-
+    //creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
+    void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset)
     {
         m_flTickOffsetFix[stage] = offset;
     }
+    typedef enum 
+    {
+        ZONETYPE_END,
+        ZONETYPE_START
+    } zoneType;
 };
 
 class CTimeTriggerTraceEnum : public IEntityEnumerator

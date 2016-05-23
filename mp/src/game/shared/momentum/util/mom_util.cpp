@@ -58,7 +58,7 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
 
             DevLog("Outer is JSON OBJECT!\n");
             JsonNode *node = val.toNode();
-            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
+            DevLog("Outer has key %s with value %s\n", node->key, node->value);
 
             // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
             // the JSON
