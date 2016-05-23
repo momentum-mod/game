@@ -276,7 +276,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
     //stop replay recording
     if (g_ReplaySystem->IsRecording(pPlayer))
-        g_ReplaySystem->StopRecording(pPlayer, !endTrigger, true);
+        g_ReplaySystem->StopRecording(pPlayer, !endTrigger, endTrigger);
 
     SetRunning(false);
     m_iEndTick = gpGlobals->tickcount;
