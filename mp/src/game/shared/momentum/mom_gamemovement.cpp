@@ -1292,7 +1292,7 @@ void CMomentumGameMovement::CheckParameters(void)
     QAngle	v_angle;
 
     //shift-walking useful for some maps with tight jumps
-    if (mv->m_nButtons & IN_SPEED)
+    if (mv->m_nButtons & IN_WALK)
     {
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
     }

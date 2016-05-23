@@ -79,8 +79,7 @@ class C_HudMapInfo : public CHudElement, public Panel
     bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
 };
 
-// DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
-
+//The below is basically DECLARE_NAMED_HUDELEMENT_DEPTH(C_HudMapInfo, CHudMapInfo, 10)
 static CHudElement *Create_C_HudMapInfo(void) { return new C_HudMapInfo("CHudMapInfo"); }
 static CHudElementHelper g_C_HudMapInfo_Helper(Create_C_HudMapInfo, 10);
 
