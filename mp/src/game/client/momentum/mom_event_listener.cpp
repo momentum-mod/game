@@ -32,6 +32,8 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         stats.m_flStageExitSpeed[0][1] = pEvent->GetFloat("end_vel_2D");
         stats.m_flStageVelocityAvg[0][1] = pEvent->GetFloat("avg_vel_2D");
         stats.m_flStageVelocityMax[0][1] = pEvent->GetFloat("max_vel_2D");
+
+        m_flLastRunTime = pEvent->GetFloat("time");
     }
     else if (!Q_strcmp("stage_enter", pEvent->GetName()))
     {

@@ -29,6 +29,7 @@
 {
 	"timer_stopped"
 	{
+        "time"   "float"
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
 		"num_strafes"	"short"

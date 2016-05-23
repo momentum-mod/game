@@ -173,12 +173,12 @@ void CTimer::SaveTime()
         pOverallKey->SetFloat("avgsync", t.RunStats.m_flStageStrafeSyncAvg[0]);
         pOverallKey->SetFloat("avgsync2", t.RunStats.m_flStageStrafeSync2Avg[0]);
 
-        pOverallKey->SetFloat("start_vel", t.RunStats.m_flStageEnterSpeed[0][0]);
+        pOverallKey->SetFloat("start_vel", t.RunStats.m_flStageEnterSpeed[1][0]);
         pOverallKey->SetFloat("end_vel", t.RunStats.m_flStageExitSpeed[0][0]);
         pOverallKey->SetFloat("avg_vel", t.RunStats.m_flStageVelocityAvg[0][0]);
         pOverallKey->SetFloat("max_vel", t.RunStats.m_flStageVelocityMax[0][0]);
 
-        pOverallKey->SetFloat("start_vel_2D", t.RunStats.m_flStageEnterSpeed[0][1]);
+        pOverallKey->SetFloat("start_vel_2D", t.RunStats.m_flStageEnterSpeed[1][1]);
         pOverallKey->SetFloat("end_vel_2D", t.RunStats.m_flStageExitSpeed[0][1]);
         pOverallKey->SetFloat("avg_vel_2D", t.RunStats.m_flStageVelocityAvg[0][1]);
         pOverallKey->SetFloat("max_vel_2D", t.RunStats.m_flStageVelocityMax[0][1]);
@@ -234,7 +234,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
-    IGameEvent *timeStopEvent = gameeventmanager->CreateEvent("timer_state");
+    IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
+    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -262,12 +263,43 @@ void CTimer::Stop(bool endTrigger /* = false */)
         runSaveEvent->SetBool("run_saved", false);
         gameeventmanager->FireEvent(runSaveEvent);
     }
-    if (timeStopEvent)
+    if (timerStateEvent)
     {
-        timeStopEvent->SetBool("is_running", false);
-        gameeventmanager->FireEvent(timeStopEvent);
+        timerStateEvent->SetBool("is_running", false);
+        gameeventmanager->FireEvent(timerStateEvent);
     }
-    
+    if (timerStopEvent && pPlayer)
+    {
+        timerStopEvent->SetFloat("avg_sync", pPlayer->m_PlayerRunStats.m_flStageStrafeSyncAvg[0]);
+        timerStopEvent->SetFloat("avg_sync2", pPlayer->m_PlayerRunStats.m_flStageStrafeSync2Avg[0]);
+        timerStopEvent->SetInt("num_strafes", pPlayer->m_PlayerRunStats.m_iStageStrafes[0]);
+        timerStopEvent->SetInt("num_jumps", pPlayer->m_PlayerRunStats.m_iStageJumps[0]);
+
+        //3D VELCOCITY STATS - INDEX 0
+        timerStopEvent->SetFloat("avg_vel", pPlayer->m_PlayerRunStats.m_flStageVelocityAvg[0][0]);
+        timerStopEvent->SetFloat("start_vel", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[1][0]);
+        float endvel = pPlayer->GetLocalVelocity().Length();
+        timerStopEvent->SetFloat("end_vel", endvel);
+        if (endvel > pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][0])
+            timerStopEvent->SetFloat("max_vel", endvel);
+        else
+            timerStopEvent->SetFloat("max_vel", pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][0]);
+        pPlayer->m_PlayerRunStats.m_flStageExitSpeed[0][0] = endvel; //we have to set end speed here or else it will be saved as 0 
+
+        //2D VELOCITY STATS - INDEX 1
+        timerStopEvent->SetFloat("avg_vel_2D", pPlayer->m_PlayerRunStats.m_flStageVelocityAvg[0][1]);
+        timerStopEvent->SetFloat("start_vel_2D", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[1][1]);
+        float endvel2D = pPlayer->GetLocalVelocity().Length2D();
+        timerStopEvent->SetFloat("end_vel_2D", endvel2D);
+        if (endvel2D > pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][1])
+            timerStopEvent->SetFloat("max_vel_2D", endvel2D);
+        else
+            timerStopEvent->SetFloat("max_vel_2D", pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][1]);
+        pPlayer->m_PlayerRunStats.m_flStageExitSpeed[0][1] = endvel2D;
+
+        timerStopEvent->SetFloat("time", GetLastRunTime());
+        gameeventmanager->FireEvent(timerStopEvent);
+    }
     if (pPlayer)
     {
         pPlayer->m_RunData.m_bIsInZone = endTrigger;

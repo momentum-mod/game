@@ -202,8 +202,6 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         if (pPlayer != nullptr)
         {
             pPlayer->EmitSound("Momentum.StopTimer");
-            pPlayer->m_flLastRunTime =
-                static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         }
 
         // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?

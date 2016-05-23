@@ -314,8 +314,6 @@ void CHudMapFinishedDialog::Paint()
 }
 void CHudMapFinishedDialog::OnThink()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-
     if (g_MOMEventListener)
     {
         m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
@@ -333,7 +331,6 @@ void CHudMapFinishedDialog::OnThink()
         m_flAvgSync = g_MOMEventListener->stats.m_flStageStrafeSync2Avg[0];
         m_iTotalJumps = g_MOMEventListener->stats.m_iStageJumps[0];
         m_iTotalStrafes = g_MOMEventListener->stats.m_iStageStrafes[0];
+        mom_UTIL->FormatTime(g_MOMEventListener->m_flLastRunTime, m_pszRunTime);
     }
-    if (pPlayer != nullptr)
-        mom_UTIL->FormatTime(pPlayer->m_flLastRunTime, m_pszRunTime);
 }

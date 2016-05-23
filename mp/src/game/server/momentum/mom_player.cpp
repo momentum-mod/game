@@ -231,7 +231,6 @@ void CMomentumPlayer::CheckForBhop()
 
 void CMomentumPlayer::UpdateRunStats()
 {
-    // should velocity be XY or XYZ?
     IGameEvent *playerMoveEvent = gameeventmanager->CreateEvent("keypress");
     float velocity = GetLocalVelocity().Length();
     float velocity2D = GetLocalVelocity().Length2D();
@@ -241,9 +240,6 @@ void CMomentumPlayer::UpdateRunStats()
         int currentStage = g_Timer->GetCurrentStageNumber();
         if (!m_bPrevTimerRunning) // timer started on this tick
         {
-            // Reset old run stats -- moved to on start's touch
-            m_PlayerRunStats.m_flStageEnterSpeed[0][0] = velocity;
-            m_PlayerRunStats.m_flStageEnterSpeed[0][1] = velocity2D;
             // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
             // (for surf)
             if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)

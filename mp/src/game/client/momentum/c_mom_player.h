@@ -46,9 +46,6 @@ public:
 
     CMOMRunEntityData m_RunData;
 
-
-    float m_flLastRunTime;
-
     void GetBulletTypeParameters(
         int iBulletType,
         float &fPenetrationPower,

@@ -277,7 +277,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
-    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
     IGameEvent *stageEvent = gameeventmanager->CreateEvent("stage_enter");
 
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
@@ -286,38 +285,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         g_Timer->SetEndTrigger(this);
         if (g_Timer->IsRunning() && !pPlayer->IsWatchingReplay())
         {
-            //send run stats via GameEventManager
-            if (timerStopEvent)
-            {
-                timerStopEvent->SetFloat("avg_sync", pPlayer->m_PlayerRunStats.m_flStageStrafeSyncAvg[0]);
-                timerStopEvent->SetFloat("avg_sync2", pPlayer->m_PlayerRunStats.m_flStageStrafeSync2Avg[0]);
-                timerStopEvent->SetInt("num_strafes", pPlayer->m_PlayerRunStats.m_iStageStrafes[0]);
-                timerStopEvent->SetInt("num_jumps", pPlayer->m_PlayerRunStats.m_iStageJumps[0]);
-
-                //3D VELCOCITY STATS - INDEX 0
-                timerStopEvent->SetFloat("avg_vel", pPlayer->m_PlayerRunStats.m_flStageVelocityAvg[0][0]);
-                timerStopEvent->SetFloat("start_vel", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[0][0]);
-                float endvel = pPlayer->GetLocalVelocity().Length();
-                timerStopEvent->SetFloat("end_vel", endvel);
-                if (endvel > pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][0])
-                    timerStopEvent->SetFloat("max_vel", endvel);
-                else
-                    timerStopEvent->SetFloat("max_vel", pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][0]);
-                pPlayer->m_PlayerRunStats.m_flStageExitSpeed[0][0] = endvel; //we have to set end speed here or else it will be saved as 0 
-
-                //2D VELOCITY STATS - INDEX 1
-                timerStopEvent->SetFloat("avg_vel_2D", pPlayer->m_PlayerRunStats.m_flStageVelocityAvg[0][1]);
-                timerStopEvent->SetFloat("start_vel_2D", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[0][1]);
-                float endvel2D = pPlayer->GetLocalVelocity().Length2D();
-                timerStopEvent->SetFloat("end_vel_2D", endvel2D);
-                if (endvel2D > pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][1])
-                    timerStopEvent->SetFloat("max_vel_2D", endvel2D);
-                else
-                    timerStopEvent->SetFloat("max_vel_2D", pPlayer->m_PlayerRunStats.m_flStageVelocityMax[0][1]);
-                pPlayer->m_PlayerRunStats.m_flStageExitSpeed[0][1] = endvel2D;
-                gameeventmanager->FireEvent(timerStopEvent);
-            }
-
             if (stageEvent)
             {
                 //The last stage is a bit of a doozy.
