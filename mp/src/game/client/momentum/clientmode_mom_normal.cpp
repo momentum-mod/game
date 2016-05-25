@@ -19,7 +19,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//extern bool g_bRollingCredits; MOM_TODO: reinstate this boolean!!
+extern bool g_bRollingCredits;
 
 ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 90.0, true, 179.0);
 
@@ -114,8 +114,7 @@ void ClientModeMOMNormal::Init()
 
 bool ClientModeMOMNormal::ShouldDrawCrosshair(void)
 {
-    return true;//MOM_TODO: reinstate the g_bRollingCredits when hud_credits is copied over.
-    //return (g_bRollingCredits == false);
+    return (g_bRollingCredits == false);
 }
 
 int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
