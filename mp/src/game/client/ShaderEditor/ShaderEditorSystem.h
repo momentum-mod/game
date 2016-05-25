@@ -16,44 +16,34 @@ public:
 	ShaderEditorHandler( char const *name );
 	~ShaderEditorHandler();
 
-	virtual bool Init();
-	virtual void Shutdown();
+    bool Init() override;
+    void Shutdown() override;
 
-	virtual void Update( float frametime );
-	virtual void PreRender();
-	virtual void PostRender();
-
-#ifdef SOURCE_2006
-	void CustomViewRender( int *viewId, const VisibleFogVolumeInfo_t &fogVolumeInfo );
-#else
+    void Update( float frametime ) override;
+    void PreRender() override;
+    void PostRender() override;
 	void CustomViewRender( int *viewId, const VisibleFogVolumeInfo_t &fogVolumeInfo, const WaterRenderInfo_t &waterRenderInfo );
-#endif
-	void CustomPostRender();
-	void UpdateSkymask( bool bCombineMode = false );
+	void CustomPostRender() const;
+	void UpdateSkymask( bool bCombineMode = false ) const;
 
-	const bool IsReady();
-	int &GetViewIdForModify();
-	const VisibleFogVolumeInfo_t &GetFogVolumeInfo();
-#ifndef SOURCE_2006
-	const WaterRenderInfo_t &GetWaterRenderInfo();
-#endif
+	bool IsReady() const;
+	int &GetViewIdForModify() const;
+	const VisibleFogVolumeInfo_t &GetFogVolumeInfo() const;
+	const WaterRenderInfo_t &GetWaterRenderInfo() const;
 
 private:
 	bool m_bReady;
 
-	void RegisterCallbacks();
-	void PrepareCallbackData();
+	void RegisterCallbacks() const;
+	void PrepareCallbackData() const;
 
-	void RegisterViewRenderCallbacks();
+	void RegisterViewRenderCallbacks() const;
 
 	int *m_piCurrentViewId;
 	VisibleFogVolumeInfo_t m_tFogVolumeInfo;
-#ifndef SOURCE_2006
 	WaterRenderInfo_t m_tWaterRenderInfo;
-#endif
 };
 
 extern ShaderEditorHandler *g_ShaderEditorSystem;
-
 
 #endif

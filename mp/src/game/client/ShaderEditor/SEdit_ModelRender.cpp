@@ -60,7 +60,7 @@ SEditModelRender *sEditMRender = &__g_ShaderEditorMReder;
 
 SEditModelRender::SEditModelRender( char const *name ) : CAutoGameSystemPerFrame( name )
 {
-	pModelInstance = NULL;
+	pModelInstance = nullptr;
 	m_iNumPoseParams = 0;
 	DestroyModel();
 }
@@ -131,7 +131,7 @@ bool SEditModelRender::LoadModel( const char *localPath )
 	Q_strcpy( m_szModelPath, localPath );
 
 	C_BaseFlex *pEnt = new C_BaseFlex();
-	pEnt->InitializeAsClientEntity( NULL,
+	pEnt->InitializeAsClientEntity(nullptr,
 #if SWARM_DLL
 		false
 #else
@@ -164,7 +164,7 @@ void SEditModelRender::DestroyModel()
 	if ( pModelInstance )
 		pModelInstance->Remove();
 
-	pModelInstance = NULL;
+	pModelInstance = nullptr;
 	m_szModelPath[0] = '\0';
 	m_iNumPoseParams = 0;
 }
@@ -191,7 +191,7 @@ void SEditModelRender::DestroyCharPtrList( char ***szList )
 	{
 		delete [] (**szList);
 		delete [] (*szList);
-		*szList = NULL;
+		*szList = nullptr;
 	}
 }
 
@@ -224,7 +224,7 @@ int SEditModelRender::QuerySequences( char ***list )
 	CUtlVector< const char* >hNameList;
 	for ( int i = 0; i < numSequences; i++ )
 	{
-		const char *seqName = NULL;
+		const char *seqName = nullptr;
 		const mstudioseqdesc_t &seqPtr = *hSeqs[ i ];
 		if ( seqPtr.pszLabel() )
 			seqName = seqPtr.pszLabel();
@@ -320,8 +320,8 @@ int SEditModelRender::MaterialPicker( char ***szMat )
 		return 0;
 
 	int numMaterials = 0;
-	IMaterial **MatList = NULL;
-	studiohdr_t *pSHdr = NULL;
+	IMaterial **MatList = nullptr;
+	studiohdr_t *pSHdr = nullptr;
 
 	if ( tr.DidHitWorld() )
 	{
