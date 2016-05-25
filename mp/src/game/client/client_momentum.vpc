@@ -14,7 +14,7 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories		"$BASE;momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
-		$PreprocessorDefinitions			"$BASE"
+		$PreprocessorDefinitions			"$BASE;SOURCE_2013"
 	}
 }
 
@@ -136,6 +136,25 @@ $Project "Client (Momentum)"
 				$File "$SRCDIR\game\shared\momentum\util\mom_util.h"
                 $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
 			}
+            
+            $Folder "Shader Editor" [$WIN32]
+		    {
+			    $Folder	"Header Files"
+			    {
+				    $File	"$SRCDIR\game\client\ShaderEditor\ISEdit_ModelRender.h"
+                    $File	"$SRCDIR\game\client\ShaderEditor\IVShaderEditor.h"
+                    $File	"$SRCDIR\game\client\ShaderEditor\ShaderEditorSystem.h"
+                    $File	"$SRCDIR\game\client\ShaderEditor\SEdit_ModelRender.h"
+                    $File	"$SRCDIR\game\client\ShaderEditor\Grass\CGrassCluster.h"
+                }
+ 
+                $Folder	"Implementation Files"
+                {
+                    $File	"$SRCDIR\game\client\ShaderEditor\ShaderEditorSystem.cpp"
+                    $File	"$SRCDIR\game\client\ShaderEditor\SEdit_ModelRender.cpp"
+                    $File	"$SRCDIR\game\client\ShaderEditor\Grass\CGrassCluster.cpp"
+                }
+            }
 
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
 			$File   "$SRCDIR\game\shared\momentum\mom_gamemovement.h"
