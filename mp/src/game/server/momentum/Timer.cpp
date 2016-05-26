@@ -239,6 +239,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
+        m_iEndTick = gpGlobals->tickcount;
+
         // Post time to leaderboards if they're online
         // and if cheats haven't been turned on this session
         if (SteamAPI_IsSteamRunning())
@@ -311,9 +313,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
         g_ReplaySystem->StopRecording(pPlayer, !endTrigger, endTrigger);
 
     SetRunning(false);
-    m_iEndTick = gpGlobals->tickcount;
     DispatchStateMessage();
-    m_iEndTick = gpGlobals->tickcount;
 }
 void CTimer::OnMapEnd(const char *pMapName)
 {
