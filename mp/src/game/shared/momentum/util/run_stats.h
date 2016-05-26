@@ -5,9 +5,9 @@
 
 struct RunStats_t
 {
-    RunStats_t()
+    RunStats_t(int size = MAX_STAGES)
     {
-        for (int i = 0; i < MAX_STAGES; i++)
+        for (int i = 0; i < size; i++)
         {
             m_iStageJumps[i] = 0;
             m_iStageStrafes[i] = 0;
@@ -44,12 +44,13 @@ struct RunStats_t
         }
         return *this;
     }
+    float niggers[];
+    niggers = float[MAX_STAGES];
     //MOM_TODO: We're going to hold an unbiased view at both
     //checkpoint and stages. If a map is linear yet has checkpoints,
     //it can be free to use these below to display stats for the player to compare against.
 
     //Note: Passing 0 as the index to any of these will return overall.
-   
     //Keypress
     int m_iStageJumps[MAX_STAGES],//Amount of jumps per stage
         m_iStageStrafes[MAX_STAGES];//Amount of strafes per stage

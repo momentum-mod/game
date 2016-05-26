@@ -72,6 +72,7 @@ void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
 replay_header_t CMomentumReplaySystem::CreateHeader()
 {
     replay_header_t header;
+    header.numZones = g_Timer->GetStageCount();
     Q_strcpy(header.demofilestamp, REPLAY_HEADER_ID);
     header.demoProtoVersion = REPLAY_PROTOCOL_VERSION;
     Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
@@ -83,8 +84,29 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
     header.runTime = g_Timer->GetLastRunTime();
     time(&header.unixEpocDate);
 
-    header.stats = m_player->m_PlayerRunStats; //copy ALL run stats using operator overload
     return header;
+}
+replay_stats_t CMomentumReplaySystem::CreateStats()
+{
+    replay_stats_t runStats = replay_stats_t(g_Timer->GetStageCount());
+
+    for (int i = 0; i < runStats.arraySize; i++)
+    {
+        runStats.stats.m_iStageJumps[i] = m_player->m_PlayerRunStats.m_iStageJumps[i];
+        runStats.stats.m_iStageStrafes[i] = m_player->m_PlayerRunStats.m_iStageStrafes[i];
+        runStats.stats.m_flStageStrafeSyncAvg[i] = m_player->m_PlayerRunStats.m_flStageStrafeSyncAvg[i];
+        runStats.stats.m_flStageStrafeSync2Avg[i] = m_player->m_PlayerRunStats.m_flStageStrafeSync2Avg[i];
+        runStats.stats.m_flStageEnterTime[i] = m_player->m_PlayerRunStats.m_flStageEnterTime[i];
+        runStats.stats.m_flStageTime[i] = m_player->m_PlayerRunStats.m_flStageTime[i];
+        for (int k = 0; k < 2; k++)
+        {
+            runStats.stats.m_flStageVelocityMax[i][k] = m_player->m_PlayerRunStats.m_flStageVelocityMax[i][k];
+            runStats.stats.m_flStageVelocityAvg[i][k] = m_player->m_PlayerRunStats.m_flStageVelocityAvg[i][k];
+            runStats.stats.m_flStageEnterSpeed[i][k] = m_player->m_PlayerRunStats.m_flStageEnterSpeed[i][k];
+            runStats.stats.m_flStageExitSpeed[i][k] = m_player->m_PlayerRunStats.m_flStageExitSpeed[i][k];
+        }
+    }
+    return runStats;
 }
 void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 {
@@ -96,11 +118,17 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 
         filesystem->Seek(m_fhFileHandle, 0, FILESYSTEM_SEEK_HEAD);
         filesystem->Write(&littleEndianHeader, sizeof(replay_header_t), m_fhFileHandle);
-        DevLog("\n\nreplay header size: %i\n", sizeof(replay_header_t));
+        DevLog("replay header size: %i\n", sizeof(replay_header_t));
+
+        replay_stats_t littleEndianStats = CreateStats();
+        ByteSwap_replay_stats_t(littleEndianStats);
+        filesystem->Write(&littleEndianStats, sizeof(littleEndianStats), m_fhFileHandle);
+        DevLog("replay stats size: %i\n", sizeof(littleEndianStats));
 
         Assert(buf && buf->IsValid());
         //write write from the CUtilBuffer to our filehandle:
         filesystem->Write(buf->Base(), buf->TellPut(), m_fhFileHandle);
+        DevLog("replay frame data size: %i\n", buf->Size());
         buf->Purge();
     }
 }
@@ -115,13 +143,16 @@ replay_frame_t* CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const 
 }
 replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char* filename)
 {
-    Q_memset(&m_replayHeader, 0, sizeof(m_replayHeader));
+    V_memset(&m_replayHeader, 0, sizeof(m_replayHeader));
+    V_memset(&m_replayStats, 0, sizeof(m_replayStats));
 
     Assert(file != FILESYSTEM_INVALID_HANDLE);
     filesystem->Seek(file, 0, FILESYSTEM_SEEK_HEAD);
     filesystem->Read(&m_replayHeader, sizeof(replay_header_t), file);
-
     ByteSwap_replay_header_t(m_replayHeader);
+
+    filesystem->Read(&m_replayStats, sizeof(RunStats_t(m_replayHeader.numZones)) + sizeof(int), file);
+    ByteSwap_replay_stats_t(m_replayStats);
 
     if (Q_strcmp(m_replayHeader.demofilestamp, REPLAY_HEADER_ID)) { //DEMO_HEADER_ID is __NOT__ the same as the stamp from the header we read from file
         ConMsg("%s has invalid replay header ID.\n", filename);
