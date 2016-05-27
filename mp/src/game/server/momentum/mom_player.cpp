@@ -333,7 +333,6 @@ void CMomentumPlayer::ResetRunStats()
     m_nAccelTicks = 0;
     m_RunData.m_flStrafeSync = 0;
     m_RunData.m_flStrafeSync2 = 0;
-    //(&m_PlayerRunStats)->~RunStats_t();//MOM_TODO: Free the old memory??
     m_PlayerRunStats = RunStats_t(g_Timer->GetStageCount());
 }
 void CMomentumPlayer::CalculateAverageStats()

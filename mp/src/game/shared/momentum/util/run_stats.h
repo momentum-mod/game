@@ -29,52 +29,42 @@ struct RunStats_t
             }
         }
     }
-    
-    //Note: This needs updating every time the struct is updated!!
-    inline void ReadFromFile(IFileSystem *fs, FileHandle_t file)
+
+    //Needed for HandleFile
+    static void Read(void const* pVoid, int size, FileHandle_t file)
     {
-        fs->Read(&m_iTotalZones, sizeof(m_iTotalZones), file);
-        for (int i = 0; i < m_iTotalZones; i++)
-        {
-            fs->Read(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
-            fs->Read(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
-            fs->Read(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-
-            fs->Read(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-            fs->Read(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
-            fs->Read(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
-            fs->Read(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
-
-            for (int k = 0; k < 2; k++)
-            {
-                fs->Read(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
-                fs->Read(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
-                fs->Read(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
-                fs->Read(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
-            }
-        }
+        filesystem->Read(&pVoid, size, file);
     }
 
-    inline void WriteToFile(IFileSystem *fs, FileHandle_t file)
+    //Needed for HandleFile
+    static void Write(void const* pVoid, int size, FileHandle_t file)
     {
-        fs->Write(&m_iTotalZones, sizeof(m_iTotalZones), file);
+        filesystem->Write(&pVoid, size, file);
+    }
+    
+    //Note: This needs updating every time the struct is updated!!
+    void HandleFile(IFileSystem *fs, FileHandle_t file, bool read) const
+    {
+        void (*handle)(void const*, int, FileHandle_t) = read ? &Read : &Write;
+        
+        handle(&m_iTotalZones, sizeof(m_iTotalZones), file);
         for (int i = 0; i < m_iTotalZones; i++)
         {
-            fs->Write(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
-            fs->Write(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
-            fs->Write(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+            handle(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
+            handle(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
+            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
 
-            fs->Write(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-            fs->Write(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
-            fs->Write(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
-            fs->Write(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
+            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+            handle(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
+            handle(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
+            handle(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
 
             for (int k = 0; k < 2; k++)
             {
-                fs->Write(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
-                fs->Write(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
-                fs->Write(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
-                fs->Write(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
+                handle(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
+                handle(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
+                handle(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
+                handle(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
             }
         }
     }
@@ -103,12 +93,7 @@ struct RunStats_t
         return *this;
     }
 
-    // MOM_TODO: We're going to hold an unbiased view at both
-    // checkpoint and stages. If a map is linear yet has checkpoints,
-    // it can be free to use these below to display stats for the player to compare against.
-
     // Note: Passing 0 as the index to any of these will return the overall stat, i.e during the entire run.
-
     int m_iTotalZones; //Required for the operator= overload
 
     // Keypress

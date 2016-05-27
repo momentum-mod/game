@@ -35,8 +35,21 @@ public:
 
     bool ShouldDraw() override
     {
+        bool shouldDrawLocal = false;
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && pPlayer->m_RunData.m_bMapFinished;
+        if (pPlayer)
+        {
+            if (pPlayer->IsWatchingReplay())
+            {
+                C_MomentumReplayGhostEntity *pEnt = pPlayer->GetReplayEnt();
+                shouldDrawLocal = pEnt && pEnt->m_RunData.m_bMapFinished;
+            }
+            else
+            {
+                shouldDrawLocal = pPlayer->m_RunData.m_bMapFinished;
+            }
+        }
+        return CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
     void Paint() override;
@@ -314,7 +327,8 @@ void CHudMapFinishedDialog::Paint()
 }
 void CHudMapFinishedDialog::OnThink()
 {
-    if (g_MOMEventListener)
+    C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (g_MOMEventListener && pPlayer)
     {
         m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
         m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
@@ -323,6 +337,7 @@ void CHudMapFinishedDialog::OnThink()
 
         ConVarRef hvel("mom_speedometer_hvel");
         //MOM_TODO: Are we going to update to read replay file stats?
+        //RunStats_t *stats = pPlayer->IsWatchingReplay() ? &g_MOMEventListener->stats : pPlayer->GetReplayEnt()->m_RunData.m_RunStats;
         m_flAvgSpeed = g_MOMEventListener->stats.m_flZoneVelocityAvg[0][hvel.GetBool()];
         m_flMaxSpeed = g_MOMEventListener->stats.m_flZoneVelocityMax[0][hvel.GetBool()];
         m_flEndSpeed = g_MOMEventListener->stats.m_flZoneExitSpeed[0][hvel.GetBool()];

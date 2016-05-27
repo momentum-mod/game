@@ -99,9 +99,9 @@ void CTimer::LoadLocalTimes(const char *szMapname)
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {
-                if (!Q_strnicmp(subKv->GetName(), "stage", strlen("stage")))
+                if (!Q_strnicmp(subKv->GetName(), "zone", strlen("zone")))
                 {
-                    int i = Q_atoi(subKv->GetName() + 6); //atoi will need to ignore "stage " and only return the stage number
+                    int i = Q_atoi(subKv->GetName() + 5); //atoi will need to ignore "zone " and only return the stage number
                     t.RunStats.m_iZoneJumps[i] = subKv->GetInt("num_jumps");
                     t.RunStats.m_iZoneStrafes[i] = subKv->GetInt("num_strafes");
                     t.RunStats.m_flZoneTime[i] = subKv->GetFloat("time");
@@ -121,7 +121,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
                     t.RunStats.m_flZoneEnterSpeed[i][1] = subKv->GetFloat("stage_enter_vel_2D");
                     t.RunStats.m_flZoneExitSpeed[i][1] = subKv->GetFloat("stage_exit_vel_2D");
                 }
-                if (!Q_strcmp(subKv->GetName(), "total"))
+                if (!Q_strncmp(subKv->GetName(), "total", Q_strlen("total")))
                 {
                     t.RunStats.m_iZoneJumps[0] = subKv->GetInt("jumps");
                     t.RunStats.m_iZoneStrafes[0] = subKv->GetInt("strafes");
@@ -189,7 +189,7 @@ void CTimer::SaveTime()
         {
             for (int i2 = 1; i2 <= GetStageCount(); i2++) 
             {
-                Q_snprintf(stageName, sizeof(stageName), "stage %d", i2);//MOM_TODO: || checkpoint %d
+                Q_snprintf(stageName, sizeof(stageName), "zone %d", i2);//MOM_TODO: || checkpoint %d
 
                 KeyValues *pStageKey = new KeyValues(stageName);
                 pStageKey->SetFloat("time", t.RunStats.m_flZoneTime[i2]);

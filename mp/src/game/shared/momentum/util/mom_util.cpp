@@ -292,7 +292,7 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
         {
             FOR_EACH_SUBKEY(bestRun, kv)
             {
-                if (!Q_strnicmp(kv->GetName(), "stage", strlen("stage"))) // MOM_TODO: or "checkpoint" (for linears)
+                if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
                 {
                     // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
                     // I'm thinking the name could be like "(user): (Time)"

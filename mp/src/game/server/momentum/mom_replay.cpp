@@ -122,7 +122,7 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 
         RunStats_t littleEndianStats = CreateStats();
         ByteSwap_replay_stats_t(littleEndianStats);
-        littleEndianStats.WriteToFile(filesystem, m_fhFileHandle);
+        littleEndianStats.HandleFile(filesystem, m_fhFileHandle, false);
         //filesystem->Write(&littleEndianStats, sizeof(littleEndianStats), m_fhFileHandle);
         DevLog("replay stats size: %i\n", sizeof(littleEndianStats));
 
@@ -155,7 +155,7 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
     //Create and read into the replayStats
     m_replayStats = RunStats_t(m_replayHeader.numZones);
     
-    m_replayStats.ReadFromFile(filesystem, file);
+    m_replayStats.HandleFile(filesystem, file, true);
     //filesystem->Read(&m_replayStats, sizeof(replay_stats_t), file);
 
     ByteSwap_replay_stats_t(m_replayStats);

@@ -404,7 +404,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
                 //destinationIndex = cp->GetInt("destination", 1);
                 linkedtrigger = cp->GetString("destinationname", NULL);
             }
-            else if (Q_strcmp(cp->GetName(), "stage") == 0)
+            else if (!Q_strcmp(cp->GetName(), "stage") || !Q_strcmp(cp->GetName(), "zone"))
             {
                 zoneType = MOMZONETYPE_STAGE;
                 index = cp->GetInt("number", 0);

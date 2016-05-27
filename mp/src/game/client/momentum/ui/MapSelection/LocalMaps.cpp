@@ -63,7 +63,7 @@ bool MapHasStages(const char* szMap)
 
         if (kvMap->LoadFromFile(filesystem, path, "MOD"))
         {
-            found = (kvMap->FindKey("stage") != NULL);
+            found = (kvMap->FindKey("zone") != NULL);
         }
         kvMap->deleteThis();
     }
