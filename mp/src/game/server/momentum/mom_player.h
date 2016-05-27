@@ -119,8 +119,8 @@ class CMomentumPlayer : public CBasePlayer
     RunStats_t m_PlayerRunStats;
 
     // for calc avg
-    int m_nStageAvgCount[MAX_STAGES];
-    float m_flStageTotalSync[MAX_STAGES], m_flStageTotalSync2[MAX_STAGES], m_flStageTotalVelocity[MAX_STAGES][2];
+    int m_nZoneAvgCount[MAX_STAGES];
+    float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
 
   private:
     CountdownTimer m_ladderSurpressionTimer;

@@ -20,18 +20,18 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp("timer_stopped", pEvent->GetName()))
     {
-        stats.m_flStageStrafeSyncAvg[0] = pEvent->GetFloat("avg_sync");
-        stats.m_flStageStrafeSync2Avg[0] = pEvent->GetFloat("avg_sync2");
+        stats.m_flZoneStrafeSyncAvg[0] = pEvent->GetFloat("avg_sync");
+        stats.m_flZoneStrafeSync2Avg[0] = pEvent->GetFloat("avg_sync2");
         //3D
-        stats.m_flStageEnterSpeed[0][0] = pEvent->GetFloat("start_vel");
-        stats.m_flStageExitSpeed[0][0] = pEvent->GetFloat("end_vel");
-        stats.m_flStageVelocityAvg[0][0] = pEvent->GetFloat("avg_vel");
-        stats.m_flStageVelocityMax[0][0] = pEvent->GetFloat("max_vel");
+        stats.m_flZoneEnterSpeed[0][0] = pEvent->GetFloat("start_vel");
+        stats.m_flZoneExitSpeed[0][0] = pEvent->GetFloat("end_vel");
+        stats.m_flZoneVelocityAvg[0][0] = pEvent->GetFloat("avg_vel");
+        stats.m_flZoneVelocityMax[0][0] = pEvent->GetFloat("max_vel");
         //2D
-        stats.m_flStageEnterSpeed[0][1] = pEvent->GetFloat("start_vel_2D");
-        stats.m_flStageExitSpeed[0][1] = pEvent->GetFloat("end_vel_2D");
-        stats.m_flStageVelocityAvg[0][1] = pEvent->GetFloat("avg_vel_2D");
-        stats.m_flStageVelocityMax[0][1] = pEvent->GetFloat("max_vel_2D");
+        stats.m_flZoneEnterSpeed[0][1] = pEvent->GetFloat("start_vel_2D");
+        stats.m_flZoneExitSpeed[0][1] = pEvent->GetFloat("end_vel_2D");
+        stats.m_flZoneVelocityAvg[0][1] = pEvent->GetFloat("avg_vel_2D");
+        stats.m_flZoneVelocityMax[0][1] = pEvent->GetFloat("max_vel_2D");
 
         m_flLastRunTime = pEvent->GetFloat("time");
     }
@@ -42,29 +42,29 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 
         int currentStage = pEvent->GetInt("stage_num");
         //Note: stage_enter_time will NOT change upon multiple entries to the same stage trigger (only set once per run)
-        stats.m_flStageEnterTime[currentStage] = pEvent->GetFloat("stage_enter_time");
+        stats.m_flZoneEnterTime[currentStage] = pEvent->GetFloat("stage_enter_time");
         //Reset the stage enter speed for the speedometer
-        stats.m_flStageEnterSpeed[currentStage][0] = 0.0f;
-        stats.m_flStageEnterSpeed[currentStage][1] = 0.0f;
+        stats.m_flZoneEnterSpeed[currentStage][0] = 0.0f;
+        stats.m_flZoneEnterSpeed[currentStage][1] = 0.0f;
 
         if (currentStage > 1) //MOM_TODO: || m_iStageCount < 2 (linear maps use checkpoints?)
         {
             //The first stage doesn't have its time yet, we calculate it upon going into stage 2+
-            stats.m_flStageTime[currentStage - 1] = stats.m_flStageEnterTime[currentStage] - stats.m_flStageEnterTime[currentStage - 1];
+            stats.m_flZoneTime[currentStage - 1] = stats.m_flZoneEnterTime[currentStage] - stats.m_flZoneEnterTime[currentStage - 1];
             //And the rest of the stats are about the previous stage anyways, not calculated during stage 1 (start)
-            stats.m_flStageStrafeSyncAvg[currentStage - 1] = pEvent->GetFloat("avg_sync");
-            stats.m_flStageStrafeSync2Avg[currentStage - 1] = pEvent->GetFloat("avg_sync2");
+            stats.m_flZoneStrafeSyncAvg[currentStage - 1] = pEvent->GetFloat("avg_sync");
+            stats.m_flZoneStrafeSync2Avg[currentStage - 1] = pEvent->GetFloat("avg_sync2");
 
-            stats.m_flStageExitSpeed[currentStage - 1][0] = pEvent->GetFloat("stage_exit_vel");
-            stats.m_flStageVelocityAvg[currentStage - 1][0] = pEvent->GetFloat("avg_vel");
-            stats.m_flStageVelocityMax[currentStage - 1][0] = pEvent->GetFloat("max_vel");
+            stats.m_flZoneExitSpeed[currentStage - 1][0] = pEvent->GetFloat("stage_exit_vel");
+            stats.m_flZoneVelocityAvg[currentStage - 1][0] = pEvent->GetFloat("avg_vel");
+            stats.m_flZoneVelocityMax[currentStage - 1][0] = pEvent->GetFloat("max_vel");
 
-            stats.m_flStageExitSpeed[currentStage - 1][1] = pEvent->GetFloat("stage_exit_vel_2D");
-            stats.m_flStageVelocityAvg[currentStage - 1][1] = pEvent->GetFloat("avg_vel_2D");
-            stats.m_flStageVelocityMax[currentStage - 1][1] = pEvent->GetFloat("max_vel_2D");
+            stats.m_flZoneExitSpeed[currentStage - 1][1] = pEvent->GetFloat("stage_exit_vel_2D");
+            stats.m_flZoneVelocityAvg[currentStage - 1][1] = pEvent->GetFloat("avg_vel_2D");
+            stats.m_flZoneVelocityMax[currentStage - 1][1] = pEvent->GetFloat("max_vel_2D");
 
-            stats.m_iStageJumps[currentStage - 1] = pEvent->GetInt("num_jumps");
-            stats.m_iStageStrafes[currentStage - 1] = pEvent->GetInt("num_strafes");
+            stats.m_iZoneJumps[currentStage - 1] = pEvent->GetInt("num_jumps");
+            stats.m_iZoneStrafes[currentStage - 1] = pEvent->GetInt("num_strafes");
         } 
     }
     else if (!Q_strcmp("stage_exit", pEvent->GetName()))
@@ -76,9 +76,9 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         for (int i = 0; i < 2; i++)
         {
             float vel = i == 0 ? enterVel : enterVel2D;
-            stats.m_flStageEnterSpeed[currentStage][i] = vel;
+            stats.m_flZoneEnterSpeed[currentStage][i] = vel;
             if (currentStage == 1)
-                stats.m_flStageEnterSpeed[currentStage - 1][i] = vel;//Set overall enter vel
+                stats.m_flZoneEnterSpeed[currentStage - 1][i] = vel;//Set overall enter vel
         }
     }
     else if (!Q_strcmp("run_save", pEvent->GetName()))
@@ -97,8 +97,8 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     }
     else if (!Q_strcmp("keypress", pEvent->GetName()))
     {
-        stats.m_iStageJumps[0] = pEvent->GetInt("num_jumps");
-        stats.m_iStageStrafes[0] = pEvent->GetInt("num_strafes");
+        stats.m_iZoneJumps[0] = pEvent->GetInt("num_jumps");
+        stats.m_iZoneStrafes[0] = pEvent->GetInt("num_strafes");
     }
     else if (!Q_strcmp("map_init", pEvent->GetName()))
     {

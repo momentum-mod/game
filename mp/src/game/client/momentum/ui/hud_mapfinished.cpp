@@ -323,14 +323,14 @@ void CHudMapFinishedDialog::OnThink()
 
         ConVarRef hvel("mom_speedometer_hvel");
         //MOM_TODO: Are we going to update to read replay file stats?
-        m_flAvgSpeed = g_MOMEventListener->stats.m_flStageVelocityAvg[0][hvel.GetBool()];
-        m_flMaxSpeed = g_MOMEventListener->stats.m_flStageVelocityMax[0][hvel.GetBool()];
-        m_flEndSpeed = g_MOMEventListener->stats.m_flStageExitSpeed[0][hvel.GetBool()];
-        m_flStartSpeed = g_MOMEventListener->stats.m_flStageEnterSpeed[0][hvel.GetBool()];
-        m_flAvgSync2 = g_MOMEventListener->stats.m_flStageStrafeSyncAvg[0];
-        m_flAvgSync = g_MOMEventListener->stats.m_flStageStrafeSync2Avg[0];
-        m_iTotalJumps = g_MOMEventListener->stats.m_iStageJumps[0];
-        m_iTotalStrafes = g_MOMEventListener->stats.m_iStageStrafes[0];
+        m_flAvgSpeed = g_MOMEventListener->stats.m_flZoneVelocityAvg[0][hvel.GetBool()];
+        m_flMaxSpeed = g_MOMEventListener->stats.m_flZoneVelocityMax[0][hvel.GetBool()];
+        m_flEndSpeed = g_MOMEventListener->stats.m_flZoneExitSpeed[0][hvel.GetBool()];
+        m_flStartSpeed = g_MOMEventListener->stats.m_flZoneEnterSpeed[0][hvel.GetBool()];
+        m_flAvgSync2 = g_MOMEventListener->stats.m_flZoneStrafeSyncAvg[0];
+        m_flAvgSync = g_MOMEventListener->stats.m_flZoneStrafeSync2Avg[0];
+        m_iTotalJumps = g_MOMEventListener->stats.m_iZoneJumps[0];
+        m_iTotalStrafes = g_MOMEventListener->stats.m_iZoneStrafes[0];
         mom_UTIL->FormatTime(g_MOMEventListener->m_flLastRunTime, m_pszRunTime);
     }
 }

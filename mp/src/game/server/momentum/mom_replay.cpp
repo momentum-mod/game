@@ -86,24 +86,24 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
 
     return header;
 }
-replay_stats_t CMomentumReplaySystem::CreateStats()
+RunStats_t CMomentumReplaySystem::CreateStats()
 {
-    replay_stats_t runStats = replay_stats_t(g_Timer->GetStageCount());
+    RunStats_t runStats = RunStats_t(g_Timer->GetStageCount());
 
-    for (int i = 0; i < runStats.arraySize; i++)
+    for (int i = 0; i < runStats.m_iTotalZones; i++)
     {
-        runStats.stats.m_iStageJumps[i] = m_player->m_PlayerRunStats.m_iStageJumps[i];
-        runStats.stats.m_iStageStrafes[i] = m_player->m_PlayerRunStats.m_iStageStrafes[i];
-        runStats.stats.m_flStageStrafeSyncAvg[i] = m_player->m_PlayerRunStats.m_flStageStrafeSyncAvg[i];
-        runStats.stats.m_flStageStrafeSync2Avg[i] = m_player->m_PlayerRunStats.m_flStageStrafeSync2Avg[i];
-        runStats.stats.m_flStageEnterTime[i] = m_player->m_PlayerRunStats.m_flStageEnterTime[i];
-        runStats.stats.m_flStageTime[i] = m_player->m_PlayerRunStats.m_flStageTime[i];
+        runStats.m_iZoneJumps[i] = m_player->m_PlayerRunStats.m_iZoneJumps[i];
+        runStats.m_iZoneStrafes[i] = m_player->m_PlayerRunStats.m_iZoneStrafes[i];
+        runStats.m_flZoneStrafeSyncAvg[i] = m_player->m_PlayerRunStats.m_flZoneStrafeSyncAvg[i];
+        runStats.m_flZoneStrafeSync2Avg[i] = m_player->m_PlayerRunStats.m_flZoneStrafeSync2Avg[i];
+        runStats.m_flZoneEnterTime[i] = m_player->m_PlayerRunStats.m_flZoneEnterTime[i];
+        runStats.m_flZoneTime[i] = m_player->m_PlayerRunStats.m_flZoneTime[i];
         for (int k = 0; k < 2; k++)
         {
-            runStats.stats.m_flStageVelocityMax[i][k] = m_player->m_PlayerRunStats.m_flStageVelocityMax[i][k];
-            runStats.stats.m_flStageVelocityAvg[i][k] = m_player->m_PlayerRunStats.m_flStageVelocityAvg[i][k];
-            runStats.stats.m_flStageEnterSpeed[i][k] = m_player->m_PlayerRunStats.m_flStageEnterSpeed[i][k];
-            runStats.stats.m_flStageExitSpeed[i][k] = m_player->m_PlayerRunStats.m_flStageExitSpeed[i][k];
+            runStats.m_flZoneVelocityMax[i][k] = m_player->m_PlayerRunStats.m_flZoneVelocityMax[i][k];
+            runStats.m_flZoneVelocityAvg[i][k] = m_player->m_PlayerRunStats.m_flZoneVelocityAvg[i][k];
+            runStats.m_flZoneEnterSpeed[i][k] = m_player->m_PlayerRunStats.m_flZoneEnterSpeed[i][k];
+            runStats.m_flZoneExitSpeed[i][k] = m_player->m_PlayerRunStats.m_flZoneExitSpeed[i][k];
         }
     }
     return runStats;
@@ -120,9 +120,10 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
         filesystem->Write(&littleEndianHeader, sizeof(replay_header_t), m_fhFileHandle);
         DevLog("replay header size: %i\n", sizeof(replay_header_t));
 
-        replay_stats_t littleEndianStats = CreateStats();
+        RunStats_t littleEndianStats = CreateStats();
         ByteSwap_replay_stats_t(littleEndianStats);
-        filesystem->Write(&littleEndianStats, sizeof(littleEndianStats), m_fhFileHandle);
+        littleEndianStats.WriteToFile(filesystem, m_fhFileHandle);
+        //filesystem->Write(&littleEndianStats, sizeof(littleEndianStats), m_fhFileHandle);
         DevLog("replay stats size: %i\n", sizeof(littleEndianStats));
 
         Assert(buf && buf->IsValid());
@@ -150,8 +151,13 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
     filesystem->Seek(file, 0, FILESYSTEM_SEEK_HEAD);
     filesystem->Read(&m_replayHeader, sizeof(replay_header_t), file);
     ByteSwap_replay_header_t(m_replayHeader);
+    
+    //Create and read into the replayStats
+    m_replayStats = RunStats_t(m_replayHeader.numZones);
+    
+    m_replayStats.ReadFromFile(filesystem, file);
+    //filesystem->Read(&m_replayStats, sizeof(replay_stats_t), file);
 
-    filesystem->Read(&m_replayStats, sizeof(RunStats_t(m_replayHeader.numZones)) + sizeof(int), file);
     ByteSwap_replay_stats_t(m_replayStats);
 
     if (Q_strcmp(m_replayHeader.demofilestamp, REPLAY_HEADER_ID)) { //DEMO_HEADER_ID is __NOT__ the same as the stamp from the header we read from file

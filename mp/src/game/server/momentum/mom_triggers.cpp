@@ -42,22 +42,22 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             {
                 stageEvent->SetInt("stage_num", stageNum);
                 stageEvent->SetFloat("stage_enter_time", g_Timer->CalculateStageTime(stageNum));
-                stageEvent->SetInt("num_jumps", pPlayer->m_PlayerRunStats.m_iStageJumps[stageNum - 1]);
-                stageEvent->SetFloat("num_strafes", pPlayer->m_PlayerRunStats.m_iStageStrafes[stageNum - 1]);
-                stageEvent->SetFloat("avg_sync", pPlayer->m_PlayerRunStats.m_flStageStrafeSyncAvg[stageNum - 1]);
-                stageEvent->SetFloat("avg_sync2", pPlayer->m_PlayerRunStats.m_flStageStrafeSync2Avg[stageNum - 1]);
+                stageEvent->SetInt("num_jumps", pPlayer->m_PlayerRunStats.m_iZoneJumps[stageNum - 1]);
+                stageEvent->SetFloat("num_strafes", pPlayer->m_PlayerRunStats.m_iZoneStrafes[stageNum - 1]);
+                stageEvent->SetFloat("avg_sync", pPlayer->m_PlayerRunStats.m_flZoneStrafeSyncAvg[stageNum - 1]);
+                stageEvent->SetFloat("avg_sync2", pPlayer->m_PlayerRunStats.m_flZoneStrafeSync2Avg[stageNum - 1]);
 
                 //3D VELOCITY
-                stageEvent->SetFloat("max_vel", pPlayer->m_PlayerRunStats.m_flStageVelocityMax[stageNum - 1][0]);
-                stageEvent->SetFloat("avg_vel", pPlayer->m_PlayerRunStats.m_flStageVelocityAvg[stageNum - 1][0]);
-                pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum - 1][0] = pPlayer->GetLocalVelocity().Length();
-                stageEvent->SetFloat("stage_exit_vel", pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum - 1][0]);
+                stageEvent->SetFloat("max_vel", pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[stageNum - 1][0]);
+                stageEvent->SetFloat("avg_vel", pPlayer->m_PlayerRunStats.m_flZoneVelocityAvg[stageNum - 1][0]);
+                pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][0] = pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_exit_vel", pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][0]);
 
                 //2D VELOCITY
-                stageEvent->SetFloat("max_vel_2D", pPlayer->m_PlayerRunStats.m_flStageVelocityMax[stageNum - 1][1]);
-                stageEvent->SetFloat("avg_vel_2D", pPlayer->m_PlayerRunStats.m_flStageVelocityAvg[stageNum - 1][1]);
-                pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum - 1][1] = pPlayer->GetLocalVelocity().Length2D();
-                stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum - 1][1]);
+                stageEvent->SetFloat("max_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[stageNum - 1][1]);
+                stageEvent->SetFloat("avg_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneVelocityAvg[stageNum - 1][1]);
+                pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][1] = pPlayer->GetLocalVelocity().Length2D();
+                stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][1]);
 
                 gameeventmanager->FireEvent(stageEvent);
 
@@ -102,12 +102,12 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
                 stageEvent->SetInt("stage_num", stageNum);
 
                 //3D VELOCITY
-                pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
-                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][0]);
+                pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_enter_vel", pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[stageNum][0]);
 
                 //2D VELOCITY
-                pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
-                stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_PlayerRunStats.m_flStageEnterSpeed[stageNum][1]);
+                pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
+                stageEvent->SetFloat("stage_enter_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[stageNum][1]);
 
                 gameeventmanager->FireEvent(stageEvent);
             }
@@ -291,16 +291,16 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                 //We need to store it in totalstages + 1 so that comparisons can 
                 //call forward for determining time spent on the last stage.
                 //We set the stage_num one higher so the last stage can still compare against it
-                int stageNum = g_Timer->GetCurrentStageNumber();
+                int stageNum = g_Timer->GetCurrentZoneNumber();
                 stageEvent->SetInt("stage_num", stageNum + 1);
                 //And then put the time we finished at as the enter time for the end trigger
                 stageEvent->SetFloat("stage_enter_time", g_Timer->GetLastRunTime());
 
                 //This is needed so we have an ending velocity.
-                pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
-                stageEvent->SetFloat("stage_exit_vel", pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum][0]);
-                pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
-                stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_PlayerRunStats.m_flStageExitSpeed[stageNum][1]);
+                pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
+                stageEvent->SetFloat("stage_exit_vel", pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum][0]);
+                pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
+                stageEvent->SetFloat("stage_exit_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum][1]);
                 gameeventmanager->FireEvent(stageEvent);
             }
             

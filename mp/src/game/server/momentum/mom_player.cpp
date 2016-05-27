@@ -217,9 +217,9 @@ void CMomentumPlayer::CheckForBhop()
             m_iSuccessiveBhops++;
             if (g_Timer->IsRunning())
             {
-                int currentStage = g_Timer->GetCurrentStageNumber();
-                m_PlayerRunStats.m_iStageJumps[0]++;
-                m_PlayerRunStats.m_iStageJumps[currentStage]++;
+                int currentZone = g_Timer->GetCurrentZoneNumber();
+                m_PlayerRunStats.m_iZoneJumps[0]++;
+                m_PlayerRunStats.m_iZoneJumps[currentZone]++;
             }
         }
     }
@@ -237,42 +237,42 @@ void CMomentumPlayer::UpdateRunStats()
 
     if (g_Timer->IsRunning())
     {
-        int currentStage = g_Timer->GetCurrentStageNumber();
+        int currentZone = g_Timer->GetCurrentZoneNumber();
         if (!m_bPrevTimerRunning) // timer started on this tick
         {
             // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
             // (for surf)
             if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
             {
-                m_PlayerRunStats.m_iStageJumps[0]++;
-                m_PlayerRunStats.m_iStageJumps[currentStage]++;
+                m_PlayerRunStats.m_iZoneJumps[0]++;
+                m_PlayerRunStats.m_iZoneJumps[currentZone]++;
             }
             if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
             {
-                m_PlayerRunStats.m_iStageStrafes[0]++;
-                m_PlayerRunStats.m_iStageStrafes[currentStage]++;
+                m_PlayerRunStats.m_iZoneStrafes[0]++;
+                m_PlayerRunStats.m_iZoneStrafes[currentZone]++;
             }
         }
         if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
         {
-            m_PlayerRunStats.m_iStageStrafes[0]++;
-            m_PlayerRunStats.m_iStageStrafes[currentStage]++;
+            m_PlayerRunStats.m_iZoneStrafes[0]++;
+            m_PlayerRunStats.m_iZoneStrafes[currentZone]++;
         }
         else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
         {
-            m_PlayerRunStats.m_iStageStrafes[0]++;
-            m_PlayerRunStats.m_iStageStrafes[currentStage]++;
+            m_PlayerRunStats.m_iZoneStrafes[0]++;
+            m_PlayerRunStats.m_iZoneStrafes[currentZone]++;
         }
         //  ---- MAX VELOCITY ----
-        if (velocity > m_PlayerRunStats.m_flStageVelocityMax[0][0])
-            m_PlayerRunStats.m_flStageVelocityMax[0][0] = velocity;
-        if (velocity2D > m_PlayerRunStats.m_flStageVelocityMax[0][1])
-            m_PlayerRunStats.m_flStageVelocityMax[0][1] = velocity;
+        if (velocity > m_PlayerRunStats.m_flZoneVelocityMax[0][0])
+            m_PlayerRunStats.m_flZoneVelocityMax[0][0] = velocity;
+        if (velocity2D > m_PlayerRunStats.m_flZoneVelocityMax[0][1])
+            m_PlayerRunStats.m_flZoneVelocityMax[0][1] = velocity;
         // also do max velocity per stage
-        if (velocity > m_PlayerRunStats.m_flStageVelocityMax[currentStage][0])
-            m_PlayerRunStats.m_flStageVelocityMax[currentStage][0] = velocity;
-        if (velocity2D > m_PlayerRunStats.m_flStageVelocityMax[currentStage][1])
-            m_PlayerRunStats.m_flStageVelocityMax[currentStage][1] = velocity2D;
+        if (velocity > m_PlayerRunStats.m_flZoneVelocityMax[currentZone][0])
+            m_PlayerRunStats.m_flZoneVelocityMax[currentZone][0] = velocity;
+        if (velocity2D > m_PlayerRunStats.m_flZoneVelocityMax[currentZone][1])
+            m_PlayerRunStats.m_flZoneVelocityMax[currentZone][1] = velocity2D;
         // ----------
 
         //  ---- STRAFE SYNC -----
@@ -316,8 +316,8 @@ void CMomentumPlayer::UpdateRunStats()
 
     if (playerMoveEvent)
     {
-        playerMoveEvent->SetInt("num_strafes", m_PlayerRunStats.m_iStageStrafes[0]);
-        playerMoveEvent->SetInt("num_jumps", m_PlayerRunStats.m_iStageJumps[0]);
+        playerMoveEvent->SetInt("num_strafes", m_PlayerRunStats.m_iZoneStrafes[0]);
+        playerMoveEvent->SetInt("num_jumps", m_PlayerRunStats.m_iZoneJumps[0]);
         bool onGround = GetFlags() & FL_ONGROUND;
         if ((m_nButtons & IN_JUMP) && onGround || m_nButtons & (IN_MOVELEFT | IN_MOVERIGHT))
             gameeventmanager->FireEvent(playerMoveEvent);
@@ -333,47 +333,47 @@ void CMomentumPlayer::ResetRunStats()
     m_nAccelTicks = 0;
     m_RunData.m_flStrafeSync = 0;
     m_RunData.m_flStrafeSync2 = 0;
-
-    m_PlayerRunStats = RunStats_t();
+    //(&m_PlayerRunStats)->~RunStats_t();//MOM_TODO: Free the old memory??
+    m_PlayerRunStats = RunStats_t(g_Timer->GetStageCount());
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
 
     if (g_Timer->IsRunning())
     {
-        int currentStage = g_Timer->GetCurrentStageNumber();
+        int currentZone = g_Timer->GetCurrentZoneNumber();
 
-        m_flStageTotalSync[currentStage] += m_RunData.m_flStrafeSync;
-        m_flStageTotalSync2[currentStage] += m_RunData.m_flStrafeSync2;
-        m_flStageTotalVelocity[currentStage][0] += GetLocalVelocity().Length();
-        m_flStageTotalVelocity[currentStage][1] += GetLocalVelocity().Length2D();
+        m_flZoneTotalSync[currentZone] += m_RunData.m_flStrafeSync;
+        m_flZoneTotalSync2[currentZone] += m_RunData.m_flStrafeSync2;
+        m_flZoneTotalVelocity[currentZone][0] += GetLocalVelocity().Length();
+        m_flZoneTotalVelocity[currentZone][1] += GetLocalVelocity().Length2D();
 
-        m_nStageAvgCount[currentStage]++;
+        m_nZoneAvgCount[currentZone]++;
 
-        m_PlayerRunStats.m_flStageStrafeSyncAvg[currentStage] =
-            m_flStageTotalSync[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_PlayerRunStats.m_flStageStrafeSync2Avg[currentStage] =
-            m_flStageTotalSync2[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_PlayerRunStats.m_flStageVelocityAvg[currentStage][0] =
-            m_flStageTotalVelocity[currentStage][0] / float(m_nStageAvgCount[currentStage]);
-        m_PlayerRunStats.m_flStageVelocityAvg[currentStage][1] =
-            m_flStageTotalVelocity[currentStage][1] / float(m_nStageAvgCount[currentStage]);
+        m_PlayerRunStats.m_flZoneStrafeSyncAvg[currentZone] =
+            m_flZoneTotalSync[currentZone] / float(m_nZoneAvgCount[currentZone]);
+        m_PlayerRunStats.m_flZoneStrafeSync2Avg[currentZone] =
+            m_flZoneTotalSync2[currentZone] / float(m_nZoneAvgCount[currentZone]);
+        m_PlayerRunStats.m_flZoneVelocityAvg[currentZone][0] =
+            m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]);
+        m_PlayerRunStats.m_flZoneVelocityAvg[currentZone][1] =
+            m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]);
 
         // stage 0 is "overall" - also update these as well, no matter which stage we are on
-        m_flStageTotalSync[0] += m_RunData.m_flStrafeSync;
-        m_flStageTotalSync2[0] += m_RunData.m_flStrafeSync2;
-        m_flStageTotalVelocity[0][0] += GetLocalVelocity().Length();
-        m_flStageTotalVelocity[0][1] += GetLocalVelocity().Length2D();
-        m_nStageAvgCount[0]++;
+        m_flZoneTotalSync[0] += m_RunData.m_flStrafeSync;
+        m_flZoneTotalSync2[0] += m_RunData.m_flStrafeSync2;
+        m_flZoneTotalVelocity[0][0] += GetLocalVelocity().Length();
+        m_flZoneTotalVelocity[0][1] += GetLocalVelocity().Length2D();
+        m_nZoneAvgCount[0]++;
 
-        m_PlayerRunStats.m_flStageStrafeSyncAvg[0] =
-            m_flStageTotalSync[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_PlayerRunStats.m_flStageStrafeSync2Avg[0] =
-            m_flStageTotalSync2[currentStage] / float(m_nStageAvgCount[currentStage]);
-        m_PlayerRunStats.m_flStageVelocityAvg[0][0] =
-            m_flStageTotalVelocity[currentStage][0] / float(m_nStageAvgCount[currentStage]);
-        m_PlayerRunStats.m_flStageVelocityAvg[0][1] =
-            m_flStageTotalVelocity[currentStage][1] / float(m_nStageAvgCount[currentStage]);
+        m_PlayerRunStats.m_flZoneStrafeSyncAvg[0] =
+            m_flZoneTotalSync[currentZone] / float(m_nZoneAvgCount[currentZone]);
+        m_PlayerRunStats.m_flZoneStrafeSync2Avg[0] =
+            m_flZoneTotalSync2[currentZone] / float(m_nZoneAvgCount[currentZone]);
+        m_PlayerRunStats.m_flZoneVelocityAvg[0][0] =
+            m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]);
+        m_PlayerRunStats.m_flZoneVelocityAvg[0][1] =
+            m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]);
     }
 
     // think once per 0.1 second interval so we avoid making the totals extremely large

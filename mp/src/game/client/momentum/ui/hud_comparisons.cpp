@@ -269,8 +269,8 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
     case TIME_OVERALL:
     case STAGE_TIME:
         // Get the time difference in seconds.
-        act = type == TIME_OVERALL ? g_MOMEventListener->stats.m_flStageEnterTime[stage + 1]
-            : g_MOMEventListener->stats.m_flStageTime[stage];
+        act = type == TIME_OVERALL ? g_MOMEventListener->stats.m_flZoneEnterTime[stage + 1]
+            : g_MOMEventListener->stats.m_flZoneTime[stage];
 
         if (m_bLoadedComparison)
             diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[stage]
@@ -286,43 +286,43 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference
-        act = g_MOMEventListener->stats.m_flStageVelocityAvg[stage][velType];
+        act = g_MOMEventListener->stats.m_flZoneVelocityAvg[stage][velType];
         if (m_bLoadedComparison)
             diff = act -
                    m_rcCurrentComparison->stageAvgVels[velType][stage - 1]; //- 1 due to array indexing (0 is stage 1)
         break;
     case VELOCITY_EXIT:
-        act = g_MOMEventListener->stats.m_flStageExitSpeed[stage][velType];
+        act = g_MOMEventListener->stats.m_flZoneExitSpeed[stage][velType];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageExitVels[velType][stage - 1];
         break;
     case VELOCITY_MAX:
-        act = g_MOMEventListener->stats.m_flStageVelocityMax[stage][velType];
+        act = g_MOMEventListener->stats.m_flZoneVelocityMax[stage][velType];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageMaxVels[velType][stage - 1];
         break;
     case VELOCITY_ENTER:
-        act = g_MOMEventListener->stats.m_flStageEnterSpeed[stage][velType];
+        act = g_MOMEventListener->stats.m_flZoneEnterSpeed[stage][velType];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageEnterVels[velType][stage - 1];
         break;
     case STAGE_SYNC1:
-        act = g_MOMEventListener->stats.m_flStageStrafeSyncAvg[stage];
+        act = g_MOMEventListener->stats.m_flZoneStrafeSyncAvg[stage];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageAvgSync1[stage - 1];
         break;
     case STAGE_SYNC2:
-        act = g_MOMEventListener->stats.m_flStageStrafeSync2Avg[stage];
+        act = g_MOMEventListener->stats.m_flZoneStrafeSync2Avg[stage];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageAvgSync2[stage - 1];
         break;
     case STAGE_JUMPS:
-        act = g_MOMEventListener->stats.m_iStageJumps[stage];
+        act = g_MOMEventListener->stats.m_iZoneJumps[stage];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageJumps[stage - 1];
         break;
     case STAGE_STRAFES:
-        act = g_MOMEventListener->stats.m_iStageStrafes[stage];
+        act = g_MOMEventListener->stats.m_iZoneStrafes[stage];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->stageStrafes[stage - 1];
         break;

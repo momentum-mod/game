@@ -68,7 +68,8 @@ public:
         m_pCurrentStage.Set(pTrigger);
         //DispatchStageMessage();
     }
-    int GetCurrentStageNumber() { return m_pCurrentStage.Get()->GetStageNumber(); }
+    int GetCurrentZoneNumber() const
+    { return m_pCurrentStage.Get() && m_pCurrentStage.Get()->GetStageNumber(); }
 
     // Calculates the stage count
     // Stores the result on m_iStageCount
@@ -183,7 +184,7 @@ private:
         int flags;
 
         //stage specific stats:
-        RunStats_t RunStats = RunStats_t();
+        RunStats_t RunStats;
     };
 
     struct Checkpoint
@@ -192,6 +193,7 @@ private:
         Vector vel;
         QAngle ang;
         char targetName[MAX_PLAYER_NAME_LENGTH];
+        char targetClassName[MAX_PLAYER_NAME_LENGTH];
     };
     CUtlVector<Checkpoint> checkpoints;
     CUtlVector<CTriggerOnehop*> onehops;

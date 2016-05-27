@@ -51,42 +51,31 @@ struct replay_header_t
 //byteswap for int and float members of header, swaps the endianness (byte order) in order to read correctly
 inline void ByteSwap_replay_header_t(replay_header_t &swap)
 {
+    swap.numZones = LittleDWord(swap.numZones);
     swap.demoProtoVersion = LittleDWord(swap.demoProtoVersion);
     swap.unixEpocDate = LittleLong(swap.unixEpocDate);
     swap.steamID64 = LittleLong(swap.steamID64);
     LittleFloat(&swap.interval_per_tick, &swap.interval_per_tick);
     LittleFloat(&swap.runTime, &swap.runTime);
-
 }
-struct replay_stats_t
-{
-    replay_stats_t() {}
-    replay_stats_t(int size)
-    {
-        stats = RunStats_t(size);
-        arraySize = size;
-    }
 
-    RunStats_t stats;
-    int arraySize;
-};
-inline void ByteSwap_replay_stats_t(replay_stats_t &swap)
+inline void ByteSwap_replay_stats_t(RunStats_t &swap)
 {
-    for (int i = 0; i < swap.arraySize; i++)
+    for (int i = 0; i < swap.m_iTotalZones; i++)
     {
-        LittleFloat(&swap.stats.m_flStageEnterTime[i], &swap.stats.m_flStageEnterTime[i]);
-        LittleFloat(&swap.stats.m_flStageTime[i], &swap.stats.m_flStageTime[i]);
-        LittleFloat(&swap.stats.m_flStageStrafeSyncAvg[i], &swap.stats.m_flStageStrafeSyncAvg[i]);
-        LittleFloat(&swap.stats.m_flStageStrafeSync2Avg[i], &swap.stats.m_flStageStrafeSync2Avg[i]);
-        swap.stats.m_iStageJumps[i] = LittleDWord(swap.stats.m_iStageJumps[i]);
-        swap.stats.m_iStageStrafes[i] = LittleDWord(swap.stats.m_iStageStrafes[i]);
+        LittleFloat(&swap.m_flZoneEnterTime[i], &swap.m_flZoneEnterTime[i]);
+        LittleFloat(&swap.m_flZoneTime[i], &swap.m_flZoneTime[i]);
+        LittleFloat(&swap.m_flZoneStrafeSyncAvg[i], &swap.m_flZoneStrafeSyncAvg[i]);
+        LittleFloat(&swap.m_flZoneStrafeSync2Avg[i], &swap.m_flZoneStrafeSync2Avg[i]);
+        swap.m_iZoneJumps[i] = LittleDWord(swap.m_iZoneJumps[i]);
+        swap.m_iZoneStrafes[i] = LittleDWord(swap.m_iZoneStrafes[i]);
 
         for (int k = 0; k < 2; k++)
         {
-            LittleFloat(&swap.stats.m_flStageEnterSpeed[i][k], &swap.stats.m_flStageEnterSpeed[i][k]);
-            LittleFloat(&swap.stats.m_flStageExitSpeed[i][k], &swap.stats.m_flStageExitSpeed[i][k]);
-            LittleFloat(&swap.stats.m_flStageVelocityAvg[i][k], &swap.stats.m_flStageVelocityAvg[i][k]);
-            LittleFloat(&swap.stats.m_flStageVelocityMax[i][k], &swap.stats.m_flStageVelocityMax[i][k]);
+            LittleFloat(&swap.m_flZoneEnterSpeed[i][k], &swap.m_flZoneEnterSpeed[i][k]);
+            LittleFloat(&swap.m_flZoneExitSpeed[i][k], &swap.m_flZoneExitSpeed[i][k]);
+            LittleFloat(&swap.m_flZoneVelocityAvg[i][k], &swap.m_flZoneVelocityAvg[i][k]);
+            LittleFloat(&swap.m_flZoneVelocityMax[i][k], &swap.m_flZoneVelocityMax[i][k]);
         }
     }
 
