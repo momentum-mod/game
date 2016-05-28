@@ -43,7 +43,7 @@ struct RunStats_t
     }
     
     //Note: This needs updating every time the struct is updated!!
-    void HandleFile(IFileSystem *fs, FileHandle_t file, bool read) const
+    void HandleFile(FileHandle_t file, bool read) const
     {
         void (*handle)(void const*, int, FileHandle_t) = read ? &Read : &Write;
         
