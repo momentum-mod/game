@@ -31,11 +31,13 @@ END_DATADESC()
 
 Color CMomentumReplayGhostEntity::m_newGhostColor = COLOR_GREEN;
 
-CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
+CMomentumReplayGhostEntity::CMomentumReplayGhostEntity(): 
+m_bIsActive(false), m_nStartTick(0), step(0), m_flLastSyncVelocity(0)
 {
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
     m_bHasJumped = false;
+    m_RunStats = RunStats_t(g_Timer->GetZoneCount());
 }
 
 
@@ -294,6 +296,12 @@ void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
         m_newGhostColor = *mom_UTIL->GetColorFromHex(args.ArgS());
     }
 }
+
+void CMomentumReplayGhostEntity::SetRunStats(RunStats_t& stats)
+{
+    m_RunStats = stats;
+}
+
 void CMomentumReplayGhostEntity::EndRun()
 {
 	SetNextThink(-1);

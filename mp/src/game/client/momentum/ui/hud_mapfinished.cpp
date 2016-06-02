@@ -336,16 +336,18 @@ void CHudMapFinishedDialog::OnThink()
         //Is it going to be a localized string, except for errors that have to be specific?
 
         ConVarRef hvel("mom_speedometer_hvel");
-        //MOM_TODO: Are we going to update to read replay file stats?
-        //RunStats_t *stats = pPlayer->IsWatchingReplay() ? &g_MOMEventListener->stats : pPlayer->GetReplayEnt()->m_RunData.m_RunStats;
-        m_flAvgSpeed = g_MOMEventListener->stats.m_flZoneVelocityAvg[0][hvel.GetBool()];
-        m_flMaxSpeed = g_MOMEventListener->stats.m_flZoneVelocityMax[0][hvel.GetBool()];
-        m_flEndSpeed = g_MOMEventListener->stats.m_flZoneExitSpeed[0][hvel.GetBool()];
-        m_flStartSpeed = g_MOMEventListener->stats.m_flZoneEnterSpeed[0][hvel.GetBool()];
-        m_flAvgSync2 = g_MOMEventListener->stats.m_flZoneStrafeSyncAvg[0];
-        m_flAvgSync = g_MOMEventListener->stats.m_flZoneStrafeSync2Avg[0];
-        m_iTotalJumps = g_MOMEventListener->stats.m_iZoneJumps[0];
-        m_iTotalStrafes = g_MOMEventListener->stats.m_iZoneStrafes[0];
+
+        RunStats_t *stats = g_MOMEventListener->GetRunStats(pPlayer->IsWatchingReplay() ? pPlayer->GetReplayEnt()->entindex() :
+            pPlayer->entindex());
+        m_flAvgSpeed = stats->m_flZoneVelocityAvg[0][hvel.GetBool()];
+        m_flMaxSpeed = stats->m_flZoneVelocityMax[0][hvel.GetBool()];
+        m_flEndSpeed = stats->m_flZoneExitSpeed[0][hvel.GetBool()];
+        m_flStartSpeed = stats->m_flZoneEnterSpeed[0][hvel.GetBool()];
+        m_flAvgSync2 = stats->m_flZoneStrafeSyncAvg[0];
+        m_flAvgSync = stats->m_flZoneStrafeSync2Avg[0];
+        m_iTotalJumps = stats->m_iZoneJumps[0];
+        m_iTotalStrafes = stats->m_iZoneStrafes[0];
+        //MOM_TODO: This needs updating to show the run time of the ghost
         mom_UTIL->FormatTime(g_MOMEventListener->m_flLastRunTime, m_pszRunTime);
     }
 }

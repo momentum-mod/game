@@ -77,7 +77,7 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    m_iCurrentStage = 0;
+    m_iCurrentZone = 0;
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
@@ -104,8 +104,22 @@ void C_RunComparisons::Init()
 
 bool C_RunComparisons::ShouldDraw()
 {
-    return mom_comparisons.GetBool() && m_bLoadedComparison && CHudElement::ShouldDraw() && g_MOMEventListener &&
-           g_MOMEventListener->m_bTimerIsRunning;
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    bool shouldDrawLocal = false;
+    if (pPlayer)
+    {
+        if (pPlayer->IsWatchingReplay())
+        {
+            //MOM_TODO: Should we have a convar against this?
+            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+            shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
+        } 
+        else
+        {
+            shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+        }
+    }
+    return mom_comparisons.GetBool() && m_bLoadedComparison && CHudElement::ShouldDraw() && shouldDrawLocal;
 }
 
 void C_RunComparisons::Reset()
@@ -114,6 +128,7 @@ void C_RunComparisons::Reset()
     m_iMaxWide = m_iDefaultWidth;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
+    m_iEntIndex = -1;
 }
 
 void C_RunComparisons::FireGameEvent(IGameEvent *event)
@@ -160,7 +175,10 @@ void C_RunComparisons::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pPlayer)
-        m_iCurrentStage = pPlayer->m_RunData.m_iCurrentZone;
+    {
+        m_iCurrentZone = pPlayer->m_RunData.m_iCurrentZone;
+        m_iEntIndex = pPlayer->IsWatchingReplay() ? pPlayer->GetReplayEnt()->entindex() : pPlayer->entindex();
+    }
 
     if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perstage.GetBool())
     {
@@ -184,16 +202,16 @@ int C_RunComparisons::GetMaximumTall()
     int fontTall = surface()->GetFontTall(m_hTextFont) + 2; // font tall and padding
     toReturn += fontTall;                                   // Comparing against: (run)
     int stageBuffer = mom_comparisons_max_stages.GetInt();
-    int lowerBound = m_iCurrentStage - stageBuffer;
+    int lowerBound = m_iCurrentZone - stageBuffer;
 
-    for (int i = 1; i < m_iCurrentStage; i++)
+    for (int i = 1; i < m_iCurrentZone; i++)
     {
         // Note: Say our current stage is 5 and our buffer is 4. We don't look at stage 5,
         // and the lower bound becomes 1. If the check was i > lowerBound, stage 1 would be ignored,
         // and the panel would thus only show 3 stages (2, 3, and 4). So it must be >=.
         if (i >= lowerBound)
         {
-            if (i == (m_iCurrentStage - 1))
+            if (i == (m_iCurrentZone - 1))
             {
                 // Add everything that the user compares.
                 // Time
@@ -253,28 +271,31 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
 
 // If you pass null to any of the pointer args, they will not be touched. This allows for
 // only obtaining the actual, only obtaining the comparison, or only obtaining the color.
-void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, char *ansiActualBufferOut,
+void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex, int zone, char *ansiActualBufferOut,
                                            char *ansiCompareBufferOut, Color *compareColorOut)
 {
     ConVarRef velTypeVar("mom_speedometer_hvel");
     int velType = velTypeVar.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
     float diff = 0.0f;                               // Difference between the current and the compared-to.
-    float act;                                // Actual value that the player has for this stage.
+    float act;                                // Actual value that the player has for this zone.
     char tempANSITimeOutput[BUFSIZETIME],
         tempANSITimeActual[BUFSIZETIME]; // Only used for time comparisons, ignored otherwise.
     char diffChar = '\0';                // The character used for showing the diff: + or -
-                                         // Calculate diffs only if we loaded a comparison
+
+    //Get the run stats for the ent index, usually the player but can be the ghost the player is spectating
+    RunStats_t *stats = g_MOMEventListener->GetRunStats(entIndex);
+
     switch (type)
     {
     case TIME_OVERALL:
     case STAGE_TIME:
         // Get the time difference in seconds.
-        act = type == TIME_OVERALL ? g_MOMEventListener->stats.m_flZoneEnterTime[stage + 1]
-            : g_MOMEventListener->stats.m_flZoneTime[stage];
+        act = type == TIME_OVERALL ? stats->m_flZoneEnterTime[zone + 1]
+            : stats->m_flZoneTime[zone];
 
         if (m_bLoadedComparison)
-            diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[stage]
-                                               : m_rcCurrentComparison->stageSplits[stage - 1]);
+            diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[zone]
+                                               : m_rcCurrentComparison->stageSplits[zone - 1]);
 
         // Are we losing time compared to the run?
         // If diff > 0, that means you're falling behind (losing time to) your PB!
@@ -286,45 +307,45 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int stage, c
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference
-        act = g_MOMEventListener->stats.m_flZoneVelocityAvg[stage][velType];
+        act = stats->m_flZoneVelocityAvg[zone][velType];
         if (m_bLoadedComparison)
             diff = act -
-                   m_rcCurrentComparison->stageAvgVels[velType][stage - 1]; //- 1 due to array indexing (0 is stage 1)
+                   m_rcCurrentComparison->stageAvgVels[velType][zone - 1]; //- 1 due to array indexing (0 is zone 1)
         break;
     case VELOCITY_EXIT:
-        act = g_MOMEventListener->stats.m_flZoneExitSpeed[stage][velType];
+        act = stats->m_flZoneExitSpeed[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageExitVels[velType][stage - 1];
+            diff = act - m_rcCurrentComparison->stageExitVels[velType][zone - 1];
         break;
     case VELOCITY_MAX:
-        act = g_MOMEventListener->stats.m_flZoneVelocityMax[stage][velType];
+        act = stats->m_flZoneVelocityMax[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageMaxVels[velType][stage - 1];
+            diff = act - m_rcCurrentComparison->stageMaxVels[velType][zone - 1];
         break;
     case VELOCITY_ENTER:
-        act = g_MOMEventListener->stats.m_flZoneEnterSpeed[stage][velType];
+        act = stats->m_flZoneEnterSpeed[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageEnterVels[velType][stage - 1];
+            diff = act - m_rcCurrentComparison->stageEnterVels[velType][zone - 1];
         break;
     case STAGE_SYNC1:
-        act = g_MOMEventListener->stats.m_flZoneStrafeSyncAvg[stage];
+        act = stats->m_flZoneStrafeSyncAvg[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageAvgSync1[stage - 1];
+            diff = act - m_rcCurrentComparison->stageAvgSync1[zone - 1];
         break;
     case STAGE_SYNC2:
-        act = g_MOMEventListener->stats.m_flZoneStrafeSync2Avg[stage];
+        act = stats->m_flZoneStrafeSync2Avg[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageAvgSync2[stage - 1];
+            diff = act - m_rcCurrentComparison->stageAvgSync2[zone - 1];
         break;
     case STAGE_JUMPS:
-        act = g_MOMEventListener->stats.m_iZoneJumps[stage];
+        act = stats->m_iZoneJumps[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageJumps[stage - 1];
+            diff = act - m_rcCurrentComparison->stageJumps[zone - 1];
         break;
     case STAGE_STRAFES:
-        act = g_MOMEventListener->stats.m_iZoneStrafes[stage];
+        act = stats->m_iZoneStrafes[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageStrafes[stage - 1];
+            diff = act - m_rcCurrentComparison->stageStrafes[zone - 1];
         break;
     default:
         return;
@@ -423,7 +444,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     }
 
     // Obtain the actual value, comparison string, and corresponding color
-    GetComparisonString(string, stage, actualValueANSI, compareValueANSI, &compareColor);
+    GetComparisonString(string, m_iEntIndex, stage, actualValueANSI, compareValueANSI, &compareColor);
 
     // Pad the compare type with a couple spaces in front.
     V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s", localized);
@@ -500,7 +521,7 @@ void C_RunComparisons::Paint()
     // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat?
 
     // Get player current stage
-    int currentStage = m_iCurrentStage;
+    int currentStage = m_iCurrentZone;
 
     // We want to create a "buffer" of stages. The very last stage should show
     // full comparisons, and be the most bottom one. However, the stages before that need
@@ -647,7 +668,7 @@ void C_RunComparisons::Paint()
                               + 2;                                                // Padding
 
                 // Get just the comparison value, no actual value needed as it clutters up the panel
-                GetComparisonString(timeType, i, nullptr, timeComparisonString, &comparisonColor);
+                GetComparisonString(timeType, m_iEntIndex, i, nullptr, timeComparisonString, &comparisonColor);
 
                 // See if this updates our max width.
                 SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, timeComparisonString) + 2);

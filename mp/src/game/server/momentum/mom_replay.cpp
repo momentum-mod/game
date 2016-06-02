@@ -72,7 +72,7 @@ void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
 replay_header_t CMomentumReplaySystem::CreateHeader()
 {
     replay_header_t header;
-    header.numZones = g_Timer->GetStageCount();
+    header.numZones = g_Timer->GetZoneCount();
     Q_strcpy(header.demofilestamp, REPLAY_HEADER_ID);
     header.demoProtoVersion = REPLAY_PROTOCOL_VERSION;
     Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
@@ -88,7 +88,7 @@ replay_header_t CMomentumReplaySystem::CreateHeader()
 }
 RunStats_t CMomentumReplaySystem::CreateStats()
 {
-    RunStats_t runStats = RunStats_t(g_Timer->GetStageCount());
+    RunStats_t runStats = RunStats_t(g_Timer->GetZoneCount());
 
     for (int i = 0; i < runStats.m_iTotalZones; i++)
     {
@@ -122,8 +122,7 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 
         RunStats_t littleEndianStats = CreateStats();
         ByteSwap_replay_stats_t(littleEndianStats);
-        littleEndianStats.HandleFile(filesystem, m_fhFileHandle, false);
-        //filesystem->Write(&littleEndianStats, sizeof(littleEndianStats), m_fhFileHandle);
+        littleEndianStats.Write(m_fhFileHandle);
         DevLog("replay stats size: %i\n", sizeof(littleEndianStats));
 
         Assert(buf && buf->IsValid());
@@ -155,8 +154,7 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
     //Create and read into the replayStats
     m_replayStats = RunStats_t(m_replayHeader.numZones);
     
-    m_replayStats.HandleFile(filesystem, file, true);
-    //filesystem->Read(&m_replayStats, sizeof(replay_stats_t), file);
+    m_replayStats.Read(file);
 
     ByteSwap_replay_stats_t(m_replayStats);
 
@@ -203,6 +201,8 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
     m_CurrentReplayGhost = static_cast<CMomentumReplayGhostEntity*>(CreateEntityByName("mom_replay_ghost"));
     if (m_CurrentReplayGhost != nullptr)
     {
+        m_CurrentReplayGhost->SetRunStats(m_replayStats);
+        m_CurrentReplayGhost->m_flRunTime = m_replayHeader.runTime;
         if (firstperson) g_Timer->Stop(false); //stop the timer just in case we started a replay while it was running...
         m_CurrentReplayGhost->StartRun(firstperson);
     }

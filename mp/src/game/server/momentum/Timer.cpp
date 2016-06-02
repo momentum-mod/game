@@ -6,6 +6,8 @@
 void CTimer::Start(int start)
 {
     if (m_bUsingCPMenu) return;
+    ConVarRef zoneEdit("mom_zone_edit");
+    if (zoneEdit.GetBool()) return;
     m_iStartTick = start;
     SetRunning(true);
 
@@ -95,7 +97,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t.tickrate = kv->GetFloat("rate");
             t.date = static_cast<time_t>(kv->GetInt("date"));
             t.flags = kv->GetInt("flags");
-            t.RunStats = RunStats_t(GetStageCount());
+            t.RunStats = RunStats_t(GetZoneCount());
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {
@@ -112,14 +114,14 @@ void CTimer::LoadLocalTimes(const char *szMapname)
                     //3D Velocity Stats
                     t.RunStats.m_flZoneVelocityAvg[i][0] = subKv->GetFloat("avg_vel");
                     t.RunStats.m_flZoneVelocityMax[i][0] = subKv->GetFloat("max_vel");
-                    t.RunStats.m_flZoneEnterSpeed[i][0] = subKv->GetFloat("stage_enter_vel");
-                    t.RunStats.m_flZoneExitSpeed[i][0] = subKv->GetFloat("stage_exit_vel");
+                    t.RunStats.m_flZoneEnterSpeed[i][0] = subKv->GetFloat("enter_vel");
+                    t.RunStats.m_flZoneExitSpeed[i][0] = subKv->GetFloat("exit_vel");
 
                     //2D Velocity Stats
                     t.RunStats.m_flZoneVelocityAvg[i][1] = subKv->GetFloat("avg_vel_2D");
                     t.RunStats.m_flZoneVelocityMax[i][1] = subKv->GetFloat("max_vel_2D");
-                    t.RunStats.m_flZoneEnterSpeed[i][1] = subKv->GetFloat("stage_enter_vel_2D");
-                    t.RunStats.m_flZoneExitSpeed[i][1] = subKv->GetFloat("stage_exit_vel_2D");
+                    t.RunStats.m_flZoneEnterSpeed[i][1] = subKv->GetFloat("enter_vel_2D");
+                    t.RunStats.m_flZoneExitSpeed[i][1] = subKv->GetFloat("exit_vel_2D");
                 }
                 if (!Q_strncmp(subKv->GetName(), "total", Q_strlen("total")))
                 {
@@ -185,11 +187,11 @@ void CTimer::SaveTime()
         pOverallKey->SetFloat("max_vel_2D", t.RunStats.m_flZoneVelocityMax[0][1]);
 
         char stageName[9]; // "stage 64\0"
-        if (GetStageCount() > 1)
+        if (GetZoneCount() > 1)
         {
-            for (int i2 = 1; i2 <= GetStageCount(); i2++) 
+            for (int i2 = 1; i2 <= GetZoneCount(); i2++) 
             {
-                Q_snprintf(stageName, sizeof(stageName), "zone %d", i2);//MOM_TODO: || checkpoint %d
+                Q_snprintf(stageName, sizeof(stageName), "zone %d", i2);
 
                 KeyValues *pStageKey = new KeyValues(stageName);
                 pStageKey->SetFloat("time", t.RunStats.m_flZoneTime[i2]);
@@ -201,13 +203,13 @@ void CTimer::SaveTime()
 
                 pStageKey->SetFloat("avg_vel", t.RunStats.m_flZoneVelocityAvg[i2][0]);
                 pStageKey->SetFloat("max_vel", t.RunStats.m_flZoneVelocityMax[i2][0]);
-                pStageKey->SetFloat("stage_enter_vel", t.RunStats.m_flZoneEnterSpeed[i2][0]);
-                pStageKey->SetFloat("stage_exit_vel", t.RunStats.m_flZoneExitSpeed[i2][0]);
+                pStageKey->SetFloat("enter_vel", t.RunStats.m_flZoneEnterSpeed[i2][0]);
+                pStageKey->SetFloat("exit_vel", t.RunStats.m_flZoneExitSpeed[i2][0]);
 
                 pStageKey->SetFloat("avg_vel_2D", t.RunStats.m_flZoneVelocityAvg[i2][1]);
                 pStageKey->SetFloat("max_vel_2D", t.RunStats.m_flZoneVelocityMax[i2][1]);
-                pStageKey->SetFloat("stage_enter_vel_2D", t.RunStats.m_flZoneEnterSpeed[i2][1]);
-                pStageKey->SetFloat("stage_exit_vel_2D", t.RunStats.m_flZoneExitSpeed[i2][1]);
+                pStageKey->SetFloat("enter_vel_2D", t.RunStats.m_flZoneEnterSpeed[i2][1]);
+                pStageKey->SetFloat("exit_vel_2D", t.RunStats.m_flZoneExitSpeed[i2][1]);
 
                 pSubkey->AddSubKey(pStageKey);
             }
@@ -241,7 +243,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
-    IGameEvent *timerStopEvent = gameeventmanager->CreateEvent("timer_stopped");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
@@ -263,8 +264,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         localTimes.AddToTail(t);
 
-        SaveTime();
-        
+        SaveTime();  
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {  
@@ -275,43 +275,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
     {
         timerStateEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timerStateEvent);
-    }
-    if (timerStopEvent && pPlayer)
-    {
-        timerStopEvent->SetFloat("avg_sync", pPlayer->m_PlayerRunStats.m_flZoneStrafeSyncAvg[0]);
-        timerStopEvent->SetFloat("avg_sync2", pPlayer->m_PlayerRunStats.m_flZoneStrafeSync2Avg[0]);
-        timerStopEvent->SetInt("num_strafes", pPlayer->m_PlayerRunStats.m_iZoneStrafes[0]);
-        timerStopEvent->SetInt("num_jumps", pPlayer->m_PlayerRunStats.m_iZoneJumps[0]);
-
-        //3D VELCOCITY STATS - INDEX 0
-        timerStopEvent->SetFloat("avg_vel", pPlayer->m_PlayerRunStats.m_flZoneVelocityAvg[0][0]);
-        timerStopEvent->SetFloat("start_vel", pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[1][0]);
-        float endvel = pPlayer->GetLocalVelocity().Length();
-        timerStopEvent->SetFloat("end_vel", endvel);
-        if (endvel > pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][0])
-            timerStopEvent->SetFloat("max_vel", endvel);
-        else
-            timerStopEvent->SetFloat("max_vel", pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][0]);
-        pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[0][0] = endvel; //we have to set end speed here or else it will be saved as 0 
-
-        //2D VELOCITY STATS - INDEX 1
-        timerStopEvent->SetFloat("avg_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneVelocityAvg[0][1]);
-        timerStopEvent->SetFloat("start_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[1][1]);
-        float endvel2D = pPlayer->GetLocalVelocity().Length2D();
-        timerStopEvent->SetFloat("end_vel_2D", endvel2D);
-        if (endvel2D > pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][1])
-            timerStopEvent->SetFloat("max_vel_2D", endvel2D);
-        else
-            timerStopEvent->SetFloat("max_vel_2D", pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][1]);
-        pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[0][1] = endvel2D;
-
-        timerStopEvent->SetFloat("time", GetLastRunTime());
-        gameeventmanager->FireEvent(timerStopEvent);
-    }
-    if (pPlayer)
-    {
-        pPlayer->m_RunData.m_bIsInZone = endTrigger;
-        pPlayer->m_RunData.m_bMapFinished = endTrigger;
     }
 
     //stop replay recording
@@ -341,8 +304,8 @@ void CTimer::DispatchMapInfo()
     {
         //MOM_TODO: for now it's assuming stages are on staged maps, load this from
         //either the RequestStageCount() method, or something else (map info file?)
-        mapInitEvent->SetBool("is_linear", m_iStageCount == 0);
-        mapInitEvent->SetInt("num_checkpoints", m_iStageCount);
+        mapInitEvent->SetBool("is_linear", m_iZoneCount == 0);
+        mapInitEvent->SetInt("num_zones", m_iZoneCount);
         gameeventmanager->FireEvent(mapInitEvent);
     }
 }
@@ -351,14 +314,14 @@ void CTimer::OnMapStart(const char *pMapName)
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
-    RequestStageCount();
+    RequestZoneCount();
     LoadLocalTimes(pMapName);
     //MOM_TODO: g_Timer->LoadOnlineTimes();
 }
 
 //MOM_TODO: This needs to update to include checkpoint triggers placed in linear
 //maps to allow players to compare at certain points.
-void CTimer::RequestStageCount()
+void CTimer::RequestZoneCount()
 {
     CTriggerStage *stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage"));
     int iCount = 1;//CTriggerStart counts as one
@@ -367,7 +330,7 @@ void CTimer::RequestStageCount()
         iCount++;
         stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage"));
     }
-    m_iStageCount = iCount;
+    m_iZoneCount = iCount;
 }
 //This function is called every time CTriggerStage::StartTouch is called
 float CTimer::CalculateStageTime(int stage)
@@ -376,12 +339,12 @@ float CTimer::CalculateStageTime(int stage)
     {
         float originalTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         //If the stage is a new one, we store the time we entered this stage in
-        m_iStageEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
+        m_iZoneEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
             originalTime + m_flTickOffsetFix[stage-1];
-        DevLog("Original Time: %f\n New Time: %f", originalTime, m_iStageEnterTime[stage]);
+        DevLog("Original Time: %f\n New Time: %f", originalTime, m_iZoneEnterTime[stage]);
     }
     m_iLastStage = stage;
-    return m_iStageEnterTime[stage];
+    return m_iZoneEnterTime[stage];
 }
 void CTimer::DispatchResetMessage()
 {
@@ -403,7 +366,7 @@ void CTimer::DispatchStateMessage()
         user.MakeReliable();
         UserMessageBegin(user, "Timer_State");
         WRITE_BOOL(m_bIsRunning);
-        WRITE_LONG(m_iStartTick);
+        WRITE_LONG(m_iStartTick);//MOM_TODO: m_iStartTick is also
         MessageEnd();
     }
 }
@@ -428,7 +391,7 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
     if (!pPlayer) return;
     Ray_t ray;
     Vector prevOrigin, origin, velocity = pPlayer->GetLocalVelocity();
-    // Because trigger touch is calculated using colission hull rather than the player's origin (which is their world space center,
+    // Because trigger touch is calculated using colission hull rather than the player's origin (which is their world space center),
     // this origin is actually the player's local origin offset by their colission hull (depending on which direction they are moving), 
     // so that we trace from the point in space where the player actually exited touch with the trigger, rather than their world center.
 

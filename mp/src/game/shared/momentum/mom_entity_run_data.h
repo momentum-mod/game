@@ -31,12 +31,11 @@ public:
     CNetworkVar(bool, m_bIsInZone);//This is true if the player is in a CTriggerTimerStage zone
     CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
     CNetworkVar(int, m_iCurrentZone);//Current stage/checkpoint the player is on
-
-    //MOM_TODO: CNetworkEmbedded(CMOMRunStats, m_RunStats);
+    CNetworkVar(bool, m_bTimerRunning);//Is the timer currently running for this ent?
 
 #elif defined CLIENT_DLL
 
-    bool m_bAutoBhop, m_bIsInZone, m_bMapFinished;
+    bool m_bAutoBhop, m_bIsInZone, m_bMapFinished, m_bTimerRunning;
     float m_flStrafeSync, m_flStrafeSync2, m_flLastJumpVel, m_flLastJumpTime;
     int m_iSuccessiveBhops, m_iRunFlags, m_iCurrentZone;
 

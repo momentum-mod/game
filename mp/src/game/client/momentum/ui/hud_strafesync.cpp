@@ -44,9 +44,22 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     void OnThink() override;
     bool ShouldDraw() override
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && g_MOMEventListener &&
-               g_MOMEventListener->m_bTimerIsRunning;
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        bool shouldDrawLocal = false;
+        if (pPlayer)
+        {
+            if (pPlayer->IsWatchingReplay())
+            {
+                //MOM_TODO: Should we have a convar against this?
+                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+                shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
+            }
+            else
+            {
+                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+            }
+        }
+        return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
     void Reset() override
@@ -200,9 +213,22 @@ class CHudStrafeSyncBar : public CHudFillableBar
     void OnThink() override;
     bool ShouldDraw() override
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return (pPlayer && strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && g_MOMEventListener &&
-                g_MOMEventListener->m_bTimerIsRunning);
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        bool shouldDrawLocal = false;
+        if (pPlayer)
+        {
+            if (pPlayer->IsWatchingReplay())
+            {
+                //MOM_TODO: Should we have a convar against this?
+                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+                shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
+            }
+            else
+            {
+                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+            }
+        }
+        return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
     void Reset() override

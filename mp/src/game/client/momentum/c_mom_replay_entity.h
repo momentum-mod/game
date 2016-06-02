@@ -14,6 +14,7 @@ public:
     CMOMRunEntityData m_RunData;
 
     int m_nReplayButtons;
+    //These are stored here because run stats already has the ones obtained from the run
     int m_iTotalStrafes;
     int m_iTotalJumps;
 

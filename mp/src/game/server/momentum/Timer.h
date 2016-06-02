@@ -49,7 +49,7 @@ public:
     // Gets the current checkpoint
     CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint.Get(); }
     
-    CTriggerTimerStop *GetEndTrtigger() { return m_pEndTrigger.Get(); }
+    CTriggerTimerStop *GetEndTrigger() { return m_pEndTrigger.Get(); }
     CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
 
     // Sets the given trigger as the start trigger
@@ -73,9 +73,9 @@ public:
 
     // Calculates the stage count
     // Stores the result on m_iStageCount
-    void RequestStageCount();
+    void RequestZoneCount();
     // Gets the total stage count
-    int GetStageCount() { return m_iStageCount; };
+    int GetZoneCount() { return m_iZoneCount; };
     float CalculateStageTime(int stageNum);
     float GetLastRunTime() 
     {
@@ -163,17 +163,18 @@ public:
 
 private:
 
-    int m_iStageCount;
+    int m_iZoneCount;
     int m_iStartTick, m_iEndTick;
     int m_iLastStage = 0;
-    float m_iStageEnterTime[MAX_STAGES];
+    float m_iZoneEnterTime[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
+    bool m_bMapIsLinear;
 
     CHandle<CTriggerTimerStart> m_pStartTrigger;
     CHandle<CTriggerTimerStop> m_pEndTrigger;
     CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
-    CHandle<CTriggerStage> m_pCurrentStage;
+    CHandle<CTriggerStage> m_pCurrentStage;//MOM_TODO: Change to m_pCurrentZone
 
     struct Time
     {

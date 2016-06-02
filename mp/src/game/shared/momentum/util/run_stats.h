@@ -30,41 +30,52 @@ struct RunStats_t
         }
     }
 
-    //Needed for HandleFile
-    static void Read(void const* pVoid, int size, FileHandle_t file)
+    //Note: This needs updating every time the struct is updated!
+    void Read(FileHandle_t file)
     {
-        filesystem->Read(&pVoid, size, file);
-    }
-
-    //Needed for HandleFile
-    static void Write(void const* pVoid, int size, FileHandle_t file)
-    {
-        filesystem->Write(&pVoid, size, file);
-    }
-    
-    //Note: This needs updating every time the struct is updated!!
-    void HandleFile(IFileSystem *fs, FileHandle_t file, bool read) const
-    {
-        void (*handle)(void const*, int, FileHandle_t) = read ? &Read : &Write;
-        
-        handle(&m_iTotalZones, sizeof(m_iTotalZones), file);
+        filesystem->Read(&m_iTotalZones, sizeof(m_iTotalZones), file);
         for (int i = 0; i < m_iTotalZones; i++)
         {
-            handle(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
-            handle(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
-            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+            filesystem->Read(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
+            filesystem->Read(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
+            filesystem->Read(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
 
-            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-            handle(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
-            handle(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
-            handle(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
+            filesystem->Read(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+            filesystem->Read(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
+            filesystem->Read(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
+            filesystem->Read(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
 
             for (int k = 0; k < 2; k++)
             {
-                handle(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
-                handle(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
-                handle(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
-                handle(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
+                filesystem->Read(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
+                filesystem->Read(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
+                filesystem->Read(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
+                filesystem->Read(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
+            }
+        }
+    }
+
+    //Note: This needs updating every time the struct is updated!
+    void Write(FileHandle_t file) const
+    {
+        filesystem->Write(&m_iTotalZones, sizeof(m_iTotalZones), file);
+        for (int i = 0; i < m_iTotalZones; i++)
+        {
+            filesystem->Write(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
+            filesystem->Write(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
+            filesystem->Write(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+
+            filesystem->Write(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+            filesystem->Write(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
+            filesystem->Write(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
+            filesystem->Write(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
+
+            for (int k = 0; k < 2; k++)
+            {
+                filesystem->Write(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
+                filesystem->Write(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
+                filesystem->Write(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
+                filesystem->Write(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
             }
         }
     }

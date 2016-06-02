@@ -29,6 +29,7 @@
 {
 	"timer_stopped"
 	{
+		"ent" "short"
         "time"   "float"
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
@@ -44,10 +45,11 @@
 		"start_vel_2D"	"float"
 		"end_vel_2D"	"float"
 	}
-	"stage_enter"
+	"zone_enter"//When the player/ghost enters a checkpoint/stage trigger
 	{
-		"stage_num"	"byte"
-		"stage_enter_time"	"float" //time is in seconds
+		"num"	"byte"//Number of the zone
+		"ent" "short"//Ent index of the ent that touched me
+		"enter_time"	"float" //time is in seconds
 		"avg_sync"	"float"
 		"avg_sync2"	"float"
 		"num_strafes"	"short"
@@ -55,17 +57,18 @@
         
         "avg_vel"	"float"
 		"max_vel"	"float"
-		"stage_exit_vel"	"float"//previous stage's exit velocity
+		"exit_vel"	"float"//previous stage's exit velocity
         //we save both XY and XYZ, so we can look at both if need be...
         "avg_vel_2D"	"float"
 		"max_vel_2D"	"float"
-		"stage_exit_vel_2D"	"float"//previous stage's horizontal exit velocity
+		"exit_vel_2D"	"float"//this stage's horizontal exit velocity
 	}
-    "stage_exit"//When the player exits the start trigger for the stage
+    "zone_exit"//When the player exits the start trigger for the stage
     {
-        "stage_num" "byte"
-        "stage_enter_vel"    "float"//velocity in which the player starts the stage (exits the stage trigger)
-        "stage_enter_vel_2D"    "float"
+        "num" "byte"
+		"ent" "byte"//Ent index
+        "enter_vel"    "float"//velocity in which the player starts the stage (exits the stage trigger)
+        "enter_vel_2D"    "float"
     }
 	"run_save"
 	{
@@ -82,12 +85,13 @@
 	}
 	"keypress"
 	{
+	    "ent" "short"
 		"num_jumps"	"short"
 		"num_strafes"	"short"
 	}
     "map_init"
     {
         "is_linear" "bool"
-        "num_checkpoints" "byte"
+        "num_zones" "byte"
     }
 }

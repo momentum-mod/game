@@ -80,7 +80,7 @@ class C_Timer : public CHudElement, public Panel
     CPanelAnimationVarAliasType(int, split_ypos, "split_ypos", "19", "proportional_ypos");
 
   private:
-    int m_iStageCurrent, m_iStageCount;
+    int m_iZoneCurrent, m_iZoneCount;
     int initialTall;
 
     wchar_t m_pwCurrentTime[BUFSIZETIME];
@@ -107,7 +107,9 @@ class C_Timer : public CHudElement, public Panel
     bool m_bPlayerHasPracticeMode;
     bool m_bShowCheckpoints;
     bool m_bMapFinished;
+    bool m_bMapIsLinear;
     int m_iCheckpointCount, m_iCheckpointCurrent;
+    int m_iEntIndex;
     char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL],
         noTimerLocalized[BUFSIZELOCL];
@@ -134,7 +136,8 @@ void C_Timer::Init()
     HOOK_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
     initialTall = 48;
     m_iTotalTicks = 0;
-    m_iStageCount = 0;
+    m_iZoneCount = 0;
+    m_iEntIndex = -1;
     // Reset();
 
     // cache localization strings
@@ -153,14 +156,16 @@ void C_Timer::Reset()
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iTotalTicks = 0;
-    m_iStageCurrent = 1;
+    m_iZoneCurrent = 1;
     m_bShowCheckpoints = false;
     m_bWereCheatsActivated = false;
     m_bPlayerHasPracticeMode = false;
     m_bPlayerInZone = false;
     m_bMapFinished = false;
+    m_bMapIsLinear = false;
     m_iCheckpointCount = 0;
     m_iCheckpointCurrent = 0;
+    m_iEntIndex = -1;
 }
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
@@ -210,6 +215,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 
 void C_Timer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
+//MOM_TODO: This should be moved to the player
 void C_Timer::MsgFunc_Timer_Checkpoint(bf_read &msg)
 {
     m_bShowCheckpoints = msg.ReadOneBit();
@@ -232,11 +238,15 @@ void C_Timer::OnThink()
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pLocal && g_MOMEventListener)
     {
-        m_iStageCurrent = pLocal->m_RunData.m_iCurrentZone;
-        m_bPlayerInZone = pLocal->m_RunData.m_bIsInZone;
-        m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
-        m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
-        m_iStageCount = g_MOMEventListener->m_iMapCheckpointCount;
+        C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
+        C_MOMRunEntityData *runData = pGhost ? &pGhost->m_RunData : &pLocal->m_RunData;
+        m_iEntIndex = pGhost ? pGhost->entindex() : pLocal->entindex();
+        m_iZoneCurrent = runData->m_iCurrentZone;
+        m_bPlayerInZone = runData->m_bIsInZone;
+        m_bMapFinished = runData->m_bMapFinished;
+        m_bPlayerHasPracticeMode = pGhost ? false : pLocal->m_bHasPracticeMode;
+        m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
+        m_bMapIsLinear = g_MOMEventListener->m_bMapIsLinear;
     }
 }
 
@@ -263,19 +273,19 @@ void C_Timer::Paint(void)
     Color compareColor = GetFgColor();
 
     // MOM_TODO: this will have to handle checkpoints as well!
-    if (m_iStageCurrent > 1)
+    if (m_iZoneCurrent > 1)
     {
         // MOM_TODO: m_bMapIsLinear needs to be passed here
         Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i",
-                   stLocalized,          // Stage localization (MOM_TODO: "Checkpoint:" if linear)
-                   m_iStageCurrent - 1); // Last stage number
+                   m_bMapIsLinear ? cpLocalized : stLocalized, // Stage localization ("Checkpoint:" if linear)
+                   m_iZoneCurrent - 1); // Last stage number
 
         ANSI_TO_UNICODE(prevStageString, prevStageStringUnicode);
 
         ConVarRef timeType("mom_comparisons_time_type");
         // This void works even if there is no comparison loaded
-        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? STAGE_TIME : TIME_OVERALL, m_iStageCurrent - 1,
-                                             m_pszStageTimeString, comparisonANSI, &compareColor);
+        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? STAGE_TIME : TIME_OVERALL, m_iEntIndex, 
+            m_iZoneCurrent - 1, m_pszStageTimeString, comparisonANSI, &compareColor);
 
         // Convert the split to Unicode
         ANSI_TO_UNICODE(m_pszStageTimeString, m_pwStageTimeLabel);
@@ -337,7 +347,7 @@ void C_Timer::Paint(void)
         surface()->DrawPrintText(m_pwCurrentCheckpoints, wcslen(m_pwCurrentCheckpoints));
     }
     // don't draw stages when drawing checkpoints, and vise versa.
-    else if (m_iStageCurrent > 1 && m_bIsRunning)
+    else if (m_iZoneCurrent > 1 && m_bIsRunning)
     {
         // only draw split timer if we are on stage/checkpoint 2 (not start, which is 1) or above.
         bool hasComparison = g_MOMRunCompare->LoadedComparison();

@@ -193,7 +193,7 @@ void CHudKeyPressDisplay::OnThink()
             C_MomentumReplayGhostEntity *pReplayEnt = dynamic_cast<C_MomentumReplayGhostEntity*>(pPlayer->GetObserverTarget());
             if (pReplayEnt)
             {
-                m_bShouldDrawCounts = true;
+                m_bShouldDrawCounts = pReplayEnt->m_RunData.m_bTimerRunning;
                 m_nButtons = pReplayEnt->m_nReplayButtons;
                 m_nStrafes = pReplayEnt->m_iTotalStrafes;
                 m_nJumps = pReplayEnt->m_iTotalJumps;
@@ -205,9 +205,10 @@ void CHudKeyPressDisplay::OnThink()
             if (g_MOMEventListener)
             {
                 //we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;
-                m_nStrafes = g_MOMEventListener->stats.m_iZoneStrafes[0];
-                m_nJumps = g_MOMEventListener->stats.m_iZoneJumps[0];
+                m_bShouldDrawCounts = pPlayer->m_RunData.m_bTimerRunning;
+                RunStats_t *stats = g_MOMEventListener->GetRunStats(pPlayer->entindex());
+                m_nStrafes = stats->m_iZoneStrafes[0];
+                m_nJumps = stats->m_iZoneJumps[0];
             }
         }
     } 
