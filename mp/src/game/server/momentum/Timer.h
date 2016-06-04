@@ -166,7 +166,7 @@ private:
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick;
     int m_iLastStage = 0;
-    float m_iZoneEnterTime[MAX_STAGES];
+    float m_flZoneEnterTime[MAX_STAGES];
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
     bool m_bMapIsLinear;

@@ -88,7 +88,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         //This happens when the player/ghost exits the ending trigger (despawn or restart)
         if (currentZone > m_iMapZoneCount)
         {
-             m_EntRunStats.Remove(entIndex);
+            m_EntRunStats.Remove(entIndex);
         } 
         else
         {
@@ -129,6 +129,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     }
     else if (!Q_strcmp("map_init", pEvent->GetName()))
     {
+        m_EntRunStats.PurgeAndDeleteElements();
         m_bMapIsLinear = pEvent->GetBool("is_linear");
         m_iMapZoneCount = pEvent->GetInt("num_zones");
     }

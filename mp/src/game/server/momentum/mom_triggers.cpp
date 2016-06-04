@@ -28,7 +28,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
     BaseClass::StartTouch(pOther);
     int stageNum = GetStageNumber();
 
-    IGameEvent *stageEvent = gameeventmanager->CreateEvent("zone_enter");
+    IGameEvent *stageEvent = nullptr;
     RunStats_t *pStats = nullptr;
     float enterTime = 0.0f;
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
@@ -39,12 +39,14 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         //Set player run data
         pPlayer->m_RunData.m_bIsInZone = true;
         pPlayer->m_RunData.m_iCurrentZone = stageNum;
+        stageEvent = gameeventmanager->CreateEvent("zone_enter");
         if (g_Timer->IsRunning())
-        {
+        { 
             pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][0] = pPlayer->GetLocalVelocity().Length();
             pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][1] = pPlayer->GetLocalVelocity().Length2D();
             g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_END);
             enterTime = g_Timer->CalculateStageTime(stageNum);
+            pPlayer->m_PlayerRunStats.m_flZoneEnterTime[stageNum] = enterTime;
             pStats = &pPlayer->m_PlayerRunStats;
         }
         else
@@ -60,6 +62,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity*>(pOther);
         if (pGhost)
         {
+            stageEvent = gameeventmanager->CreateEvent("zone_enter");
             pGhost->m_RunData.m_iCurrentZone = stageNum;
             pGhost->m_RunData.m_bIsInZone = true;
             enterTime = pGhost->GetRunStats()->m_flZoneEnterTime[stageNum];

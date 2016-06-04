@@ -316,7 +316,7 @@ void CTimer::OnMapStart(const char *pMapName)
     m_bWereCheatsActivated = false;
     RequestZoneCount();
     LoadLocalTimes(pMapName);
-    //MOM_TODO: g_Timer->LoadOnlineTimes();
+    //MOM_TODO: LoadOnlineTimes();
 }
 
 //MOM_TODO: This needs to update to include checkpoint triggers placed in linear
@@ -339,12 +339,12 @@ float CTimer::CalculateStageTime(int stage)
     {
         float originalTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
         //If the stage is a new one, we store the time we entered this stage in
-        m_iZoneEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
+        m_flZoneEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
             originalTime + m_flTickOffsetFix[stage-1];
-        DevLog("Original Time: %f\n New Time: %f", originalTime, m_iZoneEnterTime[stage]);
+        DevLog("Original Time: %f\n New Time: %f", originalTime, m_flZoneEnterTime[stage]);
     }
     m_iLastStage = stage;
-    return m_iZoneEnterTime[stage];
+    return m_flZoneEnterTime[stage];
 }
 void CTimer::DispatchResetMessage()
 {
