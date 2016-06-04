@@ -16,6 +16,7 @@ SendPropInt(SENDINFO(m_iRunFlags)),
 SendPropBool(SENDINFO(m_bIsInZone)),
 SendPropInt(SENDINFO(m_iCurrentZone)),
 SendPropBool(SENDINFO(m_bMapFinished)),
+SendPropBool(SENDINFO(m_bTimerRunning)),
 END_SEND_TABLE()
 
 #elif defined CLIENT_DLL
@@ -30,6 +31,7 @@ RecvPropInt(RECVINFO(m_iRunFlags)),
 RecvPropBool(RECVINFO(m_bIsInZone)),
 RecvPropInt(RECVINFO(m_iCurrentZone)),
 RecvPropBool(RECVINFO(m_bMapFinished)),
+RecvPropBool(RECVINFO(m_bTimerRunning)),
 END_RECV_TABLE()
 #endif
 
@@ -45,4 +47,5 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_bIsInZone = false;
     m_iCurrentZone = 0;
     m_bMapFinished = false;
+    m_bTimerRunning = false;
 }

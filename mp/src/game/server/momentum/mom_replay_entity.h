@@ -49,9 +49,13 @@ public:
 	void HandleGhost();
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel); //for hud display..
+    void SetRunStats(RunStats_t &stats);
+    RunStats_t *GetRunStats()
+    { return &m_RunStats; }
 
     bool m_bIsActive;
     int m_nStartTick;
+    float m_flRunTime;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     CNetworkVar(int, m_nReplayButtons);
@@ -67,6 +71,7 @@ private:
     char m_pszModel[256], m_pszMapName[256];
 	replay_frame_t currentStep; 
     replay_frame_t nextStep;	
+    RunStats_t m_RunStats;
 
     //MOM_TODO: CUtlVector<CMomentumPlayer*> spectators;
 

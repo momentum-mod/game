@@ -116,7 +116,7 @@ void C_HudMapInfo::OnThink()
             m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
         }
 
-        m_iZoneCount = g_MOMEventListener->m_iMapCheckpointCount;
+        m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
         m_bMapLinear = g_MOMEventListener->m_bMapIsLinear;
     }
 }

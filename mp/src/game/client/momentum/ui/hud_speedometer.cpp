@@ -101,12 +101,12 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 
     void FireGameEvent(IGameEvent *pEvent) override
     {
-        if (!Q_strcmp(pEvent->GetName(), "stage_exit"))
+        if (!Q_strcmp(pEvent->GetName(), "zone_exit"))
         {
             // Fade the enter speed after 5 seconds (in event)
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutEnterSpeed");
         }
-        else if (!Q_strcmp(pEvent->GetName(), "stage_enter"))
+        else if (!Q_strcmp(pEvent->GetName(), "zone_enter"))
         {
             // Reset the alpha if we hit a stage enter again
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("ResetEnterSpeed");
@@ -125,6 +125,8 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     Color secondaryColor;
 
     bool m_bRanFadeOutJumpSpeed;
+    int m_iEntIndex, m_iCurrentZone;
+    bool m_bEntInZone, m_bTimerIsRunning;
 
   protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
@@ -138,13 +140,16 @@ DECLARE_NAMED_HUDELEMENT(CHudSpeedMeter, HudSpeedMeter);
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
-    ListenForGameEvent("stage_exit");
-    ListenForGameEvent("stage_enter");
+    ListenForGameEvent("zone_exit");
+    ListenForGameEvent("zone_enter");
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_bRanFadeOutJumpSpeed = false;
+    m_iEntIndex = -1;
+    m_iCurrentZone = 0;
+    m_bEntInZone = false;
 }
 
 void CHudSpeedMeter::OnThink()
@@ -166,6 +171,14 @@ void CHudSpeedMeter::OnThink()
         //The last jump time is also important if the player is watching a replay
         float lastJumpTime = (pGhost ? pGhost->m_RunData.m_flLastJumpTime :
             pPlayer->m_RunData.m_flLastJumpTime);
+
+        m_iEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
+
+        m_bEntInZone = pGhost ? pGhost->m_RunData.m_bIsInZone : pPlayer->m_RunData.m_bIsInZone;
+
+        m_iCurrentZone = pGhost ? pGhost->m_RunData.m_iCurrentZone : pPlayer->m_RunData.m_iCurrentZone;
+
+        m_bTimerIsRunning = pGhost ? pGhost->m_RunData.m_bTimerRunning : pPlayer->m_RunData.m_bTimerRunning;
 
         int velType = mom_speedometer_hvel.GetBool(); // 1 is horizontal velocity
 
@@ -283,11 +296,8 @@ void CHudSpeedMeter::Paint()
 
     BaseClass::Paint();
 
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-
     // Draw the enter speed split, if toggled on
-    if (mom_speedometer_showenterspeed.GetBool() && pPlayer && !pPlayer->m_RunData.m_bIsInZone &&
-        g_MOMEventListener->m_bTimerIsRunning)
+    if (mom_speedometer_showenterspeed.GetBool() && m_bTimerIsRunning)
     {
         int split_xpos; // Dynamically set
         int split_ypos = mom_speedometer_showlastjumpvel.GetBool()
@@ -304,7 +314,8 @@ void CHudSpeedMeter::Paint()
         Color fg = GetFgColor();
         Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), stageStartAlpha);
 
-        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, pPlayer->m_RunData.m_iCurrentZone, enterVelANSITemp,
+
+        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_iEntIndex, m_iCurrentZone, enterVelANSITemp,
                                              enterVelANSICompTemp, &compareColor);
 
         Q_snprintf(enterVelANSI, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelANSITemp))));

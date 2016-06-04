@@ -217,7 +217,7 @@ void CMomentumPlayer::CheckForBhop()
             m_iSuccessiveBhops++;
             if (g_Timer->IsRunning())
             {
-                int currentZone = g_Timer->GetCurrentZoneNumber();
+                int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
                 m_PlayerRunStats.m_iZoneJumps[0]++;
                 m_PlayerRunStats.m_iZoneJumps[currentZone]++;
             }
@@ -237,7 +237,7 @@ void CMomentumPlayer::UpdateRunStats()
 
     if (g_Timer->IsRunning())
     {
-        int currentZone = g_Timer->GetCurrentZoneNumber();
+        int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
         if (!m_bPrevTimerRunning) // timer started on this tick
         {
             // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
@@ -316,6 +316,7 @@ void CMomentumPlayer::UpdateRunStats()
 
     if (playerMoveEvent)
     {
+        playerMoveEvent->SetInt("ent", entindex());
         playerMoveEvent->SetInt("num_strafes", m_PlayerRunStats.m_iZoneStrafes[0]);
         playerMoveEvent->SetInt("num_jumps", m_PlayerRunStats.m_iZoneJumps[0]);
         bool onGround = GetFlags() & FL_ONGROUND;
@@ -333,14 +334,14 @@ void CMomentumPlayer::ResetRunStats()
     m_nAccelTicks = 0;
     m_RunData.m_flStrafeSync = 0;
     m_RunData.m_flStrafeSync2 = 0;
-    m_PlayerRunStats = RunStats_t(g_Timer->GetStageCount());
+    m_PlayerRunStats = RunStats_t(g_Timer->GetZoneCount());
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
 
     if (g_Timer->IsRunning())
     {
-        int currentZone = g_Timer->GetCurrentZoneNumber();
+        int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
 
         m_flZoneTotalSync[currentZone] += m_RunData.m_flStrafeSync;
         m_flZoneTotalSync2[currentZone] += m_RunData.m_flStrafeSync2;

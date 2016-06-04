@@ -313,9 +313,9 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
                         into->stageAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
                         into->stageMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
                         into->stageEnterVels[i].AddToTail(
-                            kv->GetFloat(horizontalVel ? "stage_enter_vel_2D" : "stage_enter_vel"));
+                            kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
                         into->stageExitVels[i].AddToTail(
-                            kv->GetFloat(horizontalVel ? "stage_exit_vel_2D" : "stage_exit_vel"));
+                            kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
                     }
                 }
             }
