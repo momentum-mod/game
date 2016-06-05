@@ -2,6 +2,7 @@
 #include "Timer.h"
 #include "in_buttons.h"
 #include "mom_triggers.h"
+#include "mom_player.h"
 #include "movevars_shared.h"
 #include "mom_replay.h"
 #include "tier0/memdbgon.h"
@@ -47,6 +48,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_END);
             enterTime = g_Timer->CalculateStageTime(stageNum);
             pPlayer->m_PlayerRunStats.m_flZoneEnterTime[stageNum] = enterTime;
+            pPlayer->m_PlayerRunStats.m_flZoneTime[stageNum - 1] =
+                pPlayer->m_PlayerRunStats.m_flZoneEnterTime[stageNum] - pPlayer->m_PlayerRunStats.m_flZoneEnterTime[stageNum - 1];
             pStats = &pPlayer->m_PlayerRunStats;
         }
         else
@@ -324,21 +327,18 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[zoneNum][1] = pPlayer->GetLocalVelocity().Length2D();
 
             //Check to see if we should calculate the timer offset fix
-            Vector origin = pPlayer->GetAbsOrigin(), velocity = pPlayer->GetAbsVelocity();
-            Vector prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
-                origin.y - (velocity.y * gpGlobals->interval_per_tick),
-                origin.z - (velocity.z * gpGlobals->interval_per_tick));
-            Vector bottomLeft = GetAbsOrigin() + CollisionProp()->OBBMins();
-            Vector topRight = GetAbsOrigin() + CollisionProp()->OBBMaxs();
-
-            if ((prevOrigin.x > bottomLeft.x && prevOrigin.x < topRight.x) &&
-                (prevOrigin.y > bottomLeft.y && prevOrigin.y < topRight.y))
+            if (ContainsPosition(pPlayer->GetPrevOrigin()))
                 DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
             else
             {
                 DevLog("Previous origin is NOT inside the trigger, calculating offset...\n");
                 g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_END);
             }
+
+            //This is needed for the final stage
+            pPlayer->m_PlayerRunStats.m_flZoneTime[zoneNum] = 
+                g_Timer->GetCurrentTime() - 
+                pPlayer->m_PlayerRunStats.m_flZoneEnterTime[zoneNum];
 
             //Ending velocity checks
             //3D Velocity
@@ -371,6 +371,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             pPlayer->m_RunData.m_bMapFinished = true;
             pPlayer->m_RunData.m_bTimerRunning = false;
 
+            pPlayer->SetLaggedMovementValue(0.01f);
             //MOM_TODO: SLOW DOWN/STOP THE PLAYER HERE!
         }
         
@@ -436,6 +437,7 @@ void CTriggerTimerStop::EndTouch(CBaseEntity* pOther)
     int lastZoneNumber = -1;
     if (pMomPlayer)
     {
+        pMomPlayer->SetLaggedMovementValue(1.0f);//Reset slow motion
         pMomPlayer->m_RunData.m_bMapFinished = false;//Close the hud_mapfinished panel
         pMomPlayer->m_RunData.m_bIsInZone = false;//Update status
         lastZoneNumber = pMomPlayer->m_RunData.m_iCurrentZone;

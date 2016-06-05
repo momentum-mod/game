@@ -90,7 +90,7 @@ RunStats_t CMomentumReplaySystem::CreateStats()
 {
     RunStats_t runStats = RunStats_t(g_Timer->GetZoneCount());
 
-    for (int i = 0; i < runStats.m_iTotalZones; i++)
+    for (int i = 0; i < runStats.m_iTotalZones + 1; i++)
     {
         runStats.m_iZoneJumps[i] = m_player->m_PlayerRunStats.m_iZoneJumps[i];
         runStats.m_iZoneStrafes[i] = m_player->m_PlayerRunStats.m_iZoneStrafes[i];
@@ -122,7 +122,7 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 
         RunStats_t littleEndianStats = CreateStats();
         ByteSwap_replay_stats_t(littleEndianStats);
-        littleEndianStats.Write(m_fhFileHandle);
+        littleEndianStats.HandleFile(m_fhFileHandle, false);
         DevLog("replay stats size: %i\n", sizeof(littleEndianStats));
 
         Assert(buf && buf->IsValid());
@@ -153,7 +153,7 @@ replay_header_t* CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
     
     //Create and read into the replayStats
     m_replayStats = RunStats_t(m_replayHeader.numZones);
-    m_replayStats.Read(file);
+    m_replayStats.HandleFile(file, true);
     ByteSwap_replay_stats_t(m_replayStats);
 
     if (Q_strcmp(m_replayHeader.demofilestamp, REPLAY_HEADER_ID)) { //DEMO_HEADER_ID is __NOT__ the same as the stamp from the header we read from file

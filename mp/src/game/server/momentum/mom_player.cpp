@@ -112,6 +112,22 @@ void CMomentumPlayer::Spawn()
     DevLog("Finished spawn!\n");
 }
 
+// Obtains the player's previous origin using their current origin as a base.
+Vector CMomentumPlayer::GetPrevOrigin(void)
+{
+    return GetPrevOrigin(GetLocalOrigin());
+}
+
+// Obtains the player's previous origin using a vector as the base, subtracting one tick's worth of velocity.
+Vector CMomentumPlayer::GetPrevOrigin(const Vector &base)
+{
+    Vector velocity = GetLocalVelocity();
+    Vector prevOrigin(base.x - (velocity.x * gpGlobals->interval_per_tick),
+        base.y - (velocity.y * gpGlobals->interval_per_tick),
+        base.z - (velocity.z * gpGlobals->interval_per_tick));
+    return prevOrigin;
+}
+
 void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
 {
     m_ladderSurpressionTimer.Start(1.0f);

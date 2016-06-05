@@ -3,8 +3,8 @@
 
 #include "cbase.h"
 #include "in_buttons.h"
-#include "replayformat.h"
 #include "mom_entity_run_data.h"
+#include "replayformat.h"
 
 #pragma once
 
@@ -32,55 +32,55 @@ enum ghostModelBodyGroup
 class CMomentumReplayGhostEntity : public CBaseAnimating
 {
     DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
-	DECLARE_DATADESC();
+    DECLARE_DATADESC();
     DECLARE_SERVERCLASS();
-public:
+
+  public:
     CMomentumReplayGhostEntity();
     ~CMomentumReplayGhostEntity();
-	const char* GetGhostModel() const;
-	void SetGhostModel(const char* model);
+    const char *GetGhostModel() const;
+    void SetGhostModel(const char *model);
     void SetGhostBodyGroup(int bodyGroup);
     static void SetGhostColor(const CCommand &args);
-	//Increments the steps intelligently.
-	void UpdateStep();
+    // Increments the steps intelligently.
+    void UpdateStep();
 
-	void EndRun();
-	void StartRun(bool firstPerson = false, bool shouldLoop = false);
-	void HandleGhost();
+    void EndRun();
+    void StartRun(bool firstPerson = false, bool shouldLoop = false);
+    void HandleGhost();
     void HandleGhostFirstPerson();
-    void UpdateStats(Vector ghostVel); //for hud display..
+    void UpdateStats(Vector ghostVel); // for hud display..
     void SetRunStats(RunStats_t &stats);
-    RunStats_t *GetRunStats()
-    { return &m_RunStats; }
+    RunStats_t *GetRunStats() { return &m_RunStats; }
 
     bool m_bIsActive;
     int m_nStartTick;
-    float m_flRunTime;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     CNetworkVar(int, m_nReplayButtons);
     CNetworkVar(int, m_iTotalStrafes);
     CNetworkVar(int, m_iTotalJumps);
+    CNetworkVar(float, m_flRunTime);
 
-protected:
-	void Think(void) override;
+  protected:
+    void Think(void) override;
     void Spawn(void) override;
     void Precache(void) override;
 
-private:
+  private:
     char m_pszModel[256], m_pszMapName[256];
-	replay_frame_t currentStep; 
-    replay_frame_t nextStep;	
+    replay_frame_t currentStep;
+    replay_frame_t nextStep;
     RunStats_t m_RunStats;
 
-    //MOM_TODO: CUtlVector<CMomentumPlayer*> spectators;
+    // MOM_TODO: CUtlVector<CMomentumPlayer*> spectators;
 
     int step;
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
     Color m_ghostColor;
     static Color m_newGhostColor;
     bool m_bHasJumped;
-    //for faking strafe sync calculations
+    // for faking strafe sync calculations
     QAngle m_qLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;

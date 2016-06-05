@@ -9,6 +9,7 @@ void CTimer::Start(int start)
     ConVarRef zoneEdit("mom_zone_edit");
     if (zoneEdit.GetBool()) return;
     m_iStartTick = start;
+    m_iEndTick = 0;
     SetRunning(true);
 
     //MOM_TODO: IDEA START:
@@ -335,15 +336,15 @@ void CTimer::RequestZoneCount()
 //This function is called every time CTriggerStage::StartTouch is called
 float CTimer::CalculateStageTime(int stage)
 {
-    if (stage > m_iLastStage)
+    if (stage > m_iLastZone)
     {
-        float originalTime = static_cast<float>(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+        float originalTime = GetCurrentTime();
         //If the stage is a new one, we store the time we entered this stage in
         m_flZoneEnterTime[stage] = stage == 1 ? 0.0f : //Always returns 0 for first stage.
             originalTime + m_flTickOffsetFix[stage-1];
-        DevLog("Original Time: %f\n New Time: %f", originalTime, m_flZoneEnterTime[stage]);
+        DevLog("Original Time: %f\n New Time: %f\n", originalTime, m_flZoneEnterTime[stage]);
     }
-    m_iLastStage = stage;
+    m_iLastZone = stage;
     return m_flZoneEnterTime[stage];
 }
 void CTimer::DispatchResetMessage()
@@ -391,13 +392,13 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
     if (!pPlayer) return;
     Ray_t ray;
     Vector prevOrigin, origin, velocity = pPlayer->GetLocalVelocity();
-    // Because trigger touch is calculated using colission hull rather than the player's origin (which is their world space center),
+    // Because trigger touch is calculated using collision hull rather than the player's origin (which is their world space center),
     // this origin is actually the player's local origin offset by their colission hull (depending on which direction they are moving), 
     // so that we trace from the point in space where the player actually exited touch with the trigger, rather than their world center.
 
     if (zoneType == ZONETYPE_END) //ending zone or ending a stage
     {
-        if (velocity.x > 0 || velocity.y > 0)
+        if (abs(velocity.x) > 0 || abs(velocity.y) > 0)
             origin = Vector (pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x, 
             pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y, 
             pPlayer->GetLocalOrigin().z );
@@ -405,20 +406,18 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
             origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
 
         // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
-        prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
-            origin.y - (velocity.y * gpGlobals->interval_per_tick),
-            origin.z - (velocity.z * gpGlobals->interval_per_tick));
+        prevOrigin = pPlayer->GetPrevOrigin(origin);
 
         //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with prevOrigin
         //and trace "forwards" to our current origin, hitting the trigger on the way.
         ray.Init(prevOrigin, origin);
-        debugoverlay->AddLineOverlay(prevOrigin, origin, 0, 255, 0, true, 10.0f);
+        debugoverlay->AddLineOverlay(prevOrigin, origin, 0, 255, 0, true, 10.0f);//MOM_TODO: REMOVE ME
         CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
     }
     else if (zoneType == ZONETYPE_START )//start zone and stages
     {
-        if (velocity.x > 0 || velocity.y > 0)
+        if (abs(velocity.x) > 0 || abs(velocity.y) > 0)
             origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
         else
             origin = Vector(pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x,
@@ -426,9 +425,7 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
             pPlayer->GetLocalOrigin().z);
 
         // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
-        prevOrigin = Vector(origin.x - (velocity.x * gpGlobals->interval_per_tick),
-            origin.y - (velocity.y * gpGlobals->interval_per_tick),
-            origin.z - (velocity.z * gpGlobals->interval_per_tick));
+        prevOrigin = pPlayer->GetPrevOrigin(origin);
 
         //Start/stage zones trace from outside the trigger, backwards, hitting the zone along the way
         ray.Init(origin, prevOrigin);
@@ -461,7 +458,11 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
         DevLog("Time offset: %f\n", offset);
         int stage = m_iZoneType;
         if (m_iZoneType == g_Timer->ZONETYPE_START) stage = g_Timer->GetCurrentZoneNumber();
-        g_Timer->SetIntervalOffset(stage, offset);
+
+        //MOM_TODO: If this was a ZONETYPE_END, don't we set the offset as (gpGlobals->interval_per_tick - offset) ?
+
+        if (!mom_UTIL->FloatEquals(offset, 0.0f))
+            g_Timer->SetIntervalOffset(stage, offset);
         return true;
     }
 

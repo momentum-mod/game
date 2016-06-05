@@ -62,7 +62,7 @@ inline void ByteSwap_replay_header_t(replay_header_t &swap)
 inline void ByteSwap_replay_stats_t(RunStats_t &swap)
 {
     swap.m_iTotalZones = LittleDWord(swap.m_iTotalZones);
-    for (int i = 0; i < swap.m_iTotalZones; i++)
+    for (int i = 0; i < swap.m_iTotalZones + 1; i++)
     {
         LittleFloat(&swap.m_flZoneEnterTime[i], &swap.m_flZoneEnterTime[i]);
         LittleFloat(&swap.m_flZoneTime[i], &swap.m_flZoneTime[i]);
@@ -79,6 +79,5 @@ inline void ByteSwap_replay_stats_t(RunStats_t &swap)
             LittleFloat(&swap.m_flZoneVelocityMax[i][k], &swap.m_flZoneVelocityMax[i][k]);
         }
     }
-
 }
 #endif //REPLAYFORMAT_H

@@ -6,16 +6,14 @@
 
 #include "utlvector.h"
 #include "momentum/tickset.h"
-#include "KeyValues.h"
-#include "momentum/util/mom_util.h"
-#include "filesystem.h"
 #include "mom_triggers.h"
-#include "GameEventListener.h"
-#include "tier1/checksum_sha1.h"
+#include "mom_player.h"
+#include "tier1/checksum_sha1.h"//MOM_TODO: We'll need this
 #include "momentum/mom_shareddefs.h"
-#include "momentum/mom_gamerules.h"
 #include "mom_replay.h"
+#include "util/mom_util.h"
 #include "movevars_shared.h"
+#include "filesystem.h"
 #include <ctime>
 
 class CTriggerTimerStart;
@@ -26,6 +24,23 @@ class CTriggerStage;
 class CTimer
 {
 public:
+
+    CTimer()
+        : m_iZoneCount(0),
+          m_iStartTick(0),
+          m_iEndTick(0),
+          m_iLastZone(0),
+          m_bIsRunning(false),
+          m_bWereCheatsActivated(false),
+          m_bMapIsLinear(false),
+          m_pStartTrigger(nullptr),
+          m_pEndTrigger(nullptr),
+          m_pCurrentCheckpoint(nullptr),
+          m_pCurrentStage(nullptr),
+          m_iCurrentStepCP(0),
+          m_bUsingCPMenu(false)
+    {
+    }
 
     //-------- HUD Messages --------------------
     void DispatchStateMessage();
@@ -39,23 +54,28 @@ public:
     // Stops the timer
     void Stop(bool = false);
     // Is the timer running?
-    bool IsRunning() { return m_bIsRunning; }
+    bool IsRunning() const
+    { return m_bIsRunning; }
     // Set the running status of the timer
     void SetRunning(bool running) { m_bIsRunning = running; }
 
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
-    CTriggerTimerStart *GetStartTrigger() { return m_pStartTrigger.Get(); }
+    CTriggerTimerStart *GetStartTrigger() const
+    { return m_pStartTrigger.Get(); }
     // Gets the current checkpoint
-    CTriggerCheckpoint *GetCurrentCheckpoint() { return m_pCurrentCheckpoint.Get(); }
+    CTriggerCheckpoint *GetCurrentCheckpoint() const
+    { return m_pCurrentCheckpoint.Get(); }
     
-    CTriggerTimerStop *GetEndTrigger() { return m_pEndTrigger.Get(); }
-    CTriggerStage *GetCurrentStage() { return m_pCurrentStage.Get(); }
+    CTriggerTimerStop *GetEndTrigger() const
+    { return m_pEndTrigger.Get(); }
+    CTriggerStage *GetCurrentStage() const
+    { return m_pCurrentStage.Get(); }
 
     // Sets the given trigger as the start trigger
     void SetStartTrigger(CTriggerTimerStart *pTrigger)
     {
-        m_iLastStage = 0;//Allows us to overwrite previous runs
+        m_iLastZone = 0;//Allows us to overwrite previous runs
         m_pStartTrigger.Set(pTrigger);
     }
 
@@ -75,21 +95,33 @@ public:
     // Stores the result on m_iStageCount
     void RequestZoneCount();
     // Gets the total stage count
-    int GetZoneCount() { return m_iZoneCount; };
+    int GetZoneCount() const
+    { return m_iZoneCount; };
     float CalculateStageTime(int stageNum);
+    // Gets the time for the last run, if there was one
     float GetLastRunTime() 
     {
+        if (m_iEndTick == 0)
+            return 0.0f;
         float originalTime = static_cast<float>(m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick;
         // apply precision fix, adding offset from start as well as subtracting offset from end.
         // offset from end is 1 tick - fraction offset, since we started trace outside of the end zone.
         return originalTime + m_flTickOffsetFix[1] - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
     }
 
+    // Gets the current time for this timer
+    float GetCurrentTime() const
+    {
+        return float(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick;
+    }
+
     //--------- CheckpointMenu stuff --------------------------------
     // Gets the current menu checkpoint index
-    int GetCurrentCPMenuStep() { return m_iCurrentStepCP; }
+    int GetCurrentCPMenuStep() const
+    { return m_iCurrentStepCP; }
     // MOM_TODO: For leaderboard use later on
-    bool IsUsingCPMenu() { return m_bUsingCPMenu; }
+    bool IsUsingCPMenu() const
+    { return m_bUsingCPMenu; }
     // Creates a checkpoint (menu) on the location of the given Entity
     void CreateCheckpoint(CBasePlayer*);
     // Removes last checkpoint (menu) form the checkpoint lists
@@ -107,7 +139,8 @@ public:
     // Sets the current checkpoint (menu) to the desired one with that index
     void SetCurrentCPMenuStep(int pNewNum);
     // Gets the total amount of menu checkpoints
-    int GetCPCount() { return checkpoints.Size(); }
+    int GetCPCount() const
+    { return checkpoints.Size(); }
     // Sets wheter or not we're using the CPMenu
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingCPMenu(bool pIsUsingCPMenu);
@@ -125,7 +158,8 @@ public:
     // Removes all onehops from the list
     void RemoveAllOnehopsFromList() { onehops.RemoveAll(); }
     // Returns the count for the onehop list
-    int GetOnehopListCount() { return onehops.Count(); }
+    int GetOnehopListCount() const
+    { return onehops.Count(); }
     // Finds the onehop with the given index on the list
     CTriggerOnehop* FindOnehopOnList(int pIndexOnList);
 
@@ -165,8 +199,7 @@ private:
 
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick;
-    int m_iLastStage = 0;
-    float m_flZoneEnterTime[MAX_STAGES];
+    int m_iLastZone;
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
     bool m_bMapIsLinear;
@@ -186,6 +219,10 @@ private:
 
         //stage specific stats:
         RunStats_t RunStats;
+
+        Time(): time_sec(0), tickrate(0), date(0), flags(0)
+        {           
+        }
     };
 
     struct Checkpoint
@@ -201,13 +238,14 @@ private:
     CUtlVector<Time> localTimes;
     //MOM_TODO: CUtlVector<OnlineTime> onlineTimes;
 
-    int m_iCurrentStepCP = 0;
-    bool m_bUsingCPMenu = false;
+    int m_iCurrentStepCP;
+    bool m_bUsingCPMenu;
 
     //PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the start trigger
     // also, subtract the ending offset from the time, since we end after we actually enter the ending trigger 
     float m_flTickOffsetFix[MAX_STAGES]; //index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
+    float m_flZoneEnterTime[MAX_STAGES];
 
 public:
     //creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.

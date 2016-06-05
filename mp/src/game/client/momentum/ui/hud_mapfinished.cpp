@@ -325,6 +325,8 @@ void CHudMapFinishedDialog::Paint()
     // ----------------
     // ------------------------------
 }
+
+//MOM_TODO: Do we want this to be a think method or update it to a usermsg/event, so it only calls once, and not every frame?
 void CHudMapFinishedDialog::OnThink()
 {
     C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
@@ -339,6 +341,7 @@ void CHudMapFinishedDialog::OnThink()
 
         RunStats_t *stats = g_MOMEventListener->GetRunStats(pPlayer->IsWatchingReplay() ? pPlayer->GetReplayEnt()->entindex() :
             pPlayer->entindex());
+        float lastRunTime = pPlayer->IsWatchingReplay() ? pPlayer->GetReplayEnt()->m_flRunTime : g_MOMEventListener->m_flLastRunTime;
         m_flAvgSpeed = stats->m_flZoneVelocityAvg[0][hvel.GetBool()];
         m_flMaxSpeed = stats->m_flZoneVelocityMax[0][hvel.GetBool()];
         m_flEndSpeed = stats->m_flZoneExitSpeed[0][hvel.GetBool()];
@@ -347,7 +350,6 @@ void CHudMapFinishedDialog::OnThink()
         m_flAvgSync = stats->m_flZoneStrafeSync2Avg[0];
         m_iTotalJumps = stats->m_iZoneJumps[0];
         m_iTotalStrafes = stats->m_iZoneStrafes[0];
-        //MOM_TODO: This needs updating to show the run time of the ghost
-        mom_UTIL->FormatTime(g_MOMEventListener->m_flLastRunTime, m_pszRunTime);
+        mom_UTIL->FormatTime(lastRunTime, m_pszRunTime);
     }
 }

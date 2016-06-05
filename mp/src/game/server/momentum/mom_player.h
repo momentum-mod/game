@@ -46,8 +46,8 @@ class CMomentumPlayer : public CBasePlayer
     void Spawn() override;
     void Precache() override;
 
-    //MOM_TODO: This is called when the player spawns so that HUD elements can be updated
-    //void InitHUD() override;
+    // MOM_TODO: This is called when the player spawns so that HUD elements can be updated
+    // void InitHUD() override;
 
     void CommitSuicide(bool bExplode = false, bool bForce = false) override{};
 
@@ -84,9 +84,9 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bResumeZoom);
     CNetworkVar(int, m_iLastZoom);
 
-    CNetworkVar(bool, m_bDidPlayerBhop);  // Did the player bunnyhop successfully?
-    CNetworkVar(int, m_iSuccessiveBhops); // How many successive bhops this player has
-    CNetworkVar(bool, m_bHasPracticeMode); //Is the player in practice mode?
+    CNetworkVar(bool, m_bDidPlayerBhop);   // Did the player bunnyhop successfully?
+    CNetworkVar(int, m_iSuccessiveBhops);  // How many successive bhops this player has
+    CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
 
@@ -117,6 +117,10 @@ class CMomentumPlayer : public CBasePlayer
 
     // Run Stats
     RunStats_t m_PlayerRunStats;
+
+    // Used by momentum triggers
+    Vector GetPrevOrigin(void);
+    Vector GetPrevOrigin(const Vector &base);
 
     // for calc avg
     int m_nZoneAvgCount[MAX_STAGES];

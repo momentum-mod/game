@@ -6,13 +6,15 @@
 
 struct RunStats_t
 {
+    //Note: This needs updating every time the struct is updated!
     RunStats_t(int size = MAX_STAGES)
     {
         // Set the total number of stages/checkpoints
         m_iTotalZones = size;
 
         // initialize everything to 0
-        for (int i = 0; i < m_iTotalZones; i++)
+        //Note: We do m_iTotalZones + 1 because 0 is overall!
+        for (int i = 0; i < m_iTotalZones + 1; i++)
         {
             m_iZoneJumps[i] = 0;
             m_iZoneStrafes[i] = 0;
@@ -30,60 +32,50 @@ struct RunStats_t
         }
     }
 
-    //Note: This needs updating every time the struct is updated!
-    void Read(FileHandle_t file)
+    //Needed for HandleFile
+    static void Read(void const* pData, int size, FileHandle_t file)
     {
-        filesystem->Read(&m_iTotalZones, sizeof(m_iTotalZones), file);
-        for (int i = 0; i < m_iTotalZones; i++)
-        {
-            filesystem->Read(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
-            filesystem->Read(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
-            filesystem->Read(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+        filesystem->Read(&pData, size, file);
+    }
 
-            filesystem->Read(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-            filesystem->Read(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
-            filesystem->Read(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
-            filesystem->Read(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
+    //Needed for HandleFile
+    static void Write(void const* pData, int size, FileHandle_t file)
+    {
+        filesystem->Write(&pData, size, file);
+    }
+
+    //Note: This needs updating every time the struct is updated!
+    void HandleFile(FileHandle_t file, bool read) const
+    {
+        void(*handle)(void const*, int, FileHandle_t) = read ? &Read : &Write;
+
+        handle(&m_iTotalZones, sizeof(m_iTotalZones), file);
+        for (int i = 0; i < m_iTotalZones + 1; i++)
+        {
+            handle(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
+            handle(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
+            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+
+            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
+            handle(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
+            handle(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
+            handle(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
 
             for (int k = 0; k < 2; k++)
             {
-                filesystem->Read(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
-                filesystem->Read(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
-                filesystem->Read(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
-                filesystem->Read(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
+                handle(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
+                handle(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
+                handle(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
+                handle(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
             }
         }
     }
 
-    //Note: This needs updating every time the struct is updated!
-    void Write(FileHandle_t file) const
-    {
-        filesystem->Write(&m_iTotalZones, sizeof(m_iTotalZones), file);
-        for (int i = 0; i < m_iTotalZones; i++)
-        {
-            filesystem->Write(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
-            filesystem->Write(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
-            filesystem->Write(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-
-            filesystem->Write(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-            filesystem->Write(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
-            filesystem->Write(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
-            filesystem->Write(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
-
-            for (int k = 0; k < 2; k++)
-            {
-                filesystem->Write(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
-                filesystem->Write(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
-                filesystem->Write(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
-                filesystem->Write(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
-            }
-        }
-    }
-
+    // Note: This needs updating every time the struct is updated!
     RunStats_t &operator=(const RunStats_t &other)
     {
         m_iTotalZones = other.m_iTotalZones;
-        for (int i = 0; i < other.m_iTotalZones; i++)
+        for (int i = 0; i < other.m_iTotalZones + 1; i++)
         {
             m_iZoneJumps[i] = other.m_iZoneJumps[i];
             m_iZoneStrafes[i] = other.m_iZoneStrafes[i];
