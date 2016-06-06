@@ -269,7 +269,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
         runSaveEvent->SetBool("run_saved", false);
         gameeventmanager->FireEvent(runSaveEvent);
     }
-    if (timerStateEvent)
+    if (timerStateEvent && pPlayer)
     {
         timerStateEvent->SetInt("ent", pPlayer->entindex());
         timerStateEvent->SetBool("is_running", false);
