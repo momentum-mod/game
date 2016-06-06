@@ -4,22 +4,7 @@
 #include "tier0/memdbgon.h"
 
 
-#ifdef GAME_DLL
-BEGIN_SEND_TABLE_NOBASE(CMOMRunEntityData, DT_MOM_RunEntData)
-SendPropBool(SENDINFO(m_bAutoBhop)),
-SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-SendPropFloat(SENDINFO(m_flStrafeSync)),
-SendPropFloat(SENDINFO(m_flStrafeSync2)),
-SendPropFloat(SENDINFO(m_flLastJumpVel)),
-SendPropFloat(SENDINFO(m_flLastJumpTime)),
-SendPropInt(SENDINFO(m_iRunFlags)),
-SendPropBool(SENDINFO(m_bIsInZone)),
-SendPropInt(SENDINFO(m_iCurrentZone)),
-SendPropBool(SENDINFO(m_bMapFinished)),
-SendPropBool(SENDINFO(m_bTimerRunning)),
-END_SEND_TABLE()
-
-#elif defined CLIENT_DLL
+#ifdef CLIENT_DLL
 BEGIN_RECV_TABLE_NOBASE(C_MOMRunEntityData, DT_MOM_RunEntData)
 RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
@@ -32,7 +17,23 @@ RecvPropBool(RECVINFO(m_bIsInZone)),
 RecvPropInt(RECVINFO(m_iCurrentZone)),
 RecvPropBool(RECVINFO(m_bMapFinished)),
 RecvPropBool(RECVINFO(m_bTimerRunning)),
+RecvPropInt(RECVINFO(m_iStartTick)),
 END_RECV_TABLE()
+#else
+BEGIN_SEND_TABLE_NOBASE(CMOMRunEntityData, DT_MOM_RunEntData)
+SendPropBool(SENDINFO(m_bAutoBhop)),
+SendPropInt(SENDINFO(m_iSuccessiveBhops)),
+SendPropFloat(SENDINFO(m_flStrafeSync)),
+SendPropFloat(SENDINFO(m_flStrafeSync2)),
+SendPropFloat(SENDINFO(m_flLastJumpVel)),
+SendPropFloat(SENDINFO(m_flLastJumpTime)),
+SendPropInt(SENDINFO(m_iRunFlags)),
+SendPropBool(SENDINFO(m_bIsInZone)),
+SendPropInt(SENDINFO(m_iCurrentZone)),
+SendPropBool(SENDINFO(m_bMapFinished)),
+SendPropBool(SENDINFO(m_bTimerRunning)),
+SendPropInt(SENDINFO(m_iStartTick)),
+END_SEND_TABLE()
 #endif
 
 CMOMRunEntityData::CMOMRunEntityData()
@@ -46,6 +47,7 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_iRunFlags = 0;
     m_bIsInZone = false;
     m_iCurrentZone = 0;
+    m_iStartTick = -1;
     m_bMapFinished = false;
     m_bTimerRunning = false;
 }

@@ -7,6 +7,7 @@
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/Panel.h>
+#include <vgui/IVGui.h>
 
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
@@ -81,6 +82,7 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
+    ivgui()->AddTickSignal(GetVPanel());
 }
 
 C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
@@ -108,15 +110,13 @@ bool C_RunComparisons::ShouldDraw()
     bool shouldDrawLocal = false;
     if (pPlayer)
     {
-        if (pPlayer->IsWatchingReplay())
+        //MOM_TODO: Should we have a convar against letting a ghost compare?
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        C_MOMRunEntityData *runData = pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData;
+
+        if (runData)
         {
-            //MOM_TODO: Should we have a convar against this?
-            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-            shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
-        } 
-        else
-        {
-            shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+            shouldDrawLocal = runData->m_bTimerRunning && !runData->m_bMapFinished;
         }
     }
     return mom_comparisons.GetBool() && m_bLoadedComparison && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -135,14 +135,10 @@ void C_RunComparisons::FireGameEvent(IGameEvent *event)
 {
     if (!Q_strcmp(event->GetName(), "timer_state")) // This is insuring, even though we register for only this event...?
     {
-        bool started = event->GetBool("is_running", false);
-        if (started)
+        int entIndex = event->GetInt("ent");
+        if (entIndex == m_iEntIndex)
         {
-            LoadComparisons();
-        }
-        else
-        {
-            UnloadComparisons();
+            event->GetBool("is_running", false) ? LoadComparisons() : UnloadComparisons();
         }
     }
 }
@@ -150,14 +146,27 @@ void C_RunComparisons::FireGameEvent(IGameEvent *event)
 void C_RunComparisons::LoadComparisons()
 {
     UnloadComparisons();
-    // MOM_TODO: Allow replays to compare? If so we'd need interval_per_tick and run flags to be passed here.
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     const char *szMapName = g_pGameRules ? g_pGameRules->MapName() : nullptr;
     if (szMapName && pPlayer)
     {
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        float tickRate = 0;
+        int runFlags = 0;
+
+        if (pGhost)
+        {
+            tickRate = pGhost->m_flTickRate;
+            runFlags = pGhost->m_RunData.m_iRunFlags;
+        }
+        else
+        {
+            tickRate = gpGlobals->interval_per_tick;
+            runFlags = pPlayer->m_RunData.m_iRunFlags;
+        }
+
         m_rcCurrentComparison = new RunCompare_t();
-        m_bLoadedComparison = mom_UTIL->GetRunComparison(szMapName, gpGlobals->interval_per_tick, pPlayer->m_RunData.m_iRunFlags,
-                                                         m_rcCurrentComparison);
+        m_bLoadedComparison = mom_UTIL->GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
     }
 }
 
@@ -171,13 +180,23 @@ void C_RunComparisons::UnloadComparisons()
     m_bLoadedComparison = false;
 }
 
+void C_RunComparisons::OnTick()
+{
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+    if (pPlayer)
+    {
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        m_iEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
+    }
+}
+
 void C_RunComparisons::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
-        m_iCurrentZone = pPlayer->m_RunData.m_iCurrentZone;
-        m_iEntIndex = pPlayer->IsWatchingReplay() ? pPlayer->GetReplayEnt()->entindex() : pPlayer->entindex();
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        m_iCurrentZone = pGhost ? pGhost->m_RunData.m_iCurrentZone : pPlayer->m_RunData.m_iCurrentZone;
     }
 
     if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perstage.GetBool())
@@ -518,7 +537,7 @@ void C_RunComparisons::Paint()
     int newY = m_iDefaultYPos + (m_iDefaultTall - maxTall);
     SetPos(m_iDefaultXPos, newY); // Dynamic placement
     SetSize(m_iMaxWide, maxTall); // Dynamic sizing
-    // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat?
+    // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat, which affects maxTall
 
     // Get player current stage
     int currentStage = m_iCurrentZone;

@@ -92,6 +92,7 @@ void CMomentumPlayer::Spawn()
     }
     if (timerStartEvent)
     {
+        timerStartEvent->SetInt("ent", entindex());
         timerStartEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timerStartEvent);
     }
@@ -446,28 +447,26 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
         return false;
     }
 
-    CMomentumPlayer *player = ToCMOMPlayer(target);
+    return BaseClass::IsValidObserverTarget(target);
+}
 
-    /* Don't spec observers or players who haven't picked a class yet */
-    if (player->IsObserver())
-        return false;
+// Override of CBasePlayer::SetObserverTarget that lets us add/remove ourselves as spectors to the ghost
+bool CMomentumPlayer::SetObserverTarget(CBaseEntity* target)
+{
+    CMomentumReplayGhostEntity *pGhostToSpectate = dynamic_cast<CMomentumReplayGhostEntity*>(target),
+        *pCurrentGhost = GetReplayEnt();
 
-    if (player == this)
-        return false; // We can't observe ourselves.
-
-    if (player->IsEffectActive(EF_NODRAW)) // don't watch invisible players
-        return false;
-
-    if (player->m_lifeState == LIFE_RESPAWNABLE) // target is dead, waiting for respawn
-        return false;
-
-    if (player->m_lifeState == LIFE_DEAD || player->m_lifeState == LIFE_DYING)
+    if (pCurrentGhost)
     {
-        if ((player->m_flDeathTime + DEATH_ANIMATION_TIME) < gpGlobals->curtime)
-        {
-            return false; // allow watching until 3 seconds after death to see death animation
-        }
+        pCurrentGhost->RemoveSpectator(this);
     }
 
-    return true; // passed all tests
+    bool base = BaseClass::SetObserverTarget(target);
+
+    if (pGhostToSpectate && base)
+    {
+        pGhostToSpectate->AddSpectator(this);
+    }
+
+    return base;
 }

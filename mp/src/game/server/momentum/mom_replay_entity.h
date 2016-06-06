@@ -1,12 +1,13 @@
 #ifndef MOM_REPLAY_GHOST_H
 #define MOM_REPLAY_GHOST_H
 
+#pragma once
+
 #include "cbase.h"
+#include "mom_player.h"
 #include "in_buttons.h"
 #include "mom_entity_run_data.h"
 #include "replayformat.h"
-
-#pragma once
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
 #define ALL_BUTTONS IN_LEFT & IN_RIGHT & IN_MOVELEFT & IN_MOVERIGHT & IN_FORWARD & IN_BACK & IN_JUMP & IN_DUCK
@@ -29,6 +30,8 @@ enum ghostModelBodyGroup
     BODY_CYLINDER
 };
 
+class CMomentumPlayer;
+
 class CMomentumReplayGhostEntity : public CBaseAnimating
 {
     DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
@@ -47,11 +50,30 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
     void EndRun();
     void StartRun(bool firstPerson = false, bool shouldLoop = false);
+    void StartTimer(int m_iStartTick);
+    void StopTimer();
     void HandleGhost();
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel); // for hud display..
+    void SetHeader(replay_header_t &head)
+    {
+        header = head;
+        m_flRunTime = header.runTime;
+        m_flTickRate = header.interval_per_tick;
+        m_RunData.m_iRunFlags = header.runFlags;
+    }
     void SetRunStats(RunStats_t &stats);
     RunStats_t *GetRunStats() { return &m_RunStats; }
+
+    void AddSpectator(CMomentumPlayer* player)
+    {
+        spectators.AddToTail(player);
+    }
+
+    void RemoveSpectator(CMomentumPlayer* player)
+    {
+        spectators.FindAndRemove(player);
+    }
 
     bool m_bIsActive;
     int m_nStartTick;
@@ -61,6 +83,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     CNetworkVar(int, m_iTotalStrafes);
     CNetworkVar(int, m_iTotalJumps);
     CNetworkVar(float, m_flRunTime);
+    CNetworkVar(float, m_flTickRate);
 
   protected:
     void Think(void) override;
@@ -69,11 +92,12 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
   private:
     char m_pszModel[256], m_pszMapName[256];
+    replay_header_t header;
     replay_frame_t currentStep;
     replay_frame_t nextStep;
     RunStats_t m_RunStats;
 
-    // MOM_TODO: CUtlVector<CMomentumPlayer*> spectators;
+    CUtlVector<CMomentumPlayer *> spectators;
 
     int step;
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;

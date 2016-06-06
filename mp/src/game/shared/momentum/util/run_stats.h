@@ -6,14 +6,16 @@
 
 struct RunStats_t
 {
-    //Note: This needs updating every time the struct is updated!
+    // Note: This needs updating every time the struct is updated!
     RunStats_t(int size = MAX_STAGES)
     {
+        if (size > MAX_STAGES)
+            size = MAX_STAGES;
         // Set the total number of stages/checkpoints
         m_iTotalZones = size;
 
         // initialize everything to 0
-        //Note: We do m_iTotalZones + 1 because 0 is overall!
+        // Note: We do m_iTotalZones + 1 because 0 is overall!
         for (int i = 0; i < m_iTotalZones + 1; i++)
         {
             m_iZoneJumps[i] = 0;
@@ -32,22 +34,24 @@ struct RunStats_t
         }
     }
 
-    //Needed for HandleFile
-    static void Read(void const* pData, int size, FileHandle_t file)
+    // Needed for HandleFile function pointers
+    static void Read(void const *pData, int size, FileHandle_t file)
     {
-        filesystem->Read(&pData, size, file);
+        if (pData)
+            filesystem->Read(const_cast<void *>(pData), size, file); // Remove the const
     }
 
-    //Needed for HandleFile
-    static void Write(void const* pData, int size, FileHandle_t file)
+    // Needed for HandleFile function pointers
+    static void Write(void const *pData, int size, FileHandle_t file)
     {
-        filesystem->Write(&pData, size, file);
+        if (pData)
+            filesystem->Write(pData, size, file);
     }
 
-    //Note: This needs updating every time the struct is updated!
+    // Note: This needs updating every time the struct is updated!
     void HandleFile(FileHandle_t file, bool read) const
     {
-        void(*handle)(void const*, int, FileHandle_t) = read ? &Read : &Write;
+        void (*handle)(void const *, int, FileHandle_t) = read ? &Read : &Write;
 
         handle(&m_iTotalZones, sizeof(m_iTotalZones), file);
         for (int i = 0; i < m_iTotalZones + 1; i++)
@@ -97,24 +101,24 @@ struct RunStats_t
     }
 
     // Note: Passing 0 as the index to any of these will return the overall stat, i.e during the entire run.
-    int m_iTotalZones; //Required for the operator= overload
+    int m_iTotalZones; // Required for the operator= overload
 
     // Keypress
-    int m_iZoneJumps[MAX_STAGES],    // Amount of jumps per stage/checkpoint
-        m_iZoneStrafes[MAX_STAGES]; // Amount of strafes per stage/checkpoint
+    int m_iZoneJumps[MAX_STAGES + 1],   // Amount of jumps per stage/checkpoint
+        m_iZoneStrafes[MAX_STAGES + 1]; // Amount of strafes per stage/checkpoint
 
     // Time
-    float m_flZoneTime[MAX_STAGES],    // The amount of time (seconds) you spent to accomplish (stage) -> (stage + 1)
-        m_flZoneEnterTime[MAX_STAGES]; // The time in seconds that you entered the given stage/checkpoint
+    float m_flZoneTime[MAX_STAGES + 1], // The amount of time (seconds) you spent to accomplish (stage) -> (stage + 1)
+        m_flZoneEnterTime[MAX_STAGES + 1]; // The time in seconds that you entered the given stage/checkpoint
 
     // Sync
-    float m_flZoneStrafeSyncAvg[MAX_STAGES], // The average sync1 you had over the given stage/checkpoint
-        m_flZoneStrafeSync2Avg[MAX_STAGES];  // The average sync2 you had over the given stage/checkpoint
+    float m_flZoneStrafeSyncAvg[MAX_STAGES + 1], // The average sync1 you had over the given stage/checkpoint
+        m_flZoneStrafeSync2Avg[MAX_STAGES + 1];  // The average sync2 you had over the given stage/checkpoint
 
     // Velocity
     // Note: The secondary index is as follows: 0 = 3D Velocity (z included), 1 = Horizontal (XY) Velocity
-    float m_flZoneEnterSpeed[MAX_STAGES][2], // The velocity with which you started the stage (exit this stage's start trigger)
-        m_flZoneVelocityMax[MAX_STAGES][2], // Max velocity for a stage/checkpoint
-        m_flZoneVelocityAvg[MAX_STAGES][2], // Average velocity in a stage/checkpoint
-        m_flZoneExitSpeed[MAX_STAGES][2];   // The velocity with which you exit the stage (this stage -> next)
+    float m_flZoneEnterSpeed[MAX_STAGES + 1][2],// The velocity with which you started the stage (exit this stage's start trigger)
+        m_flZoneVelocityMax[MAX_STAGES + 1][2], // Max velocity for a stage/checkpoint
+        m_flZoneVelocityAvg[MAX_STAGES + 1][2], // Average velocity in a stage/checkpoint
+        m_flZoneExitSpeed[MAX_STAGES + 1][2];   // The velocity with which you exit the stage (this stage -> next)
 };

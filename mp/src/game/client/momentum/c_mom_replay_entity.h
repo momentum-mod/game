@@ -13,7 +13,7 @@ public:
 
     CMOMRunEntityData m_RunData;
 
-    float m_flRunTime;
+    float m_flRunTime, m_flTickRate;
 
     int m_nReplayButtons;
     //These are stored here because run stats already has the ones obtained from the run

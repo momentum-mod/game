@@ -9,6 +9,7 @@ RecvPropInt(RECVINFO(m_nReplayButtons)),
 RecvPropInt(RECVINFO(m_iTotalStrafes)),
 RecvPropInt(RECVINFO(m_iTotalJumps)),
 RecvPropFloat(RECVINFO(m_flRunTime)),
+RecvPropFloat(RECVINFO(m_flTickRate)),
 RecvPropDataTable(RECVINFO_DT(m_RunData), 0, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData))
 END_RECV_TABLE();
 
@@ -18,4 +19,5 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()
     m_iTotalStrafes = 0;
     m_iTotalJumps = 0;
     m_flRunTime = 0.0f;
+    m_flTickRate = 0.0f;
 }

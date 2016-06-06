@@ -41,6 +41,7 @@ public:
     void Reset() override;
     void Paint() override;
     bool ShouldDraw() override;
+    void OnTick() override;
 
     void FireGameEvent(IGameEvent *event) override;
 

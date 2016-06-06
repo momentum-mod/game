@@ -99,8 +99,6 @@ class CMomentumPlayer : public CBasePlayer
     void KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max,
                   float lateral_max, int direction_change);
 
-    bool IsValidObserverTarget(CBaseEntity *target) override;
-
     // Used by g_MOMBlockFix door/button fix code
     void Touch(CBaseEntity *) override;
     int GetLastBlock() const { return m_iLastBlock; }
@@ -108,12 +106,16 @@ class CMomentumPlayer : public CBasePlayer
     void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
     void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
 
+    //Replay stuff
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
 
     CMomentumReplayGhostEntity *GetReplayEnt() const
     {
         return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
     }
+
+    bool IsValidObserverTarget(CBaseEntity *target) override;
+    bool SetObserverTarget(CBaseEntity *target) override;
 
     // Run Stats
     RunStats_t m_PlayerRunStats;

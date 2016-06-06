@@ -12,19 +12,14 @@ void CTimer::Start(int start)
     m_iEndTick = 0;
     SetRunning(true);
 
-    //MOM_TODO: IDEA START:
-    //Move this to mom_triggers.cpp, and make it take a CBasePlayer
-    //as an argument, to pass into the RecipientFilter, so that
-    //anyone who spectates a replay can start their hud_timer, but not
-    //the server timer.
+    //Dispatch a start timer message for the local player
     DispatchStateMessage();
-    //--- IDEA END
-
 
     IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (timeStartEvent)
     {
+        timeStartEvent->SetInt("ent", UTIL_GetLocalPlayer()->entindex());
         timeStartEvent->SetBool("is_running", true);
         gameeventmanager->FireEvent(timeStartEvent);
     }
@@ -89,58 +84,60 @@ void CTimer::LoadLocalTimes(const char *szMapname)
 
     KeyValues *timesKV = new KeyValues(szMapname);
 
-    if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD"))
+    if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD")) 
     {
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
         {
-            Time t = Time();
-            t.time_sec = Q_atof(kv->GetName());
-            t.tickrate = kv->GetFloat("rate");
-            t.date = static_cast<time_t>(kv->GetInt("date"));
-            t.flags = kv->GetInt("flags");
-            t.RunStats = RunStats_t(GetZoneCount());
+            const char *kvName = kv->GetName();
+            Log("kvName is %s\n", kvName);
+            Time *t = new Time();
+            t->time_sec = Q_atof(kvName);
+            t->tickrate = kv->GetFloat("rate");
+            t->date = static_cast<time_t>(kv->GetInt("date"));
+            t->flags = kv->GetInt("flags");
+            t->RunStats = RunStats_t(GetZoneCount());
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {
-                if (!Q_strnicmp(subKv->GetName(), "zone", strlen("zone")))
+                if (!Q_strnicmp(subKv->GetName(), "zone", Q_strlen("zone")))
                 {
                     int i = Q_atoi(subKv->GetName() + 5); //atoi will need to ignore "zone " and only return the stage number
-                    t.RunStats.m_iZoneJumps[i] = subKv->GetInt("num_jumps");
-                    t.RunStats.m_iZoneStrafes[i] = subKv->GetInt("num_strafes");
-                    t.RunStats.m_flZoneTime[i] = subKv->GetFloat("time");
-                    t.RunStats.m_flZoneEnterTime[i] = subKv->GetFloat("enter_time");
-                    t.RunStats.m_flZoneStrafeSyncAvg[i] = subKv->GetFloat("avg_sync");
-                    t.RunStats.m_flZoneStrafeSync2Avg[i] = subKv->GetFloat("avg_sync2");
+                    t->RunStats.m_iZoneJumps[i] = subKv->GetInt("num_jumps");
+                    t->RunStats.m_iZoneStrafes[i] = subKv->GetInt("num_strafes");
+                    t->RunStats.m_flZoneTime[i] = subKv->GetFloat("time");
+                    t->RunStats.m_flZoneEnterTime[i] = subKv->GetFloat("enter_time");
+                    t->RunStats.m_flZoneStrafeSyncAvg[i] = subKv->GetFloat("avg_sync");
+                    t->RunStats.m_flZoneStrafeSync2Avg[i] = subKv->GetFloat("avg_sync2");
 
                     //3D Velocity Stats
-                    t.RunStats.m_flZoneVelocityAvg[i][0] = subKv->GetFloat("avg_vel");
-                    t.RunStats.m_flZoneVelocityMax[i][0] = subKv->GetFloat("max_vel");
-                    t.RunStats.m_flZoneEnterSpeed[i][0] = subKv->GetFloat("enter_vel");
-                    t.RunStats.m_flZoneExitSpeed[i][0] = subKv->GetFloat("exit_vel");
+                    t->RunStats.m_flZoneVelocityAvg[i][0] = subKv->GetFloat("avg_vel");
+                    t->RunStats.m_flZoneVelocityMax[i][0] = subKv->GetFloat("max_vel");
+                    t->RunStats.m_flZoneEnterSpeed[i][0] = subKv->GetFloat("enter_vel");
+                    t->RunStats.m_flZoneExitSpeed[i][0] = subKv->GetFloat("exit_vel");
 
                     //2D Velocity Stats
-                    t.RunStats.m_flZoneVelocityAvg[i][1] = subKv->GetFloat("avg_vel_2D");
-                    t.RunStats.m_flZoneVelocityMax[i][1] = subKv->GetFloat("max_vel_2D");
-                    t.RunStats.m_flZoneEnterSpeed[i][1] = subKv->GetFloat("enter_vel_2D");
-                    t.RunStats.m_flZoneExitSpeed[i][1] = subKv->GetFloat("exit_vel_2D");
+                    t->RunStats.m_flZoneVelocityAvg[i][1] = subKv->GetFloat("avg_vel_2D");
+                    t->RunStats.m_flZoneVelocityMax[i][1] = subKv->GetFloat("max_vel_2D");
+                    t->RunStats.m_flZoneEnterSpeed[i][1] = subKv->GetFloat("enter_vel_2D");
+                    t->RunStats.m_flZoneExitSpeed[i][1] = subKv->GetFloat("exit_vel_2D");
                 }
                 if (!Q_strncmp(subKv->GetName(), "total", Q_strlen("total")))
                 {
-                    t.RunStats.m_iZoneJumps[0] = subKv->GetInt("jumps");
-                    t.RunStats.m_iZoneStrafes[0] = subKv->GetInt("strafes");
-                    t.RunStats.m_flZoneStrafeSyncAvg[0] = subKv->GetFloat("avgsync");
-                    t.RunStats.m_flZoneStrafeSync2Avg[0] = subKv->GetFloat("avgsync2");
+                    t->RunStats.m_iZoneJumps[0] = subKv->GetInt("jumps");
+                    t->RunStats.m_iZoneStrafes[0] = subKv->GetInt("strafes");
+                    t->RunStats.m_flZoneStrafeSyncAvg[0] = subKv->GetFloat("avgsync");
+                    t->RunStats.m_flZoneStrafeSync2Avg[0] = subKv->GetFloat("avgsync2");
                     //3D
-                    t.RunStats.m_flZoneVelocityAvg[0][0] = subKv->GetFloat("avg_vel");
-                    t.RunStats.m_flZoneVelocityMax[0][0] = subKv->GetFloat("max_vel");
-                    t.RunStats.m_flZoneEnterSpeed[0][0] = subKv->GetFloat("start_vel");
-                    t.RunStats.m_flZoneExitSpeed[0][0] = subKv->GetFloat("end_vel");
+                    t->RunStats.m_flZoneVelocityAvg[0][0] = subKv->GetFloat("avg_vel");
+                    t->RunStats.m_flZoneVelocityMax[0][0] = subKv->GetFloat("max_vel");
+                    t->RunStats.m_flZoneEnterSpeed[0][0] = subKv->GetFloat("start_vel");
+                    t->RunStats.m_flZoneExitSpeed[0][0] = subKv->GetFloat("end_vel");
                     //2D
-                    t.RunStats.m_flZoneVelocityAvg[0][1] = subKv->GetFloat("avg_vel_2D");
-                    t.RunStats.m_flZoneVelocityMax[0][1] = subKv->GetFloat("max_vel_2D");
-                    t.RunStats.m_flZoneEnterSpeed[0][1] = subKv->GetFloat("start_vel_2D");
-                    t.RunStats.m_flZoneExitSpeed[0][1] = subKv->GetFloat("end_vel_2D");
-                }     
+                    t->RunStats.m_flZoneVelocityAvg[0][1] = subKv->GetFloat("avg_vel_2D");
+                    t->RunStats.m_flZoneVelocityMax[0][1] = subKv->GetFloat("max_vel_2D");
+                    t->RunStats.m_flZoneEnterSpeed[0][1] = subKv->GetFloat("start_vel_2D");
+                    t->RunStats.m_flZoneExitSpeed[0][1] = subKv->GetFloat("end_vel_2D");
+                }
             }
             localTimes.AddToTail(t);
         }
@@ -163,29 +160,29 @@ void CTimer::SaveTime()
 
     for (int i = 0; i < count; i++)
     {
-        Time t = localTimes[i];
+        Time *t = localTimes[i];
         char timeName[512];
-        Q_snprintf(timeName, 512, "%.6f", t.time_sec);
+        Q_snprintf(timeName, 512, "%.6f", t->time_sec);
         KeyValues *pSubkey = new KeyValues(timeName);
-        pSubkey->SetFloat("rate", t.tickrate);
-        pSubkey->SetInt("date", t.date);
-        pSubkey->SetInt("flags", t.flags);
+        pSubkey->SetFloat("rate", t->tickrate);
+        pSubkey->SetInt("date", t->date);
+        pSubkey->SetInt("flags", t->flags);
         
         KeyValues *pOverallKey = new KeyValues("total");
-        pOverallKey->SetInt("jumps", t.RunStats.m_iZoneJumps[0]);
-        pOverallKey->SetInt("strafes", t.RunStats.m_iZoneStrafes[0]);
-        pOverallKey->SetFloat("avgsync", t.RunStats.m_flZoneStrafeSyncAvg[0]);
-        pOverallKey->SetFloat("avgsync2", t.RunStats.m_flZoneStrafeSync2Avg[0]);
+        pOverallKey->SetInt("jumps", t->RunStats.m_iZoneJumps[0]);
+        pOverallKey->SetInt("strafes", t->RunStats.m_iZoneStrafes[0]);
+        pOverallKey->SetFloat("avgsync", t->RunStats.m_flZoneStrafeSyncAvg[0]);
+        pOverallKey->SetFloat("avgsync2", t->RunStats.m_flZoneStrafeSync2Avg[0]);
 
-        pOverallKey->SetFloat("start_vel", t.RunStats.m_flZoneEnterSpeed[1][0]);
-        pOverallKey->SetFloat("end_vel", t.RunStats.m_flZoneExitSpeed[0][0]);
-        pOverallKey->SetFloat("avg_vel", t.RunStats.m_flZoneVelocityAvg[0][0]);
-        pOverallKey->SetFloat("max_vel", t.RunStats.m_flZoneVelocityMax[0][0]);
+        pOverallKey->SetFloat("start_vel", t->RunStats.m_flZoneEnterSpeed[1][0]);
+        pOverallKey->SetFloat("end_vel", t->RunStats.m_flZoneExitSpeed[0][0]);
+        pOverallKey->SetFloat("avg_vel", t->RunStats.m_flZoneVelocityAvg[0][0]);
+        pOverallKey->SetFloat("max_vel", t->RunStats.m_flZoneVelocityMax[0][0]);
 
-        pOverallKey->SetFloat("start_vel_2D", t.RunStats.m_flZoneEnterSpeed[1][1]);
-        pOverallKey->SetFloat("end_vel_2D", t.RunStats.m_flZoneExitSpeed[0][1]);
-        pOverallKey->SetFloat("avg_vel_2D", t.RunStats.m_flZoneVelocityAvg[0][1]);
-        pOverallKey->SetFloat("max_vel_2D", t.RunStats.m_flZoneVelocityMax[0][1]);
+        pOverallKey->SetFloat("start_vel_2D", t->RunStats.m_flZoneEnterSpeed[1][1]);
+        pOverallKey->SetFloat("end_vel_2D", t->RunStats.m_flZoneExitSpeed[0][1]);
+        pOverallKey->SetFloat("avg_vel_2D", t->RunStats.m_flZoneVelocityAvg[0][1]);
+        pOverallKey->SetFloat("max_vel_2D", t->RunStats.m_flZoneVelocityMax[0][1]);
 
         char stageName[9]; // "stage 64\0"
         if (GetZoneCount() > 1)
@@ -195,22 +192,22 @@ void CTimer::SaveTime()
                 Q_snprintf(stageName, sizeof(stageName), "zone %d", i2);
 
                 KeyValues *pStageKey = new KeyValues(stageName);
-                pStageKey->SetFloat("time", t.RunStats.m_flZoneTime[i2]);
-                pStageKey->SetFloat("enter_time", t.RunStats.m_flZoneEnterTime[i2]);
-                pStageKey->SetInt("num_jumps", t.RunStats.m_iZoneJumps[i2]);
-                pStageKey->SetInt("num_strafes", t.RunStats.m_iZoneStrafes[i2]);
-                pStageKey->SetFloat("avg_sync", t.RunStats.m_flZoneStrafeSyncAvg[i2]);
-                pStageKey->SetFloat("avg_sync2", t.RunStats.m_flZoneStrafeSync2Avg[i2]);
+                pStageKey->SetFloat("time", t->RunStats.m_flZoneTime[i2]);
+                pStageKey->SetFloat("enter_time", t->RunStats.m_flZoneEnterTime[i2]);
+                pStageKey->SetInt("num_jumps", t->RunStats.m_iZoneJumps[i2]);
+                pStageKey->SetInt("num_strafes", t->RunStats.m_iZoneStrafes[i2]);
+                pStageKey->SetFloat("avg_sync", t->RunStats.m_flZoneStrafeSyncAvg[i2]);
+                pStageKey->SetFloat("avg_sync2", t->RunStats.m_flZoneStrafeSync2Avg[i2]);
 
-                pStageKey->SetFloat("avg_vel", t.RunStats.m_flZoneVelocityAvg[i2][0]);
-                pStageKey->SetFloat("max_vel", t.RunStats.m_flZoneVelocityMax[i2][0]);
-                pStageKey->SetFloat("enter_vel", t.RunStats.m_flZoneEnterSpeed[i2][0]);
-                pStageKey->SetFloat("exit_vel", t.RunStats.m_flZoneExitSpeed[i2][0]);
+                pStageKey->SetFloat("avg_vel", t->RunStats.m_flZoneVelocityAvg[i2][0]);
+                pStageKey->SetFloat("max_vel", t->RunStats.m_flZoneVelocityMax[i2][0]);
+                pStageKey->SetFloat("enter_vel", t->RunStats.m_flZoneEnterSpeed[i2][0]);
+                pStageKey->SetFloat("exit_vel", t->RunStats.m_flZoneExitSpeed[i2][0]);
 
-                pStageKey->SetFloat("avg_vel_2D", t.RunStats.m_flZoneVelocityAvg[i2][1]);
-                pStageKey->SetFloat("max_vel_2D", t.RunStats.m_flZoneVelocityMax[i2][1]);
-                pStageKey->SetFloat("enter_vel_2D", t.RunStats.m_flZoneEnterSpeed[i2][1]);
-                pStageKey->SetFloat("exit_vel_2D", t.RunStats.m_flZoneExitSpeed[i2][1]);
+                pStageKey->SetFloat("avg_vel_2D", t->RunStats.m_flZoneVelocityAvg[i2][1]);
+                pStageKey->SetFloat("max_vel_2D", t->RunStats.m_flZoneVelocityMax[i2][1]);
+                pStageKey->SetFloat("enter_vel_2D", t->RunStats.m_flZoneEnterSpeed[i2][1]);
+                pStageKey->SetFloat("exit_vel_2D", t->RunStats.m_flZoneExitSpeed[i2][1]);
 
                 pSubkey->AddSubKey(pStageKey);
             }
@@ -244,7 +241,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
-
+    
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
         m_iEndTick = gpGlobals->tickcount;
@@ -255,25 +252,26 @@ void CTimer::Stop(bool endTrigger /* = false */)
             PostTime();
 
         //Save times locally too, regardless of SteamAPI condition
-        Time t = Time();
-        t.time_sec = GetLastRunTime();
+        Time *t = new Time();
+        t->time_sec = GetLastRunTime();
 
-        t.tickrate = gpGlobals->interval_per_tick;
-        t.flags = pPlayer->m_RunData.m_iRunFlags;
-        time(&t.date);
-        t.RunStats = pPlayer->m_PlayerRunStats; //copy all the run stats
+        t->tickrate = gpGlobals->interval_per_tick;
+        t->flags = pPlayer->m_RunData.m_iRunFlags;
+        time(&t->date);
+        t->RunStats = pPlayer->m_PlayerRunStats; //copy all the run stats
 
         localTimes.AddToTail(t);
 
         SaveTime();  
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
-    {  
+    {
         runSaveEvent->SetBool("run_saved", false);
         gameeventmanager->FireEvent(runSaveEvent);
     }
     if (timerStateEvent)
     {
+        timerStateEvent->SetInt("ent", pPlayer->entindex());
         timerStateEvent->SetBool("is_running", false);
         gameeventmanager->FireEvent(timerStateEvent);
     }
@@ -294,7 +292,7 @@ void CTimer::OnMapEnd(const char *pMapName)
     SetStartTrigger(nullptr);
     SetCurrentStage(nullptr);
     RemoveAllCheckpoints();
-    localTimes.Purge();
+    localTimes.PurgeAndDeleteElements();
     //MOM_TODO: onlineTimes.RemoveAll();
 }
 
@@ -357,19 +355,7 @@ void CTimer::DispatchResetMessage()
 
 void CTimer::DispatchStateMessage()
 {
-    //MOM_TODO: after replay merge: change cPlayer to be an argument 
-    //of this method, and make that the Recipient, so that the hud_timer
-    //can start if you're spectating a replay in first person
-    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer)
-    {
-        CSingleUserRecipientFilter user(cPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_State");
-        WRITE_BOOL(m_bIsRunning);
-        WRITE_LONG(m_iStartTick);//MOM_TODO: m_iStartTick is also
-        MessageEnd();
-    }
+    mom_UTIL->DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_iStartTick, m_bIsRunning);
 }
 
 void CTimer::DispatchCheckpointMessage()

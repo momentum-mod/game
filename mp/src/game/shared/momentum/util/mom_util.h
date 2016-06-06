@@ -47,6 +47,12 @@ public:
     {
         return fabs(a - b) < epsilon;
     }
+
+#ifdef GAME_DLL
+
+    void DispatchTimerStateMessage(CBasePlayer *, int, bool) const;
+
+#endif
 };
 
 class CTimeSortFunc

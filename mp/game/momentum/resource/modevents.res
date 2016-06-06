@@ -81,6 +81,7 @@
     }
 	"timer_state"
 	{
+        "ent" "short"
 		"is_running"	"bool"
 	}
 	"keypress"

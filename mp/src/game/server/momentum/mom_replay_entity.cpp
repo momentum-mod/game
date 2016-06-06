@@ -23,8 +23,11 @@ LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 // MOM_TODO: Network other variables that the UI will need to reference
-SendPropInt(SENDINFO(m_nReplayButtons)), SendPropInt(SENDINFO(m_iTotalStrafes)), SendPropInt(SENDINFO(m_iTotalJumps)),
+SendPropInt(SENDINFO(m_nReplayButtons)), 
+SendPropInt(SENDINFO(m_iTotalStrafes)), 
+SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropFloat(SENDINFO(m_flRunTime)),
+SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)), 
 END_SEND_TABLE();
 
@@ -306,20 +309,52 @@ void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
     }
 }
 
+void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
+{
+    m_RunData.m_iStartTick = m_iStartTick;
+
+    FOR_EACH_VEC(spectators, i)
+    {
+        CMomentumPlayer *pPlayer = spectators[i];
+        if (pPlayer && pPlayer->GetReplayEnt() == this)
+        {
+            mom_UTIL->DispatchTimerStateMessage(pPlayer, m_iStartTick, true);
+        }
+    }
+}
+
+void CMomentumReplayGhostEntity::StopTimer()
+{
+    FOR_EACH_VEC(spectators, i)
+    {
+        CMomentumPlayer *pPlayer = spectators[i];
+        if (pPlayer && pPlayer->GetReplayEnt() == this)
+        {
+            mom_UTIL->DispatchTimerStateMessage(pPlayer, 0, false);
+        }
+    }
+}
+
 void CMomentumReplayGhostEntity::SetRunStats(RunStats_t &stats) { m_RunStats = stats; }
 
 void CMomentumReplayGhostEntity::EndRun()
 {
+    StopTimer();
     SetNextThink(-1);
     Remove();
     m_bIsActive = false;
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
-    if (pPlayer && pPlayer->IsObserver())
+    FOR_EACH_VEC(spectators, i)
     {
-        pPlayer->StopObserverMode();
-        pPlayer->ForceRespawn();
-        pPlayer->SetMoveType(MOVETYPE_WALK);
-        // pPlayer->m_bIsWatchingReplay = false;
+        CMomentumPlayer *pPlayer = spectators[i];
+        if (pPlayer && pPlayer->GetReplayEnt() == this)
+        {
+            pPlayer->StopObserverMode();
+            pPlayer->ForceRespawn();
+            pPlayer->SetMoveType(MOVETYPE_WALK);
+            // pPlayer->m_bIsWatchingReplay = false;
+        }
     }
+
+    spectators.RemoveAll();
 }

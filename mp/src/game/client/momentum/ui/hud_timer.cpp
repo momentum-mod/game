@@ -239,12 +239,24 @@ void C_Timer::OnThink()
     if (pLocal && g_MOMEventListener)
     {
         C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
-        C_MOMRunEntityData *runData = pGhost ? &pGhost->m_RunData : &pLocal->m_RunData;
-        m_iEntIndex = pGhost ? pGhost->entindex() : pLocal->entindex();
+        C_MOMRunEntityData *runData;
+        if (pGhost)
+        {
+            m_bIsRunning = pGhost->m_RunData.m_bTimerRunning;
+            m_iStartTick = pGhost->m_RunData.m_iStartTick;
+            m_iEntIndex = pGhost->entindex();
+            m_bPlayerHasPracticeMode = false;
+            runData = &pGhost->m_RunData;
+        }
+        else
+        {
+            m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
+            m_iEntIndex = pLocal->entindex();
+            runData = &pLocal->m_RunData;
+        }
         m_iZoneCurrent = runData->m_iCurrentZone;
         m_bPlayerInZone = runData->m_bIsInZone;
         m_bMapFinished = runData->m_bMapFinished;
-        m_bPlayerHasPracticeMode = pGhost ? false : pLocal->m_bHasPracticeMode;
         m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
         m_bMapIsLinear = g_MOMEventListener->m_bMapIsLinear;
     }

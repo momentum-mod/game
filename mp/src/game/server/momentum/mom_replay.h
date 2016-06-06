@@ -40,8 +40,9 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
     void WriteRecordingToFile(CUtlBuffer *buf);
-    replay_header_t CreateHeader();
-    RunStats_t CreateStats();
+    //replay_header_t CreateHeader();
+    void CreateHeader(replay_header_t &head);
+    void CreateStats(RunStats_t &stats);
 
     replay_frame_t *ReadSingleFrame(FileHandle_t file, const char *filename);
     replay_header_t *ReadHeader(FileHandle_t file, const char *filename);
@@ -57,7 +58,6 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
 
     replay_header_t m_loadedHeader;
     bool m_bIsWatchingReplay;
-    void DispatchTimerStateMessage(CBasePlayer *pPlayer, bool started);
 
   private:
     void UpdateRecordingParams(CUtlBuffer *); // called every game frame after entities think and update

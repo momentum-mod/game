@@ -192,8 +192,18 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             pGhost->m_RunData.m_bIsInZone = false;
             pGhost->m_RunData.m_bMapFinished = false;
             pGhost->m_RunData.m_bTimerRunning = true;
-            //MOM_TODO: Make the spectator's timer start
-            //pGhost->StartTimer(gpGlobals->tickcount);
+            pGhost->m_RunData.m_iStartTick = gpGlobals->tickcount;
+            pGhost->StartTimer(gpGlobals->tickcount);
+
+            //Needed for hud_comparisons
+            IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
+            if (timerStateEvent)
+            {
+                timerStateEvent->SetInt("ent", pGhost->entindex());
+                timerStateEvent->SetBool("is_running", false);
+
+                gameeventmanager->FireEvent(timerStateEvent);
+            }
         }
     }
 
@@ -390,6 +400,17 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             zoneNum = pGhost->m_RunData.m_iCurrentZone;
             pStats = pGhost->GetRunStats();
             lastRun = pGhost->m_flRunTime;
+
+            //Needed for hud_comparisons
+            IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
+            if (timerStateEvent)
+            {
+                timerStateEvent->SetInt("ent", pGhost->entindex());
+                timerStateEvent->SetBool("is_running", false);
+
+                gameeventmanager->FireEvent(timerStateEvent);
+            }
+            pGhost->StopTimer();
             //MOM_TODO: pGhost->EndRunHud(); //sends a hud timer state message to each spectator
             //MOM_TODO: Maybe also play effects if the player is racing against us and lost?
         }

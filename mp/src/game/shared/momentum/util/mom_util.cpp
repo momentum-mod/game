@@ -278,7 +278,7 @@ KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, fl
                 {
                     int kvflags = kv->GetInt("flags");
                     float kvrate = kv->GetFloat("rate");
-                    if (kvflags == flags && FloatEquals(kvrate, tickrate, 0.001f))
+                    if (kvflags == flags && FloatEquals(kvrate, tickrate))
                     {
                         sortedTimes.InsertNoSort(kv);
                     }
@@ -342,6 +342,21 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
     }
     return toReturn;
 }
+
+#ifdef GAME_DLL
+void MomentumUtil::DispatchTimerStateMessage(CBasePlayer* pPlayer, int startTick, bool isRunning) const
+{
+    if (pPlayer)
+    {
+        CSingleUserRecipientFilter user(pPlayer);
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_State");
+        WRITE_BOOL(isRunning);
+        WRITE_LONG(startTick);
+        MessageEnd();
+    }
+}
+#endif
 
 static MomentumUtil s_momentum_util;
 MomentumUtil *mom_UTIL = &s_momentum_util;
