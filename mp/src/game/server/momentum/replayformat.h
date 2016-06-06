@@ -71,21 +71,28 @@ inline void HandleReplayHeader(replay_header_t &header, FileHandle_t file, bool 
 {
     void(*handle)(const void*, int, FileHandle_t) = read ? &RunStats_t::Read : &RunStats_t::Write;
 
-    handle(&header.numZones, sizeof(header.numZones), file);
-    handle(&header.demofilestamp, sizeof(header.demofilestamp), file);
-    handle(&header.demoProtoVersion, sizeof(header.demoProtoVersion), file);
-    handle(&header.unixEpocDate, sizeof(header.unixEpocDate), file);
-    //If we're reading, this value will be overridden
-    int mapNameSize = Q_strlen(header.mapName) + 1;//+ 1 for null termination char \0
-    handle(&mapNameSize, sizeof(mapNameSize), file);
-    handle(&header.mapName, mapNameSize, file);
+    //If we're reading, these values will be overridden (+ 1 for null termination char '\0')
+    int demoTSSize = Q_strlen(header.demofilestamp) + 1;
+    int mapNameSize = Q_strlen(header.mapName) + 1;
     int playerNameSize = Q_strlen(header.playerName) + 1;
+
+    // Replay magic
+    handle(&demoTSSize, sizeof(demoTSSize), file);
+    handle(&header.demofilestamp, demoTSSize, file);
+    // Replay version
+    handle(&header.demoProtoVersion, sizeof(header.demoProtoVersion), file);
+
+    handle(&header.unixEpocDate, sizeof(header.unixEpocDate), file);
+    handle(&mapNameSize, sizeof(mapNameSize), file);
+    handle(&header.mapName, mapNameSize, file); 
     handle(&playerNameSize, sizeof(playerNameSize), file);
     handle(&header.playerName, playerNameSize, file);
     handle(&header.steamID64, sizeof(header.steamID64), file);
+
+    handle(&header.numZones, sizeof(header.numZones), file);
     handle(&header.interval_per_tick, sizeof(header.interval_per_tick), file);
     handle(&header.runTime, sizeof(header.runTime), file);
-    handle(&(header.runFlags), sizeof(header.runFlags), file);
+    handle(&header.runFlags, sizeof(header.runFlags), file);
 }
 
 // byteswap for int and float members of header, swaps the endianness (byte order) in order to read correctly
@@ -97,7 +104,7 @@ inline void ByteSwap_replay_header_t(replay_header_t &swap)
     swap.steamID64 = LittleLong(swap.steamID64);
     LittleFloat(&swap.interval_per_tick, &swap.interval_per_tick);
     LittleFloat(&swap.runTime, &swap.runTime);
-    swap.runFlags = LittleDWord(swap.numZones);
+    swap.runFlags = LittleDWord(swap.runFlags);
 }
 
 inline void ByteSwap_replay_stats_t(RunStats_t &swap)

@@ -82,7 +82,7 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
-    ivgui()->AddTickSignal(GetVPanel());
+    ivgui()->AddTickSignal(GetVPanel(), 250);
 }
 
 C_RunComparisons::~C_RunComparisons() { UnloadComparisons(); }
@@ -138,7 +138,7 @@ void C_RunComparisons::FireGameEvent(IGameEvent *event)
         int entIndex = event->GetInt("ent");
         if (entIndex == m_iEntIndex)
         {
-            event->GetBool("is_running", false) ? LoadComparisons() : UnloadComparisons();
+            event->GetBool("is_running") ? LoadComparisons() : UnloadComparisons();
         }
     }
 }

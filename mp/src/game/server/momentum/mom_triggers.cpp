@@ -200,7 +200,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             if (timerStateEvent)
             {
                 timerStateEvent->SetInt("ent", pGhost->entindex());
-                timerStateEvent->SetBool("is_running", false);
+                timerStateEvent->SetBool("is_running", true);
 
                 gameeventmanager->FireEvent(timerStateEvent);
             }

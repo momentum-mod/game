@@ -57,8 +57,8 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
             //Note: enter_time will NOT change upon multiple entries to the same stage trigger (only set once per run)
             stats->m_flZoneEnterTime[currentZone] = pEvent->GetFloat("enter_time");
             //Reset the stage enter speed for the speedometer
-            stats->m_flZoneEnterSpeed[currentZone][0] = 0.0f;
-            stats->m_flZoneEnterSpeed[currentZone][1] = 0.0f;
+            //stats->m_flZoneEnterSpeed[currentZone][0] = 0.0f;
+            //stats->m_flZoneEnterSpeed[currentZone][1] = 0.0f;
         }
         
         if (currentZone > 1) //MOM_TODO: || m_iStageCount < 2 (linear maps use checkpoints?)
