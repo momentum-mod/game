@@ -10,9 +10,8 @@ public:
 	~BinaryWriter();
 
 public:
-	void ShouldFlipEndianness(bool flip);
-	void Seek(int position, FileSystemSeek_t seek);
-	int Position();
+	inline void ShouldFlipEndianness(bool flip) { m_ShouldFlipEndianness = flip; }
+	inline void Seek(int position, FileSystemSeek_t seek) { filesystem->Seek(m_File, position, seek); }
 
 public:
 	void WriteInt8(int8 data);

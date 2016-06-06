@@ -24,6 +24,8 @@ ipch
 *.vcxproj.filters
 *.pdb
 *.lib
+*.VC.db
+*.VC.VC.opendb
 
 # OSX/Linux build products
 *.mak

@@ -48,6 +48,8 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
                 $File "$SRCDIR\game\shared\momentum\util\binary_writer.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\binary_writer.h"
+                $File "$SRCDIR\game\shared\momentum\util\binary_reader.cpp"
+                $File "$SRCDIR\game\shared\momentum\util\binary_reader.h"
 
 			}
 
