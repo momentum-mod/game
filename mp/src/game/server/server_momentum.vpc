@@ -50,6 +50,7 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\binary_writer.h"
                 $File "$SRCDIR\game\shared\momentum\util\binary_reader.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\binary_reader.h"
+                $File "$SRCDIR\game\shared\momentum\util\serialization.h"
 
 			}
 
@@ -65,7 +66,8 @@ $Project "Server (Momentum)"
                 $File   "momentum\mom_replay.h"
                 $File   "momentum\mom_replay_entity.cpp"
                 $File   "momentum\mom_replay_entity.h"
-                $File   "momentum\replayformat.h"
+                $File   "momentum\replay_data.h"
+                $File   "momentum\replay_manager.h"
             }
 			
 			$File	"momentum\mom_blockfix.h"

@@ -25,7 +25,7 @@ public:
 	uint64 ReadUInt64();
 	float ReadFloat();
 	double ReadDouble();
-	uint16 ReadString(char* data);
+	uint16 ReadString(char* data, int32 maxlen = -1);
 	void ReadData(void* data, int length);
 
 private:

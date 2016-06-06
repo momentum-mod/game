@@ -101,9 +101,20 @@ double BinaryReader::ReadDouble()
 	return *(double*) &value;
 }
 
-uint16 BinaryReader::ReadString(char* data)
+uint16 BinaryReader::ReadString(char* data, int32 maxlen /* = -1 */)
 {
 	uint16 length = ReadUInt16();
+
+	if (maxlen != -1 && length > maxlen)
+	{
+		ReadData(data, maxlen);
+		data[maxlen] = '\0';
+
+		Seek(length - maxlen, FILESYSTEM_SEEK_CURRENT);
+		
+		return maxlen;
+	}
+
 	ReadData(data, length);
 	data[length] = '\0';
 	return length;

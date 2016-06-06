@@ -120,7 +120,7 @@ class CMomentumPlayer : public CBasePlayer
     bool SetObserverTarget(CBaseEntity *target) override;
 
     // Run Stats
-    RunStats_t m_PlayerRunStats;
+    MomRunStats m_PlayerRunStats;
 
     // Used by momentum triggers
     Vector GetPrevOrigin(void);

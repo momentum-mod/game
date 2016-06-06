@@ -7,7 +7,7 @@
 #include "mom_player.h"
 #include "in_buttons.h"
 #include "mom_entity_run_data.h"
-#include "replayformat.h"
+#include "replay_data.h"
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
 enum ghostModelBodyGroup
@@ -54,15 +54,16 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     void HandleGhost();
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel); // for hud display..
-    void SetHeader(replay_header_t &head)
+    void SetHeader(ReplayHeader &head)
     {
-        header = head;
+		// TODO (OrfeasZ)
+        /*header = head;
         m_flRunTime = header.runTime;
         m_flTickRate = header.interval_per_tick;
-        m_RunData.m_iRunFlags = header.runFlags;
+        m_RunData.m_iRunFlags = header.runFlags;*/
     }
-    void SetRunStats(RunStats_t &stats);
-    RunStats_t *GetRunStats() { return &m_RunStats; }
+    void SetRunStats(MomRunStats &stats);
+    MomRunStats *GetRunStats() { return &m_RunStats; }
 
     void AddSpectator(CMomentumPlayer* player)
     {
@@ -92,10 +93,10 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
   private:
     char m_pszModel[256], m_pszMapName[256];
-    replay_header_t header;
-    replay_frame_t currentStep;
-    replay_frame_t nextStep;
-    RunStats_t m_RunStats;
+    ReplayHeader header;
+    ReplayFrame currentStep;
+	ReplayFrame nextStep;
+    MomRunStats m_RunStats;
 
     CUtlVector<CMomentumPlayer *> spectators;
 

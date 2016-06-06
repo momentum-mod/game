@@ -64,25 +64,21 @@ void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
 {
     m_nCurrentTick++; // increment recording tick
 
-    m_currentFrame.m_nPlayerButtons = m_player->m_nButtons;
-    m_currentFrame.m_qEyeAngles = m_player->EyeAngles();
-    m_currentFrame.m_vPlayerOrigin = m_player->GetAbsOrigin();
-
-    ByteSwap_replay_frame_t(
-        m_currentFrame); // We need to byteswap all of our data first in order to write each byte in the correct order
+	m_currentFrame = ReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons);
 
     if (m_bShouldStopRec)
         if (gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
             StopRecording(UTIL_GetLocalPlayer(), false, false);
 
     Assert(buf && buf->IsValid());
-    buf->Put(&m_currentFrame, sizeof(replay_frame_t)); // stick all the frame info into the buffer
+    buf->Put(&m_currentFrame, sizeof(ReplayFrame)); // stick all the frame info into the buffer
 }
 
-void CMomentumReplaySystem::CreateHeader(replay_header_t &header)
+void CMomentumReplaySystem::CreateHeader(ReplayHeader &header)
 {
     //replay_header_t header;
-    header.numZones = g_Timer->GetZoneCount();
+	// TODO (OrfeasZ)
+   /* header.numZones = g_Timer->GetZoneCount();
     Q_strcpy(header.demofilestamp, REPLAY_HEADER_ID);
     header.demoProtoVersion = REPLAY_PROTOCOL_VERSION;
     Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
@@ -93,15 +89,15 @@ void CMomentumReplaySystem::CreateHeader(replay_header_t &header)
     header.interval_per_tick = gpGlobals->interval_per_tick;
     header.runTime = g_Timer->GetLastRunTime();
     time(&header.unixEpocDate);
-    header.runFlags = m_player->m_RunData.m_iRunFlags;
+    header.runFlags = m_player->m_RunData.m_iRunFlags;*/
     //return header;
 }
 
-void CMomentumReplaySystem::CreateStats(RunStats_t &runStats)
+void CMomentumReplaySystem::CreateStats(MomRunStats &runStats)
 {
     //RunStats_t runStats = RunStats_t(g_Timer->GetZoneCount());
 
-    for (int i = 0; i < runStats.m_iTotalZones + 1; i++)
+    for (int i = 0; i < m_player->m_PlayerRunStats.m_iTotalZones + 1; ++i)
     {
         runStats.m_iZoneJumps[i] = m_player->m_PlayerRunStats.m_iZoneJumps[i];
         runStats.m_iZoneStrafes[i] = m_player->m_PlayerRunStats.m_iZoneStrafes[i];
@@ -109,7 +105,8 @@ void CMomentumReplaySystem::CreateStats(RunStats_t &runStats)
         runStats.m_flZoneStrafeSync2Avg[i] = m_player->m_PlayerRunStats.m_flZoneStrafeSync2Avg[i];
         runStats.m_flZoneEnterTime[i] = m_player->m_PlayerRunStats.m_flZoneEnterTime[i];
         runStats.m_flZoneTime[i] = m_player->m_PlayerRunStats.m_flZoneTime[i];
-        for (int k = 0; k < 2; k++)
+
+        for (int k = 0; k < 2; ++k)
         {
             runStats.m_flZoneVelocityMax[i][k] = m_player->m_PlayerRunStats.m_flZoneVelocityMax[i][k];
             runStats.m_flZoneVelocityAvg[i][k] = m_player->m_PlayerRunStats.m_flZoneVelocityAvg[i][k];
@@ -125,7 +122,8 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
     if (m_fhFileHandle)
     {
         // write header: Mapname, Playername, steam64, interval per tick
-        replay_header_t littleEndianHeader = replay_header_t();
+		// TODO (OrfeasZ)
+        /*replay_header_t littleEndianHeader = replay_header_t();
         CreateHeader(littleEndianHeader);
         ByteSwap_replay_header_t(littleEndianHeader); // byteswap again
         filesystem->Seek(m_fhFileHandle, 0, FILESYSTEM_SEEK_HEAD);
@@ -133,7 +131,7 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
         // filesystem->Write(&littleEndianHeader, sizeof(replay_header_t), m_fhFileHandle);
         DevLog("replay header size: %i\n", sizeof(littleEndianHeader));
 
-        RunStats_t littleEndianStats = RunStats_t(littleEndianHeader.numZones);
+        MomRunStats littleEndianStats = MomRunStats(littleEndianHeader.numZones);
         CreateStats(littleEndianStats);
         ByteSwap_replay_stats_t(littleEndianStats);
         littleEndianStats.HandleFile(m_fhFileHandle, false);
@@ -143,23 +141,25 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
         // write write from the CUtlBuffer to our filehandle:
         filesystem->Write(buf->Base(), buf->TellPut(), m_fhFileHandle);
         DevLog("replay frame data size: %i\n", buf->Size());
-        buf->Purge();
+        buf->Purge();*/
     }
 }
 
 // read a single frame (or tick) of a recording
-replay_frame_t *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const char *filename)
+ReplayFrame *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const char *filename)
 {
-    Assert(file != FILESYSTEM_INVALID_HANDLE);
+	// TODO (OrfeasZ)
+    /*Assert(file != FILESYSTEM_INVALID_HANDLE);
     filesystem->Read(&m_currentFrame, sizeof(replay_frame_t), file);
-    ByteSwap_replay_frame_t(m_currentFrame);
+	*/
 
     return &m_currentFrame;
 }
 
-replay_header_t *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char *filename)
+ReplayHeader *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char *filename)
 {
-    Assert(file != FILESYSTEM_INVALID_HANDLE);
+	// TODO (OrfeasZ)
+    /*Assert(file != FILESYSTEM_INVALID_HANDLE);
     filesystem->Seek(file, 0, FILESYSTEM_SEEK_HEAD);
     //Create and read into replay header
     m_replayHeader = replay_header_t();
@@ -167,7 +167,7 @@ replay_header_t *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
     ByteSwap_replay_header_t(m_replayHeader);
 
     // Create and read into the replayStats
-    m_replayStats = RunStats_t(m_replayHeader.numZones);
+    m_replayStats = MomRunStats(m_replayHeader.numZones);
     m_replayStats.HandleFile(file, true);
     ByteSwap_replay_stats_t(m_replayStats);
 
@@ -182,13 +182,14 @@ replay_header_t *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
         ConMsg("ERROR: replay file protocol %i outdated, engine version is %i \n", m_replayHeader.demoProtoVersion,
                REPLAY_PROTOCOL_VERSION);
         return nullptr;
-    }
+    }*/
     return &m_replayHeader;
 }
 
 bool CMomentumReplaySystem::LoadRun(const char *filename)
 {
-    m_vecRunData.Purge();
+	// TODO (OrfeasZ)
+    /*m_vecRunData.Purge();
     char recordingName[MAX_PATH];
     V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
     m_fhFileHandle = filesystem->Open(recordingName, "r+b", "MOD");
@@ -209,7 +210,7 @@ bool CMomentumReplaySystem::LoadRun(const char *filename)
         }
         filesystem->Close(m_fhFileHandle);
         return true;
-    }
+    }*/
 
     return false;
 }
@@ -239,7 +240,8 @@ class CMOMReplayCommands
   public:
     static void StartReplay(const CCommand &args, bool firstperson)
     {
-        if (args.ArgC() > 0) // we passed any argument at all
+		// TODO (OrfeasZ)
+        /*if (args.ArgC() > 0) // we passed any argument at all
         {
             char filename[MAX_PATH];
             if (Q_strstr(args.ArgS(), ".momrec"))
@@ -262,7 +264,7 @@ class CMOMReplayCommands
                             g_ReplaySystem->m_loadedHeader.mapName);
                 }
             }
-        }
+        }*/
     }
     static void PlayReplayGhost(const CCommand &args) { StartReplay(args, false); }
     static void PlayReplayFirstPerson(const CCommand &args) { StartReplay(args, true); }

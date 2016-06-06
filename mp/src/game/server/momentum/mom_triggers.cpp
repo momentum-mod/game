@@ -30,7 +30,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
     int stageNum = GetStageNumber();
 
     IGameEvent *stageEvent = nullptr;
-    RunStats_t *pStats = nullptr;
+    MomRunStats *pStats = nullptr;
     float enterTime = 0.0f;
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
@@ -102,7 +102,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     int stageNum = GetStageNumber();
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     IGameEvent *stageEvent = gameeventmanager->CreateEvent("zone_exit");
-    RunStats_t *pStats = nullptr;
+    MomRunStats *pStats = nullptr;
     if (pPlayer)
     {
         if (stageNum == 1 || g_Timer->IsRunning())//Timer won't be running if it's the start trigger
@@ -314,7 +314,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 
     IGameEvent *stageEvent = gameeventmanager->CreateEvent("zone_enter");
     IGameEvent *timerStopEvent = nullptr;
-    RunStats_t *pStats = nullptr;
+    MomRunStats *pStats = nullptr;
     int zoneNum = -1;
     float lastRun = 0.0f;
     // If timer is already stopped, there's nothing to stop (No run state effect to play)

@@ -81,3 +81,5 @@ voice_ban.dt
 *.vmx
 *.lin
 *.vdf
+*.pch.ib_tag
+*.ib_pdb_index

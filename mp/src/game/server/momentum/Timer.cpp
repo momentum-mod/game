@@ -94,7 +94,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
             t->tickrate = kv->GetFloat("rate");
             t->date = static_cast<time_t>(kv->GetInt("date"));
             t->flags = kv->GetInt("flags");
-            t->RunStats = RunStats_t(GetZoneCount());
+            t->RunStats = MomRunStats(GetZoneCount());
 
             for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
             {

@@ -304,7 +304,7 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
     char diffChar = '\0';                // The character used for showing the diff: + or -
 
     //Get the run stats for the ent index, usually the player but can be the ghost the player is spectating
-    RunStats_t *stats = g_MOMEventListener->GetRunStats(entIndex);
+    MomRunStats *stats = g_MOMEventListener->GetRunStats(entIndex);
 
     switch (type)
     {

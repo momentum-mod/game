@@ -3,20 +3,24 @@
 #include "cbase.h"
 #include "filesystem.h"
 #include "mom_shareddefs.h"
+#include "serialization.h"
 
-struct RunStats_t
+class MomRunStats : 
+	public ISerializable
 {
+public:
     // Note: This needs updating every time the struct is updated!
-    RunStats_t(int size = MAX_STAGES)
+    MomRunStats(uint8 size = MAX_STAGES)
     {
         if (size > MAX_STAGES)
             size = MAX_STAGES;
+
         // Set the total number of stages/checkpoints
         m_iTotalZones = size;
 
         // initialize everything to 0
         // Note: We do m_iTotalZones + 1 because 0 is overall!
-        for (int i = 0; i < m_iTotalZones + 1; i++)
+        for (int i = 0; i < MAX_STAGES + 1; ++i)
         {
             m_iZoneJumps[i] = 0;
             m_iZoneStrafes[i] = 0;
@@ -24,7 +28,8 @@ struct RunStats_t
             m_flZoneStrafeSync2Avg[i] = 0;
             m_flZoneEnterTime[i] = 0;
             m_flZoneTime[i] = 0;
-            for (int k = 0; k < 2; k++)
+
+            for (int k = 0; k < 2; ++k)
             {
                 m_flZoneVelocityMax[i][k] = 0;
                 m_flZoneVelocityAvg[i][k] = 0;
@@ -34,52 +39,69 @@ struct RunStats_t
         }
     }
 
-    // Needed for HandleFile function pointers
-    static void Read(void const *pData, int size, FileHandle_t file)
-    {
-        if (pData)
-            filesystem->Read(const_cast<void *>(pData), size, file); // Remove the const
-    }
+	MomRunStats(BinaryReader* reader)
+	{
+		m_iTotalZones = reader->ReadUInt8();
 
-    // Needed for HandleFile function pointers
-    static void Write(void const *pData, int size, FileHandle_t file)
-    {
-        if (pData)
-            filesystem->Write(pData, size, file);
-    }
+		// NOTE: This range checking might result in unread data.
+		if (m_iTotalZones > MAX_STAGES)
+			m_iTotalZones = MAX_STAGES;
 
+		for (int i = 0; i < m_iTotalZones + 1; ++i)
+		{
+			m_iZoneJumps[i] = reader->ReadUInt32();
+			m_iZoneStrafes[i] = reader->ReadUInt32();
+
+			m_flZoneStrafeSyncAvg[i] = reader->ReadFloat();
+			m_flZoneStrafeSync2Avg[i] = reader->ReadFloat();
+			m_flZoneEnterTime[i] = reader->ReadFloat();
+			m_flZoneTime[i] = reader->ReadFloat();
+
+			for (int k = 0; k < 2; ++k)
+			{
+				m_flZoneVelocityMax[i][k] = reader->ReadFloat();
+				m_flZoneVelocityAvg[i][k] = reader->ReadFloat();
+				m_flZoneEnterSpeed[i][k] = reader->ReadFloat();
+				m_flZoneExitSpeed[i][k] = reader->ReadFloat();
+			}
+		}
+	}
+
+public:
+	virtual void Serialize(BinaryWriter* writer) override
+	{
+		writer->WriteUInt8(m_iTotalZones);
+
+		for (int i = 0; i < m_iTotalZones + 1; ++i)
+		{
+			writer->WriteUInt32(m_iZoneJumps[i]);
+			writer->WriteUInt32(m_iZoneStrafes[i]);
+
+			writer->WriteFloat(m_flZoneStrafeSyncAvg[i]);
+			writer->WriteFloat(m_flZoneStrafeSync2Avg[i]);
+			writer->WriteFloat(m_flZoneEnterTime[i]);
+			writer->WriteFloat(m_flZoneTime[i]);
+
+			for (int k = 0; k < 2; ++k)
+			{
+				writer->WriteFloat(m_flZoneVelocityMax[i][k]);
+				writer->WriteFloat(m_flZoneVelocityAvg[i][k]);
+				writer->WriteFloat(m_flZoneEnterSpeed[i][k]);
+				writer->WriteFloat(m_flZoneExitSpeed[i][k]);
+			}
+		}
+	}
+
+public:
     // Note: This needs updating every time the struct is updated!
-    void HandleFile(FileHandle_t file, bool read) const
+    MomRunStats &operator=(const MomRunStats &other)
     {
-        void (*handle)(void const *, int, FileHandle_t) = read ? &Read : &Write;
+		if (this == &other)
+			return *this;
 
-        handle(&m_iTotalZones, sizeof(m_iTotalZones), file);
-        for (int i = 0; i < m_iTotalZones + 1; i++)
-        {
-            handle(&m_iZoneJumps[i], sizeof(m_iZoneJumps[i]), file);
-            handle(&m_iZoneStrafes[i], sizeof(m_iZoneStrafes[i]), file);
-            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-
-            handle(&m_flZoneStrafeSyncAvg[i], sizeof(m_flZoneStrafeSyncAvg[i]), file);
-            handle(&m_flZoneStrafeSync2Avg[i], sizeof(m_flZoneStrafeSync2Avg[i]), file);
-            handle(&m_flZoneEnterTime[i], sizeof(m_flZoneEnterTime[i]), file);
-            handle(&m_flZoneTime[i], sizeof(m_flZoneTime[i]), file);
-
-            for (int k = 0; k < 2; k++)
-            {
-                handle(&m_flZoneVelocityMax[i][k], sizeof(m_flZoneVelocityMax[i][k]), file);
-                handle(&m_flZoneVelocityAvg[i][k], sizeof(m_flZoneVelocityAvg[i][k]), file);
-                handle(&m_flZoneEnterSpeed[i][k], sizeof(m_flZoneEnterSpeed[i][k]), file);
-                handle(&m_flZoneExitSpeed[i][k], sizeof(m_flZoneExitSpeed[i][k]), file);
-            }
-        }
-    }
-
-    // Note: This needs updating every time the struct is updated!
-    RunStats_t &operator=(const RunStats_t &other)
-    {
         m_iTotalZones = other.m_iTotalZones;
-        for (int i = 0; i < other.m_iTotalZones + 1; i++)
+
+        for (int i = 0; i < MAX_STAGES + 1; ++i)
         {
             m_iZoneJumps[i] = other.m_iZoneJumps[i];
             m_iZoneStrafes[i] = other.m_iZoneStrafes[i];
@@ -89,7 +111,7 @@ struct RunStats_t
             m_flZoneEnterTime[i] = other.m_flZoneEnterTime[i];
             m_flZoneTime[i] = other.m_flZoneTime[i];
 
-            for (int k = 0; k < 2; k++)
+            for (int k = 0; k < 2; ++k)
             {
                 m_flZoneVelocityMax[i][k] = other.m_flZoneVelocityMax[i][k];
                 m_flZoneVelocityAvg[i][k] = other.m_flZoneVelocityAvg[i][k];
@@ -97,14 +119,16 @@ struct RunStats_t
                 m_flZoneExitSpeed[i][k] = other.m_flZoneExitSpeed[i][k];
             }
         }
+
         return *this;
     }
 
+public:
     // Note: Passing 0 as the index to any of these will return the overall stat, i.e during the entire run.
-    int m_iTotalZones; // Required for the operator= overload
+    uint8 m_iTotalZones; // Required for the operator= overload
 
     // Keypress
-    int m_iZoneJumps[MAX_STAGES + 1],   // Amount of jumps per stage/checkpoint
+    uint32 m_iZoneJumps[MAX_STAGES + 1],   // Amount of jumps per stage/checkpoint
         m_iZoneStrafes[MAX_STAGES + 1]; // Amount of strafes per stage/checkpoint
 
     // Time

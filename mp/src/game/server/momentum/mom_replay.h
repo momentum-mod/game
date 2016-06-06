@@ -5,7 +5,7 @@
 #include "filesystem.h"
 #include "utlbuffer.h"
 
-#include "replayformat.h"
+#include "replay_data.h"
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 
@@ -41,22 +41,22 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
     void WriteRecordingToFile(CUtlBuffer *buf);
     //replay_header_t CreateHeader();
-    void CreateHeader(replay_header_t &head);
-    void CreateStats(RunStats_t &stats);
+    void CreateHeader(ReplayHeader &head);
+    void CreateStats(MomRunStats &stats);
 
-    replay_frame_t *ReadSingleFrame(FileHandle_t file, const char *filename);
-    replay_header_t *ReadHeader(FileHandle_t file, const char *filename);
+    ReplayFrame *ReadSingleFrame(FileHandle_t file, const char *filename);
+	ReplayHeader *ReadHeader(FileHandle_t file, const char *filename);
 
     void StartReplay(bool firstperson = false);
     void EndReplay();
     bool LoadRun(const char *fileName);
-    CUtlVector<replay_frame_t> m_vecRunData;
+    CUtlVector<ReplayFrame> m_vecRunData;
 
     //MOM_TODO: Handle the pPlayer pointer passed here or get rid of it
     bool IsRecording(CBasePlayer *pPlayer) const
     { return m_bIsRecording; }
 
-    replay_header_t m_loadedHeader;
+	ReplayHeader m_loadedHeader;
     bool m_bIsWatchingReplay;
 
   private:
@@ -70,9 +70,9 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     CMomentumPlayer *m_player;
     CMomentumReplayGhostEntity *m_CurrentReplayGhost;//MOM_TODO: Update this to be a CUtlVector so multiple ghosts can be kept track of
 
-    replay_frame_t m_currentFrame;
-    replay_header_t m_replayHeader;
-    RunStats_t m_replayStats;
+    ReplayFrame m_currentFrame;
+    ReplayHeader m_replayHeader;
+    MomRunStats m_replayStats;
 
     FileHandle_t m_fhFileHandle;
     CUtlBuffer m_buf;
