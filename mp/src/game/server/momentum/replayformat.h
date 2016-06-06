@@ -9,6 +9,9 @@
 #define REPLAY_HEADER_ID "MOMREPLAY"
 #define REPLAY_PROTOCOL_VERSION 4
 
+#define REPLAY_MAGIC_LE 0x524D4F4D
+#define REPLAY_MAGIC_BE 0x4D4F4D52
+
 // describes a single frame of a replay
 struct replay_frame_t
 {

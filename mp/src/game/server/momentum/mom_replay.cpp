@@ -20,6 +20,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
         m_nCurrentTick = 1; // recoring begins at 1 ;)
     }
 }
+
 void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay)
 {
     if (throwaway)
@@ -58,6 +59,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
         LoadRun(newRecordingName); // load the last run that we did in case we want to watch it
     }
 }
+
 void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
 {
     m_nCurrentTick++; // increment recording tick
@@ -76,6 +78,7 @@ void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
     Assert(buf && buf->IsValid());
     buf->Put(&m_currentFrame, sizeof(replay_frame_t)); // stick all the frame info into the buffer
 }
+
 void CMomentumReplaySystem::CreateHeader(replay_header_t &header)
 {
     //replay_header_t header;
@@ -93,6 +96,7 @@ void CMomentumReplaySystem::CreateHeader(replay_header_t &header)
     header.runFlags = m_player->m_RunData.m_iRunFlags;
     //return header;
 }
+
 void CMomentumReplaySystem::CreateStats(RunStats_t &runStats)
 {
     //RunStats_t runStats = RunStats_t(g_Timer->GetZoneCount());
@@ -115,6 +119,7 @@ void CMomentumReplaySystem::CreateStats(RunStats_t &runStats)
     }
     //return runStats;
 }
+
 void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 {
     if (m_fhFileHandle)
@@ -141,6 +146,7 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
         buf->Purge();
     }
 }
+
 // read a single frame (or tick) of a recording
 replay_frame_t *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const char *filename)
 {
@@ -150,6 +156,7 @@ replay_frame_t *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const 
 
     return &m_currentFrame;
 }
+
 replay_header_t *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char *filename)
 {
     Assert(file != FILESYSTEM_INVALID_HANDLE);
@@ -178,6 +185,7 @@ replay_header_t *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char
     }
     return &m_replayHeader;
 }
+
 bool CMomentumReplaySystem::LoadRun(const char *filename)
 {
     m_vecRunData.Purge();
@@ -205,6 +213,7 @@ bool CMomentumReplaySystem::LoadRun(const char *filename)
 
     return false;
 }
+
 void CMomentumReplaySystem::StartReplay(bool firstperson)
 {
     m_CurrentReplayGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
