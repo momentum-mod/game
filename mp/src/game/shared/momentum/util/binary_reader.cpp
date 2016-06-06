@@ -14,12 +14,17 @@ BinaryReader::~BinaryReader()
 		filesystem->Close(m_File);
 }
 
+bool BinaryReader::ReadBool()
+{
+	return ReadUInt8() != 0;
+}
+
 int8 BinaryReader::ReadInt8()
 {
 	uint8 data[1];
 	ReadData(data, 1);
 
-	return static_cast<int8>(*data);
+	return *(int8*) data;
 }
 
 uint8 BinaryReader::ReadUInt8()
@@ -27,7 +32,7 @@ uint8 BinaryReader::ReadUInt8()
 	uint8 data[1];
 	ReadData(data, 1);
 
-	return static_cast<uint8>(*data);
+	return *(uint8*) data;
 }
 
 int16 BinaryReader::ReadInt16()
@@ -35,7 +40,7 @@ int16 BinaryReader::ReadInt16()
 	uint8 data[2];
 	ReadData(data, 2);
 
-	return static_cast<int16>(FixEndianness16(static_cast<uint16>(*data)));
+	return static_cast<int16>(FixEndianness16(*(uint16*) data));
 }
 
 uint16 BinaryReader::ReadUInt16()
@@ -43,7 +48,7 @@ uint16 BinaryReader::ReadUInt16()
 	uint8 data[2];
 	ReadData(data, 2);
 
-	return FixEndianness16(static_cast<uint16>(*data));
+	return FixEndianness16(*(uint16*) data);
 }
 
 int32 BinaryReader::ReadInt32()
@@ -51,7 +56,7 @@ int32 BinaryReader::ReadInt32()
 	uint8 data[4];
 	ReadData(data, 4);
 
-	return static_cast<int32>(FixEndianness32(static_cast<uint32>(*data)));
+	return static_cast<int32>(FixEndianness32(*(uint32*) data));
 }
 
 uint32 BinaryReader::ReadUInt32()
@@ -59,7 +64,7 @@ uint32 BinaryReader::ReadUInt32()
 	uint8 data[4];
 	ReadData(data, 4);
 
-	return FixEndianness32(static_cast<uint32>(*data));
+	return FixEndianness32(*(uint32*) data);
 }
 
 int64 BinaryReader::ReadInt64()
@@ -67,7 +72,7 @@ int64 BinaryReader::ReadInt64()
 	uint8 data[8];
 	ReadData(data, 8);
 
-	return static_cast<int64>(FixEndianness64(static_cast<uint64>(*data)));
+	return static_cast<int64>(FixEndianness64(*(uint64*) data));
 }
 
 uint64 BinaryReader::ReadUInt64()
@@ -75,7 +80,7 @@ uint64 BinaryReader::ReadUInt64()
 	uint8 data[8];
 	ReadData(data, 8);
 
-	return FixEndianness64(static_cast<uint64>(*data));
+	return FixEndianness64(*(uint64*) data);
 }
 
 float BinaryReader::ReadFloat()
@@ -83,7 +88,8 @@ float BinaryReader::ReadFloat()
 	uint8 data[4];
 	ReadData(data, 4);
 
-	return static_cast<float>(FixEndianness32(static_cast<uint32>(*data)));
+	uint32 value = FixEndianness32(*(uint32*) data);
+	return *(float*) &value;
 }
 
 double BinaryReader::ReadDouble()
@@ -91,13 +97,15 @@ double BinaryReader::ReadDouble()
 	uint8 data[8];
 	ReadData(data, 8);
 
-	return static_cast<double>(FixEndianness64(static_cast<uint64>(*data)));
+	uint64 value = FixEndianness64(*(uint64*) data);
+	return *(double*) &value;
 }
 
-uint32 BinaryReader::ReadString(char* data)
+uint16 BinaryReader::ReadString(char* data)
 {
-	uint32 length = ReadUInt32();
+	uint16 length = ReadUInt16();
 	ReadData(data, length);
+	data[length] = '\0';
 	return length;
 }
 

@@ -14,6 +14,7 @@ public:
 	inline void Seek(int position, FileSystemSeek_t seek) { filesystem->Seek(m_File, position, seek); }
 
 public:
+	bool ReadBool();
 	int8 ReadInt8();
 	uint8 ReadUInt8();
 	int16 ReadInt16();
@@ -24,7 +25,7 @@ public:
 	uint64 ReadUInt64();
 	float ReadFloat();
 	double ReadDouble();
-	uint32 ReadString(char* data);
+	uint16 ReadString(char* data);
 	void ReadData(void* data, int length);
 
 private:

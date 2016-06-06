@@ -14,6 +14,7 @@ public:
 	inline void Seek(int position, FileSystemSeek_t seek) { filesystem->Seek(m_File, position, seek); }
 
 public:
+	void WriteBool(bool data);
 	void WriteInt8(int8 data);
 	void WriteUInt8(uint8 data);
 	void WriteInt16(int16 data);
