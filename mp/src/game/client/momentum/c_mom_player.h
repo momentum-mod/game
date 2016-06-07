@@ -25,7 +25,7 @@ public:
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
     bool HasAutoBhop() { return m_RunData.m_bAutoBhop; }
     //void ResetStrafeSync();
-    //Returns true if the player is watching a replay (first person)
+
     bool IsWatchingReplay() const
     {
         return m_hObserverTarget.Get() && GetReplayEnt();

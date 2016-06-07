@@ -12,6 +12,7 @@
 #include <vgui/IPanel.h>
 #include <vgui/ISurface.h>
 #include "ClientTimesDisplay.h"
+#include "momSpectatorGUI.h"
 #include <vgui_controls/AnimationController.h>
 #include "iinput.h"
 #include "ienginevgui.h"
@@ -62,7 +63,16 @@ protected:
             {
                 panel = new CClientTimesDisplay(this);
             }
+            else if (!Q_strcmp(PANEL_SPECMENU, pzName))
+            {
+                panel = new CMOMSpectatorMenu(this);
+            }
+            else if (!Q_strcmp(PANEL_SPECGUI, pzName))
+            {
+                panel = new CMOMSpectatorGUI(this);
+            }
         }
+
 
         return panel;
     }
@@ -73,6 +83,7 @@ protected:
 
         BaseClass::CreateDefaultPanels();// MOM_TODO: do we want the other panels?
     };
+
 };
 
 
@@ -130,4 +141,33 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
     }
         
     return BaseClass::HudElementKeyInput(down, keynum, pszCurrentBinding);
+}
+int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
+{
+    // MOM_TODO: re-enable this in beta when we add movie-style controls to the spectator menu!
+    /*
+    // we are in spectator mode, open spectator menu
+    if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+duck") == 0)
+    {
+        m_pViewport->ShowPanel(PANEL_SPECMENU, true);
+        return 0; // we handled it, don't handle twice or send to server
+    }
+    */
+    if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+attack") == 0)
+    {
+        engine->ClientCmd("spec_next");
+        return 0;
+    }
+    else if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+attack2") == 0)
+    {
+        engine->ClientCmd("spec_prev");
+        return 0;
+    }
+    else if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+jump") == 0)
+    {
+        engine->ClientCmd("spec_mode");
+        return 0;
+    }
+    
+    return 1;
 }

@@ -20,6 +20,7 @@ public:
     int m_iTotalStrafes;
     int m_iTotalJumps;
 
+    char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
     bool ShouldInterpolate() override
     {
         return true;

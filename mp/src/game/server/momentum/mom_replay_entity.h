@@ -10,7 +10,6 @@
 #include "replayformat.h"
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
-#define ALL_BUTTONS IN_LEFT & IN_RIGHT & IN_MOVELEFT & IN_MOVERIGHT & IN_FORWARD & IN_BACK & IN_JUMP & IN_DUCK
 enum ghostModelBodyGroup
 {
     BODY_THREE_SIDED_PYRAMID = 0,
@@ -84,6 +83,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     CNetworkVar(int, m_iTotalJumps);
     CNetworkVar(float, m_flRunTime);
     CNetworkVar(float, m_flTickRate);
+    CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
   protected:
     void Think(void) override;

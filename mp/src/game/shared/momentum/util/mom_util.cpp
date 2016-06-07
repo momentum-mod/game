@@ -225,6 +225,14 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
         else
             Q_snprintf(pOut, BUFSIZETIME, "%d.%03d", seconds, millis);
         break;
+    case 4:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%04d", hours, separator, minutes, separator, seconds, millis);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%04d", minutes, separator, seconds, millis);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%04d", seconds, millis);
+        break;
     }
 }
 

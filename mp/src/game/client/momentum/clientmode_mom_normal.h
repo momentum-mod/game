@@ -39,7 +39,7 @@ public:
     virtual void	Init();
     virtual bool	ShouldDrawCrosshair(void);
     virtual int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding);
-
+    int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) override;
 private:
     CHudMenuStatic *m_pHudMenuStatic;
 };

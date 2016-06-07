@@ -28,6 +28,7 @@ SendPropInt(SENDINFO(m_iTotalStrafes)),
 SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropFloat(SENDINFO(m_flRunTime)),
 SendPropFloat(SENDINFO(m_flTickRate)),
+SendPropString(SENDINFO(m_pszPlayerName)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)), 
 END_SEND_TABLE();
 
@@ -73,6 +74,8 @@ void CMomentumReplayGhostEntity::Spawn(void)
 
     SetModel(GHOST_MODEL);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
+
+    Q_strcpy(m_pszPlayerName.GetForModify(), g_ReplaySystem->m_loadedHeader.playerName);
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */)

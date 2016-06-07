@@ -84,6 +84,8 @@ $Project "Client (Momentum)"
                 $File "momentum\ui\hud_comparisons.cpp"
 				$File "momentum\ui\hud_comparisons.h"
                 $File "momentum\ui\hud_mapinfo.cpp"
+                $File "momentum\ui\momSpectatorGUI.cpp"
+                $File "momentum\ui\momSpectatorGUI.h"
 			}
 
 			$File	"momentum\client_events.h"
