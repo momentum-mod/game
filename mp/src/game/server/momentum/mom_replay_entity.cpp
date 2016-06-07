@@ -196,7 +196,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             currentStep
                 .m_nPlayerButtons; // networked var that allows the replay to control keypress display on the client
 
-        if (g_Timer->IsRunning())
+        if (this->m_RunData.m_bTimerRunning)
             UpdateStats(interpolatedVel);
 
         if (currentStep.m_nPlayerButtons & IN_DUCK)
