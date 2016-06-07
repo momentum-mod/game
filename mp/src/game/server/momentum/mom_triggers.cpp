@@ -99,7 +99,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
 void CTriggerStage::EndTouch(CBaseEntity *pOther)
 {
     BaseClass::EndTouch(pOther);
-    int stageNum = this->GetStageNumber();
+    int stageNum = GetStageNumber();
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     IGameEvent *stageEvent = gameeventmanager->CreateEvent("zone_exit");
     RunStats_t *pStats = nullptr;

@@ -322,22 +322,22 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
                     Q_strcpy(into->runName, "Personal Best");
                     // Splits
                     into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
-                    into->stageSplits.AddToTail(kv->GetFloat("time"));
+                    into->zoneSplits.AddToTail(kv->GetFloat("time"));
                     // Keypress
-                    into->stageJumps.AddToTail(kv->GetInt("num_jumps"));
-                    into->stageStrafes.AddToTail(kv->GetInt("num_strafes"));
+                    into->zoneJumps.AddToTail(kv->GetInt("num_jumps"));
+                    into->zoneStrafes.AddToTail(kv->GetInt("num_strafes"));
                     // Sync
-                    into->stageAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
-                    into->stageAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
+                    into->zoneAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
+                    into->zoneAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
                     // Velocity (3D and Horizontal)
                     for (int i = 0; i < 2; i++)
                     {
                         bool horizontalVel = (i == 1);
-                        into->stageAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                        into->stageMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                        into->stageEnterVels[i].AddToTail(
+                        into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                        into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                        into->zoneEnterVels[i].AddToTail(
                             kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
-                        into->stageExitVels[i].AddToTail(
+                        into->zoneExitVels[i].AddToTail(
                             kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
                     }
                 }
@@ -345,20 +345,20 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
                 {
                     Q_strcpy(into->runName, "Personal Best");
                     // Keypress
-                    into->stageJumps.AddToTail(kv->GetInt("jumps"));
-                    into->stageStrafes.AddToTail(kv->GetInt("strafes"));
+                    into->zoneJumps.AddToTail(kv->GetInt("jumps"));
+                    into->zoneStrafes.AddToTail(kv->GetInt("strafes"));
                     // Sync
-                    into->stageAvgSync1.AddToTail(kv->GetFloat("avgsync"));
-                    into->stageAvgSync2.AddToTail(kv->GetFloat("avgsync2"));
+                    into->zoneAvgSync1.AddToTail(kv->GetFloat("avgsync"));
+                    into->zoneAvgSync2.AddToTail(kv->GetFloat("avgsync2"));
                     // Velocity (3D and Horizontal)
                     for (int i = 0; i < 2; i++)
                     {
                         bool horizontalVel = (i == 1);
-                        into->stageAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                        into->stageMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                        into->stageExitVels[i].AddToTail(
+                        into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                        into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                        into->zoneExitVels[i].AddToTail(
                             kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
-                        into->stageEnterVels[i].AddToTail(
+                        into->zoneEnterVels[i].AddToTail(
                             kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
                     }
                 }

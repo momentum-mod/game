@@ -296,7 +296,7 @@ void C_Timer::Paint(void)
 
         ConVarRef timeType("mom_comparisons_time_type");
         // This void works even if there is no comparison loaded
-        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? STAGE_TIME : TIME_OVERALL, m_iEntIndex, 
+        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_iEntIndex, 
             m_iZoneCurrent - 1, m_pszStageTimeString, comparisonANSI, &compareColor);
 
         // Convert the split to Unicode

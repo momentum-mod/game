@@ -4,31 +4,32 @@
 
 struct RunCompare_t
 {
-    //Name of the comparison.
-    char runName[32];//MOM_TODO: determine a good size for this array. 
-    //Note: we're using CUtlVectors here so we don't have to parse the stage/checkpoint number from the .tim file!
-    CUtlVector<float> overallSplits,//Stage enter times (overall times)
-        stageSplits,//Times spent on stages (stage time)
-        stageAvgVels[2],//Average velocities for stages, 0 = 3D vels, 1 = horizontal vels
-        stageMaxVels[2],//Maximum velocities for stages, 0 = 3D vels, 1 = horizontal vels
-        stageEnterVels[2],//Velocity with which you enter a stage (exit a stage start trigger), 0 = 3D vels, 1 = horizontal vels
-        stageExitVels[2],//Velocity with which you leave a stage (one stage -> next), 0 = 3D vels, 1 = horizontal vels
-        stageAvgSync1,//Average stage sync1
-        stageAvgSync2;//Average stage sync2
-    CUtlVector<int> stageJumps,//Number of jumps on this stage
-        stageStrafes;//Number of strafes on this stage
+    // Name of the comparison.
+    char runName[32]; // MOM_TODO: determine a good size for this array.
+    // Note: we're using CUtlVectors here so we don't have to parse the stage/checkpoint number from the .tim file!
+    CUtlVector<float> overallSplits, // Zone enter times (overall times)
+        zoneSplits,                  // Times spent on zones (zone time)
+        zoneAvgVels[2],              // Average velocities for zones, 0 = 3D vels, 1 = horizontal vels
+        zoneMaxVels[2],              // Maximum velocities for zones, 0 = 3D vels, 1 = horizontal vels
+        zoneEnterVels[2], // Velocity with which you enter a zone (exit a zone start trigger), 0 = 3D vels, 1 =
+                          // horizontal vels
+        zoneExitVels[2], // Velocity with which you leave a zone (one stage -> next), 0 = 3D vels, 1 = horizontal vels
+        zoneAvgSync1,    // Average zone sync1
+        zoneAvgSync2;    // Average zone sync2
+    CUtlVector<int> zoneJumps, // Number of jumps on this zone
+        zoneStrafes;           // Number of strafes on this zone
 };
 
 enum ComparisonString_t
 {
-    TIME_OVERALL = 1,
-    STAGE_TIME,
-    VELOCITY_AVERAGE,
-    VELOCITY_MAX,
-    VELOCITY_ENTER,
-    VELOCITY_EXIT,
-    STAGE_SYNC1,
-    STAGE_SYNC2,
-    STAGE_JUMPS,
-    STAGE_STRAFES
+    TIME_OVERALL = 1, // Zone enter times (overall times)
+    ZONE_TIME,        // Times spent on zones (zone time)
+    VELOCITY_AVERAGE, // Average velocities for zones
+    VELOCITY_MAX,     // Maximum velocities for zones
+    VELOCITY_ENTER,   // Velocity with which you enter a zone (exit a zone start trigger)
+    VELOCITY_EXIT,    // Velocity with which you leave a zone (staged maps only)
+    ZONE_SYNC1,       // Average zone sync1
+    ZONE_SYNC2,       // Average zone sync2
+    ZONE_JUMPS,       // Number of jumps on this zone
+    ZONE_STRAFES      // Number of strafes on this zone
 };

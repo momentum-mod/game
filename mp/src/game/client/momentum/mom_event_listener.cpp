@@ -89,7 +89,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         if (currentZone > m_iMapZoneCount)
         {
             m_EntRunStats.Remove(entIndex);
-        } 
+        }
         else
         {
             //Set the stage enter speed upon exiting the trigger

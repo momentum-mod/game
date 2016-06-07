@@ -309,14 +309,14 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
     switch (type)
     {
     case TIME_OVERALL:
-    case STAGE_TIME:
+    case ZONE_TIME:
         // Get the time difference in seconds.
         act = type == TIME_OVERALL ? stats->m_flZoneEnterTime[zone + 1]
             : stats->m_flZoneTime[zone];
 
         if (m_bLoadedComparison)
             diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[zone]
-                                               : m_rcCurrentComparison->stageSplits[zone - 1]);
+                                               : m_rcCurrentComparison->zoneSplits[zone - 1]);
 
         // Are we losing time compared to the run?
         // If diff > 0, that means you're falling behind (losing time to) your PB!
@@ -331,42 +331,42 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
         act = stats->m_flZoneVelocityAvg[zone][velType];
         if (m_bLoadedComparison)
             diff = act -
-                   m_rcCurrentComparison->stageAvgVels[velType][zone - 1]; //- 1 due to array indexing (0 is zone 1)
+                   m_rcCurrentComparison->zoneAvgVels[velType][zone - 1]; //- 1 due to array indexing (0 is zone 1)
         break;
     case VELOCITY_EXIT:
         act = stats->m_flZoneExitSpeed[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageExitVels[velType][zone - 1];
+            diff = act - m_rcCurrentComparison->zoneExitVels[velType][zone - 1];
         break;
     case VELOCITY_MAX:
         act = stats->m_flZoneVelocityMax[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageMaxVels[velType][zone - 1];
+            diff = act - m_rcCurrentComparison->zoneMaxVels[velType][zone - 1];
         break;
     case VELOCITY_ENTER:
         act = stats->m_flZoneEnterSpeed[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageEnterVels[velType][zone - 1];
+            diff = act - m_rcCurrentComparison->zoneEnterVels[velType][zone - 1];
         break;
-    case STAGE_SYNC1:
+    case ZONE_SYNC1:
         act = stats->m_flZoneStrafeSyncAvg[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageAvgSync1[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneAvgSync1[zone - 1];
         break;
-    case STAGE_SYNC2:
+    case ZONE_SYNC2:
         act = stats->m_flZoneStrafeSync2Avg[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageAvgSync2[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneAvgSync2[zone - 1];
         break;
-    case STAGE_JUMPS:
+    case ZONE_JUMPS:
         act = stats->m_iZoneJumps[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageJumps[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneJumps[zone - 1];
         break;
-    case STAGE_STRAFES:
+    case ZONE_STRAFES:
         act = stats->m_iZoneStrafes[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->stageStrafes[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneStrafes[zone - 1];
         break;
     default:
         return;
@@ -375,13 +375,13 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
     if (m_bLoadedComparison)
     {
         // Time and jump comparison are where positive is bad.
-        bool positiveIsLoss = (type == TIME_OVERALL || type == STAGE_TIME || type == STAGE_JUMPS);
+        bool positiveIsLoss = (type == TIME_OVERALL || type == ZONE_TIME || type == ZONE_JUMPS);
 
         diffChar = diff > 0.0f ? '+' : '-';
 
         if (compareColorOut)
         {
-            if (type == STAGE_STRAFES) // Since strafes aren't really important to be above/below on
+            if (type == ZONE_STRAFES) // Since strafes aren't really important to be above/below on
                 compareColorOut->SetRawColor(m_cTie.GetRawColor());
             else
                 GetDiffColor(diff, compareColorOut, !positiveIsLoss);
@@ -390,14 +390,14 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
         diff = abs(diff);
     }
 
-    if (type == TIME_OVERALL || type == STAGE_TIME)
+    if (type == TIME_OVERALL || type == ZONE_TIME)
     {
         if (ansiActualBufferOut)
             V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%s ", tempANSITimeActual);
         if (m_bLoadedComparison && ansiCompareBufferOut)
             V_snprintf(ansiCompareBufferOut, BUFSIZELOCL, "(%c %s)", diffChar, tempANSITimeOutput);
     }
-    else if (type == STAGE_JUMPS || type == STAGE_STRAFES)
+    else if (type == ZONE_JUMPS || type == ZONE_STRAFES)
     {
         if (ansiActualBufferOut)
             V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%i ", static_cast<int>(act));
@@ -426,7 +426,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     switch (string)
     {
     case TIME_OVERALL:
-    case STAGE_TIME:
+    case ZONE_TIME:
         //" Overall Time: " or "  Stage Time: "
         localized = (string == TIME_OVERALL) ? overallTimeLocalized : stageTimeLocalized;
         break;
@@ -442,16 +442,16 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     case VELOCITY_EXIT:
         localized = velocityExitLocalized;
         break;
-    case STAGE_SYNC1:
+    case ZONE_SYNC1:
         localized = sync1Localized;
         break;
-    case STAGE_SYNC2:
+    case ZONE_SYNC2:
         localized = sync2Localized;
         break;
-    case STAGE_JUMPS:
+    case ZONE_JUMPS:
         localized = jumpsLocalized;
         break;
-    case STAGE_STRAFES:
+    case ZONE_STRAFES:
         localized = strafesLocalized;
         break;
     default:
@@ -615,7 +615,7 @@ void C_RunComparisons::Paint()
                 }
                 if (mom_comparisons_time_show_perstage.GetBool())
                 {
-                    DrawComparisonString(STAGE_TIME, i, Y);
+                    DrawComparisonString(ZONE_TIME, i, Y);
                     Y += yToIncrementBy;
                 }
 
@@ -652,25 +652,25 @@ void C_RunComparisons::Paint()
                 {
                     if (mom_comparisons_sync_show_sync1.GetBool())
                     {
-                        DrawComparisonString(STAGE_SYNC1, i, Y);
+                        DrawComparisonString(ZONE_SYNC1, i, Y);
                         Y += yToIncrementBy;
                     }
                     if (mom_comparisons_sync_show_sync2.GetBool())
                     {
-                        DrawComparisonString(STAGE_SYNC2, i, Y);
+                        DrawComparisonString(ZONE_SYNC2, i, Y);
                         Y += yToIncrementBy;
                     }
                 }
                 // print jumps
                 if (mom_comparisons_jumps_show.GetBool())
                 {
-                    DrawComparisonString(STAGE_JUMPS, i, Y);
+                    DrawComparisonString(ZONE_JUMPS, i, Y);
                     Y += yToIncrementBy;
                 }
                 // print strafes
                 if (mom_comparisons_strafe_show.GetBool())
                 {
-                    DrawComparisonString(STAGE_STRAFES, i, Y);
+                    DrawComparisonString(ZONE_STRAFES, i, Y);
                     Y += yToIncrementBy;
                 }
             }
@@ -678,7 +678,7 @@ void C_RunComparisons::Paint()
             {
                 // This is done here and not through DrawComparisonString because
                 // we only need to get the time comparison string, nothing else.
-                ComparisonString_t timeType = mom_comparisons_time_type.GetBool() ? STAGE_TIME : TIME_OVERALL;
+                ComparisonString_t timeType = mom_comparisons_time_type.GetBool() ? ZONE_TIME : TIME_OVERALL;
                 char timeComparisonString[BUFSIZELOCL];
                 wchar_t timeComparisonStringUnicode[BUFSIZELOCL];
 
