@@ -7,10 +7,11 @@
 
 #include "replay_data.h"
 #include "mom_player_shared.h"
-#include "mom_replay_entity.h"
 
 #define RECORDING_PATH "recordings"
 #define END_RECORDING_PAUSE 1.0
+
+class CMomentumReplayGhostEntity;
 
 class CMomentumReplaySystem : CAutoGameSystemPerFrame
 {

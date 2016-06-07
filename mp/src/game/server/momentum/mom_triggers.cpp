@@ -6,6 +6,7 @@
 #include "movevars_shared.h"
 #include "mom_replay.h"
 #include "tier0/memdbgon.h"
+#include "mom_replay_entity.h"
 
 
 // CBaseMomentumTrigger

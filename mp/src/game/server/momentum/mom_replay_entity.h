@@ -8,6 +8,7 @@
 #include "in_buttons.h"
 #include "mom_entity_run_data.h"
 #include "replay_data.h"
+#include "mom_replay.h"
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
 enum ghostModelBodyGroup
@@ -39,8 +40,8 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
   public:
     CMomentumReplayGhostEntity();
-    ~CMomentumReplayGhostEntity();
-    const char *GetGhostModel() const;
+	~CMomentumReplayGhostEntity();
+
     void SetGhostModel(const char *model);
     void SetGhostBodyGroup(int bodyGroup);
     static void SetGhostColor(const CCommand &args);
@@ -53,27 +54,28 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     void StopTimer();
     void HandleGhost();
     void HandleGhostFirstPerson();
-    void UpdateStats(Vector ghostVel); // for hud display..
-    void SetHeader(CReplayHeader &head)
-    {
-		// TODO (OrfeasZ)
-        /*header = head;
-        m_flRunTime = header.runTime;
-        m_flTickRate = header.interval_per_tick;
-        m_RunData.m_iRunFlags = header.runFlags;*/
-    }
-    void SetRunStats(CMomRunStats &stats);
-    CMomRunStats *GetRunStats() { return &m_RunStats; }
+	void UpdateStats(Vector ghostVel); // for hud display..
+
+	inline const char* GetGhostModel() const { return m_pszModel; }
+	inline void SetRunStats(CMomRunStats &stats) { m_RunStats = stats; }
+    inline CMomRunStats* GetRunStats() { return &m_RunStats; }
 
     void AddSpectator(CMomentumPlayer* player)
     {
-        spectators.AddToTail(player);
+        m_rgSpectators.AddToTail(player);
     }
 
     void RemoveSpectator(CMomentumPlayer* player)
     {
-        spectators.FindAndRemove(player);
+        m_rgSpectators.FindAndRemove(player);
     }
+
+	inline void SetRunTime(float time) { m_flRunTime = time; }
+	inline void SetTickRate(float rate) { m_flTickRate = rate; }
+	inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
+
+	inline CReplayFrame* GetCurrentStep() { return &g_ReplaySystem->m_vecRunData[m_iCurrentStep]; }
+	CReplayFrame* GetNextStep();
 
     bool m_bIsActive;
     int m_nStartTick;
@@ -93,20 +95,17 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
   private:
     char m_pszModel[256], m_pszMapName[256];
-    CReplayHeader header;
-    CReplayFrame currentStep;
-	CReplayFrame nextStep;
+	int m_iCurrentStep;
     CMomRunStats m_RunStats;
 
-    CUtlVector<CMomentumPlayer *> spectators;
+    CUtlVector<CMomentumPlayer *> m_rgSpectators;
 
-    int step;
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
-    Color m_ghostColor;
-    static Color m_newGhostColor;
+    Color m_GhostColor;
+    static Color m_NewGhostColor;
     bool m_bHasJumped;
     // for faking strafe sync calculations
-    QAngle m_qLastEyeAngle;
+    QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;
     bool m_bReplayShouldLoop, m_bReplayFirstPerson;

@@ -3,6 +3,7 @@
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_triggers.h"
+#include "mom_replay_entity.h"
 
 #include "tier0/memdbgon.h"
 
@@ -487,4 +488,9 @@ void CMomentumPlayer::TweenSlowdownPlayer()
     SetLaggedMovementValue(m_flTweenVelValue);
 
     SetNextThink(gpGlobals->curtime, "TWEEN");
+}
+
+CMomentumReplayGhostEntity* CMomentumPlayer::GetReplayEnt() const
+{
+	return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
 }

@@ -220,8 +220,9 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
     m_CurrentReplayGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
     if (m_CurrentReplayGhost != nullptr)
     {
+		// TODO (OrfeasZ)
         m_CurrentReplayGhost->SetRunStats(m_replayStats);
-        m_CurrentReplayGhost->SetHeader(m_replayHeader);
+        //m_CurrentReplayGhost->SetHeader(m_replayHeader);
         if (firstperson)
             g_Timer->Stop(false); // stop the timer just in case we started a replay while it was running...
         m_CurrentReplayGhost->StartRun(firstperson);
