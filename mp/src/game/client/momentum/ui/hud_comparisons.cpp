@@ -116,7 +116,9 @@ bool C_RunComparisons::ShouldDraw()
 
         if (runData)
         {
-            shouldDrawLocal = runData->m_bTimerRunning && !runData->m_bMapFinished;
+            shouldDrawLocal = runData->m_bTimerRunning && !runData->m_bMapFinished 
+                //we don't want the panel to draw on linear maps (since it doesn't appear until stage transitions anyways)
+                && g_MOMEventListener->m_iMapZoneCount > 1; 
         }
     }
     return mom_comparisons.GetBool() && m_bLoadedComparison && CHudElement::ShouldDraw() && shouldDrawLocal;

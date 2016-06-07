@@ -55,8 +55,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 
         filesystem->Close(m_fhFileHandle);
         Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
-        if (LoadRun(newRecordingName)) // load the last run that we did in case we want to watch it
-            StartReplay();
+        LoadRun(newRecordingName); // load the last run that we did in case we want to watch it
     }
 }
 void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)

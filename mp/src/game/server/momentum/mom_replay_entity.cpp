@@ -80,8 +80,8 @@ void CMomentumReplayGhostEntity::Spawn(void)
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */)
 {
-    mom_replay_firstperson.SetValue(firstPerson ? "1" : "0");
-    mom_replay_loop.SetValue(shouldLoop ? "1" : "0");
+    m_bReplayFirstPerson = firstPerson;
+    m_bReplayShouldLoop = shouldLoop;
 
     Spawn();
     m_iTotalStrafes = 0;
@@ -107,7 +107,28 @@ void CMomentumReplayGhostEntity::UpdateStep()
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
-    BaseClass::Think();
+    // update color, bodygroup, and other params if they change
+    if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
+    {
+        m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
+        SetBodygroup(1, m_iBodyGroup);
+    }
+    if (m_ghostColor != m_newGhostColor)
+    {
+        m_ghostColor = m_newGhostColor;
+        SetRenderColor(m_ghostColor.r(), m_ghostColor.g(), m_ghostColor.b());
+    }
+    if (mom_replay_ghost_alpha.GetInt() != m_ghostColor.a())
+    {
+        m_ghostColor.SetColor(m_ghostColor.r(), m_ghostColor.g(),
+            m_ghostColor.b(), // we have to set the previous colors in order to change alpha...
+            mom_replay_ghost_alpha.GetInt());
+        SetRenderColorA(mom_replay_ghost_alpha.GetInt());
+    }
+    mom_replay_loop.SetValue(m_bReplayShouldLoop);
+    mom_replay_firstperson.SetValue(m_bReplayFirstPerson);
+
+    //move the ghost
     if (step >= 0)
     {
         if (step + 1 < g_ReplaySystem->m_vecRunData.Size() || mom_replay_reverse.GetBool() && step - 1 > -1)
@@ -125,31 +146,12 @@ void CMomentumReplayGhostEntity::Think(void)
         }
     }
 
-    // update color, bodygroup, and other params if they change
-    if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
-    {
-        m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
-        SetBodygroup(1, m_iBodyGroup);
-    }
-    if (m_ghostColor != m_newGhostColor)
-    {
-        m_ghostColor = m_newGhostColor;
-        SetRenderColor(m_ghostColor.r(), m_ghostColor.g(), m_ghostColor.b());
-    }
-    if (mom_replay_ghost_alpha.GetInt() != m_ghostColor.a())
-    {
-        m_ghostColor.SetColor(m_ghostColor.r(), m_ghostColor.g(),
-                              m_ghostColor.b(), // we have to set the previous colors in order to change alpha...
-                              mom_replay_ghost_alpha.GetInt());
-        SetRenderColorA(mom_replay_ghost_alpha.GetInt());
-    }
-
+    BaseClass::Think();
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
 }
 //-----------------------------------------------------------------------------
 // Purpose: called by the think function, moves and handles the ghost if we're spectating it
 //-----------------------------------------------------------------------------
-
 void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());

@@ -108,7 +108,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     QAngle m_qLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;
-    bool m_bReplayShouldLoop;
+    bool m_bReplayShouldLoop, m_bReplayFirstPerson;
 };
 
 #endif // MOM_REPLAY_GHOST_H

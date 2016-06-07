@@ -256,8 +256,8 @@ Color* MomentumUtil::GetColorFromHex(const char* hexColor)
     int length = Q_strlen(hexColor);
     if (length == 6)
     {
-        int r = ((hex >> 16) & 0xFF);  //extract RR byte
-        int g = ((hex >> 8) & 0xFF);   //extract GG byte
+        int r = ((hex >> 16) & 0xFF);   //extract RR byte
+        int g = ((hex >> 8) & 0xFF);    //extract GG byte
         int b = ((hex) & 0xFF);         //extract BB byte
         m_newColor.SetColor(r, g, b, 75);
         return &m_newColor;
@@ -339,6 +339,27 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
                             kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
                         into->stageExitVels[i].AddToTail(
                             kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
+                    }
+                }
+                else if (!Q_strcmp(kv->GetName(), "total"))
+                {
+                    Q_strcpy(into->runName, "Personal Best");
+                    // Keypress
+                    into->stageJumps.AddToTail(kv->GetInt("jumps"));
+                    into->stageStrafes.AddToTail(kv->GetInt("strafes"));
+                    // Sync
+                    into->stageAvgSync1.AddToTail(kv->GetFloat("avgsync"));
+                    into->stageAvgSync2.AddToTail(kv->GetFloat("avgsync2"));
+                    // Velocity (3D and Horizontal)
+                    for (int i = 0; i < 2; i++)
+                    {
+                        bool horizontalVel = (i == 1);
+                        into->stageAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                        into->stageMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                        into->stageExitVels[i].AddToTail(
+                            kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
+                        into->stageEnterVels[i].AddToTail(
+                            kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
                     }
                 }
             }

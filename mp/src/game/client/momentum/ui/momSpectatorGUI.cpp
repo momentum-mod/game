@@ -613,7 +613,7 @@ void CMOMSpectatorGUI::Update()
 
 		m_pPlayerLabel->SetFgColor( c );
 		
-		wchar_t playerText[ 80 ], playerName[ 64 ], health[ 10 ];
+		wchar_t playerText[ 80 ], playerName[ 64 ];
 		V_wcsncpy( playerText, L"Unable to find #Spec_PlayerItem*", sizeof( playerText ) );
 		memset( playerName, 0x0, sizeof( playerName ) );
 
