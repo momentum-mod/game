@@ -25,6 +25,8 @@
 
 using namespace vgui;
 
+#define LASTJUMPVEL_TIMEOUT 3.0f
+
 static MAKE_TOGGLE_CONVAR(
     mom_speedometer_hvel, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
     "Toggles showing only the horizontal component of player speed. 0 = OFF (XYZ), 1 = ON (XY)\n");
@@ -182,7 +184,7 @@ void CHudSpeedMeter::OnThink()
 
         int velType = mom_speedometer_hvel.GetBool(); // 1 is horizontal velocity
 
-        if (gpGlobals->curtime - lastJumpTime > 5.0f)
+        if (gpGlobals->curtime - lastJumpTime > LASTJUMPVEL_TIMEOUT)
         {
             if (!m_bRanFadeOutJumpSpeed)
                 m_bRanFadeOutJumpSpeed =

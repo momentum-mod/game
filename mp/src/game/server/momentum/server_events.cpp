@@ -81,6 +81,10 @@ public:
 
         // Reset zone editing
         g_MapzoneEdit.Reset();
+        
+        //disable point_servercommand
+        ConVarRef servercommand("sv_allow_point_servercommand");
+        servercommand.SetValue("0");
     }
 
     void LevelShutdownPreEntity() override
@@ -105,7 +109,7 @@ public:
 
         if (!g_Timer->GotCaughtCheating())
         {
-            ConVarRef cheatsRef = ConVarRef("sv_cheats");
+            ConVarRef cheatsRef("sv_cheats");
             if (cheatsRef.GetBool())
             {
                 g_Timer->SetCheating(true);
