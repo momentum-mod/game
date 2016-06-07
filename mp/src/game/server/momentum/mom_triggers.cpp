@@ -381,7 +381,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             pPlayer->m_RunData.m_bMapFinished = true;
             pPlayer->m_RunData.m_bTimerRunning = false;
 
-            pPlayer->SetLaggedMovementValue(0.01f);
             //MOM_TODO: SLOW DOWN/STOP THE PLAYER HERE!
         }
         

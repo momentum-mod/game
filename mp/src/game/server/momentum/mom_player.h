@@ -74,6 +74,8 @@ class CMomentumPlayer : public CBasePlayer
     // think function for detecting if player bhopped
     void CheckForBhop();
     void UpdateRunStats();
+    // slows down the player in a tween-y fashion
+    void TweenSlowdownPlayer();
     void ResetRunStats();
     void CalculateAverageStats();
     void LimitSpeedInStartZone();
@@ -157,5 +159,7 @@ class CMomentumPlayer : public CBasePlayer
     int m_nTicksInAir;
     const int MAX_AIRTIME_TICKS =
         15; // The player can spend this many ticks in the air inside the start zone before their speed is limited
+
+    float m_flTweenVelValue = 1.0f;
 };
 #endif // MOMPLAYER_H

@@ -103,12 +103,15 @@ void CMomentumPlayer::Spawn()
     RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
     RegisterThinkContext("CURTIME_FOR_START");
+    RegisterThinkContext("TWEEN");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick,
                     "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL,
                     "THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
+    SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
+
     SetNextThink(gpGlobals->curtime);
     DevLog("Finished spawn!\n");
 }
@@ -469,4 +472,19 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity* target)
     }
 
     return base;
+}
+void CMomentumPlayer::TweenSlowdownPlayer()
+{
+    if (m_RunData.m_bMapFinished) //slowdown when map is finished
+    {
+        //decrease our lagged movement value by 10% every tick
+        m_flTweenVelValue += (0.01f - m_flTweenVelValue) * 0.1f; 
+    }
+    else
+    {
+        m_flTweenVelValue = 1.0f;
+    }
+    SetLaggedMovementValue(m_flTweenVelValue);
+
+    SetNextThink(gpGlobals->curtime, "TWEEN");
 }
