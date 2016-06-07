@@ -1,25 +1,25 @@
 #include "cbase.h"
 #include "binary_reader.h"
 
-BinaryReader::BinaryReader(FileHandle_t file, bool close /* = false */) :
-	m_File(file),
-	m_ShouldClose(close),
-	m_ShouldFlipEndianness(false)
+CBinaryReader::CBinaryReader(FileHandle_t file, bool close /* = false */) :
+	m_pFile(file),
+	m_bShouldClose(close),
+	m_bShouldFlipEndianness(false)
 {
 }
 
-BinaryReader::~BinaryReader()
+CBinaryReader::~CBinaryReader()
 {
-	if (m_ShouldClose)
-		filesystem->Close(m_File);
+	if (m_bShouldClose)
+		filesystem->Close(m_pFile);
 }
 
-bool BinaryReader::ReadBool()
+bool CBinaryReader::ReadBool()
 {
 	return ReadUInt8() != 0;
 }
 
-int8 BinaryReader::ReadInt8()
+int8 CBinaryReader::ReadInt8()
 {
 	uint8 data[1];
 	ReadData(data, 1);
@@ -27,7 +27,7 @@ int8 BinaryReader::ReadInt8()
 	return *(int8*) data;
 }
 
-uint8 BinaryReader::ReadUInt8()
+uint8 CBinaryReader::ReadUInt8()
 {
 	uint8 data[1];
 	ReadData(data, 1);
@@ -35,7 +35,7 @@ uint8 BinaryReader::ReadUInt8()
 	return *(uint8*) data;
 }
 
-int16 BinaryReader::ReadInt16()
+int16 CBinaryReader::ReadInt16()
 {
 	uint8 data[2];
 	ReadData(data, 2);
@@ -43,7 +43,7 @@ int16 BinaryReader::ReadInt16()
 	return static_cast<int16>(FixEndianness16(*(uint16*) data));
 }
 
-uint16 BinaryReader::ReadUInt16()
+uint16 CBinaryReader::ReadUInt16()
 {
 	uint8 data[2];
 	ReadData(data, 2);
@@ -51,7 +51,7 @@ uint16 BinaryReader::ReadUInt16()
 	return FixEndianness16(*(uint16*) data);
 }
 
-int32 BinaryReader::ReadInt32()
+int32 CBinaryReader::ReadInt32()
 {
 	uint8 data[4];
 	ReadData(data, 4);
@@ -59,7 +59,7 @@ int32 BinaryReader::ReadInt32()
 	return static_cast<int32>(FixEndianness32(*(uint32*) data));
 }
 
-uint32 BinaryReader::ReadUInt32()
+uint32 CBinaryReader::ReadUInt32()
 {
 	uint8 data[4];
 	ReadData(data, 4);
@@ -67,7 +67,7 @@ uint32 BinaryReader::ReadUInt32()
 	return FixEndianness32(*(uint32*) data);
 }
 
-int64 BinaryReader::ReadInt64()
+int64 CBinaryReader::ReadInt64()
 {
 	uint8 data[8];
 	ReadData(data, 8);
@@ -75,7 +75,7 @@ int64 BinaryReader::ReadInt64()
 	return static_cast<int64>(FixEndianness64(*(uint64*) data));
 }
 
-uint64 BinaryReader::ReadUInt64()
+uint64 CBinaryReader::ReadUInt64()
 {
 	uint8 data[8];
 	ReadData(data, 8);
@@ -83,7 +83,7 @@ uint64 BinaryReader::ReadUInt64()
 	return FixEndianness64(*(uint64*) data);
 }
 
-float BinaryReader::ReadFloat()
+float CBinaryReader::ReadFloat()
 {
 	uint8 data[4];
 	ReadData(data, 4);
@@ -92,7 +92,7 @@ float BinaryReader::ReadFloat()
 	return *(float*) &value;
 }
 
-double BinaryReader::ReadDouble()
+double CBinaryReader::ReadDouble()
 {
 	uint8 data[8];
 	ReadData(data, 8);
@@ -101,7 +101,7 @@ double BinaryReader::ReadDouble()
 	return *(double*) &value;
 }
 
-uint16 BinaryReader::ReadString(char* data, int32 maxlen /* = -1 */)
+uint16 CBinaryReader::ReadString(char* data, int32 maxlen /* = -1 */)
 {
 	uint16 length = ReadUInt16();
 
@@ -120,31 +120,31 @@ uint16 BinaryReader::ReadString(char* data, int32 maxlen /* = -1 */)
 	return length;
 }
 
-void BinaryReader::ReadData(void* data, int length)
+void CBinaryReader::ReadData(void* data, int length)
 {
-	filesystem->Read(data, length, m_File);
+	filesystem->Read(data, length, m_pFile);
 }
 
-uint16 BinaryReader::FixEndianness16(uint16 data)
+uint16 CBinaryReader::FixEndianness16(uint16 data)
 {
-	if (!m_ShouldFlipEndianness)
+	if (!m_bShouldFlipEndianness)
 		return data;
 
 	return ((data >> 8) & 0x00FF) | ((data << 8) & 0xFF00);
 }
 
-uint32 BinaryReader::FixEndianness32(uint32 data)
+uint32 CBinaryReader::FixEndianness32(uint32 data)
 {
-	if (!m_ShouldFlipEndianness)
+	if (!m_bShouldFlipEndianness)
 		return data;
 
 	return ((data >> 24) & 0x000000FF) | ((data >> 8) & 0x0000FF00) |
 		((data << 8) & 0x00FF0000) | ((data << 24) & 0xFF000000);
 }
 
-uint64 BinaryReader::FixEndianness64(uint64 data)
+uint64 CBinaryReader::FixEndianness64(uint64 data)
 {
-	if (!m_ShouldFlipEndianness)
+	if (!m_bShouldFlipEndianness)
 		return data;
 
 	return ((data >> 56) & 0x00000000000000FF) | ((data >> 40) & 0x000000000000FF00) |

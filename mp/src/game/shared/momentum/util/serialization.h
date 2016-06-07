@@ -7,5 +7,5 @@
 class ISerializable
 {
 public:
-	virtual void Serialize(BinaryWriter* writer) = 0;
+	virtual void Serialize(CBinaryWriter* writer) = 0;
 };

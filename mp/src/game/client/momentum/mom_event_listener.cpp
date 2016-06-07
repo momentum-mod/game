@@ -22,7 +22,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     if (!Q_strcmp("timer_stopped", pEvent->GetName()))
     {
         int entIndex = pEvent->GetInt("ent");
-        MomRunStats *stats = GetRunStats(entIndex);
+        CMomRunStats *stats = GetRunStats(entIndex);
 
         stats->m_flZoneStrafeSyncAvg[0] = pEvent->GetFloat("avg_sync");
         stats->m_flZoneStrafeSync2Avg[0] = pEvent->GetFloat("avg_sync2");
@@ -47,7 +47,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         int currentZone = pEvent->GetInt("num");
         int entIndex = pEvent->GetInt("ent");
 
-        MomRunStats *stats = GetRunStats(entIndex);
+        CMomRunStats *stats = GetRunStats(entIndex);
 
         if (currentZone <= m_iMapZoneCount)
         {
@@ -95,7 +95,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
             //Set the stage enter speed upon exiting the trigger
             float enterVel = pEvent->GetFloat("enter_vel");
             float enterVel2D = pEvent->GetFloat("enter_vel_2D");
-            MomRunStats *stats = GetRunStats(entIndex);
+            CMomRunStats *stats = GetRunStats(entIndex);
 
             for (int i = 0; i < 2; i++)
             {
@@ -123,7 +123,7 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
     else if (!Q_strcmp("keypress", pEvent->GetName()))
     {
         int entIndex = pEvent->GetInt("ent");
-        MomRunStats *stats = GetRunStats(entIndex);
+        CMomRunStats *stats = GetRunStats(entIndex);
         stats->m_iZoneJumps[0] = pEvent->GetInt("num_jumps");
         stats->m_iZoneStrafes[0] = pEvent->GetInt("num_strafes");
     }

@@ -54,7 +54,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     void HandleGhost();
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel); // for hud display..
-    void SetHeader(ReplayHeader &head)
+    void SetHeader(CReplayHeader &head)
     {
 		// TODO (OrfeasZ)
         /*header = head;
@@ -62,8 +62,8 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
         m_flTickRate = header.interval_per_tick;
         m_RunData.m_iRunFlags = header.runFlags;*/
     }
-    void SetRunStats(MomRunStats &stats);
-    MomRunStats *GetRunStats() { return &m_RunStats; }
+    void SetRunStats(CMomRunStats &stats);
+    CMomRunStats *GetRunStats() { return &m_RunStats; }
 
     void AddSpectator(CMomentumPlayer* player)
     {
@@ -93,10 +93,10 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
   private:
     char m_pszModel[256], m_pszMapName[256];
-    ReplayHeader header;
-    ReplayFrame currentStep;
-	ReplayFrame nextStep;
-    MomRunStats m_RunStats;
+    CReplayHeader header;
+    CReplayFrame currentStep;
+	CReplayFrame nextStep;
+    CMomRunStats m_RunStats;
 
     CUtlVector<CMomentumPlayer *> spectators;
 

@@ -190,7 +190,7 @@ class CTimer
         int flags;
 
         // stage specific stats:
-        MomRunStats RunStats;
+        CMomRunStats RunStats;
 
         Time() : time_sec(0), tickrate(0), date(0), flags(0), RunStats() {}
     };

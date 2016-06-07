@@ -1,114 +1,114 @@
 #include "cbase.h"
 #include "binary_writer.h"
 
-BinaryWriter::BinaryWriter(FileHandle_t file, bool close /* = false */) :
-	m_File(file),
-	m_ShouldClose(close),
-	m_ShouldFlipEndianness(false)
+CBinaryWriter::CBinaryWriter(FileHandle_t file, bool close /* = false */) :
+	m_pFile(file),
+	m_bShouldClose(close),
+	m_bShouldFlipEndianness(false)
 {
 }
 
-BinaryWriter::~BinaryWriter()
+CBinaryWriter::~CBinaryWriter()
 {
-	if (m_ShouldClose)
-		filesystem->Close(m_File);
+	if (m_bShouldClose)
+		filesystem->Close(m_pFile);
 }
 
-void BinaryWriter::WriteBool(bool data)
+void CBinaryWriter::WriteBool(bool data)
 {
 	WriteUInt8(data ? 1 : 0);
 }
 
-void BinaryWriter::WriteInt8(int8 data)
+void CBinaryWriter::WriteInt8(int8 data)
 {
 	WriteData(&data, 1);
 }
 
-void BinaryWriter::WriteUInt8(uint8 data)
+void CBinaryWriter::WriteUInt8(uint8 data)
 {
 	WriteData(&data, 1);
 }
 
-void BinaryWriter::WriteInt16(int16 data)
+void CBinaryWriter::WriteInt16(int16 data)
 {
 	uint16 value = FixEndianness16(*(uint16*) &data);
 	WriteData(&value, 2);
 }
 
-void BinaryWriter::WriteUInt16(uint16 data)
+void CBinaryWriter::WriteUInt16(uint16 data)
 {
 	uint16 value = FixEndianness16(data);
 	WriteData(&value, 2);
 }
 
-void BinaryWriter::WriteInt32(int32 data)
+void CBinaryWriter::WriteInt32(int32 data)
 {
 	uint32 value = FixEndianness32(*(uint32*) &data);
 	WriteData(&value, 4);
 }
 
-void BinaryWriter::WriteUInt32(uint32 data)
+void CBinaryWriter::WriteUInt32(uint32 data)
 {
 	uint32 value = FixEndianness32(data);
 	WriteData(&value, 4);
 }
 
-void BinaryWriter::WriteInt64(int64 data)
+void CBinaryWriter::WriteInt64(int64 data)
 {
 	uint64 value = FixEndianness64(*(uint64*) &data);
 	WriteData(&value, 8);
 }
 
-void BinaryWriter::WriteUInt64(uint64 data)
+void CBinaryWriter::WriteUInt64(uint64 data)
 {
 	uint64 value = FixEndianness64(data);
 	WriteData(&value, 8);
 }
 
-void BinaryWriter::WriteFloat(float data)
+void CBinaryWriter::WriteFloat(float data)
 {
 	uint32 value = FixEndianness32(*(uint32*) &data);
 	WriteData(&value, 4);
 }
 
-void BinaryWriter::WriteDouble(double data)
+void CBinaryWriter::WriteDouble(double data)
 {
 	uint64 value = FixEndianness64(*(uint64*) &data);
 	WriteData(&value, 8);
 }
 
-void BinaryWriter::WriteString(const char* data)
+void CBinaryWriter::WriteString(const char* data)
 {
 	uint16 length = Q_strlen(data);
 	WriteUInt16(length);
 	WriteData(data, length);
 }
 
-void BinaryWriter::WriteData(const void* data, int length)
+void CBinaryWriter::WriteData(const void* data, int length)
 {
-	filesystem->Write(data, length, m_File);
+	filesystem->Write(data, length, m_pFile);
 }
 
-uint16 BinaryWriter::FixEndianness16(uint16 data)
+uint16 CBinaryWriter::FixEndianness16(uint16 data)
 {
-	if (!m_ShouldFlipEndianness)
+	if (!m_bShouldFlipEndianness)
 		return data;
 
 	return ((data >> 8) & 0x00FF) | ((data << 8) & 0xFF00);
 }
 
-uint32 BinaryWriter::FixEndianness32(uint32 data)
+uint32 CBinaryWriter::FixEndianness32(uint32 data)
 {
-	if (!m_ShouldFlipEndianness)
+	if (!m_bShouldFlipEndianness)
 		return data;
 
 	return ((data >> 24) & 0x000000FF) | ((data >> 8) & 0x0000FF00) |
 		((data << 8) & 0x00FF0000) | ((data << 24) & 0xFF000000);
 }
 
-uint64 BinaryWriter::FixEndianness64(uint64 data)
+uint64 CBinaryWriter::FixEndianness64(uint64 data)
 {
-	if (!m_ShouldFlipEndianness)
+	if (!m_bShouldFlipEndianness)
 		return data;
 
 	return ((data >> 56) & 0x00000000000000FF) | ((data >> 40) & 0x000000000000FF00) |

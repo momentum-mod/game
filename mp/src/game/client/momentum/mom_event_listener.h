@@ -21,14 +21,14 @@ public:
 
     void FireGameEvent(IGameEvent* pEvent) override;
 
-    MomRunStats *GetRunStats(int entIndex)
+    CMomRunStats *GetRunStats(int entIndex)
     {
         unsigned short index;
         if ((index = m_EntRunStats.Find(entIndex)) != m_EntRunStats.InvalidIndex())
         {
             return m_EntRunStats.Element(index);
         }
-        MomRunStats *temp = new MomRunStats(m_iMapZoneCount);
+        CMomRunStats *temp = new CMomRunStats(m_iMapZoneCount);
         m_EntRunStats.InsertOrReplace(entIndex, temp);
         return GetRunStats(entIndex);
     }
@@ -38,7 +38,7 @@ public:
 
     int m_iMapZoneCount;
 
-    CUtlMap<int, MomRunStats*> m_EntRunStats;
+    CUtlMap<int, CMomRunStats*> m_EntRunStats;
     float m_flLastRunTime; //this is the "adjusted" precision-fixed time value that was calculated on the server DLL
 
     char m_szRunUploadStatus[512];//MOM_TODO: determine best (max) size for this

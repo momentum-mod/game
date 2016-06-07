@@ -8,99 +8,99 @@
 #define REPLAY_MAGIC_BE 0x4D4F4D52
 
 // A single frame of the replay.
-class ReplayFrame : 
+class CReplayFrame : 
 	public ISerializable
 {
 public:
-	ReplayFrame() :
-		m_qEyeAngles(0, 0, 0),
+	CReplayFrame() :
+		m_angEyeAngles(0, 0, 0),
 		m_vPlayerOrigin(0, 0, 0),
-		m_nPlayerButtons(0)
+		m_iPlayerButtons(0)
 	{
 	}
 
-	ReplayFrame(BinaryReader* reader)
+	CReplayFrame(CBinaryReader* reader)
 	{
-		m_qEyeAngles.x = reader->ReadFloat();
-		m_qEyeAngles.y = reader->ReadFloat();
-		m_qEyeAngles.z = reader->ReadFloat();
+		m_angEyeAngles.x = reader->ReadFloat();
+		m_angEyeAngles.y = reader->ReadFloat();
+		m_angEyeAngles.z = reader->ReadFloat();
 
 		m_vPlayerOrigin.x = reader->ReadFloat();
 		m_vPlayerOrigin.y = reader->ReadFloat();
 		m_vPlayerOrigin.z = reader->ReadFloat();
 
-		m_nPlayerButtons = reader->ReadInt32();
+		m_iPlayerButtons = reader->ReadInt32();
 	}
 
-	ReplayFrame(const QAngle& eye, const Vector& origin, int buttons) :
-		m_qEyeAngles(eye),
+	CReplayFrame(const QAngle& eye, const Vector& origin, int buttons) :
+		m_angEyeAngles(eye),
 		m_vPlayerOrigin(origin),
-		m_nPlayerButtons(buttons)
+		m_iPlayerButtons(buttons)
 	{
 	}
 
 public:
-	virtual void Serialize(BinaryWriter* writer) override
+	virtual void Serialize(CBinaryWriter* writer) override
 	{
-		writer->WriteFloat(m_qEyeAngles.x);
-		writer->WriteFloat(m_qEyeAngles.y);
-		writer->WriteFloat(m_qEyeAngles.z);
+		writer->WriteFloat(m_angEyeAngles.x);
+		writer->WriteFloat(m_angEyeAngles.y);
+		writer->WriteFloat(m_angEyeAngles.z);
 
 		writer->WriteFloat(m_vPlayerOrigin.x);
 		writer->WriteFloat(m_vPlayerOrigin.y);
 		writer->WriteFloat(m_vPlayerOrigin.z);
 
-		writer->WriteInt32(m_nPlayerButtons);
+		writer->WriteInt32(m_iPlayerButtons);
 	}
 
 public:
-	inline QAngle EyeAngles() const { return m_qEyeAngles; }
+	inline QAngle EyeAngles() const { return m_angEyeAngles; }
 	inline Vector PlayerOrigin() const { return m_vPlayerOrigin; }
-	inline int PlayerButtons() const { return m_nPlayerButtons; }
+	inline int PlayerButtons() const { return m_iPlayerButtons; }
 
 private:
-	QAngle m_qEyeAngles;
+	QAngle m_angEyeAngles;
 	Vector m_vPlayerOrigin;
-	int m_nPlayerButtons;
+	int m_iPlayerButtons;
 };
 
-class ReplayHeader :
+class CReplayHeader :
 	public ISerializable
 {
 public:
-	ReplayHeader()
+	CReplayHeader()
 	{
 	}
 	
-	ReplayHeader(BinaryReader* reader)
+	CReplayHeader(CBinaryReader* reader)
 	{
-		m_Version = reader->ReadUInt8();
-		reader->ReadString(m_MapName, sizeof(m_MapName) - 1);
-		reader->ReadString(m_PlayerName, sizeof(m_PlayerName) - 1);
-		m_SteamID = reader->ReadUInt64();
-		m_TickInterval = reader->ReadFloat();
-		m_RunTime = reader->ReadFloat();
-		m_RunFlags = reader->ReadInt32();
+		m_ucVersion = reader->ReadUInt8();
+		reader->ReadString(m_szMapName, sizeof(m_szMapName) - 1);
+		reader->ReadString(m_szPlayerName, sizeof(m_szPlayerName) - 1);
+		m_ulSteamID = reader->ReadUInt64();
+		m_fTickInterval = reader->ReadFloat();
+		m_fRunTime = reader->ReadFloat();
+		m_iRunFlags = reader->ReadInt32();
 	}
 
 public:
-	virtual void Serialize(BinaryWriter* writer) override
+	virtual void Serialize(CBinaryWriter* writer) override
 	{
-		writer->WriteUInt8(m_Version);
-		writer->WriteString(m_MapName);
-		writer->WriteString(m_PlayerName);
-		writer->WriteUInt64(m_SteamID);
-		writer->WriteFloat(m_TickInterval);
-		writer->WriteFloat(m_RunTime);
-		writer->WriteInt32(m_RunFlags);
+		writer->WriteUInt8(m_ucVersion);
+		writer->WriteString(m_szMapName);
+		writer->WriteString(m_szPlayerName);
+		writer->WriteUInt64(m_ulSteamID);
+		writer->WriteFloat(m_fTickInterval);
+		writer->WriteFloat(m_fRunTime);
+		writer->WriteInt32(m_iRunFlags);
 	}
 
 public:
-	uint8 m_Version; // The version of the replay.
-	char m_MapName[256]; // The map the run was done in.
-	char m_PlayerName[256]; // The name of the player that did this run.
-	uint64 m_SteamID; // The steamID of the player that did this run.
-	float m_TickInterval; // The tickrate of the run.
-	float m_RunTime; // The total runtime of the run in seconds.
-	int m_RunFlags; // The flags the player ran with.
+	uint8 m_ucVersion; // The version of the replay.
+	char m_szMapName[256]; // The map the run was done in.
+	char m_szPlayerName[256]; // The name of the player that did this run.
+	uint64 m_ulSteamID; // The steamID of the player that did this run.
+	float m_fTickInterval; // The tickrate of the run.
+	float m_fRunTime; // The total runtime of the run in seconds.
+	int m_iRunFlags; // The flags the player ran with.
 };

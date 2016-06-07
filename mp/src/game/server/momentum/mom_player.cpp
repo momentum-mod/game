@@ -354,7 +354,7 @@ void CMomentumPlayer::ResetRunStats()
     m_nAccelTicks = 0;
     m_RunData.m_flStrafeSync = 0;
     m_RunData.m_flStrafeSync2 = 0;
-    m_PlayerRunStats = MomRunStats(g_Timer->GetZoneCount());
+    m_PlayerRunStats = CMomRunStats(g_Timer->GetZoneCount());
 }
 void CMomentumPlayer::CalculateAverageStats()
 {

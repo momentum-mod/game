@@ -5,12 +5,12 @@
 #include "mom_shareddefs.h"
 #include "serialization.h"
 
-class MomRunStats : 
+class CMomRunStats : 
 	public ISerializable
 {
 public:
     // Note: This needs updating every time the struct is updated!
-    MomRunStats(uint8 size = MAX_STAGES)
+    CMomRunStats(uint8 size = MAX_STAGES)
     {
         if (size > MAX_STAGES)
             size = MAX_STAGES;
@@ -39,7 +39,7 @@ public:
         }
     }
 
-	MomRunStats(BinaryReader* reader)
+	CMomRunStats(CBinaryReader* reader)
 	{
 		m_iTotalZones = reader->ReadUInt8();
 
@@ -68,7 +68,7 @@ public:
 	}
 
 public:
-	virtual void Serialize(BinaryWriter* writer) override
+	virtual void Serialize(CBinaryWriter* writer) override
 	{
 		writer->WriteUInt8(m_iTotalZones);
 
@@ -94,7 +94,7 @@ public:
 
 public:
     // Note: This needs updating every time the struct is updated!
-    MomRunStats &operator=(const MomRunStats &other)
+    CMomRunStats &operator=(const CMomRunStats &other)
     {
 		if (this == &other)
 			return *this;

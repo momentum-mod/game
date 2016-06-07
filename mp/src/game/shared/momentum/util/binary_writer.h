@@ -3,15 +3,15 @@
 #include "cbase.h"
 #include "filesystem.h"
 
-class BinaryWriter
+class CBinaryWriter
 {
 public:
-	BinaryWriter(FileHandle_t file, bool close = false);
-	~BinaryWriter();
+	CBinaryWriter(FileHandle_t file, bool close = false);
+	~CBinaryWriter();
 
 public:
-	inline void ShouldFlipEndianness(bool flip) { m_ShouldFlipEndianness = flip; }
-	inline void Seek(int position, FileSystemSeek_t seek) { filesystem->Seek(m_File, position, seek); }
+	inline void ShouldFlipEndianness(bool flip) { m_bShouldFlipEndianness = flip; }
+	inline void Seek(int position, FileSystemSeek_t seek) { filesystem->Seek(m_pFile, position, seek); }
 
 public:
 	void WriteBool(bool data);
@@ -34,7 +34,7 @@ private:
 	uint64 FixEndianness64(uint64 data);
 
 private:
-	FileHandle_t m_File;
-	bool m_ShouldClose;
-	bool m_ShouldFlipEndianness;
+	FileHandle_t m_pFile;
+	bool m_bShouldClose;
+	bool m_bShouldFlipEndianness;
 };

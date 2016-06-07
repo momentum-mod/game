@@ -64,17 +64,17 @@ void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
 {
     m_nCurrentTick++; // increment recording tick
 
-	m_currentFrame = ReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons);
+	m_currentFrame = CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons);
 
     if (m_bShouldStopRec)
         if (gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
             StopRecording(UTIL_GetLocalPlayer(), false, false);
 
     Assert(buf && buf->IsValid());
-    buf->Put(&m_currentFrame, sizeof(ReplayFrame)); // stick all the frame info into the buffer
+    buf->Put(&m_currentFrame, sizeof(CReplayFrame)); // stick all the frame info into the buffer
 }
 
-void CMomentumReplaySystem::CreateHeader(ReplayHeader &header)
+void CMomentumReplaySystem::CreateHeader(CReplayHeader &header)
 {
     //replay_header_t header;
 	// TODO (OrfeasZ)
@@ -93,7 +93,7 @@ void CMomentumReplaySystem::CreateHeader(ReplayHeader &header)
     //return header;
 }
 
-void CMomentumReplaySystem::CreateStats(MomRunStats &runStats)
+void CMomentumReplaySystem::CreateStats(CMomRunStats &runStats)
 {
     //RunStats_t runStats = RunStats_t(g_Timer->GetZoneCount());
 
@@ -146,7 +146,7 @@ void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
 }
 
 // read a single frame (or tick) of a recording
-ReplayFrame *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const char *filename)
+CReplayFrame *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const char *filename)
 {
 	// TODO (OrfeasZ)
     /*Assert(file != FILESYSTEM_INVALID_HANDLE);
@@ -156,7 +156,7 @@ ReplayFrame *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const cha
     return &m_currentFrame;
 }
 
-ReplayHeader *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char *filename)
+CReplayHeader *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char *filename)
 {
 	// TODO (OrfeasZ)
     /*Assert(file != FILESYSTEM_INVALID_HANDLE);

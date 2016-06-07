@@ -43,7 +43,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
     m_bHasJumped = false;
-    m_RunStats = MomRunStats(g_Timer->GetZoneCount());
+    m_RunStats = CMomRunStats(g_Timer->GetZoneCount());
 }
 
 const char *CMomentumReplayGhostEntity::GetGhostModel() const { return m_pszModel; }
@@ -339,7 +339,7 @@ void CMomentumReplayGhostEntity::StopTimer()
     }
 }
 
-void CMomentumReplayGhostEntity::SetRunStats(MomRunStats &stats) { m_RunStats = stats; }
+void CMomentumReplayGhostEntity::SetRunStats(CMomRunStats &stats) { m_RunStats = stats; }
 
 void CMomentumReplayGhostEntity::EndRun()
 {
