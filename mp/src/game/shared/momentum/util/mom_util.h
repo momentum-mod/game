@@ -48,6 +48,19 @@ public:
         return fabs(a - b) < epsilon;
     }
 
+    //Checks if source is within a rectangle formed by leftCorner and rightCorner
+    bool IsInBounds(Vector2D source, Vector2D bottomLeft, Vector2D topRight) const
+    {
+        return (source.x > bottomLeft.x && source.x < topRight.x) &&
+            (source.y > bottomLeft.y && source.y < topRight.y);
+    }
+
+    bool IsInBounds(int x, int y, int rectX, int rectY, int rectW, int rectH) const
+    {
+        return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY),
+            Vector2D(rectX + rectW, rectY + rectH));
+    }
+
 #ifdef GAME_DLL
 
     void DispatchTimerStateMessage(CBasePlayer *, int, bool) const;

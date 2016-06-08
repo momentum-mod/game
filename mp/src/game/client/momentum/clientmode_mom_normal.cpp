@@ -90,6 +90,7 @@ class CHudViewport : public CBaseViewport
 ClientModeMOMNormal::ClientModeMOMNormal()
 {
     m_pHudMenuStatic = nullptr;
+    m_pHudMapFinished = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
@@ -97,7 +98,10 @@ ClientModeMOMNormal::ClientModeMOMNormal()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-ClientModeMOMNormal::~ClientModeMOMNormal() {}
+ClientModeMOMNormal::~ClientModeMOMNormal()
+{
+    //MOM_TODO: delete pointers (m_pViewport) here?
+}
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -107,7 +111,7 @@ void ClientModeMOMNormal::Init()
     BaseClass::Init();
 
     m_pHudMenuStatic = static_cast<CHudMenuStatic *>(GET_HUDELEMENT(CHudMenuStatic));
-
+    m_pHudMapFinished = static_cast<CHudMapFinishedDialog*>(GET_HUDELEMENT(CHudMapFinishedDialog));
     // Load up the combine control panel scheme
     g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
@@ -122,6 +126,7 @@ bool ClientModeMOMNormal::ShouldDrawCrosshair(void) { return (g_bRollingCredits 
 
 int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {
+    //Swallow the key input if a hud menu is open
     if (m_pHudMenuStatic && m_pHudMenuStatic->IsMenuDisplayed())
     {
         if (down >= 1 && keynum >= KEY_0 && keynum <= KEY_9)
@@ -131,13 +136,23 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         }
     }
 
+    //Detach the mouse if the user right-clicked while the leaderboards are open
     CClientTimesDisplay *pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
     if (pLeaderboards && pLeaderboards->IsVisible())
     {
         if (keynum == MOUSE_RIGHT)
         {
-            //Detach the mouse if the user right-clicked while the leaderboards are open
             pLeaderboards->SetMouseInputEnabled(true);
+            return 0;
+        }
+    }
+
+    //Detach the mouse if the user right-clicked while the map finished dialog is open
+    if (m_pHudMapFinished && m_pHudMapFinished->IsVisible())
+    {
+        if (keynum == MOUSE_RIGHT)
+        {
+            m_pHudMapFinished->SetMouseInputEnabled(true);
             return 0;
         }
     }

@@ -89,7 +89,6 @@ void CTimer::LoadLocalTimes(const char *szMapname)
         for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
         {
             const char *kvName = kv->GetName();
-            Log("kvName is %s\n", kvName);
             Time *t = new Time();
             t->time_sec = Q_atof(kvName);
             t->tickrate = kv->GetFloat("rate");
