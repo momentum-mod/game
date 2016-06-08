@@ -5,7 +5,7 @@
 #include "filesystem.h"
 #include "utlbuffer.h"
 
-#include "replay_data.h"
+#include "mom_replay_data.h"
 #include "mom_player_shared.h"
 
 #define RECORDING_PATH "recordings"

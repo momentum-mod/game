@@ -74,7 +74,6 @@ public:
 	
 	CReplayHeader(CBinaryReader* reader)
 	{
-		m_ucVersion = reader->ReadUInt8();
 		reader->ReadString(m_szMapName, sizeof(m_szMapName) - 1);
 		reader->ReadString(m_szPlayerName, sizeof(m_szPlayerName) - 1);
 		m_ulSteamID = reader->ReadUInt64();
@@ -86,7 +85,6 @@ public:
 public:
 	virtual void Serialize(CBinaryWriter* writer) override
 	{
-		writer->WriteUInt8(m_ucVersion);
 		writer->WriteString(m_szMapName);
 		writer->WriteString(m_szPlayerName);
 		writer->WriteUInt64(m_ulSteamID);
@@ -96,7 +94,6 @@ public:
 	}
 
 public:
-	uint8 m_ucVersion; // The version of the replay.
 	char m_szMapName[256]; // The map the run was done in.
 	char m_szPlayerName[256]; // The name of the player that did this run.
 	uint64 m_ulSteamID; // The steamID of the player that did this run.

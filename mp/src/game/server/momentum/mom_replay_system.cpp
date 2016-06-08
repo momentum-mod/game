@@ -1,6 +1,6 @@
 #include "cbase.h"
 
-#include "mom_replay.h"
+#include "mom_replay_system.h"
 #include "mom_replay_entity.h"
 #include "util/baseautocompletefilelist.h"
 #include "util/mom_util.h"

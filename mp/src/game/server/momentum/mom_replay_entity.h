@@ -7,8 +7,8 @@
 #include "mom_player.h"
 #include "in_buttons.h"
 #include "mom_entity_run_data.h"
-#include "replay_data.h"
-#include "mom_replay.h"
+#include "mom_replay_data.h"
+#include "mom_replay_system.h"
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
 enum ghostModelBodyGroup

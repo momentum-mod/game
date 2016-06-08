@@ -4,7 +4,7 @@
 #include "mom_triggers.h"
 #include "mom_player.h"
 #include "movevars_shared.h"
-#include "mom_replay.h"
+#include "mom_replay_system.h"
 #include "tier0/memdbgon.h"
 #include "mom_replay_entity.h"
 

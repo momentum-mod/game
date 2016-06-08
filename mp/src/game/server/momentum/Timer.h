@@ -14,7 +14,7 @@
 #include "tier1/checksum_sha1.h"
 #include "momentum/mom_shareddefs.h"
 #include "momentum/mom_gamerules.h"
-#include "mom_replay.h"
+#include "mom_replay_system.h"
 #include "movevars_shared.h"
 #include <ctime>
 
