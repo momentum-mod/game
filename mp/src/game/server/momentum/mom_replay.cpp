@@ -97,23 +97,8 @@ void CMomentumReplaySystem::CreateStats(CMomRunStats &runStats)
 {
     //RunStats_t runStats = RunStats_t(g_Timer->GetZoneCount());
 
-    for (int i = 0; i < m_player->m_PlayerRunStats.m_iTotalZones + 1; ++i)
-    {
-        runStats.m_iZoneJumps[i] = m_player->m_PlayerRunStats.m_iZoneJumps[i];
-        runStats.m_iZoneStrafes[i] = m_player->m_PlayerRunStats.m_iZoneStrafes[i];
-        runStats.m_flZoneStrafeSyncAvg[i] = m_player->m_PlayerRunStats.m_flZoneStrafeSyncAvg[i];
-        runStats.m_flZoneStrafeSync2Avg[i] = m_player->m_PlayerRunStats.m_flZoneStrafeSync2Avg[i];
-        runStats.m_flZoneEnterTime[i] = m_player->m_PlayerRunStats.m_flZoneEnterTime[i];
-        runStats.m_flZoneTime[i] = m_player->m_PlayerRunStats.m_flZoneTime[i];
+	runStats = m_player->m_PlayerRunStats;
 
-        for (int k = 0; k < 2; ++k)
-        {
-            runStats.m_flZoneVelocityMax[i][k] = m_player->m_PlayerRunStats.m_flZoneVelocityMax[i][k];
-            runStats.m_flZoneVelocityAvg[i][k] = m_player->m_PlayerRunStats.m_flZoneVelocityAvg[i][k];
-            runStats.m_flZoneEnterSpeed[i][k] = m_player->m_PlayerRunStats.m_flZoneEnterSpeed[i][k];
-            runStats.m_flZoneExitSpeed[i][k] = m_player->m_PlayerRunStats.m_flZoneExitSpeed[i][k];
-        }
-    }
     //return runStats;
 }
 

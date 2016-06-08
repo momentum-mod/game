@@ -68,6 +68,7 @@ $Project "Server (Momentum)"
                 $File   "momentum\mom_replay_entity.h"
                 $File   "momentum\replay_data.h"
                 $File   "momentum\replay_manager.h"
+                $File   "momentum\replay.h"
             }
 			
 			$File	"momentum\mom_blockfix.h"

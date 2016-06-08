@@ -311,8 +311,8 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
     case TIME_OVERALL:
     case ZONE_TIME:
         // Get the time difference in seconds.
-        act = type == TIME_OVERALL ? stats->m_flZoneEnterTime[zone + 1]
-            : stats->m_flZoneTime[zone];
+        act = type == TIME_OVERALL ? stats->GetZoneEnterTime(zone + 1)
+            : stats->GetZoneTime(zone);
 
         if (m_bLoadedComparison)
             diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[zone]
@@ -328,43 +328,43 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference
-        act = stats->m_flZoneVelocityAvg[zone][velType];
+        act = stats->GetZoneVelocityAvg(zone)[velType];
         if (m_bLoadedComparison)
             diff = act -
                    m_rcCurrentComparison->zoneAvgVels[velType][zone];
         break;
     case VELOCITY_EXIT:
-        act = stats->m_flZoneExitSpeed[zone][velType];
+        act = stats->GetZoneExitSpeed(zone)[velType];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneExitVels[velType][zone];
         break;
     case VELOCITY_MAX:
-        act = stats->m_flZoneVelocityMax[zone][velType];
+        act = stats->GetZoneVelocityMax(zone)[velType];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneMaxVels[velType][zone];
         break;
     case VELOCITY_ENTER:
-        act = stats->m_flZoneEnterSpeed[zone][velType];
+        act = stats->GetZoneEnterSpeed(zone)[velType];
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneEnterVels[velType][zone];
         break;
     case ZONE_SYNC1:
-        act = stats->m_flZoneStrafeSyncAvg[zone];
+        act = stats->GetZoneStrafeSyncAvg(zone);
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneAvgSync1[zone];
         break;
     case ZONE_SYNC2:
-        act = stats->m_flZoneStrafeSync2Avg[zone];
+        act = stats->GetZoneStrafeSync2Avg(zone);
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneAvgSync2[zone];
         break;
     case ZONE_JUMPS:
-        act = stats->m_iZoneJumps[zone];
+        act = stats->GetZoneJumps(zone);
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneJumps[zone];
         break;
     case ZONE_STRAFES:
-        act = stats->m_iZoneStrafes[zone];
+        act = stats->GetZoneStrafes(zone);
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneStrafes[zone];
         break;

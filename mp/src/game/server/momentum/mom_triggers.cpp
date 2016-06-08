@@ -44,13 +44,12 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
         if (g_Timer->IsRunning())
         { 
-            pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][0] = pPlayer->GetLocalVelocity().Length();
-            pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[stageNum - 1][1] = pPlayer->GetLocalVelocity().Length2D();
+			pPlayer->m_PlayerRunStats.SetZoneExitSpeed(stageNum - 1, pPlayer->GetLocalVelocity().Length(), pPlayer->GetLocalVelocity().Length2D());
             g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_END);
             enterTime = g_Timer->CalculateStageTime(stageNum);
-            pPlayer->m_PlayerRunStats.m_flZoneEnterTime[stageNum] = enterTime;
-            pPlayer->m_PlayerRunStats.m_flZoneTime[stageNum - 1] =
-                pPlayer->m_PlayerRunStats.m_flZoneEnterTime[stageNum] - pPlayer->m_PlayerRunStats.m_flZoneEnterTime[stageNum - 1];
+            pPlayer->m_PlayerRunStats.SetZoneEnterTime(stageNum, enterTime);
+            pPlayer->m_PlayerRunStats.SetZoneTime(stageNum - 1,
+                pPlayer->m_PlayerRunStats.GetZoneEnterTime(stageNum) - pPlayer->m_PlayerRunStats.GetZoneEnterTime(stageNum - 1));
             pStats = &pPlayer->m_PlayerRunStats;
         }
         else
@@ -69,7 +68,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
             pGhost->m_RunData.m_iCurrentZone = stageNum;
             pGhost->m_RunData.m_bIsInZone = true;
-            enterTime = pGhost->GetRunStats()->m_flZoneEnterTime[stageNum];
+            enterTime = pGhost->GetRunStats()->GetZoneEnterTime(stageNum);
             pStats = pGhost->GetRunStats();                
         }
     }
@@ -79,20 +78,20 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         stageEvent->SetInt("num", stageNum);
         stageEvent->SetInt("ent", pOther->entindex());
         stageEvent->SetFloat("enter_time", enterTime);
-        stageEvent->SetInt("num_jumps", pStats->m_iZoneJumps[stageNum - 1]);
-        stageEvent->SetFloat("num_strafes", pStats->m_iZoneStrafes[stageNum - 1]);
-        stageEvent->SetFloat("avg_sync", pStats->m_flZoneStrafeSyncAvg[stageNum - 1]);
-        stageEvent->SetFloat("avg_sync2", pStats->m_flZoneStrafeSync2Avg[stageNum - 1]);
+        stageEvent->SetInt("num_jumps", pStats->GetZoneJumps(stageNum - 1));
+        stageEvent->SetFloat("num_strafes", pStats->GetZoneStrafes(stageNum - 1));
+        stageEvent->SetFloat("avg_sync", pStats->GetZoneStrafeSyncAvg(stageNum - 1));
+        stageEvent->SetFloat("avg_sync2", pStats->GetZoneStrafeSync2Avg(stageNum - 1));
 
         //3D VELOCITY
-        stageEvent->SetFloat("max_vel", pStats->m_flZoneVelocityMax[stageNum - 1][0]);
-        stageEvent->SetFloat("avg_vel", pStats->m_flZoneVelocityAvg[stageNum - 1][0]);
-        stageEvent->SetFloat("exit_vel", pStats->m_flZoneExitSpeed[stageNum - 1][0]);
+        stageEvent->SetFloat("max_vel", pStats->GetZoneVelocityMax(stageNum - 1)[0]);
+        stageEvent->SetFloat("avg_vel", pStats->GetZoneVelocityAvg(stageNum - 1)[0]);
+        stageEvent->SetFloat("exit_vel", pStats->GetZoneExitSpeed(stageNum - 1)[0]);
 
         //2D VELOCITY
-        stageEvent->SetFloat("max_vel_2D", pStats->m_flZoneVelocityMax[stageNum - 1][1]);
-        stageEvent->SetFloat("avg_vel_2D", pStats->m_flZoneVelocityAvg[stageNum - 1][1]);
-        stageEvent->SetFloat("exit_vel_2D", pStats->m_flZoneExitSpeed[stageNum - 1][1]);
+        stageEvent->SetFloat("max_vel_2D", pStats->GetZoneVelocityMax(stageNum - 1)[1]);
+        stageEvent->SetFloat("avg_vel_2D", pStats->GetZoneVelocityAvg(stageNum - 1)[1]);
+        stageEvent->SetFloat("exit_vel_2D", pStats->GetZoneExitSpeed(stageNum - 1)[1]);
 
         gameeventmanager->FireEvent(stageEvent);
     }
@@ -113,8 +112,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
 
             //Status
             pPlayer->m_RunData.m_bIsInZone = false;
-            pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[stageNum][0] = pPlayer->GetLocalVelocity().Length();
-            pPlayer->m_PlayerRunStats.m_flZoneEnterSpeed[stageNum][1] = pPlayer->GetLocalVelocity().Length2D();
+			pPlayer->m_PlayerRunStats.SetZoneEnterSpeed(stageNum, pPlayer->GetLocalVelocity().Length(), pPlayer->GetLocalVelocity().Length2D());
             pStats = &pPlayer->m_PlayerRunStats;
         }
     }
@@ -136,10 +134,10 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
         stageEvent->SetInt("num", stageNum);
 
         //3D VELOCITY
-        stageEvent->SetFloat("enter_vel", pStats->m_flZoneEnterSpeed[stageNum][0]);
+        stageEvent->SetFloat("enter_vel", pStats->GetZoneEnterSpeed(stageNum)[0]);
 
         //2D VELOCITY
-        stageEvent->SetFloat("enter_vel_2D", pStats->m_flZoneEnterSpeed[stageNum][1]);
+        stageEvent->SetFloat("enter_vel_2D", pStats->GetZoneEnterSpeed(stageNum)[1]);
 
         gameeventmanager->FireEvent(stageEvent);
     }
@@ -335,8 +333,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             // stageEvent->SetFloat("enter_time", g_Timer->GetLastRunTime());
 
             // This is needed so we have an ending velocity.
-            pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[zoneNum][0] = pPlayer->GetLocalVelocity().Length();
-            pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[zoneNum][1] = pPlayer->GetLocalVelocity().Length2D();
+			pPlayer->m_PlayerRunStats.SetZoneExitSpeed(zoneNum, pPlayer->GetLocalVelocity().Length(), pPlayer->GetLocalVelocity().Length2D());
 
             //Check to see if we should calculate the timer offset fix
             if (ContainsPosition(pPlayer->GetPrevOrigin()))
@@ -348,29 +345,25 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             }
 
             //This is needed for the final stage
-            pPlayer->m_PlayerRunStats.m_flZoneTime[zoneNum] = 
+            pPlayer->m_PlayerRunStats.SetZoneTime(zoneNum, 
                 g_Timer->GetCurrentTime() - 
-                pPlayer->m_PlayerRunStats.m_flZoneEnterTime[zoneNum];
+                pPlayer->m_PlayerRunStats.GetZoneEnterTime(zoneNum));
 
             //Ending velocity checks
-            //3D Velocity
-            float endvel = pPlayer->GetLocalVelocity().Length();
+			float endvel = pPlayer->GetLocalVelocity().Length();
+			float endvel2D = pPlayer->GetLocalVelocity().Length2D();
 
-            //Update the ending velocity if it's the max velocity obtained
-            if (endvel > pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][0])
-                pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][0] = endvel;
+			float finalVel = endvel;
+			float finalVel2D = endvel2D;
 
-            //we have to set end speed here or else it will be saved as 0 
-            pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[0][0] = endvel; 
+			if (endvel <= pPlayer->m_PlayerRunStats.GetZoneVelocityMax(0)[0])
+				finalVel = pPlayer->m_PlayerRunStats.GetZoneVelocityMax(0)[0];
 
-            //2D Velocity
-            float endvel2D = pPlayer->GetLocalVelocity().Length2D();
+			if (endvel2D <= pPlayer->m_PlayerRunStats.GetZoneVelocityMax(0)[1])
+				finalVel2D = pPlayer->m_PlayerRunStats.GetZoneVelocityMax(0)[1];
 
-            //Update the ending velocity if it's the max velocity obtained
-            if (endvel2D > pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][1])
-                pPlayer->m_PlayerRunStats.m_flZoneVelocityMax[0][1] = endvel2D;
-
-            pPlayer->m_PlayerRunStats.m_flZoneExitSpeed[0][1] = endvel2D;
+			pPlayer->m_PlayerRunStats.SetZoneVelocityMax(0, finalVel, finalVel2D);
+			pPlayer->m_PlayerRunStats.SetZoneExitSpeed(0, endvel, endvel2D);
 
             //Set the pointer to send new stats
             pStats = &pPlayer->m_PlayerRunStats;
@@ -419,30 +412,30 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
     {
         stageEvent->SetInt("num", zoneNum + 1);
         stageEvent->SetInt("ent", pOther->entindex());
-        stageEvent->SetFloat("exit_vel", pStats->m_flZoneExitSpeed[zoneNum][0]);
-        stageEvent->SetFloat("exit_vel_2D", pStats->m_flZoneExitSpeed[zoneNum][1]);
+        stageEvent->SetFloat("exit_vel", pStats->GetZoneExitSpeed(zoneNum)[0]);
+        stageEvent->SetFloat("exit_vel_2D", pStats->GetZoneExitSpeed(zoneNum)[1]);
         gameeventmanager->FireEvent(stageEvent);
     }
 
     if (timerStopEvent && pStats)
     {
         timerStopEvent->SetInt("ent", pOther->entindex());
-        timerStopEvent->SetFloat("avg_sync", pStats->m_flZoneStrafeSyncAvg[0]);
-        timerStopEvent->SetFloat("avg_sync2", pStats->m_flZoneStrafeSync2Avg[0]);
-        timerStopEvent->SetInt("num_strafes", pStats->m_iZoneStrafes[0]);
-        timerStopEvent->SetInt("num_jumps", pStats->m_iZoneJumps[0]);
+        timerStopEvent->SetFloat("avg_sync", pStats->GetZoneStrafeSyncAvg(0));
+        timerStopEvent->SetFloat("avg_sync2", pStats->GetZoneStrafeSync2Avg(0));
+        timerStopEvent->SetInt("num_strafes", pStats->GetZoneStrafes(0));
+        timerStopEvent->SetInt("num_jumps", pStats->GetZoneJumps(0));
 
         //3D VELCOCITY STATS - INDEX 0
-        timerStopEvent->SetFloat("avg_vel", pStats->m_flZoneVelocityAvg[0][0]);
-        timerStopEvent->SetFloat("start_vel", pStats->m_flZoneEnterSpeed[1][0]);
-        timerStopEvent->SetFloat("max_vel", pStats->m_flZoneVelocityMax[0][0]);
-        timerStopEvent->SetFloat("end_vel", pStats->m_flZoneExitSpeed[0][0]);
+        timerStopEvent->SetFloat("avg_vel", pStats->GetZoneVelocityAvg(0)[0]);
+        timerStopEvent->SetFloat("start_vel", pStats->GetZoneEnterSpeed(1)[0]);
+        timerStopEvent->SetFloat("max_vel", pStats->GetZoneVelocityMax(0)[0]);
+        timerStopEvent->SetFloat("end_vel", pStats->GetZoneExitSpeed(0)[0]);
 
         //2D VELOCITY STATS - INDEX 1
-        timerStopEvent->SetFloat("avg_vel_2D", pStats->m_flZoneVelocityAvg[0][1]);
-        timerStopEvent->SetFloat("start_vel_2D", pStats->m_flZoneEnterSpeed[1][1]);
-        timerStopEvent->SetFloat("max_vel_2D", pStats->m_flZoneVelocityMax[0][1]);
-        timerStopEvent->SetFloat("end_vel_2D", pStats->m_flZoneExitSpeed[0][1]);
+        timerStopEvent->SetFloat("avg_vel_2D", pStats->GetZoneVelocityAvg(0)[1]);
+        timerStopEvent->SetFloat("start_vel_2D", pStats->GetZoneEnterSpeed(1)[1]);
+        timerStopEvent->SetFloat("max_vel_2D", pStats->GetZoneVelocityMax(0)[1]);
+        timerStopEvent->SetFloat("end_vel_2D", pStats->GetZoneExitSpeed(0)[1]);
 
         timerStopEvent->SetFloat("time", lastRun);
         gameeventmanager->FireEvent(timerStopEvent);
