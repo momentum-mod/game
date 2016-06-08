@@ -30,6 +30,25 @@ CHudMapFinishedDialog::~CHudMapFinishedDialog()
 {
 }
 
+bool CHudMapFinishedDialog::ShouldDraw()
+{
+    bool shouldDrawLocal = false;
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    if (pPlayer)
+    {
+        if (pPlayer->IsWatchingReplay())
+        {
+            C_MomentumReplayGhostEntity *pEnt = pPlayer->GetReplayEnt();
+            shouldDrawLocal = pEnt && pEnt->m_RunData.m_bMapFinished;
+        }
+        else
+        {
+            shouldDrawLocal = pPlayer->m_RunData.m_bMapFinished;
+        }
+    }
+    return CHudElement::ShouldDraw() && shouldDrawLocal;
+}
+
 
 void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 {

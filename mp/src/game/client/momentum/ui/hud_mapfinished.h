@@ -33,27 +33,7 @@ public:
     CHudMapFinishedDialog(const char *pElementName);
     ~CHudMapFinishedDialog();
 
-    bool ShouldDraw() override
-    {
-        return CHudElement::ShouldDraw();
-
-        bool shouldDrawLocal = false;
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        if (pPlayer)
-        {
-            if (pPlayer->IsWatchingReplay())
-            {
-                C_MomentumReplayGhostEntity *pEnt = pPlayer->GetReplayEnt();
-                shouldDrawLocal = pEnt && pEnt->m_RunData.m_bMapFinished;
-            }
-            else
-            {
-                shouldDrawLocal = pPlayer->m_RunData.m_bMapFinished;
-            }
-        }
-        return CHudElement::ShouldDraw() && shouldDrawLocal;
-    }
-
+    bool ShouldDraw() override;
     void Paint() override;
     void OnThink() override;
     void Init() override;
