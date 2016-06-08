@@ -313,13 +313,15 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
         KeyValues *bestRun = GetBestTime(kvMap, szMapName, tickRate, flags);
         if (bestRun)
         {
+            // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
+            // I'm thinking the name could be like "(user): (Time)"
+            Q_strcpy(into->runName, "Personal Best");
+
             FOR_EACH_SUBKEY(bestRun, kv)
             {
+                //Stages/checkpoints data
                 if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
                 {
-                    // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
-                    // I'm thinking the name could be like "(user): (Time)"
-                    Q_strcpy(into->runName, "Personal Best");
                     // Splits
                     into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
                     into->zoneSplits.AddToTail(kv->GetFloat("time"));
@@ -341,24 +343,24 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
                             kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
                     }
                 }
+                //Overall stats
                 else if (!Q_strcmp(kv->GetName(), "total"))
                 {
-                    Q_strcpy(into->runName, "Personal Best");
                     // Keypress
-                    into->zoneJumps.AddToTail(kv->GetInt("jumps"));
-                    into->zoneStrafes.AddToTail(kv->GetInt("strafes"));
+                    into->zoneJumps.AddToHead(kv->GetInt("jumps"));
+                    into->zoneStrafes.AddToHead(kv->GetInt("strafes"));
                     // Sync
-                    into->zoneAvgSync1.AddToTail(kv->GetFloat("avgsync"));
-                    into->zoneAvgSync2.AddToTail(kv->GetFloat("avgsync2"));
+                    into->zoneAvgSync1.AddToHead(kv->GetFloat("avgsync"));
+                    into->zoneAvgSync2.AddToHead(kv->GetFloat("avgsync2"));
                     // Velocity (3D and Horizontal)
                     for (int i = 0; i < 2; i++)
                     {
                         bool horizontalVel = (i == 1);
-                        into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                        into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                        into->zoneExitVels[i].AddToTail(
+                        into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                        into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                        into->zoneExitVels[i].AddToHead(
                             kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
-                        into->zoneEnterVels[i].AddToTail(
+                        into->zoneEnterVels[i].AddToHead(
                             kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
                     }
                 }

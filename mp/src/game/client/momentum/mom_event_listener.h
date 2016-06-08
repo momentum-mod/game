@@ -29,7 +29,7 @@ public:
             return m_EntRunStats.Element(index);
         }
         RunStats_t *temp = new RunStats_t(m_iMapZoneCount);
-        m_EntRunStats.Insert(entIndex, temp);
+        m_EntRunStats.InsertOrReplace(entIndex, temp);
         return GetRunStats(entIndex);
     }
 

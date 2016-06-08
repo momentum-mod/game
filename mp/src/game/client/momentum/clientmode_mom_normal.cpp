@@ -4,25 +4,27 @@
 //
 //=============================================================================
 #include "cbase.h"
+
+#include "ClientTimesDisplay.h"
 #include "clientmode_mom_normal.h"
+#include "hud.h"
+#include "ienginevgui.h"
+#include "iinput.h"
+#include "momSpectatorGUI.h"
 #include "momentum/mom_shareddefs.h"
 #include "vgui_int.h"
-#include "hud.h"
 #include <vgui/IInput.h>
 #include <vgui/IPanel.h>
 #include <vgui/ISurface.h>
-#include "ClientTimesDisplay.h"
-#include "momSpectatorGUI.h"
 #include <vgui_controls/AnimationController.h>
-#include "iinput.h"
-#include "ienginevgui.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//extern bool g_bRollingCredits; MOM_TODO: reinstate this boolean!!
+extern bool g_bRollingCredits;
 
-ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 90.0, true, 179.0);
+ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 90.0,
+                   true, 179.0);
 
 //-----------------------------------------------------------------------------
 // Globals
@@ -41,93 +43,82 @@ IClientMode *GetClientModeNormal()
 //-----------------------------------------------------------------------------
 class CHudViewport : public CBaseViewport
 {
-private:
+  private:
     DECLARE_CLASS_SIMPLE(CHudViewport, CBaseViewport);
 
-protected:
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme)
+  protected:
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override
     {
         BaseClass::ApplySchemeSettings(pScheme);
 
         gHUD.InitColors(pScheme);
-
+        
         SetPaintBackgroundEnabled(false);
     }
 
-    IViewPortPanel *CreatePanelByName(const char *pzName)
+    IViewPortPanel *CreatePanelByName(const char *pzName) override
     {
-        IViewPortPanel *panel = BaseClass::CreatePanelByName(pzName);
-        if (!panel)
+
+        if (!Q_strcmp(PANEL_TIMES, pzName))
         {
-            if (!Q_strcmp(PANEL_TIMES, pzName))
-            {
-                panel = new CClientTimesDisplay(this);
-            }
-            else if (!Q_strcmp(PANEL_SPECMENU, pzName))
-            {
-                panel = new CMOMSpectatorMenu(this);
-            }
-            else if (!Q_strcmp(PANEL_SPECGUI, pzName))
-            {
-                panel = new CMOMSpectatorGUI(this);
-            }
+            return new CClientTimesDisplay(this);
+        }
+        if (!Q_strcmp(PANEL_SPECMENU, pzName))
+        {
+            return new CMOMSpectatorMenu(this);
+        }
+        if (!Q_strcmp(PANEL_SPECGUI, pzName))
+        {
+            return new CMOMSpectatorGUI(this);
         }
 
-
-        return panel;
+        return BaseClass::CreatePanelByName(pzName);
     }
 
-    virtual void CreateDefaultPanels(void)
+    void CreateDefaultPanels(void) override
     {
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
-
-        BaseClass::CreateDefaultPanels();// MOM_TODO: do we want the other panels?
-    };
-
+        AddNewPanel(CreatePanelByName(PANEL_SPECMENU), "PANEL_SPECMENU");
+        AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
+        //BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
+    }
 };
-
 
 //-----------------------------------------------------------------------------
 // ClientModeHLNormal implementation
 //-----------------------------------------------------------------------------
 ClientModeMOMNormal::ClientModeMOMNormal()
 {
-    m_pHudMenuStatic = NULL;
+    m_pHudMenuStatic = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
 
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+ClientModeMOMNormal::~ClientModeMOMNormal() {}
 
 //-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-ClientModeMOMNormal::~ClientModeMOMNormal()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 void ClientModeMOMNormal::Init()
 {
     BaseClass::Init();
 
-    m_pHudMenuStatic = static_cast<CHudMenuStatic*>(GET_HUDELEMENT(CHudMenuStatic));
+    m_pHudMenuStatic = static_cast<CHudMenuStatic *>(GET_HUDELEMENT(CHudMenuStatic));
 
     // Load up the combine control panel scheme
-    g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(enginevgui->GetPanel(PANEL_CLIENTDLL), IsXbox() ? "resource/ClientScheme.res" : "resource/CombinePanelScheme.res", "CombineScheme");
+    g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(
+        enginevgui->GetPanel(PANEL_CLIENTDLL),
+        IsXbox() ? "resource/ClientScheme.res" : "resource/CombinePanelScheme.res", "CombineScheme");
     if (!g_hVGuiCombineScheme)
     {
         Warning("Couldn't load combine panel scheme!\n");
     }
 }
 
-bool ClientModeMOMNormal::ShouldDrawCrosshair(void)
-{
-    return true;//MOM_TODO: reinstate the g_bRollingCredits when hud_credits is copied over.
-    //return (g_bRollingCredits == false);
-}
+bool ClientModeMOMNormal::ShouldDrawCrosshair(void) { return (g_bRollingCredits == false); }
 
 int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {
@@ -136,12 +127,24 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
         if (down >= 1 && keynum >= KEY_0 && keynum <= KEY_9)
         {
             m_pHudMenuStatic->SelectMenuItem(keynum - KEY_0);
-            return 0;//The hud menu static swallowed the key input
+            return 0; // The hud menu static swallowed the key input
         }
     }
-        
+
+    CClientTimesDisplay *pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
+    if (pLeaderboards && pLeaderboards->IsVisible())
+    {
+        if (keynum == MOUSE_RIGHT)
+        {
+            //Detach the mouse if the user right-clicked while the leaderboards are open
+            pLeaderboards->SetMouseInputEnabled(true);
+            return 0;
+        }
+    }
+
     return BaseClass::HudElementKeyInput(down, keynum, pszCurrentBinding);
 }
+
 int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {
     // MOM_TODO: re-enable this in beta when we add movie-style controls to the spectator menu!
@@ -168,6 +171,6 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
         engine->ClientCmd("spec_mode");
         return 0;
     }
-    
+
     return 1;
 }

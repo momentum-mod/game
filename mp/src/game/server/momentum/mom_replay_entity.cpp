@@ -344,6 +344,15 @@ void CMomentumReplayGhostEntity::SetRunStats(RunStats_t &stats) { m_RunStats = s
 
 void CMomentumReplayGhostEntity::EndRun()
 {
+    IGameEvent *zoneExitEvent = gameeventmanager->CreateEvent("zone_exit");
+    if (zoneExitEvent)
+    {
+        //This tells the event listener to remove/clear the stats for the given ent
+        zoneExitEvent->SetInt("num", MAX_STAGES + 1);
+        zoneExitEvent->SetInt("ent", entindex());
+        gameeventmanager->FireEvent(zoneExitEvent);
+    }
+    
     StopTimer();
     SetNextThink(-1);
     Remove();

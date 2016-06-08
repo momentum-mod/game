@@ -180,6 +180,13 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             } 
             g_Timer->Start(gpGlobals->tickcount);
             pPlayer->m_RunData.m_bTimerRunning = g_Timer->IsRunning();
+
+            IGameEvent *movementCountsResetEvent = gameeventmanager->CreateEvent("keypress");
+            if (movementCountsResetEvent)
+            {
+                movementCountsResetEvent->SetInt("ent", pPlayer->entindex());
+                gameeventmanager->FireEvent(movementCountsResetEvent);
+            }
         }
         pPlayer->m_RunData.m_bIsInZone = false;
         pPlayer->m_RunData.m_bMapFinished = false;
@@ -205,12 +212,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 gameeventmanager->FireEvent(timerStateEvent);
             }
         }
-    }
-
-    IGameEvent *movementCountsResetEvent = gameeventmanager->CreateEvent("keypress");
-    if (movementCountsResetEvent)
-    {
-        gameeventmanager->FireEvent(movementCountsResetEvent);
     }
     // stop thinking on end touch
     SetNextThink(-1);
@@ -380,8 +381,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             //The map is now finished, show the mapfinished panel
             pPlayer->m_RunData.m_bMapFinished = true;
             pPlayer->m_RunData.m_bTimerRunning = false;
-
-            //MOM_TODO: SLOW DOWN/STOP THE PLAYER HERE!
         }
         
         pPlayer->m_RunData.m_bIsInZone = true;

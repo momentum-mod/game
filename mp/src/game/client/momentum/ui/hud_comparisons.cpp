@@ -331,42 +331,42 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
         act = stats->m_flZoneVelocityAvg[zone][velType];
         if (m_bLoadedComparison)
             diff = act -
-                   m_rcCurrentComparison->zoneAvgVels[velType][zone - 1]; //- 1 due to array indexing (0 is zone 1)
+                   m_rcCurrentComparison->zoneAvgVels[velType][zone];
         break;
     case VELOCITY_EXIT:
         act = stats->m_flZoneExitSpeed[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneExitVels[velType][zone - 1];
+            diff = act - m_rcCurrentComparison->zoneExitVels[velType][zone];
         break;
     case VELOCITY_MAX:
         act = stats->m_flZoneVelocityMax[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneMaxVels[velType][zone - 1];
+            diff = act - m_rcCurrentComparison->zoneMaxVels[velType][zone];
         break;
     case VELOCITY_ENTER:
         act = stats->m_flZoneEnterSpeed[zone][velType];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneEnterVels[velType][zone - 1];
+            diff = act - m_rcCurrentComparison->zoneEnterVels[velType][zone];
         break;
     case ZONE_SYNC1:
         act = stats->m_flZoneStrafeSyncAvg[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneAvgSync1[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneAvgSync1[zone];
         break;
     case ZONE_SYNC2:
         act = stats->m_flZoneStrafeSync2Avg[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneAvgSync2[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneAvgSync2[zone];
         break;
     case ZONE_JUMPS:
         act = stats->m_iZoneJumps[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneJumps[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneJumps[zone];
         break;
     case ZONE_STRAFES:
         act = stats->m_iZoneStrafes[zone];
         if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneStrafes[zone - 1];
+            diff = act - m_rcCurrentComparison->zoneStrafes[zone];
         break;
     default:
         return;

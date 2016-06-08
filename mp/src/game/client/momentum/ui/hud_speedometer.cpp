@@ -162,25 +162,23 @@ void CHudSpeedMeter::OnThink()
     {
         //This will be null if the player is not watching a replay first person
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-
+        C_MOMRunEntityData *pData = pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData;
         //Note: Velocity is also set to the player when watching first person
         velocity = pPlayer->GetLocalVelocity();
 
         //The last jump velocity
-        float lastJumpVel = (pGhost ? pGhost->m_RunData.m_flLastJumpVel : 
-            pPlayer->m_RunData.m_flLastJumpVel);
+        float lastJumpVel = pData->m_flLastJumpVel;
 
         //The last jump time is also important if the player is watching a replay
-        float lastJumpTime = (pGhost ? pGhost->m_RunData.m_flLastJumpTime :
-            pPlayer->m_RunData.m_flLastJumpTime);
+        float lastJumpTime = pData->m_flLastJumpTime;
 
         m_iEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
 
-        m_bEntInZone = pGhost ? pGhost->m_RunData.m_bIsInZone : pPlayer->m_RunData.m_bIsInZone;
+        m_bEntInZone = pData->m_bIsInZone;
 
-        m_iCurrentZone = pGhost ? pGhost->m_RunData.m_iCurrentZone : pPlayer->m_RunData.m_iCurrentZone;
+        m_iCurrentZone = pData->m_iCurrentZone;
 
-        m_bTimerIsRunning = pGhost ? pGhost->m_RunData.m_bTimerRunning : pPlayer->m_RunData.m_bTimerRunning;
+        m_bTimerIsRunning = pData->m_bTimerRunning;
 
         int velType = mom_speedometer_hvel.GetBool(); // 1 is horizontal velocity
 
@@ -243,16 +241,8 @@ void CHudSpeedMeter::OnThink()
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
             // reset last jump velocity when we (or a ghost ent) restart a run by entering the start zone
-            if (pGhost)
-            {
-                if (pGhost->m_RunData.m_bIsInZone && pGhost->m_RunData.m_iCurrentZone == 1)
-                    m_flLastJumpVelocity = 0;
-            } 
-            else
-            {
-                if (pPlayer->m_RunData.m_bIsInZone && pPlayer->m_RunData.m_iCurrentZone == 1)
-                    m_flLastJumpVelocity = 0;
-            }
+            if (pData->m_bIsInZone && pData->m_iCurrentZone == 1)
+                m_flLastJumpVelocity = 0;
 
 
             if (lastJumpVel == 0)

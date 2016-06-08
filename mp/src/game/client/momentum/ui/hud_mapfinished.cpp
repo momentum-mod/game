@@ -339,9 +339,10 @@ void CHudMapFinishedDialog::OnThink()
 
         ConVarRef hvel("mom_speedometer_hvel");
 
-        RunStats_t *stats = g_MOMEventListener->GetRunStats(pPlayer->IsWatchingReplay() ? pPlayer->GetReplayEnt()->entindex() :
-            pPlayer->entindex());
-        float lastRunTime = pPlayer->IsWatchingReplay() ? pPlayer->GetReplayEnt()->m_flRunTime : g_MOMEventListener->m_flLastRunTime;
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        RunStats_t *stats = g_MOMEventListener->GetRunStats(pGhost ? pGhost->entindex() : pPlayer->entindex());
+        float lastRunTime = pGhost ? pGhost->m_flRunTime : g_MOMEventListener->m_flLastRunTime;
+
         m_flAvgSpeed = stats->m_flZoneVelocityAvg[0][hvel.GetBool()];
         m_flMaxSpeed = stats->m_flZoneVelocityMax[0][hvel.GetBool()];
         m_flEndSpeed = stats->m_flZoneExitSpeed[0][hvel.GetBool()];
