@@ -5,8 +5,7 @@
 
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
-//NOTE: The "CHudMapFinishedDialog" (main panel) control settings are found in HudLayout.res
-// whereas the Replay_Icon/etc settings are found in MapFinishedDialog.res
+//NOTE: The "CHudMapFinishedDialog" (main panel) control settings are found in MapFinishedDialog.res
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
 CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
@@ -14,16 +13,40 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    
+
+    m_pRunStats = nullptr;
+    m_iCurrentPage = 0;
+
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
     LoadControlSettings("resource/UI/MapFinishedDialog.res");
+    m_pNextZoneButton = FindControl<Button>("Next_Zone");
+    m_pNextZoneButton->SetMouseInputEnabled(true);
+    m_pNextZoneButton->SetMouseClickEnabled(MOUSE_LEFT, true);
+    m_pNextZoneButton->InstallMouseHandler(this);
+    //MOM_TODO: Have "Next" and "Prev" icons as images for the buttons?
+    m_pPrevZoneButton = FindControl<Button>("Prev_Zone");
+    m_pPrevZoneButton->SetMouseInputEnabled(true);
+    m_pPrevZoneButton->SetMouseClickEnabled(MOUSE_LEFT, true);
+    m_pPrevZoneButton->InstallMouseHandler(this);
     m_pPlayReplayButton = FindControl<ImagePanel>("Replay_Icon");
-    m_pPlayReplayButton->SetParent(this);
     m_pPlayReplayButton->SetMouseInputEnabled(true);
     m_pPlayReplayButton->InstallMouseHandler(this);
     m_pPlayReplayLabel = FindControl<Label>("Replay_Label");
-    m_pPlayReplayLabel->SetParent(this);
+    m_pDetachMouseLabel = FindControl<Label>("Detach_Mouse");
+    m_pCurrentZoneLabel = FindControl<Label>("Current_Zone");
+    m_pZoneOverallTime = FindControl<Label>("Zone_Overall_Time");
+    m_pZoneEnterTime = FindControl<Label>("Zone_Enter_Time");
+    m_pZoneJumps = FindControl<Label>("Zone_Jumps");
+    m_pZoneStrafes = FindControl<Label>("Zone_Strafes");
+    m_pZoneVelEnter = FindControl<Label>("Zone_Vel_Enter");
+    m_pZoneVelExit = FindControl<Label>("Zone_Vel_Exit");
+    m_pZoneVelAvg = FindControl<Label>("Zone_Vel_Avg");
+    m_pZoneVelMax = FindControl<Label>("Zone_Vel_Max");
+    m_pZoneSync1 = FindControl<Label>("Zone_Sync1");
+    m_pZoneSync2 = FindControl<Label>("Zone_Sync2");
+    m_pRunSaveStatus = FindControl<Label>("Run_Save_Status");
+    m_pRunUploadStatus = FindControl<Label>("Run_Upload_Status");
 }
 
 CHudMapFinishedDialog::~CHudMapFinishedDialog()
@@ -32,6 +55,8 @@ CHudMapFinishedDialog::~CHudMapFinishedDialog()
 
 bool CHudMapFinishedDialog::ShouldDraw()
 {
+    return CHudElement::ShouldDraw();
+    
     bool shouldDrawLocal = false;
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
@@ -46,7 +71,11 @@ bool CHudMapFinishedDialog::ShouldDraw()
             shouldDrawLocal = pPlayer->m_RunData.m_bMapFinished;
         }
     }
-    return CHudElement::ShouldDraw() && shouldDrawLocal;
+
+    if (!shouldDrawLocal)
+        SetMouseInputEnabled(false);
+
+    return CHudElement::ShouldDraw() && shouldDrawLocal && m_pRunStats;
 }
 
 
@@ -54,21 +83,35 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
+    m_pDetachMouseLabel->SetFont(m_hTextFont);
     m_pPlayReplayLabel->SetFont(m_hTextFont);
-    m_pPlayReplayLabel->SetTall(surface()->GetFontTall(m_hTextFont) + 2);
+    m_pCurrentZoneLabel->SetFont(m_hTextFont);
 }
 
 void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_LEFT)
     {
-        if (input()->GetMouseOver() == m_pPlayReplayButton->GetVPanel())
+        VPANEL over = input()->GetMouseOver();
+        if (over == m_pPlayReplayButton->GetVPanel())
         {
             DevLog("Clicked on the replay icon! Starting replay...\n");
             //MOM_TODO: Play the replay
+            //engine->ServerCmd()
+        }
+        else if (over == m_pNextZoneButton->GetVPanel())
+        {
+            //MOM_TODO (beta+): Play animations?
+            m_iCurrentPage = (m_iCurrentPage + 1) % 5;//(g_MOMEventListener->m_iMapZoneCount + 1);
+        }
+        else if (over == m_pPrevZoneButton->GetVPanel())
+        {
+            //MOM_TODO: (beta+) play animations?
+            int newPage = m_iCurrentPage - 1;
+            m_iCurrentPage = newPage < 0 ? /*g_MOMEventListener->m_iMapZoneCount*/4 : newPage;
         }
 
-        //MOM_TODO: Other buttons here ("next page", see stats for entire run)
+        //MOM_TODO: Other buttons here
     }
     else if (code == MOUSE_RIGHT)
     {
@@ -81,39 +124,49 @@ void CHudMapFinishedDialog::Init()
 {
     Reset();
     //cache localization files
-    
-    //Stats
-    LOCALIZE_TOKEN(RunTime, "#MOM_RunTime", timeLocalized);
-    LOCALIZE_TOKEN(JumpCount, "#MOM_JumpCount", jumpLocalized);
-    LOCALIZE_TOKEN(StrafeCount, "#MOM_StrafeCount", strafeLocalized);
-    LOCALIZE_TOKEN(AvgSync, "#MOM_AvgSync", syncLocalized);
-    LOCALIZE_TOKEN(AvgSync2, "#MOM_AvgSync2", sync2Localized);
-    LOCALIZE_TOKEN(StartVel, "#MOM_StartVel", startVelLocalized);
-    LOCALIZE_TOKEN(EndVel, "#MOM_EndVel", endVelLocalized);
-    LOCALIZE_TOKEN(AvgVel, "#MOM_AvgVel", avgVelLocalized);
-    LOCALIZE_TOKEN(MaxVel, "#MOM_MaxVel", maxVelLocalized);
-    //Saving/Uploading
-    FIND_LOCALIZATION(m_pwRunSavedLabel, "#MOM_RunSaved");
-    FIND_LOCALIZATION(m_pwRunNotSavedLabel, "#MOM_RunNotSaved");
-    FIND_LOCALIZATION(m_pwRunUploadedLabel, "#MOM_RunUploaded");
-    FIND_LOCALIZATION(m_pwRunNotUploadedLabel, "#MOM_RunNotUploaded");
 
-    //MOM_TODO: Maybe have a "Right click to use the mouse!" string or something?
+    //Run saving/uploading
+    FIND_LOCALIZATION(m_pwRunSavedLabel, "#MOM_MF_RunSaved");
+    FIND_LOCALIZATION(m_pwRunNotSavedLabel, "#MOM_MF_RunNotSaved");
+    FIND_LOCALIZATION(m_pwRunUploadedLabel, "#MOM_MF_RunUploaded");
+    FIND_LOCALIZATION(m_pwRunNotUploadedLabel, "#MOM_MF_RunNotUploaded");
+
+    // Stats
+    FIND_LOCALIZATION(m_pwCurrentPageOverall, "#MOM_MF_OverallStats");
+    FIND_LOCALIZATION(m_pwCurrentPageZoneNum, "#MOM_MF_ZoneNum");
+    FIND_LOCALIZATION(m_pwOverallTime, "#MOM_MF_RunTime");
+    FIND_LOCALIZATION(m_pwZoneEnterTime, "#MOM_MF_Zone_Enter");
+    FIND_LOCALIZATION(m_pwZoneTime, "#MOM_MF_Time_Zone");
+    FIND_LOCALIZATION(m_pwVelAvg, "#MOM_MF_Velocity_Avg");
+    FIND_LOCALIZATION(m_pwVelMax, "#MOM_MF_Velocity_Max");
+    FIND_LOCALIZATION(m_pwVelZoneEnter, "#MOM_MF_Velocity_Enter");
+    FIND_LOCALIZATION(m_pwVelZoneExit, "#MOM_MF_Velocity_Exit");
+    FIND_LOCALIZATION(m_pwJumpsOverall, "#MOM_MF_JumpCount");
+    FIND_LOCALIZATION(m_pwJumpsZone, "#MOM_MF_Jumps");
+    FIND_LOCALIZATION(m_pwStrafesOverall, "#MOM_MF_StrafeCount");
+    FIND_LOCALIZATION(m_pwStrafesZone, "#MOM_MF_Strafes");
+    FIND_LOCALIZATION(m_pwSync1Overall, "#MOM_MF_AvgSync");
+    FIND_LOCALIZATION(m_pwSync1Zone, "#MOM_MF_Sync1");
+    FIND_LOCALIZATION(m_pwSync2Overall, "#MOM_MF_AvgSync2");
+    FIND_LOCALIZATION(m_pwSync2Zone, "#MOM_MF_Sync2");
 }
 
 void CHudMapFinishedDialog::Reset()
 {
     //default values
-    m_iTotalStrafes = 0;
-    m_iTotalJumps = 0;
-    m_flAvgSpeed = 0;
-    m_flEndSpeed = 0;
-    m_flStartSpeed = 0;
-    m_flMaxSpeed = 0;
-    m_flAvgSync = 0;
-    m_flAvgSync2 = 0;
-    strcpy(m_pszRunTime, "00:00:00.000"); 
+    m_pRunStats = nullptr;
+    strcpy(m_pszEndRunTime, "00:00:00.000"); 
 }
+
+#define MAKE_UNI_INT(name, size, number) \
+    wchar_t name[size];\
+    V_snwprintf(name, size, L"%d", number);
+
+#define MAKE_UNI_FLOAT(name, size, number) \
+    wchar_t name[size];\
+    V_snwprintf(name, size, L"%.4f", number);
+
+
 
 void CHudMapFinishedDialog::Paint()
 {
@@ -121,131 +174,163 @@ void CHudMapFinishedDialog::Paint()
     surface()->DrawSetTextFont(m_hTextFont);
     surface()->DrawSetTextColor(GetFgColor());
 
-    // --- RUN TIME ---
-    Q_snprintf(m_pszStringTimeLabel, BUFSIZELOCL, "%s %s",
-        timeLocalized, // run time localization 
-        m_pszRunTime    // run time string
-        );
+    // --- CURRENT PAGE TITLE (ZONE) ---
+    wchar_t currentPageTitle[BUFSIZELOCL];
+    if (m_iCurrentPage == 0)
+    {       
+        V_wcscpy_safe(currentPageTitle, m_pwCurrentPageOverall);
+    } 
+    else
+    {
+        MAKE_UNI_INT(num, 3, m_iCurrentPage);
+        g_pVGuiLocalize->ConstructString(currentPageTitle, sizeof(currentPageTitle), m_pwCurrentPageZoneNum, 1, num);
+    }
 
-    ANSI_TO_UNICODE(m_pszStringTimeLabel, m_pwTimeLabel);
+    m_pCurrentZoneLabel->SetText(currentPageTitle);
+    int currentPageTitleWidth = UTIL_ComputeStringWidth(m_hTextFont, currentPageTitle) + 2;
+    m_pNextZoneButton->SetPos(m_pCurrentZoneLabel->GetXPos() + currentPageTitleWidth, m_pCurrentZoneLabel->GetYPos());
 
-    surface()->DrawSetTextPos(time_xpos, time_ypos);
-    surface()->DrawPrintText(m_pwTimeLabel, wcslen(m_pwTimeLabel));
-    // ---------------------
+    //// --- RUN TIME ---
+    wchar_t currentZoneOverall[BUFSIZELOCL];
+    wchar_t unicodeTime[BUFSIZETIME];
+    //"Time:" shows up when m_iCurrentPage  == 0
+    if (m_iCurrentPage < 1)// == 0, but I'm lazy to do an else-if
+    {
+        g_pVGuiLocalize->ConvertANSIToUnicode(m_pszEndRunTime, unicodeTime, sizeof(unicodeTime));
+        g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwOverallTime, 1, unicodeTime);
 
-    // --- JUMP COUNT ---
-    Q_snprintf(m_pszStringJumpsLabel, BUFSIZELOCL, "%s %i",
-        jumpLocalized, // total jump localization 
-        m_iTotalJumps  // total jump int
-        );
+        m_pZoneOverallTime->SetText(currentZoneOverall);//"Time" (overall run time)
 
-    ANSI_TO_UNICODE(m_pszStringJumpsLabel, m_pwJumpsLabel);
+        m_pZoneEnterTime->SetVisible(false);
+        m_pZoneEnterTime->SetEnabled(false);
+    }
+    else
+    {
+        //"Zone Time:" shows up when m_iCurrentPage > 0
+        char ansiTime[BUFSIZETIME];
+        mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->m_flZoneTime[m_iCurrentPage] : 0.0f, ansiTime);
+        ANSI_TO_UNICODE(ansiTime, unicodeTime);
+        g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwZoneTime, 1, unicodeTime);
+        m_pZoneOverallTime->SetText(currentZoneOverall);//"Zone time" (time for that zone)
 
-    surface()->DrawSetTextPos(jumps_xpos, jumps_ypos);
-    surface()->DrawPrintText(m_pwJumpsLabel, wcslen(m_pwJumpsLabel));
-    // ---------------------
 
-    // --- STRAFE COUNT ---
-    Q_snprintf(m_pszStringStrafesLabel, BUFSIZELOCL, "%s %i",
-        strafeLocalized, // total strafe localization 
-        m_iTotalStrafes  //total strafes int
-        );
+        //"Zone Enter Time:" shows up when m_iCurrentPage > 1
+        if (m_iCurrentPage > 1)
+        {
+            m_pZoneEnterTime->SetEnabled(true);
+            m_pZoneEnterTime->SetVisible(true);
+            wchar_t zoneEnterTime[BUFSIZELOCL];
+            mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->m_flZoneEnterTime[m_iCurrentPage] : 0.0f, ansiTime);
+            ANSI_TO_UNICODE(ansiTime, unicodeTime);
+            g_pVGuiLocalize->ConstructString(zoneEnterTime, sizeof(zoneEnterTime), m_pwZoneEnterTime, 1, unicodeTime);
+            m_pZoneEnterTime->SetText(zoneEnterTime);//"Zone enter time:" (time entered that zone)
+        }
+        else
+        {
+            m_pZoneEnterTime->SetVisible(false);
+            m_pZoneEnterTime->SetEnabled(false);
+        }
+    }
+    //// ---------------------
 
-    ANSI_TO_UNICODE(m_pszStringStrafesLabel, m_pwStrafesLabel);
+    //MOM_TODO: Set every label's Y pos higher if there's no ZoneEnterTime visible
 
-    surface()->DrawSetTextPos(strafes_xpos, strafes_ypos);
-    surface()->DrawPrintText(m_pwStrafesLabel, wcslen(m_pwStrafesLabel));
-    // ---------------------
-
-    // --- AVG SYNC ---
-    Q_snprintf(m_pszAvgSync, BUFSIZELOCL, "%.2f", m_flAvgSync); //convert floating point avg sync to 2 decimal place string
-    Q_snprintf(m_pszStringSyncLabel, BUFSIZELOCL, "%s %s",
-        syncLocalized, // avg sync localization 
-        m_pszAvgSync    // avg sync float
-        );
-
-    ANSI_TO_UNICODE(m_pszStringSyncLabel, m_pwSyncLabel);
-
-    surface()->DrawSetTextPos(sync_xpos, sync_ypos);
-    surface()->DrawPrintText(m_pwSyncLabel, wcslen(m_pwSyncLabel));
-    // ---------------------
-
-    // --- AVG SYNC 2---
-    Q_snprintf(m_pszAvgSync2, BUFSIZELOCL, "%.2f", m_flAvgSync2); //convert floating point avg sync to 2 decimal place string
-    Q_snprintf(m_pszStringSync2Label, BUFSIZELOCL, "%s %s",
-        sync2Localized, // avg sync localization 
-        m_pszAvgSync2    // avg sync float
-        );
-
-    ANSI_TO_UNICODE(m_pszStringSync2Label, m_pwSync2Label);
-
-    surface()->DrawSetTextPos(sync2_xpos, sync2_ypos);
-    surface()->DrawPrintText(m_pwSync2Label, wcslen(m_pwSync2Label));
-    // ---------------------
-
-    // --- STARTING VELOCITY---
-    Q_snprintf(m_pszStartSpeedLabel, BUFSIZELOCL, "%s %f",
-        startVelLocalized,
-        m_flStartSpeed
-        );
-    ANSI_TO_UNICODE(m_pszStartSpeedLabel, m_pwStartSpeedLabel);
-
-    surface()->DrawSetTextPos(startvel_xpos, startvel_ypos);
-    surface()->DrawPrintText(m_pwStartSpeedLabel, wcslen(m_pwStartSpeedLabel));
-    // ---------------------
-
-    // --- ENDING VELOCITY---
-    Q_snprintf(m_pszEndSpeedLabel, BUFSIZELOCL, "%s %f", endVelLocalized, m_flEndSpeed);
-    ANSI_TO_UNICODE(m_pszEndSpeedLabel, m_pwEndSpeedLabel);
-
-    surface()->DrawSetTextPos(endvel_xpos, endvel_ypos);
-    surface()->DrawPrintText(m_pwEndSpeedLabel, wcslen(m_pwEndSpeedLabel));
-    // ---------------------
-
-    // --- AVG VELOCITY---
-    Q_snprintf(m_pszAvgSpeedLabel, BUFSIZELOCL, "%s %f",
-        avgVelLocalized,
-        m_flAvgSpeed
-        );
-    ANSI_TO_UNICODE(m_pszAvgSpeedLabel, m_pwAvgSpeedLabel);
-
-    surface()->DrawSetTextPos(avgvel_xpos, avgvel_ypos);
-    surface()->DrawPrintText(m_pwAvgSpeedLabel, wcslen(m_pwAvgSpeedLabel));
-    // ---------------------
-
-    // --- MAX VELOCITY---
-    Q_snprintf(m_pszMaxSpeedLabel, BUFSIZELOCL, "%s %f",
-        maxVelLocalized,
-        m_flMaxSpeed
-        );
+    //// --- JUMP COUNT ---
+    wchar_t jumpCount[BUFSIZELOCL];
     
-    ANSI_TO_UNICODE(m_pszMaxSpeedLabel, m_pwMaxSpeedLabel);
+    MAKE_UNI_INT(jumps, 10, m_pRunStats ? m_pRunStats->m_iZoneJumps[m_iCurrentPage] : 0);
 
-    surface()->DrawSetTextPos(maxvel_xpos, maxvel_ypos);
-    surface()->DrawPrintText(m_pwMaxSpeedLabel, wcslen(m_pwAvgSpeedLabel));
-    // ---------------------
+    g_pVGuiLocalize->ConstructString(jumpCount, sizeof(jumpCount), 
+        m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone, 1, jumps);
 
-    // ---- RUN SAVING AND UPLOADING ----
+    m_pZoneJumps->SetText(jumpCount);
+    //// ---------------------
 
-    // -- run save --
-    wchar_t *runSaveUni = m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel;
+    //// --- STRAFE COUNT ---
+    wchar_t strafeCount[BUFSIZELOCL];
 
-    // -- run upload --
-    wchar_t *runUploadUni = m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel;
+    MAKE_UNI_INT(strafes, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_iZoneStrafes[m_iCurrentPage] : 0);
 
-    // -- draw run save --
-    int save_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, runSaveUni) / 2; //center label
+    g_pVGuiLocalize->ConstructString(strafeCount, sizeof(strafeCount),
+        m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone, 1, strafes);
 
-    surface()->DrawSetTextPos(save_text_xpos, runsave_ypos);
-    surface()->DrawSetTextColor(m_bRunSaved ? GetFgColor() : COLOR_RED);//MOM_TODO: should the success color be green?
-    surface()->DrawPrintText(runSaveUni, wcslen(runSaveUni));
+    m_pZoneStrafes->SetText(strafeCount);
+    //// ---------------------
 
-    // -- draw run upload --
-    int upload_text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, runUploadUni) / 2; //center label
+    //// --- SYNC1 ---
+    wchar_t sync1Avg[BUFSIZELOCL];
 
-    surface()->DrawSetTextPos(upload_text_xpos, runupload_ypos);
-    surface()->DrawSetTextColor(m_bRunUploaded ? GetFgColor() : COLOR_RED);//MOM_TODO: should the success color be green?
-    surface()->DrawPrintText(runUploadUni, wcslen(runUploadUni));
+    MAKE_UNI_FLOAT(sync1, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneStrafeSyncAvg[m_iCurrentPage] : 0.0f);
+
+    g_pVGuiLocalize->ConstructString(sync1Avg, sizeof(sync1Avg), m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone, 1, sync1);
+
+    m_pZoneSync1->SetText(sync1Avg);
+    //// ---------------------
+
+    //// --- SYNC2---
+    wchar_t sync2Avg[BUFSIZELOCL];
+
+    MAKE_UNI_FLOAT(sync2, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneStrafeSync2Avg[m_iCurrentPage] : 0.0f);
+
+    g_pVGuiLocalize->ConstructString(sync2Avg, sizeof(sync2Avg), m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone, 1, sync2);
+
+    m_pZoneSync2->SetText(sync2Avg);
+    //// ---------------------
+
+    //// --- STARTING VELOCITY---
+    wchar_t enterVelUni[BUFSIZELOCL];
+
+    MAKE_UNI_FLOAT(enterVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneEnterSpeed[m_iCurrentPage][m_iVelocityType] : 0.0f);
+
+    g_pVGuiLocalize->ConstructString(enterVelUni, sizeof(enterVelUni), m_pwVelZoneEnter, 1, enterVel);
+
+    m_pZoneVelEnter->SetText(enterVelUni);
+    //// ---------------------
+
+    //// --- ENDING VELOCITY---
+    wchar_t exitVelUni[BUFSIZELOCL];
+
+    MAKE_UNI_FLOAT(exitVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneExitSpeed[m_iCurrentPage][m_iVelocityType] : 0.0f);
+
+    g_pVGuiLocalize->ConstructString(exitVelUni, sizeof(exitVelUni), m_pwVelZoneExit, 1, exitVel);
+
+    m_pZoneVelExit->SetText(exitVelUni);
+    //// ---------------------
+
+    //// --- AVG VELOCITY---
+    wchar_t avgVelUni[BUFSIZELOCL];
+
+    MAKE_UNI_FLOAT(avgVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneVelocityAvg[m_iCurrentPage][m_iVelocityType] : 0.0f);
+
+    g_pVGuiLocalize->ConstructString(avgVelUni, sizeof(avgVelUni), m_pwVelAvg, 1, avgVel);
+
+    m_pZoneVelAvg->SetText(avgVelUni);
+    //// ---------------------
+
+    //// --- MAX VELOCITY---
+    wchar_t maxVelUni[BUFSIZELOCL];
+
+    MAKE_UNI_FLOAT(maxVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneVelocityMax[m_iCurrentPage][m_iVelocityType] : 0.0f);
+
+    g_pVGuiLocalize->ConstructString(maxVelUni, sizeof(maxVelUni), m_pwVelMax, 1, maxVel);
+
+    m_pZoneVelMax->SetText(maxVelUni);
+
+    // MOM_TODO: Make a macro/function that takes Label*, wchar_t *wFormat, float value, bool isInt
+    // and make it take 
+
+    //// ---------------------
+
+    //// ---- RUN SAVING AND UPLOADING ----
+
+    //// -- run save --
+    m_pRunSaveStatus->SetText(m_bRunSaved ? m_pwRunSavedLabel : m_pwRunNotSavedLabel);
+    m_pRunSaveStatus->SetFgColor(m_bRunSaved ? COLOR_GREEN : COLOR_RED);
+
+    //// -- run upload --
+    //MOM_TODO: Should we have custom error messages here? One for server not responding, one for failed accept, etc
+    m_pRunUploadStatus->SetText(m_bRunUploaded ? m_pwRunUploadedLabel : m_pwRunNotUploadedLabel);
+    m_pRunUploadStatus->SetFgColor(m_bRunUploaded ? COLOR_GREEN : COLOR_RED);
     // ----------------
     // ------------------------------
 }
@@ -262,19 +347,11 @@ void CHudMapFinishedDialog::OnThink()
         //Is it going to be a localized string, except for errors that have to be specific?
 
         ConVarRef hvel("mom_speedometer_hvel");
+        m_iVelocityType = hvel.GetBool();
 
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        RunStats_t *stats = g_MOMEventListener->GetRunStats(pGhost ? pGhost->entindex() : pPlayer->entindex());
+        m_pRunStats = g_MOMEventListener->GetRunStats(pGhost ? pGhost->entindex() : pPlayer->entindex());
         float lastRunTime = pGhost ? pGhost->m_flRunTime : g_MOMEventListener->m_flLastRunTime;
-
-        m_flAvgSpeed = stats->m_flZoneVelocityAvg[0][hvel.GetBool()];
-        m_flMaxSpeed = stats->m_flZoneVelocityMax[0][hvel.GetBool()];
-        m_flEndSpeed = stats->m_flZoneExitSpeed[0][hvel.GetBool()];
-        m_flStartSpeed = stats->m_flZoneEnterSpeed[0][hvel.GetBool()];
-        m_flAvgSync2 = stats->m_flZoneStrafeSyncAvg[0];
-        m_flAvgSync = stats->m_flZoneStrafeSync2Avg[0];
-        m_iTotalJumps = stats->m_iZoneJumps[0];
-        m_iTotalStrafes = stats->m_iZoneStrafes[0];
-        mom_UTIL->FormatTime(lastRunTime, m_pszRunTime);
+        mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
     }
 }

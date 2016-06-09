@@ -45,84 +45,54 @@ public:
 
 protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
-    CPanelAnimationVarAliasType(float, time_xpos, "time_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, time_ypos, "time_ypos", "5",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, strafes_xpos, "strafes_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, strafes_ypos, "strafes_ypos", "25",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, jumps_xpos, "jumps_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, jumps_ypos, "jumps_ypos", "45",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, sync_xpos, "sync_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, sync_ypos, "sync_ypos", "65",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, sync2_xpos, "sync2_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, sync2_ypos, "sync2_ypos", "85",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, startvel_xpos, "startvel_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, startvel_ypos, "startvel_ypos", "65",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, endvel_xpos, "endvel_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, endvel_ypos, "endvel_ypos", "65",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, avgvel_xpos, "avgvel_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, avgvel_ypos, "avgvel_ypos", "65",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, maxvel_xpos, "maxvel_xpos", "30",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, maxvel_ypos, "maxvel_ypos", "65",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, runsave_ypos, "runsave_ypos", "65",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, runupload_ypos, "runupload_ypos", "65",
-        "proportional_float");
 
 private:
-    wchar_t m_pwTimeLabel[BUFSIZELOCL];
-    char m_pszStringTimeLabel[BUFSIZELOCL];
-    wchar_t m_pwStrafesLabel[BUFSIZELOCL];
-    char m_pszStringStrafesLabel[BUFSIZELOCL];
-    wchar_t m_pwJumpsLabel[BUFSIZELOCL];
-    char m_pszStringJumpsLabel[BUFSIZELOCL];
-    wchar_t m_pwSyncLabel[BUFSIZELOCL];
-    char m_pszStringSyncLabel[BUFSIZELOCL];
-    wchar_t m_pwSync2Label[BUFSIZELOCL];
-    char m_pszStringSync2Label[BUFSIZELOCL];
-    wchar_t m_pwStartSpeedLabel[BUFSIZELOCL];
-    char m_pszStartSpeedLabel[BUFSIZELOCL];
-    wchar_t m_pwEndSpeedLabel[BUFSIZELOCL];
-    char m_pszEndSpeedLabel[BUFSIZELOCL];
-    wchar_t m_pwAvgSpeedLabel[BUFSIZELOCL];
-    char m_pszAvgSpeedLabel[BUFSIZELOCL];
-    wchar_t m_pwMaxSpeedLabel[BUFSIZELOCL];
-    char m_pszMaxSpeedLabel[BUFSIZELOCL];
-
+    wchar_t m_pwCurrentPageOverall[BUFSIZELOCL];
+    wchar_t m_pwCurrentPageZoneNum[BUFSIZELOCL];
+    wchar_t m_pwOverallTime[BUFSIZELOCL];
+    wchar_t m_pwZoneTime[BUFSIZELOCL];
+    wchar_t m_pwZoneEnterTime[BUFSIZELOCL];
+    wchar_t m_pwVelAvg[BUFSIZELOCL];//Used for both overall and zones
+    wchar_t m_pwVelMax[BUFSIZELOCL];//Used for both overall and zones
+    wchar_t m_pwVelZoneEnter[BUFSIZELOCL];//MOM_TODO: This may not exist for linear maps
+    wchar_t m_pwVelZoneExit[BUFSIZELOCL];
+    wchar_t m_pwSync1Overall[BUFSIZELOCL];
+    wchar_t m_pwSync1Zone[BUFSIZELOCL];
+    wchar_t m_pwSync2Overall[BUFSIZELOCL];
+    wchar_t m_pwSync2Zone[BUFSIZELOCL];
+    wchar_t m_pwJumpsOverall[BUFSIZELOCL];
+    wchar_t m_pwJumpsZone[BUFSIZELOCL];
+    wchar_t m_pwStrafesOverall[BUFSIZELOCL];
+    wchar_t m_pwStrafesZone[BUFSIZELOCL];
     wchar_t m_pwRunSavedLabel[BUFSIZELOCL];
     wchar_t m_pwRunNotSavedLabel[BUFSIZELOCL];
     wchar_t m_pwRunUploadedLabel[BUFSIZELOCL];
     wchar_t m_pwRunNotUploadedLabel[BUFSIZELOCL];
 
-    char m_pszRunTime[BUFSIZETIME];
-    char m_pszAvgSync[BUFSIZELOCL], m_pszAvgSync2[BUFSIZELOCL];
-    int m_iTotalJumps, m_iTotalStrafes;
-    float m_flAvgSync, m_flAvgSync2;
-    float m_flStartSpeed, m_flEndSpeed, m_flAvgSpeed, m_flMaxSpeed;
-
-    char maxVelLocalized[BUFSIZELOCL], avgVelLocalized[BUFSIZELOCL], endVelLocalized[BUFSIZELOCL],
-        startVelLocalized[BUFSIZELOCL], sync2Localized[BUFSIZELOCL], syncLocalized[BUFSIZELOCL],
-        strafeLocalized[BUFSIZELOCL], jumpLocalized[BUFSIZELOCL], timeLocalized[BUFSIZELOCL];
+    char m_pszEndRunTime[BUFSIZETIME];
 
     ImagePanel *m_pPlayReplayButton;
+    Button *m_pNextZoneButton;
+    Button *m_pPrevZoneButton;
     Label *m_pPlayReplayLabel;
+    Label *m_pDetachMouseLabel;
+    Label *m_pCurrentZoneLabel;
+    Label *m_pZoneOverallTime;//Also known as "Zone Time"
+    Label *m_pZoneEnterTime;
+    Label *m_pZoneJumps;
+    Label *m_pZoneStrafes;
+    Label *m_pZoneVelEnter;
+    Label *m_pZoneVelExit;
+    Label *m_pZoneVelAvg;
+    Label *m_pZoneVelMax;
+    Label *m_pZoneSync1;
+    Label *m_pZoneSync2;
+    Label *m_pRunSaveStatus;
+    Label *m_pRunUploadStatus;
+
+    RunStats_t *m_pRunStats;
 
     bool m_bRunSaved, m_bRunUploaded;
+
+    int m_iCurrentPage, m_iVelocityType;
 };

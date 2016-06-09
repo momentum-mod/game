@@ -91,7 +91,7 @@ void C_RunComparisons::Init()
 {
     // LOCALIZE STUFF HERE
     LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
-    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Stage", stageTimeLocalized);
+    LOCALIZE_TOKEN(StageTime, "#MOM_Compare_Time_Zone", stageTimeLocalized);
     LOCALIZE_TOKEN(OverallTime, "#MOM_Compare_Time_Overall", overallTimeLocalized);
     LOCALIZE_TOKEN(Compare, "#MOM_Compare_Against", compareLocalized);
     LOCALIZE_TOKEN(VelAvg, "#MOM_Compare_Velocity_Avg", velocityAvgLocalized);
