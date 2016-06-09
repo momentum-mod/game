@@ -46,12 +46,15 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() :
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
     m_bHasJumped = false;
-    m_RunStats = CMomRunStats(g_Timer->GetZoneCount());
+	m_RunStats = nullptr;
 }
 
 CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() 
 { 
-	g_ReplaySystem->m_bIsWatchingReplay = false;
+	g_ReplaySystem->GetReplayManager()->StopPlayback();
+	
+	if (m_RunStats)
+		delete m_RunStats;
 }
 
 void CMomentumReplayGhostEntity::Precache(void)
@@ -81,7 +84,8 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetModel(GHOST_MODEL);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 
-    Q_strcpy(m_pszPlayerName.GetForModify(), g_ReplaySystem->m_loadedHeader.m_szPlayerName);
+	if (g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
+		Q_strcpy(m_pszPlayerName.GetForModify(), g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetPlayerName());
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */)
@@ -94,9 +98,16 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
     m_nStartTick = gpGlobals->curtime;
     m_bIsActive = true;
     m_bHasJumped = false;
-    m_iCurrentStep = mom_replay_reverse.GetBool() ? g_ReplaySystem->m_vecRunData.Size() - 1 : 0;
-    SetAbsOrigin(g_ReplaySystem->m_vecRunData[m_iCurrentStep].PlayerOrigin());
-    SetNextThink(gpGlobals->curtime);
+
+	if (g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
+		m_iCurrentStep = mom_replay_reverse.GetBool() ? g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount() - 1 : 0;
+	else
+		m_iCurrentStep = 0;
+
+	if (g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
+		SetAbsOrigin(g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(m_iCurrentStep)->PlayerOrigin());
+    
+	SetNextThink(gpGlobals->curtime);
 }
 
 void CMomentumReplayGhostEntity::UpdateStep()
@@ -106,14 +117,14 @@ void CMomentumReplayGhostEntity::UpdateStep()
 		--m_iCurrentStep;
 
 		if (m_iCurrentStep < 0)
-			m_iCurrentStep = g_ReplaySystem->m_vecRunData.Size() - 1;
+			m_iCurrentStep = g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount() - 1;
 
 		return;
     }
     
 	++m_iCurrentStep;
 
-	if (m_iCurrentStep >= g_ReplaySystem->m_vecRunData.Size())
+	if (m_iCurrentStep >= g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount())
 		m_iCurrentStep = 0;
 }
 void CMomentumReplayGhostEntity::Think(void)
@@ -143,7 +154,7 @@ void CMomentumReplayGhostEntity::Think(void)
 	//move the ghost
 	if (!mom_replay_loop.GetBool() &&
 		((mom_replay_reverse.GetBool() && m_iCurrentStep - 1 < 0) ||
-		(!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= g_ReplaySystem->m_vecRunData.Size())))
+		(!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount())))
 	{
 		// If we're not looping and we've reached the end of the video then end the run.
 		EndRun();
@@ -400,15 +411,15 @@ CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
 		--nextStep;
 
 		if (nextStep < 0)
-			nextStep = g_ReplaySystem->m_vecRunData.Size() - 1;
+			nextStep = g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount() - 1;
 	}
 	else
 	{
 		++nextStep;
 
-		if (nextStep >= g_ReplaySystem->m_vecRunData.Size())
+		if (nextStep >= g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount())
 			nextStep = 0;
 	}
 
-	return &g_ReplaySystem->m_vecRunData[nextStep];
+	return g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(nextStep);
 }

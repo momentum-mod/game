@@ -7,6 +7,7 @@
 
 #include "mom_replay_data.h"
 #include "mom_player_shared.h"
+#include "mom_replay_manager.h"
 
 #define RECORDING_PATH "recordings"
 #define END_RECORDING_PAUSE 1.0
@@ -15,55 +16,51 @@ class CMomentumReplayGhostEntity;
 
 class CMomentumReplaySystem : CAutoGameSystemPerFrame
 {
-  public:
-    CMomentumReplaySystem(const char *pName)
-        : CAutoGameSystemPerFrame(pName), m_bIsWatchingReplay(false), m_bIsRecording(false), m_bShouldStopRec(false),
-          m_nCurrentTick(0), m_fRecEndTime(0), m_player(nullptr), m_fhFileHandle(nullptr), m_buf()
+public:
+    CMomentumReplaySystem(const char *pName) : 
+		CAutoGameSystemPerFrame(pName),
+		m_bShouldStopRec(false),
+		m_nCurrentTick(0), 
+		m_fRecEndTime(0), 
+		m_player(nullptr)
     {
+		m_pReplayManager = new CMomReplayManager();
     }
 
+	virtual ~CMomentumReplaySystem() override
+	{
+		delete m_pReplayManager;
+	}
+
+public:
     // inherited member from CAutoGameSystemPerFrame
     void FrameUpdatePostEntityThink() override
     {
-        if (m_bIsRecording)
-        {
-            UpdateRecordingParams(&m_buf);
-        }
+        if (m_pReplayManager->Recording())
+            UpdateRecordingParams();
     }
 
     void LevelShutdownPostEntity() override
     {
         //Stop a recording if there is one while the level shuts down
-        if (m_bIsRecording)
+        if (m_pReplayManager->Recording())
             StopRecording(nullptr, true, false);
     }
 
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
-    void WriteRecordingToFile(CUtlBuffer *buf);
-    //replay_header_t CreateHeader();
-    void CreateHeader(CReplayHeader &head);
-    void CreateStats(CMomRunStats &stats);
-
-    CReplayFrame *ReadSingleFrame(FileHandle_t file, const char *filename);
-	CReplayHeader *ReadHeader(FileHandle_t file, const char *filename);
 
     void StartReplay(bool firstperson = false);
     void EndReplay();
-    bool LoadRun(const char *fileName);
-    CUtlVector<CReplayFrame> m_vecRunData;
 
-    //MOM_TODO: Handle the pPlayer pointer passed here or get rid of it
-    bool IsRecording(CBasePlayer *pPlayer) const
-    { return m_bIsRecording; }
+	inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
 
-	CReplayHeader m_loadedHeader;
-    bool m_bIsWatchingReplay;
+private:
+    void UpdateRecordingParams(); // called every game frame after entities think and update
+	void SetReplayInfo();
+	void SetRunStats();
 
-  private:
-    void UpdateRecordingParams(CUtlBuffer *); // called every game frame after entities think and update
-
-    bool m_bIsRecording;
+private:
     bool m_bShouldStopRec;
     int m_nCurrentTick;
     float m_fRecEndTime;
@@ -71,12 +68,7 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
     CMomentumPlayer *m_player;
     CMomentumReplayGhostEntity *m_CurrentReplayGhost;//MOM_TODO: Update this to be a CUtlVector so multiple ghosts can be kept track of
 
-    CReplayFrame m_currentFrame;
-    CReplayHeader m_replayHeader;
-    CMomRunStats m_replayStats;
-
-    FileHandle_t m_fhFileHandle;
-    CUtlBuffer m_buf;
+	CMomReplayManager* m_pReplayManager;
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;

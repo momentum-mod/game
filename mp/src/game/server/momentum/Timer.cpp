@@ -269,7 +269,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
     }
 
     //stop replay recording
-    if (g_ReplaySystem->IsRecording(pPlayer))
+	// TODO (OrfeasZ): Do we need to pass a player here?
+    if (g_ReplaySystem->GetReplayManager()->Recording())
         g_ReplaySystem->StopRecording(pPlayer, !endTrigger, endTrigger);
 
     SetRunning(false);

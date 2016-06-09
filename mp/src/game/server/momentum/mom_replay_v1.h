@@ -15,7 +15,7 @@ public:
 	virtual uint8 GetVersion() override { return 1; }
 	virtual CMomRunStats* GetRunStats() override;
 	virtual int32 GetFrameCount() override;
-	virtual CReplayFrame GetFrame(int32 index) override;
+	virtual CReplayFrame* GetFrame(int32 index) override;
 	virtual void AddFrame(const CReplayFrame& frame) override;
 	virtual bool SetFrame(int32 index, const CReplayFrame& frame) override;
 	virtual CMomRunStats* CreateRunStats(uint8 stages) override;

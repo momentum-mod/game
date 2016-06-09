@@ -12,10 +12,11 @@
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     m_player = ToCMOMPlayer(pPlayer);
+
     // don't record if we're watching a preexisting replay or in practice mode
     if (!m_player->IsWatchingReplay() && !m_player->m_bHasPracticeMode)
     {
-        m_bIsRecording = true;
+		m_pReplayManager->StartRecording();
         Log("Recording began!\n");
         m_nCurrentTick = 1; // recoring begins at 1 ;)
     }
@@ -25,191 +26,92 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 {
     if (throwaway)
     {
-        m_bIsRecording = false;
-        m_buf.Purge();
+		m_pReplayManager->StopRecording();
         return;
     }
+
     if (delay)
     {
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime;
+		return;
     }
-    else
-    {
-        m_bIsRecording = false;
-        m_bShouldStopRec = false;
-        CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
-        char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
-        mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime, 3, true);
-        Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec",
-                   (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
-        V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
-                          MAX_PATH); // V_ComposeFileName calls all relevent filename functions for us! THANKS GABEN
 
-        V_FixSlashes(RECORDING_PATH);
-        filesystem->CreateDirHierarchy(RECORDING_PATH,
-                                       "MOD"); // we have to create the directory here just in case it doesnt exist yet
+	char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
 
-        m_fhFileHandle = filesystem->Open(newRecordingPath, "w+b", "MOD");
+    m_bShouldStopRec = false;
+    CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
+    mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime, 3, true);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec",
+                (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
+    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
+                        MAX_PATH); // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
 
-        WriteRecordingToFile(&m_buf);
+    V_FixSlashes(RECORDING_PATH);
 
-        filesystem->Close(m_fhFileHandle);
-        Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
-        LoadRun(newRecordingName); // load the last run that we did in case we want to watch it
-    }
+	// We have to create the directory here just in case it doesn't exist yet
+    filesystem->CreateDirHierarchy(RECORDING_PATH,
+                                    "MOD");
+
+	// Store the replay in a file and stop recording.
+	SetReplayInfo();
+	SetRunStats();
+	m_pReplayManager->StoreReplay(newRecordingPath);
+	m_pReplayManager->StopRecording();
+
+    Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
+
+	// Load the last run that we did in case we want to watch it
+    // TODO (OrfeasZ): Does this need to be re-enabled?
+	//LoadRun(newRecordingName);
 }
 
-void CMomentumReplaySystem::UpdateRecordingParams(CUtlBuffer *buf)
+void CMomentumReplaySystem::UpdateRecordingParams()
 {
-    m_nCurrentTick++; // increment recording tick
+    ++m_nCurrentTick; // increment recording tick
 
-	m_currentFrame = CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons);
+	if (m_pReplayManager->Recording())
+		m_pReplayManager->GetCurrentReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons));
 
-    if (m_bShouldStopRec)
-        if (gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
-            StopRecording(UTIL_GetLocalPlayer(), false, false);
-
-    Assert(buf && buf->IsValid());
-    buf->Put(&m_currentFrame, sizeof(CReplayFrame)); // stick all the frame info into the buffer
+    if (m_bShouldStopRec && gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
+        StopRecording(UTIL_GetLocalPlayer(), false, false);
 }
 
-void CMomentumReplaySystem::CreateHeader(CReplayHeader &header)
+void CMomentumReplaySystem::SetReplayInfo()
 {
-    //replay_header_t header;
-	// TODO (OrfeasZ)
-   /* header.numZones = g_Timer->GetZoneCount();
-    Q_strcpy(header.demofilestamp, REPLAY_HEADER_ID);
-    header.demoProtoVersion = REPLAY_PROTOCOL_VERSION;
-    Q_strcpy(header.mapName, gpGlobals->mapname.ToCStr());
-    Q_strcpy(header.playerName, m_player->GetPlayerName());
+	if (!m_pReplayManager->Recording())
+		return;
 
-    header.steamID64 = steamapicontext->SteamUser() ? steamapicontext->SteamUser()->GetSteamID().ConvertToUint64() : 0;
-
-    header.interval_per_tick = gpGlobals->interval_per_tick;
-    header.runTime = g_Timer->GetLastRunTime();
-    time(&header.unixEpocDate);
-    header.runFlags = m_player->m_RunData.m_iRunFlags;*/
-    //return header;
+	auto replay = m_pReplayManager->GetCurrentReplay();
+    
+	replay->SetMapName(gpGlobals->mapname.ToCStr());
+	replay->SetPlayerName(m_player->GetPlayerName());
+	replay->SetPlayerSteamID(steamapicontext->SteamUser() ? steamapicontext->SteamUser()->GetSteamID().ConvertToUint64() : 0);
+	replay->SetTickInterval(gpGlobals->interval_per_tick);
+	replay->SetRunTime(g_Timer->GetLastRunTime());
+	replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
 }
 
-void CMomentumReplaySystem::CreateStats(CMomRunStats &runStats)
+void CMomentumReplaySystem::SetRunStats()
 {
-    //RunStats_t runStats = RunStats_t(g_Timer->GetZoneCount());
+	if (!m_pReplayManager->Recording())
+		return;
 
-	runStats = m_player->m_PlayerRunStats;
-
-    //return runStats;
-}
-
-void CMomentumReplaySystem::WriteRecordingToFile(CUtlBuffer *buf)
-{
-    if (m_fhFileHandle)
-    {
-        // write header: Mapname, Playername, steam64, interval per tick
-		// TODO (OrfeasZ)
-        /*replay_header_t littleEndianHeader = replay_header_t();
-        CreateHeader(littleEndianHeader);
-        ByteSwap_replay_header_t(littleEndianHeader); // byteswap again
-        filesystem->Seek(m_fhFileHandle, 0, FILESYSTEM_SEEK_HEAD);
-        HandleReplayHeader(littleEndianHeader, m_fhFileHandle, false);
-        // filesystem->Write(&littleEndianHeader, sizeof(replay_header_t), m_fhFileHandle);
-        DevLog("replay header size: %i\n", sizeof(littleEndianHeader));
-
-        MomRunStats littleEndianStats = MomRunStats(littleEndianHeader.numZones);
-        CreateStats(littleEndianStats);
-        ByteSwap_replay_stats_t(littleEndianStats);
-        littleEndianStats.HandleFile(m_fhFileHandle, false);
-        DevLog("replay stats size: %i\n", sizeof(littleEndianStats));
-
-        Assert(buf && buf->IsValid());
-        // write write from the CUtlBuffer to our filehandle:
-        filesystem->Write(buf->Base(), buf->TellPut(), m_fhFileHandle);
-        DevLog("replay frame data size: %i\n", buf->Size());
-        buf->Purge();*/
-    }
-}
-
-// read a single frame (or tick) of a recording
-CReplayFrame *CMomentumReplaySystem::ReadSingleFrame(FileHandle_t file, const char *filename)
-{
-	// TODO (OrfeasZ)
-    /*Assert(file != FILESYSTEM_INVALID_HANDLE);
-    filesystem->Read(&m_currentFrame, sizeof(replay_frame_t), file);
-	*/
-
-    return &m_currentFrame;
-}
-
-CReplayHeader *CMomentumReplaySystem::ReadHeader(FileHandle_t file, const char *filename)
-{
-	// TODO (OrfeasZ)
-    /*Assert(file != FILESYSTEM_INVALID_HANDLE);
-    filesystem->Seek(file, 0, FILESYSTEM_SEEK_HEAD);
-    //Create and read into replay header
-    m_replayHeader = replay_header_t();
-    HandleReplayHeader(m_replayHeader, file, true);
-    ByteSwap_replay_header_t(m_replayHeader);
-
-    // Create and read into the replayStats
-    m_replayStats = MomRunStats(m_replayHeader.numZones);
-    m_replayStats.HandleFile(file, true);
-    ByteSwap_replay_stats_t(m_replayStats);
-
-    // DEMO_HEADER_ID is __NOT__ the same as the stamp from the header we read from file
-    if (Q_strcmp(m_replayHeader.demofilestamp, REPLAY_HEADER_ID))
-    { 
-        ConMsg("%s has invalid replay header ID!\n", filename);
-        return nullptr;
-    }
-    if (m_replayHeader.demoProtoVersion != REPLAY_PROTOCOL_VERSION)
-    {
-        ConMsg("ERROR: replay file protocol %i outdated, engine version is %i \n", m_replayHeader.demoProtoVersion,
-               REPLAY_PROTOCOL_VERSION);
-        return nullptr;
-    }*/
-    return &m_replayHeader;
-}
-
-bool CMomentumReplaySystem::LoadRun(const char *filename)
-{
-	// TODO (OrfeasZ)
-    /*m_vecRunData.Purge();
-    char recordingName[MAX_PATH];
-    V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
-    m_fhFileHandle = filesystem->Open(recordingName, "r+b", "MOD");
-
-    if (m_fhFileHandle != nullptr && filename != nullptr)
-    {
-        replay_header_t *header = ReadHeader(m_fhFileHandle, filename);
-        if (header == nullptr)
-        {
-            return false;
-        }
-
-        m_loadedHeader = *header;
-        while (!filesystem->EndOfFile(m_fhFileHandle))
-        {
-            replay_frame_t *frame = ReadSingleFrame(m_fhFileHandle, filename);
-            m_vecRunData.AddToTail(*frame);
-        }
-        filesystem->Close(m_fhFileHandle);
-        return true;
-    }*/
-
-    return false;
+	auto stats = m_pReplayManager->GetCurrentReplay()->CreateRunStats(m_player->m_PlayerRunStats.GetTotalZones());
+	*stats = m_player->m_PlayerRunStats;
 }
 
 void CMomentumReplaySystem::StartReplay(bool firstperson)
 {
     m_CurrentReplayGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
-    if (m_CurrentReplayGhost != nullptr)
+
+    if (m_CurrentReplayGhost != nullptr && m_pReplayManager->GetCurrentReplay())
     {
-		// TODO (OrfeasZ)
-        m_CurrentReplayGhost->SetRunStats(m_replayStats);
-        //m_CurrentReplayGhost->SetHeader(m_replayHeader);
+		m_CurrentReplayGhost->SetRunStats(m_pReplayManager->GetCurrentReplay()->GetRunStats());
+
         if (firstperson)
             g_Timer->Stop(false); // stop the timer just in case we started a replay while it was running...
+
         m_CurrentReplayGhost->StartRun(firstperson);
     }
 }
@@ -226,11 +128,11 @@ class CMOMReplayCommands
   public:
     static void StartReplay(const CCommand &args, bool firstperson)
     {
-		// TODO (OrfeasZ)
-        /*if (args.ArgC() > 0) // we passed any argument at all
+        if (args.ArgC() > 0) // we passed any argument at all
         {
             char filename[MAX_PATH];
-            if (Q_strstr(args.ArgS(), ".momrec"))
+            
+			if (Q_strstr(args.ArgS(), ".momrec"))
             {
                 Q_snprintf(filename, MAX_PATH, "%s", args.ArgS());
             }
@@ -238,19 +140,20 @@ class CMOMReplayCommands
             {
                 Q_snprintf(filename, MAX_PATH, "%s.momrec", args.ArgS());
             }
-            if (g_ReplaySystem->LoadRun(filename))
+
+            if (g_ReplaySystem->GetReplayManager()->LoadReplay(filename))
             {
-                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->m_loadedHeader.mapName))
+                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetMapName()))
                 {
                     g_ReplaySystem->StartReplay(firstperson);
                 }
                 else
                 {
                     Warning("Error: Tried to start replay on incorrect map! Please load map %s",
-                            g_ReplaySystem->m_loadedHeader.mapName);
+						g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetMapName());
                 }
             }
-        }*/
+        }
     }
     static void PlayReplayGhost(const CCommand &args) { StartReplay(args, false); }
     static void PlayReplayFirstPerson(const CCommand &args) { StartReplay(args, true); }

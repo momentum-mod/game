@@ -57,8 +57,8 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 	void UpdateStats(Vector ghostVel); // for hud display..
 
 	inline const char* GetGhostModel() const { return m_pszModel; }
-	inline void SetRunStats(CMomRunStats &stats) { m_RunStats = stats; }
-    inline CMomRunStats* GetRunStats() { return &m_RunStats; }
+	inline void SetRunStats(CMomRunStats* stats) { m_RunStats = stats; }
+    inline CMomRunStats* GetRunStats() { return m_RunStats; }
 
     void AddSpectator(CMomentumPlayer* player)
     {
@@ -74,7 +74,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 	inline void SetTickRate(float rate) { m_flTickRate = rate; }
 	inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
 
-	inline CReplayFrame* GetCurrentStep() { return &g_ReplaySystem->m_vecRunData[m_iCurrentStep]; }
+	inline CReplayFrame* GetCurrentStep() { return g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(m_iCurrentStep); }
 	CReplayFrame* GetNextStep();
 
     bool m_bIsActive;
@@ -96,7 +96,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
   private:
     char m_pszModel[256], m_pszMapName[256];
 	int m_iCurrentStep;
-    CMomRunStats m_RunStats;
+    CMomRunStats* m_RunStats;
 
     CUtlVector<CMomentumPlayer *> m_rgSpectators;
 

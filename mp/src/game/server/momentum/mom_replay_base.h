@@ -36,7 +36,7 @@ public:
 	virtual uint8 GetVersion() = 0;
 	virtual CMomRunStats* GetRunStats() = 0;
 	virtual int32 GetFrameCount() = 0;
-	virtual CReplayFrame GetFrame(int32 index) = 0;
+	virtual CReplayFrame* GetFrame(int32 index) = 0;
 	virtual void AddFrame(const CReplayFrame& frame) = 0;
 	virtual bool SetFrame(int32 index, const CReplayFrame& frame) = 0;
 	virtual CMomRunStats* CreateRunStats(uint8 stages) = 0;

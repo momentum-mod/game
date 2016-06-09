@@ -33,12 +33,12 @@ int32 CMomReplayV1::GetFrameCount()
 	return m_rgFrames.Size();
 }
 
-CReplayFrame CMomReplayV1::GetFrame(int32 index)
+CReplayFrame* CMomReplayV1::GetFrame(int32 index)
 {
 	if (index >= m_rgFrames.Size() || index < 0)
-		return CReplayFrame();
+		return nullptr;
 
-	return m_rgFrames[index];
+	return &m_rgFrames[index];
 }
 
 void CMomReplayV1::AddFrame(const CReplayFrame& frame)

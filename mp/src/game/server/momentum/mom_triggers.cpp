@@ -235,10 +235,14 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             g_Timer->DispatchResetMessage();
             //lower the player's speed if they try to jump back into the start zone
         }
+
         //begin recording replay
-        if (!g_ReplaySystem->IsRecording(pPlayer))
-            g_ReplaySystem->BeginRecording(pPlayer);
-        else
+		// TODO (OrfeasZ): Do we need to pass a player here?
+		if (!g_ReplaySystem->GetReplayManager()->Recording())
+		{
+			g_ReplaySystem->BeginRecording(pPlayer);
+		}
+		else
         {
             g_ReplaySystem->StopRecording(pPlayer, true, false);
             g_ReplaySystem->BeginRecording(pPlayer);
