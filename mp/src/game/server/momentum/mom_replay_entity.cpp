@@ -52,9 +52,6 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() :
 CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() 
 { 
 	g_ReplaySystem->GetReplayManager()->StopPlayback();
-	
-	if (m_RunStats)
-		delete m_RunStats;
 }
 
 void CMomentumReplayGhostEntity::Precache(void)

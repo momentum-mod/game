@@ -30,12 +30,12 @@ CMomRunStats* CMomReplayV1::GetRunStats()
 
 int32 CMomReplayV1::GetFrameCount()
 {
-	return m_rgFrames.Size();
+	return m_rgFrames.Count();
 }
 
 CReplayFrame* CMomReplayV1::GetFrame(int32 index)
 {
-	if (index >= m_rgFrames.Size() || index < 0)
+	if (index >= m_rgFrames.Count() || index < 0)
 		return nullptr;
 
 	return &m_rgFrames[index];
@@ -48,7 +48,7 @@ void CMomReplayV1::AddFrame(const CReplayFrame& frame)
 
 bool CMomReplayV1::SetFrame(int32 index, const CReplayFrame& frame)
 {
-	if (index >= m_rgFrames.Size() || index < 0)
+	if (index >= m_rgFrames.Count() || index < 0)
 		return false;
 
 	m_rgFrames[index] = frame;
@@ -66,6 +66,9 @@ CMomRunStats* CMomReplayV1::CreateRunStats(uint8 stages)
 
 void CMomReplayV1::Serialize(CBinaryWriter* writer)
 {
+	// Write the header.
+	m_rhHeader.Serialize(writer);
+
 	// Write the run stats (if there are any).
 	writer->WriteBool(m_pRunStats != nullptr);
 
@@ -73,9 +76,11 @@ void CMomReplayV1::Serialize(CBinaryWriter* writer)
 		m_pRunStats->Serialize(writer);
 
 	// Write the frames.
-	writer->WriteInt32(m_rgFrames.Size());
+	writer->WriteInt32(m_rgFrames.Count());
 
-	for (int32 i = 0; i < m_rgFrames.Size(); ++i)
+	Log("Writing %d frames to replay...\n", m_rgFrames.Count());
+
+	for (int32 i = 0; i < m_rgFrames.Count(); ++i)
 		m_rgFrames[i].Serialize(writer);
 }
 
@@ -92,7 +97,7 @@ void CMomReplayV1::Deserialize(CBinaryReader* reader)
 	if (frameCount <= 0)
 		return;
 
-	m_rgFrames.EnsureCapacity(frameCount);
+	Log("There are %d frames in this replay.\n", frameCount);
 
 	// And read all the frames.
 	for (int32 i = 0; i < frameCount; ++i)

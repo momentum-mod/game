@@ -67,6 +67,7 @@ $Project "Server (Momentum)"
                 $File   "momentum\mom_replay_entity.cpp"
                 $File   "momentum\mom_replay_entity.h"
                 $File   "momentum\mom_replay_data.h"
+                $File   "momentum\mom_replay_manager.cpp"
                 $File   "momentum\mom_replay_manager.h"
                 $File   "momentum\mom_replay_base.h"
 

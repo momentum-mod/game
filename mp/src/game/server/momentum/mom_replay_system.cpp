@@ -56,7 +56,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 	// Store the replay in a file and stop recording.
 	SetReplayInfo();
 	SetRunStats();
-	m_pReplayManager->StoreReplay(newRecordingPath);
+	m_pReplayManager->StoreReplay(newRecordingPath, "MOD");
 	m_pReplayManager->StopRecording();
 
     Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
@@ -141,7 +141,10 @@ class CMOMReplayCommands
                 Q_snprintf(filename, MAX_PATH, "%s.momrec", args.ArgS());
             }
 
-            if (g_ReplaySystem->GetReplayManager()->LoadReplay(filename))
+			char recordingName[MAX_PATH];
+			V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
+
+            if (g_ReplaySystem->GetReplayManager()->LoadReplay(recordingName, "MOD"))
             {
                 if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetMapName()))
                 {

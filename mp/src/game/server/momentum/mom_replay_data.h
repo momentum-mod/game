@@ -4,9 +4,6 @@
 #include "util/serialization.h"
 #include "util/run_stats.h"
 
-#define REPLAY_MAGIC_LE 0x524D4F4D
-#define REPLAY_MAGIC_BE 0x4D4F4D52
-
 // A single frame of the replay.
 class CReplayFrame : 
 	public ISerializable

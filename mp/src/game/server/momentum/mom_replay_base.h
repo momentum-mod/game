@@ -13,6 +13,7 @@ protected:
 	{
 	}
 
+public:
 	virtual ~CMomReplayBase() {}
 
 public:
