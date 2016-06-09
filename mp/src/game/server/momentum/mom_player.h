@@ -7,10 +7,11 @@
 #include "cbase.h"
 #include "mom_blockfix.h"
 #include "mom_entity_run_data.h"
-#include "mom_replay_entity.h"
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
 #include "util/run_stats.h"
+
+class CMomentumReplayGhostEntity;
 
 class CMomentumPlayer : public CBasePlayer
 {
@@ -111,16 +112,13 @@ class CMomentumPlayer : public CBasePlayer
     //Replay stuff
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
 
-    CMomentumReplayGhostEntity *GetReplayEnt() const
-    {
-        return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
-    }
+	CMomentumReplayGhostEntity *GetReplayEnt() const;
 
     bool IsValidObserverTarget(CBaseEntity *target) override;
     bool SetObserverTarget(CBaseEntity *target) override;
 
     // Run Stats
-    RunStats_t m_PlayerRunStats;
+    CMomRunStats m_PlayerRunStats;
 
     // Used by momentum triggers
     Vector GetPrevOrigin(void);

@@ -90,7 +90,7 @@ private:
     Label *m_pRunSaveStatus;
     Label *m_pRunUploadStatus;
 
-    RunStats_t *m_pRunStats;
+    CMomRunStats* m_pRunStats;
 
     bool m_bRunSaved, m_bRunUploaded;
 

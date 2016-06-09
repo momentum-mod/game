@@ -208,7 +208,7 @@ void CHudMapFinishedDialog::Paint()
     {
         //"Zone Time:" shows up when m_iCurrentPage > 0
         char ansiTime[BUFSIZETIME];
-        mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->m_flZoneTime[m_iCurrentPage] : 0.0f, ansiTime);
+        mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->GetZoneTime(m_iCurrentPage) : 0.0f, ansiTime);
         ANSI_TO_UNICODE(ansiTime, unicodeTime);
         g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwZoneTime, 1, unicodeTime);
         m_pZoneOverallTime->SetText(currentZoneOverall);//"Zone time" (time for that zone)
@@ -220,7 +220,7 @@ void CHudMapFinishedDialog::Paint()
             m_pZoneEnterTime->SetEnabled(true);
             m_pZoneEnterTime->SetVisible(true);
             wchar_t zoneEnterTime[BUFSIZELOCL];
-            mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->m_flZoneEnterTime[m_iCurrentPage] : 0.0f, ansiTime);
+            mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->GetZoneEnterTime(m_iCurrentPage) : 0.0f, ansiTime);
             ANSI_TO_UNICODE(ansiTime, unicodeTime);
             g_pVGuiLocalize->ConstructString(zoneEnterTime, sizeof(zoneEnterTime), m_pwZoneEnterTime, 1, unicodeTime);
             m_pZoneEnterTime->SetText(zoneEnterTime);//"Zone enter time:" (time entered that zone)
@@ -238,7 +238,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- JUMP COUNT ---
     wchar_t jumpCount[BUFSIZELOCL];
     
-    MAKE_UNI_INT(jumps, 10, m_pRunStats ? m_pRunStats->m_iZoneJumps[m_iCurrentPage] : 0);
+    MAKE_UNI_INT(jumps, 10, m_pRunStats ? m_pRunStats->GetZoneJumps(m_iCurrentPage) : 0);
 
     g_pVGuiLocalize->ConstructString(jumpCount, sizeof(jumpCount), 
         m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone, 1, jumps);
@@ -249,7 +249,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- STRAFE COUNT ---
     wchar_t strafeCount[BUFSIZELOCL];
 
-    MAKE_UNI_INT(strafes, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_iZoneStrafes[m_iCurrentPage] : 0);
+    MAKE_UNI_INT(strafes, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneStrafes(m_iCurrentPage) : 0);
 
     g_pVGuiLocalize->ConstructString(strafeCount, sizeof(strafeCount),
         m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone, 1, strafes);
@@ -260,7 +260,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- SYNC1 ---
     wchar_t sync1Avg[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(sync1, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneStrafeSyncAvg[m_iCurrentPage] : 0.0f);
+    MAKE_UNI_FLOAT(sync1, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage) : 0.0f);
 
     g_pVGuiLocalize->ConstructString(sync1Avg, sizeof(sync1Avg), m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone, 1, sync1);
 
@@ -270,7 +270,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- SYNC2---
     wchar_t sync2Avg[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(sync2, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneStrafeSync2Avg[m_iCurrentPage] : 0.0f);
+    MAKE_UNI_FLOAT(sync2, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f);
 
     g_pVGuiLocalize->ConstructString(sync2Avg, sizeof(sync2Avg), m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone, 1, sync2);
 
@@ -280,7 +280,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- STARTING VELOCITY---
     wchar_t enterVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(enterVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneEnterSpeed[m_iCurrentPage][m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(enterVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage)[m_iVelocityType] : 0.0f);
 
     g_pVGuiLocalize->ConstructString(enterVelUni, sizeof(enterVelUni), m_pwVelZoneEnter, 1, enterVel);
 
@@ -290,7 +290,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- ENDING VELOCITY---
     wchar_t exitVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(exitVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneExitSpeed[m_iCurrentPage][m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(exitVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage)[m_iVelocityType] : 0.0f);
 
     g_pVGuiLocalize->ConstructString(exitVelUni, sizeof(exitVelUni), m_pwVelZoneExit, 1, exitVel);
 
@@ -300,7 +300,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- AVG VELOCITY---
     wchar_t avgVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(avgVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneVelocityAvg[m_iCurrentPage][m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(avgVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage)[m_iVelocityType] : 0.0f);
 
     g_pVGuiLocalize->ConstructString(avgVelUni, sizeof(avgVelUni), m_pwVelAvg, 1, avgVel);
 
@@ -310,7 +310,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- MAX VELOCITY---
     wchar_t maxVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(maxVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->m_flZoneVelocityMax[m_iCurrentPage][m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(maxVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage)[m_iVelocityType] : 0.0f);
 
     g_pVGuiLocalize->ConstructString(maxVelUni, sizeof(maxVelUni), m_pwVelMax, 1, maxVel);
 

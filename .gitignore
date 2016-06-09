@@ -24,6 +24,8 @@ ipch
 *.vcxproj.filters
 *.pdb
 *.lib
+*.VC.db
+*.VC.VC.opendb
 
 # OSX/Linux build products
 *.mak
@@ -79,3 +81,5 @@ voice_ban.dt
 *.vmx
 *.lin
 *.vdf
+*.pch.ib_tag
+*.ib_pdb_index
