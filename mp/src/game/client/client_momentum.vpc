@@ -27,6 +27,13 @@ $Project "Client (Momentum)"
 
 		$Folder "Momentum"
 		{
+			$Folder "NUI"
+			{
+				$File "momentum\nui\mom_nui.cpp"
+				$File "momentum\nui\mom_nui.h"
+				$File "momentum\nui\mom_nui_util_win32.h"
+			}
+			
 		    $Folder "UI"
 			{
                 $Folder "MapSelection"
