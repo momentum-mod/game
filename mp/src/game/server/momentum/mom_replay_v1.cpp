@@ -78,8 +78,6 @@ void CMomReplayV1::Serialize(CBinaryWriter* writer)
     // Write the frames.
     writer->WriteInt32(m_rgFrames.Count());
 
-    Log("Writing %d frames to replay...\n", m_rgFrames.Count());
-
     for (int32 i = 0; i < m_rgFrames.Count(); ++i)
         m_rgFrames[i].Serialize(writer);
 }
@@ -96,8 +94,6 @@ void CMomReplayV1::Deserialize(CBinaryReader* reader)
 
     if (frameCount <= 0)
         return;
-
-    Log("There are %d frames in this replay.\n", frameCount);
 
     // And read all the frames.
     for (int32 i = 0; i < frameCount; ++i)

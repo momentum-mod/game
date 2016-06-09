@@ -81,8 +81,8 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetModel(GHOST_MODEL);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 
-    if (g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
-        Q_strcpy(m_pszPlayerName.GetForModify(), g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetPlayerName());
+    if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+        Q_strcpy(m_pszPlayerName.GetForModify(), g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetPlayerName());
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */)
@@ -96,20 +96,20 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
     m_bIsActive = true;
     m_bHasJumped = false;
 
-    if (g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
-        m_iCurrentStep = mom_replay_reverse.GetBool() ? g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount() - 1 : 0;
+    if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+        m_iCurrentStep = mom_replay_reverse.GetBool() ? g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount() - 1 : 0;
     else
         m_iCurrentStep = 0;
 
-    if (g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
-        SetAbsOrigin(g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(m_iCurrentStep)->PlayerOrigin());
+    if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+        SetAbsOrigin(g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrame(m_iCurrentStep)->PlayerOrigin());
     
     SetNextThink(gpGlobals->curtime);
 }
 
 void CMomentumReplayGhostEntity::UpdateStep()
 {
-    if (!g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
+    if (!g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
         return;
 
     if (mom_replay_reverse.GetBool())
@@ -117,19 +117,19 @@ void CMomentumReplayGhostEntity::UpdateStep()
         --m_iCurrentStep;
 
         if (m_iCurrentStep < 0)
-            m_iCurrentStep = g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount() - 1;
+            m_iCurrentStep = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount() - 1;
 
         return;
     }
     
     ++m_iCurrentStep;
 
-    if (m_iCurrentStep >= g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount())
+    if (m_iCurrentStep >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())
         m_iCurrentStep = 0;
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
-    if (!g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
+    if (!g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
     {
         BaseClass::Think();
         return;
@@ -160,7 +160,7 @@ void CMomentumReplayGhostEntity::Think(void)
     //move the ghost
     if (!mom_replay_loop.GetBool() &&
         ((mom_replay_reverse.GetBool() && m_iCurrentStep - 1 < 0) ||
-        (!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount())))
+        (!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())))
     {
         // If we're not looping and we've reached the end of the video then end the run.
         EndRun();
@@ -419,15 +419,15 @@ CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
         --nextStep;
 
         if (nextStep < 0)
-            nextStep = g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount() - 1;
+            nextStep = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount() - 1;
     }
     else
     {
         ++nextStep;
 
-        if (nextStep >= g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrameCount())
+        if (nextStep >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())
             nextStep = 0;
     }
 
-    return g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(nextStep);
+    return g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrame(nextStep);
 }

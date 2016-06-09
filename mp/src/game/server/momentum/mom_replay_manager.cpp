@@ -24,7 +24,8 @@ bool CMomReplayManager::RegisterCreators()
 //////////////////////////////////////////////////////////////////////////
 
 CMomReplayManager::CMomReplayManager() :
-    m_pCurrentReplay(nullptr),
+    m_pRecordingReplay(nullptr),
+    m_pPlaybackReplay(nullptr),
     m_bRecording(false),
     m_bPlayingBack(false),
     m_ucCurrentVersion(0)
@@ -36,24 +37,24 @@ CMomReplayManager::CMomReplayManager() :
 
 CMomReplayManager::~CMomReplayManager()
 {
-    if (m_pCurrentReplay)
-        delete m_pCurrentReplay;
+    if (m_pRecordingReplay)
+        delete m_pRecordingReplay;
+
+    if (m_pPlaybackReplay)
+        delete m_pPlaybackReplay;
 }
 
 CMomReplayBase* CMomReplayManager::StartRecording()
 {
-    if (PlayingBack())
-        return nullptr;
-
     if (Recording())
-        return m_pCurrentReplay;
+        return m_pRecordingReplay;
 
     Log("Started recording a replay...\n");
 
     m_bRecording = true;
 
-    m_pCurrentReplay = m_mapCreators.Element(m_mapCreators.Find(m_ucCurrentVersion))->CreateReplay();
-    return m_pCurrentReplay;
+    m_pRecordingReplay = m_mapCreators.Element(m_mapCreators.Find(m_ucCurrentVersion))->CreateReplay();
+    return m_pRecordingReplay;
 }
 
 void CMomReplayManager::StopRecording()
@@ -65,17 +66,14 @@ void CMomReplayManager::StopRecording()
 
     m_bRecording = false;
 
-    delete m_pCurrentReplay;
-    m_pCurrentReplay = nullptr;
+    delete m_pRecordingReplay;
+    m_pRecordingReplay = nullptr;
 }
 
 CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* pathID)
 {
-    if (Recording())
-        return nullptr;
-
     if (PlayingBack())
-        return m_pCurrentReplay;
+        return m_pPlaybackReplay;
 
     Log("Loading a replay from '%s'...\n", path);
 
@@ -109,18 +107,18 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
 
     // TODO (OrfeasZ): Verify that replay parsing was successful.
     m_bPlayingBack = true;
-    m_pCurrentReplay = m_mapCreators.Element(m_mapCreators.Find(version))->LoadReplay(&reader);
+    m_pPlaybackReplay = m_mapCreators.Element(m_mapCreators.Find(version))->LoadReplay(&reader);
 
     filesystem->Close(file);
 
     Log("Successfully loaded replay.\n");
 
-    return m_pCurrentReplay;
+    return m_pPlaybackReplay;
 }
 
 bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
 {
-    if (!m_pCurrentReplay)
+    if (!m_pRecordingReplay)
         return false;
 
     auto file = filesystem->Open(path, "w+b", pathID);
@@ -128,13 +126,13 @@ bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
     if (!file)
         return false;
 
-    Log("Storing replay of version '%d' to '%s'...\n", m_pCurrentReplay->GetVersion(), path);
+    Log("Storing replay of version '%d' to '%s'...\n", m_pRecordingReplay->GetVersion(), path);
 
     CBinaryWriter writer(file);
 
     writer.WriteUInt32(REPLAY_MAGIC_LE);
-    writer.WriteUInt8(m_pCurrentReplay->GetVersion());
-    m_pCurrentReplay->Serialize(&writer);
+    writer.WriteUInt8(m_pRecordingReplay->GetVersion());
+    m_pRecordingReplay->Serialize(&writer);
 
     filesystem->Close(file);
 
@@ -150,6 +148,6 @@ void CMomReplayManager::StopPlayback()
 
     m_bPlayingBack = false;
 
-    delete m_pCurrentReplay;
-    m_pCurrentReplay = nullptr;
+    delete m_pPlaybackReplay;
+    m_pPlaybackReplay = nullptr;
 }

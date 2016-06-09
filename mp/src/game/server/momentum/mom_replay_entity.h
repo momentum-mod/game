@@ -74,7 +74,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
     inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
 
-    inline CReplayFrame* GetCurrentStep() { return g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(m_iCurrentStep); }
+    inline CReplayFrame* GetCurrentStep() { return g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrame(m_iCurrentStep); }
     CReplayFrame* GetNextStep();
 
     bool m_bIsActive;

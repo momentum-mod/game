@@ -20,11 +20,7 @@ private:
     {
     public:
         virtual CMomReplayBase* CreateReplay() override { return new T(); }
-        virtual CMomReplayBase* LoadReplay(CBinaryReader* reader) override
-        { 
-            Log("Creating stuff\n");
-            return new T(reader);
-        }
+        virtual CMomReplayBase* LoadReplay(CBinaryReader* reader) override { return new T(reader); }
     };
 
 public:
@@ -39,7 +35,8 @@ public:
     void StopPlayback();
 
 public:
-    inline CMomReplayBase* GetCurrentReplay() const { return m_pCurrentReplay; }
+    inline CMomReplayBase* GetRecordingReplay() const { return m_pRecordingReplay; }
+    inline CMomReplayBase* GetPlaybackReplay() const { return m_pPlaybackReplay; }
     inline bool Recording() const { return m_bRecording; }
     inline bool PlayingBack() const { return m_bPlayingBack; }
 
@@ -47,7 +44,8 @@ private:
     static bool RegisterCreators();
 
 private:
-    CMomReplayBase* m_pCurrentReplay;
+    CMomReplayBase* m_pRecordingReplay;
+    CMomReplayBase* m_pPlaybackReplay;
     bool m_bRecording;
     bool m_bPlayingBack;
     uint8 m_ucCurrentVersion;

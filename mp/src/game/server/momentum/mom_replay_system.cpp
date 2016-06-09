@@ -71,7 +71,7 @@ void CMomentumReplaySystem::UpdateRecordingParams()
     ++m_nCurrentTick; // increment recording tick
 
     if (m_pReplayManager->Recording())
-        m_pReplayManager->GetCurrentReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons));
+        m_pReplayManager->GetRecordingReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons));
 
     if (m_bShouldStopRec && gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
         StopRecording(UTIL_GetLocalPlayer(), false, false);
@@ -82,7 +82,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     if (!m_pReplayManager->Recording())
         return;
 
-    auto replay = m_pReplayManager->GetCurrentReplay();
+    auto replay = m_pReplayManager->GetRecordingReplay();
     
     replay->SetMapName(gpGlobals->mapname.ToCStr());
     replay->SetPlayerName(m_player->GetPlayerName());
@@ -97,7 +97,7 @@ void CMomentumReplaySystem::SetRunStats()
     if (!m_pReplayManager->Recording())
         return;
 
-    auto stats = m_pReplayManager->GetCurrentReplay()->CreateRunStats(m_player->m_PlayerRunStats.GetTotalZones());
+    auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_PlayerRunStats.GetTotalZones());
     *stats = m_player->m_PlayerRunStats;
 }
 
@@ -105,9 +105,9 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
 {
     m_CurrentReplayGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
 
-    if (m_CurrentReplayGhost != nullptr && m_pReplayManager->GetCurrentReplay())
+    if (m_CurrentReplayGhost != nullptr && m_pReplayManager->GetPlaybackReplay())
     {
-        m_CurrentReplayGhost->SetRunStats(m_pReplayManager->GetCurrentReplay()->GetRunStats());
+        m_CurrentReplayGhost->SetRunStats(m_pReplayManager->GetPlaybackReplay()->GetRunStats());
 
         if (firstperson)
             g_Timer->Stop(false); // stop the timer just in case we started a replay while it was running...
@@ -152,14 +152,14 @@ class CMOMReplayCommands
 
             if (g_ReplaySystem->GetReplayManager()->LoadReplay(recordingName, "MOD"))
             {
-                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetMapName()))
+                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetMapName()))
                 {
                     g_ReplaySystem->StartReplay(firstperson);
                 }
                 else
                 {
                     Warning("Error: Tried to start replay on incorrect map! Please load map %s",
-                        g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetMapName());
+                        g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetMapName());
                 }
             }
         }
