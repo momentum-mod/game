@@ -1,0 +1,20 @@
+$MacroRequired "PLATFORM"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories		"$BASE;momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src;$SRCDIR\thirdparty\cef"
+		$PreprocessorDefinitions			"$BASE"
+	}
+}
+
+$Project
+{
+	$Folder "Link Libraries"
+	{
+		$Libexternal $SRCDIR\lib\public\cef\libcef.dll [$VS2013]
+		$Libexternal $SRCDIR\lib\public\cef\libcef_dll_wrapper [$VS2013]
+	}
+}
+

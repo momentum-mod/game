@@ -83,3 +83,5 @@ voice_ban.dt
 *.vdf
 *.pch.ib_tag
 *.ib_pdb_index
+
+!mp/src/lib/public/cef/**
