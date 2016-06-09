@@ -115,12 +115,18 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
         m_CurrentReplayGhost->StartRun(firstperson);
     }
 }
+
 void CMomentumReplaySystem::EndReplay()
 {
     if (m_CurrentReplayGhost != nullptr)
-    {
         m_CurrentReplayGhost->EndRun();
-    }
+}
+
+void CMomentumReplaySystem::OnGhostEntityRemoved()
+{
+    // NOTE: Calling delete here seems to have some adverse side-effects.
+    // Are entities deleted by the engine itself when "Remove()" is called?
+    m_CurrentReplayGhost = nullptr;
 }
 
 class CMOMReplayCommands

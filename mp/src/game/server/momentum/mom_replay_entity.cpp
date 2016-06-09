@@ -109,6 +109,9 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
 
 void CMomentumReplayGhostEntity::UpdateStep()
 {
+    if (!g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
+        return;
+
     if (mom_replay_reverse.GetBool())
     {
         --m_iCurrentStep;
@@ -126,6 +129,12 @@ void CMomentumReplayGhostEntity::UpdateStep()
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
+    if (!g_ReplaySystem->GetReplayManager()->GetCurrentReplay())
+    {
+        BaseClass::Think();
+        return;
+    }
+
     // update color, bodygroup, and other params if they change
     if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
     {
@@ -381,7 +390,6 @@ void CMomentumReplayGhostEntity::EndRun()
     
     StopTimer();
     SetNextThink(-1);
-    Remove();
     m_bIsActive = false;
 
     FOR_EACH_VEC(m_rgSpectators, i)
@@ -397,6 +405,9 @@ void CMomentumReplayGhostEntity::EndRun()
     }
 
     m_rgSpectators.RemoveAll();
+    Remove();
+
+    g_ReplaySystem->OnGhostEntityRemoved();
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()

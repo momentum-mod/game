@@ -52,6 +52,7 @@ public:
 
     void StartReplay(bool firstperson = false);
     void EndReplay();
+    void OnGhostEntityRemoved();
 
     inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
 
