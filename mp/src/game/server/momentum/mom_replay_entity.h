@@ -40,7 +40,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
   public:
     CMomentumReplayGhostEntity();
-	~CMomentumReplayGhostEntity();
+    ~CMomentumReplayGhostEntity();
 
     void SetGhostModel(const char *model);
     void SetGhostBodyGroup(int bodyGroup);
@@ -54,10 +54,10 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     void StopTimer();
     void HandleGhost();
     void HandleGhostFirstPerson();
-	void UpdateStats(Vector ghostVel); // for hud display..
+    void UpdateStats(Vector ghostVel); // for hud display..
 
-	inline const char* GetGhostModel() const { return m_pszModel; }
-	inline void SetRunStats(CMomRunStats* stats) { m_RunStats = stats; }
+    inline const char* GetGhostModel() const { return m_pszModel; }
+    inline void SetRunStats(CMomRunStats* stats) { m_RunStats = stats; }
     inline CMomRunStats* GetRunStats() { return m_RunStats; }
 
     void AddSpectator(CMomentumPlayer* player)
@@ -70,12 +70,12 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
         m_rgSpectators.FindAndRemove(player);
     }
 
-	inline void SetRunTime(float time) { m_flRunTime = time; }
-	inline void SetTickRate(float rate) { m_flTickRate = rate; }
-	inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
+    inline void SetRunTime(float time) { m_flRunTime = time; }
+    inline void SetTickRate(float rate) { m_flTickRate = rate; }
+    inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
 
-	inline CReplayFrame* GetCurrentStep() { return g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(m_iCurrentStep); }
-	CReplayFrame* GetNextStep();
+    inline CReplayFrame* GetCurrentStep() { return g_ReplaySystem->GetReplayManager()->GetCurrentReplay()->GetFrame(m_iCurrentStep); }
+    CReplayFrame* GetNextStep();
 
     bool m_bIsActive;
     int m_nStartTick;
@@ -95,7 +95,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
   private:
     char m_pszModel[256], m_pszMapName[256];
-	int m_iCurrentStep;
+    int m_iCurrentStep;
     CMomRunStats* m_RunStats;
 
     CUtlVector<CMomentumPlayer *> m_rgSpectators;

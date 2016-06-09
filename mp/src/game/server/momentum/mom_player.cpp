@@ -238,9 +238,9 @@ void CMomentumPlayer::CheckForBhop()
             m_iSuccessiveBhops++;
             if (g_Timer->IsRunning())
             {
-				int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
-				m_PlayerRunStats.SetZoneJumps(0, m_PlayerRunStats.GetZoneJumps(0) + 1);
-				m_PlayerRunStats.SetZoneJumps(currentZone, m_PlayerRunStats.GetZoneJumps(currentZone) + 1);
+                int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
+                m_PlayerRunStats.SetZoneJumps(0, m_PlayerRunStats.GetZoneJumps(0) + 1);
+                m_PlayerRunStats.SetZoneJumps(currentZone, m_PlayerRunStats.GetZoneJumps(currentZone) + 1);
             }
         }
     }
@@ -265,46 +265,46 @@ void CMomentumPlayer::UpdateRunStats()
             // (for surf)
             if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
             {
-				m_PlayerRunStats.SetZoneJumps(0, m_PlayerRunStats.GetZoneJumps(0) + 1);
-				m_PlayerRunStats.SetZoneJumps(currentZone, m_PlayerRunStats.GetZoneJumps(currentZone) + 1);
+                m_PlayerRunStats.SetZoneJumps(0, m_PlayerRunStats.GetZoneJumps(0) + 1);
+                m_PlayerRunStats.SetZoneJumps(currentZone, m_PlayerRunStats.GetZoneJumps(currentZone) + 1);
             }
             if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
-			{
-				m_PlayerRunStats.SetZoneStrafes(0, m_PlayerRunStats.GetZoneStrafes(0) + 1);
-				m_PlayerRunStats.SetZoneStrafes(currentZone, m_PlayerRunStats.GetZoneStrafes(currentZone) + 1);
+            {
+                m_PlayerRunStats.SetZoneStrafes(0, m_PlayerRunStats.GetZoneStrafes(0) + 1);
+                m_PlayerRunStats.SetZoneStrafes(currentZone, m_PlayerRunStats.GetZoneStrafes(currentZone) + 1);
             }
         }
         if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
-		{
-			m_PlayerRunStats.SetZoneStrafes(0, m_PlayerRunStats.GetZoneStrafes(0) + 1);
-			m_PlayerRunStats.SetZoneStrafes(currentZone, m_PlayerRunStats.GetZoneStrafes(currentZone) + 1);
+        {
+            m_PlayerRunStats.SetZoneStrafes(0, m_PlayerRunStats.GetZoneStrafes(0) + 1);
+            m_PlayerRunStats.SetZoneStrafes(currentZone, m_PlayerRunStats.GetZoneStrafes(currentZone) + 1);
         }
         else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
-		{
-			m_PlayerRunStats.SetZoneStrafes(0, m_PlayerRunStats.GetZoneStrafes(0) + 1);
-			m_PlayerRunStats.SetZoneStrafes(currentZone, m_PlayerRunStats.GetZoneStrafes(currentZone) + 1);
+        {
+            m_PlayerRunStats.SetZoneStrafes(0, m_PlayerRunStats.GetZoneStrafes(0) + 1);
+            m_PlayerRunStats.SetZoneStrafes(currentZone, m_PlayerRunStats.GetZoneStrafes(currentZone) + 1);
         }
         //  ---- MAX VELOCITY ----
-		float maxOverallVel = velocity;
-		float maxOverallVel2D = velocity2D;
+        float maxOverallVel = velocity;
+        float maxOverallVel2D = velocity2D;
 
-		float maxCurrentVel = velocity;
-		float maxCurrentVel2D = velocity2D;
+        float maxCurrentVel = velocity;
+        float maxCurrentVel2D = velocity2D;
 
-		if (maxOverallVel <= m_PlayerRunStats.GetZoneVelocityMax(0)[0])
-			maxOverallVel = m_PlayerRunStats.GetZoneVelocityMax(0)[0];
+        if (maxOverallVel <= m_PlayerRunStats.GetZoneVelocityMax(0)[0])
+            maxOverallVel = m_PlayerRunStats.GetZoneVelocityMax(0)[0];
 
-		if (maxOverallVel2D <= m_PlayerRunStats.GetZoneVelocityMax(0)[1])
-			maxOverallVel2D = m_PlayerRunStats.GetZoneVelocityMax(0)[1];
+        if (maxOverallVel2D <= m_PlayerRunStats.GetZoneVelocityMax(0)[1])
+            maxOverallVel2D = m_PlayerRunStats.GetZoneVelocityMax(0)[1];
 
-		if (maxCurrentVel <= m_PlayerRunStats.GetZoneVelocityMax(currentZone)[0])
-			maxCurrentVel = m_PlayerRunStats.GetZoneVelocityMax(currentZone)[0];
+        if (maxCurrentVel <= m_PlayerRunStats.GetZoneVelocityMax(currentZone)[0])
+            maxCurrentVel = m_PlayerRunStats.GetZoneVelocityMax(currentZone)[0];
 
-		if (maxCurrentVel2D <= m_PlayerRunStats.GetZoneVelocityMax(currentZone)[1])
-			maxCurrentVel2D = m_PlayerRunStats.GetZoneVelocityMax(currentZone)[1];
+        if (maxCurrentVel2D <= m_PlayerRunStats.GetZoneVelocityMax(currentZone)[1])
+            maxCurrentVel2D = m_PlayerRunStats.GetZoneVelocityMax(currentZone)[1];
 
-		m_PlayerRunStats.SetZoneVelocityMax(0, maxOverallVel, maxOverallVel2D);
-		m_PlayerRunStats.SetZoneVelocityMax(currentZone, maxCurrentVel, maxCurrentVel2D);
+        m_PlayerRunStats.SetZoneVelocityMax(0, maxOverallVel, maxOverallVel2D);
+        m_PlayerRunStats.SetZoneVelocityMax(currentZone, maxCurrentVel, maxCurrentVel2D);
         // ----------
 
         //  ---- STRAFE SYNC -----
@@ -398,7 +398,7 @@ void CMomentumPlayer::CalculateAverageStats()
         m_PlayerRunStats.SetZoneStrafeSyncAvg(0, m_flZoneTotalSync[currentZone] / float(m_nZoneAvgCount[currentZone]));
         m_PlayerRunStats.SetZoneStrafeSync2Avg(0, m_flZoneTotalSync2[currentZone] / float(m_nZoneAvgCount[currentZone]));
         m_PlayerRunStats.SetZoneVelocityAvg(0, 
-			m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]), 
+            m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]), 
             m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]));
     }
 
@@ -497,5 +497,5 @@ void CMomentumPlayer::TweenSlowdownPlayer()
 
 CMomentumReplayGhostEntity* CMomentumPlayer::GetReplayEnt() const
 {
-	return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
+    return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
 }

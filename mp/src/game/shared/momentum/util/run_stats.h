@@ -6,7 +6,7 @@
 #include "serialization.h"
 
 class CMomRunStats : 
-	public ISerializable
+    public ISerializable
 {
 public:
     // Note: This needs updating every time the struct is updated!
@@ -39,65 +39,65 @@ public:
         }
     }
 
-	CMomRunStats(CBinaryReader* reader)
-	{
-		m_iTotalZones = reader->ReadUInt8();
+    CMomRunStats(CBinaryReader* reader)
+    {
+        m_iTotalZones = reader->ReadUInt8();
 
-		// NOTE: This range checking might result in unread data.
-		if (m_iTotalZones > MAX_STAGES)
-			m_iTotalZones = MAX_STAGES;
+        // NOTE: This range checking might result in unread data.
+        if (m_iTotalZones > MAX_STAGES)
+            m_iTotalZones = MAX_STAGES;
 
-		for (int i = 0; i < m_iTotalZones + 1; ++i)
-		{
-			m_iZoneJumps[i] = reader->ReadUInt32();
-			m_iZoneStrafes[i] = reader->ReadUInt32();
+        for (int i = 0; i < m_iTotalZones + 1; ++i)
+        {
+            m_iZoneJumps[i] = reader->ReadUInt32();
+            m_iZoneStrafes[i] = reader->ReadUInt32();
 
-			m_flZoneStrafeSyncAvg[i] = reader->ReadFloat();
-			m_flZoneStrafeSync2Avg[i] = reader->ReadFloat();
-			m_flZoneEnterTime[i] = reader->ReadFloat();
-			m_flZoneTime[i] = reader->ReadFloat();
+            m_flZoneStrafeSyncAvg[i] = reader->ReadFloat();
+            m_flZoneStrafeSync2Avg[i] = reader->ReadFloat();
+            m_flZoneEnterTime[i] = reader->ReadFloat();
+            m_flZoneTime[i] = reader->ReadFloat();
 
-			for (int k = 0; k < 2; ++k)
-			{
-				m_flZoneVelocityMax[i][k] = reader->ReadFloat();
-				m_flZoneVelocityAvg[i][k] = reader->ReadFloat();
-				m_flZoneEnterSpeed[i][k] = reader->ReadFloat();
-				m_flZoneExitSpeed[i][k] = reader->ReadFloat();
-			}
-		}
-	}
+            for (int k = 0; k < 2; ++k)
+            {
+                m_flZoneVelocityMax[i][k] = reader->ReadFloat();
+                m_flZoneVelocityAvg[i][k] = reader->ReadFloat();
+                m_flZoneEnterSpeed[i][k] = reader->ReadFloat();
+                m_flZoneExitSpeed[i][k] = reader->ReadFloat();
+            }
+        }
+    }
 
 public:
-	virtual void Serialize(CBinaryWriter* writer) override
-	{
-		writer->WriteUInt8(m_iTotalZones);
+    virtual void Serialize(CBinaryWriter* writer) override
+    {
+        writer->WriteUInt8(m_iTotalZones);
 
-		for (int i = 0; i < m_iTotalZones + 1; ++i)
-		{
-			writer->WriteUInt32(m_iZoneJumps[i]);
-			writer->WriteUInt32(m_iZoneStrafes[i]);
+        for (int i = 0; i < m_iTotalZones + 1; ++i)
+        {
+            writer->WriteUInt32(m_iZoneJumps[i]);
+            writer->WriteUInt32(m_iZoneStrafes[i]);
 
-			writer->WriteFloat(m_flZoneStrafeSyncAvg[i]);
-			writer->WriteFloat(m_flZoneStrafeSync2Avg[i]);
-			writer->WriteFloat(m_flZoneEnterTime[i]);
-			writer->WriteFloat(m_flZoneTime[i]);
+            writer->WriteFloat(m_flZoneStrafeSyncAvg[i]);
+            writer->WriteFloat(m_flZoneStrafeSync2Avg[i]);
+            writer->WriteFloat(m_flZoneEnterTime[i]);
+            writer->WriteFloat(m_flZoneTime[i]);
 
-			for (int k = 0; k < 2; ++k)
-			{
-				writer->WriteFloat(m_flZoneVelocityMax[i][k]);
-				writer->WriteFloat(m_flZoneVelocityAvg[i][k]);
-				writer->WriteFloat(m_flZoneEnterSpeed[i][k]);
-				writer->WriteFloat(m_flZoneExitSpeed[i][k]);
-			}
-		}
-	}
+            for (int k = 0; k < 2; ++k)
+            {
+                writer->WriteFloat(m_flZoneVelocityMax[i][k]);
+                writer->WriteFloat(m_flZoneVelocityAvg[i][k]);
+                writer->WriteFloat(m_flZoneEnterSpeed[i][k]);
+                writer->WriteFloat(m_flZoneExitSpeed[i][k]);
+            }
+        }
+    }
 
 public:
     // Note: This needs updating every time the struct is updated!
     CMomRunStats &operator=(const CMomRunStats &other)
     {
-		if (this == &other)
-			return *this;
+        if (this == &other)
+            return *this;
 
         m_iTotalZones = other.m_iTotalZones;
 
@@ -124,30 +124,30 @@ public:
     }
 
 public:
-	// All these are virtual so they can be overridden in future versions.
-	virtual uint8 GetTotalZones() { return m_iTotalZones; }
-	virtual uint32 GetZoneJumps(int zone) { return zone > m_iTotalZones ? 0 : m_iZoneJumps[zone]; }
-	virtual uint32 GetZoneStrafes(int zone) { return zone > m_iTotalZones ? 0 : m_iZoneStrafes[zone]; }
-	virtual float GetZoneTime(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneTime[zone]; }
-	virtual float GetZoneEnterTime(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneEnterTime[zone]; }
-	virtual float GetZoneStrafeSyncAvg(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneStrafeSyncAvg[zone]; }
-	virtual float GetZoneStrafeSync2Avg(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneStrafeSync2Avg[zone]; }
-	virtual float* GetZoneEnterSpeed(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneEnterSpeed[zone]; }
-	virtual float* GetZoneVelocityMax(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneVelocityMax[zone]; }
-	virtual float* GetZoneVelocityAvg(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneVelocityAvg[zone]; }
-	virtual float* GetZoneExitSpeed(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneExitSpeed[zone]; }
+    // All these are virtual so they can be overridden in future versions.
+    virtual uint8 GetTotalZones() { return m_iTotalZones; }
+    virtual uint32 GetZoneJumps(int zone) { return zone > m_iTotalZones ? 0 : m_iZoneJumps[zone]; }
+    virtual uint32 GetZoneStrafes(int zone) { return zone > m_iTotalZones ? 0 : m_iZoneStrafes[zone]; }
+    virtual float GetZoneTime(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneTime[zone]; }
+    virtual float GetZoneEnterTime(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneEnterTime[zone]; }
+    virtual float GetZoneStrafeSyncAvg(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneStrafeSyncAvg[zone]; }
+    virtual float GetZoneStrafeSync2Avg(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneStrafeSync2Avg[zone]; }
+    virtual float* GetZoneEnterSpeed(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneEnterSpeed[zone]; }
+    virtual float* GetZoneVelocityMax(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneVelocityMax[zone]; }
+    virtual float* GetZoneVelocityAvg(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneVelocityAvg[zone]; }
+    virtual float* GetZoneExitSpeed(int zone) { return zone > m_iTotalZones ? 0 : m_flZoneExitSpeed[zone]; }
 
-	virtual void SetTotalZones(uint8 zones) { m_iTotalZones = zones > MAX_STAGES ? MAX_STAGES : zones; }
-	virtual void SetZoneJumps(int zone, uint32 value) { if (zone > m_iTotalZones) return; m_iZoneJumps[zone] = value; }
-	virtual void SetZoneStrafes(int zone, uint32 value) { if (zone > m_iTotalZones) return; m_iZoneStrafes[zone] = value; }
-	virtual void SetZoneTime(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneTime[zone] = value; }
-	virtual void SetZoneEnterTime(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneEnterTime[zone] = value; }
-	virtual void SetZoneStrafeSyncAvg(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneStrafeSyncAvg[zone] = value; }
-	virtual void SetZoneStrafeSync2Avg(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneStrafeSync2Avg[zone] = value; }
-	virtual void SetZoneEnterSpeed(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneEnterSpeed[zone][0] = vert; m_flZoneEnterSpeed[zone][1] = hor; }
-	virtual void SetZoneVelocityMax(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneVelocityMax[zone][0] = vert; m_flZoneVelocityMax[zone][1] = hor; }
-	virtual void SetZoneVelocityAvg(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneVelocityAvg[zone][0] = vert; m_flZoneVelocityAvg[zone][1] = hor; }
-	virtual void SetZoneExitSpeed(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneExitSpeed[zone][0] = vert; m_flZoneExitSpeed[zone][1] = hor; }
+    virtual void SetTotalZones(uint8 zones) { m_iTotalZones = zones > MAX_STAGES ? MAX_STAGES : zones; }
+    virtual void SetZoneJumps(int zone, uint32 value) { if (zone > m_iTotalZones) return; m_iZoneJumps[zone] = value; }
+    virtual void SetZoneStrafes(int zone, uint32 value) { if (zone > m_iTotalZones) return; m_iZoneStrafes[zone] = value; }
+    virtual void SetZoneTime(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneTime[zone] = value; }
+    virtual void SetZoneEnterTime(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneEnterTime[zone] = value; }
+    virtual void SetZoneStrafeSyncAvg(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneStrafeSyncAvg[zone] = value; }
+    virtual void SetZoneStrafeSync2Avg(int zone, float value) { if (zone > m_iTotalZones) return; m_flZoneStrafeSync2Avg[zone] = value; }
+    virtual void SetZoneEnterSpeed(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneEnterSpeed[zone][0] = vert; m_flZoneEnterSpeed[zone][1] = hor; }
+    virtual void SetZoneVelocityMax(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneVelocityMax[zone][0] = vert; m_flZoneVelocityMax[zone][1] = hor; }
+    virtual void SetZoneVelocityAvg(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneVelocityAvg[zone][0] = vert; m_flZoneVelocityAvg[zone][1] = hor; }
+    virtual void SetZoneExitSpeed(int zone, float vert, float hor) { if (zone > m_iTotalZones) return; m_flZoneExitSpeed[zone][0] = vert; m_flZoneExitSpeed[zone][1] = hor; }
 
 private:
     // Note: Passing 0 as the index to any of these will return the overall stat, i.e during the entire run.

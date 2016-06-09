@@ -27,10 +27,10 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
         stats->SetZoneStrafeSyncAvg(0, pEvent->GetFloat("avg_sync"));
         stats->SetZoneStrafeSync2Avg(0, pEvent->GetFloat("avg_sync2"));
 
-		stats->SetZoneEnterSpeed(0, pEvent->GetFloat("start_vel"), pEvent->GetFloat("start_vel_2D"));
-		stats->SetZoneExitSpeed(0, pEvent->GetFloat("end_vel"), pEvent->GetFloat("end_vel_2D"));
-		stats->SetZoneVelocityAvg(0, pEvent->GetFloat("avg_vel"), pEvent->GetFloat("avg_vel_2D"));
-		stats->SetZoneVelocityMax(0, pEvent->GetFloat("max_vel"), pEvent->GetFloat("max_vel_2D"));
+        stats->SetZoneEnterSpeed(0, pEvent->GetFloat("start_vel"), pEvent->GetFloat("start_vel_2D"));
+        stats->SetZoneExitSpeed(0, pEvent->GetFloat("end_vel"), pEvent->GetFloat("end_vel_2D"));
+        stats->SetZoneVelocityAvg(0, pEvent->GetFloat("avg_vel"), pEvent->GetFloat("avg_vel_2D"));
+        stats->SetZoneVelocityMax(0, pEvent->GetFloat("max_vel"), pEvent->GetFloat("max_vel_2D"));
 
         m_flLastRunTime = pEvent->GetFloat("time");
     }
@@ -63,11 +63,11 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 
             //And the rest of the stats are about the previous stage anyways, not calculated during stage 1 (start)
             stats->SetZoneStrafeSyncAvg(currentZone - 1, pEvent->GetFloat("avg_sync"));
-			stats->SetZoneStrafeSync2Avg(currentZone - 1, pEvent->GetFloat("avg_sync2"));
+            stats->SetZoneStrafeSync2Avg(currentZone - 1, pEvent->GetFloat("avg_sync2"));
 
-			stats->SetZoneExitSpeed(currentZone - 1, pEvent->GetFloat("exit_vel"), pEvent->GetFloat("exit_vel_2D"));
-			stats->SetZoneVelocityAvg(currentZone - 1, pEvent->GetFloat("avg_vel"), pEvent->GetFloat("avg_vel_2D"));
-			stats->SetZoneVelocityMax(currentZone - 1, pEvent->GetFloat("max_vel"), pEvent->GetFloat("max_vel_2D"));
+            stats->SetZoneExitSpeed(currentZone - 1, pEvent->GetFloat("exit_vel"), pEvent->GetFloat("exit_vel_2D"));
+            stats->SetZoneVelocityAvg(currentZone - 1, pEvent->GetFloat("avg_vel"), pEvent->GetFloat("avg_vel_2D"));
+            stats->SetZoneVelocityMax(currentZone - 1, pEvent->GetFloat("max_vel"), pEvent->GetFloat("max_vel_2D"));
 
             stats->SetZoneJumps(currentZone - 1, pEvent->GetInt("num_jumps"));
             stats->SetZoneStrafes(currentZone - 1, pEvent->GetInt("num_strafes"));
@@ -89,10 +89,10 @@ void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
             float enterVel2D = pEvent->GetFloat("enter_vel_2D");
             CMomRunStats *stats = GetRunStats(entIndex);
 
-			stats->SetZoneEnterSpeed(currentZone, enterVel, enterVel2D);
+            stats->SetZoneEnterSpeed(currentZone, enterVel, enterVel2D);
 
-			if (currentZone == 1)
-				stats->SetZoneEnterSpeed(currentZone - 1, enterVel, enterVel2D);
+            if (currentZone == 1)
+                stats->SetZoneEnterSpeed(currentZone - 1, enterVel, enterVel2D);
         }
     }
     else if (!Q_strcmp("run_save", pEvent->GetName()))

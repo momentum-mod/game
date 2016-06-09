@@ -102,32 +102,32 @@ void CTimer::LoadLocalTimes(const char *szMapname)
                 {
                     int i = Q_atoi(subKv->GetName() + 5); //atoi will need to ignore "zone " and only return the stage number
 
-					t->RunStats.SetZoneJumps(i, subKv->GetInt("jumps"));
-					t->RunStats.SetZoneStrafes(i, subKv->GetInt("strafes"));
+                    t->RunStats.SetZoneJumps(i, subKv->GetInt("jumps"));
+                    t->RunStats.SetZoneStrafes(i, subKv->GetInt("strafes"));
 
-					t->RunStats.SetZoneTime(i, subKv->GetFloat("strafes"));
-					t->RunStats.SetZoneEnterTime(i, subKv->GetFloat("strafes"));
+                    t->RunStats.SetZoneTime(i, subKv->GetFloat("strafes"));
+                    t->RunStats.SetZoneEnterTime(i, subKv->GetFloat("strafes"));
 
-					t->RunStats.SetZoneStrafeSyncAvg(i, subKv->GetFloat("time"));
-					t->RunStats.SetZoneStrafeSync2Avg(i, subKv->GetFloat("enter_time"));
+                    t->RunStats.SetZoneStrafeSyncAvg(i, subKv->GetFloat("time"));
+                    t->RunStats.SetZoneStrafeSync2Avg(i, subKv->GetFloat("enter_time"));
 
-					t->RunStats.SetZoneEnterSpeed(i, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
-					t->RunStats.SetZoneExitSpeed(i, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
-					t->RunStats.SetZoneVelocityAvg(i, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
-					t->RunStats.SetZoneVelocityMax(i, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
+                    t->RunStats.SetZoneEnterSpeed(i, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
+                    t->RunStats.SetZoneExitSpeed(i, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
+                    t->RunStats.SetZoneVelocityAvg(i, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
+                    t->RunStats.SetZoneVelocityMax(i, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
                 }
                 if (!Q_strncmp(subKv->GetName(), "total", Q_strlen("total")))
                 {
-					t->RunStats.SetZoneJumps(0, subKv->GetInt("jumps"));
-					t->RunStats.SetZoneStrafes(0, subKv->GetInt("strafes"));
+                    t->RunStats.SetZoneJumps(0, subKv->GetInt("jumps"));
+                    t->RunStats.SetZoneStrafes(0, subKv->GetInt("strafes"));
 
-					t->RunStats.SetZoneStrafeSyncAvg(0, subKv->GetFloat("avgsync"));
-					t->RunStats.SetZoneStrafeSync2Avg(0, subKv->GetFloat("avgsync2"));
+                    t->RunStats.SetZoneStrafeSyncAvg(0, subKv->GetFloat("avgsync"));
+                    t->RunStats.SetZoneStrafeSync2Avg(0, subKv->GetFloat("avgsync2"));
 
-					t->RunStats.SetZoneEnterSpeed(0, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
-					t->RunStats.SetZoneExitSpeed(0, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
-					t->RunStats.SetZoneVelocityAvg(0, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
-					t->RunStats.SetZoneVelocityMax(0, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
+                    t->RunStats.SetZoneEnterSpeed(0, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
+                    t->RunStats.SetZoneExitSpeed(0, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
+                    t->RunStats.SetZoneVelocityAvg(0, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
+                    t->RunStats.SetZoneVelocityMax(0, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
 
                 }
             }
@@ -269,7 +269,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
     }
 
     //stop replay recording
-	// TODO (OrfeasZ): Do we need to pass a player here?
+    // TODO (OrfeasZ): Do we need to pass a player here?
     if (g_ReplaySystem->GetReplayManager()->Recording())
         g_ReplaySystem->StopRecording(pPlayer, !endTrigger, endTrigger);
 

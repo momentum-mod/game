@@ -18,19 +18,19 @@ class CMomentumReplaySystem : CAutoGameSystemPerFrame
 {
 public:
     CMomentumReplaySystem(const char *pName) : 
-		CAutoGameSystemPerFrame(pName),
-		m_bShouldStopRec(false),
-		m_nCurrentTick(0), 
-		m_fRecEndTime(0), 
-		m_player(nullptr)
+        CAutoGameSystemPerFrame(pName),
+        m_bShouldStopRec(false),
+        m_nCurrentTick(0), 
+        m_fRecEndTime(0), 
+        m_player(nullptr)
     {
-		m_pReplayManager = new CMomReplayManager();
+        m_pReplayManager = new CMomReplayManager();
     }
 
-	virtual ~CMomentumReplaySystem() override
-	{
-		delete m_pReplayManager;
-	}
+    virtual ~CMomentumReplaySystem() override
+    {
+        delete m_pReplayManager;
+    }
 
 public:
     // inherited member from CAutoGameSystemPerFrame
@@ -53,12 +53,12 @@ public:
     void StartReplay(bool firstperson = false);
     void EndReplay();
 
-	inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
+    inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
 
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
-	void SetReplayInfo();
-	void SetRunStats();
+    void SetReplayInfo();
+    void SetRunStats();
 
 private:
     bool m_bShouldStopRec;
@@ -68,7 +68,7 @@ private:
     CMomentumPlayer *m_player;
     CMomentumReplayGhostEntity *m_CurrentReplayGhost;//MOM_TODO: Update this to be a CUtlVector so multiple ghosts can be kept track of
 
-	CMomReplayManager* m_pReplayManager;
+    CMomReplayManager* m_pReplayManager;
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;
