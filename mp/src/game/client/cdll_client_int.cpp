@@ -148,7 +148,7 @@
 #include "fbxsystem/fbxsystem.h"
 #endif
 
-#include "momentum/nui/mom_nui.h"
+#include "nui.h"
 
 extern vgui::IInputInternal *g_InputInternal;
 
@@ -1099,7 +1099,7 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 
 	// Start our custom NUI (New UI) layer.
 	// TODO (OrfeasZ): Properly pass debug flag.
-	if (CMomNUI::GetInstance()->Init(true))
+	if (CMomNUI::GetInstance()->Init(true, false))
 		Log("Successfully initialized the NUI layer.\n");
 	else
 		Error("Failed to initialize the NUI layer.\n");
