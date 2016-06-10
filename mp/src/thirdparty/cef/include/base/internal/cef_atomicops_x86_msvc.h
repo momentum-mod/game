@@ -33,7 +33,7 @@
 #ifndef CEF_INCLUDE_BASE_INTERNAL_CEF_ATOMICOPS_X86_MSVC_H_
 #define CEF_INCLUDE_BASE_INTERNAL_CEF_ATOMICOPS_X86_MSVC_H_
 
-#include <windows.h>
+#include "winlite.h"
 
 #include <intrin.h>
 

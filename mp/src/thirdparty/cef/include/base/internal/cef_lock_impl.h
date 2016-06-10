@@ -35,7 +35,7 @@
 #include "include/base/cef_build.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include "winlite.h"
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #endif

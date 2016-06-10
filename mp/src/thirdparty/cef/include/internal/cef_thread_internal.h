@@ -32,7 +32,7 @@
 #pragma once
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include "winlite.h"
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #include <unistd.h>

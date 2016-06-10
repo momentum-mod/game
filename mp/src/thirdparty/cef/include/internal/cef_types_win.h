@@ -35,7 +35,7 @@
 #include "include/base/cef_build.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include "winlite.h"
 #include "include/internal/cef_string.h"
 
 // Handle types.
