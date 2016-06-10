@@ -21,11 +21,14 @@ public:
 
     void PostTime(const char* URL);
     void DownloadMap(const char*);
-    // Creates a a bug ticket on the bug tracking system
-    void ReportBug(const char* email, const char* message);
+    // Creates a a bug ticket on the bug tracking system. Returns true if it was sent
+    bool ReportBug(const char* email, const char* message);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
+
+    bool CreateAndSendHTTPReqWithPost(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
+        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;

@@ -113,16 +113,21 @@ void MomentumUtil::DownloadMap(const char *szMapname)
 
 void MomentumUtil::ReportBugCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
-
+    // The callback does not need anything
 }
 
-void MomentumUtil::ReportBug(const char* email, const char* message)
+bool MomentumUtil::ReportBug(const char* email, const char* message)
 {
-    //CreateAndSendHTTPReq("", &cbReportBugCallback, &MomentumUtil::ReportBugCallback);
+    // This is really not a good idea ot have around here, but you know, alpha! We will figure something better later.
+
+    char payload[1100];
+    Q_snprintf(payload, 1100, "{\"text\":\"Player with email %s submitted a bug report:\n%s\"}", email, message);
+    DevLog("Bug report is:\n%s\n", payload);
+    return CreateAndSendHTTPReqWithPost("https://hooks.slack.com/services/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", &cbReportBugCallback, &MomentumUtil::ReportBugCallback, new KeyValues("params", "payload", payload));
 }
 
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {
     HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
     SteamAPICall_t apiHandle;
@@ -138,10 +143,44 @@ void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumU
     }
 }
 
+bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func, KeyValues *params)
+{
+    bool bSuccess = false;
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
+        FOR_EACH_VALUE(params, p_value)
+        {
+            steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(), p_value->GetString());
+        }
+
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            Warning("Report sent.\n");
+            callback->Set(apiHandle, this, func);
+            bSuccess = true;
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to report bug online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+            
+        }
+    }
+    else
+    {
+        Warning("Steamapicontext is not online!\n");
+    }
+    return bSuccess;
+}
+
 void MomentumUtil::GetRemoteRepoModVersion()
 {
     CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
-                         &MomentumUtil::VersionCallback);
+        &MomentumUtil::VersionCallback);
 }
 
 void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -224,7 +263,7 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision) 
 }
 
 Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor,
-                                          Color decreasecolor) const
+    Color decreasecolor) const
 {
     // variation is current velocity minus previous velocity.
     Color pFinalColor = normalcolor;

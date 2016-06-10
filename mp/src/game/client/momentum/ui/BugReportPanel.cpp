@@ -8,7 +8,7 @@ using namespace vgui;
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/pch_vgui_controls.h>
-
+#include "momentum/util/mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "tier0/memdbgon.h"
 
@@ -20,10 +20,29 @@ class CBugReportPanel : public vgui::Frame
     CBugReportPanel(vgui::VPANEL parent); 	// Constructor
     ~CBugReportPanel() {};				// Destructor
 
+    void Activate() override;
     void InitPanel();
 protected:
     //VGUI overrides:
     void OnTick() override;
+    bool VerifyReport();
+    MESSAGE_FUNC(OnSubmitReport, "SubmitReport")
+    {
+        if (VerifyReport())
+        {
+            char email[30];
+            char report[1000];
+            m_pEmailTextEntry->GetText(email, m_pEmailTextEntry->GetTextLength() * sizeof(char));
+            m_pBugTextEntry->GetText(report, m_pBugTextEntry->GetTextLength() * sizeof(char));
+            
+            if (mom_UTIL->ReportBug(email, report))
+            {
+                InitPanel();
+            }
+        }
+    }
+
+private:
 
     Button *m_pSubmitButton;
     Label *m_pEmailLabel, *m_pDescribeBugLabel, *m_pCharsLeftLabel;
@@ -48,7 +67,7 @@ CBugReportPanel::CBugReportPanel(vgui::VPANEL parent)
     SetSizeable(false);
     SetMoveable(true);
     SetVisible(false);
-  
+    AddActionSignalTarget(this);
     SetScheme("ClientScheme");
 
     LoadControlSettings("resource/ui/BugReportPanel.res");
@@ -84,9 +103,13 @@ void CBugReportPanel::InitPanel()
         m_pBugTextEntry->SetDrawWidth(SCALE(550));
         m_pBugTextEntry->SetSize(SCALEXY(200, 220));
         m_pBugTextEntry->SetMultiline(true);
-        m_pBugTextEntry->SetMaximumCharCount(10000);
+        m_pBugTextEntry->SetMaximumCharCount(1000);
         m_pBugTextEntry->SetText("");
         m_pBugTextEntry->SetTabPosition(2);
+
+        m_pSubmitButton->SetCommand("SubmitReport");
+        m_pSubmitButton->AddActionSignalTarget(this);
+        m_pSubmitButton->SetEnabled(false);
     }
     else
     {
@@ -149,4 +172,18 @@ void CBugReportPanel::OnTick()
 {
     BaseClass::OnTick();
     vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
+
+    m_pSubmitButton->SetEnabled(IsVisible() && VerifyReport());
+
+}
+
+void CBugReportPanel::Activate()
+{
+    BaseClass::Activate();
+}
+
+bool CBugReportPanel::VerifyReport()
+{
+    //MOM_TODO: More verification would be needed here
+    return (m_pBugTextEntry && m_pEmailTextEntry && m_pEmailTextEntry->GetTextLength() >= 6 && m_pBugTextEntry->GetTextLength() >= 15);
 }
