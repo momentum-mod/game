@@ -1098,8 +1098,11 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
     g_MOMEventListener->Init();//Hook into game events
 
 	// Start our custom NUI (New UI) layer.
-	// TODO (OrfeasZ): Properly pass debug flag.
-	if (CMomNUI::GetInstance()->Init(true, false))
+    // TODO (OrfeasZ): Properly pass debug flag.
+    int width, height;
+    GetClientModeNormal()->GetViewport()->GetSize(width, height);
+
+	if (CMomNUI::GetInstance()->Init(width, height, true, false))
 		Log("Successfully initialized the NUI layer.\n");
 	else
 		Error("Failed to initialize the NUI layer.\n");

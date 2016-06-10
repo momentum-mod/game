@@ -8,6 +8,6 @@ int CALLBACK WinMain(
     _In_ int       nCmdShow
 )
 {
-    CMomNUI::GetInstance()->Init(false, true);
+    CMomNUI::GetInstance()->Init(1, 1, false, true);
     return 0;
 }

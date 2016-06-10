@@ -44,17 +44,17 @@ CMomNUI::~CMomNUI()
     Shutdown();
 }
 
-bool CMomNUI::Init(bool debug, bool host)
+bool CMomNUI::Init(int width, int height, bool debug, bool host)
 {
     if (m_bInitialized)
         return true;
 
 #ifdef _WIN32
-    return InitWin32(debug, host);
+    return InitWin32(width, height, debug, host);
 #elif defined (__linux__)
-    return InitLinux(debug, host);
+    return InitLinux(width, height, debug, host);
 #elif defined (__APPLE__)
-    return InitOSX(debug, host);
+    return InitOSX(width, height, debug, host);
 #endif
 }
 
@@ -68,7 +68,7 @@ void CMomNUI::Shutdown()
     CefShutdown();
 }
 
-bool CMomNUI::InitWin32(bool debug, bool host)
+bool CMomNUI::InitWin32(int width, int height, bool debug, bool host)
 {
 #if _WIN32
     if (!host)
@@ -131,12 +131,12 @@ bool CMomNUI::InitWin32(bool debug, bool host)
         m_pDevice = *device;*/
     }
 
-    if (!InitCEF(debug, host))
+    if (!InitCEF(width, height, debug, host))
         return false;
 
     if (!host)
     {
-        m_pFrame = new CMomNUIFrame(1280, 720);
+        m_pFrame = new CMomNUIFrame(width, height);
         m_pFrame->Init("http://google.com");
         m_pFrame->ShouldRender(true);
     }
@@ -147,7 +147,7 @@ bool CMomNUI::InitWin32(bool debug, bool host)
 #endif
 }
 
-bool CMomNUI::InitLinux(bool debug, bool host)
+bool CMomNUI::InitLinux(int width, int height, bool debug, bool host)
 {
 #if defined (__linux__)
     // TODO (OrfeasZ): Support for linux.
@@ -157,7 +157,7 @@ bool CMomNUI::InitLinux(bool debug, bool host)
 #endif
 }
 
-bool CMomNUI::InitOSX(bool debug, bool host)
+bool CMomNUI::InitOSX(int width, int height, bool debug, bool host)
 {
 #if defined (__APPLE__)
     // TODO (OrfeasZ): Support for OSX.
@@ -167,7 +167,7 @@ bool CMomNUI::InitOSX(bool debug, bool host)
 #endif
 }
 
-bool CMomNUI::InitCEF(bool debug, bool host)
+bool CMomNUI::InitCEF(int width, int height, bool debug, bool host)
 {
     if (!m_bShutdown)
         return false;
@@ -209,7 +209,7 @@ bool CMomNUI::InitCEF(bool debug, bool host)
     CefString(&settings.browser_subprocess_path) = hostPath;
     settings.no_sandbox = true;
     settings.pack_loading_disabled = false;
-    settings.windowless_rendering_enabled = false;
+    settings.windowless_rendering_enabled = true;
     settings.ignore_certificate_errors = true;
     settings.log_severity = LOGSEVERITY_DISABLE;
     settings.single_process = false;

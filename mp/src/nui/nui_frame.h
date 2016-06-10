@@ -28,9 +28,8 @@ public:
 
     inline CefRefPtr<CMomNUIClient> Client() const { return m_pClient; }
 
-    inline void SetTexture(int texture) { m_bNeedsRepaint = true; m_iTextureID = texture; }
-
     inline bool Dirty() { return m_bDirty; }
+    inline uint8* TextureBuffer() const { return m_pTextureBuffer; }
 
 protected:
     bool m_bInitialized;
@@ -42,6 +41,7 @@ protected:
 
     CefRefPtr<CMomNUIClient> m_pClient;
 
-    int m_iTextureID;
     bool m_bNeedsRepaint;
+    uint8* m_pTextureBuffer;
+    CThreadFastMutex m_Mutex;
 };

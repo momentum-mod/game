@@ -24,17 +24,17 @@ protected:
     ~CMomNUI();
 
 public:
-    bool Init(bool debug, bool host);
+    bool Init(int width, int height, bool debug, bool host);
     void Shutdown();
 
 public:
     inline CMomNUIFrame* GetFrame() const { return m_pFrame; }
 
 protected:
-    bool InitWin32(bool debug, bool host);
-    bool InitLinux(bool debug, bool host);
-    bool InitOSX(bool debug, bool host);
-    bool InitCEF(bool debug, bool host);
+    bool InitWin32(int width, int height, bool debug, bool host);
+    bool InitLinux(int width, int height, bool debug, bool host);
+    bool InitOSX(int width, int height, bool debug, bool host);
+    bool InitCEF(int width, int height, bool debug, bool host);
 
 protected:
     CefRefPtr<CMomNUIApp> m_pApp;

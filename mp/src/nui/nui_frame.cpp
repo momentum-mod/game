@@ -10,10 +10,10 @@ CMomNUIFrame::CMomNUIFrame(uint32_t width, uint32_t height) :
     m_iHeight(height),
     m_bInitialized(false),
     m_pClient(nullptr),
-    m_iTextureID(0),
     m_bNeedsRepaint(false),
     m_bDirty(false)
 {
+    m_pTextureBuffer = new uint8[width * height * 4];
 }
 
 CMomNUIFrame::~CMomNUIFrame()
@@ -25,6 +25,8 @@ CMomNUIFrame::~CMomNUIFrame()
         delete m_pClient.get();
         m_pClient = nullptr;
     }
+
+    delete m_pTextureBuffer;
 }
 
 bool CMomNUIFrame::Init(const std::string& url)
@@ -67,6 +69,14 @@ void CMomNUIFrame::OnResized(uint32_t width, uint32_t height)
     m_iHeight = height;
 
     m_pClient->Browser()->GetHost()->WasResized();
+
+    m_Mutex.Lock();
+
+    delete m_pTextureBuffer;
+    m_pTextureBuffer = new uint8[m_iWidth * m_iHeight * 4];
+    m_bNeedsRepaint = true;
+
+    m_Mutex.Unlock();
 }
 
 void CMomNUIFrame::ExecuteJavascript(const std::string& code)
@@ -77,19 +87,31 @@ void CMomNUIFrame::ExecuteJavascript(const std::string& code)
 
 void CMomNUIFrame::OnPaint(CefRefPtr<CefBrowser> browser, CefRenderHandler::PaintElementType type, const CefRenderHandler::RectList& dirtyRects, const void* buffer, int width, int height)
 {
-    if (m_iTextureID == 0)
-        return;
+    m_Mutex.Lock();
 
     if (m_bNeedsRepaint)
     {
+        V_memcpy(m_pTextureBuffer, buffer, m_iWidth * m_iHeight * 4);
         m_bNeedsRepaint = false;
-        g_pVGuiSurface->DrawSetTextureRGBAEx(m_iTextureID, (const unsigned char*) buffer, width, height, IMAGE_FORMAT_BGRA8888);
     }
     else
     {
+        const unsigned char* textureBuffer = (const unsigned char*) buffer;
+
         for (auto rect : dirtyRects)
-            g_pVGuiSurface->DrawUpdateRegionTextureRGBA(m_iTextureID, rect.x, rect.y, (const unsigned char*) buffer, rect.width, rect.height, IMAGE_FORMAT_BGRA8888);
+        {
+            for (int y = rect.y; y < rect.y + rect.height; y++)
+            {
+                V_memcpy(m_pTextureBuffer + (y * m_iWidth * 4) + (rect.x * 4),
+                    textureBuffer + (y * m_iWidth * 4) + (rect.x * 4),
+                    rect.width * 4
+                );
+            }
+
+        }
     }
 
     m_bDirty = true;
+
+    m_Mutex.Unlock();
 }
