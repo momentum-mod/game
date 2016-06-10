@@ -62,8 +62,10 @@ $Project "Client (Momentum)"
 				    }
                 }  
                 
-                $File "momentum\ui\MomentumSettingsDialog.cpp"
-                $File "momentum\ui\IMomentumSettingsPanel.h"
+                $File 	"momentum\ui\MomentumSettingsDialog.cpp"
+                $File 	"momentum\ui\IMomentumSettingsPanel.h"
+                $File 	"momentum\ui\BugReportPanel.cpp"
+                $File 	"momentum\ui\IBugReportPanel.h"
 			    $File	"momentum\ui\hud_speedometer.cpp"
 				$File	"momentum\ui\hud_strafesync.cpp"
 				$File	"momentum\ui\hud_timer.cpp"
@@ -81,9 +83,9 @@ $Project "Client (Momentum)"
                 $File	"hl2\hud_credits.cpp"
 				$File   "hl2\hud_weaponselection.cpp"
                 $File	"hud_chat.cpp"
-                $File "momentum\ui\hud_comparisons.cpp"
-				$File "momentum\ui\hud_comparisons.h"
-                $File "momentum\ui\hud_mapinfo.cpp"
+                $File 	"momentum\ui\hud_comparisons.cpp"
+				$File 	"momentum\ui\hud_comparisons.h"
+                $File 	"momentum\ui\hud_mapinfo.cpp"
 			}
 
 			$File	"momentum\client_events.h"

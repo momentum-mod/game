@@ -111,6 +111,16 @@ void MomentumUtil::DownloadMap(const char *szMapname)
     // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
 }
 
+void MomentumUtil::ReportBugCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+
+}
+
+void MomentumUtil::ReportBug(const char* email, const char* message)
+{
+    //CreateAndSendHTTPReq("", &cbReportBugCallback, &MomentumUtil::ReportBugCallback);
+}
+
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
                                         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {

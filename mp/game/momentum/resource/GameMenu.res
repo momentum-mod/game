@@ -70,5 +70,23 @@
 		"command" "QuitNoConfirm"
 		"InGameOrder" "200"
 	}
+		"10"
+	{
+		"label" ""
+		"command" ""
+		"InGameOrder" "110"
+	}
+		"11"
+	{
+		"label" ""
+		"command" ""
+		"InGameOrder" "110"
+	}
+	"12"
+	{
+	    "label" "#MOM_ReportBug"
+		"command" "engine mom_bugreport_show"
+		"InGameOrder" "250"
+	}
 }
 

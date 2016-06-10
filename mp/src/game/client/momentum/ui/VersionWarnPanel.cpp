@@ -137,7 +137,7 @@ void CVersionWarnPanel::OnCommand(const char* pcCommand)
     }
 }
 
-CON_COMMAND(mom_version, "Prints mod current installed version")
+CON_COMMAND(mom_version, "Prints mod current installed version.\n")
 {
     Log("Mod currently installed version: %s\n",MOM_CURRENT_VERSION);
 }

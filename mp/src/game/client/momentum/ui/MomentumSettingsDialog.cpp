@@ -121,7 +121,7 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     ivgui()->AddTickSignal(GetVPanel());
 }
 
-//Class: CMyPanelInterface Class. Used for construction.
+//Class: CMomentumSettingsPanelInterface Class. Used for construction.
 class CMomentumSettingsPanelInterface : public MomentumSettingsPanel
 {
 private:
@@ -165,10 +165,11 @@ public:
 static CMomentumSettingsPanelInterface g_SettingsPanel;
 MomentumSettingsPanel* momentum_settings = (MomentumSettingsPanel*) &g_SettingsPanel;
 
+// MOM_TODO: This is prob not necessary here
 ConVar cl_showsettingspanel("cl_showsettingspanel", "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE 
-    | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN, "Sets the state of settings panel");
+    | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN, "Sets the state of settings panel.\n");
 
-CON_COMMAND(mom_settings_show, "Shows the settings")
+CON_COMMAND(mom_settings_show, "Shows the settings.\n")
 {
     momentum_settings->Activate();
 }

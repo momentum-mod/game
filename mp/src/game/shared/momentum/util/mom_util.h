@@ -17,14 +17,19 @@ class MomentumUtil
 public:
     void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
+    void ReportBugCallback(HTTPRequestCompleted_t*, bool);
+
     void PostTime(const char* URL);
     void DownloadMap(const char*);
+    // Creates a a bug ticket on the bug tracking system
+    void ReportBug(const char* email, const char* message);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbReportBugCallback;
 
     void GetRemoteRepoModVersion();
 
@@ -44,6 +49,7 @@ public:
     {
         return fabs(a - b) < epsilon;
     }
+
 };
 class CTimeSortFunc
 {
