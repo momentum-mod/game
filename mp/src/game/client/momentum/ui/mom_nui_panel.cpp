@@ -6,16 +6,16 @@
 
 #include "vgui/IInput.h"
 #include "vgui/IVGui.h"
+#include "ienginevgui.h"
 
 CMomNUIPanel* g_pMomNUIPanel = nullptr;
 
-CMomNUIPanel::CMomNUIPanel(vgui::VPANEL parent) :
-    BaseClass(nullptr, "MomNUIPanel"),
+CMomNUIPanel::CMomNUIPanel() :
     m_iTextureID(0),
     m_iLastWidth(0),
     m_iLastHeight(0)
 {
-    SetParent(parent);
+    MakePopup(false);
 
     int width, height;
     GetClientModeNormal()->GetViewport()->GetSize(width, height);
@@ -24,26 +24,23 @@ CMomNUIPanel::CMomNUIPanel(vgui::VPANEL parent) :
     SetBgColor(Color(0, 0, 0, 0));
     SetPaintBackgroundEnabled(false);
     
+    SetPaintEnabled(true);
     SetProportional(false);
-    SetTitleBarVisible(false);
-    SetMinimizeButtonVisible(false);
-    SetMaximizeButtonVisible(false);
-    SetCloseButtonVisible(false);
-    SetSizeable(false);
-    SetMoveable(false);
     SetVisible(true);
+    SetBuildModeEditable(false);
+    SetBuildModeDeletable(false);
 
     vgui::ivgui()->AddTickSignal(GetVPanel());
 
-    SetKeyBoardInputEnabled(true);
-    SetMouseInputEnabled(true);
+    SetKeyBoardInputEnabled(false);
+    SetMouseInputEnabled(false);
 
     m_iTextureID = surface()->CreateNewTextureID(true);
 }
 
 CMomNUIPanel::~CMomNUIPanel()
 {
-
+    surface()->DestroyTextureID(m_iTextureID);
 }
 
 void CMomNUIPanel::OnThink()

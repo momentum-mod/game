@@ -232,7 +232,8 @@ void VGui_CreateGlobalPanels( void )
     mapselector->Create(gameMenu);
     versionwarnpanel->Create(gameMenu);
     momentum_settings->Create(gameMenu);
-    g_pMomNUIPanel = new CMomNUIPanel(gameMenu);
+
+    g_pMomNUIPanel = new CMomNUIPanel();
 }
 
 void VGui_Shutdown()
@@ -261,6 +262,7 @@ void VGui_Shutdown()
 	{
 		g_pClientMode->VGui_Shutdown();
 	}
+
     delete g_pMomNUIPanel;
 
 	// Make sure anything "marked for deletion"

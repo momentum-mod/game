@@ -1,15 +1,15 @@
 #pragma once
 
-#include "vgui_controls/Frame.h"
+#include "vgui_controls/Panel.h"
 
 class CMomNUIPanel :
-    public vgui::Frame
+    public vgui::Panel
 {
 public:
-    DECLARE_CLASS_SIMPLE(CMomNUIPanel, vgui::Frame);
+    DECLARE_CLASS_SIMPLE(CMomNUIPanel, vgui::Panel);
 
 public:
-    CMomNUIPanel(vgui::VPANEL parent);
+    CMomNUIPanel();
     ~CMomNUIPanel();
 
 public:
