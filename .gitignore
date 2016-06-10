@@ -84,4 +84,5 @@ voice_ban.dt
 *.pch.ib_tag
 *.ib_pdb_index
 
-!mp/src/lib/public/cef/**
+!mp/src/lib/common/cef/**
+nui_host.exe

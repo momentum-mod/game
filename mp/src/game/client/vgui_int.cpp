@@ -28,6 +28,7 @@
 #include "momentum/ui/MapSelection/IMapSelector.h"
 #include "momentum/ui/IVersionWarnPanel.h"
 #include "momentum/ui/IMomentumSettingsPanel.h"
+#include "momentum/ui/mom_nui_panel.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -231,7 +232,7 @@ void VGui_CreateGlobalPanels( void )
     mapselector->Create(gameMenu);
     versionwarnpanel->Create(gameMenu);
     momentum_settings->Create(gameMenu);
-
+    g_pMomNUIPanel = new CMomNUIPanel(gameMenu);
 }
 
 void VGui_Shutdown()
@@ -260,6 +261,7 @@ void VGui_Shutdown()
 	{
 		g_pClientMode->VGui_Shutdown();
 	}
+    delete g_pMomNUIPanel;
 
 	// Make sure anything "marked for deletion"
 	//  actually gets deleted before this dll goes away

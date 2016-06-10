@@ -1,0 +1,44 @@
+#pragma once
+
+#include "nui_predef.h"
+#include "filesystem.h"
+
+#include <include/internal/cef_ptr.h>
+
+class IShaderAPI;
+class CShaderDeviceMgr;
+class CMomNUIApp;
+class CMomNUIFrame;
+
+class CMomNUI
+{
+public:
+    static CMomNUI* GetInstance();
+    static void DestroyInstance();
+
+protected:
+    static CMomNUI* m_pInstance;
+
+protected:
+    CMomNUI();
+    ~CMomNUI();
+
+public:
+    bool Init(bool debug, bool host);
+    void Shutdown();
+
+public:
+    inline CMomNUIFrame* GetFrame() const { return m_pFrame; }
+
+protected:
+    bool InitWin32(bool debug, bool host);
+    bool InitLinux(bool debug, bool host);
+    bool InitOSX(bool debug, bool host);
+    bool InitCEF(bool debug, bool host);
+
+protected:
+    CefRefPtr<CMomNUIApp> m_pApp;
+    CMomNUIFrame* m_pFrame;
+    bool m_bShutdown;
+    bool m_bInitialized;
+};

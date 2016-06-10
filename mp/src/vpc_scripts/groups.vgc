@@ -22,6 +22,8 @@ $Group "game"
 	"server"
 	"tier1"
 	"vgui_controls"
+	"nui"
+	"nui_host"
 }
 
 $Group "shaders"

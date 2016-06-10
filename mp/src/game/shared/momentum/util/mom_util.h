@@ -66,13 +66,6 @@ public:
     void DispatchTimerStateMessage(CBasePlayer *, int, bool) const;
 
 #endif
-
-#ifdef _WIN32
-public:
-	size_t OffsetToCode(void* handle);
-	size_t GetSizeOfCode(void* handle);
-	void* SearchPattern(uint8_t* p_BaseAddress, size_t p_ScanSize, uint8_t* p_Pattern, size_t p_PatternSize, uint8_t p_Wildcard = 0xDD);
-#endif
 };
 
 class CTimeSortFunc

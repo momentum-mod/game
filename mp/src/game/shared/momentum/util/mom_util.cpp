@@ -5,11 +5,6 @@
 #include "momentum/mom_shareddefs.h"
 #include "tier0/memdbgon.h"
 
-#ifdef _WIN32
-#include "winlite.h"
-#undef CreateEvent
-#endif
-
 extern IFileSystem *filesystem;
 
 void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -378,88 +373,6 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
     }
     return toReturn;
 }
-
-#ifdef _WIN32
-size_t MomentumUtil::GetSizeOfCode(void* handle)
-{
-	HMODULE hModule = (HMODULE) handle;
-
-	if (!hModule)
-		return NULL;
-
-	PIMAGE_DOS_HEADER pDosHeader = PIMAGE_DOS_HEADER(hModule);
-
-	if (!pDosHeader)
-		return NULL;
-
-	PIMAGE_NT_HEADERS pNTHeader = PIMAGE_NT_HEADERS((uint64_t)hModule + pDosHeader->e_lfanew);
-
-	if (!pNTHeader)
-		return NULL;
-
-	PIMAGE_OPTIONAL_HEADER pOptionalHeader = &pNTHeader->OptionalHeader;
-
-	if (!pOptionalHeader)
-		return NULL;
-
-	return pOptionalHeader->SizeOfCode;
-}
-
-size_t MomentumUtil::OffsetToCode(void* handle)
-{
-	HMODULE hModule = (HMODULE) handle;
-
-	if (!hModule)
-		return NULL;
-
-	PIMAGE_DOS_HEADER pDosHeader = PIMAGE_DOS_HEADER(hModule);
-
-	if (!pDosHeader)
-		return NULL;
-
-	PIMAGE_NT_HEADERS pNTHeader = PIMAGE_NT_HEADERS(hModule + pDosHeader->e_lfanew);
-
-	if (!pNTHeader)
-		return NULL;
-
-	PIMAGE_OPTIONAL_HEADER pOptionalHeader = &pNTHeader->OptionalHeader;
-
-	if (!pOptionalHeader)
-		return NULL;
-
-	return pOptionalHeader->BaseOfCode;
-}
-
-void* MomentumUtil::SearchPattern(uint8_t* baseAddress, size_t scanSize, uint8_t* pattern, size_t patternSize, uint8_t p_Wildcard /* = 0xDD */)
-{
-	size_t badCharSkip[UCHAR_MAX + 1];
-	uint8_t* scanEnd = baseAddress + scanSize - patternSize;
-
-	size_t index = 0;
-	size_t last = patternSize - 1;
-	for (index = last; index > 0 && pattern[index] != p_Wildcard; --index);
-
-	size_t diff = patternSize - index;
-
-	for (index = 0; index <= UCHAR_MAX; ++index)
-		badCharSkip[index] = diff;
-
-	for (index = 0; index < last; ++index)
-		badCharSkip[pattern[index]] = last - index;
-
-	for (; baseAddress < scanEnd; baseAddress += badCharSkip[baseAddress[last]])
-	{
-		for (index = last; index > 0; --index)
-			if (pattern[index] != p_Wildcard && baseAddress[index] != pattern[index])
-				goto skip;
-
-		return baseAddress;
-	skip:;
-	}
-
-	return nullptr;
-}
-#endif
 
 #ifdef GAME_DLL
 void MomentumUtil::DispatchTimerStateMessage(CBasePlayer* pPlayer, int startTick, bool isRunning) const

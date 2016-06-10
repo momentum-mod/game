@@ -131,3 +131,12 @@ $Project "vvis_launcher"
 	"utils\vvis_launcher\vvis_launcher.vpc" [$WIN32]
 }
 
+$Project "nui"
+{
+	"nui\nui.vpc" [$WINDOWS||$X360||$POSIX]
+}
+
+$Project "nui_host"
+{
+	"nui_host\nui_host.vpc" [$WINDOWS]
+}
