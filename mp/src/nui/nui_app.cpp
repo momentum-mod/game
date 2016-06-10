@@ -43,9 +43,10 @@ bool CMomNUIApp::OnBeforeNavigation(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
 
 void CMomNUIApp::OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine)
 {
-    commandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
     commandLine->AppendSwitch("enable-experimental-web-platform-features");
-    commandLine->AppendSwitch("in-process-gpu");
+    commandLine->AppendSwitch("disable-gpu");
+    commandLine->AppendSwitch("disable-gpu-compositing");
+    commandLine->AppendSwitch("enable-begin-frame-scheduling");
 }
 
 bool CMomNUIApp::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefProcessId sourceProcess, CefRefPtr<CefProcessMessage> message)

@@ -5,6 +5,7 @@
 #include "nui_frame.h"
 
 #include "vgui/IInput.h"
+#include "vgui/IVGui.h"
 
 CMomNUIPanel* g_pMomNUIPanel = nullptr;
 
@@ -31,6 +32,13 @@ CMomNUIPanel::CMomNUIPanel(vgui::VPANEL parent) :
     SetSizeable(false);
     SetMoveable(false);
     SetVisible(true);
+
+    vgui::ivgui()->AddTickSignal(GetVPanel());
+
+    SetKeyBoardInputEnabled(true);
+    SetMouseInputEnabled(true);
+
+    m_iTextureID = surface()->CreateNewTextureID(true);
 }
 
 CMomNUIPanel::~CMomNUIPanel()
@@ -41,11 +49,6 @@ CMomNUIPanel::~CMomNUIPanel()
 void CMomNUIPanel::OnThink()
 {
     BaseClass::OnThink();
-}
-
-void CMomNUIPanel::Paint()
-{
-    BaseClass::Paint();
 
     int width, height;
     GetSize(width, height);
@@ -57,16 +60,21 @@ void CMomNUIPanel::Paint()
 
         CMomNUI::GetInstance()->GetFrame()->OnResized(width, height);
     }
+}
 
-    if (m_iTextureID == 0)
-        m_iTextureID = surface()->CreateNewTextureID(true);
+void CMomNUIPanel::Paint()
+{
+    auto frame = CMomNUI::GetInstance()->GetFrame();
 
-    g_pVGuiSurface->DrawSetTextureRGBAEx(m_iTextureID, CMomNUI::GetInstance()->GetFrame()->TextureBuffer(), width, height, IMAGE_FORMAT_BGRA8888);
+    if (!frame || !frame->TextureBuffer())
+        return;
+
+    if (frame->Dirty())
+        surface()->DrawSetTextureRGBAEx(m_iTextureID, frame->TextureBuffer(), frame->FrameWidth(), frame->FrameHeight(), IMAGE_FORMAT_BGRA8888);
 
     surface()->DrawSetTexture(m_iTextureID);
     surface()->DrawSetColor(Color(255, 255, 255, 255));
-
-    surface()->DrawTexturedRect(0, 0, width, height);
+    surface()->DrawTexturedRect(0, 0, frame->FrameWidth(), frame->FrameHeight());
 }
 
 void CMomNUIPanel::OnCursorEntered()
