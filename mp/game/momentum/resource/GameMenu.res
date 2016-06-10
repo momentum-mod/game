@@ -84,7 +84,7 @@
 	}
 	"12"
 	{
-	    "label" "#MOM_ReportBug"
+	    "label" "#MOM_SendFeedback"
 		"command" "engine mom_bugreport_show"
 		"InGameOrder" "250"
 	}
