@@ -280,7 +280,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- STARTING VELOCITY---
     wchar_t enterVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(enterVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage)[m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(enterVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f);
 
     g_pVGuiLocalize->ConstructString(enterVelUni, sizeof(enterVelUni), m_pwVelZoneEnter, 1, enterVel);
 
@@ -290,7 +290,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- ENDING VELOCITY---
     wchar_t exitVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(exitVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage)[m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(exitVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f);
 
     g_pVGuiLocalize->ConstructString(exitVelUni, sizeof(exitVelUni), m_pwVelZoneExit, 1, exitVel);
 
@@ -300,7 +300,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- AVG VELOCITY---
     wchar_t avgVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(avgVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage)[m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(avgVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, m_iVelocityType) : 0.0f);
 
     g_pVGuiLocalize->ConstructString(avgVelUni, sizeof(avgVelUni), m_pwVelAvg, 1, avgVel);
 
@@ -310,7 +310,7 @@ void CHudMapFinishedDialog::Paint()
     //// --- MAX VELOCITY---
     wchar_t maxVelUni[BUFSIZELOCL];
 
-    MAKE_UNI_FLOAT(maxVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage)[m_iVelocityType] : 0.0f);
+    MAKE_UNI_FLOAT(maxVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, m_iVelocityType) : 0.0f);
 
     g_pVGuiLocalize->ConstructString(maxVelUni, sizeof(maxVelUni), m_pwVelMax, 1, maxVel);
 
@@ -345,13 +345,13 @@ void CHudMapFinishedDialog::OnThink()
         m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
         //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
         //Is it going to be a localized string, except for errors that have to be specific?
-
+        
         ConVarRef hvel("mom_speedometer_hvel");
         m_iVelocityType = hvel.GetBool();
 
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        m_pRunStats = g_MOMEventListener->GetRunStats(pGhost ? pGhost->entindex() : pPlayer->entindex());
-        float lastRunTime = pGhost ? pGhost->m_flRunTime : g_MOMEventListener->m_flLastRunTime;
+        m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
+        float lastRunTime = pGhost ? pGhost->m_RunData.m_flRunTime : pPlayer->m_RunData.m_flRunTime;
         mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
     }
 }

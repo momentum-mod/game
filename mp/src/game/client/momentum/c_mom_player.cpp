@@ -13,6 +13,7 @@ RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
 RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
+RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE()
 
 
@@ -23,6 +24,7 @@ C_MomentumPlayer::C_MomentumPlayer()
     m_RunData.m_bMapFinished = false;
     m_RunData.m_flLastJumpTime = 0.0f;
     m_bHasPracticeMode = false;
+    m_RunStats.Init();
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()

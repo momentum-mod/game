@@ -127,8 +127,9 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     Color secondaryColor;
 
     bool m_bRanFadeOutJumpSpeed;
-    int m_iEntIndex, m_iCurrentZone;
+    int m_iCurrentZone;
     bool m_bEntInZone, m_bTimerIsRunning;
+    CMomRunStats *m_pRunStats;
 
   protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
@@ -149,7 +150,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_bRanFadeOutJumpSpeed = false;
-    m_iEntIndex = -1;
+    m_pRunStats = nullptr;
     m_iCurrentZone = 0;
     m_bEntInZone = false;
 }
@@ -172,7 +173,7 @@ void CHudSpeedMeter::OnThink()
         //The last jump time is also important if the player is watching a replay
         float lastJumpTime = pData->m_flLastJumpTime;
 
-        m_iEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
+        m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
 
         m_bEntInZone = pData->m_bIsInZone;
 
@@ -307,7 +308,7 @@ void CHudSpeedMeter::Paint()
         Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), stageStartAlpha);
 
 
-        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_iEntIndex, m_iCurrentZone, enterVelANSITemp,
+        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_iCurrentZone, enterVelANSITemp,
                                              enterVelANSICompTemp, &compareColor);
 
         Q_snprintf(enterVelANSI, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelANSITemp))));

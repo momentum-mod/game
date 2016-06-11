@@ -3,7 +3,6 @@
 
 #include "tier0/memdbgon.h"
 
-
 #ifdef CLIENT_DLL
 BEGIN_RECV_TABLE_NOBASE(C_MOMRunEntityData, DT_MOM_RunEntData)
 RecvPropBool(RECVINFO(m_bAutoBhop)),
@@ -18,6 +17,7 @@ RecvPropInt(RECVINFO(m_iCurrentZone)),
 RecvPropBool(RECVINFO(m_bMapFinished)),
 RecvPropBool(RECVINFO(m_bTimerRunning)),
 RecvPropInt(RECVINFO(m_iStartTick)),
+RecvPropFloat(RECVINFO(m_flRunTime)),
 END_RECV_TABLE()
 #else
 BEGIN_SEND_TABLE_NOBASE(CMOMRunEntityData, DT_MOM_RunEntData)
@@ -33,6 +33,7 @@ SendPropInt(SENDINFO(m_iCurrentZone)),
 SendPropBool(SENDINFO(m_bMapFinished)),
 SendPropBool(SENDINFO(m_bTimerRunning)),
 SendPropInt(SENDINFO(m_iStartTick)),
+SendPropFloat(SENDINFO(m_flRunTime)),
 END_SEND_TABLE()
 #endif
 
@@ -50,4 +51,5 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_iStartTick = -1;
     m_bMapFinished = false;
     m_bTimerRunning = false;
+    m_flRunTime = 0.0f;
 }

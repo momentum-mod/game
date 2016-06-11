@@ -26,10 +26,10 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 SendPropInt(SENDINFO(m_nReplayButtons)), 
 SendPropInt(SENDINFO(m_iTotalStrafes)), 
 SendPropInt(SENDINFO(m_iTotalJumps)),
-SendPropFloat(SENDINFO(m_flRunTime)),
 SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropString(SENDINFO(m_pszPlayerName)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)), 
+SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
@@ -46,7 +46,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() :
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
     m_bHasJumped = false;
-    m_RunStats = nullptr;
+    m_RunStats.Init();
 }
 
 CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() 
@@ -378,16 +378,7 @@ void CMomentumReplayGhostEntity::StopTimer()
 }
 
 void CMomentumReplayGhostEntity::EndRun()
-{
-    IGameEvent *zoneExitEvent = gameeventmanager->CreateEvent("zone_exit");
-    if (zoneExitEvent)
-    {
-        //This tells the event listener to remove/clear the stats for the given ent
-        zoneExitEvent->SetInt("num", MAX_STAGES + 1);
-        zoneExitEvent->SetInt("ent", entindex());
-        gameeventmanager->FireEvent(zoneExitEvent);
-    }
-    
+{ 
     StopTimer();
     SetNextThink(-1);
     m_bIsActive = false;
@@ -400,7 +391,6 @@ void CMomentumReplayGhostEntity::EndRun()
             pPlayer->StopObserverMode();
             pPlayer->ForceRespawn();
             pPlayer->SetMoveType(MOVETYPE_WALK);
-            // pPlayer->m_bIsWatchingReplay = false;
         }
     }
 

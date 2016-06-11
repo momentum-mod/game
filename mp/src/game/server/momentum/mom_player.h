@@ -92,6 +92,7 @@ class CMomentumPlayer : public CBasePlayer
     CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats); // Run stats, also used for hud elements
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -117,8 +118,8 @@ class CMomentumPlayer : public CBasePlayer
     bool IsValidObserverTarget(CBaseEntity *target) override;
     bool SetObserverTarget(CBaseEntity *target) override;
 
-    // Run Stats
-    CMomRunStats m_PlayerRunStats;
+    // Run Stats MOM_TODO: REMOVEME
+    //CMomRunStats m_PlayerRunStats;
 
     // Used by momentum triggers
     Vector GetPrevOrigin(void);

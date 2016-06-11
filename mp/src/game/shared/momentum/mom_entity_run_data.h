@@ -9,6 +9,8 @@
 #ifdef CLIENT_DLL 
 #define CMOMRunEntityData C_MOMRunEntityData
 EXTERN_RECV_TABLE(DT_MOM_RunEntData);
+#else
+EXTERN_SEND_TABLE(DT_MOM_RunEntData);
 #endif
 
 class CMOMRunEntityData
@@ -33,16 +35,13 @@ public:
     CNetworkVar(int, m_iCurrentZone);//Current stage/checkpoint the player is on
     CNetworkVar(bool, m_bTimerRunning);//Is the timer currently running for this ent?
     CNetworkVar(int, m_iStartTick); //Tick that the entity started its timer
+    CNetworkVar(float, m_flRunTime); //The time taken to do their most recent run
 
 #elif defined CLIENT_DLL
 
     bool m_bAutoBhop, m_bIsInZone, m_bMapFinished, m_bTimerRunning;
-    float m_flStrafeSync, m_flStrafeSync2, m_flLastJumpVel, m_flLastJumpTime;
+    float m_flStrafeSync, m_flStrafeSync2, m_flLastJumpVel, m_flLastJumpTime, m_flRunTime;
     int m_iSuccessiveBhops, m_iRunFlags, m_iCurrentZone, m_iStartTick;
 
 #endif
 };
-
-#ifdef GAME_DLL
-EXTERN_SEND_TABLE(DT_MOM_RunEntData);
-#endif

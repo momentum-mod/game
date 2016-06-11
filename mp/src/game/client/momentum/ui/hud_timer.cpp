@@ -109,7 +109,7 @@ class C_Timer : public CHudElement, public Panel
     bool m_bMapFinished;
     bool m_bMapIsLinear;
     int m_iCheckpointCount, m_iCheckpointCurrent;
-    int m_iEntIndex;
+    CMomRunStats *m_pRunStats;
     char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL],
         noTimerLocalized[BUFSIZELOCL];
@@ -137,7 +137,7 @@ void C_Timer::Init()
     initialTall = 48;
     m_iTotalTicks = 0;
     m_iZoneCount = 0;
-    m_iEntIndex = -1;
+    m_pRunStats = nullptr;
     // Reset();
 
     // cache localization strings
@@ -165,7 +165,7 @@ void C_Timer::Reset()
     m_bMapIsLinear = false;
     m_iCheckpointCount = 0;
     m_iCheckpointCurrent = 0;
-    m_iEntIndex = -1;
+    m_pRunStats = nullptr;
 }
 
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
@@ -244,14 +244,14 @@ void C_Timer::OnThink()
         {
             m_bIsRunning = pGhost->m_RunData.m_bTimerRunning;
             m_iStartTick = pGhost->m_RunData.m_iStartTick;
-            m_iEntIndex = pGhost->entindex();
+            m_pRunStats = &pGhost->m_RunStats;
             m_bPlayerHasPracticeMode = false;
             runData = &pGhost->m_RunData;
         }
         else
         {
             m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
-            m_iEntIndex = pLocal->entindex();
+            m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_RunData;
         }
         m_iZoneCurrent = runData->m_iCurrentZone;
@@ -296,7 +296,7 @@ void C_Timer::Paint(void)
 
         ConVarRef timeType("mom_comparisons_time_type");
         // This void works even if there is no comparison loaded
-        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_iEntIndex, 
+        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_pRunStats, 
             m_iZoneCurrent - 1, m_pszStageTimeString, comparisonANSI, &compareColor);
 
         // Convert the split to Unicode

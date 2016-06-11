@@ -97,8 +97,8 @@ void CMomentumReplaySystem::SetRunStats()
     if (!m_pReplayManager->Recording())
         return;
 
-    auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_PlayerRunStats.GetTotalZones());
-    *stats = m_player->m_PlayerRunStats;
+    auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
+    *stats = m_player->m_RunStats;
 }
 
 void CMomentumReplaySystem::StartReplay(bool firstperson)
@@ -107,7 +107,11 @@ void CMomentumReplaySystem::StartReplay(bool firstperson)
 
     if (m_CurrentReplayGhost != nullptr && m_pReplayManager->GetPlaybackReplay())
     {
+        //MOM_TODO: Make sure this is all the data we need to set
         m_CurrentReplayGhost->SetRunStats(m_pReplayManager->GetPlaybackReplay()->GetRunStats());
+        m_CurrentReplayGhost->m_RunData.m_flRunTime = m_pReplayManager->GetPlaybackReplay()->GetRunTime();
+        m_CurrentReplayGhost->m_RunData.m_iRunFlags = m_pReplayManager->GetPlaybackReplay()->GetRunFlags();
+        m_CurrentReplayGhost->m_flTickRate = m_pReplayManager->GetPlaybackReplay()->GetTickInterval();
 
         if (firstperson)
             g_Timer->Stop(false); // stop the timer just in case we started a replay while it was running...

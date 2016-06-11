@@ -2,6 +2,7 @@
 
 #include "cbase.h"
 #include "mom_entity_run_data.h"
+#include "util/run_stats.h"
 
 class C_MomentumReplayGhostEntity : public C_BaseAnimating
 {
@@ -12,8 +13,9 @@ public:
     C_MomentumReplayGhostEntity();
 
     CMOMRunEntityData m_RunData;
+    CMomRunStats m_RunStats;
 
-    float m_flRunTime, m_flTickRate;
+    float m_flTickRate;
 
     int m_nReplayButtons;
     //These are stored here because run stats already has the ones obtained from the run

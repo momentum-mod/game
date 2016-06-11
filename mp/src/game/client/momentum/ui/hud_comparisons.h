@@ -52,7 +52,7 @@ public:
     }
     void UnloadComparisons();
     void DrawComparisonString(ComparisonString_t, int stage, int Ypos);
-    void GetComparisonString(ComparisonString_t type, int entIndex, int zone, char *ansiActualBufferOut, char *ansiCompareBufferOut, Color *compareColorOut);
+    void GetComparisonString(ComparisonString_t type, CMomRunStats *pStats, int zone, char *ansiActualBufferOut, char *ansiCompareBufferOut, Color *compareColorOut);
     void GetDiffColor(float diff, Color *into, bool positiveIsGain);
     int GetMaximumTall();
     void SetMaxWide(int);
@@ -95,9 +95,10 @@ private:
 
     int m_iDefaultWidth, m_iDefaultTall, m_iDefaultXPos, m_iDefaultYPos;
     int m_iMaxWide, m_iWidestLabel, m_iWidestValue;
-    int m_iCurrentZone, m_iEntIndex;
+    int m_iCurrentZone, m_iCurrentEntIndex;
     bool m_bLoadedComparison;
     RunCompare_t *m_rcCurrentComparison;
+    CMomRunStats *m_pRunStats;
 
 };
 

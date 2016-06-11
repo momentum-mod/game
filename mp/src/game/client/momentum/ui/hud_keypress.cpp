@@ -206,9 +206,12 @@ void CHudKeyPressDisplay::OnThink()
             {
                 //we should only draw the strafe/jump counters when the timer is running
                 m_bShouldDrawCounts = pPlayer->m_RunData.m_bTimerRunning;
-                CMomRunStats *stats = g_MOMEventListener->GetRunStats(pPlayer->entindex());
-                m_nStrafes = stats->GetZoneStrafes(0);
-                m_nJumps = stats->GetZoneJumps(0);
+                if (m_bShouldDrawCounts)
+                {
+                    CMomRunStats *stats = &pPlayer->m_RunStats;
+                    m_nStrafes = stats->GetZoneStrafes(0);
+                    m_nJumps = stats->GetZoneJumps(0);
+                }
             }
         }
     } 

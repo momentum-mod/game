@@ -642,9 +642,9 @@ void CMOMSpectatorGUI::Update()
 
                 char tempRunTime[BUFSIZETIME];
                 wchar_t szTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
-                mom_UTIL->FormatTime(pReplayEnt->m_flRunTime, tempRunTime);
+                mom_UTIL->FormatTime(pReplayEnt->m_RunData.m_flRunTime, tempRunTime);
                 g_pVGuiLocalize->ConvertANSIToUnicode(tempRunTime, wTime, sizeof(wTime));
-                swprintf(szTimeLabel, L"%s %s", g_pVGuiLocalize->Find("#MOM_RunTime"), wTime);
+                swprintf(szTimeLabel, L"%s %s", g_pVGuiLocalize->Find("#MOM_MF_RunTime"), wTime);
 
                 SetLabelText("timelabel", szTimeLabel);
 

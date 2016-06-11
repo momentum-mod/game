@@ -166,15 +166,15 @@ void CTimer::SaveTime()
         pOverallKey->SetFloat("avgsync", t->RunStats.GetZoneStrafeSyncAvg(0));
         pOverallKey->SetFloat("avgsync2", t->RunStats.GetZoneStrafeSync2Avg(0));
 
-        pOverallKey->SetFloat("start_vel", t->RunStats.GetZoneEnterSpeed(1)[0]);
-        pOverallKey->SetFloat("end_vel", t->RunStats.GetZoneExitSpeed(0)[0]);
-        pOverallKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(0)[0]);
-        pOverallKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(0)[0]);
+        pOverallKey->SetFloat("start_vel", t->RunStats.GetZoneEnterSpeed(1, false));
+        pOverallKey->SetFloat("end_vel", t->RunStats.GetZoneExitSpeed(0, false));
+        pOverallKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(0, false));
+        pOverallKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(0, false));
 
-        pOverallKey->SetFloat("start_vel_2D", t->RunStats.GetZoneEnterSpeed(1)[1]);
-        pOverallKey->SetFloat("end_vel_2D", t->RunStats.GetZoneExitSpeed(0)[1]);
-        pOverallKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(0)[1]);
-        pOverallKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(0)[1]);
+        pOverallKey->SetFloat("start_vel_2D", t->RunStats.GetZoneEnterSpeed(1, true));
+        pOverallKey->SetFloat("end_vel_2D", t->RunStats.GetZoneExitSpeed(0, true));
+        pOverallKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(0, true));
+        pOverallKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(0, true));
 
         char stageName[9]; // "stage 64\0"
         if (GetZoneCount() > 1)
@@ -191,15 +191,15 @@ void CTimer::SaveTime()
                 pStageKey->SetFloat("avg_sync", t->RunStats.GetZoneStrafeSyncAvg(i2));
                 pStageKey->SetFloat("avg_sync2", t->RunStats.GetZoneStrafeSync2Avg(i2));
 
-                pStageKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(i2)[0]);
-                pStageKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(i2)[0]);
-                pStageKey->SetFloat("enter_vel", t->RunStats.GetZoneEnterSpeed(i2)[0]);
-                pStageKey->SetFloat("exit_vel", t->RunStats.GetZoneExitSpeed(i2)[0]);
+                pStageKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(i2, false));
+                pStageKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(i2, false));
+                pStageKey->SetFloat("enter_vel", t->RunStats.GetZoneEnterSpeed(i2, false));
+                pStageKey->SetFloat("exit_vel", t->RunStats.GetZoneExitSpeed(i2, false));
 
-                pStageKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(i2)[1]);
-                pStageKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(i2)[1]);
-                pStageKey->SetFloat("enter_vel_2D", t->RunStats.GetZoneEnterSpeed(i2)[1]);
-                pStageKey->SetFloat("exit_vel_2D", t->RunStats.GetZoneExitSpeed(i2)[1]);
+                pStageKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(i2, true));
+                pStageKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(i2, true));
+                pStageKey->SetFloat("enter_vel_2D", t->RunStats.GetZoneEnterSpeed(i2, true));
+                pStageKey->SetFloat("exit_vel_2D", t->RunStats.GetZoneExitSpeed(i2, true));
 
                 pSubkey->AddSubKey(pStageKey);
             }
@@ -250,7 +250,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
         t->tickrate = gpGlobals->interval_per_tick;
         t->flags = pPlayer->m_RunData.m_iRunFlags;
         time(&t->date);
-        t->RunStats = pPlayer->m_PlayerRunStats; //copy all the run stats
+        t->RunStats = static_cast<CMomRunStats>(pPlayer->m_RunStats); //copy all the run stats
 
         localTimes.AddToTail(t);
 

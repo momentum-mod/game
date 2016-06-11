@@ -82,6 +82,7 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
+    m_iCurrentEntIndex = -1;
     ivgui()->AddTickSignal(GetVPanel(), 250);
 }
 
@@ -130,7 +131,7 @@ void C_RunComparisons::Reset()
     m_iMaxWide = m_iDefaultWidth;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
-    m_iEntIndex = -1;
+    m_pRunStats = nullptr;
 }
 
 void C_RunComparisons::FireGameEvent(IGameEvent *event)
@@ -138,10 +139,9 @@ void C_RunComparisons::FireGameEvent(IGameEvent *event)
     if (!Q_strcmp(event->GetName(), "timer_state")) // This is insuring, even though we register for only this event...?
     {
         int entIndex = event->GetInt("ent");
-        if (entIndex == m_iEntIndex)
-        {
+        //MOM_TODO: Do we really want to UnloadComparisons right after beating the run? Why not when they leave the ending zone?
+        if (entIndex == m_iCurrentEntIndex)
             event->GetBool("is_running") ? LoadComparisons() : UnloadComparisons();
-        }
     }
 }
 
@@ -188,7 +188,8 @@ void C_RunComparisons::OnTick()
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        m_iEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
+        m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
+        m_iCurrentEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
     }
 }
 
@@ -292,9 +293,12 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
 
 // If you pass null to any of the pointer args, they will not be touched. This allows for
 // only obtaining the actual, only obtaining the comparison, or only obtaining the color.
-void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex, int zone, char *ansiActualBufferOut,
+void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats* stats, int zone, char *ansiActualBufferOut,
                                            char *ansiCompareBufferOut, Color *compareColorOut)
 {
+    Assert(stats);
+    if (!stats)
+        return;
     ConVarRef velTypeVar("mom_speedometer_hvel");
     int velType = velTypeVar.GetInt(); // Type of velocity comparison we're making (3D vs Horizontal)
     float diff = 0.0f;                               // Difference between the current and the compared-to.
@@ -302,9 +306,6 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
     char tempANSITimeOutput[BUFSIZETIME],
         tempANSITimeActual[BUFSIZETIME]; // Only used for time comparisons, ignored otherwise.
     char diffChar = '\0';                // The character used for showing the diff: + or -
-
-    //Get the run stats for the ent index, usually the player but can be the ghost the player is spectating
-    CMomRunStats *stats = g_MOMEventListener->GetRunStats(entIndex);
 
     switch (type)
     {
@@ -328,23 +329,23 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, int entIndex
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference
-        act = stats->GetZoneVelocityAvg(zone)[velType];
+        act = stats->GetZoneVelocityAvg(zone, velType);
         if (m_bLoadedComparison)
             diff = act -
                    m_rcCurrentComparison->zoneAvgVels[velType][zone];
         break;
     case VELOCITY_EXIT:
-        act = stats->GetZoneExitSpeed(zone)[velType];
+        act = stats->GetZoneExitSpeed(zone, velType);
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneExitVels[velType][zone];
         break;
     case VELOCITY_MAX:
-        act = stats->GetZoneVelocityMax(zone)[velType];
+        act = stats->GetZoneVelocityMax(zone, velType);
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneMaxVels[velType][zone];
         break;
     case VELOCITY_ENTER:
-        act = stats->GetZoneEnterSpeed(zone)[velType];
+        act = stats->GetZoneEnterSpeed(zone, velType);
         if (m_bLoadedComparison)
             diff = act - m_rcCurrentComparison->zoneEnterVels[velType][zone];
         break;
@@ -465,7 +466,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     }
 
     // Obtain the actual value, comparison string, and corresponding color
-    GetComparisonString(string, m_iEntIndex, stage, actualValueANSI, compareValueANSI, &compareColor);
+    GetComparisonString(string, m_pRunStats, stage, actualValueANSI, compareValueANSI, &compareColor);
 
     // Pad the compare type with a couple spaces in front.
     V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s", localized);
@@ -689,7 +690,7 @@ void C_RunComparisons::Paint()
                               + 2;                                                // Padding
 
                 // Get just the comparison value, no actual value needed as it clutters up the panel
-                GetComparisonString(timeType, m_iEntIndex, i, nullptr, timeComparisonString, &comparisonColor);
+                GetComparisonString(timeType, m_pRunStats, i, nullptr, timeComparisonString, &comparisonColor);
 
                 // See if this updates our max width.
                 SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, timeComparisonString) + 2);

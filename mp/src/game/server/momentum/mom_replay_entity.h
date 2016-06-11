@@ -56,9 +56,8 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel); // for hud display..
 
-    inline const char* GetGhostModel() const { return m_pszModel; }
-    inline void SetRunStats(CMomRunStats* stats) { m_RunStats = stats; }
-    inline CMomRunStats* GetRunStats() { return m_RunStats; }
+    const char* GetGhostModel() const { return m_pszModel; }
+    void SetRunStats(CMomRunStats* stats) { m_RunStats.CopyFrom(*stats); }
 
     void AddSpectator(CMomentumPlayer* player)
     {
@@ -70,7 +69,6 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
         m_rgSpectators.FindAndRemove(player);
     }
 
-    inline void SetRunTime(float time) { m_flRunTime = time; }
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
     inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
 
@@ -81,10 +79,10 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     int m_nStartTick;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
     CNetworkVar(int, m_nReplayButtons);
     CNetworkVar(int, m_iTotalStrafes);
     CNetworkVar(int, m_iTotalJumps);
-    CNetworkVar(float, m_flRunTime);
     CNetworkVar(float, m_flTickRate);
     CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
@@ -96,7 +94,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
   private:
     char m_pszModel[256], m_pszMapName[256];
     int m_iCurrentStep;
-    CMomRunStats* m_RunStats;
+    //CMomRunStats* m_RunStats;
 
     CUtlVector<CMomentumPlayer *> m_rgSpectators;
 
