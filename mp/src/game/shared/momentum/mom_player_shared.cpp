@@ -113,7 +113,6 @@ inline void UTIL_TraceLineIgnoreTwoEntities(const Vector& vecAbsStart, const Vec
     }
 }
 
-
 void CMomentumPlayer::FireBullet(
     Vector vecSrc,	// shooting postion
     const QAngle &shootAngles,  //shooting angle

@@ -31,8 +31,6 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
     int stageNum = GetStageNumber();
 
     IGameEvent *stageEvent = nullptr;
-    //CMomRunStats *pStats = nullptr;
-    float enterTime = 0.0f;
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
@@ -46,8 +44,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         { 
 			pPlayer->m_RunStats.SetZoneExitSpeed(stageNum - 1, pPlayer->GetLocalVelocity().Length(), pPlayer->GetLocalVelocity().Length2D());
             g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_END);
-            enterTime = g_Timer->CalculateStageTime(stageNum);
-            pPlayer->m_RunStats.SetZoneEnterTime(stageNum, enterTime);
+            pPlayer->m_RunStats.SetZoneEnterTime(stageNum, g_Timer->CalculateStageTime(stageNum));
             pPlayer->m_RunStats.SetZoneTime(stageNum - 1,
                 pPlayer->m_RunStats.GetZoneEnterTime(stageNum) - pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
         }

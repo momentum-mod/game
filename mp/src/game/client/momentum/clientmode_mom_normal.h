@@ -15,6 +15,7 @@
 #include "clientmode_shared.h"
 #include "hud_menu_static.h"
 #include "hud_mapfinished.h"
+#include "ClientTimesDisplay.h"
 #include <vgui/Cursor.h>
 #include <vgui_controls/EditablePanel.h>
 
@@ -45,6 +46,7 @@ class ClientModeMOMNormal : public ClientModeShared
   private:
     CHudMenuStatic *m_pHudMenuStatic;
     CHudMapFinishedDialog *m_pHudMapFinished;
+    CClientTimesDisplay *m_pLeaderboards;
 };
 
 extern IClientMode *GetClientModeNormal();

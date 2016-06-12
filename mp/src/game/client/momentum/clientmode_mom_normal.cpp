@@ -23,9 +23,6 @@
 
 extern bool g_bRollingCredits;
 
-ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 90.0,
-                   true, 179.0);
-
 //-----------------------------------------------------------------------------
 // Globals
 //-----------------------------------------------------------------------------
@@ -91,6 +88,7 @@ ClientModeMOMNormal::ClientModeMOMNormal()
 {
     m_pHudMenuStatic = nullptr;
     m_pHudMapFinished = nullptr;
+    m_pLeaderboards = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
@@ -112,6 +110,7 @@ void ClientModeMOMNormal::Init()
 
     m_pHudMenuStatic = static_cast<CHudMenuStatic *>(GET_HUDELEMENT(CHudMenuStatic));
     m_pHudMapFinished = static_cast<CHudMapFinishedDialog*>(GET_HUDELEMENT(CHudMapFinishedDialog));
+    m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
     // Load up the combine control panel scheme
     g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
@@ -137,12 +136,12 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
     }
 
     //Detach the mouse if the user right-clicked while the leaderboards are open
-    CClientTimesDisplay *pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
-    if (pLeaderboards && pLeaderboards->IsVisible())
+    
+    if (m_pLeaderboards && m_pLeaderboards->IsVisible())
     {
         if (keynum == MOUSE_RIGHT)
         {
-            pLeaderboards->SetMouseInputEnabled(true);
+            m_pLeaderboards->SetMouseInputEnabled(true);
             return 0;
         }
     }

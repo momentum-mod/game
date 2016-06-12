@@ -18,9 +18,9 @@ class CMomRunStats : public ISerializable
     DECLARE_EMBEDDED_NETWORKVAR();
 
   public:
-    // Note: This needs updating every time the struct is updated!
     CMomRunStats(uint8 size = MAX_STAGES) { Init(size); }
 
+    // Note: This needs updating every time the struct is updated!
     virtual void Init(uint8 size = MAX_STAGES)
     {
         if (size > MAX_STAGES)
@@ -47,6 +47,7 @@ class CMomRunStats : public ISerializable
         }
     }
 
+    // Note: This needs updating every time the struct is updated!
     CMomRunStats(CBinaryReader *reader)
     {
         SetTotalZones(reader->ReadUInt8());
@@ -81,8 +82,8 @@ class CMomRunStats : public ISerializable
         }
     }
 
-  public:
-    virtual void Serialize(CBinaryWriter *writer) override
+    // Note: This needs updating every time the struct is updated!
+    void Serialize(CBinaryWriter *writer) override
     {
         writer->WriteUInt8(m_iTotalZones);
 
@@ -109,7 +110,6 @@ class CMomRunStats : public ISerializable
         }
     }
 
-  public:
     // Note: This needs updating every time the struct is updated!
     CMomRunStats &operator=(const CMomRunStats &other)
     {
@@ -274,7 +274,7 @@ class CMomRunStats : public ISerializable
 #endif
     }
 
-// private:
+private:
 // Note: Passing 0 as the index to any of these will return the overall stat, i.e during the entire run.
 #ifdef CLIENT_DLL
 

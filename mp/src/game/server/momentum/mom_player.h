@@ -13,6 +13,9 @@
 
 class CMomentumReplayGhostEntity;
 
+// The player can spend this many ticks in the air inside the start zone before their speed is limited
+#define MAX_AIRTIME_TICKS 15
+
 class CMomentumPlayer : public CBasePlayer
 {
   public:
@@ -118,9 +121,6 @@ class CMomentumPlayer : public CBasePlayer
     bool IsValidObserverTarget(CBaseEntity *target) override;
     bool SetObserverTarget(CBaseEntity *target) override;
 
-    // Run Stats MOM_TODO: REMOVEME
-    //CMomRunStats m_PlayerRunStats;
-
     // Used by momentum triggers
     Vector GetPrevOrigin(void);
     Vector GetPrevOrigin(const Vector &base);
@@ -156,8 +156,6 @@ class CMomentumPlayer : public CBasePlayer
 
     // Start zone thinkfunc
     int m_nTicksInAir;
-    const int MAX_AIRTIME_TICKS =
-        15; // The player can spend this many ticks in the air inside the start zone before their speed is limited
 
     float m_flTweenVelValue = 1.0f;
 };
