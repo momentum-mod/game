@@ -17,14 +17,17 @@ class MomentumUtil
 public:
     void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
+    void GetOnlineTimesCallback(HTTPRequestCompleted_t*, bool);
     void PostTime(const char* URL);
     void DownloadMap(const char*);
+    void GetOnlineTimes(const char *p_mapname, int p_rank, int p_radius, int p_tick, uint64 p_splayer);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
 
     void GetRemoteRepoModVersion();
 

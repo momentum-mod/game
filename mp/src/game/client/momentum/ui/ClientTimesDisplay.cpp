@@ -545,7 +545,6 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
         ConvertLocalTimes(kv);
 }
 
-
 void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
 {
     FOR_EACH_VEC(m_vLocalTimes, i)
@@ -576,6 +575,16 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
     }
 }
 
+
+void CClientTimesDisplay::LoadOnlineTimes(KeyValues *kv)
+{
+    if (m_bOnlineNeedUpdate)
+    {
+        m_vOnlineTimes.RemoveAll();
+        mom_UTIL->GetOnlineTimes(g_pGameRules->MapName(), 0, 5, 100, 76561198011358548);
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Updates the leaderboard lists
 //-----------------------------------------------------------------------------
@@ -594,7 +603,8 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv)
     pLeaderboards->AddSubKey(pLocal);
 
     KeyValues *pOnline = new KeyValues("online");
-    // MOM_TODO: Fill online times (global)
+    // Fill online times (global)
+    LoadOnlineTimes(pOnline);
 
     pLeaderboards->AddSubKey(pOnline);
 

@@ -84,6 +84,60 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
+void MomentumUtil::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+    if (bIOFailure)
+        return;
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+    IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+    DevLog("pDataPtr: %s\n", pDataPtr);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            // toNode() returns the >>payload<< of the JSON object !!!
+
+            DevLog("Outer is JSON OBJECT!\n");
+            JsonNode *node = val.toNode();
+            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
+
+            // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
+            // the JSON
+            if (node && node->value.getTag() == JSON_TRUE)
+            {
+                DevLog("RESPONSE WAS TRUE!\n");
+                // Necessary so that the leaderboards and hud_mapfinished update appropriately
+                if (runUploadedEvent)
+                {
+                    runUploadedEvent->SetBool("run_posted", true);
+                    // MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
+                    gameeventmanager->FireEvent(runUploadedEvent);
+                }
+            }
+        }
+    }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
+    // Last but not least, free resources
+    alloc.deallocate();
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+}
+
 void MomentumUtil::PostTime(const char *szURL)
 {
     CreateAndSendHTTPReq(szURL, &cbPostTimeCallback, &MomentumUtil::PostTimeCallback);
@@ -111,20 +165,34 @@ void MomentumUtil::DownloadMap(const char *szMapname)
     // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
 }
 
+void MomentumUtil::GetOnlineTimes(const char *p_mapname, int p_rank, int p_radius, int p_tick, uint64 p_splayer)
+{
+    char queryURL[512];
+    Q_snprintf(queryURL, 512, "http://momentum-mod.org/getscores/%s/%i/%i/%i", p_mapname, p_tick, p_rank, p_radius);
+    CreateAndSendHTTPReq(queryURL, &cbGetOnlineTimesCallback, &MomentumUtil::GetOnlineTimesCallback);
+}
+
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
                                         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {
-    HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-    SteamAPICall_t apiHandle;
-
-    if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+    if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        callback->Set(apiHandle, this, func);
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            callback->Set(apiHandle, this, func);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
     }
     else
     {
-        Warning("Failed to send HTTP Request to post scores online!\n");
-        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        Warning("Steampicontext failure.\n");
     }
 }
 

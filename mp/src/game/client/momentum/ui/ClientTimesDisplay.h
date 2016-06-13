@@ -144,8 +144,24 @@ private:
             date = static_cast<time_t>(kv->GetInt("date", 0));
         };
     };
+
+    struct TimeOnline
+    {
+        int rank;
+        float time_sec, rate;
+        time_t date;
+
+        explicit TimeOnline(KeyValues* kv)
+        {
+            rank = kv->GetInt("rank", 0);
+            time_sec = Q_atof(kv->GetName());
+            rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
+            date = static_cast<time_t>(kv->GetInt("date", 0));
+        };
+    };
     CUtlVector<Time> m_vLocalTimes;
-    // MOM_TODO: CUtlVector<SomeStruct> m_vOnlineTimes;
+    
+    CUtlVector<TimeOnline> m_vOnlineTimes;
 
     bool m_bLocalTimesLoaded = false;
     bool m_bLocalTimesNeedUpdate = false;
@@ -159,6 +175,7 @@ private:
     void FillScoreBoard();
     void FillScoreBoard(bool pFullUpdate);
     void LoadLocalTimes(KeyValues *kv);
+    void LoadOnlineTimes(KeyValues *kv);
     void ConvertLocalTimes(KeyValues*);
 };
 
