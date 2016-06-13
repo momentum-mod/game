@@ -36,7 +36,19 @@ class CTimer
     //-------- HUD Messages --------------------
     void DispatchStateMessage();
     void DispatchResetMessage();
-    void DispatchCheckpointMessage();
+    void DispatchCheckpointMessage();//MOM_TODO: MOVE TO PLAYER
+    //Plays the hud_timer effects MOM_TODO: Maybe consider renaming this?
+    void DispatchTimerStateMessage(CBasePlayer* pPlayer, bool isRunning) const
+    {
+        if (pPlayer)
+        {
+            CSingleUserRecipientFilter user(pPlayer);
+            user.MakeReliable();
+            UserMessageBegin(user, "Timer_State");
+            WRITE_BOOL(isRunning);
+            MessageEnd();
+        }
+    }
 
     // ------------- Timer state related messages --------------------------
     // Strats the timer for the given starting tick

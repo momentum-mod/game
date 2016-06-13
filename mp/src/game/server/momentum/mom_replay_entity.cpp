@@ -38,8 +38,7 @@ END_DATADESC()
 Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() : 
-    m_bIsActive(false), 
-    m_nStartTick(0), 
+    m_bIsActive(false),
     m_iCurrentStep(0),
     m_flLastSyncVelocity(0)
 {
@@ -92,7 +91,6 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
 
     Spawn();
     m_iTotalStrafes = 0;
-    m_nStartTick = gpGlobals->curtime;
     m_bIsActive = true;
     m_bHasJumped = false;
 
@@ -103,7 +101,18 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
 
     if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
         SetAbsOrigin(g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrame(m_iCurrentStep)->PlayerOrigin());
-    
+
+    if (m_bReplayFirstPerson)
+    {
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+        if (pPlayer)
+        {
+            // Ob target set first for spectator GUI
+            pPlayer->SetObserverTarget(this);
+            pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+        }
+    } 
+
     SetNextThink(gpGlobals->curtime);
 }
 
@@ -157,11 +166,15 @@ void CMomentumReplayGhostEntity::Think(void)
     mom_replay_loop.SetValue(m_bReplayShouldLoop);
     mom_replay_firstperson.SetValue(m_bReplayFirstPerson);
 
+    
+
     //move the ghost
     if (!mom_replay_loop.GetBool() &&
         ((mom_replay_reverse.GetBool() && m_iCurrentStep - 1 < 0) ||
         (!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())))
     {
+        //MOM_TODO: Do we really want to end the run here? Why not make it wait at the end?
+
         // If we're not looping and we've reached the end of the video then end the run.
         EndRun();
     }
@@ -169,7 +182,11 @@ void CMomentumReplayGhostEntity::Think(void)
     {
         // Otherwise proceed to the next step and perform the necessary updates.
         UpdateStep();
-        mom_replay_firstperson.GetBool() ? HandleGhostFirstPerson() : HandleGhost();
+        if (m_rgSpectators.IsEmpty())
+            HandleGhost();
+        else
+            HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
+        //mom_replay_firstperson.GetBool() ? HandleGhostFirstPerson() : HandleGhost();
     }
 
     BaseClass::Think();
@@ -180,64 +197,66 @@ void CMomentumReplayGhostEntity::Think(void)
 //-----------------------------------------------------------------------------
 void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
-    if (pPlayer)
+    FOR_EACH_VEC(m_rgSpectators, i)
     {
-        auto currentStep = GetCurrentStep();
-        auto nextStep = GetNextStep();
-
-        if (!pPlayer->IsObserver())
+        CMomentumPlayer *pPlayer = m_rgSpectators[i];
+        if (pPlayer)
         {
-            pPlayer->SetObserverTarget(this);
-            pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
-        }
+            auto currentStep = GetCurrentStep();
+            auto nextStep = GetNextStep();
 
-        if (pPlayer->GetObserverMode() != (OBS_MODE_IN_EYE | OBS_MODE_CHASE))
-        {
-            // we don't want to allow any other obs modes, only IN EYE and CHASE
-            pPlayer->ForceObserverMode(OBS_MODE_IN_EYE);
-        }
+            //if (!pPlayer->IsObserver())
+            //{
+            //    pPlayer->SetObserverTarget(this);
+            //    pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+            //}
 
-        pPlayer->SetViewOffset(VEC_VIEW);
-        Vector origin = currentStep->PlayerOrigin();
-        origin.z -= 3.5f;
-        SetAbsOrigin(origin);
+            if (pPlayer->GetObserverMode() != (OBS_MODE_IN_EYE | OBS_MODE_CHASE))
+            {
+                // we don't want to allow any other obs modes, only IN EYE and CHASE
+                pPlayer->ForceObserverMode(OBS_MODE_IN_EYE);
+            }
 
-        if (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
-        {
-            SetAbsAngles(currentStep->EyeAngles());
-            // don't render the model when we're in first person mode
-            SetRenderMode(kRenderNone);
-            AddEffects(EF_NOSHADOW);
-        }
-        else
-        {
-            SetAbsAngles(QAngle(currentStep->EyeAngles().x /
-                10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-                currentStep->EyeAngles().y,
-                currentStep->EyeAngles().z));
+            pPlayer->SetViewOffset(VEC_VIEW);
+            Vector origin = currentStep->PlayerOrigin();
+            origin.z -= 3.5f;
+            SetAbsOrigin(origin);
 
-            // remove the nodraw effects
-            SetRenderMode(kRenderTransColor);
-            RemoveEffects(EF_NOSHADOW);
-        }
+            if (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
+            {
+                SetAbsAngles(currentStep->EyeAngles());
+                // don't render the model when we're in first person mode
+                SetRenderMode(kRenderNone);
+                AddEffects(EF_NOSHADOW);
+            }
+            else
+            {
+                SetAbsAngles(QAngle(currentStep->EyeAngles().x /
+                    10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                    currentStep->EyeAngles().y,
+                    currentStep->EyeAngles().z));
 
-        // interpolate vel from difference in origin
-        float distX = fabs(currentStep->PlayerOrigin().x - nextStep->PlayerOrigin().x);
-        float distY = fabs(currentStep->PlayerOrigin().y - nextStep->PlayerOrigin().y);
-        float distZ = fabs(currentStep->PlayerOrigin().z - nextStep->PlayerOrigin().z);
-        Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
-        SetAbsVelocity(interpolatedVel);
-        m_nReplayButtons = currentStep->PlayerButtons(); // networked var that allows the replay to control keypress display on the client
+                // remove the nodraw effects
+                SetRenderMode(kRenderTransColor);
+                RemoveEffects(EF_NOSHADOW);
+            }
 
-        if (this->m_RunData.m_bTimerRunning)
-            UpdateStats(interpolatedVel);
+            // interpolate vel from difference in origin
+            float distX = fabs(currentStep->PlayerOrigin().x - nextStep->PlayerOrigin().x);
+            float distY = fabs(currentStep->PlayerOrigin().y - nextStep->PlayerOrigin().y);
+            float distZ = fabs(currentStep->PlayerOrigin().z - nextStep->PlayerOrigin().z);
+            Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+            SetAbsVelocity(interpolatedVel);
+            m_nReplayButtons = currentStep->PlayerButtons(); // networked var that allows the replay to control keypress display on the client
 
-        if (currentStep->PlayerButtons() & IN_DUCK)
-        {
-            // MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
-            pPlayer->SetViewOffset(VEC_DUCK_VIEW);
+            if (m_RunData.m_bTimerRunning)
+                UpdateStats(interpolatedVel);
+
+            if (currentStep->PlayerButtons() & IN_DUCK)
+            {
+                // MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
+                pPlayer->SetViewOffset(VEC_DUCK_VIEW);
+            }
         }
     }
 }
@@ -255,14 +274,12 @@ void CMomentumReplayGhostEntity::HandleGhost()
     SetRenderMode(kRenderTransColor);
     RemoveEffects(EF_NOSHADOW);
 
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    //CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
-    if (pPlayer && pPlayer->IsObserver()) // bring the player out of obs mode if theyre currently observing
-    {
-        // pPlayer->m_bIsWatchingReplay = false;
-        pPlayer->StopObserverMode();
-        pPlayer->ForceRespawn();
-    }
+    //if (pPlayer && pPlayer->IsObserver()) // bring the player out of obs mode if theyre currently observing
+    //{
+    //    pPlayer->StopSpectating();
+    //}
 }
 
 void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
@@ -360,7 +377,7 @@ void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
         CMomentumPlayer *pPlayer = m_rgSpectators[i];
         if (pPlayer && pPlayer->GetReplayEnt() == this)
         {
-            mom_UTIL->DispatchTimerStateMessage(pPlayer, m_iStartTick, true);
+            g_Timer->DispatchTimerStateMessage(pPlayer, true);
         }
     }
 }
@@ -372,32 +389,36 @@ void CMomentumReplayGhostEntity::StopTimer()
         CMomentumPlayer *pPlayer = m_rgSpectators[i];
         if (pPlayer && pPlayer->GetReplayEnt() == this)
         {
-            mom_UTIL->DispatchTimerStateMessage(pPlayer, 0, false);
+            g_Timer->DispatchTimerStateMessage(pPlayer, false);
         }
     }
 }
 
 void CMomentumReplayGhostEntity::EndRun()
 { 
-    StopTimer();
-    SetNextThink(-1);
+    StopTimer();// Stop the timer for all spectating us
+    SetNextThink(-1);// Stop thinking
     m_bIsActive = false;
 
-    FOR_EACH_VEC(m_rgSpectators, i)
+    // Make everybody stop spectating me. Goes backwards since players remove themselves.
+    // MOM_TODO: Do we want to allow the players to still spectate other runs that may be going?
+    FOR_EACH_VEC_BACK(m_rgSpectators, i)
     {
         CMomentumPlayer *pPlayer = m_rgSpectators[i];
         if (pPlayer && pPlayer->GetReplayEnt() == this)
         {
-            pPlayer->StopObserverMode();
-            pPlayer->ForceRespawn();
-            pPlayer->SetMoveType(MOVETYPE_WALK);
+            pPlayer->StopSpectating();
         }
     }
 
+    //Theoretically, m_rgSpectators should be empty here.
     m_rgSpectators.RemoveAll();
+
+    // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
 
-    g_ReplaySystem->OnGhostEntityRemoved();
+    //Cleanup the CUtlVector back in the replay system
+    g_ReplaySystem->OnGhostEntityRemoved(this);
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()

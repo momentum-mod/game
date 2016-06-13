@@ -283,7 +283,6 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CTeamMenu( this );
 	}
-    /*
 	else if ( Q_strcmp(PANEL_SPECMENU, szPanelName) == 0 )
 	{
 		newpanel = new CSpectatorMenu( this );
@@ -292,7 +291,6 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CSpectatorGUI( this );
 	}
-    */
 #if !defined( TF_CLIENT_DLL )
 	else if ( Q_strcmp(PANEL_NAV_PROGRESS, szPanelName) == 0 )
 	{

@@ -51,8 +51,11 @@ public:
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
 
     void StartReplay(bool firstperson = false);
-    void EndReplay();
-    void OnGhostEntityRemoved();
+    void EndReplay(CMomentumReplayGhostEntity *pGhost);// Stops a given replay. If null is passed, it ends all replays.
+    void OnGhostEntityRemoved(CMomentumReplayGhostEntity*);// Called when a ghost entity is done being played.
+
+    void AddGhost(CMomentumReplayGhostEntity*);
+    void RemoveGhost(CMomentumReplayGhostEntity*);
 
     inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
 
@@ -67,7 +70,8 @@ private:
     float m_fRecEndTime;
 
     CMomentumPlayer *m_player;
-    CMomentumReplayGhostEntity *m_CurrentReplayGhost;//MOM_TODO: Update this to be a CUtlVector so multiple ghosts can be kept track of
+    CUtlVector<CMomentumReplayGhostEntity*> m_rgGhosts;
+    //CMomentumReplayGhostEntity *m_CurrentReplayGhost;//MOM_TODO: Update this to be a CUtlVector so multiple ghosts can be kept track of
 
     CMomReplayManager* m_pReplayManager;
 };

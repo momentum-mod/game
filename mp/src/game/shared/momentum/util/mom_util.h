@@ -60,12 +60,6 @@ public:
         return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY),
             Vector2D(rectX + rectW, rectY + rectH));
     }
-
-#ifdef GAME_DLL
-
-    void DispatchTimerStateMessage(CBasePlayer *, int, bool) const;
-
-#endif
 };
 
 class CTimeSortFunc

@@ -348,9 +348,10 @@ void CTimer::DispatchResetMessage()
 
 void CTimer::DispatchStateMessage()
 {
-    mom_UTIL->DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_iStartTick, m_bIsRunning);
+    DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
 }
 
+//MOM_TODO: This should be moved to the player
 void CTimer::DispatchCheckpointMessage()
 {
     CBasePlayer* cPlayer = UTIL_GetLocalPlayer();

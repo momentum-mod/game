@@ -188,16 +188,13 @@ void CHudKeyPressDisplay::OnThink()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
-        if (pPlayer->IsWatchingReplay())
+        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
+        if (pReplayEnt)
         {
-            C_MomentumReplayGhostEntity *pReplayEnt = dynamic_cast<C_MomentumReplayGhostEntity*>(pPlayer->GetObserverTarget());
-            if (pReplayEnt)
-            {
-                m_bShouldDrawCounts = pReplayEnt->m_RunData.m_bTimerRunning;
-                m_nButtons = pReplayEnt->m_nReplayButtons;
-                m_nStrafes = pReplayEnt->m_iTotalStrafes;
-                m_nJumps = pReplayEnt->m_iTotalJumps;
-            }
+            m_bShouldDrawCounts = pReplayEnt->m_RunData.m_bTimerRunning;
+            m_nButtons = pReplayEnt->m_nReplayButtons;
+            m_nStrafes = pReplayEnt->m_iTotalStrafes;
+            m_nJumps = pReplayEnt->m_iTotalJumps;
         } 
         else
         {

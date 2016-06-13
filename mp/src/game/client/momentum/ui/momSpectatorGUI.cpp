@@ -90,8 +90,8 @@ CMOMSpectatorMenu::CMOMSpectatorMenu(IViewPort *pViewPort) : Frame(NULL, PANEL_S
 	SetMoveable( false );
 	SetSizeable( false );
 	SetProportional(true);
-
 	SetScheme("ClientScheme");
+    ListenForGameEvent("spec_target_updated");
 
 	m_pPlayerList = new ComboBox(this, "playercombo", 10 , false);
 	HFont hFallbackFont = scheme()->GetIScheme( GetScheme() )->GetFont( "DefaultVerySmallFallBack", false );
@@ -629,29 +629,25 @@ void CMOMSpectatorGUI::Update()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
-        if (pPlayer->IsWatchingReplay())
+        //MOM_TODO: BUG: This returns null on the Update that we need to fill this board with
+        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
+        if (pReplayEnt)
         {
-            C_MomentumReplayGhostEntity *pReplayEnt = dynamic_cast<C_MomentumReplayGhostEntity*>(pPlayer->GetObserverTarget());
-            if (pReplayEnt)
-            {
-                wchar_t wPlayerName[MAX_PLAYER_NAME_LENGTH], szPlayerInfo[128];
-                g_pVGuiLocalize->ConvertANSIToUnicode(pReplayEnt->m_pszPlayerName, wPlayerName, sizeof(wPlayerName));
-                swprintf(szPlayerInfo, L"%s %s", g_pVGuiLocalize->Find("#MOM_ReplayPlayer"), wPlayerName);
+            wchar_t wPlayerName[MAX_PLAYER_NAME_LENGTH], szPlayerInfo[128];
+            g_pVGuiLocalize->ConvertANSIToUnicode(pReplayEnt->m_pszPlayerName, wPlayerName, sizeof(wPlayerName));
+            swprintf(szPlayerInfo, L"%s %s", g_pVGuiLocalize->Find("#MOM_ReplayPlayer"), wPlayerName);
 
-                SetLabelText("playerlabel", szPlayerInfo);
+            SetLabelText("playerlabel", szPlayerInfo);
 
-                char tempRunTime[BUFSIZETIME];
-                wchar_t szTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
-                mom_UTIL->FormatTime(pReplayEnt->m_RunData.m_flRunTime, tempRunTime);
-                g_pVGuiLocalize->ConvertANSIToUnicode(tempRunTime, wTime, sizeof(wTime));
-                swprintf(szTimeLabel, L"%s %s", g_pVGuiLocalize->Find("#MOM_MF_RunTime"), wTime);
+            char tempRunTime[BUFSIZETIME];
+            wchar_t szTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
+            mom_UTIL->FormatTime(pReplayEnt->m_RunData.m_flRunTime, tempRunTime);
+            g_pVGuiLocalize->ConvertANSIToUnicode(tempRunTime, wTime, sizeof(wTime));
+            g_pVGuiLocalize->ConstructString(szTimeLabel, sizeof(szTimeLabel), g_pVGuiLocalize->Find("#MOM_MF_RunTime"), 1, wTime);
 
-                SetLabelText("timelabel", szTimeLabel);
-
-            }
+            SetLabelText("timelabel", szTimeLabel);
 
             SetLabelText("replaylabel", g_pVGuiLocalize->Find("#MOM_WatchingReplay"));
-
         }
         else
         {
@@ -659,7 +655,7 @@ void CMOMSpectatorGUI::Update()
         }
     }
 
-	// update extra info field
+    // update extra info field
 	wchar_t szEtxraInfo[1024];
 	wchar_t szTitleLabel[1024];
 	char tempstr[128];

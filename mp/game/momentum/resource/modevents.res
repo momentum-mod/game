@@ -52,4 +52,7 @@
         "is_linear" "bool"
         "num_zones" "byte"
     }
+    "spec_target_updated" // Used by the spectator GUI
+    {
+    }
 }

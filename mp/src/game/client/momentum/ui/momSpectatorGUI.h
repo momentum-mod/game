@@ -40,7 +40,7 @@ class IBaseFileSystem;
 //-----------------------------------------------------------------------------
 // Purpose: Spectator UI
 //-----------------------------------------------------------------------------
-class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel
+class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener
 {
     DECLARE_CLASS_SIMPLE(CMOMSpectatorGUI, vgui::EditablePanel);
 
@@ -71,6 +71,14 @@ public:
 
 	const char *GetResFile( void ) { return "Resource/UI/Spectator.res"; }
 	
+    void FireGameEvent(IGameEvent *pEvent) override
+    {
+        if (!Q_strcmp(pEvent->GetName(), "spec_target_updated"))
+        {
+            Update();
+        }
+	}
+
 protected:
 
 	void SetLabelText(const char *textEntryName, const char *text);

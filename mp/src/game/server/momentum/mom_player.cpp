@@ -469,23 +469,65 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity* target)
 
     return base;
 }
+
+CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
+{
+    int startIndex = GetNextObserverSearchStartPoint(bReverse);
+
+    int	currentIndex = startIndex;
+    int iDir = bReverse ? -1 : 1;
+
+    do
+    {
+        CBaseEntity * nextTarget = UTIL_EntityByIndex(currentIndex);
+
+        if (IsValidObserverTarget(nextTarget))
+        {
+            return nextTarget;	// found next valid player
+        }
+
+        currentIndex += iDir;
+
+        // Loop through the entities
+        if (currentIndex > gEntList.NumberOfEntities())
+            currentIndex = 1;
+        else if (currentIndex < 1)
+            currentIndex = gEntList.NumberOfEntities();
+
+    } while (currentIndex != startIndex);
+
+    return nullptr;
+}
+
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
     if (m_RunData.m_bMapFinished) //slowdown when map is finished
     {
         //decrease our lagged movement value by 10% every tick
-        m_flTweenVelValue += (0.01f - m_flTweenVelValue) * 0.1f; 
+        if (!mom_UTIL->FloatEquals(m_flTweenVelValue, 0.0f))
+            m_flTweenVelValue += (0.01f - m_flTweenVelValue) * 0.1f;
     }
     else
-    {
-        m_flTweenVelValue = 1.0f;
-    }
+        m_flTweenVelValue = 1.0f;//Reset the tweened value back to normal
+
     SetLaggedMovementValue(m_flTweenVelValue);
 
-    SetNextThink(gpGlobals->curtime, "TWEEN");
+    SetNextThink(gpGlobals->curtime + 0.01f, "TWEEN");
 }
 
 CMomentumReplayGhostEntity* CMomentumPlayer::GetReplayEnt() const
 {
     return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
+}
+
+void CMomentumPlayer::StopSpectating()
+{
+    CMomentumReplayGhostEntity *pGhost = GetReplayEnt();
+    if (pGhost)
+        pGhost->RemoveSpectator(this);
+
+    StopObserverMode();
+    m_hObserverTarget.Set(nullptr);
+    ForceRespawn();
+    SetMoveType(MOVETYPE_WALK);
 }

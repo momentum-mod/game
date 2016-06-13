@@ -168,6 +168,7 @@ void C_Timer::Reset()
     m_pRunStats = nullptr;
 }
 
+// This void handles playing effects for run start and run stop
 void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
@@ -175,8 +176,6 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         return;
 
     bool started = msg.ReadOneBit();
-    m_bIsRunning = started;
-    m_iStartTick = static_cast<int>(msg.ReadLong());
 
     if (started)
     {
@@ -242,8 +241,6 @@ void C_Timer::OnThink()
         C_MOMRunEntityData *runData;
         if (pGhost)
         {
-            m_bIsRunning = pGhost->m_RunData.m_bTimerRunning;
-            m_iStartTick = pGhost->m_RunData.m_iStartTick;
             m_pRunStats = &pGhost->m_RunStats;
             m_bPlayerHasPracticeMode = false;
             runData = &pGhost->m_RunData;
@@ -254,6 +251,8 @@ void C_Timer::OnThink()
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_RunData;
         }
+        m_bIsRunning = runData->m_bTimerRunning;
+        m_iStartTick = runData->m_iStartTick;
         m_iZoneCurrent = runData->m_iCurrentZone;
         m_bPlayerInZone = runData->m_bIsInZone;
         m_bMapFinished = runData->m_bMapFinished;
@@ -284,10 +283,8 @@ void C_Timer::Paint(void)
     wchar_t prevStageStringUnicode[BUFSIZELOCL];
     Color compareColor = GetFgColor();
 
-    // MOM_TODO: this will have to handle checkpoints as well!
     if (m_iZoneCurrent > 1)
     {
-        // MOM_TODO: m_bMapIsLinear needs to be passed here
         Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i",
                    m_bMapIsLinear ? cpLocalized : stLocalized, // Stage localization ("Checkpoint:" if linear)
                    m_iZoneCurrent - 1); // Last stage number

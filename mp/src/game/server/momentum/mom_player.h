@@ -120,6 +120,9 @@ class CMomentumPlayer : public CBasePlayer
 
     bool IsValidObserverTarget(CBaseEntity *target) override;
     bool SetObserverTarget(CBaseEntity *target) override;
+    CBaseEntity *FindNextObserverTarget(bool bReverse) override;
+
+    void StopSpectating();
 
     // Used by momentum triggers
     Vector GetPrevOrigin(void);

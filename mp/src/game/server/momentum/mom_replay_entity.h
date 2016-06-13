@@ -76,7 +76,6 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     CReplayFrame* GetNextStep();
 
     bool m_bIsActive;
-    int m_nStartTick;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
