@@ -17,7 +17,8 @@ while True:
                 else:
                     tokens.append({'term': key, 'definition': value})
             json.dump(tokens, open(loclfile+lang + '.json', 'w'), indent=4, sort_keys=True)
-
+            print 'Tokens dumped to .json'
+            
     elif option is "ENCODE" or option is "E":
         print "Encoding..."
         with open(lang + '.json') as filez:
@@ -26,12 +27,14 @@ while True:
             mom = vdf.VDFDict([('lang', vdf.VDFDict([('Language', lang.title()), ('Tokens', vdf.VDFDict())]))])
             for key in jos:
                 if key['context'] == 'gameui':
-                    print 'gameui'
                     gui['lang']['Tokens'][key['term']] = key['definition']
                 else:
                     mom['lang']['Tokens'][key['term']] = key['definition']
             vdf.dump(gui, open('gameui_' + lang + '.txt', 'w'), pretty=True)
+            print 'gameui_' + lang + ' exported.'
             vdf.dump(mom, open('momentum_' + lang + '.txt', 'w'), pretty=True)
+            print 'momentum_' + lang + ' exported.'
+
     else:
         print "Unknown command. DECODE/D or ENCODE/E"
 
