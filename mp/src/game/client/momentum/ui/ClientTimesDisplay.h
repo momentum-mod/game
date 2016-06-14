@@ -13,6 +13,7 @@
 
 #include "GameEventListener.h"
 #include "cbase.h"
+#include "steam/steam_api.h"
 #include "momentum/mom_shareddefs.h"
 #include <KeyValues.h>
 #include <game/client/iviewport.h>
@@ -127,6 +128,12 @@ protected:
     CPanelAnimationVarAliasType(int, m_iDeathWidth, "death_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iPingWidth, "ping_width", "23", "proportional_int");
 
+    // Online API Pre-Alpha functions
+    void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
+    void CreateAndSendHTTPReq(const char*, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>*,
+        CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
+
 private:
     int			m_iPlayerIndexSymbol;
     int			m_iDesiredHeight;
@@ -166,6 +173,7 @@ private:
     bool m_bLocalTimesLoaded = false;
     bool m_bLocalTimesNeedUpdate = false;
     bool m_bOnlineNeedUpdate = false;
+    bool m_bOnlineTimesLoaded = false;
     //widths[0] == WIDTH FOR DATE
     //widths[1] == WIDTH FOR RANK
     //widths[2] == WIDTH FOR TIME

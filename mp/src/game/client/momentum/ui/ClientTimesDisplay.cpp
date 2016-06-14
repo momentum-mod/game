@@ -575,14 +575,92 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
     }
 }
 
-
 void CClientTimesDisplay::LoadOnlineTimes(KeyValues *kv)
 {
-    if (m_bOnlineNeedUpdate)
+    if (!m_bOnlineTimesLoaded || m_bOnlineNeedUpdate)
     {
-        m_vOnlineTimes.RemoveAll();
-        mom_UTIL->GetOnlineTimes(g_pGameRules->MapName(), 0, 5, 100, 76561198011358548);
+        //char requrl[90];
+        //// Mapname, tickrate, rank, radius
+        //Q_snprintf(requrl, 90, );
+        // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
+        CreateAndSendHTTPReq("http://momentum-mod.org/getscores/2/PLAYERSTEAMIDHERE", &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
     }
+}
+
+void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *callback,
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t func)
+{
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            Warning("Callback set.\n");
+            callback->Set(apiHandle, this, func);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
+    }
+    else
+    {
+        Warning("Steampicontext failure.\n");
+    }
+}
+
+void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+    Warning("Callback received.\n");
+    if (bIOFailure)
+        return;   
+    m_vOnlineTimes.RemoveAll();
+    m_bOnlineTimesLoaded = true;
+    m_bOnlineNeedUpdate = false;
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+    DevLog("pDataPtr: %s\n", pDataPtr);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            // toNode() returns the >>payload<< of the JSON object !!!
+
+            DevLog("Outer is JSON OBJECT!\n");
+            JsonNode *node = val.toNode();
+            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
+
+            // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
+            // the JSON
+            if (node && node->value.getTag() == JSON_TRUE)
+            {
+                DevLog("RESPONSE WAS TRUE!\n");
+
+            }
+        }
+    }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
+    // Last but not least, free resources
+    alloc.deallocate();
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
 //-----------------------------------------------------------------------------
