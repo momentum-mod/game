@@ -75,7 +75,11 @@ public:
     {
         if (!Q_strcmp(pEvent->GetName(), "spec_target_updated"))
         {
-            Update();
+            // So apparently calling Update from here doesn't work, due to some weird
+            // thing that happens upon the player's m_hObserverTarget getting updated.
+            // Pushing this back three ticks is more than long enough to delay the Update()
+            // to fill the panel with the replay's info.
+            m_flNextUpdateTime = gpGlobals->curtime + gpGlobals->interval_per_tick * 3.0f;
         }
 	}
 
@@ -108,6 +112,8 @@ protected:
 	// bool m_bHelpShown;
 	// bool m_bInsetVisible;
 	bool m_bSpecScoreboard;
+
+    float m_flNextUpdateTime;
 };
 
 

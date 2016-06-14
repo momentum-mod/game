@@ -250,6 +250,7 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
 
     return pFinalColor;
 }
+
 Color* MomentumUtil::GetColorFromHex(const char* hexColor)
 {
     long hex = strtol(hexColor, NULL, 16);
@@ -267,7 +268,6 @@ Color* MomentumUtil::GetColorFromHex(const char* hexColor)
         return nullptr;
     }
 }
-
 
 KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, float tickrate, int flags)
 {

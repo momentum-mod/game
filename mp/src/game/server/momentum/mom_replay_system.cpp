@@ -98,7 +98,7 @@ void CMomentumReplaySystem::SetRunStats()
         return;
 
     auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
-    *stats = m_player->m_RunStats;
+    *stats = static_cast<CMomRunStats>(m_player->m_RunStats);
 }
 
 void CMomentumReplaySystem::StartReplay(bool firstperson)

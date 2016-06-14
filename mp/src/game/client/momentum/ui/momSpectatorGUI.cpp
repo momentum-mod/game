@@ -42,7 +42,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-CMOMSpectatorGUI *g_pMOMSpectatorGUI = NULL;
+CMOMSpectatorGUI *g_pMOMSpectatorGUI = nullptr;
 
 // NB disconnect between localization text and observer mode enums
 static const char *s_SpectatorModes[] =
@@ -78,7 +78,7 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMOMSpectatorMenu::CMOMSpectatorMenu(IViewPort *pViewPort) : Frame(NULL, PANEL_SPECMENU)
+CMOMSpectatorMenu::CMOMSpectatorMenu(IViewPort *pViewPort) : Frame(nullptr, PANEL_SPECMENU)
 {
 	m_iDuckKey = BUTTON_CODE_INVALID;
 		
@@ -382,7 +382,7 @@ void CMOMSpectatorMenu::Update(void)
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(NULL, PANEL_SPECGUI)
+CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr, PANEL_SPECGUI)
 {
 // 	m_bHelpShown = false;
 //	m_bInsetVisible = false;
@@ -392,6 +392,10 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(NULL, P
 
 	m_pViewPort = pViewPort;
     g_pMOMSpectatorGUI = this;
+
+    ListenForGameEvent("spec_target_updated");
+
+    m_flNextUpdateTime = -1.0f;
 
 	// initialize dialog
 	SetVisible(false);
@@ -437,7 +441,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(NULL, P
 //-----------------------------------------------------------------------------
 CMOMSpectatorGUI::~CMOMSpectatorGUI()
 {
-    g_pMOMSpectatorGUI = NULL;
+    g_pMOMSpectatorGUI = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -445,9 +449,9 @@ CMOMSpectatorGUI::~CMOMSpectatorGUI()
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::ApplySchemeSettings(IScheme *pScheme)
 {
-	KeyValues *pConditions = NULL;
+	KeyValues *pConditions = nullptr;
 
-	LoadControlSettings( GetResFile(), NULL, NULL, pConditions );
+	LoadControlSettings( GetResFile(), nullptr, nullptr, pConditions );
 
 	if ( pConditions )
 	{
@@ -463,7 +467,7 @@ void CMOMSpectatorGUI::ApplySchemeSettings(IScheme *pScheme)
 	m_pBottomBarBlank->SetBgColor(GetBlackBarColor());
 	SetPaintBorderEnabled(false);
 
-	SetBorder( NULL );
+	SetBorder(nullptr );
 
 }
 
@@ -488,6 +492,12 @@ void CMOMSpectatorGUI::PerformLayout()
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::OnThink()
 {
+    if (m_flNextUpdateTime > 0.0f && gpGlobals->curtime > m_flNextUpdateTime)
+    {
+        Update();
+        m_flNextUpdateTime = -1.0f;
+    }
+
 	BaseClass::OnThink();
 }
 
@@ -629,7 +639,6 @@ void CMOMSpectatorGUI::Update()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
-        //MOM_TODO: BUG: This returns null on the Update that we need to fill this board with
         C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
         if (pReplayEnt)
         {

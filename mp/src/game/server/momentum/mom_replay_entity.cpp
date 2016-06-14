@@ -40,11 +40,18 @@ Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() : 
     m_bIsActive(false),
     m_iCurrentStep(0),
-    m_flLastSyncVelocity(0)
+    m_bHasJumped(false), 
+    m_flLastSyncVelocity(0), 
+    m_nStrafeTicks(0), 
+    m_nPerfectSyncTicks(0), 
+    m_nAccelTicks(0), 
+    m_nOldReplayButtons(0),
+    m_bReplayShouldLoop(false),
+    m_bReplayFirstPerson(false)
 {
+    //Set networked vars here
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
-    m_bHasJumped = false;
     m_RunStats.Init();
 }
 
@@ -205,12 +212,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             auto currentStep = GetCurrentStep();
             auto nextStep = GetNextStep();
 
-            //if (!pPlayer->IsObserver())
-            //{
-            //    pPlayer->SetObserverTarget(this);
-            //    pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
-            //}
-
             if (pPlayer->GetObserverMode() != (OBS_MODE_IN_EYE | OBS_MODE_CHASE))
             {
                 // we don't want to allow any other obs modes, only IN EYE and CHASE
@@ -273,13 +274,6 @@ void CMomentumReplayGhostEntity::HandleGhost()
     // remove the nodraw effects
     SetRenderMode(kRenderTransColor);
     RemoveEffects(EF_NOSHADOW);
-
-    //CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
-    //if (pPlayer && pPlayer->IsObserver()) // bring the player out of obs mode if theyre currently observing
-    //{
-    //    pPlayer->StopSpectating();
-    //}
 }
 
 void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)

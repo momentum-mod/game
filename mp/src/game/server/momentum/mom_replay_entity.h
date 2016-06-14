@@ -61,7 +61,8 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
 
     void AddSpectator(CMomentumPlayer* player)
     {
-        m_rgSpectators.AddToTail(player);
+        if (m_rgSpectators.Find(player) == m_rgSpectators.InvalidIndex())
+            m_rgSpectators.AddToTail(player);
     }
 
     void RemoveSpectator(CMomentumPlayer* player)
@@ -93,7 +94,6 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
   private:
     char m_pszModel[256], m_pszMapName[256];
     int m_iCurrentStep;
-    //CMomRunStats* m_RunStats;
 
     CUtlVector<CMomentumPlayer *> m_rgSpectators;
 
