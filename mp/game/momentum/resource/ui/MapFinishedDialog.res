@@ -14,35 +14,34 @@
     
     "Prev_Zone"
     {
-        "ControlName"   "Button"
+        "ControlName"   "ImagePanel"
         "fieldName"     "Prev_Zone"
-        "font"          "HudNumbersExtremelySmall"
+        //"font"          "HudNumbersExtremelySmall"
         "xpos"          "2"
         "ypos"          "2"
-        "wide"          "8"
-        "tall"          "8"
-        "autoResize"    "0"
+        "wide"          "16"
+        "tall"          "16"
+        "autoResize"    "1"
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "labelText"     "#MOM_LT"
-        //"image"       "replay_icon"
+        "image"         "left_arrow_button_small_grey"
     }
     
     "Next_Zone"
     {
-        "ControlName"   "Button"
+        "ControlName"   "ImagePanel"
         "fieldName"     "Next_Zone"
-        "font"          "HudNumbersExtremelySmall"
+        //"font"          "HudNumbersExtremelySmall"
         "xpos"          "50"//Determined by code
         "ypos"          "2"
-        "wide"          "8"
-        "tall"          "8"
+        "wide"          "16"
+        "tall"          "16"
         "autoResize"    "0"
         "pinCorner"     "0"
         "visible"       "1"
-        "labelText"     "#MOM_GT"
         "enabled"       "1"
+        "image"         "right_arrow_button_small_grey"
     } 
     
     "Replay_Icon"
@@ -58,7 +57,39 @@
         "visible"       "1"
         "enabled"       "1"
         "border"        ""
-        "image"         "replay_icon"
+        "image"         "replay_icon_grey"
+    }
+    
+    "Repeat_Button"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "Repeat_Button"
+        "xpos"          "250"
+        "ypos"          "80"
+        "wide"          "64"
+        "tall"          "64"
+        "autoResize"    "0"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "border"        ""
+        "image"         "loop_button_grey"
+    }
+    
+    "Close_Panel"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "Close_Panel"
+        "xpos"          "180"
+        "ypos"          "120"
+        "wide"          "64"
+        "tall"          "64"
+        "autoResize"    "0"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "border"        ""
+        "image"         "close_button"
     }
     
     "Replay_Label"

@@ -19,6 +19,7 @@ public:
     virtual void AddFrame(const CReplayFrame& frame) override;
     virtual bool SetFrame(int32 index, const CReplayFrame& frame) override;
     virtual CMomRunStats* CreateRunStats(uint8 stages) override;
+    void RemoveFrames(int num) override;
 
 public:
     virtual void Serialize(CBinaryWriter* writer) override;

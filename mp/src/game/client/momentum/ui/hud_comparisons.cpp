@@ -74,6 +74,7 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudCompare")
 {
     ListenForGameEvent("timer_state");
+    ListenForGameEvent("mapfinished_panel_closed");
     SetProportional(true);
     SetKeyBoardInputEnabled(false); // MOM_TODO: will we want keybinds? Hotkeys?
     SetMouseInputEnabled(false);
@@ -136,12 +137,16 @@ void C_RunComparisons::Reset()
 
 void C_RunComparisons::FireGameEvent(IGameEvent *event)
 {
-    if (!Q_strcmp(event->GetName(), "timer_state")) // This is insuring, even though we register for only this event...?
+    const char *name = event->GetName();
+    if (!Q_strcmp(name, "timer_state")) // This is insuring, even though we register for only this event...?
     {
         int entIndex = event->GetInt("ent");
-        //MOM_TODO: Do we really want to UnloadComparisons right after beating the run? Why not when they leave the ending zone?
-        if (entIndex == m_iCurrentEntIndex)
-            event->GetBool("is_running") ? LoadComparisons() : UnloadComparisons();
+        if (entIndex == m_iCurrentEntIndex && event->GetBool("is_running"))
+            LoadComparisons();
+    }
+    else if (!Q_strcmp(name, "mapfinished_panel_closed"))
+    {
+        UnloadComparisons();
     }
 }
 

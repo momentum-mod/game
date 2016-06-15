@@ -9,6 +9,7 @@
 #include "mom_entity_run_data.h"
 #include "mom_replay_data.h"
 #include "mom_replay_system.h"
+#include <GameEventListener.h>
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
 enum ghostModelBodyGroup
@@ -32,7 +33,7 @@ enum ghostModelBodyGroup
 
 class CMomentumPlayer;
 
-class CMomentumReplayGhostEntity : public CBaseAnimating
+class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListener
 {
     DECLARE_CLASS(CMomentumReplayGhostEntity, CBaseAnimating);
     DECLARE_DATADESC();
@@ -90,6 +91,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating
     void Think(void) override;
     void Spawn(void) override;
     void Precache(void) override;
+    void FireGameEvent(IGameEvent *pEvent) override;
 
   private:
     char m_pszModel[256], m_pszMapName[256];

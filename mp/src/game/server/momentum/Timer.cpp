@@ -269,7 +269,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
     }
 
     //stop replay recording
-    // TODO (OrfeasZ): Do we need to pass a player here?
+    // MOM_TODO (OrfeasZ): Do we need to pass a player here?
     if (g_ReplaySystem->GetReplayManager()->Recording())
         g_ReplaySystem->StopRecording(pPlayer, !endTrigger, endTrigger);
 

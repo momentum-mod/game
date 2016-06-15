@@ -7,9 +7,7 @@
 
 #include "tier0/memdbgon.h"
 
-MAKE_TOGGLE_CONVAR(mom_replay_firstperson, "1", FCVAR_CLIENTCMD_CAN_EXECUTE, "Watch replay in first-person");
 MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
-MAKE_TOGGLE_CONVAR(mom_replay_loop, "1", FCVAR_CLIENTCMD_CAN_EXECUTE, "Loop playback of replay ghost");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
                                          FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                          "Replay ghost's body group (model)", true, 0, true, 14);
@@ -53,6 +51,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() :
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
     m_RunStats.Init();
+    ListenForGameEvent("mapfinished_panel_closed");
 }
 
 CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() 
@@ -65,6 +64,14 @@ void CMomentumReplayGhostEntity::Precache(void)
     BaseClass::Precache();
     PrecacheModel(GHOST_MODEL);
     m_GhostColor = COLOR_GREEN; // default color
+}
+
+void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent* pEvent)
+{
+    if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
+    {
+        EndRun();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -118,8 +125,8 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
             pPlayer->SetObserverTarget(this);
             pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
         }
-    } 
-
+    }
+    // MOM_TODO: Maybe set this as + 3 seconds from now? Allow the player to start spectating it without missing anything?
     SetNextThink(gpGlobals->curtime);
 }
 
@@ -170,20 +177,13 @@ void CMomentumReplayGhostEntity::Think(void)
         SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
 
-    mom_replay_loop.SetValue(m_bReplayShouldLoop);
-    mom_replay_firstperson.SetValue(m_bReplayFirstPerson);
-
-    
-
     //move the ghost
-    if (!mom_replay_loop.GetBool() &&
-        ((mom_replay_reverse.GetBool() && m_iCurrentStep - 1 < 0) ||
+    if (((mom_replay_reverse.GetBool() && m_iCurrentStep - 1 < 0) ||
         (!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())))
     {
-        //MOM_TODO: Do we really want to end the run here? Why not make it wait at the end?
-
-        // If we're not looping and we've reached the end of the video then end the run.
-        EndRun();
+        // If we're not looping and we've reached the end of the video then stop and wait for the player
+        // to make a choice about if it should repeat, or end.
+        //EndRun();
     }
     else
     {
@@ -193,7 +193,6 @@ void CMomentumReplayGhostEntity::Think(void)
             HandleGhost();
         else
             HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
-        //mom_replay_firstperson.GetBool() ? HandleGhostFirstPerson() : HandleGhost();
     }
 
     BaseClass::Think();

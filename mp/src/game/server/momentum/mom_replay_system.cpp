@@ -18,7 +18,8 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     {
         m_pReplayManager->StartRecording();
         Log("Recording began!\n");
-        m_nCurrentTick = 1; // recoring begins at 1 ;)
+        m_iTickCount = 1; // recoring begins at 1 ;)
+        m_iStartRecordingTick = gpGlobals->tickcount;
     }
 }
 
@@ -33,7 +34,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     if (delay)
     {
         m_bShouldStopRec = true;
-        m_fRecEndTime = gpGlobals->curtime;
+        m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
         return;
     }
 
@@ -42,6 +43,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     m_bShouldStopRec = false;
     CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
     mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime, 3, true);
+    //MOM_TODO: BUG: The player name could have characters in it that cannot be saved as a file, causing a hang!
     Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec",
                 (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
     V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
@@ -50,30 +52,57 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     V_FixSlashes(RECORDING_PATH);
 
     // We have to create the directory here just in case it doesn't exist yet
-    filesystem->CreateDirHierarchy(RECORDING_PATH,
-                                    "MOD");
+    filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD");
 
     // Store the replay in a file and stop recording.
     SetReplayInfo();
     SetRunStats();
+
+    //MOM_TODO: Trim the start of the replay to be only START_TRIGGER_TIME_SEC seconds of inside the start trigger
+    DevLog("Before trimming: %i\n", m_iTickCount);
+    TrimReplay();
+    DevLog("After trimming: %i\n", m_pReplayManager->GetRecordingReplay()->GetFrameCount());
     m_pReplayManager->StoreReplay(newRecordingPath, "MOD");
     m_pReplayManager->StopRecording();
 
-    Log("Recording Stopped! Ticks: %i\n", m_nCurrentTick);
+    //Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
+    Log("Recording Stopped! Ticks: %i\n", m_iTickCount);
 
     // Load the last run that we did in case we want to watch it
-    // TODO (OrfeasZ): Does this need to be re-enabled?
+    // MOM_TODO (OrfeasZ): Does this need to be re-enabled?
     //LoadRun(newRecordingName);
 }
 
+void CMomentumReplaySystem::TrimReplay()
+{
+    if (m_iStartRecordingTick > -1 && m_iStartTimerTick > -1)
+    {
+        int newStart = m_iStartTimerTick - int(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
+        //We only need to trim if the player was in the start trigger for longer than what we want
+        if (newStart > m_iStartRecordingTick)
+        {
+            int extraFrames = newStart - m_iStartRecordingTick;
+            CMomReplayBase *pReplay = m_pReplayManager->GetRecordingReplay();
+            if (pReplay)
+            {
+                //Remove the amount of extra frames from the head
+                //MOM_TODO: If the map allows for prespeed in the trigger, we don't want to trim it!
+                pReplay->RemoveFrames(extraFrames);
+                m_iTickCount -= extraFrames;
+            }
+        }
+    }
+}
+
+
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
-    ++m_nCurrentTick; // increment recording tick
+    ++m_iTickCount; // increment recording tick
 
     if (m_pReplayManager->Recording())
         m_pReplayManager->GetRecordingReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons));
 
-    if (m_bShouldStopRec && gpGlobals->curtime - m_fRecEndTime >= END_RECORDING_PAUSE)
+    if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
         StopRecording(UTIL_GetLocalPlayer(), false, false);
 }
 

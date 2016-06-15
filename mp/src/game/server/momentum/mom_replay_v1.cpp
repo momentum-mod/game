@@ -64,6 +64,11 @@ CMomRunStats* CMomReplayV1::CreateRunStats(uint8 stages)
     return m_pRunStats;
 }
 
+void CMomReplayV1::RemoveFrames(int num)
+{
+    m_rgFrames.RemoveMultipleFromHead(num);
+}
+
 void CMomReplayV1::Serialize(CBinaryWriter* writer)
 {
     // Write the header.

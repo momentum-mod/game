@@ -60,8 +60,9 @@ typedef enum MOMGM
 
 #define MAX_STAGES 64
 
-#define MAP_FOLDER "maps"//MOM_TODO: Ensure all files are successfully built using V_ComposeFile
-#define EXT_TIME_FILE ".tim"//MOM_TODO: Find and replace all instances, no hardcode.
-#define EXT_ZONE_FILE ".zon"//MOM_TODO: Find and replace all instances, no hardcode.
+#define MAP_FOLDER "maps" //MOM_TODO: Ensure all files are successfully built using V_ComposeFile
+#define RECORDING_PATH "recordings"
+#define EXT_TIME_FILE ".tim" //MOM_TODO: Find and replace all instances, no hardcode.
+#define EXT_ZONE_FILE ".zon" //MOM_TODO: Find and replace all instances, no hardcode.
 
 #endif // MOM_SHAREDDEFS_H

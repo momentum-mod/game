@@ -55,4 +55,7 @@
     "spec_target_updated" // Used by the spectator GUI
     {
     }
+    "mapfinished_panel_closed"
+    {
+    }
 }

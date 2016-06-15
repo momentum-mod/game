@@ -143,6 +143,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             g_Timer->Start(gpGlobals->tickcount);
             if (g_Timer->IsRunning())
             {
+                //Used for trimming later on
+                if (g_ReplaySystem->GetReplayManager()->Recording())
+                {
+                    g_ReplaySystem->SetTimerStartTick(gpGlobals->tickcount);
+                }
+
                 pPlayer->m_RunData.m_bTimerRunning = g_Timer->IsRunning();
                 //Used for spectating later on
                 pPlayer->m_RunData.m_iStartTick = gpGlobals->tickcount;

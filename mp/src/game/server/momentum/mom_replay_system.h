@@ -9,19 +9,21 @@
 #include "mom_player_shared.h"
 #include "mom_replay_manager.h"
 
-#define RECORDING_PATH "recordings"
-#define END_RECORDING_PAUSE 1.0
+#define END_RECORDING_DELAY 1.0f //Delay the ending by this amount of seconds
+#define START_TRIGGER_TIME_SEC 2.0f //We only want this amount in seconds of being in the start trigger
 
 class CMomentumReplayGhostEntity;
 
 class CMomentumReplaySystem : CAutoGameSystemPerFrame
 {
 public:
-    CMomentumReplaySystem(const char *pName) : 
+    CMomentumReplaySystem(const char *pName) :
         CAutoGameSystemPerFrame(pName),
         m_bShouldStopRec(false),
-        m_nCurrentTick(0), 
-        m_fRecEndTime(0), 
+        m_iTickCount(0),
+        m_iStartRecordingTick(-1),
+        m_iStartTimerTick(-1),
+        m_fRecEndTime(-1.0f), 
         m_player(nullptr)
     {
         m_pReplayManager = new CMomReplayManager();
@@ -47,11 +49,17 @@ public:
             StopRecording(nullptr, true, false);
     }
 
+    void SetTimerStartTick(int tick)
+    {
+        m_iStartTimerTick = tick;
+    }
+
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
 
     void StartReplay(bool firstperson = false);
     void EndReplay(CMomentumReplayGhostEntity *pGhost);// Stops a given replay. If null is passed, it ends all replays.
+    void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
     void OnGhostEntityRemoved(CMomentumReplayGhostEntity*);// Called when a ghost entity is done being played.
 
     void AddGhost(CMomentumReplayGhostEntity*);
@@ -66,12 +74,13 @@ private:
 
 private:
     bool m_bShouldStopRec;
-    int m_nCurrentTick;
-    float m_fRecEndTime;
+    int m_iTickCount;// MOM_TODO: Maybe remove me?
+    int m_iStartRecordingTick;//The tick that the replay started, used for trimming.
+    int m_iStartTimerTick;//The tick that the player's timer starts, used for trimming.
+    float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
 
     CMomentumPlayer *m_player;
     CUtlVector<CMomentumReplayGhostEntity*> m_rgGhosts;
-    //CMomentumReplayGhostEntity *m_CurrentReplayGhost;//MOM_TODO: Update this to be a CUtlVector so multiple ghosts can be kept track of
 
     CMomReplayManager* m_pReplayManager;
 };

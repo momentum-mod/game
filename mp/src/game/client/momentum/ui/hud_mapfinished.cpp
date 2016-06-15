@@ -20,18 +20,21 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
     LoadControlSettings("resource/UI/MapFinishedDialog.res");
-    m_pNextZoneButton = FindControl<Button>("Next_Zone");
+    m_pNextZoneButton = FindControl<ImagePanel>("Next_Zone");
     m_pNextZoneButton->SetMouseInputEnabled(true);
-    m_pNextZoneButton->SetMouseClickEnabled(MOUSE_LEFT, true);
     m_pNextZoneButton->InstallMouseHandler(this);
-    //MOM_TODO: Have "Next" and "Prev" icons as images for the buttons?
-    m_pPrevZoneButton = FindControl<Button>("Prev_Zone");
+    m_pPrevZoneButton = FindControl<ImagePanel>("Prev_Zone");
     m_pPrevZoneButton->SetMouseInputEnabled(true);
-    m_pPrevZoneButton->SetMouseClickEnabled(MOUSE_LEFT, true);
     m_pPrevZoneButton->InstallMouseHandler(this);
     m_pPlayReplayButton = FindControl<ImagePanel>("Replay_Icon");
     m_pPlayReplayButton->SetMouseInputEnabled(true);
     m_pPlayReplayButton->InstallMouseHandler(this);
+    m_pRepeatButton = FindControl<ImagePanel>("Repeat_Button");
+    m_pRepeatButton->SetMouseInputEnabled(true);
+    m_pRepeatButton->InstallMouseHandler(this);
+    m_pClosePanelButton = FindControl<ImagePanel>("Close_Panel");
+    m_pClosePanelButton->SetMouseInputEnabled(true);
+    m_pClosePanelButton->InstallMouseHandler(this);
     m_pPlayReplayLabel = FindControl<Label>("Replay_Label");
     m_pDetachMouseLabel = FindControl<Label>("Detach_Mouse");
     m_pCurrentZoneLabel = FindControl<Label>("Current_Zone");
@@ -110,6 +113,21 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
             int newPage = m_iCurrentPage - 1;
             m_iCurrentPage = newPage < 0 ? /*g_MOMEventListener->m_iMapZoneCount*/4 : newPage;
         }
+        else if (over == m_pRepeatButton->GetVPanel())
+        {
+            //The player either wants to repeat the replay (if spectating), or restart the map (not spec)
+        }
+        else if (over == m_pClosePanelButton->GetVPanel())
+        {
+            //This is where we unload comparisons, as well as the ghost if the player was speccing it
+            SetMouseInputEnabled(false);
+            IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
+            if (pClosePanel)
+            {
+                //Fire this event so other classes can get at this
+                gameeventmanager->FireEvent(pClosePanel);
+            }
+        }
 
         //MOM_TODO: Other buttons here
     }
@@ -177,7 +195,8 @@ void CHudMapFinishedDialog::Paint()
     // --- CURRENT PAGE TITLE (ZONE) ---
     wchar_t currentPageTitle[BUFSIZELOCL];
     if (m_iCurrentPage == 0)
-    {       
+    {
+        //MOM_TODO: Take this width, divide by 2, 
         V_wcscpy_safe(currentPageTitle, m_pwCurrentPageOverall);
     } 
     else
@@ -185,7 +204,7 @@ void CHudMapFinishedDialog::Paint()
         MAKE_UNI_INT(num, 3, m_iCurrentPage);
         g_pVGuiLocalize->ConstructString(currentPageTitle, sizeof(currentPageTitle), m_pwCurrentPageZoneNum, 1, num);
     }
-
+    
     m_pCurrentZoneLabel->SetText(currentPageTitle);
     int currentPageTitleWidth = UTIL_ComputeStringWidth(m_hTextFont, currentPageTitle) + 2;
     m_pNextZoneButton->SetPos(m_pCurrentZoneLabel->GetXPos() + currentPageTitleWidth, m_pCurrentZoneLabel->GetYPos());

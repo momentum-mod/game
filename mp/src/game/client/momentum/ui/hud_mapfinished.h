@@ -72,8 +72,10 @@ private:
     char m_pszEndRunTime[BUFSIZETIME];
 
     ImagePanel *m_pPlayReplayButton;
-    Button *m_pNextZoneButton;
-    Button *m_pPrevZoneButton;
+    ImagePanel *m_pClosePanelButton;
+    ImagePanel *m_pRepeatButton;
+    ImagePanel *m_pNextZoneButton;
+    ImagePanel *m_pPrevZoneButton;
     Label *m_pPlayReplayLabel;
     Label *m_pDetachMouseLabel;
     Label *m_pCurrentZoneLabel;
