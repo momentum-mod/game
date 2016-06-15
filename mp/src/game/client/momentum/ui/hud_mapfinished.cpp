@@ -176,15 +176,17 @@ void CHudMapFinishedDialog::Reset()
     strcpy(m_pszEndRunTime, "00:00:00.000"); 
 }
 
-#define MAKE_UNI_INT(name, size, number) \
-    wchar_t name[size];\
-    V_snwprintf(name, size, L"%d", number);
+#define MAKE_UNI_NUM(name, size, number, isInt) \
+    wchar_t name[size]; \
+    V_snwprintf(name, size, isInt ? L"%.4f" : L"%d", number)
 
-#define MAKE_UNI_FLOAT(name, size, number) \
-    wchar_t name[size];\
-    V_snwprintf(name, size, L"%.4f", number);
-
-
+inline void PaintLabel(Label *label, wchar_t *wFormat, float value, bool isInt)
+{
+    wchar_t temp[BUFSIZELOCL];
+    MAKE_UNI_NUM(tempNum, BUFSIZESHORT, isInt ? int(value) : value, isInt);
+    g_pVGuiLocalize->ConstructString(temp, sizeof(temp), wFormat, 1, tempNum);
+    label->SetText(temp);
+}
 
 void CHudMapFinishedDialog::Paint()
 {
@@ -198,10 +200,10 @@ void CHudMapFinishedDialog::Paint()
     {
         //MOM_TODO: Take this width, divide by 2, 
         V_wcscpy_safe(currentPageTitle, m_pwCurrentPageOverall);
-    } 
+    }
     else
     {
-        MAKE_UNI_INT(num, 3, m_iCurrentPage);
+        MAKE_UNI_NUM(num, 3, m_iCurrentPage, true);
         g_pVGuiLocalize->ConstructString(currentPageTitle, sizeof(currentPageTitle), m_pwCurrentPageZoneNum, 1, num);
     }
     
@@ -255,89 +257,59 @@ void CHudMapFinishedDialog::Paint()
     //MOM_TODO: Set every label's Y pos higher if there's no ZoneEnterTime visible
 
     //// --- JUMP COUNT ---
-    wchar_t jumpCount[BUFSIZELOCL];
-    
-    MAKE_UNI_INT(jumps, 10, m_pRunStats ? m_pRunStats->GetZoneJumps(m_iCurrentPage) : 0);
-
-    g_pVGuiLocalize->ConstructString(jumpCount, sizeof(jumpCount), 
-        m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone, 1, jumps);
-
-    m_pZoneJumps->SetText(jumpCount);
+    PaintLabel(m_pZoneJumps, 
+        m_iCurrentPage == 0 ? m_pwJumpsOverall : m_pwJumpsZone,
+        m_pRunStats ? m_pRunStats->GetZoneJumps(m_iCurrentPage) : 0, 
+        true);
     //// ---------------------
 
     //// --- STRAFE COUNT ---
-    wchar_t strafeCount[BUFSIZELOCL];
-
-    MAKE_UNI_INT(strafes, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneStrafes(m_iCurrentPage) : 0);
-
-    g_pVGuiLocalize->ConstructString(strafeCount, sizeof(strafeCount),
-        m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone, 1, strafes);
-
-    m_pZoneStrafes->SetText(strafeCount);
+    PaintLabel(m_pZoneStrafes,
+        m_iCurrentPage == 0 ? m_pwStrafesOverall : m_pwStrafesZone,
+        m_pRunStats ? m_pRunStats->GetZoneStrafes(m_iCurrentPage) : 0,
+        true);
     //// ---------------------
 
     //// --- SYNC1 ---
-    wchar_t sync1Avg[BUFSIZELOCL];
-
-    MAKE_UNI_FLOAT(sync1, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage) : 0.0f);
-
-    g_pVGuiLocalize->ConstructString(sync1Avg, sizeof(sync1Avg), m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone, 1, sync1);
-
-    m_pZoneSync1->SetText(sync1Avg);
+    PaintLabel(m_pZoneSync1,
+        m_iCurrentPage == 0 ? m_pwSync1Overall : m_pwSync1Zone,
+        m_pRunStats ? m_pRunStats->GetZoneStrafeSyncAvg(m_iCurrentPage) : 0.0f,
+        false);
     //// ---------------------
 
     //// --- SYNC2---
-    wchar_t sync2Avg[BUFSIZELOCL];
-
-    MAKE_UNI_FLOAT(sync2, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f);
-
-    g_pVGuiLocalize->ConstructString(sync2Avg, sizeof(sync2Avg), m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone, 1, sync2);
-
-    m_pZoneSync2->SetText(sync2Avg);
+    PaintLabel(m_pZoneSync2,
+        m_iCurrentPage == 0 ? m_pwSync2Overall : m_pwSync2Zone,
+        m_pRunStats ? m_pRunStats->GetZoneStrafeSync2Avg(m_iCurrentPage) : 0.0f,
+        false);
     //// ---------------------
 
     //// --- STARTING VELOCITY---
-    wchar_t enterVelUni[BUFSIZELOCL];
-
-    MAKE_UNI_FLOAT(enterVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f);
-
-    g_pVGuiLocalize->ConstructString(enterVelUni, sizeof(enterVelUni), m_pwVelZoneEnter, 1, enterVel);
-
-    m_pZoneVelEnter->SetText(enterVelUni);
+    PaintLabel(m_pZoneVelEnter,
+        m_pwVelZoneEnter,
+        m_pRunStats ? m_pRunStats->GetZoneEnterSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f,
+        false);
     //// ---------------------
 
     //// --- ENDING VELOCITY---
-    wchar_t exitVelUni[BUFSIZELOCL];
-
-    MAKE_UNI_FLOAT(exitVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f);
-
-    g_pVGuiLocalize->ConstructString(exitVelUni, sizeof(exitVelUni), m_pwVelZoneExit, 1, exitVel);
-
-    m_pZoneVelExit->SetText(exitVelUni);
+    PaintLabel(m_pZoneVelExit,
+        m_pwVelZoneExit,
+        m_pRunStats ? m_pRunStats->GetZoneExitSpeed(m_iCurrentPage, m_iVelocityType) : 0.0f,
+        false);
     //// ---------------------
 
     //// --- AVG VELOCITY---
-    wchar_t avgVelUni[BUFSIZELOCL];
-
-    MAKE_UNI_FLOAT(avgVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, m_iVelocityType) : 0.0f);
-
-    g_pVGuiLocalize->ConstructString(avgVelUni, sizeof(avgVelUni), m_pwVelAvg, 1, avgVel);
-
-    m_pZoneVelAvg->SetText(avgVelUni);
+    PaintLabel(m_pZoneVelAvg,
+        m_pwVelAvg,
+        m_pRunStats ? m_pRunStats->GetZoneVelocityAvg(m_iCurrentPage, m_iVelocityType) : 0.0f,
+        false);
     //// ---------------------
 
     //// --- MAX VELOCITY---
-    wchar_t maxVelUni[BUFSIZELOCL];
-
-    MAKE_UNI_FLOAT(maxVel, BUFSIZESHORT, m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, m_iVelocityType) : 0.0f);
-
-    g_pVGuiLocalize->ConstructString(maxVelUni, sizeof(maxVelUni), m_pwVelMax, 1, maxVel);
-
-    m_pZoneVelMax->SetText(maxVelUni);
-
-    // MOM_TODO: Make a macro/function that takes Label*, wchar_t *wFormat, float value, bool isInt
-    // and make it take 
-
+    PaintLabel(m_pZoneVelMax,
+        m_pwVelMax,
+        m_pRunStats ? m_pRunStats->GetZoneVelocityMax(m_iCurrentPage, m_iVelocityType) : 0.0f,
+        false);
     //// ---------------------
 
     //// ---- RUN SAVING AND UPLOADING ----
