@@ -64,7 +64,9 @@ void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
 {
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
-        //MOM_TODO: Set something here, m_RunData.m_bMapFinished = false I think
+        //Hide the mapfinished panel and reset our speed to normal
+        m_RunData.m_bMapFinished = false;
+        SetLaggedMovementValue(1.0f);
     }
 }
 

@@ -57,20 +57,19 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     // Store the replay in a file and stop recording.
     SetReplayInfo();
     SetRunStats();
-
-    //MOM_TODO: Trim the start of the replay to be only START_TRIGGER_TIME_SEC seconds of inside the start trigger
+    
     DevLog("Before trimming: %i\n", m_iTickCount);
     TrimReplay();
-    DevLog("After trimming: %i\n", m_pReplayManager->GetRecordingReplay()->GetFrameCount());
-    m_pReplayManager->StoreReplay(newRecordingPath, "MOD");
+    int postTrimTickCount = m_pReplayManager->GetRecordingReplay()->GetFrameCount();
+    DevLog("After trimming: %i\n", postTrimTickCount);
+    m_pReplayManager->StoreReplay(newRecordingPath);
     m_pReplayManager->StopRecording();
 
     //Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
-    Log("Recording Stopped! Ticks: %i\n", m_iTickCount);
+    Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
 
     // Load the last run that we did in case we want to watch it
-    // MOM_TODO (OrfeasZ): Does this need to be re-enabled?
-    //LoadRun(newRecordingName);
+    m_pReplayManager->LoadReplay(newRecordingPath);
 }
 
 void CMomentumReplaySystem::TrimReplay()
@@ -94,6 +93,16 @@ void CMomentumReplaySystem::TrimReplay()
     }
 }
 
+
+void CMomentumReplaySystem::FireGameEvent(IGameEvent* pEvent)
+{
+    if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
+    {
+        //If we loaded a replay, and it's not already playing, we want to unload it here
+        if (m_pReplayManager->GetPlaybackReplay() && !m_pReplayManager->PlayingBack())
+            m_pReplayManager->UnloadPlayback();
+    }
+}
 
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
@@ -130,67 +139,6 @@ void CMomentumReplaySystem::SetRunStats()
     *stats = static_cast<CMomRunStats>(m_player->m_RunStats);
 }
 
-void CMomentumReplaySystem::StartReplay(bool firstperson)
-{
-    CMomentumReplayGhostEntity* pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
-
-    if (pGhost != nullptr && m_pReplayManager->GetPlaybackReplay())
-    {
-        //MOM_TODO: Make sure this is all the data we need to set
-        pGhost->SetRunStats(m_pReplayManager->GetPlaybackReplay()->GetRunStats());
-        pGhost->m_RunData.m_flRunTime = m_pReplayManager->GetPlaybackReplay()->GetRunTime();
-        pGhost->m_RunData.m_iRunFlags = m_pReplayManager->GetPlaybackReplay()->GetRunFlags();
-        pGhost->m_flTickRate = m_pReplayManager->GetPlaybackReplay()->GetTickInterval();
-
-        if (firstperson)
-            g_Timer->Stop(false); // stop the timer just in case we started a replay while it was running...
-
-        pGhost->StartRun(firstperson);
-
-        AddGhost(pGhost);
-    }
-}
-
-void CMomentumReplaySystem::AddGhost(CMomentumReplayGhostEntity *pGhost)
-{
-    if (pGhost)
-        m_rgGhosts.AddToTail(pGhost);
-}
-
-void CMomentumReplaySystem::RemoveGhost(CMomentumReplayGhostEntity *pGhost)
-{
-    if (pGhost)
-        m_rgGhosts.FindAndRemove(pGhost);
-}
-
-void CMomentumReplaySystem::EndReplay(CMomentumReplayGhostEntity *pGhost)
-{
-    if (pGhost)
-    {
-        pGhost->EndRun();
-    }
-    else
-    {
-        //Backwards since this will be removing ghosts as it goes along
-        FOR_EACH_VEC_BACK(m_rgGhosts, i)
-        {
-            CMomentumReplayGhostEntity *pGhost2 = m_rgGhosts[i];
-            if (pGhost2)
-                pGhost2->EndRun();
-        }
-        //Theoretically, m_rcGhosts will be empty here.
-    }
-}
-
-
-void CMomentumReplaySystem::OnGhostEntityRemoved(CMomentumReplayGhostEntity* pGhost)
-{
-    // NOTE: Calling delete here seems to have some adverse side-effects.
-    // Are entities deleted by the engine itself when "Remove()" is called?
-    // @Gocnak: Yep. Calling Remove() on an ent marks it for deletion next frame.
-    RemoveGhost(pGhost);
-}
-
 class CMOMReplayCommands
 {
   public:
@@ -212,16 +160,17 @@ class CMOMReplayCommands
             char recordingName[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
 
-            if (g_ReplaySystem->GetReplayManager()->LoadReplay(recordingName, "MOD"))
+            auto pLoaded = g_ReplaySystem->GetReplayManager()->LoadReplay(recordingName);
+            if (pLoaded)
             {
-                if (!Q_strcmp(STRING(gpGlobals->mapname), g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetMapName()))
+                if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
                 {
-                    g_ReplaySystem->StartReplay(firstperson);
+                    pLoaded->Start(firstperson);
                 }
                 else
                 {
                     Warning("Error: Tried to start replay on incorrect map! Please load map %s",
-                        g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetMapName());
+                        pLoaded->GetMapName());
                 }
             }
         }
@@ -233,40 +182,44 @@ class CMOMReplayCommands
 CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play_ghost, CMOMReplayCommands::PlayReplayGhost, "Begins playback of a replay as a ghost.",
                              "recordings", momrec);
 CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play, CMOMReplayCommands::PlayReplayFirstPerson,
-                             "Begins a playback of a replay in first-person mode.", "recordings", momrec);
+                             "Begins a playback of a replay in first-person mode.", 
+                             "recordings", momrec);
 
-CON_COMMAND(mom_replay_stop, "Stops playing the current replay.")
+CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in first person), if there is one.")
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    CMomentumReplayGhostEntity *pGhost = nullptr;
-    if (pPlayer)
+    auto pPlaybackReplay = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay();
+    if (pPlaybackReplay && !g_ReplaySystem->GetReplayManager()->PlayingBack())
     {
-        if (pPlayer->IsWatchingReplay())
-        {
-            pGhost = pPlayer->GetReplayEnt();
-        }
-        else
-        {
-            //MOM_TODO: Should this just pick the first ghost from the replay system and stop that?
-            // Or should we print "Use "mom_replay_stop_all" to stop all ghosts"?
-        }
-
-        if (pGhost)
-            g_ReplaySystem->EndReplay(pGhost);
+        pPlaybackReplay->Start(true);
     }
 }
 
-CON_COMMAND(mom_replay_stop_all, "Stops all currently playing replays.")
+CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there is one.")
 {
-    g_ReplaySystem->EndReplay(nullptr);
+    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    {
+        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        if (pGhost)
+        {
+            pGhost->StartRun(pGhost->m_bReplayFirstPerson);
+        }
+    }
+}
+
+CON_COMMAND(mom_replay_stop, "Stops playing the current replay.")
+{
+    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    {
+        g_ReplaySystem->GetReplayManager()->StopPlayback();
+    }
 }
 
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && !pPlayer->IsObserver())
     {
-        CBaseEntity *pNext = pPlayer->FindNextObserverTarget(false);
+        auto pNext = pPlayer->FindNextObserverTarget(false);
         if (pNext)
         {
             //Setting ob target first is needed for the specGUI panel to update properly
@@ -278,7 +231,7 @@ CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being 
 
 CON_COMMAND(mom_spectate_stop, "Stop spectating.")
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {  
         pPlayer->StopSpectating();

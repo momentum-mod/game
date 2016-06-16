@@ -2,6 +2,7 @@
 #include "mom_replay_manager.h"
 #include "filesystem.h"
 #include "mom_replay_v1.h"
+#include "mom_replay_entity.h"
 
 #define REPLAY_MAGIC_LE 0x524D4F4D
 #define REPLAY_MAGIC_BE 0x4D4F4D52
@@ -105,13 +106,21 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
 
     Log("Loading replay '%s' of version '%d'...\n", path, version);
 
-    // TODO (OrfeasZ): Verify that replay parsing was successful.
-    m_bPlayingBack = true;
+    // MOM_TODO (OrfeasZ): Verify that replay parsing was successful.
     m_pPlaybackReplay = m_mapCreators.Element(m_mapCreators.Find(version))->LoadReplay(&reader);
 
     filesystem->Close(file);
 
     Log("Successfully loaded replay.\n");
+
+    //Create the run entity here
+    CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
+    pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
+    pGhost->m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
+    pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+    pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
+    pGhost->SetPlaybackReplay(m_pPlaybackReplay);
+    m_pPlaybackReplay->SetRunEntity(pGhost);
 
     return m_pPlaybackReplay;
 }
@@ -145,9 +154,20 @@ void CMomReplayManager::StopPlayback()
         return;
 
     Log("Stopping replay playback.\n");
+    UnloadPlayback();
+}
 
-    m_bPlayingBack = false;
+void CMomReplayManager::UnloadPlayback()
+{
+    SetPlayingBack(false);
 
-    delete m_pPlaybackReplay;
+    if (m_pPlaybackReplay)
+    {
+        if (m_pPlaybackReplay->GetRunEntity())
+            m_pPlaybackReplay->GetRunEntity()->EndRun();
+
+        delete m_pPlaybackReplay;
+    }
+
     m_pPlaybackReplay = nullptr;
 }

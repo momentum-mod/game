@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "mom_replay_v1.h"
+#include "Timer.h"
 
 CMomReplayV1::CMomReplayV1(CBinaryReader* reader) :
     CMomReplayBase(CReplayHeader(reader)),
@@ -68,6 +69,19 @@ void CMomReplayV1::RemoveFrames(int num)
 {
     m_rgFrames.RemoveMultipleFromHead(num);
 }
+
+void CMomReplayV1::Start(bool firstperson)
+{
+    if (m_pEntity)
+    {
+        if (firstperson)
+            g_Timer->Stop(false); // stop the timer just in case we started a replay while it was running...
+
+        m_pEntity->StartRun(firstperson);
+        g_ReplaySystem->GetReplayManager()->SetPlayingBack(true);
+    }
+}
+
 
 void CMomReplayV1::Serialize(CBinaryWriter* writer)
 {

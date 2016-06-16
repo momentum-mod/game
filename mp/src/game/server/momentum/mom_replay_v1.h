@@ -2,6 +2,7 @@
 
 #include "cbase.h"
 #include "mom_replay_base.h"
+#include "mom_replay_entity.h"
 
 class CMomReplayV1 :
     public CMomReplayBase
@@ -9,20 +10,21 @@ class CMomReplayV1 :
 public:
     CMomReplayV1();
     CMomReplayV1(CBinaryReader* reader);
-    virtual ~CMomReplayV1() override;
+    ~CMomReplayV1() override;
 
 public:
-    virtual uint8 GetVersion() override { return 1; }
-    virtual CMomRunStats* GetRunStats() override;
-    virtual int32 GetFrameCount() override;
-    virtual CReplayFrame* GetFrame(int32 index) override;
-    virtual void AddFrame(const CReplayFrame& frame) override;
-    virtual bool SetFrame(int32 index, const CReplayFrame& frame) override;
-    virtual CMomRunStats* CreateRunStats(uint8 stages) override;
+    uint8 GetVersion() override { return 1; }
+    CMomRunStats* GetRunStats() override;
+    int32 GetFrameCount() override;
+    CReplayFrame* GetFrame(int32 index) override;
+    void AddFrame(const CReplayFrame& frame) override;
+    bool SetFrame(int32 index, const CReplayFrame& frame) override;
+    CMomRunStats* CreateRunStats(uint8 stages) override;
     void RemoveFrames(int num) override;
+    void Start(bool firstperson) override;
 
 public:
-    virtual void Serialize(CBinaryWriter* writer) override;
+    void Serialize(CBinaryWriter* writer) override;
 
 private:
     void Deserialize(CBinaryReader* reader);

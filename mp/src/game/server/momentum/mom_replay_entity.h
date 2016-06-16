@@ -74,10 +74,13 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
     inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
 
-    inline CReplayFrame* GetCurrentStep() { return g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrame(m_iCurrentStep); }
+    void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
+
+    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentStep); }
     CReplayFrame* GetNextStep();
 
     bool m_bIsActive;
+    bool m_bReplayShouldLoop, m_bReplayFirstPerson;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
@@ -97,7 +100,13 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     char m_pszModel[256], m_pszMapName[256];
     int m_iCurrentStep;
 
+    // These are the players spectating this ghost. This will most likely be used in
+    // online mode, where you can play back a ghost and people can watch with you.
+    // @Gocnak: I'm not really seeing why though, shouldn't players just download replay files
+    // if they want to view them...?
     CUtlVector<CMomentumPlayer *> m_rgSpectators;
+
+    CMomReplayBase *m_pPlaybackReplay;
 
     int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
     Color m_GhostColor;
@@ -107,7 +116,6 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;
-    bool m_bReplayShouldLoop, m_bReplayFirstPerson;
 };
 
 #endif // MOM_REPLAY_GHOST_H

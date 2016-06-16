@@ -4,6 +4,8 @@
 #include "mom_replay_base.h"
 #include "utlmap.h"
 
+class CMomentumReplayGhostEntity;
+
 class CMomReplayManager
 {
 private:
@@ -30,9 +32,11 @@ public:
 public:
     CMomReplayBase* StartRecording();
     void StopRecording();
-    bool StoreReplay(const char* path, const char* pathID);
-    CMomReplayBase* LoadReplay(const char* path, const char* pathID);
+    bool StoreReplay(const char* path, const char* pathID = "MOD");
+    CMomReplayBase* LoadReplay(const char* path, const char* pathID = "MOD");
     void StopPlayback();
+    void UnloadPlayback();
+    void SetPlayingBack(bool playing) { m_bPlayingBack = playing; }
 
 public:
     inline CMomReplayBase* GetRecordingReplay() const { return m_pRecordingReplay; }

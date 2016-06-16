@@ -37,15 +37,16 @@ Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() : 
     m_bIsActive(false),
-    m_iCurrentStep(0),
+    m_bReplayShouldLoop(false),
+    m_bReplayFirstPerson(false), 
+    m_iCurrentStep(0), 
+    m_pPlaybackReplay(nullptr), 
     m_bHasJumped(false), 
     m_flLastSyncVelocity(0), 
-    m_nStrafeTicks(0), 
-    m_nPerfectSyncTicks(0), 
-    m_nAccelTicks(0), 
-    m_nOldReplayButtons(0),
-    m_bReplayShouldLoop(false),
-    m_bReplayFirstPerson(false)
+    m_nStrafeTicks(0),
+    m_nPerfectSyncTicks(0),
+    m_nAccelTicks(0),
+    m_nOldReplayButtons(0)
 {
     //Set networked vars here
     m_nReplayButtons = 0;
@@ -94,45 +95,48 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetModel(GHOST_MODEL);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
 
-    if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
-        Q_strcpy(m_pszPlayerName.GetForModify(), g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetPlayerName());
+    if (m_pPlaybackReplay)
+        Q_strcpy(m_pszPlayerName.GetForModify(), m_pPlaybackReplay->GetPlayerName());
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */)
 {
     m_bReplayFirstPerson = firstPerson;
     m_bReplayShouldLoop = shouldLoop;
-
+    
     Spawn();
     m_iTotalStrafes = 0;
+    m_RunData.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
 
-    if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
-        m_iCurrentStep = mom_replay_reverse.GetBool() ? g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount() - 1 : 0;
-    else
-        m_iCurrentStep = 0;
-
-    if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
-        SetAbsOrigin(g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrame(m_iCurrentStep)->PlayerOrigin());
-
-    if (m_bReplayFirstPerson)
+    if (m_pPlaybackReplay)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-        if (pPlayer)
+        if (m_bReplayFirstPerson)
         {
-            // Ob target set first for spectator GUI
-            pPlayer->SetObserverTarget(this);
-            pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+            CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+            if (pPlayer && pPlayer->GetReplayEnt() != this)
+            {
+                pPlayer->SetObserverTarget(this);
+                pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+            }
         }
+
+        m_iCurrentStep = mom_replay_reverse.GetBool() ? m_pPlaybackReplay->GetFrameCount() - 1 : 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentStep)->PlayerOrigin());
+
+        SetNextThink(gpGlobals->curtime);
     }
-    // MOM_TODO: Maybe set this as + 3 seconds from now? Allow the player to start spectating it without missing anything?
-    SetNextThink(gpGlobals->curtime);
+    else
+    {
+        Warning("CMomentumReplayGhostEntity::StartRun: No playback replay found!\n");
+        EndRun();
+    }
 }
 
 void CMomentumReplayGhostEntity::UpdateStep()
 {
-    if (!g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+    if (!m_pPlaybackReplay)
         return;
 
     if (mom_replay_reverse.GetBool())
@@ -140,19 +144,19 @@ void CMomentumReplayGhostEntity::UpdateStep()
         --m_iCurrentStep;
 
         if (m_iCurrentStep < 0)
-            m_iCurrentStep = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount() - 1;
+            m_iCurrentStep = m_pPlaybackReplay->GetFrameCount() - 1;
 
         return;
     }
     
     ++m_iCurrentStep;
 
-    if (m_iCurrentStep >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())
+    if (m_iCurrentStep >= m_pPlaybackReplay->GetFrameCount())
         m_iCurrentStep = 0;
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
-    if (!g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+    if (!m_pPlaybackReplay)
     {
         BaseClass::Think();
         return;
@@ -179,11 +183,10 @@ void CMomentumReplayGhostEntity::Think(void)
 
     //move the ghost
     if (((mom_replay_reverse.GetBool() && m_iCurrentStep - 1 < 0) ||
-        (!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())))
+        (!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= m_pPlaybackReplay->GetFrameCount())))
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
-        //EndRun();
     }
     else
     {
@@ -409,9 +412,6 @@ void CMomentumReplayGhostEntity::EndRun()
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
-
-    //Cleanup the CUtlVector back in the replay system
-    g_ReplaySystem->OnGhostEntityRemoved(this);
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
@@ -423,15 +423,15 @@ CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
         --nextStep;
 
         if (nextStep < 0)
-            nextStep = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount() - 1;
+            nextStep = m_pPlaybackReplay->GetFrameCount() - 1;
     }
     else
     {
         ++nextStep;
 
-        if (nextStep >= g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrameCount())
+        if (nextStep >= m_pPlaybackReplay->GetFrameCount())
             nextStep = 0;
     }
 
-    return g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetFrame(nextStep);
+    return m_pPlaybackReplay->GetFrame(nextStep);
 }

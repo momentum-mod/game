@@ -14,7 +14,7 @@
 
 class CMomentumReplayGhostEntity;
 
-class CMomentumReplaySystem : CAutoGameSystemPerFrame
+class CMomentumReplaySystem : public CAutoGameSystemPerFrame, public CGameEventListener
 {
 public:
     CMomentumReplaySystem(const char *pName) :
@@ -27,6 +27,7 @@ public:
         m_player(nullptr)
     {
         m_pReplayManager = new CMomReplayManager();
+        ListenForGameEvent("mapfinished_panel_closed");
     }
 
     virtual ~CMomentumReplaySystem() override
@@ -57,22 +58,18 @@ public:
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
 
-    void StartReplay(bool firstperson = false);
-    void EndReplay(CMomentumReplayGhostEntity *pGhost);// Stops a given replay. If null is passed, it ends all replays.
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
     void OnGhostEntityRemoved(CMomentumReplayGhostEntity*);// Called when a ghost entity is done being played.
 
-    void AddGhost(CMomentumReplayGhostEntity*);
-    void RemoveGhost(CMomentumReplayGhostEntity*);
+    CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
 
-    inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
+    void FireGameEvent(IGameEvent *pEvent) override;
 
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayInfo();
     void SetRunStats();
 
-private:
     bool m_bShouldStopRec;
     int m_iTickCount;// MOM_TODO: Maybe remove me?
     int m_iStartRecordingTick;//The tick that the replay started, used for trimming.
@@ -80,8 +77,6 @@ private:
     float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
 
     CMomentumPlayer *m_player;
-    CUtlVector<CMomentumReplayGhostEntity*> m_rgGhosts;
-
     CMomReplayManager* m_pReplayManager;
 };
 

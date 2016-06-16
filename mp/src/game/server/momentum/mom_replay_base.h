@@ -4,12 +4,14 @@
 #include "mom_replay_data.h"
 #include "util/serialization.h"
 
+class CMomentumReplayGhostEntity;
+
 class CMomReplayBase :
     public ISerializable
 {
 protected:
     CMomReplayBase(CReplayHeader header) :
-        m_rhHeader(header)
+        m_rhHeader(header), m_pEntity(nullptr)
     {
     }
 
@@ -24,6 +26,7 @@ public:
     virtual float GetTickInterval() { return m_rhHeader.m_fTickInterval; }
     virtual float GetRunTime() { return m_rhHeader.m_fRunTime; }
     virtual int GetRunFlags() { return m_rhHeader.m_iRunFlags; }
+    virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
 
 public:
     virtual void SetMapName(const char* name) { Q_strcpy(m_rhHeader.m_szMapName, name); }
@@ -32,6 +35,7 @@ public:
     virtual void SetTickInterval(float interval) { m_rhHeader.m_fTickInterval = interval; }
     virtual void SetRunTime(float runTime) { m_rhHeader.m_fRunTime = runTime; }
     virtual void SetRunFlags(int runFlags) { m_rhHeader.m_iRunFlags = runFlags; }
+    virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
 
 public:
     virtual uint8 GetVersion() = 0;
@@ -42,7 +46,9 @@ public:
     virtual bool SetFrame(int32 index, const CReplayFrame& frame) = 0;
     virtual CMomRunStats* CreateRunStats(uint8 stages) = 0;
     virtual void RemoveFrames(int num) = 0;
+    virtual void Start(bool firstperson) = 0;
 
 protected:
     CReplayHeader m_rhHeader;
+    CMomentumReplayGhostEntity *m_pEntity;
 };

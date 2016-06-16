@@ -85,6 +85,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                     lastRunTime = pGhost->m_RunData.m_flRunTime;
                     m_bIsGhost = true;
                     m_pPlayReplayButton->SetVisible(false);
+                    m_pRunUploadStatus->SetVisible(false);
+                    m_pRunSaveStatus->SetVisible(false);
                     m_pRepeatButton->GetTooltip()->SetText(m_pszRepeatToolTipReplay);
                 }
                 else
@@ -93,6 +95,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                     lastRunTime = pPlayer->m_RunData.m_flRunTime;
                     m_bIsGhost = false;
                     m_pPlayReplayButton->SetVisible(true);
+                    m_pRunUploadStatus->SetVisible(true);
+                    m_pRunSaveStatus->SetVisible(true);
                     m_pRepeatButton->GetTooltip()->SetText(m_pszRepeatToolTipMap);
                 }
 
@@ -104,21 +108,16 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
 
 bool CHudMapFinishedDialog::ShouldDraw()
 {
-    return CHudElement::ShouldDraw();
+    //return CHudElement::ShouldDraw();//MOM_TODO: REMOVEME
     
     bool shouldDrawLocal = false;
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
-        if (pPlayer->IsWatchingReplay())
-        {
-            C_MomentumReplayGhostEntity *pEnt = pPlayer->GetReplayEnt();
-            shouldDrawLocal = pEnt && pEnt->m_RunData.m_bMapFinished;
-        }
-        else
-        {
-            shouldDrawLocal = pPlayer->m_RunData.m_bMapFinished;
-        }
+        CMOMRunEntityData *pData = nullptr;
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        pData = (pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData);
+        shouldDrawLocal = pData && pData->m_bMapFinished;
     }
 
     if (!shouldDrawLocal)
@@ -141,9 +140,8 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         VPANEL over = input()->GetMouseOver();
         if (over == m_pPlayReplayButton->GetVPanel())
         {
-            DevLog("Clicked on the replay icon! Starting replay...\n");
-            //MOM_TODO: Play the replay
-            //engine->ServerCmd()
+            SetMouseInputEnabled(false);
+            engine->ServerCmd("mom_replay_play_loaded");
         }
         else if (over == m_pNextZoneButton->GetVPanel())
         {
@@ -158,7 +156,16 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         }
         else if (over == m_pRepeatButton->GetVPanel())
         {
+            SetMouseInputEnabled(false);
             //The player either wants to repeat the replay (if spectating), or restart the map (not spec)
+            if (m_bIsGhost)
+            {
+                engine->ServerCmd("mom_replay_restart");
+            }
+            else
+            {
+                engine->ServerCmd("mom_restart");
+            }
         }
         else if (over == m_pClosePanelButton->GetVPanel())
         {
@@ -171,12 +178,6 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
                 gameeventmanager->FireEvent(pClosePanel);
             }
         }
-
-        //MOM_TODO: Other buttons here
-    }
-    else if (code == MOUSE_RIGHT)
-    {
-        SetMouseInputEnabled(false);//Lock mouse again
     }
 }
 
