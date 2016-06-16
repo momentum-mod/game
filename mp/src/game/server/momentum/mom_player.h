@@ -10,13 +10,14 @@
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
 #include "util/run_stats.h"
+#include <GameEventListener.h>
 
 class CMomentumReplayGhostEntity;
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 
-class CMomentumPlayer : public CBasePlayer
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -49,6 +50,8 @@ class CMomentumPlayer : public CBasePlayer
 
     void Spawn() override;
     void Precache() override;
+
+    void FireGameEvent(IGameEvent *pEvent) override;
 
     // MOM_TODO: This is called when the player spawns so that HUD elements can be updated
     // void InitHUD() override;

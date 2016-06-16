@@ -31,11 +31,21 @@ END_DATADESC();
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
-CMomentumPlayer::CMomentumPlayer()
+CMomentumPlayer::CMomentumPlayer() : 
+      m_duckUntilOnGround(false), m_flStamina(0), m_flTicksOnGround(0), m_flLastVelocity(0), m_flLastSyncVelocity(0),
+      m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
+      m_nTicksInAir(0)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
     m_RunData.m_iRunFlags = 0;
+    m_iShotsFired = 0;
+    m_iDirection = 0;
+    m_bResumeZoom = false;
+    m_iLastZoom = 0;
+    m_bDidPlayerBhop = false;
+    m_iSuccessiveBhops = 0;
+    m_bHasPracticeMode = false;
 }
 
 CMomentumPlayer::~CMomentumPlayer() {}
@@ -48,6 +58,14 @@ void CMomentumPlayer::Precache()
     PrecacheModel(ENTITY_MODEL);
 
     BaseClass::Precache();
+}
+
+void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
+{
+    if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
+    {
+        //MOM_TODO: Set something here, m_RunData.m_bMapFinished = false I think
+    }
 }
 
 void CMomentumPlayer::Spawn()

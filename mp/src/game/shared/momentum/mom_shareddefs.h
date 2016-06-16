@@ -38,6 +38,7 @@ typedef enum MOMGM
 #define FIND_LOCALIZATION(output, token) \
     V_snwprintf(output, BUFSIZELOCL, L"%ls", g_pVGuiLocalize->Find(token) ? g_pVGuiLocalize->Find(token) : L##token);
 
+
 //Localizes a token to an ansi output array, under a name macro
 #define LOCALIZE_TOKEN(name, token, output)\
     wchar_t *unicode_##name = g_pVGuiLocalize->Find(token);\
@@ -47,6 +48,7 @@ typedef enum MOMGM
 //Takes input ansi and converts, using g_pVGuiLocalize, to unicode
 #define ANSI_TO_UNICODE(ansi, unicode) \
     g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof(unicode));
+
 
 //Creates a convar, mainly used for MAKE_TOGGLE
 #define MAKE_CONVAR(name, defaultval, flags, desc, minVal, maxVal)                                                            \

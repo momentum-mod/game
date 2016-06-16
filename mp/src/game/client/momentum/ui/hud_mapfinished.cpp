@@ -9,13 +9,15 @@ DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
 CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
-    SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 
     m_pRunStats = nullptr;
+    m_bIsGhost = false;
     m_iCurrentPage = 0;
+
+    ListenForGameEvent("timer_state");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
@@ -35,7 +37,6 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_pClosePanelButton = FindControl<ImagePanel>("Close_Panel");
     m_pClosePanelButton->SetMouseInputEnabled(true);
     m_pClosePanelButton->InstallMouseHandler(this);
-    m_pPlayReplayLabel = FindControl<Label>("Replay_Label");
     m_pDetachMouseLabel = FindControl<Label>("Detach_Mouse");
     m_pCurrentZoneLabel = FindControl<Label>("Current_Zone");
     m_pZoneOverallTime = FindControl<Label>("Zone_Overall_Time");
@@ -50,10 +51,55 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_pZoneSync2 = FindControl<Label>("Zone_Sync2");
     m_pRunSaveStatus = FindControl<Label>("Run_Save_Status");
     m_pRunUploadStatus = FindControl<Label>("Run_Upload_Status");
+
+    SetProportional(true);
 }
 
 CHudMapFinishedDialog::~CHudMapFinishedDialog()
 {
+}
+
+void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
+{
+    if (!Q_strcmp(pEvent->GetName(), "timer_state"))
+    {
+        //We only care when this is false
+        if (!pEvent->GetBool("is_running", true))
+        {
+            C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+            if (g_MOMEventListener && pPlayer)
+            {
+                m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
+                m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
+                //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
+                //Is it going to be a localized string, except for errors that have to be specific?
+
+                ConVarRef hvel("mom_speedometer_hvel");
+                m_iVelocityType = hvel.GetBool();
+
+                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+                float lastRunTime;
+                if (pGhost)
+                {
+                    m_pRunStats = &pGhost->m_RunStats;
+                    lastRunTime = pGhost->m_RunData.m_flRunTime;
+                    m_bIsGhost = true;
+                    m_pPlayReplayButton->SetVisible(false);
+                    m_pRepeatButton->GetTooltip()->SetText(m_pszRepeatToolTipReplay);
+                }
+                else
+                {
+                    m_pRunStats = &pPlayer->m_RunStats;
+                    lastRunTime = pPlayer->m_RunData.m_flRunTime;
+                    m_bIsGhost = false;
+                    m_pPlayReplayButton->SetVisible(true);
+                    m_pRepeatButton->GetTooltip()->SetText(m_pszRepeatToolTipMap);
+                }
+
+                mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
+            }
+        }
+    }
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
@@ -86,9 +132,6 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
-    m_pDetachMouseLabel->SetFont(m_hTextFont);
-    m_pPlayReplayLabel->SetFont(m_hTextFont);
-    m_pCurrentZoneLabel->SetFont(m_hTextFont);
 }
 
 void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
@@ -105,13 +148,13 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         else if (over == m_pNextZoneButton->GetVPanel())
         {
             //MOM_TODO (beta+): Play animations?
-            m_iCurrentPage = (m_iCurrentPage + 1) % 5;//(g_MOMEventListener->m_iMapZoneCount + 1);
+            m_iCurrentPage = (m_iCurrentPage + 1) % (g_MOMEventListener->m_iMapZoneCount + 1);//;
         }
         else if (over == m_pPrevZoneButton->GetVPanel())
         {
             //MOM_TODO: (beta+) play animations?
             int newPage = m_iCurrentPage - 1;
-            m_iCurrentPage = newPage < 0 ? /*g_MOMEventListener->m_iMapZoneCount*/4 : newPage;
+            m_iCurrentPage = newPage < 0 ? g_MOMEventListener->m_iMapZoneCount : newPage;
         }
         else if (over == m_pRepeatButton->GetVPanel())
         {
@@ -141,8 +184,17 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
 void CHudMapFinishedDialog::Init()
 {
     Reset();
-    //cache localization files
-
+    // --- cache localization tokens ---
+    //Label Tooltips
+    LOCALIZE_TOKEN(repeatToolTipMap, "#MOM_MF_Restart_Map", m_pszRepeatToolTipMap);
+    LOCALIZE_TOKEN(repeatToolTipReplay, "#MOM_MF_Restart_Replay", m_pszRepeatToolTipReplay);
+    LOCALIZE_TOKEN(playReplatTooltip, "#MOM_MF_PlayReplay", m_pszPlayReplayToolTip);
+    m_pPlayReplayButton->GetTooltip()->SetText(m_pszPlayReplayToolTip);
+    LOCALIZE_TOKEN(rightArrowTT, "#MOM_MF_Right_Arrow", m_pszRightArrowToolTip);
+    m_pNextZoneButton->GetTooltip()->SetText(m_pszRightArrowToolTip);
+    LOCALIZE_TOKEN(leftTokenTT, "#MOM_MF_Left_Arrow", m_pszLeftArrowToolTip);
+    m_pPrevZoneButton->GetTooltip()->SetText(m_pszLeftArrowToolTip);
+    
     //Run saving/uploading
     FIND_LOCALIZATION(m_pwRunSavedLabel, "#MOM_MF_RunSaved");
     FIND_LOCALIZATION(m_pwRunNotSavedLabel, "#MOM_MF_RunNotSaved");
@@ -178,7 +230,7 @@ void CHudMapFinishedDialog::Reset()
 
 #define MAKE_UNI_NUM(name, size, number, isInt) \
     wchar_t name[size]; \
-    V_snwprintf(name, size, isInt ? L"%.4f" : L"%d", number)
+    V_snwprintf(name, size, isInt ? L"%d" : L"%.4f", number)
 
 inline void PaintLabel(Label *label, wchar_t *wFormat, float value, bool isInt)
 {
@@ -198,7 +250,7 @@ void CHudMapFinishedDialog::Paint()
     wchar_t currentPageTitle[BUFSIZELOCL];
     if (m_iCurrentPage == 0)
     {
-        //MOM_TODO: Take this width, divide by 2, 
+        //MOM_TODO: Take this width, divide by 2, subtract half the label's width to center it
         V_wcscpy_safe(currentPageTitle, m_pwCurrentPageOverall);
     }
     else
@@ -217,7 +269,7 @@ void CHudMapFinishedDialog::Paint()
     //"Time:" shows up when m_iCurrentPage  == 0
     if (m_iCurrentPage < 1)// == 0, but I'm lazy to do an else-if
     {
-        g_pVGuiLocalize->ConvertANSIToUnicode(m_pszEndRunTime, unicodeTime, sizeof(unicodeTime));
+        ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
         g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwOverallTime, 1, unicodeTime);
 
         m_pZoneOverallTime->SetText(currentZoneOverall);//"Time" (overall run time)
@@ -326,23 +378,7 @@ void CHudMapFinishedDialog::Paint()
     // ------------------------------
 }
 
-//MOM_TODO: Do we want this to be a think method or update it to a usermsg/event, so it only calls once, and not every frame?
 void CHudMapFinishedDialog::OnThink()
 {
-    C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (g_MOMEventListener && pPlayer)
-    {
-        m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
-        m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
-        //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
-        //Is it going to be a localized string, except for errors that have to be specific?
-        
-        ConVarRef hvel("mom_speedometer_hvel");
-        m_iVelocityType = hvel.GetBool();
-
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
-        float lastRunTime = pGhost ? pGhost->m_RunData.m_flRunTime : pPlayer->m_RunData.m_flRunTime;
-        mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
-    }
+    m_pDetachMouseLabel->SetVisible(!IsMouseInputEnabled());
 }

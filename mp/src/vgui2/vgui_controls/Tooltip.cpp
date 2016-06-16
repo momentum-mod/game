@@ -41,6 +41,7 @@ BaseTooltip::BaseTooltip(Panel *parent, const char *text)
 
 	_displayOnOneLine = false;
 	_makeVisible = false;
+    _visible = false;
 	_isDirty = false;
 	_enabled = true;
 
@@ -132,6 +133,7 @@ void BaseTooltip::HideTooltip()
 {
 	_makeVisible = false;
 	_isDirty = true;
+    _visible = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -174,8 +176,9 @@ const char *BaseTooltip::GetText()
 //-----------------------------------------------------------------------------
 // Purpose: Position the tool tip
 //-----------------------------------------------------------------------------
-void BaseTooltip::PositionWindow( Panel *pTipPanel )
+void BaseTooltip::PositionWindow( void )
 {
+    Panel *pTipPanel = s_TooltipWindow.Get();
 	int iTipW, iTipH;
 	pTipPanel->GetSize( iTipW, iTipH );
 
@@ -329,7 +332,7 @@ void TextTooltip::PerformLayout()
 		return;
 
 	_isDirty = false;
-
+    _visible = true;
 	s_TooltipWindow->SetVisible(true);
 	s_TooltipWindow->MakePopup( false, true );
 	s_TooltipWindow->SetKeyBoardInputEnabled( false );
@@ -338,8 +341,8 @@ void TextTooltip::PerformLayout()
 	// relayout the textwindow immediately so that we know it's size
 	//m_pTextEntry->InvalidateLayout(true);
 
-	SizeTextWindow();
-	PositionWindow( s_TooltipWindow );
+    SizeTextWindow();
+    PositionWindow();
 }
 
 //-----------------------------------------------------------------------------

@@ -38,6 +38,7 @@ public:
     void OnThink() override;
     void Init() override;
     void Reset() override;
+    void FireGameEvent(IGameEvent*) override;
 
     void OnMousePressed(MouseCode code) override;
 
@@ -70,13 +71,17 @@ private:
     wchar_t m_pwRunNotUploadedLabel[BUFSIZELOCL];
 
     char m_pszEndRunTime[BUFSIZETIME];
+    char m_pszRepeatToolTipMap[BUFSIZELOCL];
+    char m_pszRepeatToolTipReplay[BUFSIZELOCL];
+    char m_pszPlayReplayToolTip[BUFSIZELOCL];
+    char m_pszRightArrowToolTip[BUFSIZELOCL];
+    char m_pszLeftArrowToolTip[BUFSIZELOCL];
 
     ImagePanel *m_pPlayReplayButton;
     ImagePanel *m_pClosePanelButton;
     ImagePanel *m_pRepeatButton;
     ImagePanel *m_pNextZoneButton;
     ImagePanel *m_pPrevZoneButton;
-    Label *m_pPlayReplayLabel;
     Label *m_pDetachMouseLabel;
     Label *m_pCurrentZoneLabel;
     Label *m_pZoneOverallTime;//Also known as "Zone Time"
@@ -94,7 +99,7 @@ private:
 
     CMomRunStats* m_pRunStats;
 
-    bool m_bRunSaved, m_bRunUploaded;
+    bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
 
     int m_iCurrentPage, m_iVelocityType;
 };

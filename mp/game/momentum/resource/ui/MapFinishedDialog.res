@@ -16,32 +16,30 @@
     {
         "ControlName"   "ImagePanel"
         "fieldName"     "Prev_Zone"
-        //"font"          "HudNumbersExtremelySmall"
         "xpos"          "2"
         "ypos"          "2"
-        "wide"          "16"
-        "tall"          "16"
-        "autoResize"    "1"
+        "wide"          "8"
+        "tall"          "8"
+        "scaleImage"    "1"
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "image"         "left_arrow_button_small_grey"
+        "image"         "left_arrow_button_grey"
     }
     
     "Next_Zone"
     {
         "ControlName"   "ImagePanel"
         "fieldName"     "Next_Zone"
-        //"font"          "HudNumbersExtremelySmall"
         "xpos"          "50"//Determined by code
         "ypos"          "2"
-        "wide"          "16"
-        "tall"          "16"
-        "autoResize"    "0"
+        "wide"          "8"
+        "tall"          "8"
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "image"         "right_arrow_button_small_grey"
+        "scaleImage"    "1"
+        "image"         "right_arrow_button_grey"
     } 
     
     "Replay_Icon"
@@ -50,13 +48,12 @@
         "fieldName"     "Replay_Icon"
         "xpos"          "180"
         "ypos"          "80"
-        "wide"          "64"
-        "tall"          "64"
-        "autoResize"    "0"
+        "wide"          "32"
+        "tall"          "32"
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "border"        ""
+        "scaleImage"    "1"
         "image"         "replay_icon_grey"
     }
     
@@ -66,13 +63,12 @@
         "fieldName"     "Repeat_Button"
         "xpos"          "250"
         "ypos"          "80"
-        "wide"          "64"
-        "tall"          "64"
-        "autoResize"    "0"
+        "wide"          "32"
+        "tall"          "32"
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "border"        ""
+        "scaleImage"    "1"
         "image"         "loop_button_grey"
     }
     
@@ -82,33 +78,14 @@
         "fieldName"     "Close_Panel"
         "xpos"          "180"
         "ypos"          "120"
-        "wide"          "64"
-        "tall"          "64"
+        "wide"          "32"
+        "tall"          "32"
         "autoResize"    "0"
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
-        "border"        ""
+        "scaleImage"    "1"
         "image"         "close_button"
-    }
-    
-    "Replay_Label"
-    {
-        "ControlName"   "Label"
-        "fieldName"     "Replay_Label"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "175"
-        "ypos"          "110"
-        "wide"          "100"
-        "tall"          "10"//Set by font size
-        "autoResize"    "1"
-        "pinCorner"     "0"
-        "visible"       "1"
-        "enabled"       "1"
-        "labelText"     "#MOM_MF_PlayReplay"
-        "textAlignment" "west"
-        "dulltext"      "0"
-        "brighttext"    "0"
     }
     
     "Detach_Mouse"

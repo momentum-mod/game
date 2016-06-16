@@ -138,10 +138,9 @@ void C_RunComparisons::Reset()
 void C_RunComparisons::FireGameEvent(IGameEvent *event)
 {
     const char *name = event->GetName();
-    if (!Q_strcmp(name, "timer_state")) // This is insuring, even though we register for only this event...?
+    if (!Q_strcmp(name, "timer_state"))
     {
-        int entIndex = event->GetInt("ent");
-        if (entIndex == m_iCurrentEntIndex && event->GetBool("is_running"))
+        if (event->GetInt("ent") == m_iCurrentEntIndex && event->GetBool("is_running"))
             LoadComparisons();
     }
     else if (!Q_strcmp(name, "mapfinished_panel_closed"))
