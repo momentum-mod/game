@@ -76,6 +76,9 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
     if (PlayingBack())
         return m_pPlaybackReplay;
 
+    if (m_pPlaybackReplay)
+        UnloadPlayback();
+
     Log("Loading a replay from '%s'...\n", path);
 
     auto file = filesystem->Open(path, "r+b", pathID);

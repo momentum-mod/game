@@ -3,9 +3,9 @@
     "CHudMapFinishedDialog"
     {
         "fieldName"     "CHudMapFinishedDialog"
-        "xpos"          "c-300"
+        "xpos"          "c-110"
         "ypos"          "c-150"
-        "wide"          "300"
+        "wide"          "220"
         "tall"          "175"
         "visible"       "1"
         "enabled"       "1"
@@ -61,8 +61,8 @@
     {
         "ControlName"   "ImagePanel"
         "fieldName"     "Repeat_Button"
-        "xpos"          "250"
-        "ypos"          "80"
+        "xpos"          "180"
+        "ypos"          "120"
         "wide"          "32"
         "tall"          "32"
         "pinCorner"     "0"
@@ -77,7 +77,7 @@
         "ControlName"   "ImagePanel"
         "fieldName"     "Close_Panel"
         "xpos"          "180"
-        "ypos"          "120"
+        "ypos"          "2"
         "wide"          "32"
         "tall"          "32"
         "autoResize"    "0"
@@ -88,31 +88,12 @@
         "image"         "close_button"
     }
     
-    "Detach_Mouse"
-    {
-        "ControlName" "Label"
-        "fieldName" "Detach_Mouse"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "150"
-        "wide"          "150"
-        "tall"          "10"//Set by font size
-        "autoResize"    "1"
-        "pinCorner"     "0"
-        "visible"       "1"
-        "enabled"       "1"
-        "labelText"     "#MOM_MF_DetachMouse"
-        "textAlignment" "west"
-        "dulltext"      "0"
-        "brighttext"    "0"
-    }
-    
     "Current_Zone"//This is the label that shows what the current zone on the map finished panel
     {
         "ControlName" "Label"
         "fieldName"  "Current_Zone"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "11"
+        "xpos"          "13"
         "ypos"          "2"
         "wide"          "100"
         "tall"          "10"//Set by font size
@@ -132,7 +113,7 @@
         "fieldName"  "Zone_Overall_Time"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "10"
+        "ypos"          "20"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -151,7 +132,7 @@
         "fieldName"  "Zone_Enter_Time"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "20"
+        "ypos"          "30"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -170,7 +151,7 @@
         "fieldName"  "Zone_Strafes"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "30"
+        "ypos"          "40"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -189,7 +170,7 @@
         "fieldName"  "Zone_Jumps"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "40"
+        "ypos"          "50"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -208,7 +189,7 @@
         "fieldName"  "Zone_Vel_Enter"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "50"
+        "ypos"          "60"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -227,7 +208,7 @@
         "fieldName"  "Zone_Vel_Exit"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "60"
+        "ypos"          "70"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -246,7 +227,7 @@
         "fieldName"  "Zone_Vel_Avg"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "70"
+        "ypos"          "80"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -265,7 +246,7 @@
         "fieldName"  "Zone_Vel_Max"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "80"
+        "ypos"          "90"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -284,7 +265,7 @@
         "fieldName"  "Zone_Sync1"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "90"
+        "ypos"          "100"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -303,7 +284,7 @@
         "fieldName"  "Zone_Sync2"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "100"
+        "ypos"          "110"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -322,7 +303,7 @@
         "fieldName"  "Run_Save_Status"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "110"
+        "ypos"          "130"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -341,7 +322,7 @@
         "fieldName"  "Run_Upload_Status"
         "font"          "Default"//Set by "TextFont" in HudLayout.res
         "xpos"          "20"
-        "ypos"          "120"
+        "ypos"          "140"
         "wide"          "120"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -349,6 +330,25 @@
         "visible"       "1"
         "enabled"       "1"
         "labelText"     "#MOM_MF_RunNotUploaded"
+        "textAlignment" "west"
+        "dulltext"      "0"
+        "brighttext"    "0"
+    }
+    
+    "Detach_Mouse"
+    {
+        "ControlName" "Label"
+        "fieldName" "Detach_Mouse"
+        "font"          "Default"//Set by "TextFont" in HudLayout.res
+        "xpos"          "4"
+        "ypos"          "160"
+        "wide"          "150"
+        "tall"          "10"//Set by font size
+        "autoResize"    "1"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "labelText"     "#MOM_MF_DetachMouse"
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"

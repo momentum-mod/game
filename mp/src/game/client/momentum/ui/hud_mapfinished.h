@@ -102,4 +102,5 @@ private:
     bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
 
     int m_iCurrentPage, m_iVelocityType;
+    int m_iMaxPageTitleWidth, m_iCurrentZoneOrigX;
 };

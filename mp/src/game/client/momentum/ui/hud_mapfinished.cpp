@@ -9,13 +9,10 @@ DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
 CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
-    SetKeyBoardInputEnabled(false);
-    SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-
     m_pRunStats = nullptr;
     m_bIsGhost = false;
     m_iCurrentPage = 0;
+    m_iMaxPageTitleWidth = 0;
 
     ListenForGameEvent("timer_state");
 
@@ -39,6 +36,7 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_pClosePanelButton->InstallMouseHandler(this);
     m_pDetachMouseLabel = FindControl<Label>("Detach_Mouse");
     m_pCurrentZoneLabel = FindControl<Label>("Current_Zone");
+    m_iCurrentZoneOrigX = m_pCurrentZoneLabel->GetXPos();
     m_pZoneOverallTime = FindControl<Label>("Zone_Overall_Time");
     m_pZoneEnterTime = FindControl<Label>("Zone_Enter_Time");
     m_pZoneJumps = FindControl<Label>("Zone_Jumps");
@@ -52,11 +50,17 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_pRunSaveStatus = FindControl<Label>("Run_Save_Status");
     m_pRunUploadStatus = FindControl<Label>("Run_Upload_Status");
 
+    SetPaintBackgroundEnabled(true);
+    SetPaintBackgroundType(2);
+    SetKeyBoardInputEnabled(false);
+    SetMouseInputEnabled(false);
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     SetProportional(true);
 }
 
 CHudMapFinishedDialog::~CHudMapFinishedDialog()
 {
+    m_pRunStats = nullptr;
 }
 
 void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
@@ -84,21 +88,18 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                     m_pRunStats = &pGhost->m_RunStats;
                     lastRunTime = pGhost->m_RunData.m_flRunTime;
                     m_bIsGhost = true;
-                    m_pPlayReplayButton->SetVisible(false);
-                    m_pRunUploadStatus->SetVisible(false);
-                    m_pRunSaveStatus->SetVisible(false);
-                    m_pRepeatButton->GetTooltip()->SetText(m_pszRepeatToolTipReplay);
                 }
                 else
                 {
                     m_pRunStats = &pPlayer->m_RunStats;
                     lastRunTime = pPlayer->m_RunData.m_flRunTime;
                     m_bIsGhost = false;
-                    m_pPlayReplayButton->SetVisible(true);
-                    m_pRunUploadStatus->SetVisible(true);
-                    m_pRunSaveStatus->SetVisible(true);
-                    m_pRepeatButton->GetTooltip()->SetText(m_pszRepeatToolTipMap);
                 }
+
+                m_pPlayReplayButton->SetVisible(!m_bIsGhost);
+                m_pRunUploadStatus->SetVisible(!m_bIsGhost);
+                m_pRunSaveStatus->SetVisible(!m_bIsGhost);
+                m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? m_pszRepeatToolTipReplay : m_pszRepeatToolTipMap);
 
                 mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
             }
@@ -108,8 +109,6 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
 
 bool CHudMapFinishedDialog::ShouldDraw()
 {
-    //return CHudElement::ShouldDraw();//MOM_TODO: REMOVEME
-    
     bool shouldDrawLocal = false;
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
@@ -251,8 +250,13 @@ void CHudMapFinishedDialog::Paint()
     wchar_t currentPageTitle[BUFSIZELOCL];
     if (m_iCurrentPage == 0)
     {
-        //MOM_TODO: Take this width, divide by 2, subtract half the label's width to center it
         V_wcscpy_safe(currentPageTitle, m_pwCurrentPageOverall);
+        if (m_iMaxPageTitleWidth == 0)
+        {
+            HFont font = m_pCurrentZoneLabel->GetFont();
+            m_iMaxPageTitleWidth = UTIL_ComputeStringWidth(font, currentPageTitle);
+            m_pNextZoneButton->SetPos(m_pCurrentZoneLabel->GetXPos() + m_iMaxPageTitleWidth + 2, m_pCurrentZoneLabel->GetYPos());
+        }
     }
     else
     {
@@ -262,7 +266,10 @@ void CHudMapFinishedDialog::Paint()
     
     m_pCurrentZoneLabel->SetText(currentPageTitle);
     int currentPageTitleWidth = UTIL_ComputeStringWidth(m_hTextFont, currentPageTitle) + 2;
-    m_pNextZoneButton->SetPos(m_pCurrentZoneLabel->GetXPos() + currentPageTitleWidth, m_pCurrentZoneLabel->GetYPos());
+    int newX = m_iCurrentZoneOrigX + ((m_iMaxPageTitleWidth / 2) - currentPageTitleWidth / 2);
+    m_pCurrentZoneLabel->SetPos(newX, m_pCurrentZoneLabel->GetYPos());
+
+    
 
     //// --- RUN TIME ---
     wchar_t currentZoneOverall[BUFSIZELOCL];
@@ -382,4 +389,15 @@ void CHudMapFinishedDialog::Paint()
 void CHudMapFinishedDialog::OnThink()
 {
     m_pDetachMouseLabel->SetVisible(!IsMouseInputEnabled());
+
+    //Center the detach mouse label
+    if (m_pDetachMouseLabel->IsVisible())
+    {
+        int wide = GetWide();
+        char text[BUFSIZELOCL];
+        m_pDetachMouseLabel->GetText(text, BUFSIZELOCL);
+        HFont font = m_pDetachMouseLabel->GetFont();
+        int stringWidth = UTIL_ComputeStringWidth(font, text);
+        m_pDetachMouseLabel->SetPos((wide / 2) - stringWidth / 2, m_pDetachMouseLabel->GetYPos());
+    }
 }
