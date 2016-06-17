@@ -46,6 +46,8 @@ CMomentumPlayer::CMomentumPlayer() :
     m_bDidPlayerBhop = false;
     m_iSuccessiveBhops = 0;
     m_bHasPracticeMode = false;
+
+    ListenForGameEvent("mapfinished_panel_closed");
 }
 
 CMomentumPlayer::~CMomentumPlayer() {}

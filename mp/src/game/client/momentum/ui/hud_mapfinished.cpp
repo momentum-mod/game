@@ -113,9 +113,8 @@ bool CHudMapFinishedDialog::ShouldDraw()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
-        CMOMRunEntityData *pData = nullptr;
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        pData = (pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData);
+        CMOMRunEntityData *pData = (pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData);
         shouldDrawLocal = pData && pData->m_bMapFinished;
     }
 
@@ -228,14 +227,22 @@ void CHudMapFinishedDialog::Reset()
     strcpy(m_pszEndRunTime, "00:00:00.000"); 
 }
 
-#define MAKE_UNI_NUM(name, size, number, isInt) \
+#define MAKE_UNI_NUM(name, size, number, format) \
     wchar_t name[size]; \
-    V_snwprintf(name, size, isInt ? L"%d" : L"%.4f", number)
+    V_snwprintf(name, size, format, number)
 
 inline void PaintLabel(Label *label, wchar_t *wFormat, float value, bool isInt)
 {
-    wchar_t temp[BUFSIZELOCL];
-    MAKE_UNI_NUM(tempNum, BUFSIZESHORT, isInt ? int(value) : value, isInt);
+    wchar_t temp[BUFSIZELOCL], tempNum[BUFSIZESHORT];
+    if (isInt)
+    {
+        int intVal = static_cast<int>(value);
+        V_snwprintf(tempNum, BUFSIZESHORT, L"%i", intVal);
+    }
+    else
+    {
+        V_snwprintf(tempNum, BUFSIZESHORT, L"%.4f", value);
+    }
     g_pVGuiLocalize->ConstructString(temp, sizeof(temp), wFormat, 1, tempNum);
     label->SetText(temp);
 }
@@ -260,7 +267,7 @@ void CHudMapFinishedDialog::Paint()
     }
     else
     {
-        MAKE_UNI_NUM(num, 3, m_iCurrentPage, true);
+        MAKE_UNI_NUM(num, 3, m_iCurrentPage, L"%i");
         g_pVGuiLocalize->ConstructString(currentPageTitle, sizeof(currentPageTitle), m_pwCurrentPageZoneNum, 1, num);
     }
     
