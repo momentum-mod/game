@@ -75,8 +75,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     m_pPlayerStats = FindControl<Panel>("PlayerStats", true);
     m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
     m_lPlayerName = FindControl<Label>("PlayerName", true);
-	m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
-	m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
+    m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
+    m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
     m_pLeaderboards = FindControl<Panel>("Leaderboards", true);
     m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineLeaderboards", true);
     m_pLocalLeaderboards = FindControl<SectionedListPanel>("LocalLeaderboards", true);
@@ -172,7 +172,7 @@ void CClientTimesDisplay::OnThink()
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::OnPollHideCode(int code)
 {
-    m_nCloseKey = (ButtonCode_t) code;
+    m_nCloseKey = (ButtonCode_t)code;
 }
 
 //-----------------------------------------------------------------------------
@@ -235,8 +235,8 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]));
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
     }
 
     if (m_pFriendsLeaderboards)
@@ -510,6 +510,27 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(vgui::SectionedListPanel *lis
 {
     // This will behave almost identically to StaticLocalTimeSortFunc, 
     // but using rank insetad of time (Momentum page will handle players with same times)
+    KeyValues *it1 = list->GetItemData(itemID1);
+    KeyValues *it2 = list->GetItemData(itemID2);
+    Assert(it1 && it2);
+    int t1 = it1->GetFloat("rank");
+    int t2 = it2->GetFloat("rank");
+    //Ascending order
+    if (t1 < t2)
+        return true;//this time is faster, place it up higher
+    else if (t1 > t2)
+        return false;
+
+    // We will never need this, but just in case...
+
+    float s1 = it1->GetFloat("time");
+    float s2 = it2->GetFloat("time");
+    //Ascending order
+    if (s1 < s2)
+        return true;//this time is faster, place it up higher
+    else if (s1 > s2)
+        return false;
+
     return itemID1 < itemID2;
 }
 
@@ -575,15 +596,23 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
     }
 }
 
-void CClientTimesDisplay::LoadOnlineTimes(KeyValues *kv)
+void CClientTimesDisplay::ConvertOnlineTimes(KeyValues *kv, float seconds)
+{
+    char timeString[BUFSIZETIME];
+
+    mom_UTIL->FormatTime(seconds, timeString);
+    kv->SetString("time_f", timeString);
+}
+
+void CClientTimesDisplay::LoadOnlineTimes()
 {
     if (!m_bOnlineTimesLoaded || m_bOnlineNeedUpdate)
     {
-        //char requrl[90];
-        //// Mapname, tickrate, rank, radius
-        //Q_snprintf(requrl, 90, );
+        char requrl[90];
+        // Mapname, tickrate, rank, radius
+        Q_snprintf(requrl, 90, "http://127.0.0.1:5000/getscores/%s", "1");
         // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
-        CreateAndSendHTTPReq("http://momentum-mod.org/getscores/2/PLAYERSTEAMIDHERE", &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
+        CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
     }
 }
 
@@ -616,10 +645,8 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
 {
     Warning("Callback received.\n");
     if (bIOFailure)
-        return;   
-    m_vOnlineTimes.RemoveAll();
-    m_bOnlineTimesLoaded = true;
-    m_bOnlineNeedUpdate = false;
+        return;
+    
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     DevLog("Size of body: %u\n", size);
@@ -630,7 +657,6 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     JsonValue val; // Outer object
     JsonAllocator alloc;
     char *pDataPtr = reinterpret_cast<char *>(pData);
-    DevLog("pDataPtr: %s\n", pDataPtr);
     char *endPtr;
     int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
 
@@ -639,19 +665,56 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
         DevLog("JSON Parsed!\n");
         if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
         {
-            // toNode() returns the >>payload<< of the JSON object !!!
-
-            DevLog("Outer is JSON OBJECT!\n");
-            JsonNode *node = val.toNode();
-            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
-
-            // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
-            // the JSON
-            if (node && node->value.getTag() == JSON_TRUE)
+            JsonValue oval = val.toNode()->value;
+            if (oval.getTag() == JSON_ARRAY)
             {
-                DevLog("RESPONSE WAS TRUE!\n");
-
-            }
+                // By now we're pretty sure everything will be ok, so we can do this
+                m_vOnlineTimes.RemoveAll();
+                for (auto i : oval)
+                {
+                    if (i->value.getTag() == JSON_OBJECT)
+                    {
+                        KeyValues *kv = new KeyValues("entry");
+                        for (auto j : i->value)
+                        {
+                            if (!Q_strcmp(j->key, "time"))
+                            {
+                                kv->SetFloat("time", j->value.toNumber());
+                            }
+                            else if (!Q_strcmp(j->key,"steamid"))
+                            {
+                                kv->SetUint64("steamid", j->value.toNumber());
+                                // steamapicontext->SteamFriends()->RequestUserInfo( ID, true) is what we would need here, but for now..
+                                // 
+                                kv->SetString("personaname", steamapicontext->SteamFriends()->GetPlayerNickname(CSteamID(kv->GetUint64("steamid", j->value.toNumber()))));
+                            }
+                            else if (!Q_strcmp(j->key, "rank"))
+                            {
+                                // MOM_TODO: Implement
+                            }
+                            else if (!Q_strcmp(j->key, "rate"))
+                            {
+                                kv->SetInt("rate", j->value.toNumber());
+                            }
+                            else if (!Q_strcmp(j->key, "date"))
+                            {
+                                // MOM_TODO: Implement.
+                            }
+                            else if (!Q_strcmp(j->key, "id"))
+                            {
+                                kv->SetInt("id", j->value.toNumber());
+                            }
+                        }
+                        TimeOnline ot = TimeOnline(kv);
+                        ConvertOnlineTimes(ot.m_kv, ot.time_sec);
+                        kv->deleteThis();
+                        m_vOnlineTimes.AddToTail(ot);
+                    }
+                }
+                //If we're here and no errors happened, then we can assume times were loaded
+                m_bOnlineTimesLoaded = true;
+                m_bOnlineNeedUpdate = false;
+            }       
         }
     }
     else
@@ -662,6 +725,38 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
+
+//void TellAbout(JsonValue o)
+//{
+//    switch (o.getTag()) {
+//    case JSON_NUMBER:
+//        DevLog("%g\n", o.toNumber());
+//        break;
+//    case JSON_STRING:
+//        DevLog("\"%s\"\n", o.toString());
+//        break;
+//    case JSON_ARRAY:
+//        for (auto i : o) {
+//            TellAbout(i->value);
+//        }
+//        break;
+//    case JSON_OBJECT:
+//        for (auto i : o) {
+//            DevLog("%s = ", i->key);
+//            TellAbout(i->value);
+//        }
+//        break;
+//    case JSON_TRUE:
+//        DevLog("true");
+//        break;
+//    case JSON_FALSE:
+//        DevLog("false");
+//        break;
+//    case JSON_NULL:
+//        DevLog("null\n");
+//        break;
+//    }
+//}
 
 //-----------------------------------------------------------------------------
 // Purpose: Updates the leaderboard lists
@@ -680,11 +775,10 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv)
 
     pLeaderboards->AddSubKey(pLocal);
 
-    KeyValues *pOnline = new KeyValues("online");
-    // Fill online times (global)
-    LoadOnlineTimes(pOnline);
 
-    pLeaderboards->AddSubKey(pOnline);
+    // Fill online times (global)
+    LoadOnlineTimes();
+
 
     KeyValues *pFriends = new KeyValues("friends");
     // MOM_TODO: Fill online times (friends)
@@ -731,7 +825,7 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
 
                 kv->SetInt("avatar", iImageIndex);
 
-                CAvatarImage *pAvIm = (CAvatarImage *) m_pImageList->GetImage(iImageIndex);
+                CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage(iImageIndex);
                 pAvIm->UpdateFriendStatus();
                 // Set friend draw to false, so the offset is not set
                 pAvIm->SetDrawFriend(false);
@@ -832,6 +926,24 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
                     m_pLocalLeaderboards->ModifyItem(itemID, m_iSectionId, kvLocalTime);
             }
         }
+
+        // Online works slightly different, we use the vector content, not the ones from m_kvPlayerData (because online times are not stored there)
+        if (m_vOnlineTimes.Count() > 0)
+        {
+            FOR_EACH_VEC(m_vOnlineTimes, entry)
+            {
+                int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry).id);
+                if (itemID == -1)
+                {
+                    m_pOnlineLeaderboards->AddItem(m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
+                }
+                else
+                {
+                    m_pOnlineLeaderboards->ModifyItem(itemID, m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
+                }
+            }
+        }
+
         m_pLeaderboards->SetVisible(true);
     }
     m_kvPlayerData->deleteThis();
@@ -870,6 +982,22 @@ int CClientTimesDisplay::FindItemIDForLocalTime(KeyValues *kvRef)
         }
     }
     return -1;
+}
+
+int CClientTimesDisplay::FindItemIDForOnlineTime(int runID)
+{
+    for (int i = 0; i <= m_pOnlineLeaderboards->GetHighestItemID(); i++)
+    {
+        if (m_pOnlineLeaderboards->IsItemIDValid(i))
+        {
+            KeyValues *kv = m_pOnlineLeaderboards->GetItemData(i);
+            if (kv && (kv->GetInt("id", -1) == runID))
+            {
+                return i;
+            }
+        }
+    }
+    return - 1;
 }
 
 //-----------------------------------------------------------------------------

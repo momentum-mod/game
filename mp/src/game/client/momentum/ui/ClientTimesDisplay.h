@@ -19,6 +19,7 @@
 #include <game/client/iviewport.h>
 #include <vgui_controls/EditablePanel.h>
 
+
 #define TYPE_NOTEAM			0	// NOTEAM must be zero :)
 #define TYPE_TEAM			1	// a section for a single team	
 #define TYPE_PLAYERS		2
@@ -93,6 +94,8 @@ protected:
     int FindItemIDForPlayerIndex(int playerIndex);
     // finds a local time in the scoreboard
     int FindItemIDForLocalTime(KeyValues *kvRef);
+    // finds an online time in the scoreboard
+    int FindItemIDForOnlineTime(int runID);
 
     int m_iNumTeams;
 
@@ -151,19 +154,45 @@ private:
             date = static_cast<time_t>(kv->GetInt("date", 0));
         };
     };
-
+    void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline
     {
-        int rank;
+        int rank, id;
         float time_sec, rate;
+        uint64 steamid;
         time_t date;
 
+        // MOM_TODO: Avatar of the player?
+
+        // entry
+        // -steamid
+        // -personaname
+        // -rank
+        // -time
+        // -time_f
+        // -rate
+        // -date
+        // -id
+        KeyValues *m_kv;
+
+        
         explicit TimeOnline(KeyValues* kv)
         {
+            m_kv = new KeyValues("entry");
+            id = kv->GetInt("id", -1);
+            m_kv->SetInt("id", id);
             rank = kv->GetInt("rank", 0);
-            time_sec = Q_atof(kv->GetName());
-            rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
-            date = static_cast<time_t>(kv->GetInt("date", 0));
+            m_kv->SetInt("rank", rank);
+            time_sec = kv->GetFloat("time", -1);
+            m_kv->SetFloat("time", time_sec);
+            
+            rate = kv->GetFloat("rate", 100);
+            m_kv->SetFloat("rate", rate);
+            date = static_cast<time_t>(Q_atoi(kv->GetString("date", "0")));
+            m_kv->SetString("date", kv->GetString("date", "0"));
+            steamid = kv->GetUint64("steamid", 0);
+            m_kv->SetUint64("steamid", steamid);
+            m_kv->SetString("personaname", kv->GetString("personaname", "Unknown"));
         };
     };
     CUtlVector<Time> m_vLocalTimes;
@@ -183,7 +212,7 @@ private:
     void FillScoreBoard();
     void FillScoreBoard(bool pFullUpdate);
     void LoadLocalTimes(KeyValues *kv);
-    void LoadOnlineTimes(KeyValues *kv);
+    void LoadOnlineTimes();
     void ConvertLocalTimes(KeyValues*);
 };
 
