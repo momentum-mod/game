@@ -508,8 +508,7 @@ bool CClientTimesDisplay::StaticLocalTimeSortFunc(vgui::SectionedListPanel *list
 //-----------------------------------------------------------------------------
 bool CClientTimesDisplay::StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2)
 {
-    // This will behave almost identically to StaticLocalTimeSortFunc, 
-    // but using rank insetad of time (Momentum page will handle players with same times)
+    // Uses rank insetad of time (Momentum page will handle players with same times)
     KeyValues *it1 = list->GetItemData(itemID1);
     KeyValues *it2 = list->GetItemData(itemID2);
     Assert(it1 && it2);
@@ -520,17 +519,19 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(vgui::SectionedListPanel *lis
         return true;//this time is faster, place it up higher
     else if (t1 > t2)
         return false;
+    else
+    {
 
-    // We will never need this, but just in case...
+        // We will *almost* never need this, but just in case...
 
-    float s1 = it1->GetFloat("time");
-    float s2 = it2->GetFloat("time");
-    //Ascending order
-    if (s1 < s2)
-        return true;//this time is faster, place it up higher
-    else if (s1 > s2)
-        return false;
-
+        float s1 = it1->GetFloat("time");
+        float s2 = it2->GetFloat("time");
+        //Ascending order
+        if (s1 < s2)
+            return true;//this time is faster, place it up higher
+        else if (s1 > s2)
+            return false;
+    }
     return itemID1 < itemID2;
 }
 
