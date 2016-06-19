@@ -61,7 +61,7 @@ public:
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
     void OnGhostEntityRemoved(CMomentumReplayGhostEntity*);// Called when a ghost entity is done being played.
 
-    CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
+    inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
 
     void FireGameEvent(IGameEvent *pEvent) override;
 
