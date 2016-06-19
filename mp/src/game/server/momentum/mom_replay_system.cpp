@@ -17,7 +17,6 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     if (!m_player->IsWatchingReplay() && !m_player->m_bHasPracticeMode)
     {
         m_pReplayManager->StartRecording();
-        Log("Recording began!\n");
         m_iTickCount = 1; // recoring begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
     }
