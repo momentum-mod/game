@@ -320,8 +320,18 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
             : stats->GetZoneTime(zone);
 
         if (m_bLoadedComparison)
-            diff = act - (type == TIME_OVERALL ? m_rcCurrentComparison->overallSplits[zone]
-                                               : m_rcCurrentComparison->zoneSplits[zone - 1]);
+        {
+            if (type == TIME_OVERALL)
+            {
+                if (m_rcCurrentComparison->overallSplits.IsValidIndex(zone))
+                    diff = act - m_rcCurrentComparison->overallSplits[zone];
+            }
+            else
+            {
+                if (m_rcCurrentComparison->zoneSplits.IsValidIndex(zone))
+                    diff = act - m_rcCurrentComparison->zoneSplits[zone - 1];
+            }
+        }
 
         // Are we losing time compared to the run?
         // If diff > 0, that means you're falling behind (losing time to) your PB!
