@@ -108,8 +108,8 @@ void ClientModeMOMNormal::Init()
 {
     BaseClass::Init();
 
-    m_pHudMenuStatic = static_cast<CHudMenuStatic *>(GET_HUDELEMENT(CHudMenuStatic));
-    m_pHudMapFinished = static_cast<CHudMapFinishedDialog*>(GET_HUDELEMENT(CHudMapFinishedDialog));
+    m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
+    m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
     m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
     // Load up the combine control panel scheme
     g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(
