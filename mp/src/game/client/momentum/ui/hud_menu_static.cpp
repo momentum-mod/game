@@ -87,7 +87,7 @@ void CHudMenuStatic::SelectMenuItem(int menu_item)
     m_nSelectedItem = menu_item;
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
     C_BasePlayer *cPlayer = C_BasePlayer::GetLocalPlayer();
-    if (cPlayer != NULL)
+    if (cPlayer != nullptr)
     {
         cPlayer->EmitSound("Momentum.UIMenuSelection");
     }
@@ -298,7 +298,7 @@ void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
     int		nCount;
 
     int i = 0;
-    for (KeyValues *item = pKV->GetFirstSubKey(); item != NULL; item = item->GetNextKey())
+    for (KeyValues *item = pKV->GetFirstSubKey(); item != nullptr; item = item->GetNextKey())
     {
         // Set this slot valid
         m_bitsValidSlots |= (1 << i);

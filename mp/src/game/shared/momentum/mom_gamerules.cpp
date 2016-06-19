@@ -7,7 +7,7 @@
 
 #include "tier0/memdbgon.h"
 
-REGISTER_GAMERULES_CLASS(CMomentum);
+REGISTER_GAMERULES_CLASS(CMomentumGameRules);
 
 // shared ammo definition
 // JAY: Trying to make a more physical bullet response
@@ -78,12 +78,12 @@ ConVar ammo_hegrenade_max("ammo_hegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_flashbang_max("ammo_flashbang_max", "2", FCVAR_REPLICATED);
 ConVar ammo_smokegrenade_max("ammo_smokegrenade_max", "1", FCVAR_REPLICATED);
 
-CMomentum::CMomentum()
+CMomentumGameRules::CMomentumGameRules()
 {
     //m_iGameMode = 0;
 }
 
-CMomentum::~CMomentum()
+CMomentumGameRules::~CMomentumGameRules()
 {
 }
 
@@ -103,7 +103,7 @@ static CViewVectors g_MOMViewVectors(
     Vector(0, 0, 14)		// dead view height
     );
 
-const CViewVectors *CMomentum::GetViewVectors() const
+const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
     return &g_MOMViewVectors;
 }
@@ -116,7 +116,7 @@ LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
 
 
 
-Vector CMomentum::DropToGround(
+Vector CMomentumGameRules::DropToGround(
     CBaseEntity *pMainEnt,
     const Vector &vPos,
     const Vector &vMins,
@@ -127,7 +127,7 @@ Vector CMomentum::DropToGround(
     return trace.endpos;
 }
 
-CBaseEntity *CMomentum::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
+CBaseEntity *CMomentumGameRules::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
 {
     // gat valid spwan point
     if (pPlayer)
@@ -144,11 +144,11 @@ CBaseEntity *CMomentum::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
             return pSpawnSpot;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 // checks if the spot is clear of players
-bool CMomentum::IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer)
+bool CMomentumGameRules::IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer)
 {
     if (!pSpot->IsTriggered(pPlayer))
     {
@@ -165,25 +165,25 @@ bool CMomentum::IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer)
     return UTIL_IsSpaceEmpty(pPlayer, vTestMins, vTestMaxs);
 }
 
-bool CMomentum::ClientCommand(CBaseEntity *pEdict, const CCommand &args)
+bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args)
 {
     if (BaseClass::ClientCommand(pEdict, args))
         return true;
 
-    CMomentumPlayer *pPlayer = (CMomentumPlayer *) pEdict;
+    CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(pEdict);
 
     return pPlayer->ClientCommand(args);
 }
 
 static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldValue)
 {
-    int toCheck = ((ConVar*) var)->GetInt();
+    int toCheck = static_cast<ConVar*>(var)->GetInt();
     if (toCheck == fOldValue) return;
     if (toCheck < 0)
     {
         // This will never happen. but better be safe than sorry, right?
         Warning("Cannot set a game mode under 0!\n");
-        var->SetValue(((ConVar*) var)->GetDefault());
+        var->SetValue(static_cast<ConVar*>(var)->GetDefault());
         return;
     }
     bool result = TickSet::SetTickrate(toCheck);
@@ -201,7 +201,7 @@ static ConVar allow_custom("mom_allow_custom_maps", "0", FCVAR_ARCHIVE | FCVAR_R
 
 static ConVar give_weapon("mom_spawn_with_weapon", "1", FCVAR_NONE, "Spawn the player with a weapon?", true, 0, true, 1);
 
-void CMomentum::PlayerSpawn(CBasePlayer* pPlayer)
+void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
 {
     if (gamemode.GetInt() == 0 && !allow_custom.GetBool())
     {
@@ -236,7 +236,7 @@ void CMomentum::PlayerSpawn(CBasePlayer* pPlayer)
 class CVoiceGameMgrHelper : public IVoiceGameMgrHelper
 {
 public:
-    virtual bool		CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity)
+    bool CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity) override
     {
         return true;
     }
@@ -254,7 +254,8 @@ public:
     DECLARE_CLASS(CCorpse, CBaseAnimating);
     DECLARE_SERVERCLASS();
 
-    virtual int ObjectCaps(void) { return FCAP_DONT_SAVE; }
+    int ObjectCaps(void) override
+    { return FCAP_DONT_SAVE; }
 
 public:
     CNetworkVar(int, m_nReferencePlayer);
@@ -271,7 +272,7 @@ CCorpse		*g_pBodyQueueHead;
 
 void InitBodyQue(void)
 {
-    CCorpse *pEntity = (CCorpse *) CreateEntityByName("bodyque");
+    CCorpse *pEntity = static_cast<CCorpse *>(CreateEntityByName("bodyque"));
     pEntity->AddEFlags(EFL_KEEP_ON_RECREATE_ENTITIES);
     g_pBodyQueueHead = pEntity;
     CCorpse *p = g_pBodyQueueHead;
@@ -279,7 +280,7 @@ void InitBodyQue(void)
     // Reserve 3 more slots for dead bodies
     for (int i = 0; i < 3; i++)
     {
-        CCorpse *next = (CCorpse *) CreateEntityByName("bodyque");
+        CCorpse *next = static_cast<CCorpse *>(CreateEntityByName("bodyque"));
         next->AddEFlags(EFL_KEEP_ON_RECREATE_ENTITIES);
         p->SetOwnerEntity(next);
         p = next;
@@ -310,7 +311,71 @@ void CopyToBodyQue(CBaseAnimating *pCorpse)
     UTIL_SetOrigin(pHead, pCorpse->GetAbsOrigin());
 
     UTIL_SetSize(pHead, pCorpse->WorldAlignMins(), pCorpse->WorldAlignMaxs());
-    g_pBodyQueueHead = (CCorpse *) pHead->GetOwnerEntity();
+    g_pBodyQueueHead = static_cast<CCorpse *>(pHead->GetOwnerEntity());
+}
+
+//Overidden for FOV changes
+void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
+{
+    const char *pszName = engine->GetClientConVarValue(pPlayer->entindex(), "name");
+
+    const char *pszOldName = pPlayer->GetPlayerName();
+
+    // msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
+    // Note, not using FStrEq so that this is case sensitive
+    if (pszOldName[0] != 0 && Q_strcmp(pszOldName, pszName))
+    {
+        char text[256];
+        Q_snprintf(text, sizeof(text), "%s changed name to %s\n", pszOldName, pszName);
+
+        UTIL_ClientPrintAll(HUD_PRINTTALK, text);
+
+        IGameEvent * event = gameeventmanager->CreateEvent("player_changename");
+        if (event)
+        {
+            event->SetInt("userid", pPlayer->GetUserID());
+            event->SetString("oldname", pszOldName);
+            event->SetString("newname", pszName);
+            gameeventmanager->FireEvent(event);
+        }
+
+        pPlayer->SetPlayerName(pszName);
+    }
+
+    const char *pszFov = engine->GetClientConVarValue(pPlayer->entindex(), "fov_desired");
+    if (pszFov)
+    {
+        int iFov = atoi(pszFov);
+        //iFov = clamp(iFov, 75, 90);
+        pPlayer->SetDefaultFOV(iFov);
+    }
+
+    // NVNT see if this user is still or has began using a haptic device
+    const char *pszHH = engine->GetClientConVarValue(pPlayer->entindex(), "hap_HasDevice");
+    if (pszHH)
+    {
+        int iHH = atoi(pszHH);
+        pPlayer->SetHaptics(iHH != 0);
+    }
+}
+
+void FovChanged(IConVar *pVar, const char *pOldValue, float flOldValue)
+{
+    ConVarRef var(pVar);
+    CMomentumPlayer *pMomPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pMomPlayer)
+    {
+        pMomPlayer->SetDefaultFOV(var.GetInt());
+        pMomPlayer->SetFOV(pMomPlayer, var.GetInt());
+    }
+}
+
+ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 90.0,
+    true, 179.0, FovChanged);
+
+int CMomentumGameRules::DefaultFOV()
+{
+    return fov_desired.GetInt();
 }
 
 #endif

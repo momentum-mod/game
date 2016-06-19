@@ -31,11 +31,14 @@ public:
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
     void VersionCallback(HTTPRequestCompleted_t*, bool);
 
+    //Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
+    Color* GetColorFromHex(const char* hexColor); //in hex color format RRGGBB
+    Color m_newColor;
+    
     Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor) const;
-
     //Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours, etc
     //Precision is miliseconds by default
-    void FormatTime(float seconds, char *pOut, int precision = 3) const;
+    void FormatTime(float seconds, char *pOut, int precision = 3, bool fileName = false) const;
 
     KeyValues *GetBestTime(KeyValues *kvInput, const char *szMapName, float tickrate, int flags = 0);
     bool GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into);
@@ -44,7 +47,21 @@ public:
     {
         return fabs(a - b) < epsilon;
     }
+
+    //Checks if source is within a rectangle formed by leftCorner and rightCorner
+    bool IsInBounds(Vector2D source, Vector2D bottomLeft, Vector2D topRight) const
+    {
+        return (source.x > bottomLeft.x && source.x < topRight.x) &&
+            (source.y > bottomLeft.y && source.y < topRight.y);
+    }
+
+    bool IsInBounds(int x, int y, int rectX, int rectY, int rectW, int rectH) const
+    {
+        return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY),
+            Vector2D(rectX + rectW, rectY + rectH));
+    }
 };
+
 class CTimeSortFunc
 {
 public:
@@ -53,7 +70,6 @@ public:
         return (Q_atof(lhs->GetName())) < Q_atof(rhs->GetName());
     }
 };
-
 
 extern MomentumUtil *mom_UTIL;
 

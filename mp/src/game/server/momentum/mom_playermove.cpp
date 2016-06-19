@@ -53,7 +53,7 @@ CPlayerMove *PlayerMove()
 static CMoveData g_HLMoveData;
 CMoveData *g_pMoveData = &g_HLMoveData;
 
-IPredictionSystem *IPredictionSystem::g_pPredictionSystems = NULL;
+IPredictionSystem *IPredictionSystem::g_pPredictionSystems = nullptr;
 
 void CMOMPlayerMove::SetupMove(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move)
 {

@@ -21,7 +21,7 @@ class CMOMInput : public CInput
     typedef CInput BaseClass;
 public:
     
-    int GetButtonBits(int bResetState)
+    int GetButtonBits(int bResetState) override
     {
         int bits = BaseClass::GetButtonBits(bResetState);
         CalcButtonBits(bits, IN_TIMES, s_ClearInputState, &in_times, bResetState);
@@ -36,7 +36,7 @@ public:
         return bits;
     }
 
-    void ClearInputButton(int bits)
+    void ClearInputButton(int bits) override
     {
         s_ClearInputState |= bits;
         BaseClass::ClearInputButton(bits);

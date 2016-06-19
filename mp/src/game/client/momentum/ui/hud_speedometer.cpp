@@ -18,11 +18,14 @@
 
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
+#include "c_mom_replay_entity.h"
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
 #include <math.h>
 
 using namespace vgui;
+
+#define LASTJUMPVEL_TIMEOUT 3.0f
 
 static MAKE_TOGGLE_CONVAR(
     mom_speedometer_hvel, "0", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
@@ -100,12 +103,12 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 
     void FireGameEvent(IGameEvent *pEvent) override
     {
-        if (!Q_strcmp(pEvent->GetName(), "stage_exit"))
+        if (!Q_strcmp(pEvent->GetName(), "zone_exit"))
         {
             // Fade the enter speed after 5 seconds (in event)
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutEnterSpeed");
         }
-        else if (!Q_strcmp(pEvent->GetName(), "stage_enter"))
+        else if (!Q_strcmp(pEvent->GetName(), "zone_enter"))
         {
             // Reset the alpha if we hit a stage enter again
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("ResetEnterSpeed");
@@ -124,6 +127,9 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     Color secondaryColor;
 
     bool m_bRanFadeOutJumpSpeed;
+    int m_iCurrentZone;
+    bool m_bEntInZone, m_bTimerIsRunning;
+    CMomRunStats *m_pRunStats;
 
   protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
@@ -137,13 +143,16 @@ DECLARE_NAMED_HUDELEMENT(CHudSpeedMeter, HudSpeedMeter);
 CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
-    ListenForGameEvent("stage_exit");
-    ListenForGameEvent("stage_enter");
+    ListenForGameEvent("zone_exit");
+    ListenForGameEvent("zone_enter");
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_bRanFadeOutJumpSpeed = false;
+    m_pRunStats = nullptr;
+    m_iCurrentZone = 0;
+    m_bEntInZone = false;
 }
 
 void CHudSpeedMeter::OnThink()
@@ -152,11 +161,29 @@ void CHudSpeedMeter::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
+        //This will be null if the player is not watching a replay first person
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        C_MOMRunEntityData *pData = pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData;
+        //Note: Velocity is also set to the player when watching first person
         velocity = pPlayer->GetLocalVelocity();
-        float lastJumpVel = pPlayer->m_flLastJumpVel;
+
+        //The last jump velocity
+        float lastJumpVel = pData->m_flLastJumpVel;
+
+        //The last jump time is also important if the player is watching a replay
+        float lastJumpTime = pData->m_flLastJumpTime;
+
+        m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
+
+        m_bEntInZone = pData->m_bIsInZone;
+
+        m_iCurrentZone = pData->m_iCurrentZone;
+
+        m_bTimerIsRunning = pData->m_bTimerRunning;
+
         int velType = mom_speedometer_hvel.GetBool(); // 1 is horizontal velocity
 
-        if (gpGlobals->curtime - pPlayer->m_flLastJumpTime > 5.0f)
+        if (gpGlobals->curtime - lastJumpTime > LASTJUMPVEL_TIMEOUT)
         {
             if (!m_bRanFadeOutJumpSpeed)
                 m_bRanFadeOutJumpSpeed =
@@ -214,20 +241,21 @@ void CHudSpeedMeter::OnThink()
                 m_flLastVelocity = vel;
                 m_flNextColorizeCheck = gpGlobals->curtime + MOM_COLORIZATION_CHECK_FREQUENCY;
             }
-            // reset last jump velocity when we restart a run by entering the start zone
-            if (pPlayer->m_bIsInZone && pPlayer->m_iCurrentStage == 1)
+            // reset last jump velocity when we (or a ghost ent) restart a run by entering the start zone
+            if (pData->m_bIsInZone && pData->m_iCurrentZone == 1)
                 m_flLastJumpVelocity = 0;
 
-            if (pPlayer->m_flLastJumpVel == 0)
+
+            if (lastJumpVel == 0)
             {
                 m_SecondaryValueColor = normalColor;
             }
-            else if (m_flLastJumpVelocity != pPlayer->m_flLastJumpVel)
+            else if (m_flLastJumpVelocity != lastJumpVel)
             {
                 m_SecondaryValueColor =
-                    mom_UTIL->GetColorFromVariation(abs(pPlayer->m_flLastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
+                    mom_UTIL->GetColorFromVariation(abs(lastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
                                                     normalColor, increaseColor, decreaseColor);
-                m_flLastJumpVelocity = pPlayer->m_flLastJumpVel;
+                m_flLastJumpVelocity = lastJumpVel;
             }
         }
         else
@@ -261,11 +289,8 @@ void CHudSpeedMeter::Paint()
 
     BaseClass::Paint();
 
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-
     // Draw the enter speed split, if toggled on
-    if (mom_speedometer_showenterspeed.GetBool() && pPlayer && !pPlayer->m_bIsInZone &&
-        g_MOMEventListener->m_bTimerIsRunning)
+    if (mom_speedometer_showenterspeed.GetBool() && m_bTimerIsRunning)
     {
         int split_xpos; // Dynamically set
         int split_ypos = mom_speedometer_showlastjumpvel.GetBool()
@@ -282,7 +307,8 @@ void CHudSpeedMeter::Paint()
         Color fg = GetFgColor();
         Color actualColorFade = Color(fg.r(), fg.g(), fg.b(), stageStartAlpha);
 
-        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, pPlayer->m_iCurrentStage, enterVelANSITemp,
+
+        g_MOMRunCompare->GetComparisonString(VELOCITY_ENTER, m_pRunStats, m_iCurrentZone, enterVelANSITemp,
                                              enterVelANSICompTemp, &compareColor);
 
         Q_snprintf(enterVelANSI, BUFSIZELOCL, "%i", static_cast<int>(round(atof(enterVelANSITemp))));

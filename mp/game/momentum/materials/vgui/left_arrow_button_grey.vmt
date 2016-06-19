@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture"  "vgui\left_arrow_button_grey"
+	"$translucent"  1
+	"$ignorez"	1
+}

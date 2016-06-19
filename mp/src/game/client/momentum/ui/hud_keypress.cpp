@@ -12,8 +12,13 @@
 #include <vgui/ILocalize.h>
 
 #include "mom_shareddefs.h"
+#include "c_mom_replay_entity.h"
 #include "mom_player_shared.h"
 #include "mom_event_listener.h"
+
+#include "tier0/memdbgon.h"
+
+#define KEYDRAW_MIN 0.07f
 
 using namespace vgui; 
 
@@ -31,7 +36,7 @@ public:
     bool ShouldDraw() override
     {
         C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        return showkeys.GetBool() && pMom && !pMom->m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
+        return showkeys.GetBool() && pMom && !pMom->m_RunData.m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
     }
 
     void OnThink() override;
@@ -76,6 +81,8 @@ private:
     wchar_t m_pwright[BUFSIZESHORT];
     wchar_t m_pwjump[BUFSIZELOCL];
     wchar_t m_pwduck[BUFSIZELOCL];
+    float m_fJumpColorUntil;
+    float m_fDuckColorUntil;
 };
 
 DECLARE_HUDELEMENT(CHudKeyPressDisplay);
@@ -101,6 +108,8 @@ void CHudKeyPressDisplay::Init()
     Q_wcsncpy(m_pwjump, uJumpUnicode, sizeof(m_pwjump)); //use buffer-safe wcscpy so we don't crash on startup if localization file is corrupted
     wchar_t *uDuckUnicode = g_pVGuiLocalize->Find("#MOM_Duck");
     Q_wcsncpy(m_pwduck, uDuckUnicode, sizeof(m_pwduck));
+
+    m_fJumpColorUntil = m_fDuckColorUntil = 0;
 }
 void CHudKeyPressDisplay::Paint()
 {
@@ -134,13 +143,21 @@ void CHudKeyPressDisplay::Paint()
     //reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
-    if (m_nButtons & IN_JUMP)
+    if (m_nButtons & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
     {
+        if (m_nButtons & IN_JUMP)
+        {
+            m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), jump_row_ypos);
         surface()->DrawPrintText(m_pwjump, wcslen(m_pwjump));
     }
-    if (m_nButtons & IN_DUCK)
+    if (m_nButtons & IN_DUCK || gpGlobals->curtime < m_fDuckColorUntil)
     {
+        if (m_nButtons & IN_DUCK)
+        {
+            m_fDuckColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
+        }
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), duck_row_ypos);
         surface()->DrawPrintText(m_pwduck, wcslen(m_pwduck));
     }
@@ -168,14 +185,33 @@ void CHudKeyPressDisplay::Paint()
 }
 void CHudKeyPressDisplay::OnThink()
 {
-    m_nButtons = ::input->GetButtonBits(1);
-
-    if (g_MOMEventListener)
-    {   //we should only draw the strafe/jump counters when the timer is running
-        m_bShouldDrawCounts = g_MOMEventListener->m_bTimerIsRunning;
-        m_nStrafes = g_MOMEventListener->m_iStageStrafes[0];
-        m_nJumps = g_MOMEventListener->m_iStageJumps[0];
-    }
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    if (pPlayer)
+    {
+        C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
+        if (pReplayEnt)
+        {
+            m_bShouldDrawCounts = pReplayEnt->m_RunData.m_bTimerRunning;
+            m_nButtons = pReplayEnt->m_nReplayButtons;
+            m_nStrafes = pReplayEnt->m_iTotalStrafes;
+            m_nJumps = pReplayEnt->m_iTotalJumps;
+        } 
+        else
+        {
+            m_nButtons = ::input->GetButtonBits(1);
+            if (g_MOMEventListener)
+            {
+                //we should only draw the strafe/jump counters when the timer is running
+                m_bShouldDrawCounts = pPlayer->m_RunData.m_bTimerRunning;
+                if (m_bShouldDrawCounts)
+                {
+                    CMomRunStats *stats = &pPlayer->m_RunStats;
+                    m_nStrafes = stats->GetZoneStrafes(0);
+                    m_nJumps = stats->GetZoneJumps(0);
+                }
+            }
+        }
+    } 
 }
 void CHudKeyPressDisplay::Reset()
 {

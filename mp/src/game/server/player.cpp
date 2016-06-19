@@ -2666,9 +2666,9 @@ bool CBasePlayer::IsValidObserverTarget(CBaseEntity * target)
 
 	CBasePlayer * player = ToBasePlayer( target );
 
-	/* Don't spec observers or players who haven't picked a class yet
+	/* Don't spec observers or players who haven't picked a class yet */
  	if ( player->IsObserver() )
-		return false;	*/
+		return false;	
 
 	if( player == this )
 		return false; // We can't observe ourselves.
@@ -2686,7 +2686,7 @@ bool CBasePlayer::IsValidObserverTarget(CBaseEntity * target)
 			return false;	// allow watching until 3 seconds after death to see death animation
 		}
 	}
-		
+
 	// check forcecamera settings for active players
 	if ( GetTeamNumber() != TEAM_SPECTATOR )
 	{

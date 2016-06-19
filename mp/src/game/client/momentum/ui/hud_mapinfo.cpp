@@ -75,12 +75,11 @@ class C_HudMapInfo : public CHudElement, public Panel
         m_pszStringStages[BUFSIZELOCL], noStagesLocalized[BUFSIZELOCL], noCPLocalized[BUFSIZELOCL],
         mapNameLabelLocalized[BUFSIZELOCL], mapAuthorLabelLocalized[BUFSIZELOCL], mapDiffLabelLocalized[BUFSIZELOCL];
 
-    int m_iStageCount, m_iStageCurrent;
+    int m_iZoneCount, m_iZoneCurrent;
     bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
 };
 
-// DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
-
+//The below is basically DECLARE_NAMED_HUDELEMENT_DEPTH(C_HudMapInfo, CHudMapInfo, 10)
 static CHudElement *Create_C_HudMapInfo(void) { return new C_HudMapInfo("CHudMapInfo"); }
 static CHudElementHelper g_C_HudMapInfo_Helper(Create_C_HudMapInfo, 10);
 
@@ -92,7 +91,8 @@ C_HudMapInfo::C_HudMapInfo(const char *pElementName)
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    m_iStageCurrent = 0;
+    m_iZoneCurrent = 0;
+    m_iZoneCount = 0;
     m_bPlayerInZone = false;
     m_bMapFinished = false;
 }
@@ -102,10 +102,21 @@ void C_HudMapInfo::OnThink()
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pLocal && g_MOMEventListener)
     {
-        m_iStageCurrent = pLocal->m_iCurrentStage;
-        m_bPlayerInZone = pLocal->m_bIsInZone;
-        m_bMapFinished = pLocal->m_bMapFinished;
-        m_iStageCount = g_MOMEventListener->m_iMapCheckpointCount;
+        C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
+        if (pGhost)
+        {
+            m_iZoneCurrent = pGhost->m_RunData.m_iCurrentZone;
+            m_bPlayerInZone = pGhost->m_RunData.m_bIsInZone;
+            m_bMapFinished = pGhost->m_RunData.m_bMapFinished;
+        }
+        else
+        {
+            m_iZoneCurrent = pLocal->m_RunData.m_iCurrentZone;
+            m_bPlayerInZone = pLocal->m_RunData.m_bIsInZone;
+            m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
+        }
+
+        m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
         m_bMapLinear = g_MOMEventListener->m_bMapIsLinear;
     }
 }
@@ -128,19 +139,22 @@ void C_HudMapInfo::Init()
 
 void C_HudMapInfo::Reset()
 {
-    // MOM_TODO: Reset all the numbers and stuff here?
+    m_iZoneCount = 0;
+    m_iZoneCurrent = 0;
+    m_bMapLinear = false;
+    m_bPlayerInZone = false;
+    m_bMapFinished = false;
 }
 
 void C_HudMapInfo::Paint()
 {
-    // MOM_TODO: this will change to be checkpoints
-    if (m_iStageCount > 0)
+    if (m_iZoneCount > 0)
     {
         // Current stage(checkpoint)/total stages(checkpoints)
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
                    m_bMapLinear ? checkpointLocalized : stageLocalized, // "Stage" / "Checkpoint"
-                   m_iStageCurrent,                                     // Current stage/checkpoint
-                   m_iStageCount                                        // Total number of stages/checkpoints
+                   m_iZoneCurrent,                                     // Current stage/checkpoint
+                   m_iZoneCount                                        // Total number of stages/checkpoints
                    );
     }
     else
@@ -153,7 +167,7 @@ void C_HudMapInfo::Paint()
     // No matter what, we always want the player's status printed out, if they're in a zone
     if (m_bPlayerInZone)
     {
-        if (m_iStageCurrent == 1)
+        if (m_iZoneCurrent == 1)
         {
             // Start zone
             Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), startZoneLocalized);
@@ -167,10 +181,11 @@ void C_HudMapInfo::Paint()
         }
         else
         {
+            //Note: The player will never be inside a "checkpoint" zone
             // Stage # Start
             wchar_t stageCurrent[128]; // 00'\0' and max stages is 64
 
-            V_snwprintf(stageCurrent, ARRAYSIZE(stageCurrent), L"%d", m_iStageCurrent);
+            V_snwprintf(stageCurrent, ARRAYSIZE(stageCurrent), L"%d", m_iZoneCurrent);
             // Fills the "Stage %s1 Start" string
             g_pVGuiLocalize->ConstructString(m_pwStageStartLabel, sizeof(m_pwStageStartLabel), m_pwStageStartString, 1,
                                              stageCurrent);

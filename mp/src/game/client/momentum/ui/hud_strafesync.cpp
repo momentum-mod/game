@@ -1,12 +1,13 @@
 #include "cbase.h"
+#include "c_mom_replay_entity.h"
 #include "hud_fillablebar.h"
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
+#include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
-#include "mom_event_listener.h"
 #include <math.h>
 
 #include "tier0/memdbgon.h"
@@ -16,8 +17,9 @@ using namespace vgui;
 static ConVar strafesync_draw("mom_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                               "Toggles displaying the strafesync data.\n", true, 0, true, 1);
 
-static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Toggles displaying the visual strafesync bar.\n", true, 0, true, 1);
+static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1",
+                                 FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                                 "Toggles displaying the visual strafesync bar.\n", true, 0, true, 1);
 
 static ConVar strafesync_type(
     "mom_strafesync_type", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -42,9 +44,22 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     void OnThink() override;
     bool ShouldDraw() override
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return pPlayer && strafesync_draw.GetBool() && CHudElement::ShouldDraw() && g_MOMEventListener
-            && g_MOMEventListener->m_bTimerIsRunning;
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        bool shouldDrawLocal = false;
+        if (pPlayer)
+        {
+            if (pPlayer->IsWatchingReplay())
+            {
+                //MOM_TODO: Should we have a convar against this?
+                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+                shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
+            }
+            else
+            {
+                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+            }
+        }
+        return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
     void Reset() override
@@ -55,7 +70,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
         m_lastColor = normalColor;
         m_currentColor = normalColor;
     }
-    void ApplySchemeSettings(IScheme *pScheme)
+    void ApplySchemeSettings(IScheme *pScheme) override
     {
         Panel::ApplySchemeSettings(pScheme);
         SetFgColor(GetSchemeColor("White", pScheme));
@@ -78,7 +93,8 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     Color normalColor, increaseColor, decreaseColor;
 
     float digit_xpos_initial;
-protected:
+
+  protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
 };
 
@@ -92,14 +108,26 @@ CHudStrafeSyncDisplay::CHudStrafeSyncDisplay(const char *pElementName)
 void CHudStrafeSyncDisplay::OnThink()
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-    if (!pPlayer) return;
+    if (!pPlayer)
+        return;
 
-    if (strafesync_type.GetInt() == 1) // sync1
-        m_localStrafeSync = pPlayer->m_flStrafeSync;
-    else if (strafesync_type.GetInt() == 2) // sync2
-        m_localStrafeSync = pPlayer->m_flStrafeSync2;
+    m_localStrafeSync = 0;
+
+    C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
+    if (pReplayEnt)
+    {
+        if (strafesync_type.GetInt() == 1) // sync1
+            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync;
+        else if (strafesync_type.GetInt() == 2) // sync2
+            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync2;
+    }
     else
-        m_localStrafeSync = 0;
+    {
+        if (strafesync_type.GetInt() == 1) // sync1
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+        else if (strafesync_type.GetInt() == 2) // sync2
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+    }
 
     float clampedStrafeSync = clamp(m_localStrafeSync, 0, 100);
 
@@ -109,8 +137,9 @@ void CHudStrafeSyncDisplay::OnThink()
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
             m_flLastStrafeSync != 0
-                ? m_currentColor = mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
-                normalColor, increaseColor, decreaseColor)
+                ? m_currentColor =
+                      mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                                                      normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
 
             m_lastColor = m_currentColor;
@@ -149,7 +178,7 @@ void CHudStrafeSyncDisplay::OnThink()
 
     if (clampedStrafeSync == 0)
     {
-        digit_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hNumberFont,"0") / 2;
+        digit_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hNumberFont, "0") / 2;
     }
     else
     {
@@ -170,7 +199,7 @@ void CHudStrafeSyncDisplay::Paint()
     {
         SetLabelText(L"Sync");
     }
-    text_xpos = GetWide() / 2 -  UTIL_ComputeStringWidth(m_hTextFont, m_LabelText) / 2;
+    text_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hTextFont, m_LabelText) / 2;
 }
 //////////////////////////////////////////
 //           CHudStrafeSyncBar          //
@@ -184,9 +213,22 @@ class CHudStrafeSyncBar : public CHudFillableBar
     void OnThink() override;
     bool ShouldDraw() override
     {
-        C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return (pPlayer && strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && g_MOMEventListener
-            && g_MOMEventListener->m_bTimerIsRunning);
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        bool shouldDrawLocal = false;
+        if (pPlayer)
+        {
+            if (pPlayer->IsWatchingReplay())
+            {
+                //MOM_TODO: Should we have a convar against this?
+                C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+                shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
+            }
+            else
+            {
+                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+            }
+        }
+        return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
     void Reset() override
@@ -216,7 +258,6 @@ class CHudStrafeSyncBar : public CHudFillableBar
     Color m_lastColor;
     Color m_currentColor;
     Color normalColor, increaseColor, decreaseColor;
-
 };
 
 DECLARE_HUDELEMENT(CHudStrafeSyncBar);
@@ -235,18 +276,32 @@ void CHudStrafeSyncBar::OnThink()
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer == nullptr)
         return;
-    if (strafesync_type.GetInt() == 1) // sync1
-        m_localStrafeSync = pPlayer->m_flStrafeSync;
-    else if (strafesync_type.GetInt() == 2) // sync2
-        m_localStrafeSync = pPlayer->m_flStrafeSync2;
+
+    C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
+    if (pReplayEnt)
+    {
+        if (strafesync_type.GetInt() == 1) // sync1
+            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync;
+        else if (strafesync_type.GetInt() == 2) // sync2
+            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync2;
+    }
+    else
+    {
+        if (strafesync_type.GetInt() == 1) // sync1
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+        else if (strafesync_type.GetInt() == 2) // sync2
+            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+    }
+
     switch (strafesync_colorize.GetInt())
     {
     case 1:
         if (m_flNextColorizeCheck <= gpGlobals->curtime)
         {
-            m_flLastStrafeSync != 0 
-                ? m_currentColor = mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
-                normalColor, increaseColor, decreaseColor) 
+            m_flLastStrafeSync != 0
+                ? m_currentColor =
+                      mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                                                      normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
 
             m_lastColor = m_currentColor;

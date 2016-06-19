@@ -9,16 +9,24 @@ $path = (Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentV
 
 if (!$path)
 {
-	Write-Warning "You should install Source SDK Base 2013 Multiplayer.`nRequesting Steam to install the app..."
-    try {
-        $cmd ="cmd.exe"
-        &$cmd "/c start steam://install/243750/"
+    $path2 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 243750" -Name InstallLocation).InstallLocation
+    if (!$path2)
+    {
+	    Write-Warning "You should install Source SDK Base 2013 Multiplayer.`nRequesting Steam to install the app..."
+        try {
+            $cmd ="cmd.exe"
+            &$cmd "/c start steam://install/243750/"
+        }
+        catch {
+            Write-Warning "Steam is not running. Can not launch installation pop-up"
+        }
+	    pause
+	    exit
     }
-    catch {
-        Write-Warning "Steam is not running. Can not launch installation pop-up"
+    else 
+    {
+        ($path = $path2)
     }
-	pause
-	exit
 }
 
 $hl2exe = Join-Path $path hl2.exe
