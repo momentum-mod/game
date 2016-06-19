@@ -47,6 +47,11 @@ using namespace vgui;
 #define DATESTRING "00/00/0000 00:00:00" //Entire date string
 #define TIMESTRING "00:00:00.000"//Entire time string
 
+bool PNamesMapLessFunc(const uint64 &first, const uint64 &second)
+{
+    return first < second;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -119,7 +124,11 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
+
+    m_mSIdNames.SetLessFunc(PNamesMapLessFunc);
 }
+
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -537,6 +546,7 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(vgui::SectionedListPanel *lis
 
 void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 {
+    /*steamapicontext->SteamFriends()->RequestUserInformation()*/
     if (!m_bLocalTimesLoaded || m_bLocalTimesNeedUpdate)
     {
         //Clear the local times for a refresh
@@ -647,7 +657,7 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     Warning("Callback received.\n");
     if (bIOFailure)
         return;
-    
+
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     DevLog("Size of body: %u\n", size);
@@ -682,12 +692,15 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                             {
                                 kv->SetFloat("time", j->value.toNumber());
                             }
-                            else if (!Q_strcmp(j->key,"steamid"))
+                            else if (!Q_strcmp(j->key, "steamid"))
                             {
                                 kv->SetUint64("steamid", j->value.toNumber());
                                 // steamapicontext->SteamFriends()->RequestUserInfo( ID, true) is what we would need here, but for now..
                                 // 
-                                kv->SetString("personaname", steamapicontext->SteamFriends()->GetPlayerNickname(CSteamID(kv->GetUint64("steamid", j->value.toNumber()))));
+                                if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(kv->GetUint64("steamid", j->value.toNumber())), true))
+                                {
+                                    kv->SetString("personaname", "UNKNOWN - API ERROR!");
+                                }
                             }
                             else if (!Q_strcmp(j->key, "rank"))
                             {
@@ -715,7 +728,7 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                 //If we're here and no errors happened, then we can assume times were loaded
                 m_bOnlineTimesLoaded = true;
                 m_bOnlineNeedUpdate = false;
-            }       
+            }
         }
     }
     else
@@ -725,6 +738,16 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     // Last but not least, free resources
     alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+}
+
+void CClientTimesDisplay::RequestUserInformation(PersonaStateChange_t *pParam)
+{
+    if (pParam->m_nChangeFlags | k_EPersonaChangeName || pParam->m_nChangeFlags | k_EPersonaChangeAvatar)
+    {
+        const char *pName = steamapicontext->SteamFriends()->GetPlayerNickname(CSteamID(pParam->m_ulSteamID));
+        m_mSIdNames.InsertOrReplace(pParam->m_ulSteamID, pName);
+        FillScoreBoard(false);
+    }
 }
 
 //void TellAbout(JsonValue o)
@@ -933,6 +956,10 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
         {
             FOR_EACH_VEC(m_vOnlineTimes, entry)
             {
+                // We set the current personaname before anything...
+
+                m_vOnlineTimes.Element(entry).m_kv->SetString("personaname", m_mSIdNames.Element(m_mSIdNames.Find(m_vOnlineTimes.Element(entry).steamid)));
+
                 int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry).id);
                 if (itemID == -1)
                 {
@@ -998,7 +1025,7 @@ int CClientTimesDisplay::FindItemIDForOnlineTime(int runID)
             }
         }
     }
-    return - 1;
+    return -1;
 }
 
 //-----------------------------------------------------------------------------

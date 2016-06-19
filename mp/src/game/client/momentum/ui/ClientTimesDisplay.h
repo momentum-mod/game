@@ -195,9 +195,14 @@ private:
             m_kv->SetString("personaname", kv->GetString("personaname", "Unknown"));
         };
     };
+
     CUtlVector<Time> m_vLocalTimes;
     
     CUtlVector<TimeOnline> m_vOnlineTimes;
+
+    STEAM_CALLBACK(CClientTimesDisplay, RequestUserInformation, PersonaStateChange_t);
+
+    CUtlMap<uint64, const char *> m_mSIdNames;
 
     bool m_bLocalTimesLoaded = false;
     bool m_bLocalTimesNeedUpdate = false;
