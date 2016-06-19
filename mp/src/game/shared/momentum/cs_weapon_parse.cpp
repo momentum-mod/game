@@ -37,7 +37,7 @@ WeaponTypeInfo s_weaponTypeInfo[] =
     { WEAPONTYPE_MACHINEGUN, "mg" },
     { WEAPONTYPE_C4, "C4" },
     { WEAPONTYPE_GRENADE, "Grenade" },
-    { WEAPONTYPE_UNKNOWN, NULL },
+    { WEAPONTYPE_UNKNOWN, nullptr },
 };
 
 //--------------------------------------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ void PrepareEquipmentInfo(void)
 CCSWeaponInfo * GetWeaponInfo(CSWeaponID weaponID)
 {
     if (weaponID == WEAPON_NONE)
-        return NULL;
+        return nullptr;
 
     if (weaponID >= WEAPON_KEVLAR)
     {
@@ -139,7 +139,7 @@ CCSWeaponInfo * GetWeaponInfo(CSWeaponID weaponID)
     WEAPON_FILE_INFO_HANDLE	hWpnInfo = LookupWeaponInfoSlot(weaponName);
     if (hWpnInfo == GetInvalidWeaponInfoHandle())
     {
-        return NULL;
+        return nullptr;
     }
 
     CCSWeaponInfo *pWeaponInfo = dynamic_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
@@ -151,7 +151,7 @@ CCSWeaponInfo * GetWeaponInfo(CSWeaponID weaponID)
 const char * WeaponClassAsString(CSWeaponType weaponType)
 {
     WeaponTypeInfo *info = s_weaponTypeInfo;
-    while (info->name != NULL)
+    while (info->name != nullptr)
     {
         if (info->type == weaponType)
         {
@@ -160,7 +160,7 @@ const char * WeaponClassAsString(CSWeaponType weaponType)
         ++info;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -168,7 +168,7 @@ const char * WeaponClassAsString(CSWeaponType weaponType)
 CSWeaponType WeaponClassFromString(const char * weaponType)
 {
     WeaponTypeInfo *info = s_weaponTypeInfo;
-    while (info->name != NULL)
+    while (info->name != nullptr)
     {
         if (!Q_stricmp(info->name, weaponType))
         {
@@ -355,7 +355,7 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
     // Default is 2000.
     m_flBotAudibleRange = pKeyValuesData->GetFloat("BotAudibleRange", 2000.0f);
 
-    const char *pTypeString = pKeyValuesData->GetString("WeaponType", NULL);
+    const char *pTypeString = pKeyValuesData->GetString("WeaponType", nullptr);
 
     m_WeaponType = WEAPONTYPE_UNKNOWN;
     if (!pTypeString)

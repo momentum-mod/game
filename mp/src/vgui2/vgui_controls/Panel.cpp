@@ -1784,7 +1784,10 @@ void Panel::InternalCursorMoved(int x, int y)
 		{
 			m_pTooltips->SetText( _tooltipText );
 		}
-		m_pTooltips->ShowTooltip(this);
+        if (m_pTooltips->IsVisible())
+            m_pTooltips->PositionWindow();
+        else
+            m_pTooltips->ShowTooltip(this);
 	}
 
 	ScreenToLocal(x, y);
@@ -1962,6 +1965,9 @@ void Panel::InternalMousePressed(int code)
 	{
 		OnMousePressed( (MouseCode)code );
 	}
+
+    if (m_pTooltips)
+        m_pTooltips->HideTooltip();
 
 #if defined( VGUI_USEDRAGDROP )
 	DragDropStartDragging();

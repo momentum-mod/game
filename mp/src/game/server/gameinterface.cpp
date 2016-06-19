@@ -1170,9 +1170,6 @@ void CServerGameDLL::ServerActivate( edict_t *pEdictList, int edictCount, int cl
 #ifdef NEXT_BOT
 	TheNextBots().OnMapLoaded();
 #endif
-
-    //Momentum
-    Momentum::OnMapStart(gpGlobals->mapname.ToCStr());
 }
 
 //-----------------------------------------------------------------------------
@@ -1254,10 +1251,6 @@ void CServerGameDLL::GameFrame( bool simulating )
 
 	IGameSystem::FrameUpdatePreEntityThinkAllSystems();
 	GameStartFrame();
-
-
-    //Momentum
-    Momentum::OnGameFrameStart();
 
 
 #ifndef _XBOX
@@ -1404,9 +1397,6 @@ void CServerGameDLL::OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_
 // Called when a level is shutdown (including changing levels)
 void CServerGameDLL::LevelShutdown( void )
 {
-    //Momentum
-    Momentum::OnMapEnd(gpGlobals->mapname.ToCStr());
-
 
 #ifndef NO_STEAM
 	IGameSystem::LevelShutdownPreClearSteamAPIContextAllSystems();

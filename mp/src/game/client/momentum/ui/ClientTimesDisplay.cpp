@@ -50,7 +50,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(NULL, PANEL_TIMES)
+CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, PANEL_TIMES)
 {
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
@@ -60,6 +60,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    //Create a "popup" so we can get the mouse to detach
+    surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
     // set the scheme before any child control is created
     SetScheme("ClientScheme");
@@ -106,17 +108,21 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     m_pLocalLeaderboards->SetVerticalScrollbar(false);
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
 
+    m_pLocalLeaderboards->SetMouseInputEnabled(true);
+    m_pOnlineLeaderboards->SetMouseInputEnabled(true);
+    m_pFriendsLeaderboards->SetMouseInputEnabled(true);
+
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 
     m_iDesiredHeight = GetTall();
     m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
 
     // update scoreboard instantly if on of these events occur
-    gameeventmanager->LoadEventsFromFile("resource/modevents.res");
     ListenForGameEvent("run_save");
+    ListenForGameEvent("run_upload");
     ListenForGameEvent("game_newmap");
 
-    m_pImageList = NULL;
+    m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
 }
@@ -126,10 +132,10 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
 //-----------------------------------------------------------------------------
 CClientTimesDisplay::~CClientTimesDisplay()
 {
-    if (NULL != m_pImageList)
+    if (m_pImageList)
     {
         delete m_pImageList;
-        m_pImageList = NULL;
+        m_pImageList = nullptr;
     }
     // MOM_TODO: Ensure a good destructor
 }
@@ -220,8 +226,6 @@ void CClientTimesDisplay::Reset(bool pFullReset)
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::InitScoreboardSections()
 {
-#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
-
     if (m_pLocalLeaderboards)
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
@@ -248,7 +252,6 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH*1.8);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2] * 1.8));
     }
-#undef SCALE
 }
 
 //-----------------------------------------------------------------------------
@@ -257,7 +260,7 @@ void CClientTimesDisplay::InitScoreboardSections()
 void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-
+    
     if (m_pImageList)
         delete m_pImageList;
     m_pImageList = new ImageList(false);
@@ -272,7 +275,6 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
 {
-#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
     // resize the images to our resolution
     for (int i = 0; i < m_pImageList->GetImageCount(); i++)
     {
@@ -314,7 +316,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 {
     // Catch the case where we call ShowPanel before ApplySchemeSettings, eg when
     // going from windowed <-> fullscreen
-    if (m_pImageList == NULL)
+    if (m_pImageList == nullptr)
     {
         InvalidateLayout(true, true);
     }
@@ -331,12 +333,13 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     {
         Reset(true);
         SetVisible(true);
+        //SetEnabled(true);
         MoveToFront();
     }
     else
-    {
-        BaseClass::SetVisible(false);
-        SetMouseInputEnabled(false);
+    { 
+        SetVisible(false);
+        SetMouseInputEnabled(false);//Turn mouse off
         SetKeyBoardInputEnabled(false);
     }
 }
@@ -347,18 +350,19 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
 
     const char * type = event->GetName();
 
-    if (Q_strcmp(type, "runtime_saved") == 0)
+    if (Q_strcmp(type, "run_save") == 0)
     {
         //this updates the local times file, needing a reload of it
-        bLocalTimesNeedUpdate = true;
+        m_bLocalTimesNeedUpdate = true;
     }
-    else if (Q_strcmp(type, "runtime_posted") == 0)
+    else if (Q_strcmp(type, "run_upload") == 0)
     {
         //MOM_TODO: this updates your rank (friends/online panel)
+        m_bOnlineNeedUpdate = event->GetBool("run_posted");
     }
     else if (Q_strcmp(type, "game_newmap") == 0)
     {
-        bLocalTimesLoaded = false;
+        m_bLocalTimesLoaded = false;
     }
 
     //MOM_TODO: there's a crash here if you uncomment it, 
@@ -514,7 +518,7 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(vgui::SectionedListPanel *lis
 
 void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 {
-    if (!bLocalTimesLoaded || bLocalTimesNeedUpdate)
+    if (!m_bLocalTimesLoaded || m_bLocalTimesNeedUpdate)
     {
         //Clear the local times for a refresh
         m_vLocalTimes.RemoveAll();
@@ -522,10 +526,9 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
         //Load from .tim file
         KeyValues *pLoaded = new KeyValues("local");
         char fileName[MAX_PATH];
-        Q_strcpy(fileName, "maps/");
-        //Q_strncat(fileName, g_pGameRules->MapName(), MAX_PATH);
-        Q_strncat(fileName, g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME", MAX_PATH);
-        Q_strncat(fileName, ".tim", MAX_PATH);
+
+        Q_snprintf(fileName, MAX_PATH, "maps/%s.tim", g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME");
+
         if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
         {
             DevLog("Loading from file %s...\n", fileName);
@@ -534,8 +537,8 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
                 Time t = Time(kvLocalTime);
                 m_vLocalTimes.AddToTail(t);
             }
-            bLocalTimesLoaded = true;
-            bLocalTimesNeedUpdate = false;
+            m_bLocalTimesLoaded = true;
+            m_bLocalTimesNeedUpdate = false;
         }
         pLoaded->deleteThis();
     }
@@ -551,15 +554,14 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
     FOR_EACH_VEC(m_vLocalTimes, i)
     {
         Time t = m_vLocalTimes[i];
-        float secondsF = ((float) t.ticks) * t.rate;
         //MOM_TODO: consider adding a "100 tick" column?
 
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
-        kvLocalTimeFormatted->SetFloat("time_f", secondsF);//Used for static compare
+        kvLocalTimeFormatted->SetFloat("time_f", t.time_sec);//Used for static compare
         kvLocalTimeFormatted->SetInt("date_t", t.date);//Used for finding
         char timeString[BUFSIZETIME];
 
-        mom_UTIL.FormatTime(t.ticks, t.rate, timeString);
+        mom_UTIL->FormatTime(t.time_sec, timeString);
         kvLocalTimeFormatted->SetString("time", timeString);
 
         char dateString[64];

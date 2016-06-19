@@ -182,7 +182,7 @@ Scheme
 
 		ToggleButton.SelectedTextColor	"White"
 
-		Tooltip.TextColor			"Light Gray"
+		Tooltip.TextColor			"White"
 		Tooltip.BgColor				"MOM.Panel.Bg"
 
 		TreeView.BgColor			"Light Gray"

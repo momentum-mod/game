@@ -31,7 +31,7 @@ float PercentageOfFlashForPlayer(CBaseEntity *player, Vector flashPos, CBaseEnti
 
     QAngle tempAngle;
     VectorAngles(player->EyePosition() - flashPos, tempAngle);
-    AngleVectors(tempAngle, NULL, &vecRight, &vecUp);
+    AngleVectors(tempAngle, nullptr, &vecRight, &vecUp);
 
     vecRight.NormalizeInPlace();
     vecUp.NormalizeInPlace();
@@ -137,14 +137,14 @@ void RadiusFlash(
     Vector		vecLOS;
     float		flDot;
 
-    CBaseEntity		*pEntity = NULL;
+    CBaseEntity		*pEntity = nullptr;
     static float	flRadius = 1500;
     float			falloff = flDamage / flRadius;
 
     bool bInWater = (UTIL_PointContents(vecSrc) == CONTENTS_WATER);
 
     // iterate on all entities in the vicinity.
-    while ((pEntity = gEntList.FindEntityInSphere(pEntity, vecSrc, flRadius)) != NULL)
+    while ((pEntity = gEntList.FindEntityInSphere(pEntity, vecSrc, flRadius)) != nullptr)
     {
         bool bPlayer = pEntity->IsPlayer();
         bool bHostage = (Q_stricmp(pEntity->GetClassname(), "hostage_entity") == 0);

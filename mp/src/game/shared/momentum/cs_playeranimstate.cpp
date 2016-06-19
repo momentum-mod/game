@@ -228,7 +228,7 @@ Activity CCSHostageAnimState::CalcMainActivity()
 
 CCSPlayerAnimState::CCSPlayerAnimState()
 {
-	m_pOuter = NULL;
+    m_pOuter = nullptr;
 
 	m_bJumping = false;
 	m_flJumpStartTime = 0.0f;
@@ -251,9 +251,9 @@ CCSPlayerAnimState::CCSPlayerAnimState()
 	m_iLastThrowGrenadeCounter = 0;
 	m_cachedModelIndex = -1;
 
-	m_pPlayer = NULL;
+    m_pPlayer = nullptr;
 
-	m_pHelpers = NULL;
+    m_pHelpers = nullptr;
 }
 
 

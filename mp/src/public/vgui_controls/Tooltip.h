@@ -35,7 +35,7 @@ public:
 
 	bool		 ShouldLayout( void );
 	virtual void PerformLayout() { return; }
-	virtual void PositionWindow( Panel *pTipPanel );
+	virtual void PositionWindow( void );
 
 	void ResetDelay();
 	void SetTooltipFormatToSingleLine();
@@ -43,6 +43,7 @@ public:
 	void SetTooltipDelay(int tooltipDelayMilliseconds);
 	int GetTooltipDelay();
 	void SetEnabled( bool bState );
+    bool IsVisible() { return _visible; }
 
 private:
 	Panel *m_pParent;
@@ -55,6 +56,7 @@ protected:
 	bool _displayOnOneLine : 1;
 	bool _isDirty : 1;
 	bool _enabled : 1;
+    bool _visible : 1;
 };
 
 class TextTooltip : public BaseTooltip

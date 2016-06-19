@@ -15,7 +15,8 @@ CHudMenuStatic::CHudMenuStatic(const char *pElementName) : CHudElement(pElementN
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 };
 
-DECLARE_HUDELEMENT(CHudMenuStatic);
+//Deeper because otherwise the animations mess with hud_mapinfo (weird)
+DECLARE_HUDELEMENT_DEPTH(CHudMenuStatic, 60);
 
 bool CHudMenuStatic::ShouldDraw()
 {
@@ -86,7 +87,7 @@ void CHudMenuStatic::SelectMenuItem(int menu_item)
     m_nSelectedItem = menu_item;
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuPulse");
     C_BasePlayer *cPlayer = C_BasePlayer::GetLocalPlayer();
-    if (cPlayer != NULL)
+    if (cPlayer != nullptr)
     {
         cPlayer->EmitSound("Momentum.UIMenuSelection");
     }
@@ -297,7 +298,7 @@ void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
     int		nCount;
 
     int i = 0;
-    for (KeyValues *item = pKV->GetFirstSubKey(); item != NULL; item = item->GetNextKey())
+    for (KeyValues *item = pKV->GetFirstSubKey(); item != nullptr; item = item->GetNextKey())
     {
         // Set this slot valid
         m_bitsValidSlots |= (1 << i);
@@ -312,7 +313,7 @@ void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
             DevWarning("Missing localization for %s\n", pszItem);
         }
         else Q_wcsncpy(wLocalizedItem, wLocalizedItemPtr, 512);
-
+        
         nCount = _snwprintf(pWritePosition, nRemaining, L"%d. %ls\n", i + 1, wLocalizedItem);
         nRemaining -= nCount;
         pWritePosition += nCount;

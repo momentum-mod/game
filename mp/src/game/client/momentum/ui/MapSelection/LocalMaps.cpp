@@ -2,6 +2,8 @@
 
 using namespace vgui;
 
+extern IFileSystem *filesystem;
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -47,15 +49,25 @@ bool CLocalMaps::SupportsItem(InterfaceItem_e item)
 }
 
 
-inline bool MapHasStages(const char* szMap)
+bool MapHasStages(const char* szMap)
 {
     bool found = false;
-    KeyValues *kvMap = new KeyValues("Map");
-    if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.zon", szMap), "MOD"))
+    if (filesystem && szMap)
     {
-        found = (kvMap->FindKey("stage") != NULL);
+        KeyValues *kvMap = new KeyValues(szMap);
+        char path[MAX_PATH];
+        char fileName[FILENAME_MAX];
+        Q_snprintf(fileName, FILENAME_MAX, "%s.tim", szMap);
+        V_ComposeFileName(MAP_FOLDER, fileName, path, MAX_PATH);
+
+
+        if (kvMap->LoadFromFile(filesystem, path, "MOD"))
+        {
+            found = (kvMap->FindKey("zone") != nullptr);
+        }
+        kvMap->deleteThis();
     }
-    kvMap->deleteThis();
+
     return found;
 }
 
@@ -63,6 +75,7 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
 {
     //Game mode
     m->m_iGameMode = MOMGM_UNKNOWN;
+    float tickRate = 0.015f;
     if (!Q_strnicmp(m->m_szMapName, "surf_", 5))
     {
         m->m_iGameMode = MOMGM_SURF;
@@ -70,6 +83,7 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     else if (!Q_strnicmp(m->m_szMapName, "bhop_", 5))
     {
         m->m_iGameMode = MOMGM_BHOP;
+        tickRate = 0.01f;
     }
 
     // MOM_TODO: Determine difficulty
@@ -79,27 +93,16 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     m->m_bHasStages = MapHasStages(m->m_szMapName);
 
     //Completed/Best time
-    KeyValues *kvMap = new KeyValues("Map");
-    if (kvMap->LoadFromFile(g_pFullFileSystem, VarArgs("maps/%s.tim", m->m_szMapName), "MOD"))
+    KeyValues *kvMapWrapper = new KeyValues(m->m_szMapName);
+    //MOM_TODO: have the tickrate and run flags as filters, load actual values
+    
+    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, tickRate);
+    if (kvMapTime)
     {
-        if (!kvMap->IsEmpty())
-        {
-            m->m_bCompleted = true;
-
-            CUtlSortVector<KeyValues*, CTimeSortFunc> sortedTimes;
-            for (KeyValues *kv = kvMap->GetFirstSubKey(); kv; kv = kv->GetNextKey())
-            {
-                sortedTimes.InsertNoSort(kv);
-            }
-
-            sortedTimes.RedoSort();
-
-            KeyValues *pBestTime = sortedTimes[0];
-            if (pBestTime)
-                mom_UTIL.FormatTime(Q_atoi(pBestTime->GetName()), pBestTime->GetFloat("rate"), m->m_szBestTime);
-        }
+        m->m_bCompleted = true;
+        mom_UTIL->FormatTime(Q_atof(kvMapTime->GetName()), m->m_szBestTime);
     }
-    kvMap->deleteThis();
+    kvMapWrapper->deleteThis();
 }
 
 

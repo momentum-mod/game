@@ -4,20 +4,16 @@
 #include "tier0/memdbgon.h"
 
 
-
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
 RecvPropInt(RECVINFO(m_iShotsFired)),
 RecvPropInt(RECVINFO(m_iDirection)),
 RecvPropBool(RECVINFO(m_bResumeZoom)),
 RecvPropInt(RECVINFO(m_iLastZoom)),
-RecvPropBool(RECVINFO(m_bAutoBhop)),
 RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
 RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
-RecvPropFloat(RECVINFO(m_flStrafeSync)),
-RecvPropFloat(RECVINFO(m_flStrafeSync2)),
-RecvPropFloat(RECVINFO(m_flLastJumpVel)),
-//RecvPropDataTable(RECVINFO_DT(m_HL2Local), 0, &REFERENCE_RECV_TABLE(DT_HL2Local)),
-//RecvPropBool(RECVINFO(m_fIsSprinting)),
+RecvPropBool(RECVINFO(m_bHasPracticeMode)),
+RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
+RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE()
 
 
@@ -25,6 +21,10 @@ C_MomentumPlayer::C_MomentumPlayer()
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
+    m_RunData.m_bMapFinished = false;
+    m_RunData.m_flLastJumpTime = 0.0f;
+    m_bHasPracticeMode = false;
+    m_RunStats.Init();
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()

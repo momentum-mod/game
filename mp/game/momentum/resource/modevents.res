@@ -27,51 +27,35 @@
 
 "modevents"
 {
-	"timer_stopped"
+	"zone_enter"//When the player/ghost enters a checkpoint/stage trigger
 	{
-		"avg_sync"	"float"
-		"avg_sync2"	"float"
-		"avg_vel"	"float"
-		"max_vel"	"float"
-		"start_vel"	"float"
-		"end_vel"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
 	}
-	"new_stage"
-	{
-		"stage_num"	"byte"
-		"stage_ticks"	"long" //time is in ticks
-		"avg_sync"	"float"
-		"avg_sync2"	"float"
-		"avg_vel"	"float"
-		"max_vel"	"float"
-		"stage_enter_vel"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
-	}
+    "zone_exit"//When the player exits the start trigger for the stage
+    {
+    }
 	"run_save"
 	{
 		"run_saved"	"bool"
-		"run_posted"	"bool"
 	}
-	"timer_started"
+    "run_upload"
+    {
+        "run_posted" "bool"
+        "web_msg" "string"//MOM_TODO: fill this with more stuff?
+    }
+	"timer_state"
 	{
-		"timer_isrunning"	"bool"
+        "ent" "short"
+		"is_running"	"bool"
 	}
-	"player_inside_mapzone"
-	{
-		"inside_startzone"	"bool"
-		"inside_endzone"	"bool"
-		"map_finished"	"bool"
-	}
-	"keypress"
-	{
-		"num_jumps"	"short"
-		"num_strafes"	"short"
-	}
-	"practice_mode"
-	{
-		"has_practicemode"	"bool"
-	}
+    "map_init"
+    {
+        "is_linear" "bool"
+        "num_zones" "byte"
+    }
+    "spec_target_updated" // Used by the spectator GUI
+    {
+    }
+    "mapfinished_panel_closed"
+    {
+    }
 }

@@ -1,121 +1,109 @@
 #include "cbase.h"
-#include "movevars_shared.h"
-#include "mapzones.h"
-#include "Timer.h"
-#include "mapzones_edit.h"
-
+#include "server_events.h"
 
 #include "tier0/memdbgon.h"
 
-namespace Momentum
+void Momentum::OnServerDLLInit()
 {
-
-    CMapzoneData* zones;
-
-    void OnServerDLLInit()
+    TickSet::TickInit();
+    // MOM_TODO: connect to site
+    if (SteamAPI_IsSteamRunning())
     {
-        TickSet::TickInit();
-        // MOM_TODO: connect to site
-        if (SteamAPI_IsSteamRunning())
+        mom_UTIL->GetRemoteRepoModVersion();
+    }
+}
+
+//This is only called when "map ____" is called, if the user uses changelevel then...
+// \/(o_o)\/
+void Momentum::GameInit()
+{
+    ConVarRef gm("mom_gamemode");
+    ConVarRef map("host_map");
+    const char *pMapName = map.GetString();
+    // This will only happen if the user didn't use the map selector to start a map
+
+    //set gamemode depending on map name
+    //MOM_TODO: This needs to read map entity/momfile data and set accordingly
+    if (gm.GetInt() == MOMGM_UNKNOWN)
+    {
+        if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
         {
-            mom_UTIL.GetRemoteRepoModVersion();
+            gm.SetValue(MOMGM_SURF);
+        }
+        else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
+        {
+            DevLog("SETTING THE GAMEMODE!\n");
+            gm.SetValue(MOMGM_BHOP);
+        }
+        else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
+        {
+            DevLog("SETTING THE GAMEMODE!\n");
+            gm.SetValue(MOMGM_SCROLL);
+        }
+        else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
+        {
+            gm.SetValue(MOMGM_ALLOWED);
+        }
+        else
+        {
+            gm.SetValue(MOMGM_UNKNOWN);
         }
     }
+}
 
-    //This is only called when "map ____" is called, if the user uses changelevel then...
-    // \/(o_o)\/
-    void GameInit()
+void CMOMServerEvents::LevelInitPostEntity()
+{
+    const char *pMapName = gpGlobals->mapname.ToCStr();
+    // (Re-)Load zones
+    if (zones)
     {
-        ConVarRef gm("mom_gamemode");
-        ConVarRef map("host_map");
-        const char *pMapName = map.GetString();
-        // This will only happen if the user didn't use the map selector to start a map
+        delete zones;
+        zones = nullptr;
+    }
+    zones = new CMapzoneData(pMapName);
+    zones->SpawnMapZones();
 
-        //set gamemode depending on map name
-        if (gm.GetInt() == MOMGM_UNKNOWN)
-        {
-            if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
-            {
-                gm.SetValue(MOMGM_SURF);
-                //g_Timer.SetGameMode(MOMGM_SURF);
-            }
-            else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
-            {
-                DevLog("SETTING THE GAMEMODE!\n");
-                gm.SetValue(MOMGM_BHOP);
-                //DevLog("GOT TO #2 %i\n", m_iGameMode);
+    //Setup timer
+    g_Timer->OnMapStart(pMapName);
 
-                //g_Timer.SetGameMode(MOMGM_BHOP);
-            }
-            else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
-            {
-               DevLog("SETTING THE GAMEMODE!\n");
-               gm.SetValue(MOMGM_SCROLL);
-            }
-            else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
-            {
-                gm.SetValue(MOMGM_ALLOWED);
-            }
-            else
-            {
-                gm.SetValue(MOMGM_UNKNOWN);
-                //g_Timer.SetGameMode(MOMGM_UNKNOWN);
-            }
-            
-        }
+    // Reset zone editing
+    g_MapzoneEdit.Reset();
+
+    //disable point_servercommand
+    ConVarRef servercommand("sv_allow_point_servercommand");
+    servercommand.SetValue("0");
+}
+
+void CMOMServerEvents::LevelShutdownPreEntity()
+{
+    const char *pMapName = gpGlobals->mapname.ToCStr();
+    // Unload zones
+    if (zones)
+    {
+        delete zones;
+        zones = nullptr;
     }
 
-    void OnMapStart(const char *pMapName)
-    { 
-        // (Re-)Load zones
-        if (zones)
-        {
-            delete zones;
-            zones = NULL;
-        }
-        zones = new CMapzoneData(pMapName);
-        zones->SpawnMapZones();
+    ConVarRef gm("mom_gamemode");
+    gm.SetValue(gm.GetDefault());
 
-        //Setup timer
-        g_Timer.OnMapStart(pMapName);
-        
-        // Reset zone editing
-        g_MapzoneEdit.Reset();
-    }
+    g_Timer->OnMapEnd(pMapName);
+}
 
-    void OnMapEnd(const char *pMapName)
+void CMOMServerEvents::FrameUpdatePreEntityThink()
+{
+    g_MapzoneEdit.Update();
+
+    if (!g_Timer->GotCaughtCheating())
     {
-        // Unload zones
-        if (zones)
+        ConVarRef cheatsRef("sv_cheats");
+        if (cheatsRef.GetBool())
         {
-            delete zones;
-            zones = NULL;
-        }
-
-        ConVarRef gm("mom_gamemode");
-        gm.SetValue(gm.GetDefault());
-
-        g_Timer.OnMapEnd(pMapName);
-    }
-
-    void OnGameFrameStart()
-    {
-        g_MapzoneEdit.Update();
-
-        if (!g_Timer.GotCaughtCheating())
-        {
-            ConVarRef cheatsRef = ConVarRef("sv_cheats");
-            if (cheatsRef.GetBool())
-            {
-                g_Timer.SetCheating(true);
-                g_Timer.Stop(false);
-            }
-
+            g_Timer->SetCheating(true);
+            g_Timer->Stop(false);
         }
     }
+}
 
-    /*void OnGameFrameEnd()
-    {
-    }*/
-
-} // namespace Momentum
+//Create the 
+CMOMServerEvents g_MOMServerEvents("MOMServerEvents");

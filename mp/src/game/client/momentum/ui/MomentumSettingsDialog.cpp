@@ -1,4 +1,4 @@
-//The following include files are necessary to allow your MyPanel.cpp to compile.
+//The following include files are necessary to allow your  the panel .cpp to compile.
 #include "cbase.h"
 #include "IMomentumSettingsPanel.h"
 using namespace vgui;
@@ -80,7 +80,7 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
     m_pSyncColorize->AddActionSignalTarget(this);
 
-    m_pSpeedometerShow = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_drawspeedometer", false);
+    m_pSpeedometerShow = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_speedometer", false);
     m_pSpeedometerShow->AddActionSignalTarget(this);
     m_pSpeedometerShowLastJump = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", 
         "mom_speedometer_showlastjumpvel", false);
