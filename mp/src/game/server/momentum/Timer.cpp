@@ -13,7 +13,7 @@ void CTimer::Start(int start)
     SetRunning(true);
 
     //Dispatch a start timer message for the local player
-    DispatchStateMessage();
+    DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
 
     IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_state");
 
@@ -274,7 +274,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
         g_ReplaySystem->StopRecording(pPlayer, !endTrigger, endTrigger);
 
     SetRunning(false);
-    DispatchStateMessage();
+    DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
 }
 void CTimer::OnMapEnd(const char *pMapName)
 {
@@ -346,9 +346,16 @@ void CTimer::DispatchResetMessage()
     MessageEnd();
 }
 
-void CTimer::DispatchStateMessage()
+void CTimer::DispatchTimerStateMessage(CBasePlayer* pPlayer, bool isRunning) const
 {
-    DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
+    if (pPlayer)
+    {
+        CSingleUserRecipientFilter user(pPlayer);
+        user.MakeReliable();
+        UserMessageBegin(user, "Timer_State");
+        WRITE_BOOL(isRunning);
+        MessageEnd();
+    }
 }
 
 //MOM_TODO: This should be moved to the player
@@ -366,7 +373,15 @@ void CTimer::DispatchCheckpointMessage()
         MessageEnd();
     }
 }
-
+void CTimer::SetRunning(bool isRunning)
+{
+    m_bIsRunning = isRunning;
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pPlayer)
+    {
+        pPlayer->m_RunData.m_bTimerRunning = isRunning;
+    }
+}
 void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zoneType)
 {
     if (!pPlayer) return;
@@ -378,7 +393,7 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
 
     if (zoneType == ZONETYPE_END) //ending zone or ending a stage
     {
-        if (abs(velocity.x) > 0 || abs(velocity.y) > 0)
+        if (velocity.x > 0 || velocity.y > 0)
             origin = Vector (pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x, 
             pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y, 
             pPlayer->GetLocalOrigin().z );
@@ -391,7 +406,7 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
         //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with prevOrigin
         //and trace "forwards" to our current origin, hitting the trigger on the way.
         ray.Init(prevOrigin, origin);
-        debugoverlay->AddLineOverlay(prevOrigin, origin, 0, 255, 0, true, 10.0f);//MOM_TODO: REMOVE ME
+        //debugoverlay->AddLineOverlay(prevOrigin, origin, 0, 255, 0, true, 10.0f);//MOM_TODO: REMOVE ME
         CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
     }
@@ -431,7 +446,7 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
-        debugoverlay->AddLineOverlay(tr.startpos, tr.endpos, 255, 0, 0, true, 10.0f);
+        //debugoverlay->AddLineOverlay(tr.startpos, tr.endpos, 255, 0, 0, true, 10.0f);
         float dist = tr.startpos.DistTo(tr.endpos);
         DevLog("Distance to zone: %f\n", dist);
         float offset = dist / m_currVelocity.Length();//velocity = dist/time, so it follows that time = distance / velocity.
