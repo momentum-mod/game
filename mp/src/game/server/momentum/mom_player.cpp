@@ -56,7 +56,7 @@ void CMomentumPlayer::Precache()
 {
 // Name of our entity's model
     //MOM_TODO: Replace this with the custom player model
-#define ENTITY_MODEL "models/gibs/airboat_broken_engine.mdl"
+#define ENTITY_MODEL "models/player/player_shape_base.mdl"
     PrecacheModel(ENTITY_MODEL);
 
     BaseClass::Precache();
@@ -75,6 +75,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
 void CMomentumPlayer::Spawn()
 {
     SetModel(ENTITY_MODEL);
+    SetBodygroup(1, 11);//BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
