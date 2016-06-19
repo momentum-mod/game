@@ -144,7 +144,7 @@ CBaseEntity *CMomentumGameRules::GetPlayerSpawnSpot(CBasePlayer *pPlayer)
             return pSpawnSpot;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 // checks if the spot is clear of players

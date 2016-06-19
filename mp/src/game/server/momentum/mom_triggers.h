@@ -194,7 +194,9 @@ public:
     void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think() override;
     void AfterTeleport() override
-    { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
+    {
+        m_fStartTouchedTime = -1.0f; SetDestinationEnt(nullptr);
+    }
 
 private:
     // The time that the player initally touched the trigger
@@ -227,7 +229,9 @@ public:
     void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think() override;
     void AfterTeleport() override
-    { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
+    {
+        m_fStartTouchedTime = -1.0f; SetDestinationEnt(nullptr);
+    }
 
 private:
     // The time that the player initally touched the trigger. -1 if not checking for teleport
@@ -307,7 +311,9 @@ public:
     float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void AfterTeleport() override
-    { m_fStartTouchedTime = -1.0f; SetDestinationEnt(NULL); }
+    {
+        m_fStartTouchedTime = -1.0f; SetDestinationEnt(nullptr);
+    }
 
 private:
     // The time that the player initally touched the trigger

@@ -55,7 +55,7 @@ void CC_Mom_ZoneDelete(const CCommand &args)
             char szDelete[64];
             if (ZoneTypeToClass(g_MapzoneEdit.ShortNameToZoneType(args[1]), szDelete))
             {
-                CBaseEntity *pEnt = gEntList.FindEntityByClassname(NULL, szDelete);
+                CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, szDelete);
                 while (pEnt)
                 {
                     UTIL_Remove(pEnt);
@@ -88,7 +88,7 @@ void CC_Mom_ZoneSetLook(const CCommand &args)
         yaw = pPlayer->EyeAngles()[1];
     }
 
-    CBaseEntity *pEnt = gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_start");
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
     CTriggerTimerStart *pStart;
 
     while (pEnt)
@@ -140,14 +140,14 @@ void CC_Mom_ZoneMark(const CCommand &args)
 
             CBaseEntity *pEnt;
 
-            pEnt = gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_start");
+            pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
             while (pEnt)
             {
                 startnum++;
                 pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
             }
 
-            pEnt = gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stop");
+            pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
             while (pEnt)
             {
                 endnum++;
@@ -286,7 +286,7 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
             int higheststage = 1;
             CTriggerStage *pTempStage;
 
-            CBaseEntity *pTemp = gEntList.FindEntityByClassname(NULL, "trigger_momentum_timer_stage");
+            CBaseEntity *pTemp = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage");
             while (pTemp)
             {
                 pTempStage = static_cast<CTriggerStage *>(pTemp);

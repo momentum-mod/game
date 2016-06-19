@@ -460,8 +460,8 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
             // make origin adjustments. (origin in center, not at feet)
             tmp.z -= pOther->WorldAlignMins().z;
 
-            pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : NULL,
-                             m_bResetVelocity ? &vec3_origin : NULL);
+            pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : nullptr,
+                m_bResetVelocity ? &vec3_origin : nullptr);
             AfterTeleport();
         }
     }

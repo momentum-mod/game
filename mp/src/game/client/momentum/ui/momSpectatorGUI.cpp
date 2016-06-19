@@ -467,7 +467,7 @@ void CMOMSpectatorGUI::ApplySchemeSettings(IScheme *pScheme)
 	m_pBottomBarBlank->SetBgColor(GetBlackBarColor());
 	SetPaintBorderEnabled(false);
 
-	SetBorder(nullptr );
+	SetBorder(nullptr);
 
 }
 

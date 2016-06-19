@@ -253,7 +253,7 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
 
 Color* MomentumUtil::GetColorFromHex(const char* hexColor)
 {
-    long hex = strtol(hexColor, NULL, 16);
+    long hex = strtol(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
     if (length == 6)
     {

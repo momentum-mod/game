@@ -1228,7 +1228,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     //CMomentumPlayer *player = GetMomentumPlayer();
 
-    CBaseEntity *newGround = pm ? pm->m_pEnt : NULL;
+    CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
 
     CBaseEntity *oldGround = player->GetGroundEntity();
     Vector vecBaseVelocity = player->GetBaseVelocity();

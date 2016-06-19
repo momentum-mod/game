@@ -15,22 +15,22 @@ CMapzone::~CMapzone()
     if (m_pos)
     {
         delete m_pos;
-        m_pos = NULL;
+        m_pos = nullptr;
     }
     if (m_rot)
     {
         delete m_rot;
-        m_rot = NULL;
+        m_rot = nullptr;
     }
     if (m_scaleMins)
     {
         delete m_scaleMins;
-        m_scaleMins = NULL;
+        m_scaleMins = nullptr;
     }
     if (m_scaleMaxs)
     {
         delete m_scaleMaxs;
-        m_scaleMaxs = NULL;
+        m_scaleMaxs = nullptr;
     }
 }
 
@@ -142,10 +142,10 @@ void CMapzone::SpawnZone()
 static void saveZonFile(const char* szMapName)
 {
     KeyValues* zoneKV = new KeyValues(szMapName);
-    CBaseEntity* pEnt = gEntList.FindEntityByClassname(NULL, "trigger_momentum_*");
+    CBaseEntity* pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_*");
     while (pEnt)
     {
-        KeyValues* subKey = NULL;
+        KeyValues* subKey = nullptr;
         if (pEnt->ClassMatches("trigger_momentum_timer_start"))
         {
             CTriggerTimerStart* pTrigger = dynamic_cast<CTriggerTimerStart*>(pEnt);
@@ -286,7 +286,7 @@ bool CMapzoneData::MapZoneSpawned(CMapzone *mZone)
     if ( !ZoneTypeToClass( mZone->GetType(), name ) ) return false;
 
 
-    CBaseEntity *pEnt = gEntList.FindEntityByClassname(NULL, name);
+    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, name);
     while (pEnt)
     {
         if (pEnt->GetAbsOrigin() == *mZone->GetPosition()

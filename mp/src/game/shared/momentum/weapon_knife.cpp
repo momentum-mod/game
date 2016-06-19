@@ -44,7 +44,7 @@ Vector head_hull_maxs( 16, 16, 18 );
 			}
 		}
 		
-		return NULL;
+        return nullptr;
 	}
 	REGISTER_SEND_PROXY_NON_MODIFIED_POINTER( SendProxy_SendActiveLocalKnifeDataTable );
 #endif

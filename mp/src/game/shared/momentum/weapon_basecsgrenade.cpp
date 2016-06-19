@@ -82,7 +82,7 @@ bool CBaseCSGrenade::Deploy()
 
     if (pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)
     {
-        pPlayer->Weapon_Drop(this, NULL, NULL);
+        pPlayer->Weapon_Drop(this, nullptr, nullptr);
         UTIL_Remove(this);
         return false;
     }
@@ -153,7 +153,7 @@ void CBaseCSGrenade::SecondaryAttack()
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
-    if (pPlayer == NULL)
+    if (pPlayer == nullptr)
         return;
 
     //See if we're ducking
@@ -257,7 +257,7 @@ void CBaseCSGrenade::ItemPostFrame()
             // if we're officially out of grenades, ditch this weapon
             if (pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)
             {
-                pPlayer->Weapon_Drop(this, NULL, NULL);
+                pPlayer->Weapon_Drop(this, nullptr, nullptr);
                 UTIL_Remove(this);
             }
             else

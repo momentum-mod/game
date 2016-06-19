@@ -155,7 +155,7 @@ void CMomentumPlayer::FireBullet(
 
     bool bFirstHit = true;
 
-    CBasePlayer *lastPlayerHit = NULL;
+    CBasePlayer *lastPlayerHit = nullptr;
 
     //MDLCACHE_CRITICAL_SECTION();
     while (fCurrentDamage > 0)
@@ -322,9 +322,9 @@ void CMomentumPlayer::FireBullet(
 
         // find exact penetration exit
         trace_t exitTr;
-        UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, NULL, &exitTr);
+        UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, nullptr, &exitTr);
 
-        if (exitTr.m_pEnt != tr.m_pEnt && exitTr.m_pEnt != NULL)
+        if (exitTr.m_pEnt != tr.m_pEnt && exitTr.m_pEnt != nullptr)
         {
             // something was blocking, trace again
             UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, exitTr.m_pEnt, COLLISION_GROUP_NONE, &exitTr);
