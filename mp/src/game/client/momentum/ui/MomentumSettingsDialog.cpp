@@ -1,55 +1,51 @@
-//The following include files are necessary to allow your  the panel .cpp to compile.
 #include "cbase.h"
+
 #include "IMomentumSettingsPanel.h"
-using namespace vgui;
 #include <vgui/IVGui.h>
-#include <vgui_controls/Frame.h>
 #include <vgui_controls/Button.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/Frame.h>
 #include <vgui_controls/URLLabel.h>
 #include <vgui_controls/pch_vgui_controls.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
 
 #include "momentum/mom_shareddefs.h"
 #include "tier0/memdbgon.h"
 
+using namespace vgui;
+
 class CMomentumSettingsPanel : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CMomentumSettingsPanel, vgui::Frame);
-    //CMomentumSettingsPanel : This Class / vgui::Frame : BaseClass
+    // CMomentumSettingsPanel : This Class / vgui::Frame : BaseClass
 
-    CMomentumSettingsPanel(VPANEL parent); 	// Constructor
-    ~CMomentumSettingsPanel() {};				// Destructor
+    CMomentumSettingsPanel(VPANEL parent); // Constructor
+    ~CMomentumSettingsPanel(){};           // Destructor
     void Activate() override;
 
-protected:
-    //VGUI overrides:
+  protected:
+    // VGUI overrides:
     void OnTick() override;
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
     MESSAGE_FUNC_PTR(OnCheckboxChecked, "CheckButtonChecked", panel);
-    MESSAGE_FUNC(OnApplyChanges, "ApplyChanges")
-    {
-        m_pApplyButton->SetEnabled(false);
-    }
+    MESSAGE_FUNC(OnApplyChanges, "ApplyChanges") { m_pApplyButton->SetEnabled(false); }
 
-private:
+  private:
     void LoadSettings();
-    //Other used VGUI control Elements:
+    // Other used VGUI control Elements:
     ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize;
 
-    CvarToggleCheckButton<ConVarRef> *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel, *m_pSpeedometerColorize,
-        *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow,
-        *m_pShowVersion;
+    CvarToggleCheckButton<ConVarRef> *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel,
+        *m_pSpeedometerColorize, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion;
 
     Button *m_pApplyButton;
-
 };
 
 // Constuctor: Initializes the Panel
-CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
-    : BaseClass(nullptr, "CMomentumSettingsPanel")
+CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent) : BaseClass(nullptr, "CMomentumSettingsPanel")
 {
     SetParent(parent);
 
+    SetProportional(true);
     LoadControlSettings("resource/ui/MomentumSettingsPanel.res");
 
     SetPaintBackgroundType(1);
@@ -59,7 +55,6 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
 
     SetMinimumSize(500, 500);
 
-    SetProportional(true);
     SetTitleBarVisible(true);
     SetMinimizeButtonVisible(false);
     SetMaximizeButtonVisible(false);
@@ -67,47 +62,51 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     SetSizeable(false);
     SetMoveable(true);
     SetVisible(false);
-    
-    m_pSpeedometerUnits = new ComboBox(this, "SpeedoUnits", 3, false);
+
+    m_pSpeedometerUnits = FindControl<ComboBox>("SpeedoUnits");
+    m_pSpeedometerUnits->SetNumberOfEditLines(3);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_UPS", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_KPH", nullptr);
     m_pSpeedometerUnits->AddItem("#MOM_Settings_Speedometer_Units_MPH", nullptr);
     m_pSpeedometerUnits->AddActionSignalTarget(this);
 
-    m_pSyncType = new ComboBox(this, "SyncType", 2, false);
+    m_pSyncType = FindControl<ComboBox>("SyncType");
+    m_pSyncType->SetNumberOfEditLines(2);
     m_pSyncType->AddItem("#MOM_Settings_Sync_Type_Sync1", nullptr);
     m_pSyncType->AddItem("#MOM_Settings_Sync_Type_Sync2", nullptr);
     m_pSyncType->AddActionSignalTarget(this);
 
-    m_pSyncColorize = new ComboBox(this, "SyncColorize", 3, false);
+    m_pSyncColorize = FindControl<ComboBox>("SyncColorize");
+    m_pSyncColorize->SetNumberOfEditLines(3);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_None", nullptr);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_1", nullptr);
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
     m_pSyncColorize->AddActionSignalTarget(this);
 
-    m_pSpeedometerShow = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShow", "#MOM_Settings_Speedometer_Show", "mom_speedometer", false);
+    m_pSpeedometerShow = FindControl<CvarToggleCheckButton<ConVarRef>>("SpeedoShow");
     m_pSpeedometerShow->AddActionSignalTarget(this);
-    m_pSpeedometerShowLastJump = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowJump", "#MOM_Settings_Speedometer_Show_Jump", 
-        "mom_speedometer_showlastjumpvel", false);
+
+    m_pSpeedometerShowLastJump = FindControl<CvarToggleCheckButton<ConVarRef>>("SpeedoShowJump");
     m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
-    m_pSpeedometerShowVerticalVel = new CvarToggleCheckButton<ConVarRef>(this, "ShowSpeedoHvel", "#MOM_Settings_Speedometer_Show_Hvel",
-        "mom_speedometer_hvel", false);
+
+    m_pSpeedometerShowVerticalVel = FindControl<CvarToggleCheckButton<ConVarRef>>("ShowSpeedoHvel");
     m_pSpeedometerShowVerticalVel->AddActionSignalTarget(this);
-    m_pSpeedometerColorize = new CvarToggleCheckButton<ConVarRef>(this, "SpeedoShowColor", "#MOM_Settings_Speedometer_Show_Color", 
-        "mom_speedometer_colorize", false);
+
+    m_pSpeedometerColorize = FindControl<CvarToggleCheckButton<ConVarRef>>("SpeedoShowColor");
     m_pSpeedometerColorize->AddActionSignalTarget(this);
 
-    m_pSyncShow = new CvarToggleCheckButton<ConVarRef>(this, "SyncShow", "#MOM_Settings_Sync_Show", "mom_strafesync_draw", false);
+    m_pSyncShow = FindControl<CvarToggleCheckButton<ConVarRef>>("SyncShow");
     m_pSyncShow->AddActionSignalTarget(this);
-    m_pSyncShowBar = new CvarToggleCheckButton<ConVarRef>(this, "SyncShowBar", "#MOM_Settings_Sync_Show_Bar", "mom_strafesync_drawbar", false);
+
+    m_pSyncShowBar = FindControl<CvarToggleCheckButton<ConVarRef>>("SyncShowBar");
     m_pSyncShowBar->AddActionSignalTarget(this);
 
-    m_pButtonsShow = new CvarToggleCheckButton<ConVarRef>(this, "ButtonsShow", "#MOM_Settings_Buttons_Show", "mom_showkeypresses", false);
+    m_pButtonsShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ButtonsShow");
     m_pButtonsShow->AddActionSignalTarget(this);
-    //MOM_TODO: have one for hud_versionwarn? 
+    // MOM_TODO: have one for hud_versionwarn?
 
-    m_pApplyButton = new Button(this, "ApplyButton", "#GameUI_Apply", this);
-    m_pApplyButton->SetCommand("ApplyChanges");
+    m_pApplyButton = FindControl<Button>("ApplyButton");
+    m_pApplyButton->AddActionSignalTarget(this);
 
     m_pApplyButton->AddActionSignalTarget(m_pSpeedometerShow);
     m_pApplyButton->AddActionSignalTarget(m_pSpeedometerShowLastJump);
@@ -116,33 +115,30 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     m_pApplyButton->AddActionSignalTarget(m_pSyncShow);
     m_pApplyButton->AddActionSignalTarget(m_pSyncShowBar);
     m_pApplyButton->AddActionSignalTarget(m_pButtonsShow);
-    
-    //SetScheme("ClientScheme");
-    //SetScheme(vgui::scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme"));
-    
+
+    SetScheme("SourceScheme");
+    //Okay so this is gross but ComboBoxes only use the "Default" font for the text inside them. IDK why.
+    //Maybe in the future, we can update the scheme to not have grossly large default fonts (in ClientScheme)
+    HFont comboBoxFont = scheme()->GetIScheme(scheme()->GetScheme("SourceScheme"))->GetFont("DefaultVerySmall", true);
+    m_pSyncType->SetFont(comboBoxFont);
+    m_pSyncColorize->SetFont(comboBoxFont);
+    m_pSpeedometerUnits->SetFont(comboBoxFont);
+
     LoadSettings();
 
     ivgui()->AddTickSignal(GetVPanel());
 }
 
-//Class: CMyPanelInterface Class. Used for construction.
+// Class: CMyPanelInterface Class. Used for construction.
 class CMomentumSettingsPanelInterface : public MomentumSettingsPanel
 {
-private:
+  private:
     CMomentumSettingsPanel *settings_panel;
-public:
-    CMomentumSettingsPanelInterface()
-    {
-        settings_panel = nullptr;
-    }
-    ~CMomentumSettingsPanelInterface()
-    {
-        settings_panel = nullptr;
-    }
-    void Create(vgui::VPANEL parent) override
-    {
-        settings_panel = new CMomentumSettingsPanel(parent);
-    }
+
+  public:
+    CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
+    ~CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
+    void Create(vgui::VPANEL parent) override { settings_panel = new CMomentumSettingsPanel(parent); }
     void Destroy() override
     {
         if (settings_panel)
@@ -167,21 +163,21 @@ public:
     }
 };
 static CMomentumSettingsPanelInterface g_SettingsPanel;
-MomentumSettingsPanel* momentum_settings = static_cast<MomentumSettingsPanel*>(&g_SettingsPanel);
+MomentumSettingsPanel *momentum_settings = static_cast<MomentumSettingsPanel *>(&g_SettingsPanel);
 
-CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE
-    | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN)
+CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n",
+              FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN)
 {
     momentum_settings->Activate();
 }
 
-//Combobox changed a value
-void CMomentumSettingsPanel::OnTextChanged(vgui::Panel* panel)
+// Combobox changed a value
+void CMomentumSettingsPanel::OnTextChanged(vgui::Panel *panel)
 {
     ConVarRef units("mom_speedometer_units"), sync_type("mom_strafesync_type"), sync_color("mom_strafesync_colorize");
-    
+
     units.SetValue(m_pSpeedometerUnits->GetActiveItem() + 1);
-    sync_type.SetValue(m_pSyncType->GetActiveItem() + 1);//Sync type needs +1 added to it before setting convar!
+    sync_type.SetValue(m_pSyncType->GetActiveItem() + 1); // Sync type needs +1 added to it before setting convar!
     sync_color.SetValue(m_pSyncColorize->GetActiveItem());
 }
 
@@ -205,7 +201,7 @@ void CMomentumSettingsPanel::Activate()
     BaseClass::Activate();
 }
 
-void CMomentumSettingsPanel::OnCheckboxChecked(vgui::Panel* panel)
+void CMomentumSettingsPanel::OnCheckboxChecked(vgui::Panel *panel)
 {
     m_pApplyButton->SetEnabled(true);
 
