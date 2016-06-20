@@ -219,6 +219,8 @@ private:
     void LoadLocalTimes(KeyValues *kv);
     void LoadOnlineTimes();
     void ConvertLocalTimes(KeyValues*);
+    //Place m_vOnlineTimes into m_pOnlineLeaderboards
+    void OnlineTimesVectorToLeaderboards();
 };
 
 

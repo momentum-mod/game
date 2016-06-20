@@ -694,12 +694,29 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                             }
                             else if (!Q_strcmp(j->key, "steamid"))
                             {
-                                kv->SetUint64("steamid", j->value.toNumber());
-                                // steamapicontext->SteamFriends()->RequestUserInfo( ID, true) is what we would need here, but for now..
-                                // 
-                                if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(kv->GetUint64("steamid", j->value.toNumber())), true))
+                                uint64 steamid = j->value.toNumber();
+
+                                kv->SetUint64("steamid", steamid);
+                                // MOM_TODO: Localize this string
+
+                                if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamid), true))
                                 {
-                                    kv->SetString("personaname", "UNKNOWN - API ERROR!");
+                                    // GetFriendPersonaName is not what we want, probably
+                                    const char * pname = steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamid));
+                                    if (Q_strcmp(pname, "") != 0)
+                                    {
+                                        kv->SetString("personaname", pname);
+                                    }
+                                    else
+                                    {
+                                        char safename[MAX_PLAYER_NAME_LENGTH];
+                                        Q_snprintf(safename, MAX_PLAYER_NAME_LENGTH, "SID: %llu", steamid);
+                                        kv->SetString("personaname", safename);
+                                    }
+                                }
+                                else
+                                {
+                                    kv->SetString("personaname", "Loading player name...");
                                 }
                             }
                             else if (!Q_strcmp(j->key, "rank"))
@@ -742,11 +759,15 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
 
 void CClientTimesDisplay::RequestUserInformation(PersonaStateChange_t *pParam)
 {
-    if (pParam->m_nChangeFlags | k_EPersonaChangeName || pParam->m_nChangeFlags | k_EPersonaChangeAvatar)
+    // This function gets called every time a friend updates something, not just the poeple you called it upon. Wtf
+
+    // GetFriendPersonaName is not what we want, probably
+
+    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pParam->m_ulSteamID));
+    if (Q_strcmp(pName, "") != 0) //We don't want to set an empty name
     {
-        const char *pName = steamapicontext->SteamFriends()->GetPlayerNickname(CSteamID(pParam->m_ulSteamID));
         m_mSIdNames.InsertOrReplace(pParam->m_ulSteamID, pName);
-        FillScoreBoard(false);
+        OnlineTimesVectorToLeaderboards();
     }
 }
 
@@ -952,29 +973,50 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
         }
 
         // Online works slightly different, we use the vector content, not the ones from m_kvPlayerData (because online times are not stored there)
-        if (m_vOnlineTimes.Count() > 0)
-        {
-            FOR_EACH_VEC(m_vOnlineTimes, entry)
-            {
-                // We set the current personaname before anything...
 
-                m_vOnlineTimes.Element(entry).m_kv->SetString("personaname", m_mSIdNames.Element(m_mSIdNames.Find(m_vOnlineTimes.Element(entry).steamid)));
-
-                int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry).id);
-                if (itemID == -1)
-                {
-                    m_pOnlineLeaderboards->AddItem(m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
-                }
-                else
-                {
-                    m_pOnlineLeaderboards->ModifyItem(itemID, m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
-                }
-            }
-        }
+        // Place m_vOnlineTimes into m_pOnlineLeaderboards
+        // This first pass probably does not have a name set yet
+        OnlineTimesVectorToLeaderboards();
 
         m_pLeaderboards->SetVisible(true);
     }
     m_kvPlayerData->deleteThis();
+}
+
+void CClientTimesDisplay::OnlineTimesVectorToLeaderboards()
+{
+    if (m_vOnlineTimes.Count() > 0 && m_pOnlineLeaderboards)
+    {
+        FOR_EACH_VEC(m_vOnlineTimes, entry)
+        {
+            // We set the current personaname before anything...
+            // Find method is not being nice, so we craft our own
+            //int mId = m_mSIdNames.Find(m_vOnlineTimes.Element(entry).steamid);
+            FOR_EACH_MAP_FAST(m_mSIdNames, mIter)
+            {
+                if (m_mSIdNames.Key(mIter) == m_vOnlineTimes.Element(entry).steamid)
+                {
+                    const char * personaname = m_mSIdNames.Element(mIter);
+                    if (Q_strcmp(personaname, "") != 0)
+                    {
+                        m_vOnlineTimes.Element(entry).m_kv->SetString("personaname", personaname);
+                    }
+                    break;
+                }
+            }
+
+            int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry).id);
+            if (itemID == -1)
+            {
+                m_pOnlineLeaderboards->AddItem(m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
+            }
+            else
+            {
+                m_pOnlineLeaderboards->ModifyItem(itemID, m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
+            }
+
+        }
+    }
 }
 
 //-----------------------------------------------------------------------------
