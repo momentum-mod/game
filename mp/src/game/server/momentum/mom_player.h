@@ -163,6 +163,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // Start zone thinkfunc
     int m_nTicksInAir;
 
-    float m_flTweenVelValue = 1.0f;
+    float m_flTweenVelValue;
 };
 #endif // MOMPLAYER_H

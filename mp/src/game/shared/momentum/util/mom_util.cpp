@@ -7,6 +7,17 @@
 
 extern IFileSystem *filesystem;
 
+inline void CleanupRequest(HTTPRequestCompleted_t* pCallback, uint8* pData)
+{
+    if (pData)
+    {
+        delete[] pData;
+    }
+    pData = nullptr;
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+}
+
+
 void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     if (bIOFailure)
@@ -32,7 +43,7 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     DevLog("Successfully written file\n");
 
     // Free resources
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    CleanupRequest(pCallback, pData);
 }
 
 void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -91,7 +102,7 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     }
     // Last but not least, free resources
     alloc.deallocate();
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    CleanupRequest(pCallback, pData);
 }
 
 void MomentumUtil::PostTime(const char *szURL)
@@ -138,10 +149,39 @@ void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumU
     }
 }
 
+
+#ifdef CLIENT_DLL
 void MomentumUtil::GetRemoteRepoModVersion()
 {
     CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
                          &MomentumUtil::VersionCallback);
+}
+
+void MomentumUtil::GetRemoteChangelog()
+{
+    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog, 
+        &MomentumUtil::ChangelogCallback);
+}
+
+void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
+{
+    if (bIOFailure)
+        return;
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    if (size == 0)
+    {
+        Warning("MomentumUtil::ChangelogCallback: 0 body size!\n");
+        return;
+    }
+
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+
+    versionwarnpanel->SetChangelog(pDataPtr);
+
+    CleanupRequest(pCallback, pData);
 }
 
 void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -164,20 +204,20 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
     char versionValue[15];
     Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
-    if (Q_atoi(repoVersion.Element(0)) > Q_atoi(storedVersion.Element(0)))
+    for (int i = 0; i < 3; i++)
     {
-        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
+        if (Q_atoi(repoVersion.Element(i)) > Q_atoi(storedVersion.Element(i)))
+        {
+            versionwarnpanel->SetVersion(versionValue);
+            GetRemoteChangelog();
+            versionwarnpanel->Activate();
+            break;
+        }
     }
-    else if (Q_atoi(repoVersion.Element(1)) > Q_atoi(storedVersion.Element(1)))
-    {
-        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
-    }
-    else if (Q_atoi(repoVersion.Element(2)) > Q_atoi(storedVersion.Element(2)))
-    {
-        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
-    }
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+
+    CleanupRequest(pCallback, pData);
 }
+#endif
 
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName) const
 {

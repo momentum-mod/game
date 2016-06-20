@@ -34,7 +34,7 @@ PRECACHE_REGISTER(player);
 CMomentumPlayer::CMomentumPlayer() : 
       m_duckUntilOnGround(false), m_flStamina(0), m_flTicksOnGround(0), m_flLastVelocity(0), m_flLastSyncVelocity(0),
       m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
-      m_nTicksInAir(0)
+      m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -69,6 +69,13 @@ void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
         //Hide the mapfinished panel and reset our speed to normal
         m_RunData.m_bMapFinished = false;
         SetLaggedMovementValue(1.0f);
+
+        //Fix for the replay system not being able to listen to events
+        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay() &&
+            !g_ReplaySystem->GetReplayManager()->PlayingBack())
+        {
+            g_ReplaySystem->GetReplayManager()->UnloadPlayback();
+        }
     }
 }
 
@@ -524,18 +531,16 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
-    if (m_RunData.m_bMapFinished) //slowdown when map is finished
-    {
+    //slowdown when map is finished
+    if (m_RunData.m_bMapFinished)
         //decrease our lagged movement value by 10% every tick
-        if (!mom_UTIL->FloatEquals(m_flTweenVelValue, 0.0f))
-            m_flTweenVelValue += (0.01f - m_flTweenVelValue) * 0.1f;
-    }
+        m_flTweenVelValue *= 0.9f;
     else
         m_flTweenVelValue = 1.0f;//Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
 
-    SetNextThink(gpGlobals->curtime + 0.01f, "TWEEN");
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "TWEEN");
 }
 
 CMomentumReplayGhostEntity* CMomentumPlayer::GetReplayEnt() const

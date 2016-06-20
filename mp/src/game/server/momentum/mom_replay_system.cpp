@@ -92,17 +92,6 @@ void CMomentumReplaySystem::TrimReplay()
     }
 }
 
-
-void CMomentumReplaySystem::FireGameEvent(IGameEvent* pEvent)
-{
-    if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
-    {
-        //If we loaded a replay, and it's not already playing, we want to unload it here
-        if (m_pReplayManager->GetPlaybackReplay() && !m_pReplayManager->PlayingBack())
-            m_pReplayManager->UnloadPlayback();
-    }
-}
-
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
     ++m_iTickCount; // increment recording tick

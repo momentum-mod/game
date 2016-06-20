@@ -11,8 +11,6 @@
 #include "mapzones_edit.h"
 
 namespace Momentum {
-
-void OnServerDLLInit();
 void GameInit();
 } // namespace Momentum
 
@@ -22,7 +20,7 @@ public:
     CMOMServerEvents(const char *pName) : CAutoGameSystemPerFrame(pName), zones(nullptr)
     {
     }
-
+    void PostInit() override;
     void LevelInitPostEntity() override;
     void LevelShutdownPreEntity() override;
     void FrameUpdatePreEntityThink() override;

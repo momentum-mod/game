@@ -160,17 +160,19 @@ void CMomReplayManager::StopPlayback()
     UnloadPlayback();
 }
 
-void CMomReplayManager::UnloadPlayback()
+void CMomReplayManager::UnloadPlayback(bool shutdown)
 {
     SetPlayingBack(false);
 
     if (m_pPlaybackReplay)
     {
-        if (m_pPlaybackReplay->GetRunEntity())
+        if (m_pPlaybackReplay->GetRunEntity() && !shutdown)
             m_pPlaybackReplay->GetRunEntity()->EndRun();
 
         delete m_pPlaybackReplay;
     }
 
     m_pPlaybackReplay = nullptr;
+
+    DevLog("Successfully unloaded playback, shutdown: %i\n", shutdown);
 }

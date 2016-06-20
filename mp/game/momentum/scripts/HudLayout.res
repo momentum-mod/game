@@ -79,9 +79,9 @@
          //You can override "MenuItemColor" etc here (I think)
     }
     // Version warning
-    CHudVersionWarn
+    CHudVersionInfo
     {
-        "fieldName"     "CHudVersionWarn"
+        "fieldName"     "CHudVersionInfo"
         "xpos"          "640"
         "ypos"          "460"
         "visible"       "1"
