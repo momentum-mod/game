@@ -269,7 +269,7 @@ void CMomentumPlayer::CheckForBhop()
             m_iSuccessiveBhops++;
             if (g_Timer->IsRunning())
             {
-                int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
+                int currentZone = m_RunData.m_iCurrentZone;
                 m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
                 m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
             }
