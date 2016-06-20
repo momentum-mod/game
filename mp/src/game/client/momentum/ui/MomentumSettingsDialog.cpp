@@ -17,7 +17,7 @@ class CMomentumSettingsPanel : public vgui::Frame
     DECLARE_CLASS_SIMPLE(CMomentumSettingsPanel, vgui::Frame);
     //CMomentumSettingsPanel : This Class / vgui::Frame : BaseClass
 
-    CMomentumSettingsPanel(vgui::VPANEL parent); 	// Constructor
+    CMomentumSettingsPanel(VPANEL parent); 	// Constructor
     ~CMomentumSettingsPanel() {};				// Destructor
     void Activate() override;
 
@@ -49,10 +49,15 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     : BaseClass(nullptr, "CMomentumSettingsPanel")
 {
     SetParent(parent);
+
+    LoadControlSettings("resource/ui/MomentumSettingsPanel.res");
+
     SetPaintBackgroundType(1);
     SetRoundedCorners(PANEL_ROUND_CORNER_ALL);
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
+
+    SetMinimumSize(500, 500);
 
     SetProportional(true);
     SetTitleBarVisible(true);
@@ -112,10 +117,9 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(vgui::VPANEL parent)
     m_pApplyButton->AddActionSignalTarget(m_pSyncShowBar);
     m_pApplyButton->AddActionSignalTarget(m_pButtonsShow);
     
-    SetScheme("ClientScheme");
+    //SetScheme("ClientScheme");
     //SetScheme(vgui::scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme"));
-
-    LoadControlSettings("resource/ui/MomentumSettingsPanel.res");
+    
     LoadSettings();
 
     ivgui()->AddTickSignal(GetVPanel());
@@ -135,11 +139,11 @@ public:
     {
         settings_panel = nullptr;
     }
-    void Create(vgui::VPANEL parent)
+    void Create(vgui::VPANEL parent) override
     {
         settings_panel = new CMomentumSettingsPanel(parent);
     }
-    void Destroy()
+    void Destroy() override
     {
         if (settings_panel)
         {
@@ -147,14 +151,14 @@ public:
             delete settings_panel;
         }
     }
-    void Activate(void)
+    void Activate(void) override
     {
         if (settings_panel)
         {
             settings_panel->Activate();
         }
     }
-    void Close()
+    void Close() override
     {
         if (settings_panel)
         {
@@ -163,12 +167,10 @@ public:
     }
 };
 static CMomentumSettingsPanelInterface g_SettingsPanel;
-MomentumSettingsPanel* momentum_settings = (MomentumSettingsPanel*) &g_SettingsPanel;
+MomentumSettingsPanel* momentum_settings = static_cast<MomentumSettingsPanel*>(&g_SettingsPanel);
 
-ConVar cl_showsettingspanel("cl_showsettingspanel", "0", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE 
-    | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN, "Sets the state of settings panel");
-
-CON_COMMAND(mom_settings_show, "Shows the settings")
+CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE
+    | FCVAR_SERVER_CAN_EXECUTE | FCVAR_HIDDEN)
 {
     momentum_settings->Activate();
 }
@@ -194,7 +196,7 @@ void CMomentumSettingsPanel::LoadSettings()
 void CMomentumSettingsPanel::OnTick()
 {
     BaseClass::OnTick();
-    vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
+    GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
 
 void CMomentumSettingsPanel::Activate()
