@@ -236,6 +236,68 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&p
     return false;
 }
 
+bool CMomentumPlayer::ClientCommand(const CCommand& args)
+{
+    auto cmd = args[0];
+
+    //We're overriding this to prevent the spec_mode to change to ROAMING,
+    // remove this if we want to allow the player to fly around their ghost as it goes
+    // (and change the ghost entity code to match as well)
+    if (!stricmp(cmd, "spec_mode")) // new observer mode
+    {
+        int mode;
+
+        if (GetObserverMode() == OBS_MODE_FREEZECAM)
+        {
+            AttemptToExitFreezeCam();
+            return true;
+        }
+
+        // check for parameters.
+        if (args.ArgC() >= 2)
+        {
+            mode = atoi(args[1]);
+
+            if (mode < OBS_MODE_IN_EYE || mode > OBS_MODE_CHASE)
+                mode = OBS_MODE_IN_EYE;
+        }
+        else
+        {
+            // switch to next spec mode if no parameter given
+            mode = GetObserverMode() + 1;
+
+            if (mode > OBS_MODE_CHASE)
+            {
+                mode = OBS_MODE_IN_EYE;
+            }
+            else if (mode < OBS_MODE_IN_EYE)
+            {
+                mode = OBS_MODE_CHASE;
+            }
+        }
+
+        // don't allow input while player or death cam animation
+        if (GetObserverMode() > OBS_MODE_DEATHCAM)
+        {
+            // set new spectator mode, don't allow OBS_MODE_NONE
+            if (!SetObserverMode(mode))
+                ClientPrint(this, HUD_PRINTCONSOLE, "#Spectator_Mode_Unkown");
+            else
+                engine->ClientCommand(edict(), "cl_spec_mode %d", mode);
+        }
+        else
+        {
+            // remember spectator mode for later use
+            m_iObserverLastMode = mode;
+            engine->ClientCommand(edict(), "cl_spec_mode %d", mode);
+        }
+
+        return true;
+    }
+
+    return BaseClass::ClientCommand(args);
+}
+
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
 {
     BaseClass::Touch(pOther);

@@ -1,31 +1,16 @@
-0.4.0
-Replay System
-    Automatically records replays for every run
-    Small, lightweight file (28 bytes / tick)
-    Truncates the recording to the first two seconds before the run started to show prestrafe only
-    Supports all stats that were displayed during the real run
-    Allows playback of ghosts with options for 15 different display models and customizable colors (see mom_replay_* commands for more details)
-Comparisons Panel
-    Compare your current run against your PB
-    Compare against any run stats; all, some or none
-Precise Timer
-    Times accurate to 6 decimal places (however, we currently only display 3 decimal places)
-    The only timer for surf or bhop that is more accurate than the interval per tick
-    Read about how it works on our devblog
-Map Finished Screen
-    Mouse controls for watching the replay of the run you just finished
-    Pages for stats in every zone, not just overall
-    Shows both XY and XYZ velocity (controlled by mom_speedometer_hvel currently)
-Other changes
-    Added Source Shader Editor
-    Added both XY and XYZ velocities to run stats
-    Player's velocity is now slowed down when they finish a map to allow them to see the map finished screen
-    Crosshair is off by default
-    +left and +right are now bindable from Options->Keyboard
-    JUMP indicator in key press display no longer flashes when the player uses the scroll wheel to jump
-    Credits can now go faster if +attack is pressed
-    DIsabled demo interpolation, which fixes demo stuttering bug, but makes demos lag. Demos will work properly if you turn off client interpolation (cl_interp 0) but this breaks other things
-    point_servercommand entities are disabled by default
-    sv_gravity is development-only (sorry)
-    Player FOV setting now works properly through fov_desired
-    Changed mom_generate_zon_file to mom_zone_generate
+0.4.5
+Changelog Introduced
+    The version update panel now includes a changelog for the newer version.
+Spectator UI Updated
+    Now includes toggled mouse control upon pressing your +duck bind
+    Added a red X that stops the replay and respawns the player (similar to MapFinished)
+Bugfixes
+    Fixed scroll detection
+        Scrolls of all force are detected now, player should jump properly (sorry about that, scrollers!)
+    Replays
+        Fixed crash with replays not unloading properly
+        Fixed potential crash with replays ending
+        Fixed velocity setting to a value that was too high (due to teleports)
+        Fixed potential "roaming" spec mode if replay was finished
+    Ending player movement actually approaches 0 now
+        The player will actually stop inside the end trigger
