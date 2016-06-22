@@ -71,8 +71,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
         SetLaggedMovementValue(1.0f);
 
         //Fix for the replay system not being able to listen to events
-        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay() &&
-            !g_ReplaySystem->GetReplayManager()->PlayingBack())
+        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
         {
             g_ReplaySystem->GetReplayManager()->UnloadPlayback();
         }

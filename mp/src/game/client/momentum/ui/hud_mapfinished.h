@@ -38,6 +38,7 @@ public:
     void OnThink() override;
     void Init() override;
     void Reset() override;
+    void SetVisible(bool) override;
     void FireGameEvent(IGameEvent*) override;
 
     void OnMousePressed(MouseCode code) override;

@@ -227,6 +227,14 @@ void CHudMapFinishedDialog::Reset()
     strcpy(m_pszEndRunTime, "00:00:00.000"); 
 }
 
+void CHudMapFinishedDialog::SetVisible(bool b)
+{
+    BaseClass::SetVisible(b);
+    //We reset the page to 0 when this this panel is shown because Reset() is not always called.
+    if (b) 
+        m_iCurrentPage = 0;
+}
+
 #define MAKE_UNI_NUM(name, size, number, format) \
     wchar_t name[size]; \
     V_snwprintf(name, size, format, number)
