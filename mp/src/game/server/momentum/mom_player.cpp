@@ -34,7 +34,7 @@ PRECACHE_REGISTER(player);
 CMomentumPlayer::CMomentumPlayer() : 
       m_duckUntilOnGround(false), m_flStamina(0), m_flTicksOnGround(0), m_flLastVelocity(0), m_flLastSyncVelocity(0),
       m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
-      m_nTicksInAir(0)
+      m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -69,6 +69,12 @@ void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
         //Hide the mapfinished panel and reset our speed to normal
         m_RunData.m_bMapFinished = false;
         SetLaggedMovementValue(1.0f);
+
+        //Fix for the replay system not being able to listen to events
+        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+        {
+            g_ReplaySystem->GetReplayManager()->UnloadPlayback();
+        }
     }
 }
 
@@ -229,6 +235,68 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&p
     return false;
 }
 
+bool CMomentumPlayer::ClientCommand(const CCommand& args)
+{
+    auto cmd = args[0];
+
+    //We're overriding this to prevent the spec_mode to change to ROAMING,
+    // remove this if we want to allow the player to fly around their ghost as it goes
+    // (and change the ghost entity code to match as well)
+    if (!stricmp(cmd, "spec_mode")) // new observer mode
+    {
+        int mode;
+
+        if (GetObserverMode() == OBS_MODE_FREEZECAM)
+        {
+            AttemptToExitFreezeCam();
+            return true;
+        }
+
+        // check for parameters.
+        if (args.ArgC() >= 2)
+        {
+            mode = atoi(args[1]);
+
+            if (mode < OBS_MODE_IN_EYE || mode > OBS_MODE_CHASE)
+                mode = OBS_MODE_IN_EYE;
+        }
+        else
+        {
+            // switch to next spec mode if no parameter given
+            mode = GetObserverMode() + 1;
+
+            if (mode > OBS_MODE_CHASE)
+            {
+                mode = OBS_MODE_IN_EYE;
+            }
+            else if (mode < OBS_MODE_IN_EYE)
+            {
+                mode = OBS_MODE_CHASE;
+            }
+        }
+
+        // don't allow input while player or death cam animation
+        if (GetObserverMode() > OBS_MODE_DEATHCAM)
+        {
+            // set new spectator mode, don't allow OBS_MODE_NONE
+            if (!SetObserverMode(mode))
+                ClientPrint(this, HUD_PRINTCONSOLE, "#Spectator_Mode_Unkown");
+            else
+                engine->ClientCommand(edict(), "cl_spec_mode %d", mode);
+        }
+        else
+        {
+            // remember spectator mode for later use
+            m_iObserverLastMode = mode;
+            engine->ClientCommand(edict(), "cl_spec_mode %d", mode);
+        }
+
+        return true;
+    }
+
+    return BaseClass::ClientCommand(args);
+}
+
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
 {
     BaseClass::Touch(pOther);
@@ -262,7 +330,7 @@ void CMomentumPlayer::CheckForBhop()
             m_iSuccessiveBhops++;
             if (g_Timer->IsRunning())
             {
-                int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
+                int currentZone = m_RunData.m_iCurrentZone;
                 m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
                 m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
             }
@@ -524,18 +592,16 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
-    if (m_RunData.m_bMapFinished) //slowdown when map is finished
-    {
+    //slowdown when map is finished
+    if (m_RunData.m_bMapFinished)
         //decrease our lagged movement value by 10% every tick
-        if (!mom_UTIL->FloatEquals(m_flTweenVelValue, 0.0f))
-            m_flTweenVelValue += (0.01f - m_flTweenVelValue) * 0.1f;
-    }
+        m_flTweenVelValue *= 0.9f;
     else
         m_flTweenVelValue = 1.0f;//Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
 
-    SetNextThink(gpGlobals->curtime + 0.01f, "TWEEN");
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "TWEEN");
 }
 
 CMomentumReplayGhostEntity* CMomentumPlayer::GetReplayEnt() const

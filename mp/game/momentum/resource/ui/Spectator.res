@@ -43,7 +43,7 @@
 	{
 		"ControlName"		"Label"
 		"fieldName"			"playerlabel"
-		"xpos"				"r86"
+		"xpos"				"10"
 		"ypos"				"20"
 		"wide"				"81"
 		"tall"				"15"
@@ -60,7 +60,7 @@
 	{
 		"ControlName"		"Label"
 		"fieldName"			"timelabel"
-		"xpos"				"r86"
+		"xpos"				"10"
 		"ypos"				"28"
 		"wide"				"81"
 		"tall"				"15"
@@ -92,7 +92,7 @@
 	{
 		"ControlName"		"Label"
 		"fieldName"			"extrainfo"
-		"xpos"				"r86"
+		"xpos"				"10"
 		"ypos"				"12"
 		"wide"				"81"
 		"tall"				"15"
@@ -105,6 +105,7 @@
 		"dulltext"			"0"
 		"brighttext"		"0"
 	}
+    //Not used?
 	"titlelabel"
 	{
 		"ControlName"		"Label"
@@ -123,4 +124,20 @@
 		"dulltext"			"0"
 		"brighttext"		"0"
 	}
+    
+    "Close_Panel"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "Close_Panel"
+        "xpos"          "r36"//Give a 4 pixel padding
+        "ypos"          "4"
+        "wide"          "32"
+        "tall"          "32"
+        "autoResize"    "0"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "scaleImage"    "1"
+        "image"         "close_button"
+    }
 }

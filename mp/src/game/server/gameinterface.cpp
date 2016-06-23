@@ -747,9 +747,6 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	gamestatsuploader->InitConnection();
 #endif
 
-    //Momentum
-    Momentum::OnServerDLLInit();
-
 	return true;
 }
 

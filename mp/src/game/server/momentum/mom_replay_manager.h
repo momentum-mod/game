@@ -35,7 +35,7 @@ public:
     bool StoreReplay(const char* path, const char* pathID = "MOD");
     CMomReplayBase* LoadReplay(const char* path, const char* pathID = "MOD");
     void StopPlayback();
-    void UnloadPlayback();
+    void UnloadPlayback(bool shutdown = false);
     void SetPlayingBack(bool playing) { m_bPlayingBack = playing; }
 
 public:

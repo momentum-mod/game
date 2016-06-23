@@ -13,12 +13,12 @@
 
 using namespace vgui;
 
-class CHudVersionWarn : public CHudElement, public Panel
+class CHudVersionInfo : public CHudElement, public Panel
 {
-    DECLARE_CLASS_SIMPLE(CHudVersionWarn, Panel);
+    DECLARE_CLASS_SIMPLE(CHudVersionInfo, Panel);
 
   public:
-    CHudVersionWarn(const char *pElementName);
+    CHudVersionInfo(const char *pElementName);
 
     bool ShouldDraw() override { return CHudElement::ShouldDraw(); }
 
@@ -33,10 +33,10 @@ class CHudVersionWarn : public CHudElement, public Panel
     wchar_t uVersionText[BUFSIZELOCL];
 };
 
-DECLARE_HUDELEMENT(CHudVersionWarn);
+DECLARE_HUDELEMENT(CHudVersionInfo);
 
-CHudVersionWarn::CHudVersionWarn(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudVersionWarn")
+CHudVersionInfo::CHudVersionInfo(const char *pElementName)
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudVersionInfo")
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
@@ -45,7 +45,7 @@ CHudVersionWarn::CHudVersionWarn(const char *pElementName)
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 
-void CHudVersionWarn::Init()
+void CHudVersionInfo::Init()
 {
     char m_pszStringVersion[BUFSIZELOCL];
     char strVersion[BUFSIZELOCL];
@@ -57,7 +57,7 @@ void CHudVersionWarn::Init()
     g_pVGuiLocalize->ConvertANSIToUnicode(m_pszStringVersion, uVersionText, sizeof(m_pszStringVersion));
 }
 
-void CHudVersionWarn::Paint()
+void CHudVersionInfo::Paint()
 {
     surface()->DrawSetTextPos(0, 0);
     surface()->DrawSetTextFont(m_hTextFont);

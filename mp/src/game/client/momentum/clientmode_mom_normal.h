@@ -16,6 +16,7 @@
 #include "hud_menu_static.h"
 #include "hud_mapfinished.h"
 #include "ClientTimesDisplay.h"
+#include "momSpectatorGUI.h"
 #include <vgui/Cursor.h>
 #include <vgui_controls/EditablePanel.h>
 
@@ -47,6 +48,7 @@ class ClientModeMOMNormal : public ClientModeShared
     CHudMenuStatic *m_pHudMenuStatic;
     CHudMapFinishedDialog *m_pHudMapFinished;
     CClientTimesDisplay *m_pLeaderboards;
+    CMOMSpectatorGUI *m_pSpectatorGUI;
 };
 
 extern IClientMode *GetClientModeNormal();
