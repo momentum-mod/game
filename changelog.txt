@@ -1,3 +1,10 @@
+0.4.7
+Bugfixes
+    Fixed replays sometimes not unloading
+    Fixed width of settings panel labels
+    Mapfinished panel resets to page 0 properly
+    Added StartupVids.txt to override Valve's startup vid
+
 0.4.5
 Changelog Introduced
     The version update panel now includes a changelog for the newer version.
