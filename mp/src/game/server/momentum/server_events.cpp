@@ -3,16 +3,6 @@
 
 #include "tier0/memdbgon.h"
 
-void Momentum::OnServerDLLInit()
-{
-    TickSet::TickInit();
-    // MOM_TODO: connect to site
-    if (SteamAPI_IsSteamRunning())
-    {
-        mom_UTIL->GetRemoteRepoModVersion();
-    }
-}
-
 //This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
 void Momentum::GameInit()
@@ -49,6 +39,16 @@ void Momentum::GameInit()
             gm.SetValue(MOMGM_UNKNOWN);
         }
     }
+}
+
+void CMOMServerEvents::PostInit()
+{
+    TickSet::TickInit();
+    // MOM_TODO: connect to site
+    /*if (SteamAPI_IsSteamRunning())
+    {
+
+    }*/
 }
 
 void CMOMServerEvents::LevelInitPostEntity()
@@ -106,4 +106,4 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
 }
 
 //Create the 
-CMOMServerEvents g_MOMServerEvents("MOMServerEvents");
+CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");

@@ -89,7 +89,7 @@ Scheme
 		FrameSystemButton.BgColor		"Blank"
 		FrameSystemButton.Icon			""
 		FrameSystemButton.DisabledIcon	""
-		FrameTitleBar.Font				"Verdana"		
+		FrameTitleBar.Font				"DefaultSmall"		
 		FrameTitleBar.TextColor			"255 255 255 204"
 		FrameTitleBar.BgColor			"Blank"
 		FrameTitleBar.DisabledTextColor	"255 255 255 91"
@@ -255,6 +255,7 @@ Scheme
 				"name"		"Verdana" [$LINUX]
 				"tall"		"16"
 				"weight"	"500"
+                "antialias" "1"
 			}
 		}
 		"DefaultBold"
@@ -287,6 +288,7 @@ Scheme
 				"tall"		"12" [!$LINUX]
 				"tall"		"16" [$LINUX]
 				"weight"	"0"
+                "antialias" "1"
 			}
 		}
 		"DefaultSmallDropShadow"
@@ -298,6 +300,7 @@ Scheme
 				"tall"		"13"
 				"weight"	"0"
 				"dropshadow" "1"
+                "antialias" "1"
 			}
 		}
 		"DefaultVerySmall"
@@ -306,8 +309,10 @@ Scheme
 			{
 				"name"		"Tahoma" [!$LINUX]
 				"name"		"Verdana" [$LINUX]
-				"tall"		"12"
+				"tall"		"12" [$LINUX]
+                "tall"      "10" [!$LINUX]
 				"weight"	"0"
+                "antialias" "1"
 			}
 		}
 

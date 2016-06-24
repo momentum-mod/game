@@ -60,7 +60,7 @@ $Project "Client (Momentum)"
                             }
                         }
                     }
-                }  
+                }
                 
                 $File "momentum\ui\MomentumSettingsDialog.cpp"
                 $File "momentum\ui\IMomentumSettingsPanel.h"
@@ -75,13 +75,14 @@ $Project "Client (Momentum)"
                 $File   "momentum\ui\ClientTimesDisplay.cpp"
                 $File   "momentum\ui\IVersionWarnPanel.h"
                 $File   "momentum\ui\VersionWarnPanel.cpp"
-                $File   "momentum\ui\hud_versionwarn.cpp"
-                $File   "momentum\ui\hud_mapfinished.cpp"
+                $File   "momentum\ui\VersionWarnPanel.h"
+                $File   "momentum\ui\hud_versioninfo.cpp"
+                $File "momentum\ui\hud_mapfinished.cpp"
                 $File "momentum\ui\hud_mapfinished.h"
-                $File   "momentum\ui\hud_keypress.cpp"
-                $File   "hl2\hud_credits.cpp"
-                $File   "hl2\hud_weaponselection.cpp"
-                $File   "hud_chat.cpp"
+                $File "momentum\ui\hud_keypress.cpp"
+                $File "hl2\hud_credits.cpp"
+                $File "hl2\hud_weaponselection.cpp"
+                $File "hud_chat.cpp"
                 $File "momentum\ui\hud_comparisons.cpp"
                 $File "momentum\ui\hud_comparisons.h"
                 $File "momentum\ui\hud_mapinfo.cpp"

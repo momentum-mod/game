@@ -57,7 +57,6 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() :
 
 CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() 
 { 
-    g_ReplaySystem->GetReplayManager()->StopPlayback();
 }
 
 void CMomentumReplayGhostEntity::Precache(void)
@@ -143,19 +142,24 @@ void CMomentumReplayGhostEntity::UpdateStep()
     {
         --m_iCurrentStep;
 
-        if (m_iCurrentStep < 0)
+        if (m_bReplayShouldLoop && m_iCurrentStep < 0)
+        {
             m_iCurrentStep = m_pPlaybackReplay->GetFrameCount() - 1;
+        }
 
         return;
     }
     
     ++m_iCurrentStep;
 
-    if (m_iCurrentStep >= m_pPlaybackReplay->GetFrameCount())
+    if (m_iCurrentStep >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
         m_iCurrentStep = 0;
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
+    if (!m_bIsActive)
+        return;
+
     if (!m_pPlaybackReplay)
     {
         BaseClass::Think();
@@ -181,12 +185,16 @@ void CMomentumReplayGhostEntity::Think(void)
         SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
 
+    bool reverse = mom_replay_reverse.GetBool();
+
     //move the ghost
-    if (((mom_replay_reverse.GetBool() && m_iCurrentStep - 1 < 0) ||
-        (!mom_replay_reverse.GetBool() && m_iCurrentStep + 1 >= m_pPlaybackReplay->GetFrameCount())))
+    if (!m_bReplayShouldLoop &&
+        (reverse && (m_iCurrentStep - 1 < 0) ||
+        !reverse && (m_iCurrentStep + 1 >= m_pPlaybackReplay->GetFrameCount())))
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
+        SetAbsVelocity(vec3_origin);
     }
     else
     {
@@ -249,7 +257,12 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             float distY = fabs(currentStep->PlayerOrigin().y - nextStep->PlayerOrigin().y);
             float distZ = fabs(currentStep->PlayerOrigin().z - nextStep->PlayerOrigin().z);
             Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
-            SetAbsVelocity(interpolatedVel);
+            float maxvel = sv_maxvelocity.GetFloat();
+
+            //Fixes an issue with teleporting
+            if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
+                SetAbsVelocity(interpolatedVel);
+
             m_nReplayButtons = currentStep->PlayerButtons(); // networked var that allows the replay to control keypress display on the client
 
             if (m_RunData.m_bTimerRunning)
@@ -393,7 +406,6 @@ void CMomentumReplayGhostEntity::StopTimer()
 void CMomentumReplayGhostEntity::EndRun()
 { 
     StopTimer();// Stop the timer for all spectating us
-    SetNextThink(-1);// Stop thinking
     m_bIsActive = false;
 
     // Make everybody stop spectating me. Goes backwards since players remove themselves.

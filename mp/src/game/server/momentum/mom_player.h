@@ -135,6 +135,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_nZoneAvgCount[MAX_STAGES];
     float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
 
+    //Overrode for the spectating GUI
+    bool ClientCommand(const CCommand &args) override;
+
   private:
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
@@ -163,6 +166,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // Start zone thinkfunc
     int m_nTicksInAir;
 
-    float m_flTweenVelValue = 1.0f;
+    float m_flTweenVelValue;
 };
 #endif // MOMPLAYER_H

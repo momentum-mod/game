@@ -195,10 +195,10 @@ void CHudKeyPressDisplay::OnThink()
             m_nButtons = pReplayEnt->m_nReplayButtons;
             m_nStrafes = pReplayEnt->m_iTotalStrafes;
             m_nJumps = pReplayEnt->m_iTotalJumps;
-        } 
+        }
         else
         {
-            m_nButtons = ::input->GetButtonBits(1);
+            m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
             if (g_MOMEventListener)
             {
                 //we should only draw the strafe/jump counters when the timer is running

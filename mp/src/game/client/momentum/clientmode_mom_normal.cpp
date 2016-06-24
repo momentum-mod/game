@@ -12,6 +12,7 @@
 #include "iinput.h"
 #include "momSpectatorGUI.h"
 #include "momentum/mom_shareddefs.h"
+#include "momSpectatorGUI.h"
 #include "vgui_int.h"
 #include <vgui/IInput.h>
 #include <vgui/IPanel.h>
@@ -111,6 +112,7 @@ void ClientModeMOMNormal::Init()
     m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
     m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
     m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
+    m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
     // Load up the combine control panel scheme
     g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
@@ -161,29 +163,33 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
 
 int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding)
 {
-    // MOM_TODO: re-enable this in beta when we add movie-style controls to the spectator menu!
-    /*
-    // we are in spectator mode, open spectator menu
-    if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+duck") == 0)
+    if (m_pSpectatorGUI)
     {
-        m_pViewport->ShowPanel(PANEL_SPECMENU, true);
-        return 0; // we handled it, don't handle twice or send to server
-    }
-    */
-    if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+attack") == 0)
-    {
-        engine->ClientCmd("spec_next");
-        return 0;
-    }
-    else if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+attack2") == 0)
-    {
-        engine->ClientCmd("spec_prev");
-        return 0;
-    }
-    else if (down && pszCurrentBinding && Q_strcmp(pszCurrentBinding, "+jump") == 0)
-    {
-        engine->ClientCmd("spec_mode");
-        return 0;
+        // we are in spectator mode, open spectator menu
+        if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+duck"))
+        {
+            m_pSpectatorGUI->SetMouseInputEnabled(!m_pSpectatorGUI->IsMouseInputEnabled());
+            // MOM_TODO: re-enable this in beta when we add movie-style controls to the spectator menu!
+            //m_pViewport->ShowPanel(PANEL_SPECMENU, true);
+
+            return 0; // we handled it, don't handle twice or send to server
+        }
+
+        if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack") && !m_pSpectatorGUI->IsMouseInputEnabled())
+        {
+            engine->ClientCmd("spec_next");
+            return 0;
+        }
+        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+attack2") && !m_pSpectatorGUI->IsMouseInputEnabled())
+        {
+            engine->ClientCmd("spec_prev");
+            return 0;
+        }
+        else if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+jump"))
+        {
+            engine->ClientCmd("spec_mode");
+            return 0;
+        }
     }
 
     return 1;

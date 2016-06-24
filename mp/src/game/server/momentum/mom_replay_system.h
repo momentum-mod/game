@@ -14,7 +14,7 @@
 
 class CMomentumReplayGhostEntity;
 
-class CMomentumReplaySystem : public CAutoGameSystemPerFrame, public CGameEventListener
+class CMomentumReplaySystem : public CAutoGameSystemPerFrame
 {
 public:
     CMomentumReplaySystem(const char *pName) :
@@ -27,7 +27,6 @@ public:
         m_player(nullptr)
     {
         m_pReplayManager = new CMomReplayManager();
-        ListenForGameEvent("mapfinished_panel_closed");
     }
 
     virtual ~CMomentumReplaySystem() override
@@ -48,6 +47,9 @@ public:
         //Stop a recording if there is one while the level shuts down
         if (m_pReplayManager->Recording())
             StopRecording(nullptr, true, false);
+
+        if (m_pReplayManager->GetPlaybackReplay())
+            m_pReplayManager->UnloadPlayback(true);
     }
 
     void SetTimerStartTick(int tick)
@@ -57,13 +59,9 @@ public:
 
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
-
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
-    void OnGhostEntityRemoved(CMomentumReplayGhostEntity*);// Called when a ghost entity is done being played.
 
     inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
-
-    void FireGameEvent(IGameEvent *pEvent) override;
 
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update

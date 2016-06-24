@@ -11,6 +11,9 @@
 #include "UtlSortVector.h"
 #include "filesystem.h"
 #include "gason.h"
+#ifdef CLIENT_DLL
+#include "VersionWarnPanel.h"
+#endif
 
 class MomentumUtil
 {
@@ -26,10 +29,15 @@ public:
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
 
-    void GetRemoteRepoModVersion();
+#ifdef CLIENT_DLL
+    void GetRemoteChangelog();
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbChangeLog;
+    void ChangelogCallback(HTTPRequestCompleted_t*, bool);
 
+    void GetRemoteRepoModVersion();
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
     void VersionCallback(HTTPRequestCompleted_t*, bool);
+#endif
 
     //Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
     Color* GetColorFromHex(const char* hexColor); //in hex color format RRGGBB
