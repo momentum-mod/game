@@ -246,7 +246,7 @@ static void saveZonFile(const char* szMapName)
         char zoneFilePath[MAX_PATH];
         Q_strcpy(zoneFilePath, "maps/");
         Q_strcat(zoneFilePath, szMapName, MAX_PATH);
-        Q_strncat(zoneFilePath, ".zon", MAX_PATH);
+        Q_strncat(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
         zoneKV->SaveToFile(filesystem, zoneFilePath, "MOD");
         zoneKV->deleteThis();
     }

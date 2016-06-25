@@ -527,7 +527,7 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
         KeyValues *pLoaded = new KeyValues("local");
         char fileName[MAX_PATH];
 
-        Q_snprintf(fileName, MAX_PATH, "maps/%s.tim", g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME");
+        Q_snprintf(fileName, MAX_PATH, "maps/%s%s", g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME", EXT_TIME_FILE);
 
         if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
         {

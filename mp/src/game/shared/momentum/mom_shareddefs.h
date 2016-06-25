@@ -67,4 +67,11 @@ typedef enum MOMGM
 #define EXT_TIME_FILE ".tim" //MOM_TODO: Find and replace all instances, no hardcode.
 #define EXT_ZONE_FILE ".zon" //MOM_TODO: Find and replace all instances, no hardcode.
 
+// What is the URL of the web?
+#define MOM_WEBDOMAIN "http://momentum-mod.org"
+
+// Where to query the api. (here so we can change between live server and test adress  (127.0....) easier
+// ensure that this equals MOM_WEBDOMAIN before pushing!
+#define MOM_APIDOMAIN MOM_WEBDOMAIN
+
 #endif // MOM_SHAREDDEFS_H

@@ -71,6 +71,11 @@ protected:
     virtual void OnTick();
     virtual void PerformLayout();
 
+    // API
+    void GetMapInfo(const char* mapname);
+    void GetMapInfoCallback(HTTPRequestCompleted_t*, bool);
+    CCallResult<CDialogMapInfo, HTTPRequestCompleted_t> cbGetMapInfoCallback;
+
 private:
 #ifndef NO_STEAM
     STEAM_CALLBACK(CDialogMapInfo, OnPersonaStateChange, PersonaStateChange_t, m_CallbackPersonaStateChange);
@@ -88,11 +93,8 @@ private:
 
     vgui::Button *m_pConnectButton;
     vgui::Button *m_pCloseButton;
-    vgui::Button *m_pRefreshButton;
     vgui::Label *m_pInfoLabel;
-    vgui::ToggleButton *m_pAutoRetry;
-    vgui::RadioButton *m_pAutoRetryAlert;
-    vgui::RadioButton *m_pAutoRetryJoin;
+    //vgui::Label *m_pAuthorLabel;
     vgui::ListPanel *m_pPlayerList;
 
     enum { PING_TIMES_MAX = 4 };

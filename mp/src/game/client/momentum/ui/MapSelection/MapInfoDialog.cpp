@@ -56,15 +56,10 @@ Frame(parent, "DialogMapInfo")
 
     m_szPassword[0] = 0;
 
-    m_pConnectButton = new Button(this, "Connect", "#ServerBrowser_JoinGame");
+    m_pConnectButton = new Button(this, "Connect", "#MOM_MapSelector_StartMap");
     m_pCloseButton = new Button(this, "Close", "#ServerBrowser_Close");
-    m_pRefreshButton = new Button(this, "Refresh", "#ServerBrowser_Refresh");
     m_pInfoLabel = new Label(this, "InfoLabel", "");
-    m_pAutoRetry = new ToggleButton(this, "AutoRetry", "#ServerBrowser_AutoRetry");
-    m_pAutoRetry->AddActionSignalTarget(this);
 
-    m_pAutoRetryAlert = new RadioButton(this, "AutoRetryAlert", "#ServerBrowser_AlertMeWhenSlotOpens");
-    m_pAutoRetryJoin = new RadioButton(this, "AutoRetryJoin", "#ServerBrowser_JoinWhenSlotOpens");
     m_pPlayerList = new ListPanel(this, "PlayerList");
     m_pPlayerList->AddColumnHeader(0, "PlayerName", "#ServerBrowser_PlayerName", 156);
     m_pPlayerList->AddColumnHeader(1, "Score", "#ServerBrowser_Score", 64);
@@ -78,11 +73,8 @@ Frame(parent, "DialogMapInfo")
     PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
     PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
 
-    m_pAutoRetryAlert->SetSelected(true);
-
     m_pConnectButton->SetCommand(new KeyValues("Connect"));
     m_pCloseButton->SetCommand(new KeyValues("Close"));
-    m_pRefreshButton->SetCommand(new KeyValues("Refresh"));
 
     m_iRequestRetry = 0;
 
@@ -109,15 +101,15 @@ Frame(parent, "DialogMapInfo")
 CDialogMapInfo::~CDialogMapInfo()
 {
     //MOM_TODO: Cancel any queries sent out
-/*#ifndef NO_STEAM
-    if (!SteamMatchmakingServers())
+    /*#ifndef NO_STEAM
+        if (!SteamMatchmakingServers())
         return;
 
-    if (m_hPingQuery != HSERVERQUERY_INVALID)
+        if (m_hPingQuery != HSERVERQUERY_INVALID)
         SteamMatchmakingServers()->CancelServerQuery(m_hPingQuery);
-    if (m_hPlayersQuery != HSERVERQUERY_INVALID)
+        if (m_hPlayersQuery != HSERVERQUERY_INVALID)
         SteamMatchmakingServers()->CancelServerQuery(m_hPlayersQuery);
-#endif*/
+        #endif*/
 }
 
 //-----------------------------------------------------------------------------
@@ -129,13 +121,13 @@ void CDialogMapInfo::SendPlayerQuery(uint32 unIP, uint16 usQueryPort)
     /*
 #ifndef NO_STEAM
     if (!SteamMatchmakingServers())
-        return;
+    return;
 
     if (m_hPlayersQuery != HSERVERQUERY_INVALID)
-        SteamMatchmakingServers()->CancelServerQuery(m_hPlayersQuery);
+    SteamMatchmakingServers()->CancelServerQuery(m_hPlayersQuery);
     m_hPlayersQuery = SteamMatchmakingServers()->PlayerDetails(unIP, usQueryPort, this);
     m_bPlayerListUpdatePending = true;
-#endif*/
+    #endif*/
 }
 
 
@@ -144,19 +136,16 @@ void CDialogMapInfo::SendPlayerQuery(uint32 unIP, uint16 usQueryPort)
 //-----------------------------------------------------------------------------
 void CDialogMapInfo::Run(const char *titleName)
 {
-    if (titleName)
-    {
-        SetTitle("#ServerBrowser_GameInfoWithNameTitle", true);
-    }
-    else
-    {
-        SetTitle("#ServerBrowser_GameInfoWithNameTitle", true);
-    }
+
+    SetTitle("#ServerBrowser_GameInfoWithNameTitle", true);
+
     SetDialogVariable("game", titleName);
 
     // get the info from the user
     //RequestInfo();
     //MOM_TODO: LoadLocalInfo(); //Loads the local information (local PBs, local replays)
+    // We ask for some info of this map to the web. IF it is a valid map, we'll fill the info
+    GetMapInfo(titleName);
     Activate();
 }
 
@@ -233,28 +222,28 @@ void CDialogMapInfo::OnPersonaStateChange(PersonaStateChange_t *pPersonaStateCha
 void CDialogMapInfo::SetFriend(uint64 ulSteamIDFriend)
 {
     //MOM_TODO: What is this void?
-/*#ifndef NO_STEAM
-    // set the title to include the friends name
-    SetTitle("#ServerBrowser_GameInfoWithNameTitle", true);
+    /*#ifndef NO_STEAM
+        // set the title to include the friends name
+        SetTitle("#ServerBrowser_GameInfoWithNameTitle", true);
 
-    SetDialogVariable("game", SteamFriends()->GetFriendPersonaName(ulSteamIDFriend));
-    SetDialogVariable("friend", SteamFriends()->GetFriendPersonaName(ulSteamIDFriend));
+        SetDialogVariable("game", SteamFriends()->GetFriendPersonaName(ulSteamIDFriend));
+        SetDialogVariable("friend", SteamFriends()->GetFriendPersonaName(ulSteamIDFriend));
 
-    // store the friend we're associated with
-    m_SteamIDFriend = ulSteamIDFriend;
+        // store the friend we're associated with
+        m_SteamIDFriend = ulSteamIDFriend;
 
-    uint64 nGameID;
-    uint32 unGameIP;
-    uint16 usGamePort;
-    uint16 usQueryPort;
-    if (SteamFriends()->GetFriendGamePlayed(ulSteamIDFriend, &nGameID, &unGameIP, &usGamePort, &usQueryPort))
-    {
+        uint64 nGameID;
+        uint32 unGameIP;
+        uint16 usGamePort;
+        uint16 usQueryPort;
+        if (SteamFriends()->GetFriendGamePlayed(ulSteamIDFriend, &nGameID, &unGameIP, &usGamePort, &usQueryPort))
+        {
         uint16 usConnPort = usGamePort;
         if (usQueryPort < QUERY_PORT_ERROR)
-            usConnPort = usGamePort;
+        usConnPort = usGamePort;
         ChangeGame(unGameIP, usConnPort, usGamePort);
-    }
-#endif*/
+        }
+        #endif*/
 }
 
 
@@ -280,20 +269,20 @@ void CDialogMapInfo::PerformLayout()
 
     /*if (!Q_strlen(m_Server.m_szGameDescription) && m_SteamIDFriend && g_pAppInformation)
     {
-        // no game description set yet
-        // get the game from the friends info if we can
-        uint64 nGameID = 0;
-#ifndef NO_STEAM
-        //SteamFriends()->GetFriendGamePlayed(m_SteamIDFriend, &nGameID, NULL, NULL, NULL);
-#endif
-        if (nGameID)
-        {
-            //SetControlString("GameText", g_pAppInformation->GetAppName(g_pAppInformation->GetIAppForAppID(nGameID)));
-        }
-        else
-        {
-            SetControlString("GameText", "#ServerBrowser_NotInGame");
-        }
+    // no game description set yet
+    // get the game from the friends info if we can
+    uint64 nGameID = 0;
+    #ifndef NO_STEAM
+    //SteamFriends()->GetFriendGamePlayed(m_SteamIDFriend, &nGameID, NULL, NULL, NULL);
+    #endif
+    if (nGameID)
+    {
+    //SetControlString("GameText", g_pAppInformation->GetAppName(g_pAppInformation->GetIAppForAppID(nGameID)));
+    }
+    else
+    {
+    SetControlString("GameText", "#ServerBrowser_NotInGame");
+    }
     }*/
 
     if (!m_Server.m_bHadSuccessfulResponse)
@@ -320,26 +309,8 @@ void CDialogMapInfo::PerformLayout()
     }
     SetControlString("PlayersText", buf);
 
-    if (m_Server.m_NetAdr.GetIP() && m_Server.m_NetAdr.GetQueryPort())
-    {
-        SetControlString("ServerIPText", m_Server.m_NetAdr.GetConnectionAddressString());
-        m_pConnectButton->SetEnabled(true);
-        if (m_pAutoRetry->IsSelected())
-        {
-            m_pAutoRetryAlert->SetVisible(true);
-            m_pAutoRetryJoin->SetVisible(true);
-        }
-        else
-        {
-            m_pAutoRetryAlert->SetVisible(false);
-            m_pAutoRetryJoin->SetVisible(false);
-        }
-    }
-    else
-    {
-        SetControlString("ServerIPText", "");
-        m_pConnectButton->SetEnabled(false);
-    }
+    // Conditions that allow for a map to be played: none, always playable
+    m_pConnectButton->SetEnabled(true);
 
     if (m_Server.m_bHadSuccessfulResponse)
     {
@@ -352,22 +323,7 @@ void CDialogMapInfo::PerformLayout()
     }
 
     // set the info text
-    if (m_pAutoRetry->IsSelected())
-    {
-        if (m_Server.m_nPlayers < m_Server.m_nMaxPlayers)
-        {
-            m_pInfoLabel->SetText("#ServerBrowser_PressJoinToConnect");
-        }
-        else if (m_pAutoRetryJoin->IsSelected())
-        {
-            m_pInfoLabel->SetText("#ServerBrowser_JoinWhenSlotIsFree");
-        }
-        else
-        {
-            m_pInfoLabel->SetText("#ServerBrowser_AlertWhenSlotIsFree");
-        }
-    }
-    else if (m_bServerFull)
+    if (m_bServerFull)
     {
         m_pInfoLabel->SetText("#ServerBrowser_CouldNotConnectServerFull");
     }
@@ -389,9 +345,6 @@ void CDialogMapInfo::PerformLayout()
     {
         m_pPlayerList->SetEmptyListText("#ServerBrowser_ServerNotResponding");
     }
-
-    // auto-retry layout
-    m_pAutoRetry->SetVisible(m_bShowAutoRetryToggle);
 
     Repaint();
 }
@@ -430,7 +383,7 @@ void CDialogMapInfo::OnConnectToGame(int ip, int port)
 {
     // if we just connected to the server we were looking at, close the dialog
     // important so that we don't auto-retry a server that we are already on
-    if (m_Server.m_NetAdr.GetIP() == (uint32) ip && m_Server.m_NetAdr.GetConnectionPort() == (uint16) port)
+    if (m_Server.m_NetAdr.GetIP() == (uint32)ip && m_Server.m_NetAdr.GetConnectionPort() == (uint16)port)
     {
         // close this dialog
         Close();
@@ -452,11 +405,6 @@ void CDialogMapInfo::OnRefresh()
 //-----------------------------------------------------------------------------
 void CDialogMapInfo::OnButtonToggled(Panel *panel)
 {
-    if (panel == m_pAutoRetry)
-    {
-        ShowAutoRetryOptions(m_pAutoRetry->IsSelected());
-    }
-
     InvalidateLayout();
 }
 
@@ -490,8 +438,6 @@ void CDialogMapInfo::ShowAutoRetryOptions(bool state)
     // restore other properties of the dialog
     PerformLayout();
 
-    m_pAutoRetryAlert->SetSelected(true);
-
     InvalidateLayout();
 }
 
@@ -501,19 +447,19 @@ void CDialogMapInfo::ShowAutoRetryOptions(bool state)
 void CDialogMapInfo::RequestInfo()
 {
     //MOM_TODO: Request info from our website/API
-/*#ifndef NO_STEAM
-    if (!SteamMatchmakingServers())
+    /*#ifndef NO_STEAM
+        if (!SteamMatchmakingServers())
         return;
 
-    if (m_iRequestRetry == 0)
-    {
+        if (m_iRequestRetry == 0)
+        {
         // reset the time at which we auto-refresh
         m_iRequestRetry = system()->GetTimeMillis() + RETRY_TIME;
         if (m_hPingQuery != HSERVERQUERY_INVALID)
-            SteamMatchmakingServers()->CancelServerQuery(m_hPingQuery);
+        SteamMatchmakingServers()->CancelServerQuery(m_hPingQuery);
         m_hPingQuery = SteamMatchmakingServers()->PingServer(m_Server.m_NetAdr.GetIP(), m_Server.m_NetAdr.GetQueryPort(), this);
-    }
-#endif*/
+        }
+        #endif*/
 }
 
 //-----------------------------------------------------------------------------
@@ -540,22 +486,6 @@ void CDialogMapInfo::ServerResponded(gameserveritem_t &server)
     if (m_bConnecting)
     {
         ConnectToServer();
-    }
-    else if (m_pAutoRetry->IsSelected() && server.m_nPlayers < server.m_nMaxPlayers)
-    {
-        // there is a slot free, we can join
-
-        // make the sound
-        surface()->PlaySound("Servers/game_ready.wav");
-
-        // flash this window
-        FlashWindow();
-
-        // if it's set, connect right away
-        if (m_pAutoRetryJoin->IsSelected())
-        {
-            ConnectToServer();
-        }
     }
     else
     {
@@ -638,21 +568,21 @@ void CDialogMapInfo::ConnectToServer()
     // check VAC status
     /*if (m_Server.m_bSecure && ServerBrowser().IsVACBannedFromGame(m_Server.m_nAppID))
     {
-        // refuse the user
-        CVACBannedConnRefusedDialog *pDlg = new CVACBannedConnRefusedDialog(GetVParent(), "VACBannedConnRefusedDialog");
-        pDlg->Activate();
-        Close();
-        return;
+    // refuse the user
+    CVACBannedConnRefusedDialog *pDlg = new CVACBannedConnRefusedDialog(GetVParent(), "VACBannedConnRefusedDialog");
+    pDlg->Activate();
+    Close();
+    return;
     }*/
 
 
     // check to see if we need a password
     /*if (m_Server.m_bPassword && !m_szPassword[0])
     {
-        CDialogServerPassword *box = new CDialogServerPassword(this);
-        box->AddActionSignalTarget(this);
-        box->Activate(m_Server.GetName(), 0);
-        return;
+    CDialogServerPassword *box = new CDialogServerPassword(this);
+    box->AddActionSignalTarget(this);
+    box->Activate(m_Server.GetName(), 0);
+    return;
     }*/
 
     // check the player count
@@ -680,36 +610,36 @@ void CDialogMapInfo::ConnectToServer()
 
         if ((m_Server.m_bSecure && JoiningSecureServerCall()) || !m_Server.m_bSecure)
         {
-            switch (g_pRunGameEngine->RunEngine(m_Server.m_nAppID, gameDir, connectArgs))
-            {
-            case IRunGameEngine::k_ERunResultModNotInstalled:
-            {
-                MessageBox *dlg = new MessageBox("#ServerBrowser_GameInfoTitle", "#ServerBrowser_ModNotInstalled");
-                dlg->DoModal();
-                SetVisible(false);
-                return;
-            }
-            break;
-            case IRunGameEngine::k_ERunResultAppNotFound:
-            {
-                MessageBox *dlg = new MessageBox("#ServerBrowser_GameInfoTitle", "#ServerBrowser_AppNotFound");
-                dlg->DoModal();
-                SetVisible(false);
-                return;
-            }
-            break;
-            case IRunGameEngine::k_ERunResultNotInitialized:
-            {
-                MessageBox *dlg = new MessageBox("#ServerBrowser_GameInfoTitle", "#ServerBrowser_NotInitialized");
-                dlg->DoModal();
-                SetVisible(false);
-                return;
-            }
-            break;
-            case IRunGameEngine::k_ERunResultOkay:
-            default:
-                break;
-            };
+        switch (g_pRunGameEngine->RunEngine(m_Server.m_nAppID, gameDir, connectArgs))
+        {
+        case IRunGameEngine::k_ERunResultModNotInstalled:
+        {
+        MessageBox *dlg = new MessageBox("#ServerBrowser_GameInfoTitle", "#ServerBrowser_ModNotInstalled");
+        dlg->DoModal();
+        SetVisible(false);
+        return;
+        }
+        break;
+        case IRunGameEngine::k_ERunResultAppNotFound:
+        {
+        MessageBox *dlg = new MessageBox("#ServerBrowser_GameInfoTitle", "#ServerBrowser_AppNotFound");
+        dlg->DoModal();
+        SetVisible(false);
+        return;
+        }
+        break;
+        case IRunGameEngine::k_ERunResultNotInitialized:
+        {
+        MessageBox *dlg = new MessageBox("#ServerBrowser_GameInfoTitle", "#ServerBrowser_NotInitialized");
+        dlg->DoModal();
+        SetVisible(false);
+        return;
+        }
+        break;
+        case IRunGameEngine::k_ERunResultOkay:
+        default:
+        break;
+        };
         }*/
     }
 
@@ -759,10 +689,10 @@ void CDialogMapInfo::AddPlayerToList(const char *playerName, int score, float ti
     KeyValues *player = new KeyValues("player");
     player->SetString("PlayerName", playerName);
     player->SetInt("Score", score);
-    player->SetInt("TimeSec", (int) timePlayedSeconds);
+    player->SetInt("TimeSec", (int)timePlayedSeconds);
 
     // construct a time string
-    int seconds = (int) timePlayedSeconds;
+    int seconds = (int)timePlayedSeconds;
     int minutes = seconds / 60;
     int hours = minutes / 60;
     seconds %= 60;
@@ -801,4 +731,52 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
         return 1;
 
     return 0;
+}
+
+void CDialogMapInfo::GetMapInfo(const char* mapname)
+{
+    char szURL[512];
+    Q_snprintf(szURL, 512, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
+    HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+    SteamAPICall_t apiHandle;
+
+    if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+    { 
+        cbGetMapInfoCallback.Set(apiHandle, this, &CDialogMapInfo::GetMapInfoCallback);
+    }
+    else
+    {
+        Warning("Failed to send HTTP Request to post scores online!\n");
+        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+    }
+}
+
+void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+    // If something fails or the server tells us it could not find the map...
+    if (bIOFailure || pCallback->m_eStatusCode ==k_EHTTPStatusCode204NoContent)
+        return;
+    uint32 size;
+    
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    if (size == 0)
+    {
+        Warning("CDialogMapInfo::GetMapInfo: 0 body size!\n");
+        return;
+    }
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        //m_pAuthorLabel->SetText("Ruben");
+    }
 }
