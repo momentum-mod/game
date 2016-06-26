@@ -67,4 +67,4 @@ CON_COMMAND(mom_version, "Prints mod current installed version")
 
 // Interface this class to the rest of the DLL
 static CVersionWarnPanelInterface g_VersionWarn;
-VersionWarnPanel *versionwarnpanel = static_cast<VersionWarnPanel *>(&g_VersionWarn);
+IVersionWarnPanel *versionwarnpanel = static_cast<IVersionWarnPanel *>(&g_VersionWarn);

@@ -139,7 +139,7 @@ Scheme
 		RichText.TextColor				"White"
 		RichText.BgColor				"TransparentBlack"
 		RichText.SelectedTextColor		"White"
-		RichText.SelectedBgColor		"MOM.Panel.Bg"
+		RichText.SelectedBgColor		"Light Gray"//"MOM.Panel.Bg"
 
 		ScrollBar.Wide					15
 
@@ -266,8 +266,21 @@ Scheme
 				"name"		"Verdana Bold" [$LINUX]
 				"tall"		"16"
 				"weight"	"1000"
+                "antialias" "1"
 			}
 		}
+        "DefaultBoldLarge"
+        {
+			"1"
+			{
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana Bold" [$LINUX]
+				"tall"		"18"
+				"weight"	"1000"
+                "antialias" "1"
+			}
+		}
+        
 		"DefaultUnderline"
 		{
 			"1"
@@ -309,8 +322,7 @@ Scheme
 			{
 				"name"		"Tahoma" [!$LINUX]
 				"name"		"Verdana" [$LINUX]
-				"tall"		"12" [$LINUX]
-                "tall"      "10" [!$LINUX]
+				"tall"		"11"
 				"weight"	"0"
                 "antialias" "1"
 			}
@@ -324,8 +336,20 @@ Scheme
 				"name"		"Verdana" [$LINUX]
 				"tall"		"18"
 				"weight"	"0"
+                "antialias" "1"
 			}
 		}
+        "DefaultVeryLarge"
+        {
+            "1"
+            {
+                "name" "Tahoma" [!$LINUX]
+                "name" "Verdana" [$LINUX]
+                "tall" "22"
+                "antialias" "1"
+            }
+        }
+        
 		"UiBold"
 		{
 			"1"	[$WIN32]

@@ -54,7 +54,7 @@ class CVersionWarnPanel : public Frame
     char m_cOnlineChangelog[4056]; // MOM_TODO: Determine a better size
 };
 
-class CVersionWarnPanelInterface : public VersionWarnPanel
+class CVersionWarnPanelInterface : public IVersionWarnPanel
 {
   private:
     CVersionWarnPanel *pPanel;
