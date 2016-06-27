@@ -14,16 +14,21 @@ class SettingsPage : public PropertyPage
 {
     DECLARE_CLASS_SIMPLE(SettingsPage, PropertyPage);
 
-    SettingsPage(Panel *pPanel, const char *pName) : BaseClass(pPanel, pName)
+    SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
     {
+        //This hooks into the parent for the "ApplyChanges" message sent by OK/Apply buttons
+        pParent->AddActionSignalTarget(this);
+
+        // Set proportionality of the panels inside the dialog
+        SetProportional(true);
+
         // Set up the res file
         char m_pszResFilePath[MAX_PATH];
         Q_snprintf(m_pszResFilePath, MAX_PATH, "resource/ui/SettingsPanel_%s.res", pName);
-
-        SetProportional(true);
         LoadControlSettingsAndUserConfig(m_pszResFilePath);
 
-        m_pScrollPanel = new ScrollableEditablePanel(pPanel, this, "ScrollablePanel");
+        //Lastly, the scroll panel so we can scroll through our settings page.
+        m_pScrollPanel = new ScrollableEditablePanel(pParent, this, "ScrollablePanel");
         m_pScrollPanel->SetProportional(true);
     }
 

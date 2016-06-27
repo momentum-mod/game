@@ -23,12 +23,6 @@ class CMomentumSettingsPanel : public PropertyDialog
   protected:
     // VGUI overrides:
     void OnTick() override;
-    //This is called from the Apply button child in PropertyDialog. We need
-    //to pass it through to our children.
-    MESSAGE_FUNC(OnApplyChanges, "ApplyChanges")
-    {
-        PostMessage(m_pHudSettings, new KeyValues("ApplyChanges"));
-    }
 
   private:
     SettingsPage *m_pHudSettings;
@@ -51,9 +45,8 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetCloseButtonVisible(true);
     SetMoveable(true);
     SetVisible(false);
-    AddActionSignalTarget(this);
 
-    m_pHudSettings = new HudSettingsPanel(this);
+    m_pHudSettings = new HudSettingsPage(this);
     //Note: we're adding the scroll panels here, because we want to be able to scroll.
     AddPage(m_pHudSettings->GetScrollPanel(), "#MOM_Settings_Tab_HUD");
     

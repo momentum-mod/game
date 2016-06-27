@@ -10,11 +10,11 @@
 
 using namespace vgui;
 
-class HudSettingsPanel : public SettingsPage
+class HudSettingsPage : public SettingsPage
 {
-    DECLARE_CLASS_SIMPLE(HudSettingsPanel, SettingsPage);
+    DECLARE_CLASS_SIMPLE(HudSettingsPage, SettingsPage);
 
-    HudSettingsPanel(Panel *pParent) : BaseClass(pParent, "HudSettings")
+    HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettings")
     {
         m_pSpeedometerUnits = FindControl<ComboBox>("SpeedoUnits");
         m_pSpeedometerUnits->SetNumberOfEditLines(3);
@@ -60,7 +60,7 @@ class HudSettingsPanel : public SettingsPage
         LoadSettings();
     }
 
-    ~HudSettingsPanel() {}
+    ~HudSettingsPage() {}
 
     void OnApplyChanges() override
     {

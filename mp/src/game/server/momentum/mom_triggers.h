@@ -38,11 +38,7 @@ public:
     //Used to calculate if a position is inside of this trigger's bounds
     bool ContainsPosition(const Vector &pos)
     {
-        Vector bottomLeft = GetAbsOrigin() + CollisionProp()->OBBMins();
-        Vector topRight = GetAbsOrigin() + CollisionProp()->OBBMaxs();
-
-        return ((pos.x > bottomLeft.x && pos.x < topRight.x) &&
-            (pos.y > bottomLeft.y && pos.y < topRight.y));
+        return CollisionProp()->IsPointInBounds(pos);
     }
 };
 
