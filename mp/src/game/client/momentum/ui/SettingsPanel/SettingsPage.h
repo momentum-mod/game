@@ -49,6 +49,9 @@ class SettingsPage : public PropertyPage
     }
 
     // Update the parent (PropertyDialog) page
+    MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel) { NotifyParentOfUpdate(); }
+
+    // Update the parent (PropertyDialog) page
     MESSAGE_FUNC_PTR(OnCheckboxChecked, "CheckButtonChecked", panel) { NotifyParentOfUpdate(); }
 
     // This can be sent from ComboBoxes or any TextEntry

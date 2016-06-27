@@ -83,25 +83,26 @@ class HudSettingsPage : public SettingsPage
         m_pSyncColorize->ActivateItemByRow(sync_color.GetInt());
     }
 
+    //This uses OnCheckbox and not OnModified because we want to be able to enable
+    // the other checkboxes regardless of whether the player clicks Apply/OK
     void OnCheckboxChecked(Panel *p) override
     {
         BaseClass::OnCheckboxChecked(p);
-        CheckButton *button = dynamic_cast<CheckButton *>(p);
-        if (button)
+
+        if (p == m_pSpeedometerShow)
         {
-            if (!Q_stricmp(button->GetName(), "SpeedoShow"))
-            {
-                m_pSpeedometerShowLastJump->SetEnabled(button->IsSelected());
-                m_pSpeedometerShowVerticalVel->SetEnabled(button->IsSelected());
-                m_pSpeedometerUnits->SetEnabled(button->IsSelected());
-                m_pSpeedometerColorize->SetEnabled(button->IsSelected());
-            }
-            else if (!Q_stricmp(button->GetName(), "SyncShow"))
-            {
-                m_pSyncType->SetEnabled(button->IsSelected());
-                m_pSyncShowBar->SetEnabled(button->IsSelected());
-                m_pSyncColorize->SetEnabled(button->IsSelected());
-            }
+            bool bEnabled = m_pSpeedometerShow->IsSelected();
+            m_pSpeedometerShowLastJump->SetEnabled(bEnabled);
+            m_pSpeedometerShowVerticalVel->SetEnabled(bEnabled);
+            m_pSpeedometerUnits->SetEnabled(bEnabled);
+            m_pSpeedometerColorize->SetEnabled(bEnabled);
+        }
+        else if (p == m_pSyncShow)
+        {
+            bool bEnabled = m_pSyncShow->IsSelected();
+            m_pSyncType->SetEnabled(bEnabled);
+            m_pSyncShowBar->SetEnabled(bEnabled);
+            m_pSyncColorize->SetEnabled(bEnabled);
         }
     }
 

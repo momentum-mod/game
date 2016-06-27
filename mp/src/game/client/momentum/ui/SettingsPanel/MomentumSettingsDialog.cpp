@@ -3,6 +3,7 @@
 #include "IMomentumSettingsPanel.h"
 #include "SettingsPage.h"
 #include "HudSettingsPage.h"
+#include "ControlsSettingsPage.h"
 #include <vgui/IVGui.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Frame.h>
@@ -25,7 +26,7 @@ class CMomentumSettingsPanel : public PropertyDialog
     void OnTick() override;
 
   private:
-    SettingsPage *m_pHudSettings;
+    SettingsPage *m_pHudSettings, *m_pControlsSettings;
 };
 
 // Constuctor: Initializes the Panel
@@ -46,10 +47,13 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetMoveable(true);
     SetVisible(false);
 
+    //Create the pages here
+    m_pControlsSettings = new ControlsSettingsPage(this);
     m_pHudSettings = new HudSettingsPage(this);
+
     //Note: we're adding the scroll panels here, because we want to be able to scroll.
+    AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Controls");
     AddPage(m_pHudSettings->GetScrollPanel(), "#MOM_Settings_Tab_HUD");
-    
     //MOM_TODO: Add the other settings panels here.
 
     SetScheme("SourceScheme");
