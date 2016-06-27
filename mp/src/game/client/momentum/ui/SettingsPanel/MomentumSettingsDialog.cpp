@@ -63,7 +63,6 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
 
 CMomentumSettingsPanel::~CMomentumSettingsPanel()
 {
-    m_pHudSettings->DeletePanel();
 }
 
 // Class: CMyPanelInterface Class. Used for construction.
