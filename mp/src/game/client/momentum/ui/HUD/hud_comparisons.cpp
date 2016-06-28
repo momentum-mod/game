@@ -24,8 +24,8 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run co
 // Max stages
 // MOM_TODO: 64 stages max is a lot, perhaps reduce it to like 10? But you know people and their customization
 // options...
-static MAKE_CONVAR(mom_comparisons_max_stages, "4", FLAG_HUD_CVAR,
-                   "Max number of stages to show on the comparison panel.", 1, 64);
+static MAKE_CONVAR(mom_comparisons_max_zones, "4", FLAG_HUD_CVAR,
+                   "Max number of zones to show on the comparison panel.", 1, 64);
 
 // Format the output to look pretty?
 static MAKE_TOGGLE_CONVAR(mom_comparisons_format_output, "1", FLAG_HUD_CVAR,
@@ -71,7 +71,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1", FLAG_HUD_CVAR,
 DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
 
 C_RunComparisons::C_RunComparisons(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudCompare")
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
 {
     ListenForGameEvent("timer_state");
     ListenForGameEvent("mapfinished_panel_closed");
@@ -83,7 +83,9 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
+    m_nCurrentBogusPulse = 0;
     m_iCurrentEntIndex = -1;
+    m_bBogusComparison = false;
     ivgui()->AddTickSignal(GetVPanel(), 250);
 }
 
@@ -176,6 +178,33 @@ void C_RunComparisons::LoadComparisons()
     }
 }
 
+void C_RunComparisons::LoadBogusComparisons()
+{
+    UnloadBogusComparisons();
+    m_rcCurrentComparison = new RunCompare_t();
+    KeyValues *kvBogusRunComp = new KeyValues("BogusRun");
+    mom_UTIL->GenerateBogusComparison(kvBogusRunComp);
+    m_pRunStats = new C_MomRunStats();
+    scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
+    m_hTextFont = scheme()->GetIScheme(scheme()->GetScheme("ClientScheme"))->GetFont("HudNumbersVerySmall");
+    //mom_UTIL->GenerateBogusRunStats(m_pRunStats);
+    m_iCurrentZone = MAX_STAGES - 1;
+    mom_UTIL->FillRunComparison("Example Run", kvBogusRunComp, m_rcCurrentComparison);
+    m_bLoadedComparison = true;
+    m_bBogusComparison = true;
+}
+
+void C_RunComparisons::UnloadBogusComparisons()
+{
+    UnloadComparisons();
+    if (m_pRunStats)
+        delete m_pRunStats;
+    m_pRunStats = nullptr;
+
+    m_bLoadedComparison = false;
+}
+
+
 void C_RunComparisons::UnloadComparisons()
 {
     if (m_rcCurrentComparison)
@@ -227,7 +256,7 @@ int C_RunComparisons::GetMaximumTall()
     int toReturn = 0;
     int fontTall = surface()->GetFontTall(m_hTextFont) + 2; // font tall and padding
     toReturn += fontTall;                                   // Comparing against: (run)
-    int stageBuffer = mom_comparisons_max_stages.GetInt();
+    int stageBuffer = mom_comparisons_max_zones.GetInt();
     int lowerBound = m_iCurrentZone - stageBuffer;
 
     for (int i = 1; i < m_iCurrentZone; i++)
@@ -430,7 +459,14 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
 
 void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage, int Ypos)
 {
-    Color compareColor = Color(GetFgColor());
+    Color fgColor = GetFgColor();
+    //We override the color here from HUD animations, if this is a bogus comparisons panel
+    if (m_bBogusComparison)
+    {
+        int alpha = m_bBogusComparison && (m_nCurrentBogusPulse & string) ? bogus_alpha : fgColor.a();
+        fgColor = Color(fgColor.r(), fgColor.g(), fgColor.b(), alpha);
+    }
+    Color compareColor = fgColor;
     char actualValueANSI[BUFSIZELOCL],       // The actual value of the run
         compareTypeANSI[BUFSIZELOCL],        // The label of the comparison "Velocity: " etc
         compareValueANSI[BUFSIZELOCL];       // The comparison string (+/- XX)
@@ -482,6 +518,13 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     // Obtain the actual value, comparison string, and corresponding color
     GetComparisonString(string, m_pRunStats, stage, actualValueANSI, compareValueANSI, &compareColor);
 
+    //Override the color if we're a bogus panel
+    if (m_bBogusComparison)
+    {
+        int alphaComp = (m_nCurrentBogusPulse & string) ? bogus_alpha : compareColor.a();
+        compareColor = Color(compareColor.r(), compareColor.g(), compareColor.b(), alphaComp);
+    }
+
     // Pad the compare type with a couple spaces in front.
     V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s", localized);
 
@@ -489,8 +532,8 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     ANSI_TO_UNICODE(compareTypeANSI, compareTypeUnicode);
 
     // Print the compare type "Velocity:"/"Stage Time:" etc
-    surface()->DrawSetTextColor(GetFgColor());  // Standard text color
-    surface()->DrawSetTextPos(text_xpos, Ypos); // Standard position
+    surface()->DrawSetTextColor(fgColor);          // Standard text color
+    surface()->DrawSetTextPos(text_xpos, Ypos);    // Standard position
     surface()->DrawPrintText(compareTypeUnicode, wcslen(compareTypeUnicode));
 
     // Convert actual value ANSI to unicode
@@ -534,7 +577,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     // Convert the comparison value to unicode
     ANSI_TO_UNICODE(compareValueANSI, compareValueUnicode);
 
-    // Print the
+    // Print the comparison
     surface()->DrawSetTextColor(compareColor);                                  // Set the color to gain/loss color
     surface()->DrawSetTextPos(newXPosComparison, Ypos);                         // Set pos to calculated width X
     surface()->DrawPrintText(compareValueUnicode, wcslen(compareValueUnicode)); // print string
@@ -550,11 +593,13 @@ void C_RunComparisons::Paint()
 {
     if (!m_rcCurrentComparison)
         return;
+
+    // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat, which affects maxTall
     int maxTall = GetMaximumTall();
     int newY = m_iDefaultYPos + (m_iDefaultTall - maxTall);
-    SetPos(m_iDefaultXPos, newY); // Dynamic placement
-    SetSize(m_iMaxWide, maxTall); // Dynamic sizing
-    // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat, which affects maxTall
+    if (!m_bBogusComparison)
+        SetPos(m_iDefaultXPos, newY); // Dynamic placement, only when it's not bogus
+    SetPanelSize(m_iMaxWide, maxTall);     // Dynamic sizing
 
     // Get player current stage
     int currentStage = m_iCurrentZone;
@@ -592,12 +637,12 @@ void C_RunComparisons::Paint()
     int yToIncrementBy = surface()->GetFontTall(m_hTextFont) + 2; //+2 for padding
     int Y = text_ypos + yToIncrementBy;
 
-    int STAGE_BUFFER = mom_comparisons_max_stages.GetInt();
-    for (int i = 1; i < currentStage; i++, Y += yToIncrementBy)
+    int STAGE_BUFFER = mom_comparisons_max_zones.GetInt();
+    for (int i = 1; i < currentStage; i++)
     {
         // We need a buffer. We only want the last STAGE_BUFFER amount of
         // stages. (So if there's 20 stages, we only show the last X stages, not all.)
-        if (i > (currentStage - STAGE_BUFFER))
+        if (i >= (currentStage - STAGE_BUFFER))
         {
             char stageString[BUFSIZELOCL];
             wchar_t stageStringUnicode[BUFSIZELOCL];
@@ -714,6 +759,9 @@ void C_RunComparisons::Paint()
                 surface()->DrawSetTextPos(newXPos, Y);
                 surface()->DrawPrintText(timeComparisonStringUnicode, wcslen(timeComparisonStringUnicode));
             }
+
+            //Increment the Y only when we draw things.
+            Y += yToIncrementBy;
         }
     }
 }

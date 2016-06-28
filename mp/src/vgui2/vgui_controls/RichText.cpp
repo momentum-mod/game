@@ -1564,6 +1564,7 @@ void RichText::OnMouseFocusTicked()
 //-----------------------------------------------------------------------------
 void RichText::OnCursorEntered()
 {
+    BaseClass::OnCursorEntered();
 	_mouseDragSelection = false; // outside of window dont recieve drag scrolling ticks
 }
 
@@ -1573,6 +1574,7 @@ void RichText::OnCursorEntered()
 //-----------------------------------------------------------------------------
 void RichText::OnCursorExited() 
 {
+    BaseClass::OnCursorExited();
 	// outside of window recieve drag scrolling ticks
 	if (_mouseSelection)
 	{

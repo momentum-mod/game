@@ -70,6 +70,24 @@ event ResetJumpSpeed
    Animate HudSpeedMeter JumpAlpha "255" Linear 0.0 0.001
 }
 
+event PulseComparePanel
+{
+    Animate BogusComparisonsPanel BogusAlpha "0" Linear 0.0 1.5
+    Animate BogusComparisonsPanel BogusAlpha "255" Linear 1.5 1.5
+    RunEvent LoopPulse 3.0
+}
+
+event LoopPulse
+{
+    RunEvent PulseComparePanel 0.0
+}
+
+event StopPulseComparePanel
+{
+    //Just set our Alpha to 255 again.
+    Animate BogusComparisonsPanel BogusAlpha "255" Linear 0.0 0.0000001
+}
+
 event WeaponHighlight
 {
 	Animate HudWeaponSelection		Blur		"7"			Linear		0.0	0.0 

@@ -3,10 +3,12 @@
 #include "cbase.h"
 
 #include "SettingsPage.h"
+#include "hud_comparisons.h"
 #include <vgui_controls/Button.h>
 #include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
+#include <vgui_controls/AnimationController.h>
 
 using namespace vgui;
 
@@ -76,10 +78,54 @@ class ComparisonsSettingsPage : public SettingsPage
         m_pStrafeShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ShowStrafes");
         m_pStrafeShow->AddActionSignalTarget(this);
 
+        InitBogusComparePanel();
+
         LoadSettings();
     }
 
-    ~ComparisonsSettingsPage() {}
+    ~ComparisonsSettingsPage()
+    {
+        
+    }
+
+    void DestroyBogusComparePanel()
+    {
+        if (m_pComparisonsFrame)
+            m_pComparisonsFrame->DeletePanel();
+
+        if (m_pBogusComparisonsPanel)
+            m_pBogusComparisonsPanel->DeletePanel();
+
+        m_pComparisonsFrame = nullptr;
+        m_pBogusComparisonsPanel = nullptr;
+    }
+
+    void InitBogusComparePanel()
+    {
+        m_pComparisonsFrame = new Frame(GetScrollPanel(), "ComparisonsFrame");
+        m_pComparisonsFrame->SetSize(350, scheme()->GetProportionalScaledValue(275));
+        m_pComparisonsFrame->SetMoveable(true);
+        m_pComparisonsFrame->SetSizeable(false);
+        m_pComparisonsFrame->SetTitle("", false);//MOM_TODO: "#MOM_Settings_Compare_Panel"
+        m_pComparisonsFrame->SetTitleBarVisible(true);
+        m_pComparisonsFrame->SetCloseButtonVisible(true);
+        m_pComparisonsFrame->SetMinimizeButtonVisible(false);
+        m_pComparisonsFrame->SetMaximizeButtonVisible(false);
+        m_pComparisonsFrame->PinToSibling(GetName(), PIN_TOPRIGHT, PIN_TOPLEFT);
+        m_pComparisonsFrame->SetParent(this);
+        m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel");
+        m_pBogusComparisonsPanel->SetParent(m_pComparisonsFrame);
+        m_pBogusComparisonsPanel->AddActionSignalTarget(this);
+        m_pBogusComparisonsPanel->Init();
+        m_pBogusComparisonsPanel->SetSize(200, 150);
+        m_pBogusComparisonsPanel->SetPos(14, 30);
+        m_pBogusComparisonsPanel->LoadBogusComparisons();
+        scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
+        m_pBogusComparisonsPanel->ApplySchemeSettings(scheme()->GetIScheme(scheme()->GetScheme("ClientScheme")));
+        m_pBogusComparisonsPanel->SetVisible(true);
+        m_pComparisonsFrame->SetVisible(true);
+        m_pBogusComparisonsPanel->MakeReadyForUse();
+    }
 
     void OnApplyChanges() override
     {
@@ -87,7 +133,7 @@ class ComparisonsSettingsPage : public SettingsPage
 
         if (m_pMaxZones)
         {
-            ConVarRef stages("mom_comparisons_max_stages");
+            ConVarRef stages("mom_comparisons_max_zones");
             char buf[64];
             m_pMaxZones->GetText(buf, sizeof(buf));
             int stagesNum = atoi(buf);
@@ -109,7 +155,7 @@ class ComparisonsSettingsPage : public SettingsPage
     {
         if (m_pMaxZones)
         {
-            ConVarRef stages("mom_comparisons_max_stages");
+            ConVarRef stages("mom_comparisons_max_zones");
             m_pMaxZones->SetText(stages.GetString());
         }
 
@@ -183,7 +229,7 @@ class ComparisonsSettingsPage : public SettingsPage
 
         if (p == m_pMaxZones)
         {
-            ConVarRef maxStages("mom_comparisons_max_stages");
+            ConVarRef maxStages("mom_comparisons_max_zones");
             char buf[64];
             m_pMaxZones->GetText(buf, 64);
             int input = Q_atoi(buf);
@@ -192,13 +238,47 @@ class ComparisonsSettingsPage : public SettingsPage
             {
                 maxStages.SetValue(input);
             }
-            else // Out of range, 
+            else // Out of range, set to default
             {
                 const char *pDefault = maxStages.GetDefault();
                 maxStages.SetValue(pDefault);
                 m_pMaxZones->SetText(pDefault);
             }
         }
+    }
+
+    MESSAGE_FUNC_PTR(CursorEnteredCallback, "OnCursorEntered", panel)
+    {
+        int bogusPulse = DetermineBogusPulse(panel);
+
+        m_pBogusComparisonsPanel->SetBogusPulse(bogusPulse);
+        if (bogusPulse > 0)
+        {
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(m_pComparisonsFrame, "PulseComparePanel");
+        }
+    }
+
+    MESSAGE_FUNC_PTR(CursorExitedCallback, "OnCursorExited", panel)
+    {
+        int bogusPulse = DetermineBogusPulse(panel);
+
+        if (bogusPulse > 0)
+        {
+            m_pBogusComparisonsPanel->ClearBogusPulse();
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(m_pComparisonsFrame, "StopPulseComparePanel");
+        }
+    }
+
+    MESSAGE_FUNC_INT_INT(OnComparisonResize, "OnSizeChange", wide, tall)
+    {
+        int scaledPad = scheme()->GetProportionalScaledValue(15);
+        m_pComparisonsFrame->SetSize(wide + scaledPad, tall + float(scaledPad) * 1.5f);
+        m_pBogusComparisonsPanel->SetPos(m_pComparisonsFrame->GetXPos() + scaledPad/2, m_pComparisonsFrame->GetYPos() + scaledPad);
+    }
+
+    MESSAGE_FUNC(OnMainDialogClose, "OnClose")
+    {
+        DestroyBogusComparePanel();
     }
 
 private:
@@ -209,4 +289,66 @@ private:
     TextEntry *m_pMaxZones;
     ComboBox *m_pTimeType;
     Label *m_pTimeTypeLabel;
+    Frame *m_pComparisonsFrame;
+    C_RunComparisons *m_pBogusComparisonsPanel;
+
+    int DetermineBogusPulse(Panel *panel)
+    {
+        CUtlFlags<int> flag;
+        int bogusPulse = 0;
+        if (panel == m_pJumpShow)
+        {
+            bogusPulse |= ZONE_JUMPS;
+        }
+        else if (panel == m_pStrafeShow)
+        {
+            bogusPulse |= ZONE_STRAFES;
+        }
+        else if (panel == m_pSyncShow)
+        {
+            bogusPulse |= ZONE_SYNC1;
+            bogusPulse |= ZONE_SYNC2;
+        }
+        else if (panel == m_pSyncShowS1)
+        {
+            bogusPulse |= ZONE_SYNC1;
+        }
+        else if (panel == m_pSyncShowS2)
+        {
+            bogusPulse |= ZONE_SYNC2;
+        }
+        else if (panel == m_pVelocityShow)
+        {
+            bogusPulse |= VELOCITY_AVERAGE;
+            bogusPulse |= VELOCITY_MAX;
+            bogusPulse |= VELOCITY_ENTER;
+            bogusPulse |= VELOCITY_EXIT;
+        }
+        else if (panel == m_pVelocityShowAvg)
+        {
+            bogusPulse |= VELOCITY_AVERAGE;
+        }
+        else if (panel == m_pVelocityShowMax)
+        {
+            bogusPulse |= VELOCITY_MAX;
+        }
+        else if (panel == m_pVelocityShowEnter)
+        {
+            bogusPulse |= VELOCITY_ENTER;
+        }
+        else if (panel == m_pVelocityShowExit)
+        {
+            bogusPulse |= VELOCITY_EXIT;
+        }
+        else if (panel == m_pTimeShowOverall)
+        {
+            bogusPulse |= TIME_OVERALL;
+        }
+        else if (panel == m_pTimeShowZone)
+        {
+            bogusPulse |= ZONE_TIME;
+        }
+
+        return bogusPulse;
+    }
 };

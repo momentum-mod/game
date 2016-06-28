@@ -8,6 +8,7 @@
 #include "KeyValues.h"
 #include "steam/steam_api.h"
 #include "run_compare.h"
+#include "run_stats.h"
 #include "UtlSortVector.h"
 #include "filesystem.h"
 #include "gason.h"
@@ -37,6 +38,10 @@ public:
     void GetRemoteRepoModVersion();
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
     void VersionCallback(HTTPRequestCompleted_t*, bool);
+
+    //For the ComparisonsSettingsPage
+    void GenerateBogusComparison(KeyValues *kvOut);
+    void GenerateBogusRunStats(C_MomRunStats *pStatsOut);
 #endif
 
     //Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
@@ -50,6 +55,8 @@ public:
 
     KeyValues *GetBestTime(KeyValues *kvInput, const char *szMapName, float tickrate, int flags = 0);
     bool GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into);
+    void FillRunComparison(const char *compareName, KeyValues *kvBestRun, RunCompare_t *into);
+    
 
     bool FloatEquals(float a, float b, float epsilon = FLT_EPSILON) const
     {

@@ -6,7 +6,6 @@
 #include "ControlsSettingsPage.h"
 #include "ComparisonsSettingsPage.h"
 #include <vgui/IVGui.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
 
@@ -25,6 +24,11 @@ class CMomentumSettingsPanel : public PropertyDialog
   protected:
     // VGUI overrides:
     void OnTick() override;
+    void OnClose() override
+    {
+        BaseClass::OnClose();
+        PostActionSignal(new KeyValues("OnClose"));
+    }
 
   private:
     SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings;
@@ -115,6 +119,6 @@ CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n",
 
 void CMomentumSettingsPanel::OnTick()
 {
-    BaseClass::OnTick();
-    GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
+    if (g_pClientMode->GetViewport() && g_pClientMode->GetViewportAnimationController())
+        g_pClientMode->GetViewportAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
