@@ -25,7 +25,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run co
 // MOM_TODO: 64 stages max is a lot, perhaps reduce it to like 10? But you know people and their customization
 // options...
 static MAKE_CONVAR(mom_comparisons_max_zones, "4", FLAG_HUD_CVAR,
-                   "Max number of zones to show on the comparison panel.", 1, 64);
+                   "Max number of zones to show on the comparison panel.", 1, 10);
 
 // Format the output to look pretty?
 static MAKE_TOGGLE_CONVAR(mom_comparisons_format_output, "1", FLAG_HUD_CVAR,

@@ -102,9 +102,11 @@ class ComparisonsSettingsPage : public SettingsPage
 
     void InitBogusComparePanel()
     {
+        
         m_pComparisonsFrame = new Frame(GetScrollPanel(), "ComparisonsFrame");
         m_pComparisonsFrame->SetSize(350, scheme()->GetProportionalScaledValue(275));
-        m_pComparisonsFrame->SetMoveable(true);
+        m_pComparisonsFrame->SetMoveable(false);
+        m_pComparisonsFrame->MoveToFront();
         m_pComparisonsFrame->SetSizeable(false);
         m_pComparisonsFrame->SetTitle("#MOM_Settings_Compare_Bogus_Run", false);
         m_pComparisonsFrame->SetTitleBarVisible(true);
@@ -139,22 +141,23 @@ class ComparisonsSettingsPage : public SettingsPage
             char buf[64];
             m_pMaxZones->GetText(buf, sizeof(buf));
             int zonesNum = atoi(buf);
-            if (zonesNum > 0 && zonesNum < 11)
+            if (zonesNum < 0) // Less than min
+            {
+                zones.SetValue(1);
+            }
+            else if (zonesNum > 10) // Greater than max
+            {
+                zones.SetValue(10);
+            }
+            else // In range
             {
                 zones.SetValue(zonesNum);
-            }
-            else // Out of range, set to default
-            {
-                const char *pDefault = zones.GetDefault();
-                zones.SetValue(pDefault);
-                m_pMaxZones->SetText(pDefault);
             }
         }
 
         if (m_pTimeType)
         {
-            ConVarRef timeType("mom_comparisons_time_type");
-            timeType.SetValue(m_pTimeType->GetActiveItem());
+            ConVarRef("mom_comparisons_time_type").SetValue(m_pTimeType->GetActiveItem());
         }
     }
 
@@ -162,14 +165,12 @@ class ComparisonsSettingsPage : public SettingsPage
     {
         if (m_pMaxZones)
         {
-            ConVarRef stages("mom_comparisons_max_zones");
-            m_pMaxZones->SetText(stages.GetString());
+            m_pMaxZones->SetText(ConVarRef("mom_comparisons_max_zones").GetString());
         }
 
         if (m_pTimeType)
         {
-            ConVarRef timeType("mom_comparisons_time_type");
-            m_pTimeType->ActivateItemByRow(timeType.GetInt());
+           m_pTimeType->ActivateItemByRow(ConVarRef("mom_comparisons_time_type").GetInt());
         }
     }
 
@@ -208,6 +209,9 @@ class ComparisonsSettingsPage : public SettingsPage
             //Keypress
             m_pJumpShow->SetEnabled(bEnabled);
             m_pStrafeShow->SetEnabled(bEnabled);
+
+            //Bogus panel
+            m_pComparisonsFrame->SetVisible(bEnabled);
         }
 
         else if (p == m_pVelocityShow)
@@ -234,16 +238,14 @@ class ComparisonsSettingsPage : public SettingsPage
         BaseClass::OnTextChanged(p);
 
         if (p == m_pMaxZones)
-        {
-            ConVarRef maxStages("mom_comparisons_max_zones");
+        {            
             char buf[64];
             m_pMaxZones->GetText(buf, 64);
             int input = Q_atoi(buf);
             if (input > 0 && input < 11)
             {
-                maxStages.SetValue(input);
+                ConVarRef("mom_comparisons_max_zones").SetValue(input);
             }
-            
         }
     }
 
@@ -260,9 +262,7 @@ class ComparisonsSettingsPage : public SettingsPage
 
     MESSAGE_FUNC_PTR(CursorExitedCallback, "OnCursorExited", panel)
     {
-        int bogusPulse = DetermineBogusPulse(panel);
-
-        if (bogusPulse > 0)
+        if (DetermineBogusPulse(panel) > 0)
         {
             m_pBogusComparisonsPanel->ClearBogusPulse();
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(m_pComparisonsFrame, "StopPulseComparePanel");
@@ -289,7 +289,6 @@ private:
 
     int DetermineBogusPulse(Panel *panel)
     {
-        CUtlFlags<int> flag;
         int bogusPulse = 0;
         if (panel == m_pJumpShow)
         {
