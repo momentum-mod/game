@@ -85,16 +85,16 @@ class ComparisonsSettingsPage : public SettingsPage
 
     ~ComparisonsSettingsPage()
     {
-        
+        DestroyBogusComparePanel();
     }
 
     void DestroyBogusComparePanel()
     {
-        if (m_pComparisonsFrame)
-            m_pComparisonsFrame->DeletePanel();
-
         if (m_pBogusComparisonsPanel)
             m_pBogusComparisonsPanel->DeletePanel();
+
+        if (m_pComparisonsFrame)
+            m_pComparisonsFrame->DeletePanel();
 
         m_pComparisonsFrame = nullptr;
         m_pBogusComparisonsPanel = nullptr;
@@ -106,7 +106,7 @@ class ComparisonsSettingsPage : public SettingsPage
         m_pComparisonsFrame->SetSize(350, scheme()->GetProportionalScaledValue(275));
         m_pComparisonsFrame->SetMoveable(true);
         m_pComparisonsFrame->SetSizeable(false);
-        m_pComparisonsFrame->SetTitle("", false);//MOM_TODO: "#MOM_Settings_Compare_Panel"
+        m_pComparisonsFrame->SetTitle("#MOM_Settings_Compare_Bogus_Run", false);
         m_pComparisonsFrame->SetTitleBarVisible(true);
         m_pComparisonsFrame->SetCloseButtonVisible(true);
         m_pComparisonsFrame->SetMinimizeButtonVisible(false);
@@ -116,6 +116,8 @@ class ComparisonsSettingsPage : public SettingsPage
         m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel");
         m_pBogusComparisonsPanel->SetParent(m_pComparisonsFrame);
         m_pBogusComparisonsPanel->AddActionSignalTarget(this);
+        m_pBogusComparisonsPanel->SetPaintBackgroundEnabled(true);
+        m_pBogusComparisonsPanel->SetPaintBackgroundType(2);
         m_pBogusComparisonsPanel->Init();
         m_pBogusComparisonsPanel->SetSize(200, 150);
         m_pBogusComparisonsPanel->SetPos(14, 30);
@@ -133,14 +135,19 @@ class ComparisonsSettingsPage : public SettingsPage
 
         if (m_pMaxZones)
         {
-            ConVarRef stages("mom_comparisons_max_zones");
+            ConVarRef zones("mom_comparisons_max_zones");
             char buf[64];
             m_pMaxZones->GetText(buf, sizeof(buf));
-            int stagesNum = atoi(buf);
-            //MOM_TODO: This needs changing if mom_comparisons_max_stages has a new caps
-            if (stagesNum > 0 && stagesNum < 65)
+            int zonesNum = atoi(buf);
+            if (zonesNum > 0 && zonesNum < 11)
             {
-                stages.SetValue(stagesNum);
+                zones.SetValue(zonesNum);
+            }
+            else // Out of range, set to default
+            {
+                const char *pDefault = zones.GetDefault();
+                zones.SetValue(pDefault);
+                m_pMaxZones->SetText(pDefault);
             }
         }
 
@@ -177,7 +184,6 @@ class ComparisonsSettingsPage : public SettingsPage
             //Turn everything on/off
             bool bEnabled = m_pCompareShow->IsSelected();
 
-            //MOM_TODO: Turn everything off
             m_pMaxZones->SetEnabled(bEnabled);
             m_pCompareFormat->SetEnabled(bEnabled);
 
@@ -233,17 +239,11 @@ class ComparisonsSettingsPage : public SettingsPage
             char buf[64];
             m_pMaxZones->GetText(buf, 64);
             int input = Q_atoi(buf);
-            //MOM_TODO: If the max stages clamp changes, this needs to as well!
-            if (input > 0 && input < 65)
+            if (input > 0 && input < 11)
             {
                 maxStages.SetValue(input);
             }
-            else // Out of range, set to default
-            {
-                const char *pDefault = maxStages.GetDefault();
-                maxStages.SetValue(pDefault);
-                m_pMaxZones->SetText(pDefault);
-            }
+            
         }
     }
 
@@ -274,11 +274,6 @@ class ComparisonsSettingsPage : public SettingsPage
         int scaledPad = scheme()->GetProportionalScaledValue(15);
         m_pComparisonsFrame->SetSize(wide + scaledPad, tall + float(scaledPad) * 1.5f);
         m_pBogusComparisonsPanel->SetPos(m_pComparisonsFrame->GetXPos() + scaledPad/2, m_pComparisonsFrame->GetYPos() + scaledPad);
-    }
-
-    MESSAGE_FUNC(OnMainDialogClose, "OnClose")
-    {
-        DestroyBogusComparePanel();
     }
 
 private:

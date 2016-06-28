@@ -235,12 +235,27 @@ void MomentumUtil::GenerateBogusComparison(KeyValues* kvOut)
 
 void MomentumUtil::GenerateBogusRunStats(C_MomRunStats* pStatsOut)
 {
-    //RandomSeed(Plat_FloatTime());
-    pStatsOut = new C_MomRunStats();
-    /*for (int i = 0; i < MAX_STAGES; i++)
+    RandomSeed(Plat_FloatTime());
+    for (int i = 0; i < MAX_STAGES; i++)
     {
-        pStatsOut->Set
-    }*/
+        //Time
+        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
+        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
+
+        //Velocity
+        pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+
+        //Sync
+        pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
+        pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
+
+        //Keypress
+        pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
+        pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
+    }
 }
 
 #endif

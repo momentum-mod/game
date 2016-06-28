@@ -72,7 +72,7 @@ public:
         GetPos(m_iDefaultXPos, m_iDefaultYPos);//gets "xpos" and "ypos" from scheme .res file
     }
 
-    //Bogus Pulse is a flag-based variable, using the run_compare enum
+    //Bogus Pulse is a flag-based variable, using the run_compare enum. Allows for multiple parsing.
     void SetBogusPulse(int i)
     {
         m_nCurrentBogusPulse |= i;
@@ -84,9 +84,29 @@ public:
         PostActionSignal(new KeyValues("OnSizeChange", "wide", wide, "tall", tall));
     }
 
+    int GetCurrentZone() const
+    {
+        return m_bLoadedBogusComparison ? MAX_STAGES - 1 : m_iCurrentZone;
+    }
+
     void ClearBogusPulse()
     {
         m_nCurrentBogusPulse = 0;
+    }
+
+    bool LoadedComparison()
+    {
+        return m_bLoadedComparison || m_bLoadedBogusComparison;
+    }
+
+    RunCompare_t *GetRunComparisons() const
+    {
+        return m_bLoadedBogusComparison ? m_rcBogusComparison : m_rcCurrentComparison;
+    }
+
+    C_MomRunStats *GetRunStats() const
+    {
+        return m_bLoadedBogusComparison ? m_pBogusRunStats : m_pRunStats;
     }
 
 protected:
@@ -116,9 +136,9 @@ private:
     int m_iDefaultWidth, m_iDefaultTall, m_iDefaultXPos, m_iDefaultYPos;
     int m_iMaxWide, m_iWidestLabel, m_iWidestValue;
     int m_iCurrentZone, m_iCurrentEntIndex;
-    bool m_bLoadedComparison, m_bBogusComparison;
-    RunCompare_t *m_rcCurrentComparison;
-    CMomRunStats *m_pRunStats;
+    bool m_bLoadedComparison, m_bLoadedBogusComparison;
+    RunCompare_t *m_rcCurrentComparison, *m_rcBogusComparison;
+    CMomRunStats *m_pRunStats, *m_pBogusRunStats;
     int m_nCurrentBogusPulse;
 
 };

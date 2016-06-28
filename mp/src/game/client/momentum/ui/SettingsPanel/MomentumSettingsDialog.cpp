@@ -21,14 +21,15 @@ class CMomentumSettingsPanel : public PropertyDialog
     CMomentumSettingsPanel(VPANEL parent); // Constructor
     ~CMomentumSettingsPanel();           // Destructor
 
+    void Activate() override
+    {
+        BaseClass::Activate();
+        PostActionSignal(new KeyValues("OnActivate"));
+    }
+
   protected:
     // VGUI overrides:
     void OnTick() override;
-    void OnClose() override
-    {
-        BaseClass::OnClose();
-        PostActionSignal(new KeyValues("OnClose"));
-    }
 
   private:
     SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings;
@@ -44,6 +45,9 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetMouseInputEnabled(true);
 
     SetMinimumSize(500, 500);
+    int wide, tall;
+    surface()->GetScreenSize(wide, tall);
+    SetPos(wide / 3, tall / 4);
     SetApplyButtonVisible(true);
     SetTitleBarVisible(true);
     SetMinimizeButtonVisible(false);
