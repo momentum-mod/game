@@ -82,7 +82,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
         SetDisplayValue(0);
         SetSecondaryValue(0);
         m_flNextColorizeCheck = 0;
-        stageStartAlpha = 255;
+        stageStartAlpha = 0.0f;
     }
 
     void OnThink() override;
@@ -108,11 +108,6 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
             // Fade the enter speed after 5 seconds (in event)
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutEnterSpeed");
         }
-        else if (!Q_strcmp(pEvent->GetName(), "zone_enter"))
-        {
-            // Reset the alpha if we hit a stage enter again
-            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("ResetEnterSpeed");
-        }
     }
 
   private:
@@ -134,8 +129,8 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
   protected:
     CPanelAnimationVar(Color, _bgColor, "BgColor", "Blank");
     // NOTE: These need to be floats because of animations (thanks volvo)
-    CPanelAnimationVar(float, stageStartAlpha, "StageAlpha", "255.0"); // Used for fading
-    CPanelAnimationVar(float, lastJumpAlpha, "JumpAlpha", "255.0");
+    CPanelAnimationVar(float, stageStartAlpha, "StageAlpha", "0.0"); // Used for fading
+    CPanelAnimationVar(float, lastJumpAlpha, "JumpAlpha", "0.0");
 };
 
 DECLARE_NAMED_HUDELEMENT(CHudSpeedMeter, HudSpeedMeter);
@@ -144,7 +139,6 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudSpeedMeter")
 {
     ListenForGameEvent("zone_exit");
-    ListenForGameEvent("zone_enter");
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);

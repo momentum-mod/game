@@ -34,7 +34,7 @@ class ControlsSettingsPage : public SettingsPage
 
     void LoadSettings() override
     {
-        UpdateYawspeedLabel();
+        UpdateYawspeedEntry();
     }
 
     void OnTextChanged(Panel *p) override
@@ -60,13 +60,13 @@ class ControlsSettingsPage : public SettingsPage
 
         if (p == m_pYawSpeedSlider && m_pYawSpeedSlider->HasBeenModified())
         {
-            UpdateYawspeedLabel();
+            UpdateYawspeedEntry();
         }
     }
 
 private:
 
-    void UpdateYawspeedLabel()
+    void UpdateYawspeedEntry() const
     {
         char buf[64];
         Q_snprintf(buf, sizeof(buf), " %.1f", m_pYawSpeedSlider->GetSliderValue());

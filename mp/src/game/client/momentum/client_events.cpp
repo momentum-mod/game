@@ -63,6 +63,40 @@ void CMOMClientEvents::PostInit()
         VCRHook_RegCloseKey(hKey);
     }
 #endif
+
+    MountAdditionalContent();
+}
+
+void CMOMClientEvents::MountAdditionalContent()
+{
+    // From the Valve SDK wiki
+    KeyValues *pMainFile = new KeyValues("gameinfo.txt");
+    bool bLoad = false;
+#ifndef _WINDOWS
+    // case sensitivity
+    bLoad = pMainFile->LoadFromFile(filesystem, "GameInfo.txt", "MOD");
+#endif
+    if (!bLoad)
+        bLoad = pMainFile->LoadFromFile(filesystem, "gameinfo.txt", "MOD");
+
+    if (pMainFile && bLoad)
+    {
+        KeyValues *pFileSystemInfo = pMainFile->FindKey("FileSystem");
+        if (pFileSystemInfo)
+        {
+            for (KeyValues *pKey = pFileSystemInfo->GetFirstSubKey(); pKey; pKey = pKey->GetNextKey())
+            {
+                if (Q_strcmp(pKey->GetName(), "AdditionalContentId") == 0)
+                {
+                    int appid = abs(pKey->GetInt());
+                    if (appid)
+                        if (filesystem->MountSteamContent(-appid) != FILESYSTEM_MOUNT_OK)
+                            Warning("Unable to mount extra content with appId: %i\n", appid);
+                }
+            }
+        } 
+    }
+    pMainFile->deleteThis();
 }
 
 CMOMClientEvents g_MOMClientEvents("CMOMClientEvents");

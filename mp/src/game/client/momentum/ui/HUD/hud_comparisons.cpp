@@ -25,7 +25,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run co
 // MOM_TODO: 64 stages max is a lot, perhaps reduce it to like 10? But you know people and their customization
 // options...
 static MAKE_CONVAR(mom_comparisons_max_stages, "4", FLAG_HUD_CVAR,
-                   "Max number of stages to show on the comparison panel.", 0, 64);
+                   "Max number of stages to show on the comparison panel.", 1, 64);
 
 // Format the output to look pretty?
 static MAKE_TOGGLE_CONVAR(mom_comparisons_format_output, "1", FLAG_HUD_CVAR,
@@ -38,7 +38,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_time_type, "0", FLAG_HUD_CVAR,
                           "(compare against time spent on stage)");
 static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_overall, "1", FLAG_HUD_CVAR,
                           "Toggle showing comparison to overall time for the run. 0 = OFF, 1 = ON");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perstage, "0", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perzone, "1", FLAG_HUD_CVAR,
                           "Toggle showing comparison to time spent on stage. 0 = OFF, 1 = ON");
 
 // Velocity
@@ -59,7 +59,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show, "0", FLAG_HUD_CVAR,
 static MAKE_TOGGLE_CONVAR(
     mom_comparisons_sync_show_sync1, "0", FLAG_HUD_CVAR,
     "Toggle showing average stage Sync1 (perfect strafe ticks / total strafe ticks). 0 = OFF, 1 = ON");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show_sync2, "0", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show_sync2, "1", FLAG_HUD_CVAR,
                           "Toggle showing average stage Sync2 (accel ticks / total strafe ticks). 0 = OFF, 1 = ON");
 
 // Keypress
@@ -206,13 +206,13 @@ void C_RunComparisons::OnThink()
         m_iCurrentZone = pGhost ? pGhost->m_RunData.m_iCurrentZone : pPlayer->m_RunData.m_iCurrentZone;
     }
 
-    if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perstage.GetBool())
+    if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perzone.GetBool())
     {
         // Uh oh, both overall and perstage were turned off, let's turn back on the one they want to compare
         bool showStage = mom_comparisons_time_type.GetBool(); // 0 = overall, 1 = perstage
         if (showStage)
         {
-            mom_comparisons_time_show_perstage.SetValue(1);
+            mom_comparisons_time_show_perzone.SetValue(1);
         }
         else
         {
@@ -244,7 +244,7 @@ int C_RunComparisons::GetMaximumTall()
                 // Note: They actually could show both, but one is always on
                 if (mom_comparisons_time_show_overall.GetBool())
                     toReturn += fontTall;
-                if (mom_comparisons_time_show_perstage.GetBool())
+                if (mom_comparisons_time_show_perzone.GetBool())
                     toReturn += fontTall;
                 // Vel
                 if (mom_comparisons_vel_show.GetBool())
@@ -628,7 +628,7 @@ void C_RunComparisons::Paint()
                     DrawComparisonString(TIME_OVERALL, i, Y);
                     Y += yToIncrementBy;
                 }
-                if (mom_comparisons_time_show_perstage.GetBool())
+                if (mom_comparisons_time_show_perzone.GetBool())
                 {
                     DrawComparisonString(ZONE_TIME, i, Y);
                     Y += yToIncrementBy;

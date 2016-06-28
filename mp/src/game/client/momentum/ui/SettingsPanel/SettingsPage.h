@@ -16,6 +16,8 @@ class SettingsPage : public PropertyPage
 
     SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
     {
+        SetAutoDelete(true);
+
         //This hooks into the parent for the "ApplyChanges" message sent by OK/Apply buttons
         pParent->AddActionSignalTarget(this);
 
@@ -30,13 +32,11 @@ class SettingsPage : public PropertyPage
         //Lastly, the scroll panel so we can scroll through our settings page.
         m_pScrollPanel = new ScrollableEditablePanel(pParent, this, "ScrollablePanel");
         m_pScrollPanel->SetProportional(true);
+        m_pScrollPanel->SetAutoDelete(true);
     }
 
     ~SettingsPage()
     {
-        if (m_pScrollPanel)
-            m_pScrollPanel->DeletePanel();
-        m_pScrollPanel = nullptr;
     }
 
     // Let the PropertyDialog know that something changed on me, so the Apply button can be enabled again.
