@@ -43,16 +43,10 @@ event MenuClose
 event FadeOutEnterSpeed
 {
     //Reset the alpha for this event
-    RunEvent ResetEnterSpeed 0.0
+    Animate HudSpeedMeter StageAlpha "255" Linear 0.0 0.001
     
     //Take 5 seconds to fade the number out
     Animate HudSpeedMeter StageAlpha "0" Accel 5.0 0.75
-}
-
-event ResetEnterSpeed
-{
-   //Reset the alpha back to normal immediately
-   Animate HudSpeedMeter StageAlpha "255" Linear 0.0 0.001
 }
 
 event FadeOutJumpSpeed
