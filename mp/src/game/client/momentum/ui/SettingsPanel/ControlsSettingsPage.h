@@ -19,8 +19,6 @@ class ControlsSettingsPage : public SettingsPage
 
         m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
         m_pYawSpeedEntry->AddActionSignalTarget(this);
-
-        LoadSettings();
     }
 
     ~ControlsSettingsPage() {}

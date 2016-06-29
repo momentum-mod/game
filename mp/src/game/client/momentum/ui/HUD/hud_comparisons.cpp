@@ -667,12 +667,18 @@ void C_RunComparisons::Paint()
 
             ANSI_TO_UNICODE(stageString, stageStringUnicode);
 
+            Color fgColorOverride = GetFgColor();
+
+            if (m_bLoadedBogusComparison && (m_nCurrentBogusPulse & ZONE_LABELS))
+            {
+                fgColorOverride = Color(fgColorOverride.r(), fgColorOverride.g(), fgColorOverride.b(), bogus_alpha);
+            }
+
             // print "Stage ## "
-            surface()->DrawSetTextColor(GetFgColor());
+            surface()->DrawSetTextColor(fgColorOverride);
             surface()->DrawSetTextPos(text_xpos, Y);
             surface()->DrawPrintText(stageStringUnicode, wcslen(stageStringUnicode));
 
-            Color comparisonColor = Color(GetFgColor());
 
             if (i == (currentStage - 1))
             {
@@ -750,25 +756,34 @@ void C_RunComparisons::Paint()
             }
             else
             {
+                // It's a stage before the very last one we've been to.
+
                 // This is done here and not through DrawComparisonString because
                 // we only need to get the time comparison string, nothing else.
                 ComparisonString_t timeType = mom_comparisons_time_type.GetBool() ? ZONE_TIME : TIME_OVERALL;
                 char timeComparisonString[BUFSIZELOCL];
                 wchar_t timeComparisonStringUnicode[BUFSIZELOCL];
 
-                // It's a stage before the very last one we've been to.
-                // print "          (+/- XX:XX.XX)" with colorization
                 int newXPos = text_xpos                                           // Base starting X pos
                               + UTIL_ComputeStringWidth(m_hTextFont, stageString) //"Stage ## "
                               + 2;                                                // Padding
 
+                Color comparisonColor = Color(GetFgColor());
+
                 // Get just the comparison value, no actual value needed as it clutters up the panel
                 GetComparisonString(timeType, GetRunStats(), i, nullptr, timeComparisonString, &comparisonColor);
+
+                if (m_bLoadedBogusComparison && (m_nCurrentBogusPulse & ZONE_LABELS_COMP))
+                {
+                    comparisonColor = Color(comparisonColor.r(), comparisonColor.g(), comparisonColor.b(), bogus_alpha);
+                }
 
                 // See if this updates our max width.
                 SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, timeComparisonString) + 2);
 
                 ANSI_TO_UNICODE(timeComparisonString, timeComparisonStringUnicode);
+
+                // print "          (+/- XX:XX.XX)" with colorization
                 surface()->DrawSetTextColor(comparisonColor);
                 surface()->DrawSetTextPos(newXPos, Y);
                 surface()->DrawPrintText(timeComparisonStringUnicode, wcslen(timeComparisonStringUnicode));

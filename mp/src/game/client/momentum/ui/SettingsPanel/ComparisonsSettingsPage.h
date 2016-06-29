@@ -24,6 +24,8 @@ class ComparisonsSettingsPage : public SettingsPage
         m_pMaxZones = FindControl<TextEntry>("Zones");
         m_pMaxZones->AddActionSignalTarget(this);
 
+        m_pMaxZonesLabel = FindControl<Label>("ZonesLabel");
+
         m_pCompareFormat = FindControl<CvarToggleCheckButton<ConVarRef>>("CompareFormat");
         m_pCompareFormat->AddActionSignalTarget(this);
 
@@ -79,8 +81,6 @@ class ComparisonsSettingsPage : public SettingsPage
         m_pStrafeShow->AddActionSignalTarget(this);
 
         InitBogusComparePanel();
-
-        LoadSettings();
     }
 
     ~ComparisonsSettingsPage()
@@ -102,7 +102,7 @@ class ComparisonsSettingsPage : public SettingsPage
 
     void InitBogusComparePanel()
     {
-        
+        //Initialize the frame we're putting this into
         m_pComparisonsFrame = new Frame(GetScrollPanel(), "ComparisonsFrame");
         m_pComparisonsFrame->SetSize(350, scheme()->GetProportionalScaledValue(275));
         m_pComparisonsFrame->SetMoveable(false);
@@ -113,8 +113,10 @@ class ComparisonsSettingsPage : public SettingsPage
         m_pComparisonsFrame->SetCloseButtonVisible(true);
         m_pComparisonsFrame->SetMinimizeButtonVisible(false);
         m_pComparisonsFrame->SetMaximizeButtonVisible(false);
-        m_pComparisonsFrame->PinToSibling(GetName(), PIN_TOPRIGHT, PIN_TOPLEFT);
+        m_pComparisonsFrame->PinToSibling(GetName(), PIN_CENTER_RIGHT, PIN_CENTER_LEFT);
         m_pComparisonsFrame->SetParent(this);
+        
+        //Initialize a bogus version of the HUD element
         m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel");
         m_pBogusComparisonsPanel->SetParent(m_pComparisonsFrame);
         m_pBogusComparisonsPanel->AddActionSignalTarget(this);
@@ -127,8 +129,22 @@ class ComparisonsSettingsPage : public SettingsPage
         scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
         m_pBogusComparisonsPanel->ApplySchemeSettings(scheme()->GetIScheme(scheme()->GetScheme("ClientScheme")));
         m_pBogusComparisonsPanel->SetVisible(true);
-        m_pComparisonsFrame->SetVisible(true);
         m_pBogusComparisonsPanel->MakeReadyForUse();
+
+        //Finally, set the frame visible (after the bogus panel is loaded and dandy)
+        m_pComparisonsFrame->SetVisible(true);
+    }
+
+    void OnMainDialogClosed() const
+    {
+        if (m_pComparisonsFrame)
+            m_pComparisonsFrame->Close();
+    }
+
+    void OnMainDialogShow() const
+    {
+        if (m_pComparisonsFrame)
+            m_pComparisonsFrame->SetVisible(true);
     }
 
     void OnApplyChanges() override
@@ -186,6 +202,7 @@ class ComparisonsSettingsPage : public SettingsPage
             bool bEnabled = m_pCompareShow->IsSelected();
 
             m_pMaxZones->SetEnabled(bEnabled);
+            m_pMaxZonesLabel->SetEnabled(bEnabled);
             m_pCompareFormat->SetEnabled(bEnabled);
 
             //Time
@@ -283,11 +300,11 @@ private:
         *m_pVelocityShowExit, *m_pSyncShow, *m_pSyncShowS1, *m_pSyncShowS2, *m_pJumpShow, *m_pStrafeShow;
     TextEntry *m_pMaxZones;
     ComboBox *m_pTimeType;
-    Label *m_pTimeTypeLabel;
+    Label *m_pTimeTypeLabel, *m_pMaxZonesLabel;
     Frame *m_pComparisonsFrame;
     C_RunComparisons *m_pBogusComparisonsPanel;
 
-    int DetermineBogusPulse(Panel *panel)
+    int DetermineBogusPulse(Panel *panel) const
     {
         int bogusPulse = 0;
         if (panel == m_pJumpShow)
@@ -341,6 +358,28 @@ private:
         else if (panel == m_pTimeShowZone)
         {
             bogusPulse |= ZONE_TIME;
+        }
+        else if (panel == m_pMaxZones || panel == m_pMaxZonesLabel)
+        {
+            bogusPulse |= ZONE_LABELS;
+        }
+        else if (panel == m_pTimeType || panel == m_pTimeTypeLabel)
+        {
+            bogusPulse |= ZONE_LABELS_COMP;
+        }
+        else if (panel == m_pCompareFormat)
+        {
+            //Just fade everything since formatting affects them all
+            bogusPulse |= ZONE_TIME;
+            bogusPulse |= TIME_OVERALL;
+            bogusPulse |= VELOCITY_AVERAGE;
+            bogusPulse |= VELOCITY_MAX;
+            bogusPulse |= VELOCITY_ENTER;
+            bogusPulse |= VELOCITY_EXIT;
+            bogusPulse |= ZONE_SYNC1;
+            bogusPulse |= ZONE_SYNC2;
+            bogusPulse |= ZONE_JUMPS;
+            bogusPulse |= ZONE_STRAFES;
         }
 
         return bogusPulse;

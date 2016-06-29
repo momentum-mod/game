@@ -21,10 +21,26 @@ class CMomentumSettingsPanel : public PropertyDialog
     CMomentumSettingsPanel(VPANEL parent); // Constructor
     ~CMomentumSettingsPanel();           // Destructor
 
+    void OnClose() override
+    {
+        BaseClass::OnClose();
+
+        //Let the comparisons settings page know so the bogus panel can fade too
+        if (GetActivePage() && GetActivePage() == m_pCompareSettings->GetParent())
+        {
+            dynamic_cast<ComparisonsSettingsPage*>(m_pCompareSettings)->OnMainDialogClosed();
+        }
+    }
+
     void Activate() override
     {
         BaseClass::Activate();
-        PostActionSignal(new KeyValues("OnActivate"));
+
+        //Let the comparisons settings page know so the bogus panel can show back up
+        if (GetActivePage() && GetActivePage() == m_pCompareSettings->GetParent())
+        {
+            dynamic_cast<ComparisonsSettingsPage*>(m_pCompareSettings)->OnMainDialogShow();
+        }
     }
 
   protected:

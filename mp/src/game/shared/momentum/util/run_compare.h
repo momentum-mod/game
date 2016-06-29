@@ -31,5 +31,9 @@ enum ComparisonString_t
     ZONE_SYNC1 = (1 << 6),       // Average zone sync1
     ZONE_SYNC2 = (1 << 7),       // Average zone sync2
     ZONE_JUMPS = (1 << 8),       // Number of jumps on this zone
-    ZONE_STRAFES = (1 << 9)      // Number of strafes on this zone
+    ZONE_STRAFES = (1 << 9),     // Number of strafes on this zone
+
+    //The below are used only in a bogus hud_comparisons, for the settings panel
+    ZONE_LABELS = (1 << 10),     //The "Stage/Checkpoint ###" labels 
+    ZONE_LABELS_COMP = (1 << 11) //The (+/- XX:XX.XX) next to the above label
 };

@@ -56,8 +56,6 @@ class HudSettingsPage : public SettingsPage
 
         m_pButtonsShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ButtonsShow");
         m_pButtonsShow->AddActionSignalTarget(this);
-
-        LoadSettings();
     }
 
     ~HudSettingsPage() {}
