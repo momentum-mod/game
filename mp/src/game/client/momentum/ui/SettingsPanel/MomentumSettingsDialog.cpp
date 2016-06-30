@@ -137,6 +137,8 @@ CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n",
 
 void CMomentumSettingsPanel::OnThink()
 {
+    BaseClass::OnThink();
+
     if (g_pClientMode->GetViewport() && g_pClientMode->GetViewportAnimationController())
         g_pClientMode->GetViewportAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
