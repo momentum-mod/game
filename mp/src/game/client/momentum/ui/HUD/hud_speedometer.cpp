@@ -106,6 +106,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
         if (!Q_strcmp(pEvent->GetName(), "zone_exit"))
         {
             // Fade the enter speed after 5 seconds (in event)
+            stageStartAlpha = 255.0f;
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutEnterSpeed");
         }
     }
@@ -180,12 +181,16 @@ void CHudSpeedMeter::OnThink()
         if (gpGlobals->curtime - lastJumpTime > LASTJUMPVEL_TIMEOUT)
         {
             if (!m_bRanFadeOutJumpSpeed)
-                m_bRanFadeOutJumpSpeed =
+            {
+                m_bRanFadeOutJumpSpeed = 
                     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("FadeOutJumpSpeed");
+            }
         }
         else
         {
-            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("ResetJumpSpeed");
+            //Keep the alpha at full opaque so we can see it
+            //MOM_TODO: If we want it to fade back in, we should use an event here
+            lastJumpAlpha = 255.0f;
             m_bRanFadeOutJumpSpeed = false;
         }
         // Remove the vertical component if necessary
@@ -277,9 +282,8 @@ void CHudSpeedMeter::Paint()
     digit2_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallNumberFont, lastJumpvValue) / 2;
 
     // Fade out the secondary value (last jump speed) based on the lastJumpAlpha value
-    Color newSecondary =
+    m_SecondaryValueColor =
         Color(m_SecondaryValueColor.r(), m_SecondaryValueColor.g(), m_SecondaryValueColor.b(), lastJumpAlpha);
-    m_SecondaryValueColor = newSecondary;
 
     BaseClass::Paint();
 

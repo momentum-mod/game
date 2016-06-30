@@ -165,13 +165,19 @@ void MomentumUtil::GetRemoteChangelog()
 
 void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
 {
+    const char *pError = "Error loading changelog!";
     if (bIOFailure)
+    {
+        pError = "Error loading changelog due to bIOFailure!";
+        versionwarnpanel->SetChangelog(pError);
         return;
+    }
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     if (size == 0)
     {
-        Warning("MomentumUtil::ChangelogCallback: 0 body size!\n");
+        pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
+        versionwarnpanel->SetChangelog(pError);
         return;
     }
 

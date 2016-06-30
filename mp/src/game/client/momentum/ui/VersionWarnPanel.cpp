@@ -9,10 +9,13 @@
 CVersionWarnPanel::CVersionWarnPanel(VPANEL parent) : BaseClass(nullptr, "VersionWarnPanel")
 {
     V_memset(m_cOnlineVersion, 0, sizeof(m_cOnlineVersion));
+    V_memset(m_pwOnlineChangelog, 0, sizeof(m_pwOnlineChangelog));
+
     SetParent(parent);
     LoadControlSettings("resource/ui/versionwarnpanel.res");
     m_pReleaseText = FindControl<URLLabel>("ReleaseText", true);
     m_pChangeLog = FindControl<RichText>("ChangeLog", true);
+    m_flScrollTime = -1.0f;
 
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
@@ -26,7 +29,6 @@ CVersionWarnPanel::CVersionWarnPanel(VPANEL parent) : BaseClass(nullptr, "Versio
     SetVisible(false);
     SetProportional(true);
 
-    //SetScheme(scheme()->LoadSchemeFromFile("resource/SourceScheme.res", "SourceScheme"));
     if (!m_pReleaseText || !m_pChangeLog)
     {
         Assert("Missing one more gameui controls from ui/versionwarnpanel.res");
@@ -36,7 +38,6 @@ CVersionWarnPanel::CVersionWarnPanel(VPANEL parent) : BaseClass(nullptr, "Versio
 // Called when the versions don't match (there's an update)
 void CVersionWarnPanel::Activate()
 {
-    //HFont m_hfReleaseFont = m_pReleaseText->GetFont();
     char m_cReleaseText[225];
     m_pReleaseText->GetText(m_cReleaseText, sizeof(m_cReleaseText));
     char m_cReleaseF[225];
@@ -46,17 +47,6 @@ void CVersionWarnPanel::Activate()
     m_pReleaseText->SetURL("https://github.com/momentum-mod/game/releases");
 
     BaseClass::Activate();
-}
-
-void CVersionWarnPanel::OnCommand(const char *pcCommand)
-{
-    BaseClass::OnCommand(pcCommand);
-
-    if (!Q_stricmp(pcCommand, "turnoff"))
-    {
-        SetVisible(false);
-        Close();
-    }
 }
 
 CON_COMMAND(mom_version, "Prints mod current installed version")

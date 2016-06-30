@@ -42,9 +42,6 @@ event MenuClose
 //Fades out the stage enter speed 
 event FadeOutEnterSpeed
 {
-    //Reset the alpha for this event
-    Animate HudSpeedMeter StageAlpha "255" Linear 0.0 0.001
-    
     //Take 5 seconds to fade the number out
     Animate HudSpeedMeter StageAlpha "0" Accel 5.0 0.75
 }

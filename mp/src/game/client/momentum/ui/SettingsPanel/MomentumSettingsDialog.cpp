@@ -45,7 +45,7 @@ class CMomentumSettingsPanel : public PropertyDialog
 
   protected:
     // VGUI overrides:
-    void OnTick() override;
+    void OnThink() override;
 
   private:
     SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings;
@@ -84,8 +84,6 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     //MOM_TODO: Add the other settings panels here.
 
     SetScheme("SourceScheme");
-
-    ivgui()->AddTickSignal(GetVPanel());
 }
 
 CMomentumSettingsPanel::~CMomentumSettingsPanel()
@@ -137,7 +135,7 @@ CON_COMMAND_F(mom_settings_show, "Shows the settings panel.\n",
     momentum_settings->Activate();
 }
 
-void CMomentumSettingsPanel::OnTick()
+void CMomentumSettingsPanel::OnThink()
 {
     if (g_pClientMode->GetViewport() && g_pClientMode->GetViewportAnimationController())
         g_pClientMode->GetViewportAnimationController()->UpdateAnimations(system()->GetFrameTime());
