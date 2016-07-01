@@ -695,7 +695,6 @@ public:
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
         if (!pPlayer)
             return;
-        Vector velocity = pPlayer->GetAbsVelocity();
 
         if (!pPlayer->m_bHasPracticeMode)
         {

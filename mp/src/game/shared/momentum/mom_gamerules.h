@@ -52,6 +52,8 @@ class CMomentumGameRules : public CSingleplayRules
 
     void ClientSettingsChanged(CBasePlayer *) override;
 
+    bool FAllowNPCs() override { return false; }
+
   private:
     // void AdjustPlayerDamageTaken(CTakeDamageInfo *pInfo);
     // float AdjustPlayerDamageInflicted(float damage);
