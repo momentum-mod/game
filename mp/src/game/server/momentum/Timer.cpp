@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "Timer.h"
+#include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
@@ -698,8 +699,9 @@ public:
 
         if (!pPlayer->m_bHasPracticeMode)
         {
-            if (velocity.Length2DSqr() != 0)
-                DevLog("You cannot enable practice mode while moving!\n");
+            int b = pPlayer->m_nButtons;
+            if (b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP || b & IN_DUCK || b & IN_WALK)
+                Warning("You cannot enable practice mode while moving!\n");
             else
                 g_Timer->EnablePractice(pPlayer);
         }
@@ -710,7 +712,7 @@ public:
 
 
 static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove, "Toggle. Stops timer and allows player to fly around in noclip.\n" 
-    "Only activates when player is standing still (xy vel = 0)\n",
+    "Only activates when player is not pressing any movement inputs.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE);
 static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
