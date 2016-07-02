@@ -19,6 +19,9 @@ class ControlsSettingsPage : public SettingsPage
 
         m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
         m_pYawSpeedEntry->AddActionSignalTarget(this);
+
+        m_pPlayBlockSound = FindControl<CvarToggleCheckButton<ConVarRef>>("PlayBlockSound");
+        m_pPlayBlockSound->AddActionSignalTarget(this);
     }
 
     ~ControlsSettingsPage() {}
@@ -70,7 +73,7 @@ private:
         Q_snprintf(buf, sizeof(buf), " %.1f", m_pYawSpeedSlider->GetSliderValue());
         m_pYawSpeedEntry->SetText(buf);
     }
-
+    CvarToggleCheckButton<ConVarRef> *m_pPlayBlockSound;
     CCvarSlider *m_pYawSpeedSlider;
     TextEntry *m_pYawSpeedEntry;
 };
