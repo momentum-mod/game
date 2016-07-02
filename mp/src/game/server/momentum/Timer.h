@@ -211,7 +211,7 @@ class CTimer
 
     int m_iCurrentStepCP;
     bool m_bUsingCPMenu;
-
+public:
     // PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the
     // start trigger
@@ -219,7 +219,6 @@ class CTimer
     float m_flTickOffsetFix[MAX_STAGES]; // index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
     float m_flZoneEnterTime[MAX_STAGES];
 
-  public:
     // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }

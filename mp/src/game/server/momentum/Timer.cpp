@@ -448,6 +448,12 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
     DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", smallest, smallestCornerNum, traceDist);
     // ...and set the interval offset as this smallest time
     SetIntervalOffset(GetCurrentZoneNumber(), smallest);
+    // ..then reset the flCorners array
+    for (int i = 0; i < 8; i++)
+    {
+        m_flTickOffsetFixTraceCorners[i] = 0.0f;
+    }
+
 }
 
 // override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
@@ -457,11 +463,12 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     // store entity that we found on the trace
     CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
 
-    if (pEnt->IsSolid())
+    if (pEnt->IsSolid()) 
         return false;
 
-    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_"))) //if we aren't hitting a momentum trigger
-        return false;
+    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1) //if we aren't hitting a momentum trigger
+        return true; //the return type of EnumEntity tells the engine whether to continue enumerating future entities or not. 
+    //In this case, we want to continue in case we hit another type of trigger.
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
 
