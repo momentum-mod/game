@@ -23,13 +23,37 @@ class CTriggerCheckpoint;
 class CTriggerOnehop;
 class CTriggerStage;
 
+struct Time
+{
+    // overall run stats:
+    float time_sec; // The amount of seconds taken to complete
+    float tickrate; // Tickrate the run was done on
+    time_t date;    // Date achieved
+    int flags;
+
+    // stage specific stats:
+    CMomRunStats RunStats;
+
+    Time() : time_sec(0), tickrate(0), date(0), flags(0), RunStats() {}
+};
+
+struct Checkpoint
+{
+    Vector pos;
+    Vector vel;
+    QAngle ang;
+    char targetName[MAX_PLAYER_NAME_LENGTH];
+    char targetClassName[MAX_PLAYER_NAME_LENGTH];
+};
+
 class CTimer
 {
   public:
-    CTimer()
-        : m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_bIsRunning(false),
+      CTimer()
+          : m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_bIsRunning(false),
           m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr), m_pEndTrigger(nullptr),
-          m_pCurrentCheckpoint(nullptr), m_pCurrentStage(nullptr), m_iCurrentStepCP(0), m_bUsingCPMenu(false)
+          m_pCurrentCheckpoint(nullptr), m_pCurrentZone(nullptr), m_iCurrentStepCP(0), m_bUsingCPMenu(false),
+          m_pLocalTimes(nullptr)
     {
     }
 
@@ -56,7 +80,7 @@ class CTimer
     CTriggerCheckpoint *GetCurrentCheckpoint() const { return m_pCurrentCheckpoint.Get(); }
 
     CTriggerTimerStop *GetEndTrigger() const { return m_pEndTrigger.Get(); }
-    CTriggerStage *GetCurrentStage() const { return m_pCurrentStage.Get(); }
+    CTriggerStage *GetCurrentStage() const { return m_pCurrentZone.Get(); }
 
     // Sets the given trigger as the start trigger
     void SetStartTrigger(CTriggerTimerStart *pTrigger)
@@ -69,12 +93,12 @@ class CTimer
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint.Set(pTrigger); }
 
     void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger.Set(pTrigger); }
-    void SetCurrentStage(CTriggerStage *pTrigger)
+    //MOM_TODO: Change this to be the CTriggerZone class
+    void SetCurrentZone(CTriggerStage *pTrigger)
     {
-        m_pCurrentStage.Set(pTrigger);
-        // DispatchStageMessage();
+        m_pCurrentZone.Set(pTrigger);
     }
-    int GetCurrentZoneNumber() const { return m_pCurrentStage.Get() && m_pCurrentStage.Get()->GetStageNumber(); }
+    int GetCurrentZoneNumber() const { return m_pCurrentZone.Get() && m_pCurrentZone.Get()->GetStageNumber(); }
 
     // Calculates the stage count
     // Stores the result on m_iStageCount
@@ -140,6 +164,12 @@ class CTimer
     // Finds the onehop with the given index on the list
     CTriggerOnehop *FindOnehopOnList(int pIndexOnList);
 
+    //-------- Generic Time & Run related code
+    // Converts the provided run from kvRun into a Time struct.
+    void ConvertKVToTime(KeyValues *kvRun, Time &into) const;
+    //Converts a given Time struct into a KeyValues object into kvInto.
+    //Note: kvInto must be declared BEFORE going into the function!
+    void ConvertTimeToKV(KeyValues *kvInto, Time *from) const;
     //-------- Online-related timer commands -----------------------------
     // Tries to post the current time.
     void PostTime();
@@ -148,11 +178,20 @@ class CTimer
     //------- Local-related timer commands -------------------------------
     // Loads local times from given map name
     void LoadLocalTimes(const char *);
+    // Add a new time to the local times KV
+    void AddNewTime(Time* t) const;
     // Saves current time to a local file
-    void SaveTime();
+    void SaveTimeToFile() const;
+    // Unloads loaded times
+    void UnloadLoadedLocalTimes()
+    {
+        if (m_pLocalTimes)
+            m_pLocalTimes->deleteThis();
+        m_pLocalTimes = nullptr;
+    }
     void OnMapEnd(const char *);
     void OnMapStart(const char *);
-    void DispatchMapInfo();
+    void DispatchMapInfo() const;
     // Practice mode- noclip mode that stops timer
     // void PracticeMove(); MOM_TODO: NOT IMPLEMENTED
     void EnablePractice(CMomentumPlayer *pPlayer);
@@ -180,34 +219,12 @@ class CTimer
     CHandle<CTriggerTimerStart> m_pStartTrigger;
     CHandle<CTriggerTimerStop> m_pEndTrigger;
     CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
-    CHandle<CTriggerStage> m_pCurrentStage; // MOM_TODO: Change to m_pCurrentZone
+    CHandle<CTriggerStage> m_pCurrentZone; // MOM_TODO: Change to be the generic Zone trigger
 
-    struct Time
-    {
-        // overall run stats:
-        float time_sec; // The amount of seconds taken to complete
-        float tickrate; // Tickrate the run was done on
-        time_t date;    // Date achieved
-        int flags;
-
-        // stage specific stats:
-        CMomRunStats RunStats;
-
-        Time() : time_sec(0), tickrate(0), date(0), flags(0), RunStats() {}
-    };
-
-    struct Checkpoint
-    {
-        Vector pos;
-        Vector vel;
-        QAngle ang;
-        char targetName[MAX_PLAYER_NAME_LENGTH];
-        char targetClassName[MAX_PLAYER_NAME_LENGTH];
-    };
     CUtlVector<Checkpoint> checkpoints;
     CUtlVector<CTriggerOnehop *> onehops;
-    CUtlVector<Time*> localTimes;
-    // MOM_TODO: CUtlVector<OnlineTime> onlineTimes;
+    KeyValues *m_pLocalTimes;
+    // MOM_TODO: KeyValues *m_pOnlineTimes;
 
     int m_iCurrentStepCP;
     bool m_bUsingCPMenu;
