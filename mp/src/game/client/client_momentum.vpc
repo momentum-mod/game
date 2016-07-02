@@ -70,6 +70,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
                     $File "momentum\ui\SettingsPanel\ControlsSettingsPage.h"
                     $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
+                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
                 }
                 
                 $Folder "HUD"
