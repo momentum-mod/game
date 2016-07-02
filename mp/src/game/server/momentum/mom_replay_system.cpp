@@ -69,10 +69,15 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 
     // Load the last run that we did in case we want to watch it
     m_pReplayManager->LoadReplay(newRecordingPath);
+
+    //Reset the m_i*Tick s
+    m_iStartRecordingTick = -1;
+    m_iStartTimerTick = -1;
 }
 
 void CMomentumReplaySystem::TrimReplay()
 {
+    //Our actual start
     if (m_iStartRecordingTick > -1 && m_iStartTimerTick > -1)
     {
         int newStart = m_iStartTimerTick - int(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
@@ -94,10 +99,12 @@ void CMomentumReplaySystem::TrimReplay()
 
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
-    ++m_iTickCount; // increment recording tick
-
-    if (m_pReplayManager->Recording())
+    //We only record frames that the player isn't pausing on
+    if (m_pReplayManager->Recording() && !engine->IsPaused())
+    {
         m_pReplayManager->GetRecordingReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons));
+        ++m_iTickCount; // increment recording tick
+    }
 
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
         StopRecording(UTIL_GetLocalPlayer(), false, false);
