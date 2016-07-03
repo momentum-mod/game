@@ -66,5 +66,6 @@ typedef enum MOMGM
 #define RECORDING_PATH "recordings"
 #define EXT_TIME_FILE ".tim" //MOM_TODO: Find and replace all instances, no hardcode.
 #define EXT_ZONE_FILE ".zon" //MOM_TODO: Find and replace all instances, no hardcode.
+#define EXT_RECORDING_FILE ".momrec"
 
 #endif // MOM_SHAREDDEFS_H

@@ -21,6 +21,7 @@
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
 #include <vgui/IVGui.h>
+#include <vgui/IInput.h>
 #include <vstdlib/IKeyValuesSystem.h>
 
 #include <KeyValues.h>
@@ -77,8 +78,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pPlayerStats = FindControl<Panel>("PlayerStats", true);
     m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
     m_lPlayerName = FindControl<Label>("PlayerName", true);
-	m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
-	m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
+    m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
+    m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
     m_pLeaderboards = FindControl<Panel>("Leaderboards", true);
     m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineLeaderboards", true);
     m_pLocalLeaderboards = FindControl<SectionedListPanel>("LocalLeaderboards", true);
@@ -122,6 +123,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     ListenForGameEvent("run_upload");
     ListenForGameEvent("game_newmap");
 
+    m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
+
     m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
@@ -136,6 +139,12 @@ CClientTimesDisplay::~CClientTimesDisplay()
     {
         delete m_pImageList;
         m_pImageList = nullptr;
+    }
+
+    if (m_pLeaderboardReplayCMenu)
+    {
+        delete m_pLeaderboardReplayCMenu;
+        m_pLeaderboardReplayCMenu = nullptr;
     }
     // MOM_TODO: Ensure a good destructor
 }
@@ -178,7 +187,7 @@ void CClientTimesDisplay::OnThink()
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::OnPollHideCode(int code)
 {
-    m_nCloseKey = (ButtonCode_t) code;
+    m_nCloseKey = (ButtonCode_t)code;
 }
 
 //-----------------------------------------------------------------------------
@@ -260,7 +269,7 @@ void CClientTimesDisplay::InitScoreboardSections()
 void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-    
+
     if (m_pImageList)
         delete m_pImageList;
     m_pImageList = new ImageList(false);
@@ -337,7 +346,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
         MoveToFront();
     }
     else
-    { 
+    {
         SetVisible(false);
         SetMouseInputEnabled(false);//Turn mouse off
         SetKeyBoardInputEnabled(false);
@@ -646,7 +655,7 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
 
                 kv->SetInt("avatar", iImageIndex);
 
-                CAvatarImage *pAvIm = (CAvatarImage *) m_pImageList->GetImage(iImageIndex);
+                CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage(iImageIndex);
                 pAvIm->UpdateFriendStatus();
                 // Set friend draw to false, so the offset is not set
                 pAvIm->SetDrawFriend(false);
@@ -808,4 +817,72 @@ void CClientTimesDisplay::MoveToCenterOfScreen()
     int wx, wy, ww, wt;
     surface()->GetWorkspaceBounds(wx, wy, ww, wt);
     SetPos((ww - GetWide()) / 2, (wt - GetTall()) / 2);
+}
+
+CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(vgui::Panel *pParent)
+{
+    // create a drop down for this object's states
+    if (m_pLeaderboardReplayCMenu)
+        delete m_pLeaderboardReplayCMenu;
+    m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
+    m_pLeaderboardReplayCMenu->SetAutoDelete(false);
+
+    if (!pParent)
+    {
+        m_pLeaderboardReplayCMenu->SetParent(this);
+    }
+    else
+    {
+        m_pLeaderboardReplayCMenu->SetParent(pParent);
+    }
+
+    m_pLeaderboardReplayCMenu->SetVisible(false);
+    return m_pLeaderboardReplayCMenu;
+}
+
+void CClientTimesDisplay::OnMousePressed(vgui::MouseCode code)
+{
+    if (code == MOUSE_RIGHT && m_pLocalLeaderboards->IsCursorOver())
+    {
+        int mx, my; 
+        input()->GetCursorPosition(mx, my);
+        for (int itemID = 0; itemID < m_pLocalLeaderboards->GetItemCount(); itemID++)
+        {
+            int x, y, wide, tall;
+            m_pLocalLeaderboards->GetItemBounds(itemID, x, y, wide, tall);
+            // MOM_TODO: Actually get this right
+            if (mx >= x && mx <= x + wide && my >= y && my <= y + tall)
+            {
+                // We're on this row, select it
+                m_pLocalLeaderboards->SetSelectedItem(itemID);
+                break;
+            }
+        }
+        int selectedID = m_pLocalLeaderboards->GetSelectedItem();
+        if (selectedID > -1)
+        {
+            // MOM_TODO: Finish this
+            /*KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(selectedID);
+            CReplayContextMenu *replayCMenu = GetLeaderboardReplayContextMenu(m_pLocalLeaderboards);
+            char recordingName[MAX_PATH], runTime[BUFSIZETIME];
+            
+            mom_UTIL->FormatTime(selectedRun->GetFloat("time_t"), runTime, 3, true);
+            
+            Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s%s",
+                ( Player : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime, EXT_RECORDING_FILE);
+            V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
+                MAX_PATH);
+            Q_snprintf(recordingName, MAX_PATH, "%s%)
+            replayCMenu->ShowMenu(this, "filenamewithoutextension");*/
+        }
+    }
+}
+
+void CClientTimesDisplay::OnCommand(const char * command)
+{
+    if (!Q_strcmp(command, "ContextWatchReplay"))
+    {
+        // MOM_TODO: Play the recording. How do we get the names?
+    }
+    BaseClass::OnCommand(command);
 }

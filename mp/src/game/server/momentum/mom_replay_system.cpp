@@ -43,8 +43,8 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
     mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime, 3, true);
     //MOM_TODO: BUG: The player name could have characters in it that cannot be saved as a file, causing a hang!
-    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec",
-                (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s%s",
+        (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime, EXT_RECORDING_FILE);
     V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
                         MAX_PATH); // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
 
