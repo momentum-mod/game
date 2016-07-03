@@ -14,11 +14,7 @@ class SettingsPageScrollPanel : public ScrollableEditablePanel
 {
     DECLARE_CLASS_SIMPLE(SettingsPageScrollPanel, ScrollableEditablePanel);
 
-    SettingsPageScrollPanel(Panel *pParent, EditablePanel *pChild, const char *pName) :
-        BaseClass(pParent, pChild, pName)
-    {
-        m_pChild = dynamic_cast<PropertyPage*>(pChild);
-    }
+    SettingsPageScrollPanel(Panel *pParent, EditablePanel *pChild, const char *pName);
 
     //These are needed because the PropertyDialog fires everything to us,
     //since it displays us, it thinks we are the PropertyPage, so we must
@@ -75,37 +71,14 @@ class SettingsPage : public PropertyPage
 {
     DECLARE_CLASS_SIMPLE(SettingsPage, PropertyPage);
 
-    SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
-    {
-        SetAutoDelete(true);
+    SettingsPage(Panel *pParent, const char *pName);
 
-        // Set proportionality of the panels inside the dialog
-        SetProportional(true);
-
-        // Set up the res file
-        char m_pszResFilePath[MAX_PATH];
-        Q_snprintf(m_pszResFilePath, MAX_PATH, "resource/ui/SettingsPanel_%s.res", pName);
-        LoadControlSettingsAndUserConfig(m_pszResFilePath);
-
-        //Lastly, the scroll panel so we can scroll through our settings page.
-        m_pScrollPanel = new SettingsPageScrollPanel(pParent, this, "ScrollablePanel");
-        m_pScrollPanel->AddActionSignalTarget(this);
-        m_pScrollPanel->SetProportional(true);
-        m_pScrollPanel->SetAutoDelete(true);
-    }
-
-    ~SettingsPage()
-    {
-    }
+    ~SettingsPage() {}
 
     // Let the PropertyDialog know that something changed on me, so the Apply button can be enabled again.
     // This is passed through the scroll panel because the scroll panel overrides this class's parent,
     // yet holds the actual parent in itself.
-    void NotifyParentOfUpdate()
-    {
-        // Note: Clicking the "apply" button should handle setting the values.
-        PostMessage(m_pScrollPanel->GetParent()->GetVPanel(), new KeyValues("ApplyButtonEnable"));
-    }
+    void NotifyParentOfUpdate();
 
     // Update the parent (PropertyDialog) page
     MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel) { NotifyParentOfUpdate(); }
@@ -120,19 +93,7 @@ class SettingsPage : public PropertyPage
 
     // When the "Apply" button is pressed. Each settings panel should handle this separately.
     // Due to different controls for each, which cannot be automated through here.
-    void OnApplyChanges() override
-    {
-        // We're going to fire this to all our children, so the CVarToggleCheckButtons apply
-        // their new settings to the convars.
-        for (int i = 0; i < GetChildCount(); i++)
-        {
-            Panel *pChild = GetChild(i);
-            if (pChild)
-            {
-                PostMessage(pChild, new KeyValues("ApplyChanges"));
-            }
-        }
-    }
+    void OnApplyChanges() override;
 
     // Called when this page needs to load the current values into controls on the page.
     // This is primarily used for ComboBoxes, since there is no ConvarComboBox class.

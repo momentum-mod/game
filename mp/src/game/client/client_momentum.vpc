@@ -64,13 +64,22 @@ $Project "Client (Momentum)"
                 
                 $Folder "SettingsPanel"
                 {
+                	$Folder "Headers"
+                	{
+	                	$File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
+	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\ControlsSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
+                	}
+
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
-                    $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
-                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
-                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
-                    $File "momentum\ui\SettingsPanel\ControlsSettingsPage.h"
-                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
-                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
+                    $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\ControlsSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.cpp"
                 }
                 
                 $Folder "HUD"

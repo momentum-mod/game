@@ -12,56 +12,19 @@ class ReplaysSettingsPage : public SettingsPage
 {
     DECLARE_CLASS_SIMPLE(ReplaysSettingsPage, SettingsPage);
 
-    ReplaysSettingsPage(Panel *pParent) : BaseClass(pParent, "ReplaysSettings")
-    {
-        m_pReplayModelAlphaSlider = FindControl<CCvarSlider>("ReplayModelAlphaSlider");
-        m_pReplayModelAlphaSlider->AddActionSignalTarget(this);
-
-        m_pReplayModelAlphaEntry = FindControl<TextEntry>("ReplayModelAlphaEntry");
-        m_pReplayModelAlphaEntry->AddActionSignalTarget(this);
-    }
+    ReplaysSettingsPage(Panel *pParent);
 
     ~ReplaysSettingsPage() {}
 
-    void LoadSettings() override
-    {
-        UpdateReplayEntityAlphaEntry();
-    }
+    void LoadSettings() override;
 
-    void OnTextChanged(Panel *p) override
-    {
-        BaseClass::OnTextChanged(p);
+    void OnTextChanged(Panel *p) override;
 
-        if (p == m_pReplayModelAlphaEntry)
-        {
-            char buf[64];
-            m_pReplayModelAlphaEntry->GetText(buf, 64);
-
-            float fValue = float(atof(buf));
-            if (fValue >= 1.0)
-            {
-                m_pReplayModelAlphaSlider->SetSliderValue(fValue);
-            }
-        }
-    }
-
-    void OnControlModified(Panel *p) override
-    {
-        BaseClass::OnControlModified(p);
-
-        if (p == m_pReplayModelAlphaSlider && m_pReplayModelAlphaSlider->HasBeenModified())
-        {
-            UpdateReplayEntityAlphaEntry();
-        }
-    }
+    void OnControlModified(Panel *p) override;
 
 private:
-    void UpdateReplayEntityAlphaEntry() const
-    {
-        char buf[64];
-        Q_snprintf(buf, sizeof(buf), " %.1f", m_pReplayModelAlphaSlider->GetSliderValue());
-        m_pReplayModelAlphaEntry->SetText(buf);
-    }
+    void UpdateReplayEntityAlphaEntry() const;
+
     CCvarSlider *m_pReplayModelAlphaSlider;
     TextEntry *m_pReplayModelAlphaEntry;
 };
