@@ -434,8 +434,8 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
 
     }
     // we calculate the smallest trace distance...
-    float smallest = m_flTickOffsetFixTraceCorners[0];
-    int smallestCornerNum = 0;
+    float smallest = FLT_MAX;
+    int smallestCornerNum = -1;
     for (int i = 0; i < 8; i++)
     {
         if (m_flTickOffsetFixTraceCorners[i] < smallest && !mom_UTIL->FloatEquals(m_flTickOffsetFixTraceCorners[i], 0.0f))
@@ -444,16 +444,20 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
             smallestCornerNum = i;
         }
     }
-    float traceDist = smallest * pPlayer->GetLocalVelocity().Length();
-    DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", smallest, smallestCornerNum, traceDist);
-    // ...and set the interval offset as this smallest time
-    SetIntervalOffset(GetCurrentZoneNumber(), smallest);
+
+    if (smallestCornerNum > -1)
+    {
+        float traceDist = smallest * pPlayer->GetLocalVelocity().Length();
+        DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", smallest, smallestCornerNum, traceDist);
+        // ...and set the interval offset as this smallest time
+        SetIntervalOffset(GetCurrentZoneNumber(), smallest);
+    }
+
     // ..then reset the flCorners array
     for (int i = 0; i < 8; i++)
     {
         m_flTickOffsetFixTraceCorners[i] = 0.0f;
     }
-
 }
 
 // override of IEntityEnumerator's EnumEntity() in order for our trace to hit zone triggers
@@ -463,6 +467,7 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     // store entity that we found on the trace
     CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
 
+    //Stop the trace if this entity is solid.
     if (pEnt->IsSolid()) 
         return false;
 
@@ -478,12 +483,14 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
         float offset = dist / m_currVelocity.Length();//velocity = dist / time, so it follows that time = distance / velocity.
 
         if (!mom_UTIL->FloatEquals(offset, 0.0f))
+        {
             g_Timer->m_flTickOffsetFixTraceCorners[m_iCornerNumber] = offset;
-        return true;
-    }
+        }
 
-    DevWarning("Didn't hit a zone trigger.\n");
-    return false;
+        return false;//Stop the enumeration, we hit our target
+    }
+    //Continue until tr.fraction == 1.0f
+    return true;
 }
 
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
