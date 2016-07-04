@@ -60,6 +60,9 @@ void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
 
         pDoorEnt->m_ls.sLockedSound =
             pDoorEnt->m_NoiseMoving; // Plays the sound like normal (makes the player aware they jumped it)
+
+        // Let the entity know that it's a bhop block, so mom_bhop_playblocksound is able to control if we should make noises
+        pDoorEnt->m_bIsBhopBlock = true;
     }
     else
     { // func_button block
@@ -71,6 +74,9 @@ void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
         pEntButton->ClearSpawnFlags();
 
         pEntButton->AddSpawnFlags(SF_BUTTON_DONTMOVE | SF_BUTTON_TOUCH_ACTIVATES);
+
+        // Let the entity know that it's a bhop block, so mom_bhop_playblocksound is able to control if we should make noises
+        pEntButton->m_bIsBhopBlock = true;
     }
 }
 

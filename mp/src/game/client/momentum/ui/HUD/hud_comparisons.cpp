@@ -24,8 +24,8 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run co
 // Max stages
 // MOM_TODO: 64 stages max is a lot, perhaps reduce it to like 10? But you know people and their customization
 // options...
-static MAKE_CONVAR(mom_comparisons_max_stages, "4", FLAG_HUD_CVAR,
-                   "Max number of stages to show on the comparison panel.", 0, 64);
+static MAKE_CONVAR(mom_comparisons_max_zones, "4", FLAG_HUD_CVAR,
+                   "Max number of zones to show on the comparison panel.", 1, 10);
 
 // Format the output to look pretty?
 static MAKE_TOGGLE_CONVAR(mom_comparisons_format_output, "1", FLAG_HUD_CVAR,
@@ -38,7 +38,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_time_type, "0", FLAG_HUD_CVAR,
                           "(compare against time spent on stage)");
 static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_overall, "1", FLAG_HUD_CVAR,
                           "Toggle showing comparison to overall time for the run. 0 = OFF, 1 = ON");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perstage, "0", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_comparisons_time_show_perzone, "1", FLAG_HUD_CVAR,
                           "Toggle showing comparison to time spent on stage. 0 = OFF, 1 = ON");
 
 // Velocity
@@ -59,7 +59,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show, "0", FLAG_HUD_CVAR,
 static MAKE_TOGGLE_CONVAR(
     mom_comparisons_sync_show_sync1, "0", FLAG_HUD_CVAR,
     "Toggle showing average stage Sync1 (perfect strafe ticks / total strafe ticks). 0 = OFF, 1 = ON");
-static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show_sync2, "0", FLAG_HUD_CVAR,
+static MAKE_TOGGLE_CONVAR(mom_comparisons_sync_show_sync2, "1", FLAG_HUD_CVAR,
                           "Toggle showing average stage Sync2 (accel ticks / total strafe ticks). 0 = OFF, 1 = ON");
 
 // Keypress
@@ -71,7 +71,7 @@ static MAKE_TOGGLE_CONVAR(mom_comparisons_strafe_show, "1", FLAG_HUD_CVAR,
 DECLARE_NAMED_HUDELEMENT(C_RunComparisons, CHudCompare);
 
 C_RunComparisons::C_RunComparisons(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudCompare")
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
 {
     ListenForGameEvent("timer_state");
     ListenForGameEvent("mapfinished_panel_closed");
@@ -83,7 +83,12 @@ C_RunComparisons::C_RunComparisons(const char *pElementName)
     m_bLoadedComparison = false;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
+    m_nCurrentBogusPulse = 0;
     m_iCurrentEntIndex = -1;
+    m_bLoadedBogusComparison = false;
+    m_pRunStats = nullptr;
+    m_pBogusRunStats = nullptr;
+    m_rcBogusComparison = nullptr;
     ivgui()->AddTickSignal(GetVPanel(), 250);
 }
 
@@ -132,7 +137,6 @@ void C_RunComparisons::Reset()
     m_iMaxWide = m_iDefaultWidth;
     m_iWidestLabel = 0;
     m_iWidestValue = 0;
-    m_pRunStats = nullptr;
 }
 
 void C_RunComparisons::FireGameEvent(IGameEvent *event)
@@ -176,43 +180,82 @@ void C_RunComparisons::LoadComparisons()
     }
 }
 
+void C_RunComparisons::LoadBogusComparisons()
+{
+    UnloadBogusComparisons();
+    //Let's make a bogus run, shall we?
+    m_rcBogusComparison = new RunCompare_t();
+    KeyValues *kvBogusRunComp = new KeyValues("BogusRun");
+    mom_UTIL->GenerateBogusComparison(kvBogusRunComp);
+    m_pBogusRunStats = new C_MomRunStats();
+    mom_UTIL->GenerateBogusRunStats(m_pBogusRunStats);
+
+    //Fill the comparison with the bogus run
+    char bogusRunANSI[BUFSIZELOCL];
+    LOCALIZE_TOKEN(BogusRun, "#MOM_Settings_Compare_Bogus_Run", bogusRunANSI);
+    
+    mom_UTIL->FillRunComparison(bogusRunANSI, kvBogusRunComp, m_rcBogusComparison);
+    m_bLoadedBogusComparison = true;
+}
+
+void C_RunComparisons::UnloadBogusComparisons()
+{
+    if (m_rcBogusComparison)
+        delete m_rcBogusComparison;
+
+    if (m_pBogusRunStats)
+        delete m_pBogusRunStats;
+
+    m_pBogusRunStats = nullptr;
+    m_rcBogusComparison = nullptr;
+
+    m_bLoadedBogusComparison = false;
+}
+
+
 void C_RunComparisons::UnloadComparisons()
 {
     if (m_rcCurrentComparison)
-    {
         delete m_rcCurrentComparison;
-        m_rcCurrentComparison = nullptr;
-    }
+
+    m_rcCurrentComparison = nullptr;
+
     m_bLoadedComparison = false;
 }
 
 void C_RunComparisons::OnTick()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (pPlayer)
+    if (!m_bLoadedBogusComparison)
     {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
-        m_iCurrentEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        if (pPlayer)
+        {
+            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+            m_pRunStats = pGhost ? &pGhost->m_RunStats : &pPlayer->m_RunStats;
+            m_iCurrentEntIndex = pGhost ? pGhost->entindex() : pPlayer->entindex();
+        }
     }
 }
 
 void C_RunComparisons::OnThink()
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if (pPlayer)
+    if (!m_bLoadedBogusComparison)
     {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        m_iCurrentZone = pGhost ? pGhost->m_RunData.m_iCurrentZone : pPlayer->m_RunData.m_iCurrentZone;
+        C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
+        if (pPlayer)
+        {
+            C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+            m_iCurrentZone = pGhost ? pGhost->m_RunData.m_iCurrentZone : pPlayer->m_RunData.m_iCurrentZone;
+        }
     }
 
-    if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perstage.GetBool())
+    if (!mom_comparisons_time_show_overall.GetBool() && !mom_comparisons_time_show_perzone.GetBool())
     {
         // Uh oh, both overall and perstage were turned off, let's turn back on the one they want to compare
         bool showStage = mom_comparisons_time_type.GetBool(); // 0 = overall, 1 = perstage
         if (showStage)
         {
-            mom_comparisons_time_show_perstage.SetValue(1);
+            mom_comparisons_time_show_perzone.SetValue(1);
         }
         else
         {
@@ -227,24 +270,24 @@ int C_RunComparisons::GetMaximumTall()
     int toReturn = 0;
     int fontTall = surface()->GetFontTall(m_hTextFont) + 2; // font tall and padding
     toReturn += fontTall;                                   // Comparing against: (run)
-    int stageBuffer = mom_comparisons_max_stages.GetInt();
-    int lowerBound = m_iCurrentZone - stageBuffer;
+    int stageBuffer = mom_comparisons_max_zones.GetInt();
+    int lowerBound = GetCurrentZone() - stageBuffer;
 
-    for (int i = 1; i < m_iCurrentZone; i++)
+    for (int i = 1; i < GetCurrentZone(); i++)
     {
         // Note: Say our current stage is 5 and our buffer is 4. We don't look at stage 5,
         // and the lower bound becomes 1. If the check was i > lowerBound, stage 1 would be ignored,
         // and the panel would thus only show 3 stages (2, 3, and 4). So it must be >=.
         if (i >= lowerBound)
         {
-            if (i == (m_iCurrentZone - 1))
+            if (i == (GetCurrentZone() - 1))
             {
                 // Add everything that the user compares.
                 // Time
                 // Note: They actually could show both, but one is always on
                 if (mom_comparisons_time_show_overall.GetBool())
                     toReturn += fontTall;
-                if (mom_comparisons_time_show_perstage.GetBool())
+                if (mom_comparisons_time_show_perzone.GetBool())
                     toReturn += fontTall;
                 // Vel
                 if (mom_comparisons_vel_show.GetBool())
@@ -319,17 +362,17 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
         act = type == TIME_OVERALL ? stats->GetZoneEnterTime(zone + 1)
             : stats->GetZoneTime(zone);
 
-        if (m_bLoadedComparison)
+        if (LoadedComparison())
         {
             if (type == TIME_OVERALL)
             {
-                if (m_rcCurrentComparison->overallSplits.IsValidIndex(zone))
-                    diff = act - m_rcCurrentComparison->overallSplits[zone];
+                if (GetRunComparisons()->overallSplits.IsValidIndex(zone))
+                    diff = act - GetRunComparisons()->overallSplits[zone];
             }
             else
             {
-                if (m_rcCurrentComparison->zoneSplits.IsValidIndex(zone))
-                    diff = act - m_rcCurrentComparison->zoneSplits[zone - 1];
+                if (GetRunComparisons()->zoneSplits.IsValidIndex(zone))
+                    diff = act - GetRunComparisons()->zoneSplits[zone - 1];
             }
         }
 
@@ -338,56 +381,56 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
 
         // Format the time for displaying
         mom_UTIL->FormatTime(act, tempANSITimeActual);
-        if (m_bLoadedComparison)
+        if (LoadedComparison())
             mom_UTIL->FormatTime(diff, tempANSITimeOutput);
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference
         act = stats->GetZoneVelocityAvg(zone, velType);
-        if (m_bLoadedComparison)
+        if (LoadedComparison())
             diff = act -
-                   m_rcCurrentComparison->zoneAvgVels[velType][zone];
+            GetRunComparisons()->zoneAvgVels[velType][zone];
         break;
     case VELOCITY_EXIT:
         act = stats->GetZoneExitSpeed(zone, velType);
-        if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneExitVels[velType][zone];
+        if (LoadedComparison())
+            diff = act - GetRunComparisons()->zoneExitVels[velType][zone];
         break;
     case VELOCITY_MAX:
         act = stats->GetZoneVelocityMax(zone, velType);
-        if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneMaxVels[velType][zone];
+        if (LoadedComparison())
+            diff = act - GetRunComparisons()->zoneMaxVels[velType][zone];
         break;
     case VELOCITY_ENTER:
         act = stats->GetZoneEnterSpeed(zone, velType);
-        if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneEnterVels[velType][zone];
+        if (LoadedComparison())
+            diff = act - GetRunComparisons()->zoneEnterVels[velType][zone];
         break;
     case ZONE_SYNC1:
         act = stats->GetZoneStrafeSyncAvg(zone);
-        if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneAvgSync1[zone];
+        if (LoadedComparison())
+            diff = act - GetRunComparisons()->zoneAvgSync1[zone];
         break;
     case ZONE_SYNC2:
         act = stats->GetZoneStrafeSync2Avg(zone);
-        if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneAvgSync2[zone];
+        if (LoadedComparison())
+            diff = act - GetRunComparisons()->zoneAvgSync2[zone];
         break;
     case ZONE_JUMPS:
         act = stats->GetZoneJumps(zone);
-        if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneJumps[zone];
+        if (LoadedComparison())
+            diff = act - GetRunComparisons()->zoneJumps[zone];
         break;
     case ZONE_STRAFES:
         act = stats->GetZoneStrafes(zone);
-        if (m_bLoadedComparison)
-            diff = act - m_rcCurrentComparison->zoneStrafes[zone];
+        if (LoadedComparison())
+            diff = act - GetRunComparisons()->zoneStrafes[zone];
         break;
     default:
         return;
     }
 
-    if (m_bLoadedComparison)
+    if (LoadedComparison())
     {
         // Time and jump comparison are where positive is bad.
         bool positiveIsLoss = (type == TIME_OVERALL || type == ZONE_TIME || type == ZONE_JUMPS);
@@ -409,28 +452,35 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
     {
         if (ansiActualBufferOut)
             V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%s ", tempANSITimeActual);
-        if (m_bLoadedComparison && ansiCompareBufferOut)
+        if (LoadedComparison() && ansiCompareBufferOut)
             V_snprintf(ansiCompareBufferOut, BUFSIZELOCL, "(%c %s)", diffChar, tempANSITimeOutput);
     }
     else if (type == ZONE_JUMPS || type == ZONE_STRAFES)
     {
         if (ansiActualBufferOut)
             V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%i ", static_cast<int>(act));
-        if (m_bLoadedComparison && ansiCompareBufferOut)
+        if (LoadedComparison() && ansiCompareBufferOut)
             V_snprintf(ansiCompareBufferOut, BUFSIZELOCL, "(%c %i)", diffChar, static_cast<int>(diff));
     }
     else
     {
         if (ansiActualBufferOut)
             V_snprintf(ansiActualBufferOut, BUFSIZELOCL, "%.3f ", act);
-        if (m_bLoadedComparison && ansiCompareBufferOut)
+        if (LoadedComparison() && ansiCompareBufferOut)
             V_snprintf(ansiCompareBufferOut, BUFSIZELOCL, "(%c %.3f)", diffChar, diff);
     }
 }
 
 void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage, int Ypos)
 {
-    Color compareColor = Color(GetFgColor());
+    Color fgColor = GetFgColor();
+    //We override the color here from HUD animations, if this is a bogus comparisons panel
+    if (m_bLoadedBogusComparison)
+    {
+        int alpha = m_bLoadedBogusComparison && (m_nCurrentBogusPulse & string) ? bogus_alpha : fgColor.a();
+        fgColor = Color(fgColor.r(), fgColor.g(), fgColor.b(), alpha);
+    }
+    Color compareColor = fgColor;
     char actualValueANSI[BUFSIZELOCL],       // The actual value of the run
         compareTypeANSI[BUFSIZELOCL],        // The label of the comparison "Velocity: " etc
         compareValueANSI[BUFSIZELOCL];       // The comparison string (+/- XX)
@@ -480,7 +530,14 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     }
 
     // Obtain the actual value, comparison string, and corresponding color
-    GetComparisonString(string, m_pRunStats, stage, actualValueANSI, compareValueANSI, &compareColor);
+    GetComparisonString(string, GetRunStats(), stage, actualValueANSI, compareValueANSI, &compareColor);
+
+    //Override the color if we're a bogus panel
+    if (m_bLoadedBogusComparison)
+    {
+        int alphaComp = (m_nCurrentBogusPulse & string) ? bogus_alpha : compareColor.a();
+        compareColor = Color(compareColor.r(), compareColor.g(), compareColor.b(), alphaComp);
+    }
 
     // Pad the compare type with a couple spaces in front.
     V_snprintf(compareTypeANSI, BUFSIZELOCL, "  %s", localized);
@@ -489,8 +546,8 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     ANSI_TO_UNICODE(compareTypeANSI, compareTypeUnicode);
 
     // Print the compare type "Velocity:"/"Stage Time:" etc
-    surface()->DrawSetTextColor(GetFgColor());  // Standard text color
-    surface()->DrawSetTextPos(text_xpos, Ypos); // Standard position
+    surface()->DrawSetTextColor(fgColor);          // Standard text color
+    surface()->DrawSetTextPos(text_xpos, Ypos);    // Standard position
     surface()->DrawPrintText(compareTypeUnicode, wcslen(compareTypeUnicode));
 
     // Convert actual value ANSI to unicode
@@ -534,7 +591,7 @@ void C_RunComparisons::DrawComparisonString(ComparisonString_t string, int stage
     // Convert the comparison value to unicode
     ANSI_TO_UNICODE(compareValueANSI, compareValueUnicode);
 
-    // Print the
+    // Print the comparison
     surface()->DrawSetTextColor(compareColor);                                  // Set the color to gain/loss color
     surface()->DrawSetTextPos(newXPosComparison, Ypos);                         // Set pos to calculated width X
     surface()->DrawPrintText(compareValueUnicode, wcslen(compareValueUnicode)); // print string
@@ -548,16 +605,18 @@ void C_RunComparisons::SetMaxWide(int newWide)
 
 void C_RunComparisons::Paint()
 {
-    if (!m_rcCurrentComparison)
+    if (!GetRunComparisons())
         return;
+
+    // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat, which affects maxTall
     int maxTall = GetMaximumTall();
     int newY = m_iDefaultYPos + (m_iDefaultTall - maxTall);
-    SetPos(m_iDefaultXPos, newY); // Dynamic placement
-    SetSize(m_iMaxWide, maxTall); // Dynamic sizing
-    // MOM_TODO: Linear maps will have checkpoints, which rid the exit velocity stat, which affects maxTall
+    if (!m_bLoadedBogusComparison)
+        SetPos(m_iDefaultXPos, newY); // Dynamic placement, only when it's not bogus
+    SetPanelSize(m_iMaxWide, maxTall);     // Dynamic sizing
 
     // Get player current stage
-    int currentStage = m_iCurrentZone;
+    int currentStage = GetCurrentZone();
 
     // We want to create a "buffer" of stages. The very last stage should show
     // full comparisons, and be the most bottom one. However, the stages before that need
@@ -578,7 +637,7 @@ void C_RunComparisons::Paint()
     char fullCompareString[BUFSIZELOCL];
     Q_snprintf(fullCompareString, BUFSIZELOCL, "%s%s",
                compareLocalized, //"Compare against: "
-               m_rcCurrentComparison->runName);
+               GetRunComparisons()->runName);
 
     // Check to see if this updates max width
     SetMaxWide(UTIL_ComputeStringWidth(m_hTextFont, fullCompareString));
@@ -592,28 +651,34 @@ void C_RunComparisons::Paint()
     int yToIncrementBy = surface()->GetFontTall(m_hTextFont) + 2; //+2 for padding
     int Y = text_ypos + yToIncrementBy;
 
-    int STAGE_BUFFER = mom_comparisons_max_stages.GetInt();
-    for (int i = 1; i < currentStage; i++, Y += yToIncrementBy)
+    int STAGE_BUFFER = mom_comparisons_max_zones.GetInt();
+    for (int i = 1; i < currentStage; i++)
     {
         // We need a buffer. We only want the last STAGE_BUFFER amount of
         // stages. (So if there's 20 stages, we only show the last X stages, not all.)
-        if (i > (currentStage - STAGE_BUFFER))
+        if (i >= (currentStage - STAGE_BUFFER))
         {
             char stageString[BUFSIZELOCL];
             wchar_t stageStringUnicode[BUFSIZELOCL];
-
+            //MOM_TODO: LINEAR MAPS WILL NEED "Checkpoint: " here!
             Q_snprintf(stageString, BUFSIZELOCL, "%s %i ",
                        stLocalized, // "Stage" localization
                        i);          // Stage number
 
             ANSI_TO_UNICODE(stageString, stageStringUnicode);
 
+            Color fgColorOverride = GetFgColor();
+
+            if (m_bLoadedBogusComparison && (m_nCurrentBogusPulse & ZONE_LABELS))
+            {
+                fgColorOverride = Color(fgColorOverride.r(), fgColorOverride.g(), fgColorOverride.b(), bogus_alpha);
+            }
+
             // print "Stage ## "
-            surface()->DrawSetTextColor(GetFgColor());
+            surface()->DrawSetTextColor(fgColorOverride);
             surface()->DrawSetTextPos(text_xpos, Y);
             surface()->DrawPrintText(stageStringUnicode, wcslen(stageStringUnicode));
 
-            Color comparisonColor = Color(GetFgColor());
 
             if (i == (currentStage - 1))
             {
@@ -628,7 +693,7 @@ void C_RunComparisons::Paint()
                     DrawComparisonString(TIME_OVERALL, i, Y);
                     Y += yToIncrementBy;
                 }
-                if (mom_comparisons_time_show_perstage.GetBool())
+                if (mom_comparisons_time_show_perzone.GetBool())
                 {
                     DrawComparisonString(ZONE_TIME, i, Y);
                     Y += yToIncrementBy;
@@ -691,29 +756,41 @@ void C_RunComparisons::Paint()
             }
             else
             {
+                // It's a stage before the very last one we've been to.
+
                 // This is done here and not through DrawComparisonString because
                 // we only need to get the time comparison string, nothing else.
                 ComparisonString_t timeType = mom_comparisons_time_type.GetBool() ? ZONE_TIME : TIME_OVERALL;
                 char timeComparisonString[BUFSIZELOCL];
                 wchar_t timeComparisonStringUnicode[BUFSIZELOCL];
 
-                // It's a stage before the very last one we've been to.
-                // print "          (+/- XX:XX.XX)" with colorization
                 int newXPos = text_xpos                                           // Base starting X pos
                               + UTIL_ComputeStringWidth(m_hTextFont, stageString) //"Stage ## "
                               + 2;                                                // Padding
 
+                Color comparisonColor = Color(GetFgColor());
+
                 // Get just the comparison value, no actual value needed as it clutters up the panel
-                GetComparisonString(timeType, m_pRunStats, i, nullptr, timeComparisonString, &comparisonColor);
+                GetComparisonString(timeType, GetRunStats(), i, nullptr, timeComparisonString, &comparisonColor);
+
+                if (m_bLoadedBogusComparison && (m_nCurrentBogusPulse & ZONE_LABELS_COMP))
+                {
+                    comparisonColor = Color(comparisonColor.r(), comparisonColor.g(), comparisonColor.b(), bogus_alpha);
+                }
 
                 // See if this updates our max width.
                 SetMaxWide(newXPos + UTIL_ComputeStringWidth(m_hTextFont, timeComparisonString) + 2);
 
                 ANSI_TO_UNICODE(timeComparisonString, timeComparisonStringUnicode);
+
+                // print "          (+/- XX:XX.XX)" with colorization
                 surface()->DrawSetTextColor(comparisonColor);
                 surface()->DrawSetTextPos(newXPos, Y);
                 surface()->DrawPrintText(timeComparisonStringUnicode, wcslen(timeComparisonStringUnicode));
             }
+
+            //Increment the Y only when we draw things.
+            Y += yToIncrementBy;
         }
     }
 }

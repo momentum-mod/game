@@ -96,6 +96,10 @@ protected:
 	COutputEvent m_OnOut;
 
 	int		m_nState;
+
+    // MOMENTUM SPECIFIC
+public:
+    bool m_bIsBhopBlock = false;
 };
 
 

@@ -1420,6 +1420,7 @@ void TextEntry::OnMouseFocusTicked()
 //-----------------------------------------------------------------------------
 void TextEntry::OnCursorEntered()
 {
+    BaseClass::OnCursorEntered();
 	_mouseDragSelection = false; // outside of window dont recieve drag scrolling ticks
 }
 
@@ -1430,6 +1431,7 @@ void TextEntry::OnCursorEntered()
 //-----------------------------------------------------------------------------
 void TextEntry::OnCursorExited() // outside of window recieve drag scrolling ticks
 {
+    BaseClass::OnCursorExited();
 	if (_mouseSelection)
 		_mouseDragSelection = true;
 }
