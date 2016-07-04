@@ -113,6 +113,10 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pOnlineLeaderboards->SetMouseInputEnabled(true);
     m_pFriendsLeaderboards->SetMouseInputEnabled(true);
 
+    m_pLocalLeaderboards->SetClickable(true);
+    m_pLocalLeaderboards->AddActionSignalTarget(this);
+
+
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 
     m_iDesiredHeight = GetTall();
@@ -822,17 +826,19 @@ void CClientTimesDisplay::MoveToCenterOfScreen()
 CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(vgui::Panel *pParent)
 {
     // create a drop down for this object's states
+    // This will stop being created after the second time you open the leaderboards?
     if (m_pLeaderboardReplayCMenu)
         delete m_pLeaderboardReplayCMenu;
     m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
     m_pLeaderboardReplayCMenu->SetAutoDelete(false);
-
+   
     if (!pParent)
     {
         m_pLeaderboardReplayCMenu->SetParent(this);
     }
     else
     {
+        m_pLeaderboardReplayCMenu->AddActionSignalTarget(pParent);
         m_pLeaderboardReplayCMenu->SetParent(pParent);
     }
 
@@ -840,41 +846,14 @@ CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(vgui::P
     return m_pLeaderboardReplayCMenu;
 }
 
+
 void CClientTimesDisplay::OnMousePressed(vgui::MouseCode code)
 {
-    if (code == MOUSE_RIGHT && m_pLocalLeaderboards->IsCursorOver())
+    
+    BaseClass::OnMousePressed(code);
+    if (code == MOUSE_RIGHT && m_pLocalLeaderboards)
     {
-        int mx, my; 
-        input()->GetCursorPosition(mx, my);
-        for (int itemID = 0; itemID < m_pLocalLeaderboards->GetItemCount(); itemID++)
-        {
-            int x, y, wide, tall;
-            m_pLocalLeaderboards->GetItemBounds(itemID, x, y, wide, tall);
-            // MOM_TODO: Actually get this right
-            if (mx >= x && mx <= x + wide && my >= y && my <= y + tall)
-            {
-                // We're on this row, select it
-                m_pLocalLeaderboards->SetSelectedItem(itemID);
-                break;
-            }
-        }
-        int selectedID = m_pLocalLeaderboards->GetSelectedItem();
-        if (selectedID > -1)
-        {
-            // MOM_TODO: Finish this
-            /*KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(selectedID);
-            CReplayContextMenu *replayCMenu = GetLeaderboardReplayContextMenu(m_pLocalLeaderboards);
-            char recordingName[MAX_PATH], runTime[BUFSIZETIME];
-            
-            mom_UTIL->FormatTime(selectedRun->GetFloat("time_t"), runTime, 3, true);
-            
-            Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s%s",
-                ( Player : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime, EXT_RECORDING_FILE);
-            V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
-                MAX_PATH);
-            Q_snprintf(recordingName, MAX_PATH, "%s%)
-            replayCMenu->ShowMenu(this, "filenamewithoutextension");*/
-        }
+        GetLeaderboardReplayContextMenu(m_pLeaderboardReplayCMenu)->ShowMenu(this, "filename");
     }
 }
 
@@ -882,7 +861,31 @@ void CClientTimesDisplay::OnCommand(const char * command)
 {
     if (!Q_strcmp(command, "ContextWatchReplay"))
     {
-        // MOM_TODO: Play the recording. How do we get the names?
+        SetMouseInputEnabled(false);
     }
-    BaseClass::OnCommand(command);
+    else
+    {
+        BaseClass::OnCommand(command);
+    }
+}
+
+void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
+{
+    int itemID = pData->GetInt("itemID", -1);
+    Panel *pPanel = (Panel*)pData->GetPtr("SubPanel", nullptr);
+    DevLog("%i %s\n", itemID, pPanel->GetName());
+    // MOM_TODO: Finish this, and figure why this is not being fired
+    /*KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(selectedID);
+    CReplayContextMenu *replayCMenu = GetLeaderboardReplayContextMenu(m_pLocalLeaderboards);
+    char recordingName[MAX_PATH], runTime[BUFSIZETIME];
+
+    mom_UTIL->FormatTime(selectedRun->GetFloat("time_t"), runTime, 3, true);
+
+    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s%s",
+    ( Player : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime, EXT_RECORDING_FILE);
+    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
+    MAX_PATH);
+    Q_snprintf(recordingName, MAX_PATH, "%s%)
+    replayCMenu->ShowMenu(this, "filenamewithoutextension");*/
+
 }

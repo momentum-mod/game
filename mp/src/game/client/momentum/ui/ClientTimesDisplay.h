@@ -84,12 +84,13 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     virtual void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
 
-    void OnMousePressed(vgui::MouseCode code) override;
-
     CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
 
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
+    MESSAGE_FUNC_ENUM(OnMousePressed, "MousePressed", ButtonCode_t, code);
+    MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);
+    virtual void OnCommand(const char *command);
 
     // functions to override
     virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
@@ -146,9 +147,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CPanelAnimationVarAliasType(int, m_iScoreWidth, "score_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iDeathWidth, "death_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iPingWidth, "ping_width", "23", "proportional_int");
-
-    void OnCommand(const char *command) override;
-
   private:
     int m_iPlayerIndexSymbol;
     int m_iDesiredHeight;
