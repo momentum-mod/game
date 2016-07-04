@@ -849,7 +849,6 @@ CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(vgui::P
 
 void CClientTimesDisplay::OnMousePressed(vgui::MouseCode code)
 {
-    
     BaseClass::OnMousePressed(code);
     if (code == MOUSE_RIGHT && m_pLocalLeaderboards)
     {
@@ -857,16 +856,10 @@ void CClientTimesDisplay::OnMousePressed(vgui::MouseCode code)
     }
 }
 
-void CClientTimesDisplay::OnCommand(const char * command)
+void CClientTimesDisplay::OnContextWatchReplay(KeyValues *pData)
 {
-    if (!Q_strcmp(command, "ContextWatchReplay"))
-    {
-        SetMouseInputEnabled(false);
-    }
-    else
-    {
-        BaseClass::OnCommand(command);
-    }
+    SetMouseInputEnabled(false);
+    ShowPanel(false);
 }
 
 void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
@@ -888,4 +881,9 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
     Q_snprintf(recordingName, MAX_PATH, "%s%)
     replayCMenu->ShowMenu(this, "filenamewithoutextension");*/
 
+}
+
+void CClientTimesDisplay::OnItemLeftClick(int itemid)
+{
+    DevLog("%i\n", itemid);
 }

@@ -90,7 +90,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
     MESSAGE_FUNC_ENUM(OnMousePressed, "MousePressed", ButtonCode_t, code);
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);
-    virtual void OnCommand(const char *command);
+    MESSAGE_FUNC_INT(OnItemLeftClick, "ItemLeftClick", itemid);
+    MESSAGE_FUNC_PARAMS(OnContextWatchReplay, "ContextWatchReplay", data);
+
 
     // functions to override
     virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
