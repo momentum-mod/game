@@ -123,7 +123,7 @@ void CMapSelectorDialog::Open()
 void CMapSelectorDialog::OnTick()
 {
     BaseClass::OnTick();
-    vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
+    //vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
 
 

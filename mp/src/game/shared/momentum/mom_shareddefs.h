@@ -36,7 +36,7 @@ typedef enum MOMGM
 //Checks to see if the token exists, and if so, localizes it into output. Otherwise
 //it's just the token value. This exists to prevent null localization tokens.
 #define FIND_LOCALIZATION(output, token) \
-    V_snwprintf(output, BUFSIZELOCL, L"%ls", g_pVGuiLocalize->Find(token) ? g_pVGuiLocalize->Find(token) : L##token);
+    Q_wcsncpy(output, g_pVGuiLocalize->Find(token) ? g_pVGuiLocalize->Find(token) : L##token , sizeof(output))
 
 
 //Localizes a token to an ansi output array, under a name macro
