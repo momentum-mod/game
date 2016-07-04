@@ -434,29 +434,29 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
 
     }
     // we calculate the smallest trace distance...
-    float smallest = FLT_MAX;
+    float smallestDist = FLT_MAX;
     int smallestCornerNum = -1;
     for (int i = 0; i < 8; i++)
     {
-        if (m_flTickOffsetFixTraceCorners[i] < smallest && !mom_UTIL->FloatEquals(m_flTickOffsetFixTraceCorners[i], 0.0f))
+        if (m_flDistFixTraceCorners[i] < smallestDist && !mom_UTIL->FloatEquals(m_flDistFixTraceCorners[i], 0.0f))
         {
-            smallest = m_flTickOffsetFixTraceCorners[i];
+            smallestDist = m_flDistFixTraceCorners[i];
             smallestCornerNum = i;
         }
     }
 
     if (smallestCornerNum > -1)
     {
-        float traceDist = smallest * pPlayer->GetLocalVelocity().Length();
-        DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", smallest, smallestCornerNum, traceDist);
+        float offset = smallestDist / pPlayer->GetLocalVelocity().Length();//velocity = dist / time, so it follows that time = distance / velocity.
+        DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", offset, smallestCornerNum, smallestDist);
         // ...and set the interval offset as this smallest time
-        SetIntervalOffset(GetCurrentZoneNumber(), smallest);
+        SetIntervalOffset(GetCurrentZoneNumber(), offset);
     }
 
     // ..then reset the flCorners array
     for (int i = 0; i < 8; i++)
     {
-        m_flTickOffsetFixTraceCorners[i] = 0.0f;
+        m_flDistFixTraceCorners[i] = 0.0f;
     }
 }
 
@@ -480,11 +480,10 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
         float dist = tr.startpos.DistTo(tr.endpos);
-        float offset = dist / m_currVelocity.Length();//velocity = dist / time, so it follows that time = distance / velocity.
 
-        if (!mom_UTIL->FloatEquals(offset, 0.0f))
+        if (!mom_UTIL->FloatEquals(dist, 0.0f))
         {
-            g_Timer->m_flTickOffsetFixTraceCorners[m_iCornerNumber] = offset;
+            g_Timer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
         }
 
         return false;//Stop the enumeration, we hit our target

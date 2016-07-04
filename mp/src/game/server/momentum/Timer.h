@@ -222,7 +222,7 @@ public:
     // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
-    float m_flTickOffsetFixTraceCorners[8]; //array of floats representing the trace times from each corner of the player's collision hull
+    float m_flDistFixTraceCorners[8]; //array of floats representing the trace distance from each corner of the player's collision hull
     typedef enum { ZONETYPE_END, ZONETYPE_START } zoneType;
 };
 
@@ -230,7 +230,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 {
   public:
     CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity, int zoneType, int cornerNum)
-        : m_iZoneType(zoneType), m_pRay(pRay), m_currVelocity(velocity), m_iCornerNumber(cornerNum)
+        : m_iZoneType(zoneType), m_pRay(pRay), m_iCornerNumber(cornerNum)
     {
     }
 
@@ -240,7 +240,6 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     int m_iZoneType;
     int m_iCornerNumber;
     Ray_t *m_pRay;
-    Vector m_currVelocity;
 };
 
 extern CTimer *g_Timer;
