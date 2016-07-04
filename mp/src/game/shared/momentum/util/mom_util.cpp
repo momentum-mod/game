@@ -135,17 +135,24 @@ void MomentumUtil::DownloadMap(const char *szMapname)
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
                                         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {
-    HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-    SteamAPICall_t apiHandle;
-
-    if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+    if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        callback->Set(apiHandle, this, func);
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            callback->Set(apiHandle, this, func);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
     }
     else
     {
-        Warning("Failed to send HTTP Request to post scores online!\n");
-        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        Warning("Could not find Steam Api Context active\n");
     }
 }
 
