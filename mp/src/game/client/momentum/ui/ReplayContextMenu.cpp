@@ -36,7 +36,14 @@ void CReplayContextMenu::ShowMenu(Panel *target, const char *runName)
     int x, y, gx, gy;
     input()->GetCursorPos(x, y);
     ipanel()->GetPos(surface()->GetEmbeddedPanel(), gx, gy);
-    SetPos(x - gx, y - gy);
+    SetPos(x - gx - 5, y - gy - 5);
     SetVisible(true);
     SetMouseInputEnabled(true);
+}
+
+void CReplayContextMenu::OnCursorExitedMenuItem(int vpanel)
+{ 
+    SetVisible(false);
+    SetMouseInputEnabled(false);
+    BaseClass::OnCursorExitedMenuItem(vpanel);
 }
