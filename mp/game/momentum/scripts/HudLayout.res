@@ -19,8 +19,8 @@
                 "SecondaryValueColor" "Light Gray"
                 "LabelColor"    "MOM.Panel.Fg"
                 "BgColor"   "Blank"
-                "SplitAlpha" "255"//Used for fading
-                "JumpAlpha" "255"//Used for fading
+                "StageAlpha" "0.0"//Used for fading
+                "JumpAlpha" "0.0"//Used for fading
         }
     //Timer
     HudTimer

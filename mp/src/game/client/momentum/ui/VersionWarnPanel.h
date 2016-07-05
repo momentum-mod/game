@@ -4,6 +4,8 @@
 
 #include "IVersionWarnPanel.h"
 #include <vgui/IVGui.h>
+#include <vgui/ISystem.h>
+#include <vgui/ILocalize.h>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/RichText.h>
@@ -24,13 +26,14 @@ class CVersionWarnPanel : public Frame
 
     void SetVersion(const char *version) { Q_strncpy(m_cOnlineVersion, version, 12); }
 
-    void SetChangelog(char *pChangelog)
+    void SetChangelog(const char *pChangelog)
     {
-        Q_strncpy(m_cOnlineChangelog, pChangelog, sizeof(m_cOnlineChangelog));
+        ANSI_TO_UNICODE(pChangelog, m_pwOnlineChangelog);
         if (m_pChangeLog)
         {
-            m_pChangeLog->InsertString(m_cOnlineChangelog);
-            m_pChangeLog->GotoTextStart();
+            m_pChangeLog->SetText(m_pwOnlineChangelog);
+            //Delay the scrolling to a tick or so away, thanks Valve.
+            m_flScrollTime = system()->GetFrameTime() + 0.010f;
         }
     }
 
@@ -42,19 +45,26 @@ class CVersionWarnPanel : public Frame
 
     void Activate() override;
 
-  protected:
-    // VGUI overrides:
-    void OnCommand(const char *pcCommand) override;
+    void OnThink() override
+    {
+        BaseClass::OnThink();
+
+        if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
+        {
+            m_pChangeLog->GotoTextStart();
+            m_flScrollTime = -1.0f;
+        }
+    }
 
   private:
-    // Other used VGUI control Elements:
+    float m_flScrollTime;
     URLLabel *m_pReleaseText;
     RichText *m_pChangeLog;
     char m_cOnlineVersion[12];
-    char m_cOnlineChangelog[4056]; // MOM_TODO: Determine a better size
+    wchar_t m_pwOnlineChangelog[4096]; // MOM_TODO: Determine a better size
 };
 
-class CVersionWarnPanelInterface : public VersionWarnPanel
+class CVersionWarnPanelInterface : public IVersionWarnPanel
 {
   private:
     CVersionWarnPanel *pPanel;
@@ -95,7 +105,7 @@ class CVersionWarnPanelInterface : public VersionWarnPanel
         }
     }
 
-    void SetChangelog(char *pChangelog) const override
+    void SetChangelog(const char *pChangelog) const override
     {
         if (pPanel)
         {

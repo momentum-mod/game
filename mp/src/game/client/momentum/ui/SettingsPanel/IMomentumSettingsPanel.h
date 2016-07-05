@@ -2,7 +2,7 @@
 
 #include "vgui/IVGui.h"
 
-class MomentumSettingsPanel
+class IMomentumSettingsPanel
 {
 public:
     virtual void Create(vgui::VPANEL parent) = 0;
@@ -11,4 +11,4 @@ public:
     virtual void Close() = 0;
 };
 
-extern MomentumSettingsPanel *momentum_settings;
+extern IMomentumSettingsPanel *momentum_settings;

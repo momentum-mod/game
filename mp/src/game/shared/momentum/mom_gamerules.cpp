@@ -201,6 +201,8 @@ static ConVar allow_custom("mom_allow_custom_maps", "0", FCVAR_ARCHIVE | FCVAR_R
 
 static ConVar give_weapon("mom_spawn_with_weapon", "1", FCVAR_NONE, "Spawn the player with a weapon?", true, 0, true, 1);
 
+static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
+
 void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
 {
     if (gamemode.GetInt() == 0 && !allow_custom.GetBool())

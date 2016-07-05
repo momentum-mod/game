@@ -131,6 +131,16 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
 }
 
+inline void FireMapFinishedClosedEvent()
+{
+    IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
+    if (pClosePanel)
+    {
+        //Fire this event so other classes can get at this
+        gameeventmanager->FireEvent(pClosePanel);
+    }
+}
+
 void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_LEFT)
@@ -162,6 +172,7 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
             }
             else
             {
+                FireMapFinishedClosedEvent();
                 engine->ServerCmd("mom_restart");
             }
         }
@@ -169,12 +180,7 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         {
             //This is where we unload comparisons, as well as the ghost if the player was speccing it
             SetMouseInputEnabled(false);
-            IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
-            if (pClosePanel)
-            {
-                //Fire this event so other classes can get at this
-                gameeventmanager->FireEvent(pClosePanel);
-            }
+            FireMapFinishedClosedEvent();
         }
     }
 }

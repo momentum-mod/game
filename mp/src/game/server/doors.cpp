@@ -121,7 +121,7 @@ END_SEND_TABLE()
 //-----------------------------------------------------------------------------
 void PlayLockSounds(CBaseEntity *pEdict, locksound_t *pls, int flocked, int fbutton)
 {
-	if ( pEdict->HasSpawnFlags( SF_DOOR_SILENT ) )
+    if (pEdict->HasSpawnFlags(SF_DOOR_SILENT) || !ConVarRef("mom_bhop_playblocksound").GetBool())
 	{
 		return;
 	}

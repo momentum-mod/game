@@ -16,6 +16,9 @@ public:
     //After DLL inits successfully
     void PostInit() override;
 
+    //From the Valve SDK wiki
+    static void MountAdditionalContent();
+
 };
 
 #endif // CLIENT_EVENTS_H
