@@ -123,7 +123,10 @@ END_SEND_TABLE()
 void PlayLockSounds(CBaseEntity *pEdict, locksound_t *pls, int flocked, int fbutton)
 {
     CBaseDoor *pDoor = dynamic_cast<CBaseDoor*>(pEdict);
-    CBaseButton *pButton = dynamic_cast<CBaseButton*>(pEdict);
+    // Dynamic_cast is more expensive than a normal cast, so we should only do it if we need it.
+    // As pDoor will be nullptr if it's not a Door, then it has to be a Button, and that is the only moment when
+    // we need to dynamic_cast pEdict into button. This way we save a dynamic_cast most of the times (Most blocks are doors)
+    CBaseButton *pButton = pDoor ? nullptr : dynamic_cast<CBaseButton*>(pEdict);
     bool isMomentumBlock = pDoor ? pDoor->m_bIsBhopBlock : (pButton ? pButton->m_bIsBhopBlock : false);
     bool shouldPlayBhopSound = ConVarRef("mom_bhop_playblocksound").GetBool();
     if (pEdict->HasSpawnFlags(SF_DOOR_SILENT) || (isMomentumBlock && !shouldPlayBhopSound))
