@@ -436,9 +436,11 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
         if (zoneType == ZONETYPE_START)
             ray.Init(tracePoint, rewoundTracePoint);
         else
+        {
             //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with rewoundTracePoint
             //and trace "forwards" to the tracing point, hitting the trigger on the way.
             ray.Init(rewoundTracePoint, tracePoint);
+        }
 
         CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType, i);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
