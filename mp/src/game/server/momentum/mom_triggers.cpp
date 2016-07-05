@@ -35,7 +35,7 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         //Set the current stage to this
-        g_Timer->SetCurrentStage(this);
+        g_Timer->SetCurrentZone(this);
         //Set player run data
         pPlayer->m_RunData.m_bIsInZone = true;
         pPlayer->m_RunData.m_iCurrentZone = stageNum;

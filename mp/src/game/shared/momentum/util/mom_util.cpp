@@ -172,13 +172,19 @@ void MomentumUtil::GetRemoteChangelog()
 
 void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
 {
+    const char *pError = "Error loading changelog!";
     if (bIOFailure)
+    {
+        pError = "Error loading changelog due to bIOFailure!";
+        versionwarnpanel->SetChangelog(pError);
         return;
+    }
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     if (size == 0)
     {
-        Warning("MomentumUtil::ChangelogCallback: 0 body size!\n");
+        pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
+        versionwarnpanel->SetChangelog(pError);
         return;
     }
 
@@ -224,6 +230,47 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
     CleanupRequest(pCallback, pData);
 }
+
+
+void MomentumUtil::GenerateBogusComparison(KeyValues* kvOut)
+{
+    //RandomSeed(Plat_FloatTime());
+    for (int i = 1; i < MAX_STAGES; i++)
+    {
+        KeyValues *kvZone = new KeyValues("zone");
+        kvOut->AddSubKey(kvZone);
+    }
+
+    KeyValues *kvTotal = new KeyValues("total");
+    kvOut->AddSubKey(kvTotal);
+
+}
+
+void MomentumUtil::GenerateBogusRunStats(C_MomRunStats* pStatsOut)
+{
+    RandomSeed(Plat_FloatTime());
+    for (int i = 0; i < MAX_STAGES; i++)
+    {
+        //Time
+        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
+        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
+
+        //Velocity
+        pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+
+        //Sync
+        pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
+        pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
+
+        //Keypress
+        pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
+        pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
+    }
+}
+
 #endif
 
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName) const
@@ -362,56 +409,7 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
         {
             // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
             // I'm thinking the name could be like "(user): (Time)"
-            Q_strcpy(into->runName, "Personal Best");
-
-            FOR_EACH_SUBKEY(bestRun, kv)
-            {
-                //Stages/checkpoints data
-                if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
-                {
-                    // Splits
-                    into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
-                    into->zoneSplits.AddToTail(kv->GetFloat("time"));
-                    // Keypress
-                    into->zoneJumps.AddToTail(kv->GetInt("num_jumps"));
-                    into->zoneStrafes.AddToTail(kv->GetInt("num_strafes"));
-                    // Sync
-                    into->zoneAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
-                    into->zoneAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
-                    // Velocity (3D and Horizontal)
-                    for (int i = 0; i < 2; i++)
-                    {
-                        bool horizontalVel = (i == 1);
-                        into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                        into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                        into->zoneEnterVels[i].AddToTail(
-                            kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
-                        into->zoneExitVels[i].AddToTail(
-                            kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
-                    }
-                }
-                //Overall stats
-                else if (!Q_strcmp(kv->GetName(), "total"))
-                {
-                    // Keypress
-                    into->zoneJumps.AddToHead(kv->GetInt("jumps"));
-                    into->zoneStrafes.AddToHead(kv->GetInt("strafes"));
-                    // Sync
-                    into->zoneAvgSync1.AddToHead(kv->GetFloat("avgsync"));
-                    into->zoneAvgSync2.AddToHead(kv->GetFloat("avgsync2"));
-                    // Velocity (3D and Horizontal)
-                    for (int i = 0; i < 2; i++)
-                    {
-                        bool horizontalVel = (i == 1);
-                        into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                        into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                        into->zoneExitVels[i].AddToHead(
-                            kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
-                        into->zoneEnterVels[i].AddToHead(
-                            kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
-                    }
-                }
-            }
+            FillRunComparison("Personal Best", bestRun, into);
             DevLog("Loaded run comparisons for %s !\n", into->runName);
             toReturn = true;
         }
@@ -419,6 +417,60 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
         kvMap->deleteThis();
     }
     return toReturn;
+}
+
+void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, RunCompare_t *into)
+{
+    Q_strcpy(into->runName, compareName);
+
+    FOR_EACH_SUBKEY(kvRun, kv)
+    {
+        //Stages/checkpoints data
+        if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
+        {
+            // Splits
+            into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
+            into->zoneSplits.AddToTail(kv->GetFloat("time"));
+            // Keypress
+            into->zoneJumps.AddToTail(kv->GetInt("num_jumps"));
+            into->zoneStrafes.AddToTail(kv->GetInt("num_strafes"));
+            // Sync
+            into->zoneAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
+            into->zoneAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
+            // Velocity (3D and Horizontal)
+            for (int i = 0; i < 2; i++)
+            {
+                bool horizontalVel = (i == 1);
+                into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                into->zoneEnterVels[i].AddToTail(
+                    kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
+                into->zoneExitVels[i].AddToTail(
+                    kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
+            }
+        }
+        //Overall stats
+        else if (!Q_strcmp(kv->GetName(), "total"))
+        {
+            // Keypress
+            into->zoneJumps.AddToHead(kv->GetInt("jumps"));
+            into->zoneStrafes.AddToHead(kv->GetInt("strafes"));
+            // Sync
+            into->zoneAvgSync1.AddToHead(kv->GetFloat("avgsync"));
+            into->zoneAvgSync2.AddToHead(kv->GetFloat("avgsync2"));
+            // Velocity (3D and Horizontal)
+            for (int i = 0; i < 2; i++)
+            {
+                bool horizontalVel = (i == 1);
+                into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                into->zoneExitVels[i].AddToHead(
+                    kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
+                into->zoneEnterVels[i].AddToHead(
+                    kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
+            }
+        }
+    }
 }
 
 static MomentumUtil s_momentum_util;

@@ -25,6 +25,8 @@ public:
     void LevelShutdownPreEntity() override;
     void FrameUpdatePreEntityThink() override;
 
+    void MountAdditionalContent();
+
 private:
     CMapzoneData* zones;
 };

@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "Timer.h"
+#include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
@@ -75,146 +76,157 @@ void CTimer::PostTime()
 //    Log("\n");
 //}
 
+void CTimer::ConvertKVToTime(KeyValues *kvRun, Time &into) const
+{
+    const char *kvName = kvRun->GetName();
+    into.time_sec = Q_atof(kvName);
+    into.tickrate = kvRun->GetFloat("rate");
+    into.date = static_cast<time_t>(kvRun->GetInt("date"));
+    into.flags = kvRun->GetInt("flags");
+    into.RunStats = CMomRunStats(GetZoneCount());
+
+    for (KeyValues *subKv = kvRun->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey())
+    {
+        if (!Q_strnicmp(subKv->GetName(), "zone", Q_strlen("zone")))
+        {
+            int i = Q_atoi(subKv->GetName() + 5); // atoi will need to ignore "zone " and only return the stage number
+
+            into.RunStats.SetZoneJumps(i, subKv->GetInt("jumps"));
+            into.RunStats.SetZoneStrafes(i, subKv->GetInt("strafes"));
+
+            into.RunStats.SetZoneTime(i, subKv->GetFloat("strafes"));
+            into.RunStats.SetZoneEnterTime(i, subKv->GetFloat("strafes"));
+
+            into.RunStats.SetZoneStrafeSyncAvg(i, subKv->GetFloat("time"));
+            into.RunStats.SetZoneStrafeSync2Avg(i, subKv->GetFloat("enter_time"));
+
+            into.RunStats.SetZoneEnterSpeed(i, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
+            into.RunStats.SetZoneExitSpeed(i, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
+            into.RunStats.SetZoneVelocityAvg(i, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
+            into.RunStats.SetZoneVelocityMax(i, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
+        }
+        else if (!Q_strncmp(subKv->GetName(), "total", Q_strlen("total")))
+        {
+            into.RunStats.SetZoneJumps(0, subKv->GetInt("jumps"));
+            into.RunStats.SetZoneStrafes(0, subKv->GetInt("strafes"));
+
+            into.RunStats.SetZoneStrafeSyncAvg(0, subKv->GetFloat("avgsync"));
+            into.RunStats.SetZoneStrafeSync2Avg(0, subKv->GetFloat("avgsync2"));
+
+            into.RunStats.SetZoneEnterSpeed(0, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
+            into.RunStats.SetZoneExitSpeed(0, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
+            into.RunStats.SetZoneVelocityAvg(0, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
+            into.RunStats.SetZoneVelocityMax(0, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
+        }
+    }
+}
+
+void CTimer::ConvertTimeToKV(KeyValues *kvInto, Time* t) const
+{
+    if (!t || !kvInto)
+        return;
+
+    //Handle "header"
+    char timeName[512];
+    Q_snprintf(timeName, 512, "%.6f", t->time_sec);
+    kvInto->SetName(timeName);
+    kvInto->SetFloat("rate", t->tickrate);
+    kvInto->SetInt("date", t->date);
+    kvInto->SetInt("flags", t->flags);
+
+    //Handle "total" stats
+    KeyValues *pOverallKey = new KeyValues("total");
+    pOverallKey->SetInt("jumps", t->RunStats.GetZoneJumps(0));
+    pOverallKey->SetInt("strafes", t->RunStats.GetZoneStrafes(0));
+    pOverallKey->SetFloat("avgsync", t->RunStats.GetZoneStrafeSyncAvg(0));
+    pOverallKey->SetFloat("avgsync2", t->RunStats.GetZoneStrafeSync2Avg(0));
+
+    pOverallKey->SetFloat("start_vel", t->RunStats.GetZoneEnterSpeed(1, false));
+    pOverallKey->SetFloat("end_vel", t->RunStats.GetZoneExitSpeed(0, false));
+    pOverallKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(0, false));
+    pOverallKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(0, false));
+
+    pOverallKey->SetFloat("start_vel_2D", t->RunStats.GetZoneEnterSpeed(1, true));
+    pOverallKey->SetFloat("end_vel_2D", t->RunStats.GetZoneExitSpeed(0, true));
+    pOverallKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(0, true));
+    pOverallKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(0, true));
+
+    kvInto->AddSubKey(pOverallKey);
+
+    //Handle zone stats
+    char stageName[9]; // "stage 64\0"
+    if (GetZoneCount() > 1)
+    {
+        for (int i2 = 1; i2 <= GetZoneCount(); i2++)
+        {
+            Q_snprintf(stageName, sizeof(stageName), "zone %d", i2);
+
+            KeyValues *pStageKey = new KeyValues(stageName);
+            pStageKey->SetFloat("time", t->RunStats.GetZoneTime(i2));
+            pStageKey->SetFloat("enter_time", t->RunStats.GetZoneEnterTime(i2));
+            pStageKey->SetInt("num_jumps", t->RunStats.GetZoneJumps(i2));
+            pStageKey->SetInt("num_strafes", t->RunStats.GetZoneStrafes(i2));
+            pStageKey->SetFloat("avg_sync", t->RunStats.GetZoneStrafeSyncAvg(i2));
+            pStageKey->SetFloat("avg_sync2", t->RunStats.GetZoneStrafeSync2Avg(i2));
+
+            pStageKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(i2, false));
+            pStageKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(i2, false));
+            pStageKey->SetFloat("enter_vel", t->RunStats.GetZoneEnterSpeed(i2, false));
+            pStageKey->SetFloat("exit_vel", t->RunStats.GetZoneExitSpeed(i2, false));
+
+            pStageKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(i2, true));
+            pStageKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(i2, true));
+            pStageKey->SetFloat("enter_vel_2D", t->RunStats.GetZoneEnterSpeed(i2, true));
+            pStageKey->SetFloat("exit_vel_2D", t->RunStats.GetZoneExitSpeed(i2, true));
+
+            kvInto->AddSubKey(pStageKey);
+        }
+    }
+}
+
 //Called upon map load, loads any and all times stored in the <mapname>.tim file
 void CTimer::LoadLocalTimes(const char *szMapname)
 {
+    //Build the file to load from
     char timesFilePath[MAX_PATH];
-
     V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapname, EXT_TIME_FILE), timesFilePath, MAX_PATH);
 
-    KeyValues *timesKV = new KeyValues(szMapname);
+    //Unload (if necessary), then load the new times
+    UnloadLoadedLocalTimes();
+    m_pLocalTimes = new KeyValues(szMapname);
 
-    if (timesKV->LoadFromFile(filesystem, timesFilePath, "MOD")) 
+    if (m_pLocalTimes->LoadFromFile(filesystem, timesFilePath, "MOD")) 
     {
-        for (KeyValues *kv = timesKV->GetFirstSubKey(); kv; kv = kv->GetNextKey())
-        {
-            const char *kvName = kv->GetName();
-            Time *t = new Time();
-            t->time_sec = Q_atof(kvName);
-            t->tickrate = kv->GetFloat("rate");
-            t->date = static_cast<time_t>(kv->GetInt("date"));
-            t->flags = kv->GetInt("flags");
-            t->RunStats = CMomRunStats(GetZoneCount());
-
-            for (KeyValues *subKv = kv->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey()) 
-            {
-                if (!Q_strnicmp(subKv->GetName(), "zone", Q_strlen("zone")))
-                {
-                    int i = Q_atoi(subKv->GetName() + 5); //atoi will need to ignore "zone " and only return the stage number
-
-                    t->RunStats.SetZoneJumps(i, subKv->GetInt("jumps"));
-                    t->RunStats.SetZoneStrafes(i, subKv->GetInt("strafes"));
-
-                    t->RunStats.SetZoneTime(i, subKv->GetFloat("strafes"));
-                    t->RunStats.SetZoneEnterTime(i, subKv->GetFloat("strafes"));
-
-                    t->RunStats.SetZoneStrafeSyncAvg(i, subKv->GetFloat("time"));
-                    t->RunStats.SetZoneStrafeSync2Avg(i, subKv->GetFloat("enter_time"));
-
-                    t->RunStats.SetZoneEnterSpeed(i, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
-                    t->RunStats.SetZoneExitSpeed(i, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
-                    t->RunStats.SetZoneVelocityAvg(i, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
-                    t->RunStats.SetZoneVelocityMax(i, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
-                }
-                if (!Q_strncmp(subKv->GetName(), "total", Q_strlen("total")))
-                {
-                    t->RunStats.SetZoneJumps(0, subKv->GetInt("jumps"));
-                    t->RunStats.SetZoneStrafes(0, subKv->GetInt("strafes"));
-
-                    t->RunStats.SetZoneStrafeSyncAvg(0, subKv->GetFloat("avgsync"));
-                    t->RunStats.SetZoneStrafeSync2Avg(0, subKv->GetFloat("avgsync2"));
-
-                    t->RunStats.SetZoneEnterSpeed(0, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
-                    t->RunStats.SetZoneExitSpeed(0, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
-                    t->RunStats.SetZoneVelocityAvg(0, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
-                    t->RunStats.SetZoneVelocityMax(0, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
-
-                }
-            }
-            localTimes.AddToTail(t);
-        }
+        DevLog("Successfully loaded times for map %s\n", szMapname);
     }
     else
     {
         DevLog("Failed to load local times; no local file was able to be loaded!\n");
     }
-    timesKV->deleteThis();
+}
+
+
+void CTimer::AddNewTime(Time *t) const
+{
+    if (!t || !m_pLocalTimes)
+        return;
+    //Don't worry, this KeyValues name gets overridden 
+    KeyValues *pNewTime = new KeyValues("New Time!");
+    ConvertTimeToKV(pNewTime, t);
+    m_pLocalTimes->AddSubKey(pNewTime);
 }
 
 //Called every time a new time is achieved
-void CTimer::SaveTime()
+void CTimer::SaveTimeToFile() const
 {
     const char *szMapName = gpGlobals->mapname.ToCStr();
-    KeyValues *timesKV = new KeyValues(szMapName);
-    int count = localTimes.Count();
-
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
 
-    for (int i = 0; i < count; i++)
-    {
-        Time *t = localTimes[i];
-        char timeName[512];
-        Q_snprintf(timeName, 512, "%.6f", t->time_sec);
-        KeyValues *pSubkey = new KeyValues(timeName);
-        pSubkey->SetFloat("rate", t->tickrate);
-        pSubkey->SetInt("date", t->date);
-        pSubkey->SetInt("flags", t->flags);
-        
-        KeyValues *pOverallKey = new KeyValues("total");
-        pOverallKey->SetInt("jumps", t->RunStats.GetZoneJumps(0));
-        pOverallKey->SetInt("strafes", t->RunStats.GetZoneStrafes(0));
-        pOverallKey->SetFloat("avgsync", t->RunStats.GetZoneStrafeSyncAvg(0));
-        pOverallKey->SetFloat("avgsync2", t->RunStats.GetZoneStrafeSync2Avg(0));
-
-        pOverallKey->SetFloat("start_vel", t->RunStats.GetZoneEnterSpeed(1, false));
-        pOverallKey->SetFloat("end_vel", t->RunStats.GetZoneExitSpeed(0, false));
-        pOverallKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(0, false));
-        pOverallKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(0, false));
-
-        pOverallKey->SetFloat("start_vel_2D", t->RunStats.GetZoneEnterSpeed(1, true));
-        pOverallKey->SetFloat("end_vel_2D", t->RunStats.GetZoneExitSpeed(0, true));
-        pOverallKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(0, true));
-        pOverallKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(0, true));
-
-        char stageName[9]; // "stage 64\0"
-        if (GetZoneCount() > 1)
-        {
-            for (int i2 = 1; i2 <= GetZoneCount(); i2++) 
-            {
-                Q_snprintf(stageName, sizeof(stageName), "zone %d", i2);
-
-                KeyValues *pStageKey = new KeyValues(stageName);
-                pStageKey->SetFloat("time", t->RunStats.GetZoneTime(i2));
-                pStageKey->SetFloat("enter_time", t->RunStats.GetZoneEnterTime(i2));
-                pStageKey->SetInt("num_jumps", t->RunStats.GetZoneJumps(i2));
-                pStageKey->SetInt("num_strafes", t->RunStats.GetZoneStrafes(i2));
-                pStageKey->SetFloat("avg_sync", t->RunStats.GetZoneStrafeSyncAvg(i2));
-                pStageKey->SetFloat("avg_sync2", t->RunStats.GetZoneStrafeSync2Avg(i2));
-
-                pStageKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(i2, false));
-                pStageKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(i2, false));
-                pStageKey->SetFloat("enter_vel", t->RunStats.GetZoneEnterSpeed(i2, false));
-                pStageKey->SetFloat("exit_vel", t->RunStats.GetZoneExitSpeed(i2, false));
-
-                pStageKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(i2, true));
-                pStageKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(i2, true));
-                pStageKey->SetFloat("enter_vel_2D", t->RunStats.GetZoneEnterSpeed(i2, true));
-                pStageKey->SetFloat("exit_vel_2D", t->RunStats.GetZoneExitSpeed(i2, true));
-
-                pSubkey->AddSubKey(pStageKey);
-            }
-        }
-
-        pSubkey->AddSubKey(pOverallKey);
-        timesKV->AddSubKey(pSubkey);
-    }
-
     char file[MAX_PATH];
-
     V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapName, EXT_TIME_FILE), file, MAX_PATH);
 
     bool saved = false;
-    if (timesKV->SaveToFile(filesystem, file, "MOD", true))
+    if (m_pLocalTimes->SaveToFile(filesystem, file, "MOD", true))
     {
         saved = true;
         Log("Successfully saved new time!\n");
@@ -224,7 +236,6 @@ void CTimer::SaveTime()
         runSaveEvent->SetBool("run_saved", saved);
         gameeventmanager->FireEvent(runSaveEvent);
     }
-    timesKV->deleteThis(); //We don't need to delete sub KV pointers e.g. pSubkey because this destructor deletes all child nodes
 }
 
 void CTimer::Stop(bool endTrigger /* = false */)
@@ -244,17 +255,17 @@ void CTimer::Stop(bool endTrigger /* = false */)
             PostTime();
 
         //Save times locally too, regardless of SteamAPI condition
-        Time *t = new Time();
-        t->time_sec = GetLastRunTime();
+        Time t = Time();
+        t.time_sec = GetLastRunTime();
 
-        t->tickrate = gpGlobals->interval_per_tick;
-        t->flags = pPlayer->m_RunData.m_iRunFlags;
-        time(&t->date);
-        t->RunStats = static_cast<CMomRunStats>(pPlayer->m_RunStats); //copy all the run stats
+        t.tickrate = gpGlobals->interval_per_tick; // 
+        t.flags = pPlayer->m_RunData.m_iRunFlags; // Set the run flags of this run
+        time(&t.date); // Set the date of this run
+        t.RunStats = static_cast<CMomRunStats>(pPlayer->m_RunStats); //copy all the run stats
 
-        localTimes.AddToTail(t);
+        AddNewTime(&t);
 
-        SaveTime();  
+        SaveTimeToFile();  
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {
@@ -283,13 +294,13 @@ void CTimer::OnMapEnd(const char *pMapName)
     m_bWereCheatsActivated = false;
     SetCurrentCheckpointTrigger(nullptr);
     SetStartTrigger(nullptr);
-    SetCurrentStage(nullptr);
+    SetCurrentZone(nullptr);
     RemoveAllCheckpoints();
-    localTimes.PurgeAndDeleteElements();
-    //MOM_TODO: onlineTimes.RemoveAll();
+    UnloadLoadedLocalTimes();
+    //MOM_TODO: UnloadLoadedOnlineTimes();
 }
 
-void CTimer::DispatchMapInfo()
+void CTimer::DispatchMapInfo() const
 {
     IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init", true);
     if (mapInitEvent)
@@ -386,46 +397,79 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
 {
     if (!pPlayer) return;
     Ray_t ray;
-    Vector prevOrigin, origin, velocity = pPlayer->GetLocalVelocity();
-    // Because trigger touch is calculated using collision hull rather than the player's origin (which is their world space center),
-    // this origin is actually the player's local origin offset by their colission hull (depending on which direction they are moving), 
-    // so that we trace from the point in space where the player actually exited touch with the trigger, rather than their world center.
-
-    if (zoneType == ZONETYPE_END) //ending zone or ending a stage
+    Vector rewoundTracePoint, tracePoint, velocity = pPlayer->GetLocalVelocity();
+    // Because trigger touch is calculated using collision hull rather than the player's origin (which is based on their world space center in XY and their feet in Z),
+    // the trace point is actually the player's local origin offset by their collision hull. We trace a ray from all 8 corners of their collision hull and pick the trace that
+    // is the shortest distance, since the trace with the shortest distance originated from that point that was last touching the trigger volume.
+    for (int i = 0; i < 8; i++)
     {
-        if (velocity.x > 0 || velocity.y > 0)
-            origin = Vector (pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x, 
-            pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y, 
-            pPlayer->GetLocalOrigin().z );
+        switch (i) //depending on which corner number we've iterated to so far, the origin is one of the eight corners of the bbox.
+        {
+        case 0:
+            tracePoint = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
+            break;
+        case 1: 
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMins().x, pPlayer->CollisionProp()->OBBMaxs().y, pPlayer->CollisionProp()->OBBMins().z);
+            break;
+        case 2: 
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMins().x, pPlayer->CollisionProp()->OBBMins().y, pPlayer->CollisionProp()->OBBMaxs().z);
+            break;
+        case 3: 
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMins().x, pPlayer->CollisionProp()->OBBMaxs().y, pPlayer->CollisionProp()->OBBMaxs().z);
+            break;
+        case 4:
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMaxs().x, pPlayer->CollisionProp()->OBBMins().y, pPlayer->CollisionProp()->OBBMaxs().z);
+            break;
+        case 5:
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMaxs().x, pPlayer->CollisionProp()->OBBMins().y, pPlayer->CollisionProp()->OBBMins().z);
+            break;
+        case 6:
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMaxs().x, pPlayer->CollisionProp()->OBBMaxs().y, pPlayer->CollisionProp()->OBBMins().z);
+            break;
+        case 7:
+            tracePoint = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMaxs();
+            break;
+        }
+        // The previous trace point is the trace point "rewound" in time a single tick, scaled by player's current velocity
+        rewoundTracePoint = pPlayer->GetPrevOrigin(tracePoint);
+
+        if (zoneType == ZONETYPE_START)
+            ray.Init(tracePoint, rewoundTracePoint);
         else
-            origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
+        {
+            //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with rewoundTracePoint
+            //and trace "forwards" to the tracing point, hitting the trigger on the way.
+            ray.Init(rewoundTracePoint, tracePoint);
+        }
 
-        // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
-        prevOrigin = pPlayer->GetPrevOrigin(origin);
-
-        //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with prevOrigin
-        //and trace "forwards" to our current origin, hitting the trigger on the way.
-        ray.Init(prevOrigin, origin);
-        //debugoverlay->AddLineOverlay(prevOrigin, origin, 0, 255, 0, true, 10.0f);//MOM_TODO: REMOVE ME
-        CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
+        CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType, i);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
+
     }
-    else if (zoneType == ZONETYPE_START )//start zone and stages
+    // we calculate the smallest trace distance...
+    float smallestDist = FLT_MAX;
+    int smallestCornerNum = -1;
+    for (int i = 0; i < 8; i++)
     {
-        if (abs(velocity.x) > 0 || abs(velocity.y) > 0)
-            origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
-        else
-            origin = Vector(pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x,
-            pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y,
-            pPlayer->GetLocalOrigin().z);
+        if (m_flDistFixTraceCorners[i] < smallestDist && !mom_UTIL->FloatEquals(m_flDistFixTraceCorners[i], 0.0f))
+        {
+            smallestDist = m_flDistFixTraceCorners[i];
+            smallestCornerNum = i;
+        }
+    }
 
-        // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
-        prevOrigin = pPlayer->GetPrevOrigin(origin);
+    if (smallestCornerNum > -1)
+    {
+        float offset = smallestDist / pPlayer->GetLocalVelocity().Length();//velocity = dist / time, so it follows that time = distance / velocity.
+        DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", offset, smallestCornerNum, smallestDist);
+        // ...and set the interval offset as this smallest time
+        SetIntervalOffset(GetCurrentZoneNumber(), offset);
+    }
 
-        //Start/stage zones trace from outside the trigger, backwards, hitting the zone along the way
-        ray.Init(origin, prevOrigin);
-        CTimeTriggerTraceEnum startTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
-        enginetrace->EnumerateEntities(ray, true, &startTriggerTraceEnum);
+    // ..then reset the flCorners array
+    for (int i = 0; i < 8; i++)
+    {
+        m_flDistFixTraceCorners[i] = 0.0f;
     }
 }
 
@@ -436,33 +480,29 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     // store entity that we found on the trace
     CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
 
-    if (pEnt->IsSolid())
+    //Stop the trace if this entity is solid.
+    if (pEnt->IsSolid()) 
         return false;
 
-    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_"))) //if we aren't hitting a momentum trigger
-        return false;
+    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1) //if we aren't hitting a momentum trigger
+        return true; //the return type of EnumEntity tells the engine whether to continue enumerating future entities or not. 
+    //In this case, we want to continue in case we hit another type of trigger.
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
 
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
-        //debugoverlay->AddLineOverlay(tr.startpos, tr.endpos, 255, 0, 0, true, 10.0f);
         float dist = tr.startpos.DistTo(tr.endpos);
-        DevLog("Distance to zone: %f\n", dist);
-        float offset = dist / m_currVelocity.Length();//velocity = dist/time, so it follows that time = distance / velocity.
-        DevLog("Time offset: %f\n", offset);
-        int stage = m_iZoneType;
-        if (m_iZoneType == g_Timer->ZONETYPE_START) stage = g_Timer->GetCurrentZoneNumber();
 
-        //MOM_TODO: If this was a ZONETYPE_END, don't we set the offset as (gpGlobals->interval_per_tick - offset) ?
+        if (!mom_UTIL->FloatEquals(dist, 0.0f))
+        {
+            g_Timer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
+        }
 
-        if (!mom_UTIL->FloatEquals(offset, 0.0f))
-            g_Timer->SetIntervalOffset(stage, offset);
-        return true;
+        return false;//Stop the enumeration, we hit our target
     }
-
-    DevWarning("Didn't hit a zone trigger.\n");
-    return false;
+    //Continue until tr.fraction == 1.0f
+    return true;
 }
 
 //set ConVars according to Gamemode. Tickrate is by in tickset.h
@@ -588,8 +628,8 @@ public:
     static void ResetToStart()
     {
         CBasePlayer* cPlayer = UTIL_GetCommandClient();
-        CTriggerTimerStart *start;
-        if ((start = g_Timer->GetStartTrigger()) != nullptr && cPlayer)
+        CTriggerTimerStart *start = g_Timer->GetStartTrigger();
+        if (start && cPlayer)
         {
             // Don't set angles if still in start zone.
             if (g_Timer->IsRunning() && start->GetHasLookAngles())
@@ -694,12 +734,12 @@ public:
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
         if (!pPlayer)
             return;
-        Vector velocity = pPlayer->GetAbsVelocity();
 
         if (!pPlayer->m_bHasPracticeMode)
         {
-            if (velocity.Length2DSqr() != 0)
-                DevLog("You cannot enable practice mode while moving!\n");
+            int b = pPlayer->m_nButtons;
+            if (b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP || b & IN_DUCK || b & IN_WALK)
+                Warning("You cannot enable practice mode while moving!\n");
             else
                 g_Timer->EnablePractice(pPlayer);
         }
@@ -710,7 +750,7 @@ public:
 
 
 static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove, "Toggle. Stops timer and allows player to fly around in noclip.\n" 
-    "Only activates when player is standing still (xy vel = 0)\n",
+    "Only activates when player is not pressing any movement inputs.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE);
 static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart, "Restarts the player to the start trigger.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);

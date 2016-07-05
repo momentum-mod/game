@@ -23,7 +23,7 @@ public:
         m_iTickCount(0),
         m_iStartRecordingTick(-1),
         m_iStartTimerTick(-1),
-        m_fRecEndTime(-1.0f), 
+        m_fRecEndTime(-1.0f),
         m_player(nullptr)
     {
         m_pReplayManager = new CMomReplayManager();
@@ -52,6 +52,7 @@ public:
             m_pReplayManager->UnloadPlayback(true);
     }
 
+    //Sets the start timer tick, this is used for trimming later on
     void SetTimerStartTick(int tick)
     {
         m_iStartTimerTick = tick;

@@ -1,42 +1,41 @@
 ﻿#include "cbase.h"
-#include "hudelement.h"
 #include "hud_macros.h"
+#include "hudelement.h"
 #include "iclientmode.h"
 #include "in_buttons.h"
 #include "input.h"
 
-#include <vgui_controls/Panel.h>
-#include <vgui_controls/Frame.h>
+#include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
+#include <vgui_controls/Frame.h>
+#include <vgui_controls/Panel.h>
 
-#include "mom_shareddefs.h"
 #include "c_mom_replay_entity.h"
-#include "mom_player_shared.h"
 #include "mom_event_listener.h"
+#include "mom_player_shared.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 
 #define KEYDRAW_MIN 0.07f
 
-using namespace vgui; 
+using namespace vgui;
 
 static ConVar showkeys("mom_showkeypresses", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
-    "Toggles showing keypresses and strafe/jump counter\n");
+                       "Toggles showing keypresses and strafe/jump counter\n");
 
 class CHudKeyPressDisplay : public CHudElement, public Panel
 {
     DECLARE_CLASS_SIMPLE(CHudKeyPressDisplay, Panel);
 
-public:
-    CHudKeyPressDisplay();
     CHudKeyPressDisplay(const char *pElementName);
 
     bool ShouldDraw() override
     {
         C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        return showkeys.GetBool() && pMom && !pMom->m_RunData.m_bMapFinished && CHudElement::ShouldDraw(); //don't show during map finished dialog
+        // don't show during map finished dialog
+        return showkeys.GetBool() && pMom && !pMom->m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
     }
 
     void OnThink() override;
@@ -48,47 +47,42 @@ public:
     void ApplySchemeSettings(IScheme *pScheme) override
     {
         Panel::ApplySchemeSettings(pScheme);
-        SetBgColor(Color::Color(0,0,0,1)); //empty background, 1 alpha (out of 255) so game text doesnt obscure our text
+        SetBgColor(Color(0, 0, 0, 1)); // empty background, 1 alpha (out of 255) so game text doesnt obscure our text
     }
-protected:
+
+  protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
     CPanelAnimationVar(HFont, m_hWordTextFont, "WordTextFont", "Default");
     CPanelAnimationVar(HFont, m_hCounterTextFont, "CounterTextFont", "Default");
     CPanelAnimationVar(Color, m_Normal, "KeyPressedColor", "Panel.Fg");
     CPanelAnimationVar(Color, m_darkGray, "KeyOutlineColor", "Dark Gray");
-    CPanelAnimationVarAliasType(float, top_row_ypos, "top_row_ypos", "5",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, mid_row_ypos, "mid_row_ypos", "20",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, lower_row_ypos, "lower_row_ypos", "35",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, jump_row_ypos, "jump_row_ypos", "60",
-        "proportional_float");    
-    CPanelAnimationVarAliasType(float, duck_row_ypos, "duck_row_ypos", "70",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, strafe_count_xpos, "strafe_count_xpos", "80",
-        "proportional_float");
-    CPanelAnimationVarAliasType(float, jump_count_xpos, "jump_count_xpos", "80",
-        "proportional_float");
-private:
+    CPanelAnimationVarAliasType(float, top_row_ypos, "top_row_ypos", "5", "proportional_float");
+    CPanelAnimationVarAliasType(float, mid_row_ypos, "mid_row_ypos", "20", "proportional_float");
+    CPanelAnimationVarAliasType(float, lower_row_ypos, "lower_row_ypos", "35", "proportional_float");
+    CPanelAnimationVarAliasType(float, jump_row_ypos, "jump_row_ypos", "60", "proportional_float");
+    CPanelAnimationVarAliasType(float, duck_row_ypos, "duck_row_ypos", "70", "proportional_float");
+    CPanelAnimationVarAliasType(float, strafe_count_xpos, "strafe_count_xpos", "80", "proportional_float");
+    CPanelAnimationVarAliasType(float, jump_count_xpos, "jump_count_xpos", "80", "proportional_float");
+
+  private:
     int GetTextCenter(HFont font, wchar_t *wstring);
 
     int m_nButtons, m_nStrafes, m_nJumps;
-    bool m_bShouldDrawCounts; 
-    wchar_t m_pwfwd[BUFSIZESHORT];
-    wchar_t m_pwleft[BUFSIZESHORT];
-    wchar_t m_pwback[BUFSIZESHORT];
-    wchar_t m_pwright[BUFSIZESHORT];
-    wchar_t m_pwjump[BUFSIZELOCL];
-    wchar_t m_pwduck[BUFSIZELOCL];
+    bool m_bShouldDrawCounts;
+    wchar_t m_pwFwd[BUFSIZESHORT];
+    wchar_t m_pwLeft[BUFSIZESHORT];
+    wchar_t m_pwBack[BUFSIZESHORT];
+    wchar_t m_pwRight[BUFSIZESHORT];
+    wchar_t m_pwJump[BUFSIZELOCL];
+    wchar_t m_pwDuck[BUFSIZELOCL];
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
 };
 
 DECLARE_HUDELEMENT(CHudKeyPressDisplay);
 
-CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName) :
-CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudKeyPressDisplay")
+CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudKeyPressDisplay")
 {
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
@@ -97,50 +91,48 @@ CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudKeyPressDisp
 }
 void CHudKeyPressDisplay::Init()
 {
-    //init wchar with display values 
-    wcscpy(m_pwfwd, L"W");
-    wcscpy(m_pwleft, L"A");
-    wcscpy(m_pwback, L"S");
-    wcscpy(m_pwright, L"D");
+    // init wchar with display values
+    wcscpy(m_pwFwd, L"W");
+    wcscpy(m_pwLeft, L"A");
+    wcscpy(m_pwBack, L"S");
+    wcscpy(m_pwRight, L"D");
 
-    //localize jump and duck strings
-    wchar_t *uJumpUnicode = g_pVGuiLocalize->Find("#MOM_Jump");
-    Q_wcsncpy(m_pwjump, uJumpUnicode, sizeof(m_pwjump)); //use buffer-safe wcscpy so we don't crash on startup if localization file is corrupted
-    wchar_t *uDuckUnicode = g_pVGuiLocalize->Find("#MOM_Duck");
-    Q_wcsncpy(m_pwduck, uDuckUnicode, sizeof(m_pwduck));
+    // localize jump and duck strings
+    FIND_LOCALIZATION(m_pwJump, "#MOM_Jump");
+    FIND_LOCALIZATION(m_pwDuck, "#MOM_Duck");
 
     m_fJumpColorUntil = m_fDuckColorUntil = 0;
 }
 void CHudKeyPressDisplay::Paint()
 {
-    //first, semi-transparent key templates
+    // first, semi-transparent key templates
     DrawKeyTemplates();
-    //then, color the key in if it's pressed
+    // then, color the key in if it's pressed
     surface()->DrawSetTextColor(m_Normal);
     surface()->DrawSetTextFont(m_hTextFont);
     if (m_nButtons & IN_FORWARD)
     {
-        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwfwd), top_row_ypos);
-        surface()->DrawPrintText(m_pwfwd, wcslen(m_pwfwd));
+        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwFwd), top_row_ypos);
+        surface()->DrawPrintText(m_pwFwd, wcslen(m_pwFwd));
     }
     if (m_nButtons & IN_MOVELEFT)
     {
-        int text_left = GetTextCenter(m_hTextFont, m_pwleft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwleft);
+        int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft);
         surface()->DrawSetTextPos(text_left, mid_row_ypos);
-        surface()->DrawPrintText(m_pwleft, wcslen(m_pwleft));
+        surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
     }
     if (m_nButtons & IN_BACK)
     {
-        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), lower_row_ypos);
-        surface()->DrawPrintText(m_pwback, wcslen(m_pwback));
+        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwBack), lower_row_ypos);
+        surface()->DrawPrintText(m_pwBack, wcslen(m_pwBack));
     }
     if (m_nButtons & IN_MOVERIGHT)
     {
-        int text_right = GetTextCenter(m_hTextFont, m_pwright) + UTIL_ComputeStringWidth(m_hTextFont, m_pwright);
+        int text_right = GetTextCenter(m_hTextFont, m_pwRight) + UTIL_ComputeStringWidth(m_hTextFont, m_pwRight);
         surface()->DrawSetTextPos(text_right, mid_row_ypos);
-        surface()->DrawPrintText(m_pwright, wcslen(m_pwright));
+        surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     }
-    //reset text font for jump/duck
+    // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
     if (m_nButtons & IN_JUMP || gpGlobals->curtime < m_fJumpColorUntil)
@@ -149,8 +141,8 @@ void CHudKeyPressDisplay::Paint()
         {
             m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
-        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), jump_row_ypos);
-        surface()->DrawPrintText(m_pwjump, wcslen(m_pwjump));
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
+        surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
     if (m_nButtons & IN_DUCK || gpGlobals->curtime < m_fDuckColorUntil)
     {
@@ -158,10 +150,10 @@ void CHudKeyPressDisplay::Paint()
         {
             m_fDuckColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
-        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), duck_row_ypos);
-        surface()->DrawPrintText(m_pwduck, wcslen(m_pwduck));
+        surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
+        surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
     }
-    // ---------- 
+    // ----------
     if (m_bShouldDrawCounts)
     {
         surface()->DrawSetTextFont(m_hCounterTextFont);
@@ -201,7 +193,7 @@ void CHudKeyPressDisplay::OnThink()
             m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
             if (g_MOMEventListener)
             {
-                //we should only draw the strafe/jump counters when the timer is running
+                // we should only draw the strafe/jump counters when the timer is running
                 m_bShouldDrawCounts = pPlayer->m_RunData.m_bTimerRunning;
                 if (m_bShouldDrawCounts)
                 {
@@ -211,11 +203,11 @@ void CHudKeyPressDisplay::OnThink()
                 }
             }
         }
-    } 
+    }
 }
 void CHudKeyPressDisplay::Reset()
 {
-    //reset buttons member in case a button gets stuck
+    // reset buttons member in case a button gets stuck
     m_nButtons = NULL;
 }
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
@@ -224,29 +216,29 @@ int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 }
 void CHudKeyPressDisplay::DrawKeyTemplates()
 {
-    //first draw all keys on screen in a dark gray
+    // first draw all keys on screen in a dark gray
     surface()->DrawSetTextColor(m_darkGray);
     surface()->DrawSetTextFont(m_hTextFont);
-    //fwd
-    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwfwd), top_row_ypos);
-    surface()->DrawPrintText(m_pwfwd, wcslen(m_pwfwd));
-    //left
-    int text_left = GetTextCenter(m_hTextFont, m_pwleft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwleft);
+    // fwd
+    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwFwd), top_row_ypos);
+    surface()->DrawPrintText(m_pwFwd, wcslen(m_pwFwd));
+    // left
+    int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft);
     surface()->DrawSetTextPos(text_left, mid_row_ypos);
-    surface()->DrawPrintText(m_pwleft, wcslen(m_pwleft));
-    //back
-    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwback), lower_row_ypos);
-    surface()->DrawPrintText(m_pwback, wcslen(m_pwback));
-    //right
-    int text_right = GetTextCenter(m_hTextFont, m_pwright) + UTIL_ComputeStringWidth(m_hTextFont, m_pwright);
+    surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
+    // back
+    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwBack), lower_row_ypos);
+    surface()->DrawPrintText(m_pwBack, wcslen(m_pwBack));
+    // right
+    int text_right = GetTextCenter(m_hTextFont, m_pwRight) + UTIL_ComputeStringWidth(m_hTextFont, m_pwRight);
     surface()->DrawSetTextPos(text_right, mid_row_ypos);
-    surface()->DrawPrintText(m_pwright, wcslen(m_pwright));
-    //reset text font for jump/duck
+    surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
+    // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
-    //jump
-    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwjump), jump_row_ypos);
-    surface()->DrawPrintText(m_pwjump, wcslen(m_pwjump));
-    //duck
-    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwduck), duck_row_ypos);
-    surface()->DrawPrintText(m_pwduck, wcslen(m_pwduck));
+    // jump
+    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
+    surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
+    // duck
+    surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
+    surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
 }
