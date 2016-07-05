@@ -397,46 +397,79 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer* pPlayer, const int zon
 {
     if (!pPlayer) return;
     Ray_t ray;
-    Vector prevOrigin, origin, velocity = pPlayer->GetLocalVelocity();
-    // Because trigger touch is calculated using collision hull rather than the player's origin (which is their world space center),
-    // this origin is actually the player's local origin offset by their colission hull (depending on which direction they are moving), 
-    // so that we trace from the point in space where the player actually exited touch with the trigger, rather than their world center.
-
-    if (zoneType == ZONETYPE_END) //ending zone or ending a stage
+    Vector rewoundTracePoint, tracePoint, velocity = pPlayer->GetLocalVelocity();
+    // Because trigger touch is calculated using collision hull rather than the player's origin (which is based on their world space center in XY and their feet in Z),
+    // the trace point is actually the player's local origin offset by their collision hull. We trace a ray from all 8 corners of their collision hull and pick the trace that
+    // is the shortest distance, since the trace with the shortest distance originated from that point that was last touching the trigger volume.
+    for (int i = 0; i < 8; i++)
     {
-        if (velocity.x > 0 || velocity.y > 0)
-            origin = Vector (pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x, 
-            pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y, 
-            pPlayer->GetLocalOrigin().z );
+        switch (i) //depending on which corner number we've iterated to so far, the origin is one of the eight corners of the bbox.
+        {
+        case 0:
+            tracePoint = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
+            break;
+        case 1: 
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMins().x, pPlayer->CollisionProp()->OBBMaxs().y, pPlayer->CollisionProp()->OBBMins().z);
+            break;
+        case 2: 
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMins().x, pPlayer->CollisionProp()->OBBMins().y, pPlayer->CollisionProp()->OBBMaxs().z);
+            break;
+        case 3: 
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMins().x, pPlayer->CollisionProp()->OBBMaxs().y, pPlayer->CollisionProp()->OBBMaxs().z);
+            break;
+        case 4:
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMaxs().x, pPlayer->CollisionProp()->OBBMins().y, pPlayer->CollisionProp()->OBBMaxs().z);
+            break;
+        case 5:
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMaxs().x, pPlayer->CollisionProp()->OBBMins().y, pPlayer->CollisionProp()->OBBMins().z);
+            break;
+        case 6:
+            tracePoint = pPlayer->GetLocalOrigin() + Vector(pPlayer->CollisionProp()->OBBMaxs().x, pPlayer->CollisionProp()->OBBMaxs().y, pPlayer->CollisionProp()->OBBMins().z);
+            break;
+        case 7:
+            tracePoint = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMaxs();
+            break;
+        }
+        // The previous trace point is the trace point "rewound" in time a single tick, scaled by player's current velocity
+        rewoundTracePoint = pPlayer->GetPrevOrigin(tracePoint);
+
+        if (zoneType == ZONETYPE_START)
+            ray.Init(tracePoint, rewoundTracePoint);
         else
-            origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
+        {
+            //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with rewoundTracePoint
+            //and trace "forwards" to the tracing point, hitting the trigger on the way.
+            ray.Init(rewoundTracePoint, tracePoint);
+        }
 
-        // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
-        prevOrigin = pPlayer->GetPrevOrigin(origin);
-
-        //ending zones have to have the ray start _before_ we entered the zone bbox, hence why we start with prevOrigin
-        //and trace "forwards" to our current origin, hitting the trigger on the way.
-        ray.Init(prevOrigin, origin);
-        //debugoverlay->AddLineOverlay(prevOrigin, origin, 0, 255, 0, true, 10.0f);//MOM_TODO: REMOVE ME
-        CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
+        CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType, i);
         enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
+
     }
-    else if (zoneType == ZONETYPE_START )//start zone and stages
+    // we calculate the smallest trace distance...
+    float smallestDist = FLT_MAX;
+    int smallestCornerNum = -1;
+    for (int i = 0; i < 8; i++)
     {
-        if (abs(velocity.x) > 0 || abs(velocity.y) > 0)
-            origin = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
-        else
-            origin = Vector(pPlayer->GetLocalOrigin().x + pPlayer->CollisionProp()->OBBMaxs().x,
-            pPlayer->GetLocalOrigin().y + pPlayer->CollisionProp()->OBBMaxs().y,
-            pPlayer->GetLocalOrigin().z);
+        if (m_flDistFixTraceCorners[i] < smallestDist && !mom_UTIL->FloatEquals(m_flDistFixTraceCorners[i], 0.0f))
+        {
+            smallestDist = m_flDistFixTraceCorners[i];
+            smallestCornerNum = i;
+        }
+    }
 
-        // The previous origin is the origin "rewound" in time a single tick, scaled by player's current velocity
-        prevOrigin = pPlayer->GetPrevOrigin(origin);
+    if (smallestCornerNum > -1)
+    {
+        float offset = smallestDist / pPlayer->GetLocalVelocity().Length();//velocity = dist / time, so it follows that time = distance / velocity.
+        DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", offset, smallestCornerNum, smallestDist);
+        // ...and set the interval offset as this smallest time
+        SetIntervalOffset(GetCurrentZoneNumber(), offset);
+    }
 
-        //Start/stage zones trace from outside the trigger, backwards, hitting the zone along the way
-        ray.Init(origin, prevOrigin);
-        CTimeTriggerTraceEnum startTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity(), zoneType);
-        enginetrace->EnumerateEntities(ray, true, &startTriggerTraceEnum);
+    // ..then reset the flCorners array
+    for (int i = 0; i < 8; i++)
+    {
+        m_flDistFixTraceCorners[i] = 0.0f;
     }
 }
 
@@ -447,33 +480,29 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     // store entity that we found on the trace
     CBaseEntity *pEnt = gEntList.GetBaseEntity(pHandleEntity->GetRefEHandle());
 
-    if (pEnt->IsSolid())
+    //Stop the trace if this entity is solid.
+    if (pEnt->IsSolid()) 
         return false;
 
-    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_"))) //if we aren't hitting a momentum trigger
-        return false;
+    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1) //if we aren't hitting a momentum trigger
+        return true; //the return type of EnumEntity tells the engine whether to continue enumerating future entities or not. 
+    //In this case, we want to continue in case we hit another type of trigger.
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
 
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
-        //debugoverlay->AddLineOverlay(tr.startpos, tr.endpos, 255, 0, 0, true, 10.0f);
         float dist = tr.startpos.DistTo(tr.endpos);
-        DevLog("Distance to zone: %f\n", dist);
-        float offset = dist / m_currVelocity.Length();//velocity = dist/time, so it follows that time = distance / velocity.
-        DevLog("Time offset: %f\n", offset);
-        int stage = m_iZoneType;
-        if (m_iZoneType == g_Timer->ZONETYPE_START) stage = g_Timer->GetCurrentZoneNumber();
 
-        //MOM_TODO: If this was a ZONETYPE_END, don't we set the offset as (gpGlobals->interval_per_tick - offset) ?
+        if (!mom_UTIL->FloatEquals(dist, 0.0f))
+        {
+            g_Timer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
+        }
 
-        if (!mom_UTIL->FloatEquals(offset, 0.0f))
-            g_Timer->SetIntervalOffset(stage, offset);
-        return true;
+        return false;//Stop the enumeration, we hit our target
     }
-
-    DevWarning("Didn't hit a zone trigger.\n");
-    return false;
+    //Continue until tr.fraction == 1.0f
+    return true;
 }
 
 //set ConVars according to Gamemode. Tickrate is by in tickset.h

@@ -228,7 +228,7 @@ class CTimer
 
     int m_iCurrentStepCP;
     bool m_bUsingCPMenu;
-
+public:
     // PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the
     // start trigger
@@ -236,18 +236,18 @@ class CTimer
     float m_flTickOffsetFix[MAX_STAGES]; // index 0 = endzone, 1 = startzone, 2 = stage 2, 3 = stage3, etc
     float m_flZoneEnterTime[MAX_STAGES];
 
-  public:
     // creates fraction of a tick to be used as a time "offset" in precicely calculating the real run time.
     void CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType);
     void SetIntervalOffset(int stage, float offset) { m_flTickOffsetFix[stage] = offset; }
+    float m_flDistFixTraceCorners[8]; //array of floats representing the trace distance from each corner of the player's collision hull
     typedef enum { ZONETYPE_END, ZONETYPE_START } zoneType;
 };
 
 class CTimeTriggerTraceEnum : public IEntityEnumerator
 {
   public:
-    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity, int zoneType)
-        : m_iZoneType(zoneType), m_pRay(pRay), m_currVelocity(velocity)
+    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity, int zoneType, int cornerNum)
+        : m_iZoneType(zoneType), m_pRay(pRay), m_iCornerNumber(cornerNum)
     {
     }
 
@@ -255,8 +255,8 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 
   private:
     int m_iZoneType;
+    int m_iCornerNumber;
     Ray_t *m_pRay;
-    Vector m_currVelocity;
 };
 
 extern CTimer *g_Timer;

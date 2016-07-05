@@ -145,9 +145,10 @@ bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     {
         // arguments are initilized in the constructor of CTeleportTriggerTraceEnum
         g_MOMBlockFixer->AddBhopBlock(pEntBlock, pEnt, bIsDoor);
-        return true;
+        return false;//Stop, we hit our target.
     }
-    return false;
+    //Continue until fraction == 1.0f
+    return true;
 }
 
 static CMOMBhopBlockFixSystem s_MOMBlockFixer("CMOMBhopBlockFixSystem");
