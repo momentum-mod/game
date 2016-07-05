@@ -12,6 +12,7 @@
 #include "ndebugoverlay.h"
 #include "engine/IEngineSound.h"
 #include "physics_npc_solver.h"
+#include "buttons.h"
 
 #ifdef HL1_DLL
 #include "filters.h"
@@ -121,7 +122,11 @@ END_SEND_TABLE()
 //-----------------------------------------------------------------------------
 void PlayLockSounds(CBaseEntity *pEdict, locksound_t *pls, int flocked, int fbutton)
 {
-    if (pEdict->HasSpawnFlags(SF_DOOR_SILENT) || !ConVarRef("mom_bhop_playblocksound").GetBool())
+    CBaseDoor *pDoor = dynamic_cast<CBaseDoor*>(pEdict);
+    CBaseButton *pButton = dynamic_cast<CBaseButton*>(pEdict);
+    bool isMomentumBlock = pDoor ? pDoor->m_bIsBhopBlock : (pButton ? pButton->m_bIsBhopBlock : false);
+    bool shouldPlayBhopSound = ConVarRef("mom_bhop_playblocksound").GetBool();
+    if (pEdict->HasSpawnFlags(SF_DOOR_SILENT) || (isMomentumBlock && !shouldPlayBhopSound))
 	{
 		return;
 	}
