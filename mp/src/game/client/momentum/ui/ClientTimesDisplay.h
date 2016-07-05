@@ -89,9 +89,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
     MESSAGE_FUNC_ENUM(OnMousePressed, "MousePressed", ButtonCode_t, code);
-    MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);
+    MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);//Catching from SectionedListPanel
     MESSAGE_FUNC_INT(OnItemLeftClick, "ItemLeftClick", itemid);
-    MESSAGE_FUNC_PARAMS(OnContextWatchReplay, "ContextWatchReplay", data);
+    MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
 
 
     // functions to override

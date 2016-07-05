@@ -30,7 +30,7 @@ void CReplayContextMenu::ShowMenu(Panel *target, const char *runName)
 {
     if (runName)
     {
-        AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", new KeyValues("ContextWatchReplay"), target, new KeyValues("replayname", "filename", runName));
+        AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", new KeyValues("ContextWatchReplay", "runName", runName), target);
     }
 
     int x, y, gx, gy;
