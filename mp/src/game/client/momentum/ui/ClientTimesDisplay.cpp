@@ -854,12 +854,6 @@ CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(Panel *
     return m_pLeaderboardReplayCMenu;
 }
 
-
-void CClientTimesDisplay::OnMousePressed(MouseCode code)
-{
-    BaseClass::OnMousePressed(code);
-}
-
 void CClientTimesDisplay::OnContextWatchReplay(const char *runName)
 {
     if (runName)
@@ -875,7 +869,6 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 {
     int itemID = pData->GetInt("itemID", -1);
     Panel *pPanel = static_cast<Panel*>(pData->GetPtr("SubPanel", nullptr));
-    DevLog("%i %s\n", itemID, pPanel->GetClassName());
     
     KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
     char recordingName[MAX_PATH];
@@ -885,9 +878,4 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
     {
         GetLeaderboardReplayContextMenu(pPanel->GetParent())->ShowMenu(this, recordingName);
     }
-}
-
-void CClientTimesDisplay::OnItemLeftClick(int itemid)
-{
-    DevLog("%i\n", itemid);
 }
