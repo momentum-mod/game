@@ -74,7 +74,7 @@ void CMomReplayManager::StopRecording()
 CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* pathID)
 {
     if (PlayingBack())
-        return m_pPlaybackReplay;
+        StopPlayback();
 
     if (m_pPlaybackReplay)
         UnloadPlayback();
