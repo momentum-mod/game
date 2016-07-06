@@ -76,7 +76,7 @@ typedef enum MOMGM
 #define MOM_WEBDOMAIN "http://momentum-mod.org"
 
 // Where to query the api. (here so we can change between live server and test adress  (127.0....) easier
-// ensure that this equals MOM_WEBDOMAIN before pushing! (MOM_USINGLOCALAPI has to be commented)
+// ensure that this equals MOM_WEBDOMAIN before pushing! (!!MOM_USINGLOCALAPI also has to be commented!!))
 #ifndef MOM_USINGLOCALAPI
 #define MOM_APIDOMAIN MOM_WEBDOMAIN
 #else

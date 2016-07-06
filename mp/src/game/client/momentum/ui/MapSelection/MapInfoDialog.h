@@ -62,7 +62,6 @@ private:
 
     vgui::Button *m_pConnectButton;
     vgui::Button *m_pCloseButton;
-    vgui::Label *m_pAuthorLabel;
     vgui::ListPanel *m_pPlayerList;
 
     enum { PING_TIMES_MAX = 4 };
