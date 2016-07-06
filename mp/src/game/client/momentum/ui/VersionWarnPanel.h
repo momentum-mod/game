@@ -48,12 +48,17 @@ class CVersionWarnPanel : public Frame
     void OnThink() override
     {
         BaseClass::OnThink();
-
         if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
         {
             m_pChangeLog->GotoTextStart();
             m_flScrollTime = -1.0f;
         }
+    }
+
+    void OnKillFocus() override
+    {
+        BaseClass::OnKillFocus();
+        Close();
     }
 
   private:
