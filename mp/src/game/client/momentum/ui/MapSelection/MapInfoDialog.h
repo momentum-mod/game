@@ -48,6 +48,11 @@ protected:
     void GetMapInfoCallback(HTTPRequestCompleted_t*, bool);
     CCallResult<CDialogMapInfo, HTTPRequestCompleted_t> cbGetMapInfoCallback;
 
+    void Get10MapTimes(const char* mapname);
+    void Get10MapTimesCallback(HTTPRequestCompleted_t*, bool);
+    CCallResult<CDialogMapInfo, HTTPRequestCompleted_t> cbGet10MapTimesCallback;
+
+
 private:
 #ifndef NO_STEAM
     STEAM_CALLBACK(CDialogMapInfo, OnPersonaStateChange, PersonaStateChange_t, m_CallbackPersonaStateChange);

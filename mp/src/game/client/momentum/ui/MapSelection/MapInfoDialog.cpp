@@ -62,6 +62,12 @@ Frame(parent, "DialogMapInfo")
     // hack, need to make this more explicit functions in ListPanel
     if (m_pPlayerList)
     {
+        m_pPlayerList->AddColumnHeader(0, "PlayerName", "#MOM_Name", 166);
+        m_pPlayerList->AddColumnHeader(1, "Score", "#MOM_Rank", 54);
+        m_pPlayerList->AddColumnHeader(2, "Time", "#MOM_Time", 64);
+
+        m_pPlayerList->SetSortFunc(2, &PlayerTimeColumnSortFunc);
+
         PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 2));
         PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
         PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
@@ -74,9 +80,6 @@ Frame(parent, "DialogMapInfo")
     {
         m_pCloseButton->SetCommand(new KeyValues("Close"));
     }
-
-    // refresh immediately
-    //RequestInfo();
 
     // let us be ticked every frame
     ivgui()->AddTickSignal(this->GetVPanel());
@@ -211,6 +214,7 @@ void CDialogMapInfo::OnConnect()
 void CDialogMapInfo::RequestInfo(const char* mapName)
 {
     GetMapInfo(mapName);
+    Get10MapTimes(mapName);
 }
 
 //-----------------------------------------------------------------------------
@@ -314,9 +318,9 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
     int p2time = p2.kv->GetInt("TimeSec");
 
     if (p1time > p2time)
-        return -1;
-    if (p1time < p2time)
         return 1;
+    if (p1time < p2time)
+        return -1;
 
     return 0;
 }
@@ -332,6 +336,7 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
 
         if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
         {
+            m_bPlayerListUpdatePending = true;
             cbGetMapInfoCallback.Set(apiHandle, this, &CDialogMapInfo::GetMapInfoCallback);
         }
         else
@@ -342,7 +347,7 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
     }
     else
     {
-        Warning("CDialogMapInfo::Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
+        Warning("CDialogMapInfo::GetMapInfo() - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
     }
 }
 
@@ -356,7 +361,7 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     if (size == 0)
     {
-        Warning("CDialogMapInfo::GetMapInfo: 0 body size!\n");
+        Warning("CDialogMapInfo::GetMapInfo() - 0 body size!\n");
         return;
     }
     DevLog("Size of body: %u\n", size);
@@ -441,7 +446,12 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
                             }
                             else
                             {
-                                DevLog("Uncaught key %s with value %s\n", j->key, j->value.getTag() == JSON_STRING ? j->value.toString() : "It's a number");
+                                if (j->value.getTag() == JSON_STRING)
+                                    DevLog("Uncaught key %s with string value %s\n", j->key,j->value.toString());
+                                else if (j->value.getTag() == JSON_STRING)
+                                    DevLog("Uncaught key %s with numerical value %i\n", j->key, (int)j->value.toNumber());
+                                else
+                                    DevLog("Uncaught key %s with object value\n");
                             }
                         }
                     }
@@ -449,4 +459,139 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
             }
         }
     }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
+}
+void CDialogMapInfo::Get10MapTimes(const char* mapname)
+{
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        char szURL[512];
+        Q_snprintf(szURL, 512, "%s/getscores/%s", MOM_APIDOMAIN, mapname);
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            cbGet10MapTimesCallback.Set(apiHandle, this, &CDialogMapInfo::Get10MapTimesCallback);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to get map scores!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
+    }
+    else
+    {
+        Warning("CDialogMapInfo::Get10MapTimes() - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
+    }
+
+}
+void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+    Warning("Callback received.\n");
+    if (bIOFailure || pCallback->m_eStatusCode == k_EHTTPStatusCode204NoContent || pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
+        return;
+
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            JsonValue oval = val.toNode()->value;
+            if (oval.getTag() == JSON_ARRAY)
+            {
+                // If there is something there (not sure how it would be there at this point) remove it
+                ClearPlayerList();
+                for (auto i : oval)
+                {
+                    if (i->value.getTag() == JSON_OBJECT)
+                    {
+                        KeyValues *kv = new KeyValues("entry");
+                        bool bFalseResult = false;
+                        for (auto j : i->value)
+                        {
+                            if (!Q_strcmp(j->key, "time"))
+                            {
+                                kv->SetFloat("time", j->value.toNumber());
+                            }
+                            else if (!Q_strcmp(j->key, "steamid"))
+                            {
+                                uint64 steamid = j->value.toNumber();
+
+                                kv->SetUint64("steamid", steamid);
+                                // MOM_TODO: Localize this string
+                                char locl[BUFSIZELOCL];
+                                LOCALIZE_TOKEN(apiresponse, "MOM_API_WaitingForResponse", locl);
+                                kv->SetString("personaname", locl);
+                                
+                            }
+                            else if (!Q_strcmp(j->key, "rank"))
+                            {
+                                // MOM_TODO: Implement
+                            }
+                            else if (!Q_strcmp(j->key, "rate"))
+                            {
+                                kv->SetInt("rate", j->value.toNumber());
+                            }
+                            else if (!Q_strcmp(j->key, "date"))
+                            {
+                                // MOM_TODO: Implement.
+                            }
+                            else if (!Q_strcmp(j->key, "id"))
+                            {
+                                kv->SetInt("id", j->value.toNumber());
+                            }
+                            else if (!Q_strcmp(j->key, "result") && !Q_strcmp(j->value.toString(), "false"))
+                            {
+                                char locl[BUFSIZELOCL];
+                                LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
+                                SetControlString("PlayerList", locl);
+                                bFalseResult = true;
+                                break;
+                            }
+                            else
+                            {
+                                if (j->value.getTag() == JSON_STRING)
+                                    DevLog("Uncaught key %s with string value %s\n", j->key, j->value.toString());
+                                else if (j->value.getTag() == JSON_STRING)
+                                    DevLog("Uncaught key %s with numerical value %i\n", j->key, (int)j->value.toNumber());
+                                else
+                                    DevLog("Uncaught key %s with object value\n");
+                            }
+                        }
+                        if (!bFalseResult)
+                        {
+                            AddPlayerToList(kv->GetString("personaname"), kv->GetInt("id"), kv->GetFloat("time"));
+                            InvalidateLayout();
+                            m_pPlayerList->InvalidateLayout();
+                            Repaint();
+                        }
+                        kv->deleteThis();
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
+    // Last but not least, free resources
+    alloc.deallocate();
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
