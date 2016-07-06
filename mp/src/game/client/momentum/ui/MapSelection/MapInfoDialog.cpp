@@ -69,8 +69,8 @@ Frame(parent, "DialogMapInfo")
         m_pPlayerList->SetSortFunc(2, &PlayerTimeColumnSortFunc);
 
         PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 2));
-        PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
-        PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
+        //PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
+        //PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
     }
     if (m_pConnectButton)
     {
