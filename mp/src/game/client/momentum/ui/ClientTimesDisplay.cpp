@@ -548,13 +548,14 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 
         //Load from .tim file
         KeyValues *pLoaded = new KeyValues("local");
-        char fileName[MAX_PATH];
+        char fileName[MAX_PATH], filePath[MAX_PATH];
+        const char *mapName = g_pGameRules->MapName();
+        Q_snprintf(fileName, MAX_PATH, "%s%s", mapName ? mapName : "FIXME", EXT_TIME_FILE);
+        V_ComposeFileName(MAP_FOLDER, fileName, filePath, MAX_PATH);
 
-        Q_snprintf(fileName, MAX_PATH, "maps/%s.tim", g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME");
-
-        if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
+        DevLog("Loading from file %s...\n", filePath);
+        if (pLoaded->LoadFromFile(filesystem, filePath, "MOD"))
         {
-            DevLog("Loading from file %s...\n", fileName);
             for (KeyValues* kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime; kvLocalTime = kvLocalTime->GetNextKey())
             {
                 Time t = Time(kvLocalTime);

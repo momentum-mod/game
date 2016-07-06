@@ -126,6 +126,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetTickInterval(gpGlobals->interval_per_tick);
     replay->SetRunTime(g_Timer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
+    replay->SetRunDate(g_Timer->GetLastRunDate());
 }
 
 void CMomentumReplaySystem::SetRunStats()
