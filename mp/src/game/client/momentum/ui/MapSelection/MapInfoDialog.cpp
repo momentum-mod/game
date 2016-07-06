@@ -76,7 +76,7 @@ Frame(parent, "DialogMapInfo")
     }
 
     // refresh immediately
-    RequestInfo();
+    //RequestInfo();
 
     // let us be ticked every frame
     ivgui()->AddTickSignal(this->GetVPanel());
@@ -111,11 +111,12 @@ void CDialogMapInfo::Run(const char *titleName)
 
     SetDialogVariable("game", titleName);
 
-    // get the info from the user
-    //RequestInfo();
+    
     //MOM_TODO: LoadLocalInfo(); //Loads the local information (local PBs, local replays)
     // We ask for some info of this map to the web. IF it is a valid map, we'll fill the info
     SetControlString("MapText", titleName);
+    // get the info for the map
+    RequestInfo(titleName);
     Activate();
 }
 
@@ -207,22 +208,9 @@ void CDialogMapInfo::OnConnect()
 //-----------------------------------------------------------------------------
 // Purpose: Requests the right info from the server
 //-----------------------------------------------------------------------------
-void CDialogMapInfo::RequestInfo()
+void CDialogMapInfo::RequestInfo(const char* mapName)
 {
-    //MOM_TODO: Request info from our website/API
-    /*#ifndef NO_STEAM
-        if (!SteamMatchmakingServers())
-        return;
-
-        if (m_iRequestRetry == 0)
-        {
-        // reset the time at which we auto-refresh
-        m_iRequestRetry = system()->GetTimeMillis() + RETRY_TIME;
-        if (m_hPingQuery != HSERVERQUERY_INVALID)
-        SteamMatchmakingServers()->CancelServerQuery(m_hPingQuery);
-        m_hPingQuery = SteamMatchmakingServers()->PingServer(m_Server.m_NetAdr.GetIP(), m_Server.m_NetAdr.GetQueryPort(), this);
-        }
-        #endif*/
+    GetMapInfo(mapName);
 }
 
 //-----------------------------------------------------------------------------
@@ -335,19 +323,26 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
 
 void CDialogMapInfo::GetMapInfo(const char* mapname)
 {
-    char szURL[512];
-    Q_snprintf(szURL, 512, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
-    HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-    SteamAPICall_t apiHandle;
-
-    if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+    if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        cbGetMapInfoCallback.Set(apiHandle, this, &CDialogMapInfo::GetMapInfoCallback);
+        char szURL[512];
+        Q_snprintf(szURL, 512, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            cbGetMapInfoCallback.Set(apiHandle, this, &CDialogMapInfo::GetMapInfoCallback);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to get map info!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
     }
     else
     {
-        Warning("Failed to send HTTP Request to post scores online!\n");
-        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        Warning("CDialogMapInfo::Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
     }
 }
 
@@ -377,6 +372,67 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
 
     if (status == JSON_OK)
     {
-        //m_pAuthorLabel->SetText("Ruben");
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            JsonValue oval = val.toNode()->value;
+            if (oval.getTag() == JSON_ARRAY)
+            {
+                for (auto i : oval)
+                {
+                    if (i->value.getTag() == JSON_OBJECT)
+                    {
+                        for (auto j : i->value)
+                        {
+                            if (!Q_strcmp(j->key, "difficulty"))
+                            {
+                                char buffer[32];
+                                Q_snprintf(buffer, sizeof(buffer), "Tier %g", j->value.toNumber());
+                                SetControlString("DifficultyText", buffer);
+                            }
+                            else if (!Q_strcmp(j->key, "layout"))
+                            {
+                                char buffer[32];
+                                int layout = j->value.toNumber();
+                                if (layout > 0)
+                                {
+                                    char locl[BUFSIZELOCL];
+                                    LOCALIZE_TOKEN(staged, "MOM_AmountStages", locl);
+                                    Q_snprintf(buffer, sizeof(buffer), locl, layout);
+                                }
+                                else
+                                {
+                                    LOCALIZE_TOKEN(linear, "MOM_Linear", buffer);
+                                }
+                                SetControlString("LayoutText", buffer);
+                            }
+                            else if (!Q_strcmp(j->key, "submitter"))
+                            {
+                                char buffer[32];
+                                Q_snprintf(buffer, sizeof(buffer), "%llu", (uint64)j->value.toNumber());
+                                SetControlString("AuthorText", buffer);
+                            }
+                            else if (!Q_strcmp(j->key, "gamemode"))
+                            {
+                                char* buffer;
+                                switch ((int)j->value.toNumber())
+                                {
+                                case MOMGM_SURF:
+                                    buffer = "Surf";
+                                    break;
+                                case MOMGM_BHOP:
+                                    buffer = "Bunnyhop";
+                                    break;
+                                default:
+                                    buffer = "Unknown";
+                                    break;
+                                }
+                                SetControlString("GamemodeText", buffer);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -56,7 +56,7 @@ private:
     static int PlayerTimeColumnSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &p1, const vgui::ListPanelItem &p2);
 
     // methods
-    void RequestInfo();
+    void RequestInfo(const char* mapName);
     void ConnectToServer();
     void ApplyConnectCommand(const char *mapName);
 

@@ -64,14 +64,25 @@ typedef enum MOMGM
 
 #define MAP_FOLDER "maps" //MOM_TODO: Ensure all files are successfully built using V_ComposeFile
 #define RECORDING_PATH "recordings"
-#define EXT_TIME_FILE ".tim" //MOM_TODO: Find and replace all instances, no hardcode.
-#define EXT_ZONE_FILE ".zon" //MOM_TODO: Find and replace all instances, no hardcode.
+#define EXT_TIME_FILE ".tim"
+#define EXT_ZONE_FILE ".zon"
+
+// I'm a deadbeat, so I did this to stop having to worry about what MOM_APIDOMAIN is
+// Comment this next definition to use MOM_WEBDOMAIN as MOM_APIDOMAIN
+// Make sure this is commented when you push!
+//#define MOM_USINGLOCALAPI
 
 // What is the URL of the web?
 #define MOM_WEBDOMAIN "http://momentum-mod.org"
 
 // Where to query the api. (here so we can change between live server and test adress  (127.0....) easier
-// ensure that this equals MOM_WEBDOMAIN before pushing!
+// ensure that this equals MOM_WEBDOMAIN before pushing! (MOM_USINGLOCALAPI has to be commented)
+#ifndef MOM_USINGLOCALAPI
 #define MOM_APIDOMAIN MOM_WEBDOMAIN
+#else
+// You can change this adress if you use some other url
+#define MOM_APIDOMAIN "http://127.0.0.1:5000"
+#endif
+
 
 #endif // MOM_SHAREDDEFS_H
