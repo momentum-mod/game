@@ -429,6 +429,20 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
                                 }
                                 SetControlString("GamemodeText", buffer);
                             }
+                            else if (!Q_strcmp(j->key, "result") && !Q_strcmp(j->value.toString(), "false"))
+                            {
+                                char locl[BUFSIZELOCL];
+                                LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
+                                SetControlString("DifficultyText", locl);
+                                SetControlString("GamemodeText", locl);
+                                SetControlString("AuthorText", locl);
+                                SetControlString("LayoutText", locl);
+                                break;
+                            }
+                            else
+                            {
+                                DevLog("Uncaught key %s with value %s\n", j->key, j->value.getTag() == JSON_STRING ? j->value.toString() : "It's a number");
+                            }
                         }
                     }
                 }
