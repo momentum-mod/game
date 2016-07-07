@@ -43,16 +43,7 @@ event MenuClose
 event FadeOutEnterSpeed
 {
     //Take 5 seconds to fade the number out
-     Animate HudSpeedMeter StageAlpha "0" Accel 5.0 0.75
-}
-
-event ResetEnterSpeed
-{
-   //Stop any fadeout happening
-   StopEvent FadeOutEnterSpeed 0.0
-
-   //Reset the alpha back to normal immediately
-   Animate HudSpeedMeter StageAlpha "255" Linear 0.0 0.001
+    Animate HudSpeedMeter StageAlpha "0" Accel 5.0 0.75
 }
 
 event FadeOutJumpSpeed
@@ -68,6 +59,24 @@ event ResetJumpSpeed
    
    //Reset the alpha back to normal immediately MOM_TODO: should this fade back in?
    Animate HudSpeedMeter JumpAlpha "255" Linear 0.0 0.001
+}
+
+event PulseComparePanel
+{
+    Animate BogusComparisonsPanel BogusAlpha "0" Linear 0.0 1.5
+    Animate BogusComparisonsPanel BogusAlpha "255" Linear 1.5 1.5
+    RunEvent LoopPulse 3.0
+}
+
+event LoopPulse
+{
+    RunEvent PulseComparePanel 0.0
+}
+
+event StopPulseComparePanel
+{
+    //Just set our Alpha to 255 again.
+    Animate BogusComparisonsPanel BogusAlpha "255" Linear 0.0 0.0000001
 }
 
 event WeaponHighlight

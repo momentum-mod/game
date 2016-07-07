@@ -7,6 +7,17 @@
 
 extern IFileSystem *filesystem;
 
+inline void CleanupRequest(HTTPRequestCompleted_t* pCallback, uint8* pData)
+{
+    if (pData)
+    {
+        delete[] pData;
+    }
+    pData = nullptr;
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+}
+
+
 void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     if (bIOFailure)
@@ -17,6 +28,11 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     file = filesystem->Open("testmapdownload.bsp", "w+b", "MOD");
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    if (size == 0)
+    {
+        Warning("MomentumUtil::DownloadCallback: 0 body size!\n");
+        return;
+    }
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
@@ -27,7 +43,7 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     DevLog("Successfully written file\n");
 
     // Free resources
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    CleanupRequest(pCallback, pData);
 }
 
 void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -36,6 +52,11 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
         return;
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    if (size == 0)
+    {
+        Warning("MomentumUtil::PostTimeCallback: 0 body size!\n");
+        return;
+    }
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
@@ -58,7 +79,7 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
 
             DevLog("Outer is JSON OBJECT!\n");
             JsonNode *node = val.toNode();
-            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
+            DevLog("Outer has key %s with value %s\n", node->key, node->value);
 
             // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
             // the JSON
@@ -81,7 +102,7 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     }
     // Last but not least, free resources
     alloc.deallocate();
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    CleanupRequest(pCallback, pData);
 }
 
 void MomentumUtil::PostTime(const char *szURL)
@@ -177,10 +198,44 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL, CCallResult<M
     return bSuccess;
 }
 
+#ifdef CLIENT_DLL
 void MomentumUtil::GetRemoteRepoModVersion()
 {
     CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
         &MomentumUtil::VersionCallback);
+}
+
+void MomentumUtil::GetRemoteChangelog()
+{
+    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog, 
+        &MomentumUtil::ChangelogCallback);
+}
+
+void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
+{
+    const char *pError = "Error loading changelog!";
+    if (bIOFailure)
+    {
+        pError = "Error loading changelog due to bIOFailure!";
+        versionwarnpanel->SetChangelog(pError);
+        return;
+    }
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    if (size == 0)
+    {
+        pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
+        versionwarnpanel->SetChangelog(pError);
+        return;
+    }
+
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+
+    versionwarnpanel->SetChangelog(pDataPtr);
+
+    CleanupRequest(pCallback, pData);
 }
 
 void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -189,6 +244,11 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         return;
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    if (size == 0)
+    {
+        Warning("MomentumUtil::VersionCallback: 0 body size!\n");
+        return;
+    }
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
@@ -198,26 +258,67 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
     char versionValue[15];
     Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
-    if (Q_atoi(repoVersion.Element(0)) > Q_atoi(storedVersion.Element(0)))
+    for (int i = 0; i < 3; i++)
     {
-        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
+        if (Q_atoi(repoVersion.Element(i)) > Q_atoi(storedVersion.Element(i)))
+        {
+            versionwarnpanel->SetVersion(versionValue);
+            GetRemoteChangelog();
+            versionwarnpanel->Activate();
+            break;
+        }
     }
-    else if (Q_atoi(repoVersion.Element(1)) > Q_atoi(storedVersion.Element(1)))
-    {
-        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
-    }
-    else if (Q_atoi(repoVersion.Element(2)) > Q_atoi(storedVersion.Element(2)))
-    {
-        ConVarRef("cl_showversionwarnpanel").SetValue(versionValue);
-    }
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+
+    CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision) const
+
+void MomentumUtil::GenerateBogusComparison(KeyValues* kvOut)
+{
+    //RandomSeed(Plat_FloatTime());
+    for (int i = 1; i < MAX_STAGES; i++)
+    {
+        KeyValues *kvZone = new KeyValues("zone");
+        kvOut->AddSubKey(kvZone);
+    }
+
+    KeyValues *kvTotal = new KeyValues("total");
+    kvOut->AddSubKey(kvTotal);
+
+}
+
+void MomentumUtil::GenerateBogusRunStats(C_MomRunStats* pStatsOut)
+{
+    RandomSeed(Plat_FloatTime());
+    for (int i = 0; i < MAX_STAGES; i++)
+    {
+        //Time
+        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
+        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
+
+        //Velocity
+        pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+
+        //Sync
+        pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
+        pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
+
+        //Keypress
+        pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
+        pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
+    }
+}
+
+#endif
+
+void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName) const
 {
     // We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = abs(m_flSecondsTime);
-
+    char separator = fileName ? '-' : ':';//MOM_TODO: Think of a better char?
     int hours = m_flSecondsTime / (60.0f * 60.0f);
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
     int seconds = fmod(m_flSecondsTime, 60.0f);
@@ -229,35 +330,43 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision) 
     {
     case 0:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d", hours, minutes, seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d", hours, separator, minutes, separator, seconds);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d", minutes, seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d", minutes, separator, seconds);
         else
             Q_snprintf(pOut, BUFSIZETIME, "%d", seconds);
         break;
     case 1:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%d", hours, minutes, seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%d", hours, separator, minutes, separator, seconds, tenths);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%d", minutes, seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%d", minutes, separator, seconds, tenths);
         else
             Q_snprintf(pOut, BUFSIZETIME, "%d.%d", seconds, tenths);
         break;
     case 2:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%02d", hours, minutes, seconds, hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%02d", hours, separator, minutes, separator, seconds, hundredths);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%02d", minutes, seconds, hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%02d", minutes, separator, seconds, hundredths);
         else
             Q_snprintf(pOut, BUFSIZETIME, "%d.%02d", seconds, hundredths);
         break;
     case 3:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d:%02d.%03d", hours, minutes, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%03d", hours, separator, minutes, separator, seconds, millis);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d:%02d.%03d", minutes, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%03d", minutes, separator, seconds, millis);
         else
             Q_snprintf(pOut, BUFSIZETIME, "%d.%03d", seconds, millis);
+        break;
+    case 4:
+        if (hours > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%04d", hours, separator, minutes, separator, seconds, millis);
+        else if (minutes > 0)
+            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%04d", minutes, separator, seconds, millis);
+        else
+            Q_snprintf(pOut, BUFSIZETIME, "%d.%04d", seconds, millis);
         break;
     }
 }
@@ -277,6 +386,24 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
     return pFinalColor;
 }
 
+Color* MomentumUtil::GetColorFromHex(const char* hexColor)
+{
+    long hex = strtol(hexColor, nullptr, 16);
+    int length = Q_strlen(hexColor);
+    if (length == 6)
+    {
+        int r = ((hex >> 16) & 0xFF);   //extract RR byte
+        int g = ((hex >> 8) & 0xFF);    //extract GG byte
+        int b = ((hex) & 0xFF);         //extract BB byte
+        m_newColor.SetColor(r, g, b, 75);
+        return &m_newColor;
+    }
+    else {
+        Msg("Error: Color format incorrect! Use hex code in format \"RRGGBB\"\n");
+        return nullptr;
+    }
+}
+
 KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, float tickrate, int flags)
 {
     if (kvMap && szMapName)
@@ -294,7 +421,7 @@ KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, fl
                 {
                     int kvflags = kv->GetInt("flags");
                     float kvrate = kv->GetFloat("rate");
-                    if (kvflags == flags && FloatEquals(kvrate, tickrate, 0.001f))
+                    if (kvflags == flags && FloatEquals(kvrate, tickrate))
                     {
                         sortedTimes.InsertNoSort(kv);
                     }
@@ -321,35 +448,9 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
         KeyValues *bestRun = GetBestTime(kvMap, szMapName, tickRate, flags);
         if (bestRun)
         {
-            FOR_EACH_SUBKEY(bestRun, kv)
-            {
-                if (!Q_strnicmp(kv->GetName(), "stage", strlen("stage"))) // MOM_TODO: or "checkpoint" (for linears)
-                {
-                    // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
-                    // I'm thinking the name could be like "(user): (Time)"
-                    Q_strcpy(into->runName, "Personal Best");
-                    // Splits
-                    into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
-                    into->stageSplits.AddToTail(kv->GetFloat("time"));
-                    // Keypress
-                    into->stageJumps.AddToTail(kv->GetInt("num_jumps"));
-                    into->stageStrafes.AddToTail(kv->GetInt("num_strafes"));
-                    // Sync
-                    into->stageAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
-                    into->stageAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
-                    // Velocity (3D and Horizontal)
-                    for (int i = 0; i < 2; i++)
-                    {
-                        bool horizontalVel = (i == 1);
-                        into->stageAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                        into->stageMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                        into->stageEnterVels[i].AddToTail(
-                            kv->GetFloat(horizontalVel ? "stage_enter_vel_2D" : "stage_enter_vel"));
-                        into->stageExitVels[i].AddToTail(
-                            kv->GetFloat(horizontalVel ? "stage_exit_vel_2D" : "stage_exit_vel"));
-                    }
-                }
-            }
+            // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
+            // I'm thinking the name could be like "(user): (Time)"
+            FillRunComparison("Personal Best", bestRun, into);
             DevLog("Loaded run comparisons for %s !\n", into->runName);
             toReturn = true;
         }
@@ -357,6 +458,60 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
         kvMap->deleteThis();
     }
     return toReturn;
+}
+
+void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, RunCompare_t *into)
+{
+    Q_strcpy(into->runName, compareName);
+
+    FOR_EACH_SUBKEY(kvRun, kv)
+    {
+        //Stages/checkpoints data
+        if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
+        {
+            // Splits
+            into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
+            into->zoneSplits.AddToTail(kv->GetFloat("time"));
+            // Keypress
+            into->zoneJumps.AddToTail(kv->GetInt("num_jumps"));
+            into->zoneStrafes.AddToTail(kv->GetInt("num_strafes"));
+            // Sync
+            into->zoneAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
+            into->zoneAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
+            // Velocity (3D and Horizontal)
+            for (int i = 0; i < 2; i++)
+            {
+                bool horizontalVel = (i == 1);
+                into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                into->zoneEnterVels[i].AddToTail(
+                    kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
+                into->zoneExitVels[i].AddToTail(
+                    kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
+            }
+        }
+        //Overall stats
+        else if (!Q_strcmp(kv->GetName(), "total"))
+        {
+            // Keypress
+            into->zoneJumps.AddToHead(kv->GetInt("jumps"));
+            into->zoneStrafes.AddToHead(kv->GetInt("strafes"));
+            // Sync
+            into->zoneAvgSync1.AddToHead(kv->GetFloat("avgsync"));
+            into->zoneAvgSync2.AddToHead(kv->GetFloat("avgsync2"));
+            // Velocity (3D and Horizontal)
+            for (int i = 0; i < 2; i++)
+            {
+                bool horizontalVel = (i == 1);
+                into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
+                into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
+                into->zoneExitVels[i].AddToHead(
+                    kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
+                into->zoneEnterVels[i].AddToHead(
+                    kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
+            }
+        }
+    }
 }
 
 static MomentumUtil s_momentum_util;

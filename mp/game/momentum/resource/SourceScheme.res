@@ -89,7 +89,7 @@ Scheme
 		FrameSystemButton.BgColor		"Blank"
 		FrameSystemButton.Icon			""
 		FrameSystemButton.DisabledIcon	""
-		FrameTitleBar.Font				"Verdana"		
+		FrameTitleBar.Font				"DefaultSmall"		
 		FrameTitleBar.TextColor			"255 255 255 204"
 		FrameTitleBar.BgColor			"Blank"
 		FrameTitleBar.DisabledTextColor	"255 255 255 91"
@@ -139,7 +139,7 @@ Scheme
 		RichText.TextColor				"White"
 		RichText.BgColor				"TransparentBlack"
 		RichText.SelectedTextColor		"White"
-		RichText.SelectedBgColor		"MOM.Panel.Bg"
+		RichText.SelectedBgColor		"Light Gray"//"MOM.Panel.Bg"
 
 		ScrollBar.Wide					15
 
@@ -182,7 +182,7 @@ Scheme
 
 		ToggleButton.SelectedTextColor	"White"
 
-		Tooltip.TextColor			"Light Gray"
+		Tooltip.TextColor			"White"
 		Tooltip.BgColor				"MOM.Panel.Bg"
 
 		TreeView.BgColor			"Light Gray"
@@ -255,6 +255,7 @@ Scheme
 				"name"		"Verdana" [$LINUX]
 				"tall"		"16"
 				"weight"	"500"
+                "antialias" "1"
 			}
 		}
 		"DefaultBold"
@@ -265,8 +266,21 @@ Scheme
 				"name"		"Verdana Bold" [$LINUX]
 				"tall"		"16"
 				"weight"	"1000"
+                "antialias" "1"
 			}
 		}
+        "DefaultBoldLarge"
+        {
+			"1"
+			{
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana Bold" [$LINUX]
+				"tall"		"18"
+				"weight"	"1000"
+                "antialias" "1"
+			}
+		}
+        
 		"DefaultUnderline"
 		{
 			"1"
@@ -287,6 +301,7 @@ Scheme
 				"tall"		"12" [!$LINUX]
 				"tall"		"16" [$LINUX]
 				"weight"	"0"
+                "antialias" "1"
 			}
 		}
 		"DefaultSmallDropShadow"
@@ -298,6 +313,7 @@ Scheme
 				"tall"		"13"
 				"weight"	"0"
 				"dropshadow" "1"
+                "antialias" "1"
 			}
 		}
 		"DefaultVerySmall"
@@ -306,8 +322,9 @@ Scheme
 			{
 				"name"		"Tahoma" [!$LINUX]
 				"name"		"Verdana" [$LINUX]
-				"tall"		"12"
+				"tall"		"11"
 				"weight"	"0"
+                "antialias" "1"
 			}
 		}
 
@@ -319,8 +336,20 @@ Scheme
 				"name"		"Verdana" [$LINUX]
 				"tall"		"18"
 				"weight"	"0"
+                "antialias" "1"
 			}
 		}
+        "DefaultVeryLarge"
+        {
+            "1"
+            {
+                "name" "Tahoma" [!$LINUX]
+                "name" "Verdana" [$LINUX]
+                "tall" "22"
+                "antialias" "1"
+            }
+        }
+        
 		"UiBold"
 		{
 			"1"	[$WIN32]

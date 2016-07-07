@@ -1,11 +1,16 @@
-# About contributing
-Contributing to the mod is very easy. Just fork the repo, make your desired changes
+# About Contributing
+Contributing to this project is very easy. Just fork the repo, make your desired changes
 and then send us a pull request and we'll happily revise it.
 
+Note: We use Hungarian Notation (Systems), spaces instead of tabs, and ClangFormat for any custom file added to the project.
 
-When writing the Pull Request comment, don't forget to ask to get listed in the contributors section of the web by providing a name/alias that will be displayed in the credits section of the mod. If you don't provide a name, we'll use your GitHub username
+If your work is to be used in our project, we will credit you with a Contributor role on [our credits page.](http://momentum-mod.org/about) If you wish to have a certain name in this credit, make sure to mention it in the comments of your Pull Request, otherwise, we'll just use your GitHub username.
 
-**Every help we can get is welcomed**
+If we like your work enough, we may invite you to be on the team!
+
+If you have any other concerns, feel free to [contact us!](http://momentum-mod.org/contact)
+
+**All the help we can get is very welcome!**
 
 
 Also, *as this is a Source mod*, VALVe's contributing conditions apply here as well:

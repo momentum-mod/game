@@ -1,0 +1,6 @@
+"wireframe" 
+{ 
+"$model" "1" 
+"$basetexture" "dev_nyro\dev_gray-21" 
+"$nocull" "1"
+} 

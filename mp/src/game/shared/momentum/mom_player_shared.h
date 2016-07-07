@@ -17,7 +17,7 @@
 inline CMomentumPlayer *ToCMOMPlayer(CBaseEntity *pEntity)
 {
     if (!pEntity || !pEntity->IsPlayer())
-        return NULL;
+        return nullptr;
     return dynamic_cast<CMomentumPlayer*>(pEntity);
 }
 

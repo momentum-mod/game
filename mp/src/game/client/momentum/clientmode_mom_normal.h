@@ -1,12 +1,12 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $Workfile:     $
 // $Date:         $
 // $NoKeywords: $
 //=============================================================================//
-#if !defined( CLIENTMODE_MOM_NORM_H )
+#if !defined(CLIENTMODE_MOM_NORM_H)
 #define CLIENTMODE_MOM_NORM_H
 #ifdef _WIN32
 #pragma once
@@ -14,34 +14,41 @@
 
 #include "clientmode_shared.h"
 #include "hud_menu_static.h"
-#include <vgui_controls/EditablePanel.h>
+#include "hud_mapfinished.h"
+#include "ClientTimesDisplay.h"
+#include "momSpectatorGUI.h"
 #include <vgui/Cursor.h>
+#include <vgui_controls/EditablePanel.h>
 
 class CHudViewport;
 
 namespace vgui
 {
-    typedef unsigned long HScheme;
+typedef unsigned long HScheme;
 }
 
-
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose:
 //-----------------------------------------------------------------------------
 class ClientModeMOMNormal : public ClientModeShared
 {
-public:
+  public:
     DECLARE_CLASS(ClientModeMOMNormal, ClientModeShared);
 
     ClientModeMOMNormal();
     ~ClientModeMOMNormal();
 
-    virtual void	Init();
-    virtual bool	ShouldDrawCrosshair(void);
-    virtual int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding);
+    void Init() override;
+    bool ShouldDrawCrosshair(void) override;
+    //NOTE: This includes mouse inputs!!!
+    int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) override;
+    int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) override;
 
-private:
+  private:
     CHudMenuStatic *m_pHudMenuStatic;
+    CHudMapFinishedDialog *m_pHudMapFinished;
+    CClientTimesDisplay *m_pLeaderboards;
+    CMOMSpectatorGUI *m_pSpectatorGUI;
 };
 
 extern IClientMode *GetClientModeNormal();

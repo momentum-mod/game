@@ -2,7 +2,7 @@
 
 using namespace vgui;
 
-static CMapSelectorDialog *s_InternetDlg = NULL;
+static CMapSelectorDialog *s_InternetDlg = nullptr;
 
 CMapSelectorDialog &MapSelectorDialog()
 {
@@ -25,12 +25,12 @@ void GetMostCommonQueryPorts(CUtlVector<uint16> &ports)
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(NULL, "CMapSelectorDialog")//"CServerBrowserDialog")
+CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")//"CServerBrowserDialog")
 {
     SetParent(parent);
     s_InternetDlg = this;
-    m_pSavedData = NULL;
-    m_pFilterData = NULL;
+    m_pSavedData = nullptr;
+    m_pFilterData = nullptr;
 
     LoadUserData();
 
@@ -123,7 +123,7 @@ void CMapSelectorDialog::Open()
 void CMapSelectorDialog::OnTick()
 {
     BaseClass::OnTick();
-    vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
+    //vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
 
 
@@ -304,7 +304,7 @@ CDialogMapInfo *CMapSelectorDialog::JoinGame(IMapList *gameList, unsigned int se
     //gameDialog->Connect();
 
     // return gameDialog;
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -335,14 +335,14 @@ CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyVal
     //We're going to send just the map name to the CDialogMapInfo() constructor,
     //then to the server and populate it with leaderboard times, replays, personal bests, etc
     const char *pMapName = pMap->GetString("name", "");
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, pMapName);
+    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, pMapName);
     gameDialog->SetParent(GetVParent());
     gameDialog->AddActionSignalTarget(this);
     gameDialog->Run(pMapName);
     int i = m_vecMapInfoDialogs.AddToTail();
     m_vecMapInfoDialogs[i] = gameDialog;
     return gameDialog;
-    return NULL;
+    //return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -350,7 +350,7 @@ CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyVal
 //-----------------------------------------------------------------------------
 CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort)
 {
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, "");
+    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, "");
     gameDialog->AddActionSignalTarget(this);
     gameDialog->SetParent(GetVParent());
     gameDialog->Run("");
@@ -388,7 +388,7 @@ CDialogMapInfo *CMapSelectorDialog::GetDialogGameInfoForFriend(uint64 ulSteamIDF
             return pDlg;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------

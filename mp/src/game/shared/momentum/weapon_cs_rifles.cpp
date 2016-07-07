@@ -296,9 +296,9 @@ void CWeaponAWP::SecondaryAttack()
 #ifndef CLIENT_DLL
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
-    if (pPlayer == NULL)
+    if (pPlayer == nullptr)
     {
-        Assert(pPlayer != NULL);
+        Assert(pPlayer != nullptr);
         return;
     }
 
@@ -366,9 +366,9 @@ void CWeaponAWP::AWPFire(float flSpread)
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
-    if (pPlayer == NULL)
+    if (pPlayer == nullptr)
     {
-        Assert(pPlayer != NULL);
+        Assert(pPlayer != nullptr);
         return;
     }
 
@@ -405,9 +405,9 @@ void CWeaponAWP::UnzoomThink(void)
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
-    if (pPlayer == NULL)
+    if (pPlayer == nullptr)
     {
-        Assert(pPlayer != NULL);
+        Assert(pPlayer != nullptr);
         return;
     }
 
@@ -420,9 +420,9 @@ float CWeaponAWP::GetMaxSpeed() const
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
-    if (pPlayer == NULL)
+    if (pPlayer == nullptr)
     {
-        Assert(pPlayer != NULL);
+        Assert(pPlayer != nullptr);
         return BaseClass::GetMaxSpeed();
     }
 

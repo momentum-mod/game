@@ -82,7 +82,7 @@ CBaseEntity* FindEntity(edict_t *pEdict, char *classname)
     {
         return (FindPickerEntityClass(static_cast<CBasePlayer*>(GetContainingEntity(pEdict)), classname));
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -132,5 +132,5 @@ void GameStartFrame(void)
 //=========================================================
 void InstallGameRules()
 {
-    CreateGameRulesObject("CMomentum");
+    CreateGameRulesObject("CMomentumGameRules");
 }

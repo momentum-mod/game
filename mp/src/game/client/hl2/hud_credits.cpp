@@ -61,7 +61,7 @@ class CHudCredits : public CHudElement, public vgui::Panel
 {
     DECLARE_CLASS_SIMPLE(CHudCredits, vgui::Panel);
 
-  public:
+public:
     CHudCredits(const char *pElementName);
     void Init(void) override;
     void LevelShutdown(void) override;
@@ -81,11 +81,11 @@ class CHudCredits : public CHudElement, public vgui::Panel
         return IsActive();
     }
 
-  protected:
+protected:
     void Paint() override;
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
-  private:
+private:
     void Clear();
 
     void ReadNames(KeyValues *pKeyValue);
@@ -548,13 +548,13 @@ void CHudCredits::DrawIntroCreditsName(void)
                     {
                         pNextCredits->flTimeAdd = (i + 1.0f);
                         pNextCredits->flTime = gpGlobals->curtime + m_flFadeInTime + m_flFadeOutTime +
-                                               m_flFadeHoldTime + pNextCredits->flTimeAdd;
+                            m_flFadeHoldTime + pNextCredits->flTimeAdd;
                     }
                     else
                     {
                         pNextCredits->flTimeAdd = m_flPauseBetweenWaves;
                         pNextCredits->flTime = gpGlobals->curtime + m_flFadeInTime + m_flFadeOutTime +
-                                               m_flFadeHoldTime + pNextCredits->flTimeAdd;
+                            m_flFadeHoldTime + pNextCredits->flTimeAdd;
                     }
 
                     pNextCredits->flTimeStart = gpGlobals->curtime;

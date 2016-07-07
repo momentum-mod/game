@@ -76,7 +76,7 @@ void CSmokeGrenadeProjectile::Think_Detonate()
 	//TheBots->SetGrenadeRadius( this, SmokeGrenadeRadius );
 
 	// Ok, we've stopped rolling or whatever. Now detonate.
-	ParticleSmokeGrenade *pGren = (ParticleSmokeGrenade*)CBaseEntity::Create( PARTICLESMOKEGRENADE_ENTITYNAME, GetAbsOrigin(), QAngle(0,0,0), NULL );
+    ParticleSmokeGrenade *pGren = (ParticleSmokeGrenade*)CBaseEntity::Create(PARTICLESMOKEGRENADE_ENTITYNAME, GetAbsOrigin(), QAngle(0, 0, 0), nullptr);
 	if ( pGren )
 	{
 		pGren->FillVolume();
@@ -84,10 +84,10 @@ void CSmokeGrenadeProjectile::Think_Detonate()
 		pGren->SetAbsOrigin( GetAbsOrigin() );
 
 		//tell the hostages about the smoke!
-		CBaseEntity *pEntity = NULL;
+        CBaseEntity *pEntity = nullptr;
 		variant_t var;	//send the location of the smoke?
 		var.SetVector3D( GetAbsOrigin() );
-		while ( ( pEntity = gEntList.FindEntityByClassname( pEntity, "hostage_entity" ) ) != NULL)
+        while ((pEntity = gEntList.FindEntityByClassname(pEntity, "hostage_entity")) != nullptr)
 		{
 			//send to hostages that have a resonable chance of being in it while its still smoking
 			if( (GetAbsOrigin() - pEntity->GetAbsOrigin()).Length() < 1000 )

@@ -27,8 +27,8 @@
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
 #include "momentum/ui/IVersionWarnPanel.h"
-#include "momentum/ui/IMomentumSettingsPanel.h"
 #include "momentum/ui/IBugReportPanel.h"
+#include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
