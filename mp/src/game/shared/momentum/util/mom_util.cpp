@@ -132,21 +132,6 @@ void MomentumUtil::DownloadMap(const char *szMapname)
     // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
 }
 
-void MomentumUtil::ReportBugCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    // The callback does not need anything
-}
-
-bool MomentumUtil::ReportBug(const char* email, const char* message)
-{
-    // This is really not a good idea ot have around here, but you know, alpha! We will figure something better later.
-
-    char payload[1100];
-    Q_snprintf(payload, 1100, "{\"text\":\"Player with email %s submitted a bug report:\n%s\"}", email, message);
-    DevLog("Bug report is:\n%s\n", payload);
-    return CreateAndSendHTTPReqWithPost("https://hooks.slack.com/services/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", &cbReportBugCallback, &MomentumUtil::ReportBugCallback, new KeyValues("params", "payload", payload));
-}
-
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
     CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {

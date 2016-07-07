@@ -2,7 +2,7 @@
 
 #include "vgui/IVGui.h"
 
-class BugReportPanel
+class IBugReportPanel
 {
 public:
     virtual void Create(vgui::VPANEL parent) = 0;
@@ -11,4 +11,4 @@ public:
     virtual void Close() = 0;
 };
 
-extern BugReportPanel *bug_report;
+extern IBugReportPanel *bug_report;

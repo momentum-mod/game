@@ -1,56 +1,41 @@
 //The following include files are necessary to allow your  the panel .cpp to compile.
 #include "cbase.h"
+
 #include "IBugReportPanel.h"
-using namespace vgui;
 #include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
-#include <vgui_controls/Button.h>
 #include <vgui_controls/TextEntry.h>
-#include <vgui_controls/Label.h>
 #include <vgui_controls/pch_vgui_controls.h>
 #include "momentum/util/mom_util.h"
-#include "momentum/mom_shareddefs.h"
+
 #include "tier0/memdbgon.h"
 
-class CBugReportPanel : public vgui::Frame
+using namespace vgui;
+
+class CBugReportPanel : public Frame
 {
     DECLARE_CLASS_SIMPLE(CBugReportPanel, vgui::Frame);
     //CBugReportPanel : This Class / vgui::Frame : BaseClass
 
-    CBugReportPanel(vgui::VPANEL parent); 	// Constructor
+    CBugReportPanel(VPANEL parent); 	// Constructor
     ~CBugReportPanel() {};				// Destructor
 
+    void OnThink() override;
     void Activate() override;
     void InitPanel();
 protected:
-    //VGUI overrides:
-    void OnTick() override;
-    bool VerifyReport();
-    MESSAGE_FUNC(OnSubmitReport, "SubmitReport")
+    MESSAGE_FUNC_CHARPTR(OnURLChange, "OnFinishRequest", URL)
     {
-        if (VerifyReport())
-        {
-            char email[30];
-            char report[1000];
-            m_pEmailTextEntry->GetText(email, m_pEmailTextEntry->GetTextLength() * sizeof(char));
-            m_pBugTextEntry->GetText(report, m_pBugTextEntry->GetTextLength() * sizeof(char));
-            
-            if (mom_UTIL->ReportBug(email, report))
-            {
-                InitPanel();
-            }
-        }
+        DevLog("URL FINISHED LOADING %s\n", URL);
+        //MOM_TODO: Do we want to have anything custom when they submit a contact form?
     }
 
 private:
-
-    Button *m_pSubmitButton;
-    Label *m_pEmailLabel, *m_pDescribeBugLabel, *m_pCharsLeftLabel;
-    TextEntry *m_pEmailTextEntry, *m_pBugTextEntry;
+    HTML *m_pWebPage;
 };
 
 // Constuctor: Initializes the Panel
-CBugReportPanel::CBugReportPanel(vgui::VPANEL parent)
+CBugReportPanel::CBugReportPanel(VPANEL parent)
     : BaseClass(nullptr, "CBugReportPanel")
 {
     SetParent(parent);
@@ -68,57 +53,26 @@ CBugReportPanel::CBugReportPanel(vgui::VPANEL parent)
     SetMoveable(true);
     SetVisible(false);
     AddActionSignalTarget(this);
-    SetScheme("ClientScheme");
 
     LoadControlSettings("resource/ui/BugReportPanel.res");
-
-    m_pEmailLabel = FindControl<Label>("EmailLabel", true);
-    m_pDescribeBugLabel = FindControl<Label>("DescribeLabel", true);
-
-    m_pBugTextEntry = new TextEntry(this, "BugText");
-    m_pEmailTextEntry = new TextEntry(this, "EmailText");
-
-    m_pSubmitButton = FindControl<Button>("SubmitButton", true);
-
-    ivgui()->AddTickSignal(GetVPanel());
+    m_pWebPage = new HTML(this, "HTMLForm", true);
+    m_pWebPage->AddActionSignalTarget(this);
 
     InitPanel();
 }
 
 void CBugReportPanel::InitPanel()
 {
-#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
+#define SCALE(num) scheme()->GetProportionalScaledValue(num)
 #define SCALEXY(x,y) SCALE(x), SCALE(y)
-    if (m_pSubmitButton && m_pEmailLabel && m_pDescribeBugLabel && m_pBugTextEntry && m_pEmailTextEntry)
-    {
-        m_pEmailTextEntry->SetPos(SCALEXY(67, 38));
-        m_pEmailTextEntry->SetDrawWidth(SCALE(550));
-        m_pEmailTextEntry->SetSize(SCALEXY(200, 13));
-        m_pEmailTextEntry->SetMultiline(false);
-        m_pEmailTextEntry->SetMaximumCharCount(30);
-        m_pEmailTextEntry->SetText("");
-        m_pEmailTextEntry->SetTabPosition(1);
 
-        m_pBugTextEntry->SetPos(SCALEXY(67, 72));
-        m_pBugTextEntry->SetDrawWidth(SCALE(550));
-        m_pBugTextEntry->SetSize(SCALEXY(200, 220));
-        m_pBugTextEntry->SetMultiline(true);
-        m_pBugTextEntry->SetMaximumCharCount(1000);
-        m_pBugTextEntry->SetText("");
-        m_pBugTextEntry->SetTabPosition(2);
-
-        m_pSubmitButton->SetCommand("SubmitReport");
-        m_pSubmitButton->AddActionSignalTarget(this);
-        m_pSubmitButton->SetEnabled(false);
-    }
-    else
-    {
-        DevLog("Report bug has a bug (Nullptr) Oh the irony...\n");
-    }
+    m_pWebPage->SetPos(SCALEXY(0, 25));
+    m_pWebPage->SetSize(GetWide(), GetTall() - SCALE(25));
+    m_pWebPage->OpenURL("http://momentum-mod.org/contact", nullptr);
 }
 
 //Class: CBugReportPanelInterface Class. Used for construction.
-class CBugReportPanelInterface : public BugReportPanel
+class CBugReportPanelInterface : public IBugReportPanel
 {
 private:
     CBugReportPanel *reportubug_panel;
@@ -131,11 +85,11 @@ public:
     {
         reportubug_panel = nullptr;
     }
-    void Create(vgui::VPANEL parent)
+    void Create(VPANEL parent) override
     {
         reportubug_panel = new CBugReportPanel(parent);
     }
-    void Destroy()
+    void Destroy() override
     {
         if (reportubug_panel)
         {
@@ -143,7 +97,7 @@ public:
             delete reportubug_panel;
         }
     }
-    void Activate(void)
+    void Activate(void) override
     {
         if (reportubug_panel)
         {
@@ -151,7 +105,7 @@ public:
             reportubug_panel->SetKeyBoardInputEnabled(true);
         }
     }
-    void Close()
+    void Close() override
     {
         if (reportubug_panel)
         {
@@ -161,29 +115,21 @@ public:
     }
 };
 static CBugReportPanelInterface g_BugReportPanel;
-BugReportPanel* bug_report = (BugReportPanel*)&g_BugReportPanel;
+IBugReportPanel* bug_report = static_cast<IBugReportPanel*>(&g_BugReportPanel);
 
 CON_COMMAND(mom_bugreport_show, "Shows the bug report panel.\n")
 {
     bug_report->Activate();
 }
 
-void CBugReportPanel::OnTick()
+void CBugReportPanel::OnThink()
 {
-    BaseClass::OnTick();
-    vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
-
-    m_pSubmitButton->SetEnabled(IsVisible() && VerifyReport());
-
+    BaseClass::OnThink();
+    GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
 
 void CBugReportPanel::Activate()
 {
     BaseClass::Activate();
-}
-
-bool CBugReportPanel::VerifyReport()
-{
-    //MOM_TODO: More verification would be needed here
-    return (m_pBugTextEntry && m_pEmailTextEntry && m_pEmailTextEntry->GetTextLength() >= 6 && m_pBugTextEntry->GetTextLength() >= 15);
+    InitPanel();
 }
