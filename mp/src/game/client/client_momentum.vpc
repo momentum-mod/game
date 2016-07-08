@@ -103,8 +103,8 @@ $Project "Client (Momentum)"
                     $File "hl2\hud_weaponselection.cpp"
                 }
                 
-                $File 	"momentum\ui\BugReportPanel.cpp"
-                $File 	"momentum\ui\IBugReportPanel.h"
+                $File 	"momentum\ui\ContactPanel.cpp"
+                $File 	"momentum\ui\IContactPanel.h"
                 
                 $File   "momentum\ui\ClientTimesDisplay.h"
                 $File   "momentum\ui\ClientTimesDisplay.cpp"

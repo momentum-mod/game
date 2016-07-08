@@ -1,7 +1,7 @@
 //The following include files are necessary to allow your  the panel .cpp to compile.
 #include "cbase.h"
 
-#include "IBugReportPanel.h"
+#include "IContactPanel.h"
 #include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/TextEntry.h>
@@ -12,13 +12,13 @@
 
 using namespace vgui;
 
-class CBugReportPanel : public Frame
+class CContactPanel : public Frame
 {
-    DECLARE_CLASS_SIMPLE(CBugReportPanel, vgui::Frame);
+    DECLARE_CLASS_SIMPLE(CContactPanel, vgui::Frame);
     //CBugReportPanel : This Class / vgui::Frame : BaseClass
 
-    CBugReportPanel(VPANEL parent); 	// Constructor
-    ~CBugReportPanel() {};				// Destructor
+    CContactPanel(VPANEL parent); 	// Constructor
+    ~CContactPanel() {};				// Destructor
 
     void OnThink() override;
     void Activate() override;
@@ -35,7 +35,7 @@ private:
 };
 
 // Constuctor: Initializes the Panel
-CBugReportPanel::CBugReportPanel(VPANEL parent)
+CContactPanel::CContactPanel(VPANEL parent)
     : BaseClass(nullptr, "CBugReportPanel")
 {
     SetParent(parent);
@@ -54,14 +54,14 @@ CBugReportPanel::CBugReportPanel(VPANEL parent)
     SetVisible(false);
     AddActionSignalTarget(this);
 
-    LoadControlSettings("resource/ui/BugReportPanel.res");
+    LoadControlSettings("resource/ui/ContactPanel.res");
     m_pWebPage = new HTML(this, "HTMLForm", true);
     m_pWebPage->AddActionSignalTarget(this);
 
     InitPanel();
 }
 
-void CBugReportPanel::InitPanel()
+void CContactPanel::InitPanel()
 {
 #define SCALE(num) scheme()->GetProportionalScaledValue(num)
 #define SCALEXY(x,y) SCALE(x), SCALE(y)
@@ -72,63 +72,63 @@ void CBugReportPanel::InitPanel()
 }
 
 //Class: CBugReportPanelInterface Class. Used for construction.
-class CBugReportPanelInterface : public IBugReportPanel
+class CContactPanelInterface : public IContactPanel
 {
 private:
-    CBugReportPanel *reportubug_panel;
+    CContactPanel *contact_panel;
 public:
-    CBugReportPanelInterface()
+    CContactPanelInterface()
     {
-        reportubug_panel = nullptr;
+        contact_panel = nullptr;
     }
-    ~CBugReportPanelInterface()
+    ~CContactPanelInterface()
     {
-        reportubug_panel = nullptr;
+        contact_panel = nullptr;
     }
     void Create(VPANEL parent) override
     {
-        reportubug_panel = new CBugReportPanel(parent);
+        contact_panel = new CContactPanel(parent);
     }
     void Destroy() override
     {
-        if (reportubug_panel)
+        if (contact_panel)
         {
-            reportubug_panel->SetParent(nullptr);
-            delete reportubug_panel;
+            contact_panel->SetParent(nullptr);
+            delete contact_panel;
         }
     }
     void Activate(void) override
     {
-        if (reportubug_panel)
+        if (contact_panel)
         {
-            reportubug_panel->Activate();
-            reportubug_panel->SetKeyBoardInputEnabled(true);
+            contact_panel->Activate();
+            contact_panel->SetKeyBoardInputEnabled(true);
         }
     }
     void Close() override
     {
-        if (reportubug_panel)
+        if (contact_panel)
         {
-            reportubug_panel->Close();
-            reportubug_panel->SetKeyBoardInputEnabled(false);
+            contact_panel->Close();
+            contact_panel->SetKeyBoardInputEnabled(false);
         }
     }
 };
-static CBugReportPanelInterface g_BugReportPanel;
-IBugReportPanel* bug_report = static_cast<IBugReportPanel*>(&g_BugReportPanel);
+static CContactPanelInterface g_ContactPanel;
+IContactPanel* contact_panel = static_cast<IContactPanel*>(&g_ContactPanel);
 
-CON_COMMAND(mom_bugreport_show, "Shows the bug report panel.\n")
+CON_COMMAND(mom_contact_show, "Shows the contact panel.\n")
 {
-    bug_report->Activate();
+    contact_panel->Activate();
 }
 
-void CBugReportPanel::OnThink()
+void CContactPanel::OnThink()
 {
     BaseClass::OnThink();
     GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
 
-void CBugReportPanel::Activate()
+void CContactPanel::Activate()
 {
     BaseClass::Activate();
     InitPanel();

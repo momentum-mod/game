@@ -85,7 +85,7 @@
 	"12"
 	{
 	    "label" "#MOM_SendFeedback"
-		"command" "engine mom_bugreport_show"
+		"command" "engine mom_contact_show"
 		"InGameOrder" "250"
 	}
 }
