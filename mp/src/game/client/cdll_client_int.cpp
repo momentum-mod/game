@@ -2338,8 +2338,8 @@ void CHLClient::PreSave( CSaveRestoreData *s )
 
 void CHLClient::Save( CSaveRestoreData *s )
 {
-	CSave saveHelper( s );
-	g_pGameSaveRestoreBlockSet->Save( &saveHelper );
+	//CSave saveHelper( s );
+	//g_pGameSaveRestoreBlockSet->Save( &saveHelper );
 }
 
 void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
@@ -2351,16 +2351,16 @@ void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
 
 void CHLClient::ReadRestoreHeaders( CSaveRestoreData *s )
 {
-	CRestore restoreHelper( s );
-	g_pGameSaveRestoreBlockSet->PreRestore();
-	g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
+	//CRestore restoreHelper( s );
+	//g_pGameSaveRestoreBlockSet->PreRestore();
+	//g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
 }
 
 void CHLClient::Restore( CSaveRestoreData *s, bool b )
 {
-	CRestore restore(s);
-	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	g_pGameSaveRestoreBlockSet->PostRestore();
+	//CRestore restore(s);
+	//g_pGameSaveRestoreBlockSet->Restore( &restore, b );
+	//g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 static CUtlVector<EHANDLE> g_RestoredEntities;
