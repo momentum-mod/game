@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories       "$BASE;momentum\ui\HUD,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
+        $AdditionalIncludeDirectories       "$BASE;momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
         $PreprocessorDefinitions            "$BASE;SOURCE_2013"
     }
 }
@@ -101,6 +101,13 @@ $Project "Client (Momentum)"
                     $File "hl2\hud_credits.cpp"
                     $File "hud_chat.cpp"
                     $File "hl2\hud_weaponselection.cpp"
+                }
+                
+                $Folder "MainMenu"
+                {
+                    $File "momentum\ui\MainMenu\IMenuOverride.h"
+                    $File "momentum\ui\MainMenu\mom_menu_rootpanel.h"
+                    $File "momentum\ui\MainMenu\mom_menu_rootpanel.cpp"
                 }
                 
                 $File   "momentum\ui\ClientTimesDisplay.h"
