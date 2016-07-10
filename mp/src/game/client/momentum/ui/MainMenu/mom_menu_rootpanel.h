@@ -1,53 +1,51 @@
 #pragma once
 
 #include "cbase.h"
+
+#include "GameUI/IGameUI.h"
 #include "IMenuOverride.h"
 #include "vgui_controls/EditablePanel.h"
-#include "GameUI/IGameUI.h"
 
 // This class is what is actually used instead of the main menu.
 class CMOMMenuOverride : public vgui::EditablePanel
 {
     DECLARE_CLASS_SIMPLE(CMOMMenuOverride, vgui::EditablePanel);
-public:
+
+  public:
     CMOMMenuOverride(vgui::VPANEL parent);
     virtual ~CMOMMenuOverride();
 
-    IGameUI*		GetGameUI();
+    IGameUI *GetGameUI();
 
-protected:
-    void	ApplySchemeSettings(vgui::IScheme *pScheme) override;
+  protected:
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
     void OnCommand(const char *command) override;
 
-private:
-    bool			LoadGameUI();
+  private:
+    bool LoadGameUI();
 
-    int				m_ExitingFrameCount;
-    bool			m_bCopyFrameBuffer;
+    int m_ExitingFrameCount;
+    bool m_bCopyFrameBuffer;
 
-    IGameUI*		m_pGameUI;
+    IGameUI *m_pGameUI;
 };
-
 
 // Derived class of override interface
 class COverrideInterface : public IMenuOverride
 {
-private:
+  private:
     CMOMMenuOverride *m_pMainMenu;
 
-public:
-    COverrideInterface(void)
-    {
-        m_pMainMenu = nullptr;
-    }
+  public:
+    COverrideInterface(void) { m_pMainMenu = nullptr; }
 
     void Create(vgui::VPANEL parent) override
     {
         // Create immediately
         m_pMainMenu = new CMOMMenuOverride(parent);
 
-        //Set this as the main menu override
+        // Set this as the main menu override
         if (m_pMainMenu->GetGameUI())
         {
             m_pMainMenu->GetGameUI()->SetMainMenuOverride(m_pMainMenu->GetVPanel());

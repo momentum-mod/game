@@ -46,9 +46,10 @@
         "enabled" "1"
         "visible" "1"
         "wide" "200"
+        "tall" "25"
         //"proportionalToParent" "1"
         "labelText" "#MOM_MapSelector_MainMenuOption"
-        "font" "Default"
+        "font" "MainMenuButton"
         "auto_wide_tocontents" "0"
         "textAlignment" "center"
     }

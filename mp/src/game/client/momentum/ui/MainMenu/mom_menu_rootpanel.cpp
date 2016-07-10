@@ -28,10 +28,8 @@ CMOMMenuOverride::CMOMMenuOverride(VPANEL parent) : EditablePanel(nullptr, "CMOM
     SetParent(parent);
 
     SetProportional(true);
+    SetScheme("ClientScheme");
     LoadControlSettings("resource/ui/MainMenu.res");
-    
-
-    
     m_bCopyFrameBuffer = false;
     m_pGameUI = nullptr;
     
@@ -82,7 +80,7 @@ CMOMMenuOverride::~CMOMMenuOverride()
 void CMOMMenuOverride::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-
+    
     // Resize the panel to the screen size
     // Otherwise, it'll just be in a little corner
     int wide, tall;

@@ -295,6 +295,19 @@ Scheme
 				"custom"	"1"
 			}
 		}
+        
+        "MainMenuButton"
+        {
+            "1"
+            {
+                "name" "BigNoodleTitling"
+                "tall" "25"
+                "weight" "50"
+                "custom" "1"
+                "antialias" "1"
+            }
+        }
+        
 		Icons
 		{
 			"1"
@@ -1747,9 +1760,10 @@ Scheme
 	{
 		"1"		"resource/HALFLIFE2.ttf"
 		"1"		"resource/MomIcons.ttf"
-		"2"		"resource/HL2MP.ttf"
+		//"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
-		"4"		"resource/cs.ttf"
+		//"4"		"resource/cs.ttf"
+        "1" "resource/BigNoodleTitling.ttf"
 	}
 
 }
