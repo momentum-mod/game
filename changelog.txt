@@ -1,4 +1,6 @@
 0.5.0
+Contact/Feedback Panel
+    Introduced a panel for in-game feedback, available in the menu.
 Overhauled Settings Panel
     Changed to tabular settings, includes four new Tabs:
     "Controls" for momentum-specific controls settings
@@ -16,6 +18,7 @@ Bug/Other fixes
     Fixed animations for player jumping and zone enter speed on the HUD speedometer
     Fixed the zone buffer for the comparisons panel
     Fixed the Changelog panel to properly scroll to top upon load
+    Removed ability to save/load (use the checkpoint menu instead!)
     
 0.4.7
 Bugfixes
