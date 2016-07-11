@@ -160,6 +160,18 @@
         "MapInfoFont" "HudHintTextSmall"//Font for the map information
     }
     
+    "CHudMapFinishedDialog"
+    {
+        "fieldName"     "CHudMapFinishedDialog"
+        "xpos"          "c-110"
+        "ypos"          "c-150"
+        "wide"          "220"
+        "tall"          "175"
+        "visible"       "1"
+        "enabled"       "1"
+        "TextFont"      "Default"
+    }
+    
     HudHealth [$WIN32]
     {
         "fieldName"     "HudHealth"

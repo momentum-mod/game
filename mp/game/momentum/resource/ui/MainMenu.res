@@ -24,7 +24,7 @@
     
     "MenuButtonsBackground"
     {
-        "controlName" "Panel"
+        "controlName" "EditablePanel"
         "fieldName" "MenuButtonsBackground"
         "xpos" "c-125"
         "ypos" "c-20"
