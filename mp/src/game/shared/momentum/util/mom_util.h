@@ -21,11 +21,15 @@ class MomentumUtil
 public:
     void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
+
     void PostTime(const char* URL);
     void DownloadMap(const char*);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
+
+    bool CreateAndSendHTTPReqWithPost(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
+        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
@@ -62,7 +66,7 @@ public:
     {
         return fabs(a - b) < epsilon;
     }
-
+    
     //Checks if source is within a rectangle formed by leftCorner and rightCorner
     bool IsInBounds(Vector2D source, Vector2D bottomLeft, Vector2D topRight) const
     {
