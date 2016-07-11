@@ -1,4 +1,5 @@
 #include "cbase.h"
+
 #include "jsontokv.h"
 KeyValues *CJsonToKeyValues::ConvertJsonToKeyValues(JsonNode *node)
 {
@@ -24,7 +25,15 @@ void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)
     case JSON_OBJECT:
         for (auto i : value)
         {
-            kv->AddSubKey(MapNode(i));
+            // If what we're going to parse is an object, then we need to add it as a subkey.
+            if (i->value.getTag() == JSON_OBJECT || i->value.getTag() == JSON_ARRAY)
+            {
+                kv->AddSubKey(MapNode(i));
+            }
+            else //Otherwise (string, numbers, booleans) we just add them as an entry of the current key
+            {
+                MapNode(i, kv);
+            }
         }
         break;
     case JSON_TRUE:
@@ -45,9 +54,14 @@ KeyValues *CJsonToKeyValues::MapNode(JsonNode *node)
     // as the only value it has)
     if (!node)
         return nullptr;
+
+    // @Ruben: When node->key is null on the json, key is not nullptr, but 0xffeeffee.
+    // MOM_TODO: Is it always that adress? If not, when / how does it change?
+    
     // Parent keyvalue.
     KeyValues *pNodeValues =
         new KeyValues((node->key == nullptr || POINTER_TO_INT(node->key) == 0xffeeffee) ? nullptr : node->key);
+
     MapNode(node, pNodeValues);
     return pNodeValues;
 }
