@@ -110,6 +110,9 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\MainMenu\mom_menu_rootpanel.cpp"
                 }
                 
+                $File 	"momentum\ui\ContactPanel.cpp"
+                $File 	"momentum\ui\IContactPanel.h"
+                
                 $File   "momentum\ui\ClientTimesDisplay.h"
                 $File   "momentum\ui\ClientTimesDisplay.cpp"
                 
