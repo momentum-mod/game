@@ -49,7 +49,7 @@ void CGameUI2::Initialize(CreateInterfaceFn appFactory)
     {
         GetBasePanel()->Create();
         if (GetBasePanel())
-            gameui->SetMainMenuOverride(GetBasePanel()->GetVPanel());
+            gameui->SetMainMenuOverride(GetBasePanel()->GetMainMenu()->GetVPanel());
     }
 }
 

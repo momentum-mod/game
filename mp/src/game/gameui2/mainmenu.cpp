@@ -3,7 +3,6 @@
 #include "mainmenu.h"
 
 #include "vgui/ISurface.h"
-#include "vgui/ILocalize.h"
 #include "vgui/IVGui.h"
 #include "vgui_controls/ImagePanel.h"
 
@@ -13,21 +12,20 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-MainMenu::MainMenu(vgui::Panel* parent) : BaseClass(NULL, "MainMenu")
+using namespace vgui;
+
+MainMenu::MainMenu(Panel* parent) : BaseClass(nullptr, "MainMenu")
 {
-	vgui::HScheme Scheme = vgui::scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
+	HScheme Scheme = scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
 	SetScheme(Scheme);
 
 	SetProportional(false);
+    SetMouseInputEnabled(true);
+    SetKeyBoardInputEnabled(true);
 	SetPaintBorderEnabled(false);
 	SetPaintBackgroundEnabled(false);
-	SetDeleteSelfOnClose(true);
-	SetSizeable(false);
-	SetMoveable(false);
-	SetCloseButtonVisible(false);
-	SetMenuButtonVisible(false);
-	Activate();
-
+    SetAutoDelete(true);
+    
 	m_bFocused = true;
 
 	m_logoLeft = GameUI2().GetLocalizedString("#GameUI2_LogoLeft");
@@ -41,6 +39,10 @@ MainMenu::MainMenu(vgui::Panel* parent) : BaseClass(NULL, "MainMenu")
     m_pButtonFeedback->SetVisible(true);
     m_pButtonFeedback->SetTextAlignment(RIGHT);
 	CreateMenu("resource2/mainmenu.res");
+
+    MakeReadyForUse();
+    SetZPos(0);
+    RequestFocus();
 }
 
 void MainMenu::CreateMenu(const char* menu)
@@ -80,7 +82,7 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu* const* s1, Button_MainMenu* co
 	return ((*s1)->GetPriority() < (*s2)->GetPriority());
 }
 
-void MainMenu::ApplySchemeSettings(vgui::IScheme* pScheme)
+void MainMenu::ApplySchemeSettings(IScheme* pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
@@ -98,7 +100,7 @@ void MainMenu::ApplySchemeSettings(vgui::IScheme* pScheme)
         if (m_pLogoImage)
             m_pLogoImage->EvictImage();
         else
-            m_pLogoImage = new vgui::ImagePanel(this, "GameLogo");
+            m_pLogoImage = new ImagePanel(this, "GameLogo");
 
         m_pLogoImage->SetAutoDelete(true);
         m_pLogoImage->SetShouldScaleImage(true);
@@ -118,7 +120,7 @@ void MainMenu::OnThink()
 {
 	BaseClass::OnThink();
 
-    if (vgui::ipanel())
+    if (ipanel())
         SetBounds(0, 0, GameUI2().GetViewport().x, GameUI2().GetViewport().y);
 }
 
@@ -127,7 +129,7 @@ bool MainMenu::IsVisible(void)
 	if (GameUI2().IsInLoading())
 		return false;
 
-	return m_bFocused;
+    return BaseClass::IsVisible();
 }
 
 void MainMenu::DrawMainMenu()
@@ -181,17 +183,17 @@ void MainMenu::DrawLogo()
 {
     if (m_bLogoText)
     {
-        vgui::surface()->DrawSetTextColor(m_cLogoLeft);
-        vgui::surface()->DrawSetTextFont(m_fLogoFont);
+        surface()->DrawSetTextColor(m_cLogoLeft);
+        surface()->DrawSetTextFont(m_fLogoFont);
 
         int32 logoW, logoH;
-        vgui::surface()->GetTextSize(m_fLogoFont, m_logoLeft, logoW, logoH);
+        surface()->GetTextSize(m_fLogoFont, m_logoLeft, logoW, logoH);
 
         int32 logoX, logoY;
         if (m_pButtons.Count() <= 0 || m_bLogoAttachToMenu == false)
         {
             logoX = m_fLogoOffsetX;
-            logoY = 0;//GameUI2().GetViewport().y - (m_fLogoOffsetY + logoH);
+            logoY = m_fLogoOffsetY;
         }
         else
         {
@@ -200,13 +202,13 @@ void MainMenu::DrawLogo()
             logoX = m_fButtonsOffsetX + m_fLogoOffsetX;
             logoY = y0 - (logoH + m_fLogoOffsetY);
         }
-        vgui::surface()->DrawSetTextPos(logoX, logoY);
-        vgui::surface()->DrawPrintText(m_logoLeft, wcslen(m_logoLeft));
+        surface()->DrawSetTextPos(logoX, logoY);
+        surface()->DrawPrintText(m_logoLeft, wcslen(m_logoLeft));
 
-        vgui::surface()->DrawSetTextColor(m_cLogoRight);
-        vgui::surface()->DrawSetTextFont(m_fLogoFont);
-        vgui::surface()->DrawSetTextPos(logoX + logoW, logoY);
-        vgui::surface()->DrawPrintText(m_logoRight, wcslen(m_logoRight));
+        surface()->DrawSetTextColor(m_cLogoRight);
+        surface()->DrawSetTextFont(m_fLogoFont);
+        surface()->DrawSetTextPos(logoX + logoW, logoY);
+        surface()->DrawPrintText(m_logoRight, wcslen(m_logoRight));
     }
     else
     {
@@ -252,17 +254,15 @@ void MainMenu::OnCommand(char const* cmd)
 void MainMenu::OnSetFocus()
 {
 	BaseClass::OnSetFocus();
-
 	m_bFocused = true;
-	vgui::surface()->PlaySound(m_pszMenuOpenSound);
+	surface()->PlaySound(m_pszMenuOpenSound);
 }
 
 void MainMenu::OnKillFocus()
 {
 	BaseClass::OnKillFocus();
-
 	m_bFocused = false;
-	vgui::surface()->PlaySound(m_pszMenuCloseSound);
+	surface()->PlaySound(m_pszMenuCloseSound);
 }
 
 bool MainMenu::Equals(char const* inputA, char const* inputB)
@@ -270,15 +270,8 @@ bool MainMenu::Equals(char const* inputA, char const* inputB)
 	std::string str1Cpy(inputA);
 	std::string str2Cpy(inputB);
 
-	std::transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), std::function<int32(int32)>(::tolower));
-	std::transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), std::function<int32(int32)>(::tolower));
+	transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), std::function<int32(int32)>(tolower));
+	transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), std::function<int32(int32)>(tolower));
 
 	return (str1Cpy == str2Cpy);
-}
-
-MainMenuHelper::MainMenuHelper(MainMenu* menu, vgui::Panel* parent) : BaseClass(parent)
-{
-	menu->SetParent(this);
-	menu->MakeReadyForUse();
-	menu->SetZPos(0);
 }

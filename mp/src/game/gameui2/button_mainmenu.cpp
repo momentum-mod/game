@@ -7,6 +7,7 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+#include <vgui/IInput.h>
 
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT(Button_MainMenu, Button_MainMenu);
 
@@ -16,7 +17,6 @@ using namespace vgui;
 
 Button_MainMenu::Button_MainMenu(Panel* parent, Panel* pActionSignalTarget, const char* pCmd) : BaseClass(parent, "", "", pActionSignalTarget, pCmd)
 {
-    SetProportional(true);
 	Init();
     Q_strncpy(m_pCmd, pCmd, sizeof(m_pCmd));
 }
@@ -33,21 +33,28 @@ void Button_MainMenu::SetButtonDescription(const char* description)
 
 void Button_MainMenu::Init()
 {
+    SetProportional(true);
     m_bIsBlank = false;
     m_iPriority = 0;
     m_iTextAlignment = LEFT;
 
-	HScheme Scheme = scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
-	SetScheme(Scheme);
+    HScheme menuScheme = scheme()->GetScheme("SchemeMainMenu"); 
+    //Load this scheme only if it doesn't exist yet
+    if (!menuScheme) 
+        scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
+
+	SetScheme(menuScheme);
 
 	m_pAnimController = new AnimationController(this);
-	m_pAnimController->SetScheme(Scheme);
+	m_pAnimController->SetScheme(menuScheme);
 	m_pAnimController->SetProportional(true);
+    m_pAnimController->SetAutoDelete(true);
 
 	SetPaintBorderEnabled(false);
 	SetPaintBackgroundEnabled(false);
 	SetEnabled(true);
 	SetVisible(false);
+    SetAutoDelete(true);
 }
 
 void Button_MainMenu::ApplySchemeSettings(IScheme* pScheme)
@@ -312,7 +319,7 @@ void Button_MainMenu::AdditionalCursorCheck()
     if (!input()) return;
 
     if (IsBlank()) return;
-
+    
 	if (IsCursorOver() == false)
 		m_sButtonState = Out;
 	else if (IsCursorOver() == true && m_sButtonState == Out)
