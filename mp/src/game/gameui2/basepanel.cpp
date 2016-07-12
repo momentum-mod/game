@@ -30,7 +30,7 @@ BasePanel::BasePanel(vgui::VPANEL parent) : BaseClass(nullptr)
     m_backgroundMusic = "Interface.Music";
     m_nBackgroundMusicGUID = 0;
 
-    g_pVGuiLocalize->AddFile("resource2/localization/gameui2_%language%.txt");
+    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
     m_pMainMenu = new MainMenu(nullptr);
 }

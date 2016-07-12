@@ -58,6 +58,7 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetParent(parent);
     SetAutoDelete(true);
     LoadControlSettings("resource/ui/SettingsPanel_Base.res");
+    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
 
