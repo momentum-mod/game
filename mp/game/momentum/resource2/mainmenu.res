@@ -22,7 +22,7 @@
 	{
 		"text"			"#GameUI2_Options"
 		"description"	"#GameUI2_OptionsDescription"
-		"command"		"cvar gamemenucommand openoptionsdialog"
+		"command"		"engine gamemenucommand openoptionsdialog"
 		"priority"		"70"
 		"specifics"		"shared"
 	}
