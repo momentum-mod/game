@@ -296,18 +296,6 @@ Scheme
 			}
 		}
         
-        "MainMenuButton"
-        {
-            "1"
-            {
-                "name" "BigNoodleTitling"
-                "tall" "25"
-                "weight" "50"
-                "custom" "1"
-                "antialias" "1"
-            }
-        }
-        
 		Icons
 		{
 			"1"
