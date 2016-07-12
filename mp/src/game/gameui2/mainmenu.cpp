@@ -39,7 +39,7 @@ MainMenu::MainMenu(vgui::Panel* parent) : BaseClass(NULL, "MainMenu")
     m_pButtonFeedback->SetPriority(1);
     m_pButtonFeedback->SetBlank(false);
     m_pButtonFeedback->SetVisible(true);
-
+    m_pButtonFeedback->SetTextAlignment(RIGHT);
 	CreateMenu("resource2/mainmenu.res");
 }
 

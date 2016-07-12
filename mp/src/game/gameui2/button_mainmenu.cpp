@@ -35,6 +35,7 @@ void Button_MainMenu::Init()
 {
     m_bIsBlank = false;
     m_iPriority = 0;
+    m_iTextAlignment = LEFT;
 
 	HScheme Scheme = scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
 	SetScheme(Scheme);
@@ -218,13 +219,33 @@ void Button_MainMenu::DrawButton_Blur()
 	surface()->DrawFilledRect(0, 0, m_fWidth + 0, m_fHeight + 0);
 }
 
+inline int CalculateTextXFromAlignment(TextAlignment align, float buttonWide, int textWide, float m_fTextOffsetX)
+{
+    int toReturn = 0;
+    int iTextOffset = static_cast<int>(m_fTextOffsetX);
+    switch (align)
+    {
+    default:
+    case LEFT://LEFT ALIGN
+        toReturn = iTextOffset;
+        break;
+    case CENTER://CENTER
+        toReturn = static_cast<int>(buttonWide) / 2 - textWide / 2;
+        break;
+    case RIGHT://RIGHT ALIGN
+        toReturn = static_cast<int>(buttonWide) - iTextOffset - textWide;
+        break;
+    }
+    return toReturn;
+}
+
 void Button_MainMenu::DrawText()
 {
 	surface()->DrawSetTextColor(m_cText);
 	surface()->DrawSetTextFont(m_fTextFont);
 
 	surface()->GetTextSize(m_fTextFont, m_ButtonText, m_iTextSizeX, m_iTextSizeY);
-	m_iTextPositionX = m_fTextOffsetX;
+	m_iTextPositionX = CalculateTextXFromAlignment(m_iTextAlignment, m_fWidth, m_iTextSizeX, m_fTextOffsetX);
 	m_iTextPositionY = m_fHeight / 2 - m_iTextSizeY / 2 + m_fTextOffsetY;
 
 	surface()->DrawSetTextPos(m_iTextPositionX, m_iTextPositionY);
@@ -241,7 +262,14 @@ void Button_MainMenu::DrawDescription()
 
 	surface()->DrawSetTextColor(m_cDescription);
 	surface()->DrawSetTextFont(m_fDescriptionFont);
-	surface()->DrawSetTextPos(m_iTextPositionX + m_fDescriptionOffsetX, m_iTextPositionY + m_iTextSizeY + m_fDescriptionOffsetY);
+    int descWide, descTall;
+    surface()->GetTextSize(m_fDescriptionFont, m_ButtonDescription, descWide, descTall);
+    int descriptionX; 
+    if (descWide > m_iTextSizeX)
+        descriptionX = CalculateTextXFromAlignment(m_iTextAlignment, m_fWidth, descWide, m_iTextPositionX + m_fDescriptionOffsetX);
+    else
+        descriptionX = m_iTextPositionX + m_fDescriptionOffsetX;
+	surface()->DrawSetTextPos(descriptionX, m_iTextPositionY + m_iTextSizeY + m_fDescriptionOffsetY);
 	surface()->DrawPrintText(m_ButtonDescription, wcslen(m_ButtonDescription));
 }
 

@@ -11,6 +11,13 @@ enum ButtonState
 	Released
 };
 
+enum TextAlignment
+{
+    LEFT,
+    CENTER,
+    RIGHT
+};
+
 class Button_MainMenu : public Button2D
 {
 	DECLARE_CLASS_SIMPLE(Button_MainMenu, Button2D);
@@ -46,6 +53,8 @@ public:
 
     virtual void        SetBlank(bool blank) { m_bIsBlank = blank; }
     bool                IsBlank() { return m_bIsBlank; }
+
+    virtual void        SetTextAlignment(TextAlignment alignment) { m_iTextAlignment = alignment; }
 
 private:
 	ButtonState			m_sButtonState;
@@ -124,4 +133,5 @@ private:
 	vgui::HFont			m_fDescriptionFont;
 
     bool m_bIsBlank;
+    TextAlignment m_iTextAlignment;
 };
