@@ -1,10 +1,11 @@
 #include "gameui2_interface.h"
 #include "basepanel.h"
-
+#include <icommandline.h>
 #include "vgui/ILocalize.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
 
 static CDllDemandLoader g_GameUI("GameUI");
 
@@ -44,9 +45,12 @@ void CGameUI2::Initialize(CreateInterfaceFn appFactory)
 	if (!enginesound || !enginevgui || !engine || !soundemitterbase || !render || !gameui)
 		Error("CGameUI2::Initialize() failed to get necessary interfaces.\n");
 
-	GetBasePanel()->Create();
-	if (GetBasePanel())
-		gameui->SetMainMenuOverride(GetBasePanel()->GetVPanel());
+    if (!CommandLine()->FindParm("-shaderedit"))
+    {
+        GetBasePanel()->Create();
+        if (GetBasePanel())
+            gameui->SetMainMenuOverride(GetBasePanel()->GetVPanel());
+    }
 }
 
 void CGameUI2::Shutdown()
