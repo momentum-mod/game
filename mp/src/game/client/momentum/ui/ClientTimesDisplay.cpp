@@ -139,8 +139,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
-
-    m_mSIdNames.SetLessFunc(PNamesMapLessFunc);
 }
 
 
@@ -645,9 +643,9 @@ void CClientTimesDisplay::LoadOnlineTimes()
 {
     if (!m_bOnlineTimesLoaded || m_bOnlineNeedUpdate)
     {
-        char requrl[90];
+        char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, 90, "http://127.0.0.1:5000/getscores/%s", "1");
+        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getscores/%s", g_pGameRules->MapName());
         // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
     }
@@ -720,30 +718,11 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                             }
                             else if (!Q_strcmp(j->key, "steamid"))
                             {
-                                uint64 steamid = j->value.toNumber();
-
-                                kv->SetUint64("steamid", steamid);
-                                // MOM_TODO: Localize this string
-
-                                if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamid), true))
-                                {
-                                    // GetFriendPersonaName is not what we want, probably
-                                    const char * pname = steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamid));
-                                    if (Q_strcmp(pname, "") != 0)
-                                    {
-                                        kv->SetString("personaname", pname);
-                                    }
-                                    else
-                                    {
-                                        char safename[MAX_PLAYER_NAME_LENGTH];
-                                        Q_snprintf(safename, MAX_PLAYER_NAME_LENGTH, "SID: %llu", steamid);
-                                        kv->SetString("personaname", safename);
-                                    }
-                                }
-                                else
-                                {
-                                    kv->SetString("personaname", "Loading player name...");
-                                }
+                                kv->SetUint64("steamid", (uint64)j->value.toNumber());     
+                            }
+                            else if (!Q_strcmp(j->key, "personaname"))
+                            {
+                                kv->SetString("personaname", j->value.toString());
                             }
                             else if (!Q_strcmp(j->key, "rank"))
                             {
@@ -782,52 +761,6 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
-void CClientTimesDisplay::RequestUserInformation(PersonaStateChange_t *pParam)
-{
-    // This function gets called every time a friend updates something, not just the poeple you called it upon. Wtf
-
-    // GetFriendPersonaName is not what we want, probably
-
-    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pParam->m_ulSteamID));
-    if (Q_strcmp(pName, "") != 0) //We don't want to set an empty name
-    {
-        m_mSIdNames.InsertOrReplace(pParam->m_ulSteamID, pName);
-        OnlineTimesVectorToLeaderboards();
-    }
-}
-
-//void TellAbout(JsonValue o)
-//{
-//    switch (o.getTag()) {
-//    case JSON_NUMBER:
-//        DevLog("%g\n", o.toNumber());
-//        break;
-//    case JSON_STRING:
-//        DevLog("\"%s\"\n", o.toString());
-//        break;
-//    case JSON_ARRAY:
-//        for (auto i : o) {
-//            TellAbout(i->value);
-//        }
-//        break;
-//    case JSON_OBJECT:
-//        for (auto i : o) {
-//            DevLog("%s = ", i->key);
-//            TellAbout(i->value);
-//        }
-//        break;
-//    case JSON_TRUE:
-//        DevLog("true");
-//        break;
-//    case JSON_FALSE:
-//        DevLog("false");
-//        break;
-//    case JSON_NULL:
-//        DevLog("null\n");
-//        break;
-//    }
-//}
 
 //-----------------------------------------------------------------------------
 // Purpose: Updates the leaderboard lists
@@ -1013,23 +946,7 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards()
     if (m_vOnlineTimes.Count() > 0 && m_pOnlineLeaderboards)
     {
         FOR_EACH_VEC(m_vOnlineTimes, entry)
-        {
-            // We set the current personaname before anything...
-            // Find method is not being nice, so we craft our own
-            //int mId = m_mSIdNames.Find(m_vOnlineTimes.Element(entry).steamid);
-            FOR_EACH_MAP_FAST(m_mSIdNames, mIter)
-            {
-                if (m_mSIdNames.Key(mIter) == m_vOnlineTimes.Element(entry).steamid)
-                {
-                    const char * personaname = m_mSIdNames.Element(mIter);
-                    if (Q_strcmp(personaname, "") != 0)
-                    {
-                        m_vOnlineTimes.Element(entry).m_kv->SetString("personaname", personaname);
-                    }
-                    break;
-                }
-            }
-
+        {           
             int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry).id);
             if (itemID == -1)
             {
@@ -1126,7 +1043,7 @@ CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(Panel *
         delete m_pLeaderboardReplayCMenu;
     m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
     m_pLeaderboardReplayCMenu->SetAutoDelete(false);
-   
+
     if (!pParent)
     {
         m_pLeaderboardReplayCMenu->SetParent(this);
@@ -1156,7 +1073,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 {
     int itemID = pData->GetInt("itemID", -1);
     Panel *pPanel = static_cast<Panel*>(pData->GetPtr("SubPanel", nullptr));
-    
+
     KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
     char recordingName[MAX_PATH];
     Q_snprintf(recordingName, MAX_PATH, "%i-%f", selectedRun->GetInt("date_t"), selectedRun->GetFloat("time_f"));
