@@ -64,7 +64,7 @@
 	"Colors"
 	{
         "White" "255 255 255 255"
-        "Light.Blue" "51 122 183 255"
+        "Light Blue" "51 122 183 255"
         "Dark Blue" "22 69 119 255"
     
 		"MainMenu.Logo.Left"							"255 255 255 255"
