@@ -29,6 +29,7 @@
 #include "momentum/ui/IChangelogPanel.h"
 #include "momentum/ui/IContactPanel.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
+#include "momentum/ui/IMessageboxPanel.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -233,6 +234,7 @@ void VGui_CreateGlobalPanels( void )
     changelogpanel->Create(gameMenu);
     momentum_settings->Create(gameMenu);
     contact_panel->Create(gameMenu);
+    messageboxpanel->Create(gameMenu);
 }
 
 void VGui_Shutdown()

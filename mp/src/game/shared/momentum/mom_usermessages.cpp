@@ -49,5 +49,7 @@ void RegisterUserMessages(void)
     usermessages->Register("Timer_Stage", 4);
     usermessages->Register("Timer_StageCount", 4);
     //usermessages->Register("Timer_GameMode", 4);
+    usermessages->Register("MB_PlayerTriedSaveOrLoad", 0);
+    usermessages->Register("MB_NoStartOrEnd", 0);
     RegisterHapticMessages();
 }
