@@ -9,7 +9,7 @@
 #include "tickset.h"
 #include "tier0/platform.h"
 
-float* TickSet::interval_per_tick = NULL;
+float* TickSet::interval_per_tick = nullptr;
 const TickSet::Tickrate TickSet::s_DefinedRates[] = {
     { 0.015f, "66" },
     { 0.01f, "100" }
@@ -75,7 +75,7 @@ void* TickSet::FindPattern(const void* start, size_t length, const unsigned char
             return const_cast<void*>(reinterpret_cast<const void*>(addr));
     }
 
-    return NULL;
+    return nullptr;
 }
 
 bool TickSet::TickInit()

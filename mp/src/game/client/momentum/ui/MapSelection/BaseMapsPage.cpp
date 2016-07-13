@@ -236,7 +236,7 @@ mapstruct_t *CBaseMapsPage::GetMap(unsigned int serverID)
     return NULL; // bugbug Alfred: temp Favorites/History objects won't return a good value here...
     }
     #else*/
-    return NULL;
+    return nullptr;
     //#endif
 }
 
@@ -251,9 +251,9 @@ void CBaseMapsPage::CreateFilters()
 
     // filter controls
     m_pGameModeFilter = new ComboBox(this, "GameModeFilter", 3, false);//"Game mode"
-    m_pGameModeFilter->AddItem("#MOM_MapSelector_All", NULL);//All
-    m_pGameModeFilter->AddItem("#MOM_MapSelector_SurfOnly", NULL);//Surf only
-    m_pGameModeFilter->AddItem("#MOM_MapSelector_BhopOnly", NULL);//Bhop only
+    m_pGameModeFilter->AddItem("#MOM_MapSelector_All", nullptr);//All
+    m_pGameModeFilter->AddItem("#MOM_MapSelector_SurfOnly", nullptr);//Surf only
+    m_pGameModeFilter->AddItem("#MOM_MapSelector_BhopOnly", nullptr);//Bhop only
     m_pGameModeFilter->AddActionSignalTarget(this);
     //MOM_TODO: add extra game mode filter types?
 
@@ -263,12 +263,12 @@ void CBaseMapsPage::CreateFilters()
 
     //Difficulty filter
     m_pDifficultyFilter = new ComboBox(this, "DifficultyFilter", 6, false);
-    m_pDifficultyFilter->AddItem("#MOM_MapSelector_All", NULL);
-    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff2", NULL);//"Less than Tier 2"
-    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff3", NULL);//"Less than Tier 3" 
-    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff4", NULL);//etc
-    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff5", NULL);//etc
-    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff6", NULL);//MOM_TODO: Is "tier 6" difficulty the highest?
+    m_pDifficultyFilter->AddItem("#MOM_MapSelector_All", nullptr);
+    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff2", nullptr);//"Less than Tier 2"
+    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff3", nullptr);//"Less than Tier 3" 
+    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff4", nullptr);//etc
+    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff5", nullptr);//etc
+    m_pDifficultyFilter->AddItem("#MOM_MapSelector_LessThanDiff6", nullptr);//MOM_TODO: Is "tier 6" difficulty the highest?
     m_pDifficultyFilter->AddActionSignalTarget(this);
 
     //Hide completed maps
@@ -277,9 +277,9 @@ void CBaseMapsPage::CreateFilters()
 
     //Filter staged/linear
     m_pMapLayoutFilter = new ComboBox(this, "MapLayoutFilter", 3, false);
-    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_All", NULL);
-    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_StagedOnly", NULL);
-    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_LinearOnly", NULL);
+    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_All", nullptr);
+    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_StagedOnly", nullptr);
+    m_pMapLayoutFilter->AddItem("#MOM_MapSelector_LinearOnly", nullptr);
     m_pMapLayoutFilter->AddActionSignalTarget(this);
 }
 

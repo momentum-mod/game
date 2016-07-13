@@ -31,11 +31,12 @@ public:
 	virtual void	SetSelected( bool state );
 
 	virtual void	Paint();
-
+    
 	void			Reset();
 	void			ApplyChanges();
 	bool			HasBeenModified();
 	virtual void	ApplySettings( KeyValues *inResourceData );
+    void GetSettings(KeyValues *outResources) override;
 
 private:
 	// Called when the OK / Apply button is pressed.  Changed data should be written into cvar.
@@ -184,6 +185,15 @@ void CvarToggleCheckButton<T>::ApplySettings( KeyValues *inResourceData )
 	{
 		SetSelected( m_cvar.GetBool() );
 	}
+}
+
+template< class T >
+void CvarToggleCheckButton<T>::GetSettings( KeyValues *pOutResource)
+{
+    BaseClass::GetSettings(pOutResource);
+
+    pOutResource->SetString("cvar_name", m_cvar.GetName());
+    pOutResource->SetString("cvar_value", m_cvar.GetString());
 }
 
 } // namespace vgui

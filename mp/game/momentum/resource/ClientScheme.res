@@ -214,7 +214,7 @@ Scheme
 
 		ToggleButton.SelectedTextColor	"White"
 
-		Tooltip.TextColor			"TransparentBlack"
+		Tooltip.TextColor			"White"
 		Tooltip.BgColor				"Red"
 
 		TreeView.BgColor			"TransparentBlack"
@@ -295,6 +295,7 @@ Scheme
 				"custom"	"1"
 			}
 		}
+        
 		Icons
 		{
 			"1"
@@ -1747,9 +1748,10 @@ Scheme
 	{
 		"1"		"resource/HALFLIFE2.ttf"
 		"1"		"resource/MomIcons.ttf"
-		"2"		"resource/HL2MP.ttf"
+		//"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
-		"4"		"resource/cs.ttf"
+		//"4"		"resource/cs.ttf"
+        "1" "resource/BigNoodleTitling.ttf"
 	}
 
 }

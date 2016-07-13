@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================//
@@ -11,13 +11,16 @@
 #pragma once
 #endif
 
-#include "GameEventListener.h"
 #include "cbase.h"
 #include "steam/steam_api.h"
+
+#include "GameEventListener.h"
+
 #include "momentum/mom_shareddefs.h"
 #include <KeyValues.h>
 #include <game/client/iviewport.h>
 #include <vgui_controls/EditablePanel.h>
+#include <vgui_controls/SectionedListPanel.h>
 
 
 #define TYPE_NOTEAM			0	// NOTEAM must be zero :)
@@ -26,50 +29,72 @@
 #define TYPE_SPECTATORS		3	// a section for a spectator group
 #define TYPE_BLANK			4
 
+#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
 
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
 class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener
 {
-private:
+  private:
     DECLARE_CLASS_SIMPLE(CClientTimesDisplay, vgui::EditablePanel);
 
-protected:
+  protected:
     // column widths at 640
-    enum { NAME_WIDTH = 160, SCORE_WIDTH = 60, DEATH_WIDTH = 60, PING_WIDTH = 80, VOICE_WIDTH = 0, FRIENDS_WIDTH = 0 };
+    enum
+    {
+        NAME_WIDTH = 160,
+        SCORE_WIDTH = 60,
+        DEATH_WIDTH = 60,
+        PING_WIDTH = 80,
+        VOICE_WIDTH = 0,
+        FRIENDS_WIDTH = 0
+    };
     // total = 340
 
-public:
+  public:
     CClientTimesDisplay(IViewPort *pViewPort);
     ~CClientTimesDisplay();
 
-    virtual const char *GetName(void) { return PANEL_TIMES; }
-    virtual void SetData(KeyValues *data) {};
-    virtual void Reset();
-    virtual void Update();
+    const char *GetName(void) override { return PANEL_TIMES; }
+
+    void SetData(KeyValues *data) override{};
+
+    void Reset() override;
+    void Update() override;
     void Update(bool pFullUpdate);
     void Reset(bool pFullReset);
-    virtual bool NeedsUpdate(void);
-    virtual bool HasInputElements(void) { return true; }
-    virtual void ShowPanel(bool bShow);
+    bool NeedsUpdate(void) override;
 
-    virtual bool ShowAvatars()
-    {
-        return IsPC();
-    }
+    bool HasInputElements(void) override { return true; }
+
+    void ShowPanel(bool bShow) override;
+
+    virtual bool ShowAvatars() { return IsPC(); }
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
-    vgui::VPANEL GetVPanel(void) { return BaseClass::GetVPanel(); }
-    virtual bool IsVisible() { return BaseClass::IsVisible(); }
-    virtual void SetParent(vgui::VPANEL parent) { BaseClass::SetParent(parent); }
+    vgui::VPANEL GetVPanel(void) override { return BaseClass::GetVPanel(); }
+
+    bool IsVisible() override { return BaseClass::IsVisible(); }
+
+    void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
 
     // IGameEventListener interface:
-    virtual void FireGameEvent(IGameEvent *event);
+    void FireGameEvent(IGameEvent *event) override;
 
     virtual void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
 
-protected:
+    void OnMousePressed(vgui::MouseCode code) override
+    {
+        //Log("MOUSE RELEASED: %i\n", code);
+        
+        if (code == MOUSE_RIGHT)
+        {
+            //MOM_TODO: Show a menu with like "Watch Replay"
+        }
+    }
+
+  protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
 
     // functions to override
@@ -77,8 +102,8 @@ protected:
     virtual void InitScoreboardSections();
     virtual void UpdateTeamInfo();
     virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo);
-    virtual void OnThink();
-    virtual void AddHeader(vgui::Label *pMapSummary); // add the start header of the scoreboard
+    void OnThink() override;
+    virtual void AddHeader(vgui::Label *pMapSummary);      // add the start header of the scoreboard
     virtual void AddSection(int teamType, int teamNumber); // add a new section header for a team
     virtual int GetAdditionalHeight() { return 0; }
 
@@ -86,7 +111,7 @@ protected:
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
     static bool StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
     virtual void PostApplySchemeSettings(vgui::IScheme *pScheme);
 
@@ -100,14 +125,14 @@ protected:
     int m_iNumTeams;
 
     vgui::SectionedListPanel *m_pPlayerList;
-    int				m_iSectionId; // the current section we are entering into
+    int m_iSectionId; // the current section we are entering into
 
     float m_fNextUpdateTime;
 
     void MoveLabelToFront(const char *textEntryName);
     void MoveToCenterOfScreen();
 
-    vgui::ImageList	*m_pImageList;
+    vgui::ImageList *m_pImageList;
     vgui::Panel *m_pHeader;
     vgui::Panel *m_pPlayerStats;
     vgui::Panel *m_pLeaderboards;
@@ -121,10 +146,9 @@ protected:
     vgui::ImagePanel *m_pPlayerAvatar;
     vgui::ImagePanel *m_pMomentumLogo;
 
+    CUtlMap<CSteamID, int> m_mapAvatarsToImageList;
 
-    CUtlMap<CSteamID, int>		m_mapAvatarsToImageList;
-
-    CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34");		// Avatar width doesn't scale with resolution
+    CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34"); // Avatar width doesn't scale with resolution
     CPanelAnimationVarAliasType(int, m_iNameWidth, "name_width", "136", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iClassWidth, "class_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iScoreWidth, "score_width", "35", "proportional_int");
@@ -141,13 +165,14 @@ private:
     int			m_iPlayerIndexSymbol;
     int			m_iDesiredHeight;
     IViewPort	*m_pViewPort;
+    
     ButtonCode_t m_nCloseKey;
     struct Time
     {
         float time_sec, rate;
         time_t date;
 
-        explicit Time(KeyValues* kv)
+        explicit Time(KeyValues *kv)
         {
             time_sec = Q_atof(kv->GetName());
             rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
@@ -222,6 +247,5 @@ private:
     //Place m_vOnlineTimes into m_pOnlineLeaderboards
     void OnlineTimesVectorToLeaderboards();
 };
-
 
 #endif // CLIENTSCOREBOARDDIALOG_H

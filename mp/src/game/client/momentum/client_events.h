@@ -4,10 +4,21 @@
 #pragma once
 #endif
 
-namespace Momentum {
+#include "cbase.h"
 
-	void OnClientDLLInit();
+class CMOMClientEvents : public CAutoGameSystem
+{
+public:
+    CMOMClientEvents(const char *pName) : CAutoGameSystem(pName)
+    {
+    }
 
-} // namespace Momentum
+    //After DLL inits successfully
+    void PostInit() override;
+
+    //From the Valve SDK wiki
+    static void MountAdditionalContent();
+
+};
 
 #endif // CLIENT_EVENTS_H

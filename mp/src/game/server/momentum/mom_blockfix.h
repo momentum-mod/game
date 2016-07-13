@@ -4,8 +4,8 @@
 #pragma once
 #endif
 
-#include "buttons.h"
 #include "cbase.h"
+#include "buttons.h"
 #include "doors.h"
 #include "mom_player.h"
 
@@ -19,13 +19,11 @@ class CMOMBhopBlockFixSystem : CAutoGameSystem
   public:
     CMOMBhopBlockFixSystem(const char *pName) : CAutoGameSystem(pName) {}
 
-    void LevelInitPostEntity() override
-    { FindBhopBlocks(); }
+    void LevelInitPostEntity() override { FindBhopBlocks(); }
 
-    void LevelShutdownPostEntity() override
-    { m_mapBlocks.RemoveAll(); }
+    void LevelShutdownPostEntity() override { m_mapBlocks.RemoveAll(); }
 
-    bool IsBhopBlock(int entIndex) { return (m_mapBlocks.Find(entIndex) != m_mapBlocks.InvalidIndex()); }
+    bool IsBhopBlock(int entIndex) const { return (m_mapBlocks.Find(entIndex) != m_mapBlocks.InvalidIndex()); }
 
     void PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *pBlock);
 
@@ -58,11 +56,11 @@ class CTeleportTriggerTraceEnum : public IEntityEnumerator
 {
   public:
     CTeleportTriggerTraceEnum(Ray_t *pRay, CBaseEntity *block, bool isDoor)
-        : m_pRay(pRay), pEntBlock(block), bIsDoor(isDoor)
+        : bIsDoor(isDoor), pEntBlock(block), m_pRay(pRay)
     {
     }
 
-    virtual bool EnumEntity(IHandleEntity *pHandleEntity);
+    bool EnumEntity(IHandleEntity *pHandleEntity) override;
 
   private:
     bool bIsDoor;

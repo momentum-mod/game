@@ -55,7 +55,7 @@ bool PNamesMapLessFunc(const uint64 &first, const uint64 &second)
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(NULL, PANEL_TIMES)
+CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, PANEL_TIMES)
 {
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
@@ -65,6 +65,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
+    //Create a "popup" so we can get the mouse to detach
+    surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
     // set the scheme before any child control is created
     SetScheme("ClientScheme");
@@ -110,6 +112,10 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(N
     m_pOnlineLeaderboards->SetVerticalScrollbar(false);
     m_pLocalLeaderboards->SetVerticalScrollbar(false);
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
+
+    m_pLocalLeaderboards->SetMouseInputEnabled(true);
+    m_pOnlineLeaderboards->SetMouseInputEnabled(true);
+    m_pFriendsLeaderboards->SetMouseInputEnabled(true);
 
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 
@@ -229,8 +235,6 @@ void CClientTimesDisplay::Reset(bool pFullReset)
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::InitScoreboardSections()
 {
-#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
-
     if (m_pLocalLeaderboards)
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
@@ -257,7 +261,6 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "name", "#MOM_Name", 0, NAME_WIDTH*1.8);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2] * 1.8));
     }
-#undef SCALE
 }
 
 //-----------------------------------------------------------------------------
@@ -266,7 +269,7 @@ void CClientTimesDisplay::InitScoreboardSections()
 void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-
+    
     if (m_pImageList)
         delete m_pImageList;
     m_pImageList = new ImageList(false);
@@ -281,7 +284,6 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
 {
-#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
     // resize the images to our resolution
     for (int i = 0; i < m_pImageList->GetImageCount(); i++)
     {
@@ -340,12 +342,13 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
     {
         Reset(true);
         SetVisible(true);
+        //SetEnabled(true);
         MoveToFront();
     }
     else
-    {
-        BaseClass::SetVisible(false);
-        SetMouseInputEnabled(false);
+    { 
+        SetVisible(false);
+        SetMouseInputEnabled(false);//Turn mouse off
         SetKeyBoardInputEnabled(false);
     }
 }

@@ -77,6 +77,13 @@
 // Projective textures
 #include "C_Env_Projected_Texture.h"
 
+//Shader editor
+#include "ShaderEditor/ShaderEditorSystem.h"
+//GameUI2
+#if defined(GAMEUI2)
+#include "igameui2.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -1359,6 +1366,13 @@ void CViewRender::ViewDrawScene( bool bDrew3dSkybox, SkyboxVisibility_t nSkyboxV
 
 	DrawWorldAndEntities( drawSkybox, view, nClearFlags, pCustomVisibility );
 
+    //Shader editor
+    VisibleFogVolumeInfo_t fogVolumeInfo;
+    render->GetVisibleFogVolume(view.origin, &fogVolumeInfo);
+    WaterRenderInfo_t info;
+    DetermineWaterRenderInfo(fogVolumeInfo, info);
+    g_ShaderEditorSystem->CustomViewRender(&g_CurrentViewID, fogVolumeInfo, info);
+
 	// Disable fog for the rest of the stuff
 	DisableFog();
 
@@ -1985,6 +1999,8 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		if ( ( bDrew3dSkybox = pSkyView->Setup( view, &nClearFlags, &nSkyboxVisible ) ) != false )
 		{
 			AddViewToScene( pSkyView );
+            //Shader editor
+            g_ShaderEditorSystem->UpdateSkymask();
 		}
 		SafeRelease( pSkyView );
 
@@ -2042,6 +2058,9 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		// Now actually draw the viewmodel
 		DrawViewModels( view, whatToDraw & RENDERVIEW_DRAWVIEWMODEL );
 
+        //Shader editor
+        g_ShaderEditorSystem->UpdateSkymask(bDrew3dSkybox);
+
 		DrawUnderwaterOverlay();
 
 		PixelVisibility_EndScene();
@@ -2078,6 +2097,9 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 			}
 			pRenderContext.SafeRelease();
 		}
+
+        //Shader editor
+        g_ShaderEditorSystem->CustomPostRender();
 
 		// And here are the screen-space effects
 
@@ -2176,6 +2198,25 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 	{
 		saveRenderTarget = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye - 1), ISourceVirtualReality::RT_Color );
 	}
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+    {
+        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
+        if (maskTexture)
+        {
+            CMatRenderContextPtr renderContext(materials);
+            renderContext->PushRenderTargetAndViewport(maskTexture);
+            renderContext->ClearColor4ub(0, 0, 0, 255);
+            renderContext->ClearBuffers(true, true, true);
+            renderContext->PopRenderTargetAndViewport();
+
+            g_pGameUI2->SetFrustum(GetFrustum());
+            g_pGameUI2->SetView(view);
+            g_pGameUI2->SetMaskTexture(maskTexture);
+        }
+    }
+#endif
 
 	// Draw the 2D graphics
 	render->Push2DView( view, 0, saveRenderTarget, GetFrustum() );

@@ -1,0 +1,49 @@
+0.5.0
+New Main Menu UI
+    Thanks to NicolasDe from Project-9 for GameUI2
+    New background (from tutorial levels) to accomodate the shininess
+Contact/Feedback Panel
+    Introduced a panel for in-game feedback, available in the menu.
+Overhauled Settings Panel
+    Changed to tabular settings, includes four new Tabs:
+    "Controls" for momentum-specific controls settings
+    "HUD Settings" for HUD-related momentum settings
+    "Run Comparisons" for settings regarding the comparisons panel
+    "Replays" for replay-related settings (just translucence for Alpha)
+Accurate Timer Fix
+    Fixed offset calculations by using a new method to calculate them
+Bug/Other fixes
+    Fixed potential bug with saving times to file
+    Fixed empty node graphs building
+    Changed practice mode to enable when no inputs are pressed
+    Fixed RichText highlighting to properly display highlighted text
+    Fixed replays recording paused frames
+    Fixed animations for player jumping and zone enter speed on the HUD speedometer
+    Fixed the zone buffer for the comparisons panel
+    Fixed the Changelog panel to properly scroll to top upon load
+    Removed ability to save/load (use the checkpoint menu instead!)
+    Fixed Biohazard90's Source Shader Editor (faulty config)
+    
+0.4.7
+Bugfixes
+    Fixed replays sometimes not unloading
+    Fixed width of settings panel labels
+    Mapfinished panel resets to page 0 properly
+    Added StartupVids.txt to override Valve's startup vid
+
+0.4.5
+Changelog Introduced
+    The version update panel now includes a changelog for the newer version.
+Spectator UI Updated
+    Now includes toggled mouse control upon pressing your +duck bind
+    Added a red X that stops the replay and respawns the player (similar to MapFinished)
+Bugfixes
+    Fixed scroll detection
+        Scrolls of all force are detected now, player should jump properly (sorry about that, scrollers!)
+    Replays
+        Fixed crash with replays not unloading properly
+        Fixed potential crash with replays ending
+        Fixed velocity setting to a value that was too high (due to teleports)
+        Fixed potential "roaming" spec mode if replay was finished
+    Ending player movement actually approaches 0 now
+        The player will actually stop inside the end trigger
