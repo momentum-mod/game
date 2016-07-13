@@ -70,7 +70,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pPlayerList = new SectionedListPanel(this, "PlayerList");
     m_pPlayerList->SetVerticalScrollbar(false);
 
-    LoadControlSettings("Resource/UI/timesdisplay.res");
+    LoadControlSettings("resource/ui/timesdisplay.res");
 
     m_pHeader = FindControl<Panel>("Header", true);
     m_lMapSummary = FindControl<Label>("MapSummary", true);
