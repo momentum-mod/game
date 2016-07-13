@@ -178,6 +178,8 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
                 $File "$SRCDIR\game\shared\momentum\util\run_stats.h"
                 $File "$SRCDIR\game\shared\momentum\util\run_stats.cpp"
+                $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
+                $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
             }
             
             $Folder "Shader Editor" [$WIN32]
