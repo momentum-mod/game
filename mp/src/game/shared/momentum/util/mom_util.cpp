@@ -135,17 +135,24 @@ void MomentumUtil::DownloadMap(const char *szMapname)
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
     CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {
-    HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-    SteamAPICall_t apiHandle;
-
-    if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+    if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        callback->Set(apiHandle, this, func);
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            callback->Set(apiHandle, this, func);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
     }
     else
     {
-        Warning("Failed to send HTTP Request to post scores online!\n");
-        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        Warning("Could not find Steam Api Context active\n");
     }
 }
 
@@ -243,13 +250,20 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
     char versionValue[15];
     Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
+
     for (int i = 0; i < 3; i++)
     {
-        if (Q_atoi(repoVersion.Element(i)) > Q_atoi(storedVersion.Element(i)))
+        int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
+        if (repo > local)
         {
             versionwarnpanel->SetVersion(versionValue);
             GetRemoteChangelog();
             versionwarnpanel->Activate();
+            break;
+        }
+        if (repo < local)
+        {
+            //The local version is higher than the repo version, do not show this panel
             break;
         }
     }

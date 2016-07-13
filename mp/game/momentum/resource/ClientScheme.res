@@ -20,6 +20,9 @@ Scheme
 		"Gray" 				"128 128 128 150"
 		"Dark Gray" 		"64 64 64 200"
 		
+        "Light Blue" "51 122 183 255"
+        "Dark Blue" "22 69 119 255"
+        
 		"Red"                "192 28 0 140"
 		"Black"                "0 0 0 196"
 		"TransparentBlack"    "0 0 0 196"
@@ -145,14 +148,14 @@ Scheme
 		ListPanel.TextColor					"White"
 		ListPanel.BgColor					"TransparentBlack"
 		ListPanel.SelectedTextColor			"Black"
-		ListPanel.SelectedBgColor			"Red"
-		ListPanel.SelectedOutOfFocusBgColor	"Red"
+		ListPanel.SelectedBgColor			"Light Blue"
+		ListPanel.SelectedOutOfFocusBgColor	"Dark Blue"
 		ListPanel.EmptyListInfoTextColor	"White"
 
 		Menu.TextColor					"White"
 		Menu.BgColor					"TransparentBlack"
 		Menu.ArmedTextColor				"White"
-		Menu.ArmedBgColor				"Red"
+		Menu.ArmedBgColor				"Light Blue"
 		Menu.TextInset					"6"
 
 		Chat.TypingText					"White"
@@ -191,10 +194,10 @@ Scheme
 		SectionedListPanel.TextColor		"White"
 		SectionedListPanel.BrightTextColor	"White"
 		SectionedListPanel.BgColor			"TransparentLightBlack"
-		SectionedListPanel.SelectedTextColor			"Black"
-		SectionedListPanel.SelectedBgColor				"Red"
-		SectionedListPanel.OutOfFocusSelectedTextColor	"Black"
-		SectionedListPanel.OutOfFocusSelectedBgColor	"255 255 255 32"
+		SectionedListPanel.SelectedTextColor			"White"
+		SectionedListPanel.SelectedBgColor				"Dark Blue"
+		SectionedListPanel.OutOfFocusSelectedTextColor	"White"
+		SectionedListPanel.OutOfFocusSelectedBgColor	"Light Blue"
 
 		Slider.NobColor				"108 108 108 255"
 		Slider.TextColor			"127 140 127 255"

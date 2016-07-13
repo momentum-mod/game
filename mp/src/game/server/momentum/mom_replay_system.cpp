@@ -37,18 +37,21 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
         return;
     }
 
-    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
+    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[MAX_PATH], runDate[MAX_PATH];
 
     m_bShouldStopRec = false;
-    CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
-    mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime, 3, true);
-    //MOM_TODO: BUG: The player name could have characters in it that cannot be saved as a file, causing a hang!
-    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec",
-                (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
-    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
-                        MAX_PATH); // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
+    
+    //Don't ask why, but these need to be formatted in their own strings.
+    time_t lastDate = g_Timer->GetLastRunDate();
+    Q_snprintf(runDate, MAX_PATH, "%i", lastDate);
+    float lastTime = g_Timer->GetLastRunTime();
+    Q_snprintf(runTime, MAX_PATH, "%f", lastTime);
+    //It's weird.
 
-    V_FixSlashes(RECORDING_PATH);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s%s", runDate, runTime, EXT_RECORDING_FILE);
+
+    // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
+    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); 
 
     // We have to create the directory here just in case it doesn't exist yet
     filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD");
@@ -123,6 +126,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetTickInterval(gpGlobals->interval_per_tick);
     replay->SetRunTime(g_Timer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
+    replay->SetRunDate(g_Timer->GetLastRunDate());
 }
 
 void CMomentumReplaySystem::SetRunStats()
