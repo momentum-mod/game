@@ -77,6 +77,7 @@ public:
         m_fTickInterval = reader->ReadFloat();
         m_fRunTime = reader->ReadFloat();
         m_iRunFlags = reader->ReadInt32();
+        m_iRunDate = reader->ReadInt64();
     }
 
 public:
@@ -88,6 +89,7 @@ public:
         writer->WriteFloat(m_fTickInterval);
         writer->WriteFloat(m_fRunTime);
         writer->WriteInt32(m_iRunFlags);
+        writer->WriteInt64(m_iRunDate);
     }
 
 public:
@@ -97,4 +99,5 @@ public:
     float m_fTickInterval; // The tickrate of the run.
     float m_fRunTime; // The total runtime of the run in seconds.
     int m_iRunFlags; // The flags the player ran with.
+    time_t m_iRunDate; //The date this run was achieved.
 };

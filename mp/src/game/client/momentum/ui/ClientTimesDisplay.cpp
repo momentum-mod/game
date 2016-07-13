@@ -21,6 +21,7 @@
 #include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
 #include <vgui/IVGui.h>
+#include <vgui/IInput.h>
 #include <vstdlib/IKeyValuesSystem.h>
 
 #include <KeyValues.h>
@@ -74,7 +75,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pPlayerList = new SectionedListPanel(this, "PlayerList");
     m_pPlayerList->SetVerticalScrollbar(false);
 
-    LoadControlSettings("Resource/UI/timesdisplay.res");
+    LoadControlSettings("resource/ui/timesdisplay.res");
 
     m_pHeader = FindControl<Panel>("Header", true);
     m_lMapSummary = FindControl<Label>("MapSummary", true);
@@ -113,9 +114,15 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pLocalLeaderboards->SetVerticalScrollbar(false);
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
 
+    m_pLeaderboards->SetMouseInputEnabled(true);
+
     m_pLocalLeaderboards->SetMouseInputEnabled(true);
     m_pOnlineLeaderboards->SetMouseInputEnabled(true);
     m_pFriendsLeaderboards->SetMouseInputEnabled(true);
+
+    m_pLocalLeaderboards->SetKeyBoardInputEnabled(true);
+    m_pLocalLeaderboards->SetClickable(true);
+    m_pLocalLeaderboards->AddActionSignalTarget(this);
 
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 
@@ -126,6 +133,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     ListenForGameEvent("run_save");
     ListenForGameEvent("run_upload");
     ListenForGameEvent("game_newmap");
+
+    m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
 
     m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
@@ -145,6 +154,12 @@ CClientTimesDisplay::~CClientTimesDisplay()
     {
         delete m_pImageList;
         m_pImageList = nullptr;
+    }
+
+    if (m_pLeaderboardReplayCMenu)
+    {
+        delete m_pLeaderboardReplayCMenu;
+        m_pLeaderboardReplayCMenu = nullptr;
     }
     // MOM_TODO: Ensure a good destructor
 }
@@ -269,7 +284,7 @@ void CClientTimesDisplay::InitScoreboardSections()
 void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-    
+
     if (m_pImageList)
         delete m_pImageList;
     m_pImageList = new ImageList(false);
@@ -330,6 +345,14 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
         InvalidateLayout(true, true);
     }
 
+    if (m_pLeaderboardReplayCMenu)
+    {
+        //Close the menu
+        m_pLeaderboardReplayCMenu->OnKillFocus();
+        m_pLeaderboardReplayCMenu->DeletePanel();
+    }
+    m_pLeaderboardReplayCMenu = nullptr;
+
     if (!bShow)
     {
         m_nCloseKey = BUTTON_CODE_INVALID;
@@ -346,7 +369,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
         MoveToFront();
     }
     else
-    { 
+    {
         SetVisible(false);
         SetMouseInputEnabled(false);//Turn mouse off
         SetKeyBoardInputEnabled(false);
@@ -557,13 +580,14 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 
         //Load from .tim file
         KeyValues *pLoaded = new KeyValues("local");
-        char fileName[MAX_PATH];
+        char fileName[MAX_PATH], filePath[MAX_PATH];
+        const char *mapName = g_pGameRules->MapName();
+        Q_snprintf(fileName, MAX_PATH, "%s%s", mapName ? mapName : "FIXME", EXT_TIME_FILE);
+        V_ComposeFileName(MAP_FOLDER, fileName, filePath, MAX_PATH);
 
-        Q_snprintf(fileName, MAX_PATH, "maps/%s.tim", g_pGameRules->MapName() ? g_pGameRules->MapName() : "FIXME");
-
-        if (pLoaded->LoadFromFile(filesystem, fileName, "MOD"))
+        DevLog("Loading from file %s...\n", filePath);
+        if (pLoaded->LoadFromFile(filesystem, filePath, "MOD"))
         {
-            DevLog("Loading from file %s...\n", fileName);
             for (KeyValues* kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime; kvLocalTime = kvLocalTime->GetNextKey())
             {
                 Time t = Time(kvLocalTime);
@@ -585,7 +609,6 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
     FOR_EACH_VEC(m_vLocalTimes, i)
     {
         Time t = m_vLocalTimes[i];
-        //MOM_TODO: consider adding a "100 tick" column?
 
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
         kvLocalTimeFormatted->SetFloat("time_f", t.time_sec);//Used for static compare
@@ -964,8 +987,7 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
         KeyValues *kvLocalTimes = kvLeaderboards->FindKey("local");
         if (kvLocalTimes && !kvLocalTimes->IsEmpty())
         {
-            for (KeyValues *kvLocalTime = kvLocalTimes->GetFirstSubKey(); kvLocalTime;
-                kvLocalTime = kvLocalTime->GetNextKey())
+            FOR_EACH_SUBKEY(kvLocalTimes, kvLocalTime)
             {
                 int itemID = FindItemIDForLocalTime(kvLocalTime);
                 if (itemID == -1)
@@ -1094,4 +1116,53 @@ void CClientTimesDisplay::MoveToCenterOfScreen()
     int wx, wy, ww, wt;
     surface()->GetWorkspaceBounds(wx, wy, ww, wt);
     SetPos((ww - GetWide()) / 2, (wt - GetTall()) / 2);
+}
+
+CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(Panel *pParent)
+{
+    // create a drop down for this object's states
+    // This will stop being created after the second time you open the leaderboards?
+    if (m_pLeaderboardReplayCMenu)
+        delete m_pLeaderboardReplayCMenu;
+    m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
+    m_pLeaderboardReplayCMenu->SetAutoDelete(false);
+   
+    if (!pParent)
+    {
+        m_pLeaderboardReplayCMenu->SetParent(this);
+    }
+    else
+    {
+        m_pLeaderboardReplayCMenu->AddActionSignalTarget(pParent);
+        m_pLeaderboardReplayCMenu->SetParent(pParent);
+    }
+
+    m_pLeaderboardReplayCMenu->SetVisible(false);
+    return m_pLeaderboardReplayCMenu;
+}
+
+void CClientTimesDisplay::OnContextWatchReplay(const char *runName)
+{
+    if (runName)
+    {
+        char command[MAX_PATH];
+        Q_snprintf(command, MAX_PATH, "mom_replay_play %s", runName);
+        engine->ServerCmd(command);
+        ShowPanel(false);
+    }
+}
+
+void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
+{
+    int itemID = pData->GetInt("itemID", -1);
+    Panel *pPanel = static_cast<Panel*>(pData->GetPtr("SubPanel", nullptr));
+    
+    KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
+    char recordingName[MAX_PATH];
+    Q_snprintf(recordingName, MAX_PATH, "%i-%f", selectedRun->GetInt("date_t"), selectedRun->GetFloat("time_f"));
+
+    if (pPanel->GetParent())
+    {
+        GetLeaderboardReplayContextMenu(pPanel->GetParent())->ShowMenu(this, recordingName);
+    }
 }
