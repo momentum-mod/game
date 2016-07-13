@@ -13,8 +13,8 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories       "$BASE;momentum\ui\HUD,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
-        $PreprocessorDefinitions            "$BASE;SOURCE_2013"
+        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
+        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013"
     }
 }
 
@@ -102,6 +102,9 @@ $Project "Client (Momentum)"
                     $File "hud_chat.cpp"
                     $File "hl2\hud_weaponselection.cpp"
                 }
+                
+                $File 	"momentum\ui\ContactPanel.cpp"
+                $File 	"momentum\ui\IContactPanel.h"
                 
                 $File   "momentum\ui\ClientTimesDisplay.h"
                 $File   "momentum\ui\ClientTimesDisplay.cpp"
@@ -226,6 +229,12 @@ $Project "Client (Momentum)"
             $File   "momentum\mom_event_listener.cpp"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
+            
+            $Folder "Project-9"
+            {
+                $File "momentum\dynamicrendertargets.cpp"
+                $File "momentum\dynamicrendertargets.h"
+            }
         }
         
         $Folder "JSON Parser"

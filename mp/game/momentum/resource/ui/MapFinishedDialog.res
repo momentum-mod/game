@@ -1,17 +1,5 @@
 "resource/ui/MapFinishedDialog.res"
 {
-    "CHudMapFinishedDialog"
-    {
-        "fieldName"     "CHudMapFinishedDialog"
-        "xpos"          "c-110"
-        "ypos"          "c-150"
-        "wide"          "220"
-        "tall"          "175"
-        "visible"       "1"
-        "enabled"       "1"
-        "TextFont"      "Default"
-    }
-    
     "Prev_Zone"
     {
         "ControlName"   "ImagePanel"

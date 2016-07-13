@@ -1,0 +1,259 @@
+"canvas"
+{
+	"cfmt_version"		"canvasver#003"
+	"flowgraph_type"		"1"
+	"config"
+	{
+		"shadermodel"		"1"
+		"cull_mode"		"0"
+		"alpha_blending"		"0"
+		"depth_test"		"0"
+		"depth_write"		"0"
+		"srgb_write"		"0"
+	}
+	"Nodes"
+	{
+		"Node_000"
+		{
+			"iType"		"1"
+			"pos_x"		"-320.000000"
+			"pos_y"		"190.000000"
+			"size_x"		"55.000000"
+			"size_y"		"-28.000000"
+			"iPreview"		"0"
+			"enable_flex"		"0"
+			"enable_normal"		"0"
+			"enable_normal_compression"		"0"
+			"enable_blendweights"		"0"
+			"enable_tangentspace"		"0"
+			"enable_tangentspace_skinning"		"0"
+			"numTexcoords"		"1"
+			"numColor"		"0"
+			"dTFlag_Texcoords_0"		"2"
+			"dTFlag_Texcoords_1"		"2"
+			"dTFlag_Texcoords_2"		"2"
+			"dTFlag_Color_0"		"8"
+			"dTFlag_Color_1"		"8"
+		}
+		"Node_001"
+		{
+			"iType"		"2"
+			"pos_x"		"265.000000"
+			"pos_y"		"190.000000"
+			"size_x"		"55.000000"
+			"size_y"		"-28.000000"
+			"iPreview"		"0"
+			"bridges"
+			{
+				"jackIn_00"
+				{
+					"iTarget_node"		"3"
+					"iTarget_jack"		"0"
+				}
+				"jackIn_01"
+				{
+					"iTarget_node"		"0"
+					"iTarget_jack"		"1"
+				}
+			}
+			"numTexcoords"		"1"
+			"numColor"		"0"
+			"numTexcoord_Flag_0"		"2"
+			"numTexcoord_Flag_1"		"2"
+			"numTexcoord_Flag_2"		"2"
+			"numTexcoord_Flag_3"		"2"
+			"numTexcoord_Flag_4"		"2"
+			"numTexcoord_Flag_5"		"2"
+			"numTexcoord_Flag_6"		"2"
+			"numTexcoord_Flag_7"		"2"
+			"numColor_Flag_0"		"8"
+			"numColor_Flag_1"		"8"
+		}
+		"Node_002"
+		{
+			"iType"		"4"
+			"pos_x"		"265.000000"
+			"pos_y"		"-130.000000"
+			"size_x"		"55.000000"
+			"size_y"		"-17.000000"
+			"iPreview"		"0"
+			"bridges"
+			{
+				"jackIn_00"
+				{
+					"iTarget_node"		"5"
+					"iTarget_jack"		"0"
+				}
+			}
+			"numColors"		"1"
+			"enable_Depth"		"0"
+		}
+		"Node_003"
+		{
+			"iType"		"27"
+			"pos_x"		"-44.526688"
+			"pos_y"		"206.208878"
+			"size_x"		"80.000000"
+			"size_y"		"-17.000000"
+			"iPreview"		"1"
+			"bridges"
+			{
+				"jackIn_00"
+				{
+					"iTarget_node"		"0"
+					"iTarget_jack"		"0"
+				}
+			}
+			"swizzleString"		"x y z 1"
+		}
+		"Node_004"
+		{
+			"iType"		"3"
+			"pos_x"		"-291.142334"
+			"pos_y"		"15.985941"
+			"size_x"		"55.000000"
+			"size_y"		"-17.000000"
+			"iPreview"		"0"
+			"numTexcoords"		"1"
+			"numColor"		"0"
+			"numTexcoord_Flag_0"		"2"
+			"numTexcoord_Flag_1"		"2"
+			"numTexcoord_Flag_2"		"2"
+			"numTexcoord_Flag_3"		"2"
+			"numTexcoord_Flag_4"		"2"
+			"numTexcoord_Flag_5"		"2"
+			"numTexcoord_Flag_6"		"2"
+			"numTexcoord_Flag_7"		"2"
+			"numColor_Flag_0"		"8"
+			"numColor_Flag_1"		"8"
+		}
+		"Node_005"
+		{
+			"iType"		"99"
+			"szName"		"Fringe"
+			"pos_x"		"-62.698055"
+			"pos_y"		"20.951138"
+			"size_x"		"151.000000"
+			"size_y"		"-80.000000"
+			"iPreview"		"1"
+			"bridges"
+			{
+				"jackIn_00"
+				{
+					"iTarget_node"		"4"
+					"iTarget_jack"		"0"
+				}
+				"jackIn_01"
+				{
+					"iTarget_node"		"6"
+					"iTarget_jack"		"0"
+				}
+				"jackIn_02"
+				{
+					"iTarget_node"		"9"
+					"iTarget_jack"		"0"
+				}
+			}
+			"varName_In_0"		"uv"
+			"varType_In_0"		"2"
+			"varName_In_1"		"framebuffer"
+			"varType_In_1"		"128"
+			"varName_In_2"		"intensity"
+			"varType_In_2"		"1"
+			"varName_Out_0"		"color"
+			"varType_Out_0"		"8"
+			"szFunctionName"		"Fringe"
+			"iInline"		"1"
+			"szcode_body_num_strings"		"1"
+			"szcode_body_partial_00"		"		float2 uv_shift = 2.0 * uv - 1.0;\r\n	float radial_gradient = uv_shift * 0.0018; //uv_shift.x * uv_shift.x + uv_shift.y * uv_shift.y;\r\n	\r\n	float2 r_shift = uv + lerp(0.0, intensity, radial_gradient);\r\n	float2 g_shift = uv;\r\n	float2 b_shift = uv - lerp(0.0, intensity, radial_gradient);\r\n	\r\n	color.r = tex2D(framebuffer, r_shift).r;\r\n	color.g = tex2D(framebuffer, g_shift).g;\r\n	color.b = tex2D(framebuffer, b_shift).b;\r\n	color.a = 1.0;"
+			"iEnvFlags"		"0"
+		}
+		"Node_006"
+		{
+			"iType"		"94"
+			"pos_x"		"-290.930695"
+			"pos_y"		"-24.057587"
+			"size_x"		"84.000000"
+			"size_y"		"-50.000000"
+			"iPreview"		"1"
+			"iTextureType"		"5"
+			"IsCubemap"		"0"
+			"szDemoTexturePath"		"_rt_FullFrameFB"
+			"szFallbackTexturePath"		"white"
+			"iFallbackMode"		"0"
+		}
+		"Node_007"
+		{
+			"iType"		"5"
+			"pos_x"		"-319.355896"
+			"pos_y"		"-129.426392"
+			"size_x"		"50.000000"
+			"size_y"		"-50.000000"
+			"iPreview"		"1"
+			"szConstantString"		"0.35"
+		}
+		"Node_008"
+		{
+			"iType"		"5"
+			"pos_x"		"-319.295105"
+			"pos_y"		"-205.344284"
+			"size_x"		"50.000000"
+			"size_y"		"-50.000000"
+			"iPreview"		"1"
+			"szConstantString"		"2"
+		}
+		"Node_009"
+		{
+			"iType"		"21"
+			"pos_x"		"-163.672440"
+			"pos_y"		"-149.410110"
+			"size_x"		"100.000000"
+			"size_y"		"-80.000000"
+			"iPreview"		"1"
+			"bridges"
+			{
+				"jackIn_00"
+				{
+					"iTarget_node"		"7"
+					"iTarget_jack"		"0"
+				}
+				"jackIn_01"
+				{
+					"iTarget_node"		"8"
+					"iTarget_jack"		"0"
+				}
+				"jackIn_02"
+				{
+					"iTarget_node"		"10"
+					"iTarget_jack"		"2"
+				}
+			}
+		}
+		"Node_010"
+		{
+			"iType"		"29"
+			"szName"		"Mask"
+			"pos_x"		"-318.250061"
+			"pos_y"		"-279.951691"
+			"size_x"		"122.000000"
+			"size_y"		"-80.000000"
+			"iPreview"		"1"
+			"bridges"
+			{
+				"jackIn_00"
+				{
+					"iTarget_node"		"4"
+					"iTarget_jack"		"0"
+				}
+			}
+			"szParamname"		"Mask"
+			"iSRGB"		"0"
+			"iTextureType"		"0"
+			"IsCubemap"		"0"
+			"iLookupoverride"		"0"
+			"szDemoTexturePath"		"_rt_MaskGameUI"
+			"szFallbackTexturePath"		"_rt_MaskGameUI"
+			"iFallbackMode"		"4"
+		}
+	}
+}

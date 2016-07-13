@@ -17,7 +17,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"settitlebarvisible"		"1"
-		"title"		"#MOM_Settings"
+		"title"		"#MOM_Settings_Title"
 	}
     "Sheet"
     {

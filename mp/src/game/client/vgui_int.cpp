@@ -27,6 +27,7 @@
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
 #include "momentum/ui/IVersionWarnPanel.h"
+#include "momentum/ui/IContactPanel.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
 
 #ifdef SIXENSE
@@ -231,7 +232,7 @@ void VGui_CreateGlobalPanels( void )
     mapselector->Create(gameMenu);
     versionwarnpanel->Create(gameMenu);
     momentum_settings->Create(gameMenu);
-
+    contact_panel->Create(gameMenu);
 }
 
 void VGui_Shutdown()
