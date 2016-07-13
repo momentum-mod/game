@@ -1,4 +1,5 @@
 #include "cbase.h"
+
 #include "filesystem.h"
 #include "mom_player_shared.h"
 #include "mom_util.h"
@@ -209,7 +210,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     if (bIOFailure)
     {
         pError = "Error loading changelog due to bIOFailure!";
-        versionwarnpanel->SetChangelog(pError);
+        changelogpanel->SetChangelog(pError);
         return;
     }
     uint32 size;
@@ -256,9 +257,9 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
         if (repo > local)
         {
-            versionwarnpanel->SetVersion(versionValue);
+            changelogpanel->SetVersion(versionValue);
             GetRemoteChangelog();
-            versionwarnpanel->Activate();
+            changelogpanel->Activate();
             break;
         }
         if (repo < local)

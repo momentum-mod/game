@@ -13,7 +13,7 @@
 #include "filesystem.h"
 #include "gason.h"
 #ifdef CLIENT_DLL
-#include "VersionWarnPanel.h"
+#include "ChangelogPanel.h"
 #endif
 
 class MomentumUtil
