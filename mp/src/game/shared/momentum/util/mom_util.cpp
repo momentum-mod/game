@@ -218,7 +218,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     if (size == 0)
     {
         pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
-        versionwarnpanel->SetChangelog(pError);
+        changelogpanel->SetChangelog(pError);
         return;
     }
 
@@ -226,7 +226,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
 
-    versionwarnpanel->SetChangelog(pDataPtr);
+    changelogpanel->SetChangelog(pDataPtr);
 
     CleanupRequest(pCallback, pData);
 }
