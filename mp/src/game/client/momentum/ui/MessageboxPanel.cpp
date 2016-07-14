@@ -51,7 +51,8 @@ void CMessageboxPanel::Close() { FlushMessageboxes(); }
 HPanel CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept)
 {
     MessageBox *pMessageBox = new MessageBox(pTitle, pMessage);
-    if (pAccept)
+    // If it is not a nullptr and it's not an empty string...
+    if (pAccept && Q_strlen(pAccept) > 0)
     {
         pMessageBox->SetOKButtonText(pAccept);
     }
