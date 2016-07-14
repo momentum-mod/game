@@ -8,6 +8,7 @@
 #include "movevars_shared.h"
 #include "util/mom_util.h"
 #include "mom_event_listener.h"
+#include "momentum/ui/IMessageboxPanel.h"
 
 #include "tier0/memdbgon.h"
 
@@ -65,6 +66,14 @@ void CMOMClientEvents::PostInit()
 #endif
 
     MountAdditionalContent();
+
+    // MOM_TODO: Change this once we hit Alpha/Beta
+
+    char *p_sInitialMsgTitle;
+    LOCALIZE_TOKEN(p_wcInitialMsgTitle, "MOM_StartupMsg_Prealpha_Title", p_sInitialMsgTitle);
+    char *p_sInitialMsg;
+    LOCALIZE_TOKEN(p_wcInitialMsg, "MOM_StartupMsg_Prealpha", p_sInitialMsg);
+    messageboxpanel->CreateMessagebox(p_sInitialMsgTitle, p_sInitialMsg);
 }
 
 void CMOMClientEvents::MountAdditionalContent()
