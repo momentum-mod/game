@@ -3041,10 +3041,12 @@ void Panel::OnCursorMoved(int x, int y)
 
 void Panel::OnCursorEntered()
 {
+    PostActionSignal(new KeyValues("OnCursorEntered"));
 }
 
 void Panel::OnCursorExited()
 {
+    PostActionSignal(new KeyValues("OnCursorExited"));
 }
 
 void Panel::OnMousePressed(MouseCode code)

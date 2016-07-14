@@ -159,6 +159,10 @@ private:
 	bool m_isChaining;
 
 	void CloseAreaPortalsThink( void );	///< Delays turning off area portals when closing doors to prevent visual artifacts
+
+    // MOMENTUM SPECIFIC
+public:
+    bool m_bIsBhopBlock = false ;
 };
 
 #endif // DOORS_H

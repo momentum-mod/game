@@ -20,6 +20,8 @@
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/SectionedListPanel.h>
 
+#include "ReplayContextMenu.h"
+
 #define TYPE_NOTEAM 0 // NOTEAM must be zero :)
 #define TYPE_TEAM 1   // a section for a single team
 #define TYPE_PLAYERS 2
@@ -27,6 +29,7 @@
 #define TYPE_BLANK 4
 
 #define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
@@ -81,18 +84,13 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     virtual void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
 
-    void OnMousePressed(vgui::MouseCode code) override
-    {
-        //Log("MOUSE RELEASED: %i\n", code);
-        
-        if (code == MOUSE_RIGHT)
-        {
-            //MOM_TODO: Show a menu with like "Watch Replay"
-        }
-    }
+    CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
 
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
+    MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);//Catching from SectionedListPanel
+    MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
+
 
     // functions to override
     virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
@@ -149,7 +147,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CPanelAnimationVarAliasType(int, m_iScoreWidth, "score_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iDeathWidth, "death_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iPingWidth, "ping_width", "23", "proportional_int");
-
   private:
     int m_iPlayerIndexSymbol;
     int m_iDesiredHeight;
@@ -183,6 +180,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void FillScoreBoard(bool pFullUpdate);
     void LoadLocalTimes(KeyValues *kv);
     void ConvertLocalTimes(KeyValues *);
-};
 
+    CReplayContextMenu *m_pLeaderboardReplayCMenu;
+};
 #endif // CLIENTSCOREBOARDDIALOG_H

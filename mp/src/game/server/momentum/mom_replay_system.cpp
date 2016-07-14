@@ -37,18 +37,21 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
         return;
     }
 
-    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[BUFSIZETIME];
+    char newRecordingName[MAX_PATH], newRecordingPath[MAX_PATH], runTime[MAX_PATH], runDate[MAX_PATH];
 
     m_bShouldStopRec = false;
-    CMomentumPlayer *pMOMPlayer = ToCMOMPlayer(pPlayer);
-    mom_UTIL->FormatTime(g_Timer->GetLastRunTime(), runTime, 3, true);
-    //MOM_TODO: BUG: The player name could have characters in it that cannot be saved as a file, causing a hang!
-    Q_snprintf(newRecordingName, MAX_PATH, "%s_%s_%s.momrec",
-                (pMOMPlayer ? pMOMPlayer->GetPlayerName() : "Unnamed"), gpGlobals->mapname.ToCStr(), runTime);
-    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath,
-                        MAX_PATH); // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
+    
+    //Don't ask why, but these need to be formatted in their own strings.
+    time_t lastDate = g_Timer->GetLastRunDate();
+    Q_snprintf(runDate, MAX_PATH, "%i", lastDate);
+    float lastTime = g_Timer->GetLastRunTime();
+    Q_snprintf(runTime, MAX_PATH, "%f", lastTime);
+    //It's weird.
 
-    V_FixSlashes(RECORDING_PATH);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s%s", runDate, runTime, EXT_RECORDING_FILE);
+
+    // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
+    V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH); 
 
     // We have to create the directory here just in case it doesn't exist yet
     filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD");
@@ -69,10 +72,15 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
 
     // Load the last run that we did in case we want to watch it
     m_pReplayManager->LoadReplay(newRecordingPath);
+
+    //Reset the m_i*Tick s
+    m_iStartRecordingTick = -1;
+    m_iStartTimerTick = -1;
 }
 
 void CMomentumReplaySystem::TrimReplay()
 {
+    //Our actual start
     if (m_iStartRecordingTick > -1 && m_iStartTimerTick > -1)
     {
         int newStart = m_iStartTimerTick - int(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
@@ -94,10 +102,12 @@ void CMomentumReplaySystem::TrimReplay()
 
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
-    ++m_iTickCount; // increment recording tick
-
-    if (m_pReplayManager->Recording())
+    //We only record frames that the player isn't pausing on
+    if (m_pReplayManager->Recording() && !engine->IsPaused())
+    {
         m_pReplayManager->GetRecordingReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->m_nButtons));
+        ++m_iTickCount; // increment recording tick
+    }
 
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
         StopRecording(UTIL_GetLocalPlayer(), false, false);
@@ -116,6 +126,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetTickInterval(gpGlobals->interval_per_tick);
     replay->SetRunTime(g_Timer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
+    replay->SetRunDate(g_Timer->GetLastRunDate());
 }
 
 void CMomentumReplaySystem::SetRunStats()

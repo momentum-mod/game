@@ -1546,15 +1546,23 @@ void CServerGameDLL::RestoreGlobalState(CSaveRestoreData *s)
 
 void CServerGameDLL::Save( CSaveRestoreData *s )
 {
-	CSave saveHelper( s );
-	g_pGameSaveRestoreBlockSet->Save( &saveHelper );
+    Warning("************************************\n");
+    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
+    Warning("Try using the checkpoint menu instead!\n");
+    Warning("************************************\n");
+	//CSave saveHelper( s );
+	//g_pGameSaveRestoreBlockSet->Save( &saveHelper );
 }
 
 void CServerGameDLL::Restore( CSaveRestoreData *s, bool b)
 {
-	CRestore restore(s);
-	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	g_pGameSaveRestoreBlockSet->PostRestore();
+    Warning("************************************\n");
+    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
+    Warning("Try using the checkpoint menu instead!\n");
+    Warning("************************************\n");
+	//CRestore restore(s);
+	//g_pGameSaveRestoreBlockSet->Restore( &restore, b );
+	//g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 //-----------------------------------------------------------------------------

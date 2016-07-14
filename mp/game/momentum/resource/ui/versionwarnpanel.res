@@ -283,7 +283,7 @@
 		"textinsety"		"2"
 		"auto_wide_tocontents"		"0"
 		"use_proportional_insets"		"0"
-		"command"		"turnoff"
+		"command"		"Close"
 		"Default"		"0"
 	}
 	"frame_menu"
@@ -389,13 +389,14 @@
 		"tabPosition"		"0"
 		"maxchars"		"-1"
 		"scrollbar"		"1"
+        "text" "Failed to load changelog!"
 	}
 	"Changelog_Label"
 	{
 		"ControlName"		"Label"
 		"fieldName"		"Changelog_Label"
 		"xpos"		"9"
-		"ypos"		"36"
+		"ypos"		"33"
 		"wide"		"150"
 		"tall"		"20"
 		"autoResize"		"0"

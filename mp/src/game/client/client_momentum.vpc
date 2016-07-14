@@ -13,8 +13,8 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories       "$BASE;momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
-        $PreprocessorDefinitions            "$BASE;SOURCE_2013"
+        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
+        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013"
     }
 }
 
@@ -62,32 +62,64 @@ $Project "Client (Momentum)"
                     }
                 }
                 
-                $File "momentum\ui\MomentumSettingsDialog.cpp"
-                $File "momentum\ui\IMomentumSettingsPanel.h"
-                $File   "momentum\ui\hud_speedometer.cpp"
-                $File   "momentum\ui\hud_strafesync.cpp"
-                $File   "momentum\ui\hud_timer.cpp"
-                $File   "momentum\ui\hud_cp_menu.cpp"
-                $File   "momentum\ui\hud_menu_static.h"
-                $File   "momentum\ui\hud_menu_static.cpp"
-                $File   "momentum\ui\hud_fillablebar.h"
+                $Folder "SettingsPanel"
+                {
+                	$Folder "Headers"
+                	{
+	                	$File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
+	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\ControlsSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
+                	}
+
+                    $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
+                    $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\ControlsSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.cpp"
+                }
+                
+                $Folder "HUD"
+                {
+                    $File "momentum\ui\HUD\hud_versioninfo.cpp"
+                    $File "momentum\ui\HUD\hud_mapfinished.cpp"
+                    $File "momentum\ui\HUD\hud_mapfinished.h"
+                    $File "momentum\ui\HUD\hud_keypress.cpp"
+                    $File "momentum\ui\HUD\hud_comparisons.cpp"
+                    $File "momentum\ui\HUD\hud_comparisons.h"
+                    $File "momentum\ui\HUD\hud_mapinfo.cpp"
+                    $File "momentum\ui\HUD\hud_speedometer.cpp"
+                    $File "momentum\ui\HUD\hud_strafesync.cpp"
+                    $File "momentum\ui\HUD\hud_timer.cpp"
+                    $File "momentum\ui\HUD\hud_cp_menu.cpp"
+                    $File "momentum\ui\HUD\hud_menu_static.h"
+                    $File "momentum\ui\HUD\hud_menu_static.cpp"
+                    $File "momentum\ui\HUD\hud_fillablebar.h"
+                    $File "hl2\hud_credits.cpp"
+                    $File "hud_chat.cpp"
+                    $File "hl2\hud_weaponselection.cpp"
+                }
+                
+                $File 	"momentum\ui\ContactPanel.cpp"
+                $File 	"momentum\ui\IContactPanel.h"
+                
                 $File   "momentum\ui\ClientTimesDisplay.h"
                 $File   "momentum\ui\ClientTimesDisplay.cpp"
+                $File 	"momentum\ui\ReplayContextMenu.h"
+                $File 	"momentum\ui\ReplayContextMenu.cpp"
+
                 $File   "momentum\ui\IVersionWarnPanel.h"
                 $File   "momentum\ui\VersionWarnPanel.cpp"
                 $File   "momentum\ui\VersionWarnPanel.h"
-                $File   "momentum\ui\hud_versioninfo.cpp"
-                $File "momentum\ui\hud_mapfinished.cpp"
-                $File "momentum\ui\hud_mapfinished.h"
-                $File "momentum\ui\hud_keypress.cpp"
-                $File "hl2\hud_credits.cpp"
-                $File "hl2\hud_weaponselection.cpp"
-                $File "hud_chat.cpp"
-                $File "momentum\ui\hud_comparisons.cpp"
-                $File "momentum\ui\hud_comparisons.h"
-                $File "momentum\ui\hud_mapinfo.cpp"
+                
                 $File "momentum\ui\momSpectatorGUI.cpp"
                 $File "momentum\ui\momSpectatorGUI.h"
+                
+                $File "momentum\ui\CVarSlider.h"
+                $File "momentum\ui\CVarSlider.cpp"
             }
 
             $File   "momentum\client_events.h"
@@ -148,6 +180,8 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
                 $File "$SRCDIR\game\shared\momentum\util\run_stats.h"
                 $File "$SRCDIR\game\shared\momentum\util\run_stats.cpp"
+                $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
+                $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
             }
             
             $Folder "Shader Editor" [$WIN32]
@@ -197,6 +231,12 @@ $Project "Client (Momentum)"
             $File   "momentum\mom_event_listener.cpp"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
+            
+            $Folder "Project-9"
+            {
+                $File "momentum\dynamicrendertargets.cpp"
+                $File "momentum\dynamicrendertargets.h"
+            }
         }
         
         $Folder "JSON Parser"

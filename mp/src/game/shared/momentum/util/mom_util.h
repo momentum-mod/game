@@ -8,6 +8,7 @@
 #include "KeyValues.h"
 #include "steam/steam_api.h"
 #include "run_compare.h"
+#include "run_stats.h"
 #include "UtlSortVector.h"
 #include "filesystem.h"
 #include "gason.h"
@@ -20,11 +21,15 @@ class MomentumUtil
 public:
     void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
+
     void PostTime(const char* URL);
     void DownloadMap(const char*);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
+
+    bool CreateAndSendHTTPReqWithPost(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
+        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
@@ -37,6 +42,10 @@ public:
     void GetRemoteRepoModVersion();
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
     void VersionCallback(HTTPRequestCompleted_t*, bool);
+
+    //For the ComparisonsSettingsPage
+    void GenerateBogusComparison(KeyValues *kvOut);
+    void GenerateBogusRunStats(C_MomRunStats *pStatsOut);
 #endif
 
     //Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color decreasecolor);
@@ -50,12 +59,14 @@ public:
 
     KeyValues *GetBestTime(KeyValues *kvInput, const char *szMapName, float tickrate, int flags = 0);
     bool GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into);
+    void FillRunComparison(const char *compareName, KeyValues *kvBestRun, RunCompare_t *into);
+    
 
     bool FloatEquals(float a, float b, float epsilon = FLT_EPSILON) const
     {
         return fabs(a - b) < epsilon;
     }
-
+    
     //Checks if source is within a rectangle formed by leftCorner and rightCorner
     bool IsInBounds(Vector2D source, Vector2D bottomLeft, Vector2D topRight) const
     {

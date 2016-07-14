@@ -23,7 +23,7 @@ typedef enum MOMGM
 // Main Version (0 is alpha, 1 is beta, 2 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 // When editing this, remember to also edit version.txt on the main dir of the repo
 // If you have any doubts, please refer to http://semver.org/
-#define MOM_CURRENT_VERSION "0.4.7"
+#define MOM_CURRENT_VERSION "0.5.0"
 
 #define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
 
@@ -36,7 +36,7 @@ typedef enum MOMGM
 //Checks to see if the token exists, and if so, localizes it into output. Otherwise
 //it's just the token value. This exists to prevent null localization tokens.
 #define FIND_LOCALIZATION(output, token) \
-    V_snwprintf(output, BUFSIZELOCL, L"%ls", g_pVGuiLocalize->Find(token) ? g_pVGuiLocalize->Find(token) : L##token);
+    Q_wcsncpy(output, g_pVGuiLocalize->Find(token) ? g_pVGuiLocalize->Find(token) : L##token , sizeof(output))
 
 
 //Localizes a token to an ansi output array, under a name macro
@@ -66,5 +66,6 @@ typedef enum MOMGM
 #define RECORDING_PATH "recordings"
 #define EXT_TIME_FILE ".tim" //MOM_TODO: Find and replace all instances, no hardcode.
 #define EXT_ZONE_FILE ".zon" //MOM_TODO: Find and replace all instances, no hardcode.
+#define EXT_RECORDING_FILE ".momrec"
 
 #endif // MOM_SHAREDDEFS_H

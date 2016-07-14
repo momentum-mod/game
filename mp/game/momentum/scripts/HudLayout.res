@@ -19,8 +19,8 @@
                 "SecondaryValueColor" "Light Gray"
                 "LabelColor"    "MOM.Panel.Fg"
                 "BgColor"   "Blank"
-                "SplitAlpha" "255"//Used for fading
-                "JumpAlpha" "255"//Used for fading
+                "StageAlpha" "0.0"//Used for fading
+                "JumpAlpha" "0.0"//Used for fading
         }
     //Timer
     HudTimer
@@ -158,6 +158,18 @@
         "mapinfo_ypos" "10"//ypos for the map info
         "StatusFont" "HudHintTextSmall"//Font for the current map area/status
         "MapInfoFont" "HudHintTextSmall"//Font for the map information
+    }
+    
+    "CHudMapFinishedDialog"
+    {
+        "fieldName"     "CHudMapFinishedDialog"
+        "xpos"          "c-110"
+        "ypos"          "c-150"
+        "wide"          "220"
+        "tall"          "175"
+        "visible"       "1"
+        "enabled"       "1"
+        "TextFont"      "Default"
     }
     
     HudHealth [$WIN32]

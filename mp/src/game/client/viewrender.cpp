@@ -79,6 +79,10 @@
 
 //Shader editor
 #include "ShaderEditor/ShaderEditorSystem.h"
+//GameUI2
+#if defined(GAMEUI2)
+#include "igameui2.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -2194,6 +2198,25 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 	{
 		saveRenderTarget = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye - 1), ISourceVirtualReality::RT_Color );
 	}
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+    {
+        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
+        if (maskTexture)
+        {
+            CMatRenderContextPtr renderContext(materials);
+            renderContext->PushRenderTargetAndViewport(maskTexture);
+            renderContext->ClearColor4ub(0, 0, 0, 255);
+            renderContext->ClearBuffers(true, true, true);
+            renderContext->PopRenderTargetAndViewport();
+
+            g_pGameUI2->SetFrustum(GetFrustum());
+            g_pGameUI2->SetView(view);
+            g_pGameUI2->SetMaskTexture(maskTexture);
+        }
+    }
+#endif
 
 	// Draw the 2D graphics
 	render->Push2DView( view, 0, saveRenderTarget, GetFrustum() );
