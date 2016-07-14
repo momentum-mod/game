@@ -181,8 +181,7 @@ private:
         float time_sec, rate;
         uint64 steamid;
         time_t date;
-
-        // MOM_TODO: Avatar of the player?
+        const char* personaname;
 
         // entry
         // -steamid
@@ -198,6 +197,7 @@ private:
         
         explicit TimeOnline(KeyValues* kv)
         {
+            // MOM_TODO: Uh.. Memory leak?
             m_kv = new KeyValues("entry");
             id = kv->GetInt("id", -1);
             m_kv->SetInt("id", id);
@@ -205,7 +205,8 @@ private:
             m_kv->SetInt("rank", rank);
             time_sec = kv->GetFloat("time", -1);
             m_kv->SetFloat("time", time_sec);
-            
+            personaname = kv->GetString("personaname", "Unknown");
+            m_kv->SetString("personaname", personaname);
             rate = kv->GetFloat("rate", 100);
             m_kv->SetFloat("rate", rate);
             date = static_cast<time_t>(Q_atoi(kv->GetString("date", "0")));

@@ -31,22 +31,9 @@ void CTimer::PostTime()
 {
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
-        //Get required info 
         //MOM_TODO include the extra security measures for beta+
-        uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
-        const char* map = gpGlobals->mapname.ToCStr();
-        int ticks = gpGlobals->tickcount - m_iStartTick;
-
-        TickSet::Tickrate tickRate = TickSet::GetCurrentTickrate();
-        
-        //Build URL
-        char webURL[512];
-        Q_snprintf(webURL, 512, "http://momentum-mod.org/postscore/%llu/%s/%i/%s", steamID, map,
-            ticks, tickRate.sType);
-
-        DevLog("Ticks sent to server: %i\n", ticks);
         //Build request
-        mom_UTIL->PostTime(webURL);
+        mom_UTIL->PostTime(g_ReplaySystem->);
     }
     else
     {
@@ -250,11 +237,6 @@ void CTimer::Stop(bool endTrigger /* = false */)
     {
         m_iEndTick = gpGlobals->tickcount;
 
-        // Post time to leaderboards if they're online
-        // and if cheats haven't been turned on this session
-        if (SteamAPI_IsSteamRunning())
-            PostTime();
-
         //Save times locally too, regardless of SteamAPI condition
         Time t = Time();
         t.time_sec = GetLastRunTime();
@@ -267,7 +249,11 @@ void CTimer::Stop(bool endTrigger /* = false */)
 
         AddNewTime(&t);
 
-        SaveTimeToFile();  
+        SaveTimeToFile(); 
+        // Post time to leaderboards if they're online
+        // and if cheats haven't been turned on this session
+        if (SteamAPI_IsSteamRunning())
+            PostTime();
     }
     else if (runSaveEvent) //reset run saved status to false if we cant or didn't save
     {

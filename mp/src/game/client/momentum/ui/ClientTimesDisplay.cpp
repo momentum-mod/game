@@ -933,7 +933,6 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
         // Online works slightly different, we use the vector content, not the ones from m_kvPlayerData (because online times are not stored there)
 
         // Place m_vOnlineTimes into m_pOnlineLeaderboards
-        // This first pass probably does not have a name set yet
         OnlineTimesVectorToLeaderboards();
 
         m_pLeaderboards->SetVisible(true);
