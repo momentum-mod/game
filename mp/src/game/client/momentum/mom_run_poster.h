@@ -6,16 +6,23 @@
 
 #include "cbase.h"
 
-#include "filesystem.h"
-#include "mom_event_listener.h"
+#include "GameEventListener.h"
+#include "KeyValues.h"
+#include "gason.h"
 #include "momentum/mom_shareddefs.h"
+#include "steam/steam_api.h"
 
-class CRunPoster
+class CRunPoster : CGameEventListener
 {
-public:
-    DECLARE_CLASS_NOBASE(CRunPoster);
+  public:
     CRunPoster();
     ~CRunPoster();
+
+    void Init();
+    void FireGameEvent(IGameEvent *pEvent) override;
+
+    void PostTimeCallback(HTTPRequestCompleted_t *, bool);
+    CCallResult<CRunPoster, HTTPRequestCompleted_t> cbPostTimeCallback;
 };
 
-#endif //MOMRUNPOSTER_H
+#endif // MOMRUNPOSTER_H

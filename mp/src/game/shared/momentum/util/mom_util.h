@@ -19,10 +19,8 @@
 class MomentumUtil
 {
 public:
-    void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
 
-    void PostTime(const char* replayName);
     void DownloadMap(const char*);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
@@ -32,7 +30,6 @@ public:
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
 
 #ifdef CLIENT_DLL
     void GetRemoteChangelog();
