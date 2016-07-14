@@ -105,9 +105,11 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::PostTime(const char *szURL)
+void MomentumUtil::PostTime(const char *replayName)
 {
-    CreateAndSendHTTPReq(szURL, &cbPostTimeCallback, &MomentumUtil::PostTimeCallback);
+    filesystem->Open(replayName, "R", "MOD");
+
+    CreateAndSendHTTPReq("http:://momentum-mod.org/postscore/", &cbPostTimeCallback, &MomentumUtil::PostTimeCallback);
 }
 
 void MomentumUtil::DownloadMap(const char *szMapname)

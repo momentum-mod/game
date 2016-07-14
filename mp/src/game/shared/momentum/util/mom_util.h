@@ -22,7 +22,7 @@ public:
     void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
 
-    void PostTime(const char* URL);
+    void PostTime(const char* replayName);
     void DownloadMap(const char*);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
