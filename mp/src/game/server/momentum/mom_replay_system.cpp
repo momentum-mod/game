@@ -64,10 +64,14 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     DevLog("After trimming: %i\n", postTrimTickCount);
     m_pReplayManager->StoreReplay(newRecordingPath);
     m_pReplayManager->StopRecording();
-
+    IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
     //Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
     Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
-
+    if (replaySavedEvent)
+    {
+        replaySavedEvent->SetString("path", newRecordingPath);
+        gameeventmanager->FireEvent(replaySavedEvent);
+    }
     // Load the last run that we did in case we want to watch it
     m_pReplayManager->LoadReplay(newRecordingPath);
 

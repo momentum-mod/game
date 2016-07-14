@@ -135,6 +135,9 @@ $Project "Client (Momentum)"
                 }
             }
 
+            $File 	"momentum\mom_run_poster.h"
+            $File 	"momentum\mom_run_poster.cpp"
+
             $Folder "Weapons"
             {
                 $File "$SRCDIR\game\shared\momentum\weapon_momentum_gun.cpp"

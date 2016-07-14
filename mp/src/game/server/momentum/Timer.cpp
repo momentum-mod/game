@@ -33,7 +33,7 @@ void CTimer::PostTime()
     {
         //MOM_TODO include the extra security measures for beta+
         //Build request
-        mom_UTIL->PostTime(g_ReplaySystem->);
+        //mom_UTIL->PostTime("run.momrec");
     }
     else
     {
