@@ -29,7 +29,7 @@ class CMessageboxPanel : public Frame
     // Creates a messagebox, with pTitle as title and pMessage as message.
     // It does not disappear until Close is pressed or FlushMessageboxes() is called
     // Returns tje handle of the newly created Messagebox
-    HPanel CreateMessagebox(const char *pTitle, const char *pMessage);
+    HPanel CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept = nullptr);
 
     // This function deletes all the messageboxes
     void FlushMessageboxes();
@@ -49,6 +49,7 @@ class CMessageboxInterface : public IMessageboxPanel
     CMessageboxInterface() { pPanel = nullptr; }
     ~CMessageboxInterface() {}
     void Create(vgui::VPANEL parent) override { pPanel = new CMessageboxPanel(parent); }
+
     void Destroy() override
     {
         if (pPanel)
@@ -58,6 +59,7 @@ class CMessageboxInterface : public IMessageboxPanel
         }
         pPanel = nullptr;
     }
+
     void Activate(void) override
     {
         if (pPanel)
@@ -65,6 +67,7 @@ class CMessageboxInterface : public IMessageboxPanel
             pPanel->Activate();
         }
     }
+
     void Close() override
     {
         if (pPanel)
@@ -73,11 +76,12 @@ class CMessageboxInterface : public IMessageboxPanel
         }
     }
 
-    HPanel CreateMessagebox(const char *pTitle, const char *pMessage) override
+    // is the default parameter specifier needed here?
+    HPanel CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept = nullptr) override
     {
         if (pPanel)
         {
-            return pPanel->CreateMessagebox(pTitle, pMessage);
+            return pPanel->CreateMessagebox(pTitle, pMessage, pAccept);
         }
         return 0;
     }

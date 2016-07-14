@@ -48,9 +48,13 @@ CMessageboxPanel::~CMessageboxPanel() { FlushMessageboxes(); }
 
 void CMessageboxPanel::Close() { FlushMessageboxes(); }
 
-HPanel CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessage)
+HPanel CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept)
 {
     MessageBox *pMessageBox = new MessageBox(pTitle, pMessage);
+    if (pAccept)
+    {
+        pMessageBox->SetOKButtonText(pAccept);
+    }
     m_mbItems.AddToTail(pMessageBox);
     pMessageBox->ShowWindow();
     return pMessageBox->ToHandle();

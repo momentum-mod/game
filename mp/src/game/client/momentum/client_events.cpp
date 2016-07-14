@@ -69,11 +69,13 @@ void CMOMClientEvents::PostInit()
 
     // MOM_TODO: Change this once we hit Alpha/Beta
 
-    char *p_sInitialMsgTitle;
+    char p_sInitialMsgTitle[BUFSIZELOCL];
     LOCALIZE_TOKEN(p_wcInitialMsgTitle, "MOM_StartupMsg_Prealpha_Title", p_sInitialMsgTitle);
-    char *p_sInitialMsg;
+    char p_sInitialMsg[BUFSIZELOCL];
     LOCALIZE_TOKEN(p_wcInitialMsg, "MOM_StartupMsg_Prealpha", p_sInitialMsg);
-    messageboxpanel->CreateMessagebox(p_sInitialMsgTitle, p_sInitialMsg);
+    char p_sInitialMsgOkButton[BUFSIZELOCL];
+    LOCALIZE_TOKEN(p_wcInitialMsgOkButton, "MOM_IUnderstand", p_sInitialMsgOkButton);
+    messageboxpanel->CreateMessagebox(p_sInitialMsgTitle, p_sInitialMsg, p_sInitialMsgOkButton);
 }
 
 void CMOMClientEvents::MountAdditionalContent()
