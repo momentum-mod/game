@@ -93,8 +93,8 @@ public:
     }
 
 public:
-    char m_szMapName[256]; // The map the run was done in.
-    char m_szPlayerName[256]; // The name of the player that did this run.
+    char m_szMapName[MAX_DISPLAY_MAP_NAME]; // The map the run was done in.
+    char m_szPlayerName[MAX_PLAYER_NAME_LENGTH]; // The name of the player that did this run.
     uint64 m_ulSteamID; // The steamID of the player that did this run.
     float m_fTickInterval; // The tickrate of the run.
     float m_fRunTime; // The total runtime of the run in seconds.
