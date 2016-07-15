@@ -256,6 +256,9 @@ void VGui_Shutdown()
 
     //Momentum
     mapselector->Destroy();
+    versionwarnpanel->Destroy();
+    momentum_settings->Destroy();
+    contact_panel->Destroy();
 
 	if ( g_pClientMode )
 	{

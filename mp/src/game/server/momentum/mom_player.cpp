@@ -17,6 +17,9 @@ SendPropInt(SENDINFO(m_iLastZoom)),
 SendPropBool(SENDINFO(m_bDidPlayerBhop)),
 SendPropInt(SENDINFO(m_iSuccessiveBhops)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
+SendPropBool(SENDINFO(m_bUsingCPMenu)),
+SendPropInt(SENDINFO(m_iCurrentStepCP)),
+SendPropInt(SENDINFO(m_iCheckpointCount)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
 SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
@@ -46,6 +49,10 @@ CMomentumPlayer::CMomentumPlayer() :
     m_bDidPlayerBhop = false;
     m_iSuccessiveBhops = 0;
     m_bHasPracticeMode = false;
+
+    m_iCheckpointCount = 0;
+    m_bUsingCPMenu = false;
+    m_iCurrentStepCP = -1;
 
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -295,6 +302,44 @@ bool CMomentumPlayer::ClientCommand(const CCommand& args)
     }
 
     return BaseClass::ClientCommand(args);
+}
+
+void CMomentumPlayer::CreateCheckpoint()
+{
+    Checkpoint c;
+    c.ang = GetAbsAngles();
+    c.pos = GetAbsOrigin();
+    c.vel = GetAbsVelocity();
+    Q_strncpy(c.targetName, GetEntityName().ToCStr(), MAX_PLAYER_NAME_LENGTH);
+    Q_strncpy(c.targetClassName, GetClassname(), MAX_PLAYER_NAME_LENGTH);
+    checkpoints.AddToTail(c);
+    ++m_iCurrentStepCP;
+    ++m_iCheckpointCount;
+}
+
+void CMomentumPlayer::RemoveLastCheckpoint()
+{
+    if (checkpoints.IsEmpty()) return;
+    checkpoints.Remove(m_iCurrentStepCP);
+    //If there's one element left, we still need to decrease currentStep to -1
+    --m_iCurrentStepCP;
+    --m_iCheckpointCount;
+}
+
+void CMomentumPlayer::RemoveAllCheckpoints()
+{
+    checkpoints.RemoveAll();
+    m_iCurrentStepCP = -1;
+    m_iCheckpointCount = 0;
+}
+
+void CMomentumPlayer::TeleportToCP(int newCheckpoint)
+{
+    if (newCheckpoint > checkpoints.Count() || newCheckpoint < 0) return;
+    Checkpoint c = checkpoints[newCheckpoint];
+    SetName(MAKE_STRING(c.targetName));
+    SetClassname(c.targetClassName);
+    Teleport(&c.pos, &c.ang, &c.vel);
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)

@@ -45,6 +45,10 @@ public:
     bool m_bDidPlayerBhop;
     bool m_bHasPracticeMode;
 
+    bool m_bUsingCPMenu;
+    int m_iCurrentStepCP;
+    int m_iCheckpointCount;
+
     CMOMRunEntityData m_RunData;
     CMomRunStats m_RunStats;
 
