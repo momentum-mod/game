@@ -24,5 +24,5 @@ class CRunPoster : CGameEventListener
     void PostTimeCallback(HTTPRequestCompleted_t *, bool);
     CCallResult<CRunPoster, HTTPRequestCompleted_t> cbPostTimeCallback;
 };
-
+extern CRunPoster *g_MOMRunPoster;
 #endif // MOMRUNPOSTER_H

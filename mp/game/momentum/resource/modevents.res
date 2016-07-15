@@ -58,4 +58,8 @@
     "mapfinished_panel_closed"
     {
     }
+	"replay_save"
+	{
+		"filename" "string"
+	}
 }

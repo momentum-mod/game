@@ -5,9 +5,10 @@
 #include "client_events.h"
 
 #include "filesystem.h"
+#include "mom_event_listener.h"
+#include "mom_run_poster.h"
 #include "movevars_shared.h"
 #include "util/mom_util.h"
-#include "mom_event_listener.h"
 
 #include "tier0/memdbgon.h"
 
@@ -15,7 +16,8 @@ extern IFileSystem *filesystem;
 
 void CMOMClientEvents::PostInit()
 {
-    g_MOMEventListener->Init();//Hook into game events
+    g_MOMEventListener->Init(); // Hook into game events
+    g_MOMRunPoster->Init();     // Get ready to post runs...
 
     // enable console by default
     ConVarRef con_enable("con_enable");
@@ -26,23 +28,16 @@ void CMOMClientEvents::PostInit()
         mom_UTIL->GetRemoteRepoModVersion();
     }
 
-    // mount CSS content even if it's on a different drive than SDK
+// mount CSS content even if it's on a different drive than SDK
 #ifdef _WIN32
     HKEY hKey;
     if (VCRHook_RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 240",
-        0,
-        KEY_READ,
-        &hKey) == ERROR_SUCCESS)
+                             "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 240", 0, KEY_READ,
+                             &hKey) == ERROR_SUCCESS)
     {
         char installPath[MAX_PATH];
         DWORD len = sizeof(installPath);
-        if (VCRHook_RegQueryValueEx(hKey,
-            "InstallLocation",
-            NULL,
-            NULL,
-            (LPBYTE) installPath,
-            &len) == ERROR_SUCCESS)
+        if (VCRHook_RegQueryValueEx(hKey, "InstallLocation", NULL, NULL, (LPBYTE)installPath, &len) == ERROR_SUCCESS)
         {
             char path[MAX_PATH];
             Q_strncpy(path, installPath, sizeof(path));
@@ -94,7 +89,7 @@ void CMOMClientEvents::MountAdditionalContent()
                             Warning("Unable to mount extra content with appId: %i\n", appid);
                 }
             }
-        } 
+        }
     }
     pMainFile->deleteThis();
 }

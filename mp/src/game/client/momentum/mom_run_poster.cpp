@@ -27,8 +27,9 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
             char szURL[MAX_PATH] = "http://momentum-mod.org/postscore/";
             HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
 
-            char data[999;
-            buf.Get(data, buf.Size());
+            char* data = new char[buf.GetBytesRemaining()];
+            buf.Get(data, buf.GetBytesRemaining());
+            
             steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "file", data);
 
             SteamAPICall_t apiHandle;
@@ -113,3 +114,6 @@ void CRunPoster::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFai
     // pDataPtr = nullptr;
     // steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
+
+static CRunPoster s_momRunposter;
+CRunPoster *g_MOMRunPoster = &s_momRunposter;
