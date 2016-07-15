@@ -23,8 +23,8 @@ struct Checkpoint
     Vector pos;
     Vector vel;
     QAngle ang;
-    char targetName[MAX_PLAYER_NAME_LENGTH];
-    char targetClassName[MAX_PLAYER_NAME_LENGTH];
+    char targetName[512];
+    char targetClassName[512];
 };
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener
@@ -170,14 +170,17 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // Sets the current checkpoint (menu) to the desired one with that index
     void SetCurrentCPMenuStep(int iNewNum) { m_iCurrentStepCP = iNewNum; }
     // Gets the total amount of menu checkpoints
-    int GetCPCount() const { return checkpoints.Size(); }
+    int GetCPCount() const { return m_rcCheckpoints.Size(); }
     // Sets wheter or not we're using the CPMenu
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingCPMenu(bool bIsUsingCPMenu) { m_bUsingCPMenu = bIsUsingCPMenu; }
 
+    void SaveCPsToFile(KeyValues *kvInto);
+    void LoadCPsFromFile(KeyValues *kvFrom);
+
   private:
     CountdownTimer m_ladderSurpressionTimer;
-    CUtlVector<Checkpoint> checkpoints;
+    CUtlVector<Checkpoint> m_rcCheckpoints;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
     EHANDLE g_pLastSpawn;

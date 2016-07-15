@@ -4,6 +4,7 @@
 #include "mom_player.h"
 #include "mom_triggers.h"
 #include "mom_replay_entity.h"
+#include "mom_system_checkpoint.h"
 
 #include "tier0/memdbgon.h"
 
@@ -151,7 +152,9 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
     SetNextThink(gpGlobals->curtime);
-    DevLog("Finished spawn!\n");
+
+    //Load the player's checkpoints
+    g_MOMCheckpointSystem->LoadMapCheckpoints(this);
 }
 
 // Obtains the player's previous origin using their current origin as a base.
@@ -310,17 +313,17 @@ void CMomentumPlayer::CreateCheckpoint()
     c.ang = GetAbsAngles();
     c.pos = GetAbsOrigin();
     c.vel = GetAbsVelocity();
-    Q_strncpy(c.targetName, GetEntityName().ToCStr(), MAX_PLAYER_NAME_LENGTH);
-    Q_strncpy(c.targetClassName, GetClassname(), MAX_PLAYER_NAME_LENGTH);
-    checkpoints.AddToTail(c);
+    Q_strncpy(c.targetName, GetEntityName().ToCStr(), sizeof(c.targetName));
+    Q_strncpy(c.targetClassName, GetClassname(), sizeof(c.targetClassName));
+    m_rcCheckpoints.AddToTail(c);
     ++m_iCurrentStepCP;
     ++m_iCheckpointCount;
 }
 
 void CMomentumPlayer::RemoveLastCheckpoint()
 {
-    if (checkpoints.IsEmpty()) return;
-    checkpoints.Remove(m_iCurrentStepCP);
+    if (m_rcCheckpoints.IsEmpty()) return;
+    m_rcCheckpoints.Remove(m_iCurrentStepCP);
     //If there's one element left, we still need to decrease currentStep to -1
     --m_iCurrentStepCP;
     --m_iCheckpointCount;
@@ -328,18 +331,53 @@ void CMomentumPlayer::RemoveLastCheckpoint()
 
 void CMomentumPlayer::RemoveAllCheckpoints()
 {
-    checkpoints.RemoveAll();
+    m_rcCheckpoints.RemoveAll();
     m_iCurrentStepCP = -1;
     m_iCheckpointCount = 0;
 }
 
 void CMomentumPlayer::TeleportToCP(int newCheckpoint)
 {
-    if (newCheckpoint > checkpoints.Count() || newCheckpoint < 0) return;
-    Checkpoint c = checkpoints[newCheckpoint];
+    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0) return;
+    Checkpoint c = m_rcCheckpoints[newCheckpoint];
     SetName(MAKE_STRING(c.targetName));
     SetClassname(c.targetClassName);
     Teleport(&c.pos, &c.ang, &c.vel);
+}
+
+void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
+{
+    FOR_EACH_VEC(m_rcCheckpoints, i)
+    {
+        Checkpoint c = m_rcCheckpoints[i];
+        char szCheckpointNum[6];//9 million checkpoints is pretty generous
+        Q_snprintf(szCheckpointNum, 6, "%i", i);
+        KeyValues *kvCP = new KeyValues(szCheckpointNum);
+        kvCP->SetString("targetName", c.targetName);
+        kvCP->SetString("targetClassName", c.targetClassName);
+        mom_UTIL->KVSaveVector(kvCP, "vel", c.vel);
+        mom_UTIL->KVSaveVector(kvCP, "pos", c.pos);
+        mom_UTIL->KVSaveQAngles(kvCP, "ang", c.ang);
+        kvInto->AddSubKey(kvCP);
+    }
+}
+
+void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
+{
+    if (!kvFrom) return;
+    FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
+    {
+        Checkpoint c;
+        Q_strncpy(c.targetName, kvCheckpoint->GetString("targetName"), sizeof(c.targetName));
+        Q_strncpy(c.targetClassName, kvCheckpoint->GetString("targetClassName"), sizeof(c.targetClassName));
+        mom_UTIL->KVLoadVector(kvCheckpoint, "pos", c.pos);
+        mom_UTIL->KVLoadVector(kvCheckpoint, "vel", c.vel);
+        mom_UTIL->KVLoadQAngles(kvCheckpoint, "ang", c.ang);
+        m_rcCheckpoints.AddToTail(c);
+    }
+
+    m_iCheckpointCount = m_rcCheckpoints.Count();
+    m_iCurrentStepCP = m_iCheckpointCount - 1;
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)

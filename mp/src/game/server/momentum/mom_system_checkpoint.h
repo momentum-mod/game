@@ -20,10 +20,11 @@ public:
     void LevelInitPostEntity() override;
     void LevelShutdownPreEntity() override;
 
+    void LoadMapCheckpoints(CMomentumPlayer *pPlayer) const;
+
 private:
 
     KeyValues *m_pCheckpointsKV;
 };
-
 
 extern CMOMCheckpointSystem *g_MOMCheckpointSystem;

@@ -1,29 +1,67 @@
 #include "cbase.h"
 #include "mom_system_checkpoint.h"
 #include "Timer.h"
+#include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
-
+#define CHECKPOINTS_FILE_NAME "checkpoints.txt"
 
 void CMOMCheckpointSystem::LevelInitPostEntity()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    DevLog("Loading checkpoints from %s ...\n", CHECKPOINTS_FILE_NAME);
+
+    if (m_pCheckpointsKV)
     {
-        //MOM_TODO: Load the checkpoints from file, only pass the given map's checkpoints to player
-        DevLog("MOM_TODO: Loading checkpoints from %s.dat ...\n", gpGlobals->mapname.ToCStr());
+        //Remove the past loaded stuff
+        m_pCheckpointsKV->Clear();
+
+        // Note: This loading is going to contain all of the other maps' checkpoints as well!
+        // Note: We are not in PostInit because if players edit their checkpoints file (add
+        // checkpoints from a friend or something), then we want to reload on map load again,
+        // and not force the player to restart the mod every time.
+        if (m_pCheckpointsKV->LoadFromFile(filesystem, CHECKPOINTS_FILE_NAME, "MOD"))
+        {
+            DevLog("Loaded checkpoints from %s!\n", CHECKPOINTS_FILE_NAME);
+        }
     }
 }
 
 void CMOMCheckpointSystem::LevelShutdownPreEntity()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    if (pPlayer && m_pCheckpointsKV && pPlayer->GetCPCount() > 0)
     {
-        //MOM_TODO: Save the checkpoints to file under the given map name
+        DevLog("Saving map %s checkpoints to %s ...\n", gpGlobals->mapname.ToCStr(), CHECKPOINTS_FILE_NAME);
+        //Make the KV to save into and save into it
+        KeyValues *pKvMapCheckpoints = new KeyValues(gpGlobals->mapname.ToCStr());
+        pPlayer->SaveCPsToFile(pKvMapCheckpoints);
 
+        //Remove the map if it already exists in there
+        KeyValues *pExisting = m_pCheckpointsKV->FindKey(gpGlobals->mapname.ToCStr());
+        if (pExisting)
+            m_pCheckpointsKV->RemoveSubKey(pExisting);
 
+        //Add the new one
+        m_pCheckpointsKV->AddSubKey(pKvMapCheckpoints);
+
+        //Save everything to file
+        if (m_pCheckpointsKV->SaveToFile(filesystem, CHECKPOINTS_FILE_NAME, "MOD", true))
+            DevLog("Saved map %s checkpoints to %s!\n", gpGlobals->mapname.ToCStr(), CHECKPOINTS_FILE_NAME);
+    }
+}
+
+// Called from player spawn because LevelInitPostEntity is annoying and doesn't allow
+// to cast to a CMomentumPlayer. 
+void CMOMCheckpointSystem::LoadMapCheckpoints(CMomentumPlayer* pPlayer) const
+{
+    if (pPlayer && m_pCheckpointsKV && !m_pCheckpointsKV->IsEmpty())
+    {
+        KeyValues *kvMapCheckpoints = m_pCheckpointsKV->FindKey(gpGlobals->mapname.ToCStr());
+        if (kvMapCheckpoints)
+        {
+            pPlayer->LoadCPsFromFile(kvMapCheckpoints);
+        }
     }
 }
 
