@@ -25,7 +25,7 @@
 		"MainMenu.Button.Width.Pressed"					"384"
 		"MainMenu.Button.Width.Released"				"324"
 
-		"MainMenu.Button.Height.Out"					"74"
+		"MainMenu.Button.Height.Out"					"40"
 		"MainMenu.Button.Height.Over"					"74"
 		"MainMenu.Button.Height.Pressed"				"74"
 		"MainMenu.Button.Height.Released"				"74"
