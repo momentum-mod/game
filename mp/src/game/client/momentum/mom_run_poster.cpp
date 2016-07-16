@@ -24,11 +24,11 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
         Q_ComposeFileName(RECORDING_PATH, filename, filePath, MAX_PATH);
         CUtlBuffer buf;
         if (steamapicontext && steamapicontext->SteamHTTP() && filesystem->ReadFile(filePath, "MOD", buf))
-        { 
+        {
             char szURL[MAX_PATH] = "http://momentum-mod.org/postscore/";
             HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
             int size = buf.Size();
-            char * data = new char[size];
+            char *data = new char[size];
             buf.Get(data, size);
             steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "file", data);
 
@@ -43,7 +43,6 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
             {
                 Warning("Failed to send HTTP Request to send run!\n");
                 steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-
             }
         }
     }
