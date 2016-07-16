@@ -19,17 +19,17 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp("replay_save", pEvent->GetName()))
     {
+        char filePath[MAX_PATH];
         const char *filename = pEvent->GetString("filename");
-        if (filename && Q_strlen(filename) > 1 && steamapicontext && steamapicontext->SteamHTTP())
-        {
-            CUtlBuffer buf;
-            filesystem->ReadFile(RECORDING_PATH, filename, buf);
+        Q_ComposeFileName(RECORDING_PATH, filename, filePath, MAX_PATH);
+        CUtlBuffer buf;
+        if (steamapicontext && steamapicontext->SteamHTTP() && filesystem->ReadFile(filePath, "MOD", buf))
+        { 
             char szURL[MAX_PATH] = "http://momentum-mod.org/postscore/";
             HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
-
-            char* data = new char[buf.GetBytesRemaining()];
-            buf.Get(data, buf.GetBytesRemaining());
-            
+            int size = buf.Size();
+            char * data = new char[size];
+            buf.Get(data, size);
             steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "file", data);
 
             SteamAPICall_t apiHandle;
