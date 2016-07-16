@@ -26,13 +26,8 @@ CReplayContextMenu::~CReplayContextMenu()
 //-----------------------------------------------------------------------------
 // Purpose: Activates the menu
 //-----------------------------------------------------------------------------
-void CReplayContextMenu::ShowMenu(Panel *target, const char *runName)
+void CReplayContextMenu::ShowMenu()
 {
-    if (runName)
-    {
-        AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", new KeyValues("ContextWatchReplay", "runName", runName), target);
-    }
-
     int x, y, gx, gy;
     input()->GetCursorPos(x, y);
     ipanel()->GetPos(surface()->GetEmbeddedPanel(), gx, gy);

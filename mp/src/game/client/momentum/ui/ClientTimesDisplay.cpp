@@ -124,6 +124,10 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pLocalLeaderboards->SetClickable(true);
     m_pLocalLeaderboards->AddActionSignalTarget(this);
 
+    m_pOnlineLeaderboards->SetKeyBoardInputEnabled(true);
+    m_pOnlineLeaderboards->SetClickable(true);
+    m_pOnlineLeaderboards->AddActionSignalTarget(this);
+
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256), scheme()->GetProportionalScaledValue(64));
 
     m_iDesiredHeight = GetTall();
@@ -139,6 +143,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
+
+    m_umMapNames.SetLessFunc(PNamesMapLessFunc);
 }
 
 
@@ -260,7 +266,9 @@ void CClientTimesDisplay::InitScoreboardSections()
     {
         m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
+        m_pOnlineLeaderboards->SetImageList(m_pImageList, false);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]));
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "", 2, 64);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
     }
@@ -718,11 +726,28 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                             }
                             else if (!Q_strcmp(j->key, "steamid"))
                             {
-                                kv->SetUint64("steamid", (uint64)j->value.toNumber());     
+                                uint64 steamid = Q_atoui64(j->value.toString());
+                                kv->SetUint64("steamid", steamid);
+                                if (steamapicontext && steamapicontext->SteamFriends())
+                                {
+                                    if (GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64() == steamid)
+                                    {
+                                        UpdatePlayerAvatar(GetLocalPlayerIndex(), kv);
+                                    }
+                                    else
+                                    {
+                                        UpdateLeaderboardPlayerAvatar(steamid, kv);
+                                    }
+                                    if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamid), true))
+                                    {
+                                        kv->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamid)));
+                                    }
+                                }
                             }
                             else if (!Q_strcmp(j->key, "personaname"))
                             {
-                                kv->SetString("personaname", j->value.toString());
+                                // This is the name the player had when the run was completed, not the one currently
+                                kv->SetString("personaname_onruntime", j->value.toString());
                             }
                             else if (!Q_strcmp(j->key, "rank"))
                             {
@@ -838,6 +863,16 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
     }
 }
 
+void CClientTimesDisplay::UpdateLeaderboardPlayerAvatar(uint64 steamid, KeyValues *kv)
+{
+    // Update their avatar
+    if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())
+    {
+
+        kv->SetInt("avatar", TryAddAvatar(CSteamID(steamid)));
+    }
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: reload the player list on the scoreboard
 //-----------------------------------------------------------------------------
@@ -945,7 +980,23 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards()
     if (m_vOnlineTimes.Count() > 0 && m_pOnlineLeaderboards)
     {
         FOR_EACH_VEC(m_vOnlineTimes, entry)
-        {           
+        {
+            // We set the current personaname before anything...
+            // Find method is not being nice, so we craft our own
+            //int mId = m_mSIdNames.Find(m_vOnlineTimes.Element(entry).steamid);
+            FOR_EACH_MAP_FAST(m_umMapNames, mIter)
+            {
+                if (m_umMapNames.Key(mIter) == m_vOnlineTimes.Element(entry).steamid)
+                {
+                    const char * personaname = m_umMapNames.Element(mIter);
+                    if (Q_strcmp(personaname, "") != 0)
+                    {
+                        m_vOnlineTimes.Element(entry).m_kv->SetString("personaname", personaname);
+                    }
+                    break;
+                }
+            }
+
             int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry).id);
             if (itemID == -1)
             {
@@ -1072,13 +1123,72 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 {
     int itemID = pData->GetInt("itemID", -1);
     Panel *pPanel = static_cast<Panel*>(pData->GetPtr("SubPanel", nullptr));
-
-    KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
-    char recordingName[MAX_PATH];
-    Q_snprintf(recordingName, MAX_PATH, "%i-%f", selectedRun->GetInt("date_t"), selectedRun->GetFloat("time_f"));
-
-    if (pPanel->GetParent())
+    if (pPanel && pPanel->GetParent())
     {
-        GetLeaderboardReplayContextMenu(pPanel->GetParent())->ShowMenu(this, recordingName);
+        if (pPanel->GetParent() == m_pLocalLeaderboards && m_pLocalLeaderboards->IsItemIDValid(itemID))
+        {
+            KeyValues * selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
+            char recordingName[MAX_PATH];
+            Q_snprintf(recordingName, MAX_PATH, "%i-%f", selectedRun->GetInt("date_t"), selectedRun->GetFloat("time_f"));
+
+            CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pPanel->GetParent());
+            pContextMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", new KeyValues("ContextWatchReplay", "runName", recordingName), this);
+            pContextMenu->ShowMenu();
+        }
+        else if (pPanel->GetParent() == m_pOnlineLeaderboards && m_pOnlineLeaderboards->IsItemIDValid(itemID))
+        {
+            CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pPanel->GetParent());
+            KeyValues *pKv = new KeyValues("ContextVisitProfile");
+            pKv->SetUint64("profile", m_pOnlineLeaderboards->GetItemData(itemID)->GetUint64("steamid"));
+            pContextMenu->AddMenuItem("VisitProfile", "Steam Profile", pKv, this);
+            pContextMenu->ShowMenu();
+        }
     }
+}
+
+void CClientTimesDisplay::OnContextVisitProfile(uint64 profile)
+{
+    if (profile != 0 && steamapicontext && steamapicontext->SteamFriends())
+    {
+        steamapicontext->SteamFriends()->ActivateGameOverlayToUser("steamid", CSteamID(profile));
+    }
+}
+
+void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
+{
+    if (pParam->m_nChangeFlags & k_EPersonaChangeName)
+    {
+        m_umMapNames.InsertOrReplace(pParam->m_ulSteamID, steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pParam->m_ulSteamID)));
+    }
+}
+
+int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
+{
+    // Update their avatar
+    if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())
+    {
+        CSteamID sID = CSteamID(steamid);
+        // See if we already have that avatar in our list
+
+        int iMapIndex = m_mapAvatarsToImageList.Find(sID);
+        int iImageIndex;
+        if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
+        {
+            CAvatarImage *pImage = new CAvatarImage();
+            // 64 is enough up to full HD resolutions.
+            pImage->SetAvatarSteamID(sID, k_EAvatarSize64x64);
+            pImage->SetAvatarSize(64, 64);	// Deliberately non scaling
+            pImage->UpdateFriendStatus();
+            pImage->SetDrawFriend(false);
+            iImageIndex = m_pImageList->AddImage(pImage);
+            m_mapAvatarsToImageList.Insert(steamid, iImageIndex);
+        }
+        else
+        {
+            iImageIndex = m_mapAvatarsToImageList[iMapIndex];
+            return false;
+        }
+        return iImageIndex;
+    }
+    return -1;
 }

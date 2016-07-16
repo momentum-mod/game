@@ -85,13 +85,19 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     virtual void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
 
+    void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
+
     CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
 
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);//Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
+    MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
 
+    STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
+
+    int TryAddAvatar(CSteamID);
 
     // functions to override
     virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
@@ -177,21 +183,17 @@ private:
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline
     {
-        int rank, id;
+        int rank, id, avatar;
         float time_sec, rate;
         uint64 steamid;
         time_t date;
         const char* personaname;
 
         // entry
-        // -steamid
-        // -personaname
         // -rank
-        // -time
-        // -time_f
-        // -rate
-        // -date
-        // -id
+        // -avatar
+        // -personaname
+        // -steamid
         KeyValues *m_kv;
 
         
@@ -213,6 +215,8 @@ private:
             m_kv->SetString("date", kv->GetString("date", "0"));
             steamid = kv->GetUint64("steamid", 0);
             m_kv->SetUint64("steamid", steamid);
+            avatar = kv->GetInt("avatar", 0);
+            m_kv->SetInt("avatar", avatar);
             m_kv->SetString("personaname", kv->GetString("personaname", "Unknown"));
         };
     };
@@ -241,5 +245,7 @@ private:
 
 
     CReplayContextMenu *m_pLeaderboardReplayCMenu;
+
+    CUtlMap<uint64, const char*> m_umMapNames;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H

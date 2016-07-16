@@ -18,7 +18,7 @@ public:
     ~CReplayContextMenu();
 
     // call this to Activate the menu
-    void ShowMenu( vgui::Panel *target, const char *runName);
+    void ShowMenu();
     void OnCursorExitedMenuItem(int vpanel) override;
     // This one works weird, so using OnCurosExitedMenuItem until we figure how it works
     //void OnCursorExited() override;
