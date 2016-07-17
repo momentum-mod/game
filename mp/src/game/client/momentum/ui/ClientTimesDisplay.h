@@ -103,10 +103,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
     virtual void InitScoreboardSections();
     virtual void UpdateTeamInfo();
-    virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo);
+    virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() override;
     virtual void AddHeader(vgui::Label *pMapSummary);      // add the start header of the scoreboard
-    virtual void AddSection(int teamType, int teamNumber); // add a new section header for a team
     virtual int GetAdditionalHeight() { return 0; }
 
     // sorts players within a section
@@ -142,6 +141,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Label *m_lPlayerName;
     vgui::Label *m_lPlayerMapRank;
     vgui::Label *m_lPlayerGlobalRank;
+    vgui::Label *m_lPlayerPersonaBest;
+    vgui::Label *m_lLoadingOnlineTimes;
     vgui::SectionedListPanel *m_pOnlineLeaderboards;
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
@@ -160,12 +161,21 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // Online API Pre-Alpha functions
     void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
+    void GetGetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetGetPlayerDataForMapCallback;
+
     void CreateAndSendHTTPReq(const char*, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>*,
         CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
 
 private:
     int			m_iPlayerIndexSymbol;
     int			m_iDesiredHeight;
+
+    float       m_fMinHeaderUpdateInterval;
+    float       m_fMaxHeaderUpdateInterval;
+    float       m_fLastHeaderUpdate;
+    bool        m_bFirstUpdate;
+
     IViewPort	*m_pViewPort;
     ButtonCode_t m_nCloseKey;
     struct Time

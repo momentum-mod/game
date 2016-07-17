@@ -83,6 +83,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_lPlayerName = FindControl<Label>("PlayerName", true);
     m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
     m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
+    m_lPlayerPersonaBest = FindControl<Label>("PlayerPersonalBest", true);
+    m_lLoadingOnlineTimes = FindControl<Label>("LoadingOnlineTimes", true);
     m_pLeaderboards = FindControl<Panel>("Leaderboards", true);
     m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineLeaderboards", true);
     m_pLocalLeaderboards = FindControl<SectionedListPanel>("LocalLeaderboards", true);
@@ -90,7 +92,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 
     if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName || !m_pMomentumLogo ||
         !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards ||
-        !m_pLocalLeaderboards || !m_pFriendsLeaderboards)
+        !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_lPlayerPersonaBest || !m_lLoadingOnlineTimes)
     {
         Assert("Null pointer(s) on scoreboards");
     }
@@ -105,7 +107,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_lPlayerName->SetParent(m_pPlayerStats);
     m_lPlayerMapRank->SetParent(m_pPlayerStats);
     m_lPlayerGlobalRank->SetParent(m_pPlayerStats);
+    m_lPlayerPersonaBest->SetParent(m_pPlayerStats);
     m_pOnlineLeaderboards->SetParent(m_pLeaderboards);
+    m_lLoadingOnlineTimes->SetParent(m_pLeaderboards);
     m_pLocalLeaderboards->SetParent(m_pLeaderboards);
     m_pFriendsLeaderboards->SetParent(m_pLeaderboards);
 
@@ -132,6 +136,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 
     m_iDesiredHeight = GetTall();
     m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
+    m_lLoadingOnlineTimes->SetVisible(false);
 
     // update scoreboard instantly if on of these events occur
     ListenForGameEvent("run_save");
@@ -143,6 +148,12 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pImageList = nullptr;
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
+
+    m_fLastHeaderUpdate = 0;
+    m_fMaxHeaderUpdateInterval = 45;
+    m_fMinHeaderUpdateInterval = 15;
+
+    m_bFirstUpdate = true;
 
     m_umMapNames.SetLessFunc(PNamesMapLessFunc);
 }
@@ -438,6 +449,9 @@ void CClientTimesDisplay::Update(bool pFullUpdate)
     // we don't need to update this too often. (Player is not finishing a run every second, so...)
 
     m_fNextUpdateTime = gpGlobals->curtime + 3.0f;
+
+    // This starts as true on the constructor.
+    m_bFirstUpdate = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -451,7 +465,7 @@ void CClientTimesDisplay::UpdateTeamInfo()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv)
+void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
 {
     m_iSectionId = 0; // 0'th row is a header
 
@@ -466,12 +480,40 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv)
     char newName[MAX_PLAYER_NAME_LENGTH];
     UTIL_MakeSafeName(oldName, newName, MAX_PLAYER_NAME_LENGTH);
     playerData->SetString("name", newName);
+    // What this if is:
+    // We want to do a full update if (we ask for it with fullUpdate boolean AND (the minimum time has passed OR it is the first update)) OR the maximum time has passed
+    if ((fullUpdate && (gpGlobals->curtime - m_fLastHeaderUpdate >= m_fMinHeaderUpdateInterval || m_bFirstUpdate)) || gpGlobals->curtime - m_fLastHeaderUpdate >= m_fMaxHeaderUpdateInterval)
+    {
+        // MOM_TODO: Get real data from the API
+        char p_sCalculating[BUFSIZELOCL];
+        char p_sWaitingResponse[BUFSIZELOCL];
+        LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);     
+        LOCALIZE_TOKEN(p_wcWaitingResponse, "MOM_API_WaitingForResponse", p_sWaitingResponse);
 
-    // MOM_TODO: Get real data from the API
-    playerData->SetInt("globalRank", -1);
-    playerData->SetInt("globalCount", -1);
-    playerData->SetInt("mapRank", -1);
-    playerData->SetInt("mapCount", -1);
+        char p_sMapRank[BUFSIZELOCL];
+        char p_sGlobalRank[BUFSIZELOCL];
+        char p_sPersonalBest[BUFSIZELOCL];
+        
+        char mrLocalized[BUFSIZELOCL];
+        char grLocalized[BUFSIZELOCL];
+        char pbLocalized[BUFSIZELOCL];
+
+        LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
+        LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
+        LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
+
+        Q_snprintf(mrLocalized, BUFSIZELOCL, "%s: %s", p_sMapRank, p_sCalculating);
+        Q_snprintf(grLocalized, BUFSIZELOCL, "%s: %s", p_sGlobalRank, p_sCalculating);
+        Q_snprintf(pbLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sWaitingResponse);
+        m_lPlayerMapRank->SetText(mrLocalized);
+        m_lPlayerGlobalRank->SetText(grLocalized);
+        m_lPlayerPersonaBest->SetText(pbLocalized);
+
+        char requrl[MAX_PATH];
+        // Mapname, tickrate, rank, radius
+        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getusermaprank/%s/%llu", g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+        CreateAndSendHTTPReq(requrl, &cbGetGetPlayerDataForMapCallback, &CClientTimesDisplay::GetGetPlayerDataForMapCallback);
+    }
 
     kv->AddSubKey(playerData);
 }
@@ -488,26 +530,27 @@ void CClientTimesDisplay::AddHeader(Label *pMapSummary)
     if (pMapSummary)
     {
         char gameMode[5];
-        ConVarRef gm("mom_gamemode");
-        if (gm.GetInt() == MOMGM_SURF)
-            Q_strcpy(gameMode, "SURF");
-        else if (gm.GetInt() == MOMGM_BHOP)
-            Q_strcpy(gameMode, "BHOP");
-        else if (gm.GetInt() == MOMGM_SCROLL)
-            Q_strcpy(gameMode, "SCROLL");
-        else
-            Q_strcpy(gameMode, "????");
+        switch (ConVarRef("mom_gamemode").GetInt())
+        {
+        case MOMGM_SURF:
+                Q_strcpy(gameMode, "SURF");
+                break;
+        case MOMGM_BHOP:
+                Q_strcpy(gameMode, "BHOP");
+                break;
+        case MOMGM_SCROLL:
+                Q_strcpy(gameMode, "SCROLL");
+                break;
+        default:
+                Q_strcpy(gameMode, "????");
+                break;
+        }
 
-        char mapSummary[64];
+        char mapSummary[BUFSIZELOCL];
         Q_snprintf(mapSummary, 64, "%s | %s", gameMode, g_pGameRules->MapName());
         pMapSummary->SetText(mapSummary);
     }
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: Adds a new section to the scoreboard (i.e the team header)
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::AddSection(int teamType, int teamNumber) {}
 
 //-----------------------------------------------------------------------------
 // Purpose: Used for sorting local times
@@ -700,6 +743,11 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
             {
                 // By now we're pretty sure everything will be ok, so we can do this
                 m_vOnlineTimes.RemoveAll();
+                if (m_pOnlineLeaderboards && m_lLoadingOnlineTimes)
+                {
+                    m_pOnlineLeaderboards->SetVisible(false);
+                    m_lLoadingOnlineTimes->SetVisible(true);
+                }
                 for (auto i : oval)
                 {
                     if (i->value.getTag() == JSON_OBJECT)
@@ -707,11 +755,11 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                         KeyValues *kv = new KeyValues("entry");
                         for (auto j : i->value)
                         {
-                            if (!Q_strcmp(j->key, "time"))
+                            if (!Q_strcmp(j->key, "time") && j->value.getTag() == JSON_NUMBER)
                             {
                                 kv->SetFloat("time", j->value.toNumber());
                             }
-                            else if (!Q_strcmp(j->key, "steamid"))
+                            else if (!Q_strcmp(j->key, "steamid") && j->value.getTag() == JSON_STRING)
                             {
                                 uint64 steamid = Q_atoui64(j->value.toString());
                                 kv->SetUint64("steamid", steamid);
@@ -734,16 +782,25 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                                     }
                                 }
                             }
-                            else if (!Q_strcmp(j->key, "personaname"))
+                            else if (!Q_strcmp(j->key, "personaname") && j->value.getTag() == JSON_STRING)
                             {
                                 // This is the name the player had when the run was completed, not the one currently
                                 kv->SetString("personaname_onruntime", j->value.toString());
                             }
                             else if (!Q_strcmp(j->key, "rank"))
                             {
-                                // MOM_TODO: Implement
+                                if (j->value.getTag() == JSON_NUMBER)
+                                {
+                                    kv->SetInt("rank", j->value.toNumber());
+                                }
+                                else
+                                {
+                                    char p_sCalculating[BUFSIZELOCL];
+                                    LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);
+                                    kv->SetString("rank", p_sCalculating);
+                                }
                             }
-                            else if (!Q_strcmp(j->key, "rate"))
+                            else if (!Q_strcmp(j->key, "rate") && j->value.getTag() == JSON_NUMBER)
                             {
                                 kv->SetInt("rate", j->value.toNumber());
                             }
@@ -751,7 +808,7 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                             {
                                 // MOM_TODO: Implement.
                             }
-                            else if (!Q_strcmp(j->key, "id"))
+                            else if (!Q_strcmp(j->key, "id") && j->value.getTag() == JSON_NUMBER)
                             {
                                 kv->SetInt("id", j->value.toNumber());
                             }
@@ -771,6 +828,100 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     else
     {
         Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
+    // Last but not least, free resources
+    alloc.deallocate();
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+}
+
+void CClientTimesDisplay::GetGetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+    Warning("Callback received.\n");
+    if (bIOFailure)
+        return;
+
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            JsonValue oval = val.toNode()->value;
+            if (oval.getTag() == JSON_ARRAY)
+            {
+                if (JsonNode *i = oval.toNode())
+                {
+                    int rank = -1;
+                    int total = -1;
+                    float seconds = 0;
+                    if (i->value.getTag() == JSON_OBJECT)
+                    {
+                        for (auto j : i->value)
+                        {
+                            if (!Q_strcmp(j->key, "run") && j->value.getTag() == JSON_OBJECT)
+                            {
+                                for (auto k : j->value)
+                                {
+                                    if (!Q_strcmp(k->key, "rank") && k->value.getTag() == JSON_NUMBER)
+                                    {
+                                        rank = k->value.toNumber();
+                                    }
+                                    else if (!Q_strcmp(k->key, "time") && k->value.getTag() == JSON_NUMBER)
+                                    {
+                                        seconds = k->value.toNumber();
+                                    }
+                                }
+                            }
+                            else if (!Q_strcmp(j->key, "total") && j->value.getTag() == JSON_NUMBER)
+                            {
+                                total = j->value.toNumber();
+                            }
+                        } 
+                    }
+                    if (rank > -1)
+                    {
+                        char p_sMapRank[BUFSIZELOCL];
+                        char p_sLocalized[BUFSIZELOCL];
+                        LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
+                        Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sMapRank, rank, total);
+                        m_lPlayerMapRank->SetText(p_sLocalized);
+                    }
+                    if (seconds > 0)
+                    {
+                        char p_sPersonalBestTime[BUFSIZETIME];
+                        char p_sPersonalBest[BUFSIZELOCL];
+                        char p_sLocalized[BUFSIZELOCL];
+                        mom_UTIL->FormatTime(seconds, p_sPersonalBestTime);
+                        LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
+                        Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sPersonalBestTime);
+                        m_lPlayerPersonaBest->SetText(p_sLocalized);
+                    }
+                    /*char globalRank[BUFSIZELOCL];
+                    char grLocalized[BUFSIZELOCL];
+                    LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", globalRank);
+
+                    Q_snprintf(globalRank, 50, "%s: %i/%i", grLocalized, playdata->GetInt("globalRank", -1),
+                    playdata->GetInt("globalCount", -1));
+                    m_lPlayerGlobalRank->SetText(globalRank);*/
+                    m_fLastHeaderUpdate = gpGlobals->curtime;
+                }
+            }
+        }
+    }
+    else
+    {
+            Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
     }
     // Last but not least, free resources
     alloc.deallocate();
@@ -872,8 +1023,9 @@ void CClientTimesDisplay::FillScoreBoard()
 
 void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
 {
+
     KeyValues *m_kvPlayerData = new KeyValues("playdata");
-    UpdatePlayerInfo(m_kvPlayerData);
+    UpdatePlayerInfo(m_kvPlayerData, pFullUpdate);
     if (pFullUpdate)
         AddHeader(m_lMapSummary);
 
@@ -897,26 +1049,6 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
                 m_pPlayerAvatar->GetImage()->SetSize(scheme()->GetProportionalScaledValue(32),
                                                      scheme()->GetProportionalScaledValue(32));
             }
-
-            char mapRank[50];
-            char mrLocalized[50];
-            wchar_t *uMapRankUnicode = g_pVGuiLocalize->Find("#MOM_MapRank");
-            // If localization is not found, we fall back to english!
-            g_pVGuiLocalize->ConvertUnicodeToANSI(uMapRankUnicode ? uMapRankUnicode : L"Map Rank", mrLocalized, 50);
-
-            Q_snprintf(mapRank, 50, "%s: %i/%i", mrLocalized, playdata->GetInt("mapRank", -1),
-                       playdata->GetInt("mapCount", -1));
-            m_lPlayerMapRank->SetText(mapRank);
-
-            char globalRank[50];
-            char grLocalized[50];
-            wchar_t *wGlobalLocal = g_pVGuiLocalize->Find("#MOM_GlobalRank");
-            // If localization is not found, we fall back to english!
-            g_pVGuiLocalize->ConvertUnicodeToANSI(wGlobalLocal ? wGlobalLocal : L"Global Rank", grLocalized, 50);
-
-            Q_snprintf(globalRank, 50, "%s: %i/%i", grLocalized, playdata->GetInt("globalRank", -1),
-                       playdata->GetInt("globalCount", -1));
-            m_lPlayerGlobalRank->SetText(globalRank);
         }
         m_pPlayerStats->SetVisible(true); // And seen again!
     }
@@ -997,6 +1129,11 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards()
             {
                 m_pOnlineLeaderboards->ModifyItem(itemID, m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
             }
+        }
+        if (m_pOnlineLeaderboards && m_lLoadingOnlineTimes)
+        {
+            m_pOnlineLeaderboards->SetVisible(true);
+            m_lLoadingOnlineTimes->SetVisible(false);
         }
     }
 }
@@ -1179,7 +1316,6 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
         else
         {
             iImageIndex = m_mapAvatarsToImageList[iMapIndex];
-            return false;
         }
         return iImageIndex;
     }
