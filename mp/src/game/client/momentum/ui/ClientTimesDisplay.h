@@ -31,7 +31,9 @@
 
 #define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
 
-
+#define DELAY_NEXT_UPDATE 10.0f // Delay for the next API update, in seconds
+#define MIN_ONLINE_UPDATE_INTERVAL 15.0f //The amount of seconds minimum between online checks
+#define MAX_ONLINE_UPDATE_INTERVAL 45.0f //The amount of seconds maximum between online checks
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
@@ -100,7 +102,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     int TryAddAvatar(CSteamID);
 
     // functions to override
-    virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
+    virtual bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
     virtual void InitScoreboardSections();
     virtual void UpdateTeamInfo();
     virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
@@ -171,10 +173,11 @@ private:
     int			m_iPlayerIndexSymbol;
     int			m_iDesiredHeight;
 
-    float       m_fMinHeaderUpdateInterval;
-    float       m_fMaxHeaderUpdateInterval;
     float       m_fLastHeaderUpdate;
-    bool        m_bFirstUpdate;
+    bool        m_bFirstHeaderUpdate;
+
+    float m_flLastOnlineTimeUpdate;
+    bool m_bFirstOnlineTimesUpdate;
 
     IViewPort	*m_pViewPort;
     ButtonCode_t m_nCloseKey;
@@ -209,8 +212,7 @@ private:
         
         explicit TimeOnline(KeyValues* kv)
         {
-            // MOM_TODO: Uh.. Memory leak?
-            m_kv = new KeyValues("entry");
+            m_kv = new KeyValues("OnlineTime");
             id = kv->GetInt("id", -1);
             m_kv->SetInt("id", id);
             rank = kv->GetInt("rank", 0);
@@ -229,6 +231,14 @@ private:
             m_kv->SetInt("avatar", avatar);
             m_kv->SetString("personaname", kv->GetString("personaname", "Unknown"));
         };
+
+        ~TimeOnline() 
+        {
+            if (m_kv)
+                m_kv->deleteThis();
+            m_kv = nullptr;
+            personaname = nullptr;
+        }
     };
 
     CUtlVector<Time> m_vLocalTimes;

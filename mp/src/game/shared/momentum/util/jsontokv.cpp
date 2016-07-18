@@ -70,7 +70,7 @@ KeyValues *CJsonToKeyValues::MapNode(JsonNode *node)
             //Add it to our parent
             pNodeValues->AddSubKey(pSub);
             //Iterate through it
-            MapNode(i, pSub);
+            MapNode(i->value.toNode(), pSub);
         }
         else 
         {

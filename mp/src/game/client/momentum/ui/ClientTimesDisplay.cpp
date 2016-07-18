@@ -37,6 +37,7 @@
 #include "util\mom_util.h"
 #include "vgui_avatarimage.h"
 #include <time.h>
+#include <util/jsontokv.h>
 
 extern IFileSystem *filesystem;
 
@@ -149,11 +150,11 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
     m_mapAvatarsToImageList.RemoveAll();
 
-    m_fLastHeaderUpdate = 0;
-    m_fMaxHeaderUpdateInterval = 45;
-    m_fMinHeaderUpdateInterval = 15;
+    m_fLastHeaderUpdate = 0.0f;
+    m_flLastOnlineTimeUpdate = 0.0f;
 
-    m_bFirstUpdate = true;
+    m_bFirstHeaderUpdate = true;
+    m_bFirstOnlineTimesUpdate = true;
 
     m_umMapNames.SetLessFunc(PNamesMapLessFunc);
 }
@@ -445,13 +446,13 @@ void CClientTimesDisplay::Update(bool pFullUpdate)
 
     MoveToCenterOfScreen();
 
-    // update every second
+    // update every X seconds
     // we don't need to update this too often. (Player is not finishing a run every second, so...)
-
-    m_fNextUpdateTime = gpGlobals->curtime + 3.0f;
+    m_fNextUpdateTime = gpGlobals->curtime + DELAY_NEXT_UPDATE;
 
     // This starts as true on the constructor.
-    m_bFirstUpdate = false;
+    m_bFirstHeaderUpdate = false;
+    m_bFirstOnlineTimesUpdate = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -482,7 +483,8 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
     playerData->SetString("name", newName);
     // What this if is:
     // We want to do a full update if (we ask for it with fullUpdate boolean AND (the minimum time has passed OR it is the first update)) OR the maximum time has passed
-    if ((fullUpdate && (gpGlobals->curtime - m_fLastHeaderUpdate >= m_fMinHeaderUpdateInterval || m_bFirstUpdate)) || gpGlobals->curtime - m_fLastHeaderUpdate >= m_fMaxHeaderUpdateInterval)
+    if ((fullUpdate && (gpGlobals->curtime - m_fLastHeaderUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstHeaderUpdate)) 
+        || gpGlobals->curtime - m_fLastHeaderUpdate >= MAX_ONLINE_UPDATE_INTERVAL)
     {
         // MOM_TODO: Get real data from the API
         char p_sCalculating[BUFSIZELOCL];
@@ -511,7 +513,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
 
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getusermaprank/%s/%llu", g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+        Q_snprintf(requrl, MAX_PATH, "http://sitehere/getusermaprank/%s/%llu", g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         CreateAndSendHTTPReq(requrl, &cbGetGetPlayerDataForMapCallback, &CClientTimesDisplay::GetGetPlayerDataForMapCallback);
     }
 
@@ -683,9 +685,10 @@ void CClientTimesDisplay::LoadOnlineTimes()
     {
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getscores/%s", g_pGameRules->MapName());
+        Q_snprintf(requrl, MAX_PATH, "http://sitehere/getscores/%s", g_pGameRules->MapName());
         // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
+        m_bOnlineNeedUpdate = false;
     }
 }
 
@@ -721,8 +724,15 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     if (bIOFailure)
         return;
 
-    uint32 size;
+    uint32 size = 0;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+
+    if (size < 1)
+    {
+        Warning("GetOnlineTimesCallback: size < 1 !!");
+        return;
+    }
+
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
@@ -738,8 +748,13 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
         DevLog("JSON Parsed!\n");
         if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
         {
-            JsonValue oval = val.toNode()->value;
-            if (oval.getTag() == JSON_ARRAY)
+            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
+            CKeyValuesDumpContextAsDevMsg dev;
+            pResponse->Dump(&dev, 1);
+            KeyValues::AutoDelete ad(pResponse);
+            KeyValues *pRuns = pResponse->FindKey("runs");
+
+            if (pRuns && !pRuns->IsEmpty())
             {
                 // By now we're pretty sure everything will be ok, so we can do this
                 m_vOnlineTimes.RemoveAll();
@@ -748,85 +763,76 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                     m_pOnlineLeaderboards->SetVisible(false);
                     m_lLoadingOnlineTimes->SetVisible(true);
                 }
-                for (auto i : oval)
+
+                // Iterate through each loaded run
+                FOR_EACH_SUBKEY(pRuns, pRun)
                 {
-                    if (i->value.getTag() == JSON_OBJECT)
+                    KeyValues *kvEntry = new KeyValues("Entry");
+                    //Time is handled by the converter
+                    kvEntry->SetFloat("time", pRun->GetFloat("time"));
+
+                    //SteamID, Avatar, and Persona Name
+                    uint64 steamID = Q_atoui64(pRun->GetString("steamid"));
+                    kvEntry->SetUint64("steamid", steamID);
+                    if (steamapicontext->SteamFriends())
                     {
-                        KeyValues *kv = new KeyValues("entry");
-                        for (auto j : i->value)
+                        //These handle setting "avatar" for kvEntry
+                        if (GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64() == steamID)
                         {
-                            if (!Q_strcmp(j->key, "time") && j->value.getTag() == JSON_NUMBER)
-                            {
-                                kv->SetFloat("time", j->value.toNumber());
-                            }
-                            else if (!Q_strcmp(j->key, "steamid") && j->value.getTag() == JSON_STRING)
-                            {
-                                uint64 steamid = Q_atoui64(j->value.toString());
-                                kv->SetUint64("steamid", steamid);
-                                if (steamapicontext && steamapicontext->SteamFriends())
-                                {
-                                    if (GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64() == steamid)
-                                    {
-                                        UpdatePlayerAvatar(GetLocalPlayerIndex(), kv);
-                                    }
-                                    else
-                                    {
-                                        UpdateLeaderboardPlayerAvatar(steamid, kv);
-                                    }
-                                    if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamid),
-                                                                                                 true))
-                                    {
-                                        kv->SetString(
-                                            "personaname",
-                                            steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamid)));
-                                    }
-                                }
-                            }
-                            else if (!Q_strcmp(j->key, "personaname") && j->value.getTag() == JSON_STRING)
-                            {
-                                // This is the name the player had when the run was completed, not the one currently
-                                kv->SetString("personaname_onruntime", j->value.toString());
-                            }
-                            else if (!Q_strcmp(j->key, "rank"))
-                            {
-                                if (j->value.getTag() == JSON_NUMBER)
-                                {
-                                    kv->SetInt("rank", j->value.toNumber());
-                                }
-                                else
-                                {
-                                    char p_sCalculating[BUFSIZELOCL];
-                                    LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);
-                                    kv->SetString("rank", p_sCalculating);
-                                }
-                            }
-                            else if (!Q_strcmp(j->key, "rate") && j->value.getTag() == JSON_NUMBER)
-                            {
-                                kv->SetInt("rate", j->value.toNumber());
-                            }
-                            else if (!Q_strcmp(j->key, "date"))
-                            {
-                                // MOM_TODO: Implement.
-                            }
-                            else if (!Q_strcmp(j->key, "id") && j->value.getTag() == JSON_NUMBER)
-                            {
-                                kv->SetInt("id", j->value.toNumber());
-                            }
+                            UpdatePlayerAvatar(GetLocalPlayerIndex(), kvEntry);
                         }
-                        TimeOnline ot = TimeOnline(kv);
-                        ConvertOnlineTimes(ot.m_kv, ot.time_sec);
-                        kv->deleteThis();
-                        m_vOnlineTimes.AddToTail(ot);
+                        else
+                        {
+                            UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
+                        }
+
+                        //persona name
+                        if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamID), true))
+                        {
+                            kvEntry->SetString(
+                                "personaname",
+                                steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamID)));
+                        }
                     }
+
+                    //Persona name for the time they accomplished the run
+                    kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname"));
+
+                    //Rank
+                    kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
+                    //MOM_TODO: Implement the other end of this (rank is not a number)
+
+                    //Tickrate
+                    kvEntry->SetInt("rate", static_cast<int>(pRun->GetFloat("rate")));
+
+                    //Date
+                    kvEntry->SetString("date", pRun->GetString("date"));
+
+                    //ID
+                    kvEntry->SetInt("id", static_cast<int>(pRun->GetFloat("id")));
+
+                    //Add this baby to the online times vector
+                    TimeOnline ot = TimeOnline(kvEntry);
+                    //Convert the time to 
+                    ConvertOnlineTimes(ot.m_kv, ot.time_sec);
+                    m_vOnlineTimes.AddToTail(ot);
                 }
+
                 // If we're here and no errors happened, then we can assume times were loaded
                 m_bOnlineTimesLoaded = true;
                 m_bOnlineNeedUpdate = false;
+
+                m_flLastOnlineTimeUpdate = gpGlobals->curtime;
+            }
+            else
+            {
+                m_bOnlineTimesLoaded = false;
             }
         }
     }
     else
     {
+        m_bOnlineTimesLoaded = false;
         Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
     }
     // Last but not least, free resources
@@ -857,66 +863,48 @@ void CClientTimesDisplay::GetGetPlayerDataForMapCallback(HTTPRequestCompleted_t 
         DevLog("JSON Parsed!\n");
         if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
         {
-            JsonValue oval = val.toNode()->value;
-            if (oval.getTag() == JSON_ARRAY)
-            {
-                if (JsonNode *i = oval.toNode())
-                {
-                    int rank = -1;
-                    int total = -1;
-                    float seconds = 0;
-                    if (i->value.getTag() == JSON_OBJECT)
-                    {
-                        for (auto j : i->value)
-                        {
-                            if (!Q_strcmp(j->key, "run") && j->value.getTag() == JSON_OBJECT)
-                            {
-                                for (auto k : j->value)
-                                {
-                                    if (!Q_strcmp(k->key, "rank") && k->value.getTag() == JSON_NUMBER)
-                                    {
-                                        rank = k->value.toNumber();
-                                    }
-                                    else if (!Q_strcmp(k->key, "time") && k->value.getTag() == JSON_NUMBER)
-                                    {
-                                        seconds = k->value.toNumber();
-                                    }
-                                }
-                            }
-                            else if (!Q_strcmp(j->key, "total") && j->value.getTag() == JSON_NUMBER)
-                            {
-                                total = j->value.toNumber();
-                            }
-                        } 
-                    }
-                    if (rank > -1)
-                    {
-                        char p_sMapRank[BUFSIZELOCL];
-                        char p_sLocalized[BUFSIZELOCL];
-                        LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
-                        Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sMapRank, rank, total);
-                        m_lPlayerMapRank->SetText(p_sLocalized);
-                    }
-                    if (seconds > 0)
-                    {
-                        char p_sPersonalBestTime[BUFSIZETIME];
-                        char p_sPersonalBest[BUFSIZELOCL];
-                        char p_sLocalized[BUFSIZELOCL];
-                        mom_UTIL->FormatTime(seconds, p_sPersonalBestTime);
-                        LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
-                        Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sPersonalBestTime);
-                        m_lPlayerPersonaBest->SetText(p_sLocalized);
-                    }
-                    /*char globalRank[BUFSIZELOCL];
-                    char grLocalized[BUFSIZELOCL];
-                    LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", globalRank);
+            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
 
-                    Q_snprintf(globalRank, 50, "%s: %i/%i", grLocalized, playdata->GetInt("globalRank", -1),
-                    playdata->GetInt("globalCount", -1));
-                    m_lPlayerGlobalRank->SetText(globalRank);*/
-                    m_fLastHeaderUpdate = gpGlobals->curtime;
-                }
+            CKeyValuesDumpContextAsDevMsg dev;
+            pResponse->Dump(&dev);
+
+            int rank = -1;
+            int total = static_cast<int>(pResponse->GetFloat("total", -1.0f));
+            float seconds = 0.0f;
+
+            KeyValues *pRun = pResponse->FindKey("run");
+            if (pRun)
+            {
+                rank = static_cast<int>(pRun->GetFloat("rank"));
+                seconds = pRun->GetFloat("time");
             }
+
+            if (rank > -1)
+            {
+                char p_sMapRank[BUFSIZELOCL];
+                char p_sLocalized[BUFSIZELOCL];
+                LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
+                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sMapRank, rank, total);
+                m_lPlayerMapRank->SetText(p_sLocalized);
+            }
+            if (seconds > 0.0f)
+            {
+                char p_sPersonalBestTime[BUFSIZETIME];
+                char p_sPersonalBest[BUFSIZELOCL];
+                char p_sLocalized[BUFSIZELOCL];
+                mom_UTIL->FormatTime(seconds, p_sPersonalBestTime);
+                LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
+                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sPersonalBestTime);
+                m_lPlayerPersonaBest->SetText(p_sLocalized);
+            }
+            /*char globalRank[BUFSIZELOCL];
+            char grLocalized[BUFSIZELOCL];
+            LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", globalRank);
+
+            Q_snprintf(globalRank, 50, "%s: %i/%i", grLocalized, playdata->GetInt("globalRank", -1),
+            playdata->GetInt("globalCount", -1));
+            m_lPlayerGlobalRank->SetText(globalRank);*/
+            m_fLastHeaderUpdate = gpGlobals->curtime;
         }
     }
     else
@@ -931,7 +919,7 @@ void CClientTimesDisplay::GetGetPlayerDataForMapCallback(HTTPRequestCompleted_t 
 //-----------------------------------------------------------------------------
 // Purpose: Updates the leaderboard lists
 //-----------------------------------------------------------------------------
-bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv)
+bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
 {
     ConVarRef gm("mom_gamemode");
     if (!kv || gm.GetInt() == MOMGM_ALLOWED)
@@ -945,8 +933,10 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv)
 
     pLeaderboards->AddSubKey(pLocal);
 
-    // Fill online times (global)
-    LoadOnlineTimes();
+    // Fill online times only if needed
+    if (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstOnlineTimesUpdate)
+        || gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL)
+        LoadOnlineTimes();
 
     KeyValues *pFriends = new KeyValues("friends");
     // MOM_TODO: Fill online times (friends)
@@ -1061,7 +1051,7 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
     // and on the GetPlayerTimes passthrough, we'd update the local times, which then gets stored in
     // the Panel object until next update
 
-    GetPlayerTimes(m_kvPlayerData);
+    GetPlayerTimes(m_kvPlayerData, pFullUpdate);
 
     if (m_pLeaderboards && m_pOnlineLeaderboards && m_pLocalLeaderboards && m_pFriendsLeaderboards && m_kvPlayerData &&
         !m_kvPlayerData->IsEmpty())
