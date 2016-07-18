@@ -208,43 +208,32 @@ private:
         // -personaname
         // -steamid
         KeyValues *m_kv;
-
         
         explicit TimeOnline(KeyValues* kv)
         {
-            m_kv = new KeyValues("OnlineTime");
+            m_kv = kv;
             id = kv->GetInt("id", -1);
-            m_kv->SetInt("id", id);
             rank = kv->GetInt("rank", 0);
-            m_kv->SetInt("rank", rank);
             time_sec = kv->GetFloat("time", -1);
-            m_kv->SetFloat("time", time_sec);
             personaname = kv->GetString("personaname", "Unknown");
-            m_kv->SetString("personaname", personaname);
             rate = kv->GetFloat("rate", 100);
-            m_kv->SetFloat("rate", rate);
             date = static_cast<time_t>(Q_atoi(kv->GetString("date", "0")));
-            m_kv->SetString("date", kv->GetString("date", "0"));
             steamid = kv->GetUint64("steamid", 0);
-            m_kv->SetUint64("steamid", steamid);
             avatar = kv->GetInt("avatar", 0);
-            m_kv->SetInt("avatar", avatar);
-            m_kv->SetString("personaname", kv->GetString("personaname", "Unknown"));
         };
 
-        // This causes the KV to be deleted somewhere before the data is displayed. So.. yeah
-        /*~TimeOnline() 
+        ~TimeOnline() 
         {
             if (m_kv)
                 m_kv->deleteThis();
             m_kv = nullptr;
             personaname = nullptr;
-        }*/
+        }
     };
 
     CUtlVector<Time> m_vLocalTimes;
     
-    CUtlVector<TimeOnline> m_vOnlineTimes;
+    CUtlVector<TimeOnline*> m_vOnlineTimes;
 
     bool m_bLocalTimesLoaded = false;
     bool m_bLocalTimesNeedUpdate = false;

@@ -757,7 +757,7 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
             if (pRuns && !pRuns->IsEmpty())
             {
                 // By now we're pretty sure everything will be ok, so we can do this
-                m_vOnlineTimes.RemoveAll();
+                m_vOnlineTimes.PurgeAndDeleteElements();
                 if (m_pOnlineLeaderboards && m_lLoadingOnlineTimes)
                 {
                     m_pOnlineLeaderboards->SetVisible(false);
@@ -812,9 +812,9 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                     kvEntry->SetInt("id", static_cast<int>(pRun->GetFloat("id")));
 
                     //Add this baby to the online times vector
-                    TimeOnline ot = TimeOnline(kvEntry);
-                    //Convert the time to 
-                    ConvertOnlineTimes(ot.m_kv, ot.time_sec);
+                    TimeOnline *ot = new TimeOnline(kvEntry);
+                    //Convert the time
+                    ConvertOnlineTimes(ot->m_kv, ot->time_sec);
                     m_vOnlineTimes.AddToTail(ot);
                 }
 
@@ -823,6 +823,8 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                 m_bOnlineNeedUpdate = false;
 
                 m_flLastOnlineTimeUpdate = gpGlobals->curtime;
+
+                Update();
             }
             else
             {
@@ -1099,25 +1101,25 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards()
             // int mId = m_mSIdNames.Find(m_vOnlineTimes.Element(entry).steamid);
             FOR_EACH_MAP_FAST(m_umMapNames, mIter)
             {
-                if (m_umMapNames.Key(mIter) == m_vOnlineTimes.Element(entry).steamid)
+                if (m_umMapNames.Key(mIter) == m_vOnlineTimes.Element(entry)->steamid)
                 {
                     const char *personaname = m_umMapNames.Element(mIter);
                     if (Q_strcmp(personaname, "") != 0)
                     {
-                        m_vOnlineTimes.Element(entry).m_kv->SetString("personaname", personaname);
+                        m_vOnlineTimes.Element(entry)->m_kv->SetString("personaname", personaname);
                     }
                     break;
                 }
             }
 
-            int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry).id);
+            int itemID = FindItemIDForOnlineTime(m_vOnlineTimes.Element(entry)->id);
             if (itemID == -1)
             {
-                m_pOnlineLeaderboards->AddItem(m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
+                m_pOnlineLeaderboards->AddItem(m_iSectionId, m_vOnlineTimes.Element(entry)->m_kv);
             }
             else
             {
-                m_pOnlineLeaderboards->ModifyItem(itemID, m_iSectionId, m_vOnlineTimes.Element(entry).m_kv);
+                m_pOnlineLeaderboards->ModifyItem(itemID, m_iSectionId, m_vOnlineTimes.Element(entry)->m_kv);
             }
         }
         if (m_pOnlineLeaderboards && m_lLoadingOnlineTimes)
