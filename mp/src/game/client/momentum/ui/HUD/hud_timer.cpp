@@ -230,6 +230,9 @@ void C_Timer::OnThink()
         C_MOMRunEntityData *runData;
         if (pGhost)
         {
+            m_bShowCheckpoints = false;
+            m_iCheckpointCurrent = 0;
+            m_iCheckpointCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
             m_bPlayerHasPracticeMode = false;
             runData = &pGhost->m_RunData;
