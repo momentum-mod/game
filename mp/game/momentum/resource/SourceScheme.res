@@ -122,7 +122,7 @@ Scheme
 		Menu.TextInset					"6"
 
 		Panel.FgColor					"Gray"
-		Panel.BgColor					"MOM.Panel.Bg"
+		Panel.BgColor					"Blank"
 
 		ProgressBar.FgColor				"White"
 		ProgressBar.BgColor				"MOM.Panel.Bg"
