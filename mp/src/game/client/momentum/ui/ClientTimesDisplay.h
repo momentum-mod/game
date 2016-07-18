@@ -232,13 +232,14 @@ private:
             m_kv->SetString("personaname", kv->GetString("personaname", "Unknown"));
         };
 
-        ~TimeOnline() 
+        // This causes the KV to be deleted somewhere before the data is displayed. So.. yeah
+        /*~TimeOnline() 
         {
             if (m_kv)
                 m_kv->deleteThis();
             m_kv = nullptr;
             personaname = nullptr;
-        }
+        }*/
     };
 
     CUtlVector<Time> m_vLocalTimes;
