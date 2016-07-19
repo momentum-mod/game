@@ -513,7 +513,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
 
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "http://sitehere/getusermaprank/%s/%llu", g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getusermaprank/%s/%llu", g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         CreateAndSendHTTPReq(requrl, &cbGetGetPlayerDataForMapCallback, &CClientTimesDisplay::GetGetPlayerDataForMapCallback);
     }
 
@@ -685,7 +685,7 @@ void CClientTimesDisplay::LoadOnlineTimes()
     {
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "http://sitehere/getscores/%s", g_pGameRules->MapName());
+        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getscores/%s/10", g_pGameRules->MapName());
         // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
         m_bOnlineNeedUpdate = false;
