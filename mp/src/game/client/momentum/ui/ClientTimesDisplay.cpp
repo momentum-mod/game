@@ -513,7 +513,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
 
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "http://sitehere/getusermaprank/%s/%llu", g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getusermaprank/%s/%llu", g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         CreateAndSendHTTPReq(requrl, &cbGetGetPlayerDataForMapCallback, &CClientTimesDisplay::GetGetPlayerDataForMapCallback);
     }
 
@@ -685,7 +685,7 @@ void CClientTimesDisplay::LoadOnlineTimes()
     {
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "http://sitehere/getscores/%s", g_pGameRules->MapName());
+        Q_snprintf(requrl, MAX_PATH, "http://127.0.0.1:5000/getscores/%s", g_pGameRules->MapName());
         // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
         m_bOnlineNeedUpdate = false;
@@ -935,10 +935,10 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
 
     pLeaderboards->AddSubKey(pLocal);
 
+    m_bOnlineNeedUpdate = (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstOnlineTimesUpdate)
+        || gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL);
     // Fill online times only if needed
-    if (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstOnlineTimesUpdate)
-        || gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL)
-        LoadOnlineTimes();
+    LoadOnlineTimes();
 
     KeyValues *pFriends = new KeyValues("friends");
     // MOM_TODO: Fill online times (friends)
@@ -1248,7 +1248,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
         {
             KeyValues *selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
             char recordingName[MAX_PATH];
-            Q_snprintf(recordingName, MAX_PATH, "%i-%f", selectedRun->GetInt("date_t"),
+            Q_snprintf(recordingName, MAX_PATH, "%i-%.3f", selectedRun->GetInt("date_t"),
                        selectedRun->GetFloat("time_f"));
 
             CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pPanel->GetParent());

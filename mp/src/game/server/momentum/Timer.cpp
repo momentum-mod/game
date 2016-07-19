@@ -116,7 +116,7 @@ void CTimer::ConvertTimeToKV(KeyValues *kvInto, Time* t) const
 
     //Handle "header"
     char timeName[512];
-    Q_snprintf(timeName, 512, "%.6f", t->time_sec);
+    Q_snprintf(timeName, 512, "%.8f", t->time_sec);
     kvInto->SetName(timeName);
     kvInto->SetFloat("rate", t->tickrate);
     kvInto->SetInt("date", t->date);

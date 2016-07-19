@@ -43,7 +43,7 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     
     //Don't ask why, but these need to be formatted in their own strings.
     Q_snprintf(runDate, MAX_PATH, "%i", g_Timer->GetLastRunDate());
-    Q_snprintf(runTime, MAX_PATH, "%f", g_Timer->GetLastRunTime());
+    Q_snprintf(runTime, MAX_PATH, "%.3f", g_Timer->GetLastRunTime());
     //It's weird.
 
     Q_snprintf(newRecordingName, MAX_PATH, "%s-%s%s", runDate, runTime, EXT_RECORDING_FILE);
