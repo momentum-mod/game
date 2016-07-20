@@ -83,8 +83,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
     m_lPlayerName = FindControl<Label>("PlayerName", true);
     m_lPlayerMapRank = FindControl<Label>("PlayerMapRank", true);
+    m_lPlayerPersonalBest = FindControl<Label>("PlayerPersonalBest", true);
     m_lPlayerGlobalRank = FindControl<Label>("PlayerGlobalRank", true);
-    m_lPlayerPersonaBest = FindControl<Label>("PlayerPersonalBest", true);
+    m_lPlayerExperience = FindControl<Label>("PlayerExperience", true);
     m_lLoadingOnlineTimes = FindControl<Label>("LoadingOnlineTimes", true);
     m_pLeaderboards = FindControl<Panel>("Leaderboards", true);
     m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineLeaderboards", true);
@@ -93,7 +94,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 
     if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName || !m_pMomentumLogo ||
         !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards ||
-        !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_lPlayerPersonaBest || !m_lLoadingOnlineTimes)
+        !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_lPlayerPersonalBest || !m_lLoadingOnlineTimes || !m_lPlayerExperience)
     {
         Assert("Null pointer(s) on scoreboards");
     }
@@ -108,7 +109,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_lPlayerName->SetParent(m_pPlayerStats);
     m_lPlayerMapRank->SetParent(m_pPlayerStats);
     m_lPlayerGlobalRank->SetParent(m_pPlayerStats);
-    m_lPlayerPersonaBest->SetParent(m_pPlayerStats);
+    m_lPlayerPersonalBest->SetParent(m_pPlayerStats);
+    m_lPlayerExperience->SetParent(m_pPlayerStats);
     m_pOnlineLeaderboards->SetParent(m_pLeaderboards);
     m_lLoadingOnlineTimes->SetParent(m_pLeaderboards);
     m_pLocalLeaderboards->SetParent(m_pLeaderboards);
@@ -495,21 +497,27 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
         char p_sMapRank[BUFSIZELOCL];
         char p_sGlobalRank[BUFSIZELOCL];
         char p_sPersonalBest[BUFSIZELOCL];
+        char p_sExperiencePoints[BUFSIZELOCL];
         
         char mrLocalized[BUFSIZELOCL];
         char grLocalized[BUFSIZELOCL];
         char pbLocalized[BUFSIZELOCL];
+        char xpLocalized[BUFSIZELOCL];
 
         LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
         LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
         LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
+        LOCALIZE_TOKEN(p_wcExperiencePoints, "MOM_ExperiencePoints", p_sExperiencePoints);
 
         Q_snprintf(mrLocalized, BUFSIZELOCL, "%s: %s", p_sMapRank, p_sCalculating);
         Q_snprintf(grLocalized, BUFSIZELOCL, "%s: %s", p_sGlobalRank, p_sCalculating);
         Q_snprintf(pbLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sWaitingResponse);
+        Q_snprintf(xpLocalized, BUFSIZELOCL, "%s: %s", p_sExperiencePoints, p_sWaitingResponse);
+
         m_lPlayerMapRank->SetText(mrLocalized);
         m_lPlayerGlobalRank->SetText(grLocalized);
-        m_lPlayerPersonaBest->SetText(pbLocalized);
+        m_lPlayerPersonalBest->SetText(pbLocalized);
+        m_lPlayerExperience->SetText(xpLocalized);
 
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
@@ -867,26 +875,42 @@ void CClientTimesDisplay::GetGetPlayerDataForMapCallback(HTTPRequestCompleted_t 
         {
             KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
 
-            CKeyValuesDumpContextAsDevMsg dev;
-            pResponse->Dump(&dev);
+            int mrank = -1;
+            int mtotal = -1;
 
-            int rank = -1;
-            int total = static_cast<int>(pResponse->GetFloat("total", -1.0f));
+            int grank = -1;
+            int gtotal = -1;
+            int gexp = -1;
+
             float seconds = 0.0f;
 
             KeyValues *pRun = pResponse->FindKey("run");
             if (pRun)
             {
-                rank = static_cast<int>(pRun->GetFloat("rank"));
+                mrank = static_cast<int>(pRun->GetFloat("rank"));
                 seconds = pRun->GetFloat("time");
             }
 
-            if (rank > -1)
+            KeyValues *pMap = pResponse->FindKey("mapranking");
+            if (pMap)
+            {
+                mtotal = static_cast<int>(pMap->GetFloat("total", -1.0f));
+            }
+
+            KeyValues *pExperience = pResponse->FindKey("globalranking");
+            if (pExperience)
+            {
+                grank = static_cast<int>(pExperience->GetFloat("rank"));
+                gtotal = static_cast<int>(pExperience->GetFloat("total"));
+                gexp = static_cast<int>(pExperience->GetFloat("experience"));
+            }
+
+            if (mrank > -1 && mtotal > -1)
             {
                 char p_sMapRank[BUFSIZELOCL];
                 char p_sLocalized[BUFSIZELOCL];
                 LOCALIZE_TOKEN(p_wcMapRank, "MOM_MapRank", p_sMapRank);
-                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sMapRank, rank, total);
+                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sMapRank, mrank, mtotal);
                 m_lPlayerMapRank->SetText(p_sLocalized);
             }
             if (seconds > 0.0f)
@@ -897,15 +921,23 @@ void CClientTimesDisplay::GetGetPlayerDataForMapCallback(HTTPRequestCompleted_t 
                 mom_UTIL->FormatTime(seconds, p_sPersonalBestTime);
                 LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
                 Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sPersonalBestTime);
-                m_lPlayerPersonaBest->SetText(p_sLocalized);
+                m_lPlayerPersonalBest->SetText(p_sLocalized);
             }
-            /*char globalRank[BUFSIZELOCL];
-            char grLocalized[BUFSIZELOCL];
-            LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", globalRank);
 
-            Q_snprintf(globalRank, 50, "%s: %i/%i", grLocalized, playdata->GetInt("globalRank", -1),
-            playdata->GetInt("globalCount", -1));
-            m_lPlayerGlobalRank->SetText(globalRank);*/
+            if (grank > -1 && gtotal > -1)
+            {
+                char p_sGlobalRank[BUFSIZELOCL];
+                char p_sLocalized[BUFSIZELOCL];
+                LOCALIZE_TOKEN(p_wcGlobalRank, "MOM_GlobalRank", p_sGlobalRank);
+                Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %i/%i", p_sGlobalRank, grank, gtotal);
+                m_lPlayerGlobalRank->SetText(p_sLocalized);
+
+                char p_sExperience[BUFSIZELOCL];
+                char p_sLocalized2[BUFSIZELOCL];
+                LOCALIZE_TOKEN(p_wcExperience, "MOM_ExperiencePoints", p_sExperience);
+                Q_snprintf(p_sLocalized2, BUFSIZELOCL, "%s: %i", p_sExperience, gexp);
+                m_lPlayerExperience->SetText(p_sLocalized2);
+            }
             m_fLastHeaderUpdate = gpGlobals->curtime;
         }
     }

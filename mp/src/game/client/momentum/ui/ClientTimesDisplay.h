@@ -142,8 +142,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Label *m_lMapSummary;
     vgui::Label *m_lPlayerName;
     vgui::Label *m_lPlayerMapRank;
+    vgui::Label *m_lPlayerPersonalBest;
     vgui::Label *m_lPlayerGlobalRank;
-    vgui::Label *m_lPlayerPersonaBest;
+    vgui::Label *m_lPlayerExperience;
     vgui::Label *m_lLoadingOnlineTimes;
     vgui::SectionedListPanel *m_pOnlineLeaderboards;
     vgui::SectionedListPanel *m_pLocalLeaderboards;
