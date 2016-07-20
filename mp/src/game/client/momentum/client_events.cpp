@@ -67,14 +67,9 @@ void CMOMClientEvents::PostInit()
 
     MountAdditionalContent();
 
+    // Version warning
     // MOM_TODO: Change this once we hit Alpha/Beta
-    char p_sInitialMsgTitle[BUFSIZELOCL];
-    LOCALIZE_TOKEN(p_wcInitialMsgTitle, "#MOM_StartupMsg_Prealpha_Title", p_sInitialMsgTitle);
-    char p_sInitialMsg[1024];
-    LOCALIZE_TOKEN(p_wcInitialMsg, "#MOM_StartupMsg_Prealpha", p_sInitialMsg);
-    char p_sInitialMsgOkButton[BUFSIZELOCL];
-    LOCALIZE_TOKEN(p_wcInitialMsgOkButton, "#MOM_IUnderstand", p_sInitialMsgOkButton);
-    messageboxpanel->CreateMessagebox(p_sInitialMsgTitle, p_sInitialMsg, p_sInitialMsgOkButton);
+    messageboxpanel->CreateMessagebox("#MOM_StartupMsg_Prealpha_Title", "#MOM_StartupMsg_Prealpha", "#MOM_IUnderstand");
 }
 
 void CMOMClientEvents::MountAdditionalContent()

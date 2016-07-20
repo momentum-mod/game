@@ -3,20 +3,14 @@
 
 #include "MessageboxPanel.h"
 
-void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg);
+
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
-    messageboxpanel->CreateMessagebox(
-        "Saving and loading are forbbiden",
-        "You're not allowed to save/load in Momentum. Please use the built-in checkpoint system!");
+    messageboxpanel->CreateMessagebox("#MOM_MB_TrySaveLoad_Title", "#MOM_MB_TrySaveLoad");
 }
-
-void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg);
 void __MsgFunc_MB_NoStartOrEnd(bf_read &msg)
 {
-    messageboxpanel->CreateMessagebox(
-        "Not enough zones detected",
-        "You're playing a map that has either no start or end zones! You won't be able to use the timer properly!");
+    messageboxpanel->CreateMessagebox("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd");
 }
 
 // Constuctor: Initializes the Panel
@@ -37,8 +31,6 @@ CMessageboxPanel::CMessageboxPanel(VPANEL parent) : BaseClass(nullptr, "Messageb
     SetMoveable(true);
     SetVisible(false);
     SetProportional(true);
-
-    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
     HOOK_MESSAGE(MB_PlayerTriedSaveOrLoad);
     HOOK_MESSAGE(MB_NoStartOrEnd);
