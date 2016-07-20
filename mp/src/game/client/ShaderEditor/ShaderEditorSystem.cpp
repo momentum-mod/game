@@ -459,8 +459,9 @@ class CBaseVCallbackView : public CRendering3dView
         // if( !r_drawopaquerenderables.GetBool() )
         //	return;
 
-        //if (!m_pMainView->ShouldDrawEntities())
-            //return;
+        ConVarRef drawEntities("r_drawentities");
+        if (!drawEntities.GetBool())
+            return;
 
         render->SetBlend(1);
 

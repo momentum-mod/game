@@ -58,8 +58,8 @@ void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
         variant_t emptyvarient;
         pDoorEnt->AcceptInput("Lock", nullptr, nullptr, emptyvarient, 0); // Lock the door bhop block
 
-        pDoorEnt->m_ls.sLockedSound =
-            pDoorEnt->m_NoiseMoving; // Plays the sound like normal (makes the player aware they jumped it)
+        // Plays the sound like normal (makes the player aware they jumped it)
+        pDoorEnt->m_ls.sLockedSound = pDoorEnt->m_NoiseMoving; 
 
         // Let the entity know that it's a bhop block, so mom_bhop_playblocksound is able to control if we should make noises
         pDoorEnt->m_bIsBhopBlock = true;

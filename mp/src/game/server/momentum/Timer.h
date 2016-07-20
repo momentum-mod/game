@@ -116,6 +116,11 @@ class CTimer
         // offset from end is 1 tick - fraction offset, since we started trace outside of the end zone.
         return originalTime + m_flTickOffsetFix[1] - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
     }
+    // Gets the date achieved for the last run.
+    time_t GetLastRunDate() const
+    {
+        return m_iLastRunDate;
+    }
 
     // Gets the current time for this timer
     float GetCurrentTime() const { return float(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; }
@@ -212,6 +217,7 @@ class CTimer
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick;
     int m_iLastZone;
+    time_t m_iLastRunDate;
     bool m_bIsRunning;
     bool m_bWereCheatsActivated;
     bool m_bMapIsLinear;

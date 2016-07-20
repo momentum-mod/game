@@ -133,28 +133,68 @@ void MomentumUtil::DownloadMap(const char *szMapname)
 }
 
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {
-    HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-    SteamAPICall_t apiHandle;
-
-    if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+    if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        callback->Set(apiHandle, this, func);
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            callback->Set(apiHandle, this, func);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
     }
     else
     {
-        Warning("Failed to send HTTP Request to post scores online!\n");
-        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        Warning("Could not find Steam Api Context active\n");
     }
 }
 
+bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func, KeyValues *params)
+{
+    bool bSuccess = false;
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
+        FOR_EACH_VALUE(params, p_value)
+        {
+            steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(), p_value->GetString());
+        }
+
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            Warning("Report sent.\n");
+            callback->Set(apiHandle, this, func);
+            bSuccess = true;
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to report bug online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+            
+        }
+    }
+    else
+    {
+        Warning("Steamapicontext is not online!\n");
+    }
+    return bSuccess;
+}
 
 #ifdef CLIENT_DLL
 void MomentumUtil::GetRemoteRepoModVersion()
 {
     CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
-                         &MomentumUtil::VersionCallback);
+        &MomentumUtil::VersionCallback);
 }
 
 void MomentumUtil::GetRemoteChangelog()
@@ -210,13 +250,20 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
 
     char versionValue[15];
     Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
+
     for (int i = 0; i < 3; i++)
     {
-        if (Q_atoi(repoVersion.Element(i)) > Q_atoi(storedVersion.Element(i)))
+        int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
+        if (repo > local)
         {
             versionwarnpanel->SetVersion(versionValue);
             GetRemoteChangelog();
             versionwarnpanel->Activate();
+            break;
+        }
+        if (repo < local)
+        {
+            //The local version is higher than the repo version, do not show this panel
             break;
         }
     }
@@ -324,7 +371,7 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
 }
 
 Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor,
-                                          Color decreasecolor) const
+    Color decreasecolor) const
 {
     // variation is current velocity minus previous velocity.
     Color pFinalColor = normalcolor;

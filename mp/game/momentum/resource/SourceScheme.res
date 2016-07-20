@@ -339,6 +339,18 @@ Scheme
                 "antialias" "1"
 			}
 		}
+        "DefaultLargeDropShadow"
+        {
+            "1"
+			{
+				"name"		"Tahoma" [!$LINUX]
+				"name"		"Verdana" [$LINUX]
+				"tall"		"18"
+				"weight"	"0"
+				"dropshadow" "1"
+                "antialias" "1"
+			}
+        }
         "DefaultVeryLarge"
         {
             "1"

@@ -170,6 +170,10 @@ extern vgui::IInputInternal *g_InputInternal;
 #include "sixense/in_sixense.h"
 #endif
 
+#ifdef GAMEUI2
+#include "igameui2.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -217,6 +221,10 @@ IReplaySystem *g_pReplay = NULL;
 #endif
 
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
+
+#ifdef GAMEUI2
+IGameUI2* g_pGameUI2 = NULL;
+#endif
 
 //=============================================================================
 // HPE_BEGIN
@@ -1156,6 +1164,42 @@ void CHLClient::PostInit()
 		}
 	}
 #endif
+
+#ifdef GAMEUI2
+    if (!CommandLine()->CheckParm("-nogameui2"))
+    {
+        const int16 modulePathLength = 2048;
+        char modulePath[modulePathLength];
+        Q_snprintf(modulePath, modulePathLength, "%s\\bin\\gameui2.dll", engine->GetGameDirectory());
+
+        CSysModule* dllModule = Sys_LoadModule(modulePath);
+        if (dllModule)
+        {
+            ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui2.dll\n");
+
+            CreateInterfaceFn appSystemFactory = Sys_GetFactory(dllModule);
+
+            g_pGameUI2 = appSystemFactory ? ((IGameUI2*) appSystemFactory(GAMEUI2_DLL_INTERFACE_VERSION, NULL)) : NULL;
+            if (g_pGameUI2)
+            {
+                ConColorMsg(Color(0, 148, 255, 255), "Initializing IGameUI2 interface...\n");
+
+                factorylist_t factories;
+                FactoryList_Retrieve(factories);
+                g_pGameUI2->Initialize(factories.appSystemFactory);
+                g_pGameUI2->OnInitialize();
+            }
+            else
+            {
+                ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI2 interface.\n");
+            }
+        }
+        else
+        {
+            ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui2.dll from:\n%s\n", modulePath);
+        }
+    }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1197,6 +1241,14 @@ void CHLClient::Shutdown( void )
 
 	IGameSystem::ShutdownAllSystems();
 	
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+    {
+        g_pGameUI2->OnShutdown();
+        g_pGameUI2->Shutdown();
+    }
+#endif
+
 	gHUD.Shutdown();
 	VGui_Shutdown();
 	
@@ -1291,6 +1343,11 @@ void CHLClient::HudUpdate( bool bActive )
 	{
 		g_pSixenseInput->SixenseFrame( 0, NULL ); 
 	}
+#endif
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnUpdate();
 #endif
 }
 
@@ -1638,6 +1695,11 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 		CReplayRagdollRecorder::Instance().Init();
 	}
 #endif
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnLevelInitializePreEntity();
+#endif
 }
 
 
@@ -1649,6 +1711,11 @@ void CHLClient::LevelInitPostEntity( )
 	IGameSystem::LevelInitPostEntityAllSystems();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnLevelInitializePostEntity();
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1714,6 +1781,11 @@ void CHLClient::LevelShutdown( void )
 	ParticleMgr()->RemoveAllEffects();
 	
 	StopAllRumbleEffects();
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnLevelShutdown();
+#endif
 
 	gHUD.LevelShutdown();
 
@@ -2338,8 +2410,8 @@ void CHLClient::PreSave( CSaveRestoreData *s )
 
 void CHLClient::Save( CSaveRestoreData *s )
 {
-	CSave saveHelper( s );
-	g_pGameSaveRestoreBlockSet->Save( &saveHelper );
+	//CSave saveHelper( s );
+	//g_pGameSaveRestoreBlockSet->Save( &saveHelper );
 }
 
 void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
@@ -2351,16 +2423,16 @@ void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
 
 void CHLClient::ReadRestoreHeaders( CSaveRestoreData *s )
 {
-	CRestore restoreHelper( s );
-	g_pGameSaveRestoreBlockSet->PreRestore();
-	g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
+	//CRestore restoreHelper( s );
+	//g_pGameSaveRestoreBlockSet->PreRestore();
+	//g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
 }
 
 void CHLClient::Restore( CSaveRestoreData *s, bool b )
 {
-	CRestore restore(s);
-	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	g_pGameSaveRestoreBlockSet->PostRestore();
+	//CRestore restore(s);
+	//g_pGameSaveRestoreBlockSet->Restore( &restore, b );
+	//g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 static CUtlVector<EHANDLE> g_RestoredEntities;

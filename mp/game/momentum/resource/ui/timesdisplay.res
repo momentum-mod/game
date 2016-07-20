@@ -91,7 +91,7 @@ Resource/ui/timesdisplay.res
 		"visible"		"1"
 		"enabled"		"1"
 		"border"		""
-		"image"			"logo"
+		"image"			"menu/logo"
 	}
 	"PlayerAvatar"
 	{

@@ -1,4 +1,12 @@
 0.5.0
+New Main Menu UI
+    Thanks to NicolasDe from Project-9 for GameUI2
+    New background (from tutorial levels) to accomodate the shininess
+Play Replays from Leaderboards
+    Right-clicking when the leaderboards are open will allow you to right click a run and "Watch Replay"
+    More functionality in future updates!
+Contact/Feedback Panel
+    Introduced a panel for in-game feedback, available in the menu.
 Overhauled Settings Panel
     Changed to tabular settings, includes four new Tabs:
     "Controls" for momentum-specific controls settings
@@ -16,6 +24,10 @@ Bug/Other fixes
     Fixed animations for player jumping and zone enter speed on the HUD speedometer
     Fixed the zone buffer for the comparisons panel
     Fixed the Changelog panel to properly scroll to top upon load
+    Removed ability to save/load (use the checkpoint menu instead!)
+    Fixed Biohazard90's Source Shader Editor (faulty config)
+    Fixed Version Update panel showing when you have a higher version than master
+    Fixed a bug in the blockfix system with incorporating the mom_bhop_playblocksound cvar
     
 0.4.7
 Bugfixes

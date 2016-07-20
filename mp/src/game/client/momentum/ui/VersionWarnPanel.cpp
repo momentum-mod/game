@@ -29,6 +29,8 @@ CVersionWarnPanel::CVersionWarnPanel(VPANEL parent) : BaseClass(nullptr, "Versio
     SetVisible(false);
     SetProportional(true);
 
+    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
+
     if (!m_pReleaseText || !m_pChangeLog)
     {
         Assert("Missing one more gameui controls from ui/versionwarnpanel.res");

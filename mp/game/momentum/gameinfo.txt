@@ -7,7 +7,7 @@
 	nodifficulty    1
 	developer	"Team Momentum"
 	developer_url   "http://momentum-mod.org"
-	gamelogo	1
+	//gamelogo	1
 
 	icon		"resource/icon"
 

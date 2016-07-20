@@ -11,6 +11,7 @@ void CTimer::Start(int start)
     if (zoneEdit.GetBool()) return;
     m_iStartTick = start;
     m_iEndTick = 0;
+    m_iLastRunDate = 0;
     SetRunning(true);
 
     //Dispatch a start timer message for the local player
@@ -258,9 +259,10 @@ void CTimer::Stop(bool endTrigger /* = false */)
         Time t = Time();
         t.time_sec = GetLastRunTime();
 
-        t.tickrate = gpGlobals->interval_per_tick; // 
+        t.tickrate = gpGlobals->interval_per_tick; // Set the tickrate
         t.flags = pPlayer->m_RunData.m_iRunFlags; // Set the run flags of this run
         time(&t.date); // Set the date of this run
+        m_iLastRunDate = t.date;// Use this date for the replay file
         t.RunStats = static_cast<CMomRunStats>(pPlayer->m_RunStats); //copy all the run stats
 
         AddNewTime(&t);

@@ -62,11 +62,6 @@ typedef enum MOMGM
 
 #define MAX_STAGES 64
 
-#define MAP_FOLDER "maps" //MOM_TODO: Ensure all files are successfully built using V_ComposeFile
-#define RECORDING_PATH "recordings"
-#define EXT_TIME_FILE ".tim"
-#define EXT_ZONE_FILE ".zon"
-
 // I'm a deadbeat, so I did this to stop having to worry about what MOM_APIDOMAIN is
 // Comment this next definition to use MOM_WEBDOMAIN as MOM_APIDOMAIN
 // Make sure this is commented when you push!
@@ -84,5 +79,10 @@ typedef enum MOMGM
 #define MOM_APIDOMAIN "http://127.0.0.1:5000"
 #endif
 
+#define MAP_FOLDER "maps" //MOM_TODO: Ensure all files are successfully built using V_ComposeFile
+#define RECORDING_PATH "recordings"
+#define EXT_TIME_FILE ".tim" //MOM_TODO: Find and replace all instances, no hardcode.
+#define EXT_ZONE_FILE ".zon" //MOM_TODO: Find and replace all instances, no hardcode.
+#define EXT_RECORDING_FILE ".momrec"
 
 #endif // MOM_SHAREDDEFS_H
