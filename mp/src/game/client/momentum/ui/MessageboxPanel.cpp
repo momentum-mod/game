@@ -40,7 +40,7 @@ CMessageboxPanel::~CMessageboxPanel() { FlushMessageboxes(); }
 
 void CMessageboxPanel::Close() { FlushMessageboxes(); }
 
-HPanel CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept)
+Panel *CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept)
 {
     MessageBox *pMessageBox = new MessageBox(pTitle, pMessage);
     // If it is not a nullptr and it's not an empty string...
@@ -50,7 +50,7 @@ HPanel CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessa
     }
     m_mbItems.AddToTail(pMessageBox);
     pMessageBox->ShowWindow();
-    return pMessageBox->ToHandle();
+    return pMessageBox;
 }
 
 void CMessageboxPanel::FlushMessageboxes()
