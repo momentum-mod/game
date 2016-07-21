@@ -130,27 +130,12 @@ void CDialogMapInfo::Run(const char *titleName)
 #ifndef NO_STEAM
 void CDialogMapInfo::OnPersonaStateChange(PersonaStateChange_t *pPersonaStateChange)
 {
-#if 0 // TBD delete this func
-    if (m_SteamIDFriend && m_SteamIDFriend == pPersonaStateChange->m_ulSteamID)
-    {
-        // friend may have changed servers
-        uint64 nGameID;
-        uint32 unGameIP;
-        uint16 usGamePort;
-        uint16 usQueryPort;
 
-        if (SteamFriends()->GetFriendGamePlayed(m_SteamIDFriend, &nGameID, &unGameIP, &usGamePort, &usQueryPort))
-        {
-            if (pPersonaStateChange->m_nGameIDPrevious != nGameID
-                || pPersonaStateChange->m_unGameServerIPPrevious != unGameIP
-                || pPersonaStateChange->m_usGameServerPortPrevious != usGamePort
-                || pPersonaStateChange->m_usGameServerQueryPortPrevious != usQueryPort)
-            {
-                ChangeGame(unGameIP, usQueryPort, usGamePort);
-            }
-        }
+    if (pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeNameFirstSet || 
+        pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeName)
+    {
+        SetControlString("AuthorText", steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pPersonaStateChange->m_ulSteamID)));
     }
-#endif
 }
 #endif // NO_STEAM
 
@@ -182,7 +167,7 @@ void CDialogMapInfo::PerformLayout()
     // Conditions that allow for a map to be played: none, always playable
     m_pConnectButton->SetEnabled(true);
     
-    m_pPlayerList->SetEmptyListText("No one wants to run this map");
+    m_pPlayerList->SetEmptyListText("Nobody has run this map!");
     
     Repaint();
 }
@@ -355,16 +340,32 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
 void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     // If something fails or the server tells us it could not find the map...
-    if (bIOFailure || pCallback->m_eStatusCode == k_EHTTPStatusCode204NoContent)
+    if (bIOFailure)
+    {
+        Warning("%s::%s - bIOFailure is true!\n", __FILE__, __FUNCTION__);
         return;
-    uint32 size;
+    }
 
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict)
+    {
+        char locl[BUFSIZELOCL];
+        LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
+        SetControlString("DifficultyText", locl);
+        SetControlString("GamemodeText", locl);
+        SetControlString("AuthorText", locl);
+        SetControlString("LayoutText", locl);
+        Warning("%s::%s - Map not found on server!\n", __FILE__, __FUNCTION__);
+        return;
+    }
+
+    uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     if (size == 0)
     {
-        Warning("CDialogMapInfo::GetMapInfo() - 0 body size!\n");
+        Warning("%s::%s - 0 body size!\n", __FILE__, __FUNCTION__);
         return;
     }
+
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
@@ -381,83 +382,70 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
         DevLog("JSON Parsed!\n");
         if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
         {
-            JsonValue oval = val.toNode()->value;
-            if (oval.getTag() == JSON_ARRAY)
+            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
+            KeyValues::AutoDelete ad(pResponse);
+
+            //Difficulty
+            char buffer[32];
+            Q_snprintf(buffer, sizeof(buffer), "Tier %g", pResponse->GetFloat("difficulty"));
+            SetControlString("DifficultyText", buffer);
+
+            V_memset(buffer, 0, sizeof(buffer));
+
+            //Layout
+            bool linear = pResponse->GetBool("linear");
+            
+            if (linear)
             {
-                for (auto i : oval)
-                {
-                    if (i->value.getTag() == JSON_OBJECT)
-                    {
-                        for (auto j : i->value)
-                        {
-                            if (!Q_strcmp(j->key, "difficulty"))
-                            {
-                                char buffer[32];
-                                Q_snprintf(buffer, sizeof(buffer), "Tier %g", j->value.toNumber());
-                                SetControlString("DifficultyText", buffer);
-                            }
-                            else if (!Q_strcmp(j->key, "layout"))
-                            {
-                                char buffer[32];
-                                int layout = j->value.toNumber();
-                                if (layout > 0)
-                                {
-                                    char locl[BUFSIZELOCL];
-                                    LOCALIZE_TOKEN(staged, "MOM_AmountStages", locl);
-                                    Q_snprintf(buffer, sizeof(buffer), locl, layout);
-                                }
-                                else
-                                {
-                                    LOCALIZE_TOKEN(linear, "MOM_Linear", buffer);
-                                }
-                                SetControlString("LayoutText", buffer);
-                            }
-                            else if (!Q_strcmp(j->key, "submitter"))
-                            {
-                                char buffer[32];
-                                Q_snprintf(buffer, sizeof(buffer), "%llu", (uint64)j->value.toNumber());
-                                SetControlString("AuthorText", buffer);
-                            }
-                            else if (!Q_strcmp(j->key, "gamemode"))
-                            {
-                                char* buffer;
-                                switch ((int)j->value.toNumber())
-                                {
-                                case MOMGM_SURF:
-                                    buffer = "Surf";
-                                    break;
-                                case MOMGM_BHOP:
-                                    buffer = "Bunnyhop";
-                                    break;
-                                default:
-                                    buffer = "Unknown";
-                                    break;
-                                }
-                                SetControlString("GamemodeText", buffer);
-                            }
-                            else if (!Q_strcmp(j->key, "result") && !Q_strcmp(j->value.toString(), "false"))
-                            {
-                                char locl[BUFSIZELOCL];
-                                LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
-                                SetControlString("DifficultyText", locl);
-                                SetControlString("GamemodeText", locl);
-                                SetControlString("AuthorText", locl);
-                                SetControlString("LayoutText", locl);
-                                break;
-                            }
-                            else
-                            {
-                                if (j->value.getTag() == JSON_STRING)
-                                    DevLog("Uncaught key %s with string value %s\n", j->key,j->value.toString());
-                                else if (j->value.getTag() == JSON_STRING)
-                                    DevLog("Uncaught key %s with numerical value %i\n", j->key, (int)j->value.toNumber());
-                                else
-                                    DevLog("Uncaught key %s with object value\n");
-                            }
-                        }
-                    }
-                }
+                LOCALIZE_TOKEN(linear, "MOM_Linear", buffer);
             }
+            else
+            {
+                LOCALIZE_TOKEN(staged, "MOM_MapSelector_InfoDialog_Staged", buffer);
+            }
+            SetControlString("LayoutText", buffer);
+
+            V_memset(buffer, 0, sizeof(buffer));
+
+            //Zones
+            int zones = static_cast<int>(pResponse->GetFloat("zones"));
+
+            char locl[BUFSIZELOCL];
+            LOCALIZE_TOKEN(staged, "MOM_AmountZones", locl);
+            Q_snprintf(buffer, sizeof(buffer), locl, zones);
+
+            SetControlString("NumZones", buffer);
+
+            //Author
+            uint64 steamID = Q_atoui64(pResponse->GetString("submitter"));
+            CSteamID submitter(steamID);
+
+            if (steamapicontext->SteamFriends()->RequestUserInformation(submitter, true))
+            {
+                SetControlString("AuthorText", "Requesting map author...");
+            }
+            else
+            {
+                SetControlString("AuthorText", steamapicontext->SteamFriends()->GetFriendPersonaName(submitter));
+            }
+
+            //Game mode
+            //MOM_TODO: Potentially have this part of the site?
+            int gameMode = static_cast<int>(pResponse->GetFloat("gamemode"));
+            const char *gameType;
+            switch (gameMode)
+            {
+            case MOMGM_SURF:
+                gameType = "Surf";
+                break;
+            case MOMGM_BHOP:
+                gameType = "Bunnyhop";
+                break;
+            default:
+                gameType = "Unknown";
+                break;
+            }
+            SetControlString("GamemodeText", gameType);
         }
     }
     else
@@ -468,6 +456,8 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     //Cleanup
     alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    delete[] pData;
+    pData = nullptr;
 }
 void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
