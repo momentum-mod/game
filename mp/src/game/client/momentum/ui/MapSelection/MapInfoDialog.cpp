@@ -1,4 +1,5 @@
 #include "pch_mapselection.h"
+#include <util/jsontokv.h>
 
 using namespace vgui;
 //extern class IAppInformation *g_pAppInformation; // may be NULL
@@ -463,6 +464,10 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     {
         Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
     }
+
+    //Cleanup
+    alloc.deallocate();
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
