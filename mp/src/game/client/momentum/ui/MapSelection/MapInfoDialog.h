@@ -4,22 +4,15 @@
 #pragma once
 #endif
 
-
-/*struct challenge_s
-{
-    netadr_t addr;
-    int challenge;
-};*/
-
 //-----------------------------------------------------------------------------
 // Purpose: Dialog for displaying information about a game server
 //-----------------------------------------------------------------------------
-class CDialogMapInfo : public vgui::Frame//, public ISteamMatchmakingPlayersResponse, public ISteamMatchmakingPingResponse
+class CDialogMapInfo : public Frame
 {
     DECLARE_CLASS_SIMPLE(CDialogMapInfo, vgui::Frame);
 
 public:
-    CDialogMapInfo(vgui::Panel *parent, const char*);
+    CDialogMapInfo(Panel *parent, const char*);
     ~CDialogMapInfo();
 
     void Run(const char *titleName);
@@ -28,7 +21,7 @@ public:
     void Connect();
 
     // on individual player added
-    virtual void AddPlayerToList(const char *playerName, int score, float timePlayedSeconds);
+    virtual void AddPlayerToList(KeyValues *pPlayerInfo);
 
     // called when the current refresh list is complete
     virtual void RefreshComplete(EMatchMakingServerResponse response);
@@ -40,8 +33,8 @@ protected:
     // message handlers
     MESSAGE_FUNC(OnConnect, "Connect");
     // vgui overrides
-    virtual void OnTick();
-    virtual void PerformLayout();
+    void OnTick() override;
+    void PerformLayout() override;
 
     // API
     void GetMapInfo(const char* mapname);
@@ -58,16 +51,16 @@ private:
     STEAM_CALLBACK(CDialogMapInfo, OnPersonaStateChange, PersonaStateChange_t, m_CallbackPersonaStateChange);
 #endif
 
-    static int PlayerTimeColumnSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &p1, const vgui::ListPanelItem &p2);
+    static int PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2);
 
     // methods
     void RequestInfo(const char* mapName);
     void ConnectToServer();
     void ApplyConnectCommand(const char *mapName);
 
-    vgui::Button *m_pConnectButton;
-    vgui::Button *m_pCloseButton;
-    vgui::ListPanel *m_pPlayerList;
+    Button *m_pConnectButton;
+    Button *m_pCloseButton;
+    ListPanel *m_pPlayerList;
 
     enum { PING_TIMES_MAX = 4 };
 

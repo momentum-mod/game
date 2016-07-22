@@ -1,46 +1,14 @@
 #include "pch_mapselection.h"
 #include <util/jsontokv.h>
+#include <util/mom_util.h>
 
 using namespace vgui;
-//extern class IAppInformation *g_pAppInformation; // may be NULL
-
-static const long RETRY_TIME = 10000;		// refresh server every 10 seconds
-static const long CHALLENGE_ENTRIES = 1024;
-
-extern "C"
-{
-    DLL_EXPORT bool JoiningSecureServerCall()
-    {
-        return true;
-    }
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Comparison function used in query redblack tree
-//-----------------------------------------------------------------------------
-/*bool QueryLessFunc(const struct challenge_s &item1, const struct challenge_s &item2)
-{
-return false;
-// compare port then ip
-if (item1.addr.GetPort() < item2.addr.GetPort())
-return true;
-else if (item1.addr.GetPort() > item2.addr.GetPort())
-return false;
-
-//int ip1 = item1.addr.GetIP();
-//int ip2 = item2.addr.GetIP();
-//  return ip1 < ip2;
-}*/
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) :
-Frame(parent, "DialogMapInfo")
-#ifndef NO_STEAM
-, m_CallbackPersonaStateChange(this, &CDialogMapInfo::OnPersonaStateChange)
-#endif
+CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo"),
+m_CallbackPersonaStateChange(this, &CDialogMapInfo::OnPersonaStateChange)
 {
     SetBounds(0, 0, 512, 512);
     SetMinimumSize(416, 340);
@@ -53,7 +21,7 @@ Frame(parent, "DialogMapInfo")
 
     m_pConnectButton = FindControl<Button>("Connect", true);
     m_pCloseButton = FindControl<Button>("Close", true);
-    m_pPlayerList = FindControl<ListPanel>("PlayerList", true);;
+    m_pPlayerList = FindControl<ListPanel>("PlayerList", true);
 
     if (!m_pConnectButton || !m_pCloseButton || !m_pPlayerList)
     {
@@ -64,14 +32,12 @@ Frame(parent, "DialogMapInfo")
     if (m_pPlayerList)
     {
         m_pPlayerList->AddColumnHeader(0, "PlayerName", "#MOM_Name", 166);
-        m_pPlayerList->AddColumnHeader(1, "Score", "#MOM_Rank", 54);
+        m_pPlayerList->AddColumnHeader(1, "Rank", "#MOM_Rank", 54);
         m_pPlayerList->AddColumnHeader(2, "Time", "#MOM_Time", 64);
 
         m_pPlayerList->SetSortFunc(2, &PlayerTimeColumnSortFunc);
 
-        PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 2));
-        //PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
-        //PostMessage(m_pPlayerList, new KeyValues("SetSortColumn", "column", 1));
+        m_pPlayerList->SetSortColumn(2);
     }
     if (m_pConnectButton)
     {
@@ -83,7 +49,7 @@ Frame(parent, "DialogMapInfo")
     }
 
     // let us be ticked every frame
-    ivgui()->AddTickSignal(this->GetVPanel());
+    ivgui()->AddTickSignal(GetVPanel());
 
     MoveToCenterOfScreen();
 }
@@ -93,16 +59,13 @@ Frame(parent, "DialogMapInfo")
 //-----------------------------------------------------------------------------
 CDialogMapInfo::~CDialogMapInfo()
 {
-    //MOM_TODO: Cancel any queries sent out
-    /*#ifndef NO_STEAM
-        if (!SteamMatchmakingServers())
-        return;
+    if (cbGetMapInfoCallback.IsActive())
+        cbGetMapInfoCallback.Cancel();
 
-        if (m_hPingQuery != HSERVERQUERY_INVALID)
-        SteamMatchmakingServers()->CancelServerQuery(m_hPingQuery);
-        if (m_hPlayersQuery != HSERVERQUERY_INVALID)
-        SteamMatchmakingServers()->CancelServerQuery(m_hPlayersQuery);
-        #endif*/
+    if (cbGet10MapTimesCallback.IsActive())
+        cbGet10MapTimesCallback.Cancel();
+    
+    m_CallbackPersonaStateChange.Unregister();
 }
 
 //-----------------------------------------------------------------------------
@@ -125,12 +88,11 @@ void CDialogMapInfo::Run(const char *titleName)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: updates the dialog if it's watching a friend who changes servers
+// Purpose: updates the dialog when we get info about the map creator
 //-----------------------------------------------------------------------------
 #ifndef NO_STEAM
 void CDialogMapInfo::OnPersonaStateChange(PersonaStateChange_t *pPersonaStateChange)
 {
-
     if (pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeNameFirstSet || 
         pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeName)
     {
@@ -145,25 +107,6 @@ void CDialogMapInfo::OnPersonaStateChange(PersonaStateChange_t *pPersonaStateCha
 void CDialogMapInfo::PerformLayout()
 {
     BaseClass::PerformLayout();
-    /*if (!Q_strlen(m_Server.m_szGameDescription) && m_SteamIDFriend && g_pAppInformation)
-    {
-    // no game description set yet
-    // get the game from the friends info if we can
-    uint64 nGameID = 0;
-    #ifndef NO_STEAM
-    //SteamFriends()->GetFriendGamePlayed(m_SteamIDFriend, &nGameID, NULL, NULL, NULL);
-    #endif
-    if (nGameID)
-    {
-    //SetControlString("GameText", g_pAppInformation->GetAppName(g_pAppInformation->GetIAppForAppID(nGameID)));
-    }
-    else
-    {
-    SetControlString("GameText", "#ServerBrowser_NotInGame");
-    }
-    }*/
-
-
     // Conditions that allow for a map to be played: none, always playable
     m_pConnectButton->SetEnabled(true);
     
@@ -256,7 +199,7 @@ void CDialogMapInfo::ClearPlayerList()
 //-----------------------------------------------------------------------------
 // Purpose: on individual player added
 //-----------------------------------------------------------------------------
-void CDialogMapInfo::AddPlayerToList(const char *playerName, int score, float timePlayedSeconds)
+void CDialogMapInfo::AddPlayerToList(KeyValues* pPlayerInfo)
 {
     if (m_bPlayerListUpdatePending)
     {
@@ -264,35 +207,12 @@ void CDialogMapInfo::AddPlayerToList(const char *playerName, int score, float ti
         m_pPlayerList->RemoveAll();
     }
 
-    KeyValues *player = new KeyValues("player");
-    player->SetString("PlayerName", playerName);
-    player->SetInt("Score", score);
-    player->SetInt("TimeSec", (int)timePlayedSeconds);
+    char buf[BUFSIZETIME];
+    mom_UTIL->FormatTime(pPlayerInfo->GetFloat("TimeSec"), buf);
+    pPlayerInfo->SetString("Time", buf);
 
-    // construct a time string
-    int seconds = (int)timePlayedSeconds;
-    int minutes = seconds / 60;
-    int hours = minutes / 60;
-    seconds %= 60;
-    minutes %= 60;
-    char buf[64];
-    buf[0] = 0;
-    if (hours)
-    {
-        Q_snprintf(buf, sizeof(buf), "%dh %dm %ds", hours, minutes, seconds);
-    }
-    else if (minutes)
-    {
-        Q_snprintf(buf, sizeof(buf), "%dm %ds", minutes, seconds);
-    }
-    else
-    {
-        Q_snprintf(buf, sizeof(buf), "%ds", seconds);
-    }
-    player->SetString("Time", buf);
-
-    m_pPlayerList->AddItem(player, 0, false, true);
-    player->deleteThis();
+    m_pPlayerList->AddItem(pPlayerInfo, 0, false, true);
+    pPlayerInfo->deleteThis();
 }
 
 //-----------------------------------------------------------------------------
@@ -300,8 +220,8 @@ void CDialogMapInfo::AddPlayerToList(const char *playerName, int score, float ti
 //-----------------------------------------------------------------------------
 int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2)
 {
-    int p1time = p1.kv->GetInt("TimeSec");
-    int p2time = p2.kv->GetInt("TimeSec");
+    float p1time = p1.kv->GetFloat("TimeSec");
+    float p2time = p2.kv->GetFloat("TimeSec");
 
     if (p1time > p2time)
         return 1;
@@ -342,11 +262,11 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     // If something fails or the server tells us it could not find the map...
     if (bIOFailure)
     {
-        Warning("%s::%s - bIOFailure is true!\n", __FILE__, __FUNCTION__);
+        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
         return;
     }
 
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict)
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict || pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
     {
         char locl[BUFSIZELOCL];
         LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
@@ -354,7 +274,7 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
         SetControlString("GamemodeText", locl);
         SetControlString("AuthorText", locl);
         SetControlString("LayoutText", locl);
-        Warning("%s::%s - Map not found on server!\n", __FILE__, __FUNCTION__);
+        Warning("%s - Map not found on server!\n", __FUNCTION__);
         return;
     }
 
@@ -362,7 +282,7 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     if (size == 0)
     {
-        Warning("%s::%s - 0 body size!\n", __FILE__, __FUNCTION__);
+        Warning("%s - 0 body size!\n", __FUNCTION__);
         return;
     }
 
@@ -457,14 +377,13 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
     delete[] pData;
-    pData = nullptr;
 }
 void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
         char szURL[512];
-        Q_snprintf(szURL, 512, "%s/getscores/%s", MOM_APIDOMAIN, mapname);
+        Q_snprintf(szURL, 512, "%s/getscores/%s/10", MOM_APIDOMAIN, mapname);
         HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
         if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
@@ -485,16 +404,36 @@ void CDialogMapInfo::Get10MapTimes(const char* mapname)
 }
 void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
-    Warning("Callback received.\n");
-    if (bIOFailure || pCallback->m_eStatusCode == k_EHTTPStatusCode204NoContent || pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
+    if (bIOFailure)
+    {
+        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
         return;
+    }
+
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
+    {
+        Warning("%s - k_EHTTPStatusCode404NotFound !\n", __FUNCTION__);
+        return;
+    }
+
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict)
+    {
+        Warning("%s - No runs found for the map!\n", __FUNCTION__);
+        return;
+    }
 
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+
+    if (size == 0)
+    {
+        Warning("%s - 0 body size!\n", __FUNCTION__);
+        return;
+    }
+
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
 
     JsonValue val; // Outer object
     JsonAllocator alloc;
@@ -507,78 +446,37 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
         DevLog("JSON Parsed!\n");
         if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
         {
-            JsonValue oval = val.toNode()->value;
-            if (oval.getTag() == JSON_ARRAY)
-            {
-                // If there is something there (not sure how it would be there at this point) remove it
-                ClearPlayerList();
-                for (auto i : oval)
-                {
-                    if (i->value.getTag() == JSON_OBJECT)
-                    {
-                        KeyValues *kv = new KeyValues("entry");
-                        bool bFalseResult = false;
-                        for (auto j : i->value)
-                        {
-                            if (!Q_strcmp(j->key, "time"))
-                            {
-                                kv->SetFloat("time", j->value.toNumber());
-                            }
-                            else if (!Q_strcmp(j->key, "steamid"))
-                            {
-                                uint64 steamid = j->value.toNumber();
+            // If there is something there (not sure how it would be there at this point) remove it
+            ClearPlayerList();
 
-                                kv->SetUint64("steamid", steamid);
-                                // MOM_TODO: Localize this string
-                                char locl[BUFSIZELOCL];
-                                LOCALIZE_TOKEN(apiresponse, "MOM_API_WaitingForResponse", locl);
-                                kv->SetString("personaname", locl);
-                                
-                            }
-                            else if (!Q_strcmp(j->key, "rank"))
-                            {
-                                // MOM_TODO: Implement
-                            }
-                            else if (!Q_strcmp(j->key, "rate"))
-                            {
-                                kv->SetInt("rate", j->value.toNumber());
-                            }
-                            else if (!Q_strcmp(j->key, "date"))
-                            {
-                                // MOM_TODO: Implement.
-                            }
-                            else if (!Q_strcmp(j->key, "id"))
-                            {
-                                kv->SetInt("id", j->value.toNumber());
-                            }
-                            else if (!Q_strcmp(j->key, "result") && !Q_strcmp(j->value.toString(), "false"))
-                            {
-                                char locl[BUFSIZELOCL];
-                                LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
-                                SetControlString("PlayerList", locl);
-                                bFalseResult = true;
-                                break;
-                            }
-                            else
-                            {
-                                if (j->value.getTag() == JSON_STRING)
-                                    DevLog("Uncaught key %s with string value %s\n", j->key, j->value.toString());
-                                else if (j->value.getTag() == JSON_STRING)
-                                    DevLog("Uncaught key %s with numerical value %i\n", j->key, (int)j->value.toNumber());
-                                else
-                                    DevLog("Uncaught key %s with object value\n");
-                            }
-                        }
-                        if (!bFalseResult)
-                        {
-                            AddPlayerToList(kv->GetString("personaname"), kv->GetInt("id"), kv->GetFloat("time"));
-                            InvalidateLayout();
-                            m_pPlayerList->InvalidateLayout();
-                            Repaint();
-                        }
-                        kv->deleteThis();
-                    }
+            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
+            KeyValues::AutoDelete ad(pResponse);
+
+            KeyValues *pRuns = pResponse->FindKey("runs");
+
+            if (pRuns && !pRuns->IsEmpty())
+            {
+                // Iterate through each loaded run
+                FOR_EACH_SUBKEY(pRuns, pRun)
+                {
+                    KeyValues *kvEntry = new KeyValues("Entry");
+                    //Time is handled by the converter
+                    kvEntry->SetFloat("TimeSec", pRun->GetFloat("time"));
+
+                    //Persona name for the time they accomplished the run
+                    kvEntry->SetString("PlayerName", pRun->GetString("personaname_t"));
+
+                    //Rank
+                    kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
+
+                    //This handles deleting the kvEntry
+                    AddPlayerToList(kvEntry);
                 }
+
+                //Update the control with this new info
+                InvalidateLayout();
+                m_pPlayerList->InvalidateLayout();
+                Repaint();
             }
         }
     }
@@ -589,4 +487,5 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
     // Last but not least, free resources
     alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    delete[] pData;
 }
