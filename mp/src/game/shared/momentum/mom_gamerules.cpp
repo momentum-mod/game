@@ -3,6 +3,7 @@
 #include "cs_ammodef.h"
 #include "weapon_csbase.h"
 #include "voice_gamemgr.h"
+#include "mathlib/mathlib.h"
 #include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
@@ -106,6 +107,37 @@ static CViewVectors g_MOMViewVectors(
 const CViewVectors *CMomentumGameRules::GetViewVectors() const
 {
     return &g_MOMViewVectors;
+}
+
+
+bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
+{
+    if (collisionGroup0 > collisionGroup1)
+    {
+        // swap so that lowest is always first
+        V_swap(collisionGroup0, collisionGroup1);
+    }
+
+    //Don't stand on COLLISION_GROUP_WEAPONs
+    if( collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT &&
+        collisionGroup1 == COLLISION_GROUP_WEAPON )
+    {
+        return false;
+    }
+
+    if ( (collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT) &&
+        collisionGroup1 == COLLISION_GROUP_PUSHAWAY )
+    {
+        return false;
+    }
+
+    if ( collisionGroup0 == COLLISION_GROUP_DEBRIS && collisionGroup1 == COLLISION_GROUP_PUSHAWAY )
+    {
+        // let debris and multiplayer objects collide
+        return true;
+    }
+
+    return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 ); 
 }
 
 
