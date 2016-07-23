@@ -316,7 +316,10 @@ void CMomentumPlayer::CreateCheckpoint()
     Q_strncpy(c.targetName, GetEntityName().ToCStr(), sizeof(c.targetName));
     Q_strncpy(c.targetClassName, GetClassname(), sizeof(c.targetClassName));
     m_rcCheckpoints.AddToTail(c);
-    ++m_iCurrentStepCP;
+    if (m_iCurrentStepCP == m_iCheckpointCount - 1)
+        ++m_iCurrentStepCP;
+    else
+        m_iCurrentStepCP = m_iCheckpointCount;//Set it to the new checkpoint's index
     ++m_iCheckpointCount;
 }
 
@@ -325,7 +328,9 @@ void CMomentumPlayer::RemoveLastCheckpoint()
     if (m_rcCheckpoints.IsEmpty()) return;
     m_rcCheckpoints.Remove(m_iCurrentStepCP);
     //If there's one element left, we still need to decrease currentStep to -1
-    --m_iCurrentStepCP;
+    if (m_iCurrentStepCP == m_iCheckpointCount - 1)
+        --m_iCurrentStepCP;
+    //else we want it to shift forward one until it catches back up to the last checkpoint
     --m_iCheckpointCount;
 }
 
