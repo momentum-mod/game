@@ -67,6 +67,8 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetPos(wide / 3, tall / 4);
     SetApplyButtonVisible(true);
     SetTitleBarVisible(true);
+    SetMenuButtonResponsive(false);
+    SetSysMenu(nullptr);
     SetMinimizeButtonVisible(false);
     SetMaximizeButtonVisible(false);
     SetCloseButtonVisible(true);

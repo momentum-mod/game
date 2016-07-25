@@ -8,6 +8,7 @@
 		"ypos"		"20"
 		"wide"		"380"
 		"tall"		"450"
+        "proportionalToParent" "1"
 		"autoResize"		"1"
 		"pinCorner"		"0"
 		"RoundedCorners"		"15"
@@ -17,7 +18,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"settitlebarvisible"		"1"
-		"title"		"#MOM_SendFeedback"
+		"title"		"#GameUI2_SendFeedback"
 	}
 	"frame_topGrip"
 	{
