@@ -380,14 +380,15 @@ void CMapSelectorDialog::CloseAllMapInfoDialogs()
 //-----------------------------------------------------------------------------
 CDialogMapInfo *CMapSelectorDialog::GetDialogGameInfoForFriend(uint64 ulSteamIDFriend)
 {
-    FOR_EACH_VEC(m_vecMapInfoDialogs, i)
-    {
-        CDialogMapInfo *pDlg = m_vecMapInfoDialogs[i];
-        if (pDlg && pDlg->GetAssociatedFriend() == ulSteamIDFriend)
-        {
-            return pDlg;
-        }
-    }
+    //FOR_EACH_VEC(m_vecMapInfoDialogs, i)
+    //{
+    //    CDialogMapInfo *pDlg = m_vecMapInfoDialogs[i];
+    //    if (pDlg && pDlg->GetAssociatedFriend() == ulSteamIDFriend)
+    //    {
+    //        return pDlg;
+    //    }
+    //}
+    // We don't have friends
     return nullptr;
 }
 

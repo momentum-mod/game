@@ -363,6 +363,14 @@ void CMapzoneEdit::Update()
         {
             m_nBuildStage = BUILDSTAGE_NONE;
             m_bEditing = true;
+            if (!m_bFirstEdit)
+            {
+                CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+                filter.MakeReliable();
+                UserMessageBegin(filter, "MB_EditingZone");
+                MessageEnd();
+            }
+            m_bFirstEdit = true;
         }
     }
     else

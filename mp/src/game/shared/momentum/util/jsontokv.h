@@ -15,11 +15,11 @@ class CJsonToKeyValues
 
     // Given a node, converts it and all its childern to KeyValues.
     // Caller has to make sure the returned value is not of nullptr
-    KeyValues *ConvertJsonToKeyValues(JsonNode *);
+    static KeyValues *ConvertJsonToKeyValues(JsonNode *);
 
   private:
     // Maps a node (and later its childern) to a keyvalue
-    KeyValues *MapNode(JsonNode *);
+    static KeyValues *MapNode(JsonNode *);
     // Maps a node and its children to the given keyvalue (recursively)
-    void MapNode(JsonNode *, KeyValues *);
+    static void MapNode(JsonNode *, KeyValues *);
 };
