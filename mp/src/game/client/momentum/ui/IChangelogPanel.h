@@ -2,7 +2,7 @@
 
 #include "vgui/IVGui.h"
 
-class IVersionWarnPanel
+class IChangelogPanel
 {
   public:
     virtual void Create(vgui::VPANEL parent) = 0;
@@ -13,4 +13,4 @@ class IVersionWarnPanel
     virtual void SetChangelog(const char *pChangelog) const = 0;
 };
 
-extern IVersionWarnPanel *versionwarnpanel;
+extern IChangelogPanel *changelogpanel;

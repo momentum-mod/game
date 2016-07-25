@@ -1,38 +1,32 @@
 #include "cbase.h"
+
 #include "Timer.h"
 #include "in_buttons.h"
 #include "mom_player.h"
-#include "mom_triggers.h"
 #include "mom_replay_entity.h"
+#include "mom_triggers.h"
 
 #include "tier0/memdbgon.h"
 
 #define AVERAGE_STATS_INTERVAL 0.1
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropInt(SENDINFO(m_iShotsFired)),
-SendPropInt(SENDINFO(m_iDirection)),
-SendPropBool(SENDINFO(m_bResumeZoom)),
-SendPropInt(SENDINFO(m_iLastZoom)),
-SendPropBool(SENDINFO(m_bDidPlayerBhop)),
-SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-SendPropBool(SENDINFO(m_bHasPracticeMode)),
-SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
-END_SEND_TABLE();
+SendPropInt(SENDINFO(m_iShotsFired)), SendPropInt(SENDINFO(m_iDirection)), SendPropBool(SENDINFO(m_bResumeZoom)),
+    SendPropInt(SENDINFO(m_iLastZoom)), SendPropBool(SENDINFO(m_bDidPlayerBhop)),
+    SendPropInt(SENDINFO(m_iSuccessiveBhops)), SendPropBool(SENDINFO(m_bHasPracticeMode)),
+    SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(CheckForBhop),
-DEFINE_THINKFUNC(UpdateRunStats),
-DEFINE_THINKFUNC(CalculateAverageStats),
-DEFINE_THINKFUNC(LimitSpeedInStartZone),
-END_DATADESC();
+DEFINE_THINKFUNC(CheckForBhop)
+, DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), DEFINE_THINKFUNC(LimitSpeedInStartZone),
+    END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
-CMomentumPlayer::CMomentumPlayer() : 
-      m_duckUntilOnGround(false), m_flStamina(0), m_flTicksOnGround(0), m_flLastVelocity(0), m_flLastSyncVelocity(0),
+CMomentumPlayer::CMomentumPlayer()
+    : m_duckUntilOnGround(false), m_flStamina(0), m_flTicksOnGround(0), m_flLastVelocity(0), m_flLastSyncVelocity(0),
       m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
       m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
@@ -55,22 +49,22 @@ CMomentumPlayer::~CMomentumPlayer() {}
 void CMomentumPlayer::Precache()
 {
 // Name of our entity's model
-    //MOM_TODO: Replace this with the custom player model
+// MOM_TODO: Replace this with the custom player model
 #define ENTITY_MODEL "models/player/player_shape_base.mdl"
     PrecacheModel(ENTITY_MODEL);
 
     BaseClass::Precache();
 }
 
-void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
+void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
-        //Hide the mapfinished panel and reset our speed to normal
+        // Hide the mapfinished panel and reset our speed to normal
         m_RunData.m_bMapFinished = false;
         SetLaggedMovementValue(1.0f);
 
-        //Fix for the replay system not being able to listen to events
+        // Fix for the replay system not being able to listen to events
         if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
         {
             g_ReplaySystem->GetReplayManager()->UnloadPlayback();
@@ -81,7 +75,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)
 void CMomentumPlayer::Spawn()
 {
     SetModel(ENTITY_MODEL);
-    SetBodygroup(1, 11);//BODY_PROLATE_ELLIPSE
+    SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
@@ -93,6 +87,34 @@ void CMomentumPlayer::Spawn()
     {
     case MOMGM_BHOP:
     case MOMGM_SURF:
+    {
+        int startnum = 0;
+        int endnum = 0;
+
+        CBaseEntity *pEnt;
+
+        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
+        while (pEnt)
+        {
+            startnum++;
+            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
+        }
+
+        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
+        while (pEnt)
+        {
+            endnum++;
+            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
+        }
+
+        if (startnum == 0 || endnum == 0)
+        {
+            CSingleUserRecipientFilter filter(this);
+            filter.MakeReliable();
+            UserMessageBegin(filter, "MB_NoStartOrEnd");
+            MessageEnd();
+        }
+    }
     case MOMGM_UNKNOWN:
     default:
         EnableAutoBhop();
@@ -148,18 +170,15 @@ void CMomentumPlayer::Spawn()
 }
 
 // Obtains the player's previous origin using their current origin as a base.
-Vector CMomentumPlayer::GetPrevOrigin(void)
-{
-    return GetPrevOrigin(GetLocalOrigin());
-}
+Vector CMomentumPlayer::GetPrevOrigin(void) { return GetPrevOrigin(GetLocalOrigin()); }
 
 // Obtains the player's previous origin using a vector as the base, subtracting one tick's worth of velocity.
 Vector CMomentumPlayer::GetPrevOrigin(const Vector &base)
 {
     Vector velocity = GetLocalVelocity();
     Vector prevOrigin(base.x - (velocity.x * gpGlobals->interval_per_tick),
-        base.y - (velocity.y * gpGlobals->interval_per_tick),
-        base.z - (velocity.z * gpGlobals->interval_per_tick));
+                      base.y - (velocity.y * gpGlobals->interval_per_tick),
+                      base.z - (velocity.z * gpGlobals->interval_per_tick));
     return prevOrigin;
 }
 
@@ -235,11 +254,11 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&p
     return false;
 }
 
-bool CMomentumPlayer::ClientCommand(const CCommand& args)
+bool CMomentumPlayer::ClientCommand(const CCommand &args)
 {
     auto cmd = args[0];
 
-    //We're overriding this to prevent the spec_mode to change to ROAMING,
+    // We're overriding this to prevent the spec_mode to change to ROAMING,
     // remove this if we want to allow the player to fly around their ghost as it goes
     // (and change the ghost entity code to match as well)
     if (!stricmp(cmd, "spec_mode")) // new observer mode
@@ -349,8 +368,8 @@ void CMomentumPlayer::UpdateRunStats()
 
     if (g_Timer->IsRunning())
     {
-        int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
-        if (!m_bPrevTimerRunning) // timer started on this tick
+        int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
+        if (!m_bPrevTimerRunning)                   // timer started on this tick
         {
             // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
             // (for surf)
@@ -451,10 +470,9 @@ void CMomentumPlayer::ResetRunStats()
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
-
     if (g_Timer->IsRunning())
     {
-        int currentZone = m_RunData.m_iCurrentZone;//g_Timer->GetCurrentZoneNumber();
+        int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
 
         m_flZoneTotalSync[currentZone] += m_RunData.m_flStrafeSync;
         m_flZoneTotalSync2[currentZone] += m_RunData.m_flStrafeSync2;
@@ -463,11 +481,13 @@ void CMomentumPlayer::CalculateAverageStats()
 
         m_nZoneAvgCount[currentZone]++;
 
-        m_RunStats.SetZoneStrafeSyncAvg(currentZone, m_flZoneTotalSync[currentZone] / float(m_nZoneAvgCount[currentZone]));
-        m_RunStats.SetZoneStrafeSync2Avg(currentZone, m_flZoneTotalSync2[currentZone] / float(m_nZoneAvgCount[currentZone]));
+        m_RunStats.SetZoneStrafeSyncAvg(currentZone,
+                                        m_flZoneTotalSync[currentZone] / float(m_nZoneAvgCount[currentZone]));
+        m_RunStats.SetZoneStrafeSync2Avg(currentZone,
+                                         m_flZoneTotalSync2[currentZone] / float(m_nZoneAvgCount[currentZone]));
         m_RunStats.SetZoneVelocityAvg(currentZone,
-            m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]),
-            m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]));
+                                      m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]),
+                                      m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]));
 
         // stage 0 is "overall" - also update these as well, no matter which stage we are on
         m_flZoneTotalSync[0] += m_RunData.m_flStrafeSync;
@@ -478,9 +498,8 @@ void CMomentumPlayer::CalculateAverageStats()
 
         m_RunStats.SetZoneStrafeSyncAvg(0, m_flZoneTotalSync[currentZone] / float(m_nZoneAvgCount[currentZone]));
         m_RunStats.SetZoneStrafeSync2Avg(0, m_flZoneTotalSync2[currentZone] / float(m_nZoneAvgCount[currentZone]));
-        m_RunStats.SetZoneVelocityAvg(0, 
-            m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]), 
-            m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]));
+        m_RunStats.SetZoneVelocityAvg(0, m_flZoneTotalVelocity[currentZone][0] / float(m_nZoneAvgCount[currentZone]),
+                                      m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]));
     }
 
     // think once per 0.1 second interval so we avoid making the totals extremely large
@@ -488,8 +507,9 @@ void CMomentumPlayer::CalculateAverageStats()
 }
 // This limits the player's speed in the start zone, depending on which gamemode the player is currently playing.
 // On surf/other, it only limits practice mode speed. On bhop/scroll, it limits the movement speed above a certain
-// threshhold, and clamps the player's velocity if they go above it. 
-// This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and bhop.
+// threshhold, and clamps the player's velocity if they go above it.
+// This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
+// bhop.
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
@@ -498,8 +518,7 @@ void CMomentumPlayer::LimitSpeedInStartZone()
     bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
     if (m_RunData.m_bIsInZone && m_RunData.m_iCurrentZone == 1)
     {
-        if (GetGroundEntity() == nullptr &&
-            !m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
+        if (GetGroundEntity() == nullptr && !m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
         else
             m_nTicksInAir = 0;
@@ -541,10 +560,10 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 }
 
 // Override of CBasePlayer::SetObserverTarget that lets us add/remove ourselves as spectors to the ghost
-bool CMomentumPlayer::SetObserverTarget(CBaseEntity* target)
+bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 {
-    CMomentumReplayGhostEntity *pGhostToSpectate = dynamic_cast<CMomentumReplayGhostEntity*>(target),
-        *pCurrentGhost = GetReplayEnt();
+    CMomentumReplayGhostEntity *pGhostToSpectate = dynamic_cast<CMomentumReplayGhostEntity *>(target),
+                               *pCurrentGhost = GetReplayEnt();
 
     if (pCurrentGhost)
     {
@@ -565,16 +584,16 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 {
     int startIndex = GetNextObserverSearchStartPoint(bReverse);
 
-    int	currentIndex = startIndex;
+    int currentIndex = startIndex;
     int iDir = bReverse ? -1 : 1;
 
     do
     {
-        CBaseEntity * nextTarget = UTIL_EntityByIndex(currentIndex);
+        CBaseEntity *nextTarget = UTIL_EntityByIndex(currentIndex);
 
         if (IsValidObserverTarget(nextTarget))
         {
-            return nextTarget;	// found next valid player
+            return nextTarget; // found next valid player
         }
 
         currentIndex += iDir;
@@ -592,19 +611,19 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
-    //slowdown when map is finished
+    // slowdown when map is finished
     if (m_RunData.m_bMapFinished)
-        //decrease our lagged movement value by 10% every tick
+        // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else
-        m_flTweenVelValue = 1.0f;//Reset the tweened value back to normal
+        m_flTweenVelValue = 1.0f; // Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
 
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "TWEEN");
 }
 
-CMomentumReplayGhostEntity* CMomentumPlayer::GetReplayEnt() const
+CMomentumReplayGhostEntity *CMomentumPlayer::GetReplayEnt() const
 {
     return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
 }
