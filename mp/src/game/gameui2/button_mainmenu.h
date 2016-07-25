@@ -11,6 +11,13 @@ enum ButtonState
     Released
 };
 
+enum ButtonType
+{
+    SHARED,
+    MAIN_MENU,
+    IN_GAME
+};
+
 enum TextAlignment
 {
     LEFT,
@@ -55,6 +62,9 @@ class Button_MainMenu : public Button2D
     bool IsBlank() const { return m_bIsBlank; }
 
     virtual void SetTextAlignment(TextAlignment alignment) { m_iTextAlignment = alignment; }
+    virtual void SetButtonType(ButtonType type) { m_nType = type; }
+    virtual ButtonType GetButtonType() const { return m_nType; }
+    virtual vgui::AnimationController GetAnimationController() const { return m_pAnimController; }
 
   private:
     ButtonState m_sButtonState;
@@ -134,4 +144,5 @@ class Button_MainMenu : public Button2D
 
     bool m_bIsBlank;
     TextAlignment m_iTextAlignment;
+    ButtonType m_nType;
 };

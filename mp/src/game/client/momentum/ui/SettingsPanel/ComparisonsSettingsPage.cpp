@@ -1,6 +1,7 @@
 #include "cbase.h"
 
 #include "ComparisonsSettingsPage.h"
+#include <ienginevgui.h>
 
 ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pParent, "ComparisonsSettings")
 {
@@ -66,7 +67,7 @@ ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pPa
     m_pStrafeShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ShowStrafes");
     m_pStrafeShow->AddActionSignalTarget(this);
 
-    InitBogusComparePanel();
+    m_pComparisonsFrame = nullptr;
 }
 
 ComparisonsSettingsPage::~ComparisonsSettingsPage()
@@ -89,18 +90,19 @@ void ComparisonsSettingsPage::DestroyBogusComparePanel()
 void ComparisonsSettingsPage::InitBogusComparePanel()
 {
     //Initialize the frame we're putting this into
-    m_pComparisonsFrame = new Frame(GetScrollPanel(), "ComparisonsFrame");
+    m_pComparisonsFrame = new Frame(nullptr, "ComparisonsFrame");
+    m_pComparisonsFrame->SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     m_pComparisonsFrame->SetSize(350, scheme()->GetProportionalScaledValue(275));
     m_pComparisonsFrame->SetMoveable(false);
     m_pComparisonsFrame->MoveToFront();
     m_pComparisonsFrame->SetSizeable(false);
     m_pComparisonsFrame->SetTitle("#MOM_Settings_Compare_Bogus_Run", false);
     m_pComparisonsFrame->SetTitleBarVisible(true);
+    m_pComparisonsFrame->SetMenuButtonResponsive(false);
     m_pComparisonsFrame->SetCloseButtonVisible(true);
     m_pComparisonsFrame->SetMinimizeButtonVisible(false);
     m_pComparisonsFrame->SetMaximizeButtonVisible(false);
-    m_pComparisonsFrame->PinToSibling(GetName(), PIN_CENTER_RIGHT, PIN_CENTER_LEFT);
-    m_pComparisonsFrame->SetParent(this);
+    m_pComparisonsFrame->PinToSibling("CMomentumSettingsPanel", PIN_TOPRIGHT, PIN_TOPLEFT);
 
     //Initialize a bogus version of the HUD element
     m_pBogusComparisonsPanel = new C_RunComparisons("BogusComparisonsPanel");
@@ -112,8 +114,14 @@ void ComparisonsSettingsPage::InitBogusComparePanel()
     m_pBogusComparisonsPanel->SetSize(200, 150);
     m_pBogusComparisonsPanel->SetPos(14, 30);
     m_pBogusComparisonsPanel->LoadBogusComparisons();
-    scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
-    m_pBogusComparisonsPanel->ApplySchemeSettings(scheme()->GetIScheme(scheme()->GetScheme("ClientScheme")));
+    IScheme *pClientScheme = scheme()->GetIScheme(scheme()->GetScheme("ClientScheme"));
+    if (!pClientScheme)
+    {
+        //Only load this if we haven't already
+        scheme()->LoadSchemeFromFile("resource/ClientScheme.res", "ClientScheme");
+        pClientScheme = scheme()->GetIScheme(scheme()->GetScheme("ClientScheme"));
+    }
+    m_pBogusComparisonsPanel->ApplySchemeSettings(pClientScheme);
     m_pBogusComparisonsPanel->SetVisible(true);
     m_pBogusComparisonsPanel->MakeReadyForUse();
 
@@ -176,6 +184,22 @@ void ComparisonsSettingsPage::LoadSettings()
     }
 }
 
+void ComparisonsSettingsPage::OnPageShow()
+{
+    BaseClass::OnPageShow();
+
+    if (!m_pComparisonsFrame)
+        InitBogusComparePanel();
+    else if (!m_pComparisonsFrame->IsVisible())
+        m_pComparisonsFrame->Activate();
+}
+
+void ComparisonsSettingsPage::OnPageHide()
+{
+    if (m_pComparisonsFrame)
+        m_pComparisonsFrame->Close();
+}
+
 void ComparisonsSettingsPage::OnCheckboxChecked(Panel *p)
 {
     BaseClass::OnCheckboxChecked(p);
@@ -212,7 +236,8 @@ void ComparisonsSettingsPage::OnCheckboxChecked(Panel *p)
         m_pStrafeShow->SetEnabled(bEnabled);
 
         //Bogus panel
-        m_pComparisonsFrame->SetVisible(bEnabled);
+        if (m_pComparisonsFrame)
+            m_pComparisonsFrame->SetVisible(bEnabled);
     }
 
     else if (p == m_pVelocityShow)

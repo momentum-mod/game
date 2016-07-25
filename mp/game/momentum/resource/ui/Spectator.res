@@ -55,6 +55,7 @@
 		"textAlignment"		"west"
 		"dulltext"			"0"
 		"brighttext"		"0"
+        "auto_wide_tocontents" "1"
 	}
     "timelabel"
 	{
@@ -72,6 +73,7 @@
 		"textAlignment"		"west"
 		"dulltext"			"0"
 		"brighttext"		"0"
+        "auto_wide_tocontents" "1"
 	}
     "replaylabel"
 	{
@@ -88,6 +90,7 @@
 		"tabPosition"		"0"
 		"textAlignment"		"center"
 	}
+    //"Map" label
 	"extrainfo"
 	{
 		"ControlName"		"Label"
@@ -104,6 +107,7 @@
 		"textAlignment"		"west"
 		"dulltext"			"0"
 		"brighttext"		"0"
+        "auto_wide_tocontents" "1"
 	}
     //Not used?
 	"titlelabel"

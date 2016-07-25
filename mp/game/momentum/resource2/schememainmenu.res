@@ -18,12 +18,12 @@
 	
 		"MainMenu.Buttons.OffsetX"						"32"
 		"MainMenu.Buttons.OffsetY"						"32"
-		"MainMenu.Buttons.Space"						"10"
+		"MainMenu.Buttons.Space"						"0"
 	
-		"MainMenu.Button.Width.Out"						"384"
+		"MainMenu.Button.Width.Out"						"324"
 		"MainMenu.Button.Width.Over"					"384"
 		"MainMenu.Button.Width.Pressed"					"384"
-		"MainMenu.Button.Width.Released"				"384"
+		"MainMenu.Button.Width.Released"				"324"
 
 		"MainMenu.Button.Height.Out"					"40"
 		"MainMenu.Button.Height.Over"					"74"
@@ -34,19 +34,19 @@
 		"MainMenu.Button.Text.OffsetY"					"0"
 
 		"MainMenu.Button.Description.OffsetX"			"1"
-		"MainMenu.Button.Description.OffsetY"			"-3"
+		"MainMenu.Button.Description.OffsetY"			"-9"
 
 		"MainMenu.Button.Description.Hide.Out"			"1"
 		"MainMenu.Button.Description.Hide.Over"			"0"
 		"MainMenu.Button.Description.Hide.Pressed"		"0"
-		"MainMenu.Button.Description.Hide.Released"		"0"
+		"MainMenu.Button.Description.Hide.Released"		"1"
 
 		"MainMenu.Button.Background.Blur.Out"			"0"
-		"MainMenu.Button.Background.Blur.Over"			"1"
-		"MainMenu.Button.Background.Blur.Pressed"		"1"
-		"MainMenu.Button.Background.Blur.Released"		"1"
-
-		"MainMenu.Button.Animation.Width"				"0.15"
+		"MainMenu.Button.Background.Blur.Over"			"0"
+		"MainMenu.Button.Background.Blur.Pressed"		"0"
+		"MainMenu.Button.Background.Blur.Released"		"0"
+        
+        "MainMenu.Button.Animation.Width"				"0.15"
 		"MainMenu.Button.Animation.Height"				"0.25"
 		"MainMenu.Button.Animation.Background"			"0.2"
 		"MainMenu.Button.Animation.Text"				"0.2"

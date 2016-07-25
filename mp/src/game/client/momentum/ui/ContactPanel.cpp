@@ -54,7 +54,7 @@ CContactPanel::CContactPanel(VPANEL parent)
     SetVisible(false);
     AddActionSignalTarget(this);
 
-    LoadControlSettings("resource/ui/ContactPanel.res");
+    
     m_pWebPage = new HTML(this, "HTMLForm", true);
     m_pWebPage->AddActionSignalTarget(this);
 
@@ -65,7 +65,7 @@ void CContactPanel::InitPanel()
 {
 #define SCALE(num) scheme()->GetProportionalScaledValue(num)
 #define SCALEXY(x,y) SCALE(x), SCALE(y)
-
+    LoadControlSettings("resource/ui/ContactPanel.res");
     m_pWebPage->SetPos(SCALEXY(0, 25));
     m_pWebPage->SetSize(GetWide(), GetTall() - SCALE(25));
     m_pWebPage->OpenURL("http://momentum-mod.org/contact", nullptr);

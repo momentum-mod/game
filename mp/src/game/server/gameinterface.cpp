@@ -1546,23 +1546,31 @@ void CServerGameDLL::RestoreGlobalState(CSaveRestoreData *s)
 
 void CServerGameDLL::Save( CSaveRestoreData *s )
 {
+    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+    filter.MakeReliable();
+    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
+    MessageEnd();
     Warning("************************************\n");
     Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
     Warning("Try using the checkpoint menu instead!\n");
     Warning("************************************\n");
-	//CSave saveHelper( s );
-	//g_pGameSaveRestoreBlockSet->Save( &saveHelper );
+	/*CSave saveHelper( s );
+	g_pGameSaveRestoreBlockSet->Save( &saveHelper );*/
 }
 
 void CServerGameDLL::Restore( CSaveRestoreData *s, bool b)
 {
+    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+    filter.MakeReliable();
+    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
+    MessageEnd();
     Warning("************************************\n");
     Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
     Warning("Try using the checkpoint menu instead!\n");
     Warning("************************************\n");
-	//CRestore restore(s);
-	//g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	//g_pGameSaveRestoreBlockSet->PostRestore();
+	/*CRestore restore(s);
+	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
+	g_pGameSaveRestoreBlockSet->PostRestore();*/
 }
 
 //-----------------------------------------------------------------------------
