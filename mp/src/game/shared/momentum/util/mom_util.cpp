@@ -1,4 +1,5 @@
 #include "cbase.h"
+
 #include "filesystem.h"
 #include "mom_player_shared.h"
 #include "mom_util.h"
@@ -209,7 +210,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     if (bIOFailure)
     {
         pError = "Error loading changelog due to bIOFailure!";
-        versionwarnpanel->SetChangelog(pError);
+        changelogpanel->SetChangelog(pError);
         return;
     }
     uint32 size;
@@ -217,7 +218,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     if (size == 0)
     {
         pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
-        versionwarnpanel->SetChangelog(pError);
+        changelogpanel->SetChangelog(pError);
         return;
     }
 
@@ -225,7 +226,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
 
-    versionwarnpanel->SetChangelog(pDataPtr);
+    changelogpanel->SetChangelog(pDataPtr);
 
     CleanupRequest(pCallback, pData);
 }
@@ -256,9 +257,9 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
         if (repo > local)
         {
-            versionwarnpanel->SetVersion(versionValue);
+            changelogpanel->SetVersion(versionValue);
             GetRemoteChangelog();
-            versionwarnpanel->Activate();
+            changelogpanel->Activate();
             break;
         }
         if (repo < local)
@@ -511,6 +512,36 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, 
             }
         }
     }
+}
+
+#define SAVE_3D_TO_KV(kvInto, pName, toSave) \
+    if (!kvInto || !pName) return; \
+    char value[512]; \
+    Q_snprintf(value, 512, "%f %f %f", toSave.x, toSave.y, toSave.z); \
+    kvInto->SetString(pName, value);
+
+#define LOAD_3D_FROM_KV(kvFrom, pName, into) \
+    if (!kvFrom || !pName) return; \
+    sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
+
+void MomentumUtil::KVSaveVector(KeyValues* kvInto, const char* pName, Vector& toSave)
+{
+    SAVE_3D_TO_KV(kvInto, pName, toSave);
+}
+
+void MomentumUtil::KVLoadVector(KeyValues* kvFrom, const char* pName, Vector& vecInto)
+{
+    LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
+}
+
+void MomentumUtil::KVSaveQAngles(KeyValues* kvInto, const char* pName, QAngle& toSave)
+{
+    SAVE_3D_TO_KV(kvInto, pName, toSave);
+}
+
+void MomentumUtil::KVLoadQAngles(KeyValues* kvFrom, const char* pName, QAngle& angInto)
+{
+    LOAD_3D_FROM_KV(kvFrom, pName, angInto);
 }
 
 static MomentumUtil s_momentum_util;

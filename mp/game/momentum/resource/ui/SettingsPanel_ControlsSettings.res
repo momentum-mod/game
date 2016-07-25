@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "ControlsSettings"
-        "tall" "255"
+        "tall" "60"
         "wide" "1000"
     }
     

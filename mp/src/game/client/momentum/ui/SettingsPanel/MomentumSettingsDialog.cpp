@@ -58,7 +58,6 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetParent(parent);
     SetAutoDelete(true);
     LoadControlSettings("resource/ui/SettingsPanel_Base.res");
-    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
 
@@ -68,6 +67,8 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetPos(wide / 3, tall / 4);
     SetApplyButtonVisible(true);
     SetTitleBarVisible(true);
+    SetMenuButtonResponsive(false);
+    SetSysMenu(nullptr);
     SetMinimizeButtonVisible(false);
     SetMaximizeButtonVisible(false);
     SetCloseButtonVisible(true);

@@ -62,6 +62,7 @@ save/
 config.cfg
 server_blacklist.txt
 gamestate.txt
+checkpoints.txt
 *.ain
 stats.txt
 voice_ban.dt

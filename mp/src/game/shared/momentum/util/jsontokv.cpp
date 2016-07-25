@@ -1,10 +1,17 @@
 #include "cbase.h"
 
 #include "jsontokv.h"
+
 KeyValues *CJsonToKeyValues::ConvertJsonToKeyValues(JsonNode *node)
 {
-    // This simply calls MapNode(node), which handles creating the new keyvalue and making sure node is not nullptr
-    return MapNode(node);
+    //This iterates through the base JsonObject node
+    KeyValues *pKvToReturn = new KeyValues("Response");
+    while (node)
+    {
+        MapNode(node, pKvToReturn);
+        node = node->next;
+    }
+    return pKvToReturn;
 }
 
 void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)
@@ -23,28 +30,11 @@ void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)
         break;
     case JSON_ARRAY:
     case JSON_OBJECT:
-        for (auto i : value)
-        {
-            // If what we're going to parse is an object, then we need to add it as a subkey.
-            if (i->value.getTag() == JSON_OBJECT || i->value.getTag() == JSON_ARRAY)
-            {
-                KeyValues *pSub = MapNode(i);
-                if (pSub)
-                {
-                    kv->AddSubKey(pSub);
-                }
-            }
-            else // Otherwise (string, numbers, booleans) we just add them as an entry of the current key
-            {
-                MapNode(i, kv);
-            }
-        }
+        kv->AddSubKey(MapNode(node));
         break;
     case JSON_TRUE:
-        kv->SetBool(node->key, true);
-        break;
     case JSON_FALSE:
-        kv->SetBool(node->key, false);
+        kv->SetBool(node->key, value.getTag() == JSON_TRUE);
         break;
     case JSON_NULL:
         kv->SetString(node->key, nullptr);
@@ -60,12 +50,34 @@ KeyValues *CJsonToKeyValues::MapNode(JsonNode *node)
         return nullptr;
 
     // @Ruben: When node->key is null on the json, key is not nullptr, but 0xffeeffee.
-    // MOM_TODO: Is it always that adress? If not, when / how does it change?
+    // MOM_TODO: Is it always that address? If not, when / how does it change?
+    bool isKeyNull = node->key == nullptr || POINTER_TO_INT(node->key) == 0xffeeffee;
+
+    // @Gocnak: Note: The key should never be null in here. The only time it would be null is either
+    // you pass the first node into this method (handled by the Convert method), or if the response from the API is bad!
+    // But you never know, so *shrug*
 
     // Parent keyvalue.
-    KeyValues *pNodeValues =
-        new KeyValues((node->key == nullptr || POINTER_TO_INT(node->key) == 0xffeeffee) ? nullptr : node->key);
+    KeyValues *pNodeValues = new KeyValues(isKeyNull ? "(null)" : node->key);
 
-    MapNode(node, pNodeValues);
+    for (auto i : node->value)
+    {
+        // If what we're going to parse is an object, then we need to add it as a subkey.
+        if (i->value.getTag() == JSON_OBJECT || i->value.getTag() == JSON_ARRAY)
+        {
+            //Array or just normal object, make this into a subkey
+            KeyValues *pSub = MapNode(i);
+            //Add it to our parent
+            pNodeValues->AddSubKey(pSub);
+            //Iterate through it
+            MapNode(i->value.toNode(), pSub);
+        }
+        else 
+        {
+            // Otherwise (strings, numbers, booleans) we just add them as an entry of the current key
+            MapNode(i, pNodeValues);
+        }
+    }
+
     return pNodeValues;
 }

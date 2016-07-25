@@ -102,6 +102,8 @@ void CHudKeyPressDisplay::Init()
     FIND_LOCALIZATION(m_pwDuck, "#MOM_Duck");
 
     m_fJumpColorUntil = m_fDuckColorUntil = 0;
+
+    m_nButtons = 0;
 }
 void CHudKeyPressDisplay::Paint()
 {
@@ -208,7 +210,9 @@ void CHudKeyPressDisplay::OnThink()
 void CHudKeyPressDisplay::Reset()
 {
     // reset buttons member in case a button gets stuck
-    m_nButtons = NULL;
+    m_nButtons = 0;
+    m_fDuckColorUntil = 0;
+    m_fJumpColorUntil = 0;
 }
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 {

@@ -111,15 +111,19 @@ $Project "Client (Momentum)"
                 $File 	"momentum\ui\ReplayContextMenu.h"
                 $File 	"momentum\ui\ReplayContextMenu.cpp"
 
-                $File   "momentum\ui\IVersionWarnPanel.h"
-                $File   "momentum\ui\VersionWarnPanel.cpp"
-                $File   "momentum\ui\VersionWarnPanel.h"
+                $File   "momentum\ui\IChangelogPanel.h"
+                $File   "momentum\ui\ChangelogPanel.cpp"
+                $File   "momentum\ui\ChangelogPanel.h"
                 
                 $File "momentum\ui\momSpectatorGUI.cpp"
                 $File "momentum\ui\momSpectatorGUI.h"
                 
                 $File "momentum\ui\CVarSlider.h"
                 $File "momentum\ui\CVarSlider.cpp"
+
+                $File "momentum\ui\IMessageboxPanel.h"
+                $File "momentum\ui\MessageboxPanel.cpp"
+                $File "momentum\ui\MessageboxPanel.h"
             }
 
             $File   "momentum\client_events.h"
