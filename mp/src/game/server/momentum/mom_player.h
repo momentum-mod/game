@@ -17,6 +17,16 @@ class CMomentumReplayGhostEntity;
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 
+//Checkpoints used in the "Checkpoint menu"
+struct Checkpoint
+{
+    Vector pos;
+    Vector vel;
+    QAngle ang;
+    char targetName[512];
+    char targetClassName[512];
+};
+
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 {
   public:
@@ -138,8 +148,39 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     //Overrode for the spectating GUI
     bool ClientCommand(const CCommand &args) override;
 
+    //--------- CheckpointMenu stuff --------------------------------
+    CNetworkVar(int, m_iCurrentStepCP); //The current checkpoint the player is on
+    CNetworkVar(bool, m_bUsingCPMenu); //If this player is using the checkpoint menu or not
+    CNetworkVar(int, m_iCheckpointCount); //How many checkpoints this player has
+
+    // Gets the current menu checkpoint index
+    int GetCurrentCPMenuStep() const { return m_iCurrentStepCP; }
+    // MOM_TODO: For leaderboard use later on
+    bool IsUsingCPMenu() const { return m_bUsingCPMenu; }
+    // Creates a checkpoint (menu) on the location of the player
+    void CreateCheckpoint();
+    // Removes last checkpoint (menu) form the checkpoint lists
+    void RemoveLastCheckpoint();
+    // Removes every checkpoint (menu) on the checkpoint list
+    void RemoveAllCheckpoints();
+    // Teleports the player to the checkpoint (menu) with the given index
+    void TeleportToCP(int);
+    // Teleports the player to their current checkpoint
+    void TeleportToCurrentCP() { TeleportToCP(m_iCurrentStepCP); }
+    // Sets the current checkpoint (menu) to the desired one with that index
+    void SetCurrentCPMenuStep(int iNewNum) { m_iCurrentStepCP = iNewNum; }
+    // Gets the total amount of menu checkpoints
+    int GetCPCount() const { return m_rcCheckpoints.Size(); }
+    // Sets wheter or not we're using the CPMenu
+    // WARNING! No verification is done. It is up to the caller to don't give false information
+    void SetUsingCPMenu(bool bIsUsingCPMenu) { m_bUsingCPMenu = bIsUsingCPMenu; }
+
+    void SaveCPsToFile(KeyValues *kvInto);
+    void LoadCPsFromFile(KeyValues *kvFrom);
+
   private:
     CountdownTimer m_ladderSurpressionTimer;
+    CUtlVector<Checkpoint> m_rcCheckpoints;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
     EHANDLE g_pLastSpawn;

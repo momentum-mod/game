@@ -514,5 +514,35 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, 
     }
 }
 
+#define SAVE_3D_TO_KV(kvInto, pName, toSave) \
+    if (!kvInto || !pName) return; \
+    char value[512]; \
+    Q_snprintf(value, 512, "%f %f %f", toSave.x, toSave.y, toSave.z); \
+    kvInto->SetString(pName, value);
+
+#define LOAD_3D_FROM_KV(kvFrom, pName, into) \
+    if (!kvFrom || !pName) return; \
+    sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
+
+void MomentumUtil::KVSaveVector(KeyValues* kvInto, const char* pName, Vector& toSave)
+{
+    SAVE_3D_TO_KV(kvInto, pName, toSave);
+}
+
+void MomentumUtil::KVLoadVector(KeyValues* kvFrom, const char* pName, Vector& vecInto)
+{
+    LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
+}
+
+void MomentumUtil::KVSaveQAngles(KeyValues* kvInto, const char* pName, QAngle& toSave)
+{
+    SAVE_3D_TO_KV(kvInto, pName, toSave);
+}
+
+void MomentumUtil::KVLoadQAngles(KeyValues* kvFrom, const char* pName, QAngle& angInto)
+{
+    LOAD_3D_FROM_KV(kvFrom, pName, angInto);
+}
+
 static MomentumUtil s_momentum_util;
 MomentumUtil *mom_UTIL = &s_momentum_util;

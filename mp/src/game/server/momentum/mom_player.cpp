@@ -4,6 +4,7 @@
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
+#include "mom_system_checkpoint.h"
 #include "mom_triggers.h"
 
 #include "tier0/memdbgon.h"
@@ -11,11 +12,20 @@
 #define AVERAGE_STATS_INTERVAL 0.1
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropInt(SENDINFO(m_iShotsFired)), SendPropInt(SENDINFO(m_iDirection)), SendPropBool(SENDINFO(m_bResumeZoom)),
-    SendPropInt(SENDINFO(m_iLastZoom)), SendPropBool(SENDINFO(m_bDidPlayerBhop)),
-    SendPropInt(SENDINFO(m_iSuccessiveBhops)), SendPropBool(SENDINFO(m_bHasPracticeMode)),
-    SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
+SendPropInt(SENDINFO(m_iShotsFired)),
+SendPropInt(SENDINFO(m_iDirection)),
+SendPropBool(SENDINFO(m_bResumeZoom)),
+SendPropInt(SENDINFO(m_iLastZoom)),
+SendPropBool(SENDINFO(m_bDidPlayerBhop)),
+SendPropInt(SENDINFO(m_iSuccessiveBhops)),
+SendPropBool(SENDINFO(m_bHasPracticeMode)),
+SendPropBool(SENDINFO(m_bUsingCPMenu)),
+SendPropInt(SENDINFO(m_iCurrentStepCP)),
+SendPropInt(SENDINFO(m_iCheckpointCount)),
+SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
+END_SEND_TABLE();
+
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop)
@@ -40,6 +50,10 @@ CMomentumPlayer::CMomentumPlayer()
     m_bDidPlayerBhop = false;
     m_iSuccessiveBhops = 0;
     m_bHasPracticeMode = false;
+
+    m_iCheckpointCount = 0;
+    m_bUsingCPMenu = false;
+    m_iCurrentStepCP = -1;
 
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -166,7 +180,9 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
     SetNextThink(gpGlobals->curtime);
-    DevLog("Finished spawn!\n");
+
+    //Load the player's checkpoints
+    g_MOMCheckpointSystem->LoadMapCheckpoints(this);
 }
 
 // Obtains the player's previous origin using their current origin as a base.
@@ -314,6 +330,84 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     }
 
     return BaseClass::ClientCommand(args);
+}
+
+void CMomentumPlayer::CreateCheckpoint()
+{
+    Checkpoint c;
+    c.ang = GetAbsAngles();
+    c.pos = GetAbsOrigin();
+    c.vel = GetAbsVelocity();
+    Q_strncpy(c.targetName, GetEntityName().ToCStr(), sizeof(c.targetName));
+    Q_strncpy(c.targetClassName, GetClassname(), sizeof(c.targetClassName));
+    m_rcCheckpoints.AddToTail(c);
+    if (m_iCurrentStepCP == m_iCheckpointCount - 1)
+        ++m_iCurrentStepCP;
+    else
+        m_iCurrentStepCP = m_iCheckpointCount;//Set it to the new checkpoint's index
+    ++m_iCheckpointCount;
+}
+
+void CMomentumPlayer::RemoveLastCheckpoint()
+{
+    if (m_rcCheckpoints.IsEmpty()) return;
+    m_rcCheckpoints.Remove(m_iCurrentStepCP);
+    //If there's one element left, we still need to decrease currentStep to -1
+    if (m_iCurrentStepCP == m_iCheckpointCount - 1)
+        --m_iCurrentStepCP;
+    //else we want it to shift forward one until it catches back up to the last checkpoint
+    --m_iCheckpointCount;
+}
+
+void CMomentumPlayer::RemoveAllCheckpoints()
+{
+    m_rcCheckpoints.RemoveAll();
+    m_iCurrentStepCP = -1;
+    m_iCheckpointCount = 0;
+}
+
+void CMomentumPlayer::TeleportToCP(int newCheckpoint)
+{
+    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0) return;
+    Checkpoint c = m_rcCheckpoints[newCheckpoint];
+    SetName(MAKE_STRING(c.targetName));
+    SetClassname(c.targetClassName);
+    Teleport(&c.pos, &c.ang, &c.vel);
+}
+
+void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
+{
+    FOR_EACH_VEC(m_rcCheckpoints, i)
+    {
+        Checkpoint c = m_rcCheckpoints[i];
+        char szCheckpointNum[6];//9 million checkpoints is pretty generous
+        Q_snprintf(szCheckpointNum, 6, "%i", i);
+        KeyValues *kvCP = new KeyValues(szCheckpointNum);
+        kvCP->SetString("targetName", c.targetName);
+        kvCP->SetString("targetClassName", c.targetClassName);
+        mom_UTIL->KVSaveVector(kvCP, "vel", c.vel);
+        mom_UTIL->KVSaveVector(kvCP, "pos", c.pos);
+        mom_UTIL->KVSaveQAngles(kvCP, "ang", c.ang);
+        kvInto->AddSubKey(kvCP);
+    }
+}
+
+void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
+{
+    if (!kvFrom) return;
+    FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
+    {
+        Checkpoint c;
+        Q_strncpy(c.targetName, kvCheckpoint->GetString("targetName"), sizeof(c.targetName));
+        Q_strncpy(c.targetClassName, kvCheckpoint->GetString("targetClassName"), sizeof(c.targetClassName));
+        mom_UTIL->KVLoadVector(kvCheckpoint, "pos", c.pos);
+        mom_UTIL->KVLoadVector(kvCheckpoint, "vel", c.vel);
+        mom_UTIL->KVLoadQAngles(kvCheckpoint, "ang", c.ang);
+        m_rcCheckpoints.AddToTail(c);
+    }
+
+    m_iCheckpointCount = m_rcCheckpoints.Count();
+    m_iCurrentStepCP = m_iCheckpointCount - 1;
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)

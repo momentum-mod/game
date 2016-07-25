@@ -79,6 +79,12 @@ public:
         return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY),
             Vector2D(rectX + rectW, rectY + rectH));
     }
+
+    void KVSaveVector(KeyValues *kvInto, const char *pName, Vector &toSave);
+    void KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto);
+
+    void KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave);
+    void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
 };
 
 class CTimeSortFunc
