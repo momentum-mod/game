@@ -13,6 +13,11 @@ void __MsgFunc_MB_NoStartOrEnd(bf_read &msg)
     messageboxpanel->CreateMessagebox("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd");
 }
 
+void __MsgFunc_MB_EditingZone(bf_read &msg)
+{
+    messageboxpanel->CreateMessagebox("#MOM_MB_EditingZone_Title", "#MOM_MB_EditingZone");
+}
+
 // Constuctor: Initializes the Panel
 CMessageboxPanel::CMessageboxPanel(VPANEL parent) : BaseClass(nullptr, "MessageboxPanel")
 {
@@ -34,6 +39,7 @@ CMessageboxPanel::CMessageboxPanel(VPANEL parent) : BaseClass(nullptr, "Messageb
 
     HOOK_MESSAGE(MB_PlayerTriedSaveOrLoad);
     HOOK_MESSAGE(MB_NoStartOrEnd);
+    HOOK_MESSAGE(MB_EditingZone);
 }
 
 CMessageboxPanel::~CMessageboxPanel() { FlushMessageboxes(); }
