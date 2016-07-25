@@ -2,7 +2,7 @@
 
 #include "cbase.h"
 
-#include "IVersionWarnPanel.h"
+#include "IChangelogPanel.h"
 #include <vgui/IVGui.h>
 #include <vgui/ISystem.h>
 #include <vgui/ILocalize.h>
@@ -15,14 +15,14 @@
 
 using namespace vgui;
 
-// CVersionWarnPanel class
-class CVersionWarnPanel : public Frame
+// CChangelogPanel class
+class CChangelogPanel : public Frame
 {
-    DECLARE_CLASS_SIMPLE(CVersionWarnPanel, Frame);
-    // CVersionWarnPanel : This Class / vgui::Frame : BaseClass
+    DECLARE_CLASS_SIMPLE(CChangelogPanel, Frame);
+    // CChangelogPanel : This Class / vgui::Frame : BaseClass
 
-    CVersionWarnPanel(VPANEL parent); // Constructor
-    ~CVersionWarnPanel(){};           // Destructor
+    CChangelogPanel(VPANEL parent); // Constructor
+    ~CChangelogPanel(){};           // Destructor
 
     void SetVersion(const char *version) { Q_strncpy(m_cOnlineVersion, version, 12); }
 
@@ -64,15 +64,15 @@ class CVersionWarnPanel : public Frame
     wchar_t m_pwOnlineChangelog[4096]; // MOM_TODO: Determine a better size
 };
 
-class CVersionWarnPanelInterface : public IVersionWarnPanel
+class CChangelogInterface : public IChangelogPanel
 {
   private:
-    CVersionWarnPanel *pPanel;
+      CChangelogPanel *pPanel;
 
   public:
-    CVersionWarnPanelInterface() { pPanel = nullptr; }
-    ~CVersionWarnPanelInterface() { }
-    void Create(vgui::VPANEL parent) override { pPanel = new CVersionWarnPanel(parent); }
+      CChangelogInterface() { pPanel = nullptr; }
+      ~CChangelogInterface() { }
+    void Create(vgui::VPANEL parent) override { pPanel = new CChangelogPanel(parent); }
     void Destroy() override
     {
         if (pPanel)

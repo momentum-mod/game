@@ -1,9 +1,9 @@
-"resource/ui/versionwarnpanel.res"
+"resource/ui/ChangelogPanel.res"
 {
-	"VersionWarnPanel"
+	"ChangelogPanel"
 	{
-		"ControlName"		"CVersionWarnPanel"
-		"fieldName"		"VersionWarnPanel"
+		"ControlName"		"CChangelogPanel"
+		"fieldName"		"ChangelogPanel"
 		"xpos"		"c-250"
 		"ypos"		"c-125"
 		"wide"		"650"
