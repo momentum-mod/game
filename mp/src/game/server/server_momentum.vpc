@@ -14,7 +14,7 @@ $Configuration
     $Compiler
     {
         $AdditionalIncludeDirectories   "$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
-        $PreprocessorDefinitions        "$BASE"
+        $PreprocessorDefinitions        "$BASE;SDK_DLL"
     }
 }
 
@@ -151,7 +151,12 @@ $Project "Server (Momentum)"
             $File   "momentum\mom_replay_system.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
+            
+            
         }
+        
+        $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
+		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
 
         $Folder "JSON Parser"
         {

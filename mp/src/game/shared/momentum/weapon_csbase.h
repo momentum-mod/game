@@ -176,8 +176,6 @@ public:
 
 	bool IsUseable();
 	virtual bool	CanDeploy( void );
-	virtual void	UpdateShieldState( void );
-	virtual bool	SendWeaponAnim( int iActivity );
 	virtual void	Precache( void );
 	virtual bool	CanBeSelected( void );
 	virtual Activity GetDeployActivity( void );

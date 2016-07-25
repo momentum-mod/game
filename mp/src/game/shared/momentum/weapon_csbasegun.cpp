@@ -125,7 +125,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 
 	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
 
-	m_iClip1--;
+	//m_iClip1--;
 
 	// player "shoot" animation
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );

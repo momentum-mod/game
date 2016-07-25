@@ -4,6 +4,7 @@
 #include "mom_player.h"
 #include "mom_triggers.h"
 #include "mom_replay_entity.h"
+#include "predicted_viewmodel.h"
 
 #include "tier0/memdbgon.h"
 
@@ -60,6 +61,26 @@ void CMomentumPlayer::Precache()
     PrecacheModel(ENTITY_MODEL);
 
     BaseClass::Precache();
+}
+
+//Used for making the view model like CS's
+void CMomentumPlayer::CreateViewModel(int index)
+{
+    Assert(index >= 0 && index < MAX_VIEWMODELS);
+
+    if (GetViewModel(index))
+        return;
+
+    CPredictedViewModel *vm = dynamic_cast<CPredictedViewModel *>(CreateEntityByName("predicted_viewmodel"));
+    if (vm)
+    {
+        vm->SetAbsOrigin(GetAbsOrigin());
+        vm->SetOwner(this);
+        vm->SetIndex(index);
+        DispatchSpawn(vm);
+        vm->FollowEntity(this, false);
+        m_hViewModel.Set(index, vm);
+    }
 }
 
 void CMomentumPlayer::FireGameEvent(IGameEvent* pEvent)

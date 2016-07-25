@@ -14,7 +14,7 @@ $Configuration
     $Compiler
     {
         $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
-        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013"
+        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013;SDK_DLL"
     }
 }
 
@@ -238,6 +238,9 @@ $Project "Client (Momentum)"
                 $File "momentum\dynamicrendertargets.h"
             }
         }
+        
+        $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
+		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
         
         $Folder "JSON Parser"
         {

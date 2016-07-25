@@ -813,21 +813,9 @@ const char* CCSPlayerAnimState::GetWeaponSuffix()
 	// Figure out the weapon suffix.
 	CWeaponCSBase *pWeapon = m_pHelpers->CSAnim_GetActiveWeapon();
 	if ( !pWeapon )
-		return 0;
+		return nullptr;
 
-	const char *pSuffix = pWeapon->GetCSWpnData().m_szAnimExtension;
-
-#ifdef CS_SHIELD_ENABLED
-	if ( m_pOuter->HasShield() == true )
-	{
-		if ( m_pOuter->IsShieldDrawn() == true )
-			pSuffix = "shield";
-		else 
-			pSuffix = "shield_undeployed";
-	}
-#endif
-
-	return pSuffix;
+	return pWeapon->GetCSWpnData().m_szAnimExtension;
 }
 
 

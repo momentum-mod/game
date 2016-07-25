@@ -70,11 +70,10 @@ static const char * s_WeaponAliasInfo[] =
     "ak47",		// WEAPON_AK47
     "knife",	// WEAPON_KNIFE
     "p90",		// WEAPON_P90
-    "shield",	// WEAPON_SHIELDGUN 
     "kevlar",
     "assaultsuit",
     "nightvision",
-    NULL,		// WEAPON_NONE
+    nullptr,		// WEAPON_NONE
 };
 
 struct WeaponAliasTranslationInfoStruct
@@ -148,7 +147,7 @@ int AliasToWeaponID(const char *alias)
 {
     if (alias)
     {
-        for (int i = 0; s_WeaponAliasInfo[i] != NULL; ++i)
+        for (int i = 0; s_WeaponAliasInfo[i] != nullptr; ++i)
             if (!Q_stricmp(s_WeaponAliasInfo[i], alias))
                 return i;
     }
@@ -164,7 +163,7 @@ int ClassnameToWeaponID(const char *classname)
 {
     if (classname)
     {
-        for (int i = 0; s_WeaponAliasInfo[i] != NULL; ++i)
+        for (int i = 0; s_WeaponAliasInfo[i] != nullptr; ++i)
             if (Q_stristr(classname, s_WeaponAliasInfo[i]))
                 return i;
     }
@@ -210,7 +209,6 @@ bool IsPrimaryWeapon(int id)
     case WEAPON_SG552:
     case WEAPON_AK47:
     case WEAPON_P90:
-    case WEAPON_SHIELDGUN:
         return true;
     }
 
@@ -399,41 +397,12 @@ CMomentumPlayer* CWeaponCSBase::GetPlayerOwner() const
     return dynamic_cast<CMomentumPlayer*>(GetOwner());
 }
 
-bool CWeaponCSBase::SendWeaponAnim(int iActivity)
-{
-#ifdef CS_SHIELD_ENABLED
-    CCSPlayer *pPlayer = GetPlayerOwner();
-
-    if ( pPlayer && pPlayer->HasShield() )
-    {
-        CBaseViewModel *vm = pPlayer->GetViewModel( 1 );
-
-        if ( vm == NULL )
-            return false;
-
-        vm->SetWeaponModel( SHIELD_VIEW_MODEL, this );
-
-        int	idealSequence = vm->SelectWeightedSequence( (Activity)iActivity );
-
-        if ( idealSequence >= 0 )
-        {
-            vm->SendViewModelMatchingSequence( idealSequence );
-        }
-    } 
-#endif
-
-    return BaseClass::SendWeaponAnim(iActivity);
-}
-
-
 void CWeaponCSBase::ItemPostFrame()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
 
     if (!pPlayer)
         return;
-
-    UpdateShieldState();
 
     if ((m_bInReload) && (pPlayer->m_flNextAttack <= gpGlobals->curtime))
     {
@@ -465,14 +434,6 @@ void CWeaponCSBase::ItemPostFrame()
             m_bFireOnEmpty = TRUE;
         }
 
-        // Can't shoot during the freeze period
-        // Ken: Always allow firing in single player
-        //---
-        /*if ( !CSGameRules()->IsFreezePeriod() &&
-            !pPlayer->m_bIsDefusing &&
-            pPlayer->State_Get() == STATE_ACTIVE && !pPlayer->IsShieldDrawn()
-            )*/
-        {
 #ifndef CLIENT_DLL
             // allow the bots to react to the gunfire
             if (GetCSWpnData().m_WeaponType != WEAPONTYPE_GRENADE)
@@ -492,19 +453,12 @@ void CWeaponCSBase::ItemPostFrame()
                 }
             }
 #endif
-            PrimaryAttack();
-        }
+        PrimaryAttack();
         //---
     }
     else if (pPlayer->m_nButtons & IN_RELOAD && GetMaxClip1() != WEAPON_NOCLIP && !m_bInReload && m_flNextPrimaryAttack < gpGlobals->curtime)
     {
         // reload when reload is pressed, or if no buttons are down and weapon is empty.
-
-        //MIKETODO: add code for shields...
-        //if ( !FBitSet( m_iWeaponState, WPNSTATE_SHIELD_DRAWN ) )
-
-        //if ( !pPlayer->IsShieldDrawn() )
-        {
 #ifndef CLIENT_DLL
             // allow the bots to react to the reload
             //IGameEvent * event = gameeventmanager->CreateEvent( "weapon_reload" );
@@ -514,9 +468,7 @@ void CWeaponCSBase::ItemPostFrame()
             //	gameeventmanager->FireEvent( event );
             //}
 #endif
-
-            Reload();
-        }
+         Reload();
     }
     else if (!(pPlayer->m_nButtons & (IN_ATTACK | IN_ATTACK2)))
     {
@@ -606,7 +558,7 @@ const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is igno
 {
     CMomentumPlayer *pOwner = GetPlayerOwner();
 
-    if (pOwner == NULL)
+    if (pOwner == nullptr)
     {
         return BaseClass::GetViewModel();
     }
@@ -619,13 +571,6 @@ const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is igno
 void CWeaponCSBase::Precache(void)
 {
     BaseClass::Precache();
-
-#ifdef CS_SHIELD_ENABLED
-    if ( GetCSWpnData().m_bCanUseWithShield )
-    {
-        PrecacheModel( GetCSWpnData().m_szShieldViewModel );
-    }
-#endif
 
     PrecacheScriptSound("Default.ClipEmpty_Pistol");
     PrecacheScriptSound("Default.ClipEmpty_Rifle");
@@ -657,37 +602,9 @@ bool CWeaponCSBase::DefaultDeploy(char *szViewModel, char *szWeaponModel, int iA
     m_flNextSecondaryAttack = gpGlobals->curtime;
 
     SetWeaponVisible(true);
-    //pOwner->SetShieldDrawnState( false );
-
-    //if ( pOwner->HasShield() == true )
-    //	 SetWeaponModelIndex( SHIELD_WORLD_MODEL);
-    //else
     SetWeaponModelIndex(szWeaponModel);
 
     return true;
-}
-
-void CWeaponCSBase::UpdateShieldState(void)
-{
-    //empty by default.
-    CMomentumPlayer *pOwner = GetPlayerOwner();
-
-    if (pOwner == NULL)
-        return;
-
-    //ADRIANTODO
-    //Make the hitbox set switches here!!!
-    //if ( pOwner->HasShield() == false )
-    //{
-
-    //	pOwner->SetShieldDrawnState( false );
-    //pOwner->SetHitBoxSet( 0 );
-    //	return;
-    //}
-    //else
-    {
-        //pOwner->SetHitBoxSet( 1 );
-    }
 }
 
 void CWeaponCSBase::SetWeaponModelIndex(const char *pName)
@@ -709,9 +626,6 @@ bool CWeaponCSBase::CanDeploy(void)
     if (!pPlayer)
         return false;
 
-    //if ( pPlayer->HasShield() && GetCSWpnData().m_bCanUseWithShield == false )
-    //	 return false;
-
     return BaseClass::CanDeploy();
 }
 
@@ -725,9 +639,6 @@ bool CWeaponCSBase::Holster(CBaseCombatWeapon *pSwitchingTo)
     if (pPlayer)
         pPlayer->SetFOV(pPlayer, 0); // reset the default FOV.
 #endif
-
-    //if ( pPlayer )
-    //	pPlayer->SetShieldDrawnState( false );
 
     return BaseClass::Holster(pSwitchingTo);
 }
@@ -822,7 +733,7 @@ void CWeaponCSBase::Drop(const Vector &vecVelocity)
 // for a little while.  But if they throw it at someone else, the other player should get it immediately.
 void CWeaponCSBase::DefaultTouch(CBaseEntity *pOther)
 {
-    if ((m_prevOwner != NULL) && (pOther == m_prevOwner) && (gpGlobals->curtime < m_nextPrevOwnerTouchTime))
+    if (m_prevOwner && (pOther == m_prevOwner) && (gpGlobals->curtime < m_nextPrevOwnerTouchTime))
     {
         return;
     }
@@ -846,9 +757,9 @@ void CWeaponCSBase::DrawCrosshair()
         return;
 
     // clear crosshair
-    pCrosshair->SetCrosshair(0, Color(255, 255, 255, 255));
+    pCrosshair->SetCrosshair(nullptr, Color(255, 255, 255, 255));
 
-    CMomentumPlayer* pPlayer = (CMomentumPlayer*) C_BasePlayer::GetLocalPlayer();
+    CMomentumPlayer* pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
 
     if (!pPlayer)
         return;
@@ -859,9 +770,6 @@ void CWeaponCSBase::DrawCrosshair()
     // Draw the targeting zone around the pCrosshair
     if (pPlayer->IsInVGuiInputMode())
         return;
-
-    //if ( pPlayer->HasShield() && pPlayer->IsShieldDrawn() == true )
-    //	 return;
 
     // no crosshair for sniper rifles
     if (GetCSWpnData().m_WeaponType == WEAPONTYPE_SNIPER_RIFLE)
@@ -920,10 +828,10 @@ void CWeaponCSBase::DrawCrosshair()
     }
     else
     {
-        scale = (float) ScreenHeight() / (float) crosshairScale;
+        scale = float(ScreenHeight()) / float(crosshairScale);
     }
 
-    int iCrosshairDistance = (int) ceil(m_flCrosshairDistance * scale);
+    int iCrosshairDistance = static_cast<int>(ceil(m_flCrosshairDistance * scale));
 
     int iBarSize = XRES(5) + (iCrosshairDistance - iDistance) / 2;
 
@@ -1338,7 +1246,7 @@ float CWeaponCSBase::CalcViewmodelBob(void)
     //NOTENOTE: For now, let this cycle continue when in the air, because it snaps badly without it
 
     if ((!gpGlobals->frametime) ||
-        (player == NULL) ||
+        (player == nullptr) ||
         (cl_bobcycle.GetFloat() <= 0.0f) ||
         (cl_bobup.GetFloat() <= 0.0f) ||
         (cl_bobup.GetFloat() >= 1.0f))
