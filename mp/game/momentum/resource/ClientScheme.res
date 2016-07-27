@@ -1094,7 +1094,29 @@ Scheme
 				"additive" "1"
 				"antialias" "1"
 		   }
-		}	
+		}
+		"BigNoodle"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "32"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
+		"BigNoodleSmall"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "16"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
 	}
 
 		//////////////////// BORDERS //////////////////////////////

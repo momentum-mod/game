@@ -96,6 +96,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);//Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
+    MESSAGE_FUNC_PARAMS(OnToggleLeaderboard, "ToggleLeaderboard", data);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
@@ -107,7 +108,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     virtual void UpdateTeamInfo();
     virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() override;
-    virtual void AddHeader(vgui::Label *pMapSummary);      // add the start header of the scoreboard
+    virtual void AddHeader();      // add the start header of the scoreboard
     virtual int GetAdditionalHeight() { return 0; }
 
     // sorts players within a section
@@ -140,6 +141,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Panel *m_pPlayerStats;
     vgui::Panel *m_pLeaderboards;
     vgui::Label *m_lMapSummary;
+    vgui::Label *m_lMapDetails;
     vgui::Label *m_lPlayerName;
     vgui::Label *m_lPlayerMapRank;
     vgui::Label *m_lPlayerPersonalBest;
@@ -151,6 +153,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
     vgui::ImagePanel *m_pPlayerAvatar;
     vgui::ImagePanel *m_pMomentumLogo;
+    vgui::Button *m_pGlobalLeaderboardsButton;
+    vgui::Button *m_pFriendsLeaderboardsButton;
 
     CUtlMap<CSteamID, int> m_mapAvatarsToImageList;
 
@@ -258,5 +262,7 @@ private:
     CReplayContextMenu *m_pLeaderboardReplayCMenu;
 
     CUtlMap<uint64, const char*> m_umMapNames;
+
+    bool m_bGlobalsShown = true;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H

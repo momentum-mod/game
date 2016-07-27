@@ -63,21 +63,19 @@ typedef enum MOMGM
 #define MAX_STAGES 64
 
 // I'm a deadbeat, so I did this to stop having to worry about what MOM_APIDOMAIN is
-// Set this macro to 0 to use MOM_WEBDOMAIN as MOM_APIDOMAIN, otherwise it uses the local domain
+// Set this macro to 0 to use momentum-mod.org as the webdomain, otherwise it uses the local domain (Or whatever you set)
 // Make sure this is 0 when you push!
-#define MOM_USINGLOCALAPI 0
+#define MOM_USINGLOCALWEB 1
 
+#if MOM_USINGLOCALWEB
 // What is the URL of the web?
-#define MOM_WEBDOMAIN "http://momentum-mod.org"
-
-// Where to query the api. (here so we can change between live server and test adress  (127.0....) easier
-// ensure that this equals MOM_WEBDOMAIN before pushing! (!!MOM_USINGLOCALAPI also has to be commented!!))
-#if MOM_USINGLOCALAPI
-// You can change this adress if you use some other url
-#define MOM_APIDOMAIN "http://127.0.0.1:5000"
+#define MOM_WEBDOMAIN "http://127.0.0.1:5000"
 #else
-#define MOM_APIDOMAIN MOM_WEBDOMAIN
+#define MOM_WEBDOMAIN "http://momentum-mod.org"
 #endif
+
+// Where to query the api. In case it does not match the current WEBDOMAIN (How did you end up like this?), you can change it!
+#define MOM_APIDOMAIN MOM_WEBDOMAIN
 
 #define MAP_FOLDER "maps" //MOM_TODO: Ensure all files are successfully built using V_ComposeFile
 #define RECORDING_PATH "recordings"

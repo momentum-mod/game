@@ -68,7 +68,9 @@ void CContactPanel::InitPanel()
     LoadControlSettings("resource/ui/ContactPanel.res");
     m_pWebPage->SetPos(SCALEXY(0, 25));
     m_pWebPage->SetSize(GetWide(), GetTall() - SCALE(25));
-    m_pWebPage->OpenURL("http://momentum-mod.org/contact", nullptr);
+    char url[BUFSIZELOCL];
+    Q_snprintf(url, BUFSIZELOCL, "%s/feedback", MOM_WEBDOMAIN);
+    m_pWebPage->OpenURL(url, nullptr);
 }
 
 //Class: CBugReportPanelInterface Class. Used for construction.
