@@ -1,18 +1,18 @@
 // The following include files are necessary to allow The Panel .cpp to compile.
 #include "cbase.h"
 
-#include "VersionWarnPanel.h"
+#include "ChangelogPanel.h"
 
 #include "tier0/memdbgon.h"
 
 // Constuctor: Initializes the Panel
-CVersionWarnPanel::CVersionWarnPanel(VPANEL parent) : BaseClass(nullptr, "VersionWarnPanel")
+CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogPanel")
 {
     V_memset(m_cOnlineVersion, 0, sizeof(m_cOnlineVersion));
     V_memset(m_pwOnlineChangelog, 0, sizeof(m_pwOnlineChangelog));
 
     SetParent(parent);
-    LoadControlSettings("resource/ui/versionwarnpanel.res");
+    LoadControlSettings("resource/ui/ChangelogPanel.res");
     m_pReleaseText = FindControl<URLLabel>("ReleaseText", true);
     m_pChangeLog = FindControl<RichText>("ChangeLog", true);
     m_flScrollTime = -1.0f;
@@ -29,16 +29,14 @@ CVersionWarnPanel::CVersionWarnPanel(VPANEL parent) : BaseClass(nullptr, "Versio
     SetVisible(false);
     SetProportional(true);
 
-    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
-
     if (!m_pReleaseText || !m_pChangeLog)
     {
-        Assert("Missing one more gameui controls from ui/versionwarnpanel.res");
+        Assert("Missing one more gameui controls from ui/changelogpanel.res");
     }
 }
 
 // Called when the versions don't match (there's an update)
-void CVersionWarnPanel::Activate()
+void CChangelogPanel::Activate()
 {
     char m_cReleaseText[225];
     m_pReleaseText->GetText(m_cReleaseText, sizeof(m_cReleaseText));
@@ -58,5 +56,5 @@ CON_COMMAND(mom_version, "Prints mod current installed version")
 }
 
 // Interface this class to the rest of the DLL
-static CVersionWarnPanelInterface g_VersionWarn;
-IVersionWarnPanel *versionwarnpanel = static_cast<IVersionWarnPanel *>(&g_VersionWarn);
+static CChangelogInterface g_Changelog;
+IChangelogPanel *changelogpanel = static_cast<IChangelogPanel *>(&g_Changelog);

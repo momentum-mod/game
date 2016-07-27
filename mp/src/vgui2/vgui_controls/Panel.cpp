@@ -1629,7 +1629,7 @@ Panel *Panel::FindSiblingByName(const char *siblingName)
 	{
 		VPANEL sibling = ipanel()->GetChild(GetVParent(), i);
 		Panel *panel = ipanel()->GetPanel(sibling, GetControlsModuleName());
-		if (!stricmp(panel->GetName(), siblingName))
+		if (panel && !stricmp(panel->GetName(), siblingName))
 		{
 			return panel;
 		}

@@ -32,6 +32,18 @@ void CTimer::PostTime()
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
         //MOM_TODO include the extra security measures for beta+
+        uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
+        const char* map = gpGlobals->mapname.ToCStr();
+        int ticks = gpGlobals->tickcount - m_iStartTick;
+
+        TickSet::Tickrate tickRate = TickSet::GetCurrentTickrate();
+        
+        //Build URL
+        char webURL[512];
+        Q_snprintf(webURL, 512, "%s/postscore/%llu/%s/%i/%s", MOM_APIDOMAIN, steamID, map,
+            ticks, tickRate.sType);
+
+        DevLog("Ticks sent to server: %i\n", ticks);
         //Build request
         //mom_UTIL->PostTime("run.momrec");
     }
@@ -283,7 +295,6 @@ void CTimer::OnMapEnd(const char *pMapName)
     SetCurrentCheckpointTrigger(nullptr);
     SetStartTrigger(nullptr);
     SetCurrentZone(nullptr);
-    RemoveAllCheckpoints();
     UnloadLoadedLocalTimes();
     //MOM_TODO: UnloadLoadedOnlineTimes();
 }
@@ -315,7 +326,7 @@ void CTimer::OnMapStart(const char *pMapName)
 void CTimer::RequestZoneCount()
 {
     CTriggerStage *stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage"));
-    int iCount = 1;//CTriggerStart counts as one
+    int iCount = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start") ? 1 : 0;//CTriggerStart counts as one
     while (stage)
     {
         iCount++;
@@ -357,21 +368,6 @@ void CTimer::DispatchTimerStateMessage(CBasePlayer* pPlayer, bool isRunning) con
     }
 }
 
-//MOM_TODO: This should be moved to the player
-void CTimer::DispatchCheckpointMessage()
-{
-    CBasePlayer* cPlayer = UTIL_GetLocalPlayer();
-    if (cPlayer)
-    {
-        CSingleUserRecipientFilter user(cPlayer);
-        user.MakeReliable();
-        UserMessageBegin(user, "Timer_Checkpoint");
-        WRITE_BOOL(m_bUsingCPMenu);
-        WRITE_LONG(m_iCurrentStepCP + 1);
-        WRITE_LONG(checkpoints.Count());
-        MessageEnd();
-    }
-}
 void CTimer::SetRunning(bool isRunning)
 {
     m_bIsRunning = isRunning;
@@ -545,47 +541,6 @@ void CTimer::DisablePractice(CMomentumPlayer *pPlayer)
     pPlayer->m_bHasPracticeMode = false;
 }
 
-//--------- CPMenu stuff --------------------------------
-
-void CTimer::CreateCheckpoint(CBasePlayer *pPlayer)
-{
-    if (!pPlayer) return;
-    Checkpoint c;
-    c.ang = pPlayer->GetAbsAngles();
-    c.pos = pPlayer->GetAbsOrigin();
-    c.vel = pPlayer->GetAbsVelocity();
-    Q_strncpy(c.targetName, pPlayer->GetEntityName().ToCStr(), MAX_PLAYER_NAME_LENGTH);
-    Q_strncpy(c.targetClassName, pPlayer->GetClassname(), MAX_PLAYER_NAME_LENGTH);
-    checkpoints.AddToTail(c);
-    m_iCurrentStepCP++;
-}
-
-void CTimer::RemoveLastCheckpoint()
-{
-    if (checkpoints.IsEmpty()) return;
-    checkpoints.Remove(m_iCurrentStepCP);
-    m_iCurrentStepCP--;//If there's one element left, we still need to decrease currentStep to -1
-}
-
-void CTimer::TeleportToCP(CBasePlayer* cPlayer, int cpNum)
-{
-    if (checkpoints.IsEmpty() || !cPlayer) return;
-    Checkpoint c = checkpoints[cpNum];
-    cPlayer->SetName(MAKE_STRING(c.targetName));
-    cPlayer->SetClassname(c.targetClassName);
-    cPlayer->Teleport(&c.pos, &c.ang, &c.vel);
-}
-
-void CTimer::SetUsingCPMenu(bool pIsUsingCPMenu)
-{
-    m_bUsingCPMenu = pIsUsingCPMenu;
-}
-
-void CTimer::SetCurrentCPMenuStep(int pNewNum)
-{
-    m_iCurrentStepCP = pNewNum;
-}
-
 //--------- CTriggerOnehop stuff --------------------------------
 
 int CTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger)
@@ -643,80 +598,6 @@ public:
         }
     }
 
-    static void CPMenu(const CCommand &args)
-    {
-        if (!g_Timer->IsUsingCPMenu())
-            g_Timer->SetUsingCPMenu(true);
-
-        if (g_Timer->IsRunning())
-        {
-            // MOM_TODO: consider
-            // 1. having a local timer running, as people may want to time their routes they're using CP menu for
-            // 2. gamemodes (KZ) where this is allowed
-
-            ConVarRef gm("mom_gamemode");
-            switch (gm.GetInt())
-            {
-            case MOMGM_SURF:
-            case MOMGM_BHOP:
-            case MOMGM_SCROLL:
-                g_Timer->Stop(false);
-
-                //case MOMGM_KZ:
-            default:
-                break;
-            }
-        }
-        if (args.ArgC() > 1)
-        {
-            int sel = Q_atoi(args[1]);
-            CBasePlayer* cPlayer = UTIL_GetCommandClient();
-            switch (sel)
-            {
-            case 1://create a checkpoint
-                g_Timer->CreateCheckpoint(cPlayer);
-                break;
-
-            case 2://load previous checkpoint
-                g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
-                break;
-
-            case 3://cycle through checkpoints forwards (+1 % length)
-                if (g_Timer->GetCPCount() > 0)
-                {
-                    g_Timer->SetCurrentCPMenuStep((g_Timer->GetCurrentCPMenuStep() + 1) % g_Timer->GetCPCount());
-                    g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
-                }
-                break;
-
-            case 4://cycle backwards through checkpoints
-                if (g_Timer->GetCPCount() > 0)
-                {
-                    g_Timer->SetCurrentCPMenuStep(g_Timer->GetCurrentCPMenuStep() == 0 ? g_Timer->GetCPCount() - 1 : g_Timer->GetCurrentCPMenuStep() - 1);
-                    g_Timer->TeleportToCP(cPlayer, g_Timer->GetCurrentCPMenuStep());
-                }
-                break;
-
-            case 5://remove current checkpoint
-                g_Timer->RemoveLastCheckpoint();
-                break;
-            case 6://remove every checkpoint
-                g_Timer->RemoveAllCheckpoints();
-                break;
-            case 0://They closed the menu
-                g_Timer->SetUsingCPMenu(false);
-                break;
-            default:
-                if (cPlayer != nullptr)
-                {
-                    cPlayer->EmitSound("Momentum.UIMissingMenuSelection");
-                }
-                break;
-            }
-        }
-        g_Timer->DispatchCheckpointMessage();
-    }
-
     static void PracticeMove()
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
@@ -744,7 +625,6 @@ static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint, "Teleports the player back to the start of the current stage.\n",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
-static ConCommand mom_cpmenu("cpmenu", CTimerCommands::CPMenu, "", FCVAR_HIDDEN | FCVAR_SERVER_CAN_EXECUTE | FCVAR_CLIENTCMD_CAN_EXECUTE);
 
 static CTimer s_Timer;
 CTimer *g_Timer = &s_Timer;

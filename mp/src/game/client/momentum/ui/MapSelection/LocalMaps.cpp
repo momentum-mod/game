@@ -57,7 +57,7 @@ bool MapHasStages(const char* szMap)
         KeyValues *kvMap = new KeyValues(szMap);
         char path[MAX_PATH];
         char fileName[FILENAME_MAX];
-        Q_snprintf(fileName, FILENAME_MAX, "%s.tim", szMap);
+        Q_snprintf(fileName, FILENAME_MAX, "%s%s", szMap, EXT_TIME_FILE);
         V_ComposeFileName(MAP_FOLDER, fileName, path, MAX_PATH);
 
 

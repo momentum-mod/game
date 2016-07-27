@@ -27,6 +27,8 @@ MainMenu::MainMenu(Panel* parent) : BaseClass(nullptr, "MainMenu")
     SetAutoDelete(true);
     
 	m_bFocused = true;
+    m_bNeedSort = false;
+    m_nSortFlags = FL_SORT_SHARED;
 
 	m_logoLeft = GameUI2().GetLocalizedString("#GameUI2_LogoLeft");
 	m_logoRight = GameUI2().GetLocalizedString("#GameUI2_LogoRight");
@@ -60,12 +62,12 @@ void MainMenu::CreateMenu(const char* menu)
             button->SetBlank(dat->GetBool("blank"));
 
             const char* specifics = dat->GetString("specifics", "shared");
-            if (Equals(specifics, "ingame"))
-                m_pButtonsInGame.AddToTail(button);
-            else if (Equals(specifics, "mainmenu"))
-                m_pButtonsBackground.AddToTail(button);
-            else if (Equals(specifics, "shared"))
-                m_pButtonsShared.AddToTail(button);
+            if (!Q_strcasecmp(specifics, "ingame"))
+                button->SetButtonType(IN_GAME);
+            else if (!Q_strcasecmp(specifics, "mainmenu"))
+                button->SetButtonType(MAIN_MENU);
+
+            m_pButtons.AddToTail(button);
         }
 	}
 
@@ -132,43 +134,71 @@ bool MainMenu::IsVisible(void)
     return BaseClass::IsVisible();
 }
 
+inline Button_MainMenu *GetNextVisible(CUtlVector<Button_MainMenu*> *vec, int start)
+{
+    for (int i = start + 1; i < vec->Count(); i++)
+    {
+        Button_MainMenu *pButton = vec->Element(i);
+        if (pButton->IsVisible()) return pButton;
+    }
+    return nullptr;
+}
+
 void MainMenu::DrawMainMenu()
 {
-	for (int8 i = 0; i < m_pButtonsInGame.Count(); i++)
-		m_pButtonsInGame[i]->SetVisible(GameUI2().IsInLevel());
+    for (int8 i = 0; i < m_pButtons.Count(); i++)
+    {
+        Button_MainMenu *pButton = m_pButtons[i];
+        switch (pButton->GetButtonType())
+        {
+        default:
+        case SHARED:
+            pButton->SetVisible(GameUI2().IsInLevel() || GameUI2().IsInBackgroundLevel());
+            break;
+        case IN_GAME:
+            pButton->SetVisible(GameUI2().IsInLevel());
+            break;
+        case MAIN_MENU:
+            pButton->SetVisible(GameUI2().IsInBackgroundLevel());
+            break;
+        }
+    }
 
-	for (int8 i = 0; i < m_pButtonsBackground.Count(); i++)
-		m_pButtonsBackground[i]->SetVisible(GameUI2().IsInBackgroundLevel());
 
-	for (int8 i = 0; i < m_pButtonsShared.Count(); i++)
-		m_pButtonsShared[i]->SetVisible(GameUI2().IsInLevel() || GameUI2().IsInBackgroundLevel());
-
-	CUtlVector<Button_MainMenu*> activeButtons;
 	if (GameUI2().IsInLevel())
-		activeButtons.AddVectorToTail(m_pButtonsInGame);
+	{
+        m_nSortFlags &= ~FL_SORT_MENU;
+	    
+        m_bNeedSort = (!m_bNeedSort && !(m_nSortFlags & FL_SORT_INGAME));
+        m_nSortFlags |= FL_SORT_INGAME;
+	}
 	else if (GameUI2().IsInBackgroundLevel())
-		activeButtons.AddVectorToTail(m_pButtonsBackground);
-	activeButtons.AddVectorToTail(m_pButtonsShared);
+	{
+        m_nSortFlags &= ~FL_SORT_INGAME;
 
-	m_pButtons = activeButtons;
+        m_bNeedSort = (!m_bNeedSort && !(m_nSortFlags & FL_SORT_MENU));
+        m_nSortFlags |= FL_SORT_MENU;
+	}
 	
-	if (m_pButtons.Count() > 0)
-		m_pButtons.Sort(ButtonsPositionTop);
+    if (m_pButtons.Count() > 0 && m_bNeedSort)
+    {
+        m_bNeedSort = false;
+        m_pButtons.Sort(ButtonsPositionTop);
+    }
 
 	for (int8 i = 0; i < m_pButtons.Count(); i++)
 	{
-		if ((i + 1) < m_pButtons.Count())
-		{
-			int32 x0, y0;
-			m_pButtons[i + 1]->GetPos(x0, y0);
-			m_pButtons[i]->SetPos(m_fButtonsOffsetX, y0 - (m_pButtons[i]->GetHeight() + m_fButtonsSpace));
-		}
-		else
-		{
+        Button_MainMenu *pNextVisible = GetNextVisible(&m_pButtons, i);
+        if (pNextVisible)
+        {
+            int32 x0, y0;
+            pNextVisible->GetPos(x0, y0);
+            m_pButtons[i]->SetPos(m_fButtonsOffsetX, y0 - (m_pButtons[i]->GetHeight() + m_fButtonsSpace));
+        }
+        else
+        {
             m_pButtons[i]->SetPos(m_fButtonsOffsetX, GameUI2().GetViewport().y - (m_fButtonsOffsetY + m_pButtons[i]->GetHeight()));
-		}
-
-		m_pButtons[i]->SetVisible(true);
+        }
 	}
 
     //MOM_TODO: Remove this after it's not needed
@@ -263,15 +293,4 @@ void MainMenu::OnKillFocus()
 	BaseClass::OnKillFocus();
 	m_bFocused = false;
 	surface()->PlaySound(m_pszMenuCloseSound);
-}
-
-bool MainMenu::Equals(char const* inputA, char const* inputB)
-{
-	std::string str1Cpy(inputA);
-	std::string str2Cpy(inputB);
-
-	transform(str1Cpy.begin(), str1Cpy.end(), str1Cpy.begin(), std::function<int32(int32)>(tolower));
-	transform(str2Cpy.begin(), str2Cpy.end(), str2Cpy.begin(), std::function<int32(int32)>(tolower));
-
-	return (str1Cpy == str2Cpy);
 }

@@ -104,11 +104,10 @@ class SettingsPage : public PropertyPage
 
     ScrollableEditablePanel *GetScrollPanel() const { return m_pScrollPanel; }
 
-  protected:
     // Load the panel's settings
-    void OnPageShow() override { LoadSettings(); }
-    void OnResetData() override { LoadSettings(); }
-
+    virtual void OnPageShow() override { LoadSettings(); }
+    virtual void OnResetData() override { LoadSettings(); }
+    
   private:
     ScrollableEditablePanel *m_pScrollPanel;
 };

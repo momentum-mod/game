@@ -151,6 +151,9 @@ $Project "Server (Momentum)"
             $File   "momentum\mom_replay_system.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
+            
+            $File "momentum\mom_system_checkpoint.cpp"
+            $File "momentum\mom_system_checkpoint.h"
         }
 
         $Folder "JSON Parser"
