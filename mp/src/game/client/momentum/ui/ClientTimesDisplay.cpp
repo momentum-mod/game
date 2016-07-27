@@ -105,10 +105,10 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     SetSize(scheme()->GetProportionalScaledValue(480), scheme()->GetProportionalScaledValue(480));
 
     m_pHeader->SetParent(this);
-    m_pPlayerStats->SetParent(this);
     m_pLeaderboards->SetParent(this);
     m_lMapSummary->SetParent(m_pHeader);
     m_lMapDetails->SetParent(m_pHeader);
+    m_pPlayerStats->SetParent(m_pLeaderboards);
     m_pMomentumLogo->SetParent(m_pPlayerStats);
     m_pPlayerAvatar->SetParent(m_pPlayerStats);
     m_lPlayerName->SetParent(m_pPlayerStats);
@@ -1079,7 +1079,7 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
                                                      scheme()->GetProportionalScaledValue(32));
             }
         }
-        //m_pPlayerStats->SetVisible(true); // And seen again!
+        m_pPlayerStats->SetVisible(true); // And seen again!
     }
 
     // Leaderboards
