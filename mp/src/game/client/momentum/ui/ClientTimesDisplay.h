@@ -34,6 +34,8 @@
 #define DELAY_NEXT_UPDATE 10.0f // Delay for the next API update, in seconds
 #define MIN_ONLINE_UPDATE_INTERVAL 15.0f //The amount of seconds minimum between online checks
 #define MAX_ONLINE_UPDATE_INTERVAL 45.0f //The amount of seconds maximum between online checks
+#define MIN_FRIENDS_UPDATE_INTERVAL 15.0f //The amount of seconds minimum between online checks
+#define MAX_FRIENDS_UPDATE_INTERVAL 45.0f //The amount of seconds maximum between online checks
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
@@ -54,6 +56,13 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
         FRIENDS_WIDTH = 0
     };
     // total = 340
+
+    enum LEADERBOARDS
+    {
+        FRIENDS_LEADERBOARDS = 0,
+        ONLINE_LEADERBOARDS,
+        LOCAL_LEADERBOARDS
+    };
 
   public:
     CClientTimesDisplay(IViewPort *pViewPort);
@@ -124,7 +133,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // finds a local time in the scoreboard
     int FindItemIDForLocalTime(KeyValues *kvRef);
     // finds an online time in the scoreboard
-    int FindItemIDForOnlineTime(int runID);
+    int FindItemIDForOnlineTime(int runID, LEADERBOARDS);
 
     int m_iNumTeams;
 
@@ -166,10 +175,13 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CPanelAnimationVarAliasType(int, m_iPingWidth, "ping_width", "23", "proportional_int");
 
     // Online API Pre-Alpha functions
+
     void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
-    void GetGetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetGetPlayerDataForMapCallback;
+    void GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetFriendsTimesCallback;
 
     void CreateAndSendHTTPReq(const char*, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>*,
         CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
@@ -183,6 +195,9 @@ private:
 
     float m_flLastOnlineTimeUpdate;
     bool m_bFirstOnlineTimesUpdate;
+
+    float m_flLastFriendsTimeUpdate;
+    bool m_bFirstFriendsTimesUpdate;
 
     IViewPort	*m_pViewPort;
     ButtonCode_t m_nCloseKey;
@@ -206,6 +221,7 @@ private:
         uint64 steamid;
         time_t date;
         const char* personaname;
+        bool momember;
 
         // entry
         // -rank
@@ -225,6 +241,7 @@ private:
             date = static_cast<time_t>(Q_atoi(kv->GetString("date", "0")));
             steamid = kv->GetUint64("steamid", 0);
             avatar = kv->GetInt("avatar", 0);
+            momember = kv->GetBool("tm", false);
         };
 
         ~TimeOnline() 
@@ -240,10 +257,15 @@ private:
     
     CUtlVector<TimeOnline*> m_vOnlineTimes;
 
+    CUtlVector<TimeOnline*> m_vFriendsTimes;
+
     bool m_bLocalTimesLoaded = false;
     bool m_bLocalTimesNeedUpdate = false;
     bool m_bOnlineNeedUpdate = false;
     bool m_bOnlineTimesLoaded = false;
+    bool m_bFriendsNeedUpdate = false;
+    bool m_bFriendsTimesLoaded = false;
+    bool m_bUnauthorizedFriendlist = false;
     //widths[0] == WIDTH FOR DATE
     //widths[1] == WIDTH FOR RANK
     //widths[2] == WIDTH FOR TIME
@@ -254,9 +276,10 @@ private:
     void FillScoreBoard(bool pFullUpdate);
     void LoadLocalTimes(KeyValues *kv);
     void LoadOnlineTimes();
+    void LoadFriendsTimes();
     void ConvertLocalTimes(KeyValues*);
-    //Place m_vOnlineTimes into m_pOnlineLeaderboards
-    void OnlineTimesVectorToLeaderboards();
+    // Place vector times into leaderboards panel (sectionlist)
+    void OnlineTimesVectorToLeaderboards(LEADERBOARDS);
 
 
     CReplayContextMenu *m_pLeaderboardReplayCMenu;
@@ -264,5 +287,6 @@ private:
     CUtlMap<uint64, const char*> m_umMapNames;
 
     bool m_bGlobalsShown = true;
+    int m_iGetScoresVersion = 2;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H
