@@ -382,8 +382,8 @@ void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        char szURL[512];
-        Q_snprintf(szURL, 512, "%s/getscores/%s/10", MOM_APIDOMAIN, mapname);
+        char szURL[BUFSIZ];
+        Q_snprintf(szURL, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, mapname);
         HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
         if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
