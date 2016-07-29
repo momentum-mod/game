@@ -235,8 +235,8 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
 {
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        char szURL[512];
-        Q_snprintf(szURL, 512, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
+        char szURL[BUFSIZ];
+        Q_snprintf(szURL, BUFSIZ, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
         HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
 
@@ -247,13 +247,13 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
         }
         else
         {
-            Warning("Failed to send HTTP Request to get map info!\n");
+            Warning("%s - Failed to send HTTP Request to get map info!\n", __FUNCTION__);
             steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
     {
-        Warning("CDialogMapInfo::GetMapInfo() - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
+        Warning("%s - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n", __FUNCTION__);
     }
 }
 
@@ -392,13 +392,13 @@ void CDialogMapInfo::Get10MapTimes(const char* mapname)
         }
         else
         {
-            Warning("Failed to send HTTP Request to get map scores!\n");
+            Warning("%s - Failed to send HTTP Request to get map scores!\n", __FUNCTION__);
             steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
     {
-        Warning("CDialogMapInfo::Get10MapTimes() - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
+        Warning("%s - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n", __FUNCTION__);
     }
 
 }

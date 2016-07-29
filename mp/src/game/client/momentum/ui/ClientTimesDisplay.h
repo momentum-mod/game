@@ -145,6 +145,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void MoveLabelToFront(const char *textEntryName);
     void MoveToCenterOfScreen();
+    // Sets the text of the MapInfo label. If it's nullptr, it hides it
+    void UpdateMapInfoLabel(const char *text = nullptr);
+    void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
 
     vgui::ImageList *m_pImageList;
     vgui::Panel *m_pHeader;
@@ -182,9 +185,11 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
     void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
-    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetGetPlayerDataForMapCallback;
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetPlayerDataForMapCallback;
     void GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetFriendsTimesCallback;
+    void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetMapInfoCallback;
 
     void CreateAndSendHTTPReq(const char*, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>*,
         CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
@@ -291,5 +296,7 @@ private:
 
     bool m_bGlobalsShown = true;
     int m_iGetScoresVersion = 2;
+
+    bool m_bMapInfoLoaded = false;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H

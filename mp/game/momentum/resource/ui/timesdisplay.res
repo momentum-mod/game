@@ -69,9 +69,9 @@
 	{
 		"ControlName"	"Label"
 		"fieldName"		"MapDetails"
-		"xpos"			"370"
+		"xpos"			"310"
 		"ypos"			"1"
-		"wide"			"105"
+		"wide"			"155"
 		"tall"			"26"
 		"autoResize"	"0"
 		"pinCorner"		"0"

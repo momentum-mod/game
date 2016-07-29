@@ -533,7 +533,6 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
     if ((fullUpdate && (gpGlobals->curtime - m_fLastHeaderUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstHeaderUpdate)) 
         || gpGlobals->curtime - m_fLastHeaderUpdate >= MAX_ONLINE_UPDATE_INTERVAL)
     {
-        // MOM_TODO: Get real data from the API
         char p_sCalculating[BUFSIZELOCL];
         char p_sWaitingResponse[BUFSIZELOCL];
         LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);     
@@ -567,7 +566,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
         Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
-        CreateAndSendHTTPReq(requrl, &cbGetGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback);
+        CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback);
     }
 
     kv->AddSubKey(playerData);
@@ -581,11 +580,11 @@ void CClientTimesDisplay::AddHeader()
     if (m_lMapSummary)
         m_lMapSummary->SetText(g_pGameRules->MapName());
 
-    if (m_lMapDetails)
+    if (m_lMapDetails && !m_bMapInfoLoaded)
     {
-        char mapDetails[BUFSIZ];
-        Q_snprintf(mapDetails, BUFSIZ, "By %s\nTIER %i - %s - %i BONUS", "Author", 1, "Linear", 3);
-        m_lMapDetails->SetText(mapDetails);
+        char requrl[MAX_PATH];
+        Q_snprintf(requrl, MAX_PATH, "%s/getmapinfo/%s", MOM_APIDOMAIN, g_pGameRules->MapName());
+        CreateAndSendHTTPReq(requrl, &cbGetMapInfoCallback, &CClientTimesDisplay::GetMapInfoCallback);
     }
 }
 
@@ -761,7 +760,7 @@ void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
 
         if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
         {
-            Warning("Callback set.\n");
+            Warning("%s - Callback set for %s.\n", __FUNCTION__, szURL);
             callback->Set(apiHandle, this, func);
         }
         else
@@ -778,6 +777,7 @@ void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
 
 void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
+    Warning("%s - Callback received.\n", __FUNCTION__);
     if (bIOFailure)
     {
         Warning("%s - bIOFailure is true!\n", __FUNCTION__);
@@ -1088,7 +1088,7 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
 
 void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
-    Warning("Callback received.\n");
+    Warning("%s - Callback received.\n", __FUNCTION__);
     if (bIOFailure)
         return;
 
@@ -1180,6 +1180,73 @@ void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pC
     else
     {
             Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
+    // Last but not least, free resources
+    alloc.deallocate();
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+}
+
+void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+{
+    Warning("%s - Callback received.\n", __FUNCTION__);
+    if (bIOFailure)
+    {
+        UpdateMapInfoLabel(); // Default param is nullptr, so it hides it
+        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
+        return;
+    }
+
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict || pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
+    {
+        char locl[BUFSIZELOCL];
+        LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
+        UpdateMapInfoLabel(locl);
+        Warning("%s - Map not found on server!\n", __FUNCTION__);
+        return;
+    }
+
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
+            if (pResponse)
+            {
+                const char *author = pResponse->GetString("submitter", "Unknown");
+                const int tier = pResponse->GetInt("difficulty", -1);
+                const int bonus = pResponse->GetInt("bonus", -1);
+                char layout[BUFSIZELOCL];
+                if (pResponse->GetBool("linear", false))
+                {
+                    LOCALIZE_TOKEN(linear, "MOM_Linear", layout);
+                }
+                else
+                {
+                    Q_snprintf(layout, BUFSIZELOCL, "%i STAGES", pResponse->GetInt("zones", -1));
+                }
+
+                UpdateMapInfoLabel(author, tier, layout, bonus);
+                m_bMapInfoLoaded = true; // Stop this info from being fetched again
+            }
+
+        }
+    }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
     }
     // Last but not least, free resources
     alloc.deallocate();
@@ -1658,7 +1725,7 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
             pImage->SetAvatarSteamID(sID, k_EAvatarSize64x64);
             pImage->SetAvatarSize(64, 64); // Deliberately non scaling
             pImage->UpdateFriendStatus();
-            pImage->SetDrawFriend(false);
+            pImage->SetDrawFriend(true);
             iImageIndex = m_pImageList->AddImage(pImage);
             m_mapAvatarsToImageList.Insert(steamid, iImageIndex);
         }
@@ -1705,6 +1772,28 @@ void CClientTimesDisplay::OnToggleLeaderboardType(KeyValues *pData)
             m_pOnlineLeaderboards->RemoveAll();
             m_bOnlineNeedUpdate = true;
             FillScoreBoard();
+        }
+    }
+}
+
+void CClientTimesDisplay::UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus)
+{
+    if (m_lMapDetails)
+    {
+        char mapDetails[BUFSIZ];
+        Q_snprintf(mapDetails, BUFSIZ, "By %s\nTIER %i - %s - %i BONUS", author, tier, layout, bonus);
+        UpdateMapInfoLabel(mapDetails);
+    }
+}
+
+void CClientTimesDisplay::UpdateMapInfoLabel(const char* text)
+{
+    if (m_lMapDetails)
+    {
+        m_lMapDetails->SetText(text);
+        if (text == nullptr)
+        {
+            m_lMapDetails->SetVisible(false);
         }
     }
 }
