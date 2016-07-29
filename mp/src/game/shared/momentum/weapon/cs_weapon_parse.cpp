@@ -7,11 +7,8 @@
 #include "cbase.h"
 #include <KeyValues.h>
 #include "cs_weapon_parse.h"
-//#include "cs_shareddefs.h"
 #include "weapon_csbase.h"
 #include "icvar.h"
-//#include "cs_gamerules.h"
-//#include "cs_blackmarket.h"
 
 //--------------------------------------------------------------------------------------------------------
 struct WeaponTypeInfo
@@ -44,9 +41,6 @@ WeaponTypeInfo s_weaponTypeInfo[] =
 static const char *WeaponNames[WEAPON_MAX] =
 {
     "weapon_none",
-
-    "weapon_p228",
-    "weapon_glock",
     "weapon_scout",
     "weapon_hegrenade",
     "weapon_xm1014",
@@ -54,14 +48,11 @@ static const char *WeaponNames[WEAPON_MAX] =
     "weapon_mac10",
     "weapon_aug",
     "weapon_smokegrenade",
-    "weapon_elite",
-    "weapon_fiveseven",
     "weapon_ump45",
     "weapon_sg550",
 
     "weapon_galil",
     "weapon_famas",
-    "weapon_usp",
     "weapon_awp",
     "weapon_mp5navy",
     "weapon_m249",
@@ -70,7 +61,6 @@ static const char *WeaponNames[WEAPON_MAX] =
     "weapon_tmp",
     "weapon_g3sg1",
     "weapon_flashbang",
-    "weapon_deagle",
     "weapon_sg552",
     "weapon_ak47",
     "weapon_knife",

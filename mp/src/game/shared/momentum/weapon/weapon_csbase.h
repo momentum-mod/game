@@ -198,7 +198,6 @@ public:
 	int GetExtraAmmoCount( void ) { return m_iExtraPrimaryAmmo; }
 
 private:
-
 	float	m_flDecreaseShotsFired;
 
 	CWeaponCSBase( const CWeaponCSBase & );

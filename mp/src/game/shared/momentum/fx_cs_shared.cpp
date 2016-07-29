@@ -6,7 +6,7 @@
 
 #include "cbase.h"
 #include "fx_cs_shared.h"
-#include "weapon_csbase.h"
+#include "weapon/weapon_csbase.h"
 
 #ifndef CLIENT_DLL
 #include "ilagcompensationmanager.h"
@@ -183,27 +183,11 @@ void FX_FireBullets(
 
     // CS HACK, tweak some weapon values based on primary/secondary mode
 
-    if (iWeaponID == WEAPON_GLOCK)
-    {
-        if (!bPrimaryMode)
-        {
-            iDamage = 18;	// reduced power for burst shots
-            flRangeModifier = 0.9f;
-        }
-    }
-    else if (iWeaponID == WEAPON_M4A1)
+    if (iWeaponID == WEAPON_M4A1)
     {
         if (!bPrimaryMode)
         {
             flRangeModifier = 0.95f; // slower bullets in silenced mode
-            sound_type = SPECIAL1;
-        }
-    }
-    else if (iWeaponID == WEAPON_USP)
-    {
-        if (!bPrimaryMode)
-        {
-            iDamage = 30; // reduced damage in silenced mode
             sound_type = SPECIAL1;
         }
     }
@@ -221,10 +205,6 @@ void FX_FireBullets(
         return;
 
     StartGroupingSounds();
-
-#ifdef GAME_DLL
-    //pPlayer->StartNewBulletGroup();
-#endif
 
 #if !defined (CLIENT_DLL)
     // Move other players back to history positions based on local player's lag

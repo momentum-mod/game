@@ -10,7 +10,7 @@
 #pragma once
 #endif
 
-#include "momentum/basecsgrenade_projectile.h"
+#include "weapon/basecsgrenade_projectile.h"
 
 class CHEGrenadeProjectile : public CBaseCSGrenadeProjectile
 {

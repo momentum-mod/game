@@ -1,0 +1,33 @@
+weapon_manifest
+{
+    //Momentum-related guns
+	"file"	"scripts/weapon_momentum_pistol.txt"
+    //MOM_TODO: "file" "scripts/weapon_momentum_rifle.txt"
+    //MOM_TODO: "file" "scripts/weapon_momentum_smg.txt"
+    //MOM_TODO: "file" "scripts/weapon_momentum_shotgun.txt"
+    //MOM_TODO: "file" "scripts/weapon_momentum_grenade.txt"
+    
+    //CS Guns (MOM_TODO: Needs migration!)
+    "file" "scripts/weapon_ak47.txt"
+    "file" "scripts/weapon_aug.txt"
+    "file" "scripts/weapon_awp.txt"
+    "file" "scripts/weapon_famas.txt"
+    "file" "scripts/weapon_flashbang.txt"
+    "file" "scripts/weapon_g3sg1.txt"
+    "file" "scripts/weapon_galil.txt"
+    "file" "scripts/weapon_hegrenade.txt"
+    "file" "scripts/weapon_knife.txt"
+    "file" "scripts/weapon_m3.txt"
+    "file" "scripts/weapon_m4a1.txt"
+    "file" "scripts/weapon_m249.txt"
+    "file" "scripts/weapon_mac10.txt"
+    "file" "scripts/weapon_mp5navy.txt"
+    "file" "scripts/weapon_p90.txt"
+    "file" "scripts/weapon_scout.txt"
+    "file" "scripts/weapon_sg550.txt"
+    "file" "scripts/weapon_sg552.txt"
+    "file" "scripts/weapon_smokegrenade.txt"
+    "file" "scripts/weapon_tmp.txt"
+    "file" "scripts/weapon_ump45.txt"
+    "file" "scripts/weapon_xm1014.txt"
+}

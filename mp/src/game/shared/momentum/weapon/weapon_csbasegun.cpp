@@ -112,6 +112,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 	}
 
 	// Out of ammo?
+#ifdef WEAPONS_USE_AMMO
 	if ( m_iClip1 <= 0 )
 	{
 		if (m_bFireOnEmpty)
@@ -123,9 +124,10 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 		return false;
 	}
 
-	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
+    m_iClip1--;
+#endif
 
-	//m_iClip1--;
+	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
 
 	// player "shoot" animation
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
@@ -143,11 +145,13 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + flCycleTime;
 
+#ifdef WEAPONS_USE_AMMO
 	if (!m_iClip1 && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) <= 0)
 	{
 		// HEV suit - indicate out of ammo condition
 		pPlayer->SetSuitUpdate("!HEV_AMO0", false, 0);
 	}
+#endif
 
 	SetWeaponIdleTime( gpGlobals->curtime + pCSInfo.m_flTimeToIdleAfterFire );
 	return true;
@@ -189,7 +193,7 @@ bool CWeaponCSBaseGun::Reload()
 	pPlayer->m_iShotsFired = 0;
 	m_bDelayFire = false;
 
-	//pPlayer->SetShieldDrawnState( false );
+
 	return true;
 }
 

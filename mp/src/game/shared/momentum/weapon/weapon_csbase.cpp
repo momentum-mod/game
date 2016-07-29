@@ -41,22 +41,18 @@ extern IVModelInfo* modelinfo;
 static const char * s_WeaponAliasInfo[] =
 {
     "none",		// WEAPON_NONE
-    "p228",		// WEAPON_P228
-    "glock",	// WEAPON_GLOCK				// old glock
+    "momentum_pistol",	// WEAPON_PISTOL
     "scout",	// WEAPON_SCOUT
-    "hegren",	// WEAPON_HEGRENADE
+    "hegrenade",	// WEAPON_HEGRENADE
     "xm1014",	// WEAPON_XM1014			// auto shotgun
     "c4",		// WEAPON_C4
     "mac10",	// WEAPON_MAC10				// T only
     "aug",		// WEAPON_AUG
-    "sgren",	// WEAPON_SMOKEGRENADE
-    "elite",	// WEAPON_ELITE
-    "fiveseven",// WEAPON_FIVESEVEN
+    "smokegrenade",	// WEAPON_SMOKEGRENADE
     "ump45",	// WEAPON_UMP45
     "sg550",	// WEAPON_SG550				// auto-sniper
     "galil",	// WEAPON_GALIL
     "famas",	// WEAPON_FAMAS				// CT cheap m4a1
-    "usp",		// WEAPON_USP
     "awp",		// WEAPON_AWP
     "mp5navy",	// WEAPON_MP5N 
     "m249",		// WEAPON_M249				// big machinegun
@@ -64,8 +60,7 @@ static const char * s_WeaponAliasInfo[] =
     "m4a1",		// WEAPON_M4A1
     "tmp",		// WEAPON_TMP
     "g3sg1",	// WEAPON_G3SG1				// T auto-sniper
-    "flash",	// WEAPON_FLASHBANG
-    "deagle",	// WEAPON_DEAGLE
+    "flashbang",	// WEAPON_FLASHBANG
     "sg552",	// WEAPON_SG552				// T aug equivalent
     "ak47",		// WEAPON_AK47
     "knife",	// WEAPON_KNIFE
@@ -223,12 +218,7 @@ bool IsSecondaryWeapon(int id)
 {
     switch (id)
     {
-    case WEAPON_USP:
-    case WEAPON_GLOCK:
-    case WEAPON_DEAGLE:
-    case WEAPON_ELITE:
-    case WEAPON_P228:
-    case WEAPON_FIVESEVEN:
+    case WEAPON_PISTOL:
         return true;
     }
 
@@ -563,19 +553,84 @@ const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is igno
         return BaseClass::GetViewModel();
     }
 
-    return GetWpnData().szViewModel;
+    return GetCSWpnData().szViewModel;
 
     //return BaseClass::GetViewModel();
 }
 
 void CWeaponCSBase::Precache(void)
 {
-    BaseClass::Precache();
-
+    m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
     PrecacheScriptSound("Default.ClipEmpty_Pistol");
     PrecacheScriptSound("Default.ClipEmpty_Rifle");
-
     PrecacheScriptSound("Default.Zoom");
+
+    const char *pWeaponAlias = WeaponIDToAlias(GetWeaponID());
+
+    if (pWeaponAlias)
+    {
+        char wpnName[128];
+        Q_snprintf(wpnName, sizeof(wpnName), "weapon_%s", pWeaponAlias);
+
+        // Add this weapon to the weapon registry, and get our index into it
+        // Get weapon data from script file
+        if (ReadWeaponDataFromFileForSlot(filesystem, wpnName, &m_hWeaponFileInfo, GetEncryptionKey()))
+        {
+            // Get the ammo indexes for the ammo's specified in the data file
+            if (GetCSWpnData().szAmmo1[0])
+            {
+                m_iPrimaryAmmoType = GetAmmoDef()->Index(GetCSWpnData().szAmmo1);
+                if (m_iPrimaryAmmoType == -1)
+                {
+                    Msg("ERROR: Weapon (%s) using undefined primary ammo type (%s)\n", GetClassname(),
+                        GetCSWpnData().szAmmo1);
+                }
+            }
+            if (GetCSWpnData().szAmmo2[0])
+            {
+                m_iSecondaryAmmoType = GetAmmoDef()->Index(GetCSWpnData().szAmmo2);
+                if (m_iSecondaryAmmoType == -1)
+                {
+                    Msg("ERROR: Weapon (%s) using undefined secondary ammo type (%s)\n", GetClassname(),
+                        GetCSWpnData().szAmmo2);
+                }
+            }
+#if defined(CLIENT_DLL)
+            gWR.LoadWeaponSprites(GetWeaponFileInfoHandle());
+#endif
+            // Precache models (preload to avoid hitch)
+            m_iViewModelIndex = 0;
+            m_iWorldModelIndex = 0;
+            if (GetViewModel() && GetViewModel()[0])
+            {
+                m_iViewModelIndex = CBaseEntity::PrecacheModel(GetViewModel());
+            }
+            if (GetWorldModel() && GetWorldModel()[0])
+            {
+                m_iWorldModelIndex = CBaseEntity::PrecacheModel(GetWorldModel());
+            }
+
+            // Precache sounds, too
+            for (int i = 0; i < NUM_SHOOT_SOUND_TYPES; ++i)
+            {
+                const char *shootsound = GetShootSound(i);
+                if (shootsound && shootsound[0])
+                {
+                    CBaseEntity::PrecacheScriptSound(shootsound);
+                }
+            }
+        }
+        else
+        {
+            // Couldn't read data file, remove myself
+            Warning("Error reading weapon data file for: %s\n", GetClassname());
+            //	Remove( );	//don't remove, this gets released soon!
+        }
+    }
+    else
+    {
+        Warning("Error reading weapon data file for weapon alias: %i \n", GetWeaponID());
+    }
 }
 
 Activity CWeaponCSBase::GetDeployActivity(void)

@@ -158,6 +158,7 @@
         "mapinfo_ypos" "10"//ypos for the map info
         "StatusFont" "HudHintTextSmall"//Font for the current map area/status
         "MapInfoFont" "HudHintTextSmall"//Font for the map information
+        "TextColor" "MOM.Panel.Fg"
     }
     
     "CHudMapFinishedDialog"

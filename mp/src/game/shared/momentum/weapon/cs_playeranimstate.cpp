@@ -830,14 +830,6 @@ int CCSPlayerAnimState::CalcFireLayerSequence(PlayerAnimEvent_t event)
 	if ( !pSuffix )
 		return -1;
 
-	char tempsuffix[32];
-	if ( pWeapon->GetWeaponID() == WEAPON_ELITE )
-	{
-		bool bPrimary = (event == PLAYERANIMEVENT_FIRE_GUN_PRIMARY);
-		Q_snprintf( tempsuffix, sizeof(tempsuffix), "%s_%c", pSuffix, bPrimary?'r':'l' );
-		pSuffix = tempsuffix;
-	}
-
 	// Grenades handle their fire events separately
 	if ( event == PLAYERANIMEVENT_THROW_GRENADE ||
 		pWeapon->GetWeaponID() == WEAPON_HEGRENADE ||
