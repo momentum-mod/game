@@ -207,7 +207,7 @@ Scheme
 
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"TransparentBlack"
-		TextEntry.CursorColor		"White"
+		TextEntry.CursorColor		"Black"
 		TextEntry.DisabledTextColor	"White"
 		TextEntry.DisabledBgColor	"Blank"
 		TextEntry.SelectedTextColor	"Black"

@@ -172,7 +172,7 @@ Scheme
 
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"MOM.Panel.Bg"
-		TextEntry.CursorColor		"Gray"
+		TextEntry.CursorColor		"Black"
 		TextEntry.DisabledTextColor	"Light Gray"
 		TextEntry.DisabledBgColor	"TransparentBlack"
 		TextEntry.SelectedTextColor	"White"
