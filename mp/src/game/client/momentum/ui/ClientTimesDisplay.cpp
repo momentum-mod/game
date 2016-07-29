@@ -93,12 +93,14 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pLocalLeaderboards = FindControl<SectionedListPanel>("LocalLeaderboards", true);
     m_pFriendsLeaderboards = FindControl<SectionedListPanel>("FriendsLeaderboards", true);
     m_pGlobalLeaderboardsButton = FindControl<Button>("GlobalLeaderboarsButton", true);
+    m_pGlobalTop10Button = FindControl<Button>("GlobalTop10Button", true);
+    m_pGlobalAroundButton = FindControl<Button>("GlobalAroundButton", true);
     m_pFriendsLeaderboardsButton = FindControl<Button>("FriendsLeaderboardsButton", true);
 
     if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName || !m_pMomentumLogo ||
         !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards ||
         !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_lPlayerPersonalBest || !m_lLoadingOnlineTimes || !m_lPlayerExperience ||
-        !m_pGlobalLeaderboardsButton || !m_pFriendsLeaderboardsButton)
+        !m_pGlobalLeaderboardsButton || !m_pFriendsLeaderboardsButton || !m_pGlobalTop10Button || !m_pGlobalAroundButton)
     {
         Assert("Null pointer(s) on scoreboards");
     }
@@ -121,17 +123,32 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pLocalLeaderboards->SetParent(m_pLeaderboards);
     m_pFriendsLeaderboards->SetParent(m_pLeaderboards);
     m_pGlobalLeaderboardsButton->SetParent(m_pLeaderboards);
+    m_pGlobalTop10Button->SetParent(m_pLeaderboards);
+    m_pGlobalAroundButton->SetParent(m_pLeaderboards);
     m_pFriendsLeaderboardsButton->SetParent(m_pLeaderboards);
 
     m_pGlobalLeaderboardsButton->SetMouseInputEnabled(true);
     m_pGlobalLeaderboardsButton->AddActionSignalTarget(this);
     m_pFriendsLeaderboardsButton->SetMouseInputEnabled(true);
     m_pFriendsLeaderboardsButton->AddActionSignalTarget(this);
+    m_pGlobalTop10Button->AddActionSignalTarget(this);
+    m_pGlobalAroundButton->AddActionSignalTarget(this);
+    m_pGlobalTop10Button->SetMouseInputEnabled(true);
+    m_pGlobalAroundButton->SetMouseInputEnabled(true);
     m_pGlobalLeaderboardsButton->SetPos(86, 3);
     m_pFriendsLeaderboardsButton->SetPos(3, 3);
+    m_pGlobalTop10Button->SetPos(169, 3);
+    m_pGlobalAroundButton->SetPos(252, 3);
     m_pGlobalLeaderboardsButton->SetCommand(new KeyValues("ToggleLeaderboard", "leaderboard", "global"));
     m_pFriendsLeaderboardsButton->SetCommand(new KeyValues("ToggleLeaderboard", "leaderboard", "friend"));
+    m_pGlobalTop10Button->SetCommand(new KeyValues("ToggleLeaderboardType", "type", "top10"));
+    m_pGlobalAroundButton->SetCommand(new KeyValues("ToggleLeaderboardType", "type", "around"));
     m_pGlobalLeaderboardsButton->SetEnabled(false);
+    m_pGlobalTop10Button->SetEnabled(true);
+    m_pGlobalAroundButton->SetEnabled(false);
+    m_pGlobalTop10Button->SetVisible(true);
+    m_pGlobalAroundButton->SetVisible(true);
+
     m_pOnlineLeaderboards->SetVisible(true);
     m_pFriendsLeaderboards->SetVisible(false);
 
@@ -853,10 +870,14 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                                 "personaname",
                                 steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamID)));
                         }
+                        else
+                        {
+                            kvEntry->SetString("personaname", "Unknown");
+                        }
                     }
 
                     //Persona name for the time they accomplished the run
-                    kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname"));
+                    kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname_t"));
 
                     //Rank
                     kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
@@ -1009,10 +1030,14 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
                                 "personaname",
                                 steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamID)));
                         }
+                        else
+                        {
+                            kvEntry->SetString("personaname", pRun->GetString("personaname_t"));
+                        }
                     }
 
                     //Persona name for the time they accomplished the run
-                    kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname"));
+                    kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname_t"));
 
                     //Rank
                     kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
@@ -1179,10 +1204,10 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
     pLeaderboards->AddSubKey(pLocal);
 
     m_bOnlineNeedUpdate = (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstOnlineTimesUpdate)
-        || gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL);
+        || (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL || m_bOnlineNeedUpdate));
 
     m_bFriendsNeedUpdate = (fullUpdate && (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MIN_FRIENDS_UPDATE_INTERVAL || m_bFirstFriendsTimesUpdate)
-        || gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MAX_FRIENDS_UPDATE_INTERVAL);
+        || (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MAX_FRIENDS_UPDATE_INTERVAL || m_bFriendsNeedUpdate));
     // Fill online times only if needed
     LoadOnlineTimes();
     LoadFriendsTimes();
@@ -1648,7 +1673,7 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
 
 void CClientTimesDisplay::OnToggleLeaderboard(KeyValues *pData)
 {
-    if (m_pOnlineLeaderboards && m_pFriendsLeaderboards)
+    if (m_pOnlineLeaderboards && m_pFriendsLeaderboards && m_pGlobalLeaderboardsButton && m_pFriendsLeaderboardsButton && m_pGlobalTop10Button && m_pGlobalAroundButton)
     {
         const char *leaderboard = pData->GetString("leaderboard");
         m_bGlobalsShown = !Q_strcmp(leaderboard, "global");
@@ -1656,5 +1681,30 @@ void CClientTimesDisplay::OnToggleLeaderboard(KeyValues *pData)
         m_pGlobalLeaderboardsButton->SetEnabled(!m_bGlobalsShown);
         m_pFriendsLeaderboards->SetVisible(!m_bGlobalsShown);
         m_pFriendsLeaderboardsButton->SetEnabled(m_bGlobalsShown);
+        m_pGlobalTop10Button->SetVisible(m_bGlobalsShown);
+        m_pGlobalAroundButton->SetVisible(m_bGlobalsShown);
+    }
+}
+
+void CClientTimesDisplay::OnToggleLeaderboardType(KeyValues *pData)
+{
+    if (m_pGlobalTop10Button && m_pGlobalAroundButton)
+    {
+        const char *type = pData->GetString("type");
+        const bool versionTop10 = !Q_strcmp(type, "top10");
+        const int preScoresVersion = m_iGetScoresVersion;
+
+        m_iGetScoresVersion = versionTop10 ? 1 : 2;
+
+        m_pGlobalTop10Button->SetEnabled(!versionTop10);
+        m_pGlobalAroundButton->SetEnabled(versionTop10);
+
+        if (preScoresVersion != m_iGetScoresVersion && m_pOnlineLeaderboards)
+        {
+            m_vOnlineTimes.PurgeAndDeleteElements();
+            m_pOnlineLeaderboards->RemoveAll();
+            m_bOnlineNeedUpdate = true;
+            FillScoreBoard();
+        }
     }
 }

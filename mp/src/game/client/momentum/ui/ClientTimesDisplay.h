@@ -106,6 +106,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
     MESSAGE_FUNC_PARAMS(OnToggleLeaderboard, "ToggleLeaderboard", data);
+    MESSAGE_FUNC_PARAMS(OnToggleLeaderboardType, "ToggleLeaderboardType", data);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
@@ -163,6 +164,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::ImagePanel *m_pPlayerAvatar;
     vgui::ImagePanel *m_pMomentumLogo;
     vgui::Button *m_pGlobalLeaderboardsButton;
+    vgui::Button *m_pGlobalTop10Button;
+    vgui::Button *m_pGlobalAroundButton;
     vgui::Button *m_pFriendsLeaderboardsButton;
 
     CUtlMap<CSteamID, int> m_mapAvatarsToImageList;
