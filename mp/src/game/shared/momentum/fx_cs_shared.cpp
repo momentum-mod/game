@@ -172,30 +172,15 @@ void FX_FireBullets(
 
     iSeed++;
 
-    bool	bPrimaryMode = (iMode == Primary_Mode);
     int		iDamage = pWeaponInfo->m_iDamage;
     float	flRange = pWeaponInfo->m_flRange;
     int		iPenetration = pWeaponInfo->m_iPenetration;
     float	flRangeModifier = pWeaponInfo->m_flRangeModifier;
     int		iAmmoType = pWeaponInfo->iAmmoType;
 
-    WeaponSound_t sound_type = SINGLE;
-
-    // CS HACK, tweak some weapon values based on primary/secondary mode
-
-    if (iWeaponID == WEAPON_M4A1)
-    {
-        if (!bPrimaryMode)
-        {
-            flRangeModifier = 0.95f; // slower bullets in silenced mode
-            sound_type = SPECIAL1;
-        }
-    }
-
-
     if (bDoEffects)
     {
-        FX_WeaponSound(iPlayerIndex, sound_type, vOrigin, pWeaponInfo);
+        FX_WeaponSound(iPlayerIndex, SINGLE, vOrigin, pWeaponInfo);
     }
 
 

@@ -42,27 +42,22 @@ static const char * s_WeaponAliasInfo[] =
 {
     "none",		// WEAPON_NONE
     "momentum_pistol",	// WEAPON_PISTOL
+    "momentum_rifle", //WEAPON_RIFLE
     "scout",	// WEAPON_SCOUT
     "hegrenade",	// WEAPON_HEGRENADE
     "xm1014",	// WEAPON_XM1014			// auto shotgun
     "c4",		// WEAPON_C4
     "mac10",	// WEAPON_MAC10				// T only
-    "aug",		// WEAPON_AUG
     "smokegrenade",	// WEAPON_SMOKEGRENADE
     "ump45",	// WEAPON_UMP45
     "sg550",	// WEAPON_SG550				// auto-sniper
-    "galil",	// WEAPON_GALIL
-    "famas",	// WEAPON_FAMAS				// CT cheap m4a1
     "awp",		// WEAPON_AWP
     "mp5navy",	// WEAPON_MP5N 
     "m249",		// WEAPON_M249				// big machinegun
     "m3",		// WEAPON_M3 				// cheap shotgun
-    "m4a1",		// WEAPON_M4A1
     "tmp",		// WEAPON_TMP
     "g3sg1",	// WEAPON_G3SG1				// T auto-sniper
     "flashbang",	// WEAPON_FLASHBANG
-    "sg552",	// WEAPON_SG552				// T aug equivalent
-    "ak47",		// WEAPON_AK47
     "knife",	// WEAPON_KNIFE
     "p90",		// WEAPON_P90
     "kevlar",
@@ -189,20 +184,15 @@ bool IsPrimaryWeapon(int id)
     case WEAPON_SCOUT:
     case WEAPON_XM1014:
     case WEAPON_MAC10:
-    case WEAPON_AUG:
+    case WEAPON_RIFLE:
     case WEAPON_UMP45:
     case WEAPON_SG550:
-    case WEAPON_GALIL:
-    case WEAPON_FAMAS:
     case WEAPON_AWP:
     case WEAPON_MP5NAVY:
     case WEAPON_M249:
     case WEAPON_M3:
-    case WEAPON_M4A1:
     case WEAPON_TMP:
     case WEAPON_G3SG1:
-    case WEAPON_SG552:
-    case WEAPON_AK47:
     case WEAPON_P90:
         return true;
     }

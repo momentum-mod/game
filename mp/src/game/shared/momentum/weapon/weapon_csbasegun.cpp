@@ -96,6 +96,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 	pPlayer->m_iShotsFired++;
 	
 	// These modifications feed back into flSpread eventually.
+#ifdef WEAPONS_USE_SPREAD
 	if ( pCSInfo.m_flAccuracyDivisor != -1 )
 	{
 		int iShotsFired = pPlayer->m_iShotsFired;
@@ -110,6 +111,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 		if (m_flAccuracy > pCSInfo.m_flMaxInaccuracy)
 			m_flAccuracy = pCSInfo.m_flMaxInaccuracy;
 	}
+#endif
 
 	// Out of ammo?
 #ifdef WEAPONS_USE_AMMO

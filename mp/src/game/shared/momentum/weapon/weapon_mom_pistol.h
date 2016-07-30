@@ -9,10 +9,10 @@
 #endif
 
 
-class CMomentumPistol : public CWeaponCSBase
+class CMomentumPistol : public CWeaponCSBaseGun
 {
 public:
-    DECLARE_CLASS(CMomentumPistol, CWeaponCSBase);
+    DECLARE_CLASS(CMomentumPistol, CWeaponCSBaseGun);
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 

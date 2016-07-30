@@ -145,6 +145,7 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
     if (!pPlayer)
         return;
 
+    //MOM_TODO: Hardcode this so people can't edit it easily?
     float flCycleTime = GetCSWpnData().m_flCycleTime;
 
     if (bFireBurst)

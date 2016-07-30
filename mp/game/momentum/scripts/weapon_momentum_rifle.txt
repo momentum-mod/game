@@ -8,7 +8,7 @@ WeaponData
 	"CrosshairMinDistance"		"4"
 	"CrosshairDeltaDistance"	"4"
 	"Team" 				"TERRORIST"
-	"BuiltRightHanded" 		"0"
+	"BuiltRightHanded" 		"1"
 	"PlayerAnimationExtension" 	"ak"
 	"MuzzleFlashScale"		"1.6"
 	"MuzzleFlashStyle"		"CS_MUZZLEFLASH_X"
@@ -43,8 +43,8 @@ WeaponData
 	
 	// Weapon data is loaded by both the Game and Client DLLs.
 	"printname"			"#Cstrike_WPNHUD_AK47"
-	"viewmodel"			"models/weapons/v_rif_ak47.mdl"
-	"playermodel"			"models/weapons/w_rif_ak47.mdl"
+	"viewmodel"			"models/weapons/v_irifle.mdl"
+	"playermodel"			"models/weapons/w_irifle.mdl"
 	
 	"anim_prefix"			"anim"
 	"bucket"			"0"
@@ -61,7 +61,7 @@ WeaponData
 	// Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
 	SoundData
 	{
-		"single_shot"		"Weapon_AK47.Single"
+		"single_shot"		"Weapon_AR2.Single"
 	}
 
 	// Weapon Sprite data is loaded by the Client DLL.
