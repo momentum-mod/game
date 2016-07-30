@@ -92,6 +92,8 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_pistol.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_rifle.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_rifle.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_shotgun.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_shotgun.cpp"
                 
                 $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.h"
