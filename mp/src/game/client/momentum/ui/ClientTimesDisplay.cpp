@@ -203,6 +203,10 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_bFirstOnlineTimesUpdate = true;
     m_bFirstFriendsTimesUpdate = true;
 
+    m_tVip = gHUD.GetIcon("p_icon_vip");
+    m_tFriend = gHUD.GetIcon("p_icon_friend");
+    m_tTeamMember = gHUD.GetIcon("p_icon_member");
+
     m_umMapNames.SetLessFunc(PNamesMapLessFunc);
 }
 
@@ -222,6 +226,17 @@ CClientTimesDisplay::~CClientTimesDisplay()
         delete m_pLeaderboardReplayCMenu;
         m_pLeaderboardReplayCMenu = nullptr;
     }
+    if (cbGetFriendsTimesCallback.IsActive())
+        cbGetFriendsTimesCallback.Cancel();
+
+    if (cbGetMapInfoCallback.IsActive())
+        cbGetMapInfoCallback.Cancel();
+
+    if (cbGetOnlineTimesCallback.IsActive())
+        cbGetOnlineTimesCallback.Cancel();
+
+    if (cbGetPlayerDataForMapCallback.IsActive())
+        cbGetPlayerDataForMapCallback.Cancel();
     // MOM_TODO: Ensure a good destructor
 }
 
@@ -895,6 +910,9 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                     // Is part of the momentum team?
                     kvEntry->SetBool("tm", pRun->GetBool("tm"));
 
+                    // Is vip?
+                    kvEntry->SetBool("vip", pRun->GetBool("vip"));
+
                     //Add this baby to the online times vector
                     TimeOnline *ot = new TimeOnline(kvEntry);
                     //Convert the time
@@ -1054,6 +1072,9 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
 
                     // Is part of the momentum team?
                     kvEntry->SetBool("tm", pRun->GetBool("tm"));
+
+                    // Is vip?
+                    kvEntry->SetBool("vip", pRun->GetBool("vip"));
 
                     //Add this baby to the online times vector
                     TimeOnline *ot = new TimeOnline(kvEntry);
@@ -1312,7 +1333,9 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
                     CAvatarImage *pImage = new CAvatarImage();
                     // 64 is enough up to full HD resolutions.
                     pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
-                    pImage->SetAvatarSize(64, 64); // Deliberately non scaling
+                    
+                    pImage->SetDrawFriend(false);
+                    pImage->SetAvatarSize(32, 32); // Deliberately non scaling
                     iImageIndex = m_pImageList->AddImage(pImage);
 
                     m_mapAvatarsToImageList.Insert(steamIDForPlayer, iImageIndex);
@@ -1322,6 +1345,7 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
                     iImageIndex = m_mapAvatarsToImageList[iMapIndex];
                 }
 
+                kv->SetBool("is_friend", false);
                 kv->SetInt("avatar", iImageIndex);
 
                 CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage(iImageIndex);
@@ -1338,7 +1362,7 @@ void CClientTimesDisplay::UpdateLeaderboardPlayerAvatar(uint64 steamid, KeyValue
     // Update their avatar
     if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())
     {
-
+        kv->SetBool("is_friend", steamapicontext->SteamFriends()->HasFriend(steamid, k_EFriendFlagImmediate));
         kv->SetInt("avatar", TryAddAvatar(CSteamID(steamid)));
     }
 }
@@ -1672,7 +1696,7 @@ void CClientTimesDisplay::OnContextVisitProfile(uint64 profile)
 
 void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
 {
-    if (pParam->m_nChangeFlags & k_EPersonaChangeName)
+    if (pParam->m_nChangeFlags & k_EPersonaChangeNameFirstSet || pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
         bool bFoundOnline = false;
         bool bFoundFriends = false;
@@ -1713,19 +1737,18 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
     // Update their avatar
     if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())
     {
-        CSteamID sID = CSteamID(steamid);
         // See if we already have that avatar in our list
 
-        int iMapIndex = m_mapAvatarsToImageList.Find(sID);
+        int iMapIndex = m_mapAvatarsToImageList.Find(steamid);
         int iImageIndex;
         if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
         {
             CAvatarImage *pImage = new CAvatarImage();
             // 64 is enough up to full HD resolutions.
-            pImage->SetAvatarSteamID(sID, k_EAvatarSize64x64);
-            pImage->SetAvatarSize(64, 64); // Deliberately non scaling
-            pImage->UpdateFriendStatus();
-            pImage->SetDrawFriend(true);
+            pImage->SetAvatarSteamID(steamid, k_EAvatarSize64x64);
+            
+            pImage->SetDrawFriend(false);
+            pImage->SetAvatarSize(32, 32); 
             iImageIndex = m_pImageList->AddImage(pImage);
             m_mapAvatarsToImageList.Insert(steamid, iImageIndex);
         }

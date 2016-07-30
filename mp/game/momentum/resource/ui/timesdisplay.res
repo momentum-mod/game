@@ -71,8 +71,8 @@
 		"fieldName"		"MapDetails"
 		"xpos"			"310"
 		"ypos"			"1"
-		"wide"			"155"
-		"tall"			"26"
+		"wide"			"156"
+		"tall"			"28"
 		"autoResize"	"0"
 		"pinCorner"		"0"
 		"visible"		"1"
@@ -85,7 +85,7 @@
 		"centerwrap"	"0"
 		"textinsetx"	"0"
 		"textinsety"	"0"
-		"auto_wide_tocontents" "1"
+		"auto_wide_tocontents" "0"
 	}
 	"LoadingOnlineTimes"
 	{

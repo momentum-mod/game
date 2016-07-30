@@ -229,13 +229,8 @@ private:
         uint64 steamid;
         time_t date;
         const char* personaname;
-        bool momember;
+        bool momember, vip;
 
-        // entry
-        // -rank
-        // -avatar
-        // -personaname
-        // -steamid
         KeyValues *m_kv;
         
         explicit TimeOnline(KeyValues* kv)
@@ -250,6 +245,7 @@ private:
             steamid = kv->GetUint64("steamid", 0);
             avatar = kv->GetInt("avatar", 0);
             momember = kv->GetBool("tm", false);
+            vip = kv->GetBool("vip", false);
         };
 
         ~TimeOnline() 
@@ -298,5 +294,9 @@ private:
     int m_iGetScoresVersion = 2;
 
     bool m_bMapInfoLoaded = false;
+
+    CHudTexture *m_tVip;
+    CHudTexture *m_tFriend;
+    CHudTexture *m_tTeamMember;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H
