@@ -3,7 +3,7 @@ weapon_manifest
     //Momentum-related guns
 	"file"	"scripts/weapon_momentum_pistol.txt"
     "file" "scripts/weapon_momentum_rifle.txt"
-    //MOM_TODO: "file" "scripts/weapon_momentum_smg.txt"
+    "file" "scripts/weapon_momentum_smg.txt"
     "file" "scripts/weapon_momentum_shotgun.txt"
     //MOM_TODO: "file" "scripts/weapon_momentum_sniper.txt"
     //MOM_TODO: "file" "scripts/weapon_momentum_grenade.txt"
@@ -15,12 +15,7 @@ weapon_manifest
     "file" "scripts/weapon_hegrenade.txt"
     "file" "scripts/weapon_knife.txt"
     "file" "scripts/weapon_m249.txt"
-    "file" "scripts/weapon_mac10.txt"
-    "file" "scripts/weapon_mp5navy.txt"
-    "file" "scripts/weapon_p90.txt"
     "file" "scripts/weapon_scout.txt"
     "file" "scripts/weapon_sg550.txt"
     "file" "scripts/weapon_smokegrenade.txt"
-    "file" "scripts/weapon_tmp.txt"
-    "file" "scripts/weapon_ump45.txt"
 }
