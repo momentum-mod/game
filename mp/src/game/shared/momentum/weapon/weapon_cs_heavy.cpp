@@ -14,22 +14,6 @@
 
 #include "tier0/memdbgon.h"
 
-//M3
-class CWeaponM3 : public CMomentumShotgun
-{
-public:
-    DECLARE_CLASS(CWeaponM3, CMomentumShotgun);
-    DECLARE_PREDICTABLE();
-
-    CWeaponM3() {}
-};
-
-BEGIN_PREDICTION_DATA(CWeaponM3)
-END_PREDICTION_DATA()
-
-LINK_ENTITY_TO_CLASS(weapon_m3, CWeaponM3);
-PRECACHE_WEAPON_REGISTER(weapon_m3);
-
 //M249
 class CWeaponM249 : public CWeaponCSBaseGun
 {
@@ -101,19 +85,3 @@ void CWeaponM249::M249Fire(float flSpread)
     else
         pPlayer->KickBack(0.8, 0.35, 0.3, 0.03, 3.75, 3, 9);
 }
-
-//XM1014
-class CWeaponXM1014 : public CMomentumShotgun
-{
-public:
-    DECLARE_CLASS(CWeaponXM1014, CMomentumShotgun);
-    DECLARE_PREDICTABLE();
-
-    CWeaponXM1014() {}
-};
-
-BEGIN_PREDICTION_DATA(CWeaponXM1014)
-END_PREDICTION_DATA()
-
-LINK_ENTITY_TO_CLASS(weapon_xm1014, CWeaponXM1014);
-PRECACHE_WEAPON_REGISTER(weapon_xm1014);

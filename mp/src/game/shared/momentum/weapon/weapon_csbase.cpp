@@ -45,14 +45,10 @@ static const char * s_WeaponAliasInfo[] =
     "momentum_rifle", //WEAPON_RIFLE
     "momentum_shotgun", //WEAPON_SHOTGUN
     "momentum_smg", //WEAPON_SMG
-    "scout",	// WEAPON_SCOUT
+    "momentum_sniper", //WEAPON_SNIPER
     "hegrenade",	// WEAPON_HEGRENADE
-    "c4",		// WEAPON_C4
     "smokegrenade",	// WEAPON_SMOKEGRENADE
-    "sg550",	// WEAPON_SG550				// auto-sniper
-    "awp",		// WEAPON_AWP
     "m249",		// WEAPON_M249				// big machinegun
-    "g3sg1",	// WEAPON_G3SG1				// T auto-sniper
     "flashbang",	// WEAPON_FLASHBANG
     "knife",	// WEAPON_KNIFE
     "kevlar",
@@ -176,14 +172,11 @@ bool IsPrimaryWeapon(int id)
 {
     switch (id)
     {
-    case WEAPON_SCOUT:
+    case WEAPON_SNIPER:
     case WEAPON_RIFLE:
     case WEAPON_SHOTGUN:
     case WEAPON_SMG:
-    case WEAPON_SG550:
-    case WEAPON_AWP:
     case WEAPON_M249:
-    case WEAPON_G3SG1:
         return true;
     }
 

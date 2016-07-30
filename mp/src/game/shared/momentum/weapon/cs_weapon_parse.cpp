@@ -45,15 +45,12 @@ static const char *WeaponNames[WEAPON_MAX] =
     "weapon_momentum_rifle",
     "weapon_momentum_shotgun",
     "weapon_momentum_smg",
-    "weapon_scout",
+    "weapon_momentum_sniper",
     "weapon_hegrenade",
     "weapon_c4",
     "weapon_smokegrenade",
-    "weapon_sg550",
 
-    "weapon_awp",
     "weapon_m249",
-    "weapon_g3sg1",
     "weapon_flashbang",
     "weapon_knife",
 
