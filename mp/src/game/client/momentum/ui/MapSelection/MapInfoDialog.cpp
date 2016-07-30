@@ -7,8 +7,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo"),
-m_CallbackPersonaStateChange(this, &CDialogMapInfo::OnPersonaStateChange)
+CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo")
 {
     SetBounds(0, 0, 512, 512);
     SetMinimumSize(416, 340);
@@ -64,8 +63,6 @@ CDialogMapInfo::~CDialogMapInfo()
 
     if (cbGet10MapTimesCallback.IsActive())
         cbGet10MapTimesCallback.Cancel();
-    
-    m_CallbackPersonaStateChange.Unregister();
 }
 
 //-----------------------------------------------------------------------------
@@ -86,20 +83,6 @@ void CDialogMapInfo::Run(const char *titleName)
     RequestInfo(titleName);
     Activate();
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: updates the dialog when we get info about the map creator
-//-----------------------------------------------------------------------------
-#ifndef NO_STEAM
-void CDialogMapInfo::OnPersonaStateChange(PersonaStateChange_t *pPersonaStateChange)
-{
-    if (pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeNameFirstSet || 
-        pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeName)
-    {
-        SetControlString("AuthorText", steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pPersonaStateChange->m_ulSteamID)));
-    }
-}
-#endif // NO_STEAM
 
 //-----------------------------------------------------------------------------
 // Purpose: lays out the data
@@ -337,17 +320,9 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
             SetControlString("NumZones", buffer);
 
             //Author
-            uint64 steamID = Q_atoui64(pResponse->GetString("submitter"));
-            CSteamID submitter(steamID);
 
-            if (steamapicontext->SteamFriends()->RequestUserInformation(submitter, true))
-            {
-                SetControlString("AuthorText", "Requesting map author...");
-            }
-            else
-            {
-                SetControlString("AuthorText", steamapicontext->SteamFriends()->GetFriendPersonaName(submitter));
-            }
+            SetControlString("AuthorText", pResponse->GetString("submitter"));
+
 
             //Game mode
             //MOM_TODO: Potentially have this part of the site?
@@ -464,7 +439,8 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
                     kvEntry->SetFloat("TimeSec", pRun->GetFloat("time"));
 
                     //Persona name for the time they accomplished the run
-                    kvEntry->SetString("PlayerName", pRun->GetString("personaname_t"));
+                    const char * pPerName = pRun->GetString("personaname_t");
+                    kvEntry->SetString("PlayerName", !Q_strcmp(pPerName, "") ? "< blank >" : pRun->GetString("personaname_t"));
 
                     //Rank
                     kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
