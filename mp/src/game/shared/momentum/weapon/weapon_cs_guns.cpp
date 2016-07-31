@@ -25,7 +25,7 @@
     END_PREDICTION_DATA()                                                                                              \
     LINK_ENTITY_TO_CLASS(entName, C_##csGun)                                                                           \
     PRECACHE_WEAPON_REGISTER(entName)
-#elif defined GAME_DLL
+#else
 #define CS_WEP_OVERRIDE(csGun, momGun, entName)                                                                        \
     class csGun : public momGun                                                                                        \
     {                                                                                                                  \

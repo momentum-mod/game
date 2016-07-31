@@ -79,8 +79,6 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
             //This handles both the start and stage triggers
             g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_START);
 
-            //Status
-            pPlayer->m_RunData.m_bIsInZone = false;
             float enterVel3D = pPlayer->GetLocalVelocity().Length(), enterVel2D = pPlayer->GetLocalVelocity().Length2D();
             pPlayer->m_RunStats.SetZoneEnterSpeed(stageNum, enterVel3D, enterVel2D);
             if (stageNum == 1)
@@ -88,6 +86,9 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
         }
+
+        //Status
+        pPlayer->m_RunData.m_bIsInZone = false;
     }
     else
     {
