@@ -18,7 +18,7 @@ void CMomentumSniper::SecondaryAttack()
 {
 #ifndef CLIENT_DLL
     CMomentumPlayer *pPlayer = GetPlayerOwner();
-    if (pPlayer == NULL)
+    if (!pPlayer)
     {
         Assert(pPlayer != NULL);
         return;

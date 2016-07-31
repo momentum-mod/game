@@ -4,6 +4,7 @@
 #include "weapon_mom_pistol.h"
 #include "weapon_mom_shotgun.h"
 #include "weapon_mom_smg.h"
+#include "weapon_mom_lmg.h"
 
 #include "tier0/memdbgon.h"
 
@@ -16,6 +17,9 @@
         DECLARE_CLASS(C_##csGun, momGun);                                                                              \
         DECLARE_PREDICTABLE();                                                                                         \
         C_##csGun(){};                                                                                                 \
+                                                                                                                       \
+      private:                                                                                                         \
+        C_##csGun(const C_##csGun &){};                                                                                \
     };                                                                                                                 \
     BEGIN_PREDICTION_DATA(C_##csGun)                                                                                   \
     END_PREDICTION_DATA()                                                                                              \
@@ -29,6 +33,9 @@
         DECLARE_CLASS(csGun, momGun);                                                                                  \
         DECLARE_PREDICTABLE();                                                                                         \
         csGun(){};                                                                                                     \
+                                                                                                                       \
+      private:                                                                                                         \
+        csGun(const csGun &){};                                                                                        \
     };                                                                                                                 \
     BEGIN_PREDICTION_DATA(csGun)                                                                                       \
     END_PREDICTION_DATA()                                                                                              \
@@ -70,5 +77,7 @@ CS_WEP_OVERRIDE(CWeaponXM1014, CMomentumShotgun, weapon_xm1014);
 CS_WEP_OVERRIDE(CWeaponM3, CMomentumShotgun, weapon_m3);
 
 //LMG
+CS_WEP_OVERRIDE(CWeaponM249, CMomentumLMG, weapon_m249);
 
 //Grenades
+// MOM_TODO
