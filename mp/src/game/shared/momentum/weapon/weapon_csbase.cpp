@@ -159,7 +159,7 @@ int ClassnameToWeaponID(const char *classname)
 const char *WeaponIDToAlias(int id)
 {
     if ((id >= WEAPON_MAX) || (id < 0))
-        return NULL;
+        return nullptr;
 
     return s_WeaponAliasInfo[id];
 }
@@ -279,7 +279,7 @@ CWeaponCSBase::CWeaponCSBase()
     SetPredictionEligible(true);
     m_bDelayFire = true;
     m_nextPrevOwnerTouchTime = 0.0;
-    m_prevOwner = NULL;
+    m_prevOwner = nullptr;
     AddSolidFlags(FSOLID_TRIGGER); // Nothing collides with these but it gets touches.
 
 #ifdef CLIENT_DLL
@@ -527,8 +527,6 @@ const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is igno
     }
 
     return GetCSWpnData().szViewModel;
-
-    //return BaseClass::GetViewModel();
 }
 
 void CWeaponCSBase::Precache(void)
@@ -576,11 +574,11 @@ void CWeaponCSBase::Precache(void)
             m_iWorldModelIndex = 0;
             if (GetViewModel() && GetViewModel()[0])
             {
-                m_iViewModelIndex = CBaseEntity::PrecacheModel(GetViewModel());
+                m_iViewModelIndex = PrecacheModel(GetViewModel());
             }
             if (GetWorldModel() && GetWorldModel()[0])
             {
-                m_iWorldModelIndex = CBaseEntity::PrecacheModel(GetWorldModel());
+                m_iWorldModelIndex = PrecacheModel(GetWorldModel());
             }
 
             // Precache sounds, too
@@ -589,7 +587,7 @@ void CWeaponCSBase::Precache(void)
                 const char *shootsound = GetShootSound(i);
                 if (shootsound && shootsound[0])
                 {
-                    CBaseEntity::PrecacheScriptSound(shootsound);
+                    PrecacheScriptSound(shootsound);
                 }
             }
         }
@@ -729,7 +727,7 @@ void CWeaponCSBase::Drop(const Vector &vecVelocity)
     m_iState = WEAPON_NOT_CARRIED;
     RemoveEffects(EF_NODRAW);
     FallInit();
-    SetGroundEntity(NULL);
+    SetGroundEntity(nullptr);
 
     m_bInReload = false; // stop reloading 
 
@@ -740,7 +738,7 @@ void CWeaponCSBase::Drop(const Vector &vecVelocity)
     SetTouch(&CWeaponCSBase::DefaultTouch);
 
     IPhysicsObject *pObj = VPhysicsGetObject();
-    if (pObj != NULL)
+    if (pObj != nullptr)
     {
         AngularImpulse	angImp(200, 200, 200);
         pObj->AddVelocity(&vecVelocity, &angImp);
@@ -752,8 +750,8 @@ void CWeaponCSBase::Drop(const Vector &vecVelocity)
 
     SetNextThink(gpGlobals->curtime);
 
-    SetOwnerEntity(NULL);
-    SetOwner(NULL);
+    SetOwnerEntity(nullptr);
+    SetOwner(nullptr);
 #endif
 }
 
@@ -1066,24 +1064,6 @@ void CWeaponCSBase::Materialize()
     //SetTouch( &CWeaponCSBase::DefaultTouch );
 
     SetThink(NULL);
-
-}
-
-//=========================================================
-// AttemptToMaterialize - the item is trying to rematerialize,
-// should it do so now or wait longer?
-//=========================================================
-void CWeaponCSBase::AttemptToMaterialize()
-{
-    float time = g_pGameRules->FlWeaponTryRespawn(this);
-
-    if (time == 0)
-    {
-        Materialize();
-        return;
-    }
-
-    SetNextThink(gpGlobals->curtime + time);
 }
 
 //=========================================================
@@ -1105,13 +1085,13 @@ CBaseEntity* CWeaponCSBase::Respawn()
 {
     // make a copy of this weapon that is invisible and inaccessible to players (no touch function). The weapon spawn/respawn code
     // will decide when to make the weapon visible and touchable.
-    CBaseEntity *pNewWeapon = CBaseEntity::Create(GetClassname(), g_pGameRules->VecWeaponRespawnSpot(this), GetAbsAngles(), GetOwner());
+    CBaseEntity *pNewWeapon = Create(GetClassname(), g_pGameRules->VecWeaponRespawnSpot(this), GetAbsAngles(), GetOwner());
 
     if (pNewWeapon)
     {
         pNewWeapon->AddEffects(EF_NODRAW);// invisible for now
         pNewWeapon->SetTouch(NULL);// no touch
-        pNewWeapon->SetThink(&CWeaponCSBase::AttemptToMaterialize);
+        pNewWeapon->SetThink(&BaseClass::AttemptToMaterialize);
 
         UTIL_DropToFloor(this, MASK_SOLID);
 
@@ -1125,19 +1105,6 @@ CBaseEntity* CWeaponCSBase::Respawn()
     }
 
     return pNewWeapon;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void CWeaponCSBase::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
-{
-    CBasePlayer *pPlayer = ToBasePlayer(pActivator);
-
-    if (pPlayer)
-    {
-        pPlayer->Weapon_Equip(this);
-    }
 }
 
 bool CWeaponCSBase::Reload()
@@ -1175,7 +1142,7 @@ void CWeaponCSBase::Spawn()
     SetExtraAmmoCount(m_iDefaultExtraAmmo);	//Start with no additional ammo
 
     m_nextPrevOwnerTouchTime = 0.0;
-    m_prevOwner = NULL;
+    m_prevOwner = nullptr;
 
 #ifdef CLIENT_DLL
     m_bInReloadAnimation = false;
@@ -1416,40 +1383,3 @@ bool CWeaponCSBase::PhysicsSplash(const Vector &centerPoint, const Vector &norma
     return false;
 }
 #endif // !CLIENT_DLL
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pPicker - 
-//-----------------------------------------------------------------------------
-void CWeaponCSBase::OnPickedUp(CBaseCombatCharacter *pNewOwner)
-{
-#if !defined( CLIENT_DLL )
-    RemoveEffects(EF_ITEM_BLINK);
-
-    if (pNewOwner->IsPlayer() && pNewOwner->IsAlive())
-    {
-        // Play the pickup sound for 1st-person observers
-        CRecipientFilter filter;
-        for (int i = 0; i < gpGlobals->maxClients; ++i)
-        {
-            CBasePlayer *player = UTIL_PlayerByIndex(i);
-            if (player && !player->IsAlive() && player->GetObserverMode() == OBS_MODE_IN_EYE)
-            {
-                filter.AddRecipient(player);
-            }
-        }
-        if (filter.GetRecipientCount())
-        {
-            CBaseEntity::EmitSound(filter, pNewOwner->entindex(), "Player.PickupWeapon");
-        }
-
-        // Robin: We don't want to delete weapons the player has picked up, so 
-        // clear the name of the weapon. This prevents wildcards that are meant 
-        // to find NPCs finding weapons dropped by the NPCs as well.
-        SetName(NULL_STRING);
-    }
-
-    // Someone picked me up, so make it so that I can't be removed.
-    SetRemoveable(false);
-#endif
-}
