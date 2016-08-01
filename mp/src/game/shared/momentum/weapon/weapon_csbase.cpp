@@ -11,6 +11,7 @@
 #include "weapon_csbase.h"
 #include "ammodef.h"
 #include "mom_player_shared.h"
+#include "movevars_shared.h"
 
 #if defined( CLIENT_DLL )
 
@@ -47,6 +48,7 @@ static const char * s_WeaponAliasInfo[] =
     "momentum_smg", //WEAPON_SMG
     "momentum_sniper", //WEAPON_SNIPER
     "momentum_lmg", //WEAPON_LMG
+    "momentum_grenade", //WEAPON_GRENADE
     "hegrenade",	// WEAPON_HEGRENADE
     "smokegrenade",	// WEAPON_SMOKEGRENADE
     "flashbang",	// WEAPON_FLASHBANG
@@ -313,25 +315,6 @@ bool CWeaponCSBase::KeyValue(const char *szKeyName, const char *szValue)
 }
 #endif
 
-
-bool CWeaponCSBase::IsPredicted() const
-{
-    return true;
-}
-
-
-bool CWeaponCSBase::IsPistol() const
-{
-    return GetCSWpnData().m_WeaponType == WEAPONTYPE_PISTOL;
-}
-
-
-bool CWeaponCSBase::IsAwp() const
-{
-    return false;
-}
-
-
 bool CWeaponCSBase::PlayEmptySound()
 {
     //MIKETODO: certain weapons should override this to make it empty:
@@ -352,7 +335,7 @@ bool CWeaponCSBase::PlayEmptySound()
         EmitSound(filter, entindex(), "Default.ClipEmpty_Rifle");
     }
 
-    return 0;
+    return false;
 }
 
 CMomentumPlayer* CWeaponCSBase::GetPlayerOwner() const
@@ -484,17 +467,13 @@ void CWeaponCSBase::ItemPostFrame()
         }
 
         WeaponIdle();
-        return;
     }
 }
 
 
 float CWeaponCSBase::GetMaxSpeed() const
 {
-    // The weapon should have set this in its constructor.
-    float flRet = GetCSWpnData().m_flMaxSpeed;
-    Assert(flRet > 1);
-    return flRet;
+    return sv_maxspeed.GetFloat();
 }
 
 

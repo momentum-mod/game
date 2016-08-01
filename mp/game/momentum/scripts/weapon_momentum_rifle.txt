@@ -3,11 +3,8 @@ WeaponData
 	"MaxPlayerSpeed"		"221"
 	"WeaponType"			"Rifle"
 	"FullAuto"				1
-	"WeaponPrice"			"2500"
-	"WeaponArmorRatio"		"1.55"
 	"CrosshairMinDistance"		"4"
 	"CrosshairDeltaDistance"	"4"
-	"Team" 				"TERRORIST"
 	"BuiltRightHanded" 		"1"
 	"PlayerAnimationExtension" 	"ak"
 	"MuzzleFlashScale"		"1.6"
@@ -22,24 +19,6 @@ WeaponData
 	"RangeModifier"			"0.98"
 	"Bullets"			"1"
 	"CycleTime"			"0.1"
-	"AccuracyDivisor"		"200"
-	"AccuracyOffset"		"0.35"
-	"MaxInaccuracy"			"1.25"
-	"TimeToIdle"			"1.9"
-	"IdleInterval"			"20"
-	
-	// New accuracy model parameters
-	"Spread"					0.00060
-	"InaccuracyCrouch"			0.00687
-	"InaccuracyStand"			0.00916
-	"InaccuracyJump"			0.43044
-	"InaccuracyLand"			0.08609
-	"InaccuracyLadder"			0.10761
-	"InaccuracyFire"			0.01158
-	"InaccuracyMove"			0.09222
-								 
-	"RecoveryTimeCrouch"		0.34868
-	"RecoveryTimeStand"			0.48815
 	
 	// Weapon data is loaded by both the Game and Client DLLs.
 	"printname"			"#Cstrike_WPNHUD_AK47"

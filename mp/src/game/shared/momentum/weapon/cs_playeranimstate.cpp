@@ -831,10 +831,7 @@ int CCSPlayerAnimState::CalcFireLayerSequence(PlayerAnimEvent_t event)
 		return -1;
 
 	// Grenades handle their fire events separately
-	if ( event == PLAYERANIMEVENT_THROW_GRENADE ||
-		pWeapon->GetWeaponID() == WEAPON_HEGRENADE ||
-		pWeapon->GetWeaponID() == WEAPON_SMOKEGRENADE ||
-		pWeapon->GetWeaponID() == WEAPON_FLASHBANG )
+	if ( event == PLAYERANIMEVENT_THROW_GRENADE || pWeapon->GetWeaponID() == WEAPON_GRENADE )
 	{
 		return -1;
 	}

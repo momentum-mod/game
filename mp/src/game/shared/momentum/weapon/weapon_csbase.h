@@ -102,7 +102,7 @@ public:
 
 		void SendReloadEvents();
 
-		void Materialize();
+		void Materialize() override;
 
 		virtual bool IsRemoveable();
 		
@@ -112,13 +112,10 @@ public:
 	virtual void	AddViewmodelBob( CBaseViewModel *viewmodel, Vector &origin, QAngle &angles );
 	virtual	float	CalcViewmodelBob( void );
 	// All predicted weapons need to implement and return true
-	virtual bool	IsPredicted() const;
+    virtual bool	IsPredicted() const { return true; }
 
 	// Pistols reset m_iShotsFired to 0 when the attack button is released.
-	bool			IsPistol() const;
-
-	// Is this an awp?
-	virtual bool	IsAwp() const;
+    bool			IsPistol() const { return GetCSWpnData().m_WeaponType == WEAPONTYPE_PISTOL; }
 
 	CMomentumPlayer *GetPlayerOwner() const;
 
@@ -129,12 +126,6 @@ public:
 
 	// Get specific CS weapon ID (ie: WEAPON_AK47, etc)
 	virtual CSWeaponID GetWeaponID( void ) const		{ return WEAPON_NONE; }
-
-	// return true if this weapon is an instance of the given weapon type (ie: "IsA" WEAPON_GLOCK)
-	bool IsA( CSWeaponID id ) const						{ return GetWeaponID() == id; }
-
-	// return true if this weapon is a kinf of the given weapon type (ie: "IsKindOf" WEAPONTYPE_RIFLE )
-	bool IsKindOf( CSWeaponType type ) const			{ return GetCSWpnData().m_WeaponType == type; }
 
 	// return true if this weapon has a silencer equipped
 	virtual bool IsSilenced( void ) const				{ return false; }
@@ -173,7 +164,7 @@ public:
 
 	bool IsUseable();
 	virtual bool	CanDeploy( void );
-	virtual void	Precache( void );
+	virtual void	Precache( void );//Overridden for CS guns to point to momentum gun overrides
 	virtual bool	CanBeSelected( void );
 	virtual Activity GetDeployActivity( void );
 	virtual bool	DefaultDeploy( char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt );

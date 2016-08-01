@@ -24,7 +24,8 @@ LINK_ENTITY_TO_CLASS( weapon_csbase_gun, CWeaponCSBaseGun );
 
 CWeaponCSBaseGun::CWeaponCSBaseGun()
 {
-
+    m_flTimeToIdleAfterFire = 2.0f;
+    m_flIdleInterval = 20.0f;
 }
 
 void CWeaponCSBaseGun::Spawn()
@@ -90,28 +91,8 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 	if ( !pPlayer )
 		return false;
 
-	const CCSWeaponInfo &pCSInfo = GetCSWpnData();
-
 	m_bDelayFire = true;
 	pPlayer->m_iShotsFired++;
-	
-	// These modifications feed back into flSpread eventually.
-#ifdef WEAPONS_USE_SPREAD
-	if ( pCSInfo.m_flAccuracyDivisor != -1 )
-	{
-		int iShotsFired = pPlayer->m_iShotsFired;
-
-		if ( pCSInfo.m_bAccuracyQuadratic )
-			iShotsFired = iShotsFired * iShotsFired;
-		else
-			iShotsFired = iShotsFired * iShotsFired * iShotsFired;
-
-		m_flAccuracy = ( iShotsFired / pCSInfo.m_flAccuracyDivisor) + pCSInfo.m_flAccuracyOffset;
-		
-		if (m_flAccuracy > pCSInfo.m_flMaxInaccuracy)
-			m_flAccuracy = pCSInfo.m_flMaxInaccuracy;
-	}
-#endif
 
 	// Out of ammo?
 #ifdef WEAPONS_USE_AMMO
@@ -155,7 +136,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flSpread, float flCycleTime, bool bP
 	}
 #endif
 
-	SetWeaponIdleTime( gpGlobals->curtime + pCSInfo.m_flTimeToIdleAfterFire );
+	SetWeaponIdleTime( gpGlobals->curtime + m_flTimeToIdleAfterFire );
 	return true;
 }
 
@@ -207,7 +188,7 @@ void CWeaponCSBaseGun::WeaponIdle()
 	// only idle if the slid isn't back
 	if ( m_iClip1 != 0 )
 	{
-		SetWeaponIdleTime( gpGlobals->curtime + GetCSWpnData().m_flIdleInterval );
+		SetWeaponIdleTime( gpGlobals->curtime + m_flIdleInterval );
 		SendWeaponAnim( ACT_VM_IDLE );
 	}
 }

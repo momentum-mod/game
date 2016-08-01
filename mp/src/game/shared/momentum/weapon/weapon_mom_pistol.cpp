@@ -31,7 +31,6 @@ CMomentumPistol::CMomentumPistol(): m_iPistolShotsFired(0), m_flPistolShoot(0)
 void CMomentumPistol::Spawn()
 {
     BaseClass::Spawn();
-
     m_bBurstMode = false;
     m_iPistolShotsFired = 0;
     m_flPistolShoot = 0.0f;
@@ -145,8 +144,7 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
     if (!pPlayer)
         return;
 
-    //MOM_TODO: Hardcode this so people can't edit it easily?
-    float flCycleTime = GetCSWpnData().m_flCycleTime;
+    float flCycleTime = 0.15f;
 
     if (bFireBurst)
     {
@@ -160,14 +158,6 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
         if (pPlayer->m_iShotsFired > 1)
             return;
     }
-
-    // Mark the time of this shot and determine the accuracy modifier based on the last shot fired...
-    m_flAccuracy -= (0.275)*(0.325 - (gpGlobals->curtime - m_flLastFire));
-
-    if (m_flAccuracy > 0.9)
-        m_flAccuracy = 0.9;
-    else if (m_flAccuracy < 0.6)
-        m_flAccuracy = 0.6;
 
     m_flLastFire = gpGlobals->curtime;
 

@@ -14,7 +14,11 @@ class CMomentumSniper : public CWeaponCSBaseGun
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumSniper() {}
+    CMomentumSniper()
+    {
+        m_flIdleInterval = 60.0f;
+        m_flTimeToIdleAfterFire = 1.8f;
+    }
 
     void PrimaryAttack() override;
     void SecondaryAttack() override;

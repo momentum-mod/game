@@ -14,7 +14,11 @@ class CMomentumSMG : public CWeaponCSBaseGun
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumSMG() {}
+    CMomentumSMG()
+    {
+        m_flIdleInterval = 20.0f;
+        m_flTimeToIdleAfterFire = 2.0f;
+    }
 
     void PrimaryAttack() override;
 

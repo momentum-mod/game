@@ -14,7 +14,11 @@ public:
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumRifle() {};
+    CMomentumRifle()
+    {
+        m_flTimeToIdleAfterFire = 1.9f;
+        m_flIdleInterval = 20.0f;
+    };
 
     void PrimaryAttack() override;
 

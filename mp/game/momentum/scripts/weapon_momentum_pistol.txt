@@ -11,8 +11,6 @@ WeaponData
 	"BuiltRightHanded"		"1"
 	"PlayerAnimationExtension" 	"pistol"
 	"MuzzleFlashScale"		"1.0"
-	
-	"CanEquipWithShield"		"1"
 
 
 	// Weapon characteristics:
@@ -22,28 +20,6 @@ WeaponData
 	"RangeModifier"			"0.75"
 	"Bullets"			"1"
 	"CycleTime"			"0.15"
-	
-	// New accuracy model parameters
-	"Spread"					0.00400
-	"InaccuracyCrouch"			0.00750
-	"InaccuracyStand"			0.01000
-	"InaccuracyJump"			0.27750
-	"InaccuracyLand"			0.05550
-	"InaccuracyLadder"			0.01850
-	"InaccuracyFire"			0.03167
-	"InaccuracyMove"			0.01665
-								
-	"SpreadAlt"					0.00400
-	"InaccuracyCrouchAlt"		0.00750
-	"InaccuracyStandAlt"		0.01000
-	"InaccuracyJumpAlt"			0.27750
-	"InaccuracyLandAlt"			0.05550
-	"InaccuracyLadderAlt"		0.01850
-	"InaccuracyFireAlt"			0.02217
-	"InaccuracyMoveAlt"			0.01665
-								 
-	"RecoveryTimeCrouch"		0.21875
-	"RecoveryTimeStand"			0.26249
 	
 	// Weapon data is loaded by both the Game and Client DLLs.
 	"printname"			"#Cstrike_WPNHUD_Glock18"

@@ -49,6 +49,8 @@ public:
 
 protected: 
 	float m_zoomFullyActiveTime;
+    float m_flTimeToIdleAfterFire;
+    float	m_flIdleInterval;
 
 private:
 

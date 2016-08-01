@@ -27,7 +27,7 @@ void CMomentumSMG::SMGFire()
     if (!pPlayer)
         return;
 
-    if (!CSBaseGunFire(0.0f, GetCSWpnData().m_flCycleTime, true))
+    if (!CSBaseGunFire(0.0f, 0.07f, true))
         return;
 
     //MOM_TODO: Do we want this kickback? Should it be convar'd?

@@ -14,7 +14,11 @@ public:
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumLMG() {};
+    CMomentumLMG()
+    {
+        m_flTimeToIdleAfterFire = 1.6f;
+        m_flIdleInterval = 20.0f;
+    };
 
     void PrimaryAttack() override;
     CSWeaponID GetWeaponID(void) const override { return WEAPON_LMG; }

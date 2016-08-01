@@ -23,8 +23,7 @@ void CMomentumLMG::PrimaryAttack(void)
 
 void CMomentumLMG::LMGFire()
 {
-    //MOM_TODO: Hardcode this value so it can't be edited?
-    if (!CSBaseGunFire(0.0f, GetCSWpnData().m_flCycleTime, true))
+    if (!CSBaseGunFire(0.0f, 0.08f, true))
         return;
 
     CMomentumPlayer *pPlayer = GetPlayerOwner();

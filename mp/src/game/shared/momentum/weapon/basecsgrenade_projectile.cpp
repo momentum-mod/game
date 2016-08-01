@@ -95,17 +95,6 @@ void CBaseCSGrenadeProjectile::Spawn()
 
 #else
 
-void CBaseCSGrenadeProjectile::PostConstructor(const char *className)
-{
-    BaseClass::PostConstructor(className);
-    //TheBots->AddGrenade( this );
-}
-
-CBaseCSGrenadeProjectile::~CBaseCSGrenadeProjectile()
-{
-    //TheBots->RemoveGrenade( this );
-}
-
 void CBaseCSGrenadeProjectile::Spawn(void)
 {
     BaseClass::Spawn();
@@ -265,21 +254,6 @@ void CBaseCSGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector 
     }
 
     BounceSound();
-
-    // tell the bots a grenade has bounced
-    CMomentumPlayer *player = ToCMOMPlayer(GetThrower());
-    if (player)
-    {
-        IGameEvent * event = gameeventmanager->CreateEvent("grenade_bounce");
-        if (event)
-        {
-            event->SetInt("userid", player->GetUserID());
-            event->SetFloat("x", GetAbsOrigin().x);
-            event->SetFloat("y", GetAbsOrigin().y);
-            event->SetFloat("z", GetAbsOrigin().z);
-            gameeventmanager->FireEvent(event);
-        }
-    }
 }
 
 void CBaseCSGrenadeProjectile::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity)

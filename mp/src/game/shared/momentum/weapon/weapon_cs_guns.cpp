@@ -5,6 +5,7 @@
 #include "weapon_mom_shotgun.h"
 #include "weapon_mom_smg.h"
 #include "weapon_mom_lmg.h"
+#include "weapon_mom_grenade.h"
 
 #include "tier0/memdbgon.h"
 
@@ -80,4 +81,6 @@ CS_WEP_OVERRIDE(CWeaponM3, CMomentumShotgun, weapon_m3);
 CS_WEP_OVERRIDE(CWeaponM249, CMomentumLMG, weapon_m249);
 
 //Grenades
-// MOM_TODO
+CS_WEP_OVERRIDE(CHEGrenade, CMomentumGrenade, weapon_hegrenade);
+CS_WEP_OVERRIDE(CFlashbang, CMomentumGrenade, weapon_flashbang);
+CS_WEP_OVERRIDE(CSmokeGrenade, CMomentumGrenade, weapon_smokegrenade);

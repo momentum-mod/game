@@ -7,11 +7,8 @@ weapon_manifest
     "file" "scripts/weapon_momentum_shotgun.txt"
     "file" "scripts/weapon_momentum_sniper.txt"
     "file" "scripts/weapon_momentum_lmg.txt"
-    //MOM_TODO: "file" "scripts/weapon_momentum_grenade.txt"
+    "file" "scripts/weapon_momentum_grenade.txt"
     
     //CS Guns (MOM_TODO: Needs migration!)
-    "file" "scripts/weapon_flashbang.txt"
-    "file" "scripts/weapon_hegrenade.txt"
     "file" "scripts/weapon_knife.txt"
-    "file" "scripts/weapon_smokegrenade.txt"
 }

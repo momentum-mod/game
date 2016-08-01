@@ -20,7 +20,10 @@ END_PREDICTION_DATA();
 LINK_ENTITY_TO_CLASS(weapon_momentum_shotgun, CMomentumShotgun);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_shotgun);
 
-CMomentumShotgun::CMomentumShotgun() { m_flPumpTime = 0; }
+CMomentumShotgun::CMomentumShotgun()
+{
+    m_flPumpTime = 0;
+}
 
 void CMomentumShotgun::PrimaryAttack()
 {

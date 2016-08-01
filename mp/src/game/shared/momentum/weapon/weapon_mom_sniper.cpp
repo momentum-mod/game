@@ -70,8 +70,7 @@ void CMomentumSniper::SniperFire()
 #endif
     }
 
-    // MOM_TODO: Hardcode this so players can't spam fire?
-    if (!CSBaseGunFire(0.0f, GetCSWpnData().m_flCycleTime, true))
+    if (!CSBaseGunFire(0.0f, 1.25f, true))
         return;
 
     QAngle angle = pPlayer->GetPunchAngle();

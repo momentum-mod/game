@@ -45,9 +45,6 @@ public:
 #else
 	DECLARE_DATADESC();
 
-	virtual void PostConstructor( const char *className );
-	virtual ~CBaseCSGrenadeProjectile();
-
 	//Constants for all CS Grenades
 	static inline float GetGrenadeGravity() { return 0.4f; }
 	static inline const float GetGrenadeFriction() { return 0.2f; }

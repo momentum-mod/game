@@ -1,18 +1,15 @@
 WeaponData
 {
-	"MaxPlayerSpeed"		"220" 
 	"WeaponType"			"Machinegun"
 	"FullAuto"				1
 	"WeaponPrice"			"5750"
 	"WeaponArmorRatio"		"1.6"
 	"CrosshairMinDistance"		"6"
 	"CrosshairDeltaDistance"	"3"
-	"Team"				"ANY"
 	"BuiltRightHanded"		"1"
 	"PlayerAnimationExtension"	"m249"
 	"MuzzleFlashScale"		"1.5"
 	"MuzzleFlashStyle"		"CS_MUZZLEFLASH_X"
-	"CanEquipWithShield" 		"0"
 
 	
 	// Weapon characteristics:
@@ -22,24 +19,6 @@ WeaponData
 	"RangeModifier"			"0.97"
 	"Bullets"			"1"
 	"CycleTime"			"0.08"
-	"AccuracyDivisor"		"175"
-	"AccuracyOffset"		"0.4"
-	"MaxInaccuracy"			"0.9"
-	"TimeToIdle"			"1.6"
-	"IdleInterval"			"20"
-	
-	// New accuracy model parameters
-	"Spread"					0.00200
-	"InaccuracyCrouch"			0.00763
-	"InaccuracyStand"			0.01017
-	"InaccuracyJump"			0.70830
-	"InaccuracyLand"			0.14166
-	"InaccuracyLadder"			0.13281
-	"InaccuracyFire"			0.00427
-	"InaccuracyMove"			0.10618
-								 
-	"RecoveryTimeCrouch"		0.55920
-	"RecoveryTimeStand"			0.78288
 	
 	// Weapon data is loaded by both the Game and Client DLLs.
 	"printname"			"#Cstrike_WPNHUD_M249"
