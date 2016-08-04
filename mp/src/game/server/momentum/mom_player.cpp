@@ -7,6 +7,7 @@
 #include "predicted_viewmodel.h"
 #include "mom_system_checkpoint.h"
 #include "mom_triggers.h"
+#include "momentum/weapon/weapon_csbasegun.h"
 
 #include "tier0/memdbgon.h"
 
@@ -350,9 +351,33 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
 
         return true;
     }
+    if (FStrEq(cmd, "drop"))
+    {
+        CWeaponCSBase *pWeapon = dynamic_cast< CWeaponCSBase* >(GetActiveWeapon());
+
+        if (pWeapon)
+        {
+            CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
+            
+            if (type != WEAPONTYPE_KNIFE && type != WEAPONTYPE_GRENADE)
+            {
+                MomentumWeaponDrop(pWeapon);
+            }
+        }
+
+        return true;
+    }
 
     return BaseClass::ClientCommand(args);
 }
+
+void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon* pWeapon)
+{
+    Weapon_Drop(pWeapon, nullptr, nullptr);
+    pWeapon->StopFollowingEntity();
+    UTIL_Remove(pWeapon);
+}
+
 
 void CMomentumPlayer::CreateCheckpoint()
 {

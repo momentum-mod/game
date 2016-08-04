@@ -111,8 +111,6 @@ $Project "Server (Momentum)"
                 
                 $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.h"
-                $File "$SRCDIR\game\shared\momentum\weapon\cs_playeranimstate.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\cs_playeranimstate.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.h"

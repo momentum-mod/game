@@ -147,8 +147,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_nZoneAvgCount[MAX_STAGES];
     float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
 
-    //Overrode for the spectating GUI
+    //Overrode for the spectating GUI and weapon dropping
     bool ClientCommand(const CCommand &args) override;
+    void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
 
     //--------- CheckpointMenu stuff --------------------------------
     CNetworkVar(int, m_iCurrentStepCP); //The current checkpoint the player is on

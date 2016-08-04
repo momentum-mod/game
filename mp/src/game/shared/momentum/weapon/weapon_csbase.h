@@ -10,8 +10,6 @@
 #pragma once
 #endif
 
-
-#include "cs_playeranimstate.h"
 #include "cs_weapon_parse.h"
 #include "mom_player_shared.h"
 

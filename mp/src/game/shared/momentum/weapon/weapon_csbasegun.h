@@ -1,6 +1,6 @@
 //========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 //=============================================================================//
 
@@ -10,52 +10,45 @@
 #pragma once
 #endif
 
-
 #include "weapon_csbase.h"
 
-
 // This is the base class for pistols and rifles.
-#if defined( CLIENT_DLL )
-
-	#define CWeaponCSBaseGun C_WeaponCSBaseGun
-
+#if defined(CLIENT_DLL)
+#define CWeaponCSBaseGun C_WeaponCSBaseGun
 #else
 #endif
 
-
 class CWeaponCSBaseGun : public CWeaponCSBase
 {
-public:
-	
-	DECLARE_CLASS( CWeaponCSBaseGun, CWeaponCSBase );
-	DECLARE_NETWORKCLASS(); 
-	DECLARE_PREDICTABLE();
-	
-	CWeaponCSBaseGun();
+  public:
+    DECLARE_CLASS(CWeaponCSBaseGun, CWeaponCSBase);
+    DECLARE_NETWORKCLASS();
+    DECLARE_PREDICTABLE();
 
-	virtual void PrimaryAttack();
-	virtual void Spawn();
-	virtual bool Deploy();
-	virtual bool Reload();
-	virtual void WeaponIdle();
+    CWeaponCSBaseGun();
 
+    virtual void PrimaryAttack();
+    virtual void Spawn();
+    virtual bool Deploy();
+#ifdef WEAPONS_USE_AMMO
+    virtual bool Reload();
+#endif
+    virtual void WeaponIdle();
 
-	// Derived classes call this to fire a bullet.
-	bool CSBaseGunFire( float flSpread, float flCycleTime, bool bPrimaryMode );
+    // Derived classes call this to fire a bullet.
+    bool CSBaseGunFire(float flSpread, float flCycleTime, bool bPrimaryMode);
 
-	// Usually plays the shot sound. Guns with silencers can play different sounds.
-	virtual void DoFireEffects();
-	virtual void ItemPostFrame();
+    // Usually plays the shot sound. Guns with silencers can play different sounds.
+    virtual void DoFireEffects();
+    virtual void ItemPostFrame();
 
-protected: 
-	float m_zoomFullyActiveTime;
+  protected:
+    float m_zoomFullyActiveTime;
     float m_flTimeToIdleAfterFire;
-    float	m_flIdleInterval;
+    float m_flIdleInterval;
 
-private:
-
-	CWeaponCSBaseGun( const CWeaponCSBaseGun & );
+  private:
+    CWeaponCSBaseGun(const CWeaponCSBaseGun &);
 };
-
 
 #endif // WEAPON_CSBASE_GUN_H

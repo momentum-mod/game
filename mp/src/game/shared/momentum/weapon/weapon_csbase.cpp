@@ -53,9 +53,6 @@ static const char * s_WeaponAliasInfo[] =
     "smokegrenade",	// WEAPON_SMOKEGRENADE
     "flashbang",	// WEAPON_FLASHBANG
     "knife",	// WEAPON_KNIFE
-    "kevlar",
-    "assaultsuit",
-    "nightvision",
     nullptr,		// WEAPON_NONE
 };
 
@@ -508,6 +505,7 @@ const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is igno
     return GetCSWpnData().szViewModel;
 }
 
+// Overridden for the CS gun overrides
 void CWeaponCSBase::Precache(void)
 {
     m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
