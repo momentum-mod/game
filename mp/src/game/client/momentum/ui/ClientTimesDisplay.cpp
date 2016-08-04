@@ -10,19 +10,15 @@
 #include <stdio.h>
 
 #include "ClientTimesDisplay.h"
-#include "IGameUIFuncs.h" // for key bindings
 #include "inputsystem/iinputsystem.h"
 #include <cdll_client_int.h>
 #include <cdll_util.h>
 #include <globalvars_base.h>
-#include <igameresources.h>
 #include <voice_status.h>
 
-#include <vgui/IInput.h>
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
 #include <vstdlib/IKeyValuesSystem.h>
 
 #include <KeyValues.h>
@@ -31,10 +27,9 @@
 #include <vgui_controls/SectionedListPanel.h>
 
 #include <game/client/iviewport.h>
-#include <igameresources.h>
 
 #include "filesystem.h"
-#include "util\mom_util.h"
+#include "util/mom_util.h"
 #include "vgui_avatarimage.h"
 #include <time.h>
 #include <util/jsontokv.h>
@@ -99,8 +94,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 
     if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName || !m_pMomentumLogo ||
         !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards ||
-        !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_lPlayerPersonalBest || !m_lLoadingOnlineTimes || !m_lPlayerExperience ||
-        !m_pGlobalLeaderboardsButton || !m_pFriendsLeaderboardsButton || !m_pGlobalTop10Button || !m_pGlobalAroundButton)
+        !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_lPlayerPersonalBest || !m_lLoadingOnlineTimes ||
+        !m_lPlayerExperience || !m_pGlobalLeaderboardsButton || !m_pFriendsLeaderboardsButton ||
+        !m_pGlobalTop10Button || !m_pGlobalAroundButton)
     {
         Assert("Null pointer(s) on scoreboards");
     }
@@ -276,7 +272,7 @@ void CClientTimesDisplay::OnThink()
 //-----------------------------------------------------------------------------
 // Called by vgui panels that activate the client scoreboard
 //-----------------------------------------------------------------------------
-void CClientTimesDisplay::OnPollHideCode(int code) { m_nCloseKey = (ButtonCode_t)code; }
+void CClientTimesDisplay::OnPollHideCode(int code) { m_nCloseKey = static_cast<ButtonCode_t>(code); }
 
 //-----------------------------------------------------------------------------
 // Purpose: clears everything in the scoreboard and all it's state
@@ -518,14 +514,6 @@ void CClientTimesDisplay::Update(bool pFullUpdate)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Sort all the teams
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::UpdateTeamInfo()
-{
-    // TODO: work out a sorting algorithm for team display for TF2
-}
-
-//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
@@ -544,20 +532,22 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
     UTIL_MakeSafeName(oldName, newName, MAX_PLAYER_NAME_LENGTH);
     playerData->SetString("name", newName);
     // What this if is:
-    // We want to do a full update if (we ask for it with fullUpdate boolean AND (the minimum time has passed OR it is the first update)) OR the maximum time has passed
-    if ((fullUpdate && (gpGlobals->curtime - m_fLastHeaderUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstHeaderUpdate)) 
-        || gpGlobals->curtime - m_fLastHeaderUpdate >= MAX_ONLINE_UPDATE_INTERVAL)
+    // We want to do a full update if (we ask for it with fullUpdate boolean AND (the minimum time has passed OR it is
+    // the first update)) OR the maximum time has passed
+    if ((fullUpdate &&
+         (gpGlobals->curtime - m_fLastHeaderUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstHeaderUpdate)) ||
+        gpGlobals->curtime - m_fLastHeaderUpdate >= MAX_ONLINE_UPDATE_INTERVAL)
     {
         char p_sCalculating[BUFSIZELOCL];
         char p_sWaitingResponse[BUFSIZELOCL];
-        LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);     
+        LOCALIZE_TOKEN(p_wcCalculating, "MOM_Calculating", p_sCalculating);
         LOCALIZE_TOKEN(p_wcWaitingResponse, "MOM_API_WaitingForResponse", p_sWaitingResponse);
 
         char p_sMapRank[BUFSIZELOCL];
         char p_sGlobalRank[BUFSIZELOCL];
         char p_sPersonalBest[BUFSIZELOCL];
         char p_sExperiencePoints[BUFSIZELOCL];
-        
+
         char mrLocalized[BUFSIZELOCL];
         char grLocalized[BUFSIZELOCL];
         char pbLocalized[BUFSIZELOCL];
@@ -580,7 +570,8 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
 
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
-        Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+        Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
+                   GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback);
     }
 
@@ -740,7 +731,8 @@ void CClientTimesDisplay::LoadOnlineTimes()
             Q_snprintf(requrl, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, g_pGameRules->MapName());
             break;
         case 2:
-            Q_snprintf(requrl, BUFSIZ, "%s/getscores/2/%s/10/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(), GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+            Q_snprintf(requrl, BUFSIZ, "%s/getscores/2/%s/10/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
+                       GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
             break;
         default:
             return;
@@ -758,7 +750,8 @@ void CClientTimesDisplay::LoadFriendsTimes()
         char requrl[BUFSIZ];
         // Mapname, tickrate, rank, radius
 
-        Q_snprintf(requrl, BUFSIZ, "%s/getfriendscores/%llu/10/1/%s", MOM_APIDOMAIN, GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName());
+        Q_snprintf(requrl, BUFSIZ, "%s/getfriendscores/%llu/10/1/%s", MOM_APIDOMAIN,
+                   GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName());
         CreateAndSendHTTPReq(requrl, &cbGetFriendsTimesCallback, &CClientTimesDisplay::GetFriendsTimesCallback);
         m_bFriendsNeedUpdate = false;
     }
@@ -860,15 +853,15 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                 FOR_EACH_SUBKEY(pRuns, pRun)
                 {
                     KeyValues *kvEntry = new KeyValues("Entry");
-                    //Time is handled by the converter
+                    // Time is handled by the converter
                     kvEntry->SetFloat("time", pRun->GetFloat("time"));
 
-                    //SteamID, Avatar, and Persona Name
+                    // SteamID, Avatar, and Persona Name
                     uint64 steamID = Q_atoui64(pRun->GetString("steamid"));
                     kvEntry->SetUint64("steamid", steamID);
                     if (steamapicontext->SteamFriends())
                     {
-                        //These handle setting "avatar" for kvEntry
+                        // These handle setting "avatar" for kvEntry
                         if (GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64() == steamID)
                         {
                             UpdatePlayerAvatar(GetLocalPlayerIndex(), kvEntry);
@@ -878,12 +871,11 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                             UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
                         }
 
-                        //persona name
+                        // persona name
                         if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamID), true))
                         {
-                            kvEntry->SetString(
-                                "personaname",
-                                steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamID)));
+                            kvEntry->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(
+                                                                  CSteamID(steamID)));
                         }
                         else
                         {
@@ -891,20 +883,20 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                         }
                     }
 
-                    //Persona name for the time they accomplished the run
+                    // Persona name for the time they accomplished the run
                     kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname_t"));
 
-                    //Rank
+                    // Rank
                     kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
-                    //MOM_TODO: Implement the other end of this (rank is not a number)
+                    // MOM_TODO: Implement the other end of this (rank is not a number)
 
-                    //Tickrate
+                    // Tickrate
                     kvEntry->SetInt("rate", static_cast<int>(pRun->GetFloat("rate")));
 
-                    //Date
+                    // Date
                     kvEntry->SetString("date", pRun->GetString("date"));
 
-                    //ID
+                    // ID
                     kvEntry->SetInt("id", static_cast<int>(pRun->GetFloat("id")));
 
                     // Is part of the momentum team?
@@ -913,9 +905,9 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                     // Is vip?
                     kvEntry->SetBool("vip", pRun->GetBool("vip"));
 
-                    //Add this baby to the online times vector
+                    // Add this baby to the online times vector
                     TimeOnline *ot = new TimeOnline(kvEntry);
-                    //Convert the time
+                    // Convert the time
                     ConvertOnlineTimes(ot->m_kv, ot->time_sec);
                     m_vOnlineTimes.AddToTail(ot);
                 }
@@ -943,7 +935,6 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
     alloc.deallocate();
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
 
 void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
@@ -1023,15 +1014,15 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
                 FOR_EACH_SUBKEY(pRuns, pRun)
                 {
                     KeyValues *kvEntry = new KeyValues("Entry");
-                    //Time is handled by the converter
+                    // Time is handled by the converter
                     kvEntry->SetFloat("time", pRun->GetFloat("time"));
 
-                    //SteamID, Avatar, and Persona Name
+                    // SteamID, Avatar, and Persona Name
                     uint64 steamID = Q_atoui64(pRun->GetString("steamid"));
                     kvEntry->SetUint64("steamid", steamID);
                     if (steamapicontext->SteamFriends())
                     {
-                        //These handle setting "avatar" for kvEntry
+                        // These handle setting "avatar" for kvEntry
                         if (GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64() == steamID)
                         {
                             UpdatePlayerAvatar(GetLocalPlayerIndex(), kvEntry);
@@ -1041,12 +1032,11 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
                             UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
                         }
 
-                        //persona name
+                        // persona name
                         if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamID), true))
                         {
-                            kvEntry->SetString(
-                                "personaname",
-                                steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(steamID)));
+                            kvEntry->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(
+                                                                  CSteamID(steamID)));
                         }
                         else
                         {
@@ -1054,20 +1044,20 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
                         }
                     }
 
-                    //Persona name for the time they accomplished the run
+                    // Persona name for the time they accomplished the run
                     kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname_t"));
 
-                    //Rank
+                    // Rank
                     kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));
-                    //MOM_TODO: Implement the other end of this (rank is not a number)
+                    // MOM_TODO: Implement the other end of this (rank is not a number)
 
-                    //Tickrate
+                    // Tickrate
                     kvEntry->SetInt("rate", static_cast<int>(pRun->GetFloat("rate")));
 
-                    //Date
+                    // Date
                     kvEntry->SetString("date", pRun->GetString("date"));
 
-                    //ID
+                    // ID
                     kvEntry->SetInt("id", static_cast<int>(pRun->GetFloat("id")));
 
                     // Is part of the momentum team?
@@ -1076,9 +1066,9 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
                     // Is vip?
                     kvEntry->SetBool("vip", pRun->GetBool("vip"));
 
-                    //Add this baby to the online times vector
+                    // Add this baby to the online times vector
                     TimeOnline *ot = new TimeOnline(kvEntry);
-                    //Convert the time
+                    // Convert the time
                     ConvertOnlineTimes(ot->m_kv, ot->time_sec);
                     m_vFriendsTimes.AddToTail(ot);
                 }
@@ -1200,7 +1190,7 @@ void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pC
     }
     else
     {
-            Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
     }
     // Last but not least, free resources
     alloc.deallocate();
@@ -1217,7 +1207,8 @@ void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, 
         return;
     }
 
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict || pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict ||
+        pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
     {
         char locl[BUFSIZELOCL];
         LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
@@ -1262,7 +1253,6 @@ void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, 
                 UpdateMapInfoLabel(author, tier, layout, bonus);
                 m_bMapInfoLoaded = true; // Stop this info from being fetched again
             }
-
         }
     }
     else
@@ -1291,11 +1281,15 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
 
     pLeaderboards->AddSubKey(pLocal);
 
-    m_bOnlineNeedUpdate = (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstOnlineTimesUpdate)
-        || (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL || m_bOnlineNeedUpdate));
+    m_bOnlineNeedUpdate =
+        (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL ||
+                        m_bFirstOnlineTimesUpdate) ||
+         (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL || m_bOnlineNeedUpdate));
 
-    m_bFriendsNeedUpdate = (fullUpdate && (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MIN_FRIENDS_UPDATE_INTERVAL || m_bFirstFriendsTimesUpdate)
-        || (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MAX_FRIENDS_UPDATE_INTERVAL || m_bFriendsNeedUpdate));
+    m_bFriendsNeedUpdate =
+        (fullUpdate && (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MIN_FRIENDS_UPDATE_INTERVAL ||
+                        m_bFirstFriendsTimesUpdate) ||
+         (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MAX_FRIENDS_UPDATE_INTERVAL || m_bFriendsNeedUpdate));
     // Fill online times only if needed
     LoadOnlineTimes();
     LoadFriendsTimes();
@@ -1333,7 +1327,7 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
                     CAvatarImage *pImage = new CAvatarImage();
                     // 64 is enough up to full HD resolutions.
                     pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
-                    
+
                     pImage->SetDrawFriend(false);
                     pImage->SetAvatarSize(32, 32); // Deliberately non scaling
                     iImageIndex = m_pImageList->AddImage(pImage);
@@ -1348,7 +1342,7 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
                 kv->SetBool("is_friend", false);
                 kv->SetInt("avatar", iImageIndex);
 
-                CAvatarImage *pAvIm = (CAvatarImage *)m_pImageList->GetImage(iImageIndex);
+                CAvatarImage *pAvIm = static_cast<CAvatarImage *>(m_pImageList->GetImage(iImageIndex));
                 pAvIm->UpdateFriendStatus();
                 // Set friend draw to false, so the offset is not set
                 pAvIm->SetDrawFriend(false);
@@ -1456,7 +1450,7 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
 
 void CClientTimesDisplay::OnlineTimesVectorToLeaderboards(LEADERBOARDS pLeaderboard)
 {
-    CUtlVector<TimeOnline*> pVector;
+    CUtlVector<TimeOnline *> pVector;
     SectionedListPanel *pList;
     switch (pLeaderboard)
     {
@@ -1674,9 +1668,10 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
                                       new KeyValues("ContextWatchReplay", "runName", recordingName), this);
             pContextMenu->ShowMenu();
         }
-        else if ((pPanel->GetParent() == m_pOnlineLeaderboards && m_pOnlineLeaderboards->IsItemIDValid(itemID)) || (pPanel->GetParent() == m_pFriendsLeaderboards && m_pFriendsLeaderboards->IsItemIDValid(itemID)))
+        else if ((pPanel->GetParent() == m_pOnlineLeaderboards && m_pOnlineLeaderboards->IsItemIDValid(itemID)) ||
+                 (pPanel->GetParent() == m_pFriendsLeaderboards && m_pFriendsLeaderboards->IsItemIDValid(itemID)))
         {
-            SectionedListPanel *pLeaderboard = static_cast<SectionedListPanel*>(pPanel->GetParent());
+            SectionedListPanel *pLeaderboard = static_cast<SectionedListPanel *>(pPanel->GetParent());
             CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pLeaderboard);
             KeyValues *pKv = new KeyValues("ContextVisitProfile");
             pKv->SetUint64("profile", pLeaderboard->GetItemData(itemID)->GetUint64("steamid"));
@@ -1700,35 +1695,13 @@ void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
     {
         bool bFoundOnline = false;
         bool bFoundFriends = false;
-        FOR_EACH_VEC(m_vOnlineTimes, iter)
-        {
-            if (m_vOnlineTimes.Element(iter)->steamid == pParam->m_ulSteamID)
-            {
-                bFoundOnline = true;
-                break;
-            }
-        }
 
-        FOR_EACH_VEC(m_vFriendsTimes, iter)
-        {
-            if (m_vFriendsTimes.Element(iter)->steamid == pParam->m_ulSteamID)
-            {
-                bFoundFriends = true;
-                break;
-            }
-        }
         m_umMapNames.InsertOrReplace(
             pParam->m_ulSteamID, steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pParam->m_ulSteamID)));
-        if (bFoundOnline)
-        {
-            OnlineTimesVectorToLeaderboards(ONLINE_LEADERBOARDS);
-        }
 
-        if (bFoundFriends)
-        {
-            OnlineTimesVectorToLeaderboards(FRIENDS_LEADERBOARDS);
-        }
+        OnlineTimesVectorToLeaderboards(ONLINE_LEADERBOARDS);
 
+        OnlineTimesVectorToLeaderboards(FRIENDS_LEADERBOARDS);
     }
 }
 
@@ -1746,9 +1719,9 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
             CAvatarImage *pImage = new CAvatarImage();
             // 64 is enough up to full HD resolutions.
             pImage->SetAvatarSteamID(steamid, k_EAvatarSize64x64);
-            
+
             pImage->SetDrawFriend(false);
-            pImage->SetAvatarSize(32, 32); 
+            pImage->SetAvatarSize(32, 32);
             iImageIndex = m_pImageList->AddImage(pImage);
             m_mapAvatarsToImageList.Insert(steamid, iImageIndex);
         }
@@ -1763,7 +1736,8 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
 
 void CClientTimesDisplay::OnToggleLeaderboard(KeyValues *pData)
 {
-    if (m_pOnlineLeaderboards && m_pFriendsLeaderboards && m_pGlobalLeaderboardsButton && m_pFriendsLeaderboardsButton && m_pGlobalTop10Button && m_pGlobalAroundButton)
+    if (m_pOnlineLeaderboards && m_pFriendsLeaderboards && m_pGlobalLeaderboardsButton &&
+        m_pFriendsLeaderboardsButton && m_pGlobalTop10Button && m_pGlobalAroundButton)
     {
         const char *leaderboard = pData->GetString("leaderboard");
         m_bGlobalsShown = !Q_strcmp(leaderboard, "global");
@@ -1809,7 +1783,7 @@ void CClientTimesDisplay::UpdateMapInfoLabel(const char *author, const int tier,
     }
 }
 
-void CClientTimesDisplay::UpdateMapInfoLabel(const char* text)
+void CClientTimesDisplay::UpdateMapInfoLabel(const char *text)
 {
     if (m_lMapDetails)
     {

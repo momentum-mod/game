@@ -12,16 +12,17 @@
 #endif
 
 #include "cbase.h"
+
 #include "steam/steam_api.h"
 
 #include "GameEventListener.h"
 
+#include "ReplayContextMenu.h"
 #include "momentum/mom_shareddefs.h"
 #include <KeyValues.h>
 #include <game/client/iviewport.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/SectionedListPanel.h>
-#include "ReplayContextMenu.h"
 
 #define TYPE_NOTEAM 0 // NOTEAM must be zero :)
 #define TYPE_TEAM 1   // a section for a single team
@@ -31,11 +32,11 @@
 
 #define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
 
-#define DELAY_NEXT_UPDATE 10.0f // Delay for the next API update, in seconds
-#define MIN_ONLINE_UPDATE_INTERVAL 15.0f //The amount of seconds minimum between online checks
-#define MAX_ONLINE_UPDATE_INTERVAL 45.0f //The amount of seconds maximum between online checks
-#define MIN_FRIENDS_UPDATE_INTERVAL 15.0f //The amount of seconds minimum between online checks
-#define MAX_FRIENDS_UPDATE_INTERVAL 45.0f //The amount of seconds maximum between online checks
+#define DELAY_NEXT_UPDATE 10.0f           // Delay for the next API update, in seconds
+#define MIN_ONLINE_UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
+#define MAX_ONLINE_UPDATE_INTERVAL 45.0f  // The amount of seconds maximum between online checks
+#define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
+#define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
@@ -82,7 +83,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void ShowPanel(bool bShow) override;
 
-    virtual bool ShowAvatars() { return IsPC(); }
+    bool ShowAvatars() { return IsPC(); }
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
     vgui::VPANEL GetVPanel(void) override { return BaseClass::GetVPanel(); }
@@ -94,7 +95,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // IGameEventListener interface:
     void FireGameEvent(IGameEvent *event) override;
 
-    virtual void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
+    void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
 
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
@@ -102,7 +103,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
-    MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data);//Catching from SectionedListPanel
+    MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
     MESSAGE_FUNC_PARAMS(OnToggleLeaderboard, "ToggleLeaderboard", data);
@@ -113,13 +114,12 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     int TryAddAvatar(CSteamID);
 
     // functions to override
-    virtual bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
-    virtual void InitScoreboardSections();
-    virtual void UpdateTeamInfo();
-    virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
+    bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
+    void InitScoreboardSections();
+    void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() override;
-    virtual void AddHeader();      // add the start header of the scoreboard
-    virtual int GetAdditionalHeight() { return 0; }
+    void AddHeader(); // add the start header of the scoreboard
+    static int GetAdditionalHeight() { return 0; }
 
     // sorts players within a section
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
@@ -127,7 +127,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
 
-    virtual void PostApplySchemeSettings(vgui::IScheme *pScheme);
+    void PostApplySchemeSettings(vgui::IScheme *pScheme);
 
     // finds the player in the scoreboard
     int FindItemIDForPlayerIndex(int playerIndex);
@@ -150,9 +150,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
 
     vgui::ImageList *m_pImageList;
-    vgui::Panel *m_pHeader;
-    vgui::Panel *m_pPlayerStats;
-    vgui::Panel *m_pLeaderboards;
+    Panel *m_pHeader;
+    Panel *m_pPlayerStats;
+    Panel *m_pLeaderboards;
     vgui::Label *m_lMapSummary;
     vgui::Label *m_lMapDetails;
     vgui::Label *m_lPlayerName;
@@ -191,15 +191,15 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetMapInfoCallback;
 
-    void CreateAndSendHTTPReq(const char*, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>*,
-        CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
+    void CreateAndSendHTTPReq(const char *, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *,
+                              CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
 
-private:
-    int			m_iPlayerIndexSymbol;
-    int			m_iDesiredHeight;
+  private:
+    int m_iPlayerIndexSymbol;
+    int m_iDesiredHeight;
 
-    float       m_fLastHeaderUpdate;
-    bool        m_bFirstHeaderUpdate;
+    float m_fLastHeaderUpdate;
+    bool m_bFirstHeaderUpdate;
 
     float m_flLastOnlineTimeUpdate;
     bool m_bFirstOnlineTimesUpdate;
@@ -207,7 +207,7 @@ private:
     float m_flLastFriendsTimeUpdate;
     bool m_bFirstFriendsTimesUpdate;
 
-    IViewPort	*m_pViewPort;
+    IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
     struct Time
     {
@@ -228,12 +228,12 @@ private:
         float time_sec, rate;
         uint64 steamid;
         time_t date;
-        const char* personaname;
+        const char *personaname;
         bool momember, vip;
 
         KeyValues *m_kv;
-        
-        explicit TimeOnline(KeyValues* kv)
+
+        explicit TimeOnline(KeyValues *kv)
         {
             m_kv = kv;
             id = kv->GetInt("id", -1);
@@ -248,7 +248,7 @@ private:
             vip = kv->GetBool("vip", false);
         };
 
-        ~TimeOnline() 
+        ~TimeOnline()
         {
             if (m_kv)
                 m_kv->deleteThis();
@@ -258,10 +258,10 @@ private:
     };
 
     CUtlVector<Time> m_vLocalTimes;
-    
-    CUtlVector<TimeOnline*> m_vOnlineTimes;
 
-    CUtlVector<TimeOnline*> m_vFriendsTimes;
+    CUtlVector<TimeOnline *> m_vOnlineTimes;
+
+    CUtlVector<TimeOnline *> m_vFriendsTimes;
 
     bool m_bLocalTimesLoaded = false;
     bool m_bLocalTimesNeedUpdate = false;
@@ -270,9 +270,9 @@ private:
     bool m_bFriendsNeedUpdate = false;
     bool m_bFriendsTimesLoaded = false;
     bool m_bUnauthorizedFriendlist = false;
-    //widths[0] == WIDTH FOR DATE
-    //widths[1] == WIDTH FOR RANK
-    //widths[2] == WIDTH FOR TIME
+    // widths[0] == WIDTH FOR DATE
+    // widths[1] == WIDTH FOR RANK
+    // widths[2] == WIDTH FOR TIME
     int m_aiColumnWidths[3];
 
     // methods
@@ -281,14 +281,13 @@ private:
     void LoadLocalTimes(KeyValues *kv);
     void LoadOnlineTimes();
     void LoadFriendsTimes();
-    void ConvertLocalTimes(KeyValues*);
+    void ConvertLocalTimes(KeyValues *);
     // Place vector times into leaderboards panel (sectionlist)
     void OnlineTimesVectorToLeaderboards(LEADERBOARDS);
 
-
     CReplayContextMenu *m_pLeaderboardReplayCMenu;
 
-    CUtlMap<uint64, const char*> m_umMapNames;
+    CUtlMap<uint64, const char *> m_umMapNames;
 
     bool m_bGlobalsShown = true;
     int m_iGetScoresVersion = 2;
