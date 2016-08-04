@@ -7,9 +7,10 @@
 #include "cbase.h"
 #include "weapon_knife.h"
 #include "mom_player_shared.h"
+#include "effect_dispatch_data.h"
 
 #ifndef CLIENT_DLL 
-	#include "ilagcompensationmanager.h"
+#include "ilagcompensationmanager.h"
 #endif
 
 
@@ -147,24 +148,6 @@ void CKnife::Holster( int skiplocal )
 	}
 }
 
-void CKnife::WeaponAnimation ( int iAnimation )
-{
-	/*
-	int flag;
-	#if defined( CLIENT_WEAPONS )
-		flag = FEV_NOTHOST;
-	#else
-		flag = 0;
-	#endif
-
-	PLAYBACK_EVENT_FULL( flag, pPlayer->edict(), m_usKnife,
-		0.0, (float *)&g_vecZero, (float *)&g_vecZero, 
-		0.0,
-		0.0,
-		iAnimation, 2, 3, 4 );
-	*/
-}
-
 void FindHullIntersection( const Vector &vecSrc, trace_t &tr, const Vector &mins, const Vector &maxs, CBaseEntity *pEntity )
 {
 	int			i, j, k;
@@ -212,37 +195,29 @@ void FindHullIntersection( const Vector &vecSrc, trace_t &tr, const Vector &mins
 
 void CKnife::PrimaryAttack()
 {
-	CMomentumPlayer *pPlayer = GetPlayerOwner();
-	if ( pPlayer )
-	{
-#if !defined (CLIENT_DLL)
-		// Move other players back to history positions based on local player's lag
-		lagcompensation->StartLagCompensation( pPlayer, pPlayer->GetCurrentCommand() );
-#endif
-		SwingOrStab( false );
-#if !defined (CLIENT_DLL)
-		lagcompensation->FinishLagCompensation( pPlayer );
-#endif
-	}
+    DoAttack(false);
 }
 
 void CKnife::SecondaryAttack()
 {
-	CMomentumPlayer *pPlayer = GetPlayerOwner();
-	if ( pPlayer /*&& !pPlayer->m_bIsDefusing && !CSGameRules()->IsFreezePeriod()*/ )
-	{
-#if !defined (CLIENT_DLL)
-		// Move other players back to history positions based on local player's lag
-		lagcompensation->StartLagCompensation( pPlayer, pPlayer->GetCurrentCommand() );
-#endif
-		SwingOrStab( true );
-#if !defined (CLIENT_DLL)
-		lagcompensation->FinishLagCompensation( pPlayer );
-#endif
-	}
+    DoAttack(true);
 }
 
-#include "effect_dispatch_data.h"
+void CKnife::DoAttack(bool bIsSecondary)
+{
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+    if (pPlayer)
+    {
+#if !defined (CLIENT_DLL)
+        // Move other players back to history positions based on local player's lag
+        lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());
+#endif
+        SwingOrStab(bIsSecondary);
+#if !defined (CLIENT_DLL)
+        lagcompensation->FinishLagCompensation(pPlayer);
+#endif
+    }
+}
 
 void CKnife::Smack( void )
 {
@@ -285,14 +260,10 @@ void CKnife::Smack( void )
 #endif
 
 	CPASFilter filter( data.m_vOrigin );
-	
-#ifndef CLIENT_DLL
-	filter.RemoveRecipient( GetPlayerOwner() );
-#endif
-
 	data.m_vAngles = GetPlayerOwner()->GetAbsAngles();
 	data.m_fFlags = 0x1;	//IMPACT_NODECAL;
-	te->DispatchEffect( filter, 0.0, data.m_vOrigin, "KnifeSlash", data );
+	
+    te->DispatchEffect( filter, 0.0, data.m_vOrigin, "KnifeSlash", data );
 }
 
 void CKnife::WeaponIdle()
@@ -304,17 +275,11 @@ void CKnife::WeaponIdle()
 	if ( !pPlayer )
 		return;
 
-	//if ( pPlayer->IsShieldDrawn() )
-	//	 return;
-
 	SetWeaponIdleTime( gpGlobals->curtime + 20 );
 
 	// only idle if the slid isn't back
 	SendWeaponAnim( ACT_VM_IDLE );
 }
-
-
-
 
 bool CKnife::SwingOrStab( bool bStab )
 {
@@ -331,7 +296,7 @@ bool CKnife::SwingOrStab( bool bStab )
 	trace_t tr;
 	UTIL_TraceLine( vecSrc, vecEnd, MASK_SOLID, pPlayer, COLLISION_GROUP_NONE, &tr );
 
-	//check for hitting glass - TODO - fix this hackiness, doesn't always line up with what FindHullIntersection returns
+	//check for hitting glass
 #ifndef CLIENT_DLL
 	CTakeDamageInfo glassDamage( pPlayer, pPlayer, 42.0f, DMG_BULLET | DMG_NEVERGIB );
 	TraceAttackToTriggers( glassDamage, tr.startpos, tr.endpos, vForward );
@@ -364,8 +329,6 @@ bool CKnife::SwingOrStab( bool bStab )
 		SendWeaponAnim( bDidHit ? ACT_VM_HITCENTER : ACT_VM_MISSCENTER );
 
 		fPrimDelay = fSecDelay = bDidHit ? 1.1f : 1.0f;
-
-		//pPlayer->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_PRIMARY );
 	}
 	else // swing
 	{
@@ -373,15 +336,7 @@ bool CKnife::SwingOrStab( bool bStab )
 
 		fPrimDelay = bDidHit ? 0.5f : 0.4f;
 		fSecDelay = bDidHit ? 0.5f : 0.5f;
-
-		//pPlayer->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_SECONDARY );
 	}
-
-	//if ( pPlayer->HasShield() )
-	//{
-	//	fPrimDelay += 0.7f; // 0.7 seconds slower if we carry a shield
-	//	fSecDelay += 0.7f;
-	//}
 
 	m_flNextPrimaryAttack = gpGlobals->curtime + fPrimDelay;
 	m_flNextSecondaryAttack = gpGlobals->curtime + fSecDelay;
@@ -485,5 +440,3 @@ bool CKnife::CanDrop()
 {
 	return false;
 }
-
-

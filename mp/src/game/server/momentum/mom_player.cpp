@@ -65,10 +65,10 @@ CMomentumPlayer::~CMomentumPlayer() {}
 
 void CMomentumPlayer::Precache()
 {
-// Name of our entity's model
-// MOM_TODO: Replace this with the custom player model
-#define ENTITY_MODEL "models/player/player_shape_base.mdl"
     PrecacheModel(ENTITY_MODEL);
+
+    PrecacheScriptSound(SND_FLASHLIGHT_ON);
+    PrecacheScriptSound(SND_FLASHLIGHT_OFF);
 
     BaseClass::Precache();
 }
@@ -300,7 +300,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     // We're overriding this to prevent the spec_mode to change to ROAMING,
     // remove this if we want to allow the player to fly around their ghost as it goes
     // (and change the ghost entity code to match as well)
-    if (!stricmp(cmd, "spec_mode")) // new observer mode
+    if (FStrEq(cmd, "spec_mode")) // new observer mode
     {
         int mode;
 
@@ -358,7 +358,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
         if (pWeapon)
         {
             CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
-            
+
             if (type != WEAPONTYPE_KNIFE && type != WEAPONTYPE_GRENADE)
             {
                 MomentumWeaponDrop(pWeapon);
@@ -371,7 +371,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     return BaseClass::ClientCommand(args);
 }
 
-void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon* pWeapon)
+void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
 {
     Weapon_Drop(pWeapon, nullptr, nullptr);
     pWeapon->StopFollowingEntity();

@@ -41,18 +41,10 @@ enum CSWeaponID
     WEAPON_SNIPER,
     WEAPON_LMG,
     WEAPON_GRENADE,
-
 	WEAPON_KNIFE,
-
-	WEAPON_KEVLAR,
-	WEAPON_ASSAULTSUIT,
-	WEAPON_NVG,
 
 	WEAPON_MAX,		// number of weapons weapon index
 };
-
-
-#define MAX_EQUIPMENT (WEAPON_MAX - WEAPON_KEVLAR)
 
 //--------------------------------------------------------------------------------------------------------
 const char * WeaponClassAsString( CSWeaponType weaponType );

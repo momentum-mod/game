@@ -50,22 +50,11 @@ static const char *WeaponNames[WEAPON_MAX] =
     "weapon_knife"
 };
 
-
-CCSWeaponInfo g_EquipmentInfo[MAX_EQUIPMENT];
-
 //--------------------------------------------------------------------------------------------------------------
 CCSWeaponInfo * GetWeaponInfo(CSWeaponID weaponID)
 {
     if (weaponID == WEAPON_NONE)
         return nullptr;
-
-    if (weaponID >= WEAPON_KEVLAR)
-    {
-        int iIndex = (WEAPON_MAX - weaponID) - 1;
-
-        return &g_EquipmentInfo[iIndex];
-
-    }
 
     const char *weaponName = WeaponNames[weaponID];
     WEAPON_FILE_INFO_HANDLE	hWpnInfo = LookupWeaponInfoSlot(weaponName);

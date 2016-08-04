@@ -49,9 +49,6 @@ static const char * s_WeaponAliasInfo[] =
     "momentum_sniper", //WEAPON_SNIPER
     "momentum_lmg", //WEAPON_LMG
     "momentum_grenade", //WEAPON_GRENADE
-    "hegrenade",	// WEAPON_HEGRENADE
-    "smokegrenade",	// WEAPON_SMOKEGRENADE
-    "flashbang",	// WEAPON_FLASHBANG
     "knife",	// WEAPON_KNIFE
     nullptr,		// WEAPON_NONE
 };
@@ -505,7 +502,8 @@ const char *CWeaponCSBase::GetViewModel(int /*viewmodelindex = 0 -- this is igno
     return GetCSWpnData().szViewModel;
 }
 
-// Overridden for the CS gun overrides
+// Overridden for the CS gun overrides, since GetClassname returns the weapon_glock etc, instead
+// of the weapon_momentum_* class. So we do a little workaround with the weapon ID.
 void CWeaponCSBase::Precache(void)
 {
     m_iPrimaryAmmoType = m_iSecondaryAmmoType = -1;
@@ -519,7 +517,7 @@ void CWeaponCSBase::Precache(void)
     {
         char wpnName[128];
         Q_snprintf(wpnName, sizeof(wpnName), "weapon_%s", pWeaponAlias);
-
+        
         // Add this weapon to the weapon registry, and get our index into it
         // Get weapon data from script file
         if (ReadWeaponDataFromFileForSlot(filesystem, wpnName, &m_hWeaponFileInfo, GetEncryptionKey()))
