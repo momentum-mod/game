@@ -1693,9 +1693,6 @@ void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
 {
     if (pParam->m_nChangeFlags & k_EPersonaChangeNameFirstSet || pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
-        bool bFoundOnline = false;
-        bool bFoundFriends = false;
-
         m_umMapNames.InsertOrReplace(
             pParam->m_ulSteamID, steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pParam->m_ulSteamID)));
 
