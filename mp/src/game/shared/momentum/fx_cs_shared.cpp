@@ -139,17 +139,6 @@ void FX_FireBullets(
         return;
     }
 
-    CCSWeaponInfo *pWeaponInfo = static_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
-
-    // Do the firing animation event.
-    if (pPlayer && !pPlayer->IsDormant())
-    {
-        //if (iMode == Primary_Mode)
-         //   pPlayer->GetPlayerAnimState()->DoAnimationEvent(PLAYERANIMEVENT_FIRE_GUN_PRIMARY);
-        //else
-        //    pPlayer->GetPlayerAnimState()->DoAnimationEvent(PLAYERANIMEVENT_FIRE_GUN_SECONDARY);
-    }
-
 #ifndef CLIENT_DLL
     // if this is server code, send the effect over to client as temp entity
     // Dispatch one message for all the bullet impacts and sounds.
@@ -167,6 +156,8 @@ void FX_FireBullets(
 #endif
 
     iSeed++;
+
+    CCSWeaponInfo *pWeaponInfo = static_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
 
     int		iDamage = pWeaponInfo->m_iDamage;
     float	flRange = pWeaponInfo->m_flRange;

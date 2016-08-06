@@ -378,7 +378,6 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
     UTIL_Remove(pWeapon);
 }
 
-
 void CMomentumPlayer::CreateCheckpoint()
 {
     Checkpoint c;

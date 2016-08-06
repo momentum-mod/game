@@ -26,11 +26,11 @@ public:
 
     void ItemPostFrame() override;
 
-    void PistolFire(float flSpread, bool bFireBurst);
+    void PistolFire();
     void FireRemaining(int &shotsFired, float &shootTime) const;
-
+#ifdef WEAPONS_USE_AMMO
     bool Reload() override;
-
+#endif
     void WeaponIdle() override;
 
     CSWeaponID GetWeaponID(void) const override { return WEAPON_PISTOL; }

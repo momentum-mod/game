@@ -65,7 +65,7 @@ void CMomentumShotgun::PrimaryAttack()
     // Dispatch the FX right away with full accuracy.
     FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
                    pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(), Primary_Mode,
-                   CBaseEntity::GetPredictionRandomSeed() &
+                   GetPredictionRandomSeed() &
                        255, // wrap it for network traffic so it's the same between client and server
                    0.0725   // flSpread
                    );

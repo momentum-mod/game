@@ -4,7 +4,7 @@
 #include "tier0/memdbgon.h"
 
 //MOM_TODO: Change this model to be something custom
-#define GRENADE_MODEL "models/Weapons/w_eq_fraggrenade_thrown.mdl"
+#define GRENADE_MODEL "models/Weapons/w_grenade.mdl"
 
 LINK_ENTITY_TO_CLASS(momgrenade_projectile, CMomGrenadeProjectile);
 PRECACHE_WEAPON_REGISTER(momgrenade_projectile);

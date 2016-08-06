@@ -1,75 +1,65 @@
 //========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 //=============================================================================//
 
 #include "cbase.h"
-#include <KeyValues.h>
 #include "cs_weapon_parse.h"
-#include "weapon_csbase.h"
 #include "icvar.h"
+#include "weapon_csbase.h"
+#include <KeyValues.h>
 
 //--------------------------------------------------------------------------------------------------------
 struct WeaponTypeInfo
 {
     CSWeaponType type;
-    const char * name;
+    const char *name;
 };
-
 
 //--------------------------------------------------------------------------------------------------------
-WeaponTypeInfo s_weaponTypeInfo[] =
-{
-    { WEAPONTYPE_KNIFE, "Knife" },
-    { WEAPONTYPE_PISTOL, "Pistol" },
-    { WEAPONTYPE_SUBMACHINEGUN, "Submachine Gun" },	// First match is printable
-    { WEAPONTYPE_SUBMACHINEGUN, "submachinegun" },
-    { WEAPONTYPE_SUBMACHINEGUN, "smg" },
-    { WEAPONTYPE_RIFLE, "Rifle" },
-    { WEAPONTYPE_SHOTGUN, "Shotgun" },
-    { WEAPONTYPE_SNIPER_RIFLE, "Sniper" },
-    { WEAPONTYPE_MACHINEGUN, "Machine Gun" },		// First match is printable
-    { WEAPONTYPE_MACHINEGUN, "machinegun" },
-    { WEAPONTYPE_MACHINEGUN, "mg" },
-    { WEAPONTYPE_GRENADE, "Grenade" },
-    { WEAPONTYPE_UNKNOWN, nullptr },
+WeaponTypeInfo s_weaponTypeInfo[] = {
+    {WEAPONTYPE_KNIFE, "Knife"},
+    {WEAPONTYPE_PISTOL, "Pistol"},
+    {WEAPONTYPE_SUBMACHINEGUN, "Submachine Gun"}, // First match is printable
+    {WEAPONTYPE_SUBMACHINEGUN, "submachinegun"},
+    {WEAPONTYPE_SUBMACHINEGUN, "smg"},
+    {WEAPONTYPE_RIFLE, "Rifle"},
+    {WEAPONTYPE_SHOTGUN, "Shotgun"},
+    {WEAPONTYPE_SNIPER_RIFLE, "Sniper"},
+    {WEAPONTYPE_MACHINEGUN, "Machine Gun"}, // First match is printable
+    {WEAPONTYPE_MACHINEGUN, "machinegun"},
+    {WEAPONTYPE_MACHINEGUN, "mg"},
+    {WEAPONTYPE_GRENADE, "Grenade"},
+    {WEAPONTYPE_UNKNOWN, nullptr},
 };
 
 //--------------------------------------------------------------------------------------------------------------
-static const char *WeaponNames[WEAPON_MAX] =
-{
-    "weapon_none",
-    "weapon_momentum_pistol",
-    "weapon_momentum_rifle",
-    "weapon_momentum_shotgun",
-    "weapon_momentum_smg",
-    "weapon_momentum_sniper",
-    "weapon_momentum_lmg",
-    "weapon_momentum_grenade",
-    "weapon_knife"
-};
+static const char *WeaponNames[WEAPON_MAX] = {
+    "weapon_none",         "weapon_momentum_pistol", "weapon_momentum_rifle", "weapon_momentum_shotgun",
+    "weapon_momentum_smg", "weapon_momentum_sniper", "weapon_momentum_lmg",   "weapon_momentum_grenade",
+    "weapon_knife"};
 
 //--------------------------------------------------------------------------------------------------------------
-CCSWeaponInfo * GetWeaponInfo(CSWeaponID weaponID)
+CCSWeaponInfo *GetWeaponInfo(CSWeaponID weaponID)
 {
     if (weaponID == WEAPON_NONE)
         return nullptr;
 
     const char *weaponName = WeaponNames[weaponID];
-    WEAPON_FILE_INFO_HANDLE	hWpnInfo = LookupWeaponInfoSlot(weaponName);
+    WEAPON_FILE_INFO_HANDLE hWpnInfo = LookupWeaponInfoSlot(weaponName);
     if (hWpnInfo == GetInvalidWeaponInfoHandle())
     {
         return nullptr;
     }
 
-    CCSWeaponInfo *pWeaponInfo = dynamic_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
+    CCSWeaponInfo *pWeaponInfo = dynamic_cast<CCSWeaponInfo *>(GetFileWeaponInfoFromHandle(hWpnInfo));
 
     return pWeaponInfo;
 }
 
 //--------------------------------------------------------------------------------------------------------
-const char * WeaponClassAsString(CSWeaponType weaponType)
+const char *WeaponClassAsString(CSWeaponType weaponType)
 {
     WeaponTypeInfo *info = s_weaponTypeInfo;
     while (info->name != nullptr)
@@ -84,9 +74,8 @@ const char * WeaponClassAsString(CSWeaponType weaponType)
     return nullptr;
 }
 
-
 //--------------------------------------------------------------------------------------------------------
-CSWeaponType WeaponClassFromString(const char * weaponType)
+CSWeaponType WeaponClassFromString(const char *weaponType)
 {
     WeaponTypeInfo *info = s_weaponTypeInfo;
     while (info->name != nullptr)
@@ -101,7 +90,6 @@ CSWeaponType WeaponClassFromString(const char * weaponType)
     return WEAPONTYPE_UNKNOWN;
 }
 
-
 //--------------------------------------------------------------------------------------------------------
 CSWeaponType WeaponClassFromWeaponID(CSWeaponID weaponID)
 {
@@ -110,10 +98,10 @@ CSWeaponType WeaponClassFromWeaponID(CSWeaponID weaponID)
 
     char wpnName[128];
     Q_snprintf(wpnName, sizeof(wpnName), "weapon_%s", translatedAlias);
-    WEAPON_FILE_INFO_HANDLE	hWpnInfo = LookupWeaponInfoSlot(wpnName);
+    WEAPON_FILE_INFO_HANDLE hWpnInfo = LookupWeaponInfoSlot(wpnName);
     if (hWpnInfo != GetInvalidWeaponInfoHandle())
     {
-        CCSWeaponInfo *pWeaponInfo = dynamic_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
+        CCSWeaponInfo *pWeaponInfo = dynamic_cast<CCSWeaponInfo *>(GetFileWeaponInfoFromHandle(hWpnInfo));
         if (pWeaponInfo)
         {
             return pWeaponInfo->m_WeaponType;
@@ -123,9 +111,8 @@ CSWeaponType WeaponClassFromWeaponID(CSWeaponID weaponID)
     return WEAPONTYPE_UNKNOWN;
 }
 
-
 //--------------------------------------------------------------------------------------------------------
-void ParseVector(KeyValues *keyValues, const char *keyName, Vector& vec)
+void ParseVector(KeyValues *keyValues, const char *keyName, Vector &vec)
 {
     vec.x = vec.y = vec.z = 0.0f;
 
@@ -153,11 +140,7 @@ CCSWeaponInfo::CCSWeaponInfo()
     m_szAddonModel[0] = 0;
 }
 
-FileWeaponInfo_t* CreateWeaponInfo()
-{
-    return new CCSWeaponInfo();
-}
-
+FileWeaponInfo_t *CreateWeaponInfo() { return new CCSWeaponInfo(); }
 
 void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
 {
@@ -191,15 +174,13 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
     m_flRangeModifier = pKeyValuesData->GetFloat("RangeModifier", 0.98f);
     m_iBullets = pKeyValuesData->GetInt("Bullets", 1);
 
-    const char *pAnimEx = pKeyValuesData->GetString("PlayerAnimationExtension", "m4");
-    Q_strncpy(m_szAnimExtension, pAnimEx, sizeof(m_szAnimExtension));
 
     const char *pTypeString = pKeyValuesData->GetString("WeaponType", nullptr);
 
     m_WeaponType = WEAPONTYPE_UNKNOWN;
     if (!pTypeString)
     {
-        //Assert(false);
+        // Assert(false);
     }
     else if (Q_stricmp(pTypeString, "Knife") == 0)
     {
@@ -235,7 +216,7 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
     }
     else
     {
-        //Assert(false);
+        // Assert(false);
     }
 
     // Read the addon model.
@@ -250,7 +231,7 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
 #ifndef CLIENT_DLL
     // Enforce consistency for the weapon here, since that way we don't need to save off the model bounds
     // for all time.
-    //engine->ForceExactFile( UTIL_VarArgs("scripts/%s.ctx", szWeaponName ) );
+    // engine->ForceExactFile( UTIL_VarArgs("scripts/%s.ctx", szWeaponName ) );
 
     // Model bounds are rounded to the nearest integer, then extended by 1
     engine->ForceModelBounds(szWorldModel, Vector(-15, -12, -18), Vector(44, 16, 19));
@@ -264,5 +245,3 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
     }
 #endif // !CLIENT_DLL
 }
-
-

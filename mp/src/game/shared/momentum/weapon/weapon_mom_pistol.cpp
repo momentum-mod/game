@@ -22,9 +22,8 @@ LINK_ENTITY_TO_CLASS(weapon_momentum_pistol, CMomentumPistol);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_pistol);
 
 
-CMomentumPistol::CMomentumPistol(): m_iPistolShotsFired(0), m_flPistolShoot(0)
+CMomentumPistol::CMomentumPistol() : m_iPistolShotsFired(0), m_flPistolShoot(0), m_flLastFire(gpGlobals->curtime)
 {
-    m_flLastFire = gpGlobals->curtime;
 }
 
 
@@ -52,7 +51,7 @@ void CMomentumPistol::SecondaryAttack()
     if (!pPlayer)
         return;
 
-    //MOM_TODO: Create an effect (animation maybe, lights on the gun?) that shows switch, don't wanna use ugly text
+    // MOM_TODO: Create an effect (animation maybe, lights on the gun?) that shows switch, don't wanna use ugly text
     if (m_bBurstMode)
     {
         ClientPrint(pPlayer, HUD_PRINTCENTER, "#Switch_To_SemiAuto");
@@ -69,22 +68,7 @@ void CMomentumPistol::SecondaryAttack()
 
 void CMomentumPistol::PrimaryAttack()
 {
-    CMomentumPlayer *pPlayer = GetPlayerOwner();
-    if (!pPlayer)
-        return;
-
-
-    if (!FBitSet(pPlayer->GetFlags(), FL_ONGROUND))
-        PistolFire(1.0f * (1 - m_flAccuracy), m_bBurstMode);
-
-    else if (pPlayer->GetAbsVelocity().Length2D() > 5)
-        PistolFire(0.165f * (1 - m_flAccuracy), m_bBurstMode);
-
-    else if (FBitSet(pPlayer->GetFlags(), FL_DUCKING))
-        PistolFire(0.075f * (1 - m_flAccuracy), m_bBurstMode);
-
-    else
-        PistolFire(0.1f * (1 - m_flAccuracy), m_bBurstMode);
+    PistolFire();
 }
 
 void CMomentumPistol::FireRemaining(int &shotsFired, float &shootTime) const
@@ -115,8 +99,8 @@ void CMomentumPistol::FireRemaining(int &shotsFired, float &shootTime) const
         pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(),
         GetWeaponID(),
         Secondary_Mode,
-        CBaseEntity::GetPredictionRandomSeed() & 255, // wrap it for network traffic so it's the same between client and server
-        0.05);
+        GetPredictionRandomSeed() & 255, // wrap it for network traffic so it's the same between client and server
+        0.0f);
 
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
@@ -138,7 +122,7 @@ void CMomentumPistol::ItemPostFrame()
 }
 
 
-void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
+void CMomentumPistol::PistolFire()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
@@ -146,14 +130,14 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
 
     float flCycleTime = 0.15f;
 
-    if (bFireBurst)
+    if (m_bBurstMode)
     {
         m_iPistolShotsFired = 0;
         flCycleTime = 0.5f;
     }
     else
     {
-        pPlayer->m_iShotsFired++;
+        ++pPlayer->m_iShotsFired;
 
         if (pPlayer->m_iShotsFired > 1)
             return;
@@ -161,6 +145,7 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
 
     m_flLastFire = gpGlobals->curtime;
 
+#ifdef WEAPONS_USE_AMMO
     if (m_iClip1 <= 0)
     {
         if (m_bFireOnEmpty)
@@ -172,7 +157,6 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
         return;
     }
 
-#ifdef WEAPONS_USE_AMMO
     m_iClip1--;
 #endif
 
@@ -187,8 +171,8 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
         pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(),
         GetWeaponID(),
         Primary_Mode,
-        CBaseEntity::GetPredictionRandomSeed() & 255, // wrap it for network traffic so it's the same between client and server
-        flSpread);
+        GetPredictionRandomSeed() & 255, // wrap it for network traffic so it's the same between client and server
+        0.0f);
 
     m_flNextPrimaryAttack = m_flNextSecondaryAttack = gpGlobals->curtime + flCycleTime;
 
@@ -202,7 +186,7 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
 
     SetWeaponIdleTime(gpGlobals->curtime + 2.5);
 
-    if (bFireBurst)
+    if (m_bBurstMode)
     {
         // Fire off the next two rounds
         m_flPistolShoot = gpGlobals->curtime + 0.1;
@@ -216,7 +200,7 @@ void CMomentumPistol::PistolFire(float flSpread, bool bFireBurst)
     }
 }
 
-
+#ifdef WEAPONS_USE_AMMO
 bool CMomentumPistol::Reload()
 {
     if (m_flPistolShoot != 0)
@@ -228,6 +212,7 @@ bool CMomentumPistol::Reload()
     m_flAccuracy = 0.9;
     return true;
 }
+#endif
 
 void CMomentumPistol::WeaponIdle()
 {
