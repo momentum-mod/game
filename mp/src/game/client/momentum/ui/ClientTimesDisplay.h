@@ -96,7 +96,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void FireGameEvent(IGameEvent *event) override;
 
     void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
-
+    void UpdatePlayerAvatarStandalone();
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
     CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
@@ -129,8 +129,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void PostApplySchemeSettings(vgui::IScheme *pScheme);
 
-    // finds the player in the scoreboard
-    int FindItemIDForPlayerIndex(int playerIndex);
     // finds a local time in the scoreboard
     int FindItemIDForLocalTime(KeyValues *kvRef);
     // finds an online time in the scoreboard
@@ -138,7 +136,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     int m_iNumTeams;
 
-    vgui::SectionedListPanel *m_pPlayerList;
     int m_iSectionId; // the current section we are entering into
 
     float m_fNextUpdateTime;
@@ -229,7 +226,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
         uint64 steamid;
         time_t date;
         const char *personaname;
-        bool momember, vip;
+        bool momember, vip, is_friend;
 
         KeyValues *m_kv;
 
@@ -246,6 +243,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
             avatar = kv->GetInt("avatar", 0);
             momember = kv->GetBool("tm", false);
             vip = kv->GetBool("vip", false);
+            is_friend = kv->GetBool("is_friend", false);
         };
 
         ~TimeOnline()
@@ -294,8 +292,16 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     bool m_bMapInfoLoaded = false;
 
-    CHudTexture *m_tVip;
-    CHudTexture *m_tFriend;
-    CHudTexture *m_tTeamMember;
+    enum LEADERBOARD_ICONS
+    {
+        ICON_VIP,
+        ICON_TEAMMEMBER,
+        ICON_FRIEND,
+
+        ICON_TOTAL // Used to control the amount of icons available
+    };
+    int m_IconsIndex[ICON_TOTAL];
+
+    int m_iPlayerAvatarIndexStandalone = -1;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H

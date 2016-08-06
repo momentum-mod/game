@@ -66,9 +66,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     // set the scheme before any child control is created
     SetScheme("ClientScheme");
 
-    m_pPlayerList = new SectionedListPanel(this, "PlayerList");
-    m_pPlayerList->SetVerticalScrollbar(false);
-
     LoadControlSettings("resource/ui/timesdisplay.res");
 
     m_pHeader = FindControl<Panel>("Header", true);
@@ -177,7 +174,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
                                          scheme()->GetProportionalScaledValue(64));
 
     m_iDesiredHeight = GetTall();
-    m_pPlayerList->SetVisible(false); // hide this until we load the images in applyschemesettings
+
     m_lLoadingOnlineTimes->SetVisible(false);
 
     // update scoreboard instantly if on of these events occur
@@ -198,10 +195,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_bFirstHeaderUpdate = true;
     m_bFirstOnlineTimesUpdate = true;
     m_bFirstFriendsTimesUpdate = true;
-
-    m_tVip = gHUD.GetIcon("p_icon_vip");
-    m_tFriend = gHUD.GetIcon("p_icon_friend");
-    m_tTeamMember = gHUD.GetIcon("p_icon_member");
 
     m_umMapNames.SetLessFunc(PNamesMapLessFunc);
 }
@@ -281,10 +274,6 @@ void CClientTimesDisplay::Reset() { Reset(false); }
 
 void CClientTimesDisplay::Reset(bool pFullReset)
 {
-    // clear
-    m_pPlayerList->DeleteAllItems();
-    m_pPlayerList->RemoveAllSections();
-
     if (m_pLocalLeaderboards)
     {
         m_pLocalLeaderboards->DeleteAllItems();
@@ -329,9 +318,16 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pOnlineLeaderboards->SetImageList(m_pImageList, false);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]));
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "", 2, 64);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
+                                                  SCALE(m_aiColumnWidths[1]));
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "",
+                                                  SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+                                                  DEFAULT_AVATAR_SIZE);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
+                                                  SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
     }
 
@@ -341,10 +337,18 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
         m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pFriendsLeaderboards->SetImageList(m_pImageList, false);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", 0, SCALE(m_aiColumnWidths[1]));
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "", 2, 64);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
+                                                   SCALE(m_aiColumnWidths[1]));
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "",
+                                                   SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+                                                   DEFAULT_AVATAR_SIZE);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
+                                                   SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
+                                                   SectionedListPanel::COLUMN_CENTER, SCALE(m_aiColumnWidths[2]));
     }
 }
 
@@ -361,6 +365,31 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 
     m_mapAvatarsToImageList.RemoveAll();
 
+    for (int index = 0; index < ICON_TOTAL; index++)
+    {
+        m_IconsIndex[index] = -1;
+        IImage *image = nullptr;
+        switch (index)
+        {
+        case ICON_VIP:
+            image = scheme()->GetImage("leaderboards_icon_vip", false);
+            break;
+        case ICON_TEAMMEMBER:
+            image = scheme()->GetImage("leaderboards_icon_vip", false);
+            break;
+        case ICON_FRIEND:
+            image = scheme()->GetImage("leaderboards_icon_vip", false);
+            break;
+        default:
+            break;
+        }
+        if (image)
+        {
+            image->SetSize(16, 16);
+            m_IconsIndex[index] = m_pImageList->AddImage(image);
+        }
+    }
+
     PostApplySchemeSettings(pScheme);
 }
 
@@ -370,12 +399,12 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
 {
     // resize the images to our resolution
-    for (int i = 0; i < m_pImageList->GetImageCount(); i++)
+    /*for (int i = 0; i < m_pImageList->GetImageCount(); i++)
     {
         int wide, tall;
         m_pImageList->GetImage(i)->GetSize(wide, tall);
         m_pImageList->GetImage(i)->SetSize(SCALE(wide), SCALE(tall));
-    }
+    }*/
 
     const char *columnNames[] = {DATESTRING, RANKSTRING, TIMESTRING};
 
@@ -392,9 +421,6 @@ void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
         m_aiColumnWidths[i] = pixels;
     }
     // DevLog("Widths %i %i %i \n", m_aiColumnWidths[0], m_aiColumnWidths[1], m_aiColumnWidths[2]);
-
-    m_pPlayerList->SetImageList(m_pImageList, false);
-    m_pPlayerList->SetVisible(true);
 
     if (m_lMapSummary)
         m_lMapSummary->SetVisible(true);
@@ -486,21 +512,6 @@ void CClientTimesDisplay::Update(bool pFullUpdate)
 
     FillScoreBoard(pFullUpdate);
 
-    // grow the scoreboard to fit all the players
-    int wide, tall;
-    m_pPlayerList->GetContentSize(wide, tall);
-    tall += GetAdditionalHeight();
-    wide = GetWide();
-    if (m_iDesiredHeight < tall)
-    {
-        SetSize(wide, tall);
-        m_pPlayerList->SetSize(wide, tall);
-    }
-    else
-    {
-        SetSize(wide, m_iDesiredHeight);
-        m_pPlayerList->SetSize(wide, m_iDesiredHeight);
-    }
     MoveToCenterOfScreen();
 
     // update every X seconds
@@ -522,7 +533,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
 
     // add the player to the list
     KeyValues *playerData = new KeyValues("data");
-    UpdatePlayerAvatar(engine->GetLocalPlayer(), playerData);
+    UpdatePlayerAvatarStandalone();
 
     player_info_t pi;
     engine->GetPlayerInfo(engine->GetLocalPlayer(), &pi);
@@ -1311,42 +1322,54 @@ void CClientTimesDisplay::UpdatePlayerAvatar(int playerIndex, KeyValues *kv)
     // Update their avatar
     if (kv && ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())
     {
-        player_info_t pi;
-        if (engine->GetPlayerInfo(playerIndex, &pi))
+        CSteamID steamIDForPlayer = GetSteamIDForPlayerIndex(playerIndex);
+
+        // See if we already have that avatar in our list
+        int iMapIndex = m_mapAvatarsToImageList.Find(steamIDForPlayer);
+        int iImageIndex;
+        if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
         {
-            if (pi.friendsID)
-            {
-                CSteamID steamIDForPlayer(pi.friendsID, 1, steamapicontext->SteamUtils()->GetConnectedUniverse(),
-                                          k_EAccountTypeIndividual);
+            CAvatarImage *pImage = new CAvatarImage();
+            // 64 is enough up to full HD resolutions.
+            pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
 
-                // See if we already have that avatar in our list
-                int iMapIndex = m_mapAvatarsToImageList.Find(steamIDForPlayer);
-                int iImageIndex;
-                if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
-                {
-                    CAvatarImage *pImage = new CAvatarImage();
-                    // 64 is enough up to full HD resolutions.
-                    pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
+            pImage->SetDrawFriend(false);
+            pImage->SetAvatarSize(32, 32); // Deliberately non scaling
+            iImageIndex = m_pImageList->AddImage(pImage);
 
-                    pImage->SetDrawFriend(false);
-                    pImage->SetAvatarSize(32, 32); // Deliberately non scaling
-                    iImageIndex = m_pImageList->AddImage(pImage);
+            m_mapAvatarsToImageList.Insert(steamIDForPlayer, iImageIndex);
+        }
+        else
+        {
+            iImageIndex = m_mapAvatarsToImageList[iMapIndex];
+        }
 
-                    m_mapAvatarsToImageList.Insert(steamIDForPlayer, iImageIndex);
-                }
-                else
-                {
-                    iImageIndex = m_mapAvatarsToImageList[iMapIndex];
-                }
+        kv->SetBool("is_friend", false);
+        kv->SetInt("avatar", iImageIndex);
 
-                kv->SetBool("is_friend", false);
-                kv->SetInt("avatar", iImageIndex);
+        CAvatarImage *pAvIm = static_cast<CAvatarImage *>(m_pImageList->GetImage(iImageIndex));
+        pAvIm->UpdateFriendStatus();
+        // Set friend draw to false, so the offset is not set
+        pAvIm->SetDrawFriend(false);
+    }
+}
 
-                CAvatarImage *pAvIm = static_cast<CAvatarImage *>(m_pImageList->GetImage(iImageIndex));
-                pAvIm->UpdateFriendStatus();
-                // Set friend draw to false, so the offset is not set
-                pAvIm->SetDrawFriend(false);
-            }
+void CClientTimesDisplay::UpdatePlayerAvatarStandalone()
+{
+    // Update their avatar
+    if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())
+    {
+        CSteamID steamIDForPlayer = GetSteamIDForPlayerIndex(GetLocalPlayerIndex());
+
+        if (m_iPlayerAvatarIndexStandalone == -1)
+        {
+            CAvatarImage *pImage = new CAvatarImage();
+            // 64 is enough up to full HD resolutions.
+            pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
+
+            pImage->SetDrawFriend(false);
+            pImage->SetAvatarSize(64, 64); // Deliberately non scaling
+            m_iPlayerAvatarIndexStandalone = m_pImageList->AddImage(pImage);
         }
     }
 }
@@ -1390,11 +1413,10 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
             m_lPlayerName->SetText(playdata->GetString("name", "Unknown"));
             if (pFullUpdate)
             {
-                int pAvatarIndex = playdata->GetInt("avatar", 0);
-                if (pAvatarIndex == 0)
+                if (m_iPlayerAvatarIndexStandalone == -1)
                     m_pPlayerAvatar->SetImage("default_steam");
                 else
-                    m_pPlayerAvatar->SetImage(m_pImageList->GetImage(pAvatarIndex));
+                    m_pPlayerAvatar->SetImage(m_pImageList->GetImage(m_iPlayerAvatarIndexStandalone));
                 m_pPlayerAvatar->GetImage()->SetSize(scheme()->GetProportionalScaledValue(32),
                                                      scheme()->GetProportionalScaledValue(32));
             }
@@ -1436,7 +1458,8 @@ void CClientTimesDisplay::FillScoreBoard(bool pFullUpdate)
             }
         }
 
-        // Online works slightly different, we use the vector content, not the ones from m_kvPlayerData (because online
+        // Online works slightly different, we use the vector content, not the ones from m_kvPlayerData (because
+        // online
         // times are not stored there)
 
         OnlineTimesVectorToLeaderboards(ONLINE_LEADERBOARDS);
@@ -1464,11 +1487,9 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards(LEADERBOARDS pLeaderbo
         break;
     default:
         return;
-        break;
     }
     if (pVector.Count() > 0 && pList)
     {
-        uint64 localSteamId = GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64();
         FOR_EACH_VEC(pVector, entry)
         {
             // We set the current personaname before anything...
@@ -1488,6 +1509,11 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards(LEADERBOARDS pLeaderbo
             }
 
             int itemID = FindItemIDForOnlineTime(runEntry->id, pLeaderboard);
+
+            runEntry->m_kv->SetInt("icon_tm", runEntry->momember ? m_IconsIndex[ICON_TEAMMEMBER] : -1);
+            runEntry->m_kv->SetInt("icon_vip", runEntry->vip ? m_IconsIndex[ICON_VIP] : -1);
+            runEntry->m_kv->SetInt("icon_friend", runEntry->is_friend ? m_IconsIndex[ICON_FRIEND] : -1);
+
             if (itemID == -1)
             {
                 itemID = pList->AddItem(m_iSectionId, runEntry->m_kv);
@@ -1511,16 +1537,6 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards(LEADERBOARDS pLeaderbo
             default:
                 break;
             }
-
-            if (runEntry->momember)
-            {
-                pList->SetItemBgColor(itemID, Color(46, 102, 165, 225));
-            }
-
-            if (runEntry->steamid == localSteamId)
-            {
-                pList->SetItemBgColor(itemID, Color(66, 114, 136, 200));
-            }
         }
         if (m_lLoadingOnlineTimes)
         {
@@ -1532,22 +1548,6 @@ void CClientTimesDisplay::OnlineTimesVectorToLeaderboards(LEADERBOARDS pLeaderbo
 //-----------------------------------------------------------------------------
 // Purpose: searches for the player in the scoreboard
 //-----------------------------------------------------------------------------
-int CClientTimesDisplay::FindItemIDForPlayerIndex(int playerIndex)
-{
-    // MOM_TODO: make this return an ItemID for another person's time (friend/global)
-    for (int i = 0; i <= m_pPlayerList->GetHighestItemID(); i++)
-    {
-        if (m_pPlayerList->IsItemIDValid(i))
-        {
-            KeyValues *kv = m_pPlayerList->GetItemData(i);
-            kv = kv->FindKey(m_iPlayerIndexSymbol);
-            if (kv && kv->GetInt() == playerIndex)
-                return i;
-        }
-    }
-    return -1;
-}
-
 int CClientTimesDisplay::FindItemIDForLocalTime(KeyValues *kvRef)
 {
     for (int i = 0; i <= m_pLocalLeaderboards->GetHighestItemID(); i++)
@@ -1577,7 +1577,6 @@ int CClientTimesDisplay::FindItemIDForOnlineTime(int runID, LEADERBOARDS leaderb
         break;
     default:
         return -1;
-        break;
     }
     for (int i = 0; i <= pLeaderboard->GetHighestItemID(); i++)
     {
@@ -1765,7 +1764,7 @@ void CClientTimesDisplay::OnToggleLeaderboardType(KeyValues *pData)
             m_vOnlineTimes.PurgeAndDeleteElements();
             m_pOnlineLeaderboards->RemoveAll();
             m_bOnlineNeedUpdate = true;
-            FillScoreBoard();
+            Update();
         }
     }
 }
