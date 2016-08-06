@@ -20,7 +20,7 @@ void CMomentumSniper::SecondaryAttack()
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
     {
-        Assert(pPlayer != NULL);
+        Assert(pPlayer != nullptr);
         return;
     }
 
@@ -84,7 +84,7 @@ float CMomentumSniper::GetMaxSpeed() const
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
     {
-        Assert(pPlayer != NULL);
+        Assert(pPlayer != nullptr);
         return BaseClass::GetMaxSpeed();
     }
 

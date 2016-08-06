@@ -354,7 +354,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
             bool limitingspeed = true;
             bool checkonlyxy = true;
             float bhopleavespeed = 250.0f;
-            const char * linkedtrigger = NULL;
+            const char * linkedtrigger = nullptr;
 
             float start_yaw = NO_LOOK;
 
@@ -381,7 +381,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
                 shouldTilt = cp->GetBool("resetang", true);
                 holdTime = cp->GetFloat("hold", 1);
                 //destinationIndex = cp->GetInt("destination", 1);
-                linkedtrigger = cp->GetString("destinationname", NULL);
+                linkedtrigger = cp->GetString("destinationname", nullptr);
             }
             else if (Q_strcmp(cp->GetName(), "resetonehop") == 0)
             {
@@ -393,7 +393,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
                 //destinationIndex = cp->GetInt("destination", -1);
                 shouldStop = cp->GetBool("stop", false);
                 shouldTilt = cp->GetBool("resetang", true);
-                linkedtrigger = cp->GetString("destinationname", NULL);
+                linkedtrigger = cp->GetString("destinationname", nullptr);
             }
             else if (Q_strcmp(cp->GetName(), "multihop") == 0)
             {
@@ -402,7 +402,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
                 shouldTilt = cp->GetBool("resetang", true);
                 holdTime = cp->GetFloat("hold", 1);
                 //destinationIndex = cp->GetInt("destination", 1);
-                linkedtrigger = cp->GetString("destinationname", NULL);
+                linkedtrigger = cp->GetString("destinationname", nullptr);
             }
             else if (!Q_strcmp(cp->GetName(), "stage") || !Q_strcmp(cp->GetName(), "zone"))
             {

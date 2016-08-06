@@ -23,7 +23,7 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
 
     //m_pLocationFilter->DeleteAllItems();
     KeyValues *kv = new KeyValues("Regions");
-    if (kv->LoadFromFile(g_pFullFileSystem, "servers/Regions.vdf", NULL))
+    if (kv->LoadFromFile(g_pFullFileSystem, "servers/Regions.vdf", nullptr))
     {
         // iterate the list loading all the servers
         for (KeyValues *srv = kv->GetFirstSubKey(); srv != nullptr; srv = srv->GetNextKey())

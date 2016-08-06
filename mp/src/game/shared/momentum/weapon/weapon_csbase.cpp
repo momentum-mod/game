@@ -1294,7 +1294,7 @@ float CWeaponCSBase::CalcViewmodelBob(void)
 void CWeaponCSBase::AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAngle &angles)
 {
     Vector	forward, right;
-    AngleVectors(angles, &forward, &right, NULL);
+    AngleVectors(angles, &forward, &right, nullptr);
 
     CalcViewmodelBob();
 
