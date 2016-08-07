@@ -751,6 +751,7 @@ void CClientTimesDisplay::LoadOnlineTimes()
         // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
         m_bOnlineNeedUpdate = false;
+        m_flLastOnlineTimeUpdate = gpGlobals->curtime;
     }
 }
 
@@ -765,6 +766,7 @@ void CClientTimesDisplay::LoadFriendsTimes()
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName());
         CreateAndSendHTTPReq(requrl, &cbGetFriendsTimesCallback, &CClientTimesDisplay::GetFriendsTimesCallback);
         m_bFriendsNeedUpdate = false;
+        m_flLastFriendsTimeUpdate = gpGlobals->curtime;
     }
 }
 
