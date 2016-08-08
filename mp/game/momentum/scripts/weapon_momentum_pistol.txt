@@ -17,7 +17,7 @@ WeaponData
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#HL2_Pistol"
-    "viewmodel"         "models/weapons/v_pistol.mdl"
+    "viewmodel"         "models/weapons/v_mom_pistol.mdl"
     "playermodel"       "models/weapons/w_mom_pistol.mdl"
     "anim_prefix"       "anim"
     "bucket"            "1"
