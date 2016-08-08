@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture" "vgui/leaderboards_icon_mom"
+	"$translucent" 1
+	"$ignorez"	1
+}
