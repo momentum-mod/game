@@ -18,7 +18,7 @@
 
 struct EventQueuePrioritizedEvent_t
 {
-	float m_flFireTime;
+	int m_iFireTick;
 	string_t m_iTarget;
 	string_t m_iTargetInput;
 	EHANDLE m_pActivator;
@@ -74,6 +74,8 @@ private:
 	DECLARE_SIMPLE_DATADESC();
 	EventQueuePrioritizedEvent_t m_Events;
 	int m_iListCount;
+
+	int m_iRealTickCount;
 };
 
 extern CEventQueue g_EventQueue;
