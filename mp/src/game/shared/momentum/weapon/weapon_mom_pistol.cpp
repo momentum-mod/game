@@ -22,8 +22,11 @@ LINK_ENTITY_TO_CLASS(weapon_momentum_pistol, CMomentumPistol);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_pistol);
 
 
-CMomentumPistol::CMomentumPistol() : m_iPistolShotsFired(0), m_flPistolShoot(0), m_flLastFire(gpGlobals->curtime)
+CMomentumPistol::CMomentumPistol()
 {
+    m_iPistolShotsFired = 0;
+    m_flPistolShoot = 0;
+    m_flLastFire = gpGlobals->curtime;
 }
 
 
@@ -34,6 +37,8 @@ void CMomentumPistol::Spawn()
     m_iPistolShotsFired = 0;
     m_flPistolShoot = 0.0f;
     m_flAccuracy = 0.9;
+    m_flNextPrimaryAttack = 0.0f;
+    m_flNextSecondaryAttack = 0.0f;
 }
 
 bool CMomentumPistol::Deploy()
@@ -41,7 +46,6 @@ bool CMomentumPistol::Deploy()
     m_iPistolShotsFired = 0;
     m_flPistolShoot = 0.0f;
     m_flAccuracy = 0.9f;
-
     return BaseClass::Deploy();
 }
 
@@ -62,7 +66,7 @@ void CMomentumPistol::SecondaryAttack()
         ClientPrint(pPlayer, HUD_PRINTCENTER, "#Switch_To_BurstFire");
         m_bBurstMode = true;
     }
-
+    SendWeaponAnim(ACT_VM_SECONDARYATTACK_SPECIAL);
     m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
 }
 
@@ -226,8 +230,8 @@ void CMomentumPistol::WeaponIdle()
 #ifdef WEAPONS_USE_AMMO
     // only idle if the slid isn't back
     if (m_iClip1 != 0)
+#endif
     {
         SendWeaponAnim(ACT_VM_IDLE);
     }
-#endif
 }
