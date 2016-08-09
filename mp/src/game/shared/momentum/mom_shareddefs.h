@@ -79,8 +79,8 @@ typedef enum MOMGM
 
 #define MAP_FOLDER "maps" //MOM_TODO: Ensure all files are successfully built using V_ComposeFile
 #define RECORDING_PATH "recordings"
-#define EXT_TIME_FILE ".tim" //MOM_TODO: Find and replace all instances, no hardcode.
-#define EXT_ZONE_FILE ".zon" //MOM_TODO: Find and replace all instances, no hardcode.
+#define EXT_TIME_FILE ".tim"
+#define EXT_ZONE_FILE ".zon"
 #define EXT_RECORDING_FILE ".momrec"
 
 #endif // MOM_SHAREDDEFS_H

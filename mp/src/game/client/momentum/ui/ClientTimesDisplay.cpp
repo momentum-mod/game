@@ -378,7 +378,7 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
             image = scheme()->GetImage("leaderboards_icon_mom", false);
             break;
         case ICON_FRIEND:
-            image = scheme()->GetImage("leaderboards_icon_vip", false);
+            image = scheme()->GetImage("leaderboards_icon_friends", false);
             break;
         default:
             break;
