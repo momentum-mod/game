@@ -12,10 +12,10 @@
     // NOTE: This causes $envmapmask (specmap) to not work, 
     // so we need to compile the specmap as the alpha channel of the albedo texture.
     // Then, we can use the following to make it work:
-    $basealphaenvmapmask 1
+    $normalmapalphaenvmapmask 1
     
     // Misc env_map settings
     "$envmaptint" "[ 0.25 0.25 0.25 ]"
     "$envmapcontrast" 0 //1
-    "$envmapsaturation" .1
+    "$envmapsaturation" .1//1
 }
