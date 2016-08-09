@@ -203,7 +203,6 @@ void CC_Mom_ZoneCancel()
 
 static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel the zone building.\n", FCVAR_CHEAT);
 
-
 void CMapzoneEdit::Build(Vector *aimpos, int type, int forcestage)
 {
     if (mom_zone_grid.GetInt() > 0)

@@ -17,6 +17,7 @@ extern ConVar mom_zone_edit;
 
 class CMapzoneEdit
 {
+    CMapzoneEdit() : m_flReticleDist(256.0), m_nBuildStage(BUILDSTAGE_NONE), m_bEditing(false) {};
 public:
     void Build( Vector *aimpos, int type, int forcestage = BUILDSTAGE_NONE );
 
@@ -40,11 +41,11 @@ public:
     int ShortNameToZoneType( const char *in );
 
 private:
-    int m_nBuildStage = BUILDSTAGE_NONE;
-    float m_flReticleDist = 256.0f;
+    int m_nBuildStage;
+    float m_flReticleDist;
     Vector m_vecBuildStart;
     Vector m_vecBuildEnd;
-    bool m_bEditing = false;
+    bool m_bEditing;
 
     float GetZoneHeightToPlayer( CBasePlayer *pPlayer );
     void SetZoneProps( CBaseEntity *pEnt );

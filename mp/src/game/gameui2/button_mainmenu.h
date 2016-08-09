@@ -3,6 +3,8 @@
 #include "vgui2d/button2d.h"
 #include "vgui_controls/AnimationController.h"
 
+#define override
+
 enum ButtonState
 {
     Out,

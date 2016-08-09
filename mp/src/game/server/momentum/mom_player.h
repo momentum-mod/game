@@ -6,10 +6,10 @@
 
 #include "cbase.h"
 #include "mom_blockfix.h"
-#include "mom_entity_run_data.h"
+#include "../../shared/momentum/mom_entity_run_data.h"
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
-#include "util/run_stats.h"
+#include "../../shared/momentum/util/run_stats.h"
 #include <GameEventListener.h>
 
 class CMomentumReplayGhostEntity;
@@ -147,7 +147,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     // for detecting bhop
     float m_flTicksOnGround;
-    const int NUM_TICKS_TO_BHOP = 10;
+    const int NUM_TICKS_TO_BHOP;
     friend class CMomentumGameMovement;
     float m_flPunishTime;
     int m_iLastBlock;

@@ -300,10 +300,10 @@ void Button_MainMenu::DrawText()
 
 void Button_MainMenu::DrawDescription()
 {
-    if (m_sButtonState == Out && m_bDescriptionHideOut == true ||
-        m_sButtonState == Over && m_bDescriptionHideOver == true ||
-        m_sButtonState == Pressed && m_bDescriptionHidePressed == true ||
-        m_sButtonState == Released && m_bDescriptionHideReleased == true)
+    if ((m_sButtonState == Out) && (m_bDescriptionHideOut == true) ||
+        (m_sButtonState == Over) && (m_bDescriptionHideOver == true) ||
+        (m_sButtonState == Pressed) && (m_bDescriptionHidePressed == true) ||
+        (m_sButtonState == Released) && (m_bDescriptionHideReleased == true))
         return;
 
     surface()->DrawSetTextColor(m_cDescription);
