@@ -290,7 +290,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     bool m_bGlobalsShown = true;
     int m_iGetScoresVersion = 2;
 
-    bool m_bMapInfoLoaded = false;
+    bool m_bMapInfoLoaded;
 
     enum LEADERBOARD_ICONS
     {

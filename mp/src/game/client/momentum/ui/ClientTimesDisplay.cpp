@@ -196,6 +196,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_bFirstOnlineTimesUpdate = true;
     m_bFirstFriendsTimesUpdate = true;
 
+    m_bMapInfoLoaded = false;
+
     m_umMapNames.SetLessFunc(PNamesMapLessFunc);
 }
 
@@ -212,7 +214,7 @@ CClientTimesDisplay::~CClientTimesDisplay()
 
     if (m_pLeaderboardReplayCMenu)
     {
-        delete m_pLeaderboardReplayCMenu;
+        m_pLeaderboardReplayCMenu->DeletePanel();
         m_pLeaderboardReplayCMenu = nullptr;
     }
     if (cbGetFriendsTimesCallback.IsActive())
@@ -361,7 +363,7 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 
     if (m_pImageList)
         delete m_pImageList;
-    m_pImageList = new ImageList(false);
+    m_pImageList = new ImageList(true);
 
     m_mapAvatarsToImageList.RemoveAll();
 
@@ -486,12 +488,14 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
     }
     else if (Q_strcmp(type, "run_upload") == 0)
     {
-        // MOM_TODO: this updates your rank (friends/online panel)
         m_bFriendsNeedUpdate = m_bOnlineNeedUpdate = event->GetBool("run_posted");
     }
     else if (Q_strcmp(type, "game_newmap") == 0)
     {
         m_bLocalTimesLoaded = false;
+        m_bMapInfoLoaded = false;
+        m_bFriendsNeedUpdate = true;
+        m_bOnlineNeedUpdate = true;
     }
 
     // MOM_TODO: there's a crash here if you uncomment it,
@@ -584,6 +588,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
         Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback);
+        m_fLastHeaderUpdate = gpGlobals->curtime;
     }
 
     kv->AddSubKey(playerData);
@@ -951,6 +956,8 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
 
 void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
+    //MOM_TODO: Tell the player the reason this list isn't loading
+    // Look into making the "SetEmptyListText" method from ListPanel into a custom SectionedListPanel class
     if (bIOFailure)
     {
         Warning("%s - bIOFailure is true!\n", __FUNCTION__);
@@ -963,6 +970,7 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
         return;
     }
 
+    
     if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict)
     {
         Warning("%s - Could not fetch player frindlist!\n", __FUNCTION__);
@@ -973,6 +981,7 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
     if (pCallback->m_eStatusCode == k_EHTTPStatusCode4xxUnknown)
     {
         Warning("%s - No friends found on this map. You must be a teapot!\n", __FUNCTION__);
+       
         m_bUnauthorizedFriendlist = true;
         return;
     }
