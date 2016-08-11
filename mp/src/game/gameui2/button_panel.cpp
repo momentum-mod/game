@@ -235,10 +235,10 @@ void Button_Panel::DrawText()
 
 void Button_Panel::DrawDescription()
 {
-	if ((m_sButtonState == Out) && (m_bDescriptionHideOut == true) ||
-		(m_sButtonState == Over) && (m_bDescriptionHideOver == true) ||
-		(m_sButtonState == Pressed) && (m_bDescriptionHidePressed == true) ||
-		(m_sButtonState == Released) && (m_bDescriptionHideReleased == true))
+	if ((m_sButtonState == Out && m_bDescriptionHideOut == true) ||
+		(m_sButtonState == Over && m_bDescriptionHideOver == true) ||
+		(m_sButtonState == Pressed && m_bDescriptionHidePressed == true) ||
+		(m_sButtonState == Released && m_bDescriptionHideReleased == true))
 		return;
 
 	vgui::surface()->DrawSetTextColor(m_cDescription);
