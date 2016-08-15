@@ -644,8 +644,8 @@ CEventQueue g_EventQueue;
 
 CEventQueue::CEventQueue()
 {
-	m_Events.m_flFireTime = -FLT_MAX;
-	m_Events.m_pNext = NULL;
+	m_Events.m_iFireTick = INT_MIN;
+	m_Events.m_pNext = nullptr;
 
 	Init();
 }
@@ -787,8 +787,8 @@ void CEventQueue::Dump( void )
 	{
 		EventQueuePrioritizedEvent_t *next = pe->m_pNext;
 
-		Msg("   (%.2f) Target: '%s', Input: '%s', Parameter '%s'. Activator: '%s', Caller '%s'.  \n", 
-			pe->m_flFireTime, 
+		Msg("   (%d) Target: '%s', Input: '%s', Parameter '%s'. Activator: '%s', Caller '%s'.  \n", 
+			pe->m_iFireTick,
 			STRING(pe->m_iTarget), 
 			STRING(pe->m_iTargetInput), 
 			pe->m_VariantValue.String(),
@@ -812,7 +812,7 @@ void CEventQueue::AddEvent( const char *target, const char *targetInput, variant
 #ifdef TF_DLL
 	newEvent->m_flFireTime = engine->GetServerTime() + fireDelay;	// priority key in the priority queue
 #else
-	newEvent->m_flFireTime = gpGlobals->curtime + fireDelay;	// priority key in the priority queue
+	newEvent->m_iFireTick = gpGlobals->tickcount + round(fireDelay * (1.0f / gpGlobals->interval_per_tick));	// priority key in the priority queue
 #endif
 	newEvent->m_iTarget = MAKE_STRING( target );
 	newEvent->m_pEntTarget = NULL;
@@ -835,7 +835,7 @@ void CEventQueue::AddEvent( CBaseEntity *target, const char *targetInput, varian
 #ifdef TF_DLL
 	newEvent->m_flFireTime = engine->GetServerTime() + fireDelay;	// primary priority key in the priority queue
 #else
-	newEvent->m_flFireTime = gpGlobals->curtime + fireDelay;	// primary priority key in the priority queue
+	newEvent->m_iFireTick = gpGlobals->tickcount + round(fireDelay * (1.0f / gpGlobals->interval_per_tick));	// primary priority key in the priority queue
 #endif
 	newEvent->m_iTarget = NULL_STRING;
 	newEvent->m_pEntTarget = target;
@@ -866,7 +866,7 @@ void CEventQueue::AddEvent( EventQueuePrioritizedEvent_t *newEvent )
 	EventQueuePrioritizedEvent_t *pe;
 	for ( pe = &m_Events; pe->m_pNext != NULL; pe = pe->m_pNext )
 	{
-		if ( pe->m_pNext->m_flFireTime > newEvent->m_flFireTime )
+		if ( pe->m_pNext->m_iFireTick > newEvent->m_iFireTick )
 		{
 			break;
 		}
@@ -910,7 +910,7 @@ void CEventQueue::ServiceEvents( void )
 #ifdef TF_DLL
 	while ( pe != NULL && pe->m_flFireTime <= engine->GetServerTime() )
 #else
-	while ( pe != NULL && pe->m_flFireTime <= gpGlobals->curtime )
+	while ( pe != NULL && pe->m_iFireTick <= gpGlobals->tickcount )
 #endif
 	{
 		MDLCACHE_CRITICAL_SECTION();
@@ -1134,7 +1134,7 @@ END_DATADESC()
 
 // save data for a single event in the queue
 BEGIN_SIMPLE_DATADESC( EventQueuePrioritizedEvent_t )
-	DEFINE_FIELD( m_flFireTime, FIELD_TIME ),
+	DEFINE_FIELD( m_iFireTick, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iTarget, FIELD_STRING ),
 	DEFINE_FIELD( m_iTargetInput, FIELD_STRING ),
 	DEFINE_FIELD( m_pActivator, FIELD_EHANDLE ),
@@ -1200,7 +1200,7 @@ int CEventQueue::Restore( IRestore &restore )
 #ifdef TF_DLL
 					  tmpEvent.m_flFireTime - engine->GetServerTime(),
 #else
-					  tmpEvent.m_flFireTime - gpGlobals->curtime,
+					  tmpEvent.m_iFireTick - gpGlobals->tickcount,
 #endif
 					  tmpEvent.m_pActivator,
 					  tmpEvent.m_pCaller,
@@ -1214,7 +1214,7 @@ int CEventQueue::Restore( IRestore &restore )
 #ifdef TF_DLL
 					  tmpEvent.m_flFireTime - engine->GetServerTime(),
 #else
-					  tmpEvent.m_flFireTime - gpGlobals->curtime,
+					  tmpEvent.m_iFireTick - gpGlobals->tickcount,
 #endif
 					  tmpEvent.m_pActivator,
 					  tmpEvent.m_pCaller,
