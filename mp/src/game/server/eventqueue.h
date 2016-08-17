@@ -18,7 +18,7 @@
 
 struct EventQueuePrioritizedEvent_t
 {
-	float m_flFireTime;
+	int m_iFireTick;
 	string_t m_iTarget;
 	string_t m_iTargetInput;
 	EHANDLE m_pActivator;
