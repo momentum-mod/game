@@ -23,6 +23,7 @@
 #include <game/client/iviewport.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/SectionedListPanel.h>
+#include <vgui_controls/TextImage.h>
 
 #define TYPE_NOTEAM 0 // NOTEAM must be zero :)
 #define TYPE_TEAM 1   // a section for a single team
@@ -106,8 +107,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
-    MESSAGE_FUNC_PARAMS(OnToggleLeaderboard, "ToggleLeaderboard", data);
-    MESSAGE_FUNC_PARAMS(OnToggleLeaderboardType, "ToggleLeaderboardType", data);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
@@ -120,6 +119,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void OnThink() override;
     void AddHeader(); // add the start header of the scoreboard
     static int GetAdditionalHeight() { return 0; }
+
+    void OnCommand(const char *pCommand) override;
 
     // sorts players within a section
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
@@ -163,6 +164,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
     vgui::ImagePanel *m_pPlayerAvatar;
     vgui::ImagePanel *m_pMomentumLogo;
+    vgui::Button *m_pLocalLeaderboardsButton;
     vgui::Button *m_pGlobalLeaderboardsButton;
     vgui::Button *m_pGlobalTop10Button;
     vgui::Button *m_pGlobalAroundButton;
@@ -287,8 +289,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     CUtlMap<uint64, const char *> m_umMapNames;
 
-    bool m_bGlobalsShown = true;
-    int m_iGetScoresVersion = 2;
+    bool m_bGetTop10Scores;
 
     bool m_bMapInfoLoaded;
 
@@ -302,6 +303,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     };
     int m_IconsIndex[ICON_TOTAL];
 
-    int m_iPlayerAvatarIndexStandalone = -1;
+    int m_iPlayerAvatarIndexStandalone;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H

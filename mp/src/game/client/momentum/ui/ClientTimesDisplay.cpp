@@ -50,10 +50,13 @@ bool PNamesMapLessFunc(const uint64 &first, const uint64 &second) { return first
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, PANEL_TIMES)
+CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, "ClientTimesDisplay")
 {
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
+
+    m_bGetTop10Scores = true;
+    m_iPlayerAvatarIndexStandalone = -1;
 
     m_pViewPort = pViewPort;
     // initialize dialog
@@ -84,10 +87,11 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pOnlineLeaderboards = FindControl<SectionedListPanel>("OnlineLeaderboards", true);
     m_pLocalLeaderboards = FindControl<SectionedListPanel>("LocalLeaderboards", true);
     m_pFriendsLeaderboards = FindControl<SectionedListPanel>("FriendsLeaderboards", true);
-    m_pGlobalLeaderboardsButton = FindControl<Button>("GlobalLeaderboarsButton", true);
+    m_pGlobalLeaderboardsButton = FindControl<Button>("GlobalLeaderboardsButton", true);
     m_pGlobalTop10Button = FindControl<Button>("GlobalTop10Button", true);
     m_pGlobalAroundButton = FindControl<Button>("GlobalAroundButton", true);
     m_pFriendsLeaderboardsButton = FindControl<Button>("FriendsLeaderboardsButton", true);
+    m_pLocalLeaderboardsButton = FindControl<Button>("LocalLeaderboardsButton", true);
 
     if (!m_pHeader || !m_lMapSummary || !m_pPlayerStats || !m_pPlayerAvatar || !m_lPlayerName || !m_pMomentumLogo ||
         !m_lPlayerMapRank || !m_lPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards ||
@@ -97,10 +101,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     {
         Assert("Null pointer(s) on scoreboards");
     }
-    SetSize(scheme()->GetProportionalScaledValue(480), scheme()->GetProportionalScaledValue(480));
 
-    m_pHeader->SetParent(this);
-    m_pLeaderboards->SetParent(this);
+    // Override the parents of the controls (the current parent is this)
     m_lMapSummary->SetParent(m_pHeader);
     m_lMapDetails->SetParent(m_pHeader);
     m_pPlayerStats->SetParent(m_pLeaderboards);
@@ -119,63 +121,18 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pGlobalTop10Button->SetParent(m_pLeaderboards);
     m_pGlobalAroundButton->SetParent(m_pLeaderboards);
     m_pFriendsLeaderboardsButton->SetParent(m_pLeaderboards);
+    m_pLocalLeaderboardsButton->SetParent(m_pLeaderboards);
 
-    m_pGlobalLeaderboardsButton->SetMouseInputEnabled(true);
-    m_pGlobalLeaderboardsButton->AddActionSignalTarget(this);
-    m_pFriendsLeaderboardsButton->SetMouseInputEnabled(true);
-    m_pFriendsLeaderboardsButton->AddActionSignalTarget(this);
-    m_pGlobalTop10Button->AddActionSignalTarget(this);
-    m_pGlobalAroundButton->AddActionSignalTarget(this);
-    m_pGlobalTop10Button->SetMouseInputEnabled(true);
-    m_pGlobalAroundButton->SetMouseInputEnabled(true);
-    m_pGlobalLeaderboardsButton->SetPos(86, 3);
-    m_pFriendsLeaderboardsButton->SetPos(3, 3);
-    m_pGlobalTop10Button->SetPos(169, 3);
-    m_pGlobalAroundButton->SetPos(252, 3);
-    m_pGlobalLeaderboardsButton->SetCommand(new KeyValues("ToggleLeaderboard", "leaderboard", "global"));
-    m_pFriendsLeaderboardsButton->SetCommand(new KeyValues("ToggleLeaderboard", "leaderboard", "friend"));
-    m_pGlobalTop10Button->SetCommand(new KeyValues("ToggleLeaderboardType", "type", "top10"));
-    m_pGlobalAroundButton->SetCommand(new KeyValues("ToggleLeaderboardType", "type", "around"));
-    m_pGlobalLeaderboardsButton->SetEnabled(false);
-    m_pGlobalTop10Button->SetEnabled(true);
-    m_pGlobalAroundButton->SetEnabled(false);
-    m_pGlobalTop10Button->SetVisible(true);
-    m_pGlobalAroundButton->SetVisible(true);
-
-    m_pOnlineLeaderboards->SetVisible(true);
-    m_pFriendsLeaderboards->SetVisible(false);
-
+    // Get rid of the scrollbars for the panels
+    // MOM_TODO: Do we want the player to be able to explore the ranks?
     m_pOnlineLeaderboards->SetVerticalScrollbar(false);
     m_pLocalLeaderboards->SetVerticalScrollbar(false);
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
-
-    m_pLeaderboards->SetMouseInputEnabled(true);
-
-    m_pLocalLeaderboards->SetMouseInputEnabled(true);
-    m_pOnlineLeaderboards->SetMouseInputEnabled(true);
-    m_pFriendsLeaderboards->SetMouseInputEnabled(true);
-
-    m_pLocalLeaderboards->SetKeyBoardInputEnabled(true);
-    m_pLocalLeaderboards->SetClickable(true);
-    m_pLocalLeaderboards->AddActionSignalTarget(this);
-
-    m_pOnlineLeaderboards->SetKeyBoardInputEnabled(true);
-    m_pOnlineLeaderboards->SetClickable(true);
-    m_pOnlineLeaderboards->AddActionSignalTarget(this);
-
-    m_pFriendsLeaderboards->SetKeyBoardInputEnabled(true);
-    m_pFriendsLeaderboards->SetClickable(true);
-    m_pFriendsLeaderboards->AddActionSignalTarget(this);
-
-    m_pOnlineLeaderboards->SetPaintBorderEnabled(true);
-    m_pFriendsLeaderboards->SetPaintBorderEnabled(true);
 
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256),
                                          scheme()->GetProportionalScaledValue(64));
 
     m_iDesiredHeight = GetTall();
-
-    m_lLoadingOnlineTimes->SetVisible(false);
 
     // update scoreboard instantly if on of these events occur
     ListenForGameEvent("run_save");
@@ -199,6 +156,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_bMapInfoLoaded = false;
 
     m_umMapNames.SetLessFunc(PNamesMapLessFunc);
+
+    SetSize(scheme()->GetProportionalScaledValue(480), scheme()->GetProportionalScaledValue(480));
 }
 
 //-----------------------------------------------------------------------------
@@ -426,6 +385,13 @@ void CClientTimesDisplay::PostApplySchemeSettings(vgui::IScheme *pScheme)
 
     if (m_lMapSummary)
         m_lMapSummary->SetVisible(true);
+
+    int textWidth, textHeight;
+    m_lLoadingOnlineTimes->GetTextImage()->GetContentSize(textWidth, textHeight);
+
+    int xPos = m_pLocalLeaderboards->GetWide() / 2 - (textWidth / 2);
+    int yPos = m_pLocalLeaderboards->GetTall() / 2 - textHeight / 2;
+    m_lLoadingOnlineTimes->SetPos(xPos, yPos);
 
     // light up scoreboard a bit
     SetBgColor(Color(0, 0, 0, 0));
@@ -739,24 +705,23 @@ void CClientTimesDisplay::LoadOnlineTimes()
 {
     if (!m_bOnlineTimesLoaded || m_bOnlineNeedUpdate)
     {
-        char requrl[BUFSIZ];
+        char requrl[BUFSIZ], format[BUFSIZ];
         // Mapname, tickrate, rank, radius
-        switch (m_iGetScoresVersion)
-        {
-        case 1:
-            Q_snprintf(requrl, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, g_pGameRules->MapName());
-            break;
-        case 2:
-            Q_snprintf(requrl, BUFSIZ, "%s/getscores/2/%s/10/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
-                       GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
-            break;
-        default:
-            return;
-        }
-        // This url is not real, just for testing pourposes. It returns a json list with the serialization of the scores
+
+        Q_strcpy(format, "%s/getscores/%i/%s/10");
+
+        if (!m_bGetTop10Scores)
+            Q_strcat(format, "/%llu", sizeof("/%llu"));
+        
+        Q_snprintf(requrl, BUFSIZ, format, MOM_APIDOMAIN, m_bGetTop10Scores ? 1 : 2, g_pGameRules->MapName(), 
+            GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+
+        // This url is not real, just for testing purposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
         m_bOnlineNeedUpdate = false;
         m_flLastOnlineTimeUpdate = gpGlobals->curtime;
+
+        m_lLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
     }
 }
 
@@ -765,13 +730,12 @@ void CClientTimesDisplay::LoadFriendsTimes()
     if ((!m_bFriendsTimesLoaded || m_bFriendsNeedUpdate) && !m_bUnauthorizedFriendlist)
     {
         char requrl[BUFSIZ];
-        // Mapname, tickrate, rank, radius
-
         Q_snprintf(requrl, BUFSIZ, "%s/getfriendscores/%llu/10/1/%s", MOM_APIDOMAIN,
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName());
         CreateAndSendHTTPReq(requrl, &cbGetFriendsTimesCallback, &CClientTimesDisplay::GetFriendsTimesCallback);
         m_bFriendsNeedUpdate = false;
         m_flLastFriendsTimeUpdate = gpGlobals->curtime;
+        m_lLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
     }
 }
 
@@ -1741,36 +1705,26 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
     return -1;
 }
 
-void CClientTimesDisplay::OnToggleLeaderboard(KeyValues *pData)
+void CClientTimesDisplay::OnCommand(const char* pCommand)
 {
-    if (m_pOnlineLeaderboards && m_pFriendsLeaderboards && m_pGlobalLeaderboardsButton &&
-        m_pFriendsLeaderboardsButton && m_pGlobalTop10Button && m_pGlobalAroundButton)
+    
+    // Leaderboards type
+    bool isTop10 = FStrEq(pCommand, "GlobalTypeTop10");
+    bool isAround = FStrEq(pCommand, "GlobalTypeAround");
+    bool isLocal = FStrEq(pCommand, "ShowLocal");
+    bool isFriends = FStrEq(pCommand, "ShowFriends");
+    bool isGlobal = FStrEq(pCommand, "ShowGlobal");
+    if (isTop10 || isAround)
     {
-        const char *leaderboard = pData->GetString("leaderboard");
-        m_bGlobalsShown = !Q_strcmp(leaderboard, "global");
-        m_pOnlineLeaderboards->SetVisible(m_bGlobalsShown);
-        m_pGlobalLeaderboardsButton->SetEnabled(!m_bGlobalsShown);
-        m_pFriendsLeaderboards->SetVisible(!m_bGlobalsShown);
-        m_pFriendsLeaderboardsButton->SetEnabled(m_bGlobalsShown);
-        m_pGlobalTop10Button->SetVisible(m_bGlobalsShown);
-        m_pGlobalAroundButton->SetVisible(m_bGlobalsShown);
-    }
-}
+        m_pFriendsLeaderboardsButton->SetEnabled(true);
 
-void CClientTimesDisplay::OnToggleLeaderboardType(KeyValues *pData)
-{
-    if (m_pGlobalTop10Button && m_pGlobalAroundButton)
-    {
-        const char *type = pData->GetString("type");
-        const bool versionTop10 = !Q_strcmp(type, "top10");
-        const int preScoresVersion = m_iGetScoresVersion;
+        bool wasTop10Scores = m_bGetTop10Scores;
+        m_bGetTop10Scores = isTop10;
 
-        m_iGetScoresVersion = versionTop10 ? 1 : 2;
+        m_pGlobalTop10Button->SetEnabled(!isTop10);
+        m_pGlobalAroundButton->SetEnabled(isTop10);
 
-        m_pGlobalTop10Button->SetEnabled(!versionTop10);
-        m_pGlobalAroundButton->SetEnabled(versionTop10);
-
-        if (preScoresVersion != m_iGetScoresVersion && m_pOnlineLeaderboards)
+        if (wasTop10Scores != m_bGetTop10Scores && m_pOnlineLeaderboards)
         {
             m_vOnlineTimes.PurgeAndDeleteElements();
             m_pOnlineLeaderboards->RemoveAll();
@@ -1778,6 +1732,31 @@ void CClientTimesDisplay::OnToggleLeaderboardType(KeyValues *pData)
             Update();
         }
     }
+    else if (isLocal || isFriends || isGlobal)
+    {
+        // Show the right type of leaderboards
+        m_pOnlineLeaderboards->SetVisible(isGlobal);
+        m_pLocalLeaderboards->SetVisible(isLocal);
+        m_pFriendsLeaderboards->SetVisible(isFriends);
+
+        m_pGlobalLeaderboardsButton->SetEnabled(!isGlobal && !isFriends);
+        m_pFriendsLeaderboardsButton->SetEnabled(!isFriends);
+        m_pLocalLeaderboardsButton->SetEnabled(!isLocal);
+
+        m_pGlobalTop10Button->SetVisible(isGlobal || isFriends);
+        m_pGlobalAroundButton->SetVisible(isGlobal || isFriends);
+        m_pFriendsLeaderboardsButton->SetVisible(isGlobal || isFriends);
+
+        if (isLocal)
+            m_lLoadingOnlineTimes->SetVisible(false);
+
+        else if (isFriends)
+        {
+            m_pGlobalAroundButton->SetEnabled(true);
+            m_pGlobalTop10Button->SetEnabled(true);
+        }
+    }
+
 }
 
 void CClientTimesDisplay::UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus)

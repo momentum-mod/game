@@ -1117,6 +1117,19 @@ void SectionedListPanel::ApplySettings(KeyValues *inResourceData)
 	{
 		m_iSectionGap = scheme()->GetProportionalScaledValueEx(GetScheme(), m_iSectionGap);
 	}
+
+    SetClickable(inResourceData->GetBool("clickable", true));
+    SetVerticalScrollbar(inResourceData->GetBool("vertical_scrollbar", true));
+}
+
+void SectionedListPanel::GetSettings(KeyValues* outResourceData)
+{
+    BaseClass::GetSettings(outResourceData);
+
+    outResourceData->SetInt("linespacing", m_iLineSpacing);
+    outResourceData->SetInt("sectiongap", m_iSectionGap);
+    outResourceData->SetBool("clickable", m_clickable);
+    outResourceData->SetBool("vertical_scrollbar", m_bVerticalScrollbarEnabled);
 }
 
 //-----------------------------------------------------------------------------

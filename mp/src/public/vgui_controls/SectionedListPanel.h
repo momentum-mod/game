@@ -216,6 +216,7 @@ protected:
 	virtual void PerformLayout();
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	virtual void ApplySettings(KeyValues *inResourceData);
+    virtual void GetSettings(KeyValues *outResourceData);
 	virtual void OnSizeChanged(int wide, int tall);
 	virtual void OnMouseWheeled(int delta);
 	virtual void OnMousePressed( MouseCode code);

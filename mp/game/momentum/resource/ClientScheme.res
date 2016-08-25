@@ -30,6 +30,10 @@ Scheme
 	
 		"Blank"                "0 0 0 1"
 
+		//"MOM.Panel.Bg"				"211 211 211 50"
+		"MomentumBlue"	"30 150 210 255"
+		"MomentumRed"	"255 75 75 255"
+
 		"MOM.Panel.Fg"				"255 255 255 125"
 		"MOM.Panel.Bg"				"0 0 0 76"
 		"MOM.Speedometer.Normal"	"255 255 255 125"
@@ -98,9 +102,9 @@ Scheme
 		Button.TextColor				"White"
 		Button.BgColor					"Blank"
 		Button.ArmedTextColor			"White"
-		Button.ArmedBgColor				"Red"
+		Button.ArmedBgColor				"MomentumBlue"
 		Button.DepressedTextColor		"White"
-		Button.DepressedBgColor			"Red"
+		Button.DepressedBgColor			"MomentumBlue"
 
 		CheckButton.TextColor			"White"
 		CheckButton.SelectedTextColor	"White"
