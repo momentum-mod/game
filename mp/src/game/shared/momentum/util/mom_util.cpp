@@ -79,7 +79,7 @@ void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
 
             DevLog("Outer is JSON OBJECT!\n");
             JsonNode *node = val.toNode();
-            DevLog("Outer has key %s with value %s\n", node->key, node->value);
+            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
 
             // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
             // the JSON
@@ -245,8 +245,8 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
     const char separator[2] = ".";
-    CSplitString storedVersion = CSplitString(MOM_CURRENT_VERSION, separator);
-    CSplitString repoVersion = CSplitString(pDataPtr, separator);
+    CSplitString storedVersion( MOM_CURRENT_VERSION, separator);
+    CSplitString repoVersion(pDataPtr, separator);
 
     char versionValue[15];
     Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));

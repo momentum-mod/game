@@ -81,7 +81,7 @@ public:
     void ReduceTimers(void) override;
 private:
 
-    float m_flReflectNormal = NO_REFL_NORMAL_CHANGE;//Used by rampboost fix
+    float m_flReflectNormal;//Used by rampboost fix
 
     // Given a list of nearby ladders, find the best ladder and the "mount" origin
     void		Findladder(float maxdist, CFuncLadder **ppLadder, Vector& ladderOrigin, const CFuncLadder *skipLadder);

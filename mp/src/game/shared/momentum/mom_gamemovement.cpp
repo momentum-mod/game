@@ -18,7 +18,7 @@ static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
 #ifndef player
 #define player GetMomentumPlayer()
 
-CMomentumGameMovement::CMomentumGameMovement()
+CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal( NO_REFL_NORMAL_CHANGE )
 {
 
 }

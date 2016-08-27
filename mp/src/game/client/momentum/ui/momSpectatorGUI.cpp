@@ -11,7 +11,7 @@
 #include <cdll_util.h>
 #include <globalvars_base.h>
 
-#include "momspectatorgui.h"
+#include "momSpectatorGUI.h"
 
 #include <vgui/ILocalize.h>
 #include <vgui/IPanel.h>

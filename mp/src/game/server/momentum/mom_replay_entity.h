@@ -108,7 +108,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
 
     CMomReplayBase *m_pPlaybackReplay;
 
-    int m_iBodyGroup = BODY_PROLATE_ELLIPSE;
+    int m_iBodyGroup;
     Color m_GhostColor;
     static Color m_NewGhostColor;
     bool m_bHasJumped;

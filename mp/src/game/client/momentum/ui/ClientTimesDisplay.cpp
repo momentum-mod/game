@@ -34,7 +34,7 @@
 
 #include "vgui_avatarimage.h"
 #include "filesystem.h"
-#include "util\mom_util.h"
+#include <momentum/util/mom_util.h>
 #include <time.h>
 
 extern IFileSystem *filesystem;
@@ -51,7 +51,11 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, PANEL_TIMES)
+CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : 
+    EditablePanel(nullptr, PANEL_TIMES),
+    m_bLocalTimesLoaded(false),
+    m_bLocalTimesNeedUpdate(false),
+    m_bOnlineNeedUpdate(false)
 {
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;

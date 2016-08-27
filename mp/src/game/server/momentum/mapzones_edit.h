@@ -17,8 +17,9 @@ extern ConVar mom_zone_edit;
 
 class CMapzoneEdit
 {
-    CMapzoneEdit() : m_flReticleDist(256.0), m_nBuildStage(BUILDSTAGE_NONE), m_bEditing(false) {};
 public:
+    CMapzoneEdit() : m_flReticleDist(256.0), m_nBuildStage( BUILDSTAGE_NONE ), m_bEditing(false) {};
+
     void Build( Vector *aimpos, int type, int forcestage = BUILDSTAGE_NONE );
 
     // Draw lines and update the zone height.

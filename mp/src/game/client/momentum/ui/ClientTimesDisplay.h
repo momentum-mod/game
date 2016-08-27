@@ -167,9 +167,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CUtlVector<Time> m_vLocalTimes;
     // MOM_TODO: CUtlVector<SomeStruct> m_vOnlineTimes;
 
-    bool m_bLocalTimesLoaded = false;
-    bool m_bLocalTimesNeedUpdate = false;
-    bool m_bOnlineNeedUpdate = false;
+    bool m_bLocalTimesLoaded;
+    bool m_bLocalTimesNeedUpdate;
+    bool m_bOnlineNeedUpdate;
     // widths[0] == WIDTH FOR DATE
     // widths[1] == WIDTH FOR RANK
     // widths[2] == WIDTH FOR TIME

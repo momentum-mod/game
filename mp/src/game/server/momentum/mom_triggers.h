@@ -121,6 +121,7 @@ private:
 // CTriggerTimerStart
 class CTriggerTimerStart : public CTriggerStage
 {
+public:
     DECLARE_CLASS(CTriggerTimerStart, CTriggerStage);
     DECLARE_DATADESC();
 
@@ -182,6 +183,7 @@ public:
 // CTriggerOnehop
 class CTriggerOnehop : public CTriggerTeleportEnt
 {
+public:
     DECLARE_CLASS(CTriggerOnehop, CTriggerTeleportEnt);
     DECLARE_DATADESC();
     
@@ -218,6 +220,7 @@ public:
 // CTriggerMultihop
 class CTriggerMultihop : public CTriggerTeleportEnt
 {
+public:
     DECLARE_CLASS(CTriggerMultihop, CTriggerTeleportEnt);
     DECLARE_DATADESC();
 
@@ -301,9 +304,11 @@ public:
 // CTriggerMomentumPush
 class CTriggerMomentumPush : public CTriggerTeleportEnt
 {
+public:
     DECLARE_CLASS(CTriggerMomentumPush, CTriggerTeleportEnt);
     DECLARE_DATADESC();
 
+    CTriggerMomentumPush();
 public:
     void StartTouch(CBaseEntity*) override;
     void EndTouch(CBaseEntity*) override;

@@ -12,18 +12,18 @@
 #include <time.h>
 
 #include "../../../../../public/vstdlib/pch_vstdlib.h"
-#include "../../../../../vgui2/vgui_controls/pch_vgui_controls.h"
-#include "../../../../../vgui2/vgui_controls/Frame.h"
+#include <vgui_controls/pch_vgui_controls.h>
+#include <vgui_controls/Frame.h>
 
 #include "tier3/tier3.h"
 
 // steam3 API
 //#include "steam/isteammasterserverupdater.h"
 //#include "steam/steam_querypackets.h"
-#include "../../../../../public/steam/steam_api.h"
-#include "../../../../../public/steam/isteamuser.h"
-#include "../../../../../public/steam/isteammatchmaking.h"
-#include "../../../../../public/steam/isteamfriends.h"
+#include <steam/steam_api.h>
+#include <steam/isteamuser.h>
+#include <steam/isteammatchmaking.h>
+#include <steam/isteamfriends.h>
 
 #include "IMapSelector.h"
 //#include "ServerBrowser/IServerBrowser.h"
@@ -31,16 +31,16 @@
 //#include "vgui_controls/Controls.h"
 
 //#include "tier1/netadr.h"
-#include "../../../../../public/FileSystem.h"
+#include <filesystem.h>
 //#include "iappinformation.h"
 //#include "proto_oob.h"
 //#include "modlist.h"
 //#include "IRunGameEngine.h"
-#include "../../../../../public/tier1/KeyValues.h"
-#include "../../../../shared/momentum/mom_shareddefs.h"
-#include "../../../../shared/momentum/mom_gamerules.h"
-#include "../../../../shared/momentum/util/mom_util.h"
-#include "../../../../../public/OfflineMode.h"
+#include <tier1/KeyValues.h>
+#include <momentum/mom_shareddefs.h>
+#include <momentum/mom_gamerules.h>
+#include <momentum/util/mom_util.h>
+#include <OfflineMode.h>
 
 //VGUI
 #include <vgui_controls/pch_vgui_controls.h>
