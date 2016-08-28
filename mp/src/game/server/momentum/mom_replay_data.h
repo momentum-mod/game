@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cbase.h"
-#include "../../shared/momentum/util/serialization.h"
-#include "../../shared/momentum/util/run_stats.h"
+#include <momentum/util/serialization.h>
+#include <momentum/util/run_stats.h>
 
 // A single frame of the replay.
 class CReplayFrame : 

@@ -7,7 +7,7 @@
 #include "triggers.h"
 #include "filters.h"
 #include "func_break.h"
-#include "../../shared/momentum/mom_gamerules.h"
+#include <momentum/mom_gamerules.h>
 
 // spawnflags 
 enum {

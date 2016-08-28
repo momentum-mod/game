@@ -11,7 +11,7 @@
 
 #include <time.h>
 
-#include "../../../../../public/vstdlib/pch_vstdlib.h"
+#include <vstdlib/pch_vstdlib.h>
 #include <vgui_controls/pch_vgui_controls.h>
 #include <vgui_controls/Frame.h>
 

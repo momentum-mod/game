@@ -6,10 +6,10 @@
 
 #include "cbase.h"
 #include "mom_blockfix.h"
-#include "../../shared/momentum/mom_entity_run_data.h"
+#include <momentum/mom_entity_run_data.h>
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
-#include "../../shared/momentum/util/run_stats.h"
+#include <momentum/util/run_stats.h>
 #include <GameEventListener.h>
 
 class CMomentumReplayGhostEntity;

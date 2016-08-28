@@ -5,7 +5,7 @@
 #endif
 
 #include "cbase.h"
-#include "../../shared/movevars_shared.h"
+#include <movevars_shared.h>
 #include "mapzones.h"
 #include "Timer.h"
 #include "mapzones_edit.h"

@@ -2,7 +2,7 @@
 
 #include "cbase.h"
 #include "mom_replay_data.h"
-#include "../../shared/momentum/util/serialization.h"
+#include <momentum/util/serialization.h>
 
 class CMomentumReplayGhostEntity;
 

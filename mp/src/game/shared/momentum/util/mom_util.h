@@ -11,7 +11,7 @@
 #include "run_stats.h"
 #include "UtlSortVector.h"
 #include "filesystem.h"
-#include "../../../../thirdparty/gason/src/gason.h"
+#include <gason.h>
 #ifdef CLIENT_DLL
 #include "VersionWarnPanel.h"
 #endif
