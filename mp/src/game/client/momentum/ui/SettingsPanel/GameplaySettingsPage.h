@@ -8,13 +8,13 @@
 
 using namespace vgui;
 
-class ControlsSettingsPage : public SettingsPage
+class GameplaySettingsPage : public SettingsPage
 {
-    DECLARE_CLASS_SIMPLE(ControlsSettingsPage, SettingsPage);
+    DECLARE_CLASS_SIMPLE(GameplaySettingsPage, SettingsPage);
 
-    ControlsSettingsPage(Panel *pParent);
+    GameplaySettingsPage(Panel *pParent);
 
-    ~ControlsSettingsPage() {}
+    ~GameplaySettingsPage() {}
 
     void LoadSettings() override;
 

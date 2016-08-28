@@ -1,12 +1,12 @@
-"resource/ui/SettingsPanel_ControlsSettings.res"
+"resource/ui/SettingsPanel_GameplaySettings.res"
 {
     //This is the base panel that the scroll panel encapsulates.
     //Wide can be whatever, but tall should be as close to what you need
     // as possible.
-    "ControlsSettings"
+    "GameplaySettings"
     {
         "ControlName" "SettingsPanel"
-        "fieldName" "ControlsSettings"
+        "fieldName" "GameplaySettings"
         "tall" "60"
         "wide" "1000"
     }

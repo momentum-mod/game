@@ -1,8 +1,8 @@
 #include "cbase.h"
 
-#include "ControlsSettingsPage.h"
+#include "GameplaySettingsPage.h"
 
-ControlsSettingsPage::ControlsSettingsPage(Panel *pParent) : BaseClass(pParent, "ControlsSettings")
+GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
     m_pYawSpeedSlider->AddActionSignalTarget(this);
@@ -14,12 +14,12 @@ ControlsSettingsPage::ControlsSettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pPlayBlockSound->AddActionSignalTarget(this);
 }
 
-void ControlsSettingsPage::LoadSettings()
+void GameplaySettingsPage::LoadSettings()
 {
     UpdateYawspeedEntry();
 }
 
-void ControlsSettingsPage::OnTextChanged(Panel *p)
+void GameplaySettingsPage::OnTextChanged(Panel *p)
 {
     BaseClass::OnTextChanged(p);
 
@@ -36,7 +36,7 @@ void ControlsSettingsPage::OnTextChanged(Panel *p)
     }
 }
 
-void ControlsSettingsPage::OnControlModified(Panel *p)
+void GameplaySettingsPage::OnControlModified(Panel *p)
 {
     BaseClass::OnControlModified(p);
 
@@ -46,7 +46,7 @@ void ControlsSettingsPage::OnControlModified(Panel *p)
     }
 }
 
-void ControlsSettingsPage::UpdateYawspeedEntry() const
+void GameplaySettingsPage::UpdateYawspeedEntry() const
 {
     char buf[64];
     Q_snprintf(buf, sizeof(buf), " %.1f", m_pYawSpeedSlider->GetSliderValue());
