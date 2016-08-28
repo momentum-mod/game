@@ -18,7 +18,21 @@ typedef enum MOMGM
 
 } GAMEMODES;
 
+// Run Flags
+typedef enum FLAGS
+{
+    RUNFLAG_NONE = 0,
+    RUNFLAG_SCROLL = 1 << 0,
+    RUNFLAG_W_ONLY = 1 << 1,
+    RUNFLAG_HSW = 1 << 2,
+    RUNFLAG_SW = 1 << 3,
+    RUNFLAG_BW = 1 << 4,
+    RUNFLAG_BONUS = 1 << 5
+    //MOM_TODO: Figure out the rest
+} RUN_FLAG;
+
 #define PANEL_TIMES "times"
+#define IN_TIMES (1<<26)
 
 // Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 // When editing this, remember to also edit version.txt on the main dir of the repo

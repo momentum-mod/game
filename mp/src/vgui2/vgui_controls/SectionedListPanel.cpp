@@ -613,7 +613,8 @@ public:
                 RequestFocus();
             }
 			m_bSelected = state;
-			SetPaintBackgroundEnabled( state );
+            if (!m_bOverrideColors)
+                SetPaintBackgroundEnabled(state);
 			InvalidateLayout();
 			Repaint();
 		}

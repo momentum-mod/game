@@ -21,6 +21,7 @@
 #include "momentum/mom_shareddefs.h"
 #include <KeyValues.h>
 #include <game/client/iviewport.h>
+#include <vgui_controls/pch_vgui_controls.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/SectionedListPanel.h>
 #include <vgui_controls/TextImage.h>
@@ -151,14 +152,15 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     Panel *m_pHeader;
     Panel *m_pPlayerStats;
     Panel *m_pLeaderboards;
-    vgui::Label *m_lMapSummary;
-    vgui::Label *m_lMapDetails;
-    vgui::Label *m_lPlayerName;
-    vgui::Label *m_lPlayerMapRank;
-    vgui::Label *m_lPlayerPersonalBest;
-    vgui::Label *m_lPlayerGlobalRank;
-    vgui::Label *m_lPlayerExperience;
-    vgui::Label *m_lLoadingOnlineTimes;
+    vgui::Label *m_pMapName;
+    vgui::Label *m_pMapAuthor;
+    vgui::Label *m_pMapDetails;
+    vgui::Label *m_pPlayerName;
+    vgui::Label *m_pPlayerMapRank;
+    vgui::Label *m_pPlayerPersonalBest;
+    vgui::Label *m_pPlayerGlobalRank;
+    vgui::Label *m_pPlayerExperience;
+    vgui::Label *m_pLoadingOnlineTimes;
     vgui::SectionedListPanel *m_pOnlineLeaderboards;
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
@@ -169,6 +171,11 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Button *m_pGlobalTop10Button;
     vgui::Button *m_pGlobalAroundButton;
     vgui::Button *m_pFriendsLeaderboardsButton;
+
+    vgui::ToggleButton *m_pRunFilterButton;
+    EditablePanel *m_pFilterPanel;
+
+    Panel *m_pCurrentLeaderboards;
 
     CUtlMap<CSteamID, int> m_mapAvatarsToImageList;
 
@@ -258,9 +265,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     };
 
     CUtlVector<Time> m_vLocalTimes;
-
     CUtlVector<TimeOnline *> m_vOnlineTimes;
-
     CUtlVector<TimeOnline *> m_vFriendsTimes;
 
     bool m_bLocalTimesLoaded = false;
@@ -277,6 +282,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     // methods
     void FillScoreBoard();
+    void SetPlaceColors(vgui::SectionedListPanel* panel) const;
     void FillScoreBoard(bool pFullUpdate);
     void LoadLocalTimes(KeyValues *kv);
     void LoadOnlineTimes();
@@ -303,6 +309,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     };
     int m_IconsIndex[ICON_TOTAL];
 
-    int m_iPlayerAvatarIndexStandalone;
+    int m_bLoadedLocalPlayerAvatar;
+
+    Color m_cFirstPlace, m_cSecondPlace, m_cThirdPlace;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H
