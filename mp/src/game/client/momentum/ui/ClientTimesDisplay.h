@@ -312,5 +312,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     int m_bLoadedLocalPlayerAvatar;
 
     Color m_cFirstPlace, m_cSecondPlace, m_cThirdPlace;
+
+    RUN_FLAG flaggedRuns;
 };
 #endif // CLIENTSCOREBOARDDIALOG_H

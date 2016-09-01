@@ -118,4 +118,20 @@
         "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
     }
+
+	"Reset"
+    {
+        "ControlName" "Button"
+        "fieldName" "Reset"
+        "xpos" "5"
+        "ypos" "190"
+        "wide"		"88"
+		"tall"		"16"
+        "labelText" "#MOM_RunFlag_Reset"
+        "auto_wide_tocontents" "1"
+        "textAlignment" "center"
+        "command" "ResetFlags"
+        "actionsignallevel" "2"
+        "Font"			"BigNoodleSmall"
+    }
 }

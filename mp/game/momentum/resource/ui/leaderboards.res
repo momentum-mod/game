@@ -343,7 +343,7 @@
         "fieldName" "FilterButton"
         "xpos"		"435"
 		"ypos"		"2"
-		"wide"		"88"
+		"wide"		"90"
 		"tall"		"16"
 		"autoResize"		"0"
 		"pinCorner"		"2"
@@ -482,7 +482,7 @@
 	{
 		"ControlName"	"Label"
 		"fieldName"		"PlayerGlobalRank"
-		"xpos"			"371"
+		"xpos"			"345"
 		"ypos"			"16"
 		"wide"			"100"
 		"tall"			"13"
