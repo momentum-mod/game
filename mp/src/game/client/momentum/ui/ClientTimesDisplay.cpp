@@ -31,9 +31,9 @@
 #include "filesystem.h"
 #include "util/mom_util.h"
 #include "vgui_avatarimage.h"
+#include <hud_vote.h>
 #include <time.h>
 #include <util/jsontokv.h>
-#include <hud_vote.h>
 
 extern IFileSystem *filesystem;
 
@@ -68,7 +68,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
     // set the scheme before any child control is created
-    //SetScheme("ClientScheme");
+    // SetScheme("ClientScheme");
     SetScheme(scheme()->LoadSchemeFromFile("resource/LeaderboardsScheme.res", "LeaderboardsScheme"));
 
     LoadControlSettings("resource/ui/leaderboards.res");
@@ -141,7 +141,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
 
     m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256),
-        scheme()->GetProportionalScaledValue(64));
+                                         scheme()->GetProportionalScaledValue(64));
 
     m_iDesiredHeight = GetTall();
 
@@ -288,7 +288,8 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, SCALE(m_aiColumnWidths[0]));
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
+                                                 16);
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
     }
 
@@ -298,19 +299,23 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pOnlineLeaderboards->SetImageList(m_pImageList, false);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-            SCALE(m_aiColumnWidths[1]));
+                                                  SCALE(m_aiColumnWidths[1]));
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "",
-            SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
-            DEFAULT_AVATAR_SIZE);
+                                                  SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+                                                  DEFAULT_AVATAR_SIZE);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
-            SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
+                                                  SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, 16);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE,
+                                                  16);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
+                                                  16);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
+                                                  16);
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE,
+                                                  16);
     }
 
     if (m_pFriendsLeaderboards)
@@ -320,23 +325,27 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pFriendsLeaderboards->SetImageList(m_pImageList, false);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-            SCALE(m_aiColumnWidths[1]));
+                                                   SCALE(m_aiColumnWidths[1]));
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "",
-            SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
-            DEFAULT_AVATAR_SIZE);
+                                                   SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+                                                   DEFAULT_AVATAR_SIZE);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
-            SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
+                                                   SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_tm", "", SectionedListPanel::COLUMN_IMAGE, 16);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE,
+                                                   16);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
-            SectionedListPanel::COLUMN_CENTER, SCALE(m_aiColumnWidths[2]));
+                                                   SectionedListPanel::COLUMN_CENTER, SCALE(m_aiColumnWidths[2]));
         // Scroll only icon
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
+                                                   16);
         // HSW/SW/BW/WOnly Icons
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
+                                                   16);
         // Bonus Icon
-        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE,
+                                                   16);
     }
 }
 
@@ -382,7 +391,6 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
     m_cSecondPlace = pScheme->GetColor("SecondPlace", Color(175, 175, 175, 50));
     m_cThirdPlace = pScheme->GetColor("ThirdPlace", Color(205, 127, 50, 50));
 
-
     PostApplySchemeSettings(pScheme);
 }
 
@@ -399,7 +407,7 @@ void CClientTimesDisplay::PostApplySchemeSettings(IScheme *pScheme)
     m_pImageList->GetImage(i)->SetSize(SCALE(wide), SCALE(tall));
     }*/
 
-    const char *columnNames[] = { DATESTRING, RANKSTRING, TIMESTRING };
+    const char *columnNames[] = {DATESTRING, RANKSTRING, TIMESTRING};
 
     HFont font = pScheme->GetFont("Default", true);
     for (int i = 0; i < 3; i++)
@@ -560,7 +568,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
     // We want to do a full update if (we ask for it with fullUpdate boolean AND (the minimum time has passed OR it is
     // the first update)) OR the maximum time has passed
     if ((fullUpdate &&
-        (gpGlobals->curtime - m_fLastHeaderUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstHeaderUpdate)) ||
+         (gpGlobals->curtime - m_fLastHeaderUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstHeaderUpdate)) ||
         gpGlobals->curtime - m_fLastHeaderUpdate >= MAX_ONLINE_UPDATE_INTERVAL)
     {
         char p_sCalculating[BUFSIZELOCL];
@@ -596,7 +604,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
         Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
-            GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+                   GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback);
         m_fLastHeaderUpdate = gpGlobals->curtime;
     }
@@ -615,7 +623,8 @@ void CClientTimesDisplay::AddHeader()
         // Set the author label to be at the end of this label
         int wide, tall;
         m_pMapName->GetContentSize(wide, tall);
-        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + SCALE(4), m_pMapName->GetYPos() + tall - SCALE(surface()->GetFontTall(m_pMapAuthor->GetFont())));
+        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + SCALE(4),
+                             m_pMapName->GetYPos() + tall - SCALE(surface()->GetFontTall(m_pMapAuthor->GetFont())));
     }
 
     if (m_pMapDetails && !m_bMapInfoLoaded)
@@ -694,7 +703,7 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
         if (pLoaded->LoadFromFile(filesystem, filePath, "MOD"))
         {
             for (KeyValues *kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime;
-                kvLocalTime = kvLocalTime->GetNextKey())
+                 kvLocalTime = kvLocalTime->GetNextKey())
             {
                 Time t = Time(kvLocalTime);
                 m_vLocalTimes.AddToTail(t);
@@ -735,7 +744,7 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         else
             kvLocalTimeFormatted->SetInt("date", t.date);
 
-        //MOM_TODO: Convert the run flags to pictures
+        // MOM_TODO: Convert the run flags to pictures
 
         kvInto->AddSubKey(kvLocalTimeFormatted);
     }
@@ -761,8 +770,8 @@ void CClientTimesDisplay::LoadOnlineTimes()
         if (!m_bGetTop10Scores)
             Q_strcat(format, "/%llu", sizeof("/%llu"));
 
-        Q_snprintf(requrl, BUFSIZ, format, MOM_APIDOMAIN, m_bGetTop10Scores ? 1 : 2, g_pGameRules->MapName(), flaggedRuns,
-            GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
+        Q_snprintf(requrl, BUFSIZ, format, MOM_APIDOMAIN, m_bGetTop10Scores ? 1 : 2, g_pGameRules->MapName(),
+                   flaggedRuns, GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
 
         // This url is not real, just for testing purposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
@@ -779,8 +788,8 @@ void CClientTimesDisplay::LoadFriendsTimes()
     {
         char requrl[BUFSIZ];
         Q_snprintf(requrl, BUFSIZ, "%s/getfriendscores/%llu/10/1/%s/%d", MOM_APIDOMAIN,
-            GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName(),
-            flaggedRuns);
+                   GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName(),
+                   flaggedRuns);
         CreateAndSendHTTPReq(requrl, &cbGetFriendsTimesCallback, &CClientTimesDisplay::GetFriendsTimesCallback);
         m_bFriendsNeedUpdate = false;
         m_flLastFriendsTimeUpdate = gpGlobals->curtime;
@@ -789,8 +798,8 @@ void CClientTimesDisplay::LoadFriendsTimes()
 }
 
 void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
-    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *callback,
-    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t func)
+                                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *callback,
+                                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t func)
 {
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
@@ -906,7 +915,7 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
                         if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamID), true))
                         {
                             kvEntry->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(
-                                CSteamID(steamID)));
+                                                                  CSteamID(steamID)));
                         }
                         else
                         {
@@ -971,7 +980,7 @@ void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallba
 
 void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
-    //MOM_TODO: Tell the player the reason this list isn't loading
+    // MOM_TODO: Tell the player the reason this list isn't loading
     // Look into making the "SetEmptyListText" method from ListPanel into a custom SectionedListPanel class
     if (bIOFailure)
     {
@@ -984,7 +993,6 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
         Warning("%s - k_EHTTPStatusCode404NotFound !\n", __FUNCTION__);
         return;
     }
-
 
     if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict)
     {
@@ -1073,7 +1081,7 @@ void CClientTimesDisplay::GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallb
                         if (!steamapicontext->SteamFriends()->RequestUserInformation(CSteamID(steamID), true))
                         {
                             kvEntry->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(
-                                CSteamID(steamID)));
+                                                                  CSteamID(steamID)));
                         }
                         else
                         {
@@ -1340,12 +1348,14 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
     pLeaderboards->AddSubKey(pLocal);
 
     m_bOnlineNeedUpdate =
-        (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL || m_bFirstOnlineTimesUpdate)
-        || (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL || m_bOnlineNeedUpdate));
+        (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL ||
+                        m_bFirstOnlineTimesUpdate) ||
+         (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MAX_ONLINE_UPDATE_INTERVAL || m_bOnlineNeedUpdate));
 
     m_bFriendsNeedUpdate =
-        (fullUpdate && (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MIN_FRIENDS_UPDATE_INTERVAL || m_bFirstFriendsTimesUpdate)
-        || (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MAX_FRIENDS_UPDATE_INTERVAL || m_bFriendsNeedUpdate));
+        (fullUpdate && (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MIN_FRIENDS_UPDATE_INTERVAL ||
+                        m_bFirstFriendsTimesUpdate) ||
+         (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MAX_FRIENDS_UPDATE_INTERVAL || m_bFriendsNeedUpdate));
 
     // Fill online times only if needed
     LoadOnlineTimes();
@@ -1707,15 +1717,15 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             KeyValues *selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
             char recordingName[MAX_PATH];
             Q_snprintf(recordingName, MAX_PATH, "%i-%.3f", selectedRun->GetInt("date_t"),
-                selectedRun->GetFloat("time_f"));
+                       selectedRun->GetFloat("time_f"));
 
             CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pPanel->GetParent());
             pContextMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay",
-                new KeyValues("ContextWatchReplay", "runName", recordingName), this);
+                                      new KeyValues("ContextWatchReplay", "runName", recordingName), this);
             pContextMenu->ShowMenu();
         }
         else if ((pPanel->GetParent() == m_pOnlineLeaderboards && m_pOnlineLeaderboards->IsItemIDValid(itemID)) ||
-            (pPanel->GetParent() == m_pFriendsLeaderboards && m_pFriendsLeaderboards->IsItemIDValid(itemID)))
+                 (pPanel->GetParent() == m_pFriendsLeaderboards && m_pFriendsLeaderboards->IsItemIDValid(itemID)))
         {
             SectionedListPanel *pLeaderboard = static_cast<SectionedListPanel *>(pPanel->GetParent());
             CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pLeaderboard);
@@ -1777,7 +1787,7 @@ int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
     return -1;
 }
 
-void CClientTimesDisplay::OnCommand(const char* pCommand)
+void CClientTimesDisplay::OnCommand(const char *pCommand)
 {
     BaseClass::OnCommand(pCommand);
     // MOM_TODO: Implement run tags
@@ -1817,7 +1827,8 @@ void CClientTimesDisplay::OnCommand(const char* pCommand)
     {
         // Show the right type of leaderboards
         m_pCurrentLeaderboards->SetVisible(false);
-        m_pCurrentLeaderboards = isGlobal ? m_pOnlineLeaderboards : isLocal ? m_pLocalLeaderboards : m_pFriendsLeaderboards;
+        m_pCurrentLeaderboards =
+            isGlobal ? m_pOnlineLeaderboards : isLocal ? m_pLocalLeaderboards : m_pFriendsLeaderboards;
         m_pCurrentLeaderboards->SetVisible(true);
 
         m_pGlobalLeaderboardsButton->SetEnabled(!isGlobal && !isFriends);
@@ -1845,41 +1856,35 @@ void CClientTimesDisplay::OnCommand(const char* pCommand)
     {
         // MOM_TODO: Logic to reset the filters (Only the ones from the filter panel)
         flaggedRuns = FLAGS::RUNFLAG_NONE;
-        ToggleButton *ScrollOnly = static_cast<ToggleButton*>(m_pFilterPanel->FindChildByName("ScrollOnly"));
+        ToggleButton *ScrollOnly = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("ScrollOnly"));
         if (ScrollOnly)
         {
             ScrollOnly->SetSelected(false);
-            ScrollOnly->Repaint();
         }
-        ToggleButton *WOnly = static_cast<ToggleButton*>(m_pFilterPanel->FindChildByName("WOnly"));
+        ToggleButton *WOnly = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("WOnly"));
         if (WOnly)
         {
             WOnly->SetSelected(false);
-            WOnly->Repaint();
         }
-        ToggleButton *HalfSideways = static_cast<ToggleButton*>(m_pFilterPanel->FindChildByName("HalfSideways"));
+        ToggleButton *HalfSideways = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("HalfSideways"));
         if (HalfSideways)
         {
             HalfSideways->SetSelected(false);
-            HalfSideways->Repaint();
         }
-        ToggleButton *Sideways = static_cast<ToggleButton*>(m_pFilterPanel->FindChildByName("Sideways"));
+        ToggleButton *Sideways = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("Sideways"));
         if (Sideways)
         {
             Sideways->SetSelected(false);
-            Sideways->Repaint();
         }
-        ToggleButton *Backwards = static_cast<ToggleButton*>(m_pFilterPanel->FindChildByName("Backwards"));
+        ToggleButton *Backwards = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("Backwards"));
         if (Backwards)
         {
             Backwards->SetSelected(false);
-            Backwards->Repaint();
         }
-        ToggleButton *Bonus = static_cast<ToggleButton*>(m_pFilterPanel->FindChildByName("Bonus"));
+        ToggleButton *Bonus = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("Bonus"));
         if (Bonus)
         {
             Bonus->SetSelected(false);
-            Bonus->Repaint();
         }
     }
     else if (isFlagScrollOnly)
