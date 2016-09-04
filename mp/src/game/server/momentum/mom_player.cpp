@@ -4,14 +4,17 @@
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
+#include "predicted_viewmodel.h"
 #include "mom_system_checkpoint.h"
 #include "mom_triggers.h"
+#include "momentum/weapon/weapon_csbasegun.h"
 
 #include "tier0/memdbgon.h"
 
 #define AVERAGE_STATS_INTERVAL 0.1
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
 SendPropInt(SENDINFO(m_iShotsFired)),
 SendPropInt(SENDINFO(m_iDirection)),
 SendPropBool(SENDINFO(m_bResumeZoom)),
@@ -62,12 +65,32 @@ CMomentumPlayer::~CMomentumPlayer() {}
 
 void CMomentumPlayer::Precache()
 {
-// Name of our entity's model
-// MOM_TODO: Replace this with the custom player model
-#define ENTITY_MODEL "models/player/player_shape_base.mdl"
     PrecacheModel(ENTITY_MODEL);
 
+    PrecacheScriptSound(SND_FLASHLIGHT_ON);
+    PrecacheScriptSound(SND_FLASHLIGHT_OFF);
+
     BaseClass::Precache();
+}
+
+//Used for making the view model like CS's
+void CMomentumPlayer::CreateViewModel(int index)
+{
+    Assert(index >= 0 && index < MAX_VIEWMODELS);
+
+    if (GetViewModel(index))
+        return;
+
+    CPredictedViewModel *vm = dynamic_cast<CPredictedViewModel *>(CreateEntityByName("predicted_viewmodel"));
+    if (vm)
+    {
+        vm->SetAbsOrigin(GetAbsOrigin());
+        vm->SetOwner(this);
+        vm->SetIndex(index);
+        DispatchSpawn(vm);
+        vm->FollowEntity(this, false);
+        m_hViewModel.Set(index, vm);
+    }
 }
 
 void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
@@ -277,7 +300,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     // We're overriding this to prevent the spec_mode to change to ROAMING,
     // remove this if we want to allow the player to fly around their ghost as it goes
     // (and change the ghost entity code to match as well)
-    if (!stricmp(cmd, "spec_mode")) // new observer mode
+    if (FStrEq(cmd, "spec_mode")) // new observer mode
     {
         int mode;
 
@@ -328,8 +351,31 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
 
         return true;
     }
+    if (FStrEq(cmd, "drop"))
+    {
+        CWeaponCSBase *pWeapon = dynamic_cast< CWeaponCSBase* >(GetActiveWeapon());
+
+        if (pWeapon)
+        {
+            CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
+
+            if (type != WEAPONTYPE_KNIFE && type != WEAPONTYPE_GRENADE)
+            {
+                MomentumWeaponDrop(pWeapon);
+            }
+        }
+
+        return true;
+    }
 
     return BaseClass::ClientCommand(args);
+}
+
+void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
+{
+    Weapon_Drop(pWeapon, nullptr, nullptr);
+    pWeapon->StopFollowingEntity();
+    UTIL_Remove(pWeapon);
 }
 
 void CMomentumPlayer::CreateCheckpoint()
