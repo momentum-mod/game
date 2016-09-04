@@ -9,9 +9,23 @@
 static CMoveData g_MoveData;
 CMoveData *g_pMoveData = &g_MoveData;
 
-// Expose interface to engine
-static CPrediction g_Prediction;
 
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CPrediction, IPrediction, VCLIENT_PREDICTION_INTERFACE_VERSION, g_Prediction);
+class CMOMPrediction : public CPrediction
+{
+	DECLARE_CLASS(CMOMPrediction, CPrediction);
+
+public:
+	void SetupMove(C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move) override
+	{
+		player->AvoidPhysicsProps(ucmd);
+
+		BaseClass::SetupMove(player, ucmd, pHelper, move);
+	}
+};
+
+// Expose interface to engine
+static CMOMPrediction g_Prediction;
+
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CMOMPrediction, IPrediction, VCLIENT_PREDICTION_INTERFACE_VERSION, g_Prediction);
 
 CPrediction *prediction = &g_Prediction;
