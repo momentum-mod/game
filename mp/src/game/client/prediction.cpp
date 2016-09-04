@@ -878,7 +878,7 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 //	CheckMovingGround( player, ucmd->frametime );
 
 // TODO
-//	g_pMoveData->m_vecOldAngles = player->pl.v_angle;
+	g_pMoveData->m_vecOldAngles = player->pl.v_angle.Get();
 
 	// Copy from command to player unless game .dll has set angle using fixangle
 	// if ( !player->pl.fixangle )
@@ -1803,7 +1803,7 @@ void CPrediction::GetLocalViewAngles( QAngle& ang )
 	}
 	else 
 	{
-		ang = player->pl.v_angle;
+		ang = player->pl.v_angle.Get();
 	}
 }
 
