@@ -1559,12 +1559,28 @@ void CClientTimesDisplay::OnContextDeleteReplay(const char* runName)
     {
         char file[MAX_PATH];
         V_ComposeFileName(RECORDING_PATH, runName, file, MAX_PATH);
+        // SetExtension removes the last numbers after the dot on the file, that's why we can't remove it
         V_SetExtension(file, EXT_TIME_FILE, MAX_PATH);
-        DevLog("Deleting %s !\n", file);
-        g_pFullFileSystem->RemoveFile(file, "MOD");
-        // MOM_TODO: Consider adding/showing a confirmation message box?
+        messageboxpanel->CreateConfirmationBox(this, "Delete run", "Sure?", new KeyValues("ConfirmDeleteReplay", "file", file), nullptr, "Remove Replay", "Don't remove!");
     }
 }
+
+void CClientTimesDisplay::OnConfirmDeleteReplay(KeyValues* data)
+{
+    if (data)
+    {
+        const char * file = data->GetString("file", nullptr);
+        if (file)
+        {
+            g_pFullFileSystem->RemoveFile(file, "MOD");
+            // Once we delete the times from the TIM., this will have to be executed too
+            // MOM_TODO: Uncomment when ready
+            /*m_bLocalTimesNeedUpdate = true;
+            FillScoreBoard();*/
+        }
+    }
+}
+
 
 inline bool CheckParent(Panel *pPanel, SectionedListPanel *pParentToCheck, int itemID)
 {

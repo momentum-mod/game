@@ -3,7 +3,6 @@
 
 #include "MessageboxPanel.h"
 
-
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
     messageboxpanel->CreateMessagebox("#MOM_MB_TrySaveLoad_Title", "#MOM_MB_TrySaveLoad");
@@ -53,6 +52,38 @@ Panel *CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessa
     if (pAccept && Q_strlen(pAccept) > 0)
     {
         pMessageBox->SetOKButtonText(pAccept);
+    }
+    m_mbItems.AddToTail(pMessageBox);
+    pMessageBox->ShowWindow();
+    return pMessageBox;
+}
+
+Panel *CMessageboxPanel::CreateConfirmationBox(Panel *pTarget, const char *pTitle, const char *pMessage, KeyValues *okCommand,
+    KeyValues *cancelCommand, const char *pAcceptText, const char *pCancelText)
+{
+    MessageBox *pMessageBox = new MessageBox(pTitle, pMessage);
+    if (pTarget)
+    {
+        pMessageBox->AddActionSignalTarget(pTarget);
+        // This does not make sense if the target is nullptr so..
+        if (okCommand)
+        {
+            pMessageBox->SetCommand(okCommand);
+        }
+        if (cancelCommand)
+        {
+            pMessageBox->SetCancelCommand(cancelCommand);
+        }
+    }
+    pMessageBox->SetOKButtonVisible(true);
+    if (pAcceptText && Q_strlen(pAcceptText) > 0)
+    {
+        pMessageBox->SetOKButtonText(pAcceptText);
+    }
+    pMessageBox->SetCancelButtonVisible(true);
+    if (pCancelText && Q_strlen(pCancelText) > 0)
+    {
+        pMessageBox->SetCancelButtonText(pCancelText);
     }
     m_mbItems.AddToTail(pMessageBox);
     pMessageBox->ShowWindow();
