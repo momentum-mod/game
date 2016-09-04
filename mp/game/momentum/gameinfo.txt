@@ -22,8 +22,6 @@
 	FileSystem
 	{
 		SteamAppId				243750 // This sets the app ID in Steam. This is the Source SDK Base 2013 Multiplayer
-		AdditionalContentId     240    // CS:S
-        AdditionalContentId     232330 // CSS:DS
         
 		//
 		// The code that loads this file automatically does a few things here:
@@ -81,10 +79,6 @@
 
 			// Last, mount in shared HL2 loose files
 			game				|all_source_engine_paths|hl2
-            game                |all_source_engine_paths|cstrike
-			game 	 			"|all_source_engine_paths|../Counter-Strike Source/cstrike/cstrike_pak.vpk"
-			game 	 			"|all_source_engine_paths|../Counter-Strike Source/cstrike"
-			game 	 			"|all_source_engine_paths|../Counter-Strike Source/cstrike/download"
 			platform			|all_source_engine_paths|platform
 		}
 	}

@@ -14,14 +14,12 @@ class CReplayContextMenu : public vgui::Menu
 {
 public:
     DECLARE_CLASS_SIMPLE(CReplayContextMenu, vgui::Menu);
-    CReplayContextMenu(vgui::Panel *parent);
+    CReplayContextMenu(Panel *parent);
     ~CReplayContextMenu();
 
     // call this to Activate the menu
     void ShowMenu();
     void OnCursorExitedMenuItem(int vpanel) override;
-    // This one works weird, so using OnCurosExitedMenuItem until we figure how it works
-    //void OnCursorExited() override;
 };
 
 

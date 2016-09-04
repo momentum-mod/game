@@ -166,7 +166,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 
     m_bMapInfoLoaded = false;
 
-    flaggedRuns = FLAGS::RUNFLAG_NONE;
+    flaggedRuns = RUNFLAG_NONE;
 
     m_umMapNames.SetLessFunc(PNamesMapLessFunc);
 }
@@ -1706,6 +1706,19 @@ void CClientTimesDisplay::OnContextWatchReplay(const char *runName)
     }
 }
 
+void CClientTimesDisplay::OnContextDeleteReplay(const char* runName)
+{
+    if (runName)
+    {
+        char file[MAX_PATH];
+        V_ComposeFileName(RECORDING_PATH, runName, file, MAX_PATH);
+        V_SetExtension(file, EXT_TIME_FILE, MAX_PATH);
+        DevLog("Deleting %s !\n", file);
+        g_pFullFileSystem->RemoveFile(file, "MOD");
+    }
+}
+
+
 void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 {
     int itemID = pData->GetInt("itemID", -1);
@@ -1722,6 +1735,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pPanel->GetParent());
             pContextMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay",
                                       new KeyValues("ContextWatchReplay", "runName", recordingName), this);
+            pContextMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", new KeyValues("ContextDeleteReplay", "runName", recordingName), this);
             pContextMenu->ShowMenu();
         }
         else if ((pPanel->GetParent() == m_pOnlineLeaderboards && m_pOnlineLeaderboards->IsItemIDValid(itemID)) ||
@@ -1854,62 +1868,40 @@ void CClientTimesDisplay::OnCommand(const char *pCommand)
     }
     else if (isReset)
     {
-        // MOM_TODO: Logic to reset the filters (Only the ones from the filter panel)
-        flaggedRuns = FLAGS::RUNFLAG_NONE;
-        ToggleButton *ScrollOnly = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("ScrollOnly"));
-        if (ScrollOnly)
+        flaggedRuns = RUNFLAG_NONE;
+        for (int i = 0; i < m_pFilterPanel->GetChildCount(); i++)
         {
-            ScrollOnly->SetSelected(false);
-        }
-        ToggleButton *WOnly = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("WOnly"));
-        if (WOnly)
-        {
-            WOnly->SetSelected(false);
-        }
-        ToggleButton *HalfSideways = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("HalfSideways"));
-        if (HalfSideways)
-        {
-            HalfSideways->SetSelected(false);
-        }
-        ToggleButton *Sideways = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("Sideways"));
-        if (Sideways)
-        {
-            Sideways->SetSelected(false);
-        }
-        ToggleButton *Backwards = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("Backwards"));
-        if (Backwards)
-        {
-            Backwards->SetSelected(false);
-        }
-        ToggleButton *Bonus = static_cast<ToggleButton *>(m_pFilterPanel->FindChildByName("Bonus"));
-        if (Bonus)
-        {
-            Bonus->SetSelected(false);
+            ToggleButton *pChild = dynamic_cast<ToggleButton*>(m_pFilterPanel->GetChild(i));
+            if (pChild)
+            {
+                pChild->ForceDepressed(false);
+                pChild->SetSelected(false);
+            }
         }
     }
     else if (isFlagScrollOnly)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ FLAGS::RUNFLAG_SCROLL);
+        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_SCROLL);
     }
     else if (isFlagWOnly)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ FLAGS::RUNFLAG_W_ONLY);
+        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_W_ONLY);
     }
     else if (isFlagHSW)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ FLAGS::RUNFLAG_HSW);
+        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_HSW);
     }
     else if (isFlagSideways)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ FLAGS::RUNFLAG_SW);
+        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_SW);
     }
     else if (isFlagBackwards)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ FLAGS::RUNFLAG_BW);
+        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_BW);
     }
     else if (isFlagBonus)
     {
-        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ FLAGS::RUNFLAG_BONUS);
+        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_BONUS);
     }
     else
     {

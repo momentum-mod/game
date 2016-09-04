@@ -30,41 +30,32 @@ void CMOMClientEvents::PostInit()
         mom_UTIL->GetRemoteRepoModVersion();
     }
 
-// mount CSS content even if it's on a different drive than SDK
-#ifdef _WIN32
-    HKEY hKey;
-    if (VCRHook_RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                             "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 240", 0, KEY_READ,
-                             &hKey) == ERROR_SUCCESS)
+    // mount CSS content even if it's on a different drive than SDK
+    if (steamapicontext && steamapicontext->SteamApps())
     {
         char installPath[MAX_PATH];
-        DWORD len = sizeof(installPath);
-        if (VCRHook_RegQueryValueEx(hKey, "InstallLocation", NULL, NULL, (LPBYTE)installPath, &len) == ERROR_SUCCESS)
-        {
-            char path[MAX_PATH];
-            Q_strncpy(path, installPath, sizeof(path));
+        steamapicontext->SteamApps()->GetAppInstallDir(240, installPath, MAX_PATH);
 
-            Q_strncat(path, "\\cstrike", sizeof(path));
-            filesystem->AddSearchPath(path, "GAME");
+        char pathCStrike[MAX_PATH];
+        V_ComposeFileName(installPath, "cstrike", pathCStrike, sizeof(pathCStrike));
+        filesystem->AddSearchPath(pathCStrike, "GAME");
 
-            Q_strncat(path, "\\download", sizeof(path));
-            filesystem->AddSearchPath(path, "GAME");
+        char pathPak[MAX_PATH];
+        V_ComposeFileName(pathCStrike, "cstrike_pak.vpk", pathPak, sizeof(pathPak));
+        filesystem->AddSearchPath(pathPak, "GAME");
 
-            Q_strncpy(path, installPath, sizeof(path));
-            Q_strncat(path, "\\cstrike\\cstrike_pak.vpk", sizeof(path));
-            filesystem->AddSearchPath(path, "GAME");
+        char downloadPath[MAX_PATH];
+        V_ComposeFileName(pathCStrike, "download", downloadPath, sizeof(downloadPath));
+        filesystem->AddSearchPath(downloadPath, "GAME");
 
-            filesystem->PrintSearchPaths();
-        }
-
-        VCRHook_RegCloseKey(hKey);
+        filesystem->PrintSearchPaths();
     }
-#endif
 
     MountAdditionalContent();
 
     // Version warning
     // MOM_TODO: Change this once we hit Alpha/Beta
+    // MOM_CURRENT_VERSION
     messageboxpanel->CreateMessagebox("#MOM_StartupMsg_Prealpha_Title", "#MOM_StartupMsg_Prealpha", "#MOM_IUnderstand");
 }
 

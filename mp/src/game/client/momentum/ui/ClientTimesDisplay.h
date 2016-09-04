@@ -107,6 +107,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
+    MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
