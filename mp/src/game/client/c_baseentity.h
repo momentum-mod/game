@@ -2148,7 +2148,7 @@ inline VarMapping_t* C_BaseEntity::GetVarMapping()
 //-----------------------------------------------------------------------------
 inline bool	C_BaseEntity::IsInterpolationEnabled()
 {
-	return true; //always interpolate 
+	return s_bInterpolate; 
 }
 
 //-----------------------------------------------------------------------------
@@ -2156,7 +2156,7 @@ inline bool	C_BaseEntity::IsInterpolationEnabled()
 //-----------------------------------------------------------------------------
 inline bool C_BaseEntity::IsNoInterpolationFrame()
 {
-	return /*m_ubOldInterpolationFrame != m_ubInterpolationFrame*/ false; //always interpolate
+	return m_ubOldInterpolationFrame != m_ubInterpolationFrame;
 }
 
 //-----------------------------------------------------------------------------
