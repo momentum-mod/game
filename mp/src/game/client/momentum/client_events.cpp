@@ -48,7 +48,9 @@ void CMOMClientEvents::PostInit()
         V_ComposeFileName(pathCStrike, "download", downloadPath, sizeof(downloadPath));
         filesystem->AddSearchPath(downloadPath, "GAME");
 
+#ifdef DEBUG
         filesystem->PrintSearchPaths();
+#endif
     }
 
     MountAdditionalContent();

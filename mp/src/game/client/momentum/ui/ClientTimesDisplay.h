@@ -97,8 +97,12 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // IGameEventListener interface:
     void FireGameEvent(IGameEvent *event) override;
 
-    void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
+    //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
+    // Updates the local player's avatar image
     void UpdatePlayerAvatarStandalone();
+    // This updates the local player's avatar in the online/friends leaderboards
+    void UpdatePlayerAvatarStandaloneOnline(KeyValues *);
+    // Updates an online player's avatar image
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
     CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
@@ -200,6 +204,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void CreateAndSendHTTPReq(const char *, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *,
                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
+
+    void ParseTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure, bool bFriendsTimes);
 
   private:
     int m_iPlayerIndexSymbol;
