@@ -3180,7 +3180,7 @@ void C_BaseEntity::Simulate()
 }
 
 // Defined in engine
-static ConVar cl_interpolate( "cl_interpolate", "1.0f", FCVAR_USERINFO ); //This cvar is used for lag compensation, better to not remove it yet
+static ConVar cl_interpolate( "cl_interpolate", "1.0f", FCVAR_USERINFO | FCVAR_DEVELOPMENTONLY );
 
 // (static function)
 void C_BaseEntity::InterpolateServerEntities()
