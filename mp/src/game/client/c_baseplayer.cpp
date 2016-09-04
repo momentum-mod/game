@@ -137,6 +137,7 @@ void RecvProxy_ObserverMode  ( const CRecvProxyData *pData, void *pStruct, void 
 // -------------------------------------------------------------------------------- //
 
 	BEGIN_RECV_TABLE_NOBASE(CPlayerState, DT_PlayerState)
+		RecvPropQAngles(RECVINFO(v_angle)),
 		RecvPropInt		(RECVINFO(deadflag)),
 	END_RECV_TABLE()
 
@@ -406,7 +407,7 @@ LINK_ENTITY_TO_CLASS( player, C_BasePlayer );
 // -------------------------------------------------------------------------------- //
 C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset( "C_BasePlayer::m_iv_vecViewOffset" )
 {
-	AddVar( &m_vecViewOffset, &m_iv_vecViewOffset, LATCH_SIMULATION_VAR );
+	AddVar(&m_vecViewOffset, &m_iv_vecViewOffset, LATCH_ANIMATION_VAR);
 	
 #ifdef _DEBUG																
 	m_vecLadderNormal.Init();
@@ -673,7 +674,7 @@ bool C_BasePlayer::ViewModel_IsUsingFBTexture( void )
 //-----------------------------------------------------------------------------
 void C_BasePlayer::SetLocalViewAngles( const QAngle &viewAngles )
 {
-	pl.v_angle = viewAngles;
+	pl.v_angle.GetForModify() = viewAngles;
 }
 
 //-----------------------------------------------------------------------------

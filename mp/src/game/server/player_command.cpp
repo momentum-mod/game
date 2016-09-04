@@ -178,7 +178,7 @@ void CPlayerMove::SetupMove( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *p
 	// Prepare remaining fields
 	move->m_flClientMaxSpeed		= player->m_flMaxspeed;
 	move->m_nOldButtons			= player->m_Local.m_nOldButtons;
-	move->m_vecAngles			= player->pl.v_angle;
+	move->m_vecAngles			= player->pl.v_angle.Get();
 
 	move->m_vecVelocity			= player->GetAbsVelocity();
 
@@ -406,16 +406,16 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 
 	CheckMovingGround( player, TICK_INTERVAL );
 
-	g_pMoveData->m_vecOldAngles = player->pl.v_angle;
+	g_pMoveData->m_vecOldAngles = player->pl.v_angle.Get();
 
 	// Copy from command to player unless game .dll has set angle using fixangle
 	if ( player->pl.fixangle == FIXANGLE_NONE )
 	{
-		player->pl.v_angle = ucmd->viewangles;
+		player->pl.v_angle.GetForModify() = ucmd->viewangles;
 	}
 	else if( player->pl.fixangle == FIXANGLE_RELATIVE )
 	{
-		player->pl.v_angle = ucmd->viewangles + player->pl.anglechange;
+		player->pl.v_angle.GetForModify() = ucmd->viewangles + player->pl.anglechange;
 	}
 
 	// Call standard client pre-think
@@ -446,7 +446,7 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// If we have to restore the view angle then do so right now
 	if ( !player->IsBot() && ( gpGlobals->tickcount - player->GetLockViewanglesTickNumber() < sv_maxusrcmdprocessticks_holdaim.GetInt() ) )
 	{
-		player->pl.v_angle = player->GetLockViewanglesData();
+		player->pl.v_angle.GetForModify() = player->GetLockViewanglesData();
 	}
 
 	// Let server invoke any needed impact functions
