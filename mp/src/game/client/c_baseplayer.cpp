@@ -408,7 +408,8 @@ LINK_ENTITY_TO_CLASS( player, C_BasePlayer );
 C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset( "C_BasePlayer::m_iv_vecViewOffset" )
 {
 	AddVar(&m_vecViewOffset, &m_iv_vecViewOffset, LATCH_ANIMATION_VAR);
-	
+	AddVar(&m_Local.m_vecPunchAngle, &m_Local.m_iv_vecPunchAngle, LATCH_ANIMATION_VAR);
+
 #ifdef _DEBUG																
 	m_vecLadderNormal.Init();
 	m_vecOldViewAngles.Init();
@@ -2325,7 +2326,7 @@ void C_BasePlayer::PhysicsSimulate( void )
 		ctx->cmd.upmove = 0;
 		ctx->cmd.buttons = 0;
 		ctx->cmd.impulse = 0;
-		//VectorCopy ( pl.v_angle, ctx->cmd.viewangles );
+		VectorCopy ( pl.v_angle.Get(), ctx->cmd.viewangles );
 	}
 
 	// Run the next command
@@ -2344,7 +2345,7 @@ const QAngle& C_BasePlayer::GetPunchAngle()
 
 void C_BasePlayer::SetPunchAngle( const QAngle &angle )
 {
-	m_Local.m_vecPunchAngle = angle;
+	m_Local.m_vecPunchAngle.GetForModify() = angle;
 }
 
 

@@ -1617,7 +1617,7 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 	CalcViewRoll( eyeAngles );
 
 	// Apply punch angle
-	VectorAdd( eyeAngles, m_Local.m_vecPunchAngle, eyeAngles );
+	VectorAdd( eyeAngles,m_Local.m_vecPunchAngle, eyeAngles );
 
 #if defined( CLIENT_DLL )
 	if ( !prediction->InPrediction() )

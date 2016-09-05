@@ -593,8 +593,8 @@ CBasePlayer::CBasePlayer( )
 
 	m_hZoomOwner = NULL;
 
-	m_nUpdateRate = 20;  // cl_updaterate defualt
-	m_fLerpTime = 0.1f; // cl_interp default
+	m_nUpdateRate = 1.0f/TICK_INTERVAL;  // cl_updaterate defualt
+	m_fLerpTime = TICK_INTERVAL; // cl_interp default
 	m_bPredictWeapons = true;
 	m_bLagCompensation = false;
 	m_flLaggedMovementValue = 1.0f;
