@@ -30,6 +30,7 @@ public:
 		m_iv_vecPunchAngle( "CPlayerLocalData::m_iv_vecPunchAngle" ),
 		m_iv_vecPunchAngleVel( "CPlayerLocalData::m_iv_vecPunchAngleVel" )
 	{
+		//We can set animation because it's only used for player
 		m_iv_vecPunchAngle.Setup(&m_vecPunchAngle.m_Value, LATCH_ANIMATION_VAR);
 		m_iv_vecPunchAngleVel.Setup(&m_vecPunchAngleVel.m_Value, LATCH_ANIMATION_VAR);
 		m_flFOVRate = 0;

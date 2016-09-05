@@ -898,6 +898,8 @@ C_BaseEntity::C_BaseEntity() :
 {
 	m_pAttributes = NULL;
 
+
+	//LATCH_ANIMATION_VAR or LATCH_SIMULATION_VAR, we should call this only when cbaseanimating is there I guess?
 	AddVar(&m_vecOrigin, &m_iv_vecOrigin, LATCH_ANIMATION_VAR);
 	AddVar(&m_angRotation, &m_iv_angRotation, LATCH_ANIMATION_VAR);
 	AddVar(&m_vecVelocity, &m_iv_vecVelocity, LATCH_ANIMATION_VAR);
