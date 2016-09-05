@@ -42,6 +42,30 @@ C_MomentumPlayer::~C_MomentumPlayer()
 
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Input handling
+//-----------------------------------------------------------------------------
+bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
+{
+	// Bleh... we will wind up needing to access bones for attachments in here.
+	C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
+
+	return BaseClass::CreateMove(flInputSampleTime, pCmd);
+}
+
+void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
+{
+	
+	BaseClass::OnDataChanged(type);
+
+	if (type == DATA_UPDATE_CREATED)
+	{
+		SetNextClientThink(CLIENT_THINK_ALWAYS);
+	}
+
+	UpdateVisibility();
+}
+
 
 void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 {
