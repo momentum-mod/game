@@ -2156,6 +2156,8 @@ inline bool	C_BaseEntity::IsInterpolationEnabled()
 //-----------------------------------------------------------------------------
 inline bool C_BaseEntity::IsNoInterpolationFrame()
 {				
+	if (GetLocalPlayerIndex() == entindex()) //Always interpolate with ourselve
+		return false;
 
 	return m_ubOldInterpolationFrame != m_ubInterpolationFrame;
 }
