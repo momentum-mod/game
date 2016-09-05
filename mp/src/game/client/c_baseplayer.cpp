@@ -405,10 +405,11 @@ LINK_ENTITY_TO_CLASS( player, C_BasePlayer );
 // -------------------------------------------------------------------------------- //
 // Functions.
 // -------------------------------------------------------------------------------- //
-C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset( "C_BasePlayer::m_iv_vecViewOffset" )
+C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset("C_BasePlayer::m_iv_vecViewOffset")
 {
 	AddVar(&m_vecViewOffset, &m_iv_vecViewOffset, LATCH_ANIMATION_VAR);
 	AddVar(&m_Local.m_vecPunchAngle, &m_Local.m_iv_vecPunchAngle, LATCH_ANIMATION_VAR);
+	AddVar(&m_Local.m_vecPunchAngleVel, &m_Local.m_iv_vecPunchAngleVel, LATCH_ANIMATION_VAR);
 
 #ifdef _DEBUG																
 	m_vecLadderNormal.Init();
