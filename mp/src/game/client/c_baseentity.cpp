@@ -2994,8 +2994,7 @@ void C_BaseEntity::MoveToLastReceivedPosition( bool force )
 
 bool C_BaseEntity::ShouldInterpolate()
 {
-	return true;//always interpolate
-	/*if ( render->GetViewEntity() == index )
+	if ( render->GetViewEntity() == index )
 		return true;
 
 	if ( index == 0 || !GetModel() )
@@ -3016,7 +3015,7 @@ bool C_BaseEntity::ShouldInterpolate()
 	}
 
 	// don't interpolate
-	return false;*/
+	return false;
 }
 
 
