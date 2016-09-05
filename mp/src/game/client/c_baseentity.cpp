@@ -2994,6 +2994,10 @@ void C_BaseEntity::MoveToLastReceivedPosition( bool force )
 
 bool C_BaseEntity::ShouldInterpolate()
 {
+	//we should always enable interpolation on localplayer
+	if (index == engine->GetLocalPlayer())
+		return true;
+
 	if ( render->GetViewEntity() == index )
 		return true;
 
