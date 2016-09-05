@@ -1559,9 +1559,12 @@ void CClientTimesDisplay::OnContextDeleteReplay(const char* runName)
     {
         char file[MAX_PATH];
         V_ComposeFileName(RECORDING_PATH, runName, file, MAX_PATH);
-        // SetExtension removes the last numbers after the dot on the file, that's why we can't remove it
-        V_SetExtension(file, EXT_TIME_FILE, MAX_PATH);
-        messageboxpanel->CreateConfirmationBox(this, "Delete run", "Sure?", new KeyValues("ConfirmDeleteReplay", "file", file), nullptr, "Remove Replay", "Don't remove!");
+        // cat the extension because V_SetExtension doesn't like our file
+        Q_strncat(file, EXT_TIME_FILE, MAX_PATH);
+
+        messageboxpanel->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay", 
+            "#MOM_MB_DeleteRunConfirmation", new KeyValues("ConfirmDeleteReplay", "file", file),
+             nullptr, "#MOM_Leaderboards_DeleteReplay");
     }
 }
 

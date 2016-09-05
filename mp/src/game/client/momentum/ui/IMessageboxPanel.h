@@ -1,10 +1,7 @@
 #pragma once
 
 #include "vgui/IVGui.h"
-
-namespace vgui {
-    class Panel;
-}
+#include "vgui_controls/Panel.h"
 
 class IMessageboxPanel
 {

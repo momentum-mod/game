@@ -53,8 +53,9 @@ Panel *CMessageboxPanel::CreateMessagebox(const char *pTitle, const char *pMessa
     {
         pMessageBox->SetOKButtonText(pAccept);
     }
+    pMessageBox->MoveToCenterOfScreen();
     m_mbItems.AddToTail(pMessageBox);
-    pMessageBox->ShowWindow();
+    pMessageBox->DoModal();
     return pMessageBox;
 }
 
@@ -75,18 +76,22 @@ Panel *CMessageboxPanel::CreateConfirmationBox(Panel *pTarget, const char *pTitl
             pMessageBox->SetCancelCommand(cancelCommand);
         }
     }
+
     pMessageBox->SetOKButtonVisible(true);
     if (pAcceptText && Q_strlen(pAcceptText) > 0)
     {
         pMessageBox->SetOKButtonText(pAcceptText);
     }
+
     pMessageBox->SetCancelButtonVisible(true);
     if (pCancelText && Q_strlen(pCancelText) > 0)
     {
         pMessageBox->SetCancelButtonText(pCancelText);
     }
+    pMessageBox->MoveToCenterOfScreen();
+
     m_mbItems.AddToTail(pMessageBox);
-    pMessageBox->ShowWindow();
+    pMessageBox->DoModal();
     return pMessageBox;
 }
 

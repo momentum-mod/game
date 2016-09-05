@@ -41,7 +41,7 @@ void CReplayContextMenu::OnCursorExitedMenuItem(int vpanel)
     int x, y;
     input()->GetCursorPosition(x, y);
     bool inside = IsWithin(x, y);
-    SetVisible(inside);
-    SetMouseInputEnabled(inside);
+    SetVisible(inside && IsVisible());
+    SetMouseInputEnabled(inside && IsVisible());
     BaseClass::OnCursorExitedMenuItem(vpanel);
 }
