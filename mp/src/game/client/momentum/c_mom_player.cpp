@@ -61,13 +61,9 @@ void C_MomentumPlayer::ClientThink()
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
-	
-	BaseClass::OnDataChanged(type);
+	SetNextClientThink(CLIENT_THINK_ALWAYS);
 
-	if (type == DATA_UPDATE_CREATED)
-	{
-		SetNextClientThink(CLIENT_THINK_ALWAYS);
-	}
+	BaseClass::OnDataChanged(type);
 
 	UpdateVisibility();
 }
