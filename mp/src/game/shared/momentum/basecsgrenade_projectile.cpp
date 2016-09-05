@@ -54,7 +54,7 @@ void CBaseCSGrenadeProjectile::PostDataUpdate( DataUpdateType_t type )
         CInterpolatedVar< Vector > &interpolator = GetOriginInterpolator();
 
         interpolator.ClearHistory();
-        float changeTime = GetLastChangeTime( LATCH_SIMULATION_VAR );
+		float changeTime = GetLastChangeTime(LATCH_ANIMATION_VAR);
 
         // Add a sample 1 second back.
         Vector vCurOrigin = GetLocalOrigin() - m_vInitialVelocity;

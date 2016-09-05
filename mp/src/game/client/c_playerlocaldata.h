@@ -30,8 +30,8 @@ public:
 		m_iv_vecPunchAngle( "CPlayerLocalData::m_iv_vecPunchAngle" ),
 		m_iv_vecPunchAngleVel( "CPlayerLocalData::m_iv_vecPunchAngleVel" )
 	{
-		m_iv_vecPunchAngle.Setup( &m_vecPunchAngle.m_Value, LATCH_SIMULATION_VAR );
-		m_iv_vecPunchAngleVel.Setup( &m_vecPunchAngleVel.m_Value, LATCH_SIMULATION_VAR );
+		m_iv_vecPunchAngle.Setup(&m_vecPunchAngle.m_Value, LATCH_ANIMATION_VAR);
+		m_iv_vecPunchAngleVel.Setup(&m_vecPunchAngleVel.m_Value, LATCH_ANIMATION_VAR);
 		m_flFOVRate = 0;
 	}
 

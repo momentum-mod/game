@@ -305,14 +305,14 @@ const QAngle &CBasePlayer::EyeAngles( )
 	// NOTE: Viewangles are measured *relative* to the parent's coordinate system
 	CBaseEntity *pMoveParent = const_cast<CBasePlayer*>(this)->GetMoveParent();
 
-	if ( !pMoveParent )
+	if (!pMoveParent)
 	{
-		return pl.v_angle;
+		return pl.v_angle.Get();
 	}
 
 	// FIXME: Cache off the angles?
 	matrix3x4_t eyesToParent, eyesToWorld;
-	AngleMatrix( pl.v_angle, eyesToParent );
+	AngleMatrix( pl.v_angle.Get(), eyesToParent );
 	ConcatTransforms( pMoveParent->EntityToWorldTransform(), eyesToParent, eyesToWorld );
 
 	static QAngle angEyeWorld;
@@ -323,7 +323,7 @@ const QAngle &CBasePlayer::EyeAngles( )
 
 const QAngle &CBasePlayer::LocalEyeAngles()
 {
-	return pl.v_angle;
+	return pl.v_angle.Get();
 }
 
 //-----------------------------------------------------------------------------
