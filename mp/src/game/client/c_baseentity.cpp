@@ -898,9 +898,9 @@ C_BaseEntity::C_BaseEntity() :
 {
 	m_pAttributes = NULL;
 
-	AddVar( &m_vecOrigin, &m_iv_vecOrigin, LATCH_SIMULATION_VAR );
-	AddVar(&m_angRotation, &m_iv_angRotation, LATCH_SIMULATION_VAR);
-	AddVar(&m_vecVelocity, &m_iv_vecVelocity, LATCH_SIMULATION_VAR);
+	AddVar(&m_vecOrigin, &m_iv_vecOrigin, LATCH_ANIMATION_VAR);
+	AddVar(&m_angRotation, &m_iv_angRotation, LATCH_ANIMATION_VAR);
+	AddVar(&m_vecVelocity, &m_iv_vecVelocity, LATCH_ANIMATION_VAR);
 
 	m_DataChangeEventRef = -1;
 	m_EntClientFlags = 0;
@@ -1149,7 +1149,7 @@ bool C_BaseEntity::InitializeAsClientEntityByIndex( int iIndex, RenderGroup_t re
 void C_BaseEntity::TrackAngRotation( bool bTrack )
 {
 	if ( bTrack )
-		AddVar(&m_angRotation, &m_iv_angRotation, LATCH_SIMULATION_VAR);
+		AddVar(&m_angRotation, &m_iv_angRotation, LATCH_ANIMATION_VAR);
 	else
 		RemoveVar( &m_angRotation, false );
 }

@@ -872,7 +872,7 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
 }
 
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_NOT_CONNECTED, "Changes the tickrate of the game.", onTickRateChange);
+static ConVar tickRate("sv_tickrate", "0.01", FCVAR_CHEAT | FCVAR_NOT_CONNECTED, "Changes the tickrate of the game.", onTickRateChange);
 
 // This is called when a new game is started. (restart, map)
 bool CServerGameDLL::GameInit( void )
