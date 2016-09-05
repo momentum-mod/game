@@ -15,11 +15,13 @@ class C_MomentumPlayer : public C_BasePlayer
 public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
 	DECLARE_CLIENTCLASS();
-	//DECLARE_PREDICTABLE(); if MP game?
+	DECLARE_PREDICTABLE(); 
 	DECLARE_INTERPOLATION();
 
     C_MomentumPlayer();
     ~C_MomentumPlayer();
+
+	virtual void PostDataUpdate(DataUpdateType_t updateType);
 
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 

@@ -19,6 +19,13 @@ RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_REC
 RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE()
 
+BEGIN_PREDICTION_DATA(C_MomentumPlayer)
+#ifdef CS_SHIELD_ENABLED
+DEFINE_PRED_FIELD(m_bShieldDrawn, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE),
+#endif
+DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+END_PREDICTION_DATA()
 
 C_MomentumPlayer::C_MomentumPlayer()
 {
@@ -34,6 +41,17 @@ C_MomentumPlayer::~C_MomentumPlayer()
 {
 
 }
+
+
+void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
+{
+	// C_BaseEntity assumes we're networking the entity's angles, so pretend that it
+	// networked the same value we already have.
+	SetNetworkAngles(GetLocalAngles());
+
+	BaseClass::PostDataUpdate(updateType);
+}
+
 
 void C_MomentumPlayer::SurpressLadderChecks(const Vector& pos, const Vector& normal)
 {

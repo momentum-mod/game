@@ -2155,9 +2155,7 @@ inline bool	C_BaseEntity::IsInterpolationEnabled()
 // Should we be interpolating during this frame? (was EF_NOINTERP)
 //-----------------------------------------------------------------------------
 inline bool C_BaseEntity::IsNoInterpolationFrame()
-{
-	if (entindex() == engine->GetLocalPlayer())  // should always interpolate on localplayer because some minor frames wouldn't be interpolated and the game wouldn't look that smooth
-		return true;					
+{				
 
 	return m_ubOldInterpolationFrame != m_ubInterpolationFrame;
 }

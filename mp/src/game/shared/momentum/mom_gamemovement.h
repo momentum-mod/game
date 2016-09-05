@@ -31,54 +31,54 @@ public:
     CMomentumGameMovement();
 
     // Overrides
-    bool LadderMove(void) override; // REPLACED
-    bool OnLadder(trace_t &trace) override; // REPLACED
-    void SetGroundEntity(trace_t *pm) override;
+	virtual bool LadderMove(void) ; // REPLACED
+	virtual bool OnLadder(trace_t &trace) ; // REPLACED
+	virtual void SetGroundEntity(trace_t *pm) ;
 
-    bool CanAccelerate(void) override
+	virtual bool CanAccelerate(void)
     { BaseClass::CanAccelerate(); return true; }//C+P from HL2GM
-    bool CheckJumpButton(void) override;
-    void PlayerMove(void) override;
-    void AirMove(void) override;//Overridden for rampboost fix
-    void WalkMove(void) override;
+	virtual bool CheckJumpButton(void);
+	virtual void PlayerMove(void);
+	virtual void AirMove(void);//Overridden for rampboost fix
+	virtual void WalkMove(void);
     virtual void CheckForLadders(bool);
 
     virtual void CategorizeGroundSurface(trace_t&);
 
     //Override fall damage
-    void CheckFalling() override;
+	virtual void CheckFalling();
 
     //added ladder
-    float LadderDistance(void) const override
+	virtual float LadderDistance(void) const
     {
         if (player->GetMoveType() == MOVETYPE_LADDER)
             return 10.0f;
         return 2.0f;
     }
 
-    unsigned int LadderMask(void) const override
+	virtual unsigned int LadderMask(void) const 
     {
         return MASK_PLAYERSOLID & (~CONTENTS_PLAYERCLIP);
     }
 
-    float ClimbSpeed(void) const override;
-    float LadderLateralMultiplier(void) const override;
+	virtual float ClimbSpeed(void) const ;
+	virtual float LadderLateralMultiplier(void) const ;
     //const float DuckSpeedMultiplier = 0.34f;
 
     //Overrides for fixing rampboost
-    int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr) override;
-    void FullWalkMove() override;
-    void DoLateReflect();
-    void CategorizePosition() override;
+	virtual int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr);
+	virtual void FullWalkMove();
+	virtual void DoLateReflect();
+	virtual void CategorizePosition();
 
     // Duck
-    void Duck(void) override;
-    void FinishUnDuck(void) override;
-    void FinishDuck(void) override;
-    bool CanUnduck() override;
-    void HandleDuckingSpeedCrop() override;
-    void CheckParameters(void) override;
-    void ReduceTimers(void) override;
+	virtual void Duck(void) ;
+	virtual void FinishUnDuck(void) ;
+	virtual void FinishDuck(void) ;
+	virtual bool CanUnduck() ;
+	virtual void HandleDuckingSpeedCrop() ;
+	virtual void CheckParameters(void) ;
+	virtual void ReduceTimers(void);
 private:
 
     float m_flReflectNormal = NO_REFL_NORMAL_CHANGE;//Used by rampboost fix
