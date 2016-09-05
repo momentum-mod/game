@@ -24,6 +24,7 @@ public:
 	void PostDataUpdate(DataUpdateType_t updateType) override;
 	void OnDataChanged(DataUpdateType_t type) override;
 	bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) override;
+	virtual void ClientThink(void);
 
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 
