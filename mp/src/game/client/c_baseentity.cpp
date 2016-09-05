@@ -75,7 +75,7 @@ void cc_cl_interp_all_changed( IConVar *pConVar, const char *pOldString, float f
 
 static ConVar  cl_extrapolate( "cl_extrapolate", "1", FCVAR_CHEAT, "Enable/disable extrapolation if interpolation history runs out." );
 static ConVar  cl_interp_npcs( "cl_interp_npcs", "0.0", FCVAR_USERINFO, "Interpolate NPC positions starting this many seconds in past (or cl_interp, if greater)" );  
-static ConVar  cl_interp_all( "cl_interp_all", "0", 0, "Disable interpolation list optimizations.", 0, 0, 0, 0, cc_cl_interp_all_changed );
+static ConVar  cl_interp_all( "cl_interp_all", "1", 0, "Disable interpolation list optimizations.", 0, 0, 0, 0, cc_cl_interp_all_changed );
 ConVar  r_drawmodeldecals( "r_drawmodeldecals", "1" );
 extern ConVar	cl_showerror;
 int C_BaseEntity::m_nPredictionRandomSeed = -1;
@@ -899,11 +899,6 @@ C_BaseEntity::C_BaseEntity() :
 
 	AddVar( &m_vecOrigin, &m_iv_vecOrigin, LATCH_ANIMATION_VAR );
 	AddVar(&m_angRotation, &m_iv_angRotation, LATCH_ANIMATION_VAR);
-	// Removing this until we figure out why velocity introduces view hitching.
-	// One possible fix is removing the player->ResetLatched() call in CGameMovement::FinishDuck(), 
-	// but that re-introduces a third-person hitching bug.  One possible cause is the abrupt change
-	// in player size/position that occurs when ducking, and how prediction tries to work through that.
-	//
 	AddVar(&m_vecVelocity, &m_iv_vecVelocity, LATCH_ANIMATION_VAR);
 
 	m_DataChangeEventRef = -1;
@@ -2994,10 +2989,6 @@ void C_BaseEntity::MoveToLastReceivedPosition( bool force )
 
 bool C_BaseEntity::ShouldInterpolate()
 {
-	//we should always enable interpolation on localplayer
-	if (index == engine->GetLocalPlayer())
-		return true;
-
 	if ( render->GetViewEntity() == index )
 		return true;
 

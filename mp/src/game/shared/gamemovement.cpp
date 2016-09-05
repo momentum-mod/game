@@ -61,8 +61,8 @@ ConVar debug_latch_reset_onduck( "debug_latch_reset_onduck", "1", FCVAR_CHEAT );
 #endif
 #endif
 
-// [MD] I'll remove this eventually. For now, I want the ability to A/B the optimizations.
-bool g_bMovementOptimizations = true;
+// [MD] I'll remove this eventually. For now, I want the ability to A/B the optimizations. EDIT: Let's the game roll
+bool g_bMovementOptimizations = false;
 
 // Roughly how often we want to update the info about the ground surface we're on.
 // We don't need to do this very often.

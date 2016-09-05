@@ -14,7 +14,9 @@ class C_MomentumPlayer : public C_BasePlayer
 {
 public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
-    DECLARE_CLIENTCLASS();
+	DECLARE_CLIENTCLASS();
+	//DECLARE_PREDICTABLE(); if MP game?
+	DECLARE_INTERPOLATION();
 
     C_MomentumPlayer();
     ~C_MomentumPlayer();

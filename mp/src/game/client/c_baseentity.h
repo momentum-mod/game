@@ -2148,7 +2148,7 @@ inline VarMapping_t* C_BaseEntity::GetVarMapping()
 //-----------------------------------------------------------------------------
 inline bool	C_BaseEntity::IsInterpolationEnabled()
 {
-	return s_bInterpolate; //always interpolate 
+	return s_bInterpolate; 
 }
 
 //-----------------------------------------------------------------------------
@@ -2156,7 +2156,10 @@ inline bool	C_BaseEntity::IsInterpolationEnabled()
 //-----------------------------------------------------------------------------
 inline bool C_BaseEntity::IsNoInterpolationFrame()
 {
-	return m_ubOldInterpolationFrame != m_ubInterpolationFrame; //always interpolate
+	if (entindex() == engine->GetLocalPlayer())  // should always interpolate on localplayer because some minor frames wouldn't be interpolated and the game wouldn't look that smooth
+		return true;					
+
+	return m_ubOldInterpolationFrame != m_ubInterpolationFrame;
 }
 
 //-----------------------------------------------------------------------------
