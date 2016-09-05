@@ -815,6 +815,7 @@ void CBasePlayer::SetStepSoundTime( stepsoundtimes_t iStepSoundTime, bool bWalki
 	}
 }
 
+//Actually the eyeposition here aren't correct, there is 1 tick difference between the crosshair position and the eyepositions, so, if we want to set up a good precision, you know what to do...
 Vector CBasePlayer::Weapon_ShootPosition( )
 {
 	return EyePosition();
