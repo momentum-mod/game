@@ -829,56 +829,56 @@ void C_BaseEntity::Interp_RestoreToLastNetworked( VarMapping_t *map )
 	BaseInterpolatePart2( oldOrigin, oldAngles, oldVel, 0 );
 }
 
-void C_BaseEntity::Interp_UpdateInterpolationAmounts( VarMapping_t *map )
+void C_BaseEntity::Interp_UpdateInterpolationAmounts(VarMapping_t *map)
 {
-	if( !map )
+	if (!map)
 		return;
 
 	int c = map->m_Entries.Count();
-	for ( int i = 0; i < c; i++ )
+	for (int i = 0; i < c; i++)
 	{
-		VarMapEntry_t *e = &map->m_Entries[ i ];
+		VarMapEntry_t *e = &map->m_Entries[i];
 		IInterpolatedVar *watcher = e->watcher;
-		watcher->SetInterpolationAmount( GetInterpolationAmount( watcher->GetType() ) ); 
+		watcher->SetInterpolationAmount(GetInterpolationAmount(watcher->GetType()));
 	}
 }
 
 void C_BaseEntity::Interp_HierarchyUpdateInterpolationAmounts()
 {
-	Interp_UpdateInterpolationAmounts( GetVarMapping() );
+	Interp_UpdateInterpolationAmounts(GetVarMapping());
 
-	for ( C_BaseEntity *pChild = FirstMoveChild(); pChild; pChild = pChild->NextMovePeer() )
+	for (C_BaseEntity *pChild = FirstMoveChild(); pChild; pChild = pChild->NextMovePeer())
 	{
 		pChild->Interp_HierarchyUpdateInterpolationAmounts();
 	}
 }
 
-inline int C_BaseEntity::Interp_Interpolate( VarMapping_t *map, float currentTime )
+inline int C_BaseEntity::Interp_Interpolate(VarMapping_t *map, float currentTime)
 {
 	int bNoMoreChanges = 1;
-	if ( currentTime < map->m_lastInterpolationTime )
+	if (currentTime < map->m_lastInterpolationTime)
 	{
-		for ( int i = 0; i < map->m_nInterpolatedEntries; i++ )
+		for (int i = 0; i < map->m_nInterpolatedEntries; i++)
 		{
-			VarMapEntry_t *e = &map->m_Entries[ i ];
+			VarMapEntry_t *e = &map->m_Entries[i];
 
 			e->m_bNeedsToInterpolate = true;
 		}
 	}
 	map->m_lastInterpolationTime = currentTime;
 
-	for ( int i = 0; i < map->m_nInterpolatedEntries; i++ )
+	for (int i = 0; i < map->m_nInterpolatedEntries; i++)
 	{
-		VarMapEntry_t *e = &map->m_Entries[ i ];
+		VarMapEntry_t *e = &map->m_Entries[i];
 
-		if ( !e->m_bNeedsToInterpolate )
+		if (!e->m_bNeedsToInterpolate)
 			continue;
-			
+
 		IInterpolatedVar *watcher = e->watcher;
-		Assert( !( watcher->GetType() & EXCLUDE_AUTO_INTERPOLATE ) );
+		Assert(!(watcher->GetType() & EXCLUDE_AUTO_INTERPOLATE));
 
 
-		if ( watcher->Interpolate( currentTime ) )
+		if (watcher->Interpolate(currentTime))
 			e->m_bNeedsToInterpolate = false;
 		else
 			bNoMoreChanges = 0;
@@ -886,6 +886,7 @@ inline int C_BaseEntity::Interp_Interpolate( VarMapping_t *map, float currentTim
 
 	return bNoMoreChanges;
 }
+
 
 //-----------------------------------------------------------------------------
 // Functions.
