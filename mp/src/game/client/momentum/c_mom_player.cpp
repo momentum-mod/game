@@ -53,6 +53,12 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 	return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }
 
+
+void C_MomentumPlayer::ClientThink()
+{
+	SetNextClientThink(CLIENT_THINK_ALWAYS);
+}
+
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
 	
@@ -72,6 +78,8 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 	// C_BaseEntity assumes we're networking the entity's angles, so pretend that it
 	// networked the same value we already have.
 	SetNetworkAngles(GetLocalAngles());
+
+	SetNextClientThink(CLIENT_THINK_ALWAYS);
 
 	BaseClass::PostDataUpdate(updateType);
 }
