@@ -309,7 +309,7 @@ BEGIN_PREDICTION_DATA_NO_BASE( CPlayerState )
 	// DEFINE_FIELD( netname, string_t ),
 	// DEFINE_FIELD( fixangle, FIELD_INTEGER ),
 	// DEFINE_FIELD( anglechange, FIELD_FLOAT ),
-	// DEFINE_FIELD( v_angle, FIELD_VECTOR ),
+	 DEFINE_FIELD( v_angle, FIELD_VECTOR ),
 
 END_PREDICTION_DATA()	
 
