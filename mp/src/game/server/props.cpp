@@ -329,10 +329,9 @@ int CBaseProp::ParsePropData( void )
 	KeyValues *modelKeyValues = new KeyValues("");
 	if ( !modelKeyValues->LoadFromBuffer( modelinfo->GetModelName( GetModel() ), modelinfo->GetModelKeyValueText( GetModel() ) ) )
 	{
+		modelKeyValues->deleteThis();
 		return PARSE_FAILED_NO_DATA;
 	}
-
-	modelKeyValues->deleteThis();
 
 	// Do we have a props section?
 	KeyValues *pkvPropData = modelKeyValues->FindKey("prop_data");
