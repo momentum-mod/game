@@ -4,9 +4,9 @@
 #include "mom_entity_run_data.h"
 #include "util/run_stats.h"
 
-class C_MomentumReplayGhostEntity : public C_BasePlayer
+class C_MomentumReplayGhostEntity : public C_BaseAnimating
 {
-	DECLARE_CLASS(C_MomentumReplayGhostEntity, C_BasePlayer);
+	DECLARE_CLASS(C_MomentumReplayGhostEntity, C_BaseAnimating);
     DECLARE_CLIENTCLASS();
 	DECLARE_INTERPOLATION()
 
