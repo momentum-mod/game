@@ -644,6 +644,7 @@ CBasePlayer::CBasePlayer( )
 CBasePlayer::~CBasePlayer( )
 {
 	VPhysicsDestroyObject();
+	delete STRING(pl.netname);
 }
 
 //-----------------------------------------------------------------------------
@@ -4571,7 +4572,7 @@ void CBasePlayer::PostThink()
 					CSoundEnt::InsertSound ( SOUND_PLAYER, GetAbsOrigin(), m_Local.m_flFallVelocity, 0.2, this );
 					// Msg( "fall %f\n", m_Local.m_flFallVelocity );
 				}
-				m_Local.m_flFallVelocity = 0;
+				m_Local.m_flFallVelocity = 0.0f;
 			}
 
 			// select the proper animation for the player character	

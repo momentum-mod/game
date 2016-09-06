@@ -649,6 +649,9 @@ void CGamePlayerEquip::EquipPlayer( CBaseEntity *pEntity )
 {
 	CBasePlayer *pPlayer = ToBasePlayer(pEntity);
 
+	if (!pEntity || !pEntity->IsPlayer())
+		pEntity = UTIL_GetLocalPlayer();
+
 	if ( !pPlayer )
 		return;
 

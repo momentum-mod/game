@@ -2053,7 +2053,7 @@ void C_BasePlayer::PostThink( void )
 
 		if ( GetFlags() & FL_ONGROUND )
 		{		
-			m_Local.m_flFallVelocity = 0;
+			m_Local.m_flFallVelocity = 0.0f;
 		}
 
 		// Don't allow bogus sequence on player

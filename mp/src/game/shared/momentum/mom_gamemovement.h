@@ -15,10 +15,10 @@ class CMomentumPlayer;
 #define	STOP_EPSILON		0.1
 #define	MAX_CLIP_PLANES		5
 
-#define STAMINA_MAX				100.0
-#define STAMINA_COST_JUMP		25.0
-#define STAMINA_COST_FALL		20.0
-#define STAMINA_RECOVER_RATE	19.0
+#define STAMINA_MAX				100.0f
+#define STAMINA_COST_JUMP		25.0f
+#define STAMINA_COST_FALL		20.0f
+#define STAMINA_RECOVER_RATE	19.0f
 #define CS_WALK_SPEED			135.0f
 
 #define DuckSpeedMultiplier 0.34f

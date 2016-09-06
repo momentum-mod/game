@@ -329,9 +329,10 @@ int CBaseProp::ParsePropData( void )
 	KeyValues *modelKeyValues = new KeyValues("");
 	if ( !modelKeyValues->LoadFromBuffer( modelinfo->GetModelName( GetModel() ), modelinfo->GetModelKeyValueText( GetModel() ) ) )
 	{
-		modelKeyValues->deleteThis();
 		return PARSE_FAILED_NO_DATA;
 	}
+
+	modelKeyValues->deleteThis();
 
 	// Do we have a props section?
 	KeyValues *pkvPropData = modelKeyValues->FindKey("prop_data");
@@ -2054,9 +2055,9 @@ void CDynamicProp::CreateBoneFollowers()
 				pBone = pBone->GetNextKey();
 			}
 		}
-
-		modelKeyValues->deleteThis();
 	}
+
+	modelKeyValues->deleteThis();
 
 	// if we got here, we don't have a bone follower section, but if we have a ragdoll
 	// go ahead and create default bone followers for it
