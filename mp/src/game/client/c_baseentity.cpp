@@ -900,6 +900,7 @@ C_BaseEntity::C_BaseEntity() :
 
 
 	//LATCH_ANIMATION_VAR or LATCH_SIMULATION_VAR, we should call this only when cbaseanimating is there I guess?
+	//Angles or origin changed, we use simulation for this: https://developer.valvesoftware.com/wiki/Interpolation
 	AddVar(&m_vecOrigin, &m_iv_vecOrigin, LATCH_SIMULATION_VAR);
 	AddVar(&m_angRotation, &m_iv_angRotation, LATCH_SIMULATION_VAR);
 	AddVar(&m_vecVelocity, &m_iv_vecVelocity, LATCH_SIMULATION_VAR);
