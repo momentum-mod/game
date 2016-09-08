@@ -768,7 +768,9 @@ void CServerGameDLL::PostInit()
 		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
 		if (shared)
 		{
-			shared->LoadedClient = true;
+			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (SERVER)\n");
+
+			shared->LoadedServer = true;
 
 			if (shared->LoadedClient && shared->LoadedServer)
 			{
