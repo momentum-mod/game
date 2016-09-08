@@ -1,0 +1,96 @@
+//-----------------------------------------------------------------------------
+//	GAMEUI2_BASE.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro GAMENAME 	"momentum"
+$Macro OUTBINNAME	"shared"
+$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
+$Macro SRCDIR		"..\.."
+$Macro GENERATED_PROTO_DIR	"$SRCDIR\game\shared\generated_proto_$GAMENAME"
+
+$Include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
+$include "$SRCDIR\vpc_scripts\protobuf_builder.vpc"
+$Include "$SRCDIR\vpc_scripts\source_replay.vpc"	[$TF]
+$Include "$SRCDIR\game\protobuf_include.vpc"
+
+
+$Configuration	"Debug"
+{
+	$General
+	{
+		$OutputDirectory			".\Debug_$GAMENAME"			[$WIN32]
+		$IntermediateDirectory		".\Debug_$GAMENAME"			[$WIN32]
+	}
+}
+
+$Configuration	"Release"
+{
+	$General
+	{
+		$OutputDirectory			".\Release_$GAMENAME"		[$WIN32]
+		$IntermediateDirectory		".\Release_$GAMENAME"		[$WIN32]
+	}
+}
+
+$Configuration
+{
+	$General
+	{
+			$OutputDirectory			".\$GAMENAME"		[$OSXALL]
+	}
+
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	".\;$BASE;$SRCDIR\game\shared;"
+		$PreprocessorDefinitions		"$BASE;NO_STRING_T;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead" 
+		$PreprocessorDefinitions		"$BASE;fopen=dont_use_fopen" [$WIN32]
+		$PreprocessorDefinitions		"$BASE;CURL_STATICLIB" [$WIN32 && $BUILD_REPLAY]
+		$Create/UsePrecompiledHeader	"Use Precompiled Header (/Yu)"
+		$Create/UsePCHThroughFile		"cbase.h"
+		$PrecompiledHeaderFile			"$(IntDir)/shared.pch"
+	}
+
+	$Linker
+	{
+		$SystemLibraries				"iconv" [$OSXALL]
+		$SystemFrameworks				"Carbon" [$OSXALL]
+		$SystemLibraries				"rt" [$LINUXALL]
+		$IgnoreImportLibrary			"TRUE"
+		$AdditionalDependencies			"$BASE winmm.lib"	[$WIN32]
+		$AdditionalDependencies			"$BASE wsock32.lib Ws2_32.lib" [$BUILD_REPLAY]
+	}
+}
+
+
+$Project "Shared (momentum)"
+{
+	$Folder	"Link Libraries"
+	{
+		$Lib		bitmap
+		$Lib		choreoobjects
+		$Lib		dmxloader
+		$Lib		mathlib
+		$Lib		matsys_controls
+		$Lib		particles
+		$Lib		tier1
+		$Lib		tier2
+		$Lib		tier3
+		$Lib		vgui_controls
+		$Lib		vtf
+		$ImpLib		steam_api
+		
+		$Lib $LIBCOMMON/libcrypto [$POSIX]
+
+		$ImpLib	"$LIBCOMMON\curl"	  [$OSXALL]
+
+		$Lib	"$LIBCOMMON\libcurl" [$WIN32]
+		$Lib   "libz" [$WIN32]
+
+		$Libexternal libz [$LINUXALL]
+		$Libexternal "$LIBCOMMON/libcurl" [$LINUXALL]
+		$Libexternal "$LIBCOMMON/libcurlssl" [$LINUXALL]
+		$Libexternal "$LIBCOMMON/libssl" [$LINUXALL]
+ 	}
+}
