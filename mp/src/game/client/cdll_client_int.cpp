@@ -180,6 +180,7 @@ extern vgui::IInputInternal *g_InputInternal;
 extern IClientMode *GetClientModeNormal();
 
 // IF YOU ADD AN INTERFACE, EXTERN IT IN THE HEADER FILE.
+C_SharedDLL     *shared = NULL;
 IVEngineClient	*engine = NULL;
 IVModelRender *modelrender = NULL;
 IVEfx *effects = NULL;
@@ -1198,6 +1199,33 @@ void CHLClient::PostInit()
             ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui2.dll from:\n%s\n", modulePath);
         }
     }
+
+	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
+	if (SharedModule)
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll\n");
+
+		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
+
+		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
+		if (shared)
+		{
+			shared->LoadedClient = true;
+			ConColorMsg(Color(0, 148, 255, 255), "Loaded C_SharedDLL (CLIENT)\n");
+			if (shared->LoadedClient && shared->LoadedServer)
+			{
+				ConColorMsg(Color(0, 255, 255, 255), "Loaded C_SharedDLL from server & client!\n");
+			}
+		}
+		else
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Unable to pull C_SharedDLL interface.\n");
+		}
+	}
+	else
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
+	}
 #endif
 }
 

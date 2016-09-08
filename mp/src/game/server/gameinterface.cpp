@@ -171,6 +171,7 @@ IFileSystem		*filesystem = NULL;
 #else
 extern IFileSystem *filesystem;
 #endif
+C_SharedDLL *shared = NULL;
 INetworkStringTableContainer *networkstringtable = NULL;
 IStaticPropMgrServer *staticpropmgr = NULL;
 IUniformRandomStream *random = NULL;
@@ -632,6 +633,9 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	// If not running dedicated, grab the engine vgui interface
 	if ( !engine->IsDedicatedServer() )
 	{
+
+
+
 #ifdef _WIN32
 		// This interface is optional, and is only valid when running with -tools
 		serverenginetools = ( IServerEngineTools * )appSystemFactory( VSERVERENGINETOOLS_INTERFACE_VERSION, NULL );
@@ -753,6 +757,33 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 void CServerGameDLL::PostInit()
 {
 	IGameSystem::PostInitAllSystems();
+
+	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
+	if (SharedModule)
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll\n");
+
+		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
+
+		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
+		if (shared)
+		{
+			shared->LoadedServer = true;
+			ConColorMsg(Color(0, 148, 255, 255), "Loaded C_SharedDLL (SERVER)\n");
+			if (shared->LoadedClient && shared->LoadedServer)
+			{
+				ConColorMsg(Color(0, 255, 255, 255), "Loaded C_SharedDLL from server & client!\n");
+			}
+		}
+		else
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Unable to pull C_SharedDLL interface.\n");
+		}
+	}
+	else
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
+	}
 }
 
 void CServerGameDLL::DLLShutdown( void )

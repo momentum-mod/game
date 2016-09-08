@@ -5,5 +5,5 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(C_SharedDLL, C_SharedDLL, INTERFACEVERSION_SHA
 
 void C_SharedDLL::Something()
 {
-	Simple = !Simple;
+	
 }

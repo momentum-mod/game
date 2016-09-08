@@ -6,7 +6,8 @@ public:
 
 	virtual void Something();
 
-	bool Simple = false;
+	bool LoadedClient = false;
+	bool LoadedServer = false;
 }; 
 
 #define INTERFACEVERSION_SHAREDGAMEDLL			"SHAREDGAMEDLL001"
