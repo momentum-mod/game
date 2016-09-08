@@ -662,6 +662,7 @@ public:
 		}
 		else
 		{
+			pkvFile->deleteThis();
 			Msg( "Commentary: Could not find commentary data file '%s'. \n", szFullName );
 		}
 
