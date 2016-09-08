@@ -5886,7 +5886,6 @@ static float AdjustInterpolationAmount( C_BaseEntity *pEntity, float baseInterpo
 
 static ConVar cl_interp_threadmodeticks("cl_interp_threadmodeticks", "0", 0, "Additional interpolation ticks to use when interpolating with threaded engine mode set.");
 
-//-------------------------------------
 float C_BaseEntity::GetInterpolationAmount(int flags)
 {
 	// If single player server is "skipping ticks" everything needs to interpolate for a bit longer
@@ -5901,9 +5900,11 @@ float C_BaseEntity::GetInterpolationAmount(int flags)
 		return TICK_INTERVAL * serverTickMultiple;
 	}
 
-	// Always fully interpolate during multi-player or during demo playback...
-	if ((gpGlobals->maxClients > 1) ||
-		engine->IsPlayingDemo())
+	// Always fully interpolate during multi-player or during demo playback, if the recorded
+	// demo was recorded locally.
+	const bool bPlayingDemo = engine->IsPlayingDemo();
+	const bool bPlayingMultiplayer = !bPlayingDemo && (gpGlobals->maxClients > 1);
+	if (bPlayingMultiplayer)      
 	{
 		return AdjustInterpolationAmount(this, TICKS_TO_TIME(TIME_TO_TICKS(GetClientInterpAmount()) + serverTickMultiple));
 	}
@@ -5911,7 +5912,7 @@ float C_BaseEntity::GetInterpolationAmount(int flags)
 	int expandedServerTickMultiple = serverTickMultiple;
 	if (IsEngineThreaded())
 	{
-		expandedServerTickMultiple += cl_interp_threadmodeticks.GetInt();
+		expandedServerTickMultiple += g_nThreadModeTicks;
 	}
 
 	if (IsAnimatedEveryTick() && IsSimulatedEveryTick())
@@ -5928,7 +5929,7 @@ float C_BaseEntity::GetInterpolationAmount(int flags)
 		return TICK_INTERVAL * expandedServerTickMultiple;
 	}
 
-	return AdjustInterpolationAmount(this, TICK_INTERVAL * (TIME_TO_TICKS(GetClientInterpAmount()) + serverTickMultiple));
+	return AdjustInterpolationAmount(this, TICKS_TO_TIME(TIME_TO_TICKS(GetClientInterpAmount()) + serverTickMultiple));
 }
 
 float C_BaseEntity::GetLastChangeTime( int flags )
