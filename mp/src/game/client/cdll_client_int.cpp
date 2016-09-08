@@ -1203,7 +1203,7 @@ void CHLClient::PostInit()
 	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
 	if (SharedModule)
 	{
-		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll\n");
+		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (CLIENT)\n");
 
 		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
 
@@ -1211,15 +1211,15 @@ void CHLClient::PostInit()
 		if (shared)
 		{
 			shared->LoadedClient = true;
-			ConColorMsg(Color(0, 148, 255, 255), "Loaded C_SharedDLL (CLIENT)\n");
+
 			if (shared->LoadedClient && shared->LoadedServer)
 			{
-				ConColorMsg(Color(0, 255, 255, 255), "Loaded C_SharedDLL from server & client!\n");
+				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
 			}
 		}
 		else
 		{
-			ConColorMsg(Color(0, 148, 255, 255), "Unable to pull C_SharedDLL interface.\n");
+			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
 		}
 	}
 	else

@@ -761,23 +761,23 @@ void CServerGameDLL::PostInit()
 	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
 	if (SharedModule)
 	{
-		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll\n");
+		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (SERVER)\n");
 
 		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
 
 		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
 		if (shared)
 		{
-			shared->LoadedServer = true;
-			ConColorMsg(Color(0, 148, 255, 255), "Loaded C_SharedDLL (SERVER)\n");
+			shared->LoadedClient = true;
+
 			if (shared->LoadedClient && shared->LoadedServer)
 			{
-				ConColorMsg(Color(0, 255, 255, 255), "Loaded C_SharedDLL from server & client!\n");
+				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
 			}
 		}
 		else
 		{
-			ConColorMsg(Color(0, 148, 255, 255), "Unable to pull C_SharedDLL interface.\n");
+			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
 		}
 	}
 	else
