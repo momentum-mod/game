@@ -20,6 +20,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "hud_replayui.h"
 #include "../clientmode.h"
+#include "mom_event_listener.h"
+#include "mom_player_shared.h"
+#include "mom_shareddefs.h"
+#include "momentum/util/mom_util.h"
+
 bool Activated = false;
 CHudReplay *HudReplay = NULL;
 
@@ -146,11 +151,13 @@ void CHudReplay::OnTick()
 	if (m_pFastBackward->IsSelected())
 	{
 		shared->m_iCurrentTick--;
+		shared->m_iTotalTicksT--;
 	}
 
 	if (m_pFastForward->IsSelected())
 	{
 		shared->m_iCurrentTick++;
+		shared->m_iTotalTicksT++;
 	}
 
 	if (shared->m_iCurrentTick < 0)
@@ -161,6 +168,11 @@ void CHudReplay::OnTick()
 	if (shared->m_iCurrentTick > shared->m_iTotalTicks)
 	{
 		shared->m_iCurrentTick = shared->m_iTotalTicks;
+	}
+
+	if (shared->m_iTotalTicksT < 0)
+	{
+		shared->m_iTotalTicksT = 0;
 	}
 
 	fProgress = (float)shared->m_iCurrentTick / (float)shared->m_iTotalTicks;
@@ -187,6 +199,7 @@ void CHudReplay::OnCommand(const char *command)
 	else if (!Q_strcasecmp(command, "reload"))
 	{
 		shared->m_iCurrentTick = 0;
+		shared->m_iTotalTicksT = 0;
 	}
 	else if (!Q_strcasecmp(command, "gotoend"))
 	{
@@ -194,10 +207,12 @@ void CHudReplay::OnCommand(const char *command)
 	}
 	else if (!Q_strcasecmp(command, "prevframe"))
 	{
+		shared->m_iTotalTicksT--;
 		shared->m_iCurrentTick--;
 	}
 	else if (!Q_strcasecmp(command, "nextframe"))
 	{
+		shared->m_iTotalTicksT++;
 		shared->m_iCurrentTick++;
 	}
 	else if (!Q_strcasecmp(command, "gototick"))

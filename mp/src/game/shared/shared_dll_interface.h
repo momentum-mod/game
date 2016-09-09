@@ -10,6 +10,8 @@ public:
 	int m_iCurrentTick = 0;
 	bool m_bIsPlaying = false;
 
+	int m_iCurrentTickClientT = 0;
+	int m_iTotalTicksT = 0;
 	bool LoadedClient = false;
 	bool LoadedServer = false;
 }; 
