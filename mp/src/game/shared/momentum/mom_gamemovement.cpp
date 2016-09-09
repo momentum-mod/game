@@ -595,20 +595,11 @@ bool CMomentumGameMovement::CheckJumpButton()
         {
             float flRatio;
 
-<<<<<<< HEAD
-            flRatio = (STAMINA_MAX - ((player->m_flStamina / 1000.0f) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
-=======
             flRatio = (STAMINA_MAX - ((m_pPlayer->m_flStamina / 1000.0) * STAMINA_RECOVER_RATE)) / STAMINA_MAX;
->>>>>>> refs/remotes/momentum-mod/develop
-
             mv->m_vecVelocity[2] *= flRatio;
         }
 
-<<<<<<< HEAD
-        player->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0f;
-=======
         m_pPlayer->m_flStamina = (STAMINA_COST_JUMP / STAMINA_RECOVER_RATE) * 1000.0;
->>>>>>> refs/remotes/momentum-mod/develop
     }
 
     FinishGravity();
@@ -1305,27 +1296,18 @@ void CMomentumGameMovement::CheckParameters(void)
 
     BaseClass::CheckParameters();
 }
+
 void CMomentumGameMovement::ReduceTimers(void)
 {
     float frame_msec = 1000.0f * gpGlobals->frametime;
 
-<<<<<<< HEAD
-    if (player->m_flStamina > 0.0f)
-=======
     if (m_pPlayer->m_flStamina > 0)
->>>>>>> refs/remotes/momentum-mod/develop
     {
         m_pPlayer->m_flStamina -= frame_msec;
 
-<<<<<<< HEAD
-        if (player->m_flStamina < 0.0f)
-        {
-            player->m_flStamina = 0.0f;
-=======
         if (m_pPlayer->m_flStamina < 0)
         {
             m_pPlayer->m_flStamina = 0;
->>>>>>> refs/remotes/momentum-mod/develop
         }
     }
 
@@ -1408,10 +1390,5 @@ void CMomentumGameMovement::CheckFalling(void)
 static CMomentumGameMovement g_GameMovement;
 IGameMovement *g_pGameMovement = static_cast<IGameMovement *>(&g_GameMovement);
 
-<<<<<<< HEAD
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CMomentumGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);
 
-#endif
-=======
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);
->>>>>>> refs/remotes/momentum-mod/develop

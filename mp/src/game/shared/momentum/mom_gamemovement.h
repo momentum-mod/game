@@ -61,14 +61,10 @@ public:
         return MASK_PLAYERSOLID & (~CONTENTS_PLAYERCLIP);
     }
 
-<<<<<<< HEAD
+
 	virtual float ClimbSpeed(void) const ;
 	virtual float LadderLateralMultiplier(void) const ;
     //const float DuckSpeedMultiplier = 0.34f;
-=======
-    float ClimbSpeed(void) const override;
-    float LadderLateralMultiplier(void) const override;
->>>>>>> refs/remotes/momentum-mod/develop
 
     //Overrides for fixing rampboost
 	virtual int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr);
