@@ -66,6 +66,17 @@ $Configuration
 
 $Project "Shared (momentum)"
 {
+  	$Folder "Source Files"
+    	{
+        	$File   "shared_dll_interface.cpp"
+	}
+
+
+ 	$Folder "Header Files"
+    	{  
+        	$File   "shared_dll_interface.h"
+	}
+
 	$Folder	"Link Libraries"
 	{
 		$Lib		bitmap
