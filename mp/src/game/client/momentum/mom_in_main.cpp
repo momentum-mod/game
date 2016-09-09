@@ -8,8 +8,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#define IN_TIMES (1<<26)
-
 static int s_ClearInputState = 0;
 static	kbutton_t	in_times;
 
@@ -25,7 +23,7 @@ public:
     {
         int bits = BaseClass::GetButtonBits(bResetState);
         CalcButtonBits(bits, IN_TIMES, s_ClearInputState, &in_times, bResetState);
-        
+
         bits &= ~s_ClearInputState;
 
         if (bResetState)
@@ -83,7 +81,6 @@ void IN_TimesUp(const CCommand &args)
     if (gViewPortInterface)
     {
         gViewPortInterface->ShowPanel(PANEL_TIMES, false);
-        //GetClientVoiceMgr()->StopSquelchMode();
     }
 }
 

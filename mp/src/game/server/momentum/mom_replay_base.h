@@ -25,7 +25,7 @@ public:
     virtual uint64 GetPlayerSteamID() { return m_rhHeader.m_ulSteamID; }
     virtual float GetTickInterval() { return m_rhHeader.m_fTickInterval; }
     virtual float GetRunTime() { return m_rhHeader.m_fRunTime; }
-    virtual int GetRunFlags() { return m_rhHeader.m_iRunFlags; }
+    virtual uint32 GetRunFlags() { return m_rhHeader.m_iRunFlags; }
     virtual time_t GetRunDate() { return m_rhHeader.m_iRunDate; }
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
 
@@ -35,7 +35,7 @@ public:
     virtual void SetPlayerSteamID(uint64 steamID) { m_rhHeader.m_ulSteamID = steamID; }
     virtual void SetTickInterval(float interval) { m_rhHeader.m_fTickInterval = interval; }
     virtual void SetRunTime(float runTime) { m_rhHeader.m_fRunTime = runTime; }
-    virtual void SetRunFlags(int runFlags) { m_rhHeader.m_iRunFlags = runFlags; }
+    virtual void SetRunFlags(uint32 runFlags) { m_rhHeader.m_iRunFlags = runFlags; }
     virtual void SetRunDate(time_t date) { m_rhHeader.m_iRunDate = date; }
     virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
 

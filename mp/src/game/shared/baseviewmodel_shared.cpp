@@ -389,7 +389,7 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 	QAngle vmangoriginal = eyeAngles;
 	QAngle vmangles = eyeAngles;
 	Vector vmorigin = eyePosition;
-
+    
 	CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
 	//Allow weapon lagging
 	if ( pWeapon != NULL )
@@ -400,7 +400,7 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 		{
 			// add weapon-specific bob 
 			pWeapon->AddViewmodelBob( this, vmorigin, vmangles );
-#if defined ( CSTRIKE_DLL )
+#if defined ( CSTRIKE_DLL ) || defined (SDK_DLL)
 			CalcViewModelLag( vmorigin, vmangles, vmangoriginal );
 #endif
 		}
@@ -408,6 +408,14 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 
 	// Add model-specific bob even if no weapon associated (for head bob for off hand models)
 	AddViewModelBob( owner, vmorigin, vmangles );
+<<<<<<< HEAD
+=======
+#if !defined ( CSTRIKE_DLL ) && !defined (SDK_DLL)
+	// This was causing weapon jitter when rotating in updated CS:S; original Source had this in above InPrediction block  07/14/10
+	// Add lag
+	CalcViewModelLag( vmorigin, vmangles, vmangoriginal );
+#endif
+>>>>>>> refs/remotes/momentum-mod/develop
 
 #if defined( CLIENT_DLL )
 	if ( !prediction->InPrediction() )

@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture" "vgui/leaderboards_icon_friends"
+	"$translucent" 1
+	"$ignorez" 1
+}

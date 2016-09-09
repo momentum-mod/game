@@ -47,9 +47,6 @@ protected:
 
 
 private:
-#ifndef NO_STEAM
-    STEAM_CALLBACK(CDialogMapInfo, OnPersonaStateChange, PersonaStateChange_t, m_CallbackPersonaStateChange);
-#endif
 
     static int PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2);
 

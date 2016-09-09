@@ -28,15 +28,17 @@ class CMessageboxPanel : public Frame
 
     // Creates a messagebox, with pTitle as title and pMessage as message.
     // It does not disappear until Close is pressed or FlushMessageboxes() is called
-    // Returns tje handle of the newly created Messagebox
+    // Returns the pointer of the newly created panel
     Panel *CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept = nullptr);
 
+    Panel *CreateConfirmationBox(Panel *pTarget, const char *pTitle, const char *pMessage, KeyValues *okCommand,
+        KeyValues *cancelCommand, const char *pAcceptText = nullptr, const char *pCancelText = nullptr);
     // This function deletes all the messageboxes
     void FlushMessageboxes();
     // Removes the HPanel messagebox
     void FlushMessageboxes(HPanel pHPanel);
 
-  private:    
+  private:
     CUtlVector<MessageBox *> m_mbItems;
 };
 
@@ -54,8 +56,7 @@ class CMessageboxInterface : public IMessageboxPanel
     {
         if (pPanel)
         {
-            pPanel->SetParent(nullptr);
-            delete pPanel;
+            pPanel->DeletePanel();
         }
         pPanel = nullptr;
     }
@@ -82,6 +83,16 @@ class CMessageboxInterface : public IMessageboxPanel
         if (pPanel)
         {
             return pPanel->CreateMessagebox(pTitle, pMessage, pAccept);
+        }
+        return nullptr;
+    }
+
+    Panel *CreateConfirmationBox(Panel *pTarget, const char *pTitle, const char *pMessage, KeyValues *okCommand,
+        KeyValues *cancelCommand, const char *pAcceptText = nullptr, const char *pCancelText = nullptr) override
+    {
+        if (pPanel)
+        {
+            return pPanel->CreateConfirmationBox(pTarget, pTitle, pMessage, okCommand, cancelCommand, pAcceptText, pCancelText);
         }
         return nullptr;
     }

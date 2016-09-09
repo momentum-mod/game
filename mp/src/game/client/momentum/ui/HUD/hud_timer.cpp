@@ -4,6 +4,7 @@
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
+#include "baseviewport.h"
 #include "menu.h"
 #include "utlvector.h"
 #include "vgui_helpers.h"
@@ -41,7 +42,11 @@ class C_Timer : public CHudElement, public Panel
     void Init() override;
     void Reset() override;
     void Paint() override;
-    bool ShouldDraw() override { return mom_timer.GetBool() && CHudElement::ShouldDraw(); }
+    bool ShouldDraw() override
+    { 
+        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
+        return mom_timer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible();
+    }
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {

@@ -16,14 +16,54 @@
 	"wave"	"player/suit_sprint.wav"
 }
 
-"HL2Player.FlashLightOn"
+"CSPlayer.FlashlightOn"
+{
+    "channel"	"CHAN_WEAPON"
+	"volume"	"0.8"
+	"soundlevel"    "SNDLVL_75dB"
+	"pitch"	"PITCH_NORM"
+
+	"wave" "items/flashlight_cs.wav"
+}
+
+"CSPlayer.FlashlightOff"
+{
+    "channel"	"CHAN_WEAPON"
+	"volume"	"0.8"
+	"soundlevel"    "SNDLVL_75dB"
+	"pitch"	"PITCH_NORM"
+
+	"wave" "items/flashlight_cs.wav"
+}
+
+"HL1Player.FlashlightOn"
 {
 	"channel"	"CHAN_WEAPON"
 	"volume"	"0.8"
 	"soundlevel"    "SNDLVL_75dB"
 	"pitch"	"PITCH_NORM"
 
-	"wave" "items/flashlight1.wav"
+	"wave" "items/flashlight_hl1.wav"
+}
+
+"HL1Player.FlashlightOff"
+{
+	"channel"	"CHAN_WEAPON"
+	"volume"	"0.8"
+	"soundlevel"  "SNDLVL_75dB"
+	"pitch"	"PITCH_NORM"
+
+	"wave" "items/flashlight_hl1.wav"
+}
+
+"HL2Player.FlashlightOn"
+{
+	"channel"	"CHAN_WEAPON"
+	"volume"	"0.8"
+	"soundlevel"    "SNDLVL_75dB"
+	"pitch"	"PITCH_NORM"
+
+	"wave" "items/flashlight_hl2.wav"
 }
 
 "HL2Player.FlashLightOff"
@@ -33,7 +73,7 @@
 	"soundlevel"  "SNDLVL_75dB"
 	"pitch"	"PITCH_NORM"
 
-	"wave" "items/flashlight1.wav"
+	"wave" "items/flashlight_hl2.wav"
 }
 
 "HL2Player.PickupWeapon"

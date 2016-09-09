@@ -4726,11 +4726,11 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 
 	SetEnabled( inResourceData->GetInt("enabled", true) );
 
-	bool bMouseEnabled = inResourceData->GetInt( "mouseinputenabled", true );
-	if ( !bMouseEnabled )
-	{
-		SetMouseInputEnabled( false );
-	}
+    if (!inResourceData->IsEmpty("mouseinputenabled"))
+        SetMouseInputEnabled(inResourceData->GetBool("mouseinputenabled", true));
+
+    if (!inResourceData->IsEmpty("keyboardinputenabled"))
+        SetKeyBoardInputEnabled(inResourceData->GetBool("keyboardinputenabled", false));
 
 	// tab order
 	SetTabPosition(inResourceData->GetInt("tabPosition", 0));
@@ -4835,12 +4835,6 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 			(*m_OverridableColorEntries[i].m_pColor) = m_OverridableColorEntries[i].m_colFromScript;
 			m_OverridableColorEntries[i].m_bOverridden = true;
 		}
-	}
-
-	const char *pKeyboardInputEnabled = inResourceData->GetString( "keyboardinputenabled", NULL );
-	if ( pKeyboardInputEnabled && pKeyboardInputEnabled[0] )
-	{
-		SetKeyBoardInputEnabled( atoi( pKeyboardInputEnabled ) );
 	}
 
 	OnChildSettingsApplied( inResourceData, this );

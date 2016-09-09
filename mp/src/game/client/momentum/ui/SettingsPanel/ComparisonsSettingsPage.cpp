@@ -72,7 +72,6 @@ ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pPa
 
 ComparisonsSettingsPage::~ComparisonsSettingsPage()
 {
-    DestroyBogusComparePanel();
 }
 
 void ComparisonsSettingsPage::DestroyBogusComparePanel()

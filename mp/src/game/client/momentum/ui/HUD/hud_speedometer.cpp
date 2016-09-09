@@ -22,6 +22,9 @@
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
 #include <math.h>
+#include "baseviewport.h"
+
+#include "tier0/memdbgon.h"
 
 using namespace vgui;
 
@@ -87,7 +90,11 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
 
     void OnThink() override;
 
-    bool ShouldDraw() override { return mom_speedometer.GetBool() && CHudElement::ShouldDraw(); }
+    bool ShouldDraw() override 
+    { 
+        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
+        return mom_speedometer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
+    }
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {

@@ -20,6 +20,7 @@
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
+#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
@@ -44,7 +45,11 @@ class C_HudMapInfo : public CHudElement, public Panel
     void Init() override;
     void Reset() override;
     void Paint() override;
-    bool ShouldDraw() override { return CHudElement::ShouldDraw(); }
+    bool ShouldDraw() override 
+    { 
+        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
+        return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
+    }
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {
@@ -59,8 +64,9 @@ class C_HudMapInfo : public CHudElement, public Panel
   protected:
     CPanelAnimationVar(HFont, m_hStatusFont, "StatusFont", "Default");
     CPanelAnimationVar(HFont, m_hMapInfoFont, "MapInfoFont", "Default");
+    CPanelAnimationVar(Color, m_cTextColor, "TextColor", "MOM.Panel.Fg");
+    CPanelAnimationVar(bool, center_status, "centerStatus", "1");
 
-    CPanelAnimationVarAliasType(bool, center_status, "centerStatus", "1", "BOOL");
     CPanelAnimationVarAliasType(int, status_xpos, "status_xpos", "0", "proportional_xpos");
     CPanelAnimationVarAliasType(int, status_ypos, "status_ypos", "c+135", "proportional_ypos");
     CPanelAnimationVarAliasType(int, mapinfo_xpos, "mapinfo_xpos", "0", "proportional_xpos");
@@ -79,12 +85,10 @@ class C_HudMapInfo : public CHudElement, public Panel
     bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
 };
 
-//The below is basically DECLARE_NAMED_HUDELEMENT_DEPTH(C_HudMapInfo, CHudMapInfo, 10)
-static CHudElement *Create_C_HudMapInfo(void) { return new C_HudMapInfo("CHudMapInfo"); }
-static CHudElementHelper g_C_HudMapInfo_Helper(Create_C_HudMapInfo, 10);
+DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
 
 C_HudMapInfo::C_HudMapInfo(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapInfo")
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
@@ -191,6 +195,9 @@ void C_HudMapInfo::Paint()
                                              stageCurrent);
         }
     }
+
+    // We need our text color, otherwise the following text can be hijacked
+    surface()->DrawSetTextColor(m_cTextColor);
 
     if (center_status)
     {

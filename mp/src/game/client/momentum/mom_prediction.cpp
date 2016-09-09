@@ -12,6 +12,7 @@ CMoveData *g_pMoveData = &g_MoveData;
 
 class CMOMPrediction : public CPrediction
 {
+<<<<<<< HEAD
 	DECLARE_CLASS(CMOMPrediction, CPrediction);
 
 public:
@@ -21,6 +22,17 @@ public:
 
 		BaseClass::SetupMove(player, ucmd, pHelper, move);
 	}
+=======
+    DECLARE_CLASS(CMOMPrediction, CPrediction);
+
+public:
+    void SetupMove(C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move) override
+    {
+        player->AvoidPhysicsProps(ucmd);
+
+        BaseClass::SetupMove(player, ucmd, pHelper, move);
+    }
+>>>>>>> refs/remotes/momentum-mod/develop
 };
 
 // Expose interface to engine

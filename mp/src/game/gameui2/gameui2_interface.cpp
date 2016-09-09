@@ -56,7 +56,10 @@ void CGameUI2::Initialize(CreateInterfaceFn appFactory)
 void CGameUI2::Shutdown()
 {
     if (GetBasePanel())
+    {
+        GetBasePanel()->GetMainMenu()->DeletePanel();
         GetBasePanel()->DeletePanel();
+    }
 
 	ConVar_Unregister();
 	DisconnectTier3Libraries();

@@ -1274,7 +1274,9 @@ void CHLClient::Shutdown( void )
     if (g_pGameUI2)
     {
         g_pGameUI2->OnShutdown();
-        g_pGameUI2->Shutdown();
+#ifndef DEBUG
+        g_pGameUI2->Shutdown(); //For some reason this causes hangs when you debug
+#endif
     }
 #endif
 

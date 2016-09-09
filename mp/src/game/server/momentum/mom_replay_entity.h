@@ -72,7 +72,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     }
 
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
-    inline void SetRunFlags(int flags) { m_RunData.m_iRunFlags = flags; }
+    inline void SetRunFlags(uint32 flags) { m_RunData.m_iRunFlags = flags; }
 
     void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
 

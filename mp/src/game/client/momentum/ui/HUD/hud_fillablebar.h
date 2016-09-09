@@ -1,4 +1,7 @@
+#pragma once
+
 #include "cbase.h"
+
 #include "view.h"
 #include "menu.h"
 #include "iclientmode.h"

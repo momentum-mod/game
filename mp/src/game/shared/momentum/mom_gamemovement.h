@@ -21,7 +21,7 @@ class CMomentumPlayer;
 #define STAMINA_RECOVER_RATE	19.0f
 #define CS_WALK_SPEED			135.0f
 
-#define DuckSpeedMultiplier 0.34f
+#define DUCK_SPEED_MULTIPLIER 0.34f
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -61,15 +61,28 @@ public:
         return MASK_PLAYERSOLID & (~CONTENTS_PLAYERCLIP);
     }
 
+<<<<<<< HEAD
 	virtual float ClimbSpeed(void) const ;
 	virtual float LadderLateralMultiplier(void) const ;
     //const float DuckSpeedMultiplier = 0.34f;
+=======
+    float ClimbSpeed(void) const override;
+    float LadderLateralMultiplier(void) const override;
+>>>>>>> refs/remotes/momentum-mod/develop
 
     //Overrides for fixing rampboost
 	virtual int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr);
 	virtual void FullWalkMove();
 	virtual void DoLateReflect();
 	virtual void CategorizePosition();
+
+    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) override
+    {
+        m_pPlayer = ToCMOMPlayer(pBasePlayer);
+        Assert(m_pPlayer);
+
+        BaseClass::ProcessMovement(pBasePlayer, pMove);
+    }
 
     // Duck
 	virtual void Duck(void) ;
@@ -82,18 +95,5 @@ public:
 private:
 
     float m_flReflectNormal = NO_REFL_NORMAL_CHANGE;//Used by rampboost fix
-
-    // Given a list of nearby ladders, find the best ladder and the "mount" origin
-    void		Findladder(float maxdist, CFuncLadder **ppLadder, Vector& ladderOrigin, const CFuncLadder *skipLadder);
-
-    // Debounce the +USE key
-    void		SwallowUseKey();
-    CMomentumPlayer *GetMomentumPlayer() const;
+    CMomentumPlayer *m_pPlayer;
 };
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-inline CMomentumPlayer	*CMomentumGameMovement::GetMomentumPlayer() const
-{
-    return static_cast<CMomentumPlayer *>(player);
-}
