@@ -7,8 +7,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo"),
-m_CallbackPersonaStateChange(this, &CDialogMapInfo::OnPersonaStateChange)
+CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo")
 {
     SetBounds(0, 0, 512, 512);
     SetMinimumSize(416, 340);
@@ -64,8 +63,6 @@ CDialogMapInfo::~CDialogMapInfo()
 
     if (cbGet10MapTimesCallback.IsActive())
         cbGet10MapTimesCallback.Cancel();
-    
-    m_CallbackPersonaStateChange.Unregister();
 }
 
 //-----------------------------------------------------------------------------
@@ -86,20 +83,6 @@ void CDialogMapInfo::Run(const char *titleName)
     RequestInfo(titleName);
     Activate();
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: updates the dialog when we get info about the map creator
-//-----------------------------------------------------------------------------
-#ifndef NO_STEAM
-void CDialogMapInfo::OnPersonaStateChange(PersonaStateChange_t *pPersonaStateChange)
-{
-    if (pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeNameFirstSet || 
-        pPersonaStateChange->m_nChangeFlags & k_EPersonaChangeName)
-    {
-        SetControlString("AuthorText", steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pPersonaStateChange->m_ulSteamID)));
-    }
-}
-#endif // NO_STEAM
 
 //-----------------------------------------------------------------------------
 // Purpose: lays out the data
@@ -235,8 +218,8 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
 {
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        char szURL[512];
-        Q_snprintf(szURL, 512, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
+        char szURL[BUFSIZ];
+        Q_snprintf(szURL, BUFSIZ, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
         HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
 
@@ -247,13 +230,13 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
         }
         else
         {
-            Warning("Failed to send HTTP Request to get map info!\n");
+            Warning("%s - Failed to send HTTP Request to get map info!\n", __FUNCTION__);
             steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
     {
-        Warning("CDialogMapInfo::GetMapInfo() - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
+        Warning("%s - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n", __FUNCTION__);
     }
 }
 
@@ -337,17 +320,9 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
             SetControlString("NumZones", buffer);
 
             //Author
-            uint64 steamID = Q_atoui64(pResponse->GetString("submitter"));
-            CSteamID submitter(steamID);
 
-            if (steamapicontext->SteamFriends()->RequestUserInformation(submitter, true))
-            {
-                SetControlString("AuthorText", "Requesting map author...");
-            }
-            else
-            {
-                SetControlString("AuthorText", steamapicontext->SteamFriends()->GetFriendPersonaName(submitter));
-            }
+            SetControlString("AuthorText", pResponse->GetString("submitter"));
+
 
             //Game mode
             //MOM_TODO: Potentially have this part of the site?
@@ -382,8 +357,8 @@ void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        char szURL[512];
-        Q_snprintf(szURL, 512, "%s/getscores/%s/10", MOM_APIDOMAIN, mapname);
+        char szURL[BUFSIZ];
+        Q_snprintf(szURL, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, mapname);
         HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
         if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
@@ -392,13 +367,13 @@ void CDialogMapInfo::Get10MapTimes(const char* mapname)
         }
         else
         {
-            Warning("Failed to send HTTP Request to get map scores!\n");
+            Warning("%s - Failed to send HTTP Request to get map scores!\n", __FUNCTION__);
             steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
     {
-        Warning("CDialogMapInfo::Get10MapTimes() - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n");
+        Warning("%s - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n", __FUNCTION__);
     }
 
 }
@@ -464,7 +439,8 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
                     kvEntry->SetFloat("TimeSec", pRun->GetFloat("time"));
 
                     //Persona name for the time they accomplished the run
-                    kvEntry->SetString("PlayerName", pRun->GetString("personaname_t"));
+                    const char * pPerName = pRun->GetString("personaname_t");
+                    kvEntry->SetString("PlayerName", !Q_strcmp(pPerName, "") ? "< blank >" : pRun->GetString("personaname_t"));
 
                     //Rank
                     kvEntry->SetInt("rank", static_cast<int>(pRun->GetFloat("rank")));

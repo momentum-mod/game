@@ -20,6 +20,7 @@
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
+#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
@@ -44,7 +45,11 @@ class C_HudMapInfo : public CHudElement, public Panel
     void Init() override;
     void Reset() override;
     void Paint() override;
-    bool ShouldDraw() override { return CHudElement::ShouldDraw(); }
+    bool ShouldDraw() override 
+    { 
+        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
+        return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
+    }
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {

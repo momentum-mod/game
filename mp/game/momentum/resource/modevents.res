@@ -58,6 +58,10 @@
     "mapfinished_panel_closed"
     {
     }
+	"replay_save"
+	{
+		"filename" "string"
+	}
     "weapon_fire"
     {
         "userid" "long"

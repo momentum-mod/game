@@ -69,7 +69,7 @@ $Project "Client (Momentum)"
 	                	$File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
 	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
-	                    $File "momentum\ui\SettingsPanel\ControlsSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
                 	}
@@ -77,7 +77,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
                     $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
                     $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
-	                $File "momentum\ui\SettingsPanel\ControlsSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\GameplaySettingsPage.cpp"
 	                $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
 	                $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.cpp"
                 }
@@ -138,6 +138,9 @@ $Project "Client (Momentum)"
                     }
                 }
             }
+
+            $File 	"momentum\mom_run_poster.h"
+            $File 	"momentum\mom_run_poster.cpp"
 
             $Folder "Weapons"
             {

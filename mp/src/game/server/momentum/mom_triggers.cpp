@@ -127,13 +127,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         {
             if (IsLimitingSpeed())
             {
-                Vector velocity = pOther->GetAbsVelocity();
-                    // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
-                    // It only has a NormalizeInPlace... Not simple enough for me
-                Vector2D vel2D = velocity.AsVector2D();
-
                 if (pPlayer->DidPlayerBhop())
                 {
+                    Vector velocity = pOther->GetAbsVelocity();
+                    // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
+                    // It only has a NormalizeInPlace... Not simple enough for me
+                    Vector2D vel2D = velocity.AsVector2D();
                     if (velocity.AsVector2D().IsLengthGreaterThan(m_fBhopLeaveSpeed))
                     {
                         vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));

@@ -47,70 +47,6 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    if (bIOFailure)
-        return;
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        Warning("MomentumUtil::PostTimeCallback: 0 body size!\n");
-        return;
-    }
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    DevLog("pDataPtr: %s\n", pDataPtr);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-        {
-            // toNode() returns the >>payload<< of the JSON object !!!
-
-            DevLog("Outer is JSON OBJECT!\n");
-            JsonNode *node = val.toNode();
-            DevLog("Outer has key %s with value %s\n", node->key, node->value);
-
-            // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
-            // the JSON
-            if (node && node->value.getTag() == JSON_TRUE)
-            {
-                DevLog("RESPONSE WAS TRUE!\n");
-                // Necessary so that the leaderboards and hud_mapfinished update appropriately
-                if (runUploadedEvent)
-                {
-                    runUploadedEvent->SetBool("run_posted", true);
-                    // MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
-                    gameeventmanager->FireEvent(runUploadedEvent);
-                }
-            }
-        }
-    }
-    else
-    {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    }
-    // Last but not least, free resources
-    alloc.deallocate();
-    CleanupRequest(pCallback, pData);
-}
-
-void MomentumUtil::PostTime(const char *szURL)
-{
-    CreateAndSendHTTPReq(szURL, &cbPostTimeCallback, &MomentumUtil::PostTimeCallback);
-}
-
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
     if (!steamapicontext->SteamHTTP())
@@ -153,6 +89,7 @@ void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumU
     }
     else
     {
+        Warning("Steampicontext failure.\n");
         Warning("Could not find Steam Api Context active\n");
     }
 }

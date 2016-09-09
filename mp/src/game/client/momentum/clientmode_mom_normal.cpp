@@ -18,6 +18,7 @@
 #include <vgui/IPanel.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
+#include "IGameUIFuncs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -138,12 +139,15 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
     }
 
     //Detach the mouse if the user right-clicked while the leaderboards are open
-    
     if (m_pLeaderboards && m_pLeaderboards->IsVisible())
     {
         if (keynum == MOUSE_RIGHT)
         {
             m_pLeaderboards->SetMouseInputEnabled(true);
+            //MOM_TODO: Consider toggling the leaderboards open with this
+            //m_pLeaderboards->SetKeyBoardInputEnabled(!prior);
+            //ButtonCode_t close = gameuifuncs->GetButtonCodeForBind("showtimes");
+            //gViewPortInterface->PostMessageToPanel(PANEL_TIMES, new KeyValues("PollHideCode", "code", close));
             return 0;
         }
     }

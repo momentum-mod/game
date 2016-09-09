@@ -9,6 +9,7 @@
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
 #include <math.h>
+#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
@@ -39,11 +40,14 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
 {
     DECLARE_CLASS_SIMPLE(CHudStrafeSyncDisplay, CHudNumericDisplay);
 
-  public:
     CHudStrafeSyncDisplay(const char *pElementName);
     void OnThink() override;
     bool ShouldDraw() override
     {
+        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
+        if (pLeaderboards && pLeaderboards->IsVisible())
+            return false;
+
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
         bool shouldDrawLocal = false;
         if (pPlayer)

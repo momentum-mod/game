@@ -42,10 +42,8 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     m_bShouldStopRec = false;
     
     //Don't ask why, but these need to be formatted in their own strings.
-    time_t lastDate = g_Timer->GetLastRunDate();
-    Q_snprintf(runDate, MAX_PATH, "%i", lastDate);
-    float lastTime = g_Timer->GetLastRunTime();
-    Q_snprintf(runTime, MAX_PATH, "%f", lastTime);
+    Q_snprintf(runDate, MAX_PATH, "%i", g_Timer->GetLastRunDate());
+    Q_snprintf(runTime, MAX_PATH, "%.3f", g_Timer->GetLastRunTime());
     //It's weird.
 
     Q_snprintf(newRecordingName, MAX_PATH, "%s-%s%s", runDate, runTime, EXT_RECORDING_FILE);
@@ -66,10 +64,14 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     DevLog("After trimming: %i\n", postTrimTickCount);
     m_pReplayManager->StoreReplay(newRecordingPath);
     m_pReplayManager->StopRecording();
-
     //Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
     Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
-
+    IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+    if (replaySavedEvent)
+    {
+        replaySavedEvent->SetString("filename", newRecordingName);
+        gameeventmanager->FireEvent(replaySavedEvent);
+    }
     // Load the last run that we did in case we want to watch it
     m_pReplayManager->LoadReplay(newRecordingPath);
 
