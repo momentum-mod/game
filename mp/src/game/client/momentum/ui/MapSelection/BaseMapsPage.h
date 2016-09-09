@@ -39,7 +39,7 @@ class CBaseMapsPage : public vgui::PropertyPage, public IMapList
     DECLARE_CLASS_SIMPLE(CBaseMapsPage, vgui::PropertyPage);
 
 public:
-    CBaseMapsPage(vgui::Panel *parent, const char *name, const char *pCustomResFilename = NULL);
+    CBaseMapsPage(vgui::Panel *parent, const char *name, const char *pCustomResFilename = nullptr);
     ~CBaseMapsPage();
 
     virtual void PerformLayout();

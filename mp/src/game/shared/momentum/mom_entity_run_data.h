@@ -29,7 +29,7 @@ public:
     CNetworkVar(float, m_flStrafeSync2); //acceleration based, strafes speed gained / total strafes
     CNetworkVar(float, m_flLastJumpTime); //The last time that the player jumped
     CNetworkVar(float, m_flLastJumpVel); //Last jump velocity of the player
-    CNetworkVar(int, m_iRunFlags);//The run flags (W only/HSW/Scroll etc) of the player
+    CNetworkVar(uint32, m_iRunFlags);//The run flags (W only/HSW/Scroll etc) of the player
     CNetworkVar(bool, m_bIsInZone);//This is true if the player is in a CTriggerTimerStage zone
     CNetworkVar(bool, m_bMapFinished);//Did the player finish the map?
     CNetworkVar(int, m_iCurrentZone);//Current stage/checkpoint the player is on
@@ -41,7 +41,8 @@ public:
 
     bool m_bAutoBhop, m_bIsInZone, m_bMapFinished, m_bTimerRunning;
     float m_flStrafeSync, m_flStrafeSync2, m_flLastJumpVel, m_flLastJumpTime, m_flRunTime;
-    int m_iSuccessiveBhops, m_iRunFlags, m_iCurrentZone, m_iStartTick;
+    int m_iSuccessiveBhops, m_iCurrentZone, m_iStartTick;
+    uint32 m_iRunFlags;
 
 #endif
 };

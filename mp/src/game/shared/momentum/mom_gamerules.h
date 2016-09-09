@@ -25,6 +25,8 @@ class CMomentumGameRules : public CSingleplayRules
 
     const CViewVectors* GetViewVectors() const override;
 
+    bool ShouldCollide(int collGroup1, int collGroup2) override;
+
 #ifdef CLIENT_DLL
 
     DECLARE_CLIENTCLASS_NOBASE(); // This makes datatables able to access our private vars.

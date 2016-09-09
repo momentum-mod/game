@@ -56,8 +56,7 @@ class CMessageboxInterface : public IMessageboxPanel
     {
         if (pPanel)
         {
-            pPanel->SetParent(nullptr);
-            delete pPanel;
+            pPanel->DeletePanel();
         }
         pPanel = nullptr;
     }

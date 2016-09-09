@@ -62,4 +62,16 @@
 	{
 		"filename" "string"
 	}
+    "weapon_fire"
+    {
+        "userid" "long"
+        "weapon" "string"
+    }
+    "bullet_impact"
+    {
+        "userid" "long"
+        "x" "float"
+        "y" "float"
+        "z" "float"
+    }
 }

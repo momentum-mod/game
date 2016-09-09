@@ -6,7 +6,7 @@
 
 #include "cbase.h"
 #include "fx_cs_shared.h"
-#include "weapon_csbase.h"
+#include "weapon/weapon_csbase.h"
 
 #ifndef CLIENT_DLL
 #include "ilagcompensationmanager.h"
@@ -139,17 +139,6 @@ void FX_FireBullets(
         return;
     }
 
-    CCSWeaponInfo *pWeaponInfo = static_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
-
-    // Do the firing animation event.
-    if (pPlayer && !pPlayer->IsDormant())
-    {
-        //if (iMode == Primary_Mode)
-         //   pPlayer->GetPlayerAnimState()->DoAnimationEvent(PLAYERANIMEVENT_FIRE_GUN_PRIMARY);
-        //else
-        //    pPlayer->GetPlayerAnimState()->DoAnimationEvent(PLAYERANIMEVENT_FIRE_GUN_SECONDARY);
-    }
-
 #ifndef CLIENT_DLL
     // if this is server code, send the effect over to client as temp entity
     // Dispatch one message for all the bullet impacts and sounds.
@@ -163,55 +152,22 @@ void FX_FireBullets(
         flSpread
         );
 
-
-    // Let the player remember the usercmd he fired a weapon on. Assists in making decisions about lag compensation.
-    //pPlayer->NoteWeaponFired();
-
     bDoEffects = false; // no effects on server
 #endif
 
     iSeed++;
 
-    bool	bPrimaryMode = (iMode == Primary_Mode);
+    CCSWeaponInfo *pWeaponInfo = static_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
+
     int		iDamage = pWeaponInfo->m_iDamage;
     float	flRange = pWeaponInfo->m_flRange;
     int		iPenetration = pWeaponInfo->m_iPenetration;
     float	flRangeModifier = pWeaponInfo->m_flRangeModifier;
     int		iAmmoType = pWeaponInfo->iAmmoType;
 
-    WeaponSound_t sound_type = SINGLE;
-
-    // CS HACK, tweak some weapon values based on primary/secondary mode
-
-    if (iWeaponID == WEAPON_GLOCK)
-    {
-        if (!bPrimaryMode)
-        {
-            iDamage = 18;	// reduced power for burst shots
-            flRangeModifier = 0.9f;
-        }
-    }
-    else if (iWeaponID == WEAPON_M4A1)
-    {
-        if (!bPrimaryMode)
-        {
-            flRangeModifier = 0.95f; // slower bullets in silenced mode
-            sound_type = SPECIAL1;
-        }
-    }
-    else if (iWeaponID == WEAPON_USP)
-    {
-        if (!bPrimaryMode)
-        {
-            iDamage = 30; // reduced damage in silenced mode
-            sound_type = SPECIAL1;
-        }
-    }
-
-
     if (bDoEffects)
     {
-        FX_WeaponSound(iPlayerIndex, sound_type, vOrigin, pWeaponInfo);
+        FX_WeaponSound(iPlayerIndex, SINGLE, vOrigin, pWeaponInfo);
     }
 
 
@@ -221,10 +177,6 @@ void FX_FireBullets(
         return;
 
     StartGroupingSounds();
-
-#ifdef GAME_DLL
-    //pPlayer->StartNewBulletGroup();
-#endif
 
 #if !defined (CLIENT_DLL)
     // Move other players back to history positions based on local player's lag

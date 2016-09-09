@@ -1,0 +1,96 @@
+WeaponData
+{
+    "WeaponType"                "Shotgun"
+    "CrosshairMinDistance"      "9"
+    "CrosshairDeltaDistance"    "4"
+    "BuiltRightHanded"          "1"
+    "MuzzleFlashScale"          "1.3"
+    
+    // Weapon characteristics:
+    "Penetration"       "1"
+    "Damage"            "22"
+    "Range"             "3000"
+    "RangeModifier"     "0.70"
+    "Bullets"           "6"
+    "CycleTime"         "0.25"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "#HL2_Shotgun"
+    "viewmodel"         "models/weapons/v_mom_shotgun.mdl"
+    "playermodel"       "models/weapons/w_mom_shotgun.mdl"
+    
+    "anim_prefix"       "anim"
+    "bucket"            "0"
+    "bucket_position"   "4"
+
+    "clip_size"         "7"
+    
+    "primary_ammo"      "BULLET_PLAYER_BUCKSHOT"
+    "secondary_ammo"    "None"
+
+    "weight"            "20"
+    "item_flags"        "0"
+
+    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    SoundData
+    {
+        //"reload"          "Default.Reload"
+        //"empty"               "Default.ClipEmpty_Rifle"
+        "single_shot"       "Weapon_Shotgun.Single"
+        special3            Default.Zoom
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        "weapon"
+		{
+				"font"		"WeaponIcons"
+				"character"	"b"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"b"
+		}
+		"weapon_small"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"b"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"s"
+		}
+        "crosshair"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+        "autoaim"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+    }
+    ModelBounds
+    {
+        Viewmodel
+        {
+            Mins    "-13 -3 -11"
+            Maxs    "29 10 0"
+        }
+        World
+        {
+            Mins    "-4 -8 -4"
+            Maxs    "30 8 6"
+        }
+    }
+}
