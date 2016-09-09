@@ -1210,7 +1210,7 @@ void CHLClient::PostInit()
 		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
 		if (shared)
 		{
-			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (SERVER)\n");
+			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (CLIENT)\n");
 			
 			shared->LoadedClient = true;
 
