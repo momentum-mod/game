@@ -100,7 +100,6 @@ class C_Timer : public CHudElement, public Panel
 
     wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL];
 
-    int m_iTotalTicks;
     bool m_bPlayerInZone;
     bool m_bWereCheatsActivated;
     bool m_bPlayerHasPracticeMode;
@@ -132,7 +131,6 @@ void C_Timer::Init()
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
     initialTall = 48;
-    m_iTotalTicks = 0;
 	if (shared)
 		shared->m_iTotalTicksT = 0;
     m_iZoneCount = 0;
@@ -154,7 +152,6 @@ void C_Timer::Reset()
 {
     m_bIsRunning = false;
     m_bTimerRan = false;
-    m_iTotalTicks = 0;
 	if (shared)
 		shared->m_iTotalTicksT = 0;
     m_iZoneCurrent = 1;
