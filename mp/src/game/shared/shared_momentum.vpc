@@ -61,7 +61,7 @@ $Configuration
 }
 
 
-$Project "Shared (momentum)"
+$Project "Shared (Momentum)"
 {
   	$Folder "Source Files"
     	{
