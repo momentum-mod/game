@@ -46,6 +46,7 @@ server_srv.so.dbg
 client.dll
 server.dll
 gameui2.dll
+shared.dll
 
 client.dylib
 client.dylib.dSYM/
