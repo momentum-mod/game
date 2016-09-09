@@ -173,7 +173,7 @@ void CHudReplay::OnTick()
 	Q_strncpy(totaltime, COM_FormatSeconds(TICK_INTERVAL * shared->m_iTotalTicks), 32);
 
 	m_pProgressLabelTime->SetText(va("Time: %s / %s", curtime, totaltime));
-	m_pSpeedScaleLabel->SetText(va("%.1f %% (ms)", (float)m_pSpeedScale->GetValue()));
+	m_pSpeedScaleLabel->SetText(va("%.1f %%", (float)m_pSpeedScale->GetValue()));
 }
 
 // Command issued
