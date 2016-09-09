@@ -42,7 +42,7 @@ CMessageboxPanel::CMessageboxPanel(VPANEL parent) : BaseClass(nullptr, "Messageb
     HOOK_MESSAGE(MB_EditingZone);
 }
 
-CMessageboxPanel::~CMessageboxPanel() { FlushMessageboxes(); }
+CMessageboxPanel::~CMessageboxPanel() { }
 
 void CMessageboxPanel::Close() { FlushMessageboxes(); }
 

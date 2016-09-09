@@ -58,4 +58,16 @@
     "mapfinished_panel_closed"
     {
     }
+    "weapon_fire"
+    {
+        "userid" "long"
+        "weapon" "string"
+    }
+    "bullet_impact"
+    {
+        "userid" "long"
+        "x" "float"
+        "y" "float"
+        "z" "float"
+    }
 }

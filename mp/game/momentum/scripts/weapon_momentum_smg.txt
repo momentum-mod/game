@@ -1,0 +1,95 @@
+WeaponData
+{
+    "WeaponType"                "SubMachinegun"
+    "CrosshairMinDistance"      "7"
+    "CrosshairDeltaDistance"    "3"
+    "BuiltRightHanded"          "1"
+    "MuzzleFlashScale"          "1.2"
+    "MuzzleFlashStyle"          "CS_MUZZLEFLASH_X"
+    
+    
+    // Weapon characteristics:
+    "Penetration"       "1"
+    "Damage"            "26"
+    "Range"             "4096"
+    "RangeModifier"     "0.84"
+    "Bullets"           "1"
+    "CycleTime"         "0.07"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "#HL2_SMG1"
+    "viewmodel"         "models/weapons/v_smg1.mdl"
+    "playermodel"       "models/weapons/w_smg1.mdl"
+    
+    "anim_prefix"       "anim"
+    "bucket"            "0"
+    "bucket_position"   "0"
+
+    "clip_size"         "50"
+    
+    "primary_ammo"      "BULLET_PLAYER_57MM"
+    "secondary_ammo"    "None"
+
+    "weight"            "26"
+    "item_flags"        "0"
+
+    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    SoundData
+    {
+        "single_shot"       "Weapon_SMG1.Single"
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        "weapon"
+		{
+				"font"		"WeaponIcons"
+				"character"	"a"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"a"
+		}
+		"weapon_small"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"a"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"r"
+		}
+        "crosshair"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+        "autoaim"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+    }
+    ModelBounds
+    {
+        Viewmodel
+        {
+            Mins    "-8 -3 -13"
+            Maxs    "19 9 -1"
+        }
+        World
+        {
+            Mins    "-8 -1 -3"
+            Maxs    "14 3 9"
+        }
+    }
+}

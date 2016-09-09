@@ -17,6 +17,13 @@ class CMomentumReplayGhostEntity;
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 
+// MOM_TODO: Replace this with the custom player model
+#define ENTITY_MODEL "models/player/player_shape_base.mdl"
+
+// Change these if you want to change the flashlight sound
+#define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
+#define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
+
 //Checkpoints used in the "Checkpoint menu"
 struct Checkpoint
 {
@@ -49,17 +56,19 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void FlashlightTurnOn() override
     {
         AddEffects(EF_DIMLIGHT);
-        EmitSound("HL2Player.FlashLightOn"); // MOM_TODO: change this?
+        EmitSound(SND_FLASHLIGHT_ON);
     }
 
     void FlashlightTurnOff() override
     {
         RemoveEffects(EF_DIMLIGHT);
-        EmitSound("HL2Player.FlashLightOff"); // MOM_TODO: change this?
+        EmitSound(SND_FLASHLIGHT_OFF);
     }
 
     void Spawn() override;
     void Precache() override;
+
+    void CreateViewModel(int index = 0) override;
 
     void FireGameEvent(IGameEvent *pEvent) override;
 
@@ -145,8 +154,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_nZoneAvgCount[MAX_STAGES];
     float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
 
-    //Overrode for the spectating GUI
+    //Overrode for the spectating GUI and weapon dropping
     bool ClientCommand(const CCommand &args) override;
+    void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
 
     //--------- CheckpointMenu stuff --------------------------------
     CNetworkVar(int, m_iCurrentStepCP); //The current checkpoint the player is on
