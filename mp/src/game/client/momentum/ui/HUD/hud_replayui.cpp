@@ -230,4 +230,4 @@ void replayui_f()
 	}
 }
 
-static ConCommand replayui("replayui", replayui_f, "Replay UI.");
+static ConCommand replayui("replayui", replayui_f, "Replay Ghost GUI.");
