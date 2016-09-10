@@ -185,31 +185,21 @@ void CHudReplay::OnTick()
 
     // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
     // will disable the replayui
-    static bool once = false;
-	C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-	if (pGhost)
-	{
-		//always disable if map is finished
-		if (pGhost->m_RunData.m_bMapFinished)
-		{
-			SetVisible(false);
-		}
+    C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+    if (pGhost)
+    {
+        // always disable if map is finished
+        if (pGhost->m_RunData.m_bMapFinished)
+        {
+            SetVisible(false);
+        }
 
-		if (shared->m_iCurrentTick >= shared->m_iTotalTicks)
-		{
-			if (!once)
-			{
-
-				pGhost->m_RunData.m_bMapFinished = true;
-
-				SetVisible(false);
-
-				once = true;
-			}
-		}
-		else
-			once = false;
-	}
+        if (shared->m_iCurrentTick >= shared->m_iTotalTicks)
+        {
+            pGhost->m_RunData.m_bMapFinished = true;
+            SetVisible(false);
+        }
+    }
 }
 
 // Command issued
