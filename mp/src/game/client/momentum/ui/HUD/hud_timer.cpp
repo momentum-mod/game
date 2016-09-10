@@ -133,11 +133,12 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
 
 void C_Timer::Init()
 {
+	if (shared)
+		shared->m_iTotalTicks_Client_Timer = 0;
+
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
     initialTall = 48;
-	if (shared)
-		shared->m_iTotalTicksT = 0;
     m_iZoneCount = 0;
     m_pRunStats = nullptr;
     // Reset();
@@ -155,10 +156,11 @@ void C_Timer::Init()
 
 void C_Timer::Reset()
 {
+	if (shared)
+		shared->m_iTotalTicks_Client_Timer = 0;
+
     m_bIsRunning = false;
     m_bTimerRan = false;
-	if (shared)
-		shared->m_iTotalTicksT = 0;
     m_iZoneCurrent = 1;
     m_bShowCheckpoints = false;
     m_bWereCheatsActivated = false;
@@ -220,23 +222,38 @@ void C_Timer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
 float C_Timer::GetCurrentTime()
 {
-    // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
-    // so we add an extra tick here to make them line up again
+	// HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
+	// so we add an extra tick here to make them line up again
 
-	//If we even loaded the shared DLL
-    if (shared)
-    {
-        shared->m_iTotalTicksT = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
-    }
-    else
-    {
-        return 0.0f;
-    }
-	
+	// If it's null then don't do anything
+	if (shared)
+	{
+		//If a replay is on (m_iTotalTicks is set when a ghost entity is spawned and reset after it's gone so it's good to use this
+		if (shared->m_iTotalTicks > 0)
+		{
+			//If the client pressed playing
+			if (shared->m_bIsPlaying)
+			{
+				//If he's inside start zone
+				shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
+			}
+			else
+			{
+				/*If the client didn't press "Playing" button and if he's not inside a start zone then we just reset timer, we can't set to 0 without checking that,
+				because the client could still move the ghost entity with prevtick/nexttick with the replayui but will be reseted there, so we don't want that*/
+				if (!m_bIsRunning)
+					shared->m_iTotalTicks_Client_Timer = 0;
+			}
+		}
+		else
+		{
+			//Otherwhise just run it normally.
+			shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
+		}
+	}
 
-	return static_cast<float>(shared->m_iTotalTicksT) * gpGlobals->interval_per_tick;
+	return static_cast<float>(shared->m_iTotalTicks_Client_Timer) * gpGlobals->interval_per_tick;
 }
-
 // Calculations should be done in here. Paint is for drawing what the calculations have done.
 void C_Timer::OnThink()
 {

@@ -180,7 +180,7 @@ extern vgui::IInputInternal *g_InputInternal;
 extern IClientMode *GetClientModeNormal();
 
 // IF YOU ADD AN INTERFACE, EXTERN IT IN THE HEADER FILE.
-C_SharedDLL     *shared = NULL;
+CShared     *shared = NULL;
 IVEngineClient	*engine = NULL;
 IVModelRender *modelrender = NULL;
 IVEfx *effects = NULL;
@@ -1207,7 +1207,7 @@ void CHLClient::PostInit()
 
 		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
 
-		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
+		shared = appSystemFactory ? ((CShared*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
 		if (shared)
 		{
 			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (CLIENT)\n");

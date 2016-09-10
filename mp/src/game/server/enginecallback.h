@@ -28,9 +28,9 @@ class IServerEngineTools;
 class IXboxSystem;
 class CSteamAPIContext;
 class CSteamGameServerAPIContext;
-class C_SharedDLL;
+class CShared;
 
-extern C_SharedDLL				*shared;
+extern CShared					*shared;
 extern IVEngineServer			*engine;
 extern IVoiceServer				*g_pVoiceServer;
 extern IFileSystem				*filesystem;
