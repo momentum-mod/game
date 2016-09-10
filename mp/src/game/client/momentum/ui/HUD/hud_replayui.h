@@ -15,6 +15,78 @@ class FileOpenDialog;
 class Slider;
 };
 
+namespace vgui
+{
+	//-----------------------------------------------------------------------------
+	// Purpose: overrides normal button drawing to use different colors & borders
+	//-----------------------------------------------------------------------------
+	class OnClickButton : public Button
+	{
+		DECLARE_CLASS_SIMPLE(OnClickButton, Button);
+
+	public:
+
+		Color _selectedColor;
+
+		OnClickButton(Panel *parent, const char *name, const char *text) : Button(parent, name, text)
+		{
+			Button::Button(parent, name, text);
+		}
+
+		virtual void ApplySchemeSettings(IScheme *pScheme)
+		{
+			Button::ApplySchemeSettings(pScheme);
+			_selectedColor = GetSchemeColor("ToggleButton.SelectedTextColor", pScheme);
+		}
+
+		virtual void OnClick()
+		{
+			// post a button toggled message
+			KeyValues *msg = new KeyValues("ButtonToggled");
+			msg->SetInt("state", (int)IsSelected());
+			PostActionSignal(msg);
+
+			Repaint();
+		}
+
+		virtual Color GetButtonFgColor()
+		{
+			if (IsSelected())
+			{
+				// highlight the text when depressed
+				return _selectedColor;
+			}
+			else
+			{
+				return BaseClass::GetButtonFgColor();
+			}
+		}
+
+		virtual void PerformLayout()
+		{
+			Button::PerformLayout();
+		}
+
+		// Don't request focus.
+		// This will keep items in the listpanel selected.
+		virtual void OnMousePressed(MouseCode code)
+		{
+			if (!IsEnabled())
+				return;
+
+			if (!IsMouseClickEnabled(code))
+				return;
+
+			if (IsUseCaptureMouseEnabled())
+			{
+				SetSelected(true);
+			}
+		}
+	};
+
+
+} // namespace vgui
+
 class CHudReplay : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CHudReplay, vgui::Frame);
