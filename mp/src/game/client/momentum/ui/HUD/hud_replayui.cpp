@@ -79,13 +79,13 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(0, pElementName)
 
     m_pPlayPauseResume = new vgui::ToggleButton(this, "DemoPlayPauseResume", "PlayPauseResume");
 
-	m_pGoStart = new vgui::Button(this, "DemoGoStart", "Go Start");
-	m_pGoEnd = new vgui::Button(this, "DemoGoEnd", "Go End");
-	m_pPrevFrame = new vgui::Button(this, "DemoPrevFrame", "Prev Frame");
-	m_pNextFrame = new vgui::Button(this, "DemoNextFrame", "Next Frame");
-	m_pFastForward = new vgui::OnClickButton(this, "DemoFastForward", "Fast Fwd");
-	m_pFastBackward = new vgui::OnClickButton(this, "DemoFastBackward", "Fast Bwd");
-	m_pGo = new vgui::Button(this, "DemoGo", "Go");
+    m_pGoStart = new vgui::Button(this, "DemoGoStart", "Go Start");
+    m_pGoEnd = new vgui::Button(this, "DemoGoEnd", "Go End");
+    m_pPrevFrame = new vgui::Button(this, "DemoPrevFrame", "Prev Frame");
+    m_pNextFrame = new vgui::Button(this, "DemoNextFrame", "Next Frame");
+    m_pFastForward = new vgui::OnClickButton(this, "DemoFastForward", "Fast Fwd");
+    m_pFastBackward = new vgui::OnClickButton(this, "DemoFastBackward", "Fast Bwd");
+    m_pGo = new vgui::Button(this, "DemoGo", "Go");
 
     m_pProgress = new vgui::ProgressBar(this, "DemoProgress");
     m_pProgress->SetSegmentInfo(2, 2);
@@ -183,26 +183,33 @@ void CHudReplay::OnTick()
     m_pProgressLabelTime->SetText(va("Time: %s / %s", curtime, totaltime));
     m_pSpeedScaleLabel->SetText(va("%.1f %%", (float)m_pSpeedScale->GetValue()));
 
-	//Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we will disable the replayui
-	static bool once = false;
-	if (shared->m_iCurrentTick >= shared->m_iTotalTicks)
+    // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
+    // will disable the replayui
+    static bool once = false;
+	C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+	if (pGhost)
 	{
-		if (!once)
+		//always disable if map is finished
+		if (pGhost->m_RunData.m_bMapFinished)
 		{
-			C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-			if (pPlayer)
-			{
-				C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-				pGhost->m_RunData.m_bMapFinished = true;
-			}
-
 			SetVisible(false);
-
-			once = true;
 		}
+
+		if (shared->m_iCurrentTick >= shared->m_iTotalTicks)
+		{
+			if (!once)
+			{
+
+				pGhost->m_RunData.m_bMapFinished = true;
+
+				SetVisible(false);
+
+				once = true;
+			}
+		}
+		else
+			once = false;
 	}
-	else
-		once = false;
 }
 
 // Command issued
