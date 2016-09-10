@@ -34,6 +34,8 @@ public:
 	void		Blocked( CBaseEntity *pOther );
 	void		SetPosition( float flPosition );
 
+	virtual void SetParent(CBaseEntity* pNewParent, int iAttachment = -1);
+
 	int			DrawDebugTextOverlays(void);
 
 	// Input handlers

@@ -829,56 +829,56 @@ void C_BaseEntity::Interp_RestoreToLastNetworked( VarMapping_t *map )
 	BaseInterpolatePart2( oldOrigin, oldAngles, oldVel, 0 );
 }
 
-void C_BaseEntity::Interp_UpdateInterpolationAmounts( VarMapping_t *map )
+void C_BaseEntity::Interp_UpdateInterpolationAmounts(VarMapping_t *map)
 {
-	if( !map )
+	if (!map)
 		return;
 
 	int c = map->m_Entries.Count();
-	for ( int i = 0; i < c; i++ )
+	for (int i = 0; i < c; i++)
 	{
-		VarMapEntry_t *e = &map->m_Entries[ i ];
+		VarMapEntry_t *e = &map->m_Entries[i];
 		IInterpolatedVar *watcher = e->watcher;
-		watcher->SetInterpolationAmount( GetInterpolationAmount( watcher->GetType() ) ); 
+		watcher->SetInterpolationAmount(GetInterpolationAmount(watcher->GetType()));
 	}
 }
 
 void C_BaseEntity::Interp_HierarchyUpdateInterpolationAmounts()
 {
-	Interp_UpdateInterpolationAmounts( GetVarMapping() );
+	Interp_UpdateInterpolationAmounts(GetVarMapping());
 
-	for ( C_BaseEntity *pChild = FirstMoveChild(); pChild; pChild = pChild->NextMovePeer() )
+	for (C_BaseEntity *pChild = FirstMoveChild(); pChild; pChild = pChild->NextMovePeer())
 	{
 		pChild->Interp_HierarchyUpdateInterpolationAmounts();
 	}
 }
 
-inline int C_BaseEntity::Interp_Interpolate( VarMapping_t *map, float currentTime )
+inline int C_BaseEntity::Interp_Interpolate(VarMapping_t *map, float currentTime)
 {
 	int bNoMoreChanges = 1;
-	if ( currentTime < map->m_lastInterpolationTime )
+	if (currentTime < map->m_lastInterpolationTime)
 	{
-		for ( int i = 0; i < map->m_nInterpolatedEntries; i++ )
+		for (int i = 0; i < map->m_nInterpolatedEntries; i++)
 		{
-			VarMapEntry_t *e = &map->m_Entries[ i ];
+			VarMapEntry_t *e = &map->m_Entries[i];
 
 			e->m_bNeedsToInterpolate = true;
 		}
 	}
 	map->m_lastInterpolationTime = currentTime;
 
-	for ( int i = 0; i < map->m_nInterpolatedEntries; i++ )
+	for (int i = 0; i < map->m_nInterpolatedEntries; i++)
 	{
-		VarMapEntry_t *e = &map->m_Entries[ i ];
+		VarMapEntry_t *e = &map->m_Entries[i];
 
-		if ( !e->m_bNeedsToInterpolate )
+		if (!e->m_bNeedsToInterpolate)
 			continue;
-			
+
 		IInterpolatedVar *watcher = e->watcher;
-		Assert( !( watcher->GetType() & EXCLUDE_AUTO_INTERPOLATE ) );
+		Assert(!(watcher->GetType() & EXCLUDE_AUTO_INTERPOLATE));
 
 
-		if ( watcher->Interpolate( currentTime ) )
+		if (watcher->Interpolate(currentTime))
 			e->m_bNeedsToInterpolate = false;
 		else
 			bNoMoreChanges = 0;
@@ -886,6 +886,7 @@ inline int C_BaseEntity::Interp_Interpolate( VarMapping_t *map, float currentTim
 
 	return bNoMoreChanges;
 }
+
 
 //-----------------------------------------------------------------------------
 // Functions.
@@ -897,14 +898,12 @@ C_BaseEntity::C_BaseEntity() :
 {
 	m_pAttributes = NULL;
 
-	AddVar( &m_vecOrigin, &m_iv_vecOrigin, LATCH_SIMULATION_VAR );
-	AddVar( &m_angRotation, &m_iv_angRotation, LATCH_SIMULATION_VAR );
-	// Removing this until we figure out why velocity introduces view hitching.
-	// One possible fix is removing the player->ResetLatched() call in CGameMovement::FinishDuck(), 
-	// but that re-introduces a third-person hitching bug.  One possible cause is the abrupt change
-	// in player size/position that occurs when ducking, and how prediction tries to work through that.
-	//
-	// AddVar( &m_vecVelocity, &m_iv_vecVelocity, LATCH_SIMULATION_VAR );
+
+	//LATCH_ANIMATION_VAR or LATCH_SIMULATION_VAR, we should call this only when cbaseanimating is there I guess?
+	//Angles or origin changed, we use simulation for this: https://developer.valvesoftware.com/wiki/Interpolation
+	AddVar(&m_vecOrigin, &m_iv_vecOrigin, LATCH_SIMULATION_VAR);
+	AddVar(&m_angRotation, &m_iv_angRotation, LATCH_SIMULATION_VAR);
+	AddVar(&m_vecVelocity, &m_iv_vecVelocity, LATCH_SIMULATION_VAR);
 
 	m_DataChangeEventRef = -1;
 	m_EntClientFlags = 0;
@@ -1153,7 +1152,7 @@ bool C_BaseEntity::InitializeAsClientEntityByIndex( int iIndex, RenderGroup_t re
 void C_BaseEntity::TrackAngRotation( bool bTrack )
 {
 	if ( bTrack )
-		AddVar( &m_angRotation, &m_iv_angRotation, LATCH_SIMULATION_VAR );
+		AddVar(&m_angRotation, &m_iv_angRotation, LATCH_SIMULATION_VAR);
 	else
 		RemoveVar( &m_angRotation, false );
 }
@@ -3171,6 +3170,7 @@ void C_BaseEntity::TextureAnimationWrapped()
 
 void C_BaseEntity::ClientThink()
 {
+
 }
 
 void C_BaseEntity::Simulate()
@@ -5884,17 +5884,18 @@ static float AdjustInterpolationAmount( C_BaseEntity *pEntity, float baseInterpo
 	return baseInterpolation;
 }
 
-//-------------------------------------
-float C_BaseEntity::GetInterpolationAmount( int flags )
+static ConVar cl_interp_threadmodeticks("cl_interp_threadmodeticks", "0", 0, "Additional interpolation ticks to use when interpolating with threaded engine mode set.");
+
+float C_BaseEntity::GetInterpolationAmount(int flags)
 {
 	// If single player server is "skipping ticks" everything needs to interpolate for a bit longer
 	int serverTickMultiple = 1;
-	if ( IsSimulatingOnAlternateTicks() )
+	if (IsSimulatingOnAlternateTicks())
 	{
 		serverTickMultiple = 2;
 	}
 
-	if ( GetPredictable() || IsClientCreated() )
+	if (GetPredictable() || IsClientCreated())
 	{
 		return TICK_INTERVAL * serverTickMultiple;
 	}
@@ -5902,36 +5903,34 @@ float C_BaseEntity::GetInterpolationAmount( int flags )
 	// Always fully interpolate during multi-player or during demo playback, if the recorded
 	// demo was recorded locally.
 	const bool bPlayingDemo = engine->IsPlayingDemo();
-	const bool bPlayingMultiplayer = !bPlayingDemo && ( gpGlobals->maxClients > 1 );
-	const bool bPlayingNonLocallyRecordedDemo = bPlayingDemo && !engine->IsPlayingDemoALocallyRecordedDemo();
-	if ( bPlayingMultiplayer || bPlayingNonLocallyRecordedDemo )
+	const bool bPlayingMultiplayer = !bPlayingDemo && (gpGlobals->maxClients > 1);
+	if (bPlayingMultiplayer)      
 	{
-		return AdjustInterpolationAmount( this, TICKS_TO_TIME( TIME_TO_TICKS( GetClientInterpAmount() ) + serverTickMultiple ) );
+		return AdjustInterpolationAmount(this, TICKS_TO_TIME(TIME_TO_TICKS(GetClientInterpAmount()) + serverTickMultiple));
 	}
 
 	int expandedServerTickMultiple = serverTickMultiple;
-	if ( IsEngineThreaded() )
+	if (IsEngineThreaded())
 	{
 		expandedServerTickMultiple += g_nThreadModeTicks;
 	}
 
-	if ( IsAnimatedEveryTick() && IsSimulatedEveryTick() )
+	if (IsAnimatedEveryTick() && IsSimulatedEveryTick())
 	{
 		return TICK_INTERVAL * expandedServerTickMultiple;
 	}
 
-	if ( ( flags & LATCH_ANIMATION_VAR ) && IsAnimatedEveryTick() )
+	if ((flags & LATCH_ANIMATION_VAR) && IsAnimatedEveryTick())
 	{
 		return TICK_INTERVAL * expandedServerTickMultiple;
 	}
-	if ( ( flags & LATCH_SIMULATION_VAR ) && IsSimulatedEveryTick() )
+	if ((flags & LATCH_SIMULATION_VAR) && IsSimulatedEveryTick())
 	{
 		return TICK_INTERVAL * expandedServerTickMultiple;
 	}
 
-	return AdjustInterpolationAmount( this, TICKS_TO_TIME( TIME_TO_TICKS( GetClientInterpAmount() ) + serverTickMultiple ) );
+	return AdjustInterpolationAmount(this, TICKS_TO_TIME(TIME_TO_TICKS(GetClientInterpAmount()) + serverTickMultiple));
 }
-
 
 float C_BaseEntity::GetLastChangeTime( int flags )
 {

@@ -76,7 +76,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
 
     void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentStep); }
+    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick); }
     CReplayFrame* GetNextStep();
 
     bool m_bIsActive;
@@ -98,7 +98,6 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
 
   private:
     char m_pszModel[256], m_pszMapName[256];
-    int m_iCurrentStep;
 
     // These are the players spectating this ghost. This will most likely be used in
     // online mode, where you can play back a ghost and people can watch with you.

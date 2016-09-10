@@ -51,6 +51,11 @@ $Project "server"
     "game\server\server_momentum.vpc"   [($WIN32||$POSIX) && $MOMENTUM]
 }
 
+$Project "shared"
+{
+    "game\shared\shared_momentum.vpc"   [($WIN32||$POSIX) && $MOMENTUM]
+}
+
 $Project "mathlib"
 {
 	"mathlib\mathlib.vpc" [$WINDOWS||$X360||$POSIX]

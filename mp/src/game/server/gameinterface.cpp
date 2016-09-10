@@ -171,6 +171,7 @@ IFileSystem		*filesystem = NULL;
 #else
 extern IFileSystem *filesystem;
 #endif
+C_SharedDLL *shared = NULL;
 INetworkStringTableContainer *networkstringtable = NULL;
 IStaticPropMgrServer *staticpropmgr = NULL;
 IUniformRandomStream *random = NULL;
@@ -632,6 +633,9 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	// If not running dedicated, grab the engine vgui interface
 	if ( !engine->IsDedicatedServer() )
 	{
+
+
+
 #ifdef _WIN32
 		// This interface is optional, and is only valid when running with -tools
 		serverenginetools = ( IServerEngineTools * )appSystemFactory( VSERVERENGINETOOLS_INTERFACE_VERSION, NULL );
@@ -753,6 +757,35 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 void CServerGameDLL::PostInit()
 {
 	IGameSystem::PostInitAllSystems();
+
+	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
+	if (SharedModule)
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (SERVER)\n");
+
+		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
+
+		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
+		if (shared)
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (SERVER)\n");
+
+			shared->LoadedServer = true;
+
+			if (shared->LoadedClient && shared->LoadedServer)
+			{
+				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
+			}
+		}
+		else
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
+		}
+	}
+	else
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
+	}
 }
 
 void CServerGameDLL::DLLShutdown( void )
@@ -872,7 +905,7 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
 }
 
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_NOT_CONNECTED, "Changes the tickrate of the game.", onTickRateChange);
+static ConVar tickRate("sv_tickrate", "0.01", FCVAR_CHEAT | FCVAR_NOT_CONNECTED, "Changes the tickrate of the game.", onTickRateChange);
 
 // This is called when a new game is started. (restart, map)
 bool CServerGameDLL::GameInit( void )

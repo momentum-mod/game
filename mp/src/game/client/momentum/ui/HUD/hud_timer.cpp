@@ -105,7 +105,6 @@ class C_Timer : public CHudElement, public Panel
 
     wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL];
 
-    int m_iTotalTicks;
     bool m_bPlayerInZone;
     bool m_bWereCheatsActivated;
     bool m_bPlayerHasPracticeMode;
@@ -137,7 +136,8 @@ void C_Timer::Init()
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
     initialTall = 48;
-    m_iTotalTicks = 0;
+	if (shared)
+		shared->m_iTotalTicksT = 0;
     m_iZoneCount = 0;
     m_pRunStats = nullptr;
     // Reset();
@@ -157,7 +157,8 @@ void C_Timer::Reset()
 {
     m_bIsRunning = false;
     m_bTimerRan = false;
-    m_iTotalTicks = 0;
+	if (shared)
+		shared->m_iTotalTicksT = 0;
     m_iZoneCurrent = 1;
     m_bShowCheckpoints = false;
     m_bWereCheatsActivated = false;
@@ -207,6 +208,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         // VGUI_ANIMATE("TimerStop");
         if (pPlayer != nullptr)
         {
+			  m_bTimerRan = true;
             pPlayer->EmitSound("Momentum.StopTimer");
         }
 
@@ -220,9 +222,30 @@ float C_Timer::GetCurrentTime()
 {
     // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     // so we add an extra tick here to make them line up again
-    if (m_bIsRunning)
-        m_iTotalTicks = gpGlobals->tickcount - m_iStartTick + 1;
-    return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
+
+	//If ghost
+	if (shared->m_iTotalTicks > 0)
+	{
+		if (shared->m_bIsPlaying)
+		{
+			if (m_bIsRunning)
+				shared->m_iTotalTicksT = gpGlobals->tickcount - m_iStartTick + 1;
+			else
+				shared->m_iTotalTicksT = 0;
+		}
+		else
+		{
+			if (!m_bIsRunning)
+				shared->m_iTotalTicksT = 0;
+		}
+	}
+	else
+	{
+		if (m_bIsRunning)
+			shared->m_iTotalTicksT = gpGlobals->tickcount - m_iStartTick + 1;
+	}
+
+	return static_cast<float>(shared->m_iTotalTicksT) * gpGlobals->interval_per_tick;
 }
 
 // Calculations should be done in here. Paint is for drawing what the calculations have done.
@@ -251,6 +274,7 @@ void C_Timer::OnThink()
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_RunData;
         }
+
         m_bIsRunning = runData->m_bTimerRunning;
         m_iStartTick = runData->m_iStartTick;
         m_iZoneCurrent = runData->m_iCurrentZone;

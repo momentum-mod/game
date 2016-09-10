@@ -120,6 +120,8 @@ private:
 	void			StorePredictionResults( int predicted_frame );
 	bool			ShouldDumpEntity( C_BaseEntity *ent );
 
+	void			CheckMovingGround(CBasePlayer *player, double frametime);
+
 	void			SmoothViewOnMovingPlatform( C_BasePlayer *pPlayer, Vector& offset );
 
 #if !defined( NO_ENTITY_PREDICTION )

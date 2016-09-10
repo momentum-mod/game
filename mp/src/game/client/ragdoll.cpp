@@ -433,8 +433,8 @@ C_ServerRagdoll::C_ServerRagdoll( void ) :
 	m_elementCount = 0;
 	m_flLastBoneChangeTime = -FLT_MAX;
 
-	AddVar( m_ragPos, &m_iv_ragPos, LATCH_SIMULATION_VAR  );
-	AddVar( m_ragAngles, &m_iv_ragAngles, LATCH_SIMULATION_VAR );
+	AddVar(m_ragPos, &m_iv_ragPos, LATCH_SIMULATION_VAR);
+	AddVar(m_ragAngles, &m_iv_ragAngles, LATCH_SIMULATION_VAR);
 
 	m_flBlendWeight = 0.0f;
 	m_flBlendWeightCurrent = 0.0f;

@@ -405,17 +405,22 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 #endif
 		}
 	}
+
 	// Add model-specific bob even if no weapon associated (for head bob for off hand models)
 	AddViewModelBob( owner, vmorigin, vmangles );
+
 #if !defined ( CSTRIKE_DLL ) && !defined (SDK_DLL)
 	// This was causing weapon jitter when rotating in updated CS:S; original Source had this in above InPrediction block  07/14/10
 	// Add lag
 	CalcViewModelLag( vmorigin, vmangles, vmangoriginal );
+
 #endif
 
 #if defined( CLIENT_DLL )
 	if ( !prediction->InPrediction() )
 	{
+		CalcViewModelLag(vmorigin, vmangles, vmangoriginal); //https://developer.valvesoftware.com/wiki/Viewmodel_Prediction_Fix
+
 		// Let the viewmodel shake at about 10% of the amplitude of the player's view
 		vieweffects->ApplyShake( vmorigin, vmangles, 0.1 );	
 	}

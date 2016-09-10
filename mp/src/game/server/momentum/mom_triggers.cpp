@@ -223,6 +223,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         {
             pGhost->m_RunData.m_bIsInZone = true;
             pGhost->m_RunData.m_bMapFinished = false;
+			pGhost->m_RunData.m_bTimerRunning = false; //Fixed
         }
     }
     // start thinking
@@ -281,12 +282,12 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-
     IGameEvent *stageEvent = nullptr;
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
-    if (pPlayer)
+	if (pOther->IsPlayer())
     {
+		CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+
         g_Timer->SetEndTrigger(this);
         if (g_Timer->IsRunning() && !pPlayer->IsWatchingReplay())
         {

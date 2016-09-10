@@ -14,10 +14,17 @@ class C_MomentumPlayer : public C_BasePlayer
 {
 public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
-    DECLARE_CLIENTCLASS();
+	DECLARE_CLIENTCLASS();
+	DECLARE_PREDICTABLE(); 
+	DECLARE_INTERPOLATION();
 
     C_MomentumPlayer();
     ~C_MomentumPlayer();
+
+	void PostDataUpdate(DataUpdateType_t updateType) override;
+	void OnDataChanged(DataUpdateType_t type) override;
+	bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) override;
+	virtual void ClientThink(void);
 
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 

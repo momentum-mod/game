@@ -38,6 +38,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
+	DECLARE_SERVERCLASS();
+	DECLARE_PREDICTABLE();
+	DECLARE_DATADESC();
 
     CMomentumPlayer();
     ~CMomentumPlayer(void);
@@ -47,9 +50,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
         s_PlayerEdict = ed;
         return static_cast<CMomentumPlayer *>(CreateEntityByName(className));
     }
-
-    DECLARE_SERVERCLASS();
-    DECLARE_DATADESC();
 
     int FlashlightIsOn() override { return IsEffectActive(EF_DIMLIGHT); }
 

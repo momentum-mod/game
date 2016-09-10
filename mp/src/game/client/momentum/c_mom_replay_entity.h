@@ -6,8 +6,9 @@
 
 class C_MomentumReplayGhostEntity : public C_BaseAnimating
 {
-    DECLARE_CLASS(C_MomentumReplayGhostEntity, C_BaseAnimating);
+	DECLARE_CLASS(C_MomentumReplayGhostEntity, C_BaseAnimating);
     DECLARE_CLIENTCLASS();
+	DECLARE_INTERPOLATION()
 
 public:
     C_MomentumReplayGhostEntity();

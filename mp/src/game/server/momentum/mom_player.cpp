@@ -39,7 +39,7 @@ LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0), m_flTicksOnGround(0), m_flLastVelocity(0), m_flLastSyncVelocity(0),
+    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), m_flLastVelocity(0.0f), m_flLastSyncVelocity(0),
       m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
       m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
