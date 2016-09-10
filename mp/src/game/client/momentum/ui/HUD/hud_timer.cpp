@@ -223,27 +223,16 @@ float C_Timer::GetCurrentTime()
     // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     // so we add an extra tick here to make them line up again
 
-	//If ghost
-	if (shared->m_iTotalTicks > 0)
-	{
-		if (shared->m_bIsPlaying)
-		{
-			if (m_bIsRunning)
-				shared->m_iTotalTicksT = gpGlobals->tickcount - m_iStartTick + 1;
-			else
-				shared->m_iTotalTicksT = 0;
-		}
-		else
-		{
-			if (!m_bIsRunning)
-				shared->m_iTotalTicksT = 0;
-		}
-	}
-	else
-	{
-		if (m_bIsRunning)
-			shared->m_iTotalTicksT = gpGlobals->tickcount - m_iStartTick + 1;
-	}
+	//If we even loaded the shared DLL
+    if (shared)
+    {
+        shared->m_iTotalTicksT = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
+    }
+    else
+    {
+        return 0.0f;
+    }
+	
 
 	return static_cast<float>(shared->m_iTotalTicksT) * gpGlobals->interval_per_tick;
 }

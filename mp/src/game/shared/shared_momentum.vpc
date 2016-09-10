@@ -8,12 +8,8 @@ $Macro GAMENAME 	"momentum"
 $Macro OUTBINNAME	"shared"
 $Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
 $Macro SRCDIR		"..\.."
-$Macro GENERATED_PROTO_DIR	"$SRCDIR\game\shared\generated_proto_$GAMENAME"
 
 $Include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
-$include "$SRCDIR\vpc_scripts\protobuf_builder.vpc"
-$Include "$SRCDIR\vpc_scripts\source_replay.vpc"	[$TF]
-$Include "$SRCDIR\game\protobuf_include.vpc"
 
 
 $Configuration	"Debug"
