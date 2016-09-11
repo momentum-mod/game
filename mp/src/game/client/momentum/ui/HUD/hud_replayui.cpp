@@ -148,8 +148,7 @@ void CHudReplay::OnTick()
         if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
             shared->m_iCountAfterStartZone_Client_Timer--;
     }
-
-    if (m_pFastForward->IsSelected())
+	else if (m_pFastForward->IsSelected())
     {
         shared->m_bIsPlaying = false;
         shared->m_iCurrentTick++;
@@ -158,21 +157,23 @@ void CHudReplay::OnTick()
         if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
             shared->m_iCountAfterStartZone_Client_Timer++;
     }
+	else
+	{
+		if (shared->m_bIsPlaying)
+		{
+			C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+			if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+				shared->m_iCountAfterStartZone_Client_Timer++;
 
-    if (shared->m_bIsPlaying)
-    {
-		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
-			shared->m_iCountAfterStartZone_Client_Timer++;
-
-        shared->m_iTotalTicks_Client_Timer++;
-        shared->m_iCurrentTick++;
-        m_pPlayPauseResume->SetText("Playing");
-    }
-    else
-    {
-        m_pPlayPauseResume->SetText("Paused");
-    }
+			shared->m_iTotalTicks_Client_Timer++;
+			shared->m_iCurrentTick++;
+			m_pPlayPauseResume->SetText("Playing");
+		}
+		else
+		{
+			m_pPlayPauseResume->SetText("Paused");
+		}
+	}
 
     if (shared->m_iCurrentTick < 0)
     {
