@@ -87,20 +87,22 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(0, pElementName)
     m_pFastBackward = new vgui::OnClickButton(this, "DemoFastBackward", "Fast Bwd");
     m_pGo = new vgui::Button(this, "DemoGo", "Go");
 
+    m_pGotoTick2 = new vgui::TextEntry(this, "DemoGoToTick2");
+
+    TickRate = ((int)(1.0f / TICK_INTERVAL)) / 10;
+    char buf[0xFF];
+    sprintf(buf, "%i", TickRate);
+    m_pGotoTick2->SetText(buf);
+
+    m_pGo2 = new vgui::Button(this, "DemoGo2", "Go2");
+
     m_pProgress = new vgui::ProgressBar(this, "DemoProgress");
     m_pProgress->SetSegmentInfo(2, 2);
 
     m_pProgressLabelFrame = new vgui::Label(this, "DemoProgressLabelFrame", "");
     m_pProgressLabelTime = new vgui::Label(this, "DemoProgressLabelTime", "");
 
-    m_pSpeedScale = new vgui::Slider(this, "DemoSpeedScale");
-    m_pSpeedScale->SetRange(0, 200);
-    m_pSpeedScale->SetValue(TICK_INTERVAL * 1000);
-    m_pSpeedScale->AddActionSignalTarget(this);
-
-    vgui::ivgui()->AddTickSignal(BaseClass::GetVPanel(), m_pSpeedScale->GetValue());
-
-    m_pSpeedScaleLabel = new vgui::Label(this, "SpeedScale", "");
+    vgui::ivgui()->AddTickSignal(BaseClass::GetVPanel(), m_pGotoTick2->GetValueAsInt());
 
     m_pGotoTick = new vgui::TextEntry(this, "DemoGoToTick");
 
@@ -116,8 +118,8 @@ void CHudReplay::OnTick()
 {
     BaseClass::OnTick();
 
-    char curtime[32];
-    char totaltime[32];
+    char curtime[64];
+    char totaltime[64];
     float fProgress = 0.0f;
 
     // enable/disable all playback control buttons
@@ -126,40 +128,46 @@ void CHudReplay::OnTick()
     m_pGoStart->SetEnabled(true);
     m_pGoEnd->SetEnabled(true);
     m_pPrevFrame->SetEnabled(true);
-    m_pPlayPauseResume->SetEnabled(true);
     m_pFastBackward->SetEnabled(true);
     m_pFastForward->SetEnabled(true);
     m_pGotoTick->SetEnabled(true);
     m_pGo->SetEnabled(true);
+    m_pGotoTick2->SetEnabled(true);
+    m_pGo2->SetEnabled(true);
 
-    vgui::ivgui()->AddTickSignal(BaseClass::GetVPanel(), m_pSpeedScale->GetValue());
+    vgui::ivgui()->AddTickSignal(BaseClass::GetVPanel(), TickRate);
 
     // set play button text
+
+    if (m_pFastBackward->IsSelected())
+    {
+        shared->m_bIsPlaying = false;
+        shared->m_iCurrentTick--;
+        shared->m_iTotalTicks_Client_Timer--;
+        C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+        if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+            shared->m_iCountAfterStartZone_Client_Timer--;
+    }
+
+    if (m_pFastForward->IsSelected())
+    {
+        shared->m_bIsPlaying = false;
+        shared->m_iCurrentTick++;
+        shared->m_iTotalTicks_Client_Timer++;
+        C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+        if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+            shared->m_iCountAfterStartZone_Client_Timer++;
+    }
+
     if (shared->m_bIsPlaying)
     {
+        shared->m_iTotalTicks_Client_Timer++;
+        shared->m_iCurrentTick++;
         m_pPlayPauseResume->SetText("Playing");
     }
     else
     {
         m_pPlayPauseResume->SetText("Paused");
-    }
-
-    if (m_pFastBackward->IsSelected())
-    {
-        shared->m_iCurrentTick--;
-        shared->m_iTotalTicks_Client_Timer--;
-		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
-			shared->m_iCountAfterStartZone_Client_Timer--;
-    }
-
-    if (m_pFastForward->IsSelected())
-    {
-        shared->m_iCurrentTick++;
-        shared->m_iTotalTicks_Client_Timer++;
-		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
-			shared->m_iCountAfterStartZone_Client_Timer++;
     }
 
     if (shared->m_iCurrentTick < 0)
@@ -183,14 +191,13 @@ void CHudReplay::OnTick()
     m_pProgress->SetProgress(fProgress);
     m_pProgressLabelFrame->SetText(va("Tick: %i / %i", shared->m_iCurrentTick, shared->m_iTotalTicks));
 
-    Q_strncpy(curtime, COM_FormatSeconds(TICK_INTERVAL * shared->m_iCurrentTick), 32);
-    Q_strncpy(totaltime, COM_FormatSeconds(TICK_INTERVAL * shared->m_iTotalTicks), 32);
+    Q_strncpy(curtime, COM_FormatSeconds(TICK_INTERVAL * shared->m_iCurrentTick), 64);
+    Q_strncpy(totaltime, COM_FormatSeconds(TICK_INTERVAL * shared->m_iTotalTicks), 64);
 
-    m_pProgressLabelTime->SetText(va("Time: %s / %s", curtime, totaltime));
-    m_pSpeedScaleLabel->SetText(va("%.1f %%", (float)m_pSpeedScale->GetValue()));
+    m_pProgressLabelTime->SetText(va("Time: %s -> %s", curtime, totaltime));
     // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
     // will disable the replayui
-	
+
     C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
     if (pGhost)
     {
@@ -214,7 +221,6 @@ void CHudReplay::OnCommand(const char *command)
     if (!Q_strcasecmp(command, "play"))
     {
         shared->m_bIsPlaying = !shared->m_bIsPlaying;
-        m_pSpeedScale->SetValue(TICK_INTERVAL * 1000);
     }
     else if (!Q_strcasecmp(command, "reload"))
     {
@@ -230,34 +236,40 @@ void CHudReplay::OnCommand(const char *command)
     {
         shared->m_iTotalTicks_Client_Timer--;
         shared->m_iCurrentTick--;
-		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
-			shared->m_iCountAfterStartZone_Client_Timer--;
+        C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+        if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+            shared->m_iCountAfterStartZone_Client_Timer--;
     }
     else if (!Q_strcasecmp(command, "nextframe"))
     {
         shared->m_iTotalTicks_Client_Timer++;
         shared->m_iCurrentTick++;
-		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
-			shared->m_iCountAfterStartZone_Client_Timer++;
+        C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+        if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+            shared->m_iCountAfterStartZone_Client_Timer++;
+    }
+    else if (!Q_strcasecmp(command, "gototick2"))
+    {
+        char tick[32];
+        m_pGotoTick2->GetText(tick, sizeof(tick));
+        TickRate = atoi(tick);
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
 
-		//Don't allow to jump to a position when we are inside the start zone because of bugs with triggers
-		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-		if (pGhost->m_RunData.m_bTimerRunning)
-		{
-			shared->m_iCurrentTick = atoi(tick);
-			shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - shared->m_iCountAfterStartZone_Client_Timer;
-		}
-		else
-		{
-			engine->Con_NPrintf(5, "PLEASE, BE OUTSIDE OF THE START ZONE BEFORE USING THIS!");
-		}
+        // Don't allow to jump to a position when we are inside the start zone because of bugs with triggers
+        C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+        if (pGhost->m_RunData.m_bTimerRunning)
+        {
+            shared->m_iCurrentTick = atoi(tick);
+            shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - shared->m_iCountAfterStartZone_Client_Timer;
+        }
+        else
+        {
+            engine->Con_NPrintf(5, "PLEASE, BE OUTSIDE OF THE START ZONE BEFORE USING THIS!");
+        }
     }
     else
     {

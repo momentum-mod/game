@@ -138,7 +138,8 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
 
 void CMomentumReplayGhostEntity::UpdateStep()
 {
-    if (!m_pPlaybackReplay)
+	//Managed by replayui now
+   /* if (!m_pPlaybackReplay)
         return;
 
 	if (!shared->m_bIsPlaying)
@@ -159,7 +160,7 @@ void CMomentumReplayGhostEntity::UpdateStep()
     ++shared->m_iCurrentTick;
 
     if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-        shared->m_iCurrentTick = 0;
+        shared->m_iCurrentTick = 0;*/ 
 }
 void CMomentumReplayGhostEntity::Think(void)
 {

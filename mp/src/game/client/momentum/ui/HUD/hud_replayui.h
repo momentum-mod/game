@@ -109,12 +109,14 @@ class CHudReplay : public vgui::Frame
     vgui::Button *m_pFastBackward;
     vgui::Button *m_pGo;
 
+	vgui::TextEntry *m_pGotoTick2;
+	vgui::Button *m_pGo2;
+
     vgui::ProgressBar *m_pProgress;
     vgui::Label *m_pProgressLabelFrame;
     vgui::Label *m_pProgressLabelTime;
 
-    vgui::Slider *m_pSpeedScale;
-    vgui::Label *m_pSpeedScaleLabel;
     vgui::TextEntry *m_pGotoTick;
+	int TickRate = 0;
 };
 extern CHudReplay *HudReplay;
