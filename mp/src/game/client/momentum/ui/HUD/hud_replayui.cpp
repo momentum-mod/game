@@ -148,12 +148,18 @@ void CHudReplay::OnTick()
     {
         shared->m_iCurrentTick--;
         shared->m_iTotalTicks_Client_Timer--;
+		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+			shared->m_iCountAfterStartZone_Client_Timer--;
     }
 
     if (m_pFastForward->IsSelected())
     {
         shared->m_iCurrentTick++;
         shared->m_iTotalTicks_Client_Timer++;
+		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+			shared->m_iCountAfterStartZone_Client_Timer++;
     }
 
     if (shared->m_iCurrentTick < 0)
@@ -182,9 +188,9 @@ void CHudReplay::OnTick()
 
     m_pProgressLabelTime->SetText(va("Time: %s / %s", curtime, totaltime));
     m_pSpeedScaleLabel->SetText(va("%.1f %%", (float)m_pSpeedScale->GetValue()));
-
     // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
     // will disable the replayui
+	
     C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
     if (pGhost)
     {
@@ -224,17 +230,34 @@ void CHudReplay::OnCommand(const char *command)
     {
         shared->m_iTotalTicks_Client_Timer--;
         shared->m_iCurrentTick--;
+		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+			shared->m_iCountAfterStartZone_Client_Timer--;
     }
     else if (!Q_strcasecmp(command, "nextframe"))
     {
         shared->m_iTotalTicks_Client_Timer++;
         shared->m_iCurrentTick++;
+		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+		if (pGhost && !pGhost->m_RunData.m_bTimerRunning)
+			shared->m_iCountAfterStartZone_Client_Timer++;
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
-        shared->m_iCurrentTick = atoi(tick);
+
+		//Don't allow to jump to a position when we are inside the start zone because of bugs with triggers
+		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+		if (pGhost->m_RunData.m_bTimerRunning)
+		{
+			shared->m_iCurrentTick = atoi(tick);
+			shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - shared->m_iCountAfterStartZone_Client_Timer;
+		}
+		else
+		{
+			engine->Con_NPrintf(5, "PLEASE, BE OUTSIDE OF THE START ZONE BEFORE USING THIS!");
+		}
     }
     else
     {

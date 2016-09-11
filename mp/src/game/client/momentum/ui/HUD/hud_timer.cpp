@@ -133,8 +133,10 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
 
 void C_Timer::Init()
 {	
+	//We reset only if it was a run not a replay -> lets check if shared was valid first
 	if (shared)
-		shared->m_iTotalTicks_Client_Timer = 0;
+		if (shared->m_iTotalTicks > 0)
+			shared->m_iTotalTicks_Client_Timer = 0;
 
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
@@ -156,7 +158,9 @@ void C_Timer::Init()
 
 void C_Timer::Reset()
 {
+	//We reset only if it was a run not a replay -> lets check if shared was valid first
 	if (shared)
+		if (shared->m_iTotalTicks > 0)
 		shared->m_iTotalTicks_Client_Timer = 0;
 
     m_bIsRunning = false;
@@ -228,11 +232,22 @@ float C_Timer::GetCurrentTime()
 	// If it's null then don't do anything
 	if (shared)
 	{
-		//If a replay is on (m_iTotalTicks is set when a ghost entity is spawned and reset after it's gone so it's good to use this)
+		//If a replay is on (m_iTotalTicks is set when a ghost entity is spawned and reset after it's gone so it's good to use this
 		if (shared->m_iTotalTicks > 0)
 		{
-			//Set our current tick
-			shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick;
+			//If the client pressed playing
+			if (shared->m_bIsPlaying)
+			{
+				//If he's inside start zone
+				shared->m_iTotalTicks_Client_Timer = gpGlobals->tickcount - m_iStartTick + 1;
+			}
+			else
+			{
+				/*If the client didn't press "Playing" button and if he's inside a start zone then we just reset timer, we can't set to 0 without checking that,
+				because the client could still move the ghost entity with prevtick/nexttick with the replayui but will be reseted there, so we don't want that*/
+				if (!m_bIsRunning)
+					shared->m_iTotalTicks_Client_Timer = 0;
+			}
 		}
 		else
 		{
