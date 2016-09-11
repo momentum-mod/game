@@ -61,6 +61,7 @@ class C_Timer : public CHudElement, public Panel
     bool m_bIsRunning;
     bool m_bTimerRan;//MOM_TODO: What is this used for?
     int m_iStartTick;
+	int m_iTotalTicks;
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -133,10 +134,7 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
 
 void C_Timer::Init()
 {	
-	//We reset only if it was a run not a replay -> lets check if shared was valid first
-	if (shared)
-		if (shared->m_iTotalTicks > 0)
-			shared->m_iTotalTicks_Client_Timer = 0;
+	m_iTotalTicks = 0;
 
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
@@ -159,9 +157,7 @@ void C_Timer::Init()
 void C_Timer::Reset()
 {
 	//We reset only if it was a run not a replay -> lets check if shared was valid first
-	if (shared)
-		if (shared->m_iTotalTicks > 0)
-		shared->m_iTotalTicks_Client_Timer = 0;
+	m_iTotalTicks = 0;
 
     m_bIsRunning = false;
     m_bTimerRan = false;
@@ -229,25 +225,9 @@ float C_Timer::GetCurrentTime()
 	// HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
 	// so we add an extra tick here to make them line up again
 
-	// If it's null then don't do anything
-	if (shared)
-	{
-		//If a replay is on (m_iTotalTicks is set when a ghost entity is spawned and reset after it's gone so it's good to use this
-		if (shared->m_iTotalTicks > 0)
-		{
-				/*If the client is inside a start zone then we just reset timer, we can't set to 0 without checking that,
-				because the client could still move the ghost entity with prevtick/nexttick with the replayui but will be reseted there, so we don't want that*/
-				if (!m_bIsRunning)
-					shared->m_iTotalTicks_Client_Timer = 0;
-		}
-		else
-		{
-			//Otherwhise just run it normally.
-			shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
-		}
-	}
+	m_iTotalTicks = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
 
-	return static_cast<float>(shared->m_iTotalTicks_Client_Timer) * gpGlobals->interval_per_tick;
+	return static_cast<float>(m_iTotalTicks)* gpGlobals->interval_per_tick;
 }
 // Calculations should be done in here. Paint is for drawing what the calculations have done.
 void C_Timer::OnThink()
