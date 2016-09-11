@@ -79,7 +79,13 @@ namespace vgui
 
 			if (IsUseCaptureMouseEnabled())
 			{
-				SetSelected(true);
+				{
+					SetSelected(true);
+					Repaint();
+				}
+
+				// lock mouse input to going to this button
+				input()->SetMouseCapture(GetVPanel());
 			}
 		}
 	};
