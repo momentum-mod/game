@@ -14,5 +14,6 @@ exec autoexec.cfg
 stuffcmds
 sv_unlockedchapters 99 //Random background selection
 startupmenu
-//"fix" for demo playback stutter bug. MOM_TODO: fix this for realzies
-demo_interpolateview 0
+
+//FOR REAL FIXEXS DEMO PLAYBACK INTERP ISSUES
+demo_interplimit 9999999
