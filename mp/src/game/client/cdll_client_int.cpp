@@ -148,6 +148,7 @@
 #include "fbxsystem/fbxsystem.h"
 #endif
 
+#include "INetChannelInfo.h"
 extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
@@ -2207,6 +2208,18 @@ void OnRenderStart()
 	VPROF( "OnRenderStart" );
 	MDLCACHE_CRITICAL_SECTION();
 	MDLCACHE_COARSE_LOCK();
+    
+    // BenLubar: rescale time in demos during slow motion
+    INetChannelInfo *nci = engine->GetNetChannelInfo();
+    ConVarRef ts("host_timescale");
+    if (nci && nci->IsPlayback() && engine->GetDemoPlaybackTimeScale() != 1)
+    {
+        float flServerTime = engine->GetLastTimeStamp();
+        float flTimeSince = nci->GetTimeSinceLastReceived();
+        float flTimeScale = engine->GetDemoPlaybackTimeScale();
+        gpGlobals->curtime = flServerTime + flTimeSince * flTimeScale * flTimeScale;
+        gpGlobals->frametime *= flTimeScale;
+    }
 
 #ifdef PORTAL
 	g_pPortalRender->UpdatePortalPixelVisibility(); //updating this one or two lines before querying again just isn't cutting it. Update as soon as it's cheap to do so.
