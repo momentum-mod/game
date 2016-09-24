@@ -27,6 +27,7 @@ class CMomentumReplayGhostEntity;
 //Checkpoints used in the "Checkpoint menu"
 struct Checkpoint
 {
+    bool crouched;
     Vector pos;
     Vector vel;
     QAngle ang;
