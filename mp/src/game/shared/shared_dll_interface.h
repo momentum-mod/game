@@ -6,12 +6,12 @@ public:
 
 	virtual void Something();
 
-	int m_iTotalTicks = 0;
-	int m_iCurrentTick = 0;
-	bool m_bIsPlaying = false;
-	int m_iTotalTicksT = 0;
-	bool LoadedClient = false;
-	bool LoadedServer = false;
+	int m_iTotalTicks;
+	int m_iCurrentTick;
+	bool m_bIsPlaying;
+	int m_iTotalTicksT;
+	bool LoadedClient;
+	bool LoadedServer;
 }; 
 
 #define INTERFACEVERSION_SHAREDGAMEDLL			"SHAREDGAMEDLL001"

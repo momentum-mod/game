@@ -51,6 +51,8 @@ public:
 	DECLARE_CLASS( CBaseDoor, CBaseToggle );
 
 	DECLARE_SERVERCLASS();
+    
+    CBaseDoor() : m_bIsBhopBlock(false) {};
 
 	void Spawn( void );
 	void Precache( void );
@@ -162,7 +164,7 @@ private:
 
     // MOMENTUM SPECIFIC
 public:
-    bool m_bIsBhopBlock = false ;
+    bool m_bIsBhopBlock;
 };
 
 #endif // DOORS_H

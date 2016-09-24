@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_entity_run_data.h"
-#include "util/run_stats.h"
+#include <momentum/mom_entity_run_data.h>
+#include <momentum/util/run_stats.h>
 
 class C_MomentumReplayGhostEntity : public C_BaseAnimating
 {

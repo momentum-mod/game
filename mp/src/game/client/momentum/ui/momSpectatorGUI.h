@@ -6,7 +6,7 @@
 //=============================================================================//
 
 #ifndef MOMSPECTATORGUI_H
-#define MOMSSPECTATORGUI_H
+#define MOMSPECTATORGUI_H
 #ifdef _WIN32
 #pragma once
 #endif

@@ -116,6 +116,8 @@ DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
 DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") 
 END_DATADESC()
 
+CTriggerTimerStart::CTriggerTimerStart() : m_angLook(QAngle(0, 0, 0)), m_fBhopLeaveSpeed(250), m_fPunishSpeed(200) {};
+
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
     if (pOther->IsPlayer())
@@ -486,6 +488,8 @@ BEGIN_DATADESC(CTriggerOnehop)
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
 END_DATADESC()
 
+CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1) {};
+
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
     SetDestinationEnt(nullptr);
@@ -551,6 +555,8 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_multihop, CTriggerMultihop);
 BEGIN_DATADESC(CTriggerMultihop)
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
 END_DATADESC()
+
+CTriggerMultihop::CTriggerMultihop() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1) {}
 
 void CTriggerMultihop::StartTouch(CBaseEntity *pOther)
 {
@@ -791,6 +797,8 @@ DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
 DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
 DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
 END_DATADESC()
+
+CTriggerMomentumPush::CTriggerMomentumPush() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1) {};
 
 void CTriggerMomentumPush::StartTouch(CBaseEntity *pOther)
 {

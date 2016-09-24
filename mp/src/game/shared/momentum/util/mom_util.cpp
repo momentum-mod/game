@@ -47,6 +47,7 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     CleanupRequest(pCallback, pData);
 }
 
+
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
     if (!steamapicontext->SteamHTTP())
@@ -183,8 +184,8 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
     const char separator[2] = ".";
-    CSplitString storedVersion = CSplitString(MOM_CURRENT_VERSION, separator);
-    CSplitString repoVersion = CSplitString(pDataPtr, separator);
+    CSplitString storedVersion( MOM_CURRENT_VERSION, separator);
+    CSplitString repoVersion(pDataPtr, separator);
 
     char versionValue[15];
     Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
