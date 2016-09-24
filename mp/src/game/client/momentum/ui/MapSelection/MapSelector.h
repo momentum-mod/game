@@ -13,16 +13,16 @@ public:
     CMapSelector();
     ~CMapSelector();
 
-    void Create(vgui::VPANEL parent);
-    void Destroy();
-    void Activate();
-    void Deactivate();
+    void Create(VPANEL parent) override;
+    void Destroy() override;
+    void Activate() override;
+    void Deactivate() override;
 
     void Open();
     void CloseAllMapInfoDialogs();
 
 private:
-    vgui::DHANDLE<CMapSelectorDialog> m_hMapsDlg;
+    DHANDLE<CMapSelectorDialog> m_hMapsDlg;
 };
 
 extern IMapSelector* mapselector;
