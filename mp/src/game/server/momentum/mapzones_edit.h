@@ -53,6 +53,9 @@ private:
     float SnapToGrid( float fl, float gridsize );
     void VectorSnapToGrid( Vector *dest, float gridsize );
     void DrawReticle( Vector *pos, float retsize );
+
+    // Have we edited the zones (mom_zone_edit 1) already
+    bool m_bFirstEdit = false;
 };
 
 extern CMapzoneEdit g_MapzoneEdit;

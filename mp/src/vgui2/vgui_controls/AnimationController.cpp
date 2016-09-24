@@ -1627,12 +1627,33 @@ public:
 	{
 	}
 
-	~CPanelAnimationDictionary()
-	{
-		m_PanelAnimationMapPool.Clear();
-	}
+    ~CPanelAnimationDictionary()
+    {
+#ifndef _DEBUG
+        int v2, v1 = m_AnimationMaps.Count();
+        PanelAnimationMapEntry *pCur;
+        PanelAnimationMap *pMap;
+        for (int x = 0; x < v1; x++)
+        {
+            pMap = m_AnimationMaps[x].map;
+            if (pMap)
+            {
+                v2 = pMap->entries.Count();
+                for (int y = 0; y < v2; y++)
+                {
+                    pCur = &pMap->entries[y];
+                    delete[] pCur->m_pszScriptName;
+                    delete[] pCur->m_pszVariable;
+                    delete[] pCur->m_pszType;
+                    delete[] pCur->m_pszDefaultValue;
+                }
+            }
+        }
+#endif
+        m_PanelAnimationMapPool.Clear();
+    }
 
-	PanelAnimationMap		*FindOrAddPanelAnimationMap( char const *className );
+    PanelAnimationMap		*FindOrAddPanelAnimationMap( char const *className );
 	PanelAnimationMap		*FindPanelAnimationMap( char const *className );
 	void					PanelAnimationDumpVars( char const *className );
 private:

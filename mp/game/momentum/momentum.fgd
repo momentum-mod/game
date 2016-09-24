@@ -152,3 +152,33 @@
 		256 : "Use the direction vector as final force instead of calculating it by force amount" : 1
 	]
 ]
+
+//-------------------------------------------------------------------------
+//
+// Weapons
+//
+//-------------------------------------------------------------------------
+@BaseClass color(0 0 200) base(Targetname, Angles) sphere(fademindist) sphere(fademaxdist) = Weapon
+[
+	spawnflags(Flags) =
+	[
+		1 : "Start constrained" : 0
+	]
+
+	output OnPlayerUse(void) : "Fires when the player +uses this weapon"
+	output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
+
+	fademindist(float) : "Start Fade Dist/Pixels" : -1 : "Distance at which the prop starts to fade (<0 = use fademaxdist). If 'Screen Space Fade' is selected, this represents the number of pixels wide covered by the prop when it starts to fade."
+	fademaxdist(float) : "End Fade Dist/Pixels" : 0 : "Maximum distance at which the prop is visible (0 = don't fade out). If 'Screen Space Fade' is selected, this represents the *minimum* number of pixels wide covered by the prop when it fades."
+	fadescale(float) : "Fade Scale" : 1 : "If you specify a fade in the worldspawn, or if the engine is running under dx7, then the engine will forcibly fade out props even if fademindist/fademaxdist isn't specified." +
+												 " This scale factor gives you some control over the fade. Using 0 here turns off the forcible fades." +
+]
+
+@PointClass base(Weapon) studio("models/weapons/w_knife_t.mdl") = weapon_knife : "Knife" []
+@PointClass base(Weapon) studio("models/weapons/w_pistol.mdl") = weapon_momentum_pistol : "Pistol" []
+@PointClass base(Weapon) studio("models/weapons/w_smg1.mdl") = weapon_momentum_smg : "SMG" []
+@PointClass base(Weapon) studio("models/weapons/w_irifle.mdl") = weapon_momentum_rifle : "Rifle" []
+@PointClass base(Weapon) studio("models/weapons/w_shotgun.mdl") = weapon_momentum_shotgun : "Shotgun" []
+@PointClass base(Weapon) studio("models/weapons/w_mach_m249para.mdl") = weapon_momentum_lmg : "LMG" []
+@PointClass base(Weapon) studio("models/weapons/w_snip_scout.mdl") = weapon_momentum_sniper : "Sniper" []
+@PointClass base(Weapon) studio("models/weapons/w_eq_fraggrenade.mdl") = weapon_momentum_grenade : "Grenade" []

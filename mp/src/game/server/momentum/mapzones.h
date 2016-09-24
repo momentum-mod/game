@@ -70,7 +70,7 @@ public:
 
 private:
     static constexpr char* c_mapPath = "maps/";
-    static constexpr char* c_zoneFileEnding = ".zon";
+    static constexpr char* c_zoneFileEnding = EXT_ZONE_FILE;
 
     CUtlVector<CMapzone*> m_zones;
 };

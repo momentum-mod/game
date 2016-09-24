@@ -57,7 +57,7 @@ bool MapHasStages(const char* szMap)
         KeyValues *kvMap = new KeyValues(szMap);
         char path[MAX_PATH];
         char fileName[FILENAME_MAX];
-        Q_snprintf(fileName, FILENAME_MAX, "%s.tim", szMap);
+        Q_snprintf(fileName, FILENAME_MAX, "%s%s", szMap, EXT_TIME_FILE);
         V_ComposeFileName(MAP_FOLDER, fileName, path, MAX_PATH);
 
 
@@ -75,7 +75,7 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
 {
     //Game mode
     m->m_iGameMode = MOMGM_UNKNOWN;
-    float tickRate = 0.015f;
+    float tickRate = 1.0f/66.0f;
     if (!Q_strnicmp(m->m_szMapName, "surf_", 5))
     {
         m->m_iGameMode = MOMGM_SURF;

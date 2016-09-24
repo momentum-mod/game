@@ -4,6 +4,7 @@
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
+#include "baseviewport.h"
 #include "menu.h"
 #include "utlvector.h"
 #include "vgui_helpers.h"
@@ -41,7 +42,11 @@ class C_Timer : public CHudElement, public Panel
     void Init() override;
     void Reset() override;
     void Paint() override;
-    bool ShouldDraw() override { return mom_timer.GetBool() && CHudElement::ShouldDraw(); }
+    bool ShouldDraw() override
+    { 
+        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
+        return mom_timer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible();
+    }
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {
@@ -52,7 +57,6 @@ class C_Timer : public CHudElement, public Panel
     }
     void MsgFunc_Timer_State(bf_read &msg);
     void MsgFunc_Timer_Reset(bf_read &msg);
-    void MsgFunc_Timer_Checkpoint(bf_read &msg);
     float GetCurrentTime();
     bool m_bIsRunning;
     bool m_bTimerRan;//MOM_TODO: What is this used for?
@@ -101,7 +105,6 @@ class C_Timer : public CHudElement, public Panel
 
     wchar_t m_pwStageStartString[BUFSIZELOCL], m_pwStageStartLabel[BUFSIZELOCL];
 
-    int m_iTotalTicks;
     bool m_bPlayerInZone;
     bool m_bWereCheatsActivated;
     bool m_bPlayerHasPracticeMode;
@@ -118,7 +121,6 @@ class C_Timer : public CHudElement, public Panel
 DECLARE_HUDELEMENT(C_Timer);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_State);
 DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
-DECLARE_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
 
 C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
 {
@@ -133,9 +135,9 @@ void C_Timer::Init()
 {
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
-    HOOK_HUD_MESSAGE(C_Timer, Timer_Checkpoint);
     initialTall = 48;
-    m_iTotalTicks = 0;
+	if (shared)
+		shared->m_iTotalTicksT = 0;
     m_iZoneCount = 0;
     m_pRunStats = nullptr;
     // Reset();
@@ -155,7 +157,8 @@ void C_Timer::Reset()
 {
     m_bIsRunning = false;
     m_bTimerRan = false;
-    m_iTotalTicks = 0;
+	if (shared)
+		shared->m_iTotalTicksT = 0;
     m_iZoneCurrent = 1;
     m_bShowCheckpoints = false;
     m_bWereCheatsActivated = false;
@@ -205,6 +208,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         // VGUI_ANIMATE("TimerStop");
         if (pPlayer != nullptr)
         {
+			  m_bTimerRan = true;
             pPlayer->EmitSound("Momentum.StopTimer");
         }
 
@@ -214,21 +218,23 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
 
 void C_Timer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
-//MOM_TODO: This should be moved to the player
-void C_Timer::MsgFunc_Timer_Checkpoint(bf_read &msg)
-{
-    m_bShowCheckpoints = msg.ReadOneBit();
-    m_iCheckpointCurrent = static_cast<int>(msg.ReadLong());
-    m_iCheckpointCount = static_cast<int>(msg.ReadLong());
-}
-
 float C_Timer::GetCurrentTime()
 {
     // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     // so we add an extra tick here to make them line up again
-    if (m_bIsRunning)
-        m_iTotalTicks = gpGlobals->tickcount - m_iStartTick + 1;
-    return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
+
+	//If we even loaded the shared DLL
+    if (shared)
+    {
+        shared->m_iTotalTicksT = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
+    }
+    else
+    {
+        return 0.0f;
+    }
+	
+
+	return static_cast<float>(shared->m_iTotalTicksT) * gpGlobals->interval_per_tick;
 }
 
 // Calculations should be done in here. Paint is for drawing what the calculations have done.
@@ -241,16 +247,23 @@ void C_Timer::OnThink()
         C_MOMRunEntityData *runData;
         if (pGhost)
         {
+            m_bShowCheckpoints = false;
+            m_iCheckpointCurrent = 0;
+            m_iCheckpointCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
             m_bPlayerHasPracticeMode = false;
             runData = &pGhost->m_RunData;
         }
         else
         {
+            m_bShowCheckpoints = pLocal->m_bUsingCPMenu;
+            m_iCheckpointCurrent = pLocal->m_iCurrentStepCP + 1;
+            m_iCheckpointCount = pLocal->m_iCheckpointCount;
             m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_RunData;
         }
+
         m_bIsRunning = runData->m_bTimerRunning;
         m_iStartTick = runData->m_iStartTick;
         m_iZoneCurrent = runData->m_iCurrentZone;
@@ -267,7 +280,6 @@ void C_Timer::Paint(void)
     mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);
     ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
 
-    // MOM_TODO: this should be moved to the player
     if (m_bShowCheckpoints)
     {
         Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "%s %i/%i",

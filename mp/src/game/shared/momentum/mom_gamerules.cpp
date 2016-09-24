@@ -1,8 +1,9 @@
 #include "cbase.h"
 #include "mom_gamerules.h"
-#include "cs_ammodef.h"
-#include "weapon_csbase.h"
+#include "weapon/cs_ammodef.h"
+#include "weapon/weapon_csbase.h"
 #include "voice_gamemgr.h"
+#include "mathlib/mathlib.h"
 #include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
@@ -109,6 +110,37 @@ const CViewVectors *CMomentumGameRules::GetViewVectors() const
 }
 
 
+bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
+{
+    if (collisionGroup0 > collisionGroup1)
+    {
+        // swap so that lowest is always first
+        V_swap(collisionGroup0, collisionGroup1);
+    }
+
+    //Don't stand on COLLISION_GROUP_WEAPONs
+    if( collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT &&
+        collisionGroup1 == COLLISION_GROUP_WEAPON )
+    {
+        return false;
+    }
+
+    if ( (collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT) &&
+        collisionGroup1 == COLLISION_GROUP_PUSHAWAY )
+    {
+        return false;
+    }
+
+    if ( collisionGroup0 == COLLISION_GROUP_DEBRIS && collisionGroup1 == COLLISION_GROUP_PUSHAWAY )
+    {
+        // let debris and multiplayer objects collide
+        return true;
+    }
+
+    return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 ); 
+}
+
+
 #ifndef CLIENT_DLL
 LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
@@ -197,20 +229,13 @@ static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldVal
 
 static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", true, 0, false, 0, OnGamemodeChanged);
 
-static ConVar allow_custom("mom_allow_custom_maps", "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Allow loading custom maps that aren't of an official gametype.", true, 0, true, 1);
-
 static ConVar give_weapon("mom_spawn_with_weapon", "1", FCVAR_NONE, "Spawn the player with a weapon?", true, 0, true, 1);
 
 static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
 
 void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
 {
-    if (gamemode.GetInt() == 0 && !allow_custom.GetBool())
-    {
-        engine->ServerCommand("disconnect\n");
-        Warning("\n\nBeware, beware!\nYou have been disconnected from the map because custom maps are not allowed if %s is 0.\nPlease set it to 1 in order to play custom maps.\n\n", allow_custom.GetName());
-    }
-    else if (pPlayer) {
+    if (pPlayer) {
 
         ConVarRef map("host_map");
         const char *pMapName = map.GetString();

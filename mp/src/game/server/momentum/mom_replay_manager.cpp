@@ -84,7 +84,10 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
     auto file = filesystem->Open(path, "r+b", pathID);
 
     if (!file)
+    {
+        filesystem->Close(file);
         return nullptr;
+    }
 
     CBinaryReader reader(file);
 
@@ -136,7 +139,10 @@ bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
     auto file = filesystem->Open(path, "w+b", pathID);
 
     if (!file)
+    {
+        filesystem->Close(file);
         return false;
+    }
 
     Log("Storing replay of version '%d' to '%s'...\n", m_pRecordingReplay->GetVersion(), path);
 

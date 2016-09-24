@@ -1,4 +1,5 @@
 #include "cbase.h"
+
 #include "filesystem.h"
 #include "mom_player_shared.h"
 #include "mom_util.h"
@@ -46,69 +47,6 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    if (bIOFailure)
-        return;
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        Warning("MomentumUtil::PostTimeCallback: 0 body size!\n");
-        return;
-    }
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-
-    IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
-
-    JsonValue val; // Outer object
-    JsonAllocator alloc;
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    DevLog("pDataPtr: %s\n", pDataPtr);
-    char *endPtr;
-    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
-
-    if (status == JSON_OK)
-    {
-        DevLog("JSON Parsed!\n");
-        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
-        {
-            // toNode() returns the >>payload<< of the JSON object !!!
-
-            DevLog("Outer is JSON OBJECT!\n");
-            JsonNode *node = val.toNode();
-            DevLog("Outer has key %s with value %s\n", node->key, node->value.toString());
-
-            // MOM_TODO: This doesn't work, even if node has tag 'true'. Something is wrong with the way we are parsing
-            // the JSON
-            if (node && node->value.getTag() == JSON_TRUE)
-            {
-                DevLog("RESPONSE WAS TRUE!\n");
-                // Necessary so that the leaderboards and hud_mapfinished update appropriately
-                if (runUploadedEvent)
-                {
-                    runUploadedEvent->SetBool("run_posted", true);
-                    // MOM_TODO: Once the server updates this to contain more info, parse and do more with the response
-                    gameeventmanager->FireEvent(runUploadedEvent);
-                }
-            }
-        }
-    }
-    else
-    {
-        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
-    }
-    // Last but not least, free resources
-    alloc.deallocate();
-    CleanupRequest(pCallback, pData);
-}
-
-void MomentumUtil::PostTime(const char *szURL)
-{
-    CreateAndSendHTTPReq(szURL, &cbPostTimeCallback, &MomentumUtil::PostTimeCallback);
-}
 
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
@@ -152,6 +90,7 @@ void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumU
     }
     else
     {
+        Warning("Steampicontext failure.\n");
         Warning("Could not find Steam Api Context active\n");
     }
 }
@@ -209,7 +148,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     if (bIOFailure)
     {
         pError = "Error loading changelog due to bIOFailure!";
-        versionwarnpanel->SetChangelog(pError);
+        changelogpanel->SetChangelog(pError);
         return;
     }
     uint32 size;
@@ -217,7 +156,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     if (size == 0)
     {
         pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
-        versionwarnpanel->SetChangelog(pError);
+        changelogpanel->SetChangelog(pError);
         return;
     }
 
@@ -225,7 +164,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIO
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
 
-    versionwarnpanel->SetChangelog(pDataPtr);
+    changelogpanel->SetChangelog(pDataPtr);
 
     CleanupRequest(pCallback, pData);
 }
@@ -256,9 +195,9 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
         if (repo > local)
         {
-            versionwarnpanel->SetVersion(versionValue);
+            changelogpanel->SetVersion(versionValue);
             GetRemoteChangelog();
-            versionwarnpanel->Activate();
+            changelogpanel->Activate();
             break;
         }
         if (repo < local)
@@ -511,6 +450,36 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, 
             }
         }
     }
+}
+
+#define SAVE_3D_TO_KV(kvInto, pName, toSave) \
+    if (!kvInto || !pName) return; \
+    char value[512]; \
+    Q_snprintf(value, 512, "%f %f %f", toSave.x, toSave.y, toSave.z); \
+    kvInto->SetString(pName, value);
+
+#define LOAD_3D_FROM_KV(kvFrom, pName, into) \
+    if (!kvFrom || !pName) return; \
+    sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
+
+void MomentumUtil::KVSaveVector(KeyValues* kvInto, const char* pName, Vector& toSave)
+{
+    SAVE_3D_TO_KV(kvInto, pName, toSave);
+}
+
+void MomentumUtil::KVLoadVector(KeyValues* kvFrom, const char* pName, Vector& vecInto)
+{
+    LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
+}
+
+void MomentumUtil::KVSaveQAngles(KeyValues* kvInto, const char* pName, QAngle& toSave)
+{
+    SAVE_3D_TO_KV(kvInto, pName, toSave);
+}
+
+void MomentumUtil::KVLoadQAngles(KeyValues* kvFrom, const char* pName, QAngle& angInto)
+{
+    LOAD_3D_FROM_KV(kvFrom, pName, angInto);
 }
 
 static MomentumUtil s_momentum_util;

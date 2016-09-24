@@ -79,8 +79,6 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
             //This handles both the start and stage triggers
             g_Timer->CalculateTickIntervalOffset(pPlayer, g_Timer->ZONETYPE_START);
 
-            //Status
-            pPlayer->m_RunData.m_bIsInZone = false;
             float enterVel3D = pPlayer->GetLocalVelocity().Length(), enterVel2D = pPlayer->GetLocalVelocity().Length2D();
             pPlayer->m_RunStats.SetZoneEnterSpeed(stageNum, enterVel3D, enterVel2D);
             if (stageNum == 1)
@@ -88,6 +86,9 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
         }
+
+        //Status
+        pPlayer->m_RunData.m_bIsInZone = false;
     }
     else
     {
@@ -128,13 +129,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         {
             if (IsLimitingSpeed())
             {
-                Vector velocity = pOther->GetAbsVelocity();
-                    // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
-                    // It only has a NormalizeInPlace... Not simple enough for me
-                Vector2D vel2D = velocity.AsVector2D();
-
                 if (pPlayer->DidPlayerBhop())
                 {
+                    Vector velocity = pOther->GetAbsVelocity();
+                    // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
+                    // It only has a NormalizeInPlace... Not simple enough for me
+                    Vector2D vel2D = velocity.AsVector2D();
                     if (velocity.AsVector2D().IsLengthGreaterThan(m_fBhopLeaveSpeed))
                     {
                         vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));
@@ -225,6 +225,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         {
             pGhost->m_RunData.m_bIsInZone = true;
             pGhost->m_RunData.m_bMapFinished = false;
+			pGhost->m_RunData.m_bTimerRunning = false; //Fixed
         }
     }
     // start thinking
@@ -283,12 +284,12 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
 void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-
     IGameEvent *stageEvent = nullptr;
     // If timer is already stopped, there's nothing to stop (No run state effect to play)
-    if (pPlayer)
+	if (pOther->IsPlayer())
     {
+		CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+
         g_Timer->SetEndTrigger(this);
         if (g_Timer->IsRunning() && !pPlayer->IsWatchingReplay())
         {

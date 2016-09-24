@@ -3,7 +3,7 @@
 #include "IMomentumSettingsPanel.h"
 #include "SettingsPage.h"
 #include "HudSettingsPage.h"
-#include "ControlsSettingsPage.h"
+#include "GameplaySettingsPage.h"
 #include "ComparisonsSettingsPage.h"
 #include "ReplaysSettingsPage.h"
 #include <vgui/IVGui.h>
@@ -58,7 +58,6 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetParent(parent);
     SetAutoDelete(true);
     LoadControlSettings("resource/ui/SettingsPanel_Base.res");
-    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
 
@@ -68,6 +67,8 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetPos(wide / 3, tall / 4);
     SetApplyButtonVisible(true);
     SetTitleBarVisible(true);
+    SetMenuButtonResponsive(false);
+    SetSysMenu(nullptr);
     SetMinimizeButtonVisible(false);
     SetMaximizeButtonVisible(false);
     SetCloseButtonVisible(true);
@@ -75,13 +76,13 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetVisible(false);
 
     //Create the pages here
-    m_pControlsSettings = new ControlsSettingsPage(this);
+    m_pControlsSettings = new GameplaySettingsPage(this);
     m_pHudSettings = new HudSettingsPage(this);
     m_pCompareSettings = new ComparisonsSettingsPage(this);
     m_pReplaysSettings = new ReplaysSettingsPage(this);
 
     //Note: we're adding the scroll panels here, because we want to be able to scroll.
-    AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Controls");
+    AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gameplay");
     AddPage(m_pHudSettings->GetScrollPanel(), "#MOM_Settings_Tab_HUD");
     AddPage(m_pCompareSettings->GetScrollPanel(), "#MOM_Settings_Tab_Comparisons");
     AddPage(m_pReplaysSettings->GetScrollPanel(), "#MOM_Settings_Tab_Replays");

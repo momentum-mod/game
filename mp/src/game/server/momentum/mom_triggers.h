@@ -111,8 +111,9 @@ public:
     //Used by CTimer and CStageFilter
     virtual int GetStageNumber() { return m_iStageNumber; }
     void SetStageNumber(int newInt) { m_iStageNumber = newInt; }
+    //Override, use GetStageNumber()
     int GetCheckpointNumber() override
-    { return -1; }//Override, use GetStageNumber()
+    { return -1; }
 
 private:
     int m_iStageNumber;
@@ -140,6 +141,7 @@ public:
     void SetMaxLeaveSpeed(float maxLeaveSpeed);
     void SetLookAngles(QAngle newang);
     QAngle GetLookAngles() { return m_angLook; }
+    // MOM_TODO: Is this even used right now??
     void SetPunishSpeed(float pPunishSpeed);
     float GetPunishSpeed() { return m_fPunishSpeed; }
 

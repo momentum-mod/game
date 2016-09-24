@@ -30,5 +30,5 @@ class HudSettingsPage : public SettingsPage
     ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize;
 
     CvarToggleCheckButton<ConVarRef> *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel,
-        *m_pSpeedometerColorize, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion;
+        *m_pSpeedometerColorize, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;
 };

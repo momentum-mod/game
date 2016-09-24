@@ -60,7 +60,7 @@ static int in_impulse = 0;
 static int in_cancel = 0;
 
 ConVar cl_anglespeedkey( "cl_anglespeedkey", "0.67", 0 );
-ConVar cl_yawspeed( "cl_yawspeed", "210", FCVAR_NONE, "Client yaw speed.", true, -100000, true, 100000 );
+ConVar cl_yawspeed( "cl_yawspeed", "210", FCVAR_ARCHIVE, "Client yaw speed.", true, -100000, true, 100000 );
 ConVar cl_pitchspeed( "cl_pitchspeed", "225", FCVAR_NONE, "Client pitch speed.", true, -100000, true, 100000 );
 ConVar cl_pitchdown( "cl_pitchdown", "89", FCVAR_CHEAT );
 ConVar cl_pitchup( "cl_pitchup", "89", FCVAR_CHEAT );

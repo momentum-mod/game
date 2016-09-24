@@ -656,7 +656,7 @@ void CBaseMapsPage::ApplyGameFilters()
                 kv->SetString("map", mapinfo->m_szMapName);
                 kv->SetInt("gamemode", mapinfo->m_iGameMode);
                 kv->SetInt("difficulty", mapinfo->m_iDifficulty);
-                kv->SetInt("MapLayout", ((int)mapinfo->m_bHasStages) + 2);//+ 2 so the picture sets correctly
+                kv->SetInt("MapLayout", (static_cast<int>(mapinfo->m_bHasStages)) + 2);//+ 2 so the picture sets correctly
                 kv->SetBool("HasCompleted", mapinfo->m_bCompleted);
                 kv->SetString("time", mapinfo->m_szBestTime);
 

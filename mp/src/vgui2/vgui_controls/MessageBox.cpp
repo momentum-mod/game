@@ -383,7 +383,6 @@ void MessageBox::SetCancelCommand( KeyValues *command )
 	}
 	m_CancelCommand = command;
 }
-
 	
 //-----------------------------------------------------------------------------
 // Purpose: Toggles visibility of the close box.

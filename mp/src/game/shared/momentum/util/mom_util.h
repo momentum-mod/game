@@ -13,16 +13,14 @@
 #include "filesystem.h"
 #include <gason.h>
 #ifdef CLIENT_DLL
-#include "VersionWarnPanel.h"
+#include "ChangelogPanel.h"
 #endif
 
 class MomentumUtil
 {
 public:
-    void PostTimeCallback(HTTPRequestCompleted_t*, bool);
     void DownloadCallback(HTTPRequestCompleted_t*, bool);
 
-    void PostTime(const char* URL);
     void DownloadMap(const char*);
 
     void CreateAndSendHTTPReq(const char*, CCallResult<MomentumUtil, HTTPRequestCompleted_t>*,
@@ -32,7 +30,6 @@ public:
         CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbPostTimeCallback;
 
 #ifdef CLIENT_DLL
     void GetRemoteChangelog();
@@ -79,6 +76,12 @@ public:
         return IsInBounds(Vector2D(x, y), Vector2D(rectX, rectY),
             Vector2D(rectX + rectW, rectY + rectH));
     }
+
+    void KVSaveVector(KeyValues *kvInto, const char *pName, Vector &toSave);
+    void KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto);
+
+    void KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave);
+    void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
 };
 
 class CTimeSortFunc

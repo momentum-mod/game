@@ -56,7 +56,10 @@ void CGameUI2::Initialize(CreateInterfaceFn appFactory)
 void CGameUI2::Shutdown()
 {
     if (GetBasePanel())
+    {
+        GetBasePanel()->GetMainMenu()->DeletePanel();
         GetBasePanel()->DeletePanel();
+    }
 
 	ConVar_Unregister();
 	DisconnectTier3Libraries();
@@ -96,18 +99,12 @@ void CGameUI2::OnLevelShutdown()
 
 bool CGameUI2::IsInLevel()
 {
-	if (engine->IsInGame() && !engine->IsLevelMainMenuBackground())
-		return true;
-
-	return false;
+    return engine->IsInGame() && !engine->IsLevelMainMenuBackground();
 }
 
 bool CGameUI2::IsInBackgroundLevel()
 {
-	if ((engine->IsInGame() && engine->IsLevelMainMenuBackground()) || !engine->IsInGame())
-		return true;
-
-	return false;
+    return (engine->IsInGame() && engine->IsLevelMainMenuBackground()) || !engine->IsInGame();
 }
 
 bool CGameUI2::IsInMultiplayer()

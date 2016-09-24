@@ -17,7 +17,7 @@ Scheme
 	{
 		// base colors
 		"White"				"255 255 255 255"
-		"Light Gray"		"211 211 211 100"
+		"Light Gray"		"211 211 211 20"
 		"Gray" 				"128 128 128 150"
 		"Dark Gray" 		"64 64 64 200"
 		
@@ -29,7 +29,7 @@ Scheme
 		"Blank"                "0 0 0 1"
 
 		"MOM.Panel.Fg"				"255 255 255 125"
-		"MOM.Panel.Bg"				"0 0 0 76"
+		"MOM.Panel.Bg"				"211 211 211 50"
 		"MomentumBlue"	"30 150 210 255"
 		"MomentumRed"	"255 75 75 255"
 	}
@@ -42,8 +42,8 @@ Scheme
 	{
 		// vgui_controls color specifications
 		Border.Bright					"200 200 200 255"	// the lit side of a control
-		Border.Dark						"40 40 40 198"		// the dark/unlit side of a control
-		Border.Selection				"0 0 0 255"			// the additional border color for displaying the default/selected button
+		Border.Dark						"40 40 40 100"		// the dark/unlit side of a control
+		Border.Selection				"0 0 0 76"			// the additional border color for displaying the default/selected button
 		Border.DarkSolid				"40 40 40 255"
 		Border.Subtle					"80 80 80 255"
 
@@ -53,7 +53,7 @@ Scheme
 		Button.ArmedBgColor				"240 240 240 255"	
 		Button.DepressedTextColor		"White"
 		Button.DepressedBgColor			"84 178 245 255"
-		Button.FocusBorderColor			"82 82 82 255"
+		Button.FocusBorderColor			"82 82 82 20"
 
 		CheckButton.TextColor			"White"
 		CheckButton.SelectedTextColor	"White"
@@ -67,9 +67,9 @@ Scheme
 		CheckButton.DisabledBgColor	   	"153 153 153 255"
 				
 		ComboBoxButton.ArrowColor		"81 81 81 255"
-		ComboBoxButton.ArmedArrowColor	"110 110 110 255"
-		ComboBoxButton.BgColor			"Blank"
-		ComboBoxButton.DisabledBgColor	"Blank"
+		ComboBoxButton.ArmedArrowColor	"MomentumBlue"
+		ComboBoxButton.BgColor			"MOM.Panel.Bg"
+		ComboBoxButton.DisabledBgColor	"Light Gray"
 
 		Frame.TitleTextInsetX			16
 		Frame.ClientInsetX				8
@@ -116,16 +116,16 @@ Scheme
 		ListPanel.EmptyListInfoTextColor	"Gray"
 
 		Menu.TextColor					"White"
-		Menu.BgColor					"MOM.Panel.Bg"
+		Menu.BgColor					"Gray"
 		Menu.ArmedTextColor				"White"
 		Menu.ArmedBgColor				"MomentumBlue"
 		Menu.TextInset					"6"
 
-		Panel.FgColor					"DullWhite"
+		Panel.FgColor					"Gray"
 		Panel.BgColor					"Blank"
 
 		ProgressBar.FgColor				"White"
-		ProgressBar.BgColor				"TransparentBlack"
+		ProgressBar.BgColor				"MOM.Panel.Bg"
 
 		PropertySheet.TextColor			"10 10 10 200"
 		PropertySheet.SelectedTextColor	"10 10 10 255"
@@ -134,14 +134,14 @@ Scheme
 		PropertySheet.BgColor "0 0 0 255"
 
 		RadioButton.TextColor			"White"
-		RadioButton.SelectedTextColor	"White"
+		RadioButton.SelectedTextColor	"MomentumBlue"
 
 		RichText.TextColor				"White"
 		RichText.BgColor				"TransparentBlack"
-		RichText.SelectedTextColor		"White"
+		RichText.SelectedTextColor		"MomentumBlue"
 		RichText.SelectedBgColor		"Light Gray"//"MOM.Panel.Bg"
 
-		ScrollBar.Wide					15
+		ScrollBar.Wide					"15"
 
 		ScrollBarButton.FgColor				"60 60 60 255"
 		ScrollBarButton.BgColor				"207 207 207 255"
@@ -158,21 +158,21 @@ Scheme
 		SectionedListPanel.DividerColor		"Dark Gray"
 		SectionedListPanel.TextColor		"Light Gray"
 		SectionedListPanel.BrightTextColor	"White"
-		SectionedListPanel.BgColor			"MOM.Panel.Bg"
+		SectionedListPanel.BgColor			"TransparentBlack"
 		SectionedListPanel.SelectedTextColor			"White"
 		SectionedListPanel.SelectedBgColor				"MomentumBlue"
 		SectionedListPanel.OutOfFocusSelectedTextColor	"White"
 		SectionedListPanel.OutOfFocusSelectedBgColor	"132 183 241 100"
 
-		Slider.NobColor				"220 220 220 255"
-		Slider.TextColor			"180 180 180 255"
-		Slider.TrackColor			"184 184 184 229"
-		Slider.DisabledTextColor1	"110 110 110 255"
+		Slider.NobColor				"White"
+		Slider.TextColor			"White"
+		Slider.TrackColor			"White"
+		Slider.DisabledTextColor1	"Dark Gray"
 		Slider.DisabledTextColor2	"50 50 50 255"
 
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"MOM.Panel.Bg"
-		TextEntry.CursorColor		"Gray"
+		TextEntry.CursorColor		"Black"
 		TextEntry.DisabledTextColor	"Light Gray"
 		TextEntry.DisabledBgColor	"TransparentBlack"
 		TextEntry.SelectedTextColor	"White"
@@ -189,16 +189,8 @@ Scheme
 
 		WizardSubPanel.BgColor		"Blank"
 
-		// scheme-specific colors
-		MainMenu.TextColor			"White"
-		MainMenu.ArmedTextColor		"Light Gray"	
-		MainMenu.DepressedTextColor	"Light Gray"
-		MainMenu.MenuItemHeight		"32"
-		MainMenu.Inset				"32"
-		MainMenu.Backdrop			"0 0 0 175"
-
 		Console.TextColor			"White"
-		Console.DevTextColor		"White"
+		Console.DevTextColor		"MomentumBlue"
 	}
 
 	//////////////////////// FONTS /////////////////////////////

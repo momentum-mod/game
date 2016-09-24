@@ -44,6 +44,9 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
 
     m_pButtonsShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ButtonsShow");
     m_pButtonsShow->AddActionSignalTarget(this);
+
+    m_pTimerShow = FindControl<CvarToggleCheckButton<ConVarRef>>("TimerShow");
+    m_pTimerShow->AddActionSignalTarget(this);
 }
 
 void HudSettingsPage::OnApplyChanges()

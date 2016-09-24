@@ -137,6 +137,7 @@ void RecvProxy_ObserverMode  ( const CRecvProxyData *pData, void *pStruct, void 
 // -------------------------------------------------------------------------------- //
 
 	BEGIN_RECV_TABLE_NOBASE(CPlayerState, DT_PlayerState)
+		RecvPropQAngles(RECVINFO(v_angle)),
 		RecvPropInt		(RECVINFO(deadflag)),
 	END_RECV_TABLE()
 
@@ -308,7 +309,7 @@ BEGIN_PREDICTION_DATA_NO_BASE( CPlayerState )
 	// DEFINE_FIELD( netname, string_t ),
 	// DEFINE_FIELD( fixangle, FIELD_INTEGER ),
 	// DEFINE_FIELD( anglechange, FIELD_FLOAT ),
-	// DEFINE_FIELD( v_angle, FIELD_VECTOR ),
+	 DEFINE_FIELD( v_angle, FIELD_VECTOR ),
 
 END_PREDICTION_DATA()	
 
@@ -404,10 +405,13 @@ LINK_ENTITY_TO_CLASS( player, C_BasePlayer );
 // -------------------------------------------------------------------------------- //
 // Functions.
 // -------------------------------------------------------------------------------- //
-C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset( "C_BasePlayer::m_iv_vecViewOffset" )
+C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset("C_BasePlayer::m_iv_vecViewOffset")
 {
-	AddVar( &m_vecViewOffset, &m_iv_vecViewOffset, LATCH_SIMULATION_VAR );
-	
+	//Animation, because they aren't really anymore based on viewangle change or position
+	AddVar(&m_vecViewOffset, &m_iv_vecViewOffset, LATCH_ANIMATION_VAR);
+	AddVar(&m_Local.m_vecPunchAngle, &m_Local.m_iv_vecPunchAngle, LATCH_ANIMATION_VAR);
+	AddVar(&m_Local.m_vecPunchAngleVel, &m_Local.m_iv_vecPunchAngleVel, LATCH_ANIMATION_VAR);
+
 #ifdef _DEBUG																
 	m_vecLadderNormal.Init();
 	m_vecOldViewAngles.Init();
@@ -673,7 +677,7 @@ bool C_BasePlayer::ViewModel_IsUsingFBTexture( void )
 //-----------------------------------------------------------------------------
 void C_BasePlayer::SetLocalViewAngles( const QAngle &viewAngles )
 {
-	pl.v_angle = viewAngles;
+	pl.v_angle.GetForModify() = viewAngles;
 }
 
 //-----------------------------------------------------------------------------
@@ -2050,7 +2054,7 @@ void C_BasePlayer::PostThink( void )
 
 		if ( GetFlags() & FL_ONGROUND )
 		{		
-			m_Local.m_flFallVelocity = 0;
+			m_Local.m_flFallVelocity = 0.0f;
 		}
 
 		// Don't allow bogus sequence on player
@@ -2324,7 +2328,7 @@ void C_BasePlayer::PhysicsSimulate( void )
 		ctx->cmd.upmove = 0;
 		ctx->cmd.buttons = 0;
 		ctx->cmd.impulse = 0;
-		//VectorCopy ( pl.v_angle, ctx->cmd.viewangles );
+		VectorCopy ( pl.v_angle.Get(), ctx->cmd.viewangles );
 	}
 
 	// Run the next command
@@ -2343,7 +2347,7 @@ const QAngle& C_BasePlayer::GetPunchAngle()
 
 void C_BasePlayer::SetPunchAngle( const QAngle &angle )
 {
-	m_Local.m_vecPunchAngle = angle;
+	m_Local.m_vecPunchAngle.GetForModify() = angle;
 }
 
 

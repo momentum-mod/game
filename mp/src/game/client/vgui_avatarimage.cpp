@@ -47,7 +47,7 @@ CAvatarImage::CAvatarImage( void )
 	m_iTextureID = -1;
 
 	// set up friend icon
-	m_pFriendIcon = gHUD.GetIcon( "ico_friend_indicator_avatar" );
+	m_pFriendIcon = gHUD.GetIcon( "p_icon_friend" );
 
 	m_pDefaultImage = NULL;
 

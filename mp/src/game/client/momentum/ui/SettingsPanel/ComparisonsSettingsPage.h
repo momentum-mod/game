@@ -20,22 +20,28 @@ class ComparisonsSettingsPage : public SettingsPage
 
     ~ComparisonsSettingsPage();
 
+    //The "bogus" panel is a HUD comparisons panel initted just for this Settings Page.
     void DestroyBogusComparePanel();
-
     void InitBogusComparePanel();
 
+    //These are used for closing/activating the bogus panel if this was the tab
     void OnMainDialogClosed() const;
-
     void OnMainDialogShow() const;
 
+    //Handle custom controls
     void OnApplyChanges() override;
 
+    //Load the settings for this panel
     void LoadSettings() override;
+    void OnPageShow() override;
 
-    //This uses OnCheckbox and not OnModified because we want to be able to enable
+    //Overridden from PropertyPage so we can hide the comparisons frame
+    void OnPageHide() override;
+
+    // This uses OnCheckbox and not OnModified because we want to be able to enable
     // the other checkboxes regardless of whether the player clicks Apply/OK
     void OnCheckboxChecked(Panel *p) override;
-
+    // Used for updating the max stage buffer label
     void OnTextChanged(Panel *p) override;
 
     MESSAGE_FUNC_PTR(CursorEnteredCallback, "OnCursorEntered", panel)
@@ -76,5 +82,6 @@ private:
     Frame *m_pComparisonsFrame;
     C_RunComparisons *m_pBogusComparisonsPanel;
 
+    //Determines what should pulse for the bogus panel
     int DetermineBogusPulse(Panel *panel) const;
 };

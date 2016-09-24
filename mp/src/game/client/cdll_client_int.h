@@ -59,6 +59,7 @@ class IEngineReplay;
 class IEngineClientReplay;
 class IReplayScreenshotManager;
 class CSteamID;
+class C_SharedDLL;
 
 #ifdef GAMEUI2
 class IGameUI2;
@@ -75,6 +76,7 @@ class AchievementsAndStatsInterface;
 // HPE_END
 //=============================================================================
 
+extern C_SharedDLL* shared;
 extern IVModelRender *modelrender;
 extern IVEngineClient	*engine;
 extern IVModelRender *modelrender;
