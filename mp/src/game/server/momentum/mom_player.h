@@ -70,6 +70,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     void CreateViewModel(int index = 0) override;
 
+    void SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize) override;
+
     void FireGameEvent(IGameEvent *pEvent) override;
 
     // MOM_TODO: This is called when the player spawns so that HUD elements can be updated

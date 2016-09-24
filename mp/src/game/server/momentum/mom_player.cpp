@@ -8,6 +8,7 @@
 #include "mom_system_checkpoint.h"
 #include "mom_triggers.h"
 #include "momentum/weapon/weapon_csbasegun.h"
+#include "info_camera_link.h"
 
 #include "tier0/memdbgon.h"
 
@@ -91,6 +92,14 @@ void CMomentumPlayer::CreateViewModel(int index)
         vm->FollowEntity(this, false);
         m_hViewModel.Set(index, vm);
     }
+}
+
+void CMomentumPlayer::SetupVisibility(CBaseEntity* pViewEntity, unsigned char* pvs, int pvssize)
+{
+    BaseClass::SetupVisibility(pViewEntity, pvs, pvssize);
+
+    int area = pViewEntity ? pViewEntity->NetworkProp()->AreaNum() : NetworkProp()->AreaNum();
+    PointCameraSetupVisibility(this, area, pvs, pvssize);
 }
 
 void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
