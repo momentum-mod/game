@@ -69,7 +69,7 @@ void CContactPanel::InitPanel()
     m_pWebPage->SetPos(SCALEXY(0, 25));
     m_pWebPage->SetSize(GetWide(), GetTall() - SCALE(25));
     char url[BUFSIZELOCL];
-    Q_snprintf(url, BUFSIZELOCL, "%s/feedback", MOM_WEBDOMAIN);
+    Q_snprintf(url, BUFSIZELOCL, "%s/feedback", MOM_APIDOMAIN);
     m_pWebPage->OpenURL(url, nullptr);
 }
 
