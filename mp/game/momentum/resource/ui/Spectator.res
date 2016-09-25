@@ -15,10 +15,10 @@
 	{
 		"ControlName"		"Panel"
 		"fieldName"			"topbar"
-        //Handled in code
-		"xpos"				"0"
+        "xpos"				"0"
 		"ypos"				"0"
-		"tall"				"0"
+		"tall"				"52"
+        //Handled in code
 		"wide"				"0" 
 		"autoResize"		"0"
 		"pinCorner"			"0"

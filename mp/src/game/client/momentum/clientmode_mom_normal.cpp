@@ -91,6 +91,7 @@ ClientModeMOMNormal::ClientModeMOMNormal()
     m_pHudMenuStatic = nullptr;
     m_pHudMapFinished = nullptr;
     m_pLeaderboards = nullptr;
+    m_pSpectatorGUI = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
