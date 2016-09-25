@@ -62,6 +62,14 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
     void OnThink() override;
 
+    void SetMouseInputEnabled(bool bState) override 
+    {
+        BaseClass::SetMouseInputEnabled(bState);
+
+        if (m_pGainControlLabel)
+            m_pGainControlLabel->SetVisible(!bState);
+    }
+
     int GetTopBarHeight() { return m_pTopBar->GetTall(); }
     int GetBottomBarHeight() { return m_pBottomBarBlank->GetTall(); }
 
@@ -110,6 +118,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     vgui::Label *m_pPlayerLabel;
     vgui::Label *m_pReplayLabel;
     vgui::Label *m_pTimeLabel;
+    vgui::Label *m_pGainControlLabel;
 
     vgui::ImagePanel *m_pCloseButton;
 

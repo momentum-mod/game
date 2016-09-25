@@ -15,10 +15,11 @@
 	{
 		"ControlName"		"Panel"
 		"fieldName"			"topbar"
+        //Handled in code
 		"xpos"				"0"
 		"ypos"				"0"
-		"tall"				"52"
-		"wide"				"640"
+		"tall"				"0"
+		"wide"				"0" 
 		"autoResize"		"0"
 		"pinCorner"			"0"
 		"visible"			"1"
@@ -30,9 +31,9 @@
 		"ControlName"		"Panel"
 		"fieldName"			"bottombarblank"
 		"xpos"				"0"
-		"ypos"				"428"
-		"tall"				"55"		// this needs to match the size of BottomBar
-		"wide"				"640"
+		"ypos"				"0"
+		"tall"				"0"		// this needs to match the size of BottomBar
+		"wide"				"0"
 		"autoResize"		"0"
 		"pinCorner"			"0"
 		"visible"			"1"
@@ -49,7 +50,7 @@
 		"tall"				"15"
 		"autoResize"		"0"
 		"pinCorner"			"0"
-		"visible"			"1"
+		"visible"			"0"
 		"enabled"			"1"
 		"labelText"			""
 		"textAlignment"		"west"
@@ -143,5 +144,20 @@
         "enabled"       "1"
         "scaleImage"    "1"
         "image"         "close_button"
+        "mouseinputenabled" "1"
+    }
+    
+    "Detach_Info"
+    {
+        "ControlName" "Label"
+        "fieldName" "Detach_Info"
+        "xpos" "r202"
+        "ypos" "34"
+        "wide" "200"
+        "tall" "20"
+        "textAlignment" "east"
+        "labelText" "#MOM_GainControlReplay"
+        "dulltext" "0"
+        "brighttext" "0"
     }
 }

@@ -228,7 +228,8 @@ void C_HudMapInfo::Paint()
     int yPos = mapinfo_ypos;
     int toIncrement = surface()->GetFontTall(m_hMapInfoFont) + 2;
     surface()->DrawSetTextFont(m_hMapInfoFont);
-    if (mom_mapinfo_show_mapname.GetBool())
+    IViewPortPanel *pSpecGUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+    if (mom_mapinfo_show_mapname.GetBool() && pSpecGUI && !pSpecGUI->IsVisible())
     {
         const char *pMapName = g_pGameRules->MapName();
         if (pMapName)
