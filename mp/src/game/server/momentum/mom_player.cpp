@@ -420,7 +420,7 @@ void CMomentumPlayer::TeleportToCP(int newCheckpoint)
     SetName(MAKE_STRING(c.targetName));
     SetClassname(c.targetClassName);
     if (!c.crouched && IsDucked())
-        c.pos.z -= VEC_DUCK_VIEW.z;
+        // MOM_TODO: Unduck the player
     Teleport(&c.pos, &c.ang, &c.vel);
 }
 
