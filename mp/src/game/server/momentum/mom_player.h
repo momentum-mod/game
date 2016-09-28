@@ -189,6 +189,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SaveCPsToFile(KeyValues *kvInto);
     void LoadCPsFromFile(KeyValues *kvFrom);
 
+    void ToggleDuckThisFrame(bool bState);
+
   private:
     CountdownTimer m_ladderSurpressionTimer;
     CUtlVector<Checkpoint> m_rcCheckpoints;

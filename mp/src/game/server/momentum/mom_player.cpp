@@ -413,14 +413,33 @@ void CMomentumPlayer::RemoveAllCheckpoints()
     m_iCheckpointCount = 0;
 }
 
+void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
+{
+    if (m_Local.m_bDucked != bState)
+    {
+        m_Local.m_bDucked = bState;
+        bState ? AddFlag(FL_DUCKING) : RemoveFlag(FL_DUCKING);
+        SetVCollisionState(GetAbsOrigin(), GetAbsVelocity(), bState ? VPHYS_CROUCH : VPHYS_WALK);
+    }
+}
+
+
 void CMomentumPlayer::TeleportToCP(int newCheckpoint)
 {
     if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0) return;
     Checkpoint c = m_rcCheckpoints[newCheckpoint];
+
+    // Handle custom ent flags that old maps do
     SetName(MAKE_STRING(c.targetName));
     SetClassname(c.targetClassName);
-    if (!c.crouched && IsDucked())
-        // MOM_TODO: Unduck the player
+
+    // Handle the crouched state
+    if (c.crouched && !IsDucked())
+        ToggleDuckThisFrame(true);
+    else if (!c.crouched && IsDucked())
+        ToggleDuckThisFrame(false);
+
+    //Teleport the player
     Teleport(&c.pos, &c.ang, &c.vel);
 }
 
