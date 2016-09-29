@@ -139,7 +139,7 @@ CON_COMMAND_F(mom_checkpoint_nav_prev, "Goes backwards through the checkpoint li
     CheckTimer();
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    if (pPlayer && pPlayer->GetCPCount() > 0)
     {
         pPlayer->SetCurrentCPMenuStep(pPlayer->GetCurrentCPMenuStep() == 0 ? pPlayer->GetCPCount() - 1 : pPlayer->GetCurrentCPMenuStep() - 1);
         pPlayer->TeleportToCurrentCP();
