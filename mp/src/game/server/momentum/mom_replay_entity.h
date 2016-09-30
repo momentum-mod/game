@@ -76,7 +76,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
 
     void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentTick); }
+    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick); }
     CReplayFrame* GetNextStep();
 
     bool m_bIsActive;
@@ -114,7 +114,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
-    int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTotalTicks, m_iCurrentTick;
+    int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;
 };
 
 #endif // MOM_REPLAY_GHOST_H

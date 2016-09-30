@@ -7,7 +7,7 @@
 
 #include "tier0/memdbgon.h"
 
-MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
+//MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
                                          FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                          "Replay ghost's body group (model)", true, 0, true, 14);
@@ -123,9 +123,9 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
             }
         }
 
-        m_iCurrentTick = mom_replay_reverse.GetBool() ? m_pPlaybackReplay->GetFrameCount() - 1 : 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
-		m_iTotalTicks = m_pPlaybackReplay->GetFrameCount() - 1;
+        shared->m_iCurrentTick = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick)->PlayerOrigin());
+		shared->m_iTotalTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime);
     }
@@ -142,22 +142,38 @@ void CMomentumReplayGhostEntity::UpdateStep()
     if (!m_pPlaybackReplay)
         return;
 
-    if (mom_replay_reverse.GetBool())
-    {
-        --m_iCurrentTick;
+	if (!shared->m_bIsPlaying)
+	{
+		if (shared->HasSelected == 1)
+		{
+			--shared->m_iCurrentTick;
 
-        if (m_bReplayShouldLoop && m_iCurrentTick < 0)
-        {
-            m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - 1;
-        }
+			if (m_bReplayShouldLoop && shared->m_iCurrentTick < 0)
+			{
+				shared->m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - 1;
+			}
 
-        return;
-    }
-    
-    ++m_iCurrentTick;
+		}
+		else if (shared->HasSelected == 2)
+		{
+			++shared->m_iCurrentTick;
 
-    if (m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-        m_iCurrentTick = 0;
+			if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+				shared->m_iCurrentTick = 0;
+		}
+	}
+	else
+	{
+		++shared->m_iCurrentTick;
+
+		if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+			shared->m_iCurrentTick = 0;
+	}
+
+	if (shared->m_iCurrentTick < 0)
+	{
+		shared->m_iCurrentTick = 0;
+	}
 }
 void CMomentumReplayGhostEntity::Think(void)
 {
@@ -188,13 +204,10 @@ void CMomentumReplayGhostEntity::Think(void)
             mom_replay_ghost_alpha.GetInt());
         SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
-
-    bool reverse = mom_replay_reverse.GetBool();
-
     //move the ghost
     if (!m_bReplayShouldLoop &&
-        (reverse && (m_iCurrentTick - 1 < 0) ||
-        !reverse && (m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
+        ((shared->m_iCurrentTick < 0) ||
+         (shared->m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
@@ -432,9 +445,9 @@ void CMomentumReplayGhostEntity::EndRun()
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = m_iCurrentTick;
+    int nextStep = shared->m_iCurrentTick;
 
-    if (mom_replay_reverse.GetBool())
+    if ((shared->HasSelected == 1) && !shared->m_bIsPlaying)
     {
         --nextStep;
 

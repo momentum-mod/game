@@ -61,7 +61,6 @@ class C_Timer : public CHudElement, public Panel
     bool m_bIsRunning;
     bool m_bTimerRan;//MOM_TODO: What is this used for?
     int m_iStartTick;
-	int m_iTotalTicks;
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -134,7 +133,10 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
 
 void C_Timer::Init()
 {	
-	m_iTotalTicks = 0;
+	//We reset only if it was a run not a replay -> lets check if shared was valid first
+	if (shared)
+		if (shared->m_iTotalTicks > 0)
+			shared->m_iTotalTicks_Client_Timer = 0;
 
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
@@ -157,7 +159,9 @@ void C_Timer::Init()
 void C_Timer::Reset()
 {
 	//We reset only if it was a run not a replay -> lets check if shared was valid first
-	m_iTotalTicks = 0;
+	if (shared)
+		if (shared->m_iTotalTicks > 0)
+		shared->m_iTotalTicks_Client_Timer = 0;
 
     m_bIsRunning = false;
     m_bTimerRan = false;
@@ -225,9 +229,46 @@ float C_Timer::GetCurrentTime()
 	// HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
 	// so we add an extra tick here to make them line up again
 
-	m_iTotalTicks = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
+	static int Count = 0;
+	static int OldTickCount = 0;
+	static bool once = false;
 
-	return static_cast<float>(m_iTotalTicks)* gpGlobals->interval_per_tick;
+	if (gpGlobals->tickcount != OldTickCount)
+	{
+		if (!once)
+		{
+			if (shared->m_iTotalTicks > 0)
+			{
+				if (shared->m_bIsPlaying)
+					shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
+				else
+				{
+					if (shared->HasSelected == 2)
+					{
+						shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
+					}
+					else if (shared->HasSelected == 1)
+					{
+						shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? (shared->m_iTotalTicks_Client_Timer - 1) : 0;
+					}
+				}
+
+			}
+			else
+			{
+				shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? shared->m_iTotalTicks_Client_Timer + 1 : 0;
+			}
+
+			once = true;
+		}
+	}
+	else
+		once = false;
+
+	OldTickCount = gpGlobals->tickcount;
+
+
+	return static_cast<float>(shared->m_iTotalTicks_Client_Timer) * gpGlobals->interval_per_tick;
 }
 // Calculations should be done in here. Paint is for drawing what the calculations have done.
 void C_Timer::OnThink()
