@@ -239,19 +239,6 @@ float C_Timer::GetCurrentTime()
 		{
 			if (shared->m_iTotalTicks > 0)
 			{
-				if (shared->m_bIsPlaying)
-					shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
-				else
-				{
-					if (shared->HasSelected == 2)
-					{
-						shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
-					}
-					else if (shared->HasSelected == 1)
-					{
-						shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? (shared->m_iTotalTicks_Client_Timer - 1) : 0;
-					}
-				}
 
 			}
 			else
@@ -271,6 +258,9 @@ float C_Timer::GetCurrentTime()
 	return static_cast<float>(shared->m_iTotalTicks_Client_Timer) * gpGlobals->interval_per_tick;
 }
 // Calculations should be done in here. Paint is for drawing what the calculations have done.
+// So do it?
+
+float CurTime = 0.0f;
 void C_Timer::OnThink()
 {
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
@@ -305,12 +295,14 @@ void C_Timer::OnThink()
         m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
         m_bMapIsLinear = g_MOMEventListener->m_bMapIsLinear;
     }
+
+	CurTime = GetCurrentTime();
 }
 
 void C_Timer::Paint(void)
 {
     // Format the run's time
-    mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);
+	mom_UTIL->FormatTime(CurTime, m_pszString, 2);
     ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
 
     if (m_bShowCheckpoints)

@@ -142,6 +142,21 @@ void CMomentumReplayGhostEntity::UpdateStep()
     if (!m_pPlaybackReplay)
         return;
 
+
+	if (shared->m_bIsPlaying)
+		shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
+	else
+	{
+		if (shared->HasSelected == 2)
+		{
+			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
+		}
+		else if (shared->HasSelected == 1)
+		{
+			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer - 1) : 0;
+		}
+	}
+
 	if (!shared->m_bIsPlaying)
 	{
 		if (shared->HasSelected == 1)
@@ -175,56 +190,62 @@ void CMomentumReplayGhostEntity::UpdateStep()
 		shared->m_iCurrentTick = 0;
 	}
 }
+
 void CMomentumReplayGhostEntity::Think(void)
 {
-    if (!m_bIsActive)
-        return;
-
-    if (!m_pPlaybackReplay)
-    {
-        BaseClass::Think();
-        return;
-    }
-
-    // update color, bodygroup, and other params if they change
-    if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
-    {
-        m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
-        SetBodygroup(1, m_iBodyGroup);
-    }
-    if (m_GhostColor != m_NewGhostColor)
-    {
-        m_GhostColor = m_NewGhostColor;
-        SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b());
-    }
-    if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
-    {
-        m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
-            m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
-            mom_replay_ghost_alpha.GetInt());
-        SetRenderColorA(mom_replay_ghost_alpha.GetInt());
-    }
-    //move the ghost
-    if (!m_bReplayShouldLoop &&
-        ((shared->m_iCurrentTick < 0) ||
-         (shared->m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
-    {
-        // If we're not looping and we've reached the end of the video then stop and wait for the player
-        // to make a choice about if it should repeat, or end.
-        SetAbsVelocity(vec3_origin);
-    }
-    else
-    {
-        // Otherwise proceed to the next step and perform the necessary updates.
-        UpdateStep();
-        if (m_rgSpectators.IsEmpty())
-            HandleGhost();
-        else
-            HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
-    }
 
     BaseClass::Think();
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+
+	if (!m_bIsActive)
+		return;
+
+	if (!m_pPlaybackReplay)
+	{
+		return;
+	}
+
+	// update color, bodygroup, and other params if they change
+	if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
+	{
+		m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
+		SetBodygroup(1, m_iBodyGroup);
+	}
+	if (m_GhostColor != m_NewGhostColor)
+	{
+		m_GhostColor = m_NewGhostColor;
+		SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b());
+	}
+	if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
+	{
+		m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
+			m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
+			mom_replay_ghost_alpha.GetInt());
+		SetRenderColorA(mom_replay_ghost_alpha.GetInt());
+	}
+	//move the ghost
+	if (!m_bReplayShouldLoop &&
+		((shared->m_iCurrentTick < 0) ||
+		(shared->m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
+	{
+		// If we're not looping and we've reached the end of the video then stop and wait for the player
+		// to make a choice about if it should repeat, or end.
+		SetAbsVelocity(vec3_origin);
+	}
+	else
+	{
+		// Otherwise proceed to the next step and perform the necessary updates.
+		UpdateStep();
+		if (m_rgSpectators.IsEmpty())
+			HandleGhost();
+		else
+			HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
+	}
+
+
+	float scale = gpGlobals->interval_per_tick*(1.0f / shared->TickRate);
+	engine->Con_NPrintf(0, "%f", scale);
+    SetNextThink(gpGlobals->curtime + scale);
+	
 }
 //-----------------------------------------------------------------------------
 // Purpose: called by the think function, moves and handles the ghost if we're spectating it

@@ -1517,6 +1517,7 @@ void CHLClient::ExtraMouseSample( float frametime, bool active )
 
 void CHLClient::IN_SetSampleTime( float frametime )
 {
+
 	input->Joystick_SetSampleTime( frametime );
 	input->IN_SetSampleTime( frametime );
 

@@ -116,7 +116,6 @@ void CHudReplay::OnThink()
 {
 	BaseClass::OnThink();
 
-
 	char curtime[64];
 	char totaltime[64];
 	float fProgress = 0.0f;
@@ -157,9 +156,8 @@ void CHudReplay::OnThink()
 		}
 	}
 
-	cvar->FindVar("sv_cheats")->SetValue(1);
-	cvar->FindVar("host_timescale")->SetValue(shared->TickRate);
-
+	//cvar->FindVar("sv_cheats")->SetValue(1);
+	//cvar->FindVar("host_timescale")->SetValue(shared->TickRate);
 
 	fProgress = (float)shared->m_iCurrentTick / (float)shared->m_iTotalTicks;
 	fProgress = clamp(fProgress, 0.0f, 1.0f);
@@ -180,8 +178,16 @@ void CHudReplay::OnThink()
 		// always disable if map is finished
 		if (pGhost->m_RunData.m_bMapFinished)
 		{
-			cvar->FindVar("sv_cheats")->SetValue(0);
-			cvar->FindVar("host_timescale")->SetValue(1.0f);
+			//cvar->FindVar("sv_cheats")->SetValue(0);
+			//cvar->FindVar("host_timescale")->SetValue(1.0f);
+			SetVisible(false);
+		}
+
+		if (shared->m_iCurrentTick >= shared->m_iTotalTicks)
+		{
+			//cvar->FindVar("sv_cheats")->SetValue(0);
+			//cvar->FindVar("host_timescale")->SetValue(1.0f);
+			pGhost->m_RunData.m_bMapFinished = true;
 			SetVisible(false);
 		}
 	}
