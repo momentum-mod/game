@@ -185,7 +185,7 @@
 		"visible"		"1"
 		"enabled"		"0"
 		"tabPosition"		"0"
-		"labelText"		"TimeScale:"
+		"labelText"		"T_S:"
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
