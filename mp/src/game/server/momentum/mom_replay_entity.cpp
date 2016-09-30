@@ -243,7 +243,6 @@ void CMomentumReplayGhostEntity::Think(void)
 
 
 	float scale = gpGlobals->interval_per_tick*(1.0f / shared->TickRate);
-	engine->Con_NPrintf(0, "%f", scale);
     SetNextThink(gpGlobals->curtime + scale);
 	
 }
