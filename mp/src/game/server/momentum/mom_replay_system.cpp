@@ -75,6 +75,8 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     // Load the last run that we did in case we want to watch it
     m_pReplayManager->LoadReplay(newRecordingPath);
 
+	shared->ExtraTicksToRemove = m_iStartTimerTick - m_iStartRecordingTick;
+
     //Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
     m_iStartTimerTick = -1;

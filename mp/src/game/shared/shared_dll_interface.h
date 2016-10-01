@@ -14,6 +14,7 @@ class CShared
 	bool m_bIsPlaying = false;
 	int m_iTotalTicks_Client_Timer = 0;
 	int HasSelected = 0;
+	int ExtraTicksToRemove = 0;
 };
 
 #define INTERFACEVERSION_SHAREDGAMEDLL "SHAREDGAMEDLL001"
