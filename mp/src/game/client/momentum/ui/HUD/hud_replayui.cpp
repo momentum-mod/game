@@ -155,7 +155,7 @@ void CHudReplay::OnCommand(const char *command)
     else if (!Q_strcasecmp(command, "reload"))
     {
         shared->m_iCurrentTick = 0;
-        shared->m_iTotalTicks_Client_Timer = 0;
+		shared->m_iTotalTicks_Client_Timer = 0;
     }
     else if (!Q_strcasecmp(command, "gotoend"))
     {

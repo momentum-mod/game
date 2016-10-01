@@ -147,13 +147,13 @@ void CMomentumReplayGhostEntity::UpdateStep()
 		shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
 	else
 	{
-		if (shared->HasSelected == 2)
-		{
-			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
-		}
-		else if (shared->HasSelected == 1)
+		if (shared->HasSelected == 1)
 		{
 			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer - 1) : 0;
+		}
+		else if (shared->HasSelected == 2)
+		{
+			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
 		}
 	}
 
@@ -189,6 +189,14 @@ void CMomentumReplayGhostEntity::UpdateStep()
 	{
 		shared->m_iCurrentTick = 0;
 	}
+
+	if (shared->m_iCurrentTick > shared->m_iTotalTicks)
+	{
+		shared->m_iCurrentTick = 0;
+	}
+
+	if (shared->m_iTotalTicks_Client_Timer < 0)
+		shared->m_iTotalTicks_Client_Timer = 0;
 }
 
 void CMomentumReplayGhostEntity::Think(void)
@@ -310,6 +318,15 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
                 // MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
                 pPlayer->SetViewOffset(VEC_DUCK_VIEW);
             }
+
+			if (currentStep->PlayerButtons()  & FL_DUCKING)
+			{
+				SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			}
+			else
+			{
+				SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
+			}
         }
     }
 }

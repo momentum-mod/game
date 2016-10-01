@@ -226,17 +226,13 @@ float C_Timer::GetCurrentTime()
     // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     // so we add an extra tick here to make them line up again
 
-    // MOM_TODO: This is not working properly.. What is all of this?
-    static int Count = 0;
+    // Done, I've shouldn't have checked if tickcount wasn't the same for only one frame, but for all the frames that paint is getting called.
+
     static int OldTickCount = 0;
 
-    if (gpGlobals->tickcount != OldTickCount)
+	if ((gpGlobals->tickcount != OldTickCount) && (shared->m_iTotalTicks <= 0))
     {
-            if (shared->m_iTotalTicks <= 0)
-            {
-                shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? shared->m_iTotalTicks_Client_Timer + 1 : 0;
-            }
-    
+		shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? shared->m_iTotalTicks_Client_Timer + 1 : 0;
     }
 
     OldTickCount = gpGlobals->tickcount;
