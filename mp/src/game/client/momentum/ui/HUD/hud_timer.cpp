@@ -1,5 +1,5 @@
-#include "baseviewport.h"
 #include "cbase.h"
+#include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
 #include "hud_numericdisplay.h"
