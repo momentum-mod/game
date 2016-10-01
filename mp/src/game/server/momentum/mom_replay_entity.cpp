@@ -313,14 +313,13 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             if (m_RunData.m_bTimerRunning)
                 UpdateStats(interpolatedVel);
 
+
+			//kamay: Now timer start and end at the right time, well I'm not sure that playerbuttons is the right way since normaly it's using the getflags() and check for fl_ducking for the collision bounds
+			//But that should do the trick.
             if (currentStep->PlayerButtons() & IN_DUCK)
             {
                 // MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
-                pPlayer->SetViewOffset(VEC_DUCK_VIEW);
-            }
-
-			if (currentStep->PlayerButtons()  & FL_DUCKING)
-			{
+				pPlayer->SetViewOffset(VEC_DUCK_VIEW);
 				SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 			}
 			else
