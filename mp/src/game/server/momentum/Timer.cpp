@@ -571,9 +571,11 @@ class CTimerCommands
 public:
     static void ResetToStart()
     {
-        CBasePlayer* cPlayer = UTIL_GetCommandClient();
+        CMomentumPlayer* cPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
+        if (!cPlayer)
+            return;
         CTriggerTimerStart *start = g_Timer->GetStartTrigger();
-        if (start && cPlayer)
+        if (start)
         {
             // Don't set angles if still in start zone.
             if (g_Timer->IsRunning() && start->GetHasLookAngles())
@@ -585,6 +587,14 @@ public:
             else
             {
                 cPlayer->Teleport(&start->WorldSpaceCenter(), nullptr, &vec3_origin);
+            }
+        } 
+        else
+        {
+            CBaseEntity* startPoint = cPlayer->EntSelectSpawnPoint();
+            if (startPoint)
+            {
+                cPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), nullptr);
             }
         }
     }
