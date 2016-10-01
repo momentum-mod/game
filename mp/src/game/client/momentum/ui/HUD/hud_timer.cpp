@@ -59,6 +59,7 @@ class C_Timer : public CHudElement, public Panel
     bool m_bIsRunning;
     bool m_bTimerRan; // MOM_TODO: What is this used for?
     int m_iStartTick;
+	int m_iEndTick;
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -268,6 +269,7 @@ void C_Timer::OnThink()
 
         m_bIsRunning = runData->m_bTimerRunning;
         m_iStartTick = runData->m_iStartTick;
+		m_iEndTick = runData->m_iEndTick;
         m_iZoneCurrent = runData->m_iCurrentZone;
         m_bPlayerInZone = runData->m_bIsInZone;
         m_bMapFinished = runData->m_bMapFinished;

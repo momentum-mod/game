@@ -49,6 +49,7 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_bIsInZone = false;
     m_iCurrentZone = 0;
     m_iStartTick = -1;
+	m_iEndTick = -1;
     m_bMapFinished = false;
     m_bTimerRunning = false;
     m_flRunTime = 0.0f;

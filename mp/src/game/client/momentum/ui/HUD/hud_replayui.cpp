@@ -187,6 +187,12 @@ void CHudReplay::OnCommand(const char *command)
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
 		shared->m_iCurrentTick = atoi(tick);
+
+		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+		if (pGhost)
+		{
+			shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - int(2.0f / gpGlobals->interval_per_tick); //START_TRIGGER_TIME_SEC
+		}
     }
     else
     {
