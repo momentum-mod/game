@@ -186,6 +186,7 @@ void CHudReplay::OnCommand(const char *command)
 		//TODO: Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
+		shared->m_iCurrentTick = atoi(tick);
     }
     else
     {
