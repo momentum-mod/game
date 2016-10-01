@@ -461,6 +461,8 @@ void CMomentumReplayGhostEntity::EndRun()
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
+
+	shared->m_iTotalTicks = 0;
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
