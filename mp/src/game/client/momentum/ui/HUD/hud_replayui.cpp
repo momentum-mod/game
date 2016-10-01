@@ -6,9 +6,9 @@
 
 #include <vgui_controls/TextEntry.h>
 
-#include "hud_replayui.h"
-#include "hud_mapfinished.h"
 #include "PFrameButton.h"
+#include "hud_mapfinished.h"
+#include "hud_replayui.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
@@ -20,7 +20,7 @@ CHudReplay *HudReplay = nullptr;
 CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 {
     SetTitle("Reply Playback", true);
- 
+
     // MOM_TODO: use FindControl from the .res instead of creating new
 
     m_pPlayPauseResume = new vgui::ToggleButton(this, "DemoPlayPauseResume", "PlayPauseResume");
@@ -53,7 +53,7 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 
     m_pGotoTick = new vgui::TextEntry(this, "DemoGoToTick");
 
-	LoadControlSettings("resource\\ui\\HudReplay.res");//Should be always loaded at the end...
+    LoadControlSettings("resource\\ui\\HudReplay.res"); // Should be always loaded at the end...
 
     SetMoveable(true);
     SetSizeable(false);
@@ -86,26 +86,26 @@ void CHudReplay::OnThink()
     {
         shared->HasSelected = RUI_MOVEBW;
         shared->m_bIsPlaying = false;
-		m_pPlayPauseResume->ForceDepressed(false);
+        m_pPlayPauseResume->ForceDepressed(false);
     }
     else if (m_pFastForward->IsSelected())
     {
         shared->HasSelected = RUI_MOVEFW;
         shared->m_bIsPlaying = false;
-		m_pPlayPauseResume->ForceDepressed(false);
+        m_pPlayPauseResume->ForceDepressed(false);
     }
     else
     {
         if (shared->m_bIsPlaying)
         {
             m_pPlayPauseResume->SetText("Playing");
-			m_pPlayPauseResume->SetSelected(true);
+            m_pPlayPauseResume->SetSelected(true);
         }
         else
         {
             shared->HasSelected = RUI_NOTHING;
             m_pPlayPauseResume->SetText("Paused");
-			m_pPlayPauseResume->SetSelected(false);
+            m_pPlayPauseResume->SetSelected(false);
         }
     }
 
@@ -149,7 +149,7 @@ void CHudReplay::OnCommand(const char *command)
     else if (!Q_strcasecmp(command, "reload"))
     {
         shared->m_iCurrentTick = 0;
-		shared->m_iTotalTicks_Client_Timer = 0;
+        shared->m_iTotalTicks_Client_Timer = 0;
     }
     else if (!Q_strcasecmp(command, "gotoend"))
     {
@@ -173,20 +173,20 @@ void CHudReplay::OnCommand(const char *command)
     {
         char tick[32];
         m_pGotoTick2->GetText(tick, sizeof(tick));
-		shared->TickRate = atof(tick);
+        shared->TickRate = atof(tick);
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {
-		//TODO: Teleport at the position we want with timer included
+        // TODO: Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
-		shared->m_iCurrentTick = atoi(tick);
+        shared->m_iCurrentTick = atoi(tick);
 
-		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-		if (pGhost)
-		{
-			shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD;
-		}
+        C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+        if (pGhost)
+        {
+            shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD;
+        }
     }
     else
     {
