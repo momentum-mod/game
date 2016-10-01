@@ -22,7 +22,7 @@ CHudReplay *HudReplay = nullptr;
 CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 {
     SetTitle("Reply Playback", true);
-    LoadControlSettings("resource/ui/HudReplay.res");
+ 
     // MOM_TODO: use FindControl from the .res instead of creating new
 
     m_pPlayPauseResume = new vgui::ToggleButton(this, "DemoPlayPauseResume", "PlayPauseResume");
@@ -54,6 +54,8 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
     m_pProgressLabelTime = new vgui::Label(this, "DemoProgressLabelTime", "");
 
     m_pGotoTick = new vgui::TextEntry(this, "DemoGoToTick");
+
+	LoadControlSettings("resource\\ui\\HudReplay.res");//Should be always loaded at the end...
 
     SetMoveable(true);
     SetSizeable(false);
@@ -181,6 +183,7 @@ void CHudReplay::OnCommand(const char *command)
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {
+		//TODO: Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
     }
