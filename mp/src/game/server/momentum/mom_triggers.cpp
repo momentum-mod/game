@@ -215,6 +215,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
             g_ReplaySystem->StopRecording(pPlayer, true, false);
             g_ReplaySystem->BeginRecording(pPlayer);
         }
+
     }
     else
     {
@@ -332,7 +333,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             //The map is now finished, show the mapfinished panel
             pPlayer->m_RunData.m_bMapFinished = true;
             pPlayer->m_RunData.m_bTimerRunning = false;
-			pPlayer->m_RunData.m_iEndTick = gpGlobals->tickcount;
         }
 
         stageEvent = gameeventmanager->CreateEvent("zone_enter");

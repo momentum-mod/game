@@ -75,8 +75,6 @@ void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, 
     // Load the last run that we did in case we want to watch it
     m_pReplayManager->LoadReplay(newRecordingPath);
 
-	shared->ExtraTicksToRemove = m_iStartTimerTick - m_iStartRecordingTick;
-
     //Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
     m_iStartTimerTick = -1;
@@ -122,6 +120,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     if (!m_pReplayManager->Recording())
         return;
 
+
     auto replay = m_pReplayManager->GetRecordingReplay();
     
     replay->SetMapName(gpGlobals->mapname.ToCStr());
@@ -131,6 +130,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetRunTime(g_Timer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
     replay->SetRunDate(g_Timer->GetLastRunDate());
+	replay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
 }
 
 void CMomentumReplaySystem::SetRunStats()

@@ -67,6 +67,7 @@ class CReplayHeader : public ISerializable
         m_fRunTime = reader->ReadFloat();
         m_iRunFlags = reader->ReadUInt32();
         m_iRunDate = reader->ReadInt64();
+		m_iStartDif = reader->ReadInt32();
     }
 
   public:
@@ -79,6 +80,7 @@ class CReplayHeader : public ISerializable
         writer->WriteFloat(m_fRunTime);
         writer->WriteUInt32(m_iRunFlags);
         writer->WriteInt64(m_iRunDate);
+		writer->WriteInt32(m_iStartDif);
     }
 
   public:
@@ -89,4 +91,5 @@ class CReplayHeader : public ISerializable
     float m_fRunTime;         // The total runtime of the run in seconds.
     uint32 m_iRunFlags;       // The flags the player ran with.
     time_t m_iRunDate;        // The date this run was achieved.
+	int m_iStartDif;		  // The difference between the tick of the start timer and record
 };

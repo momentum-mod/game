@@ -17,6 +17,7 @@ RecvPropInt(RECVINFO(m_iCurrentZone)),
 RecvPropBool(RECVINFO(m_bMapFinished)),
 RecvPropBool(RECVINFO(m_bTimerRunning)),
 RecvPropInt(RECVINFO(m_iStartTick)),
+RecvPropInt(RECVINFO(m_iStartTickD)),
 RecvPropFloat(RECVINFO(m_flRunTime)),
 END_RECV_TABLE()
 #else
@@ -33,6 +34,7 @@ SendPropInt(SENDINFO(m_iCurrentZone)),
 SendPropBool(SENDINFO(m_bMapFinished)),
 SendPropBool(SENDINFO(m_bTimerRunning)),
 SendPropInt(SENDINFO(m_iStartTick)),
+SendPropInt(SENDINFO(m_iStartTickD)),
 SendPropFloat(SENDINFO(m_flRunTime)),
 END_SEND_TABLE()
 #endif
@@ -49,7 +51,7 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_bIsInZone = false;
     m_iCurrentZone = 0;
     m_iStartTick = -1;
-	m_iEndTick = -1;
+	m_iStartTickD = -1;
     m_bMapFinished = false;
     m_bTimerRunning = false;
     m_flRunTime = 0.0f;

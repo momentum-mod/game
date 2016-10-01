@@ -9,7 +9,7 @@
 #include <vgui_controls/TextEntry.h>
 
 #include "hud_replayui.h"
-
+#include "hud_mapfinished.h"
 #include "PFrameButton.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
@@ -132,14 +132,6 @@ void CHudReplay::OnThink()
             // cvar->FindVar("host_timescale")->SetValue(1.0f);
             SetVisible(false);
         }
-
-        if (shared->m_iCurrentTick >= shared->m_iTotalTicks)
-        {
-            // cvar->FindVar("sv_cheats")->SetValue(0);
-            // cvar->FindVar("host_timescale")->SetValue(1.0f);
-            pGhost->m_RunData.m_bMapFinished = true;
-            SetVisible(false);
-        }
     }
 }
 
@@ -191,7 +183,7 @@ void CHudReplay::OnCommand(const char *command)
 		C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
 		if (pGhost)
 		{
-			shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - shared->ExtraTicksToRemove; 
+			shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD;
 		}
     }
     else

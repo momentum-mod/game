@@ -35,14 +35,14 @@ public:
     CNetworkVar(int, m_iCurrentZone);//Current stage/checkpoint the player is on
     CNetworkVar(bool, m_bTimerRunning);//Is the timer currently running for this ent?
     CNetworkVar(int, m_iStartTick); //Tick that the entity started its timer
-	CNetworkVar(int, m_iEndTick); //Tick that the entity ended its timer
+	CNetworkVar(int, m_iStartTickD); //The tick difference between timer and record
     CNetworkVar(float, m_flRunTime); //The time taken to do their most recent run
 
 #elif defined CLIENT_DLL
 
     bool m_bAutoBhop, m_bIsInZone, m_bMapFinished, m_bTimerRunning;
     float m_flStrafeSync, m_flStrafeSync2, m_flLastJumpVel, m_flLastJumpTime, m_flRunTime;
-    int m_iSuccessiveBhops, m_iCurrentZone, m_iStartTick, m_iEndTick;
+	int m_iSuccessiveBhops, m_iCurrentZone, m_iStartTick, m_iStartTickD;
     uint32 m_iRunFlags;
 
 #endif
