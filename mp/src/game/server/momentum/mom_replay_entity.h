@@ -47,7 +47,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void SetGhostBodyGroup(int bodyGroup);
     static void SetGhostColor(const CCommand &args);
     // Increments the steps intelligently.
-    void UpdateStep();
+    void UpdateStep(int Skip);
 
     void EndRun();
     void StartRun(bool firstPerson = false, bool shouldLoop = false);

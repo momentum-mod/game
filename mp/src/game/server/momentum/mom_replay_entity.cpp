@@ -136,7 +136,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
     }
 }
 
-void CMomentumReplayGhostEntity::UpdateStep()
+void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 {
 	//Managed by replayui now
     if (!m_pPlaybackReplay)
@@ -144,16 +144,16 @@ void CMomentumReplayGhostEntity::UpdateStep()
 
 
 	if (shared->m_bIsPlaying)
-		shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
+		shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
 	else
 	{
 		if (shared->HasSelected == 1)
 		{
-			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer - 1) : 0;
+			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer - Skip) : 0;
 		}
 		else if (shared->HasSelected == 2)
 		{
-			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + 1) : 0;
+			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
 		}
 	}
 
@@ -161,17 +161,17 @@ void CMomentumReplayGhostEntity::UpdateStep()
 	{
 		if (shared->HasSelected == 1)
 		{
-			--shared->m_iCurrentTick;
+			shared->m_iCurrentTick = shared->m_iCurrentTick - Skip;
 
 			if (m_bReplayShouldLoop && shared->m_iCurrentTick < 0)
 			{
-				shared->m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - 1;
+				shared->m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - Skip;
 			}
 
 		}
 		else if (shared->HasSelected == 2)
 		{
-			++shared->m_iCurrentTick;
+			shared->m_iCurrentTick = shared->m_iCurrentTick + Skip;
 
 			if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
 				shared->m_iCurrentTick = 0;
@@ -179,7 +179,7 @@ void CMomentumReplayGhostEntity::UpdateStep()
 	}
 	else
 	{
-		++shared->m_iCurrentTick;
+		shared->m_iCurrentTick = shared->m_iCurrentTick + Skip;
 
 		if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
 			shared->m_iCurrentTick = 0;
@@ -232,7 +232,7 @@ void CMomentumReplayGhostEntity::Think(void)
 	}
 	//move the ghost
 	if (!m_bReplayShouldLoop &&
-		((shared->m_iCurrentTick < 0) ||
+		((shared->m_iCurrentTick <= 0) ||
 		(shared->m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
 	{
 		// If we're not looping and we've reached the end of the video then stop and wait for the player
@@ -242,7 +242,12 @@ void CMomentumReplayGhostEntity::Think(void)
 	else
 	{
 		// Otherwise proceed to the next step and perform the necessary updates.
-		UpdateStep();
+		if (shared->TickRate <= 1.0f)
+		UpdateStep(1);
+		else
+		{
+			UpdateStep(static_cast<int>(shared->TickRate));
+		}
 		if (m_rgSpectators.IsEmpty())
 			HandleGhost();
 		else
