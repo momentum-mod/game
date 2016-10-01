@@ -40,8 +40,8 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
     if (shared)
     {
         shared->TickRate = 1.0f;
-        char buf[0xFF]; // This is way too much
-        sprintf(buf, "%f", shared->TickRate);
+        char buf[0xF]; // This is way too much
+        sprintf(buf, "%.1f", shared->TickRate);
         m_pGotoTick2->SetText(buf);
     }
 
@@ -99,11 +99,13 @@ void CHudReplay::OnThink()
         if (shared->m_bIsPlaying)
         {
             m_pPlayPauseResume->SetText("Playing");
+			m_pPlayPauseResume->SetArmed(true);
         }
         else
         {
             shared->HasSelected = RUI_NOTHING;
             m_pPlayPauseResume->SetText("Paused");
+			m_pPlayPauseResume->SetArmed(false);
         }
     }
 
@@ -171,7 +173,7 @@ void CHudReplay::OnCommand(const char *command)
     {
         char tick[32];
         m_pGotoTick2->GetText(tick, sizeof(tick));
-        shared->TickRate = atof(tick);
+		shared->TickRate = atof(tick);
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {
