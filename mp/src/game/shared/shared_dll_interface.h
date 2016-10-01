@@ -7,7 +7,7 @@ class CShared
   public:
     bool LoadedClient = false;
     bool LoadedServer = false;
-	void* HudReplay = NULL;
+	void* HudReplay = nullptr;
 	float TickRate = 1.0f;
 	int m_iTotalTicks = 0;
 	int m_iCurrentTick = 0;
