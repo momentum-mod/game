@@ -1,8 +1,6 @@
 #include "cbase.h"
 
 #include <vgui_controls/BuildGroup.h>
-#include <vgui_controls/CheckButton.h>
-
 #include <vgui_controls/Label.h>
 #include <vgui_controls/ProgressBar.h>
 
@@ -88,24 +86,26 @@ void CHudReplay::OnThink()
     {
         shared->HasSelected = RUI_MOVEBW;
         shared->m_bIsPlaying = false;
+		m_pPlayPauseResume->ForceDepressed(false);
     }
     else if (m_pFastForward->IsSelected())
     {
         shared->HasSelected = RUI_MOVEFW;
         shared->m_bIsPlaying = false;
+		m_pPlayPauseResume->ForceDepressed(false);
     }
     else
     {
         if (shared->m_bIsPlaying)
         {
             m_pPlayPauseResume->SetText("Playing");
-			m_pPlayPauseResume->SetArmed(true);
+			m_pPlayPauseResume->SetSelected(true);
         }
         else
         {
             shared->HasSelected = RUI_NOTHING;
             m_pPlayPauseResume->SetText("Paused");
-			m_pPlayPauseResume->SetArmed(false);
+			m_pPlayPauseResume->SetSelected(false);
         }
     }
 
