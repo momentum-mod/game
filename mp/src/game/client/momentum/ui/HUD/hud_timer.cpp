@@ -229,23 +229,16 @@ float C_Timer::GetCurrentTime()
     // MOM_TODO: This is not working properly.. What is all of this?
     static int Count = 0;
     static int OldTickCount = 0;
-    static bool once = false;
 
     if (gpGlobals->tickcount != OldTickCount)
     {
-        if (!once)
-        {
             if (shared->m_iTotalTicks <= 0)
             {
                 shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? shared->m_iTotalTicks_Client_Timer + 1 : 0;
             }
-            once = true;
-        }
+    
     }
-    else
-    {
-        once = false;
-    }
+
     OldTickCount = gpGlobals->tickcount;
 
     return static_cast<float>(shared->m_iTotalTicks_Client_Timer) * gpGlobals->interval_per_tick;
