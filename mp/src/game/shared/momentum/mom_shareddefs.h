@@ -79,7 +79,7 @@ typedef enum FLAGS
 // I'm a deadbeat, so I did this to stop having to worry about what MOM_APIDOMAIN is
 // Set this macro to 0 to use momentum-mod.org as the webdomain, otherwise it uses the local domain (Or whatever you set)
 // Make sure this is 0 when you push!
-#define MOM_USINGLOCALWEB 1
+#define MOM_USINGLOCALWEB 0
 
 #if MOM_USINGLOCALWEB
 // What is the URL of the web?

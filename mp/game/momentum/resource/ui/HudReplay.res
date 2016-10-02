@@ -1,6 +1,6 @@
-"Resource\HudReplay.res"
+"resource\ui\HudReplay.res"
 {
-	"DemoUIPanel"
+	"ReplayUIPanel"
 	{
 		"ControlName"		"CHudReplay"
 		"fieldName"		"HudReplay"
@@ -16,10 +16,10 @@
 		"settitlebarvisible"		"1"
 		"title"		"Ghost Playback"
 	}
-	"DemoPlayPauseResume"
+	"ReplayPlayPauseResume"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoPlayPauseResume"
+		"fieldName"		"ReplayPlayPauseResume"
 		"xpos"		"123"
 		"ypos"		"116"
 		"wide"		"58"
@@ -37,10 +37,10 @@
 		"Command"		"play"
 		"Default"		"1"
 	}
-	"DemoGoStart"
+	"ReplayGoStart"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoGoStart"
+		"fieldName"		"ReplayGoStart"
 		"xpos"		"12"
 		"ypos"		"116"
 		"wide"		"32"
@@ -58,10 +58,10 @@
 		"Command"		"reload"
 		"Default"		"0"
 	}
-	"DemoGoEnd"
+	"ReplayGoEnd"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoGoEnd"
+		"fieldName"		"ReplayGoEnd"
 		"xpos"		"260"
 		"ypos"		"116"
 		"wide"		"32"
@@ -79,10 +79,10 @@
 		"Command"		"gotoend"
 		"Default"		"0"
 	}
-	"DemoPrevFrame"
+	"ReplayPrevFrame"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoPrevFrame"
+		"fieldName"		"ReplayPrevFrame"
 		"xpos"		"86"
 		"ypos"		"116"
 		"wide"		"24"
@@ -100,10 +100,10 @@
 		"Command"		"prevframe"
 		"Default"		"0"
 	}
-	"DemoNextFrame"
+	"ReplayNextFrame"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoNextFrame"
+		"fieldName"		"ReplayNextFrame"
 		"xpos"		"196"
 		"ypos"		"116"
 		"wide"		"24"
@@ -121,10 +121,10 @@
 		"Command"		"nextframe"
 		"Default"		"0"
 	}
-	"DemoProgress"
+	"ReplayProgress"
 	{
 		"ControlName"		"ProgressBar"
-		"fieldName"		"DemoProgress"
+		"fieldName"		"ReplayProgress"
 		"xpos"		"12"
 		"ypos"		"94"
 		"wide"		"280"
@@ -136,10 +136,10 @@
 		"tabPosition"		"0"
 		"progress"		"0.000000"
 	}
-	"DemoProgressLabelFrame"
+	"ReplayProgressLabelFrame"
 	{
 		"ControlName"		"Label"
-		"fieldName"		"DemoProgressLabelFrame"
+		"fieldName"		"ReplayProgressLabelFrame"
 		"xpos"		"12"
 		"ypos"		"148"
 		"wide"		"116"
@@ -154,13 +154,13 @@
 		"brighttext"		"1"
 		"wrap"		"0"
 	}
-	"DemoProgressLabelTime"
+	"ReplayProgressLabelTime"
 	{
 		"ControlName"		"Label"
-		"fieldName"		"DemoProgressLabelTime"
+		"fieldName"		"ReplayProgressLabelTime"
 		"xpos"		"13"
 		"ypos"		"64"
-		"wide"		"116"
+		"wide"		"160"
 		"tall"		"24"
 		"autoResize"		"0"
 		"pinCorner"		"0"
@@ -172,43 +172,50 @@
 		"brighttext"		"1"
 		"wrap"		"0"
 	}
-	"DemoSpeedScale"
+	"ReplayGo2"
 	{
-		"ControlName"		"Slider"
-		"fieldName"		"DemoSpeedScale"
-		"xpos"		"140"
+		"ControlName"		"Button"
+		"fieldName"		"ReplayGo2"
+		"xpos"		"149"
 		"ypos"		"64"
-		"wide"		"98"
+		"wide"		"84"
 		"tall"		"24"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"visible"		"1"
-		"enabled"		"1"
+		"enabled"		"0"
 		"tabPosition"		"0"
-	}
-	"SpeedScale"
-	{
-		"ControlName"		"Label"
-		"fieldName"		"SpeedScale"
-		"xpos"		"239"
-		"ypos"		"64"
-		"wide"		"54"
-		"tall"		"24"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"labelText"		"100.00 %"
+		"labelText"		"TimeScale:"
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
 		"wrap"		"0"
+		"Command"		"gototick2"
+		"Default"		"0"
 	}
-	"DemoGo"
+	"ReplayGoToTick2"
+	{
+		"ControlName"		"TextEntry"
+		"fieldName"		"ReplayGoToTick2"
+		"xpos"		"240"
+		"ypos"		"64"
+		"wide"		"60"
+		"tall"		"24"
+		"autoResize"		"0"
+		"pinCorner"		"0"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"		"0"
+		"textHidden"		"0"
+		"editable"		"1"
+		"maxchars"		"-1"
+		"NumericInputOnly"		"0"
+		"unicode"		"0"
+	}
+	"ReplayGo"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoGo"
+		"fieldName"		"ReplayGo"
 		"xpos"		"133"
 		"ypos"		"148"
 		"wide"		"48"
@@ -226,10 +233,10 @@
 		"Command"		"gototick"
 		"Default"		"0"
 	}
-	"DemoGoToTick"
+	"ReplayGoToTick"
 	{
 		"ControlName"		"TextEntry"
-		"fieldName"		"DemoGoToTick"
+		"fieldName"		"ReplayGoToTick"
 		"xpos"		"196"
 		"ypos"		"148"
 		"wide"		"60"
@@ -307,10 +314,10 @@
 		"Default"		"0"
 	}
 
-	"DemoFastForward"
+	"ReplayFastForward"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoFastForward"
+		"fieldName"		"ReplayFastForward"
 		"xpos"		"224"
 		"ypos"		"116"
 		"wide"		"32"
@@ -327,10 +334,10 @@
 		"wrap"		"0"
 		"Default"		"0"
 	}
-	"DemoFastBackward"
+	"ReplayFastBackward"
 	{
 		"ControlName"		"Button"
-		"fieldName"		"DemoFastBackward"
+		"fieldName"		"ReplayFastBackward"
 		"xpos"		"50"
 		"ypos"		"116"
 		"wide"		"32"

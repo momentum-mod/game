@@ -47,7 +47,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void SetGhostBodyGroup(int bodyGroup);
     static void SetGhostColor(const CCommand &args);
     // Increments the steps intelligently.
-    void UpdateStep();
+    void UpdateStep(int Skip);
 
     void EndRun();
     void StartRun(bool firstPerson = false, bool shouldLoop = false);
@@ -76,7 +76,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
 
     void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick); }
+    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick_Server); }
     CReplayFrame* GetNextStep();
 
     bool m_bIsActive;

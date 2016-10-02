@@ -7,7 +7,7 @@
 
 #include "tier0/memdbgon.h"
 
-MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
+//MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
                                          FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                          "Replay ghost's body group (model)", true, 0, true, 14);
@@ -123,9 +123,9 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
             }
         }
 
-        shared->m_iCurrentTick = mom_replay_reverse.GetBool() ? m_pPlaybackReplay->GetFrameCount() - 1 : 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick)->PlayerOrigin());
-		shared->m_iTotalTicks = m_pPlaybackReplay->GetFrameCount() - 1;
+        shared->m_iCurrentTick_Server = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick_Server)->PlayerOrigin());
+		shared->m_iTotalTicks_Server = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime);
     }
@@ -136,84 +136,190 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
     }
 }
 
-void CMomentumReplayGhostEntity::UpdateStep()
+void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 {
+	//Managed by replayui now
     if (!m_pPlaybackReplay)
         return;
 
-	if (!shared->m_bIsPlaying)
-		return;
 
-    if (mom_replay_reverse.GetBool())
-    {
-        --shared->m_iCurrentTick;
+	if (shared->RGUI_bIsPlaying)
+		shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
+	else
+	{
+		if (shared->RGUI_HasSelected == 1)
+		{
+			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer - Skip) : 0;
+		}
+		else if (shared->RGUI_HasSelected == 2)
+		{
+			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
+		}
+	}
 
-        if (m_bReplayShouldLoop && shared->m_iCurrentTick < 0)
-        {
-            shared->m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - 1;
-        }
+	if (!shared->RGUI_bIsPlaying)
+	{
+		if (shared->RGUI_HasSelected == 1)
+		{
+			shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server - Skip;
 
-        return;
-    }
-    
-    ++shared->m_iCurrentTick;
+			if (m_bReplayShouldLoop && shared->m_iCurrentTick_Server < 0)
+			{
+				shared->m_iCurrentTick_Server = m_pPlaybackReplay->GetFrameCount() - 1;
+			}
 
-    if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-        shared->m_iCurrentTick = 0;
+		}
+		else if (shared->RGUI_HasSelected == 2)
+		{
+			shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server + Skip;
+			 
+			if (shared->m_iCurrentTick_Server >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+				shared->m_iCurrentTick_Server = 0;
+		}
+	}
+	else
+	{
+		shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server + Skip;
+
+		if (shared->m_iCurrentTick_Server >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+			shared->m_iCurrentTick_Server = 0;
+	}
+
+	if (shared->m_iCurrentTick_Server < 0)
+	{
+		shared->m_iCurrentTick_Server = 0;
+	}
+
+	if (shared->m_iCurrentTick_Server > shared->m_iTotalTicks_Server)
+	{
+		shared->m_iCurrentTick_Server = 0;
+	}
+
+	if (shared->m_iTotalTicks_Client_Timer < 0)
+		shared->m_iTotalTicks_Client_Timer = 0;
 }
+
 void CMomentumReplayGhostEntity::Think(void)
 {
-    if (!m_bIsActive)
-        return;
-
-    if (!m_pPlaybackReplay)
-    {
-        BaseClass::Think();
-        return;
-    }
-
-    // update color, bodygroup, and other params if they change
-    if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
-    {
-        m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
-        SetBodygroup(1, m_iBodyGroup);
-    }
-    if (m_GhostColor != m_NewGhostColor)
-    {
-        m_GhostColor = m_NewGhostColor;
-        SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b());
-    }
-    if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
-    {
-        m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
-            m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
-            mom_replay_ghost_alpha.GetInt());
-        SetRenderColorA(mom_replay_ghost_alpha.GetInt());
-    }
-
-    bool reverse = mom_replay_reverse.GetBool();
-
-    //move the ghost
-    if (!m_bReplayShouldLoop &&
-        (reverse && (shared->m_iCurrentTick - 1 < 0) ||
-        !reverse && (shared->m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
-    {
-        // If we're not looping and we've reached the end of the video then stop and wait for the player
-        // to make a choice about if it should repeat, or end.
-        SetAbsVelocity(vec3_origin);
-    }
-    else
-    {
-        // Otherwise proceed to the next step and perform the necessary updates.
-        UpdateStep();
-        if (m_rgSpectators.IsEmpty())
-            HandleGhost();
-        else
-            HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
-    }
 
     BaseClass::Think();
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+
+	if (!m_bIsActive)
+		return;
+
+	if (!m_pPlaybackReplay)
+	{
+		return;
+	}
+
+	// update color, bodygroup, and other params if they change
+	if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
+	{
+		m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
+		SetBodygroup(1, m_iBodyGroup);
+	}
+	if (m_GhostColor != m_NewGhostColor)
+	{
+		m_GhostColor = m_NewGhostColor;
+		SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b());
+	}
+	if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
+	{
+		m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
+			m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
+			mom_replay_ghost_alpha.GetInt());
+		SetRenderColorA(mom_replay_ghost_alpha.GetInt());
+	}
+
+
+	int NextStep = static_cast<int>(shared->RGUI_TimeScale) + 1;
+
+	//move the ghost
+	if (!m_bReplayShouldLoop &&
+		((shared->m_iCurrentTick_Server < 0) ||
+		(shared->m_iCurrentTick_Server + 1 >= m_pPlaybackReplay->GetFrameCount())))
+	{
+		// If we're not looping and we've reached the end of the video then stop and wait for the player
+		// to make a choice about if it should repeat, or end.
+		SetAbsVelocity(vec3_origin);
+	}
+	else
+	{
+		// Otherwise proceed to the next step and perform the necessary updates.
+		if (shared->RGUI_TimeScale <= 1.0f)
+		UpdateStep(1);
+		else
+		{
+			//Check our tickrate
+			int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
+
+			//How many ticks we should speed, if it's 0 then simply run the current one.
+			int TicksToGoToNextStep = static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep)-shared->RGUI_TimeScale)));
+
+			if (TicksToGoToNextStep <= 0)
+			UpdateStep(NextStep - 1);
+			else
+			{
+				float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
+				//Now we will calculate how many ticks should be updated on the next step or the current one.
+
+				//Let's choose wich tick we want to set our nextstep
+				static int CountMain = 0;
+				static int Count = 0;
+				static int CountSpeed = 0;
+				static bool Reset = false;
+		
+				if (CountMain < TickRate)
+				{
+					Count++;
+
+					int Difference = Count - CountSpeed;
+					float fDif = 1.0f / static_cast<float>(Difference);	
+
+					if (fDif <= AverageSpeedUp)
+					{
+						UpdateStep(NextStep);
+						CountSpeed++;
+						Reset = true;
+					}
+					else
+						UpdateStep(NextStep-1);
+
+					if (Reset)
+					{
+						Count = 0;
+						CountSpeed = 0;
+						Reset = false;
+					}
+				
+	
+					CountMain++;
+				}
+				else
+				{
+					Count = 0;
+					CountSpeed = 0;
+					CountMain = 0;
+					Reset = false;
+				}
+			}
+		}
+
+		if (m_rgSpectators.IsEmpty())
+			HandleGhost();
+		else
+			HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
+	}
+
+	if (shared->RGUI_TimeScale <= 1.0f)
+	{
+		SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * ( 1.0f/ shared->RGUI_TimeScale ));
+	}
+	else
+	{
+		SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+	}
+	
 }
 //-----------------------------------------------------------------------------
 // Purpose: called by the think function, moves and handles the ghost if we're spectating it
@@ -274,11 +380,19 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             if (m_RunData.m_bTimerRunning)
                 UpdateStats(interpolatedVel);
 
+
+			//kamay: Now timer start and end at the right time, well I'm not sure that playerbuttons is the right way since normaly it's using the getflags() and check for fl_ducking for the collision bounds
+			//But that should do the trick.
             if (currentStep->PlayerButtons() & IN_DUCK)
             {
                 // MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
-                pPlayer->SetViewOffset(VEC_DUCK_VIEW);
-            }
+				pPlayer->SetViewOffset(VEC_DUCK_VIEW);
+				SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+			}
+			else
+			{
+				SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
+			}
         }
     }
 }
@@ -430,13 +544,15 @@ void CMomentumReplayGhostEntity::EndRun()
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
+
+	shared->m_iTotalTicks_Server = 0;
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = shared->m_iCurrentTick;
+    int nextStep = shared->m_iCurrentTick_Server;
 
-    if (mom_replay_reverse.GetBool())
+    if ((shared->RGUI_HasSelected == 1) && !shared->RGUI_bIsPlaying)
     {
         --nextStep;
 

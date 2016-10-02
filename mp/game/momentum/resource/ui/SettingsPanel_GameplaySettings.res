@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "GameplaySettings"
-        "tall" "60"
+        "tall" "150"
         "wide" "1000"
     }
     
@@ -36,6 +36,7 @@
         "maxvalue" "300"
         "cvar_name" "cl_yawspeed"
         "allowoutofrange" "0"
+        "actionsignallevel" "1"
     }
     
     "YawSpeedEntry"
@@ -60,6 +61,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+        "actionsignallevel" "1"
 	}
     
     "YawSpeedLabel"
@@ -117,6 +119,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_bhop_playblocksound"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "PracModeSafeGuard"
@@ -149,6 +152,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_practice_safeguard"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "SaveCheckpoints"
@@ -177,8 +181,9 @@
 		"textinsety"		"0"
 		"auto_wide_tocontents"		"1"
 		"use_proportional_insets"		"0"
-		"Default"		"1"
+		"Default"		"0"
 		"cvar_name"		"mom_checkpoint_save_between_sessions"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
 }
