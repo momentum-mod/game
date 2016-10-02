@@ -703,10 +703,7 @@ void CMomentumPlayer::CalculateAverageStats()
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
-    ConVarRef gm("mom_gamemode");
-    CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
-    bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-    if (m_RunData.m_bIsInZone && m_RunData.m_iCurrentZone == 1)
+    if (m_RunData.m_bIsInZone && m_RunData.m_iCurrentZone == 1 && !m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
     {
         if (GetGroundEntity() == nullptr && !m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
@@ -718,7 +715,10 @@ void CMomentumPlayer::LimitSpeedInStartZone()
             m_bDidPlayerBhop = true;
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
-        if (bhopGameMode && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        ConVarRef gm("mom_gamemode");
+        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
+        CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
+        if (bhopGameMode && startTrigger && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetPunishSpeed() * startTrigger->GetPunishSpeed();
