@@ -5,16 +5,7 @@
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
-    m_pYawSpeedSlider->AddActionSignalTarget(this);
-
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
-    m_pYawSpeedEntry->AddActionSignalTarget(this);
-
-    m_pPlayBlockSound = FindControl<CvarToggleCheckButton<ConVarRef>>("PlayBlockSound");
-    m_pPlayBlockSound->AddActionSignalTarget(this);
-
-    m_pSaveCheckpoints = FindControl<CvarToggleCheckButton<ConVarRef>>("SaveCheckpoints");
-    m_pSaveCheckpoints->AddActionSignalTarget(this);
 }
 
 void GameplaySettingsPage::LoadSettings()
