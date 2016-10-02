@@ -27,6 +27,7 @@ class CMomentumReplayGhostEntity;
 //Checkpoints used in the "Checkpoint menu"
 struct Checkpoint
 {
+    bool crouched;
     Vector pos;
     Vector vel;
     QAngle ang;
@@ -189,6 +190,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     void SaveCPsToFile(KeyValues *kvInto);
     void LoadCPsFromFile(KeyValues *kvFrom);
+
+    void ToggleDuckThisFrame(bool bState);
 
   private:
     CountdownTimer m_ladderSurpressionTimer;

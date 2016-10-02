@@ -434,6 +434,7 @@ void CMomentumPlayer::CreateCheckpoint()
     c.ang = GetAbsAngles();
     c.pos = GetAbsOrigin();
     c.vel = GetAbsVelocity();
+    c.crouched = IsDucked() || IsDucking();  // Do we want IsDucking here??
     Q_strncpy(c.targetName, GetEntityName().ToCStr(), sizeof(c.targetName));
     Q_strncpy(c.targetClassName, GetClassname(), sizeof(c.targetClassName));
     m_rcCheckpoints.AddToTail(c);
@@ -462,12 +463,33 @@ void CMomentumPlayer::RemoveAllCheckpoints()
     m_iCheckpointCount = 0;
 }
 
+void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
+{
+    if (m_Local.m_bDucked != bState)
+    {
+        m_Local.m_bDucked = bState;
+        bState ? AddFlag(FL_DUCKING) : RemoveFlag(FL_DUCKING);
+        SetVCollisionState(GetAbsOrigin(), GetAbsVelocity(), bState ? VPHYS_CROUCH : VPHYS_WALK);
+    }
+}
+
+
 void CMomentumPlayer::TeleportToCP(int newCheckpoint)
 {
     if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0) return;
     Checkpoint c = m_rcCheckpoints[newCheckpoint];
+
+    // Handle custom ent flags that old maps do
     SetName(MAKE_STRING(c.targetName));
     SetClassname(c.targetClassName);
+
+    // Handle the crouched state
+    if (c.crouched && !IsDucked())
+        ToggleDuckThisFrame(true);
+    else if (!c.crouched && IsDucked())
+        ToggleDuckThisFrame(false);
+
+    //Teleport the player
     Teleport(&c.pos, &c.ang, &c.vel);
 }
 
@@ -484,6 +506,7 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
         mom_UTIL->KVSaveVector(kvCP, "vel", c.vel);
         mom_UTIL->KVSaveVector(kvCP, "pos", c.pos);
         mom_UTIL->KVSaveQAngles(kvCP, "ang", c.ang);
+        kvCP->SetBool("crouched", c.crouched);
         kvInto->AddSubKey(kvCP);
     }
 }
@@ -499,6 +522,7 @@ void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
         mom_UTIL->KVLoadVector(kvCheckpoint, "pos", c.pos);
         mom_UTIL->KVLoadVector(kvCheckpoint, "vel", c.vel);
         mom_UTIL->KVLoadQAngles(kvCheckpoint, "ang", c.ang);
+        c.crouched = kvCheckpoint->GetBool("crouched");
         m_rcCheckpoints.AddToTail(c);
     }
 
