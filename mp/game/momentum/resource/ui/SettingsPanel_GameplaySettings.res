@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "GameplaySettings"
-        "tall" "60"
+        "tall" "82"
         "wide" "1000"
     }
     
@@ -87,7 +87,6 @@
 		"auto_wide_tocontents" "1"
 		"use_proportional_insets"		"0"
     }
-
 	"PlayBlockSound"
     {
         "ControlName" "CvarToggleCheckButton"
@@ -118,13 +117,12 @@
 		"cvar_name"		"mom_bhop_playblocksound"
 		"cvar_value"		"1"
     }
-    
     "PracModeSafeGuard"
     {
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "PracModeSafeGuard"
         "xpos" "12"
-        "ypos" "47"
+        "ypos" "50"
         "wide"		"189"
 		"tall"		"16"
 		"autoResize"		"0"
@@ -150,13 +148,12 @@
 		"cvar_name"		"mom_practice_safeguard"
 		"cvar_value"		"1"
     }
-    
     "SaveCheckpoints"
     {
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "SaveCheckpoints"
         "xpos" "12"
-        "ypos" "48"
+        "ypos" "68"
         "wide"		"189"
 		"tall"		"16"
 		"autoResize"		"0"
