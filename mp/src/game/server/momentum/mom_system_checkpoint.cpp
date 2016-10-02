@@ -1,14 +1,19 @@
 #include "cbase.h"
 #include "mom_system_checkpoint.h"
 #include "Timer.h"
+#include "mom_shareddefs.h"
 #include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
 #define CHECKPOINTS_FILE_NAME "checkpoints.txt"
 
+MAKE_TOGGLE_CONVAR(mom_checkpoint_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if checkpoints should be saved between sessions of the same map.\n");
+
 void CMOMCheckpointSystem::LevelInitPostEntity()
 {
+    // We don't check mom_checkpoints_save_between_sessions because we want to be able to, for example
+    // load checkpoints from friends
     DevLog("Loading checkpoints from %s ...\n", CHECKPOINTS_FILE_NAME);
 
     if (m_pCheckpointsKV)
@@ -29,6 +34,9 @@ void CMOMCheckpointSystem::LevelInitPostEntity()
 
 void CMOMCheckpointSystem::LevelShutdownPreEntity()
 {
+    
+    if (!mom_checkpoint_save_between_sessions.GetBool())
+        return;  // If we don't want older checkpoints, we don't save them
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && m_pCheckpointsKV && pPlayer->GetCPCount() > 0)
     {
@@ -120,7 +128,7 @@ CON_COMMAND_F(mom_checkpoint_nav_next, "Goes forwards through the checkpoint lis
     CheckTimer();
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    if (pPlayer && pPlayer->GetCPCount() > 0)
     {
         pPlayer->SetCurrentCPMenuStep((pPlayer->GetCurrentCPMenuStep() + 1) % pPlayer->GetCPCount());
         pPlayer->TeleportToCurrentCP();
@@ -131,7 +139,7 @@ CON_COMMAND_F(mom_checkpoint_nav_prev, "Goes backwards through the checkpoint li
     CheckTimer();
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    if (pPlayer && pPlayer->GetCPCount() > 0)
     {
         pPlayer->SetCurrentCPMenuStep(pPlayer->GetCurrentCPMenuStep() == 0 ? pPlayer->GetCPCount() - 1 : pPlayer->GetCurrentCPMenuStep() - 1);
         pPlayer->TeleportToCurrentCP();
