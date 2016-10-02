@@ -594,7 +594,7 @@ public:
             CBaseEntity* startPoint = cPlayer->EntSelectSpawnPoint();
             if (startPoint)
             {
-                cPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), nullptr);
+                cPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), &vec3_origin);
             }
         }
     }
