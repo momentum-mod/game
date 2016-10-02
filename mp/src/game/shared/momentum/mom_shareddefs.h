@@ -85,13 +85,13 @@ typedef enum FLAGS
 // What is the URL of the web?
 #define MOM_WEBDOMAIN "http://127.0.0.1:5000"
 #else
-#define MOM_WEBDOMAIN "http://momentum-mod.org"
+#define MOM_WEBDOMAIN "https://momentum-mod.org"
 #endif
 
 // Where to query the api. In case it does not match the current WEBDOMAIN (How did you end up like this?), you can change it!
 #define MOM_APIDOMAIN MOM_WEBDOMAIN
 
-#define MAP_FOLDER "maps" //MOM_TODO: Ensure all files are successfully built using V_ComposeFile
+#define MAP_FOLDER "maps"
 #define RECORDING_PATH "recordings"
 #define EXT_TIME_FILE ".tim"
 #define EXT_ZONE_FILE ".zon"

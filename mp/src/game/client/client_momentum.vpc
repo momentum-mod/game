@@ -251,6 +251,8 @@ $Project "Client (Momentum)"
             }
         }
         
+        $File "hl2\C_Func_Monitor.cpp"
+        
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
         

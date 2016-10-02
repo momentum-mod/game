@@ -155,6 +155,8 @@ $Project "Server (Momentum)"
             $File "momentum\mom_system_checkpoint.h"
         }
         
+        $File "hl2\Func_Monitor.cpp"
+        
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
 
