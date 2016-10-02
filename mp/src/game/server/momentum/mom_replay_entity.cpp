@@ -123,9 +123,9 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
             }
         }
 
-        shared->m_iCurrentTick = 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick)->PlayerOrigin());
-		shared->m_iTotalTicks = m_pPlaybackReplay->GetFrameCount() - 1;
+        shared->m_iCurrentTick_Server = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick_Server)->PlayerOrigin());
+		shared->m_iTotalTicks_Server = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime);
     }
@@ -143,56 +143,56 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
         return;
 
 
-	if (shared->m_bIsPlaying)
+	if (shared->RGUI_bIsPlaying)
 		shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
 	else
 	{
-		if (shared->HasSelected == 1)
+		if (shared->RGUI_HasSelected == 1)
 		{
 			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer - Skip) : 0;
 		}
-		else if (shared->HasSelected == 2)
+		else if (shared->RGUI_HasSelected == 2)
 		{
 			shared->m_iTotalTicks_Client_Timer = m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
 		}
 	}
 
-	if (!shared->m_bIsPlaying)
+	if (!shared->RGUI_bIsPlaying)
 	{
-		if (shared->HasSelected == 1)
+		if (shared->RGUI_HasSelected == 1)
 		{
-			shared->m_iCurrentTick = shared->m_iCurrentTick - Skip;
+			shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server - Skip;
 
-			if (m_bReplayShouldLoop && shared->m_iCurrentTick < 0)
+			if (m_bReplayShouldLoop && shared->m_iCurrentTick_Server < 0)
 			{
-				shared->m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - 1;
+				shared->m_iCurrentTick_Server = m_pPlaybackReplay->GetFrameCount() - 1;
 			}
 
 		}
-		else if (shared->HasSelected == 2)
+		else if (shared->RGUI_HasSelected == 2)
 		{
-			shared->m_iCurrentTick = shared->m_iCurrentTick + Skip;
+			shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server + Skip;
 			 
-			if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-				shared->m_iCurrentTick = 0;
+			if (shared->m_iCurrentTick_Server >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+				shared->m_iCurrentTick_Server = 0;
 		}
 	}
 	else
 	{
-		shared->m_iCurrentTick = shared->m_iCurrentTick + Skip;
+		shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server + Skip;
 
-		if (shared->m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-			shared->m_iCurrentTick = 0;
+		if (shared->m_iCurrentTick_Server >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+			shared->m_iCurrentTick_Server = 0;
 	}
 
-	if (shared->m_iCurrentTick < 0)
+	if (shared->m_iCurrentTick_Server < 0)
 	{
-		shared->m_iCurrentTick = 0;
+		shared->m_iCurrentTick_Server = 0;
 	}
 
-	if (shared->m_iCurrentTick > shared->m_iTotalTicks)
+	if (shared->m_iCurrentTick_Server > shared->m_iTotalTicks_Server)
 	{
-		shared->m_iCurrentTick = 0;
+		shared->m_iCurrentTick_Server = 0;
 	}
 
 	if (shared->m_iTotalTicks_Client_Timer < 0)
@@ -230,10 +230,14 @@ void CMomentumReplayGhostEntity::Think(void)
 			mom_replay_ghost_alpha.GetInt());
 		SetRenderColorA(mom_replay_ghost_alpha.GetInt());
 	}
+
+
+	int NextStep = static_cast<int>(shared->RGUI_TimeScale) + 1;
+
 	//move the ghost
 	if (!m_bReplayShouldLoop &&
-		((shared->m_iCurrentTick < 0) ||
-		(shared->m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
+		((shared->m_iCurrentTick_Server < 0) ||
+		(shared->m_iCurrentTick_Server + 1 >= m_pPlaybackReplay->GetFrameCount())))
 	{
 		// If we're not looping and we've reached the end of the video then stop and wait for the player
 		// to make a choice about if it should repeat, or end.
@@ -242,21 +246,79 @@ void CMomentumReplayGhostEntity::Think(void)
 	else
 	{
 		// Otherwise proceed to the next step and perform the necessary updates.
-		if (shared->TickRate < 2.0f)
+		if (shared->RGUI_TimeScale <= 1.0f)
 		UpdateStep(1);
 		else
 		{
-			UpdateStep(static_cast<int>(shared->TickRate+0.5f));
+			//Check our tickrate
+			int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
+
+			//How many ticks we should speed, if it's 0 then simply run the current one.
+			int TicksToGoToNextStep = static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep)-shared->RGUI_TimeScale)));
+
+			if (TicksToGoToNextStep <= 0)
+			UpdateStep(NextStep - 1);
+			else
+			{
+				float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
+				//Now we will calculate how many ticks should be updated on the next step or the current one.
+
+				//Let's choose wich tick we want to set our nextstep
+				static int CountMain = 0;
+				static int Count = 0;
+				static int CountSpeed = 0;
+				static bool Reset = false;
+		
+				if (CountMain < TickRate)
+				{
+					Count++;
+
+					int Difference = Count - CountSpeed;
+					float fDif = 1.0f / static_cast<float>(Difference);	
+
+					if (fDif <= AverageSpeedUp)
+					{
+						UpdateStep(NextStep);
+						CountSpeed++;
+						Reset = true;
+					}
+					else
+						UpdateStep(NextStep-1);
+
+					if (Reset)
+					{
+						Count = 0;
+						CountSpeed = 0;
+						Reset = false;
+					}
+				
+	
+					CountMain++;
+				}
+				else
+				{
+					Count = 0;
+					CountSpeed = 0;
+					CountMain = 0;
+					Reset = false;
+				}
+			}
 		}
+
 		if (m_rgSpectators.IsEmpty())
 			HandleGhost();
 		else
 			HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
 	}
 
-
-	float scale = gpGlobals->interval_per_tick*(1.0f / shared->TickRate);
-    SetNextThink(gpGlobals->curtime + scale);
+	if (shared->RGUI_TimeScale <= 1.0f)
+	{
+		SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * ( 1.0f/ shared->RGUI_TimeScale ));
+	}
+	else
+	{
+		SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+	}
 	
 }
 //-----------------------------------------------------------------------------
@@ -483,14 +545,14 @@ void CMomentumReplayGhostEntity::EndRun()
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
 
-	shared->m_iTotalTicks = 0;
+	shared->m_iTotalTicks_Server = 0;
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = shared->m_iCurrentTick;
+    int nextStep = shared->m_iCurrentTick_Server;
 
-    if ((shared->HasSelected == 1) && !shared->m_bIsPlaying)
+    if ((shared->RGUI_HasSelected == 1) && !shared->RGUI_bIsPlaying)
     {
         --nextStep;
 

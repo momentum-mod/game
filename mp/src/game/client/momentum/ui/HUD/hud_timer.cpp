@@ -133,7 +133,7 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
 void C_Timer::Init()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-    if (shared && shared->m_iTotalTicks > 0)
+    if (shared && shared->m_iTotalTicks_Server > 0)
         shared->m_iTotalTicks_Client_Timer = 0;
 
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
@@ -157,7 +157,7 @@ void C_Timer::Init()
 void C_Timer::Reset()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-    if (shared && shared->m_iTotalTicks > 0)
+    if (shared && shared->m_iTotalTicks_Server > 0)
         shared->m_iTotalTicks_Client_Timer = 0;
 
     m_bIsRunning = false;
@@ -230,7 +230,7 @@ float C_Timer::GetCurrentTime()
 
     static int OldTickCount = 0;
 
-	if ((gpGlobals->tickcount != OldTickCount) && (shared->m_iTotalTicks <= 0))
+	if ((gpGlobals->tickcount != OldTickCount) && (shared->m_iTotalTicks_Server <= 0))
     {
 		shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? shared->m_iTotalTicks_Client_Timer + 1 : 0;
     }

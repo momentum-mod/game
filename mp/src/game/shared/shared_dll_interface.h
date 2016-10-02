@@ -10,13 +10,17 @@ class CShared
   public:
     bool LoadedClient = false;
     bool LoadedServer = false;
+
+
+	int m_iTotalTicks_Server = 0;
+	int m_iCurrentTick_Server = 0;
+	int m_iTotalTicks_Client_Timer = 0;
+
+	//ReplayUI Stuffs
 	CHudReplay *HudReplay = nullptr;
-    float TickRate = 1.0f;
-    int m_iTotalTicks = 0;
-    int m_iCurrentTick = 0;
-    bool m_bIsPlaying = false;
-    int m_iTotalTicks_Client_Timer = 0;
-    int HasSelected = 0;
+	float RGUI_TimeScale = 1.0f;
+    bool RGUI_bIsPlaying = false;
+    int RGUI_HasSelected = 0;
 };
 
 #define INTERFACEVERSION_SHAREDGAMEDLL "SHAREDGAMEDLL001"

@@ -76,7 +76,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
 
     void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick); }
+    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick_Server); }
     CReplayFrame* GetNextStep();
 
     bool m_bIsActive;

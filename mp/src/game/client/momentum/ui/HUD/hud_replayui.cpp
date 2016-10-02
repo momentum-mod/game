@@ -19,35 +19,35 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 
     // MOM_TODO: use FindControl from the .res instead of creating new
 
-    m_pPlayPauseResume = new vgui::ToggleButton(this, "DemoPlayPauseResume", "PlayPauseResume");
+    m_pPlayPauseResume = new vgui::ToggleButton(this, "ReplayPlayPauseResume", "PlayPauseResume");
 
-    m_pGoStart = new vgui::Button(this, "DemoGoStart", "Go Start");
-    m_pGoEnd = new vgui::Button(this, "DemoGoEnd", "Go End");
-    m_pPrevFrame = new vgui::Button(this, "DemoPrevFrame", "Prev Frame");
-    m_pNextFrame = new vgui::Button(this, "DemoNextFrame", "Next Frame");
-    m_pFastForward = new vgui::PFrameButton(this, "DemoFastForward", "Fast Fwd");
-    m_pFastBackward = new vgui::PFrameButton(this, "DemoFastBackward", "Fast Bwd");
-    m_pGo = new vgui::Button(this, "DemoGo", "Go");
+    m_pGoStart = new vgui::Button(this, "ReplayGoStart", "Go Start");
+    m_pGoEnd = new vgui::Button(this, "ReplayGoEnd", "Go End");
+    m_pPrevFrame = new vgui::Button(this, "ReplayPrevFrame", "Prev Frame");
+    m_pNextFrame = new vgui::Button(this, "ReplayNextFrame", "Next Frame");
+    m_pFastForward = new vgui::PFrameButton(this, "ReplayFastForward", "Fast Fwd");
+    m_pFastBackward = new vgui::PFrameButton(this, "ReplayFastBackward", "Fast Bwd");
+    m_pGo = new vgui::Button(this, "ReplayGo", "Go");
 
-    m_pGotoTick2 = new vgui::TextEntry(this, "DemoGoToTick2");
+    m_pGotoTick2 = new vgui::TextEntry(this, "ReplayGoToTick2");
 
     if (shared)
     {
-        shared->TickRate = 1.0f;
+        shared->RGUI_TimeScale = 1.0f;
         char buf[0xF]; // This is way too much
-        sprintf(buf, "%.1f", shared->TickRate);
+		sprintf(buf, "%.1f", shared->RGUI_TimeScale);
         m_pGotoTick2->SetText(buf);
     }
 
-    m_pGo2 = new vgui::Button(this, "DemoGo2", "Go2");
+    m_pGo2 = new vgui::Button(this, "ReplayGo2", "Go2");
 
-    m_pProgress = new vgui::ProgressBar(this, "DemoProgress");
+    m_pProgress = new vgui::ProgressBar(this, "ReplayProgress");
     m_pProgress->SetSegmentInfo(2, 2);
 
-    m_pProgressLabelFrame = new vgui::Label(this, "DemoProgressLabelFrame", "");
-    m_pProgressLabelTime = new vgui::Label(this, "DemoProgressLabelTime", "");
+    m_pProgressLabelFrame = new vgui::Label(this, "ReplayProgressLabelFrame", "");
+    m_pProgressLabelTime = new vgui::Label(this, "ReplayProgressLabelTime", "");
 
-    m_pGotoTick = new vgui::TextEntry(this, "DemoGoToTick");
+    m_pGotoTick = new vgui::TextEntry(this, "ReplayGoToTick");
 
     LoadControlSettings("resource\\ui\\HudReplay.res"); // Should be always loaded at the end...
 
@@ -80,26 +80,26 @@ void CHudReplay::OnThink()
 
     if (m_pFastBackward->IsSelected())
     {
-        shared->HasSelected = RUI_MOVEBW;
-        shared->m_bIsPlaying = false;
+		shared->RGUI_HasSelected = RUI_MOVEBW;
+		shared->RGUI_bIsPlaying = false;
         m_pPlayPauseResume->ForceDepressed(false);
     }
     else if (m_pFastForward->IsSelected())
     {
-        shared->HasSelected = RUI_MOVEFW;
-        shared->m_bIsPlaying = false;
+		shared->RGUI_HasSelected = RUI_MOVEFW;
+		shared->RGUI_bIsPlaying = false;
         m_pPlayPauseResume->ForceDepressed(false);
     }
     else
     {
-        if (shared->m_bIsPlaying)
+		if (shared->RGUI_bIsPlaying)
         {
             m_pPlayPauseResume->SetText("Playing");
             m_pPlayPauseResume->SetSelected(true);
         }
         else
         {
-            shared->HasSelected = RUI_NOTHING;
+            shared->RGUI_HasSelected = RUI_NOTHING;
             m_pPlayPauseResume->SetText("Paused");
             m_pPlayPauseResume->SetSelected(false);
         }
@@ -108,13 +108,13 @@ void CHudReplay::OnThink()
     // cvar->FindVar("sv_cheats")->SetValue(1);
     // cvar->FindVar("host_timescale")->SetValue(shared->TickRate);
 
-    fProgress = static_cast<float>(shared->m_iCurrentTick) / static_cast<float>(shared->m_iTotalTicks);
+    fProgress = static_cast<float>(shared->m_iCurrentTick_Server) / static_cast<float>(shared->m_iTotalTicks_Server);
     fProgress = clamp(fProgress, 0.0f, 1.0f);
 
     m_pProgress->SetProgress(fProgress);
-    m_pProgressLabelFrame->SetText(mom_UTIL->vaprintf("Tick: %i / %i", shared->m_iCurrentTick, shared->m_iTotalTicks));
-    mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iCurrentTick, curtime);
-    mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iTotalTicks, totaltime);
+    m_pProgressLabelFrame->SetText(mom_UTIL->vaprintf("Tick: %i / %i", shared->m_iCurrentTick_Server, shared->m_iTotalTicks_Server));
+    mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iCurrentTick_Server, curtime);
+    mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iTotalTicks_Server, totaltime);
 
     m_pProgressLabelTime->SetText(mom_UTIL->vaprintf("Time: %s -> %s", curtime, totaltime));
     // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
@@ -140,48 +140,48 @@ void CHudReplay::OnCommand(const char *command)
         return BaseClass::OnCommand(command);
     if (!Q_strcasecmp(command, "play"))
     {
-        shared->m_bIsPlaying = !shared->m_bIsPlaying;
+		shared->RGUI_bIsPlaying = !shared->RGUI_bIsPlaying;
     }
     else if (!Q_strcasecmp(command, "reload"))
     {
-        shared->m_iCurrentTick = 0;
+        shared->m_iCurrentTick_Server = 0;
         shared->m_iTotalTicks_Client_Timer = 0;
     }
     else if (!Q_strcasecmp(command, "gotoend"))
     {
-        shared->m_iCurrentTick = shared->m_iTotalTicks;
-        shared->m_iTotalTicks_Client_Timer = shared->m_iTotalTicks;
+        shared->m_iCurrentTick_Server = shared->m_iTotalTicks_Server;
+        shared->m_iTotalTicks_Client_Timer = shared->m_iTotalTicks_Server;
     }
     else if (!Q_strcasecmp(command, "prevframe"))
     {
-        if (shared->m_iTotalTicks_Client_Timer > 0 && shared->m_iCurrentTick > 0)
+        if (shared->m_iTotalTicks_Client_Timer > 0 && shared->m_iCurrentTick_Server > 0)
         {
             shared->m_iTotalTicks_Client_Timer--;
-            shared->m_iCurrentTick--;
+            shared->m_iCurrentTick_Server--;
         }
     }
     else if (!Q_strcasecmp(command, "nextframe"))
     {
         shared->m_iTotalTicks_Client_Timer++;
-        shared->m_iCurrentTick++;
+        shared->m_iCurrentTick_Server++;
     }
     else if (!Q_strcasecmp(command, "gototick2"))
     {
         char tick[32];
         m_pGotoTick2->GetText(tick, sizeof(tick));
-        shared->TickRate = atof(tick);
+        shared->RGUI_TimeScale = atof(tick);
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {
-        // TODO: Teleport at the position we want with timer included
+        //Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
-        shared->m_iCurrentTick = atoi(tick);
+        shared->m_iCurrentTick_Server = atoi(tick);
 
         C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
         if (pGhost)
         {
-            shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD;
+            shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick_Server - pGhost->m_RunData.m_iStartTickD;
         }
     }
     else
