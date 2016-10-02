@@ -564,6 +564,7 @@ CTriggerOnehop *CTimer::FindOnehopOnList(int pIndexOnList)
 }
 
 //--------- Commands --------------------------------
+static MAKE_TOGGLE_CONVAR(mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggles the safeguard for enabling practice mode (not pressing any movement keys to enable). 0 = OFF, 1 = ON.\n");
 
 class CTimerCommands
 {
@@ -607,16 +608,19 @@ public:
         if (!pPlayer->m_bHasPracticeMode)
         {
             int b = pPlayer->m_nButtons;
-            if (b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP || b & IN_DUCK || b & IN_WALK)
+            bool safeGuard = b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP || b & IN_DUCK || b & IN_WALK;
+            if (mom_practice_safeguard.GetBool() && safeGuard)
+            {
                 Warning("You cannot enable practice mode while moving!\n");
-            else
-                g_Timer->EnablePractice(pPlayer);
+                return;
+            }
+            
+            g_Timer->EnablePractice(pPlayer);
         }
-        else //player is either already in practice mode
+        else
             g_Timer->DisablePractice(pPlayer);
     }
 };
-
 
 static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove, "Toggle. Stops timer and allows player to fly around in noclip.\n" 
     "Only activates when player is not pressing any movement inputs.\n",

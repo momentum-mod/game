@@ -151,13 +151,13 @@ class CMOMReplayCommands
         {
             char filename[MAX_PATH];
             
-            if (Q_strstr(args.ArgS(), ".momrec"))
+            if (Q_strstr(args.ArgS(), EXT_RECORDING_FILE))
             {
                 Q_snprintf(filename, MAX_PATH, "%s", args.ArgS());
             }
             else
             {
-                Q_snprintf(filename, MAX_PATH, "%s.momrec", args.ArgS());
+                Q_snprintf(filename, MAX_PATH, "%s%s", args.ArgS(), EXT_RECORDING_FILE);
             }
 
             char recordingName[MAX_PATH];
@@ -183,10 +183,10 @@ class CMOMReplayCommands
 };
 
 CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play_ghost, CMOMReplayCommands::PlayReplayGhost, "Begins playback of a replay as a ghost.",
-                             "recordings", momrec);
+                             RECORDING_PATH, momrec);
 CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play, CMOMReplayCommands::PlayReplayFirstPerson,
                              "Begins a playback of a replay in first-person mode.", 
-                             "recordings", momrec);
+                             RECORDING_PATH, momrec);
 
 CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in first person), if there is one.")
 {

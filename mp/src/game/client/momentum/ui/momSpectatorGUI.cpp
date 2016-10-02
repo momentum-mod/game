@@ -68,7 +68,7 @@ class CSpecButton : public Button
     CSpecButton(Panel *parent, const char *panelName) : Button(parent, panelName, "") {}
 
   private:
-    void ApplySchemeSettings(vgui::IScheme *pScheme)
+    void ApplySchemeSettings(IScheme *pScheme)
     {
         Button::ApplySchemeSettings(pScheme);
         SetFont(pScheme->GetFont("Marlett", IsProportional()));
@@ -402,22 +402,15 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
 
     // load the new scheme early!!
     SetScheme("ClientScheme");
-    SetMouseInputEnabled(false);
-    SetKeyBoardInputEnabled(false);
 
     LoadControlSettings(GetResFile());
-
     m_pTopBar = FindControl<Panel>("topbar");
     m_pBottomBarBlank = FindControl<Panel>("bottombarblank");
-
     m_pPlayerLabel = FindControl<Label>("playerlabel");
-    m_pPlayerLabel->SetVisible(false);
-
     m_pReplayLabel = FindControl<Label>("replaylabel");
     m_pTimeLabel = FindControl<Label>("timelabel");
-
+    m_pGainControlLabel = FindControl<Label>("Detach_Info");
     m_pCloseButton = FindControl<ImagePanel>("Close_Panel");
-    m_pCloseButton->SetMouseInputEnabled(true);
     m_pCloseButton->InstallMouseHandler(this);
 
     TextImage *image = m_pPlayerLabel->GetTextImage();
@@ -432,6 +425,8 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
 
     SetPaintBorderEnabled(false);
     SetPaintBackgroundEnabled(false);
+    SetMouseInputEnabled(false);
+    SetKeyBoardInputEnabled(false);
 
     InvalidateLayout();
 }
@@ -596,8 +591,8 @@ void CMOMSpectatorGUI::Update()
         int mx, my, mwide, mtall;
 
         VPANEL p = overview->GetVPanel();
-        vgui::ipanel()->GetPos(p, mx, my);
-        vgui::ipanel()->GetSize(p, mwide, mtall);
+        ipanel()->GetPos(p, mx, my);
+        ipanel()->GetSize(p, mwide, mtall);
 
         if (my < btall)
         {
@@ -650,12 +645,26 @@ void CMOMSpectatorGUI::Update()
         C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
         if (pReplayEnt)
         {
+            // Current player name
             wchar_t wPlayerName[MAX_PLAYER_NAME_LENGTH], szPlayerInfo[128];
             g_pVGuiLocalize->ConvertANSIToUnicode(pReplayEnt->m_pszPlayerName, wPlayerName, sizeof(wPlayerName));
-            swprintf(szPlayerInfo, L"%s %s", g_pVGuiLocalize->Find("#MOM_ReplayPlayer"), wPlayerName);
+            V_snwprintf(szPlayerInfo, 128, L"%s %s", g_pVGuiLocalize->Find("#MOM_ReplayPlayer"), wPlayerName);
 
-            SetLabelText("playerlabel", szPlayerInfo);
+            if (m_pPlayerLabel)
+                m_pPlayerLabel->SetText(szPlayerInfo);
 
+            // Duck bind to release mouse
+            if (!IsMouseInputEnabled())
+            {
+                wchar_t pwDetachInfo[BUFSIZELOCL], pwGainControlReplay[BUFSIZELOCL];
+                FIND_LOCALIZATION(pwGainControlReplay, "#MOM_GainControlReplay");
+                UTIL_ReplaceKeyBindings(pwGainControlReplay, sizeof(pwGainControlReplay), pwDetachInfo, sizeof(pwDetachInfo));
+
+                if (m_pGainControlLabel)
+                    m_pGainControlLabel->SetText(pwDetachInfo);
+            }
+
+            // Run time label
             char tempRunTime[BUFSIZETIME];
             wchar_t szTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
             mom_UTIL->FormatTime(pReplayEnt->m_RunData.m_flRunTime, tempRunTime);
@@ -663,9 +672,12 @@ void CMOMSpectatorGUI::Update()
             g_pVGuiLocalize->ConstructString(szTimeLabel, sizeof(szTimeLabel), g_pVGuiLocalize->Find("#MOM_MF_RunTime"),
                                              1, wTime);
 
-            SetLabelText("timelabel", szTimeLabel);
+            if (m_pTimeLabel)
+                m_pTimeLabel->SetText(szTimeLabel);
 
-            SetLabelText("replaylabel", g_pVGuiLocalize->Find("#MOM_WatchingReplay"));
+            // "REPLAY" label
+            if (m_pReplayLabel)
+                m_pReplayLabel->SetText(g_pVGuiLocalize->Find("#MOM_WatchingReplay"));
         }
         else
         {

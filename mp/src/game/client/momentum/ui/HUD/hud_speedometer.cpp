@@ -167,7 +167,7 @@ void CHudSpeedMeter::OnThink()
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         C_MOMRunEntityData *pData = pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData;
         //Note: Velocity is also set to the player when watching first person
-        velocity = pPlayer->GetLocalVelocity();
+        velocity = pPlayer->GetAbsVelocity();
 
         //The last jump velocity
         float lastJumpVel = pData->m_flLastJumpVel;

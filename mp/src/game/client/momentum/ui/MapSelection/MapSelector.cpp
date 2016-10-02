@@ -2,7 +2,7 @@
 
 
 static CMapSelector g_MapSelectorPanel;
-IMapSelector* mapselector = (CMapSelector*)&g_MapSelectorPanel;
+IMapSelector* mapselector = static_cast<CMapSelector*>(&g_MapSelectorPanel);
 
 //
 CMapSelector::CMapSelector()
@@ -17,20 +17,9 @@ CMapSelector::~CMapSelector()
 {
 }
 
-static ConVar cl_showmapselection("cl_showmapselection", "0", FCVAR_CLIENTDLL | FCVAR_HIDDEN, "Sets the state of mapselection panel <state>");
-
-CON_COMMAND_F(ToggleMapSelectionPanel, "Toggles MapSelectorPanel", FCVAR_CLIENTDLL | FCVAR_HIDDEN)
+CON_COMMAND_F(ShowMapSelectionPanel, "Shows MapSelectorPanel", FCVAR_CLIENTDLL | FCVAR_HIDDEN)
 {
-    if (!cl_showmapselection.GetBool())
-    {
-        mapselector->Activate();
-        cl_showmapselection.SetValue(1);
-    }
-    else
-    {
-        cl_showmapselection.SetValue(0);
-        mapselector->Deactivate();
-    }
+    mapselector->Activate();
 };
 
 

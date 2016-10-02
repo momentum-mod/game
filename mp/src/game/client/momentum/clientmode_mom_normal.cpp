@@ -91,6 +91,7 @@ ClientModeMOMNormal::ClientModeMOMNormal()
     m_pHudMenuStatic = nullptr;
     m_pHudMapFinished = nullptr;
     m_pLeaderboards = nullptr;
+    m_pSpectatorGUI = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
@@ -173,7 +174,7 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
         if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+duck"))
         {
             m_pSpectatorGUI->SetMouseInputEnabled(!m_pSpectatorGUI->IsMouseInputEnabled());
-            // MOM_TODO: re-enable this in beta when we add movie-style controls to the spectator menu!
+            // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             //m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
             return 0; // we handled it, don't handle twice or send to server

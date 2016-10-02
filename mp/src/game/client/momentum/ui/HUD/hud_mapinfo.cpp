@@ -78,7 +78,7 @@ class C_HudMapInfo : public CHudElement, public Panel
 
     char stageLocalized[BUFSIZELOCL], checkpointLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], m_pszStringStatus[BUFSIZELOCL],
-        m_pszStringStages[BUFSIZELOCL], noStagesLocalized[BUFSIZELOCL], noCPLocalized[BUFSIZELOCL],
+        m_pszStringStages[BUFSIZELOCL], noZonesLocalized[BUFSIZELOCL],
         mapNameLabelLocalized[BUFSIZELOCL], mapAuthorLabelLocalized[BUFSIZELOCL], mapDiffLabelLocalized[BUFSIZELOCL];
 
     int m_iZoneCount, m_iZoneCurrent;
@@ -134,8 +134,7 @@ void C_HudMapInfo::Init()
     LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
     LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
     LOCALIZE_TOKEN(MapFinished, "#MOM_MapFinished", mapFinishedLocalized);
-    LOCALIZE_TOKEN(NoCheckpoint, "#MOM_Status_NoCheckpoints", noCPLocalized);
-    LOCALIZE_TOKEN(NoStages, "#MOM_Status_NoStages", noStagesLocalized);
+    LOCALIZE_TOKEN(NoCheckpoint, "#MOM_Status_NoZones", noZonesLocalized);
     LOCALIZE_TOKEN(MapName, "#MOM_Map_Name", mapNameLabelLocalized);
     LOCALIZE_TOKEN(MapAuthor, "#MOM_Map_Author", mapAuthorLabelLocalized);
     LOCALIZE_TOKEN(MapDifficulty, "#MOM_Map_Difficulty", mapDiffLabelLocalized);
@@ -163,7 +162,7 @@ void C_HudMapInfo::Paint()
     }
     else
     { // No stages/checkpoints found
-        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), m_bMapLinear ? noCPLocalized : noStagesLocalized);
+        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), noZonesLocalized);
     }
 
     ANSI_TO_UNICODE(m_pszStringStages, m_pwCurrentStages);
@@ -229,7 +228,8 @@ void C_HudMapInfo::Paint()
     int yPos = mapinfo_ypos;
     int toIncrement = surface()->GetFontTall(m_hMapInfoFont) + 2;
     surface()->DrawSetTextFont(m_hMapInfoFont);
-    if (mom_mapinfo_show_mapname.GetBool())
+    IViewPortPanel *pSpecGUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+    if (mom_mapinfo_show_mapname.GetBool() && pSpecGUI && !pSpecGUI->IsVisible())
     {
         const char *pMapName = g_pGameRules->MapName();
         if (pMapName)

@@ -12,6 +12,9 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 
     m_pPlayBlockSound = FindControl<CvarToggleCheckButton<ConVarRef>>("PlayBlockSound");
     m_pPlayBlockSound->AddActionSignalTarget(this);
+
+    m_pSaveCheckpoints = FindControl<CvarToggleCheckButton<ConVarRef>>("SaveCheckpoints");
+    m_pSaveCheckpoints->AddActionSignalTarget(this);
 }
 
 void GameplaySettingsPage::LoadSettings()

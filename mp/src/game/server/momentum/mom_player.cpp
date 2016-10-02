@@ -8,6 +8,8 @@
 #include "mom_system_checkpoint.h"
 #include "mom_triggers.h"
 #include "momentum/weapon/weapon_csbasegun.h"
+#include "info_camera_link.h"
+#include "player_command.h"
 
 #include "tier0/memdbgon.h"
 
@@ -91,6 +93,54 @@ void CMomentumPlayer::CreateViewModel(int index)
         vm->FollowEntity(this, false);
         m_hViewModel.Set(index, vm);
     }
+}
+
+// Overridden so the player isn't frozen on a new map change
+void CMomentumPlayer::PlayerRunCommand(CUserCmd* ucmd, IMoveHelper* moveHelper)
+{
+    m_touchedPhysObject = false;
+
+    if (pl.fixangle == FIXANGLE_NONE)
+    {
+        VectorCopy(ucmd->viewangles, pl.v_angle.GetForModify());
+    }
+
+    // Handle FL_FROZEN.
+    if (GetFlags() & FL_FROZEN)
+    {
+        ucmd->forwardmove = 0;
+        ucmd->sidemove = 0;
+        ucmd->upmove = 0;
+        ucmd->buttons = 0;
+        ucmd->impulse = 0;
+        VectorCopy(pl.v_angle.Get(), ucmd->viewangles);
+    }
+    else if (GetToggledDuckState()) // Force a duck if we're toggled
+    {
+        ConVarRef xc_crouch_debounce("xc_crouch_debounce");
+        // If this is set, we've altered our menu options and need to debounce the duck
+        if (xc_crouch_debounce.GetBool())
+        {
+            ToggleDuck();
+
+            // Mark it as handled
+            xc_crouch_debounce.SetValue(0);
+        }
+        else
+        {
+            ucmd->buttons |= IN_DUCK;
+        }
+    }
+
+    PlayerMove()->RunCommand(this, ucmd, moveHelper);
+}
+
+void CMomentumPlayer::SetupVisibility(CBaseEntity* pViewEntity, unsigned char* pvs, int pvssize)
+{
+    BaseClass::SetupVisibility(pViewEntity, pvs, pvssize);
+
+    int area = pViewEntity ? pViewEntity->NetworkProp()->AreaNum() : NetworkProp()->AreaNum();
+    PointCameraSetupVisibility(this, area, pvs, pvssize);
 }
 
 void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
@@ -384,6 +434,7 @@ void CMomentumPlayer::CreateCheckpoint()
     c.ang = GetAbsAngles();
     c.pos = GetAbsOrigin();
     c.vel = GetAbsVelocity();
+    c.crouched = IsDucked() || IsDucking();  // Do we want IsDucking here??
     Q_strncpy(c.targetName, GetEntityName().ToCStr(), sizeof(c.targetName));
     Q_strncpy(c.targetClassName, GetClassname(), sizeof(c.targetClassName));
     m_rcCheckpoints.AddToTail(c);
@@ -412,12 +463,33 @@ void CMomentumPlayer::RemoveAllCheckpoints()
     m_iCheckpointCount = 0;
 }
 
+void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
+{
+    if (m_Local.m_bDucked != bState)
+    {
+        m_Local.m_bDucked = bState;
+        bState ? AddFlag(FL_DUCKING) : RemoveFlag(FL_DUCKING);
+        SetVCollisionState(GetAbsOrigin(), GetAbsVelocity(), bState ? VPHYS_CROUCH : VPHYS_WALK);
+    }
+}
+
+
 void CMomentumPlayer::TeleportToCP(int newCheckpoint)
 {
     if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0) return;
     Checkpoint c = m_rcCheckpoints[newCheckpoint];
+
+    // Handle custom ent flags that old maps do
     SetName(MAKE_STRING(c.targetName));
     SetClassname(c.targetClassName);
+
+    // Handle the crouched state
+    if (c.crouched && !IsDucked())
+        ToggleDuckThisFrame(true);
+    else if (!c.crouched && IsDucked())
+        ToggleDuckThisFrame(false);
+
+    //Teleport the player
     Teleport(&c.pos, &c.ang, &c.vel);
 }
 
@@ -434,6 +506,7 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
         mom_UTIL->KVSaveVector(kvCP, "vel", c.vel);
         mom_UTIL->KVSaveVector(kvCP, "pos", c.pos);
         mom_UTIL->KVSaveQAngles(kvCP, "ang", c.ang);
+        kvCP->SetBool("crouched", c.crouched);
         kvInto->AddSubKey(kvCP);
     }
 }
@@ -449,6 +522,7 @@ void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
         mom_UTIL->KVLoadVector(kvCheckpoint, "pos", c.pos);
         mom_UTIL->KVLoadVector(kvCheckpoint, "vel", c.vel);
         mom_UTIL->KVLoadQAngles(kvCheckpoint, "ang", c.ang);
+        c.crouched = kvCheckpoint->GetBool("crouched");
         m_rcCheckpoints.AddToTail(c);
     }
 
@@ -653,10 +727,7 @@ void CMomentumPlayer::CalculateAverageStats()
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
-    ConVarRef gm("mom_gamemode");
-    CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
-    bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-    if (m_RunData.m_bIsInZone && m_RunData.m_iCurrentZone == 1)
+    if (m_RunData.m_bIsInZone && m_RunData.m_iCurrentZone == 1 && !m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
     {
         if (GetGroundEntity() == nullptr && !m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
@@ -668,7 +739,10 @@ void CMomentumPlayer::LimitSpeedInStartZone()
             m_bDidPlayerBhop = true;
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
-        if (bhopGameMode && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        ConVarRef gm("mom_gamemode");
+        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
+        CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
+        if (bhopGameMode && startTrigger && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetPunishSpeed() * startTrigger->GetPunishSpeed();
