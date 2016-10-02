@@ -13,10 +13,6 @@
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
 
-// Having an interface do this would be better, but for testing it's ok enought
-// MOM_TODO: Interface this
-CHudReplay *HudReplay = nullptr;
-
 CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 {
     SetTitle("Reply Playback", true);
@@ -196,22 +192,20 @@ void CHudReplay::OnCommand(const char *command)
 
 void replayui_f()
 {
-    if (!HudReplay)
-        HudReplay = new CHudReplay("HudReplay");
+	if (!shared->HudReplay)
+		shared->HudReplay = new CHudReplay("HudReplay");
 
-    if (!HudReplay || !shared)
+	if (!shared->HudReplay || !shared)
         return;
 
-    if (HudReplay->IsVisible())
+	if (shared->HudReplay->IsVisible())
     {
-        HudReplay->Close();
+		shared->HudReplay->Close();
     }
     else
     {
-        HudReplay->Activate();
+		shared->HudReplay->Activate();
     }
-
-    shared->HudReplay = HudReplay;
 }
 
 static ConCommand replayui("replayui", replayui_f, "Replay Ghost GUI.");

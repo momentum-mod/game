@@ -42,4 +42,3 @@ class CHudReplay : public vgui::Frame
 
     vgui::TextEntry *m_pGotoTick;
 };
-extern CHudReplay *HudReplay;

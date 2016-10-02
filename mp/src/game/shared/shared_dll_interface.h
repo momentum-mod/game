@@ -2,12 +2,15 @@
 
 #include "interface.h"
 
+
+class CHudReplay;
+
 class CShared
 {
   public:
     bool LoadedClient = false;
     bool LoadedServer = false;
-    void *HudReplay = nullptr;
+	CHudReplay *HudReplay = nullptr;
     float TickRate = 1.0f;
     int m_iTotalTicks = 0;
     int m_iCurrentTick = 0;
