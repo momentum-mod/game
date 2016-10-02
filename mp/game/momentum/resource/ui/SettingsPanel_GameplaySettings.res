@@ -156,7 +156,7 @@
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "SaveCheckpoints"
         "xpos" "12"
-        "ypos" "48"
+        "ypos" "62"
         "wide"		"189"
 		"tall"		"16"
 		"autoResize"		"0"
