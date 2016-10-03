@@ -59,6 +59,7 @@ class C_Timer : public CHudElement, public Panel
     bool m_bIsRunning;
     bool m_bTimerRan; // MOM_TODO: What is this used for?
     int m_iStartTick;
+    
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -84,6 +85,7 @@ class C_Timer : public CHudElement, public Panel
   private:
     int m_iZoneCurrent, m_iZoneCount;
     int initialTall;
+    bool m_bIsReplay;
     //float m_fCurrentTime;
 
     wchar_t m_pwCurrentTime[BUFSIZETIME];
@@ -128,12 +130,13 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    m_bIsReplay = false;
 }
 
 void C_Timer::Init()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-    if (shared && shared->m_iTotalTicks_Server > 0)
+    if (shared && m_bIsReplay)
         shared->m_iTotalTicks_Client_Timer = 0;
 
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
@@ -157,7 +160,7 @@ void C_Timer::Init()
 void C_Timer::Reset()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-    if (shared && shared->m_iTotalTicks_Server > 0)
+    if (shared && m_bIsReplay)
         shared->m_iTotalTicks_Client_Timer = 0;
 
     m_bIsRunning = false;
@@ -230,7 +233,7 @@ float C_Timer::GetCurrentTime()
 
     static int OldTickCount = 0;
 
-	if ((gpGlobals->tickcount != OldTickCount) && (shared->m_iTotalTicks_Server <= 0))
+	if (gpGlobals->tickcount != OldTickCount && !m_bIsReplay)
     {
 		shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? shared->m_iTotalTicks_Client_Timer + 1 : 0;
     }
@@ -253,11 +256,13 @@ void C_Timer::OnThink()
             m_iCheckpointCurrent = 0;
             m_iCheckpointCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
+            m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
             runData = &pGhost->m_RunData;
         }
         else
         {
+            m_bIsReplay = false;
             m_bShowCheckpoints = pLocal->m_bUsingCPMenu;
             m_iCheckpointCurrent = pLocal->m_iCurrentStepCP + 1;
             m_iCheckpointCount = pLocal->m_iCheckpointCount;

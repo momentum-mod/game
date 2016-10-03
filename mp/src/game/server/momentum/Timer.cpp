@@ -280,9 +280,8 @@ void CTimer::Stop(bool endTrigger /* = false */)
     }
 
     //stop replay recording
-    // MOM_TODO (OrfeasZ): Do we need to pass a player here?
     if (g_ReplaySystem->GetReplayManager()->Recording())
-        g_ReplaySystem->StopRecording(pPlayer, !endTrigger, endTrigger);
+        g_ReplaySystem->StopRecording(!endTrigger, endTrigger);
 
     SetRunning(false);
     DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);

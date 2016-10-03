@@ -12,7 +12,6 @@ class CShared
     bool LoadedServer = false;
 
 
-	int m_iTotalTicks_Server = 0;
 	int m_iCurrentTick_Server = 0;
 	int m_iTotalTicks_Client_Timer = 0;
 

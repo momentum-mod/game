@@ -204,14 +204,13 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         }
 
         // begin recording replay
-        // TODO (OrfeasZ): Do we need to pass a player here?
         if (!g_ReplaySystem->GetReplayManager()->Recording())
         {
             g_ReplaySystem->BeginRecording(pPlayer);
         }
         else
         {
-            g_ReplaySystem->StopRecording(pPlayer, true, false);
+            g_ReplaySystem->StopRecording(true, false);
             g_ReplaySystem->BeginRecording(pPlayer);
         }
     }

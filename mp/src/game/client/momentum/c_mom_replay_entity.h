@@ -22,6 +22,8 @@ public:
     //These are stored here because run stats already has the ones obtained from the run
     int m_iTotalStrafes;
     int m_iTotalJumps;
+    
+    int m_iTotalTimeTicks;
 
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
     bool ShouldInterpolate() override

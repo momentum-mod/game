@@ -46,7 +46,7 @@ public:
     {
         //Stop a recording if there is one while the level shuts down
         if (m_pReplayManager->Recording())
-            StopRecording(nullptr, true, false);
+            StopRecording(true, false);
 
         if (m_pReplayManager->GetPlaybackReplay())
             m_pReplayManager->UnloadPlayback(true);
@@ -59,7 +59,7 @@ public:
     }
 
     void BeginRecording(CBasePlayer *pPlayer);
-    void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
+    void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
 
     inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }

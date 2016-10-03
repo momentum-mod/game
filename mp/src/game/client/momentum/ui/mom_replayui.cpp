@@ -118,32 +118,39 @@ void CHudReplay::OnThink()
 
     // cvar->FindVar("sv_cheats")->SetValue(1);
     // cvar->FindVar("host_timescale")->SetValue(shared->TickRate);
-
-    fProgress = static_cast<float>(shared->m_iCurrentTick_Server) / static_cast<float>(shared->m_iTotalTicks_Server);
-    fProgress = clamp(fProgress, 0.0f, 1.0f);
-
-    m_pProgress->SetProgress(fProgress);
-    char labelFrame[512];
-    Q_snprintf(labelFrame, 512, "Tick: %i / %i", shared->m_iCurrentTick_Server, shared->m_iTotalTicks_Server);
-    m_pProgressLabelFrame->SetText(labelFrame);
-    mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iCurrentTick_Server, curtime);
-    mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iTotalTicks_Server, totaltime);
-
-    char labelTime[512];
-    Q_snprintf(labelTime, 512, "Time: %s -> %s", curtime, totaltime);
-    m_pProgressLabelTime->SetText(labelTime);
-    // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
-    // will disable the replayui
-
-    C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
-    if (pGhost)
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    if (pPlayer)
     {
-        // always disable if map is finished
-        if (pGhost->m_RunData.m_bMapFinished)
+        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
+        if (pGhost)
         {
-            // cvar->FindVar("sv_cheats")->SetValue(0);
-            // cvar->FindVar("host_timescale")->SetValue(1.0f);
-            SetVisible(false);
+            fProgress = static_cast<float>(shared->m_iCurrentTick_Server) / static_cast<float>(pGhost->m_iTotalTimeTicks);
+            fProgress = clamp(fProgress, 0.0f, 1.0f);
+
+            m_pProgress->SetProgress(fProgress);
+            char labelFrame[512];
+            Q_snprintf(labelFrame, 512, "Tick: %i / %i", shared->m_iCurrentTick_Server, pGhost->m_iTotalTimeTicks);
+            m_pProgressLabelFrame->SetText(labelFrame);
+            mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iCurrentTick_Server, curtime);
+            mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iTotalTimeTicks, totaltime);
+
+            char labelTime[512];
+            Q_snprintf(labelTime, 512, "Time: %s -> %s", curtime, totaltime);
+            m_pProgressLabelTime->SetText(labelTime);
+            // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
+            // will disable the replayui
+
+
+            if (pGhost)
+            {
+                // always disable if map is finished
+                if (pGhost->m_RunData.m_bMapFinished)
+                {
+                    // cvar->FindVar("sv_cheats")->SetValue(0);
+                    // cvar->FindVar("host_timescale")->SetValue(1.0f);
+                    SetVisible(false);
+                }
+            }
         }
     }
 }
@@ -153,6 +160,7 @@ void CHudReplay::OnCommand(const char *command)
 {
     if (!shared)
         return BaseClass::OnCommand(command);
+    C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
     if (!Q_strcasecmp(command, "play"))
     {
 		shared->RGUI_bIsPlaying = !shared->RGUI_bIsPlaying;
@@ -162,10 +170,10 @@ void CHudReplay::OnCommand(const char *command)
         shared->m_iCurrentTick_Server = 0;
         shared->m_iTotalTicks_Client_Timer = 0;
     }
-    else if (!Q_strcasecmp(command, "gotoend"))
+    else if (!Q_strcasecmp(command, "gotoend") && pGhost)
     {
-        shared->m_iCurrentTick_Server = shared->m_iTotalTicks_Server;
-        shared->m_iTotalTicks_Client_Timer = shared->m_iTotalTicks_Server;
+        shared->m_iCurrentTick_Server = pGhost->m_iTotalTimeTicks;
+        shared->m_iTotalTicks_Client_Timer = pGhost->m_iTotalTimeTicks;
     }
     else if (!Q_strcasecmp(command, "prevframe"))
     {
@@ -193,7 +201,7 @@ void CHudReplay::OnCommand(const char *command)
         m_pGotoTick->GetText(tick, sizeof(tick));
         shared->m_iCurrentTick_Server = atoi(tick);
 
-        C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+       
         if (pGhost)
         {
             shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick_Server - pGhost->m_RunData.m_iStartTickD;

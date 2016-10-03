@@ -26,6 +26,7 @@ SendPropInt(SENDINFO(m_iTotalStrafes)),
 SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropString(SENDINFO(m_pszPlayerName)),
+SendPropInt(SENDINFO(m_iTotalTimeTicks)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)), 
 SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
@@ -125,7 +126,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
 
         shared->m_iCurrentTick_Server = 0;
         SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick_Server)->PlayerOrigin());
-		shared->m_iTotalTicks_Server = m_pPlaybackReplay->GetFrameCount() - 1;
+		m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime);
     }
@@ -190,7 +191,7 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 		shared->m_iCurrentTick_Server = 0;
 	}
 
-	if (shared->m_iCurrentTick_Server > shared->m_iTotalTicks_Server)
+	if (shared->m_iCurrentTick_Server > m_iTotalTimeTicks)
 	{
 		shared->m_iCurrentTick_Server = 0;
 	}
@@ -544,8 +545,6 @@ void CMomentumReplayGhostEntity::EndRun()
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
-
-	shared->m_iTotalTicks_Server = 0;
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()

@@ -22,7 +22,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     }
 }
 
-void CMomentumReplaySystem::StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay)
+void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 {
     if (throwaway)
     {
@@ -112,7 +112,7 @@ void CMomentumReplaySystem::UpdateRecordingParams()
     }
 
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
-        StopRecording(UTIL_GetLocalPlayer(), false, false);
+        StopRecording(false, false);
 }
 
 void CMomentumReplaySystem::SetReplayInfo()
