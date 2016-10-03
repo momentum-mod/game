@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/Frame.h>
@@ -69,4 +71,6 @@ namespace vgui
             }
         }
     };
+
+    DECLARE_BUILD_FACTORY_DEFAULT_TEXT(PFrameButton, PFrameButton);
 } // namespace vgui

@@ -1,10 +1,7 @@
-#include "hudelement.h"
+#pragma once
+
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
-
-#ifdef _WIN32
-#pragma once
-#endif
 
 enum Selections
 {

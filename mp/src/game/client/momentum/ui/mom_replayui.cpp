@@ -8,7 +8,7 @@
 
 #include "PFrameButton.h"
 #include "hud_mapfinished.h"
-#include "hud_replayui.h"
+#include "mom_replayui.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
@@ -16,20 +16,34 @@
 CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 {
     SetTitle("Reply Playback", true);
+    SetMoveable(true);
+    SetSizeable(false);
+    SetVisible(false);
+    SetSize(310, 210);
 
-    // MOM_TODO: use FindControl from the .res instead of creating new
+    LoadControlSettings("resource/ui/ReplayUI.res");
 
-    m_pPlayPauseResume = new vgui::ToggleButton(this, "ReplayPlayPauseResume", "PlayPauseResume");
+    //m_pPlayPauseResume = new vgui::ToggleButton(this, "ReplayPlayPauseResume", "PlayPauseResume");
+    m_pPlayPauseResume = FindControl<ToggleButton>("ReplayPlayPauseResume");
 
-    m_pGoStart = new vgui::Button(this, "ReplayGoStart", "Go Start");
-    m_pGoEnd = new vgui::Button(this, "ReplayGoEnd", "Go End");
-    m_pPrevFrame = new vgui::Button(this, "ReplayPrevFrame", "Prev Frame");
-    m_pNextFrame = new vgui::Button(this, "ReplayNextFrame", "Next Frame");
-    m_pFastForward = new vgui::PFrameButton(this, "ReplayFastForward", "Fast Fwd");
-    m_pFastBackward = new vgui::PFrameButton(this, "ReplayFastBackward", "Fast Bwd");
-    m_pGo = new vgui::Button(this, "ReplayGo", "Go");
+    //m_pGoStart = new vgui::Button(this, "ReplayGoStart", "Go Start");
+    m_pGoStart = FindControl<Button>("ReplayGoStart");
+    //m_pGoEnd = new vgui::Button(this, "ReplayGoEnd", "Go End");
+    m_pGoEnd = FindControl<Button>("ReplayGoEnd");
+    //m_pPrevFrame = new vgui::Button(this, "ReplayPrevFrame", "Prev Frame");
+    m_pPrevFrame = FindControl<Button>("ReplayPrevFrame");
+    //m_pNextFrame = new vgui::Button(this, "ReplayNextFrame", "Next Frame");
+    m_pNextFrame = FindControl<Button>("ReplayNextFrame");
+    //m_pFastForward = new vgui::PFrameButton(this, "ReplayFastForward", "Fast Fwd");
+    m_pFastForward = FindControl<PFrameButton>("ReplayFastForward");
+    //m_pFastBackward = new vgui::PFrameButton(this, "ReplayFastBackward", "Fast Bwd");
+    m_pFastBackward = FindControl<PFrameButton>("ReplayFastBackward");
+    //m_pGo = new vgui::Button(this, "ReplayGo", "Go");
+    m_pGo = FindControl<Button>("ReplayGo");
 
-    m_pGotoTick2 = new vgui::TextEntry(this, "ReplayGoToTick2");
+    //m_pGotoTick2 = new vgui::TextEntry(this, "ReplayGoToTick2");
+    m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
+    m_pGotoTick2 = FindControl<TextEntry>("ReplayGoToTick2");
 
     if (shared)
     {
@@ -39,22 +53,19 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
         m_pGotoTick2->SetText(buf);
     }
 
-    m_pGo2 = new vgui::Button(this, "ReplayGo2", "Go2");
+    //m_pGo2 = new vgui::Button(this, "ReplayGo2", "Go2");
+    m_pGo2 = FindControl<Button>("ReplayGo2");
 
-    m_pProgress = new vgui::ProgressBar(this, "ReplayProgress");
+    //m_pProgress = new vgui::ProgressBar(this, "ReplayProgress");
+    m_pProgress = FindControl<ProgressBar>("ReplayProgress");
     m_pProgress->SetSegmentInfo(2, 2);
 
-    m_pProgressLabelFrame = new vgui::Label(this, "ReplayProgressLabelFrame", "");
-    m_pProgressLabelTime = new vgui::Label(this, "ReplayProgressLabelTime", "");
+    //m_pProgressLabelFrame = new vgui::Label(this, "ReplayProgressLabelFrame", "");
+    m_pProgressLabelFrame = FindControl<Label>("ReplayProgressLabelFrame");
+    //m_pProgressLabelTime = new vgui::Label(this, "ReplayProgressLabelTime", "");
+    m_pProgressLabelTime = FindControl<Label>("ReplayProgressLabelTime");
 
-    m_pGotoTick = new vgui::TextEntry(this, "ReplayGoToTick");
-
-    LoadControlSettings("resource\\ui\\HudReplay.res"); // Should be always loaded at the end...
-
-    SetMoveable(true);
-    SetSizeable(false);
-    SetVisible(false);
-    SetSize(310, 210);
+    //m_pGotoTick = new vgui::TextEntry(this, "ReplayGoToTick");
 }
 
 void CHudReplay::OnThink()
@@ -112,11 +123,15 @@ void CHudReplay::OnThink()
     fProgress = clamp(fProgress, 0.0f, 1.0f);
 
     m_pProgress->SetProgress(fProgress);
-    m_pProgressLabelFrame->SetText(mom_UTIL->vaprintf("Tick: %i / %i", shared->m_iCurrentTick_Server, shared->m_iTotalTicks_Server));
+    char labelFrame[512];
+    Q_snprintf(labelFrame, 512, "Tick: %i / %i", shared->m_iCurrentTick_Server, shared->m_iTotalTicks_Server);
+    m_pProgressLabelFrame->SetText(labelFrame);
     mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iCurrentTick_Server, curtime);
     mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iTotalTicks_Server, totaltime);
 
-    m_pProgressLabelTime->SetText(mom_UTIL->vaprintf("Time: %s -> %s", curtime, totaltime));
+    char labelTime[512];
+    Q_snprintf(labelTime, 512, "Time: %s -> %s", curtime, totaltime);
+    m_pProgressLabelTime->SetText(labelTime);
     // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
     // will disable the replayui
 

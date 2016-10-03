@@ -317,8 +317,7 @@ void C_Timer::Paint(void)
     // find out status of timer (no timer/practice mode)
     if (!m_bIsRunning)
     {
-        if (m_bPlayerHasPracticeMode)
-            Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus),
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus),
                        m_bPlayerHasPracticeMode ? practiceModeLocalized
                                                 : noTimerLocalized); // ? practice mode : no timer
         ANSI_TO_UNICODE(m_pszStringStatus, m_pwCurrentStatus);

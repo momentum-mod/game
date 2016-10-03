@@ -90,8 +90,6 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_keypress.cpp"
                     $File "momentum\ui\HUD\hud_comparisons.cpp"
                     $File "momentum\ui\HUD\hud_comparisons.h"
-                    $File "momentum\ui\HUD\hud_replayui.cpp"
-                    $File "momentum\ui\HUD\hud_replayui.h"
                     $File "momentum\ui\HUD\hud_mapinfo.cpp"
                     $File "momentum\ui\HUD\hud_speedometer.cpp"
                     $File "momentum\ui\HUD\hud_strafesync.cpp"
@@ -105,29 +103,48 @@ $Project "Client (Momentum)"
                     $File "hl2\hud_weaponselection.cpp"
                 }
                 
-                $File 	"momentum\ui\ContactPanel.cpp"
-                $File 	"momentum\ui\IContactPanel.h"
+                $Folder "Controls"
+                {
+                    $File "momentum\ui\PFrameButton.h"
+                    $File "momentum\ui\CVarSlider.h"
+                    $File "momentum\ui\CVarSlider.cpp"
+                }
                 
-                $File   "momentum\ui\ClientTimesDisplay.h"
-                $File   "momentum\ui\ClientTimesDisplay.cpp"
-                $File 	"momentum\ui\ReplayContextMenu.h"
-                $File 	"momentum\ui\ReplayContextMenu.cpp"
-
-                $File   "momentum\ui\IChangelogPanel.h"
-                $File   "momentum\ui\ChangelogPanel.cpp"
-                $File   "momentum\ui\ChangelogPanel.h"
+                $Folder "Leaderboards"
+                {
+                    $File   "momentum\ui\ClientTimesDisplay.h"
+                    $File   "momentum\ui\ClientTimesDisplay.cpp"
+                    $File 	"momentum\ui\ReplayContextMenu.h"
+                    $File 	"momentum\ui\ReplayContextMenu.cpp"
+                }
                 
-                $File "momentum\ui\momSpectatorGUI.cpp"
-                $File "momentum\ui\momSpectatorGUI.h"
+                $Folder "Changelog"
+                {
+                    $File   "momentum\ui\IChangelogPanel.h"
+                    $File   "momentum\ui\ChangelogPanel.cpp"
+                    $File   "momentum\ui\ChangelogPanel.h"
+                }
                 
-                $File "momentum\ui\CVarSlider.h"
-                $File "momentum\ui\CVarSlider.cpp"
-
-                $File "momentum\ui\IMessageboxPanel.h"
-                $File "momentum\ui\MessageboxPanel.cpp"
-                $File "momentum\ui\MessageboxPanel.h"
-
-                $File "momentum\ui\PFrameButton.h"
+                $Folder "Feedback"
+                {
+                    $File 	"momentum\ui\ContactPanel.cpp"
+                    $File 	"momentum\ui\IContactPanel.h"
+                }
+                
+                $Folder "Messagebox"
+                {
+                    $File "momentum\ui\IMessageboxPanel.h"
+                    $File "momentum\ui\MessageboxPanel.cpp"
+                    $File "momentum\ui\MessageboxPanel.h"
+                }
+                
+                $Folder "Spectator"
+                {
+                    $File "momentum\ui\momSpectatorGUI.cpp"
+                    $File "momentum\ui\momSpectatorGUI.h"
+                    $File "momentum\ui\mom_replayui.cpp"
+                    $File "momentum\ui\mom_replayui.h"
+                }
             }
 
             $File   "momentum\client_events.h"

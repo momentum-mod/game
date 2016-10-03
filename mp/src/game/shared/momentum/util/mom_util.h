@@ -79,9 +79,6 @@ class MomentumUtil
 
     void KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave);
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
-    // Taken from Source Engine 2007 leak,
-    // https://github.com/LestaD/SourceEngine2007/blob/master/se2007/engine/common.cpp
-    char *vaprintf(char *format, ...) const;
 };
 
 class CTimeSortFunc

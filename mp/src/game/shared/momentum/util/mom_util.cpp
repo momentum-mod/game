@@ -475,27 +475,6 @@ void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &a
 {
     LOAD_3D_FROM_KV(kvFrom, pName, angInto);
 }
-// Original VALVE Source engine 2007 comment:
-/*== == == == == ==
-    va
-    does a varargs printf into a temp buffer, so I don't need to have
-    varargs versions of all text functions.
-== == == == == ==
-*/
-char *MomentumUtil::vaprintf(char *format, ...) const
-{
-    va_list argptr;
-    static char string[8][512];
-    static int curstring = 0;
-
-    curstring = (curstring + 1) % 8;
-
-    va_start(argptr, format);
-    Q_vsnprintf(string[curstring], sizeof(string[curstring]), format, argptr);
-    va_end(argptr);
-
-    return string[curstring];
-}
 
 static MomentumUtil s_momentum_util;
 MomentumUtil *mom_UTIL = &s_momentum_util;
