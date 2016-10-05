@@ -3,6 +3,7 @@
 #include "cbase.h"
 #include "mom_entity_run_data.h"
 #include "util/run_stats.h"
+#include <../interpolatedvar.h>
 
 class C_MomentumReplayGhostEntity : public C_BaseAnimating
 {
@@ -30,5 +31,7 @@ public:
     {
         return true;
     }
+
+	CInterpolatedVar< Vector >	m_iv_vecViewOffset;
 
 };
