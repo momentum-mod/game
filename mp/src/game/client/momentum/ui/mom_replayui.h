@@ -10,32 +10,32 @@ enum Selections
     RUI_MOVEFW,
 };
 
-class CHudReplay : public vgui::Frame
+class CHudReplay : public Frame
 {
     DECLARE_CLASS_SIMPLE(CHudReplay, vgui::Frame);
     CHudReplay(const char *pElementName);
 
-    virtual void OnThink();
+    virtual void OnThink() OVERRIDE;
 
     // Command issued
-    virtual void OnCommand(const char *command);
+    virtual void OnCommand(const char *command) OVERRIDE;
 
     // player controls
-    vgui::Button *m_pPlayPauseResume;
-    vgui::Button *m_pGoStart;
-    vgui::Button *m_pGoEnd;
-    vgui::Button *m_pPrevFrame;
-    vgui::Button *m_pNextFrame;
-    vgui::Button *m_pFastForward;
-    vgui::Button *m_pFastBackward;
-    vgui::Button *m_pGo;
+    ToggleButton *m_pPlayPauseResume;
+    Button *m_pGoStart;
+    Button *m_pGoEnd;
+    Button *m_pPrevFrame;
+    Button *m_pNextFrame;
+    PFrameButton *m_pFastForward;
+    PFrameButton *m_pFastBackward;
+    Button *m_pGo;
 
-    vgui::TextEntry *m_pGotoTick2;
-    vgui::Button *m_pGo2;
+    TextEntry *m_pGotoTick2;
+    Button *m_pGo2;
 
-    vgui::ProgressBar *m_pProgress;
-    vgui::Label *m_pProgressLabelFrame;
-    vgui::Label *m_pProgressLabelTime;
+    ProgressBar *m_pProgress;
+    Label *m_pProgressLabelFrame;
+    Label *m_pProgressLabelTime;
 
-    vgui::TextEntry *m_pGotoTick;
+    TextEntry *m_pGotoTick;
 };

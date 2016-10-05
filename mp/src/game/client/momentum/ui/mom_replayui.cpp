@@ -15,7 +15,6 @@
 
 CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 {
-    SetTitle("Reply Playback", true);
     SetMoveable(true);
     SetSizeable(false);
     SetVisible(false);
@@ -23,25 +22,16 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 
     LoadControlSettings("resource/ui/ReplayUI.res");
 
-    //m_pPlayPauseResume = new vgui::ToggleButton(this, "ReplayPlayPauseResume", "PlayPauseResume");
     m_pPlayPauseResume = FindControl<ToggleButton>("ReplayPlayPauseResume");
 
-    //m_pGoStart = new vgui::Button(this, "ReplayGoStart", "Go Start");
     m_pGoStart = FindControl<Button>("ReplayGoStart");
-    //m_pGoEnd = new vgui::Button(this, "ReplayGoEnd", "Go End");
     m_pGoEnd = FindControl<Button>("ReplayGoEnd");
-    //m_pPrevFrame = new vgui::Button(this, "ReplayPrevFrame", "Prev Frame");
     m_pPrevFrame = FindControl<Button>("ReplayPrevFrame");
-    //m_pNextFrame = new vgui::Button(this, "ReplayNextFrame", "Next Frame");
     m_pNextFrame = FindControl<Button>("ReplayNextFrame");
-    //m_pFastForward = new vgui::PFrameButton(this, "ReplayFastForward", "Fast Fwd");
     m_pFastForward = FindControl<PFrameButton>("ReplayFastForward");
-    //m_pFastBackward = new vgui::PFrameButton(this, "ReplayFastBackward", "Fast Bwd");
     m_pFastBackward = FindControl<PFrameButton>("ReplayFastBackward");
-    //m_pGo = new vgui::Button(this, "ReplayGo", "Go");
     m_pGo = FindControl<Button>("ReplayGo");
 
-    //m_pGotoTick2 = new vgui::TextEntry(this, "ReplayGoToTick2");
     m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
     m_pGotoTick2 = FindControl<TextEntry>("ReplayGoToTick2");
 
@@ -53,41 +43,18 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
         m_pGotoTick2->SetText(buf);
     }
 
-    //m_pGo2 = new vgui::Button(this, "ReplayGo2", "Go2");
     m_pGo2 = FindControl<Button>("ReplayGo2");
-
-    //m_pProgress = new vgui::ProgressBar(this, "ReplayProgress");
     m_pProgress = FindControl<ProgressBar>("ReplayProgress");
     m_pProgress->SetSegmentInfo(2, 2);
 
-    //m_pProgressLabelFrame = new vgui::Label(this, "ReplayProgressLabelFrame", "");
     m_pProgressLabelFrame = FindControl<Label>("ReplayProgressLabelFrame");
-    //m_pProgressLabelTime = new vgui::Label(this, "ReplayProgressLabelTime", "");
     m_pProgressLabelTime = FindControl<Label>("ReplayProgressLabelTime");
 
-    //m_pGotoTick = new vgui::TextEntry(this, "ReplayGoToTick");
 }
 
 void CHudReplay::OnThink()
 {
     BaseClass::OnThink();
-
-    char curtime[BUFSIZETIME];
-    char totaltime[BUFSIZETIME];
-    float fProgress = 0.0f;
-
-    // enable/disable all playback control buttons
-    m_pPlayPauseResume->SetEnabled(true);
-    m_pNextFrame->SetEnabled(true);
-    m_pGoStart->SetEnabled(true);
-    m_pGoEnd->SetEnabled(true);
-    m_pPrevFrame->SetEnabled(true);
-    m_pFastBackward->SetEnabled(true);
-    m_pFastForward->SetEnabled(true);
-    m_pGotoTick->SetEnabled(true);
-    m_pGo->SetEnabled(true);
-    m_pGotoTick2->SetEnabled(true);
-    m_pGo2->SetEnabled(true);
 
     if (m_pFastBackward->IsSelected())
     {
@@ -116,21 +83,21 @@ void CHudReplay::OnThink()
         }
     }
 
-    // cvar->FindVar("sv_cheats")->SetValue(1);
-    // cvar->FindVar("host_timescale")->SetValue(shared->TickRate);
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
-            fProgress = static_cast<float>(shared->m_iCurrentTick_Server) / static_cast<float>(pGhost->m_iTotalTimeTicks);
+            float fProgress = static_cast<float>(shared->m_iCurrentTick_Server) / static_cast<float>(pGhost->m_iTotalTimeTicks);
             fProgress = clamp(fProgress, 0.0f, 1.0f);
 
             m_pProgress->SetProgress(fProgress);
             char labelFrame[512];
             Q_snprintf(labelFrame, 512, "Tick: %i / %i", shared->m_iCurrentTick_Server, pGhost->m_iTotalTimeTicks);
             m_pProgressLabelFrame->SetText(labelFrame);
+            char curtime[BUFSIZETIME];
+            char totaltime[BUFSIZETIME];
             mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iCurrentTick_Server, curtime);
             mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iTotalTimeTicks, totaltime);
 
@@ -146,8 +113,6 @@ void CHudReplay::OnThink()
                 // always disable if map is finished
                 if (pGhost->m_RunData.m_bMapFinished)
                 {
-                    // cvar->FindVar("sv_cheats")->SetValue(0);
-                    // cvar->FindVar("host_timescale")->SetValue(1.0f);
                     SetVisible(false);
                 }
             }

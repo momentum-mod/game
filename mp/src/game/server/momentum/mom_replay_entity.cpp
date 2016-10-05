@@ -6,6 +6,7 @@
 #include "Timer.h"
 
 #include "tier0/memdbgon.h"
+#include "cdll_int.h"
 
 //MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
@@ -91,8 +92,11 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetSolid(SOLID_BBOX);
     RemoveSolidFlags(FSOLID_NOT_SOLID);
 
+    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
     SetModel(GHOST_MODEL);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
+    UpdateModelScale();
+    SetViewOffset(VEC_VIEW_SCALED(this));
 
 	if (m_pPlaybackReplay)
 	{
@@ -123,7 +127,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
                 pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
             }
         }
-
+        
         shared->m_iCurrentTick_Server = 0;
         SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick_Server)->PlayerOrigin());
 		m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
@@ -322,6 +326,37 @@ void CMomentumReplayGhostEntity::Think(void)
 	}
 	
 }
+
+// Ripped from gamemovement for slightly better collision
+inline bool CanUnduck(CMomentumReplayGhostEntity *pGhost)
+{
+    trace_t trace;
+    Vector newOrigin;
+
+    VectorCopy(pGhost->GetAbsOrigin(), newOrigin);
+
+    if (pGhost->GetGroundEntity() != nullptr)
+    {
+        newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
+    }
+    else
+    {
+        // If in air an letting go of croush, make sure we can offset origin to make
+        //  up for uncrouching
+        Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
+        Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
+
+        newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
+    }
+
+    UTIL_TraceHull(pGhost->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, pGhost, COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+
+    if (trace.startsolid || (trace.fraction != 1.0f))
+        return false;
+
+    return true;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: called by the think function, moves and handles the ghost if we're spectating it
 //-----------------------------------------------------------------------------
@@ -341,28 +376,30 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
                 pPlayer->ForceObserverMode(OBS_MODE_IN_EYE);
             }
 
-            pPlayer->SetViewOffset(VEC_VIEW);
-            Vector origin = currentStep->PlayerOrigin();
-            origin.z -= 3.5f;
-            SetAbsOrigin(origin);
+            SetAbsOrigin(currentStep->PlayerOrigin());
 
             if (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
             {
                 SetAbsAngles(currentStep->EyeAngles());
                 // don't render the model when we're in first person mode
-                SetRenderMode(kRenderNone);
-                AddEffects(EF_NOSHADOW);
+                if (GetRenderMode() != kRenderNone)
+                {
+                    SetRenderMode(kRenderNone);
+                    AddEffects(EF_NOSHADOW);
+                }
             }
             else
             {
-                SetAbsAngles(QAngle(currentStep->EyeAngles().x /
-                    10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-                    currentStep->EyeAngles().y,
-                    currentStep->EyeAngles().z));
+                // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                SetAbsAngles(
+                    QAngle(currentStep->EyeAngles().x / 10, currentStep->EyeAngles().y, currentStep->EyeAngles().z));
 
                 // remove the nodraw effects
-                SetRenderMode(kRenderTransColor);
-                RemoveEffects(EF_NOSHADOW);
+                if (GetRenderMode() != kRenderTransColor)
+                {
+                    SetRenderMode(kRenderTransColor);
+                    RemoveEffects(EF_NOSHADOW);
+                }
             }
 
             // interpolate vel from difference in origin
@@ -372,28 +409,38 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
             float maxvel = sv_maxvelocity.GetFloat();
 
-            //Fixes an issue with teleporting
+            // Fixes an issue with teleporting
             if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
                 SetAbsVelocity(interpolatedVel);
 
-            m_nReplayButtons = currentStep->PlayerButtons(); // networked var that allows the replay to control keypress display on the client
+            m_nReplayButtons =
+                currentStep
+                    ->PlayerButtons(); // networked var that allows the replay to control keypress display on the client
 
             if (m_RunData.m_bTimerRunning)
                 UpdateStats(interpolatedVel);
 
-
-			//kamay: Now timer start and end at the right time, well I'm not sure that playerbuttons is the right way since normaly it's using the getflags() and check for fl_ducking for the collision bounds
-			//But that should do the trick.
+            // kamay: Now timer start and end at the right time
+            bool isDucking = (GetFlags() & FL_DUCKING) != 0;
             if (currentStep->PlayerButtons() & IN_DUCK)
             {
-                // MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
-				pPlayer->SetViewOffset(VEC_DUCK_VIEW);
-				SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-			}
-			else
-			{
-				SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
-			}
+                // MOM_TODO: make this smoother. look at void CGameMovement::SetDuckedEyeOffset( float duckFraction )
+                if (!isDucking)
+                {
+                    SetViewOffset(VEC_DUCK_VIEW_SCALED(this));
+                    SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+                    AddFlag(FL_DUCKING);
+                }
+            }
+            else
+            {
+                if (CanUnduck(this) && isDucking)
+                {
+                    SetViewOffset(VEC_VIEW_SCALED(this));
+                    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
+                    RemoveFlag(FL_DUCKING);
+                }
+            }
         }
     }
 }

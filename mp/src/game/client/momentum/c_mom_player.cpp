@@ -108,3 +108,22 @@ bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
 
     return false;
 }
+
+// Overridden for Ghost entity
+Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
+{
+    C_MomentumReplayGhostEntity *pGhost = dynamic_cast<C_MomentumReplayGhostEntity*>(target);
+
+    if (pGhost)
+    {
+        if (pGhost->GetFlags() & FL_DUCKING)
+        {
+            return VEC_DUCK_VIEW_SCALED(pGhost);
+        }
+
+        return VEC_VIEW_SCALED(pGhost);
+    }
+
+    // Resort to base class for player code
+    return BaseClass::GetChaseCamViewOffset(target);
+}
