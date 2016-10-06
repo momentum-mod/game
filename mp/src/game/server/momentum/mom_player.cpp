@@ -898,7 +898,7 @@ void CMomentumPlayer::TweenSlowdownPlayer()
         // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else
-        m_flTweenVelValue = 1.0f; // Reset the tweened value back to normal
+        m_flTweenVelValue = GetLaggedMovementValue(); // Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
 
