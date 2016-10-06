@@ -24,7 +24,8 @@ public:
     int m_iTotalStrafes;
     int m_iTotalJumps;
     
-    int m_iTotalTimeTicks;
+    int m_iTotalTimeTicks; // The total tick count of the playback
+    int m_iCurrentTick; // The current tick of playback
 
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
     bool ShouldInterpolate() override

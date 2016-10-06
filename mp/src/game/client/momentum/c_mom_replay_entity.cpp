@@ -11,6 +11,7 @@ RecvPropInt(RECVINFO(m_iTotalJumps)),
 RecvPropFloat(RECVINFO(m_flTickRate)),
 RecvPropString(RECVINFO(m_pszPlayerName)),
 RecvPropInt(RECVINFO(m_iTotalTimeTicks)),
+RecvPropInt(RECVINFO(m_iCurrentTick)),
 RecvPropDataTable(RECVINFO_DT(m_RunData), 0, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
 RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE();
@@ -23,6 +24,7 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity() : m_iv_vecViewOffset(
     m_iTotalStrafes = 0;
     m_iTotalJumps = 0;
     m_iTotalTimeTicks = 0;
+    m_iCurrentTick = 0;
     m_flTickRate = 0.0f;
     m_pszPlayerName[0] = '\0';
     m_RunStats.Init();

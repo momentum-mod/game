@@ -6,7 +6,6 @@
 #include "Timer.h"
 
 #include "tier0/memdbgon.h"
-#include "cdll_int.h"
 
 //MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
@@ -28,6 +27,7 @@ SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropString(SENDINFO(m_pszPlayerName)),
 SendPropInt(SENDINFO(m_iTotalTimeTicks)),
+SendPropInt(SENDINFO(m_iCurrentTick)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)), 
 SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
@@ -128,8 +128,9 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
             }
         }
         
-        shared->m_iCurrentTick_Server = 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick_Server)->PlayerOrigin());
+        m_iCurrentTick = 0;
+        shared->m_iTotalTicks_Client_Timer = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
 		m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime);
@@ -166,38 +167,38 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 	{
 		if (shared->RGUI_HasSelected == 1)
 		{
-			shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server - Skip;
+			m_iCurrentTick -= Skip;
 
-			if (m_bReplayShouldLoop && shared->m_iCurrentTick_Server < 0)
+            if (m_bReplayShouldLoop && m_iCurrentTick < 0)
 			{
-				shared->m_iCurrentTick_Server = m_pPlaybackReplay->GetFrameCount() - 1;
+                m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - 1;
 			}
 
 		}
 		else if (shared->RGUI_HasSelected == 2)
 		{
-			shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server + Skip;
+            m_iCurrentTick += Skip;
 			 
-			if (shared->m_iCurrentTick_Server >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-				shared->m_iCurrentTick_Server = 0;
+            if (m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+                m_iCurrentTick = 0;
 		}
 	}
 	else
 	{
-		shared->m_iCurrentTick_Server = shared->m_iCurrentTick_Server + Skip;
+        m_iCurrentTick += Skip;
 
-		if (shared->m_iCurrentTick_Server >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-			shared->m_iCurrentTick_Server = 0;
+        if (m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
+            m_iCurrentTick = 0;
 	}
 
-	if (shared->m_iCurrentTick_Server < 0)
+    if (m_iCurrentTick < 0)
 	{
-		shared->m_iCurrentTick_Server = 0;
+        m_iCurrentTick = 0;
 	}
 
-	if (shared->m_iCurrentTick_Server > m_iTotalTimeTicks)
+    if (m_iCurrentTick > m_iTotalTimeTicks)
 	{
-		shared->m_iCurrentTick_Server = 0;
+        m_iCurrentTick = 0;
 	}
 
 	if (shared->m_iTotalTicks_Client_Timer < 0)
@@ -241,90 +242,89 @@ void CMomentumReplayGhostEntity::Think(void)
 
 	//move the ghost
 	if (!m_bReplayShouldLoop &&
-		((shared->m_iCurrentTick_Server < 0) ||
-		(shared->m_iCurrentTick_Server + 1 >= m_pPlaybackReplay->GetFrameCount())))
+        ((m_iCurrentTick < 0) ||
+        (m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
 	{
 		// If we're not looping and we've reached the end of the video then stop and wait for the player
 		// to make a choice about if it should repeat, or end.
 		SetAbsVelocity(vec3_origin);
 	}
-	else
-	{
-		// Otherwise proceed to the next step and perform the necessary updates.
-		if (shared->RGUI_TimeScale <= 1.0f)
-		UpdateStep(1);
-		else
-		{
-			//Check our tickrate
-			int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
+    else
+    {
+        // Otherwise proceed to the next step and perform the necessary updates.
+        if (shared->RGUI_TimeScale <= 1.0f)
+            UpdateStep(1);
+        else
+        {
+            // Check our tickrate
+            int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
 
-			//How many ticks we should speed, if it's 0 then simply run the current one.
-			int TicksToGoToNextStep = static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep)-shared->RGUI_TimeScale)));
+            // How many ticks we should speed, if it's 0 then simply run the current one.
+            int TicksToGoToNextStep =
+                static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep) - shared->RGUI_TimeScale)));
 
-			if (TicksToGoToNextStep <= 0)
-			UpdateStep(NextStep - 1);
-			else
-			{
-				float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
-				//Now we will calculate how many ticks should be updated on the next step or the current one.
+            if (TicksToGoToNextStep <= 0)
+                UpdateStep(NextStep - 1);
+            else
+            {
+                float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
+                // Now we will calculate how many ticks should be updated on the next step or the current one.
 
-				//Let's choose wich tick we want to set our nextstep
-				static int CountMain = 0;
-				static int Count = 0;
-				static int CountSpeed = 0;
-				static bool Reset = false;
-		
-				if (CountMain < TickRate)
-				{
-					Count++;
+                // Let's choose wich tick we want to set our nextstep
+                static int CountMain = 0;
+                static int Count = 0;
+                static int CountSpeed = 0;
+                static bool Reset = false;
 
-					int Difference = Count - CountSpeed;
-					float fDif = 1.0f / static_cast<float>(Difference);	
+                if (CountMain < TickRate)
+                {
+                    Count++;
 
-					if (fDif <= AverageSpeedUp)
-					{
-						UpdateStep(NextStep);
-						CountSpeed++;
-						Reset = true;
-					}
-					else
-						UpdateStep(NextStep-1);
+                    int Difference = Count - CountSpeed;
+                    float fDif = 1.0f / static_cast<float>(Difference);
 
-					if (Reset)
-					{
-						Count = 0;
-						CountSpeed = 0;
-						Reset = false;
-					}
-				
-	
-					CountMain++;
-				}
-				else
-				{
-					Count = 0;
-					CountSpeed = 0;
-					CountMain = 0;
-					Reset = false;
-				}
-			}
-		}
+                    if (fDif <= AverageSpeedUp)
+                    {
+                        UpdateStep(NextStep);
+                        CountSpeed++;
+                        Reset = true;
+                    }
+                    else
+                        UpdateStep(NextStep - 1);
 
-		if (m_rgSpectators.IsEmpty())
-			HandleGhost();
-		else
-			HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
-	}
+                    if (Reset)
+                    {
+                        Count = 0;
+                        CountSpeed = 0;
+                        Reset = false;
+                    }
 
-	if (shared->RGUI_TimeScale <= 1.0f)
-	{
-		SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * ( 1.0f/ shared->RGUI_TimeScale ));
-	}
-	else
-	{
-		SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
-	}
-	
+                    CountMain++;
+                }
+                else
+                {
+                    Count = 0;
+                    CountSpeed = 0;
+                    CountMain = 0;
+                    Reset = false;
+                }
+            }
+        }
+
+        if (m_rgSpectators.IsEmpty())
+            HandleGhost();
+        else
+            HandleGhostFirstPerson(); // MOM_TODO: If some players aren't spectating this, they won't have it update...
+    }
+
+    if (shared->RGUI_TimeScale <= 1.0f)
+    {
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * (1.0f / shared->RGUI_TimeScale));
+    }
+    else
+    {
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    }
 }
 
 // Ripped from gamemovement for slightly better collision
@@ -378,9 +378,11 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
             SetAbsOrigin(currentStep->PlayerOrigin());
 
+            QAngle angles = currentStep->EyeAngles();
+
             if (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
             {
-                SetAbsAngles(currentStep->EyeAngles());
+                SetAbsAngles(angles);
                 // don't render the model when we're in first person mode
                 if (GetRenderMode() != kRenderNone)
                 {
@@ -391,8 +393,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             else
             {
                 // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-                SetAbsAngles(
-                    QAngle(currentStep->EyeAngles().x / 10, currentStep->EyeAngles().y, currentStep->EyeAngles().z));
+                SetAbsAngles(QAngle(angles.x / 10, angles.y, angles.z));
 
                 // remove the nodraw effects
                 if (GetRenderMode() != kRenderTransColor)
@@ -413,9 +414,8 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
                 SetAbsVelocity(interpolatedVel);
 
-            m_nReplayButtons =
-                currentStep
-                    ->PlayerButtons(); // networked var that allows the replay to control keypress display on the client
+            // networked var that allows the replay to control keypress display on the client
+            m_nReplayButtons = currentStep->PlayerButtons(); 
 
             if (m_RunData.m_bTimerRunning)
                 UpdateStats(interpolatedVel);
@@ -596,7 +596,7 @@ void CMomentumReplayGhostEntity::EndRun()
 
 CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = shared->m_iCurrentTick_Server;
+    int nextStep = m_iCurrentTick;
 
     if ((shared->RGUI_HasSelected == 1) && !shared->RGUI_bIsPlaying)
     {

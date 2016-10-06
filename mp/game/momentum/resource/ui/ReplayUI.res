@@ -1,6 +1,6 @@
 "resource\ui\ReplayUI.res"
 {
-	"ReplayUIPanel"
+	"HudReplay"
 	{
 		"ControlName"		"CHudReplay"
 		"fieldName"		"HudReplay"
@@ -14,7 +14,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"settitlebarvisible"		"1"
-		"title"		"Ghost Playback"
+		"title"		"Ghost Playback" //MOM_TODO: LOCALIZE
 	}
 	"ReplayPlayPauseResume"
 	{
@@ -29,7 +29,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"Play"
+		"labelText"		"Play" // MOM_TODO: LOCALIZE
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
@@ -185,7 +185,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"TimeScale:"
+		"labelText"		"TimeScale:" // MOM_TODO: LOCALIZE
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
@@ -225,7 +225,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"Goto:"
+		"labelText"		"Goto:" // MOM_TODO: LOCALIZE
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"

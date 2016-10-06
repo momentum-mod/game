@@ -217,6 +217,36 @@ CON_COMMAND(mom_replay_stop, "Stops playing the current replay.")
     }
 }
 
+CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
+{
+    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    {
+        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        if (pGhost && args.ArgC() > 1)
+        {
+            int tick = Q_atoi(args[1]); 
+            if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
+            {
+                pGhost->m_iCurrentTick = tick;
+                shared->m_iTotalTicks_Client_Timer = pGhost->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD;
+            }
+        }
+    }
+}
+
+CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
+{
+    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    {
+        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        if (pGhost)
+        {
+            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks;
+            shared->m_iTotalTicks_Client_Timer = pGhost->m_iTotalTimeTicks;
+        }
+    }
+}
+
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {
     auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());

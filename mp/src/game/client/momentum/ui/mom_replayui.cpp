@@ -89,19 +89,21 @@ void CHudReplay::OnThink()
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
-            float fProgress = static_cast<float>(shared->m_iCurrentTick_Server) / static_cast<float>(pGhost->m_iTotalTimeTicks);
+            float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(pGhost->m_iTotalTimeTicks);
             fProgress = clamp(fProgress, 0.0f, 1.0f);
 
             m_pProgress->SetProgress(fProgress);
             char labelFrame[512];
-            Q_snprintf(labelFrame, 512, "Tick: %i / %i", shared->m_iCurrentTick_Server, pGhost->m_iTotalTimeTicks);
+            // MOM_TODO: Localize this
+            Q_snprintf(labelFrame, 512, "Tick: %i / %i", pGhost->m_iCurrentTick, pGhost->m_iTotalTimeTicks);
             m_pProgressLabelFrame->SetText(labelFrame);
             char curtime[BUFSIZETIME];
             char totaltime[BUFSIZETIME];
-            mom_UTIL->FormatTime(TICK_INTERVAL * shared->m_iCurrentTick_Server, curtime);
+            mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iCurrentTick, curtime);
             mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iTotalTimeTicks, totaltime);
 
             char labelTime[512];
+            // MOM_TODO: LOCALIZE
             Q_snprintf(labelTime, 512, "Time: %s -> %s", curtime, totaltime);
             m_pProgressLabelTime->SetText(labelTime);
             // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
@@ -132,26 +134,29 @@ void CHudReplay::OnCommand(const char *command)
     }
     else if (!Q_strcasecmp(command, "reload"))
     {
-        shared->m_iCurrentTick_Server = 0;
-        shared->m_iTotalTicks_Client_Timer = 0;
+        engine->ServerCmd("mom_replay_restart");
     }
-    else if (!Q_strcasecmp(command, "gotoend") && pGhost)
+    else if (!Q_strcasecmp(command, "gotoend"))
     {
-        shared->m_iCurrentTick_Server = pGhost->m_iTotalTimeTicks;
-        shared->m_iTotalTicks_Client_Timer = pGhost->m_iTotalTimeTicks;
+        engine->ServerCmd("mom_replay_goto_end");
     }
-    else if (!Q_strcasecmp(command, "prevframe"))
+    else if (!Q_strcasecmp(command, "prevframe") && pGhost)
     {
-        if (shared->m_iTotalTicks_Client_Timer > 0 && shared->m_iCurrentTick_Server > 0)
+        if (shared->m_iTotalTicks_Client_Timer > 0 && pGhost->m_iCurrentTick > 0)
         {
-            shared->m_iTotalTicks_Client_Timer--;
-            shared->m_iCurrentTick_Server--;
+            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick - 1));
+            // shared->m_iTotalTicks_Client_Timer--;
+            // shared->m_iCurrentTick_Server--;
         }
     }
-    else if (!Q_strcasecmp(command, "nextframe"))
+    else if (!Q_strcasecmp(command, "nextframe") && pGhost)
     {
-        shared->m_iTotalTicks_Client_Timer++;
-        shared->m_iCurrentTick_Server++;
+        if (pGhost->m_iCurrentTick < pGhost->m_iTotalTimeTicks)
+        {
+            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
+        }
+        //shared->m_iTotalTicks_Client_Timer++;
+        //shared->m_iCurrentTick_Server++;
     }
     else if (!Q_strcasecmp(command, "gototick2"))
     {
@@ -164,13 +169,7 @@ void CHudReplay::OnCommand(const char *command)
         //Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
-        shared->m_iCurrentTick_Server = atoi(tick);
-
-       
-        if (pGhost)
-        {
-            shared->m_iTotalTicks_Client_Timer = shared->m_iCurrentTick_Server - pGhost->m_RunData.m_iStartTickD;
-        }
+        engine->ServerCmd(VarArgs("mom_replay_goto %s", tick));
     }
     else
     {
