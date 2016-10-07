@@ -420,6 +420,8 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             if (m_RunData.m_bTimerRunning)
                 UpdateStats(interpolatedVel);
 
+			SetViewOffset(currentStep->PlayerViewOffset());
+
             // kamay: Now timer start and end at the right time
             bool isDucking = (GetFlags() & FL_DUCKING) != 0;
             if (currentStep->PlayerButtons() & IN_DUCK)
@@ -427,7 +429,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
                 // MOM_TODO: make this smoother. look at void CGameMovement::SetDuckedEyeOffset( float duckFraction )
                 if (!isDucking)
                 {
-                    SetViewOffset(VEC_DUCK_VIEW_SCALED(this));
                     SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
                     AddFlag(FL_DUCKING);
                 }
@@ -436,7 +437,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             {
                 if (CanUnduck(this) && isDucking)
                 {
-                    SetViewOffset(VEC_VIEW_SCALED(this));
                     SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
                     RemoveFlag(FL_DUCKING);
                 }

@@ -8,7 +8,7 @@
 class CReplayFrame : public ISerializable
 {
   public:
-    CReplayFrame() : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_iPlayerButtons(0) {}
+	  CReplayFrame() : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_vPlayerViewOffset(0, 0, 0), m_iPlayerButtons(0){}
 
     CReplayFrame(CBinaryReader *reader)
     {
@@ -20,11 +20,15 @@ class CReplayFrame : public ISerializable
         m_vPlayerOrigin.y = reader->ReadFloat();
         m_vPlayerOrigin.z = reader->ReadFloat();
 
+		m_vPlayerViewOffset.x = reader->ReadFloat();
+		m_vPlayerViewOffset.y = reader->ReadFloat();
+		m_vPlayerViewOffset.z = reader->ReadFloat();
+
         m_iPlayerButtons = reader->ReadInt32();
     }
 
-    CReplayFrame(const QAngle &eye, const Vector &origin, int buttons)
-        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_iPlayerButtons(buttons)
+    CReplayFrame(const QAngle &eye, const Vector &origin, const Vector &viewoffset, int buttons)
+        : m_angEyeAngles(eye), m_vPlayerOrigin(origin),m_vPlayerViewOffset(viewoffset), m_iPlayerButtons(buttons)
     {
     }
 
@@ -39,17 +43,23 @@ class CReplayFrame : public ISerializable
         writer->WriteFloat(m_vPlayerOrigin.y);
         writer->WriteFloat(m_vPlayerOrigin.z);
 
+		writer->WriteFloat(m_vPlayerViewOffset.x);
+		writer->WriteFloat(m_vPlayerViewOffset.y);
+		writer->WriteFloat(m_vPlayerViewOffset.z);
+
         writer->WriteInt32(m_iPlayerButtons);
     }
 
   public:
     inline QAngle EyeAngles() const { return m_angEyeAngles; }
     inline Vector PlayerOrigin() const { return m_vPlayerOrigin; }
+	inline Vector PlayerViewOffset() const { return m_vPlayerViewOffset; }
     inline int PlayerButtons() const { return m_iPlayerButtons; }
 
   private:
     QAngle m_angEyeAngles;
     Vector m_vPlayerOrigin;
+	Vector m_vPlayerViewOffset;
     int m_iPlayerButtons;
 };
 
