@@ -242,7 +242,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         if (pGhost)
         {
             pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks;
-            shared->m_iTotalTicks_Client_Timer = pGhost->m_iTotalTimeTicks;
+			shared->m_iTotalTicks_Client_Timer = pGhost->m_iTotalTimeTicks - pGhost->m_RunData.m_iStartTickD;
         }
     }
 }
