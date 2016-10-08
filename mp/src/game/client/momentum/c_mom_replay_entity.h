@@ -7,11 +7,11 @@
 
 class C_MomentumReplayGhostEntity : public C_BaseAnimating
 {
-	DECLARE_CLASS(C_MomentumReplayGhostEntity, C_BaseAnimating);
+    DECLARE_CLASS(C_MomentumReplayGhostEntity, C_BaseAnimating);
     DECLARE_CLIENTCLASS();
-	DECLARE_INTERPOLATION()
+    DECLARE_INTERPOLATION()
 
-public:
+  public:
     C_MomentumReplayGhostEntity();
 
     CMOMRunEntityData m_RunData;
@@ -20,20 +20,16 @@ public:
     float m_flTickRate;
 
     int m_nReplayButtons;
-    //These are stored here because run stats already has the ones obtained from the run
+    // These are stored here because run stats already has the ones obtained from the run
     int m_iTotalStrafes;
     int m_iTotalJumps;
-    
+
     int m_iTotalTimeTicks; // The total tick count of the playback
-    int m_iCurrentTick; // The current tick of playback
-	float m_flTimeScale; // The current timescale of the replay
+    int m_iCurrentTick;    // The current tick of playback
+    float m_flTimeScale;   // The current timescale of the replay
 
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
-    bool ShouldInterpolate() override
-    {
-        return true;
-    }
+    bool ShouldInterpolate() override { return true; }
 
-	CInterpolatedVar< Vector >	m_iv_vecViewOffset;
-
+    CInterpolatedVar<Vector> m_iv_vecViewOffset;
 };

@@ -2,7 +2,6 @@
 
 #include "interface.h"
 
-
 class CHudReplay;
 
 class CShared
@@ -11,8 +10,7 @@ class CShared
     bool LoadedClient = false;
     bool LoadedServer = false;
 
-	//ReplayUI Stuffs
-	CHudReplay *HudReplay = nullptr;
+    // ReplayUI Stuffs
     bool RGUI_bIsPlaying = false;
     int RGUI_HasSelected = 0;
 };

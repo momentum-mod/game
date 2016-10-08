@@ -8,8 +8,8 @@
 
 #include "PFrameButton.h"
 #include "hud_mapfinished.h"
-#include "mom_replayui.h"
 #include "mom_player_shared.h"
+#include "mom_replayui.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
 
@@ -33,17 +33,15 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
     m_pGo = FindControl<Button>("ReplayGo");
 
     m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
-    m_pGotoTick2 = FindControl<TextEntry>("ReplayGoToTick2");
-	m_pGotoTick2->SetText("1.0");
-    
+    m_pGoToTimeScale = FindControl<TextEntry>("ReplayGoToTimeScale");
+    m_pGoToTimeScale->SetText("1.0");
 
-    m_pGo2 = FindControl<Button>("ReplayGo2");
+    m_pGoTimeScale = FindControl<Button>("ReplayGoTimeScale");
     m_pProgress = FindControl<ProgressBar>("ReplayProgress");
     m_pProgress->SetSegmentInfo(2, 2);
 
     m_pProgressLabelFrame = FindControl<Label>("ReplayProgressLabelFrame");
     m_pProgressLabelTime = FindControl<Label>("ReplayProgressLabelTime");
-
 }
 
 void CHudReplay::OnThink()
@@ -52,19 +50,19 @@ void CHudReplay::OnThink()
 
     if (m_pFastBackward->IsSelected())
     {
-		shared->RGUI_HasSelected = RUI_MOVEBW;
-		shared->RGUI_bIsPlaying = false;
+        shared->RGUI_HasSelected = RUI_MOVEBW;
+        shared->RGUI_bIsPlaying = false;
         m_pPlayPauseResume->ForceDepressed(false);
     }
     else if (m_pFastForward->IsSelected())
     {
-		shared->RGUI_HasSelected = RUI_MOVEFW;
-		shared->RGUI_bIsPlaying = false;
+        shared->RGUI_HasSelected = RUI_MOVEFW;
+        shared->RGUI_bIsPlaying = false;
         m_pPlayPauseResume->ForceDepressed(false);
     }
     else
     {
-		if (shared->RGUI_bIsPlaying)
+        if (shared->RGUI_bIsPlaying)
         {
             m_pPlayPauseResume->SetText("Playing");
             m_pPlayPauseResume->SetSelected(true);
@@ -83,7 +81,8 @@ void CHudReplay::OnThink()
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
-            float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(pGhost->m_iTotalTimeTicks);
+            float fProgress =
+                static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(pGhost->m_iTotalTimeTicks);
             fProgress = clamp(fProgress, 0.0f, 1.0f);
 
             m_pProgress->SetProgress(fProgress);
@@ -100,9 +99,9 @@ void CHudReplay::OnThink()
             // MOM_TODO: LOCALIZE
             Q_snprintf(labelTime, 512, "Time: %s -> %s", curtime, totaltime);
             m_pProgressLabelTime->SetText(labelTime);
-            // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly), then we
+            // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly),
+            // then we
             // will disable the replayui
-
 
             if (pGhost)
             {
@@ -124,7 +123,7 @@ void CHudReplay::OnCommand(const char *command)
     C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
     if (!Q_strcasecmp(command, "play"))
     {
-		shared->RGUI_bIsPlaying = !shared->RGUI_bIsPlaying;
+        shared->RGUI_bIsPlaying = !shared->RGUI_bIsPlaying;
     }
     else if (!Q_strcasecmp(command, "reload"))
     {
@@ -148,15 +147,15 @@ void CHudReplay::OnCommand(const char *command)
             engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
         }
     }
-    else if (!Q_strcasecmp(command, "gototick2"))
+    else if (!Q_strcasecmp(command, "gototimescale"))
     {
         char tick[32];
-        m_pGotoTick2->GetText(tick, sizeof(tick));
-		engine->ServerCmd(VarArgs("mom_replay_timescale %f", atof(tick)));
+        m_pGoToTimeScale->GetText(tick, sizeof(tick));
+        engine->ServerCmd(VarArgs("mom_replay_timescale %f", atof(tick)));
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {
-        //Teleport at the position we want with timer included
+        // Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
         engine->ServerCmd(VarArgs("mom_replay_goto %s", tick));
@@ -169,19 +168,20 @@ void CHudReplay::OnCommand(const char *command)
 
 void replayui_f()
 {
-	if (!shared->HudReplay)
-		shared->HudReplay = new CHudReplay("HudReplay");
+    CHudReplay *HudReplay = nullptr;
+    if (HudReplay == nullptr)
+        HudReplay = new CHudReplay("HudReplay");
 
-	if (!shared->HudReplay || !shared)
+    if (!HudReplay || !shared)
         return;
 
-	if (shared->HudReplay->IsVisible())
+    if (HudReplay->IsVisible())
     {
-		shared->HudReplay->Close();
+        HudReplay->Close();
     }
     else
     {
-		shared->HudReplay->Activate();
+        HudReplay->Activate();
     }
 }
 

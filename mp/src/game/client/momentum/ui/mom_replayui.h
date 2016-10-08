@@ -30,8 +30,8 @@ class CHudReplay : public Frame
     PFrameButton *m_pFastBackward;
     Button *m_pGo;
 
-    TextEntry *m_pGotoTick2;
-    Button *m_pGo2;
+    TextEntry *m_pGoToTimeScale;
+    Button *m_pGoTimeScale;
 
     ProgressBar *m_pProgress;
     Label *m_pProgressLabelFrame;

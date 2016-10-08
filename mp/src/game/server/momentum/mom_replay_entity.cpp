@@ -24,7 +24,7 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 SendPropInt(SENDINFO(m_nReplayButtons)), SendPropInt(SENDINFO(m_iTotalStrafes)), SendPropInt(SENDINFO(m_iTotalJumps)),
     SendPropFloat(SENDINFO(m_flTickRate)), SendPropString(SENDINFO(m_pszPlayerName)),
     SendPropInt(SENDINFO(m_iTotalTimeTicks)), SendPropInt(SENDINFO(m_iCurrentTick)),
-	SendPropFloat(SENDINFO(m_flTimeScale)),
+    SendPropFloat(SENDINFO(m_flTimeScale)),
     SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
     SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
 
@@ -41,7 +41,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     // Set networked vars here
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
-	m_flTimeScale = 1.0f;
+    m_flTimeScale = 1.0f;
     m_RunStats.Init();
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -172,8 +172,8 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
         m_iCurrentTick = 0;
     }
 
-    //if (shared->m_iTotalTicks_Client_Timer < 0)
-      //  shared->m_iTotalTicks_Client_Timer = 0;
+    // if (shared->m_iTotalTicks_Client_Timer < 0)
+    //  shared->m_iTotalTicks_Client_Timer = 0;
 }
 
 void CMomentumReplayGhostEntity::Think(void)

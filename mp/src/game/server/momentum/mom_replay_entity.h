@@ -4,9 +4,9 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_player.h"
 #include "in_buttons.h"
 #include "mom_entity_run_data.h"
+#include "mom_player.h"
 #include "mom_replay_data.h"
 #include "mom_replay_system.h"
 #include <GameEventListener.h>
@@ -57,27 +57,24 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel); // for hud display..
 
-    const char* GetGhostModel() const { return m_pszModel; }
-    void SetRunStats(CMomRunStats* stats) { m_RunStats.CopyFrom(*stats); }
+    const char *GetGhostModel() const { return m_pszModel; }
+    void SetRunStats(CMomRunStats *stats) { m_RunStats.CopyFrom(*stats); }
 
-    void AddSpectator(CMomentumPlayer* player)
+    void AddSpectator(CMomentumPlayer *player)
     {
         if (m_rgSpectators.Find(player) == m_rgSpectators.InvalidIndex())
             m_rgSpectators.AddToTail(player);
     }
 
-    void RemoveSpectator(CMomentumPlayer* player)
-    {
-        m_rgSpectators.FindAndRemove(player);
-    }
+    void RemoveSpectator(CMomentumPlayer *player) { m_rgSpectators.FindAndRemove(player); }
 
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
     inline void SetRunFlags(uint32 flags) { m_RunData.m_iRunFlags = flags; }
 
-    void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
+    void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentTick); }
-    CReplayFrame* GetNextStep();
+    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentTick); }
+    CReplayFrame *GetNextStep();
 
     bool m_bIsActive;
     bool m_bReplayShouldLoop, m_bReplayFirstPerson;
@@ -90,7 +87,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     CNetworkVar(float, m_flTickRate);
     CNetworkVar(int, m_iTotalTimeTicks);
     CNetworkVar(int, m_iCurrentTick);
-	CNetworkVar(float, m_flTimeScale);
+    CNetworkVar(float, m_flTimeScale);
     CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
   protected:

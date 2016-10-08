@@ -59,7 +59,6 @@ class C_Timer : public CHudElement, public Panel
     bool m_bIsRunning;
     bool m_bTimerRan; // MOM_TODO: What is this used for?
     int m_iStartTick;
-    
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -84,10 +83,10 @@ class C_Timer : public CHudElement, public Panel
 
   private:
     int m_iZoneCurrent, m_iZoneCount;
-	int m_iTotalTicks,m_G_iStartTickD,m_G_iCurrentTick;
+    int m_iTotalTicks, m_G_iStartTickD, m_G_iCurrentTick;
     int initialTall;
     bool m_bIsReplay;
-    //float m_fCurrentTime;
+    // float m_fCurrentTime;
 
     wchar_t m_pwCurrentTime[BUFSIZETIME];
     char m_pszString[BUFSIZETIME];
@@ -137,9 +136,9 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
 void C_Timer::Init()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-	m_iTotalTicks = 0;
-	m_G_iCurrentTick = 0;
-	m_G_iStartTickD = 0;
+    m_iTotalTicks = 0;
+    m_G_iCurrentTick = 0;
+    m_G_iStartTickD = 0;
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
     initialTall = 48;
@@ -161,9 +160,9 @@ void C_Timer::Init()
 void C_Timer::Reset()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-	m_iTotalTicks = 0;
-	m_G_iCurrentTick = 0;
-	m_G_iStartTickD = 0;
+    m_iTotalTicks = 0;
+    m_G_iCurrentTick = 0;
+    m_G_iStartTickD = 0;
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iZoneCurrent = 1;
@@ -230,19 +229,20 @@ float C_Timer::GetCurrentTime()
     // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     // so we add an extra tick here to make them line up again
 
-    // Done, I've shouldn't have checked if tickcount wasn't the same for only one frame, but for all the frames that paint is getting called.
+    // Done, I've shouldn't have checked if tickcount wasn't the same for only one frame, but for all the frames that
+    // paint is getting called.
 
     static int OldTickCount = 0;
 
-	if (gpGlobals->tickcount != OldTickCount && !m_bIsReplay)
+    if (gpGlobals->tickcount != OldTickCount && !m_bIsReplay)
     {
-		m_iTotalTicks = m_bIsRunning ? m_iTotalTicks + 1 : 0;
+        m_iTotalTicks = m_bIsRunning ? m_iTotalTicks + 1 : 0;
     }
 
-	if (m_bIsReplay)
-	{
-		m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
-	}
+    if (m_bIsReplay)
+    {
+        m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
+    }
 
     OldTickCount = gpGlobals->tickcount;
 
@@ -264,8 +264,8 @@ void C_Timer::OnThink()
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
-			m_G_iCurrentTick = pGhost->m_iCurrentTick;
-			m_G_iStartTickD = pGhost->m_RunData.m_iStartTickD;
+            m_G_iCurrentTick = pGhost->m_iCurrentTick;
+            m_G_iStartTickD = pGhost->m_RunData.m_iStartTickD;
             runData = &pGhost->m_RunData;
         }
         else
@@ -331,8 +331,7 @@ void C_Timer::Paint(void)
     if (!m_bIsRunning)
     {
         Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus),
-                       m_bPlayerHasPracticeMode ? practiceModeLocalized
-                                                : noTimerLocalized); // ? practice mode : no timer
+                   m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized); // ? practice mode : no timer
         ANSI_TO_UNICODE(m_pszStringStatus, m_pwCurrentStatus);
     }
 
