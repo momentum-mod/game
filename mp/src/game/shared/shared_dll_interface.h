@@ -13,7 +13,6 @@ class CShared
 
 	//ReplayUI Stuffs
 	CHudReplay *HudReplay = nullptr;
-	float RGUI_TimeScale = 1.0f;
     bool RGUI_bIsPlaying = false;
     int RGUI_HasSelected = 0;
 };

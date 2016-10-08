@@ -34,14 +34,8 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 
     m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
     m_pGotoTick2 = FindControl<TextEntry>("ReplayGoToTick2");
-
-    if (shared)
-    {
-        shared->RGUI_TimeScale = 1.0f;
-        char buf[0xF]; // This is way too much
-		sprintf(buf, "%.1f", shared->RGUI_TimeScale);
-        m_pGotoTick2->SetText(buf);
-    }
+	m_pGotoTick2->SetText("1.0");
+    
 
     m_pGo2 = FindControl<Button>("ReplayGo2");
     m_pProgress = FindControl<ProgressBar>("ReplayProgress");
@@ -158,7 +152,7 @@ void CHudReplay::OnCommand(const char *command)
     {
         char tick[32];
         m_pGotoTick2->GetText(tick, sizeof(tick));
-        shared->RGUI_TimeScale = atof(tick);
+		engine->ServerCmd(VarArgs("mom_replay_timescale %f", atof(tick)));
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {

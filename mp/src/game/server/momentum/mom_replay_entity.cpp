@@ -24,6 +24,7 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 SendPropInt(SENDINFO(m_nReplayButtons)), SendPropInt(SENDINFO(m_iTotalStrafes)), SendPropInt(SENDINFO(m_iTotalJumps)),
     SendPropFloat(SENDINFO(m_flTickRate)), SendPropString(SENDINFO(m_pszPlayerName)),
     SendPropInt(SENDINFO(m_iTotalTimeTicks)), SendPropInt(SENDINFO(m_iCurrentTick)),
+	SendPropFloat(SENDINFO(m_flTimeScale)),
     SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
     SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
 
@@ -40,6 +41,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     // Set networked vars here
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
+	m_flTimeScale = 1.0f;
     m_RunStats.Init();
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -206,7 +208,7 @@ void CMomentumReplayGhostEntity::Think(void)
         SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
 
-    int NextStep = static_cast<int>(shared->RGUI_TimeScale) + 1;
+    int NextStep = static_cast<int>(m_flTimeScale) + 1;
 
     // move the ghost
     if (!m_bReplayShouldLoop && ((m_iCurrentTick < 0) || (m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
@@ -218,7 +220,7 @@ void CMomentumReplayGhostEntity::Think(void)
     else
     {
         // Otherwise proceed to the next step and perform the necessary updates.
-        if (shared->RGUI_TimeScale <= 1.0f)
+        if (m_flTimeScale <= 1.0f)
             UpdateStep(1);
         else
         {
@@ -227,7 +229,7 @@ void CMomentumReplayGhostEntity::Think(void)
 
             // How many ticks we should speed, if it's 0 then simply run the current one.
             int TicksToGoToNextStep =
-                static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep) - shared->RGUI_TimeScale)));
+                static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep) - m_flTimeScale)));
 
             if (TicksToGoToNextStep <= 0)
                 UpdateStep(NextStep - 1);
@@ -283,9 +285,9 @@ void CMomentumReplayGhostEntity::Think(void)
             HandleGhostFirstPerson(); // MOM_TODO: If some players aren't spectating this, they won't have it update...
     }
 
-    if (shared->RGUI_TimeScale <= 1.0f)
+    if (m_flTimeScale <= 1.0f)
     {
-        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * (1.0f / shared->RGUI_TimeScale));
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * (1.0f / m_flTimeScale));
     }
     else
     {
