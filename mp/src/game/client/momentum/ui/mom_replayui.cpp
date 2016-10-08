@@ -18,6 +18,9 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
     SetMoveable(true);
     SetSizeable(false);
     SetVisible(false);
+    SetMaximizeButtonVisible(false);
+    SetMinimizeButtonVisible(false);
+    SetMenuButtonResponsive(false);
     SetSize(310, 210);
 
     LoadControlSettings("resource/ui/ReplayUI.res");
@@ -33,10 +36,12 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
     m_pGo = FindControl<Button>("ReplayGo");
 
     m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
-    m_pGoToTimeScale = FindControl<TextEntry>("ReplayGoToTimeScale");
-    m_pGoToTimeScale->SetText("1.0");
 
-    m_pGoTimeScale = FindControl<Button>("ReplayGoTimeScale");
+    m_pTimescaleSlider = FindControl<CCvarSlider>("TimescaleSlider");
+    m_pTimescaleLabel = FindControl<Label>("TimescaleLabel");
+    m_pTimescaleEntry = FindControl<TextEntry>("TimescaleEntry");
+    m_pTimescaleEntry->SetText("1.0");
+
     m_pProgress = FindControl<ProgressBar>("ReplayProgress");
     m_pProgress->SetSegmentInfo(2, 2);
 
@@ -115,6 +120,35 @@ void CHudReplay::OnThink()
     }
 }
 
+void CHudReplay::OnControlModified(Panel *p)
+{
+    if (p == m_pTimescaleSlider && m_pTimescaleSlider->HasBeenModified())
+    {
+        char buf[64];
+        Q_snprintf(buf, sizeof(buf), " %.1f", m_pTimescaleSlider->GetSliderValue());
+        m_pTimescaleEntry->SetText(buf);
+
+        m_pTimescaleSlider->ApplyChanges();
+    }
+}
+
+void CHudReplay::OnTextChanged(Panel* p)
+{
+    if (p == m_pTimescaleEntry)
+    {
+        char buf[64];
+        m_pTimescaleEntry->GetText(buf, 64);
+
+        float fValue = float(atof(buf));
+        if (fValue >= 0.01 && fValue <= 10.0)
+        {
+            m_pTimescaleSlider->SetSliderValue(fValue);
+            m_pTimescaleSlider->ApplyChanges();
+        }
+    }
+}
+
+
 // Command issued
 void CHudReplay::OnCommand(const char *command)
 {
@@ -146,12 +180,6 @@ void CHudReplay::OnCommand(const char *command)
         {
             engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
         }
-    }
-    else if (!Q_strcasecmp(command, "gototimescale"))
-    {
-        char tick[32];
-        m_pGoToTimeScale->GetText(tick, sizeof(tick));
-        engine->ServerCmd(VarArgs("mom_replay_timescale %f", atof(tick)));
     }
     else if (!Q_strcasecmp(command, "gototick"))
     {

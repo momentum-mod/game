@@ -87,7 +87,6 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     CNetworkVar(float, m_flTickRate);
     CNetworkVar(int, m_iTotalTimeTicks);
     CNetworkVar(int, m_iCurrentTick);
-    CNetworkVar(float, m_flTimeScale);
     CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
   protected:

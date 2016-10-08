@@ -2,6 +2,7 @@
 
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
+#include "CVarSlider.h"
 
 enum Selections
 {
@@ -20,6 +21,12 @@ class CHudReplay : public Frame
     // Command issued
     virtual void OnCommand(const char *command) OVERRIDE;
 
+    // When the slider changes, we want to update the text panel
+    MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
+
+    // When the text entry updates, we want to update the slider
+    MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
+
     // player controls
     ToggleButton *m_pPlayPauseResume;
     Button *m_pGoStart;
@@ -30,8 +37,9 @@ class CHudReplay : public Frame
     PFrameButton *m_pFastBackward;
     Button *m_pGo;
 
-    TextEntry *m_pGoToTimeScale;
-    Button *m_pGoTimeScale;
+    CCvarSlider *m_pTimescaleSlider;
+    TextEntry *m_pTimescaleEntry;
+    Label *m_pTimescaleLabel;
 
     ProgressBar *m_pProgress;
     Label *m_pProgressLabelFrame;

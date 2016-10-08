@@ -24,7 +24,6 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 SendPropInt(SENDINFO(m_nReplayButtons)), SendPropInt(SENDINFO(m_iTotalStrafes)), SendPropInt(SENDINFO(m_iTotalJumps)),
     SendPropFloat(SENDINFO(m_flTickRate)), SendPropString(SENDINFO(m_pszPlayerName)),
     SendPropInt(SENDINFO(m_iTotalTimeTicks)), SendPropInt(SENDINFO(m_iCurrentTick)),
-    SendPropFloat(SENDINFO(m_flTimeScale)),
     SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
     SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
 
@@ -41,7 +40,6 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     // Set networked vars here
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
-    m_flTimeScale = 1.0f;
     m_RunStats.Init();
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -207,6 +205,8 @@ void CMomentumReplayGhostEntity::Think(void)
                               mom_replay_ghost_alpha.GetInt());
         SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
+
+    float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
     int NextStep = static_cast<int>(m_flTimeScale) + 1;
 
