@@ -84,6 +84,7 @@ class C_Timer : public CHudElement, public Panel
 
   private:
     int m_iZoneCurrent, m_iZoneCount;
+	int m_iTotalTicks,m_G_iStartTickD,m_G_iCurrentTick;
     int initialTall;
     bool m_bIsReplay;
     //float m_fCurrentTime;
@@ -136,9 +137,9 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
 void C_Timer::Init()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-    if (shared && m_bIsReplay)
-        shared->m_iTotalTicks_Client_Timer = 0;
-
+	m_iTotalTicks = 0;
+	m_G_iCurrentTick = 0;
+	m_G_iStartTickD = 0;
     HOOK_HUD_MESSAGE(C_Timer, Timer_State);
     HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
     initialTall = 48;
@@ -160,9 +161,9 @@ void C_Timer::Init()
 void C_Timer::Reset()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
-    if (shared && m_bIsReplay)
-        shared->m_iTotalTicks_Client_Timer = 0;
-
+	m_iTotalTicks = 0;
+	m_G_iCurrentTick = 0;
+	m_G_iStartTickD = 0;
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iZoneCurrent = 1;
@@ -235,12 +236,17 @@ float C_Timer::GetCurrentTime()
 
 	if (gpGlobals->tickcount != OldTickCount && !m_bIsReplay)
     {
-		shared->m_iTotalTicks_Client_Timer = m_bIsRunning ? shared->m_iTotalTicks_Client_Timer + 1 : 0;
+		m_iTotalTicks = m_bIsRunning ? m_iTotalTicks + 1 : 0;
     }
+
+	if (m_bIsReplay)
+	{
+		m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
+	}
 
     OldTickCount = gpGlobals->tickcount;
 
-    return static_cast<float>(shared->m_iTotalTicks_Client_Timer) * gpGlobals->interval_per_tick;
+    return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }
 
 void C_Timer::OnThink()
@@ -258,6 +264,8 @@ void C_Timer::OnThink()
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
+			m_G_iCurrentTick = pGhost->m_iCurrentTick;
+			m_G_iStartTickD = pGhost->m_RunData.m_iStartTickD;
             runData = &pGhost->m_RunData;
         }
         else

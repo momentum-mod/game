@@ -142,11 +142,9 @@ void CHudReplay::OnCommand(const char *command)
     }
     else if (!Q_strcasecmp(command, "prevframe") && pGhost)
     {
-        if (shared->m_iTotalTicks_Client_Timer > 0 && pGhost->m_iCurrentTick > 0)
+        if (pGhost->m_iCurrentTick > 0)
         {
             engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick - 1));
-            // shared->m_iTotalTicks_Client_Timer--;
-            // shared->m_iCurrentTick_Server--;
         }
     }
     else if (!Q_strcasecmp(command, "nextframe") && pGhost)
@@ -155,8 +153,6 @@ void CHudReplay::OnCommand(const char *command)
         {
             engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
         }
-        //shared->m_iTotalTicks_Client_Timer++;
-        //shared->m_iCurrentTick_Server++;
     }
     else if (!Q_strcasecmp(command, "gototick2"))
     {

@@ -11,8 +11,6 @@ class CShared
     bool LoadedClient = false;
     bool LoadedServer = false;
 
-	int m_iTotalTicks_Client_Timer = 0;
-
 	//ReplayUI Stuffs
 	CHudReplay *HudReplay = nullptr;
 	float RGUI_TimeScale = 1.0f;

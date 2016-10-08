@@ -115,7 +115,6 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
         }
 
         m_iCurrentTick = 0;
-        shared->m_iTotalTicks_Client_Timer = 0;
         SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
         m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
@@ -133,23 +132,6 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
     // Managed by replayui now
     if (!m_pPlaybackReplay)
         return;
-
-    if (shared->RGUI_bIsPlaying)
-        shared->m_iTotalTicks_Client_Timer =
-            m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
-    else
-    {
-        if (shared->RGUI_HasSelected == 1)
-        {
-            shared->m_iTotalTicks_Client_Timer =
-                m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer - Skip) : 0;
-        }
-        else if (shared->RGUI_HasSelected == 2)
-        {
-            shared->m_iTotalTicks_Client_Timer =
-                m_RunData.m_bTimerRunning ? (shared->m_iTotalTicks_Client_Timer + Skip) : 0;
-        }
-    }
 
     if (!shared->RGUI_bIsPlaying)
     {
@@ -188,8 +170,8 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
         m_iCurrentTick = 0;
     }
 
-    if (shared->m_iTotalTicks_Client_Timer < 0)
-        shared->m_iTotalTicks_Client_Timer = 0;
+    //if (shared->m_iTotalTicks_Client_Timer < 0)
+      //  shared->m_iTotalTicks_Client_Timer = 0;
 }
 
 void CMomentumReplayGhostEntity::Think(void)
