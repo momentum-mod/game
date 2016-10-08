@@ -1,4 +1,5 @@
 #include "cbase.h"
+
 #include "mom_replay_entity.h"
 #include "Timer.h"
 #include "mom_replay_system.h"
@@ -7,7 +8,6 @@
 
 #include "tier0/memdbgon.h"
 
-// MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
                                          FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                          "Replay ghost's body group (model)", true, 0, true, 14);
@@ -33,7 +33,7 @@ END_DATADESC()
 Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
-    : m_bIsActive(false), m_bReplayShouldLoop(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr),
+    : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr),
       m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
       m_nOldReplayButtons(0)
 {
@@ -91,10 +91,9 @@ void CMomentumReplayGhostEntity::Spawn(void)
     }
 }
 
-void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */)
+void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 {
     m_bReplayFirstPerson = firstPerson;
-    m_bReplayShouldLoop = shouldLoop;
 
     Spawn();
     m_iTotalStrafes = 0;
@@ -138,40 +137,21 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
         if (shared->RGUI_HasSelected == 1)
         {
             m_iCurrentTick -= Skip;
-
-            if (m_bReplayShouldLoop && m_iCurrentTick < 0)
-            {
-                m_iCurrentTick = m_pPlaybackReplay->GetFrameCount() - 1;
-            }
         }
         else if (shared->RGUI_HasSelected == 2)
         {
             m_iCurrentTick += Skip;
-
-            if (m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-                m_iCurrentTick = 0;
         }
     }
     else
     {
         m_iCurrentTick += Skip;
-
-        if (m_iCurrentTick >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-            m_iCurrentTick = 0;
     }
 
-    if (m_iCurrentTick < 0)
+    if (m_iCurrentTick < 0 || m_iCurrentTick > m_iTotalTimeTicks)
     {
         m_iCurrentTick = 0;
     }
-
-    if (m_iCurrentTick > m_iTotalTimeTicks)
-    {
-        m_iCurrentTick = 0;
-    }
-
-    // if (shared->m_iTotalTicks_Client_Timer < 0)
-    //  shared->m_iTotalTicks_Client_Timer = 0;
 }
 
 void CMomentumReplayGhostEntity::Think(void)
@@ -211,7 +191,7 @@ void CMomentumReplayGhostEntity::Think(void)
     int NextStep = static_cast<int>(m_flTimeScale) + 1;
 
     // move the ghost
-    if (!m_bReplayShouldLoop && ((m_iCurrentTick < 0) || (m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())))
+    if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.

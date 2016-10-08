@@ -50,7 +50,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void UpdateStep(int Skip);
 
     void EndRun();
-    void StartRun(bool firstPerson = false, bool shouldLoop = false);
+    void StartRun(bool firstPerson = false);
     void StartTimer(int m_iStartTick);
     void StopTimer();
     void HandleGhost();
@@ -77,7 +77,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     CReplayFrame *GetNextStep();
 
     bool m_bIsActive;
-    bool m_bReplayShouldLoop, m_bReplayFirstPerson;
+    bool m_bReplayFirstPerson;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
