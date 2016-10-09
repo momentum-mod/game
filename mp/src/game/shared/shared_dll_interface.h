@@ -2,8 +2,6 @@
 
 #include "interface.h"
 
-class C_ReplayUI;
-
 class CShared
 {
   public:

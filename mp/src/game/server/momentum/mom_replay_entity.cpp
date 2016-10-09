@@ -85,10 +85,7 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetViewOffset(VEC_VIEW_SCALED(this));
 
     if (m_pPlaybackReplay)
-    {
-        engine->ClientCommand(UTIL_GetLocalPlayer()->edict(), "replayui");
         Q_strcpy(m_pszPlayerName.GetForModify(), m_pPlaybackReplay->GetPlayerName());
-    }
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
@@ -148,10 +145,7 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
         m_iCurrentTick += Skip;
     }
 
-    if (m_iCurrentTick < 0 || m_iCurrentTick > m_iTotalTimeTicks)
-    {
-        m_iCurrentTick = 0;
-    }
+    m_iCurrentTick = clamp<int>(m_iCurrentTick, 0, m_iTotalTimeTicks);
 }
 
 void CMomentumReplayGhostEntity::Think(void)

@@ -14,19 +14,11 @@
 #include <vgui_controls/ComboBox.h>
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/Frame.h>
+#include "mom_replayui.h"
 
 #include <game/client/iviewport.h>
 
 class KeyValues;
-
-namespace vgui
-{
-class TextEntry;
-class Button;
-class Panel;
-class ImagePanel;
-class ComboBox;
-}
 
 #define BLACK_BAR_COLOR Color(0, 0, 0, 196)
 
@@ -63,6 +55,9 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
         if (m_pGainControlLabel)
             m_pGainControlLabel->SetVisible(!bState);
+
+        if (m_pReplayControls && m_pReplayControls->IsVisible())
+            m_pReplayControls->SetMouseInputEnabled(bState);
     }
 
     int GetTopBarHeight() { return m_pTopBar->GetTall(); }
@@ -84,11 +79,6 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     }
 
 protected:
-    enum
-    {
-        INSET_OFFSET = 2
-    };
-
     // vgui overrides
     void PerformLayout() override;
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
@@ -103,12 +93,11 @@ private:
     vgui::Label *m_pMapLabel;
     vgui::Label *m_pTimeLabel;
 
-    vgui::ImagePanel *m_pCloseButton;
+    vgui::ImagePanel *m_pCloseButton, *m_pShowControls;
+
+    C_MOMReplayUI *m_pReplayControls;
 
     IViewPort *m_pViewPort;
-
-    // bool m_bHelpShown;
-    // bool m_bInsetVisible;
     bool m_bSpecScoreboard;
 
     float m_flNextUpdateTime;

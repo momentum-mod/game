@@ -1,9 +1,18 @@
 #pragma once
 
-#include <vgui_controls/Frame.h>
+#include "cbase.h"
+
 #include <vgui_controls/Panel.h>
+#include <vgui_controls/Frame.h>
+#include <vgui_controls/Label.h>
+#include <vgui_controls/Button.h>
+#include <vgui_controls/ToggleButton.h>
+#include <vgui_controls/TextEntry.h>
 #include "CVarSlider.h"
 #include "ScrubbableProgressBar.h"
+#include "PFrameButton.h"
+#include "momentum/mom_shareddefs.h"
+#include "game/client/iviewport.h"
 
 enum Selections
 {
@@ -12,16 +21,33 @@ enum Selections
     RUI_MOVEFW,
 };
 
-class C_ReplayUI : public Frame
+class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel
 {
-    DECLARE_CLASS_SIMPLE(C_ReplayUI, vgui::Frame);
-    C_ReplayUI(const char *pElementName);
+    DECLARE_CLASS_SIMPLE(C_MOMReplayUI, vgui::Frame);
+    C_MOMReplayUI(IViewPort *pViewport);
 
     virtual void OnThink() OVERRIDE;
 
     // Command issued
     virtual void OnCommand(const char *command) OVERRIDE;
 
+    void SetLabelText() const;
+
+    virtual const char *GetName(void) OVERRIDE { return PANEL_REPLAY; }
+    virtual void SetData(KeyValues *data) OVERRIDE {}
+    virtual void Reset(void) OVERRIDE {};		// clears internal state, deactivates it
+    virtual void Update(void) OVERRIDE {};
+    virtual bool NeedsUpdate(void) OVERRIDE { return false; }
+    virtual bool HasInputElements(void) OVERRIDE { return true; }
+
+    virtual void ShowPanel(bool state) OVERRIDE; // activate VGUI Frame
+
+    // VGUI functions:
+    virtual vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
+    virtual bool IsVisible() OVERRIDE{ return BaseClass::IsVisible(); };  // true if panel is visible
+    virtual void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); };
+
+protected:
     // When the slider changes, we want to update the text panel
     MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
 
@@ -33,30 +59,29 @@ class C_ReplayUI : public Frame
 
     // When the user scrolls on the Progress Bar
     MESSAGE_FUNC_PARAMS(OnMouseWheeled, "MouseWheeled", pKv);
-
-
-    void SetLabelText() const;
-
-    // player controls
+    
 private:
-    ToggleButton *m_pPlayPauseResume;
-    Button *m_pGoStart;
-    Button *m_pGoEnd;
-    Button *m_pPrevFrame;
-    Button *m_pNextFrame;
-    PFrameButton *m_pFastForward;
-    PFrameButton *m_pFastBackward;
-    Button *m_pGo;
+    // player controls
+    vgui::ToggleButton *m_pPlayPauseResume;
+    vgui::Button *m_pGoStart;
+    vgui::Button *m_pGoEnd;
+    vgui::Button *m_pPrevFrame;
+    vgui::Button *m_pNextFrame;
+    vgui::PFrameButton *m_pFastForward;
+    vgui::PFrameButton *m_pFastBackward;
+    vgui::Button *m_pGo;
 
     CCvarSlider *m_pTimescaleSlider;
-    TextEntry *m_pTimescaleEntry;
-    Label *m_pTimescaleLabel;
+    vgui::TextEntry *m_pTimescaleEntry;
+    vgui::Label *m_pTimescaleLabel;
 
-    ScrubbableProgressBar *m_pProgress;
-    Label *m_pProgressLabelFrame;
-    Label *m_pProgressLabelTime;
+    vgui::ScrubbableProgressBar *m_pProgress;
+    vgui::Label *m_pProgressLabelFrame;
+    vgui::Label *m_pProgressLabelTime;
 
-    TextEntry *m_pGotoTick;
+    vgui::TextEntry *m_pGotoTick;
+
+    IViewPort *m_pViewport;
 
     int m_iTotalDuration;
 

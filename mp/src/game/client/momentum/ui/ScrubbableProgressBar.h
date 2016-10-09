@@ -2,7 +2,6 @@
 
 #include "cbase.h"
 
-#include "vgui/IInput.h"
 #include "vgui_controls/ProgressBar.h"
 #include <vgui_controls/Panel.h>
 
@@ -10,57 +9,26 @@
  * This is a scroll bar that the user can click (and drag) on the progress to fire
  * events related to potentially changing the playback to that position.
  */
-class ScrubbableProgressBar : public vgui::ContinuousProgressBar
+namespace vgui
 {
-    DECLARE_CLASS_SIMPLE(ScrubbableProgressBar, ContinuousProgressBar);
-
-    ScrubbableProgressBar(Panel *pParent, const char *pName) : ContinuousProgressBar(pParent, pName)
+    class ScrubbableProgressBar : public ContinuousProgressBar
     {
-        SetMouseInputEnabled(true); // Needed for this panel
-        m_bIsHeld = false;
-    }
+        DECLARE_CLASS_SIMPLE(ScrubbableProgressBar, ContinuousProgressBar);
 
-    void DoScrubbing()
-    {
-        int x, dummy;
-        input()->GetCursorPosition(x, dummy);
-        ScreenToLocal(x, dummy);
-        float scale = static_cast<float>(x) / static_cast<float>(GetWide());
-        KeyValues *pKv = new KeyValues("ScrubbedProgress");
-        pKv->SetFloat("scale", scale);
-        PostActionSignal(pKv);
-    }
+        ScrubbableProgressBar(Panel *pParent, const char *pName);
 
-  protected:
-    void OnMousePressed(MouseCode e) OVERRIDE
-    {
-        if (e == MOUSE_LEFT)
-        {
-            m_bIsHeld = true;
-            DoScrubbing();
-        }
-    }
+        void DoScrubbing();
 
-    void OnCursorExited() OVERRIDE
-    {
-        BaseClass::OnCursorExited();
-        m_bIsHeld = false;
-    }
+    protected:
+        void OnMousePressed(MouseCode e) OVERRIDE;
 
-    void OnCursorMoved(int x, int y) OVERRIDE
-    {
-        if (m_bIsHeld)
-            DoScrubbing();
-    }
+        void OnCursorExited() OVERRIDE;
 
-    void OnMouseReleased(MouseCode e) OVERRIDE
-    {
-        if (e == MOUSE_LEFT)
-            m_bIsHeld = false;
-    }
+        void OnCursorMoved(int x, int y) OVERRIDE;
 
-  private:
-    bool m_bIsHeld;
-};
+        void OnMouseReleased(MouseCode e) OVERRIDE;
 
-DECLARE_BUILD_FACTORY(ScrubbableProgressBar);
+    private:
+        bool m_bIsHeld;
+    };
+}

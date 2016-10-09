@@ -28,6 +28,7 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/TextEntry.h>
+#include "mom_replayui.h"
 
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
@@ -50,9 +51,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     //	m_iDuckKey = KEY_NONE;
     SetSize(10, 10); // Quiet "parent not sized yet" spew
     m_bSpecScoreboard = false;
-
     m_pViewPort = pViewPort;
-
     ListenForGameEvent("spec_target_updated");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
@@ -62,6 +61,9 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     // initialize dialog
     SetVisible(false);
     SetProportional(true);
+    SetPaintBorderEnabled(false);
+    SetPaintBackgroundEnabled(false);
+    SetKeyBoardInputEnabled(false);
 
     // load the new scheme early!!
     SetScheme("ClientScheme");
@@ -76,6 +78,11 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     m_pCloseButton = FindControl<ImagePanel>("ClosePanel");
     m_pCloseButton->InstallMouseHandler(this);
 
+    m_pShowControls = FindControl<ImagePanel>("ShowControls");
+    m_pShowControls->InstallMouseHandler(this);
+
+    m_pReplayControls = dynamic_cast<C_MOMReplayUI*>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
+
     TextImage *image = m_pPlayerLabel->GetTextImage();
     if (image)
     {
@@ -86,11 +93,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
         }
     }
 
-    SetPaintBorderEnabled(false);
-    SetPaintBackgroundEnabled(false);
     SetMouseInputEnabled(false);
-    SetKeyBoardInputEnabled(false);
-
     InvalidateLayout();
 }
 
@@ -125,6 +128,10 @@ void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
                 gameeventmanager->FireEvent(pClosePanel);
             }
         }
+        else if (over == m_pShowControls->GetVPanel() && m_pReplayControls)
+        {
+            m_pReplayControls->ShowPanel(!m_pReplayControls->IsVisible());
+        }
     }
 }
 
@@ -133,11 +140,11 @@ void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::PerformLayout()
 {
-    int w, h;
-    GetHudSize(w, h);
+    int w, dummy;
+    GetHudSize(w, dummy);
 
     // fill the screen
-    SetBounds(0, 0, w, h);
+    SetBounds(0, 0, w, m_pTopBar->GetTall());
 }
 
 //-----------------------------------------------------------------------------
@@ -163,10 +170,19 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
     {
         m_bSpecScoreboard = false;
     }
+
     SetVisible(bShow);
-    if (!bShow && m_bSpecScoreboard)
+    
+    if (!bShow)
     {
-        gViewPortInterface->ShowPanel(PANEL_TIMES, false);
+
+        if (m_pReplayControls && m_pReplayControls->IsVisible())
+            m_pReplayControls->ShowPanel(false);
+
+        if (m_bSpecScoreboard)
+        {
+            m_pViewPort->ShowPanel(PANEL_TIMES, false);
+        }
     }
 }
 
@@ -182,7 +198,7 @@ void CMOMSpectatorGUI::Update()
     GetHudSize(wide, tall);
     m_pTopBar->GetBounds(bx, by, bwide, btall);
 
-    IViewPortPanel *overview = gViewPortInterface->FindPanelByName(PANEL_OVERVIEW);
+    IViewPortPanel *overview = m_pViewPort->FindPanelByName(PANEL_OVERVIEW);
 
     if (overview && overview->IsVisible())
     {

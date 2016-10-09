@@ -59,12 +59,17 @@ class CHudViewport : public CBaseViewport
         {
             return new CMOMSpectatorGUI(this);
         }
+        if (!Q_strcmp(PANEL_REPLAY, pzName))
+        {
+            return new C_MOMReplayUI(this);
+        }
 
         return BaseClass::CreatePanelByName(pzName);
     }
 
     void CreateDefaultPanels(void) override
     {
+        AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
         //BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?

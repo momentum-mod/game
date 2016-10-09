@@ -1,13 +1,13 @@
 "resource\ui\ReplayUI.res"
 {
-	"HudReplay"
+	"ReplayControls"
 	{
-		"ControlName"		"CHudReplay"
-		"fieldName"		"HudReplay"
-		"xpos"		"197"
-		"ypos"		"379"
-		"wide"		"302"
-		"tall"		"224"
+		"ControlName"		"C_MOMReplayUI"
+		"fieldName"		"ReplayControls"
+		"xpos"		"310"
+		"ypos"		"210"
+		"wide"		"310"
+		"tall"		"210"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"visible"		"1"
@@ -36,6 +36,7 @@
 		"wrap"		"0"
 		"Command"		"play"
 		"Default"		"1"
+        "mouseinputenabled" "1"
 	}
 	"ReplayGoStart"
 	{
@@ -57,6 +58,7 @@
 		"wrap"		"0"
 		"Command"		"reload"
 		"Default"		"0"
+        "mouseinputenabled" "1"
 	}
 	"ReplayGoEnd"
 	{
@@ -78,6 +80,7 @@
 		"wrap"		"0"
 		"Command"		"gotoend"
 		"Default"		"0"
+        "mouseinputenabled" "1"
 	}
 	"ReplayPrevFrame"
 	{
@@ -99,6 +102,7 @@
 		"wrap"			"0"
 		"Command"		"prevframe"
 		"Default"		"0"
+        "mouseinputenabled" "1"
 	}
 	"ReplayNextFrame"
 	{
@@ -120,6 +124,7 @@
 		"wrap"		"0"
 		"Command"		"nextframe"
 		"Default"		"0"
+        "mouseinputenabled" "1"
 	}
 	"ReplayProgress"
 	{
@@ -138,6 +143,7 @@
         "actionsignallevel" "1"
         "segment_gap" "4"
         "segment_width" "4"
+        "mouseinputenabled" "1"
 	}
 	"ReplayProgressLabelFrame"
 	{
@@ -218,6 +224,7 @@
         "cvar_name" "mom_replay_timescale"
         "allowoutofrange" "0"
         "actionsignallevel" "1"
+        "mouseinputenabled" "1"
     }
     
 	"TimescaleEntry"
@@ -238,6 +245,8 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+        "mouseinputenabled" "1"
+        "keyboardinputenabled" "1"
 	}
 	"ReplayGo"
 	{
@@ -259,6 +268,7 @@
 		"wrap"		"0"
 		"Command"		"gototick"
 		"Default"		"0"
+        "mouseinputenabled" "1"
 	}
 	"ReplayGoToTick"
 	{
@@ -276,8 +286,10 @@
 		"textHidden"		"0"
 		"editable"		"1"
 		"maxchars"		"-1"
-		"NumericInputOnly"		"0"
+		"NumericInputOnly"		"1"
 		"unicode"		"0"
+        "mouseinputenabled" "1"
+        "keyboardinputenabled" "1"
 	}
 
 	"ReplayFastForward"
@@ -299,6 +311,7 @@
 		"brighttext"		"0"
 		"wrap"		"0"
 		"Default"		"0"
+        "mouseinputenabled" "1"
 	}
 	"ReplayFastBackward"
 	{
@@ -319,5 +332,6 @@
 		"brighttext"		"0"
 		"wrap"		"0"
 		"Default"		"0"
+        "mouseinputenabled" "1"
 	}
 }

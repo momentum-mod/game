@@ -6,24 +6,29 @@
 
 #include <vgui_controls/TextEntry.h>
 
-#include "PFrameButton.h"
 #include "hud_mapfinished.h"
 #include "mom_player_shared.h"
 #include "mom_replayui.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
+#include "momspectatorgui.h"
 
-C_ReplayUI::C_ReplayUI(const char *pElementName) : Frame(nullptr, pElementName)
+C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY, false, false)
 {
+    m_pViewport = pViewport;
+
+    SetProportional(false);
     SetMoveable(true);
     SetSizeable(false);
     SetVisible(false);
     SetMaximizeButtonVisible(false);
     SetMinimizeButtonVisible(false);
     SetMenuButtonResponsive(false);
-    SetSize(310, 210);
+    SetClipToParent(true); // Needed so we won't go out of bounds
 
     m_iTotalDuration = 0;
+
+    surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
     SetScheme("ClientScheme");
     LoadControlSettings("resource/ui/ReplayUI.res");
@@ -49,12 +54,16 @@ C_ReplayUI::C_ReplayUI(const char *pElementName) : Frame(nullptr, pElementName)
 
     m_pProgressLabelFrame = FindControl<Label>("ReplayProgressLabelFrame");
     m_pProgressLabelTime = FindControl<Label>("ReplayProgressLabelTime");
-
 }
 
-void C_ReplayUI::OnThink()
+void C_MOMReplayUI::OnThink()
 {
     BaseClass::OnThink();
+
+    // HACKHACK for focus, Blame Valve
+    int x, y;
+    input()->GetCursorPosition(x, y);
+    SetKeyBoardInputEnabled(IsWithin(x, y));
 
     if (m_pFastBackward->IsSelected())
     {
@@ -111,21 +120,20 @@ void C_ReplayUI::OnThink()
             // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly),
             // then we will disable the replayui
 
-            if (pGhost)
+            if (pGhost->m_RunData.m_bMapFinished)
             {
-                // always disable if map is finished
-                if (pGhost->m_RunData.m_bMapFinished)
-                {
-                    SetVisible(false);
-                }
+                ShowPanel(false);
+
+                // Hide spec input as well
+                CMOMSpectatorGUI *pSpec = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+                if (pSpec)
+                    pSpec->SetMouseInputEnabled(false);
             }
         }
     }
 }
 
-
-
-void C_ReplayUI::OnControlModified(Panel *p)
+void C_MOMReplayUI::OnControlModified(Panel *p)
 {
     if (p == m_pTimescaleSlider && m_pTimescaleSlider->HasBeenModified())
     {
@@ -133,7 +141,7 @@ void C_ReplayUI::OnControlModified(Panel *p)
     }
 }
 
-void C_ReplayUI::OnTextChanged(Panel* p)
+void C_MOMReplayUI::OnTextChanged(Panel *p)
 {
     if (p == m_pTimescaleEntry)
     {
@@ -149,7 +157,7 @@ void C_ReplayUI::OnTextChanged(Panel* p)
     }
 }
 
-void C_ReplayUI::OnNewProgress(float scale)
+void C_MOMReplayUI::OnNewProgress(float scale)
 {
     int tickToGo = static_cast<int>(scale * m_iTotalDuration);
     if (tickToGo > -1 && tickToGo <= m_iTotalDuration)
@@ -158,13 +166,13 @@ void C_ReplayUI::OnNewProgress(float scale)
     }
 }
 
-void C_ReplayUI::OnMouseWheeled(KeyValues *pKv)
+void C_MOMReplayUI::OnMouseWheeled(KeyValues *pKv)
 {
     if (pKv->GetPtr("panel") == m_pProgress)
         OnCommand(pKv->GetInt("delta") > 0 ? "nextframe" : "prevframe");
 }
 
-void C_ReplayUI::SetLabelText() const
+void C_MOMReplayUI::SetLabelText() const
 {
     if (m_pTimescaleSlider && m_pTimescaleEntry)
     {
@@ -173,11 +181,17 @@ void C_ReplayUI::SetLabelText() const
         m_pTimescaleEntry->SetText(buf);
 
         m_pTimescaleSlider->ApplyChanges();
-    }   
+    }
+}
+
+void C_MOMReplayUI::ShowPanel(bool state)
+{
+    SetVisible(state);
+    SetMouseInputEnabled(state);
 }
 
 // Command issued
-void C_ReplayUI::OnCommand(const char *command)
+void C_MOMReplayUI::OnCommand(const char *command)
 {
     if (!shared)
         return BaseClass::OnCommand(command);
@@ -208,36 +222,16 @@ void C_ReplayUI::OnCommand(const char *command)
             engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
         }
     }
-    else if (!Q_strcasecmp(command, "gototick"))
+    else if (!Q_strcasecmp(command, "gototick") && pGhost)
     {
         // Teleport at the position we want with timer included
         char tick[32];
         m_pGotoTick->GetText(tick, sizeof(tick));
         engine->ServerCmd(VarArgs("mom_replay_goto %s", tick));
+        m_pGotoTick->SetText("");
     }
     else
     {
         BaseClass::OnCommand(command);
     }
 }
-
-void replayui_f()
-{
-    C_ReplayUI *HudReplay = nullptr;
-    if (HudReplay == nullptr)
-        HudReplay = new C_ReplayUI("HudReplay");
-
-    if (!HudReplay || !shared)
-        return;
-
-    if (HudReplay->IsVisible())
-    {
-        HudReplay->Close();
-    }
-    else
-    {
-        HudReplay->Activate();
-    }
-}
-
-static ConCommand replayui("replayui", replayui_f, "Replay Ghost GUI.");

@@ -111,6 +111,23 @@
         "mouseinputenabled" "1"
     }
     
+    "ShowControls"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "ShowControls"
+        "xpos"          "r72"
+        "ypos"          "4"
+        "wide"          "32"
+        "tall"          "32"
+        "autoResize"    "0"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "scaleImage"    "1"
+        "image"         "close_button" // MOM_TODO: Update this logo to the controls one
+        "mouseinputenabled" "1"
+    }
+    
     "DetachInfo"
     {
         "ControlName" "Label"
