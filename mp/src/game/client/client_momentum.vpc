@@ -126,6 +126,8 @@ $Project "Client (Momentum)"
                 $File "momentum\ui\IMessageboxPanel.h"
                 $File "momentum\ui\MessageboxPanel.cpp"
                 $File "momentum\ui\MessageboxPanel.h"
+
+                $File "momentum\ui\MeasureTool.cpp"
             }
 
             $File   "momentum\client_events.h"

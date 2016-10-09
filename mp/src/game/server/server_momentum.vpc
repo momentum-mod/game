@@ -153,6 +153,8 @@ $Project "Server (Momentum)"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
             $File "momentum\mom_system_checkpoint.cpp"
             $File "momentum\mom_system_checkpoint.h"
+            $File "momentum\mom_ruler.h"
+            $File "momentum\mom_ruler.cpp"
         }
         
         $File "hl2\Func_Monitor.cpp"
