@@ -65,39 +65,32 @@ void C_MOMReplayUI::OnThink()
     input()->GetCursorPosition(x, y);
     SetKeyBoardInputEnabled(IsWithin(x, y));
 
-    if (m_pFastBackward->IsSelected())
-    {
-        shared->RGUI_HasSelected = RUI_MOVEBW;
-        shared->RGUI_bIsPlaying = false;
-        m_pPlayPauseResume->ForceDepressed(false);
-    }
-    else if (m_pFastForward->IsSelected())
-    {
-        shared->RGUI_HasSelected = RUI_MOVEFW;
-        shared->RGUI_bIsPlaying = false;
-        m_pPlayPauseResume->ForceDepressed(false);
-    }
-    else
-    {
-        if (shared->RGUI_bIsPlaying)
-        {
-            m_pPlayPauseResume->SetText("Playing");
-            m_pPlayPauseResume->SetSelected(true);
-        }
-        else
-        {
-            shared->RGUI_HasSelected = RUI_NOTHING;
-            m_pPlayPauseResume->SetText("Paused");
-            m_pPlayPauseResume->SetSelected(false);
-        }
-    }
-
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
+            if (m_pFastBackward->IsSelected() || m_pFastForward->IsSelected())
+            {
+                shared->RGUI_HasSelected = m_pFastBackward->IsSelected() ? RUI_MOVEBW : RUI_MOVEFW;
+                
+                if (!pGhost->m_bIsPaused)
+                    engine->ClientCmd("mom_replay_pause");
+
+                m_pPlayPauseResume->ForceDepressed(false);
+            }
+            else
+            {
+                shared->RGUI_HasSelected = RUI_NOTHING;
+            }
+
+            if (!pGhost->m_bIsPaused && !m_pPlayPauseResume->IsArmed())
+                m_pPlayPauseResume->SetArmed(true);
+
+            m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
+            m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "Paused" : "Playing"); // MOM_TODO: Localize
+
             m_iTotalDuration = pGhost->m_iTotalTimeTicks;
 
             float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
@@ -166,10 +159,9 @@ void C_MOMReplayUI::OnNewProgress(float scale)
     }
 }
 
-void C_MOMReplayUI::OnMouseWheeled(KeyValues *pKv)
+void C_MOMReplayUI::OnPBMouseWheeled(int delta)
 {
-    if (pKv->GetPtr("panel") == m_pProgress)
-        OnCommand(pKv->GetInt("delta") > 0 ? "nextframe" : "prevframe");
+    OnCommand(delta > 0 ? "nextframe" : "prevframe");
 }
 
 void C_MOMReplayUI::SetLabelText() const
@@ -198,7 +190,7 @@ void C_MOMReplayUI::OnCommand(const char *command)
     C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
     if (!Q_strcasecmp(command, "play"))
     {
-        shared->RGUI_bIsPlaying = !shared->RGUI_bIsPlaying;
+        engine->ClientCmd("mom_replay_pause"); // Handles the toggle state
     }
     else if (!Q_strcasecmp(command, "reload"))
     {

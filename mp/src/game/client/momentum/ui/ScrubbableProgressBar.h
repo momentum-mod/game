@@ -25,7 +25,7 @@ namespace vgui
         void OnCursorExited() OVERRIDE;
 
         void OnCursorMoved(int x, int y) OVERRIDE;
-
+        void OnMouseWheeled(int delta) OVERRIDE;
         void OnMouseReleased(MouseCode e) OVERRIDE;
 
     private:

@@ -9,6 +9,8 @@
 
 #include "tier0/memdbgon.h"
 
+static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
+
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     m_player = ToCMOMPlayer(pPlayer);
@@ -173,6 +175,7 @@ class CMOMReplayCommands
                 if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
                 {
                     pLoaded->Start(firstperson);
+                    mom_replay_timescale.SetValue(1.0f);
                 }
                 else
                 {
@@ -196,6 +199,7 @@ CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in fir
     if (pPlaybackReplay && !g_ReplaySystem->GetReplayManager()->PlayingBack())
     {
         pPlaybackReplay->Start(true);
+        mom_replay_timescale.SetValue(1.0f);
     }
 }
 
@@ -216,6 +220,18 @@ CON_COMMAND(mom_replay_stop, "Stops playing the current replay.")
     if (g_ReplaySystem->GetReplayManager()->PlayingBack())
     {
         g_ReplaySystem->GetReplayManager()->StopPlayback();
+    }
+}
+
+CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
+{
+    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    {
+        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        if (pGhost)
+        {
+            pGhost->m_bIsPaused = !pGhost->m_bIsPaused;
+        }
     }
 }
 
@@ -246,8 +262,6 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         }
     }
 }
-
-static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
 
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {

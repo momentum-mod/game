@@ -46,6 +46,12 @@ void ScrubbableProgressBar::OnCursorMoved(int x, int y)
         DoScrubbing();
 }
 
+void ScrubbableProgressBar::OnMouseWheeled(int delta)
+{
+    BaseClass::OnMouseWheeled(delta);
+    PostActionSignal(new KeyValues("PBMouseWheeled", "delta", delta));
+}
+
 void ScrubbableProgressBar::OnMouseReleased(MouseCode e)
 {
     if (e == MOUSE_LEFT)

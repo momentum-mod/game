@@ -9,7 +9,6 @@ class CShared
     bool LoadedServer = false;
 
     // ReplayUI Stuffs
-    bool RGUI_bIsPlaying = false;
     int RGUI_HasSelected = 0;
 };
 

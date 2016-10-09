@@ -35,7 +35,7 @@
 		"brighttext"		"0"
 		"wrap"		"0"
 		"Command"		"play"
-		"Default"		"1"
+		"Default"		"0"
         "mouseinputenabled" "1"
 	}
 	"ReplayGoStart"

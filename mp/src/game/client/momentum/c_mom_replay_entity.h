@@ -23,6 +23,7 @@ class C_MomentumReplayGhostEntity : public C_BaseAnimating
     // These are stored here because run stats already has the ones obtained from the run
     int m_iTotalStrafes;
     int m_iTotalJumps;
+    bool m_bIsPaused;
 
     int m_iTotalTimeTicks; // The total tick count of the playback
     int m_iCurrentTick;    // The current tick of playback

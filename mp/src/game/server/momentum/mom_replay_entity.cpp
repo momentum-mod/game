@@ -21,11 +21,17 @@ LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 // MOM_TODO: Network other variables that the UI will need to reference
-SendPropInt(SENDINFO(m_nReplayButtons)), SendPropInt(SENDINFO(m_iTotalStrafes)), SendPropInt(SENDINFO(m_iTotalJumps)),
-    SendPropFloat(SENDINFO(m_flTickRate)), SendPropString(SENDINFO(m_pszPlayerName)),
-    SendPropInt(SENDINFO(m_iTotalTimeTicks)), SendPropInt(SENDINFO(m_iCurrentTick)),
-    SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
+SendPropInt(SENDINFO(m_nReplayButtons)), 
+SendPropInt(SENDINFO(m_iTotalStrafes)), 
+SendPropInt(SENDINFO(m_iTotalJumps)),
+SendPropFloat(SENDINFO(m_flTickRate)),
+SendPropString(SENDINFO(m_pszPlayerName)),
+SendPropInt(SENDINFO(m_iTotalTimeTicks)), 
+SendPropInt(SENDINFO(m_iCurrentTick)),
+SendPropBool(SENDINFO(m_bIsPaused)),
+SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), 
+END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
 END_DATADESC()
@@ -97,6 +103,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
     m_RunData.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
+    m_bIsPaused = false;
 
     if (m_pPlaybackReplay)
     {
@@ -129,16 +136,12 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
     if (!m_pPlaybackReplay)
         return;
 
-    if (!shared->RGUI_bIsPlaying)
+    if (m_bIsPaused)
     {
         if (shared->RGUI_HasSelected == 1)
-        {
             m_iCurrentTick -= Skip;
-        }
         else if (shared->RGUI_HasSelected == 2)
-        {
             m_iCurrentTick += Skip;
-        }
     }
     else
     {
@@ -541,7 +544,7 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
     int nextStep = m_iCurrentTick;
 
-    if ((shared->RGUI_HasSelected == 1) && !shared->RGUI_bIsPlaying)
+    if ((shared->RGUI_HasSelected == 1) && m_bIsPaused)
     {
         --nextStep;
 

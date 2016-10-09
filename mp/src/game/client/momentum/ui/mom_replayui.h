@@ -58,7 +58,7 @@ protected:
     MESSAGE_FUNC_FLOAT(OnNewProgress, "ScrubbedProgress", scale);
 
     // When the user scrolls on the Progress Bar
-    MESSAGE_FUNC_PARAMS(OnMouseWheeled, "MouseWheeled", pKv);
+    MESSAGE_FUNC_INT(OnPBMouseWheeled, "PBMouseWheeled", delta);
     
 private:
     // player controls
