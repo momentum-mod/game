@@ -101,8 +101,8 @@ void CHudReplay::OnThink()
             m_pProgressLabelFrame->SetText(labelFrame);
             char curtime[BUFSIZETIME];
             char totaltime[BUFSIZETIME];
-            mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iCurrentTick, curtime);
-            mom_UTIL->FormatTime(TICK_INTERVAL * m_iTotalDuration, totaltime);
+            mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iCurrentTick, curtime, 2);
+            mom_UTIL->FormatTime(TICK_INTERVAL * m_iTotalDuration, totaltime, 2);
 
             char labelTime[512];
             // MOM_TODO: LOCALIZE

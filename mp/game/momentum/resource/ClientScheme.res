@@ -125,7 +125,7 @@ Scheme
 		Frame.AutoSnapRange				"0"
 		FrameGrip.Color1				"Blank"
 		FrameGrip.Color2				"Blank"
-		FrameTitleButton.FgColor		"Blank"
+		FrameTitleButton.FgColor		"200 200 200 196"
 		FrameTitleButton.BgColor		"Blank"
 		FrameTitleButton.DisabledFgColor	"Blank"
 		FrameTitleButton.DisabledBgColor	"Blank"
