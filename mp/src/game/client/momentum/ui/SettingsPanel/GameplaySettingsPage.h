@@ -32,8 +32,12 @@ private:
     CCvarSlider *m_pYawSpeedSlider;
     CCvarSlider *m_pTrailColorRSlider;
     CCvarSlider *m_pTrailColorGSlider;
+    CCvarSlider *m_pTrailColorBSlider;
+    CCvarSlider *m_pTrailColorASlider;
     TextEntry *m_pYawSpeedEntry;
     TextEntry *m_pTrailColorREntry;
     TextEntry *m_pTrailColorGEntry;
+    TextEntry *m_pTrailColorBEntry;
+    TextEntry *m_pTrailColorAEntry;
     Panel *m_pSampleColor;
 };
