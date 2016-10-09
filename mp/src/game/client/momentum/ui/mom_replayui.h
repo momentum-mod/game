@@ -3,6 +3,7 @@
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 #include "CVarSlider.h"
+#include "ScrubbableProgressBar.h"
 
 enum Selections
 {
@@ -27,7 +28,17 @@ class CHudReplay : public Frame
     // When the text entry updates, we want to update the slider
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
 
+    // When the user clicks (and potentially drags) on the Progress Bar
+    MESSAGE_FUNC_FLOAT(OnNewProgress, "ScrubbedProgress", scale);
+
+    // When the user scrolls on the Progress Bar
+    MESSAGE_FUNC_PARAMS(OnMouseWheeled, "MouseWheeled", pKv);
+
+
+    void SetLabelText() const;
+
     // player controls
+private:
     ToggleButton *m_pPlayPauseResume;
     Button *m_pGoStart;
     Button *m_pGoEnd;
@@ -41,9 +52,12 @@ class CHudReplay : public Frame
     TextEntry *m_pTimescaleEntry;
     Label *m_pTimescaleLabel;
 
-    ProgressBar *m_pProgress;
+    ScrubbableProgressBar *m_pProgress;
     Label *m_pProgressLabelFrame;
     Label *m_pProgressLabelTime;
 
     TextEntry *m_pGotoTick;
+
+    int m_iTotalDuration;
+
 };

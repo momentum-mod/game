@@ -23,6 +23,9 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
     SetMenuButtonResponsive(false);
     SetSize(310, 210);
 
+    m_iTotalDuration = 0;
+
+    SetScheme("ClientScheme");
     LoadControlSettings("resource/ui/ReplayUI.res");
 
     m_pPlayPauseResume = FindControl<ToggleButton>("ReplayPlayPauseResume");
@@ -40,13 +43,13 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
     m_pTimescaleSlider = FindControl<CCvarSlider>("TimescaleSlider");
     m_pTimescaleLabel = FindControl<Label>("TimescaleLabel");
     m_pTimescaleEntry = FindControl<TextEntry>("TimescaleEntry");
-    m_pTimescaleEntry->SetText("1.0");
+    SetLabelText();
 
-    m_pProgress = FindControl<ProgressBar>("ReplayProgress");
-    m_pProgress->SetSegmentInfo(2, 2);
+    m_pProgress = FindControl<ScrubbableProgressBar>("ReplayProgress");
 
     m_pProgressLabelFrame = FindControl<Label>("ReplayProgressLabelFrame");
     m_pProgressLabelTime = FindControl<Label>("ReplayProgressLabelTime");
+
 }
 
 void CHudReplay::OnThink()
@@ -86,27 +89,27 @@ void CHudReplay::OnThink()
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
-            float fProgress =
-                static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(pGhost->m_iTotalTimeTicks);
+            m_iTotalDuration = pGhost->m_iTotalTimeTicks;
+
+            float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
             fProgress = clamp(fProgress, 0.0f, 1.0f);
 
             m_pProgress->SetProgress(fProgress);
             char labelFrame[512];
             // MOM_TODO: Localize this
-            Q_snprintf(labelFrame, 512, "Tick: %i / %i", pGhost->m_iCurrentTick, pGhost->m_iTotalTimeTicks);
+            Q_snprintf(labelFrame, 512, "Tick: %i / %i", pGhost->m_iCurrentTick, m_iTotalDuration);
             m_pProgressLabelFrame->SetText(labelFrame);
             char curtime[BUFSIZETIME];
             char totaltime[BUFSIZETIME];
             mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iCurrentTick, curtime);
-            mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iTotalTimeTicks, totaltime);
+            mom_UTIL->FormatTime(TICK_INTERVAL * m_iTotalDuration, totaltime);
 
             char labelTime[512];
             // MOM_TODO: LOCALIZE
             Q_snprintf(labelTime, 512, "Time: %s -> %s", curtime, totaltime);
             m_pProgressLabelTime->SetText(labelTime);
             // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly),
-            // then we
-            // will disable the replayui
+            // then we will disable the replayui
 
             if (pGhost)
             {
@@ -120,15 +123,13 @@ void CHudReplay::OnThink()
     }
 }
 
+
+
 void CHudReplay::OnControlModified(Panel *p)
 {
     if (p == m_pTimescaleSlider && m_pTimescaleSlider->HasBeenModified())
     {
-        char buf[64];
-        Q_snprintf(buf, sizeof(buf), " %.1f", m_pTimescaleSlider->GetSliderValue());
-        m_pTimescaleEntry->SetText(buf);
-
-        m_pTimescaleSlider->ApplyChanges();
+        SetLabelText();
     }
 }
 
@@ -148,6 +149,32 @@ void CHudReplay::OnTextChanged(Panel* p)
     }
 }
 
+void CHudReplay::OnNewProgress(float scale)
+{
+    int tickToGo = static_cast<int>(scale * m_iTotalDuration);
+    if (tickToGo > -1 && tickToGo <= m_iTotalDuration)
+    {
+        engine->ServerCmd(VarArgs("mom_replay_goto %i", tickToGo));
+    }
+}
+
+void CHudReplay::OnMouseWheeled(KeyValues *pKv)
+{
+    if (pKv->GetPtr("panel") == m_pProgress)
+        OnCommand(pKv->GetInt("delta") > 0 ? "nextframe" : "prevframe");
+}
+
+void CHudReplay::SetLabelText() const
+{
+    if (m_pTimescaleSlider && m_pTimescaleEntry)
+    {
+        char buf[64];
+        Q_snprintf(buf, sizeof(buf), " %.1f", m_pTimescaleSlider->GetSliderValue());
+        m_pTimescaleEntry->SetText(buf);
+
+        m_pTimescaleSlider->ApplyChanges();
+    }   
+}
 
 // Command issued
 void CHudReplay::OnCommand(const char *command)

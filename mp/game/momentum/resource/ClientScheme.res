@@ -167,7 +167,7 @@ Scheme
 		Panel.FgColor					"WhiteDim"
 		Panel.BgColor					"blank"
 
-		ProgressBar.FgColor				"White"
+		ProgressBar.FgColor				"Light Blue"
 		ProgressBar.BgColor				"TransparentBlack"
 
 		PropertySheet.TextColor			"White"
@@ -203,8 +203,9 @@ Scheme
 		SectionedListPanel.OutOfFocusSelectedTextColor	"White"
 		SectionedListPanel.OutOfFocusSelectedBgColor	"Light Blue"
 
-		Slider.NobColor				"108 108 108 255"
-		Slider.TextColor			"127 140 127 255"
+		Slider.NobColor				"White"//"108 108 108 255"
+		Slider.TextColor			"White"//"127 140 127 255"
+        Slider.BgColor              "Blank"
 		Slider.TrackColor			"31 31 31 255"
 		Slider.DisabledTextColor1	"117 117 117 255"
 		Slider.DisabledTextColor2	"30 30 30 255"

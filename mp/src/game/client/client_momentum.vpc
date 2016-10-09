@@ -108,6 +108,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\PFrameButton.h"
                     $File "momentum\ui\CVarSlider.h"
                     $File "momentum\ui\CVarSlider.cpp"
+                    $File "momentum\ui\ScrubbableProgressBar.h"
                 }
                 
                 $Folder "Leaderboards"

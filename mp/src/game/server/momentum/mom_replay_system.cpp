@@ -247,7 +247,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
     }
 }
 
-static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
+static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
 
 CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
 {

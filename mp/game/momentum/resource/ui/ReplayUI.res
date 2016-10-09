@@ -123,18 +123,21 @@
 	}
 	"ReplayProgress"
 	{
-		"ControlName"		"ProgressBar"
+		"ControlName"		"ScrubbableProgressBar"
 		"fieldName"		"ReplayProgress"
 		"xpos"		"12"
-		"ypos"		"59"
+		"ypos"		"55"
 		"wide"		"280"
-		"tall"		"13"
+		"tall"		"20"
 		"autoResize"		"0"
 		"pinCorner"		"0"
 		"visible"		"1"
 		"enabled"		"0"
 		"tabPosition"		"0"
 		"progress"		"0.000000"
+        "actionsignallevel" "1"
+        "segment_gap" "4"
+        "segment_width" "4"
 	}
 	"ReplayProgressLabelFrame"
 	{
