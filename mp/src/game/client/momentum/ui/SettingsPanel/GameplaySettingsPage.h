@@ -24,10 +24,16 @@ class GameplaySettingsPage : public SettingsPage
 
 private:
 
-    void UpdateYawspeedEntry() const;
+    void UpdateSlideEntries() const;
 
     CvarToggleCheckButton<ConVarRef> *m_pPlayBlockSound;
     CvarToggleCheckButton<ConVarRef> *m_pSaveCheckpoints;
+    CvarToggleCheckButton<ConVarRef> *m_pEnableTrail;
     CCvarSlider *m_pYawSpeedSlider;
+    CCvarSlider *m_pTrailColorRSlider;
+    CCvarSlider *m_pTrailColorGSlider;
     TextEntry *m_pYawSpeedEntry;
+    TextEntry *m_pTrailColorREntry;
+    TextEntry *m_pTrailColorGEntry;
+    Panel *m_pSampleColor;
 };

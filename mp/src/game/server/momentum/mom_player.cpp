@@ -40,6 +40,15 @@ DEFINE_THINKFUNC(CheckForBhop)
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
+MAKE_TOGGLE_CONVAR(mom_trail_enable, "1", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Paint trails on player?\n");
+// MOM_TODO: WHat is a good length for this?
+// MOM_TODO: Trail should reset when the run resets and on tps Or at least not join both ends if they are too far away?
+MAKE_CONVAR(mom_trail_length, "0", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Length of the trail. 0 makes it infinite (mom_trail_enable 0 to diable)", 0, 9000);
+MAKE_CONVAR(mom_trail_color_r, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Red amount of the trail color", 0, 255);
+MAKE_CONVAR(mom_trail_color_g, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Green amount of the trail color", 0, 255);
+MAKE_CONVAR(mom_trail_color_b, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Blue amount of the trail color", 0, 255);
+MAKE_CONVAR(mom_trail_color_a, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Alpha amount of the trail", 0, 255);
+
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), m_flLastVelocity(0.0f), m_flLastSyncVelocity(0),
       m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
@@ -63,7 +72,11 @@ CMomentumPlayer::CMomentumPlayer()
     ListenForGameEvent("mapfinished_panel_closed");
 }
 
-CMomentumPlayer::~CMomentumPlayer() {}
+CMomentumPlayer::~CMomentumPlayer()
+{
+    if (m_eTrail)
+        delete m_eTrail;
+}
 
 void CMomentumPlayer::Precache()
 {
@@ -252,10 +265,28 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
-    SetNextThink(gpGlobals->curtime);
-
     //Load the player's checkpoints
     g_MOMCheckpointSystem->LoadMapCheckpoints(this);
+
+    // If wanted, create trail
+    if (mom_trail_enable.GetBool())
+    {
+        // Ty GhostingMod
+        m_eTrail = CreateEntityByName("env_spritetrail");
+        m_eTrail->SetAbsOrigin(GetAbsOrigin());
+        m_eTrail->SetParent(this);
+        m_eTrail->KeyValue("rendermode", "5");
+        m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
+        m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());  // This does not do what I thought it does
+        m_eTrail->SetRenderColor(mom_trail_color_r.GetInt(), mom_trail_color_g.GetInt(), mom_trail_color_b.GetInt(), mom_trail_color_a.GetInt());
+        //trail->KeyValue("rendercolor", spriteColor.GetString());
+        m_eTrail->KeyValue("renderamt", "75");
+        m_eTrail->KeyValue("startwidth", "9.5");
+        m_eTrail->KeyValue("endwidth", "1.05");
+        DispatchSpawn(m_eTrail);
+    }
+
+    SetNextThink(gpGlobals->curtime);
 }
 
 // Obtains the player's previous origin using their current origin as a base.
