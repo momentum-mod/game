@@ -548,15 +548,13 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
     {
         --nextStep;
 
-        if (nextStep < 0)
-            nextStep = m_pPlaybackReplay->GetFrameCount() - 1;
+        nextStep = max(nextStep, 0);
     }
     else
     {
         ++nextStep;
 
-        if (nextStep >= m_pPlaybackReplay->GetFrameCount())
-            nextStep = 0;
+        nextStep = min(nextStep, m_pPlaybackReplay->GetFrameCount() - 1);
     }
 
     return m_pPlaybackReplay->GetFrame(nextStep);
