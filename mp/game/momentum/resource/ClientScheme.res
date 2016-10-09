@@ -212,12 +212,12 @@ Scheme
 
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"TransparentBlack"
-		TextEntry.CursorColor		"Black"
+		TextEntry.CursorColor		"Light Gray"
 		TextEntry.DisabledTextColor	"White"
 		TextEntry.DisabledBgColor	"Blank"
-		TextEntry.SelectedTextColor	"Black"
-		TextEntry.SelectedBgColor	"Red"
-		TextEntry.OutOfFocusSelectedBgColor	"Red"
+		TextEntry.SelectedTextColor	"Light Gray"
+		TextEntry.SelectedBgColor	"Dark Blue"
+		TextEntry.OutOfFocusSelectedBgColor	"Light Blue"
 		TextEntry.FocusEdgeColor	"TransparentBlack"
 
 		ToggleButton.SelectedTextColor	"White"

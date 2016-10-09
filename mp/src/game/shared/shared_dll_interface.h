@@ -2,7 +2,7 @@
 
 #include "interface.h"
 
-class CHudReplay;
+class C_ReplayUI;
 
 class CShared
 {

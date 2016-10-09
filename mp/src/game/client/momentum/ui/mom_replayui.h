@@ -12,10 +12,10 @@ enum Selections
     RUI_MOVEFW,
 };
 
-class CHudReplay : public Frame
+class C_ReplayUI : public Frame
 {
-    DECLARE_CLASS_SIMPLE(CHudReplay, vgui::Frame);
-    CHudReplay(const char *pElementName);
+    DECLARE_CLASS_SIMPLE(C_ReplayUI, vgui::Frame);
+    C_ReplayUI(const char *pElementName);
 
     virtual void OnThink() OVERRIDE;
 

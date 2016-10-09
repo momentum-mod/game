@@ -43,6 +43,6 @@ void GameplaySettingsPage::OnControlModified(Panel *p)
 void GameplaySettingsPage::UpdateYawspeedEntry() const
 {
     char buf[64];
-    Q_snprintf(buf, sizeof(buf), " %.1f", m_pYawSpeedSlider->GetSliderValue());
+    Q_snprintf(buf, sizeof(buf), "%.1f", m_pYawSpeedSlider->GetSliderValue());
     m_pYawSpeedEntry->SetText(buf);
 }

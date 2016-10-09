@@ -13,7 +13,7 @@
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
 
-CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
+C_ReplayUI::C_ReplayUI(const char *pElementName) : Frame(nullptr, pElementName)
 {
     SetMoveable(true);
     SetSizeable(false);
@@ -52,7 +52,7 @@ CHudReplay::CHudReplay(const char *pElementName) : Frame(nullptr, pElementName)
 
 }
 
-void CHudReplay::OnThink()
+void C_ReplayUI::OnThink()
 {
     BaseClass::OnThink();
 
@@ -125,7 +125,7 @@ void CHudReplay::OnThink()
 
 
 
-void CHudReplay::OnControlModified(Panel *p)
+void C_ReplayUI::OnControlModified(Panel *p)
 {
     if (p == m_pTimescaleSlider && m_pTimescaleSlider->HasBeenModified())
     {
@@ -133,7 +133,7 @@ void CHudReplay::OnControlModified(Panel *p)
     }
 }
 
-void CHudReplay::OnTextChanged(Panel* p)
+void C_ReplayUI::OnTextChanged(Panel* p)
 {
     if (p == m_pTimescaleEntry)
     {
@@ -149,7 +149,7 @@ void CHudReplay::OnTextChanged(Panel* p)
     }
 }
 
-void CHudReplay::OnNewProgress(float scale)
+void C_ReplayUI::OnNewProgress(float scale)
 {
     int tickToGo = static_cast<int>(scale * m_iTotalDuration);
     if (tickToGo > -1 && tickToGo <= m_iTotalDuration)
@@ -158,18 +158,18 @@ void CHudReplay::OnNewProgress(float scale)
     }
 }
 
-void CHudReplay::OnMouseWheeled(KeyValues *pKv)
+void C_ReplayUI::OnMouseWheeled(KeyValues *pKv)
 {
     if (pKv->GetPtr("panel") == m_pProgress)
         OnCommand(pKv->GetInt("delta") > 0 ? "nextframe" : "prevframe");
 }
 
-void CHudReplay::SetLabelText() const
+void C_ReplayUI::SetLabelText() const
 {
     if (m_pTimescaleSlider && m_pTimescaleEntry)
     {
         char buf[64];
-        Q_snprintf(buf, sizeof(buf), " %.1f", m_pTimescaleSlider->GetSliderValue());
+        Q_snprintf(buf, sizeof(buf), "%.1f", m_pTimescaleSlider->GetSliderValue());
         m_pTimescaleEntry->SetText(buf);
 
         m_pTimescaleSlider->ApplyChanges();
@@ -177,7 +177,7 @@ void CHudReplay::SetLabelText() const
 }
 
 // Command issued
-void CHudReplay::OnCommand(const char *command)
+void C_ReplayUI::OnCommand(const char *command)
 {
     if (!shared)
         return BaseClass::OnCommand(command);
@@ -223,9 +223,9 @@ void CHudReplay::OnCommand(const char *command)
 
 void replayui_f()
 {
-    CHudReplay *HudReplay = nullptr;
+    C_ReplayUI *HudReplay = nullptr;
     if (HudReplay == nullptr)
-        HudReplay = new CHudReplay("HudReplay");
+        HudReplay = new C_ReplayUI("HudReplay");
 
     if (!HudReplay || !shared)
         return;
