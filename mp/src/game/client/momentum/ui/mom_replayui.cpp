@@ -141,7 +141,7 @@ void C_ReplayUI::OnTextChanged(Panel* p)
         m_pTimescaleEntry->GetText(buf, 64);
 
         float fValue = float(atof(buf));
-        if (fValue >= 0.01 && fValue <= 10.0)
+        if (fValue >= 0.01f && fValue <= 10.0f)
         {
             m_pTimescaleSlider->SetSliderValue(fValue);
             m_pTimescaleSlider->ApplyChanges();

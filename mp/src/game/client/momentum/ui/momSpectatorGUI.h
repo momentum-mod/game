@@ -4,12 +4,7 @@
 //
 // $NoKeywords: $
 //=============================================================================//
-
-#ifndef MOMSPECTATORGUI_H
-#define MOMSSPECTATORGUI_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "GameEventListener.h"
 #include <igameevents.h>
@@ -46,7 +41,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
   public:
     CMOMSpectatorGUI(IViewPort *pViewPort);
-    virtual ~CMOMSpectatorGUI();
+    virtual ~CMOMSpectatorGUI(){};
 
     const char *GetName(void) override { return PANEL_SPECGUI; }
     void SetData(KeyValues *data) override{};
@@ -62,7 +57,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
     void OnThink() override;
 
-    void SetMouseInputEnabled(bool bState) override 
+    void SetMouseInputEnabled(bool bState) override
     {
         BaseClass::SetMouseInputEnabled(bState);
 
@@ -71,14 +66,10 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     }
 
     int GetTopBarHeight() { return m_pTopBar->GetTall(); }
-    int GetBottomBarHeight() { return m_pBottomBarBlank->GetTall(); }
-
-    bool ShouldShowPlayerLabel(int specmode);
 
     Color GetBlackBarColor(void) { return BLACK_BAR_COLOR; }
 
-    const char *GetResFile(void) const
-    { return "resource/UI/Spectator.res"; }
+    const char *GetResFile(void) const { return "resource/UI/Spectator.res"; }
 
     void FireGameEvent(IGameEvent *pEvent) override
     {
@@ -92,14 +83,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
         }
     }
 
-  protected:
-    void SetLabelText(const char *textEntryName, const char *text);
-    void SetLabelText(const char *textEntryName, wchar_t *text);
-    void MoveLabelToFront(const char *textEntryName);
-    void UpdateTimer();
-    void SetLogoImage(const char *image);
-
-  protected:
+protected:
     enum
     {
         INSET_OFFSET = 2
@@ -109,16 +93,15 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     void PerformLayout() override;
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
     void OnMousePressed(vgui::MouseCode code) override;
-    //	virtual void OnCommand( const char *command );
 
-    vgui::Panel *m_pTopBar;
-    vgui::Panel *m_pBottomBarBlank;
+private:
+    Panel *m_pTopBar;
 
-    vgui::ImagePanel *m_pBannerImage;
     vgui::Label *m_pPlayerLabel;
     vgui::Label *m_pReplayLabel;
-    vgui::Label *m_pTimeLabel;
     vgui::Label *m_pGainControlLabel;
+    vgui::Label *m_pMapLabel;
+    vgui::Label *m_pTimeLabel;
 
     vgui::ImagePanel *m_pCloseButton;
 
@@ -130,55 +113,3 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
     float m_flNextUpdateTime;
 };
-
-//-----------------------------------------------------------------------------
-// Purpose: the bottom bar panel, this is a separate panel because it
-// wants mouse input and the main window doesn't
-//----------------------------------------------------------------------------
-class CMOMSpectatorMenu : public vgui::Frame, public IViewPortPanel, public CGameEventListener
-{
-    DECLARE_CLASS_SIMPLE(CMOMSpectatorMenu, vgui::Frame);
-
-  public:
-    CMOMSpectatorMenu(IViewPort *pViewPort);
-    ~CMOMSpectatorMenu() {}
-
-    const char *GetName(void) override { return PANEL_SPECMENU; }
-    void SetData(KeyValues *data) override{};
-    void Reset(void) override { m_pPlayerList->DeleteAllItems(); }
-    void Update(void) override;
-    bool NeedsUpdate(void) override { return false; }
-    bool HasInputElements(void) override { return true; }
-    void ShowPanel(bool bShow) override;
-    void FireGameEvent(IGameEvent *event) override;
-
-    // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
-    bool IsVisible() override { return BaseClass::IsVisible(); }
-    vgui::VPANEL GetVPanel(void) { return BaseClass::GetVPanel(); }
-    void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
-
-  private:
-    // VGUI2 overrides
-    MESSAGE_FUNC_PARAMS(OnTextChanged, "TextChanged", data);
-    void OnCommand(const char *command) override;
-    void OnKeyCodePressed(vgui::KeyCode code) override;
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
-    void PerformLayout() override;
-
-    void SetViewModeText(const char *text) { m_pViewOptions->SetText(text); }
-    void SetPlayerFgColor(Color c1) { m_pPlayerList->SetFgColor(c1); }
-
-    vgui::ComboBox *m_pPlayerList;
-    vgui::ComboBox *m_pViewOptions;
-    vgui::ComboBox *m_pConfigSettings;
-
-    vgui::Button *m_pLeftButton;
-    vgui::Button *m_pRightButton;
-
-    IViewPort *m_pViewPort;
-    ButtonCode_t m_iDuckKey;
-};
-
-extern CMOMSpectatorGUI *g_pMOMSpectatorGUI;
-
-#endif // MOMSSPECTATORGUI_H
