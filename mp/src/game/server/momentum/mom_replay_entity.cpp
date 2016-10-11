@@ -372,10 +372,21 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             SetViewOffset(currentStep->PlayerViewOffset());
 
             // kamay: Now timer start and end at the right time
-            bool isDucking = (GetFlags() & FL_DUCKING) != 0;
+
             if (currentStep->PlayerButtons() & IN_DUCK)
             {
-                // MOM_TODO: make this smoother. look at void CGameMovement::SetDuckedEyeOffset( float duckFraction )
+               SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);             
+            }
+            else
+            {
+               SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
+            }
+
+            //MOM_TODO: this does not work for the moment. We use this one above.
+
+            /*bool isDucking = (GetFlags() & FL_DUCKING) != 0;
+            if (currentStep->PlayerButtons() & IN_DUCK)
+            {
                 if (!isDucking)
                 {
                     SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
@@ -389,7 +400,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
                     SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
                     RemoveFlag(FL_DUCKING);
                 }
-            }
+            }*/
         }
     }
 }

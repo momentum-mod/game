@@ -56,12 +56,13 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // We have to create the directory here just in case it doesn't exist yet
     filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD");
 
-    // Store the replay in a file and stop recording.
+    DevLog("Before trimming: %i\n", m_iTickCount);
+    TrimReplay();
+
+    // Store the replay in a file and stop recording. Let's Trim before doing this, for our start recorded tick.
     SetReplayInfo();
     SetRunStats();
 
-    DevLog("Before trimming: %i\n", m_iTickCount);
-    TrimReplay();
     int postTrimTickCount = m_pReplayManager->GetRecordingReplay()->GetFrameCount();
     DevLog("After trimming: %i\n", postTrimTickCount);
     m_pReplayManager->StoreReplay(newRecordingPath);
@@ -98,6 +99,8 @@ void CMomentumReplaySystem::TrimReplay()
                 // Remove the amount of extra frames from the head
                 // MOM_TODO: If the map allows for prespeed in the trigger, we don't want to trim it!
                 pReplay->RemoveFrames(extraFrames);
+                // Add our extraFrames because we may have stayed in the start zone
+                m_iStartRecordingTick += extraFrames;
                 m_iTickCount -= extraFrames;
             }
         }
