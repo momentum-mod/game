@@ -94,24 +94,26 @@ void C_MOMReplayUI::OnThink()
             m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
             m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
-            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (1.0f / gpGlobals->interval_per_tick);  //subtract 1 second from total progress bar due to 1s buffer at end of replay
+            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (1.0f / TICK_INTERVAL);  //subtract 1 second from total progress bar due to 1s buffer at end of replay
 
             // Set overall progress
             float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
             fProgress = clamp(fProgress, 0.0f, 1.0f);
             m_pProgress->SetProgress(fProgress);
 
+            int currentTick = pGhost->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD;
+            bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_RunData.m_iStartTickD;
             // Print "Tick: %i / %i"
             wchar_t wLabelFrame[BUFSIZELOCL];
-            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, pGhost->m_iCurrentTick, m_iTotalDuration);
+            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, currentTick, m_iTotalDuration - pGhost->m_RunData.m_iStartTickD);
             m_pProgressLabelFrame->SetText(wLabelFrame);
 
             // Print "Time: X:XX.XX -> X:XX.XX"
             char curtime[BUFSIZETIME], totaltime[BUFSIZETIME];
             wchar_t wCurtime[BUFSIZETIME], wTotaltime[BUFSIZETIME];
             // Get the times
-            mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iCurrentTick, curtime, 2);
-            mom_UTIL->FormatTime(TICK_INTERVAL * m_iTotalDuration, totaltime, 2);
+            mom_UTIL->FormatTime(TICK_INTERVAL * currentTick, curtime, 2, false, negativeTime);
+            mom_UTIL->FormatTime(pGhost->m_RunData.m_flRunTime, totaltime, 2);
             // Conver to Unicode
             ANSI_TO_UNICODE(curtime, wCurtime);
             ANSI_TO_UNICODE(totaltime, wTotaltime);

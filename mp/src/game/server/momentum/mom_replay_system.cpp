@@ -210,8 +210,9 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->StartRun(pGhost->m_bReplayFirstPerson);
+            pGhost->m_iCurrentTick = 1;
         }
+
     }
 }
 

@@ -55,7 +55,7 @@ class MomentumUtil
     // Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours,
     // etc
     // Precision is miliseconds by default
-    void FormatTime(float seconds, char *pOut, int precision = 3, bool fileName = false) const;
+    void FormatTime(float seconds, char *pOut, int precision = 3, bool fileName = false, bool negativeTime = false) const;
 
     KeyValues *GetBestTime(KeyValues *kvInput, const char *szMapName, float tickrate, int flags = 0);
     bool GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into);
