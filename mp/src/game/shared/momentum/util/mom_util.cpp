@@ -254,7 +254,7 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
     // We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = abs(m_flSecondsTime);
     char separator = fileName ? '-' : ':'; // MOM_TODO: Think of a better char?
-    char negative = negativeTime ? '-' : ' ';
+    const char* negative = negativeTime ? "-" : "";
     int hours = m_flSecondsTime / (60.0f * 60.0f);
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
     int seconds = fmod(m_flSecondsTime, 60.0f);
@@ -266,44 +266,47 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
     {
     case 0:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d%c%02d", negative, hours, separator, minutes, separator, seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d", negative, hours, separator, minutes, separator, seconds);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d", negative, minutes, separator, seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d", negative, minutes, separator, seconds);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d", negative, seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d", negative, seconds);
         break;
     case 1:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d%c%02d.%d", negative, hours, separator, minutes, separator, seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%d", negative, hours, separator, minutes, separator,
+                       seconds, tenths);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d.%d", negative, minutes, separator, seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%d", negative, minutes, separator, seconds, tenths);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d.%d", negative, seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%d", negative, seconds, tenths);
         break;
     case 2:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d%c%02d.%02d", negative, hours, separator, minutes, separator, seconds,
-                       hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%02d", negative, hours, separator, minutes, separator,
+                       seconds, hundredths);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d.%02d", negative, minutes, separator, seconds, hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%02d", negative, minutes, separator, seconds, hundredths);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d.%02d", negative, seconds, hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%02d", negative, seconds, hundredths);
         break;
     case 3:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d%c%02d.%03d", negative, hours, separator, minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%03d", negative, hours, separator, minutes, separator,
+                       seconds, millis);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d.%03d", negative, minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%03d", negative, minutes, separator, seconds, millis);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d.%03d", negative, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%03d", negative, seconds, millis);
         break;
     case 4:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d%c%02d.%04d", negative, hours, separator, minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%04d", negative, hours, separator, minutes, separator,
+                       seconds, millis);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d%c%02d.%04d", negative, minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%04d", negative, minutes, separator, seconds, millis);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%c%d.%04d", negative, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%04d", negative, seconds, millis);
         break;
     }
 }
