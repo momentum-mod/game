@@ -94,7 +94,7 @@ void C_MOMReplayUI::OnThink()
             m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
             m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
-            m_iTotalDuration = pGhost->m_iTotalTimeTicks;
+            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (1.0f / gpGlobals->interval_per_tick);  //subtract 1 second from total progress bar due to 1s buffer at end of replay
 
             // Set overall progress
             float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
