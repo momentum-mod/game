@@ -175,6 +175,7 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
     if (bShow && !IsVisible())
     {
         m_bSpecScoreboard = false;
+        SetMouseInputEnabled(true);
     }
 
     SetVisible(bShow);
@@ -199,7 +200,7 @@ void CMOMSpectatorGUI::Update()
 {
     int wide, tall;
     int bx, by, bwide, btall;
-
+    
     GetHudSize(wide, tall);
     m_pTopBar->GetBounds(bx, by, bwide, btall);
 
@@ -248,14 +249,10 @@ void CMOMSpectatorGUI::Update()
                 m_pPlayerLabel->SetText(szPlayerInfo);
 
             // Duck bind to release mouse
-            if (!IsMouseInputEnabled())
-            {
-                wchar_t tempControl[BUFSIZELOCL];
-                UTIL_ReplaceKeyBindings(m_pwGainControl, sizeof m_pwGainControl, tempControl, sizeof tempControl);
-
-                if (m_pGainControlLabel)
-                    m_pGainControlLabel->SetText(tempControl);
-            }
+            wchar_t tempControl[BUFSIZELOCL];
+            UTIL_ReplaceKeyBindings(m_pwGainControl, sizeof m_pwGainControl, tempControl, sizeof tempControl);
+            if (m_pGainControlLabel)
+                m_pGainControlLabel->SetText(tempControl);
 
             // Run time label
             char tempRunTime[BUFSIZETIME];

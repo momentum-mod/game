@@ -48,9 +48,6 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     {
         BaseClass::SetMouseInputEnabled(bState);
 
-        if (m_pGainControlLabel)
-            m_pGainControlLabel->SetVisible(!bState);
-
         if (m_pReplayControls && m_pReplayControls->IsVisible())
             m_pReplayControls->SetMouseInputEnabled(bState);
     }

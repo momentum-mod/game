@@ -258,7 +258,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks;
+            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - 2;
         }
     }
 }

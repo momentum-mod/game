@@ -123,11 +123,6 @@ void C_MOMReplayUI::OnThink()
             {
                 // Hide the panel on run finish
                 ShowPanel(false);
-
-                // Hide spec input as well
-                CMOMSpectatorGUI *pSpec = dynamic_cast<CMOMSpectatorGUI *>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
-                if (pSpec)
-                    pSpec->SetMouseInputEnabled(false);
             }
         }
     }

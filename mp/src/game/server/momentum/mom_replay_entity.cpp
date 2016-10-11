@@ -63,7 +63,10 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
-        EndRun();
+        if (pEvent->GetBool("restart"))
+            m_RunData.m_bMapFinished = false;
+        else
+            EndRun();
     }
 }
 

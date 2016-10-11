@@ -112,10 +112,11 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed")
-, DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") END_DATADESC()
+DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"), 
+DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") 
+END_DATADESC();
 
-      void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
+void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
     if (pOther->IsPlayer())
     {
@@ -375,7 +376,6 @@ void CTriggerTimerStop::EndTouch(CBaseEntity *pOther)
     if (pMomPlayer)
     {
         pMomPlayer->SetLaggedMovementValue(1.0f);     // Reset slow motion
-        pMomPlayer->m_RunData.m_bMapFinished = false; // Close the hud_mapfinished panel
         pMomPlayer->m_RunData.m_bIsInZone = false;    // Update status
         lastZoneNumber = pMomPlayer->m_RunData.m_iCurrentZone;
     }
@@ -384,7 +384,6 @@ void CTriggerTimerStop::EndTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_RunData.m_bMapFinished = false;
             pGhost->m_RunData.m_bIsInZone = false;
             lastZoneNumber = pGhost->m_RunData.m_iCurrentZone;
         }
