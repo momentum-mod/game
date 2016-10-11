@@ -54,6 +54,9 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
 
     m_pProgressLabelFrame = FindControl<Label>("ReplayProgressLabelFrame");
     m_pProgressLabelTime = FindControl<Label>("ReplayProgressLabelTime");
+
+    FIND_LOCALIZATION(m_pwReplayTime, "#MOM_ReplayTime");
+    FIND_LOCALIZATION(m_pwReplayTimeTick, "#MOM_ReplayTimeTick");
 }
 
 void C_MOMReplayUI::OnThink()
@@ -89,32 +92,36 @@ void C_MOMReplayUI::OnThink()
                 m_pPlayPauseResume->SetArmed(true);
 
             m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
-            m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "Paused" : "Playing"); // MOM_TODO: Localize
+            m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
             m_iTotalDuration = pGhost->m_iTotalTimeTicks;
 
+            // Set overall progress
             float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
             fProgress = clamp(fProgress, 0.0f, 1.0f);
-
             m_pProgress->SetProgress(fProgress);
-            char labelFrame[512];
-            // MOM_TODO: Localize this
-            Q_snprintf(labelFrame, 512, "Tick: %i / %i", pGhost->m_iCurrentTick, m_iTotalDuration);
-            m_pProgressLabelFrame->SetText(labelFrame);
-            char curtime[BUFSIZETIME];
-            char totaltime[BUFSIZETIME];
+
+            // Print "Tick: %i / %i"
+            wchar_t wLabelFrame[BUFSIZELOCL];
+            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, pGhost->m_iCurrentTick, m_iTotalDuration);
+            m_pProgressLabelFrame->SetText(wLabelFrame);
+
+            // Print "Time: X:XX.XX -> X:XX.XX"
+            char curtime[BUFSIZETIME], totaltime[BUFSIZETIME];
+            wchar_t wCurtime[BUFSIZETIME], wTotaltime[BUFSIZETIME];
+            // Get the times
             mom_UTIL->FormatTime(TICK_INTERVAL * pGhost->m_iCurrentTick, curtime, 2);
             mom_UTIL->FormatTime(TICK_INTERVAL * m_iTotalDuration, totaltime, 2);
-
-            char labelTime[512];
-            // MOM_TODO: LOCALIZE
-            Q_snprintf(labelTime, 512, "Time: %s -> %s", curtime, totaltime);
-            m_pProgressLabelTime->SetText(labelTime);
-            // Let's add a check if we entered into end zone without the trigger spot it (since we teleport directly),
-            // then we will disable the replayui
+            // Conver to Unicode
+            ANSI_TO_UNICODE(curtime, wCurtime);
+            ANSI_TO_UNICODE(totaltime, wTotaltime);
+            wchar_t pwTime[BUFSIZELOCL];
+            V_snwprintf(pwTime, BUFSIZELOCL, m_pwReplayTime, wCurtime, wTotaltime);
+            m_pProgressLabelTime->SetText(pwTime);
 
             if (pGhost->m_RunData.m_bMapFinished)
             {
+                // Hide the panel on run finish
                 ShowPanel(false);
 
                 // Hide spec input as well

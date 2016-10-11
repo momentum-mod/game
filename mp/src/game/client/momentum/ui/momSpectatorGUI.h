@@ -7,15 +7,10 @@
 #pragma once
 
 #include "GameEventListener.h"
-#include <igameevents.h>
-#include <vgui/IScheme.h>
-#include <vgui/KeyCode.h>
-#include <vgui_controls/Button.h>
-#include <vgui_controls/ComboBox.h>
-#include <vgui_controls/EditablePanel.h>
-#include <vgui_controls/Frame.h>
 #include "mom_replayui.h"
-
+#include <igameevents.h>
+#include <vgui/KeyCode.h>
+#include <vgui_controls/EditablePanel.h>
 #include <game/client/iviewport.h>
 
 class KeyValues;
@@ -78,13 +73,13 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
         }
     }
 
-protected:
+  protected:
     // vgui overrides
     void PerformLayout() override;
     void ApplySchemeSettings(vgui::IScheme *pScheme) override;
     void OnMousePressed(vgui::MouseCode code) override;
 
-private:
+  private:
     Panel *m_pTopBar;
 
     vgui::Label *m_pPlayerLabel;
@@ -101,4 +96,7 @@ private:
     bool m_bSpecScoreboard;
 
     float m_flNextUpdateTime;
+
+    wchar_t m_pwReplayPlayer[BUFSIZELOCL], m_pwGainControl[BUFSIZELOCL], m_pwWatchingReplay[BUFSIZELOCL],
+        m_pwRunTime[BUFSIZELOCL], m_pwSpecMap[BUFSIZELOCL];
 };

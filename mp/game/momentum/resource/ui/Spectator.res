@@ -108,6 +108,7 @@
         "enabled"       "1"
         "scaleImage"    "1"
         "image"         "close_button"
+        "tooltiptext"   "#MOM_SpecGUI_StopPlayback"
         "mouseinputenabled" "1"
     }
     
@@ -124,7 +125,8 @@
         "visible"       "1"
         "enabled"       "1"
         "scaleImage"    "1"
-        "image"         "close_button" // MOM_TODO: Update this logo to the controls one
+        "tooltiptext"   "#MOM_SpecGUI_ToggleControls" 
+        "image"         "toggle_replay_controls"
         "mouseinputenabled" "1"
     }
     
@@ -137,7 +139,7 @@
         "wide" "200"
         "tall" "20"
         "textAlignment" "east"
-        "labelText" "#MOM_GainControlReplay"
+        "labelText" "#MOM_SpecGUI_GainControl"
         "dulltext" "0"
         "brighttext" "0"
     }

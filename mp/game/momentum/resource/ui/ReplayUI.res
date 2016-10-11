@@ -4,8 +4,8 @@
 	{
 		"ControlName"		"C_MOMReplayUI"
 		"fieldName"		"ReplayControls"
-		"xpos"		"310"
-		"ypos"		"210"
+		"xpos"		"20"
+		"ypos"		"100"
 		"wide"		"310"
 		"tall"		"210"
 		"autoResize"		"0"
@@ -14,7 +14,7 @@
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"settitlebarvisible"		"1"
-		"title"		"Replay Controls" //MOM_TODO: LOCALIZE
+		"title"		"#MOM_ReplayControls"
 	}
 	"ReplayPlayPauseResume"
 	{
@@ -29,7 +29,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"Play" // MOM_TODO: LOCALIZE
+		"labelText"		"#MOM_ReplayStatusPlaying"
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
@@ -194,7 +194,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"Timescale:" // MOM_TODO: LOCALIZE
+		"labelText"		"#MOM_ReplayTimescale"
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"
@@ -261,7 +261,7 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"		"0"
-		"labelText"		"Goto:" // MOM_TODO: LOCALIZE
+		"labelText"		"#MOM_ReplayGoto"
 		"textAlignment"		"west"
 		"dulltext"		"0"
 		"brighttext"		"0"

@@ -2,17 +2,17 @@
 
 #include "cbase.h"
 
-#include <vgui_controls/Panel.h>
+#include "CVarSlider.h"
+#include "PFrameButton.h"
+#include "ScrubbableProgressBar.h"
+#include "game/client/iviewport.h"
+#include "momentum/mom_shareddefs.h"
+#include <vgui_controls/Button.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Label.h>
-#include <vgui_controls/Button.h>
-#include <vgui_controls/ToggleButton.h>
+#include <vgui_controls/Panel.h>
 #include <vgui_controls/TextEntry.h>
-#include "CVarSlider.h"
-#include "ScrubbableProgressBar.h"
-#include "PFrameButton.h"
-#include "momentum/mom_shareddefs.h"
-#include "game/client/iviewport.h"
+#include <vgui_controls/ToggleButton.h>
 
 enum Selections
 {
@@ -35,8 +35,8 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel
 
     virtual const char *GetName(void) OVERRIDE { return PANEL_REPLAY; }
     virtual void SetData(KeyValues *data) OVERRIDE {}
-    virtual void Reset(void) OVERRIDE {};		// clears internal state, deactivates it
-    virtual void Update(void) OVERRIDE {};
+    virtual void Reset(void) OVERRIDE{}; // clears internal state, deactivates it
+    virtual void Update(void) OVERRIDE{};
     virtual bool NeedsUpdate(void) OVERRIDE { return false; }
     virtual bool HasInputElements(void) OVERRIDE { return true; }
 
@@ -44,10 +44,10 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel
 
     // VGUI functions:
     virtual vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
-    virtual bool IsVisible() OVERRIDE{ return BaseClass::IsVisible(); };  // true if panel is visible
+    virtual bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }; // true if panel is visible
     virtual void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); };
 
-protected:
+  protected:
     // When the slider changes, we want to update the text panel
     MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
 
@@ -59,8 +59,8 @@ protected:
 
     // When the user scrolls on the Progress Bar
     MESSAGE_FUNC_INT(OnPBMouseWheeled, "PBMouseWheeled", delta);
-    
-private:
+
+  private:
     // player controls
     vgui::ToggleButton *m_pPlayPauseResume;
     vgui::Button *m_pGoStart;
@@ -85,4 +85,5 @@ private:
 
     int m_iTotalDuration;
 
+    wchar_t m_pwReplayTime[BUFSIZELOCL], m_pwReplayTimeTick[BUFSIZELOCL];
 };

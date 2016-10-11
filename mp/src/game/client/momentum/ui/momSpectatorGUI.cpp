@@ -12,6 +12,7 @@
 
 #include "momspectatorgui.h"
 
+#include <game/client/iviewport.h>
 #include <vgui/ILocalize.h>
 #include <vgui/IPanel.h>
 #include <vgui/IScheme.h>
@@ -19,16 +20,15 @@
 #include <vgui_controls/ImageList.h>
 #include <vgui_controls/MenuItem.h>
 #include <vgui_controls/TextImage.h>
-#include <game/client/iviewport.h>
 
 #include "IGameUIFuncs.h" // for key bindings
+#include "mom_replayui.h"
 #include <imapoverview.h>
 #include <shareddefs.h>
 #include <vgui/IInput.h>
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/TextEntry.h>
-#include "mom_replayui.h"
 
 #include "mom_player_shared.h"
 #include "util/mom_util.h"
@@ -81,7 +81,7 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     m_pShowControls = FindControl<ImagePanel>("ShowControls");
     m_pShowControls->InstallMouseHandler(this);
 
-    m_pReplayControls = dynamic_cast<C_MOMReplayUI*>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
+    m_pReplayControls = dynamic_cast<C_MOMReplayUI *>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
 
     TextImage *image = m_pPlayerLabel->GetTextImage();
     if (image)
@@ -95,6 +95,12 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
 
     SetMouseInputEnabled(false);
     InvalidateLayout();
+
+    FIND_LOCALIZATION(m_pwReplayPlayer, "#MOM_ReplayPlayer");
+    FIND_LOCALIZATION(m_pwGainControl, "#MOM_SpecGUI_GainControl");
+    FIND_LOCALIZATION(m_pwWatchingReplay, "#MOM_WatchingReplay");
+    FIND_LOCALIZATION(m_pwRunTime, "#MOM_MF_RunTime");
+    FIND_LOCALIZATION(m_pwSpecMap, "#Spec_Map");
 }
 
 //-----------------------------------------------------------------------------
@@ -172,7 +178,7 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
     }
 
     SetVisible(bShow);
-    
+
     if (!bShow)
     {
 
@@ -185,7 +191,6 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
         }
     }
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose: Updates the gui, rearranges elements
@@ -236,8 +241,8 @@ void CMOMSpectatorGUI::Update()
         {
             // Current player name
             wchar_t wPlayerName[MAX_PLAYER_NAME_LENGTH], szPlayerInfo[128];
-            g_pVGuiLocalize->ConvertANSIToUnicode(pReplayEnt->m_pszPlayerName, wPlayerName, sizeof(wPlayerName));
-            V_snwprintf(szPlayerInfo, 128, L"%s %s", g_pVGuiLocalize->Find("#MOM_ReplayPlayer"), wPlayerName);
+            ANSI_TO_UNICODE(pReplayEnt->m_pszPlayerName, wPlayerName);
+            V_snwprintf(szPlayerInfo, 128, m_pwReplayPlayer, wPlayerName);
 
             if (m_pPlayerLabel)
                 m_pPlayerLabel->SetText(szPlayerInfo);
@@ -245,29 +250,26 @@ void CMOMSpectatorGUI::Update()
             // Duck bind to release mouse
             if (!IsMouseInputEnabled())
             {
-                wchar_t pwDetachInfo[BUFSIZELOCL], pwGainControlReplay[BUFSIZELOCL];
-                FIND_LOCALIZATION(pwGainControlReplay, "#MOM_GainControlReplay");
-                UTIL_ReplaceKeyBindings(pwGainControlReplay, sizeof(pwGainControlReplay), pwDetachInfo,
-                                        sizeof(pwDetachInfo));
+                wchar_t tempControl[BUFSIZELOCL];
+                UTIL_ReplaceKeyBindings(m_pwGainControl, sizeof m_pwGainControl, tempControl, sizeof tempControl);
 
                 if (m_pGainControlLabel)
-                    m_pGainControlLabel->SetText(pwDetachInfo);
+                    m_pGainControlLabel->SetText(tempControl);
             }
 
             // Run time label
             char tempRunTime[BUFSIZETIME];
-            wchar_t szTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
+            wchar_t wTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
             mom_UTIL->FormatTime(pReplayEnt->m_RunData.m_flRunTime, tempRunTime);
-            g_pVGuiLocalize->ConvertANSIToUnicode(tempRunTime, wTime, sizeof(wTime));
-            g_pVGuiLocalize->ConstructString(szTimeLabel, sizeof(szTimeLabel), g_pVGuiLocalize->Find("#MOM_MF_RunTime"),
-                                             1, wTime);
+            ANSI_TO_UNICODE(tempRunTime, wTime);
+            g_pVGuiLocalize->ConstructString(wTimeLabel, sizeof(wTimeLabel), m_pwRunTime, 1, wTime);
 
             if (m_pTimeLabel)
-                m_pTimeLabel->SetText(szTimeLabel);
+                m_pTimeLabel->SetText(wTimeLabel);
 
             // "REPLAY" label
             if (m_pReplayLabel)
-                m_pReplayLabel->SetText(g_pVGuiLocalize->Find("#MOM_WatchingReplay"));
+                m_pReplayLabel->SetText(m_pwWatchingReplay);
         }
         else
         {
@@ -279,11 +281,10 @@ void CMOMSpectatorGUI::Update()
     // Show the current map
     wchar_t szMapName[1024];
     char tempstr[128];
-    wchar_t wMapName[64];
-
+    wchar_t wMapName[BUFSIZELOCL];
     Q_FileBase(engine->GetLevelName(), tempstr, sizeof(tempstr));
     ANSI_TO_UNICODE(tempstr, wMapName);
-    g_pVGuiLocalize->ConstructString(szMapName, sizeof(szMapName), g_pVGuiLocalize->Find("#Spec_Map"), 1, wMapName);
+    g_pVGuiLocalize->ConstructString(szMapName, sizeof(szMapName), m_pwSpecMap, 1, wMapName);
 
     if (m_pMapLabel)
         m_pMapLabel->SetText(szMapName);
