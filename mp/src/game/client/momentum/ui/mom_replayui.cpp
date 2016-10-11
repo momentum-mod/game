@@ -74,19 +74,28 @@ void C_MOMReplayUI::OnThink()
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
+            int RUI_HasSelected = RUI_NOTHING;
+            static int OldRGUI_Selected = RUI_NOTHING;
+
             if (m_pFastBackward->IsSelected() || m_pFastForward->IsSelected())
             {
-                shared->RGUI_HasSelected = m_pFastBackward->IsSelected() ? RUI_MOVEBW : RUI_MOVEFW;
+                RUI_HasSelected = m_pFastBackward->IsSelected() ? RUI_MOVEBW : RUI_MOVEFW;
                 
                 if (!pGhost->m_bIsPaused)
                     engine->ClientCmd("mom_replay_pause");
 
                 m_pPlayPauseResume->ForceDepressed(false);
             }
-            else
+
+            //We need to do it only once
+            if (OldRGUI_Selected != RUI_HasSelected)
             {
-                shared->RGUI_HasSelected = RUI_NOTHING;
+                char format[32];
+                sprintf(format, "mom_replay_selection %i", RUI_HasSelected);
+                engine->ClientCmd(format);
             }
+     
+            OldRGUI_Selected = RUI_HasSelected;
 
             if (!pGhost->m_bIsPaused && !m_pPlayPauseResume->IsArmed())
                 m_pPlayPauseResume->SetArmed(true);

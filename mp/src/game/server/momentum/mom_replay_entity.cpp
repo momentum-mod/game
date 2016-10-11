@@ -141,9 +141,9 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 
     if (m_bIsPaused)
     {
-        if (shared->RGUI_HasSelected == 1)
+        if (ConVarRef("mom_replay_selection").GetInt() == 1)
             m_iCurrentTick -= Skip;
-        else if (shared->RGUI_HasSelected == 2)
+        else if (ConVarRef("mom_replay_selection").GetInt() == 2)
             m_iCurrentTick += Skip;
     }
     else
@@ -558,7 +558,7 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
     int nextStep = m_iCurrentTick;
 
-    if ((shared->RGUI_HasSelected == 1) && m_bIsPaused)
+    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_bIsPaused)
     {
         --nextStep;
 
