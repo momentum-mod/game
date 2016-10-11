@@ -87,8 +87,9 @@ void CMomentumReplayGhostEntity::Spawn(void)
     SetSolid(SOLID_BBOX);
     RemoveSolidFlags(FSOLID_NOT_SOLID);
 
-    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
     SetModel(GHOST_MODEL);
+    //Always call CollisionBounds after you set the model
+    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
     UpdateModelScale();
     SetViewOffset(VEC_VIEW_SCALED(this));
@@ -372,19 +373,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             SetViewOffset(currentStep->PlayerViewOffset());
 
             // kamay: Now timer start and end at the right time
-
-            if (currentStep->PlayerButtons() & IN_DUCK)
-            {
-               SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);             
-            }
-            else
-            {
-               SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
-            }
-
-            //MOM_TODO: this does not work for the moment. We use this one above.
-
-            /*bool isDucking = (GetFlags() & FL_DUCKING) != 0;
+            bool isDucking = (GetFlags() & FL_DUCKING) != 0;
             if (currentStep->PlayerButtons() & IN_DUCK)
             {
                 if (!isDucking)
@@ -400,7 +389,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
                     SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
                     RemoveFlag(FL_DUCKING);
                 }
-            }*/
+            }
         }
     }
 }
