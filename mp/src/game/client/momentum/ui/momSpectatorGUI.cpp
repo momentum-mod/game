@@ -172,10 +172,13 @@ void CMOMSpectatorGUI::OnThink()
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::ShowPanel(bool bShow)
 {
+    // If we're becoming visible (for the first time)
     if (bShow && !IsVisible())
     {
         m_bSpecScoreboard = false;
         SetMouseInputEnabled(true);
+        if (m_pReplayControls && !m_pReplayControls->IsVisible())
+            m_pReplayControls->ShowPanel(true);
     }
 
     SetVisible(bShow);

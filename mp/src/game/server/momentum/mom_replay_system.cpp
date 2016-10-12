@@ -9,7 +9,8 @@
 
 #include "tier0/memdbgon.h"
 
-static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE, "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
+static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE,
+                   "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
 static MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or backward in the replayui \n", 0, 2);
 
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
@@ -89,7 +90,7 @@ void CMomentumReplaySystem::TrimReplay()
     // Our actual start
     if (m_iStartRecordingTick > -1 && m_iStartTimerTick > -1)
     {
-        int newStart = m_iStartTimerTick - int(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
+        int newStart = m_iStartTimerTick - static_cast<int>(START_TRIGGER_TIME_SEC / gpGlobals->interval_per_tick);
         // We only need to trim if the player was in the start trigger for longer than what we want
         if (newStart > m_iStartRecordingTick)
         {
@@ -137,7 +138,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetRunTime(g_Timer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
     replay->SetRunDate(g_Timer->GetLastRunDate());
-    replay->SetStartTick( m_iStartTimerTick - m_iStartRecordingTick ); // Since the timer isn't really that precise, we can remove our precision fix.
+    replay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
 }
 
 void CMomentumReplaySystem::SetRunStats()
@@ -212,9 +213,8 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = 1;
+            pGhost->m_iCurrentTick = 0;
         }
-
     }
 }
 
@@ -249,6 +249,7 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
             if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
             {
                 pGhost->m_iCurrentTick = tick;
+                pGhost->m_RunData.m_bMapFinished = false;
             }
         }
     }
@@ -261,7 +262,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - 2;
+            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_RunData.m_iStartTickD;
         }
     }
 }

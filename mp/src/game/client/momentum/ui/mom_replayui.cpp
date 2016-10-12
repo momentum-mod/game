@@ -20,13 +20,16 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
     SetProportional(false);
     SetMoveable(true);
     SetSizeable(false);
-    SetVisible(false);
     SetMaximizeButtonVisible(false);
     SetMinimizeButtonVisible(false);
     SetMenuButtonResponsive(false);
     SetClipToParent(true); // Needed so we won't go out of bounds
 
+    ListenForGameEvent("mapfinished_panel_closed");
+
     m_iTotalDuration = 0;
+    m_iPlayButtonSelected = RUI_NOTHING;
+    m_bWasVisible = false;
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
 
@@ -74,28 +77,26 @@ void C_MOMReplayUI::OnThink()
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
-            int RUI_HasSelected = RUI_NOTHING;
-            static int OldRGUI_Selected = RUI_NOTHING;
+            int iPlayButtonSelected = RUI_NOTHING;
 
             if (m_pFastBackward->IsSelected() || m_pFastForward->IsSelected())
             {
-                RUI_HasSelected = m_pFastBackward->IsSelected() ? RUI_MOVEBW : RUI_MOVEFW;
-                
+                iPlayButtonSelected = m_pFastBackward->IsSelected() ? RUI_MOVEBW : RUI_MOVEFW;
+
                 if (!pGhost->m_bIsPaused)
                     engine->ClientCmd("mom_replay_pause");
 
                 m_pPlayPauseResume->ForceDepressed(false);
             }
 
-            //We need to do it only once
-            if (OldRGUI_Selected != RUI_HasSelected)
+            // We need to do it only once
+            if (m_iPlayButtonSelected != iPlayButtonSelected)
             {
                 char format[32];
-                sprintf(format, "mom_replay_selection %i", RUI_HasSelected);
+                Q_snprintf(format, sizeof format, "mom_replay_selection %i", iPlayButtonSelected);
                 engine->ClientCmd(format);
+                m_iPlayButtonSelected = iPlayButtonSelected;
             }
-     
-            OldRGUI_Selected = RUI_HasSelected;
 
             if (!pGhost->m_bIsPaused && !m_pPlayPauseResume->IsArmed())
                 m_pPlayPauseResume->SetArmed(true);
@@ -103,25 +104,25 @@ void C_MOMReplayUI::OnThink()
             m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
             m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
-            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (1.0f / TICK_INTERVAL);  //subtract 1 second from total progress bar due to 1s buffer at end of replay
+            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (END_RECORDING_DELAY / TICK_INTERVAL);
 
             // Set overall progress
             float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
-            fProgress = clamp(fProgress, 0.0f, 1.0f);
+            fProgress = Clamp(fProgress, 0.0f, 1.0f);
             m_pProgress->SetProgress(fProgress);
 
-            int currentTick = pGhost->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD;
             bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_RunData.m_iStartTickD;
             // Print "Tick: %i / %i"
             wchar_t wLabelFrame[BUFSIZELOCL];
-            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, currentTick, m_iTotalDuration - pGhost->m_RunData.m_iStartTickD);
+            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, pGhost->m_iCurrentTick, m_iTotalDuration);
             m_pProgressLabelFrame->SetText(wLabelFrame);
 
             // Print "Time: X:XX.XX -> X:XX.XX"
             char curtime[BUFSIZETIME], totaltime[BUFSIZETIME];
             wchar_t wCurtime[BUFSIZETIME], wTotaltime[BUFSIZETIME];
             // Get the times
-            mom_UTIL->FormatTime(TICK_INTERVAL * currentTick, curtime, 2, false, negativeTime);
+            mom_UTIL->FormatTime(TICK_INTERVAL * (pGhost->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD), curtime, 2,
+                                 false, negativeTime);
             mom_UTIL->FormatTime(pGhost->m_RunData.m_flRunTime, totaltime, 2);
             // Conver to Unicode
             ANSI_TO_UNICODE(curtime, wCurtime);
@@ -132,7 +133,8 @@ void C_MOMReplayUI::OnThink()
 
             if (pGhost->m_RunData.m_bMapFinished)
             {
-                // Hide the panel on run finish
+                // Hide the panel on map finish, but show it afterwards
+                m_bWasVisible = true; // Note: This OnThink will never happen if this panel is not drawn!
                 ShowPanel(false);
             }
         }
@@ -172,10 +174,7 @@ void C_MOMReplayUI::OnNewProgress(float scale)
     }
 }
 
-void C_MOMReplayUI::OnPBMouseWheeled(int delta)
-{
-    OnCommand(delta > 0 ? "nextframe" : "prevframe");
-}
+void C_MOMReplayUI::OnPBMouseWheeled(int delta) { OnCommand(delta > 0 ? "nextframe" : "prevframe"); }
 
 void C_MOMReplayUI::SetLabelText() const
 {
@@ -193,6 +192,14 @@ void C_MOMReplayUI::ShowPanel(bool state)
 {
     SetVisible(state);
     SetMouseInputEnabled(state);
+}
+
+void C_MOMReplayUI::FireGameEvent(IGameEvent *pEvent)
+{
+    if (pEvent->GetBool("restart"))
+        ShowPanel(m_bWasVisible);
+    else
+        m_bWasVisible = false;
 }
 
 // Command issued
@@ -234,6 +241,11 @@ void C_MOMReplayUI::OnCommand(const char *command)
         m_pGotoTick->GetText(tick, sizeof(tick));
         engine->ServerCmd(VarArgs("mom_replay_goto %s", tick));
         m_pGotoTick->SetText("");
+    }
+    else if (FStrEq("close", command))
+    {
+        m_bWasVisible = false;
+        Close();
     }
     else
     {

@@ -21,7 +21,7 @@ enum Selections
     RUI_MOVEFW,
 };
 
-class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel
+class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEventListener
 {
     DECLARE_CLASS_SIMPLE(C_MOMReplayUI, vgui::Frame);
     C_MOMReplayUI(IViewPort *pViewport);
@@ -41,6 +41,8 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel
     virtual bool HasInputElements(void) OVERRIDE { return true; }
 
     virtual void ShowPanel(bool state) OVERRIDE; // activate VGUI Frame
+
+    virtual void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     // VGUI functions:
     virtual vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
@@ -83,7 +85,9 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel
 
     IViewPort *m_pViewport;
 
-    int m_iTotalDuration;
+    int m_iTotalDuration, m_iPlayButtonSelected;
+
+    bool m_bWasVisible;
 
     wchar_t m_pwReplayTime[BUFSIZELOCL], m_pwReplayTimeTick[BUFSIZELOCL];
 };
