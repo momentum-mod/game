@@ -138,6 +138,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetRunTime(g_Timer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
     replay->SetRunDate(g_Timer->GetLastRunDate());
+    // TODO: Stages precision fix aswell
     replay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick + TIME_TO_TICKS(g_Timer->m_flTickOffsetFix[1] - (gpGlobals->interval_per_tick - g_Timer->m_flTickOffsetFix[0])));
 }
 
