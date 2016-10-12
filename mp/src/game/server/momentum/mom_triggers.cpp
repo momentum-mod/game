@@ -197,14 +197,8 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         pPlayer->m_RunData.m_flLastJumpVel = 0; // also reset last jump velocity when we enter the start zone
         pPlayer->m_RunData.m_flRunTime = 0.0f;  // MOM_TODO: Do we want to reset this?
 
-        if (g_Timer->IsRunning())
-        {
-            g_Timer->Stop(false); // Handles stopping replay recording as well
-            g_Timer->DispatchResetMessage();
-            // lower the player's speed if they try to jump back into the start zone
-        }
-
         // begin recording replay
+        // we need first to stop the recording before stopping timer
         if (!g_ReplaySystem->GetReplayManager()->Recording())
         {
             g_ReplaySystem->BeginRecording(pPlayer);
@@ -213,6 +207,14 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         {
             g_ReplaySystem->StopRecording(true, false);
             g_ReplaySystem->BeginRecording(pPlayer);
+        }
+
+    
+        if (g_Timer->IsRunning())
+        {
+            g_Timer->Stop(false); // Handles stopping replay recording as well
+            g_Timer->DispatchResetMessage();
+            // lower the player's speed if they try to jump back into the start zone
         }
     }
     else
