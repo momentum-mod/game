@@ -171,7 +171,7 @@ IFileSystem		*filesystem = NULL;
 #else
 extern IFileSystem *filesystem;
 #endif
-C_SharedDLL *shared = NULL;
+CShared *shared = NULL;
 INetworkStringTableContainer *networkstringtable = NULL;
 IStaticPropMgrServer *staticpropmgr = NULL;
 IUniformRandomStream *random = NULL;
@@ -765,7 +765,7 @@ void CServerGameDLL::PostInit()
 
 		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
 
-		shared = appSystemFactory ? ((C_SharedDLL*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
+		shared = appSystemFactory ? ((CShared*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
 		if (shared)
 		{
 			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (SERVER)\n");

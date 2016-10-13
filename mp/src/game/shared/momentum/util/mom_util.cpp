@@ -8,7 +8,7 @@
 
 extern IFileSystem *filesystem;
 
-inline void CleanupRequest(HTTPRequestCompleted_t* pCallback, uint8* pData)
+inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
 {
     if (pData)
     {
@@ -17,7 +17,6 @@ inline void CleanupRequest(HTTPRequestCompleted_t* pCallback, uint8* pData)
     pData = nullptr;
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
 
 void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
@@ -70,7 +69,7 @@ void MomentumUtil::DownloadMap(const char *szMapname)
 }
 
 void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
+                                        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
 {
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
@@ -94,8 +93,10 @@ void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumU
     }
 }
 
-bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func, KeyValues *params)
+bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
+                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
+                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
+                                                KeyValues *params)
 {
     bool bSuccess = false;
     if (steamapicontext && steamapicontext->SteamHTTP())
@@ -103,7 +104,8 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL, CCallResult<M
         HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
         FOR_EACH_VALUE(params, p_value)
         {
-            steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(), p_value->GetString());
+            steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
+                                                                           p_value->GetString());
         }
 
         SteamAPICall_t apiHandle;
@@ -118,7 +120,6 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL, CCallResult<M
         {
             Warning("Failed to send HTTP Request to report bug online!\n");
             steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-            
         }
     }
     else
@@ -132,16 +133,16 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL, CCallResult<M
 void MomentumUtil::GetRemoteRepoModVersion()
 {
     CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
-        &MomentumUtil::VersionCallback);
+                         &MomentumUtil::VersionCallback);
 }
 
 void MomentumUtil::GetRemoteChangelog()
 {
-    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog, 
-        &MomentumUtil::ChangelogCallback);
+    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog,
+                         &MomentumUtil::ChangelogCallback);
 }
 
-void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
+void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     const char *pError = "Error loading changelog!";
     if (bIOFailure)
@@ -201,7 +202,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         }
         if (repo < local)
         {
-            //The local version is higher than the repo version, do not show this panel
+            // The local version is higher than the repo version, do not show this panel
             break;
         }
     }
@@ -209,10 +210,9 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     CleanupRequest(pCallback, pData);
 }
 
-
-void MomentumUtil::GenerateBogusComparison(KeyValues* kvOut)
+void MomentumUtil::GenerateBogusComparison(KeyValues *kvOut)
 {
-    //RandomSeed(Plat_FloatTime());
+    // RandomSeed(Plat_FloatTime());
     for (int i = 1; i < MAX_STAGES; i++)
     {
         KeyValues *kvZone = new KeyValues("zone");
@@ -221,41 +221,40 @@ void MomentumUtil::GenerateBogusComparison(KeyValues* kvOut)
 
     KeyValues *kvTotal = new KeyValues("total");
     kvOut->AddSubKey(kvTotal);
-
 }
 
-void MomentumUtil::GenerateBogusRunStats(C_MomRunStats* pStatsOut)
+void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
 {
     RandomSeed(Plat_FloatTime());
     for (int i = 0; i < MAX_STAGES; i++)
     {
-        //Time
+        // Time
         pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
         pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
 
-        //Velocity
+        // Velocity
         pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
         pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
         pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
         pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
 
-        //Sync
+        // Sync
         pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
         pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
 
-        //Keypress
+        // Keypress
         pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
         pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
     }
 }
-
 #endif
 
-void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName) const
+void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName, bool negativeTime) const
 {
     // We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = abs(m_flSecondsTime);
-    char separator = fileName ? '-' : ':';//MOM_TODO: Think of a better char?
+    char separator = fileName ? '-' : ':'; // MOM_TODO: Think of a better char?
+    const char* negative = negativeTime ? "-" : "";
     int hours = m_flSecondsTime / (60.0f * 60.0f);
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
     int seconds = fmod(m_flSecondsTime, 60.0f);
@@ -267,49 +266,53 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
     {
     case 0:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d", hours, separator, minutes, separator, seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d", negative, hours, separator, minutes, separator, seconds);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d", minutes, separator, seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d", negative, minutes, separator, seconds);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%d", seconds);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d", negative, seconds);
         break;
     case 1:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%d", hours, separator, minutes, separator, seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%d", negative, hours, separator, minutes, separator,
+                       seconds, tenths);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%d", minutes, separator, seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%d", negative, minutes, separator, seconds, tenths);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%d.%d", seconds, tenths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%d", negative, seconds, tenths);
         break;
     case 2:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%02d", hours, separator, minutes, separator, seconds, hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%02d", negative, hours, separator, minutes, separator,
+                       seconds, hundredths);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%02d", minutes, separator, seconds, hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%02d", negative, minutes, separator, seconds, hundredths);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%d.%02d", seconds, hundredths);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%02d", negative, seconds, hundredths);
         break;
     case 3:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%03d", hours, separator, minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%03d", negative, hours, separator, minutes, separator,
+                       seconds, millis);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%03d", minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%03d", negative, minutes, separator, seconds, millis);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%d.%03d", seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%03d", negative, seconds, millis);
         break;
     case 4:
         if (hours > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d%c%02d.%04d", hours, separator, minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d%c%02d.%04d", negative, hours, separator, minutes, separator,
+                       seconds, millis);
         else if (minutes > 0)
-            Q_snprintf(pOut, BUFSIZETIME, "%d%c%02d.%04d", minutes, separator, seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d%c%02d.%04d", negative, minutes, separator, seconds, millis);
         else
-            Q_snprintf(pOut, BUFSIZETIME, "%d.%04d", seconds, millis);
+            Q_snprintf(pOut, BUFSIZETIME, "%s%d.%04d", negative, seconds, millis);
         break;
     }
 }
 
 Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor,
-    Color decreasecolor) const
+                                          Color decreasecolor) const
 {
     // variation is current velocity minus previous velocity.
     Color pFinalColor = normalcolor;
@@ -323,22 +326,20 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
     return pFinalColor;
 }
 
-Color* MomentumUtil::GetColorFromHex(const char* hexColor)
+Color *MomentumUtil::GetColorFromHex(const char *hexColor)
 {
     long hex = strtol(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
     if (length == 6)
     {
-        int r = ((hex >> 16) & 0xFF);   //extract RR byte
-        int g = ((hex >> 8) & 0xFF);    //extract GG byte
-        int b = ((hex) & 0xFF);         //extract BB byte
+        int r = ((hex >> 16) & 0xFF); // extract RR byte
+        int g = ((hex >> 8) & 0xFF);  // extract GG byte
+        int b = ((hex)&0xFF);         // extract BB byte
         m_newColor.SetColor(r, g, b, 75);
         return &m_newColor;
     }
-    else {
-        Msg("Error: Color format incorrect! Use hex code in format \"RRGGBB\"\n");
-        return nullptr;
-    }
+    Msg("Error: Color format incorrect! Use hex code in format \"RRGGBB\"\n");
+    return nullptr;
 }
 
 KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, float tickrate, int flags)
@@ -397,13 +398,13 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
     return toReturn;
 }
 
-void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, RunCompare_t *into)
+void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, RunCompare_t *into)
 {
     Q_strcpy(into->runName, compareName);
 
     FOR_EACH_SUBKEY(kvRun, kv)
     {
-        //Stages/checkpoints data
+        // Stages/checkpoints data
         if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
         {
             // Splits
@@ -421,13 +422,11 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, 
                 bool horizontalVel = (i == 1);
                 into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
                 into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneEnterVels[i].AddToTail(
-                    kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
-                into->zoneExitVels[i].AddToTail(
-                    kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
+                into->zoneEnterVels[i].AddToTail(kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
+                into->zoneExitVels[i].AddToTail(kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
             }
         }
-        //Overall stats
+        // Overall stats
         else if (!Q_strcmp(kv->GetName(), "total"))
         {
             // Keypress
@@ -442,41 +441,41 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues* kvRun, 
                 bool horizontalVel = (i == 1);
                 into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
                 into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneExitVels[i].AddToHead(
-                    kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
-                into->zoneEnterVels[i].AddToHead(
-                    kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
+                into->zoneExitVels[i].AddToHead(kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
+                into->zoneEnterVels[i].AddToHead(kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
             }
         }
     }
 }
 
-#define SAVE_3D_TO_KV(kvInto, pName, toSave) \
-    if (!kvInto || !pName) return; \
-    char value[512]; \
-    Q_snprintf(value, 512, "%f %f %f", toSave.x, toSave.y, toSave.z); \
+#define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
+    if (!kvInto || !pName)                                                                                             \
+        return;                                                                                                        \
+    char value[512];                                                                                                   \
+    Q_snprintf(value, 512, "%f %f %f", toSave.x, toSave.y, toSave.z);                                                  \
     kvInto->SetString(pName, value);
 
-#define LOAD_3D_FROM_KV(kvFrom, pName, into) \
-    if (!kvFrom || !pName) return; \
+#define LOAD_3D_FROM_KV(kvFrom, pName, into)                                                                           \
+    if (!kvFrom || !pName)                                                                                             \
+        return;                                                                                                        \
     sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
 
-void MomentumUtil::KVSaveVector(KeyValues* kvInto, const char* pName, Vector& toSave)
+void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, Vector &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
 
-void MomentumUtil::KVLoadVector(KeyValues* kvFrom, const char* pName, Vector& vecInto)
+void MomentumUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &vecInto)
 {
     LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
 }
 
-void MomentumUtil::KVSaveQAngles(KeyValues* kvInto, const char* pName, QAngle& toSave)
+void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
 
-void MomentumUtil::KVLoadQAngles(KeyValues* kvFrom, const char* pName, QAngle& angInto)
+void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto)
 {
     LOAD_3D_FROM_KV(kvFrom, pName, angInto);
 }

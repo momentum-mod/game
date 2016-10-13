@@ -146,6 +146,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool IsValidObserverTarget(CBaseEntity *target) override;
     bool SetObserverTarget(CBaseEntity *target) override;
     CBaseEntity *FindNextObserverTarget(bool bReverse) override;
+    void CheckObserverSettings() OVERRIDE;
 
     void StopSpectating();
 

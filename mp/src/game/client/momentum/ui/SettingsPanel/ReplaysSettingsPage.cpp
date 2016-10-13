@@ -46,6 +46,6 @@ void ReplaysSettingsPage::OnControlModified(Panel *p)
 void ReplaysSettingsPage::UpdateReplayEntityAlphaEntry() const
 {
     char buf[64];
-    Q_snprintf(buf, sizeof(buf), " %.1f", m_pReplayModelAlphaSlider->GetSliderValue());
+    Q_snprintf(buf, sizeof(buf), "%.1f", m_pReplayModelAlphaSlider->GetSliderValue());
     m_pReplayModelAlphaEntry->SetText(buf);
 }

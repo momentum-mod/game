@@ -30,9 +30,9 @@ public:
 		m_iv_vecPunchAngle( "CPlayerLocalData::m_iv_vecPunchAngle" ),
 		m_iv_vecPunchAngleVel( "CPlayerLocalData::m_iv_vecPunchAngleVel" )
 	{
-		//We can set animation because it's not about changing position or angles there
-		m_iv_vecPunchAngle.Setup(&m_vecPunchAngle.m_Value, LATCH_ANIMATION_VAR);
-		m_iv_vecPunchAngleVel.Setup(&m_vecPunchAngleVel.m_Value, LATCH_ANIMATION_VAR);
+		//Animation, because they aren't really anymore based on viewangle change or position FIX: Oh yeh because punchangle doesn't use angles and viewoffset use origin?!
+		m_iv_vecPunchAngle.Setup(&m_vecPunchAngle.m_Value, LATCH_SIMULATION_VAR);
+		m_iv_vecPunchAngleVel.Setup(&m_vecPunchAngleVel.m_Value, LATCH_SIMULATION_VAR);
 		m_flFOVRate = 0;
 	}
 

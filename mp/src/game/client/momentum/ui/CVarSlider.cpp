@@ -246,7 +246,7 @@ void CCvarSlider::SetSliderValue(float fValue)
 //-----------------------------------------------------------------------------
 void CCvarSlider::Reset()
 {
-    ConVarRef var(m_szCvarName);
+    ConVarRef var(m_szCvarName, !Q_strlen(m_szCvarName));
     if (!var.IsValid())
     {
         m_fCurrentValue = m_fStartValue = 0.0f;
