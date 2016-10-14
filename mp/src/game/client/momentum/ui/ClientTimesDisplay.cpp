@@ -704,8 +704,7 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
         DevLog("Loading from file %s...\n", filePath);
         if (pLoaded->LoadFromFile(filesystem, filePath, "MOD"))
         {
-            for (KeyValues *kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime;
-                 kvLocalTime = kvLocalTime->GetNextKey())
+            FOR_EACH_SUBKEY(pLoaded, kvLocalTime)
             {
                 Time t = Time(kvLocalTime);
                 m_vLocalTimes.InsertNoSort(t);
