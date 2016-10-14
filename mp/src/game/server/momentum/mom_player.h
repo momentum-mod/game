@@ -10,6 +10,7 @@
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
 #include "util/run_stats.h"
+#include "util/mom_util.h"
 #include <GameEventListener.h>
 
 class CMomentumReplayGhostEntity;
@@ -33,6 +34,16 @@ struct Checkpoint
     QAngle ang;
     char targetName[512];
     char targetClassName[512];
+
+    void FromKV(KeyValues *pKv)
+    {
+        Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
+        Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));
+        mom_UTIL->KVLoadVector(pKv, "pos", pos);
+        mom_UTIL->KVLoadVector(pKv, "vel", vel);
+        mom_UTIL->KVLoadQAngles(pKv, "ang", ang);
+        crouched = pKv->GetBool("crouched");
+    }
 };
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener
@@ -171,16 +182,20 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int GetCurrentCPMenuStep() const { return m_iCurrentStepCP; }
     // MOM_TODO: For leaderboard use later on
     bool IsUsingCPMenu() const { return m_bUsingCPMenu; }
-    // Creates a checkpoint (menu) on the location of the player
-    void CreateCheckpoint();
+    // Creates a checkpoint on the location of the player
+    Checkpoint *CreateCheckpoint();
+    // Creates and saves a checkpoint to the checkpoint menu
+    void CreateAndSaveCheckpoint();
     // Removes last checkpoint (menu) form the checkpoint lists
     void RemoveLastCheckpoint();
     // Removes every checkpoint (menu) on the checkpoint list
     void RemoveAllCheckpoints();
     // Teleports the player to the checkpoint (menu) with the given index
-    void TeleportToCP(int);
+    void TeleportToCheckpoint(int);
+    // Teleports to a provided Checkpoint
+    void TeleportToCheckpoint(Checkpoint *pCP);
     // Teleports the player to their current checkpoint
-    void TeleportToCurrentCP() { TeleportToCP(m_iCurrentStepCP); }
+    void TeleportToCurrentCP() { TeleportToCheckpoint(m_iCurrentStepCP); }
     // Sets the current checkpoint (menu) to the desired one with that index
     void SetCurrentCPMenuStep(int iNewNum) { m_iCurrentStepCP = iNewNum; }
     // Gets the total amount of menu checkpoints
@@ -196,7 +211,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
   private:
     CountdownTimer m_ladderSurpressionTimer;
-    CUtlVector<Checkpoint> m_rcCheckpoints;
+    CUtlVector<Checkpoint*> m_rcCheckpoints;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
     EHANDLE g_pLastSpawn;

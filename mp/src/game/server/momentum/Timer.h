@@ -44,7 +44,7 @@ class CTimer
           : m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_bIsRunning(false),
           m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr), m_pEndTrigger(nullptr),
           m_pCurrentCheckpoint(nullptr), m_pCurrentZone(nullptr), m_iCurrentStepCP(0), m_bUsingCPMenu(false),
-          m_pLocalTimes(nullptr)
+          m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr)
     {
     }
 
@@ -176,6 +176,10 @@ class CTimer
 
     void SetGameModeConVars();
 
+    void CreateStartMark();
+    Checkpoint *GetStartMark() const { return m_pStartZoneMark; }
+    void ClearStartMark();
+
   private:
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick;
@@ -197,6 +201,8 @@ class CTimer
 
     int m_iCurrentStepCP;
     bool m_bUsingCPMenu;
+    Checkpoint *m_pStartZoneMark;
+
 public:
     // PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the

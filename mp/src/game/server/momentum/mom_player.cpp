@@ -432,15 +432,21 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
     UTIL_Remove(pWeapon);
 }
 
-void CMomentumPlayer::CreateCheckpoint()
+Checkpoint *CMomentumPlayer::CreateCheckpoint()
 {
-    Checkpoint c;
-    c.ang = GetAbsAngles();
-    c.pos = GetAbsOrigin();
-    c.vel = GetAbsVelocity();
-    c.crouched = IsDucked() || IsDucking();  // Do we want IsDucking here??
-    Q_strncpy(c.targetName, GetEntityName().ToCStr(), sizeof(c.targetName));
-    Q_strncpy(c.targetClassName, GetClassname(), sizeof(c.targetClassName));
+    Checkpoint *c = new Checkpoint();
+    c->ang = GetAbsAngles();
+    c->pos = GetAbsOrigin();
+    c->vel = GetAbsVelocity();
+    c->crouched = IsDucked() || IsDucking();  // Do we want IsDucking here??
+    Q_strncpy(c->targetName, GetEntityName().ToCStr(), sizeof(c->targetName));
+    Q_strncpy(c->targetClassName, GetClassname(), sizeof(c->targetClassName));
+    return c;
+}
+
+void CMomentumPlayer::CreateAndSaveCheckpoint()
+{
+    Checkpoint *c = CreateCheckpoint();
     m_rcCheckpoints.AddToTail(c);
     if (m_iCurrentStepCP == m_iCheckpointCount - 1)
         ++m_iCurrentStepCP;
@@ -462,7 +468,7 @@ void CMomentumPlayer::RemoveLastCheckpoint()
 
 void CMomentumPlayer::RemoveAllCheckpoints()
 {
-    m_rcCheckpoints.RemoveAll();
+    m_rcCheckpoints.PurgeAndDeleteElements();
     m_iCurrentStepCP = -1;
     m_iCheckpointCount = 0;
 }
@@ -478,39 +484,45 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
 }
 
 
-void CMomentumPlayer::TeleportToCP(int newCheckpoint)
+void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
     if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0) return;
-    Checkpoint c = m_rcCheckpoints[newCheckpoint];
+    Checkpoint *c = m_rcCheckpoints[newCheckpoint];
+    TeleportToCheckpoint(c);
+}
+
+void CMomentumPlayer::TeleportToCheckpoint(Checkpoint* pCP)
+{
+    if (!pCP) return;
 
     // Handle custom ent flags that old maps do
-    SetName(MAKE_STRING(c.targetName));
-    SetClassname(c.targetClassName);
+    SetName(MAKE_STRING(pCP->targetName));
+    SetClassname(pCP->targetClassName);
 
     // Handle the crouched state
-    if (c.crouched && !IsDucked())
+    if (pCP->crouched && !IsDucked())
         ToggleDuckThisFrame(true);
-    else if (!c.crouched && IsDucked())
+    else if (!pCP->crouched && IsDucked())
         ToggleDuckThisFrame(false);
 
     //Teleport the player
-    Teleport(&c.pos, &c.ang, &c.vel);
+    Teleport(&pCP->pos, &pCP->ang, &pCP->vel);
 }
 
 void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
 {
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
-        Checkpoint c = m_rcCheckpoints[i];
+        Checkpoint *c = m_rcCheckpoints[i];
         char szCheckpointNum[6];//9 million checkpoints is pretty generous
         Q_snprintf(szCheckpointNum, 6, "%i", i);
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
-        kvCP->SetString("targetName", c.targetName);
-        kvCP->SetString("targetClassName", c.targetClassName);
-        mom_UTIL->KVSaveVector(kvCP, "vel", c.vel);
-        mom_UTIL->KVSaveVector(kvCP, "pos", c.pos);
-        mom_UTIL->KVSaveQAngles(kvCP, "ang", c.ang);
-        kvCP->SetBool("crouched", c.crouched);
+        kvCP->SetString("targetName", c->targetName);
+        kvCP->SetString("targetClassName", c->targetClassName);
+        mom_UTIL->KVSaveVector(kvCP, "vel", c->vel);
+        mom_UTIL->KVSaveVector(kvCP, "pos", c->pos);
+        mom_UTIL->KVSaveQAngles(kvCP, "ang", c->ang);
+        kvCP->SetBool("crouched", c->crouched);
         kvInto->AddSubKey(kvCP);
     }
 }
@@ -520,13 +532,8 @@ void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
     if (!kvFrom) return;
     FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
     {
-        Checkpoint c;
-        Q_strncpy(c.targetName, kvCheckpoint->GetString("targetName"), sizeof(c.targetName));
-        Q_strncpy(c.targetClassName, kvCheckpoint->GetString("targetClassName"), sizeof(c.targetClassName));
-        mom_UTIL->KVLoadVector(kvCheckpoint, "pos", c.pos);
-        mom_UTIL->KVLoadVector(kvCheckpoint, "vel", c.vel);
-        mom_UTIL->KVLoadQAngles(kvCheckpoint, "ang", c.ang);
-        c.crouched = kvCheckpoint->GetBool("crouched");
+        Checkpoint *c = new Checkpoint();
+        c->FromKV(kvFrom);
         m_rcCheckpoints.AddToTail(c);
     }
 
