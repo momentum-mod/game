@@ -87,4 +87,5 @@ voice_ban.dt
 *.pch.ib_tag
 *.ib_pdb_index
 *.cfg
-*.res
+mp/src/game/shared/Release_momentum/shared.dll
+mp/src/game/shared/Release_momentum/shared.dll

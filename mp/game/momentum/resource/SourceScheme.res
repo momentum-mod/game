@@ -166,6 +166,7 @@ Scheme
 
 		Slider.NobColor				"White"
 		Slider.TextColor			"White"
+        Slider.BgColor              "Blank"
 		Slider.TrackColor			"White"
 		Slider.DisabledTextColor1	"Dark Gray"
 		Slider.DisabledTextColor2	"50 50 50 255"

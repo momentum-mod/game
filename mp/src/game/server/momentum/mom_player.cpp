@@ -152,7 +152,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
         SetLaggedMovementValue(1.0f);
 
         // Fix for the replay system not being able to listen to events
-        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay() && !pEvent->GetBool("restart"))
         {
             g_ReplaySystem->GetReplayManager()->UnloadPlayback();
         }
@@ -254,8 +254,9 @@ void CMomentumPlayer::Spawn()
 
     SetNextThink(gpGlobals->curtime);
 
-    //Load the player's checkpoints
-    g_MOMCheckpointSystem->LoadMapCheckpoints(this);
+    //Load the player's checkpoints, only if we are spawning for the first time
+    if (m_rcCheckpoints.IsEmpty())
+        g_MOMCheckpointSystem->LoadMapCheckpoints(this);
 }
 
 // Obtains the player's previous origin using their current origin as a base.
@@ -823,6 +824,73 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
     return nullptr;
 }
 
+// Overridden for custom IN_EYE check
+void CMomentumPlayer::CheckObserverSettings()
+{
+    // check if we are in forced mode and may go back to old mode
+    if (m_bForcedObserverMode)
+    {
+        CBaseEntity * target = m_hObserverTarget;
+
+        if (!IsValidObserverTarget(target))
+        {
+            // if old target is still invalid, try to find valid one
+            target = FindNextObserverTarget(false);
+        }
+
+        if (target)
+        {
+            // we found a valid target
+            m_bForcedObserverMode = false;	// disable force mode
+            SetObserverMode(m_iObserverLastMode); // switch to last mode
+            SetObserverTarget(target); // goto target
+
+            // TODO check for HUD icons
+            return;
+        }
+        // else stay in forced mode, no changes
+        return;
+    }
+
+    // make sure our last mode is valid
+    if (m_iObserverLastMode < OBS_MODE_FIXED)
+    {
+        m_iObserverLastMode = OBS_MODE_ROAMING;
+    }
+
+    // check if our spectating target is still a valid one
+    if (m_iObserverMode == OBS_MODE_IN_EYE || m_iObserverMode == OBS_MODE_CHASE || m_iObserverMode == OBS_MODE_FIXED || m_iObserverMode == OBS_MODE_POI)
+    {
+        ValidateCurrentObserverTarget();
+
+        CMomentumReplayGhostEntity *target = GetReplayEnt();
+        // for ineye mode we have to copy several data to see exactly the same 
+
+        if (target && m_iObserverMode == OBS_MODE_IN_EYE)
+        {
+            int flagMask = FL_ONGROUND | FL_DUCKING;
+
+            int flags = target->GetFlags() & flagMask;
+
+            if ((GetFlags() & flagMask) != flags)
+            {
+                flags |= GetFlags() & (~flagMask); // keep other flags
+                ClearFlags();
+                AddFlag(flags);
+            }
+
+            if (target->GetViewOffset() != GetViewOffset())
+            {
+                SetViewOffset(target->GetViewOffset());
+            }
+            return;
+        }
+    }
+
+    // Call base class for player check
+    BaseClass::CheckObserverSettings();
+}
+
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
     // slowdown when map is finished
@@ -830,7 +898,7 @@ void CMomentumPlayer::TweenSlowdownPlayer()
         // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else
-        m_flTweenVelValue = 1.0f; // Reset the tweened value back to normal
+        m_flTweenVelValue = GetLaggedMovementValue(); // Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
 

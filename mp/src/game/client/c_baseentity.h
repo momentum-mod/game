@@ -1445,7 +1445,7 @@ public:
 
 	void TrackAngRotation( bool bTrack );
 
-private:
+public:
 	friend void OnRenderStart();
 
 	// Figure out the smoothly interpolated origin for all server entities. Happens right before

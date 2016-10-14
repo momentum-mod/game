@@ -1,5 +1,8 @@
 #include "cbase.h"
 #include "hud_mapfinished.h"
+#include "mom_shareddefs.h"
+#include <game/client/iviewport.h>
+#include "momSpectatorGUI.h"
 
 #include "tier0/memdbgon.h"
 
@@ -102,6 +105,10 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? m_pszRepeatToolTipReplay : m_pszRepeatToolTipMap);
 
                 mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
+                
+                CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
+                if (pPanel && pPanel->IsVisible())
+                    SetMouseInputEnabled(pPanel->IsMouseInputEnabled());
             }
         }
     }
@@ -131,11 +138,12 @@ void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
 }
 
-inline void FireMapFinishedClosedEvent()
+inline void FireMapFinishedClosedEvent(bool restart)
 {
     IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
     if (pClosePanel)
     {
+        pClosePanel->SetBool("restart", restart);
         //Fire this event so other classes can get at this
         gameeventmanager->FireEvent(pClosePanel);
     }
@@ -166,21 +174,14 @@ void CHudMapFinishedDialog::OnMousePressed(MouseCode code)
         {
             SetMouseInputEnabled(false);
             //The player either wants to repeat the replay (if spectating), or restart the map (not spec)
-            if (m_bIsGhost)
-            {
-                engine->ServerCmd("mom_replay_restart");
-            }
-            else
-            {
-                FireMapFinishedClosedEvent();
-                engine->ServerCmd("mom_restart");
-            }
+            engine->ServerCmd(m_bIsGhost ? "mom_replay_restart" : "mom_restart");
+            FireMapFinishedClosedEvent(true);
         }
         else if (over == m_pClosePanelButton->GetVPanel())
         {
             //This is where we unload comparisons, as well as the ghost if the player was speccing it
             SetMouseInputEnabled(false);
-            FireMapFinishedClosedEvent();
+            FireMapFinishedClosedEvent(false);
         }
     }
 }

@@ -185,7 +185,7 @@ void CHudKeyPressDisplay::OnThink()
         C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
         if (pReplayEnt)
         {
-            m_bShouldDrawCounts = pReplayEnt->m_RunData.m_bTimerRunning;
+            m_bShouldDrawCounts = false; // Not worth it
             m_nButtons = pReplayEnt->m_nReplayButtons;
             m_nStrafes = pReplayEnt->m_iTotalStrafes;
             m_nJumps = pReplayEnt->m_iTotalJumps;
