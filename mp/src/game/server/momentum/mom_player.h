@@ -220,6 +220,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
 
+    char m_pszDefaultEntName[128];
+
     // Start zone thinkfunc
     int m_nTicksInAir;
 

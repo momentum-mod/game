@@ -60,6 +60,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_bUsingCPMenu = false;
     m_iCurrentStepCP = -1;
 
+    Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
+
     ListenForGameEvent("mapfinished_panel_closed");
 }
 
@@ -161,6 +163,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
 
 void CMomentumPlayer::Spawn()
 {
+    SetName(MAKE_STRING(m_pszDefaultEntName));
     SetModel(ENTITY_MODEL);
     SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
@@ -676,6 +679,8 @@ void CMomentumPlayer::UpdateRunStats()
 }
 void CMomentumPlayer::ResetRunStats()
 {
+    SetName(MAKE_STRING(m_pszDefaultEntName)); // Reset name
+
     m_nPerfectSyncTicks = 0;
     m_nStrafeTicks = 0;
     m_nAccelTicks = 0;
