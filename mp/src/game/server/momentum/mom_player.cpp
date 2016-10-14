@@ -680,6 +680,7 @@ void CMomentumPlayer::UpdateRunStats()
 void CMomentumPlayer::ResetRunStats()
 {
     SetName(MAKE_STRING(m_pszDefaultEntName)); // Reset name
+    // MOM_TODO: Consider any other resets needed (classname, any flags, etc)
 
     m_nPerfectSyncTicks = 0;
     m_nStrafeTicks = 0;

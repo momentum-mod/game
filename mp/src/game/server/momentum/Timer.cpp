@@ -577,7 +577,7 @@ public:
         if (start)
         {
             // Don't set angles if still in start zone.
-            if (g_Timer->IsRunning() && start->GetHasLookAngles())
+            if (start->GetHasLookAngles())
             {
                 QAngle ang = start->GetLookAngles();
 
@@ -587,13 +587,14 @@ public:
             {
                 cPlayer->Teleport(&start->WorldSpaceCenter(), nullptr, &vec3_origin);
             }
-        } 
+        }
         else
         {
             CBaseEntity* startPoint = cPlayer->EntSelectSpawnPoint();
             if (startPoint)
             {
                 cPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), &vec3_origin);
+                cPlayer->ResetRunStats();
             }
         }
     }
