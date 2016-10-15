@@ -32,10 +32,10 @@ static ConVar mom_timer("mom_timer", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
 static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                          "Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Checkpoint\n");
 
-class C_Timer : public CHudElement, public Panel
+class C_HudTimer : public CHudElement, public Panel
 {
-    DECLARE_CLASS_SIMPLE(C_Timer, Panel);
-    C_Timer(const char *pElementName);
+    DECLARE_CLASS_SIMPLE(C_HudTimer, Panel);
+    C_HudTimer(const char *pElementName);
     void OnThink() override;
     void Init() override;
     void Reset() override;
@@ -119,11 +119,11 @@ class C_Timer : public CHudElement, public Panel
         noTimerLocalized[BUFSIZELOCL];
 };
 
-DECLARE_HUDELEMENT(C_Timer);
-DECLARE_HUD_MESSAGE(C_Timer, Timer_State);
-DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
+DECLARE_HUDELEMENT(C_HudTimer);
+DECLARE_HUD_MESSAGE(C_HudTimer, Timer_State);
+DECLARE_HUD_MESSAGE(C_HudTimer, Timer_Reset);
 
-C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
+C_HudTimer::C_HudTimer(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
 {
     // This is already set for HUD elements, but still...
     SetProportional(true);
@@ -133,14 +133,14 @@ C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_
     m_bIsReplay = false;
 }
 
-void C_Timer::Init()
+void C_HudTimer::Init()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
     m_iTotalTicks = 0;
     m_G_iCurrentTick = 0;
     m_G_iStartTickD = 0;
-    HOOK_HUD_MESSAGE(C_Timer, Timer_State);
-    HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
+    HOOK_HUD_MESSAGE(C_HudTimer, Timer_State);
+    HOOK_HUD_MESSAGE(C_HudTimer, Timer_Reset);
     initialTall = 48;
     m_iZoneCount = 0;
     m_pRunStats = nullptr;
@@ -157,7 +157,7 @@ void C_Timer::Init()
     LOCALIZE_TOKEN(NoTimer, "#MOM_NoTimer", noTimerLocalized);
 }
 
-void C_Timer::Reset()
+void C_HudTimer::Reset()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
     m_iTotalTicks = 0;
@@ -178,7 +178,7 @@ void C_Timer::Reset()
 }
 
 // This void handles playing effects for run start and run stop
-void C_Timer::MsgFunc_Timer_State(bf_read &msg)
+void C_HudTimer::MsgFunc_Timer_State(bf_read &msg)
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (!pPlayer)
@@ -222,9 +222,9 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     }
 }
 
-void C_Timer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
+void C_HudTimer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
-float C_Timer::GetCurrentTime()
+float C_HudTimer::GetCurrentTime()
 {
     // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     // so we add an extra tick here to make them line up again
@@ -249,7 +249,7 @@ float C_Timer::GetCurrentTime()
     return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }
 
-void C_Timer::OnThink()
+void C_HudTimer::OnThink()
 {
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pLocal && g_MOMEventListener)
@@ -289,7 +289,7 @@ void C_Timer::OnThink()
     }
 }
 
-void C_Timer::Paint(void)
+void C_HudTimer::Paint(void)
 {
     // Format the run's time
     mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);

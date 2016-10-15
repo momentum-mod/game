@@ -89,7 +89,10 @@ CMomentumGameRules::~CMomentumGameRules()
 }
 
 static CViewVectors g_MOMViewVectors(
-    Vector(0, 0, 64),		// eye position
+    Vector(0, 0, 62),		// eye position
+    //@tuxxi: this eye position does not affect the ingame camera, it only affects the 'virtual' eye position used by the renderer.
+    //the Z val is 64 by default, changing it to 62 to match the hull max fixes 
+    //the bug where the out-of-bounds area appears when hitting a ceiling while traveling upwards.
 
     Vector(-16, -16, 0),	// hull min
     Vector(16, 16, 62),	// hull max

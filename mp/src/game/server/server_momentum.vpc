@@ -55,12 +55,6 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
             }
-
-            $Folder "Timer"
-            {
-                $File   "momentum\Timer.h"
-                $File   "momentum\Timer.cpp"
-            }
             
             $Folder "Replays"
             {
@@ -153,6 +147,8 @@ $Project "Server (Momentum)"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
             $File "momentum\mom_system_checkpoint.cpp"
             $File "momentum\mom_system_checkpoint.h"
+            $File   "momentum\mom_timer.h"
+            $File   "momentum\mom_timer.cpp"
         }
         
         $File "hl2\Func_Monitor.cpp"

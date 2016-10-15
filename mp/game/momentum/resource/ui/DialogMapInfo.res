@@ -657,23 +657,6 @@
 		"auto_wide_tocontents"		"0"
 		"use_proportional_insets"		"0"
 	}
-	"PlayerList"
-	{
-		"ControlName"		"ListPanel"
-		"fieldName"		"PlayerList"
-		"xpos"		"24"
-		"ypos"		"228"
-		"wide"		"368"
-		"tall"		"140"
-		"autoResize"		"3"
-		"pinCorner"		"0"
-		"RoundedCorners"		"15"
-		"pin_corner_to_sibling"		"0"
-		"pin_to_sibling_corner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-	}
 	"GameText"
 	{
 		"ControlName"		"Label"
@@ -754,6 +737,23 @@
 		"textinsety"		"0"
 		"auto_wide_tocontents"		"0"
 		"use_proportional_insets"		"0"
+	}
+	"PlayerList"
+	{
+		"ControlName"		"ListPanel"
+		"fieldName"		"PlayerList"
+		"xpos"		"24"
+		"ypos"		"228"
+		"wide"		"368"
+		"tall"		"140"
+		"autoResize"		"3"
+		"pinCorner"		"0"
+		"RoundedCorners"		"15"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"0"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"		"0"
 	}
 	"BuildModeDialog"
 	{

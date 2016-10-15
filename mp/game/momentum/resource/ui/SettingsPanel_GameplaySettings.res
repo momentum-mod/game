@@ -89,7 +89,6 @@
 		"auto_wide_tocontents" "1"
 		"use_proportional_insets"		"0"
     }
-
 	"PlayBlockSound"
     {
         "ControlName" "CvarToggleCheckButton"
@@ -121,13 +120,12 @@
 		"cvar_value"		"1"
         "actionsignallevel" "1"
     }
-    
     "PracModeSafeGuard"
     {
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "PracModeSafeGuard"
         "xpos" "12"
-        "ypos" "47"
+        "ypos" "50"
         "wide"		"189"
 		"tall"		"16"
 		"autoResize"		"0"
@@ -154,7 +152,6 @@
 		"cvar_value"		"1"
         "actionsignallevel" "1"
     }
-    
     "SaveCheckpoints"
     {
         "ControlName" "CvarToggleCheckButton"

@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "mom_system_checkpoint.h"
-#include "Timer.h"
+#include "mom_timer.h"
 #include "mom_shareddefs.h"
 #include "filesystem.h"
 
@@ -72,7 +72,7 @@ void CMOMCheckpointSystem::LoadMapCheckpoints(CMomentumPlayer* pPlayer) const
 
 inline void CheckTimer()
 {
-    if (g_Timer->IsRunning())
+    if (g_pMomentumTimer->IsRunning())
     {
         // MOM_TODO: consider
         // 1. having a local timer running, as people may want to time their routes they're using CP menu for
@@ -84,7 +84,7 @@ inline void CheckTimer()
         case MOMGM_SURF:
         case MOMGM_BHOP:
         case MOMGM_SCROLL:
-            g_Timer->Stop(false);
+            g_pMomentumTimer->Stop(false);
 
             //case MOMGM_KZ:
         default:
@@ -106,7 +106,7 @@ CON_COMMAND_F(mom_checkpoint_create, "Creates a checkpoint that saves a player's
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        pPlayer->CreateCheckpoint();
+        pPlayer->CreateAndSaveCheckpoint();
     }
 }
 
