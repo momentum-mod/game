@@ -557,12 +557,14 @@ void CTimer::CreateStartMark()
     if (!pPlayer)
         return;
 
-    ClearStartMark();
-
     CTriggerTimerStart *start = GetStartTrigger();
     if (start && start->IsTouching(pPlayer))
     {
+        // Rid the previous one
+        ClearStartMark();
+
         m_pStartZoneMark = pPlayer->CreateCheckpoint();
+        m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
         DevLog("Successfully created a starting mark!\n");
     }
 }
