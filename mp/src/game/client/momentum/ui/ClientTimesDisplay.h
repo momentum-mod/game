@@ -39,6 +39,29 @@
 #define MAX_ONLINE_UPDATE_INTERVAL 45.0f  // The amount of seconds maximum between online checks
 #define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
 #define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
+
+struct Time
+{
+    float time_sec, rate;
+    time_t date;
+
+    explicit Time(KeyValues *kv)
+    {
+        time_sec = Q_atof(kv->GetName());
+        rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
+        date = static_cast<time_t>(kv->GetInt("date", 0));
+    };
+};
+
+class CUtlSortVectorTimeValue
+{
+public:
+    bool Less(const Time lhs, const Time rhs, void *)
+    {
+        return lhs.time_sec < rhs.time_sec;
+    }
+};
+
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
@@ -223,18 +246,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
-    struct Time
-    {
-        float time_sec, rate;
-        time_t date;
-
-        explicit Time(KeyValues *kv)
-        {
-            time_sec = Q_atof(kv->GetName());
-            rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
-            date = static_cast<time_t>(kv->GetInt("date", 0));
-        };
-    };
+    
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline
     {
@@ -272,7 +284,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
         }
     };
 
-    CUtlVector<Time> m_vLocalTimes;
+    CUtlSortVector<Time, CUtlSortVectorTimeValue> m_vLocalTimes;
     CUtlVector<TimeOnline *> m_vOnlineTimes;
     CUtlVector<TimeOnline *> m_vFriendsTimes;
 

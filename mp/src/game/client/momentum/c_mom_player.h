@@ -45,6 +45,8 @@ public:
         return dynamic_cast<C_MomentumReplayGhostEntity*>(m_hObserverTarget.Get());
     }
 
+    Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
+
     int m_iShotsFired;
     int m_iDirection;
     bool m_bResumeZoom;

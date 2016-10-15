@@ -11,38 +11,25 @@
 		"enabled"			"1"
 		"tabPosition"		"0"
 	}
-	"topbar"
+	"TopBar"
 	{
 		"ControlName"		"Panel"
-		"fieldName"			"topbar"
-		"xpos"				"0"
+		"fieldName"			"TopBar"
+        "xpos"				"0"
 		"ypos"				"0"
 		"tall"				"52"
-		"wide"				"640"
-		"autoResize"		"0"
-		"pinCorner"			"0"
-		"visible"			"1"
-		"enabled"			"1"
-		"tabPosition"		"0"
-	}	
-    "bottombarblank"
-	{
-		"ControlName"		"Panel"
-		"fieldName"			"bottombarblank"
-		"xpos"				"0"
-		"ypos"				"428"
-		"tall"				"55"		// this needs to match the size of BottomBar
-		"wide"				"640"
+        //Handled in code
+		"wide"				"0" 
 		"autoResize"		"0"
 		"pinCorner"			"0"
 		"visible"			"1"
 		"enabled"			"1"
 		"tabPosition"		"0"
 	}
-	"playerlabel"
+	"PlayerLabel"
 	{
 		"ControlName"		"Label"
-		"fieldName"			"playerlabel"
+		"fieldName"			"PlayerLabel"
 		"xpos"				"10"
 		"ypos"				"20"
 		"wide"				"81"
@@ -51,16 +38,15 @@
 		"pinCorner"			"0"
 		"visible"			"1"
 		"enabled"			"1"
-		"labelText"			""
 		"textAlignment"		"west"
 		"dulltext"			"0"
 		"brighttext"		"0"
         "auto_wide_tocontents" "1"
 	}
-    "timelabel"
+    "TimeLabel"
 	{
 		"ControlName"		"Label"
-		"fieldName"			"timelabel"
+		"fieldName"			"TimeLabel"
 		"xpos"				"10"
 		"ypos"				"28"
 		"wide"				"81"
@@ -69,16 +55,15 @@
 		"pinCorner"			"0"
 		"visible"			"1"
 		"enabled"			"1"
-		"labelText"			""
 		"textAlignment"		"west"
 		"dulltext"			"0"
 		"brighttext"		"0"
         "auto_wide_tocontents" "1"
 	}
-    "replaylabel"
+    "ReplayLabel"
 	{
 		"ControlName"		"Label"
-		"fieldName"			"replaylabel"
+		"fieldName"			"ReplayLabel"
 		"xpos"				"c-175"
 		"ypos"				"18"
 		"wide"				"350"
@@ -91,10 +76,10 @@
 		"textAlignment"		"center"
 	}
     //"Map" label
-	"extrainfo"
+	"MapLabel"
 	{
 		"ControlName"		"Label"
-		"fieldName"			"extrainfo"
+		"fieldName"			"MapLabel"
 		"xpos"				"10"
 		"ypos"				"12"
 		"wide"				"81"
@@ -103,36 +88,16 @@
 		"pinCorner"			"0"
 		"visible"			"1"
 		"enabled"			"1"
-		"labelText"			""
 		"textAlignment"		"west"
 		"dulltext"			"0"
 		"brighttext"		"0"
         "auto_wide_tocontents" "1"
 	}
-    //Not used?
-	"titlelabel"
-	{
-		"ControlName"		"Label"
-		"fieldName"			"titlelabel"
-		"xpos"				"16"
-		"ypos"				"16"
-		"wide"				"320"
-		"tall"				"20"
-		"autoResize"		"0"
-		"pinCorner"			"0"
-		"visible"			"1"
-		"enabled"			"1"
-		"font"				"HudNumbersSmall"
-		"labelText"			""
-		"textAlignment"		"west"
-		"dulltext"			"0"
-		"brighttext"		"0"
-	}
     
-    "Close_Panel"
+    "ClosePanel"
     {
         "ControlName"   "ImagePanel"
-        "fieldName"     "Close_Panel"
+        "fieldName"     "ClosePanel"
         "xpos"          "r36"//Give a 4 pixel padding
         "ypos"          "4"
         "wide"          "32"
@@ -143,5 +108,39 @@
         "enabled"       "1"
         "scaleImage"    "1"
         "image"         "close_button"
+        "tooltiptext"   "#MOM_SpecGUI_StopPlayback"
+        "mouseinputenabled" "1"
+    }
+    
+    "ShowControls"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "ShowControls"
+        "xpos"          "r72"
+        "ypos"          "4"
+        "wide"          "32"
+        "tall"          "32"
+        "autoResize"    "0"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "scaleImage"    "1"
+        "tooltiptext"   "#MOM_SpecGUI_ToggleControls" 
+        "image"         "toggle_replay_controls"
+        "mouseinputenabled" "1"
+    }
+    
+    "DetachInfo"
+    {
+        "ControlName" "Label"
+        "fieldName" "DetachInfo"
+        "xpos" "r202"
+        "ypos" "34"
+        "wide" "200"
+        "tall" "20"
+        "textAlignment" "east"
+        "labelText" "#MOM_SpecGUI_GainControl"
+        "dulltext" "0"
+        "brighttext" "0"
     }
 }

@@ -4,9 +4,9 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_player.h"
 #include "in_buttons.h"
 #include "mom_entity_run_data.h"
+#include "mom_player.h"
 #include "mom_replay_data.h"
 #include "mom_replay_system.h"
 #include <GameEventListener.h>
@@ -47,40 +47,37 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void SetGhostBodyGroup(int bodyGroup);
     static void SetGhostColor(const CCommand &args);
     // Increments the steps intelligently.
-    void UpdateStep();
+    void UpdateStep(int Skip);
 
     void EndRun();
-    void StartRun(bool firstPerson = false, bool shouldLoop = false);
+    void StartRun(bool firstPerson = false);
     void StartTimer(int m_iStartTick);
     void StopTimer();
     void HandleGhost();
     void HandleGhostFirstPerson();
     void UpdateStats(Vector ghostVel); // for hud display..
 
-    const char* GetGhostModel() const { return m_pszModel; }
-    void SetRunStats(CMomRunStats* stats) { m_RunStats.CopyFrom(*stats); }
+    const char *GetGhostModel() const { return m_pszModel; }
+    void SetRunStats(CMomRunStats *stats) { m_RunStats.CopyFrom(*stats); }
 
-    void AddSpectator(CMomentumPlayer* player)
+    void AddSpectator(CMomentumPlayer *player)
     {
         if (m_rgSpectators.Find(player) == m_rgSpectators.InvalidIndex())
             m_rgSpectators.AddToTail(player);
     }
 
-    void RemoveSpectator(CMomentumPlayer* player)
-    {
-        m_rgSpectators.FindAndRemove(player);
-    }
+    void RemoveSpectator(CMomentumPlayer *player) { m_rgSpectators.FindAndRemove(player); }
 
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
     inline void SetRunFlags(uint32 flags) { m_RunData.m_iRunFlags = flags; }
 
-    void SetPlaybackReplay(CMomReplayBase* pPlayback) { m_pPlaybackReplay = pPlayback; }
+    void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame* GetCurrentStep() { return m_pPlaybackReplay->GetFrame(shared->m_iCurrentTick); }
-    CReplayFrame* GetNextStep();
+    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentTick); }
+    CReplayFrame *GetNextStep();
 
     bool m_bIsActive;
-    bool m_bReplayShouldLoop, m_bReplayFirstPerson;
+    bool m_bReplayFirstPerson;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);
@@ -88,6 +85,9 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     CNetworkVar(int, m_iTotalStrafes);
     CNetworkVar(int, m_iTotalJumps);
     CNetworkVar(float, m_flTickRate);
+    CNetworkVar(int, m_iTotalTimeTicks);
+    CNetworkVar(int, m_iCurrentTick);
+    CNetworkVar(bool, m_bIsPaused);
     CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
   protected:

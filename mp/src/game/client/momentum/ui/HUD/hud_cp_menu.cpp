@@ -6,7 +6,6 @@
 
 static void SelectMenuItem(int menu_item)
 {
-    C_MomentumPlayer* cPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     switch (menu_item)
     {
     case 1://create a checkpoint
@@ -31,6 +30,7 @@ static void SelectMenuItem(int menu_item)
         engine->ExecuteClientCmd("mom_checkpoint_close");
         break;
     default:
+        C_MomentumPlayer* cPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
         if (cPlayer != nullptr)
         {
             cPlayer->EmitSound("Momentum.UIMissingMenuSelection");

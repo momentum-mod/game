@@ -26,7 +26,6 @@ private:
 
     void UpdateYawspeedEntry() const;
 
-    CvarToggleCheckButton<ConVarRef> *m_pPlayBlockSound;
     CCvarSlider *m_pYawSpeedSlider;
     TextEntry *m_pYawSpeedEntry;
 };

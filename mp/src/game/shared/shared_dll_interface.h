@@ -1,17 +1,12 @@
+#pragma once
+
 #include "interface.h"
 
-class C_SharedDLL
+class CShared
 {
-public:
+  public:
+    bool LoadedClient = false;
+    bool LoadedServer = false;
+};
 
-	virtual void Something();
-
-	int m_iTotalTicks;
-	int m_iCurrentTick;
-	bool m_bIsPlaying;
-	int m_iTotalTicksT;
-	bool LoadedClient;
-	bool LoadedServer;
-}; 
-
-#define INTERFACEVERSION_SHAREDGAMEDLL			"SHAREDGAMEDLL001"
+#define INTERFACEVERSION_SHAREDGAMEDLL "SHAREDGAMEDLL001"

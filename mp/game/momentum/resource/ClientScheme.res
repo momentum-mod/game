@@ -125,9 +125,9 @@ Scheme
 		Frame.AutoSnapRange				"0"
 		FrameGrip.Color1				"Blank"
 		FrameGrip.Color2				"Blank"
-		FrameTitleButton.FgColor		"Blank"
+		FrameTitleButton.FgColor		"200 200 200 196"
 		FrameTitleButton.BgColor		"Blank"
-		FrameTitleButton.DisabledFgColor	"Blank"
+		FrameTitleButton.DisabledFgColor	"200 200 200 196"
 		FrameTitleButton.DisabledBgColor	"Blank"
 		FrameSystemButton.FgColor		"Blank"
 		FrameSystemButton.BgColor		"Blank"
@@ -167,7 +167,7 @@ Scheme
 		Panel.FgColor					"WhiteDim"
 		Panel.BgColor					"blank"
 
-		ProgressBar.FgColor				"White"
+		ProgressBar.FgColor				"Light Blue"
 		ProgressBar.BgColor				"TransparentBlack"
 
 		PropertySheet.TextColor			"White"
@@ -203,20 +203,21 @@ Scheme
 		SectionedListPanel.OutOfFocusSelectedTextColor	"White"
 		SectionedListPanel.OutOfFocusSelectedBgColor	"Light Blue"
 
-		Slider.NobColor				"108 108 108 255"
-		Slider.TextColor			"127 140 127 255"
+		Slider.NobColor				"White"//"108 108 108 255"
+		Slider.TextColor			"White"//"127 140 127 255"
+        Slider.BgColor              "Blank"
 		Slider.TrackColor			"31 31 31 255"
 		Slider.DisabledTextColor1	"117 117 117 255"
 		Slider.DisabledTextColor2	"30 30 30 255"
 
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"TransparentBlack"
-		TextEntry.CursorColor		"Black"
+		TextEntry.CursorColor		"Light Gray"
 		TextEntry.DisabledTextColor	"White"
 		TextEntry.DisabledBgColor	"Blank"
-		TextEntry.SelectedTextColor	"Black"
-		TextEntry.SelectedBgColor	"Red"
-		TextEntry.OutOfFocusSelectedBgColor	"Red"
+		TextEntry.SelectedTextColor	"Light Gray"
+		TextEntry.SelectedBgColor	"Dark Blue"
+		TextEntry.OutOfFocusSelectedBgColor	"Light Blue"
 		TextEntry.FocusEdgeColor	"TransparentBlack"
 
 		ToggleButton.SelectedTextColor	"White"
@@ -1167,124 +1168,20 @@ Scheme
 				}
 			}
 		}
-		
-		TitleButtonBorder
+        
+        TitleButtonBorder
 		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
-
+		
 		TitleButtonDisabledBorder
 		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "1 0"
-				}
-			}
-			Top
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
 
 		TitleButtonDepressedBorder
 		{
-			"inset" "1 1 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
 
 		ScrollBarButtonBorder

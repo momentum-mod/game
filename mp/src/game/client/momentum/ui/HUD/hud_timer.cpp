@@ -1,10 +1,10 @@
 #include "cbase.h"
+#include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "baseviewport.h"
 #include "menu.h"
 #include "utlvector.h"
 #include "vgui_helpers.h"
@@ -32,18 +32,16 @@ static ConVar mom_timer("mom_timer", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE,
 static ConVar timer_mode("mom_timer_mode", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED,
                          "Set what type of timer you want.\n0 = Generic Timer (no splits)\n1 = Splits by Checkpoint\n");
 
-class C_Timer : public CHudElement, public Panel
+class C_HudTimer : public CHudElement, public Panel
 {
-    DECLARE_CLASS_SIMPLE(C_Timer, Panel);
-
-  public:
-    C_Timer(const char *pElementName);
+    DECLARE_CLASS_SIMPLE(C_HudTimer, Panel);
+    C_HudTimer(const char *pElementName);
     void OnThink() override;
     void Init() override;
     void Reset() override;
     void Paint() override;
     bool ShouldDraw() override
-    { 
+    {
         IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
         return mom_timer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible();
     }
@@ -59,7 +57,7 @@ class C_Timer : public CHudElement, public Panel
     void MsgFunc_Timer_Reset(bf_read &msg);
     float GetCurrentTime();
     bool m_bIsRunning;
-    bool m_bTimerRan;//MOM_TODO: What is this used for?
+    bool m_bTimerRan; // MOM_TODO: What is this used for?
     int m_iStartTick;
 
   protected:
@@ -85,7 +83,10 @@ class C_Timer : public CHudElement, public Panel
 
   private:
     int m_iZoneCurrent, m_iZoneCount;
+    int m_iTotalTicks, m_G_iStartTickD, m_G_iCurrentTick;
     int initialTall;
+    bool m_bIsReplay;
+    // float m_fCurrentTime;
 
     wchar_t m_pwCurrentTime[BUFSIZETIME];
     char m_pszString[BUFSIZETIME];
@@ -118,26 +119,29 @@ class C_Timer : public CHudElement, public Panel
         noTimerLocalized[BUFSIZELOCL];
 };
 
-DECLARE_HUDELEMENT(C_Timer);
-DECLARE_HUD_MESSAGE(C_Timer, Timer_State);
-DECLARE_HUD_MESSAGE(C_Timer, Timer_Reset);
+DECLARE_HUDELEMENT(C_HudTimer);
+DECLARE_HUD_MESSAGE(C_HudTimer, Timer_State);
+DECLARE_HUD_MESSAGE(C_HudTimer, Timer_Reset);
 
-C_Timer::C_Timer(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
+C_HudTimer::C_HudTimer(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
 {
     // This is already set for HUD elements, but still...
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    m_bIsReplay = false;
 }
 
-void C_Timer::Init()
+void C_HudTimer::Init()
 {
-    HOOK_HUD_MESSAGE(C_Timer, Timer_State);
-    HOOK_HUD_MESSAGE(C_Timer, Timer_Reset);
+    // We reset only if it was a run not a replay -> lets check if shared was valid first
+    m_iTotalTicks = 0;
+    m_G_iCurrentTick = 0;
+    m_G_iStartTickD = 0;
+    HOOK_HUD_MESSAGE(C_HudTimer, Timer_State);
+    HOOK_HUD_MESSAGE(C_HudTimer, Timer_Reset);
     initialTall = 48;
-	if (shared)
-		shared->m_iTotalTicksT = 0;
     m_iZoneCount = 0;
     m_pRunStats = nullptr;
     // Reset();
@@ -153,12 +157,14 @@ void C_Timer::Init()
     LOCALIZE_TOKEN(NoTimer, "#MOM_NoTimer", noTimerLocalized);
 }
 
-void C_Timer::Reset()
+void C_HudTimer::Reset()
 {
+    // We reset only if it was a run not a replay -> lets check if shared was valid first
+    m_iTotalTicks = 0;
+    m_G_iCurrentTick = 0;
+    m_G_iStartTickD = 0;
     m_bIsRunning = false;
     m_bTimerRan = false;
-	if (shared)
-		shared->m_iTotalTicksT = 0;
     m_iZoneCurrent = 1;
     m_bShowCheckpoints = false;
     m_bWereCheatsActivated = false;
@@ -172,7 +178,7 @@ void C_Timer::Reset()
 }
 
 // This void handles playing effects for run start and run stop
-void C_Timer::MsgFunc_Timer_State(bf_read &msg)
+void C_HudTimer::MsgFunc_Timer_State(bf_read &msg)
 {
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (!pPlayer)
@@ -208,7 +214,7 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
         // VGUI_ANIMATE("TimerStop");
         if (pPlayer != nullptr)
         {
-			  m_bTimerRan = true;
+            m_bTimerRan = true;
             pPlayer->EmitSound("Momentum.StopTimer");
         }
 
@@ -216,29 +222,34 @@ void C_Timer::MsgFunc_Timer_State(bf_read &msg)
     }
 }
 
-void C_Timer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
+void C_HudTimer::MsgFunc_Timer_Reset(bf_read &msg) { Reset(); }
 
-float C_Timer::GetCurrentTime()
+float C_HudTimer::GetCurrentTime()
 {
     // HACKHACK: The client timer stops 1 tick behind the server timer for unknown reasons,
     // so we add an extra tick here to make them line up again
 
-	//If we even loaded the shared DLL
-    if (shared)
-    {
-        shared->m_iTotalTicksT = m_bIsRunning ? gpGlobals->tickcount - m_iStartTick + 1 : 0;
-    }
-    else
-    {
-        return 0.0f;
-    }
-	
+    // Done, I've shouldn't have checked if tickcount wasn't the same for only one frame, but for all the frames that
+    // paint is getting called.
 
-	return static_cast<float>(shared->m_iTotalTicksT) * gpGlobals->interval_per_tick;
+    static int OldTickCount = 0;
+
+    if (gpGlobals->tickcount != OldTickCount && !m_bIsReplay)
+    {
+        m_iTotalTicks = m_bIsRunning ? m_iTotalTicks + 1 : 0;
+    }
+
+    if (m_bIsReplay)
+    {
+        m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
+    }
+
+    OldTickCount = gpGlobals->tickcount;
+
+    return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }
 
-// Calculations should be done in here. Paint is for drawing what the calculations have done.
-void C_Timer::OnThink()
+void C_HudTimer::OnThink()
 {
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (pLocal && g_MOMEventListener)
@@ -251,11 +262,15 @@ void C_Timer::OnThink()
             m_iCheckpointCurrent = 0;
             m_iCheckpointCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
+            m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
+            m_G_iCurrentTick = pGhost->m_iCurrentTick;
+            m_G_iStartTickD = pGhost->m_RunData.m_iStartTickD;
             runData = &pGhost->m_RunData;
         }
         else
         {
+            m_bIsReplay = false;
             m_bShowCheckpoints = pLocal->m_bUsingCPMenu;
             m_iCheckpointCurrent = pLocal->m_iCurrentStepCP + 1;
             m_iCheckpointCount = pLocal->m_iCheckpointCount;
@@ -274,7 +289,7 @@ void C_Timer::OnThink()
     }
 }
 
-void C_Timer::Paint(void)
+void C_HudTimer::Paint(void)
 {
     // Format the run's time
     mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);
@@ -299,14 +314,14 @@ void C_Timer::Paint(void)
     {
         Q_snprintf(prevStageString, BUFSIZELOCL, "%s %i",
                    m_bMapIsLinear ? cpLocalized : stLocalized, // Stage localization ("Checkpoint:" if linear)
-                   m_iZoneCurrent - 1); // Last stage number
+                   m_iZoneCurrent - 1);                        // Last stage number
 
         ANSI_TO_UNICODE(prevStageString, prevStageStringUnicode);
 
         ConVarRef timeType("mom_comparisons_time_type");
         // This void works even if there is no comparison loaded
-        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_pRunStats, 
-            m_iZoneCurrent - 1, m_pszStageTimeString, comparisonANSI, &compareColor);
+        g_MOMRunCompare->GetComparisonString(timeType.GetBool() ? ZONE_TIME : TIME_OVERALL, m_pRunStats,
+                                             m_iZoneCurrent - 1, m_pszStageTimeString, comparisonANSI, &compareColor);
 
         // Convert the split to Unicode
         ANSI_TO_UNICODE(m_pszStageTimeString, m_pwStageTimeLabel);
@@ -315,14 +330,8 @@ void C_Timer::Paint(void)
     // find out status of timer (no timer/practice mode)
     if (!m_bIsRunning)
     {
-        if (m_bPlayerHasPracticeMode) // In practice mode
-        {
-            Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), practiceModeLocalized);
-        }
-        else // no timer
-        {
-            Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), noTimerLocalized);
-        }
+        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus),
+                   m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized); // ? practice mode : no timer
         ANSI_TO_UNICODE(m_pszStringStatus, m_pwCurrentStatus);
     }
 
@@ -378,23 +387,24 @@ void C_Timer::Paint(void)
         {
             prevStageXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, prevStageString) / 2;
 
-            //Inline the comparison (affects split xpos)
+            // Inline the comparison (affects split xpos)
             int extra = hasComparison ? UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) : 0;
-            stageSplitXPos = GetWide() / 2 - (UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + extra) / 2;
+            stageSplitXPos =
+                GetWide() / 2 - (UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + extra) / 2;
         }
 
-        //Print the previous stage
+        // Print the previous stage
         surface()->DrawSetTextPos(prevStageXPos, splitY);
         surface()->DrawPrintText(prevStageStringUnicode, wcslen(prevStageStringUnicode));
 
-        //Go down a line
+        // Go down a line
         splitY += yToIncrement;
 
-        //Print the split
+        // Print the split
         surface()->DrawSetTextPos(stageSplitXPos, splitY);
         surface()->DrawPrintText(m_pwStageTimeLabel, wcslen(m_pwStageTimeLabel));
 
-        //Draw the comparison to the split, if existent
+        // Draw the comparison to the split, if existent
         if (hasComparison)
         {
             // Convert to unicode.
@@ -402,12 +412,12 @@ void C_Timer::Paint(void)
             ANSI_TO_UNICODE(comparisonANSI, comparisonUnicode);
 
             // This will be right below where the time begins to print, but is unwanted
-            //int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
-            //splitY += yToIncrement;
+            // int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
+            // splitY += yToIncrement;
 
-            //Find the xpos of the comparison string
+            // Find the xpos of the comparison string
             int compare_xpos = stageSplitXPos + UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + 2;
-            //Print the comparison
+            // Print the comparison
             surface()->DrawSetTextPos(compare_xpos, splitY);
             surface()->DrawSetTextColor(compareColor);
             surface()->DrawPrintText(comparisonUnicode, wcslen(comparisonUnicode));

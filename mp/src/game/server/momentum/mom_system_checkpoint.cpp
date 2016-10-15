@@ -1,14 +1,19 @@
 #include "cbase.h"
 #include "mom_system_checkpoint.h"
-#include "Timer.h"
+#include "mom_timer.h"
+#include "mom_shareddefs.h"
 #include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
 #define CHECKPOINTS_FILE_NAME "checkpoints.txt"
 
+MAKE_TOGGLE_CONVAR(mom_checkpoint_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if checkpoints should be saved between sessions of the same map.\n");
+
 void CMOMCheckpointSystem::LevelInitPostEntity()
 {
+    // We don't check mom_checkpoints_save_between_sessions because we want to be able to, for example
+    // load checkpoints from friends
     DevLog("Loading checkpoints from %s ...\n", CHECKPOINTS_FILE_NAME);
 
     if (m_pCheckpointsKV)
@@ -30,22 +35,22 @@ void CMOMCheckpointSystem::LevelInitPostEntity()
 void CMOMCheckpointSystem::LevelShutdownPreEntity()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer && m_pCheckpointsKV && pPlayer->GetCPCount() > 0)
+    if (pPlayer && m_pCheckpointsKV && pPlayer->GetCPCount() && mom_checkpoint_save_between_sessions.GetBool())
     {
         DevLog("Saving map %s checkpoints to %s ...\n", gpGlobals->mapname.ToCStr(), CHECKPOINTS_FILE_NAME);
-        //Make the KV to save into and save into it
+        // Make the KV to save into and save into it
         KeyValues *pKvMapCheckpoints = new KeyValues(gpGlobals->mapname.ToCStr());
         pPlayer->SaveCPsToFile(pKvMapCheckpoints);
 
-        //Remove the map if it already exists in there
+        // Remove the map if it already exists in there
         KeyValues *pExisting = m_pCheckpointsKV->FindKey(gpGlobals->mapname.ToCStr());
         if (pExisting)
             m_pCheckpointsKV->RemoveSubKey(pExisting);
 
-        //Add the new one
+        // Add the new one
         m_pCheckpointsKV->AddSubKey(pKvMapCheckpoints);
 
-        //Save everything to file
+        // Save everything to file
         if (m_pCheckpointsKV->SaveToFile(filesystem, CHECKPOINTS_FILE_NAME, "MOD", true))
             DevLog("Saved map %s checkpoints to %s!\n", gpGlobals->mapname.ToCStr(), CHECKPOINTS_FILE_NAME);
     }
@@ -67,7 +72,7 @@ void CMOMCheckpointSystem::LoadMapCheckpoints(CMomentumPlayer* pPlayer) const
 
 inline void CheckTimer()
 {
-    if (g_Timer->IsRunning())
+    if (g_pMomentumTimer->IsRunning())
     {
         // MOM_TODO: consider
         // 1. having a local timer running, as people may want to time their routes they're using CP menu for
@@ -79,7 +84,7 @@ inline void CheckTimer()
         case MOMGM_SURF:
         case MOMGM_BHOP:
         case MOMGM_SCROLL:
-            g_Timer->Stop(false);
+            g_pMomentumTimer->Stop(false);
 
             //case MOMGM_KZ:
         default:
@@ -101,7 +106,7 @@ CON_COMMAND_F(mom_checkpoint_create, "Creates a checkpoint that saves a player's
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        pPlayer->CreateCheckpoint();
+        pPlayer->CreateAndSaveCheckpoint();
     }
 }
 
@@ -120,7 +125,7 @@ CON_COMMAND_F(mom_checkpoint_nav_next, "Goes forwards through the checkpoint lis
     CheckTimer();
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    if (pPlayer && pPlayer->GetCPCount() > 0)
     {
         pPlayer->SetCurrentCPMenuStep((pPlayer->GetCurrentCPMenuStep() + 1) % pPlayer->GetCPCount());
         pPlayer->TeleportToCurrentCP();
@@ -131,7 +136,7 @@ CON_COMMAND_F(mom_checkpoint_nav_prev, "Goes backwards through the checkpoint li
     CheckTimer();
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    if (pPlayer && pPlayer->GetCPCount() > 0)
     {
         pPlayer->SetCurrentCPMenuStep(pPlayer->GetCurrentCPMenuStep() == 0 ? pPlayer->GetCPCount() - 1 : pPlayer->GetCurrentCPMenuStep() - 1);
         pPlayer->TeleportToCurrentCP();

@@ -65,7 +65,7 @@ void CMOMServerEvents::LevelInitPostEntity()
     zones->SpawnMapZones();
 
     //Setup timer
-    g_Timer->OnMapStart(pMapName);
+    g_pMomentumTimer->OnMapStart(pMapName);
 
     // Reset zone editing
     g_MapzoneEdit.Reset();
@@ -88,20 +88,20 @@ void CMOMServerEvents::LevelShutdownPreEntity()
     ConVarRef gm("mom_gamemode");
     gm.SetValue(gm.GetDefault());
 
-    g_Timer->OnMapEnd(pMapName);
+    g_pMomentumTimer->OnMapEnd(pMapName);
 }
 
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     g_MapzoneEdit.Update();
 
-    if (!g_Timer->GotCaughtCheating())
+    if (!g_pMomentumTimer->GotCaughtCheating())
     {
         ConVarRef cheatsRef("sv_cheats");
         if (cheatsRef.GetBool())
         {
-            g_Timer->SetCheating(true);
-            g_Timer->Stop(false);
+            g_pMomentumTimer->SetCheating(true);
+            g_pMomentumTimer->Stop(false);
         }
     }
 }

@@ -5,13 +5,7 @@
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
-    m_pYawSpeedSlider->AddActionSignalTarget(this);
-
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
-    m_pYawSpeedEntry->AddActionSignalTarget(this);
-
-    m_pPlayBlockSound = FindControl<CvarToggleCheckButton<ConVarRef>>("PlayBlockSound");
-    m_pPlayBlockSound->AddActionSignalTarget(this);
 }
 
 void GameplaySettingsPage::LoadSettings()
@@ -49,6 +43,6 @@ void GameplaySettingsPage::OnControlModified(Panel *p)
 void GameplaySettingsPage::UpdateYawspeedEntry() const
 {
     char buf[64];
-    Q_snprintf(buf, sizeof(buf), " %.1f", m_pYawSpeedSlider->GetSliderValue());
+    Q_snprintf(buf, sizeof(buf), "%.1f", m_pYawSpeedSlider->GetSliderValue());
     m_pYawSpeedEntry->SetText(buf);
 }

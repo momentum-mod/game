@@ -32,6 +32,7 @@
 #include <util/mom_util.h>
 #include "vgui_avatarimage.h"
 #include <hud_vote.h>
+#include "UtlSortVector.h"
 #include <time.h>
 #include <util/jsontokv.h>
 #include "IMessageboxPanel.h"
@@ -711,12 +712,12 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
         DevLog("Loading from file %s...\n", filePath);
         if (pLoaded->LoadFromFile(filesystem, filePath, "MOD"))
         {
-            for (KeyValues *kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime;
-                 kvLocalTime = kvLocalTime->GetNextKey())
+            FOR_EACH_SUBKEY(pLoaded, kvLocalTime)
             {
                 Time t = Time(kvLocalTime);
-                m_vLocalTimes.AddToTail(t);
+                m_vLocalTimes.InsertNoSort(t);
             }
+            m_vLocalTimes.RedoSort();
             m_bLocalTimesLoaded = true;
             m_bLocalTimesNeedUpdate = false;
         }

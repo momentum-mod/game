@@ -59,7 +59,7 @@
 #include "portal_render_targets.h"
 #include "PortalRender.h"
 #endif
-#if defined( HL2_CLIENT_DLL ) || defined( CSTRIKE_DLL )
+#if defined( HL2_CLIENT_DLL ) || defined( CSTRIKE_DLL ) || defined (SDK_DLL)
 #define USE_MONITORS
 #endif
 #include "rendertexture.h"
