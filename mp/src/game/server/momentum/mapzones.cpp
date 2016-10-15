@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "mapzones.h"
-#include "Timer.h"
+#include "mom_timer.h"
 #include "filesystem.h"
 #include "KeyValues.h"
 #include "mom_triggers.h"
@@ -74,7 +74,7 @@ void CMapzone::SpawnZone()
         }
         
         m_trigger->SetName(MAKE_STRING("Start Trigger"));
-        g_Timer->SetStartTrigger((CTriggerTimerStart *) m_trigger);
+        g_pMomentumTimer->SetStartTrigger((CTriggerTimerStart *) m_trigger);
         break;
     case MOMZONETYPE_CP:
         m_trigger = (CTriggerCheckpoint *) CreateEntityByName("trigger_momentum_timer_checkpoint");

@@ -7,7 +7,7 @@
 #include "cbase.h"
 #include "movevars_shared.h"
 #include "mapzones.h"
-#include "Timer.h"
+#include "mom_timer.h"
 #include "mapzones_edit.h"
 
 namespace Momentum {

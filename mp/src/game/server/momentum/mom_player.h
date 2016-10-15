@@ -162,8 +162,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void StopSpectating();
 
     // Used by momentum triggers
-    Vector GetPrevOrigin(void);
-    Vector GetPrevOrigin(const Vector &base);
+    Vector GetPrevOrigin(void) const;
+    Vector GetPrevOrigin(const Vector &base) const;
 
     // for calc avg
     int m_nZoneAvgCount[MAX_STAGES];

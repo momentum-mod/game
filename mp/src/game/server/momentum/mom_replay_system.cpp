@@ -1,6 +1,6 @@
 #include "cbase.h"
 
-#include "Timer.h"
+#include "mom_timer.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "util/baseautocompletefilelist.h"
@@ -46,8 +46,8 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_bShouldStopRec = false;
 
     // Don't ask why, but these need to be formatted in their own strings.
-    Q_snprintf(runDate, MAX_PATH, "%i", g_Timer->GetLastRunDate());
-    Q_snprintf(runTime, MAX_PATH, "%.3f", g_Timer->GetLastRunTime());
+    Q_snprintf(runDate, MAX_PATH, "%i", g_pMomentumTimer->GetLastRunDate());
+    Q_snprintf(runTime, MAX_PATH, "%.3f", g_pMomentumTimer->GetLastRunTime());
     // It's weird.
 
     Q_snprintf(newRecordingName, MAX_PATH, "%s-%s%s", runDate, runTime, EXT_RECORDING_FILE);
@@ -135,9 +135,9 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetPlayerSteamID(steamapicontext->SteamUser() ? steamapicontext->SteamUser()->GetSteamID().ConvertToUint64()
                                                           : 0);
     replay->SetTickInterval(gpGlobals->interval_per_tick);
-    replay->SetRunTime(g_Timer->GetLastRunTime());
+    replay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
-    replay->SetRunDate(g_Timer->GetLastRunDate());
+    replay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     replay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
 }
 
@@ -288,7 +288,7 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
     if (pPlayer)
     {
         pPlayer->StopSpectating();
-        g_Timer->DispatchTimerStateMessage(pPlayer, false);
+        g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
     }
 }
 

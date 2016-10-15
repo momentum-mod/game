@@ -1,6 +1,6 @@
 #include "cbase.h"
 
-#include "Timer.h"
+#include "mom_timer.h"
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
@@ -33,9 +33,11 @@ END_SEND_TABLE();
 
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(CheckForBhop)
-, DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), DEFINE_THINKFUNC(LimitSpeedInStartZone),
-    END_DATADESC();
+DEFINE_THINKFUNC(CheckForBhop), 
+DEFINE_THINKFUNC(UpdateRunStats), 
+DEFINE_THINKFUNC(CalculateAverageStats),
+DEFINE_THINKFUNC(LimitSpeedInStartZone),
+END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
@@ -240,7 +242,7 @@ void CMomentumPlayer::Spawn()
         gameeventmanager->FireEvent(timerStartEvent);
     }
     // Linear/etc map
-    g_Timer->DispatchMapInfo();
+    g_pMomentumTimer->DispatchMapInfo();
 
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
@@ -263,10 +265,10 @@ void CMomentumPlayer::Spawn()
 }
 
 // Obtains the player's previous origin using their current origin as a base.
-Vector CMomentumPlayer::GetPrevOrigin(void) { return GetPrevOrigin(GetLocalOrigin()); }
+Vector CMomentumPlayer::GetPrevOrigin(void) const { return GetPrevOrigin(GetLocalOrigin()); }
 
 // Obtains the player's previous origin using a vector as the base, subtracting one tick's worth of velocity.
-Vector CMomentumPlayer::GetPrevOrigin(const Vector &base)
+Vector CMomentumPlayer::GetPrevOrigin(const Vector &base) const
 {
     Vector velocity = GetLocalVelocity();
     Vector prevOrigin(base.x - (velocity.x * gpGlobals->interval_per_tick),
@@ -572,7 +574,7 @@ void CMomentumPlayer::CheckForBhop()
         {
             m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
             m_iSuccessiveBhops++;
-            if (g_Timer->IsRunning())
+            if (g_pMomentumTimer->IsRunning())
             {
                 int currentZone = m_RunData.m_iCurrentZone;
                 m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
@@ -591,7 +593,7 @@ void CMomentumPlayer::UpdateRunStats()
     float velocity = GetLocalVelocity().Length();
     float velocity2D = GetLocalVelocity().Length2D();
 
-    if (g_Timer->IsRunning())
+    if (g_pMomentumTimer->IsRunning())
     {
         int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
         if (!m_bPrevTimerRunning)                   // timer started on this tick
@@ -665,10 +667,10 @@ void CMomentumPlayer::UpdateRunStats()
         }
         if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
         {
-            m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) *
-                                       100.0f; // ticks strafing perfectly / ticks strafing
-            m_RunData.m_flStrafeSync2 =
-                (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
+            // ticks strafing perfectly / ticks strafing
+            m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; 
+            // ticks gaining speed / ticks strafing
+            m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; 
         }
         // ----------
 
@@ -677,7 +679,7 @@ void CMomentumPlayer::UpdateRunStats()
         // this might be used in a later update
         // m_flLastVelocity = velocity;
 
-        m_bPrevTimerRunning = g_Timer->IsRunning();
+        m_bPrevTimerRunning = g_pMomentumTimer->IsRunning();
         m_nPrevButtons = m_nButtons;
     }
 
@@ -694,11 +696,11 @@ void CMomentumPlayer::ResetRunStats()
     m_nAccelTicks = 0;
     m_RunData.m_flStrafeSync = 0;
     m_RunData.m_flStrafeSync2 = 0;
-    m_RunStats.Init(g_Timer->GetZoneCount());
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
-    if (g_Timer->IsRunning())
+    if (g_pMomentumTimer->IsRunning())
     {
         int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
 
@@ -755,8 +757,8 @@ void CMomentumPlayer::LimitSpeedInStartZone()
         // depending on gamemode, limit speed outright when player exceeds punish vel
         ConVarRef gm("mom_gamemode");
         bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-        CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
-        if (bhopGameMode && startTrigger && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
+        if (bhopGameMode && startTrigger && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetPunishSpeed() * startTrigger->GetPunishSpeed();

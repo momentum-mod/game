@@ -1,7 +1,7 @@
 #include "cbase.h"
 
 #include "mom_replay_entity.h"
-#include "Timer.h"
+#include "mom_timer.h"
 #include "mom_replay_system.h"
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
@@ -503,7 +503,7 @@ void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
         CMomentumPlayer *pPlayer = m_rgSpectators[i];
         if (pPlayer && pPlayer->GetReplayEnt() == this)
         {
-            g_Timer->DispatchTimerStateMessage(pPlayer, true);
+            g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, true);
         }
     }
 }
@@ -515,7 +515,7 @@ void CMomentumReplayGhostEntity::StopTimer()
         CMomentumPlayer *pPlayer = m_rgSpectators[i];
         if (pPlayer && pPlayer->GetReplayEnt() == this)
         {
-            g_Timer->DispatchTimerStateMessage(pPlayer, false);
+            g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
         }
     }
 }

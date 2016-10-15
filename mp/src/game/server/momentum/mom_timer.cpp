@@ -1,16 +1,19 @@
 #include "cbase.h"
 
-#include "Timer.h"
+#include "mom_timer.h"
 #include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
-void CTimer::Start(int start)
+void CMomentumTimer::Start(int start)
 {
-    if (m_bUsingCPMenu)
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (!pPlayer)
         return;
-    ConVarRef zoneEdit("mom_zone_edit");
-    if (zoneEdit.GetBool())
+    // MOM_TODO: Allow it based on gametype
+    if (pPlayer->m_bUsingCPMenu)
+        return;
+    if (ConVarRef("mom_zone_edit").GetBool())
         return;
     m_iStartTick = start;
     m_iEndTick = 0;
@@ -18,19 +21,19 @@ void CTimer::Start(int start)
     SetRunning(true);
 
     // Dispatch a start timer message for the local player
-    DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
+    DispatchTimerStateMessage(pPlayer, m_bIsRunning);
 
     IGameEvent *timeStartEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (timeStartEvent)
     {
-        timeStartEvent->SetInt("ent", UTIL_GetLocalPlayer()->entindex());
+        timeStartEvent->SetInt("ent", pPlayer->entindex());
         timeStartEvent->SetBool("is_running", true);
         gameeventmanager->FireEvent(timeStartEvent);
     }
 }
 
-void CTimer::PostTime()
+void CMomentumTimer::PostTime()
 {
     if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
     {
@@ -78,7 +81,7 @@ void CTimer::PostTime()
 //    Log("\n");
 //}
 
-void CTimer::ConvertKVToTime(KeyValues *kvRun, Time &into) const
+void CMomentumTimer::ConvertKVToTime(KeyValues *kvRun, Time &into) const
 {
     const char *kvName = kvRun->GetName();
     into.time_sec = Q_atof(kvName);
@@ -123,7 +126,7 @@ void CTimer::ConvertKVToTime(KeyValues *kvRun, Time &into) const
     }
 }
 
-void CTimer::ConvertTimeToKV(KeyValues *kvInto, Time *t) const
+void CMomentumTimer::ConvertTimeToKV(KeyValues *kvInto, Time *t) const
 {
     if (!t || !kvInto)
         return;
@@ -187,7 +190,7 @@ void CTimer::ConvertTimeToKV(KeyValues *kvInto, Time *t) const
 }
 
 // Called upon map load, loads any and all times stored in the <mapname>.tim file
-void CTimer::LoadLocalTimes(const char *szMapname)
+void CMomentumTimer::LoadLocalTimes(const char *szMapname)
 {
     // Build the file to load from
     char timesFilePath[MAX_PATH];
@@ -207,7 +210,7 @@ void CTimer::LoadLocalTimes(const char *szMapname)
     }
 }
 
-void CTimer::AddNewTime(Time *t) const
+void CMomentumTimer::AddNewTime(Time *t) const
 {
     if (!t || !m_pLocalTimes)
         return;
@@ -218,7 +221,7 @@ void CTimer::AddNewTime(Time *t) const
 }
 
 // Called every time a new time is achieved
-void CTimer::SaveTimeToFile() const
+void CMomentumTimer::SaveTimeToFile() const
 {
     const char *szMapName = gpGlobals->mapname.ToCStr();
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
@@ -239,7 +242,7 @@ void CTimer::SaveTimeToFile() const
     }
 }
 
-void CTimer::Stop(bool endTrigger /* = false */)
+void CMomentumTimer::Stop(bool endTrigger /* = false */)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
@@ -265,8 +268,9 @@ void CTimer::Stop(bool endTrigger /* = false */)
         SaveTimeToFile();
         // Post time to leaderboards if they're online
         // and if cheats haven't been turned on this session
-        if (SteamAPI_IsSteamRunning())
-            PostTime();
+        // MOM_TODO: Post the time when ready
+        //if (SteamAPI_IsSteamRunning())
+        //    PostTime();
     }
     else if (runSaveEvent) // reset run saved status to false if we cant or didn't save
     {
@@ -287,7 +291,7 @@ void CTimer::Stop(bool endTrigger /* = false */)
     SetRunning(false);
     DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
 }
-void CTimer::OnMapEnd(const char *pMapName)
+void CMomentumTimer::OnMapEnd(const char *pMapName)
 {
     if (IsRunning())
         Stop(false);
@@ -300,7 +304,7 @@ void CTimer::OnMapEnd(const char *pMapName)
     // MOM_TODO: UnloadLoadedOnlineTimes();
 }
 
-void CTimer::DispatchMapInfo() const
+void CMomentumTimer::DispatchMapInfo() const
 {
     IGameEvent *mapInitEvent = gameeventmanager->CreateEvent("map_init", true);
     if (mapInitEvent)
@@ -313,7 +317,7 @@ void CTimer::DispatchMapInfo() const
     }
 }
 
-void CTimer::OnMapStart(const char *pMapName)
+void CMomentumTimer::OnMapStart(const char *pMapName)
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
@@ -325,7 +329,7 @@ void CTimer::OnMapStart(const char *pMapName)
 
 // MOM_TODO: This needs to update to include checkpoint triggers placed in linear
 // maps to allow players to compare at certain points.
-void CTimer::RequestZoneCount()
+void CMomentumTimer::RequestZoneCount()
 {
     CTriggerStage *stage =
         static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage"));
@@ -339,7 +343,7 @@ void CTimer::RequestZoneCount()
     m_iZoneCount = iCount;
 }
 // This function is called every time CTriggerStage::StartTouch is called
-float CTimer::CalculateStageTime(int stage)
+float CMomentumTimer::CalculateStageTime(int stage)
 {
     if (stage > m_iLastZone)
     {
@@ -352,7 +356,7 @@ float CTimer::CalculateStageTime(int stage)
     m_iLastZone = stage;
     return m_flZoneEnterTime[stage];
 }
-void CTimer::DispatchResetMessage()
+void CMomentumTimer::DispatchResetMessage()
 {
     CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
     user.MakeReliable();
@@ -360,7 +364,7 @@ void CTimer::DispatchResetMessage()
     MessageEnd();
 }
 
-void CTimer::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool isRunning) const
+void CMomentumTimer::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool isRunning) const
 {
     if (pPlayer)
     {
@@ -372,7 +376,7 @@ void CTimer::DispatchTimerStateMessage(CBasePlayer *pPlayer, bool isRunning) con
     }
 }
 
-void CTimer::SetRunning(bool isRunning)
+void CMomentumTimer::SetRunning(bool isRunning)
 {
     m_bIsRunning = isRunning;
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
@@ -381,7 +385,7 @@ void CTimer::SetRunning(bool isRunning)
         pPlayer->m_RunData.m_bTimerRunning = isRunning;
     }
 }
-void CTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType)
+void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType)
 {
     if (!pPlayer)
         return;
@@ -466,9 +470,8 @@ void CTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zon
 
     if (smallestCornerNum > -1)
     {
-        float offset = smallestDist /
-                       pPlayer->GetLocalVelocity()
-                           .Length(); // velocity = dist / time, so it follows that time = distance / velocity.
+        // velocity = dist / time, so it follows that time = distance / velocity.
+        float offset = smallestDist /pPlayer->GetLocalVelocity().Length(); 
         DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", offset,
                smallestCornerNum, smallestDist);
         // ...and set the interval offset as this smallest time
@@ -493,10 +496,12 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     if (pEnt->IsSolid())
         return false;
 
-    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) ==
-        1)           // if we aren't hitting a momentum trigger
-        return true; // the return type of EnumEntity tells the engine whether to continue enumerating future entities
-                     // or not.
+    // if we aren't hitting a momentum trigger
+    // the return type of EnumEntity tells the engine whether to continue enumerating future entities
+    // or not.
+    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1)           
+        return true; 
+                     
     // In this case, we want to continue in case we hit another type of trigger.
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
@@ -507,7 +512,7 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 
         if (!mom_UTIL->FloatEquals(dist, 0.0f))
         {
-            g_Timer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
+            g_pMomentumTimer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
         }
 
         return false; // Stop the enumeration, we hit our target
@@ -517,7 +522,7 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 }
 
 // set ConVars according to Gamemode. Tickrate is by in tickset.h
-void CTimer::SetGameModeConVars()
+void CMomentumTimer::SetGameModeConVars()
 {
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
@@ -551,7 +556,7 @@ void CTimer::SetGameModeConVars()
            sv_airaccelerate.GetInt(), sv_maxspeed.GetInt());
 }
 
-void CTimer::CreateStartMark()
+void CMomentumTimer::CreateStartMark()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (!pPlayer)
@@ -569,7 +574,7 @@ void CTimer::CreateStartMark()
     }
 }
 
-void CTimer::ClearStartMark()
+void CMomentumTimer::ClearStartMark()
 {
     if (m_pStartZoneMark)
         delete m_pStartZoneMark;
@@ -577,7 +582,7 @@ void CTimer::ClearStartMark()
 }
 
 // Practice mode that stops the timer and allows the player to noclip.
-void CTimer::EnablePractice(CMomentumPlayer *pPlayer)
+void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
 {
     pPlayer->SetParent(nullptr);
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
@@ -586,7 +591,7 @@ void CTimer::EnablePractice(CMomentumPlayer *pPlayer)
     pPlayer->m_bHasPracticeMode = true;
     Stop(false);
 }
-void CTimer::DisablePractice(CMomentumPlayer *pPlayer)
+void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 {
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
@@ -596,13 +601,13 @@ void CTimer::DisablePractice(CMomentumPlayer *pPlayer)
 
 //--------- CTriggerOnehop stuff --------------------------------
 
-int CTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger) { return onehops.AddToTail(pTrigger); }
+int CMomentumTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger) { return onehops.AddToTail(pTrigger); }
 
-bool CTimer::RemoveOnehopFromList(CTriggerOnehop *pTrigger) { return onehops.FindAndRemove(pTrigger); }
+bool CMomentumTimer::RemoveOnehopFromList(CTriggerOnehop *pTrigger) { return onehops.FindAndRemove(pTrigger); }
 
-int CTimer::FindOnehopOnList(CTriggerOnehop *pTrigger) { return onehops.Find(pTrigger); }
+int CMomentumTimer::FindOnehopOnList(CTriggerOnehop *pTrigger) { return onehops.Find(pTrigger); }
 
-CTriggerOnehop *CTimer::FindOnehopOnList(int pIndexOnList) { return onehops.Element(pIndexOnList); }
+CTriggerOnehop *CMomentumTimer::FindOnehopOnList(int pIndexOnList) { return onehops.Element(pIndexOnList); }
 
 //--------- Commands --------------------------------
 static MAKE_TOGGLE_CONVAR(
@@ -617,10 +622,10 @@ class CTimerCommands
         CMomentumPlayer *cPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
         if (!cPlayer)
             return;
-        CTriggerTimerStart *start = g_Timer->GetStartTrigger();
+        CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
         if (start)
         {
-            Checkpoint *pStartMark = g_Timer->GetStartMark();
+            Checkpoint *pStartMark = g_pMomentumTimer->GetStartMark();
             if (pStartMark)
             {
                 cPlayer->TeleportToCheckpoint(pStartMark);
@@ -654,7 +659,7 @@ class CTimerCommands
     {
         CTriggerStage *stage;
         CBaseEntity *pPlayer = UTIL_GetCommandClient();
-        if ((stage = g_Timer->GetCurrentStage()) != nullptr && pPlayer)
+        if ((stage = g_pMomentumTimer->GetCurrentStage()) != nullptr && pPlayer)
         {
             pPlayer->Teleport(&stage->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
@@ -677,23 +682,22 @@ class CTimerCommands
                 return;
             }
 
-            g_Timer->EnablePractice(pPlayer);
+            g_pMomentumTimer->EnablePractice(pPlayer);
         }
         else
-            g_Timer->DisablePractice(pPlayer);
+            g_pMomentumTimer->DisablePractice(pPlayer);
     }
 
-    static void MarkStart() { g_Timer->CreateStartMark(); }
+    static void MarkStart() { g_pMomentumTimer->CreateStartMark(); }
 
-    static void ClearStart() { g_Timer->ClearStartMark(); }
+    static void ClearStart() { g_pMomentumTimer->ClearStartMark(); }
 };
 
 static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove,
                                "Toggle. Stops timer and allows player to fly around in noclip.\n"
                                "Only activates when player is not pressing any movement inputs.\n",
                                FCVAR_CLIENTCMD_CAN_EXECUTE);
-static ConCommand
-    mom_mark_start("mom_mark_start", CTimerCommands::MarkStart,
+static ConCommand mom_mark_start("mom_mark_start", CTimerCommands::MarkStart,
                    "Marks a starting point inside the start trigger for a more customized starting location.\n",
                    FCVAR_NONE);
 static ConCommand mom_mark_start_clear("mom_mark_start_clear", CTimerCommands::ClearStart,
@@ -705,5 +709,5 @@ static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCh
                                           "Teleports the player back to the start of the current stage.\n",
                                           FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 
-static CTimer s_Timer;
-CTimer *g_Timer = &s_Timer;
+static CMomentumTimer s_Timer;
+CMomentumTimer *g_pMomentumTimer = &s_Timer;
