@@ -3,8 +3,6 @@
 #include "vgui2d/button2d.h"
 #include "vgui_controls/AnimationController.h"
 
-#define override
-
 enum ButtonState
 {
     Out,
@@ -35,21 +33,21 @@ class Button_MainMenu : public Button2D
     Button_MainMenu(Panel *parent, Panel *pActionSignalTarget = nullptr, const char *pCmd = nullptr);
 
     virtual void Init();
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
-    void OnThink() override;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
+    void OnThink() OVERRIDE;
     virtual void DrawButton();
     virtual void DrawButton_Blur();
     virtual void DrawText();
     virtual void DrawDescription();
-    void Paint() override;
-    void PaintBlurMask() override;
+    void Paint() OVERRIDE;
+    void PaintBlurMask() OVERRIDE;
     virtual void Animations();
 
     virtual void AdditionalCursorCheck();
-    void OnCursorEntered() override;
-    void OnCursorExited() override;
-    void OnMouseReleased(vgui::MouseCode code) override;
-    void OnMousePressed(vgui::MouseCode code) override;
+    void OnCursorEntered() OVERRIDE;
+    void OnCursorExited() OVERRIDE;
+    void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
+    void OnMousePressed(vgui::MouseCode code) OVERRIDE;
 
     virtual void SetButtonText(const char *text);
     virtual void SetButtonDescription(const char *description);
@@ -66,7 +64,6 @@ class Button_MainMenu : public Button2D
     virtual void SetTextAlignment(TextAlignment alignment) { m_iTextAlignment = alignment; }
     virtual void SetButtonType(ButtonType type) { m_nType = type; }
     virtual ButtonType GetButtonType() const { return m_nType; }
-    virtual vgui::AnimationController GetAnimationController() const { return m_pAnimController; }
 
   private:
     ButtonState m_sButtonState;

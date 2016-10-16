@@ -42,7 +42,7 @@ void Button_MainMenu::Init()
 
     SetScheme(menuScheme);
 
-    m_pAnimController = new AnimationController(this);
+    m_pAnimController = vgui::GetAnimationController();//new AnimationController(this);
     m_pAnimController->SetScheme(menuScheme);
     m_pAnimController->SetProportional(true);
     m_pAnimController->SetAutoDelete(true);
@@ -241,7 +241,7 @@ void Button_MainMenu::OnThink()
     AdditionalCursorCheck();
     Animations();
 
-    if (IsVisible() == false)
+    if (!IsVisible())
     {
         ConColorMsg(Color(0, 148, 255, 255), "\nMain menu is not visible, running all animations to completion...\n");
 
@@ -322,10 +322,10 @@ void Button_MainMenu::DrawText()
 
 void Button_MainMenu::DrawDescription()
 {
-    if ((m_sButtonState == Out && m_bDescriptionHideOut == true) ||
-        (m_sButtonState == Over && m_bDescriptionHideOver == true) ||
-        (m_sButtonState == Pressed && m_bDescriptionHidePressed == true) ||
-        (m_sButtonState == Released && m_bDescriptionHideReleased == true))
+    if ((m_sButtonState == Out && m_bDescriptionHideOut) ||
+        (m_sButtonState == Over && m_bDescriptionHideOver) ||
+        (m_sButtonState == Pressed && m_bDescriptionHidePressed) ||
+        (m_sButtonState == Released && m_bDescriptionHideReleased))
         return;
 
     surface()->DrawSetTextColor(m_cDescription);
@@ -383,9 +383,9 @@ void Button_MainMenu::AdditionalCursorCheck()
     if (IsBlank())
         return;
 
-    if (IsCursorOver() == false)
+    if (!IsCursorOver())
         m_sButtonState = Out;
-    else if (IsCursorOver() == true && m_sButtonState == Out)
+    else if (m_sButtonState == Out)
         m_sButtonState = Over;
 }
 

@@ -5,8 +5,8 @@
 class CShared
 {
   public:
-    bool LoadedClient = false;
-    bool LoadedServer = false;
+    bool LoadedClient;
+    bool LoadedServer;
 };
 
 #define INTERFACEVERSION_SHAREDGAMEDLL "SHAREDGAMEDLL001"

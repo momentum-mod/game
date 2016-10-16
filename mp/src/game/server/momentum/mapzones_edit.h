@@ -18,7 +18,7 @@ extern ConVar mom_zone_edit;
 class CMapzoneEdit
 {
 public:
-    CMapzoneEdit() : m_flReticleDist(256.0), m_nBuildStage( BUILDSTAGE_NONE ), m_bEditing(false) {};
+    CMapzoneEdit() : m_flReticleDist(256.0), m_nBuildStage( BUILDSTAGE_NONE ), m_bEditing(false), m_bFirstEdit(false) {};
 
     void Build( Vector *aimpos, int type, int forcestage = BUILDSTAGE_NONE );
 
@@ -55,7 +55,7 @@ private:
     void DrawReticle( Vector *pos, float retsize );
 
     // Have we edited the zones (mom_zone_edit 1) already
-    bool m_bFirstEdit = false;
+    bool m_bFirstEdit;
 };
 
 extern CMapzoneEdit g_MapzoneEdit;

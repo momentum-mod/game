@@ -40,7 +40,6 @@ Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() : 
     m_bIsActive(false),
-    m_bReplayShouldLoop(false),
     m_bReplayFirstPerson(false), 
     m_pPlaybackReplay(nullptr), 
     m_bHasJumped(false), 

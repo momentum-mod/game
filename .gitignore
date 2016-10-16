@@ -39,6 +39,8 @@ obj*/
 # Specific Source build products
 client.so
 client.so.dbg
+client_srv.so
+client_srv.so.dbg
 server.so
 server.so.dbg
 server_srv.so
@@ -46,8 +48,6 @@ server_srv.so.dbg
 
 client.dll
 server.dll
-gameui2.dll
-shared.dll
 
 client.dylib
 client.dylib.dSYM/
@@ -77,6 +77,14 @@ voice_ban.dt
 *.tim
 *.zon
 *.momrec
+gameui2.so
+gameui2.so.dbg
+gameui2_srv.so
+gameui2_srv.so.dbg
+shared.so
+shared.so.dbg
+shared_srv.so
+shared_srv.so.dbg
 
 # Others
 *.cache
@@ -88,5 +96,5 @@ voice_ban.dt
 *.pch.ib_tag
 *.ib_pdb_index
 *.cfg
-mp/src/game/shared/Release_momentum/shared.dll
-mp/src/game/shared/Release_momentum/shared.dll
+.idea/
+CMakeLists.txt

@@ -64,15 +64,15 @@ $Project "Client (Momentum)"
                 
                 $Folder "SettingsPanel"
                 {
-                	$Folder "Headers"
-                	{
-	                	$File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
+                    $Folder "Headers"
+                    {
+	                $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
 	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
-                	}
+                    }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
                     $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
@@ -273,7 +273,7 @@ $Project "Client (Momentum)"
             }
         }
         
-        $File "hl2\C_Func_Monitor.cpp"
+        //$File "hl2\C_Func_Monitor.cpp"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
