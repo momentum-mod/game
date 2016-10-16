@@ -77,10 +77,12 @@ voice_ban.dt
 *.tim
 *.zon
 *.momrec
+gameui2.dll
 gameui2.so
 gameui2.so.dbg
 gameui2_srv.so
 gameui2_srv.so.dbg
+shared.dll
 shared.so
 shared.so.dbg
 shared_srv.so
