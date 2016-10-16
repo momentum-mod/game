@@ -265,6 +265,8 @@ private:
 
 };
 
+#define FL_BHOP_TIMER 0.15f
+
 // CTriggerLimitMovement
 class CTriggerLimitMovement : public CBaseMomentumTrigger
 {
@@ -277,7 +279,6 @@ public:
 
 private:
     CountdownTimer m_BhopTimer;
-    static constexpr float FL_BHOP_TIMER = 0.15;
 };
 
 
