@@ -8,10 +8,11 @@
 #include "UtlSortVector.h"
 #include "cbase.h"
 #include "filesystem.h"
-#include "gason.h"
+#include <gason.h>
 #include "run_compare.h"
 #include "run_stats.h"
 #include "steam/steam_api.h"
+
 #ifdef CLIENT_DLL
 #include "ChangelogPanel.h"
 #endif

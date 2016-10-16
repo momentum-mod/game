@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_entity_run_data.h"
-#include "util/run_stats.h"
+#include <momentum/mom_entity_run_data.h>
+#include <momentum/util/run_stats.h>
 #include <../interpolatedvar.h>
 
 class C_MomentumReplayGhostEntity : public C_BaseAnimating
@@ -30,6 +30,5 @@ class C_MomentumReplayGhostEntity : public C_BaseAnimating
 
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
     bool ShouldInterpolate() override { return true; }
-
     CInterpolatedVar<Vector> m_iv_vecViewOffset;
 };

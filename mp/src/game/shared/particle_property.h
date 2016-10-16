@@ -12,7 +12,7 @@
 
 #include "smartptr.h"
 #include "globalvars_base.h"
-#include "particles_new.h"
+#include "../client/particles_new.h"
 #include "particle_parse.h"
 
 //-----------------------------------------------------------------------------

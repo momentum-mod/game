@@ -148,7 +148,7 @@
 #include "fbxsystem/fbxsystem.h"
 #endif
 
-#include "INetChannelInfo.h"
+#include "inetchannelinfo.h"
 extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================

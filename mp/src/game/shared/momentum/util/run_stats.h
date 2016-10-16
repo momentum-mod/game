@@ -2,7 +2,7 @@
 
 #include "cbase.h"
 #include "filesystem.h"
-#include "mom_shareddefs.h"
+#include "../mom_shareddefs.h"
 #include "serialization.h"
 
 #ifdef CLIENT_DLL

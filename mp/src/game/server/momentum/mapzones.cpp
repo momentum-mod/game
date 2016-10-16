@@ -327,9 +327,8 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 {
     bool toReturn = false;
     char zoneFilePath[MAX_PATH];
-    Q_strcpy(zoneFilePath, c_mapPath);
-    Q_strcat(zoneFilePath, szMapName, MAX_PATH);
-    Q_strncat(zoneFilePath, c_zoneFileEnding, MAX_PATH);
+    V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
+    V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
     DevLog("Looking for zone file: %s \n", zoneFilePath);
     KeyValues* zoneKV = new KeyValues(szMapName);
     if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))

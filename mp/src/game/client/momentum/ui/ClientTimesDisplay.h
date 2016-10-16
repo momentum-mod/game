@@ -288,13 +288,13 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CUtlVector<TimeOnline *> m_vOnlineTimes;
     CUtlVector<TimeOnline *> m_vFriendsTimes;
 
-    bool m_bLocalTimesLoaded = false;
-    bool m_bLocalTimesNeedUpdate = false;
-    bool m_bOnlineNeedUpdate = false;
-    bool m_bOnlineTimesLoaded = false;
-    bool m_bFriendsNeedUpdate = false;
-    bool m_bFriendsTimesLoaded = false;
-    bool m_bUnauthorizedFriendlist = false;
+    bool m_bLocalTimesLoaded;
+    bool m_bLocalTimesNeedUpdate;
+    bool m_bOnlineNeedUpdate;
+    bool m_bOnlineTimesLoaded;
+    bool m_bFriendsNeedUpdate;
+    bool m_bFriendsTimesLoaded;
+    bool m_bUnauthorizedFriendlist;
     // widths[0] == WIDTH FOR DATE
     // widths[1] == WIDTH FOR RANK
     // widths[2] == WIDTH FOR TIME
