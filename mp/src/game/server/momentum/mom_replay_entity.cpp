@@ -38,10 +38,17 @@ END_DATADESC()
 
 Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 
-CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
-    : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr),
-      m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
-      m_nOldReplayButtons(0)
+CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() : 
+    m_bIsActive(false),
+    m_bReplayFirstPerson(false), 
+    m_pPlaybackReplay(nullptr), 
+    m_bHasJumped(false), 
+    m_flLastSyncVelocity(0), 
+    m_nStrafeTicks(0),
+    m_nPerfectSyncTicks(0),
+    m_nAccelTicks(0),
+    m_nOldReplayButtons(0),
+    m_iBodyGroup( BODY_PROLATE_ELLIPSE )
 {
     // Set networked vars here
     m_nReplayButtons = 0;

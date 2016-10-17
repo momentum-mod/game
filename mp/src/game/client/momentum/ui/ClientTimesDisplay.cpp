@@ -29,7 +29,7 @@
 #include <game/client/iviewport.h>
 
 #include "filesystem.h"
-#include "util/mom_util.h"
+#include <util/mom_util.h>
 #include "vgui_avatarimage.h"
 #include <hud_vote.h>
 #include "UtlSortVector.h"
@@ -53,7 +53,15 @@ bool PNamesMapLessFunc(const uint64 &first, const uint64 &second) { return first
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, "ClientTimesDisplay")
+CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : 
+    EditablePanel(nullptr, PANEL_TIMES),
+    m_bLocalTimesLoaded(false),
+    m_bLocalTimesNeedUpdate(false),
+    m_bOnlineNeedUpdate(false),
+     m_bOnlineTimesLoaded(false),
+    m_bFriendsNeedUpdate(false),
+    m_bFriendsTimesLoaded(false),
+    m_bUnauthorizedFriendlist(false)
 {
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;

@@ -5,10 +5,10 @@
 #endif
 
 #include "cbase.h"
-#include "momentum/mom_shareddefs.h"
+#include <momentum/mom_shareddefs.h>
 #include "c_mom_replay_entity.h"
-#include "mom_entity_run_data.h"
-#include "util/run_stats.h"
+#include <momentum/mom_entity_run_data.h>
+#include <momentum/util/run_stats.h>
 
 class C_MomentumPlayer : public C_BasePlayer
 {

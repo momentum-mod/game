@@ -11,7 +11,7 @@
 #include "mom_replayui.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
-#include "momspectatorgui.h"
+#include "momSpectatorGUI.h"
 
 C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY, false, false)
 {

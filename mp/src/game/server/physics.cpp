@@ -1170,11 +1170,11 @@ void PhysSolidOverride( solid_t &solid, string_t overrideScript )
 	}
 }
 
-void PhysSetMassCenterOverride( masscenteroverride_t &override )
+void PhysSetMassCenterOverride( masscenteroverride_t &override_o )
 {
-	if ( override.entityName != NULL_STRING )
+	if ( override_o.entityName != NULL_STRING )
 	{
-		g_PhysicsHook.m_massCenterOverrides.AddToTail( override );
+		g_PhysicsHook.m_massCenterOverrides.AddToTail( override_o );
 	}
 }
 
@@ -1200,9 +1200,9 @@ void PhysGetMassCenterOverride( CBaseEntity *pEntity, vcollide_t *pCollide, soli
 
 	if ( index >= 0 )
 	{
-		masscenteroverride_t &override = g_PhysicsHook.m_massCenterOverrides[index];
-		Vector massCenterWS = override.center;
-		switch ( override.alignType )
+		masscenteroverride_t &override_o = g_PhysicsHook.m_massCenterOverrides[index];
+		Vector massCenterWS = override_o.center;
+		switch ( override_o.alignType )
 		{
 		case masscenteroverride_t::ALIGN_POINT:
 			VectorITransform( massCenterWS, pEntity->EntityToWorldTransform(), solidOut.massCenterOverride );
@@ -1212,8 +1212,8 @@ void PhysGetMassCenterOverride( CBaseEntity *pEntity, vcollide_t *pCollide, soli
 				Vector massCenterLocal, defaultMassCenterWS;
 				physcollision->CollideGetMassCenter( pCollide->solids[solidOut.index], &massCenterLocal );
 				VectorTransform( massCenterLocal, pEntity->EntityToWorldTransform(), defaultMassCenterWS );
-				massCenterWS += override.axis * 
-					( DotProduct(defaultMassCenterWS,override.axis) - DotProduct( override.axis, override.center ) );
+				massCenterWS += override_o.axis * 
+					( DotProduct(defaultMassCenterWS,override_o.axis) - DotProduct( override_o.axis, override_o.center ) );
 				VectorITransform( massCenterWS, pEntity->EntityToWorldTransform(), solidOut.massCenterOverride );
 			}
 			break;

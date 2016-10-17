@@ -15,7 +15,7 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
 #endif
 
-CMomentumGameMovement::CMomentumGameMovement()
+CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal( NO_REFL_NORMAL_CHANGE )
 {
 
 }
@@ -1391,4 +1391,5 @@ static CMomentumGameMovement g_GameMovement;
 IGameMovement *g_pGameMovement = static_cast<IGameMovement *>(&g_GameMovement);
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CMomentumGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);
+
 

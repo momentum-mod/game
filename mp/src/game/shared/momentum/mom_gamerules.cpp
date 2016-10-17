@@ -99,7 +99,7 @@ static CViewVectors g_MOMViewVectors(
 
     Vector(-16, -16, 0),	// duck hull min
     Vector(16, 16, 45),	// duck hull max
-    Vector(0, 0, 47),		// duck view
+    Vector(0, 0, 45),		// duck view
 
     Vector(-10, -10, -10),	// observer hull min
     Vector(10, 10, 10),	// observer hull max

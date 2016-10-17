@@ -7,7 +7,7 @@
 #include "triggers.h"
 #include "filters.h"
 #include "func_break.h"
-#include "mom_gamerules.h"
+#include <momentum/mom_gamerules.h>
 
 // spawnflags 
 enum {
@@ -122,9 +122,11 @@ private:
 // CTriggerTimerStart
 class CTriggerTimerStart : public CTriggerStage
 {
+public:
     DECLARE_CLASS(CTriggerTimerStart, CTriggerStage);
     DECLARE_DATADESC();
 
+    CTriggerTimerStart();
 public:
     void EndTouch(CBaseEntity*) override;
     void StartTouch(CBaseEntity*) override;
@@ -150,11 +152,11 @@ public:
     bool GetHasLookAngles() { return HasSpawnFlags(SF_USE_LOOKANGLES); }
 
 private:
-    QAngle m_angLook = QAngle(0, 0, 0);
+    QAngle m_angLook;
 
     //How fast can player leave start trigger if they bhopped?
-    float m_fBhopLeaveSpeed = 250;
-    float m_fPunishSpeed = 200;
+    float m_fBhopLeaveSpeed;
+    float m_fPunishSpeed;
 };
 
 // CFilterCheckpoint
@@ -183,8 +185,11 @@ public:
 // CTriggerOnehop
 class CTriggerOnehop : public CTriggerTeleportEnt
 {
+public:
     DECLARE_CLASS(CTriggerOnehop, CTriggerTeleportEnt);
     DECLARE_DATADESC();
+    
+    CTriggerOnehop();
 
 public:
     void StartTouch(CBaseEntity*) override;
@@ -198,9 +203,9 @@ public:
 
 private:
     // The time that the player initally touched the trigger
-    float m_fStartTouchedTime = 0.0f;
+    float m_fStartTouchedTime;
     // Seconds to hold before activating the teleport
-    float m_fMaxHoldSeconds = 1;
+    float m_fMaxHoldSeconds;
 
 };
 
@@ -217,9 +222,12 @@ public:
 // CTriggerMultihop
 class CTriggerMultihop : public CTriggerTeleportEnt
 {
+public:
     DECLARE_CLASS(CTriggerMultihop, CTriggerTeleportEnt);
     DECLARE_DATADESC();
 
+    CTriggerMultihop();
+    
 public:
     void StartTouch(CBaseEntity*) override;
     void EndTouch(CBaseEntity*) override;
@@ -233,9 +241,9 @@ public:
 
 private:
     // The time that the player initally touched the trigger. -1 if not checking for teleport
-    float m_fStartTouchedTime = 0.0f;
+    float m_fStartTouchedTime;
     // Seconds to hold before activating the teleport
-    float m_fMaxHoldSeconds = 1;
+    float m_fMaxHoldSeconds;
 
 };
 
@@ -257,6 +265,8 @@ private:
 
 };
 
+#define FL_BHOP_TIMER 0.15f
+
 // CTriggerLimitMovement
 class CTriggerLimitMovement : public CBaseMomentumTrigger
 {
@@ -269,7 +279,6 @@ public:
 
 private:
     CountdownTimer m_BhopTimer;
-    const float FL_BHOP_TIMER = 0.15f;
 };
 
 
@@ -298,9 +307,11 @@ public:
 // CTriggerMomentumPush
 class CTriggerMomentumPush : public CTriggerTeleportEnt
 {
+public:
     DECLARE_CLASS(CTriggerMomentumPush, CTriggerTeleportEnt);
     DECLARE_DATADESC();
 
+    CTriggerMomentumPush();
 public:
     void StartTouch(CBaseEntity*) override;
     void EndTouch(CBaseEntity*) override;
@@ -315,9 +326,9 @@ public:
 
 private:
     // The time that the player initally touched the trigger
-    float m_fStartTouchedTime = 0.0f;
+    float m_fStartTouchedTime;
     // Seconds to hold before activating the teleport
-    float m_fMaxHoldSeconds = 1;
+    float m_fMaxHoldSeconds;
     // Force in units per seconds applied to the player
     float m_fPushForce;
     // 1: SetPlayerVelocity to final push force

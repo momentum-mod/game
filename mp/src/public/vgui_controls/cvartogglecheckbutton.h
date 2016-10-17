@@ -9,6 +9,8 @@
 #define CVARTOGGLECHECKBUTTON_H
 #ifdef _WIN32
 #pragma once
+#else
+#define override
 #endif
 
 #include "vgui/VGUI.h"
