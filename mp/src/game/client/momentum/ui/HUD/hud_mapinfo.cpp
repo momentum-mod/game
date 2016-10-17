@@ -20,6 +20,7 @@
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
+#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
@@ -44,7 +45,11 @@ class C_HudMapInfo : public CHudElement, public Panel
     void Init() override;
     void Reset() override;
     void Paint() override;
-    bool ShouldDraw() override { return CHudElement::ShouldDraw(); }
+    bool ShouldDraw() override 
+    { 
+        IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
+        return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
+    }
 
     void ApplySchemeSettings(IScheme *pScheme) override
     {
@@ -59,8 +64,9 @@ class C_HudMapInfo : public CHudElement, public Panel
   protected:
     CPanelAnimationVar(HFont, m_hStatusFont, "StatusFont", "Default");
     CPanelAnimationVar(HFont, m_hMapInfoFont, "MapInfoFont", "Default");
+    CPanelAnimationVar(Color, m_cTextColor, "TextColor", "MOM.Panel.Fg");
+    CPanelAnimationVar(bool, center_status, "centerStatus", "1");
 
-    CPanelAnimationVarAliasType(bool, center_status, "centerStatus", "1", "BOOL");
     CPanelAnimationVarAliasType(int, status_xpos, "status_xpos", "0", "proportional_xpos");
     CPanelAnimationVarAliasType(int, status_ypos, "status_ypos", "c+135", "proportional_ypos");
     CPanelAnimationVarAliasType(int, mapinfo_xpos, "mapinfo_xpos", "0", "proportional_xpos");
@@ -72,19 +78,17 @@ class C_HudMapInfo : public CHudElement, public Panel
 
     char stageLocalized[BUFSIZELOCL], checkpointLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], m_pszStringStatus[BUFSIZELOCL],
-        m_pszStringStages[BUFSIZELOCL], noStagesLocalized[BUFSIZELOCL], noCPLocalized[BUFSIZELOCL],
+        m_pszStringStages[BUFSIZELOCL], noZonesLocalized[BUFSIZELOCL],
         mapNameLabelLocalized[BUFSIZELOCL], mapAuthorLabelLocalized[BUFSIZELOCL], mapDiffLabelLocalized[BUFSIZELOCL];
 
     int m_iZoneCount, m_iZoneCurrent;
     bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
 };
 
-//The below is basically DECLARE_NAMED_HUDELEMENT_DEPTH(C_HudMapInfo, CHudMapInfo, 10)
-static CHudElement *Create_C_HudMapInfo(void) { return new C_HudMapInfo("CHudMapInfo"); }
-static CHudElementHelper g_C_HudMapInfo_Helper(Create_C_HudMapInfo, 10);
+DECLARE_NAMED_HUDELEMENT(C_HudMapInfo, CHudMapInfo);
 
 C_HudMapInfo::C_HudMapInfo(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMapInfo")
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName)
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
@@ -130,8 +134,7 @@ void C_HudMapInfo::Init()
     LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
     LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
     LOCALIZE_TOKEN(MapFinished, "#MOM_MapFinished", mapFinishedLocalized);
-    LOCALIZE_TOKEN(NoCheckpoint, "#MOM_Status_NoCheckpoints", noCPLocalized);
-    LOCALIZE_TOKEN(NoStages, "#MOM_Status_NoStages", noStagesLocalized);
+    LOCALIZE_TOKEN(NoCheckpoint, "#MOM_Status_NoZones", noZonesLocalized);
     LOCALIZE_TOKEN(MapName, "#MOM_Map_Name", mapNameLabelLocalized);
     LOCALIZE_TOKEN(MapAuthor, "#MOM_Map_Author", mapAuthorLabelLocalized);
     LOCALIZE_TOKEN(MapDifficulty, "#MOM_Map_Difficulty", mapDiffLabelLocalized);
@@ -159,7 +162,7 @@ void C_HudMapInfo::Paint()
     }
     else
     { // No stages/checkpoints found
-        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), m_bMapLinear ? noCPLocalized : noStagesLocalized);
+        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), noZonesLocalized);
     }
 
     ANSI_TO_UNICODE(m_pszStringStages, m_pwCurrentStages);
@@ -192,6 +195,9 @@ void C_HudMapInfo::Paint()
         }
     }
 
+    // We need our text color, otherwise the following text can be hijacked
+    surface()->DrawSetTextColor(m_cTextColor);
+
     if (center_status)
     {
         // Center the status string above the timer.
@@ -222,7 +228,8 @@ void C_HudMapInfo::Paint()
     int yPos = mapinfo_ypos;
     int toIncrement = surface()->GetFontTall(m_hMapInfoFont) + 2;
     surface()->DrawSetTextFont(m_hMapInfoFont);
-    if (mom_mapinfo_show_mapname.GetBool())
+    IViewPortPanel *pSpecGUI = gViewPortInterface->FindPanelByName(PANEL_SPECGUI);
+    if (mom_mapinfo_show_mapname.GetBool() && pSpecGUI && !pSpecGUI->IsVisible())
     {
         const char *pMapName = g_pGameRules->MapName();
         if (pMapName)

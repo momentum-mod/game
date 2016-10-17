@@ -1629,7 +1629,7 @@ Panel *Panel::FindSiblingByName(const char *siblingName)
 	{
 		VPANEL sibling = ipanel()->GetChild(GetVParent(), i);
 		Panel *panel = ipanel()->GetPanel(sibling, GetControlsModuleName());
-		if (!stricmp(panel->GetName(), siblingName))
+		if (panel && !stricmp(panel->GetName(), siblingName))
 		{
 			return panel;
 		}
@@ -3546,7 +3546,9 @@ bool Panel::RequestFocusNext(VPANEL panel)
 void Panel::RequestFocus(int direction)
 {
 	// NOTE: This doesn't make any sense if we don't have keyboard input enabled
-	Assert( ( IsX360() || IsConsoleStylePanel() ) || IsKeyBoardInputEnabled() );
+	//Assert( ( IsX360() || IsConsoleStylePanel() ) || IsKeyBoardInputEnabled() );
+    if (!IsX360() && !IsConsoleStylePanel() && !IsKeyBoardInputEnabled())
+        Warning("A panel is requesting focus when it probably shouldn't!\n");
 	//	ivgui()->DPrintf2("RequestFocus(%s, %s)\n", GetName(), GetClassName());
 	OnRequestFocus(GetVPanel(), NULL);
 }
@@ -4726,11 +4728,11 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 
 	SetEnabled( inResourceData->GetInt("enabled", true) );
 
-	bool bMouseEnabled = inResourceData->GetInt( "mouseinputenabled", true );
-	if ( !bMouseEnabled )
-	{
-		SetMouseInputEnabled( false );
-	}
+    if (!inResourceData->IsEmpty("mouseinputenabled"))
+        SetMouseInputEnabled(inResourceData->GetBool("mouseinputenabled", true));
+
+    if (!inResourceData->IsEmpty("keyboardinputenabled"))
+        SetKeyBoardInputEnabled(inResourceData->GetBool("keyboardinputenabled", false));
 
 	// tab order
 	SetTabPosition(inResourceData->GetInt("tabPosition", 0));
@@ -4835,12 +4837,6 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 			(*m_OverridableColorEntries[i].m_pColor) = m_OverridableColorEntries[i].m_colFromScript;
 			m_OverridableColorEntries[i].m_bOverridden = true;
 		}
-	}
-
-	const char *pKeyboardInputEnabled = inResourceData->GetString( "keyboardinputenabled", NULL );
-	if ( pKeyboardInputEnabled && pKeyboardInputEnabled[0] )
-	{
-		SetKeyBoardInputEnabled( atoi( pKeyboardInputEnabled ) );
 	}
 
 	OnChildSettingsApplied( inResourceData, this );

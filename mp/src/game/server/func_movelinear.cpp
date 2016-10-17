@@ -21,38 +21,38 @@
 // -------------------------------
 #define SF_MOVELINEAR_NOTSOLID		8
 
-LINK_ENTITY_TO_CLASS( func_movelinear, CFuncMoveLinear );
-LINK_ENTITY_TO_CLASS( momentary_door, CFuncMoveLinear );	// For backward compatibility
+LINK_ENTITY_TO_CLASS(func_movelinear, CFuncMoveLinear);
+LINK_ENTITY_TO_CLASS(momentary_door, CFuncMoveLinear);	// For backward compatibility
 
 //
 // func_water_analog is implemented as a linear mover so we can raise/lower the water level.
 //
-LINK_ENTITY_TO_CLASS( func_water_analog, CFuncMoveLinear );
+LINK_ENTITY_TO_CLASS(func_water_analog, CFuncMoveLinear);
 
 
-BEGIN_DATADESC( CFuncMoveLinear )
+BEGIN_DATADESC(CFuncMoveLinear)
 
-	DEFINE_KEYFIELD( m_vecMoveDir,		 FIELD_VECTOR, "movedir" ),
-	DEFINE_KEYFIELD( m_soundStart,		 FIELD_SOUNDNAME, "StartSound" ),
-	DEFINE_KEYFIELD( m_soundStop,		 FIELD_SOUNDNAME, "StopSound" ),
-	DEFINE_FIELD( m_currentSound, FIELD_SOUNDNAME ),
-	DEFINE_KEYFIELD( m_flBlockDamage,	 FIELD_FLOAT,	"BlockDamage"),
-	DEFINE_KEYFIELD( m_flStartPosition, FIELD_FLOAT,	"StartPosition"),
-	DEFINE_KEYFIELD( m_flMoveDistance,  FIELD_FLOAT,	"MoveDistance"),
+DEFINE_KEYFIELD(m_vecMoveDir, FIELD_VECTOR, "movedir"),
+DEFINE_KEYFIELD(m_soundStart, FIELD_SOUNDNAME, "StartSound"),
+DEFINE_KEYFIELD(m_soundStop, FIELD_SOUNDNAME, "StopSound"),
+DEFINE_FIELD(m_currentSound, FIELD_SOUNDNAME),
+DEFINE_KEYFIELD(m_flBlockDamage, FIELD_FLOAT, "BlockDamage"),
+DEFINE_KEYFIELD(m_flStartPosition, FIELD_FLOAT, "StartPosition"),
+DEFINE_KEYFIELD(m_flMoveDistance, FIELD_FLOAT, "MoveDistance"),
 //	DEFINE_PHYSPTR( m_pFluidController ),
 
-	// Inputs
-	DEFINE_INPUTFUNC( FIELD_VOID,  "Open", InputOpen ),
-	DEFINE_INPUTFUNC( FIELD_VOID,  "Close", InputClose ),
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetPosition", InputSetPosition ),
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetSpeed", InputSetSpeed ),
+// Inputs
+DEFINE_INPUTFUNC(FIELD_VOID, "Open", InputOpen),
+DEFINE_INPUTFUNC(FIELD_VOID, "Close", InputClose),
+DEFINE_INPUTFUNC(FIELD_FLOAT, "SetPosition", InputSetPosition),
+DEFINE_INPUTFUNC(FIELD_FLOAT, "SetSpeed", InputSetSpeed),
 
-	// Outputs
-	DEFINE_OUTPUT( m_OnFullyOpen, "OnFullyOpen" ),
-	DEFINE_OUTPUT( m_OnFullyClosed, "OnFullyClosed" ),
+// Outputs
+DEFINE_OUTPUT(m_OnFullyOpen, "OnFullyOpen"),
+DEFINE_OUTPUT(m_OnFullyClosed, "OnFullyClosed"),
 
-	// Functions
-	DEFINE_FUNCTION( StopMoveSound ),
+// Functions
+DEFINE_FUNCTION(StopMoveSound),
 
 END_DATADESC()
 
@@ -60,99 +60,105 @@ END_DATADESC()
 //------------------------------------------------------------------------------
 // Purpose: Called before spawning, after keyvalues have been parsed.
 //------------------------------------------------------------------------------
-void CFuncMoveLinear::Spawn( void )
+void CFuncMoveLinear::Spawn(void)
 {
 	// Convert movedir from angles to a vector
-	QAngle angMoveDir = QAngle( m_vecMoveDir.x, m_vecMoveDir.y, m_vecMoveDir.z );
-	AngleVectors( angMoveDir, &m_vecMoveDir );
+	QAngle angMoveDir = QAngle(m_vecMoveDir.x, m_vecMoveDir.y, m_vecMoveDir.z);
+	AngleVectors(angMoveDir, &m_vecMoveDir);
 
-	SetMoveType( MOVETYPE_PUSH );
-	SetModel( STRING( GetModelName() ) );
-	
+	SetMoveType(MOVETYPE_PUSH);
+	SetModel(STRING(GetModelName()));
+
 	// Don't allow zero or negative speeds
 	if (m_flSpeed <= 0)
 	{
 		m_flSpeed = 100;
 	}
-	
+
 	// If move distance is set to zero, use with width of the 
 	// brush to determine the size of the move distance
 	if (m_flMoveDistance <= 0)
 	{
 		Vector vecOBB = CollisionProp()->OBBSize();
-		vecOBB -= Vector( 2, 2, 2 );
-		m_flMoveDistance = DotProductAbs( m_vecMoveDir, vecOBB ) - m_flLip;
+		vecOBB -= Vector(2, 2, 2);
+		m_flMoveDistance = DotProductAbs(m_vecMoveDir, vecOBB) - m_flLip;
 	}
 
+	/* BM: Fixing this based on: https://developer.valvesoftware.com/wiki/CFuncMoveLinear_Fix
 	m_vecPosition1 = GetAbsOrigin() - (m_vecMoveDir * m_flMoveDistance * m_flStartPosition);
 	m_vecPosition2 = m_vecPosition1 + (m_vecMoveDir * m_flMoveDistance);
 	m_vecFinalDest = GetAbsOrigin();
+	//*/
+	m_vecPosition1 = GetLocalOrigin() - (m_vecMoveDir * m_flMoveDistance * m_flStartPosition);
+	m_vecPosition2 = m_vecPosition1 + (m_vecMoveDir * m_flMoveDistance);
+	m_vecFinalDest = GetLocalOrigin();
+	//*/ The start & end positions are now calculated in local (parent) space.
 
-	SetTouch( NULL );
+	SetTouch(NULL);
 
 	Precache();
 
 	// It is solid?
-	SetSolid( SOLID_VPHYSICS );
+	SetSolid(SOLID_VPHYSICS);
 
-	if ( FClassnameIs( this, "func_water_analog" ) )
+	if (FClassnameIs(this, "func_water_analog"))
 	{
-		AddSolidFlags( FSOLID_VOLUME_CONTENTS );
+		AddSolidFlags(FSOLID_VOLUME_CONTENTS);
 	}
 
-	if ( !FClassnameIs( this, "func_water_analog" ) && FBitSet (m_spawnflags, SF_MOVELINEAR_NOTSOLID) )
+	if (!FClassnameIs(this, "func_water_analog") && FBitSet(m_spawnflags, SF_MOVELINEAR_NOTSOLID))
 	{
-		AddSolidFlags( FSOLID_NOT_SOLID );
+		AddSolidFlags(FSOLID_NOT_SOLID);
 	}
 
 	CreateVPhysics();
 }
 
 
-bool CFuncMoveLinear::ShouldSavePhysics( void )
+bool CFuncMoveLinear::ShouldSavePhysics(void)
 {
 	// don't save physics for func_water_analog, regen
-	return !FClassnameIs( this, "func_water_analog" );
-		
+	return !FClassnameIs(this, "func_water_analog");
+
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CFuncMoveLinear::CreateVPhysics( void )
+bool CFuncMoveLinear::CreateVPhysics(void)
 {
-	if ( !FClassnameIs( this, "func_water_analog" ) )
+	if (!FClassnameIs(this, "func_water_analog"))
 	{
 		//normal door
-		if ( !IsSolidFlagSet( FSOLID_NOT_SOLID ) )
+		if (!IsSolidFlagSet(FSOLID_NOT_SOLID))
 		{
-			VPhysicsInitShadow( false, false );
+			VPhysicsInitShadow(false, false);
 		}
 	}
 	else
 	{
 		// special contents
-		AddSolidFlags( FSOLID_VOLUME_CONTENTS );
+		AddSolidFlags(FSOLID_VOLUME_CONTENTS);
 		//SETBITS( m_spawnflags, SF_DOOR_SILENT );	// water is silent for now
 
-		IPhysicsObject *pPhysics = VPhysicsInitShadow( false, false );
+		IPhysicsObject *pPhysics = VPhysicsInitShadow(false, false);
 		fluidparams_t fluid;
-		
-		Assert( CollisionProp()->GetCollisionAngles() == vec3_angle );
+
+		Assert(CollisionProp()->GetCollisionAngles() == vec3_angle);
 		fluid.damping = 0.01f;
 		fluid.surfacePlane[0] = 0;
 		fluid.surfacePlane[1] = 0;
 		fluid.surfacePlane[2] = 1;
 		fluid.surfacePlane[3] = CollisionProp()->GetCollisionOrigin().z + CollisionProp()->OBBMaxs().z - 1;
-		fluid.currentVelocity.Init(0,0,0);
+		fluid.currentVelocity.Init(0, 0, 0);
 		fluid.torqueFactor = 0.1f;
 		fluid.viscosityFactor = 0.01f;
 		fluid.pGameData = static_cast<void *>(this);
-		
+
 		//FIXME: Currently there's no way to specify that you want slime
 		fluid.contents = CONTENTS_WATER;
-		
-		m_pFluidController = physenv->CreateFluidController( pPhysics, &fluid );
+
+		m_pFluidController = physenv->CreateFluidController(pPhysics, &fluid);
 	}
 
 	return true;
@@ -162,15 +168,15 @@ bool CFuncMoveLinear::CreateVPhysics( void )
 //------------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-void CFuncMoveLinear::Precache( void )
+void CFuncMoveLinear::Precache(void)
 {
 	if (m_soundStart != NULL_STRING)
 	{
-		PrecacheScriptSound( (char *) STRING(m_soundStart) );
+		PrecacheScriptSound((char *)STRING(m_soundStart));
 	}
 	if (m_soundStop != NULL_STRING)
 	{
-		PrecacheScriptSound( (char *) STRING(m_soundStop) );
+		PrecacheScriptSound((char *)STRING(m_soundStop));
 	}
 	m_currentSound = NULL_STRING;
 }
@@ -181,9 +187,9 @@ void CFuncMoveLinear::Precache( void )
 //------------------------------------------------------------------------------
 void CFuncMoveLinear::MoveTo(Vector vPosition, float flSpeed)
 {
-	if ( flSpeed != 0 )
+	if (flSpeed != 0)
 	{
-		if ( m_soundStart != NULL_STRING )
+		if (m_soundStart != NULL_STRING)
 		{
 			if (m_currentSound == m_soundStart)
 			{
@@ -192,7 +198,7 @@ void CFuncMoveLinear::MoveTo(Vector vPosition, float flSpeed)
 			else
 			{
 				m_currentSound = m_soundStart;
-				CPASAttenuationFilter filter( this );
+				CPASAttenuationFilter filter(this);
 
 				EmitSound_t ep;
 				ep.m_nChannel = CHAN_BODY;
@@ -200,13 +206,13 @@ void CFuncMoveLinear::MoveTo(Vector vPosition, float flSpeed)
 				ep.m_flVolume = 1;
 				ep.m_SoundLevel = SNDLVL_NORM;
 
-				EmitSound( filter, entindex(), ep );	
+				EmitSound(filter, entindex(), ep);
 			}
 		}
 
-		LinearMove( vPosition, flSpeed );
+		LinearMove(vPosition, flSpeed);
 
-		if ( m_pFluidController )
+		if (m_pFluidController)
 		{
 			m_pFluidController->WakeAllSleepingObjects();
 		}
@@ -220,17 +226,17 @@ void CFuncMoveLinear::MoveTo(Vector vPosition, float flSpeed)
 //------------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-void CFuncMoveLinear::StopMoveSound( void )
+void CFuncMoveLinear::StopMoveSound(void)
 {
-	if ( m_soundStart != NULL_STRING && ( m_currentSound == m_soundStart ) )
+	if (m_soundStart != NULL_STRING && (m_currentSound == m_soundStart))
 	{
-		StopSound(entindex(), CHAN_BODY, (char*)STRING(m_soundStart) );
+		StopSound(entindex(), CHAN_BODY, (char*)STRING(m_soundStart));
 	}
 
-	if ( m_soundStop != NULL_STRING && ( m_currentSound != m_soundStop ) )
+	if (m_soundStop != NULL_STRING && (m_currentSound != m_soundStop))
 	{
 		m_currentSound = m_soundStop;
-		CPASAttenuationFilter filter( this );
+		CPASAttenuationFilter filter(this);
 
 		EmitSound_t ep;
 		ep.m_nChannel = CHAN_BODY;
@@ -238,7 +244,7 @@ void CFuncMoveLinear::StopMoveSound( void )
 		ep.m_flVolume = 1;
 		ep.m_SoundLevel = SNDLVL_NORM;
 
-		EmitSound( filter, entindex(), ep );
+		EmitSound(filter, entindex(), ep);
 	}
 
 	SetThink(NULL);
@@ -248,21 +254,21 @@ void CFuncMoveLinear::StopMoveSound( void )
 //------------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-void CFuncMoveLinear::MoveDone( void )
+void CFuncMoveLinear::MoveDone(void)
 {
 	// Stop sounds at the next think, rather than here as another
 	// SetPosition call might immediately follow the end of this move
 	SetThink(&CFuncMoveLinear::StopMoveSound);
-	SetNextThink( gpGlobals->curtime + 0.1f );
+	SetNextThink(gpGlobals->curtime + 0.1f);
 	BaseClass::MoveDone();
 
-	if ( GetAbsOrigin() == m_vecPosition2 )
+	if (GetAbsOrigin() == m_vecPosition2)
 	{
-		m_OnFullyOpen.FireOutput( this, this );
+		m_OnFullyOpen.FireOutput(this, this);
 	}
-	else if ( GetAbsOrigin() == m_vecPosition1 )
+	else if (GetAbsOrigin() == m_vecPosition1)
 	{
-		m_OnFullyClosed.FireOutput( this, this );
+		m_OnFullyClosed.FireOutput(this, this);
 	}
 }
 
@@ -270,15 +276,15 @@ void CFuncMoveLinear::MoveDone( void )
 //------------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-void CFuncMoveLinear::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+void CFuncMoveLinear::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-	if ( useType != USE_SET )		// Momentary buttons will pass down a float in here
+	if (useType != USE_SET)		// Momentary buttons will pass down a float in here
 		return;
 
-	if ( value > 1.0 )
+	if (value > 1.0)
 		value = 1.0;
 	Vector move = m_vecPosition1 + (value * (m_vecPosition2 - m_vecPosition1));
-	
+
 	Vector delta = move - GetLocalOrigin();
 	float speed = delta.Length() * 10;
 
@@ -289,9 +295,9 @@ void CFuncMoveLinear::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 //-----------------------------------------------------------------------------
 // Purpose: Sets the position as a value from [0..1].
 //-----------------------------------------------------------------------------
-void CFuncMoveLinear::SetPosition( float flPosition )
+void CFuncMoveLinear::SetPosition(float flPosition)
 {
-	Vector vTargetPos = m_vecPosition1 + ( flPosition * (m_vecPosition2 - m_vecPosition1));
+	Vector vTargetPos = m_vecPosition1 + (flPosition * (m_vecPosition2 - m_vecPosition1));
 	if ((vTargetPos - GetLocalOrigin()).Length() > 0.001)
 	{
 		MoveTo(vTargetPos, m_flSpeed);
@@ -302,7 +308,7 @@ void CFuncMoveLinear::SetPosition( float flPosition )
 //------------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-void CFuncMoveLinear::InputOpen( inputdata_t &inputdata )
+void CFuncMoveLinear::InputOpen(inputdata_t &inputdata)
 {
 	if (GetLocalOrigin() != m_vecPosition2)
 	{
@@ -314,7 +320,7 @@ void CFuncMoveLinear::InputOpen( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 // Purpose:
 //------------------------------------------------------------------------------
-void CFuncMoveLinear::InputClose( inputdata_t &inputdata )
+void CFuncMoveLinear::InputClose(inputdata_t &inputdata)
 {
 	if (GetLocalOrigin() != m_vecPosition1)
 	{
@@ -327,9 +333,9 @@ void CFuncMoveLinear::InputClose( inputdata_t &inputdata )
 // Purpose: Input handler for setting the position from [0..1].
 // Input  : Float position.
 //-----------------------------------------------------------------------------
-void CFuncMoveLinear::InputSetPosition( inputdata_t &inputdata )
+void CFuncMoveLinear::InputSetPosition(inputdata_t &inputdata)
 {
-	SetPosition( inputdata.value.Float() );
+	SetPosition(inputdata.value.Float());
 }
 
 
@@ -337,18 +343,18 @@ void CFuncMoveLinear::InputSetPosition( inputdata_t &inputdata )
 // Purpose: Called every frame when the bruch is blocked while moving
 // Input  : pOther - The blocking entity.
 //-----------------------------------------------------------------------------
-void CFuncMoveLinear::Blocked( CBaseEntity *pOther )
+void CFuncMoveLinear::Blocked(CBaseEntity *pOther)
 {
 	// Hurt the blocker 
-	if ( m_flBlockDamage )
+	if (m_flBlockDamage)
 	{
-		if ( pOther->m_takedamage == DAMAGE_EVENTS_ONLY )
+		if (pOther->m_takedamage == DAMAGE_EVENTS_ONLY)
 		{
-			if ( FClassnameIs( pOther, "gib" ) )
-				UTIL_Remove( pOther );
+			if (FClassnameIs(pOther, "gib"))
+				UTIL_Remove(pOther);
 		}
 		else
-			pOther->TakeDamage( CTakeDamageInfo( this, this, m_flBlockDamage, DMG_CRUSH ) );
+			pOther->TakeDamage(CTakeDamageInfo(this, this, m_flBlockDamage, DMG_CRUSH));
 	}
 }
 
@@ -356,17 +362,17 @@ void CFuncMoveLinear::Blocked( CBaseEntity *pOther )
 // Purpose: 
 // Input  : &inputdata - 
 //-----------------------------------------------------------------------------
-void CFuncMoveLinear::InputSetSpeed( inputdata_t &inputdata )
+void CFuncMoveLinear::InputSetSpeed(inputdata_t &inputdata)
 {
 	// Set the new speed
 	m_flSpeed = inputdata.value.Float();
 
 	// FIXME: This is a little questionable.  Do we want to fix the speed, or let it continue on at the old speed?
-	float flDistToGoalSqr = ( m_vecFinalDest - GetAbsOrigin() ).LengthSqr();
-	if ( flDistToGoalSqr > Square( FLT_EPSILON ) )
+	float flDistToGoalSqr = (m_vecFinalDest - GetAbsOrigin()).LengthSqr();
+	if (flDistToGoalSqr > Square(FLT_EPSILON))
 	{
 		// NOTE: We do NOT want to call sound functions here, just vanilla position changes
-		LinearMove( m_vecFinalDest, m_flSpeed );
+		LinearMove(m_vecFinalDest, m_flSpeed);
 	}
 }
 
@@ -374,23 +380,36 @@ void CFuncMoveLinear::InputSetSpeed( inputdata_t &inputdata )
 // Purpose: Draw any debug text overlays
 // Output : Current text offset from the top
 //-----------------------------------------------------------------------------
-int CFuncMoveLinear::DrawDebugTextOverlays(void) 
+int CFuncMoveLinear::DrawDebugTextOverlays(void)
 {
 	int text_offset = BaseClass::DrawDebugTextOverlays();
 
-	if (m_debugOverlays & OVERLAY_TEXT_BIT) 
+	if (m_debugOverlays & OVERLAY_TEXT_BIT)
 	{
 		char tempstr[512];
 		float flTravelDist = (m_vecPosition1 - m_vecPosition2).Length();
-		float flCurDist	   = (m_vecPosition1 - GetLocalOrigin()).Length();
-		Q_snprintf(tempstr,sizeof(tempstr),"Current Pos: %3.3f",flCurDist/flTravelDist);
-		EntityText(text_offset,tempstr,0);
+		float flCurDist = (m_vecPosition1 - GetLocalOrigin()).Length();
+		Q_snprintf(tempstr, sizeof(tempstr), "Current Pos: %3.3f", flCurDist / flTravelDist);
+		EntityText(text_offset, tempstr, 0);
 		text_offset++;
 
-		float flTargetDist	   = (m_vecPosition1 - m_vecFinalDest).Length();
-		Q_snprintf(tempstr,sizeof(tempstr),"Target Pos: %3.3f",flTargetDist/flTravelDist);
-		EntityText(text_offset,tempstr,0);
+		float flTargetDist = (m_vecPosition1 - m_vecFinalDest).Length();
+		Q_snprintf(tempstr, sizeof(tempstr), "Target Pos: %3.3f", flTargetDist / flTravelDist);
+		EntityText(text_offset, tempstr, 0);
 		text_offset++;
 	}
 	return text_offset;
+}
+/* BM: Overriding this to run a fix when it is called */
+//-----------------------------------------------------------------------------
+// Purpose: Runs a fix atfer the base version clearly dosen't cut it.
+//-----------------------------------------------------------------------------
+void CFuncMoveLinear::SetParent(CBaseEntity *pParentEntity, int iAttachment)
+{
+	BaseClass::SetParent(pParentEntity, iAttachment);
+
+	// Recompute all positions
+	m_vecPosition1 = GetLocalOrigin() - (m_vecMoveDir * m_flMoveDistance * m_flStartPosition);
+	m_vecPosition2 = m_vecPosition1 + (m_vecMoveDir * m_flMoveDistance);
+	m_vecFinalDest = GetLocalOrigin();
 }

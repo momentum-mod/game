@@ -203,7 +203,6 @@ void CC_Mom_ZoneCancel()
 
 static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel the zone building.\n", FCVAR_CHEAT);
 
-
 void CMapzoneEdit::Build(Vector *aimpos, int type, int forcestage)
 {
     if (mom_zone_grid.GetInt() > 0)
@@ -363,6 +362,14 @@ void CMapzoneEdit::Update()
         {
             m_nBuildStage = BUILDSTAGE_NONE;
             m_bEditing = true;
+            if (!m_bFirstEdit)
+            {
+                CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+                filter.MakeReliable();
+                UserMessageBegin(filter, "MB_EditingZone");
+                MessageEnd();
+            }
+            m_bFirstEdit = true;
         }
     }
     else

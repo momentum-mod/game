@@ -148,6 +148,7 @@
 #include "fbxsystem/fbxsystem.h"
 #endif
 
+#include "inetchannelinfo.h"
 extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
@@ -180,6 +181,7 @@ extern vgui::IInputInternal *g_InputInternal;
 extern IClientMode *GetClientModeNormal();
 
 // IF YOU ADD AN INTERFACE, EXTERN IT IN THE HEADER FILE.
+CShared     *shared = NULL;
 IVEngineClient	*engine = NULL;
 IVModelRender *modelrender = NULL;
 IVEfx *effects = NULL;
@@ -870,7 +872,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	InitCRTMemDebug();
 	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f );
 
-
 #ifdef SIXENSE
 	g_pSixenseInput = new SixenseInput;
 #endif
@@ -1199,6 +1200,35 @@ void CHLClient::PostInit()
             ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui2.dll from:\n%s\n", modulePath);
         }
     }
+
+	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
+	if (SharedModule)
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (CLIENT)\n");
+
+		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
+
+		shared = appSystemFactory ? ((CShared*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
+		if (shared)
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (CLIENT)\n");
+			
+			shared->LoadedClient = true;
+
+			if (shared->LoadedClient && shared->LoadedServer)
+			{
+				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
+			}
+		}
+		else
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
+		}
+	}
+	else
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
+	}
 #endif
 }
 
@@ -1245,7 +1275,9 @@ void CHLClient::Shutdown( void )
     if (g_pGameUI2)
     {
         g_pGameUI2->OnShutdown();
-        g_pGameUI2->Shutdown();
+#ifndef DEBUG
+        g_pGameUI2->Shutdown(); //For some reason this causes hangs when you debug
+#endif
     }
 #endif
 
@@ -1486,6 +1518,7 @@ void CHLClient::ExtraMouseSample( float frametime, bool active )
 
 void CHLClient::IN_SetSampleTime( float frametime )
 {
+
 	input->Joystick_SetSampleTime( frametime );
 	input->IN_SetSampleTime( frametime );
 
@@ -2176,6 +2209,18 @@ void OnRenderStart()
 	VPROF( "OnRenderStart" );
 	MDLCACHE_CRITICAL_SECTION();
 	MDLCACHE_COARSE_LOCK();
+    
+    // BenLubar: rescale time in demos during slow motion
+    INetChannelInfo *nci = engine->GetNetChannelInfo();
+    ConVarRef ts("host_timescale");
+    if (nci && nci->IsPlayback() && engine->GetDemoPlaybackTimeScale() != 1)
+    {
+        float flServerTime = engine->GetLastTimeStamp();
+        float flTimeSince = nci->GetTimeSinceLastReceived();
+        float flTimeScale = engine->GetDemoPlaybackTimeScale();
+        gpGlobals->curtime = flServerTime + flTimeSince * flTimeScale * flTimeScale;
+        gpGlobals->frametime *= flTimeScale;
+    }
 
 #ifdef PORTAL
 	g_pPortalRender->UpdatePortalPixelVisibility(); //updating this one or two lines before querying again just isn't cutting it. Update as soon as it's cheap to do so.

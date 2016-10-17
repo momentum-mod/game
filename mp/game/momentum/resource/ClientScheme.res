@@ -30,6 +30,10 @@ Scheme
 	
 		"Blank"                "0 0 0 1"
 
+		//"MOM.Panel.Bg"				"211 211 211 50"
+		"MomentumBlue"	"30 150 210 255"
+		"MomentumRed"	"255 75 75 255"
+
 		"MOM.Panel.Fg"				"255 255 255 125"
 		"MOM.Panel.Bg"				"0 0 0 76"
 		"MOM.Speedometer.Normal"	"255 255 255 125"
@@ -98,9 +102,9 @@ Scheme
 		Button.TextColor				"White"
 		Button.BgColor					"Blank"
 		Button.ArmedTextColor			"White"
-		Button.ArmedBgColor				"Red"
+		Button.ArmedBgColor				"MomentumBlue"
 		Button.DepressedTextColor		"White"
-		Button.DepressedBgColor			"Red"
+		Button.DepressedBgColor			"MomentumBlue"
 
 		CheckButton.TextColor			"White"
 		CheckButton.SelectedTextColor	"White"
@@ -121,9 +125,9 @@ Scheme
 		Frame.AutoSnapRange				"0"
 		FrameGrip.Color1				"Blank"
 		FrameGrip.Color2				"Blank"
-		FrameTitleButton.FgColor		"Blank"
+		FrameTitleButton.FgColor		"200 200 200 196"
 		FrameTitleButton.BgColor		"Blank"
-		FrameTitleButton.DisabledFgColor	"Blank"
+		FrameTitleButton.DisabledFgColor	"200 200 200 196"
 		FrameTitleButton.DisabledBgColor	"Blank"
 		FrameSystemButton.FgColor		"Blank"
 		FrameSystemButton.BgColor		"Blank"
@@ -163,7 +167,7 @@ Scheme
 		Panel.FgColor					"WhiteDim"
 		Panel.BgColor					"blank"
 
-		ProgressBar.FgColor				"White"
+		ProgressBar.FgColor				"Light Blue"
 		ProgressBar.BgColor				"TransparentBlack"
 
 		PropertySheet.TextColor			"White"
@@ -199,20 +203,21 @@ Scheme
 		SectionedListPanel.OutOfFocusSelectedTextColor	"White"
 		SectionedListPanel.OutOfFocusSelectedBgColor	"Light Blue"
 
-		Slider.NobColor				"108 108 108 255"
-		Slider.TextColor			"127 140 127 255"
+		Slider.NobColor				"White"//"108 108 108 255"
+		Slider.TextColor			"White"//"127 140 127 255"
+        Slider.BgColor              "Blank"
 		Slider.TrackColor			"31 31 31 255"
 		Slider.DisabledTextColor1	"117 117 117 255"
 		Slider.DisabledTextColor2	"30 30 30 255"
 
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"TransparentBlack"
-		TextEntry.CursorColor		"White"
+		TextEntry.CursorColor		"Light Gray"
 		TextEntry.DisabledTextColor	"White"
 		TextEntry.DisabledBgColor	"Blank"
-		TextEntry.SelectedTextColor	"Black"
-		TextEntry.SelectedBgColor	"Red"
-		TextEntry.OutOfFocusSelectedBgColor	"Red"
+		TextEntry.SelectedTextColor	"Light Gray"
+		TextEntry.SelectedBgColor	"Dark Blue"
+		TextEntry.OutOfFocusSelectedBgColor	"Light Blue"
 		TextEntry.FocusEdgeColor	"TransparentBlack"
 
 		ToggleButton.SelectedTextColor	"White"
@@ -1094,7 +1099,29 @@ Scheme
 				"additive" "1"
 				"antialias" "1"
 		   }
-		}	
+		}
+		"BigNoodle"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "32"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
+		"BigNoodleSmall"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "16"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
 	}
 
 		//////////////////// BORDERS //////////////////////////////
@@ -1141,124 +1168,20 @@ Scheme
 				}
 			}
 		}
-		
-		TitleButtonBorder
+        
+        TitleButtonBorder
 		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
-
+		
 		TitleButtonDisabledBorder
 		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "1 0"
-				}
-			}
-			Top
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
 
 		TitleButtonDepressedBorder
 		{
-			"inset" "1 1 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
 
 		ScrollBarButtonBorder

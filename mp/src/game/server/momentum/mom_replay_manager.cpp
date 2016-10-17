@@ -84,7 +84,10 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
     auto file = filesystem->Open(path, "r+b", pathID);
 
     if (!file)
+    {
+        filesystem->Close(file);
         return nullptr;
+    }
 
     CBinaryReader reader(file);
 
@@ -123,6 +126,7 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
     pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
     pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
     pGhost->SetPlaybackReplay(m_pPlaybackReplay);
+	pGhost->m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
     m_pPlaybackReplay->SetRunEntity(pGhost);
 
     return m_pPlaybackReplay;
@@ -136,7 +140,10 @@ bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
     auto file = filesystem->Open(path, "w+b", pathID);
 
     if (!file)
+    {
+        filesystem->Close(file);
         return false;
+    }
 
     Log("Storing replay of version '%d' to '%s'...\n", m_pRecordingReplay->GetVersion(), path);
 

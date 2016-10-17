@@ -14,11 +14,6 @@ game_sounds_manifest
 	"precache_file"		"scripts/game_sounds_physics.txt"
 	"precache_file"		"scripts/game_sounds_vehicles.txt"
 
-	// E3 level sounds
-	"precache_file"		"scripts/level_sounds_e3_c17.txt"
-	"precache_file"		"scripts/level_sounds_e3_town.txt"
-	"precache_file"		"scripts/level_sounds_e3_bugbait.txt"
-
 	// Game level sounds
 	"precache_file"		"scripts/level_sounds_eli_lab.txt"
 	"precache_file"		"scripts/level_sounds_trainyard.txt"
@@ -78,4 +73,14 @@ game_sounds_manifest
 	"precache_file"		"scripts/game_sounds_momentum.txt"
 	"precache_file"		"scripts/game_sounds_momentum_weapons.txt"
 	"precache_file"		"scripts/game_sounds_momentum_music.txt"
+    
+    //CS:S Specific
+    "precache_file"  	"scripts/game_sounds_hostages.txt"
+	"precache_file"  	"scripts/game_sounds_bots.txt"
+	"preload_file"  	"scripts/game_sounds_physics.txt"	
+	"preload_file"  	"scripts/game_sounds_radio.txt"
+	"preload_file"  	"scripts/game_sounds_weapons.txt"
+
+	 // Level sounds
+	 "preload_file"		"scripts/level_sounds_general.txt"
 }

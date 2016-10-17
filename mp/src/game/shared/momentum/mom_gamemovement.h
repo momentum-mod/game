@@ -15,13 +15,13 @@ class CMomentumPlayer;
 #define	STOP_EPSILON		0.1
 #define	MAX_CLIP_PLANES		5
 
-#define STAMINA_MAX				100.0
-#define STAMINA_COST_JUMP		25.0
-#define STAMINA_COST_FALL		20.0
-#define STAMINA_RECOVER_RATE	19.0
+#define STAMINA_MAX				100.0f
+#define STAMINA_COST_JUMP		25.0f
+#define STAMINA_COST_FALL		20.0f
+#define STAMINA_RECOVER_RATE	19.0f
 #define CS_WALK_SPEED			135.0f
 
-#define DuckSpeedMultiplier 0.34f
+#define DUCK_SPEED_MULTIPLIER 0.34f
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -31,69 +31,65 @@ public:
     CMomentumGameMovement();
 
     // Overrides
-    bool LadderMove(void) override; // REPLACED
-    bool OnLadder(trace_t &trace) override; // REPLACED
-    void SetGroundEntity(trace_t *pm) override;
+	virtual bool LadderMove(void) ; // REPLACED
+	virtual bool OnLadder(trace_t &trace) ; // REPLACED
+	virtual void SetGroundEntity(trace_t *pm) ;
 
-    bool CanAccelerate(void) override
+	virtual bool CanAccelerate(void)
     { BaseClass::CanAccelerate(); return true; }//C+P from HL2GM
-    bool CheckJumpButton(void) override;
-    void PlayerMove(void) override;
-    void AirMove(void) override;//Overridden for rampboost fix
-    void WalkMove(void) override;
+	virtual bool CheckJumpButton(void);
+	virtual void PlayerMove(void);
+	virtual void AirMove(void);//Overridden for rampboost fix
+	virtual void WalkMove(void);
     virtual void CheckForLadders(bool);
 
     virtual void CategorizeGroundSurface(trace_t&);
 
     //Override fall damage
-    void CheckFalling() override;
+	virtual void CheckFalling();
 
     //added ladder
-    float LadderDistance(void) const override
+	virtual float LadderDistance(void) const
     {
         if (player->GetMoveType() == MOVETYPE_LADDER)
             return 10.0f;
         return 2.0f;
     }
 
-    unsigned int LadderMask(void) const override
+	virtual unsigned int LadderMask(void) const 
     {
         return MASK_PLAYERSOLID & (~CONTENTS_PLAYERCLIP);
     }
 
-    float ClimbSpeed(void) const override;
-    float LadderLateralMultiplier(void) const override;
+
+	virtual float ClimbSpeed(void) const ;
+	virtual float LadderLateralMultiplier(void) const ;
     //const float DuckSpeedMultiplier = 0.34f;
 
     //Overrides for fixing rampboost
-    int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr) override;
-    void FullWalkMove() override;
-    void DoLateReflect();
-    void CategorizePosition() override;
+	virtual int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr);
+	virtual void FullWalkMove();
+	virtual void DoLateReflect();
+	virtual void CategorizePosition();
+
+    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) override
+    {
+        m_pPlayer = ToCMOMPlayer(pBasePlayer);
+        Assert(m_pPlayer);
+
+        BaseClass::ProcessMovement(pBasePlayer, pMove);
+    }
 
     // Duck
-    void Duck(void) override;
-    void FinishUnDuck(void) override;
-    void FinishDuck(void) override;
-    bool CanUnduck() override;
-    void HandleDuckingSpeedCrop() override;
-    void CheckParameters(void) override;
-    void ReduceTimers(void) override;
+	virtual void Duck(void) ;
+	virtual void FinishUnDuck(void) ;
+	virtual void FinishDuck(void) ;
+	virtual bool CanUnduck() ;
+	virtual void HandleDuckingSpeedCrop() ;
+	virtual void CheckParameters(void) ;
+	virtual void ReduceTimers(void);
+    
 private:
-
-    float m_flReflectNormal = NO_REFL_NORMAL_CHANGE;//Used by rampboost fix
-
-    // Given a list of nearby ladders, find the best ladder and the "mount" origin
-    void		Findladder(float maxdist, CFuncLadder **ppLadder, Vector& ladderOrigin, const CFuncLadder *skipLadder);
-
-    // Debounce the +USE key
-    void		SwallowUseKey();
-    CMomentumPlayer *GetMomentumPlayer() const;
+    float m_flReflectNormal;//Used by rampboost fix
+    CMomentumPlayer *m_pPlayer;
 };
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-inline CMomentumPlayer	*CMomentumGameMovement::GetMomentumPlayer() const
-{
-    return static_cast<CMomentumPlayer *>(player);
-}

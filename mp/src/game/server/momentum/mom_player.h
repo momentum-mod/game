@@ -6,10 +6,11 @@
 
 #include "cbase.h"
 #include "mom_blockfix.h"
-#include "mom_entity_run_data.h"
+#include <momentum/mom_entity_run_data.h>
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
-#include "util/run_stats.h"
+#include <momentum/util/run_stats.h>
+#include <momentum/util/mom_util.h>
 #include <GameEventListener.h>
 
 class CMomentumReplayGhostEntity;
@@ -17,10 +18,41 @@ class CMomentumReplayGhostEntity;
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 
+// MOM_TODO: Replace this with the custom player model
+#define ENTITY_MODEL "models/player/player_shape_base.mdl"
+
+// Change these if you want to change the flashlight sound
+#define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
+#define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
+
+//Checkpoints used in the "Checkpoint menu"
+struct Checkpoint
+{
+    bool crouched;
+    Vector pos;
+    Vector vel;
+    QAngle ang;
+    char targetName[512];
+    char targetClassName[512];
+
+    void FromKV(KeyValues *pKv)
+    {
+        Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
+        Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));
+        mom_UTIL->KVLoadVector(pKv, "pos", pos);
+        mom_UTIL->KVLoadVector(pKv, "vel", vel);
+        mom_UTIL->KVLoadQAngles(pKv, "ang", ang);
+        crouched = pKv->GetBool("crouched");
+    }
+};
+
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
+	DECLARE_SERVERCLASS();
+	DECLARE_PREDICTABLE();
+	DECLARE_DATADESC();
 
     CMomentumPlayer();
     ~CMomentumPlayer(void);
@@ -31,25 +63,26 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
         return static_cast<CMomentumPlayer *>(CreateEntityByName(className));
     }
 
-    DECLARE_SERVERCLASS();
-    DECLARE_DATADESC();
-
     int FlashlightIsOn() override { return IsEffectActive(EF_DIMLIGHT); }
 
     void FlashlightTurnOn() override
     {
         AddEffects(EF_DIMLIGHT);
-        EmitSound("HL2Player.FlashLightOn"); // MOM_TODO: change this?
+        EmitSound(SND_FLASHLIGHT_ON);
     }
 
     void FlashlightTurnOff() override
     {
         RemoveEffects(EF_DIMLIGHT);
-        EmitSound("HL2Player.FlashLightOff"); // MOM_TODO: change this?
+        EmitSound(SND_FLASHLIGHT_OFF);
     }
 
     void Spawn() override;
     void Precache() override;
+
+    void CreateViewModel(int index = 0) override;
+    void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) OVERRIDE;
+    void SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize) override;
 
     void FireGameEvent(IGameEvent *pEvent) override;
 
@@ -124,22 +157,61 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool IsValidObserverTarget(CBaseEntity *target) override;
     bool SetObserverTarget(CBaseEntity *target) override;
     CBaseEntity *FindNextObserverTarget(bool bReverse) override;
+    void CheckObserverSettings() OVERRIDE;
 
     void StopSpectating();
 
     // Used by momentum triggers
-    Vector GetPrevOrigin(void);
-    Vector GetPrevOrigin(const Vector &base);
+    Vector GetPrevOrigin(void) const;
+    Vector GetPrevOrigin(const Vector &base) const;
 
     // for calc avg
     int m_nZoneAvgCount[MAX_STAGES];
     float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
 
-    //Overrode for the spectating GUI
+    //Overrode for the spectating GUI and weapon dropping
     bool ClientCommand(const CCommand &args) override;
+    void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
+
+    //--------- CheckpointMenu stuff --------------------------------
+    CNetworkVar(int, m_iCurrentStepCP); //The current checkpoint the player is on
+    CNetworkVar(bool, m_bUsingCPMenu); //If this player is using the checkpoint menu or not
+    CNetworkVar(int, m_iCheckpointCount); //How many checkpoints this player has
+
+    // Gets the current menu checkpoint index
+    int GetCurrentCPMenuStep() const { return m_iCurrentStepCP; }
+    // MOM_TODO: For leaderboard use later on
+    bool IsUsingCPMenu() const { return m_bUsingCPMenu; }
+    // Creates a checkpoint on the location of the player
+    Checkpoint *CreateCheckpoint();
+    // Creates and saves a checkpoint to the checkpoint menu
+    void CreateAndSaveCheckpoint();
+    // Removes last checkpoint (menu) form the checkpoint lists
+    void RemoveLastCheckpoint();
+    // Removes every checkpoint (menu) on the checkpoint list
+    void RemoveAllCheckpoints();
+    // Teleports the player to the checkpoint (menu) with the given index
+    void TeleportToCheckpoint(int);
+    // Teleports to a provided Checkpoint
+    void TeleportToCheckpoint(Checkpoint *pCP);
+    // Teleports the player to their current checkpoint
+    void TeleportToCurrentCP() { TeleportToCheckpoint(m_iCurrentStepCP); }
+    // Sets the current checkpoint (menu) to the desired one with that index
+    void SetCurrentCPMenuStep(int iNewNum) { m_iCurrentStepCP = iNewNum; }
+    // Gets the total amount of menu checkpoints
+    int GetCPCount() const { return m_rcCheckpoints.Size(); }
+    // Sets wheter or not we're using the CPMenu
+    // WARNING! No verification is done. It is up to the caller to don't give false information
+    void SetUsingCPMenu(bool bIsUsingCPMenu) { m_bUsingCPMenu = bIsUsingCPMenu; }
+
+    void SaveCPsToFile(KeyValues *kvInto);
+    void LoadCPsFromFile(KeyValues *kvFrom);
+
+    void ToggleDuckThisFrame(bool bState);
 
   private:
     CountdownTimer m_ladderSurpressionTimer;
+    CUtlVector<Checkpoint*> m_rcCheckpoints;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
     EHANDLE g_pLastSpawn;
@@ -147,7 +219,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     // for detecting bhop
     float m_flTicksOnGround;
-    const int NUM_TICKS_TO_BHOP = 10;
+    const int NUM_TICKS_TO_BHOP;
     friend class CMomentumGameMovement;
     float m_flPunishTime;
     int m_iLastBlock;
@@ -162,6 +234,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
+
+    char m_pszDefaultEntName[128];
 
     // Start zone thinkfunc
     int m_nTicksInAir;

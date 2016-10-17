@@ -26,9 +26,10 @@
 
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
-#include "momentum/ui/IVersionWarnPanel.h"
+#include "momentum/ui/IChangelogPanel.h"
 #include "momentum/ui/IContactPanel.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
+#include "momentum/ui/IMessageboxPanel.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -122,6 +123,27 @@ public:
 
 static CHudTextureHandleProperty textureHandleConverter;
 
+// Momentum-related VGUI Panels
+void VGui_CreateMomentumPanels()
+{
+    VPANEL gameMenu = enginevgui->GetPanel(PANEL_GAMEUIDLL);
+    mapselector->Create(gameMenu);
+    changelogpanel->Create(gameMenu);
+    momentum_settings->Create(gameMenu);
+    contact_panel->Create(gameMenu);
+    messageboxpanel->Create(gameMenu);
+}
+
+void VGui_DestroyMomentumPanels()
+{
+    mapselector->Destroy();
+    changelogpanel->Destroy();
+    momentum_settings->Destroy();
+    contact_panel->Destroy();
+    messageboxpanel->Destroy();
+}
+
+
 static void VGui_VideoMode_AdjustForModeChange( void )
 {
 	// Kill all our panels. We need to do this in case any of them
@@ -135,6 +157,9 @@ static void VGui_VideoMode_AdjustForModeChange( void )
 	fps->Destroy();
 	messagechars->Destroy();
 	loadingdisc->Destroy();
+
+    //Momentum
+    VGui_DestroyMomentumPanels();
 
 	// Recreate our panels.
 	VPANEL gameToolParent = enginevgui->GetPanel( PANEL_CLIENTDLL_TOOLS );
@@ -153,6 +178,9 @@ static void VGui_VideoMode_AdjustForModeChange( void )
 #endif
 	netgraphpanel->Create( toolParent );
 	debugoverlaypanel->Create( gameToolParent );
+
+    //Momentum
+    VGui_CreateMomentumPanels();
 }
 
 static void VGui_OneTimeInit()
@@ -201,7 +229,6 @@ bool VGui_Startup( CreateInterfaceFn appSystemFactory )
 //-----------------------------------------------------------------------------
 void VGui_CreateGlobalPanels( void )
 {
-    VPANEL gameMenu = enginevgui->GetPanel(PANEL_GAMEUIDLL);
 	VPANEL gameToolParent = enginevgui->GetPanel( PANEL_CLIENTDLL_TOOLS );
 	VPANEL toolParent = enginevgui->GetPanel( PANEL_TOOLS );
 #if defined( TRACK_BLOCKING_IO )
@@ -229,10 +256,7 @@ void VGui_CreateGlobalPanels( void )
 #endif
 
     //Momentum
-    mapselector->Create(gameMenu);
-    versionwarnpanel->Create(gameMenu);
-    momentum_settings->Create(gameMenu);
-    contact_panel->Create(gameMenu);
+    VGui_CreateMomentumPanels();
 }
 
 void VGui_Shutdown()
@@ -255,7 +279,7 @@ void VGui_Shutdown()
 	internalCenterPrint->Destroy();
 
     //Momentum
-    mapselector->Destroy();
+    VGui_DestroyMomentumPanels();
 
 	if ( g_pClientMode )
 	{
@@ -267,7 +291,7 @@ void VGui_Shutdown()
 	vgui::ivgui()->RunFrame();
 }
 
-static ConVar cl_showpausedimage( "cl_showpausedimage", "1", 0, "Show the 'Paused' image when game is paused." );
+static ConVar cl_showpausedimage( "cl_showpausedimage", "0", 0, "Show the 'Paused' image when game is paused." );
 
 //-----------------------------------------------------------------------------
 // Things to do before rendering vgui stuff...

@@ -44,7 +44,7 @@ class ClientModeMOMNormal : public ClientModeShared
     int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) override;
     int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) override;
 
-  private:
+  public:
     CHudMenuStatic *m_pHudMenuStatic;
     CHudMapFinishedDialog *m_pHudMapFinished;
     CClientTimesDisplay *m_pLeaderboards;

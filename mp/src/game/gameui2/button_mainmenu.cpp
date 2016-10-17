@@ -33,6 +33,7 @@ void Button_MainMenu::Init()
     m_bIsBlank = false;
     m_iPriority = 0;
     m_iTextAlignment = LEFT;
+    m_nType = SHARED;
 
     HScheme menuScheme = scheme()->GetScheme("SchemeMainMenu");
     // Load this scheme only if it doesn't exist yet
@@ -41,7 +42,7 @@ void Button_MainMenu::Init()
 
     SetScheme(menuScheme);
 
-    m_pAnimController = new AnimationController(this);
+    m_pAnimController = vgui::GetAnimationController();//new AnimationController(this);
     m_pAnimController->SetScheme(menuScheme);
     m_pAnimController->SetProportional(true);
     m_pAnimController->SetAutoDelete(true);
@@ -240,7 +241,7 @@ void Button_MainMenu::OnThink()
     AdditionalCursorCheck();
     Animations();
 
-    if (IsVisible() == false)
+    if (!IsVisible())
     {
         ConColorMsg(Color(0, 148, 255, 255), "\nMain menu is not visible, running all animations to completion...\n");
 
@@ -262,6 +263,27 @@ void Button_MainMenu::DrawButton_Blur()
 {
     surface()->DrawSetColor(m_cBackgroundBlurAlpha);
     surface()->DrawFilledRect(0, 0, m_fWidth + 0, m_fHeight + 0);
+}
+
+inline int CalculateDescOffsetFromAlignment(TextAlignment align, int mainTextSize, int mainTextPos, int descWide, float m_fDescOffsetX)
+{
+    int toReturn;
+    int descOffset = static_cast<int>(m_fDescOffsetX);
+    switch (align)
+    {
+    default:
+    case LEFT:
+        toReturn = mainTextPos + descOffset;
+        break;
+    case CENTER:
+        toReturn = descOffset;//Doesn't matter for center
+        break;
+    case RIGHT:
+        toReturn = descWide <= mainTextSize ? (mainTextSize - descWide + descOffset) : descOffset;
+        break;
+    }
+
+    return toReturn;
 }
 
 inline int CalculateTextXFromAlignment(TextAlignment align, float buttonWide, int textWide, float m_fTextOffsetX)
@@ -300,22 +322,19 @@ void Button_MainMenu::DrawText()
 
 void Button_MainMenu::DrawDescription()
 {
-    if (m_sButtonState == Out && m_bDescriptionHideOut == true ||
-        m_sButtonState == Over && m_bDescriptionHideOver == true ||
-        m_sButtonState == Pressed && m_bDescriptionHidePressed == true ||
-        m_sButtonState == Released && m_bDescriptionHideReleased == true)
+    if ((m_sButtonState == Out && m_bDescriptionHideOut) ||
+        (m_sButtonState == Over && m_bDescriptionHideOver) ||
+        (m_sButtonState == Pressed && m_bDescriptionHidePressed) ||
+        (m_sButtonState == Released && m_bDescriptionHideReleased))
         return;
 
     surface()->DrawSetTextColor(m_cDescription);
     surface()->DrawSetTextFont(m_fDescriptionFont);
     int descWide, descTall;
     surface()->GetTextSize(m_fDescriptionFont, m_ButtonDescription, descWide, descTall);
-    int descriptionX;
-    if (descWide > m_iTextSizeX)
-        descriptionX =
-            CalculateTextXFromAlignment(m_iTextAlignment, m_fWidth, descWide, m_iTextPositionX + m_fDescriptionOffsetX);
-    else
-        descriptionX = m_iTextPositionX + m_fDescriptionOffsetX;
+    int offsetX = CalculateDescOffsetFromAlignment(m_iTextAlignment, m_iTextSizeX, m_iTextPositionX, descWide, m_fDescriptionOffsetX);
+    int descriptionX = CalculateTextXFromAlignment(m_iTextAlignment, m_fWidth, descWide, offsetX);
+
     surface()->DrawSetTextPos(descriptionX, m_iTextPositionY + m_iTextSizeY + m_fDescriptionOffsetY);
     surface()->DrawPrintText(m_ButtonDescription, wcslen(m_ButtonDescription));
 }
@@ -364,9 +383,9 @@ void Button_MainMenu::AdditionalCursorCheck()
     if (IsBlank())
         return;
 
-    if (IsCursorOver() == false)
+    if (!IsCursorOver())
         m_sButtonState = Out;
-    else if (IsCursorOver() == true && m_sButtonState == Out)
+    else if (m_sButtonState == Out)
         m_sButtonState = Over;
 }
 

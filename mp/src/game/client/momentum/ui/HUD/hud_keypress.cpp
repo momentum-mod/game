@@ -102,6 +102,8 @@ void CHudKeyPressDisplay::Init()
     FIND_LOCALIZATION(m_pwDuck, "#MOM_Duck");
 
     m_fJumpColorUntil = m_fDuckColorUntil = 0;
+
+    m_nButtons = 0;
 }
 void CHudKeyPressDisplay::Paint()
 {
@@ -183,7 +185,7 @@ void CHudKeyPressDisplay::OnThink()
         C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
         if (pReplayEnt)
         {
-            m_bShouldDrawCounts = pReplayEnt->m_RunData.m_bTimerRunning;
+            m_bShouldDrawCounts = false; // Not worth it
             m_nButtons = pReplayEnt->m_nReplayButtons;
             m_nStrafes = pReplayEnt->m_iTotalStrafes;
             m_nJumps = pReplayEnt->m_iTotalJumps;
@@ -208,7 +210,9 @@ void CHudKeyPressDisplay::OnThink()
 void CHudKeyPressDisplay::Reset()
 {
     // reset buttons member in case a button gets stuck
-    m_nButtons = NULL;
+    m_nButtons = 0;
+    m_fDuckColorUntil = 0;
+    m_fJumpColorUntil = 0;
 }
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 {

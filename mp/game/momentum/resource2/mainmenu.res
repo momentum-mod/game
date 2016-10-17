@@ -13,9 +13,9 @@
 	{
 		"text"			"#GameUI2_SelectMap"
 		"description"	"#GameUI2_SelectMapDescription"
-		"command"		"engine ToggleMapSelectionPanel"
+		"command"		"engine ShowMapSelectionPanel"
 		"priority"		"99"
-		"specifics"		"mainmenu"
+		"specifics"		"shared"
 	}
 	
 	"Options"

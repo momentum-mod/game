@@ -8,7 +8,7 @@
 #else
 #include "c_te_effect_dispatch.h"
 #endif
-#include "weapon_csbase.h"
+#include "weapon/weapon_csbase.h"
 #include "engine/ivdebugoverlay.h"
 #include "decals.h"
 

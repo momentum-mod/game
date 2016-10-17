@@ -224,5 +224,30 @@
 				"width"		"32"
 				"height"	"32"
 		}
+		// MOM_TODO: Add icons
+		"p_icon_vip"
+		{
+				"file"		"voice/icntlk_local"
+				"x"		"0"
+				"y"		"0"
+				"width"		"32"
+				"height"	"32"
+		}
+		"p_icon_friend"
+		{
+				"file"		"sprites/640hud1"
+				"x"			"192"
+				"y"			"192"
+				"width"		"32"
+				"height"	"16"
+		}
+		"p_icon_member"
+		{
+				"file"		"voice/icntlk_local"
+				"x"		"0"
+				"y"		"0"
+				"width"		"32"
+				"height"	"32"
+		}
 	}	
 }

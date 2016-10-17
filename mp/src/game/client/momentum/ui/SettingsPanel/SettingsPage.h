@@ -3,7 +3,7 @@
 #include "cbase.h"
 
 #include <vgui_controls/Button.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/cvartogglecheckbutton.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/ScrollableEditablePanel.h>
 #include <vgui_controls/pch_vgui_controls.h>
@@ -104,11 +104,10 @@ class SettingsPage : public PropertyPage
 
     ScrollableEditablePanel *GetScrollPanel() const { return m_pScrollPanel; }
 
-  protected:
     // Load the panel's settings
-    void OnPageShow() override { LoadSettings(); }
-    void OnResetData() override { LoadSettings(); }
-
+    virtual void OnPageShow() override { LoadSettings(); }
+    virtual void OnResetData() override { LoadSettings(); }
+    
   private:
     ScrollableEditablePanel *m_pScrollPanel;
 };

@@ -1,13 +1,13 @@
 #include "cbase.h"
-#include "mom_replay_system.h"
+
 #include "mom_replay_entity.h"
+#include "mom_timer.h"
+#include "mom_replay_system.h"
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
-#include "Timer.h"
 
 #include "tier0/memdbgon.h"
 
-MAKE_TOGGLE_CONVAR(mom_replay_reverse, "0", FCVAR_CLIENTCMD_CAN_EXECUTE, "Reverse playback of replay");
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
                                          FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                          "Replay ghost's body group (model)", true, 0, true, 14);
@@ -26,8 +26,11 @@ SendPropInt(SENDINFO(m_iTotalStrafes)),
 SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropString(SENDINFO(m_pszPlayerName)),
-SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)), 
-SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
+SendPropInt(SENDINFO(m_iTotalTimeTicks)), 
+SendPropInt(SENDINFO(m_iCurrentTick)),
+SendPropBool(SENDINFO(m_bIsPaused)),
+SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), 
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
@@ -37,27 +40,24 @@ Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() : 
     m_bIsActive(false),
-    m_bReplayShouldLoop(false),
     m_bReplayFirstPerson(false), 
-    m_iCurrentStep(0), 
     m_pPlaybackReplay(nullptr), 
     m_bHasJumped(false), 
     m_flLastSyncVelocity(0), 
     m_nStrafeTicks(0),
     m_nPerfectSyncTicks(0),
     m_nAccelTicks(0),
-    m_nOldReplayButtons(0)
+    m_nOldReplayButtons(0),
+    m_iBodyGroup( BODY_PROLATE_ELLIPSE )
 {
-    //Set networked vars here
+    // Set networked vars here
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
     m_RunStats.Init();
     ListenForGameEvent("mapfinished_panel_closed");
 }
 
-CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() 
-{ 
-}
+CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() {}
 
 void CMomentumReplayGhostEntity::Precache(void)
 {
@@ -66,11 +66,14 @@ void CMomentumReplayGhostEntity::Precache(void)
     m_GhostColor = COLOR_GREEN; // default color
 }
 
-void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent* pEvent)
+void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
-        EndRun();
+        if (pEvent->GetBool("restart"))
+            m_RunData.m_bMapFinished = false;
+        else
+            EndRun();
     }
 }
 
@@ -92,22 +95,26 @@ void CMomentumReplayGhostEntity::Spawn(void)
     RemoveSolidFlags(FSOLID_NOT_SOLID);
 
     SetModel(GHOST_MODEL);
+    //Always call CollisionBounds after you set the model
+    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
     SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
+    UpdateModelScale();
+    SetViewOffset(VEC_VIEW_SCALED(this));
 
     if (m_pPlaybackReplay)
         Q_strcpy(m_pszPlayerName.GetForModify(), m_pPlaybackReplay->GetPlayerName());
 }
 
-void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* = false */)
+void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 {
     m_bReplayFirstPerson = firstPerson;
-    m_bReplayShouldLoop = shouldLoop;
-    
+
     Spawn();
     m_iTotalStrafes = 0;
     m_RunData.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
+    m_bIsPaused = false;
 
     if (m_pPlaybackReplay)
     {
@@ -121,8 +128,9 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
             }
         }
 
-        m_iCurrentStep = mom_replay_reverse.GetBool() ? m_pPlaybackReplay->GetFrameCount() - 1 : 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentStep)->PlayerOrigin());
+        m_iCurrentTick = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
+        m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime);
     }
@@ -133,36 +141,37 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson, bool shouldLoop /* =
     }
 }
 
-void CMomentumReplayGhostEntity::UpdateStep()
+void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 {
+    // Managed by replayui now
     if (!m_pPlaybackReplay)
         return;
 
-    if (mom_replay_reverse.GetBool())
+    if (m_bIsPaused)
     {
-        --m_iCurrentStep;
-
-        if (m_bReplayShouldLoop && m_iCurrentStep < 0)
-        {
-            m_iCurrentStep = m_pPlaybackReplay->GetFrameCount() - 1;
-        }
-
-        return;
+        if (ConVarRef("mom_replay_selection").GetInt() == 1)
+            m_iCurrentTick -= Skip;
+        else if (ConVarRef("mom_replay_selection").GetInt() == 2)
+            m_iCurrentTick += Skip;
     }
-    
-    ++m_iCurrentStep;
+    else
+    {
+        m_iCurrentTick += Skip;
+    }
 
-    if (m_iCurrentStep >= m_pPlaybackReplay->GetFrameCount() && m_bReplayShouldLoop)
-        m_iCurrentStep = 0;
+    m_iCurrentTick = clamp<int>(m_iCurrentTick, 0, m_iTotalTimeTicks);
 }
+
 void CMomentumReplayGhostEntity::Think(void)
 {
+
+    BaseClass::Think();
+
     if (!m_bIsActive)
         return;
 
     if (!m_pPlaybackReplay)
     {
-        BaseClass::Think();
         return;
     }
 
@@ -180,17 +189,17 @@ void CMomentumReplayGhostEntity::Think(void)
     if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
     {
         m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
-            m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
-            mom_replay_ghost_alpha.GetInt());
+                              m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
+                              mom_replay_ghost_alpha.GetInt());
         SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
 
-    bool reverse = mom_replay_reverse.GetBool();
+    float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
-    //move the ghost
-    if (!m_bReplayShouldLoop &&
-        (reverse && (m_iCurrentStep - 1 < 0) ||
-        !reverse && (m_iCurrentStep + 1 >= m_pPlaybackReplay->GetFrameCount())))
+    int NextStep = static_cast<int>(m_flTimeScale) + 1;
+
+    // move the ghost
+    if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
@@ -199,16 +208,112 @@ void CMomentumReplayGhostEntity::Think(void)
     else
     {
         // Otherwise proceed to the next step and perform the necessary updates.
-        UpdateStep();
+        if (m_flTimeScale <= 1.0f)
+            UpdateStep(1);
+        else
+        {
+            // Check our tickrate
+            int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
+
+            // How many ticks we should speed, if it's 0 then simply run the current one.
+            int TicksToGoToNextStep =
+                static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep) - m_flTimeScale)));
+
+            if (TicksToGoToNextStep <= 0)
+                UpdateStep(NextStep - 1);
+            else
+            {
+                float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
+                // Now we will calculate how many ticks should be updated on the next step or the current one.
+
+                // Let's choose wich tick we want to set our nextstep
+                static int CountMain = 0;
+                static int Count = 0;
+                static int CountSpeed = 0;
+                static bool Reset = false;
+
+                if (CountMain < TickRate)
+                {
+                    Count++;
+
+                    int Difference = Count - CountSpeed;
+                    float fDif = 1.0f / static_cast<float>(Difference);
+
+                    if (fDif <= AverageSpeedUp)
+                    {
+                        UpdateStep(NextStep);
+                        CountSpeed++;
+                        Reset = true;
+                    }
+                    else
+                        UpdateStep(NextStep - 1);
+
+                    if (Reset)
+                    {
+                        Count = 0;
+                        CountSpeed = 0;
+                        Reset = false;
+                    }
+
+                    CountMain++;
+                }
+                else
+                {
+                    Count = 0;
+                    CountSpeed = 0;
+                    CountMain = 0;
+                    Reset = false;
+                }
+            }
+        }
+
         if (m_rgSpectators.IsEmpty())
             HandleGhost();
         else
-            HandleGhostFirstPerson();//MOM_TODO: If some players aren't spectating this, they won't have it update...
+            HandleGhostFirstPerson(); // MOM_TODO: If some players aren't spectating this, they won't have it update...
     }
 
-    BaseClass::Think();
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    if (m_flTimeScale <= 1.0f)
+    {
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * (1.0f / m_flTimeScale));
+    }
+    else
+    {
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    }
 }
+
+// Ripped from gamemovement for slightly better collision
+inline bool CanUnduck(CMomentumReplayGhostEntity *pGhost)
+{
+    trace_t trace;
+    Vector newOrigin;
+
+    VectorCopy(pGhost->GetAbsOrigin(), newOrigin);
+
+    if (pGhost->GetGroundEntity() != nullptr)
+    {
+        newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
+    }
+    else
+    {
+        // If in air an letting go of croush, make sure we can offset origin to make
+        //  up for uncrouching
+        Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
+        Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
+
+        newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
+    }
+
+    UTIL_TraceHull(pGhost->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, pGhost,
+                   COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+
+    if (trace.startsolid || (trace.fraction != 1.0f))
+        return false;
+
+    return true;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: called by the think function, moves and handles the ghost if we're spectating it
 //-----------------------------------------------------------------------------
@@ -228,28 +333,31 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
                 pPlayer->ForceObserverMode(OBS_MODE_IN_EYE);
             }
 
-            pPlayer->SetViewOffset(VEC_VIEW);
-            Vector origin = currentStep->PlayerOrigin();
-            origin.z -= 3.5f;
-            SetAbsOrigin(origin);
+            SetAbsOrigin(currentStep->PlayerOrigin());
+
+            QAngle angles = currentStep->EyeAngles();
 
             if (pPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
             {
-                SetAbsAngles(currentStep->EyeAngles());
+                SetAbsAngles(angles);
                 // don't render the model when we're in first person mode
-                SetRenderMode(kRenderNone);
-                AddEffects(EF_NOSHADOW);
+                if (GetRenderMode() != kRenderNone)
+                {
+                    SetRenderMode(kRenderNone);
+                    AddEffects(EF_NOSHADOW);
+                }
             }
             else
             {
-                SetAbsAngles(QAngle(currentStep->EyeAngles().x /
-                    10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-                    currentStep->EyeAngles().y,
-                    currentStep->EyeAngles().z));
+                // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                SetAbsAngles(QAngle(angles.x / 10, angles.y, angles.z));
 
                 // remove the nodraw effects
-                SetRenderMode(kRenderTransColor);
-                RemoveEffects(EF_NOSHADOW);
+                if (GetRenderMode() != kRenderTransColor)
+                {
+                    SetRenderMode(kRenderTransColor);
+                    RemoveEffects(EF_NOSHADOW);
+                }
             }
 
             // interpolate vel from difference in origin
@@ -259,19 +367,35 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
             float maxvel = sv_maxvelocity.GetFloat();
 
-            //Fixes an issue with teleporting
+            // Fixes an issue with teleporting
             if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
                 SetAbsVelocity(interpolatedVel);
 
-            m_nReplayButtons = currentStep->PlayerButtons(); // networked var that allows the replay to control keypress display on the client
+            // networked var that allows the replay to control keypress display on the client
+            m_nReplayButtons = currentStep->PlayerButtons();
 
             if (m_RunData.m_bTimerRunning)
                 UpdateStats(interpolatedVel);
 
+            SetViewOffset(currentStep->PlayerViewOffset());
+
+            // kamay: Now timer start and end at the right time
+            bool isDucking = (GetFlags() & FL_DUCKING) != 0;
             if (currentStep->PlayerButtons() & IN_DUCK)
             {
-                // MOM_TODO: make this smoother. possibly inherit from NPC classes/CBaseCombatCharacter
-                pPlayer->SetViewOffset(VEC_DUCK_VIEW);
+                if (!isDucking)
+                {
+                    SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+                    AddFlag(FL_DUCKING);
+                }
+            }
+            else
+            {
+                if (CanUnduck(this) && isDucking)
+                {
+                    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
+                    RemoveFlag(FL_DUCKING);
+                }
             }
         }
     }
@@ -299,7 +423,7 @@ void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
     auto currentStep = GetCurrentStep();
     float SyncVelocity = ghostVel.Length2DSqr(); // we always want HVEL for checking velocity sync
 
-    if (GetGroundEntity() == nullptr)            // The ghost is in the air
+    if (GetGroundEntity() == nullptr) // The ghost is in the air
     {
         m_bHasJumped = false;
 
@@ -386,7 +510,7 @@ void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
         CMomentumPlayer *pPlayer = m_rgSpectators[i];
         if (pPlayer && pPlayer->GetReplayEnt() == this)
         {
-            g_Timer->DispatchTimerStateMessage(pPlayer, true);
+            g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, true);
         }
     }
 }
@@ -398,14 +522,14 @@ void CMomentumReplayGhostEntity::StopTimer()
         CMomentumPlayer *pPlayer = m_rgSpectators[i];
         if (pPlayer && pPlayer->GetReplayEnt() == this)
         {
-            g_Timer->DispatchTimerStateMessage(pPlayer, false);
+            g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
         }
     }
 }
 
 void CMomentumReplayGhostEntity::EndRun()
-{ 
-    StopTimer();// Stop the timer for all spectating us
+{
+    StopTimer(); // Stop the timer for all spectating us
     m_bIsActive = false;
 
     // Make everybody stop spectating me. Goes backwards since players remove themselves.
@@ -419,30 +543,28 @@ void CMomentumReplayGhostEntity::EndRun()
         }
     }
 
-    //Theoretically, m_rgSpectators should be empty here.
+    // Theoretically, m_rgSpectators should be empty here.
     m_rgSpectators.RemoveAll();
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
 }
 
-CReplayFrame* CMomentumReplayGhostEntity::GetNextStep()
+CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = m_iCurrentStep;
+    int nextStep = m_iCurrentTick;
 
-    if (mom_replay_reverse.GetBool())
+    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_bIsPaused)
     {
         --nextStep;
 
-        if (nextStep < 0)
-            nextStep = m_pPlaybackReplay->GetFrameCount() - 1;
+        nextStep = max(nextStep, 0);
     }
     else
     {
         ++nextStep;
 
-        if (nextStep >= m_pPlaybackReplay->GetFrameCount())
-            nextStep = 0;
+        nextStep = min(nextStep, m_pPlaybackReplay->GetFrameCount() - 1);
     }
 
     return m_pPlaybackReplay->GetFrame(nextStep);

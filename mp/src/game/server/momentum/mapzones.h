@@ -69,9 +69,6 @@ public:
     bool LoadFromFile(const char*);
 
 private:
-    const char* c_mapPath = "maps/";
-    const char* c_zoneFileEnding = ".zon";
-
     CUtlVector<CMapzone*> m_zones;
 };
 

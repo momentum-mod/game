@@ -5,19 +5,26 @@
 #endif
 
 #include "cbase.h"
-#include "momentum/mom_shareddefs.h"
+#include <momentum/mom_shareddefs.h>
 #include "c_mom_replay_entity.h"
-#include "mom_entity_run_data.h"
-#include "util/run_stats.h"
+#include <momentum/mom_entity_run_data.h>
+#include <momentum/util/run_stats.h>
 
 class C_MomentumPlayer : public C_BasePlayer
 {
 public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
-    DECLARE_CLIENTCLASS();
+	DECLARE_CLIENTCLASS();
+	DECLARE_PREDICTABLE(); 
+	DECLARE_INTERPOLATION();
 
     C_MomentumPlayer();
     ~C_MomentumPlayer();
+
+	void PostDataUpdate(DataUpdateType_t updateType) override;
+	void OnDataChanged(DataUpdateType_t type) override;
+	bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) override;
+	virtual void ClientThink(void);
 
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 
@@ -38,12 +45,18 @@ public:
         return dynamic_cast<C_MomentumReplayGhostEntity*>(m_hObserverTarget.Get());
     }
 
+    Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
+
     int m_iShotsFired;
     int m_iDirection;
     bool m_bResumeZoom;
     int m_iLastZoom;
     bool m_bDidPlayerBhop;
     bool m_bHasPracticeMode;
+
+    bool m_bUsingCPMenu;
+    int m_iCurrentStepCP;
+    int m_iCheckpointCount;
 
     CMOMRunEntityData m_RunData;
     CMomRunStats m_RunStats;

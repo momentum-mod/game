@@ -31,6 +31,7 @@ ipch
 *.mak
 *.mak.vpc_crc
 *.xcodeproj/
+*.project
 obj*/
 !devtools/*.mak
 !utils/smdlexp/smdlexp.mak
@@ -38,6 +39,8 @@ obj*/
 # Specific Source build products
 client.so
 client.so.dbg
+client_srv.so
+client_srv.so.dbg
 server.so
 server.so.dbg
 server_srv.so
@@ -45,7 +48,6 @@ server_srv.so.dbg
 
 client.dll
 server.dll
-gameui2.dll
 
 client.dylib
 client.dylib.dSYM/
@@ -62,6 +64,7 @@ save/
 config.cfg
 server_blacklist.txt
 gamestate.txt
+checkpoints.txt
 *.ain
 stats.txt
 voice_ban.dt
@@ -74,6 +77,16 @@ voice_ban.dt
 *.tim
 *.zon
 *.momrec
+gameui2.dll
+gameui2.so
+gameui2.so.dbg
+gameui2_srv.so
+gameui2_srv.so.dbg
+shared.dll
+shared.so
+shared.so.dbg
+shared_srv.so
+shared_srv.so.dbg
 
 # Others
 *.cache
@@ -84,3 +97,6 @@ voice_ban.dt
 *.vdf
 *.pch.ib_tag
 *.ib_pdb_index
+*.cfg
+.idea/
+CMakeLists.txt

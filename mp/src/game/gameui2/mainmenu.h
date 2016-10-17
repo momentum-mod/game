@@ -3,35 +3,35 @@
 #include "vgui2d/panel2d.h"
 
 #include "button_mainmenu.h"
-
-#include <algorithm>
-#include <functional>
 #include <string>
+
+enum SortFlags_t
+{
+    FL_SORT_SHARED = 0x01,
+    FL_SORT_INGAME = 0x02,
+    FL_SORT_MENU = 0x04
+};
 
 class MainMenu : public Panel2D
 {
     DECLARE_CLASS_SIMPLE(MainMenu, Panel2D);
 
   public:
-    MainMenu(vgui::Panel *parent);
+    MainMenu(Panel *parent);
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     virtual void CreateMenu(const char *menu);
-    virtual void OnThink();
-    virtual bool IsVisible();
+    void OnThink() OVERRIDE;
+    bool IsVisible() OVERRIDE;
     virtual void DrawMainMenu();
     virtual void DrawLogo();
-    virtual void Paint();
-    virtual void OnCommand(char const *cmd);
-    virtual void OnSetFocus();
-    virtual void OnKillFocus();
-    virtual bool Equals(char const *inputA, char const *inputB);
+    void Paint() OVERRIDE;
+    void OnCommand(char const *cmd) OVERRIDE;
+    void OnSetFocus() OVERRIDE;
+    void OnKillFocus() OVERRIDE;
 
   private:
     CUtlVector<Button_MainMenu *> m_pButtons;
-    CUtlVector<Button_MainMenu *> m_pButtonsInGame;
-    CUtlVector<Button_MainMenu *> m_pButtonsBackground;
-    CUtlVector<Button_MainMenu *> m_pButtonsShared;
 
     // MOM_TODO: Remove this when it's no longer needed
     Button_MainMenu *m_pButtonFeedback;
@@ -59,4 +59,6 @@ class MainMenu : public Panel2D
     Color m_cLogoRight;
 
     vgui::HFont m_fLogoFont;
+    int m_nSortFlags;
+    bool m_bNeedSort;
 };

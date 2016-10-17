@@ -9,15 +9,9 @@
 #include "clientmode_mom_normal.h"
 #include "hud.h"
 #include "ienginevgui.h"
-#include "iinput.h"
 #include "momSpectatorGUI.h"
 #include "momentum/mom_shareddefs.h"
-#include "momSpectatorGUI.h"
-#include "vgui_int.h"
-#include <vgui/IInput.h>
-#include <vgui/IPanel.h>
-#include <vgui/ISurface.h>
-#include <vgui_controls/AnimationController.h>
+#include "IGameUIFuncs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -61,13 +55,13 @@ class CHudViewport : public CBaseViewport
         {
             return new CClientTimesDisplay(this);
         }
-        if (!Q_strcmp(PANEL_SPECMENU, pzName))
-        {
-            return new CMOMSpectatorMenu(this);
-        }
         if (!Q_strcmp(PANEL_SPECGUI, pzName))
         {
             return new CMOMSpectatorGUI(this);
+        }
+        if (!Q_strcmp(PANEL_REPLAY, pzName))
+        {
+            return new C_MOMReplayUI(this);
         }
 
         return BaseClass::CreatePanelByName(pzName);
@@ -75,8 +69,8 @@ class CHudViewport : public CBaseViewport
 
     void CreateDefaultPanels(void) override
     {
+        AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
-        AddNewPanel(CreatePanelByName(PANEL_SPECMENU), "PANEL_SPECMENU");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
         //BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
     }
@@ -90,6 +84,7 @@ ClientModeMOMNormal::ClientModeMOMNormal()
     m_pHudMenuStatic = nullptr;
     m_pHudMapFinished = nullptr;
     m_pLeaderboards = nullptr;
+    m_pSpectatorGUI = nullptr;
     m_pViewport = new CHudViewport();
     m_pViewport->Start(gameuifuncs, gameeventmanager);
 }
@@ -114,7 +109,7 @@ void ClientModeMOMNormal::Init()
     m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
     m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
     // Load up the combine control panel scheme
-    g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(
+    g_hVGuiCombineScheme = scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
         IsXbox() ? "resource/ClientScheme.res" : "resource/CombinePanelScheme.res", "CombineScheme");
     if (!g_hVGuiCombineScheme)
@@ -138,12 +133,15 @@ int ClientModeMOMNormal::HudElementKeyInput(int down, ButtonCode_t keynum, const
     }
 
     //Detach the mouse if the user right-clicked while the leaderboards are open
-    
     if (m_pLeaderboards && m_pLeaderboards->IsVisible())
     {
         if (keynum == MOUSE_RIGHT)
         {
             m_pLeaderboards->SetMouseInputEnabled(true);
+            //MOM_TODO: Consider toggling the leaderboards open with this
+            //m_pLeaderboards->SetKeyBoardInputEnabled(!prior);
+            //ButtonCode_t close = gameuifuncs->GetButtonCodeForBind("showtimes");
+            //gViewPortInterface->PostMessageToPanel(PANEL_TIMES, new KeyValues("PollHideCode", "code", close));
             return 0;
         }
     }
@@ -169,7 +167,7 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
         if (down && pszCurrentBinding && !Q_strcmp(pszCurrentBinding, "+duck"))
         {
             m_pSpectatorGUI->SetMouseInputEnabled(!m_pSpectatorGUI->IsMouseInputEnabled());
-            // MOM_TODO: re-enable this in beta when we add movie-style controls to the spectator menu!
+            // MOM_TODO: re-enable this in alpha+ when we add movie-style controls to the spectator menu!
             //m_pViewport->ShowPanel(PANEL_SPECMENU, true);
 
             return 0; // we handled it, don't handle twice or send to server
