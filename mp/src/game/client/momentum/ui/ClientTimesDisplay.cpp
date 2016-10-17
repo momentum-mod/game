@@ -466,7 +466,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 {
     // Catch the case where we call ShowPanel before ApplySchemeSettings, eg when
     // going from windowed <-> fullscreen
-    if (m_pImageList == nullptr)
+    if (!m_pImageList && bShow)
     {
         InvalidateLayout(true, true);
     }
