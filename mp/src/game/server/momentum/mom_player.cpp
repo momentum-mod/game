@@ -67,7 +67,10 @@ CMomentumPlayer::CMomentumPlayer()
     ListenForGameEvent("mapfinished_panel_closed");
 }
 
-CMomentumPlayer::~CMomentumPlayer() {}
+CMomentumPlayer::~CMomentumPlayer()
+{
+    RemoveAllCheckpoints();
+}
 
 void CMomentumPlayer::Precache()
 {
@@ -531,11 +534,10 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
 
 void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
 {
-    if (!kvFrom) return;
+    if (!kvFrom || kvFrom->IsEmpty()) return;
     FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
     {
-        Checkpoint *c = new Checkpoint();
-        c->FromKV(kvFrom);
+        Checkpoint *c = new Checkpoint(kvCheckpoint);
         m_rcCheckpoints.AddToTail(c);
     }
 

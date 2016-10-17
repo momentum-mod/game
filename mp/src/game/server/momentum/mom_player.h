@@ -35,7 +35,13 @@ struct Checkpoint
     char targetName[512];
     char targetClassName[512];
 
-    void FromKV(KeyValues *pKv)
+    Checkpoint() : crouched(false), pos(vec3_origin), vel(vec3_origin), ang(vec3_angle)
+    {
+        targetName[0] = '\0';
+        targetClassName[0] = '\0';
+    }
+
+    Checkpoint(KeyValues *pKv)
     {
         Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
         Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));

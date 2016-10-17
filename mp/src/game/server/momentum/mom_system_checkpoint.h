@@ -17,7 +17,7 @@ public:
         m_pCheckpointsKV = nullptr;
     }
 
-    void LevelInitPostEntity() override;
+    void LevelInitPreEntity() override;
     void LevelShutdownPreEntity() override;
 
     void LoadMapCheckpoints(CMomentumPlayer *pPlayer) const;
