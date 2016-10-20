@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "baseviewport.h"
 #include "c_mom_replay_entity.h"
 #include "hud_fillablebar.h"
 #include "hud_numericdisplay.h"
@@ -9,14 +10,14 @@
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
 #include <math.h>
-#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 static ConVar strafesync_draw("mom_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                              "Toggles displaying the strafesync data. (1 = only timer , 2 = always) \n", true, 0, true, 2);
+                              "Toggles displaying the strafesync data. (1 = only timer , 2 = timer + pratice mode) \n",
+                              true, 0, true, 2);
 
 static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1",
                                  FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -54,14 +55,15 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
         {
             if (pPlayer->IsWatchingReplay())
             {
-                //MOM_TODO: Should we have a convar against this?
+                // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
                 shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
             }
             else
             {
-                if ( strafesync_draw.GetInt() == 2 )
-                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && !( ( pPlayer->m_RunData.m_iCurrentZone == 1 ) && !( pPlayer->m_RunData.m_bTimerRunning ) );
+                if (strafesync_draw.GetInt() == 2)
+                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
+                                      (pPlayer->m_RunData.m_iCurrentZone != 1 || pPlayer->m_RunData.m_bTimerRunning);
                 else
                     shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && pPlayer->m_RunData.m_bTimerRunning;
             }
@@ -193,7 +195,6 @@ void CHudStrafeSyncDisplay::OnThink()
     }
 
     m_PrimaryValueColor = m_SecondaryValueColor = m_currentColor;
-
 }
 void CHudStrafeSyncDisplay::Paint()
 {
@@ -227,14 +228,17 @@ class CHudStrafeSyncBar : public CHudFillableBar
         {
             if (pPlayer->IsWatchingReplay())
             {
-                //MOM_TODO: Should we have a convar against this?
+                // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
                 shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
             }
             else
             {
-                if ( strafesync_draw.GetInt() == 2 )
-                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && !( ( pPlayer->m_RunData.m_iCurrentZone == 1 ) && !( pPlayer->m_RunData.m_bTimerRunning ) );
+                if (strafesync_draw.GetInt() == 2)
+                {
+                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
+                                      (pPlayer->m_RunData.m_iCurrentZone != 1 || pPlayer->m_RunData.m_bTimerRunning);
+                }
                 else
                     shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && pPlayer->m_RunData.m_bTimerRunning;
             }
@@ -345,5 +349,4 @@ void CHudStrafeSyncBar::OnThink()
         break;
     }
     SetValue(m_localStrafeSync);
-
 }
