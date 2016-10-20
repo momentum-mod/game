@@ -597,7 +597,7 @@ void CMomentumPlayer::UpdateRunStats()
     float velocity = GetLocalVelocity().Length();
     float velocity2D = GetLocalVelocity().Length2D();
 
-    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2))
+    if (g_pMomentumTimer->IsRunning() || ((ConVarRef("mom_strafesync_draw").GetInt() == 2) && !m_bHasPracticeMode))
     {
         int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
         if (!m_bPrevTimerRunning)                   // timer started on this tick

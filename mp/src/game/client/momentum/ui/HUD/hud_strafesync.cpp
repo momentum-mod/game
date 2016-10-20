@@ -62,7 +62,8 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
             else
             {
                 shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
-                                  ((pPlayer->m_RunData.m_iCurrentZone != 1 && strafesync_draw.GetInt() == 2) ||
+                                  (((pPlayer->m_RunData.m_iCurrentZone != 1 && !pPlayer->m_bHasPracticeMode) &&
+                                    strafesync_draw.GetInt() == 2) ||
                                    pPlayer->m_RunData.m_bTimerRunning);
             }
         }
@@ -233,7 +234,8 @@ class CHudStrafeSyncBar : public CHudFillableBar
             else
             {
                 shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
-                                  ((pPlayer->m_RunData.m_iCurrentZone != 1 && strafesync_draw.GetInt() == 2) ||
+                                  (((pPlayer->m_RunData.m_iCurrentZone != 1 && !pPlayer->m_bHasPracticeMode) &&
+                                    strafesync_draw.GetInt() == 2) ||
                                    pPlayer->m_RunData.m_bTimerRunning);
             }
         }
