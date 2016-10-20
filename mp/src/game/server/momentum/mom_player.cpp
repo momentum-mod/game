@@ -15,6 +15,10 @@
 
 #define AVERAGE_STATS_INTERVAL 0.1
 
+static ConVar strafesync_reset( "mom_strafesync_reset" , false ,
+                                FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE ,
+                                "Reset the strafe sync. (works only when timer is disabled)\n" , true , 0 , true , 1 );
+
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
 SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
 SendPropInt(SENDINFO(m_iShotsFired)),
@@ -593,7 +597,14 @@ void CMomentumPlayer::UpdateRunStats()
     float velocity = GetLocalVelocity().Length();
     float velocity2D = GetLocalVelocity().Length2D();
 
-    if (g_pMomentumTimer->IsRunning())
+    if ( strafesync_reset.GetBool() && !m_RunData.m_bTimerRunning)
+    {
+        m_nStrafeTicks = m_nPerfectSyncTicks = m_nAccelTicks = 0;
+        m_RunData.m_flStrafeSync = m_RunData.m_flStrafeSync2 = 0.0f;
+        strafesync_reset.SetValue( false );
+    }
+
+    //if (g_pMomentumTimer->IsRunning())
     {
         int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
         if (!m_bPrevTimerRunning)                   // timer started on this tick

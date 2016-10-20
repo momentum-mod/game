@@ -60,7 +60,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
             }
             else
             {
-                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished;
             }
         }
         return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -190,6 +190,7 @@ void CHudStrafeSyncDisplay::OnThink()
     }
 
     m_PrimaryValueColor = m_SecondaryValueColor = m_currentColor;
+
 }
 void CHudStrafeSyncDisplay::Paint()
 {
@@ -229,7 +230,7 @@ class CHudStrafeSyncBar : public CHudFillableBar
             }
             else
             {
-                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished;
             }
         }
         return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -338,4 +339,5 @@ void CHudStrafeSyncBar::OnThink()
         break;
     }
     SetValue(m_localStrafeSync);
+
 }
