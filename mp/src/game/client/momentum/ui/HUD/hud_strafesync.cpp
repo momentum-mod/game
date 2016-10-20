@@ -16,7 +16,7 @@
 using namespace vgui;
 
 static ConVar strafesync_draw("mom_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                              "Toggles displaying the strafesync data.\n", true, 0, true, 1);
+                              "Toggles displaying the strafesync data. (1 = only timer , 2 = always) \n", true, 0, true, 2);
 
 static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1",
                                  FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -60,7 +60,10 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
             }
             else
             {
-                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished;
+                if ( strafesync_draw.GetInt() == 2 )
+                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && !( ( pPlayer->m_RunData.m_iCurrentZone == 1 ) && !( pPlayer->m_RunData.m_bTimerRunning ) );
+                else
+                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && pPlayer->m_RunData.m_bTimerRunning;
             }
         }
         return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -230,7 +233,10 @@ class CHudStrafeSyncBar : public CHudFillableBar
             }
             else
             {
-                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished;
+                if ( strafesync_draw.GetInt() == 2 )
+                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && !( ( pPlayer->m_RunData.m_iCurrentZone == 1 ) && !( pPlayer->m_RunData.m_bTimerRunning ) );
+                else
+                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && pPlayer->m_RunData.m_bTimerRunning;
             }
         }
         return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;

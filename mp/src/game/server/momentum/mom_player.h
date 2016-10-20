@@ -209,6 +209,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     void ToggleDuckThisFrame(bool bState);
 
+
+    //strafesync MOM_TODO: do function for set or get theses int.
+    int m_nPerfectSyncTicks;
+    int m_nStrafeTicks;
+    int m_nAccelTicks;
+
   private:
     CountdownTimer m_ladderSurpressionTimer;
     CUtlVector<Checkpoint*> m_rcCheckpoints;
@@ -227,10 +233,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // for strafe sync
     float m_flLastVelocity, m_flLastSyncVelocity;
     QAngle m_qangLastAngle;
-
-    int m_nPerfectSyncTicks;
-    int m_nStrafeTicks;
-    int m_nAccelTicks;
 
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;

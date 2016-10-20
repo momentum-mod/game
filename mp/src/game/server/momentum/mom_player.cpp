@@ -15,9 +15,17 @@
 
 #define AVERAGE_STATS_INTERVAL 0.1
 
-static ConVar strafesync_reset( "mom_strafesync_reset" , false ,
-                                FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE ,
-                                "Reset the strafe sync. (works only when timer is disabled)\n" , true , 0 , true , 1 );
+CON_COMMAND( mom_strafesync_reset , "Reset the strafe sync. (works only when timer is disabled)\n" )
+{
+    CMomentumPlayer* pPlayer = ( CMomentumPlayer*) UTIL_GetLocalPlayer();
+
+    if ( pPlayer && !g_pMomentumTimer->IsRunning() )
+    {
+        pPlayer->m_nStrafeTicks = pPlayer->m_nPerfectSyncTicks = pPlayer->m_nAccelTicks = 0;
+        pPlayer->m_RunData.m_flStrafeSync = pPlayer->m_RunData.m_flStrafeSync2 = 0.0f;
+    }
+
+}
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
 SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
@@ -597,14 +605,7 @@ void CMomentumPlayer::UpdateRunStats()
     float velocity = GetLocalVelocity().Length();
     float velocity2D = GetLocalVelocity().Length2D();
 
-    if ( strafesync_reset.GetBool() && !m_RunData.m_bTimerRunning)
-    {
-        m_nStrafeTicks = m_nPerfectSyncTicks = m_nAccelTicks = 0;
-        m_RunData.m_flStrafeSync = m_RunData.m_flStrafeSync2 = 0.0f;
-        strafesync_reset.SetValue( false );
-    }
-
-    //if (g_pMomentumTimer->IsRunning())
+    if (g_pMomentumTimer->IsRunning())
     {
         int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
         if (!m_bPrevTimerRunning)                   // timer started on this tick
@@ -692,6 +693,45 @@ void CMomentumPlayer::UpdateRunStats()
 
         m_bPrevTimerRunning = g_pMomentumTimer->IsRunning();
         m_nPrevButtons = m_nButtons;
+    }
+   
+    if ( !g_pMomentumTimer->IsRunning() && (ConVarRef("mom_strafesync_draw").GetInt() == 2) )
+    {
+
+        //  ---- STRAFE SYNC -----
+        float SyncVelocity = GetLocalVelocity().Length2DSqr(); // we always want HVEL for checking velocity sync
+        if ( !( GetFlags() & ( FL_ONGROUND | FL_INWATER ) ) && GetMoveType() != MOVETYPE_LADDER )
+        {
+            if ( EyeAngles().y > m_qangLastAngle.y ) // player turned left
+            {
+                m_nStrafeTicks++;
+                if ( ( m_nButtons & IN_MOVELEFT ) && !( m_nButtons & IN_MOVERIGHT ) )
+                    m_nPerfectSyncTicks++;
+                if ( SyncVelocity > m_flLastSyncVelocity )
+                    m_nAccelTicks++;
+            }
+            else if ( EyeAngles().y < m_qangLastAngle.y ) // player turned right
+            {
+                m_nStrafeTicks++;
+                if ( ( m_nButtons & IN_MOVERIGHT ) && !( m_nButtons & IN_MOVELEFT ) )
+                    m_nPerfectSyncTicks++;
+                if ( SyncVelocity > m_flLastSyncVelocity )
+                    m_nAccelTicks++;
+            }
+        }
+
+        if ( m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks )
+        {
+            // ticks strafing perfectly / ticks strafing
+            m_RunData.m_flStrafeSync = ( float( m_nPerfectSyncTicks ) / float( m_nStrafeTicks ) ) * 100.0f;
+            // ticks gaining speed / ticks strafing
+            m_RunData.m_flStrafeSync2 = ( float( m_nAccelTicks ) / float( m_nStrafeTicks ) ) * 100.0f;
+        }
+        // ----------
+
+        m_qangLastAngle = EyeAngles();
+        m_flLastSyncVelocity = SyncVelocity;
+
     }
 
     // think once per tick
