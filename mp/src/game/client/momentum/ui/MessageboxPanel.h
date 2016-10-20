@@ -15,8 +15,18 @@
 
 using namespace vgui;
 
+
+class MessageBoxVarRef : public MessageBox
+{
+public:
+    MessageBoxVarRef(const char *title, const char *msg, const char *cvar);
+    ~MessageBoxVarRef();
+private:
+    CvarToggleCheckButton<ConVarRef>* m_pToggleCheckButton;
+};
+
 // CChangelogPanel class
-class CMessageboxPanel : public Frame
+class CMessageboxPanel : public Frame  // We're not a child of MessageBox for a good reason. I guess...
 {
     DECLARE_CLASS_SIMPLE(CMessageboxPanel, Frame);
     // CChangelogPanel : This Class / vgui::Frame : BaseClass
@@ -33,6 +43,10 @@ class CMessageboxPanel : public Frame
 
     Panel *CreateConfirmationBox(Panel *pTarget, const char *pTitle, const char *pMessage, KeyValues *okCommand,
         KeyValues *cancelCommand, const char *pAcceptText = nullptr, const char *pCancelText = nullptr);
+
+    // Creates a messagebox with a "Don't show me this again" toggle controlled by a convar (Defined in its params)
+    // TIP: ConVar should be defined as FCVAR_HIDDEN | FCVAR_ARCHIVE with default to 0.
+    Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char* cvar, const char *pAccept = nullptr);
     // This function deletes all the messageboxes
     void FlushMessageboxes();
     // Removes the HPanel messagebox
@@ -93,6 +107,15 @@ class CMessageboxInterface : public IMessageboxPanel
         if (pPanel)
         {
             return pPanel->CreateConfirmationBox(pTarget, pTitle, pMessage, okCommand, cancelCommand, pAcceptText, pCancelText);
+        }
+        return nullptr;
+    }
+
+    Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char *cvar, const char *pAccept = nullptr) override
+    {
+        if (pPanel)
+        {
+            return pPanel->CreateMessagebox(pTitle, pMessage, pAccept);
         }
         return nullptr;
     }

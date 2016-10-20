@@ -2,6 +2,10 @@
 #include "cbase.h"
 
 #include "MessageboxPanel.h"
+#include "mom_shareddefs.h"
+#include <vgui_controls/cvartogglecheckbutton.h>
+
+MAKE_TOGGLE_CONVAR(mom_toggle_nostartorend, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if MB_NoStartOrEnd should be shown.\n");
 
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
@@ -9,12 +13,30 @@ void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 }
 void __MsgFunc_MB_NoStartOrEnd(bf_read &msg)
 {
-    messageboxpanel->CreateMessagebox("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd");
+    if (!mom_toggle_nostartorend.GetBool())
+        messageboxpanel->CreateMessageboxVarRef("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd", "mom_toggle_nostartorend");
 }
 
 void __MsgFunc_MB_EditingZone(bf_read &msg)
 {
     messageboxpanel->CreateMessagebox("#MOM_MB_EditingZone_Title", "#MOM_MB_EditingZone");
+}
+
+MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvar) : MessageBox(title, msg)
+{
+    m_pToggleCheckButton = new CvarToggleCheckButton<ConVarRef>(this, "MessageboxVarRef", "Don't show me this again", cvar);
+    // When toggled, will not allow the panel to be created (We don't check it here because we've done it on our 2 interfaces (Messaging and IMEssageBox)
+    // this also allows us to show this even if the toggle says no! (Like, for important stuff)
+    //m_pToggleCheckButton->SetPos(0, 0);
+}
+
+MessageBoxVarRef::~MessageBoxVarRef()
+{
+    if (m_pToggleCheckButton)
+    {
+        delete m_pToggleCheckButton;
+        m_pToggleCheckButton = nullptr;
+    }
 }
 
 // Constuctor: Initializes the Panel
@@ -90,6 +112,25 @@ Panel *CMessageboxPanel::CreateConfirmationBox(Panel *pTarget, const char *pTitl
     }
     pMessageBox->MoveToCenterOfScreen();
 
+    m_mbItems.AddToTail(pMessageBox);
+    pMessageBox->DoModal();
+    return pMessageBox;
+}
+
+Panel* CMessageboxPanel::CreateMessageboxVarRef(const char* pTitle, const char* pMessage, const char* cvar, const char* pAccept)
+{
+    ConVarRef varref(cvar);
+    if (!varref.IsValid())
+        return nullptr;
+    if (varref.GetBool())  // If we are false, we want to show up! Otherwise we are nothing but null
+        return nullptr;
+    MessageBoxVarRef *pMessageBox = new MessageBoxVarRef(pTitle, pMessage, cvar);
+    // If it is not a nullptr and it's not an empty string...
+    if (pAccept && Q_strlen(pAccept) > 0)
+    {
+        pMessageBox->SetOKButtonText(pAccept);
+    }
+    pMessageBox->MoveToCenterOfScreen();
     m_mbItems.AddToTail(pMessageBox);
     pMessageBox->DoModal();
     return pMessageBox;
