@@ -21,7 +21,7 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 
     if (pPlayer && !g_pMomentumTimer->IsRunning())
     {
-        pPlayer->m_nStrafeTicks = pPlayer->m_nPerfectSyncTicks = pPlayer->m_nAccelTicks = 0;
+        pPlayer->GetStrafeTicks() = pPlayer->GetPerfectSyncTicks() = pPlayer->GetAccelTicks() = 0;
         pPlayer->m_RunData.m_flStrafeSync = pPlayer->m_RunData.m_flStrafeSync2 = 0.0f;
     }
 }

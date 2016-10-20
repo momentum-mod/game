@@ -6,12 +6,12 @@
 
 #include "cbase.h"
 #include "mom_blockfix.h"
-#include <momentum/mom_entity_run_data.h>
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
-#include <momentum/util/run_stats.h>
-#include <momentum/util/mom_util.h>
 #include <GameEventListener.h>
+#include <momentum/mom_entity_run_data.h>
+#include <momentum/util/mom_util.h>
+#include <momentum/util/run_stats.h>
 
 class CMomentumReplayGhostEntity;
 
@@ -25,7 +25,7 @@ class CMomentumReplayGhostEntity;
 #define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
 #define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
 
-//Checkpoints used in the "Checkpoint menu"
+// Checkpoints used in the "Checkpoint menu"
 struct Checkpoint
 {
     bool crouched;
@@ -50,9 +50,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
-	DECLARE_SERVERCLASS();
-	DECLARE_PREDICTABLE();
-	DECLARE_DATADESC();
+    DECLARE_SERVERCLASS();
+    DECLARE_PREDICTABLE();
+    DECLARE_DATADESC();
 
     CMomentumPlayer();
     ~CMomentumPlayer(void);
@@ -131,7 +131,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
-    CNetworkVarEmbedded(CMomRunStats, m_RunStats); // Run stats, also used for hud elements
+    CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -149,10 +149,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
     void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
 
-    //Replay stuff
+    // Replay stuff
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
 
-	CMomentumReplayGhostEntity *GetReplayEnt() const;
+    CMomentumReplayGhostEntity *GetReplayEnt() const;
 
     bool IsValidObserverTarget(CBaseEntity *target) override;
     bool SetObserverTarget(CBaseEntity *target) override;
@@ -169,14 +169,14 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_nZoneAvgCount[MAX_STAGES];
     float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
 
-    //Overrode for the spectating GUI and weapon dropping
+    // Overrode for the spectating GUI and weapon dropping
     bool ClientCommand(const CCommand &args) override;
     void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
 
     //--------- CheckpointMenu stuff --------------------------------
-    CNetworkVar(int, m_iCurrentStepCP); //The current checkpoint the player is on
-    CNetworkVar(bool, m_bUsingCPMenu); //If this player is using the checkpoint menu or not
-    CNetworkVar(int, m_iCheckpointCount); //How many checkpoints this player has
+    CNetworkVar(int, m_iCurrentStepCP);   // The current checkpoint the player is on
+    CNetworkVar(bool, m_bUsingCPMenu);    // If this player is using the checkpoint menu or not
+    CNetworkVar(int, m_iCheckpointCount); // How many checkpoints this player has
 
     // Gets the current menu checkpoint index
     int GetCurrentCPMenuStep() const { return m_iCurrentStepCP; }
@@ -209,15 +209,13 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     void ToggleDuckThisFrame(bool bState);
 
-
-    //strafesync MOM_TODO: do function for set or get theses int.
-    int m_nPerfectSyncTicks;
-    int m_nStrafeTicks;
-    int m_nAccelTicks;
+    int &GetPerfectSyncTicks() { return m_nPerfectSyncTicks; }
+    int &GetStrafeTicks() { return m_nStrafeTicks; }
+    int &GetAccelTicks() { return m_nAccelTicks; }
 
   private:
     CountdownTimer m_ladderSurpressionTimer;
-    CUtlVector<Checkpoint*> m_rcCheckpoints;
+    CUtlVector<Checkpoint *> m_rcCheckpoints;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
     EHANDLE g_pLastSpawn;
@@ -233,6 +231,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // for strafe sync
     float m_flLastVelocity, m_flLastSyncVelocity;
     QAngle m_qangLastAngle;
+    int m_nPerfectSyncTicks;
+    int m_nStrafeTicks;
+    int m_nAccelTicks;
 
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;

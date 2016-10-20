@@ -61,11 +61,9 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
             }
             else
             {
-                if (strafesync_draw.GetInt() == 2)
-                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
-                                      (pPlayer->m_RunData.m_iCurrentZone != 1 || pPlayer->m_RunData.m_bTimerRunning);
-                else
-                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && pPlayer->m_RunData.m_bTimerRunning;
+                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
+                                  ((pPlayer->m_RunData.m_iCurrentZone != 1 && strafesync_draw.GetInt() == 2) ||
+                                   pPlayer->m_RunData.m_bTimerRunning);
             }
         }
         return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -234,13 +232,9 @@ class CHudStrafeSyncBar : public CHudFillableBar
             }
             else
             {
-                if (strafesync_draw.GetInt() == 2)
-                {
-                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
-                                      (pPlayer->m_RunData.m_iCurrentZone != 1 || pPlayer->m_RunData.m_bTimerRunning);
-                }
-                else
-                    shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished && pPlayer->m_RunData.m_bTimerRunning;
+                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
+                                  ((pPlayer->m_RunData.m_iCurrentZone != 1 && strafesync_draw.GetInt() == 2) ||
+                                   pPlayer->m_RunData.m_bTimerRunning);
             }
         }
         return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
