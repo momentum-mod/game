@@ -1,0 +1,6 @@
+fxctmp9_tmp\gauss_blur_3x3_ps30.inc
+fxctmp9_tmp\gauss_blur_3x3_vs30.inc
+fxctmp9_tmp\ssao_ps30.inc
+fxctmp9_tmp\ssao_vs30.inc
+fxctmp9_tmp\ssao_combine_ps30.inc
+fxctmp9_tmp\ssao_combine_vs30.inc

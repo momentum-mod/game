@@ -130,6 +130,7 @@ static ConVar r_threaded_renderables( "r_threaded_renderables", "0" );
 ConVar r_DrawDetailProps( "r_DrawDetailProps", "1", FCVAR_NONE, "0=Off, 1=Normal, 2=Wireframe" );
 
 ConVar r_worldlistcache( "r_worldlistcache", "1" );
+ConVar ssao_enable("ssao_enable", "1", FCVAR_ARCHIVE | FCVAR_REPLICATED);
 
 //-----------------------------------------------------------------------------
 // Convars related to fog color
@@ -781,6 +782,10 @@ CLIENTEFFECT_REGISTER_END()
 #endif
 
 CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
+    CLIENTEFFECT_MATERIAL("dev/ssao")
+    CLIENTEFFECT_MATERIAL("dev/ssaoblur")
+    CLIENTEFFECT_MATERIAL("dev/ssao_combine")
+
 	CLIENTEFFECT_MATERIAL( "dev/blurfiltery_and_add_nohdr" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx_nohdr" )
@@ -2172,6 +2177,10 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		}
 
 	}
+    if (ssao_enable.GetBool())
+    {
+        DoSSAO(view);
+    }
 
 	if ( mat_viewportupscale.GetBool() && mat_viewportscale.GetFloat() < 1.0f ) 
 	{

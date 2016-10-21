@@ -1,0 +1,31 @@
+//-----------------------------------------------------------------------------
+//	game_shader_dx9.vpc
+//
+//	Project Script for mods to use an an example of how to override shaders
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro GAMENAME "Momentum"
+$Include "$SRCDIR\materialsystem\stdshaders\game_shader_dx9_base.vpc"
+
+$Project "Shaders (Momentum)"
+{
+    $Folder "Source Files"
+    {
+        $File   "ssao.cpp"
+        $File   "ssao_combine.cpp"
+        $File   "gaussian_blur_3x3.cpp"
+    }
+
+	$Folder "Link Libraries"
+	{
+        $Lib	mathlib
+        $Lib	shaderlib
+    }
+
+	$File	"buildsdkshaders.bat"
+	$File	"buildshaders.bat"
+
+	$Shaders	"stdshader_dx9_20b.txt"
+	$Shaders	"stdshader_dx9_30.txt"
+}

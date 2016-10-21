@@ -1,0 +1,6 @@
+gauss_blur_3x3_ps30.fxc-----gauss_blur_3x3_ps30
+gauss_blur_3x3_vs30.fxc-----gauss_blur_3x3_vs30
+ssao_ps30.fxc-----ssao_ps30
+ssao_vs30.fxc-----ssao_vs30
+ssao_combine_ps30.fxc-----ssao_combine_ps30
+ssao_combine_vs30.fxc-----ssao_combine_vs30
