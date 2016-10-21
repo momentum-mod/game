@@ -589,7 +589,6 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
     pPlayer->m_bHasPracticeMode = true;
-    pPlayer->m_RunData.m_iCurrentZone = 0;
     Stop(false);
 }
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)

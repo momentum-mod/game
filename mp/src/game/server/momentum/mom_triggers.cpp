@@ -333,7 +333,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             // The map is now finished, show the mapfinished panel
             pPlayer->m_RunData.m_bMapFinished = true;
             pPlayer->m_RunData.m_bTimerRunning = false;
-            pPlayer->m_RunData.m_iCurrentZone = 0;
         }
 
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
