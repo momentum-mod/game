@@ -103,11 +103,7 @@ ClientModeMOMNormal::~ClientModeMOMNormal()
 void ClientModeMOMNormal::Init()
 {
     BaseClass::Init();
-
-    m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
-    m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
-    m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
-    m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+    SetupPointers();
     // Load up the combine control panel scheme
     g_hVGuiCombineScheme = scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
@@ -191,4 +187,12 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
     }
 
     return 1;
+}
+
+void ClientModeMOMNormal::SetupPointers()
+{
+    m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
+    m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
+    m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
+    m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
 }

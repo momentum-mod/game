@@ -63,6 +63,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_bFriendsTimesLoaded(false),
     m_bUnauthorizedFriendlist(false)
 {
+    SetSize(10, 10); // Quiet the "parent not sized yet" spew, actual size in leaderboards.res
+
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
 

@@ -46,6 +46,7 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
 
     // property sheet
     m_pTabPanel = new PropertySheet(this, "MapTabs");
+    m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
     m_pTabPanel->AddPage(m_pLocal, "#MOM_MapSelector_LocalMaps");
     //MOM_TODO: uncomment: m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_OnlineMaps");

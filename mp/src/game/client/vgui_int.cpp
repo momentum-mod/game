@@ -30,6 +30,7 @@
 #include "momentum/ui/IContactPanel.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
 #include "momentum/ui/IMessageboxPanel.h"
+#include "clientmode_mom_normal.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -159,7 +160,6 @@ static void VGui_VideoMode_AdjustForModeChange( void )
 	loadingdisc->Destroy();
 
     //Momentum
-    //mapselector->Destroy();
     VGui_DestroyMomentumPanels();
 
 	// Recreate our panels.
@@ -181,9 +181,9 @@ static void VGui_VideoMode_AdjustForModeChange( void )
 	debugoverlaypanel->Create( gameToolParent );
 
     //Momentum
-    //mapselector->Create(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     VGui_CreateMomentumPanels();
-    g_pClientMode->Init();
+    // Needed for re-gaining control on panels (pointers get messed up somehow)
+    static_cast<ClientModeMOMNormal*>(g_pClientMode)->SetupPointers();
 }
 
 static void VGui_OneTimeInit()
