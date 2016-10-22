@@ -188,12 +188,6 @@ CClientTimesDisplay::~CClientTimesDisplay()
 {
     m_pCurrentLeaderboards = nullptr;
 
-    if (m_pImageList)
-    {
-        delete m_pImageList;
-        m_pImageList = nullptr;
-    }
-
     if (m_pLeaderboardReplayCMenu)
     {
         m_pLeaderboardReplayCMenu->DeletePanel();
