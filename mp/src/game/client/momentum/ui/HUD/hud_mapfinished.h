@@ -41,6 +41,8 @@ public:
     void SetVisible(bool) override;
     void FireGameEvent(IGameEvent*) override;
 
+    bool IsBuildGroupEnabled() OVERRIDE { return false; }
+
     void OnMousePressed(MouseCode code) override;
 
     void ApplySchemeSettings(IScheme *pScheme) override;

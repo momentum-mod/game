@@ -77,8 +77,10 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
 //-----------------------------------------------------------------------------
 CMapSelectorDialog::~CMapSelectorDialog()
 {
-    delete m_pContextMenu;
+    if (m_pContextMenu)
+        m_pContextMenu->DeletePanel();
 
+    // Attempt to save user data, if not that's okay
     SaveUserData();
 
     if (m_pSavedData)
@@ -169,6 +171,8 @@ void CMapSelectorDialog::LoadUserData()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::SaveUserData()
 {
+    if (!g_pFullFileSystem) return;
+
     m_pSavedData->Clear();
     m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 

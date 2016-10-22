@@ -159,6 +159,7 @@ static void VGui_VideoMode_AdjustForModeChange( void )
 	loadingdisc->Destroy();
 
     //Momentum
+    //mapselector->Destroy();
     VGui_DestroyMomentumPanels();
 
 	// Recreate our panels.
@@ -180,7 +181,9 @@ static void VGui_VideoMode_AdjustForModeChange( void )
 	debugoverlaypanel->Create( gameToolParent );
 
     //Momentum
+    //mapselector->Create(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     VGui_CreateMomentumPanels();
+    g_pClientMode->Init();
 }
 
 static void VGui_OneTimeInit()
@@ -279,7 +282,7 @@ void VGui_Shutdown()
 	internalCenterPrint->Destroy();
 
     //Momentum
-    VGui_DestroyMomentumPanels();
+    //VGui_DestroyMomentumPanels();
 
 	if ( g_pClientMode )
 	{

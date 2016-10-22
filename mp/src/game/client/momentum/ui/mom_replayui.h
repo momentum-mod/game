@@ -48,6 +48,7 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
     virtual vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
     virtual bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }; // true if panel is visible
     virtual void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); };
+    virtual Panel* GetParent() OVERRIDE{ return nullptr; }
 
   protected:
     // When the slider changes, we want to update the text panel
