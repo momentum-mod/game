@@ -266,7 +266,7 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
 class CVoiceGameMgrHelper : public IVoiceGameMgrHelper
 {
 public:
-    bool CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity) override
+    bool CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity) OVERRIDE
     {
         return true;
     }
@@ -284,7 +284,7 @@ public:
     DECLARE_CLASS(CCorpse, CBaseAnimating);
     DECLARE_SERVERCLASS();
 
-    int ObjectCaps(void) override
+    int ObjectCaps(void) OVERRIDE
     { return FCAP_DONT_SAVE; }
 
 public:

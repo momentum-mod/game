@@ -69,37 +69,37 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
         return static_cast<CMomentumPlayer *>(CreateEntityByName(className));
     }
 
-    int FlashlightIsOn() override { return IsEffectActive(EF_DIMLIGHT); }
+    int FlashlightIsOn() OVERRIDE { return IsEffectActive(EF_DIMLIGHT); }
 
-    void FlashlightTurnOn() override
+    void FlashlightTurnOn() OVERRIDE
     {
         AddEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_ON);
     }
 
-    void FlashlightTurnOff() override
+    void FlashlightTurnOff() OVERRIDE
     {
         RemoveEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_OFF);
     }
 
-    void Spawn() override;
-    void Precache() override;
+    void Spawn() OVERRIDE;
+    void Precache() OVERRIDE;
 
-    void CreateViewModel(int index = 0) override;
+    void CreateViewModel(int index = 0) OVERRIDE;
     void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) OVERRIDE;
-    void SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize) override;
+    void SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize) OVERRIDE;
 
-    void FireGameEvent(IGameEvent *pEvent) override;
+    void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     // MOM_TODO: This is called when the player spawns so that HUD elements can be updated
-    // void InitHUD() override;
+    // void InitHUD() OVERRIDE;
 
-    void CommitSuicide(bool bExplode = false, bool bForce = false) override{};
+    void CommitSuicide(bool bExplode = false, bool bForce = false) OVERRIDE{};
 
-    void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false) override{};
+    void CommitSuicide(const Vector &vecForce, bool bExplode = false, bool bForce = false) OVERRIDE{};
 
-    bool CanBreatheUnderwater() const override { return true; }
+    bool CanBreatheUnderwater() const OVERRIDE { return true; }
 
     // LADDERS
     void SurpressLadderChecks(const Vector &pos, const Vector &normal);
@@ -107,7 +107,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 
     // SPAWNING
-    CBaseEntity *EntSelectSpawnPoint() override;
+    CBaseEntity *EntSelectSpawnPoint() OVERRIDE;
 
     // used by CMomentumGameMovement
     bool m_duckUntilOnGround;
@@ -149,7 +149,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
                   float lateral_max, int direction_change);
 
     // Used by g_MOMBlockFix door/button fix code
-    void Touch(CBaseEntity *) override;
+    void Touch(CBaseEntity *) OVERRIDE;
     int GetLastBlock() const { return m_iLastBlock; }
     float GetPunishTime() const { return m_flPunishTime; }
     void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
@@ -160,9 +160,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
 	CMomentumReplayGhostEntity *GetReplayEnt() const;
 
-    bool IsValidObserverTarget(CBaseEntity *target) override;
-    bool SetObserverTarget(CBaseEntity *target) override;
-    CBaseEntity *FindNextObserverTarget(bool bReverse) override;
+    bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
+    bool SetObserverTarget(CBaseEntity *target) OVERRIDE;
+    CBaseEntity *FindNextObserverTarget(bool bReverse) OVERRIDE;
     void CheckObserverSettings() OVERRIDE;
 
     void StopSpectating();
@@ -176,7 +176,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
 
     //Overrode for the spectating GUI and weapon dropping
-    bool ClientCommand(const CCommand &args) override;
+    bool ClientCommand(const CCommand &args) OVERRIDE;
     void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
 
     //--------- CheckpointMenu stuff --------------------------------

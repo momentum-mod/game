@@ -9,9 +9,9 @@ public:
     DECLARE_CLASS(CMomGrenadeProjectile, CBaseCSGrenadeProjectile);
 
     // Overrides.
-    void Spawn() override;
-    void Precache() override;
-    void BounceSound(void) override;
+    void Spawn() OVERRIDE;
+    void Precache() OVERRIDE;
+    void BounceSound(void) OVERRIDE;
 
     // Grenade stuff.
     static CMomGrenadeProjectile* Create(

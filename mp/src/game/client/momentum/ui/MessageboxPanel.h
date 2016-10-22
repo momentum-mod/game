@@ -34,7 +34,7 @@ class CMessageboxPanel : public Frame  // We're not a child of MessageBox for a 
     CMessageboxPanel(VPANEL parent); // Constructor
     ~CMessageboxPanel();             // Destructor
 
-    void Close() override;
+    void Close() OVERRIDE;
 
     // Creates a messagebox, with pTitle as title and pMessage as message.
     // It does not disappear until Close is pressed or FlushMessageboxes() is called
@@ -64,9 +64,9 @@ class CMessageboxInterface : public IMessageboxPanel
   public:
     CMessageboxInterface() { pPanel = nullptr; }
     ~CMessageboxInterface() {}
-    void Create(VPANEL parent) override { pPanel = new CMessageboxPanel(parent); }
+    void Create(VPANEL parent) OVERRIDE { pPanel = new CMessageboxPanel(parent); }
 
-    void Destroy() override
+    void Destroy() OVERRIDE
     {
         if (pPanel)
         {
@@ -75,7 +75,7 @@ class CMessageboxInterface : public IMessageboxPanel
         pPanel = nullptr;
     }
 
-    void Activate(void) override
+    void Activate(void) OVERRIDE
     {
         if (pPanel)
         {
@@ -83,7 +83,7 @@ class CMessageboxInterface : public IMessageboxPanel
         }
     }
 
-    void Close() override
+    void Close() OVERRIDE
     {
         if (pPanel)
         {
@@ -92,7 +92,7 @@ class CMessageboxInterface : public IMessageboxPanel
     }
 
     // is the default parameter specifier needed here?
-    Panel *CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept = nullptr) override
+    Panel *CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept = nullptr) OVERRIDE
     {
         if (pPanel)
         {
@@ -102,7 +102,7 @@ class CMessageboxInterface : public IMessageboxPanel
     }
 
     Panel *CreateConfirmationBox(Panel *pTarget, const char *pTitle, const char *pMessage, KeyValues *okCommand,
-        KeyValues *cancelCommand, const char *pAcceptText = nullptr, const char *pCancelText = nullptr) override
+        KeyValues *cancelCommand, const char *pAcceptText = nullptr, const char *pCancelText = nullptr) OVERRIDE
     {
         if (pPanel)
         {
@@ -111,7 +111,7 @@ class CMessageboxInterface : public IMessageboxPanel
         return nullptr;
     }
 
-    Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char *cvar, const char *pAccept = nullptr) override
+    Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char *cvar, const char *pAccept = nullptr) OVERRIDE
     {
         if (pPanel)
         {
@@ -120,7 +120,7 @@ class CMessageboxInterface : public IMessageboxPanel
         return nullptr;
     }
 
-    void FlushMessageboxes() override
+    void FlushMessageboxes() OVERRIDE
     {
         if (pPanel)
         {
@@ -128,7 +128,7 @@ class CMessageboxInterface : public IMessageboxPanel
         }
     }
 
-    void FlushMessageboxes(HPanel pHp) override
+    void FlushMessageboxes(HPanel pHp) OVERRIDE
     {
         if (pPanel)
         {

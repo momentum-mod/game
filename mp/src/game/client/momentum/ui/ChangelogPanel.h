@@ -37,15 +37,15 @@ class CChangelogPanel : public Frame
         }
     }
 
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         BaseClass::ApplySchemeSettings(pScheme);
         m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall"));
     }
 
-    void Activate() override;
+    void Activate() OVERRIDE;
 
-    void OnThink() override
+    void OnThink() OVERRIDE
     {
         BaseClass::OnThink();
         if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
@@ -55,7 +55,7 @@ class CChangelogPanel : public Frame
         }
     }
 
-    void OnKillFocus() override
+    void OnKillFocus() OVERRIDE
     {
         BaseClass::OnKillFocus();
         Close();
@@ -77,8 +77,8 @@ class CChangelogInterface : public IChangelogPanel
   public:
       CChangelogInterface() { pPanel = nullptr; }
       ~CChangelogInterface() { }
-    void Create(vgui::VPANEL parent) override { pPanel = new CChangelogPanel(parent); }
-    void Destroy() override
+    void Create(vgui::VPANEL parent) OVERRIDE { pPanel = new CChangelogPanel(parent); }
+    void Destroy() OVERRIDE
     {
         if (pPanel)
         {
@@ -87,14 +87,14 @@ class CChangelogInterface : public IChangelogPanel
         }
         pPanel = nullptr;
     }
-    void Activate(void) override
+    void Activate(void) OVERRIDE
     {
         if (pPanel)
         {
             pPanel->Activate();
         }
     }
-    void Close() override
+    void Close() OVERRIDE
     {
         if (pPanel)
         {

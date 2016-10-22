@@ -19,7 +19,7 @@ public:
 
     // call this to Activate the menu
     void ShowMenu();
-    void OnCursorExitedMenuItem(int vpanel) override;
+    void OnCursorExitedMenuItem(int vpanel) OVERRIDE;
 };
 
 

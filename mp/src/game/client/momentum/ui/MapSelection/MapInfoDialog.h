@@ -33,8 +33,8 @@ protected:
     // message handlers
     MESSAGE_FUNC(OnConnect, "Connect");
     // vgui overrides
-    void OnTick() override;
-    void PerformLayout() override;
+    void OnTick() OVERRIDE;
+    void PerformLayout() OVERRIDE;
 
     // API
     void GetMapInfo(const char* mapname);

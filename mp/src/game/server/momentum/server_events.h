@@ -20,10 +20,10 @@ public:
     CMOMServerEvents(const char *pName) : CAutoGameSystemPerFrame(pName), zones(nullptr)
     {
     }
-    void PostInit() override;
-    void LevelInitPostEntity() override;
-    void LevelShutdownPreEntity() override;
-    void FrameUpdatePreEntityThink() override;
+    void PostInit() OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPreEntity() OVERRIDE;
+    void FrameUpdatePreEntityThink() OVERRIDE;
 
     void MountAdditionalContent();
 

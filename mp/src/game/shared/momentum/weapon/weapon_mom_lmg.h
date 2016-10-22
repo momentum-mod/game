@@ -20,8 +20,8 @@ public:
         m_flIdleInterval = 20.0f;
     };
 
-    void PrimaryAttack() override;
-    CSWeaponID GetWeaponID(void) const override { return WEAPON_LMG; }
+    void PrimaryAttack() OVERRIDE;
+    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_LMG; }
 
 private:
     CMomentumLMG(const CMomentumLMG &);

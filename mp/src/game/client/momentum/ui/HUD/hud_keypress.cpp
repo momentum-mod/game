@@ -31,20 +31,20 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
 
     CHudKeyPressDisplay(const char *pElementName);
 
-    bool ShouldDraw() override
+    bool ShouldDraw() OVERRIDE
     {
         C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
         // don't show during map finished dialog
         return showkeys.GetBool() && pMom && !pMom->m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
     }
 
-    void OnThink() override;
-    void Paint() override;
-    void Init() override;
-    void Reset() override;
+    void OnThink() OVERRIDE;
+    void Paint() OVERRIDE;
+    void Init() OVERRIDE;
+    void Reset() OVERRIDE;
     void DrawKeyTemplates();
 
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
         SetBgColor(Color(0, 0, 0, 1)); // empty background, 1 alpha (out of 255) so game text doesnt obscure our text

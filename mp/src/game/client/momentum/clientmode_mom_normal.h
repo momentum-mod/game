@@ -38,11 +38,11 @@ class ClientModeMOMNormal : public ClientModeShared
     ClientModeMOMNormal();
     ~ClientModeMOMNormal();
 
-    void Init() override;
-    bool ShouldDrawCrosshair(void) override;
+    void Init() OVERRIDE;
+    bool ShouldDrawCrosshair(void) OVERRIDE;
     //NOTE: This includes mouse inputs!!!
-    int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) override;
-    int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) override;
+    int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
+    int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
 
   public:
     CHudMenuStatic *m_pHudMenuStatic;

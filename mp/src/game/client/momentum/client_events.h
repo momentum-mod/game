@@ -14,7 +14,7 @@ public:
     }
 
     //After DLL inits successfully
-    void PostInit() override;
+    void PostInit() OVERRIDE;
 
     //From the Valve SDK wiki
     static void MountAdditionalContent();

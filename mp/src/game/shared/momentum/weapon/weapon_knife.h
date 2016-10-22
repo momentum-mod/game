@@ -40,26 +40,26 @@ public:
 	CKnife();
 
 	// We say yes to this so the weapon system lets us switch to it.
-    bool HasPrimaryAmmo() override;
-    bool CanBeSelected() override;
+    bool HasPrimaryAmmo() OVERRIDE;
+    bool CanBeSelected() OVERRIDE;
 
-    void Precache() override;
+    void Precache() OVERRIDE;
 
-	void Spawn() override;
+	void Spawn() OVERRIDE;
 	void Smack();
 	bool SwingOrStab( bool bStab );
     void DoAttack(bool bIsSecondary);
-	void PrimaryAttack() override;
-	void SecondaryAttack() override;
+	void PrimaryAttack() OVERRIDE;
+	void SecondaryAttack() OVERRIDE;
 
-    void ItemPostFrame( void ) override;
+    void ItemPostFrame( void ) OVERRIDE;
 
 
-	bool Deploy() override;
+	bool Deploy() OVERRIDE;
 	void Holster( int skiplocal = 0 );
 	bool CanDrop();
 
-	void WeaponIdle() override;
+	void WeaponIdle() OVERRIDE;
 
     CSWeaponID GetWeaponID( void ) const override
 	{ return WEAPON_KNIFE; }

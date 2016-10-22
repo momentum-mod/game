@@ -59,14 +59,14 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
   public:
     CHudSpeedMeter(const char *pElementName);
 
-    void Init() override { Reset(); }
+    void Init() OVERRIDE { Reset(); }
 
-    void VidInit() override { Reset(); }
+    void VidInit() OVERRIDE { Reset(); }
 
-    void Paint() override;
-    void PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits) override;
+    void Paint() OVERRIDE;
+    void PaintNumbers(HFont font, int xpos, int ypos, int value, bool atLeast2Digits) OVERRIDE;
 
-    void Reset() override
+    void Reset() OVERRIDE
     {
         // We set the proper LabelText based on mom_speedmeter_units value
         switch (mom_speedometer_units.GetInt())
@@ -88,15 +88,15 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
         stageStartAlpha = 0.0f;
     }
 
-    void OnThink() override;
+    void OnThink() OVERRIDE;
 
-    bool ShouldDraw() override 
+    bool ShouldDraw() OVERRIDE
     { 
         IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
         return mom_speedometer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
     }
 
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
         secondaryColor = GetSchemeColor("SecondaryValueColor", pScheme);
@@ -108,7 +108,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
     }
     bool ShouldColorize() const { return mom_speedometer_colorize.GetBool(); }
 
-    void FireGameEvent(IGameEvent *pEvent) override
+    void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {
         if (!Q_strcmp(pEvent->GetName(), "zone_exit"))
         {

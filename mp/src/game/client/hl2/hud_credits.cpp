@@ -63,15 +63,15 @@ class CHudCredits : public CHudElement, public vgui::Panel
 
 public:
     CHudCredits(const char *pElementName);
-    void Init(void) override;
-    void LevelShutdown(void) override;
+    void Init(void) OVERRIDE;
+    void LevelShutdown(void) OVERRIDE;
 
     int GetStringPixelWidth(wchar_t *pString, vgui::HFont hFont);
 
     void MsgFunc_CreditsMsg(bf_read &msg);
     void MsgFunc_LogoTimeMsg(bf_read &msg);
 
-    bool ShouldDraw(void) override
+    bool ShouldDraw(void) OVERRIDE
     {
         g_bRollingCredits = IsActive();
 
@@ -82,8 +82,8 @@ public:
     }
 
 protected:
-    void Paint() override;
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+    void Paint() OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
 private:
     void Clear();

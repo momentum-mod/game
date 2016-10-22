@@ -29,6 +29,6 @@ class C_MomentumReplayGhostEntity : public C_BaseAnimating
     int m_iCurrentTick;    // The current tick of playback
 
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
-    bool ShouldInterpolate() override { return true; }
+    bool ShouldInterpolate() OVERRIDE { return true; }
     CInterpolatedVar<Vector> m_iv_vecViewOffset;
 };

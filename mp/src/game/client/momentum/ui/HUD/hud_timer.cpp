@@ -36,17 +36,17 @@ class C_HudTimer : public CHudElement, public Panel
 {
     DECLARE_CLASS_SIMPLE(C_HudTimer, Panel);
     C_HudTimer(const char *pElementName);
-    void OnThink() override;
-    void Init() override;
-    void Reset() override;
-    void Paint() override;
-    bool ShouldDraw() override
+    void OnThink() OVERRIDE;
+    void Init() OVERRIDE;
+    void Reset() OVERRIDE;
+    void Paint() OVERRIDE;
+    bool ShouldDraw() OVERRIDE
     {
         IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
         return mom_timer.GetBool() && CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible();
     }
 
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
         SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));

@@ -16,11 +16,11 @@ public:
 
     CMomentumGrenade() {};
 
-    CSWeaponID GetWeaponID(void) const override { return WEAPON_GRENADE; }
+    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_GRENADE; }
 
 #ifdef GAME_DLL
 
     void EmitGrenade(Vector vecSrc, QAngle vecAngles, Vector vecVel, AngularImpulse angImpulse,
-                             CBasePlayer *pPlayer) override;
+                             CBasePlayer *pPlayer) OVERRIDE;
 #endif
 };

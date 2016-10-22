@@ -205,9 +205,8 @@ void C_MOMReplayUI::FireGameEvent(IGameEvent *pEvent)
 // Command issued
 void C_MOMReplayUI::OnCommand(const char *command)
 {
-    if (!shared)
-        return BaseClass::OnCommand(command);
-    C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    C_MomentumReplayGhostEntity *pGhost = pPlayer ? pPlayer->GetReplayEnt() : nullptr;
     if (!Q_strcasecmp(command, "play"))
     {
         engine->ClientCmd("mom_replay_pause"); // Handles the toggle state
