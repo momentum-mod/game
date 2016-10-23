@@ -232,8 +232,6 @@ static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldVal
 
 static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", true, 0, false, 0, OnGamemodeChanged);
 
-static ConVar give_weapon("mom_spawn_with_weapon", "1", FCVAR_NONE, "Spawn the player with a weapon?", true, 0, true, 1);
-
 static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
 
 void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
@@ -256,9 +254,6 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
 
 
         //MOM_TODO: could this change to gamemode != ALLOWED ?
-        if (give_weapon.GetBool() && !Q_strcmp(pMapName, "credits") && !(Q_strnicmp(pMapName, "background", Q_strlen("background"))))
-            pPlayer->Weapon_Create("weapon_momentum_gun");
-        //MOM_TODO: keep track of holstering (convar?)
     }
 }
 

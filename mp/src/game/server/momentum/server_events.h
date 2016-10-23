@@ -23,6 +23,7 @@ public:
     void PostInit() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
+    void LevelShutdownPostEntity() OVERRIDE;
     void FrameUpdatePreEntityThink() OVERRIDE;
 
     void MountAdditionalContent();

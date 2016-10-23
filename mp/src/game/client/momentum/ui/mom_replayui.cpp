@@ -104,11 +104,11 @@ void C_MOMReplayUI::OnThink()
             m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
             m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
-            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (END_RECORDING_DELAY / TICK_INTERVAL);
+            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (TIME_TO_TICKS(END_RECORDING_DELAY));
 
             // Set overall progress
             float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
-            fProgress = Clamp(fProgress, 0.0f, 1.0f);
+            fProgress = clamp<float>(fProgress, 0.0f, 1.0f);
             m_pProgress->SetProgress(fProgress);
 
             bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_RunData.m_iStartTickD;
