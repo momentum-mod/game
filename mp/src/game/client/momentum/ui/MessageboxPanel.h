@@ -21,6 +21,8 @@ class MessageBoxVarRef : public MessageBox
 public:
     MessageBoxVarRef(const char *title, const char *msg, const char *cvar);
     ~MessageBoxVarRef();
+
+    void PerformLayout() OVERRIDE;
 private:
     CvarToggleCheckButton<ConVarRef>* m_pToggleCheckButton;
 };
@@ -63,7 +65,7 @@ class CMessageboxInterface : public IMessageboxPanel
 
   public:
     CMessageboxInterface() { pPanel = nullptr; }
-    ~CMessageboxInterface() {}
+    virtual ~CMessageboxInterface() {}
     void Create(VPANEL parent) OVERRIDE { pPanel = new CMessageboxPanel(parent); }
 
     void Destroy() OVERRIDE
@@ -115,7 +117,7 @@ class CMessageboxInterface : public IMessageboxPanel
     {
         if (pPanel)
         {
-            return pPanel->CreateMessagebox(pTitle, pMessage, pAccept);
+            return pPanel->CreateMessageboxVarRef(pTitle, pMessage, cvar, pAccept);
         }
         return nullptr;
     }

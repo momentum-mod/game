@@ -3,9 +3,9 @@
 #include "cbase.h"
 
 #include "IChangelogPanel.h"
-#include <vgui/IVGui.h>
-#include <vgui/ISystem.h>
 #include <vgui/ILocalize.h>
+#include <vgui/ISystem.h>
+#include <vgui/IVGui.h>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/RichText.h>
@@ -32,7 +32,7 @@ class CChangelogPanel : public Frame
         if (m_pChangeLog)
         {
             m_pChangeLog->SetText(m_pwOnlineChangelog);
-            //Delay the scrolling to a tick or so away, thanks Valve.
+            // Delay the scrolling to a tick or so away, thanks Valve.
             m_flScrollTime = system()->GetFrameTime() + 0.010f;
         }
     }
@@ -72,11 +72,11 @@ class CChangelogPanel : public Frame
 class CChangelogInterface : public IChangelogPanel
 {
   private:
-      CChangelogPanel *pPanel;
+    CChangelogPanel *pPanel;
 
   public:
-      CChangelogInterface() { pPanel = nullptr; }
-      ~CChangelogInterface() { }
+    CChangelogInterface() { pPanel = nullptr; }
+    virtual ~CChangelogInterface() {}
     void Create(vgui::VPANEL parent) OVERRIDE { pPanel = new CChangelogPanel(parent); }
     void Destroy() OVERRIDE
     {
