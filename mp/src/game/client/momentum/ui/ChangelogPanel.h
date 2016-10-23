@@ -102,7 +102,7 @@ class CChangelogInterface : public IChangelogPanel
         }
     }
 
-    void SetVersion(const char *pVersion) const override
+    void SetVersion(const char *pVersion) const OVERRIDE
     {
         if (pPanel)
         {
@@ -110,7 +110,7 @@ class CChangelogInterface : public IChangelogPanel
         }
     }
 
-    void SetChangelog(const char *pChangelog) const override
+    void SetChangelog(const char *pChangelog) const OVERRIDE
     {
         if (pPanel)
         {

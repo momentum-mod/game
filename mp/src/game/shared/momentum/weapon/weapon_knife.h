@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -61,7 +61,7 @@ public:
 
 	void WeaponIdle() OVERRIDE;
 
-    CSWeaponID GetWeaponID( void ) const override
+    CSWeaponID GetWeaponID( void ) const OVERRIDE
 	{ return WEAPON_KNIFE; }
 
 public:
