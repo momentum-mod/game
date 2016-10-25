@@ -128,8 +128,8 @@ bool TickSet::SetTickrate(float tickrate)
     if (m_trCurrent.fTickRate != tickrate)
     {
         Tickrate tr;
-        if (tickrate == 0.01f) tr = s_DefinedRates[TICKRATE_100];
-        else if (tickrate == 0.015f) tr = s_DefinedRates[TICKRATE_66];
+        if (mom_UTIL->FloatEquals(tickrate, 0.01f)) tr = s_DefinedRates[TICKRATE_100];
+        else if (mom_UTIL->FloatEquals(tickrate, 0.015f)) tr = s_DefinedRates[TICKRATE_66];
         else
         {
             tr.fTickRate = tickrate;

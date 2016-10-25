@@ -225,6 +225,7 @@ IReplaySystem *g_pReplay = NULL;
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
 #ifdef GAMEUI2
+CSysModule *g_pGameUI2Module = nullptr;
 IGameUI2* g_pGameUI2 = NULL;
 #endif
 
@@ -1173,14 +1174,14 @@ void CHLClient::PostInit()
         char modulePath[modulePathLength];
         Q_snprintf(modulePath, modulePathLength, "%s\\bin\\gameui2.dll", engine->GetGameDirectory());
 
-        CSysModule* dllModule = Sys_LoadModule(modulePath);
-        if (dllModule)
+        g_pGameUI2Module = Sys_LoadModule(modulePath);
+        if (g_pGameUI2Module)
         {
             ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui2.dll\n");
 
-            CreateInterfaceFn appSystemFactory = Sys_GetFactory(dllModule);
+            CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUI2Module);
 
-            g_pGameUI2 = appSystemFactory ? ((IGameUI2*) appSystemFactory(GAMEUI2_DLL_INTERFACE_VERSION, NULL)) : NULL;
+            g_pGameUI2 = appSystemFactory ? static_cast<IGameUI2*>(appSystemFactory(GAMEUI2_DLL_INTERFACE_VERSION, nullptr)) : NULL;
             if (g_pGameUI2)
             {
                 ConColorMsg(Color(0, 148, 255, 255), "Initializing IGameUI2 interface...\n");
@@ -1208,7 +1209,7 @@ void CHLClient::PostInit()
 
 		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
 
-		shared = appSystemFactory ? ((CShared*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
+		shared = appSystemFactory ? static_cast<CShared*>(appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, nullptr)) : NULL;
 		if (shared)
 		{
 			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (CLIENT)\n");
@@ -1270,20 +1271,21 @@ void CHLClient::Shutdown( void )
 	UncacheAllMaterials();
 
 	IGameSystem::ShutdownAllSystems();
-	
+
+    gHUD.Shutdown(); 
+	VGui_Shutdown();
+
 #ifdef GAMEUI2
     if (g_pGameUI2)
     {
         g_pGameUI2->OnShutdown();
-#ifndef DEBUG
-        g_pGameUI2->Shutdown(); //For some reason this causes hangs when you debug
-#endif
+        g_pGameUI2->Shutdown();
     }
+
+    if (g_pGameUI2Module)
+        Sys_UnloadModule(g_pGameUI2Module);
 #endif
 
-	gHUD.Shutdown();
-	VGui_Shutdown();
-	
 	ParticleMgr()->Term();
 	
 	ClearKeyValuesCache();

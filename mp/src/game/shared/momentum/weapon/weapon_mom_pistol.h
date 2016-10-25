@@ -18,22 +18,22 @@ public:
 
     CMomentumPistol();
 
-    void Spawn() override;
+    void Spawn() OVERRIDE;
 
-    void PrimaryAttack() override;
-    void SecondaryAttack() override;
-    bool Deploy() override;
+    void PrimaryAttack() OVERRIDE;
+    void SecondaryAttack() OVERRIDE;
+    bool Deploy() OVERRIDE;
 
-    void ItemPostFrame() override;
+    void ItemPostFrame() OVERRIDE;
 
     void PistolFire();
     void FireRemaining(int &shotsFired, float &shootTime) const;
 #ifdef WEAPONS_USE_AMMO
-    bool Reload() override;
+    bool Reload() OVERRIDE;
 #endif
-    void WeaponIdle() override;
+    void WeaponIdle() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const override { return WEAPON_PISTOL; }
+    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PISTOL; }
 
 private:
 

@@ -63,6 +63,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_bFriendsTimesLoaded(false),
     m_bUnauthorizedFriendlist(false)
 {
+    SetSize(10, 10); // Quiet the "parent not sized yet" spew, actual size in leaderboards.res
+
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
 
@@ -187,12 +189,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
 CClientTimesDisplay::~CClientTimesDisplay()
 {
     m_pCurrentLeaderboards = nullptr;
-
-    if (m_pImageList)
-    {
-        delete m_pImageList;
-        m_pImageList = nullptr;
-    }
 
     if (m_pLeaderboardReplayCMenu)
     {
@@ -466,7 +462,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 {
     // Catch the case where we call ShowPanel before ApplySchemeSettings, eg when
     // going from windowed <-> fullscreen
-    if (m_pImageList == nullptr)
+    if (!m_pImageList && bShow)
     {
         InvalidateLayout(true, true);
     }

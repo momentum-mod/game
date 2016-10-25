@@ -20,8 +20,8 @@ class CContactPanel : public Frame
     CContactPanel(VPANEL parent); 	// Constructor
     ~CContactPanel() {};				// Destructor
 
-    void OnThink() override;
-    void Activate() override;
+    void OnThink() OVERRIDE;
+    void Activate() OVERRIDE;
     void InitPanel();
 protected:
     MESSAGE_FUNC_CHARPTR(OnURLChange, "OnFinishRequest", URL)
@@ -87,11 +87,11 @@ public:
     {
         contact_panel = nullptr;
     }
-    void Create(VPANEL parent) override
+    void Create(VPANEL parent) OVERRIDE
     {
         contact_panel = new CContactPanel(parent);
     }
-    void Destroy() override
+    void Destroy() OVERRIDE
     {
         if (contact_panel)
         {
@@ -99,7 +99,7 @@ public:
             delete contact_panel;
         }
     }
-    void Activate(void) override
+    void Activate(void) OVERRIDE
     {
         if (contact_panel)
         {
@@ -107,7 +107,7 @@ public:
             contact_panel->SetKeyBoardInputEnabled(true);
         }
     }
-    void Close() override
+    void Close() OVERRIDE
     {
         if (contact_panel)
         {

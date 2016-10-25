@@ -21,8 +21,8 @@ private:
         public CReplayCreatorBase
     {
     public:
-        virtual CMomReplayBase* CreateReplay() override { return new T(); }
-        virtual CMomReplayBase* LoadReplay(CBinaryReader* reader) override { return new T(reader); }
+        virtual CMomReplayBase* CreateReplay() OVERRIDE { return new T(); }
+        virtual CMomReplayBase* LoadReplay(CBinaryReader* reader) OVERRIDE { return new T(reader); }
     };
 
 public:

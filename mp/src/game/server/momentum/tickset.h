@@ -3,6 +3,7 @@
 
 #include "cbase.h"
 #include "momentum/mom_shareddefs.h"
+#include "util/mom_util.h"
 
 class TickSet {
 public:
@@ -30,7 +31,7 @@ public:
         }
         bool operator ==(const Tickrate &other)
         {
-            return (other.fTickRate == fTickRate
+            return (mom_UTIL->FloatEquals(other.fTickRate, fTickRate)
                 && !Q_strcmp(other.sType, sType));
         }
     };

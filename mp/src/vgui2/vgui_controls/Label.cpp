@@ -1375,6 +1375,13 @@ void Label::SetAllCaps( bool bAllCaps )
 	InvalidateLayout();
 }
 
+void Label::SetAutoWide(bool bSize)
+{
+    m_bAutoWideToContents = bSize;
+    m_bAutoWideDirty = bSize;
+    InvalidateLayout();
+}
+
 void Label::HandleAutoSizing( void )
 {
 	if ( m_bAutoWideDirty )

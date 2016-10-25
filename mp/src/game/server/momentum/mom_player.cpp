@@ -67,7 +67,10 @@ CMomentumPlayer::CMomentumPlayer()
     ListenForGameEvent("mapfinished_panel_closed");
 }
 
-CMomentumPlayer::~CMomentumPlayer() {}
+CMomentumPlayer::~CMomentumPlayer()
+{
+    RemoveAllCheckpoints();
+}
 
 void CMomentumPlayer::Precache()
 {
@@ -308,7 +311,7 @@ bool CMomentumPlayer::CanGrabLadder(const Vector &pos, const Vector &normal)
 CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 {
     CBaseEntity *pStart = nullptr;
-    const char *spawns[] = {"info_player_counterterrorist", "info_player_terrorist", "info_player_start"};
+    const char *spawns[] = {"info_player_start", "info_player_counterterrorist", "info_player_terrorist"};
     for (int i = 0; i < 3; i++)
     {
         if (SelectSpawnSpot(spawns[i], pStart))
@@ -321,7 +324,6 @@ CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 
 bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pStart)
 {
-#define SF_PLAYER_START_MASTER 1
     pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
     if (pStart == nullptr) // skip over the null point
         pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
@@ -330,7 +332,7 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&p
     {
         if (g_pGameRules->IsSpawnPointValid(pStart, this))
         {
-            if (pStart->HasSpawnFlags(SF_PLAYER_START_MASTER))
+            if (pStart->HasSpawnFlags(1)) // SF_PLAYER_START_MASTER
             {
                 g_pLastSpawn = pStart;
                 return true;
@@ -531,11 +533,10 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
 
 void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
 {
-    if (!kvFrom) return;
+    if (!kvFrom || kvFrom->IsEmpty()) return;
     FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
     {
-        Checkpoint *c = new Checkpoint();
-        c->FromKV(kvFrom);
+        Checkpoint *c = new Checkpoint(kvCheckpoint);
         m_rcCheckpoints.AddToTail(c);
     }
 

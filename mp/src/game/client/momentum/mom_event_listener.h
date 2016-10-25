@@ -13,7 +13,7 @@ public:
 
     void Init();
 
-    void FireGameEvent(IGameEvent* pEvent) override;
+    void FireGameEvent(IGameEvent* pEvent) OVERRIDE;
 
     bool m_bTimeDidSave, m_bTimeDidUpload;
     bool m_bMapIsLinear;

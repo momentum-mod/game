@@ -21,9 +21,9 @@ public:
     C_MomentumPlayer();
     ~C_MomentumPlayer();
 
-	void PostDataUpdate(DataUpdateType_t updateType) override;
-	void OnDataChanged(DataUpdateType_t type) override;
-	bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) override;
+	void PostDataUpdate(DataUpdateType_t updateType) OVERRIDE;
+	void OnDataChanged(DataUpdateType_t type) OVERRIDE;
+	bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
 	virtual void ClientThink(void);
 
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders

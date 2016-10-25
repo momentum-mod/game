@@ -58,7 +58,8 @@ void CMOMClientEvents::PostInit()
     // Version warning
     // MOM_TODO: Change this once we hit Alpha/Beta
     // MOM_CURRENT_VERSION
-    messageboxpanel->CreateMessagebox("#MOM_StartupMsg_Prealpha_Title", "#MOM_StartupMsg_Prealpha", "#MOM_IUnderstand");
+    messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Prealpha_Title", "#MOM_StartupMsg_Prealpha", "mom_toggle_versionwarn", "#MOM_IUnderstand");
+    
     if (!steamapicontext || !steamapicontext->SteamHTTP() || !steamapicontext->SteamUtils())
     {
         messageboxpanel->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title", "#MOM_StartupMsg_NoSteamApiContext", "#MOM_IUnderstand");

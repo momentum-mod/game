@@ -104,11 +104,11 @@ void C_MOMReplayUI::OnThink()
             m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
             m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
-            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (END_RECORDING_DELAY / TICK_INTERVAL);
+            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (TIME_TO_TICKS(END_RECORDING_DELAY));
 
             // Set overall progress
             float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
-            fProgress = Clamp(fProgress, 0.0f, 1.0f);
+            fProgress = clamp<float>(fProgress, 0.0f, 1.0f);
             m_pProgress->SetProgress(fProgress);
 
             bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_RunData.m_iStartTickD;
@@ -205,9 +205,8 @@ void C_MOMReplayUI::FireGameEvent(IGameEvent *pEvent)
 // Command issued
 void C_MOMReplayUI::OnCommand(const char *command)
 {
-    if (!shared)
-        return BaseClass::OnCommand(command);
-    C_MomentumReplayGhostEntity *pGhost = ToCMOMPlayer(CBasePlayer::GetLocalPlayer())->GetReplayEnt();
+    C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+    C_MomentumReplayGhostEntity *pGhost = pPlayer ? pPlayer->GetReplayEnt() : nullptr;
     if (!Q_strcasecmp(command, "play"))
     {
         engine->ClientCmd("mom_replay_pause"); // Handles the toggle state

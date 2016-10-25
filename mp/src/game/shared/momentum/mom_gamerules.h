@@ -23,9 +23,9 @@ class CMomentumGameRules : public CSingleplayRules
     CMomentumGameRules();
     ~CMomentumGameRules();
 
-    const CViewVectors* GetViewVectors() const override;
+    const CViewVectors* GetViewVectors() const OVERRIDE;
 
-    bool ShouldCollide(int collGroup1, int collGroup2) override;
+    bool ShouldCollide(int collGroup1, int collGroup2) OVERRIDE;
 
 #ifdef CLIENT_DLL
 
@@ -36,32 +36,32 @@ class CMomentumGameRules : public CSingleplayRules
 
     // virtual void			Think(void);
 
-    bool ClientCommand(CBaseEntity *pEdict, const CCommand &args) override;
-    void PlayerSpawn(CBasePlayer *pPlayer) override;
-    bool IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer) override;
-    CBaseEntity *GetPlayerSpawnSpot(CBasePlayer *pPlayer) override;
+    bool ClientCommand(CBaseEntity *pEdict, const CCommand &args) OVERRIDE;
+    void PlayerSpawn(CBasePlayer *pPlayer) OVERRIDE;
+    bool IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer) OVERRIDE;
+    CBaseEntity *GetPlayerSpawnSpot(CBasePlayer *pPlayer) OVERRIDE;
 
-    const char *GetGameDescription(void) override { return "Momentum"; }
+    const char *GetGameDescription(void) OVERRIDE { return "Momentum"; }
 
     // Ammo
-    void PlayerThink(CBasePlayer *pPlayer) override {}
+    void PlayerThink(CBasePlayer *pPlayer) OVERRIDE {}
     // virtual float			GetAmmoDamage(CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType);
 
     // Players take no damage
-    float FlPlayerFallDamage(CBasePlayer *pPlayer) override { return 0.0f; }
+    float FlPlayerFallDamage(CBasePlayer *pPlayer) OVERRIDE { return 0.0f; }
 
-    bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) override { return !pVictim->IsPlayer(); }
+    bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE { return !pVictim->IsPlayer(); }
 
-    void ClientSettingsChanged(CBasePlayer *) override;
+    void ClientSettingsChanged(CBasePlayer *) OVERRIDE;
 
-    bool FAllowNPCs() override { return false; }
+    bool FAllowNPCs() OVERRIDE { return false; }
 
   private:
     // void AdjustPlayerDamageTaken(CTakeDamageInfo *pInfo);
     // float AdjustPlayerDamageInflicted(float damage);
     Vector DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins, const Vector &vMaxs);
 
-    int DefaultFOV(void) override;// { return 90; }
+    int DefaultFOV(void) OVERRIDE;// { return 90; }
 #endif
 };
 

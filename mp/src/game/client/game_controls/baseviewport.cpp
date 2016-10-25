@@ -222,7 +222,6 @@ void CBaseViewport::OnScreenSizeChanged(int iOldWide, int iOldTall)
 #ifndef _XBOX
 	vgui::ipanel()->MoveToBack( m_pBackGround->GetVPanel() ); // really send it to the back 
 #endif
-
 	// hide all panels when reconnecting 
 	ShowPanel( PANEL_ALL, false );
 
@@ -707,7 +706,8 @@ void CBaseViewport::ReloadScheme(const char *fromFile)
 
 	gHUD.RefreshHudTextures();
 
-	InvalidateLayout( true, true );
+    if (fromFile)
+        InvalidateLayout(true, true);
 
 	// reset the hud
 	gHUD.ResetHUD();
