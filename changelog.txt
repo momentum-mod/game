@@ -1,3 +1,19 @@
+0.6.1
+Slight Annoyance Alleviated
+    Added "Do not show again" checkboxes to version/zone warning MessageBoxes
+Suggestions
+    Changed settings panel to disable child checkboxes (suggestion by Enjoy.)
+    Changed sv_noclipspeed to scale to maxvel (suggestion by lody)
+Fixes
+    Fixed checkpoints being corrupted upon map load
+    Fixed (most) crashes with changing resolution and exiting the game
+    Fixed ReplayUI to better scale for 1080p
+    Prevent playback of replays with different tickrate than current (will revist)
+    Fixed maps that crashed when using a fade-in trigger
+    Fixed spawn searching to prioritize info_player_start over info_player_(counter)terrorist
+    Fixed bug with cursor disappearing when net_graph was turned on
+    Fixed maps that use detail objects (for real this time)
+
 0.6.0
 New Replay UI
     Like DemoUI, a window to control playback of Replay files
@@ -45,34 +61,3 @@ Fixes, Baby
     Fixed offset bug with spectating a replay in chase mode
     Fixed the mapfinished panel to not prematurely close if player goes out of end trigger
     Fixed mom_restart not resetting player progress (stored in target name)
-    
-0.5.0
-New Main Menu UI
-    Thanks to NicolasDe from Project-9 for GameUI2
-    New background (from tutorial levels) to accomodate the shininess
-Play Replays from Leaderboards
-    Right-clicking when the leaderboards are open will allow you to right click a run and "Watch Replay"
-    More functionality in future updates!
-Contact/Feedback Panel
-    Introduced a panel for in-game feedback, available in the menu.
-Overhauled Settings Panel
-    Changed to tabular settings, includes four new Tabs:
-    "Controls" for momentum-specific controls settings
-    "HUD Settings" for HUD-related momentum settings
-    "Run Comparisons" for settings regarding the comparisons panel
-    "Replays" for replay-related settings (just translucence for Alpha)
-Accurate Timer Fix
-    Fixed offset calculations by using a new method to calculate them
-Bug/Other fixes
-    Fixed potential bug with saving times to file
-    Fixed empty node graphs building
-    Changed practice mode to enable when no inputs are pressed
-    Fixed RichText highlighting to properly display highlighted text
-    Fixed replays recording paused frames
-    Fixed animations for player jumping and zone enter speed on the HUD speedometer
-    Fixed the zone buffer for the comparisons panel
-    Fixed the Changelog panel to properly scroll to top upon load
-    Removed ability to save/load (use the checkpoint menu instead!)
-    Fixed Biohazard90's Source Shader Editor (faulty config)
-    Fixed Version Update panel showing when you have a higher version than master
-    Fixed a bug in the blockfix system with incorporating the mom_bhop_playblocksound cvar

@@ -22,7 +22,7 @@ class CMomentumSettingsPanel : public PropertyDialog
     CMomentumSettingsPanel(VPANEL parent); // Constructor
     ~CMomentumSettingsPanel();           // Destructor
 
-    void OnClose() override
+    void OnClose() OVERRIDE
     {
         BaseClass::OnClose();
 
@@ -33,7 +33,7 @@ class CMomentumSettingsPanel : public PropertyDialog
         }
     }
 
-    void Activate() override
+    void Activate() OVERRIDE
     {
         BaseClass::Activate();
 
@@ -46,7 +46,7 @@ class CMomentumSettingsPanel : public PropertyDialog
 
   protected:
     // VGUI overrides:
-    void OnThink() override;
+    void OnThink() OVERRIDE;
 
   private:
     SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pReplaysSettings;
@@ -104,8 +104,8 @@ class CMomentumSettingsPanelInterface : public IMomentumSettingsPanel
   public:
     CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
     ~CMomentumSettingsPanelInterface() { settings_panel = nullptr; }
-    void Create(VPANEL parent) override { settings_panel = new CMomentumSettingsPanel(parent); }
-    void Destroy() override
+    void Create(VPANEL parent) OVERRIDE { settings_panel = new CMomentumSettingsPanel(parent); }
+    void Destroy() OVERRIDE
     {
         if (settings_panel)
         {
@@ -114,14 +114,14 @@ class CMomentumSettingsPanelInterface : public IMomentumSettingsPanel
         }
         settings_panel = nullptr;
     }
-    void Activate(void) override
+    void Activate(void) OVERRIDE
     {
         if (settings_panel)
         {
             settings_panel->Activate();
         }
     }
-    void Close() override
+    void Close() OVERRIDE
     {
         if (settings_panel)
         {

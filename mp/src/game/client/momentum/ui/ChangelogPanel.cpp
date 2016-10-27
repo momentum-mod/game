@@ -38,6 +38,9 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
 // Called when the versions don't match (there's an update)
 void CChangelogPanel::Activate()
 {
+    // Reset the version warning to keep reminding them
+    ConVarRef("mom_toggle_versionwarn").SetValue(0);
+
     char m_cReleaseText[225];
     m_pReleaseText->GetText(m_cReleaseText, sizeof(m_cReleaseText));
     char m_cReleaseF[225];

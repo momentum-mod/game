@@ -2,6 +2,11 @@
 #include "cbase.h"
 
 #include "MessageboxPanel.h"
+#include "mom_shareddefs.h"
+#include <vgui_controls/cvartogglecheckbutton.h>
+
+static MAKE_TOGGLE_CONVAR(mom_toggle_nostartorend, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if No Start or End should be shown.\n");
+static MAKE_TOGGLE_CONVAR(mom_toggle_versionwarn, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if the initial version warning should be shown.\n");
 
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
@@ -9,12 +14,68 @@ void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 }
 void __MsgFunc_MB_NoStartOrEnd(bf_read &msg)
 {
-    messageboxpanel->CreateMessagebox("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd");
+    messageboxpanel->CreateMessageboxVarRef("#MOM_MB_NoStartOrEnd_Title", "#MOM_MB_NoStartOrEnd", "mom_toggle_nostartorend");
 }
 
 void __MsgFunc_MB_EditingZone(bf_read &msg)
 {
     messageboxpanel->CreateMessagebox("#MOM_MB_EditingZone_Title", "#MOM_MB_EditingZone");
+}
+
+MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const char* cvar) : MessageBox(title, msg)
+{
+    // When toggled, will not allow the panel to be created (We don't check it here because we've done it on our 2 interfaces (Messaging and IMEssageBox)
+    // this also allows us to show this even if the toggle says no! (Like, for important stuff)
+    m_pToggleCheckButton = new CvarToggleCheckButton<ConVarRef>(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
+    AddActionSignalTarget(m_pToggleCheckButton); // Catch that OK button press
+}
+
+MessageBoxVarRef::~MessageBoxVarRef()
+{
+    if (m_pToggleCheckButton)
+    {
+        m_pToggleCheckButton->DeletePanel();
+        m_pToggleCheckButton = nullptr;
+    }
+}
+
+// Overridden 
+void MessageBoxVarRef::PerformLayout()
+{
+    int x, y, wide, tall;
+    GetClientArea(x, y, wide, tall);
+    wide += x;
+    tall += y;
+
+    int boxWidth, boxTall;
+    GetSize(boxWidth, boxTall);
+
+    int oldWide, oldTall;
+    m_pOkButton->GetSize(oldWide, oldTall);
+
+    int btnWide, btnTall;
+    m_pOkButton->GetContentSize(btnWide, btnTall);
+    btnWide = max(oldWide, btnWide + 10);
+    btnTall = max(oldTall, btnTall + 10);
+    m_pOkButton->SetSize(btnWide, btnTall);
+
+    boxWidth = max(boxWidth, m_pMessageLabel->GetWide() + 100);
+    boxWidth = max(boxWidth, btnWide * 2 + 30);
+    SetSize(boxWidth, boxTall);
+
+    m_pMessageLabel->SetPos((wide / 2) - (m_pMessageLabel->GetWide() / 2) + x, y + 5);
+    m_pOkButton->SetPos((wide / 2) - (m_pOkButton->GetWide() / 2) + x, tall - m_pOkButton->GetTall() - 25);
+
+    if (m_pToggleCheckButton)
+    {
+        int dummy, okY;
+        m_pOkButton->GetPos(dummy, okY);
+        m_pToggleCheckButton->SetAutoWide(true);
+        m_pToggleCheckButton->SetPos(x, tall - m_pToggleCheckButton->GetTall());
+    }
+
+    // Bypass BaseClass and call its BaseClass
+    Frame::PerformLayout();
 }
 
 // Constuctor: Initializes the Panel
@@ -88,6 +149,29 @@ Panel *CMessageboxPanel::CreateConfirmationBox(Panel *pTarget, const char *pTitl
     {
         pMessageBox->SetCancelButtonText(pCancelText);
     }
+    pMessageBox->MoveToCenterOfScreen();
+
+    m_mbItems.AddToTail(pMessageBox);
+    pMessageBox->DoModal();
+    return pMessageBox;
+}
+
+Panel* CMessageboxPanel::CreateMessageboxVarRef(const char* pTitle, const char* pMessage, const char* cvar, const char* pAccept)
+{
+    ConVarRef varref(cvar);
+    if (!varref.IsValid())
+        return nullptr;
+    // Preliminary check, if the var is already 1 then bail
+    if (varref.GetBool())
+        return nullptr;
+    MessageBoxVarRef *pMessageBox = new MessageBoxVarRef(pTitle, pMessage, cvar);
+    // If it is not a nullptr and it's not an empty string...
+    if (pAccept && Q_strlen(pAccept) > 0)
+    {
+        pMessageBox->SetOKButtonText(pAccept);
+    }
+    // Needed for saving the ConVarRef
+    pMessageBox->SetCommand(new KeyValues("ApplyChanges"));
     pMessageBox->MoveToCenterOfScreen();
 
     m_mbItems.AddToTail(pMessageBox);

@@ -128,6 +128,13 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
             }
         }
 
+        if (!mom_UTIL->FloatEquals(m_flTickRate, gpGlobals->interval_per_tick))
+        {
+            Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_flTickRate, gpGlobals->interval_per_tick);
+            EndRun();
+            return;
+        }
+
         m_iCurrentTick = 0;
         SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
         m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;

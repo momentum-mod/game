@@ -39,7 +39,7 @@ class CHudViewport : public CBaseViewport
     DECLARE_CLASS_SIMPLE(CHudViewport, CBaseViewport);
 
   protected:
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE
     {
         BaseClass::ApplySchemeSettings(pScheme);
 
@@ -48,7 +48,7 @@ class CHudViewport : public CBaseViewport
         SetPaintBackgroundEnabled(false);
     }
 
-    IViewPortPanel *CreatePanelByName(const char *pzName) override
+    IViewPortPanel *CreatePanelByName(const char *pzName) OVERRIDE
     {
 
         if (!Q_strcmp(PANEL_TIMES, pzName))
@@ -67,7 +67,7 @@ class CHudViewport : public CBaseViewport
         return BaseClass::CreatePanelByName(pzName);
     }
 
-    void CreateDefaultPanels(void) override
+    void CreateDefaultPanels(void) OVERRIDE
     {
         AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
@@ -103,11 +103,7 @@ ClientModeMOMNormal::~ClientModeMOMNormal()
 void ClientModeMOMNormal::Init()
 {
     BaseClass::Init();
-
-    m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
-    m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
-    m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
-    m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+    SetupPointers();
     // Load up the combine control panel scheme
     g_hVGuiCombineScheme = scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
@@ -191,4 +187,12 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
     }
 
     return 1;
+}
+
+void ClientModeMOMNormal::SetupPointers()
+{
+    m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
+    m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
+    m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
+    m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
 }

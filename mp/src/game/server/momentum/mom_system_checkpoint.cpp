@@ -10,10 +10,9 @@
 
 MAKE_TOGGLE_CONVAR(mom_checkpoint_save_between_sessions, "1", FCVAR_ARCHIVE, "Defines if checkpoints should be saved between sessions of the same map.\n");
 
-void CMOMCheckpointSystem::LevelInitPostEntity()
+void CMOMCheckpointSystem::LevelInitPreEntity()
 {
-    // We don't check mom_checkpoints_save_between_sessions because we want to be able to, for example
-    // load checkpoints from friends
+    // We don't check mom_checkpoints_save_between_sessions because we want to be able to load checkpoints from friends
     DevLog("Loading checkpoints from %s ...\n", CHECKPOINTS_FILE_NAME);
 
     if (m_pCheckpointsKV)

@@ -72,7 +72,7 @@ public:
 	virtual void DoLateReflect();
 	virtual void CategorizePosition();
 
-    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) override
+    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE
     {
         m_pPlayer = ToCMOMPlayer(pBasePlayer);
         Assert(m_pPlayer);

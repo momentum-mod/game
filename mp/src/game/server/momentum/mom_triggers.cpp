@@ -73,7 +73,8 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     IGameEvent *stageEvent = nullptr;
     if (pPlayer)
     {
-        if (stageNum == 1 || g_pMomentumTimer->IsRunning()) // Timer won't be running if it's the start trigger
+        // Timer won't be running if it's the start trigger
+        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_bHasPracticeMode) 
         {
             // This handles both the start and stage triggers
             g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_START);
@@ -124,9 +125,11 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
+        bool bCheating = pPlayer->GetMoveType() == MOVETYPE_NOCLIP;
+
         //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_bHasPracticeMode && !pPlayer->IsUsingCPMenu())
+        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_bHasPracticeMode && !bCheating && !pPlayer->IsUsingCPMenu())
         {
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {

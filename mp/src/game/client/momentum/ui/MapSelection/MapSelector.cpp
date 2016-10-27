@@ -121,6 +121,7 @@ void CMapSelector::Destroy()
     {
         m_hMapsDlg->Close();
         m_hMapsDlg->MarkForDeletion();
+        m_hMapsDlg = nullptr;
     }
 }
 

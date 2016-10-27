@@ -6,66 +6,39 @@
 ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pParent, "ComparisonsSettings")
 {
     m_pCompareShow = FindControl<CvarToggleCheckButton<ConVarRef>>("CompareShow");
-    m_pCompareShow->AddActionSignalTarget(this);
 
     m_pMaxZones = FindControl<TextEntry>("Zones");
-    m_pMaxZones->AddActionSignalTarget(this);
-
     m_pMaxZonesLabel = FindControl<Label>("ZonesLabel");
 
     m_pCompareFormat = FindControl<CvarToggleCheckButton<ConVarRef>>("CompareFormat");
-    m_pCompareFormat->AddActionSignalTarget(this);
 
     m_pTimeTypeLabel = FindControl<Label>("TimeTypeLabel");
     m_pTimeTypeLabel->GetTooltip()->SetTooltipFormatToSingleLine();
-
     m_pTimeType = FindControl<ComboBox>("TimeType");
     m_pTimeType->SetNumberOfEditLines(2);
     m_pTimeType->AddItem("#MOM_Settings_Compare_Time_Type_Overall", nullptr);
     m_pTimeType->AddItem("#MOM_Settings_Compare_Time_Type_PerZone", nullptr);
-    m_pTimeType->AddActionSignalTarget(this);
-
     m_pTimeShowOverall = FindControl<CvarToggleCheckButton<ConVarRef>>("TimeShowOverall");
     m_pTimeShowOverall->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pTimeShowOverall->AddActionSignalTarget(this);
-
     m_pTimeShowZone = FindControl<CvarToggleCheckButton<ConVarRef>>("TimeShowZone");
     m_pTimeShowZone->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pTimeShowZone->AddActionSignalTarget(this);
 
     m_pVelocityShow = FindControl<CvarToggleCheckButton<ConVarRef>>("VelShow");
-    m_pVelocityShow->AddActionSignalTarget(this);
-
     m_pVelocityShowAvg = FindControl<CvarToggleCheckButton<ConVarRef>>("VelShowAvg");
-    m_pVelocityShowAvg->AddActionSignalTarget(this);
-
     m_pVelocityShowMax = FindControl<CvarToggleCheckButton<ConVarRef>>("VelShowMax");
-    m_pVelocityShowMax->AddActionSignalTarget(this);
-
     m_pVelocityShowEnter = FindControl<CvarToggleCheckButton<ConVarRef>>("VelShowEnter");
     m_pVelocityShowEnter->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pVelocityShowEnter->AddActionSignalTarget(this);
-
     m_pVelocityShowExit = FindControl<CvarToggleCheckButton<ConVarRef>>("VelShowExit");
     m_pVelocityShowExit->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pVelocityShowExit->AddActionSignalTarget(this);
 
     m_pSyncShow = FindControl<CvarToggleCheckButton<ConVarRef>>("SyncShow");
-    m_pSyncShow->AddActionSignalTarget(this);
-
     m_pSyncShowS1 = FindControl<CvarToggleCheckButton<ConVarRef>>("SyncShowS1");
     m_pSyncShowS1->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pSyncShow->AddActionSignalTarget(this);
-
     m_pSyncShowS2 = FindControl<CvarToggleCheckButton<ConVarRef>>("SyncShowS2");
     m_pSyncShowS2->GetTooltip()->SetTooltipFormatToSingleLine();
-    m_pSyncShowS2->AddActionSignalTarget(this);
 
     m_pJumpShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ShowJumps");
-    m_pJumpShow->AddActionSignalTarget(this);
-
     m_pStrafeShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ShowStrafes");
-    m_pStrafeShow->AddActionSignalTarget(this);
 
     m_pComparisonsFrame = nullptr;
 }
@@ -244,9 +217,13 @@ void ComparisonsSettingsPage::OnCheckboxChecked(Panel *p)
         bool bEnabled = m_pVelocityShow->IsSelected();
 
         m_pVelocityShowExit->SetEnabled(bEnabled);
+        m_pVelocityShowExit->SetSelected(bEnabled);
         m_pVelocityShowAvg->SetEnabled(bEnabled);
+        m_pVelocityShowAvg->SetSelected(bEnabled);
         m_pVelocityShowEnter->SetEnabled(bEnabled);
+        m_pVelocityShowEnter->SetSelected(bEnabled);
         m_pVelocityShowMax->SetEnabled(bEnabled);
+        m_pVelocityShowMax->SetSelected(bEnabled);
     }
 
     else if (p == m_pSyncShow)
@@ -254,7 +231,9 @@ void ComparisonsSettingsPage::OnCheckboxChecked(Panel *p)
         bool bEnabled = m_pSyncShow->IsSelected();
 
         m_pSyncShowS1->SetEnabled(bEnabled);
+        m_pSyncShowS1->SetSelected(bEnabled);
         m_pSyncShowS2->SetEnabled(bEnabled);
+        m_pSyncShowS2->SetSelected(bEnabled);
     }
 }
 

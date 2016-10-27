@@ -91,6 +91,14 @@ void CMOMServerEvents::LevelShutdownPreEntity()
     g_pMomentumTimer->OnMapEnd(pMapName);
 }
 
+void CMOMServerEvents::LevelShutdownPostEntity()
+{
+    ConVarRef fullbright("mat_fullbright");
+    // Shut off fullbright if the map enabled it
+    if (fullbright.IsValid() && fullbright.GetBool())
+        fullbright.SetValue(0);
+}
+
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     g_MapzoneEdit.Update();

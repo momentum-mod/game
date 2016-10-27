@@ -19,7 +19,7 @@ class CRunPoster : CGameEventListener
     ~CRunPoster();
 
     void Init();
-    void FireGameEvent(IGameEvent *pEvent) override;
+    void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     void PostTimeCallback(HTTPRequestCompleted_t *, bool);
     CCallResult<CRunPoster, HTTPRequestCompleted_t> cbPostTimeCallback;
