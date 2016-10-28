@@ -196,9 +196,12 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
         if (repo > local)
         {
-            changelogpanel->SetVersion(versionValue);
-            GetRemoteChangelog();
-            changelogpanel->Activate();
+            if (ConVarRef("developer").GetInt() < 2) // If we're developers, we prob know what version we are at.
+            {
+                changelogpanel->SetVersion(versionValue);
+                GetRemoteChangelog();
+                changelogpanel->Activate();
+            }
             break;
         }
         if (repo < local)

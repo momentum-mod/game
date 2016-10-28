@@ -691,6 +691,65 @@ class CTimerCommands
     static void MarkStart() { g_pMomentumTimer->CreateStartMark(); }
 
     static void ClearStart() { g_pMomentumTimer->ClearStartMark(); }
+
+    static void TeleToStage(const CCommand &args)
+    {
+        CBaseEntity *pPlayer = UTIL_GetLocalPlayer();
+        if (pPlayer && args.ArgC() >= 2)
+        {
+            // We get the desried index from the command (Remember that for us, args are 1 indexed)
+            int desiredIndex = atoi(args[1]);
+            if (desiredIndex == 1)
+            {
+                // Index 1 is the start. If the timer has a mark, we use it
+                Checkpoint *startMark = g_pMomentumTimer->GetStartMark();
+                if (startMark)
+                {
+                    // Stop the timer before proceding
+                    g_pMomentumTimer->Stop();
+                    pPlayer->Teleport(&startMark->pos, &startMark->ang, &vec3_origin);
+                }
+                else
+                {
+                    // If no mark was found, we teleport to the center of the first trigger_momentum_timer_start we find
+                    CTriggerTimerStart *pEnt = static_cast<CTriggerTimerStart *>(
+                        gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start"));
+                    // Note that static_cast is valid wehn the argument is nullptr_t
+                    if (pEnt)
+                    {
+                        // Stop the timer before proceding
+                        g_pMomentumTimer->Stop();
+                        pPlayer->Teleport(&pEnt->GetAbsOrigin(), nullptr, &vec3_origin);
+                    }
+                }
+            }
+            else
+            {
+                // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
+                // stuff so...)
+                CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage");
+                CTriggerStage *pStage;
+
+                while (pEnt)
+                {
+                    pStage = static_cast<CTriggerStage *>(pEnt);
+
+                    if (pStage && pStage->GetStageNumber() == desiredIndex)
+                    {
+                        // Stop the timer before proceding (in the case that we go to an end stage)
+                        g_pMomentumTimer->Stop();
+                        pPlayer->Teleport(&pStage->GetAbsOrigin(), &pStage->GetAbsAngles(), &vec3_origin);
+                        // We also need to stop AGAIN the timer here in case we were insde a start trigger
+                        // this was not needed on desiredIndex == 1 for obious reasons
+                        g_pMomentumTimer->Stop();
+                        break;
+                    }
+
+                    pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stage");
+                }
+            }
+        }
+    }
 };
 
 static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove,
@@ -708,6 +767,10 @@ static ConCommand mom_reset_to_start("mom_restart", CTimerCommands::ResetToStart
 static ConCommand mom_reset_to_checkpoint("mom_reset", CTimerCommands::ResetToCheckpoint,
                                           "Teleports the player back to the start of the current stage.\n",
                                           FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
+
+static ConCommand mom_stage_tele("mom_stage_tele", CTimerCommands::TeleToStage,
+                                 "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n",
+                                 FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 
 static CMomentumTimer s_Timer;
 CMomentumTimer *g_pMomentumTimer = &s_Timer;
