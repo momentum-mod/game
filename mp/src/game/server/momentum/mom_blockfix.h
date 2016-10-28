@@ -19,9 +19,9 @@ class CMOMBhopBlockFixSystem : CAutoGameSystem
   public:
     CMOMBhopBlockFixSystem(const char *pName) : CAutoGameSystem(pName) {}
 
-    void LevelInitPostEntity() override { FindBhopBlocks(); }
+    void LevelInitPostEntity() OVERRIDE { FindBhopBlocks(); }
 
-    void LevelShutdownPostEntity() override { m_mapBlocks.RemoveAll(); }
+    void LevelShutdownPostEntity() OVERRIDE { m_mapBlocks.RemoveAll(); }
 
     bool IsBhopBlock(int entIndex) const { return (m_mapBlocks.Find(entIndex) != m_mapBlocks.InvalidIndex()); }
 
@@ -60,7 +60,7 @@ class CTeleportTriggerTraceEnum : public IEntityEnumerator
     {
     }
 
-    bool EnumEntity(IHandleEntity *pHandleEntity) override;
+    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
 
   private:
     bool bIsDoor;

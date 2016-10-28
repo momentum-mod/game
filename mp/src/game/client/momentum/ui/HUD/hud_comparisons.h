@@ -36,14 +36,14 @@ public:
     C_RunComparisons(const char* pElementName);
     ~C_RunComparisons();
 
-    void OnThink() override;
-    void Init() override;
-    void Reset() override;
-    void Paint() override;
-    bool ShouldDraw() override;
-    void OnTick() override;
+    void OnThink() OVERRIDE;
+    void Init() OVERRIDE;
+    void Reset() OVERRIDE;
+    void Paint() OVERRIDE;
+    bool ShouldDraw() OVERRIDE;
+    void OnTick() OVERRIDE;
 
-    void FireGameEvent(IGameEvent *event) override;
+    void FireGameEvent(IGameEvent *event) OVERRIDE;
 
     void LoadComparisons();
     void LoadBogusComparisons();
@@ -59,7 +59,7 @@ public:
     int GetMaximumTall();
     void SetMaxWide(int);
 
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
         m_hTextFont = pScheme->GetFont("HudHintTextSmall", true);

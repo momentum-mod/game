@@ -46,6 +46,7 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
 
     // property sheet
     m_pTabPanel = new PropertySheet(this, "MapTabs");
+    m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
     m_pTabPanel->AddPage(m_pLocal, "#MOM_MapSelector_LocalMaps");
     //MOM_TODO: uncomment: m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_OnlineMaps");
@@ -77,8 +78,10 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
 //-----------------------------------------------------------------------------
 CMapSelectorDialog::~CMapSelectorDialog()
 {
-    delete m_pContextMenu;
+    if (m_pContextMenu)
+        m_pContextMenu->DeletePanel();
 
+    // Attempt to save user data, if not that's okay
     SaveUserData();
 
     if (m_pSavedData)
@@ -169,6 +172,8 @@ void CMapSelectorDialog::LoadUserData()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::SaveUserData()
 {
+    if (!g_pFullFileSystem) return;
+
     m_pSavedData->Clear();
     m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 

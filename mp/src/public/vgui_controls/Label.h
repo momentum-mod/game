@@ -156,6 +156,8 @@ public:
 
 	void SetAllCaps( bool bAllCaps );
 
+    void SetAutoWide(bool bSize);
+
 protected:
 	virtual void PerformLayout();
 	virtual wchar_t CalculateHotkey(const char *text);

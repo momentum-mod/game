@@ -10,21 +10,21 @@ class CMomReplayV1 :
 public:
     CMomReplayV1();
     CMomReplayV1(CBinaryReader* reader);
-    virtual ~CMomReplayV1() override;
+    virtual ~CMomReplayV1() OVERRIDE;
 
 public:
-    virtual uint8 GetVersion() override { return 1; }
-    virtual CMomRunStats* GetRunStats() override;
-    virtual int32 GetFrameCount() override;
-    virtual CReplayFrame* GetFrame(int32 index) override;
-    virtual void AddFrame(const CReplayFrame& frame) override;
-    virtual bool SetFrame(int32 index, const CReplayFrame& frame) override;
-    virtual CMomRunStats* CreateRunStats(uint8 stages) override;
-    virtual void RemoveFrames(int num) override;
-    virtual void Start(bool firstperson) override;
+    virtual uint8 GetVersion() OVERRIDE { return 1; }
+    virtual CMomRunStats* GetRunStats() OVERRIDE;
+    virtual int32 GetFrameCount() OVERRIDE;
+    virtual CReplayFrame* GetFrame(int32 index) OVERRIDE;
+    virtual void AddFrame(const CReplayFrame& frame) OVERRIDE;
+    virtual bool SetFrame(int32 index, const CReplayFrame& frame) OVERRIDE;
+    virtual CMomRunStats* CreateRunStats(uint8 stages) OVERRIDE;
+    virtual void RemoveFrames(int num) OVERRIDE;
+    virtual void Start(bool firstperson) OVERRIDE;
 
 public:
-    virtual void Serialize(CBinaryWriter* writer) override;
+    virtual void Serialize(CBinaryWriter* writer) OVERRIDE;
 
 private:
     void Deserialize(CBinaryReader* reader);

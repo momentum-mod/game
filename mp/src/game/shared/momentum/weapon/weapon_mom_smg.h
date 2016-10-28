@@ -20,9 +20,9 @@ class CMomentumSMG : public CWeaponCSBaseGun
         m_flTimeToIdleAfterFire = 2.0f;
     }
 
-    void PrimaryAttack() override;
+    void PrimaryAttack() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const override { return WEAPON_SMG; }
+    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SMG; }
 
   private:
     void SMGFire();

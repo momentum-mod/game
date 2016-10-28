@@ -42,6 +42,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "CompareFormat"
@@ -73,6 +74,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_format_output"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "ZonesLabel"
@@ -126,6 +128,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+        "actionsignallevel" "1"
 	}
     
     "TimeTypeLabel"
@@ -180,6 +183,7 @@
 		"NumericInputOnly"		"0"
 		"unicode"		"0"
         "font" "DefaultVerySmall"
+        "actionsignallevel" "1"
 	}
     
     "TimeShowOverall"
@@ -212,6 +216,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_time_show_overall"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "TimeShowZone"
@@ -244,6 +249,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_time_show_perzone"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "VelShow"
@@ -275,6 +281,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "VelShowAvg"
@@ -306,6 +313,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_avg"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "VelShowMax"
@@ -337,6 +345,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_max"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "VelShowEnter"
@@ -369,6 +378,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_enter"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "VelShowExit"
@@ -401,6 +411,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_vel_show_exit"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "SyncShow"
@@ -432,6 +443,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_sync_show"
 		"cvar_value"		"0"
+        "actionsignallevel" "1"
     }
     
     "SyncShowS1"
@@ -464,6 +476,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_sync_show_sync1"
 		"cvar_value"		"0"
+        "actionsignallevel" "1"
     }
     
     "SyncShowS2"
@@ -496,6 +509,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_sync_show_sync2"
 		"cvar_value"		"0"
+        "actionsignallevel" "1"
     }
     
     "ShowJumps"
@@ -527,6 +541,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_jumps_show"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
     
     "ShowStrafes"
@@ -558,5 +573,6 @@
 		"Default"		"0"
 		"cvar_name"		"mom_comparisons_strafe_show"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
 }

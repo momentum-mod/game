@@ -42,8 +42,8 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
     DECLARE_CLASS_SIMPLE(CHudStrafeSyncDisplay, CHudNumericDisplay);
 
     CHudStrafeSyncDisplay(const char *pElementName);
-    void OnThink() override;
-    bool ShouldDraw() override
+    void OnThink() OVERRIDE;
+    bool ShouldDraw() OVERRIDE
     {
         IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
         if (pLeaderboards && pLeaderboards->IsVisible())
@@ -70,7 +70,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
         return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
-    void Reset() override
+    void Reset() OVERRIDE
     {
         m_flNextColorizeCheck = 0;
         m_flLastStrafeSync = 0;
@@ -78,7 +78,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
         m_lastColor = normalColor;
         m_currentColor = normalColor;
     }
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
         SetFgColor(GetSchemeColor("White", pScheme));
@@ -89,7 +89,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
         digit_xpos_initial = digit_xpos;
     }
     bool ShouldColorize() { return strafesync_colorize.GetInt() > 0; }
-    void Paint() override;
+    void Paint() OVERRIDE;
 
   private:
     float m_flNextColorizeCheck;
@@ -218,8 +218,8 @@ class CHudStrafeSyncBar : public CHudFillableBar
 
   public:
     CHudStrafeSyncBar(const char *pElementName);
-    void OnThink() override;
-    bool ShouldDraw() override
+    void OnThink() OVERRIDE;
+    bool ShouldDraw() OVERRIDE
     {
         C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
         bool shouldDrawLocal = false;
@@ -242,7 +242,7 @@ class CHudStrafeSyncBar : public CHudFillableBar
         return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
-    void Reset() override
+    void Reset() OVERRIDE
     {
         m_flNextColorizeCheck = 0;
         m_flLastStrafeSync = 0;
@@ -250,7 +250,7 @@ class CHudStrafeSyncBar : public CHudFillableBar
         m_lastColor = normalColor;
         m_currentColor = normalColor;
     }
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
         SetFgColor(GetSchemeColor("White", pScheme));
@@ -258,7 +258,7 @@ class CHudStrafeSyncBar : public CHudFillableBar
         increaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
         decreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
     }
-    void Paint() override;
+    void Paint() OVERRIDE;
     bool ShouldColorize() { return strafesync_colorize.GetInt() > 0; }
 
   private:

@@ -41,17 +41,17 @@ class C_HudMapInfo : public CHudElement, public Panel
     DECLARE_CLASS_SIMPLE(C_HudMapInfo, Panel);
 
     C_HudMapInfo(const char *pElementName);
-    void OnThink() override;
-    void Init() override;
-    void Reset() override;
-    void Paint() override;
-    bool ShouldDraw() override 
+    void OnThink() OVERRIDE;
+    void Init() OVERRIDE;
+    void Reset() OVERRIDE;
+    void Paint() OVERRIDE;
+    bool ShouldDraw() OVERRIDE
     { 
         IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
         return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
     }
 
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
 
         Panel::ApplySchemeSettings(pScheme);

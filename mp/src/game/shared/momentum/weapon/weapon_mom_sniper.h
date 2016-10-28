@@ -20,12 +20,12 @@ class CMomentumSniper : public CWeaponCSBaseGun
         m_flTimeToIdleAfterFire = 1.8f;
     }
 
-    void PrimaryAttack() override;
-    void SecondaryAttack() override;
+    void PrimaryAttack() OVERRIDE;
+    void SecondaryAttack() OVERRIDE;
 
-    float GetMaxSpeed() const override;
+    float GetMaxSpeed() const OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const override { return WEAPON_SNIPER; }
+    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SNIPER; }
 
   private:
     void SniperFire();

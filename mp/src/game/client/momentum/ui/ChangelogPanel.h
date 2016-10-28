@@ -3,9 +3,9 @@
 #include "cbase.h"
 
 #include "IChangelogPanel.h"
-#include <vgui/IVGui.h>
-#include <vgui/ISystem.h>
 #include <vgui/ILocalize.h>
+#include <vgui/ISystem.h>
+#include <vgui/IVGui.h>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/RichText.h>
@@ -32,20 +32,20 @@ class CChangelogPanel : public Frame
         if (m_pChangeLog)
         {
             m_pChangeLog->SetText(m_pwOnlineChangelog);
-            //Delay the scrolling to a tick or so away, thanks Valve.
+            // Delay the scrolling to a tick or so away, thanks Valve.
             m_flScrollTime = system()->GetFrameTime() + 0.010f;
         }
     }
 
-    void ApplySchemeSettings(IScheme *pScheme) override
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         BaseClass::ApplySchemeSettings(pScheme);
         m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall"));
     }
 
-    void Activate() override;
+    void Activate() OVERRIDE;
 
-    void OnThink() override
+    void OnThink() OVERRIDE
     {
         BaseClass::OnThink();
         if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
@@ -55,7 +55,7 @@ class CChangelogPanel : public Frame
         }
     }
 
-    void OnKillFocus() override
+    void OnKillFocus() OVERRIDE
     {
         BaseClass::OnKillFocus();
         Close();
@@ -72,13 +72,13 @@ class CChangelogPanel : public Frame
 class CChangelogInterface : public IChangelogPanel
 {
   private:
-      CChangelogPanel *pPanel;
+    CChangelogPanel *pPanel;
 
   public:
-      CChangelogInterface() { pPanel = nullptr; }
-      ~CChangelogInterface() { }
-    void Create(vgui::VPANEL parent) override { pPanel = new CChangelogPanel(parent); }
-    void Destroy() override
+    CChangelogInterface() { pPanel = nullptr; }
+    virtual ~CChangelogInterface() {}
+    void Create(vgui::VPANEL parent) OVERRIDE { pPanel = new CChangelogPanel(parent); }
+    void Destroy() OVERRIDE
     {
         if (pPanel)
         {
@@ -87,14 +87,14 @@ class CChangelogInterface : public IChangelogPanel
         }
         pPanel = nullptr;
     }
-    void Activate(void) override
+    void Activate(void) OVERRIDE
     {
         if (pPanel)
         {
             pPanel->Activate();
         }
     }
-    void Close() override
+    void Close() OVERRIDE
     {
         if (pPanel)
         {
@@ -102,7 +102,7 @@ class CChangelogInterface : public IChangelogPanel
         }
     }
 
-    void SetVersion(const char *pVersion) const override
+    void SetVersion(const char *pVersion) const OVERRIDE
     {
         if (pPanel)
         {
@@ -110,7 +110,7 @@ class CChangelogInterface : public IChangelogPanel
         }
     }
 
-    void SetChangelog(const char *pChangelog) const override
+    void SetChangelog(const char *pChangelog) const OVERRIDE
     {
         if (pPanel)
         {

@@ -14,7 +14,7 @@ $Configuration
     $Compiler
     {
         $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
-        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013"
+        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013;SDK_DLL"
     }
 }
 
