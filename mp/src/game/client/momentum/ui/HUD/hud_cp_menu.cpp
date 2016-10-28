@@ -39,6 +39,11 @@ static void SelectMenuItem(int menu_item)
     }
 }
 
+static void OnClose()
+{
+    engine->ExecuteClientCmd("mom_checkpoint_close");
+}
+
 CON_COMMAND(showCPmenu, "Opens the Checkpoint Menu.\n")
 {
     CHudMenuStatic *cpMenu = GET_HUDELEMENT(CHudMenuStatic);
@@ -46,8 +51,7 @@ CON_COMMAND(showCPmenu, "Opens the Checkpoint Menu.\n")
     {
         if (cpMenu->IsMenuDisplayed())
         {
-            cpMenu->HideMenu();//MOM_TODO: if another menu is open this will close it!
-            engine->ExecuteClientCmd("mom_checkpoint_close");
+            cpMenu->HideMenu();//NOTE: if another menu is open this will close it!
         }
         else
         {
@@ -58,7 +62,7 @@ CON_COMMAND(showCPmenu, "Opens the Checkpoint Menu.\n")
             pKv->AddSubKey(new KeyValues("#MOM_Menu_ToLastCP"));
             pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveCurrentCP"));
             pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveEveryCP"));
-            cpMenu->ShowMenu(pKv, SelectMenuItem);
+            cpMenu->ShowMenu(pKv, SelectMenuItem, OnClose);
             pKv->deleteThis();
         }
     }

@@ -20,20 +20,24 @@ class CMOMRulerTool : CAutoGameSystem
 {
 public:
     CMOMRulerTool(const char* pName);
-
     ~CMOMRulerTool();
 
-
-    Vector m_vFirstPoint;
-    Vector m_vSecondPoint;
-
-    CMOMRulerToolMarker *firstMark;
-    CMOMRulerToolMarker *secondMark;
+    void PostInit() OVERRIDE;
 
     void ConnectMarks();
     void Reset();
 
-    CBeam *beam_connector;
+    void DoTrace(bool bFirst);
+    void Measure();
+
+private:
+    char m_szDistanceFormat[BUFSIZ];
+    Vector m_vFirstPoint;
+    Vector m_vSecondPoint;
+
+    CBeam *m_pBeamConnector;
+    CMOMRulerToolMarker *m_pFirstMark;
+    CMOMRulerToolMarker *m_pSecondMark;
 };
 
 extern CMOMRulerTool *g_MOMRulerTool;

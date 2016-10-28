@@ -4,14 +4,16 @@
 #include <vgui/ILocalize.h>
 #include "vgui_controls/InputDialog.h"  // ReSharper, for some reason, found that including this was necessary. Ty!
 
+#include "tier0/memdbgon.h"
 
-
-// MOM_TODO: Fine tune this value
 // used to ignore solids that are further away than this 
 // from the player when setting the ruler's points
-#define RULER_MAXLENGTH 2000
+static MAKE_CONVAR(mom_ruler_maxlength, "2000", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the maximum length of the measuring tool.\n", 0, MAX_TRACE_LENGTH);
+static MAKE_CONVAR(mom_ruler_width, "1.0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the width of the beam that connects the two endpoints.\n", 0, 100);
+static MAKE_CONVAR(mom_ruler_duration, "5.5", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the duration of the measurement (in seconds).\n", 0.1, FLT_MAX);
+
+// This will stay a #define
 #define RULER_MARKER_MODEL "models/editor/axis_helper.mdl"
-#define RULER_MARKER_LINK_WIDTH 1.0f
 
 LINK_ENTITY_TO_CLASS(mom_ruler_mark, CMOMRulerToolMarker);
 
@@ -32,9 +34,6 @@ void CMOMRulerToolMarker::Spawn()
 
 void CMOMRulerToolMarker::MoveTo(const Vector& dest)
 {
-    // SetAbsOrigin(dest); visibly moves them (Interpolates a litle bit)
-    // teleport does not.
-    // MOM_TODO: What behaviour is preferred?
     Teleport(&dest, nullptr, &vec3_origin);
 }
 
@@ -46,149 +45,129 @@ CMOMRulerTool::CMOMRulerTool(const char* pName) : CAutoGameSystem(pName)
 
 CMOMRulerTool::~CMOMRulerTool()
 {
-    UTIL_Remove(firstMark);
-    UTIL_Remove(secondMark);
-    UTIL_Remove(beam_connector);
+    m_pFirstMark = nullptr;
+    m_pSecondMark = nullptr;
+    m_pBeamConnector = nullptr;
+}
+
+void CMOMRulerTool::PostInit()
+{
+    LOCALIZE_TOKEN(distanceFormat, "#MOM_Ruler_Distance", m_szDistanceFormat);
 }
 
 void CMOMRulerTool::ConnectMarks()
 {
-    if (!firstMark || !secondMark) return; // If we can't attach to anything, simply return.
+    if (!m_pFirstMark || !m_pSecondMark) return; // If we can't attach to anything, simply return.
     // Create a laser that will signal that both points are connected
 
-    if (beam_connector)
+    if (m_pBeamConnector)
     {
-        UTIL_Remove(beam_connector);
+        UTIL_Remove(m_pBeamConnector);
     }
 
-    beam_connector = CBeam::BeamCreate("sprites/laserbeam.vmt", RULER_MARKER_LINK_WIDTH);
-    beam_connector->PointsInit(firstMark->GetAbsOrigin(), secondMark->GetAbsOrigin());
-    beam_connector->SetColor(115, 80, 255);
-    beam_connector->SetBrightness(128);
-    beam_connector->SetNoise(0.0f);
-    beam_connector->SetEndWidth(RULER_MARKER_LINK_WIDTH);
-    beam_connector->SetWidth(RULER_MARKER_LINK_WIDTH);
-    beam_connector->LiveForTime(5.5f);	// Live for 5 and a half seconds
-    beam_connector->SetFrameRate(1.0f);
-    beam_connector->SetFrame(random->RandomInt(0, 2));
-
+    m_pBeamConnector = CBeam::BeamCreate("sprites/laserbeam.vmt", mom_ruler_width.GetFloat());
+    m_pBeamConnector->PointsInit(m_pFirstMark->GetAbsOrigin(), m_pSecondMark->GetAbsOrigin());
+    m_pBeamConnector->SetColor(115, 80, 255); // MOM_TODO: Potentially make these all customizable?
+    m_pBeamConnector->SetBrightness(128);
+    m_pBeamConnector->SetNoise(0.0f);
+    m_pBeamConnector->SetEndWidth(mom_ruler_width.GetFloat());
+    m_pBeamConnector->SetWidth(mom_ruler_width.GetFloat());
+    m_pBeamConnector->LiveForTime(mom_ruler_duration.GetFloat());
+    m_pBeamConnector->SetFrameRate(1.0f);
+    m_pBeamConnector->SetFrame(random->RandomInt(0, 2));
 }
 
 void CMOMRulerTool::Reset()
 {
     // We reset to our default state
-    UTIL_Remove(firstMark);
-    UTIL_Remove(secondMark);
-    UTIL_Remove(beam_connector);
+    UTIL_Remove(m_pFirstMark);
+    UTIL_Remove(m_pSecondMark);
+    UTIL_Remove(m_pBeamConnector);
+
+    m_pFirstMark = m_pSecondMark = nullptr;
 
     m_vFirstPoint = vec3_invalid;
     m_vSecondPoint = vec3_invalid;
 }
 
-CON_COMMAND_F(mom_ruler_first, "Creates the first measure point where the player is looking at.\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+void CMOMRulerTool::DoTrace(bool bFirst)
 {
     CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
-    if (!pPlayer || !g_MOMRulerTool)
+    if (!pPlayer)
         return;
+
     trace_t tr;
     Vector vecFwd;
-
     AngleVectors(pPlayer->EyeAngles(), &vecFwd);
+    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + vecFwd * mom_ruler_maxlength.GetFloat(), MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
 
-    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + vecFwd * RULER_MAXLENGTH, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
     if (!tr.DidHit())
         return;
-    // We have checked if the player is looking at something within RULER_MAXLENGTH units of itself. if so, set the point
-    g_MOMRulerTool->m_vFirstPoint = tr.endpos;
-    if (!g_MOMRulerTool->firstMark)
+
+    //CMOMRulerToolMarker *pMarker = bFirst ? m_pFirstMark : m_pSecondMark;
+    Color renderColor = bFirst ? Color(255, 255, 255, 255) : Color(0, 0, 0, 255);
+    // We have checked if the player is looking at something within the max length units of the ruler itself. if so, set the point
+    Vector *pVec = bFirst ? &m_vFirstPoint : &m_vSecondPoint;
+    *pVec = tr.endpos;
+    // If we're null, we gotta stop being lazy and make something of ourselves
+    if (!(bFirst ? m_pFirstMark : m_pSecondMark))
     {
-        g_MOMRulerTool->firstMark = static_cast<CMOMRulerToolMarker *>(CreateEntityByName("mom_ruler_mark"));
-        if (g_MOMRulerTool->firstMark)
+        (bFirst ? m_pFirstMark : m_pSecondMark) = static_cast<CMOMRulerToolMarker *>(CreateEntityByName("mom_ruler_mark"));
+        if (bFirst ? m_pFirstMark : m_pSecondMark)
         {
-            g_MOMRulerTool->firstMark->Spawn();
-            // To distinguish between each mark, the first one is "wither"
-            g_MOMRulerTool->firstMark->SetRenderColor(255, 255, 255, 255);
+            (bFirst ? m_pFirstMark : m_pSecondMark)->Spawn();
+            // To distinguish between each mark, the first one is "whiter", second is "blacker"
+            (bFirst ? m_pFirstMark : m_pSecondMark)->SetRenderColor(renderColor.r(), renderColor.g(), renderColor.b(), renderColor.a());
         }
     }
-    if (g_MOMRulerTool->firstMark)
+    // Now we're either created, or were never null in the first place
+    if (bFirst ? m_pFirstMark : m_pSecondMark)
     {
-        if (g_MOMRulerTool->beam_connector)
-        {
-            UTIL_Remove(g_MOMRulerTool->beam_connector);
-        }
-        g_MOMRulerTool->firstMark->MoveTo(tr.endpos);
-        DevMsg("First point set in (%.4f, %.4f, %.4f)\n", g_MOMRulerTool->m_vFirstPoint.x, g_MOMRulerTool->m_vFirstPoint.y, g_MOMRulerTool->m_vFirstPoint.z);
+        // Get rid of the beam if it's already there, because we're moving
+        if (m_pBeamConnector) 
+            UTIL_Remove(m_pBeamConnector);
+
+        (bFirst ? m_pFirstMark : m_pSecondMark)->MoveTo(tr.endpos);
+        DevMsg("%s point set in (%.4f, %.4f, %.4f)\n", bFirst ? "First" : "Second", pVec->x, pVec->y, pVec->z);
     }
 }
 
-CON_COMMAND_F(mom_ruler_second, "Creates the second measure point where the player is looking at.\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+void CMOMRulerTool::Measure()
 {
-    CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
-    if (!pPlayer || !g_MOMRulerTool)
-        return;
-    trace_t tr;
-    Vector vecFwd;
-
-    AngleVectors(pPlayer->EyeAngles(), &vecFwd);
-
-    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + vecFwd * RULER_MAXLENGTH, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
-    if (!tr.DidHit())
-        return;
-    // We have checked if the player is looking at something within RULER_MAXLENGTH units of itself. if so, set the point
-    g_MOMRulerTool->m_vSecondPoint = tr.endpos;
-    if (!g_MOMRulerTool->secondMark)
+    if (m_vFirstPoint.IsValid() && m_vSecondPoint.IsValid() && m_pFirstMark && m_pSecondMark)
     {
-        g_MOMRulerTool->secondMark = static_cast<CMOMRulerToolMarker *>(CreateEntityByName("mom_ruler_mark"));
-        if (g_MOMRulerTool->secondMark)
+        // Create the beam that connects the marks
+        ConnectMarks();
+
+        if (m_pBeamConnector)
         {
-            g_MOMRulerTool->secondMark->Spawn();
-            // To distinguish between each mark, the second one is "blacker"
-            g_MOMRulerTool->secondMark->SetRenderColor(0, 0, 0, 255);
+            char distString[BUFSIZ];
+            Q_snprintf(distString, BUFSIZ, m_szDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
+            m_pBeamConnector->EntityText(0, distString, mom_ruler_duration.GetFloat());
         }
-    }
-
-    if (g_MOMRulerTool->secondMark)
-    {
-        if (g_MOMRulerTool->beam_connector)
-        {
-            UTIL_Remove(g_MOMRulerTool->beam_connector);
-        }
-        g_MOMRulerTool->secondMark->MoveTo(tr.endpos);
-        DevMsg("Second point set in (%.4f, %.4f, %.4f)\n", g_MOMRulerTool->m_vSecondPoint.x, g_MOMRulerTool->m_vSecondPoint.y, g_MOMRulerTool->m_vSecondPoint.z);
-    }
-}
-
-CON_COMMAND_F(mom_ruler_measure, "Measures the distance between the first and second point.\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
-{
-    CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
-    if (!pPlayer || !g_MOMRulerTool)
-        return;
-    if (g_MOMRulerTool->m_vFirstPoint != vec3_invalid && g_MOMRulerTool->m_vSecondPoint != vec3_invalid)
-    {
-        g_MOMRulerTool->ConnectMarks();
-        CSingleUserRecipientFilter filter(pPlayer);
-        filter.MakeReliable();
-        // We print the distance to the chat via usermessage
-        UserMessageBegin(filter, "SayText");
-        WRITE_BYTE(pPlayer->GetClientIndex());
-        char printOutText[BUFSIZ];
-        char formatText[BUFSIZ];
-        LOCALIZE_TOKEN(distance_ruler, "MOM_Ruler_Distance ", printOutText);
-        Q_snprintf(formatText, BUFSIZ, printOutText,
-            g_MOMRulerTool->m_vFirstPoint.x, g_MOMRulerTool->m_vFirstPoint.y, g_MOMRulerTool->m_vFirstPoint.z,
-            g_MOMRulerTool->m_vSecondPoint.x, g_MOMRulerTool->m_vSecondPoint.y, g_MOMRulerTool->m_vSecondPoint.z,
-            g_MOMRulerTool->m_vFirstPoint.DistTo(g_MOMRulerTool->m_vSecondPoint));
-        WRITE_STRING(formatText);
-        MessageEnd();
     }
     else
     {
         // We don't need to output this in chat, but may it be worth it?
-        DevWarning("Can't measure distance because both points need to be set.\n");
+        DevWarning("Can't measure distance! Both points need to be set.\n");
     }
 }
 
-// MOM_TODO: When opening another panel that hides the ruler, this command is not called
+CON_COMMAND_F(mom_ruler_first, "Creates the first measure point where the player is looking at.\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+{
+    g_MOMRulerTool->DoTrace(true);
+}
+
+CON_COMMAND_F(mom_ruler_second, "Creates the second measure point where the player is looking at.\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+{
+    g_MOMRulerTool->DoTrace(false);
+}
+
+CON_COMMAND_F(mom_ruler_measure, "Measures the distance between the first and second point.\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
+{
+    g_MOMRulerTool->Measure();
+}
+
 CON_COMMAND_F(mom_ruler_close, "Closes the menu (ONLY HANDLES LOGIC ABOUT WHAT TO DO WHEN ONCLOSE!)\n", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_HIDDEN)
 {
     g_MOMRulerTool->Reset();  // Simple reset to our default values (And deleting any possible mark we've left on the world)

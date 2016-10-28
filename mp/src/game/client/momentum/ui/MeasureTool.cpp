@@ -32,15 +32,19 @@ static void SelectMenuItem(int menu_item)
     }
 }
 
+static void OnClose()
+{
+    engine->ExecuteClientCmd("mom_ruler_close");
+}
+
 CON_COMMAND(showRuler, "Opens the ruler tool.\n")
 {
     CHudMenuStatic *rulerMenu = GET_HUDELEMENT(CHudMenuStatic);
-    if (rulerMenu && g_pGameRules && Q_strlen(g_pGameRules->MapName()) > 0)
+    if (rulerMenu && engine->IsInGame())
     {
         if (rulerMenu->IsMenuDisplayed())
         {
-            rulerMenu->HideMenu();//MOM_TODO: if another menu is open this will close it!
-            engine->ExecuteClientCmd("mom_ruler_close");
+            rulerMenu->HideMenu();//NOTE: if another menu is open this will close it!
         }
         else
         {
@@ -48,7 +52,7 @@ CON_COMMAND(showRuler, "Opens the ruler tool.\n")
             pKv->AddSubKey(new KeyValues("#MOM_Ruler_FirstPoint"));
             pKv->AddSubKey(new KeyValues("#MOM_Ruler_SecondPoint"));
             pKv->AddSubKey(new KeyValues("#MOM_Ruler_Measure"));
-            rulerMenu->ShowMenu(pKv, SelectMenuItem);
+            rulerMenu->ShowMenu(pKv, SelectMenuItem, OnClose);
             pKv->deleteThis();
         }
     }
