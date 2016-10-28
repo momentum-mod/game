@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================//
@@ -11,156 +11,328 @@
 #pragma once
 #endif
 
-#include "GameEventListener.h"
 #include "cbase.h"
+
+#include "steam/steam_api.h"
+
+#include "GameEventListener.h"
+
+#include "ReplayContextMenu.h"
 #include "momentum/mom_shareddefs.h"
 #include <KeyValues.h>
 #include <game/client/iviewport.h>
+#include <vgui_controls/pch_vgui_controls.h>
 #include <vgui_controls/EditablePanel.h>
+#include <vgui_controls/SectionedListPanel.h>
+#include <vgui_controls/TextImage.h>
 
-#define TYPE_NOTEAM			0	// NOTEAM must be zero :)
-#define TYPE_TEAM			1	// a section for a single team	
-#define TYPE_PLAYERS		2
-#define TYPE_SPECTATORS		3	// a section for a spectator group
-#define TYPE_BLANK			4
+#define TYPE_NOTEAM 0 // NOTEAM must be zero :)
+#define TYPE_TEAM 1   // a section for a single team
+#define TYPE_PLAYERS 2
+#define TYPE_SPECTATORS 3 // a section for a spectator group
+#define TYPE_BLANK 4
 
+#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
+
+#define DELAY_NEXT_UPDATE 10.0f           // Delay for the next API update, in seconds
+#define MIN_ONLINE_UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
+#define MAX_ONLINE_UPDATE_INTERVAL 45.0f  // The amount of seconds maximum between online checks
+#define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
+#define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
+
+struct Time
+{
+    float time_sec, rate;
+    time_t date;
+
+    explicit Time(KeyValues *kv)
+    {
+        time_sec = Q_atof(kv->GetName());
+        rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
+        date = static_cast<time_t>(kv->GetInt("date", 0));
+    };
+};
+
+class CUtlSortVectorTimeValue
+{
+public:
+    bool Less(const Time lhs, const Time rhs, void *)
+    {
+        return lhs.time_sec < rhs.time_sec;
+    }
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
 class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener
 {
-private:
+  private:
     DECLARE_CLASS_SIMPLE(CClientTimesDisplay, vgui::EditablePanel);
 
-protected:
+  protected:
     // column widths at 640
-    enum { NAME_WIDTH = 160, SCORE_WIDTH = 60, DEATH_WIDTH = 60, PING_WIDTH = 80, VOICE_WIDTH = 0, FRIENDS_WIDTH = 0 };
+    enum
+    {
+        NAME_WIDTH = 160,
+        SCORE_WIDTH = 60,
+        DEATH_WIDTH = 60,
+        PING_WIDTH = 80,
+        VOICE_WIDTH = 0,
+        FRIENDS_WIDTH = 0
+    };
     // total = 340
 
-public:
+    enum LEADERBOARDS
+    {
+        FRIENDS_LEADERBOARDS = 0,
+        ONLINE_LEADERBOARDS,
+        LOCAL_LEADERBOARDS
+    };
+
+  public:
     CClientTimesDisplay(IViewPort *pViewPort);
     ~CClientTimesDisplay();
 
-    virtual const char *GetName(void) { return PANEL_TIMES; }
-    virtual void SetData(KeyValues *data) {};
-    virtual void Reset();
-    virtual void Update();
+    const char *GetName(void) OVERRIDE { return PANEL_TIMES; }
+
+    void SetData(KeyValues *data) OVERRIDE{};
+
+    void Reset() OVERRIDE;
+    void Update() OVERRIDE;
     void Update(bool pFullUpdate);
     void Reset(bool pFullReset);
-    virtual bool NeedsUpdate(void);
-    virtual bool HasInputElements(void) { return true; }
-    virtual void ShowPanel(bool bShow);
+    bool NeedsUpdate(void) OVERRIDE;
 
-    virtual bool ShowAvatars()
-    {
-        return IsPC();
-    }
+    bool HasInputElements(void) OVERRIDE { return true; }
+
+    void ShowPanel(bool bShow) OVERRIDE;
+
+    bool ShowAvatars() { return IsPC(); }
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
-    vgui::VPANEL GetVPanel(void) { return BaseClass::GetVPanel(); }
-    virtual bool IsVisible() { return BaseClass::IsVisible(); }
-    virtual void SetParent(vgui::VPANEL parent) { BaseClass::SetParent(parent); }
+    vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
+
+    bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }
+
+    void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); }
 
     // IGameEventListener interface:
-    virtual void FireGameEvent(IGameEvent *event);
+    void FireGameEvent(IGameEvent *event) OVERRIDE;
 
-    virtual void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
+    //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
+    // Updates the local player's avatar image
+    void UpdatePlayerAvatarStandalone();
+    // This updates the local player's avatar in the online/friends leaderboards
+    void UpdatePlayerAvatarStandaloneOnline(KeyValues *);
+    // Updates an online player's avatar image
+    void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
-protected:
+    CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
+
+  protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
+    MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
+    MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
+    MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
+    MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
+    MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
+
+    STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
+
+    int TryAddAvatar(CSteamID);
 
     // functions to override
-    virtual bool GetPlayerTimes(KeyValues *outPlayerInfo);
-    virtual void InitScoreboardSections();
-    virtual void UpdateTeamInfo();
-    virtual void UpdatePlayerInfo(KeyValues *outPlayerInfo);
-    virtual void OnThink();
-    virtual void AddHeader(vgui::Label *pMapSummary); // add the start header of the scoreboard
-    virtual void AddSection(int teamType, int teamNumber); // add a new section header for a team
-    virtual int GetAdditionalHeight() { return 0; }
+    bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
+    void InitScoreboardSections();
+    void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
+    void OnThink() OVERRIDE;
+    void AddHeader(); // add the start header of the scoreboard
+    static int GetAdditionalHeight() { return 0; }
+
+    void OnCommand(const char *pCommand) OVERRIDE;
 
     // sorts players within a section
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
     static bool StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
 
-    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
-    virtual void PostApplySchemeSettings(vgui::IScheme *pScheme);
+    void PostApplySchemeSettings(vgui::IScheme *pScheme);
 
-    // finds the player in the scoreboard
-    int FindItemIDForPlayerIndex(int playerIndex);
     // finds a local time in the scoreboard
     int FindItemIDForLocalTime(KeyValues *kvRef);
+    // finds an online time in the scoreboard
+    int FindItemIDForOnlineTime(int runID, LEADERBOARDS);
 
     int m_iNumTeams;
 
-    vgui::SectionedListPanel *m_pPlayerList;
-    int				m_iSectionId; // the current section we are entering into
+    int m_iSectionId; // the current section we are entering into
 
     float m_fNextUpdateTime;
 
     void MoveLabelToFront(const char *textEntryName);
     void MoveToCenterOfScreen();
+    // Sets the text of the MapInfo label. If it's nullptr, it hides it
+    void UpdateMapInfoLabel(const char *text = nullptr);
+    void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
 
-    vgui::ImageList	*m_pImageList;
-    vgui::Panel *m_pHeader;
-    vgui::Panel *m_pPlayerStats;
-    vgui::Panel *m_pLeaderboards;
-    vgui::Label *m_lMapSummary;
-    vgui::Label *m_lPlayerName;
-    vgui::Label *m_lPlayerMapRank;
-    vgui::Label *m_lPlayerGlobalRank;
+    vgui::ImageList *m_pImageList;
+    Panel *m_pHeader;
+    Panel *m_pPlayerStats;
+    Panel *m_pLeaderboards;
+    vgui::Label *m_pMapName;
+    vgui::Label *m_pMapAuthor;
+    vgui::Label *m_pMapDetails;
+    vgui::Label *m_pPlayerName;
+    vgui::Label *m_pPlayerMapRank;
+    vgui::Label *m_pPlayerPersonalBest;
+    vgui::Label *m_pPlayerGlobalRank;
+    vgui::Label *m_pPlayerExperience;
+    vgui::Label *m_pLoadingOnlineTimes;
     vgui::SectionedListPanel *m_pOnlineLeaderboards;
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
     vgui::ImagePanel *m_pPlayerAvatar;
     vgui::ImagePanel *m_pMomentumLogo;
+    vgui::Button *m_pLocalLeaderboardsButton;
+    vgui::Button *m_pGlobalLeaderboardsButton;
+    vgui::Button *m_pGlobalTop10Button;
+    vgui::Button *m_pGlobalAroundButton;
+    vgui::Button *m_pFriendsLeaderboardsButton;
 
+    vgui::ToggleButton *m_pRunFilterButton;
+    EditablePanel *m_pFilterPanel;
 
-    CUtlMap<CSteamID, int>		m_mapAvatarsToImageList;
+    Panel *m_pCurrentLeaderboards;
 
-    CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34");		// Avatar width doesn't scale with resolution
+    CUtlMap<CSteamID, int> m_mapAvatarsToImageList;
+
+    CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34"); // Avatar width doesn't scale with resolution
     CPanelAnimationVarAliasType(int, m_iNameWidth, "name_width", "136", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iClassWidth, "class_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iScoreWidth, "score_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iDeathWidth, "death_width", "35", "proportional_int");
     CPanelAnimationVarAliasType(int, m_iPingWidth, "ping_width", "23", "proportional_int");
 
-private:
-    int			m_iPlayerIndexSymbol;
-    int			m_iDesiredHeight;
-    IViewPort	*m_pViewPort;
+    // Online API Pre-Alpha functions
+
+    void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
+    void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetPlayerDataForMapCallback;
+    void GetFriendsTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetFriendsTimesCallback;
+    void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetMapInfoCallback;
+
+    void CreateAndSendHTTPReq(const char *, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *,
+                              CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
+
+    void ParseTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure, bool bFriendsTimes);
+
+  private:
+    int m_iPlayerIndexSymbol;
+    int m_iDesiredHeight;
+
+    float m_fLastHeaderUpdate;
+    bool m_bFirstHeaderUpdate;
+
+    float m_flLastOnlineTimeUpdate;
+    bool m_bFirstOnlineTimesUpdate;
+
+    float m_flLastFriendsTimeUpdate;
+    bool m_bFirstFriendsTimesUpdate;
+
+    IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
-    struct Time
+    
+    void ConvertOnlineTimes(KeyValues *kv, float seconds);
+    struct TimeOnline
     {
+        int rank, id, avatar;
         float time_sec, rate;
+        uint64 steamid;
         time_t date;
+        const char *personaname;
+        bool momember, vip, is_friend;
 
-        explicit Time(KeyValues* kv)
+        KeyValues *m_kv;
+
+        explicit TimeOnline(KeyValues *kv)
         {
-            time_sec = Q_atof(kv->GetName());
-            rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
-            date = static_cast<time_t>(kv->GetInt("date", 0));
+            m_kv = kv;
+            id = kv->GetInt("id", -1);
+            rank = kv->GetInt("rank", 0);
+            time_sec = kv->GetFloat("time", -1);
+            personaname = kv->GetString("personaname", "Unknown");
+            rate = kv->GetFloat("rate", 100);
+            date = static_cast<time_t>(Q_atoi(kv->GetString("date", "0")));
+            steamid = kv->GetUint64("steamid", 0);
+            avatar = kv->GetInt("avatar", 0);
+            momember = kv->GetBool("tm", false);
+            vip = kv->GetBool("vip", false);
+            is_friend = kv->GetBool("is_friend", false);
         };
-    };
-    CUtlVector<Time> m_vLocalTimes;
-    // MOM_TODO: CUtlVector<SomeStruct> m_vOnlineTimes;
 
-    bool m_bLocalTimesLoaded = false;
-    bool m_bLocalTimesNeedUpdate = false;
-    bool m_bOnlineNeedUpdate = false;
-    //widths[0] == WIDTH FOR DATE
-    //widths[1] == WIDTH FOR RANK
-    //widths[2] == WIDTH FOR TIME
+        ~TimeOnline()
+        {
+            if (m_kv)
+                m_kv->deleteThis();
+            m_kv = nullptr;
+            personaname = nullptr;
+        }
+    };
+
+    CUtlSortVector<Time, CUtlSortVectorTimeValue> m_vLocalTimes;
+    CUtlVector<TimeOnline *> m_vOnlineTimes;
+    CUtlVector<TimeOnline *> m_vFriendsTimes;
+
+    bool m_bLocalTimesLoaded;
+    bool m_bLocalTimesNeedUpdate;
+    bool m_bOnlineNeedUpdate;
+    bool m_bOnlineTimesLoaded;
+    bool m_bFriendsNeedUpdate;
+    bool m_bFriendsTimesLoaded;
+    bool m_bUnauthorizedFriendlist;
+    // widths[0] == WIDTH FOR DATE
+    // widths[1] == WIDTH FOR RANK
+    // widths[2] == WIDTH FOR TIME
     int m_aiColumnWidths[3];
 
     // methods
     void FillScoreBoard();
+    void SetPlaceColors(vgui::SectionedListPanel* panel) const;
     void FillScoreBoard(bool pFullUpdate);
     void LoadLocalTimes(KeyValues *kv);
-    void ConvertLocalTimes(KeyValues*);
+    void LoadOnlineTimes();
+    void LoadFriendsTimes();
+    void ConvertLocalTimes(KeyValues *);
+    // Place vector times into leaderboards panel (sectionlist)
+    void OnlineTimesVectorToLeaderboards(LEADERBOARDS);
+
+    CReplayContextMenu *m_pLeaderboardReplayCMenu;
+
+    CUtlMap<uint64, const char *> m_umMapNames;
+
+    bool m_bGetTop10Scores;
+
+    bool m_bMapInfoLoaded;
+
+    enum LEADERBOARD_ICONS
+    {
+        ICON_VIP,
+        ICON_TEAMMEMBER,
+        ICON_FRIEND,
+
+        ICON_TOTAL // Used to control the amount of icons available
+    };
+    int m_IconsIndex[ICON_TOTAL];
+
+    int m_bLoadedLocalPlayerAvatar;
+
+    Color m_cFirstPlace, m_cSecondPlace, m_cThirdPlace;
+
+    RUN_FLAG flaggedRuns;
 };
-
-
 #endif // CLIENTSCOREBOARDDIALOG_H

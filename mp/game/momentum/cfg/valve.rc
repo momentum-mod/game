@@ -14,8 +14,6 @@ exec autoexec.cfg
 stuffcmds
 sv_unlockedchapters 99 //Random background selection
 startupmenu
- //THESE FIX DEMO PLAYBACK BUG, DO NOT REMOVE
-sv_client_min_interp_ratio 0
-sv_client_max_interp_ratio 0
-cl_interp 0
-cl_interp_ratio 0
+
+//FOR REAL FIXEXS DEMO PLAYBACK INTERP ISSUES
+demo_interplimit 9999999

@@ -1627,12 +1627,13 @@ public:
 	{
 	}
 
-	~CPanelAnimationDictionary()
-	{
-		m_PanelAnimationMapPool.Clear();
-	}
+    ~CPanelAnimationDictionary()
+    {
+        m_AnimationMaps.RemoveAll();
+        m_PanelAnimationMapPool.Clear();
+    }
 
-	PanelAnimationMap		*FindOrAddPanelAnimationMap( char const *className );
+    PanelAnimationMap		*FindOrAddPanelAnimationMap( char const *className );
 	PanelAnimationMap		*FindPanelAnimationMap( char const *className );
 	void					PanelAnimationDumpVars( char const *className );
 private:

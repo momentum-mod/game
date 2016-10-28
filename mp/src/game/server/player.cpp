@@ -593,8 +593,8 @@ CBasePlayer::CBasePlayer( )
 
 	m_hZoomOwner = NULL;
 
-	m_nUpdateRate = 20;  // cl_updaterate defualt
-	m_fLerpTime = 0.1f; // cl_interp default
+	m_nUpdateRate = 1.0f/TICK_INTERVAL;  // cl_updaterate defualt
+	m_fLerpTime = TICK_INTERVAL; // cl_interp default
 	m_bPredictWeapons = true;
 	m_bLagCompensation = false;
 	m_flLaggedMovementValue = 1.0f;
@@ -786,7 +786,7 @@ void CBasePlayer::SetBonusChallenge( int iBonusChallenge )
 //-----------------------------------------------------------------------------
 void CBasePlayer::SnapEyeAngles( const QAngle &viewAngles )
 {
-	pl.v_angle = viewAngles;
+	pl.v_angle.GetForModify() = viewAngles;
 	pl.fixangle = FIXANGLE_ABSOLUTE;
 }
 
@@ -2666,9 +2666,9 @@ bool CBasePlayer::IsValidObserverTarget(CBaseEntity * target)
 
 	CBasePlayer * player = ToBasePlayer( target );
 
-	/* Don't spec observers or players who haven't picked a class yet
+	/* Don't spec observers or players who haven't picked a class yet */
  	if ( player->IsObserver() )
-		return false;	*/
+		return false;	
 
 	if( player == this )
 		return false; // We can't observe ourselves.
@@ -2686,7 +2686,7 @@ bool CBasePlayer::IsValidObserverTarget(CBaseEntity * target)
 			return false;	// allow watching until 3 seconds after death to see death animation
 		}
 	}
-		
+
 	// check forcecamera settings for active players
 	if ( GetTeamNumber() != TEAM_SPECTATOR )
 	{
@@ -3482,7 +3482,7 @@ void CBasePlayer::ProcessUsercmds( CUserCmd *cmds, int numcmds, int totalcmds,
 				ctx->cmds[ i ].forwardmove = 0;
 				ctx->cmds[ i ].sidemove = 0;
 				ctx->cmds[ i ].upmove = 0;
-				VectorCopy ( pl.v_angle, ctx->cmds[ i ].viewangles );
+				VectorCopy ( pl.v_angle.Get(), ctx->cmds[ i ].viewangles );
 			}
 		}
 
@@ -3663,7 +3663,7 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 
 	if ( pl.fixangle == FIXANGLE_NONE)
 	{
-		VectorCopy ( ucmd->viewangles, pl.v_angle );
+		VectorCopy ( ucmd->viewangles, pl.v_angle.GetForModify() );
 	}
 
 	// Handle FL_FROZEN.
@@ -3676,7 +3676,7 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->upmove = 0;
 		ucmd->buttons = 0;
 		ucmd->impulse = 0;
-		VectorCopy ( pl.v_angle, ucmd->viewangles );
+		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
 	}
 	else
 	{
@@ -4571,7 +4571,7 @@ void CBasePlayer::PostThink()
 					CSoundEnt::InsertSound ( SOUND_PLAYER, GetAbsOrigin(), m_Local.m_flFallVelocity, 0.2, this );
 					// Msg( "fall %f\n", m_Local.m_flFallVelocity );
 				}
-				m_Local.m_flFallVelocity = 0;
+				m_Local.m_flFallVelocity = 0.0f;
 			}
 
 			// select the proper animation for the player character	
@@ -5200,7 +5200,7 @@ int CBasePlayer::Restore( IRestore &restore )
 		SetLocalAngles( pSpawnSpot->GetLocalAngles() );
 	}
 
-	QAngle newViewAngles = pl.v_angle;
+	QAngle newViewAngles = pl.v_angle.Get();
 	newViewAngles.z = 0;	// Clear out roll
 	SetLocalAngles( newViewAngles );
 	SnapEyeAngles( newViewAngles );
@@ -7927,6 +7927,7 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 // -------------------------------------------------------------------------------- //
 
 	BEGIN_SEND_TABLE_NOBASE(CPlayerState, DT_PlayerState)
+		SendPropQAngles(SENDINFO(v_angle), 13),
 		SendPropInt		(SENDINFO(deadflag),	1, SPROP_UNSIGNED ),
 	END_SEND_TABLE()
 

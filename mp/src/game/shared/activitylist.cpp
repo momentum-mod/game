@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //
 //=============================================================================//
+
 #include "cbase.h"
 #include "ai_activity.h"
 #include "activitylist.h"

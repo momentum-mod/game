@@ -4,15 +4,32 @@
 #pragma once
 #endif
 
+#include "cbase.h"
+#include <movevars_shared.h>
+#include "mapzones.h"
+#include "mom_timer.h"
+#include "mapzones_edit.h"
+
 namespace Momentum {
-
-void OnServerDLLInit();
-void OnMapStart(const char *pMapName);
-void OnMapEnd(const char *pMapName);
-void OnGameFrameStart();
 void GameInit();
-//void OnGameFrameEnd();
-
 } // namespace Momentum
+
+class CMOMServerEvents : CAutoGameSystemPerFrame
+{
+public:
+    CMOMServerEvents(const char *pName) : CAutoGameSystemPerFrame(pName), zones(nullptr)
+    {
+    }
+    void PostInit() OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPreEntity() OVERRIDE;
+    void LevelShutdownPostEntity() OVERRIDE;
+    void FrameUpdatePreEntityThink() OVERRIDE;
+
+    void MountAdditionalContent();
+
+private:
+    CMapzoneData* zones;
+};
 
 #endif // SERVER_EVENTS_H

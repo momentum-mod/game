@@ -59,6 +59,11 @@ class IEngineReplay;
 class IEngineClientReplay;
 class IReplayScreenshotManager;
 class CSteamID;
+class CShared;
+
+#ifdef GAMEUI2
+class IGameUI2;
+#endif
 
 //=============================================================================
 // HPE_BEGIN
@@ -71,6 +76,7 @@ class AchievementsAndStatsInterface;
 // HPE_END
 //=============================================================================
 
+extern CShared* shared;
 extern IVModelRender *modelrender;
 extern IVEngineClient	*engine;
 extern IVModelRender *modelrender;
@@ -110,6 +116,10 @@ extern IReplayManager *g_pReplayManager;
 extern IReplayScreenshotManager *g_pReplayScreenshotManager;
 extern IEngineReplay *g_pEngineReplay;
 extern IEngineClientReplay *g_pEngineClientReplay;
+
+#ifdef GAMEUI2
+extern IGameUI2* g_pGameUI2;
+#endif
 
 //=============================================================================
 // HPE_BEGIN

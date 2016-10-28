@@ -7,7 +7,7 @@
 	nodifficulty    1
 	developer	"Team Momentum"
 	developer_url   "http://momentum-mod.org"
-	gamelogo	1
+	//gamelogo	1
 
 	icon		"resource/icon"
 
@@ -22,7 +22,7 @@
 	FileSystem
 	{
 		SteamAppId				243750 // This sets the app ID in Steam. This is the Source SDK Base 2013 Multiplayer
-		
+        
 		//
 		// The code that loads this file automatically does a few things here:
 		//
@@ -49,7 +49,7 @@
 			// folder.
 			//
 			// Note that this folder is scanned only when the game is booted.
-			game+mod			hl2/custom/*
+			game+mod			momentum/custom/*
 
 			// Now search loose files.  We'll set the directory containing the gameinfo.txt file
 			// as the first "mod" search path (after any user customizations).  This is also the one
@@ -79,9 +79,6 @@
 
 			// Last, mount in shared HL2 loose files
 			game				|all_source_engine_paths|hl2
-			game 	 			"|all_source_engine_paths|../Counter-Strike Source/cstrike/cstrike_pak.vpk"
-			game 	 			"|all_source_engine_paths|../Counter-Strike Source/cstrike"
-			game 	 			"|all_source_engine_paths|../Counter-Strike Source/cstrike/download"
 			platform			|all_source_engine_paths|platform
 		}
 	}

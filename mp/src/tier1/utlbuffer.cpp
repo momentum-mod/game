@@ -219,7 +219,7 @@ CUtlBuffer::CUtlBuffer( int growSize, int initSize, int nFlags ) :
 CUtlBuffer::CUtlBuffer( const void *pBuffer, int nSize, int nFlags ) :
 	m_Memory( (unsigned char*)pBuffer, nSize ), m_Error(0)
 {
-	Assert( nSize != 0 );
+	Assert(nSize >= 0);
 
 	m_Get = 0;
 	m_Put = 0;
@@ -615,9 +615,9 @@ void CUtlBuffer::GetStringInternal( char *pString, size_t maxLenInChars )
 		return;
 	}
 
-	Assert( maxLenInChars != 0 );
+	//Assert( maxLenInChars != 0 );
 
-	if ( maxLenInChars == 0 )
+	if ( maxLenInChars <= 0 )
 	{
 		return;
 	}

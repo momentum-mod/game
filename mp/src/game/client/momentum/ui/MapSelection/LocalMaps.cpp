@@ -57,13 +57,13 @@ bool MapHasStages(const char* szMap)
         KeyValues *kvMap = new KeyValues(szMap);
         char path[MAX_PATH];
         char fileName[FILENAME_MAX];
-        Q_snprintf(fileName, FILENAME_MAX, "%s.tim", szMap);
-        V_ComposeFileName("maps", fileName, path, MAX_PATH);
+        Q_snprintf(fileName, FILENAME_MAX, "%s%s", szMap, EXT_TIME_FILE);
+        V_ComposeFileName(MAP_FOLDER, fileName, path, MAX_PATH);
 
 
         if (kvMap->LoadFromFile(filesystem, path, "MOD"))
         {
-            found = (kvMap->FindKey("stage") != NULL);
+            found = (kvMap->FindKey("zone") != nullptr);
         }
         kvMap->deleteThis();
     }

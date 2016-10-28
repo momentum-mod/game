@@ -148,6 +148,7 @@
 #include "fbxsystem/fbxsystem.h"
 #endif
 
+#include "inetchannelinfo.h"
 extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
@@ -170,9 +171,9 @@ extern vgui::IInputInternal *g_InputInternal;
 #include "sixense/in_sixense.h"
 #endif
 
-
-//Momentum
-#include "mom_event_listener.h"
+#ifdef GAMEUI2
+#include "igameui2.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -180,6 +181,7 @@ extern vgui::IInputInternal *g_InputInternal;
 extern IClientMode *GetClientModeNormal();
 
 // IF YOU ADD AN INTERFACE, EXTERN IT IN THE HEADER FILE.
+CShared     *shared = NULL;
 IVEngineClient	*engine = NULL;
 IVModelRender *modelrender = NULL;
 IVEfx *effects = NULL;
@@ -221,6 +223,11 @@ IReplaySystem *g_pReplay = NULL;
 #endif
 
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
+
+#ifdef GAMEUI2
+CSysModule *g_pGameUI2Module = nullptr;
+IGameUI2* g_pGameUI2 = NULL;
+#endif
 
 //=============================================================================
 // HPE_BEGIN
@@ -866,7 +873,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	InitCRTMemDebug();
 	MathLib_Init( 2.2f, 2.2f, 0.0f, 2.0f );
 
-
 #ifdef SIXENSE
 	g_pSixenseInput = new SixenseInput;
 #endif
@@ -1093,8 +1099,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	HookHapticMessages(); // Always hook the messages
 #endif
 
-    g_MOMEventListener->Init();//Hook into game events
-
 	return true;
 }
 
@@ -1162,6 +1166,71 @@ void CHLClient::PostInit()
 		}
 	}
 #endif
+
+#ifdef GAMEUI2
+    if (!CommandLine()->CheckParm("-nogameui2"))
+    {
+        const int16 modulePathLength = 2048;
+        char modulePath[modulePathLength];
+        Q_snprintf(modulePath, modulePathLength, "%s\\bin\\gameui2.dll", engine->GetGameDirectory());
+
+        g_pGameUI2Module = Sys_LoadModule(modulePath);
+        if (g_pGameUI2Module)
+        {
+            ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui2.dll\n");
+
+            CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUI2Module);
+
+            g_pGameUI2 = appSystemFactory ? static_cast<IGameUI2*>(appSystemFactory(GAMEUI2_DLL_INTERFACE_VERSION, nullptr)) : NULL;
+            if (g_pGameUI2)
+            {
+                ConColorMsg(Color(0, 148, 255, 255), "Initializing IGameUI2 interface...\n");
+
+                factorylist_t factories;
+                FactoryList_Retrieve(factories);
+                g_pGameUI2->Initialize(factories.appSystemFactory);
+                g_pGameUI2->OnInitialize();
+            }
+            else
+            {
+                ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI2 interface.\n");
+            }
+        }
+        else
+        {
+            ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui2.dll from:\n%s\n", modulePath);
+        }
+    }
+
+	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
+	if (SharedModule)
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (CLIENT)\n");
+
+		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
+
+		shared = appSystemFactory ? static_cast<CShared*>(appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, nullptr)) : NULL;
+		if (shared)
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (CLIENT)\n");
+			
+			shared->LoadedClient = true;
+
+			if (shared->LoadedClient && shared->LoadedServer)
+			{
+				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
+			}
+		}
+		else
+		{
+			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
+		}
+	}
+	else
+	{
+		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1202,10 +1271,21 @@ void CHLClient::Shutdown( void )
 	UncacheAllMaterials();
 
 	IGameSystem::ShutdownAllSystems();
-	
-	gHUD.Shutdown();
+
+    gHUD.Shutdown(); 
 	VGui_Shutdown();
-	
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+    {
+        g_pGameUI2->OnShutdown();
+        g_pGameUI2->Shutdown();
+    }
+
+    if (g_pGameUI2Module)
+        Sys_UnloadModule(g_pGameUI2Module);
+#endif
+
 	ParticleMgr()->Term();
 	
 	ClearKeyValuesCache();
@@ -1297,6 +1377,11 @@ void CHLClient::HudUpdate( bool bActive )
 	{
 		g_pSixenseInput->SixenseFrame( 0, NULL ); 
 	}
+#endif
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnUpdate();
 #endif
 }
 
@@ -1435,6 +1520,7 @@ void CHLClient::ExtraMouseSample( float frametime, bool active )
 
 void CHLClient::IN_SetSampleTime( float frametime )
 {
+
 	input->Joystick_SetSampleTime( frametime );
 	input->IN_SetSampleTime( frametime );
 
@@ -1644,6 +1730,11 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 		CReplayRagdollRecorder::Instance().Init();
 	}
 #endif
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnLevelInitializePreEntity();
+#endif
 }
 
 
@@ -1655,6 +1746,11 @@ void CHLClient::LevelInitPostEntity( )
 	IGameSystem::LevelInitPostEntityAllSystems();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnLevelInitializePostEntity();
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1720,6 +1816,11 @@ void CHLClient::LevelShutdown( void )
 	ParticleMgr()->RemoveAllEffects();
 	
 	StopAllRumbleEffects();
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+        g_pGameUI2->OnLevelShutdown();
+#endif
 
 	gHUD.LevelShutdown();
 
@@ -2110,6 +2211,18 @@ void OnRenderStart()
 	VPROF( "OnRenderStart" );
 	MDLCACHE_CRITICAL_SECTION();
 	MDLCACHE_COARSE_LOCK();
+    
+    // BenLubar: rescale time in demos during slow motion
+    INetChannelInfo *nci = engine->GetNetChannelInfo();
+    ConVarRef ts("host_timescale");
+    if (nci && nci->IsPlayback() && engine->GetDemoPlaybackTimeScale() != 1)
+    {
+        float flServerTime = engine->GetLastTimeStamp();
+        float flTimeSince = nci->GetTimeSinceLastReceived();
+        float flTimeScale = engine->GetDemoPlaybackTimeScale();
+        gpGlobals->curtime = flServerTime + flTimeSince * flTimeScale * flTimeScale;
+        gpGlobals->frametime *= flTimeScale;
+    }
 
 #ifdef PORTAL
 	g_pPortalRender->UpdatePortalPixelVisibility(); //updating this one or two lines before querying again just isn't cutting it. Update as soon as it's cheap to do so.
@@ -2344,8 +2457,8 @@ void CHLClient::PreSave( CSaveRestoreData *s )
 
 void CHLClient::Save( CSaveRestoreData *s )
 {
-	CSave saveHelper( s );
-	g_pGameSaveRestoreBlockSet->Save( &saveHelper );
+	//CSave saveHelper( s );
+	//g_pGameSaveRestoreBlockSet->Save( &saveHelper );
 }
 
 void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
@@ -2357,16 +2470,16 @@ void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
 
 void CHLClient::ReadRestoreHeaders( CSaveRestoreData *s )
 {
-	CRestore restoreHelper( s );
-	g_pGameSaveRestoreBlockSet->PreRestore();
-	g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
+	//CRestore restoreHelper( s );
+	//g_pGameSaveRestoreBlockSet->PreRestore();
+	//g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
 }
 
 void CHLClient::Restore( CSaveRestoreData *s, bool b )
 {
-	CRestore restore(s);
-	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	g_pGameSaveRestoreBlockSet->PostRestore();
+	//CRestore restore(s);
+	//g_pGameSaveRestoreBlockSet->Restore( &restore, b );
+	//g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 static CUtlVector<EHANDLE> g_RestoredEntities;

@@ -53,11 +53,12 @@ CPlayerMove *PlayerMove()
 static CMoveData g_HLMoveData;
 CMoveData *g_pMoveData = &g_HLMoveData;
 
-IPredictionSystem *IPredictionSystem::g_pPredictionSystems = NULL;
+IPredictionSystem *IPredictionSystem::g_pPredictionSystems = nullptr;
 
 void CMOMPlayerMove::SetupMove(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move)
 {
     // Call the default SetupMove code.
+	player->AvoidPhysicsProps(ucmd);
     BaseClass::SetupMove(player, ucmd, pHelper, move);
 
     // Convert to HL2 data.

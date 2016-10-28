@@ -234,7 +234,7 @@ enum CastVote
 
 #define MAX_PLACE_NAME_LENGTH		18
 
-#define MAX_FOV						90
+#define MAX_FOV						179
 
 //===================================================================================================================
 // Team Defines
@@ -373,11 +373,11 @@ enum PLAYER_ANIM
 #define PLAYER_MIN_BOUNCE_SPEED		173
 #define PLAYER_FALL_PUNCH_THRESHOLD 303.0f // won't punch player's screen/make scrape noise unless player falling at least this fast - at least a 76" fall (sqrt( 2 * g * 76))
 #else
-#define PLAYER_FATAL_FALL_SPEED		1024 // approx 60 feet
-#define PLAYER_MAX_SAFE_FALL_SPEED	580 // approx 20 feet
-#define PLAYER_LAND_ON_FLOATING_OBJECT	200 // Can go another 200 units without getting hurt
-#define PLAYER_MIN_BOUNCE_SPEED		200
-#define PLAYER_FALL_PUNCH_THRESHOLD (float)350 // won't punch player's screen/make scrape noise unless player falling at least this fast.
+#define PLAYER_FATAL_FALL_SPEED		1024.0f // approx 60 feet
+#define PLAYER_MAX_SAFE_FALL_SPEED	580.0f // approx 20 feet
+#define PLAYER_LAND_ON_FLOATING_OBJECT	200.0f // Can go another 200 units without getting hurt
+#define PLAYER_MIN_BOUNCE_SPEED		200.0f
+#define PLAYER_FALL_PUNCH_THRESHOLD 350.0f // won't punch player's screen/make scrape noise unless player falling at least this fast.
 #endif
 #define DAMAGE_FOR_FALL_SPEED		100.0f / ( PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED ) // damage per unit per second.
 

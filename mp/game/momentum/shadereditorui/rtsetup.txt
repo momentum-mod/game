@@ -1,0 +1,33 @@
+"rt_setup"
+{
+	"rt_00"
+	{
+		"rt_name"		"_rt_BlurX"
+		"rt_imgformat"		"2"
+		"rt_sizemode"		"3"
+		"rt_depthmode"		"2"
+		"rt_flags"		"32780"
+		"rt_size_x"		"800"
+		"rt_size_y"		"450"
+	}
+	"rt_01"
+	{
+		"rt_name"		"_rt_BlurY"
+		"rt_imgformat"		"2"
+		"rt_sizemode"		"3"
+		"rt_depthmode"		"2"
+		"rt_flags"		"32780"
+		"rt_size_x"		"800"
+		"rt_size_y"		"450"
+	}
+	"rt_02"
+	{
+		"rt_name"		"_rt_FullscreenPP"
+		"rt_imgformat"		"2"
+		"rt_sizemode"		"4"
+		"rt_depthmode"		"2"
+		"rt_flags"		"32780"
+		"rt_size_x"		"256"
+		"rt_size_y"		"256"
+	}
+}

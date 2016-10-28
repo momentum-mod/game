@@ -902,6 +902,7 @@ void Button::OnSetState(int state)
 //-----------------------------------------------------------------------------
 void Button::OnCursorEntered()
 {
+    BaseClass::OnCursorEntered();
 	if (IsEnabled() && !IsSelected() )
 	{
 		SetArmed( true );
@@ -913,6 +914,7 @@ void Button::OnCursorEntered()
 //-----------------------------------------------------------------------------
 void Button::OnCursorExited()
 {
+    BaseClass::OnCursorExited();
 	if ( !_buttonFlags.IsFlagSet( BUTTON_KEY_DOWN ) && !IsSelected() )
 	{
 		SetArmed( false );

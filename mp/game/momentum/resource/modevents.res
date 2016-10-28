@@ -27,44 +27,11 @@
 
 "modevents"
 {
-	"timer_stopped"
+	"zone_enter"//When the player/ghost enters a checkpoint/stage trigger
 	{
-		"avg_sync"	"float"
-		"avg_sync2"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
-        
-        "avg_vel"	"float"
-		"max_vel"	"float"
-		"start_vel"	"float"
-		"end_vel"	"float"
-        "avg_vel_2D"	"float"
-		"max_vel_2D"	"float"
-		"start_vel_2D"	"float"
-		"end_vel_2D"	"float"
 	}
-	"stage_enter"
-	{
-		"stage_num"	"byte"
-		"stage_enter_time"	"float" //time is in seconds
-		"avg_sync"	"float"
-		"avg_sync2"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
-        
-        "avg_vel"	"float"
-		"max_vel"	"float"
-		"stage_exit_vel"	"float"//previous stage's exit velocity
-        //we save both XY and XYZ, so we can look at both if need be...
-        "avg_vel_2D"	"float"
-		"max_vel_2D"	"float"
-		"stage_exit_vel_2D"	"float"//previous stage's horizontal exit velocity
-	}
-    "stage_exit"//When the player exits the start trigger for the stage
+    "zone_exit"//When the player exits the start trigger for the stage
     {
-        "stage_num" "byte"
-        "stage_enter_vel"    "float"//velocity in which the player starts the stage (exits the stage trigger)
-        "stage_enter_vel_2D"    "float"
     }
 	"run_save"
 	{
@@ -77,20 +44,35 @@
     }
 	"timer_state"
 	{
+        "ent" "short"
 		"is_running"	"bool"
-	}
-	"keypress"
-	{
-		"num_jumps"	"short"
-		"num_strafes"	"short"
-	}
-	"practice_mode"
-	{
-		"has_practicemode"	"bool"
 	}
     "map_init"
     {
         "is_linear" "bool"
-        "num_checkpoints" "byte"
+        "num_zones" "byte"
+    }
+    "spec_target_updated" // Used by the spectator GUI
+    {
+    }
+    "mapfinished_panel_closed"
+    {
+        "restart" "bool"
+    }
+	"replay_save"
+	{
+		"filename" "string"
+	}
+    "weapon_fire"
+    {
+        "userid" "long"
+        "weapon" "string"
+    }
+    "bullet_impact"
+    {
+        "userid" "long"
+        "x" "float"
+        "y" "float"
+        "z" "float"
     }
 }

@@ -51,6 +51,8 @@ public:
 	DECLARE_CLASS( CBaseDoor, CBaseToggle );
 
 	DECLARE_SERVERCLASS();
+    
+    CBaseDoor() : m_bIsBhopBlock(false) {};
 
 	void Spawn( void );
 	void Precache( void );
@@ -159,6 +161,10 @@ private:
 	bool m_isChaining;
 
 	void CloseAreaPortalsThink( void );	///< Delays turning off area portals when closing doors to prevent visual artifacts
+
+    // MOMENTUM SPECIFIC
+public:
+    bool m_bIsBhopBlock;
 };
 
 #endif // DOORS_H
