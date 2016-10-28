@@ -18,6 +18,7 @@ static void SelectMenuItem(int menu_item)
         engine->ExecuteClientCmd("mom_ruler_measure");
         break;
     case 4:  // Close the ruler
+    case 0:
         engine->ExecuteClientCmd("mom_ruler_close");
         break;
     default:
@@ -34,7 +35,7 @@ static void SelectMenuItem(int menu_item)
 CON_COMMAND(showRuler, "Opens the ruler tool.\n")
 {
     CHudMenuStatic *rulerMenu = GET_HUDELEMENT(CHudMenuStatic);
-    if (rulerMenu)
+    if (rulerMenu && g_pGameRules && Q_strlen(g_pGameRules->MapName()) > 0)
     {
         if (rulerMenu->IsMenuDisplayed())
         {
