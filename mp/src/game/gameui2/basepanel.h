@@ -12,15 +12,15 @@ class BasePanel : public Panel2D
     BasePanel(vgui::VPANEL parent);
 
     static void Create();
-    void OnThink() override;
-    void PaintBlurMask() override;
+    void OnThink() OVERRIDE;
+    void PaintBlurMask() OVERRIDE;
 
     virtual bool IsBackgroundMusicPlaying();
     virtual bool StartBackgroundMusic(float fVol);
     virtual void UpdateBackgroundMusicVolume(float fVol);
     virtual void ReleaseBackgroundMusic();
 
-    vgui::VPANEL GetVPanel() override;
+    vgui::VPANEL GetVPanel() OVERRIDE;
 
     MainMenu *GetMainMenu() const { return m_pMainMenu; }
 

@@ -36,7 +36,7 @@ public:
 	void			ApplyChanges();
 	bool			HasBeenModified();
 	virtual void	ApplySettings( KeyValues *inResourceData );
-    void GetSettings(KeyValues *outResources) override;
+    void GetSettings(KeyValues *outResources) OVERRIDE;
 
 private:
 	// Called when the OK / Apply button is pressed.  Changed data should be written into cvar.

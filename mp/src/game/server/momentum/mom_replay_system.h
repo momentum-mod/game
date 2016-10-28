@@ -6,11 +6,8 @@
 #include "utlbuffer.h"
 
 #include "mom_replay_data.h"
-#include "mom_player_shared.h"
+#include <momentum/mom_player_shared.h>
 #include "mom_replay_manager.h"
-
-#define END_RECORDING_DELAY 1.0f //Delay the ending by this amount of seconds
-#define START_TRIGGER_TIME_SEC 2.0f //We only want this amount in seconds of being in the start trigger
 
 class CMomentumReplayGhostEntity;
 
@@ -29,24 +26,24 @@ public:
         m_pReplayManager = new CMomReplayManager();
     }
 
-    virtual ~CMomentumReplaySystem() override
+    virtual ~CMomentumReplaySystem() OVERRIDE
     {
         delete m_pReplayManager;
     }
 
 public:
     // inherited member from CAutoGameSystemPerFrame
-    void FrameUpdatePostEntityThink() override
+    void FrameUpdatePostEntityThink() OVERRIDE
     {
         if (m_pReplayManager->Recording())
             UpdateRecordingParams();
     }
 
-    void LevelShutdownPostEntity() override
+    void LevelShutdownPostEntity() OVERRIDE
     {
         //Stop a recording if there is one while the level shuts down
         if (m_pReplayManager->Recording())
-            StopRecording(nullptr, true, false);
+            StopRecording(true, false);
 
         if (m_pReplayManager->GetPlaybackReplay())
             m_pReplayManager->UnloadPlayback(true);
@@ -59,7 +56,7 @@ public:
     }
 
     void BeginRecording(CBasePlayer *pPlayer);
-    void StopRecording(CBasePlayer *pPlayer, bool throwaway, bool delay);
+    void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
 
     inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }

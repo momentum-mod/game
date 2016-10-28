@@ -33,17 +33,19 @@ public:
     CHudMapFinishedDialog(const char *pElementName);
     ~CHudMapFinishedDialog();
 
-    bool ShouldDraw() override;
-    void Paint() override;
-    void OnThink() override;
-    void Init() override;
-    void Reset() override;
-    void SetVisible(bool) override;
-    void FireGameEvent(IGameEvent*) override;
+    bool ShouldDraw() OVERRIDE;
+    void Paint() OVERRIDE;
+    void OnThink() OVERRIDE;
+    void Init() OVERRIDE;
+    void Reset() OVERRIDE;
+    void SetVisible(bool) OVERRIDE;
+    void FireGameEvent(IGameEvent*) OVERRIDE;
 
-    void OnMousePressed(MouseCode code) override;
+    bool IsBuildGroupEnabled() OVERRIDE { return false; }
 
-    void ApplySchemeSettings(IScheme *pScheme) override;
+    void OnMousePressed(MouseCode code) OVERRIDE;
+
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
 
 protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");

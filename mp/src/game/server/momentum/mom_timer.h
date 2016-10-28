@@ -37,14 +37,13 @@ struct Time
     Time() : time_sec(0), tickrate(0), date(0), flags(0), RunStats() {}
 };
 
-class CTimer
+class CMomentumTimer
 {
   public:
-      CTimer()
-          : m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_bIsRunning(false),
+      CMomentumTimer()
+        : m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0), m_bIsRunning(false),
           m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr), m_pEndTrigger(nullptr),
-          m_pCurrentCheckpoint(nullptr), m_pCurrentZone(nullptr), m_iCurrentStepCP(0), m_bUsingCPMenu(false),
-          m_pLocalTimes(nullptr)
+          m_pCurrentCheckpoint(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr)
     {
     }
 
@@ -176,6 +175,10 @@ class CTimer
 
     void SetGameModeConVars();
 
+    void CreateStartMark();
+    Checkpoint *GetStartMark() const { return m_pStartZoneMark; }
+    void ClearStartMark();
+
   private:
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick;
@@ -195,8 +198,8 @@ class CTimer
     KeyValues *m_pLocalTimes;
     // MOM_TODO: KeyValues *m_pOnlineTimes;
 
-    int m_iCurrentStepCP;
-    bool m_bUsingCPMenu;
+    Checkpoint *m_pStartZoneMark;
+
 public:
     // PRECISION FIX:
     // this works by adding the starting offset to the final time, since the timer starts after we actually exit the
@@ -216,11 +219,11 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 {
   public:
     CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity, int zoneType, int cornerNum)
-        : m_iZoneType(zoneType), m_pRay(pRay), m_iCornerNumber(cornerNum)
+        : m_iZoneType(zoneType), m_iCornerNumber(cornerNum), m_pRay(pRay)
     {
     }
 
-    bool EnumEntity(IHandleEntity *pHandleEntity) override;
+    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
 
   private:
     int m_iZoneType;
@@ -228,6 +231,6 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-extern CTimer *g_Timer;
+extern CMomentumTimer *g_pMomentumTimer;
 
 #endif // TIMER_H

@@ -1,14 +1,17 @@
 #pragma once
 
 #include "cbase.h"
-#include "util/run_stats.h"
-#include "util/serialization.h"
+#include <momentum/util/serialization.h>
+#include <momentum/util/run_stats.h>
 
 // A single frame of the replay.
 class CReplayFrame : public ISerializable
 {
   public:
-    CReplayFrame() : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_iPlayerButtons(0) {}
+    CReplayFrame()
+        : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_vPlayerViewOffset(0, 0, 0), m_iPlayerButtons(0)
+    {
+    }
 
     CReplayFrame(CBinaryReader *reader)
     {
@@ -20,16 +23,20 @@ class CReplayFrame : public ISerializable
         m_vPlayerOrigin.y = reader->ReadFloat();
         m_vPlayerOrigin.z = reader->ReadFloat();
 
+        m_vPlayerViewOffset.x = reader->ReadFloat();
+        m_vPlayerViewOffset.y = reader->ReadFloat();
+        m_vPlayerViewOffset.z = reader->ReadFloat();
+
         m_iPlayerButtons = reader->ReadInt32();
     }
 
-    CReplayFrame(const QAngle &eye, const Vector &origin, int buttons)
-        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_iPlayerButtons(buttons)
+    CReplayFrame(const QAngle &eye, const Vector &origin, const Vector &viewoffset, int buttons)
+        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_vPlayerViewOffset(viewoffset), m_iPlayerButtons(buttons)
     {
     }
 
   public:
-    virtual void Serialize(CBinaryWriter *writer) override
+    virtual void Serialize(CBinaryWriter *writer) OVERRIDE
     {
         writer->WriteFloat(m_angEyeAngles.x);
         writer->WriteFloat(m_angEyeAngles.y);
@@ -39,17 +46,23 @@ class CReplayFrame : public ISerializable
         writer->WriteFloat(m_vPlayerOrigin.y);
         writer->WriteFloat(m_vPlayerOrigin.z);
 
+        writer->WriteFloat(m_vPlayerViewOffset.x);
+        writer->WriteFloat(m_vPlayerViewOffset.y);
+        writer->WriteFloat(m_vPlayerViewOffset.z);
+
         writer->WriteInt32(m_iPlayerButtons);
     }
 
   public:
     inline QAngle EyeAngles() const { return m_angEyeAngles; }
     inline Vector PlayerOrigin() const { return m_vPlayerOrigin; }
+    inline Vector PlayerViewOffset() const { return m_vPlayerViewOffset; }
     inline int PlayerButtons() const { return m_iPlayerButtons; }
 
   private:
     QAngle m_angEyeAngles;
     Vector m_vPlayerOrigin;
+    Vector m_vPlayerViewOffset;
     int m_iPlayerButtons;
 };
 
@@ -67,10 +80,11 @@ class CReplayHeader : public ISerializable
         m_fRunTime = reader->ReadFloat();
         m_iRunFlags = reader->ReadUInt32();
         m_iRunDate = reader->ReadInt64();
+        m_iStartDif = reader->ReadInt32();
     }
 
   public:
-    virtual void Serialize(CBinaryWriter *writer) override
+    virtual void Serialize(CBinaryWriter *writer) OVERRIDE
     {
         writer->WriteString(m_szMapName);
         writer->WriteString(m_szPlayerName);
@@ -79,6 +93,7 @@ class CReplayHeader : public ISerializable
         writer->WriteFloat(m_fRunTime);
         writer->WriteUInt32(m_iRunFlags);
         writer->WriteInt64(m_iRunDate);
+        writer->WriteInt32(m_iStartDif);
     }
 
   public:
@@ -89,4 +104,5 @@ class CReplayHeader : public ISerializable
     float m_fRunTime;         // The total runtime of the run in seconds.
     uint32 m_iRunFlags;       // The flags the player ran with.
     time_t m_iRunDate;        // The date this run was achieved.
+    int m_iStartDif;          // The difference between the tick of the start timer and record
 };

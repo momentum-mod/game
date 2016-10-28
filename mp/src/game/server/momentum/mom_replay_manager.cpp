@@ -126,6 +126,7 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
     pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
     pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
     pGhost->SetPlaybackReplay(m_pPlaybackReplay);
+	pGhost->m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
     m_pPlaybackReplay->SetRunEntity(pGhost);
 
     return m_pPlaybackReplay;

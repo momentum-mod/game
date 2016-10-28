@@ -5,7 +5,7 @@
 #include "SettingsPage.h"
 #include "hud_comparisons.h"
 #include <vgui_controls/Button.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/cvartogglecheckbutton.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
 #include <vgui_controls/AnimationController.h>
@@ -29,20 +29,20 @@ class ComparisonsSettingsPage : public SettingsPage
     void OnMainDialogShow() const;
 
     //Handle custom controls
-    void OnApplyChanges() override;
+    void OnApplyChanges() OVERRIDE;
 
     //Load the settings for this panel
-    void LoadSettings() override;
-    void OnPageShow() override;
+    void LoadSettings() OVERRIDE;
+    void OnPageShow() OVERRIDE;
 
     //Overridden from PropertyPage so we can hide the comparisons frame
-    void OnPageHide() override;
+    void OnPageHide() OVERRIDE;
 
     // This uses OnCheckbox and not OnModified because we want to be able to enable
     // the other checkboxes regardless of whether the player clicks Apply/OK
-    void OnCheckboxChecked(Panel *p) override;
+    void OnCheckboxChecked(Panel *p) OVERRIDE;
     // Used for updating the max stage buffer label
-    void OnTextChanged(Panel *p) override;
+    void OnTextChanged(Panel *p) OVERRIDE;
 
     MESSAGE_FUNC_PTR(CursorEnteredCallback, "OnCursorEntered", panel)
     {

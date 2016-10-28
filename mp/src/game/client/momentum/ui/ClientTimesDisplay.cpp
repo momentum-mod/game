@@ -29,9 +29,10 @@
 #include <game/client/iviewport.h>
 
 #include "filesystem.h"
-#include "util/mom_util.h"
+#include <util/mom_util.h>
 #include "vgui_avatarimage.h"
 #include <hud_vote.h>
+#include "UtlSortVector.h"
 #include <time.h>
 #include <util/jsontokv.h>
 #include "IMessageboxPanel.h"
@@ -52,8 +53,18 @@ bool PNamesMapLessFunc(const uint64 &first, const uint64 &second) { return first
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(nullptr, "ClientTimesDisplay")
+CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : 
+    EditablePanel(nullptr, PANEL_TIMES),
+    m_bLocalTimesLoaded(false),
+    m_bLocalTimesNeedUpdate(false),
+    m_bOnlineNeedUpdate(false),
+     m_bOnlineTimesLoaded(false),
+    m_bFriendsNeedUpdate(false),
+    m_bFriendsTimesLoaded(false),
+    m_bUnauthorizedFriendlist(false)
 {
+    SetSize(10, 10); // Quiet the "parent not sized yet" spew, actual size in leaderboards.res
+
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
 
@@ -178,12 +189,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) : EditablePanel(n
 CClientTimesDisplay::~CClientTimesDisplay()
 {
     m_pCurrentLeaderboards = nullptr;
-
-    if (m_pImageList)
-    {
-        delete m_pImageList;
-        m_pImageList = nullptr;
-    }
 
     if (m_pLeaderboardReplayCMenu)
     {
@@ -457,7 +462,7 @@ void CClientTimesDisplay::ShowPanel(bool bShow)
 {
     // Catch the case where we call ShowPanel before ApplySchemeSettings, eg when
     // going from windowed <-> fullscreen
-    if (m_pImageList == nullptr)
+    if (!m_pImageList && bShow)
     {
         InvalidateLayout(true, true);
     }
@@ -703,12 +708,12 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
         DevLog("Loading from file %s...\n", filePath);
         if (pLoaded->LoadFromFile(filesystem, filePath, "MOD"))
         {
-            for (KeyValues *kvLocalTime = pLoaded->GetFirstSubKey(); kvLocalTime;
-                 kvLocalTime = kvLocalTime->GetNextKey())
+            FOR_EACH_SUBKEY(pLoaded, kvLocalTime)
             {
                 Time t = Time(kvLocalTime);
-                m_vLocalTimes.AddToTail(t);
+                m_vLocalTimes.InsertNoSort(t);
             }
+            m_vLocalTimes.RedoSort();
             m_bLocalTimesLoaded = true;
             m_bLocalTimesNeedUpdate = false;
         }

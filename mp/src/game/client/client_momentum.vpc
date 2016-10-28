@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
+        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
         $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013;SDK_DLL"
     }
 }
@@ -64,15 +64,15 @@ $Project "Client (Momentum)"
                 
                 $Folder "SettingsPanel"
                 {
-                	$Folder "Headers"
-                	{
-	                	$File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
+                    $Folder "Headers"
+                    {
+	                $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
 	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
-                	}
+                    }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
                     $File "momentum\ui\SettingsPanel\SettingsPage.cpp"
@@ -90,8 +90,6 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_keypress.cpp"
                     $File "momentum\ui\HUD\hud_comparisons.cpp"
                     $File "momentum\ui\HUD\hud_comparisons.h"
-                    $File "momentum\ui\HUD\hud_replayui.cpp"
-                    $File "momentum\ui\HUD\hud_replayui.h"
                     $File "momentum\ui\HUD\hud_mapinfo.cpp"
                     $File "momentum\ui\HUD\hud_speedometer.cpp"
                     $File "momentum\ui\HUD\hud_strafesync.cpp"
@@ -105,28 +103,51 @@ $Project "Client (Momentum)"
                     $File "hl2\hud_weaponselection.cpp"
                 }
                 
-                $File 	"momentum\ui\ContactPanel.cpp"
-                $File 	"momentum\ui\IContactPanel.h"
+                $Folder "Controls"
+                {
+                    $File "momentum\ui\PFrameButton.h"
+                    $File "momentum\ui\PFrameButton.cpp"
+                    $File "momentum\ui\CVarSlider.h"
+                    $File "momentum\ui\CVarSlider.cpp"
+                    $File "momentum\ui\ScrubbableProgressBar.h"
+                    $File "momentum\ui\ScrubbableProgressBar.cpp"
+                }
                 
-                $File   "momentum\ui\ClientTimesDisplay.h"
-                $File   "momentum\ui\ClientTimesDisplay.cpp"
-                $File 	"momentum\ui\ReplayContextMenu.h"
-                $File 	"momentum\ui\ReplayContextMenu.cpp"
-
-                $File   "momentum\ui\IChangelogPanel.h"
-                $File   "momentum\ui\ChangelogPanel.cpp"
-                $File   "momentum\ui\ChangelogPanel.h"
+                $Folder "Leaderboards"
+                {
+                    $File   "momentum\ui\ClientTimesDisplay.h"
+                    $File   "momentum\ui\ClientTimesDisplay.cpp"
+                    $File 	"momentum\ui\ReplayContextMenu.h"
+                    $File 	"momentum\ui\ReplayContextMenu.cpp"
+                }
                 
-                $File "momentum\ui\momSpectatorGUI.cpp"
-                $File "momentum\ui\momSpectatorGUI.h"
+                $Folder "Changelog"
+                {
+                    $File   "momentum\ui\IChangelogPanel.h"
+                    $File   "momentum\ui\ChangelogPanel.cpp"
+                    $File   "momentum\ui\ChangelogPanel.h"
+                }
+                $Folder "Feedback"
+                {
+                    $File 	"momentum\ui\ContactPanel.cpp"
+                    $File 	"momentum\ui\IContactPanel.h"
+                }
                 
-                $File "momentum\ui\CVarSlider.h"
-                $File "momentum\ui\CVarSlider.cpp"
-
-                $File "momentum\ui\IMessageboxPanel.h"
-                $File "momentum\ui\MessageboxPanel.cpp"
-                $File "momentum\ui\MessageboxPanel.h"
-
+                $Folder "Messagebox"
+                {
+                    $File "momentum\ui\IMessageboxPanel.h"
+                    $File "momentum\ui\MessageboxPanel.cpp"
+                    $File "momentum\ui\MessageboxPanel.h"
+                }
+                
+                $Folder "Spectator"
+                {
+                    $File "momentum\ui\momSpectatorGUI.cpp"
+                    $File "momentum\ui\momSpectatorGUI.h"
+                    $File "momentum\ui\mom_replayui.cpp"
+                    $File "momentum\ui\mom_replayui.h"
+                }
+                
                 $File "momentum\ui\MeasureTool.cpp"
             }
 
@@ -220,8 +241,8 @@ $Project "Client (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_player_shared.h"
             $File   "$SRCDIR\game\shared\momentum\mom_player_shared.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_gamerules.cpp"
-            $File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_gamerules.h"
+            $File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
             $File   "momentum\c_mom_player.cpp"
             $File   "momentum\c_mom_player.h"
@@ -253,7 +274,7 @@ $Project "Client (Momentum)"
             }
         }
         
-        $File "hl2\C_Func_Monitor.cpp"
+        //$File "hl2\C_Func_Monitor.cpp"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"

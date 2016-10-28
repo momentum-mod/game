@@ -336,6 +336,9 @@ void ProgressBar::ApplySettings(KeyValues *inResourceData)
 {
 	_progress = inResourceData->GetFloat("progress", 0.0f);
 
+    _segmentGap = inResourceData->GetInt("segment_gap", 4);
+    _segmentWide = inResourceData->GetInt("segment_width", 8);
+
 	const char *dialogVar = inResourceData->GetString("variable", "");
 	if (dialogVar && *dialogVar)
 	{
@@ -353,6 +356,8 @@ void ProgressBar::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
 	outResourceData->SetFloat("progress", _progress );
+    outResourceData->SetInt("segment_gap", _segmentGap);
+    outResourceData->SetInt("segment_width", _segmentWide);
 
 	if (m_pszDialogVar)
 	{

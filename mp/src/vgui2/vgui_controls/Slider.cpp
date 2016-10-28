@@ -275,6 +275,7 @@ void Slider::ApplySchemeSettings(IScheme *pScheme)
 	SetFgColor(GetSchemeColor("Slider.NobColor", pScheme));
 	// this line is useful for debugging
 	//SetBgColor(GetSchemeColor("0 0 0 255"));
+    SetBgColor(GetSchemeColor("Slider.BgColor", pScheme));
 
 	m_TickColor = pScheme->GetColor( "Slider.TextColor", GetFgColor() );
 	m_TrackColor = pScheme->GetColor( "Slider.TrackColor", GetFgColor() );

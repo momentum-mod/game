@@ -57,6 +57,7 @@
     }
     "mapfinished_panel_closed"
     {
+        "restart" "bool"
     }
 	"replay_save"
 	{

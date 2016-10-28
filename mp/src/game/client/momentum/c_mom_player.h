@@ -5,10 +5,10 @@
 #endif
 
 #include "cbase.h"
-#include "momentum/mom_shareddefs.h"
+#include <momentum/mom_shareddefs.h>
 #include "c_mom_replay_entity.h"
-#include "mom_entity_run_data.h"
-#include "util/run_stats.h"
+#include <momentum/mom_entity_run_data.h>
+#include <momentum/util/run_stats.h>
 
 class C_MomentumPlayer : public C_BasePlayer
 {
@@ -21,9 +21,9 @@ public:
     C_MomentumPlayer();
     ~C_MomentumPlayer();
 
-	void PostDataUpdate(DataUpdateType_t updateType) override;
-	void OnDataChanged(DataUpdateType_t type) override;
-	bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) override;
+	void PostDataUpdate(DataUpdateType_t updateType) OVERRIDE;
+	void OnDataChanged(DataUpdateType_t type) OVERRIDE;
+	bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
 	virtual void ClientThink(void);
 
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
@@ -44,6 +44,8 @@ public:
     {
         return dynamic_cast<C_MomentumReplayGhostEntity*>(m_hObserverTarget.Get());
     }
+
+    Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
 
     int m_iShotsFired;
     int m_iDirection;

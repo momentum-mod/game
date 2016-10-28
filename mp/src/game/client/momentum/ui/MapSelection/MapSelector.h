@@ -13,10 +13,10 @@ public:
     CMapSelector();
     ~CMapSelector();
 
-    void Create(VPANEL parent) override;
-    void Destroy() override;
-    void Activate() override;
-    void Deactivate() override;
+    void Create(VPANEL parent) OVERRIDE;
+    void Destroy() OVERRIDE;
+    void Activate() OVERRIDE;
+    void Deactivate() OVERRIDE;
 
     void Open();
     void CloseAllMapInfoDialogs();
