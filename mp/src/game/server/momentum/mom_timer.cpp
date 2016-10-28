@@ -742,6 +742,8 @@ class CTimerCommands
             {
                 // pAng can be null here, it's okay
                 pPlayer->Teleport(pVec, pAng, &vec3_origin);
+                // Untouch our triggers
+                pPlayer->PhysicsCheckForEntityUntouch();
                 // Stop *after* the teleport
                 g_pMomentumTimer->Stop();
             } 
