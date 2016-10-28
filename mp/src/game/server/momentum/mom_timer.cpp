@@ -695,31 +695,28 @@ class CTimerCommands
     static void TeleToStage(const CCommand &args)
     {
         CBaseEntity *pPlayer = UTIL_GetLocalPlayer();
+        const Vector *pVec = nullptr;
+        const QAngle *pAng = nullptr;
         if (pPlayer && args.ArgC() >= 2)
         {
             // We get the desried index from the command (Remember that for us, args are 1 indexed)
-            int desiredIndex = atoi(args[1]);
+            int desiredIndex = Q_atoi(args[1]);
             if (desiredIndex == 1)
             {
                 // Index 1 is the start. If the timer has a mark, we use it
                 Checkpoint *startMark = g_pMomentumTimer->GetStartMark();
                 if (startMark)
                 {
-                    // Stop the timer before proceding
-                    g_pMomentumTimer->Stop();
-                    pPlayer->Teleport(&startMark->pos, &startMark->ang, &vec3_origin);
+                    pVec = &startMark->pos;
+                    pAng = &startMark->ang;
                 }
                 else
                 {
                     // If no mark was found, we teleport to the center of the first trigger_momentum_timer_start we find
-                    CTriggerTimerStart *pEnt = static_cast<CTriggerTimerStart *>(
-                        gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start"));
-                    // Note that static_cast is valid wehn the argument is nullptr_t
+                    CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
                     if (pEnt)
                     {
-                        // Stop the timer before proceding
-                        g_pMomentumTimer->Stop();
-                        pPlayer->Teleport(&pEnt->GetAbsOrigin(), nullptr, &vec3_origin);
+                        pVec = &pEnt->GetAbsOrigin();
                     }
                 }
             }
@@ -727,26 +724,30 @@ class CTimerCommands
             {
                 // Every other index is probably a stage (What about < 1 indexes? Mappers are weird and do "weirder"
                 // stuff so...)
-                CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage");
-                CTriggerStage *pStage;
+                CTriggerStage *pStage = nullptr;
 
-                while (pEnt)
+                while ((pStage = static_cast<CTriggerStage*>(gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
                 {
-                    pStage = static_cast<CTriggerStage *>(pEnt);
-
                     if (pStage && pStage->GetStageNumber() == desiredIndex)
                     {
-                        // Stop the timer before proceding (in the case that we go to an end stage)
-                        g_pMomentumTimer->Stop();
-                        pPlayer->Teleport(&pStage->GetAbsOrigin(), &pStage->GetAbsAngles(), &vec3_origin);
-                        // We also need to stop AGAIN the timer here in case we were insde a start trigger
-                        // this was not needed on desiredIndex == 1 for obious reasons
-                        g_pMomentumTimer->Stop();
+                        pVec = &pStage->GetAbsOrigin();
+                        pAng = &pStage->GetAbsAngles();
                         break;
                     }
-
-                    pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stage");
                 }
+            }
+
+            // Teleport if we have a destination
+            if (pVec)
+            {
+                // pAng can be null here, it's okay
+                pPlayer->Teleport(pVec, pAng, &vec3_origin);
+                // Stop *after* the teleport
+                g_pMomentumTimer->Stop();
+            } 
+            else
+            {
+                Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);
             }
         }
     }
