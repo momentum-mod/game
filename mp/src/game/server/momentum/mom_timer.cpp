@@ -1,7 +1,7 @@
 #include "cbase.h"
 
-#include "mom_timer.h"
 #include "in_buttons.h"
+#include "mom_timer.h"
 
 #include "tier0/memdbgon.h"
 
@@ -269,7 +269,7 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */)
         // Post time to leaderboards if they're online
         // and if cheats haven't been turned on this session
         // MOM_TODO: Post the time when ready
-        //if (SteamAPI_IsSteamRunning())
+        // if (SteamAPI_IsSteamRunning())
         //    PostTime();
     }
     else if (runSaveEvent) // reset run saved status to false if we cant or didn't save
@@ -400,7 +400,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     for (int i = 0; i < 8; i++)
     {
         switch (i) // depending on which corner number we've iterated to so far, the origin is one of the eight corners
-                   // of the bbox.
+        // of the bbox.
         {
         case 0:
             tracePoint = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMins();
@@ -471,7 +471,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     if (smallestCornerNum > -1)
     {
         // velocity = dist / time, so it follows that time = distance / velocity.
-        float offset = smallestDist /pPlayer->GetLocalVelocity().Length(); 
+        float offset = smallestDist / pPlayer->GetLocalVelocity().Length();
         DevLog("Smallest time offset was %f seconds, traced from bbox corner %i (trace distance: %f units)\n", offset,
                smallestCornerNum, smallestDist);
         // ...and set the interval offset as this smallest time
@@ -499,9 +499,9 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     // if we aren't hitting a momentum trigger
     // the return type of EnumEntity tells the engine whether to continue enumerating future entities
     // or not.
-    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1)           
-        return true; 
-                     
+    if (Q_strnicmp(pEnt->GetClassname(), "trigger_momentum_", Q_strlen("trigger_momentum_")) == 1)
+        return true;
+
     // In this case, we want to continue in case we hit another type of trigger.
 
     enginetrace->ClipRayToEntity(*m_pRay, MASK_ALL, pHandleEntity, &tr);
@@ -756,7 +756,8 @@ static ConCommand mom_practice("mom_practice", CTimerCommands::PracticeMove,
                                "Toggle. Stops timer and allows player to fly around in noclip.\n"
                                "Only activates when player is not pressing any movement inputs.\n",
                                FCVAR_CLIENTCMD_CAN_EXECUTE);
-static ConCommand mom_mark_start("mom_mark_start", CTimerCommands::MarkStart,
+static ConCommand
+    mom_mark_start("mom_mark_start", CTimerCommands::MarkStart,
                    "Marks a starting point inside the start trigger for a more customized starting location.\n",
                    FCVAR_NONE);
 static ConCommand mom_mark_start_clear("mom_mark_start_clear", CTimerCommands::ClearStart,
