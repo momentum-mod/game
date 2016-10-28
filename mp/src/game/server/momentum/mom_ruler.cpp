@@ -32,7 +32,7 @@ void CMOMRulerToolMarker::Spawn()
 
 void CMOMRulerToolMarker::MoveTo(const Vector& dest)
 {
-    // SetAbsOrigin(dest); moves them visibly (Interpolates a litle bit)
+    // SetAbsOrigin(dest); visibly moves them (Interpolates a litle bit)
     // teleport does not.
     // MOM_TODO: What behaviour is preferred?
     Teleport(&dest, nullptr, &vec3_origin);
@@ -46,19 +46,9 @@ CMOMRulerTool::CMOMRulerTool(const char* pName) : CAutoGameSystem(pName)
 
 CMOMRulerTool::~CMOMRulerTool()
 {
-    // MOM_TODO: Ensure a good destructor (Crashes on exit with current state)
-    /*
-    if (firstMark)
-    {
-        firstMark->Remove();
-        firstMark = nullptr;
-    }
-
-    if (secondMark)
-    {
-        secondMark->Remove();
-        secondMark = nullptr;
-    }*/
+    UTIL_Remove(firstMark);
+    UTIL_Remove(secondMark);
+    UTIL_Remove(beam_connector);
 }
 
 void CMOMRulerTool::ConnectMarks()
@@ -87,17 +77,9 @@ void CMOMRulerTool::ConnectMarks()
 void CMOMRulerTool::Reset()
 {
     // We reset to our default state
-    if (firstMark)
-        firstMark->Remove();
-    firstMark = nullptr;
-
-    if (secondMark)
-        secondMark->Remove();
-    secondMark = nullptr;
-
-    if (beam_connector)
-        beam_connector->Remove();
-    beam_connector = nullptr;
+    UTIL_Remove(firstMark);
+    UTIL_Remove(secondMark);
+    UTIL_Remove(beam_connector);
 
     m_vFirstPoint = vec3_invalid;
     m_vSecondPoint = vec3_invalid;
