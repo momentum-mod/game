@@ -120,6 +120,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // think function for detecting if player bhopped
     void CheckForBhop();
     void UpdateRunStats();
+    void UpdateRunSync();
+    void UpdateJumpStrafes();
+    void UpdateMaxVelocity();
     // slows down the player in a tween-y fashion
     void TweenSlowdownPlayer();
     void ResetRunStats();

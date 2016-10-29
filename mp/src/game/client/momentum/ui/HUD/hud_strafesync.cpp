@@ -16,7 +16,7 @@
 using namespace vgui;
 
 static ConVar strafesync_draw("mom_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                              "Toggles displaying the strafesync data. (1 = only timer , 2 = timer + pratice mode) \n",
+                              "Toggles displaying the strafesync data. (1 = only timer , 2 = always (except practice mode)) \n",
                               true, 0, true, 2);
 
 static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1",
@@ -67,7 +67,7 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
                                    pPlayer->m_RunData.m_bTimerRunning);
             }
         }
-        return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
+        return strafesync_draw.GetInt() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
     void Reset() OVERRIDE

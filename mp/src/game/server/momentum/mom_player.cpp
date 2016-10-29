@@ -36,17 +36,19 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINF
     SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(CheckForBhop)
-, DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), DEFINE_THINKFUNC(LimitSpeedInStartZone),
-    END_DATADESC();
+DEFINE_THINKFUNC(CheckForBhop), 
+DEFINE_THINKFUNC(UpdateRunStats), 
+DEFINE_THINKFUNC(CalculateAverageStats), 
+DEFINE_THINKFUNC(LimitSpeedInStartZone),
+END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), m_flLastVelocity(0.0f),
-      m_flLastSyncVelocity(0), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
-      m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f), NUM_TICKS_TO_BHOP(10)
+    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
+      m_flLastVelocity(0.0f), m_flLastSyncVelocity(0), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
+      m_bPrevTimerRunning(false), m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -594,61 +596,28 @@ void CMomentumPlayer::CheckForBhop()
 
 void CMomentumPlayer::UpdateRunStats()
 {
-    float velocity = GetLocalVelocity().Length();
-    float velocity2D = GetLocalVelocity().Length2D();
+    // ---- Jumps and Strafes ----
+    UpdateJumpStrafes();
 
-    if (g_pMomentumTimer->IsRunning() || ((ConVarRef("mom_strafesync_draw").GetInt() == 2) && !m_bHasPracticeMode))
+    //  ---- MAX VELOCITY ----
+    UpdateMaxVelocity();
+    // ----------
+
+    //  ---- STRAFE SYNC -----
+    UpdateRunSync();
+    // ----------
+
+    // this might be used in a later update
+    // m_flLastVelocity = velocity;
+
+    // think once per tick
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+}
+
+void CMomentumPlayer::UpdateRunSync()
+{
+    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_bHasPracticeMode))
     {
-        int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
-        if (!m_bPrevTimerRunning)                   // timer started on this tick
-        {
-            // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
-            // (for surf)
-            if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
-            {
-                m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
-                m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
-            }
-            if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
-            {
-                m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
-                m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
-            }
-        }
-        if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
-        {
-            m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
-            m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
-        }
-        else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
-        {
-            m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
-            m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
-        }
-        //  ---- MAX VELOCITY ----
-        float maxOverallVel = velocity;
-        float maxOverallVel2D = velocity2D;
-
-        float maxCurrentVel = velocity;
-        float maxCurrentVel2D = velocity2D;
-
-        if (maxOverallVel <= m_RunStats.GetZoneVelocityMax(0, false))
-            maxOverallVel = m_RunStats.GetZoneVelocityMax(0, false);
-
-        if (maxOverallVel2D <= m_RunStats.GetZoneVelocityMax(0, true))
-            maxOverallVel2D = m_RunStats.GetZoneVelocityMax(0, true);
-
-        if (maxCurrentVel <= m_RunStats.GetZoneVelocityMax(currentZone, false))
-            maxCurrentVel = m_RunStats.GetZoneVelocityMax(currentZone, false);
-
-        if (maxCurrentVel2D <= m_RunStats.GetZoneVelocityMax(currentZone, true))
-            maxCurrentVel2D = m_RunStats.GetZoneVelocityMax(currentZone, true);
-
-        m_RunStats.SetZoneVelocityMax(0, maxOverallVel, maxOverallVel2D);
-        m_RunStats.SetZoneVelocityMax(currentZone, maxCurrentVel, maxCurrentVel2D);
-        // ----------
-
-        //  ---- STRAFE SYNC -----
         float SyncVelocity = GetLocalVelocity().Length2DSqr(); // we always want HVEL for checking velocity sync
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
@@ -676,20 +645,78 @@ void CMomentumPlayer::UpdateRunStats()
             // ticks gaining speed / ticks strafing
             m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f;
         }
-        // ----------
 
         m_qangLastAngle = EyeAngles();
         m_flLastSyncVelocity = SyncVelocity;
-        // this might be used in a later update
-        // m_flLastVelocity = velocity;
+    }
+}
 
-        m_bPrevTimerRunning = g_pMomentumTimer->IsRunning();
-        m_nPrevButtons = m_nButtons;
+void CMomentumPlayer::UpdateJumpStrafes()
+{
+    if (!g_pMomentumTimer->IsRunning())
+        return;
+
+    int currentZone = m_RunData.m_iCurrentZone;
+    if (!m_bPrevTimerRunning)                   // timer started on this tick
+    {
+        // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
+        // (for surf)
+        if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
+        {
+            m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
+            m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
+        }
+        if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
+        {
+            m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
+            m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
+        }
+    }
+    if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
+    {
+        m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
+        m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
+    }
+    else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
+    {
+        m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
+        m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
     }
 
-    // think once per tick
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+    m_bPrevTimerRunning = g_pMomentumTimer->IsRunning();
+    m_nPrevButtons = m_nButtons;
 }
+
+void CMomentumPlayer::UpdateMaxVelocity()
+{
+    if (!g_pMomentumTimer->IsRunning())
+        return;
+
+    int currentZone = m_RunData.m_iCurrentZone;
+    float velocity = GetLocalVelocity().Length();
+    float velocity2D = GetLocalVelocity().Length2D();
+    float maxOverallVel = velocity;
+    float maxOverallVel2D = velocity2D;
+
+    float maxCurrentVel = velocity;
+    float maxCurrentVel2D = velocity2D;
+
+    if (maxOverallVel <= m_RunStats.GetZoneVelocityMax(0, false))
+        maxOverallVel = m_RunStats.GetZoneVelocityMax(0, false);
+
+    if (maxOverallVel2D <= m_RunStats.GetZoneVelocityMax(0, true))
+        maxOverallVel2D = m_RunStats.GetZoneVelocityMax(0, true);
+
+    if (maxCurrentVel <= m_RunStats.GetZoneVelocityMax(currentZone, false))
+        maxCurrentVel = m_RunStats.GetZoneVelocityMax(currentZone, false);
+
+    if (maxCurrentVel2D <= m_RunStats.GetZoneVelocityMax(currentZone, true))
+        maxCurrentVel2D = m_RunStats.GetZoneVelocityMax(currentZone, true);
+
+    m_RunStats.SetZoneVelocityMax(0, maxOverallVel, maxOverallVel2D);
+    m_RunStats.SetZoneVelocityMax(currentZone, maxCurrentVel, maxCurrentVel2D);
+}
+
 void CMomentumPlayer::ResetRunStats()
 {
     SetName(MAKE_STRING(m_pszDefaultEntName)); // Reset name
