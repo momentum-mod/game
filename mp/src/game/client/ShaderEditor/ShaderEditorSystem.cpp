@@ -787,7 +787,7 @@ class CSimpleVCallbackView : public CBaseVCallbackView
         m_fogInfo = fogInfo;
     };
 
-    void Draw() override
+    void Draw() OVERRIDE
     {
         DrawSetup(0, m_DrawFlags, 0);
 
@@ -839,7 +839,7 @@ class CSimpleVCallbackView : public CBaseVCallbackView
         m_pMainView->DisableFog();
     };
 
-    void CallbackInitRenderList(int viewId) override
+    void CallbackInitRenderList(int viewId) OVERRIDE
     {
         BaseClass::CallbackInitRenderList(viewId);
 
@@ -915,15 +915,15 @@ class CSimpleVCallbackView : public CBaseVCallbackView
         }
     };
 
-    bool ShouldDrawParticles() override { return settings.bDrawParticles; };
+    bool ShouldDrawParticles() OVERRIDE { return settings.bDrawParticles; };
 
-    bool ShouldDrawRopes() override { return settings.bDrawRopes; };
+    bool ShouldDrawRopes() OVERRIDE { return settings.bDrawRopes; };
 
-    bool ShouldDrawWorld() override { return settings.bDrawWorld; };
+    bool ShouldDrawWorld() OVERRIDE { return settings.bDrawWorld; };
 
-    bool ShouldDrawTranslucents() override { return settings.bDrawTranslucents; };
+    bool ShouldDrawTranslucents() OVERRIDE { return settings.bDrawTranslucents; };
 
-    bool ShouldDrawTranslucentWorld() override { return settings.bDrawWorld && settings.bDrawTranslucents; };
+    bool ShouldDrawTranslucentWorld() OVERRIDE { return settings.bDrawWorld && settings.bDrawTranslucents; };
 
   private:
     VisibleFogVolumeInfo_t m_fogInfo;

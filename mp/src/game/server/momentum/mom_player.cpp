@@ -1,41 +1,46 @@
 #include "cbase.h"
 
-#include "Timer.h"
 #include "in_buttons.h"
+#include "info_camera_link.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
-#include "predicted_viewmodel.h"
 #include "mom_system_checkpoint.h"
+#include "mom_timer.h"
 #include "mom_triggers.h"
 #include "momentum/weapon/weapon_csbasegun.h"
-#include "info_camera_link.h"
 #include "player_command.h"
+#include "predicted_viewmodel.h"
 
 #include "tier0/memdbgon.h"
 
 #define AVERAGE_STATS_INTERVAL 0.1
 
-IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
-SendPropInt(SENDINFO(m_iShotsFired)),
-SendPropInt(SENDINFO(m_iDirection)),
-SendPropBool(SENDINFO(m_bResumeZoom)),
-SendPropInt(SENDINFO(m_iLastZoom)),
-SendPropBool(SENDINFO(m_bDidPlayerBhop)),
-SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-SendPropBool(SENDINFO(m_bHasPracticeMode)),
-SendPropBool(SENDINFO(m_bUsingCPMenu)),
-SendPropInt(SENDINFO(m_iCurrentStepCP)),
-SendPropInt(SENDINFO(m_iCheckpointCount)),
-SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
-END_SEND_TABLE();
+CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer is disabled)\n")
+{
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());
 
+    if (pPlayer && !g_pMomentumTimer->IsRunning())
+    {
+        pPlayer->GetStrafeTicks() = pPlayer->GetPerfectSyncTicks() = pPlayer->GetAccelTicks() = 0;
+        pPlayer->m_RunData.m_flStrafeSync = pPlayer->m_RunData.m_flStrafeSync2 = 0.0f;
+    }
+}
+
+IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINFO(m_iShotsFired)),
+    SendPropInt(SENDINFO(m_iDirection)), SendPropBool(SENDINFO(m_bResumeZoom)), SendPropInt(SENDINFO(m_iLastZoom)),
+    SendPropBool(SENDINFO(m_bDidPlayerBhop)), SendPropInt(SENDINFO(m_iSuccessiveBhops)),
+    SendPropBool(SENDINFO(m_bHasPracticeMode)), SendPropBool(SENDINFO(m_bUsingCPMenu)),
+    SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
+    SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(CheckForBhop)
-, DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), DEFINE_THINKFUNC(LimitSpeedInStartZone),
-    END_DATADESC();
+DEFINE_THINKFUNC(CheckForBhop), 
+DEFINE_THINKFUNC(UpdateRunStats), 
+DEFINE_THINKFUNC(CalculateAverageStats), 
+DEFINE_THINKFUNC(LimitSpeedInStartZone),
+END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
@@ -50,9 +55,9 @@ MAKE_CONVAR(mom_trail_color_b, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Blue
 MAKE_CONVAR(mom_trail_color_a, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Alpha amount of the trail", 0, 255);
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), m_flLastVelocity(0.0f), m_flLastSyncVelocity(0),
-      m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
-      m_nTicksInAir(0), m_flTweenVelValue(1.0f)
+    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
+      m_flLastVelocity(0.0f), m_flLastSyncVelocity(0), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
+      m_bPrevTimerRunning(false), m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -69,13 +74,19 @@ CMomentumPlayer::CMomentumPlayer()
     m_bUsingCPMenu = false;
     m_iCurrentStepCP = -1;
 
+    Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
+
     ListenForGameEvent("mapfinished_panel_closed");
 }
 
 CMomentumPlayer::~CMomentumPlayer()
 {
+<<<<<<< HEAD
     if (m_eTrail)
         delete m_eTrail;
+=======
+    RemoveAllCheckpoints();
+>>>>>>> refs/remotes/origin/develop
 }
 
 void CMomentumPlayer::Precache()
@@ -88,7 +99,7 @@ void CMomentumPlayer::Precache()
     BaseClass::Precache();
 }
 
-//Used for making the view model like CS's
+// Used for making the view model like CS's
 void CMomentumPlayer::CreateViewModel(int index)
 {
     Assert(index >= 0 && index < MAX_VIEWMODELS);
@@ -109,7 +120,7 @@ void CMomentumPlayer::CreateViewModel(int index)
 }
 
 // Overridden so the player isn't frozen on a new map change
-void CMomentumPlayer::PlayerRunCommand(CUserCmd* ucmd, IMoveHelper* moveHelper)
+void CMomentumPlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
     m_touchedPhysObject = false;
 
@@ -148,7 +159,7 @@ void CMomentumPlayer::PlayerRunCommand(CUserCmd* ucmd, IMoveHelper* moveHelper)
     PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }
 
-void CMomentumPlayer::SetupVisibility(CBaseEntity* pViewEntity, unsigned char* pvs, int pvssize)
+void CMomentumPlayer::SetupVisibility(CBaseEntity *pViewEntity, unsigned char *pvs, int pvssize)
 {
     BaseClass::SetupVisibility(pViewEntity, pvs, pvssize);
 
@@ -165,7 +176,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
         SetLaggedMovementValue(1.0f);
 
         // Fix for the replay system not being able to listen to events
-        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay())
+        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay() && !pEvent->GetBool("restart"))
         {
             g_ReplaySystem->GetReplayManager()->UnloadPlayback();
         }
@@ -174,6 +185,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
 
 void CMomentumPlayer::Spawn()
 {
+    SetName(MAKE_STRING(m_pszDefaultEntName));
     SetModel(ENTITY_MODEL);
     SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
@@ -250,7 +262,7 @@ void CMomentumPlayer::Spawn()
         gameeventmanager->FireEvent(timerStartEvent);
     }
     // Linear/etc map
-    g_Timer->DispatchMapInfo();
+    g_pMomentumTimer->DispatchMapInfo();
 
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("CURTIME");
@@ -265,6 +277,7 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
+<<<<<<< HEAD
     //Load the player's checkpoints
     g_MOMCheckpointSystem->LoadMapCheckpoints(this);
 
@@ -287,13 +300,20 @@ void CMomentumPlayer::Spawn()
     }
 
     SetNextThink(gpGlobals->curtime);
+=======
+    SetNextThink(gpGlobals->curtime);
+
+    // Load the player's checkpoints, only if we are spawning for the first time
+    if (m_rcCheckpoints.IsEmpty())
+        g_MOMCheckpointSystem->LoadMapCheckpoints(this);
+>>>>>>> refs/remotes/origin/develop
 }
 
 // Obtains the player's previous origin using their current origin as a base.
-Vector CMomentumPlayer::GetPrevOrigin(void) { return GetPrevOrigin(GetLocalOrigin()); }
+Vector CMomentumPlayer::GetPrevOrigin(void) const { return GetPrevOrigin(GetLocalOrigin()); }
 
 // Obtains the player's previous origin using a vector as the base, subtracting one tick's worth of velocity.
-Vector CMomentumPlayer::GetPrevOrigin(const Vector &base)
+Vector CMomentumPlayer::GetPrevOrigin(const Vector &base) const
 {
     Vector velocity = GetLocalVelocity();
     Vector prevOrigin(base.x - (velocity.x * gpGlobals->interval_per_tick),
@@ -333,7 +353,7 @@ bool CMomentumPlayer::CanGrabLadder(const Vector &pos, const Vector &normal)
 CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 {
     CBaseEntity *pStart = nullptr;
-    const char *spawns[] = {"info_player_counterterrorist", "info_player_terrorist", "info_player_start"};
+    const char *spawns[] = {"info_player_start", "info_player_counterterrorist", "info_player_terrorist"};
     for (int i = 0; i < 3; i++)
     {
         if (SelectSpawnSpot(spawns[i], pStart))
@@ -346,7 +366,6 @@ CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 
 bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pStart)
 {
-#define SF_PLAYER_START_MASTER 1
     pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
     if (pStart == nullptr) // skip over the null point
         pStart = gEntList.FindEntityByClassname(pStart, pEntClassName);
@@ -355,7 +374,7 @@ bool CMomentumPlayer::SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&p
     {
         if (g_pGameRules->IsSpawnPointValid(pStart, this))
         {
-            if (pStart->HasSpawnFlags(SF_PLAYER_START_MASTER))
+            if (pStart->HasSpawnFlags(1)) // SF_PLAYER_START_MASTER
             {
                 g_pLastSpawn = pStart;
                 return true;
@@ -434,7 +453,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     }
     if (FStrEq(cmd, "drop"))
     {
-        CWeaponCSBase *pWeapon = dynamic_cast< CWeaponCSBase* >(GetActiveWeapon());
+        CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
 
         if (pWeapon)
         {
@@ -459,37 +478,44 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
     UTIL_Remove(pWeapon);
 }
 
-void CMomentumPlayer::CreateCheckpoint()
+Checkpoint *CMomentumPlayer::CreateCheckpoint()
 {
-    Checkpoint c;
-    c.ang = GetAbsAngles();
-    c.pos = GetAbsOrigin();
-    c.vel = GetAbsVelocity();
-    c.crouched = IsDucked() || IsDucking();  // Do we want IsDucking here??
-    Q_strncpy(c.targetName, GetEntityName().ToCStr(), sizeof(c.targetName));
-    Q_strncpy(c.targetClassName, GetClassname(), sizeof(c.targetClassName));
+    Checkpoint *c = new Checkpoint();
+    c->ang = GetAbsAngles();
+    c->pos = GetAbsOrigin();
+    c->vel = GetAbsVelocity();
+    c->crouched = IsDucked() || IsDucking(); // Do we want IsDucking here??
+    Q_strncpy(c->targetName, GetEntityName().ToCStr(), sizeof(c->targetName));
+    Q_strncpy(c->targetClassName, GetClassname(), sizeof(c->targetClassName));
+    return c;
+}
+
+void CMomentumPlayer::CreateAndSaveCheckpoint()
+{
+    Checkpoint *c = CreateCheckpoint();
     m_rcCheckpoints.AddToTail(c);
     if (m_iCurrentStepCP == m_iCheckpointCount - 1)
         ++m_iCurrentStepCP;
     else
-        m_iCurrentStepCP = m_iCheckpointCount;//Set it to the new checkpoint's index
+        m_iCurrentStepCP = m_iCheckpointCount; // Set it to the new checkpoint's index
     ++m_iCheckpointCount;
 }
 
 void CMomentumPlayer::RemoveLastCheckpoint()
 {
-    if (m_rcCheckpoints.IsEmpty()) return;
+    if (m_rcCheckpoints.IsEmpty())
+        return;
     m_rcCheckpoints.Remove(m_iCurrentStepCP);
-    //If there's one element left, we still need to decrease currentStep to -1
+    // If there's one element left, we still need to decrease currentStep to -1
     if (m_iCurrentStepCP == m_iCheckpointCount - 1)
         --m_iCurrentStepCP;
-    //else we want it to shift forward one until it catches back up to the last checkpoint
+    // else we want it to shift forward one until it catches back up to the last checkpoint
     --m_iCheckpointCount;
 }
 
 void CMomentumPlayer::RemoveAllCheckpoints()
 {
-    m_rcCheckpoints.RemoveAll();
+    m_rcCheckpoints.PurgeAndDeleteElements();
     m_iCurrentStepCP = -1;
     m_iCheckpointCount = 0;
 }
@@ -504,56 +530,57 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
     }
 }
 
-
-void CMomentumPlayer::TeleportToCP(int newCheckpoint)
+void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
-    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0) return;
-    Checkpoint c = m_rcCheckpoints[newCheckpoint];
-
-    // Handle custom ent flags that old maps do
-    SetName(MAKE_STRING(c.targetName));
-    SetClassname(c.targetClassName);
-
-    // Handle the crouched state
-    if (c.crouched && !IsDucked())
-        ToggleDuckThisFrame(true);
-    else if (!c.crouched && IsDucked())
-        ToggleDuckThisFrame(false);
-
-    //Teleport the player
-    Teleport(&c.pos, &c.ang, &c.vel);
+    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0)
+        return;
+    Checkpoint *c = m_rcCheckpoints[newCheckpoint];
+    TeleportToCheckpoint(c);
 }
 
-void CMomentumPlayer::SaveCPsToFile(KeyValues* kvInto)
+void CMomentumPlayer::TeleportToCheckpoint(Checkpoint *pCP)
+{
+    if (!pCP)
+        return;
+
+    // Handle custom ent flags that old maps do
+    SetName(MAKE_STRING(pCP->targetName));
+    SetClassname(pCP->targetClassName);
+
+    // Handle the crouched state
+    if (pCP->crouched && !IsDucked())
+        ToggleDuckThisFrame(true);
+    else if (!pCP->crouched && IsDucked())
+        ToggleDuckThisFrame(false);
+
+    // Teleport the player
+    Teleport(&pCP->pos, &pCP->ang, &pCP->vel);
+}
+
+void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
 {
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
-        Checkpoint c = m_rcCheckpoints[i];
-        char szCheckpointNum[6];//9 million checkpoints is pretty generous
+        Checkpoint *c = m_rcCheckpoints[i];
+        char szCheckpointNum[6]; // 9 million checkpoints is pretty generous
         Q_snprintf(szCheckpointNum, 6, "%i", i);
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
-        kvCP->SetString("targetName", c.targetName);
-        kvCP->SetString("targetClassName", c.targetClassName);
-        mom_UTIL->KVSaveVector(kvCP, "vel", c.vel);
-        mom_UTIL->KVSaveVector(kvCP, "pos", c.pos);
-        mom_UTIL->KVSaveQAngles(kvCP, "ang", c.ang);
-        kvCP->SetBool("crouched", c.crouched);
+        kvCP->SetString("targetName", c->targetName);
+        kvCP->SetString("targetClassName", c->targetClassName);
+        mom_UTIL->KVSaveVector(kvCP, "vel", c->vel);
+        mom_UTIL->KVSaveVector(kvCP, "pos", c->pos);
+        mom_UTIL->KVSaveQAngles(kvCP, "ang", c->ang);
+        kvCP->SetBool("crouched", c->crouched);
         kvInto->AddSubKey(kvCP);
     }
 }
 
-void CMomentumPlayer::LoadCPsFromFile(KeyValues* kvFrom)
+void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
 {
-    if (!kvFrom) return;
+    if (!kvFrom || kvFrom->IsEmpty()) return;
     FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
     {
-        Checkpoint c;
-        Q_strncpy(c.targetName, kvCheckpoint->GetString("targetName"), sizeof(c.targetName));
-        Q_strncpy(c.targetClassName, kvCheckpoint->GetString("targetClassName"), sizeof(c.targetClassName));
-        mom_UTIL->KVLoadVector(kvCheckpoint, "pos", c.pos);
-        mom_UTIL->KVLoadVector(kvCheckpoint, "vel", c.vel);
-        mom_UTIL->KVLoadQAngles(kvCheckpoint, "ang", c.ang);
-        c.crouched = kvCheckpoint->GetBool("crouched");
+        Checkpoint *c = new Checkpoint(kvCheckpoint);
         m_rcCheckpoints.AddToTail(c);
     }
 
@@ -592,7 +619,7 @@ void CMomentumPlayer::CheckForBhop()
         {
             m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
             m_iSuccessiveBhops++;
-            if (g_Timer->IsRunning())
+            if (g_pMomentumTimer->IsRunning())
             {
                 int currentZone = m_RunData.m_iCurrentZone;
                 m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
@@ -608,61 +635,28 @@ void CMomentumPlayer::CheckForBhop()
 
 void CMomentumPlayer::UpdateRunStats()
 {
-    float velocity = GetLocalVelocity().Length();
-    float velocity2D = GetLocalVelocity().Length2D();
+    // ---- Jumps and Strafes ----
+    UpdateJumpStrafes();
 
-    if (g_Timer->IsRunning())
+    //  ---- MAX VELOCITY ----
+    UpdateMaxVelocity();
+    // ----------
+
+    //  ---- STRAFE SYNC -----
+    UpdateRunSync();
+    // ----------
+
+    // this might be used in a later update
+    // m_flLastVelocity = velocity;
+
+    // think once per tick
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+}
+
+void CMomentumPlayer::UpdateRunSync()
+{
+    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_bHasPracticeMode))
     {
-        int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
-        if (!m_bPrevTimerRunning)                   // timer started on this tick
-        {
-            // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
-            // (for surf)
-            if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
-            {
-                m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
-                m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
-            }
-            if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
-            {
-                m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
-                m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
-            }
-        }
-        if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
-        {
-            m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
-            m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
-        }
-        else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
-        {
-            m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
-            m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
-        }
-        //  ---- MAX VELOCITY ----
-        float maxOverallVel = velocity;
-        float maxOverallVel2D = velocity2D;
-
-        float maxCurrentVel = velocity;
-        float maxCurrentVel2D = velocity2D;
-
-        if (maxOverallVel <= m_RunStats.GetZoneVelocityMax(0, false))
-            maxOverallVel = m_RunStats.GetZoneVelocityMax(0, false);
-
-        if (maxOverallVel2D <= m_RunStats.GetZoneVelocityMax(0, true))
-            maxOverallVel2D = m_RunStats.GetZoneVelocityMax(0, true);
-
-        if (maxCurrentVel <= m_RunStats.GetZoneVelocityMax(currentZone, false))
-            maxCurrentVel = m_RunStats.GetZoneVelocityMax(currentZone, false);
-
-        if (maxCurrentVel2D <= m_RunStats.GetZoneVelocityMax(currentZone, true))
-            maxCurrentVel2D = m_RunStats.GetZoneVelocityMax(currentZone, true);
-
-        m_RunStats.SetZoneVelocityMax(0, maxOverallVel, maxOverallVel2D);
-        m_RunStats.SetZoneVelocityMax(currentZone, maxCurrentVel, maxCurrentVel2D);
-        // ----------
-
-        //  ---- STRAFE SYNC -----
         float SyncVelocity = GetLocalVelocity().Length2DSqr(); // we always want HVEL for checking velocity sync
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
@@ -685,37 +679,98 @@ void CMomentumPlayer::UpdateRunStats()
         }
         if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
         {
-            m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) *
-                                       100.0f; // ticks strafing perfectly / ticks strafing
-            m_RunData.m_flStrafeSync2 =
-                (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
+            // ticks strafing perfectly / ticks strafing
+            m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f;
+            // ticks gaining speed / ticks strafing
+            m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f;
         }
-        // ----------
 
         m_qangLastAngle = EyeAngles();
         m_flLastSyncVelocity = SyncVelocity;
-        // this might be used in a later update
-        // m_flLastVelocity = velocity;
+    }
+}
 
-        m_bPrevTimerRunning = g_Timer->IsRunning();
-        m_nPrevButtons = m_nButtons;
+void CMomentumPlayer::UpdateJumpStrafes()
+{
+    if (!g_pMomentumTimer->IsRunning())
+        return;
+
+    int currentZone = m_RunData.m_iCurrentZone;
+    if (!m_bPrevTimerRunning)                   // timer started on this tick
+    {
+        // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
+        // (for surf)
+        if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
+        {
+            m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
+            m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
+        }
+        if (m_nButtons & IN_MOVERIGHT || m_nButtons & IN_MOVELEFT)
+        {
+            m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
+            m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
+        }
+    }
+    if (m_nButtons & IN_MOVELEFT && !(m_nPrevButtons & IN_MOVELEFT))
+    {
+        m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
+        m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
+    }
+    else if (m_nButtons & IN_MOVERIGHT && !(m_nPrevButtons & IN_MOVERIGHT))
+    {
+        m_RunStats.SetZoneStrafes(0, m_RunStats.GetZoneStrafes(0) + 1);
+        m_RunStats.SetZoneStrafes(currentZone, m_RunStats.GetZoneStrafes(currentZone) + 1);
     }
 
-    // think once per tick
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
+    m_bPrevTimerRunning = g_pMomentumTimer->IsRunning();
+    m_nPrevButtons = m_nButtons;
 }
+
+void CMomentumPlayer::UpdateMaxVelocity()
+{
+    if (!g_pMomentumTimer->IsRunning())
+        return;
+
+    int currentZone = m_RunData.m_iCurrentZone;
+    float velocity = GetLocalVelocity().Length();
+    float velocity2D = GetLocalVelocity().Length2D();
+    float maxOverallVel = velocity;
+    float maxOverallVel2D = velocity2D;
+
+    float maxCurrentVel = velocity;
+    float maxCurrentVel2D = velocity2D;
+
+    if (maxOverallVel <= m_RunStats.GetZoneVelocityMax(0, false))
+        maxOverallVel = m_RunStats.GetZoneVelocityMax(0, false);
+
+    if (maxOverallVel2D <= m_RunStats.GetZoneVelocityMax(0, true))
+        maxOverallVel2D = m_RunStats.GetZoneVelocityMax(0, true);
+
+    if (maxCurrentVel <= m_RunStats.GetZoneVelocityMax(currentZone, false))
+        maxCurrentVel = m_RunStats.GetZoneVelocityMax(currentZone, false);
+
+    if (maxCurrentVel2D <= m_RunStats.GetZoneVelocityMax(currentZone, true))
+        maxCurrentVel2D = m_RunStats.GetZoneVelocityMax(currentZone, true);
+
+    m_RunStats.SetZoneVelocityMax(0, maxOverallVel, maxOverallVel2D);
+    m_RunStats.SetZoneVelocityMax(currentZone, maxCurrentVel, maxCurrentVel2D);
+}
+
 void CMomentumPlayer::ResetRunStats()
 {
+    SetName(MAKE_STRING(m_pszDefaultEntName)); // Reset name
+    // MOM_TODO: Consider any other resets needed (classname, any flags, etc)
+
     m_nPerfectSyncTicks = 0;
     m_nStrafeTicks = 0;
     m_nAccelTicks = 0;
     m_RunData.m_flStrafeSync = 0;
     m_RunData.m_flStrafeSync2 = 0;
-    m_RunStats.Init(g_Timer->GetZoneCount());
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
-    if (g_Timer->IsRunning())
+    if (g_pMomentumTimer->IsRunning())
     {
         int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
 
@@ -772,8 +827,8 @@ void CMomentumPlayer::LimitSpeedInStartZone()
         // depending on gamemode, limit speed outright when player exceeds punish vel
         ConVarRef gm("mom_gamemode");
         bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-        CTriggerTimerStart *startTrigger = g_Timer->GetStartTrigger();
-        if (bhopGameMode && startTrigger && ((!g_Timer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
+        if (bhopGameMode && startTrigger && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetPunishSpeed() * startTrigger->GetPunishSpeed();
@@ -854,6 +909,74 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
     return nullptr;
 }
 
+// Overridden for custom IN_EYE check
+void CMomentumPlayer::CheckObserverSettings()
+{
+    // check if we are in forced mode and may go back to old mode
+    if (m_bForcedObserverMode)
+    {
+        CBaseEntity *target = m_hObserverTarget;
+
+        if (!IsValidObserverTarget(target))
+        {
+            // if old target is still invalid, try to find valid one
+            target = FindNextObserverTarget(false);
+        }
+
+        if (target)
+        {
+            // we found a valid target
+            m_bForcedObserverMode = false;        // disable force mode
+            SetObserverMode(m_iObserverLastMode); // switch to last mode
+            SetObserverTarget(target);            // goto target
+
+            // TODO check for HUD icons
+            return;
+        }
+        // else stay in forced mode, no changes
+        return;
+    }
+
+    // make sure our last mode is valid
+    if (m_iObserverLastMode < OBS_MODE_FIXED)
+    {
+        m_iObserverLastMode = OBS_MODE_ROAMING;
+    }
+
+    // check if our spectating target is still a valid one
+    if (m_iObserverMode == OBS_MODE_IN_EYE || m_iObserverMode == OBS_MODE_CHASE || m_iObserverMode == OBS_MODE_FIXED ||
+        m_iObserverMode == OBS_MODE_POI)
+    {
+        ValidateCurrentObserverTarget();
+
+        CMomentumReplayGhostEntity *target = GetReplayEnt();
+        // for ineye mode we have to copy several data to see exactly the same
+
+        if (target && m_iObserverMode == OBS_MODE_IN_EYE)
+        {
+            int flagMask = FL_ONGROUND | FL_DUCKING;
+
+            int flags = target->GetFlags() & flagMask;
+
+            if ((GetFlags() & flagMask) != flags)
+            {
+                flags |= GetFlags() & (~flagMask); // keep other flags
+                ClearFlags();
+                AddFlag(flags);
+            }
+
+            if (target->GetViewOffset() != GetViewOffset())
+            {
+                SetViewOffset(target->GetViewOffset());
+            }
+            return;
+        }
+    }
+
+    // Call base class for player check
+    BaseClass::CheckObserverSettings();
+}
+
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
     // slowdown when map is finished
@@ -861,7 +984,7 @@ void CMomentumPlayer::TweenSlowdownPlayer()
         // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else
-        m_flTweenVelValue = 1.0f; // Reset the tweened value back to normal
+        m_flTweenVelValue = GetLaggedMovementValue(); // Reset the tweened value back to normal
 
     SetLaggedMovementValue(m_flTweenVelValue);
 

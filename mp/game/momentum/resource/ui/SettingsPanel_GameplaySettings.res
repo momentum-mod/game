@@ -36,6 +36,7 @@
         "maxvalue" "300"
         "cvar_name" "cl_yawspeed"
         "allowoutofrange" "0"
+        "actionsignallevel" "1"
     }
     
     "YawSpeedEntry"
@@ -60,6 +61,7 @@
 		"maxchars"		"-1"
 		"NumericInputOnly"		"1"
 		"unicode"		"0"
+        "actionsignallevel" "1"
 	}
     
     "YawSpeedLabel"
@@ -87,7 +89,6 @@
 		"auto_wide_tocontents" "1"
 		"use_proportional_insets"		"0"
     }
-
 	"PlayBlockSound"
     {
         "ControlName" "CvarToggleCheckButton"
@@ -117,14 +118,14 @@
 		"Default"		"0"
 		"cvar_name"		"mom_bhop_playblocksound"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
-    
     "PracModeSafeGuard"
     {
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "PracModeSafeGuard"
         "xpos" "12"
-        "ypos" "47"
+        "ypos" "50"
         "wide"		"189"
 		"tall"		"16"
 		"autoResize"		"0"
@@ -149,8 +150,8 @@
 		"Default"		"0"
 		"cvar_name"		"mom_practice_safeguard"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
-    
     "SaveCheckpoints"
     {
         "ControlName" "CvarToggleCheckButton"
@@ -180,6 +181,7 @@
 		"Default"		"0"
 		"cvar_name"		"mom_checkpoint_save_between_sessions"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
     }
 	"EnableTrail"
 	{

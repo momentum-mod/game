@@ -3,7 +3,7 @@
 #include "cbase.h"
 
 #include <vgui_controls/Button.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/cvartogglecheckbutton.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/ScrollableEditablePanel.h>
 #include <vgui_controls/pch_vgui_controls.h>
@@ -93,7 +93,7 @@ class SettingsPage : public PropertyPage
 
     // When the "Apply" button is pressed. Each settings panel should handle this separately.
     // Due to different controls for each, which cannot be automated through here.
-    void OnApplyChanges() override;
+    void OnApplyChanges() OVERRIDE;
 
     // Called when this page needs to load the current values into controls on the page.
     // This is primarily used for ComboBoxes, since there is no ConvarComboBox class.
@@ -105,8 +105,8 @@ class SettingsPage : public PropertyPage
     ScrollableEditablePanel *GetScrollPanel() const { return m_pScrollPanel; }
 
     // Load the panel's settings
-    virtual void OnPageShow() override { LoadSettings(); }
-    virtual void OnResetData() override { LoadSettings(); }
+    virtual void OnPageShow() OVERRIDE { LoadSettings(); }
+    virtual void OnResetData() OVERRIDE { LoadSettings(); }
     
   private:
     ScrollableEditablePanel *m_pScrollPanel;

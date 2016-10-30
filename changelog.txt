@@ -1,54 +1,63 @@
-0.5.0
-New Main Menu UI
-    Thanks to NicolasDe from Project-9 for GameUI2
-    New background (from tutorial levels) to accomodate the shininess
-Play Replays from Leaderboards
-    Right-clicking when the leaderboards are open will allow you to right click a run and "Watch Replay"
-    More functionality in future updates!
-Contact/Feedback Panel
-    Introduced a panel for in-game feedback, available in the menu.
-Overhauled Settings Panel
-    Changed to tabular settings, includes four new Tabs:
-    "Controls" for momentum-specific controls settings
-    "HUD Settings" for HUD-related momentum settings
-    "Run Comparisons" for settings regarding the comparisons panel
-    "Replays" for replay-related settings (just translucence for Alpha)
-Accurate Timer Fix
-    Fixed offset calculations by using a new method to calculate them
-Bug/Other fixes
-    Fixed potential bug with saving times to file
-    Fixed empty node graphs building
-    Changed practice mode to enable when no inputs are pressed
-    Fixed RichText highlighting to properly display highlighted text
-    Fixed replays recording paused frames
-    Fixed animations for player jumping and zone enter speed on the HUD speedometer
-    Fixed the zone buffer for the comparisons panel
-    Fixed the Changelog panel to properly scroll to top upon load
-    Removed ability to save/load (use the checkpoint menu instead!)
-    Fixed Biohazard90's Source Shader Editor (faulty config)
-    Fixed Version Update panel showing when you have a higher version than master
-    Fixed a bug in the blockfix system with incorporating the mom_bhop_playblocksound cvar
-    
-0.4.7
-Bugfixes
-    Fixed replays sometimes not unloading
-    Fixed width of settings panel labels
-    Mapfinished panel resets to page 0 properly
-    Added StartupVids.txt to override Valve's startup vid
+0.6.1
+Slight Annoyance Alleviated
+    Added "Do not show again" checkboxes to version/zone warning MessageBoxes
+Suggestions
+    Changed settings panel to disable child checkboxes (suggestion by Enjoy.)
+    Changed sv_noclipspeed to scale to maxvel (suggestion by lody)
+Fixes
+    Fixed checkpoints being corrupted upon map load
+    Fixed (most) crashes with changing resolution and exiting the game
+    Fixed ReplayUI to better scale for 1080p
+    Prevent playback of replays with different tickrate than current (will revist)
+    Fixed maps that crashed when using a fade-in trigger
+    Fixed spawn searching to prioritize info_player_start over info_player_(counter)terrorist
+    Fixed bug with cursor disappearing when net_graph was turned on
+    Fixed maps that use detail objects (for real this time)
 
-0.4.5
-Changelog Introduced
-    The version update panel now includes a changelog for the newer version.
-Spectator UI Updated
-    Now includes toggled mouse control upon pressing your +duck bind
-    Added a red X that stops the replay and respawns the player (similar to MapFinished)
-Bugfixes
-    Fixed scroll detection
-        Scrolls of all force are detected now, player should jump properly (sorry about that, scrollers!)
-    Replays
-        Fixed crash with replays not unloading properly
-        Fixed potential crash with replays ending
-        Fixed velocity setting to a value that was too high (due to teleports)
-        Fixed potential "roaming" spec mode if replay was finished
-    Ending player movement actually approaches 0 now
-        The player will actually stop inside the end trigger
+0.6.0
+New Replay UI
+    Like DemoUI, a window to control playback of Replay files
+    Features include: scrubbable time bar, timescaled playback, frame-by-frame analysis, and much more!
+Checkpoints Overhauled
+    Checkpoint-related commands can be bound to keys now!
+    "mom_checkpoint_*" commands added
+    Checkpoints can be saved to file (toggleable from settings)
+    Checkpoints now save whether you were crouching or standing
+    Added "mom_mark_start" which saves a temporary checkpoint in the start trigger, for use by mom_restart
+    Likewise, "mom_mark_start_clear" clears the aforementioned checkpoint
+Custom Weapons
+    Added custom pistol (mom_weapon_pistol) and shotgun (mom_weapon_shotgun)
+    Added weapon "dropping" which destroys your current weapon
+MessageBoxes for Info
+    Added small (but necessary) boxes of information to help inform you of various things
+Revamped Some UI
+    In-game Leaderboards got a makeover, functionality soon!
+    Momentum Settings panel sees more settings regarding these changes and other requests
+Linux Build
+    Build was fixed to compile and run on Linux (we haven't forgotten you!)
+    Fully supported Linux build planned for Alpha release
+Quality of Life
+    CS:S properly mounts regardless of which drive it's on
+    sv_tickrate, sv_maxvelocity, and sv_airaccelerate are unlocked (temporarily)
+    "Select Map" button now shows up in-game
+    Added a "practice mode safeguard" toggle (mom_practice_safeguard)
+    "mom_restart" now teleports to the spawn spot if a start trigger is not found
+Fixes, Baby
+    Updated ClientScheme and SourceScheme to better fit color scheme of mod
+    Fixed various UI bugs with sizing and location of text and other elements
+    Fixed output timings for entities to use tick-based time (Thanks Asunaya!)
+    Fixed weapon collisions (no more random boosts!)
+    Fixed knife slashes (they show up now!)
+    Fixed crashes when playing the game offline
+    Fixed some memory leaks found throughout Valve's code
+    Fixed bug with player and replay camera popping out of bounds when too close to ceiling
+    Fixed demo view interpolation and possible demo timescale bug
+    Fixed bug where player was stuck for 3 seconds at map start
+    Fixed point_cameras
+    Fixed particles to properly mount
+    Fixed replays showing 0 velocity if they had over maxvelocity
+    Fixed player slowdown in start zone if the player was using checkpoint menu
+    Fixed player_speedmod not setting player speed
+    Fixed offset bug with spectating a replay in chase mode
+    Fixed the mapfinished panel to not prematurely close if player goes out of end trigger
+    Fixed mom_restart not resetting player progress (stored in target name)

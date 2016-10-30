@@ -15,7 +15,7 @@ class CMOMPrediction : public CPrediction
 	DECLARE_CLASS(CMOMPrediction, CPrediction);
 
 public:
-	void SetupMove(C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move) override
+	void SetupMove(C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move) OVERRIDE
 	{
 		player->AvoidPhysicsProps(ucmd);
 

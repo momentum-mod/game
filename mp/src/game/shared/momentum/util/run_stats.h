@@ -2,7 +2,7 @@
 
 #include "cbase.h"
 #include "filesystem.h"
-#include "mom_shareddefs.h"
+#include "../mom_shareddefs.h"
 #include "serialization.h"
 
 #ifdef CLIENT_DLL
@@ -83,7 +83,7 @@ class CMomRunStats : public ISerializable
     }
 
     // Note: This needs updating every time the struct is updated!
-    void Serialize(CBinaryWriter *writer) override
+    void Serialize(CBinaryWriter *writer) OVERRIDE
     {
         writer->WriteUInt8(m_iTotalZones);
 

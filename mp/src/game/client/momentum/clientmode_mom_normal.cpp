@@ -9,15 +9,8 @@
 #include "clientmode_mom_normal.h"
 #include "hud.h"
 #include "ienginevgui.h"
-#include "iinput.h"
 #include "momSpectatorGUI.h"
 #include "momentum/mom_shareddefs.h"
-#include "momSpectatorGUI.h"
-#include "vgui_int.h"
-#include <vgui/IInput.h>
-#include <vgui/IPanel.h>
-#include <vgui/ISurface.h>
-#include <vgui_controls/AnimationController.h>
 #include "IGameUIFuncs.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -46,7 +39,7 @@ class CHudViewport : public CBaseViewport
     DECLARE_CLASS_SIMPLE(CHudViewport, CBaseViewport);
 
   protected:
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE
     {
         BaseClass::ApplySchemeSettings(pScheme);
 
@@ -55,29 +48,29 @@ class CHudViewport : public CBaseViewport
         SetPaintBackgroundEnabled(false);
     }
 
-    IViewPortPanel *CreatePanelByName(const char *pzName) override
+    IViewPortPanel *CreatePanelByName(const char *pzName) OVERRIDE
     {
 
         if (!Q_strcmp(PANEL_TIMES, pzName))
         {
             return new CClientTimesDisplay(this);
         }
-        if (!Q_strcmp(PANEL_SPECMENU, pzName))
-        {
-            return new CMOMSpectatorMenu(this);
-        }
         if (!Q_strcmp(PANEL_SPECGUI, pzName))
         {
             return new CMOMSpectatorGUI(this);
+        }
+        if (!Q_strcmp(PANEL_REPLAY, pzName))
+        {
+            return new C_MOMReplayUI(this);
         }
 
         return BaseClass::CreatePanelByName(pzName);
     }
 
-    void CreateDefaultPanels(void) override
+    void CreateDefaultPanels(void) OVERRIDE
     {
+        AddNewPanel(CreatePanelByName(PANEL_REPLAY), "PANEL_REPLAY");
         AddNewPanel(CreatePanelByName(PANEL_TIMES), "PANEL_TIMES");
-        AddNewPanel(CreatePanelByName(PANEL_SPECMENU), "PANEL_SPECMENU");
         AddNewPanel(CreatePanelByName(PANEL_SPECGUI), "PANEL_SPECGUI");
         //BaseClass::CreateDefaultPanels(); // MOM_TODO: do we want the other panels?
     }
@@ -110,13 +103,9 @@ ClientModeMOMNormal::~ClientModeMOMNormal()
 void ClientModeMOMNormal::Init()
 {
     BaseClass::Init();
-
-    m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
-    m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
-    m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
-    m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
+    SetupPointers();
     // Load up the combine control panel scheme
-    g_hVGuiCombineScheme = vgui::scheme()->LoadSchemeFromFileEx(
+    g_hVGuiCombineScheme = scheme()->LoadSchemeFromFileEx(
         enginevgui->GetPanel(PANEL_CLIENTDLL),
         IsXbox() ? "resource/ClientScheme.res" : "resource/CombinePanelScheme.res", "CombineScheme");
     if (!g_hVGuiCombineScheme)
@@ -198,4 +187,12 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
     }
 
     return 1;
+}
+
+void ClientModeMOMNormal::SetupPointers()
+{
+    m_pHudMenuStatic = GET_HUDELEMENT(CHudMenuStatic);
+    m_pHudMapFinished = GET_HUDELEMENT(CHudMapFinishedDialog);
+    m_pLeaderboards = dynamic_cast<CClientTimesDisplay*>(m_pViewport->FindPanelByName(PANEL_TIMES));
+    m_pSpectatorGUI = dynamic_cast<CMOMSpectatorGUI*>(m_pViewport->FindPanelByName(PANEL_SPECGUI));
 }

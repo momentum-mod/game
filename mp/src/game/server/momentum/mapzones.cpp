@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "mapzones.h"
-#include "Timer.h"
+#include "mom_timer.h"
 #include "filesystem.h"
 #include "KeyValues.h"
 #include "mom_triggers.h"
@@ -74,7 +74,7 @@ void CMapzone::SpawnZone()
         }
         
         m_trigger->SetName(MAKE_STRING("Start Trigger"));
-        g_Timer->SetStartTrigger((CTriggerTimerStart *) m_trigger);
+        g_pMomentumTimer->SetStartTrigger((CTriggerTimerStart *) m_trigger);
         break;
     case MOMZONETYPE_CP:
         m_trigger = (CTriggerCheckpoint *) CreateEntityByName("trigger_momentum_timer_checkpoint");
@@ -327,9 +327,8 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 {
     bool toReturn = false;
     char zoneFilePath[MAX_PATH];
-    Q_strcpy(zoneFilePath, c_mapPath);
-    Q_strcat(zoneFilePath, szMapName, MAX_PATH);
-    Q_strncat(zoneFilePath, c_zoneFileEnding, MAX_PATH);
+    V_ComposeFileName(MAP_FOLDER, szMapName, zoneFilePath, MAX_PATH);
+    V_SetExtension(zoneFilePath, EXT_ZONE_FILE, MAX_PATH);
     DevLog("Looking for zone file: %s \n", zoneFilePath);
     KeyValues* zoneKV = new KeyValues(szMapName);
     if (zoneKV->LoadFromFile(filesystem, zoneFilePath, "MOD"))

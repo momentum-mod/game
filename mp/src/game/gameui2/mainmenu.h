@@ -19,16 +19,16 @@ class MainMenu : public Panel2D
   public:
     MainMenu(Panel *parent);
 
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     virtual void CreateMenu(const char *menu);
-    void OnThink() override;
-    bool IsVisible() override;
+    void OnThink() OVERRIDE;
+    bool IsVisible() OVERRIDE;
     virtual void DrawMainMenu();
     virtual void DrawLogo();
-    void Paint() override;
-    void OnCommand(char const *cmd) override;
-    void OnSetFocus() override;
-    void OnKillFocus() override;
+    void Paint() OVERRIDE;
+    void OnCommand(char const *cmd) OVERRIDE;
+    void OnSetFocus() OVERRIDE;
+    void OnKillFocus() OVERRIDE;
 
   private:
     CUtlVector<Button_MainMenu *> m_pButtons;

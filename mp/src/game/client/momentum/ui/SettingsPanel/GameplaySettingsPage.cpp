@@ -6,6 +6,7 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
+
     m_pPlayBlockSound = FindControl<CvarToggleCheckButton<ConVarRef>>("PlayBlockSound");
     m_pSaveCheckpoints = FindControl<CvarToggleCheckButton<ConVarRef>>("SaveCheckpoints");
     m_pEnableTrail = FindControl<CvarToggleCheckButton<ConVarRef>>("EnableTrail");

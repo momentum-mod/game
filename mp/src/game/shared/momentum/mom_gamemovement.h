@@ -72,7 +72,7 @@ public:
 	virtual void DoLateReflect();
 	virtual void CategorizePosition();
 
-    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) override
+    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE
     {
         m_pPlayer = ToCMOMPlayer(pBasePlayer);
         Assert(m_pPlayer);
@@ -88,8 +88,8 @@ public:
 	virtual void HandleDuckingSpeedCrop() ;
 	virtual void CheckParameters(void) ;
 	virtual void ReduceTimers(void);
+    
 private:
-
-    float m_flReflectNormal = NO_REFL_NORMAL_CHANGE;//Used by rampboost fix
+    float m_flReflectNormal;//Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
 };

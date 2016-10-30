@@ -81,7 +81,7 @@ public:
 	
 	CCSWeaponInfo();
 
-    void Parse( KeyValues *pKeyValuesData, const char *szWeaponName ) override;
+    void Parse( KeyValues *pKeyValuesData, const char *szWeaponName ) OVERRIDE;
 
 public:
 	CSWeaponType m_WeaponType;
