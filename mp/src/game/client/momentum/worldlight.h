@@ -30,10 +30,10 @@ class CWorldLights : public CAutoGameSystem
 
     // CAutoGameSystem overrides
   public:
-    bool Init() override;
-    void LevelInitPreEntity() override;
+    bool Init() OVERRIDE;
+    void LevelInitPreEntity() OVERRIDE;
 
-    void LevelShutdownPostEntity() override { Clear(); }
+    void LevelShutdownPostEntity() OVERRIDE { Clear(); }
 
   private:
     void Clear();
