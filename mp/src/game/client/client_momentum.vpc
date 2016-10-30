@@ -264,6 +264,11 @@ $Project "Client (Momentum)"
             $File   "momentum\clientmode_mom_normal.cpp"
             $File   "momentum\mom_event_listener.h"
             $File   "momentum\mom_event_listener.cpp"
+            
+            // RTT Shadows
+            $File "momentum\worldlight.h"
+            $File "momentum\worldlight.cpp"
+            
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
             
@@ -273,8 +278,6 @@ $Project "Client (Momentum)"
                 $File "momentum\dynamicrendertargets.h"
             }
         }
-        
-        //$File "hl2\C_Func_Monitor.cpp"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
