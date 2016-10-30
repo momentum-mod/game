@@ -492,18 +492,16 @@ CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
-    SetDestinationEnt(nullptr);
-    BaseClass::StartTouch(pOther);
-    // The above is needed for the Think() function of this class,
-    // it's very HACKHACK but it works
-
+    // Needed for the Think() function of this class
+    CBaseMomentumTrigger::StartTouch(pOther);
+    
     if (pOther->IsPlayer())
     {
         m_fStartTouchedTime = gpGlobals->realtime;
         if (g_pMomentumTimer->FindOnehopOnList(this) != (-1))
         {
             SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-            BaseClass::StartTouch(pOther);
+            BaseClass::StartTouch(pOther); // Does the teleporting
         }
         else
         {
@@ -560,7 +558,7 @@ CTriggerMultihop::CTriggerMultihop() : m_fStartTouchedTime(0.0), m_fMaxHoldSecon
 
 void CTriggerMultihop::StartTouch(CBaseEntity *pOther)
 {
-    BaseClass::StartTouch(pOther);
+    CBaseMomentumTrigger::StartTouch(pOther);
     if (pOther->IsPlayer())
     {
         m_fStartTouchedTime = gpGlobals->realtime;

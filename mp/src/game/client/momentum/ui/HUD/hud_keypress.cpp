@@ -56,6 +56,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     CPanelAnimationVar(HFont, m_hCounterTextFont, "CounterTextFont", "Default");
     CPanelAnimationVar(Color, m_Normal, "KeyPressedColor", "Panel.Fg");
     CPanelAnimationVar(Color, m_darkGray, "KeyOutlineColor", "Dark Gray");
+    CPanelAnimationVar(Color, m_Disabled, "KeyDisabledColor", "Red");
     CPanelAnimationVarAliasType(float, top_row_ypos, "top_row_ypos", "5", "proportional_float");
     CPanelAnimationVarAliasType(float, mid_row_ypos, "mid_row_ypos", "20", "proportional_float");
     CPanelAnimationVarAliasType(float, lower_row_ypos, "lower_row_ypos", "35", "proportional_float");
@@ -67,7 +68,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
   private:
     int GetTextCenter(HFont font, wchar_t *wstring);
 
-    int m_nButtons, m_nStrafes, m_nJumps;
+    int m_nButtons, m_nDisabledButtons, m_nStrafes, m_nJumps;
     bool m_bShouldDrawCounts;
     wchar_t m_pwFwd[BUFSIZESHORT];
     wchar_t m_pwLeft[BUFSIZESHORT];
@@ -104,7 +105,16 @@ void CHudKeyPressDisplay::Init()
     m_fJumpColorUntil = m_fDuckColorUntil = 0;
 
     m_nButtons = 0;
+    m_nDisabledButtons = 0;
 }
+
+// Checks to see if this input was blocked, and if so, paint it red.
+#define CHECK_INPUT(flag, color) surface()->DrawSetTextColor((m_nDisabledButtons & flag) ? m_Disabled : color)
+// Check for pressed input
+#define CHECK_INPUT_P(flag) CHECK_INPUT(flag, m_Normal)
+// Check for not pressed input
+#define CHECK_INPUT_N(flag) CHECK_INPUT(flag, m_darkGray)
+
 void CHudKeyPressDisplay::Paint()
 {
     // first, semi-transparent key templates
@@ -114,22 +124,26 @@ void CHudKeyPressDisplay::Paint()
     surface()->DrawSetTextFont(m_hTextFont);
     if (m_nButtons & IN_FORWARD)
     {
+        CHECK_INPUT_P(IN_FORWARD);
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwFwd), top_row_ypos);
         surface()->DrawPrintText(m_pwFwd, wcslen(m_pwFwd));
     }
     if (m_nButtons & IN_MOVELEFT)
     {
+        CHECK_INPUT_P(IN_MOVELEFT);
         int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft);
         surface()->DrawSetTextPos(text_left, mid_row_ypos);
         surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
     }
     if (m_nButtons & IN_BACK)
     {
+        CHECK_INPUT_P(IN_BACK);
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwBack), lower_row_ypos);
         surface()->DrawPrintText(m_pwBack, wcslen(m_pwBack));
     }
     if (m_nButtons & IN_MOVERIGHT)
     {
+        CHECK_INPUT_P(IN_MOVERIGHT);
         int text_right = GetTextCenter(m_hTextFont, m_pwRight) + UTIL_ComputeStringWidth(m_hTextFont, m_pwRight);
         surface()->DrawSetTextPos(text_right, mid_row_ypos);
         surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
@@ -143,6 +157,7 @@ void CHudKeyPressDisplay::Paint()
         {
             m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
+        CHECK_INPUT_P(IN_JUMP);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
@@ -152,12 +167,14 @@ void CHudKeyPressDisplay::Paint()
         {
             m_fDuckColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
+        CHECK_INPUT_P(IN_DUCK);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
         surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
     }
     // ----------
     if (m_bShouldDrawCounts)
     {
+        surface()->DrawSetTextColor(m_Normal); // Back to normal, counts don't get disabled
         surface()->DrawSetTextFont(m_hCounterTextFont);
 
         wchar_t strafes[BUFSIZESHORT];
@@ -193,6 +210,7 @@ void CHudKeyPressDisplay::OnThink()
         else
         {
             m_nButtons = ::input->GetButtonBits(engine->IsPlayingDemo());
+            m_nDisabledButtons = pPlayer->m_afButtonDisabled;
             if (g_MOMEventListener)
             {
                 // we should only draw the strafe/jump counters when the timer is running
@@ -211,6 +229,7 @@ void CHudKeyPressDisplay::Reset()
 {
     // reset buttons member in case a button gets stuck
     m_nButtons = 0;
+    m_nDisabledButtons = 0;
     m_fDuckColorUntil = 0;
     m_fJumpColorUntil = 0;
 }
@@ -218,31 +237,38 @@ int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 {
     return GetWide() / 2 - UTIL_ComputeStringWidth(font, wstring) / 2;
 }
+
 void CHudKeyPressDisplay::DrawKeyTemplates()
 {
     // first draw all keys on screen in a dark gray
     surface()->DrawSetTextColor(m_darkGray);
     surface()->DrawSetTextFont(m_hTextFont);
     // fwd
+    CHECK_INPUT_N(IN_FORWARD);
     surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwFwd), top_row_ypos);
     surface()->DrawPrintText(m_pwFwd, wcslen(m_pwFwd));
     // left
+    CHECK_INPUT_N(IN_MOVELEFT);
     int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft);
     surface()->DrawSetTextPos(text_left, mid_row_ypos);
     surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
     // back
+    CHECK_INPUT_N(IN_BACK);
     surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwBack), lower_row_ypos);
     surface()->DrawPrintText(m_pwBack, wcslen(m_pwBack));
     // right
+    CHECK_INPUT_N(IN_MOVERIGHT);
     int text_right = GetTextCenter(m_hTextFont, m_pwRight) + UTIL_ComputeStringWidth(m_hTextFont, m_pwRight);
     surface()->DrawSetTextPos(text_right, mid_row_ypos);
     surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
     // jump
+    CHECK_INPUT_N(IN_JUMP);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
     surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     // duck
+    CHECK_INPUT_N(IN_DUCK);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwDuck), duck_row_ypos);
     surface()->DrawPrintText(m_pwDuck, wcslen(m_pwDuck));
 }

@@ -32,8 +32,11 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINF
     SendPropBool(SENDINFO(m_bDidPlayerBhop)), SendPropInt(SENDINFO(m_iSuccessiveBhops)),
     SendPropBool(SENDINFO(m_bHasPracticeMode)), SendPropBool(SENDINFO(m_bUsingCPMenu)),
     SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
+    SendPropInt(SENDINFO(m_afButtonDisabled)),
     SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
+    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
+
+END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop), 
@@ -448,7 +451,7 @@ Checkpoint *CMomentumPlayer::CreateCheckpoint()
     c->ang = GetAbsAngles();
     c->pos = GetAbsOrigin();
     c->vel = GetAbsVelocity();
-    c->crouched = IsDucked() || IsDucking(); // Do we want IsDucking here??
+    c->crouched = IsDucked() || IsDucking();
     Q_strncpy(c->targetName, GetEntityName().ToCStr(), sizeof(c->targetName));
     Q_strncpy(c->targetClassName, GetClassname(), sizeof(c->targetClassName));
     return c;
