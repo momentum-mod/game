@@ -127,7 +127,6 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\ChangelogPanel.cpp"
                     $File   "momentum\ui\ChangelogPanel.h"
                 }
-                
                 $Folder "Feedback"
                 {
                     $File 	"momentum\ui\ContactPanel.cpp"
@@ -148,6 +147,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\mom_replayui.cpp"
                     $File "momentum\ui\mom_replayui.h"
                 }
+                
+                $File "momentum\ui\MeasureTool.cpp"
             }
 
             $File   "momentum\client_events.h"
