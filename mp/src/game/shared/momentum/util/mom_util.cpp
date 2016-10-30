@@ -46,7 +46,6 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     CleanupRequest(pCallback, pData);
 }
 
-
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
     if (!steamapicontext->SteamHTTP())
@@ -185,7 +184,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
     const char separator[2] = ".";
-    CSplitString storedVersion( MOM_CURRENT_VERSION, separator);
+    CSplitString storedVersion(MOM_CURRENT_VERSION, separator);
     CSplitString repoVersion(pDataPtr, separator);
 
     char versionValue[15];
@@ -196,9 +195,12 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
         if (repo > local)
         {
-            changelogpanel->SetVersion(versionValue);
-            GetRemoteChangelog();
-            changelogpanel->Activate();
+            if (developer.GetInt() < 2) // If we're developers, we probably know what version we are at.
+            {
+                changelogpanel->SetVersion(versionValue);
+                GetRemoteChangelog();
+                changelogpanel->Activate();
+            }
             break;
         }
         if (repo < local)
@@ -255,7 +257,7 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
     // We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = abs(m_flSecondsTime);
     char separator = fileName ? '-' : ':'; // MOM_TODO: Think of a better char?
-    const char* negative = negativeTime ? "-" : "";
+    const char *negative = negativeTime ? "-" : "";
     int hours = m_flSecondsTime / (60.0f * 60.0f);
     int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
     int seconds = fmod(m_flSecondsTime, 60.0f);
