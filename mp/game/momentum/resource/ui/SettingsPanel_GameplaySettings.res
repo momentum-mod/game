@@ -233,7 +233,7 @@
         "command" "picker"
         "visible" "1"
         "enabled" "1"
-        "labelText" "Pick color"
+        "labelText" ""
         "actionsignallevel" "1"
     }
 }

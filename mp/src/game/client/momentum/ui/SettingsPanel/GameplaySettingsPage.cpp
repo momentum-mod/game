@@ -16,7 +16,7 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 
 void GameplaySettingsPage::LoadSettings()
 {
-    UpdateSlideEntries();
+    UpdateSliderEntries();
 }
 
 void GameplaySettingsPage::OnTextChanged(Panel *p)
@@ -82,7 +82,7 @@ void GameplaySettingsPage::OnTextChanged(Panel *p)
         char buf[64];
         m_pTrailColorAEntry->GetText(buf, 64);
 
-        int alphaValue = atoi(buf);
+        int alphaValue = Q_atoi(buf);
         if (alphaValue >= 0 && alphaValue < 256)
         {
             m_pTrailColorASlider->SetSliderValue(alphaValue);
@@ -97,15 +97,21 @@ void GameplaySettingsPage::OnControlModified(Panel *p)
 {
     BaseClass::OnControlModified(p);
 
-    if (p == m_pYawSpeedSlider && m_pYawSpeedSlider->HasBeenModified() || 
-        p == m_pTrailColorRSlider && m_pTrailColorRSlider->HasBeenModified() ||
-        p == m_pTrailColorGSlider && m_pTrailColorGSlider->HasBeenModified() ||
-        p == m_pTrailColorBSlider && m_pTrailColorBSlider->HasBeenModified() ||
-        p == m_pTrailColorASlider && m_pTrailColorASlider->HasBeenModified())
+    if (p == m_pYawSpeedSlider && m_pYawSpeedSlider->HasBeenModified())
     {
-        UpdateSlideEntries();
+        UpdateSliderEntries();
     }
 }
+
+void GameplaySettingsPage::OnColorSelected(KeyValues *pKv)
+{
+    Color selected = pKv->GetColor("color");
+
+    m_pPickColorButton->SetBgColor(selected);
+    // MOM_TODO: Finish this
+
+}
+
 
 void GameplaySettingsPage::OnCommand(const char* pCommand)
 {
@@ -117,7 +123,7 @@ void GameplaySettingsPage::OnCommand(const char* pCommand)
     BaseClass::OnCommand(pCommand);
 }
 
-void GameplaySettingsPage::UpdateSlideEntries() const
+void GameplaySettingsPage::UpdateSliderEntries() const
 {
     char buf[64];
     Q_snprintf(buf, sizeof(buf), "%.1f", m_pYawSpeedSlider->GetSliderValue());

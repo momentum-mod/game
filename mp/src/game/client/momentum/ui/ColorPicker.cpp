@@ -4,18 +4,19 @@
 #include <math.h>
 #define PROTECTED_THINGS_DISABLE
 
+#include "util/mom_util.h"
 #include "vgui/IInput.h"
 #include "vgui/IPanel.h"
 #include "vgui/IScheme.h"
 #include "vgui/ISurface.h"
 #include "vgui/KeyCode.h"
 #include "vgui/MouseCode.h"
-#include "util/mom_util.h"
 
 #include "ColorPicker.h"
 #include "vgui_controls/Controls.h"
 #include "vgui_controls/Frame.h"
 #include "vgui_controls/Menu.h"
+#include "vgui_controls/Slider.h"
 
 #include "KeyValues.h"
 
@@ -28,6 +29,8 @@
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
+
+#define __EXTRUDE_BORDER 3
 
 static char hexLookup[16] = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
@@ -131,12 +134,12 @@ void HSV2RGB(float H, float s, float v, Vector4D &normalizedRGBA)
 {
     Vector tmp;
     HSV2RGB(H, s, v, tmp);
-    normalizedRGBA.Init(tmp.x, tmp.y, tmp.z, 1);
+    normalizedRGBA.Init(tmp.x, tmp.y, tmp.z, normalizedRGBA.w);
 }
 
 void HSV2RGB(const Vector &hsv, Vector4D &normalizedRGBA) { HSV2RGB(hsv.x, hsv.y, hsv.z, normalizedRGBA); }
 void HSV2RGB(const Vector &hsv, Vector &normalizedRGBA) { HSV2RGB(hsv.x, hsv.y, hsv.z, normalizedRGBA); }
-void RGB2HSV(const Vector &normalizedRGB, float &H, float &s, float &v)
+void RGB2HSV(const Vector4D &normalizedRGB, float &H, float &s, float &v)
 {
     float fmax = max(normalizedRGB.x, max(normalizedRGB.y, normalizedRGB.z));
     float fmin = min(normalizedRGB.x, min(normalizedRGB.y, normalizedRGB.z));
@@ -162,24 +165,25 @@ void RGB2HSV(const Vector &normalizedRGB, float &H, float &s, float &v)
         H += 360.0f;
 }
 
-void RGB2HSV(const Vector &normalizedRGB, Vector &hsv) { RGB2HSV(normalizedRGB, hsv.x, hsv.y, hsv.z); }
+void RGB2HSV(const Vector4D &normalizedRGB, Vector &hsv) { RGB2HSV(normalizedRGB, hsv.x, hsv.y, hsv.z); }
 
 void SetupVguiTex(int &var, const char *tex)
 {
-    var = vgui::surface()->DrawGetTextureId(tex);
+    var = surface()->DrawGetTextureId(tex);
     if (var <= 0)
     {
-        var = vgui::surface()->CreateNewTextureID();
-        vgui::surface()->DrawSetTextureFile(var, tex, true, false);
+        var = surface()->CreateNewTextureID();
+        surface()->DrawSetTextureFile(var, tex, true, false);
     }
 }
 
 DECLARE_BUILD_FACTORY(HSV_Select_Base);
 
-HSV_Select_Base::HSV_Select_Base(vgui::Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
+HSV_Select_Base::HSV_Select_Base(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
 {
     if (parent)
         AddActionSignalTarget(parent->GetVPanel());
+
     m_bIsReading = false;
     SetupVguiTex(m_iMat, "shadereditor/colorpicker");
 }
@@ -192,7 +196,6 @@ void HSV_Select_Base::OnMousePressed(MouseCode code)
         m_bIsReading = true;
         input()->SetMouseCapture(GetVPanel());
         ReadValues();
-        return;
     }
 }
 void HSV_Select_Base::OnMouseReleased(MouseCode code)
@@ -202,7 +205,6 @@ void HSV_Select_Base::OnMouseReleased(MouseCode code)
     {
         m_bIsReading = false;
         input()->SetMouseCapture(0);
-        return;
     }
 }
 void HSV_Select_Base::OnMouseCaptureLost()
@@ -220,7 +222,7 @@ void HSV_Select_Base::ReadValues() { PostActionSignal(new KeyValues("HSVUpdate")
 
 DECLARE_BUILD_FACTORY(HSV_Select_SV);
 
-HSV_Select_SV::HSV_Select_SV(vgui::Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
+HSV_Select_SV::HSV_Select_SV(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
 {
     m_flH = 0;
     m_flS = 0;
@@ -280,7 +282,7 @@ void HSV_Select_SV::ReadValues()
 
 DECLARE_BUILD_FACTORY(HSV_Select_Hue);
 
-HSV_Select_Hue::HSV_Select_Hue(vgui::Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
+HSV_Select_Hue::HSV_Select_Hue(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
 {
     m_flHue = 0;
 }
@@ -345,7 +347,7 @@ void HSV_Select_Hue::ReadValues()
 
     int huepos = clamp(sy - my, 0, sy);
     m_flHue = (huepos / static_cast<float>(sy)) * 360.0f;
-    m_flHue = clamp(m_flHue, 0, 360.0f);
+    m_flHue = clamp(m_flHue, 0.0f, 360.0f);
 
     BaseClass::ReadValues();
 }
@@ -364,7 +366,7 @@ class PickerHelper : public Panel
 
     int m_iImage;
 
-    void Paint()
+    void Paint() OVERRIDE
     {
         surface()->DrawSetColor(Color(255, 255, 255, 255));
         surface()->DrawSetTexture(m_iImage);
@@ -372,7 +374,7 @@ class PickerHelper : public Panel
         GetSize(sx, sy);
         surface()->DrawTexturedRect(0, 0, sx, sy);
     };
-    void OnThink() { SetZPos(100); };
+    void OnThink() OVERRIDE { SetZPos(100); };
     void SetCenter(int x, int y)
     {
         int sx, sy;
@@ -381,27 +383,35 @@ class PickerHelper : public Panel
     };
 };
 
-ColorPicker::ColorPicker(vgui::Panel *parent, Panel *pActionsignalTarget)
-    : BaseClass(parent, "CColorPicker")
+ColorPicker::ColorPicker(Panel *parent, Panel *pActionsignalTarget) : BaseClass(parent, "CColorPicker")
 {
     pTarget = nullptr;
     AddActionSignalTarget(pActionsignalTarget);
 
     Init();
 }
-ColorPicker::ColorPicker(vgui::Panel *parent, TextEntry *pTargetEntry)
-    : BaseClass(parent, "CColorPicker")
+ColorPicker::ColorPicker(Panel *parent, TextEntry *pTargetEntry) : BaseClass(parent, "CColorPicker")
 {
     pTarget = pTargetEntry;
 
     Init();
 }
 
-ColorPicker::~ColorPicker() {}
+ColorPicker::~ColorPicker()
+{
+    if (pDrawPicker_Hue)
+        pDrawPicker_Hue->DeletePanel();
+
+    if (pDrawPicker_SV)
+        pDrawPicker_SV->DeletePanel();
+
+    pDrawPicker_Hue = nullptr;
+    pDrawPicker_SV = nullptr;
+}
 
 void ColorPicker::Init()
 {
-    m_vecColor.Init();
+    m_vecColor.Init(0, 0, 0, 1);
     m_vecHSV.Init();
 
     if (pTarget)
@@ -410,24 +420,32 @@ void ColorPicker::Init()
         pTarget->GetText(buf, MAX_PATH);
         CSplitString tokens(buf, " ");
         for (int i = 0; i < tokens.Count() && i < 3; i++)
-            m_vecColor[i] = clamp(atof(tokens[i]), 0, 1);
+            m_vecColor[i] = clamp(Q_atof(tokens[i]), 0.0f, 1.0f);
         RGB2HSV(m_vecColor, m_vecHSV);
     }
 
     LoadControlSettings("resource/ui/ColorPicker.res");
 
-    Panel *pPrev = FindControl<Panel>("colorpreview");
-    pPrev->SetPaintEnabled(false);
-    pPrev->SetPaintBackgroundEnabled(false);
+    m_pColorPreview = FindControl<Panel>("colorpreview");
+    if (m_pColorPreview)
+    {
+        m_pColorPreview->SetPaintEnabled(false);
+        m_pColorPreview->SetPaintBackgroundEnabled(false);
+    }
+
     m_pSelect_Hue = FindControl<HSV_Select_Hue>("pick_hue");
     m_pSelect_SV = FindControl<HSV_Select_SV>("pick_sv");
     m_pText_HEX = FindControl<TextEntry>("col_hex");
 
-    for (int i = 0; i < 3; i++)
+    m_pAlphaSlider = FindControl<Slider>("AlphaSlider");
+    if (m_pAlphaSlider)
+        m_pAlphaSlider->SetValue(255, false);
+
+    for (int i = 0; i < 4; i++)
     {
         char tentry_name[64];
         Q_snprintf(tentry_name, 64, "col_%i\0", i);
-        m_pText_RGB[i] = FindControl<TextEntry>(tentry_name);
+        m_pText_RGBA[i] = FindControl<TextEntry>(tentry_name);
     }
 
     SetSizeable(false);
@@ -456,13 +474,10 @@ void ColorPicker::Paint()
     Color bg = GetBgColor();
     bg[3] = 160;
     SetBgColor(bg);
-    // SetOutOfFocusColor( bg );
 
     BaseClass::Paint();
 
     surface()->DrawSetColor(Color(0, 0, 0, 255));
-
-#define __EXTRUDE_BORDER 3
 
     int x, y, sx, sy;
     m_pSelect_Hue->GetBounds(x, y, sx, sy);
@@ -478,11 +493,10 @@ void ColorPicker::Paint()
     sy += __EXTRUDE_BORDER * 2;
     surface()->DrawFilledRect(x, y, x + sx, y + sy);
 
-    Panel *pColPrev = FindChildByName("colorpreview");
-    if (pColPrev)
+    if (m_pColorPreview)
     {
-        pColPrev->GetBounds(x, y, sx, sy);
-        surface()->DrawSetColor(Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, 255));
+        m_pColorPreview->GetBounds(x, y, sx, sy);
+        surface()->DrawSetColor(Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, m_vecColor.w * 255));
         surface()->DrawFilledRect(x, y, x + sx, y + sy);
 
         x -= __EXTRUDE_BORDER;
@@ -497,7 +511,7 @@ void ColorPicker::OnThink()
 {
     int x, y, sx, sy;
     m_pSelect_Hue->GetBounds(x, y, sx, sy);
-    float hue = clamp((360.0f - m_pSelect_Hue->GetHue()) / 360.0f, 0, 360.0f);
+    float hue = clamp((360.0f - m_pSelect_Hue->GetHue()) / 360.0f, 0.0f, 360.0f);
     pDrawPicker_Hue->SetCenter(x + sx / 2, y + sy * hue);
 
     m_pSelect_SV->GetBounds(x, y, sx, sy);
@@ -506,23 +520,57 @@ void ColorPicker::OnThink()
     pDrawPicker_SV->SetCenter(x + sx * _s, y + sy * _v);
 }
 
-void ColorPicker::SetPickerColor(const Vector &col)
+void ColorPicker::SetPickerColor(const Color &col)
 {
-    for (int i = 0; i < 3; i++)
-        m_vecColor[i] = clamp(col[i], 0, 1);
+    for (int i = 0; i < 4; i++)
+    {
+        m_vecColor[i] = static_cast<float>(col[i]) / 255.0f;
+    }
+
+    SetPickerColor(m_vecColor);
+}
+
+void ColorPicker::SetPickerColor(const Vector4D &col)
+{
+    for (int i = 0; i < 4; i++)
+        m_vecColor[i] = clamp(col[i], 0.0f, 1.0f);
+
     RGB2HSV(m_vecColor, m_vecHSV);
 
     UpdateAllVars();
 }
-Vector ColorPicker::GetPickerColor() { return m_vecColor; }
+Vector4D ColorPicker::GetPickerColor() const { return m_vecColor; }
 void ColorPicker::SetPickerColorHSV(const Vector &col)
 {
     m_vecHSV = col;
     HSV2RGB(m_vecHSV, m_vecColor);
     UpdateAllVars();
 }
-Vector ColorPicker::GetPickerColorHSV() { return m_vecHSV; }
+Vector ColorPicker::GetPickerColorHSV() const { return m_vecHSV; }
 void ColorPicker::ApplySchemeSettings(IScheme *pScheme) { BaseClass::ApplySchemeSettings(pScheme); }
+
+void ColorPicker::UpdateAlpha(bool bWasSlider)
+{
+    int newValue;
+
+    if (bWasSlider)
+    {
+        // Just in case
+        newValue = clamp<int>(m_pAlphaSlider->GetValue(), 0, 255);
+        char tmpText[10];
+        Q_snprintf(tmpText, 10, "%03i", newValue);
+        m_pText_RGBA[3]->SetText(tmpText);
+    }
+    else
+    {
+        char tmpText[32];
+        m_pText_RGBA[3]->GetText(tmpText, 32);
+        newValue = clamp<int>(Q_atoi(tmpText), 0, 255);
+        m_pAlphaSlider->SetValue(newValue, false);
+    }
+
+    m_vecColor[3] = static_cast<float>(newValue) / 255.0f;
+}
 
 void ColorPicker::OnCommand(const char *cmd)
 {
@@ -537,7 +585,8 @@ void ColorPicker::OnCommand(const char *cmd)
         else
         {
             KeyValues *pKV = new KeyValues("ColorSelected");
-            pKV->SetColor("color", Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, 255));
+            pKV->SetColor("color",
+                          Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, m_vecColor.w * 255));
             PostActionSignal(pKV);
         }
         Close();
@@ -546,56 +595,70 @@ void ColorPicker::OnCommand(const char *cmd)
     BaseClass::OnCommand(cmd);
 }
 
-void ColorPicker::OnHSVUpdate(KeyValues *pKV)
+void ColorPicker::OnHSVUpdate(Panel *pPanel)
 {
-    Panel *pCaller = static_cast<Panel *>(pKV->GetPtr("panel"));
-
     m_vecHSV.x = m_pSelect_Hue->GetHue();
     m_vecHSV.y = m_pSelect_SV->GetS();
     m_vecHSV.z = m_pSelect_SV->GetV();
 
-    UpdateAllVars(pCaller);
+    HSV2RGB(m_vecHSV.x, m_vecHSV.y, m_vecHSV.z, m_vecColor);
+    UpdateAllVars(pPanel);
 }
 
-void ColorPicker::OnTextChanged(KeyValues *pKV)
+void ColorPicker::OnSliderMoved(Panel *panel)
 {
-    Panel *pCaller = static_cast<Panel *>(pKV->GetPtr("panel"));
+    if (panel == m_pAlphaSlider)
+    {
+        UpdateAlpha(true);
+    }
+}
 
-    Assert(dynamic_cast<TextEntry *>(pCaller));
-    TextEntry *pTEntry = static_cast<TextEntry *>(pCaller);
+void ColorPicker::OnTextChanged(Panel *pPanel)
+{
+    TextEntry *pTEntry = dynamic_cast<TextEntry *>(pPanel);
+
+    Assert(pTEntry);
+
     char tmpText[32];
     pTEntry->GetText(tmpText, 32);
 
+    // If we're changing alpha, we only update our alpha and move on
+    if (pTEntry == m_pText_RGBA[3])
+    {
+        UpdateAlpha(false);
+        return;
+    }
+
     for (int i = 0; i < 3; i++)
     {
-        if (pCaller != m_pText_RGB[i])
+        if (pTEntry != m_pText_RGBA[i])
             continue;
-        m_vecColor[i] = atoi(tmpText) / 255.0f;
+        m_vecColor[i] = static_cast<float>(Q_atoi(tmpText)) / 255.0f;
     }
-    if (pCaller == m_pText_HEX)
+
+    if (pTEntry == m_pText_HEX)
     {
         for (int i = 0; i < 3; i++)
         {
             int iValue = 0;
             HexToInt(tmpText + i * 2, iValue, 2);
-            m_vecColor[i] = iValue / 255.0f;
+            m_vecColor[i] = static_cast<float>(iValue) / 255.0f;
         }
     }
 
     RGB2HSV(m_vecColor, m_vecHSV);
-    UpdateAllVars(pCaller);
+    UpdateAllVars(pTEntry);
 }
 
 void ColorPicker::UpdateAllVars(Panel *pIgnore)
 {
-    HSV2RGB(m_vecHSV.x, m_vecHSV.y, m_vecHSV.z, m_vecColor);
-
-    for (int i = 0; i < 3; i++)
-        if (pIgnore != m_pText_RGB[i])
+    // We only update the main 3 (RGB) here, alpha is separate
+    for (int i = 0; i < 4; i++)
+        if (pIgnore != m_pText_RGBA[i])
         {
             char tmp[64];
-            Q_snprintf(tmp, 64, "%03i", static_cast<int>(clamp(m_vecColor[i] * 255.0f, 0, 255)));
-            m_pText_RGB[i]->SetText(tmp);
+            Q_snprintf(tmp, 64, "%03i", static_cast<int>(clamp(m_vecColor[i] * 255.0f, 0.0f, 255.0f)));
+            m_pText_RGBA[i]->SetText(tmp);
         }
 
     if (pIgnore != m_pText_HEX)
@@ -605,7 +668,7 @@ void ColorPicker::UpdateAllVars(Panel *pIgnore)
         for (int i = 0; i < 3; i++)
         {
             char tmp[3];
-            IntToHex(m_vecColor[i] * 255.0, tmp, 2);
+            IntToHex(m_vecColor[i] * 255, tmp, 2);
             char tmp2[64];
             Q_snprintf(tmp2, 64, "%02s", tmp);
             Q_strcat(hexString, tmp2, sizeof(hexString));
@@ -614,7 +677,7 @@ void ColorPicker::UpdateAllVars(Panel *pIgnore)
     }
 
     if (pIgnore != m_pSelect_Hue)
-        m_pSelect_Hue->SetHue(clamp(m_vecHSV.x, 0, 360.0f));
+        m_pSelect_Hue->SetHue(clamp(m_vecHSV.x, 0.0f, 360.0f));
     if (pIgnore != m_pSelect_SV)
     {
         m_pSelect_SV->SetSV(m_vecHSV.y, m_vecHSV.z);

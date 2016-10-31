@@ -25,9 +25,12 @@ class GameplaySettingsPage : public SettingsPage
 
     void OnCommand(const char *pCommand) OVERRIDE;
 
+    // From the color picker
+    MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
+
 private:
 
-    void UpdateSlideEntries() const;
+    void UpdateSliderEntries() const;
 
     CvarToggleCheckButton<ConVarRef> *m_pPlayBlockSound;
     CvarToggleCheckButton<ConVarRef> *m_pSaveCheckpoints;
