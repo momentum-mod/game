@@ -222,6 +222,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int &GetStrafeTicks() { return m_nStrafeTicks; }
     int &GetAccelTicks() { return m_nAccelTicks; }
 
+    void CreateTrail();
+    void RemoveTrail();
+
   private:
     CountdownTimer m_ladderSurpressionTimer;
     CUtlVector<Checkpoint *> m_rcCheckpoints;
@@ -256,10 +259,5 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     // Trail pointer
     CBaseEntity* m_eTrail;
-    void RemoveTrail()
-    {
-        UTIL_RemoveImmediate(m_eTrail);
-        m_eTrail = nullptr;
-    }
 };
 #endif // MOMPLAYER_H

@@ -45,13 +45,23 @@ END_DATADESC();
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
-MAKE_TOGGLE_CONVAR(mom_trail_enable, "0", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n");
+void TrailCallback(IConVar *var, const char *pOldValue, float flOldValue)
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pPlayer)
+    {
+        pPlayer->CreateTrail(); //Refresh the trail
+    }
+}
+
 // MOM_TODO: Trail should reset when the run resets and on tps Or at least not join both ends if they are too far away?
-MAKE_CONVAR(mom_trail_length, "4", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Length of the trail in seconds.", 1, 9000);
-MAKE_CONVAR(mom_trail_color_r, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Red amount of the trail color.", 0, 255);
-MAKE_CONVAR(mom_trail_color_g, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Green amount of the trail color.", 0, 255);
-MAKE_CONVAR(mom_trail_color_b, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Blue amount of the trail color.", 0, 255);
-MAKE_CONVAR(mom_trail_color_a, "255", FCVAR_ARCHIVE | FCVAR_NOT_CONNECTED, "Alpha amount of the trail. This controls how bright the trail is.", 0, 255);
+static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_ARCHIVE, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1, TrailCallback);
+static ConVar mom_trail_length("mom_trail_length", "4", FCVAR_ARCHIVE, "Length of the trail (in seconds).", true, 1, false, 9000, TrailCallback);
+static ConVar mom_trail_color_r("mom_trail_color_r", "255", FCVAR_ARCHIVE, "Red amount of the trail color.", true, 0, true, 255, TrailCallback);
+static ConVar mom_trail_color_g("mom_trail_color_g", "255", FCVAR_ARCHIVE, "Green amount of the trail color.", true, 0, true, 255, TrailCallback);
+static ConVar mom_trail_color_b("mom_trail_color_b", "255", FCVAR_ARCHIVE, "Blue amount of the trail color.", true, 0, true, 255, TrailCallback);
+static ConVar mom_trail_color_a("mom_trail_color_a", "255", FCVAR_ARCHIVE, "Alpha amount of the trail color. This also controls how bright the trail is.", 
+    true, 0, true, 255, TrailCallback);
 
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
@@ -255,22 +265,7 @@ void CMomentumPlayer::Spawn()
 
     // If wanted, create trail
     if (mom_trail_enable.GetBool())
-    {
-        RemoveTrail();
-
-        // Ty GhostingMod
-        m_eTrail = CreateEntityByName("env_spritetrail");
-        m_eTrail->SetAbsOrigin(GetAbsOrigin());
-        m_eTrail->SetParent(this);
-        m_eTrail->KeyValue("rendermode", "5");
-        m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
-        m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());  // This does not do what I thought it does
-        m_eTrail->SetRenderColor(mom_trail_color_r.GetInt(), mom_trail_color_g.GetInt(), mom_trail_color_b.GetInt(), mom_trail_color_a.GetInt());
-        m_eTrail->KeyValue("renderamt", mom_trail_color_a.GetInt());
-        m_eTrail->KeyValue("startwidth", "9.5");
-        m_eTrail->KeyValue("endwidth", "1.05");
-        DispatchSpawn(m_eTrail);
-    }
+        CreateTrail();
 
     SetNextThink(gpGlobals->curtime);
 
@@ -499,6 +494,34 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
         SetVCollisionState(GetAbsOrigin(), GetAbsVelocity(), bState ? VPHYS_CROUCH : VPHYS_WALK);
     }
 }
+
+void CMomentumPlayer::RemoveTrail()
+{
+    UTIL_RemoveImmediate(m_eTrail);
+    m_eTrail = nullptr;
+}
+
+
+void CMomentumPlayer::CreateTrail()
+{
+    RemoveTrail();
+
+    if (!mom_trail_enable.GetBool()) return;
+
+    // Ty GhostingMod
+    m_eTrail = CreateEntityByName("env_spritetrail");
+    m_eTrail->SetAbsOrigin(GetAbsOrigin());
+    m_eTrail->SetParent(this);
+    m_eTrail->KeyValue("rendermode", "5");
+    m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
+    m_eTrail->KeyValue("startwidth", "9.5");
+    m_eTrail->KeyValue("endwidth", "1.05");
+    m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());
+    m_eTrail->SetRenderColor(mom_trail_color_r.GetInt(), mom_trail_color_g.GetInt(), mom_trail_color_b.GetInt(), mom_trail_color_a.GetInt());
+    m_eTrail->KeyValue("renderamt", mom_trail_color_a.GetInt());
+    DispatchSpawn(m_eTrail);
+}
+
 
 void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
