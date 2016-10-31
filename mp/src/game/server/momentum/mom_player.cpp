@@ -81,12 +81,9 @@ CMomentumPlayer::CMomentumPlayer()
 
 CMomentumPlayer::~CMomentumPlayer()
 {
-<<<<<<< HEAD
-    if (m_eTrail)
-        delete m_eTrail;
-=======
+    UTIL_Remove(m_eTrail);
+
     RemoveAllCheckpoints();
->>>>>>> refs/remotes/origin/develop
 }
 
 void CMomentumPlayer::Precache()
@@ -277,10 +274,6 @@ void CMomentumPlayer::Spawn()
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
-<<<<<<< HEAD
-    //Load the player's checkpoints
-    g_MOMCheckpointSystem->LoadMapCheckpoints(this);
-
     // If wanted, create trail
     if (mom_trail_enable.GetBool())
     {
@@ -300,13 +293,10 @@ void CMomentumPlayer::Spawn()
     }
 
     SetNextThink(gpGlobals->curtime);
-=======
-    SetNextThink(gpGlobals->curtime);
 
     // Load the player's checkpoints, only if we are spawning for the first time
     if (m_rcCheckpoints.IsEmpty())
         g_MOMCheckpointSystem->LoadMapCheckpoints(this);
->>>>>>> refs/remotes/origin/develop
 }
 
 // Obtains the player's previous origin using their current origin as a base.

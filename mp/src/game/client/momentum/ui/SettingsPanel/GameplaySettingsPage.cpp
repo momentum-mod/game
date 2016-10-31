@@ -10,31 +10,8 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pPlayBlockSound = FindControl<CvarToggleCheckButton<ConVarRef>>("PlayBlockSound");
     m_pSaveCheckpoints = FindControl<CvarToggleCheckButton<ConVarRef>>("SaveCheckpoints");
     m_pEnableTrail = FindControl<CvarToggleCheckButton<ConVarRef>>("EnableTrail");
-    m_pTrailColorRSlider = FindControl<CCvarSlider>("TrailColorRed");
-    m_pTrailColorREntry = FindControl<TextEntry>("TrailColorRedEntry");
-    m_pTrailColorGSlider = FindControl<CCvarSlider>("TrailColorGreen");
-    m_pTrailColorGEntry = FindControl<TextEntry>("TrailColorGreenEntry");
-    m_pTrailColorBSlider = FindControl<CCvarSlider>("TrailColorBlue");
-    m_pTrailColorBEntry = FindControl<TextEntry>("TrailColorBlueEntry");
-    m_pTrailColorASlider = FindControl<CCvarSlider>("TrailColorAlpha");
-    m_pTrailColorAEntry = FindControl<TextEntry>("TrailColorAlphaEntry");
-    m_pSampleColor = FindControl<Panel>("SampleColor");
-    if (!m_pYawSpeedSlider || !m_pYawSpeedEntry || !m_pPlayBlockSound || !m_pSaveCheckpoints || !m_pEnableTrail || 
-        !m_pTrailColorRSlider || !m_pTrailColorREntry || !m_pSampleColor || !m_pTrailColorGSlider || !m_pTrailColorGEntry ||
-        !m_pTrailColorBSlider || !m_pTrailColorBEntry || !m_pTrailColorASlider || !m_pTrailColorAEntry)
-    {
-        Assert("Null pointers on settings gameplay page. Expect a crash after this");
-    }
 
-    m_pYawSpeedSlider->AddActionSignalTarget(this);
-    m_pYawSpeedEntry->AddActionSignalTarget(this);
-    m_pPlayBlockSound->AddActionSignalTarget(this);
-    m_pSaveCheckpoints->AddActionSignalTarget(this);
-    m_pEnableTrail->AddActionSignalTarget(this);
-    m_pTrailColorRSlider->AddActionSignalTarget(this);
-    m_pTrailColorGSlider->AddActionSignalTarget(this);
-    m_pTrailColorBSlider->AddActionSignalTarget(this);
-    m_pTrailColorASlider->AddActionSignalTarget(this);
+    m_pPickColorButton = FindControl<Button>("PickColorButton");
 }
 
 void GameplaySettingsPage::LoadSettings()
@@ -130,22 +107,19 @@ void GameplaySettingsPage::OnControlModified(Panel *p)
     }
 }
 
+void GameplaySettingsPage::OnCommand(const char* pCommand)
+{
+    if (FStrEq(pCommand, "picker"))
+    {
+        m_pColorPicker = new ColorPicker(this, this);
+    }
+
+    BaseClass::OnCommand(pCommand);
+}
+
 void GameplaySettingsPage::UpdateSlideEntries() const
 {
     char buf[64];
     Q_snprintf(buf, sizeof(buf), "%.1f", m_pYawSpeedSlider->GetSliderValue());
     m_pYawSpeedEntry->SetText(buf);
-    int redColor = static_cast<int>(m_pTrailColorRSlider->GetSliderValue());
-    int greenColor = static_cast<int>(m_pTrailColorGSlider->GetSliderValue());
-    int blueColor = static_cast<int>(m_pTrailColorBSlider->GetSliderValue());
-    int alphaColor = static_cast<int>(m_pTrailColorASlider->GetSliderValue());
-    Q_snprintf(buf, sizeof(buf), "%d", redColor);
-    m_pTrailColorREntry->SetText(buf);
-    Q_snprintf(buf, sizeof(buf), "%d", greenColor);
-    m_pTrailColorGEntry->SetText(buf);
-    Q_snprintf(buf, sizeof(buf), "%d", blueColor);
-    m_pTrailColorBEntry->SetText(buf);
-    Q_snprintf(buf, sizeof(buf), "%d", alphaColor);
-    m_pTrailColorAEntry->SetText(buf);
-    m_pSampleColor->SetBgColor(Color(redColor, greenColor, blueColor, alphaColor));
 }

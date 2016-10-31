@@ -5,6 +5,7 @@
 #include "SettingsPage.h"
 #include "CVarSlider.h"
 #include <vgui_controls/Button.h>
+#include "ColorPicker.h"
 
 using namespace vgui;
 
@@ -21,6 +22,8 @@ class GameplaySettingsPage : public SettingsPage
     void OnTextChanged(Panel *p) OVERRIDE;
 
     void OnControlModified(Panel *p) OVERRIDE;
+
+    void OnCommand(const char *pCommand) OVERRIDE;
 
 private:
 
@@ -39,5 +42,7 @@ private:
     TextEntry *m_pTrailColorGEntry;
     TextEntry *m_pTrailColorBEntry;
     TextEntry *m_pTrailColorAEntry;
+    ColorPicker *m_pColorPicker;
+    Button *m_pPickColorButton;
     Panel *m_pSampleColor;
 };
