@@ -83,6 +83,7 @@ class ColorPicker : public Frame
     ~ColorPicker();
 
     void Init();
+    void Show();
 
     void OnCommand(const char *cmd) OVERRIDE;
 

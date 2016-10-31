@@ -387,13 +387,11 @@ ColorPicker::ColorPicker(Panel *parent, Panel *pActionsignalTarget) : BaseClass(
 {
     pTarget = nullptr;
     AddActionSignalTarget(pActionsignalTarget);
-
     Init();
 }
 ColorPicker::ColorPicker(Panel *parent, TextEntry *pTargetEntry) : BaseClass(parent, "CColorPicker")
 {
     pTarget = pTargetEntry;
-
     Init();
 }
 
@@ -411,6 +409,7 @@ ColorPicker::~ColorPicker()
 
 void ColorPicker::Init()
 {
+    SetProportional(false);
     m_vecColor.Init(0, 0, 0, 1);
     m_vecHSV.Init();
 
@@ -448,12 +447,11 @@ void ColorPicker::Init()
         m_pText_RGBA[i] = FindControl<TextEntry>(tentry_name);
     }
 
+    SetFadeEffectDisableOverride(true);
+    SetVisible(false);
     SetSizeable(false);
     SetSize(440, 300);
     SetTitle("Color Picker", false);
-
-    MoveToCenterOfScreen();
-    DoModal();
 
     SetupVguiTex(m_iVgui_Pick_Hue, "shadereditor/colorpicker_hue");
     SetupVguiTex(m_iVgui_Pick_SV, "shadereditor/colorpicker_sv");
@@ -464,7 +462,11 @@ void ColorPicker::Init()
     pDrawPicker_SV->SetSize(16, 16);
 
     UpdateAllVars();
+}
 
+void ColorPicker::Show()
+{
+    DoModal();
     MakeReadyForUse();
     InvalidateLayout(true, true);
 }
@@ -574,7 +576,7 @@ void ColorPicker::UpdateAlpha(bool bWasSlider)
 
 void ColorPicker::OnCommand(const char *cmd)
 {
-    if (!Q_stricmp(cmd, "save"))
+    if (FStrEq(cmd, "save"))
     {
         if (pTarget)
         {

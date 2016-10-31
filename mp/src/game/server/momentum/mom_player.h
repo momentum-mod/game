@@ -256,5 +256,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     // Trail pointer
     CBaseEntity* m_eTrail;
+    void RemoveTrail()
+    {
+        UTIL_RemoveImmediate(m_eTrail);
+        m_eTrail = nullptr;
+    }
 };
 #endif // MOMPLAYER_H

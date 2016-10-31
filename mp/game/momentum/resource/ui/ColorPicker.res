@@ -10,7 +10,7 @@
 		"tall"		"300"
 		"autoResize"		"0"
 		"pinCorner"		"0"
-		"visible"		"1"
+		"visible"		"0"
 		"enabled"		"1"
 		"tabPosition"		"0"
 		"BgColor"		"64 64 64 160"
@@ -442,7 +442,6 @@
         "rangeMax" "255"
         "actionsignallevel" "1"
     }
-    
 	"col_hex"
 	{
 		"ControlName"		"TextEntry"

@@ -36,16 +36,8 @@ private:
     CvarToggleCheckButton<ConVarRef> *m_pSaveCheckpoints;
     CvarToggleCheckButton<ConVarRef> *m_pEnableTrail;
     CCvarSlider *m_pYawSpeedSlider;
-    CCvarSlider *m_pTrailColorRSlider;
-    CCvarSlider *m_pTrailColorGSlider;
-    CCvarSlider *m_pTrailColorBSlider;
-    CCvarSlider *m_pTrailColorASlider;
     TextEntry *m_pYawSpeedEntry;
-    TextEntry *m_pTrailColorREntry;
-    TextEntry *m_pTrailColorGEntry;
-    TextEntry *m_pTrailColorBEntry;
-    TextEntry *m_pTrailColorAEntry;
     ColorPicker *m_pColorPicker;
     Button *m_pPickColorButton;
-    Panel *m_pSampleColor;
+    ConVarRef m_TrailR, m_TrailG, m_TrailB, m_TrailA;
 };

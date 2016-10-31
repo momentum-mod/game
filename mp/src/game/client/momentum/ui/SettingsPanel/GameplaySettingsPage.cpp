@@ -2,7 +2,9 @@
 
 #include "GameplaySettingsPage.h"
 
-GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
+GameplaySettingsPage::GameplaySettingsPage(Panel *pParent)
+    : BaseClass(pParent, "GameplaySettings"), m_TrailR("mom_trail_color_r"), m_TrailG("mom_trail_color_g"),
+      m_TrailB("mom_trail_color_b"), m_TrailA("mom_trail_color_a")
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
@@ -12,11 +14,20 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pEnableTrail = FindControl<CvarToggleCheckButton<ConVarRef>>("EnableTrail");
 
     m_pPickColorButton = FindControl<Button>("PickColorButton");
+    m_pColorPicker = new ColorPicker(this, this);
+    m_pColorPicker->SetAutoDelete(true);
 }
 
 void GameplaySettingsPage::LoadSettings()
 {
     UpdateSliderEntries();
+    if (m_pPickColorButton)
+    {
+        Color trailColor = Color(m_TrailR.GetInt(), m_TrailG.GetInt(), m_TrailB.GetInt(), m_TrailA.GetInt());
+        m_pPickColorButton->SetDefaultColor(trailColor, trailColor);
+        m_pPickColorButton->SetArmedColor(trailColor, trailColor);
+        m_pPickColorButton->SetSelectedColor(trailColor, trailColor);
+    }
 }
 
 void GameplaySettingsPage::OnTextChanged(Panel *p)
@@ -32,63 +43,6 @@ void GameplaySettingsPage::OnTextChanged(Panel *p)
         if (fValue >= 1.0)
         {
             m_pYawSpeedSlider->SetSliderValue(fValue);
-        }
-    } 
-    // Can't reduce this code without further checks (Sliders are different)
-    else if (p == m_pTrailColorREntry)
-    {
-        char buf[64];
-        m_pTrailColorREntry->GetText(buf, 64);
-
-        int colorValue = atoi(buf);
-        if (colorValue >= 0 && colorValue < 256)
-        {
-            m_pTrailColorRSlider->SetSliderValue(colorValue);
-            Color backColor = m_pSampleColor->GetBgColor();
-            backColor = Color(colorValue, backColor.g(), backColor.b(), backColor.a());
-            m_pSampleColor->SetBgColor(backColor);
-        }
-    }
-    else if (p == m_pTrailColorGEntry)
-    {
-        char buf[64];
-        m_pTrailColorGEntry->GetText(buf, 64);
-
-        int colorValue = atoi(buf);
-        if (colorValue >= 0 && colorValue < 256)
-        {
-            m_pTrailColorGSlider->SetSliderValue(colorValue);
-            Color backColor = m_pSampleColor->GetBgColor();
-            backColor = Color(backColor.r(), colorValue, backColor.b(), backColor.a());
-            m_pSampleColor->SetBgColor(backColor);
-        }
-    }
-    else if (p == m_pTrailColorBEntry)
-    {
-        char buf[64];
-        m_pTrailColorBEntry->GetText(buf, 64);
-
-        int colorValue = atoi(buf);
-        if (colorValue >= 0 && colorValue < 256)
-        {
-            m_pTrailColorBSlider->SetSliderValue(colorValue);
-            Color backColor = m_pSampleColor->GetBgColor();
-            backColor = Color(backColor.r(), backColor.g(), colorValue, backColor.a());
-            m_pSampleColor->SetBgColor(backColor);
-        }
-    }
-    else if (p == m_pTrailColorAEntry)
-    {
-        char buf[64];
-        m_pTrailColorAEntry->GetText(buf, 64);
-
-        int alphaValue = Q_atoi(buf);
-        if (alphaValue >= 0 && alphaValue < 256)
-        {
-            m_pTrailColorASlider->SetSliderValue(alphaValue);
-            Color backColor = m_pSampleColor->GetBgColor();
-            backColor = Color(backColor.r(), backColor.g(), backColor.b(), alphaValue);
-            m_pSampleColor->SetBgColor(backColor);
         }
     }
 }
@@ -107,17 +61,22 @@ void GameplaySettingsPage::OnColorSelected(KeyValues *pKv)
 {
     Color selected = pKv->GetColor("color");
 
-    m_pPickColorButton->SetBgColor(selected);
-    // MOM_TODO: Finish this
+    m_pPickColorButton->SetDefaultColor(selected, selected);
+    m_pPickColorButton->SetArmedColor(selected, selected);
+    m_pPickColorButton->SetSelectedColor(selected, selected);
 
+    m_TrailR.SetValue(selected.r());
+    m_TrailG.SetValue(selected.g());
+    m_TrailB.SetValue(selected.b());
+    m_TrailA.SetValue(selected.a());
 }
 
-
-void GameplaySettingsPage::OnCommand(const char* pCommand)
+void GameplaySettingsPage::OnCommand(const char *pCommand)
 {
     if (FStrEq(pCommand, "picker"))
     {
-        m_pColorPicker = new ColorPicker(this, this);
+        m_pColorPicker->SetPickerColor(Color(m_TrailR.GetInt(), m_TrailG.GetInt(), m_TrailB.GetInt(), m_TrailA.GetInt()));
+        m_pColorPicker->Show();
     }
 
     BaseClass::OnCommand(pCommand);

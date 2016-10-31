@@ -94,7 +94,7 @@
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "PlayBlockSound"
         "xpos" "12"
-        "ypos" "32"
+        "ypos" "35"
         "wide"		"189"
 		"tall"		"16"
 		"autoResize"		"0"
@@ -213,27 +213,18 @@
 		"cvar_name"		"mom_trail_enable"
 		"cvar_value"		"1"
 	}
-    "SampleColor"
-    {
-		"ControlName"		"Panel"
-		"fieldName"		"SampleColor"
-		"xpos"		"14"
-		"ypos"		"150"
-		"wide"		"45"
-		"tall"		"45"
-		"bgcolor_override"	"255 255 255 255"
-	}
     
     "PickColorButton"
     {
         "ControlName" "Button"
         "fieldName" "PickColorButton"
-        "xpos" "60"
-        "ypos" "115"
+        "xpos" "30"
+        "ypos" "95"
         "command" "picker"
         "visible" "1"
         "enabled" "1"
         "labelText" ""
+        "tooltiptext" "#MOM_Settings_Pick_Trail_Color_TT"
         "actionsignallevel" "1"
     }
 }
