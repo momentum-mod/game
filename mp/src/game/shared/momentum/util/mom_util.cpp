@@ -171,7 +171,8 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIO
 
 void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
-    if (bIOFailure)
+    // 502 is usually returned if Steam is set to offline mode. Thanks .Enjoy for reporting this one!
+    if (bIOFailure || (pCallback && pCallback->m_eStatusCode == k_EHTTPStatusCode502BadGateway))
         return;
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
@@ -186,30 +187,32 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     const char separator[2] = ".";
     CSplitString storedVersion(MOM_CURRENT_VERSION, separator);
     CSplitString repoVersion(pDataPtr, separator);
-
-    char versionValue[15];
-    Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
-
-    for (int i = 0; i < 3; i++)
+    // Above check for 502 fixes crash with Steam being offline, but just to be on the safe side, we double check we can get all the version numbers
+    if (repoVersion.Count() >= 3)
     {
-        int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
-        if (repo > local)
+        char versionValue[15];
+        Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
+
+        for (int i = 0; i < 3; i++)
         {
-            if (developer.GetInt() < 2) // If we're developers, we probably know what version we are at.
+            int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
+            if (repo > local)
             {
-                changelogpanel->SetVersion(versionValue);
-                GetRemoteChangelog();
-                changelogpanel->Activate();
+                if (developer.GetInt() < 2) // If we're developers, we probably know what version we are at.
+                {
+                    changelogpanel->SetVersion(versionValue);
+                    GetRemoteChangelog();
+                    changelogpanel->Activate();
+                }
+                break;
             }
-            break;
-        }
-        if (repo < local)
-        {
-            // The local version is higher than the repo version, do not show this panel
-            break;
+            if (repo < local)
+            {
+                // The local version is higher than the repo version, do not show this panel
+                break;
+            }
         }
     }
-
     CleanupRequest(pCallback, pData);
 }
 
