@@ -117,7 +117,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
     //but we will need to remember that the localplayer position is 1 tick after aswell on DEMOS (i don't know the reasons of why yet)
     //Tested it under CS:S (even csgo should work), just add a bot with bot_stop 1 on a surf map get velocity, and then try to aim exactly at the head with host_timescale (makes things easier)
     //Shoot and you'll notice that you're not exactly shooting at the right position
-    //and that you are 1 tick after where you should be aiming at.
+    //and that you are 1 tick after where you should be aiming at. 
     //Trying to think of good fix now than setting just the old origin.
 
     FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
