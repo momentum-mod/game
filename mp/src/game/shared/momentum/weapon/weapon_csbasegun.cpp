@@ -111,8 +111,6 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-<<<<<<< HEAD
-
     //MOM_TODO (fix): Kamay-> the crosshair position is 1 tick behind the shooting position, 
     //a possible fix would be to take the old origin instead the new one calculated or set this before the gamemovement code (but maybe that will not correspond to viewoffset so... Old origin), 
     //but we will need to remember that the localplayer position is 1 tick after aswell on DEMOS (i don't know the reasons of why yet)
@@ -121,8 +119,6 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
     //and that you are 1 tick after where you should be aiming at. 
     //Trying to think of good fix now than setting just the old origin.
 
-=======
->>>>>>> parent of c5e409e... Fix the firebullet shooting position (for now only commented), share ideas about the fix please
     FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
                    pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(),
                    bPrimaryMode ? Primary_Mode : Secondary_Mode, CBaseEntity::GetPredictionRandomSeed() & 255,
