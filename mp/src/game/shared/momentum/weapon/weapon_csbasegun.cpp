@@ -24,6 +24,7 @@ CWeaponCSBaseGun::CWeaponCSBaseGun()
     m_flTimeToIdleAfterFire = 2.0f;
     m_flIdleInterval = 20.0f;
     m_zoomFullyActiveTime = -1.0f;
+    m_bWeaponIsLowered = false;
 }
 
 void CWeaponCSBaseGun::Spawn()
@@ -71,8 +72,32 @@ void CWeaponCSBaseGun::ItemPostFrame()
         }
 #endif
     }
-
+    ProcessAnimationEvents();
     BaseClass::ItemPostFrame();
+}
+
+void CWeaponCSBaseGun::ProcessAnimationEvents(void)
+{
+    // Lowers the weapon once the player goes faster than the limit speed
+    // Credit: This is a modified version of 
+    // https://developer.valvesoftware.com/wiki/Lowering_your_weapon_on_sprint
+    CMomentumPlayer *pPlayer = GetPlayerOwner();
+    if (!pPlayer) return;
+    
+    /* MOM_TODO: If we shoot with weapon lowered, weapon does not lower again until we go under
+    the "max unlowered" speed and back again. fix */ 
+    vec_t pCurrent2DVelocitySqr = pPlayer->GetAbsVelocity().Length2DSqr();
+    // Don't simplify this. Seriously.
+    if (!m_bWeaponIsLowered && pCurrent2DVelocitySqr >= 90000)
+    {
+        m_bWeaponIsLowered = true;
+        SendWeaponAnim(ACT_VM_IDLE_LOWERED);
+    }
+    else if (m_bWeaponIsLowered && pCurrent2DVelocitySqr < 90000)
+    {
+        m_bWeaponIsLowered = false;
+        SendWeaponAnim(ACT_VM_IDLE);
+    }
 }
 
 void CWeaponCSBaseGun::PrimaryAttack()
