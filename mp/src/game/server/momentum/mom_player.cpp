@@ -501,6 +501,13 @@ void CMomentumPlayer::RemoveTrail()
     m_eTrail = nullptr;
 }
 
+// Overrides Teleport() so we can take care of the trail
+void CMomentumPlayer::Teleport(const Vector* newPosition, const QAngle* newAngles, const Vector* newVelocity)
+{
+    // No need to remove the trail here, CreateTrail() already does it for us
+    BaseClass::Teleport(newPosition, newAngles, newVelocity);
+    CreateTrail();
+}
 
 void CMomentumPlayer::CreateTrail()
 {

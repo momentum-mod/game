@@ -222,6 +222,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int &GetStrafeTicks() { return m_nStrafeTicks; }
     int &GetAccelTicks() { return m_nAccelTicks; }
 
+    // Trail Methods
+
+    void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
     void CreateTrail();
     void RemoveTrail();
 
