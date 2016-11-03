@@ -4,7 +4,7 @@
 
 #include "SettingsPage.h"
 #include "CVarSlider.h"
-#include <vgui_controls/Button.h>
+#include "CVarTextEntry.h"
 
 using namespace vgui;
 
@@ -22,10 +22,15 @@ class GameplaySettingsPage : public SettingsPage
 
     void OnControlModified(Panel *p) OVERRIDE;
 
+    void OnCheckboxChecked(Panel *p) OVERRIDE;
+
 private:
 
     void UpdateYawspeedEntry() const;
 
     CCvarSlider *m_pYawSpeedSlider;
     TextEntry *m_pYawSpeedEntry;
+
+    CCvarTextEntry *m_pLowerSpeedCVarEntry;
+    CvarToggleCheckButton<ConVarRef> *m_pLowerSpeed;
 };

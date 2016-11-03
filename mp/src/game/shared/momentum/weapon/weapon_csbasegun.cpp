@@ -19,6 +19,9 @@ END_PREDICTION_DATA()
 
 LINK_ENTITY_TO_CLASS(weapon_csbase_gun, CWeaponCSBaseGun);
 
+static ConVar mom_weapon_speed_lower("mom_weapon_speed_lower", "300", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Controls from what speed the weapon will be lowered.\n", true, 0.0f, false, 0.0f);
+static MAKE_TOGGLE_CONVAR(mom_weapon_speed_lower_enable, "1", FCVAR_ARCHIVE | FCVAR_CLIENTDLL, "Controls if the wepaon should get lowered if going faster than mom_weapon_speed_lower.\n");
+
 CWeaponCSBaseGun::CWeaponCSBaseGun()
 {
     m_flTimeToIdleAfterFire = 2.0f;
@@ -76,24 +79,32 @@ void CWeaponCSBaseGun::ItemPostFrame()
     BaseClass::ItemPostFrame();
 }
 
-void CWeaponCSBaseGun::ProcessAnimationEvents(void)
+void CWeaponCSBaseGun::ProcessAnimationEvents()
 {
     // Lowers the weapon once the player goes faster than the limit speed
     // Credit: This is a modified version of 
     // https://developer.valvesoftware.com/wiki/Lowering_your_weapon_on_sprint
-    CMomentumPlayer *pPlayer = GetPlayerOwner();
-    if (!pPlayer) return;
     
-    /* MOM_TODO: If we shoot with weapon lowered, weapon does not lower again until we go under
-    the "max unlowered" speed and back again. fix */ 
-    vec_t pCurrent2DVelocitySqr = pPlayer->GetAbsVelocity().Length2DSqr();
+    // If we currently don't want the weapon to ever lower, don't calculate it. Easy
+    if (!mom_weapon_speed_lower_enable.GetBool()) return;
+
+    CBaseEntity *pOwner = GetOwnerEntity();
+    // With pOwner being just CBaseEntity, we allow the replay entity to also lower its weapon!
+    if (!pOwner) return;
+    vec_t pCurrent2DVelocitySqr = pOwner->GetAbsVelocity().Length2DSqr();
+    float pThresholdSpeed = mom_weapon_speed_lower.GetFloat();
     // Don't simplify this. Seriously.
-    if (!m_bWeaponIsLowered && pCurrent2DVelocitySqr >= 90000)
+    if ((!m_bWeaponIsLowered || (m_bWeaponIsLowered && GetIdealActivity() == ACT_VM_IDLE)) && 
+        pCurrent2DVelocitySqr >= pThresholdSpeed * pThresholdSpeed) // pow is faster than a square root
     {
+        /* The rht of the OR takes care of the weapon being not lowered after shooting. Note how it's not 
+         * GetIdealActivity() != ACT_VM_IDLE_LOWERED so we don't change the firing animation!
+         * It takes a bit until the weapon lowers itself again (IDLE is not set instantly) but that's perfect!
+         */
         m_bWeaponIsLowered = true;
         SendWeaponAnim(ACT_VM_IDLE_LOWERED);
     }
-    else if (m_bWeaponIsLowered && pCurrent2DVelocitySqr < 90000)
+    else if (m_bWeaponIsLowered && pCurrent2DVelocitySqr < pThresholdSpeed * pThresholdSpeed)
     {
         m_bWeaponIsLowered = false;
         SendWeaponAnim(ACT_VM_IDLE);

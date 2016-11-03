@@ -6,11 +6,17 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
+
+    m_pLowerSpeedCVarEntry = FindControl<CCvarTextEntry>("LowerSpeedEntry");
+    m_pLowerSpeed = FindControl<CvarToggleCheckButton<ConVarRef>>("LowerWeaponButton");
+
 }
 
 void GameplaySettingsPage::LoadSettings()
 {
     UpdateYawspeedEntry();
+    if (m_pLowerSpeedCVarEntry && m_pLowerSpeed)
+        m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
 }
 
 void GameplaySettingsPage::OnTextChanged(Panel *p)
@@ -37,6 +43,15 @@ void GameplaySettingsPage::OnControlModified(Panel *p)
     if (p == m_pYawSpeedSlider && m_pYawSpeedSlider->HasBeenModified())
     {
         UpdateYawspeedEntry();
+    }
+}
+
+void GameplaySettingsPage::OnCheckboxChecked(Panel* p)
+{
+    BaseClass::OnCheckboxChecked(p);
+    if (p == m_pLowerSpeed && m_pLowerSpeedCVarEntry)
+    {
+        m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
     }
 }
 
