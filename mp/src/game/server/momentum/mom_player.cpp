@@ -45,6 +45,23 @@ END_DATADESC();
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 
+void TrailCallback(IConVar *var, const char *pOldValue, float flOldValue)
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pPlayer)
+    {
+        pPlayer->CreateTrail(); //Refresh the trail
+    }
+}
+
+static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_ARCHIVE, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1, TrailCallback);
+static ConVar mom_trail_length("mom_trail_length", "4", FCVAR_ARCHIVE, "Length of the trail (in seconds).", true, 1, false, 9000, TrailCallback);
+static ConVar mom_trail_color_r("mom_trail_color_r", "255", FCVAR_ARCHIVE, "Red amount of the trail color.", true, 0, true, 255, TrailCallback);
+static ConVar mom_trail_color_g("mom_trail_color_g", "255", FCVAR_ARCHIVE, "Green amount of the trail color.", true, 0, true, 255, TrailCallback);
+static ConVar mom_trail_color_b("mom_trail_color_b", "255", FCVAR_ARCHIVE, "Blue amount of the trail color.", true, 0, true, 255, TrailCallback);
+static ConVar mom_trail_color_a("mom_trail_color_a", "255", FCVAR_ARCHIVE, "Alpha amount of the trail color. This also controls how bright the trail is.", 
+    true, 0, true, 255, TrailCallback);
+
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
       m_flLastVelocity(0.0f), m_flLastSyncVelocity(0), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
@@ -72,6 +89,7 @@ CMomentumPlayer::CMomentumPlayer()
 
 CMomentumPlayer::~CMomentumPlayer()
 {
+    RemoveTrail();
     RemoveAllCheckpoints();
 }
 
@@ -177,35 +195,19 @@ void CMomentumPlayer::Spawn()
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
-    RemoveSolidFlags(FSOLID_NOT_SOLID); // this removes the flag that was added while switching to spectator mode which
-                                        // prevented the player from activating triggers
+    // this removes the flag that was added while switching to spectator mode which prevented the player from activating triggers
+    RemoveSolidFlags(FSOLID_NOT_SOLID); 
     // do this here because we can't get a local player in the timer class
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
     {
+    case MOMGM_SCROLL:
+        DisableAutoBhop();
+        break;
     case MOMGM_BHOP:
     case MOMGM_SURF:
     {
-        int startnum = 0;
-        int endnum = 0;
-
-        CBaseEntity *pEnt;
-
-        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start");
-        while (pEnt)
-        {
-            startnum++;
-            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_start");
-        }
-
-        pEnt = gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stop");
-        while (pEnt)
-        {
-            endnum++;
-            pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_timer_stop");
-        }
-
-        if (startnum == 0 || endnum == 0)
+        if (!g_pMomentumTimer->GetZoneCount())
         {
             CSingleUserRecipientFilter filter(this);
             filter.MakeReliable();
@@ -216,9 +218,6 @@ void CMomentumPlayer::Spawn()
     case MOMGM_UNKNOWN:
     default:
         EnableAutoBhop();
-        break;
-    case MOMGM_SCROLL:
-        DisableAutoBhop();
         break;
     }
     // Reset all bool gameevents
@@ -262,6 +261,10 @@ void CMomentumPlayer::Spawn()
                     "THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
+
+    // If wanted, create trail
+    if (mom_trail_enable.GetBool())
+        CreateTrail();
 
     SetNextThink(gpGlobals->curtime);
 
@@ -490,6 +493,41 @@ void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
         SetVCollisionState(GetAbsOrigin(), GetAbsVelocity(), bState ? VPHYS_CROUCH : VPHYS_WALK);
     }
 }
+
+void CMomentumPlayer::RemoveTrail()
+{
+    UTIL_RemoveImmediate(m_eTrail);
+    m_eTrail = nullptr;
+}
+
+// Overrides Teleport() so we can take care of the trail
+void CMomentumPlayer::Teleport(const Vector* newPosition, const QAngle* newAngles, const Vector* newVelocity)
+{
+    // No need to remove the trail here, CreateTrail() already does it for us
+    BaseClass::Teleport(newPosition, newAngles, newVelocity);
+    CreateTrail();
+}
+
+void CMomentumPlayer::CreateTrail()
+{
+    RemoveTrail();
+
+    if (!mom_trail_enable.GetBool()) return;
+
+    // Ty GhostingMod
+    m_eTrail = CreateEntityByName("env_spritetrail");
+    m_eTrail->SetAbsOrigin(GetAbsOrigin());
+    m_eTrail->SetParent(this);
+    m_eTrail->KeyValue("rendermode", "5");
+    m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
+    m_eTrail->KeyValue("startwidth", "9.5");
+    m_eTrail->KeyValue("endwidth", "1.05");
+    m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());
+    m_eTrail->SetRenderColor(mom_trail_color_r.GetInt(), mom_trail_color_g.GetInt(), mom_trail_color_b.GetInt(), mom_trail_color_a.GetInt());
+    m_eTrail->KeyValue("renderamt", mom_trail_color_a.GetInt());
+    DispatchSpawn(m_eTrail);
+}
+
 
 void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
