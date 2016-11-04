@@ -158,7 +158,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 pPlayer->m_RunData.m_iStartTick = gpGlobals->tickcount;
             }
         }
-
+        else
+        {
+            // MOM_TODO: Find a better way of doing this
+            // If we can't start the run, play a warning sound
+            pPlayer->EmitSound("Watermelon.Scrape");
+        }
         pPlayer->m_RunData.m_bIsInZone = false;
         pPlayer->m_RunData.m_bMapFinished = false;
     }
