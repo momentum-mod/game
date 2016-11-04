@@ -54,7 +54,6 @@ void TrailCallback(IConVar *var, const char *pOldValue, float flOldValue)
     }
 }
 
-// MOM_TODO: Trail should reset when the run resets and on tps Or at least not join both ends if they are too far away?
 static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_ARCHIVE, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1, TrailCallback);
 static ConVar mom_trail_length("mom_trail_length", "4", FCVAR_ARCHIVE, "Length of the trail (in seconds).", true, 1, false, 9000, TrailCallback);
 static ConVar mom_trail_color_r("mom_trail_color_r", "255", FCVAR_ARCHIVE, "Red amount of the trail color.", true, 0, true, 255, TrailCallback);
