@@ -35,6 +35,8 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+#include "../c_mom_replay_entity.h"
+#include "../../../../public/tier3/tier3.h"
 
 using namespace vgui;
 
@@ -244,12 +246,13 @@ void CMOMSpectatorGUI::Update()
         if (pReplayEnt)
         {
             // Current player name
-            wchar_t wPlayerName[MAX_PLAYER_NAME_LENGTH], szPlayerInfo[128];
+            wchar_t wPlayerName[BUFSIZELOCL], szPlayerInfo[BUFSIZELOCL];
             ANSI_TO_UNICODE(pReplayEnt->m_pszPlayerName, wPlayerName);
-            V_snwprintf(szPlayerInfo, 128, m_pwReplayPlayer, wPlayerName);
+            g_pVGuiLocalize->ConstructString(szPlayerInfo, sizeof(szPlayerInfo), m_pwReplayPlayer, 1, wPlayerName);
 
             if (m_pPlayerLabel)
                 m_pPlayerLabel->SetText(szPlayerInfo);
+
 
             // Duck bind to release mouse
             wchar_t tempControl[BUFSIZELOCL];

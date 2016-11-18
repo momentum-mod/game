@@ -443,7 +443,7 @@ void ColorPicker::Init()
     for (int i = 0; i < 4; i++)
     {
         char tentry_name[64];
-        Q_snprintf(tentry_name, 64, "col_%i\0", i);
+        Q_snprintf(tentry_name, 64, "col_%i", i);
         m_pText_RGBA[i] = FindControl<TextEntry>(tentry_name);
     }
 
