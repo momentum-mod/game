@@ -12,7 +12,8 @@
 #include "mom_shareddefs.h"
 #include "momentum/util/mom_util.h"
 #include "momSpectatorGUI.h"
-#include "../../../../public/tier3/tier3.h"
+
+#include <tier0/memdbgon.h>
 
 C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY, false, false)
 {

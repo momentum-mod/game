@@ -35,8 +35,6 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-#include "../c_mom_replay_entity.h"
-#include "../../../../public/tier3/tier3.h"
 
 using namespace vgui;
 
