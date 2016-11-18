@@ -258,13 +258,13 @@ void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName, bool negativeTime) const
 {
     // We want the absolute value to format! Negatives (if any) should be added post-format!
-    m_flSecondsTime = abs(m_flSecondsTime);
+    m_flSecondsTime = fabs(m_flSecondsTime);
     char separator = fileName ? '-' : ':'; // MOM_TODO: Think of a better char?
     const char *negative = negativeTime ? "-" : "";
-    int hours = m_flSecondsTime / (60.0f * 60.0f);
-    int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
-    int seconds = fmod(m_flSecondsTime, 60.0f);
-    int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
+    int hours = static_cast<int>(m_flSecondsTime / (60.0f * 60.0f));
+    int minutes = static_cast<int>(fmod(m_flSecondsTime / 60.0f, 60.0f));
+    int seconds = static_cast<int>(fmod(m_flSecondsTime, 60.0f));
+    int millis = static_cast<int>(fmod(m_flSecondsTime, 1.0f) * 1000.0f);
     int hundredths = millis / 10;
     int tenths = millis / 100;
 

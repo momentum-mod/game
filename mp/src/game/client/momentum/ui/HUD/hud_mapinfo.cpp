@@ -162,7 +162,7 @@ void C_HudMapInfo::Paint()
     }
     else
     { // No stages/checkpoints found
-        Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), noZonesLocalized);
+        Q_strncpy(m_pszStringStages, noZonesLocalized, sizeof(m_pszStringStages));
     }
 
     ANSI_TO_UNICODE(m_pszStringStages, m_pwCurrentStages);
@@ -173,13 +173,13 @@ void C_HudMapInfo::Paint()
         if (m_iZoneCurrent == 1)
         {
             // Start zone
-            Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), startZoneLocalized);
+            Q_strncpy(m_pszStringStatus, startZoneLocalized, sizeof(m_pszStringStatus));
             ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
         }
         else if (m_bPlayerInZone && m_bMapFinished) // don't check for zone # in case the player skipped one somehow
         {
             // End zone
-            Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus), mapFinishedLocalized);
+            Q_strncpy(m_pszStringStatus, mapFinishedLocalized, sizeof(m_pszStringStatus));
             ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
         }
         else
