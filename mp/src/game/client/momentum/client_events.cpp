@@ -47,6 +47,7 @@ void CMOMClientEvents::PostInit()
         char downloadPath[MAX_PATH];
         V_ComposeFileName(pathCStrike, "download", downloadPath, sizeof(downloadPath));
         filesystem->AddSearchPath(downloadPath, "GAME");
+        filesystem->AddSearchPath(downloadPath, "download");
 
 #ifdef DEBUG
         filesystem->PrintSearchPaths();

@@ -51,6 +51,8 @@ class CMomentumGameMovement : public CGameMovement
     // Override fall damage
     virtual void CheckFalling();
 
+    virtual void PlayerRoughLandingEffects(float) OVERRIDE;
+
     // added ladder
     virtual float LadderDistance(void) const
     {

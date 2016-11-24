@@ -4,6 +4,7 @@
 #include "mom_gamemovement.h"
 #include "movevars_shared.h"
 #include <stdarg.h>
+#include <rumble_shared.h>
 
 #include "tier0/memdbgon.h"
 
@@ -14,9 +15,42 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
+static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
 CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr) {}
+
+void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
+{
+    if (fvol > 0.0)
+    {
+        //
+        // Play landing sound right away.
+        player->m_flStepSoundTime = 400;
+
+        // Play step sound for current texture.
+        player->PlayStepSound(const_cast<Vector &>(mv->GetAbsOrigin()), player->m_pSurfaceData, fvol, true);
+
+#ifndef CLIENT_DLL
+        //
+        // Knock the screen around a little bit, temporary effect (IF ENABLED)
+        //
+        if (mom_punchangle_enable.GetBool())
+        {
+            player->m_Local.m_vecPunchAngle.Set(ROLL, player->m_Local.m_flFallVelocity * 0.013);
+
+            if (player->m_Local.m_vecPunchAngle[PITCH] > 8)
+            {
+                player->m_Local.m_vecPunchAngle.Set(PITCH, 8);
+            }
+        }
+
+        player->RumbleEffect((fvol > 0.85f) ? (RUMBLE_FALL_LONG) : (RUMBLE_FALL_SHORT), 0, RUMBLE_FLAGS_NONE);
+#endif
+    }
+}
+
+
 
 void CMomentumGameMovement::DecayPunchAngle(void)
 {

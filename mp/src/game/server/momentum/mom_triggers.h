@@ -146,7 +146,7 @@ class CTriggerTimerStart : public CTriggerStage
     bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
     void SetIsLimitingSpeed(bool pIsLimitingSpeed);
     void SetHasLookAngles(bool bHasLook);
-    bool GetHasLookAngles() { return HasSpawnFlags(SF_USE_LOOKANGLES); }
+    bool HasLookAngles() { return HasSpawnFlags(SF_USE_LOOKANGLES); }
 
   private:
     QAngle m_angLook;
