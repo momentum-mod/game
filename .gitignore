@@ -100,3 +100,4 @@ shared_srv.so.dbg
 *.cfg
 .idea/
 CMakeLists.txt
+mp/src/materialsystem/stdshaders/Debug_dx9_Momentum/game_shader_dx9.dll

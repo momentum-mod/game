@@ -1,16 +1,14 @@
 ..\..\devtools\bin\d3dx9_33.dll 
 ..\..\dx10sdk\utilities\dx9_30\dx_proxy.dll 
-F:\Program Files\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\shadercompile.exe 
-F:\Program Files\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\shadercompile_dll.dll 
-F:\Program Files\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\tier0.dll 
-F:\Program Files\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\vstdlib.dll 
+C:\Program Files (x86)\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\shadercompile.exe 
+C:\Program Files (x86)\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\shadercompile_dll.dll 
+C:\Program Files (x86)\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\tier0.dll 
+C:\Program Files (x86)\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\vstdlib.dll 
 common_fxc.h
 common_hlsl_cpp_consts.h
 common_pragmas.h
 common_ps_fxc.h
 common_vs_fxc.h
-gauss_blur_3x3_ps30.fxc
-gauss_blur_3x3_vs30.fxc
 ssao_combine_ps30.fxc
 ssao_combine_vs30.fxc
 ssao_ps30.fxc
