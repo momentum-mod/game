@@ -30,21 +30,21 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     CMOMSpectatorGUI(IViewPort *pViewPort);
     virtual ~CMOMSpectatorGUI(){};
 
-    const char *GetName(void) override { return PANEL_SPECGUI; }
-    void SetData(KeyValues *data) override{};
-    void Reset() override{};
-    void Update() override;
-    bool NeedsUpdate(void) override { return false; }
-    bool HasInputElements(void) override { return false; }
-    void ShowPanel(bool bShow) override;
+    const char *GetName(void) OVERRIDE { return PANEL_SPECGUI; }
+    void SetData(KeyValues *data) OVERRIDE{};
+    void Reset() OVERRIDE{};
+    void Update() OVERRIDE;
+    bool NeedsUpdate(void) OVERRIDE { return false; }
+    bool HasInputElements(void) OVERRIDE { return false; }
+    void ShowPanel(bool bShow) OVERRIDE;
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
     vgui::VPANEL GetVPanel(void) { return BaseClass::GetVPanel(); }
-    bool IsVisible() override { return BaseClass::IsVisible(); }
-    void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
-    void OnThink() override;
+    bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }
+    void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); }
+    void OnThink() OVERRIDE;
 
-    void SetMouseInputEnabled(bool bState) override
+    void SetMouseInputEnabled(bool bState) OVERRIDE
     {
         BaseClass::SetMouseInputEnabled(bState);
 
@@ -58,7 +58,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
     const char *GetResFile(void) const { return "resource/UI/Spectator.res"; }
 
-    void FireGameEvent(IGameEvent *pEvent) override
+    void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {
         if (!Q_strcmp(pEvent->GetName(), "spec_target_updated"))
         {
@@ -72,9 +72,9 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
   protected:
     // vgui overrides
-    void PerformLayout() override;
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
-    void OnMousePressed(vgui::MouseCode code) override;
+    void PerformLayout() OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
+    void OnMousePressed(vgui::MouseCode code) OVERRIDE;
 
   private:
     Panel *m_pTopBar;

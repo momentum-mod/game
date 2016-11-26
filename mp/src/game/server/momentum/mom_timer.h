@@ -223,7 +223,7 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
     {
     }
 
-    bool EnumEntity(IHandleEntity *pHandleEntity) override;
+    bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
 
   private:
     int m_iZoneType;

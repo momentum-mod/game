@@ -91,10 +91,10 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
   protected:
-    void Think(void) override;
-    void Spawn(void) override;
-    void Precache(void) override;
-    void FireGameEvent(IGameEvent *pEvent) override;
+    void Think(void) OVERRIDE;
+    void Spawn(void) OVERRIDE;
+    void Precache(void) OVERRIDE;
+    void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
   private:
     char m_pszModel[256], m_pszMapName[256];

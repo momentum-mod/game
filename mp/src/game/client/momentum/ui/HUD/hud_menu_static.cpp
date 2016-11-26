@@ -7,6 +7,11 @@
 //=============================================================================//
 #include "cbase.h"
 #include "hud_menu_static.h"
+#include "clientmode.h"
+#include "vgui_controls/AnimationController.h"
+#include "vgui/ILocalize.h"
+
+#include "tier0/memdbgon.h"
 
 using namespace vgui;
 
@@ -72,6 +77,12 @@ void CHudMenuStatic::OnThink()
 
 void CHudMenuStatic::HideMenu(void)
 {
+    if (CloseFunc)
+        CloseFunc();
+
+    CloseFunc = nullptr;
+    SelectFunc = nullptr;
+
     m_bMenuTakesInput = false;
     m_flShutoffTime = gpGlobals->realtime + m_flOpenCloseTime;
     g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuClose");

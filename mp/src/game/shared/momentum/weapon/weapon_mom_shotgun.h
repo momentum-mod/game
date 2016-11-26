@@ -16,13 +16,13 @@ class CMomentumShotgun : public CWeaponCSBaseGun
 
     CMomentumShotgun();
 
-    void PrimaryAttack() override;
+    void PrimaryAttack() OVERRIDE;
 #ifdef WEAPONS_USE_AMMO
-    bool Reload() override;
+    bool Reload() OVERRIDE;
 #endif
-    void WeaponIdle() override;
+    void WeaponIdle() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const override { return WEAPON_SHOTGUN; }
+    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_SHOTGUN; }
 
   private:
     CMomentumShotgun(const CMomentumShotgun &);

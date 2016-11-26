@@ -20,9 +20,9 @@ public:
         m_flIdleInterval = 20.0f;
     };
 
-    void PrimaryAttack() override;
+    void PrimaryAttack() OVERRIDE;
 
-    CSWeaponID GetWeaponID(void) const override { return WEAPON_RIFLE; }
+    CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_RIFLE; }
 
 private:
     void RifleFire();

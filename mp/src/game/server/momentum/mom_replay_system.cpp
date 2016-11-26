@@ -132,8 +132,8 @@ void CMomentumReplaySystem::SetReplayInfo()
 
     replay->SetMapName(gpGlobals->mapname.ToCStr());
     replay->SetPlayerName(m_player->GetPlayerName());
-    replay->SetPlayerSteamID(steamapicontext->SteamUser() ? steamapicontext->SteamUser()->GetSteamID().ConvertToUint64()
-                                                          : 0);
+    ISteamUser *pUser = steamapicontext->SteamUser();
+    replay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     replay->SetTickInterval(gpGlobals->interval_per_tick);
     replay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
     replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);

@@ -14,7 +14,7 @@
 
 using namespace vgui;
 
-MainMenu::MainMenu(Panel* parent) : BaseClass(nullptr, "MainMenu")
+MainMenu::MainMenu(Panel* parent) : BaseClass(parent, "MainMenu")
 {
 	HScheme Scheme = scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
 	SetScheme(Scheme);

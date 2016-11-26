@@ -20,11 +20,11 @@ class CHudVersionInfo : public CHudElement, public Panel
   public:
     CHudVersionInfo(const char *pElementName);
 
-    bool ShouldDraw() override { return CHudElement::ShouldDraw(); }
+    bool ShouldDraw() OVERRIDE { return CHudElement::ShouldDraw(); }
 
-    void Paint() override;
+    void Paint() OVERRIDE;
 
-    void Init() override;
+    void Init() OVERRIDE;
 
   protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");

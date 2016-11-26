@@ -7,7 +7,7 @@
     {
         "ControlName" "SettingsPanel"
         "fieldName" "GameplaySettings"
-        "tall" "150"
+        "tall" "200"
         "wide" "1000"
     }
     
@@ -94,7 +94,7 @@
         "ControlName" "CvarToggleCheckButton"
         "fieldName" "PlayBlockSound"
         "xpos" "12"
-        "ypos" "32"
+        "ypos" "35"
         "wide"		"189"
 		"tall"		"16"
 		"autoResize"		"0"
@@ -181,6 +181,50 @@
 		"Default"		"0"
 		"cvar_name"		"mom_checkpoint_save_between_sessions"
 		"cvar_value"		"1"
+        "actionsignallevel" "1"
+    }
+	"EnableTrail"
+	{
+	    "ControlName" "CvarToggleCheckButton"
+        "fieldName" "EnableTrail"
+        "xpos" "12"
+        "ypos" "77"
+        "wide"		"189"
+		"tall"		"16"
+		"autoResize"		"0"
+		"pinCorner"		"0"
+		"RoundedCorners"		"15"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"0"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"		"0"
+		"labelText"		"#MOM_Settings_Enable_Trail"
+		"textAlignment"		"west"
+		"dulltext"		"0"
+		"brighttext"		"0"
+		"wrap"		"0"
+		"centerwrap"		"0"
+		"textinsetx"		"6"
+		"textinsety"		"0"
+		"auto_wide_tocontents"		"1"
+		"use_proportional_insets"		"0"
+		"Default"		"0"
+		"cvar_name"		"mom_trail_enable"
+		"cvar_value"		"1"
+	}
+    
+    "PickColorButton"
+    {
+        "ControlName" "Button"
+        "fieldName" "PickColorButton"
+        "xpos" "30"
+        "ypos" "95"
+        "command" "picker"
+        "visible" "1"
+        "enabled" "1"
+        "labelText" ""
+        "tooltiptext" "#MOM_Settings_Pick_Trail_Color_TT"
         "actionsignallevel" "1"
     }
 }

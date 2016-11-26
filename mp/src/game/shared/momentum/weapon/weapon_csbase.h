@@ -94,17 +94,17 @@ class CWeaponCSBase : public CBaseCombatWeapon
 
     void SendReloadEvents();
 
-    void Materialize() override;
+    void Materialize() OVERRIDE;
 
     virtual bool IsRemoveable();
 
 #endif
 
-    bool Holster(CBaseCombatWeapon *pSwitchingTo) override;
-    void AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAngle &angles) override;
-    float CalcViewmodelBob(void) override;
+    bool Holster(CBaseCombatWeapon *pSwitchingTo) OVERRIDE;
+    void AddViewmodelBob(CBaseViewModel *viewmodel, Vector &origin, QAngle &angles) OVERRIDE;
+    float CalcViewmodelBob(void) OVERRIDE;
     // All predicted weapons need to implement and return true
-    bool IsPredicted() const override { return true; }
+    bool IsPredicted() const OVERRIDE { return true; }
 
     // Pistols reset m_iShotsFired to 0 when the attack button is released.
     bool IsPistol() const { return GetCSWpnData().m_WeaponType == WEAPONTYPE_PISTOL; }
@@ -127,12 +127,12 @@ class CWeaponCSBase : public CBaseCombatWeapon
   public:
 #if defined(CLIENT_DLL)
 
-    void ProcessMuzzleFlashEvent() override;
+    void ProcessMuzzleFlashEvent() OVERRIDE;
     bool OnFireEvent(C_BaseViewModel *pViewModel, const Vector &origin, const QAngle &angles, int event,
-                     const char *options) override;
-    bool ShouldPredict() override;
-    void DrawCrosshair() override;
-    void OnDataChanged(DataUpdateType_t type) override;
+                     const char *options) OVERRIDE;
+    bool ShouldPredict() OVERRIDE;
+    void DrawCrosshair() OVERRIDE;
+    void OnDataChanged(DataUpdateType_t type) OVERRIDE;
 
     virtual int GetMuzzleAttachment(void);
     virtual bool HideViewModelWhenZoomed(void) { return true; }
@@ -156,20 +156,20 @@ class CWeaponCSBase : public CBaseCombatWeapon
 #endif
 
     bool IsUseable();
-    bool CanDeploy(void) override;
-    void Precache(void) override; // Overridden for CS guns to point to momentum gun overrides
-    bool CanBeSelected(void) override;
+    bool CanDeploy(void) OVERRIDE;
+    void Precache(void) OVERRIDE; // Overridden for CS guns to point to momentum gun overrides
+    bool CanBeSelected(void) OVERRIDE;
     virtual Activity GetDeployActivity(void);
-    bool DefaultDeploy(char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt) override;
-    void DefaultTouch(CBaseEntity *pOther) override; // default weapon touch
+    bool DefaultDeploy(char *szViewModel, char *szWeaponModel, int iActivity, char *szAnimExt) OVERRIDE;
+    void DefaultTouch(CBaseEntity *pOther) OVERRIDE; // default weapon touch
     virtual bool DefaultPistolReload();
 
-    bool Deploy() override;
-    void Drop(const Vector &vecVelocity) override;
+    bool Deploy() OVERRIDE;
+    void Drop(const Vector &vecVelocity) OVERRIDE;
     bool PlayEmptySound();
-    void ItemPostFrame() override;
+    void ItemPostFrame() OVERRIDE;
 
-    const char *GetViewModel(int viewmodelindex = 0) const override;
+    const char *GetViewModel(int viewmodelindex = 0) const OVERRIDE;
 
     bool m_bDelayFire; // This variable is used to delay the time between subsequent button pressing.
     float m_flAccuracy;

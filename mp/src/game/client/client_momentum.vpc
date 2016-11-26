@@ -14,7 +14,7 @@ $Configuration
     $Compiler
     {
         $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
-        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013"
+        $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013;SDK_DLL"
     }
 }
 
@@ -111,6 +111,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\CVarSlider.cpp"
                     $File "momentum\ui\ScrubbableProgressBar.h"
                     $File "momentum\ui\ScrubbableProgressBar.cpp"
+                    $File "momentum\ui\ColorPicker.h"
+                    $File "momentum\ui\ColorPicker.cpp"
                 }
                 
                 $Folder "Leaderboards"
@@ -127,7 +129,6 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\ChangelogPanel.cpp"
                     $File   "momentum\ui\ChangelogPanel.h"
                 }
-                
                 $Folder "Feedback"
                 {
                     $File 	"momentum\ui\ContactPanel.cpp"
@@ -148,6 +149,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\mom_replayui.cpp"
                     $File "momentum\ui\mom_replayui.h"
                 }
+                
+                $File "momentum\ui\MeasureTool.cpp"
             }
 
             $File   "momentum\client_events.h"
@@ -263,6 +266,11 @@ $Project "Client (Momentum)"
             $File   "momentum\clientmode_mom_normal.cpp"
             $File   "momentum\mom_event_listener.h"
             $File   "momentum\mom_event_listener.cpp"
+            
+            // RTT Shadows
+            $File "momentum\worldlight.h"
+            $File "momentum\worldlight.cpp"
+            
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
             
@@ -272,8 +280,6 @@ $Project "Client (Momentum)"
                 $File "momentum\dynamicrendertargets.h"
             }
         }
-        
-        //$File "hl2\C_Func_Monitor.cpp"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"

@@ -18,13 +18,13 @@ class HudSettingsPage : public SettingsPage
 
     ~HudSettingsPage() {}
 
-    void OnApplyChanges() override;
+    void OnApplyChanges() OVERRIDE;
 
-    void LoadSettings() override;
+    void LoadSettings() OVERRIDE;
 
     //This uses OnCheckbox and not OnModified because we want to be able to enable
     // the other checkboxes regardless of whether the player clicks Apply/OK
-    void OnCheckboxChecked(Panel *p) override;
+    void OnCheckboxChecked(Panel *p) OVERRIDE;
 
   private:
     ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize;

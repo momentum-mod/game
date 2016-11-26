@@ -16,11 +16,11 @@ class ReplaysSettingsPage : public SettingsPage
 
     ~ReplaysSettingsPage() {}
 
-    void LoadSettings() override;
+    void LoadSettings() OVERRIDE;
 
-    void OnTextChanged(Panel *p) override;
+    void OnTextChanged(Panel *p) OVERRIDE;
 
-    void OnControlModified(Panel *p) override;
+    void OnControlModified(Panel *p) OVERRIDE;
 
 private:
     void UpdateReplayEntityAlphaEntry() const;

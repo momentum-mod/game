@@ -94,31 +94,31 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CClientTimesDisplay(IViewPort *pViewPort);
     ~CClientTimesDisplay();
 
-    const char *GetName(void) override { return PANEL_TIMES; }
+    const char *GetName(void) OVERRIDE { return PANEL_TIMES; }
 
-    void SetData(KeyValues *data) override{};
+    void SetData(KeyValues *data) OVERRIDE{};
 
-    void Reset() override;
-    void Update() override;
+    void Reset() OVERRIDE;
+    void Update() OVERRIDE;
     void Update(bool pFullUpdate);
     void Reset(bool pFullReset);
-    bool NeedsUpdate(void) override;
+    bool NeedsUpdate(void) OVERRIDE;
 
-    bool HasInputElements(void) override { return true; }
+    bool HasInputElements(void) OVERRIDE { return true; }
 
-    void ShowPanel(bool bShow) override;
+    void ShowPanel(bool bShow) OVERRIDE;
 
     bool ShowAvatars() { return IsPC(); }
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
-    vgui::VPANEL GetVPanel(void) override { return BaseClass::GetVPanel(); }
+    vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
 
-    bool IsVisible() override { return BaseClass::IsVisible(); }
+    bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }
 
-    void SetParent(vgui::VPANEL parent) override { BaseClass::SetParent(parent); }
+    void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); }
 
     // IGameEventListener interface:
-    void FireGameEvent(IGameEvent *event) override;
+    void FireGameEvent(IGameEvent *event) OVERRIDE;
 
     //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
     // Updates the local player's avatar image
@@ -146,17 +146,17 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
     void InitScoreboardSections();
     void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
-    void OnThink() override;
+    void OnThink() OVERRIDE;
     void AddHeader(); // add the start header of the scoreboard
     static int GetAdditionalHeight() { return 0; }
 
-    void OnCommand(const char *pCommand) override;
+    void OnCommand(const char *pCommand) OVERRIDE;
 
     // sorts players within a section
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
     static bool StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
 
-    void ApplySchemeSettings(vgui::IScheme *pScheme) override;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
     void PostApplySchemeSettings(vgui::IScheme *pScheme);
 

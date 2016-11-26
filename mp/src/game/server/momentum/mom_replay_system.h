@@ -26,20 +26,20 @@ public:
         m_pReplayManager = new CMomReplayManager();
     }
 
-    virtual ~CMomentumReplaySystem() override
+    virtual ~CMomentumReplaySystem() OVERRIDE
     {
         delete m_pReplayManager;
     }
 
 public:
     // inherited member from CAutoGameSystemPerFrame
-    void FrameUpdatePostEntityThink() override
+    void FrameUpdatePostEntityThink() OVERRIDE
     {
         if (m_pReplayManager->Recording())
             UpdateRecordingParams();
     }
 
-    void LevelShutdownPostEntity() override
+    void LevelShutdownPostEntity() OVERRIDE
     {
         //Stop a recording if there is one while the level shuts down
         if (m_pReplayManager->Recording())

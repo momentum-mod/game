@@ -36,7 +36,7 @@ class CReplayFrame : public ISerializable
     }
 
   public:
-    virtual void Serialize(CBinaryWriter *writer) override
+    virtual void Serialize(CBinaryWriter *writer) OVERRIDE
     {
         writer->WriteFloat(m_angEyeAngles.x);
         writer->WriteFloat(m_angEyeAngles.y);
@@ -84,7 +84,7 @@ class CReplayHeader : public ISerializable
     }
 
   public:
-    virtual void Serialize(CBinaryWriter *writer) override
+    virtual void Serialize(CBinaryWriter *writer) OVERRIDE
     {
         writer->WriteString(m_szMapName);
         writer->WriteString(m_szPlayerName);

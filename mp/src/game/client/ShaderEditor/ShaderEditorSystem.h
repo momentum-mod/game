@@ -16,12 +16,12 @@ public:
 	ShaderEditorHandler( char const *name );
 	~ShaderEditorHandler();
 
-    bool Init() override;
-    void Shutdown() override;
+    bool Init() OVERRIDE;
+    void Shutdown() OVERRIDE;
 
-    void Update( float frametime ) override;
-    void PreRender() override;
-    void PostRender() override;
+    void Update( float frametime ) OVERRIDE;
+    void PreRender() OVERRIDE;
+    void PostRender() OVERRIDE;
 	void CustomViewRender( int *viewId, const VisibleFogVolumeInfo_t &fogVolumeInfo, const WaterRenderInfo_t &waterRenderInfo );
 	void CustomPostRender() const;
 	void UpdateSkymask( bool bCombineMode = false ) const;
