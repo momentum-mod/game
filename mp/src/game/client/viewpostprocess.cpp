@@ -2213,9 +2213,6 @@ static ConVar r_queued_post_processing( "r_queued_post_processing", "0" );
 static ConVar mat_postprocess_x( "mat_postprocess_x", "4" );
 static ConVar mat_postprocess_y( "mat_postprocess_y", "1" );
 
-static ConVar ssao_blur("ssao_blur", "1", FCVAR_ARCHIVE);
-static ConVar ssao_combine("ssao_combine", "1", FCVAR_ARCHIVE, "1: normal combined view. 0: no framebuffer texture, show only first SSAO pass\n");
-
 void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, bool bPostVGui )
 {
 	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "%s", __FUNCTION__ );
@@ -3000,7 +2997,11 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 		}
 	}
 }
+
 // Special thanks to DmitRex for this SSAO implementation!
+static ConVar ssao_blur("ssao_blur", "1", FCVAR_ARCHIVE);
+static ConVar ssao_combine("ssao_combine", "1", FCVAR_ARCHIVE, "1: normal combined view. 0: no framebuffer texture, show only first SSAO pass\n");
+
 void DoSSAO(const CViewSetup &view)
 {
     CMatRenderContextPtr pRenderContext(materials);

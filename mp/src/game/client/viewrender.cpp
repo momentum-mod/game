@@ -130,7 +130,6 @@ static ConVar r_threaded_renderables( "r_threaded_renderables", "0" );
 ConVar r_DrawDetailProps( "r_DrawDetailProps", "1", FCVAR_NONE, "0=Off, 1=Normal, 2=Wireframe" );
 
 ConVar r_worldlistcache( "r_worldlistcache", "1" );
-ConVar ssao_enable("ssao_enable", "1", FCVAR_ARCHIVE | FCVAR_REPLICATED);
 
 //-----------------------------------------------------------------------------
 // Convars related to fog color
@@ -2177,7 +2176,27 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		}
 
 	}
-    if (ssao_enable.GetBool())
+
+#ifdef GAMEUI2
+    if (g_pGameUI2)
+    {
+        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
+        if (maskTexture)
+        {
+            CMatRenderContextPtr renderContext(materials);
+            renderContext->PushRenderTargetAndViewport(maskTexture);
+            renderContext->ClearColor4ub(0, 0, 0, 255);
+            renderContext->ClearBuffers(true, true, true);
+            renderContext->PopRenderTargetAndViewport();
+
+            g_pGameUI2->SetFrustum(GetFrustum());
+            g_pGameUI2->SetView(view);
+            g_pGameUI2->SetMaskTexture(maskTexture);
+        }
+    }
+#endif
+
+    if (ConVarRef("ssao_enable").GetBool())
     {
         DoSSAO(view);
     }
@@ -2215,25 +2234,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 	{
 		saveRenderTarget = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye - 1), ISourceVirtualReality::RT_Color );
 	}
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-    {
-        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
-        if (maskTexture)
-        {
-            CMatRenderContextPtr renderContext(materials);
-            renderContext->PushRenderTargetAndViewport(maskTexture);
-            renderContext->ClearColor4ub(0, 0, 0, 255);
-            renderContext->ClearBuffers(true, true, true);
-            renderContext->PopRenderTargetAndViewport();
-
-            g_pGameUI2->SetFrustum(GetFrustum());
-            g_pGameUI2->SetView(view);
-            g_pGameUI2->SetMaskTexture(maskTexture);
-        }
-    }
-#endif
 
 	// Draw the 2D graphics
 	render->Push2DView( view, 0, saveRenderTarget, GetFrustum() );
