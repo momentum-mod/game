@@ -828,15 +828,16 @@ void CMomentumPlayer::LimitSpeedInStartZone()
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
         ConVarRef gm("mom_gamemode");
-        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
         CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
-        if (bhopGameMode && startTrigger && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
+        bool isLimitingSpeed = startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED);
+        if (bhopGameMode && startTrigger && isLimitingSpeed && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
-            float PunishVelSquared = startTrigger->GetPunishSpeed() * startTrigger->GetPunishSpeed();
+            float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
             if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check agaisnt the square of velocity
             {
-                velocity = (velocity / velocity.Length()) * startTrigger->GetPunishSpeed();
+                velocity = (velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed();
                 SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
             }
         }

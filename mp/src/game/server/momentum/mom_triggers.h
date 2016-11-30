@@ -138,9 +138,6 @@ class CTriggerTimerStart : public CTriggerStage
     void SetMaxLeaveSpeed(float maxLeaveSpeed);
     void SetLookAngles(QAngle newang);
     QAngle GetLookAngles() { return m_angLook; }
-    // MOM_TODO: Is this even used right now??
-    void SetPunishSpeed(float pPunishSpeed);
-    float GetPunishSpeed() { return m_fPunishSpeed; }
 
     // spawnflags
     bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
@@ -153,7 +150,6 @@ class CTriggerTimerStart : public CTriggerStage
 
     // How fast can player leave start trigger if they bhopped?
     float m_fBhopLeaveSpeed;
-    float m_fPunishSpeed;
 };
 
 // CFilterCheckpoint
