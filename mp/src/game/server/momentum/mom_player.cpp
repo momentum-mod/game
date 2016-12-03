@@ -564,8 +564,8 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
         Checkpoint *c = m_rcCheckpoints[i];
-        char szCheckpointNum[6]; // 9 million checkpoints is pretty generous
-        Q_snprintf(szCheckpointNum, 6, "%i", i);
+        char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
+        Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
         kvCP->SetString("targetName", c->targetName);
         kvCP->SetString("targetClassName", c->targetClassName);

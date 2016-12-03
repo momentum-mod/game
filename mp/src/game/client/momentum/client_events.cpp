@@ -30,7 +30,7 @@ void CMOMClientEvents::PostInit()
         mom_UTIL->GetRemoteRepoModVersion();
     }
 
-    // mount CSS content even if it's on a different drive than SDK
+    // Mount CSS content even if it's on a different drive than SDK
     if (steamapicontext && steamapicontext->SteamApps())
     {
         char installPath[MAX_PATH];
@@ -49,7 +49,7 @@ void CMOMClientEvents::PostInit()
         filesystem->AddSearchPath(downloadPath, "GAME");
         filesystem->AddSearchPath(downloadPath, "download");
 
-#ifdef DEBUG
+#ifdef _DEBUG
         filesystem->PrintSearchPaths();
 #endif
 
