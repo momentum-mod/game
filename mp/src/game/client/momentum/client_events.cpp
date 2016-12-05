@@ -72,6 +72,16 @@ void CMOMClientEvents::PostInit()
     // MOM_TODO: Change this once we hit Alpha/Beta
     // MOM_CURRENT_VERSION
     messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Prealpha_Title", "#MOM_StartupMsg_Prealpha", "mom_toggle_versionwarn", "#MOM_IUnderstand");
+
+    // So: If cl_software_cursor is 1 on game init, it won't use the software cursor for some reason, so we have to trick the engine 
+    // so it obeys
+    // If you find the reason, let @Rubén know (Probably the callback function is not being called on init, right?)
+    ConVarRef cVarCursor("cl_software_cursor");
+    if (cVarCursor.GetBool())
+    {
+        cVarCursor.SetValue(0);
+        cVarCursor.SetValue(1);
+    }
     
     if (!steamapicontext || !steamapicontext->SteamHTTP() || !steamapicontext->SteamUtils())
     {
