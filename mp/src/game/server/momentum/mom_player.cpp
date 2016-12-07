@@ -561,6 +561,11 @@ void CMomentumPlayer::TeleportToCheckpoint(Checkpoint *pCP)
 
 void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
 {
+    // Set the current index
+    kvInto->SetInt("cur", m_iCurrentStepCP);
+
+    // Add all your checkpoints
+    KeyValues *kvCPs = new KeyValues("cps");
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
         Checkpoint *c = m_rcCheckpoints[i];
@@ -573,21 +578,28 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
         mom_UTIL->KVSaveVector(kvCP, "pos", c->pos);
         mom_UTIL->KVSaveQAngles(kvCP, "ang", c->ang);
         kvCP->SetBool("crouched", c->crouched);
-        kvInto->AddSubKey(kvCP);
+        kvCPs->AddSubKey(kvCP);
     }
+
+    // Save them into the keyvalues
+    kvInto->AddSubKey(kvCPs);
 }
 
 void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
 {
     if (!kvFrom || kvFrom->IsEmpty()) return;
-    FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
+
+    m_iCurrentStepCP = kvFrom->GetInt("cur");
+
+    KeyValues *kvCPs = kvFrom->FindKey("cps");
+    if (!kvCPs) return;
+    FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
     {
         Checkpoint *c = new Checkpoint(kvCheckpoint);
         m_rcCheckpoints.AddToTail(c);
     }
 
     m_iCheckpointCount = m_rcCheckpoints.Count();
-    m_iCurrentStepCP = m_iCheckpointCount - 1;
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
