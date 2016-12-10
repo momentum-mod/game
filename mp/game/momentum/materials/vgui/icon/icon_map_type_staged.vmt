@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+    "$basetexture"  "vgui\icon_map_type_staged"
+	"$translucent"  1
+	"$ignorez"	1
+}

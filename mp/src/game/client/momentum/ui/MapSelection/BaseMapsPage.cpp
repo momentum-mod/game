@@ -1,15 +1,45 @@
 #include "pch_mapselection.h"
 
-using namespace vgui;
-
-#define FILTER_ALLSERVERS			0
-#define FILTER_SECURESERVERSONLY	1
-#define FILTER_INSECURESERVERSONLY	2
-
-#define UNIVERSE_OFFICIAL			0
-#define UNIVERSE_CUSTOMGAMES		1
+using namespace vgui; 
 
 #undef wcscat
+
+#define KEYNAME_MAP_NAME "Name"
+#define KEYNAME_MAP_COMPLETED "HasCompleted"
+#define KEYNAME_MAP_LAYOUT "MapLayout"
+#define KEYNAME_MAP_GAME_MODE "gamemode"
+#define KEYNAME_MAP_DIFFICULTY "difficulty"
+#define KEYNAME_MAP_BEST_TIME "time"
+
+//Sort functions
+static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+{
+    const char *string1 = item1.kv->GetString(KEYNAME_MAP_NAME);
+    const char *string2 = item2.kv->GetString(KEYNAME_MAP_NAME);
+    return Q_stricmp(string1, string2);
+}
+
+static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+{
+    bool i1 = item1.kv->GetBool(KEYNAME_MAP_COMPLETED);
+    bool i2 = item2.kv->GetBool(KEYNAME_MAP_COMPLETED);
+    if (i1 < i2)
+        return 1;
+    else if (i1 == i2)
+        return 0;
+    else return -1;
+}
+
+static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
+{
+    int i1 = item1.kv->GetInt(KEYNAME_MAP_LAYOUT);
+    int i2 = item2.kv->GetInt(KEYNAME_MAP_LAYOUT);
+    if (i1 < i2)
+        return 1;
+    else if (i1 == i2)
+        return 0;
+    else return -1;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -64,20 +94,16 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
     m_pGameList->SetAllowUserModificationOfColumns(true);
     
     // Add the column headers
-    m_pGameList->AddColumnHeader(HEADER_COMPLETED, "HasCompleted", "#MOM_MapSelector_Completed", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
-    m_pGameList->AddColumnHeader(HEADER_MAPLAYOUT, "MapLayout", "#MOM_MapSelector_MapLayout", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
-    //m_pGameList->AddColumnHeader(HEADER_STAGEDMAP, "IsStaged", "#MOM_MapSelector_IsStaged", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
-    //m_pGameList->AddColumnHeader(1, "Bots", "#ServerBrowser_Bots", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_HIDDEN);//Don't need
-    //m_pGameList->AddColumnHeader(2, "Secure", "#ServerBrowser_Secure", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);//Don't need
-    m_pGameList->AddColumnHeader(HEADER_MAPNAME, "Name", "#MOM_MapSelector_Maps", 50, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);//Map name column
-    //m_pGameList->AddColumnHeader(4, "IPAddr", "#ServerBrowser_IPAddress", 64, ListPanel::COLUMN_HIDDEN);
-    m_pGameList->AddColumnHeader(HEADER_GAMEMODE, "gamemode", "#MOM_MapSelector_GameMode", 112,
+    m_pGameList->AddColumnHeader(HEADER_COMPLETED, KEYNAME_MAP_COMPLETED, "#MOM_MapSelector_Completed", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
+    m_pGameList->AddColumnHeader(HEADER_MAPLAYOUT, KEYNAME_MAP_LAYOUT, "#MOM_MapSelector_MapLayout", 16, ListPanel::COLUMN_FIXEDSIZE | ListPanel::COLUMN_IMAGE);
+    m_pGameList->AddColumnHeader(HEADER_MAPNAME, KEYNAME_MAP_NAME, "#MOM_MapSelector_Maps", 50, ListPanel::COLUMN_RESIZEWITHWINDOW | ListPanel::COLUMN_UNHIDABLE);//Map name column
+    m_pGameList->AddColumnHeader(HEADER_GAMEMODE, KEYNAME_MAP_GAME_MODE, "#MOM_MapSelector_GameMode", 112,
         112,	// minwidth
         300,	// maxwidth
         0		// flags
         );
-    m_pGameList->AddColumnHeader(HEADER_DIFFICULTY, "difficulty", "#MOM_MapSelector_Difficulty", 55, 0);//ListPanel::COLUMN_FIXEDSIZE);
-    m_pGameList->AddColumnHeader(HEADER_BESTTIME, "time", "#MOM_MapSelector_BestTime", 90,
+    m_pGameList->AddColumnHeader(HEADER_DIFFICULTY, KEYNAME_MAP_DIFFICULTY, "#MOM_MapSelector_Difficulty", 55, 0);//ListPanel::COLUMN_FIXEDSIZE);
+    m_pGameList->AddColumnHeader(HEADER_BESTTIME, KEYNAME_MAP_BEST_TIME, "#MOM_MapSelector_BestTime", 90,
         90,		// minwidth
         300,	// maxwidth
         0		// flags
@@ -87,24 +113,15 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
     m_pGameList->SetColumnHeaderTooltip(HEADER_COMPLETED, "#MOM_MapSelector_Completed_Tooltip");
     m_pGameList->SetColumnHeaderTooltip(HEADER_MAPLAYOUT, "#MOM_MapSelector_MapLayout_Tooltip");
     //MOM_TODO: do we want more tooltips?
-    //m_pGameList->SetColumnHeaderTooltip(1, "#ServerBrowser_BotColumn_Tooltip");
-    //m_pGameList->SetColumnHeaderTooltip(2, "#ServerBrowser_SecureColumn_Tooltip");
     
     // setup fast sort functions
-    //MOM_TODO: Make sorting by map names, difficulty, all of the columns
-    /*
-    m_pGameList->SetSortFunc(0, PasswordCompare);
-    m_pGameList->SetSortFunc(1, BotsCompare);
-    m_pGameList->SetSortFunc(2, SecureCompare);
-    m_pGameList->SetSortFunc(3, ServerNameCompare);
-    m_pGameList->SetSortFunc(4, IPAddressCompare);
-    m_pGameList->SetSortFunc(5, GameCompare);
-    m_pGameList->SetSortFunc(6, PlayersCompare);
-    m_pGameList->SetSortFunc(7, MapCompare);
-    m_pGameList->SetSortFunc(8, PingCompare);
-    */
-    // Sort by ping time by default
-    //m_pGameList->SetSortColumn(8);
+
+    m_pGameList->SetSortFunc(HEADER_MAPNAME, MapNameSortFunc);
+    m_pGameList->SetSortFunc(HEADER_COMPLETED, MapCompletedSortFunc);
+    m_pGameList->SetSortFunc(HEADER_MAPLAYOUT, MapLayoutSortFunc);
+
+    // Sort by map name by default
+    m_pGameList->SetSortColumn(HEADER_MAPNAME);
 
     CreateFilters();
     LoadFilterSettings();
@@ -195,18 +212,15 @@ void CBaseMapsPage::ApplySchemeSettings(IScheme *pScheme)
     // Images
     ImageList *imageList = new ImageList(false);
     //MOM_TODO: Load custom images for the map selector
-    imageList->AddImage(scheme()->GetImage("servers/icon_password", false));//Completed icon (index 1)
-    imageList->AddImage(scheme()->GetImage("servers/icon_bots", false));//Linear map icon (index 2)
-    imageList->AddImage(scheme()->GetImage("servers/icon_robotron", false));//Staged map icon (index 3)
-    //imageList->AddImage(scheme()->GetImage("servers/icon_secure_deny", false));
+    imageList->AddImage(scheme()->GetImage("icon_map_completed", false));//Completed icon (index 1)
+    imageList->AddImage(scheme()->GetImage("icon_map_type_linear", false));//Linear map icon (index 2)
+    imageList->AddImage(scheme()->GetImage("icon_map_type_staged", false));//Staged map icon (index 3)
 
-    int passwordColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_password_column", false));//Completed column header image
-    int botColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_bots_column", false));//Map layout (staged/linear) column header image
-    //int secureColumnImage = imageList->AddImage(scheme()->GetImage("servers/icon_robotron_column", false));
+    int mapCompletedColumnImage = imageList->AddImage(scheme()->GetImage("icon_map_completed_column", false));//Completed column header image
+    int mapTypeColumnImage = imageList->AddImage(scheme()->GetImage("icon_map_type_column", false));//Map layout (staged/linear) column header image
     m_pGameList->SetImageList(imageList, true);
-    m_pGameList->SetColumnHeaderImage(HEADER_COMPLETED, passwordColumnImage);
-    m_pGameList->SetColumnHeaderImage(HEADER_MAPLAYOUT, botColumnImage);
-    //m_pGameList->SetColumnHeaderImage(HEADER_STAGEDMAP, secureColumnImage);
+    m_pGameList->SetColumnHeaderImage(HEADER_COMPLETED, mapCompletedColumnImage);
+    m_pGameList->SetColumnHeaderImage(HEADER_MAPLAYOUT, mapTypeColumnImage);
 
     //Font
     m_hFont = pScheme->GetFont("ListSmall", IsProportional());
@@ -652,13 +666,13 @@ void CBaseMapsPage::ApplyGameFilters()
             {
                 //DevLog("ADDING MAP TO LIST! %s\n ", mapinfo->m_szMapName);
                 KeyValues *kv = new KeyValues("Map");
-                kv->SetString("name", mapinfo->m_szMapName);
-                kv->SetString("map", mapinfo->m_szMapName);
-                kv->SetInt("gamemode", mapinfo->m_iGameMode);
-                kv->SetInt("difficulty", mapinfo->m_iDifficulty);
-                kv->SetInt("MapLayout", (static_cast<int>(mapinfo->m_bHasStages)) + 2);//+ 2 so the picture sets correctly
-                kv->SetBool("HasCompleted", mapinfo->m_bCompleted);
-                kv->SetString("time", mapinfo->m_szBestTime);
+                kv->SetString(KEYNAME_MAP_NAME, mapinfo->m_szMapName);
+                kv->SetString("map", mapinfo->m_szMapName);//I think this is needed somewhere
+                kv->SetInt(KEYNAME_MAP_GAME_MODE, mapinfo->m_iGameMode);
+                kv->SetInt(KEYNAME_MAP_DIFFICULTY, mapinfo->m_iDifficulty);
+                kv->SetInt(KEYNAME_MAP_LAYOUT, ((int)mapinfo->m_bHasStages) + 2);//+ 2 so the picture sets correctly
+                kv->SetBool(KEYNAME_MAP_COMPLETED, mapinfo->m_bCompleted);
+                kv->SetString(KEYNAME_MAP_BEST_TIME, mapinfo->m_szBestTime);
 
                 map.m_iListID = m_pGameList->AddItem(kv, NULL, false, false);
                 kv->deleteThis();
@@ -855,7 +869,7 @@ bool CBaseMapsPage::CheckPrimaryFilters(mapstruct_t &map)
         return false;
     }
 
-    if (count && Q_strnicmp(map.m_szMapName, m_szMapFilter, count))
+    if (count && !Q_strstr(map.m_szMapName, m_szMapFilter))//strstr returns null if the substring is not in the base string
     {
         DevLog("Map %s does not pass filter %s \n", map.m_szMapName, m_szMapFilter);
         return false;
