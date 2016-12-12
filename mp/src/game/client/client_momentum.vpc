@@ -113,6 +113,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\ScrubbableProgressBar.cpp"
                     $File "momentum\ui\CVarTextEntry.h"
                     $File "momentum\ui\CVarTextEntry.cpp"
+                    $File "momentum\ui\ColorPicker.h"
+                    $File "momentum\ui\ColorPicker.cpp"
                 }
                 
                 $Folder "Leaderboards"

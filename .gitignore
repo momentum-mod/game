@@ -24,7 +24,6 @@ ipch
 *.vcxproj.filters
 *.pdb
 *.lib
-*.a
 *.VC.db
 *.VC.VC.opendb
 
