@@ -100,3 +100,4 @@ shared_srv.so.dbg
 *.cfg
 .idea/
 CMakeLists.txt
+mp/game/momentum/cfg/pet.txt
