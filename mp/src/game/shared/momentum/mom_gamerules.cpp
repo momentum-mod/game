@@ -226,6 +226,8 @@ static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldVal
     {
         Msg("Successfully changed the tickrate to %f!\n", TickSet::GetTickrate());
         gpGlobals->interval_per_tick = TickSet::GetTickrate();
+        ConVarRef tr("sv_tickrate");
+        tr.SetValue(TickSet::GetTickrate()); //set the value of sv_tickrate so it updates when gamemode changes the tickrate.
     }
     else Warning("Failed to change interval per tick, cannot set tick rate!\n");
 }

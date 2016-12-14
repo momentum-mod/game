@@ -147,6 +147,14 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
 
+    //MOM_TODO (fix): Kamay-> the crosshair position is 1 tick behind the shooting position, 
+    //a possible fix would be to take the old origin instead the new one calculated or set this before the gamemovement code (but maybe that will not correspond to viewoffset so... Old origin), 
+    //but we will need to remember that the localplayer position is 1 tick after aswell on DEMOS (i don't know the reasons of why yet)
+    //Tested it under CS:S (even csgo should work), just add a bot with bot_stop 1 on a surf map get velocity, and then try to aim exactly at the head with host_timescale (makes things easier)
+    //Shoot and you'll notice that you're not exactly shooting at the right position
+    //and that you are 1 tick after where you should be aiming at. 
+    //Trying to think of good fix now than setting just the old origin.
+
     FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
                    pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(),
                    bPrimaryMode ? Primary_Mode : Secondary_Mode, CBaseEntity::GetPredictionRandomSeed() & 255,

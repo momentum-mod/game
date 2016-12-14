@@ -889,7 +889,7 @@ float CServerGameDLL::GetTickInterval( void ) const
 static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
 {
     float toCheck = ((ConVar*) var)->GetFloat();
-    if (toCheck == fOldValue) return;
+    if (mom_UTIL->FloatEquals(toCheck, fOldValue)) return;
     // MOM_TODO: Re-implement the bound 
     //if (toCheck < 0.01f || toCheck > 0.015f)
     //{

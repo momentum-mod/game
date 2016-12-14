@@ -112,10 +112,10 @@ void CLocalMaps::GetNewMapList()
     //Populate the main list
     FileFindHandle_t found;
     //MOM_TODO: make this by *.mom
-    const char *pMapName = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "MOD", &found);
+    const char *pMapName = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "GAME", &found);
     while (pMapName)
     {       
-        DevLog("FOUND MAP %s!\n", pMapName);
+        //DevLog("FOUND MAP %s!\n", pMapName);
         
         mapdisplay_t map = mapdisplay_t();
         mapstruct_t m = mapstruct_t();
@@ -123,7 +123,7 @@ void CLocalMaps::GetNewMapList()
 
         //Map name
         Q_FileBase(pMapName, m.m_szMapName, MAX_PATH);
-        DevLog("Stripped name: %s\n", m.m_szMapName);
+        //DevLog("Stripped name: %s\n", m.m_szMapName);
 
         FillMapstruct(&m);
 
