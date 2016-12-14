@@ -32,8 +32,11 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINF
     SendPropBool(SENDINFO(m_bDidPlayerBhop)), SendPropInt(SENDINFO(m_iSuccessiveBhops)),
     SendPropBool(SENDINFO(m_bHasPracticeMode)), SendPropBool(SENDINFO(m_bUsingCPMenu)),
     SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
+    SendPropInt(SENDINFO(m_afButtonDisabled)),
     SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), END_SEND_TABLE();
+    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
+
+END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(CheckForBhop), 
@@ -448,7 +451,7 @@ Checkpoint *CMomentumPlayer::CreateCheckpoint()
     c->ang = GetAbsAngles();
     c->pos = GetAbsOrigin();
     c->vel = GetAbsVelocity();
-    c->crouched = IsDucked() || IsDucking(); // Do we want IsDucking here??
+    c->crouched = IsDucked() || IsDucking();
     Q_strncpy(c->targetName, GetEntityName().ToCStr(), sizeof(c->targetName));
     Q_strncpy(c->targetClassName, GetClassname(), sizeof(c->targetClassName));
     return c;
@@ -558,11 +561,16 @@ void CMomentumPlayer::TeleportToCheckpoint(Checkpoint *pCP)
 
 void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
 {
+    // Set the current index
+    kvInto->SetInt("cur", m_iCurrentStepCP);
+
+    // Add all your checkpoints
+    KeyValues *kvCPs = new KeyValues("cps");
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
         Checkpoint *c = m_rcCheckpoints[i];
-        char szCheckpointNum[6]; // 9 million checkpoints is pretty generous
-        Q_snprintf(szCheckpointNum, 6, "%i", i);
+        char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
+        Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
         kvCP->SetString("targetName", c->targetName);
         kvCP->SetString("targetClassName", c->targetClassName);
@@ -570,21 +578,28 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
         mom_UTIL->KVSaveVector(kvCP, "pos", c->pos);
         mom_UTIL->KVSaveQAngles(kvCP, "ang", c->ang);
         kvCP->SetBool("crouched", c->crouched);
-        kvInto->AddSubKey(kvCP);
+        kvCPs->AddSubKey(kvCP);
     }
+
+    // Save them into the keyvalues
+    kvInto->AddSubKey(kvCPs);
 }
 
 void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
 {
     if (!kvFrom || kvFrom->IsEmpty()) return;
-    FOR_EACH_SUBKEY(kvFrom, kvCheckpoint)
+
+    m_iCurrentStepCP = kvFrom->GetInt("cur");
+
+    KeyValues *kvCPs = kvFrom->FindKey("cps");
+    if (!kvCPs) return;
+    FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
     {
         Checkpoint *c = new Checkpoint(kvCheckpoint);
         m_rcCheckpoints.AddToTail(c);
     }
 
     m_iCheckpointCount = m_rcCheckpoints.Count();
-    m_iCurrentStepCP = m_iCheckpointCount - 1;
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
@@ -825,15 +840,16 @@ void CMomentumPlayer::LimitSpeedInStartZone()
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
         ConVarRef gm("mom_gamemode");
-        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
         CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
-        if (bhopGameMode && startTrigger && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
+        bool isLimitingSpeed = startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED);
+        if (bhopGameMode && startTrigger && isLimitingSpeed && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
         {
             Vector velocity = GetLocalVelocity();
-            float PunishVelSquared = startTrigger->GetPunishSpeed() * startTrigger->GetPunishSpeed();
+            float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
             if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check agaisnt the square of velocity
             {
-                velocity = (velocity / velocity.Length()) * startTrigger->GetPunishSpeed();
+                velocity = (velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed();
                 SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
             }
         }

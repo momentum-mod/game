@@ -424,6 +424,8 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// Call Think if one is set
 	RunThink( player, TICK_INTERVAL );
 
+    player->m_vecOldOrigin = player->GetAbsOrigin();
+
 	// Setup input.
 	SetupMove( player, ucmd, moveHelper, g_pMoveData );
 

@@ -244,12 +244,13 @@ void CMOMSpectatorGUI::Update()
         if (pReplayEnt)
         {
             // Current player name
-            wchar_t wPlayerName[MAX_PLAYER_NAME_LENGTH], szPlayerInfo[128];
+            wchar_t wPlayerName[BUFSIZELOCL], szPlayerInfo[BUFSIZELOCL];
             ANSI_TO_UNICODE(pReplayEnt->m_pszPlayerName, wPlayerName);
-            V_snwprintf(szPlayerInfo, 128, m_pwReplayPlayer, wPlayerName);
+            g_pVGuiLocalize->ConstructString(szPlayerInfo, sizeof(szPlayerInfo), m_pwReplayPlayer, 1, wPlayerName);
 
             if (m_pPlayerLabel)
                 m_pPlayerLabel->SetText(szPlayerInfo);
+
 
             // Duck bind to release mouse
             wchar_t tempControl[BUFSIZELOCL];

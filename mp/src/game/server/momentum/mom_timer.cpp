@@ -633,15 +633,8 @@ class CTimerCommands
             else
             {
                 // Don't set angles if still in start zone.
-                if (start->GetHasLookAngles())
-                {
-                    QAngle ang = start->GetLookAngles();
-                    cPlayer->Teleport(&start->WorldSpaceCenter(), &ang, &vec3_origin);
-                }
-                else
-                {
-                    cPlayer->Teleport(&start->WorldSpaceCenter(), nullptr, &vec3_origin);
-                }
+                QAngle ang = start->GetLookAngles();
+                cPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
             }
         }
         else

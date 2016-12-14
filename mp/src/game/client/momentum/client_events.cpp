@@ -30,7 +30,7 @@ void CMOMClientEvents::PostInit()
         mom_UTIL->GetRemoteRepoModVersion();
     }
 
-    // mount CSS content even if it's on a different drive than SDK
+    // Mount CSS content even if it's on a different drive than SDK
     if (steamapicontext && steamapicontext->SteamApps())
     {
         char installPath[MAX_PATH];
@@ -47,10 +47,23 @@ void CMOMClientEvents::PostInit()
         char downloadPath[MAX_PATH];
         V_ComposeFileName(pathCStrike, "download", downloadPath, sizeof(downloadPath));
         filesystem->AddSearchPath(downloadPath, "GAME");
+        filesystem->AddSearchPath(downloadPath, "download");
 
-#ifdef DEBUG
+#ifdef _DEBUG
         filesystem->PrintSearchPaths();
 #endif
+
+        // INTERESTING BUG, VOLVO!
+        // Apparently, mounting sounds from any directory that isn't included in gameinfo.txt is impossible
+        // to play without restarting the entire sound system. So we do that here.
+        // If we had engine code...
+        ConCommand *snd_restart = dynamic_cast<ConCommand*>(g_pCVar->FindCommand("snd_restart"));
+        if (snd_restart)
+        {
+            char const *argv[1] = {"snd_restart"};
+            CCommand cmd(1, argv);
+            snd_restart->Dispatch(cmd);
+        }
     }
 
     MountAdditionalContent();
@@ -59,6 +72,16 @@ void CMOMClientEvents::PostInit()
     // MOM_TODO: Change this once we hit Alpha/Beta
     // MOM_CURRENT_VERSION
     messageboxpanel->CreateMessageboxVarRef("#MOM_StartupMsg_Prealpha_Title", "#MOM_StartupMsg_Prealpha", "mom_toggle_versionwarn", "#MOM_IUnderstand");
+
+    // So: If cl_software_cursor is 1 on game init, it won't use the software cursor for some reason, so we have to trick the engine 
+    // so it obeys
+    // If you find the reason, let @Rubén know (Probably the callback function is not being called on init, right?)
+    ConVarRef cVarCursor("cl_software_cursor");
+    if (cVarCursor.GetBool())
+    {
+        cVarCursor.SetValue(0);
+        cVarCursor.SetValue(1);
+    }
     
     if (!steamapicontext || !steamapicontext->SteamHTTP() || !steamapicontext->SteamUtils())
     {
