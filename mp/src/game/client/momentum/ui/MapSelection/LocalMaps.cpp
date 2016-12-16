@@ -144,7 +144,7 @@ void CLocalMaps::StartRefresh()
 {
     FOR_EACH_VEC(m_vecMaps, i)
     {
-        mapdisplay_t *pMap = &m_vecMaps[0];
+        mapdisplay_t *pMap = &m_vecMaps[i];
         if (!pMap) continue;
         mapstruct_t pMapInfo = pMap->m_mMap;
         // check filters

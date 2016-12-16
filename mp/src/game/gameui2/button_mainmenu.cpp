@@ -3,6 +3,7 @@
 
 #include "vgui/ILocalize.h"
 #include "vgui/ISurface.h"
+#include "vgui/IInput.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -238,8 +239,8 @@ void Button_MainMenu::OnThink()
 {
     BaseClass::OnThink();
 
-    AdditionalCursorCheck();
     Animations();
+    AdditionalCursorCheck();
 
     if (!IsVisible())
     {
@@ -382,14 +383,14 @@ void Button_MainMenu::AdditionalCursorCheck()
 
     if (IsBlank())
         return;
-    
-    if (HasFocus())
+
+    // Essentially IsCursorOver, needed because animations mess up IsCursorOver
+    if (input()->GetMouseOver() == GetVPanel())
     {
-        if (!IsCursorOver())
-            m_sButtonState = Out;
-        else if (m_sButtonState == Out)
-            m_sButtonState = Over;
+        m_sButtonState = Over;
     }
+    else
+        m_sButtonState = Out;
 }
 
 void Button_MainMenu::OnMousePressed(MouseCode code)
