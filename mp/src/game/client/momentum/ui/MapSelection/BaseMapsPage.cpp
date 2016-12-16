@@ -866,7 +866,7 @@ bool CBaseMapsPage::CheckSecondaryFilters(mapstruct_t &map)
     // Map layout (0 = all, 1 = show staged maps only, 2 = show linear maps only)
     if (m_iMapLayoutFilter && ((int) map.m_bHasStages) + 1 == m_iMapLayoutFilter)
     {
-        DevLog("Map has stages %i and the user is filtering maps %i\n", map.m_bHasStages, m_iMapLayoutFilter);
+        DevLog("Map %s has stages %i and the user is filtering maps %i\n", map.m_szMapName, map.m_bHasStages, m_iMapLayoutFilter);
         return false;
     }
 
