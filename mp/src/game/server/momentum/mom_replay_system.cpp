@@ -46,7 +46,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_bShouldStopRec = false;
 
     // Don't ask why, but these need to be formatted in their own strings.
-    Q_snprintf(runDate, MAX_PATH, "%i", g_pMomentumTimer->GetLastRunDate());
+    Q_snprintf(runDate, MAX_PATH, "%li", g_pMomentumTimer->GetLastRunDate());
     Q_snprintf(runTime, MAX_PATH, "%.3f", g_pMomentumTimer->GetLastRunTime());
     // It's weird.
 

@@ -330,8 +330,9 @@ void C_HudTimer::Paint(void)
     // find out status of timer (no timer/practice mode)
     if (!m_bIsRunning)
     {
-        Q_snprintf(m_pszStringStatus, sizeof(m_pszStringStatus),
-                   m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized); // ? practice mode : no timer
+        Q_strncpy(m_pszStringStatus,
+                  m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized,
+                  sizeof(m_pszStringStatus));
         ANSI_TO_UNICODE(m_pszStringStatus, m_pwCurrentStatus);
     }
 

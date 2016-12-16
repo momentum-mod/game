@@ -203,8 +203,7 @@ void CMomentumReplayGhostEntity::Think(void)
 
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
-    int NextStep = static_cast<int>(m_flTimeScale) + 1;
-
+  
     // move the ghost
     if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
     {
@@ -214,64 +213,74 @@ void CMomentumReplayGhostEntity::Think(void)
     }
     else
     {
+        //MOM_TODO: Find a better solution for timescaling when it's > 1.0
+        // (commented old, it could be useful, we must find a better solution for this... host_timescale would work, but only with sv_cheats enabled, wich we would to enable maybe?)
+        // It's kinda hard without modifying the engine dll
+
         // Otherwise proceed to the next step and perform the necessary updates.
         if (m_flTimeScale <= 1.0f)
-            UpdateStep(1);
+            UpdateStep(1);                                                                            
         else
         {
-            // Check our tickrate
-            int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
 
-            // How many ticks we should speed, if it's 0 then simply run the current one.
-            int TicksToGoToNextStep =
-                static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep) - m_flTimeScale)));
+            int NextStep = static_cast<int>( m_flTimeScale ) + 1;
+            UpdateStep( NextStep );
 
-            if (TicksToGoToNextStep <= 0)
-                UpdateStep(NextStep - 1);
-            else
-            {
-                float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
-                // Now we will calculate how many ticks should be updated on the next step or the current one.
+           // int NextStep = static_cast<int>( m_flTimeScale ) +1;
 
-                // Let's choose wich tick we want to set our nextstep
-                static int CountMain = 0;
-                static int Count = 0;
-                static int CountSpeed = 0;
-                static bool Reset = false;
+            //// Check our tickrate
+            //int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
 
-                if (CountMain < TickRate)
-                {
-                    Count++;
+            //// How many ticks we should speed, if it's 0 then simply run the current one.
+            //int TicksToGoToNextStep =
+            //    static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep) - m_flTimeScale)));
 
-                    int Difference = Count - CountSpeed;
-                    float fDif = 1.0f / static_cast<float>(Difference);
+            //if (TicksToGoToNextStep <= 0)
+            //    UpdateStep(NextStep - 1);
+            //else
+            //{
+            //    float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
+            //    // Now we will calculate how many ticks should be updated on the next step or the current one.
 
-                    if (fDif <= AverageSpeedUp)
-                    {
-                        UpdateStep(NextStep);
-                        CountSpeed++;
-                        Reset = true;
-                    }
-                    else
-                        UpdateStep(NextStep - 1);
+            //    // Let's choose wich tick we want to set our nextstep
+            //    static int CountMain = 0;
+            //    static int Count = 0;
+            //    static int CountSpeed = 0;
+            //    static bool Reset = false;
 
-                    if (Reset)
-                    {
-                        Count = 0;
-                        CountSpeed = 0;
-                        Reset = false;
-                    }
+            //    if (CountMain < TickRate)
+            //    {
+            //        Count++;
 
-                    CountMain++;
-                }
-                else
-                {
-                    Count = 0;
-                    CountSpeed = 0;
-                    CountMain = 0;
-                    Reset = false;
-                }
-            }
+            //        int Difference = Count - CountSpeed;
+            //        float fDif = 1.0f / static_cast<float>(Difference);
+
+            //        if (fDif <= AverageSpeedUp)
+            //        {
+            //            UpdateStep(NextStep);
+            //            CountSpeed++;
+            //            Reset = true;
+            //        }
+            //        else
+            //            UpdateStep(NextStep - 1);
+
+            //        if (Reset)
+            //        {
+            //            Count = 0;
+            //            CountSpeed = 0;
+            //            Reset = false;
+            //        }
+
+            //        CountMain++;
+            //    }
+            //    else
+            //    {
+            //        Count = 0;
+            //        CountSpeed = 0;
+            //        CountMain = 0;
+            //        Reset = false;
+            //    }
+            //}
         }
 
         if (m_rgSpectators.IsEmpty())
@@ -286,7 +295,11 @@ void CMomentumReplayGhostEntity::Think(void)
     }
     else
     {
-        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+
+        int NextStep = static_cast<int>( m_flTimeScale ) + 1;
+
+        float CalculateSlowMotion = gpGlobals->interval_per_tick  *  ( NextStep - m_flTimeScale );
+        SetNextThink( gpGlobals->curtime + gpGlobals->interval_per_tick + CalculateSlowMotion );
     }
 }
 

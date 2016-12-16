@@ -382,11 +382,14 @@ void Button_MainMenu::AdditionalCursorCheck()
 
     if (IsBlank())
         return;
-
-    if (!IsCursorOver())
-        m_sButtonState = Out;
-    else if (m_sButtonState == Out)
-        m_sButtonState = Over;
+    
+    if (HasFocus())
+    {
+        if (!IsCursorOver())
+            m_sButtonState = Out;
+        else if (m_sButtonState == Out)
+            m_sButtonState = Over;
+    }
 }
 
 void Button_MainMenu::OnMousePressed(MouseCode code)

@@ -869,8 +869,10 @@ public:
 	int						m_afButtonPressed;
 	int						m_afButtonReleased;
 	int						m_afButtonLast;
-	int						m_afButtonDisabled;	// A mask of input flags that are cleared automatically
+//	int						m_afButtonDisabled;	// A mask of input flags that are cleared automatically
 	int						m_afButtonForced;	// These are forced onto the player's inputs
+
+    CNetworkVarForDerived(int, m_afButtonDisabled);
 
 	CNetworkVar( bool, m_fOnTarget );		//Is the crosshair on a target?
 
@@ -1224,6 +1226,10 @@ private:
 
 public:
 	virtual unsigned int PlayerSolidMask( bool brushOnly = false ) const;	// returns the solid mask for the given player, so bots can have a more-restrictive set
+
+public:
+
+    Vector m_vecOldOrigin;
 
 };
 

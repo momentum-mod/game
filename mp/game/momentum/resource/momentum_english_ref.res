@@ -256,7 +256,7 @@
 // Replay Info
 // Spec GUI
 "MOM_WatchingReplay"    "REPLAY"
-"MOM_ReplayPlayer"      "Player: %s"
+"MOM_ReplayPlayer"      "Player: %s1"
 "MOM_SpecGUI_GainControl" "Press your %duck% key to toggle mouse capture!"
 "MOM_SpecGUI_StopPlayback" "Stop Playback"
 "MOM_SpecGUI_ToggleControls" "Toggle Replay Controls"
@@ -265,7 +265,7 @@
 "MOM_ReplayStatusPlaying" "Playing"
 "MOM_ReplayStatusPaused" "Paused"
 "MOM_ReplayTimeTick" "Tick: %i / %i"
-"MOM_ReplayTime" "Time: %s -> %s"
+"MOM_ReplayTime" "Time: %s1 -> %s2"
 
 // Controls in res file
 "MOM_ReplayControls" "Replay Controls"
