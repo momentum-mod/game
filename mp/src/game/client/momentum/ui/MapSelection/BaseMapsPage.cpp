@@ -37,7 +37,7 @@ static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPa
 CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *pCustomResFilename)
     : PropertyPage(parent, name), m_pCustomResFilename(pCustomResFilename)
 {
-    SetSize(624, 278);
+    SetSize(664, 294);
     
     m_iGameModeFilter = 0;
     m_szMapFilter[0] = 0;
