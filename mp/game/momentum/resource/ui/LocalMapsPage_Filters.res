@@ -104,10 +104,10 @@
 		"command"		"refresh"
 		"Default"		"0"
 	}
-	"gamelist"
+	"MapList"
 	{
 		"ControlName"		"CGameListPanel"
-		"fieldName"		"gamelist"
+		"fieldName"		"MapList"
 		"xpos"		"8"
 		"ypos"		"8"
 		"wide"		"622"
@@ -466,7 +466,7 @@
 		"wide"		"100"
 		"tall"		"24"
 		"autoResize"		"0"
-		"pinCorner"		"0"
+		"pinCorner"		"2"
 		"RoundedCorners"		"15"
 		"pin_corner_to_sibling"		"0"
 		"pin_to_sibling_corner"		"0"
