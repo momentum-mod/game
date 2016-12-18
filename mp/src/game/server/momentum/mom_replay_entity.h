@@ -5,9 +5,9 @@
 
 #include "cbase.h"
 #include "in_buttons.h"
-#include "mom_entity_run_data.h"
+#include "run/mom_entity_run_data.h"
 #include "mom_player.h"
-#include "mom_replay_data.h"
+#include "run/mom_replay_data.h"
 #include "mom_replay_system.h"
 #include <GameEventListener.h>
 

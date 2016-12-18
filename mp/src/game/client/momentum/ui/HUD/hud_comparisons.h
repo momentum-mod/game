@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cbase.h"
-#include "util/run_compare.h"
+#include "run/run_compare.h"
 #include "hudelement.h"
 #include "hud_numericdisplay.h"
 #include "hud_macros.h"

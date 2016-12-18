@@ -1,6 +1,10 @@
 #include "cbase.h"
 #include "mom_replay_v1.h"
-#include "mom_timer.h"
+
+#ifdef GAME_DLL
+#include "momentum/mom_timer.h"
+#include "momentum/mom_replay_entity.h"
+#endif
 
 CMomReplayV1::CMomReplayV1(CBinaryReader* reader) :
     CMomReplayBase(CReplayHeader(reader)),
@@ -72,6 +76,7 @@ void CMomReplayV1::RemoveFrames(int num)
 
 void CMomReplayV1::Start(bool firstperson)
 {
+#ifdef GAME_DLL
     if (m_pEntity)
     {
         if (firstperson)
@@ -80,6 +85,7 @@ void CMomReplayV1::Start(bool firstperson)
         m_pEntity->StartRun(firstperson);
         g_ReplaySystem->GetReplayManager()->SetPlayingBack(true);
     }
+#endif
 }
 
 

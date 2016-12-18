@@ -9,9 +9,9 @@
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
 #include <GameEventListener.h>
-#include <momentum/mom_entity_run_data.h>
+#include <run/mom_entity_run_data.h>
 #include <momentum/util/mom_util.h>
-#include <momentum/util/run_stats.h>
+#include <run/run_stats.h>
 
 class CMomentumReplayGhostEntity;
 

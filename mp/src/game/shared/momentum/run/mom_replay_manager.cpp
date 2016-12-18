@@ -2,7 +2,9 @@
 #include "mom_replay_manager.h"
 #include "filesystem.h"
 #include "mom_replay_v1.h"
-#include "mom_replay_entity.h"
+#ifndef CLIENT_DLL
+#include "momentum/mom_replay_entity.h"
+#endif
 
 #define REPLAY_MAGIC_LE 0x524D4F4D
 #define REPLAY_MAGIC_BE 0x4D4F4D52
@@ -71,6 +73,7 @@ void CMomReplayManager::StopRecording()
     m_pRecordingReplay = nullptr;
 }
 
+#ifndef CLIENT_DLL
 CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* pathID)
 {
     if (PlayingBack())
@@ -132,6 +135,24 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
     return m_pPlaybackReplay;
 }
 
+void CMomReplayManager::UnloadPlayback(bool shutdown)
+{
+    SetPlayingBack(false);
+
+    if (m_pPlaybackReplay)
+    {
+        if (m_pPlaybackReplay->GetRunEntity() && !shutdown)
+            m_pPlaybackReplay->GetRunEntity()->EndRun();
+
+        delete m_pPlaybackReplay;
+    }
+
+    m_pPlaybackReplay = nullptr;
+
+    DevLog("Successfully unloaded playback, shutdown: %i\n", shutdown);
+}
+#endif
+
 bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
 {
     if (!m_pRecordingReplay)
@@ -163,23 +184,8 @@ void CMomReplayManager::StopPlayback()
     if (!PlayingBack())
         return;
 
+#ifndef CLIENT_DLL
     Log("Stopping replay playback.\n");
     UnloadPlayback();
-}
-
-void CMomReplayManager::UnloadPlayback(bool shutdown)
-{
-    SetPlayingBack(false);
-
-    if (m_pPlaybackReplay)
-    {
-        if (m_pPlaybackReplay->GetRunEntity() && !shutdown)
-            m_pPlaybackReplay->GetRunEntity()->EndRun();
-
-        delete m_pPlaybackReplay;
-    }
-
-    m_pPlaybackReplay = nullptr;
-
-    DevLog("Successfully unloaded playback, shutdown: %i\n", shutdown);
+#endif
 }

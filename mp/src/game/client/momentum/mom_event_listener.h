@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mom_shareddefs.h"
-#include "util/run_stats.h"
+#include "run/run_stats.h"
 
 class C_Momentum_EventListener : public CGameEventListener
 {

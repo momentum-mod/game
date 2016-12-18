@@ -2,7 +2,7 @@
 
 #include "cbase.h"
 #include <momentum/util/serialization.h>
-#include <momentum/util/run_stats.h>
+#include <run/run_stats.h>
 
 // A single frame of the replay.
 class CReplayFrame : public ISerializable

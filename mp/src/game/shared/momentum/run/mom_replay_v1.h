@@ -2,7 +2,6 @@
 
 #include "cbase.h"
 #include "mom_replay_base.h"
-#include "mom_replay_entity.h"
 
 class CMomReplayV1 :
     public CMomReplayBase

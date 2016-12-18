@@ -6,7 +6,7 @@
 #include "iinput.h"
 #include "in_buttons.h"
 #include "mom_shareddefs.h"
-#include "util/run_compare.h"
+#include "run/run_compare.h"
 #include "vgui_helpers.h"
 
 #include <vgui/ILocalize.h>
