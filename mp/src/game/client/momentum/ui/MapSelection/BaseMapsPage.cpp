@@ -14,20 +14,16 @@ static int __cdecl MapNameSortFunc(vgui::ListPanel *pPanel, const vgui::ListPane
 
 static int __cdecl MapCompletedSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
 {
-    bool i1 = item1.kv->GetFloat(KEYNAME_MAP_BEST_TIME);
-    bool i2 = item2.kv->GetFloat(KEYNAME_MAP_BEST_TIME);
-    if (i1 < i2)
-        return 1;
-    if (mom_UTIL->FloatEquals(i1, i2))
-        return 0;
-    return -1;
+    const char *string1 = item1.kv->GetString(KEYNAME_MAP_BEST_TIME);
+    const char *string2 = item2.kv->GetString(KEYNAME_MAP_BEST_TIME);
+    return Q_stricmp(string1, string2);
 }
 
 static int __cdecl MapLayoutSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &item1, const vgui::ListPanelItem &item2)
 {
     const char *i1 = item1.kv->GetString(KEYNAME_MAP_LAYOUT);
     const char *i2 = item2.kv->GetString(KEYNAME_MAP_LAYOUT);
-    return Q_strcmp(i1, i2);
+    return Q_stricmp(i1, i2);
 }
 
 
