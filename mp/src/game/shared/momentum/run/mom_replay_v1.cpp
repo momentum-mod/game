@@ -2,22 +2,17 @@
 #include "mom_replay_v1.h"
 
 #ifdef GAME_DLL
-#include "momentum/mom_timer.h"
 #include "momentum/mom_replay_entity.h"
+#include "momentum/mom_timer.h"
 #endif
 
-CMomReplayV1::CMomReplayV1(CBinaryReader* reader) :
-    CMomReplayBase(CReplayHeader(reader)),
-    m_pRunStats(nullptr)
+CMomReplayV1::CMomReplayV1(CBinaryReader *reader, bool bFull)
+    : CMomReplayBase(CReplayHeader(reader), bFull), m_pRunStats(nullptr)
 {
-    Deserialize(reader);
+    Deserialize(reader, bFull);
 }
 
-CMomReplayV1::CMomReplayV1() :
-    CMomReplayBase(CReplayHeader()),
-    m_pRunStats(nullptr)
-{
-}
+CMomReplayV1::CMomReplayV1() : CMomReplayBase(CReplayHeader(), true), m_pRunStats(nullptr) {}
 
 CMomReplayV1::~CMomReplayV1()
 {
@@ -28,17 +23,11 @@ CMomReplayV1::~CMomReplayV1()
     }
 }
 
-CMomRunStats* CMomReplayV1::GetRunStats()
-{
-    return m_pRunStats;
-}
+CMomRunStats *CMomReplayV1::GetRunStats() { return m_pRunStats; }
 
-int32 CMomReplayV1::GetFrameCount()
-{
-    return m_rgFrames.Count();
-}
+int32 CMomReplayV1::GetFrameCount() { return m_rgFrames.Count(); }
 
-CReplayFrame* CMomReplayV1::GetFrame(int32 index)
+CReplayFrame *CMomReplayV1::GetFrame(int32 index)
 {
     if (index >= m_rgFrames.Count() || index < 0)
         return nullptr;
@@ -46,12 +35,9 @@ CReplayFrame* CMomReplayV1::GetFrame(int32 index)
     return &m_rgFrames[index];
 }
 
-void CMomReplayV1::AddFrame(const CReplayFrame& frame)
-{
-    m_rgFrames.AddToTail(frame);
-}
+void CMomReplayV1::AddFrame(const CReplayFrame &frame) { m_rgFrames.AddToTail(frame); }
 
-bool CMomReplayV1::SetFrame(int32 index, const CReplayFrame& frame)
+bool CMomReplayV1::SetFrame(int32 index, const CReplayFrame &frame)
 {
     if (index >= m_rgFrames.Count() || index < 0)
         return false;
@@ -60,7 +46,7 @@ bool CMomReplayV1::SetFrame(int32 index, const CReplayFrame& frame)
     return true;
 }
 
-CMomRunStats* CMomReplayV1::CreateRunStats(uint8 stages)
+CMomRunStats *CMomReplayV1::CreateRunStats(uint8 stages)
 {
     if (m_pRunStats != nullptr)
         delete m_pRunStats;
@@ -69,10 +55,7 @@ CMomRunStats* CMomReplayV1::CreateRunStats(uint8 stages)
     return m_pRunStats;
 }
 
-void CMomReplayV1::RemoveFrames(int num)
-{
-    m_rgFrames.RemoveMultipleFromHead(num);
-}
+void CMomReplayV1::RemoveFrames(int num) { m_rgFrames.RemoveMultipleFromHead(num); }
 
 void CMomReplayV1::Start(bool firstperson)
 {
@@ -88,8 +71,7 @@ void CMomReplayV1::Start(bool firstperson)
 #endif
 }
 
-
-void CMomReplayV1::Serialize(CBinaryWriter* writer)
+void CMomReplayV1::Serialize(CBinaryWriter *writer)
 {
     // Write the header.
     m_rhHeader.Serialize(writer);
@@ -107,20 +89,24 @@ void CMomReplayV1::Serialize(CBinaryWriter* writer)
         m_rgFrames[i].Serialize(writer);
 }
 
-void CMomReplayV1::Deserialize(CBinaryReader* reader)
+// bFull is defined by a replay being played back vs. a replay being loaded for comparisons
+void CMomReplayV1::Deserialize(CBinaryReader *reader, bool bFull)
 {
     // Read the run stats (if there are any).
     if (reader->ReadBool())
         m_pRunStats = new CMomRunStats(reader);
 
-    // Read the count of frames in the replay 
-    // and ensure we have the capacity to store them.
-    int32 frameCount = reader->ReadInt32();
+    if (bFull)
+    {
+        // Read the count of frames in the replay
+        // and ensure we have the capacity to store them.
+        int32 frameCount = reader->ReadInt32();
 
-    if (frameCount <= 0)
-        return;
+        if (frameCount <= 0)
+            return;
 
-    // And read all the frames.
-    for (int32 i = 0; i < frameCount; ++i)
-        m_rgFrames.AddToTail(CReplayFrame(reader));
+        // And read all the frames.
+        for (int32 i = 0; i < frameCount; ++i)
+            m_rgFrames.AddToTail(CReplayFrame(reader));
+    }
 }

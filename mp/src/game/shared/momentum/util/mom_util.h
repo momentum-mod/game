@@ -12,6 +12,7 @@
 #include "run/run_compare.h"
 #include "run/run_stats.h"
 #include "steam/steam_api.h"
+#include "run/mom_replay_base.h"
 
 #ifdef CLIENT_DLL
 #include "ChangelogPanel.h"
@@ -42,7 +43,6 @@ class MomentumUtil
     void VersionCallback(HTTPRequestCompleted_t *, bool);
 
     // For the ComparisonsSettingsPage
-    void GenerateBogusComparison(KeyValues *kvOut);
     void GenerateBogusRunStats(C_MomRunStats *pStatsOut);
 #endif
 
@@ -58,9 +58,9 @@ class MomentumUtil
     // Precision is miliseconds by default
     void FormatTime(float seconds, char *pOut, int precision = 3, bool fileName = false, bool negativeTime = false) const;
 
-    KeyValues *GetBestTime(KeyValues *kvInput, const char *szMapName, float tickrate, int flags = 0);
+    CMomReplayBase *GetBestTime(const char *szMapName, float tickrate, uint32 flags = 0);
     bool GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into);
-    void FillRunComparison(const char *compareName, KeyValues *kvBestRun, RunCompare_t *into);
+    void FillRunComparison(const char *compareName, CMomRunStats *kvBestRun, RunCompare_t *into);
 
     bool FloatEquals(float a, float b, float epsilon = FLT_EPSILON) const { return fabs(a - b) < epsilon; }
 
@@ -80,12 +80,6 @@ class MomentumUtil
 
     void KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave);
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
-};
-
-class CTimeSortFunc
-{
-  public:
-    bool Less(KeyValues *lhs, KeyValues *rhs, void *) { return (Q_atof(lhs->GetName())) < Q_atof(rhs->GetName()); }
 };
 
 extern MomentumUtil *mom_UTIL;

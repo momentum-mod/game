@@ -224,7 +224,7 @@ void CMomentumPlayer::Spawn()
         break;
     }
     // Reset all bool gameevents
-    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
+    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("replay_save");
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     m_RunData.m_bIsInZone = false;
@@ -234,7 +234,7 @@ void CMomentumPlayer::Spawn()
     ResetRunStats();
     if (runSaveEvent)
     {
-        runSaveEvent->SetBool("run_saved", false);
+        runSaveEvent->SetBool("save", false);
         gameeventmanager->FireEvent(runSaveEvent);
     }
     if (runUploadEvent)

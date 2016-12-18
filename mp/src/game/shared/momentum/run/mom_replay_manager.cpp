@@ -73,18 +73,11 @@ void CMomReplayManager::StopRecording()
     m_pRecordingReplay = nullptr;
 }
 
-#ifndef CLIENT_DLL
-CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* pathID)
+CMomReplayBase* CMomReplayManager::LoadReplayFile(const char* pFileName, bool bFullLoad, const char* pPathID)
 {
-    if (PlayingBack())
-        StopPlayback();
+    Log("Loading a replay from '%s'...\n", pFileName);
 
-    if (m_pPlaybackReplay)
-        UnloadPlayback();
-
-    Log("Loading a replay from '%s'...\n", path);
-
-    auto file = filesystem->Open(path, "r+b", pathID);
+    auto file = filesystem->Open(pFileName, "r+b", pPathID);
 
     if (!file)
     {
@@ -113,24 +106,42 @@ CMomReplayBase* CMomReplayManager::LoadReplay(const char* path, const char* path
         return nullptr;
     }
 
-    Log("Loading replay '%s' of version '%d'...\n", path, version);
+    Log("Loading replay '%s' of version '%d'...\n", pFileName, version);
 
     // MOM_TODO (OrfeasZ): Verify that replay parsing was successful.
-    m_pPlaybackReplay = m_mapCreators.Element(m_mapCreators.Find(version))->LoadReplay(&reader);
+    CMomReplayBase * toReturn = m_mapCreators.Element(m_mapCreators.Find(version))->LoadReplay(&reader, bFullLoad);
 
     filesystem->Close(file);
-
     Log("Successfully loaded replay.\n");
 
-    //Create the run entity here
-    CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
-    pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
-    pGhost->m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
-    pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
-    pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
-    pGhost->SetPlaybackReplay(m_pPlaybackReplay);
-	pGhost->m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
-    m_pPlaybackReplay->SetRunEntity(pGhost);
+    return toReturn;
+}
+
+
+CMomReplayBase *CMomReplayManager::LoadReplay(const char *pFileName, bool bFullLoad, const char *pPathID)
+{
+    if (PlayingBack())
+        StopPlayback();
+
+    if (m_pPlaybackReplay)
+        UnloadPlayback();
+
+    m_pPlaybackReplay = LoadReplayFile(pFileName, bFullLoad, pPathID);
+
+    if (bFullLoad)
+    {
+#ifndef CLIENT_DLL
+        // Create the run entity here
+        CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
+        pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
+        pGhost->m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
+        pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+        pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
+        pGhost->SetPlaybackReplay(m_pPlaybackReplay);
+        pGhost->m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
+        m_pPlaybackReplay->SetRunEntity(pGhost);
+#endif
+    }
 
     return m_pPlaybackReplay;
 }
@@ -141,8 +152,10 @@ void CMomReplayManager::UnloadPlayback(bool shutdown)
 
     if (m_pPlaybackReplay)
     {
+#ifndef CLIENT_DLL
         if (m_pPlaybackReplay->GetRunEntity() && !shutdown)
             m_pPlaybackReplay->GetRunEntity()->EndRun();
+#endif
 
         delete m_pPlaybackReplay;
     }
@@ -151,7 +164,6 @@ void CMomReplayManager::UnloadPlayback(bool shutdown)
 
     DevLog("Successfully unloaded playback, shutdown: %i\n", shutdown);
 }
-#endif
 
 bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
 {

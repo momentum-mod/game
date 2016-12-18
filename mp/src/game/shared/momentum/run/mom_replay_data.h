@@ -96,6 +96,19 @@ class CReplayHeader : public ISerializable
         writer->WriteInt32(m_iStartDif);
     }
 
+    virtual CReplayHeader &operator=(const CReplayHeader& other)
+    {
+        Q_strncpy(m_szMapName, other.m_szMapName, sizeof(m_szMapName));
+        Q_strncpy(m_szPlayerName, other.m_szPlayerName, sizeof(m_szPlayerName));
+        m_ulSteamID = other.m_ulSteamID;
+        m_fTickInterval = other.m_fTickInterval;
+        m_fRunTime = other.m_fRunTime;
+        m_iRunFlags = other.m_iRunFlags;
+        m_iRunDate = other.m_iRunDate;
+        m_iStartDif = other.m_iStartDif;
+        return *this;
+    }
+
   public:
     char m_szMapName[256];    // The map the run was done in.
     char m_szPlayerName[256]; // The name of the player that did this run.

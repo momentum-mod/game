@@ -33,31 +33,6 @@ void CMomentumTimer::Start(int start)
     }
 }
 
-void CMomentumTimer::PostTime()
-{
-    if (steamapicontext->SteamHTTP() && steamapicontext->SteamUser() && !m_bWereCheatsActivated)
-    {
-        // MOM_TODO include the extra security measures for beta+
-        uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
-        const char *map = gpGlobals->mapname.ToCStr();
-        int ticks = gpGlobals->tickcount - m_iStartTick;
-
-        TickSet::Tickrate tickRate = TickSet::GetCurrentTickrate();
-
-        // Build URL
-        char webURL[512];
-        Q_snprintf(webURL, 512, "%s/postscore/%llu/%s/%i/%s", MOM_APIDOMAIN, steamID, map, ticks, tickRate.sType);
-
-        DevLog("Ticks sent to server: %i\n", ticks);
-        // Build request
-        // mom_UTIL->PostTime("run.momrec");
-    }
-    else
-    {
-        Warning("Failed to post scores online: Cannot access STEAM HTTP or Steam User!\n");
-    }
-}
-
 ////MOM_TODO: REMOVEME
 // CON_COMMAND(mom_test_hash, "Tests SHA1 Hashing\n")
 //{
@@ -81,201 +56,16 @@ void CMomentumTimer::PostTime()
 //    Log("\n");
 //}
 
-void CMomentumTimer::ConvertKVToTime(KeyValues *kvRun, Time &into) const
-{
-    const char *kvName = kvRun->GetName();
-    into.time_sec = Q_atof(kvName);
-    into.tickrate = kvRun->GetFloat("rate");
-    into.date = static_cast<time_t>(kvRun->GetInt("date"));
-    into.flags = kvRun->GetInt("flags");
-    into.RunStats = CMomRunStats(GetZoneCount());
-
-    for (KeyValues *subKv = kvRun->GetFirstSubKey(); subKv; subKv = subKv->GetNextKey())
-    {
-        if (!Q_strnicmp(subKv->GetName(), "zone", Q_strlen("zone")))
-        {
-            int i = Q_atoi(subKv->GetName() + 5); // atoi will need to ignore "zone " and only return the stage number
-
-            into.RunStats.SetZoneJumps(i, subKv->GetInt("jumps"));
-            into.RunStats.SetZoneStrafes(i, subKv->GetInt("strafes"));
-
-            into.RunStats.SetZoneTime(i, subKv->GetFloat("strafes"));
-            into.RunStats.SetZoneEnterTime(i, subKv->GetFloat("strafes"));
-
-            into.RunStats.SetZoneStrafeSyncAvg(i, subKv->GetFloat("time"));
-            into.RunStats.SetZoneStrafeSync2Avg(i, subKv->GetFloat("enter_time"));
-
-            into.RunStats.SetZoneEnterSpeed(i, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
-            into.RunStats.SetZoneExitSpeed(i, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
-            into.RunStats.SetZoneVelocityAvg(i, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
-            into.RunStats.SetZoneVelocityMax(i, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
-        }
-        else if (!Q_strncmp(subKv->GetName(), "total", Q_strlen("total")))
-        {
-            into.RunStats.SetZoneJumps(0, subKv->GetInt("jumps"));
-            into.RunStats.SetZoneStrafes(0, subKv->GetInt("strafes"));
-
-            into.RunStats.SetZoneStrafeSyncAvg(0, subKv->GetFloat("avgsync"));
-            into.RunStats.SetZoneStrafeSync2Avg(0, subKv->GetFloat("avgsync2"));
-
-            into.RunStats.SetZoneEnterSpeed(0, subKv->GetFloat("start_vel"), subKv->GetFloat("start_vel_2D"));
-            into.RunStats.SetZoneExitSpeed(0, subKv->GetFloat("end_vel"), subKv->GetFloat("end_vel_2D"));
-            into.RunStats.SetZoneVelocityAvg(0, subKv->GetFloat("avg_vel"), subKv->GetFloat("avg_vel_2D"));
-            into.RunStats.SetZoneVelocityMax(0, subKv->GetFloat("max_vel"), subKv->GetFloat("max_vel_2D"));
-        }
-    }
-}
-
-void CMomentumTimer::ConvertTimeToKV(KeyValues *kvInto, Time *t) const
-{
-    if (!t || !kvInto)
-        return;
-
-    // Handle "header"
-    char timeName[512];
-    Q_snprintf(timeName, 512, "%.8f", t->time_sec);
-    kvInto->SetName(timeName);
-    kvInto->SetFloat("rate", t->tickrate);
-    kvInto->SetInt("date", t->date);
-    kvInto->SetInt("flags", t->flags);
-
-    // Handle "total" stats
-    KeyValues *pOverallKey = new KeyValues("total");
-    pOverallKey->SetInt("jumps", t->RunStats.GetZoneJumps(0));
-    pOverallKey->SetInt("strafes", t->RunStats.GetZoneStrafes(0));
-    pOverallKey->SetFloat("avgsync", t->RunStats.GetZoneStrafeSyncAvg(0));
-    pOverallKey->SetFloat("avgsync2", t->RunStats.GetZoneStrafeSync2Avg(0));
-
-    pOverallKey->SetFloat("start_vel", t->RunStats.GetZoneEnterSpeed(1, false));
-    pOverallKey->SetFloat("end_vel", t->RunStats.GetZoneExitSpeed(0, false));
-    pOverallKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(0, false));
-    pOverallKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(0, false));
-
-    pOverallKey->SetFloat("start_vel_2D", t->RunStats.GetZoneEnterSpeed(1, true));
-    pOverallKey->SetFloat("end_vel_2D", t->RunStats.GetZoneExitSpeed(0, true));
-    pOverallKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(0, true));
-    pOverallKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(0, true));
-
-    kvInto->AddSubKey(pOverallKey);
-
-    // Handle zone stats
-    char stageName[9]; // "stage 64\0"
-    if (GetZoneCount() > 1)
-    {
-        for (int i2 = 1; i2 <= GetZoneCount(); i2++)
-        {
-            Q_snprintf(stageName, sizeof(stageName), "zone %d", i2);
-
-            KeyValues *pStageKey = new KeyValues(stageName);
-            pStageKey->SetFloat("time", t->RunStats.GetZoneTime(i2));
-            pStageKey->SetFloat("enter_time", t->RunStats.GetZoneEnterTime(i2));
-            pStageKey->SetInt("num_jumps", t->RunStats.GetZoneJumps(i2));
-            pStageKey->SetInt("num_strafes", t->RunStats.GetZoneStrafes(i2));
-            pStageKey->SetFloat("avg_sync", t->RunStats.GetZoneStrafeSyncAvg(i2));
-            pStageKey->SetFloat("avg_sync2", t->RunStats.GetZoneStrafeSync2Avg(i2));
-
-            pStageKey->SetFloat("avg_vel", t->RunStats.GetZoneVelocityAvg(i2, false));
-            pStageKey->SetFloat("max_vel", t->RunStats.GetZoneVelocityMax(i2, false));
-            pStageKey->SetFloat("enter_vel", t->RunStats.GetZoneEnterSpeed(i2, false));
-            pStageKey->SetFloat("exit_vel", t->RunStats.GetZoneExitSpeed(i2, false));
-
-            pStageKey->SetFloat("avg_vel_2D", t->RunStats.GetZoneVelocityAvg(i2, true));
-            pStageKey->SetFloat("max_vel_2D", t->RunStats.GetZoneVelocityMax(i2, true));
-            pStageKey->SetFloat("enter_vel_2D", t->RunStats.GetZoneEnterSpeed(i2, true));
-            pStageKey->SetFloat("exit_vel_2D", t->RunStats.GetZoneExitSpeed(i2, true));
-
-            kvInto->AddSubKey(pStageKey);
-        }
-    }
-}
-
-// Called upon map load, loads any and all times stored in the <mapname>.tim file
-void CMomentumTimer::LoadLocalTimes(const char *szMapname)
-{
-    // Build the file to load from
-    char timesFilePath[MAX_PATH];
-    V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapname, EXT_TIME_FILE), timesFilePath, MAX_PATH);
-
-    // Unload (if necessary), then load the new times
-    UnloadLoadedLocalTimes();
-    m_pLocalTimes = new KeyValues(szMapname);
-
-    if (m_pLocalTimes->LoadFromFile(filesystem, timesFilePath, "MOD"))
-    {
-        DevLog("Successfully loaded times for map %s\n", szMapname);
-    }
-    else
-    {
-        DevLog("Failed to load local times; no local file was able to be loaded!\n");
-    }
-}
-
-void CMomentumTimer::AddNewTime(Time *t) const
-{
-    if (!t || !m_pLocalTimes)
-        return;
-    // Don't worry, this KeyValues name gets overridden
-    KeyValues *pNewTime = new KeyValues("New Time!");
-    ConvertTimeToKV(pNewTime, t);
-    m_pLocalTimes->AddSubKey(pNewTime);
-}
-
-// Called every time a new time is achieved
-void CMomentumTimer::SaveTimeToFile() const
-{
-    const char *szMapName = gpGlobals->mapname.ToCStr();
-    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
-
-    char file[MAX_PATH];
-    V_ComposeFileName(MAP_FOLDER, UTIL_VarArgs("%s%s", szMapName, EXT_TIME_FILE), file, MAX_PATH);
-
-    bool saved = false;
-    if (m_pLocalTimes->SaveToFile(filesystem, file, "MOD", true))
-    {
-        saved = true;
-        Log("Successfully saved new time!\n");
-    }
-    if (runSaveEvent)
-    {
-        runSaveEvent->SetBool("run_saved", saved);
-        gameeventmanager->FireEvent(runSaveEvent);
-    }
-}
-
 void CMomentumTimer::Stop(bool endTrigger /* = false */)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
-    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
     IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
 
     if (endTrigger && !m_bWereCheatsActivated && pPlayer)
     {
         m_iEndTick = gpGlobals->tickcount;
-
-        // Save times locally too, regardless of SteamAPI condition
-        Time t = Time();
-        t.time_sec = GetLastRunTime();
-
-        t.tickrate = gpGlobals->interval_per_tick;                   // Set the tickrate
-        t.flags = pPlayer->m_RunData.m_iRunFlags;                    // Set the run flags of this run
-        time(&t.date);                                               // Set the date of this run
-        m_iLastRunDate = t.date;                                     // Use this date for the replay file
-        t.RunStats = static_cast<CMomRunStats>(pPlayer->m_RunStats); // copy all the run stats
-
-        AddNewTime(&t);
-
-        SaveTimeToFile();
-        // Post time to leaderboards if they're online
-        // and if cheats haven't been turned on this session
-        // MOM_TODO: Post the time when ready
-        // if (SteamAPI_IsSteamRunning())
-        //    PostTime();
-    }
-    else if (runSaveEvent) // reset run saved status to false if we cant or didn't save
-    {
-        runSaveEvent->SetBool("run_saved", false);
-        gameeventmanager->FireEvent(runSaveEvent);
+        time(&m_iLastRunDate);
     }
     if (timerStateEvent && pPlayer)
     {
@@ -286,7 +76,7 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */)
 
     // stop replay recording
     if (g_ReplaySystem->GetReplayManager()->Recording())
-        g_ReplaySystem->StopRecording(!endTrigger, endTrigger);
+        g_ReplaySystem->StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
 
     SetRunning(false);
     DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
@@ -299,7 +89,6 @@ void CMomentumTimer::OnMapEnd(const char *pMapName)
     SetCurrentCheckpointTrigger(nullptr);
     SetStartTrigger(nullptr);
     SetCurrentZone(nullptr);
-    UnloadLoadedLocalTimes();
     ClearStartMark();
     // MOM_TODO: UnloadLoadedOnlineTimes();
 }
@@ -322,7 +111,6 @@ void CMomentumTimer::OnMapStart(const char *pMapName)
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
     RequestZoneCount();
-    LoadLocalTimes(pMapName);
     ClearStartMark();
     // MOM_TODO: LoadOnlineTimes();
 }

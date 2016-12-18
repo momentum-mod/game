@@ -36,6 +36,7 @@
 #include <time.h>
 #include <util/jsontokv.h>
 #include "IMessageboxPanel.h"
+#include "run/mom_replay_manager.h"
 
 extern IFileSystem *filesystem;
 
@@ -158,7 +159,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_iDesiredHeight = GetTall();
 
     // update scoreboard instantly if on of these events occur
-    ListenForGameEvent("run_save");
+    ListenForGameEvent("replay_save");
     ListenForGameEvent("run_upload");
     ListenForGameEvent("game_newmap");
 
@@ -505,16 +506,16 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
 
     const char *type = event->GetName();
 
-    if (Q_strcmp(type, "run_save") == 0)
+    if (FStrEq(type, "replay_save") && event->GetBool("save"))
     {
         // this updates the local times file, needing a reload of it
         m_bLocalTimesNeedUpdate = true;
     }
-    else if (Q_strcmp(type, "run_upload") == 0)
+    else if (FStrEq(type, "run_upload"))
     {
         m_bFriendsNeedUpdate = m_bOnlineNeedUpdate = event->GetBool("run_posted");
     }
-    else if (Q_strcmp(type, "game_newmap") == 0)
+    else if (FStrEq(type, "game_newmap"))
     {
         m_bLocalTimesLoaded = false;
         m_bMapInfoLoaded = false;
@@ -696,28 +697,36 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
     if (!m_bLocalTimesLoaded || m_bLocalTimesNeedUpdate)
     {
         // Clear the local times for a refresh
-        m_vLocalTimes.RemoveAll();
+        m_vLocalTimes.PurgeAndDeleteElements();
 
-        // Load from .tim file
-        KeyValues *pLoaded = new KeyValues("local");
-        char fileName[MAX_PATH], filePath[MAX_PATH];
         const char *mapName = g_pGameRules->MapName();
-        Q_snprintf(fileName, MAX_PATH, "%s%s", mapName ? mapName : "FIXME", EXT_TIME_FILE);
-        V_ComposeFileName(MAP_FOLDER, fileName, filePath, MAX_PATH);
+        char path[MAX_PATH];
+        Q_snprintf(path, MAX_PATH, "%s/%s*%s", RECORDING_PATH, mapName, EXT_RECORDING_FILE);
+        V_FixSlashes(path);
 
-        DevLog("Loading from file %s...\n", filePath);
-        if (pLoaded->LoadFromFile(filesystem, filePath, "MOD"))
+        FileFindHandle_t found;
+        const char *pFoundFile = filesystem->FindFirstEx(path, "MOD", &found);
+        while (pFoundFile)
         {
-            FOR_EACH_SUBKEY(pLoaded, kvLocalTime)
-            {
-                Time t = Time(kvLocalTime);
-                m_vLocalTimes.InsertNoSort(t);
-            }
+            // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
+            char pReplayPath[MAX_PATH];
+            V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
+            CMomReplayBase *pBase = CMomReplayManager::LoadReplayFile(pReplayPath, false);
+
+            if (pBase)
+                m_vLocalTimes.InsertNoSort(pBase);
+
+            pFoundFile = filesystem->FindNext(found);
+        }
+
+        filesystem->FindClose(found);
+
+        if (!m_vLocalTimes.IsEmpty())
+        {
             m_vLocalTimes.RedoSort();
             m_bLocalTimesLoaded = true;
             m_bLocalTimesNeedUpdate = false;
         }
-        pLoaded->deleteThis();
     }
 
     // Convert
@@ -729,26 +738,37 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
 {
     FOR_EACH_VEC(m_vLocalTimes, i)
     {
-        Time t = m_vLocalTimes[i];
+        CMomReplayBase *t = m_vLocalTimes[i];
 
         KeyValues *kvLocalTimeFormatted = new KeyValues("localtime");
-        kvLocalTimeFormatted->SetFloat("time_f", t.time_sec); // Used for static compare
-        kvLocalTimeFormatted->SetInt("date_t", t.date);       // Used for finding
+        char filename[MAX_PATH], runTime[MAX_PATH], runDate[MAX_PATH];
+
+        // Don't ask why, but these need to be formatted in their own strings.
+        Q_snprintf(runDate, MAX_PATH, "%li", t->GetRunDate());
+        Q_snprintf(runTime, MAX_PATH, "%.3f", t->GetRunTime());
+        // It's weird.
+
+        Q_snprintf(filename, MAX_PATH, "%s-%s-%s%s", t->GetMapName(), runDate, runTime, EXT_RECORDING_FILE);
+        kvLocalTimeFormatted->SetString("fileName", filename);
+
+        kvLocalTimeFormatted->SetFloat("time_f", t->GetRunTime()); // Used for static compare
+        kvLocalTimeFormatted->SetInt("date_t", t->GetRunDate());       // Used for finding
+
         char timeString[BUFSIZETIME];
-
-        mom_UTIL->FormatTime(t.time_sec, timeString);
-        kvLocalTimeFormatted->SetString("time", timeString);
-
+        mom_UTIL->FormatTime(t->GetRunTime(), timeString);
+        kvLocalTimeFormatted->SetString("time", timeString); // Used for display
+        
         char dateString[64];
         tm *local;
-        local = localtime(&t.date);
+        time_t date = t->GetRunDate();
+        local = localtime(&date);
         if (local)
         {
             strftime(dateString, sizeof(dateString), "%d/%m/%Y %H:%M:%S", local);
             kvLocalTimeFormatted->SetString("date", dateString);
         }
         else
-            kvLocalTimeFormatted->SetInt("date", t.date);
+            kvLocalTimeFormatted->SetInt("date", date);
 
         // MOM_TODO: Convert the run flags to pictures
 
@@ -1564,8 +1584,6 @@ void CClientTimesDisplay::OnContextDeleteReplay(const char* runName)
     {
         char file[MAX_PATH];
         V_ComposeFileName(RECORDING_PATH, runName, file, MAX_PATH);
-        // cat the extension because V_SetExtension doesn't like our file
-        Q_strncat(file, EXT_TIME_FILE, MAX_PATH);
 
         messageboxpanel->CreateConfirmationBox(this, "#MOM_Leaderboards_DeleteReplay", 
             "#MOM_MB_DeleteRunConfirmation", new KeyValues("ConfirmDeleteReplay", "file", file),
@@ -1581,10 +1599,8 @@ void CClientTimesDisplay::OnConfirmDeleteReplay(KeyValues* data)
         if (file)
         {
             g_pFullFileSystem->RemoveFile(file, "MOD");
-            // Once we delete the times from the TIM., this will have to be executed too
-            // MOM_TODO: Uncomment when ready
-            /*m_bLocalTimesNeedUpdate = true;
-            FillScoreBoard();*/
+            m_bLocalTimesNeedUpdate = true;
+            FillScoreBoard();
         }
     }
 }
@@ -1604,15 +1620,13 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
         if (CheckParent(pPanel, m_pLocalLeaderboards, itemID))
         {
             KeyValues *selectedRun = m_pLocalLeaderboards->GetItemData(itemID);
-            char recordingName[MAX_PATH];
-            Q_snprintf(recordingName, MAX_PATH, "%i-%.3f", selectedRun->GetInt("date_t"),
-                selectedRun->GetFloat("time_f"));
+
+            const char *pFileName = selectedRun->GetString("fileName");
 
             CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pPanel->GetParent());
-            pContextMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay",
-                new KeyValues("ContextWatchReplay", "runName", recordingName), this);
+            pContextMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", new KeyValues("ContextWatchReplay", "runName", pFileName), this);
             pContextMenu->AddSeparator();
-            pContextMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", new KeyValues("ContextDeleteReplay", "runName", recordingName), this);
+            pContextMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", new KeyValues("ContextDeleteReplay", "runName", pFileName), this);
             pContextMenu->ShowMenu();
         } 
         else if (CheckParent(pPanel, m_pFriendsLeaderboards, itemID) || CheckParent(pPanel, m_pOnlineLeaderboards, itemID))

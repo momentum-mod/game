@@ -19,6 +19,7 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_iMaxPageTitleWidth = 0;
 
     ListenForGameEvent("timer_state");
+    ListenForGameEvent("replay_save");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
@@ -77,7 +78,6 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
             C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
             if (g_MOMEventListener && pPlayer)
             {
-                m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
                 m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
                 //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
                 //Is it going to be a localized string, except for errors that have to be specific?
@@ -113,6 +113,12 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
             }
         }
     }
+    else if (FStrEq(pEvent->GetName(), "replay_save"))
+    {
+        m_bRunSaved = pEvent->GetBool("save");
+        // MOM_TODO: There's a file name parameter as well, do we want to use it here?
+    }
+    //MOM_TODO: Listen for the upload event and set it here?
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()

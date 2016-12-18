@@ -13,32 +13,29 @@ class CMomReplayManager
     {
       public:
         virtual CMomReplayBase *CreateReplay() = 0;
-        virtual CMomReplayBase *LoadReplay(CBinaryReader *reader) = 0;
+        virtual CMomReplayBase *LoadReplay(CBinaryReader *reader, bool bFull) = 0;
     };
 
     template <typename T> class CReplayCreator : public CReplayCreatorBase
     {
       public:
         virtual CMomReplayBase *CreateReplay() OVERRIDE { return new T(); }
-        virtual CMomReplayBase *LoadReplay(CBinaryReader *reader) OVERRIDE { return new T(reader); }
+        virtual CMomReplayBase *LoadReplay(CBinaryReader *reader, bool bFull) OVERRIDE { return new T(reader, bFull); }
     };
 
   public:
     CMomReplayManager();
     ~CMomReplayManager();
 
-  public:
     CMomReplayBase *StartRecording();
     void StopRecording();
     bool StoreReplay(const char *path, const char *pathID = "MOD");
-#ifndef CLIENT_DLL
-    CMomReplayBase *LoadReplay(const char *path, const char *pathID = "MOD");
+    static CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
+    CMomReplayBase *LoadReplay(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
     void UnloadPlayback(bool shutdown = false);
-#endif
     void StopPlayback();
     void SetPlayingBack(bool playing) { m_bPlayingBack = playing; }
 
-  public:
     inline CMomReplayBase *GetRecordingReplay() const { return m_pRecordingReplay; }
     inline CMomReplayBase *GetPlaybackReplay() const { return m_pPlaybackReplay; }
     inline bool Recording() const { return m_bRecording; }
@@ -47,14 +44,12 @@ class CMomReplayManager
   private:
     static bool RegisterCreators();
 
-  private:
     CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
     bool m_bRecording;
     bool m_bPlayingBack;
     uint8 m_ucCurrentVersion;
 
-  private:
     static CUtlMap<uint8, CReplayCreatorBase *> m_mapCreators;
     static bool m_bDummy;
 };

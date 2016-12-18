@@ -93,18 +93,18 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     m->m_bHasStages = MapHasStages(m->m_szMapName);
 
     //Completed/Best time
-    KeyValues *kvMapWrapper = new KeyValues(m->m_szMapName);
     //MOM_TODO: have the tickrate and run flags as filters, load actual values
     
-    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, tickRate);
-    if (kvMapTime)
+    CMomReplayBase *pBestTime = mom_UTIL->GetBestTime(m->m_szMapName, tickRate);
+    if (pBestTime)
     {
         m->m_bCompleted = true;
-        mom_UTIL->FormatTime(Q_atof(kvMapTime->GetName()), m->m_szBestTime);
+        Log("FOUND BEST TIME: %f\n", pBestTime->GetRunTime());
+        mom_UTIL->FormatTime(pBestTime->GetRunTime(), m->m_szBestTime);
     }
-    kvMapWrapper->deleteThis();
 }
 
+// Gross hack needed because scheme()->GetImage still returns an image even if it's null (returns the null texture)
 inline bool ImageExists(const char *pMapName)
 {
     FileFindHandle_t found;
@@ -136,7 +136,7 @@ void CLocalMaps::GetNewMapList()
         // Map image
         if (ImageExists(m.m_szMapName))
         {
-            Log("FOUND IMAGE FOR %s!\n", m.m_szMapName);
+            DevLog("FOUND IMAGE FOR %s!\n", m.m_szMapName);
             char imagePath[MAX_PATH];
             Q_snprintf(imagePath, MAX_PATH, "maps/%s", m.m_szMapName);
             map.m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(scheme()->GetImage(imagePath, false));
