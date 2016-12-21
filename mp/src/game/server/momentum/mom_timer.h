@@ -23,11 +23,11 @@ class CTriggerCheckpoint;
 class CTriggerOnehop;
 class CTriggerStage;
 
-class CMomentumTimer
+class CMomentumTimer : CAutoGameSystem
 {
   public:
-      CMomentumTimer()
-        : m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0), m_bIsRunning(false),
+      CMomentumTimer(const char *pName)
+        : CAutoGameSystem(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0), m_bIsRunning(false),
           m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr), m_pEndTrigger(nullptr),
           m_pCurrentCheckpoint(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr)
     {
@@ -120,11 +120,12 @@ class CMomentumTimer
     //-------- Online-related timer commands -----------------------------
     // MOM_TODO: void LoadOnlineTimes();
 
-    void OnMapEnd(const char *);
-    void OnMapStart(const char *);
+    // Level init/shutdown hooks
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPreEntity() OVERRIDE;
     void DispatchMapInfo() const;
+
     // Practice mode- noclip mode that stops timer
-    // void PracticeMove(); MOM_TODO: NOT IMPLEMENTED
     void EnablePractice(CMomentumPlayer *pPlayer);
     void DisablePractice(CMomentumPlayer *pPlayer);
 

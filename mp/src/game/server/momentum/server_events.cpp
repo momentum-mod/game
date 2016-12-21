@@ -62,9 +62,6 @@ void CMOMServerEvents::LevelInitPostEntity()
     zones = new CMapzoneData(pMapName);
     zones->SpawnMapZones();
 
-    //Setup timer
-    g_pMomentumTimer->OnMapStart(pMapName);
-
     // Reset zone editing
     g_MapzoneEdit.Reset();
 
@@ -75,7 +72,6 @@ void CMOMServerEvents::LevelInitPostEntity()
 
 void CMOMServerEvents::LevelShutdownPreEntity()
 {
-    const char *pMapName = gpGlobals->mapname.ToCStr();
     // Unload zones
     if (zones)
     {
@@ -85,8 +81,6 @@ void CMOMServerEvents::LevelShutdownPreEntity()
 
     ConVarRef gm("mom_gamemode");
     gm.SetValue(gm.GetDefault());
-
-    g_pMomentumTimer->OnMapEnd(pMapName);
 }
 
 void CMOMServerEvents::LevelShutdownPostEntity()

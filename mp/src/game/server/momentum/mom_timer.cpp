@@ -86,17 +86,6 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */)
     SetRunning(false);
     DispatchTimerStateMessage(pPlayer, m_bIsRunning);
 }
-void CMomentumTimer::OnMapEnd(const char *pMapName)
-{
-    if (IsRunning())
-        Stop(false);
-    m_bWereCheatsActivated = false;
-    SetCurrentCheckpointTrigger(nullptr);
-    SetStartTrigger(nullptr);
-    SetCurrentZone(nullptr);
-    ClearStartMark();
-    // MOM_TODO: UnloadLoadedOnlineTimes();
-}
 
 void CMomentumTimer::DispatchMapInfo() const
 {
@@ -111,11 +100,22 @@ void CMomentumTimer::DispatchMapInfo() const
     }
 }
 
-void CMomentumTimer::OnMapStart(const char *pMapName)
+void CMomentumTimer::LevelInitPostEntity()
 {
     SetGameModeConVars();
     m_bWereCheatsActivated = false;
     RequestZoneCount();
+    ClearStartMark();
+}
+
+void CMomentumTimer::LevelShutdownPreEntity()
+{
+    if (IsRunning())
+        Stop(false);
+    m_bWereCheatsActivated = false;
+    SetCurrentCheckpointTrigger(nullptr);
+    SetStartTrigger(nullptr);
+    SetCurrentZone(nullptr);
     ClearStartMark();
 }
 
@@ -401,6 +401,7 @@ int CMomentumTimer::FindOnehopOnList(CTriggerOnehop *pTrigger) { return onehops.
 
 CTriggerOnehop *CMomentumTimer::FindOnehopOnList(int pIndexOnList) { return onehops.Element(pIndexOnList); }
 
+
 //--------- Commands --------------------------------
 static MAKE_TOGGLE_CONVAR(
     mom_practice_safeguard, "1", FCVAR_ARCHIVE | FCVAR_REPLICATED,
@@ -561,5 +562,5 @@ static ConCommand mom_stage_tele("mom_stage_tele", CTimerCommands::TeleToStage,
                                  "Teleports the player to the desired stage. Stops the timer (Useful for mappers)\n",
                                  FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_SERVER_CAN_EXECUTE);
 
-static CMomentumTimer s_Timer;
+static CMomentumTimer s_Timer("CMomentumTimer");
 CMomentumTimer *g_pMomentumTimer = &s_Timer;
