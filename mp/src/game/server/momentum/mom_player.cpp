@@ -574,9 +574,9 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
         kvCP->SetString("targetName", c->targetName);
         kvCP->SetString("targetClassName", c->targetClassName);
-        mom_UTIL->KVSaveVector(kvCP, "vel", c->vel);
-        mom_UTIL->KVSaveVector(kvCP, "pos", c->pos);
-        mom_UTIL->KVSaveQAngles(kvCP, "ang", c->ang);
+        g_pMomentumUtil->KVSaveVector(kvCP, "vel", c->vel);
+        g_pMomentumUtil->KVSaveVector(kvCP, "pos", c->pos);
+        g_pMomentumUtil->KVSaveQAngles(kvCP, "ang", c->ang);
         kvCP->SetBool("crouched", c->crouched);
         kvCPs->AddSubKey(kvCP);
     }

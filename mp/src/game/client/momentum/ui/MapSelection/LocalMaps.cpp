@@ -95,12 +95,12 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     //Completed/Best time
     //MOM_TODO: have the tickrate and run flags as filters, load actual values
     
-    CMomReplayBase *pBestTime = mom_UTIL->GetBestTime(m->m_szMapName, tickRate);
+    CMomReplayBase *pBestTime = g_pMomentumUtil->GetBestTime(m->m_szMapName, tickRate);
     if (pBestTime)
     {
         m->m_bCompleted = true;
         Log("FOUND BEST TIME: %f\n", pBestTime->GetRunTime());
-        mom_UTIL->FormatTime(pBestTime->GetRunTime(), m->m_szBestTime);
+        g_pMomentumUtil->FormatTime(pBestTime->GetRunTime(), m->m_szBestTime);
     }
 }
 

@@ -122,7 +122,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
             }
         }
 
-        if (!mom_UTIL->FloatEquals(m_flTickRate, gpGlobals->interval_per_tick))
+        if (!g_pMomentumUtil->FloatEquals(m_flTickRate, gpGlobals->interval_per_tick))
         {
             Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_flTickRate.Get(),
                     gpGlobals->interval_per_tick);
@@ -448,7 +448,7 @@ void CMomentumReplayGhostEntity::SetGhostBodyGroup(int bodyGroup)
 }
 void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
 {
-    Color *pColor = mom_UTIL->GetColorFromHex(args.ArgS());
+    Color *pColor = g_pMomentumUtil->GetColorFromHex(args.ArgS());
     if (pColor)
     {
         m_NewGhostColor = *pColor;

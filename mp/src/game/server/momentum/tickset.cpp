@@ -138,11 +138,11 @@ bool TickSet::SetTickrate(int gameMode)
 
 bool TickSet::SetTickrate(float tickrate)
 {
-    if (!mom_UTIL->FloatEquals(m_trCurrent.fTickRate, tickrate))
+    if (!g_pMomentumUtil->FloatEquals(m_trCurrent.fTickRate, tickrate))
     {
         Tickrate tr;
-        if (mom_UTIL->FloatEquals(tickrate, 0.01f)) tr = s_DefinedRates[TICKRATE_100];
-        else if (mom_UTIL->FloatEquals(tickrate, 0.015f)) tr = s_DefinedRates[TICKRATE_66];
+        if (g_pMomentumUtil->FloatEquals(tickrate, 0.01f)) tr = s_DefinedRates[TICKRATE_100];
+        else if (g_pMomentumUtil->FloatEquals(tickrate, 0.015f)) tr = s_DefinedRates[TICKRATE_66];
         else
         {
             tr.fTickRate = tickrate;
@@ -181,3 +181,27 @@ bool TickSet::SetTickrate(Tickrate trNew)
     }
     return false;
 }
+
+static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
+{
+    ConVarRef tr(var);
+    float toCheck = tr.GetFloat();
+    if (g_pMomentumUtil->FloatEquals(toCheck, fOldValue)) return;
+    // MOM_TODO: Re-implement the bound 
+    //if (toCheck < 0.01f || toCheck > 0.015f)
+    //{
+    //    Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
+    //    var->SetValue(((ConVar*) var)->GetDefault());
+    //    return;
+    //}
+    bool result = TickSet::SetTickrate(toCheck);
+    if (result)
+    {
+        Msg("Successfully changed the tickrate to %f!\n", toCheck);
+        gpGlobals->interval_per_tick = toCheck;
+    }
+    else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
+}
+
+// MOM_TODO: Remove the comment in the flags
+static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT /*| FCVAR_NOT_CONNECTED*/, "Changes the tickrate of the game.", onTickRateChange);

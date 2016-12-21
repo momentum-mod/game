@@ -105,7 +105,7 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 m_pRunSaveStatus->SetVisible(!m_bIsGhost);
                 m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? m_pszRepeatToolTipReplay : m_pszRepeatToolTipMap);
 
-                mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
+                g_pMomentumUtil->FormatTime(lastRunTime, m_pszEndRunTime);
                 
                 CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
                 if (pPanel && pPanel->IsVisible())
@@ -318,7 +318,7 @@ void CHudMapFinishedDialog::Paint()
     {
         //"Zone Time:" shows up when m_iCurrentPage > 0
         char ansiTime[BUFSIZETIME];
-        mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->GetZoneTime(m_iCurrentPage) : 0.0f, ansiTime);
+        g_pMomentumUtil->FormatTime(m_pRunStats ? m_pRunStats->GetZoneTime(m_iCurrentPage) : 0.0f, ansiTime);
         ANSI_TO_UNICODE(ansiTime, unicodeTime);
         g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwZoneTime, 1, unicodeTime);
         m_pZoneOverallTime->SetText(currentZoneOverall);//"Zone time" (time for that zone)
@@ -330,7 +330,7 @@ void CHudMapFinishedDialog::Paint()
             m_pZoneEnterTime->SetEnabled(true);
             m_pZoneEnterTime->SetVisible(true);
             wchar_t zoneEnterTime[BUFSIZELOCL];
-            mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->GetZoneEnterTime(m_iCurrentPage) : 0.0f, ansiTime);
+            g_pMomentumUtil->FormatTime(m_pRunStats ? m_pRunStats->GetZoneEnterTime(m_iCurrentPage) : 0.0f, ansiTime);
             ANSI_TO_UNICODE(ansiTime, unicodeTime);
             g_pVGuiLocalize->ConstructString(zoneEnterTime, sizeof(zoneEnterTime), m_pwZoneEnterTime, 1, unicodeTime);
             m_pZoneEnterTime->SetText(zoneEnterTime);//"Zone enter time:" (time entered that zone)

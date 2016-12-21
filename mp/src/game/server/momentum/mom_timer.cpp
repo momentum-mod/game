@@ -253,7 +253,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     int smallestCornerNum = -1;
     for (int i = 0; i < 8; i++)
     {
-        if (m_flDistFixTraceCorners[i] < smallestDist && !mom_UTIL->FloatEquals(m_flDistFixTraceCorners[i], 0.0f))
+        if (m_flDistFixTraceCorners[i] < smallestDist && !g_pMomentumUtil->FloatEquals(m_flDistFixTraceCorners[i], 0.0f))
         {
             smallestDist = m_flDistFixTraceCorners[i];
             smallestCornerNum = i;
@@ -302,7 +302,7 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     {
         float dist = tr.startpos.DistTo(tr.endpos);
 
-        if (!mom_UTIL->FloatEquals(dist, 0.0f))
+        if (!g_pMomentumUtil->FloatEquals(dist, 0.0f))
         {
             g_pMomentumTimer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
         }

@@ -292,7 +292,7 @@ void C_HudTimer::OnThink()
 void C_HudTimer::Paint(void)
 {
     // Format the run's time
-    mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);
+    g_pMomentumUtil->FormatTime(GetCurrentTime(), m_pszString, 2);
     ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
 
     if (m_bShowCheckpoints)

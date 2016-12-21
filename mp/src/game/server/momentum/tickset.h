@@ -29,7 +29,7 @@ struct Tickrate
     }
     bool operator ==(const Tickrate &other) const
     {
-        return (mom_UTIL->FloatEquals(other.fTickRate, fTickRate)
+        return (g_pMomentumUtil->FloatEquals(other.fTickRate, fTickRate)
             && !Q_strcmp(other.sType, sType));
     }
 };
