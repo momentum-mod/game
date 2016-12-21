@@ -59,27 +59,32 @@ void CMomentumTimer::Start(int start)
 void CMomentumTimer::Stop(bool endTrigger /* = false */)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-
     IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
 
-    if (endTrigger && !m_bWereCheatsActivated && pPlayer)
+    if (pPlayer)
     {
-        m_iEndTick = gpGlobals->tickcount;
-        time(&m_iLastRunDate);
-    }
-    if (timerStateEvent && pPlayer)
-    {
-        timerStateEvent->SetInt("ent", pPlayer->entindex());
-        timerStateEvent->SetBool("is_running", false);
-        gameeventmanager->FireEvent(timerStateEvent);
+        // Set our end time and date
+        if (endTrigger && !m_bWereCheatsActivated)
+        {
+            m_iEndTick = gpGlobals->tickcount;
+            time(&m_iLastRunDate); // Set the last run date for the replay
+        }
+
+        // Fire off the timer_state event
+        if (timerStateEvent)
+        {
+            timerStateEvent->SetInt("ent", pPlayer->entindex());
+            timerStateEvent->SetBool("is_running", false);
+            gameeventmanager->FireEvent(timerStateEvent);
+        }
     }
 
-    // stop replay recording
+    // Stop replay recording, if there was any
     if (g_ReplaySystem->GetReplayManager()->Recording())
         g_ReplaySystem->StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
 
     SetRunning(false);
-    DispatchTimerStateMessage(UTIL_GetLocalPlayer(), m_bIsRunning);
+    DispatchTimerStateMessage(pPlayer, m_bIsRunning);
 }
 void CMomentumTimer::OnMapEnd(const char *pMapName)
 {
@@ -112,7 +117,6 @@ void CMomentumTimer::OnMapStart(const char *pMapName)
     m_bWereCheatsActivated = false;
     RequestZoneCount();
     ClearStartMark();
-    // MOM_TODO: LoadOnlineTimes();
 }
 
 // MOM_TODO: This needs to update to include checkpoint triggers placed in linear

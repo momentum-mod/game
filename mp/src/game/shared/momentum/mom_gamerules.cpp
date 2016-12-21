@@ -212,24 +212,24 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
 
 static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldValue)
 {
-    int toCheck = static_cast<ConVar*>(var)->GetInt();
-    if (toCheck == fOldValue) return;
+    ConVarRef gm(var);
+    int toCheck = gm.GetInt();
     if (toCheck < 0)
     {
         // This will never happen. but better be safe than sorry, right?
-        Warning("Cannot set a game mode under 0!\n");
-        var->SetValue(static_cast<ConVar*>(var)->GetDefault());
+        DevWarning("Cannot set a game mode under 0!\n");
+        gm.SetValue(gm.GetDefault());
         return;
     }
     bool result = TickSet::SetTickrate(toCheck);
     if (result)
-    {
-        Msg("Successfully changed the tickrate to %f!\n", TickSet::GetTickrate());
-        gpGlobals->interval_per_tick = TickSet::GetTickrate();
-        ConVarRef tr("sv_tickrate");
-        tr.SetValue(TickSet::GetTickrate()); //set the value of sv_tickrate so it updates when gamemode changes the tickrate.
-    }
-    else Warning("Failed to change interval per tick, cannot set tick rate!\n");
+        DevMsg("Successfully changed the tickrate to %f!\n", TickSet::GetTickrate());
+    else 
+        DevWarning("Failed to change interval per tick!\n");
+
+    //set the value of sv_tickrate so it updates when gamemode changes the tickrate.
+    ConVarRef tr("sv_tickrate");
+    tr.SetValue(TickSet::GetTickrate()); 
 }
 
 static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", true, 0, false, 0, OnGamemodeChanged);

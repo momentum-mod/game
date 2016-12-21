@@ -882,14 +882,14 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pCurrentGhost)
     {
-        pCurrentGhost->RemoveSpectator(this);
+        pCurrentGhost->RemoveSpectator();
     }
 
     bool base = BaseClass::SetObserverTarget(target);
 
     if (pGhostToSpectate && base)
     {
-        pGhostToSpectate->AddSpectator(this);
+        pGhostToSpectate->SetSpectator(this);
     }
 
     return base;
@@ -1015,7 +1015,7 @@ void CMomentumPlayer::StopSpectating()
 {
     CMomentumReplayGhostEntity *pGhost = GetReplayEnt();
     if (pGhost)
-        pGhost->RemoveSpectator(this);
+        pGhost->RemoveSpectator();
 
     StopObserverMode();
     m_hObserverTarget.Set(nullptr);

@@ -14,30 +14,28 @@ void Momentum::GameInit()
 
     //set gamemode depending on map name
     //MOM_TODO: This needs to read map entity/momfile data and set accordingly
-    if (gm.GetInt() == MOMGM_UNKNOWN)
+
+    if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
     {
-        if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
-        {
-            gm.SetValue(MOMGM_SURF);
-        }
-        else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
-        {
-            DevLog("SETTING THE GAMEMODE!\n");
-            gm.SetValue(MOMGM_BHOP);
-        }
-        else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
-        {
-            DevLog("SETTING THE GAMEMODE!\n");
-            gm.SetValue(MOMGM_SCROLL);
-        }
-        else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
-        {
-            gm.SetValue(MOMGM_ALLOWED);
-        }
-        else
-        {
-            gm.SetValue(MOMGM_UNKNOWN);
-        }
+        gm.SetValue(MOMGM_SURF);
+    }
+    else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
+    {
+        DevLog("SETTING THE GAMEMODE!\n");
+        gm.SetValue(MOMGM_BHOP);
+    }
+    else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
+    {
+        DevLog("SETTING THE GAMEMODE!\n");
+        gm.SetValue(MOMGM_SCROLL);
+    }
+    else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
+    {
+        gm.SetValue(MOMGM_ALLOWED);
+    }
+    else
+    {
+        gm.SetValue(MOMGM_UNKNOWN);
     }
 }
 
