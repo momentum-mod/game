@@ -50,7 +50,7 @@ void CMOMServerEvents::PostInit()
     }*/
 }
 
-void CMOMServerEvents::LevelInitPostEntity()
+void CMOMServerEvents::LevelInitPreEntity()
 {
     const char *pMapName = gpGlobals->mapname.ToCStr();
     // (Re-)Load zones
@@ -61,7 +61,11 @@ void CMOMServerEvents::LevelInitPostEntity()
     }
     zones = new CMapzoneData(pMapName);
     zones->SpawnMapZones();
+}
 
+
+void CMOMServerEvents::LevelInitPostEntity()
+{
     // Reset zone editing
     g_MapzoneEdit.Reset();
 
