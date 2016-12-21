@@ -72,4 +72,8 @@
         "y" "float"
         "z" "float"
     }
+    "gravity_change"
+    {
+        "newgravity" "float"
+    }
 }
