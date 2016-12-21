@@ -27,7 +27,7 @@ void CMOMClientEvents::PostInit()
 
     if (SteamAPI_IsSteamRunning())
     {
-        mom_UTIL->GetRemoteRepoModVersion();
+        g_pMomentumUtil->GetRemoteRepoModVersion();
     }
 
     // Mount CSS content even if it's on a different drive than SDK

@@ -82,6 +82,6 @@ class MomentumUtil
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
 };
 
-extern MomentumUtil *mom_UTIL;
+extern MomentumUtil *g_pMomentumUtil;
 
 #endif // MOM_UTIL_H

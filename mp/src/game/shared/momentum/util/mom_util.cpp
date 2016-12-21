@@ -340,7 +340,7 @@ inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float
 {
     if (pCheck)
     {
-        if (pCheck->GetRunFlags() == flags && mom_UTIL->FloatEquals(tickrate, pCheck->GetTickInterval()))
+        if (pCheck->GetRunFlags() == flags && g_pMomentumUtil->FloatEquals(tickrate, pCheck->GetTickInterval()))
         {
             if (pFastest)
             {
@@ -450,4 +450,4 @@ void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &a
 }
 
 static MomentumUtil s_momentum_util;
-MomentumUtil *mom_UTIL = &s_momentum_util;
+MomentumUtil *g_pMomentumUtil = &s_momentum_util;

@@ -755,7 +755,7 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         kvLocalTimeFormatted->SetInt("date_t", t->GetRunDate());       // Used for finding
 
         char timeString[BUFSIZETIME];
-        mom_UTIL->FormatTime(t->GetRunTime(), timeString);
+        g_pMomentumUtil->FormatTime(t->GetRunTime(), timeString);
         kvLocalTimeFormatted->SetString("time", timeString); // Used for display
         
         char dateString[64];
@@ -780,7 +780,7 @@ void CClientTimesDisplay::ConvertOnlineTimes(KeyValues *kv, float seconds)
 {
     char timeString[BUFSIZETIME];
 
-    mom_UTIL->FormatTime(seconds, timeString);
+    g_pMomentumUtil->FormatTime(seconds, timeString);
     kv->SetString("time_f", timeString);
 }
 
@@ -1108,7 +1108,7 @@ void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pC
                 char p_sPersonalBestTime[BUFSIZETIME];
                 char p_sPersonalBest[BUFSIZELOCL];
                 char p_sLocalized[BUFSIZELOCL];
-                mom_UTIL->FormatTime(seconds, p_sPersonalBestTime);
+                g_pMomentumUtil->FormatTime(seconds, p_sPersonalBestTime);
                 LOCALIZE_TOKEN(p_wcPersonalBest, "MOM_PersonalBestTime", p_sPersonalBest);
                 Q_snprintf(p_sLocalized, BUFSIZELOCL, "%s: %s", p_sPersonalBest, p_sPersonalBestTime);
                 m_pPlayerPersonalBest->SetText(p_sLocalized);

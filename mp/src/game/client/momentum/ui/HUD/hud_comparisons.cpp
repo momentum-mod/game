@@ -177,7 +177,7 @@ void C_RunComparisons::LoadComparisons()
         }
 
         m_rcCurrentComparison = new RunCompare_t();
-        m_bLoadedComparison = mom_UTIL->GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
+        m_bLoadedComparison = g_pMomentumUtil->GetRunComparison(szMapName, tickRate, runFlags, m_rcCurrentComparison);
     }
 }
 
@@ -187,13 +187,13 @@ void C_RunComparisons::LoadBogusComparisons()
     // Let's make a bogus run, shall we?
     m_rcBogusComparison = new RunCompare_t();
     m_pBogusRunStats = new C_MomRunStats();
-    mom_UTIL->GenerateBogusRunStats(m_pBogusRunStats);
+    g_pMomentumUtil->GenerateBogusRunStats(m_pBogusRunStats);
 
     // Fill the comparison with the bogus run
     char bogusRunANSI[BUFSIZELOCL];
     LOCALIZE_TOKEN(BogusRun, "#MOM_Settings_Compare_Bogus_Run", bogusRunANSI);
 
-    mom_UTIL->FillRunComparison(bogusRunANSI, m_pBogusRunStats, m_rcBogusComparison);
+    g_pMomentumUtil->FillRunComparison(bogusRunANSI, m_pBogusRunStats, m_rcBogusComparison);
     m_bLoadedBogusComparison = true;
 }
 
@@ -326,7 +326,7 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
     int gainColor = positiveIsGain ? m_cGain.GetRawColor() : m_cLoss.GetRawColor();
     int lossColor = positiveIsGain ? m_cLoss.GetRawColor() : m_cGain.GetRawColor();
     int rawColor;
-    if (mom_UTIL->FloatEquals(diff, 0.0f))
+    if (g_pMomentumUtil->FloatEquals(diff, 0.0f))
         rawColor = m_cTie.GetRawColor();
     else if (diff > 0.0f)
         rawColor = gainColor;
@@ -376,9 +376,9 @@ void C_RunComparisons::GetComparisonString(ComparisonString_t type, CMomRunStats
         // If diff > 0, that means you're falling behind (losing time to) your PB!
 
         // Format the time for displaying
-        mom_UTIL->FormatTime(act, tempANSITimeActual);
+        g_pMomentumUtil->FormatTime(act, tempANSITimeActual);
         if (LoadedComparison())
-            mom_UTIL->FormatTime(diff, tempANSITimeOutput);
+            g_pMomentumUtil->FormatTime(diff, tempANSITimeOutput);
         break;
     case VELOCITY_AVERAGE:
         // Get the vel difference
