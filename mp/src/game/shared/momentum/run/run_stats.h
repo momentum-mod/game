@@ -49,7 +49,7 @@ class CMomRunStats : public ISerializable
     }
 
     // Note: This needs updating every time the struct is updated!
-    virtual void CMomRunStats::Deserialize(CBinaryReader *reader)
+    virtual void Deserialize(CBinaryReader *reader)
     {
         SetTotalZones(reader->ReadUInt8());
 
