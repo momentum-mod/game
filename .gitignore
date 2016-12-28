@@ -88,6 +88,7 @@ shared.so
 shared.so.dbg
 shared_srv.so
 shared_srv.so.dbg
+mp/game/bin/
 
 # Others
 *.cache
