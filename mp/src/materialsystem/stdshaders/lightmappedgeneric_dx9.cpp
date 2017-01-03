@@ -13,7 +13,7 @@
 static LightmappedGeneric_DX9_Vars_t s_info;
 
 
-BEGIN_VS_SHADER( LightmappedGeneric,
+BEGIN_VS_SHADER( SDK_LightmappedGeneric,
 				 "Help for LightmappedGeneric" )
 
 	BEGIN_SHADER_PARAMS

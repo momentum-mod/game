@@ -319,7 +319,6 @@ void CViewRender::Init( void )
 #if defined( CSTRIKE_DLL )
 	m_flLastFOV = default_fov.GetFloat();
 #endif
-
 }
 
 //-----------------------------------------------------------------------------

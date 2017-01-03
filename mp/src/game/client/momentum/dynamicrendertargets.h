@@ -25,11 +25,13 @@ protected:
 
 	virtual ITexture*	CreateMaskGameUITexture();
     virtual ITexture*   CreateDepthBufferTexture();
+    virtual ITexture*   CreateSSAOTexture();
 private:
 	Vector2D			m_pOldViewport;
 
 	CTextureReference	m_MaskGameUITexture;
     CTextureReference   m_DepthBufferTexture;
+    CTextureReference   m_SSAOTexture;
 
 	IMaterialSystem*	m_pMaterialSystem;
 };
