@@ -17,7 +17,4 @@
 ..\..\..\game\hl2\shaders\fxc\SDK_flashlight_ps30.vcs
 ..\..\..\game\hl2\shaders\fxc\SDK_lightmappedgeneric_flashlight_vs30.vcs
 ..\..\..\game\hl2\shaders\fxc\SDK_lightmappedgeneric_ps30.vcs
-..\..\..\game\hl2\shaders\fxc\SDK_lightmappedgeneric_filter0_ps30.vcs
-..\..\..\game\hl2\shaders\fxc\SDK_lightmappedgeneric_filter1_ps30.vcs
-..\..\..\game\hl2\shaders\fxc\SDK_lightmappedgeneric_filter2_ps30.vcs
 ..\..\..\game\hl2\shaders\fxc\SDK_lightmappedgeneric_vs30.vcs

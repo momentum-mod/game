@@ -185,6 +185,13 @@ void InitParamsLightmappedGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** pa
 	InitFloatParam( info.m_nEdgeSoftnessStart, params, 0.5 );
 	InitFloatParam( info.m_nEdgeSoftnessEnd, params, 0.5 );
 	InitFloatParam( info.m_nOutlineAlpha, params, 1.0 );
+
+    // Parallax cubemaps
+    //cubemap parallax correction requires all 4 lines (if the 2nd, 3rd, or 4th are undef, undef the first one (checking done on first var)
+    if (!(params[info.m_nEnvmapParallaxObb2]->IsDefined() && params[info.m_nEnvmapParallaxObb3]->IsDefined() && params[info.m_nEnvmapOrigin]->IsDefined()))
+    {
+        params[info.m_nEnvmapParallaxObb1]->SetUndefined();
+    }
 }
 
 void InitLightmappedGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** params, LightmappedGeneric_DX9_Vars_t &info )
@@ -313,6 +320,9 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 			(info.m_nBlendModulateTexture != -1) &&
 			(params[info.m_nBlendModulateTexture]->IsTexture() );
 		bool hasNormalMapAlphaEnvmapMask = IS_FLAG_SET( MATERIAL_VAR_NORMALMAPALPHAENVMAPMASK );
+
+        // Parallax cubemaps
+        bool hasParallaxCorrection = params[info.m_nEnvmapParallaxObb1]->IsDefined();
 
 		if ( hasFlashlight && !IsX360() )				
 		{
@@ -613,6 +623,8 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
 					SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, (int)  nNormalDecodeMode );
 					SET_STATIC_PIXEL_SHADER_COMBO( NORMALMASK_DECODE_MODE, (int) nNormalMaskDecodeMode );
+                    // Parallax cubemaps enabled for 2_0b and onwards
+                    SET_STATIC_PIXEL_SHADER_COMBO( PARALLAXCORRECT, hasParallaxCorrection );
 #ifdef _X360
 					SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT, hasFlashlight);
 #endif
@@ -643,6 +655,8 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
 					SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, 0 );					// No normal compression with ps_2_0	(yikes!)
 					SET_STATIC_PIXEL_SHADER_COMBO( NORMALMASK_DECODE_MODE, 0 );				// No normal compression with ps_2_0
+                    // Parallax cubemaps
+                    SET_STATIC_PIXEL_SHADER_COMBO(PARALLAXCORRECT, 0); // No parallax cubemaps with ps_2_0
                     SET_STATIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20);
 				}
 				// HACK HACK HACK - enable alpha writes all the time so that we have them for
@@ -920,6 +934,28 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 			{
 				pContextData->m_SemiStaticCmdsOut.BindTexture( pShader, SHADER_SAMPLER3, info.m_nBlendModulateTexture, -1 );
 			}
+
+            // Parallax cubemaps
+            if (hasParallaxCorrection)
+            {
+                pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstant(21, params[info.m_nEnvmapOrigin]->GetVecValue());
+
+                float* vecs[3];
+                vecs[0] = const_cast<float*>(params[info.m_nEnvmapParallaxObb1]->GetVecValue());
+                vecs[1] = const_cast<float*>(params[info.m_nEnvmapParallaxObb2]->GetVecValue());
+                vecs[2] = const_cast<float*>(params[info.m_nEnvmapParallaxObb3]->GetVecValue());
+                float matrix[4][4];
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        matrix[i][j] = vecs[i][j];
+                    }
+                }
+                matrix[3][0] = matrix[3][1] = matrix[3][2] = 0;
+                matrix[3][3] = 1;
+                pContextData->m_SemiStaticCmdsOut.SetPixelShaderConstant(22, &matrix[0][0], 4);
+            }
 
 			pContextData->m_SemiStaticCmdsOut.End();
 		}

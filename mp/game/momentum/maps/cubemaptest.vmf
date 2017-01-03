@@ -1,8 +1,8 @@
 versioninfo
 {
 	"editorversion" "400"
-	"editorbuild" "6083"
-	"mapversion" "66"
+	"editorbuild" "6920"
+	"mapversion" "68"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -20,7 +20,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "66"
+	"mapversion" "68"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -33,7 +33,7 @@ world
 		{
 			"id" "1"
 			"plane" "(-288 -128 0) (-288 160 0) (288 160 0)"
-			"material" "TILE/TILEFLOOR016A"
+			"material" "TILE/TILEFLOOR_CMF"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
 			"rotation" "0"
@@ -1629,9 +1629,9 @@ world
 		{
 			"id" "445"
 			"plane" "(16 -343.764 0) (151.764 -208 0) (592.999 -649.235 0)"
-			"material" "TILE/TILEFLOOR016A"
-			"uaxis" "[0.707107 0.707107 0 -32.942] 0.25"
-			"vaxis" "[0.707107 -0.707107 0 -57.5676] 0.25"
+			"material" "TILE/TILEFLOOR_CMF"
+			"uaxis" "[0.707107 0.707107 0 -33] 0.25"
+			"vaxis" "[0.707107 -0.707107 0 -58] 0.25"
 			"rotation" "0"
 			"lightmapscale" "16"
 			"smoothing_groups" "0"
@@ -3099,6 +3099,8 @@ entity
 	"angles" "0 45 0"
 	"fademindist" "-1"
 	"fadescale" "1"
+	"lightmapresolutionx" "32"
+	"lightmapresolutiony" "32"
 	"model" "models/props_interiors/lights_florescent01a.mdl"
 	"skin" "1"
 	"solid" "6"
@@ -3260,6 +3262,8 @@ entity
 	"angles" "0 45 0"
 	"fademindist" "-1"
 	"fadescale" "1"
+	"lightmapresolutionx" "32"
+	"lightmapresolutiony" "32"
 	"model" "models/props_interiors/lights_florescent01a.mdl"
 	"skin" "1"
 	"solid" "6"
@@ -3421,6 +3425,8 @@ entity
 	"angles" "0 45 0"
 	"fademindist" "-1"
 	"fadescale" "1"
+	"lightmapresolutionx" "32"
+	"lightmapresolutiony" "32"
 	"model" "models/props_interiors/lights_florescent01a.mdl"
 	"skin" "1"
 	"solid" "6"
@@ -3470,6 +3476,8 @@ entity
 	"angles" "0 0 0"
 	"fademindist" "-1"
 	"fadescale" "1"
+	"lightmapresolutionx" "32"
+	"lightmapresolutiony" "32"
 	"model" "models/props_c17/light_domelight02_on.mdl"
 	"skin" "0"
 	"solid" "6"

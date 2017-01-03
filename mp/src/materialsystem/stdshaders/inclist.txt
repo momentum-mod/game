@@ -17,7 +17,4 @@ fxctmp9_tmp\SDK_emissive_scroll_blended_pass_vs30.inc
 fxctmp9_tmp\SDK_flashlight_ps30.inc
 fxctmp9_tmp\SDK_lightmappedgeneric_flashlight_vs30.inc
 fxctmp9_tmp\SDK_lightmappedgeneric_ps30.inc
-fxctmp9_tmp\SDK_lightmappedgeneric_filter0_ps30.inc
-fxctmp9_tmp\SDK_lightmappedgeneric_filter1_ps30.inc
-fxctmp9_tmp\SDK_lightmappedgeneric_filter2_ps30.inc
 fxctmp9_tmp\SDK_lightmappedgeneric_vs30.inc
