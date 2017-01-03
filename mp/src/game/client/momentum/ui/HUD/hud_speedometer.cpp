@@ -42,8 +42,9 @@ static MAKE_CONVAR(mom_speedometer_units, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_C
 static MAKE_TOGGLE_CONVAR(mom_speedometer, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                           "Toggles displaying the speedometer. 0 = OFF, 1 = ON\n");
 
-static MAKE_TOGGLE_CONVAR(mom_speedometer_colorize, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                          "Toggles speedometer colorization based on acceleration. 0 = OFF, 1 = ON\n");
+static MAKE_CONVAR(mom_speedometer_colorize, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
+                          "Toggles speedometer colorization. 0 = OFF, 1 = ON (Based on acceleration)," 
+                          " 2 = ON (Staged by relative velocity to max.)\n", 0, 2);
 
 static MAKE_TOGGLE_CONVAR(mom_speedometer_showlastjumpvel, "1", FLAG_HUD_CVAR | FCVAR_CLIENTCMD_CAN_EXECUTE,
                           "Toggles showing player velocity at last jump (XY only). 0 = OFF, 1 = ON\n");
@@ -106,7 +107,7 @@ class CHudSpeedMeter : public CHudElement, public CHudNumericDisplay
         SetBgColor(_bgColor);
         m_LabelColor = normalColor;
     }
-    bool ShouldColorize() const { return mom_speedometer_colorize.GetBool(); }
+    bool ShouldColorize() const { return mom_speedometer_colorize.GetInt() >= 1; }
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {
@@ -159,7 +160,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
 
 void CHudSpeedMeter::OnThink()
 {
-    Vector velocity = vec3_origin;
+    Vector velocity;
     C_MomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
@@ -201,10 +202,12 @@ void CHudSpeedMeter::OnThink()
             m_bRanFadeOutJumpSpeed = false;
         }
         // Remove the vertical component if necessary
-        if (velType)
+        /*if (velType)
         {
             velocity.z = 0;
-        }
+        }*/
+        // No branch version!
+        velocity.z *= 1 - velType;
 
         // Conversions based on https://developer.valvesoftware.com/wiki/Dimensions#Map_Grid_Units:_quick_reference
         float vel = static_cast<float>(velocity.Length());
@@ -234,14 +237,40 @@ void CHudSpeedMeter::OnThink()
         {
             if (m_flNextColorizeCheck <= gpGlobals->curtime)
             {
-                if (m_flLastVelocity != 0)
+                if (mom_speedometer_colorize.GetInt() == 1)
                 {
-                    m_currentColor = mom_UTIL->GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f,
-                                                                     normalColor, increaseColor, decreaseColor);
+                    if (m_flLastVelocity != 0)
+                    {
+                        m_currentColor = mom_UTIL->GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f,
+                            normalColor, increaseColor, decreaseColor);
+                    }
+                    else
+                    {
+                        m_currentColor = normalColor;
+                    }
                 }
                 else
                 {
-                    m_currentColor = normalColor;
+                    const float maxvel = ConVarRef("sv_maxvelocity").GetFloat();
+                    switch (static_cast<int>(vel / maxvel * 5))
+                    {
+                        case 0:
+                            m_currentColor = Color(255, 255, 255, 255);  // White
+                            break;
+                        case 1:
+                            m_currentColor = Color(255, 255, 0, 255);  // Yellow
+                            break;
+                        case 2:
+                            m_currentColor = Color(255, 165, 0, 255);  // Orange
+                            break;
+                        case 3:
+                            m_currentColor = Color(255, 0, 0, 255);  // Red
+                            break;
+                        case 4:
+                        default:
+                            m_currentColor = Color(128, 0, 128, 255);  // Purple
+                                                
+                    }
                 }
                 m_lastColor = m_PrimaryValueColor = m_currentColor;
                 m_flLastVelocity = vel;
