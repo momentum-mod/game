@@ -10,9 +10,9 @@
 #include "BaseVSShader.h"
 #include "commandbuilder.h"
 #include "convar.h"
-#include "lightmappedgeneric_ps20.inc"
-#include "lightmappedgeneric_vs20.inc"
-#include "lightmappedgeneric_ps20b.inc"
+#include "SDK_lightmappedgeneric_ps20.inc"
+#include "SDK_lightmappedgeneric_vs20.inc"
+#include "SDK_lightmappedgeneric_ps20b.inc"
 
 #include "tier0/memdbgon.h"
 
@@ -20,7 +20,7 @@ ConVar mat_disable_lightwarp( "mat_disable_lightwarp", "0" );
 ConVar mat_disable_fancy_blending( "mat_disable_fancy_blending", "0" );
 ConVar mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
 ConVar my_mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
-extern ConVar r_flashlight_version2;
+//extern ConVar r_flashlight_version2;
 
 class CLightmappedGeneric_DX9_Context : public CBasePerMaterialContextData
 {
@@ -570,7 +570,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 				bool bMaskedBlending=( (info.m_nMaskedBlending != -1) &&
 									   (params[info.m_nMaskedBlending]->GetIntValue() != 0) );
 
-				DECLARE_STATIC_VERTEX_SHADER( lightmappedgeneric_vs20 );
+				DECLARE_STATIC_VERTEX_SHADER( sdk_lightmappedgeneric_vs20 );
 				SET_STATIC_VERTEX_SHADER_COMBO( ENVMAP_MASK,  hasEnvmapMask );
 				SET_STATIC_VERTEX_SHADER_COMBO( TANGENTSPACE,  params[info.m_nEnvmap]->IsTexture() );
 				SET_STATIC_VERTEX_SHADER_COMBO( BUMPMAP,  hasBump );
@@ -585,11 +585,11 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 #ifdef _X360
 				SET_STATIC_VERTEX_SHADER_COMBO( FLASHLIGHT, hasFlashlight);
 #endif
-				SET_STATIC_VERTEX_SHADER( lightmappedgeneric_vs20 );
+                SET_STATIC_VERTEX_SHADER(sdk_lightmappedgeneric_vs20);
 
 				if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 				{
-					DECLARE_STATIC_PIXEL_SHADER( lightmappedgeneric_ps20b );
+                    DECLARE_STATIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20b);
 					SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE2, hasBaseTexture2 );
 					SET_STATIC_PIXEL_SHADER_COMBO( DETAILTEXTURE, hasDetailTexture );
 					SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP,  bumpmap_variant );
@@ -616,11 +616,11 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 #ifdef _X360
 					SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT, hasFlashlight);
 #endif
-					SET_STATIC_PIXEL_SHADER( lightmappedgeneric_ps20b );
+                    SET_STATIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20b);
 				}
 				else
 				{
-					DECLARE_STATIC_PIXEL_SHADER( lightmappedgeneric_ps20 );
+                    DECLARE_STATIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20);
 					SET_STATIC_PIXEL_SHADER_COMBO( BASETEXTURE2, hasBaseTexture2 );
 					SET_STATIC_PIXEL_SHADER_COMBO( DETAILTEXTURE, hasDetailTexture );
 					SET_STATIC_PIXEL_SHADER_COMBO( BUMPMAP,  bumpmap_variant );
@@ -643,7 +643,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					SET_STATIC_PIXEL_SHADER_COMBO( DETAIL_BLEND_MODE, nDetailBlendMode );
 					SET_STATIC_PIXEL_SHADER_COMBO( NORMAL_DECODE_MODE, 0 );					// No normal compression with ps_2_0	(yikes!)
 					SET_STATIC_PIXEL_SHADER_COMBO( NORMALMASK_DECODE_MODE, 0 );				// No normal compression with ps_2_0
-					SET_STATIC_PIXEL_SHADER( lightmappedgeneric_ps20 );
+                    SET_STATIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20);
 				}
 				// HACK HACK HACK - enable alpha writes all the time so that we have them for
 				// underwater stuff and writing depth to dest alpha
@@ -949,14 +949,14 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		}
 
 		MaterialFogMode_t fogType = pShaderAPI->GetSceneFogMode();
-		DECLARE_DYNAMIC_VERTEX_SHADER( lightmappedgeneric_vs20 );
+        DECLARE_DYNAMIC_VERTEX_SHADER(sdk_lightmappedgeneric_vs20);
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG,  fogType == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( FASTPATH,  bVertexShaderFastPath );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( 
 			LIGHTING_PREVIEW, 
 			(nFixedLightingMode)?1:0
 			);
-		SET_DYNAMIC_VERTEX_SHADER_CMD( DynamicCmdsOut, lightmappedgeneric_vs20 );
+        SET_DYNAMIC_VERTEX_SHADER_CMD(DynamicCmdsOut, sdk_lightmappedgeneric_vs20);
 
 		bool bPixelShaderFastPath = pContextData->m_bPixelShaderFastPath;
 		if( nFixedLightingMode !=0 )
@@ -981,7 +981,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 		float envmapContrast = params[info.m_nEnvmapContrast]->GetFloatValue();
 		if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
 		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( lightmappedgeneric_ps20b );
+            DECLARE_DYNAMIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20b);
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( FASTPATH,  bPixelShaderFastPath || pContextData->m_bPixelShaderForceFastPathBecauseOutline );
  			SET_DYNAMIC_PIXEL_SHADER_COMBO( FASTPATHENVMAPCONTRAST,  bPixelShaderFastPath && envmapContrast == 1.0f );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
@@ -991,11 +991,11 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( LIGHTING_PREVIEW, nFixedLightingMode );
 			
-			SET_DYNAMIC_PIXEL_SHADER_CMD( DynamicCmdsOut, lightmappedgeneric_ps20b );
+            SET_DYNAMIC_PIXEL_SHADER_CMD(DynamicCmdsOut, sdk_lightmappedgeneric_ps20b);
 		}
 		else
 		{
-			DECLARE_DYNAMIC_PIXEL_SHADER( lightmappedgeneric_ps20 );
+            DECLARE_DYNAMIC_PIXEL_SHADER(sdk_lightmappedgeneric_ps20);
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( FASTPATH,  bPixelShaderFastPath );
  			SET_DYNAMIC_PIXEL_SHADER_COMBO( FASTPATHENVMAPCONTRAST,  bPixelShaderFastPath && envmapContrast == 1.0f );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( PIXELFOGTYPE, pShaderAPI->GetPixelFogCombo() );
@@ -1004,7 +1004,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO(	LIGHTING_PREVIEW, nFixedLightingMode );
 			
-			SET_DYNAMIC_PIXEL_SHADER_CMD( DynamicCmdsOut, lightmappedgeneric_ps20 );
+            SET_DYNAMIC_PIXEL_SHADER_CMD(DynamicCmdsOut, sdk_lightmappedgeneric_ps20);
 		}
 
 		if( hasFlashlight && IsX360() )
@@ -1075,6 +1075,7 @@ void DrawLightmappedGeneric_DX9(CBaseVSShader *pShader, IMaterialVar** params,
 										 CBasePerMaterialContextData **pContextDataPtr )
 {
 	bool hasFlashlight = pShader->UsingFlashlight( params );
+    ConVarRef r_flashlight_version2("r_flashlight_version2");
 	if ( !IsX360() && !r_flashlight_version2.GetInt() )
 	{
 		DrawLightmappedGeneric_DX9_Internal( pShader, params, hasFlashlight, pShaderAPI, pShaderShadow, info, pContextDataPtr );
