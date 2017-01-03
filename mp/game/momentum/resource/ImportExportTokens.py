@@ -26,7 +26,7 @@ elif option == "ENCODE" or option == "E":
             mom['lang']['Tokens'][key['term']] = key['definition']
         vdf.dump(mom, open('momentum_' + lang + '.txt', 'w', encoding='utf_16_le'), pretty=True)
         print 'momentum_%s exported.' % lang
-        if lang == 'english'
+        if lang == 'english':
             vdf.dump(mom, open('momentum_english_ref_exp.txt', 'w', encoding='utf-8'), pretty=True)
             print 'momentum_english_ref_exp exported.'
 
