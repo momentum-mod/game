@@ -1648,7 +1648,7 @@ void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
     }
 }
 
-int CClientTimesDisplay::TryAddAvatar(CSteamID steamid)
+int CClientTimesDisplay::TryAddAvatar(const CSteamID &steamid)
 {
     // Update their avatar
     if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())

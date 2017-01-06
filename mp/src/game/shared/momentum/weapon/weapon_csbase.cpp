@@ -285,6 +285,10 @@ CWeaponCSBase::CWeaponCSBase()
 #else
     m_iDefaultExtraAmmo = 0;
 #endif
+
+    m_flAccuracy = 1.0f;
+    m_flDecreaseShotsFired = 0.0f;
+    m_iExtraPrimaryAmmo = 0;
 }
 
 
@@ -438,7 +442,7 @@ void CWeaponCSBase::ItemPostFrame()
             if ((pPlayer->m_iShotsFired > 0) && (m_flDecreaseShotsFired < gpGlobals->curtime))
             {
                 m_flDecreaseShotsFired = gpGlobals->curtime + 0.0225;
-                pPlayer->m_iShotsFired--;
+                --pPlayer->m_iShotsFired;
             }
         }
 

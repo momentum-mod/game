@@ -41,7 +41,6 @@ TextImage::TextImage(const char *text) : Image()
 	_fallbackFont = INVALID_FONT;
 	_unlocalizedTextSymbol = INVALID_LOCALIZE_STRING_INDEX;
 	_drawWidth = 0;
-	_textBufferLen = 0;
 	_textLen = 0;
 	m_bWrap = false;
 	m_bWrapCenter = false;
@@ -66,7 +65,6 @@ TextImage::TextImage(const wchar_t *wszText) : Image()
 	_fallbackFont = INVALID_FONT;
 	_unlocalizedTextSymbol = INVALID_LOCALIZE_STRING_INDEX;
 	_drawWidth = 0;
-	_textBufferLen = 0;
 	_textLen = 0;
 	m_bWrap = false;
 	m_bWrapCenter = false;

@@ -396,7 +396,7 @@ void CBaseCSGrenade::DropGrenade()
     m_fThrowTime = 0.0f;
 }
 
-void CBaseCSGrenade::EmitGrenade(Vector vecSrc, QAngle vecAngles, Vector vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer)
+void CBaseCSGrenade::EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer)
 {
     Assert(0 && "CBaseCSGrenade::EmitGrenade should not be called. Make sure to implement this in your subclass!\n");
 }

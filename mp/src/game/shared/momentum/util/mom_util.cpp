@@ -407,11 +407,11 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
 void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, RunCompare_t *into)
 {
     Q_strcpy(into->runName, compareName);
-
+    const size_t pZoneSize = strlen("zone");
     FOR_EACH_SUBKEY(kvRun, kv)
     {
         // Stages/checkpoints data
-        if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
+        if (!Q_strnicmp(kv->GetName(), "zone", pZoneSize))
         {
             // Splits
             into->overallSplits.AddToTail(kv->GetFloat("enter_time"));

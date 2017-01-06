@@ -5147,7 +5147,7 @@ void CPropDoorRotating::MoveDone()
 //-----------------------------------------------------------------------------
 void CPropDoorRotating::AngularMove(const QAngle &vecDestAngle, float flSpeed)
 {
-	ASSERTSZ(flSpeed != 0, "AngularMove:  no speed is defined!");
+	ASSERTSZ(flSpeed != 0.0f, "AngularMove:  no speed is defined!");
 	
 	m_angGoal = vecDestAngle;
 

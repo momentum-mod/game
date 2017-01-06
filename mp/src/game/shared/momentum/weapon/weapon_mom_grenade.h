@@ -20,7 +20,7 @@ public:
 
 #ifdef GAME_DLL
 
-    void EmitGrenade(Vector vecSrc, QAngle vecAngles, Vector vecVel, AngularImpulse angImpulse,
+    void EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel, AngularImpulse angImpulse,
                              CBasePlayer *pPlayer) OVERRIDE;
 #endif
 };

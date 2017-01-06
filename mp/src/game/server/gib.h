@@ -52,7 +52,7 @@ public:
 	virtual int	ObjectCaps( void ) { return (BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE | FCAP_IMPULSE_USE; }
 	static	void SpawnHeadGib( CBaseEntity *pVictim );
 	static	void SpawnRandomGibs( CBaseEntity *pVictim, int cGibs, GibType_e eGibType );
-	static  void SpawnStickyGibs( CBaseEntity *pVictim, Vector vecOrigin, int cGibs );
+	static  void SpawnStickyGibs( CBaseEntity *pVictim, const Vector &vecOrigin, int cGibs );
 	static	void SpawnSpecificGibs( CBaseEntity *pVictim, int nNumGibs, float fMaxVelocity, float fMinVelocity, const char* cModelName, float flLifetime = 25);
 
 	void SetPhysicsAttacker( CBasePlayer *pEntity, float flTime );

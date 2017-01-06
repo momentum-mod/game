@@ -186,22 +186,21 @@ void C_HudTimer::MsgFunc_Timer_State( bf_read &msg )
 
     bool started = msg.ReadOneBit();
 
-    if ( started )
+    if (started)
     {
         // VGUI_ANIMATE("TimerStart");
         // Checking again, even if we just checked 8 lines before
-        if ( pPlayer != nullptr )
-        {
-            pPlayer->EmitSound( "Momentum.StartTimer" );
-            m_bTimerRan = true;
-        }
+
+        pPlayer->EmitSound("Momentum.StartTimer");
+        m_bTimerRan = true;
+
     }
     else // stopped
     {
         // Compare times.
-        if ( m_bWereCheatsActivated ) // EY, CHEATER, STOP
+        if (m_bWereCheatsActivated) // EY, CHEATER, STOP
         {
-            DevWarning( "sv_cheats was set to 1, thus making the run not valid \n" );
+            DevWarning("sv_cheats was set to 1, thus making the run not valid \n");
         }
         else // He didn't cheat, we can carry on
         {
@@ -212,11 +211,9 @@ void C_HudTimer::MsgFunc_Timer_State( bf_read &msg )
         }
 
         // VGUI_ANIMATE("TimerStop");
-        if ( pPlayer != nullptr )
-        {
-            m_bTimerRan = true;
-            pPlayer->EmitSound( "Momentum.StopTimer" );
-        }
+        m_bTimerRan = true;
+        pPlayer->EmitSound("Momentum.StopTimer");
+
 
         // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
     }

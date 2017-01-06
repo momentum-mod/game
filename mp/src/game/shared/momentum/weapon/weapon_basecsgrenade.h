@@ -58,7 +58,7 @@ public:
 	int		CapabilitiesGet();
 	
 	// Each derived grenade class implements this.
-	virtual void EmitGrenade( Vector vecSrc, QAngle vecAngles, Vector vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer );
+	virtual void EmitGrenade( const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer );
 #endif
 
 protected:

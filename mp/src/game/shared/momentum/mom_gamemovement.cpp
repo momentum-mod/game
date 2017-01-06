@@ -522,6 +522,9 @@ void CMomentumGameMovement::PlayerMove()
 
 bool CMomentumGameMovement::CheckJumpButton()
 {
+    // Avoid nullptr access, return false if somehow we don't have a player
+    if (!player)
+        return false;
 
     if (player->pl.deadflag)
     {
@@ -594,7 +597,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // if we weren't ducking, bots and hostages do a crouchjump programatically
-    if ((!player || player->IsBot()) && !(mv->m_nButtons & IN_DUCK))
+    if (player->IsBot() && !(mv->m_nButtons & IN_DUCK))
     {
         m_pPlayer->m_duckUntilOnGround = true;
         FinishDuck();
@@ -1334,7 +1337,8 @@ void CMomentumGameMovement::ReduceTimers(void)
 void CMomentumGameMovement::CheckFalling(void)
 {
     // this function really deals with landing, not falling, so early out otherwise
-    if (player->GetGroundEntity() == nullptr || player->m_Local.m_flFallVelocity <= 0.0f)
+    CBaseEntity *pGroundEntity = player->GetGroundEntity();
+    if (!pGroundEntity || player->m_Local.m_flFallVelocity <= 0.0f)
         return;
 
     if (!IsDead() && player->m_Local.m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHOLD)
@@ -1349,7 +1353,7 @@ void CMomentumGameMovement::CheckFalling(void)
         else
         {
             // Scale it down if we landed on something that's floating...
-            if (player->GetGroundEntity()->IsFloating())
+            if (pGroundEntity->IsFloating())
             {
                 player->m_Local.m_flFallVelocity -= PLAYER_LAND_ON_FLOATING_OBJECT;
             }
@@ -1357,10 +1361,10 @@ void CMomentumGameMovement::CheckFalling(void)
             //
             // They hit the ground.
             //
-            if (player->GetGroundEntity()->GetAbsVelocity().z < 0.0f)
+            if (pGroundEntity->GetAbsVelocity().z < 0.0f)
             {
                 // Player landed on a descending object. Subtract the velocity of the ground entity.
-                player->m_Local.m_flFallVelocity += player->GetGroundEntity()->GetAbsVelocity().z;
+                player->m_Local.m_flFallVelocity += pGroundEntity->GetAbsVelocity().z;
                 player->m_Local.m_flFallVelocity = MAX(0.1f, player->m_Local.m_flFallVelocity);
             }
 

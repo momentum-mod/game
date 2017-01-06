@@ -21,9 +21,9 @@ public:
 
 	~C_Gib( void );
 
-	static C_Gib	*CreateClientsideGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime = DEFAULT_GIB_LIFETIME );
+	static C_Gib	*CreateClientsideGib( const char *pszModelName, const Vector &vecOrigin, const Vector &vecForceDir, AngularImpulse vecAngularImp, float flLifetime = DEFAULT_GIB_LIFETIME );
 	
-	bool	InitializeGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime = DEFAULT_GIB_LIFETIME );
+	bool	InitializeGib( const char *pszModelName, const Vector &vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime = DEFAULT_GIB_LIFETIME );
 	void	ClientThink( void );
 	void	StartTouch( C_BaseEntity *pOther );
 

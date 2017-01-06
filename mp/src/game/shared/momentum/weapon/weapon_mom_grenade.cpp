@@ -25,7 +25,7 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_grenade);
 
 #ifndef CLIENT_DLL
 
-void CMomentumGrenade::EmitGrenade(Vector vecSrc, QAngle vecAngles, Vector vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer)
+void CMomentumGrenade::EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel, AngularImpulse angImpulse, CBasePlayer *pPlayer)
 {
     CMomGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pPlayer, GRENADE_TIMER);
 }

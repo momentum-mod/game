@@ -1710,9 +1710,10 @@ void CBaseHudChat::ChatPrintf( int iPlayerIndex, int iFilter, const char *fmt, .
 	va_end(marker);
 
 	// Strip any trailing '\n'
-	if ( strlen( msg ) > 0 && msg[ strlen( msg )-1 ] == '\n' )
+    const size_t pMsgSize = strlen(msg);
+    if (pMsgSize > 0 && msg[pMsgSize - 1] == '\n')
 	{
-		msg[ strlen( msg ) - 1 ] = 0;
+        msg[pMsgSize - 1] = 0;
 	}
 
 	// Strip leading \n characters ( or notify/color signifiers ) for empty string check

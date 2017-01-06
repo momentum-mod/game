@@ -728,7 +728,7 @@ class CSimpleVCallbackView : public CBaseVCallbackView
 
     EditorViewSettings settings;
 
-    void Setup(const CViewSetup &view, CSimpleVCallbackView::EditorViewSettings settings,
+    void Setup(const CViewSetup &view, const CSimpleVCallbackView::EditorViewSettings &settings,
                const VisibleFogVolumeInfo_t &fogInfo, const WaterRenderInfo_t &info)
     {
         this->settings = settings;

@@ -335,7 +335,7 @@ bool CKnife::SwingOrStab( bool bStab )
 		SendWeaponAnim( bDidHit ? ACT_VM_HITCENTER : ACT_VM_MISSCENTER );
 
 		fPrimDelay = bDidHit ? 0.5f : 0.4f;
-		fSecDelay = bDidHit ? 0.5f : 0.5f;
+		fSecDelay = bDidHit ? 0.5f : 0.4f;
 	}
 
 	m_flNextPrimaryAttack = gpGlobals->curtime + fPrimDelay;
