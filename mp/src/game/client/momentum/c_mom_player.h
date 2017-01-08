@@ -54,6 +54,8 @@ public:
     bool m_bDidPlayerBhop;
     bool m_bHasPracticeMode;
 
+    int m_afButtonDisabled;
+
     bool m_bUsingCPMenu;
     int m_iCurrentStepCP;
     int m_iCheckpointCount;

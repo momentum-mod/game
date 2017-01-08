@@ -50,7 +50,7 @@ typedef enum FLAGS
 
 //buffers for cstr variables
 #define BUFSIZETIME (sizeof("00:00:00.000")+1)
-#define BUFSIZELOCL (73)//Buffer size for localization/Max length for localized string
+#define BUFSIZELOCL (256)//Buffer size for localization/Max length for localized string
 #define BUFSIZESHORT 10
 
 //Localization of tokens

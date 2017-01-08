@@ -13,6 +13,8 @@
 #include "momentum/util/mom_util.h"
 #include "momSpectatorGUI.h"
 
+#include <tier0/memdbgon.h>
+
 C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY, false, false)
 {
     m_pViewport = pViewport;
@@ -124,11 +126,12 @@ void C_MOMReplayUI::OnThink()
             mom_UTIL->FormatTime(TICK_INTERVAL * (pGhost->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD), curtime, 2,
                                  false, negativeTime);
             mom_UTIL->FormatTime(pGhost->m_RunData.m_flRunTime, totaltime, 2);
-            // Conver to Unicode
+            // Convert to Unicode
             ANSI_TO_UNICODE(curtime, wCurtime);
             ANSI_TO_UNICODE(totaltime, wTotaltime);
             wchar_t pwTime[BUFSIZELOCL];
-            V_snwprintf(pwTime, BUFSIZELOCL, m_pwReplayTime, wCurtime, wTotaltime);
+            g_pVGuiLocalize->ConstructString(pwTime, sizeof(pwTime), m_pwReplayTime, 2, wCurtime, wTotaltime);
+            //V_snwprintf(pwTime, BUFSIZELOCL, m_pwReplayTime, wCurtime, wTotaltime);
             m_pProgressLabelTime->SetText(pwTime);
 
             if (pGhost->m_RunData.m_bMapFinished)

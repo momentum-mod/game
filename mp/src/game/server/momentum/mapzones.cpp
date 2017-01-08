@@ -154,7 +154,7 @@ static void saveZonFile(const char* szMapName)
             {
                 subKey->SetFloat("bhopleavespeed", pTrigger->GetMaxLeaveSpeed());
                 subKey->SetBool("limitingspeed", pTrigger->IsLimitingSpeed());
-                if (pTrigger->GetHasLookAngles())
+                if (pTrigger->HasLookAngles())
                     subKey->SetFloat("yaw", pTrigger->GetLookAngles()[YAW] );
             }
         }

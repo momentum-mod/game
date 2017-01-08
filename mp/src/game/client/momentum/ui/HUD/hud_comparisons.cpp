@@ -632,7 +632,7 @@ void C_RunComparisons::Paint()
     //  Sync? etc
 
     surface()->DrawSetTextFont(m_hTextFont);
-
+    surface()->DrawSetTextColor(GetFgColor());
     // Print "Comparing against: X"
     char fullCompareString[BUFSIZELOCL];
     Q_snprintf(fullCompareString, BUFSIZELOCL, "%s%s",

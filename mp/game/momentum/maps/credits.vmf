@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6920"
-	"mapversion" "32"
+	"mapversion" "33"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -20,7 +20,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "32"
+	"mapversion" "33"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -88,7 +88,7 @@ world
 		{
 			"id" "7"
 			"plane" "(-48 64 28) (-48 -64 28) (96 -64 28)"
-			"material" "EFFECTS/BLACK"
+			"material" "TOOLS/TOOLSBLACK"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
 			"rotation" "0"
@@ -165,7 +165,7 @@ world
 		{
 			"id" "13"
 			"plane" "(-48 -64 -53) (-48 64 -53) (96 64 -53)"
-			"material" "EFFECTS/BLACK"
+			"material" "TOOLS/TOOLSBLACK"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
 			"rotation" "0"
@@ -242,7 +242,7 @@ world
 		{
 			"id" "19"
 			"plane" "(-16 64 28) (-16 64 -53) (-16 -64 -53)"
-			"material" "EFFECTS/BLACK"
+			"material" "TOOLS/TOOLSBLACK"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -319,7 +319,7 @@ world
 		{
 			"id" "25"
 			"plane" "(64 -64 28) (64 -64 -53) (64 64 -53)"
-			"material" "EFFECTS/BLACK"
+			"material" "TOOLS/TOOLSBLACK"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -396,7 +396,7 @@ world
 		{
 			"id" "31"
 			"plane" "(64 32 -53) (-16 32 -53) (-16 32 28)"
-			"material" "EFFECTS/BLACK"
+			"material" "TOOLS/TOOLSBLACK"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -473,7 +473,7 @@ world
 		{
 			"id" "37"
 			"plane" "(-16 -32 -53) (64 -32 -53) (64 -32 28)"
-			"material" "EFFECTS/BLACK"
+			"material" "TOOLS/TOOLSBLACK"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
