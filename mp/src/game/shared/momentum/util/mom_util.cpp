@@ -255,7 +255,7 @@ void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
 }
 #endif
 
-void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName, bool negativeTime) const
+void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime) const
 {
     // We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = fabs(m_flSecondsTime);
@@ -317,8 +317,8 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
     }
 }
 
-Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor,
-                                          Color decreasecolor) const
+Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
+                                          const Color &decreasecolor) const
 {
     // variation is current velocity minus previous velocity.
     Color pFinalColor = normalcolor;
@@ -348,7 +348,7 @@ Color *MomentumUtil::GetColorFromHex(const char *hexColor)
     return nullptr;
 }
 
-KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, float tickrate, int flags)
+KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, const float tickrate, const int flags) const
 {
     if (kvMap && szMapName)
     {
@@ -383,7 +383,7 @@ KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, fl
     return nullptr;
 }
 
-bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into)
+bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into)
 {
     bool toReturn = false;
     if (into && szMapName)
@@ -404,7 +404,7 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int f
     return toReturn;
 }
 
-void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, RunCompare_t *into)
+void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, RunCompare_t *into) const
 {
     Q_strcpy(into->runName, compareName);
     const size_t pZoneSize = strlen("zone");
@@ -466,7 +466,7 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, 
         return;                                                                                                        \
     sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
 
-void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, Vector &toSave)
+void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
@@ -476,7 +476,7 @@ void MomentumUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &ve
     LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
 }
 
-void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave)
+void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
