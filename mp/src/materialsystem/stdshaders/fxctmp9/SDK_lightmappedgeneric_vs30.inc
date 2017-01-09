@@ -238,12 +238,33 @@ public:
 		bool bAllStaticVarsDefined = m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bBUMPMASK;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 8 * m_nENVMAP_MASK ) + ( 16 * m_nTANGENTSPACE ) + ( 32 * m_nBUMPMAP ) + ( 64 * m_nDIFFUSEBUMPMAP ) + ( 128 * m_nVERTEXCOLOR ) + ( 256 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 512 * m_nRELIEF_MAPPING ) + ( 512 * m_nSEAMLESS ) + ( 1024 * m_nBUMPMASK ) + 0;
+		return ( 16 * m_nENVMAP_MASK ) + ( 32 * m_nTANGENTSPACE ) + ( 64 * m_nBUMPMAP ) + ( 128 * m_nDIFFUSEBUMPMAP ) + ( 256 * m_nVERTEXCOLOR ) + ( 512 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 1024 * m_nRELIEF_MAPPING ) + ( 1024 * m_nSEAMLESS ) + ( 2048 * m_nBUMPMASK ) + 0;
 	}
 };
 #define shaderStaticTest_sdk_lightmappedgeneric_vs30 vsh_forgot_to_set_static_ENVMAP_MASK + vsh_forgot_to_set_static_TANGENTSPACE + vsh_forgot_to_set_static_BUMPMAP + vsh_forgot_to_set_static_DIFFUSEBUMPMAP + vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_VERTEXALPHATEXBLENDFACTOR + vsh_forgot_to_set_static_RELIEF_MAPPING + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_BUMPMASK + 0
 class sdk_lightmappedgeneric_vs30_Dynamic_Index
 {
+private:
+	int m_nCASCADED_SHADOW;
+#ifdef _DEBUG
+	bool m_bCASCADED_SHADOW;
+#endif
+public:
+	void SetCASCADED_SHADOW( int i )
+	{
+		Assert( i >= 0 && i <= 1 );
+		m_nCASCADED_SHADOW = i;
+#ifdef _DEBUG
+		m_bCASCADED_SHADOW = true;
+#endif
+	}
+	void SetCASCADED_SHADOW( bool i )
+	{
+		m_nCASCADED_SHADOW = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bCASCADED_SHADOW = true;
+#endif
+	}
 private:
 	int m_nFASTPATH;
 #ifdef _DEBUG
@@ -311,6 +332,10 @@ public:
 	sdk_lightmappedgeneric_vs30_Dynamic_Index()
 	{
 #ifdef _DEBUG
+		m_bCASCADED_SHADOW = false;
+#endif // _DEBUG
+		m_nCASCADED_SHADOW = 0;
+#ifdef _DEBUG
 		m_bFASTPATH = false;
 #endif // _DEBUG
 		m_nFASTPATH = 0;
@@ -328,10 +353,10 @@ public:
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllDynamicVarsDefined = m_bFASTPATH && m_bDOWATERFOG && m_bLIGHTING_PREVIEW;
+		bool bAllDynamicVarsDefined = m_bCASCADED_SHADOW && m_bFASTPATH && m_bDOWATERFOG && m_bLIGHTING_PREVIEW;
 		Assert( bAllDynamicVarsDefined );
 #endif // _DEBUG
-		return ( 1 * m_nFASTPATH ) + ( 2 * m_nDOWATERFOG ) + ( 4 * m_nLIGHTING_PREVIEW ) + 0;
+		return ( 1 * m_nCASCADED_SHADOW ) + ( 2 * m_nFASTPATH ) + ( 4 * m_nDOWATERFOG ) + ( 8 * m_nLIGHTING_PREVIEW ) + 0;
 	}
 };
-#define shaderDynamicTest_sdk_lightmappedgeneric_vs30 vsh_forgot_to_set_dynamic_FASTPATH + vsh_forgot_to_set_dynamic_DOWATERFOG + vsh_forgot_to_set_dynamic_LIGHTING_PREVIEW + 0
+#define shaderDynamicTest_sdk_lightmappedgeneric_vs30 vsh_forgot_to_set_dynamic_CASCADED_SHADOW + vsh_forgot_to_set_dynamic_FASTPATH + vsh_forgot_to_set_dynamic_DOWATERFOG + vsh_forgot_to_set_dynamic_LIGHTING_PREVIEW + 0

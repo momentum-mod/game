@@ -102,6 +102,12 @@ const float4x4 g_FlashlightWorldToTexture	: register( c15 ); // through c18
 const float4 g_ShadowTweaks					: register( c19 );
 
 
+// Parallax cubemaps
+#if (PARALLAXCORRECT)
+const float3 cubemapPos : register(c21);
+const float4x4 obbMatrix : register(c22); //through c25
+#endif
+
 sampler BaseTextureSampler		: register( s0 );
 sampler LightmapSampler			: register( s1 );
 sampler EnvmapSampler			: register( s2 );
@@ -531,6 +537,25 @@ HALF4 main( PS_INPUT i ) : COLOR
 		fresnel = pow( fresnel, 5.0 );
 		fresnel = fresnel * g_OneMinusFresnelReflection + g_FresnelReflection;
 		
+        //Parallax correction (2_0b and beyond)
+        //Adapted from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
+#if !(defined(SHADER_MODEL_PS_1_1) || defined(SHADER_MODEL_PS_1_4) || defined(SHADER_MODEL_PS_2_0))
+#if (PARALLAXCORRECT)
+        float3 worldPos = i.worldPos_projPosZ.xyz;
+        float3 positionLS = mul(float4(worldPos, 1), obbMatrix);
+        float3 rayLS = mul(reflectVect, (float3x3) obbMatrix);
+
+        float3 firstPlaneIntersect = (float3(1.0f, 1.0f, 1.0f) - positionLS) / rayLS;
+        float3 secondPlaneIntersect = (-positionLS) / rayLS;
+        float3 furthestPlane = max(firstPlaneIntersect, secondPlaneIntersect);
+        float distance = min(furthestPlane.x, min(furthestPlane.y, furthestPlane.z));
+
+        // Use distance in WS directly to recover intersection
+        float3 intersectPositionWS = worldPos + reflectVect * distance;
+        reflectVect = intersectPositionWS - cubemapPos;
+#endif
+#endif
+
 		specularLighting = ENV_MAP_SCALE * texCUBE( EnvmapSampler, reflectVect );
 		specularLighting *= specularFactor;
 								   
