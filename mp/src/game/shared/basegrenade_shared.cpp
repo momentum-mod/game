@@ -539,6 +539,7 @@ CBaseGrenade::CBaseGrenade(void)
 	m_DmgRadius			= 100;
 	m_flDetonateTime	= 0;
 	m_bHasWarnedAI		= false;
+    m_flWarnAITime = 0.0f;
 
 	SetSimulatedEveryTick( true );
 };

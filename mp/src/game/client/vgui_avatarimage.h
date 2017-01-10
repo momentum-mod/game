@@ -72,7 +72,7 @@ public:
 	// HPE_BEGIN:
 	// [tj] Added parameter to specify size. Default is 32x32.
 	//=============================================================================
-	bool SetAvatarSteamID( CSteamID steamIDUser, EAvatarSize avatarSize = k_EAvatarSize32x32 );
+	bool SetAvatarSteamID( const CSteamID &steamIDUser, EAvatarSize avatarSize = k_EAvatarSize32x32 );
 	//=============================================================================
 	// HPE_END
 	//=============================================================================
@@ -211,7 +211,7 @@ public:
 	void SetPlayer( int entityIndex, EAvatarSize avatarSize = k_EAvatarSize32x32 );
 
 	// [tj] lower level function that expects a steam ID instead of a player
-	void SetPlayer(CSteamID steamIDForPlayer, EAvatarSize avatarSize	);
+	void SetPlayer(const CSteamID &steamIDForPlayer, EAvatarSize avatarSize	);
 
 	// sets whether or not the image should scale to fit the size of the ImagePanel (defaults to false)
 	void SetShouldScaleImage( bool bScaleImage );

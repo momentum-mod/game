@@ -1784,9 +1784,9 @@ QuadBarycentricRetval_t QuadWithParallelEdges( const Vector &vecOrigin,
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void ResolveQuadratic( double tPlus, double tMinus, 
-					   const Vector axisU0, const Vector axisU1,
-					   const Vector axisV0, const Vector axisV1,
-					   const Vector axisOrigin, const Vector pt,
+					   const Vector &axisU0, const Vector &axisU1,
+					   const Vector &axisV0, const Vector &axisV1,
+					   const Vector &axisOrigin, const Vector &pt,
 					   int projU, double &s, double &t )
 {
 	// calculate the sPlus, sMinus pair(s)

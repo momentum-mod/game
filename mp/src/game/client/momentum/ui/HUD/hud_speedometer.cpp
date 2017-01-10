@@ -401,7 +401,7 @@ void CHudSpeedMeter::PaintNumbers(HFont font, int xpos, int ypos, int value, boo
     {
         if (atLeast2Digits && value < 10)
         {
-            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d", value);
+            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%02d", value);
         }
         else
         {

@@ -340,7 +340,7 @@ void		UTIL_EmitAmbientSound	( int entindex, const Vector &vecOrigin, const char 
 void		UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
 void		UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius, ShakeCommand_t eCommand, bool bAirShake=false );
 void		UTIL_ScreenShakeObject	( CBaseEntity *pEnt, const Vector &center, float amplitude, float frequency, float duration, float radius, ShakeCommand_t eCommand, bool bAirShake=false );
-void		UTIL_ViewPunch			( const Vector &center, QAngle angPunch, float radius, bool bInAir );
+void		UTIL_ViewPunch			( const Vector &center, const QAngle &angPunch, float radius, bool bInAir );
 void		UTIL_ShowMessage		( const char *pString, CBasePlayer *pPlayer );
 void		UTIL_ShowMessageAll		( const char *pString );
 void		UTIL_ScreenFadeAll		( const color32 &color, float fadeTime, float holdTime, int flags );

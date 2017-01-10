@@ -476,7 +476,7 @@ class CBaseVCallbackView : public CRendering3dView
         if (bParticles)
             g_pParticleSystemMgr->ResetRenderCache();
 
-        bool const bDrawopaquestaticpropslast = false; // r_drawopaquestaticpropslast.GetBool();
+        //bool const bDrawopaquestaticpropslast = false; // r_drawopaquestaticpropslast.GetBool();
 
         //
         // First do the brush models
@@ -561,7 +561,8 @@ class CBaseVCallbackView : public CRendering3dView
 
             for (int bucket = 0; bucket < RENDER_GROUP_CFG_NUM_OPAQUE_ENT_BUCKETS; ++bucket)
             {
-                if (bDrawopaquestaticpropslast)
+                // MOM_TODO: Figure out what was supposed to be here
+                /*if (bDrawopaquestaticpropslast)
                 {
                     DrawOpaqueRenderables_Range(pEnts[bucket][0], pEnts[bucket][1], bShadowDepth);
                     DrawOpaqueRenderables_DrawStaticProps(pProps[bucket][0], pProps[bucket][1], bShadowDepth);
@@ -570,7 +571,9 @@ class CBaseVCallbackView : public CRendering3dView
                 {
                     DrawOpaqueRenderables_Range(pEnts[bucket][0], pEnts[bucket][1], bShadowDepth);
                     DrawOpaqueRenderables_DrawStaticProps(pProps[bucket][0], pProps[bucket][1], bShadowDepth);
-                }
+                }*/
+                DrawOpaqueRenderables_Range(pEnts[bucket][0], pEnts[bucket][1], bShadowDepth);
+                DrawOpaqueRenderables_DrawStaticProps(pProps[bucket][0], pProps[bucket][1], bShadowDepth);
             }
         }
 
@@ -728,7 +731,7 @@ class CSimpleVCallbackView : public CBaseVCallbackView
 
     EditorViewSettings settings;
 
-    void Setup(const CViewSetup &view, CSimpleVCallbackView::EditorViewSettings settings,
+    void Setup(const CViewSetup &view, const CSimpleVCallbackView::EditorViewSettings &settings,
                const VisibleFogVolumeInfo_t &fogInfo, const WaterRenderInfo_t &info)
     {
         this->settings = settings;
