@@ -156,6 +156,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pRunStats = nullptr;
     m_iCurrentZone = 0;
     m_bEntInZone = false;
+    m_bIsTime = false;
 }
 
 void CHudSpeedMeter::OnThink()
@@ -397,27 +398,7 @@ void CHudSpeedMeter::PaintNumbers(HFont font, int xpos, int ypos, int value, boo
 {
     surface()->DrawSetTextFont(font);
     wchar_t unicode[6];
-    if (!m_bIsTime)
-    {
-        if (atLeast2Digits && value < 10)
-        {
-            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%02d", value);
-        }
-        else
-        {
-            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d", value);
-        }
-    }
-    else
-    {
-        int iMinutes = value / 60;
-        int iSeconds = value - iMinutes * 60;
-
-        if (iSeconds < 10)
-            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d`0%d", iMinutes, iSeconds);
-        else
-            V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d`%d", iMinutes, iSeconds);
-    }
+    V_snwprintf(unicode, ARRAYSIZE(unicode), L"%d", value);
 
     // adjust the position to take into account 3 characters
     int charWidth = surface()->GetCharacterWidth(font, '0');
