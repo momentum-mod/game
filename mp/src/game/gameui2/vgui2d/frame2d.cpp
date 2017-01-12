@@ -13,16 +13,16 @@ void Frame2D::Paint()
 {
 	BaseClass::Paint();
 
-	if (materials && render && GameUI2().GetMaskTexture() && GameUI2().GetFrustum())
-	{
-		m_bBlurEnabled = true;
+    if (GameUI2().GetMaterialSystem() && GameUI2().GetRenderView() && GameUI2().GetMaskTexture() && GameUI2().GetFrustum())
+    {
+        m_bBlurEnabled = true;
 
-		render->Push2DView(GameUI2().GetView(), NULL, GameUI2().GetMaskTexture(), GameUI2().GetFrustum());
+        GameUI2().GetRenderView()->Push2DView(GameUI2().GetView(), NULL, GameUI2().GetMaskTexture(), GameUI2().GetFrustum());
 
-		PaintBlurMask();
+        PaintBlurMask();
 
-		render->PopView(GameUI2().GetFrustum());
-	}
+        GameUI2().GetRenderView()->PopView(GameUI2().GetFrustum());
+    }
 
 	m_bBlurEnabled = false;
 }

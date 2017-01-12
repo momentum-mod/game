@@ -4,25 +4,21 @@
 
 class Button2D : public vgui::Button
 {
-	DECLARE_CLASS_SIMPLE(Button2D, vgui::Button);
+    DECLARE_CLASS_SIMPLE(Button2D, vgui::Button);
 
-public:
-	Button2D(vgui::Panel* parent, const char* panelName, const char* text, vgui::Panel* pActionSignalTarget = NULL, const char* pCmd = NULL);
-	Button2D(vgui::Panel* parent, const char* panelName, const wchar_t* text, vgui::Panel* pActionSignalTarget = NULL, const char* pCmd = NULL);
+  public:
+    Button2D(vgui::Panel *parent, const char *panelName, const char *text, vgui::Panel *pActionSignalTarget = nullptr,
+             const char *pCmd = nullptr);
+    Button2D(vgui::Panel *parent, const char *panelName, const wchar_t *text, vgui::Panel *pActionSignalTarget = nullptr,
+             const char *pCmd = nullptr);
 
-	virtual void		Paint();
-	virtual void 		PaintBlurMask();
+    virtual void Paint() OVERRIDE;
+    virtual void PaintBlurMask();
 
-	virtual bool		IsBlur()
-	{
-		return m_bBlurEnabled;
-	}
+    virtual bool IsBlur() { return m_bBlurEnabled; }
 
-	virtual bool		IsFullyVisible()
-	{
-		return vgui::ipanel()->IsFullyVisible(GetVPanel());
-	}
+    virtual bool IsFullyVisible() { return vgui::ipanel()->IsFullyVisible(GetVPanel()); }
 
-private:
-	bool				m_bBlurEnabled;
+  private:
+    bool m_bBlurEnabled;
 };
