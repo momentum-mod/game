@@ -851,29 +851,23 @@ void CTriggerSlide::Think()
 
 void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 {
-    if (pOther && pOther->IsPlayer())
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        if (pPlayer)
-        {
-            pPlayer->m_bSliding = true;
-        }
+        pPlayer->m_bSliding = true;
     }
-
     BaseClass::StartTouch(pOther);
 }
 
 void CTriggerSlide::EndTouch( CBaseEntity *pOther )
 {
-    if (pOther && pOther->IsPlayer())
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        if (pPlayer)
-        {
-            pPlayer->m_bSliding = false;
-        }
+        pPlayer->m_bSliding = false;
     }
-
     BaseClass::EndTouch(pOther);
 }
 //-----------------------------------------------------------------------------------------------
