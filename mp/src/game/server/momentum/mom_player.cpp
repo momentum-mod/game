@@ -841,16 +841,18 @@ void CMomentumPlayer::LimitSpeedInStartZone()
         // depending on gamemode, limit speed outright when player exceeds punish vel
         ConVarRef gm("mom_gamemode");
         CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
-        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-        bool isLimitingSpeed = startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED);
-        if (bhopGameMode && startTrigger && isLimitingSpeed && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        // This does not look pretty but saves us a branching. The checks are:
+        // no nullptr, correct gamemode, is limiting leave speed and 
+        //    enough ticks on air have passed
+        if (startTrigger && (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL) && startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED) &&
+            (!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
-            if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check agaisnt the square of velocity
+            if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
             {
-                velocity = (velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed();
-                SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
+                // New velocity is the unitary form of the current vel vector times the max speed amount
+                SetAbsVelocity((velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed());
             }
         }
     }

@@ -45,6 +45,9 @@ int CBaseAutoCompleteFileList::AutoCompletionFunc( char const *partial, char com
 	CUtlVector< CUtlSymbol > symbols;
     FileFindHandle_t hfind = FILESYSTEM_INVALID_FIND_HANDLE;
     const char* findfn = g_pFullFileSystem->FindFirst(searchpath, &hfind);
+
+    const size_t pSubstring = strlen(substring);
+
 	while ( findfn )
 	{
 		char sz[ MAX_QPATH ];
@@ -54,7 +57,7 @@ int CBaseAutoCompleteFileList::AutoCompletionFunc( char const *partial, char com
 		// Insert into lookup
 		if ( substring[0] )
 		{
-			if ( !Q_strncasecmp( findfn, substring, strlen( substring ) ) )
+            if (!Q_strncasecmp(findfn, substring, pSubstring))
 			{
 				add = true;
 			}

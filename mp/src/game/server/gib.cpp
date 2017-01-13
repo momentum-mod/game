@@ -62,7 +62,7 @@ void CGib::LimitVelocity( void )
 }
 
 
-void CGib::SpawnStickyGibs( CBaseEntity *pVictim, Vector vecOrigin, int cGibs )
+void CGib::SpawnStickyGibs( CBaseEntity *pVictim, const Vector &vecOrigin, int cGibs )
 {
 	int i;
 
@@ -636,13 +636,13 @@ CBaseEntity *CreateRagGib( const char *szModel, const Vector &vecOrigin, const Q
 
 	pGib = (CRagGib*)CreateEntityByName( "raggib" );
 
-	pGib->SetLocalAngles( vecAngles );
-
 	if ( !pGib )
 	{
 		Msg( "**Can't create ragdoll gib!\n" );
 		return NULL;
 	}
+
+    pGib->SetLocalAngles(vecAngles);
 
 	if ( bShouldIgnite )
 	{

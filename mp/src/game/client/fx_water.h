@@ -71,7 +71,7 @@ extern void FX_GunshotSlimeSplash( const Vector &origin, const Vector &normal, f
 //			*color - tint of the lighting at this point
 //			*luminosity - adjusted luminosity at this point
 //-----------------------------------------------------------------------------
-inline void FX_GetSplashLighting( Vector position, Vector *color, float *luminosity )
+inline void FX_GetSplashLighting( const Vector &position, Vector *color, float *luminosity )
 {
 	// Compute our lighting at our position
 	Vector totalColor = engine->GetLightForPoint( position, true );

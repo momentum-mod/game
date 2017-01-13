@@ -44,7 +44,7 @@
 class CUtlSortVectorTimeValue
 {
 public:
-    bool Less(CMomReplayBase *lhs, CMomReplayBase *rhs, void *)
+    bool Less(CMomReplayBase *lhs, CMomReplayBase *rhs, void *) const
     {
         return lhs->GetRunTime() < rhs->GetRunTime();
     }
@@ -128,7 +128,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
-    int TryAddAvatar(CSteamID);
+    int TryAddAvatar(const CSteamID &);
 
     // functions to override
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);

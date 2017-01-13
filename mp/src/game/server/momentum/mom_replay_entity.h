@@ -55,7 +55,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void StopTimer();
     void HandleGhost();
     void HandleGhostFirstPerson();
-    void UpdateStats(Vector ghostVel); // for hud display..
+    void UpdateStats(const Vector &ghostVel); // for hud display..
 
     const char *GetGhostModel() const { return m_pszModel; }
     void SetRunStats(CMomRunStats *stats) { m_RunStats.CopyFrom(*stats); }

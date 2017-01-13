@@ -11,7 +11,7 @@ void Momentum::GameInit()
     ConVarRef map("host_map");
     const char *pMapName = map.GetString();
     // This will only happen if the user didn't use the map selector to start a map
-
+    ConVarRef("sv_contact").SetValue("http://momentum-mod.org/contact");
     //set gamemode depending on map name
     //MOM_TODO: This needs to read map entity/momfile data and set accordingly
 

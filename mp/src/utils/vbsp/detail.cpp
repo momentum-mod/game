@@ -449,6 +449,7 @@ face_t *MakeBrushFace( side_t *originalSide, winding_t *winding )
 	// save plane info
 	f->planenum = originalSide->planenum;
 	f->contents = originalSide->contents;
+    f->smoothingGroups = originalSide->smoothingGroups;
 
 	return f;
 }

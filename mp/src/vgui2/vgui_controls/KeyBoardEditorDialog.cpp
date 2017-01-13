@@ -144,6 +144,8 @@ VControlsListPanel::VControlsListPanel( vgui::Panel *parent, const char *listNam
 	m_nClickRow		= 0;
 	m_pInlineEditPanel = new CInlineEditPanel();
 	m_hFont = INVALID_FONT;
+    m_iMouseX = 0;
+    m_iMouseY = 0;
 }
 
 //-----------------------------------------------------------------------------

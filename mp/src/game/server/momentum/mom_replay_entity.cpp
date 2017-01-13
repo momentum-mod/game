@@ -9,28 +9,28 @@
 #include "tier0/memdbgon.h"
 
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
-                                         FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                         "Replay ghost's body group (model)", true, 0, true, 14);
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Replay ghost's body group (model)", true, 0, true, 14);
 static ConCommand mom_replay_ghost_color("mom_replay_ghost_color", CMomentumReplayGhostEntity::SetGhostColor,
-                                         "Set the ghost's color. Accepts HEX color value in format RRGGBB",
-                                         FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE);
+    "Set the ghost's color. Accepts HEX color value in format RRGGBB",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE);
 static ConVar mom_replay_ghost_alpha("mom_replay_ghost_alpha", "75", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                     "Sets the ghost's transparency, integer between 0 and 255,", true, 0, true, 255);
+    "Sets the ghost's transparency, integer between 0 and 255,", true, 0, true, 255);
 
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 // MOM_TODO: Network other variables that the UI will need to reference
-SendPropInt(SENDINFO(m_nReplayButtons)), 
-SendPropInt(SENDINFO(m_iTotalStrafes)), 
+SendPropInt(SENDINFO(m_nReplayButtons)),
+SendPropInt(SENDINFO(m_iTotalStrafes)),
 SendPropInt(SENDINFO(m_iTotalJumps)),
-SendPropFloat(SENDINFO(m_flTickRate)), 
+SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropString(SENDINFO(m_pszPlayerName)),
-SendPropInt(SENDINFO(m_iTotalTimeTicks)), 
+SendPropInt(SENDINFO(m_iTotalTimeTicks)),
 SendPropInt(SENDINFO(m_iCurrentTick)),
 SendPropBool(SENDINFO(m_bIsPaused)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)), 
+SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
@@ -40,8 +40,8 @@ Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_iBodyGroup(BODY_PROLATE_ELLIPSE),
-      m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
-      m_nOldReplayButtons(0)
+    m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
+    m_nOldReplayButtons(0)
 {
     // Set networked vars here
     m_nReplayButtons = 0;
@@ -125,7 +125,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
         if (!g_pMomentumUtil->FloatEquals(m_flTickRate, gpGlobals->interval_per_tick))
         {
             Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_flTickRate.Get(),
-                    gpGlobals->interval_per_tick);
+                gpGlobals->interval_per_tick);
             EndRun();
             return;
         }
@@ -191,8 +191,8 @@ void CMomentumReplayGhostEntity::Think()
     if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
     {
         m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
-                              m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
-                              mom_replay_ghost_alpha.GetInt());
+            m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
+            mom_replay_ghost_alpha.GetInt());
         SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
 
@@ -217,7 +217,7 @@ void CMomentumReplayGhostEntity::Think()
             UpdateStep(1);
         else
         {
-            int NextStep = static_cast<int>(m_flTimeScale) + 1;
+            int NextStep = static_cast<int>(m_flTimeScale)+1;
             UpdateStep(NextStep);
         }
 
@@ -233,7 +233,7 @@ void CMomentumReplayGhostEntity::Think()
     }
     else
     {
-        int NextStep = static_cast<int>(m_flTimeScale) + 1;
+        int NextStep = static_cast<int>(m_flTimeScale)+1;
 
         float CalculateSlowMotion = gpGlobals->interval_per_tick * (NextStep - m_flTimeScale);
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick + CalculateSlowMotion);
@@ -263,7 +263,7 @@ inline bool CanUnduck(CMomentumReplayGhostEntity *pGhost)
     }
 
     UTIL_TraceHull(pGhost->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, pGhost,
-                   COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+        COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
 
     if (trace.startsolid || (trace.fraction != 1.0f))
         return false;
@@ -314,12 +314,16 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             }
         }
 
+
         // interpolate vel from difference in origin
-        float distX = fabs(currentStep->PlayerOrigin().x - nextStep->PlayerOrigin().x);
-        float distY = fabs(currentStep->PlayerOrigin().y - nextStep->PlayerOrigin().y);
-        float distZ = fabs(currentStep->PlayerOrigin().z - nextStep->PlayerOrigin().z);
-        Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
-        float maxvel = sv_maxvelocity.GetFloat();
+        const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
+        const Vector &pPlayerNextOrigin = nextStep->PlayerOrigin();
+        const float distX = fabs(pPlayerCurrentOrigin.x - pPlayerNextOrigin.x);
+        const float distY = fabs(pPlayerCurrentOrigin.y - pPlayerNextOrigin.y);
+        const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
+        const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+        const float maxvel = sv_maxvelocity.GetFloat();
+
 
         // Fixes an issue with teleporting
         if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
@@ -335,7 +339,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         // kamay: Now timer start and end at the right time
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-        if (currentStep->PlayerButtons() & IN_DUCK)
+        if (m_nReplayButtons & IN_DUCK)
         {
             if (!isDucking)
             {
@@ -368,7 +372,7 @@ void CMomentumReplayGhostEntity::HandleGhost()
     RemoveEffects(EF_NOSHADOW);
 }
 
-void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
+void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 {
     // --- STRAFE SYNC ---
     // calculate strafe sync based on replay ghost's movement, in order to update the player's HUD

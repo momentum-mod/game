@@ -1,4 +1,5 @@
 #include "cbase.h"
+
 #include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
@@ -123,7 +124,8 @@ DECLARE_HUDELEMENT(C_HudTimer);
 DECLARE_HUD_MESSAGE(C_HudTimer, Timer_State);
 DECLARE_HUD_MESSAGE(C_HudTimer, Timer_Reset);
 
-C_HudTimer::C_HudTimer(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
+C_HudTimer::C_HudTimer(const char *pElementName)
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
 {
     // This is already set for HUD elements, but still...
     SetProportional(true);
@@ -190,11 +192,9 @@ void C_HudTimer::MsgFunc_Timer_State(bf_read &msg)
     {
         // VGUI_ANIMATE("TimerStart");
         // Checking again, even if we just checked 8 lines before
-        if (pPlayer != nullptr)
-        {
-            pPlayer->EmitSound("Momentum.StartTimer");
-            m_bTimerRan = true;
-        }
+
+        pPlayer->EmitSound("Momentum.StartTimer");
+        m_bTimerRan = true;
     }
     else // stopped
     {
@@ -212,11 +212,8 @@ void C_HudTimer::MsgFunc_Timer_State(bf_read &msg)
         }
 
         // VGUI_ANIMATE("TimerStop");
-        if (pPlayer != nullptr)
-        {
-            m_bTimerRan = true;
-            pPlayer->EmitSound("Momentum.StopTimer");
-        }
+        m_bTimerRan = true;
+        pPlayer->EmitSound("Momentum.StopTimer");
 
         // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
     }
@@ -330,8 +327,7 @@ void C_HudTimer::Paint(void)
     // find out status of timer (no timer/practice mode)
     if (!m_bIsRunning)
     {
-        Q_strncpy(m_pszStringStatus,
-                  m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized,
+        Q_strncpy(m_pszStringStatus, m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized,
                   sizeof(m_pszStringStatus));
         ANSI_TO_UNICODE(m_pszStringStatus, m_pwCurrentStatus);
     }
@@ -363,6 +359,7 @@ void C_HudTimer::Paint(void)
                              m_bIsRunning ? wcslen(m_pwCurrentTime) : wcslen(m_pwCurrentStatus));
 
     surface()->DrawSetTextFont(m_hSmallTextFont);
+
     if (m_bShowCheckpoints)
     {
         if (center_cps)
@@ -389,9 +386,7 @@ void C_HudTimer::Paint(void)
             prevStageXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, prevStageString) / 2;
 
             // Inline the comparison (affects split xpos)
-            int extra = hasComparison ? UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) : 0;
-            stageSplitXPos =
-                GetWide() / 2 - (UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + extra) / 2;
+            stageSplitXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) / 2;
         }
 
         // Print the previous stage
@@ -412,12 +407,10 @@ void C_HudTimer::Paint(void)
             wchar_t comparisonUnicode[BUFSIZELOCL];
             ANSI_TO_UNICODE(comparisonANSI, comparisonUnicode);
 
-            // This will be right below where the time begins to print, but is unwanted
-            // int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
-            // splitY += yToIncrement;
+            // This will be right below where the time begins to print
+            int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
+            splitY += yToIncrement;
 
-            // Find the xpos of the comparison string
-            int compare_xpos = stageSplitXPos + UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + 2;
             // Print the comparison
             surface()->DrawSetTextPos(compare_xpos, splitY);
             surface()->DrawSetTextColor(compareColor);

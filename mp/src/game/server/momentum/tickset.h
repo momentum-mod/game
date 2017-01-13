@@ -36,7 +36,7 @@ struct Tickrate
 
 class TickSet {
 public:
-    
+    static const Tickrate s_DefinedRates[];
 
     enum
     {
@@ -59,8 +59,6 @@ private:
 	static inline bool DataCompare(const unsigned char*, const unsigned char*, const char*);
 	static void *FindPattern(const void*, size_t, const unsigned char*, const char*);
 	static float *interval_per_tick;
-
-    static const Tickrate s_DefinedRates[];
 
     static Tickrate m_trCurrent;
     static bool m_bInGameUpdate;
