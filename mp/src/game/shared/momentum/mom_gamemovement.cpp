@@ -733,7 +733,7 @@ void CMomentumGameMovement::CategorizePosition()
                     return;
                 }
 
-                SetGroundEntity(&pm);
+                SetGroundEntity( !m_pPlayer->m_bSliding ? &pm : nullptr);
             }
         }
         else
@@ -746,7 +746,7 @@ void CMomentumGameMovement::CategorizePosition()
                 return;
             }
 
-            SetGroundEntity(&pm); // Otherwise, point to index of ent under us.
+            SetGroundEntity( !m_pPlayer->m_bSliding ? &pm : nullptr ); // Otherwise, point to index of ent under us.
         }
 
 #ifndef CLIENT_DLL
@@ -828,6 +828,11 @@ void CMomentumGameMovement::FullWalkMove()
     else
     // Not fully underwater
     {
+        if ( m_pPlayer->m_bSliding  && ( player->GetGroundEntity() != nullptr ) )
+        {
+            SetGroundEntity( nullptr );
+        }
+
         // Was jump button pressed?
         if (mv->m_nButtons & IN_JUMP)
         {
@@ -881,16 +886,6 @@ void CMomentumGameMovement::FullWalkMove()
 
         CheckFalling();
 
-        //MOM_TODO: There might a better way to do this, but it works fine as temp trigger_slide.
-        //If we want to ignore ground, we must set the ground entity to nullptr.
-        //Now it works fine.
-
-        if ( m_pPlayer->m_bSliding )
-        {
-            SetGroundEntity( nullptr ); 
-            m_pPlayer->m_Local.m_flFallVelocity = -m_pPlayer->m_Local.m_flFallVelocity;
-            mv->m_vecVelocity[2] = -mv->m_vecVelocity[2];
-        }
     }
 
     if ((m_nOldWaterLevel == WL_NotInWater && player->GetWaterLevel() != WL_NotInWater) ||
@@ -1413,6 +1408,176 @@ void CMomentumGameMovement::CheckFalling(void)
     // Clear the fall velocity so the impact doesn't happen again.
     //
     player->m_Local.m_flFallVelocity = 0.0f;
+}
+
+//-----------------------------------------------------------------------------
+// Performs the collision resolution for fliers.
+//-----------------------------------------------------------------------------
+void CMomentumGameMovement::PerformFlyCollisionResolution( trace_t &pm , Vector &move )
+{
+    Vector base;
+    float vel;
+    float backoff;
+
+    switch ( player->GetMoveCollide() )
+    {
+        case MOVECOLLIDE_FLY_CUSTOM:
+            // Do nothing; the velocity should have been modified by touch
+            // FIXME: It seems wrong for touch to modify velocity
+            // given that it can be called in a number of places
+            // where collision resolution do *not* in fact occur
+
+            // Should this ever occur for players!?
+            Assert( 0 );
+            break;
+
+        case MOVECOLLIDE_FLY_BOUNCE:
+        case MOVECOLLIDE_DEFAULT:
+        {
+            if ( player->GetMoveCollide() == MOVECOLLIDE_FLY_BOUNCE )
+                backoff = 2.0 - player->m_surfaceFriction;
+            else
+                backoff = 1;
+
+            ClipVelocity( mv->m_vecVelocity , pm.plane.normal , mv->m_vecVelocity , backoff );
+        }
+        break;
+
+        default:
+            // Invalid collide type!
+            Assert( 0 );
+            break;
+    }
+
+    // stop if on ground
+    if ( pm.plane.normal[2] > 0.7 )
+    {
+        base.Init();
+        if ( mv->m_vecVelocity[2] < GetCurrentGravity() * gpGlobals->frametime )
+        {
+            // we're rolling on the ground, add static friction.
+            SetGroundEntity( &pm );
+            mv->m_vecVelocity[2] = 0;
+        }
+
+        vel = DotProduct( mv->m_vecVelocity , mv->m_vecVelocity );
+
+        // Con_DPrintf("%f %f: %.0f %.0f %.0f\n", vel, trace.fraction, ent->velocity[0], ent->velocity[1], ent->velocity[2] );
+
+        if ( vel < ( 30 * 30 ) || ( player->GetMoveCollide() != MOVECOLLIDE_FLY_BOUNCE ) )
+        {
+            SetGroundEntity( &pm );
+            mv->m_vecVelocity.Init();
+        }
+        else
+        {
+            VectorScale( mv->m_vecVelocity , ( 1.0 - pm.fraction ) * gpGlobals->frametime * 0.9 , move );
+            PushEntity( move , &pm );
+        }
+        VectorSubtract( mv->m_vecVelocity , base , mv->m_vecVelocity );
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CMomentumGameMovement::FullTossMove( void )
+{
+    trace_t pm;
+    Vector move;
+
+    CheckWater();
+
+    // add velocity if player is moving 
+    if ( ( mv->m_flForwardMove != 0.0f ) || ( mv->m_flSideMove != 0.0f ) || ( mv->m_flUpMove != 0.0f ) )
+    {
+        Vector forward , right , up;
+        float fmove , smove;
+        Vector wishdir , wishvel;
+        float wishspeed;
+        int i;
+
+        AngleVectors( mv->m_vecViewAngles , &forward , &right , &up );  // Determine movement angles
+
+        // Copy movement amounts
+        fmove = mv->m_flForwardMove;
+        smove = mv->m_flSideMove;
+
+        VectorNormalize( forward );  // Normalize remainder of vectors.
+        VectorNormalize( right );    // 
+
+        for ( i = 0; i<3; i++ )       // Determine x and y parts of velocity
+            wishvel[i] = forward[i] * fmove + right[i] * smove;
+
+        wishvel[2] += mv->m_flUpMove;
+
+        VectorCopy( wishvel , wishdir );   // Determine maginitude of speed of move
+        wishspeed = VectorNormalize( wishdir );
+
+        //
+        // Clamp to server defined max speed
+        //
+        if ( wishspeed > mv->m_flMaxSpeed )
+        {
+            VectorScale( wishvel , mv->m_flMaxSpeed / wishspeed , wishvel );
+            wishspeed = mv->m_flMaxSpeed;
+        }
+
+        // Set pmove velocity
+        Accelerate( wishdir , wishspeed , sv_accelerate.GetFloat() );
+    }
+
+    if ( mv->m_vecVelocity[2] > 0 )
+    {
+        SetGroundEntity( NULL );
+    }
+
+    // If on ground and not moving, return.
+    if ( player->GetGroundEntity() != NULL )
+    {
+        if ( VectorCompare( player->GetBaseVelocity() , vec3_origin ) &&
+             VectorCompare( mv->m_vecVelocity , vec3_origin ) )
+             return;
+    }
+
+    CheckVelocity();
+
+    // add gravity
+    if ( player->GetMoveType() == MOVETYPE_FLYGRAVITY )
+    {
+        AddGravity();
+    }
+
+    // move origin
+    // Base velocity is not properly accounted for since this entity will move again after the bounce without
+    // taking it into account
+    VectorAdd( mv->m_vecVelocity , player->GetBaseVelocity() , mv->m_vecVelocity );
+
+    CheckVelocity();
+
+    VectorScale( mv->m_vecVelocity , gpGlobals->frametime , move );
+    VectorSubtract( mv->m_vecVelocity , player->GetBaseVelocity() , mv->m_vecVelocity );
+
+    PushEntity( move , &pm );	// Should this clear basevelocity
+
+    CheckVelocity();
+
+    if ( pm.allsolid )
+    {
+        // entity is trapped in another solid
+        SetGroundEntity( &pm );
+        mv->m_vecVelocity.Init();
+        return;
+    }
+
+    if ( pm.fraction != 1 )
+    {
+        PerformFlyCollisionResolution( pm , move );
+    }
+
+    // check for in water
+    CheckWater();
 }
 
 // Expose our interface.

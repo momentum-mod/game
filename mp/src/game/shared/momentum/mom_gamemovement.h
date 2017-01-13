@@ -92,6 +92,9 @@ class CMomentumGameMovement : public CGameMovement
     virtual void CheckParameters(void);
     virtual void ReduceTimers(void);
 
+    virtual void PerformFlyCollisionResolution( trace_t &pm , Vector &move );
+    virtual void FullTossMove( void ) OVERRIDE;
+
   private:
     float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
