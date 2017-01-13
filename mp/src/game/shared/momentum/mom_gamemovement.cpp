@@ -3,8 +3,8 @@
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
 #include "movevars_shared.h"
-#include <rumble_shared.h>
 #include <stdarg.h>
+#include <rumble_shared.h>
 
 #include "tier0/memdbgon.h"
 
@@ -15,8 +15,7 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
-static MAKE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                   "Toggle landing punchangle. 0 = OFF, 1 = ON\n", 0, 9999);
+static MAKE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle landing punchangle. 0 = OFF, 1 = ON\n", 0, 9999);
 #endif
 
 CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr) {}
@@ -38,8 +37,7 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
         //
         if (mom_punchangle_enable.GetBool())
         {
-            player->m_Local.m_vecPunchAngle.Set(ROLL, player->m_Local.m_flFallVelocity * 0.013 *
-                                                          mom_punchangle_enable.GetInt());
+            player->m_Local.m_vecPunchAngle.Set(ROLL, player->m_Local.m_flFallVelocity * 0.013 * mom_punchangle_enable.GetInt());
 
             if (player->m_Local.m_vecPunchAngle[PITCH] > 8)
             {
@@ -51,6 +49,8 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
 #endif
     }
 }
+
+
 
 void CMomentumGameMovement::DecayPunchAngle(void)
 {
@@ -881,9 +881,13 @@ void CMomentumGameMovement::FullWalkMove()
 
         CheckFalling();
 
-        // MOM_TODO: There might a better way to do this, but it works fine as temp trigger_slide.
-        if (m_pPlayer->m_bSliding)
+        //MOM_TODO: There might a better way to do this, but it works fine as temp trigger_slide.
+        //If we want to ignore ground, we must set the ground entity to nullptr.
+        //Now it works fine.
+
+        if ( m_pPlayer->m_bSliding )
         {
+            SetGroundEntity( nullptr ); 
             m_pPlayer->m_Local.m_flFallVelocity = -m_pPlayer->m_Local.m_flFallVelocity;
             mv->m_vecVelocity[2] = -mv->m_vecVelocity[2];
         }

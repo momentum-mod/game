@@ -831,6 +831,18 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 //-----------------------------------------------------------------------------------------------
 
 //--------- CTriggerSlide -------------------------------------------------------------------
+//This trigger is made for iceskating, I'm sure that some mappers will find this useful.
+//If my code is correct, you need to create first a trigger called trigger_momentum_slide_start to enable sliding, and then trigger_momentum_slide_end, to disable it.
+//So there will be two triggers to decide when ever or not if slide must be enabled, I also removed groundentity, to prevent the walking function.
+
+//My question is, should I make just one trigger instead, like the ones used by trigger_push, or making more like start zone and end zone?
+//The problem with only one trigger, player would be spamming the trigger, and could cause gamemovement issues (wich i havent tested yet, I must do a map for it)
+//Because the player would just go outside and enter again in the trigger.
+//But the problem with two triggers, is that gravity won't work until the player goes to the trigger_momentum_slide_end.
+//Like if the mapper wants his player to go down and up, he would need to create walls upside and down.
+//But this could be useful specially when there is a loop. (sonic loop for example!)
+//So i still think one trigger should be the best. 
+
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
 void CTriggerSlide::Think()
@@ -850,7 +862,7 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
     BaseClass::StartTouch(pOther);
 }
 
-void CTriggerSlide::EndTouch( CBaseEntity *pOther )
+void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 {
     // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
@@ -860,4 +872,43 @@ void CTriggerSlide::EndTouch( CBaseEntity *pOther )
     }
     BaseClass::EndTouch(pOther);
 }
+
+/*
+LINK_ENTITY_TO_CLASS(trigger_momentum_slide_start, CTriggerSlideStart);
+LINK_ENTITY_TO_CLASS(trigger_momentum_slide_end, CTriggerSlideEnd);
+
+void CTriggerSlideStart::Think()
+{
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    BaseClass::Think();
+}
+
+void CTriggerSlideEnd::Think()
+{
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    BaseClass::Think();
+}
+
+void CTriggerSlideStart::StartTouch(CBaseEntity *pOther)
+{
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+    {
+        pPlayer->m_bSliding = true;
+    }
+    BaseClass::StartTouch(pOther);
+}
+
+void CTriggerSlideEnd::StartTouch(CBaseEntity *pOther)
+{
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+    {
+        pPlayer->m_bSliding = false;
+    }
+    BaseClass::EndTouch(pOther);
+}
+                            */
 //-----------------------------------------------------------------------------------------------
