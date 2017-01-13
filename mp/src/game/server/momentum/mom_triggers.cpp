@@ -526,13 +526,10 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 void CTriggerOnehop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != nullptr && m_fStartTouchedTime > 0)
+    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) && gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
-        if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
-        {
-            SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-            BaseClass::StartTouch(pPlayer);
-        }
+        SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
+        BaseClass::StartTouch(pPlayer);
     }
 }
 //-----------------------------------------------------------------------------------------------
@@ -576,13 +573,10 @@ void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 void CTriggerMultihop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != nullptr && m_fStartTouchedTime > 0)
+    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) && gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
-        if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
-        {
-            SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-            BaseClass::StartTouch(pPlayer);
-        }
+        SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
+        BaseClass::StartTouch(pPlayer);
     }
 }
 //-----------------------------------------------------------------------------------------------
@@ -596,7 +590,7 @@ DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"), DEFINE_OUTPUT(m_OnKeyPresse
 void CTriggerUserInput::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != nullptr && IsTouching(pPlayer) && (pPlayer->m_nButtons & m_ButtonRep))
+    if (pPlayer && IsTouching(pPlayer) && pPlayer->m_nButtons & m_ButtonRep)
     {
         m_OnKeyPressed.FireOutput(pPlayer, this);
     }
@@ -683,39 +677,35 @@ void CTriggerLimitMovement::Think()
 
 void CTriggerLimitMovement::StartTouch(CBaseEntity *pOther)
 {
-    if (pOther && pOther->IsPlayer())
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        if (pPlayer)
+        if (HasSpawnFlags(LIMIT_JUMP))
         {
-            if (HasSpawnFlags(LIMIT_JUMP))
-            {
-                pPlayer->DisableButtons(IN_JUMP);
-            }
-            if (HasSpawnFlags(LIMIT_CROUCH))
-            {
-                pPlayer->DisableButtons(IN_DUCK);
-            }
-            if (HasSpawnFlags(LIMIT_BHOP))
-            {
-                pPlayer->DisableButtons(IN_JUMP);
-            }
+            pPlayer->DisableButtons(IN_JUMP);
+        }
+        if (HasSpawnFlags(LIMIT_CROUCH))
+        {
+            pPlayer->DisableButtons(IN_DUCK);
+        }
+        if (HasSpawnFlags(LIMIT_BHOP))
+        {
+            pPlayer->DisableButtons(IN_JUMP);
         }
     }
+
     BaseClass::StartTouch(pOther);
 }
 
 void CTriggerLimitMovement::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther && pOther->IsPlayer())
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        if (pPlayer)
-        {
-            pPlayer->EnableButtons(IN_JUMP);
-            pPlayer->EnableButtons(IN_DUCK);
-        }
+        pPlayer->EnableButtons(IN_JUMP);
+        pPlayer->EnableButtons(IN_DUCK);
     }
+
     m_BhopTimer.Reset();
     BaseClass::EndTouch(pOther);
 }
