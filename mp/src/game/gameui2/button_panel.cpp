@@ -230,7 +230,7 @@ void Button_Panel::DrawText()
 	m_iTextPositionY = m_fHeight / 2 - m_iTextSizeY / 2 + m_fTextOffsetY;
 
 	vgui::surface()->DrawSetTextPos(m_iTextPositionX, m_iTextPositionY);
-	vgui::surface()->DrawPrintText(panel_title.data(), wcslen(panel_title.data()));
+	vgui::surface()->DrawPrintText(panel_title.data(), panel_title.length());
 }
 
 void Button_Panel::DrawDescription()

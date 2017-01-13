@@ -143,6 +143,7 @@ CFunc_Dust::CFunc_Dust()
 {
 	m_DustFlags = DUSTFLAGS_ON;
 	m_FallSpeed = 0.0f;
+    m_iAlpha = 0;
 }
 
 

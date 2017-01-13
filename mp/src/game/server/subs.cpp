@@ -198,7 +198,7 @@ bool CBaseToggle::KeyValue( const char *szKeyName, const char *szValue )
 //-----------------------------------------------------------------------------
 void CBaseToggle::LinearMove( const Vector &vecDest, float flSpeed )
 {
-	ASSERTSZ(flSpeed != 0, "LinearMove:  no speed is defined!");
+	ASSERTSZ(flSpeed != 0.0f, "LinearMove:  no speed is defined!");
 	
 	m_vecFinalDest = vecDest;
 
@@ -267,7 +267,7 @@ bool CBaseToggle::IsLockedByMaster( void )
 //-----------------------------------------------------------------------------
 void CBaseToggle::AngularMove( const QAngle &vecDestAngle, float flSpeed )
 {
-	ASSERTSZ(flSpeed != 0, "AngularMove:  no speed is defined!");
+	ASSERTSZ(flSpeed != 0.0f, "AngularMove:  no speed is defined!");
 	
 	m_vecFinalAngle = vecDestAngle;
 

@@ -148,7 +148,7 @@ void Panel_Options::DrawTitle()
 	m_iTitlePositionY = m_iContentY0 + m_fTitleOffsetY;
 	
 	vgui::surface()->DrawSetTextPos(m_iTitlePositionX, m_iTitlePositionY);
-	vgui::surface()->DrawPrintText(panel_title.data(), wcslen(panel_title.data()));
+	vgui::surface()->DrawPrintText(panel_title.data(), panel_title.length());
 }
 
 void Panel_Options::DrawTabs()

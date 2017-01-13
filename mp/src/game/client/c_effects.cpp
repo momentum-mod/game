@@ -161,7 +161,7 @@ private:
 	bool SimulateSnow( CPrecipitationParticle* pParticle, float dt );
 
 	void CreateAshParticle( void );
-	void CreateRainOrSnowParticle( Vector vSpawnPosition, Vector vVelocity );
+	void CreateRainOrSnowParticle( const Vector &vSpawnPosition, const Vector &vVelocity );
 
 	// Information helpful in creating and rendering particles
 	IMaterial		*m_MatHandle;	// material used 
@@ -1011,7 +1011,7 @@ void CClient_Precipitation::CreateAshParticle( void )
 		}
 	}
 
-void CClient_Precipitation::CreateRainOrSnowParticle( Vector vSpawnPosition, Vector vVelocity )
+void CClient_Precipitation::CreateRainOrSnowParticle( const Vector &vSpawnPosition, const Vector &vVelocity )
 {
 	// Create the particle
 	CPrecipitationParticle* p = CreateParticle();

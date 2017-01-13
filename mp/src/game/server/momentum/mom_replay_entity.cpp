@@ -381,11 +381,13 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             }
 
             // interpolate vel from difference in origin
-            float distX = fabs(currentStep->PlayerOrigin().x - nextStep->PlayerOrigin().x);
-            float distY = fabs(currentStep->PlayerOrigin().y - nextStep->PlayerOrigin().y);
-            float distZ = fabs(currentStep->PlayerOrigin().z - nextStep->PlayerOrigin().z);
-            Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
-            float maxvel = sv_maxvelocity.GetFloat();
+            const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
+            const Vector &pPlayerNextOrigin = nextStep->PlayerOrigin();
+            const float distX = fabs(pPlayerCurrentOrigin.x - pPlayerNextOrigin.x);
+            const float distY = fabs(pPlayerCurrentOrigin.y - pPlayerNextOrigin.y);
+            const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
+            const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+            const float maxvel = sv_maxvelocity.GetFloat();
 
             // Fixes an issue with teleporting
             if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
@@ -435,7 +437,7 @@ void CMomentumReplayGhostEntity::HandleGhost()
     RemoveEffects(EF_NOSHADOW);
 }
 
-void CMomentumReplayGhostEntity::UpdateStats(Vector ghostVel)
+void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 {
     // --- STRAFE SYNC ---
     // calculate strafe sync based on replay ghost's movement, in order to update the player's HUD

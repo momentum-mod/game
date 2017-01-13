@@ -56,7 +56,7 @@ struct Time
 class CUtlSortVectorTimeValue
 {
 public:
-    bool Less(const Time lhs, const Time rhs, void *)
+    bool Less(const Time &lhs, const Time &rhs, void *)
     {
         return lhs.time_sec < rhs.time_sec;
     }
@@ -140,7 +140,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
 
-    int TryAddAvatar(CSteamID);
+    int TryAddAvatar(const CSteamID &);
 
     // functions to override
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
