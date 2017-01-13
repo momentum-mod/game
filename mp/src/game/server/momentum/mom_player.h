@@ -140,6 +140,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     CNetworkVar(bool, m_bDidPlayerBhop);   // Did the player bunnyhop successfully?
     CNetworkVar(int, m_iSuccessiveBhops);  // How many successive bhops this player has
     CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
+    CNetworkVar(bool, m_bSliding); //Sliding mode?
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements
