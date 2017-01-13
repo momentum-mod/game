@@ -493,7 +493,7 @@ void C_BasePlayer::Spawn( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool C_BasePlayer::AudioStateIsUnderwater( Vector vecMainViewOrigin )
+bool C_BasePlayer::AudioStateIsUnderwater( const Vector &vecMainViewOrigin )
 {
 	if ( IsObserver() )
 	{

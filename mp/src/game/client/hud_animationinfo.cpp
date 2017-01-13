@@ -254,6 +254,9 @@ static int HudElementCompletion( const char *partial, char commands[ COMMAND_COM
 
 	int c = gHUD.m_HudList.Count();
 	int i;
+
+    const size_t pSubstringSize = strlen(substring);
+
 	for ( i = 0; i < c; i++ )
 	{
 		CHudElement *e = gHUD.m_HudList[ i ];
@@ -265,7 +268,7 @@ static int HudElementCompletion( const char *partial, char commands[ COMMAND_COM
 		// Insert into lookup
 		if ( substring[0] )
 		{
-			if ( !Q_strncasecmp( e->GetName(), substring, strlen( substring ) ) )
+            if (!Q_strncasecmp(e->GetName(), substring, pSubstringSize))
 			{
 				add = true;
 			}

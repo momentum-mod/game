@@ -114,7 +114,7 @@ void RayTracingEnvironment::AddQuad(
 }
 
 
-void RayTracingEnvironment::AddAxisAlignedRectangularSolid(int id,Vector minc, Vector maxc,
+void RayTracingEnvironment::AddAxisAlignedRectangularSolid(int id,const Vector &minc, const Vector &maxc,
 														   const Vector &color)
 {
 
@@ -158,7 +158,7 @@ void RayTracingEnvironment::AddAxisAlignedRectangularSolid(int id,Vector minc, V
 
 
 
-static Vector GetEdgeEquation(Vector p1, Vector p2, int c1, int c2, Vector InsidePoint)
+static Vector GetEdgeEquation(const Vector &p1, const Vector &p2, int c1, int c2, Vector InsidePoint)
 {
 	float nx=p1[c2]-p2[c2];
 	float ny=p2[c1]-p1[c1];
@@ -653,7 +653,7 @@ void RayTracingEnvironment::CalculateTriangleListBounds(int32 const *tris,int nt
 
 float RayTracingEnvironment::CalculateCostsOfSplit(
 	int split_plane,int32 const *tri_list,int ntris,
-	Vector MinBound,Vector MaxBound, float &split_value,
+	const Vector &MinBound,const Vector &MaxBound, float &split_value,
 	int &nleft, int &nright, int &nboth)
 {
 	// determine the costs of splitting on a given axis, and label triangles with respect to
@@ -663,9 +663,9 @@ float RayTracingEnvironment::CalculateCostsOfSplit(
 	
 	// now, label each triangle. Since we have not converted the triangles into
 	// intersection fromat yet, we can use the CoordSelect0 field of each as a temp.
-	nleft=0;
+	/*nleft=0;
 	nright=0;
-	nboth=0;
+	nboth=0;*/
 	float min_coord=1.0e23,max_coord=-1.0e23;
 
 	for(int t=0;t<ntris;t++)
@@ -891,11 +891,10 @@ void RayTracingEnvironment::SetupAccelerationStructure(void)
 
 
 
-void RayTracingEnvironment::AddInfinitePointLight(Vector position, Vector intensity)
+void RayTracingEnvironment::AddInfinitePointLight(const Vector &position, const Vector &intensity)
 {
 	LightDesc_t mylight(position,intensity);
 	LightList.AddToTail(mylight);
-	
 }
 
 

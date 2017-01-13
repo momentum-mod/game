@@ -26,9 +26,9 @@ class HudSettingsPage : public SettingsPage
     // the other checkboxes regardless of whether the player clicks Apply/OK
     void OnCheckboxChecked(Panel *p) OVERRIDE;
 
-  private:
-    ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize;
+private:
+    ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
 
     CvarToggleCheckButton<ConVarRef> *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel,
-        *m_pSpeedometerColorize, *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;
+        *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;
 };

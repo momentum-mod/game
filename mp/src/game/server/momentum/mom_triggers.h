@@ -62,10 +62,10 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
     void StartTouch(CBaseEntity *) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
     void SetDestinationEnt(CBaseEntity *ent) { pDestinationEnt = ent; }
-    bool ShouldStopPlayer() { return m_bResetVelocity; }
-    bool ShouldResetAngles() { return m_bResetAngles; }
-    void SetShouldStopPlayer(bool newB) { m_bResetVelocity = newB; }
-    void SetShouldResetAngles(bool newB) { m_bResetAngles = newB; }
+    bool ShouldStopPlayer() const { return m_bResetVelocity; }
+    bool ShouldResetAngles() const { return m_bResetAngles; }
+    void SetShouldStopPlayer(const bool newB) { m_bResetVelocity = newB; }
+    void SetShouldResetAngles(const bool newB) { m_bResetAngles = newB; }
 
     virtual void AfterTeleport(){}; // base class does nothing
 
@@ -84,7 +84,7 @@ class CTriggerCheckpoint : public CBaseMomentumTrigger
   public:
     void StartTouch(CBaseEntity *) OVERRIDE;
     // the following is only used by CFilterCheckpoint
-    virtual int GetCheckpointNumber() { return m_iCheckpointNumber; }
+    virtual int GetCheckpointNumber() const { return m_iCheckpointNumber; }
     // The following is used by mapzones.cpp
     void SetCheckpointNumber(int newInt) { m_iCheckpointNumber = newInt; }
 
@@ -108,10 +108,10 @@ class CTriggerStage : public CTriggerCheckpoint
         BaseClass::Spawn();
     }
     // Used by CTimer and CStageFilter
-    virtual int GetStageNumber() { return m_iStageNumber; }
-    void SetStageNumber(int newInt) { m_iStageNumber = newInt; }
+    virtual int GetStageNumber() const { return m_iStageNumber; }
+    void SetStageNumber(const int newInt) { m_iStageNumber = newInt; }
     // Override, use GetStageNumber()
-    int GetCheckpointNumber() OVERRIDE { return -1; }
+    int GetCheckpointNumber() const OVERRIDE { return -1; }
 
   private:
     int m_iStageNumber;
@@ -132,18 +132,18 @@ class CTriggerTimerStart : public CTriggerStage
     void Spawn() OVERRIDE;
 
     // The start is always the first stage/checkpoint
-    int GetCheckpointNumber() OVERRIDE { return -1; } // Override
-    int GetStageNumber() OVERRIDE { return 1; }
-    float GetMaxLeaveSpeed() { return m_fBhopLeaveSpeed; }
-    void SetMaxLeaveSpeed(float maxLeaveSpeed);
-    void SetLookAngles(QAngle newang);
-    QAngle GetLookAngles() { return m_angLook; }
+    int GetCheckpointNumber() const OVERRIDE { return -1; } // Override
+    int GetStageNumber() const OVERRIDE { return 1; }
+    float GetMaxLeaveSpeed() const { return m_fBhopLeaveSpeed; }
+    void SetMaxLeaveSpeed(const float maxLeaveSpeed);
+    void SetLookAngles(const QAngle &newang);
+    QAngle GetLookAngles() const { return m_angLook; }
 
     // spawnflags
-    bool IsLimitingSpeed() { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
-    void SetIsLimitingSpeed(bool pIsLimitingSpeed);
-    void SetHasLookAngles(bool bHasLook);
-    bool HasLookAngles() { return HasSpawnFlags(SF_USE_LOOKANGLES); }
+    bool IsLimitingSpeed() const { return HasSpawnFlags(SF_LIMIT_LEAVE_SPEED); }
+    void SetIsLimitingSpeed(const bool pIsLimitingSpeed);
+    void SetHasLookAngles(const bool bHasLook);
+    bool HasLookAngles() const { return HasSpawnFlags(SF_USE_LOOKANGLES); }
 
   private:
     QAngle m_angLook;
@@ -185,8 +185,8 @@ class CTriggerOnehop : public CTriggerTeleportEnt
 
   public:
     void StartTouch(CBaseEntity *) OVERRIDE;
-    float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
-    void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
+    float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
+    void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think() OVERRIDE;
     void AfterTeleport() OVERRIDE
     {
@@ -222,8 +222,8 @@ class CTriggerMultihop : public CTriggerTeleportEnt
   public:
     void StartTouch(CBaseEntity *) OVERRIDE;
     void EndTouch(CBaseEntity *) OVERRIDE;
-    float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
-    void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
+    float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
+    void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think() OVERRIDE;
     void AfterTeleport() OVERRIDE
     {
@@ -319,8 +319,8 @@ class CTriggerMomentumPush : public CTriggerTeleportEnt
     void EndTouch(CBaseEntity *) OVERRIDE;
     // Called when (and by) either a StartTouch() or EndTouch() event happens and their requisites are met
     void OnSuccessfulTouch(CBaseEntity *);
-    float GetHoldTeleportTime() { return m_fMaxHoldSeconds; }
-    void SetHoldTeleportTime(float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
+    float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
+    void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void AfterTeleport() OVERRIDE
     {
         m_fStartTouchedTime = -1.0f;

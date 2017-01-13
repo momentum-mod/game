@@ -53,6 +53,9 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
     m_yaw = flYaw;
     m_linkedent = pLinkedEnt;
     m_onlyxycheck = pCheckOnlyXY;
+    m_limitbhop = false;
+    m_maxleavespeed = 0.0f;
+    m_trigger = nullptr;
 }
 
 void CMapzone::SpawnZone()

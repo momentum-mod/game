@@ -506,7 +506,7 @@ namespace IntrusiveList
 	template<class T> void AddSortedByName(T * & head, T * node)
 	{
 		if ( (! head) ||                                          // empty list?
-			 (stricmp(node->m_Name,head->m_Name)==-1))                // or we should be first?
+			 (stricmp(node->m_Name,head->m_Name)<0))                // or we should be first?
 		{
 			node->m_pNext=head;                                        // make us head
 			head=node;
