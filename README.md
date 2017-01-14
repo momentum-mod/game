@@ -1,7 +1,7 @@
 # Momentum Mod
-![Build Status](https://ci.appveyor.com/api/projects/status/9hpr4p9suvlge305?svg=true)
+![Build Status](https://ci.appveyor.com/api/projects/status/9hpr4p9suvlge305?svg=true) ![Build Version](https://badge.fury.io/gh/momentum-mod%2Fgame.svg)
 
-Momentum Mod is a free, stand-alone Source Engine mod, based on Counter-Strike: Source movement physics.
+Momentum Mod is a free, stand-alone Source Engine mod based on Counter-Strike: Source movement physics.
 This project is dedicated to bhop and surfing, while not only trying to replicate them, but also trying to improve them. 
 Our goal is to make it easier to access and play (offline and online) as well as being cheaper (did we mention it's free?)
 than any other Source game you'd have to buy to play either of these game modes.
@@ -18,4 +18,4 @@ You can find a general TO-DO for the project over [at our Trello board](https://
 You can [contact us at our website](http://momentum-mod.org/contact)! 
 
 ## License
-<sub><sub>The licenses and legal notices can be found at [SDK LICENSE](LICENSE) and [THIRD PARTY LEGAL NOTICES](thirdpartylegalnotices.txt)</sub></sub>
+The licenses and legal notices can be found at [SDK LICENSE](LICENSE) and [THIRD PARTY LEGAL NOTICES.](thirdpartylegalnotices.txt)
