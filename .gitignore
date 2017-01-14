@@ -56,8 +56,8 @@ server.dylib.dSYM/
 
 Debug/
 Release/
-Release_mod_hl2/
-Debug_mod_hl2/
+Release_*momentum/
+Debug_*momentum/
 save/
 cmake*/
 
