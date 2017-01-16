@@ -25,6 +25,7 @@
 #include <vgui_controls/EditablePanel.h>
 #include <vgui_controls/SectionedListPanel.h>
 #include <vgui_controls/TextImage.h>
+#include "run/mom_replay_base.h"
 
 #define TYPE_NOTEAM 0 // NOTEAM must be zero :)
 #define TYPE_TEAM 1   // a section for a single team
@@ -40,25 +41,12 @@
 #define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
 #define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
 
-struct Time
-{
-    float time_sec, rate;
-    time_t date;
-
-    explicit Time(KeyValues *kv)
-    {
-        time_sec = Q_atof(kv->GetName());
-        rate = kv->GetFloat("rate", gpGlobals->interval_per_tick);
-        date = static_cast<time_t>(kv->GetInt("date", 0));
-    };
-};
-
 class CUtlSortVectorTimeValue
 {
 public:
-    bool Less(const Time &lhs, const Time &rhs, void *)
+    bool Less(CMomReplayBase *lhs, CMomReplayBase *rhs, void *) const
     {
-        return lhs.time_sec < rhs.time_sec;
+        return lhs->GetRunTime() < rhs->GetRunTime();
     }
 };
 
@@ -284,7 +272,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
         }
     };
 
-    CUtlSortVector<Time, CUtlSortVectorTimeValue> m_vLocalTimes;
+    CUtlSortVector<CMomReplayBase*, CUtlSortVectorTimeValue> m_vLocalTimes;
     CUtlVector<TimeOnline *> m_vOnlineTimes;
     CUtlVector<TimeOnline *> m_vFriendsTimes;
 

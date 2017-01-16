@@ -5,9 +5,9 @@
 #include "filesystem.h"
 #include "utlbuffer.h"
 
-#include "mom_replay_data.h"
+#include "run/mom_replay_data.h"
 #include <momentum/mom_player_shared.h>
-#include "mom_replay_manager.h"
+#include "run/mom_replay_manager.h"
 
 class CMomentumReplayGhostEntity;
 

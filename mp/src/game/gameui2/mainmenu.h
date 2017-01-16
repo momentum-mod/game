@@ -3,7 +3,6 @@
 #include "vgui2d/panel2d.h"
 
 #include "button_mainmenu.h"
-#include <string>
 
 enum SortFlags_t
 {
@@ -29,6 +28,13 @@ class MainMenu : public Panel2D
     void OnCommand(char const *cmd) OVERRIDE;
     void OnSetFocus() OVERRIDE;
     void OnKillFocus() OVERRIDE;
+
+    void Activate()
+    {
+        MoveToFront();
+        SetVisible(true);
+        SetEnabled(true);
+    }
 
   private:
     CUtlVector<Button_MainMenu *> m_pButtons;

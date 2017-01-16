@@ -5,6 +5,7 @@
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "tier0/memdbgon.h"
+#include "run/mom_replay_manager.h"
 
 extern IFileSystem *filesystem;
 
@@ -216,19 +217,6 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::GenerateBogusComparison(KeyValues *kvOut)
-{
-    // RandomSeed(Plat_FloatTime());
-    for (int i = 1; i < MAX_STAGES; i++)
-    {
-        KeyValues *kvZone = new KeyValues("zone");
-        kvOut->AddSubKey(kvZone);
-    }
-
-    KeyValues *kvTotal = new KeyValues("total");
-    kvOut->AddSubKey(kvTotal);
-}
-
 void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
 {
     RandomSeed(Plat_FloatTime());
@@ -348,110 +336,84 @@ Color *MomentumUtil::GetColorFromHex(const char *hexColor)
     return nullptr;
 }
 
-KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, const float tickrate, const int flags) const
+inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
 {
-    if (kvMap && szMapName)
+    if (pCheck)
     {
-        char path[MAX_PATH], mapName[MAX_PATH];
-        Q_snprintf(mapName, MAX_PATH, "%s%s", szMapName, EXT_TIME_FILE);
-        V_ComposeFileName(MAP_FOLDER, mapName, path, MAX_PATH);
-        if (kvMap->LoadFromFile(filesystem, path, "MOD"))
+        if (pCheck->GetRunFlags() == flags && g_pMomentumUtil->FloatEquals(tickrate, pCheck->GetTickInterval()))
         {
-            if (!kvMap->IsEmpty())
+            if (pFastest)
             {
-                CUtlSortVector<KeyValues *, CTimeSortFunc> sortedTimes;
-
-                FOR_EACH_SUBKEY(kvMap, kv)
-                {
-                    int kvflags = kv->GetInt("flags");
-                    float kvrate = kv->GetFloat("rate");
-                    if (kvflags == flags && FloatEquals(kvrate, tickrate))
-                    {
-                        sortedTimes.InsertNoSort(kv);
-                    }
-                }
-                if (!sortedTimes.IsEmpty())
-                {
-                    sortedTimes.RedoSort();
-                    KeyValues *toReturn = kvMap->FindKey(sortedTimes[0]->GetName());
-                    sortedTimes.Purge();
-                    return toReturn;
-                }
+                return pCheck->GetRunTime() < pFastest->GetRunTime();
             }
+            
+            return true;
         }
+    }
+
+    return false;
+}
+
+//!!! NOTE: The value returned here MUST BE DELETED, otherwise you get a memory leak!
+CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate, uint32 flags) const
+{
+    if (szMapName)
+    {
+        char path[MAX_PATH];
+        Q_snprintf(path, MAX_PATH, "%s/%s*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
+        V_FixSlashes(path);
+
+        CMomReplayBase *pFastest = nullptr;
+
+        FileFindHandle_t found;
+        const char *pFoundFile = filesystem->FindFirstEx(path, "MOD", &found);
+        while (pFoundFile)
+        {
+            // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
+            char pReplayPath[MAX_PATH];
+            V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
+            CMomReplayBase *pBase = CMomReplayManager::LoadReplayFile(pReplayPath, false);
+
+            if (CheckReplayB(pFastest, pBase, tickrate, flags))
+            {
+                pFastest = pBase;
+            }
+            else // Not faster, get rid of it
+            {
+                delete pBase;
+            }
+
+            pFoundFile = filesystem->FindNext(found);
+        }
+
+        filesystem->FindClose(found);
+        return pFastest;
     }
     return nullptr;
 }
 
-bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into)
+bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into) const
 {
-    bool toReturn = false;
     if (into && szMapName)
     {
-        KeyValues *kvMap = new KeyValues(szMapName);
-        KeyValues *bestRun = GetBestTime(kvMap, szMapName, tickRate, flags);
+        CMomReplayBase *bestRun = GetBestTime(szMapName, tickRate, flags);
         if (bestRun)
         {
             // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
             // I'm thinking the name could be like "(user): (Time)"
-            FillRunComparison("Personal Best", bestRun, into);
+            FillRunComparison("Personal Best", bestRun->GetRunStats(), into);
+            delete bestRun;
             DevLog("Loaded run comparisons for %s !\n", into->runName);
-            toReturn = true;
+            return true;
         }
-
-        kvMap->deleteThis();
     }
-    return toReturn;
+    return false;
 }
 
-void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, RunCompare_t *into) const
+void MomentumUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun, RunCompare_t *into) const
 {
     Q_strcpy(into->runName, compareName);
-    const size_t pZoneSize = strlen("zone");
-    FOR_EACH_SUBKEY(kvRun, kv)
-    {
-        // Stages/checkpoints data
-        if (!Q_strnicmp(kv->GetName(), "zone", pZoneSize))
-        {
-            // Splits
-            into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
-            into->zoneSplits.AddToTail(kv->GetFloat("time"));
-            // Keypress
-            into->zoneJumps.AddToTail(kv->GetInt("num_jumps"));
-            into->zoneStrafes.AddToTail(kv->GetInt("num_strafes"));
-            // Sync
-            into->zoneAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
-            into->zoneAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
-            // Velocity (3D and Horizontal)
-            for (int i = 0; i < 2; i++)
-            {
-                bool horizontalVel = (i == 1);
-                into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneEnterVels[i].AddToTail(kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
-                into->zoneExitVels[i].AddToTail(kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
-            }
-        }
-        // Overall stats
-        else if (!Q_strcmp(kv->GetName(), "total"))
-        {
-            // Keypress
-            into->zoneJumps.AddToHead(kv->GetInt("jumps"));
-            into->zoneStrafes.AddToHead(kv->GetInt("strafes"));
-            // Sync
-            into->zoneAvgSync1.AddToHead(kv->GetFloat("avgsync"));
-            into->zoneAvgSync2.AddToHead(kv->GetFloat("avgsync2"));
-            // Velocity (3D and Horizontal)
-            for (int i = 0; i < 2; i++)
-            {
-                bool horizontalVel = (i == 1);
-                into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneExitVels[i].AddToHead(kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
-                into->zoneEnterVels[i].AddToHead(kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
-            }
-        }
-    }
+    into->runStats = *pRun;
 }
 
 #define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
@@ -487,4 +449,4 @@ void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &a
 }
 
 static MomentumUtil s_momentum_util;
-MomentumUtil *mom_UTIL = &s_momentum_util;
+MomentumUtil *g_pMomentumUtil = &s_momentum_util;

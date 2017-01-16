@@ -93,7 +93,7 @@ bool BasePanel::IsBackgroundMusicPlaying()
     if (m_nBackgroundMusicGUID == 0)
         return false;
 
-    return enginesound->IsSoundStillPlaying(m_nBackgroundMusicGUID);
+    return GameUI2().GetEngineSound()->IsSoundStillPlaying(m_nBackgroundMusicGUID);
 }
 
 #define BACKGROUND_MUSIC_DUCK 0.15f
@@ -107,11 +107,11 @@ bool BasePanel::StartBackgroundMusic(float fVol)
         return false;
 
     CSoundParameters params;
-    if (!soundemitterbase->GetParametersForSound(m_backgroundMusic.Get(), params, GENDER_NONE))
+    if (!GameUI2().GetSoundEmitterSystemBase()->GetParametersForSound(m_backgroundMusic.Get(), params, GENDER_NONE))
         return false;
 
-    enginesound->EmitAmbientSound(params.soundname, params.volume * fVol, params.pitch);
-    m_nBackgroundMusicGUID = enginesound->GetGuidForLastSoundEmitted();
+    GameUI2().GetEngineSound()->EmitAmbientSound(params.soundname, params.volume * fVol, params.pitch);
+    m_nBackgroundMusicGUID = GameUI2().GetEngineSound()->GetGuidForLastSoundEmitted();
 
     return (m_nBackgroundMusicGUID != 0);
 }
@@ -121,7 +121,7 @@ void BasePanel::UpdateBackgroundMusicVolume(float fVol)
     if (!IsBackgroundMusicPlaying())
         return;
 
-    enginesound->SetVolumeByGuid(m_nBackgroundMusicGUID, BACKGROUND_MUSIC_DUCK * fVol);
+    GameUI2().GetEngineSound()->SetVolumeByGuid(m_nBackgroundMusicGUID, BACKGROUND_MUSIC_DUCK * fVol);
 }
 
 void BasePanel::ReleaseBackgroundMusic()
@@ -132,7 +132,7 @@ void BasePanel::ReleaseBackgroundMusic()
     if (m_nBackgroundMusicGUID == 0)
         return;
 
-    enginesound->StopSoundByGuid(m_nBackgroundMusicGUID);
+    GameUI2().GetEngineSound()->StopSoundByGuid(m_nBackgroundMusicGUID);
 
     m_nBackgroundMusicGUID = 0;
 }

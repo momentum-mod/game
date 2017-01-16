@@ -30,6 +30,7 @@ struct mapdisplay_t
 {
     mapdisplay_t()
     {
+        m_iMapImageIndex = 1; //Defaults to 1 as it's the invalid map index
         m_iListID = -1;
         m_iServerID = -1;
         m_bDoNotRefresh = true;
@@ -38,6 +39,7 @@ struct mapdisplay_t
     mapstruct_t m_mMap;         // the map struct, containing the information for the map
     int			m_iListID;		// the VGUI2 list panel index for displaying this server
     int			m_iServerID;	// the matchmaking interface index for this server MOM_TODO: remove this
+    int         m_iMapImageIndex; // the map's image index in the map list's image list
     bool		m_bDoNotRefresh;
     bool operator==(const mapdisplay_t &rhs) const { return rhs.m_iServerID == m_iServerID; }
 };

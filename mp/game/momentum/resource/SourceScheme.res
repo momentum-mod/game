@@ -113,7 +113,7 @@ Scheme
 		ListPanel.SelectedBgColor			"MomentumBlue"
 		ListPanel.OutOfFocusSelectedTextColor	"Gray"
 		ListPanel.SelectedOutOfFocusBgColor	"132 183 241 100"
-		ListPanel.EmptyListInfoTextColor	"Gray"
+		ListPanel.EmptyListInfoTextColor	"White"
 
 		Menu.TextColor					"White"
 		Menu.BgColor					"Gray"
@@ -203,6 +203,18 @@ Scheme
 		// fonts listed later in the order will only be used if they fulfill a range not already filled
 		// if a font fails to load then the subsequent fonts will replace
 		// fonts are used in order that they are listed
+        "MapListFont"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "30"
+				"weight" "0"
+				"antialias" "1"
+                "custom" "1"
+			}
+		}
+        
 		"DebugFixed"
 		{
 			"1"
@@ -1309,5 +1321,6 @@ Scheme
 		"1"		"resource/TypoGraphica.ttf"
 		"2"		"resource/HL2EP2.ttf"
 		"3"     "resource/marlett.ttf"	
+        "1"     "resource/BigNoodleTitling.ttf"
 	}
 }

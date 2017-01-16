@@ -9,13 +9,6 @@
 
 static CDllDemandLoader g_GameUI("GameUI");
 
-IVEngineClient* engine = nullptr;
-IEngineSound* enginesound = nullptr;
-IEngineVGui* enginevgui = nullptr;
-ISoundEmitterSystemBase* soundemitterbase = nullptr;
-IVRenderView* render = nullptr;
-IGameUI* gameui = nullptr;
-
 static CGameUI2 g_GameUI2;
 CGameUI2& GameUI2()
 {
@@ -32,24 +25,31 @@ void CGameUI2::Initialize(CreateInterfaceFn appFactory)
 	ConVar_Register(FCVAR_CLIENTDLL);
 	ConnectTier3Libraries(&appFactory, 1);
 
-	engine = static_cast<IVEngineClient*>(appFactory(VENGINE_CLIENT_INTERFACE_VERSION, nullptr));
-	enginesound = static_cast<IEngineSound*>(appFactory(IENGINESOUND_CLIENT_INTERFACE_VERSION, nullptr));
-	enginevgui = static_cast<IEngineVGui*>(appFactory(VENGINE_VGUI_VERSION, nullptr));
-	soundemitterbase = static_cast<ISoundEmitterSystemBase*>(appFactory(SOUNDEMITTERSYSTEM_INTERFACE_VERSION, nullptr));
-	render = static_cast<IVRenderView*>(appFactory(VENGINE_RENDERVIEW_INTERFACE_VERSION, nullptr));
+    m_pEngine = static_cast<IVEngineClient*>(appFactory(VENGINE_CLIENT_INTERFACE_VERSION, nullptr));
+	m_pEngineSound = static_cast<IEngineSound*>(appFactory(IENGINESOUND_CLIENT_INTERFACE_VERSION, nullptr));
+	m_pEngineVGUI = static_cast<IEngineVGui*>(appFactory(VENGINE_VGUI_VERSION, nullptr));
+	m_pSoundEmitterBase = static_cast<ISoundEmitterSystemBase*>(appFactory(SOUNDEMITTERSYSTEM_INTERFACE_VERSION, nullptr));
+	m_pRenderView = static_cast<IVRenderView*>(appFactory(VENGINE_RENDERVIEW_INTERFACE_VERSION, nullptr));
+    m_pMaterialSystem = static_cast<IMaterialSystem*>(appFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, nullptr));
 
 	CreateInterfaceFn gameUIFactory = g_GameUI.GetFactory();
 	if (gameUIFactory)
-		gameui = static_cast<IGameUI*>(gameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
+		m_pGameUI = static_cast<IGameUI*>(gameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
 
-	if (!enginesound || !enginevgui || !engine || !soundemitterbase || !render || !gameui)
+    if (!m_pEngineSound || !m_pEngineVGUI || !m_pEngine || !m_pSoundEmitterBase || !m_pRenderView || !m_pGameUI || !m_pMaterialSystem)
 		Error("CGameUI2::Initialize() failed to get necessary interfaces.\n");
 
     if (!CommandLine()->FindParm("-shaderedit"))
     {
         GetBasePanel()->Create();
         if (GetBasePanel())
-            gameui->SetMainMenuOverride(GetBasePanel()->GetMainMenu()->GetVPanel());
+        {
+            m_pGameUI->SetMainMenuOverride(GetBasePanel()->GetMainMenu()->GetVPanel()); 
+
+            m_pAnimationController = new vgui::AnimationController(GetBasePanel());
+            m_pAnimationController->SetProportional(false);
+            m_pAnimationController->SetScheme(GetBasePanel()->GetScheme());
+        } 
     }
 }
 
@@ -80,47 +80,59 @@ void CGameUI2::OnShutdown()
 void CGameUI2::OnUpdate()
 {
 
+    if (m_pAnimationController)
+        m_pAnimationController->UpdateAnimations(m_pEngine->Time());
 }
 
 void CGameUI2::OnLevelInitializePreEntity()
 {
+    GetBasePanel()->SetVisible(false);
 
+    if (m_pAnimationController)
+    {
+        m_pAnimationController->UpdateAnimations(m_pEngine->Time());
+        m_pAnimationController->RunAllAnimationsToCompletion();
+    }
 }
 
 void CGameUI2::OnLevelInitializePostEntity()
 {
-
+    GetBasePanel()->SetVisible(true);
+    GetBasePanel()->GetMainMenu()->SetVisible(true);
 }
 
 void CGameUI2::OnLevelShutdown()
 {
-
+    if (m_pAnimationController)
+    {
+        m_pAnimationController->UpdateAnimations(m_pEngine->Time());
+        m_pAnimationController->RunAllAnimationsToCompletion();
+    }
 }
 
 bool CGameUI2::IsInLevel()
 {
-    return engine->IsInGame() && !engine->IsLevelMainMenuBackground();
+    return m_pEngine->IsInGame() && !m_pEngine->IsLevelMainMenuBackground();
 }
 
 bool CGameUI2::IsInBackgroundLevel()
 {
-    return (engine->IsInGame() && engine->IsLevelMainMenuBackground()) || !engine->IsInGame();
+    return (m_pEngine->IsInGame() && m_pEngine->IsLevelMainMenuBackground()) || !m_pEngine->IsInGame();
 }
 
 bool CGameUI2::IsInMultiplayer()
 {
-	return (IsInLevel() && engine->GetMaxClients() > 1);
+    return (IsInLevel() && m_pEngine->GetMaxClients() > 1);
 }
 
 bool CGameUI2::IsInLoading()
 {
-	return (engine->IsDrawingLoadingImage() || engine->GetLevelName() == nullptr) || (!IsInLevel() && !IsInBackgroundLevel());
+    return (m_pEngine->IsDrawingLoadingImage() || m_pEngine->GetLevelName() == nullptr) || (!IsInLevel() && !IsInBackgroundLevel());
 }
 
 wchar_t* CGameUI2::GetLocalizedString(const char* text)
 {
 	wchar_t* localizedString = static_cast<wchar_t*>(malloc(sizeof(wchar_t) * 2048));
-//	wchar_t* localizedString = new wchar_t[2048];
 	
 	if (text[0] == '#')
 	{
@@ -146,41 +158,21 @@ wchar_t* CGameUI2::GetLocalizedString(const char* text)
 	return localizedString;
 }
 
-Vector2D CGameUI2::GetViewport()
+Vector2D CGameUI2::GetViewport() const
 {
 	int32 viewportX, viewportY;
-	engine->GetScreenSize(viewportX, viewportY);
+    m_pEngine->GetScreenSize(viewportX, viewportY);
 	return Vector2D(viewportX, viewportY);
 }
 
-float CGameUI2::GetTime()
+vgui::VPANEL CGameUI2::GetRootPanel() const
 {
-	return Plat_FloatTime();
+	return m_pEngineVGUI->GetPanel(PANEL_GAMEUIDLL);
 }
 
-vgui::VPANEL CGameUI2::GetRootPanel()
-{
-	return enginevgui->GetPanel(PANEL_GAMEUIDLL);
-}
-
-vgui::VPANEL CGameUI2::GetVPanel()
+vgui::VPANEL CGameUI2::GetVPanel() const
 {
 	return GetBasePanel()->GetVPanel();
-}
-
-CViewSetup CGameUI2::GetView()
-{
-	return m_pView;
-}
-
-VPlane* CGameUI2::GetFrustum()
-{
-	return m_pFrustum;
-}
-
-ITexture* CGameUI2::GetMaskTexture()
-{
-	return m_pMaskTexture;
 }
 
 void CGameUI2::SetView(const CViewSetup& view)
@@ -196,11 +188,6 @@ void CGameUI2::SetFrustum(VPlane* frustum)
 void CGameUI2::SetMaskTexture(ITexture* maskTexture)
 {
 	m_pMaskTexture = maskTexture;
-}
-
-void CGameUI2::SendMainMenuCommand(const char* cmd)
-{
-    gameui->SendMainMenuCommand(cmd);
 }
 
 CON_COMMAND(gameui2_version, "")

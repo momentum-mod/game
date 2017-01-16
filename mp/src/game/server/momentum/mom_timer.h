@@ -23,25 +23,11 @@ class CTriggerCheckpoint;
 class CTriggerOnehop;
 class CTriggerStage;
 
-struct Time
-{
-    // overall run stats:
-    float time_sec; // The amount of seconds taken to complete
-    float tickrate; // Tickrate the run was done on
-    time_t date;    // Date achieved
-    int flags;
-
-    // stage specific stats:
-    CMomRunStats RunStats;
-
-    Time() : time_sec(0), tickrate(0), date(0), flags(0), RunStats() {}
-};
-
-class CMomentumTimer
+class CMomentumTimer : CAutoGameSystem
 {
   public:
-      CMomentumTimer()
-        : m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0), m_bIsRunning(false),
+      CMomentumTimer(const char *pName)
+        : CAutoGameSystem(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0), m_bIsRunning(false),
           m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr), m_pEndTrigger(nullptr),
           m_pCurrentCheckpoint(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr)
     {
@@ -131,36 +117,15 @@ class CMomentumTimer
     // Finds the onehop with the given index on the list
     CTriggerOnehop *FindOnehopOnList(int pIndexOnList);
 
-    //-------- Generic Time & Run related code
-    // Converts the provided run from kvRun into a Time struct.
-    void ConvertKVToTime(KeyValues *kvRun, Time &into) const;
-    //Converts a given Time struct into a KeyValues object into kvInto.
-    //Note: kvInto must be declared BEFORE going into the function!
-    void ConvertTimeToKV(KeyValues *kvInto, Time *from) const;
     //-------- Online-related timer commands -----------------------------
-    // Tries to post the current time.
-    void PostTime();
     // MOM_TODO: void LoadOnlineTimes();
 
-    //------- Local-related timer commands -------------------------------
-    // Loads local times from given map name
-    void LoadLocalTimes(const char *);
-    // Add a new time to the local times KV
-    void AddNewTime(Time* t) const;
-    // Saves current time to a local file
-    void SaveTimeToFile() const;
-    // Unloads loaded times
-    void UnloadLoadedLocalTimes()
-    {
-        if (m_pLocalTimes)
-            m_pLocalTimes->deleteThis();
-        m_pLocalTimes = nullptr;
-    }
-    void OnMapEnd(const char *);
-    void OnMapStart(const char *);
+    // Level init/shutdown hooks
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPreEntity() OVERRIDE;
     void DispatchMapInfo() const;
+
     // Practice mode- noclip mode that stops timer
-    // void PracticeMove(); MOM_TODO: NOT IMPLEMENTED
     void EnablePractice(CMomentumPlayer *pPlayer);
     void DisablePractice(CMomentumPlayer *pPlayer);
 
