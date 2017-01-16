@@ -77,6 +77,9 @@ voice_ban.dt
 # Momentum
 *.zon
 *.momrec
+game_shader_dx9.dll
+game_shader_dx9.so
+game_shader_dx9.so.dbg
 gameui2.dll
 gameui2.so
 gameui2.so.dbg

@@ -19,4 +19,8 @@
 	"shader_016"		"ssao_combine"
 	"shader_017"		"ssao_fxaa"
 	"shader_018"		"sunrays_calc"
+    "shader_019"		"fringe"
+    "shader_020"		"gauss_blur_13_half_aceil_x"
+    "shader_021"		"gauss_blur_13_half_aceil_y"
+    "shader_022"		"gui_blur_blend"
 }
