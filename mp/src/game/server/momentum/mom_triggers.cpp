@@ -840,8 +840,41 @@ DEFINE_KEYFIELD(m_bSliding, FIELD_BOOLEAN, "Slide")
 , DEFINE_KEYFIELD(m_bStuck, FIELD_BOOLEAN, "StuckOnGround"),
     DEFINE_KEYFIELD(m_bNoGravity, FIELD_BOOLEAN, "NoGravity") END_DATADESC();
 
+
+//The mapper could disable one of these flags with an ouput I guess? I don't know.
 void CTriggerSlide::Think()
 {
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (pPlayer && IsTouching(pPlayer))
+    {
+        if (m_bSliding)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE;
+        }
+        else
+        {
+            pPlayer->m_fSliding &= ~FL_SLIDE;
+        }
+
+        if (m_bStuck)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+        }
+        else
+        {
+            pPlayer->m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
+        }
+
+        if (m_bNoGravity)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE_NOGRAVITY;
+        }
+        else
+        {
+            pPlayer->m_fSliding &= ~FL_SLIDE_NOGRAVITY;
+        }
+    }
+
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     BaseClass::Think();
 }
