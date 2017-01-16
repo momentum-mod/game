@@ -831,7 +831,6 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 //-----------------------------------------------------------------------------------------------
 
 //--------- CTriggerSlide -------------------------------------------------------------------
-//MOM_TODO: Add stuck on ground option on the triggers.
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
