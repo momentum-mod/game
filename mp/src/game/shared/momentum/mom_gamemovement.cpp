@@ -1004,7 +1004,7 @@ void CMomentumGameMovement::FullWalkMove()
             CTraceFilterSimple tracefilter(player, COLLISION_GROUP_NONE);
             enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
 
-            vAbsOrigin.z -= ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction); // Apply our adjustement
+            vAbsOrigin.z -= ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f; // Apply our adjustement + offset
 
             mv->SetAbsOrigin(vAbsOrigin);
         }

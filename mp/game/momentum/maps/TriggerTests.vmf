@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6920"
-	"mapversion" "126"
+	"mapversion" "130"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -26,7 +26,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "126"
+	"mapversion" "130"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -16171,9 +16171,15 @@ entity
 {
 	"id" "11035"
 	"classname" "trigger_momentum_slide"
+	"NoGravity" "1"
 	"origin" "752 1062 -568"
-	"slidetype" "3"
+	"Slide" "1"
 	"spawnflags" "1"
+	"StuckOnGround" "1"
+	connections
+	{
+		"OnStartTouch" "slide_msg,Display,,0,-1"
+	}
 	solid
 	{
 		"id" "11026"
@@ -16245,6 +16251,30 @@ entity
 		"visgroupshown" "1"
 		"visgroupautoshown" "1"
 		"logicalpos" "[0 3000]"
+	}
+}
+entity
+{
+	"id" "11242"
+	"classname" "game_text"
+	"channel" "1"
+	"color" "100 100 100"
+	"color2" "240 110 0"
+	"fadein" "1.5"
+	"fadeout" "0.5"
+	"fxtime" "0.25"
+	"holdtime" "1.2"
+	"message" "Slide trigger, stuck on ground + nogravity"
+	"targetname" "slide_msg"
+	"x" "-1"
+	"y" "-1"
+	"origin" "775.08 267.658 -280"
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 11500]"
 	}
 }
 cameras
