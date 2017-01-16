@@ -831,19 +831,13 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 //-----------------------------------------------------------------------------------------------
 
 //--------- CTriggerSlide -------------------------------------------------------------------
-//This trigger is made for iceskating, I'm sure that some mappers will find this useful.
-//If my code is correct, you need to create first a trigger called trigger_momentum_slide_start to enable sliding, and then trigger_momentum_slide_end, to disable it.
-//So there will be two triggers to decide when ever or not if slide must be enabled, I also removed groundentity, to prevent the walking function.
-
-//My question is, should I make just one trigger instead, like the ones used by trigger_push, or making more like start zone and end zone?
-//The problem with only one trigger, player would be spamming the trigger, and could cause gamemovement issues (wich i havent tested yet, I must do a map for it)
-//Because the player would just go outside and enter again in the trigger.
-//But the problem with two triggers, is that gravity won't work until the player goes to the trigger_momentum_slide_end.
-//Like if the mapper wants his player to go down and up, he would need to create walls upside and down.
-//But this could be useful specially when there is a loop. (sonic loop for example!)
-//So i still think one trigger should be the best. 
+//MOM_TODO: Add stuck on ground option on the triggers.
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
+
+BEGIN_DATADESC( CTriggerSlide )
+DEFINE_KEYFIELD( m_iSlidingType , FIELD_INTEGER , "slidetype" )
+END_DATADESC();
 
 void CTriggerSlide::Think()
 {
@@ -857,8 +851,9 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        pPlayer->m_bSliding = true;
+        pPlayer->m_iSliding = m_iSlidingType;
     }
+
     BaseClass::StartTouch(pOther);
 }
 
@@ -868,8 +863,9 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        pPlayer->m_bSliding = false;
+        pPlayer->m_iSliding = SlideNothing;
     }
+
     BaseClass::EndTouch(pOther);
 }
 

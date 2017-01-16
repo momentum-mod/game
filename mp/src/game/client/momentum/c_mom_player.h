@@ -50,7 +50,7 @@ class C_MomentumPlayer : public C_BasePlayer
     int m_iLastZoom;
     bool m_bDidPlayerBhop;
     bool m_bHasPracticeMode;
-    bool m_bSliding;
+    int m_iSliding;
 
     int m_afButtonDisabled;
 

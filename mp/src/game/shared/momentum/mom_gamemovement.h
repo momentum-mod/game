@@ -94,6 +94,8 @@ class CMomentumGameMovement : public CGameMovement
 
     virtual void PerformFlyCollisionResolution( trace_t &pm , Vector &move );
     virtual void FullTossMove( void ) OVERRIDE;
+    virtual void StartGravity( void ) OVERRIDE;
+    virtual void FinishGravity( void ) OVERRIDE;
 
   private:
     float m_flReflectNormal; // Used by rampboost fix

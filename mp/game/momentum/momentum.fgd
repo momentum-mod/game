@@ -58,7 +58,10 @@
 
 @SolidClass base(Trigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." []
 
-@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger that makes iceskating/slide zone." []
+@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger that makes iceskating/slide zone." 
+[
+	slidetype(integer) : "Sliding Type" : 1 : "1 Normal iceskating/slide 2 The player is getting stuck to ground, no matter what happens 3) The player is getting stuck to ground, no matter what happens, with gravity removed (wich results in better gain on the rise)"
+]
 
 @SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that only allows for one hop."
 [

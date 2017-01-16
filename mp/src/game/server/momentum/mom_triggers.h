@@ -349,11 +349,15 @@ class CTriggerMomentumPush : public CTriggerTeleportEnt
 class CTriggerSlide : public CBaseMomentumTrigger
 {
     DECLARE_CLASS(CTriggerSlide, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
 
   public:
     void Think() OVERRIDE;
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
     void EndTouch(CBaseEntity *pOther) OVERRIDE;
+
+  public:
+    int m_iSlidingType;
 };
 
 /*class CTriggerSlideStart : public CBaseMomentumTrigger

@@ -21,4 +21,12 @@ inline CMomentumPlayer *ToCMOMPlayer(CBaseEntity *pEntity)
     return dynamic_cast<CMomentumPlayer*>(pEntity);
 }
 
+enum E_MomentumPlayer_Slide
+{
+    SlideNothing = 0 ,
+    SlideNotStuck = 1 ,
+    SlideStuck = 2,
+    SlideStuckWGrav = 3
+};
+
 #endif // MOM_PLAYER_SHARED_H
