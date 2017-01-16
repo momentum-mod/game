@@ -135,12 +135,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     CNetworkVar(bool, m_bResumeZoom);
     CNetworkVar(int, m_iLastZoom);
 
-    IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled); 
+    IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
 
+    CNetworkVar(int, m_fSliding);
     CNetworkVar(bool, m_bDidPlayerBhop);   // Did the player bunnyhop successfully?
     CNetworkVar(int, m_iSuccessiveBhops);  // How many successive bhops this player has
     CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
-    CNetworkVar(int, m_iSliding); //Sliding mode?
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
     CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements

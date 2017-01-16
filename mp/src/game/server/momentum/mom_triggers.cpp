@@ -835,9 +835,10 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
-BEGIN_DATADESC( CTriggerSlide )
-DEFINE_KEYFIELD( m_iSlidingType , FIELD_INTEGER , "slidetype" )
-END_DATADESC();
+BEGIN_DATADESC(CTriggerSlide)
+DEFINE_KEYFIELD(m_bSliding, FIELD_BOOLEAN, "Slide")
+, DEFINE_KEYFIELD(m_bStuck, FIELD_BOOLEAN, "StuckOnGround"),
+    DEFINE_KEYFIELD(m_bNoGravity, FIELD_BOOLEAN, "NoGravity") END_DATADESC();
 
 void CTriggerSlide::Think()
 {
@@ -851,7 +852,20 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        pPlayer->m_iSliding = m_iSlidingType;
+        if (m_bSliding)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE;
+        }
+
+        if (m_bStuck)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+        }
+
+        if (m_bNoGravity)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE_NOGRAVITY;
+        }
     }
 
     BaseClass::StartTouch(pOther);
@@ -863,7 +877,7 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        pPlayer->m_iSliding = SlideNothing;
+        pPlayer->m_fSliding = 0;
     }
 
     BaseClass::EndTouch(pOther);

@@ -21,12 +21,8 @@ inline CMomentumPlayer *ToCMOMPlayer(CBaseEntity *pEntity)
     return dynamic_cast<CMomentumPlayer*>(pEntity);
 }
 
-enum E_MomentumPlayer_Slide
-{
-    SlideNothing = 0 ,
-    SlideNotStuck = 1 ,
-    SlideStuck = 2,
-    SlideStuckWGrav = 3
-};
+#define FL_SLIDE (1<<10) // player is sliding
+#define FL_SLIDE_STUCKONGROUND (1<<11) // player is sliding: stuck on ground
+#define FL_SLIDE_NOGRAVITY (1<<12) // player is sliding without gravity
 
 #endif // MOM_PLAYER_SHARED_H
