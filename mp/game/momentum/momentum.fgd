@@ -61,8 +61,7 @@
 @SolidClass base(Trigger) = trigger_momentum_slide : "Trigger that makes iceskating/sliding zone." 
 [
 	Slide(integer) : "Sliding" : 1 : "Should the player sliding/iceskating?"
-	StuckOnGround(integer) : "Stuck on ground" : 1 : "Should the player get stuck to ground while sliding? (when there is slopes for examples, the player will not get in air, but getting stuck directly to ground)"
-	NoGravity(integer) : "Remove gravity" : 1 : "Should the player get his gravity removed while sliding?"
+	StuckOnGround(integer) : "Stuck on ground" : 1 : "Should the player get stuck to ground while sliding? (when there is slopes for examples, the player will not get in air, but getting stuck directly to ground, useful with gravity removed)"
 ]
 
 @SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that only allows for one hop."

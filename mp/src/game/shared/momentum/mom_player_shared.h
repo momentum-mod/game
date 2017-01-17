@@ -23,6 +23,5 @@ inline CMomentumPlayer *ToCMOMPlayer(CBaseEntity *pEntity)
 
 #define FL_SLIDE (1<<10) // player is sliding
 #define FL_SLIDE_STUCKONGROUND (1<<11) // player is sliding: stuck on ground
-#define FL_SLIDE_NOGRAVITY (1<<12) // player is sliding without gravity
 
 #endif // MOM_PLAYER_SHARED_H

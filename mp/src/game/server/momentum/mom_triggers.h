@@ -357,7 +357,7 @@ class CTriggerSlide : public CBaseMomentumTrigger
     void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
-    bool m_bSliding, m_bStuck, m_bNoGravity;
+    bool m_bSliding, m_bStuck;
 };
 
 /*class CTriggerSlideStart : public CBaseMomentumTrigger

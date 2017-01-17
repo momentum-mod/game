@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6920"
-	"mapversion" "130"
+	"mapversion" "131"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -26,7 +26,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "130"
+	"mapversion" "131"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -16171,7 +16171,6 @@ entity
 {
 	"id" "11035"
 	"classname" "trigger_momentum_slide"
-	"NoGravity" "1"
 	"origin" "752 1062 -568"
 	"Slide" "1"
 	"spawnflags" "1"

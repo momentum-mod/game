@@ -837,41 +837,21 @@ void CMomentumGameMovement::CategorizePosition()
 
 void CMomentumGameMovement::FinishGravity(void)
 {
-    float ent_gravity;
-
     if (player->m_flWaterJumpTime)
         return;
 
-    if (player->GetGravity())
-        ent_gravity = player->GetGravity();
-    else
-        ent_gravity = 1.0;
-
-    if (!((m_pPlayer->m_fSliding & FL_SLIDE_NOGRAVITY) && (m_pPlayer->m_fSliding & FL_SLIDE)))
-    {
-        // Get the correct velocity for the end of the dt
-        mv->m_vecVelocity[2] -= (ent_gravity * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
-    }
+    // Get the correct velocity for the end of the dt
+    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
 
     CheckVelocity();
 }
 
 void CMomentumGameMovement::StartGravity(void)
 {
-    float ent_gravity;
-
-    if (player->GetGravity())
-        ent_gravity = player->GetGravity();
-    else
-        ent_gravity = 1.0;
-
-    if (!((m_pPlayer->m_fSliding & FL_SLIDE_NOGRAVITY) && (m_pPlayer->m_fSliding & FL_SLIDE)))
-    {
-        // Add gravity so they'll be in the correct position during movement
-        // yes, this 0.5 looks wrong, but it's not.
-        mv->m_vecVelocity[2] -= (ent_gravity * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
-        mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
-    }
+    // Add gravity so they'll be in the correct position during movement
+    // yes, this 0.5 looks wrong, but it's not.
+    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+    mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
 
     Vector temp = player->GetBaseVelocity();
     temp[2] = 0;
@@ -899,7 +879,9 @@ void CMomentumGameMovement::FullWalkMove()
 
     // If we are swimming in the water, see if we are nudging against a place we can jump up out
     //  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
-    if (player->GetWaterLevel() >= WL_Waist)
+    // If sliding is set we prefer to simulate sliding than being in water.. Could be fun for some mappers
+    // that want sliding/iceskating into water. Who knows.
+    if ((player->GetWaterLevel() >= WL_Waist) && !(m_pPlayer->m_fSliding & FL_SLIDE))
     {
         if (player->GetWaterLevel() == WL_Waist)
         {
@@ -989,6 +971,10 @@ void CMomentumGameMovement::FullWalkMove()
         }
 
         CheckFalling();
+
+        // Stuck the player to ground, if flag on sliding is set so.
+        if ((m_pPlayer->m_fSliding & FL_SLIDE_STUCKONGROUND) && (m_pPlayer->m_fSliding & FL_SLIDE))
+            StuckGround();
     }
 
     if ((m_nOldWaterLevel == WL_NotInWater && player->GetWaterLevel() != WL_NotInWater) ||
@@ -999,10 +985,6 @@ void CMomentumGameMovement::FullWalkMove()
         player->Splash();
 #endif
     }
-
-    // Stuck the player to ground, if flag on sliding is set so.
-    if ((m_pPlayer->m_fSliding & FL_SLIDE_STUCKONGROUND) && (m_pPlayer->m_fSliding & FL_SLIDE))
-        StuckGround();
 }
 
 void CMomentumGameMovement::StuckGround(void)
