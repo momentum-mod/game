@@ -2,7 +2,7 @@ versioninfo
 {
 	"editorversion" "400"
 	"editorbuild" "6920"
-	"mapversion" "131"
+	"mapversion" "136"
 	"formatversion" "100"
 	"prefab" "0"
 }
@@ -26,7 +26,7 @@ viewsettings
 world
 {
 	"id" "1"
-	"mapversion" "131"
+	"mapversion" "136"
 	"classname" "worldspawn"
 	"detailmaterial" "detail/detailsprites"
 	"detailvbsp" "detail.vbsp"
@@ -3216,82 +3216,6 @@ world
 	}
 	solid
 	{
-		"id" "6998"
-		side
-		{
-			"id" "2761"
-			"plane" "(992 -480 96) (992 2112 96) (1024 2112 96)"
-			"material" "TOOLS/TOOLSNODRAW"
-			"uaxis" "[1 0 0 0] 0.25"
-			"vaxis" "[0 -1 0 0] 0.25"
-			"rotation" "0"
-			"lightmapscale" "16"
-			"smoothing_groups" "0"
-		}
-		side
-		{
-			"id" "2762"
-			"plane" "(992 2112 -856) (992 -480 -856) (1024 -480 -856)"
-			"material" "TOOLS/TOOLSNODRAW"
-			"uaxis" "[1 0 0 0] 0.25"
-			"vaxis" "[0 -1 0 0] 0.25"
-			"rotation" "0"
-			"lightmapscale" "16"
-			"smoothing_groups" "0"
-		}
-		side
-		{
-			"id" "2763"
-			"plane" "(992 -480 -856) (992 2112 -856) (992 2112 96)"
-			"material" "DEV/DEV_MEASUREWALL01A"
-			"uaxis" "[0 1 0 0] 0.25"
-			"vaxis" "[0 0 -1 0] 0.25"
-			"rotation" "0"
-			"lightmapscale" "16"
-			"smoothing_groups" "0"
-		}
-		side
-		{
-			"id" "2764"
-			"plane" "(1024 2112 -856) (1024 -480 -856) (1024 -480 96)"
-			"material" "TOOLS/TOOLSNODRAW"
-			"uaxis" "[0 1 0 0] 0.25"
-			"vaxis" "[0 0 -1 0] 0.25"
-			"rotation" "0"
-			"lightmapscale" "16"
-			"smoothing_groups" "0"
-		}
-		side
-		{
-			"id" "2765"
-			"plane" "(992 2112 -856) (1024 2112 -856) (1024 2112 96)"
-			"material" "TOOLS/TOOLSNODRAW"
-			"uaxis" "[1 0 0 0] 0.25"
-			"vaxis" "[0 0 -1 0] 0.25"
-			"rotation" "0"
-			"lightmapscale" "16"
-			"smoothing_groups" "0"
-		}
-		side
-		{
-			"id" "2766"
-			"plane" "(1024 -480 -856) (992 -480 -856) (992 -480 96)"
-			"material" "TOOLS/TOOLSNODRAW"
-			"uaxis" "[1 0 0 0] 0.25"
-			"vaxis" "[0 0 -1 0] 0.25"
-			"rotation" "0"
-			"lightmapscale" "16"
-			"smoothing_groups" "0"
-		}
-		editor
-		{
-			"color" "0 150 167"
-			"visgroupshown" "1"
-			"visgroupautoshown" "1"
-		}
-	}
-	solid
-	{
 		"id" "6999"
 		side
 		{
@@ -6104,10 +6028,86 @@ world
 	}
 	solid
 	{
+		"id" "6998"
+		side
+		{
+			"id" "3217"
+			"plane" "(992 -480 96) (992 2112 96) (1024 2112 96)"
+			"material" "TOOLS/TOOLSNODRAW"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3216"
+			"plane" "(992 2112 -856) (992 -480 -856) (1024 -480 -856)"
+			"material" "TOOLS/TOOLSNODRAW"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3215"
+			"plane" "(992 -480 -856) (992 2112 -856) (992 2112 96)"
+			"material" "DEV/DEV_MEASUREWALL01A"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3214"
+			"plane" "(1024 2112 -856) (1024 -480 -856) (1024 -480 96)"
+			"material" "TOOLS/TOOLSNODRAW"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3213"
+			"plane" "(992 2112 -856) (1024 2112 -856) (1024 2112 96)"
+			"material" "TOOLS/TOOLSNODRAW"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3212"
+			"plane" "(1024 -480 -856) (992 -480 -856) (992 -480 96)"
+			"material" "TOOLS/TOOLSNODRAW"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "0 150 167"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
+	solid
+	{
 		"id" "11025"
 		side
 		{
-			"id" "3181"
+			"id" "3249"
 			"plane" "(480 -512 -288) (480 12 -288) (1024 12 -288)"
 			"material" "DEV/DEV_BLENDMEASURE"
 			"uaxis" "[1 0 0 0] 0.25"
@@ -6118,7 +6118,7 @@ world
 		}
 		side
 		{
-			"id" "3180"
+			"id" "3248"
 			"plane" "(480 2112 -856) (480 -512 -856) (1024 -512 -856)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
@@ -6129,7 +6129,7 @@ world
 		}
 		side
 		{
-			"id" "3179"
+			"id" "3247"
 			"plane" "(480 -512 -856) (480 2112 -856) (480 2112 -848)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[0 1 0 0] 0.25"
@@ -6140,7 +6140,7 @@ world
 		}
 		side
 		{
-			"id" "3178"
+			"id" "3246"
 			"plane" "(1024 2112 -856) (1024 -512 -856) (1024 -512 -288)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[0 1 0 0] 0.25"
@@ -6151,7 +6151,7 @@ world
 		}
 		side
 		{
-			"id" "3177"
+			"id" "3245"
 			"plane" "(480 2112 -856) (1024 2112 -856) (1024 2112 -848)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
@@ -6162,7 +6162,7 @@ world
 		}
 		side
 		{
-			"id" "3176"
+			"id" "3244"
 			"plane" "(1024 -512 -856) (480 -512 -856) (480 -512 -288)"
 			"material" "TOOLS/TOOLSNODRAW"
 			"uaxis" "[1 0 0 0] 0.25"
@@ -6173,7 +6173,7 @@ world
 		}
 		side
 		{
-			"id" "3175"
+			"id" "3243"
 			"plane" "(1024 12 -288) (480 12 -288) (480 2112 -848)"
 			"material" "DEV/DEV_BLENDMEASURE"
 			"uaxis" "[1 0 0 0] 0.25"
@@ -16169,24 +16169,50 @@ entity
 }
 entity
 {
-	"id" "11035"
-	"classname" "trigger_momentum_slide"
-	"origin" "752 1062 -568"
-	"Slide" "1"
-	"spawnflags" "1"
-	"StuckOnGround" "1"
+	"id" "11242"
+	"classname" "game_text"
+	"channel" "1"
+	"color" "100 100 100"
+	"color2" "240 110 0"
+	"fadein" "1.5"
+	"fadeout" "0.5"
+	"fxtime" "0.25"
+	"holdtime" "1.2"
+	"message" "Slide trigger, stuck on ground + nogravity"
+	"targetname" "slide_msg"
+	"x" "-1"
+	"y" "-1"
+	"origin" "775.08 267.658 -280"
+	editor
+	{
+		"color" "220 30 220"
+		"visgroupshown" "1"
+		"visgroupautoshown" "1"
+		"logicalpos" "[0 11500]"
+	}
+}
+entity
+{
+	"id" "11525"
+	"classname" "func_water_analog"
+	"movedir" "0 0 0"
+	"movedistance" "100"
+	"origin" "752 934 -468"
+	"speed" "100"
+	"startposition" "0"
+	"WaveHeight" "3.0"
 	connections
 	{
 		"OnStartTouch" "slide_msg,Display,,0,-1"
 	}
 	solid
 	{
-		"id" "11026"
+		"id" "11526"
 		side
 		{
-			"id" "3191"
-			"plane" "(480 12 -288) (480 2112 -288) (1024 2112 -288)"
-			"material" "TOOLS/TOOLSTRIGGER"
+			"id" "3254"
+			"plane" "(480 12 -288) (480 1856 -288) (1024 1856 -288)"
+			"material" "NATURE/WATER_LOWMURKREF_DX70"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
 			"rotation" "0"
@@ -16195,9 +16221,9 @@ entity
 		}
 		side
 		{
-			"id" "3190"
-			"plane" "(480 2112 -848) (480 2112 -288) (480 12 -288)"
-			"material" "TOOLS/TOOLSTRIGGER"
+			"id" "3253"
+			"plane" "(480 1856 -648) (480 1856 -288) (480 12 -288)"
+			"material" "NATURE/WATER_LOWMURKREF_DX70"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -16206,9 +16232,9 @@ entity
 		}
 		side
 		{
-			"id" "3189"
-			"plane" "(1024 12 -288) (1024 2112 -288) (1024 2112 -848)"
-			"material" "TOOLS/TOOLSTRIGGER"
+			"id" "3252"
+			"plane" "(1024 12 -288) (1024 1856 -288) (1024 1856 -648)"
+			"material" "NATURE/WATER_LOWMURKREF_DX70"
 			"uaxis" "[0 1 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -16217,9 +16243,9 @@ entity
 		}
 		side
 		{
-			"id" "3188"
-			"plane" "(1024 2112 -848) (1024 2112 -288) (480 2112 -288)"
-			"material" "TOOLS/TOOLSTRIGGER"
+			"id" "3251"
+			"plane" "(1024 1856 -648) (1024 1856 -288) (480 1856 -288)"
+			"material" "NATURE/WATER_LOWMURKREF_DX70"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 0 -1 0] 0.25"
 			"rotation" "0"
@@ -16228,9 +16254,9 @@ entity
 		}
 		side
 		{
-			"id" "3187"
-			"plane" "(480 2112 -848) (480 12 -288) (1024 12 -288)"
-			"material" "TOOLS/TOOLSTRIGGER"
+			"id" "3250"
+			"plane" "(480 1856 -648) (480 12 -288) (1024 12 -288)"
+			"material" "NATURE/WATER_LOWMURKREF_DX70"
 			"uaxis" "[1 0 0 0] 0.25"
 			"vaxis" "[0 -1 0 0] 0.25"
 			"rotation" "0"
@@ -16254,26 +16280,84 @@ entity
 }
 entity
 {
-	"id" "11242"
-	"classname" "game_text"
-	"channel" "1"
-	"color" "100 100 100"
-	"color2" "240 110 0"
-	"fadein" "1.5"
-	"fadeout" "0.5"
-	"fxtime" "0.25"
-	"holdtime" "1.2"
-	"message" "Slide trigger, stuck on ground + nogravity"
-	"targetname" "slide_msg"
-	"x" "-1"
-	"y" "-1"
-	"origin" "775.08 267.658 -280"
+	"id" "11765"
+	"classname" "trigger_momentum_slide"
+	"origin" "752 1062 -568"
+	"Slide" "1"
+	"spawnflags" "1"
+	"StartDisabled" "0"
+	"StuckOnGround" "1"
+	solid
+	{
+		"id" "11742"
+		side
+		{
+			"id" "3274"
+			"plane" "(480 12 -288) (480 2112 -288) (1024 2112 -288)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3273"
+			"plane" "(480 2112 -848) (480 2112 -288) (480 12 -288)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3272"
+			"plane" "(1024 12 -288) (1024 2112 -288) (1024 2112 -848)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[0 1 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3271"
+			"plane" "(1024 2112 -848) (1024 2112 -288) (480 2112 -288)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 0 -1 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "16"
+			"smoothing_groups" "0"
+		}
+		side
+		{
+			"id" "3270"
+			"plane" "(480 2112 -848) (480 12 -288) (1024 12 -288)"
+			"material" "TOOLS/TOOLSTRIGGER"
+			"uaxis" "[1 0 0 0] 0.25"
+			"vaxis" "[0 -1 0 0] 0.25"
+			"rotation" "0"
+			"lightmapscale" "128"
+			"smoothing_groups" "0"
+		}
+		editor
+		{
+			"color" "220 30 220"
+			"visgroupshown" "1"
+			"visgroupautoshown" "1"
+		}
+	}
 	editor
 	{
 		"color" "220 30 220"
 		"visgroupshown" "1"
 		"visgroupautoshown" "1"
-		"logicalpos" "[0 11500]"
+		"logicalpos" "[0 1500]"
 	}
 }
 cameras

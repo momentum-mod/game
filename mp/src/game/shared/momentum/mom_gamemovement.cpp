@@ -862,7 +862,7 @@ void CMomentumGameMovement::StartGravity(void)
 
 void CMomentumGameMovement::FullWalkMove()
 {
-    if (!CheckWater())
+    if (!(CheckWater() && !(m_pPlayer->m_fSliding & FL_SLIDE)))
     {
         StartGravity();
     }
@@ -959,7 +959,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckVelocity();
 
         // Add any remaining gravitational component.
-        if (!CheckWater())
+        if (!(CheckWater() && !(m_pPlayer->m_fSliding & FL_SLIDE)))
         {
             FinishGravity();
         }
