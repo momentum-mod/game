@@ -2914,7 +2914,7 @@ bool CGameMovement::LadderMove( void )
 		onFloor = false;
 	}
 
-	player->SetGravity( 0 );
+	player->SetGravity( 1.0f ); //Should be always set on 1.0..
 
 	float climbSpeed = ClimbSpeed();
 
