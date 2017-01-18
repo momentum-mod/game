@@ -45,6 +45,9 @@ int CBaseAutoCompleteFileList::AutoCompletionFunc( char const *partial, char com
 	CUtlVector< CUtlSymbol > symbols;
     FileFindHandle_t hfind = FILESYSTEM_INVALID_FIND_HANDLE;
     const char* findfn = g_pFullFileSystem->FindFirst(searchpath, &hfind);
+
+    const size_t pSubstring = strlen(substring);
+
 	while ( findfn )
 	{
 		char sz[ MAX_QPATH ];
@@ -54,7 +57,7 @@ int CBaseAutoCompleteFileList::AutoCompletionFunc( char const *partial, char com
 		// Insert into lookup
 		if ( substring[0] )
 		{
-			if ( !Q_strncasecmp( findfn, substring, strlen( substring ) ) )
+            if (!Q_strncasecmp(findfn, substring, pSubstring))
 			{
 				add = true;
 			}
@@ -90,8 +93,8 @@ int CBaseAutoCompleteFileList::AutoCompletionFunc( char const *partial, char com
 		char const *filename = entries.String( symbols[ i ] );
 
 		Q_snprintf( commands[ i ], sizeof( commands[ i ] ), "%s %s", cmdname, filename );
-		// Remove ".momrec"
-		commands[ i ][ strlen( commands[ i ] ) - 7 ] = 0;
+		// Remove ".(extension)"
+		commands[ i ][ Q_strlen( commands[ i ] ) - (Q_strlen(m_pszExtension) + 1)] = 0;
 	}
 
 	return symbols.Count();

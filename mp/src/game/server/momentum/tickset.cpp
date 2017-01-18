@@ -10,11 +10,12 @@
 #include "tier0/platform.h"
 
 float* TickSet::interval_per_tick = nullptr;
-const TickSet::Tickrate TickSet::s_DefinedRates[] = {
+bool TickSet::m_bInGameUpdate = false;
+const Tickrate TickSet::s_DefinedRates[] = {
     { 0.015f, "66" },
     { 0.01f, "100" }
 };
-TickSet::Tickrate TickSet::m_trCurrent = TickSet::s_DefinedRates[TickSet::TICKRATE_66];
+Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
 
 #ifdef __linux__
 int GetModuleInformation_Linux(const char *name, void **base, size_t *length)
@@ -115,21 +116,33 @@ bool TickSet::TickInit()
     return (interval_per_tick ? true : false);
 }
 
+
+bool TickSet::SetTickrate(int gameMode)
+{
+    switch (gameMode)
+    {
+    case MOMGM_BHOP:
+    case MOMGM_SCROLL:
+        //MOM_TODO: add more gamemodes
+        return SetTickrate(s_DefinedRates[TICKRATE_100]);
+
+    case MOMGM_UNKNOWN:
+        if (m_bInGameUpdate) // If the user's updating this, ignore the end of map setting
+            return false;
+
+    case MOMGM_SURF:
+    default:
+        return SetTickrate(s_DefinedRates[TICKRATE_66]);
+    }
+}
+
 bool TickSet::SetTickrate(float tickrate)
 {
-    /*if (interval_per_tick)
-    {
-        *interval_per_tick = tickrate;
-        gpGlobals->interval_per_tick = tickrate;
-        
-        return true;
-    }
-    else return false;*/
-    if (m_trCurrent.fTickRate != tickrate)
+    if (!g_pMomentumUtil->FloatEquals(m_trCurrent.fTickRate, tickrate))
     {
         Tickrate tr;
-        if (mom_UTIL->FloatEquals(tickrate, 0.01f)) tr = s_DefinedRates[TICKRATE_100];
-        else if (mom_UTIL->FloatEquals(tickrate, 0.015f)) tr = s_DefinedRates[TICKRATE_66];
+        if (g_pMomentumUtil->FloatEquals(tickrate, 0.01f)) tr = s_DefinedRates[TICKRATE_100];
+        else if (g_pMomentumUtil->FloatEquals(tickrate, 0.015f)) tr = s_DefinedRates[TICKRATE_66];
         else
         {
             tr.fTickRate = tickrate;
@@ -137,5 +150,58 @@ bool TickSet::SetTickrate(float tickrate)
         }
         return SetTickrate(tr);
     }
-    else return false;
+    
+    return false;
 }
+
+bool TickSet::SetTickrate(Tickrate trNew)
+{
+    if (m_bInGameUpdate)
+    {
+        m_bInGameUpdate = false;
+        return false;
+    }
+
+    if (trNew == m_trCurrent) return false;
+
+    if (interval_per_tick)
+    {
+        DevLog("Testing: %f\n", trNew.fTickRate);
+        *interval_per_tick = trNew.fTickRate;
+        gpGlobals->interval_per_tick = *interval_per_tick;
+        DevLog("Should have set the tickrate to %f\n", *interval_per_tick);
+        m_trCurrent = trNew;
+        auto pPlayer = UTIL_GetLocalPlayer();
+        if (pPlayer)
+        {
+            m_bInGameUpdate = true;
+            engine->ClientCommand(pPlayer->edict(), "reload");
+        }
+        return true;
+    }
+    return false;
+}
+
+static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
+{
+    ConVarRef tr(var);
+    float toCheck = tr.GetFloat();
+    if (g_pMomentumUtil->FloatEquals(toCheck, fOldValue)) return;
+    // MOM_TODO: Re-implement the bound 
+    //if (toCheck < 0.01f || toCheck > 0.015f)
+    //{
+    //    Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
+    //    var->SetValue(((ConVar*) var)->GetDefault());
+    //    return;
+    //}
+    bool result = TickSet::SetTickrate(toCheck);
+    if (result)
+    {
+        Msg("Successfully changed the tickrate to %f!\n", toCheck);
+        gpGlobals->interval_per_tick = toCheck;
+    }
+    else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
+}
+
+// MOM_TODO: Remove the comment in the flags
+static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT /*| FCVAR_NOT_CONNECTED*/, "Changes the tickrate of the game.", onTickRateChange);

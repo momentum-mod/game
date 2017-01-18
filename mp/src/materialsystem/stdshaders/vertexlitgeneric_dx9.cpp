@@ -11,10 +11,10 @@
 #include "emissive_scroll_blended_pass_helper.h"
 #include "cloak_blended_pass_helper.h"
 #include "flesh_interior_blended_pass_helper.h"
-#include "weapon_sheen_pass_helper.h"
+//#include "weapon_sheen_pass_helper.h"
 
 
-BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
+BEGIN_VS_SHADER( SDK_VertexLitGeneric, "Help for SDK_VertexLitGeneric" )
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM( ALBEDO, SHADER_PARAM_TYPE_TEXTURE, "shadertest/BaseTexture", "albedo (Base texture with no baked lighting)" )
 		SHADER_PARAM( COMPRESS, SHADER_PARAM_TYPE_TEXTURE, "shadertest/BaseTexture", "compression wrinklemap" )
@@ -229,7 +229,7 @@ BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
 	}
 
 	// Weapon Sheen Pass
-	void SetupVarsWeaponSheenPass( WeaponSheenPassVars_t &info )
+	/*void SetupVarsWeaponSheenPass( WeaponSheenPassVars_t &info )
 	{
 		info.m_nSheenMap = SHEENMAP;
 		info.m_nSheenMapMask = SHEENMAPMASK;
@@ -245,7 +245,7 @@ BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
 		info.m_nBumpmap = BUMPMAP;
 		info.m_nBumpFrame = BUMPFRAME;
 		info.m_nBumpTransform = BUMPTRANSFORM;
-	}
+	}*/
 
 	bool NeedsPowerOfTwoFrameBufferTexture( IMaterialVar **params, bool bCheckSpecificToThisFrame ) const 
 	{ 
@@ -336,7 +336,7 @@ BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
 		}
 
 		// Sheen Pass
-		if ( !params[SHEENPASSENABLED]->IsDefined() )
+		/*if ( !params[SHEENPASSENABLED]->IsDefined() )
 		{
 			params[SHEENPASSENABLED]->SetIntValue( 0 );
 		}
@@ -345,7 +345,7 @@ BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
 			WeaponSheenPassVars_t info;
 			SetupVarsWeaponSheenPass( info );
 			InitParamsWeaponSheenPass( this, params, pMaterialName, info );
-		}
+		}*/
 		
 		// Emissive Scroll Pass
 		if ( !params[EMISSIVEBLENDENABLED]->IsDefined() )
@@ -402,12 +402,12 @@ BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
 
 		// TODO : Only do this if we're in range of the camera
 		// Weapon Sheen
-		if ( params[SHEENPASSENABLED]->GetIntValue() )
+		/*if ( params[SHEENPASSENABLED]->GetIntValue() )
 		{
 			WeaponSheenPassVars_t info;
 			SetupVarsWeaponSheenPass( info );
 			InitWeaponSheenPass( this, params, info );
-		}
+		}*/
 
 		// Emissive Scroll Pass
 		if ( params[EMISSIVEBLENDENABLED]->GetIntValue() )
@@ -455,20 +455,20 @@ BEGIN_VS_SHADER( VertexLitGeneric, "Help for VertexLitGeneric" )
 
 		// Weapon sheen pass 
 		// only if doing standard as well (don't do it if cloaked)
-		if ( params[SHEENPASSENABLED]->GetIntValue() )
-		{
-			WeaponSheenPassVars_t info;
-			SetupVarsWeaponSheenPass( info );
-			if ( ( pShaderShadow != NULL ) || ( bDrawStandardPass && ShouldDrawMaterialSheen( params, info ) ) )
-			{
-				DrawWeaponSheenPass( this, params, pShaderAPI, pShaderShadow, info, vertexCompression );
-			}
-			else
-			{
-				// Skip this pass!
-				Draw( false );
-			}
-		}
+		//if ( params[SHEENPASSENABLED]->GetIntValue() )
+		//{
+		//	WeaponSheenPassVars_t info;
+		//	SetupVarsWeaponSheenPass( info );
+		//	if ( ( pShaderShadow != NULL ) || ( bDrawStandardPass && ShouldDrawMaterialSheen( params, info ) ) )
+		//	{
+		//		DrawWeaponSheenPass( this, params, pShaderAPI, pShaderShadow, info, vertexCompression );
+		//	}
+		//	else
+		//	{
+		//		// Skip this pass!
+		//		Draw( false );
+		//	}
+		//}
 
 		// Cloak Pass
 		if ( params[CLOAKPASSENABLED]->GetIntValue() )

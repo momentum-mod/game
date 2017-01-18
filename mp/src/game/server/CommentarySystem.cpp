@@ -381,7 +381,7 @@ public:
 		if ( !IsInCommentaryMode() )
 			return;
 
-		if ( pPlayer->IsFakeClient() )
+		if ( !pPlayer || pPlayer->IsFakeClient() )
 			return;
 
 		CPointCommentaryNode *pCurrentNode = GetNodeUnderCrosshair();

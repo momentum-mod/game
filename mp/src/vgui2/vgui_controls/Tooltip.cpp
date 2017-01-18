@@ -152,8 +152,8 @@ void BaseTooltip::SetText(const char *text)
 	{
 		m_Text.RemoveAll();
 	}
-
-	for (unsigned int i = 0; i < strlen(text); i++)
+    const size_t textSize = strlen(text);
+    for (unsigned int i = 0; i < textSize; i++)
 	{
 		m_Text.AddToTail(text[i]);
 	}

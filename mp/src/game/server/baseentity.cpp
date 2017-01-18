@@ -3718,8 +3718,9 @@ void CBaseEntity::ComputeWorldSpaceSurroundingBox( Vector *pMins, Vector *pMaxs 
 //------------------------------------------------------------------------------
 const char *CBaseEntity::GetDebugName(void)
 {
-	if ( this == NULL )
-		return "<<null>>";
+    // if (!this) is always false
+	/*if ( this == NULL )
+		return "<<null>>";*/
 
 	if ( m_iName != NULL_STRING ) 
 	{

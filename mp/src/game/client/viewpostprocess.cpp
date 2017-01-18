@@ -2997,3 +2997,67 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 		}
 	}
 }
+
+// Special thanks to DmitRex for this SSAO implementation!
+static ConVar ssao_blur("ssao_blur", "1", FCVAR_ARCHIVE);
+static ConVar ssao_combine("ssao_combine", "1", FCVAR_ARCHIVE, "1: normal combined view. 0: no framebuffer texture, show only first SSAO pass\n");
+
+void DoSSAO(const CViewSetup &view)
+{
+    CMatRenderContextPtr pRenderContext(materials);
+
+    ITexture *pSrc = materials->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+    int nSrcWidth = pSrc->GetActualWidth();
+    int nSrcHeight = pSrc->GetActualHeight();
+
+    ITexture *pSSAOTex = materials->FindTexture("_rt_SSAO", TEXTURE_GROUP_RENDER_TARGET);
+
+    int nViewportWidth = 0;
+    int nViewportHeight = 0;
+    int nDummy = 0;
+    pRenderContext->GetViewport(nDummy, nDummy, nViewportWidth, nViewportHeight);
+
+    Rect_t DestRect;
+    DestRect.x = 0;
+    DestRect.y = 0;
+    DestRect.width = nSrcWidth;
+    DestRect.height = nSrcHeight;
+
+    pRenderContext->CopyRenderTargetToTextureEx(pSSAOTex, 0, &DestRect, NULL);
+
+    IMaterial *pSSAOCalcMat = materials->FindMaterial("dev/ssao", TEXTURE_GROUP_OTHER, true);
+
+    if (pSSAOCalcMat == NULL)
+        return;
+
+    // ssao consists of 3 separate passes:
+    // 1. ssao calculation (outputs white texture with black shadows)
+    pRenderContext->DrawScreenSpaceRectangle(pSSAOCalcMat, 0, 0, nViewportWidth, nViewportHeight, 0, 0, nSrcWidth - 1,
+                                             nSrcHeight - 1, nSrcWidth, nSrcHeight,
+                                             GetClientWorldEntity()->GetClientRenderable());
+
+    // save this pass so we can apply additional post process effects to current ones
+    pRenderContext->CopyRenderTargetToTextureEx(pSSAOTex, 0, &DestRect, NULL);
+
+    // 2. blurring that texture to avoid grain
+    if (ssao_blur.GetBool())
+    {
+        IMaterial *pSSAOBlurMat = materials->FindMaterial("dev/ssaoblur", TEXTURE_GROUP_OTHER, true);
+
+        pRenderContext->DrawScreenSpaceRectangle(pSSAOBlurMat, 0, 0, nViewportWidth, nViewportHeight, 0, 0,
+                                                 nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight,
+                                                 GetClientWorldEntity()->GetClientRenderable());
+
+        pRenderContext->CopyRenderTargetToTextureEx(pSSAOTex, 0, &DestRect, NULL);
+    }
+
+    // 3. combine what we got with framebuffer texture
+    if (ssao_combine.GetBool())
+    {
+        IMaterial *pSSAOCombineMat = materials->FindMaterial("dev/ssao_combine", TEXTURE_GROUP_OTHER, true);
+
+        pRenderContext->DrawScreenSpaceRectangle(pSSAOCombineMat, 0, 0, nViewportWidth, nViewportHeight, 0, 0,
+                                                 nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight,
+                                                 GetClientWorldEntity()->GetClientRenderable());
+    }
+}

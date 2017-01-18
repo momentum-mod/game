@@ -246,9 +246,9 @@ void CTriggerTimerStart::Spawn()
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
 }
-void CTriggerTimerStart::SetMaxLeaveSpeed(float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
-void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
-void CTriggerTimerStart::SetIsLimitingSpeed(bool bIsLimitSpeed)
+void CTriggerTimerStart::SetMaxLeaveSpeed(const float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
+void CTriggerTimerStart::SetLookAngles(const QAngle &newang) { m_angLook = newang; }
+void CTriggerTimerStart::SetIsLimitingSpeed(const bool bIsLimitSpeed)
 {
     if (bIsLimitSpeed)
     {
@@ -265,7 +265,7 @@ void CTriggerTimerStart::SetIsLimitingSpeed(bool bIsLimitSpeed)
         }
     }
 }
-void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
+void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 {
     if (bHasLook)
     {
@@ -301,8 +301,11 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             int zoneNum = pPlayer->m_RunData.m_iCurrentZone;
 
             // This is needed so we have an ending velocity.
-            pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, pPlayer->GetLocalVelocity().Length(),
-                                                 pPlayer->GetLocalVelocity().Length2D());
+
+            const float endvel = pPlayer->GetLocalVelocity().Length();
+            const float endvel2D = pPlayer->GetLocalVelocity().Length2D();
+
+            pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
 
             // Check to see if we should calculate the timer offset fix
             if (ContainsPosition(pPlayer->GetPrevOrigin()))
@@ -318,8 +321,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                                                          pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
 
             // Ending velocity checks
-            float endvel = pPlayer->GetLocalVelocity().Length();
-            float endvel2D = pPlayer->GetLocalVelocity().Length2D();
+            
 
             float finalVel = endvel;
             float finalVel2D = endvel2D;

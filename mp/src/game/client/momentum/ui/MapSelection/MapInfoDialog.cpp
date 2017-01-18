@@ -191,7 +191,7 @@ void CDialogMapInfo::AddPlayerToList(KeyValues* pPlayerInfo)
     }
 
     char buf[BUFSIZETIME];
-    mom_UTIL->FormatTime(pPlayerInfo->GetFloat("TimeSec"), buf);
+    g_pMomentumUtil->FormatTime(pPlayerInfo->GetFloat("TimeSec"), buf);
     pPlayerInfo->SetString("Time", buf);
 
     m_pPlayerList->AddItem(pPlayerInfo, 0, false, true);

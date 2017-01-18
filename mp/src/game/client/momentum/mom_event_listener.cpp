@@ -6,18 +6,13 @@
 void C_Momentum_EventListener::Init()
 {
     //add listeners for all of our custom events
-    ListenForGameEvent("run_save");
     ListenForGameEvent("run_upload");
     ListenForGameEvent("map_init");
 }
 
 void C_Momentum_EventListener::FireGameEvent(IGameEvent *pEvent)
 {
-    if (!Q_strcmp("run_save", pEvent->GetName()))
-    {
-        m_bTimeDidSave = pEvent->GetBool("run_saved");
-    }
-    else if (!Q_strcmp("run_upload", pEvent->GetName()))
+    if (!Q_strcmp("run_upload", pEvent->GetName()))
     {
         m_bTimeDidUpload = pEvent->GetBool("run_posted");
         Q_strncpy(m_szRunUploadStatus, pEvent->GetString("web_msg"), sizeof(m_szRunUploadStatus));

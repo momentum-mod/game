@@ -224,7 +224,7 @@ void CMomentumPlayer::Spawn()
         break;
     }
     // Reset all bool gameevents
-    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("run_save");
+    IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("replay_save");
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     m_RunData.m_bIsInZone = false;
@@ -234,7 +234,7 @@ void CMomentumPlayer::Spawn()
     ResetRunStats();
     if (runSaveEvent)
     {
-        runSaveEvent->SetBool("run_saved", false);
+        runSaveEvent->SetBool("save", false);
         gameeventmanager->FireEvent(runSaveEvent);
     }
     if (runUploadEvent)
@@ -574,9 +574,9 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
         kvCP->SetString("targetName", c->targetName);
         kvCP->SetString("targetClassName", c->targetClassName);
-        mom_UTIL->KVSaveVector(kvCP, "vel", c->vel);
-        mom_UTIL->KVSaveVector(kvCP, "pos", c->pos);
-        mom_UTIL->KVSaveQAngles(kvCP, "ang", c->ang);
+        g_pMomentumUtil->KVSaveVector(kvCP, "vel", c->vel);
+        g_pMomentumUtil->KVSaveVector(kvCP, "pos", c->pos);
+        g_pMomentumUtil->KVSaveQAngles(kvCP, "ang", c->ang);
         kvCP->SetBool("crouched", c->crouched);
         kvCPs->AddSubKey(kvCP);
     }
@@ -841,16 +841,18 @@ void CMomentumPlayer::LimitSpeedInStartZone()
         // depending on gamemode, limit speed outright when player exceeds punish vel
         ConVarRef gm("mom_gamemode");
         CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
-        bool bhopGameMode = (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL);
-        bool isLimitingSpeed = startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED);
-        if (bhopGameMode && startTrigger && isLimitingSpeed && ((!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS)))
+        // This does not look pretty but saves us a branching. The checks are:
+        // no nullptr, correct gamemode, is limiting leave speed and 
+        //    enough ticks on air have passed
+        if (startTrigger && (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL) && startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED) &&
+            (!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS))
         {
             Vector velocity = GetLocalVelocity();
             float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
-            if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check agaisnt the square of velocity
+            if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
             {
-                velocity = (velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed();
-                SetAbsVelocity(Vector(velocity.x, velocity.y, velocity.z));
+                // New velocity is the unitary form of the current vel vector times the max speed amount
+                SetAbsVelocity((velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed());
             }
         }
     }
@@ -882,14 +884,14 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pCurrentGhost)
     {
-        pCurrentGhost->RemoveSpectator(this);
+        pCurrentGhost->RemoveSpectator();
     }
 
     bool base = BaseClass::SetObserverTarget(target);
 
     if (pGhostToSpectate && base)
     {
-        pGhostToSpectate->AddSpectator(this);
+        pGhostToSpectate->SetSpectator(this);
     }
 
     return base;
@@ -1015,7 +1017,7 @@ void CMomentumPlayer::StopSpectating()
 {
     CMomentumReplayGhostEntity *pGhost = GetReplayEnt();
     if (pGhost)
-        pGhost->RemoveSpectator(this);
+        pGhost->RemoveSpectator();
 
     StopObserverMode();
     m_hObserverTarget.Set(nullptr);

@@ -43,6 +43,7 @@ $Project "Client (Momentum)"
                         $File "momentum\ui\MapSelection\MapSelectorDialog.h"
                         $File "momentum\ui\MapSelection\OnlineMaps.h"
                         $File "momentum\ui\MapSelection\pch_mapselection.h"
+                        $File "momentum\ui\MapSelection\CMapListPanel.h"
                     }
                     $File "momentum\ui\MapSelection\BaseMapsPage.cpp" \
                           "momentum\ui\MapSelection\LocalMaps.cpp" \ 
@@ -50,7 +51,8 @@ $Project "Client (Momentum)"
                           "momentum\ui\MapSelection\MapInfoDialog.cpp" \ 
                           "momentum\ui\MapSelection\MapSelector.cpp" \
                           "momentum\ui\MapSelection\MapSelectorDialog.cpp" \
-                          "momentum\ui\MapSelection\OnlineMaps.cpp"
+                          "momentum\ui\MapSelection\OnlineMaps.cpp" \
+                          "momentum\ui\MapSelection\CMapListPanel.cpp"
                     {
                         $Configuration
                         {
@@ -214,11 +216,27 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\serialization.h"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.h"
-                $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
-                $File "$SRCDIR\game\shared\momentum\util\run_stats.h"
-                $File "$SRCDIR\game\shared\momentum\util\run_stats.cpp"
+                $File "$SRCDIR\game\shared\momentum\run\run_compare.h"
+                $File "$SRCDIR\game\shared\momentum\run\run_stats.h"
+                $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+            }
+            
+            $Folder "Replay"
+            {
+                $File "momentum\c_mom_replay_entity.h"
+                $File "momentum\c_mom_replay_entity.cpp"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.cpp"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.h"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_base.h"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_data.h"
+                
+                $Folder "Versions"
+                {                   
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_v1.cpp"
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_v1.h"
+                }
             }
             
             $Folder "Shader Editor" [$WIN32]
@@ -248,8 +266,6 @@ $Project "Client (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
             $File   "momentum\c_mom_player.cpp"
             $File   "momentum\c_mom_player.h"
-            $File "momentum\c_mom_replay_entity.h"
-            $File "momentum\c_mom_replay_entity.cpp"
             $File   "momentum\c_te_shotgun_shot.cpp"
             $File   "momentum\fx_cs_muzzleflash.cpp"
             $File   "momentum\fx_cs_weaponfx.cpp"
@@ -271,8 +287,8 @@ $Project "Client (Momentum)"
             $File "momentum\worldlight.h"
             $File "momentum\worldlight.cpp"
             
-            $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
-            $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
+            $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.h"
+            $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.cpp"
             
             $Folder "Project-9"
             {

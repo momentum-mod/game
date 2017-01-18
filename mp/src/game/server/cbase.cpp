@@ -1061,13 +1061,13 @@ void CEventQueue::CancelEventOn( CBaseEntity *pTarget, const char *sInputName )
 		return;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-
-	while (pCur != NULL)
+    const size_t inputNameSize = strlen(sInputName);
+	while (pCur != nullptr)
 	{
 		bool bDelete = false;
 		if (pCur->m_pEntTarget == pTarget)
 		{
-			if ( !Q_strncmp( STRING(pCur->m_iTargetInput), sInputName, strlen(sInputName) ) )
+            if (!Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 			{
 				// Found a matching event; delete it from the queue.
 				bDelete = true;
@@ -1096,15 +1096,12 @@ bool CEventQueue::HasEventPending( CBaseEntity *pTarget, const char *sInputName 
 		return false;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-
-	while (pCur != NULL)
+    const size_t inputNameSize = strlen(sInputName);
+	while (pCur != nullptr)
 	{
 		if (pCur->m_pEntTarget == pTarget)
 		{
-			if ( !sInputName )
-				return true;
-
-			if ( !Q_strncmp( STRING(pCur->m_iTargetInput), sInputName, strlen(sInputName) ) )
+            if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 				return true;
 		}
 

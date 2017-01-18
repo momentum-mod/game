@@ -11,25 +11,13 @@
 #pragma once
 #endif
 
-class CBaseMapsPage;
+#define KEYNAME_MAP_NAME "Name"
+#define KEYNAME_MAP_LAYOUT "MapLayout"
+#define KEYNAME_MAP_DIFFICULTY "difficulty"
+#define KEYNAME_MAP_BEST_TIME "time"
+#define KEYNAME_MAP_IMAGE "MapImage"
 
-//-----------------------------------------------------------------------------
-// Purpose: Acts like a regular ListPanel but forwards enter key presses
-// to its outer control.
-//-----------------------------------------------------------------------------
-class CGameListPanel : public vgui::ListPanel
-{
-public:
-    DECLARE_CLASS_SIMPLE(CGameListPanel, vgui::ListPanel);
-
-    CGameListPanel(CBaseMapsPage *pOuter, const char *pName);
-
-    virtual void OnKeyCodeTyped(vgui::KeyCode code);
-
-private:
-    CBaseMapsPage *m_pOuter;
-};
-
+class CMapListPanel;
 
 //-----------------------------------------------------------------------------
 // Purpose: Base property page for all the games lists (internet/favorites/lan/etc.)
@@ -137,7 +125,7 @@ protected:
     // If true, then we automatically select the first item that comes into the games list.
     bool m_bAutoSelectFirstItemInGameList;
 
-    CGameListPanel *m_pGameList;
+    CMapListPanel *m_pMapList;
 
     // command buttons
     vgui::Button *m_pStartMap;
@@ -186,11 +174,9 @@ private:
 
     typedef enum
     {
-        HEADER_COMPLETED =0,
-        HEADER_MAPLAYOUT,
-        //HEADER_STAGEDMAP,
-        HEADER_MAPNAME,
-        HEADER_GAMEMODE,
+        HEADER_MAP_IMAGE = 0,
+        HEADER_MAP_NAME,
+        HEADER_MAP_LAYOUT,
         HEADER_DIFFICULTY,
         HEADER_BESTTIME
     } HEADERS;

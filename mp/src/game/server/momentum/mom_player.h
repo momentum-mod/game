@@ -9,9 +9,9 @@
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
 #include <GameEventListener.h>
-#include <momentum/mom_entity_run_data.h>
+#include <run/mom_entity_run_data.h>
 #include <momentum/util/mom_util.h>
-#include <momentum/util/run_stats.h>
+#include <run/run_stats.h>
 
 class CMomentumReplayGhostEntity;
 
@@ -45,9 +45,9 @@ struct Checkpoint
     {
         Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
         Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));
-        mom_UTIL->KVLoadVector(pKv, "pos", pos);
-        mom_UTIL->KVLoadVector(pKv, "vel", vel);
-        mom_UTIL->KVLoadQAngles(pKv, "ang", ang);
+        g_pMomentumUtil->KVLoadVector(pKv, "pos", pos);
+        g_pMomentumUtil->KVLoadVector(pKv, "vel", vel);
+        g_pMomentumUtil->KVLoadQAngles(pKv, "ang", ang);
         crouched = pKv->GetBool("crouched");
     }
 };

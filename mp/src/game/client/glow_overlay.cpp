@@ -65,7 +65,7 @@ float g_flOverlayRange = cos( DEG2RAD( 40 ) );
 // ----------------------------------------------------------------------------- //
 // ----------------------------------------------------------------------------- //
 
-void Do2DRotation( Vector vIn, Vector &vOut, float flDegrees, int i1, int i2, int i3 )
+void Do2DRotation( const Vector &vIn, Vector &vOut, float flDegrees, int i1, int i2, int i3 )
 {
 	float c, s;
 	SinCos( DEG2RAD( flDegrees ), &s, &c );

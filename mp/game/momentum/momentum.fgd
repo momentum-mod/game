@@ -1,4 +1,36 @@
-            @include "base.fgd"
+@include "base.fgd"
+
+//-------------------------------------------------------------------------
+//
+// PARALLAX CUBEMAP OVERRIDES
+// (Credit Brian Charles)
+//-------------------------------------------------------------------------
+
+// Overrides the base cubemap to allow tying to a parallax_obb brush for parallax cubemaps.
+@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map."
+[
+	cubemapsize(choices) : "Cubemap Size" : 0 =
+	[
+		0 : "Default"
+		1 : "1x1"
+		2 : "2x2"
+		3 : "4x4"
+		4 : "8x8"
+		5 : "16x16"
+		6 : "32x32"
+		7 : "64x64"
+		8 : "128x128"
+		9 : "256x256"
+	]
+	sides(sidelist) : "Brush faces": : "(Optional) Brushes faces to directly attach to the env_cubemap. Press Pick then click on faces in the 3D View to select them. Use CTRL while clicking to add or remove from the selection."
+	parallaxobb(target_destination) : "Cubemap Bounds" : : "(Optional) assigns this cubemap a bounding box for parallax correction (brush entity tied to parallax_obb)."
+]
+
+@SolidClass = parallax_obb
+[
+	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
+]
+
 
 //-------------------------------------------------------------------------
 //
@@ -57,12 +89,6 @@
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport_checkpoint : "Trigger that teleports to the last trigger_momentum_timer_checkpoint." []
 
 @SolidClass base(Trigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." []
-
-@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger that makes iceskating/sliding zone." 
-[
-	Slide(integer) : "Sliding" : 1 : "Should the player sliding/iceskating?"
-	StuckOnGround(integer) : "Stuck on ground" : 1 : "Should the player get stuck to ground while sliding? (when there is slopes for examples, the player will not get in air, but getting stuck directly to ground, useful with gravity removed)"
-]
 
 @SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that only allows for one hop."
 [
@@ -159,6 +185,12 @@
 	]
 ]
 
+@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone." 
+[
+	Slide(integer) : "Sliding" : 1 : "Enabled?"
+	StuckOnGround(integer) : "Stick to ground" : 1 : "Should the player get stick to the ground while sliding? (Useful if no gravity present)"
+]
+
 //-------------------------------------------------------------------------
 //
 // Weapons
@@ -188,3 +220,4 @@
 @PointClass base(Weapon) studio("models/weapons/w_mach_m249para.mdl") = weapon_momentum_lmg : "LMG" []
 @PointClass base(Weapon) studio("models/weapons/w_snip_scout.mdl") = weapon_momentum_sniper : "Sniper" []
 @PointClass base(Weapon) studio("models/weapons/w_eq_fraggrenade.mdl") = weapon_momentum_grenade : "Grenade" []
+

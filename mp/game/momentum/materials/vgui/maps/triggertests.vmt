@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture"  "vgui\maps\triggertests"
+	"$translucent"  1
+	"$ignorez"	1
+}
