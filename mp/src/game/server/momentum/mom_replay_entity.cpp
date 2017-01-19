@@ -203,7 +203,6 @@ void CMomentumReplayGhostEntity::Think(void)
 
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
-  
     // move the ghost
     if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
     {
@@ -213,74 +212,77 @@ void CMomentumReplayGhostEntity::Think(void)
     }
     else
     {
-        //MOM_TODO: Find a better solution for timescaling when it's > 1.0
-        // (commented old, it could be useful, we must find a better solution for this... host_timescale would work, but only with sv_cheats enabled, wich we would to enable maybe?)
-        // It's kinda hard without modifying the engine dll
-
-        // Otherwise proceed to the next step and perform the necessary updates.
         if (m_flTimeScale <= 1.0f)
-            UpdateStep(1);                                                                            
+            UpdateStep(1);
         else
         {
+            // MOM_TODO: IMPORTANT! Remember, this is probably not the proper way of speeding up the replay.
+            // Because it skips the steps that normaly the engine would have "compensated".
+            // So it can results to unsmooth results, but this is probably the best you can get.
+            // Until we can find something else to modify timescale properly.
+            // We do it this way, because SetNextThink / engine doesn't allow faster updates at this timescale.
 
-            int NextStep = static_cast<int>( m_flTimeScale ) + 1;
-            UpdateStep( NextStep );
+            // If we should first update on the next step or not
+            bool bShouldNextStepInstead = false;
 
-           // int NextStep = static_cast<int>( m_flTimeScale ) +1;
+            // Our counter that will be used to know if we must run on the next step or current step
+            static int iTickElapsed = 0;
 
-            //// Check our tickrate
-            //int TickRate = static_cast<int>(1.0f / gpGlobals->interval_per_tick);
+            // Calculate our next step
+            int iNextStep = static_cast<int>(m_flTimeScale) + 1;
 
-            //// How many ticks we should speed, if it's 0 then simply run the current one.
-            //int TicksToGoToNextStep =
-            //    static_cast<int>(TickRate * (1.0f - (static_cast<float>(NextStep) - m_flTimeScale)));
+            // Calculate the average of ticks that will be used for the next step or the current one
+            float fTicksAverage = (1.0f - (static_cast<float>(iNextStep) - m_flTimeScale));
 
-            //if (TicksToGoToNextStep <= 0)
-            //    UpdateStep(NextStep - 1);
-            //else
-            //{
-            //    float AverageSpeedUp = static_cast<float>(TicksToGoToNextStep) / static_cast<float>(TickRate);
-            //    // Now we will calculate how many ticks should be updated on the next step or the current one.
+            // If it's null, then we just run the current step
+            if (fTicksAverage == 0.0f)
+            {
+                UpdateStep(iNextStep - 1);
+            }
 
-            //    // Let's choose wich tick we want to set our nextstep
-            //    static int CountMain = 0;
-            //    static int Count = 0;
-            //    static int CountSpeed = 0;
-            //    static bool Reset = false;
+            // Otherwhise if it's 1 we must run the next step
+            else if (fTicksAverage == 1.0f)
+            {
+                UpdateStep(iNextStep);
+            }
 
-            //    if (CountMain < TickRate)
-            //    {
-            //        Count++;
+            // Else, we calculate when we should be on the next step or the current one
+            else
+            {
+                // If the next step that must be runned is higher than the current steps:
+                // We invert roles between current steps and next steps.
+                if (fTicksAverage > 0.5f)
+                {
+                    fTicksAverage = 0.5f - (fTicksAverage - 0.5f);
+                    bShouldNextStepInstead = true;
+                }
 
-            //        int Difference = Count - CountSpeed;
-            //        float fDif = 1.0f / static_cast<float>(Difference);
+                // Actually we don't need to check for the tickrate, we will let engine compensate it.
+                float fInvTicksAverage = 1.0f / fTicksAverage;
 
-            //        if (fDif <= AverageSpeedUp)
-            //        {
-            //            UpdateStep(NextStep);
-            //            CountSpeed++;
-            //            Reset = true;
-            //        }
-            //        else
-            //            UpdateStep(NextStep - 1);
+                // If the ticks elapsed is higher or equal to the ticks calculated we must run the next step or the
+                // current one depending on the average of current and next steps.
+                if (iTickElapsed >= static_cast<int>(fInvTicksAverage + 0.5f))
+                {
+                    // If the average of next steps are higher than current steps, the current step must be called here.
+                    // Otherwhise the next step must be called.
 
-            //        if (Reset)
-            //        {
-            //            Count = 0;
-            //            CountSpeed = 0;
-            //            Reset = false;
-            //        }
+                    UpdateStep(bShouldNextStepInstead ? (iNextStep - 1) : iNextStep);
 
-            //        CountMain++;
-            //    }
-            //    else
-            //    {
-            //        Count = 0;
-            //        CountSpeed = 0;
-            //        CountMain = 0;
-            //        Reset = false;
-            //    }
-            //}
+                    // Reset our elapsed ticks, to know when we will perform a new current step or a new next step.
+                    iTickElapsed = 0;
+                }
+                else
+                {
+                    // If the average of next steps are higher than current steps, the next step must be called here.
+                    // Otherwhise the current step must be called.
+
+                    UpdateStep(bShouldNextStepInstead ? (iNextStep) : (iNextStep - 1));
+
+                    // Wait for the ticks elapsing before we change to our current step or our next step.
+                    iTickElapsed++;
+                }
+            }
         }
 
         if (m_rgSpectators.IsEmpty())
@@ -295,11 +297,7 @@ void CMomentumReplayGhostEntity::Think(void)
     }
     else
     {
-
-        int NextStep = static_cast<int>( m_flTimeScale ) + 1;
-
-        float CalculateSlowMotion = gpGlobals->interval_per_tick  *  ( NextStep - m_flTimeScale );
-        SetNextThink( gpGlobals->curtime + gpGlobals->interval_per_tick + CalculateSlowMotion );
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
 }
 
