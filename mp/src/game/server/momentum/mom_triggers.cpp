@@ -1,10 +1,10 @@
 #include "cbase.h"
 #include "mom_triggers.h"
-#include "mom_timer.h"
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
+#include "mom_timer.h"
 #include "movevars_shared.h"
 #include "tier0/memdbgon.h"
 
@@ -74,7 +74,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         // Timer won't be running if it's the start trigger
-        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_bHasPracticeMode) 
+        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_bHasPracticeMode)
         {
             // This handles both the start and stage triggers
             g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_START);
@@ -113,11 +113,10 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"), 
-DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") 
-END_DATADESC();
+DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed")
+, DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") END_DATADESC();
 
-CTriggerTimerStart::CTriggerTimerStart() : m_angLook(vec3_angle), m_fBhopLeaveSpeed(250) {};
+CTriggerTimerStart::CTriggerTimerStart() : m_angLook(vec3_angle), m_fBhopLeaveSpeed(250){};
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
@@ -127,7 +126,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
         bool bCheating = pPlayer->GetMoveType() == MOVETYPE_NOCLIP;
 
-        //surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
+        // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
         if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_bHasPracticeMode && !bCheating && !pPlayer->IsUsingCPMenu())
         {
@@ -318,8 +317,8 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             }
 
             // This is needed for the final stage
-            pPlayer->m_RunStats.SetZoneTime(zoneNum,
-                                            g_pMomentumTimer->GetCurrentTime() - pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
+            pPlayer->m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
+                                                         pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
 
             // Ending velocity checks
             
@@ -386,8 +385,8 @@ void CTriggerTimerStop::EndTouch(CBaseEntity *pOther)
     int lastZoneNumber = -1;
     if (pMomPlayer)
     {
-        pMomPlayer->SetLaggedMovementValue(1.0f);     // Reset slow motion
-        pMomPlayer->m_RunData.m_bIsInZone = false;    // Update status
+        pMomPlayer->SetLaggedMovementValue(1.0f);  // Reset slow motion
+        pMomPlayer->m_RunData.m_bIsInZone = false; // Update status
         lastZoneNumber = pMomPlayer->m_RunData.m_iCurrentZone;
     }
     else
@@ -407,8 +406,7 @@ void CTriggerTimerStop::EndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
-DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"), 
-END_DATADESC();
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"), END_DATADESC();
 
 void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 {
@@ -439,9 +437,8 @@ bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEnt
 LINK_ENTITY_TO_CLASS(trigger_momentum_teleport, CTriggerTeleportEnt);
 
 BEGIN_DATADESC(CTriggerTeleportEnt)
-DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop"), 
-DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"),
-END_DATADESC();
+DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop")
+, DEFINE_KEYFIELD(m_bResetAngles, FIELD_BOOLEAN, "resetang"), END_DATADESC();
 
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
@@ -494,13 +491,13 @@ BEGIN_DATADESC(CTriggerOnehop)
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
 END_DATADESC();
 
-CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1) {};
+CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1){};
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
     // Needed for the Think() function of this class
     CBaseMomentumTrigger::StartTouch(pOther);
-    
+
     if (pOther->IsPlayer())
     {
         m_fStartTouchedTime = gpGlobals->realtime;
@@ -531,13 +528,10 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 void CTriggerOnehop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != nullptr && m_fStartTouchedTime > 0)
+    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) && gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
-        if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
-        {
-            SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-            BaseClass::StartTouch(pPlayer);
-        }
+        SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
+        BaseClass::StartTouch(pPlayer);
     }
 }
 //-----------------------------------------------------------------------------------------------
@@ -581,13 +575,10 @@ void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 void CTriggerMultihop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != nullptr && m_fStartTouchedTime > 0)
+    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) && gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
-        if (IsTouching(pPlayer) && (gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds))
-        {
-            SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-            BaseClass::StartTouch(pPlayer);
-        }
+        SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
+        BaseClass::StartTouch(pPlayer);
     }
 }
 //-----------------------------------------------------------------------------------------------
@@ -596,14 +587,12 @@ void CTriggerMultihop::Think()
 LINK_ENTITY_TO_CLASS(trigger_momentum_userinput, CTriggerUserInput);
 
 BEGIN_DATADESC(CTriggerUserInput)
-DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"), 
-DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"),
-END_DATADESC();
+DEFINE_KEYFIELD(m_eKey, FIELD_INTEGER, "lookedkey"), DEFINE_OUTPUT(m_OnKeyPressed, "OnKeyPressed"), END_DATADESC();
 
 void CTriggerUserInput::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer != nullptr && IsTouching(pPlayer) && (pPlayer->m_nButtons & m_ButtonRep))
+    if (pPlayer && IsTouching(pPlayer) && pPlayer->m_nButtons & m_ButtonRep)
     {
         m_OnKeyPressed.FireOutput(pPlayer, this);
     }
@@ -690,39 +679,35 @@ void CTriggerLimitMovement::Think()
 
 void CTriggerLimitMovement::StartTouch(CBaseEntity *pOther)
 {
-    if (pOther && pOther->IsPlayer())
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        if (pPlayer)
+        if (HasSpawnFlags(LIMIT_JUMP))
         {
-            if (HasSpawnFlags(LIMIT_JUMP))
-            {
-                pPlayer->DisableButtons(IN_JUMP);
-            }
-            if (HasSpawnFlags(LIMIT_CROUCH))
-            {
-                pPlayer->DisableButtons(IN_DUCK);
-            }
-            if (HasSpawnFlags(LIMIT_BHOP))
-            {
-                pPlayer->DisableButtons(IN_JUMP);
-            }
+            pPlayer->DisableButtons(IN_JUMP);
+        }
+        if (HasSpawnFlags(LIMIT_CROUCH))
+        {
+            pPlayer->DisableButtons(IN_DUCK);
+        }
+        if (HasSpawnFlags(LIMIT_BHOP))
+        {
+            pPlayer->DisableButtons(IN_JUMP);
         }
     }
+
     BaseClass::StartTouch(pOther);
 }
 
 void CTriggerLimitMovement::EndTouch(CBaseEntity *pOther)
 {
-    if (pOther && pOther->IsPlayer())
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
-        CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-        if (pPlayer)
-        {
-            pPlayer->EnableButtons(IN_JUMP);
-            pPlayer->EnableButtons(IN_DUCK);
-        }
+        pPlayer->EnableButtons(IN_JUMP);
+        pPlayer->EnableButtons(IN_DUCK);
     }
+
     m_BhopTimer.Reset();
     BaseClass::EndTouch(pOther);
 }
@@ -732,10 +717,9 @@ void CTriggerLimitMovement::EndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(func_shootboost, CFuncShootBoost);
 
 BEGIN_DATADESC(CFuncShootBoost)
-DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
-DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
-DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
-END_DATADESC();
+DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir")
+, DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"), DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase"),
+    END_DATADESC();
 
 void CFuncShootBoost::Spawn()
 {
@@ -797,12 +781,11 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
 LINK_ENTITY_TO_CLASS(trigger_momentum_push, CTriggerMomentumPush);
 
 BEGIN_DATADESC(CTriggerMomentumPush)
-DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir"),
-DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
-DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase")
-END_DATADESC();
+DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir")
+, DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
+    DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase") END_DATADESC();
 
-CTriggerMomentumPush::CTriggerMomentumPush() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1) {};
+CTriggerMomentumPush::CTriggerMomentumPush() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1){};
 
 void CTriggerMomentumPush::StartTouch(CBaseEntity *pOther)
 {
@@ -847,4 +830,114 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
         pOther->SetAbsVelocity(finalVel);
     }
 }
+//-----------------------------------------------------------------------------------------------
+
+//--------- CTriggerSlide -------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
+
+BEGIN_DATADESC(CTriggerSlide)
+DEFINE_KEYFIELD(m_bSliding, FIELD_BOOLEAN, "Slide")
+, DEFINE_KEYFIELD(m_bStuck, FIELD_BOOLEAN, "StuckOnGround") END_DATADESC();
+
+
+//The mapper could disable one of these flags with an ouput I guess? I don't know.
+void CTriggerSlide::Think()
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (pPlayer && IsTouching(pPlayer))
+    {
+        if (m_bSliding)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE;
+        }
+        else
+        {
+            pPlayer->m_fSliding &= ~FL_SLIDE;
+        }
+
+        if (m_bStuck)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+        }
+        else
+        {
+            pPlayer->m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
+        }
+    }
+
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    BaseClass::Think();
+}
+
+void CTriggerSlide::StartTouch(CBaseEntity *pOther)
+{
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+    {
+        if (m_bSliding)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE;
+        }
+
+        if (m_bStuck)
+        {
+            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+        }
+    }
+
+    BaseClass::StartTouch(pOther);
+}
+
+void CTriggerSlide::EndTouch(CBaseEntity *pOther)
+{
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+    {
+        pPlayer->m_fSliding = 0;
+    }
+
+    BaseClass::EndTouch(pOther);
+}
+
+/*
+LINK_ENTITY_TO_CLASS(trigger_momentum_slide_start, CTriggerSlideStart);
+LINK_ENTITY_TO_CLASS(trigger_momentum_slide_end, CTriggerSlideEnd);
+
+void CTriggerSlideStart::Think()
+{
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    BaseClass::Think();
+}
+
+void CTriggerSlideEnd::Think()
+{
+    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    BaseClass::Think();
+}
+
+void CTriggerSlideStart::StartTouch(CBaseEntity *pOther)
+{
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+    {
+        pPlayer->m_bSliding = true;
+    }
+    BaseClass::StartTouch(pOther);
+}
+
+void CTriggerSlideEnd::StartTouch(CBaseEntity *pOther)
+{
+    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+    {
+        pPlayer->m_bSliding = false;
+    }
+    BaseClass::EndTouch(pOther);
+}
+                            */
 //-----------------------------------------------------------------------------------------------

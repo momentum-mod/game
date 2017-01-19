@@ -345,4 +345,37 @@ class CTriggerMomentumPush : public CTriggerTeleportEnt
     // Pointer to the destination entity if a teleport is needed
     CBaseEntity *m_Destination;
 };
+
+class CTriggerSlide : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerSlide, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+  public:
+    void Think() OVERRIDE;
+    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+
+  public:
+    bool m_bSliding, m_bStuck;
+};
+
+/*class CTriggerSlideStart : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS( CTriggerSlideStart , CBaseMomentumTrigger );
+
+public:
+    void Think() OVERRIDE;
+    void StartTouch( CBaseEntity *pOther ) OVERRIDE;
+};
+
+class CTriggerSlideEnd : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS( CTriggerSlideEnd , CBaseMomentumTrigger );
+
+public:
+    void Think() OVERRIDE;
+    void StartTouch( CBaseEntity *pOther ) OVERRIDE;
+};         */
+
 #endif // TIMERTRIGGERS_H

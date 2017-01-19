@@ -185,6 +185,12 @@
 	]
 ]
 
+@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone." 
+[
+	Slide(integer) : "Sliding" : 1 : "Enabled?"
+	StuckOnGround(integer) : "Stick to ground" : 1 : "Should the player get stick to the ground while sliding? (Useful if no gravity present)"
+]
+
 //-------------------------------------------------------------------------
 //
 // Weapons
@@ -214,3 +220,4 @@
 @PointClass base(Weapon) studio("models/weapons/w_mach_m249para.mdl") = weapon_momentum_lmg : "LMG" []
 @PointClass base(Weapon) studio("models/weapons/w_snip_scout.mdl") = weapon_momentum_sniper : "Sniper" []
 @PointClass base(Weapon) studio("models/weapons/w_eq_fraggrenade.mdl") = weapon_momentum_grenade : "Grenade" []
+
