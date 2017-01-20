@@ -53,6 +53,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity() :
     // Set networked vars here
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
+    m_iTickElapsed = 1;
     m_RunStats.Init();
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -222,12 +223,6 @@ void CMomentumReplayGhostEntity::Think(void)
             // Until we can find something else to modify timescale properly.
             // We do it this way, because SetNextThink / engine doesn't allow faster updates at this timescale.
 
-            // If we should first update on the next step or not
-            bool bShouldNextStepInstead = false;
-
-            // Our counter that will be used to know if we must run on the next step or current step
-            static int iTickElapsed = 0;
-
             // Calculate our next step
             int iNextStep = static_cast<int>(m_flTimeScale) + 1;
 
@@ -249,6 +244,10 @@ void CMomentumReplayGhostEntity::Think(void)
             // Else, we calculate when we should be on the next step or the current one
             else
             {
+
+                // If we should first update on the next step or not
+                bool bShouldNextStepInstead = false;
+
                 // If the next step that must be runned is higher than the current steps:
                 // We invert roles between current steps and next steps.
                 if (fTicksAverage > 0.5f)
@@ -260,27 +259,49 @@ void CMomentumReplayGhostEntity::Think(void)
                 // Actually we don't need to check for the tickrate, we will let engine compensate it.
                 float fInvTicksAverage = 1.0f / fTicksAverage;
 
-                // If the ticks elapsed is higher or equal to the ticks calculated we must run the next step or the
-                // current one depending on the average of current and next steps.
-                if (iTickElapsed >= static_cast<int>(fInvTicksAverage + 0.5f))
+                int iInvTicksAverage = static_cast<int>(fInvTicksAverage + 0.5f);
+
+                // 1) If the ticks elapsed is higher or equal to the ticks calculated we must run the next step or the
+                // current one depending on the average of current steps and next steps.
+                if (m_iTickElapsed >= iInvTicksAverage)
                 {
+                    //BLOCK1
+
                     // If the average of next steps are higher than current steps, the current step must be called here.
                     // Otherwhise the next step must be called.
 
                     UpdateStep(bShouldNextStepInstead ? (iNextStep - 1) : iNextStep);
 
                     // Reset our elapsed ticks, to know when we will perform a new current step or a new next step.
-                    iTickElapsed = 0;
+                    // At tick 1, because we're increasing only elapsed ticks after the condition of 1) and not before.
+                    // If we don't do this, we will be in late of 1 tick.
+
+                    /* --------------------------------------------------------------------------------------------------------------------------
+                    For example if m_flTimeScale = 3,5 -> then iInvTicksAverage is equal to 2 (1/0.5), and that we're resetting iTickElapsed on 0,
+                    it means that we will wait 2 ticks before being on that BLOCK1.
+                    And we dont want that because, we want the 1/2 of time the code running on both blocks and not 1/3 on BLOCK1 then 2/3 on BLOCK2,
+                    when timescale is 3,5.
+                    If we wait 2 ticks on BLOCK2 and only 1 on BLOCK1, logically, it won't correspond to 3,5 of m_flTimeScale.
+                    So we're doing like this way: iTickElapsed = 1, or iInvTicksAverage = iInvTicksAverage - 1, 
+                    to make it correspond perfectly to timescale.
+                    I hope you understood what I've meant. If not then contact that XutaxKamay ***** and tell him to fix his comments.
+                    ------------------------------------------------------------------------------------------------------------------------------
+                    */
+
+                    m_iTickElapsed = 1;
                 }
                 else
                 {
+
+                    //BLOCK2
+
                     // If the average of next steps are higher than current steps, the next step must be called here.
                     // Otherwhise the current step must be called.
 
                     UpdateStep(bShouldNextStepInstead ? (iNextStep) : (iNextStep - 1));
 
                     // Wait for the ticks elapsing before we change to our current step or our next step.
-                    iTickElapsed++;
+                    m_iTickElapsed++;
                 }
             }
         }
