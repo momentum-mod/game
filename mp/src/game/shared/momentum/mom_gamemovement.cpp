@@ -1051,12 +1051,14 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             return 4;
         }
 
+        // This part can stuck the player on some surf maps, like surf_ski_2_nova
+        // So I've added the rampfix convar here.
         // If we moved some portion of the total distance, then
         //  copy the end position into the pmove.origin and
         //  zero the plane counter.
         if (pm.fraction > 0)
         {
-            if (numbumps > 0 && pm.fraction == 1)
+            if ((numbumps > 0 && pm.fraction == 1) && !sv_ramp_fix.GetBool())
             {
                 // There's a precision issue with terrain tracing that can cause a swept box to successfully trace
                 // when the end position is stuck in the triangle.  Re-run the test with an uswept box to catch that
