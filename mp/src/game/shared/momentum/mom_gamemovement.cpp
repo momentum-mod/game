@@ -996,14 +996,17 @@ void CMomentumGameMovement::StuckGround(void)
     Ray_t ray;
 
     Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
-    vEnd[2] -= 8192.0; // 8192 should be enough
+    vEnd[2] -= 8192.0f; // 8192 should be enough
 
     ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
 
     CTraceFilterSimple tracefilter(player, COLLISION_GROUP_NONE);
     enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
 
-    vAbsOrigin.z -= ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f; // Apply our adjustement + our offset
+    float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
+
+    if (abs(fAdjust) < 4096.0f ) //Check if it's reasonable. If yes then apply our adjustement + our offset
+        vAbsOrigin.z -= fAdjust; 
 
     mv->SetAbsOrigin(vAbsOrigin);
 }
