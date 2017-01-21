@@ -608,11 +608,15 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
     if ((player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
     {
-        mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
+        mv->m_vecVelocity[2] = g_bMovementOptimizations
+                                   ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
+                                   : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
     }
     else
     {
-        mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
+        mv->m_vecVelocity[2] += g_bMovementOptimizations
+                                    ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
+                                    : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
     }
 
     // stamina stuff (scroll/kz gamemode only)
@@ -1348,11 +1352,7 @@ void CMomentumGameMovement::CheckFalling(void)
         bool bAlive = true;
         float fvol = 0.5f;
 
-        if (player->GetWaterLevel() > 0.0f)
-        {
-            // They landed in water.
-        }
-        else
+        if (player->GetWaterLevel() <= 0.0f)
         {
             // Scale it down if we landed on something that's floating...
             if (pGroundEntity->IsFloating())
