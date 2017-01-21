@@ -6543,8 +6543,8 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
             #define SPECGOTO_MAX_VALUE 0xFFFF/2.0f
 
             // This could crash the game somehow if not checked.. Thanks to Nairda.
-            if ( abs( angle.x ) <= 360.0f && abs( angle.y ) <= 360.0f && abs( origin.x ) < SPECGOTO_MAX_VALUE &&
-                 abs( origin.y ) < SPECGOTO_MAX_VALUE && abs( origin.z ) < SPECGOTO_MAX_VALUE )
+            if (abs(angle.x) <= 360.0f && abs(angle.y) <= 360.0f && abs(origin.x) < SPECGOTO_MAX_VALUE &&
+                abs(origin.y) < SPECGOTO_MAX_VALUE && abs(origin.z) < SPECGOTO_MAX_VALUE)
             {
                 JumptoPosition(origin, angle);
             }
