@@ -251,38 +251,41 @@ void SpawnAllEntities( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bAct
 	{
 		VPROF( "MapEntity_ParseAllEntities_Spawn");
 		CBaseEntity *pEntity = pSpawnList[nEntity].m_pEntity;
-
+        if (!pEntity)
+            continue;
 		if ( pSpawnList[nEntity].m_pDeferredParent )
 		{
 			// UNDONE: Promote this up to the root of this function?
 			MDLCACHE_CRITICAL_SECTION();
 			CBaseEntity *pParent = pSpawnList[nEntity].m_pDeferredParent;
-			int iAttachment = -1;
-			CBaseAnimating *pAnim = pParent->GetBaseAnimating();
-			if ( pAnim )
-			{
-				iAttachment = pAnim->LookupAttachment(pSpawnList[nEntity].m_pDeferredParentAttachment);
-			}
-			pEntity->SetParent( pParent, iAttachment );
+            if (pParent)
+            {
+                int iAttachment = -1;
+                CBaseAnimating *pAnim = pParent->GetBaseAnimating();
+                if (pAnim)
+                {
+                    iAttachment = pAnim->LookupAttachment(pSpawnList[nEntity].m_pDeferredParentAttachment);
+                }
+                pEntity->SetParent(pParent, iAttachment);
+            }
 		}
-		if ( pEntity )
-		{
-			if (DispatchSpawn(pEntity) < 0)
-			{
-				for ( int i = nEntity+1; i < nEntities; i++ )
-				{
-					// this is a child object that will be deleted now
-					if ( pSpawnList[i].m_pEntity && pSpawnList[i].m_pEntity->IsMarkedForDeletion() )
-					{
-						pSpawnList[i].m_pEntity = NULL;
-					}
-				}
-				// Spawn failed.
-				gEntList.CleanupDeleteList();
-				// Remove the entity from the spawn list
-				pSpawnList[nEntity].m_pEntity = NULL;
-			}
-		}
+
+        if (DispatchSpawn(pEntity) < 0)
+        {
+            for (int i = nEntity + 1; i < nEntities; i++)
+            {
+                // this is a child object that will be deleted now
+                if (pSpawnList[i].m_pEntity && pSpawnList[i].m_pEntity->IsMarkedForDeletion())
+                {
+                    pSpawnList[i].m_pEntity = NULL;
+                }
+            }
+            // Spawn failed.
+            gEntList.CleanupDeleteList();
+            // Remove the entity from the spawn list
+            pSpawnList[nEntity].m_pEntity = NULL;
+        }
+		
 	}
 
 	if ( bActivateEntities )

@@ -21,6 +21,7 @@ public:
     {
     }
     void PostInit() OVERRIDE;
+    void LevelInitPreEntity() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;

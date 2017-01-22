@@ -7,8 +7,8 @@
 #include "cbase.h"
 #include <momentum/mom_shareddefs.h>
 #include "c_mom_replay_entity.h"
-#include <momentum/mom_entity_run_data.h>
-#include <momentum/util/run_stats.h>
+#include <run/mom_entity_run_data.h>
+#include <run/run_stats.h>
 
 class C_MomentumPlayer : public C_BasePlayer
 {
@@ -53,6 +53,8 @@ public:
     int m_iLastZoom;
     bool m_bDidPlayerBhop;
     bool m_bHasPracticeMode;
+
+    int m_afButtonDisabled;
 
     bool m_bUsingCPMenu;
     int m_iCurrentStepCP;

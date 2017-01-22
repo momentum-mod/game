@@ -53,6 +53,9 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
     m_yaw = flYaw;
     m_linkedent = pLinkedEnt;
     m_onlyxycheck = pCheckOnlyXY;
+    m_limitbhop = false;
+    m_maxleavespeed = 0.0f;
+    m_trigger = nullptr;
 }
 
 void CMapzone::SpawnZone()
@@ -154,7 +157,7 @@ static void saveZonFile(const char* szMapName)
             {
                 subKey->SetFloat("bhopleavespeed", pTrigger->GetMaxLeaveSpeed());
                 subKey->SetBool("limitingspeed", pTrigger->IsLimitingSpeed());
-                if (pTrigger->GetHasLookAngles())
+                if (pTrigger->HasLookAngles())
                     subKey->SetFloat("yaw", pTrigger->GetLookAngles()[YAW] );
             }
         }

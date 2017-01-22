@@ -461,18 +461,21 @@ int CPropData::ParsePropFromBase( CBaseEntity *pProp, const char *pszPropData )
 const char *CPropData::GetRandomChunkModel( const char *pszBreakableSection, int iMaxSize )
 {
 	if ( !m_bPropDataLoaded )
-		return NULL;
+		return nullptr;
 
 	// Find the right section
 	int iCount = m_BreakableChunks.Count();
 	int i;
+
+    const size_t pBreakableSectionSize = strlen(pszBreakableSection);
+
 	for ( i = 0; i < iCount; i++ )
 	{
-		if ( !Q_strncmp( STRING(m_BreakableChunks[i].iszChunkType), pszBreakableSection, strlen(pszBreakableSection) ) )
+        if (!Q_strncmp(STRING(m_BreakableChunks[i].iszChunkType), pszBreakableSection, pBreakableSectionSize))
 			break;
 	}
 	if ( i == iCount )
-		return NULL;
+		return nullptr;
 
 	// Now pick a random one and return it
 	int iRandom;

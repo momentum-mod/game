@@ -54,4 +54,5 @@
 #include "LocalMaps.h"
 #include "OnlineMaps.h"
 #include "MapSelectorDialog.h"
+#include "CMapListPanel.h"
 #include "cbase.h"

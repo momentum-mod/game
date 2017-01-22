@@ -270,7 +270,7 @@ private:
 		ScrollData_t() 
 		{
 			m_bVisible = false;
-			m_nMax = m_nScroll = 0;
+			m_flZoom = m_nMax = m_nScroll = 0;
 		}
 
 		bool operator==( ScrollData_t const &src ) const

@@ -287,14 +287,14 @@ CSysModule *Sys_LoadModule( const char *pModuleName, Sys_Flags flags /* = SYS_NO
 				V_strcpy_safe( szCwd, CommandLine()->GetParm( i + 1 ) );
 			}
 		}
-		if (szCwd[strlen(szCwd) - 1] == '/' || szCwd[strlen(szCwd) - 1] == '\\' )
+        const size_t pCwdSize = strlen(szCwd);
+        if (szCwd[pCwdSize - 1] == '/' || szCwd[pCwdSize - 1] == '\\')
 		{
-			szCwd[strlen(szCwd) - 1] = 0;
+            szCwd[pCwdSize - 1] = 0;
 		}
 
 		char szAbsoluteModuleName[1024];
-		size_t cCwd = strlen( szCwd );
-		if ( strstr( pModuleName, "bin/") == pModuleName || ( szCwd[ cCwd - 1 ] == 'n'  && szCwd[ cCwd - 2 ] == 'i' && szCwd[ cCwd - 3 ] == 'b' )  )
+        if (strstr(pModuleName, "bin/") == pModuleName || (szCwd[pCwdSize - 1] == 'n'  && szCwd[pCwdSize - 2] == 'i' && szCwd[pCwdSize - 3] == 'b'))
 		{
 			// don't make bin/bin path
 			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName );			

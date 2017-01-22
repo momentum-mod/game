@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "baseviewport.h"
 #include "c_mom_replay_entity.h"
 #include "hud_fillablebar.h"
 #include "hud_numericdisplay.h"
@@ -9,14 +10,14 @@
 #include "momentum/util/mom_util.h"
 #include "vphysics_interface.h"
 #include <math.h>
-#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 static ConVar strafesync_draw("mom_strafesync_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                              "Toggles displaying the strafesync data.\n", true, 0, true, 1);
+                              "Toggles displaying the strafesync data. (1 = only timer , 2 = always (except practice mode)) \n",
+                              true, 0, true, 2);
 
 static ConVar strafesync_drawbar("mom_strafesync_drawbar", "1",
                                  FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -54,16 +55,19 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
         {
             if (pPlayer->IsWatchingReplay())
             {
-                //MOM_TODO: Should we have a convar against this?
+                // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
                 shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
             }
             else
             {
-                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
+                                  ((!pPlayer->m_bHasPracticeMode &&
+                                    strafesync_draw.GetInt() == 2) ||
+                                   pPlayer->m_RunData.m_bTimerRunning);
             }
         }
-        return strafesync_draw.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
+        return strafesync_draw.GetInt() && CHudElement::ShouldDraw() && shouldDrawLocal;
     }
 
     void Reset() OVERRIDE
@@ -142,7 +146,7 @@ void CHudStrafeSyncDisplay::OnThink()
         {
             m_flLastStrafeSync != 0
                 ? m_currentColor =
-                      mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                      g_pMomentumUtil->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
                                                       normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
 
@@ -223,13 +227,16 @@ class CHudStrafeSyncBar : public CHudFillableBar
         {
             if (pPlayer->IsWatchingReplay())
             {
-                //MOM_TODO: Should we have a convar against this?
+                // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
                 shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
             }
             else
             {
-                shouldDrawLocal = pPlayer->m_RunData.m_bTimerRunning && !pPlayer->m_RunData.m_bMapFinished;
+                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
+                                  ((!pPlayer->m_bHasPracticeMode &&
+                                    strafesync_draw.GetInt() == 2) ||
+                                   pPlayer->m_RunData.m_bTimerRunning);
             }
         }
         return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -304,7 +311,7 @@ void CHudStrafeSyncBar::OnThink()
         {
             m_flLastStrafeSync != 0
                 ? m_currentColor =
-                      mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                      g_pMomentumUtil->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
                                                       normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
 

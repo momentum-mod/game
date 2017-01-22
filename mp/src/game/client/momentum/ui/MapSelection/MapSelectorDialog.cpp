@@ -9,23 +9,10 @@ CMapSelectorDialog &MapSelectorDialog()
     return *CMapSelectorDialog::GetInstance();
 }
 
-
-// Returns a list of the ports that we hit when looking for 
-void GetMostCommonQueryPorts(CUtlVector<uint16> &ports)
-{
-    for (int i = 0; i <= 5; i++)
-    {
-        ports.AddToTail(27015 + i);
-        ports.AddToTail(26900 + i);
-    }
-
-    ports.AddToTail(4242); //RDKF
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")//"CServerBrowserDialog")
+CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
     SetParent(parent);
     s_InternetDlg = this;
@@ -37,10 +24,10 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
     m_pLocal = new CLocalMaps(this);
     //MOM_TODO: uncomment this: m_pOnline = new COnlineMaps(this);
 
-    SetMinimumSize(640, 384);
-    SetSize(640, 384);
+    SetMinimumSize(680, 400);
+    SetSize(680, 400);
 
-    m_pGameList = (IMapList*) m_pLocal;
+    m_pGameList = static_cast<IMapList*>(m_pLocal);
 
     m_pContextMenu = new CMapContextMenu(this);
 

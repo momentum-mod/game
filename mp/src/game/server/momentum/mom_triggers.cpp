@@ -117,7 +117,7 @@ DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
 DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") 
 END_DATADESC();
 
-CTriggerTimerStart::CTriggerTimerStart() : m_angLook(QAngle(0, 0, 0)), m_fBhopLeaveSpeed(250), m_fPunishSpeed(200) {};
+CTriggerTimerStart::CTriggerTimerStart() : m_angLook(vec3_angle), m_fBhopLeaveSpeed(250) {};
 
 void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 {
@@ -158,7 +158,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 pPlayer->m_RunData.m_iStartTick = gpGlobals->tickcount;
             }
         }
-
+        else
+        {
+            // MOM_TODO: Find a better way of doing this
+            // If we can't start the run, play a warning sound
+            pPlayer->EmitSound("Watermelon.Scrape");
+        }
         pPlayer->m_RunData.m_bIsInZone = false;
         pPlayer->m_RunData.m_bMapFinished = false;
     }
@@ -242,10 +247,9 @@ void CTriggerTimerStart::Spawn()
     m_angLook.z = 0.0f; // Reset roll since mappers will never stop ruining everything.
     BaseClass::Spawn();
 }
-void CTriggerTimerStart::SetMaxLeaveSpeed(float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
-void CTriggerTimerStart::SetPunishSpeed(float pPunishSpeed) { m_fPunishSpeed = abs(pPunishSpeed); }
-void CTriggerTimerStart::SetLookAngles(QAngle newang) { m_angLook = newang; }
-void CTriggerTimerStart::SetIsLimitingSpeed(bool bIsLimitSpeed)
+void CTriggerTimerStart::SetMaxLeaveSpeed(const float pBhopLeaveSpeed) { m_fBhopLeaveSpeed = pBhopLeaveSpeed; }
+void CTriggerTimerStart::SetLookAngles(const QAngle &newang) { m_angLook = newang; }
+void CTriggerTimerStart::SetIsLimitingSpeed(const bool bIsLimitSpeed)
 {
     if (bIsLimitSpeed)
     {
@@ -262,7 +266,7 @@ void CTriggerTimerStart::SetIsLimitingSpeed(bool bIsLimitSpeed)
         }
     }
 }
-void CTriggerTimerStart::SetHasLookAngles(bool bHasLook)
+void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 {
     if (bHasLook)
     {
@@ -298,8 +302,11 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             int zoneNum = pPlayer->m_RunData.m_iCurrentZone;
 
             // This is needed so we have an ending velocity.
-            pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, pPlayer->GetLocalVelocity().Length(),
-                                                 pPlayer->GetLocalVelocity().Length2D());
+
+            const float endvel = pPlayer->GetLocalVelocity().Length();
+            const float endvel2D = pPlayer->GetLocalVelocity().Length2D();
+
+            pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
 
             // Check to see if we should calculate the timer offset fix
             if (ContainsPosition(pPlayer->GetPrevOrigin()))
@@ -315,8 +322,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
                                             g_pMomentumTimer->GetCurrentTime() - pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
 
             // Ending velocity checks
-            float endvel = pPlayer->GetLocalVelocity().Length();
-            float endvel2D = pPlayer->GetLocalVelocity().Length2D();
+            
 
             float finalVel = endvel;
             float finalVel2D = endvel2D;
@@ -492,18 +498,16 @@ CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
-    SetDestinationEnt(nullptr);
-    BaseClass::StartTouch(pOther);
-    // The above is needed for the Think() function of this class,
-    // it's very HACKHACK but it works
-
+    // Needed for the Think() function of this class
+    CBaseMomentumTrigger::StartTouch(pOther);
+    
     if (pOther->IsPlayer())
     {
         m_fStartTouchedTime = gpGlobals->realtime;
         if (g_pMomentumTimer->FindOnehopOnList(this) != (-1))
         {
             SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-            BaseClass::StartTouch(pOther);
+            BaseClass::StartTouch(pOther); // Does the teleporting
         }
         else
         {
@@ -560,7 +564,7 @@ CTriggerMultihop::CTriggerMultihop() : m_fStartTouchedTime(0.0), m_fMaxHoldSecon
 
 void CTriggerMultihop::StartTouch(CBaseEntity *pOther)
 {
-    BaseClass::StartTouch(pOther);
+    CBaseMomentumTrigger::StartTouch(pOther);
     if (pOther->IsPlayer())
     {
         m_fStartTouchedTime = gpGlobals->realtime;

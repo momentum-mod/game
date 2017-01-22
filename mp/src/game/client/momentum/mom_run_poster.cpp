@@ -17,7 +17,7 @@ void CRunPoster::Init()
 
 void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 {
-    if (!Q_strcmp("replay_save", pEvent->GetName()))
+    if (!Q_strcmp("replay_save", pEvent->GetName()) && pEvent->GetBool("save"))
     {
         char filePath[MAX_PATH];
         const char *filename = pEvent->GetString("filename");

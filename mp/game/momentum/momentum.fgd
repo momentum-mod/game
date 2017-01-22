@@ -1,4 +1,36 @@
-            @include "base.fgd"
+@include "base.fgd"
+
+//-------------------------------------------------------------------------
+//
+// PARALLAX CUBEMAP OVERRIDES
+// (Credit Brian Charles)
+//-------------------------------------------------------------------------
+
+// Overrides the base cubemap to allow tying to a parallax_obb brush for parallax cubemaps.
+@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map."
+[
+	cubemapsize(choices) : "Cubemap Size" : 0 =
+	[
+		0 : "Default"
+		1 : "1x1"
+		2 : "2x2"
+		3 : "4x4"
+		4 : "8x8"
+		5 : "16x16"
+		6 : "32x32"
+		7 : "64x64"
+		8 : "128x128"
+		9 : "256x256"
+	]
+	sides(sidelist) : "Brush faces": : "(Optional) Brushes faces to directly attach to the env_cubemap. Press Pick then click on faces in the 3D View to select them. Use CTRL while clicking to add or remove from the selection."
+	parallaxobb(target_destination) : "Cubemap Bounds" : : "(Optional) assigns this cubemap a bounding box for parallax correction (brush entity tied to parallax_obb)."
+]
+
+@SolidClass = parallax_obb
+[
+	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
+]
+
 
 //-------------------------------------------------------------------------
 //

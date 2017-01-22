@@ -4,6 +4,10 @@
 #include "materialsystem/itexture.h"
 #include "tier0/icommandline.h"
 
+
+static ConVar ssao_enable("ssao_enable", "1", FCVAR_ARCHIVE | FCVAR_REPLICATED);
+
+
 void CDynamicRenderTargets::InitClientRenderTargets(IMaterialSystem *pMaterialSystem,
                                                     IMaterialSystemHardwareConfig *pHardwareConfig)
 {
@@ -19,6 +23,7 @@ void CDynamicRenderTargets::InitDynamicRenderTargets()
 {
     m_MaskGameUITexture.Init(CreateMaskGameUITexture());
     m_DepthBufferTexture.Init(CreateDepthBufferTexture());
+    m_SSAOTexture.Init(CreateSSAOTexture());
 }
 
 void CDynamicRenderTargets::ShutdownClientRenderTargets()
@@ -34,6 +39,7 @@ void CDynamicRenderTargets::ShutdownDynamicRenderTargets()
 {
     m_MaskGameUITexture.Shutdown();
     m_DepthBufferTexture.Shutdown();
+    m_SSAOTexture.Shutdown();
 }
 
 void CDynamicRenderTargets::PreRender() { UpdateDynamicRenderTargets(); }
@@ -64,8 +70,10 @@ Vector2D CDynamicRenderTargets::GetViewport()
 
 ITexture *CDynamicRenderTargets::CreateMaskGameUITexture()
 {
+    Vector2D viewport = GetViewport();
+
     return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2(
-        "_rt_MaskGameUI", GetViewport().x, GetViewport().y, RT_SIZE_FULL_FRAME_BUFFER,
+        "_rt_MaskGameUI", viewport.x, viewport.y, RT_SIZE_FULL_FRAME_BUFFER,
         m_pMaterialSystem->GetBackBufferFormat(), MATERIAL_RT_DEPTH_SHARED, 0, CREATERENDERTARGETFLAGS_HDR);
 }
 
@@ -78,10 +86,25 @@ ITexture *CDynamicRenderTargets::CreateDepthBufferTexture()
     if (textureTF2DepthBuffer)
         flags = textureTF2DepthBuffer->GetFlags();
 
-    return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2("_rt_DepthBuffer", GetViewport().x, GetViewport().y,
+    Vector2D viewport = GetViewport();
+    return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2("_rt_DepthBuffer", viewport.x, viewport.y,
                                                                 RT_SIZE_FULL_FRAME_BUFFER, IMAGE_FORMAT_RGBA32323232F,
                                                                 MATERIAL_RT_DEPTH_NONE, flags, NULL);
 }
+
+
+ITexture* CDynamicRenderTargets::CreateSSAOTexture()
+{
+    ITexture *depthOld = m_pMaterialSystem->FindTexture("_rt_DepthBuffer", TEXTURE_GROUP_RENDER_TARGET);
+    int flags = TEXTUREFLAGS_NOMIP | TEXTUREFLAGS_NOLOD | TEXTUREFLAGS_RENDERTARGET;
+    if (depthOld)
+        flags = depthOld->GetFlags();
+
+    Vector2D viewport = GetViewport();
+    return m_pMaterialSystem->CreateNamedRenderTargetTextureEx2("_rt_SSAO", viewport.x, viewport.y, RT_SIZE_NO_CHANGE, m_pMaterialSystem->GetBackBufferFormat(),
+        MATERIAL_RT_DEPTH_SHARED, flags, 0);
+}
+
 
 static CDynamicRenderTargets g_DynamicRenderTargets;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CDynamicRenderTargets, IClientRenderTargets, CLIENTRENDERTARGETS_INTERFACE_VERSION,

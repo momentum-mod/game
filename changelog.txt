@@ -1,3 +1,44 @@
+0.6.2
+You Got a Purdy Map
+    Saul Rennison's Dynamic RTT Shadows - More accurate shadows cast by world lights
+    Brian Charles' Parallax-Corrected Cubemaps - More accurate reflections for cubemaps on world geometry
+    (Both of these can be found in live examples in the triggertests map!)
+    
+Small Features Added
+    Disabled inputs - The keypress HUD element now shows disabled keys set by triggers
+    Invalid run start - A sound now plays if the run cannot be started (will be expanded upon)
+    Checkpoint saving - Maps save which checkpoint you were on when you end the map
+    mom_punchangle_enable - Landing punchangle has been disabled by default now, can be scaled by this cvar
+    mom_speedometer_colorize 2 - New colorization method suggested by Acta
+    mom_stage_tele - Teleport to the start of a specific stage number (1 = start)
+    showRuler - Shows a menu to measure distance in-game (in units)
+    sv_gravity - Allow players to change gravity in-game
+    sv_tickrate - In-game changes force a reload, allowing replays of different tickrate to be played
+    
+RIP Tim, You Shall Be Missed
+    .tim files are completely removed, in favor of reading replay files
+    (This means all replays prior to this update will be ignored due to a new format)
+    
+Yet to Come
+    Overhauled Map Selector (0.7.0) -- we included a preview of what the main panel will look like!
+    
+Fixes
+    Fixed credits.bsp's invalid textures
+    Fixed crash when running mod in Offline mode on Steam (thanks .Enjoy!)
+    Fixed lots of minute bugs in Linux (fonts, layouts, etc) [more to come!]
+    Fixed bug with main menu buttons animating even when not in focus
+    Fixed sv_tickrate now updating when set by gamemode code
+    Fixed bug with start zone exit velocity
+    Fixed bug with mounted maps not properly loading sounds packed in the map when on a separate drive
+    Fixed bug with checkpoints saving out of order when the player had > 10 checkpoints
+    Fixed bug with timer layout with regards to stage time comparisons
+    Fixed various Valve slip-ups and optimized pristine 2004 code
+    
+    (Under the Hood)
+    Fixed smoothing groups not being applied to brushes (thanks tgnottingham!)
+    Fixed hammer not loading custom shaders (Thanks Biohazard!)
+    
+
 0.6.1
 Slight Annoyance Alleviated
     Added "Do not show again" checkboxes to version/zone warning MessageBoxes
@@ -13,51 +54,3 @@ Fixes
     Fixed spawn searching to prioritize info_player_start over info_player_(counter)terrorist
     Fixed bug with cursor disappearing when net_graph was turned on
     Fixed maps that use detail objects (for real this time)
-
-0.6.0
-New Replay UI
-    Like DemoUI, a window to control playback of Replay files
-    Features include: scrubbable time bar, timescaled playback, frame-by-frame analysis, and much more!
-Checkpoints Overhauled
-    Checkpoint-related commands can be bound to keys now!
-    "mom_checkpoint_*" commands added
-    Checkpoints can be saved to file (toggleable from settings)
-    Checkpoints now save whether you were crouching or standing
-    Added "mom_mark_start" which saves a temporary checkpoint in the start trigger, for use by mom_restart
-    Likewise, "mom_mark_start_clear" clears the aforementioned checkpoint
-Custom Weapons
-    Added custom pistol (mom_weapon_pistol) and shotgun (mom_weapon_shotgun)
-    Added weapon "dropping" which destroys your current weapon
-MessageBoxes for Info
-    Added small (but necessary) boxes of information to help inform you of various things
-Revamped Some UI
-    In-game Leaderboards got a makeover, functionality soon!
-    Momentum Settings panel sees more settings regarding these changes and other requests
-Linux Build
-    Build was fixed to compile and run on Linux (we haven't forgotten you!)
-    Fully supported Linux build planned for Alpha release
-Quality of Life
-    CS:S properly mounts regardless of which drive it's on
-    sv_tickrate, sv_maxvelocity, and sv_airaccelerate are unlocked (temporarily)
-    "Select Map" button now shows up in-game
-    Added a "practice mode safeguard" toggle (mom_practice_safeguard)
-    "mom_restart" now teleports to the spawn spot if a start trigger is not found
-Fixes, Baby
-    Updated ClientScheme and SourceScheme to better fit color scheme of mod
-    Fixed various UI bugs with sizing and location of text and other elements
-    Fixed output timings for entities to use tick-based time (Thanks Asunaya!)
-    Fixed weapon collisions (no more random boosts!)
-    Fixed knife slashes (they show up now!)
-    Fixed crashes when playing the game offline
-    Fixed some memory leaks found throughout Valve's code
-    Fixed bug with player and replay camera popping out of bounds when too close to ceiling
-    Fixed demo view interpolation and possible demo timescale bug
-    Fixed bug where player was stuck for 3 seconds at map start
-    Fixed point_cameras
-    Fixed particles to properly mount
-    Fixed replays showing 0 velocity if they had over maxvelocity
-    Fixed player slowdown in start zone if the player was using checkpoint menu
-    Fixed player_speedmod not setting player speed
-    Fixed offset bug with spectating a replay in chase mode
-    Fixed the mapfinished panel to not prematurely close if player goes out of end trigger
-    Fixed mom_restart not resetting player progress (stored in target name)

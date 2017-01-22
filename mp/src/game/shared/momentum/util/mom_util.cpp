@@ -5,6 +5,7 @@
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "tier0/memdbgon.h"
+#include "run/mom_replay_manager.h"
 
 extern IFileSystem *filesystem;
 
@@ -45,7 +46,6 @@ void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOF
     // Free resources
     CleanupRequest(pCallback, pData);
 }
-
 
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
@@ -172,7 +172,8 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIO
 
 void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
-    if (bIOFailure)
+    // 502 is usually returned if Steam is set to offline mode. Thanks .Enjoy for reporting this one!
+    if (bIOFailure || (pCallback && pCallback->m_eStatusCode == k_EHTTPStatusCode502BadGateway))
         return;
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
@@ -185,43 +186,35 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
     char *pDataPtr = reinterpret_cast<char *>(pData);
     const char separator[2] = ".";
-    CSplitString storedVersion( MOM_CURRENT_VERSION, separator);
+    CSplitString storedVersion(MOM_CURRENT_VERSION, separator);
     CSplitString repoVersion(pDataPtr, separator);
-
-    char versionValue[15];
-    Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
-
-    for (int i = 0; i < 3; i++)
+    // Above check for 502 fixes crash with Steam being offline, but just to be on the safe side, we double check we can get all the version numbers
+    if (repoVersion.Count() >= 3)
     {
-        int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
-        if (repo > local)
+        char versionValue[15];
+        Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
+
+        for (int i = 0; i < 3; i++)
         {
-            changelogpanel->SetVersion(versionValue);
-            GetRemoteChangelog();
-            changelogpanel->Activate();
-            break;
-        }
-        if (repo < local)
-        {
-            // The local version is higher than the repo version, do not show this panel
-            break;
+            int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
+            if (repo > local)
+            {
+                if (developer.GetInt() < 2) // If we're developers, we probably know what version we are at.
+                {
+                    changelogpanel->SetVersion(versionValue);
+                    GetRemoteChangelog();
+                    changelogpanel->Activate();
+                }
+                break;
+            }
+            if (repo < local)
+            {
+                // The local version is higher than the repo version, do not show this panel
+                break;
+            }
         }
     }
-
     CleanupRequest(pCallback, pData);
-}
-
-void MomentumUtil::GenerateBogusComparison(KeyValues *kvOut)
-{
-    // RandomSeed(Plat_FloatTime());
-    for (int i = 1; i < MAX_STAGES; i++)
-    {
-        KeyValues *kvZone = new KeyValues("zone");
-        kvOut->AddSubKey(kvZone);
-    }
-
-    KeyValues *kvTotal = new KeyValues("total");
-    kvOut->AddSubKey(kvTotal);
 }
 
 void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
@@ -250,16 +243,16 @@ void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
 }
 #endif
 
-void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName, bool negativeTime) const
+void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime) const
 {
     // We want the absolute value to format! Negatives (if any) should be added post-format!
-    m_flSecondsTime = abs(m_flSecondsTime);
+    m_flSecondsTime = fabs(m_flSecondsTime);
     char separator = fileName ? '-' : ':'; // MOM_TODO: Think of a better char?
-    const char* negative = negativeTime ? "-" : "";
-    int hours = m_flSecondsTime / (60.0f * 60.0f);
-    int minutes = fmod(m_flSecondsTime / 60.0f, 60.0f);
-    int seconds = fmod(m_flSecondsTime, 60.0f);
-    int millis = fmod(m_flSecondsTime, 1.0f) * 1000.0f;
+    const char *negative = negativeTime ? "-" : "";
+    int hours = static_cast<int>(m_flSecondsTime / (60.0f * 60.0f));
+    int minutes = static_cast<int>(fmod(m_flSecondsTime / 60.0f, 60.0f));
+    int seconds = static_cast<int>(fmod(m_flSecondsTime, 60.0f));
+    int millis = static_cast<int>(fmod(m_flSecondsTime, 1.0f) * 1000.0f);
     int hundredths = millis / 10;
     int tenths = millis / 100;
 
@@ -312,8 +305,8 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
     }
 }
 
-Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor,
-                                          Color decreasecolor) const
+Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
+                                          const Color &decreasecolor) const
 {
     // variation is current velocity minus previous velocity.
     Color pFinalColor = normalcolor;
@@ -343,110 +336,84 @@ Color *MomentumUtil::GetColorFromHex(const char *hexColor)
     return nullptr;
 }
 
-KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, float tickrate, int flags)
+inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
 {
-    if (kvMap && szMapName)
+    if (pCheck)
     {
-        char path[MAX_PATH], mapName[MAX_PATH];
-        Q_snprintf(mapName, MAX_PATH, "%s%s", szMapName, EXT_TIME_FILE);
-        V_ComposeFileName(MAP_FOLDER, mapName, path, MAX_PATH);
-        if (kvMap->LoadFromFile(filesystem, path, "MOD"))
+        if (pCheck->GetRunFlags() == flags && g_pMomentumUtil->FloatEquals(tickrate, pCheck->GetTickInterval()))
         {
-            if (!kvMap->IsEmpty())
+            if (pFastest)
             {
-                CUtlSortVector<KeyValues *, CTimeSortFunc> sortedTimes;
-
-                FOR_EACH_SUBKEY(kvMap, kv)
-                {
-                    int kvflags = kv->GetInt("flags");
-                    float kvrate = kv->GetFloat("rate");
-                    if (kvflags == flags && FloatEquals(kvrate, tickrate))
-                    {
-                        sortedTimes.InsertNoSort(kv);
-                    }
-                }
-                if (!sortedTimes.IsEmpty())
-                {
-                    sortedTimes.RedoSort();
-                    KeyValues *toReturn = kvMap->FindKey(sortedTimes[0]->GetName());
-                    sortedTimes.Purge();
-                    return toReturn;
-                }
+                return pCheck->GetRunTime() < pFastest->GetRunTime();
             }
+            
+            return true;
         }
+    }
+
+    return false;
+}
+
+//!!! NOTE: The value returned here MUST BE DELETED, otherwise you get a memory leak!
+CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate, uint32 flags) const
+{
+    if (szMapName)
+    {
+        char path[MAX_PATH];
+        Q_snprintf(path, MAX_PATH, "%s/%s*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
+        V_FixSlashes(path);
+
+        CMomReplayBase *pFastest = nullptr;
+
+        FileFindHandle_t found;
+        const char *pFoundFile = filesystem->FindFirstEx(path, "MOD", &found);
+        while (pFoundFile)
+        {
+            // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
+            char pReplayPath[MAX_PATH];
+            V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
+            CMomReplayBase *pBase = CMomReplayManager::LoadReplayFile(pReplayPath, false);
+
+            if (CheckReplayB(pFastest, pBase, tickrate, flags))
+            {
+                pFastest = pBase;
+            }
+            else // Not faster, get rid of it
+            {
+                delete pBase;
+            }
+
+            pFoundFile = filesystem->FindNext(found);
+        }
+
+        filesystem->FindClose(found);
+        return pFastest;
     }
     return nullptr;
 }
 
-bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into)
+bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into) const
 {
-    bool toReturn = false;
     if (into && szMapName)
     {
-        KeyValues *kvMap = new KeyValues(szMapName);
-        KeyValues *bestRun = GetBestTime(kvMap, szMapName, tickRate, flags);
+        CMomReplayBase *bestRun = GetBestTime(szMapName, tickRate, flags);
         if (bestRun)
         {
             // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
             // I'm thinking the name could be like "(user): (Time)"
-            FillRunComparison("Personal Best", bestRun, into);
+            FillRunComparison("Personal Best", bestRun->GetRunStats(), into);
+            delete bestRun;
             DevLog("Loaded run comparisons for %s !\n", into->runName);
-            toReturn = true;
+            return true;
         }
-
-        kvMap->deleteThis();
     }
-    return toReturn;
+    return false;
 }
 
-void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, RunCompare_t *into)
+void MomentumUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun, RunCompare_t *into) const
 {
     Q_strcpy(into->runName, compareName);
-
-    FOR_EACH_SUBKEY(kvRun, kv)
-    {
-        // Stages/checkpoints data
-        if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
-        {
-            // Splits
-            into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
-            into->zoneSplits.AddToTail(kv->GetFloat("time"));
-            // Keypress
-            into->zoneJumps.AddToTail(kv->GetInt("num_jumps"));
-            into->zoneStrafes.AddToTail(kv->GetInt("num_strafes"));
-            // Sync
-            into->zoneAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
-            into->zoneAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
-            // Velocity (3D and Horizontal)
-            for (int i = 0; i < 2; i++)
-            {
-                bool horizontalVel = (i == 1);
-                into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneEnterVels[i].AddToTail(kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
-                into->zoneExitVels[i].AddToTail(kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
-            }
-        }
-        // Overall stats
-        else if (!Q_strcmp(kv->GetName(), "total"))
-        {
-            // Keypress
-            into->zoneJumps.AddToHead(kv->GetInt("jumps"));
-            into->zoneStrafes.AddToHead(kv->GetInt("strafes"));
-            // Sync
-            into->zoneAvgSync1.AddToHead(kv->GetFloat("avgsync"));
-            into->zoneAvgSync2.AddToHead(kv->GetFloat("avgsync2"));
-            // Velocity (3D and Horizontal)
-            for (int i = 0; i < 2; i++)
-            {
-                bool horizontalVel = (i == 1);
-                into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneExitVels[i].AddToHead(kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
-                into->zoneEnterVels[i].AddToHead(kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
-            }
-        }
-    }
+    into->runStats = *pRun;
 }
 
 #define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
@@ -461,7 +428,7 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, 
         return;                                                                                                        \
     sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
 
-void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, Vector &toSave)
+void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
@@ -471,7 +438,7 @@ void MomentumUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &ve
     LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
 }
 
-void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave)
+void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
@@ -482,4 +449,4 @@ void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &a
 }
 
 static MomentumUtil s_momentum_util;
-MomentumUtil *mom_UTIL = &s_momentum_util;
+MomentumUtil *g_pMomentumUtil = &s_momentum_util;

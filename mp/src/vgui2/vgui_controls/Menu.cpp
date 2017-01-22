@@ -1157,14 +1157,16 @@ void Menu::Paint()
 		int wide, tall;
 		GetSize (wide, tall);
 		surface()->DrawSetColor(_borderDark);
-		if( IsProportional() )
+        // MOM_TODO: Find out what is supposed to go here
+		/*if( IsProportional() )
 		{
 			surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);	
 		}
 		else
 		{
 			surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);	
-		}
+		}*/
+        surface()->DrawFilledRect(wide - m_pScroller->GetWide(), -1, wide - m_pScroller->GetWide() + 1, tall);
 	}	
 }
 

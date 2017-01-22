@@ -27,9 +27,9 @@
         {
                 "fieldName"     "HudTimer"
                 "xpos"          "c-50"
-                "ypos"          "c+150"
+                "ypos"          "c+140"
                 "wide"          "100"
-                "tall"          "50"
+                "tall"          "55"
                 "visible"       "1"
                 "enabled"       "1"
                 "PaintBackgroundType" "2"
@@ -153,7 +153,7 @@
         "enabled" "1"
         "centerStatus" "1"//If this is 1, the status will be centered above the timer, otherwise the status_xpos will be used
         "status_xpos" "0"
-        "status_ypos" "c+135"//y-pos for the map status 
+        "status_ypos" "c+125"//y-pos for the map status 
         "mapinfo_xpos" "10"//xpos for the map info (author/difficulty/etc)
         "mapinfo_ypos" "10"//ypos for the map info
         "StatusFont" "HudHintTextSmall"//Font for the current map area/status
