@@ -27,7 +27,7 @@ public:
     void ConnectMarks();
     void Reset();
 
-    void DoTrace(bool bFirst);
+    void DoTrace(const bool bFirst);
     void Measure();
 
 private:
