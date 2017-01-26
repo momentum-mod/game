@@ -838,10 +838,10 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
 BEGIN_DATADESC(CTriggerSlide)
 DEFINE_KEYFIELD(m_bSliding, FIELD_BOOLEAN, "Slide")
-, DEFINE_KEYFIELD(m_bStuck, FIELD_BOOLEAN, "StuckOnGround") END_DATADESC();
+, DEFINE_KEYFIELD(m_bStuck, FIELD_BOOLEAN, "StuckOnGround"),
+    DEFINE_KEYFIELD(m_flGravity, FIELD_FLOAT, "Gravity") END_DATADESC();
 
-
-//The mapper could disable one of these flags with an ouput I guess? I don't know.
+// The mapper could disable one of these flags with an ouput I guess? I don't know.
 void CTriggerSlide::Think()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
@@ -864,6 +864,8 @@ void CTriggerSlide::Think()
         {
             pPlayer->m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
         }
+
+        pPlayer->SetGravity(m_flGravity);
     }
 
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
@@ -885,6 +887,9 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         {
             pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
         }
+
+        m_flSavedGravity = pPlayer->GetGravity();
+        pPlayer->SetGravity(m_flGravity);
     }
 
     BaseClass::StartTouch(pOther);
@@ -896,6 +901,7 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
+        pPlayer->SetGravity(m_flSavedGravity);
         pPlayer->m_fSliding = 0;
     }
 

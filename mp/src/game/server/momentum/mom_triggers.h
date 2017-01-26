@@ -358,6 +358,7 @@ class CTriggerSlide : public CBaseMomentumTrigger
 
   public:
     bool m_bSliding, m_bStuck;
+    float m_flGravity,m_flSavedGravity;
 };
 
 /*class CTriggerSlideStart : public CBaseMomentumTrigger
