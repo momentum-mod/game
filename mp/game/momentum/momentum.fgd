@@ -185,10 +185,11 @@
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone." 
+@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working brushes must be placed under the trigger." 
 [
 	Slide(integer) : "Sliding" : 1 : "Enabled?"
 	StuckOnGround(integer) : "Stick to ground" : 1 : "Should the player get stick to the ground while sliding? (Useful if no gravity present)"
+	Gravity(float) : "Gravity" : 0 : "Use this instead of trigger_gravity. This is only set when the player touch the trigger, so once the player leave the trigger, his gravity is reset to its previous value (befores he touches the trigger). This is useful if you want speed/velocity based on strafes only, where slopes doesn't count for it."
 ]
 
 //-------------------------------------------------------------------------
