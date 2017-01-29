@@ -1201,36 +1201,7 @@ void CHLClient::PostInit()
             ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui2.dll from:\n%s\n", modulePath);
         }
     }
-
-	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
-	if (SharedModule)
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (CLIENT)\n");
-
-		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
-
-		shared = appSystemFactory ? static_cast<CShared*>(appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, nullptr)) : NULL;
-		if (shared)
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (CLIENT)\n");
-			
-			shared->LoadedClient = true;
-
-			if (shared->LoadedClient && shared->LoadedServer)
-			{
-				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
-			}
-		}
-		else
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
-		}
-	}
-	else
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
-	}
-#endif
+#endif //GameUI2
 }
 
 //-----------------------------------------------------------------------------
