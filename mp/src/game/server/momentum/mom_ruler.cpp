@@ -63,13 +63,12 @@ void CMOMRulerTool::ConnectMarks()
     // We have to delete m_pBeamConnector here, but I can't seem to do it without triggering a nullptr crash.
     // I think UTIL_Remove is not the best thing here
     // MOM_TODO: Fix commented code
-    /*
     if (m_pBeamConnector)
     {
-        UTIL_Remove(m_pBeamConnector);
+        UTIL_RemoveImmediate(m_pBeamConnector);
+        m_pBeamConnector = nullptr;
     }
-    */
-    
+
     m_pBeamConnector = CBeam::BeamCreate("sprites/laserbeam.vmt", mom_ruler_width.GetFloat());
     m_pBeamConnector->PointsInit(m_pFirstMark->GetAbsOrigin(), m_pSecondMark->GetAbsOrigin());
     m_pBeamConnector->SetColor(115, 80, 255); // MOM_TODO: Potentially make these all customizable?
@@ -89,13 +88,13 @@ void CMOMRulerTool::Reset()
     // the game crashes because...
     // MOM_TODO: Fix
     
-    UTIL_Remove(m_pFirstMark);
-    UTIL_Remove(m_pSecondMark);
-    UTIL_Remove(m_pBeamConnector);
+    UTIL_RemoveImmediate(m_pFirstMark);
+    UTIL_RemoveImmediate(m_pSecondMark);
+    UTIL_RemoveImmediate(m_pBeamConnector);
     
     m_pBeamConnector = nullptr;
-
-    m_pFirstMark = m_pSecondMark = nullptr;
+    m_pFirstMark = nullptr;
+    m_pSecondMark = nullptr;
 
     m_vFirstPoint = vec3_invalid;
     m_vSecondPoint = vec3_invalid;
@@ -117,8 +116,10 @@ void CMOMRulerTool::DoTrace(const bool bFirst)
 
     //CMOMRulerToolMarker *pMarker = bFirst ? m_pFirstMark : m_pSecondMark;
     const Color renderColor = bFirst ? Color(255, 255, 255, 255) : Color(0, 0, 0, 255);
-    // We have checked if the player is looking at something within the max length units of the ruler itself. If so, set the point
-    const Vector vEndPos = tr.endpos;
+    // We have checked if the player is looking at something within the max length units of the ruler itself.
+    // The below allows us to set the point location using pointer magic
+    Vector *pVec = bFirst ? &m_vFirstPoint : &m_vSecondPoint;
+    *pVec = tr.endpos;
     // If we're null, we gotta stop being lazy and make something of ourselves
     if (!(bFirst ? m_pFirstMark : m_pSecondMark))
     {
@@ -133,19 +134,12 @@ void CMOMRulerTool::DoTrace(const bool bFirst)
     // Now we're either created, or were never null in the first place
     if (bFirst ? m_pFirstMark : m_pSecondMark)
     {
-        // MOM_TODO: Fix commented code
-        /*
          if (m_pBeamConnector)
-            UTIL_Remove(m_pBeamConnector);
-        */
-        // Instead of deleting the beam, we siwtch it off (If it's there)
-        if (m_pBeamConnector)
-        {
-            // VALVe has an unique idea of what turning off/on a beam means. Basically, Off is drawn and On is NOT drawn
-            m_pBeamConnector->TurnOn();
-        }
-        (bFirst ? m_pFirstMark : m_pSecondMark)->MoveTo(tr.endpos);
-        DevMsg("%s point set in (%.4f, %.4f, %.4f)\n", bFirst ? "First" : "Second", vEndPos.x, vEndPos.y, vEndPos.z);
+            UTIL_RemoveImmediate(m_pBeamConnector);
+         m_pBeamConnector = nullptr;
+
+        (bFirst ? m_pFirstMark : m_pSecondMark)->MoveTo(*pVec);
+        DevMsg("%s point set in (%.4f, %.4f, %.4f)\n", bFirst ? "First" : "Second", pVec->x, pVec->y, pVec->z);
     }
 }
 
