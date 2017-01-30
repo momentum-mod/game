@@ -18,9 +18,9 @@
 	{
 		"ControlName"		"PropertySheet"
 		"fieldName"		"MapTabs"
-		"xpos"		"1"
+		"xpos"		"5"
 		"ypos"		"24"
-		"wide"		"638"
+		"wide"		"670"
 		"tall"		"338"
 		"autoResize"	"3"
 		"pinCorner"		"0"

@@ -33,10 +33,6 @@
     "zone_exit"//When the player exits the start trigger for the stage
     {
     }
-	"run_save"
-	{
-		"run_saved"	"bool"
-	}
     "run_upload"
     {
         "run_posted" "bool"
@@ -62,6 +58,7 @@
 	"replay_save"
 	{
 		"filename" "string"
+        "save" "bool"
 	}
     "weapon_fire"
     {
@@ -74,5 +71,9 @@
         "x" "float"
         "y" "float"
         "z" "float"
+    }
+    "gravity_change"
+    {
+        "newgravity" "float"
     }
 }

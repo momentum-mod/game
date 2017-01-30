@@ -19,7 +19,7 @@ extern CUtlSymbolTable g_ButtonSoundNames;
 Button_Panel::Button_Panel(vgui::Panel* parent, vgui::Panel* pActionSignalTarget, const char* pCmd) : BaseClass(parent, "", "", pActionSignalTarget, pCmd)
 {
 	Init();
-	m_pCmd = pCmd;
+    Q_strncpy(m_pCmd, pCmd, sizeof(m_pCmd));
 }
 
 void Button_Panel::SetButtonText(const char* text)
@@ -36,10 +36,6 @@ void Button_Panel::Init()
 {
 	vgui::HScheme Scheme = vgui::scheme()->LoadSchemeFromFile("resource2/schemepanel.res", "SchemePanel");
 	SetScheme(Scheme);
-
-	m_pAnimController = new vgui::AnimationController(this);
-	m_pAnimController->SetScheme(Scheme);
-	m_pAnimController->SetProportional(false);
 
 	SetProportional(false);
 	SetPaintBorderEnabled(false);
@@ -122,61 +118,59 @@ void Button_Panel::ApplySchemeSettings(vgui::IScheme* pScheme)
 
 void Button_Panel::Animations()
 {
-	if (m_pAnimController != nullptr)
-		m_pAnimController->UpdateAnimations(GameUI2().GetTime()); // (gpGlobals->realtime);
 
-	if (m_sButtonStateOld != m_sButtonState && m_pAnimController != nullptr)
+	if (m_sButtonStateOld != m_sButtonState)
 	{
 		switch (m_sButtonState)
 		{
 			case Out:
-				m_pAnimController->RunAnimationCommand(this, "m_fWidth", m_fWidthOut, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_fHeight", m_fHeightOut, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cText", m_cTextOut, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOut, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOut ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+				GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthOut, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightOut, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextOut, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOut, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOut ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
 				break;
 
 			case Over:
-				m_pAnimController->RunAnimationCommand(this, "m_fWidth", m_fWidthOver, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_fHeight", m_fHeightOver, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOver, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineOver, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cText", m_cTextOver, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOver, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOver ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthOver, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightOver, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOver, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineOver, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextOver, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOver, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOver ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
 				break;
 
 			case Pressed:
-				m_pAnimController->RunAnimationCommand(this, "m_fWidth", m_fWidthPressed, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_fHeight", m_fHeightPressed, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackground", m_cBackgroundPressed, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlinePressed, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cText", m_cTextPressed, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cDescription", m_cDescriptionPressed, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurPressed ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthPressed, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightPressed, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundPressed, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlinePressed, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextPressed, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionPressed, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurPressed ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
 				break;
 
 			case Released:
-				m_pAnimController->RunAnimationCommand(this, "m_fWidth", m_fWidthReleased, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_fHeight", m_fHeightReleased, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackground", m_cBackgroundReleased, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineReleased, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cText", m_cTextReleased, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cDescription", m_cDescriptionReleased, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurReleased ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthReleased, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightReleased, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundReleased, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineReleased, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextReleased, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionReleased, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurReleased ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
 				break;
 
 			default:
-				m_pAnimController->RunAnimationCommand(this, "m_fWidth", m_fWidthOut, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_fHeight", m_fHeightOut, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cText", m_cTextOut, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOut, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
-				m_pAnimController->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOut ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthOut, 0.0f, m_fAnimationWidth, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightOut, 0.0f, m_fAnimationHeight, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundOutline", m_cBackgroundOutlineOut, 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cText", m_cTextOut, 0.0f, m_fAnimationText, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cDescription", m_cDescriptionOut, 0.0f, m_fAnimationDescription, vgui::AnimationController::INTERPOLATOR_LINEAR);
+                GameUI2().GetAnimationController()->RunAnimationCommand(this, "m_cBackgroundBlurAlpha", m_bBackgroundBlurOut ? Color(255, 255, 255, 255) : Color(0, 0, 0, 0), 0.0f, m_fAnimationBackground, vgui::AnimationController::INTERPOLATOR_LINEAR);
 				break;
 		}
 
@@ -192,14 +186,6 @@ void Button_Panel::OnThink()
 
 	AdditionalCursorCheck();
 	Animations();
-
-	if (IsVisible() == false)
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Panel button is not visible, running all animations to completion...\n");
-
-		if (m_pAnimController != nullptr)
-			m_pAnimController->RunAllAnimationsToCompletion();
-	}
 }
 
 void Button_Panel::DrawButton()
@@ -260,7 +246,8 @@ void Button_Panel::PaintBlurMask()
 {
 	BaseClass::PaintBlurMask();
 
-	DrawButton_Blur();
+    if (GameUI2().IsInBackgroundLevel())
+        DrawButton_Blur();
 }
 
 void Button_Panel::OnCursorExited()

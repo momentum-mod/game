@@ -3,7 +3,7 @@
 #include "cbase.h"
 #include "filesystem.h"
 #include "../mom_shareddefs.h"
-#include "serialization.h"
+#include "util/serialization.h"
 
 #ifdef CLIENT_DLL
 #define CMomRunStats C_MomRunStats
@@ -19,6 +19,7 @@ class CMomRunStats : public ISerializable
 
   public:
     CMomRunStats(uint8 size = MAX_STAGES) { Init(size); }
+    CMomRunStats(CBinaryReader *pReader) { Deserialize(pReader); }
 
     // Note: This needs updating every time the struct is updated!
     virtual void Init(uint8 size = MAX_STAGES)
@@ -48,7 +49,7 @@ class CMomRunStats : public ISerializable
     }
 
     // Note: This needs updating every time the struct is updated!
-    CMomRunStats(CBinaryReader *reader)
+    virtual void Deserialize(CBinaryReader *reader)
     {
         SetTotalZones(reader->ReadUInt8());
 

@@ -146,7 +146,7 @@ void CHudStrafeSyncDisplay::OnThink()
         {
             m_flLastStrafeSync != 0
                 ? m_currentColor =
-                      mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                      g_pMomentumUtil->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
                                                       normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
 
@@ -311,7 +311,7 @@ void CHudStrafeSyncBar::OnThink()
         {
             m_flLastStrafeSync != 0
                 ? m_currentColor =
-                      mom_UTIL->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
+                      g_pMomentumUtil->GetColorFromVariation(m_localStrafeSync - m_flLastStrafeSync, SYNC_COLORIZE_DEADZONE,
                                                       normalColor, increaseColor, decreaseColor)
                 : m_currentColor = normalColor;
 

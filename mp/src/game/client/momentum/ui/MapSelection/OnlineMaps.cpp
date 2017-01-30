@@ -68,7 +68,7 @@ void COnlineMaps::PerformLayout()
 
     if (m_bOfflineMode)
     {
-        m_pGameList->SetEmptyListText("#ServerBrowser_OfflineMode");
+        m_pMapList->SetEmptyListText("#ServerBrowser_OfflineMode");
         m_pStartMap->SetEnabled(false);
         m_pRefreshAll->SetEnabled(false);
         m_pRefreshQuick->SetEnabled(false);
@@ -157,20 +157,20 @@ void COnlineMaps::RefreshComplete(EMatchMakingServerResponse response)
     {
         if (m_bAnyServersRespondedToQuery)
         {
-            m_pGameList->SetEmptyListText(GetStringNoUnfilteredServers());
+            m_pMapList->SetEmptyListText(GetStringNoUnfilteredServers());
         }
         else if (response == eNoServersListedOnMasterServer)
         {
-            m_pGameList->SetEmptyListText(GetStringNoUnfilteredServersOnMaster());
+            m_pMapList->SetEmptyListText(GetStringNoUnfilteredServersOnMaster());
         }
         else
         {
-            m_pGameList->SetEmptyListText(GetStringNoServersResponded());
+            m_pMapList->SetEmptyListText(GetStringNoServersResponded());
         }
     }
     else
     {
-        m_pGameList->SetEmptyListText("#ServerBrowser_MasterServerNotResponsive");
+        m_pMapList->SetEmptyListText("#ServerBrowser_MasterServerNotResponsive");
     }
 
     // perform last sort
@@ -178,7 +178,7 @@ void COnlineMaps::RefreshComplete(EMatchMakingServerResponse response)
     m_fLastSort = Plat_FloatTime();
     if (IsVisible())
     {
-        m_pGameList->SortList();
+        m_pMapList->SortList();
     }
 
     UpdateStatus();
@@ -197,7 +197,7 @@ void COnlineMaps::GetNewMapList()
     m_bAnyServersRetrievedFromMaster = false;
     m_bAnyServersRespondedToQuery = false;
 
-    m_pGameList->DeleteAllItems();
+    m_pMapList->DeleteAllItems();
 }
 
 
@@ -246,7 +246,7 @@ void COnlineMaps::CheckRedoSort(void)
     m_fLastSort = fCurTime;
 
     // Force sort to occur now!
-    m_pGameList->SortList();
+    m_pMapList->SortList();
 }
 
 
@@ -255,14 +255,14 @@ void COnlineMaps::CheckRedoSort(void)
 //-----------------------------------------------------------------------------
 void COnlineMaps::OnOpenContextMenu(int itemID)
 {
-    if (!m_pGameList->GetSelectedItemsCount())
+    if (!m_pMapList->GetSelectedItemsCount())
         return;
 
     // get the server
     //int serverID = m_pGameList->GetItemData(m_pGameList->GetSelectedItem(0))->userData;
 
     // Activate context menu
-    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pGameList);
+    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
     menu->ShowMenu(this, true, true);
 }
 

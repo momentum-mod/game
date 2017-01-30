@@ -6,7 +6,7 @@
 #include "iinput.h"
 #include "in_buttons.h"
 #include "mom_shareddefs.h"
-#include "util/run_compare.h"
+#include "run/run_compare.h"
 #include "vgui_helpers.h"
 
 #include <vgui/ILocalize.h>
@@ -242,7 +242,7 @@ void CHudSpeedMeter::OnThink()
                 {
                     if (m_flLastVelocity != 0)
                     {
-                        m_currentColor = mom_UTIL->GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f,
+                        m_currentColor = g_pMomentumUtil->GetColorFromVariation(abs(vel) - abs(m_flLastVelocity), 2.0f,
                             normalColor, increaseColor, decreaseColor);
                     }
                     else
@@ -289,7 +289,7 @@ void CHudSpeedMeter::OnThink()
             else if (m_flLastJumpVelocity != lastJumpVel)
             {
                 m_SecondaryValueColor =
-                    mom_UTIL->GetColorFromVariation(abs(lastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
+                    g_pMomentumUtil->GetColorFromVariation(abs(lastJumpVel) - abs(m_flLastJumpVelocity), 0.0f,
                                                     normalColor, increaseColor, decreaseColor);
                 m_flLastJumpVelocity = lastJumpVel;
             }

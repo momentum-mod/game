@@ -28,8 +28,12 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 
 void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 {
-    if (throwaway)
+    IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+
+    if (throwaway && replaySavedEvent)
     {
+        replaySavedEvent->SetBool("save", false);
+        gameeventmanager->FireEvent(replaySavedEvent);
         m_pReplayManager->StopRecording();
         return;
     }
@@ -50,7 +54,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     Q_snprintf(runTime, MAX_PATH, "%.3f", g_pMomentumTimer->GetLastRunTime());
     // It's weird.
 
-    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s%s", runDate, runTime, EXT_RECORDING_FILE);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s-%s%s", gpGlobals->mapname.ToCStr(), runDate, runTime, EXT_RECORDING_FILE);
 
     // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
     V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH);
@@ -71,9 +75,10 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_pReplayManager->StopRecording();
     // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
     Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
-    IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
+    
     if (replaySavedEvent)
     {
+        replaySavedEvent->SetBool("save", true);
         replaySavedEvent->SetString("filename", newRecordingName);
         gameeventmanager->FireEvent(replaySavedEvent);
     }

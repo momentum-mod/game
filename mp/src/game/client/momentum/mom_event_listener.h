@@ -1,13 +1,12 @@
 #pragma once
 
 #include "mom_shareddefs.h"
-#include "util/run_stats.h"
+#include "run/run_stats.h"
 
 class C_Momentum_EventListener : public CGameEventListener
 {
 public:
     C_Momentum_EventListener() :
-        m_bTimeDidSave(false),
         m_bTimeDidUpload(false), m_bMapIsLinear(false), m_iMapZoneCount(0)
     { }
 
@@ -15,7 +14,7 @@ public:
 
     void FireGameEvent(IGameEvent* pEvent) OVERRIDE;
 
-    bool m_bTimeDidSave, m_bTimeDidUpload;
+    bool m_bTimeDidUpload;
     bool m_bMapIsLinear;
 
     int m_iMapZoneCount;

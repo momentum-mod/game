@@ -57,13 +57,13 @@ bool MapHasStages(const char* szMap)
         KeyValues *kvMap = new KeyValues(szMap);
         char path[MAX_PATH];
         char fileName[FILENAME_MAX];
-        Q_snprintf(fileName, FILENAME_MAX, "%s%s", szMap, EXT_TIME_FILE);
+        Q_snprintf(fileName, FILENAME_MAX, "%s%s", szMap, EXT_ZONE_FILE);
         V_ComposeFileName(MAP_FOLDER, fileName, path, MAX_PATH);
 
 
         if (kvMap->LoadFromFile(filesystem, path, "MOD"))
         {
-            found = (kvMap->FindKey("zone") != nullptr);
+            found = (kvMap->FindKey("stage") != nullptr);
         }
         kvMap->deleteThis();
     }
@@ -93,18 +93,24 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     m->m_bHasStages = MapHasStages(m->m_szMapName);
 
     //Completed/Best time
-    KeyValues *kvMapWrapper = new KeyValues(m->m_szMapName);
     //MOM_TODO: have the tickrate and run flags as filters, load actual values
     
-    KeyValues *kvMapTime = mom_UTIL->GetBestTime(kvMapWrapper, m->m_szMapName, tickRate);
-    if (kvMapTime)
+    CMomReplayBase *pBestTime = g_pMomentumUtil->GetBestTime(m->m_szMapName, tickRate);
+    if (pBestTime)
     {
         m->m_bCompleted = true;
-        mom_UTIL->FormatTime(Q_atof(kvMapTime->GetName()), m->m_szBestTime);
+        Log("FOUND BEST TIME: %f\n", pBestTime->GetRunTime());
+        g_pMomentumUtil->FormatTime(pBestTime->GetRunTime(), m->m_szBestTime);
     }
-    kvMapWrapper->deleteThis();
 }
 
+// Gross hack needed because scheme()->GetImage still returns an image even if it's null (returns the null texture)
+inline bool ImageExists(const char *pMapName)
+{
+    FileFindHandle_t found;
+    const char *pStr = g_pFullFileSystem->FindFirstEx(VarArgs("materials/vgui/maps/%s.vmt", pMapName), "GAME", &found);
+    return pStr ? true : false;
+}
 
 void CLocalMaps::GetNewMapList()
 {
@@ -126,6 +132,15 @@ void CLocalMaps::GetNewMapList()
         //DevLog("Stripped name: %s\n", m.m_szMapName);
 
         FillMapstruct(&m);
+
+        // Map image
+        if (ImageExists(m.m_szMapName))
+        {
+            DevLog("FOUND IMAGE FOR %s!\n", m.m_szMapName);
+            char imagePath[MAX_PATH];
+            Q_snprintf(imagePath, MAX_PATH, "maps/%s", m.m_szMapName);
+            map.m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(scheme()->GetImage(imagePath, false));
+        }
 
         map.m_mMap = m;
         m_vecMaps.AddToTail(map);
@@ -166,9 +181,9 @@ void CLocalMaps::StartRefresh()
 
         if (removeItem)
         {
-            if (m_pGameList->IsValidItemID(pMap->m_iListID))
+            if (m_pMapList->IsValidItemID(pMap->m_iListID))
             {
-                m_pGameList->RemoveItem(pMap->m_iListID);
+                m_pMapList->RemoveItem(pMap->m_iListID);
                 pMap->m_iListID = GetInvalidMapListID();
             }
             return;
@@ -176,31 +191,30 @@ void CLocalMaps::StartRefresh()
 
         // update UI
         KeyValues *kv;
-        if (m_pGameList->IsValidItemID(pMap->m_iListID))
+        if (m_pMapList->IsValidItemID(pMap->m_iListID))
         {
             // we're updating an existing entry
-            kv = m_pGameList->GetItem(pMap->m_iListID);
+            kv = m_pMapList->GetItem(pMap->m_iListID);
         }
         else
         {
             // new entry
             kv = new KeyValues("Map");
         }
-
-        kv->SetString("name", pMapInfo.m_szMapName);
-        kv->SetInt("MapLayout", ((int)pMapInfo.m_bHasStages) + 2);//+ 2 so the picture sets correctly
-        kv->SetBool("completed", pMapInfo.m_bCompleted);
-        kv->SetInt("difficulty", pMapInfo.m_iDifficulty);
-        kv->SetInt("gamemode", pMapInfo.m_iGameMode);
-        kv->SetString("time", pMapInfo.m_szBestTime);
-
-        if (!m_pGameList->IsValidItemID(pMap->m_iListID))
+        
+        kv->SetString(KEYNAME_MAP_NAME, pMapInfo.m_szMapName);
+        kv->SetString(KEYNAME_MAP_LAYOUT, pMapInfo.m_bHasStages ? "STAGED" : "LINEAR");
+        kv->SetInt(KEYNAME_MAP_DIFFICULTY, pMapInfo.m_iDifficulty);
+        kv->SetString(KEYNAME_MAP_BEST_TIME, pMapInfo.m_szBestTime);
+        kv->SetInt(KEYNAME_MAP_IMAGE, pMap->m_iMapImageIndex);
+        
+        if (!m_pMapList->IsValidItemID(pMap->m_iListID))
         {
             // new map, add to list
-            pMap->m_iListID = m_pGameList->AddItem(kv, NULL, false, false);
-            if (m_bAutoSelectFirstItemInGameList && m_pGameList->GetItemCount() == 1)
+            pMap->m_iListID = m_pMapList->AddItem(kv, NULL, false, false);
+            if (m_bAutoSelectFirstItemInGameList && m_pMapList->GetItemCount() == 1)
             {
-                m_pGameList->AddSelectedItem(pMap->m_iListID);
+                m_pMapList->AddSelectedItem(pMap->m_iListID);
             }
 
             kv->deleteThis();
@@ -208,8 +222,8 @@ void CLocalMaps::StartRefresh()
         else
         {
             // tell the list that we've changed the data
-            m_pGameList->ApplyItemChanges(pMap->m_iListID);
-            m_pGameList->SetItemVisible(pMap->m_iListID, true);
+            m_pMapList->ApplyItemChanges(pMap->m_iListID);
+            m_pMapList->SetItemVisible(pMap->m_iListID, true);
         }
     }
 }
@@ -227,7 +241,7 @@ void CLocalMaps::ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool
 
 void CLocalMaps::SetEmptyListText()
 {
-    m_pGameList->SetEmptyListText("#MOM_MapSelector_NoMaps");
+    m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 }
 
 //-----------------------------------------------------------------------------
@@ -235,10 +249,10 @@ void CLocalMaps::SetEmptyListText()
 //-----------------------------------------------------------------------------
 void CLocalMaps::OnOpenContextMenu(int row)
 {
-    if (!m_pGameList->GetSelectedItemsCount())
+    if (!m_pMapList->GetSelectedItemsCount())
         return;
 
     // Activate context menu
-    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pGameList);
+    CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
     menu->ShowMenu(this, true, true);
 }

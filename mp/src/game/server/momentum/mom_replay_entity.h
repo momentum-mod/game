@@ -5,9 +5,9 @@
 
 #include "cbase.h"
 #include "in_buttons.h"
-#include "mom_entity_run_data.h"
+#include "run/mom_entity_run_data.h"
 #include "mom_player.h"
-#include "mom_replay_data.h"
+#include "run/mom_replay_data.h"
 #include "mom_replay_system.h"
 #include <GameEventListener.h>
 
@@ -60,13 +60,12 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     const char *GetGhostModel() const { return m_pszModel; }
     void SetRunStats(CMomRunStats *stats) { m_RunStats.CopyFrom(*stats); }
 
-    void AddSpectator(CMomentumPlayer *player)
+    void SetSpectator(CMomentumPlayer *player)
     {
-        if (m_rgSpectators.Find(player) == m_rgSpectators.InvalidIndex())
-            m_rgSpectators.AddToTail(player);
+        m_pPlayerSpectator = player;
     }
 
-    void RemoveSpectator(CMomentumPlayer *player) { m_rgSpectators.FindAndRemove(player); }
+    void RemoveSpectator() { m_pPlayerSpectator = nullptr; }
 
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
     inline void SetRunFlags(uint32 flags) { m_RunData.m_iRunFlags = flags; }
@@ -103,7 +102,8 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     // online mode, where you can play back a ghost and people can watch with you.
     // @Gocnak: I'm not really seeing why though, shouldn't players just download replay files
     // if they want to view them...?
-    CUtlVector<CMomentumPlayer *> m_rgSpectators;
+    //CUtlVector<CMomentumPlayer *> m_rgSpectators;
+    CMomentumPlayer *m_pPlayerSpectator;
 
     CMomReplayBase *m_pPlaybackReplay;
 

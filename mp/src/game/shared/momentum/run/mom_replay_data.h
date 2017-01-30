@@ -2,7 +2,7 @@
 
 #include "cbase.h"
 #include <momentum/util/serialization.h>
-#include <momentum/util/run_stats.h>
+#include <run/run_stats.h>
 
 // A single frame of the replay.
 class CReplayFrame : public ISerializable
@@ -94,6 +94,19 @@ class CReplayHeader : public ISerializable
         writer->WriteUInt32(m_iRunFlags);
         writer->WriteInt64(m_iRunDate);
         writer->WriteInt32(m_iStartDif);
+    }
+
+    virtual CReplayHeader &operator=(const CReplayHeader& other)
+    {
+        Q_strncpy(m_szMapName, other.m_szMapName, sizeof(m_szMapName));
+        Q_strncpy(m_szPlayerName, other.m_szPlayerName, sizeof(m_szPlayerName));
+        m_ulSteamID = other.m_ulSteamID;
+        m_fTickInterval = other.m_fTickInterval;
+        m_fRunTime = other.m_fRunTime;
+        m_iRunFlags = other.m_iRunFlags;
+        m_iRunDate = other.m_iRunDate;
+        m_iStartDif = other.m_iStartDif;
+        return *this;
     }
 
   public:

@@ -2,14 +2,12 @@
 
 #include "cbase.h"
 #include "mom_replay_base.h"
-#include "mom_replay_entity.h"
 
-class CMomReplayV1 :
-    public CMomReplayBase
+class CMomReplayV1 : public CMomReplayBase
 {
 public:
     CMomReplayV1();
-    CMomReplayV1(CBinaryReader* reader);
+    CMomReplayV1(CBinaryReader* reader, bool bFull);
     virtual ~CMomReplayV1() OVERRIDE;
 
 public:
@@ -27,7 +25,7 @@ public:
     virtual void Serialize(CBinaryWriter* writer) OVERRIDE;
 
 private:
-    void Deserialize(CBinaryReader* reader);
+    void Deserialize(CBinaryReader* reader, bool bFull = true);
 
 protected:
     CMomRunStats* m_pRunStats;

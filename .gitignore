@@ -56,8 +56,8 @@ server.dylib.dSYM/
 
 Debug/
 Release/
-Release_mod_hl2/
-Debug_mod_hl2/
+Release_*momentum/
+Debug_*momentum/
 save/
 cmake*/
 
@@ -77,6 +77,11 @@ voice_ban.dt
 # Momentum
 *.zon
 *.momrec
+game_shader_dx9.dll
+game_shader_dx9.so
+game_shader_dx9.so.dbg
+game_shader_dx9_srv.so
+game_shader_dx9_srv.so.dbg
 gameui2.dll
 gameui2.so
 gameui2.so.dbg

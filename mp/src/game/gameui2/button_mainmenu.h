@@ -68,7 +68,6 @@ class Button_MainMenu : public Button2D
   private:
     ButtonState m_sButtonState;
     ButtonState m_sButtonStateOld;
-    vgui::AnimationController *m_pAnimController;
     char m_pCmd[256];
     wchar_t *m_ButtonText;
     wchar_t *m_ButtonDescription;
