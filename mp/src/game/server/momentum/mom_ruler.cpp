@@ -60,9 +60,7 @@ void CMOMRulerTool::ConnectMarks()
     if (!m_pFirstMark || !m_pSecondMark) return; // If we can't attach to anything, simply return.
     // Create a laser that will signal that both points are connected
 
-    // We have to delete m_pBeamConnector here, but I can't seem to do it without triggering a nullptr crash.
-    // I think UTIL_Remove is not the best thing here
-    // MOM_TODO: Fix commented code
+    // We have to delete m_pBeamConnector here if it's still alive
     if (m_pBeamConnector)
     {
         UTIL_RemoveImmediate(m_pBeamConnector);
@@ -84,10 +82,6 @@ void CMOMRulerTool::ConnectMarks()
 void CMOMRulerTool::Reset()
 {
     // We reset to our default state
-    // Removing the 3 class components here makes it so if showRuler is used again in a short period of time,
-    // the game crashes because...
-    // MOM_TODO: Fix
-    
     UTIL_RemoveImmediate(m_pFirstMark);
     UTIL_RemoveImmediate(m_pSecondMark);
     UTIL_RemoveImmediate(m_pBeamConnector);
@@ -114,31 +108,32 @@ void CMOMRulerTool::DoTrace(const bool bFirst)
     if (!tr.DidHit())
         return;
 
-    //CMOMRulerToolMarker *pMarker = bFirst ? m_pFirstMark : m_pSecondMark;
     const Color renderColor = bFirst ? Color(255, 255, 255, 255) : Color(0, 0, 0, 255);
     // We have checked if the player is looking at something within the max length units of the ruler itself.
     // The below allows us to set the point location using pointer magic
     Vector *pVec = bFirst ? &m_vFirstPoint : &m_vSecondPoint;
     *pVec = tr.endpos;
+    // Yay no more copy/paste boolean conditionals
+    CMOMRulerToolMarker **pMark = bFirst ? &m_pFirstMark : &m_pSecondMark;
     // If we're null, we gotta stop being lazy and make something of ourselves
-    if (!(bFirst ? m_pFirstMark : m_pSecondMark))
+    if (!*pMark)
     {
-        (bFirst ? m_pFirstMark : m_pSecondMark) = static_cast<CMOMRulerToolMarker *>(CreateEntityByName("mom_ruler_mark"));
-        if (bFirst ? m_pFirstMark : m_pSecondMark)
+        *pMark = static_cast<CMOMRulerToolMarker *>(CreateEntityByName("mom_ruler_mark"));
+        if (*pMark)
         {
-            (bFirst ? m_pFirstMark : m_pSecondMark)->Spawn();
+            (*pMark)->Spawn();
             // To distinguish between each mark, the first one is "whiter", second is "blacker"
-            (bFirst ? m_pFirstMark : m_pSecondMark)->SetRenderColor(renderColor.r(), renderColor.g(), renderColor.b(), renderColor.a());
+            (*pMark)->SetRenderColor(renderColor.r(), renderColor.g(), renderColor.b(), renderColor.a());
         }
     }
     // Now we're either created, or were never null in the first place
-    if (bFirst ? m_pFirstMark : m_pSecondMark)
+    if (*pMark)
     {
          if (m_pBeamConnector)
             UTIL_RemoveImmediate(m_pBeamConnector);
          m_pBeamConnector = nullptr;
 
-        (bFirst ? m_pFirstMark : m_pSecondMark)->MoveTo(*pVec);
+        (*pMark)->MoveTo(*pVec);
         DevMsg("%s point set in (%.4f, %.4f, %.4f)\n", bFirst ? "First" : "Second", pVec->x, pVec->y, pVec->z);
     }
 }
