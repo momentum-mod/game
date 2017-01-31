@@ -1,9 +1,7 @@
 #include "pch_mapselection.h"
+#include "util/jsontokv.h"
 
 using namespace vgui;
-
-// How often to re-sort the server list
-const float MINIMUM_SORT_TIME = 1.5f;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -12,37 +10,8 @@ const float MINIMUM_SORT_TIME = 1.5f;
 //-----------------------------------------------------------------------------
 COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMapsPage(parent, panelName)
 {
-    m_fLastSort = 0.0f;
-    m_bDirty = false;
     m_bRequireUpdate = true;
     m_bOfflineMode = !IsSteamGameServerBrowsingEnabled();
-
-    m_bAnyServersRetrievedFromMaster = false;
-    m_bNoServersListedOnMaster = false;
-    m_bAnyServersRespondedToQuery = false;
-
-    //m_pLocationFilter->DeleteAllItems();
-    KeyValues *kv = new KeyValues("Regions");
-    if (kv->LoadFromFile(g_pFullFileSystem, "servers/Regions.vdf", nullptr))
-    {
-        // iterate the list loading all the servers
-        for (KeyValues *srv = kv->GetFirstSubKey(); srv != nullptr; srv = srv->GetNextKey())
-        {
-            struct regions_s region;
-
-            region.name = srv->GetString("text");
-            region.code = srv->GetInt("code");
-            KeyValues *regionKV = new KeyValues("region", "code", region.code);
-            //m_pLocationFilter->AddItem(region.name.String(), regionKV);
-            regionKV->deleteThis();
-            m_Regions.AddToTail(region);
-        }
-    }
-    else
-    {
-        Assert(!("Could not load file servers/Regions.vdf; server browser will not function."));
-    }
-    kv->deleteThis();
 
     LoadFilterSettings();
 }
@@ -54,6 +23,93 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
 COnlineMaps::~COnlineMaps()
 {
 }
+
+
+void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
+{
+    if (bIOFailure)
+    {
+        RefreshComplete(eNoServerReturn);
+        return;
+    }
+
+    if (pCallback->m_eStatusCode != k_EHTTPStatusCode200OK)
+    {
+        RefreshComplete(eServerBadReturn);
+        return;
+    }
+
+    EMapQueryOutputs returnCode = eSuccess;
+    uint32 size;
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+
+    if (size == 0)
+    {
+        Warning("%s - 0 body size!\n", __FUNCTION__);
+        RefreshComplete(eNoServerReturn);
+        return;
+    }
+
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
+            KeyValues::AutoDelete ad(pResponse);
+            KeyValues *pRuns = pResponse->FindKey("maps");
+
+            if (pRuns && !pRuns->IsEmpty())
+            {
+                FOR_EACH_SUBKEY(pRuns, pRun)
+                {
+                    mapdisplay_t map;
+                    mapstruct_t m;
+                    Q_strcpy(m.m_szMapName, pRun->GetString("map_name"));
+                    m.m_bHasStages = pRun->GetBool("linear");
+                    m.m_iDifficulty = pRun->GetInt("gamemode");
+                    Q_strcpy(m.m_szBestTime, pRun->GetString("mapper_name"));
+                    map.m_mMap = m;
+                    KeyValues *kv = new KeyValues("map");;
+ 
+                    kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
+                    kv->SetString(KEYNAME_MAP_LAYOUT, m.m_bHasStages ? "STAGED" : "LINEAR");
+                    kv->SetInt(KEYNAME_MAP_DIFFICULTY, m.m_iDifficulty);
+                    kv->SetString(KEYNAME_MAP_BEST_TIME, m.m_szBestTime);
+                    kv->SetInt(KEYNAME_MAP_IMAGE, map.m_iMapImageIndex);
+                    map.m_iListID = m_pMapList->AddItem(kv, 0, false, false);
+                    m_vecMaps.AddToTail(map); 
+                }
+            }
+            else
+            {
+                returnCode = eNoMapsReturned;
+            }
+        }
+    }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+        returnCode = eServerBadReturn;
+    }
+
+    // Last but not least, free resources
+    delete[] pData;
+    pData = nullptr;
+    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    RefreshComplete(returnCode);
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -70,8 +126,8 @@ void COnlineMaps::PerformLayout()
     {
         m_pMapList->SetEmptyListText("#ServerBrowser_OfflineMode");
         m_pStartMap->SetEnabled(false);
-        m_pRefreshAll->SetEnabled(false);
-        m_pRefreshQuick->SetEnabled(false);
+        m_pQueryMaps->SetEnabled(false);
+        m_pQueryMapsQuick->SetEnabled(false);
         m_pFilter->SetEnabled(false);
     }
 
@@ -79,11 +135,13 @@ void COnlineMaps::PerformLayout()
     //m_pLocationFilter->SetEnabled(true);
 }
 
+
 //-----------------------------------------------------------------------------
 // Purpose: Activates the page, starts refresh if needed
 //-----------------------------------------------------------------------------
 void COnlineMaps::OnPageShow()
 {
+    GetNewMapList();
 }
 
 
@@ -92,96 +150,7 @@ void COnlineMaps::OnPageShow()
 //-----------------------------------------------------------------------------
 void COnlineMaps::OnTick()
 {
-    if (m_bOfflineMode)
-    {
-        BaseClass::OnTick();
-        return;
-    }
-
     BaseClass::OnTick();
-
-    CheckRedoSort();
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Handles incoming server refresh data
-//			updates the server browser with the refreshed information from the server itself
-//-----------------------------------------------------------------------------
-void COnlineMaps::ServerResponded(int iServer)
-{
-    m_bDirty = true;
-    //BaseClass::ServerResponded(iServer);
-    m_bAnyServersRespondedToQuery = true;
-    m_bAnyServersRetrievedFromMaster = true;
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void COnlineMaps::ServerFailedToRespond(int iServer)
-{
-    /*
-#ifndef NO_STEAM
-    m_bDirty = true;
-    gameserveritem_t *pServer = SteamMatchmakingServers()->GetServerDetails(m_eMatchMakingType, iServer);
-    Assert(pServer);
-
-    if (pServer->m_bHadSuccessfulResponse)
-    {
-        // if it's had a successful response in the past, leave it on
-        ServerResponded(iServer);
-    }
-    else
-    {
-        int iServerMap = m_mapServers.Find(iServer);
-        if (iServerMap != m_mapServers.InvalidIndex())
-            RemoveServer(m_mapServers[iServerMap]);
-        // we've never had a good response from this server, remove it from the list
-        m_iServerRefreshCount++;
-    }
-#endif*/
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Called when server refresh has been completed
-//-----------------------------------------------------------------------------
-void COnlineMaps::RefreshComplete(EMatchMakingServerResponse response)
-{
-    SetRefreshing(false);
-    UpdateFilterSettings();
-
-    if (response != eServerFailedToRespond)
-    {
-        if (m_bAnyServersRespondedToQuery)
-        {
-            m_pMapList->SetEmptyListText(GetStringNoUnfilteredServers());
-        }
-        else if (response == eNoServersListedOnMasterServer)
-        {
-            m_pMapList->SetEmptyListText(GetStringNoUnfilteredServersOnMaster());
-        }
-        else
-        {
-            m_pMapList->SetEmptyListText(GetStringNoServersResponded());
-        }
-    }
-    else
-    {
-        m_pMapList->SetEmptyListText("#ServerBrowser_MasterServerNotResponsive");
-    }
-
-    // perform last sort
-    m_bDirty = false;
-    m_fLastSort = Plat_FloatTime();
-    if (IsVisible())
-    {
-        m_pMapList->SortList();
-    }
-
-    UpdateStatus();
 }
 
 
@@ -190,14 +159,34 @@ void COnlineMaps::RefreshComplete(EMatchMakingServerResponse response)
 //-----------------------------------------------------------------------------
 void COnlineMaps::GetNewMapList()
 {
-    BaseClass::GetNewMapList();
     UpdateStatus();
 
     m_bRequireUpdate = false;
-    m_bAnyServersRetrievedFromMaster = false;
-    m_bAnyServersRespondedToQuery = false;
 
     m_pMapList->DeleteAllItems();
+    m_vecMaps.RemoveAll();
+    StartRefresh();
+}
+
+void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
+{
+    SetRefreshing(false);
+    UpdateFilterSettings();
+    switch (eResponse)
+    {
+        case eNoMapsReturned: 
+            m_pMapList->SetEmptyListText("#ServerBrowser_NoInternetGames"); 
+            break;
+        case eNoServerReturn: 
+        case eServerBadReturn:
+            m_pMapList->SetEmptyListText("#ServerBrowser_MasterServerNotResponsive");
+            break;
+        case eSuccess: 
+        default:
+            break;
+    }
+
+    UpdateStatus();
 }
 
 
@@ -208,45 +197,26 @@ bool COnlineMaps::SupportsItem(IMapList::InterfaceItem_e item)
 {
     switch (item)
     {
-    case FILTERS:
-    case GETNEWLIST:
-        return true;
+        case FILTERS:
+        case GETNEWLIST:
+            return true;
 
-    default:
-        return false;
+        default:
+            return false;
     }
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-void COnlineMaps::CheckRedoSort(void)
+
+void COnlineMaps::StartRefresh()
 {
-    float fCurTime;
-
-    // No changes detected
-    if (!m_bDirty)
-        return;
-
-    fCurTime = Plat_FloatTime();
-    // Not time yet
-    if (fCurTime - m_fLastSort < MINIMUM_SORT_TIME)
-        return;
-
-    // postpone sort if mouse button is down
-    if (input()->IsMouseDown(MOUSE_LEFT) || input()->IsMouseDown(MOUSE_RIGHT))
+    if (steamapicontext && steamapicontext->SteamHTTP())
     {
-        // don't sort for at least another second
-        m_fLastSort = fCurTime - MINIMUM_SORT_TIME + 1.0f;
-        return;
+        SetRefreshing(true);
+        ClearMapList();
+        char szUrl[BUFSIZ];
+        Q_snprintf(szUrl, BUFSIZ, "%s/getmaps/1", MOM_APIDOMAIN);
+        g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbMapsQuery, &COnlineMaps::MapsQueryCallback, this);
     }
-
-    // Reset timer
-    m_bDirty = false;
-    m_fLastSort = fCurTime;
-
-    // Force sort to occur now!
-    m_pMapList->SortList();
 }
 
 
@@ -258,13 +228,11 @@ void COnlineMaps::OnOpenContextMenu(int itemID)
     if (!m_pMapList->GetSelectedItemsCount())
         return;
 
-    // get the server
-    //int serverID = m_pGameList->GetItemData(m_pGameList->GetSelectedItem(0))->userData;
-
     // Activate context menu
     CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
     menu->ShowMenu(this, true, true);
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: refreshes a single server
@@ -274,31 +242,4 @@ void COnlineMaps::OnRefreshServer(int serverID)
     BaseClass::OnRefreshServer(serverID);
 
     MapSelectorDialog().UpdateStatusText("#ServerBrowser_GettingNewServerList");
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: get the region code selected in the ui
-// Output: returns the region code the user wants to filter by
-//-----------------------------------------------------------------------------
-int COnlineMaps::GetRegionCodeToFilter()
-{
-    //KeyValues *kv = m_pLocationFilter->GetActiveItemUserData();
-    //if (kv)
-     //   return kv->GetInt("code");
-    //else
-        return 255;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-bool COnlineMaps::CheckTagFilter(gameserveritem_t &server)
-{
-    // Servers without tags go in the official games, servers with tags go in custom games
-    bool bOfficialServer = !(server.m_szGameTags && server.m_szGameTags[0]);
-    if (!bOfficialServer)
-        return false;
-
-    return true;
 }

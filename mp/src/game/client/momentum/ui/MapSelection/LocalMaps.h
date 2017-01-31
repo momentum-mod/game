@@ -27,7 +27,7 @@ public:
     void ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool bShowFilter);
 
     //Filters based on the filter data
-    virtual void StartRefresh();
+    void StartRefresh() OVERRIDE;
     void GetNewMapList();//called upon loading
 
     virtual void OnMapStart() { BaseClass::OnMapStart(); }
