@@ -38,7 +38,6 @@ public:
     };
 
     void RefreshComplete(EMapQueryOutputs response);
-    MESSAGE_FUNC_INT(OnRefreshServer, "RefreshServer", serverID);
 
     //virtual void LoadFilterSettings() {};//MOM_TODO: make this filter online maps (by name/gametype/difficulty?)
 
@@ -59,6 +58,8 @@ private:
     bool m_bRequireUpdate;	// checks whether we need an update upon opening
 
     bool m_bOfflineMode;
+
+    int m_iCurrentPage;
 };
 
 #endif // INTERNETGAMES_H
