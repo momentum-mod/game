@@ -40,7 +40,7 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
     m_iDifficultyFilter = 0;
     m_bFilterHideCompleted = false;
     m_iMapLayoutFilter = 0;
-    m_iServerRefreshCount = 0;
+    m_iOnlineMapsCount = 0;
 
     m_hFont = NULL;
 
@@ -52,8 +52,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
     // Init UI
     m_pStartMap = new Button(this, "StartMapButton", "#MOM_MapSelector_StartMap");
     m_pStartMap->SetEnabled(false);
-    m_pRefreshAll = new Button(this, "RefreshButton", "#ServerBrowser_Refresh");//Needed for online maps
-    m_pRefreshQuick = new Button(this, "RefreshQuickButton", "#ServerBrowser_RefreshQuick");//Needed for online maps
+    m_pQueryMaps = new Button(this, "RefreshButton", "#ServerBrowser_Refresh");//Needed for online maps
+    m_pQueryMapsQuick = new Button(this, "RefreshQuickButton", "#ServerBrowser_RefreshQuick");//Needed for online maps
     m_pMapList = new CMapListPanel(this, "MapList");
     m_pMapList->SetAllowUserModificationOfColumns(true);
     
@@ -123,36 +123,36 @@ void CBaseMapsPage::PerformLayout()
 
     if (SupportsItem(IMapList::GETNEWLIST))
     {
-        m_pRefreshQuick->SetVisible(true);
-        m_pRefreshAll->SetText("#ServerBrowser_RefreshAll");
+        m_pQueryMapsQuick->SetVisible(true);
+        m_pQueryMaps->SetText("#ServerBrowser_RefreshAll");
     }
     else
     {
-        m_pRefreshQuick->SetVisible(false);
-        m_pRefreshAll->SetVisible(false);//Because local maps won't be searching
+        m_pQueryMapsQuick->SetVisible(false);
+        m_pQueryMaps->SetVisible(false);//Because local maps won't be searching
         //m_pRefreshAll->SetText("#ServerBrowser_Refresh");
     }
 
     if (IsRefreshing())
     {
-        m_pRefreshAll->SetText("#ServerBrowser_StopRefreshingList");
+        m_pQueryMaps->SetText("#ServerBrowser_StopRefreshingList");
     }
 
     if (m_pMapList->GetItemCount() > 0)
     {
-        m_pRefreshQuick->SetEnabled(true);
+        m_pQueryMapsQuick->SetEnabled(true);
     }
     else
     {
-        m_pRefreshQuick->SetEnabled(false);
+        m_pQueryMapsQuick->SetEnabled(false);
     }
     m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
 #ifndef NO_STEAM
     //if (!SteamMatchmakingServers() || !SteamMatchmaking())
     {
-        m_pRefreshQuick->SetEnabled(false);
+        m_pQueryMapsQuick->SetEnabled(false);
         m_pStartMap->SetEnabled(false);
-        m_pRefreshAll->SetEnabled(false);
+        m_pQueryMaps->SetEnabled(false);
         //m_pGameList->SetEmptyListText("#ServerBrowser_SteamRunning");
     }
 #endif
@@ -887,33 +887,33 @@ void CBaseMapsPage::SetRefreshing(bool state)
 
         // clear message in panel
         m_pMapList->SetEmptyListText("");
-        m_pRefreshAll->SetText("#MOM_MapSelector_StopSearching");
-        m_pRefreshAll->SetCommand("stoprefresh");
-        m_pRefreshQuick->SetEnabled(false);
+        m_pQueryMaps->SetText("#MOM_MapSelector_StopSearching");
+        m_pQueryMaps->SetCommand("stoprefresh");
+        m_pQueryMapsQuick->SetEnabled(false);
     }
     else
     {
         MapSelectorDialog().UpdateStatusText("");
         if (SupportsItem(IMapList::GETNEWLIST))
         {
-            m_pRefreshAll->SetText("#MOM_MapSelector_Search");
+            m_pQueryMaps->SetText("#MOM_MapSelector_Search");
         }
         else
         {
             //MOM_TODO: hide the button? This else branch is specifically the LocalMaps one
-            m_pRefreshAll->SetVisible(false);
+            m_pQueryMaps->SetVisible(false);
             //m_pRefreshAll->SetText("#ServerBrowser_Refresh");
         }
-        m_pRefreshAll->SetCommand("GetNewList");
+        m_pQueryMaps->SetCommand("GetNewList");
 
         // 'refresh quick' button is only enabled if there are servers in the list
         if (m_pMapList->GetItemCount() > 0)
         {
-            m_pRefreshQuick->SetEnabled(true);
+            m_pQueryMapsQuick->SetEnabled(true);
         }
         else
         {
-            m_pRefreshQuick->SetEnabled(false);
+            m_pQueryMapsQuick->SetEnabled(false);
         }
     }
 }
@@ -938,7 +938,7 @@ void CBaseMapsPage::OnCommand(const char *command)
         //if (SteamMatchmakingServers())
         //    SteamMatchmakingServers()->RefreshQuery(m_eMatchMakingType);
         SetRefreshing(true);
-        m_iServerRefreshCount = 0;
+        m_iOnlineMapsCount = 0;
 #endif
     }
     else if (!Q_stricmp(command, "GetNewList"))
@@ -1060,47 +1060,10 @@ void CBaseMapsPage::OnRefreshServer(int serverID)
 //-----------------------------------------------------------------------------
 void CBaseMapsPage::StartRefresh()
 {
-    //ClearServerList();
-    //SetRefreshing(true);
-    //MOM_TODO: Update this to request maps from main server
-    /*
-#ifndef NO_STEAM
-    if (!SteamMatchmakingServers())
-    return;
-
-    ClearServerList();
-    MatchMakingKeyValuePair_t *pFilters;
-    int nFilters = GetServerFilters(&pFilters);
-
-    switch (m_eMatchMakingType)
-    {
-    case eFavoritesServer:
-    SteamMatchmakingServers()->RequestFavoritesServerList(GetFilterAppID(), &pFilters, nFilters, this);
-    break;
-    case eHistoryServer:
-    SteamMatchmakingServers()->RequestHistoryServerList(GetFilterAppID(), &pFilters, nFilters, this);
-    break;
-    case eInternetServer:
-    SteamMatchmakingServers()->RequestInternetServerList(GetFilterAppID(), &pFilters, nFilters, this);
-    break;
-    case eSpectatorServer:
-    SteamMatchmakingServers()->RequestSpectatorServerList(GetFilterAppID(), &pFilters, nFilters, this);
-    break;
-    case eFriendsServer:
-    SteamMatchmakingServers()->RequestFriendsServerList(GetFilterAppID(), &pFilters, nFilters, this);
-    break;
-    case eLANServer:
-    SteamMatchmakingServers()->RequestLANServerList(GetFilterAppID(), this);
-    break;
-    default:
-    Assert(!"Unknown server type");
-    break;
-    }
-
+    ClearMapList();
     SetRefreshing(true);
-    #endif
-    */
-    m_iServerRefreshCount = 0;
+    
+    m_iOnlineMapsCount = 0;
 }
 
 
@@ -1110,9 +1073,6 @@ void CBaseMapsPage::StartRefresh()
 void CBaseMapsPage::ClearMapList()
 {
     m_vecMaps.RemoveAll();
-
-    //m_mapServers.RemoveAll();//MOM_TODO: remove this?
-    //m_mapServerIP.RemoveAll();
     m_pMapList->RemoveAll();
 }
 
@@ -1132,7 +1092,7 @@ void CBaseMapsPage::GetNewMapList()
 void CBaseMapsPage::StopRefresh()
 {
     // clear update states
-    m_iServerRefreshCount = 0;
+    m_iOnlineMapsCount = 0;
 #ifndef NO_STEAM
     // Stop the server list refreshing
     //MOM_TODO: implement the following by HTTP request for online maps?

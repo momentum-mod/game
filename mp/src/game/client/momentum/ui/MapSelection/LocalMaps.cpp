@@ -235,7 +235,7 @@ void CLocalMaps::StartRefresh()
 void CLocalMaps::ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool bShowFilter)
 {
     m_pStartMap->SetVisible(bShowConnect);
-    m_pRefreshAll->SetVisible(bShowRefreshAll);
+    m_pQueryMaps->SetVisible(bShowRefreshAll);
     m_pFilter->SetVisible(bShowFilter);
 }
 
