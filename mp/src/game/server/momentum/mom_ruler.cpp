@@ -78,8 +78,7 @@ void CMOMRulerTool::ConnectMarks()
     m_pBeamConnector->OnForDuration(mom_ruler_duration.GetFloat());
         
     // Turn it on if it was turned off
-    if (!m_pBeamConnector->IsOn())
-        m_pBeamConnector->TurnOn();
+    m_pBeamConnector->TurnOn();
 }
 
 void CMOMRulerTool::Reset()
@@ -152,6 +151,7 @@ void CMOMRulerTool::Measure()
             char distString[BUFSIZ];
             Q_snprintf(distString, BUFSIZ, m_szDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
             m_pBeamConnector->EntityText(0, distString, mom_ruler_duration.GetFloat());
+            Msg(distString);
         }
     }
     else
