@@ -60,7 +60,7 @@ public:
 
     virtual void UpdateDerivedLayouts(void);
     //STEAM_CALLBACK(CBaseMapsPage, OnFavoritesMsg, FavoritesListChanged_t, m_CallbackFavoritesMsg);
-    //MOM_TODO: STEAM_CALLBACK for the HTTP requests for maps
+    //MOM_TODO: STEAM_CALLBACK for the HTTPS requests for maps
 protected:
     virtual void OnCommand(const char *command);
     virtual void OnKeyCodePressed(vgui::KeyCode code);
@@ -129,16 +129,14 @@ protected:
 
     // command buttons
     vgui::Button *m_pStartMap;
-    vgui::Button *m_pRefreshAll;//MOM_TODO: change to "m_pSearchMaps"
-    vgui::Button *m_pRefreshQuick;
+    vgui::Button *m_pQueryMaps;
+    vgui::Button *m_pQueryMapsQuick;
     vgui::ToggleButton *m_pFilter;
 
     CUtlVector<mapdisplay_t> m_vecMaps;
 
-    int m_iServerRefreshCount;//MOM_TODO: change this to "maps found online" ?
+    int m_iOnlineMapsCount;
 
-
-protected:
     virtual void CreateFilters();
 
     MESSAGE_FUNC_PTR_CHARPTR(OnTextChanged, "TextChanged", panel, text);
