@@ -11,6 +11,18 @@ struct RunCompare_t;
 class MomentumUtil
 {
   public:
+    void DownloadCallback(HTTPRequestCompleted_t *, bool);
+
+    void DownloadMap(const char *);
+
+    template <class T>
+    void CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t> *callback,
+        typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller);
+
+    bool CreateAndSendHTTPReqWithPost(const char *, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *,
+                                      CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
+
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
 
 #ifdef CLIENT_DLL
     void UpdatePaintDecalScale(float fNewScale);
