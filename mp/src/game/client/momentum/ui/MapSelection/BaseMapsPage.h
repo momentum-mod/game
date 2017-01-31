@@ -16,6 +16,7 @@
 #define KEYNAME_MAP_DIFFICULTY "difficulty"
 #define KEYNAME_MAP_BEST_TIME "time"
 #define KEYNAME_MAP_IMAGE "MapImage"
+#define KEYNAME_MAP_ZONE_COUNT "ZoneCount"
 
 class CMapListPanel;
 

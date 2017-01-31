@@ -13,6 +13,7 @@ struct mapstruct_t
     bool m_bCompleted;//If the player has completed this map or not (read .tim files to set this)
     int m_iDifficulty;//Difficulty of map (Tier 1, 2 etc)
     char m_szBestTime[64];//Best time for the map (MOM_TODO: determine best size for this)
+    int m_iZoneCount;//How many zones do we have? (Checkpoints/Stages)
 
     mapstruct_t()
     {

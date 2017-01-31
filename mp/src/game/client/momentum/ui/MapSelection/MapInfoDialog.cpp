@@ -265,60 +265,72 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
         {
             KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
             KeyValues::AutoDelete ad(pResponse);
-
-            //Difficulty
-            char buffer[32];
-            Q_snprintf(buffer, sizeof(buffer), "Tier %g", pResponse->GetFloat("difficulty"));
-            SetControlString("DifficultyText", buffer);
-
-            V_memset(buffer, 0, sizeof(buffer));
-
-            //Layout
-            bool linear = pResponse->GetBool("linear");
-            
-            if (linear)
+            KeyValues *pMapInfo = pResponse->FindKey("mapinfo");
+            if (pMapInfo)
             {
-                LOCALIZE_TOKEN(linear, "MOM_Linear", buffer);
+                //Difficulty
+                char buffer[32];
+                Q_snprintf(buffer, sizeof(buffer), "Tier %d", pMapInfo->GetInt("difficulty"));
+                SetControlString("DifficultyText", buffer);
+
+                V_memset(buffer, 0, sizeof(buffer));
+
+                //Layout
+                bool linear = pMapInfo->GetBool("linear");
+
+                if (linear)
+                {
+                    LOCALIZE_TOKEN(linear, "MOM_Linear", buffer);
+                }
+                else
+                {
+                    LOCALIZE_TOKEN(staged, "MOM_Staged", buffer);
+                }
+                SetControlString("LayoutText", buffer);
+
+                V_memset(buffer, 0, sizeof(buffer));
+
+                //Zones
+                int zones = static_cast<int>(pMapInfo->GetInt("zones"));
+
+                char locl[BUFSIZELOCL];
+                LOCALIZE_TOKEN(staged, "MOM_AmountZones", locl);
+                Q_snprintf(buffer, sizeof(buffer), locl, zones);
+
+                SetControlString("NumZones", buffer);
+
+                //Author
+
+                SetControlString("AuthorText", pMapInfo->GetString("mapper_nick"));
+
+
+                //Game mode
+                //MOM_TODO: Potentially have this part of the site?
+                int gameMode = static_cast<int>(pMapInfo->GetFloat("gamemode"));
+                const char *gameType;
+                switch (gameMode)
+                {
+                    case MOMGM_SURF:
+                        gameType = "Surf";
+                        break;
+                    case MOMGM_BHOP:
+                        gameType = "Bunnyhop";
+                        break;
+                    default:
+                        gameType = "Unknown";
+                        break;
+                }
+                SetControlString("GamemodeText", gameType);
             }
             else
             {
-                LOCALIZE_TOKEN(staged, "MOM_MapSelector_InfoDialog_Staged", buffer);
+                char locl[BUFSIZELOCL];
+                LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
+                SetControlString("DifficultyText", locl);
+                SetControlString("GamemodeText", locl);
+                SetControlString("AuthorText", locl);
+                SetControlString("LayoutText", locl);
             }
-            SetControlString("LayoutText", buffer);
-
-            V_memset(buffer, 0, sizeof(buffer));
-
-            //Zones
-            int zones = static_cast<int>(pResponse->GetFloat("zones"));
-
-            char locl[BUFSIZELOCL];
-            LOCALIZE_TOKEN(staged, "MOM_AmountZones", locl);
-            Q_snprintf(buffer, sizeof(buffer), locl, zones);
-
-            SetControlString("NumZones", buffer);
-
-            //Author
-
-            SetControlString("AuthorText", pResponse->GetString("submitter"));
-
-
-            //Game mode
-            //MOM_TODO: Potentially have this part of the site?
-            int gameMode = static_cast<int>(pResponse->GetFloat("gamemode"));
-            const char *gameType;
-            switch (gameMode)
-            {
-            case MOMGM_SURF:
-                gameType = "Surf";
-                break;
-            case MOMGM_BHOP:
-                gameType = "Bunnyhop";
-                break;
-            default:
-                gameType = "Unknown";
-                break;
-            }
-            SetControlString("GamemodeText", gameType);
         }
     }
     else
