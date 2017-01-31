@@ -55,28 +55,31 @@ void CMOMRulerTool::PostInit()
     LOCALIZE_TOKEN(distanceFormat, "#MOM_Ruler_Distance", m_szDistanceFormat);
 }
 
+// Create a laser that will signal that both points are connected
 void CMOMRulerTool::ConnectMarks()
 {
     if (!m_pFirstMark || !m_pSecondMark) return; // If we can't attach to anything, simply return.
-    // Create a laser that will signal that both points are connected
-
-    // We have to delete m_pBeamConnector here if it's still alive
-    if (m_pBeamConnector)
+    
+    // If the beam doesn't exist, create it
+    if (!m_pBeamConnector)
     {
-        UTIL_RemoveImmediate(m_pBeamConnector);
-        m_pBeamConnector = nullptr;
+        m_pBeamConnector = CMOMRulerToolBeam::CreateBeam("sprites/laserbeam.vmt", mom_ruler_width.GetFloat());
+        m_pBeamConnector->EntsInit(m_pFirstMark, m_pSecondMark);
+        m_pBeamConnector->SetColor(115, 80, 255); // MOM_TODO: Potentially make these all customizable?
+        m_pBeamConnector->SetBrightness(128);
+        m_pBeamConnector->SetFrameRate(1.0f);
+        m_pBeamConnector->SetFrame(random->RandomInt(0, 2));
     }
 
-    m_pBeamConnector = CBeam::BeamCreate("sprites/laserbeam.vmt", mom_ruler_width.GetFloat());
-    m_pBeamConnector->PointsInit(m_pFirstMark->GetAbsOrigin(), m_pSecondMark->GetAbsOrigin());
-    m_pBeamConnector->SetColor(115, 80, 255); // MOM_TODO: Potentially make these all customizable?
-    m_pBeamConnector->SetBrightness(128);
-    m_pBeamConnector->SetNoise(0.0f);
+    // Set it to use the custom variables (duration, width, etc)
+    m_pBeamConnector->RelinkBeam();
     m_pBeamConnector->SetEndWidth(mom_ruler_width.GetFloat());
     m_pBeamConnector->SetWidth(mom_ruler_width.GetFloat());
-    m_pBeamConnector->LiveForTime(mom_ruler_duration.GetFloat());
-    m_pBeamConnector->SetFrameRate(1.0f);
-    m_pBeamConnector->SetFrame(random->RandomInt(0, 2));
+    m_pBeamConnector->OnForDuration(mom_ruler_duration.GetFloat());
+        
+    // Turn it on if it was turned off
+    if (!m_pBeamConnector->IsOn())
+        m_pBeamConnector->TurnOn();
 }
 
 void CMOMRulerTool::Reset()
@@ -129,10 +132,9 @@ void CMOMRulerTool::DoTrace(const bool bFirst)
     // Now we're either created, or were never null in the first place
     if (*pMark)
     {
-         if (m_pBeamConnector)
-            UTIL_RemoveImmediate(m_pBeamConnector);
-         m_pBeamConnector = nullptr;
-
+        if (m_pBeamConnector && m_pBeamConnector->IsOn())
+            m_pBeamConnector->TurnOff();
+        
         (*pMark)->MoveTo(*pVec);
         DevMsg("%s point set in (%.4f, %.4f, %.4f)\n", bFirst ? "First" : "Second", pVec->x, pVec->y, pVec->z);
     }
