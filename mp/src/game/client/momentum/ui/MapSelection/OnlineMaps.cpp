@@ -12,7 +12,7 @@ COnlineMaps::COnlineMaps(vgui::Panel *parent, const char *panelName) : CBaseMaps
 {
     m_bRequireUpdate = true;
     m_bOfflineMode = !IsSteamGameServerBrowsingEnabled();
-
+    m_iCurrentPage = 0;
     LoadFilterSettings();
 }
 
@@ -76,14 +76,17 @@ void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOF
                     mapdisplay_t map;
                     mapstruct_t m;
                     Q_strcpy(m.m_szMapName, pRun->GetString("map_name"));
-                    m.m_bHasStages = pRun->GetBool("linear");
-                    m.m_iDifficulty = pRun->GetInt("gamemode");
-                    Q_strcpy(m.m_szBestTime, pRun->GetString("mapper_name"));
+                    m.m_bHasStages = !pRun->GetBool("linear");
+                    m.m_iZoneCount = pRun->GetInt("zones");
+                    m.m_iDifficulty = pRun->GetInt("difficulty");
+                    m.m_iGameMode = pRun->GetInt("gamemode");
+                    Q_strcpy(m.m_szBestTime, pRun->GetString("zones"));
                     map.m_mMap = m;
-                    KeyValues *kv = new KeyValues("map");;
+                    KeyValues *kv = new KeyValues("map");
  
                     kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
                     kv->SetString(KEYNAME_MAP_LAYOUT, m.m_bHasStages ? "STAGED" : "LINEAR");
+                    kv->SetInt(KEYNAME_MAP_ZONE_COUNT, m.m_iZoneCount);
                     kv->SetInt(KEYNAME_MAP_DIFFICULTY, m.m_iDifficulty);
                     kv->SetString(KEYNAME_MAP_BEST_TIME, m.m_szBestTime);
                     kv->SetInt(KEYNAME_MAP_IMAGE, map.m_iMapImageIndex);
@@ -165,6 +168,7 @@ void COnlineMaps::GetNewMapList()
 
     m_pMapList->DeleteAllItems();
     m_vecMaps.RemoveAll();
+    m_iCurrentPage = 0;
     StartRefresh();
 }
 
@@ -214,7 +218,7 @@ void COnlineMaps::StartRefresh()
         SetRefreshing(true);
         ClearMapList();
         char szUrl[BUFSIZ];
-        Q_snprintf(szUrl, BUFSIZ, "%s/getmaps/1", MOM_APIDOMAIN);
+        Q_snprintf(szUrl, BUFSIZ, "%s/getmaps/2/0/0", MOM_APIDOMAIN);
         g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbMapsQuery, &COnlineMaps::MapsQueryCallback, this);
     }
 }
@@ -231,15 +235,4 @@ void COnlineMaps::OnOpenContextMenu(int itemID)
     // Activate context menu
     CMapContextMenu *menu = MapSelectorDialog().GetContextMenu(m_pMapList);
     menu->ShowMenu(this, true, true);
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: refreshes a single server
-//-----------------------------------------------------------------------------
-void COnlineMaps::OnRefreshServer(int serverID)
-{
-    BaseClass::OnRefreshServer(serverID);
-
-    MapSelectorDialog().UpdateStatusText("#ServerBrowser_GettingNewServerList");
 }
