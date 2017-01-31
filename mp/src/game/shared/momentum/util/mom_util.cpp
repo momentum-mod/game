@@ -29,29 +29,7 @@ inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
     pData = nullptr;
     SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-#if 0
 
-void MomentumUtil::DownloadMap(const char *szMapname)
-{
-    if (!SteamHTTP())
-    {
-        Warning("Failed to download map, cannot access HTTP!\n");
-        return;
-    }
-    // MOM_TODO:
-    // This should only be called if the user has the outdated map version or
-    // doesn't have the map at all
-
-    // The two different URLs:
-    // cdn.momentum-mod.org/maps/MAPNAME/MAPNAME.bsp
-    // and
-    // cdn.momentum-mod.org/maps/MAPNAME/MAPNAME.zon
-    // We're going to need to build requests for and download both of these files
-
-    // Uncomment the following when we build the URLS (MOM_TODO)
-    // CreateAndSendHTTPReq(mapfileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
-    // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
-}
 bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
     CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
@@ -87,6 +65,57 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
     }
     return bSuccess;
 }
+
+template <class T>
+void MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t> *callback,
+    typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller)
+{
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            callback->Set(apiHandle, pCaller, func);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
+    }
+    else
+    {
+        Warning("Steampicontext failure.\n");
+        Warning("Could not find Steam Api Context active\n");
+    }
+}
+#if 0
+
+void MomentumUtil::DownloadMap(const char *szMapname)
+{
+    if (!SteamHTTP())
+    {
+        Warning("Failed to download map, cannot access HTTP!\n");
+        return;
+    }
+    // MOM_TODO:
+    // This should only be called if the user has the outdated map version or
+    // doesn't have the map at all
+
+    // The two different URLs:
+    // cdn.momentum-mod.org/maps/MAPNAME/MAPNAME.bsp
+    // and
+    // cdn.momentum-mod.org/maps/MAPNAME/MAPNAME.zon
+    // We're going to need to build requests for and download both of these files
+
+    // Uncomment the following when we build the URLS (MOM_TODO)
+    // CreateAndSendHTTPReq(mapfileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
+    // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
+}
+
+
 
 #endif
 

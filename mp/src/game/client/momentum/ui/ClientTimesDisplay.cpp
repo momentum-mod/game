@@ -620,9 +620,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
         // Mapname, tickrate, rank, radius
         Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
-        CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback);
-#endif
-
+        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback, this);
         m_fLastHeaderUpdate = gpGlobals->curtime;
     }
 
@@ -649,7 +647,7 @@ void CClientTimesDisplay::AddHeader()
     {
         char requrl[MAX_PATH];
         Q_snprintf(requrl, MAX_PATH, "%s/getmapinfo/%s", MOM_APIDOMAIN, g_pGameRules->MapName());
-        CreateAndSendHTTPReq(requrl, &cbGetMapInfoCallback, &CClientTimesDisplay::GetMapInfoCallback);
+        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetMapInfoCallback, &CClientTimesDisplay::GetMapInfoCallback, this);
     }
 #endif
 }
@@ -1001,8 +999,11 @@ void CClientTimesDisplay::LoadOnlineTimes()
                    flaggedRuns, GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
 
         // This url is not real, just for testing purposes. It returns a json list with the serialization of the scores
-        CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
-#endif
+        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback, this);
+        m_bOnlineNeedUpdate = false;
+        m_flLastOnlineTimeUpdate = gpGlobals->curtime;
+
+        m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
     }
 }
 
@@ -1015,7 +1016,10 @@ void CClientTimesDisplay::LoadFriendsTimes()
         Q_snprintf(requrl, BUFSIZ, "%s/getfriendscores/%llu/10/1/%s/%d", MOM_APIDOMAIN,
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName(),
                    flaggedRuns);
-        CreateAndSendHTTPReq(requrl, &cbGetFriendsTimesCallback, &CClientTimesDisplay::GetFriendsTimesCallback);
+        g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetFriendsTimesCallback, &CClientTimesDisplay::GetFriendsTimesCallback, this);
+        m_bFriendsNeedUpdate = false;
+        m_flLastFriendsTimeUpdate = gpGlobals->curtime;
+        m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
 #endif
         if (m_hCurrentLeaderboard)
         {
@@ -1057,6 +1061,32 @@ void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
         Warning("Steampicontext failure.\n");
     }
 }
+
+//void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
+//                                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *callback,
+//                                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t func)
+//{
+//    if (steamapicontext && steamapicontext->SteamHTTP())
+//    {
+//        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+//        SteamAPICall_t apiHandle;
+//
+//        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+//        {
+//            Warning("%s - Callback set for %s.\n", __FUNCTION__, szURL);
+//            callback->Set(apiHandle, this, func);
+//        }
+//        else
+//        {
+//            Warning("Failed to send HTTP Request to post scores online!\n");
+//            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+//        }
+//    }
+//    else
+//    {
+//        Warning("Steampicontext failure.\n");
+//    }
+//}
 
 void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure, bool bFriendsTimes)
 {
@@ -1225,6 +1255,7 @@ void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, 
         (bFriendsTimes ? m_bFriendsTimesLoaded : m_bOnlineTimesLoaded) = false;
         Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
     }
+
     // Last but not least, free resources
     delete[] pData;
     pData = nullptr;
