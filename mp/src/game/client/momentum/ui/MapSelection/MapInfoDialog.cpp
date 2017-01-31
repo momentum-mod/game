@@ -213,28 +213,9 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
 
 void CDialogMapInfo::GetMapInfo(const char* mapname)
 {
-    if (SteamHTTP())
-    {
-        char szURL[BUFSIZ];
-        Q_snprintf(szURL, BUFSIZ, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
-        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-        SteamAPICall_t apiHandle;
-
-        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            m_bPlayerListUpdatePending = true;
-            cbGetMapInfoCallback.Set(apiHandle, this, &CDialogMapInfo::GetMapInfoCallback);
-        }
-        else
-        {
-            Warning("%s - Failed to send HTTP Request to get map info!\n", __FUNCTION__);
-            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("%s - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n", __FUNCTION__);
-    }
+    char szURL[BUFSIZ];
+    Q_snprintf(szURL, BUFSIZ, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
+    g_pMomentumUtil->CreateAndSendHTTPReq(szURL, &cbGetMapInfoCallback, &CDialogMapInfo::GetMapInfoCallback, this);
 }
 
 void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -350,30 +331,14 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
     delete[] pData;
 }
+
 void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
-    if (SteamHTTP())
-    {
-        char szURL[BUFSIZ];
-        Q_snprintf(szURL, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, mapname);
-        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-        SteamAPICall_t apiHandle;
-        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            cbGet10MapTimesCallback.Set(apiHandle, this, &CDialogMapInfo::Get10MapTimesCallback);
-        }
-        else
-        {
-            Warning("%s - Failed to send HTTP Request to get map scores!\n", __FUNCTION__);
-            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("%s - Could not use steamapi/steamapi->SteamHTTP() due to nullptr!\n", __FUNCTION__);
-    }
-
+    char szURL[BUFSIZ];
+    Q_snprintf(szURL, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, mapname);
+    g_pMomentumUtil->CreateAndSendHTTPReq(szURL, &cbGet10MapTimesCallback, &CDialogMapInfo::Get10MapTimesCallback, this);
 }
+
 void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     if (bIOFailure)

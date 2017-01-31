@@ -217,9 +217,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetMapInfoCallback;
 
-    void CreateAndSendHTTPReq(const char *, CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *,
-                              CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
-
     void ParseTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure, bool bFriendsTimes);
 #endif
 
