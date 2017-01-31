@@ -117,6 +117,7 @@
         "MOM_Gun" "Momentum Gun"
 
     //Map Selection
+		"MOM_MapSelector_OnlineMaps" "Online Maps"
         "MOM_MapSelector_LocalMaps" "Local Maps"
         "MOM_MapSelector_Filter" "Filter"
         "MOM_MapSelector_All" "<All>"
@@ -418,9 +419,5 @@
         "GameUI2_Respawn" "Respawn"
 
         "GameUI2_TitleOptions" "Options"
-
-        "GameUI2_Apply" "Apply"
-        "GameUI2_Back" "Back"
-        "GameUI2_Done" "Done"
     }
 }

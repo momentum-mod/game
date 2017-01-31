@@ -22,7 +22,7 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
     LoadUserData();
 
     m_pLocal = new CLocalMaps(this);
-    //MOM_TODO: uncomment this: m_pOnline = new COnlineMaps(this);
+    m_pOnline = new COnlineMaps(this);
 
     SetMinimumSize(680, 400);
     SetSize(680, 400);
@@ -36,7 +36,7 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
     m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
     m_pTabPanel->AddPage(m_pLocal, "#MOM_MapSelector_LocalMaps");
-    //MOM_TODO: uncomment: m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_OnlineMaps");
+    m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_OnlineMaps");
 
     m_pTabPanel->AddActionSignalTarget(this);
 
@@ -74,6 +74,16 @@ CMapSelectorDialog::~CMapSelectorDialog()
     if (m_pSavedData)
     {
         m_pSavedData->deleteThis();
+    }
+
+    if (m_pLocal)
+    {
+        m_pLocal->DeletePanel();
+    }
+    
+    if (m_pOnline)
+    {
+        m_pOnline->DeletePanel();
     }
 }
 
