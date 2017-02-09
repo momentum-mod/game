@@ -445,6 +445,27 @@ END_DATADESC();
 
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
+    // SF_TELE_ONEXIT defaults to 0 so ents that inherit from this class and call this method DO fire the tp logic
+    if (pOther && !HasSpawnFlags(SF_TELE_ONEXIT))
+    {
+        BaseClass::StartTouch(pOther);
+
+        HandleTeleport(pOther);
+    }
+}
+
+void CTriggerTeleportEnt::EndTouch(CBaseEntity* pOther)
+{
+    if (pOther && HasSpawnFlags(SF_TELE_ONEXIT))
+    {
+        BaseClass::EndTouch(pOther);
+
+        HandleTeleport(pOther);
+    }
+}
+
+void CTriggerTeleportEnt::HandleTeleport(CBaseEntity* pOther)
+{
     if (pOther)
     {
         BaseClass::StartTouch(pOther);
@@ -470,11 +491,12 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
             tmp.z -= pOther->WorldAlignMins().z;
 
             pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : nullptr,
-                             m_bResetVelocity ? &vec3_origin : nullptr);
+                m_bResetVelocity ? &vec3_origin : nullptr);
             AfterTeleport();
         }
     }
 }
+
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTeleportCheckpoint -------------------------------------------------------
