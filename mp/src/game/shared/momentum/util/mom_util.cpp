@@ -65,32 +65,6 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
     }
     return bSuccess;
 }
-
-template <class T>
-void MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t> *callback,
-    typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller)
-{
-    if (steamapicontext && steamapicontext->SteamHTTP())
-    {
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-        SteamAPICall_t apiHandle;
-
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            callback->Set(apiHandle, pCaller, func);
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to post scores online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steampicontext failure.\n");
-        Warning("Could not find Steam Api Context active\n");
-    }
-}
 #if 0
 
 void MomentumUtil::DownloadMap(const char *szMapname)
