@@ -16,11 +16,44 @@ class MomentumUtil
     void DownloadMap(const char *);
 
     template <class T>
-    void CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t> *callback,
-        typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller);
+    bool CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t> *callback,
+        typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller,
+        const EHTTPMethod kReqMethod = k_EHTTPMethodGET, KeyValues *pParams = nullptr)
+    {
+        bool bSuccess = false;
+        if (steamapicontext && steamapicontext->SteamHTTP())
+        {
+            HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(kReqMethod, szURL);
 
-    bool CreateAndSendHTTPReqWithPost(const char *, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *,
-                                      CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
+            if (pParams && (kReqMethod == k_EHTTPMethodPOST || kReqMethod == k_EHTTPMethodGET))
+            {
+                FOR_EACH_VALUE(pParams, p_value)
+                {
+                    steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
+                        p_value->GetString());
+                }
+            }
+
+            SteamAPICall_t apiHandle;
+
+            if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+            {
+                callback->Set(apiHandle, pCaller, func);
+            }
+            else
+            {
+                Warning("Failed to send HTTP Request!\n");
+                steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+                bSuccess = true;
+            }
+        }
+        else
+        {
+            Warning("Steampicontext failure.\nCould not find Steam Api Context active");
+        }
+
+        return bSuccess;
+    }
 
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
 
