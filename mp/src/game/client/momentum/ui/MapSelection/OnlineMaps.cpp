@@ -219,7 +219,9 @@ void COnlineMaps::StartRefresh()
         ClearMapList();
         char szUrl[BUFSIZ];
         Q_snprintf(szUrl, BUFSIZ, "%s/getmaps/2/0/0", MOM_APIDOMAIN);
-        g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbMapsQuery, &COnlineMaps::MapsQueryCallback, this);
+        KeyValues *kvFilters = GetFilters();
+        g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbMapsQuery, &COnlineMaps::MapsQueryCallback, this, k_EHTTPMethodPOST, kvFilters);
+        kvFilters->deleteThis();
     }
 }
 

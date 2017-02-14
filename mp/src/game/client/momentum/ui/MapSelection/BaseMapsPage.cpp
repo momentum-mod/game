@@ -250,6 +250,18 @@ void CBaseMapsPage::CreateFilters()
     m_pMapLayoutFilter->AddActionSignalTarget(this);
 }
 
+KeyValues* CBaseMapsPage::GetFilters() const
+{
+    KeyValues *kvFilters = new KeyValues("filters");
+
+    kvFilters->SetInt("gamemode", m_iGameModeFilter);
+    kvFilters->SetString("map", m_szMapFilter);
+    kvFilters->SetInt("difficulty", m_iDifficultyFilter);
+    kvFilters->SetBool("completed", m_bFilterHideCompleted);
+    kvFilters->SetInt("layout", m_iMapLayoutFilter);
+
+    return kvFilters;
+}
 
 
 //-----------------------------------------------------------------------------
