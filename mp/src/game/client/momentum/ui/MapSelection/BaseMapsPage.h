@@ -140,6 +140,8 @@ protected:
 
     virtual void CreateFilters();
 
+    KeyValues* GetFilters() const;
+
     MESSAGE_FUNC_PTR_CHARPTR(OnTextChanged, "TextChanged", panel, text);
     MESSAGE_FUNC_PTR_INT(OnButtonToggled, "ButtonToggled", panel, state);
 
