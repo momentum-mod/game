@@ -67,7 +67,7 @@ CMapSelectorDialog::~CMapSelectorDialog()
 {
     if (m_pContextMenu)
         m_pContextMenu->DeletePanel();
-
+    
     // Attempt to save user data, if not that's okay
     SaveUserData();
 
@@ -114,6 +114,12 @@ void CMapSelectorDialog::Open()
 {
     BaseClass::Activate();
     m_pTabPanel->RequestFocus();
+}
+
+void CMapSelectorDialog::OnClose()
+{
+    SaveUserData();
+    BaseClass::OnClose();
 }
 
 

@@ -2,8 +2,6 @@
 #include "util/jsontokv.h"
 #include "view_scene.h"
 
-#include "vgui_bitmapimage.h"
-
 using namespace vgui;
 
 //-----------------------------------------------------------------------------
@@ -254,6 +252,7 @@ void COnlineMaps::OnOpenContextMenu(int itemID)
 
 bool CImageDownloader::Process(const char* szMapName, const char* szUrl, CMapListPanel* pTargetPanel, int &index)
 {
+    index = 0;
     if (!pTargetPanel || !pTargetPanel->GetImageList())
         return true;
 
