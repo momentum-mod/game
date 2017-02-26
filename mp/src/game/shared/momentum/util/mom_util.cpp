@@ -18,7 +18,6 @@
 
 #include "tier0/memdbgon.h"
 
-
 extern IFileSystem *filesystem;
 
 inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)

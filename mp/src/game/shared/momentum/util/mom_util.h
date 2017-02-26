@@ -11,10 +11,6 @@ struct RunCompare_t;
 class MomentumUtil
 {
   public:
-    void DownloadCallback(HTTPRequestCompleted_t *, bool);
-
-    void DownloadMap(const char *);
-
     template <class T>
     bool CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t> *callback,
         typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller,
@@ -39,12 +35,12 @@ class MomentumUtil
             if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
             {
                 callback->Set(apiHandle, pCaller, func);
+                bSuccess = true;
             }
             else
             {
                 Warning("Failed to send HTTP Request!\n");
                 steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-                bSuccess = true;
             }
         }
         else
@@ -54,8 +50,6 @@ class MomentumUtil
 
         return bSuccess;
     }
-
-    //CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
 
 #ifdef CLIENT_DLL
     void UpdatePaintDecalScale(float fNewScale);
