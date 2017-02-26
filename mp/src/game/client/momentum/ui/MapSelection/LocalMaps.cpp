@@ -104,14 +104,6 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     }
 }
 
-// Gross hack needed because scheme()->GetImage still returns an image even if it's null (returns the null texture)
-inline bool ImageExists(const char *pMapName)
-{
-    FileFindHandle_t found;
-    const char *pStr = g_pFullFileSystem->FindFirstEx(VarArgs("materials/vgui/maps/%s.vmt", pMapName), "GAME", &found);
-    return pStr ? true : false;
-}
-
 void CLocalMaps::GetNewMapList()
 {
     ClearMapList();
@@ -134,7 +126,7 @@ void CLocalMaps::GetNewMapList()
         FillMapstruct(&m);
 
         // Map image
-        if (ImageExists(m.m_szMapName))
+        if (g_pMomentumUtil->MapThumbnailExists(m.m_szMapName))
         {
             DevLog("FOUND IMAGE FOR %s!\n", m.m_szMapName);
             char imagePath[MAX_PATH];

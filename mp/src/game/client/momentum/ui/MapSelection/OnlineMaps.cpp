@@ -257,17 +257,12 @@ int CImageDownloader::Process(const int iMapId, const char* szMapName, const cha
     Q_strcpy(m_szImageUrl, szUrl);
     Q_strcpy(m_szMapName, szMapName);
     
-    char szPreviewPath[MAX_PATH];
-    Q_snprintf(szPreviewPath, MAX_PATH, "materials/maps/%s.vtf", m_szMapName);
-    
-    FileHandle_t file;
-    file = filesystem->Open(szPreviewPath, "r", "MOD");
     m_pImageList = pTargetPanel->GetImageList();
-    if (!file)
+    if (!g_pMomentumUtil->MapThumbnailExists(szMapName))
     {
         // fetch the image
         m_iTargetIndex = m_pImageList->AddImage(nullptr);
-        //g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbDownloadCallback, &CImageDownloader::Callback, this);
+        g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbDownloadCallback, &CImageDownloader::Callback, this);
     }
     else
     {
@@ -287,9 +282,9 @@ int CImageDownloader::Process(const int iMapId, const char* szMapName, const cha
         }
         // We're here because the image was not found, lets add it.
         // We first need to get the vtf into something that the map lists understands
-        BitmapImage *newImage = new BitmapImage;
-        newImage->SetImageFile(szPreviewPath);
-        m_iTargetIndex = m_pImageList->AddImage(newImage);
+        char szPath[MAX_PATH];
+        Q_snprintf(szPath, MAX_PATH, "maps/%s", szMapName);
+        m_iTargetIndex = m_pImageList->AddImage(scheme()->GetImage(szPath, false));
     }
     return m_iTargetIndex;
 }
