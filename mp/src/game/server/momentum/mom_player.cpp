@@ -231,6 +231,7 @@ void CMomentumPlayer::Spawn()
     m_RunData.m_bMapFinished = false;
     m_RunData.m_iCurrentZone = 0;
     m_bHasPracticeMode = false;
+    m_bAllowUserTeleports = true;
     ResetRunStats();
     if (runSaveEvent)
     {
