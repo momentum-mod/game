@@ -90,8 +90,11 @@ void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOF
                     KeyValues *kv = new KeyValues("map");
                     if (Q_strlen(m.m_szThumbnailUrl) > 3)
                     {
-                        CImageDownloader imageDownloader;
-                        map.m_iMapImageIndex = imageDownloader.Process(m.m_iMapId, m.m_szMapName, m.m_szThumbnailUrl, m_pMapList);
+                        // We ran into a good issue here because of the life time of imageDownloader. Thanks @Gocnak for noticing this after almost an hour
+
+                        // We fix it by creating a pointer, and it gets deleted when we finish the callback. We're too good
+                        CImageDownloader *imageDownloader = new CImageDownloader;
+                        map.m_iMapImageIndex = imageDownloader->Process(m.m_iMapId, m.m_szMapName, m.m_szThumbnailUrl, m_pMapList);
                     }
                     kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
                     kv->SetString(KEYNAME_MAP_LAYOUT, m.m_bHasStages ? "STAGED" : "LINEAR");
@@ -347,4 +350,5 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
     }
     pData = nullptr;
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    delete this;
 }
