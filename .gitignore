@@ -93,6 +93,7 @@ game_shader_dx9_srv.so.dbg
 game_shader_dx9.dylib
 game_shader_dx9.dylib.dYSM/
 mp/game/bin/
+mp/game/momentum/materials/vgui/maps/*
 
 # Others
 *.cache

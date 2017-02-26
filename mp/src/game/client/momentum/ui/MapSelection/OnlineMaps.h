@@ -73,7 +73,9 @@ public:
         m_pImageList = nullptr;
     }
 
-    int Process(const int iMapId, const char *szMapName, const char *szUrl, CMapListPanel* pTargetPanel);
+    // Downloads the preview image if needed. The boolean determines if the OnlineMaps class should delete it.
+    // Return true for YES DELETE ME, otherwise false (the callback will delete me)
+    bool Process(const char *szMapName, const char *szUrl, CMapListPanel* pTargetPanel, int&);
 private:
 
     CCallResult<CImageDownloader, HTTPRequestCompleted_t> cbDownloadCallback;

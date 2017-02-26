@@ -93,8 +93,9 @@ void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOF
                         // We ran into a good issue here because of the life time of imageDownloader. Thanks @Gocnak for noticing this after almost an hour
 
                         // We fix it by creating a pointer, and it gets deleted when we finish the callback. We're too good
-                        CImageDownloader *imageDownloader = new CImageDownloader;
-                        map.m_iMapImageIndex = imageDownloader->Process(m.m_iMapId, m.m_szMapName, m.m_szThumbnailUrl, m_pMapList);
+                        CImageDownloader *imageDownloader = new CImageDownloader();
+                        if (imageDownloader->Process(m.m_szMapName, m.m_szThumbnailUrl, m_pMapList, map.m_iMapImageIndex))
+                            delete imageDownloader;
                     }
                     kv->SetString(KEYNAME_MAP_NAME, m.m_szMapName);
                     kv->SetString(KEYNAME_MAP_LAYOUT, m.m_bHasStages ? "STAGED" : "LINEAR");
@@ -251,12 +252,11 @@ void COnlineMaps::OnOpenContextMenu(int itemID)
     menu->ShowMenu(this, true, true);
 }
 
-int CImageDownloader::Process(const int iMapId, const char* szMapName, const char* szUrl, CMapListPanel* pTargetPanel)
+bool CImageDownloader::Process(const char* szMapName, const char* szUrl, CMapListPanel* pTargetPanel, int &index)
 {
     if (!pTargetPanel || !pTargetPanel->GetImageList())
-    {
-        return 0;
-    }
+        return true;
+
     Q_strcpy(m_szImageUrl, szUrl);
     Q_strcpy(m_szMapName, szMapName);
     
@@ -265,90 +265,90 @@ int CImageDownloader::Process(const int iMapId, const char* szMapName, const cha
     {
         // fetch the image
         m_iTargetIndex = m_pImageList->AddImage(nullptr);
-        g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbDownloadCallback, &CImageDownloader::Callback, this);
+        index = m_iTargetIndex;
+        // If the request fails, then delete me, otherwise wait for the callback to.
+        return !g_pMomentumUtil->CreateAndSendHTTPReq(szUrl, &cbDownloadCallback, &CImageDownloader::Callback, this);
     }
-    else
-    {
-        // If it exists, lets search it on the panel list, in case it's already there
-        
-        char szPath[MAX_PATH];
-        Q_snprintf(szPath, MAX_PATH, "maps/%s", szMapName);
-        IImage *newImage = scheme()->GetImage(szPath, false);
 
-        const int itemCount = m_pImageList->GetImageCount();
-        for (int i = 0; i < itemCount; ++i)
+    // If it exists, lets search it on the panel list, in case it's already there
+    char szPath[MAX_PATH];
+    Q_snprintf(szPath, MAX_PATH, "maps/%s", szMapName);
+    IImage *newImage = scheme()->GetImage(szPath, false);
+
+    const int itemCount = m_pImageList->GetImageCount();
+    for (int i = 0; i < itemCount; ++i)
+    {
+        IImage *iterImage = m_pImageList->GetImage(i);
+        if (!iterImage) continue;
+        // This can't use map id, use image comparising
+        if (iterImage->GetID() == newImage->GetID())
         {
-            IImage *iterImage = m_pImageList->GetImage(i);
-            if (!iterImage) continue;
-            // This can't use map id, use image comparising
-            if (iterImage == newImage)
-            {
-                // Image found, return its index (We save it on the target index too just in case we need it later)
-                m_iTargetIndex = i;
-                return m_iTargetIndex;
-            }
+            // Image found, return its index (We save it on the target index too just in case we need it later)
+            m_iTargetIndex = i;
+            index = m_iTargetIndex;
+            return true; // Delete me, we already exist
         }
-        // We're here because the image was not found, lets add it.
-        // We first need to get the vtf into something that the map lists understands
-        
-        m_iTargetIndex = m_pImageList->AddImage(newImage);
     }
-    return m_iTargetIndex;
+
+    // We're here because the image was not found, lets add it.
+    // We first need to get the vtf into something that the map lists understands    
+    m_iTargetIndex = m_pImageList->AddImage(newImage);
+    index = m_iTargetIndex;
+    return true; // Delete me, we already exist
 }
 
 void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
 {
-    if (bIOFailure || !pCallback || !pCallback->m_bRequestSuccessful || pCallback->m_eStatusCode != k_EHTTPStatusCode200OK)
-        return;
-
-    FileHandle_t file;
-    char szPreviewPathSmall[MAX_PATH];
-    char szVTFPreviewPath[MAX_PATH];
-    char szVMTPreviewPath[MAX_PATH];
-    Q_snprintf(szPreviewPathSmall, MAX_PATH, "maps/%s", m_szMapName);
-        
-    Q_snprintf(szVTFPreviewPath, MAX_PATH, "materials/vgui/%s.vtf", szPreviewPathSmall);
-    Q_snprintf(szVMTPreviewPath, MAX_PATH, "materials/vgui/%s.vmt", szPreviewPathSmall);
-    
-    file = filesystem->Open(szVTFPreviewPath, "w+b", "MOD");
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
+    if (!bIOFailure && pCallback && pCallback->m_bRequestSuccessful && pCallback->m_eStatusCode == k_EHTTPStatusCode200OK)
     {
-        Warning("CImageDownloader::Callback: 0 body size!\n");
-        return;
+        FileHandle_t file;
+        char szPreviewPathSmall[MAX_PATH];
+        char szVTFPreviewPath[MAX_PATH];
+        char szVMTPreviewPath[MAX_PATH];
+        Q_snprintf(szPreviewPathSmall, MAX_PATH, "maps/%s", m_szMapName);
+
+        Q_snprintf(szVTFPreviewPath, MAX_PATH, "materials/vgui/%s.vtf", szPreviewPathSmall);
+        Q_snprintf(szVMTPreviewPath, MAX_PATH, "materials/vgui/%s.vmt", szPreviewPathSmall);
+
+        file = filesystem->Open(szVTFPreviewPath, "w+b", "MOD");
+        uint32 size;
+        steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+        if (size > 0)
+        {
+            DevLog("Size of body: %u\n", size);
+            uint8* pData = new uint8[size];
+            steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+            // write the file
+            filesystem->Write(pData, size, file);
+            // save the file
+
+            filesystem->Close(file);
+            DevLog("Successfully written file to %s\n", szVTFPreviewPath);
+
+            // Create the VMT file for the texture
+            KeyValues* kvFile = new KeyValues("UnlitGeneric");
+            char szTexturePath[MAX_PATH];
+            Q_snprintf(szTexturePath, MAX_PATH, "vgui/%s", szPreviewPathSmall);
+            kvFile->SetString("$basetexture", szTexturePath);
+            kvFile->SetInt("$translucent", 1);
+            kvFile->SetInt("$ignorez", 1);
+            if (kvFile->SaveToFile(filesystem, szVMTPreviewPath, "MOD"))
+            {
+                m_pImageList->SetImageAtIndex(m_iTargetIndex, scheme()->GetImage(szPreviewPathSmall, false));
+                DevLog("Saved VMT to %s\n", szVMTPreviewPath);
+            }
+
+            kvFile->deleteThis();
+
+            // Free resources
+            if (pData)
+            {
+                delete[] pData;
+            }
+            pData = nullptr;
+        }
     }
-    DevLog("Size of body: %u\n", size);
-    uint8* pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    // write the file
-    filesystem->Write(pData, size, file);
-    // save the file
-    
-    filesystem->Close(file);
-    DevLog("Successfully written file to %s\n", szVTFPreviewPath);
 
-    // Create the VMT file for the texture
-    KeyValues *kvFile = new KeyValues("UnlitGeneric");
-    char szTexturePath[MAX_PATH];
-    Q_snprintf(szTexturePath, MAX_PATH, "vgui/%s", szPreviewPathSmall);
-    kvFile->SetString("$basetexture", szTexturePath);
-    kvFile->SetInt("$translucent", 1);
-    kvFile->SetInt("$ignorez", 1);
-    if (kvFile->SaveToFile(filesystem, szVMTPreviewPath, "MOD"))
-    {
-        m_pImageList->SetImageAtIndex(m_iTargetIndex, scheme()->GetImage(szPreviewPathSmall, false));
-        DevLog("Saved VMT to %s\n", szVMTPreviewPath);
-    }   
-
-    kvFile->deleteThis();
-
-    // Free resources
-    if (pData)
-    {
-        delete[] pData;
-    }
-    pData = nullptr;
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
     delete this;
 }
