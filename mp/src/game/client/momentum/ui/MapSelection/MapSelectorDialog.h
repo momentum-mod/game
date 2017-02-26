@@ -20,11 +20,13 @@ public:
 
     // displays the dialog, moves it into focus, updates if it has to
     void		Open(void);
+    
+    void OnClose() OVERRIDE;
 
     // gets server info
     mapstruct_t *GetMap(unsigned int serverID);
     // called every frame
-    virtual void OnTick();
+    virtual void OnTick() OVERRIDE;
 
     // updates status text at bottom of window
     void UpdateStatusText(const char *format, ...);

@@ -141,6 +141,8 @@ void CLocalMaps::GetNewMapList()
     }
     g_pFullFileSystem->FindClose(found);
 
+    m_bLoadedMaps = true;
+
     ApplyGameFilters();
 }
 
