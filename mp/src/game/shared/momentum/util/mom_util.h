@@ -21,7 +21,7 @@ class MomentumUtil
         const EHTTPMethod kReqMethod = k_EHTTPMethodGET, KeyValues *pParams = nullptr)
     {
         bool bSuccess = false;
-        if (steamapicontext && steamapicontext->SteamHTTP())
+        if (steamapicontext && steamapicontext->SteamHTTP() && callback)
         {
             HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(kReqMethod, szURL);
 

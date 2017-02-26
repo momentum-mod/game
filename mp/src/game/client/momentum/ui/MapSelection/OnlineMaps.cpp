@@ -267,24 +267,28 @@ int CImageDownloader::Process(const int iMapId, const char* szMapName, const cha
     else
     {
         // If it exists, lets search it on the panel list, in case it's already there
-        const int itemCount = pTargetPanel->GetItemCount();
+        
+        char szPath[MAX_PATH];
+        Q_snprintf(szPath, MAX_PATH, "maps/%s", szMapName);
+        IImage *newImage = scheme()->GetImage(szPath, false);
+
+        const int itemCount = m_pImageList->GetImageCount();
         for (int i = 0; i < itemCount; ++i)
         {
-            const ListPanelItem * itemData = pTargetPanel->GetItemData(i);
-            if (!itemData->kv) continue;
+            IImage *iterImage = m_pImageList->GetImage(i);
+            if (!iterImage) continue;
             // This can't use map id, use image comparising
-            if (itemData->kv->GetInt("id") == iMapId && itemData->m_nImageIndex != 0)
+            if (iterImage == newImage)
             {
                 // Image found, return its index (We save it on the target index too just in case we need it later)
-                m_iTargetIndex = itemData->m_nImageIndex;
+                m_iTargetIndex = i;
                 return m_iTargetIndex;
             }
         }
         // We're here because the image was not found, lets add it.
         // We first need to get the vtf into something that the map lists understands
-        char szPath[MAX_PATH];
-        Q_snprintf(szPath, MAX_PATH, "maps/%s", szMapName);
-        m_iTargetIndex = m_pImageList->AddImage(scheme()->GetImage(szPath, false));
+        
+        m_iTargetIndex = m_pImageList->AddImage(newImage);
     }
     return m_iTargetIndex;
 }
