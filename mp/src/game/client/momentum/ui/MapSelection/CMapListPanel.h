@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "vgui_controls/ListPanel.h"
 //-----------------------------------------------------------------------------
 // Purpose: Acts like a regular ListPanel but forwards enter key presses
 // to its outer control.
@@ -21,6 +21,10 @@ public:
         BaseClass::SetFont(font);
         SetRowHeight(oldHeight);
     }
+
+protected:
+
+    MESSAGE_FUNC(OnSliderMoved, "ScrollBarSliderMoved");
 
 private:
     CBaseMapsPage *m_pOuter;

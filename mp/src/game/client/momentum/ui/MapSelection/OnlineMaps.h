@@ -62,4 +62,27 @@ private:
     int m_iCurrentPage;
 };
 
+class CImageDownloader
+{
+    DECLARE_CLASS_NOBASE(CImageDownloader)
+
+public:
+    CImageDownloader()
+    {
+        m_iTargetIndex = -1;
+        m_pImageList = nullptr;
+    }
+
+    int Process(const int iMapId, const char *szMapName, const char *szUrl, CMapListPanel* pTargetPanel);
+private:
+
+    CCallResult<CImageDownloader, HTTPRequestCompleted_t> cbDownloadCallback;
+    void Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailure);
+
+    char m_szMapName[MAX_PATH];
+    char m_szImageUrl[MAX_PATH];
+    int m_iTargetIndex;
+    ImageList *m_pImageList;
+};
+
 #endif // INTERNETGAMES_H

@@ -14,6 +14,8 @@ struct mapstruct_t
     int m_iDifficulty;//Difficulty of map (Tier 1, 2 etc)
     char m_szBestTime[64];//Best time for the map (MOM_TODO: determine best size for this)
     int m_iZoneCount;//How many zones do we have? (Checkpoints/Stages)
+    char m_szThumbnailUrl[MAX_PATH];//Where to find this map's preview
+    int m_iMapId;//Map ID on Momentum's servers
 
     mapstruct_t()
     {
@@ -21,8 +23,11 @@ struct mapstruct_t
         m_bHasStages = false;
         m_bCompleted = false;
         m_iDifficulty = 1;
+        m_iZoneCount = 1;
         m_szBestTime[0] = '\0';
         m_szMapName[0] = '\0';
+        m_szThumbnailUrl[0] = '\0';
+        m_iMapId = -1;
     }
 };
 
