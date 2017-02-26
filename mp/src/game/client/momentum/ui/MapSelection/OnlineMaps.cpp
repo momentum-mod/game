@@ -300,8 +300,8 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
     char szVMTPreviewPath[MAX_PATH];
     Q_snprintf(szPreviewPathSmall, MAX_PATH, "maps/%s", m_szMapName);
         
-    Q_snprintf(szVTFPreviewPath, MAX_PATH, "%s.vtf", szPreviewPathSmall);
-    Q_snprintf(szVMTPreviewPath, MAX_PATH, "%s.vmt", szPreviewPathSmall);
+    Q_snprintf(szVTFPreviewPath, MAX_PATH, "materials/vgui/%s.vtf", szPreviewPathSmall);
+    Q_snprintf(szVMTPreviewPath, MAX_PATH, "materials/vgui/%s.vmt", szPreviewPathSmall);
     
     file = filesystem->Open(szVTFPreviewPath, "w+b", "MOD");
     uint32 size;
@@ -319,22 +319,24 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
     // save the file
     
     filesystem->Close(file);
-    DevLog("Successfully written file\n");
-    // Free resources
-    IImage *newImage = scheme()->GetImage(szPreviewPathSmall, false);
-    if (newImage)
+    DevLog("Successfully written file to %s\n", szVTFPreviewPath);
+
+    // Create the VMT file for the texture
+    KeyValues *kvFile = new KeyValues("UnlitGeneric");
+    char szTexturePath[MAX_PATH];
+    Q_snprintf(szTexturePath, MAX_PATH, "vgui/%s", szPreviewPathSmall);
+    kvFile->SetString("$basetexture", szTexturePath);
+    kvFile->SetInt("$translucent", 1);
+    kvFile->SetInt("$ignorez", 1);
+    if (kvFile->SaveToFile(filesystem, szVMTPreviewPath, "MOD"))
     {
-        KeyValues *kvFile = new KeyValues("file");
-        KeyValues *kvFileContents = new KeyValues("UnlitGeneric");
-        kvFileContents->SetString("$basetexture", szPreviewPathSmall);
-        kvFileContents->SetInt("$translucent", 1);
-        kvFileContents->SetInt("$ignorez", 1);
-        kvFile->AddSubKey(kvFileContents);
-        kvFile->SaveToFile(filesystem, szVMTPreviewPath, "MOD");
-        kvFileContents->deleteThis();
-        kvFile->deleteThis();
-        m_pImageList->SetImageAtIndex(m_iTargetIndex, newImage);
-    }
+        m_pImageList->SetImageAtIndex(m_iTargetIndex, scheme()->GetImage(szPreviewPathSmall, false));
+        DevLog("Saved VMT to %s\n", szVMTPreviewPath);
+    }   
+
+    kvFile->deleteThis();
+
+    // Free resources
     if (pData)
     {
         delete[] pData;
