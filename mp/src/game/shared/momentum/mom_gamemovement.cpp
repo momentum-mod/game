@@ -205,7 +205,7 @@ bool CMomentumGameMovement::CanUnduck()
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr)
+    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_fSliding & FL_SLIDE)
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -308,66 +308,33 @@ void CMomentumGameMovement::Duck(void)
     {
         if (mv->m_nButtons & IN_DUCK)
         {
-            if (m_pPlayer->m_fSliding & FL_SLIDE)
+
+            bool alreadyDucked = (player->GetFlags() & FL_DUCKING) ? true : false;
+
+            if ((buttonsPressed & IN_DUCK) && !(player->GetFlags() & FL_DUCKING))
             {
-                bool alreadyDucked = (player->GetFlags() & FL_DUCKING) ? true : false;
-
-                if ((buttonsPressed & IN_DUCK) && !(player->GetFlags() & FL_DUCKING))
-                {
-                    // Use 1 second so super long jump will work
-                    player->m_Local.m_flDucktime = 1000;
-                    player->m_Local.m_bDucking = true;
-                }
-
-                float duckmilliseconds = max(0.0f, 1000.0f - (float)player->m_Local.m_flDucktime);
-                float duckseconds = duckmilliseconds / 1000.0f;
-
-                // time = max( 0.0, ( 1.0 - (float)player->m_Local.m_flDucktime / 1000.0 ) );
-
-                if (player->m_Local.m_bDucking)
-                {
-                    // Finish ducking immediately if duck time is over or not on ground
-                    if ((duckseconds > TIME_TO_DUCK) || alreadyDucked)
-                    {
-                        FinishDuck();
-                    }
-                    else
-                    {
-                        // Calc parametric time
-                        float duckFraction = SimpleSpline(duckseconds / TIME_TO_DUCK);
-                        SetDuckedEyeOffset(duckFraction);
-                    }
-                }
+                // Use 1 second so super long jump will work
+                player->m_Local.m_flDucktime = 1000;
+                player->m_Local.m_bDucking = true;
             }
-            else
+
+            float duckmilliseconds = max(0.0f, 1000.0f - (float) player->m_Local.m_flDucktime);
+            float duckseconds = duckmilliseconds / 1000.0f;
+
+            // time = max( 0.0, ( 1.0 - (float)player->m_Local.m_flDucktime / 1000.0 ) );
+
+            if (player->m_Local.m_bDucking)
             {
-                bool alreadyDucked = (player->GetFlags() & FL_DUCKING) ? true : false;
-
-                if ((buttonsPressed & IN_DUCK) && !(player->GetFlags() & FL_DUCKING))
+                // Finish ducking immediately if duck time is over or not on ground
+                if ((duckseconds > TIME_TO_DUCK) || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr || alreadyDucked)
                 {
-                    // Use 1 second so super long jump will work
-                    player->m_Local.m_flDucktime = 1000;
-                    player->m_Local.m_bDucking = true;
+                    FinishDuck();
                 }
-
-                float duckmilliseconds = max(0.0f, 1000.0f - (float)player->m_Local.m_flDucktime);
-                float duckseconds = duckmilliseconds / 1000.0f;
-
-                // time = max( 0.0, ( 1.0 - (float)player->m_Local.m_flDucktime / 1000.0 ) );
-
-                if (player->m_Local.m_bDucking)
+                else
                 {
-                    // Finish ducking immediately if duck time is over or not on ground
-                    if ((duckseconds > TIME_TO_DUCK) || (player->GetGroundEntity() == nullptr) || alreadyDucked)
-                    {
-                        FinishDuck();
-                    }
-                    else
-                    {
-                        // Calc parametric time
-                        float duckFraction = SimpleSpline(duckseconds / TIME_TO_DUCK);
-                        SetDuckedEyeOffset(duckFraction);
-                    }
+                    // Calc parametric time
+                    float duckFraction = SimpleSpline(duckseconds / TIME_TO_DUCK);
+                    SetDuckedEyeOffset(duckFraction);
                 }
             }
         }
@@ -375,37 +342,7 @@ void CMomentumGameMovement::Duck(void)
         {
             // Try to unduck unless automovement is not allowed
             // NOTE: When not onground, you can always unduck
-            if (m_pPlayer->m_fSliding & FL_SLIDE)
-            {
-                if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
-                {
-                    if ((buttonsReleased & IN_DUCK) && (player->GetFlags() & FL_DUCKING))
-                    {
-                        // Use 1 second so super long jump will work
-                        player->m_Local.m_flDucktime = 1000;
-                        player->m_Local.m_bDucking = true; // or unducking
-                    }
-
-                    float duckmilliseconds = max(0.0f, 1000.0f - (float)player->m_Local.m_flDucktime);
-                    float duckseconds = duckmilliseconds / 1000.0f;
-
-                    if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
-                    {
-                        // Finish ducking immediately if duck time is over or not on ground
-                        if (duckseconds > TIME_TO_UNDUCK)
-                        {
-                            FinishUnDuck();
-                        }
-                        else
-                        {
-                            // Calc parametric time
-                            float duckFraction = SimpleSpline(1.0f - (duckseconds / TIME_TO_UNDUCK));
-                            SetDuckedEyeOffset(duckFraction);
-                        }
-                    }
-                }
-            }
-            else if (player->m_Local.m_bAllowAutoMovement || player->GetGroundEntity() == nullptr)
+            if (player->m_Local.m_bAllowAutoMovement || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
             {
                 if ((buttonsReleased & IN_DUCK) && (player->GetFlags() & FL_DUCKING))
                 {
@@ -422,7 +359,7 @@ void CMomentumGameMovement::Duck(void)
                     if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
                     {
                         // Finish ducking immediately if duck time is over or not on ground
-                        if ((duckseconds > TIME_TO_UNDUCK) || (player->GetGroundEntity() == nullptr))
+                        if ((duckseconds > TIME_TO_UNDUCK) || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
                         {
                             FinishUnDuck();
                         }

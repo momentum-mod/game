@@ -361,22 +361,4 @@ class CTriggerSlide : public CBaseMomentumTrigger
     float m_flGravity,m_flSavedGravity;
 };
 
-/*class CTriggerSlideStart : public CBaseMomentumTrigger
-{
-    DECLARE_CLASS( CTriggerSlideStart , CBaseMomentumTrigger );
-
-public:
-    void Think() OVERRIDE;
-    void StartTouch( CBaseEntity *pOther ) OVERRIDE;
-};
-
-class CTriggerSlideEnd : public CBaseMomentumTrigger
-{
-    DECLARE_CLASS( CTriggerSlideEnd , CBaseMomentumTrigger );
-
-public:
-    void Think() OVERRIDE;
-    void StartTouch( CBaseEntity *pOther ) OVERRIDE;
-};         */
-
 #endif // TIMERTRIGGERS_H

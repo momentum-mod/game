@@ -844,7 +844,7 @@ DEFINE_KEYFIELD(m_bSliding, FIELD_BOOLEAN, "Slide")
 // The mapper could disable one of these flags with an ouput I guess? I don't know.
 void CTriggerSlide::Think()
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && IsTouching(pPlayer))
     {
         if (m_bSliding)
@@ -907,43 +907,4 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 
     BaseClass::EndTouch(pOther);
 }
-
-/*
-LINK_ENTITY_TO_CLASS(trigger_momentum_slide_start, CTriggerSlideStart);
-LINK_ENTITY_TO_CLASS(trigger_momentum_slide_end, CTriggerSlideEnd);
-
-void CTriggerSlideStart::Think()
-{
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
-    BaseClass::Think();
-}
-
-void CTriggerSlideEnd::Think()
-{
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
-    BaseClass::Think();
-}
-
-void CTriggerSlideStart::StartTouch(CBaseEntity *pOther)
-{
-    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer)
-    {
-        pPlayer->m_bSliding = true;
-    }
-    BaseClass::StartTouch(pOther);
-}
-
-void CTriggerSlideEnd::StartTouch(CBaseEntity *pOther)
-{
-    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer)
-    {
-        pPlayer->m_bSliding = false;
-    }
-    BaseClass::EndTouch(pOther);
-}
-                            */
 //-----------------------------------------------------------------------------------------------
