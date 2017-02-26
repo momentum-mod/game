@@ -86,6 +86,9 @@ void CGameUI2::OnUpdate()
 
 void CGameUI2::OnLevelInitializePreEntity()
 {
+    if (!GetBasePanel())
+        return;
+
     GetBasePanel()->SetVisible(false);
 
     if (m_pAnimationController)
@@ -97,6 +100,9 @@ void CGameUI2::OnLevelInitializePreEntity()
 
 void CGameUI2::OnLevelInitializePostEntity()
 {
+    if (!GetBasePanel())
+        return;
+
     GetBasePanel()->SetVisible(true);
     GetBasePanel()->GetMainMenu()->SetVisible(true);
 }
