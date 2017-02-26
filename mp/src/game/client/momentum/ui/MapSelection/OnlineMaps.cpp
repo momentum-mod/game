@@ -295,9 +295,15 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
         return;
 
     FileHandle_t file;
-    char szPreviewPath[MAX_PATH];
-    Q_snprintf(szPreviewPath, MAX_PATH, "materials/maps/%s.vtf");
-    file = filesystem->Open(szPreviewPath, "w+b", "MOD");
+    char szPreviewPathSmall[MAX_PATH];
+    char szVTFPreviewPath[MAX_PATH];
+    char szVMTPreviewPath[MAX_PATH];
+    Q_snprintf(szPreviewPathSmall, MAX_PATH, "maps/%s", m_szMapName);
+        
+    Q_snprintf(szVTFPreviewPath, MAX_PATH, "%s.vtf", szPreviewPathSmall);
+    Q_snprintf(szVMTPreviewPath, MAX_PATH, "%s.vmt", szPreviewPathSmall);
+    
+    file = filesystem->Open(szVTFPreviewPath, "w+b", "MOD");
     uint32 size;
     steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     if (size == 0)
@@ -315,7 +321,20 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
     filesystem->Close(file);
     DevLog("Successfully written file\n");
     // Free resources
-    m_pImageList->SetImageAtIndex(m_iTargetIndex, nullptr);
+    IImage *newImage = scheme()->GetImage(szPreviewPathSmall, false);
+    if (newImage)
+    {
+        KeyValues *kvFile = new KeyValues("file");
+        KeyValues *kvFileContents = new KeyValues("UnlitGeneric");
+        kvFileContents->SetString("$basetexture", szPreviewPathSmall);
+        kvFileContents->SetInt("$translucent", 1);
+        kvFileContents->SetInt("$ignorez", 1);
+        kvFile->AddSubKey(kvFileContents);
+        kvFile->SaveToFile(filesystem, szVMTPreviewPath, "MOD");
+        kvFileContents->deleteThis();
+        kvFile->deleteThis();
+        m_pImageList->SetImageAtIndex(m_iTargetIndex, newImage);
+    }
     if (pData)
     {
         delete[] pData;
