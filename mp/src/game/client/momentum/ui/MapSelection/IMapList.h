@@ -16,6 +16,8 @@ struct mapstruct_t
     int m_iZoneCount;//How many zones do we have? (Checkpoints/Stages)
     char m_szThumbnailUrl[MAX_PATH];//Where to find this map's preview
     int m_iMapId;//Map ID on Momentum's servers
+    char m_szZoneUrl[MAX_PATH];//Where to find this map's .zon
+    char m_szMapUrl[MAX_PATH];//Where to find this map's .bsp
 
     mapstruct_t()
     {
@@ -28,6 +30,8 @@ struct mapstruct_t
         m_szMapName[0] = '\0';
         m_szThumbnailUrl[0] = '\0';
         m_iMapId = -1;
+        m_szZoneUrl[0] = '\0';
+        m_szMapUrl[0] = '\0';
     }
 };
 

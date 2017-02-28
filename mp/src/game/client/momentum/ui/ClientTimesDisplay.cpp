@@ -995,6 +995,7 @@ void CClientTimesDisplay::LoadOnlineTimes()
         if (!m_bGetTop10Scores)
             Q_strcat(format, "/%llu", sizeof("/%llu"));
 
+        // MOM_TODO: g_pGameRules->MapName() is returned (null) for some reason when on a downloaded map
         Q_snprintf(requrl, BUFSIZ, format, MOM_APIDOMAIN, m_bGetTop10Scores ? 1 : 2, g_pGameRules->MapName(),
                    flaggedRuns, GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
 
@@ -1013,6 +1014,7 @@ void CClientTimesDisplay::LoadFriendsTimes()
     {
 #if ENABLE_HTTP_LEADERBOARDS
         char requrl[BUFSIZ];
+        // MOM_TODO: g_pGameRules->MapName() is returned (null) for some reason when on a downloaded map
         Q_snprintf(requrl, BUFSIZ, "%s/getfriendscores/%llu/10/1/%s/%d", MOM_APIDOMAIN,
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName(),
                    flaggedRuns);
@@ -1061,32 +1063,6 @@ void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
         Warning("Steampicontext failure.\n");
     }
 }
-
-//void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
-//                                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *callback,
-//                                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t func)
-//{
-//    if (steamapicontext && steamapicontext->SteamHTTP())
-//    {
-//        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-//        SteamAPICall_t apiHandle;
-//
-//        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-//        {
-//            Warning("%s - Callback set for %s.\n", __FUNCTION__, szURL);
-//            callback->Set(apiHandle, this, func);
-//        }
-//        else
-//        {
-//            Warning("Failed to send HTTP Request to post scores online!\n");
-//            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-//        }
-//    }
-//    else
-//    {
-//        Warning("Steampicontext failure.\n");
-//    }
-//}
 
 void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure, bool bFriendsTimes)
 {

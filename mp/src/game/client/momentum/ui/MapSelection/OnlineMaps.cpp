@@ -83,6 +83,8 @@ void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOF
                     m.m_iGameMode = pRun->GetInt("gamemode");
                     m.m_iMapId = pRun->GetInt("id");
                     Q_strcpy(m.m_szBestTime, pRun->GetString("zones"));
+                    Q_strcpy(m.m_szMapUrl, pRun->GetString("file_path"));
+                    Q_strcpy(m.m_szZoneUrl, pRun->GetString("zone_file"));
                     Q_strcpy(m.m_szThumbnailUrl, pRun->GetString("thumbnail"));
                     map.m_mMap = m;
                     KeyValues *kv = new KeyValues("map");
@@ -101,6 +103,8 @@ void COnlineMaps::MapsQueryCallback(HTTPRequestCompleted_t* pCallback, bool bIOF
                     kv->SetInt(KEYNAME_MAP_DIFFICULTY, m.m_iDifficulty);
                     kv->SetString(KEYNAME_MAP_BEST_TIME, m.m_szBestTime);
                     kv->SetInt(KEYNAME_MAP_IMAGE, map.m_iMapImageIndex);
+                    kv->SetString(KEYNAME_MAP_PATH, m.m_szMapUrl);
+                    kv->SetString(KEYNAME_MAP_ZONE_PATH, m.m_szZoneUrl);
                     map.m_iListID = m_pMapList->AddItem(kv, 0, false, false);
                     m_vecMaps.AddToTail(map); 
                 }
@@ -158,6 +162,15 @@ void COnlineMaps::OnPageShow()
     GetNewMapList();
 }
 
+void COnlineMaps::OnMapStart()
+{
+    if (!m_pMapList->GetSelectedItemsCount()) return;
+    CMapDownloader* mapDownloader = new CMapDownloader;
+    KeyValues *kv = m_pMapList->GetItem(m_pMapList->GetSelectedItem(0));
+    if (mapDownloader->Process(kv->GetString(KEYNAME_MAP_NAME), kv->GetString(KEYNAME_MAP_PATH, nullptr), kv->GetString(KEYNAME_MAP_ZONE_PATH, nullptr), this))
+        delete mapDownloader;
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Called every frame, maintains sockets and runs refreshes
@@ -181,6 +194,11 @@ void COnlineMaps::GetNewMapList()
     m_vecMaps.RemoveAll();
     m_iCurrentPage = 0;
     StartRefresh();
+}
+
+void COnlineMaps::StartSelectedMap()
+{
+    BaseClass::OnMapStart();
 }
 
 void COnlineMaps::RefreshComplete(EMapQueryOutputs eResponse)
@@ -298,7 +316,6 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
 {
     if (!bIOFailure && pCallback && pCallback->m_bRequestSuccessful && pCallback->m_eStatusCode == k_EHTTPStatusCode200OK)
     {
-        FileHandle_t file;
         char szPreviewPathSmall[MAX_PATH];
         char szVTFPreviewPath[MAX_PATH];
         char szVMTPreviewPath[MAX_PATH];
@@ -306,8 +323,7 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
 
         Q_snprintf(szVTFPreviewPath, MAX_PATH, "materials/vgui/%s.vtf", szPreviewPathSmall);
         Q_snprintf(szVMTPreviewPath, MAX_PATH, "materials/vgui/%s.vmt", szPreviewPathSmall);
-
-        file = filesystem->Open(szVTFPreviewPath, "w+b", "MOD");
+        FileHandle_t file = filesystem->Open(szVTFPreviewPath, "w+b", "MOD");
         uint32 size;
         steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
         if (size > 0)
@@ -349,4 +365,90 @@ void CImageDownloader::Callback(HTTPRequestCompleted_t* pCallback, bool bIOFailu
     if (pCallback)
         steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
     delete this;
+}
+
+bool CMapDownloader::Process(const char* szMapName, const char* szMapUrl, const char* szZoneUrl, COnlineMaps *pTarget)
+{
+    if (!pTarget || szMapName == nullptr)
+        return true;
+    m_pMapTab = pTarget;
+    Q_strcpy(m_szMapName, szMapName);
+    
+    if (szMapUrl == nullptr || szZoneUrl == nullptr)
+    {
+        // MOM_TODO: Requery web for this data
+        return true; // Change this once we requery needed data
+    }
+    if (!g_pMomentumUtil->MapExists(szMapName))
+    {
+        // We have to delet this here only if both Reqs failed:
+        bool mapReq = !g_pMomentumUtil->CreateAndSendHTTPReq(szMapUrl, &cbMapDownloadCallback, &CMapDownloader::MapCallback, this);
+        bool zonReq = !g_pMomentumUtil->CreateAndSendHTTPReq(szZoneUrl, &cbZoneDownloadCallback, &CMapDownloader::ZoneCallback, this);
+        return mapReq && zonReq;
+    }
+    return true;
+}
+
+void CMapDownloader::ZoneCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
+{
+    if (!bIOFailure && pCallback && pCallback->m_bRequestSuccessful && pCallback->m_eStatusCode == k_EHTTPStatusCode200OK)
+    {
+        char szMapPath[MAX_PATH];
+        Q_snprintf(szMapPath, MAX_PATH, "maps/%s.zon", m_szMapName);
+        FileHandle_t file = filesystem->Open(szMapPath, "w+b", "MOD");
+        uint32 size;
+        steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+        if (size > 0)
+        {
+            DevLog("Size of body: %u\n", size);
+            uint8* pData = new uint8[size];
+            steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+            // write the file
+            filesystem->Write(pData, size, file);
+            // save the file
+            filesystem->Close(file);
+            DevLog("Successfully written file to %s\n", szMapPath);
+        }
+    }
+    if (pCallback)
+        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    bool bOtherActive = cbMapDownloadCallback.IsActive();
+    DevLog("%s thinks that other is %s\n", __FUNCTION__, bOtherActive ? "active" : "closed");
+    if (!bOtherActive)
+    {
+        m_pMapTab->StartSelectedMap();
+        delete this;
+    }
+}
+
+void CMapDownloader::MapCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
+{
+    if (!bIOFailure && pCallback && pCallback->m_bRequestSuccessful && pCallback->m_eStatusCode == k_EHTTPStatusCode200OK)
+    {
+        char szMapPath[MAX_PATH];
+        Q_snprintf(szMapPath, MAX_PATH, "maps/%s.bsp", m_szMapName);
+        FileHandle_t file = filesystem->Open(szMapPath, "w+b", "MOD");
+        uint32 size;
+        steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+        if (size > 0)
+        {
+            DevLog("Size of body: %u\n", size);
+            uint8* pData = new uint8[size];
+            steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+            // write the file
+            filesystem->Write(pData, size, file);
+            // save the file
+            filesystem->Close(file);
+            DevLog("Successfully written file to %s\n", szMapPath);
+        }
+    }
+    if (pCallback)
+        steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    bool bOtherActive = cbZoneDownloadCallback.IsActive();
+    DevLog("%s thinks that other is %s\n", __FUNCTION__, bOtherActive ? "active" : "closed");
+    if (!bOtherActive)
+    {
+        m_pMapTab->StartSelectedMap();
+        delete this;
+    }
 }

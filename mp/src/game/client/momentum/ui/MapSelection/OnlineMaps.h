@@ -19,6 +19,8 @@ public:
     // property page handlers
     virtual void OnPageShow();
 
+    void OnMapStart() OVERRIDE;
+
     // returns true if the game list supports the specified ui elements
     virtual bool SupportsItem(IMapList::InterfaceItem_e item);
 
@@ -27,6 +29,8 @@ public:
 
     // gets a new server list
     MESSAGE_FUNC(GetNewMapList, "GetNewMapList");
+
+    void StartSelectedMap();
 
 
     enum EMapQueryOutputs
@@ -87,4 +91,24 @@ private:
     ImageList *m_pImageList;
 };
 
+class CMapDownloader
+{
+    DECLARE_CLASS_NOBASE(CMapDownloader)
+
+public:
+    CMapDownloader() {}
+
+    // Downloads the map if needed.
+    // MOM_TODO: Map versioning!
+    bool Process(const char *szMapName, const char *szUrl, const char* szZoneUrl, COnlineMaps *pMapTab);
+private:
+
+    CCallResult<CMapDownloader, HTTPRequestCompleted_t> cbMapDownloadCallback;
+    CCallResult<CMapDownloader, HTTPRequestCompleted_t> cbZoneDownloadCallback;
+    void MapCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure);
+    void ZoneCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure);
+
+    char m_szMapName[MAX_PATH];
+    COnlineMaps *m_pMapTab;
+};
 #endif // INTERNETGAMES_H

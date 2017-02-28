@@ -1162,7 +1162,8 @@ void CBaseMapsPage::OnMapStart()
     //engine->ServerCmd(VarArgs("mom_gamemode %i", MOMGM_BHOP));//MOM_TODO this is testing, replace with m.m_iGamemode
 
     // Start the map
-    engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString("map")));
+    // Originally this was kv->GetString("map") but did not work for Online maps. WHy it was maps and not what it's now?
+    engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString(KEYNAME_MAP_NAME)));
 }
 
 //-----------------------------------------------------------------------------
