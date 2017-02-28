@@ -124,7 +124,7 @@ typedef enum
 
 #if MOM_USINGLOCALWEB
 // What is the URL of the web?
-#define MOM_WEBDOMAIN "https://00d2299d.ngrok.io"
+#define MOM_WEBDOMAIN "http://localhost:9000"
 #else
 #define MOM_WEBDOMAIN "https://momentum-mod.org"
 #endif
