@@ -535,6 +535,17 @@ void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, co
 
     te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
 }
+bool MomentumUtil::MapExists(const char* pMapName)
+{
+    if (!pMapName) return false;
+    FileFindHandle_t found;
+    char szPath[MAX_PATH];
+    Q_snprintf(szPath, MAX_PATH, "maps/%s.bsp", pMapName);
+    const char *pStr = g_pFullFileSystem->FindFirstEx(szPath, "GAME", &found);
+    g_pFullFileSystem->FindClose(found);
+    return pStr ? true : false;
+}
+
 // Gross hack needed because scheme()->GetImage still returns an image even if it's null (returns the null texture)
 bool MomentumUtil::MapThumbnailExists(const char* pMapName)
 {
