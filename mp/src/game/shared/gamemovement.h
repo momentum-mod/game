@@ -141,8 +141,8 @@ protected:
 
 
 	// Decompoosed gravity
-	void			StartGravity( void );
-	void			FinishGravity( void );
+	virtual void StartGravity( void );
+    virtual void FinishGravity( void );
 
 	// Apply normal ( undecomposed ) gravity
 	void			AddGravity( void );

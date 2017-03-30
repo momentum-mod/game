@@ -351,4 +351,20 @@ class CTriggerMomentumPush : public CTriggerTeleportEnt
     // Pointer to the destination entity if a teleport is needed
     CBaseEntity *m_Destination;
 };
+
+class CTriggerSlide : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerSlide, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+  public:
+    void Think() OVERRIDE;
+    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+
+  public:
+    bool m_bSliding, m_bStuck;
+    float m_flGravity,m_flSavedGravity;
+};
+
 #endif // TIMERTRIGGERS_H

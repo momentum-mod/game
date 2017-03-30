@@ -3,8 +3,8 @@
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
 #include "movevars_shared.h"
-#include <stdarg.h>
 #include <rumble_shared.h>
+#include <stdarg.h>
 
 #include "tier0/memdbgon.h"
 
@@ -15,7 +15,8 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
-static MAKE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle landing punchangle. 0 = OFF, 1 = ON\n", 0, 9999);
+static MAKE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+                   "Toggle landing punchangle. 0 = OFF, 1 = ON\n", 0, 9999);
 #endif
 
 CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr) {}
@@ -37,7 +38,8 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
         //
         if (mom_punchangle_enable.GetBool())
         {
-            player->m_Local.m_vecPunchAngle.Set(ROLL, player->m_Local.m_flFallVelocity * 0.013 * mom_punchangle_enable.GetInt());
+            player->m_Local.m_vecPunchAngle.Set(ROLL, player->m_Local.m_flFallVelocity * 0.013 *
+                                                          mom_punchangle_enable.GetInt());
 
             if (player->m_Local.m_vecPunchAngle[PITCH] > 8)
             {
@@ -49,8 +51,6 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
 #endif
     }
 }
-
-
 
 void CMomentumGameMovement::DecayPunchAngle(void)
 {
@@ -205,7 +205,7 @@ bool CMomentumGameMovement::CanUnduck()
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr)
+    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_fSliding & FL_SLIDE)
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -308,6 +308,7 @@ void CMomentumGameMovement::Duck(void)
     {
         if (mv->m_nButtons & IN_DUCK)
         {
+
             bool alreadyDucked = (player->GetFlags() & FL_DUCKING) ? true : false;
 
             if ((buttonsPressed & IN_DUCK) && !(player->GetFlags() & FL_DUCKING))
@@ -317,7 +318,7 @@ void CMomentumGameMovement::Duck(void)
                 player->m_Local.m_bDucking = true;
             }
 
-            float duckmilliseconds = max(0.0f, 1000.0f - (float)player->m_Local.m_flDucktime);
+            float duckmilliseconds = max(0.0f, 1000.0f - (float) player->m_Local.m_flDucktime);
             float duckseconds = duckmilliseconds / 1000.0f;
 
             // time = max( 0.0, ( 1.0 - (float)player->m_Local.m_flDucktime / 1000.0 ) );
@@ -325,7 +326,7 @@ void CMomentumGameMovement::Duck(void)
             if (player->m_Local.m_bDucking)
             {
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_DUCK) || (player->GetGroundEntity() == nullptr) || alreadyDucked)
+                if ((duckseconds > TIME_TO_DUCK) || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr || alreadyDucked)
                 {
                     FinishDuck();
                 }
@@ -341,7 +342,7 @@ void CMomentumGameMovement::Duck(void)
         {
             // Try to unduck unless automovement is not allowed
             // NOTE: When not onground, you can always unduck
-            if (player->m_Local.m_bAllowAutoMovement || player->GetGroundEntity() == nullptr)
+            if (player->m_Local.m_bAllowAutoMovement || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
             {
                 if ((buttonsReleased & IN_DUCK) && (player->GetFlags() & FL_DUCKING))
                 {
@@ -358,7 +359,7 @@ void CMomentumGameMovement::Duck(void)
                     if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
                     {
                         // Finish ducking immediately if duck time is over or not on ground
-                        if ((duckseconds > TIME_TO_UNDUCK) || (player->GetGroundEntity() == nullptr))
+                        if ((duckseconds > TIME_TO_UNDUCK) || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
                         {
                             FinishUnDuck();
                         }
@@ -391,7 +392,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr)
+    if (player->GetGroundEntity() != nullptr || (m_pPlayer->m_fSliding & FL_SLIDE))
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -778,9 +779,34 @@ void CMomentumGameMovement::CategorizePosition()
     }
 }
 
+void CMomentumGameMovement::FinishGravity(void)
+{
+    if (player->m_flWaterJumpTime)
+        return;
+
+    // Get the correct velocity for the end of the dt
+    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+
+    CheckVelocity();
+}
+
+void CMomentumGameMovement::StartGravity(void)
+{
+    // Add gravity so they'll be in the correct position during movement
+    // yes, this 0.5 looks wrong, but it's not.
+    mv->m_vecVelocity[2] -= (player->GetGravity() * GetCurrentGravity() * 0.5 * gpGlobals->frametime);
+    mv->m_vecVelocity[2] += player->GetBaseVelocity()[2] * gpGlobals->frametime;
+
+    Vector temp = player->GetBaseVelocity();
+    temp[2] = 0;
+    player->SetBaseVelocity(temp);
+
+    CheckVelocity();
+}
+
 void CMomentumGameMovement::FullWalkMove()
 {
-    if (!CheckWater())
+    if (!(CheckWater() && !(m_pPlayer->m_fSliding & FL_SLIDE)))
     {
         StartGravity();
     }
@@ -797,7 +823,9 @@ void CMomentumGameMovement::FullWalkMove()
 
     // If we are swimming in the water, see if we are nudging against a place we can jump up out
     //  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
-    if (player->GetWaterLevel() >= WL_Waist)
+    // If sliding is set we prefer to simulate sliding than being in water.. Could be fun for some mappers
+    // that want sliding/iceskating into water. Who knows.
+    if ((player->GetWaterLevel() >= WL_Waist) && !(m_pPlayer->m_fSliding & FL_SLIDE))
     {
         if (player->GetWaterLevel() == WL_Waist)
         {
@@ -875,7 +903,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckVelocity();
 
         // Add any remaining gravitational component.
-        if (!CheckWater())
+        if (!(CheckWater() && !(m_pPlayer->m_fSliding & FL_SLIDE)))
         {
             FinishGravity();
         }
@@ -885,7 +913,12 @@ void CMomentumGameMovement::FullWalkMove()
         {
             mv->m_vecVelocity[2] = 0.f;
         }
+
         CheckFalling();
+
+        // Stuck the player to ground, if flag on sliding is set so.
+        if ((m_pPlayer->m_fSliding & FL_SLIDE_STUCKONGROUND) && (m_pPlayer->m_fSliding & FL_SLIDE))
+            StuckGround();
     }
 
     if ((m_nOldWaterLevel == WL_NotInWater && player->GetWaterLevel() != WL_NotInWater) ||
@@ -896,6 +929,27 @@ void CMomentumGameMovement::FullWalkMove()
         player->Splash();
 #endif
     }
+}
+
+void CMomentumGameMovement::StuckGround(void)
+{
+    trace_t tr;
+    Ray_t ray;
+
+    Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
+    vEnd[2] -= 8192.0f; // 8192 should be enough
+
+    ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
+
+    CTraceFilterSimple tracefilter(player, COLLISION_GROUP_NONE);
+    enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
+
+    float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
+
+    if (abs(fAdjust) < 4096.0f ) //Check if it's reasonable. If yes then apply our adjustement + our offset
+        vAbsOrigin.z -= fAdjust; 
+
+    mv->SetAbsOrigin(vAbsOrigin);
 }
 
 void CMomentumGameMovement::AirMove(void)
@@ -1248,6 +1302,11 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 // This was the virtual void, overriding it for snow friction
 void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
+    if (m_pPlayer->m_fSliding & FL_SLIDE)
+    {
+        pm = nullptr;
+    }
+
     // CMomentumPlayer *player = GetMomentumPlayer();
 
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
