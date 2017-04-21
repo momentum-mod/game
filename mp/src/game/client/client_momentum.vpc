@@ -282,7 +282,8 @@ $Project "Client (Momentum)"
             $File   "momentum\clientmode_mom_normal.cpp"
             $File   "momentum\mom_event_listener.h"
             $File   "momentum\mom_event_listener.cpp"
-            
+            $File   "momentum\mom_srvtoclient.cpp"
+
             // RTT Shadows
             $File "momentum\worldlight.h"
             $File "momentum\worldlight.cpp"

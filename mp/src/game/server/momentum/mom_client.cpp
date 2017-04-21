@@ -8,6 +8,8 @@
 #include "game.h"
 #include "player_resource.h"
 #include "engine/IEngineSound.h"
+#include "util/os_utils.h"
+
 
 #include "tier0/vprof.h"
 
@@ -18,6 +20,12 @@ void Host_Say(edict_t *pEdict, bool teamonly);
 
 extern CBaseEntity*	FindPickerEntityClass(CBasePlayer *pPlayer, char *classname);
 extern bool			g_fGameOver;
+
+#ifdef POSIX
+#define CLIENT_DLL "./momentum/bin/client.so"
+#else
+#define CLIENT_DLL "./momentum/bin/client.dll"
+#endif
 
 /*
 ===========
@@ -31,6 +39,8 @@ void ClientPutInServer(edict_t *pEdict, const char *playername)
     // Allocate a CBasePlayer for pev, and call spawn
     CMomentumPlayer *pPlayer = CMomentumPlayer::CreatePlayer("player", pEdict);
     pPlayer->SetPlayerName(playername);
+    
+    pPlayer->StdDataToClient = (DataToClientFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToClient"));
 }
 
 

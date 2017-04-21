@@ -25,6 +25,14 @@ class CMomentumReplayGhostEntity;
 #define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
 #define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
 
+/*
+ * Function pointer to exported 'DataToClient()'
+ * in the client module. Casts from pointers to function
+ * pointers aren't technically legal, but this
+ * circumvents that if you cast to 'DataToClientFn'
+ */
+typedef void (*DataToClientFn)(CMomRunStats);
+
 // Checkpoints used in the "Checkpoint menu"
 struct Checkpoint
 {
@@ -143,7 +151,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
-    CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements
+    //CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements
+    CMomRunStats m_RunStats;
+    //Function pointer to transfer regularly "networked" variables to client.
+    //Pointer is acquired in mom_client.cpp
+    void (*StdDataToClient)(CMomRunStats runStats);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 

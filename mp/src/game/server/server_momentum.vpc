@@ -51,8 +51,10 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\serialization.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
             }
-            
+           
             $Folder "Replays"
             {
                 $File   "momentum\mom_replay_system.cpp"

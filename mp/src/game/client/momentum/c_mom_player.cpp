@@ -18,7 +18,7 @@ RecvPropInt(RECVINFO(m_iCheckpointCount)),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
 RecvPropInt(RECVINFO(m_fSliding)),
 RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
-RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
+//RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)

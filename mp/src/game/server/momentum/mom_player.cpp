@@ -34,7 +34,7 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINF
     SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
     SendPropInt(SENDINFO(m_afButtonDisabled)),
     SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-    SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
+    //SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 
 END_SEND_TABLE();
 
@@ -662,6 +662,8 @@ void CMomentumPlayer::UpdateRunStats()
 
     // this might be used in a later update
     // m_flLastVelocity = velocity;
+    
+    StdDataToClient(m_RunStats); 
 
     // think once per tick
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
