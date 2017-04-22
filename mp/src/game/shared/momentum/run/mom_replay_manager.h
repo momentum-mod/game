@@ -9,7 +9,7 @@ class CMomentumReplayGhostEntity;
 class CMomReplayManager
 {
   private:
-    class CReplayCreatorBase
+    abstract_class CReplayCreatorBase
     {
       public:
         virtual CMomReplayBase *CreateReplay() = 0;
