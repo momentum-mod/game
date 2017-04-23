@@ -3,7 +3,7 @@
 
 #include "tier0/memdbgon.h"
 
-#ifdef CLIENT_DLL
+/*#ifdef CLIENT_DLL
 BEGIN_RECV_TABLE_NOBASE(C_MomRunStats, DT_MOM_RunStats)
 RecvPropInt(RECVINFO(m_iTotalZones), SPROP_UNSIGNED),
 //Keypress
@@ -47,4 +47,4 @@ SendPropArray3(SENDINFO_ARRAY3(m_flZoneVelocityAvg2D), SendPropFloat(SENDINFO_AR
 SendPropArray3(SENDINFO_ARRAY3(m_flZoneVelocityMax3D), SendPropFloat(SENDINFO_ARRAY(m_flZoneVelocityMax3D))),
 SendPropArray3(SENDINFO_ARRAY3(m_flZoneVelocityMax2D), SendPropFloat(SENDINFO_ARRAY(m_flZoneVelocityMax2D))),
 END_SEND_TABLE();
-#endif
+#endif*/

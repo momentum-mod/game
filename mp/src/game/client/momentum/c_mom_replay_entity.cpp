@@ -14,7 +14,7 @@ RecvPropInt(RECVINFO(m_iTotalTimeTicks)),
 RecvPropInt(RECVINFO(m_iCurrentTick)),
 RecvPropBool(RECVINFO(m_bIsPaused)),
 RecvPropDataTable(RECVINFO_DT(m_RunData), 0, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
-RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
+//RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE();
 
 C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()

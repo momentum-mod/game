@@ -40,6 +40,7 @@ void ClientPutInServer(edict_t *pEdict, const char *playername)
     CMomentumPlayer *pPlayer = CMomentumPlayer::CreatePlayer("player", pEdict);
     pPlayer->SetPlayerName(playername);
     
+    //Acquire client module's data recieve function
     pPlayer->StdDataToClient = (DataToClientFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToClient"));
 }
 

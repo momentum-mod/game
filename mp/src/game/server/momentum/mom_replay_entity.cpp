@@ -30,7 +30,7 @@ SendPropInt(SENDINFO(m_iTotalTimeTicks)),
 SendPropInt(SENDINFO(m_iCurrentTick)),
 SendPropBool(SENDINFO(m_bIsPaused)),
 SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
+//SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)

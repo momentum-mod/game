@@ -58,7 +58,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void UpdateStats(const Vector &ghostVel); // for hud display..
 
     const char *GetGhostModel() const { return m_pszModel; }
-    void SetRunStats(CMomRunStats *stats) { m_RunStats.CopyFrom(*stats); }
+    void SetRunStats(CMomRunStats *stats) { m_RunStats = *stats; }
 
     void SetSpectator(CMomentumPlayer *player)
     {
@@ -79,7 +79,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     bool m_bReplayFirstPerson;
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
-    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
+    CMomRunStats m_RunStats;
     CNetworkVar(int, m_nReplayButtons);
     CNetworkVar(int, m_iTotalStrafes);
     CNetworkVar(int, m_iTotalJumps);
