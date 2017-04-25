@@ -12,11 +12,11 @@ DLL_EXPORT void StdDataToClient(CMomRunStats &runStats)
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
-            memcpy((void*)pGhost->m_RunStats.m_pData, (void*)runStats.m_pData, sizeof(runStats));
+            memcpy((void*)pGhost->m_RunStats.m_pData, (void*)runStats.m_pData, sizeof(CMomRunStats::data));
         }
         else
         {
-            memcpy((void*)pPlayer->m_RunStats.m_pData, (void*)runStats.m_pData, sizeof(runStats));
+            memcpy((void*)pPlayer->m_RunStats.m_pData, (void*)runStats.m_pData, sizeof(CMomRunStats::data));
         }
     }
 }
