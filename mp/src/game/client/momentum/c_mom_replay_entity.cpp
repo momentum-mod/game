@@ -30,5 +30,6 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()
     m_flTickRate = 0.0f;
     m_bIsPaused = false;
     m_pszPlayerName[0] = '\0';
+    m_RunStats.m_pData = &m_RunStatsData;
     m_RunStats.Init();
 }

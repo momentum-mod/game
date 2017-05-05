@@ -21,12 +21,6 @@ void Host_Say(edict_t *pEdict, bool teamonly);
 extern CBaseEntity*	FindPickerEntityClass(CBasePlayer *pPlayer, char *classname);
 extern bool			g_fGameOver;
 
-#ifdef POSIX
-#define CLIENT_DLL "./momentum/bin/client.so"
-#else
-#define CLIENT_DLL "./momentum/bin/client.dll"
-#endif
-
 /*
 ===========
 ClientPutInServer
@@ -41,7 +35,7 @@ void ClientPutInServer(edict_t *pEdict, const char *playername)
     pPlayer->SetPlayerName(playername);
     
     //Acquire client module's data recieve function
-    pPlayer->StdDataToClient = (DataToClientFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToClient"));
+    pPlayer->StdDataToPlayer = (DataToPlayerFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToPlayer"));
 }
 
 

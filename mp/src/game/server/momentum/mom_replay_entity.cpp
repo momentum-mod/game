@@ -5,6 +5,7 @@
 #include "mom_shareddefs.h"
 #include "mom_timer.h"
 #include "util/mom_util.h"
+#include "util/os_utils.h"
 
 #include "tier0/memdbgon.h"
 
@@ -43,9 +44,12 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
     m_nOldReplayButtons(0)
 {
+    StdDataToReplay = (DataToReplayFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToReplay"));
+    
     // Set networked vars here
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
+    m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
     m_RunStats.Init();
     m_pPlayerSpectator = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
@@ -428,6 +432,11 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     m_flLastSyncVelocity = SyncVelocity;
     m_angLastEyeAngle = EyeAngles();
     m_nOldReplayButtons = currentStep->PlayerButtons();
+    
+    //TODO: Can this run only once? Probably. But I can't find a place where that works.
+    //This should REALLY be done.
+    if (StdDataToReplay) 
+        StdDataToReplay(&m_SrvData);
 }
 void CMomentumReplayGhostEntity::SetGhostModel(const char *newmodel)
 {

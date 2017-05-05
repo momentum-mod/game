@@ -9,6 +9,7 @@
 #include <momentum/mom_shareddefs.h>
 #include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
+#include <mom_modulecomms.h>
 
 
 class C_MomentumPlayer : public C_BasePlayer
@@ -59,6 +60,7 @@ class C_MomentumPlayer : public C_BasePlayer
     int m_iCurrentStepCP;
     int m_iCheckpointCount;
 
+    StdDataFromServer m_SrvData;
     CMOMRunEntityData m_RunData;
     CMomRunStats m_RunStats;
 

@@ -1,5 +1,3 @@
-#ifndef OS_UTILS_H
-#define OS_UTILS_H
 #pragma once
 #include "cbase.h"
 //-----------------------------------------------------------------------------
@@ -15,6 +13,10 @@ extern void *GetModuleHandle(const char *name);
 //GetProcAddress can be flat-out replaced with dlsym
 //So use GetProcAddress on both platforms.
 #define GetProcAddress dlsym
+#define CLIENT_DLL "./momentum/bin/client.so"
 
-#endif //POSIX
+#else //Not POSIX
+
+#define CLIENT_DLL "./momentum/bin/client.dll"
+
 #endif //OS_UTILS_H

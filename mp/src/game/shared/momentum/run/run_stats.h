@@ -12,237 +12,67 @@ EXTERN_RECV_TABLE(DT_MOM_RunStats);
 EXTERN_SEND_TABLE(DT_MOM_RunStats);
 #endif
 
+/*
+ * USAGE: This object is pointless without an instance of CMomRunStats::data to point to.
+ * By nature of the CMomRunStats::data's purpose, this class cannot own it, but it can own
+ * a pointer to it. Since this class can't make what it needs to point to, it needs some construction
+ * done by the creator of the instance of the class. The methods Init() and Deserialize() rely on the
+ * pointer already being set, so they can't be used until after construction.
+ *      What all this means is that construction is currently handled by the caller.
+ * 
+ * To do this, create the class, create the data, set the pointer in the class,
+ * then call either the Init(uint8) method or Deserialize(CBinaryReader *reader).
+ */
+
 class CMomRunStats : public ISerializable
 {
     DECLARE_CLASS_NOBASE(CMomRunStats);
     //DECLARE_EMBEDDED_NETWORKVAR();
     
-  public:
-    CMomRunStats(uint8 size = MAX_STAGES) : m_pData(&m_data) { Init(size); }
-    CMomRunStats(CBinaryReader *pReader) : m_pData(&m_data) { Deserialize(pReader); }
+public:
+    //TODO: HACK: These constructors are (probably just temporarily) deprecated. We need to either make this object
+    //actually capable of constructing its self, or continue to construct it externally.
+    CMomRunStats(uint8 size = MAX_STAGES);
+    CMomRunStats(CBinaryReader *pReader);
 
     // Note: This needs updating every time the struct is updated!
-    virtual void Init(uint8 size = MAX_STAGES)
-    {
-        if (size > MAX_STAGES)
-            size = MAX_STAGES;
-
-        // Set the total number of stages/checkpoints
-        SetTotalZones(size);
-
-        // initialize everything to 0
-        // Note: We do m_iTotalZones + 1 because 0 is overall!
-        for (int i = 0; i < MAX_STAGES + 1; ++i)
-        {
-            SetZoneJumps(i, 0);
-            SetZoneStrafes(i, 0);
-            SetZoneStrafeSyncAvg(i, 0);
-            SetZoneStrafeSync2Avg(i, 0);
-            SetZoneEnterTime(i, 0.0f);
-            SetZoneTime(i, 0.0f);
-
-            SetZoneEnterSpeed(i, 0.0f, 0.0f);
-            SetZoneVelocityMax(i, 0.0f, 0.0f);
-            SetZoneVelocityAvg(i, 0.0f, 0.0f);
-            SetZoneExitSpeed(i, 0.0f, 0.0f);
-        }
-    }
+    virtual void Init(uint8 size = MAX_STAGES);
 
     // Note: This needs updating every time the struct is updated!
-    virtual void Deserialize(CBinaryReader *reader)
-    {
-        SetTotalZones(reader->ReadUInt8());
-
-        // NOTE: This range checking might result in unread data.
-        if (m_data.m_iTotalZones > MAX_STAGES)
-            SetTotalZones(MAX_STAGES);
-
-        for (int i = 0; i < m_data.m_iTotalZones + 1; ++i)
-        {
-            SetZoneJumps(i, reader->ReadUInt32());
-            SetZoneStrafes(i, reader->ReadUInt32());
-
-            SetZoneStrafeSyncAvg(i, reader->ReadFloat());
-            SetZoneStrafeSync2Avg(i, reader->ReadFloat());
-            SetZoneEnterTime(i, reader->ReadFloat());
-            SetZoneTime(i, reader->ReadFloat());
-
-            float vel3D = 0.0f, vel2D = 0.0f;
-            vel3D = reader->ReadFloat();
-            vel2D = reader->ReadFloat();
-            SetZoneVelocityMax(i, vel3D, vel2D);
-            vel3D = reader->ReadFloat();
-            vel2D = reader->ReadFloat();
-            SetZoneVelocityAvg(i, vel3D, vel2D);
-            vel3D = reader->ReadFloat();
-            vel2D = reader->ReadFloat();
-            SetZoneEnterSpeed(i, vel3D, vel2D);
-            vel3D = reader->ReadFloat();
-            vel2D = reader->ReadFloat();
-            SetZoneExitSpeed(i, vel3D, vel2D);
-        }
-    }
+    virtual void Deserialize(CBinaryReader *reader);
 
     // Note: This needs updating every time the struct is updated!
-    void Serialize(CBinaryWriter *writer) OVERRIDE
-    {
-        writer->WriteUInt8(m_data.m_iTotalZones);
-
-        for (int i = 0; i < m_data.m_iTotalZones + 1; ++i)
-        {
-            //Jumps/Strafes
-            writer->WriteUInt32(m_data.m_iZoneJumps[i]);
-            writer->WriteUInt32(m_data.m_iZoneStrafes[i]);
-            //Sync
-            writer->WriteFloat(m_data.m_flZoneStrafeSyncAvg[i]);
-            writer->WriteFloat(m_data.m_flZoneStrafeSync2Avg[i]);
-            //Time
-            writer->WriteFloat(m_data.m_flZoneEnterTime[i]);
-            writer->WriteFloat(m_data.m_flZoneTime[i]);
-            //Velocity
-            writer->WriteFloat(m_data.m_flZoneVelocityMax3D[i]);
-            writer->WriteFloat(m_data.m_flZoneVelocityMax2D[i]);
-            writer->WriteFloat(m_data.m_flZoneVelocityAvg3D[i]);
-            writer->WriteFloat(m_data.m_flZoneVelocityAvg2D[i]);
-            writer->WriteFloat(m_data.m_flZoneEnterSpeed3D[i]);
-            writer->WriteFloat(m_data.m_flZoneEnterSpeed2D[i]);
-            writer->WriteFloat(m_data.m_flZoneExitSpeed3D[i]);
-            writer->WriteFloat(m_data.m_flZoneExitSpeed2D[i]);
-        }
-    }
+    void Serialize(CBinaryWriter *writer) OVERRIDE;
 
     // Note: This needs updating every time the struct is updated!
-    CMomRunStats &operator=(const CMomRunStats &other)
-    {
-        if (this == &other)
-            return *this;
-        
-        if (other.m_pData == nullptr)
-            return *this;
-
-        SetTotalZones(other.m_pData->m_iTotalZones);
-
-        for (int i = 0; i < MAX_STAGES + 1; ++i)
-        {
-            SetZoneJumps(i, other.m_pData->m_iZoneJumps[i]);
-            SetZoneStrafes(i, other.m_pData->m_iZoneStrafes[i]);
-
-            SetZoneStrafeSyncAvg(i, other.m_pData->m_flZoneStrafeSyncAvg[i]);
-            SetZoneStrafeSync2Avg(i, other.m_pData->m_flZoneStrafeSync2Avg[i]);
-
-            SetZoneEnterTime(i, other.m_pData->m_flZoneEnterTime[i]);
-            SetZoneTime(i, other.m_pData->m_flZoneTime[i]);
-
-            SetZoneVelocityMax(i, other.m_pData->m_flZoneVelocityMax3D[i], other.m_pData->m_flZoneVelocityMax2D[i]);
-            SetZoneVelocityAvg(i, other.m_pData->m_flZoneVelocityAvg3D[i], other.m_pData->m_flZoneVelocityAvg2D[i]);
-            SetZoneEnterSpeed(i, other.m_pData->m_flZoneEnterSpeed3D[i], other.m_pData->m_flZoneEnterSpeed2D[i]);
-            SetZoneExitSpeed(i, other.m_pData->m_flZoneExitSpeed3D[i], other.m_pData->m_flZoneExitSpeed2D[i]);
-        }
-
-        return *this;
-    }
+    CMomRunStats &operator=(const CMomRunStats &other);
 
   public:
     // All these are virtual so they can be overridden in future versions.
-    virtual uint8 GetTotalZones() { return m_data.m_iTotalZones; }
-    virtual uint32 GetZoneJumps(int zone) { return zone > m_data.m_iTotalZones ? 0 : m_data.m_iZoneJumps[zone]; }
-    virtual uint32 GetZoneStrafes(int zone) { return zone > m_data.m_iTotalZones ? 0 : m_data.m_iZoneStrafes[zone]; }
-    virtual float GetZoneTime(int zone) { return zone > m_data.m_iTotalZones ? 0 : m_data.m_flZoneTime[zone]; }
-    virtual float GetZoneEnterTime(int zone) { return zone > m_data.m_iTotalZones ? 0 : m_data.m_flZoneEnterTime[zone]; }
-    virtual float GetZoneStrafeSyncAvg(int zone) { return zone > m_data.m_iTotalZones ? 0 : m_data.m_flZoneStrafeSyncAvg[zone]; }
-    virtual float GetZoneStrafeSync2Avg(int zone) { return zone > m_data.m_iTotalZones ? 0 : m_data.m_flZoneStrafeSync2Avg[zone]; }
-    virtual float GetZoneEnterSpeed(int zone, bool vel2D)
-    {
-        return zone > m_data.m_iTotalZones ? 0.0f : (vel2D ? m_data.m_flZoneEnterSpeed2D[zone] : m_data.m_flZoneEnterSpeed3D[zone]);
-    }
-    virtual float GetZoneExitSpeed(int zone, bool vel2D)
-    {
-        return zone > m_data.m_iTotalZones ? 0.0f : (vel2D ? m_data.m_flZoneExitSpeed2D[zone] : m_data.m_flZoneExitSpeed3D[zone]);
-    }
-    virtual float GetZoneVelocityMax(int zone, bool vel2D)
-    {
-        return zone > m_data.m_iTotalZones ? 0.0f : (vel2D ? m_data.m_flZoneVelocityMax2D[zone] : m_data.m_flZoneVelocityMax3D[zone]);
-    }
-    virtual float GetZoneVelocityAvg(int zone, bool vel2D)
-    {
-        return zone > m_data.m_iTotalZones ? 0.0f : (vel2D ? m_data.m_flZoneVelocityAvg2D[zone] : m_data.m_flZoneVelocityAvg3D[zone]);
-    }
+    virtual uint8 GetTotalZones();
+    virtual uint32 GetZoneJumps(int zone);
+    virtual uint32 GetZoneStrafes(int zone);
+    virtual float GetZoneTime(int zone);
+    virtual float GetZoneEnterTime(int zone);
+    virtual float GetZoneStrafeSyncAvg(int zone);
+    virtual float GetZoneStrafeSync2Avg(int zone);
+    virtual float GetZoneEnterSpeed(int zone, bool vel2D);
+    virtual float GetZoneExitSpeed(int zone, bool vel2D);
+    virtual float GetZoneVelocityMax(int zone, bool vel2D);
+    virtual float GetZoneVelocityAvg(int zone, bool vel2D);
 
-    virtual void SetTotalZones(uint8 zones) { m_data.m_iTotalZones = zones > MAX_STAGES ? MAX_STAGES : zones; }
-    virtual void SetZoneJumps(int zone, uint32 value)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
 
-        m_data.m_iZoneJumps[zone] = value;
-    }
-    virtual void SetZoneStrafes(int zone, uint32 value)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_iZoneStrafes[zone] = value;
-    }
-    virtual void SetZoneTime(int zone, float value)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneTime[zone] = value;
-    }
-    virtual void SetZoneEnterTime(int zone, float value)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneEnterTime[zone] = value;
-    }
-    virtual void SetZoneStrafeSyncAvg(int zone, float value)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneStrafeSyncAvg[zone] = value;
-    }
-    virtual void SetZoneStrafeSync2Avg(int zone, float value)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneStrafeSync2Avg[zone] = value;
-    }
-    virtual void SetZoneEnterSpeed(int zone, float vert, float hor)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneEnterSpeed3D[zone] = vert;
-        m_data.m_flZoneEnterSpeed2D[zone] = hor;
-    }
-    virtual void SetZoneVelocityMax(int zone, float vert, float hor)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneVelocityMax3D[zone] = vert;
-        m_data.m_flZoneVelocityMax2D[zone] = hor;
-    }
-    virtual void SetZoneVelocityAvg(int zone, float vert, float hor)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneVelocityAvg3D[zone] = vert;
-        m_data.m_flZoneVelocityAvg2D[zone] = hor;
-    }
-    virtual void SetZoneExitSpeed(int zone, float vert, float hor)
-    {
-        if (zone > m_data.m_iTotalZones)
-            return;
-
-        m_data.m_flZoneExitSpeed3D[zone] = vert;
-        m_data.m_flZoneExitSpeed2D[zone] = hor;
-    }
+    virtual void SetTotalZones(uint8 zones);
+    virtual void SetZoneJumps(int zone, uint32 value);
+    virtual void SetZoneStrafes(int zone, uint32 value);
+    virtual void SetZoneTime(int zone, float value);
+    virtual void SetZoneEnterTime(int zone, float value);
+    virtual void SetZoneStrafeSyncAvg(int zone, float value);
+    virtual void SetZoneStrafeSync2Avg(int zone, float value);
+    virtual void SetZoneEnterSpeed(int zone, float vert, float hor);
+    virtual void SetZoneVelocityMax(int zone, float vert, float hor);
+    virtual void SetZoneVelocityAvg(int zone, float vert, float hor);
+    virtual void SetZoneExitSpeed(int zone, float vert, float hor);
 
     /*
      * We encapsulate the raw data in its own struct to allow a memcpy of just the data
@@ -275,9 +105,6 @@ class CMomRunStats : public ISerializable
     
     //A public pointer to the data kind of undermines the encapsulation, but it is necessary
     CMomRunStats::data *m_pData;
-    
-private:
-    CMomRunStats::data m_data;
 };
 
 

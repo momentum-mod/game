@@ -12,6 +12,7 @@
 #include <run/mom_entity_run_data.h>
 #include <momentum/util/mom_util.h>
 #include <run/run_stats.h>
+#include <mom_modulecomms.h>
 
 class CMomentumReplayGhostEntity;
 
@@ -24,14 +25,6 @@ class CMomentumReplayGhostEntity;
 // Change these if you want to change the flashlight sound
 #define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
 #define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
-
-/*
- * Function pointer to exported 'DataToClient()'
- * in the client module. Casts from pointers to function
- * pointers aren't technically legal, but this
- * circumvents that if you cast to 'DataToClientFn'
- */
-typedef void (*DataToClientFn)(CMomRunStats);
 
 // Checkpoints used in the "Checkpoint menu"
 struct Checkpoint
@@ -152,10 +145,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
     //CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements
+    StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
     //Function pointer to transfer regularly "networked" variables to client.
     //Pointer is acquired in mom_client.cpp
-    void (*StdDataToClient)(CMomRunStats runStats);
+    void (*StdDataToPlayer)(StdDataFromServer* from);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 

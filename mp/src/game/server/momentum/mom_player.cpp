@@ -84,6 +84,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_iCheckpointCount = 0;
     m_bUsingCPMenu = false;
     m_iCurrentStepCP = -1;
+    
+    m_RunStats.m_pData = &(this->m_SrvData.m_RunStatsData);
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
@@ -663,7 +665,7 @@ void CMomentumPlayer::UpdateRunStats()
     // this might be used in a later update
     // m_flLastVelocity = velocity;
     
-    StdDataToClient(m_RunStats); 
+    StdDataToPlayer(&m_SrvData); 
 
     // think once per tick
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");

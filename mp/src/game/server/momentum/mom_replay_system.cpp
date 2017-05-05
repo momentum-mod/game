@@ -152,7 +152,7 @@ void CMomentumReplaySystem::SetRunStats()
         return;
 
     auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
-    *stats = static_cast<CMomRunStats>(m_player->m_RunStats);
+    memcpy(stats->m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
 }
 
 class CMOMReplayCommands
