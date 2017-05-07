@@ -302,9 +302,9 @@ void CMomentumReplayGhostEntity::Think()
         }
 
         if (m_pPlayerSpectator)
-            HandleGhost();
+            HandleGhostFirstPerson();
         else
-            HandleGhostFirstPerson(); // MOM_TODO: If some players aren't spectating this, they won't have it update...
+            HandleGhost();
     }
 
     if (m_flTimeScale <= 1.0f)
