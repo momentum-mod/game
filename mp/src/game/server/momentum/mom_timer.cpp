@@ -445,9 +445,9 @@ class CTimerCommands
 
     static void ResetToCheckpoint()
     {
-        CTriggerStage *stage;
+        CTriggerStage *stage = g_pMomentumTimer->GetCurrentStage();
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
-        if ((stage = g_pMomentumTimer->GetCurrentStage()) != nullptr && pPlayer && !pPlayer->m_bAllowUserTeleports)
+        if (stage && pPlayer && pPlayer->m_bAllowUserTeleports)
         {
             pPlayer->Teleport(&stage->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
