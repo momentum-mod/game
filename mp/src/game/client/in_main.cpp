@@ -50,8 +50,6 @@ extern ConVar cam_idealyaw;
 // FIXME, tie to entity state parsing for player!!!
 int g_iAlive = 1;
 
-static int s_ClearInputState = 0;
-
 // Defined in pm_math.c
 float anglemod( float a );
 
@@ -128,7 +126,7 @@ kbutton_t	in_right;
 static	kbutton_t	in_lookup;
 static	kbutton_t	in_lookdown;
 static	kbutton_t	in_use;
-static	kbutton_t	in_jump;
+static kbutton_t	in_jump;
 static	kbutton_t	in_attack;
 static	kbutton_t	in_attack2;
 static	kbutton_t	in_up;
@@ -311,6 +309,7 @@ CInput::CInput( void )
 	m_pCommands = NULL;
 	m_pCameraThirdData = NULL;
 	m_pVerifiedCommands = NULL;
+    s_ClearInputState = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1402,10 +1401,10 @@ CUserCmd *CInput::GetUserCmd( int sequence_number )
 //			in_button - 
 //			in_ignore - 
 //			*button - 
-//			reset - 
-// Output : static void
+//			reset - If reset > 0, will clear state, if reset > 2, will also immediately clear down keys
+// Output : void
 //-----------------------------------------------------------------------------
-static void CalcButtonBits( int& bits, int in_button, int in_ignore, kbutton_t *button, bool reset )
+void CInput::CalcButtonBits( int& bits, int in_button, int in_ignore, kbutton_t *button, int reset )
 {
 	// Down or still down?
 	if ( button->state & 3 )
@@ -1425,6 +1424,13 @@ static void CalcButtonBits( int& bits, int in_button, int in_ignore, kbutton_t *
 	if ( reset )
 	{
 		button->state &= clearmask;
+        // @Gocnak: Needed for a CLEAR_STATE_NOW function for keys
+        // Added primarily for resetting stuck keys from demos/loading screens
+        if (reset >= 2)
+        {
+            button->down[0] = 0;
+            button->down[1] = 0;
+        }
 	}
 }
 
