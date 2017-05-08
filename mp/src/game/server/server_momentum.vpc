@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories   "$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
+        $AdditionalIncludeDirectories  	"$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\thirdparty\zed_net"
         $PreprocessorDefinitions        "$BASE;SDK_DLL"
     }
 }
@@ -52,7 +52,22 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
             }
-            
+            $Folder "Network"
+            {
+            	$File "$SRCDIR\thirdparty\zed_net\zed_net.h"
+                $File "$SRCDIR\thirdparty\zed_net\zed_net.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                            $TreatWarningsAsErrors "No"
+                        }
+                    }
+                }
+            }
+
             $Folder "Replays"
             {
                 $File   "momentum\mom_replay_system.cpp"

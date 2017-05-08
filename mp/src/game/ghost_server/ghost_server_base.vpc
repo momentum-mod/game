@@ -1,0 +1,69 @@
+//-----------------------------------------------------------------------------
+//	GAMEUI2_BASE.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro GAMENAME 	"momentum"
+$Macro OUTBINNAME	"ghost_server"
+$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
+$Macro SRCDIR		"..\.."
+
+$Include "$SRCDIR\vpc_scripts\mm_exe_base.vpc"			
+
+$Configuration	"Debug"
+{
+	$General
+	{
+		$OutputDirectory			".\Debug_$GAMENAME"			[$WIN32]
+		$IntermediateDirectory		".\Debug_$GAMENAME"			[$WIN32]
+	}
+}
+
+$Configuration	"Release"
+{
+	$General
+	{
+		$OutputDirectory			".\Release_$GAMENAME"		[$WIN32]
+		$IntermediateDirectory		".\Release_$GAMENAME"		[$WIN32]
+	}
+}
+
+$Configuration
+{
+	$General
+	{
+			$OutputDirectory			".\$GAMENAME"		[$OSXALL]
+	}
+	
+	$Compiler
+    {
+        $AdditionalIncludeDirectories   "$BASE;$SRCDIR\thirdparty\zed_net,$SRCDIR\game\shared\momentum"
+		$PreprocessorDefinitions		"$BASE;_HAS_EXCEPTIONS=0"
+	}
+
+	$Linker
+	{
+		$SystemLibraries				"iconv" [$OSXALL]
+		$SystemFrameworks				"Carbon" [$OSXALL]
+		$SystemLibraries				"rt" [$LINUXALL]
+		$IgnoreImportLibrary			"TRUE"
+		$AdditionalDependencies			"$BASE winmm.lib"	[$WIN32]
+	}
+}
+
+$Project "GhostServer"
+{
+	$Folder	"Header Files"
+	{
+		$File	"$SRCDIR\thirdparty\zed_net\zed_net.h"
+        $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
+	}
+
+	$Folder	"Source Files"
+	{
+		$File	"$SRCDIR\game\ghost_server\ghostServer.cpp"
+        $File	"$SRCDIR\game\ghost_server\ghostServer.h"
+        $File   "$SRCDIR\thirdparty\zed_net\zed_net.cpp"
+	}
+}

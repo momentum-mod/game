@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "server_events.h"
-
+#include "mom_shareddefs.h"
 #include "tier0/memdbgon.h"
 
 //This is only called when "map ____" is called, if the user uses changelevel then...
@@ -61,6 +61,7 @@ void CMOMServerEvents::LevelInitPreEntity()
     }
     zones = new CMapzoneData(pMapName);
     zones->SpawnMapZones();
+    runGhostClient();
 }
 
 
@@ -93,6 +94,7 @@ void CMOMServerEvents::LevelShutdownPostEntity()
     // Shut off fullbright if the map enabled it
     if (fullbright.IsValid() && fullbright.GetBool())
         fullbright.SetValue(0);
+    exitGhostClient();
 }
 
 void CMOMServerEvents::FrameUpdatePreEntityThink()
@@ -142,5 +144,38 @@ void CMOMServerEvents::MountAdditionalContent()
     pMainFile->deleteThis();
 }
 
+void CMOMServerEvents::runGhostClient()
+{
+    zed_net_init();
+    zed_net_tcp_socket_open(&socket, 0, 0, 0);
+
+    if (zed_net_get_address(&address, host, port) != 0)
+    {
+        Warning("Error: %s\n", zed_net_get_error());
+
+        zed_net_socket_close(&socket);
+        zed_net_shutdown();
+    }
+
+    if (zed_net_tcp_connect(&socket, address))
+    {
+        Warning("Failed to connect to %s:%d\n", host, port);
+    }
+    Log("Connected to %s:%d\n", host, port);
+
+    int data = MOM_SIGNON;
+    zed_net_tcp_socket_send(&socket, &data, sizeof(data));
+    Log("Sending signon packet...\n");
+
+}
+void CMOMServerEvents::exitGhostClient()
+{
+    int data = MOM_SIGNOFF;
+    zed_net_tcp_socket_send(&socket, &data, sizeof(data));
+
+    zed_net_socket_close(&socket);
+    zed_net_shutdown();
+    Log("Exiting client...\n");
+}
 //Create the 
 CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");

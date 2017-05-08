@@ -5,8 +5,10 @@
 #endif
 
 #include "const.h"
+#ifdef CLIENT_DLL
+#elif defined SERVER_DLL
 #include "shareddefs.h"
-
+#endif
 
 // Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 // When editing this, remember to also edit version.txt on the main dir of the repo
@@ -95,6 +97,9 @@ typedef enum FLAGS
 #define MOM_WEBDOMAIN "https://momentum-mod.org"
 #endif
 
+//Network data signatures
+#define MOM_SIGNON 0x0F0F0F
+#define MOM_SIGNOFF 0x101010
 // Where to query the api. In case it does not match the current WEBDOMAIN (How did you end up like this?), you can change it!
 #define MOM_APIDOMAIN MOM_WEBDOMAIN
 
