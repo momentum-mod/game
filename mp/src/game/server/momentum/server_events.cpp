@@ -6,11 +6,11 @@
 zed_net_socket_t CMOMServerEvents::socket;
 zed_net_address_t CMOMServerEvents::address;
 char CMOMServerEvents::data[256];
+CUtlVector<ghostNetFrame> CMOMServerEvents::ghostPlayers;
 
 struct MyThreadParams_t
 {
-    int number;
-    char letter;
+    CMomentumPlayer *pPlayer;
 };
 
 //This is only called when "map ____" is called, if the user uses changelevel then...
@@ -76,7 +76,7 @@ void CMOMServerEvents::LevelInitPreEntity()
 
 void CMOMServerEvents::LevelInitPostEntity()
 {
-    runGhostClient();
+    m_ghostClientConnected = runGhostClient();
 
     // Reset zone editing
     g_MapzoneEdit.Reset();
@@ -105,17 +105,20 @@ void CMOMServerEvents::LevelShutdownPostEntity()
     // Shut off fullbright if the map enabled it
     if (fullbright.IsValid() && fullbright.GetBool())
         fullbright.SetValue(0);
-    exitGhostClient();
+    m_ghostClientConnected = !exitGhostClient(); //set ghost client connection to false when we disconnect
 }
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     if (isGhostClientConnected() && pPlayer)
     {
-        MyThreadParams_t* vars = new MyThreadParams_t;
-        //vars->number = 5;
+        if (ghostPlayers.Size() > 0)
+            Msg("Players in ghost server: %i. Name of #0: %s,\n", ghostPlayers.Size(), ghostPlayers[0].PlayerName);
 
-        ThreadHandle_t thread = CreateSimpleThread(CMOMServerEvents::recieveGhostData, vars);
+        MyThreadParams_t* vars = new MyThreadParams_t;
+        vars->pPlayer = pPlayer;
+
+        ThreadHandle_t thread = CreateSimpleThread(CMOMServerEvents::sendAndRecieveData, vars);
         ThreadDetach(thread);
     }
     g_MapzoneEdit.Update();
@@ -129,7 +132,6 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
             g_pMomentumTimer->Stop(false);
         }
     }
-    Msg("Recieved from ghost server: %s", data);
 }
 
 void CMOMServerEvents::MountAdditionalContent()
@@ -204,20 +206,58 @@ bool CMOMServerEvents::exitGhostClient()
     zed_net_socket_close(&socket);
     zed_net_shutdown();
     ConColorMsg(Color(255, 255, 0, 255), "Sent signoff packet, exiting ghost client...\n");
+    ghostPlayers.RemoveAll();
     return true;
 }
-unsigned CMOMServerEvents::recieveGhostData(void *params)
+//Threaded function
+unsigned CMOMServerEvents::sendAndRecieveData(void *params)
 {
     MyThreadParams_t* vars = (MyThreadParams_t*)params; // always use a struct!
 
-    char buffer[256];
-    int bytes_read = zed_net_tcp_socket_receive(&socket, buffer, sizeof(buffer));
-    if (bytes_read)
+    //Send an identifier to the server that we're about to send a new frame. 
+    //When we get an ACK from the server, we send the frame.
+    int newFrameIdentifier = MOM_C_SENDING_NEWFRAME; //Client sending new data to server 
+    zed_net_tcp_socket_send(&socket, &newFrameIdentifier, sizeof(newFrameIdentifier)); //SYN
+
+    int data;
+    int bytes_read = zed_net_tcp_socket_receive(&socket, &data, sizeof(data));
+
+    if (bytes_read && data == MOM_C_RECIEVING_NEWFRAME) //SYN-ACK , Server acknowledges new frame is coming
     {
-        Q_strcpy(data, buffer);
+        ghostNetFrame newFrame(vars->pPlayer->EyeAngles(),
+            vars->pPlayer->GetAbsOrigin(),
+            vars->pPlayer->GetViewOffset(),
+            vars->pPlayer->m_nButtons,
+            vars->pPlayer->GetPlayerName());
+
+        zed_net_tcp_socket_send(&socket, &newFrame, sizeof(newFrame)); //ACK
+    }
+
+    newFrameIdentifier = MOM_S_RECIEVING_NEWFRAME; //Client ready to recieve data from server 
+    zed_net_tcp_socket_send(&socket, &newFrameIdentifier, sizeof(newFrameIdentifier)); //SYN
+
+    bytes_read = zed_net_tcp_socket_receive(&socket, &data, sizeof(data));
+
+    if (bytes_read && data == MOM_S_SENDING_NEWFRAME) //SYN-ACK
+    {
+        //The server then sends number of players to the client
+        newFrameIdentifier = MOM_S_RECIEVING_NUMPLAYERS; //Client ready to recieve data from server 
+        zed_net_tcp_socket_send(&socket, &newFrameIdentifier, sizeof(newFrameIdentifier)); //SYN
+
+        bytes_read = zed_net_tcp_socket_receive(&socket, &data, sizeof(data));
+
+        if (bytes_read && data == MOM_S_SENDING_NUMPLAYERS)
+        {
+            int playerNum = 0;
+            bytes_read = zed_net_tcp_socket_receive(&socket, &playerNum, sizeof(playerNum));
+
+            //TODO: Unseralize data
+            //void* ghostData;
+            //zed_net_tcp_socket_receive(&socket, &data, playerNum * sizeof(ghostNetFrame));
+        }
+
     }
     delete vars;
     return 0;
 }
-//Create the 
 CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");

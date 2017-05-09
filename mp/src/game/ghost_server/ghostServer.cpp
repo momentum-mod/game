@@ -2,13 +2,20 @@
 #include <iostream>
 #include <string.h>
 #include <thread>
+#include <mutex>
 
 #include "ghostServer.h"
     
 void handlePlayer(playerData *newPlayer);
 void getInput();
-int numPlayers = 0;
+int run_server(unsigned short port);
+void new_connection(zed_net_socket_t socket, zed_net_address_t address);
+void acceptNewConnections();
+
+volatile int numPlayers = 0;
 std::vector<playerData* >m_vecPlayers; 
+std::mutex m_vecPlayers_mutex;
+std::mutex m_bShouldExit_mutex;
 int run_server(unsigned short port)
 {
     zed_net_init();
@@ -31,14 +38,21 @@ void new_connection(zed_net_socket_t socket, zed_net_address_t address)
     if (bytes_read)
     {
         printf("Received %d bytes from %s:%d:\n", bytes_read, host, address.port);
-        if (data == MOM_SIGNON)
+        if (data == MOM_SIGNON) //Player signs on for the first time
         {
             printf("Data matches MOM_SIGNON pattern!\n");
-            playerData *newPlayer = new playerData(socket, address, numPlayers);
+            //Describes a new;y connected player with client idx equal to the maximum number of players
+            m_vecPlayers_mutex.lock();
+            playerData *newPlayer = new playerData(socket, address, numPlayers); 
+            m_vecPlayers_mutex.unlock();
+
+            m_vecPlayers_mutex.try_lock();
 
             m_vecPlayers.push_back(newPlayer);
             numPlayers = m_vecPlayers.size();
-            
+
+            m_vecPlayers_mutex.unlock();
+
             while (socket.ready == 0)
             {
                 handlePlayer(newPlayer);
@@ -51,10 +65,14 @@ void acceptNewConnections()
 {
     zed_net_socket_t remote_socket;
     zed_net_address_t remote_address;
-    zed_net_tcp_accept(&m_Socket, &remote_socket, &remote_address);
 
-    std::thread t(new_connection, remote_socket, remote_address); //create a new thread to deal with the connection
-    t.detach(); //each connection is dealt with in a seperate thread
+    while (!m_bShouldExit)
+    {
+        zed_net_tcp_accept(&m_Socket, &remote_socket, &remote_address);
+
+        std::thread t(new_connection, remote_socket, remote_address); //create a new thread to deal with the connection
+        t.detach(); //each connection is dealt with in a seperate thread
+    }
 }
 void getInput()
 {
@@ -71,36 +89,73 @@ void getInput()
     }
     if (strcmp(command, "exit") == 0)
     {
+        m_bShouldExit_mutex.lock();
         m_bShouldExit = true;
+        m_bShouldExit_mutex.unlock();
     }
     if (strcmp(command, "help") == 0)
     {
         printf("Usage: ghost_server <port> \n");
     }
-
+    if (strcmp(command, "numplayers") == 0)
+    {
+        printf("Number of connected players: %i\n", numPlayers);
+    }
 }
 void handlePlayer(playerData *newPlayer)
 {
     int data;
-    char test[256];
-    _snprintf(test, sizeof(test), "Hello! What's up yall?");
-    zed_net_tcp_socket_send(&newPlayer->remote_socket, &test, sizeof(test));
-    //const char *host;
-    //host = zed_net_host_to_str(m_vecPlayers[i]->remote_address.host);
     int bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
     if (bytes_read && newPlayer)
     {
-        //printf("Received %d bytes from %s:%d:\n", bytes_read, host, m_vecPlayers[i]->remote_address.port);
+        if (data == MOM_C_SENDING_NEWFRAME)
+        {
+            //printf("Data matches MOM_C_SENDING_NEWFRAME pattern! \n"); 
+            data = MOM_C_RECIEVING_NEWFRAME;
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
+            // Wait for client to get our acknowledgement, and recieve frame update from client
+            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentFrame, sizeof(ghostNetFrame)); //ACK
+            //printf("Ghost frame: PlayerName: %s\n", newPlayer->currentFrame.PlayerName);
+        }
+
+        if (data == MOM_S_RECIEVING_NEWFRAME) //SYN
+        {
+            //printf("Data matches MOM_S_RECIEVING_NEWFRAME pattern! ..\n");
+            // Send out a SYN-ACK to the client that we're going to be sending them an update
+            data = MOM_S_SENDING_NEWFRAME;
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN
+            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data)); //ACK
+            if (data == MOM_S_RECIEVING_NUMPLAYERS)
+            {
+                data = MOM_S_SENDING_NUMPLAYERS;
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN
+                int playerNum = numPlayers;
+                //printf("Sending number of players: %i\n", playerNum);
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum)); //SYN
+                //TODO : Serialize data into one big packet
+                /*
+                for (int i = 0; i < playerNum; i++)
+                {
+                    //printf("Sending player #%i, name %s ..\n", i, m_vecPlayers[i]->currentFrame.PlayerName);
+                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i], sizeof(ghostNetFrame)); //SYN
+                }
+                */
+            }
+
+        }
         if (data == MOM_SIGNOFF)
         {
-            printf("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
+            //printf("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
             zed_net_socket_close(&newPlayer->remote_socket);
+            m_vecPlayers_mutex.lock();
+
             m_vecPlayers.erase(m_vecPlayers.begin() + newPlayer->clientIndex);
             numPlayers = m_vecPlayers.size();
 
+            m_vecPlayers_mutex.unlock();
         }
     }
-    //printf("There are %i players connected!\n", numPlayers);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 int main(int argc, char** argv)
 {
@@ -113,17 +168,16 @@ int main(int argc, char** argv)
     {
         status = run_server(DEFAULT_PORT); 
     }
-
+    
     if (status != 0)
-        m_bShouldExit = true;
+        return 0;
+
+    std::thread t(acceptNewConnections); //create a new thread that listens for incoming client connections
+    t.detach(); //continuously
 
     while (!m_bShouldExit)
     {
-        std::thread t(acceptNewConnections); //create a new thread that listens for incoming client connections
-        t.join(); //continuously
-        //std::thread t2(getInput);
-        //t2.detach();
-
+        getInput();
     }
     zed_net_shutdown();
 

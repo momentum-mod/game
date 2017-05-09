@@ -7,20 +7,12 @@
 
 zed_net_socket_t m_Socket;
 bool m_bShouldExit = false;
+int m_iTickRate;
 
-// Based on CReplayFrame
-struct frame
-{
-    float EyeAngle[3];
-    float Position[3];
-    float ViewOffset[3];
-    int buttons;
-    char playerName[MAX_PLAYER_NAME_LENGTH];
-};
 struct playerData
 {
     int clientIndex;
-    frame currentFrame;
+    ghostNetFrame currentFrame;
     zed_net_socket_t remote_socket;
     zed_net_address_t remote_address;
     playerData(zed_net_socket_t socket, zed_net_address_t addr, int idx) 

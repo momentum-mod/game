@@ -109,6 +109,40 @@ typedef enum FLAGS
 //Network data signatures
 #define MOM_SIGNON 0x0F0F0F
 #define MOM_SIGNOFF 0x101010
+
+#define MOM_C_SENDING_NEWFRAME 0xDEDEDE
+#define MOM_C_RECIEVING_NEWFRAME 0xEDEDED
+
+#define MOM_S_SENDING_NEWFRAME 0xABABAB
+#define MOM_S_RECIEVING_NEWFRAME 0xB1B1B1
+#define MOM_S_SENDING_NUMPLAYERS 0x10BA01
+#define MOM_S_RECIEVING_NUMPLAYERS 0x02FE20
+
 #define DEFAULT_PORT 9000
 #define DEFAULT_HOST  "127.0.0.1"
+
+// Based on CReplayFrame
+struct ghostNetFrame
+{
+    float EyeAngle[3];
+    float Position[3];
+    float ViewOffset[3];
+    int Buttons;
+    char PlayerName[MAX_PLAYER_NAME_LENGTH];
+#ifndef GHOST_SERVER
+    ghostNetFrame(const QAngle eyeAngle, const Vector position, const Vector viewOffset,  int buttons, const char* playername)
+    {
+        for (int i = 0; i < 2; i++)
+        {
+            EyeAngle[i] = eyeAngle[i];
+            Position[i] = position[i];
+            ViewOffset[i] = viewOffset[i];
+        }
+        Buttons = buttons;
+        Q_strcpy(PlayerName, playername);
+    }
+    ghostNetFrame() {}
+#endif
+};
+
 #endif // MOM_SHAREDDEFS_H
