@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//	GAMEUI2_BASE.VPC
+//	GHOST_SERVER_BASE.VPC
 //
 //	Project Script
 //-----------------------------------------------------------------------------
@@ -39,7 +39,9 @@ $Configuration
 	$Compiler
     {
         $AdditionalIncludeDirectories   "$BASE;$SRCDIR\thirdparty\zed_net,$SRCDIR\game\shared\momentum"
-		$PreprocessorDefinitions		"$BASE;_HAS_EXCEPTIONS=0"
+		$PreprocessorDefinitions		"$BASE;GHOST_SERVER"
+        $AdditionalOptions				"/EHsc"
+
 	}
 
 	$Linker

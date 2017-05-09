@@ -61,12 +61,13 @@ void CMOMServerEvents::LevelInitPreEntity()
     }
     zones = new CMapzoneData(pMapName);
     zones->SpawnMapZones();
-    runGhostClient();
 }
 
 
 void CMOMServerEvents::LevelInitPostEntity()
 {
+    runGhostClient();
+
     // Reset zone editing
     g_MapzoneEdit.Reset();
 
@@ -99,6 +100,11 @@ void CMOMServerEvents::LevelShutdownPostEntity()
 
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (isGhostClientConnected() && pPlayer && !recievedPacket)
+    {
+        recievedPacket = recieveGhostData();
+    }
     g_MapzoneEdit.Update();
 
     if (!g_pMomentumTimer->GotCaughtCheating())
@@ -144,8 +150,10 @@ void CMOMServerEvents::MountAdditionalContent()
     pMainFile->deleteThis();
 }
 
-void CMOMServerEvents::runGhostClient()
+bool CMOMServerEvents::runGhostClient()
 {
+    socket = zed_net_socket_t();
+    address = zed_net_address_t();
     zed_net_init();
     zed_net_tcp_socket_open(&socket, 0, 0, 0);
 
@@ -155,27 +163,47 @@ void CMOMServerEvents::runGhostClient()
 
         zed_net_socket_close(&socket);
         zed_net_shutdown();
+        return false;
     }
 
     if (zed_net_tcp_connect(&socket, address))
     {
         Warning("Failed to connect to %s:%d\n", host, port);
+        return false;
     }
-    Log("Connected to %s:%d\n", host, port);
+    ConColorMsg(Color(255, 255, 0, 255), "Connected to %s:%d\n", host, port);
 
     int data = MOM_SIGNON;
     zed_net_tcp_socket_send(&socket, &data, sizeof(data));
-    Log("Sending signon packet...\n");
-
+    ConColorMsg(Color(255, 255, 0, 255), "Sending signon packet...\n");
+    return true;
 }
-void CMOMServerEvents::exitGhostClient()
+bool CMOMServerEvents::exitGhostClient()
 {
     int data = MOM_SIGNOFF;
-    zed_net_tcp_socket_send(&socket, &data, sizeof(data));
+    if (zed_net_tcp_socket_send(&socket, &data, sizeof(data)))
+    {
+        Warning("Could not send signoff packet!\n");
+        return false;
+    }
 
     zed_net_socket_close(&socket);
     zed_net_shutdown();
-    Log("Exiting client...\n");
+    ConColorMsg(Color(255, 255, 0, 255), "Sent signoff packet, exiting ghost client...\n");
+    return true;
+}
+bool CMOMServerEvents::recieveGhostData()
+{
+    char buffer[256];
+    int bytes_read = zed_net_tcp_socket_receive(&socket, buffer, sizeof(buffer));
+    if (bytes_read)
+    {
+        ConColorMsg(Color(0, 255, 0, 255), buffer);
+        ConColorMsg(Color(0, 255, 0, 255), "\n");
+        return true;
+    }
+    else
+        return false;
 }
 //Create the 
 CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");

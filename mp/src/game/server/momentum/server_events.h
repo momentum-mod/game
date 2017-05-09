@@ -30,15 +30,19 @@ public:
     void FrameUpdatePreEntityThink() OVERRIDE;
 
     void MountAdditionalContent();
-    void runGhostClient();
-    void exitGhostClient();
 
+    bool runGhostClient();
+    bool exitGhostClient();
+    bool recieveGhostData();
+    bool isGhostClientConnected() { return socket.ready == 0; }
 private:
     CMapzoneData* zones;
     zed_net_socket_t socket;
     zed_net_address_t address;
-    const char* host = "127.0.0.1";
-    unsigned short port = 9000;
+    const char* host = DEFAULT_HOST;
+    unsigned short port = DEFAULT_PORT;
+    bool recievedPacket;
+    ThreadHandle_t thread;
 };
 
 #endif // SERVER_EVENTS_H

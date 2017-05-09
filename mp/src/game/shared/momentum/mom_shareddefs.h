@@ -5,8 +5,7 @@
 #endif
 
 #include "const.h"
-#ifdef CLIENT_DLL
-#elif defined SERVER_DLL
+#ifndef GHOST_SERVER //we can't include tier0 header files in the ghost server
 #include "shareddefs.h"
 #endif
 
@@ -97,9 +96,6 @@ typedef enum FLAGS
 #define MOM_WEBDOMAIN "https://momentum-mod.org"
 #endif
 
-//Network data signatures
-#define MOM_SIGNON 0x0F0F0F
-#define MOM_SIGNOFF 0x101010
 // Where to query the api. In case it does not match the current WEBDOMAIN (How did you end up like this?), you can change it!
 #define MOM_APIDOMAIN MOM_WEBDOMAIN
 
@@ -108,4 +104,11 @@ typedef enum FLAGS
 #define EXT_ZONE_FILE ".zon"
 #define EXT_RECORDING_FILE ".momrec"
 
+
+// GHOST SERVER STUFF
+//Network data signatures
+#define MOM_SIGNON 0x0F0F0F
+#define MOM_SIGNOFF 0x101010
+#define DEFAULT_PORT 9000
+#define DEFAULT_HOST  "127.0.0.1"
 #endif // MOM_SHAREDDEFS_H
