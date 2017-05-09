@@ -53,7 +53,13 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
             }
             $Folder "Network"
-            {
+	        {
+	        	 $Folder "Ghost Client"
+		        {
+	            	$File "$SRCDIR\game\server\momentum\ghost_client.h"
+	                $File "$SRCDIR\game\server\momentum\ghost_client.cpp"
+	            }
+
             	$File "$SRCDIR\thirdparty\zed_net\zed_net.h"
                 $File "$SRCDIR\thirdparty\zed_net\zed_net.cpp"
                 {

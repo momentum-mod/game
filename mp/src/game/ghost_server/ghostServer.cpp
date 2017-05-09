@@ -42,24 +42,26 @@ void new_connection(zed_net_socket_t socket, zed_net_address_t address)
         {
             printf("Data matches MOM_SIGNON pattern!\n");
             //Describes a new;y connected player with client idx equal to the maximum number of players
-            m_vecPlayers_mutex.lock();
             playerData *newPlayer = new playerData(socket, address, numPlayers); 
-            m_vecPlayers_mutex.unlock();
 
-            m_vecPlayers_mutex.try_lock();
+            m_vecPlayers_mutex.lock();
 
             m_vecPlayers.push_back(newPlayer);
             numPlayers = m_vecPlayers.size();
 
             m_vecPlayers_mutex.unlock();
 
-            while (socket.ready == 0)
+            printf("There are now %i connected players.\n", numPlayers);
+            //listen(sock->handle, SOMAXCONN) != 0
+            while (newPlayer->remote_socket.ready == 0) //socket is open
             {
                 handlePlayer(newPlayer);
             }
             delete newPlayer;
         }
     }
+    printf("Thread terminating\n");
+    //End of thread
 }
 void acceptNewConnections()
 {
@@ -121,31 +123,28 @@ void handlePlayer(playerData *newPlayer)
         if (data == MOM_S_RECIEVING_NEWFRAME) //SYN
         {
             //printf("Data matches MOM_S_RECIEVING_NEWFRAME pattern! ..\n");
-            // Send out a SYN-ACK to the client that we're going to be sending them an update
+            // Send out a ACK to the client that we're going to be sending them an update
             data = MOM_S_SENDING_NEWFRAME;
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN
-            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data)); //ACK
-            if (data == MOM_S_RECIEVING_NUMPLAYERS)
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); 
+
+            int playerNum = numPlayers;
+            //printf("Sending number of players: %i\n", playerNum);
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum)); //SYN
+
+            //TODO : Serialize data into one big packet
+            /*
+            for (int i = 0; i < playerNum; i++)
             {
-                data = MOM_S_SENDING_NUMPLAYERS;
-                zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN
-                int playerNum = numPlayers;
-                //printf("Sending number of players: %i\n", playerNum);
-                zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum)); //SYN
-                //TODO : Serialize data into one big packet
-                /*
-                for (int i = 0; i < playerNum; i++)
-                {
-                    //printf("Sending player #%i, name %s ..\n", i, m_vecPlayers[i]->currentFrame.PlayerName);
-                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i], sizeof(ghostNetFrame)); //SYN
-                }
-                */
+                //printf("Sending player #%i, name %s ..\n", i, m_vecPlayers[i]->currentFrame.PlayerName);
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i], sizeof(ghostNetFrame)); //SYN
             }
+            */
+            
 
         }
         if (data == MOM_SIGNOFF)
         {
-            //printf("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
+            printf("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
             zed_net_socket_close(&newPlayer->remote_socket);
             m_vecPlayers_mutex.lock();
 
@@ -153,6 +152,8 @@ void handlePlayer(playerData *newPlayer)
             numPlayers = m_vecPlayers.size();
 
             m_vecPlayers_mutex.unlock();
+            printf("There are now %i connected players.\n", numPlayers);
+            printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
         }
     }
     //std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -173,7 +174,7 @@ int main(int argc, char** argv)
         return 0;
 
     std::thread t(acceptNewConnections); //create a new thread that listens for incoming client connections
-    t.detach(); //continuously
+    t.detach(); //continuously run thread
 
     while (!m_bShouldExit)
     {

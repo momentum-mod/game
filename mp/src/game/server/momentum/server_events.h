@@ -31,20 +31,8 @@ public:
 
     void MountAdditionalContent();
 
-    bool runGhostClient();
-    bool exitGhostClient();
-    static unsigned sendAndRecieveData(void *params);
-    bool isGhostClientConnected() { return m_ghostClientConnected; }
 private:
     CMapzoneData* zones;
-    static zed_net_socket_t socket;
-    static zed_net_address_t address;
-    bool m_ghostClientConnected = false;
-    const char* host = DEFAULT_HOST;
-    unsigned short port = DEFAULT_PORT;
-    static char data[256];
-
-    static CUtlVector<ghostNetFrame> ghostPlayers;
 };
 
 

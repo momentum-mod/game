@@ -467,6 +467,7 @@ ZED_NET_DEF void zed_net_socket_close(zed_net_socket_t *socket) {
 #else
         close(socket->handle);
 #endif
+        socket->ready = -1; // set socket as closed.
     }
 }
 
