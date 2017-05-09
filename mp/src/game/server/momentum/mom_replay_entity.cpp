@@ -6,7 +6,9 @@
 #include "mom_timer.h"
 #include "util/mom_util.h"
 #include "util/os_utils.h"
-
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "tier0/memdbgon.h"
 
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",

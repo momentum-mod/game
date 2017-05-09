@@ -10,7 +10,7 @@
 #define GetLocalPlayer() UTIL_PlayerByIndex(1)
 #endif
 
-CMomRunStats::CMomRunStats(uint8 size = MAX_STAGES) 
+CMomRunStats::CMomRunStats(uint8 size) 
 {
     //CMomentumPlayer *pPlayer = ToCMOMPlayer(GetLocalPlayer());
     //Init(size); 
@@ -97,7 +97,7 @@ void CMomRunStats::Deserialize(CBinaryReader *reader)
     }
 }
 
-void CMomRunStats::Serialize(CBinaryWriter *writer) OVERRIDE
+void CMomRunStats::Serialize(CBinaryWriter *writer) 
 {
     writer->WriteUInt8(m_pData->m_iTotalZones);
 

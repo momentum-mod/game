@@ -1,5 +1,5 @@
 #include "os_utils.h"
-
+#ifdef POSIX
 void *GetModuleHandle(const char *name)
 {
 	void *handle;
@@ -24,3 +24,4 @@ void *GetModuleHandle(const char *name)
 	dlclose(handle);
 	return handle;
 }
+#endif

@@ -53,6 +53,15 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
             }
            
             $Folder "Replays"
@@ -60,6 +69,15 @@ $Project "Server (Momentum)"
                 $File   "momentum\mom_replay_system.cpp"
                 $File   "momentum\mom_replay_system.h"
                 $File   "momentum\mom_replay_entity.cpp"
+				{
+	                    $Configuration
+	                    {
+	                        $Compiler
+	                        {
+                        		$TreatWarningsAsErrors "No"
+	                        }
+	                    }
+	            }
                 $File   "momentum\mom_replay_entity.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_data.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.cpp"
@@ -133,6 +151,15 @@ $Project "Server (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.h"
             $File   "momentum\mom_client.cpp"
+			{
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                        	$TreatWarningsAsErrors "No"
+                        }
+                    }
+            }
             $File   "momentum\mom_player.cpp"
             $File   "momentum\mom_player.h"
             $File   "momentum\te_shotgun_shot.cpp"

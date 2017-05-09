@@ -10,10 +10,14 @@
 #include "engine/IEngineSound.h"
 #include "util/os_utils.h"
 
-
+#ifdef _WIN32
+#include "Windows.h"
+#endif
 #include "tier0/vprof.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+
+
 #include "tier0/memdbgon.h"
 
 void Host_Say(edict_t *pEdict, bool teamonly);
