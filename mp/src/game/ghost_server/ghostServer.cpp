@@ -38,7 +38,8 @@ void new_connection(zed_net_socket_t socket, zed_net_address_t address)
 
             m_vecPlayers.push_back(newPlayer);
             numPlayers = m_vecPlayers.size();
-            while (newPlayer->remote_socket.ready == 0)
+            
+            while (socket.ready == 0)
             {
                 handlePlayer(newPlayer);
             }
@@ -52,8 +53,8 @@ void acceptNewConnections()
     zed_net_address_t remote_address;
     zed_net_tcp_accept(&m_Socket, &remote_socket, &remote_address);
 
-    std::thread t(new_connection, remote_socket, remote_address);
-    t.detach();
+    std::thread t(new_connection, remote_socket, remote_address); //create a new thread to deal with the connection
+    t.detach(); //each connection is dealt with in a seperate thread
 }
 void getInput()
 {
@@ -87,7 +88,7 @@ void handlePlayer(playerData *newPlayer)
     //const char *host;
     //host = zed_net_host_to_str(m_vecPlayers[i]->remote_address.host);
     int bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
-    if (bytes_read)
+    if (bytes_read && newPlayer)
     {
         //printf("Received %d bytes from %s:%d:\n", bytes_read, host, m_vecPlayers[i]->remote_address.port);
         if (data == MOM_SIGNOFF)
@@ -118,11 +119,11 @@ int main(int argc, char** argv)
 
     while (!m_bShouldExit)
     {
-        acceptNewConnections();
+        std::thread t(acceptNewConnections); //create a new thread that listens for incoming client connections
+        t.join(); //continuously
+        //std::thread t2(getInput);
+        //t2.detach();
 
-        //std::chrono::milliseconds timespan(10);
-        //std::this_thread::sleep_for(timespan);
-        //getInput();
     }
     zed_net_shutdown();
 

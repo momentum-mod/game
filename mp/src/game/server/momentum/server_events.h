@@ -33,16 +33,16 @@ public:
 
     bool runGhostClient();
     bool exitGhostClient();
-    bool recieveGhostData();
+    static unsigned recieveGhostData(void *params);
     bool isGhostClientConnected() { return socket.ready == 0; }
 private:
     CMapzoneData* zones;
-    zed_net_socket_t socket;
-    zed_net_address_t address;
+    static zed_net_socket_t socket;
+    static zed_net_address_t address;
     const char* host = DEFAULT_HOST;
     unsigned short port = DEFAULT_PORT;
-    bool recievedPacket;
-    ThreadHandle_t thread;
+    static char data[256];
 };
+
 
 #endif // SERVER_EVENTS_H

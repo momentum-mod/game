@@ -3,6 +3,16 @@
 #include "mom_shareddefs.h"
 #include "tier0/memdbgon.h"
 
+zed_net_socket_t CMOMServerEvents::socket;
+zed_net_address_t CMOMServerEvents::address;
+char CMOMServerEvents::data[256];
+
+struct MyThreadParams_t
+{
+    int number;
+    char letter;
+};
+
 //This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
 void Momentum::GameInit()
@@ -97,13 +107,16 @@ void CMOMServerEvents::LevelShutdownPostEntity()
         fullbright.SetValue(0);
     exitGhostClient();
 }
-
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
-    if (isGhostClientConnected() && pPlayer && !recievedPacket)
+    if (isGhostClientConnected() && pPlayer)
     {
-        recievedPacket = recieveGhostData();
+        MyThreadParams_t* vars = new MyThreadParams_t;
+        //vars->number = 5;
+
+        ThreadHandle_t thread = CreateSimpleThread(CMOMServerEvents::recieveGhostData, vars);
+        ThreadDetach(thread);
     }
     g_MapzoneEdit.Update();
 
@@ -116,6 +129,7 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
             g_pMomentumTimer->Stop(false);
         }
     }
+    Msg("Recieved from ghost server: %s", data);
 }
 
 void CMOMServerEvents::MountAdditionalContent()
@@ -192,18 +206,18 @@ bool CMOMServerEvents::exitGhostClient()
     ConColorMsg(Color(255, 255, 0, 255), "Sent signoff packet, exiting ghost client...\n");
     return true;
 }
-bool CMOMServerEvents::recieveGhostData()
+unsigned CMOMServerEvents::recieveGhostData(void *params)
 {
+    MyThreadParams_t* vars = (MyThreadParams_t*)params; // always use a struct!
+
     char buffer[256];
     int bytes_read = zed_net_tcp_socket_receive(&socket, buffer, sizeof(buffer));
     if (bytes_read)
     {
-        ConColorMsg(Color(0, 255, 0, 255), buffer);
-        ConColorMsg(Color(0, 255, 0, 255), "\n");
-        return true;
+        Q_strcpy(data, buffer);
     }
-    else
-        return false;
+    delete vars;
+    return 0;
 }
 //Create the 
 CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");
