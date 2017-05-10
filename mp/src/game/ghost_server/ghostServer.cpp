@@ -87,7 +87,7 @@ void getInput()
 
     if (strcmp(command, "say") == 0)
     {
-
+        printf("You tried to say: \"%s\" to the server\n", argument);
     }
     if (strcmp(command, "exit") == 0)
     {
@@ -97,7 +97,8 @@ void getInput()
     }
     if (strcmp(command, "help") == 0)
     {
-        printf("Usage: ghost_server <port> \n");
+        printf("Usage: ghost_server <port> to start on custom port. \n");
+        printf("Commands: numplayers, say, exit\n");
     }
     if (strcmp(command, "numplayers") == 0)
     {
@@ -125,22 +126,18 @@ void handlePlayer(playerData *newPlayer)
             //printf("Data matches MOM_S_RECIEVING_NEWFRAME pattern! ..\n");
             // Send out a ACK to the client that we're going to be sending them an update
             data = MOM_S_SENDING_NEWFRAME;
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); 
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //ACK
 
             int playerNum = numPlayers;
             //printf("Sending number of players: %i\n", playerNum);
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum)); //SYN
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum));
 
-            //TODO : Serialize data into one big packet
-            /*
+            //printf("Sending player data \n");
             for (int i = 0; i < playerNum; i++)
             {
-                //printf("Sending player #%i, name %s ..\n", i, m_vecPlayers[i]->currentFrame.PlayerName);
-                zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i], sizeof(ghostNetFrame)); //SYN
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame)); 
             }
-            */
             
-
         }
         if (data == MOM_SIGNOFF)
         {
@@ -153,7 +150,7 @@ void handlePlayer(playerData *newPlayer)
 
             m_vecPlayers_mutex.unlock();
             printf("There are now %i connected players.\n", numPlayers);
-            printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
+            //printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
         }
     }
     //std::this_thread::sleep_for(std::chrono::milliseconds(10));

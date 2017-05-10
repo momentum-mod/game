@@ -7,7 +7,7 @@ struct MyThreadParams_t
 {
     CMomentumPlayer *pPlayer;
 };
-
+ghostNetFrame CMomentumGhostClient::prevFrame;
 zed_net_socket_t CMomentumGhostClient::socket;
 zed_net_address_t CMomentumGhostClient::address;
 char CMomentumGhostClient::data[256];
@@ -24,11 +24,13 @@ void CMomentumGhostClient::LevelShutdownPostEntity()
 void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
-    if (isGhostClientConnected() && pPlayer)
+    if (isGhostClientConnected() && pPlayer && steamapicontext) 
     {
         if (ghostPlayers.Size() > 0)
-            Msg("Players in ghost server: %i. Name of #0: %s,\n", ghostPlayers.Size(), ghostPlayers[0].PlayerName);
-
+        {
+            //Msg("Players in ghost server: %i. SteamID of idx #0: %llu\n", ghostPlayers.Size(), ghostPlayers[0].SteamID64);
+            //Msg("Position of player: %f, %f, %f\n", ghostPlayers[0].Position.x, ghostPlayers[0].Position.y, ghostPlayers[0].Position.z);
+        }
         MyThreadParams_t* vars = new MyThreadParams_t;
         vars->pPlayer = pPlayer;
         // Create a new thread to handle network I/O
@@ -99,7 +101,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             vars->pPlayer->GetAbsOrigin(),
             vars->pPlayer->GetViewOffset(),
             vars->pPlayer->m_nButtons,
-            vars->pPlayer->GetPlayerName());
+            steamapicontext->SteamUser()->GetSteamID().ConvertToUint64());
 
         zed_net_tcp_socket_send(&socket, &newFrame, sizeof(newFrame)); //ACK
     }
@@ -115,9 +117,28 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
         int playerNum = 0;
         bytes_read = zed_net_tcp_socket_receive(&socket, &playerNum, sizeof(playerNum));
 
-        //TODO: Unseralize data
-        //void* ghostData;
-        //zed_net_tcp_socket_receive(&socket, &data, playerNum * sizeof(ghostNetFrame));
+        ghostNetFrame newFrame;
+        for (int i = 0; i < playerNum; i++)
+        {
+            zed_net_tcp_socket_receive(&socket, &newFrame, playerNum * sizeof(ghostNetFrame));
+            if (ghostPlayers.Size() == 0) //No players registered on client, we need to add new player 
+            {
+                ghostPlayers.AddToTail(newFrame);
+            }
+            else
+            {
+                uint64 steamID = ghostPlayers[ghostPlayers.Find(prevFrame)].SteamID64;
+                if (steamID != newFrame.SteamID64) //couldn't find the player already in the playerlist
+                {
+                    ghostPlayers.AddToTail(newFrame);
+                }
+                else
+                {
+                    ghostPlayers[i] = newFrame;
+                }              
+            }
+        }
+        prevFrame = newFrame;
 
     }
     delete vars;

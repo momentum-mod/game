@@ -21,8 +21,9 @@ public:
     bool runGhostClient();
     bool exitGhostClient();
     static unsigned sendAndRecieveData(void *params);
-    bool isGhostClientConnected() { return m_ghostClientConnected; }
+    bool isGhostClientConnected() { return m_ghostClientConnected && (socket.ready == 0); }
 private:
+    static ghostNetFrame prevFrame;
     static zed_net_socket_t socket;
     static zed_net_address_t address;
     bool m_ghostClientConnected = false;
