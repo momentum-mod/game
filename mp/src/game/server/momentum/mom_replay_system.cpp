@@ -141,7 +141,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     replay->SetTickInterval(gpGlobals->interval_per_tick);
     replay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
-    replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
+    replay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
     replay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     replay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
 }
@@ -254,7 +254,7 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
             if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
             {
                 pGhost->m_iCurrentTick = tick;
-                pGhost->m_RunData.m_bMapFinished = false;
+                pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             }
         }
     }
@@ -267,7 +267,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_RunData.m_iStartTickD;
+            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
     }
 }

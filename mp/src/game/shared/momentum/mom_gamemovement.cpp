@@ -584,7 +584,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     SetGroundEntity(nullptr);
 
     // Set the last jump time
-    m_pPlayer->m_RunData.m_flLastJumpTime = gpGlobals->curtime;
+    m_pPlayer->m_SrvData.m_RunData.m_flLastJumpTime = gpGlobals->curtime;
 
     player->PlayStepSound(const_cast<Vector &>(mv->GetAbsOrigin()), player->m_pSurfaceData, 1.0, true);
 

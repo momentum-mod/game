@@ -262,8 +262,8 @@ void C_HudTimer::OnThink()
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
             m_G_iCurrentTick = pGhost->m_iCurrentTick;
-            m_G_iStartTickD = pGhost->m_RunData.m_iStartTickD;
-            runData = &pGhost->m_RunData;
+            m_G_iStartTickD = pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            runData = &pGhost->m_SrvData.m_RunData;
         }
         else
         {
@@ -273,7 +273,7 @@ void C_HudTimer::OnThink()
             m_iCheckpointCount = pLocal->m_iCheckpointCount;
             m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
-            runData = &pLocal->m_RunData;
+            runData = &pLocal->m_SrvData.m_RunData;
         }
 
         m_bIsRunning = runData->m_bTimerRunning;

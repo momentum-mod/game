@@ -35,7 +35,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     {
         C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
         // don't show during map finished dialog
-        return showkeys.GetBool() && pMom && !pMom->m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
+        return showkeys.GetBool() && pMom && !pMom->m_SrvData.m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
     }
 
     void OnThink() OVERRIDE;
@@ -214,7 +214,7 @@ void CHudKeyPressDisplay::OnThink()
             if (g_MOMEventListener)
             {
                 // we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = pPlayer->m_RunData.m_bTimerRunning;
+                m_bShouldDrawCounts = pPlayer->m_SrvData.m_RunData.m_bTimerRunning;
                 if (m_bShouldDrawCounts)
                 {
                     CMomRunStats *stats = &pPlayer->m_RunStats;

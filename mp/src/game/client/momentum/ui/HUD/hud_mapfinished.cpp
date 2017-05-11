@@ -90,13 +90,13 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 if (pGhost)
                 {
                     m_pRunStats = &pGhost->m_RunStats;
-                    lastRunTime = pGhost->m_RunData.m_flRunTime;
+                    lastRunTime = pGhost->m_SrvData.m_RunData.m_flRunTime;
                     m_bIsGhost = true;
                 }
                 else
                 {
                     m_pRunStats = &pPlayer->m_RunStats;
-                    lastRunTime = pPlayer->m_RunData.m_flRunTime;
+                    lastRunTime = pPlayer->m_SrvData.m_RunData.m_flRunTime;
                     m_bIsGhost = false;
                 }
 
@@ -128,7 +128,7 @@ bool CHudMapFinishedDialog::ShouldDraw()
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        CMOMRunEntityData *pData = (pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData);
+        CMOMRunEntityData *pData = (pGhost ? &pGhost->m_SrvData.m_RunData : &pPlayer->m_SrvData.m_RunData);
         shouldDrawLocal = pData && pData->m_bMapFinished;
     }
 

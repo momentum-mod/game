@@ -33,7 +33,7 @@ class C_MomentumPlayer : public C_BasePlayer
     void SurpressLadderChecks(const Vector &pos, const Vector &normal);
     bool CanGrabLadder(const Vector &pos, const Vector &normal);
     bool DidPlayerBhop() { return m_bDidPlayerBhop; }
-    bool HasAutoBhop() { return m_RunData.m_bAutoBhop; }
+    bool HasAutoBhop() { return m_SrvData.m_RunData.m_bAutoBhop; }
     // void ResetStrafeSync();
 
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
@@ -61,7 +61,6 @@ class C_MomentumPlayer : public C_BasePlayer
     int m_iCheckpointCount;
 
     StdDataFromServer m_SrvData;
-    CMOMRunEntityData m_RunData;
     CMomRunStats m_RunStats;
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);

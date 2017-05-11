@@ -22,7 +22,7 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
     if (pPlayer && !g_pMomentumTimer->IsRunning())
     {
         pPlayer->GetStrafeTicks() = pPlayer->GetPerfectSyncTicks() = pPlayer->GetAccelTicks() = 0;
-        pPlayer->m_RunData.m_flStrafeSync = pPlayer->m_RunData.m_flStrafeSync2 = 0.0f;
+        pPlayer->m_SrvData.m_RunData.m_flStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync2 = 0.0f;
     }
 }
 
@@ -33,7 +33,7 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINF
     SendPropBool(SENDINFO(m_bHasPracticeMode)), SendPropBool(SENDINFO(m_bUsingCPMenu)),
     SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
     SendPropInt(SENDINFO(m_afButtonDisabled)),
-    SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+    //SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
     //SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 
 END_SEND_TABLE();
@@ -72,7 +72,7 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
-    m_RunData.m_iRunFlags = 0;
+    m_SrvData.m_RunData.m_iRunFlags = 0;
     m_iShotsFired = 0;
     m_iDirection = 0;
     m_bResumeZoom = false;
@@ -182,7 +182,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
         // Hide the mapfinished panel and reset our speed to normal
-        m_RunData.m_bMapFinished = false;
+        m_SrvData.m_RunData.m_bMapFinished = false;
         SetLaggedMovementValue(1.0f);
 
         // Fix for the replay system not being able to listen to events
@@ -230,9 +230,9 @@ void CMomentumPlayer::Spawn()
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("replay_save");
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
-    m_RunData.m_bIsInZone = false;
-    m_RunData.m_bMapFinished = false;
-    m_RunData.m_iCurrentZone = 0;
+    m_SrvData.m_RunData.m_bIsInZone = false;
+    m_SrvData.m_RunData.m_bMapFinished = false;
+    m_SrvData.m_RunData.m_iCurrentZone = 0;
     m_bHasPracticeMode = false;
     ResetRunStats();
     if (runSaveEvent)
@@ -615,12 +615,12 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 
 void CMomentumPlayer::EnableAutoBhop()
 {
-    m_RunData.m_bAutoBhop = true;
+    m_SrvData.m_RunData.m_bAutoBhop = true;
     DevLog("Enabled autobhop\n");
 }
 void CMomentumPlayer::DisableAutoBhop()
 {
-    m_RunData.m_bAutoBhop = false;
+    m_SrvData.m_RunData.m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
 }
 void CMomentumPlayer::CheckForBhop()
@@ -634,11 +634,11 @@ void CMomentumPlayer::CheckForBhop()
             m_iSuccessiveBhops = 0;
         if (m_nButtons & IN_JUMP)
         {
-            m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
+            m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
             m_iSuccessiveBhops++;
             if (g_pMomentumTimer->IsRunning())
             {
-                int currentZone = m_RunData.m_iCurrentZone;
+                int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
                 m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
                 m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
             }
@@ -699,9 +699,9 @@ void CMomentumPlayer::UpdateRunSync()
         if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
         {
             // ticks strafing perfectly / ticks strafing
-            m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f;
+            m_SrvData.m_RunData.m_flStrafeSync = (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f;
             // ticks gaining speed / ticks strafing
-            m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f;
+            m_SrvData.m_RunData.m_flStrafeSync2 = (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f;
         }
 
         m_qangLastAngle = EyeAngles();
@@ -714,7 +714,7 @@ void CMomentumPlayer::UpdateJumpStrafes()
     if (!g_pMomentumTimer->IsRunning())
         return;
 
-    int currentZone = m_RunData.m_iCurrentZone;
+    int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
     if (!m_bPrevTimerRunning)                   // timer started on this tick
     {
         // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
@@ -750,7 +750,7 @@ void CMomentumPlayer::UpdateMaxVelocity()
     if (!g_pMomentumTimer->IsRunning())
         return;
 
-    int currentZone = m_RunData.m_iCurrentZone;
+    int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
     float velocity = GetLocalVelocity().Length();
     float velocity2D = GetLocalVelocity().Length2D();
     float maxOverallVel = velocity;
@@ -783,18 +783,18 @@ void CMomentumPlayer::ResetRunStats()
     m_nPerfectSyncTicks = 0;
     m_nStrafeTicks = 0;
     m_nAccelTicks = 0;
-    m_RunData.m_flStrafeSync = 0;
-    m_RunData.m_flStrafeSync2 = 0;
+    m_SrvData.m_RunData.m_flStrafeSync = 0;
+    m_SrvData.m_RunData.m_flStrafeSync2 = 0;
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
 }
 void CMomentumPlayer::CalculateAverageStats()
 {
     if (g_pMomentumTimer->IsRunning())
     {
-        int currentZone = m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
+        int currentZone = m_SrvData.m_RunData.m_iCurrentZone; // g_Timer->GetCurrentZoneNumber();
 
-        m_flZoneTotalSync[currentZone] += m_RunData.m_flStrafeSync;
-        m_flZoneTotalSync2[currentZone] += m_RunData.m_flStrafeSync2;
+        m_flZoneTotalSync[currentZone] += m_SrvData.m_RunData.m_flStrafeSync;
+        m_flZoneTotalSync2[currentZone] += m_SrvData.m_RunData.m_flStrafeSync2;
         m_flZoneTotalVelocity[currentZone][0] += GetLocalVelocity().Length();
         m_flZoneTotalVelocity[currentZone][1] += GetLocalVelocity().Length2D();
 
@@ -809,8 +809,8 @@ void CMomentumPlayer::CalculateAverageStats()
                                       m_flZoneTotalVelocity[currentZone][1] / float(m_nZoneAvgCount[currentZone]));
 
         // stage 0 is "overall" - also update these as well, no matter which stage we are on
-        m_flZoneTotalSync[0] += m_RunData.m_flStrafeSync;
-        m_flZoneTotalSync2[0] += m_RunData.m_flStrafeSync2;
+        m_flZoneTotalSync[0] += m_SrvData.m_RunData.m_flStrafeSync;
+        m_flZoneTotalSync2[0] += m_SrvData.m_RunData.m_flStrafeSync2;
         m_flZoneTotalVelocity[0][0] += GetLocalVelocity().Length();
         m_flZoneTotalVelocity[0][1] += GetLocalVelocity().Length2D();
         m_nZoneAvgCount[0]++;
@@ -832,7 +832,7 @@ void CMomentumPlayer::CalculateAverageStats()
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
-    if (m_RunData.m_bIsInZone && m_RunData.m_iCurrentZone == 1 && !m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
     {
         if (GetGroundEntity() == nullptr && !m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
@@ -1002,7 +1002,7 @@ void CMomentumPlayer::CheckObserverSettings()
 void CMomentumPlayer::TweenSlowdownPlayer()
 {
     // slowdown when map is finished
-    if (m_RunData.m_bMapFinished)
+    if (m_SrvData.m_RunData.m_bMapFinished)
         // decrease our lagged movement value by 10% every tick
         m_flTweenVelValue *= 0.9f;
     else

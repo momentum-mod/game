@@ -113,7 +113,7 @@ void C_MOMReplayUI::OnThink()
             fProgress = clamp<float>(fProgress, 0.0f, 1.0f);
             m_pProgress->SetProgress(fProgress);
 
-            bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_RunData.m_iStartTickD;
+            bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_SrvData.m_RunData.m_iStartTickD;
             // Print "Tick: %i / %i"
             wchar_t wLabelFrame[BUFSIZELOCL];
             V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, pGhost->m_iCurrentTick, m_iTotalDuration);
@@ -123,9 +123,9 @@ void C_MOMReplayUI::OnThink()
             char curtime[BUFSIZETIME], totaltime[BUFSIZETIME];
             wchar_t wCurtime[BUFSIZETIME], wTotaltime[BUFSIZETIME];
             // Get the times
-            g_pMomentumUtil->FormatTime(TICK_INTERVAL * (pGhost->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD), curtime, 2,
+            g_pMomentumUtil->FormatTime(TICK_INTERVAL * (pGhost->m_iCurrentTick - pGhost->m_SrvData.m_RunData.m_iStartTickD), curtime, 2,
                                  false, negativeTime);
-            g_pMomentumUtil->FormatTime(pGhost->m_RunData.m_flRunTime, totaltime, 2);
+            g_pMomentumUtil->FormatTime(pGhost->m_SrvData.m_RunData.m_flRunTime, totaltime, 2);
             // Convert to Unicode
             ANSI_TO_UNICODE(curtime, wCurtime);
             ANSI_TO_UNICODE(totaltime, wTotaltime);
@@ -134,7 +134,7 @@ void C_MOMReplayUI::OnThink()
             //V_snwprintf(pwTime, BUFSIZELOCL, m_pwReplayTime, wCurtime, wTotaltime);
             m_pProgressLabelTime->SetText(pwTime);
 
-            if (pGhost->m_RunData.m_bMapFinished)
+            if (pGhost->m_SrvData.m_RunData.m_bMapFinished)
             {
                 // Hide the panel on map finish, but show it afterwards
                 m_bWasVisible = true; // Note: This OnThink will never happen if this panel is not drawn!

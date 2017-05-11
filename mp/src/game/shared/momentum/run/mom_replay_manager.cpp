@@ -134,11 +134,11 @@ CMomReplayBase *CMomReplayManager::LoadReplay(const char *pFileName, bool bFullL
         // Create the run entity here
         CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
         pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
-        pGhost->m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
-        pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+        pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
+        pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
         pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
         pGhost->SetPlaybackReplay(m_pPlaybackReplay);
-        pGhost->m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
+        pGhost->m_SrvData.m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
         m_pPlaybackReplay->SetRunEntity(pGhost);
 #endif
     }

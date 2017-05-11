@@ -16,7 +16,6 @@ class C_MomentumReplayGhostEntity : public C_BaseAnimating
     C_MomentumReplayGhostEntity();
 
     StdDataFromServer m_SrvData;
-    CMOMRunEntityData m_RunData;
     CMomRunStats m_RunStats;
 
     float m_flTickRate;

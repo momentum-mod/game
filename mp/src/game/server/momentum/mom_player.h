@@ -116,7 +116,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop() const { return m_RunData.m_bAutoBhop; }
+    bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void CheckForBhop();
@@ -143,7 +143,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     CNetworkVar(int, m_iSuccessiveBhops);  // How many successive bhops this player has
     CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
 
-    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
+    CMOMRunEntityData m_RunData; // Current run data, used for hud elements
     //CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;

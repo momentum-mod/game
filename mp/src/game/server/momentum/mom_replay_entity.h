@@ -68,7 +68,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void RemoveSpectator() { m_pPlayerSpectator = nullptr; }
 
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
-    inline void SetRunFlags(uint32 flags) { m_RunData.m_iRunFlags = flags; }
+    inline void SetRunFlags(uint32 flags) { m_SrvData.m_RunData.m_iRunFlags = flags; }
 
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
@@ -80,7 +80,6 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
 
-    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
     CNetworkVar(int, m_nReplayButtons);

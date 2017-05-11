@@ -174,7 +174,7 @@ void CMomentumTimer::SetRunning(bool isRunning)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        pPlayer->m_RunData.m_bTimerRunning = isRunning;
+        pPlayer->m_SrvData.m_RunData.m_bTimerRunning = isRunning;
     }
 }
 void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType)

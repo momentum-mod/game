@@ -13,11 +13,13 @@
 struct StdDataFromServer
 {
     //TODO: the rest of the data
+    CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };
 
 struct StdReplayDataFromServer
 {
+    CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };
 

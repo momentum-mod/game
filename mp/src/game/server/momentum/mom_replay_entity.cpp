@@ -32,7 +32,7 @@ SendPropString(SENDINFO(m_pszPlayerName)),
 SendPropInt(SENDINFO(m_iTotalTimeTicks)),
 SendPropInt(SENDINFO(m_iCurrentTick)),
 SendPropBool(SENDINFO(m_bIsPaused)),
-SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+//SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
 //SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
 
@@ -71,7 +71,7 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
         if (pEvent->GetBool("restart"))
-            m_RunData.m_bMapFinished = false;
+            m_SrvData.m_RunData.m_bMapFinished = false;
         else
             EndRun();
     }
@@ -111,7 +111,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 
     Spawn();
     m_iTotalStrafes = 0;
-    m_RunData.m_bMapFinished = false;
+    m_SrvData.m_RunData.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
     m_bIsPaused = false;
@@ -338,7 +338,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         // networked var that allows the replay to control keypress display on the client
         m_nReplayButtons = currentStep->PlayerButtons();
 
-        if (m_RunData.m_bTimerRunning)
+        if (m_SrvData.m_RunData.m_bTimerRunning)
             UpdateStats(interpolatedVel);
 
         SetViewOffset(currentStep->PlayerViewOffset());
@@ -409,9 +409,9 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     }
     if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
     {
-        m_RunData.m_flStrafeSync =
+        m_SrvData.m_RunData.m_flStrafeSync =
             (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks strafing perfectly / ticks strafing
-        m_RunData.m_flStrafeSync2 =
+        m_SrvData.m_RunData.m_flStrafeSync2 =
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
 
@@ -422,8 +422,8 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
         currentStep->PlayerButtons() & IN_JUMP)
     {
         m_bHasJumped = true;
-        m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
-        m_RunData.m_flLastJumpTime = gpGlobals->curtime;
+        m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
+        m_SrvData.m_RunData.m_flLastJumpTime = gpGlobals->curtime;
         m_iTotalJumps++;
     }
 
@@ -472,7 +472,7 @@ void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
 
 void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
 {
-    m_RunData.m_iStartTick = m_iStartTick;
+    m_SrvData.m_RunData.m_iStartTick = m_iStartTick;
 
     if (m_pPlayerSpectator && m_pPlayerSpectator->GetReplayEnt() == this)
     {
