@@ -16,6 +16,11 @@ struct StdDataFromServer
     CMomRunStats::data m_RunStatsData;
 };
 
+struct StdReplayDataFromServer
+{
+    CMomRunStats::data m_RunStatsData;
+};
+
 /*
  * Function pointer type to exported 'StdDataToPlayer()'
  * Casts from pointers to function aren't technically legal,

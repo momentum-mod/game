@@ -17,7 +17,7 @@ DLL_EXPORT void StdDataToPlayer(StdDataFromServer *from)
     }
 }
 
-DLL_EXPORT void StdDataToReplay(StdDataFromServer *from)
+DLL_EXPORT void StdDataToReplay(StdReplayDataFromServer *from)
 {
     C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if(pPlayer)
@@ -25,7 +25,7 @@ DLL_EXPORT void StdDataToReplay(StdDataFromServer *from)
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
         if (pGhost)
         {
-            memcpy(pGhost->m_RunStats.m_pData, from, sizeof(StdDataFromServer));
+            memcpy(&pGhost->m_SrvData, from, sizeof(StdReplayDataFromServer));
         }
     }
 }

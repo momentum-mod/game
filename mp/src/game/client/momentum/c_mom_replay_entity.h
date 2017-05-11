@@ -4,6 +4,7 @@
 #include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
 #include <../interpolatedvar.h>
+#include "mom_modulecomms.h"
 
 class C_MomentumReplayGhostEntity : public C_BaseAnimating
 {
@@ -14,9 +15,9 @@ class C_MomentumReplayGhostEntity : public C_BaseAnimating
   public:
     C_MomentumReplayGhostEntity();
 
+    StdDataFromServer m_SrvData;
     CMOMRunEntityData m_RunData;
     CMomRunStats m_RunStats;
-    CMomRunStats::data m_RunStatsData;
 
     float m_flTickRate;
 
