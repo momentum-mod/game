@@ -85,7 +85,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_bUsingCPMenu = false;
     m_iCurrentStepCP = -1;
     
-    m_RunStats.m_pData = &(this->m_SrvData.m_RunStatsData);
+    m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 

@@ -52,7 +52,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     m_nReplayButtons = 0;
     m_iTotalStrafes = 0;
     m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
-    m_RunStats.Init();
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pPlayerSpectator = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
 }

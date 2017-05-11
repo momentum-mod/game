@@ -34,7 +34,7 @@ C_MomentumPlayer::C_MomentumPlayer()
     m_RunData.m_flLastJumpTime = 0.0f;
     m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
-    m_RunStats.m_pData = &this->m_SrvData.m_RunStatsData;
+    m_RunStats.m_pData = &m_SrvData.m_RunStatsData;
     m_RunStats.Init();
 }
 
