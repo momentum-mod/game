@@ -5,7 +5,7 @@
 #include <mutex>
 
 #include "ghostServer.h"
-    
+
 void handlePlayer(playerData *newPlayer);
 void getInput();
 int run_server(unsigned short port);
@@ -41,6 +41,10 @@ void new_connection(zed_net_socket_t socket, zed_net_address_t address)
         if (data == MOM_SIGNON) //Player signs on for the first time
         {
             printf("Data matches MOM_SIGNON pattern!\n");
+
+            //send ACK to client that they are connected
+            int newdata = MOM_SIGNON;
+            zed_net_tcp_socket_send(&socket, &newdata, sizeof(newdata));
             //Describes a new;y connected player with client idx equal to the maximum number of players
             playerData *newPlayer = new playerData(socket, address, numPlayers); 
 
@@ -76,7 +80,7 @@ void acceptNewConnections()
         t.detach(); //each connection is dealt with in a seperate thread
     }
 }
-void getInput()
+void getInput() 
 {
     char buffer[256];
     char *command, *argument;
@@ -118,7 +122,6 @@ void handlePlayer(playerData *newPlayer)
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
             // Wait for client to get our acknowledgement, and recieve frame update from client
             zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentFrame, sizeof(ghostNetFrame)); //ACK
-            //printf("Ghost frame: PlayerName: %s\n", newPlayer->currentFrame.PlayerName);
         }
 
         if (data == MOM_S_RECIEVING_NEWFRAME) //SYN
@@ -135,7 +138,9 @@ void handlePlayer(playerData *newPlayer)
             //printf("Sending player data \n");
             for (int i = 0; i < playerNum; i++)
             {
+                m_vecPlayers_mutex.lock();
                 zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame)); 
+                m_vecPlayers_mutex.unlock();
             }
             
         }
