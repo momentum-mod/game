@@ -32,7 +32,7 @@ class C_MomentumPlayer : public C_BasePlayer
 
     void SurpressLadderChecks(const Vector &pos, const Vector &normal);
     bool CanGrabLadder(const Vector &pos, const Vector &normal);
-    bool DidPlayerBhop() { return m_bDidPlayerBhop; }
+    bool DidPlayerBhop() { return m_SrvData.m_bDidPlayerBhop; }
     bool HasAutoBhop() { return m_SrvData.m_RunData.m_bAutoBhop; }
     // void ResetStrafeSync();
 
@@ -45,20 +45,9 @@ class C_MomentumPlayer : public C_BasePlayer
     }
 
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
-
-    int m_iShotsFired;
-    int m_iDirection;
-    bool m_bResumeZoom;
-    int m_iLastZoom;
-    bool m_bDidPlayerBhop;
-    bool m_bHasPracticeMode;
  
     int m_afButtonDisabled;
     int m_fSliding;
-
-    bool m_bUsingCPMenu;
-    int m_iCurrentStepCP;
-    int m_iCheckpointCount;
 
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
@@ -74,7 +63,6 @@ class C_MomentumPlayer : public C_BasePlayer
 
     float m_flStartSpeed;
     float m_flEndSpeed;
-    int m_iSuccessiveBhops;
 
   private:
     CountdownTimer m_ladderSurpressionTimer;

@@ -268,10 +268,10 @@ void C_HudTimer::OnThink()
         else
         {
             m_bIsReplay = false;
-            m_bShowCheckpoints = pLocal->m_bUsingCPMenu;
-            m_iCheckpointCurrent = pLocal->m_iCurrentStepCP + 1;
-            m_iCheckpointCount = pLocal->m_iCheckpointCount;
-            m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
+            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingCPMenu;
+            m_iCheckpointCurrent = pLocal->m_SrvData.m_iCurrentStepCP + 1;
+            m_iCheckpointCount = pLocal->m_SrvData.m_iCheckpointCount;
+            m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_SrvData.m_RunData;
         }

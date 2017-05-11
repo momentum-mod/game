@@ -205,7 +205,7 @@ bool CMomentumGameMovement::CanUnduck()
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_fSliding & FL_SLIDE)
+    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE)
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -326,7 +326,7 @@ void CMomentumGameMovement::Duck(void)
             if (player->m_Local.m_bDucking)
             {
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_DUCK) || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr || alreadyDucked)
+                if ((duckseconds > TIME_TO_DUCK) || !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr || alreadyDucked)
                 {
                     FinishDuck();
                 }
@@ -342,7 +342,7 @@ void CMomentumGameMovement::Duck(void)
         {
             // Try to unduck unless automovement is not allowed
             // NOTE: When not onground, you can always unduck
-            if (player->m_Local.m_bAllowAutoMovement || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
+            if (player->m_Local.m_bAllowAutoMovement || !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
             {
                 if ((buttonsReleased & IN_DUCK) && (player->GetFlags() & FL_DUCKING))
                 {
@@ -359,7 +359,7 @@ void CMomentumGameMovement::Duck(void)
                     if (player->m_Local.m_bDucking || player->m_Local.m_bDucked) // or unducking
                     {
                         // Finish ducking immediately if duck time is over or not on ground
-                        if ((duckseconds > TIME_TO_UNDUCK) || !(m_pPlayer->m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
+                        if ((duckseconds > TIME_TO_UNDUCK) || !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
                         {
                             FinishUnDuck();
                         }
@@ -392,7 +392,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr || (m_pPlayer->m_fSliding & FL_SLIDE))
+    if (player->GetGroundEntity() != nullptr || (m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE))
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -802,7 +802,7 @@ void CMomentumGameMovement::StartGravity(void)
 
 void CMomentumGameMovement::FullWalkMove()
 {
-    if (!(CheckWater() && !(m_pPlayer->m_fSliding & FL_SLIDE)))
+    if (!(CheckWater() && !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE)))
     {
         StartGravity();
     }
@@ -821,7 +821,7 @@ void CMomentumGameMovement::FullWalkMove()
     //  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
     // If sliding is set we prefer to simulate sliding than being in water.. Could be fun for some mappers
     // that want sliding/iceskating into water. Who knows.
-    if ((player->GetWaterLevel() >= WL_Waist) && !(m_pPlayer->m_fSliding & FL_SLIDE))
+    if ((player->GetWaterLevel() >= WL_Waist) && !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE))
     {
         if (player->GetWaterLevel() == WL_Waist)
         {
@@ -899,7 +899,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckVelocity();
 
         // Add any remaining gravitational component.
-        if (!(CheckWater() && !(m_pPlayer->m_fSliding & FL_SLIDE)))
+        if (!(CheckWater() && !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE)))
         {
             FinishGravity();
         }
@@ -913,7 +913,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        if ((m_pPlayer->m_fSliding & FL_SLIDE_STUCKONGROUND) && (m_pPlayer->m_fSliding & FL_SLIDE))
+        if ((m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE_STUCKONGROUND) && (m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE))
             StuckGround();
     }
 
@@ -1296,7 +1296,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 // This was the virtual void, overriding it for snow friction
 void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
-    if (m_pPlayer->m_fSliding & FL_SLIDE)
+    if (m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE)
     {
         pm = nullptr;
     }

@@ -12,7 +12,19 @@
  */
 struct StdDataFromServer
 {
-    //TODO: the rest of the data
+    //TODO: Deprecate the usage of weapon data? (m_iLastZoom m_iShotsFired m_bResumeZoom m_iDirection)
+    
+    bool m_bHasPracticeMode;
+    bool m_bResumeZoom;
+    bool m_bDidPlayerBhop;
+    bool m_bUsingCPMenu;
+    int m_iCheckpointCount;
+    int m_iCurrentStepCP;
+    int m_iShotsFired;
+    int m_iDirection;
+    int m_iLastZoom;
+    int m_fSliding;
+    int m_iSuccessiveBhops;
     CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };

@@ -18,7 +18,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     m_player = ToCMOMPlayer(pPlayer);
 
     // don't record if we're watching a preexisting replay or in practice mode
-    if (!m_player->IsWatchingReplay() && !m_player->m_bHasPracticeMode)
+    if (!m_player->IsWatchingReplay() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
         m_pReplayManager->StartRecording();
         m_iTickCount = 1; // recoring begins at 1 ;)

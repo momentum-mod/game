@@ -74,7 +74,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         // Timer won't be running if it's the start trigger
-        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_bHasPracticeMode)
+        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             // This handles both the start and stage triggers
             g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_START);
@@ -128,7 +128,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
         // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_bHasPracticeMode && !bCheating && !pPlayer->IsUsingCPMenu())
+        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating && !pPlayer->IsUsingCPMenu())
         {
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {
@@ -849,20 +849,20 @@ void CTriggerSlide::Think()
     {
         if (m_bSliding)
         {
-            pPlayer->m_fSliding |= FL_SLIDE;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
         }
         else
         {
-            pPlayer->m_fSliding &= ~FL_SLIDE;
+            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE;
         }
 
         if (m_bStuck)
         {
-            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
         }
         else
         {
-            pPlayer->m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
+            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
         }
 
         pPlayer->SetGravity(m_flGravity);
@@ -880,12 +880,12 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
     {
         if (m_bSliding)
         {
-            pPlayer->m_fSliding |= FL_SLIDE;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
         }
 
         if (m_bStuck)
         {
-            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
         }
 
         m_flSavedGravity = pPlayer->GetGravity();
@@ -902,7 +902,7 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         pPlayer->SetGravity(m_flSavedGravity);
-        pPlayer->m_fSliding = 0;
+        pPlayer->m_SrvData.m_fSliding = 0;
     }
 
     BaseClass::EndTouch(pOther);

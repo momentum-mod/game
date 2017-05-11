@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -42,7 +42,7 @@ bool CWeaponCSBaseGun::Deploy()
         return false;
 
     m_flAccuracy = 0.2;
-    pPlayer->m_iShotsFired = 0;
+    pPlayer->m_SrvData.m_iShotsFired = 0;
     m_bDelayFire = false;
     m_zoomFullyActiveTime = -1.0f;
 
@@ -56,18 +56,18 @@ void CWeaponCSBaseGun::ItemPostFrame()
     if (!pPlayer)
         return;
 
-    if ((m_flNextPrimaryAttack <= gpGlobals->curtime) && (pPlayer->m_bResumeZoom))
+    if ((m_flNextPrimaryAttack <= gpGlobals->curtime) && (pPlayer->m_SrvData.m_bResumeZoom))
     {
 #ifndef CLIENT_DLL
-        pPlayer->SetFOV(pPlayer, pPlayer->m_iLastZoom, 0.05f);
+        pPlayer->SetFOV(pPlayer, pPlayer->m_SrvData.m_iLastZoom, 0.05f);
         m_zoomFullyActiveTime =
             gpGlobals->curtime +
             0.05f; // Make sure we think that we are zooming on the server so we don't get instant acc bonus
 
-        if (pPlayer->GetFOV() == pPlayer->m_iLastZoom)
+        if (pPlayer->GetFOV() == pPlayer->m_SrvData.m_iLastZoom)
         {
             // return the fade level in zoom.
-            pPlayer->m_bResumeZoom = false;
+            pPlayer->m_SrvData.m_bResumeZoom = false;
         }
 #endif
     }
@@ -88,7 +88,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
         return false;
 
     m_bDelayFire = true;
-    pPlayer->m_iShotsFired++;
+    pPlayer->m_SrvData.m_iShotsFired++;
 
 // Out of ammo?
 #ifdef WEAPONS_USE_AMMO
@@ -172,7 +172,7 @@ bool CWeaponCSBaseGun::Reload()
 #endif
 
     m_flAccuracy = 0.2;
-    pPlayer->m_iShotsFired = 0;
+    pPlayer->m_SrvData.m_iShotsFired = 0;
     m_bDelayFire = false;
 
     return true;

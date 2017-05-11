@@ -11,7 +11,7 @@ void CMomentumTimer::Start(int start)
     if (!pPlayer)
         return;
     // MOM_TODO: Allow it based on gametype
-    if (pPlayer->m_bUsingCPMenu)
+    if (pPlayer->m_SrvData.m_bUsingCPMenu)
         return;
     if (ConVarRef("mom_zone_edit").GetBool())
         return;
@@ -380,7 +380,7 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    pPlayer->m_bHasPracticeMode = true;
+    pPlayer->m_SrvData.m_bHasPracticeMode = true;
     Stop(false);
 }
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
@@ -388,7 +388,7 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
-    pPlayer->m_bHasPracticeMode = false;
+    pPlayer->m_SrvData.m_bHasPracticeMode = false;
 }
 
 //--------- CTriggerOnehop stuff --------------------------------
@@ -457,7 +457,7 @@ class CTimerCommands
         if (!pPlayer)
             return;
 
-        if (!pPlayer->m_bHasPracticeMode)
+        if (!pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             int b = pPlayer->m_nButtons;
             bool safeGuard = b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP ||

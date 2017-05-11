@@ -27,11 +27,14 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINFO(m_iShotsFired)),
-    SendPropInt(SENDINFO(m_iDirection)), SendPropBool(SENDINFO(m_bResumeZoom)), SendPropInt(SENDINFO(m_iLastZoom)),
-    SendPropBool(SENDINFO(m_bDidPlayerBhop)), SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-    SendPropBool(SENDINFO(m_bHasPracticeMode)), SendPropBool(SENDINFO(m_bUsingCPMenu)),
-    SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), //SendPropInt(SENDINFO(m_iShotsFired)),
+    //SendPropInt(SENDINFO(m_iDirection)), 
+    //SendPropBool(SENDINFO(m_bResumeZoom)), 
+    //SendPropInt(SENDINFO(m_iLastZoom)),
+    //SendPropBool(SENDINFO(m_bDidPlayerBhop)), SendPropInt(SENDINFO(m_iSuccessiveBhops)),
+    //SendPropBool(SENDINFO(m_bHasPracticeMode)), 
+    //SendPropBool(SENDINFO(m_bUsingCPMenu)),
+    //SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
     SendPropInt(SENDINFO(m_afButtonDisabled)),
     //SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
     //SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
@@ -73,17 +76,17 @@ CMomentumPlayer::CMomentumPlayer()
     m_flPunishTime = -1;
     m_iLastBlock = -1;
     m_SrvData.m_RunData.m_iRunFlags = 0;
-    m_iShotsFired = 0;
-    m_iDirection = 0;
-    m_bResumeZoom = false;
-    m_iLastZoom = 0;
-    m_bDidPlayerBhop = false;
-    m_iSuccessiveBhops = 0;
-    m_bHasPracticeMode = false;
+    m_SrvData.m_iShotsFired = 0;
+    m_SrvData.m_iDirection = 0;
+    m_SrvData.m_bResumeZoom = false;
+    m_SrvData.m_iLastZoom = 0;
+    m_SrvData.m_bDidPlayerBhop = false;
+    m_SrvData.m_iSuccessiveBhops = 0;
+    m_SrvData.m_bHasPracticeMode = false;
 
-    m_iCheckpointCount = 0;
-    m_bUsingCPMenu = false;
-    m_iCurrentStepCP = -1;
+    m_SrvData.m_iCheckpointCount = 0;
+    m_SrvData.m_bUsingCPMenu = false;
+    m_SrvData.m_iCurrentStepCP = -1;
     
     m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
@@ -233,7 +236,7 @@ void CMomentumPlayer::Spawn()
     m_SrvData.m_RunData.m_bIsInZone = false;
     m_SrvData.m_RunData.m_bMapFinished = false;
     m_SrvData.m_RunData.m_iCurrentZone = 0;
-    m_bHasPracticeMode = false;
+    m_SrvData.m_bHasPracticeMode = false;
     ResetRunStats();
     if (runSaveEvent)
     {
@@ -464,30 +467,30 @@ void CMomentumPlayer::CreateAndSaveCheckpoint()
 {
     Checkpoint *c = CreateCheckpoint();
     m_rcCheckpoints.AddToTail(c);
-    if (m_iCurrentStepCP == m_iCheckpointCount - 1)
-        ++m_iCurrentStepCP;
+    if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
+        ++m_SrvData.m_iCurrentStepCP;
     else
-        m_iCurrentStepCP = m_iCheckpointCount; // Set it to the new checkpoint's index
-    ++m_iCheckpointCount;
+        m_SrvData.m_iCurrentStepCP = m_SrvData.m_iCheckpointCount; // Set it to the new checkpoint's index
+    ++m_SrvData.m_iCheckpointCount;
 }
 
 void CMomentumPlayer::RemoveLastCheckpoint()
 {
     if (m_rcCheckpoints.IsEmpty())
         return;
-    m_rcCheckpoints.Remove(m_iCurrentStepCP);
+    m_rcCheckpoints.Remove(m_SrvData.m_iCurrentStepCP);
     // If there's one element left, we still need to decrease currentStep to -1
-    if (m_iCurrentStepCP == m_iCheckpointCount - 1)
-        --m_iCurrentStepCP;
+    if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
+        --m_SrvData.m_iCurrentStepCP;
     // else we want it to shift forward one until it catches back up to the last checkpoint
-    --m_iCheckpointCount;
+    --m_SrvData.m_iCheckpointCount;
 }
 
 void CMomentumPlayer::RemoveAllCheckpoints()
 {
     m_rcCheckpoints.PurgeAndDeleteElements();
-    m_iCurrentStepCP = -1;
-    m_iCheckpointCount = 0;
+    m_SrvData.m_iCurrentStepCP = -1;
+    m_SrvData.m_iCheckpointCount = 0;
 }
 
 void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
@@ -565,7 +568,7 @@ void CMomentumPlayer::TeleportToCheckpoint(Checkpoint *pCP)
 void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
 {
     // Set the current index
-    kvInto->SetInt("cur", m_iCurrentStepCP);
+    kvInto->SetInt("cur", m_SrvData.m_iCurrentStepCP);
 
     // Add all your checkpoints
     KeyValues *kvCPs = new KeyValues("cps");
@@ -592,7 +595,7 @@ void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
 {
     if (!kvFrom || kvFrom->IsEmpty()) return;
 
-    m_iCurrentStepCP = kvFrom->GetInt("cur");
+    m_SrvData.m_iCurrentStepCP = kvFrom->GetInt("cur");
 
     KeyValues *kvCPs = kvFrom->FindKey("cps");
     if (!kvCPs) return;
@@ -602,7 +605,7 @@ void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
         m_rcCheckpoints.AddToTail(c);
     }
 
-    m_iCheckpointCount = m_rcCheckpoints.Count();
+    m_SrvData.m_iCheckpointCount = m_rcCheckpoints.Count();
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
@@ -629,13 +632,13 @@ void CMomentumPlayer::CheckForBhop()
     {
         m_flTicksOnGround += gpGlobals->interval_per_tick;
         // true is player is on ground for less than 10 ticks, false if they are on ground for more s
-        m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
-        if (!m_bDidPlayerBhop)
-            m_iSuccessiveBhops = 0;
+        m_SrvData.m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
+        if (!m_SrvData.m_bDidPlayerBhop)
+            m_SrvData.m_iSuccessiveBhops = 0;
         if (m_nButtons & IN_JUMP)
         {
             m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
-            m_iSuccessiveBhops++;
+            m_SrvData.m_iSuccessiveBhops++;
             if (g_pMomentumTimer->IsRunning())
             {
                 int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
@@ -674,7 +677,7 @@ void CMomentumPlayer::UpdateRunStats()
 
 void CMomentumPlayer::UpdateRunSync()
 {
-    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_bHasPracticeMode))
+    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_SrvData.m_bHasPracticeMode))
     {
         float SyncVelocity = GetLocalVelocity().Length2DSqr(); // we always want HVEL for checking velocity sync
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
@@ -719,7 +722,7 @@ void CMomentumPlayer::UpdateJumpStrafes()
     {
         // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
         // (for surf)
-        if (GetGroundEntity() == nullptr && m_iSuccessiveBhops)
+        if (GetGroundEntity() == nullptr && m_SrvData.m_iSuccessiveBhops)
         {
             m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
             m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
@@ -832,16 +835,16 @@ void CMomentumPlayer::CalculateAverageStats()
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !m_SrvData.m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
     {
-        if (GetGroundEntity() == nullptr && !m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
+        if (GetGroundEntity() == nullptr && !m_SrvData.m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
         else
             m_nTicksInAir = 0;
 
         // set bhop flag to true so we can't prespeed with practice mode
-        if (m_bHasPracticeMode)
-            m_bDidPlayerBhop = true;
+        if (m_SrvData.m_bHasPracticeMode)
+            m_SrvData.m_bDidPlayerBhop = true;
 
         // depending on gamemode, limit speed outright when player exceeds punish vel
         ConVarRef gm("mom_gamemode");
