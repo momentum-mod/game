@@ -1,51 +1,84 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string.h>
-#include <thread>
-#include <mutex>
 
 #include "ghostServer.h"
 
-void handlePlayer(playerData *newPlayer);
-void getInput();
-int run_server(unsigned short port);
-void new_connection(zed_net_socket_t socket, zed_net_address_t address);
-void acceptNewConnections();
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+volatile int CMOMGhostServer::numPlayers;
+std::vector<playerData* > CMOMGhostServer::m_vecPlayers;
+std::mutex CMOMGhostServer::m_vecPlayers_mutex;
+std::mutex CMOMGhostServer::m_bShouldExit_mutex;
 
-volatile int numPlayers = 0;
-std::vector<playerData* >m_vecPlayers; 
-std::mutex m_vecPlayers_mutex;
-std::mutex m_bShouldExit_mutex;
-int run_server(unsigned short port)
+zed_net_socket_t CMOMGhostServer::m_Socket;
+bool CMOMGhostServer::m_bShouldExit = false;
+int CMOMGhostServer::m_iTickRate;
+char CMOMGhostServer::m_szMapName[64];
+
+typedef std::chrono::high_resolution_clock Clock;
+
+int main(int argc, char** argv)
+{
+    int status = -1;
+    if (argc == 4)
+    {
+        status = CMOMGhostServer::runGhostServer((unsigned short)atoi(argv[1]), argv[3]);
+    }
+    else
+    {
+        status = CMOMGhostServer::runGhostServer(DEFAULT_PORT, DEFAULT_MAP);
+    }
+
+    if (status != 0)
+        return 0;
+#ifdef _WIN32
+    SetConsoleMode(stdin, ENABLE_LINE_INPUT); //ignores mouse input on the input buffer
+#endif
+    std::thread t(CMOMGhostServer::acceptNewConnections); //create a new thread that listens for incoming client connections
+    t.detach(); //continuously run thread
+
+    while (!CMOMGhostServer::m_bShouldExit)
+    {
+        CMOMGhostServer::handleConsoleInput();
+    }
+    zed_net_shutdown();
+
+    return 0;
+}
+
+int CMOMGhostServer::runGhostServer(const unsigned short port, const char* mapName)
 {
     zed_net_init();
 
     zed_net_tcp_socket_open(&m_Socket, port, 0, 1);
-    printf("Running ghost server on port %d!\n", port);
-
+    conMsg("Running ghost server on %s on port %d!\n", mapName, port);
+    _snprintf(m_szMapName, sizeof(m_szMapName), "%s", mapName);
+     
     return 0;
 
 }
-void new_connection(zed_net_socket_t socket, zed_net_address_t address)
+const void CMOMGhostServer::newConnection(zed_net_socket_t socket, zed_net_address_t address)
 { 
     const char* host;
     int data;
     host = zed_net_host_to_str(address.host);
-    printf("Accepted connection from %s:%d\n", host, address.port);
+    conMsg("Accepted connection from %s:%d\n", host, address.port);
 
     host = zed_net_host_to_str(address.host);
     int bytes_read = zed_net_tcp_socket_receive(&socket, &data, sizeof(data));
     if (bytes_read)
     {
-        printf("Received %d bytes from %s:%d:\n", bytes_read, host, address.port);
+        //printf("Received %d bytes from %s:%d:\n", bytes_read, host, address.port);
         if (data == MOM_SIGNON) //Player signs on for the first time
         {
-            printf("Data matches MOM_SIGNON pattern!\n");
+            //printf("Data matches MOM_SIGNON pattern!\n");
 
-            //send ACK to client that they are connected
-            int newdata = MOM_SIGNON;
-            zed_net_tcp_socket_send(&socket, &newdata, sizeof(newdata));
-            //Describes a new;y connected player with client idx equal to the maximum number of players
+            //send ACK to client that they are connected. This is the current mapname.
+            zed_net_tcp_socket_send(&socket, &m_szMapName, sizeof(m_szMapName));
+
+            //Describes a newly connected player with client idx equal to the current number of players
             playerData *newPlayer = new playerData(socket, address, numPlayers); 
 
             m_vecPlayers_mutex.lock();
@@ -55,7 +88,7 @@ void new_connection(zed_net_socket_t socket, zed_net_address_t address)
 
             m_vecPlayers_mutex.unlock();
 
-            printf("There are now %i connected players.\n", numPlayers);
+            conMsg("There are now %i connected players.\n", numPlayers);
             //listen(sock->handle, SOMAXCONN) != 0
             while (newPlayer->remote_socket.ready == 0) //socket is open
             {
@@ -64,10 +97,10 @@ void new_connection(zed_net_socket_t socket, zed_net_address_t address)
             delete newPlayer;
         }
     }
-    printf("Thread terminating\n");
+    //printf("Thread terminating\n");
     //End of thread
 }
-void acceptNewConnections()
+void CMOMGhostServer::acceptNewConnections()
 {
     zed_net_socket_t remote_socket;
     zed_net_address_t remote_address;
@@ -76,24 +109,26 @@ void acceptNewConnections()
     {
         zed_net_tcp_accept(&m_Socket, &remote_socket, &remote_address);
 
-        std::thread t(new_connection, remote_socket, remote_address); //create a new thread to deal with the connection
+        std::thread t(newConnection, remote_socket, remote_address); //create a new thread to deal with the connection
         t.detach(); //each connection is dealt with in a seperate thread
     }
 }
-void getInput() 
+void CMOMGhostServer::handleConsoleInput()
 {
-    char buffer[256];
-    char *command, *argument;
+    char buffer[256], command[256], argument[256];
     fgets(buffer, 256, stdin);
     buffer[strlen(buffer) - 1] = '\0';
-    command = strtok(buffer, " ");
-    argument = strtok(NULL, buffer);
 
+    if (strlen(buffer) > 0)
+    {
+        _snprintf(argument-1, sizeof(argument), "%s", strpbrk(buffer, " "));
+        _snprintf(command, sizeof(command), "%s", strtok(buffer, " "));
+    }
     if (strcmp(command, "say") == 0)
     {
-        printf("You tried to say: \"%s\" to the server\n", argument);
+        conMsg("You tried to say: \"%s\" to the server\n", argument);
     }
-    if (strcmp(command, "exit") == 0)
+    if (strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
     {
         m_bShouldExit_mutex.lock();
         m_bShouldExit = true;
@@ -101,18 +136,41 @@ void getInput()
     }
     if (strcmp(command, "help") == 0)
     {
-        printf("Usage: ghost_server <port> to start on custom port. \n");
-        printf("Commands: numplayers, say, exit\n");
+        conMsg("Usage: ghost_server <port> -map <mapname> to start on custom port/map. \n");
+        conMsg("Commands: numplayers, currentmap, say, map, exit\n");
     }
     if (strcmp(command, "numplayers") == 0)
     {
-        printf("Number of connected players: %i\n", numPlayers);
+        conMsg("Number of connected players: %i\n", numPlayers);
+    }
+    if (strcmp(command, "map") == 0)
+    {
+        _snprintf(m_szMapName, sizeof(m_szMapName), argument); 
+        conMsg("Changing map to %s...\n", argument);
+    }
+    if (strcmp(command, "currentmap") == 0)
+    {
+        conMsg("Current map is: %s\n", m_szMapName);
     }
 }
-void handlePlayer(playerData *newPlayer)
+void CMOMGhostServer::handlePlayer(playerData *newPlayer)
 {
-    int data;
-    int bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
+    int data, bytes_read = 0;
+    auto t1 = Clock::now(); 
+    bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
+    while (bytes_read != sizeof(data)) //Oops, we didn't get anything from the client!
+    {
+        auto t2 = Clock::now();
+        auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
+        conMsg("Lost connection! Waiting to time out... %ll\n", deltaT.count());
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (deltaT > std::chrono::seconds(SECONDS_TO_TIMEOUT))
+        {
+            conMsg("Player timed out...\n");
+            disconnectPlayer(newPlayer);
+            break;
+        }
+    }
     if (bytes_read && newPlayer)
     {
         if (data == MOM_C_SENDING_NEWFRAME)
@@ -123,7 +181,6 @@ void handlePlayer(playerData *newPlayer)
             // Wait for client to get our acknowledgement, and recieve frame update from client
             zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentFrame, sizeof(ghostNetFrame)); //ACK
         }
-
         if (data == MOM_S_RECIEVING_NEWFRAME) //SYN
         {
             //printf("Data matches MOM_S_RECIEVING_NEWFRAME pattern! ..\n");
@@ -146,43 +203,33 @@ void handlePlayer(playerData *newPlayer)
         }
         if (data == MOM_SIGNOFF)
         {
-            printf("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
-            zed_net_socket_close(&newPlayer->remote_socket);
-            m_vecPlayers_mutex.lock();
-
-            m_vecPlayers.erase(m_vecPlayers.begin() + newPlayer->clientIndex);
-            numPlayers = m_vecPlayers.size();
-
-            m_vecPlayers_mutex.unlock();
-            printf("There are now %i connected players.\n", numPlayers);
+            conMsg("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
+            disconnectPlayer(newPlayer);
             //printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
         }
     }
     //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
-int main(int argc, char** argv)
+void CMOMGhostServer::disconnectPlayer(playerData *player)
 {
-    int status = -1;
-    if (argc == 2) 
-    {
-        status = run_server((unsigned short)atoi(argv[1]));
-    }
-    else
-    {
-        status = run_server(DEFAULT_PORT); 
-    }
-    
-    if (status != 0)
-        return 0;
+    int data = MOM_SIGNOFF;
+    zed_net_tcp_socket_send(&player->remote_socket, &data, sizeof(data)); //send back an ACK that they are disconnecting.
+    zed_net_socket_close(&player->remote_socket);
+    m_vecPlayers_mutex.lock();
 
-    std::thread t(acceptNewConnections); //create a new thread that listens for incoming client connections
-    t.detach(); //continuously run thread
+    m_vecPlayers.erase(m_vecPlayers.begin() + player->clientIndex);
+    numPlayers = m_vecPlayers.size();
 
-    while (!m_bShouldExit)
-    {
-        getInput();
-    }
-    zed_net_shutdown();
-
-    return 0;
+    m_vecPlayers_mutex.unlock();
+    conMsg("There are now %i connected players.\n", numPlayers);
+}
+//A replacement for printf that prints the time as well as the message. 
+void CMOMGhostServer::conMsg(const char* msg, ...)
+{
+    va_list list;
+    va_start(list, msg);
+    char time[64], msgBuffer[256];
+    _snprintf(time, sizeof(time), "%s", currentDateTime().c_str());
+    _snprintf(msgBuffer, sizeof(msgBuffer), "%s - %s", time, msg);
+    vprintf(msgBuffer, list);
 }
