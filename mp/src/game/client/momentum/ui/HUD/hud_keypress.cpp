@@ -204,9 +204,9 @@ void CHudKeyPressDisplay::OnThink()
         if (pReplayEnt)
         {
             m_bShouldDrawCounts = false; // Not worth it
-            m_nButtons = pReplayEnt->m_nReplayButtons;
-            m_nStrafes = pReplayEnt->m_iTotalStrafes;
-            m_nJumps = pReplayEnt->m_iTotalJumps;
+            m_nButtons = pReplayEnt->m_SrvData.m_nReplayButtons;
+            m_nStrafes = pReplayEnt->m_SrvData.m_iTotalStrafes;
+            m_nJumps = pReplayEnt->m_SrvData.m_iTotalJumps;
         }
         else
         {

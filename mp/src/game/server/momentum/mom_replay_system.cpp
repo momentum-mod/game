@@ -218,7 +218,7 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = 0;
+            pGhost->m_SrvData.m_iCurrentTick = 0;
         }
     }
 }
@@ -238,7 +238,7 @@ CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_bIsPaused = !pGhost->m_bIsPaused;
+            pGhost->m_SrvData.m_bIsPaused = !pGhost->m_SrvData.m_bIsPaused;
         }
     }
 }
@@ -253,7 +253,7 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
             int tick = Q_atoi(args[1]);
             if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
             {
-                pGhost->m_iCurrentTick = tick;
+                pGhost->m_SrvData.m_iCurrentTick = tick;
                 pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             }
         }
@@ -267,7 +267,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
     }
 }

@@ -31,6 +31,11 @@ struct StdDataFromServer
 
 struct StdReplayDataFromServer
 {
+    bool m_bIsPaused;
+    int m_iTotalStrafes;
+    int m_iTotalJumps;
+    int m_nReplayButtons;
+    int m_iCurrentTick;
     CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };
@@ -45,4 +50,4 @@ typedef void (*DataToPlayerFn)(StdDataFromServer*);
 /*
  * Function pointer to exported 'StdDataToReplay()'
  */
-typedef void (*DataToReplayFn)(StdDataFromServer*);
+typedef void (*DataToReplayFn)(StdReplayDataFromServer*);

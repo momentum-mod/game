@@ -72,23 +72,18 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
 
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentTick); }
+    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick); }
     CReplayFrame *GetNextStep();
 
-    void (*StdDataToReplay)(StdDataFromServer* from);
+    void (*StdDataToReplay)(StdReplayDataFromServer* from);
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
 
-    StdDataFromServer m_SrvData;
+    StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
-    CNetworkVar(int, m_nReplayButtons);
-    CNetworkVar(int, m_iTotalStrafes);
-    CNetworkVar(int, m_iTotalJumps);
     CNetworkVar(float, m_flTickRate);
     CNetworkVar(int, m_iTotalTimeTicks);
-    CNetworkVar(int, m_iCurrentTick);
-    CNetworkVar(bool, m_bIsPaused);
     CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
   protected:

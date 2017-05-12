@@ -261,7 +261,7 @@ void C_HudTimer::OnThink()
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
-            m_G_iCurrentTick = pGhost->m_iCurrentTick;
+            m_G_iCurrentTick = pGhost->m_SrvData.m_iCurrentTick;
             m_G_iStartTickD = pGhost->m_SrvData.m_RunData.m_iStartTickD;
             runData = &pGhost->m_SrvData.m_RunData;
         }

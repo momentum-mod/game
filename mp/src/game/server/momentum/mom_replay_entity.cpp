@@ -24,14 +24,14 @@ LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 // MOM_TODO: Network other variables that the UI will need to reference
-SendPropInt(SENDINFO(m_nReplayButtons)),
-SendPropInt(SENDINFO(m_iTotalStrafes)),
-SendPropInt(SENDINFO(m_iTotalJumps)),
+//SendPropInt(SENDINFO(m_nReplayButtons)),
+//SendPropInt(SENDINFO(m_iTotalStrafes)),
+//SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropString(SENDINFO(m_pszPlayerName)),
 SendPropInt(SENDINFO(m_iTotalTimeTicks)),
-SendPropInt(SENDINFO(m_iCurrentTick)),
-SendPropBool(SENDINFO(m_bIsPaused)),
+//SendPropInt(SENDINFO(m_iCurrentTick)),
+//SendPropBool(SENDINFO(m_bIsPaused)),
 //SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
 //SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
@@ -49,8 +49,8 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     StdDataToReplay = (DataToReplayFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToReplay"));
     
     // Set networked vars here
-    m_nReplayButtons = 0;
-    m_iTotalStrafes = 0;
+    m_SrvData.m_nReplayButtons = 0;
+    m_SrvData.m_iTotalStrafes = 0;
     m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pPlayerSpectator = nullptr;
@@ -110,11 +110,11 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
     m_bReplayFirstPerson = firstPerson;
 
     Spawn();
-    m_iTotalStrafes = 0;
+    m_SrvData.m_iTotalStrafes = 0;
     m_SrvData.m_RunData.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
-    m_bIsPaused = false;
+    m_SrvData.m_bIsPaused = false;
 
     if (m_pPlaybackReplay)
     {
@@ -136,8 +136,8 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
             return;
         }
 
-        m_iCurrentTick = 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
+        m_SrvData.m_iCurrentTick = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick)->PlayerOrigin());
         m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
@@ -155,19 +155,19 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
     if (!m_pPlaybackReplay)
         return;
 
-    if (m_bIsPaused)
+    if (m_SrvData.m_bIsPaused)
     {
         if (ConVarRef("mom_replay_selection").GetInt() == 1)
-            m_iCurrentTick -= Skip;
+            m_SrvData.m_iCurrentTick -= Skip;
         else if (ConVarRef("mom_replay_selection").GetInt() == 2)
-            m_iCurrentTick += Skip;
+            m_SrvData.m_iCurrentTick += Skip;
     }
     else
     {
-        m_iCurrentTick += Skip;
+        m_SrvData.m_iCurrentTick += Skip;
     }
 
-    m_iCurrentTick = clamp<int>(m_iCurrentTick, 0, m_iTotalTimeTicks);
+    m_SrvData.m_iCurrentTick = clamp<int>(m_SrvData.m_iCurrentTick, 0, m_iTotalTimeTicks);
 }
 
 void CMomentumReplayGhostEntity::Think()
@@ -205,7 +205,7 @@ void CMomentumReplayGhostEntity::Think()
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
     // move the ghost
-    if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
+    if (m_SrvData.m_iCurrentTick < 0 || m_SrvData.m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
@@ -336,7 +336,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             SetAbsVelocity(interpolatedVel);
 
         // networked var that allows the replay to control keypress display on the client
-        m_nReplayButtons = currentStep->PlayerButtons();
+        m_SrvData.m_nReplayButtons = currentStep->PlayerButtons();
 
         if (m_SrvData.m_RunData.m_bTimerRunning)
             UpdateStats(interpolatedVel);
@@ -345,7 +345,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         // kamay: Now timer start and end at the right time
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-        if (m_nReplayButtons & IN_DUCK)
+        if (m_SrvData.m_nReplayButtons & IN_DUCK)
         {
             if (!isDucking)
             {
@@ -424,12 +424,12 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
         m_bHasJumped = true;
         m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
         m_SrvData.m_RunData.m_flLastJumpTime = gpGlobals->curtime;
-        m_iTotalJumps++;
+        m_SrvData.m_iTotalJumps++;
     }
 
     if ((currentStep->PlayerButtons() & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) ||
         (currentStep->PlayerButtons() & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)))
-        m_iTotalStrafes++;
+        m_SrvData.m_iTotalStrafes++;
 
     m_flLastSyncVelocity = SyncVelocity;
     m_angLastEyeAngle = EyeAngles();
@@ -507,9 +507,9 @@ void CMomentumReplayGhostEntity::EndRun()
 
 CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = m_iCurrentTick;
+    int nextStep = m_SrvData.m_iCurrentTick;
 
-    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_bIsPaused)
+    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_SrvData.m_bIsPaused)
     {
         --nextStep;
 
