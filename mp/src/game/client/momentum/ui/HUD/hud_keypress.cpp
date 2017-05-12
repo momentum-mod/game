@@ -68,7 +68,8 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
   private:
     int GetTextCenter(HFont font, wchar_t *wstring);
 
-    int m_nButtons, m_nDisabledButtons, m_nStrafes, m_nJumps;
+    int m_nButtons, m_nDisabledButtons, m_nJumps;
+    uint32 m_nStrafes;
     bool m_bShouldDrawCounts;
     wchar_t m_pwFwd[BUFSIZESHORT];
     wchar_t m_pwLeft[BUFSIZESHORT];
