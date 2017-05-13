@@ -20,20 +20,21 @@ public:
     void LevelShutdownPreEntity() OVERRIDE;
     void FrameUpdatePostEntityThink() OVERRIDE;
 
-    bool runGhostClient();
+    bool initGhostClient();
     bool exitGhostClient();
+    static bool connectToGhostServer(const char* host, unsigned short port);
     static unsigned sendAndRecieveData(void *params);
-    bool isGhostClientConnected() { return m_ghostClientConnected && (socket.ready == 0); }
+    bool isGhostClientConnected() { return m_ghostClientConnected && (m_socket.ready == 0); }
 private:
     static ghostNetFrame prevFrame;
-    static zed_net_socket_t socket;
-    static zed_net_address_t address;
+    static zed_net_socket_t m_socket;
+    static zed_net_address_t m_address;
     static bool m_ghostClientConnected, m_bRanThread;
-    const char* host = "127.0.0.1";
-    unsigned short port = 9000;
+    static const char* m_host;
+    static unsigned short m_port;
     static char data[256];
 
-    static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer, m_mtxbClientConnect;
+    static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
     static CUtlVector<ghostNetFrame> ghostPlayers;
     static CMomentumPlayer *m_pPlayer;
     static uint64 m_SteamID;

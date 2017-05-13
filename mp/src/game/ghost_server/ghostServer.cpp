@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "ghostServer.h"
-
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -11,6 +10,8 @@ volatile int CMOMGhostServer::numPlayers;
 std::vector<playerData* > CMOMGhostServer::m_vecPlayers;
 std::mutex CMOMGhostServer::m_vecPlayers_mutex;
 std::mutex CMOMGhostServer::m_bShouldExit_mutex;
+//used for arbitrary events synchronized with all threads that are handled whenever the thread is free (e.g changing maps)
+SafeQueue<char*> CMOMGhostServer::m_sqEventQueue; 
 
 zed_net_socket_t CMOMGhostServer::m_Socket;
 bool CMOMGhostServer::m_bShouldExit = false;
@@ -33,9 +34,15 @@ int main(int argc, char** argv)
 
     if (status != 0)
         return 0;
+
+//Disable mouse highlighting which, for some reason, pauses ALL THREADS while something is highlighted...
 #ifdef _WIN32
-    SetConsoleMode(stdin, ENABLE_LINE_INPUT); //ignores mouse input on the input buffer
+    HANDLE input_handle = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD dwOldInputMode;
+    GetConsoleMode(input_handle, &dwOldInputMode);
+    SetConsoleMode(input_handle, dwOldInputMode & ~ENABLE_QUICK_EDIT_MODE); 
 #endif
+
     std::thread t(CMOMGhostServer::acceptNewConnections); //create a new thread that listens for incoming client connections
     t.detach(); //continuously run thread
 
@@ -44,6 +51,9 @@ int main(int argc, char** argv)
         CMOMGhostServer::handleConsoleInput();
     }
     zed_net_shutdown();
+#ifdef _WIN32
+    SetConsoleMode(input_handle, dwOldInputMode); //ignores mouse input on the input buffer
+#endif
 
     return 0;
 }
@@ -127,6 +137,7 @@ void CMOMGhostServer::handleConsoleInput()
     if (strcmp(command, "say") == 0)
     {
         conMsg("You tried to say: \"%s\" to the server\n", argument);
+        m_sqEventQueue.enqueue(argument);
     }
     if (strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
     {
@@ -147,6 +158,7 @@ void CMOMGhostServer::handleConsoleInput()
     {
         _snprintf(m_szMapName, sizeof(m_szMapName), argument); 
         conMsg("Changing map to %s...\n", argument);
+        m_sqEventQueue.enqueue(NEW_MAP_CMD);
     }
     if (strcmp(command, "currentmap") == 0)
     {
@@ -206,6 +218,16 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             conMsg("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
             disconnectPlayer(newPlayer);
             //printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
+        }
+    }
+    if (m_sqEventQueue.numInQueue() != 0) //queue is not empty
+    {
+        char* newEvent = m_sqEventQueue.dequeue();
+        if (strcmp(newEvent, NEW_MAP_CMD) == 0)
+        {
+            int data = MOM_S_SENDING_NEWMAP;
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data));
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, m_szMapName, sizeof(m_szMapName));
         }
     }
     //std::this_thread::sleep_for(std::chrono::milliseconds(10));
