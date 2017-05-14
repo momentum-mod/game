@@ -357,10 +357,6 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             pGhost->m_SrvData.m_RunData.m_bTimerRunning = false;
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
             
-            //Some timing makes it so that the ghosts's update stats function doesn't get called before this is called, nor ever after it
-            //which otherwise leaves the final changes to m_SrvData stuck on the server.
-            pGhost->StdDataToReplay(&pGhost->m_SrvData);
-
             // Needed for hud_comparisons
             IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
             if (timerStateEvent)

@@ -42,7 +42,10 @@ C_MomentumPlayer::~C_MomentumPlayer()
 {
 
 }
-
+void C_MomentumPlayer::Spawn()
+{
+    SetNextClientThink(CLIENT_THINK_ALWAYS);
+}
 //-----------------------------------------------------------------------------
 // Purpose: Input handling
 //-----------------------------------------------------------------------------
@@ -58,12 +61,12 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 void C_MomentumPlayer::ClientThink()
 {
 	SetNextClientThink(CLIENT_THINK_ALWAYS);
-    FetchStdData();
+    FetchStdData(this);
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
-	SetNextClientThink(CLIENT_THINK_ALWAYS);
+	//SetNextClientThink(CLIENT_THINK_ALWAYS);
 
 	BaseClass::OnDataChanged(type);
 
@@ -77,7 +80,7 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 	// networked the same value we already have.
 	SetNetworkAngles(GetLocalAngles());
 
-	SetNextClientThink(CLIENT_THINK_ALWAYS);
+	//SetNextClientThink(CLIENT_THINK_ALWAYS);
 
 	BaseClass::PostDataUpdate(updateType);
 }

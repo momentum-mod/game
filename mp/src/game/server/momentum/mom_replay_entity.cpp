@@ -244,6 +244,8 @@ void CMomentumReplayGhostEntity::Think()
         float CalculateSlowMotion = gpGlobals->interval_per_tick * (NextStep - m_flTimeScale);
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick + CalculateSlowMotion);
     }
+    if (StdDataToReplay)
+        StdDataToReplay(&m_SrvData);
 }
 
 // Ripped from gamemovement for slightly better collision
@@ -434,11 +436,6 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     m_flLastSyncVelocity = SyncVelocity;
     m_angLastEyeAngle = EyeAngles();
     m_nOldReplayButtons = currentStep->PlayerButtons();
-    
-    //TODO: Can this run only once? Probably. But I can't find a place where that works.
-    //This should REALLY be done.
-    if (StdDataToReplay) 
-        StdDataToReplay(&m_SrvData);
 }
 void CMomentumReplayGhostEntity::SetGhostModel(const char *newmodel)
 {

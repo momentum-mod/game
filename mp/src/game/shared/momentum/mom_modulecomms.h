@@ -1,6 +1,6 @@
 #pragma once
 
-//#include "cbase.h"
+#include "cbase.h"
 #include "run/run_stats.h"
 #include "threadtools.h"
 /*
@@ -39,11 +39,18 @@ struct StdReplayDataFromServer
     CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };
-
+#ifdef CLIENT_DLL
 //Forward Decls
-void FetchStdData();
-void FetchStdReplayData();
 
+class C_MomentumPlayer;
+class C_MomentumReplayGhostEntity;
+void FetchStdData(C_MomentumPlayer *pPlayer);
+void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost);
+
+//void FetchStdReplayData();
+//void FetchStdData();
+
+#endif
 /*
  * Buffer-like objects that exist to make the goal of no-boilerplate thread safety possible.
  * An intermediate object like this allows the data to be moved to an area that isn't locked

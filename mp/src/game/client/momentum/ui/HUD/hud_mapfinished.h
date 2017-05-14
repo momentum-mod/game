@@ -101,6 +101,7 @@ private:
     Label *m_pRunUploadStatus;
 
     CMomRunStats* m_pRunStats;
+    CMOMRunEntityData *m_pRunData;
 
     bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
 

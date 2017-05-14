@@ -6,7 +6,7 @@
 #ifdef CLIENT_DLL
 
 #include "c_mom_player.h"
-
+#include "c_mom_replay_entity.h"
 StdDataBuffer g_MomServerDataBuf;
 StdReplayDataBuffer g_MomReplayDataBuf;
 
@@ -36,9 +36,8 @@ DLL_EXPORT void StdDataToReplay(StdReplayDataFromServer *from)
     }
 }
 
-void FetchStdData()
+void FetchStdData(C_MomentumPlayer *pPlayer)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if(pPlayer)
     {
         g_MomServerDataBuf._mutex.Lock();
@@ -47,18 +46,13 @@ void FetchStdData()
     }
 }
 
-void FetchStdReplayData()
+void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if(pPlayer)
+    if (pGhost)
     {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        if (pGhost)
-        {
-            g_MomReplayDataBuf._mutex.Lock();
-            memcpy(&pGhost->m_SrvData, &g_MomReplayDataBuf, sizeof(StdReplayDataFromServer));
-            g_MomReplayDataBuf._mutex.Unlock();
-        }
+        g_MomReplayDataBuf._mutex.Lock();
+        memcpy(&pGhost->m_SrvData, &g_MomReplayDataBuf, sizeof(StdReplayDataFromServer));
+        g_MomReplayDataBuf._mutex.Unlock();
     }
 }
 

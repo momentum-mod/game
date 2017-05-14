@@ -86,17 +86,16 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 m_iVelocityType = hvel.GetBool();
 
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-                float lastRunTime;
                 if (pGhost)
                 {
                     m_pRunStats = &pGhost->m_RunStats;
-                    lastRunTime = pGhost->m_SrvData.m_RunData.m_flRunTime;
+                    m_pRunData = &pGhost->m_SrvData.m_RunData;
                     m_bIsGhost = true;
                 }
                 else
                 {
                     m_pRunStats = &pPlayer->m_RunStats;
-                    lastRunTime = pPlayer->m_SrvData.m_RunData.m_flRunTime;
+                    m_pRunData = &pPlayer->m_SrvData.m_RunData;
                     m_bIsGhost = false;
                 }
 
@@ -105,8 +104,6 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 m_pRunSaveStatus->SetVisible(!m_bIsGhost);
                 m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? m_pszRepeatToolTipReplay : m_pszRepeatToolTipMap);
 
-                g_pMomentumUtil->FormatTime(lastRunTime, m_pszEndRunTime);
-                
                 CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
                 if (pPanel && pPanel->IsVisible())
                     SetMouseInputEnabled(pPanel->IsMouseInputEnabled());
@@ -306,6 +303,7 @@ void CHudMapFinishedDialog::Paint()
     //"Time:" shows up when m_iCurrentPage  == 0
     if (m_iCurrentPage < 1)// == 0, but I'm lazy to do an else-if
     {
+        g_pMomentumUtil->FormatTime(m_pRunData ? m_pRunData->m_flRunTime : 0.0f, m_pszEndRunTime);
         ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
         g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwOverallTime, 1, unicodeTime);
 
