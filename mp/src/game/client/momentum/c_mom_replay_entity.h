@@ -14,6 +14,7 @@ class C_MomentumReplayGhostEntity : public C_BaseAnimating
 
   public:
     C_MomentumReplayGhostEntity();
+    void ClientThink(void) OVERRIDE;
 
     StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;

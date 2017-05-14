@@ -58,6 +58,7 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 void C_MomentumPlayer::ClientThink()
 {
 	SetNextClientThink(CLIENT_THINK_ALWAYS);
+    FetchStdData();
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)

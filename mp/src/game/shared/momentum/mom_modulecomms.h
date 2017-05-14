@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cbase.h"
+//#include "cbase.h"
 #include "run/run_stats.h"
-
+#include "threadtools.h"
 /*
  * Members of this class will be calculated server-side but updated
  * on the client every tick.
@@ -38,6 +38,28 @@ struct StdReplayDataFromServer
     int m_iCurrentTick;
     CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
+};
+
+//Forward Decls
+void FetchStdData();
+void FetchStdReplayData();
+
+/*
+ * Buffer-like objects that exist to make the goal of no-boilerplate thread safety possible.
+ * An intermediate object like this allows the data to be moved to an area that isn't locked
+ * by default like it would be if it was coppied straight from the server player to client player.
+ * 
+ * In other words, the server doesn't force the client to take in data when the server is ready,
+ * the client can decide when it is ready and then the server can do that too.
+ */
+struct StdDataBuffer : StdDataFromServer
+{
+    CThreadMutex _mutex;
+};
+
+struct StdReplayDataBuffer : StdReplayDataFromServer
+{
+    CThreadMutex _mutex;
 };
 
 /*

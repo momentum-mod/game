@@ -32,4 +32,11 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()
     m_pszPlayerName[0] = '\0';
     m_RunStats.m_pData = &m_SrvData.m_RunStatsData;
     m_RunStats.Init();
+    SetNextClientThink(CLIENT_THINK_ALWAYS);
+}
+
+void C_MomentumReplayGhostEntity::ClientThink()
+{
+    SetNextClientThink(CLIENT_THINK_ALWAYS);
+    FetchStdReplayData();
 }
