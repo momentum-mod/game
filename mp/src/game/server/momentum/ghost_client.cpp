@@ -12,7 +12,7 @@ ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
     "Seconds to wait when timimg out from a ghost server.\n", true, 5.0f, true, 30.0f);
 
-ghostNetFrame CMomentumGhostClient::prevFrame;
+ghostNetFrame_t CMomentumGhostClient::prevFrame;
 zed_net_socket_t CMomentumGhostClient::m_socket;
 zed_net_address_t CMomentumGhostClient::m_address;
 
@@ -24,7 +24,7 @@ unsigned short CMomentumGhostClient::m_port = 9000;
 
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer;
 uint64 CMomentumGhostClient::m_SteamID;
-CUtlVector<ghostNetFrame> CMomentumGhostClient::ghostPlayers;
+CUtlVector<ghostNetFrame_t> CMomentumGhostClient::ghostPlayers;
 CThreadMutex CMomentumGhostClient::m_mtxGhostPlayers;
 CThreadMutex CMomentumGhostClient::m_mtxpPlayer;
 
@@ -42,7 +42,8 @@ void CMomentumGhostClient::LevelInitPostEntity()
 }
 void CMomentumGhostClient::LevelShutdownPreEntity()
 {
-    m_ghostClientConnected = !exitGhostClient(); //set ghost client connection to false when we disconnect
+    exitGhostClient(); //set ghost client connection to false when we disconnect
+    m_ghostClientConnected = false;
 }
 void CMomentumGhostClient::FrameUpdatePostEntityThink()
 {
@@ -197,11 +198,20 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
 
         if (bytes_read && data == MOM_C_RECIEVING_NEWFRAME && m_pPlayer) //SYN-ACK , Server acknowledges new frame is coming
         {
-            ghostNetFrame newFrame(m_pPlayer->EyeAngles(),
+            /*
+            ghostAppearance_t newProps(m_pPlayer->GetModelName().ToCStr(),
+                m_pPlayer->GetBodygroup(1),
+                m_pPlayer->ColorAsRGBA(),
+                m_pPlayer->TrailColorAsRGBA());
+            */
+
+            ghostNetFrame_t newFrame(m_pPlayer->EyeAngles(),
                 m_pPlayer->GetAbsOrigin(),
                 m_pPlayer->GetViewOffset(),
                 m_pPlayer->m_nButtons,
-                m_SteamID);
+                m_SteamID,
+                m_pPlayer->GetPlayerName());
+
             zed_net_tcp_socket_send(&m_socket, &newFrame, sizeof(newFrame)); //ACK
         }
         m_mtxpPlayer.Unlock();
@@ -218,10 +228,10 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             bytes_read = zed_net_tcp_socket_receive(&m_socket, &playerNum, sizeof(playerNum));
 
             m_mtxGhostPlayers.Lock();
-            ghostNetFrame newFrame;
+            ghostNetFrame_t newFrame;
             for (int i = 0; i < playerNum; i++)
             {
-                zed_net_tcp_socket_receive(&m_socket, &newFrame, playerNum * sizeof(ghostNetFrame));
+                zed_net_tcp_socket_receive(&m_socket, &newFrame, playerNum * sizeof(ghostNetFrame_t));
                 if (ghostPlayers.Size() == 0) //No players registered on client, we need to add new player 
                 {
                     ghostPlayers.AddToTail(newFrame);

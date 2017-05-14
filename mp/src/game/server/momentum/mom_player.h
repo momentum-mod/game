@@ -13,6 +13,7 @@
 #include <momentum/util/mom_util.h>
 #include <run/run_stats.h>
 
+#include "mom_online_ghost.h"
 class CMomentumReplayGhostEntity;
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
@@ -265,5 +266,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     // Trail pointer
     CBaseEntity* m_eTrail;
+    // Player's apperence properties
+    ghostAppearance_t m_playerProps;
 };
 #endif // MOMPLAYER_H

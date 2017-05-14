@@ -56,6 +56,7 @@ $Project "Server (Momentum)"
 	        {
 	        	 $Folder "Ghost Client"
 		        {
+	                $File   "$SRCDIR\game\shared\momentum\mom_online_ghost.h"
 	            	$File "$SRCDIR\game\server\momentum\ghost_client.h"
 	                $File "$SRCDIR\game\server\momentum\ghost_client.cpp"
 	            }

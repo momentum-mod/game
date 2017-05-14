@@ -46,10 +46,7 @@ class MomentumUtil
     void GenerateBogusRunStats(C_MomRunStats *pStatsOut);
 #endif
 
-    // Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color
-    // decreasecolor);
-    Color *GetColorFromHex(const char *hexColor); // in hex color format RRGGBB
-    Color m_newColor;
+    Color *GetColorFromHex(const char *hexColor); // in hex color format RRGGBB or RRGGBBAA
 
     Color GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
                                 const Color &decreasecolor) const;

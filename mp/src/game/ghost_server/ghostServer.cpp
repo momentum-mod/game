@@ -31,7 +31,6 @@ int main(int argc, char** argv)
     {
         status = CMOMGhostServer::runGhostServer(DEFAULT_PORT, DEFAULT_MAP);
     }
-
     if (status != 0)
         return 0;
 
@@ -98,7 +97,6 @@ const void CMOMGhostServer::newConnection(zed_net_socket_t socket, zed_net_addre
 
             m_vecPlayers_mutex.unlock();
 
-            conMsg("There are now %i connected players.\n", numPlayers);
             //listen(sock->handle, SOMAXCONN) != 0
             while (newPlayer->remote_socket.ready == 0) //socket is open
             {
@@ -185,13 +183,19 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
     }
     if (bytes_read && newPlayer)
     {
+        static bool firstNewFrame = true;
         if (data == MOM_C_SENDING_NEWFRAME)
         {
             //printf("Data matches MOM_C_SENDING_NEWFRAME pattern! \n"); 
             data = MOM_C_RECIEVING_NEWFRAME;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
             // Wait for client to get our acknowledgement, and recieve frame update from client
-            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentFrame, sizeof(ghostNetFrame)); //ACK
+            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentFrame, sizeof(ghostNetFrame_t)); //ACK
+            if (firstNewFrame)
+            {
+                conMsg("%s connected!\n", newPlayer->currentFrame.PlayerName);
+                firstNewFrame = false;
+            }
         }
         if (data == MOM_S_RECIEVING_NEWFRAME) //SYN
         {
@@ -208,7 +212,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             for (int i = 0; i < playerNum; i++)
             {
                 m_vecPlayers_mutex.lock();
-                zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame)); 
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame_t)); 
                 m_vecPlayers_mutex.unlock();
             }
             
@@ -217,6 +221,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         {
             conMsg("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
             disconnectPlayer(newPlayer);
+            firstNewFrame = true;
             //printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
         }
     }

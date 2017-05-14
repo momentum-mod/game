@@ -320,19 +320,29 @@ Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone,
     return pFinalColor;
 }
 
-Color *MomentumUtil::GetColorFromHex(const char *hexColor)
+Color* MomentumUtil::GetColorFromHex(const char *hexColor)
 {
-    long hex = strtol(hexColor, nullptr, 16);
+    static Color *newColor; 
+    uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
     if (length == 6)
     {
-        int r = ((hex >> 16) & 0xFF); // extract RR byte
-        int g = ((hex >> 8) & 0xFF);  // extract GG byte
-        int b = ((hex)&0xFF);         // extract BB byte
-        m_newColor.SetColor(r, g, b, 75);
-        return &m_newColor;
+        uint8 r = (hex & 0xFF0000) >> 16;
+        uint8 g = (hex & 0x00FF00) >> 8;
+        uint8 b = (hex & 0x0000FF);
+        newColor = new Color(r, g, b, 75);
+        return newColor;
     }
-    Msg("Error: Color format incorrect! Use hex code in format \"RRGGBB\"\n");
+    else if (length == 8)
+    {
+        uint8 r = (hex & 0xFF000000) >> 24;
+        uint8 g = (hex & 0x00FF0000) >> 16;
+        uint8 b = (hex & 0x0000FF00) >> 8;
+        uint8 a = (hex & 0x000000FF);
+        newColor = new Color(r, g, b, a);
+        return newColor;
+    }
+    Warning("Error: Color format incorrect! Use hex code in format \"RRGGBB\" or \"RRGGBBAA\"\n");
     return nullptr;
 }
 

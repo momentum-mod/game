@@ -4,6 +4,7 @@
 #include "zed_net.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
+#include "mom_online_ghost.h"
 
 struct MyThreadParams_t{}; //empty class so we can force the threaded function to work xd
 
@@ -26,7 +27,7 @@ public:
     static unsigned sendAndRecieveData(void *params);
     bool isGhostClientConnected() { return m_ghostClientConnected && (m_socket.ready == 0); }
 private:
-    static ghostNetFrame prevFrame;
+    static ghostNetFrame_t prevFrame;
     static zed_net_socket_t m_socket;
     static zed_net_address_t m_address;
     static bool m_ghostClientConnected, m_bRanThread;
@@ -35,7 +36,7 @@ private:
     static char data[256];
 
     static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
-    static CUtlVector<ghostNetFrame> ghostPlayers;
+    static CUtlVector<ghostNetFrame_t> ghostPlayers;
     static CMomentumPlayer *m_pPlayer;
     static uint64 m_SteamID;
 };

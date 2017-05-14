@@ -12,10 +12,8 @@ static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Replay ghost's body group (model)", true, 0, true, 14);
 static ConCommand mom_replay_ghost_color("mom_replay_ghost_color", CMomentumReplayGhostEntity::SetGhostColor,
-    "Set the ghost's color. Accepts HEX color value in format RRGGBB",
+    "Set the ghost's color. Accepts HEX color value in format RRGGBBAA. if RRGGBB is supplied, Alpha is set to 0x4B",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE);
-static ConVar mom_replay_ghost_alpha("mom_replay_ghost_alpha", "75", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Sets the ghost's transparency, integer between 0 and 255,", true, 0, true, 255);
 
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
@@ -186,16 +184,8 @@ void CMomentumReplayGhostEntity::Think()
     if (m_GhostColor != m_NewGhostColor)
     {
         m_GhostColor = m_NewGhostColor;
-        SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b());
+        SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b(), m_GhostColor.a());
     }
-    if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
-    {
-        m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
-            m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
-            mom_replay_ghost_alpha.GetInt());
-        SetRenderColorA(mom_replay_ghost_alpha.GetInt());
-    }
-
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
     // move the ghost

@@ -9,6 +9,7 @@
 #include <condition_variable>
 
 #include "mom_shareddefs.h"
+#include "mom_online_ghost.h"
 
 //single-file UDP library
 #include "zed_net.h"
@@ -94,7 +95,8 @@ private:
 struct playerData
 {
     int clientIndex;
-    ghostNetFrame currentFrame;
+    ghostNetFrame_t currentFrame;
+    ghostAppearance_t currentLooks;
     zed_net_socket_t remote_socket;
     zed_net_address_t remote_address;
     playerData(zed_net_socket_t socket, zed_net_address_t addr, int idx)

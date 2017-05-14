@@ -5,7 +5,7 @@
 #endif
 
 #include "const.h"
-#ifndef GHOST_SERVER //we can't include tier0 header files in the ghost server
+#ifndef GHOST_SERVER
 #include "shareddefs.h"
 #endif
 
@@ -120,43 +120,5 @@ typedef enum FLAGS
 
 #define DEFAULT_PORT 9000
 #define DEFAULT_HOST  "127.0.0.1"
-
-// Based on CReplayFrame
-struct ghostNetFrame
-{
-#ifdef GHOST_SERVER
-    float EyeAngle[3];
-    float Position[3];
-    float ViewOffset[3];
-#endif
-    int Buttons;
-    uint64 SteamID64;
-#ifndef GHOST_SERVER
-    QAngle EyeAngle;
-    Vector Position;
-    Vector ViewOffset;
-    ghostNetFrame(const QAngle eyeAngle, const Vector position, const Vector viewOffset, int buttons, uint64 steamID64)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            EyeAngle[i] = eyeAngle[i];
-            Position[i] = position[i];
-            ViewOffset[i] = viewOffset[i];
-        }
-        Buttons = buttons;
-        SteamID64 = steamID64;
-    }
-    ghostNetFrame() {}
-
-    bool ghostNetFrame::operator==(const ghostNetFrame &other) const
-    {
-        return EyeAngle == other.EyeAngle &&
-            Position == other.Position &&
-            ViewOffset == other.ViewOffset &&
-            Buttons == other.Buttons &&
-            SteamID64 == other.SteamID64;
-    }
-#endif
-};
 
 #endif // MOM_SHAREDDEFS_H
