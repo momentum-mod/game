@@ -12,8 +12,6 @@
 
 class CMOMRunEntityData
 {
-    DECLARE_CLASS_NOBASE(CMOMRunEntityData);
-    
 public:
 
     CMOMRunEntityData();
