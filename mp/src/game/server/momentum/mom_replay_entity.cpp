@@ -244,6 +244,7 @@ void CMomentumReplayGhostEntity::Think()
         float CalculateSlowMotion = gpGlobals->interval_per_tick * (NextStep - m_flTimeScale);
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick + CalculateSlowMotion);
     }
+    
     if (StdDataToReplay)
         StdDataToReplay(&m_SrvData);
 }

@@ -12,28 +12,19 @@ StdReplayDataBuffer g_MomReplayDataBuf;
 
 DLL_EXPORT void StdDataToPlayer(StdDataFromServer *from)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if(pPlayer)
-    {
-        g_MomServerDataBuf._mutex.Lock();
-        memcpy(&g_MomServerDataBuf, from, sizeof(StdDataFromServer));
-        g_MomServerDataBuf._mutex.Unlock();
-    }
+    g_MomServerDataBuf._mutex.Lock();
+    g_MomServerDataBuf.m_bWritten = true;
+    memcpy(&g_MomServerDataBuf, from, sizeof(StdDataFromServer));
+    g_MomServerDataBuf._mutex.Unlock();
 }
 
 DLL_EXPORT void StdDataToReplay(StdReplayDataFromServer *from)
 {
-    C_MomentumPlayer *pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-    if(pPlayer)
-    {
-        C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        if (pGhost)
-        {
-            g_MomReplayDataBuf._mutex.Lock();
-            memcpy(&g_MomReplayDataBuf, from, sizeof(StdReplayDataFromServer));
-            g_MomReplayDataBuf._mutex.Unlock();
-        }
-    }
+
+    g_MomReplayDataBuf._mutex.Lock();
+    g_MomReplayDataBuf.m_bWritten = true;
+    memcpy(&g_MomReplayDataBuf, from, sizeof(StdReplayDataFromServer));
+    g_MomReplayDataBuf._mutex.Unlock();
 }
 
 void FetchStdData(C_MomentumPlayer *pPlayer)
@@ -41,6 +32,10 @@ void FetchStdData(C_MomentumPlayer *pPlayer)
     if(pPlayer)
     {
         g_MomServerDataBuf._mutex.Lock();
+        if (!g_MomServerDataBuf.m_bWritten)
+            return;
+        
+        g_MomServerDataBuf.m_bWritten = false;
         memcpy(&pPlayer->m_SrvData, &g_MomServerDataBuf, sizeof(StdDataFromServer));
         g_MomServerDataBuf._mutex.Unlock();
     }
@@ -51,6 +46,10 @@ void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost)
     if (pGhost)
     {
         g_MomReplayDataBuf._mutex.Lock();
+        if (!g_MomReplayDataBuf.m_bWritten)
+            return;
+        
+        g_MomReplayDataBuf.m_bWritten = false;
         memcpy(&pGhost->m_SrvData, &g_MomReplayDataBuf, sizeof(StdReplayDataFromServer));
         g_MomReplayDataBuf._mutex.Unlock();
     }

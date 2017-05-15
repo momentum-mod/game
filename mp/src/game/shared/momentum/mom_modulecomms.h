@@ -47,26 +47,26 @@ class C_MomentumReplayGhostEntity;
 void FetchStdData(C_MomentumPlayer *pPlayer);
 void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost);
 
-//void FetchStdReplayData();
-//void FetchStdData();
-
 #endif
+
 /*
  * Buffer-like objects that exist to make the goal of no-boilerplate thread safety possible.
  * An intermediate object like this allows the data to be moved to an area that isn't locked
  * by default like it would be if it was coppied straight from the server player to client player.
  * 
- * In other words, the server doesn't force the client to take in data when the server is ready,
+ * In other words, the server doesn't force the client to take in data when the server is ready;
  * the client can decide when it is ready and then the server can do that too.
  */
 struct StdDataBuffer : StdDataFromServer
 {
     CThreadMutex _mutex;
+    bool m_bWritten;
 };
 
 struct StdReplayDataBuffer : StdReplayDataFromServer
 {
     CThreadMutex _mutex;
+    bool m_bWritten;
 };
 
 /*
