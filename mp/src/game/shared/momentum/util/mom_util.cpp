@@ -413,7 +413,7 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate,
 void MomentumUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun, RunCompare_t *into) const
 {
     Q_strcpy(into->runName, compareName);
-    into->runStats = *pRun;
+    memcpy(&into->runStatsData = pRun->m_pData, sizeof(CMomRunStats::data));
 }
 
 #define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
