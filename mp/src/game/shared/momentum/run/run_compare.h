@@ -8,9 +8,12 @@ struct RunCompare_t
     // Name of the comparison.
     char runName[32]; // MOM_TODO: determine a good size for this array.
     CMomRunStats runStats;
-
+    CMomRunStats::data runStatsData;
+    
     RunCompare_t() : runStats()
     {
+        runStats.m_pData = &runStatsData;
+        runStats.Init();
         runName[0] = '\0';
     }
 };

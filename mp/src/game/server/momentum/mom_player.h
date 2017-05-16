@@ -12,6 +12,7 @@
 #include <run/mom_entity_run_data.h>
 #include <momentum/util/mom_util.h>
 #include <run/run_stats.h>
+#include <mom_modulecomms.h>
 
 class CMomentumReplayGhostEntity;
 
@@ -117,8 +118,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop() const { return m_RunData.m_bAutoBhop; }
-    bool DidPlayerBhop() const { return m_bDidPlayerBhop; }
+    bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
+    bool DidPlayerBhop() const { return m_SrvData.m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void CheckForBhop();
     void UpdateRunStats();
@@ -131,21 +132,13 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void CalculateAverageStats();
     void LimitSpeedInStartZone();
 
-    // These are used for weapon code, MOM_TODO: potentially remove?
-    CNetworkVar(int, m_iShotsFired);
-    CNetworkVar(int, m_iDirection);
-    CNetworkVar(bool, m_bResumeZoom);
-    CNetworkVar(int, m_iLastZoom);
-
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
 
-    CNetworkVar(int, m_fSliding);
-    CNetworkVar(bool, m_bDidPlayerBhop);   // Did the player bunnyhop successfully?
-    CNetworkVar(int, m_iSuccessiveBhops);  // How many successive bhops this player has
-    CNetworkVar(bool, m_bHasPracticeMode); // Is the player in practice mode?
-
-    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData); // Current run data, used for hud elements
-    CNetworkVarEmbedded(CMomRunStats, m_RunStats);     // Run stats, also used for hud elements
+    StdDataFromServer m_SrvData;
+    CMomRunStats m_RunStats;
+    //Function pointer to transfer regularly "networked" variables to client.
+    //Pointer is acquired in mom_client.cpp
+    void (*StdDataToPlayer)(StdDataFromServer* from);
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
 
@@ -182,20 +175,15 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // for calc avg
     int m_nZoneAvgCount[MAX_STAGES];
     float m_flZoneTotalSync[MAX_STAGES], m_flZoneTotalSync2[MAX_STAGES], m_flZoneTotalVelocity[MAX_STAGES][2];
-
+    
     //Overrode for the spectating GUI and weapon dropping
     bool ClientCommand(const CCommand &args) OVERRIDE;
     void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
 
-    //--------- CheckpointMenu stuff --------------------------------
-    CNetworkVar(int, m_iCurrentStepCP);   // The current checkpoint the player is on
-    CNetworkVar(bool, m_bUsingCPMenu);    // If this player is using the checkpoint menu or not
-    CNetworkVar(int, m_iCheckpointCount); // How many checkpoints this player has
-
     // Gets the current menu checkpoint index
-    int GetCurrentCPMenuStep() const { return m_iCurrentStepCP; }
+    int GetCurrentCPMenuStep() const { return m_SrvData.m_iCurrentStepCP; }
     // MOM_TODO: For leaderboard use later on
-    bool IsUsingCPMenu() const { return m_bUsingCPMenu; }
+    bool IsUsingCPMenu() const { return m_SrvData.m_bUsingCPMenu; }
     // Creates a checkpoint on the location of the player
     Checkpoint *CreateCheckpoint();
     // Creates and saves a checkpoint to the checkpoint menu
@@ -209,14 +197,14 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // Teleports to a provided Checkpoint
     void TeleportToCheckpoint(Checkpoint *pCP);
     // Teleports the player to their current checkpoint
-    void TeleportToCurrentCP() { TeleportToCheckpoint(m_iCurrentStepCP); }
+    void TeleportToCurrentCP() { TeleportToCheckpoint(m_SrvData.m_iCurrentStepCP); }
     // Sets the current checkpoint (menu) to the desired one with that index
-    void SetCurrentCPMenuStep(int iNewNum) { m_iCurrentStepCP = iNewNum; }
+    void SetCurrentCPMenuStep(int iNewNum) { m_SrvData.m_iCurrentStepCP = iNewNum; }
     // Gets the total amount of menu checkpoints
     int GetCPCount() const { return m_rcCheckpoints.Size(); }
     // Sets wheter or not we're using the CPMenu
     // WARNING! No verification is done. It is up to the caller to don't give false information
-    void SetUsingCPMenu(bool bIsUsingCPMenu) { m_bUsingCPMenu = bIsUsingCPMenu; }
+    void SetUsingCPMenu(bool bIsUsingCPMenu) { m_SrvData.m_bUsingCPMenu = bIsUsingCPMenu; }
 
     void SaveCPsToFile(KeyValues *kvInto);
     void LoadCPsFromFile(KeyValues *kvFrom);

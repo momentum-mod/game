@@ -141,9 +141,9 @@ void CMomentumPistol::PistolFire()
     }
     else
     {
-        ++pPlayer->m_iShotsFired;
+        ++pPlayer->m_SrvData.m_iShotsFired;
 
-        if (pPlayer->m_iShotsFired > 1)
+        if (pPlayer->m_SrvData.m_iShotsFired > 1)
             return;
     }
 
