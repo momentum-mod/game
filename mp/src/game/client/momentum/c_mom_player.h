@@ -9,6 +9,7 @@
 #include <momentum/mom_shareddefs.h>
 #include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
+#include <mom_modulecomms.h>
 
 
 class C_MomentumPlayer : public C_BasePlayer
@@ -25,14 +26,15 @@ class C_MomentumPlayer : public C_BasePlayer
     void PostDataUpdate(DataUpdateType_t updateType) OVERRIDE;
     void OnDataChanged(DataUpdateType_t type) OVERRIDE;
     bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
+    void Spawn() OVERRIDE;
     virtual void ClientThink(void);
 
     Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
 
     void SurpressLadderChecks(const Vector &pos, const Vector &normal);
     bool CanGrabLadder(const Vector &pos, const Vector &normal);
-    bool DidPlayerBhop() { return m_bDidPlayerBhop; }
-    bool HasAutoBhop() { return m_RunData.m_bAutoBhop; }
+    bool DidPlayerBhop() { return m_SrvData.m_bDidPlayerBhop; }
+    bool HasAutoBhop() { return m_SrvData.m_RunData.m_bAutoBhop; }
     // void ResetStrafeSync();
 
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
@@ -44,22 +46,11 @@ class C_MomentumPlayer : public C_BasePlayer
     }
 
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
-
-    int m_iShotsFired;
-    int m_iDirection;
-    bool m_bResumeZoom;
-    int m_iLastZoom;
-    bool m_bDidPlayerBhop;
-    bool m_bHasPracticeMode;
  
     int m_afButtonDisabled;
     int m_fSliding;
 
-    bool m_bUsingCPMenu;
-    int m_iCurrentStepCP;
-    int m_iCheckpointCount;
-
-    CMOMRunEntityData m_RunData;
+    StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
@@ -73,7 +64,6 @@ class C_MomentumPlayer : public C_BasePlayer
 
     float m_flStartSpeed;
     float m_flEndSpeed;
-    int m_iSuccessiveBhops;
 
   private:
     CountdownTimer m_ladderSurpressionTimer;

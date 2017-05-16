@@ -264,6 +264,8 @@ $Project "Client (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_gamerules.h"
             $File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
+            $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.h"
             $File   "momentum\c_mom_player.cpp"
             $File   "momentum\c_mom_player.h"
             $File   "momentum\c_te_shotgun_shot.cpp"
@@ -282,7 +284,7 @@ $Project "Client (Momentum)"
             $File   "momentum\clientmode_mom_normal.cpp"
             $File   "momentum\mom_event_listener.h"
             $File   "momentum\mom_event_listener.cpp"
-            
+
             // RTT Shadows
             $File "momentum\worldlight.h"
             $File "momentum\worldlight.cpp"

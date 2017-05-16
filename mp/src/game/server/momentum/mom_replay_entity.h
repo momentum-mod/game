@@ -58,7 +58,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void UpdateStats(const Vector &ghostVel); // for hud display..
 
     const char *GetGhostModel() const { return m_pszModel; }
-    void SetRunStats(CMomRunStats *stats) { m_RunStats.CopyFrom(*stats); }
+    void SetRunStats(CMomRunStats *stats) { m_SrvData.m_RunStatsData = *stats->m_pData; }
 
     void SetSpectator(CMomentumPlayer *player)
     {
@@ -68,25 +68,22 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     void RemoveSpectator() { m_pPlayerSpectator = nullptr; }
 
     inline void SetTickRate(float rate) { m_flTickRate = rate; }
-    inline void SetRunFlags(uint32 flags) { m_RunData.m_iRunFlags = flags; }
+    inline void SetRunFlags(uint32 flags) { m_SrvData.m_RunData.m_iRunFlags = flags; }
 
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_iCurrentTick); }
+    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick); }
     CReplayFrame *GetNextStep();
+
+    void (*StdDataToReplay)(StdReplayDataFromServer* from);
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
 
-    CNetworkVarEmbedded(CMOMRunEntityData, m_RunData);
-    CNetworkVarEmbedded(CMomRunStats, m_RunStats);
-    CNetworkVar(int, m_nReplayButtons);
-    CNetworkVar(int, m_iTotalStrafes);
-    CNetworkVar(int, m_iTotalJumps);
+    StdReplayDataFromServer m_SrvData;
+    CMomRunStats m_RunStats;
     CNetworkVar(float, m_flTickRate);
     CNetworkVar(int, m_iTotalTimeTicks);
-    CNetworkVar(int, m_iCurrentTick);
-    CNetworkVar(bool, m_bIsPaused);
     CNetworkString(m_pszPlayerName, MAX_PLAYER_NAME_LENGTH);
 
   protected:
