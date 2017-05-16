@@ -5,20 +5,7 @@
 
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
-//RecvPropInt(RECVINFO(m_iShotsFired)),
-//RecvPropInt(RECVINFO(m_iDirection)),
-//RecvPropBool(RECVINFO(m_bResumeZoom)),
-//RecvPropInt(RECVINFO(m_iLastZoom)),
-//RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
-//RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
-//RecvPropBool(RECVINFO(m_bHasPracticeMode)),
-//RecvPropBool(RECVINFO(m_bUsingCPMenu)),
-//RecvPropInt(RECVINFO(m_iCurrentStepCP)),
-//RecvPropInt(RECVINFO(m_iCheckpointCount)),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
-//RecvPropInt(RECVINFO(m_fSliding)),
-//RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
-//RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
@@ -36,6 +23,11 @@ C_MomentumPlayer::C_MomentumPlayer()
     m_afButtonDisabled = 0;
     m_RunStats.m_pData = &m_SrvData.m_RunStatsData;
     m_RunStats.Init();
+    m_fSliding = 0;
+    m_flStartSpeed = 0.0f;
+    m_flEndSpeed = 0.0f;
+    m_duckUntilOnGround = false;
+    m_flStamina = 0.0f;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()

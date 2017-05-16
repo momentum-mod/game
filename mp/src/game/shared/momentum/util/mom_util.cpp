@@ -217,7 +217,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
+void MomentumUtil::GenerateBogusRunStats(CMomRunStats *pStatsOut)
 {
     RandomSeed(Plat_FloatTime());
     for (int i = 0; i < MAX_STAGES; i++)

@@ -104,7 +104,7 @@ public:
         return m_bLoadedBogusComparison ? m_rcBogusComparison : m_rcCurrentComparison;
     }
 
-    C_MomRunStats *GetRunStats() const
+    CMomRunStats *GetRunStats() const
     {
         return m_bLoadedBogusComparison ? m_pBogusRunStats : m_pRunStats;
     }

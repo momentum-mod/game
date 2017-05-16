@@ -5,13 +5,6 @@
 #include "../mom_shareddefs.h"
 #include "util/serialization.h"
 
-#ifdef CLIENT_DLL
-#define CMomRunStats C_MomRunStats
-EXTERN_RECV_TABLE(DT_MOM_RunStats);
-#else
-EXTERN_SEND_TABLE(DT_MOM_RunStats);
-#endif
-
 /*
  * USAGE: This object is pointless without an instance of CMomRunStats::data to point to.
  * By nature of the CMomRunStats::data's purpose, this class cannot own it, but it can own
@@ -26,9 +19,6 @@ EXTERN_SEND_TABLE(DT_MOM_RunStats);
 
 class CMomRunStats : public ISerializable
 {
-    DECLARE_CLASS_NOBASE(CMomRunStats);
-    //DECLARE_EMBEDDED_NETWORKVAR();
-    
 public:
     //TODO: HACK: These constructors are (probably just temporarily) deprecated. We need to either make this object
     //actually capable of constructing its self, or continue to construct it externally.

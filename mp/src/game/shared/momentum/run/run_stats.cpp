@@ -4,22 +4,12 @@
 
 #include "tier0/memdbgon.h"
 
-#ifdef CLIENT_DLL
-#define GetLocalPlayer() C_BasePlayer::GetLocalPlayer()
-#else
-#define GetLocalPlayer() UTIL_PlayerByIndex(1)
-#endif
-
-CMomRunStats::CMomRunStats(uint8 size) 
+CMomRunStats::CMomRunStats(uint8 size) : m_pData(nullptr)
 {
-    //CMomentumPlayer *pPlayer = ToCMOMPlayer(GetLocalPlayer());
-    //Init(size); 
 }
 
-CMomRunStats::CMomRunStats(CBinaryReader *pReader) 
+CMomRunStats::CMomRunStats(CBinaryReader *pReader) : m_pData(nullptr) 
 { 
-    //CMomentumPlayer *pPlayer = ToCMOMPlayer(GetLocalPlayer());
-    //Deserialize(pReader); 
 }
 
 void CMomRunStats::Init(uint8 size)

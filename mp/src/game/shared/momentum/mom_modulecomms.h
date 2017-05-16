@@ -12,7 +12,7 @@
  */
 struct StdDataFromServer
 {
-    //TODO: Deprecate the usage of weapon data? (m_iLastZoom m_iShotsFired m_bResumeZoom m_iDirection)
+    //MOM_TODO: Deprecate the usage of weapon data? (m_iLastZoom m_iShotsFired m_bResumeZoom m_iDirection)
     
     bool m_bHasPracticeMode;
     bool m_bResumeZoom;

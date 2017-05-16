@@ -43,7 +43,7 @@ class MomentumUtil
     void VersionCallback(HTTPRequestCompleted_t *, bool);
 
     // For the ComparisonsSettingsPage
-    void GenerateBogusRunStats(C_MomRunStats *pStatsOut);
+    void GenerateBogusRunStats(CMomRunStats *pStatsOut);
 #endif
 
     // Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color

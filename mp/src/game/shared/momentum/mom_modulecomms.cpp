@@ -57,10 +57,5 @@ void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost)
 
 #else //Is not CLIENT_DLL
 
-/*StdDataFromServer::StdDataFromServer()
-{
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(GetLocalPlayer());
-    pPlayer->m_RunStats.Init();
-}*/
 
 #endif //CLIENT_DLL
