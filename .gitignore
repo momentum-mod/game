@@ -80,16 +80,13 @@ voice_ban.dt
 game_shader_dx9.dll
 game_shader_dx9.so
 game_shader_dx9.so.dbg
+game_shader_dx9_srv.so
+game_shader_dx9_srv.so.dbg
 gameui2.dll
 gameui2.so
 gameui2.so.dbg
 gameui2_srv.so
 gameui2_srv.so.dbg
-shared.dll
-shared.so
-shared.so.dbg
-shared_srv.so
-shared_srv.so.dbg
 mp/game/bin/
 
 # Others

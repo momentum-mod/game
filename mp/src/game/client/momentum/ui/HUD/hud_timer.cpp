@@ -261,19 +261,19 @@ void C_HudTimer::OnThink()
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
-            m_G_iCurrentTick = pGhost->m_iCurrentTick;
-            m_G_iStartTickD = pGhost->m_RunData.m_iStartTickD;
-            runData = &pGhost->m_RunData;
+            m_G_iCurrentTick = pGhost->m_SrvData.m_iCurrentTick;
+            m_G_iStartTickD = pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            runData = &pGhost->m_SrvData.m_RunData;
         }
         else
         {
             m_bIsReplay = false;
-            m_bShowCheckpoints = pLocal->m_bUsingCPMenu;
-            m_iCheckpointCurrent = pLocal->m_iCurrentStepCP + 1;
-            m_iCheckpointCount = pLocal->m_iCheckpointCount;
-            m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
+            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingCPMenu;
+            m_iCheckpointCurrent = pLocal->m_SrvData.m_iCurrentStepCP + 1;
+            m_iCheckpointCount = pLocal->m_SrvData.m_iCheckpointCount;
+            m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
-            runData = &pLocal->m_RunData;
+            runData = &pLocal->m_SrvData.m_RunData;
         }
 
         m_bIsRunning = runData->m_bTimerRunning;

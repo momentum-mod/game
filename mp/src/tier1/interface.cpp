@@ -97,7 +97,7 @@ void* CreateInterface( const char *pName, int *pReturnCode )
 
 #ifdef POSIX
 // Linux doesn't have this function so this emulates its functionality
-void *GetModuleHandle(const char *name)
+static void *GetModuleHandle(const char *name)
 {
 	void *handle;
 

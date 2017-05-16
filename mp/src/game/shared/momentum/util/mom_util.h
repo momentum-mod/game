@@ -43,7 +43,7 @@ class MomentumUtil
     void VersionCallback(HTTPRequestCompleted_t *, bool);
 
     // For the ComparisonsSettingsPage
-    void GenerateBogusRunStats(C_MomRunStats *pStatsOut);
+    void GenerateBogusRunStats(CMomRunStats *pStatsOut);
 #endif
 
     Color *GetColorFromHex(const char *hexColor); // in hex color format RRGGBB or RRGGBBAA

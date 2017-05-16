@@ -119,7 +119,7 @@ bool C_RunComparisons::ShouldDraw()
     {
         // MOM_TODO: Should we have a convar against letting a ghost compare?
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        C_MOMRunEntityData *runData = pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData;
+        C_MOMRunEntityData *runData = pGhost ? &pGhost->m_SrvData.m_RunData : &pPlayer->m_SrvData.m_RunData;
 
         if (runData)
         {
@@ -168,12 +168,12 @@ void C_RunComparisons::LoadComparisons()
         if (pGhost)
         {
             tickRate = pGhost->m_flTickRate;
-            runFlags = pGhost->m_RunData.m_iRunFlags;
+            runFlags = pGhost->m_SrvData.m_RunData.m_iRunFlags;
         }
         else
         {
             tickRate = gpGlobals->interval_per_tick;
-            runFlags = pPlayer->m_RunData.m_iRunFlags;
+            runFlags = pPlayer->m_SrvData.m_RunData.m_iRunFlags;
         }
 
         m_rcCurrentComparison = new RunCompare_t();
@@ -186,7 +186,9 @@ void C_RunComparisons::LoadBogusComparisons()
     UnloadBogusComparisons();
     // Let's make a bogus run, shall we?
     m_rcBogusComparison = new RunCompare_t();
-    m_pBogusRunStats = new C_MomRunStats();
+    m_pBogusRunStats = new CMomRunStats();
+    m_pBogusRunStats->m_pData = &m_bogusData;
+    m_pBogusRunStats->Init();
     g_pMomentumUtil->GenerateBogusRunStats(m_pBogusRunStats);
 
     // Fill the comparison with the bogus run
@@ -243,7 +245,7 @@ void C_RunComparisons::OnThink()
         if (pPlayer)
         {
             C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-            m_iCurrentZone = pGhost ? pGhost->m_RunData.m_iCurrentZone : pPlayer->m_RunData.m_iCurrentZone;
+            m_iCurrentZone = pGhost ? pGhost->m_SrvData.m_RunData.m_iCurrentZone : pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
         }
     }
 

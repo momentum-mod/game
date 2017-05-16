@@ -109,15 +109,15 @@ void C_HudMapInfo::OnThink()
         C_MomentumReplayGhostEntity *pGhost = pLocal->GetReplayEnt();
         if (pGhost)
         {
-            m_iZoneCurrent = pGhost->m_RunData.m_iCurrentZone;
-            m_bPlayerInZone = pGhost->m_RunData.m_bIsInZone;
-            m_bMapFinished = pGhost->m_RunData.m_bMapFinished;
+            m_iZoneCurrent = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
+            m_bPlayerInZone = pGhost->m_SrvData.m_RunData.m_bIsInZone;
+            m_bMapFinished = pGhost->m_SrvData.m_RunData.m_bMapFinished;
         }
         else
         {
-            m_iZoneCurrent = pLocal->m_RunData.m_iCurrentZone;
-            m_bPlayerInZone = pLocal->m_RunData.m_bIsInZone;
-            m_bMapFinished = pLocal->m_RunData.m_bMapFinished;
+            m_iZoneCurrent = pLocal->m_SrvData.m_RunData.m_iCurrentZone;
+            m_bPlayerInZone = pLocal->m_SrvData.m_RunData.m_bIsInZone;
+            m_bMapFinished = pLocal->m_SrvData.m_RunData.m_bMapFinished;
         }
 
         m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;

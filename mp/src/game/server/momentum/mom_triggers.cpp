@@ -35,8 +35,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         // Set the current stage to this
         g_pMomentumTimer->SetCurrentZone(this);
         // Set player run data
-        pPlayer->m_RunData.m_bIsInZone = true;
-        pPlayer->m_RunData.m_iCurrentZone = stageNum;
+        pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
+        pPlayer->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
         if (g_pMomentumTimer->IsRunning())
         {
@@ -54,8 +54,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
         if (pGhost)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
-            pGhost->m_RunData.m_iCurrentZone = stageNum;
-            pGhost->m_RunData.m_bIsInZone = true;
+            pGhost->m_SrvData.m_RunData.m_iCurrentZone = stageNum;
+            pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
         }
     }
 
@@ -74,7 +74,7 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         // Timer won't be running if it's the start trigger
-        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_bHasPracticeMode)
+        if ((stageNum == 1 || g_pMomentumTimer->IsRunning()) && !pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             // This handles both the start and stage triggers
             g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_START);
@@ -89,14 +89,14 @@ void CTriggerStage::EndTouch(CBaseEntity *pOther)
         }
 
         // Status
-        pPlayer->m_RunData.m_bIsInZone = false;
+        pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
     }
     else
     {
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_RunData.m_bIsInZone = false;
+            pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
 
             stageEvent = gameeventmanager->CreateEvent("zone_exit");
         }
@@ -128,7 +128,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
         // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_bHasPracticeMode && !bCheating && !pPlayer->IsUsingCPMenu())
+        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating && !pPlayer->IsUsingCPMenu())
         {
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {
@@ -152,9 +152,9 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                     g_ReplaySystem->SetTimerStartTick(gpGlobals->tickcount);
                 }
 
-                pPlayer->m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
+                pPlayer->m_SrvData.m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
                 // Used for spectating later on
-                pPlayer->m_RunData.m_iStartTick = gpGlobals->tickcount;
+                pPlayer->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
             }
         }
         else
@@ -163,18 +163,18 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             // If we can't start the run, play a warning sound
             pPlayer->EmitSound("Watermelon.Scrape");
         }
-        pPlayer->m_RunData.m_bIsInZone = false;
-        pPlayer->m_RunData.m_bMapFinished = false;
+        pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
+        pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
     }
     else
     {
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_RunData.m_bIsInZone = false;
-            pGhost->m_RunData.m_bMapFinished = false;
-            pGhost->m_RunData.m_bTimerRunning = true;
-            pGhost->m_RunData.m_iStartTick = gpGlobals->tickcount;
+            pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
+            pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
+            pGhost->m_SrvData.m_RunData.m_bTimerRunning = true;
+            pGhost->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
             pGhost->StartTimer(gpGlobals->tickcount);
 
             // Needed for hud_comparisons
@@ -200,11 +200,11 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         pPlayer->ResetRunStats(); // Reset run stats
-        pPlayer->m_RunData.m_bIsInZone = true;
-        pPlayer->m_RunData.m_bMapFinished = false;
-        pPlayer->m_RunData.m_bTimerRunning = false;
-        pPlayer->m_RunData.m_flLastJumpVel = 0; // also reset last jump velocity when we enter the start zone
-        pPlayer->m_RunData.m_flRunTime = 0.0f;  // MOM_TODO: Do we want to reset this?
+        pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
+        pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
+        pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
+        pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0; // also reset last jump velocity when we enter the start zone
+        pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f;  // MOM_TODO: Do we want to reset this?
 
         if (g_pMomentumTimer->IsRunning())
         {
@@ -229,9 +229,9 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_RunData.m_bIsInZone = true;
-            pGhost->m_RunData.m_bMapFinished = false;
-            pGhost->m_RunData.m_bTimerRunning = false; // Fixed
+            pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
+            pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
+            pGhost->m_SrvData.m_RunData.m_bTimerRunning = false; // Fixed
         }
     }
     // start thinking
@@ -298,7 +298,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         g_pMomentumTimer->SetEndTrigger(this);
         if (g_pMomentumTimer->IsRunning() && !pPlayer->IsWatchingReplay())
         {
-            int zoneNum = pPlayer->m_RunData.m_iCurrentZone;
+            int zoneNum = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
 
             // This is needed so we have an ending velocity.
 
@@ -337,15 +337,15 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
 
             // Stop the timer
             g_pMomentumTimer->Stop(true);
-            pPlayer->m_RunData.m_flRunTime = g_pMomentumTimer->GetLastRunTime();
+            pPlayer->m_SrvData.m_RunData.m_flRunTime = g_pMomentumTimer->GetLastRunTime();
             // The map is now finished, show the mapfinished panel
-            pPlayer->m_RunData.m_bMapFinished = true;
-            pPlayer->m_RunData.m_bTimerRunning = false;
+            pPlayer->m_SrvData.m_RunData.m_bMapFinished = true;
+            pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
         }
 
         stageEvent = gameeventmanager->CreateEvent("zone_enter");
 
-        pPlayer->m_RunData.m_bIsInZone = true;
+        pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
     }
     else
     {
@@ -353,10 +353,10 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         if (pGhost)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
-            pGhost->m_RunData.m_bMapFinished = true;
-            pGhost->m_RunData.m_bTimerRunning = false;
-            pGhost->m_RunData.m_bIsInZone = true;
-
+            pGhost->m_SrvData.m_RunData.m_bMapFinished = true;
+            pGhost->m_SrvData.m_RunData.m_bTimerRunning = false;
+            pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
+            
             // Needed for hud_comparisons
             IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
             if (timerStateEvent)
@@ -386,16 +386,16 @@ void CTriggerTimerStop::EndTouch(CBaseEntity *pOther)
     if (pMomPlayer)
     {
         pMomPlayer->SetLaggedMovementValue(1.0f);  // Reset slow motion
-        pMomPlayer->m_RunData.m_bIsInZone = false; // Update status
-        lastZoneNumber = pMomPlayer->m_RunData.m_iCurrentZone;
+        pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
+        lastZoneNumber = pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone;
     }
     else
     {
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_RunData.m_bIsInZone = false;
-            lastZoneNumber = pGhost->m_RunData.m_iCurrentZone;
+            pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
+            lastZoneNumber = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
         }
     }
     BaseClass::EndTouch(pOther);
@@ -442,6 +442,27 @@ DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop")
 
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
+    // SF_TELE_ONEXIT defaults to 0 so ents that inherit from this class and call this method DO fire the tp logic
+    if (pOther && !HasSpawnFlags(SF_TELE_ONEXIT))
+    {
+        BaseClass::StartTouch(pOther);
+
+        HandleTeleport(pOther);
+    }
+}
+
+void CTriggerTeleportEnt::EndTouch(CBaseEntity* pOther)
+{
+    if (pOther && HasSpawnFlags(SF_TELE_ONEXIT))
+    {
+        BaseClass::EndTouch(pOther);
+
+        HandleTeleport(pOther);
+    }
+}
+
+void CTriggerTeleportEnt::HandleTeleport(CBaseEntity* pOther)
+{
     if (pOther)
     {
         BaseClass::StartTouch(pOther);
@@ -467,11 +488,12 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
             tmp.z -= pOther->WorldAlignMins().z;
 
             pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : nullptr,
-                             m_bResetVelocity ? &vec3_origin : nullptr);
+                m_bResetVelocity ? &vec3_origin : nullptr);
             AfterTeleport();
         }
     }
 }
+
 //----------------------------------------------------------------------------------------------
 
 //----------- CTriggerTeleportCheckpoint -------------------------------------------------------
@@ -849,20 +871,20 @@ void CTriggerSlide::Think()
     {
         if (m_bSliding)
         {
-            pPlayer->m_fSliding |= FL_SLIDE;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
         }
         else
         {
-            pPlayer->m_fSliding &= ~FL_SLIDE;
+            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE;
         }
 
         if (m_bStuck)
         {
-            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
         }
         else
         {
-            pPlayer->m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
+            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
         }
 
         pPlayer->SetGravity(m_flGravity);
@@ -880,12 +902,12 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
     {
         if (m_bSliding)
         {
-            pPlayer->m_fSliding |= FL_SLIDE;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
         }
 
         if (m_bStuck)
         {
-            pPlayer->m_fSliding |= FL_SLIDE_STUCKONGROUND;
+            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
         }
 
         m_flSavedGravity = pPlayer->GetGravity();
@@ -902,7 +924,7 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         pPlayer->SetGravity(m_flSavedGravity);
-        pPlayer->m_fSliding = 0;
+        pPlayer->m_SrvData.m_fSliding = 0;
     }
 
     BaseClass::EndTouch(pOther);

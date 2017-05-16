@@ -172,6 +172,9 @@ void CMOMSpectatorGUI::OnThink()
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::ShowPanel(bool bShow)
 {
+    if (engine->IsPlayingDemo())
+        return;
+
     // If we're becoming visible (for the first time)
     if (bShow && !IsVisible())
     {
@@ -261,7 +264,7 @@ void CMOMSpectatorGUI::Update()
             // Run time label
             char tempRunTime[BUFSIZETIME];
             wchar_t wTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(pReplayEnt->m_RunData.m_flRunTime, tempRunTime);
+            g_pMomentumUtil->FormatTime(pReplayEnt->m_SrvData.m_RunData.m_flRunTime, tempRunTime);
             ANSI_TO_UNICODE(tempRunTime, wTime);
             g_pVGuiLocalize->ConstructString(wTimeLabel, sizeof(wTimeLabel), m_pwRunTime, 1, wTime);
 

@@ -18,7 +18,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     m_player = ToCMOMPlayer(pPlayer);
 
     // don't record if we're watching a preexisting replay or in practice mode
-    if (!m_player->IsWatchingReplay() && !m_player->m_bHasPracticeMode)
+    if (!m_player->IsWatchingReplay() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
         m_pReplayManager->StartRecording();
         m_iTickCount = 1; // recoring begins at 1 ;)
@@ -30,16 +30,26 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 {
     IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
 
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
     if (throwaway && replaySavedEvent)
     {
         replaySavedEvent->SetBool("save", false);
         gameeventmanager->FireEvent(replaySavedEvent);
         m_pReplayManager->StopRecording();
+
+        // Re-allow the player to teleport
+        if (pPlayer)
+            pPlayer->m_bAllowUserTeleports = true;
         return;
     }
 
     if (delay)
     {
+        // Prevent the user from teleporting, potentially breaking this delay
+        if (pPlayer)
+            pPlayer->m_bAllowUserTeleports = false;
+
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
         return;
@@ -75,6 +85,10 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_pReplayManager->StopRecording();
     // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
     Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
+
+    // Re-allow the player to teleport
+    if (pPlayer)
+        pPlayer->m_bAllowUserTeleports = true;
     
     if (replaySavedEvent)
     {
@@ -141,7 +155,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     replay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     replay->SetTickInterval(gpGlobals->interval_per_tick);
     replay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
-    replay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
+    replay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
     replay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     replay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
 }
@@ -152,7 +166,7 @@ void CMomentumReplaySystem::SetRunStats()
         return;
 
     auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
-    *stats = static_cast<CMomRunStats>(m_player->m_RunStats);
+    memcpy(stats->m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
 }
 
 class CMOMReplayCommands
@@ -218,7 +232,7 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = 0;
+            pGhost->m_SrvData.m_iCurrentTick = 0;
         }
     }
 }
@@ -238,7 +252,7 @@ CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_bIsPaused = !pGhost->m_bIsPaused;
+            pGhost->m_SrvData.m_bIsPaused = !pGhost->m_SrvData.m_bIsPaused;
         }
     }
 }
@@ -253,8 +267,8 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
             int tick = Q_atoi(args[1]);
             if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
             {
-                pGhost->m_iCurrentTick = tick;
-                pGhost->m_RunData.m_bMapFinished = false;
+                pGhost->m_SrvData.m_iCurrentTick = tick;
+                pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             }
         }
     }
@@ -267,7 +281,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_RunData.m_iStartTickD;
+            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
     }
 }

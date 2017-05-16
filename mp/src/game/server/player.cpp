@@ -6540,10 +6540,21 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 			angle.y = atof( args[5] );
 			angle.z = 0.0f;
 
-			JumptoPosition( origin, angle );
-		}
-		
-		return true;
+            #define SPECGOTO_MAX_VALUE 0xFFFF/2.0f
+
+            // This could crash the game somehow if not checked.. Thanks to Nairda.
+            if (abs(angle.x) <= 360.0f && abs(angle.y) <= 360.0f && abs(origin.x) < SPECGOTO_MAX_VALUE &&
+                abs(origin.y) < SPECGOTO_MAX_VALUE && abs(origin.z) < SPECGOTO_MAX_VALUE)
+            {
+                JumptoPosition(origin, angle);
+            }
+            else
+            {
+                engine->ClientPrintf(edict(), "spec_goto: Out-of-bounds");
+            }
+        }
+
+        return true;
 	}
 	else if ( stricmp( cmd, "playerperf" ) == 0 )
 	{

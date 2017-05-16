@@ -5,7 +5,10 @@
 #include "mom_shareddefs.h"
 #include "mom_timer.h"
 #include "util/mom_util.h"
-
+#include "util/os_utils.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "tier0/memdbgon.h"
 
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
@@ -19,16 +22,16 @@ LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 // MOM_TODO: Network other variables that the UI will need to reference
-SendPropInt(SENDINFO(m_nReplayButtons)),
-SendPropInt(SENDINFO(m_iTotalStrafes)),
-SendPropInt(SENDINFO(m_iTotalJumps)),
+//SendPropInt(SENDINFO(m_nReplayButtons)),
+//SendPropInt(SENDINFO(m_iTotalStrafes)),
+//SendPropInt(SENDINFO(m_iTotalJumps)),
 SendPropFloat(SENDINFO(m_flTickRate)),
 SendPropString(SENDINFO(m_pszPlayerName)),
 SendPropInt(SENDINFO(m_iTotalTimeTicks)),
-SendPropInt(SENDINFO(m_iCurrentTick)),
-SendPropBool(SENDINFO(m_bIsPaused)),
-SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
+//SendPropInt(SENDINFO(m_iCurrentTick)),
+//SendPropBool(SENDINFO(m_bIsPaused)),
+//SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
+//SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
@@ -41,10 +44,13 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
     m_nOldReplayButtons(0)
 {
+    StdDataToReplay = (DataToReplayFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToReplay"));
+    
     // Set networked vars here
-    m_nReplayButtons = 0;
-    m_iTotalStrafes = 0;
-    m_RunStats.Init();
+    m_SrvData.m_nReplayButtons = 0;
+    m_SrvData.m_iTotalStrafes = 0;
+    m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pPlayerSpectator = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -63,7 +69,7 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
         if (pEvent->GetBool("restart"))
-            m_RunData.m_bMapFinished = false;
+            m_SrvData.m_RunData.m_bMapFinished = false;
         else
             EndRun();
     }
@@ -102,11 +108,11 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
     m_bReplayFirstPerson = firstPerson;
 
     Spawn();
-    m_iTotalStrafes = 0;
-    m_RunData.m_bMapFinished = false;
+    m_SrvData.m_iTotalStrafes = 0;
+    m_SrvData.m_RunData.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
-    m_bIsPaused = false;
+    m_SrvData.m_bIsPaused = false;
 
     if (m_pPlaybackReplay)
     {
@@ -128,8 +134,8 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
             return;
         }
 
-        m_iCurrentTick = 0;
-        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_iCurrentTick)->PlayerOrigin());
+        m_SrvData.m_iCurrentTick = 0;
+        SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick)->PlayerOrigin());
         m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
@@ -147,19 +153,19 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
     if (!m_pPlaybackReplay)
         return;
 
-    if (m_bIsPaused)
+    if (m_SrvData.m_bIsPaused)
     {
         if (ConVarRef("mom_replay_selection").GetInt() == 1)
-            m_iCurrentTick -= Skip;
+            m_SrvData.m_iCurrentTick -= Skip;
         else if (ConVarRef("mom_replay_selection").GetInt() == 2)
-            m_iCurrentTick += Skip;
+            m_SrvData.m_iCurrentTick += Skip;
     }
     else
     {
-        m_iCurrentTick += Skip;
+        m_SrvData.m_iCurrentTick += Skip;
     }
 
-    m_iCurrentTick = clamp<int>(m_iCurrentTick, 0, m_iTotalTimeTicks);
+    m_SrvData.m_iCurrentTick = clamp<int>(m_SrvData.m_iCurrentTick, 0, m_iTotalTimeTicks);
 }
 
 void CMomentumReplayGhostEntity::Think()
@@ -189,7 +195,7 @@ void CMomentumReplayGhostEntity::Think()
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
     // move the ghost
-    if (m_iCurrentTick < 0 || m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
+    if (m_SrvData.m_iCurrentTick < 0 || m_SrvData.m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
@@ -197,18 +203,97 @@ void CMomentumReplayGhostEntity::Think()
     }
     else
     {
-        // MOM_TODO: Find a better solution for timescaling when it's > 1.0
-        // (commented old, it could be useful, we must find a better solution for this... host_timescale would work, but
-        // only with sv_cheats enabled, wich we would to enable maybe?)
-        // It's kinda hard without modifying the engine dll
-
-        // Otherwise proceed to the next step and perform the necessary updates.
         if (m_flTimeScale <= 1.0f)
             UpdateStep(1);
         else
         {
-            int NextStep = static_cast<int>(m_flTimeScale)+1;
-            UpdateStep(NextStep);
+            // MOM_TODO: IMPORTANT! Remember, this is probably not the proper way of speeding up the replay.
+            // Because it skips the steps that normaly the engine would have "compensated".
+            // So it can results to unsmooth results, but this is probably the best you can get.
+            // Until we can find something else to modify timescale properly.
+            // We do it this way, because SetNextThink / engine doesn't allow faster updates at this timescale.
+
+            // Calculate our next step
+            int iNextStep = static_cast<int>(m_flTimeScale) + 1;
+
+            // Calculate the average of ticks that will be used for the next step or the current one
+            float fTicksAverage = (1.0f - (static_cast<float>(iNextStep) - m_flTimeScale));
+
+            // If it's null, then we just run the current step
+            if (fTicksAverage == 0.0f)
+            {
+                UpdateStep(iNextStep - 1);
+            }
+
+            // Otherwhise if it's 1 we must run the next step
+            else if (fTicksAverage == 1.0f)
+            {
+                UpdateStep(iNextStep);
+            }
+
+            // Else, we calculate when we should be on the next step or the current one
+            else
+            {
+
+                // If we should first update on the next step or not
+                bool bShouldNextStepInstead = false;
+
+                // If the next step that must be runned is higher than the current steps:
+                // We invert roles between current steps and next steps.
+                if (fTicksAverage > 0.5f)
+                {
+                    fTicksAverage = 0.5f - (fTicksAverage - 0.5f);
+                    bShouldNextStepInstead = true;
+                }
+
+                // Actually we don't need to check for the tickrate, we will let engine compensate it.
+                float fInvTicksAverage = 1.0f / fTicksAverage;
+
+                int iInvTicksAverage = static_cast<int>(fInvTicksAverage + 0.5f);
+
+                // 1) If the ticks elapsed is higher or equal to the ticks calculated we must run the next step or the
+                // current one depending on the average of current steps and next steps.
+                if (m_iTickElapsed >= iInvTicksAverage)
+                {
+                    //BLOCK1
+
+                    // If the average of next steps are higher than current steps, the current step must be called here.
+                    // Otherwhise the next step must be called.
+
+                    UpdateStep(bShouldNextStepInstead ? (iNextStep - 1) : iNextStep);
+
+                    // Reset our elapsed ticks, to know when we will perform a new current step or a new next step.
+                    // At tick 1, because we're increasing only elapsed ticks after the condition of 1) and not before.
+                    // If we don't do this, we will be in late of 1 tick.
+
+                    /* --------------------------------------------------------------------------------------------------------------------------
+                    For example if m_flTimeScale = 3,5 -> then iInvTicksAverage is equal to 2 (1/0.5), and that we're resetting iTickElapsed on 0,
+                    it means that we will wait 2 ticks before being on that BLOCK1.
+                    And we dont want that because, we want the 1/2 of time the code running on both blocks and not 1/3 on BLOCK1 then 2/3 on BLOCK2,
+                    when timescale is 3,5.
+                    If we wait 2 ticks on BLOCK2 and only 1 on BLOCK1, logically, it won't correspond to 3,5 of m_flTimeScale.
+                    So we're doing like this way: iTickElapsed = 1, or iInvTicksAverage = iInvTicksAverage - 1, 
+                    to make it correspond perfectly to timescale.
+                    I hope you understood what I've meant. If not then contact that XutaxKamay ***** and tell him to fix his comments.
+                    ------------------------------------------------------------------------------------------------------------------------------
+                    */
+
+                    m_iTickElapsed = 1;
+                }
+                else
+                {
+
+                    //BLOCK2
+
+                    // If the average of next steps are higher than current steps, the next step must be called here.
+                    // Otherwhise the current step must be called.
+
+                    UpdateStep(bShouldNextStepInstead ? (iNextStep) : (iNextStep - 1));
+
+                    // Wait for the ticks elapsing before we change to our current step or our next step.
+                    m_iTickElapsed++;
+                }
+            }
         }
 
         if (m_pPlayerSpectator)
@@ -223,11 +308,11 @@ void CMomentumReplayGhostEntity::Think()
     }
     else
     {
-        int NextStep = static_cast<int>(m_flTimeScale)+1;
-
-        float CalculateSlowMotion = gpGlobals->interval_per_tick * (NextStep - m_flTimeScale);
-        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick + CalculateSlowMotion);
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
+    
+    if (StdDataToReplay)
+        StdDataToReplay(&m_SrvData);
 }
 
 // Ripped from gamemovement for slightly better collision
@@ -320,16 +405,16 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             SetAbsVelocity(interpolatedVel);
 
         // networked var that allows the replay to control keypress display on the client
-        m_nReplayButtons = currentStep->PlayerButtons();
+        m_SrvData.m_nReplayButtons = currentStep->PlayerButtons();
 
-        if (m_RunData.m_bTimerRunning)
+        if (m_SrvData.m_RunData.m_bTimerRunning)
             UpdateStats(interpolatedVel);
 
         SetViewOffset(currentStep->PlayerViewOffset());
 
         // kamay: Now timer start and end at the right time
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-        if (m_nReplayButtons & IN_DUCK)
+        if (m_SrvData.m_nReplayButtons & IN_DUCK)
         {
             if (!isDucking)
             {
@@ -393,9 +478,9 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     }
     if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
     {
-        m_RunData.m_flStrafeSync =
+        m_SrvData.m_RunData.m_flStrafeSync =
             (float(m_nPerfectSyncTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks strafing perfectly / ticks strafing
-        m_RunData.m_flStrafeSync2 =
+        m_SrvData.m_RunData.m_flStrafeSync2 =
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
 
@@ -406,14 +491,14 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
         currentStep->PlayerButtons() & IN_JUMP)
     {
         m_bHasJumped = true;
-        m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
-        m_RunData.m_flLastJumpTime = gpGlobals->curtime;
-        m_iTotalJumps++;
+        m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
+        m_SrvData.m_RunData.m_flLastJumpTime = gpGlobals->curtime;
+        m_SrvData.m_iTotalJumps++;
     }
 
     if ((currentStep->PlayerButtons() & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) ||
         (currentStep->PlayerButtons() & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)))
-        m_iTotalStrafes++;
+        m_SrvData.m_iTotalStrafes++;
 
     m_flLastSyncVelocity = SyncVelocity;
     m_angLastEyeAngle = EyeAngles();
@@ -451,7 +536,7 @@ void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
 
 void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
 {
-    m_RunData.m_iStartTick = m_iStartTick;
+    m_SrvData.m_RunData.m_iStartTick = m_iStartTick;
 
     if (m_pPlayerSpectator && m_pPlayerSpectator->GetReplayEnt() == this)
     {
@@ -486,9 +571,9 @@ void CMomentumReplayGhostEntity::EndRun()
 
 CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = m_iCurrentTick;
+    int nextStep = m_SrvData.m_iCurrentTick;
 
-    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_bIsPaused)
+    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_SrvData.m_bIsPaused)
     {
         --nextStep;
 
