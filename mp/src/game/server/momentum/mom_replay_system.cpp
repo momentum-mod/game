@@ -18,7 +18,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     m_player = ToCMOMPlayer(pPlayer);
 
     // don't record if we're watching a preexisting replay or in practice mode
-    if (!m_player->IsWatchingReplay() && !m_player->m_SrvData.m_bHasPracticeMode)
+    if (!m_player->IsSpectatingGhost() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
         m_pReplayManager->StartRecording();
         m_iTickCount = 1; // recoring begins at 1 ;)
@@ -265,7 +265,7 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
         if (pGhost && args.ArgC() > 1)
         {
             int tick = Q_atoi(args[1]);
-            if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
+            if (tick >= 0 && tick <= pGhost->m_SrvData.m_iTotalTimeTicks)
             {
                 pGhost->m_SrvData.m_iCurrentTick = tick;
                 pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
@@ -281,7 +281,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_SrvData.m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
     }
 }

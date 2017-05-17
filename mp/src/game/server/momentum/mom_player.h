@@ -15,7 +15,6 @@
 #include <mom_modulecomms.h>
 
 #include "mom_online_ghost.h"
-class CMomentumReplayGhostEntity;
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
@@ -53,6 +52,7 @@ struct Checkpoint
         crouched = pKv->GetBool("crouched");
     }
 };
+class CMomentumGhostBaseEntity;
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 {
@@ -158,9 +158,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
 
     // Replay stuff
-    bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
-
-    CMomentumReplayGhostEntity *GetReplayEnt() const;
+    
+    bool IsSpectatingGhost() const { return m_hObserverTarget.Get() && GetGhostEnt(); }
+    CMomentumGhostBaseEntity *GetGhostEnt() const;
 
     bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
     bool SetObserverTarget(CBaseEntity *target) OVERRIDE;

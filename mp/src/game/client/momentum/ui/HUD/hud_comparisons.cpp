@@ -167,7 +167,7 @@ void C_RunComparisons::LoadComparisons()
 
         if (pGhost)
         {
-            tickRate = pGhost->m_flTickRate;
+            tickRate = pGhost->m_SrvData.m_flTickRate;
             runFlags = pGhost->m_SrvData.m_RunData.m_iRunFlags;
         }
         else

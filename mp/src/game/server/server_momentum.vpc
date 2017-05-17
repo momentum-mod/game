@@ -201,6 +201,8 @@ $Project "Server (Momentum)"
             $File "momentum\mom_ruler.cpp"
             $File   "momentum\mom_timer.h"
             $File   "momentum\mom_timer.cpp"
+         	$File "momentum\mom_ghost_base.h"
+            $File "momentum\mom_ghost_base.cpp"
         }
         
         $File "hl2\Func_Monitor.cpp"

@@ -248,7 +248,7 @@ void CMOMSpectatorGUI::Update()
         {
             // Current player name
             wchar_t wPlayerName[BUFSIZELOCL], szPlayerInfo[BUFSIZELOCL];
-            ANSI_TO_UNICODE(pReplayEnt->m_pszPlayerName, wPlayerName);
+            ANSI_TO_UNICODE(pReplayEnt->m_SrvData.m_pszPlayerName, wPlayerName);
             g_pVGuiLocalize->ConstructString(szPlayerInfo, sizeof(szPlayerInfo), m_pwReplayPlayer, 1, wPlayerName);
 
             if (m_pPlayerLabel)

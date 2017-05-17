@@ -38,12 +38,11 @@ struct ghostNetFrame_t
     uint64 SteamID64;
     char PlayerName[32];
     ghostAppearance_t GhostAppearance;
-#ifdef GHOST_SERVER
+#ifdef GHOST_SERVER //Can't use Vector/QAngle in ghost server
     float EyeAngle[3];
     float Position[3];
     float ViewOffset[3];
-#endif
-#ifndef GHOST_SERVER
+#else   
     QAngle EyeAngle;
     Vector Position;
     Vector ViewOffset;
@@ -73,5 +72,5 @@ struct ghostNetFrame_t
             SteamID64 == other.SteamID64 &&
             Q_strcmp(PlayerName, other.PlayerName) == 0;
     }
-#endif
+#endif //NOT_GHOST_SERVER
 };

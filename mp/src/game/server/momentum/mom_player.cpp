@@ -875,7 +875,7 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 
     if (!target->IsPlayer())
     {
-        if (!Q_strcmp(target->GetClassname(), "mom_replay_ghost")) // target is a replay ghost
+        if (Q_strcmp(target->GetClassname(), "mom_replay_ghost") == 0) // target is a replay ghost
         {
             return true;
         }
@@ -888,8 +888,8 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 // Override of CBasePlayer::SetObserverTarget that lets us add/remove ourselves as spectors to the ghost
 bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 {
-    CMomentumReplayGhostEntity *pGhostToSpectate = dynamic_cast<CMomentumReplayGhostEntity *>(target),
-                               *pCurrentGhost = GetReplayEnt();
+    CMomentumGhostBaseEntity *pGhostToSpectate = dynamic_cast<CMomentumGhostBaseEntity *>(target);
+    CMomentumGhostBaseEntity *pCurrentGhost = GetGhostEnt();
 
     if (pCurrentGhost)
     {
@@ -975,7 +975,7 @@ void CMomentumPlayer::CheckObserverSettings()
     {
         ValidateCurrentObserverTarget();
 
-        CMomentumReplayGhostEntity *target = GetReplayEnt();
+        CMomentumGhostBaseEntity *target = GetGhostEnt();
         // for ineye mode we have to copy several data to see exactly the same
 
         if (target && m_iObserverMode == OBS_MODE_IN_EYE)
@@ -1017,14 +1017,14 @@ void CMomentumPlayer::TweenSlowdownPlayer()
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "TWEEN");
 }
 
-CMomentumReplayGhostEntity *CMomentumPlayer::GetReplayEnt() const
+CMomentumGhostBaseEntity *CMomentumPlayer::GetGhostEnt() const
 {
-    return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
+    return dynamic_cast<CMomentumGhostBaseEntity*>(m_hObserverTarget.Get());
 }
 
 void CMomentumPlayer::StopSpectating()
 {
-    CMomentumReplayGhostEntity *pGhost = GetReplayEnt();
+    CMomentumGhostBaseEntity *pGhost = GetGhostEnt();
     if (pGhost)
         pGhost->RemoveSpectator();
 

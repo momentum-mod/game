@@ -3,6 +3,7 @@
 #include "util/mom_util.h"
 #include "tier0/memdbgon.h"
 #include "mom_replay_entity.h"
+#include "mom_ghost_base.h"
 
 ConVar mm_updaterate("mom_ghost_online_updaterate", "20", 
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, 
@@ -72,7 +73,7 @@ void CMomentumGhostClient::FrameUpdatePostEntityThink()
             //Msg("Players in server: %i", ghostPlayers.Size());
             for (int i = 0; i < ghostPlayers.Size(); i++)
             {
-                Msg("Position of player #%i: %f, %f, %f\n", i, ghostPlayers[i].Position.x, ghostPlayers[i].Position.y, ghostPlayers[i].Position.z);
+                //Msg("Position of player #%i: %f, %f, %f\n", i, ghostPlayers[i].Position.x, ghostPlayers[i].Position.y, ghostPlayers[i].Position.z);
             }
         }
         m_mtxGhostPlayers.Unlock();
