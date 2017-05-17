@@ -44,20 +44,22 @@ struct ghostNetFrame_t
     float EyeAngle[3];
     float Position[3];
     float ViewOffset[3];
+    float Velocity[3];
 #else   
     QAngle EyeAngle;
     Vector Position;
     Vector ViewOffset;
-
-    ghostNetFrame_t(const QAngle eyeAngle, const Vector position, const Vector viewOffset,
-        const int buttons, const uint64 steamID64,
-        const char* playerName)
+    Vector Velocity;
+    ghostNetFrame_t(const QAngle eyeAngle, const Vector position, const Vector viewOffset, const Vector velocity,
+        const int buttons, const uint64 steamID64, const char* playerName)
     {
         for (int i = 0; i < 3; i++)
         {
             EyeAngle[i] = eyeAngle[i];
             Position[i] = position[i];
             ViewOffset[i] = viewOffset[i];
+            Velocity[i] = velocity[i];
+
         }
         Buttons = buttons;
         SteamID64 = steamID64;
@@ -70,9 +72,25 @@ struct ghostNetFrame_t
         return EyeAngle == other.EyeAngle &&
             Position == other.Position &&
             ViewOffset == other.ViewOffset &&
+            Velocity == other.Velocity &&
             Buttons == other.Buttons &&
             SteamID64 == other.SteamID64 &&
             Q_strcmp(PlayerName, other.PlayerName) == 0;
     }
 #endif //NOT_GHOST_SERVER
 };
+
+#ifndef GHOST_SERVER
+static ConVar mm_updaterate("mom_ghost_online_updaterate", "20", 
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, 
+    "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 1000.0f);
+
+static ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Seconds to wait when timimg out from a ghost server.\n", true, 5.0f, true, 30.0f);
+
+//we have to wait a few ticks to let the interpolation catch up with our ghosts!
+static ConVar mm_lerpRatio("mom_ghost_online_lerp_ratio", "2",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Number of ticks to wait before updating ghosts, to allow client to interpolate.\n", true, 0.0f, true, 10.0f);
+#endif

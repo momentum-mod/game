@@ -6,13 +6,6 @@
 
 #include "tier0/memdbgon.h"
 
-ConVar mm_updaterate("mom_ghost_online_updaterate", "20", 
-    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, 
-    "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 1000.0f);
-
-ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
-    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
-    "Seconds to wait when timimg out from a ghost server.\n", true, 5.0f, true, 30.0f);
 
 zed_net_socket_t CMomentumGhostClient::m_socket;
 zed_net_address_t CMomentumGhostClient::m_address;
@@ -198,6 +191,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             ghostNetFrame_t newFrame(m_pPlayer->EyeAngles(),
                 m_pPlayer->GetAbsOrigin(),
                 m_pPlayer->GetViewOffset(),
+                m_pPlayer->GetAbsVelocity(),
                 m_pPlayer->m_nButtons,
                 m_SteamID,
                 m_pPlayer->GetPlayerName());

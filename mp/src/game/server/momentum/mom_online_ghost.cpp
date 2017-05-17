@@ -5,6 +5,7 @@
 
 #include "tier0/memdbgon.h"
 
+
 LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
@@ -20,31 +21,27 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity()
 {
     SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
     SetGhostColor(COLOR_RED);
-    SetGhostModel(GHOST_MODEL);
     hasSpawned = false;
 }
 void CMomentumOnlineGhostEntity::Precache(void)
 {
     BaseClass::Precache();
-    PrecacheModel(GHOST_MODEL);
 }
 void CMomentumOnlineGhostEntity::Spawn()
 {
     Precache();
     BaseClass::Spawn();
-    m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
-
+    SetGhostColor(COLOR_RED);
     hasSpawned = true;
-    ConDColorMsg(Color(255, 0, 255, 255), "Ghost spawned!\n");
-
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    SetNextThink(gpGlobals->curtime);
 }
 void CMomentumOnlineGhostEntity::Think()
 {
     BaseClass::Think();
     HandleGhost();
-
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    //We have to wait some time after getting the new packets to allow the client some "space", i.e a few saved packets, in order to interpolate
+    float finalLerp = (mm_lerpRatio.GetFloat() / mm_updaterate.GetFloat());
+    SetNextThink(gpGlobals->curtime + finalLerp);
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
@@ -54,6 +51,28 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         QAngle newAngles = QAngle(m_pCurrentFrame->EyeAngle.x / 10, m_pCurrentFrame->EyeAngle.y, m_pCurrentFrame->EyeAngle.z);
         SetAbsAngles(newAngles);
         SetViewOffset(m_pCurrentFrame->ViewOffset);
+        //MOM_TODO: Fix this
+        /*
+        if (m_pPreviousFrame != nullptr)
+        {
+            const Vector &ghostPrevOrigin = m_pPreviousFrame->Position;
+            const Vector &ghostCurrentOrigin = m_pCurrentFrame->Position;
+            const float distX = fabs(ghostPrevOrigin.x - ghostCurrentOrigin.x);
+            const float distY = fabs(ghostPrevOrigin.y - ghostCurrentOrigin.y);
+            const float distZ = fabs(ghostPrevOrigin.z - ghostCurrentOrigin.z);
+            const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+
+            // Fixes an issue with teleporting
+            int maxvel = sv_maxvelocity.GetInt();
+            if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
+            {
+                SetAbsVelocity(interpolatedVel);
+            }
+
+            UpdateStats(interpolatedVel);
+        }
+        */
+        //SetAbsVelocity(m_pCurrentFrame->Velocity);
         Q_strncpy(m_pszGhostName, m_pCurrentFrame->PlayerName, sizeof(m_pszGhostName));
 
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
@@ -73,7 +92,6 @@ void CMomentumOnlineGhostEntity::HandleGhost()
                 RemoveFlag(FL_DUCKING);
             }
         }
-        m_pPreviousFrame = m_pCurrentFrame;
         // remove the nodraw effects
         if (GetRenderMode() != kRenderTransColor)
         {
@@ -81,8 +99,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
             RemoveEffects(EF_NOSHADOW);
         }
     }
-
-    ConDColorMsg(Color(255, 255, 0, 255), "Position of ghost %s: %f, %f, %f\n", m_pszGhostName, GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z);
+    ConDColorMsg(Color(255, 255, 0, 255), "Velocity of ghost %s: %f, %f, %f\n", m_pszGhostName, GetAbsVelocity().x, GetAbsVelocity().y, GetAbsVelocity().z);
 
 }
 void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
@@ -109,25 +126,6 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
                 SetRenderMode(kRenderTransColor);
                 RemoveEffects(EF_NOSHADOW);
             }
-        }
-        
-        if (m_pPreviousFrame != nullptr)
-        {
-            const Vector &ghostPrevOrigin = m_pPreviousFrame->Position;
-            const Vector &ghostCurrentOrigin = m_pCurrentFrame->Position;
-            const float distX = fabs(ghostPrevOrigin.x - ghostCurrentOrigin.x);
-            const float distY = fabs(ghostPrevOrigin.y - ghostCurrentOrigin.y);
-            const float distZ = fabs(ghostPrevOrigin.z - ghostCurrentOrigin.z);
-            const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
-
-            // Fixes an issue with teleporting
-            int maxvel = sv_maxvelocity.GetInt();
-            if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
-            {
-                SetAbsVelocity(interpolatedVel);
-            }
-
-            UpdateStats(interpolatedVel);
         }
     }
 }

@@ -17,10 +17,6 @@ public:
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
-    CInterpolatedVar<Vector>m_iv_VecOrigin;
-    CInterpolatedVar<QAngle>m_iv_QAEyeAngles;
-    CInterpolatedVar<Vector>m_iv_vecViewOffset;
-
 private:
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
 };
