@@ -1229,7 +1229,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             for (i = 0; i < numplanes; i++)
             {
                 ClipVelocity(original_velocity, planes[i], mv->m_vecVelocity, 1);
-
                 for (j = 0; j < numplanes; j++)
                     if (j != i)
                     {
@@ -1466,6 +1465,66 @@ void CMomentumGameMovement::CheckFalling(void)
     // Clear the fall velocity so the impact doesn't happen again.
     //
     player->m_Local.m_flFallVelocity = 0.0f;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : in - 
+//			normal - 
+//			out - 
+//			overbounce - 
+// Output : int
+//-----------------------------------------------------------------------------
+int CMomentumGameMovement::ClipVelocity(Vector& in, Vector& normal, Vector& out, float overbounce)
+{
+    float	backoff;
+    float	change;
+    float angle;
+    int		i, blocked;
+
+    Vector old = out;
+
+    angle = normal[2];
+
+    blocked = 0x00;         // Assume unblocked.
+    if (angle > 0)			// If the plane that is blocking us has a positive z component, then assume it's a floor.
+        blocked |= 0x01;	// 
+    if (!angle)				// If the plane has no Z, it is vertical (wall/step)
+        blocked |= 0x02;	// 
+
+
+    // Determine how far along plane to slide based on incoming direction.
+    backoff = DotProduct(in, normal) * overbounce;
+
+    float velocity = 0.0f;
+    for (i = 0; i<3; i++)
+    {
+        change = normal[i] * backoff;
+        velocity = in[i] - change;
+        out[i] = velocity;
+    }
+
+    // iterate once to make sure we aren't still moving through the plane
+    float adjust = DotProduct(out, normal);
+    if (adjust < 0.0f)
+    {
+        out -= (normal * adjust);
+        //Msg( "Adjustment = %lf\n", adjust );
+    }
+
+    //Check if we loose speed while going on a slope in front of us.
+    Vector dif = mv->m_vecVelocity - out;
+    if (dif.Length2D() > 0.0f && (normal.z > 0.7f) && (velocity > 0.0f))
+    {
+        out.x = mv->m_vecVelocity.x;
+        out.y = mv->m_vecVelocity.y;
+        //Avoid being stuck into the slope.. Or velocity reset incoming! (Could be better by being more close to the slope, but for player it seems to be close enough)
+        mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick;
+        DevMsg("ClipVelocity: Fixed speed.\n");
+    }
+
+    // Return blocking flags.
+    return blocked;
 }
 
 // Expose our interface.
