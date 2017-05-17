@@ -14,7 +14,7 @@
 #include <run/run_stats.h>
 #include <mom_modulecomms.h>
 
-#include "mom_online_ghost.h"
+#include "mom_ghostdefs.h"
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15

@@ -67,9 +67,14 @@ $Project "Server (Momentum)"
 	        {
 	        	 $Folder "Ghost Client"
 		        {
-	                $File   "$SRCDIR\game\shared\momentum\mom_online_ghost.h"
+
 	            	$File "$SRCDIR\game\server\momentum\ghost_client.h"
 	                $File "$SRCDIR\game\server\momentum\ghost_client.cpp"
+	            	$File "$SRCDIR\game\server\momentum\mom_online_ghost.h"
+	                $File "$SRCDIR\game\server\momentum\mom_online_ghost.cpp"
+
+	                $File "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
+
 	            }
 
             	$File "$SRCDIR\thirdparty\zed_net\zed_net.h"
@@ -80,7 +85,6 @@ $Project "Server (Momentum)"
                         $Compiler
                         {
                             $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-                            $TreatWarningsAsErrors "No"
                         }
                     }
                 }
@@ -91,15 +95,16 @@ $Project "Server (Momentum)"
                 $File   "momentum\mom_replay_system.h"
                 $File   "momentum\mom_replay_entity.cpp"
 				{
-	                    $Configuration
-	                    {
-	                        $Compiler
-	                        {
-                        		$TreatWarningsAsErrors "No"
-	                        }
-	                    }
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                    		$TreatWarningsAsErrors "No"
+                        }
+                    }
 	            }
-                $File   "momentum\mom_replay_entity.h"
+
+                $File "momentum\mom_replay_entity.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_data.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.cpp"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.h"

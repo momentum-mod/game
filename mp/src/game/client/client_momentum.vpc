@@ -221,23 +221,14 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
-				$File "$SRCDIR\thirdparty\zed_net\zed_net.h"
-                $File "$SRCDIR\thirdparty\zed_net\zed_net.cpp"
-            }
+			}
             $Folder "Network"
             {
-            	$File "$SRCDIR\thirdparty\zed_net\zed_net.h"
-                $File "$SRCDIR\thirdparty\zed_net\zed_net.cpp"
-                {
-                    $Configuration
-                    {
-                        $Compiler
-                        {
-                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-                            $TreatWarningsAsErrors "No"
-                        }
-                    }
-                }
+            	$Folder "Online Ghost"
+            	{
+	            	$File   "momentum\c_mom_online_ghost.h"
+        			$File   "momentum\c_mom_online_ghost.cpp"
+            	}
             }
 
             $Folder "Replay"

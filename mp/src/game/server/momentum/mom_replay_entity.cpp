@@ -278,12 +278,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         auto currentStep = GetCurrentStep();
         auto nextStep = GetNextStep();
 
-        if (m_pCurrentSpecPlayer->GetObserverMode() != (OBS_MODE_IN_EYE | OBS_MODE_CHASE))
-        {
-            // we don't want to allow any other obs modes, only IN EYE and CHASE
-            m_pCurrentSpecPlayer->ForceObserverMode(OBS_MODE_IN_EYE);
-        }
-
         SetAbsOrigin(currentStep->PlayerOrigin());
 
         QAngle angles = currentStep->EyeAngles();
@@ -334,7 +328,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         SetViewOffset(currentStep->PlayerViewOffset());
 
-        // kamay: Now timer start and end at the right time
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
         if (m_SrvData.m_nReplayButtons & IN_DUCK)
         {

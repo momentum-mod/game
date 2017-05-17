@@ -47,6 +47,7 @@ class MomentumUtil
 #endif
 
     Color *GetColorFromHex(const char *hexColor); // in hex color format RRGGBB or RRGGBBAA
+    Color *GetColorFromHex(uint32 HEX); // in hex color format RRGGBB or RRGGBBAA
 
     Color GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
                                 const Color &decreasecolor) const;

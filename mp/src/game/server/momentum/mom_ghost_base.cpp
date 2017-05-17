@@ -1,6 +1,6 @@
 #include "cbase.h"
+
 #include "mom_ghost_base.h"
-#include "util/mom_util.h"
 
 static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -48,6 +48,7 @@ void CMomentumGhostBaseEntity::Spawn()
 }
 void CMomentumGhostBaseEntity::Think()
 {
+    BaseClass::Think();
     // update color, bodygroup, and other params if they change
     if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
     {

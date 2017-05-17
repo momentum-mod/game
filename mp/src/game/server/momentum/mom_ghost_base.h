@@ -1,7 +1,8 @@
+#ifndef GHOST_BASE
+#define GHOST_BASE 
 #pragma once
 
 #include "cbase.h"
-#include "mom_player.h"
 #include "mom_timer.h"
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
@@ -25,8 +26,7 @@ enum ghostModelBodyGroup
     BODY_CYLINDER,
     LAST
 };
-class CMomentumPlayer; //Forward Decl;
-
+class CMomentumPlayer;
 class CMomentumGhostBaseEntity : public CBaseAnimating
 {
     DECLARE_CLASS(CMomentumGhostBaseEntity, CBaseAnimating);
@@ -75,3 +75,4 @@ private:
     static Color m_NewGhostColor;
     char m_pszModel[256];
 };
+#endif //GHOST_BASE

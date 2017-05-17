@@ -1,9 +1,10 @@
 #include "cbase.h"
 #include "ghost_client.h"
 #include "util/mom_util.h"
+
+#include "mom_online_ghost.h"
+
 #include "tier0/memdbgon.h"
-#include "mom_replay_entity.h"
-#include "mom_ghost_base.h"
 
 ConVar mm_updaterate("mom_ghost_online_updaterate", "20", 
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, 
@@ -13,7 +14,6 @@ ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
     "Seconds to wait when timimg out from a ghost server.\n", true, 5.0f, true, 30.0f);
 
-ghostNetFrame_t CMomentumGhostClient::prevFrame;
 zed_net_socket_t CMomentumGhostClient::m_socket;
 zed_net_address_t CMomentumGhostClient::m_address;
 
@@ -25,7 +25,7 @@ unsigned short CMomentumGhostClient::m_port = 9000;
 
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer;
 uint64 CMomentumGhostClient::m_SteamID;
-CUtlVector<ghostNetFrame_t> CMomentumGhostClient::ghostPlayers;
+CUtlVector<CMomentumOnlineGhostEntity*> CMomentumGhostClient::ghostPlayers;
 CThreadMutex CMomentumGhostClient::m_mtxGhostPlayers;
 CThreadMutex CMomentumGhostClient::m_mtxpPlayer;
 
@@ -66,18 +66,7 @@ void CMomentumGhostClient::FrameUpdatePostEntityThink()
     // DO stuff with that data
     if (isGhostClientConnected() && m_pPlayer)
     {
-        m_mtxGhostPlayers.Lock();
-        if (ghostPlayers.Size() > 0)
-        {
-            //MOM_TODO: Create ghost entity, and move them around. 
-            //Msg("Players in server: %i", ghostPlayers.Size());
-            for (int i = 0; i < ghostPlayers.Size(); i++)
-            {
-                //Msg("Position of player #%i: %f, %f, %f\n", i, ghostPlayers[i].Position.x, ghostPlayers[i].Position.y, ghostPlayers[i].Position.z);
-            }
-        }
-        m_mtxGhostPlayers.Unlock();
-        
+        //
     }
 }
 bool CMomentumGhostClient::initGhostClient()
@@ -108,7 +97,7 @@ bool CMomentumGhostClient::exitGhostClient()
         zed_net_shutdown();
         ConColorMsg(Color(255, 255, 0, 255), "Sent signoff packet, exiting ghost client...\n");
         m_mtxGhostPlayers.Lock();
-        ghostPlayers.RemoveAll();
+        ghostPlayers.PurgeAndDeleteElements(); //delete all the memory allocated to players 
         m_mtxGhostPlayers.Unlock();
         return true;
     }
@@ -229,28 +218,51 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             bytes_read = zed_net_tcp_socket_receive(&m_socket, &playerNum, sizeof(playerNum));
 
             m_mtxGhostPlayers.Lock();
-            ghostNetFrame_t newFrame;
             for (int i = 0; i < playerNum; i++)
             {
-                zed_net_tcp_socket_receive(&m_socket, &newFrame, playerNum * sizeof(ghostNetFrame_t));
+                ghostNetFrame_t newFrame;
+                zed_net_tcp_socket_receive(&m_socket, &newFrame, sizeof(ghostNetFrame_t));
                 if (ghostPlayers.Size() == 0) //No players registered on client, we need to add new player 
                 {
-                    ghostPlayers.AddToTail(newFrame);
+                    CMomentumOnlineGhostEntity *newPlayer = new CMomentumOnlineGhostEntity();
+                    newPlayer->SetCurrentNetFrame(&newFrame);
+                    newPlayer->Spawn();
+                    ghostPlayers.AddToTail(newPlayer);
+                    DevMsg("added new player: %s\n", newFrame.PlayerName);
                 }
                 else
                 {
-                    uint64 steamID = ghostPlayers[ghostPlayers.Find(prevFrame)].SteamID64;
-                    if (steamID != newFrame.SteamID64) //couldn't find the player already in the playerlist
+                    static bool didFindPlayer;
+                    for (auto i : ghostPlayers) //Look through all players currently connected
                     {
-                        ghostPlayers.AddToTail(newFrame);
+                        if (i->GetCurrentNetFrame()->SteamID64 == newFrame.SteamID64) //If the player is already connected to server
+                        {
+                            didFindPlayer = true;
+                            i->SetCurrentNetFrame(&newFrame); //update their current frame
+                            //DevMsg("updated player network data: %s\n", newFrame.PlayerName);
+                            break;
+                        }
                     }
-                    else
+                    if (!didFindPlayer) //they weren't in the vector of players already
                     {
-                        ghostPlayers[i] = newFrame;
+                        CMomentumOnlineGhostEntity *newPlayer = new CMomentumOnlineGhostEntity();
+                        newPlayer->SetCurrentNetFrame(&newFrame);
+                        newPlayer->Spawn();
+                        ghostPlayers.AddToTail(newPlayer);
+                        DevMsg("added new player: %s\n", newFrame.PlayerName);
+
                     }
+                    didFindPlayer = false;
                 }
             }
-            prevFrame = newFrame;
+            if (ghostPlayers.Size() > playerNum)
+            {
+                for (int i = 0; i < (ghostPlayers.Size() - playerNum); i++)
+                {
+                    delete ghostPlayers[i];
+                    ghostPlayers.Remove(i); //remove all the players that don't exist in the server anymore
+                }
+            }
             m_mtxGhostPlayers.Unlock();
         }
         if (bytes_read && data == MOM_S_SENDING_NEWMAP)

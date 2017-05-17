@@ -27,7 +27,6 @@ public:
     static unsigned sendAndRecieveData(void *params);
     bool isGhostClientConnected() { return m_ghostClientConnected && (m_socket.ready == 0); }
 private:
-    static ghostNetFrame_t prevFrame;
     static zed_net_socket_t m_socket;
     static zed_net_address_t m_address;
     static bool m_ghostClientConnected, m_bRanThread;
@@ -36,7 +35,7 @@ private:
     static char data[256];
 
     static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
-    static CUtlVector<ghostNetFrame_t> ghostPlayers;
+    static CUtlVector<CMomentumOnlineGhostEntity*> ghostPlayers;
     static CMomentumPlayer *m_pPlayer;
     static uint64 m_SteamID;
 };

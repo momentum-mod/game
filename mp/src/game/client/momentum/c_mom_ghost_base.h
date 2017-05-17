@@ -7,7 +7,7 @@ class C_MomentumGhostBaseEntity : public C_BaseAnimating
     DECLARE_CLIENTCLASS();
     DECLARE_INTERPOLATION()
 public:
-
+    
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
 

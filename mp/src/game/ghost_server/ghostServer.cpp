@@ -219,7 +219,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         }
         if (data == MOM_SIGNOFF)
         {
-            conMsg("Data matches MOM_SIGNOFF pattern! Closing socket...\n");
+            conMsg("%s disconnected...\n", newPlayer->currentFrame.PlayerName);
             disconnectPlayer(newPlayer);
             firstNewFrame = true;
             //printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);

@@ -9,7 +9,7 @@
 #include <condition_variable>
 
 #include "mom_shareddefs.h"
-#include "mom_online_ghost.h"
+#include "mom_ghostdefs.h"
 
 //single-file UDP library
 #include "zed_net.h"

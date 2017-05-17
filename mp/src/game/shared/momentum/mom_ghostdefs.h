@@ -1,9 +1,11 @@
 #pragma once
-
-#include "const.h"
 #ifndef GHOST_SERVER //we can't include tier0 header files in the ghost server
+#include "cbase.h"
 #include "shareddefs.h"
 #endif
+
+#include "const.h"
+
 
 //Describes all data for visual apperence of players ingame
 struct ghostAppearance_t

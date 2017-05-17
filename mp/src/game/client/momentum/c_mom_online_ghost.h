@@ -1,0 +1,19 @@
+#pragma once
+
+#include "cbase.h"
+#include "c_mom_ghost_base.h"
+
+class C_MomentumOnlineGhostEntity : public C_MomentumGhostBaseEntity
+{
+    DECLARE_CLASS(C_MomentumOnlineGhostEntity, C_MomentumGhostBaseEntity);
+    DECLARE_CLIENTCLASS();
+    DECLARE_INTERPOLATION()
+
+public:
+    C_MomentumOnlineGhostEntity();
+    void Spawn(void) OVERRIDE;
+
+    bool IsOnlineGhost() const OVERRIDE { return true; }
+private:
+    char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
+};

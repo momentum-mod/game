@@ -8,7 +8,6 @@ IMPLEMENT_CLIENTCLASS_DT(C_MomentumReplayGhostEntity, DT_MOM_ReplayEnt, CMomentu
 END_RECV_TABLE();
 
 C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity() : m_iv_vecViewOffset("C_MomentumReplayGhostEntity::m_iv_vecViewOffset")
-
 {
     AddVar(&m_vecViewOffset, &m_iv_vecViewOffset, LATCH_SIMULATION_VAR);
     m_SrvData.m_nReplayButtons = 0;

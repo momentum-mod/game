@@ -60,7 +60,7 @@ $Project "GhostServer"
 	{
 		$File	"$SRCDIR\thirdparty\zed_net\zed_net.h"
         $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
-        $File   "$SRCDIR\game\shared\momentum\mom_online_ghost.h"
+        $File   "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
 	}
 
 	$Folder	"Source Files"

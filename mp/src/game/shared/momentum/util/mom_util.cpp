@@ -346,6 +346,17 @@ Color* MomentumUtil::GetColorFromHex(const char *hexColor)
     return nullptr;
 }
 
+Color* MomentumUtil::GetColorFromHex(uint32 hex)
+{
+    static Color *newColor;
+    uint8 r = (hex & 0xFF000000) >> 24;
+    uint8 g = (hex & 0x00FF0000) >> 16;
+    uint8 b = (hex & 0x0000FF00) >> 8;
+    uint8 a = (hex & 0x000000FF);
+    newColor = new Color(r, g, b, a);
+    return newColor;
+}
+
 inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
 {
     if (pCheck)
