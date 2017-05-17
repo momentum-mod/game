@@ -2,6 +2,7 @@
 
 #include "cbase.h"
 #include "c_mom_ghost_base.h"
+#include "interpolatedvar.h"
 
 class C_MomentumOnlineGhostEntity : public C_MomentumGhostBaseEntity
 {
@@ -12,8 +13,14 @@ class C_MomentumOnlineGhostEntity : public C_MomentumGhostBaseEntity
 public:
     C_MomentumOnlineGhostEntity();
     void Spawn(void) OVERRIDE;
+    void ClientThink(void) OVERRIDE;
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
+
+    CInterpolatedVar<Vector>m_iv_VecOrigin;
+    CInterpolatedVar<QAngle>m_iv_QAEyeAngles;
+    CInterpolatedVar<Vector>m_iv_vecViewOffset;
+
 private:
     char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
 };

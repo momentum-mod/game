@@ -8,7 +8,7 @@
 
 ConVar mm_updaterate("mom_ghost_online_updaterate", "20", 
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, 
-    "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 50.0f);
+    "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 1000.0f);
 
 ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
@@ -224,7 +224,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 zed_net_tcp_socket_receive(&m_socket, &newFrame, sizeof(ghostNetFrame_t));
                 if (ghostPlayers.Size() == 0) //No players registered on client, we need to add new player 
                 {
-                    CMomentumOnlineGhostEntity *newPlayer = new CMomentumOnlineGhostEntity();
+                    CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                     newPlayer->SetCurrentNetFrame(&newFrame);
                     newPlayer->Spawn();
                     ghostPlayers.AddToTail(newPlayer);
@@ -245,7 +245,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                     }
                     if (!didFindPlayer) //they weren't in the vector of players already
                     {
-                        CMomentumOnlineGhostEntity *newPlayer = new CMomentumOnlineGhostEntity();
+                        CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                         newPlayer->SetCurrentNetFrame(&newFrame);
                         newPlayer->Spawn();
                         ghostPlayers.AddToTail(newPlayer);

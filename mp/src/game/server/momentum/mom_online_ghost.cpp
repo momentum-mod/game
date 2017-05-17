@@ -19,18 +19,23 @@ CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity()
 {
     SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
+    SetGhostColor(COLOR_RED);
+    SetGhostModel(GHOST_MODEL);
     hasSpawned = false;
 }
 void CMomentumOnlineGhostEntity::Precache(void)
 {
     BaseClass::Precache();
+    PrecacheModel(GHOST_MODEL);
 }
 void CMomentumOnlineGhostEntity::Spawn()
 {
     Precache();
     BaseClass::Spawn();
+    m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
+
     hasSpawned = true;
-    Msg("Ghost spawned!\n");
+    ConDColorMsg(Color(255, 0, 255, 255), "Ghost spawned!\n");
 
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
 }
@@ -38,7 +43,6 @@ void CMomentumOnlineGhostEntity::Think()
 {
     BaseClass::Think();
     HandleGhost();
-    Msg("Position of ghost #%i: %f, %f, %f\n", 0, GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z);
 
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
 }
@@ -46,7 +50,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
 {
     if (hasSpawned)
     {
-        SetAbsOrigin(m_pCurrentFrame->Position);
+        SetAbsOrigin(Vector(m_pCurrentFrame->Position.x + 25, m_pCurrentFrame->Position.y + 25, m_pCurrentFrame->Position.z));
         QAngle newAngles = QAngle(m_pCurrentFrame->EyeAngle.x / 10, m_pCurrentFrame->EyeAngle.y, m_pCurrentFrame->EyeAngle.z);
         SetAbsAngles(newAngles);
         SetViewOffset(m_pCurrentFrame->ViewOffset);
@@ -70,7 +74,16 @@ void CMomentumOnlineGhostEntity::HandleGhost()
             }
         }
         m_pPreviousFrame = m_pCurrentFrame;
+        // remove the nodraw effects
+        if (GetRenderMode() != kRenderTransColor)
+        {
+            SetRenderMode(kRenderTransColor);
+            RemoveEffects(EF_NOSHADOW);
+        }
     }
+
+    ConDColorMsg(Color(255, 255, 0, 255), "Position of ghost %s: %f, %f, %f\n", m_pszGhostName, GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z);
+
 }
 void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
 {
