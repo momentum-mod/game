@@ -1208,7 +1208,9 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             // if (cross[1] > 0)//Are we going up a slope?
             //    flReflectNormal = 1.0f;//Don't bother trying to do a LateReflect
             // else
-            m_flReflectNormal = planes[0][2]; // Determine in CategorizePosition
+
+            // Seems like it made more problems and since we got slope fix, we don't need it
+            // m_flReflectNormal = planes[0][2]; // Determine in CategorizePosition,
 
             for (i = 0; i < numplanes; i++)
             {
@@ -1305,6 +1307,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 // This was the virtual void, overriding it for snow friction
 void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
+    m_pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
     if ((m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && !(mv->m_nButtons & IN_JUMP))
