@@ -44,13 +44,11 @@ struct ghostNetFrame_t
     float EyeAngle[3];
     float Position[3];
     float ViewOffset[3];
-    float Velocity[3];
 #else   
     QAngle EyeAngle;
     Vector Position;
     Vector ViewOffset;
-    Vector Velocity;
-    ghostNetFrame_t(const QAngle eyeAngle, const Vector position, const Vector viewOffset, const Vector velocity,
+    ghostNetFrame_t(const QAngle eyeAngle, const Vector position, const Vector viewOffset,
         const int buttons, const uint64 steamID64, const char* playerName)
     {
         for (int i = 0; i < 3; i++)
@@ -58,7 +56,6 @@ struct ghostNetFrame_t
             EyeAngle[i] = eyeAngle[i];
             Position[i] = position[i];
             ViewOffset[i] = viewOffset[i];
-            Velocity[i] = velocity[i];
 
         }
         Buttons = buttons;
@@ -72,7 +69,6 @@ struct ghostNetFrame_t
         return EyeAngle == other.EyeAngle &&
             Position == other.Position &&
             ViewOffset == other.ViewOffset &&
-            Velocity == other.Velocity &&
             Buttons == other.Buttons &&
             SteamID64 == other.SteamID64 &&
             Q_strcmp(PlayerName, other.PlayerName) == 0;

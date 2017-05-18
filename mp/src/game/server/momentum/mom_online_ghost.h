@@ -13,8 +13,10 @@ class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity
 public:
     CMomentumOnlineGhostEntity();
     ~CMomentumOnlineGhostEntity();
-    void SetCurrentNetFrame(ghostNetFrame_t *newFrame);
-    ghostNetFrame_t* GetCurrentNetFrame() { return m_pCurrentFrame; }
+
+    void SetCurrentNetFrame(ghostNetFrame_t newFrame) { m_currentFrame = newFrame; }
+    ghostNetFrame_t GetCurrentNetFrame() { return m_currentFrame; }
+
     void SetGhostApperence(ghostAppearance_t app);
     ghostAppearance_t GetAppearance() { return m_currentAppearence; }
 
@@ -30,8 +32,8 @@ protected:
     void Think(void) OVERRIDE;
     void Precache(void) OVERRIDE;
 private:
-    ghostNetFrame_t* m_pCurrentFrame;
-    ghostNetFrame_t* m_pPreviousFrame;
+    ghostNetFrame_t m_currentFrame;
+    ghostNetFrame_t m_previousFrame;
 
     ghostAppearance_t m_currentAppearence;
     bool hasSpawned;

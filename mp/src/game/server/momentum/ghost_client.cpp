@@ -173,6 +173,9 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 Warning("Lost connection to ghost server.\n");
                 zed_net_socket_close(&m_socket);
                 zed_net_shutdown();
+                m_mtxGhostPlayers.Lock();
+                ghostPlayers.PurgeAndDeleteElements(); //delete all the memory allocated to players 
+                m_mtxGhostPlayers.Unlock();
                 m_ghostClientConnected = false;
                 return 1;
             }
@@ -191,7 +194,6 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             ghostNetFrame_t newFrame(m_pPlayer->EyeAngles(),
                 m_pPlayer->GetAbsOrigin(),
                 m_pPlayer->GetViewOffset(),
-                m_pPlayer->GetAbsVelocity(),
                 m_pPlayer->m_nButtons,
                 m_SteamID,
                 m_pPlayer->GetPlayerName());
@@ -219,7 +221,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 if (ghostPlayers.Size() == 0) //No players registered on client, we need to add new player 
                 {
                     CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
-                    newPlayer->SetCurrentNetFrame(&newFrame);
+                    newPlayer->SetCurrentNetFrame(newFrame);
                     newPlayer->Spawn();
                     ghostPlayers.AddToTail(newPlayer);
                     DevMsg("added new player: %s\n", newFrame.PlayerName);
@@ -229,10 +231,10 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                     static bool didFindPlayer;
                     for (auto i : ghostPlayers) //Look through all players currently connected
                     {
-                        if (i->GetCurrentNetFrame()->SteamID64 == newFrame.SteamID64) //If the player is already connected to server
+                        if (i->GetCurrentNetFrame().SteamID64 == newFrame.SteamID64) //If the player is already connected to server
                         {
                             didFindPlayer = true;
-                            i->SetCurrentNetFrame(&newFrame); //update their current frame
+                            i->SetCurrentNetFrame(newFrame); //update their current frame
                             //DevMsg("updated player network data: %s\n", newFrame.PlayerName);
                             break;
                         }
@@ -240,7 +242,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                     if (!didFindPlayer) //they weren't in the vector of players already
                     {
                         CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
-                        newPlayer->SetCurrentNetFrame(&newFrame);
+                        newPlayer->SetCurrentNetFrame(newFrame);
                         newPlayer->Spawn();
                         ghostPlayers.AddToTail(newPlayer);
                         DevMsg("added new player: %s\n", newFrame.PlayerName);
@@ -253,7 +255,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             {
                 for (int i = 0; i < (ghostPlayers.Size() - playerNum); i++)
                 {
-                    delete ghostPlayers[i];
+                    ghostPlayers[i]->Remove();
                     ghostPlayers.Remove(i); //remove all the players that don't exist in the server anymore
                 }
             }

@@ -33,6 +33,7 @@ void CMomentumOnlineGhostEntity::Spawn()
     BaseClass::Spawn();
     SetGhostColor(COLOR_RED);
     hasSpawned = true;
+    SetSolid(SOLID_NONE);
     SetNextThink(gpGlobals->curtime);
 }
 void CMomentumOnlineGhostEntity::Think()
@@ -40,67 +41,39 @@ void CMomentumOnlineGhostEntity::Think()
     BaseClass::Think();
     HandleGhost();
     //We have to wait some time after getting the new packets to allow the client some "space", i.e a few saved packets, in order to interpolate
-    float finalLerp = (mm_lerpRatio.GetFloat() / mm_updaterate.GetFloat());
+    float finalLerp = gpGlobals->interval_per_tick / (mm_lerpRatio.GetFloat() / mm_updaterate.GetFloat());
     SetNextThink(gpGlobals->curtime + finalLerp);
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
     if (hasSpawned)
     {
-        SetAbsOrigin(Vector(m_pCurrentFrame->Position.x + 25, m_pCurrentFrame->Position.y + 25, m_pCurrentFrame->Position.z));
-        QAngle newAngles = QAngle(m_pCurrentFrame->EyeAngle.x / 10, m_pCurrentFrame->EyeAngle.y, m_pCurrentFrame->EyeAngle.z);
+        SetAbsOrigin(Vector(m_currentFrame.Position.x + 25, m_currentFrame.Position.y + 25, m_currentFrame.Position.z));
+        QAngle newAngles = QAngle(m_currentFrame.EyeAngle.x / 10, m_currentFrame.EyeAngle.y, m_currentFrame.EyeAngle.z);
         SetAbsAngles(newAngles);
-        SetViewOffset(m_pCurrentFrame->ViewOffset);
+        SetViewOffset(m_currentFrame.ViewOffset);
+        SetAbsVelocity(GetSmoothedVelocity());
         //MOM_TODO: Fix this
-        /*
-        if (m_pPreviousFrame != nullptr)
-        {
-            const Vector &ghostPrevOrigin = m_pPreviousFrame->Position;
-            const Vector &ghostCurrentOrigin = m_pCurrentFrame->Position;
-            const float distX = fabs(ghostPrevOrigin.x - ghostCurrentOrigin.x);
-            const float distY = fabs(ghostPrevOrigin.y - ghostCurrentOrigin.y);
-            const float distZ = fabs(ghostPrevOrigin.z - ghostCurrentOrigin.z);
-            const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+        
+        const Vector &ghostPrevOrigin = m_previousFrame.Position;
+        const Vector &ghostCurrentOrigin = m_currentFrame.Position;
+        const float distX = fabs(ghostPrevOrigin.x - ghostCurrentOrigin.x);
+        const float distY = fabs(ghostPrevOrigin.y - ghostCurrentOrigin.y);
+        const float distZ = fabs(ghostPrevOrigin.z - ghostCurrentOrigin.z);
+        const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
 
-            // Fixes an issue with teleporting
-            int maxvel = sv_maxvelocity.GetInt();
-            if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
-            {
-                SetAbsVelocity(interpolatedVel);
-            }
+        // Fixes an issue with teleporting
+        int maxvel = sv_maxvelocity.GetInt();
+        if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
+        {
+            SetAbsVelocity(interpolatedVel);
+        }
 
-            UpdateStats(interpolatedVel);
-        }
-        */
-        //SetAbsVelocity(m_pCurrentFrame->Velocity);
-        Q_strncpy(m_pszGhostName, m_pCurrentFrame->PlayerName, sizeof(m_pszGhostName));
-
-        bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-        if (m_pCurrentFrame->Buttons & IN_DUCK)
-        {
-            if (!isDucking)
-            {
-                SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-                AddFlag(FL_DUCKING);
-            }
-        }
-        else
-        {
-            if (CanUnduck(this) && isDucking)
-            {
-                SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
-                RemoveFlag(FL_DUCKING);
-            }
-        }
-        // remove the nodraw effects
-        if (GetRenderMode() != kRenderTransColor)
-        {
-            SetRenderMode(kRenderTransColor);
-            RemoveEffects(EF_NOSHADOW);
-        }
+        UpdateStats(interpolatedVel);
+       
+        Q_strncpy(m_pszGhostName, m_currentFrame.PlayerName, sizeof(m_pszGhostName));
     }
-    ConDColorMsg(Color(255, 255, 0, 255), "Velocity of ghost %s: %f, %f, %f\n", m_pszGhostName, GetAbsVelocity().x, GetAbsVelocity().y, GetAbsVelocity().z);
-
+    m_previousFrame = m_currentFrame;
 }
 void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
 {
@@ -108,16 +81,36 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
     {
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
-            SetAbsAngles(m_pCurrentFrame->EyeAngle);
+            SetAbsAngles(m_currentFrame.EyeAngle);
             // don't render the model when we're in first person mode
             if (GetRenderMode() != kRenderNone)
             {
                 SetRenderMode(kRenderNone);
                 AddEffects(EF_NOSHADOW);
             }
+            SetSolid(SOLID_BBOX); //has to collide with stuff for duck code to work
+            bool isDucking = (GetFlags() & FL_DUCKING) != 0;
+            if (m_currentFrame.Buttons & IN_DUCK)
+            {
+                if (!isDucking)
+                {
+                    SetCollisionBounds(VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
+                    AddFlag(FL_DUCKING);
+                }
+            }
+            else
+            {
+                if (CanUnduck(this) && isDucking)
+                {
+                    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
+                    RemoveFlag(FL_DUCKING);
+                }
+            }
         }
         else
         {
+            SetSolid(SOLID_NONE); //no longer collide with anything
+
             SetAbsAngles(this->GetAbsAngles());
 
             // remove the nodraw effects
@@ -164,13 +157,6 @@ void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
     */
-}
-void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t *newFrame)
-{
-    if (newFrame)
-    {
-        m_pCurrentFrame = newFrame;
-    }
 }
 void CMomentumOnlineGhostEntity::SetGhostApperence(ghostAppearance_t app)
 {
