@@ -22,10 +22,38 @@ typedef std::chrono::high_resolution_clock Clock;
 
 int main(int argc, char** argv)
 {
+#ifdef _WIN32
+    //Disable mouse highlighting which, for some reason, pauses ALL THREADS while something is highlighted...
+    HANDLE input_handle = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD dwOldInputMode;
+    GetConsoleMode(input_handle, &dwOldInputMode);
+    SetConsoleMode(input_handle, dwOldInputMode & ~ENABLE_QUICK_EDIT_MODE);
+
+#endif
+    char map[MAX_MAP_NAME];
+    uint16 port = 0;
     int status = -1;
-    if (argc == 4)
+
+    for (int i = 0; i < argc; i++)
     {
-        status = CMOMGhostServer::runGhostServer((unsigned short)atoi(argv[1]), argv[3]);
+#ifdef _WIN32
+        if (strcmp(argv[i], "-nowindow") == 0)
+        {
+            ShowWindow(FindWindowA("ConsoleWindowClass", NULL), false); //Don't create a new window when we launch with -nowindow command
+        }
+#endif
+        if (strcmp(argv[i], "-map") == 0)
+        {
+            _snprintf(map, sizeof(map), "%s", argv[i + 1]);
+        }
+        if (strcmp(argv[i], "-port") == 0)
+        {
+            port = atoi(argv[i + 1]);
+        }
+    }
+    if (port != 0 && map != nullptr)
+    {
+        status = CMOMGhostServer::runGhostServer(port, map);
     }
     else
     {
@@ -33,14 +61,6 @@ int main(int argc, char** argv)
     }
     if (status != 0)
         return 0;
-
-//Disable mouse highlighting which, for some reason, pauses ALL THREADS while something is highlighted...
-#ifdef _WIN32
-    HANDLE input_handle = GetStdHandle(STD_INPUT_HANDLE);
-    DWORD dwOldInputMode;
-    GetConsoleMode(input_handle, &dwOldInputMode);
-    SetConsoleMode(input_handle, dwOldInputMode & ~ENABLE_QUICK_EDIT_MODE); 
-#endif
 
     std::thread t(CMOMGhostServer::acceptNewConnections); //create a new thread that listens for incoming client connections
     t.detach(); //continuously run thread
@@ -145,7 +165,7 @@ void CMOMGhostServer::handleConsoleInput()
     }
     if (strcmp(command, "help") == 0)
     {
-        conMsg("Usage: ghost_server <port> -map <mapname> to start on custom port/map. \n");
+        conMsg("flags: -port <port>, -map <mapname> \n");
         conMsg("Commands: numplayers, currentmap, say, map, exit\n");
     }
     if (strcmp(command, "numplayers") == 0)

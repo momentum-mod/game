@@ -19,8 +19,6 @@ CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 }
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity()
 {
-    SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
-    SetGhostColor(COLOR_RED);
     hasSpawned = false;
 }
 void CMomentumOnlineGhostEntity::Precache(void)
@@ -29,9 +27,9 @@ void CMomentumOnlineGhostEntity::Precache(void)
 }
 void CMomentumOnlineGhostEntity::Spawn()
 {
-    Precache();
     BaseClass::Spawn();
     SetGhostColor(COLOR_RED);
+    SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
     hasSpawned = true;
     SetSolid(SOLID_NONE);
     SetNextThink(gpGlobals->curtime);

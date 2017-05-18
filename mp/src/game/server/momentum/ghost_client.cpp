@@ -38,6 +38,7 @@ void CMomentumGhostClient::LevelShutdownPreEntity()
 {
     exitGhostClient(); //set ghost client connection to false when we disconnect
     m_ghostClientConnected = false;
+    ThreadJoin(netIOThread, 20);
 }
 void CMomentumGhostClient::FrameUpdatePostEntityThink()
 {
@@ -78,24 +79,36 @@ bool CMomentumGhostClient::initGhostClient()
 bool CMomentumGhostClient::exitGhostClient()
 {
     int data = MOM_SIGNOFF;
+    bool returnResult;
     if (zed_net_tcp_socket_send(&m_socket, &data, sizeof(data)) < 0)
     {
         Warning("Could not send signoff packet! Error: %s\n", zed_net_get_error());
-        return false;
+        returnResult = false;
     }
     int bytes_read = zed_net_tcp_socket_receive(&m_socket, &data, sizeof(data));
+
     if (bytes_read && data == MOM_SIGNOFF)
     {
-        zed_net_socket_close(&m_socket);
-        zed_net_shutdown();
         ConColorMsg(Color(255, 255, 0, 255), "Sent signoff packet, exiting ghost client...\n");
-        m_mtxGhostPlayers.Lock();
-        ghostPlayers.PurgeAndDeleteElements(); //delete all the memory allocated to players 
-        m_mtxGhostPlayers.Unlock();
-        return true;
+        returnResult = true;
     }
-    Warning("Did not recieve ACK from server. Server will have to wait for us to time out...\n");
-    return false;
+    else
+    {
+        Warning("Did not recieve ACK from server. Server will have to wait for us to time out...\n");
+        returnResult = false;
+    }
+
+    zed_net_socket_close(&m_socket);
+    zed_net_shutdown();
+    m_mtxGhostPlayers.Lock();
+    //delete all the memory allocated to players
+    for (auto i : ghostPlayers)
+    {
+        i->Remove();
+    }
+    ghostPlayers.Purge();
+    m_mtxGhostPlayers.Unlock();
+    return returnResult;
 }
 bool CMomentumGhostClient::connectToGhostServer(const char* host, unsigned short port)
 {
@@ -174,7 +187,10 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 zed_net_socket_close(&m_socket);
                 zed_net_shutdown();
                 m_mtxGhostPlayers.Lock();
-                ghostPlayers.PurgeAndDeleteElements(); //delete all the memory allocated to players 
+                for (auto i : ghostPlayers)      // delet this
+                {
+                    i->Remove();
+                }
                 m_mtxGhostPlayers.Unlock();
                 m_ghostClientConnected = false;
                 return 1;
@@ -213,50 +229,40 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             int playerNum = 0;
             bytes_read = zed_net_tcp_socket_receive(&m_socket, &playerNum, sizeof(playerNum));
 
+            //now that we have the number of players, we know how many packets to recieve. we loop through and recieve the data 
             m_mtxGhostPlayers.Lock();
-            for (int i = 0; i < playerNum; i++)
+            for (int i = 0; i < playerNum; i++) 
             {
                 ghostNetFrame_t newFrame;
                 zed_net_tcp_socket_receive(&m_socket, &newFrame, sizeof(ghostNetFrame_t));
-                if (ghostPlayers.Size() == 0) //No players registered on client, we need to add new player 
+
+                bool didFindPlayer = false;
+                for (auto i : ghostPlayers) //Look through all players currently connected
+                {
+                    if (i->GetCurrentNetFrame().SteamID64 == newFrame.SteamID64) //If the player is already connected to server
+                    {
+                        didFindPlayer = true;
+                        i->SetCurrentNetFrame(newFrame); //update their current frame
+                        break;
+                    }
+                }
+                if (!didFindPlayer) //they weren't in the vector of players already
                 {
                     CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                     newPlayer->SetCurrentNetFrame(newFrame);
                     newPlayer->Spawn();
                     ghostPlayers.AddToTail(newPlayer);
-                    DevMsg("added new player: %s\n", newFrame.PlayerName);
+                    DevMsg("Added new player: %s\n There are now %i connected players.", newFrame.PlayerName, ghostPlayers.Size());
                 }
-                else
-                {
-                    static bool didFindPlayer;
-                    for (auto i : ghostPlayers) //Look through all players currently connected
-                    {
-                        if (i->GetCurrentNetFrame().SteamID64 == newFrame.SteamID64) //If the player is already connected to server
-                        {
-                            didFindPlayer = true;
-                            i->SetCurrentNetFrame(newFrame); //update their current frame
-                            //DevMsg("updated player network data: %s\n", newFrame.PlayerName);
-                            break;
-                        }
-                    }
-                    if (!didFindPlayer) //they weren't in the vector of players already
-                    {
-                        CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
-                        newPlayer->SetCurrentNetFrame(newFrame);
-                        newPlayer->Spawn();
-                        ghostPlayers.AddToTail(newPlayer);
-                        DevMsg("added new player: %s\n", newFrame.PlayerName);
-
-                    }
-                    didFindPlayer = false;
-                }
+                didFindPlayer = false;
             }
-            if (ghostPlayers.Size() > playerNum)
+            if (ghostPlayers.Size() > playerNum) //Someone disconnected, so the server told us about it.
             {
+                //remove all the players that don't exist in the server anymore
                 for (int i = 0; i < (ghostPlayers.Size() - playerNum); i++)
                 {
-                    ghostPlayers[i]->Remove();
-                    ghostPlayers.Remove(i); //remove all the players that don't exist in the server anymore
+                    if (ghostPlayers[i] != nullptr) ghostPlayers[i]->Remove();
+                    ghostPlayers.Remove(i); 
                 }
             }
             m_mtxGhostPlayers.Unlock();

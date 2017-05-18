@@ -12,6 +12,7 @@ C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity()
 }
 void C_MomentumOnlineGhostEntity::Spawn()
 {
+    Precache();
     SetNextClientThink(CLIENT_THINK_ALWAYS);
 }
 void C_MomentumOnlineGhostEntity::ClientThink()
