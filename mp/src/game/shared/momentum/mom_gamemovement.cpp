@@ -1307,7 +1307,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 // This was the virtual void, overriding it for snow friction
 void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
-    m_pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
     if ((m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && !(mv->m_nButtons & IN_JUMP))
