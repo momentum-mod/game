@@ -172,6 +172,9 @@ void CMOMSpectatorGUI::OnThink()
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::ShowPanel(bool bShow)
 {
+    if (engine->IsPlayingDemo())
+        return;
+
     // If we're becoming visible (for the first time)
     if (bShow && !IsVisible())
     {

@@ -31,7 +31,7 @@
 #include "SDK_flashlight_ps20.inc"
 #include "SDK_flashlight_ps20b.inc"
 #endif
-#include "SDK_unlitgeneric_vs11.inc"
+#include "SDK_UnlitGeneric_vs11.inc"
 #include "SDK_VertexLitGeneric_EnvmappedBumpmap_NoLighting_ps14.inc"
 #include "SDK_VertexLitGeneric_EnvmappedBumpmap_NoLighting.inc"
 #include "SDK_vertexlitgeneric_flashlight_vs11.inc"

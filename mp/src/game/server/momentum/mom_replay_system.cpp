@@ -30,16 +30,26 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 {
     IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
 
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
     if (throwaway && replaySavedEvent)
     {
         replaySavedEvent->SetBool("save", false);
         gameeventmanager->FireEvent(replaySavedEvent);
         m_pReplayManager->StopRecording();
+
+        // Re-allow the player to teleport
+        if (pPlayer)
+            pPlayer->m_bAllowUserTeleports = true;
         return;
     }
 
     if (delay)
     {
+        // Prevent the user from teleporting, potentially breaking this delay
+        if (pPlayer)
+            pPlayer->m_bAllowUserTeleports = false;
+
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
         return;
@@ -75,6 +85,10 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_pReplayManager->StopRecording();
     // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
     Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
+
+    // Re-allow the player to teleport
+    if (pPlayer)
+        pPlayer->m_bAllowUserTeleports = true;
     
     if (replaySavedEvent)
     {

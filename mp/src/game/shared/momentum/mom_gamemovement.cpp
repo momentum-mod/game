@@ -609,11 +609,15 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
     if ((player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
     {
-        mv->m_vecVelocity[2] = flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
+        mv->m_vecVelocity[2] = g_bMovementOptimizations
+                                   ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
+                                   : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
     }
     else
     {
-        mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
+        mv->m_vecVelocity[2] += g_bMovementOptimizations
+                                    ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
+                                    : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
     }
 
     // stamina stuff (scroll/kz gamemode only)
@@ -1105,12 +1109,14 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             return 4;
         }
 
+        // This part can stuck the player on some surf maps, like surf_ski_2_nova
+        // So I've added the rampfix convar here.
         // If we moved some portion of the total distance, then
         //  copy the end position into the pmove.origin and
         //  zero the plane counter.
         if (pm.fraction > 0)
         {
-            if (numbumps > 0 && pm.fraction == 1)
+            if ((numbumps > 0 && pm.fraction == 1) && !sv_ramp_fix.GetBool())
             {
                 // There's a precision issue with terrain tracing that can cause a swept box to successfully trace
                 // when the end position is stuck in the triangle.  Re-run the test with an uswept box to catch that
@@ -1405,11 +1411,7 @@ void CMomentumGameMovement::CheckFalling(void)
         bool bAlive = true;
         float fvol = 0.5f;
 
-        if (player->GetWaterLevel() > 0.0f)
-        {
-            // They landed in water.
-        }
-        else
+        if (player->GetWaterLevel() <= 0.0f)
         {
             // Scale it down if we landed on something that's floating...
             if (pGroundEntity->IsFloating())

@@ -12,12 +12,10 @@ $Group "gamedlls"
 {
 	"client"
 	"server"
-	"shared"
 }
 
 $Group "game"
 {
-	"shared"
 	"client"
 	"mathlib"
 	"raytrace"
@@ -36,7 +34,6 @@ $Group "everything"
 {
 	"captioncompiler"
 	"client"
-	"shared"
 	"fgdlib"
 	"game_shader_dx9"
 	"glview"
@@ -59,7 +56,7 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
-    	"gameui2"
+    "gameui2"
 }
 
 $Group "dedicated"

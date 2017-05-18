@@ -5,7 +5,7 @@
 #include "tier0/icommandline.h"
 
 
-static ConVar ssao_enable("ssao_enable", "1", FCVAR_ARCHIVE | FCVAR_REPLICATED);
+static ConVar ssao_enable("ssao_enable", "0", FCVAR_ARCHIVE | FCVAR_REPLICATED);
 
 
 void CDynamicRenderTargets::InitClientRenderTargets(IMaterialSystem *pMaterialSystem,

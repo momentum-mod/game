@@ -233,6 +233,7 @@ void CMomentumPlayer::Spawn()
     IGameEvent *runSaveEvent = gameeventmanager->CreateEvent("replay_save");
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
+    m_bAllowUserTeleports = true;
     m_SrvData.m_RunData.m_bIsInZone = false;
     m_SrvData.m_RunData.m_bMapFinished = false;
     m_SrvData.m_RunData.m_iCurrentZone = 0;

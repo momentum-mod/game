@@ -114,6 +114,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool m_duckUntilOnGround;
     float m_flStamina;
 
+    bool m_bAllowUserTeleports;
+
     void EnableAutoBhop();
     void DisableAutoBhop();
     bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }

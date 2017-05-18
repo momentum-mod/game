@@ -111,7 +111,7 @@ class CMomentumReplayGhostEntity : public CBaseAnimating, public CGameEventListe
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
-    int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons;
+    int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;
 };
 
 #endif // MOM_REPLAY_GHOST_H

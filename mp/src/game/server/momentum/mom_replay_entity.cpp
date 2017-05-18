@@ -213,18 +213,97 @@ void CMomentumReplayGhostEntity::Think()
     }
     else
     {
-        // MOM_TODO: Find a better solution for timescaling when it's > 1.0
-        // (commented old, it could be useful, we must find a better solution for this... host_timescale would work, but
-        // only with sv_cheats enabled, wich we would to enable maybe?)
-        // It's kinda hard without modifying the engine dll
-
-        // Otherwise proceed to the next step and perform the necessary updates.
         if (m_flTimeScale <= 1.0f)
             UpdateStep(1);
         else
         {
-            int NextStep = static_cast<int>(m_flTimeScale)+1;
-            UpdateStep(NextStep);
+            // MOM_TODO: IMPORTANT! Remember, this is probably not the proper way of speeding up the replay.
+            // Because it skips the steps that normaly the engine would have "compensated".
+            // So it can results to unsmooth results, but this is probably the best you can get.
+            // Until we can find something else to modify timescale properly.
+            // We do it this way, because SetNextThink / engine doesn't allow faster updates at this timescale.
+
+            // Calculate our next step
+            int iNextStep = static_cast<int>(m_flTimeScale) + 1;
+
+            // Calculate the average of ticks that will be used for the next step or the current one
+            float fTicksAverage = (1.0f - (static_cast<float>(iNextStep) - m_flTimeScale));
+
+            // If it's null, then we just run the current step
+            if (fTicksAverage == 0.0f)
+            {
+                UpdateStep(iNextStep - 1);
+            }
+
+            // Otherwhise if it's 1 we must run the next step
+            else if (fTicksAverage == 1.0f)
+            {
+                UpdateStep(iNextStep);
+            }
+
+            // Else, we calculate when we should be on the next step or the current one
+            else
+            {
+
+                // If we should first update on the next step or not
+                bool bShouldNextStepInstead = false;
+
+                // If the next step that must be runned is higher than the current steps:
+                // We invert roles between current steps and next steps.
+                if (fTicksAverage > 0.5f)
+                {
+                    fTicksAverage = 0.5f - (fTicksAverage - 0.5f);
+                    bShouldNextStepInstead = true;
+                }
+
+                // Actually we don't need to check for the tickrate, we will let engine compensate it.
+                float fInvTicksAverage = 1.0f / fTicksAverage;
+
+                int iInvTicksAverage = static_cast<int>(fInvTicksAverage + 0.5f);
+
+                // 1) If the ticks elapsed is higher or equal to the ticks calculated we must run the next step or the
+                // current one depending on the average of current steps and next steps.
+                if (m_iTickElapsed >= iInvTicksAverage)
+                {
+                    //BLOCK1
+
+                    // If the average of next steps are higher than current steps, the current step must be called here.
+                    // Otherwhise the next step must be called.
+
+                    UpdateStep(bShouldNextStepInstead ? (iNextStep - 1) : iNextStep);
+
+                    // Reset our elapsed ticks, to know when we will perform a new current step or a new next step.
+                    // At tick 1, because we're increasing only elapsed ticks after the condition of 1) and not before.
+                    // If we don't do this, we will be in late of 1 tick.
+
+                    /* --------------------------------------------------------------------------------------------------------------------------
+                    For example if m_flTimeScale = 3,5 -> then iInvTicksAverage is equal to 2 (1/0.5), and that we're resetting iTickElapsed on 0,
+                    it means that we will wait 2 ticks before being on that BLOCK1.
+                    And we dont want that because, we want the 1/2 of time the code running on both blocks and not 1/3 on BLOCK1 then 2/3 on BLOCK2,
+                    when timescale is 3,5.
+                    If we wait 2 ticks on BLOCK2 and only 1 on BLOCK1, logically, it won't correspond to 3,5 of m_flTimeScale.
+                    So we're doing like this way: iTickElapsed = 1, or iInvTicksAverage = iInvTicksAverage - 1, 
+                    to make it correspond perfectly to timescale.
+                    I hope you understood what I've meant. If not then contact that XutaxKamay ***** and tell him to fix his comments.
+                    ------------------------------------------------------------------------------------------------------------------------------
+                    */
+
+                    m_iTickElapsed = 1;
+                }
+                else
+                {
+
+                    //BLOCK2
+
+                    // If the average of next steps are higher than current steps, the next step must be called here.
+                    // Otherwhise the current step must be called.
+
+                    UpdateStep(bShouldNextStepInstead ? (iNextStep) : (iNextStep - 1));
+
+                    // Wait for the ticks elapsing before we change to our current step or our next step.
+                    m_iTickElapsed++;
+                }
+            }
         }
 
         if (m_pPlayerSpectator)
@@ -239,10 +318,7 @@ void CMomentumReplayGhostEntity::Think()
     }
     else
     {
-        int NextStep = static_cast<int>(m_flTimeScale)+1;
-
-        float CalculateSlowMotion = gpGlobals->interval_per_tick * (NextStep - m_flTimeScale);
-        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick + CalculateSlowMotion);
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
     
     if (StdDataToReplay)
