@@ -4,12 +4,22 @@
 
 #include "tier0/memdbgon.h"
 
-CMomRunStats::CMomRunStats(uint8 size) : m_pData(nullptr)
+CMomRunStats::CMomRunStats(CMomRunStats::data* pData)
 {
+    m_pData = pData;
+    Init(0);
 }
 
-CMomRunStats::CMomRunStats(CBinaryReader *pReader) : m_pData(nullptr) 
-{ 
+CMomRunStats::CMomRunStats(CMomRunStats::data* pData, uint8 size)
+{
+    m_pData = pData;
+    Init(size);
+}
+
+CMomRunStats::CMomRunStats(CMomRunStats::data* pData, CBinaryReader *pReader) : m_pData(nullptr) 
+{
+    m_pData = pData;
+    Deserialize(pReader);
 }
 
 void CMomRunStats::Init(uint8 size)

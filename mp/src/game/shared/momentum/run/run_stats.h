@@ -20,10 +20,11 @@
 class CMomRunStats : public ISerializable
 {
 public:
-    //TODO: HACK: These constructors are (probably just temporarily) deprecated. We need to either make this object
-    //actually capable of constructing its self, or continue to construct it externally.
-    CMomRunStats(uint8 size = MAX_STAGES);
-    CMomRunStats(CBinaryReader *pReader);
+    struct data;
+    
+    CMomRunStats(CMomRunStats::data* pData);
+    CMomRunStats(CMomRunStats::data* pData, uint8 size);
+    CMomRunStats(CMomRunStats::data* pData, CBinaryReader *pReader);
 
     // Note: This needs updating every time the struct is updated!
     virtual void Init(uint8 size = MAX_STAGES);
@@ -36,8 +37,6 @@ public:
 
     // Note: This needs updating every time the struct is updated!
     CMomRunStats &operator=(const CMomRunStats &other);
-
-    struct data;
 
   public:
     // All these are virtual so they can be overridden in future versions.

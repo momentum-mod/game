@@ -17,7 +17,8 @@ RecvPropInt(RECVINFO(m_iTotalTimeTicks)),
 //RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE();
 
-C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity() : m_iv_vecViewOffset("C_MomentumReplayGhostEntity::m_iv_vecViewOffset")
+C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity() : m_iv_vecViewOffset("C_MomentumReplayGhostEntity::m_iv_vecViewOffset"),
+    m_RunStats(&m_SrvData.m_RunStatsData)
 {
     AddVar(&m_vecViewOffset, &m_iv_vecViewOffset, LATCH_SIMULATION_VAR);
     m_SrvData.m_nReplayButtons = 0;
@@ -28,8 +29,6 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity() : m_iv_vecViewOffset(
     m_flTickRate = 0.0f;
     m_SrvData.m_bIsPaused = false;
     m_pszPlayerName[0] = '\0';
-    m_RunStats.m_pData = &m_SrvData.m_RunStatsData;
-    m_RunStats.Init();
 }
 void C_MomentumReplayGhostEntity::Spawn()
 {
