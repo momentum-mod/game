@@ -27,18 +27,8 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), //SendPropInt(SENDINFO(m_iShotsFired)),
-    //SendPropInt(SENDINFO(m_iDirection)), 
-    //SendPropBool(SENDINFO(m_bResumeZoom)), 
-    //SendPropInt(SENDINFO(m_iLastZoom)),
-    //SendPropBool(SENDINFO(m_bDidPlayerBhop)), SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-    //SendPropBool(SENDINFO(m_bHasPracticeMode)), 
-    //SendPropBool(SENDINFO(m_bUsingCPMenu)),
-    //SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
     SendPropInt(SENDINFO(m_afButtonDisabled)),
-    //SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-    //SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
-
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
