@@ -28,6 +28,16 @@ CMomRunStats &CMomRunStats::operator=(const CMomRunStats &other)
     return *this;
 }
 
+void CMomRunStats::FullyCopyStats(CMomRunStats *to)
+{
+    memcpy(to->m_pData, m_pData, sizeof(CMomRunStats::data));
+}
+
+void CMomRunStats::FullyCopyStats(CMomRunStats::data *to)
+{
+    memcpy(to, m_pData, sizeof(CMomRunStats::data));
+}
+
 void CMomRunStats::Deserialize(CBinaryReader *reader)
 {
     SetTotalZones(reader->ReadUInt8());

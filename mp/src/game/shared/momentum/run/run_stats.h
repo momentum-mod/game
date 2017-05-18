@@ -37,6 +37,8 @@ public:
     // Note: This needs updating every time the struct is updated!
     CMomRunStats &operator=(const CMomRunStats &other);
 
+    struct data;
+
   public:
     // All these are virtual so they can be overridden in future versions.
     virtual uint8 GetTotalZones();
@@ -63,6 +65,9 @@ public:
     virtual void SetZoneVelocityMax(int zone, float vert, float hor);
     virtual void SetZoneVelocityAvg(int zone, float vert, float hor);
     virtual void SetZoneExitSpeed(int zone, float vert, float hor);
+    
+    virtual void FullyCopyStats(CMomRunStats *to);
+    virtual void FullyCopyStats(CMomRunStats::data *to);
 
     /*
      * We encapsulate the raw data in its own struct to allow a memcpy of just the data
