@@ -27,18 +27,8 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), //SendPropInt(SENDINFO(m_iShotsFired)),
-    //SendPropInt(SENDINFO(m_iDirection)), 
-    //SendPropBool(SENDINFO(m_bResumeZoom)), 
-    //SendPropInt(SENDINFO(m_iLastZoom)),
-    //SendPropBool(SENDINFO(m_bDidPlayerBhop)), SendPropInt(SENDINFO(m_iSuccessiveBhops)),
-    //SendPropBool(SENDINFO(m_bHasPracticeMode)), 
-    //SendPropBool(SENDINFO(m_bUsingCPMenu)),
-    //SendPropInt(SENDINFO(m_iCurrentStepCP)), SendPropInt(SENDINFO(m_iCheckpointCount)),
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
     SendPropInt(SENDINFO(m_afButtonDisabled)),
-    //SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-    //SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
-
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
@@ -71,7 +61,8 @@ static ConVar mom_trail_color_a("mom_trail_color_a", "255", FCVAR_ARCHIVE, "Alph
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
       m_flLastVelocity(0.0f), m_flLastSyncVelocity(0), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
-      m_bPrevTimerRunning(false), m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f)
+      m_bPrevTimerRunning(false), m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f),
+      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -87,9 +78,6 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_iCheckpointCount = 0;
     m_SrvData.m_bUsingCPMenu = false;
     m_SrvData.m_iCurrentStepCP = -1;
-    
-    m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
-    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 

@@ -165,8 +165,8 @@ void CMomentumReplaySystem::SetRunStats()
     if (!m_pReplayManager->Recording())
         return;
 
-    auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
-    memcpy(stats->m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
+    CMomRunStats* stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
+    m_player->m_RunStats.FullyCopyStats(stats);
 }
 
 class CMOMReplayCommands

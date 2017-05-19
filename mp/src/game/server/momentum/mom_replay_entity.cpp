@@ -44,15 +44,13 @@ Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_iBodyGroup(BODY_PROLATE_ELLIPSE),
     m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
-    m_nOldReplayButtons(0)
+    m_nOldReplayButtons(0), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
 {
     StdDataToReplay = (DataToReplayFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToReplay"));
     
     // Set networked vars here
     m_SrvData.m_nReplayButtons = 0;
     m_SrvData.m_iTotalStrafes = 0;
-    m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
-    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
     m_pPlayerSpectator = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
 }

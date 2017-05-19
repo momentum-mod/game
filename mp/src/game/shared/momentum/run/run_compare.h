@@ -10,10 +10,8 @@ struct RunCompare_t
     CMomRunStats runStats;
     CMomRunStats::data runStatsData;
     
-    RunCompare_t() : runStats()
+    RunCompare_t() : runStats(&runStatsData)
     {
-        runStats.m_pData = &runStatsData;
-        runStats.Init();
         runName[0] = '\0';
     }
 };
