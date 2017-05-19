@@ -1203,28 +1203,28 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  and pressing forward and nobody was really using this bounce/reflection feature anyway...
         if (numplanes == 1 && player->GetMoveType() == MOVETYPE_WALK && player->GetGroundEntity() == nullptr)
         {
-            // Vector cross = mv->m_vecVelocity.Cross(planes[0]);
-
-            // if (cross[1] > 0)//Are we going up a slope?
-            //    flReflectNormal = 1.0f;//Don't bother trying to do a LateReflect
-            // else
-
-            // Seems like it made more problems and since we got slope fix, we don't need it
-            // m_flReflectNormal = planes[0][2]; // Determine in CategorizePosition,
-
-            for (i = 0; i < numplanes; i++)
+            // Is this a floor/slope that the player can walk on?
+            if (planes[0][2] > 0.7)
             {
-                if (planes[i][2] > 0.7)
+                // We only reflect if our velocity isn't going into the slope we're jumping on
+                if (planes[0][2] < 1.0) // and if it's not the horizontal floor
                 {
-                    // floor or slope
-                    ClipVelocity(original_velocity, planes[i], new_velocity, 1);
-                    VectorCopy(new_velocity, original_velocity);
+                    Vector planeScaled;
+                    VectorMultiply(mv->m_vecVelocity, planes[0], planeScaled); // First get our plane normal up to scale with our velocity
+                    if (DotProduct(mv->m_vecVelocity, planeScaled) > 0.0f) // If our velocity is NOT going into the slope
+                    {
+                        m_flReflectNormal = planes[0][2]; // Determines if we should late reflect in CategorizePosition
+                        // (we only boost the player if the game doesn't give them one)
+                    }
                 }
-                else
-                {
-                    ClipVelocity(original_velocity, planes[i], new_velocity,
-                                 1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
-                }
+
+                ClipVelocity(original_velocity, planes[0], new_velocity, 1);
+                VectorCopy(new_velocity, original_velocity);
+            }
+            else // either the player is surfing or slammed into a wall
+            {
+                ClipVelocity(original_velocity, planes[0], new_velocity,
+                             1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
             }
 
             VectorCopy(new_velocity, mv->m_vecVelocity);
@@ -1490,8 +1490,6 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     float angle;
     int i, blocked;
 
-    Vector old = out;
-
     angle = normal[2];
 
     blocked = 0x00;      // Assume unblocked.
@@ -1521,14 +1519,16 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
 
     // Check if we loose speed while going on a slope in front of us.
     Vector dif = mv->m_vecVelocity - out;
-    if (dif.Length2D() > 0.0f && (normal.z > 0.7f) && (velocity > 0.0f))
+    if (dif.Length2D() > 0.0f && (angle > 0.7f) && (velocity > 0.0f))
     {
         out.x = mv->m_vecVelocity.x;
         out.y = mv->m_vecVelocity.y;
         // Avoid being stuck into the slope.. Or velocity reset incoming!
         // (Could be better by being more close to the slope, but for player it seems to be close enough)
+        // @Gocnak: Technically the "adjust" code above does this, but to each axis, with a much higher value.
+        // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be 0.015 or 0.01
         mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick;
-        DevMsg("ClipVelocity: Fixed speed.\n");
+        DevMsg(2, "ClipVelocity: Fixed speed.\n");
     }
 
     // Return blocking flags.
