@@ -32,7 +32,7 @@ public:
     static const void newConnection(zed_net_socket_t socket, zed_net_address_t address);
     static void acceptNewConnections();
     static void disconnectPlayer(playerData *player);
-    static void sendNewAppearences(playerData *player);
+    static void sendNewAppearances(playerData *player);
     static void conMsg(const char* msg, ...);
 
     static volatile int numPlayers;

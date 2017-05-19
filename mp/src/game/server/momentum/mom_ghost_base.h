@@ -39,8 +39,8 @@ public:
     virtual void SetGhostColor(const uint32 newHexColor);
     virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
 
-    virtual void SetGhostAppearence(ghostAppearance_t app);
-    virtual ghostAppearance_t GetAppearance() { return m_ghostAppearence; }
+    virtual void SetGhostAppearance(ghostAppearance_t app);
+    virtual ghostAppearance_t GetAppearance() { return m_ghostAppearance; }
 
     virtual void StartTimer(int m_iStartTick);
     virtual void StopTimer();
@@ -57,21 +57,23 @@ public:
     void RemoveSpectator() { m_pCurrentSpecPlayer = nullptr; }
     CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
 
-    void CreateTrail();
-    void RemoveTrail();
 protected:
     virtual void Think(void);
     virtual void Spawn(void);
     virtual void Precache(void);
+
+    virtual void CreateTrail();
+    virtual void RemoveTrail();
+
     bool CanUnduck(CMomentumGhostBaseEntity *pGhost);
     CMomentumPlayer *m_pCurrentSpecPlayer;
+    ghostAppearance_t m_ghostAppearance;
 
 private:
     bool trailEnable;
     CBaseEntity *m_eTrail;
 
-    ghostAppearance_t m_ghostAppearence;
     bool hasSpawned = false;
-    bool hasSetAppearence = false;
+    bool hasSetAppearance = false;
 };
 #endif //GHOST_BASE

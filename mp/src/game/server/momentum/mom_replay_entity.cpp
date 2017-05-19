@@ -11,6 +11,9 @@
 #endif
 #include "tier0/memdbgon.h"
 
+static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Paint a faint beam trail on the replay. 0 = OFF, 1 = ON\n", true, 0, true, 1);
 
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
@@ -460,4 +463,18 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
     }
 
     return m_pPlaybackReplay->GetFrame(nextStep);
+}
+void CMomentumReplayGhostEntity::CreateTrail()
+{
+    if (!mom_replay_trail_enable.GetBool()) return;
+    BaseClass::CreateTrail();
+}
+void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)
+{
+    m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
+    Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
+    if (newColor)
+    {
+        SetRenderColor(newColor->r(), newColor->g(), newColor->b(), 75);
+    }
 }

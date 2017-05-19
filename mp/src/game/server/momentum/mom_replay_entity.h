@@ -54,12 +54,16 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
+    //override of color so that replayghosts are always somewhat transparent.
+    void SetGhostColor(const uint32 newColor) OVERRIDE; 
+
   protected:
     void Think(void) OVERRIDE;
     void Spawn(void) OVERRIDE;
     void Precache(void) OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
+    void CreateTrail() OVERRIDE;
   private:
     CMomReplayBase *m_pPlaybackReplay;
 

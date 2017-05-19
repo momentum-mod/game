@@ -34,7 +34,7 @@ private:
     ghostNetFrame_t m_currentFrame;
     ghostNetFrame_t m_previousFrame;
 
-    ghostAppearance_t m_currentAppearence;
+    ghostAppearance_t m_currentAppearance;
     bool hasSpawned;
     int m_ghostButtons;
 };

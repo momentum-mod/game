@@ -21,7 +21,7 @@ uint64 CMomentumGhostClient::m_SteamID;
 CUtlVector<CMomentumOnlineGhostEntity*> CMomentumGhostClient::ghostPlayers;
 CThreadMutex CMomentumGhostClient::m_mtxGhostPlayers;
 CThreadMutex CMomentumGhostClient::m_mtxpPlayer;
-ghostAppearance_t CMomentumGhostClient::oldAppearence;
+ghostAppearance_t CMomentumGhostClient::oldAppearance;
 
 ThreadHandle_t netIOThread;
 void CMomentumGhostClient::LevelInitPostEntity()
@@ -213,7 +213,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
         m_mtxpPlayer.Lock();
         if (bytes_read && data == MOM_C_RECIEVING_NEWFRAME && m_pPlayer) //SYN-ACK , Server acknowledges new frame is coming
         {
-            oldAppearence = m_pPlayer->m_playerAppearenceProps;
+            oldAppearance = m_pPlayer->m_playerAppearanceProps;
             ghostNetFrame_t newFrame(m_pPlayer->EyeAngles(),
                 m_pPlayer->GetAbsOrigin(),
                 m_pPlayer->GetViewOffset(),
@@ -223,20 +223,20 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
 
             zed_net_tcp_socket_send(&m_socket, &newFrame, sizeof(newFrame)); 
 
-            //Send the appearence to the server too, so when new players connect we can see their customization!
+            //Send the appearance to the server too, so when new players connect we can see their customization!
             if (firstNewFrame)
             {
-                zed_net_tcp_socket_send(&m_socket, &oldAppearence, sizeof(oldAppearence));
+                zed_net_tcp_socket_send(&m_socket, &oldAppearance, sizeof(oldAppearance));
                 firstNewFrame = false;
             }
         }
         m_mtxpPlayer.Unlock();
 
         //------------------
-        // Handle sending appearence data to server, IFF it has changed for the local player.
+        // Handle sending appearance data to server, IFF it has changed for the local player.
         // ----------------
         m_mtxpPlayer.Lock();
-        if (!(m_pPlayer->m_playerAppearenceProps == oldAppearence)) //appearence changed! we need to send it to the server.
+        if (!(m_pPlayer->m_playerAppearanceProps == oldAppearance)) //appearance changed! we need to send it to the server.
         {
             newFrameIdentifier = MOM_C_SENDING_NEWPROPS; //Client is sending new data to the server. 
             zed_net_tcp_socket_send(&m_socket, &newFrameIdentifier, sizeof(newFrameIdentifier));
@@ -245,7 +245,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
 
             if (bytes_read && data == MOM_C_RECIEVING_NEWPROPS)
             {
-                zed_net_tcp_socket_send(&m_socket, &m_pPlayer->m_playerAppearenceProps, sizeof(ghostAppearance_t));
+                zed_net_tcp_socket_send(&m_socket, &m_pPlayer->m_playerAppearanceProps, sizeof(ghostAppearance_t));
             }
         }
         m_mtxpPlayer.Unlock();
@@ -297,7 +297,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                     CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                     newPlayer->SetCurrentNetFrame(newFrame);
                     newPlayer->Spawn();
-                    newPlayer->SetGhostAppearence(newLooks);
+                    newPlayer->SetGhostAppearance(newLooks);
                     ghostPlayers.AddToTail(newPlayer);
                     DevMsg("Added new player: %s\n There are now %i connected players.", newFrame.PlayerName, ghostPlayers.Size());
                 }
@@ -316,13 +316,13 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
         }
 
         //------------------
-        // Recieve new appearence data if it happens to change.
+        // Recieve new appearance data if it happens to change.
         // ----------------
         m_mtxGhostPlayers.Lock();
-        if (bytes_read && recvData == MOM_S_SENDING_NEWPROPS) //ghost server is sending new appearences
+        if (bytes_read && recvData == MOM_S_SENDING_NEWPROPS) //ghost server is sending new appearances
         {
-            uint64 steamIDOfNewAppearence;
-            zed_net_tcp_socket_receive(&m_socket, &steamIDOfNewAppearence, sizeof(uint64));
+            uint64 steamIDOfNewAppearance;
+            zed_net_tcp_socket_receive(&m_socket, &steamIDOfNewAppearance, sizeof(uint64));
 
             newFrameIdentifier = MOM_S_RECIEVING_NEWPROPS; //Client ready to recieve data from server 
             zed_net_tcp_socket_send(&m_socket, &newFrameIdentifier, sizeof(newFrameIdentifier)); //SYN
@@ -334,9 +334,9 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
 
                 for (auto i : ghostPlayers) //Look through all players currently connected
                 {
-                    if (i->GetCurrentNetFrame().SteamID64 == steamIDOfNewAppearence) //found them!
+                    if (i->GetCurrentNetFrame().SteamID64 == steamIDOfNewAppearance) //found them!
                     {
-                        i->SetGhostAppearence(newAppearnece); //update their appearence properties
+                        i->SetGhostAppearance(newAppearnece); //update their appearance properties
                         break;
                     }
                 }

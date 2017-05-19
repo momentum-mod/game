@@ -209,9 +209,9 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         {
             data = MOM_C_SENDING_NEWPROPS;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
-            // Wait for client to get our acknowledgement, and recieve appearence update from client
+            // Wait for client to get our acknowledgement, and recieve appearance update from client
             zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t)); //ACK
-            m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearences to be sent 
+            m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent 
         }
         if (data == MOM_C_SENDING_NEWFRAME)
         {

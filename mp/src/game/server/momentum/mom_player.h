@@ -223,7 +223,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void RemoveTrail();
      
     // Player's apperence properties
-    ghostAppearance_t m_playerAppearenceProps;
+    ghostAppearance_t m_playerAppearanceProps;
 
   private:
     CountdownTimer m_ladderSurpressionTimer;

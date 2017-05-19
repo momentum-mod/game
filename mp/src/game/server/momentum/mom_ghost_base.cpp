@@ -21,7 +21,7 @@ void CMomentumGhostBaseEntity::Spawn()
     SetModel(GHOST_MODEL); //we need a model
     SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
     RemoveEffects(EF_NODRAW);
-    SetRenderMode(kRenderNone); //we don't want to draw the ghost until it can update it's appearence.
+    SetRenderMode(kRenderNone); //we don't want to draw the ghost until it can update it's appearance.
     //~~~The magic combo~~~ (collides with triggers, not with players)
     ClearSolidFlags();
     SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
@@ -42,17 +42,17 @@ void CMomentumGhostBaseEntity::Think()
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     if (pPlayer && hasSpawned)
     {
-        if (!hasSetAppearence) //stuff that should happen only once goes here
+        if (!hasSetAppearance) //stuff that should happen only once goes here
         {
-            SetGhostAppearence(pPlayer->m_playerAppearenceProps);
-            hasSetAppearence = true; //now that we've set our appearence, the ghost should be visible again.
+            SetGhostAppearance(pPlayer->m_playerAppearanceProps);
+            hasSetAppearance = true; //now that we've set our appearance, the ghost should be visible again.
             SetRenderMode(kRenderTransColor);
-            if (m_ghostAppearence.GhostTrailEnable)
+            if (m_ghostAppearance.GhostTrailEnable)
             {
                 CreateTrail();
             }
         }
-        SetGhostAppearence(pPlayer->m_playerAppearenceProps);
+        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
 
         //MOM_TODO: handle recreating trail when ghost teleports.
     }
@@ -65,7 +65,7 @@ void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
     }
     else
     {
-        m_ghostAppearence.GhostModelBodygroup = bodyGroup;
+        m_ghostAppearance.GhostModelBodygroup = bodyGroup;
         SetBodygroup(1, bodyGroup);
     }
 }
@@ -73,14 +73,14 @@ void CMomentumGhostBaseEntity::SetGhostModel(const char *newmodel)
 {
     if (newmodel)
     {
-        Q_strncpy(m_ghostAppearence.GhostModel, newmodel, strlen(newmodel)+1);
-        PrecacheModel(m_ghostAppearence.GhostModel);
-        SetModel(m_ghostAppearence.GhostModel);
+        Q_strncpy(m_ghostAppearance.GhostModel, newmodel, strlen(newmodel)+1);
+        PrecacheModel(m_ghostAppearance.GhostModel);
+        SetModel(m_ghostAppearance.GhostModel);
     }
 }
 void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
 {
-    m_ghostAppearence.GhostModelRGBAColorAsHex = newHexColor;
+    m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
     Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
     if (newColor)
     {
@@ -89,9 +89,9 @@ void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
 }
 void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable)
 {
-    m_ghostAppearence.GhostTrailEnable = enable;
-    m_ghostAppearence.GhostTrailRGBAColorAsHex = newHexColor;
-    m_ghostAppearence.GhostTrailLength = newLen;
+    m_ghostAppearance.GhostTrailEnable = enable;
+    m_ghostAppearance.GhostTrailRGBAColorAsHex = newHexColor;
+    m_ghostAppearance.GhostTrailLength = newLen;
     CreateTrail();
 }
 void CMomentumGhostBaseEntity::StartTimer(int m_iStartTick)
@@ -142,24 +142,24 @@ bool CMomentumGhostBaseEntity::CanUnduck(CMomentumGhostBaseEntity *pGhost)
     }
     return false;
 }
-void CMomentumGhostBaseEntity::SetGhostAppearence(ghostAppearance_t newApp)
+void CMomentumGhostBaseEntity::SetGhostAppearance(ghostAppearance_t newApp)
 {
     // only set things that NEED TO BE CHANGED!!
-    if (m_ghostAppearence.GhostModelBodygroup != newApp.GhostModelBodygroup)
+    if (m_ghostAppearance.GhostModelBodygroup != newApp.GhostModelBodygroup)
     {
         SetGhostBodyGroup(newApp.GhostModelBodygroup);
     }
-    if (Q_strcmp(m_ghostAppearence.GhostModel, newApp.GhostModel) != 0)
+    if (Q_strcmp(m_ghostAppearance.GhostModel, newApp.GhostModel) != 0)
     {
         SetGhostModel(newApp.GhostModel);
     }
-    if (m_ghostAppearence.GhostModelRGBAColorAsHex != newApp.GhostModelRGBAColorAsHex)
+    if (m_ghostAppearance.GhostModelRGBAColorAsHex != newApp.GhostModelRGBAColorAsHex)
     {
         SetGhostColor(newApp.GhostModelRGBAColorAsHex);
     }
-    if (m_ghostAppearence.GhostTrailRGBAColorAsHex != newApp.GhostTrailRGBAColorAsHex || 
-        m_ghostAppearence.GhostTrailLength != newApp.GhostTrailLength || 
-        m_ghostAppearence.GhostTrailEnable != newApp.GhostTrailEnable)
+    if (m_ghostAppearance.GhostTrailRGBAColorAsHex != newApp.GhostTrailRGBAColorAsHex || 
+        m_ghostAppearance.GhostTrailLength != newApp.GhostTrailLength || 
+        m_ghostAppearance.GhostTrailEnable != newApp.GhostTrailEnable)
     {
         SetGhostTrailProperties(newApp.GhostTrailRGBAColorAsHex,
             newApp.GhostTrailLength, newApp.GhostTrailEnable);
@@ -169,7 +169,7 @@ void CMomentumGhostBaseEntity::CreateTrail()
 {
     RemoveTrail();
 
-    if (!m_ghostAppearence.GhostTrailEnable) return;
+    if (!m_ghostAppearance.GhostTrailEnable) return;
 
     // Ty GhostingMod
     m_eTrail = CreateEntityByName("env_spritetrail");
@@ -179,8 +179,8 @@ void CMomentumGhostBaseEntity::CreateTrail()
     m_eTrail->KeyValue("spritename", "materials/sprites/laser.vmt");
     m_eTrail->KeyValue("startwidth", "9.5");
     m_eTrail->KeyValue("endwidth", "1.05");
-    m_eTrail->KeyValue("lifetime", m_ghostAppearence.GhostTrailLength);
-    Color *newColor = g_pMomentumUtil->GetColorFromHex(m_ghostAppearence.GhostTrailRGBAColorAsHex);
+    m_eTrail->KeyValue("lifetime", m_ghostAppearance.GhostTrailLength);
+    Color *newColor = g_pMomentumUtil->GetColorFromHex(m_ghostAppearance.GhostTrailRGBAColorAsHex);
     if (newColor)
     {
         m_eTrail->SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
