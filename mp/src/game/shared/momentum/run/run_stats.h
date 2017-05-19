@@ -9,12 +9,7 @@
  * USAGE: This object is pointless without an instance of CMomRunStats::data to point to.
  * By nature of the CMomRunStats::data's purpose, this class cannot own it, but it can own
  * a pointer to it. Since this class can't make what it needs to point to, it needs some construction
- * done by the creator of the instance of the class. The methods Init() and Deserialize() rely on the
- * pointer already being set, so they can't be used until after construction.
- *      What all this means is that construction is currently handled by the caller.
- * 
- * To do this, create the class, create the data, set the pointer in the class,
- * then call either the Init(uint8) method or Deserialize(CBinaryReader *reader).
+ * done by the creator of the instance of the class.
  */
 
 class CMomRunStats : public ISerializable
