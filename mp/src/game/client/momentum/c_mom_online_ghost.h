@@ -12,11 +12,14 @@ class C_MomentumOnlineGhostEntity : public C_MomentumGhostBaseEntity
 
 public:
     C_MomentumOnlineGhostEntity();
+
     void Spawn(void) OVERRIDE;
     void ClientThink(void) OVERRIDE;
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
+    //recieved from CMomentumOnlineGhostEntity serverclass 
+    char m_pszGhostName[MAX_PLAYER_NAME_LENGTH]; 
+
 private:
-    char m_pszPlayerName[MAX_PLAYER_NAME_LENGTH];
 };

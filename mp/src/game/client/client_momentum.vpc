@@ -103,6 +103,7 @@ $Project "Client (Momentum)"
                     $File "hl2\hud_credits.cpp"
                     $File "hud_chat.cpp"
                     $File "hl2\hud_weaponselection.cpp"
+                    $File "momentum\ui\HUD\hud_target_id.cpp"
                 }
                 
                 $Folder "Controls"

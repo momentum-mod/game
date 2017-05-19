@@ -9,6 +9,7 @@
 LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
+    SendPropString(SENDINFO(m_pszGhostName)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
@@ -31,7 +32,7 @@ void CMomentumOnlineGhostEntity::Spawn()
     SetGhostColor(COLOR_RED);
     SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
     hasSpawned = true;
-    SetSolid(SOLID_NONE);
+    SetSolid(SOLID_BBOX);
     SetNextThink(gpGlobals->curtime);
 }
 void CMomentumOnlineGhostEntity::Think()
@@ -46,11 +47,11 @@ void CMomentumOnlineGhostEntity::HandleGhost()
 {
     if (hasSpawned)
     {
-        SetAbsOrigin(Vector(m_currentFrame.Position.x + 25, m_currentFrame.Position.y + 25, m_currentFrame.Position.z));
+        SetAbsOrigin(Vector(m_currentFrame.Position.x + 50, m_currentFrame.Position.y + 50, m_currentFrame.Position.z));
         QAngle newAngles = QAngle(m_currentFrame.EyeAngle.x / 10, m_currentFrame.EyeAngle.y, m_currentFrame.EyeAngle.z);
         SetAbsAngles(newAngles);
         SetViewOffset(m_currentFrame.ViewOffset);
-        SetAbsVelocity(GetSmoothedVelocity());
+        //SetAbsVelocity(GetSmoothedVelocity());
         //MOM_TODO: Fix this
         
         const Vector &ghostPrevOrigin = m_previousFrame.Position;
@@ -58,7 +59,9 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         const float distX = fabs(ghostPrevOrigin.x - ghostCurrentOrigin.x);
         const float distY = fabs(ghostPrevOrigin.y - ghostCurrentOrigin.y);
         const float distZ = fabs(ghostPrevOrigin.z - ghostCurrentOrigin.z);
-        const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
+
+        float finalLerp = gpGlobals->interval_per_tick / (mm_lerpRatio.GetFloat() / mm_updaterate.GetFloat());
+        const Vector interpolatedVel = Vector(distX, distY, distZ) / finalLerp;
 
         // Fixes an issue with teleporting
         int maxvel = sv_maxvelocity.GetInt();
@@ -66,10 +69,9 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         {
             SetAbsVelocity(interpolatedVel);
         }
-
         UpdateStats(interpolatedVel);
-       
-        Q_strncpy(m_pszGhostName, m_currentFrame.PlayerName, sizeof(m_pszGhostName));
+
+        Q_strncpy(m_pszGhostName.GetForModify(), m_currentFrame.PlayerName, sizeof(m_pszGhostName));
     }
     m_previousFrame = m_currentFrame;
 }
@@ -86,7 +88,6 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
                 SetRenderMode(kRenderNone);
                 AddEffects(EF_NOSHADOW);
             }
-            SetSolid(SOLID_BBOX); //has to collide with stuff for duck code to work
             bool isDucking = (GetFlags() & FL_DUCKING) != 0;
             if (m_currentFrame.Buttons & IN_DUCK)
             {
@@ -107,8 +108,6 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
         }
         else
         {
-            SetSolid(SOLID_NONE); //no longer collide with anything
-
             SetAbsAngles(this->GetAbsAngles());
 
             // remove the nodraw effects

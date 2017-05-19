@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "c_mom_player.h"
-
+#include "view.h"
 #include "tier0/memdbgon.h"
 
 
@@ -54,6 +54,7 @@ void C_MomentumPlayer::ClientThink()
 {
 	SetNextClientThink(CLIENT_THINK_ALWAYS);
     FetchStdData(this);
+    UpdateIDTarget();
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
@@ -123,4 +124,51 @@ Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
 
     // Resort to base class for player code
     return BaseClass::GetChaseCamViewOffset(target);
+}
+int C_MomentumPlayer::GetIDTarget() const
+{
+    return m_iIDEntIndex;
+}
+void C_MomentumPlayer::UpdateIDTarget()
+{
+    if (!IsLocalPlayer())
+        return;
+
+    // Clear old target and find a new one
+    m_iIDEntIndex = 0;
+
+    trace_t tr;
+    Vector vecStart, vecEnd;
+    VectorMA(MainViewOrigin(), MAX_TRACE_LENGTH, MainViewForward(), vecEnd);
+    VectorMA(MainViewOrigin(), 10, MainViewForward(), vecStart);
+
+    // If we're in observer mode, ignore our observer target. Otherwise, ignore ourselves.
+    if (IsObserver())
+    {
+        UTIL_TraceLine(vecStart, vecEnd, MASK_SOLID, GetObserverTarget(), COLLISION_GROUP_NONE, &tr);
+    }
+    else
+    {
+        UTIL_TraceLine(vecStart, vecEnd, MASK_SOLID, this, COLLISION_GROUP_NONE, &tr);
+    }
+    if (!tr.startsolid && tr.DidHitNonWorldEntity())
+    {
+        C_BaseEntity *pEntity = tr.m_pEnt;
+
+        if (pEntity && (pEntity != this))
+        {
+            m_iIDEntIndex = pEntity->entindex();
+            DisplayHintsForTarget(pEntity);
+        }
+    }
+}
+void C_MomentumPlayer::DisplayHintsForTarget(C_BaseEntity *pTarget)
+{
+    // If the entity provides hints, ask them if they have one for this target
+    ITargetIDProvidesHint *pHintInterface = dynamic_cast<ITargetIDProvidesHint*>(pTarget);
+    if (pHintInterface)
+    {
+        pHintInterface->DisplayHintTo(this);
+    }
+
 }

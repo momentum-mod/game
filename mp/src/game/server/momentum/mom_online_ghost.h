@@ -28,6 +28,8 @@ public:
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
 
+    CNetworkString(m_pszGhostName, MAX_PLAYER_NAME_LENGTH);
+
 protected:
     void Think(void) OVERRIDE;
     void Precache(void) OVERRIDE;
@@ -38,5 +40,4 @@ private:
     ghostAppearance_t m_currentAppearence;
     bool hasSpawned;
     int m_ghostButtons;
-    char m_pszGhostName[MAX_PLAYER_NAME_LENGTH];
 };

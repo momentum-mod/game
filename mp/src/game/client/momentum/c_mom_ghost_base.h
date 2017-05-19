@@ -7,7 +7,8 @@ class C_MomentumGhostBaseEntity : public C_BaseAnimating
     DECLARE_CLIENTCLASS();
     DECLARE_INTERPOLATION()
 public:
-    
+    bool IsValidIDTarget(void) OVERRIDE{ return true; }
+
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
 
