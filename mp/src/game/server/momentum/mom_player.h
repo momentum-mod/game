@@ -221,6 +221,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
     void CreateTrail();
     void RemoveTrail();
+     
+    // Player's apperence properties
+    ghostAppearance_t m_playerAppearenceProps;
 
   private:
     CountdownTimer m_ladderSurpressionTimer;
@@ -256,7 +259,5 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
 
     // Trail pointer
     CBaseEntity* m_eTrail;
-    // Player's apperence properties
-    ghostAppearance_t m_playerProps;
 };
 #endif // MOMPLAYER_H

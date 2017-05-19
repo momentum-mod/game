@@ -34,15 +34,13 @@ class CMomentumGhostBaseEntity : public CBaseAnimating
     DECLARE_SERVERCLASS();
 
 public:
-    //CMomentumGhostBaseEntity();
-    //~CMomentumGhostBaseEntity();
-
-
     virtual void SetGhostModel(const char *model);
     virtual void SetGhostBodyGroup(int bodyGroup);
-    virtual void SetGhostColor(const Color newColor) { m_NewGhostColor = newColor; }
+    virtual void SetGhostColor(const uint32 newHexColor);
+    virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
 
-    static void SetGhostColorCC(const CCommand &args);
+    virtual void SetGhostAppearence(ghostAppearance_t app);
+    virtual ghostAppearance_t GetAppearance() { return m_ghostAppearence; }
 
     virtual void StartTimer(int m_iStartTick);
     virtual void StopTimer();
@@ -55,13 +53,12 @@ public:
     virtual bool IsReplayGhost() const { return false; }
     virtual bool IsOnlineGhost() const { return false; }
 
-    const char *GetGhostModel() const { return m_pszModel; }
-    int GetGhostBodyGroup() const { return m_iBodyGroup; }
-
     void SetSpectator(CMomentumPlayer *player) { m_pCurrentSpecPlayer = player; }
     void RemoveSpectator() { m_pCurrentSpecPlayer = nullptr; }
     CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
 
+    void CreateTrail();
+    void RemoveTrail();
 protected:
     virtual void Think(void);
     virtual void Spawn(void);
@@ -70,9 +67,11 @@ protected:
     CMomentumPlayer *m_pCurrentSpecPlayer;
 
 private:
-    int m_iBodyGroup;
-    Color m_GhostColor;
-    static Color m_NewGhostColor;
-    char m_pszModel[256];
+    bool trailEnable;
+    CBaseEntity *m_eTrail;
+
+    ghostAppearance_t m_ghostAppearence;
+    bool hasSpawned = false;
+    bool hasSetAppearence = false;
 };
 #endif //GHOST_BASE

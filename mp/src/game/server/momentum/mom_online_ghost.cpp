@@ -29,8 +29,6 @@ void CMomentumOnlineGhostEntity::Precache(void)
 void CMomentumOnlineGhostEntity::Spawn()
 {
     BaseClass::Spawn();
-    SetGhostColor(COLOR_RED);
-    SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
     hasSpawned = true;
     SetSolid(SOLID_BBOX);
     SetNextThink(gpGlobals->curtime);
@@ -154,10 +152,4 @@ void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
     */
-}
-void CMomentumOnlineGhostEntity::SetGhostApperence(ghostAppearance_t app)
-{
-    SetGhostBodyGroup(app.GhostModelBodygroup);
-    SetGhostModel(app.GhostModel);
-    SetGhostColor(*g_pMomentumUtil->GetColorFromHex(app.GhostModelRGBAColorAsHex));
 }

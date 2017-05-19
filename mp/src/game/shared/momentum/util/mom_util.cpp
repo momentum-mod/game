@@ -322,7 +322,6 @@ Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone,
 
 Color* MomentumUtil::GetColorFromHex(const char *hexColor)
 {
-    static Color *newColor; 
     uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
     if (length == 6)
@@ -330,8 +329,7 @@ Color* MomentumUtil::GetColorFromHex(const char *hexColor)
         uint8 r = (hex & 0xFF0000) >> 16;
         uint8 g = (hex & 0x00FF00) >> 8;
         uint8 b = (hex & 0x0000FF);
-        newColor = new Color(r, g, b, 75);
-        return newColor;
+        return new Color(r, g, b);
     }
     else if (length == 8)
     {
@@ -339,8 +337,7 @@ Color* MomentumUtil::GetColorFromHex(const char *hexColor)
         uint8 g = (hex & 0x00FF0000) >> 16;
         uint8 b = (hex & 0x0000FF00) >> 8;
         uint8 a = (hex & 0x000000FF);
-        newColor = new Color(r, g, b, a);
-        return newColor;
+        return new Color(r, g, b, a);
     }
     Warning("Error: Color format incorrect! Use hex code in format \"RRGGBB\" or \"RRGGBBAA\"\n");
     return nullptr;
@@ -348,13 +345,23 @@ Color* MomentumUtil::GetColorFromHex(const char *hexColor)
 
 Color* MomentumUtil::GetColorFromHex(uint32 hex)
 {
-    static Color *newColor;
     uint8 r = (hex & 0xFF000000) >> 24;
     uint8 g = (hex & 0x00FF0000) >> 16;
     uint8 b = (hex & 0x0000FF00) >> 8;
     uint8 a = (hex & 0x000000FF);
-    newColor = new Color(r, g, b, a);
-    return newColor;
+    return new Color(r, g, b, a);
+}
+uint32 MomentumUtil::GetHexFromColorString(const char *hexColor)
+{
+    return strtoul(hexColor, nullptr, 16);
+}
+uint32 MomentumUtil::GetHexFromColor(const Color color)
+{
+    uint8 redByte = ((color.r() & 0xff) << 24);
+    uint8 greenByte = ((color.g() & 0xff) << 16);
+    uint8 blueByte = ((color.b() & 0xff) << 8);
+    uint8 aByte = (color.a() & 0xff);
+    return redByte + greenByte + blueByte + aByte;
 }
 
 inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)

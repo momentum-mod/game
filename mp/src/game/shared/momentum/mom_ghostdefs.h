@@ -6,30 +6,33 @@
 
 #include "const.h"
 
-
 //Describes all data for visual apperence of players ingame
 struct ghostAppearance_t
 {
-    char GhostModel[32];
+    char GhostModel[128]; //maximum model filename is 128 chars
     int GhostModelBodygroup;
     uint32 GhostModelRGBAColorAsHex;
     uint32 GhostTrailRGBAColorAsHex;
+    uint8 GhostTrailLength;
+    bool GhostTrailEnable;
 
 #ifndef GHOST_SERVER
-    ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA)
+    ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen)
     {
         Q_strncpy(GhostModel, playerModel, sizeof(GhostModel));
         GhostModelBodygroup = bodyGroup;
         GhostModelRGBAColorAsHex = bodyRGBA;
         GhostTrailRGBAColorAsHex = trailRGBA;
+        GhostTrailLength = trailLen;
     }
     ghostAppearance_t() {}
     bool ghostAppearance_t::operator==(const ghostAppearance_t &other) const
     {
-        Q_strcmp(GhostModel, other.GhostModel) == 0 &&
-        GhostModelBodygroup == other.GhostModelBodygroup && 
-        GhostModelRGBAColorAsHex == other.GhostModelRGBAColorAsHex &&
-        GhostTrailRGBAColorAsHex == other.GhostTrailRGBAColorAsHex;
+        return Q_strcmp(GhostModel, other.GhostModel) == 0 &&
+            GhostModelBodygroup == other.GhostModelBodygroup && 
+            GhostModelRGBAColorAsHex == other.GhostModelRGBAColorAsHex &&
+            GhostTrailRGBAColorAsHex == other.GhostTrailRGBAColorAsHex &&
+            GhostTrailLength == other.GhostTrailLength;
     }
 #endif
 };
@@ -77,6 +80,7 @@ struct ghostNetFrame_t
 };
 
 #ifndef GHOST_SERVER
+
 static ConVar mm_updaterate("mom_ghost_online_updaterate", "20", 
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, 
     "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 1000.0f);

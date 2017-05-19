@@ -32,7 +32,6 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     m_SrvData.m_iTotalStrafes = 0;
     m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
     m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
-    SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
     m_pCurrentSpecPlayer = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
 }

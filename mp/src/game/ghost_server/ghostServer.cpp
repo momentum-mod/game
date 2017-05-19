@@ -196,7 +196,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (deltaT > std::chrono::seconds(SECONDS_TO_TIMEOUT))
         {
-            conMsg("Player timed out...\n");
+            conMsg("%s timed out...\n", newPlayer->currentFrame.PlayerName);
             disconnectPlayer(newPlayer);
             break;
         }
@@ -204,9 +204,17 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
     if (bytes_read && newPlayer)
     {
         static bool firstNewFrame = true;
+        static bool firstNewSentFrame = true;
+        if (data == MOM_C_SENDING_NEWPROPS)
+        {
+            data = MOM_C_SENDING_NEWPROPS;
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
+            // Wait for client to get our acknowledgement, and recieve appearence update from client
+            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t)); //ACK
+            m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearences to be sent 
+        }
         if (data == MOM_C_SENDING_NEWFRAME)
         {
-            //printf("Data matches MOM_C_SENDING_NEWFRAME pattern! \n"); 
             data = MOM_C_RECIEVING_NEWFRAME;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
             // Wait for client to get our acknowledgement, and recieve frame update from client
@@ -214,25 +222,27 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             if (firstNewFrame)
             {
                 conMsg("%s connected!\n", newPlayer->currentFrame.PlayerName);
+                zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t)); 
                 firstNewFrame = false;
             }
         }
         if (data == MOM_S_RECIEVING_NEWFRAME) //SYN
         {
-            //printf("Data matches MOM_S_RECIEVING_NEWFRAME pattern! ..\n");
             // Send out a ACK to the client that we're going to be sending them an update
             data = MOM_S_SENDING_NEWFRAME;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //ACK
-
             int playerNum = numPlayers;
-            //printf("Sending number of players: %i\n", playerNum);
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum));
 
-            //printf("Sending player data \n");
             for (int i = 0; i < playerNum; i++)
             {
                 m_vecPlayers_mutex.lock();
                 zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame_t)); 
+                if (firstNewSentFrame)
+                {
+                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentLooks, sizeof(ghostAppearance_t));
+                    firstNewSentFrame = false;
+                }
                 m_vecPlayers_mutex.unlock();
             }
             
@@ -242,6 +252,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             conMsg("%s disconnected...\n", newPlayer->currentFrame.PlayerName);
             disconnectPlayer(newPlayer);
             firstNewFrame = true;
+            firstNewSentFrame = true;
             //printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
         }
     }
@@ -253,6 +264,12 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             int data = MOM_S_SENDING_NEWMAP;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data));
             zed_net_tcp_socket_send(&newPlayer->remote_socket, m_szMapName, sizeof(m_szMapName));
+        }
+        if (strcmp(newEvent, NEW_APPEARENCES_CMD) == 0)
+        {
+            int data = MOM_S_SENDING_NEWPROPS;
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data));
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t));
         }
     }
     //std::this_thread::sleep_for(std::chrono::milliseconds(10));

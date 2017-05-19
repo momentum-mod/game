@@ -49,6 +49,9 @@ class MomentumUtil
     Color *GetColorFromHex(const char *hexColor); // in hex color format RRGGBB or RRGGBBAA
     Color *GetColorFromHex(uint32 HEX); // in hex color format RRGGBB or RRGGBBAA
 
+    uint32 GetHexFromColorString(const char *hexColor);
+    uint32 GetHexFromColor(const Color color);
+
     Color GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
                                 const Color &decreasecolor) const;
     // Formats time in ticks by a given tickrate into time. Includes minutes if time > minutes, hours if time > hours,

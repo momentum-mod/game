@@ -17,9 +17,6 @@ public:
     void SetCurrentNetFrame(ghostNetFrame_t newFrame) { m_currentFrame = newFrame; }
     ghostNetFrame_t GetCurrentNetFrame() { return m_currentFrame; }
 
-    void SetGhostApperence(ghostAppearance_t app);
-    ghostAppearance_t GetAppearance() { return m_currentAppearence; }
-
     bool IsOnlineGhost() const OVERRIDE{ return true; }
 
     bool HasSpawned() const { return hasSpawned; }

@@ -38,4 +38,5 @@ private:
     static CUtlVector<CMomentumOnlineGhostEntity*> ghostPlayers;
     static CMomentumPlayer *m_pPlayer;
     static uint64 m_SteamID;
+    static ghostAppearance_t oldAppearence;
 };
