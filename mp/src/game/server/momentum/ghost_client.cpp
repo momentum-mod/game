@@ -102,7 +102,7 @@ bool CMomentumGhostClient::exitGhostClient()
     zed_net_socket_close(&m_socket);
     zed_net_shutdown();
     m_mtxGhostPlayers.Lock();
-    ghostPlayers.PurgeAndDeleteElements();
+    ghostPlayers.Purge();
     m_mtxGhostPlayers.Unlock();
     return returnResult;
 }
@@ -191,7 +191,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 zed_net_socket_close(&m_socket);
                 zed_net_shutdown();
                 m_mtxGhostPlayers.Lock();
-                ghostPlayers.PurgeAndDeleteElements();
+                ghostPlayers.Purge();
                 m_mtxGhostPlayers.Unlock();
                 m_ghostClientConnected = false;
                 firstNewFrame = true; //set to true again since the thread exited, so we disconnected
