@@ -34,6 +34,8 @@ class CMomentumGhostBaseEntity : public CBaseAnimating
     DECLARE_SERVERCLASS();
 
 public:
+    CMomentumGhostBaseEntity();
+
     virtual void SetGhostModel(const char *model);
     virtual void SetGhostBodyGroup(int bodyGroup);
     virtual void SetGhostColor(const uint32 newHexColor);
@@ -73,7 +75,7 @@ private:
     bool trailEnable;
     CBaseEntity *m_eTrail;
 
-    bool hasSpawned = false;
-    bool hasSetAppearance = false;
+    bool hasSpawned;
+    bool hasSetAppearance;
 };
 #endif //GHOST_BASE

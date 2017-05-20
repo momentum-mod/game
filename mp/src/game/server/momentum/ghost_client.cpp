@@ -102,12 +102,7 @@ bool CMomentumGhostClient::exitGhostClient()
     zed_net_socket_close(&m_socket);
     zed_net_shutdown();
     m_mtxGhostPlayers.Lock();
-    //delete all the memory allocated to players
-    for (auto i : ghostPlayers)
-    {
-        i->Remove();
-    }
-    ghostPlayers.Purge();
+    ghostPlayers.PurgeAndDeleteElements();
     m_mtxGhostPlayers.Unlock();
     return returnResult;
 }
@@ -196,10 +191,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 zed_net_socket_close(&m_socket);
                 zed_net_shutdown();
                 m_mtxGhostPlayers.Lock();
-                for (auto i : ghostPlayers)      // delet this
-                {
-                    i->Remove();
-                }
+                ghostPlayers.PurgeAndDeleteElements();
                 m_mtxGhostPlayers.Unlock();
                 m_ghostClientConnected = false;
                 firstNewFrame = true; //set to true again since the thread exited, so we disconnected
@@ -279,12 +271,12 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 zed_net_tcp_socket_receive(&m_socket, &newFrame, sizeof(ghostNetFrame_t));
 
                 bool didFindPlayer = false;
-                for (auto i : ghostPlayers) //Look through all players currently connected
+                for (auto i = ghostPlayers.begin(); i != ghostPlayers.end(); i++) //Look through all players currently connected
                 {
-                    if (i->GetCurrentNetFrame().SteamID64 == newFrame.SteamID64) //If the player is already connected to server
+                    if ((*i)->GetCurrentNetFrame().SteamID64 == newFrame.SteamID64) //If the player is already connected to server
                     {
                         didFindPlayer = true;
-                        i->SetCurrentNetFrame(newFrame); //update their current frame
+                        (*i)->SetCurrentNetFrame(newFrame); //update their current frame
                         break;
                     }
                 }
@@ -332,11 +324,11 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 ghostAppearance_t newAppearnece;
                 zed_net_tcp_socket_receive(&m_socket, &newAppearnece, sizeof(ghostAppearance_t));
 
-                for (auto i : ghostPlayers) //Look through all players currently connected
+                for (auto i = ghostPlayers.begin(); i != ghostPlayers.end(); i++) //Look through all players currently connected
                 {
-                    if (i->GetCurrentNetFrame().SteamID64 == steamIDOfNewAppearance) //found them!
+                    if ((*i)->GetCurrentNetFrame().SteamID64 == steamIDOfNewAppearance) //found them!
                     {
-                        i->SetGhostAppearance(newAppearnece); //update their appearance properties
+                        (*i)->SetGhostAppearance(newAppearnece); //update their appearance properties
                         break;
                     }
                 }

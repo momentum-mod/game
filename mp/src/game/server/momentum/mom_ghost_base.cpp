@@ -9,6 +9,10 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
+CMomentumGhostBaseEntity::CMomentumGhostBaseEntity() : hasSpawned(false), hasSetAppearance(false)
+{
+}
+
 void CMomentumGhostBaseEntity::Precache()
 {
     BaseClass::Precache();
