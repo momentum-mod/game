@@ -359,8 +359,13 @@ ZED_NET_DEF int zed_net_check_would_block(zed_net_socket_t *socket) {
 	int retval;
 
     if (socket->non_blocking && !socket->ready) {
+
+#ifdef _WIN32
 		writefd.fd_count = 1;
         writefd.fd_array[0] = socket->handle;
+#else
+        FD_SET( socket->handle, &writefd);
+#endif
         timer.tv_sec = 0;
         timer.tv_usec = 0;
 		retval = select(0, NULL, &writefd, NULL, &timer);
@@ -385,8 +390,14 @@ ZED_NET_DEF int zed_net_tcp_make_socket_ready(zed_net_socket_t *socket) {
     fd_set writefd;
 	int retval;
 
+#ifdef _WIN32
+
 	writefd.fd_count = 1;
 	writefd.fd_array[0] = socket->handle;
+#else
+	FD_SET(socket->handle, &writefd);	
+#endif	
+
 	retval = select(0, NULL, &writefd, NULL, NULL);
 	if (retval != 1)
 		return zed_net__error("Failed to make non-blocking socket ready");
