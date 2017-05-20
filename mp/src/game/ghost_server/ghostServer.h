@@ -14,10 +14,18 @@
 //single-file UDP library
 #include "zed_net.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #define DEFAULT_MAP "triggertests"
 #define SECONDS_TO_TIMEOUT 10
 #define NEW_MAP_CMD "MOMENTUM_QUEUE_NEWMAP"
 #define NEW_APPEARENCES_CMD "MOMENTUM_QUEUE_NEWAPPS"
+
+#ifndef WIN32 
+#define _snprintf snprintf
+#endif
 
 template <class T>
 class SafeQueue;

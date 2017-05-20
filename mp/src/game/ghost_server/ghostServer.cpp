@@ -1,11 +1,9 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string.h>
+#include <stdarg.h>
 
 #include "ghostServer.h"
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 volatile int CMOMGhostServer::numPlayers;
 std::vector<playerData* > CMOMGhostServer::m_vecPlayers;
 std::mutex CMOMGhostServer::m_vecPlayers_mutex;
@@ -30,8 +28,8 @@ int main(int argc, char** argv)
     SetConsoleMode(input_handle, dwOldInputMode & ~ENABLE_QUICK_EDIT_MODE);
 
 #endif
-    char map[MAX_MAP_NAME];
-    uint16 port = 0;
+    char map[32];
+    uint16_t port = 0;
     int status = -1;
 
     for (int i = 0; i < argc; i++)
@@ -48,7 +46,7 @@ int main(int argc, char** argv)
         }
         if (strcmp(argv[i], "-port") == 0)
         {
-            port = atoi(argv[i + 1]);
+            port = uint16_t(atoi(argv[i + 1]));
         }
     }
     if (port != 0 && map != nullptr)

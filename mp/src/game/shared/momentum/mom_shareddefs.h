@@ -4,11 +4,10 @@
 #pragma once
 #endif
 
-#include "const.h"
 #ifndef GHOST_SERVER
+#include "const.h"
 #include "shareddefs.h"
 #endif
-
 // Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 // When editing this, remember to also edit version.txt on the main dir of the repo
 // If you have any doubts, please refer to http://semver.org/

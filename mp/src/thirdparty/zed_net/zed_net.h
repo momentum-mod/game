@@ -47,6 +47,10 @@
 extern "C" {
 #endif
 
+#ifndef _WIN32
+#define INVALID_SOCKET          (~0)
+#define SOCKET_ERROR            (-1)
+#endif
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 // INITIALIZATION AND SHUTDOWN
