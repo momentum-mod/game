@@ -1,4 +1,4 @@
-//Adrian: This file contains the credits info for both the Intro and outro.
+
 "credits.txt"
 {
 
@@ -29,7 +29,8 @@
 
 //Outro Parameters
 // When setting scrolltime value, don't make it too slow/too fast!
-	"scrolltime" "40"
+// (3 s per team member + 1 per contributor + 10 for special thanks)
+	"scrolltime" "39"
 	"separation"  "10"
 }
 
@@ -45,28 +46,56 @@
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	"Momentum Team" "CreditsOutroTextLarge"
-	"Nick K. (Gocnak)" "CreditsOutroText"
-	"Rubén Rincón (RabsRincon)"   "CreditsOutroText"
-	"Gus Naughton" "CreditsOutroText"
-	"Fatalis"	"CreditsOutroText"
-	"Flipybitz"	"CreditsOutroText"
-	"Tuxxi"	"CreditsOutroText"
-	"Juxtapo" "CreditsOutroText"
-	"Pcpie"	"CreditsOutroText"
-	"Mehis" "CreditsOutroText"
+	
+	"Nick K. (Gocnak) - Project Lead" "CreditsOutroText"
+	
+	"Rubén Rincón Blanco (RabsRincon) - Programming & Caretaker" "CreditsOutroText"
+	
+	"Aidan S. (tuxxi) - Programming & Level Design" "CreditsOutroText"
+	
+	"Gus Naughton (Gus) - Lead Web Developer" "CreditsOutroText"
+	
+	"Jason Z. (Juxtapo) - Level Design & Front End Web" "CreditsOutroText"
+	
+	"Nolan O. (Rusty) - Programming" "CreditsOutroText"
+	
+	"Mathias Solheim (func_Mathias) - Modeller & Level Design" "CreditsOutroText"
+	
+	"Orfeas Z. (NoFaTe) - Programming" "CreditsOutroText"
+	
+	"Tim M. (Horsefeathers) - Level Design" "CreditsOutroText"
+	
+	"Till Wübbers (TheAsuro) - Programmer" "CreditsOutroText"
+	
 	" "	"CreditsOutroText"
 	"Contributors" "CreditsOutroTextLarge"
 	// Add yourself here
-
+	
+"Acer for bug testing and feedback" "CreditsOutroText"
+	
+"TotallyMehis for Code (Slope boost fix)" "CreditsOutroText"
+	
+"Fatalis for Code (Rampbug fix & Tickrate hook)" "CreditsOutroText"
+	
+"Saul Rennison for Dynamic RTT Shadow Angles code" "CreditsOutroText"
+	
+"Ole for Norwegian translations" "CreditsOutroText"
+	
+"Sewq90 for Swedish translations" "CreditsOutroText"
+	
+"HammerPavel for Russian translations" "CreditsOutroText"
+	
 	//-----------------
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	" "	"CreditsOutroText"
 	"Special thanks to:"   "CreditsOutroTextLarge"
-	"Ivan Vashchaev for his JSON parser GASON"   "CreditsOutroText"
-	"Slack Technologies Inc." "CreditsOutroText"
-	"The Rhino Burger for their cover of Tiagre at Dawn" "CreditsOutroText"
+	
+"Ivan Vashchaev for his JSON parser GASON" "CreditsOutroText"
+	
+"Slack Technologies Inc." "CreditsOutroText"
+	
 	"everyone who has ever contributed"   "CreditsOutroText"
 	"and"	"CreditsOutroText"
 	" "	"CreditsOutroText"
