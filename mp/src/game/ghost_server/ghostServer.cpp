@@ -201,8 +201,8 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
     }
     if (bytes_read && newPlayer)
     {
-        static bool firstNewFrame = true;
-        static bool firstNewSentFrame = true;
+        static thread_local bool firstNewFrame = true;
+        static thread_local bool firstNewSentFrame = true;
         if (data == MOM_C_SENDING_NEWPROPS)
         {
             data = MOM_C_SENDING_NEWPROPS;

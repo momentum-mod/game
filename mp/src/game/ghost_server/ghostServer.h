@@ -16,6 +16,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#define thread_local __declspec(thread)
 #endif
 
 #define DEFAULT_MAP "triggertests"
@@ -25,7 +26,10 @@
 
 #ifndef WIN32 
 #define _snprintf snprintf
+#define thread_local __thread
 #endif
+
+
 
 template <class T>
 class SafeQueue;
