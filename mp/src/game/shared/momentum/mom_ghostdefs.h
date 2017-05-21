@@ -26,7 +26,7 @@ struct ghostAppearance_t
         GhostTrailLength = trailLen;
     }
     ghostAppearance_t() {}
-    bool ghostAppearance_t::operator==(const ghostAppearance_t &other) const
+    bool operator==(const ghostAppearance_t &other) const
     {
         return Q_strcmp(GhostModel, other.GhostModel) == 0 &&
             GhostModelBodygroup == other.GhostModelBodygroup && 
@@ -67,7 +67,7 @@ struct ghostNetFrame_t
     }
     ghostNetFrame_t() {}
 
-    bool ghostNetFrame_t::operator==(const ghostNetFrame_t &other) const
+    bool operator==(const ghostNetFrame_t &other) const
     {
         return EyeAngle == other.EyeAngle &&
             Position == other.Position &&
