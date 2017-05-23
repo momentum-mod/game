@@ -74,6 +74,7 @@ public:
 	};
 
 	// runs the specific animation command (doesn't use script file at all)
+    void RunAnimationCommand(vgui::Panel *panel, const char *variable, float targetValue, float startDelaySeconds, float durationSeconds, Interpolators_e interpolator, void (*callback)(), float animParameter = 0 );
 	void RunAnimationCommand(vgui::Panel *panel, const char *variable, float targetValue, float startDelaySeconds, float durationSeconds, Interpolators_e interpolator, float animParameter = 0 );
 	void RunAnimationCommand(vgui::Panel *panel, const char *variable, Color targetValue, float startDelaySeconds, float durationSeconds, Interpolators_e interpolator, float animParameter = 0 );
 
@@ -148,6 +149,7 @@ private:
 		float	interpolationParameter;
 		float startTime;
 		float duration;
+        void (*callback)();
 
 		AnimAlign_t align;
 
@@ -197,6 +199,7 @@ private:
 		float interpolatorParam;
 		float startTime;
 		float endTime;
+        void (*callback)();
 
 		AnimAlign_t align;
 	};

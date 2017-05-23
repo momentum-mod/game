@@ -807,6 +807,8 @@ void AnimationController::UpdateActiveAnimations(bool bRunToCompletion)
 		// see if we can remove the animation
 		if (m_flCurrentTime >= anim.endTime || bRunToCompletion)
 		{
+            if (m_ActiveAnimations[i].callback)
+                m_ActiveAnimations[i].callback();
 			m_ActiveAnimations.Remove(i);
 			--i;
 		}
@@ -1067,6 +1069,32 @@ void AnimationController::CancelAnimationsForPanel( Panel *pWithinParent )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Runs a custom command from code, not from a script file, and supports a callback on animation finish
+//-----------------------------------------------------------------------------
+void AnimationController::RunAnimationCommand(vgui::Panel *panel, const char *variable, float targetValue, float startDelaySeconds, 
+                                                float duration, Interpolators_e interpolator, void (*callback)(), float animParameter /* = 0 */)
+{
+	// clear any previous animations of this variable
+	UtlSymId_t var = g_ScriptSymbols.AddString(variable);
+	RemoveQueuedAnimationByType(panel, var, UTL_INVAL_SYMBOL);
+
+	// build a new animation
+	AnimCmdAnimate_t animateCmd;
+	memset(&animateCmd, 0, sizeof(animateCmd));
+	animateCmd.panel = 0;
+	animateCmd.variable = var;
+	animateCmd.target.a = targetValue;
+	animateCmd.interpolationFunction = interpolator;
+	animateCmd.interpolationParameter = animParameter;
+	animateCmd.startTime = startDelaySeconds;
+	animateCmd.duration = duration;
+    animateCmd.callback = callback;
+
+	// start immediately
+	StartCmd_Animate(panel, 0, animateCmd);
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Runs a custom command from code, not from a script file
 //-----------------------------------------------------------------------------
 void AnimationController::RunAnimationCommand(vgui::Panel *panel, const char *variable, float targetValue, float startDelaySeconds, float duration, Interpolators_e interpolator, float animParameter /* = 0 */ )
@@ -1261,6 +1289,7 @@ void AnimationController::StartCmd_Animate(Panel *panel, UtlSymId_t seqName, Ani
 	anim.panel = panel;
 	anim.seqName = seqName;
 	anim.variable = cmd.variable;
+    anim.callback = cmd.callback;
 	anim.interpolator = cmd.interpolationFunction;
 	anim.interpolatorParam = cmd.interpolationParameter;
 	// timings
