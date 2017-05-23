@@ -134,6 +134,8 @@ void CTargetID::Paint()
 
         C_MomentumGhostBaseEntity *pGhost = dynamic_cast<C_MomentumGhostBaseEntity*>(pEnt);
 
+        // Stop crashing when it's not a ghost.
+        if (!pGhost) return;
 
         if (pGhost->IsOnlineGhost())
         {
