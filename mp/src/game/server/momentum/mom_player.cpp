@@ -749,7 +749,11 @@ void CMomentumPlayer::UpdateStrafeOffset(float dtAng)
             m_bKeyChanged = false;
             m_bDirChanged = false;
             if (t > -26 && t < 26)
-                printf("%d\n", t);
+            {
+                m_SrvData.m_strafeOffset = t;
+                IGameEvent *event = gameeventmanager->CreateEvent("strafe_offset");
+                gameeventmanager->FireEvent(event);
+            }
         }
     }
     else

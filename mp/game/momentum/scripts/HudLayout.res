@@ -1,5 +1,16 @@
 "Resource/HudLayout.res"
 {
+    HudStrafeOffset
+        {
+            "fieldname"         "HudStrafeOffset"
+            "xpos"              "c-140"
+            "ypos"              "453"
+            "wide"              "280"
+            "tall"              "21"
+            "visible"           "1"
+            "enabled"           "1"
+            "NumberFont"        "HudNumbersSmallBold"
+        }
     //Speedometer
     HudSpeedMeter
         {

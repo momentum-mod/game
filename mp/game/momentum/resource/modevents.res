@@ -27,6 +27,9 @@
 
 "modevents"
 {
+	"strafe_offset"
+    {
+    }
 	"zone_enter"//When the player/ghost enters a zone trigger
 	{
         "ent" "short"
