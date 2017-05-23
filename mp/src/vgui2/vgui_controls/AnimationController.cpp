@@ -29,7 +29,7 @@
 
 using namespace vgui;
 
-static CUtlSymbolTable g_ScriptSymbols(0, 128, true);
+CUtlSymbolTable g_ScriptSymbols(0, 128, true);
 
 // singleton accessor for animation controller for use by the vgui controls
 namespace vgui
@@ -1066,32 +1066,6 @@ void AnimationController::CancelAnimationsForPanel( Panel *pWithinParent )
 		m_ActiveAnimations.Remove(i);
 		--i;
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Runs a custom command from code, not from a script file, and supports a callback on animation finish
-//-----------------------------------------------------------------------------
-void AnimationController::RunAnimationCommand(vgui::Panel *panel, const char *variable, float targetValue, float startDelaySeconds, 
-                                                float duration, Interpolators_e interpolator, void (*callback)(), float animParameter /* = 0 */)
-{
-	// clear any previous animations of this variable
-	UtlSymId_t var = g_ScriptSymbols.AddString(variable);
-	RemoveQueuedAnimationByType(panel, var, UTL_INVAL_SYMBOL);
-
-	// build a new animation
-	AnimCmdAnimate_t animateCmd;
-	memset(&animateCmd, 0, sizeof(animateCmd));
-	animateCmd.panel = 0;
-	animateCmd.variable = var;
-	animateCmd.target.a = targetValue;
-	animateCmd.interpolationFunction = interpolator;
-	animateCmd.interpolationParameter = animParameter;
-	animateCmd.startTime = startDelaySeconds;
-	animateCmd.duration = duration;
-    animateCmd.callback = callback;
-
-	// start immediately
-	StartCmd_Animate(panel, 0, animateCmd);
 }
 
 //-----------------------------------------------------------------------------
