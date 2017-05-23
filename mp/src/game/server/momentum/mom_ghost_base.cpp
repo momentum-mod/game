@@ -9,6 +9,21 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
+
+ConVar mm_updaterate("mom_ghost_online_updaterate", "20",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 1000.0f);
+
+ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Seconds to wait when timimg out from a ghost server.\n", true, 5.0f, true, 30.0f);
+
+//we have to wait a few ticks to let the interpolation catch up with our ghosts!
+ConVar mm_lerpRatio("mom_ghost_online_lerp_ratio", "2",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Number of ticks to wait before updating ghosts, to allow client to interpolate.\n", true, 0.0f, true, 10.0f);
+
+
 CMomentumGhostBaseEntity::CMomentumGhostBaseEntity() : hasSpawned(false), hasSetAppearance(false)
 {
 }

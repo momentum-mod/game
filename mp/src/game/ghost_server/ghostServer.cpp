@@ -130,6 +130,8 @@ void CMOMGhostServer::acceptNewConnections()
 {
     zed_net_socket_t remote_socket;
     zed_net_address_t remote_address;
+    remote_socket.held_bytes = 0;
+    remote_socket.prefix_size = 2;
 
     while (!m_bShouldExit)
     {
@@ -186,7 +188,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
     int data, bytes_read = 0;
     auto t1 = Clock::now(); 
     bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
-    while (bytes_read != sizeof(data)) //Oops, we didn't get anything from the client!
+    while (bytes_read == 0) //Oops, we didn't get anything from the client!
     {
         auto t2 = Clock::now();
         auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
@@ -267,7 +269,12 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         {
             int data = MOM_S_SENDING_NEWPROPS;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data));
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t));
+            bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
+            if (bytes_read && data == MOM_S_RECIEVING_NEWPROPS)
+            {
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayer->currentFrame.SteamID64, sizeof(newPlayer->currentFrame.SteamID64));
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t));
+            }
         }
     }
     //std::this_thread::sleep_for(std::chrono::milliseconds(10));

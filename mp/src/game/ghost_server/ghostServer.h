@@ -17,19 +17,15 @@
 #ifdef _WIN32
 #include <Windows.h>
 #define thread_local __declspec(thread)
+#else
+#define _snprintf snprintf
+#define thread_local __thread
 #endif
 
 #define DEFAULT_MAP "triggertests"
 #define SECONDS_TO_TIMEOUT 10
 #define NEW_MAP_CMD "MOMENTUM_QUEUE_NEWMAP"
 #define NEW_APPEARENCES_CMD "MOMENTUM_QUEUE_NEWAPPS"
-
-#ifndef WIN32 
-#define _snprintf snprintf
-#define thread_local __thread
-#endif
-
-
 
 template <class T>
 class SafeQueue;
@@ -99,7 +95,6 @@ public:
     {
         std::lock_guard<std::mutex> lock(m_mtx);
         return m_queue.size();
-
     }
 private:
     std::queue<T> m_queue;

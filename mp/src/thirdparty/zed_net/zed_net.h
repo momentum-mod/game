@@ -98,11 +98,15 @@ ZED_NET_DEF const char *zed_net_host_to_str(unsigned int host);
 // UDP SOCKETS API
 //
 
-// Wraps the system handle for a UDP/TCP socket
-typedef struct {
+// Wraps the system handle for a TCP socket
+typedef struct
+{
     int handle;
     int non_blocking;
     int ready;
+    char holdingBuffer[1024]; //holds data if we recieved too much
+    int held_bytes;
+    unsigned char prefix_size;
 } zed_net_socket_t;
 
 // Closes a previously opened socket
@@ -305,7 +309,8 @@ ZED_NET_DEF int zed_net_udp_socket_open(zed_net_socket_t *sock, unsigned int por
 ZED_NET_DEF int zed_net_tcp_socket_open(zed_net_socket_t *sock, unsigned int port, int non_blocking, int listen_socket) {
     if (!sock)
         return zed_net__error("Socket is NULL");
-
+    sock->prefix_size = 2;
+    sock->held_bytes = 0;
     // Create the socket
     sock->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock->handle <= 0) {
@@ -540,14 +545,26 @@ ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const v
 	else if (retval)
 		return -1;
 
-    int sent_bytes = send(remote_socket->handle, (const char *) data, size, 0);
-    if (sent_bytes != size) {
+    int sent_bytes;
+    switch (remote_socket->prefix_size)
+    {
+    case 2:
+    default:
+        u_short lenPrefix = htons(u_short(size + remote_socket->prefix_size));
+        sent_bytes = send(remote_socket->handle, (const char *)&lenPrefix, remote_socket->prefix_size, 0);
+        break;
+
+    }
+    sent_bytes += send(remote_socket->handle, (const char *)data, size, 0);
+    if (sent_bytes != size + remote_socket->prefix_size) 
+    {
         return zed_net__error("Failed to send data");
     }
 
     return 0;
 }
 
+//returns the size of the packet recieved + the length prefix size. 
 ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void *data, int size) {
 	int retval;
 
@@ -564,11 +581,66 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
 #ifdef _WIN32
     typedef int socklen_t;
 #endif
+#define BUFFER_SIZE_MULTIPLE 2
 
-    int received_bytes = recv(remote_socket->handle, (char *) data, size, 0);
-    if (received_bytes <= 0) {
-        return 0;
+    unsigned char* buffer = new unsigned char[BUFFER_SIZE_MULTIPLE * size]; //create a buffer twice the size of the packet we are trying to recieve, so hopefully we can get all if it in one go.
+    //memset(buffer, 0, 2 * size);
+    int received_bytes = 0;
+    int packet_size = 0; //actual size of packet we are trying to read
+    bool reading_prefix = true; //are we trying to find the length prefix? 
+
+    //copy any remaining data from previous calls into packet buffer
+    if (remote_socket->held_bytes > 0)
+    {
+        memcpy(buffer, remote_socket->holdingBuffer, remote_socket->held_bytes);
+        received_bytes += remote_socket->held_bytes;
     }
+    for (;;)
+    {
+        if (reading_prefix)
+        {
+            if (received_bytes >= remote_socket->prefix_size) //we've already gotten more data from the last receive call
+            {
+                packet_size = 0;
+                for (int i = 0; i < remote_socket->prefix_size; ++i)
+                {
+                    int sizebit = buffer[i];
+                    packet_size <<= 8;
+                    packet_size |= sizebit;
+                }
+                reading_prefix = false;
+                if (packet_size > BUFFER_SIZE_MULTIPLE * size)
+                {
+                    //our buffer is too small to hold the packet. 
+                    zed_net__error("Buffer size overflow! Could not store packet\n");
+                    delete[] buffer;
+                    return 0;
+                }
+            }
+        }
+        if (!reading_prefix && received_bytes >= packet_size)
+        {
+            break; //finished building packet.
+        }
+        //recieve again
+        int new_bytes_read = recv(remote_socket->handle, (char*)buffer + received_bytes, 
+            (size + remote_socket->prefix_size) - received_bytes, 0);
+        if (new_bytes_read <= 0 || new_bytes_read == SOCKET_ERROR)
+        {
+            free(buffer);
+            return 0;
+        }
+        received_bytes += new_bytes_read;
+    }
+    // if anything is left over in the recv buffer, copy it into the holding buffer.
+    remote_socket->held_bytes = received_bytes - packet_size;
+    memcpy(remote_socket->holdingBuffer, buffer + packet_size, remote_socket->held_bytes);
+
+    // copy the correct packet size into the output
+    //memset(buffer - size, 0, packet_size - size);
+    memcpy(data, buffer + remote_socket->prefix_size, size);
+
+    delete[] buffer;
     return received_bytes;
 }
 

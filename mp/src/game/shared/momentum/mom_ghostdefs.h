@@ -5,16 +5,35 @@
 #include "shareddefs.h"
 #endif
 
+//Network data signatures
+#define MOM_SIGNON 0xAB53A53F
+#define MOM_SIGNOFF 0x101010
+
+#define MOM_C_SENDING_NEWFRAME 0xDEDEDE
+#define MOM_C_RECIEVING_NEWFRAME 0xEDEDED
+
+#define MOM_S_SENDING_NEWFRAME 0xABABAB
+#define MOM_S_RECIEVING_NEWFRAME 0xB1B1B1
+
+#define MOM_S_SENDING_NEWMAP 0x9ABF23
+
+#define MOM_S_SENDING_NEWPROPS 0x52A43E
+#define MOM_S_RECIEVING_NEWPROPS 0x6F1A42
+
+#define MOM_C_SENDING_NEWPROPS 0x13FF27
+#define MOM_C_RECIEVING_NEWPROPS 0x62FACE
+
+#define DEFAULT_PORT 9000
 
 //Describes all data for visual apperence of players ingame
 struct ghostAppearance_t
 {
-    char GhostModel[128]; //maximum model filename is 128 chars
     int GhostModelBodygroup;
     uint32_t GhostModelRGBAColorAsHex;
     uint32_t GhostTrailRGBAColorAsHex;
     uint8_t GhostTrailLength;
     bool GhostTrailEnable;
+    char GhostModel[128]; //maximum model filename is 128 chars
 
 #ifndef GHOST_SERVER
     ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen)
@@ -42,7 +61,6 @@ struct ghostNetFrame_t
     int Buttons;
     uint64_t SteamID64;
     char PlayerName[32];
-    ghostAppearance_t GhostAppearance;
 #ifdef GHOST_SERVER //Can't use Vector/QAngle in ghost server
     float EyeAngle[3];
     float Position[3];
@@ -80,17 +98,7 @@ struct ghostNetFrame_t
 };
 
 #ifndef GHOST_SERVER
-
-static ConVar mm_updaterate("mom_ghost_online_updaterate", "20", 
-    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, 
-    "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 1000.0f);
-
-static ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
-    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
-    "Seconds to wait when timimg out from a ghost server.\n", true, 5.0f, true, 30.0f);
-
-//we have to wait a few ticks to let the interpolation catch up with our ghosts!
-static ConVar mm_lerpRatio("mom_ghost_online_lerp_ratio", "2",
-    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
-    "Number of ticks to wait before updating ghosts, to allow client to interpolate.\n", true, 0.0f, true, 10.0f);
+extern ConVar mm_updaterate;
+extern ConVar mm_timeOutDuration;
+extern ConVar mm_lerpRatio;
 #endif

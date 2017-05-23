@@ -170,8 +170,9 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
         int data;
         int tick1 = gpGlobals->tickcount;
         int bytes_read = zed_net_tcp_socket_receive(&m_socket, &data, sizeof(data));
-        while (bytes_read != 4) // 
+        while (bytes_read == 0) // 
         {
+            if (!m_ghostClientConnected) break; //prevents hang on hard quit
             int tick2 = gpGlobals->tickcount;
             float deltaT = float(tick2 - tick1) * gpGlobals->interval_per_tick;
             // Can't use ThreadSleep here for some reason since GabeN called me up and said "OH MY GOD WOULD YOU JUST FUCK OFF" when I tried to
@@ -181,8 +182,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             //MOM_TODO: Fix this (it prints... a lot..)
             if (deltaT == round(deltaT))
             {
-                if (!m_ghostClientConnected) break; //prevents hang on hard quit
-                Warning("Lost connection! Waiting to time out... %f\n", deltaT);
+                //Warning("Lost connection! Waiting to time out... %f\n", deltaT);
             }
             
             if (deltaT > mm_timeOutDuration.GetInt())
@@ -213,12 +213,12 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 m_SteamID,
                 m_pPlayer->GetPlayerName());
 
-            zed_net_tcp_socket_send(&m_socket, &newFrame, sizeof(newFrame)); 
+            zed_net_tcp_socket_send(&m_socket, &newFrame, sizeof(ghostNetFrame_t)); 
 
             //Send the appearance to the server too, so when new players connect we can see their customization!
             if (firstNewFrame)
             {
-                zed_net_tcp_socket_send(&m_socket, &oldAppearance, sizeof(oldAppearance));
+                zed_net_tcp_socket_send(&m_socket, &oldAppearance, sizeof(ghostAppearance_t));
                 firstNewFrame = false;
             }
         }
@@ -313,24 +313,21 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
         m_mtxGhostPlayers.Lock();
         if (bytes_read && recvData == MOM_S_SENDING_NEWPROPS) //ghost server is sending new appearances
         {
+            data = MOM_S_RECIEVING_NEWPROPS; //Client ready to recieve data from server 
+            zed_net_tcp_socket_send(&m_socket, &data, sizeof(data)); //SYN
+
             uint64 steamIDOfNewAppearance;
             zed_net_tcp_socket_receive(&m_socket, &steamIDOfNewAppearance, sizeof(uint64));
 
-            newFrameIdentifier = MOM_S_RECIEVING_NEWPROPS; //Client ready to recieve data from server 
-            zed_net_tcp_socket_send(&m_socket, &newFrameIdentifier, sizeof(newFrameIdentifier)); //SYN
-            recvData = 0;
-            if (bytes_read && recvData == MOM_S_SENDING_NEWPROPS)
-            {
-                ghostAppearance_t newAppearnece;
-                zed_net_tcp_socket_receive(&m_socket, &newAppearnece, sizeof(ghostAppearance_t));
+            ghostAppearance_t newAppearnece;
+            zed_net_tcp_socket_receive(&m_socket, &newAppearnece, sizeof(ghostAppearance_t));
 
-                for (auto i = ghostPlayers.begin(); i != ghostPlayers.end(); i++) //Look through all players currently connected
+            for (auto i = ghostPlayers.begin(); i != ghostPlayers.end(); i++) //Look through all players currently connected
+            {
+                if ((*i)->GetCurrentNetFrame().SteamID64 == steamIDOfNewAppearance) //found them!
                 {
-                    if ((*i)->GetCurrentNetFrame().SteamID64 == steamIDOfNewAppearance) //found them!
-                    {
-                        (*i)->SetGhostAppearance(newAppearnece); //update their appearance properties
-                        break;
-                    }
+                    (*i)->SetGhostAppearance(newAppearnece); //update their appearance properties
+                    break;
                 }
             }
         }
