@@ -52,7 +52,7 @@ public:
 private:
     static zed_net_socket_t m_Socket;
     static int m_iTickRate;
-    static char m_szMapName[64];
+    static char m_szMapName[96];
 };
 
 // A threadsafe-queue.

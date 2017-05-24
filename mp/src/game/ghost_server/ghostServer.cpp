@@ -14,7 +14,7 @@ SafeQueue<char*> CMOMGhostServer::m_sqEventQueue;
 zed_net_socket_t CMOMGhostServer::m_Socket;
 bool CMOMGhostServer::m_bShouldExit = false;
 int CMOMGhostServer::m_iTickRate;
-char CMOMGhostServer::m_szMapName[64];
+char CMOMGhostServer::m_szMapName[96];
 
 typedef std::chrono::high_resolution_clock Clock;
 
@@ -207,11 +207,14 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         static thread_local bool firstNewSentFrame = true;
         if (data == MOM_C_SENDING_NEWPROPS)
         {
-            data = MOM_C_SENDING_NEWPROPS;
+            data = MOM_C_RECIEVING_NEWPROPS;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
             // Wait for client to get our acknowledgement, and recieve appearance update from client
+            printf("receiving new props from %s\n", newPlayer->currentFrame.PlayerName);
             zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t)); //ACK
-            m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent 
+            printf("success from %s\n", newPlayer->currentFrame.PlayerName);
+
+            //m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent 
         }
         if (data == MOM_C_SENDING_NEWFRAME)
         {
@@ -222,6 +225,8 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             if (firstNewFrame)
             {
                 conMsg("%s connected!\n", newPlayer->currentFrame.PlayerName);
+                conMsg("There are now %i connected players.\n", numPlayers);
+                printf("receiving new props from %s\n", newPlayer->currentFrame.PlayerName);
                 zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t)); 
                 firstNewFrame = false;
             }
@@ -238,14 +243,13 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             {
                 m_vecPlayers_mutex.lock();
                 zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame_t)); 
-                if (firstNewSentFrame)
-                {
-                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentLooks, sizeof(ghostAppearance_t));
-                    firstNewSentFrame = false;
-                }
                 m_vecPlayers_mutex.unlock();
             }
-            
+            if (firstNewSentFrame)
+            {
+                //m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent 
+            }
+            firstNewSentFrame = false;
         }
         if (data == MOM_SIGNOFF)
         {
@@ -267,13 +271,24 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         }
         if (strcmp(newEvent, NEW_APPEARENCES_CMD) == 0)
         {
+            printf("trying to send new props\n");
             int data = MOM_S_SENDING_NEWPROPS;
+            int newdata = 0;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data));
-            bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
-            if (bytes_read && data == MOM_S_RECIEVING_NEWPROPS)
+            bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newdata, sizeof(newdata));
+            if (bytes_read && newdata == MOM_S_RECIEVING_NEWPROPS)
             {
-                zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayer->currentFrame.SteamID64, sizeof(newPlayer->currentFrame.SteamID64));
-                zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t));
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data));
+
+                for (int i = 0; i < numPlayers; i++)
+                {
+                    printf("sending new props for user %s\n", m_vecPlayers[i]->currentFrame.PlayerName);
+
+                    m_vecPlayers_mutex.lock();
+                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame.SteamID64, sizeof(uint64_t));
+                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentLooks, sizeof(ghostAppearance_t));
+                    m_vecPlayers_mutex.unlock();
+                }
             }
         }
     }
@@ -286,7 +301,14 @@ void CMOMGhostServer::disconnectPlayer(playerData *player)
     zed_net_socket_close(&player->remote_socket);
     m_vecPlayers_mutex.lock();
 
-    m_vecPlayers.erase(m_vecPlayers.begin() + player->clientIndex);
+    for (auto i = m_vecPlayers.begin(); i != m_vecPlayers.end(); i++)
+    {
+        if ((*i)->currentFrame.SteamID64 == player->currentFrame.SteamID64)
+        {
+            m_vecPlayers.erase(i);
+            break;
+        }
+    }
     numPlayers = m_vecPlayers.size();
 
     m_vecPlayers_mutex.unlock();

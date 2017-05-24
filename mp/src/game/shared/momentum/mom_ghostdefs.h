@@ -101,4 +101,5 @@ struct ghostNetFrame_t
 extern ConVar mm_updaterate;
 extern ConVar mm_timeOutDuration;
 extern ConVar mm_lerpRatio;
+extern ConVar mm_ghostTesting;
 #endif

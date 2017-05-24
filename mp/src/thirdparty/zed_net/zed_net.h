@@ -614,7 +614,7 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
                     //our buffer is too small to hold the packet. 
                     zed_net__error("Buffer size overflow! Could not store packet\n");
                     delete[] buffer;
-                    return 0;
+                    return -1;
                 }
             }
         }
@@ -628,7 +628,7 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
         if (new_bytes_read <= 0 || new_bytes_read == SOCKET_ERROR)
         {
             free(buffer);
-            return 0;
+            return -1;
         }
         received_bytes += new_bytes_read;
     }

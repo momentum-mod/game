@@ -5,6 +5,7 @@
 
 #include "tier0/memdbgon.h"
 
+ConVar mm_ghostTesting("mom_ghost_testing", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN, ".");
 
 LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
@@ -45,7 +46,14 @@ void CMomentumOnlineGhostEntity::HandleGhost()
 {
     if (hasSpawned)
     {
-        SetAbsOrigin(Vector(m_currentFrame.Position.x + 50, m_currentFrame.Position.y + 50, m_currentFrame.Position.z));
+        if (mm_ghostTesting.GetBool())
+        {
+            SetAbsOrigin(Vector(m_currentFrame.Position.x + 50, m_currentFrame.Position.y + 50, m_currentFrame.Position.z));
+        }
+        else
+        {
+            SetAbsOrigin(m_currentFrame.Position);
+        }
         QAngle newAngles = QAngle(m_currentFrame.EyeAngle.x / 10, m_currentFrame.EyeAngle.y, m_currentFrame.EyeAngle.z);
         SetAbsAngles(newAngles);
         SetViewOffset(m_currentFrame.ViewOffset);
