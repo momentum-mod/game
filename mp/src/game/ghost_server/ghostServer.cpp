@@ -15,6 +15,7 @@ zed_net_socket_t CMOMGhostServer::m_Socket;
 bool CMOMGhostServer::m_bShouldExit = false;
 int CMOMGhostServer::m_iTickRate;
 char CMOMGhostServer::m_szMapName[96];
+const std::chrono::seconds CMOMGhostServer::m_secondsToTimeout(SECONDS_TO_TIMEOUT);
 
 typedef std::chrono::high_resolution_clock Clock;
 
@@ -32,7 +33,7 @@ int main(int argc, char** argv)
     uint16_t port = 0;
     int status = -1;
 
-    for (int i = 0; i < argc; i++)
+    for (int i = 0; i < argc; ++i)
     {
 #ifdef _WIN32
         if (strcmp(argv[i], "-nowindow") == 0)
@@ -86,14 +87,12 @@ int CMOMGhostServer::runGhostServer(const unsigned short port, const char* mapNa
     return 0;
 
 }
-const void CMOMGhostServer::newConnection(zed_net_socket_t socket, zed_net_address_t address)
+void CMOMGhostServer::newConnection(zed_net_socket_t socket, zed_net_address_t address)
 { 
-    const char* host;
+    const char* host = zed_net_host_to_str(address.host);
     int data;
-    host = zed_net_host_to_str(address.host);
     conMsg("Accepted connection from %s:%d\n", host, address.port);
 
-    host = zed_net_host_to_str(address.host);
     int bytes_read = zed_net_tcp_socket_receive(&socket, &data, sizeof(data));
     if (bytes_read)
     {
@@ -185,16 +184,16 @@ void CMOMGhostServer::handleConsoleInput()
 }
 void CMOMGhostServer::handlePlayer(playerData *newPlayer)
 {
-    int data, bytes_read = 0;
-    auto t1 = Clock::now(); 
-    bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
+    int data;
+    const auto t1 = Clock::now(); 
+    int bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
     while (bytes_read == 0) //Oops, we didn't get anything from the client!
     {
-        auto t2 = Clock::now();
-        auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
+        const auto t2 = Clock::now();
+        const auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
         conMsg("Lost connection! Waiting to time out... %ll\n", deltaT.count());
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        if (deltaT > std::chrono::seconds(SECONDS_TO_TIMEOUT))
+        if (deltaT > m_secondsToTimeout)
         {
             conMsg("%s timed out...\n", newPlayer->currentFrame.PlayerName);
             disconnectPlayer(newPlayer);
@@ -239,7 +238,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             int playerNum = numPlayers;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum));
 
-            for (int i = 0; i < playerNum; i++)
+            for (int i = 0; i < playerNum; ++i)
             {
                 m_vecPlayers_mutex.lock();
                 zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame_t)); 

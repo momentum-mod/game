@@ -36,8 +36,8 @@ class CMOMGhostServer
 public:
     static void handlePlayer(playerData *newPlayer);
     static void handleConsoleInput();
-    static int runGhostServer(const unsigned short port, const char* mapname);
-    static const void newConnection(zed_net_socket_t socket, zed_net_address_t address);
+    static int runGhostServer(const unsigned short port, const char *mapname);
+    static void newConnection(zed_net_socket_t socket, zed_net_address_t address);
     static void acceptNewConnections();
     static void disconnectPlayer(playerData *player);
     static void sendNewAppearances(playerData *player);
@@ -53,6 +53,7 @@ private:
     static zed_net_socket_t m_Socket;
     static int m_iTickRate;
     static char m_szMapName[96];
+    static const std::chrono::seconds m_secondsToTimeout;
 };
 
 // A threadsafe-queue.
@@ -109,18 +110,19 @@ struct playerData
     zed_net_socket_t remote_socket;
     zed_net_address_t remote_address;
     playerData(zed_net_socket_t socket, zed_net_address_t addr, int idx)
-        : remote_socket(socket), remote_address(addr), clientIndex(idx)
+        : clientIndex(idx), remote_socket(socket), remote_address(addr)
     {
     }
 };
-const std::string currentDateTime() {
-    time_t     now = time(0);
-    struct tm  tstruct;
-    char       buf[80];
+inline std::string currentDateTime()
+{
+    time_t now = time(0);
+    struct tm tstruct;
+    char buf[80];
     tstruct = *localtime(&now);
     // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
     // for more information about date/time format
     strftime(buf, sizeof(buf), "%X", &tstruct);
 
-    return buf;
+    return std::move(std::string(buf));
 }
