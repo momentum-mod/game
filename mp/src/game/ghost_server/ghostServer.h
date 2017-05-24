@@ -1,17 +1,17 @@
 #pragma once
 
-#include <vector>
-#include <thread>
-#include <mutex>
-#include <time.h>
-#include <stdio.h>
-#include <queue>
 #include <condition_variable>
+#include <mutex>
+#include <queue>
+#include <stdio.h>
+#include <thread>
+#include <time.h>
+#include <vector>
 
-#include "mom_shareddefs.h"
 #include "mom_ghostdefs.h"
+#include "mom_shareddefs.h"
 
-//single-file UDP library
+// single-file UDP library
 #include "zed_net.h"
 
 #ifdef _WIN32
@@ -27,13 +27,12 @@
 #define NEW_MAP_CMD "MOMENTUM_QUEUE_NEWMAP"
 #define NEW_APPEARENCES_CMD "MOMENTUM_QUEUE_NEWAPPS"
 
-template <class T>
-class SafeQueue;
+template <class T> class SafeQueue;
 struct playerData;
 class CMOMGhostServer
 {
     // EVERYTHING is static because there is no server object, there is only one server.
-public:
+  public:
     static void handlePlayer(playerData *newPlayer);
     static void handleConsoleInput();
     static int runGhostServer(const unsigned short port, const char *mapname);
@@ -41,15 +40,16 @@ public:
     static void acceptNewConnections();
     static void disconnectPlayer(playerData *player);
     static void sendNewAppearances(playerData *player);
-    static void conMsg(const char* msg, ...);
+    static void conMsg(const char *msg, ...);
 
     static volatile int numPlayers;
     static bool m_bShouldExit;
-    static std::vector<playerData*>m_vecPlayers;
-    static SafeQueue<char*> m_sqEventQueue;
+    static std::vector<playerData *> m_vecPlayers;
+    static SafeQueue<char *> m_sqEventQueue;
     static std::mutex m_vecPlayers_mutex;
     static std::mutex m_bShouldExit_mutex;
-private:
+
+  private:
     static zed_net_socket_t m_Socket;
     static int m_iTickRate;
     static char m_szMapName[96];
@@ -57,18 +57,12 @@ private:
 };
 
 // A threadsafe-queue.
-template <class T>
-class SafeQueue
+template <class T> class SafeQueue
 {
-public:
-    SafeQueue()
-        : m_queue()
-        , m_mtx()
-        , m_condVar()
-    {}
+  public:
+    SafeQueue() : m_queue(), m_mtx(), m_condVar() {}
 
-    ~SafeQueue()
-    {}
+    ~SafeQueue() {}
 
     // Add an element to the queue.
     void enqueue(T t)
@@ -97,7 +91,8 @@ public:
         std::lock_guard<std::mutex> lock(m_mtx);
         return m_queue.size();
     }
-private:
+
+  private:
     std::queue<T> m_queue;
     mutable std::mutex m_mtx;
     std::condition_variable m_condVar;
