@@ -59,6 +59,11 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
             memcpy(m_History1, m_CurOffset, sizeof(m_CurOffset));
             Q_snprintf(m_CurOffset, sizeof m_CurOffset, "%i", m_pPlayer->m_SrvData.m_strafeOffset);
         }
+        else //Must be timer_state
+        {
+            if (pEvent->GetBool("is_running"))
+                Reset();
+        }
     }
     
     void PaintOffset(char* str, int size);
@@ -76,6 +81,7 @@ CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     m_fontTall(0), m_histOffset(0)
 {
     ListenForGameEvent("strafe_offset");
+    ListenForGameEvent("timer_state");
     nullMagic[0] = 'z';
     nullMagic[1] = null;
     m_History1[0] = 'z';
@@ -95,6 +101,12 @@ void CHudStrafeOffset::Reset()
     m_History2[0] = 'z';
     m_History3[0] = 'z';
     m_History4[0] = 'z';
+    m_CurOffset[0] = '0';
+    m_CurOffset[1] = '\0';
+    m_nHist1 = 0, m_nHist2 = 0, m_nHist3 = 0, m_nHist4 = 0;
+    m_fAvgOffset = 0;
+    m_fMovingAvg = 0;
+    m_nOffsetCt = 0;
 }
 
 bool CHudStrafeOffset::ShouldDraw()
