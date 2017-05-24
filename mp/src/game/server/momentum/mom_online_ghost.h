@@ -15,7 +15,7 @@ public:
     ~CMomentumOnlineGhostEntity();
 
     void SetCurrentNetFrame(ghostNetFrame_t newFrame) { m_currentFrame = newFrame; }
-    ghostNetFrame_t GetCurrentNetFrame() { return m_currentFrame; }
+    ghostNetFrame_t GetCurrentNetFrame() const { return m_currentFrame; }
 
     bool IsOnlineGhost() const OVERRIDE{ return true; }
 

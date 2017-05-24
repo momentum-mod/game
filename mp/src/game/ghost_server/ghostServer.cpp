@@ -280,7 +280,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             {
                 zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data));
 
-                for (int i = 0; i < numPlayers; i++)
+                for (int i = 0; i < numPlayers; ++i)
                 {
                     printf("sending new props for user %s\n", m_vecPlayers[i]->currentFrame.PlayerName);
 
@@ -301,14 +301,11 @@ void CMOMGhostServer::disconnectPlayer(playerData *player)
     zed_net_socket_close(&player->remote_socket);
     m_vecPlayers_mutex.lock();
 
-    for (auto i = m_vecPlayers.begin(); i != m_vecPlayers.end(); i++)
+    m_vecPlayers.erase(std::remove_if(m_vecPlayers.begin(), m_vecPlayers.end(), [player](const playerData* i)
     {
-        if ((*i)->currentFrame.SteamID64 == player->currentFrame.SteamID64)
-        {
-            m_vecPlayers.erase(i);
-            break;
-        }
-    }
+        return i->currentFrame.SteamID64 == player->currentFrame.SteamID64;
+    }), m_vecPlayers.end());
+
     numPlayers = m_vecPlayers.size();
 
     m_vecPlayers_mutex.unlock();
