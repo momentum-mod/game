@@ -1,16 +1,15 @@
-#include <iostream>
-#include <stdarg.h>
 #include <stdlib.h>
+#include <iostream>
 #include <string.h>
+#include <stdarg.h>
 
 #include "ghostServer.h"
 volatile int CMOMGhostServer::numPlayers;
-std::vector<playerData *> CMOMGhostServer::m_vecPlayers;
+std::vector<playerData* > CMOMGhostServer::m_vecPlayers;
 std::mutex CMOMGhostServer::m_vecPlayers_mutex;
 std::mutex CMOMGhostServer::m_bShouldExit_mutex;
-// used for arbitrary events synchronized with all threads that are handled whenever the thread is free (e.g changing
-// maps)
-SafeQueue<char *> CMOMGhostServer::m_sqEventQueue;
+//used for arbitrary events synchronized with all threads that are handled whenever the thread is free (e.g changing maps)
+SafeQueue<char*> CMOMGhostServer::m_sqEventQueue; 
 
 zed_net_socket_t CMOMGhostServer::m_Socket;
 bool CMOMGhostServer::m_bShouldExit = false;
@@ -20,10 +19,10 @@ const std::chrono::seconds CMOMGhostServer::m_secondsToTimeout(SECONDS_TO_TIMEOU
 
 typedef std::chrono::high_resolution_clock Clock;
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 #ifdef _WIN32
-    // Disable mouse highlighting which, for some reason, pauses ALL THREADS while something is highlighted...
+    //Disable mouse highlighting which, for some reason, pauses ALL THREADS while something is highlighted...
     HANDLE input_handle = GetStdHandle(STD_INPUT_HANDLE);
     DWORD dwOldInputMode;
     GetConsoleMode(input_handle, &dwOldInputMode);
@@ -39,8 +38,7 @@ int main(int argc, char **argv)
 #ifdef _WIN32
         if (strcmp(argv[i], "-nowindow") == 0)
         {
-            ShowWindow(FindWindowA("ConsoleWindowClass", NULL),
-                       false); // Don't create a new window when we launch with -nowindow command
+            ShowWindow(FindWindowA("ConsoleWindowClass", NULL), false); //Don't create a new window when we launch with -nowindow command
         }
 #endif
         if (strcmp(argv[i], "-map") == 0)
@@ -63,9 +61,8 @@ int main(int argc, char **argv)
     if (status != 0)
         return 0;
 
-    std::thread t(
-        CMOMGhostServer::acceptNewConnections); // create a new thread that listens for incoming client connections
-    t.detach();                                 // continuously run thread
+    std::thread t(CMOMGhostServer::acceptNewConnections); //create a new thread that listens for incoming client connections
+    t.detach(); //continuously run thread
 
     while (!CMOMGhostServer::m_bShouldExit)
     {
@@ -73,41 +70,42 @@ int main(int argc, char **argv)
     }
     zed_net_shutdown();
 #ifdef _WIN32
-    SetConsoleMode(input_handle, dwOldInputMode); // ignores mouse input on the input buffer
+    SetConsoleMode(input_handle, dwOldInputMode); //ignores mouse input on the input buffer
 #endif
 
     return 0;
 }
 
-int CMOMGhostServer::runGhostServer(const unsigned short port, const char *mapName)
+int CMOMGhostServer::runGhostServer(const unsigned short port, const char* mapName)
 {
     zed_net_init();
 
     zed_net_tcp_socket_open(&m_Socket, port, 0, 1);
     conMsg("Running ghost server on %s on port %d!\n", mapName, port);
     _snprintf(m_szMapName, sizeof(m_szMapName), "%s", mapName);
-
+     
     return 0;
+
 }
 void CMOMGhostServer::newConnection(zed_net_socket_t socket, zed_net_address_t address)
-{
-    const char *host = zed_net_host_to_str(address.host);
+{ 
+    const char* host = zed_net_host_to_str(address.host);
     int data;
     conMsg("Accepted connection from %s:%d\n", host, address.port);
 
     int bytes_read = zed_net_tcp_socket_receive(&socket, &data, sizeof(data));
     if (bytes_read)
     {
-        // printf("Received %d bytes from %s:%d:\n", bytes_read, host, address.port);
-        if (data == MOM_SIGNON) // Player signs on for the first time
+        //printf("Received %d bytes from %s:%d:\n", bytes_read, host, address.port);
+        if (data == MOM_SIGNON) //Player signs on for the first time
         {
-            // printf("Data matches MOM_SIGNON pattern!\n");
+            //printf("Data matches MOM_SIGNON pattern!\n");
 
-            // send ACK to client that they are connected. This is the current mapname.
+            //send ACK to client that they are connected. This is the current mapname.
             zed_net_tcp_socket_send(&socket, &m_szMapName, sizeof(m_szMapName));
 
-            // Describes a newly connected player with client idx equal to the current number of players
-            playerData *newPlayer = new playerData(socket, address, numPlayers);
+            //Describes a newly connected player with client idx equal to the current number of players
+            playerData *newPlayer = new playerData(socket, address, numPlayers); 
 
             m_vecPlayers_mutex.lock();
 
@@ -116,16 +114,16 @@ void CMOMGhostServer::newConnection(zed_net_socket_t socket, zed_net_address_t a
 
             m_vecPlayers_mutex.unlock();
 
-            // listen(sock->handle, SOMAXCONN) != 0
-            while (newPlayer->remote_socket.ready == 0) // socket is open
+            //listen(sock->handle, SOMAXCONN) != 0
+            while (newPlayer->remote_socket.ready == 0) //socket is open
             {
                 handlePlayer(newPlayer);
             }
             delete newPlayer;
         }
     }
-    // printf("Thread terminating\n");
-    // End of thread
+    //printf("Thread terminating\n");
+    //End of thread
 }
 void CMOMGhostServer::acceptNewConnections()
 {
@@ -138,8 +136,8 @@ void CMOMGhostServer::acceptNewConnections()
     {
         zed_net_tcp_accept(&m_Socket, &remote_socket, &remote_address);
 
-        std::thread t(newConnection, remote_socket, remote_address); // create a new thread to deal with the connection
-        t.detach(); // each connection is dealt with in a seperate thread
+        std::thread t(newConnection, remote_socket, remote_address); //create a new thread to deal with the connection
+        t.detach(); //each connection is dealt with in a seperate thread
     }
 }
 void CMOMGhostServer::handleConsoleInput()
@@ -150,7 +148,7 @@ void CMOMGhostServer::handleConsoleInput()
 
     if (strlen(buffer) > 0)
     {
-        _snprintf(argument - 1, sizeof(argument), "%s", strpbrk(buffer, " "));
+        _snprintf(argument-1, sizeof(argument), "%s", strpbrk(buffer, " "));
         _snprintf(command, sizeof(command), "%s", strtok(buffer, " "));
     }
     if (strcmp(command, "say") == 0)
@@ -175,7 +173,7 @@ void CMOMGhostServer::handleConsoleInput()
     }
     if (strcmp(command, "map") == 0)
     {
-        _snprintf(m_szMapName, sizeof(m_szMapName), argument);
+        _snprintf(m_szMapName, sizeof(m_szMapName), argument); 
         conMsg("Changing map to %s...\n", argument);
         m_sqEventQueue.enqueue(NEW_MAP_CMD);
     }
@@ -187,9 +185,9 @@ void CMOMGhostServer::handleConsoleInput()
 void CMOMGhostServer::handlePlayer(playerData *newPlayer)
 {
     int data;
-    const auto t1 = Clock::now();
+    const auto t1 = Clock::now(); 
     int bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, &data, sizeof(data));
-    while (bytes_read == 0) // Oops, we didn't get anything from the client!
+    while (bytes_read == 0) //Oops, we didn't get anything from the client!
     {
         const auto t2 = Clock::now();
         const auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
@@ -209,50 +207,46 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         if (data == MOM_C_SENDING_NEWPROPS)
         {
             data = MOM_C_RECIEVING_NEWPROPS;
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); // SYN-ACK
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
             // Wait for client to get our acknowledgement, and recieve appearance update from client
             printf("receiving new props from %s\n", newPlayer->currentFrame.PlayerName);
-            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks,
-                                       sizeof(ghostAppearance_t)); // ACK
+            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t)); //ACK
             printf("success from %s\n", newPlayer->currentFrame.PlayerName);
 
-            // m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent
+            //m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent 
         }
         if (data == MOM_C_SENDING_NEWFRAME)
         {
             data = MOM_C_RECIEVING_NEWFRAME;
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); // SYN-ACK
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //SYN-ACK
             // Wait for client to get our acknowledgement, and recieve frame update from client
-            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentFrame,
-                                       sizeof(ghostNetFrame_t)); // ACK
+            zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentFrame, sizeof(ghostNetFrame_t)); //ACK
             if (firstNewFrame)
             {
                 conMsg("%s connected!\n", newPlayer->currentFrame.PlayerName);
                 conMsg("There are now %i connected players.\n", numPlayers);
                 printf("receiving new props from %s\n", newPlayer->currentFrame.PlayerName);
-                zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks,
-                                           sizeof(ghostAppearance_t));
+                zed_net_tcp_socket_receive(&newPlayer->remote_socket, &newPlayer->currentLooks, sizeof(ghostAppearance_t)); 
                 firstNewFrame = false;
             }
         }
-        if (data == MOM_S_RECIEVING_NEWFRAME) // SYN
+        if (data == MOM_S_RECIEVING_NEWFRAME) //SYN
         {
             // Send out a ACK to the client that we're going to be sending them an update
             data = MOM_S_SENDING_NEWFRAME;
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); // ACK
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &data, sizeof(data)); //ACK
             int playerNum = numPlayers;
             zed_net_tcp_socket_send(&newPlayer->remote_socket, &playerNum, sizeof(playerNum));
 
             for (int i = 0; i < playerNum; ++i)
             {
                 m_vecPlayers_mutex.lock();
-                zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame,
-                                        sizeof(ghostNetFrame_t));
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame, sizeof(ghostNetFrame_t)); 
                 m_vecPlayers_mutex.unlock();
             }
             if (firstNewSentFrame)
             {
-                // m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent
+                //m_sqEventQueue.enqueue(NEW_APPEARENCES_CMD); //queue up the new appearances to be sent 
             }
             firstNewSentFrame = false;
         }
@@ -262,12 +256,12 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
             disconnectPlayer(newPlayer);
             firstNewFrame = true;
             firstNewSentFrame = true;
-            // printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
+            //printf("Remote socket status: %i\n", newPlayer->remote_socket.ready);
         }
     }
-    if (m_sqEventQueue.numInQueue() != 0) // queue is not empty
+    if (m_sqEventQueue.numInQueue() != 0) //queue is not empty
     {
-        char *newEvent = m_sqEventQueue.dequeue();
+        char* newEvent = m_sqEventQueue.dequeue();
         if (strcmp(newEvent, NEW_MAP_CMD) == 0)
         {
             int data = MOM_S_SENDING_NEWMAP;
@@ -290,38 +284,34 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
                     printf("sending new props for user %s\n", m_vecPlayers[i]->currentFrame.PlayerName);
 
                     m_vecPlayers_mutex.lock();
-                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame.SteamID64,
-                                            sizeof(uint64_t));
-                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentLooks,
-                                            sizeof(ghostAppearance_t));
+                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentFrame.SteamID64, sizeof(uint64_t));
+                    zed_net_tcp_socket_send(&newPlayer->remote_socket, &m_vecPlayers[i]->currentLooks, sizeof(ghostAppearance_t));
                     m_vecPlayers_mutex.unlock();
                 }
             }
         }
     }
-    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 void CMOMGhostServer::disconnectPlayer(playerData *player)
 {
     int data = MOM_SIGNOFF;
-    zed_net_tcp_socket_send(&player->remote_socket, &data,
-                            sizeof(data)); // send back an ACK that they are disconnecting.
+    zed_net_tcp_socket_send(&player->remote_socket, &data, sizeof(data)); //send back an ACK that they are disconnecting.
     zed_net_socket_close(&player->remote_socket);
     m_vecPlayers_mutex.lock();
 
-    m_vecPlayers.erase(std::remove_if(m_vecPlayers.begin(), m_vecPlayers.end(),
-                                      [player](const playerData *i) {
-                                          return i->currentFrame.SteamID64 == player->currentFrame.SteamID64;
-                                      }),
-                       m_vecPlayers.end());
+    m_vecPlayers.erase(std::remove_if(m_vecPlayers.begin(), m_vecPlayers.end(), [player](const playerData* i)
+    {
+        return i->currentFrame.SteamID64 == player->currentFrame.SteamID64;
+    }), m_vecPlayers.end());
 
     numPlayers = m_vecPlayers.size();
 
     m_vecPlayers_mutex.unlock();
     conMsg("There are now %i connected players.\n", numPlayers);
 }
-// A replacement for printf that prints the time as well as the message.
-void CMOMGhostServer::conMsg(const char *msg, ...)
+//A replacement for printf that prints the time as well as the message. 
+void CMOMGhostServer::conMsg(const char* msg, ...)
 {
     va_list list;
     va_start(list, msg);
