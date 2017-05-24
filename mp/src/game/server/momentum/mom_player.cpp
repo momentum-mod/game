@@ -662,7 +662,7 @@ void CMomentumPlayer::UpdateRunStats()
     // ----------
     
     // ---- BASH-like stats ----
-    UpdateStrafeOffset(dtAng);
+    bool shouldFireOffsetEvent = UpdateStrafeOffset(dtAng);
     
     m_nPrevButtons = m_nButtons;
     m_qangLastAngle = EyeAngles();
@@ -671,6 +671,11 @@ void CMomentumPlayer::UpdateRunStats()
     // m_flLastVelocity = velocity;
     
     StdDataToPlayer(&m_SrvData); 
+    if (shouldFireOffsetEvent)
+    {
+        IGameEvent *event = gameeventmanager->CreateEvent("strafe_offset");
+        gameeventmanager->FireEvent(event);
+    }
 
     // think once per tick
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
@@ -717,8 +722,9 @@ void CMomentumPlayer::UpdateRunSync()
     }
 }
 
-void CMomentumPlayer::UpdateStrafeOffset(float dtAng)
+bool CMomentumPlayer::UpdateStrafeOffset(float dtAng)
 {
+    bool retval = false;
     if (!GetGroundEntity())
     {
         if (!(m_nButtons & IN_MOVERIGHT && m_nButtons & IN_MOVELEFT))
@@ -751,8 +757,7 @@ void CMomentumPlayer::UpdateStrafeOffset(float dtAng)
             if (t > -26 && t < 26)
             {
                 m_SrvData.m_strafeOffset = t;
-                IGameEvent *event = gameeventmanager->CreateEvent("strafe_offset");
-                gameeventmanager->FireEvent(event);
+                retval = true;
             }
         }
     }
@@ -762,6 +767,7 @@ void CMomentumPlayer::UpdateStrafeOffset(float dtAng)
         m_bKeyChanged = false;
     }
     m_fPrevDtAng = dtAng;
+    return retval;
 }
 
 void CMomentumPlayer::UpdateJumpStrafes()
