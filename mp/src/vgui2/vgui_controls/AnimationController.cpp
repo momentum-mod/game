@@ -807,8 +807,6 @@ void AnimationController::UpdateActiveAnimations(bool bRunToCompletion)
 		// see if we can remove the animation
 		if (m_flCurrentTime >= anim.endTime || bRunToCompletion)
 		{
-            if (m_ActiveAnimations[i].callback)
-                m_ActiveAnimations[i].callback();
 			m_ActiveAnimations.Remove(i);
 			--i;
 		}
@@ -1263,7 +1261,6 @@ void AnimationController::StartCmd_Animate(Panel *panel, UtlSymId_t seqName, Ani
 	anim.panel = panel;
 	anim.seqName = seqName;
 	anim.variable = cmd.variable;
-    anim.callback = cmd.callback;
 	anim.interpolator = cmd.interpolationFunction;
 	anim.interpolatorParam = cmd.interpolationParameter;
 	// timings

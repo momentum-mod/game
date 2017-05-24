@@ -21,20 +21,12 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
     void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
     
-    Panel *m_thisPanel;
-    
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {
         if (!Q_strcmp(pEvent->GetName(), "strafe_offset"))
         {
-            g_pClientMode->GetViewportAnimationController()->RunAnimationCommand(this, "HistOffset", 24.0, 0.0, 0.08, AnimationController::INTERPOLATOR_DEACCEL, &CHudStrafeOffset::HistoryAnimationCallback, 0);
+            g_pClientMode->GetViewportAnimationController()->RunAnimationCommand(this, "HistOffset", 24.0, 0.0, 0.08, AnimationController::INTERPOLATOR_DEACCEL, 0);
         }
-    }
-    
-    void HistoryAnimationCallback()
-    {
-        //Work pls.
-        //g_pClientMode->GetViewportAnimationController()->RunAnimationCommand(m_thisPanel, "HistOffset", 0.0, 0.2, 0.08, AnimationController::INTERPOLATOR_LINEAR, 0);
     }
     
     C_MomentumPlayer *m_pPlayer;
@@ -53,7 +45,6 @@ CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudStrafeOffset")
 {
     ListenForGameEvent("strafe_offset");
-    m_thisPanel = this;
 }
 
 void CHudStrafeOffset::OnThink()
