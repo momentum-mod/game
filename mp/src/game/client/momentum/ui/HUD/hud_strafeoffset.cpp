@@ -45,7 +45,7 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
             //g_pClientMode->GetViewportAnimationController()->RunAnimationCommand(this, "HistOffset", 24.0, 0.0, 0.08, AnimationController::INTERPOLATOR_DEACCEL, 0);
             float avgTemp = (float)m_nOffsetCt * m_fAvgOffset;
             ++m_nOffsetCt;
-            m_fAvgOffset = (avgTemp + (float)m_pPlayer->m_SrvData.m_strafeOffset) / (float)m_nOffsetCt;
+            m_fAvgOffset = (avgTemp + (float)(abs(m_pPlayer->m_SrvData.m_strafeOffset)) / (float)m_nOffsetCt;
             m_fMovingAvg = (float)(m_nHist1 + m_nHist2 + m_nHist3 + m_nHist4 + m_pPlayer->m_SrvData.m_strafeOffset) / min(5.0, (float)m_nOffsetCt);
             
             m_nHist4 = m_nHist3;
