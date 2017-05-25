@@ -576,7 +576,7 @@ ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const v
     return 0;
 }
 
-//returns the size of the packet recieved + the length prefix size. 
+//returns the size of the packet recieved
 ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void *data, int size, int *packetType) {
 	int retval;
 

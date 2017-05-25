@@ -98,8 +98,20 @@ bool CMomentumGhostClient::exitGhostClient()
     }
     else
     {
-        ConColorMsg(Color(255, 255, 0, 255), "Sent signoff packet, exiting ghost client...\n");
-        returnValue = true;
+        ConDColorMsg(Color(255, 255, 0, 255), "Sent signoff packet, exiting ghost client...\n");
+        char data[256];
+        int packet_type;
+        int bytes_read = zed_net_tcp_socket_receive(&m_socket, data, 256, &packet_type);
+        if (bytes_read && packet_type == PT_ACK)
+        {
+            returnValue = true;
+            ConDColorMsg(Color(255, 255, 0, 255), "Got ACK from server. We are disconnected\n");
+        }
+        else
+        {
+            DevWarning("Did not receive signoff ACK: Error: %s\n", zed_net_get_error());
+            returnValue = false;
+        }
     }
 
     zed_net_socket_close(&m_socket);
@@ -293,7 +305,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             int numGhosts = bytes_read / sizeof(ghostSignOnPacket_t);
             for (int i = 0; i < numGhosts; i++)
             {
-                ghostSignOnPacket_t *newSignOn = reinterpret_cast<ghostSignOnPacket_t*>(buffer);
+                ghostSignOnPacket_t *newSignOn = reinterpret_cast<ghostSignOnPacket_t*>(buffer + sizeof(ghostSignOnPacket_t) * i);
                 bool isLocalPlayer = m_SteamID == newSignOn->SteamID; //we don't want to add ourselves!
                 if (!isLocalPlayer)
                 {
@@ -341,6 +353,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 ghostAppearance_t *newApps = reinterpret_cast<ghostAppearance_t*>(buffer + sizeof(ghostAppearance_t) * i);
                 if (ghostPlayers[i]->HasSpawned() && i < ghostPlayers.Size())
                 {
+                    ConDColorMsg(Color(255, 255, 0, 255), "Set new appearance for %s!\n", ghostPlayers[i]->GetCurrentNetFrame().PlayerName);
                     ghostPlayers[i]->SetGhostAppearance(*newApps);
                 }
             }

@@ -239,7 +239,6 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         }
         if (strcmp(newEvent, NEW_APPEARENCES_CMD) == 0)
         {
-            //now send this player all of the net frames.
             int GhostAppsSize = sizeof(ghostAppearance_t);
             char *appearanceBuffer = new char[GhostAppsSize * numPlayers];
             m_vecPlayers_mutex.lock();
@@ -274,21 +273,7 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
     int packet_type;
     char buffer[uint16_t(~0)]; //largest packet size we can expect, 65536
     int bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, buffer, uint16_t(~0), &packet_type);
-    const auto t1 = Clock::now();
-    while (bytes_read <= 0) //Oops, we didn't get anything from the client!
-    {
-        const auto t2 = Clock::now();
-        const auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
-        conMsg("%s lost connection! Waiting to time out... %ll\n", newPlayer->currentFrame.PlayerName, deltaT.count());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        if (deltaT > m_secondsToTimeout)
-        {
-            conMsg("%s timed out...\n", newPlayer->currentFrame.PlayerName);
-            disconnectPlayer(newPlayer);
-            FirstNewFrame = true;
-            break;
-        }
-    }
+
     if (bytes_read)
     {
         if (packet_type == PT_APPEARANCE)
@@ -305,9 +290,28 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         }
         if (packet_type == PT_SIGNOFF)
         {
-            conMsg("%s disconnected...\n", newPlayer->currentFrame.PlayerName);
+            ghostSignOffPacket_t *newSignOff = reinterpret_cast<ghostSignOffPacket_t*>(buffer);
+            conMsg("%s disconnected: %s\n", newPlayer->currentFrame.PlayerName, newSignOff->Message);
+            ghostAckPacket_t newAck;
+            newAck.AckSuccess = true;
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, &newAck, sizeof(newAck), PT_ACK);
             FirstNewFrame = true;
             disconnectPlayer(newPlayer);
+        }
+    }
+    const auto t1 = Clock::now();
+    while (bytes_read <= 0) //Oops, we didn't get anything from the client!
+    {
+        const auto t2 = Clock::now();
+        const auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
+        conMsg("%s lost connection! Waiting to time out... %ll\n", newPlayer->currentFrame.PlayerName, deltaT.count());
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (deltaT > m_secondsToTimeout)
+        {
+            conMsg("%s timed out...\n", newPlayer->currentFrame.PlayerName);
+            disconnectPlayer(newPlayer);
+            FirstNewFrame = true;
+            break;
         }
     }
 }
