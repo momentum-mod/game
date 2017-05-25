@@ -106,7 +106,7 @@ void CMOMGhostServer::newConnection(zed_net_socket_t socket, zed_net_address_t a
 
             playerData *newPlayer = new playerData(socket, address, newPacket->newFrame, newPacket->newApps, numPlayers + 1, newPacket->SteamID); //numPlayers is current, add 1 for new idx
 
-            m_sqEventQueue.enqueue(NEW_PLAYER_CMD); //queue up the new player packet to be sent.
+            m_sqEventQueue.enqueue(NEW_PLAYER_CMD); //queue up the new player packet to be sent to all the other players in the server.
 
             m_vecPlayers_mutex.lock();
 
@@ -190,11 +190,47 @@ void CMOMGhostServer::handleConsoleInput()
     }
 }
 void CMOMGhostServer::handlePlayer(playerData *newPlayer)
-{   
+{
+    static thread_local bool FirstNewFrame = true;
+    if (FirstNewFrame)
+    {
+        //send a full signon of ALL the players currently in the server.
+        m_vecPlayers_mutex.lock();
+        int signOnSize = sizeof(ghostSignOnPacket_t);
+        char *buffer = new char[signOnSize * numPlayers];
+        for (int i = 0; i < numPlayers; i++)
+        {
+            ghostSignOnPacket_t newPlayerSignOn;
+            newPlayerSignOn.newApps = m_vecPlayers[i]->currentLooks;
+            newPlayerSignOn.newFrame = m_vecPlayers[i]->currentFrame;
+            newPlayerSignOn.SteamID = m_vecPlayers[i]->SteamID64;
+            memcpy(buffer + (signOnSize * i), &newPlayerSignOn, signOnSize);
+        }
+        zed_net_tcp_socket_send(&newPlayer->remote_socket, buffer, numPlayers * signOnSize, PT_SIGNON);
+        m_vecPlayers_mutex.unlock();
+        FirstNewFrame = false;
+    }
+    m_sqEventQueue.enqueue(NEW_FRAMES_CMD);
     //process the event queue first.
     if (m_sqEventQueue.numInQueue() != 0) //queue is not empty
     {
         char* newEvent = m_sqEventQueue.dequeue();
+        if (strcmp(newEvent, NEW_FRAMES_CMD) == 0)
+        {
+            //now send this player all of the net frames.
+            int GhostFrameSize = sizeof(ghostNetFrame_t);
+            char *netFrameBuffer = new char[GhostFrameSize * numPlayers];
+            m_vecPlayers_mutex.lock();
+
+            for (int i = 0; i < numPlayers; i++)
+            {
+                memcpy(netFrameBuffer + (GhostFrameSize * i), &m_vecPlayers[i]->currentFrame, GhostFrameSize);
+            }
+            zed_net_tcp_socket_send(&newPlayer->remote_socket, netFrameBuffer, GhostFrameSize * numPlayers, PT_NET_FRAME);
+            m_vecPlayers_mutex.unlock();
+
+            delete[] netFrameBuffer;
+        }
         if (strcmp(newEvent, NEW_MAP_CMD) == 0)
         {
             ghostNewMapEvent_t newMapEvent;
@@ -221,45 +257,35 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         {
             ghostSignOnPacket_t newPlayerSignOn;
             m_vecPlayers_mutex.lock();
-
             //idx of numPlayers is the newest connected player.
             newPlayerSignOn.newApps = m_vecPlayers[numPlayers-1]->currentLooks;
             newPlayerSignOn.newFrame = m_vecPlayers[numPlayers-1]->currentFrame;
             newPlayerSignOn.SteamID = m_vecPlayers[numPlayers - 1]->SteamID64;
+            if (newPlayer->SteamID64 != newPlayerSignOn.SteamID) //don't send ourselves the signon packet since we got one when we first connected.
+            {
+                printf("Sending new signon packet for %s to %s\n", newPlayerSignOn.newFrame.PlayerName, newPlayer->currentFrame.PlayerName);
+                zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayerSignOn, sizeof(ghostSignOnPacket_t), PT_SIGNON);
+            }
 
-            zed_net_tcp_socket_send(&newPlayer->remote_socket, &newPlayerSignOn, sizeof(ghostSignOnPacket_t), PT_SIGNON);
             m_vecPlayers_mutex.unlock();
         }
     }
-    //now send this player all of the net frames.
-    int GhostFrameSize = sizeof(ghostNetFrame_t);
-    char *netFrameBuffer = new char[GhostFrameSize * numPlayers];
-    m_vecPlayers_mutex.lock();
-
-    for (int i = 0; i < numPlayers; i++)
-    {
-        memcpy(netFrameBuffer + (GhostFrameSize * i), &m_vecPlayers[i]->currentFrame, GhostFrameSize);
-    }
-    zed_net_tcp_socket_send(&newPlayer->remote_socket, netFrameBuffer, GhostFrameSize * numPlayers, PT_NET_FRAME);
-    m_vecPlayers_mutex.unlock();
-
-    delete[] netFrameBuffer;
 
     int packet_type;
-   
     char buffer[uint16_t(~0)]; //largest packet size we can expect, 65536
     int bytes_read = zed_net_tcp_socket_receive(&newPlayer->remote_socket, buffer, uint16_t(~0), &packet_type);
     const auto t1 = Clock::now();
-    while (bytes_read == 0) //Oops, we didn't get anything from the client!
+    while (bytes_read <= 0) //Oops, we didn't get anything from the client!
     {
         const auto t2 = Clock::now();
         const auto deltaT = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1);
-        conMsg("Lost connection! Waiting to time out... %ll\n", deltaT.count());
+        conMsg("%s lost connection! Waiting to time out... %ll\n", newPlayer->currentFrame.PlayerName, deltaT.count());
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (deltaT > m_secondsToTimeout)
         {
             conMsg("%s timed out...\n", newPlayer->currentFrame.PlayerName);
             disconnectPlayer(newPlayer);
+            FirstNewFrame = true;
             break;
         }
     }
@@ -280,10 +306,10 @@ void CMOMGhostServer::handlePlayer(playerData *newPlayer)
         if (packet_type == PT_SIGNOFF)
         {
             conMsg("%s disconnected...\n", newPlayer->currentFrame.PlayerName);
+            FirstNewFrame = true;
             disconnectPlayer(newPlayer);
         }
     }
-
 }
 void CMOMGhostServer::disconnectPlayer(playerData *player)
 {

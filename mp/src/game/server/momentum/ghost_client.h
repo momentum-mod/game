@@ -31,8 +31,6 @@ public:
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
     static bool SendAppearanceData(ghostAppearance_t apps);
     static bool SendNetFrame(ghostNetFrame_t frame);
-    static const char* m_host;
-    static unsigned short m_port;
 private:
     static zed_net_socket_t m_socket;
     static zed_net_address_t m_address;

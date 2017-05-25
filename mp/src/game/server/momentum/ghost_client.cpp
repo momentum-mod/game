@@ -5,13 +5,13 @@
 
 #include "tier0/memdbgon.h"
 
+static ConVar mm_address("mom_ghost_address", "127.0.0.1:9000", FCVAR_HIDDEN | FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE);
+
 zed_net_socket_t CMomentumGhostClient::m_socket;
 zed_net_address_t CMomentumGhostClient::m_address;
 
 bool CMomentumGhostClient::m_ghostClientConnected = false;
 bool CMomentumGhostClient::m_bRanThread = false;
-const char* CMomentumGhostClient::m_host = "127.0.0.1";
-unsigned short CMomentumGhostClient::m_port = 9000;
 
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer;
 uint64 CMomentumGhostClient::m_SteamID;
@@ -26,7 +26,11 @@ void CMomentumGhostClient::LevelInitPostEntity()
 {
     if (initGhostClient()) //init ghost client
     {
-        m_ghostClientConnected = connectToGhostServer(m_host, m_port);
+        char buffer[64];
+        Q_strncpy(buffer, mm_address.GetString(), sizeof(buffer));
+        char *host = strtok(buffer, ":");
+        unsigned short port = atoi(strtok(NULL, ":"));
+        m_ghostClientConnected = connectToGhostServer(host, port);
     }
     if (!m_ghostClientConnected)
     {
@@ -253,6 +257,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                 ghostPlayers.Purge();
                 m_mtxGhostPlayers.Unlock();
                 m_ghostClientConnected = false;
+                FirstNewFrame = true;
                 return 1;
             }
         }
@@ -266,7 +271,7 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             for (int i = 0; i < numGhosts; i++)
             {
                 ghostNetFrame_t *newFrame = reinterpret_cast<ghostNetFrame_t*>(buffer + sizeof(ghostNetFrame_t) * i);
-                ghostPlayers[i]->SetCurrentNetFrame(*newFrame);
+                if (i < ghostPlayers.Size()) ghostPlayers[i]->SetCurrentNetFrame(*newFrame);
             }
             if (ghostPlayers.Size() > numGhosts) //Someone disconnected, so the server told us about it.
             {
@@ -285,35 +290,39 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
         if (bytes_read && packet_type == PT_SIGNON) //a new player signed on.
         {
             ConDColorMsg(Color(255, 255, 0, 255), "Receiving new player signon from server!\n");
-            ghostSignOnPacket_t *newSignOn = reinterpret_cast<ghostSignOnPacket_t*>(buffer);
-            bool isLocalPlayer = m_SteamID == newSignOn->SteamID; //we don't want to add ourselves!
-            if (!isLocalPlayer)
+            int numGhosts = bytes_read / sizeof(ghostSignOnPacket_t);
+            for (int i = 0; i < numGhosts; i++)
             {
-                CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
-                newPlayer->Spawn();
-                newPlayer->SetCurrentNetFrame(newSignOn->newFrame);
-                newPlayer->SetGhostAppearance(newSignOn->newApps);
-                newPlayer->SetGhostSteamID(newSignOn->SteamID);
-                ghostPlayers.AddToTail(newPlayer);
-                DevMsg("Added new player: %s\nThere are now %i connected players.\n", newSignOn->newFrame.PlayerName, ghostPlayers.Size());
-            }
-            else
-            {
-                CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
-                newPlayer->SetCurrentNetFrame(newSignOn->newFrame);
-                ghostPlayers.AddToTail(newPlayer);
-
-                if (mm_ghostTesting.GetBool())
+                ghostSignOnPacket_t *newSignOn = reinterpret_cast<ghostSignOnPacket_t*>(buffer);
+                bool isLocalPlayer = m_SteamID == newSignOn->SteamID; //we don't want to add ourselves!
+                if (!isLocalPlayer)
                 {
+                    CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                     newPlayer->Spawn();
-                    ConDColorMsg(Color(255, 255, 0, 255), "Added ghost of local player: %s\nThere are now %i connected players.\n",
-                        newSignOn->newFrame.PlayerName, ghostPlayers.Size());
-
+                    newPlayer->SetCurrentNetFrame(newSignOn->newFrame);
+                    newPlayer->SetGhostAppearance(newSignOn->newApps);
+                    newPlayer->SetGhostSteamID(newSignOn->SteamID);
+                    ghostPlayers.AddToTail(newPlayer);
+                    DevMsg("Added new player: %s\nThere are now %i connected players.\n", newSignOn->newFrame.PlayerName, ghostPlayers.Size());
                 }
                 else
                 {
-                    ConDColorMsg(Color(255, 255, 0, 255), "Added local player %s, but did not spawn. Set mom_ghost_testing 1 to see local players.\n",
-                        newSignOn->newFrame.PlayerName);
+                    CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
+                    newPlayer->SetCurrentNetFrame(newSignOn->newFrame);
+                    ghostPlayers.AddToTail(newPlayer);
+
+                    if (mm_ghostTesting.GetBool())
+                    {
+                        newPlayer->Spawn();
+                        ConDColorMsg(Color(255, 255, 0, 255), "Added ghost of local player: %s\nThere are now %i connected players.\n",
+                            newSignOn->newFrame.PlayerName, ghostPlayers.Size());
+
+                    }
+                    else
+                    {
+                        ConDColorMsg(Color(255, 255, 0, 255), "Added local player %s, but did not spawn. Set mom_ghost_testing 1 to see local players.\n",
+                            newSignOn->newFrame.PlayerName);
+                    }
                 }
             }
         }
@@ -330,7 +339,10 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
             for (int i = 0; i < numGhosts; i++)
             {
                 ghostAppearance_t *newApps = reinterpret_cast<ghostAppearance_t*>(buffer + sizeof(ghostAppearance_t) * i);
-                ghostPlayers[i]->SetGhostAppearance(*newApps);
+                if (ghostPlayers[i]->HasSpawned() && i < ghostPlayers.Size())
+                {
+                    ghostPlayers[i]->SetGhostAppearance(*newApps);
+                }
             }
         }
         m_mtxGhostPlayers.Unlock();

@@ -22,14 +22,16 @@
 #endif
 
 #define DEFAULT_MAP "triggertests"
+
 #define SECONDS_TO_TIMEOUT 10
 #define NEW_MAP_CMD "MOMENTUM_QUEUE_NEWMAP"
 #define NEW_APPEARENCES_CMD "MOMENTUM_QUEUE_NEWAPPS"
 #define NEW_PLAYER_CMD "MOMENTUM_NEWPLAYER_ADDED"
+#define NEW_FRAMES_CMD "MOMENTUM_PLEASE_SEND_MORE_FRAMES"
 
-template <class T>
-class SafeQueue;
+template <class T>class SafeQueue;
 struct playerData;
+
 class CMOMGhostServer
 {
     // EVERYTHING is static because there is no server object, there is only one server.
