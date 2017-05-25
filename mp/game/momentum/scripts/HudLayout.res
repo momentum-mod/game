@@ -10,6 +10,7 @@
             "visible"           "1"
             "enabled"           "1"
             "NumberFont"        "HudNumbersSmallBold"
+            "SmallNumberFont"   "HudNumbersExtremelySmall"
         }
     //Speedometer
     HudSpeedMeter

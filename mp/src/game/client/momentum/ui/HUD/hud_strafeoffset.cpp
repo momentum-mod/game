@@ -12,6 +12,8 @@
 
 using namespace vgui;
 
+#define HISTWIDTH 4
+
 class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
 {
     DECLARE_CLASS_SIMPLE(CHudStrafeOffset, CHudNumericDisplay);
@@ -21,11 +23,11 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
     void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
     
-    char m_CurOffset[4];
-    char m_History1[4];
-    char m_History2[4];
-    char m_History3[4];
-    char m_History4[4];
+    char m_CurOffset[HISTWIDTH];
+    char m_History1[HISTWIDTH];
+    char m_History2[HISTWIDTH];
+    char m_History3[HISTWIDTH];
+    char m_History4[HISTWIDTH];
     char nullMagic[2];
     
     int m_nHist1, m_nHist2, m_nHist3, m_nHist4;
@@ -34,7 +36,8 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
     float m_fMovingAvg;
     int m_nOffsetCt;
     
-    int m_fontTall;
+    int m_NormFontY;
+    int m_SmallFontY;
     
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {
@@ -45,7 +48,7 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
             //g_pClientMode->GetViewportAnimationController()->RunAnimationCommand(this, "HistOffset", 24.0, 0.0, 0.08, AnimationController::INTERPOLATOR_DEACCEL, 0);
             float avgTemp = (float)m_nOffsetCt * m_fAvgOffset;
             ++m_nOffsetCt;
-            m_fAvgOffset = (avgTemp + (float)(abs(m_pPlayer->m_SrvData.m_strafeOffset)) / (float)m_nOffsetCt;
+            m_fAvgOffset = (avgTemp + (float)(abs(m_pPlayer->m_SrvData.m_strafeOffset))) / (float)m_nOffsetCt;
             m_fMovingAvg = (float)(m_nHist1 + m_nHist2 + m_nHist3 + m_nHist4 + m_pPlayer->m_SrvData.m_strafeOffset) / min(5.0, (float)m_nOffsetCt);
             
             m_nHist4 = m_nHist3;
@@ -53,11 +56,11 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
             m_nHist2 = m_nHist1;
             m_nHist1 = abs(m_pPlayer->m_SrvData.m_strafeOffset);
             
-            memcpy(m_History4, m_History3, sizeof(m_CurOffset));
-            memcpy(m_History3, m_History2, sizeof(m_CurOffset));
-            memcpy(m_History2, m_History1, sizeof(m_CurOffset));
-            memcpy(m_History1, m_CurOffset, sizeof(m_CurOffset));
-            Q_snprintf(m_CurOffset, sizeof m_CurOffset, "%i", m_pPlayer->m_SrvData.m_strafeOffset);
+            memcpy(m_History4, m_History3, HISTWIDTH);
+            memcpy(m_History3, m_History2, HISTWIDTH);
+            memcpy(m_History2, m_History1, HISTWIDTH);
+            memcpy(m_History1, m_CurOffset, HISTWIDTH);
+            Q_snprintf(m_CurOffset, HISTWIDTH, "%i", m_pPlayer->m_SrvData.m_strafeOffset);
         }
         else //Must be timer_state
         {
@@ -66,7 +69,7 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
         }
     }
     
-    void PaintOffset(char* str, int size);
+    void PaintOffset(char* str);
     void Reset();
     
     C_MomentumPlayer *m_pPlayer;
@@ -78,7 +81,7 @@ DECLARE_NAMED_HUDELEMENT(CHudStrafeOffset, HudStrafeOffset);
 
 CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudStrafeOffset"),
-    m_fontTall(0), m_histOffset(0)
+    m_NormFontY(0), m_histOffset(0)
 {
     ListenForGameEvent("strafe_offset");
     ListenForGameEvent("timer_state");
@@ -88,6 +91,7 @@ CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     m_History2[0] = 'z';
     m_History3[0] = 'z';
     m_History4[0] = 'z';
+    m_NormFontY = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
 }
 
 void CHudStrafeOffset::OnThink()
@@ -114,13 +118,13 @@ bool CHudStrafeOffset::ShouldDraw()
     return (CHudElement::ShouldDraw());
 }
 
-void CHudStrafeOffset::PaintOffset(char* str, int size)
+void CHudStrafeOffset::PaintOffset(char* str)
 {
-    wchar_t uOffset[4];
+    wchar_t uOffset[HISTWIDTH];
     ANSI_TO_UNICODE(str, uOffset);
     int xpos = (GetWide() - UTIL_ComputeStringWidth(m_hNumberFont, uOffset)) / 2;
-    surface()->DrawSetTextPos(xpos - m_histOffset, m_fontTall);
-    surface()->DrawPrintText(uOffset, 4);
+    surface()->DrawSetTextPos(xpos - m_histOffset, m_NormFontY);
+    surface()->DrawPrintText(uOffset, HISTWIDTH);
 }
 
 void CHudStrafeOffset::Paint()
@@ -132,11 +136,11 @@ void CHudStrafeOffset::Paint()
     }
 
     int histStep = 36;
-    
-    //if (!m_fontTall)
-    m_fontTall = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
-    
+
     surface()->DrawSetTextFont(m_hNumberFont);
+    PaintOffset(m_CurOffset);
+    m_histOffset += histStep;
+    
     surface()->DrawSetTextColor(Color(100, 120, 140, 255));
     
     char avgOffsetStr[6], movingAvgOffsetStr[6]; //3 digits, a '.', a '-', and a null
@@ -149,39 +153,39 @@ void CHudStrafeOffset::Paint()
     int avgwidth = UTIL_ComputeStringWidth(m_hNumberFont, uavgOffsetStr);
     int movingavgwidth = UTIL_ComputeStringWidth(m_hNumberFont, umovingAvgOffsetStr);
     
-    surface()->DrawSetTextPos((GetWide() - movingavgwidth) / 2 + 64, m_fontTall);
+    surface()->DrawSetTextPos((GetWide() - movingavgwidth) / 2 + 64, m_NormFontY);
     surface()->DrawPrintText(umovingAvgOffsetStr, 6);
-    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 136, m_fontTall);
+    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 136, m_NormFontY);
     surface()->DrawPrintText(uavgOffsetStr, 6);
     
-    Q_snprintf(m_CurOffset, sizeof(m_CurOffset), "%i", m_pPlayer->m_SrvData.m_strafeOffset);
-    PaintOffset(m_CurOffset, 4);
-    m_histOffset += histStep;
-    
+    //surface()->DrawSetTextColor(Color(100, 120, 140, 245));
     if (Q_strcmp(m_History1, nullMagic))
     {
-        PaintOffset(m_History1, 4);
+        PaintOffset(m_History1);
     }
     else
         goto CLEANUP;
     m_histOffset += histStep;
+    //surface()->DrawSetTextColor(Color(100, 120, 140, 220));
     if (Q_strcmp(m_History2, nullMagic))
     {
-        PaintOffset(m_History2, 4);
+        PaintOffset(m_History2);
     }
     else
         goto CLEANUP;
     m_histOffset += histStep;
+    //surface()->DrawSetTextColor(Color(100, 120, 140, 185));
     if (Q_strcmp(m_History3, nullMagic))
     {
-        PaintOffset(m_History3, 4);
+        PaintOffset(m_History3);
     }
     else
         goto CLEANUP;
     m_histOffset += histStep;
+    //surface()->DrawSetTextColor(Color(100, 120, 140, 110));
     if (Q_strcmp(m_History4, nullMagic))
     {
-        PaintOffset(m_History4, 4);
+        PaintOffset(m_History4);
     }
     CLEANUP:
     m_histOffset = 0;
