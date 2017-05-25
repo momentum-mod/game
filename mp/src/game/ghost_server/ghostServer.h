@@ -1,12 +1,11 @@
 #pragma once
-
 #include <vector>
 #include <thread>
-#include <mutex>
 #include <time.h>
 #include <stdio.h>
 #include <queue>
 #include <condition_variable>
+#include <mutex>
 
 #include "mom_shareddefs.h"
 #include "mom_ghostdefs.h"
@@ -26,6 +25,7 @@
 #define SECONDS_TO_TIMEOUT 10
 #define NEW_MAP_CMD "MOMENTUM_QUEUE_NEWMAP"
 #define NEW_APPEARENCES_CMD "MOMENTUM_QUEUE_NEWAPPS"
+#define NEW_PLAYER_CMD "MOMENTUM_NEWPLAYER_ADDED"
 
 template <class T>
 class SafeQueue;
@@ -55,7 +55,6 @@ private:
     static char m_szMapName[96];
     static const std::chrono::seconds m_secondsToTimeout;
 };
-
 // A threadsafe-queue.
 template <class T>
 class SafeQueue
@@ -68,12 +67,14 @@ public:
     {}
 
     ~SafeQueue()
-    {}
+    {
+        while (!m_queue.empty()) m_queue.pop();
+    }
 
     // Add an element to the queue.
     void enqueue(T t)
     {
-        std::lock_guard<std::mutex> lock(m_mtx);
+        std::unique_lock<std::mutex> lock(m_mtx);
         m_queue.push(t);
         m_condVar.notify_one();
     }
@@ -94,7 +95,7 @@ public:
     }
     int numInQueue()
     {
-        std::lock_guard<std::mutex> lock(m_mtx);
+        std::unique_lock<std::mutex> lock(m_mtx);
         return m_queue.size();
     }
 private:
@@ -102,6 +103,7 @@ private:
     mutable std::mutex m_mtx;
     std::condition_variable m_condVar;
 };
+
 struct playerData
 {
     int clientIndex;
@@ -109,8 +111,9 @@ struct playerData
     ghostAppearance_t currentLooks;
     zed_net_socket_t remote_socket;
     zed_net_address_t remote_address;
-    playerData(zed_net_socket_t socket, zed_net_address_t addr, int idx)
-        : clientIndex(idx), remote_socket(socket), remote_address(addr)
+    uint64_t SteamID64;
+    playerData(zed_net_socket_t socket, zed_net_address_t addr, ghostNetFrame_t frame, ghostAppearance_t looks, int idx, uint64_t steamID)
+        : remote_socket(socket), remote_address(addr), clientIndex(idx), currentFrame(frame), currentLooks(looks), SteamID64(steamID)
     {
     }
 };

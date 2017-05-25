@@ -26,6 +26,11 @@ public:
     static bool connectToGhostServer(const char* host, unsigned short port);
     static unsigned sendAndRecieveData(void *params);
     static bool isGhostClientConnected() { return m_ghostClientConnected && (m_socket.ready == 0); }
+    static bool SendSignonMessage();
+    static ghostNetFrame_t CreateNewNetFrame(CMomentumPlayer *pPlayer);
+    static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
+    static bool SendAppearanceData(ghostAppearance_t apps);
+    static bool SendNetFrame(ghostNetFrame_t frame);
     static const char* m_host;
     static unsigned short m_port;
 private:

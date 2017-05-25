@@ -16,6 +16,8 @@ public:
 
     void SetCurrentNetFrame(ghostNetFrame_t newFrame) { m_currentFrame = newFrame; }
     ghostNetFrame_t GetCurrentNetFrame() const { return m_currentFrame; }
+    void SetGhostSteamID(uint64_t steamID) { m_u64GhostSteamID = steamID; }
+    uint64_t GetGhostSteamID() const { return m_u64GhostSteamID; }
 
     bool IsOnlineGhost() const OVERRIDE{ return true; }
 
@@ -34,6 +36,7 @@ private:
     ghostNetFrame_t m_currentFrame;
     ghostNetFrame_t m_previousFrame;
 
+    uint64_t m_u64GhostSteamID;
     ghostAppearance_t m_currentAppearance;
     bool hasSpawned;
     int m_ghostButtons;

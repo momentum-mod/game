@@ -5,23 +5,17 @@
 #include "shareddefs.h"
 #endif
 
-//Network data signatures
-#define MOM_SIGNON 0xAB53A53F
-#define MOM_SIGNOFF 0x101010
+enum PacketTypes
+{
+    PT_SIGNON,
+    PT_SIGNOFF,
+    PT_NET_FRAME,
+    PT_APPEARANCE,
+    PT_NEWMAP,
+    PT_ACK,
 
-#define MOM_C_SENDING_NEWFRAME 0xDEDEDE
-#define MOM_C_RECIEVING_NEWFRAME 0xEDEDED
-
-#define MOM_S_SENDING_NEWFRAME 0xABABAB
-#define MOM_S_RECIEVING_NEWFRAME 0xB1B1B1
-
-#define MOM_S_SENDING_NEWMAP 0x9ABF23
-
-#define MOM_S_SENDING_NEWPROPS 0x52A43E
-#define MOM_S_RECIEVING_NEWPROPS 0x6F1A42
-
-#define MOM_C_SENDING_NEWPROPS 0x13FF27
-#define MOM_C_RECIEVING_NEWPROPS 0x62FACE
+    PT_COUNT
+};
 
 #define DEFAULT_PORT 9000
 
@@ -36,22 +30,24 @@ struct ghostAppearance_t
     char GhostModel[128]; //maximum model filename is 128 chars
 
 #ifndef GHOST_SERVER
-    ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen)
+    ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen, const bool hasTrail)
     {
         Q_strncpy(GhostModel, playerModel, sizeof(GhostModel));
         GhostModelBodygroup = bodyGroup;
         GhostModelRGBAColorAsHex = bodyRGBA;
         GhostTrailRGBAColorAsHex = trailRGBA;
         GhostTrailLength = trailLen;
+        GhostTrailEnable = hasTrail;
     }
     ghostAppearance_t() {}
     bool operator==(const ghostAppearance_t &other) const
     {
         return Q_strcmp(GhostModel, other.GhostModel) == 0 &&
-            GhostModelBodygroup == other.GhostModelBodygroup && 
+            GhostModelBodygroup == other.GhostModelBodygroup &&
             GhostModelRGBAColorAsHex == other.GhostModelRGBAColorAsHex &&
             GhostTrailRGBAColorAsHex == other.GhostTrailRGBAColorAsHex &&
-            GhostTrailLength == other.GhostTrailLength;
+            GhostTrailLength == other.GhostTrailLength &&
+            GhostTrailEnable == other.GhostTrailEnable;
     }
 #endif
 };
@@ -59,7 +55,6 @@ struct ghostAppearance_t
 struct ghostNetFrame_t
 {
     int Buttons;
-    uint64_t SteamID64;
     char PlayerName[32];
 #ifdef GHOST_SERVER //Can't use Vector/QAngle in ghost server
     float EyeAngle[3];
@@ -70,7 +65,7 @@ struct ghostNetFrame_t
     Vector Position;
     Vector ViewOffset;
     ghostNetFrame_t(const QAngle eyeAngle, const Vector position, const Vector viewOffset,
-        const int buttons, const uint64_t steamID64, const char* playerName)
+        const int buttons, const char* playerName)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -80,7 +75,6 @@ struct ghostNetFrame_t
 
         }
         Buttons = buttons;
-        SteamID64 = steamID64;
         Q_strncpy(PlayerName, playerName, sizeof(PlayerName));
     }
     ghostNetFrame_t() {}
@@ -91,12 +85,30 @@ struct ghostNetFrame_t
             Position == other.Position &&
             ViewOffset == other.ViewOffset &&
             Buttons == other.Buttons &&
-            SteamID64 == other.SteamID64 &&
             Q_strcmp(PlayerName, other.PlayerName) == 0;
     }
 #endif //NOT_GHOST_SERVER
 };
-
+struct ghostSignOnPacket_t
+{
+    ghostNetFrame_t newFrame;
+    ghostAppearance_t newApps;
+    uint64_t SteamID;
+    char MapName[96];
+};
+struct ghostSignOffPacket_t
+{
+    char Message[128];
+};
+struct ghostNewMapEvent_t
+{
+    char MapName[96];
+};
+struct ghostAckPacket_t
+{
+    char AckMessage[16];
+    bool AckSuccess;
+};
 #ifndef GHOST_SERVER
 extern ConVar mm_updaterate;
 extern ConVar mm_timeOutDuration;

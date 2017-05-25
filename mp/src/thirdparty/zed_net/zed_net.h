@@ -107,6 +107,7 @@ typedef struct
     char holdingBuffer[1024]; //holds data if we recieved too much
     int held_bytes;
     unsigned char prefix_size;
+    unsigned char magic_num_size;
 } zed_net_socket_t;
 
 // Closes a previously opened socket
@@ -167,12 +168,12 @@ ZED_NET_DEF int zed_net_tcp_accept(zed_net_socket_t *listening_socket, zed_net_s
 // Returns 0 on success.
 //  if the socket is non-blocking, then this can return 1 if the socket isn't ready
 //  returns -1 otherwise. (call 'zed_net_get_error' for more info)
-ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const void *data, int size);
+ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const void *data, int size, int packetType);
 
 // Returns 0 on success.
 //  if the socket is non-blocking, then this can return 1 if the socket isn't ready
 //  returns -1 otherwise. (call 'zed_net_get_error' for more info)
-ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void *data, int size);
+ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void *data, int size, int *packetType);
 
 // Blocks until the TCP socket is ready. Only makes sense for non-blocking socket.
 // Returns 0 on success.
@@ -190,6 +191,7 @@ ZED_NET_DEF int zed_net_tcp_make_socket_ready(zed_net_socket_t *socket);
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdio.h>
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -311,6 +313,7 @@ ZED_NET_DEF int zed_net_tcp_socket_open(zed_net_socket_t *sock, unsigned int por
         return zed_net__error("Socket is NULL");
     sock->prefix_size = 2;
     sock->held_bytes = 0;
+    sock->magic_num_size = 4;
     // Create the socket
     sock->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock->handle <= 0) {
@@ -532,7 +535,7 @@ ZED_NET_DEF int zed_net_udp_socket_receive(zed_net_socket_t *socket, zed_net_add
     return received_bytes;
 }
 
-ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const void *data, int size) {
+ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const void *data, int size, int packetType) {
 	int retval;
 
     if (!remote_socket) {
@@ -545,18 +548,27 @@ ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const v
 	else if (retval)
 		return -1;
 
+    int headerSize = remote_socket->prefix_size + remote_socket->magic_num_size;
     int sent_bytes;
     switch (remote_socket->prefix_size)
     {
     case 2:
     default:
-        u_short lenPrefix = htons(u_short(size + remote_socket->prefix_size));
+        u_short lenPrefix = htons(u_short(size + headerSize));
         sent_bytes = send(remote_socket->handle, (const char *)&lenPrefix, remote_socket->prefix_size, 0);
         break;
 
     }
+    switch (remote_socket->magic_num_size)
+    {
+    case 4:
+    default:
+        u_long packet_type = htonl(u_long(packetType));
+        sent_bytes += send(remote_socket->handle, (const char *)&packet_type, remote_socket->magic_num_size, 0);
+        break;
+    }
     sent_bytes += send(remote_socket->handle, (const char *)data, size, 0);
-    if (sent_bytes != size + remote_socket->prefix_size) 
+    if (sent_bytes != size + remote_socket->prefix_size + remote_socket->magic_num_size) 
     {
         return zed_net__error("Failed to send data");
     }
@@ -565,7 +577,7 @@ ZED_NET_DEF int zed_net_tcp_socket_send(zed_net_socket_t *remote_socket, const v
 }
 
 //returns the size of the packet recieved + the length prefix size. 
-ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void *data, int size) {
+ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void *data, int size, int *packetType) {
 	int retval;
 
     if (!remote_socket) {
@@ -582,11 +594,12 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
     typedef int socklen_t;
 #endif
 #define BUFFER_SIZE_MULTIPLE 2
-
+    int headerSize = remote_socket->prefix_size + remote_socket->magic_num_size;
     unsigned char* buffer = new unsigned char[BUFFER_SIZE_MULTIPLE * size]; //create a buffer twice the size of the packet we are trying to recieve, so hopefully we can get all if it in one go.
     //memset(buffer, 0, 2 * size);
     int received_bytes = 0;
     int packet_size = 0; //actual size of packet we are trying to read
+    int packet_type = -1;
     bool reading_prefix = true; //are we trying to find the length prefix? 
 
     //copy any remaining data from previous calls into packet buffer
@@ -599,8 +612,9 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
     {
         if (reading_prefix)
         {
-            if (received_bytes >= remote_socket->prefix_size) //we've already gotten more data from the last receive call
+            if (received_bytes >= headerSize) //we've already gotten more data from the last receive call
             {
+                //printf("bytes received: %i\n",received_bytes);
                 packet_size = 0;
                 for (int i = 0; i < remote_socket->prefix_size; ++i)
                 {
@@ -608,6 +622,14 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
                     packet_size <<= 8;
                     packet_size |= sizebit;
                 }
+                for (int i = 0; i < remote_socket->magic_num_size; ++i)
+                {
+                    int bit = buffer[i + remote_socket->prefix_size]; //offset by the prefix size
+                    packet_type <<= 8;
+                    packet_type |= bit;
+                    //printf("packet_type: %i checking against bit %i:\n", packet_type, bit);
+                }
+                *packetType = packet_type;
                 reading_prefix = false;
                 if (packet_size > BUFFER_SIZE_MULTIPLE * size)
                 {
@@ -624,10 +646,10 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
         }
         //recieve again
         int new_bytes_read = recv(remote_socket->handle, (char*)buffer + received_bytes, 
-            (size + remote_socket->prefix_size) - received_bytes, 0);
+            packet_size == 0 ? headerSize : packet_size - received_bytes, 0);
         if (new_bytes_read <= 0 || new_bytes_read == SOCKET_ERROR)
         {
-            free(buffer);
+            delete[] buffer;
             return -1;
         }
         received_bytes += new_bytes_read;
@@ -638,10 +660,10 @@ ZED_NET_DEF int zed_net_tcp_socket_receive(zed_net_socket_t *remote_socket, void
 
     // copy the correct packet size into the output
     //memset(buffer - size, 0, packet_size - size);
-    memcpy(data, buffer + remote_socket->prefix_size, size);
+    memcpy(data, buffer + headerSize, size);
 
     delete[] buffer;
-    return received_bytes;
+    return received_bytes - headerSize;
 }
 
 #endif // ZED_NET_IMPLEMENTATION
