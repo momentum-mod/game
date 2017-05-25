@@ -200,6 +200,7 @@ ZED_NET_DEF int zed_net_tcp_make_socket_ready(zed_net_socket_t *socket);
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -413,6 +414,11 @@ ZED_NET_DEF int zed_net_tcp_make_socket_ready(zed_net_socket_t *socket) {
 	retval = select(0, NULL, &writefd, NULL, NULL);
 	if (retval != 1)
 		return zed_net__error("Failed to make non-blocking socket ready");
+
+    //diable nagle's algorithm which casues lots of delay when transmitting frequently
+    int val = 1;
+    if (setsockopt(socket->handle, IPPROTO_TCP, TCP_NODELAY, (char*)val, sizeof(val)) < 0)
+        return zed_net__error("setsockopt(2) error: COULD NOT SET NODELAY");
 
 	socket->ready = 1;
 
