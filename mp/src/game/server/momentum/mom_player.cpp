@@ -670,7 +670,13 @@ void CMomentumPlayer::UpdateRunSync()
     {
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
-            if (EyeAngles().y > m_qangLastAngle.y) // player turned left
+            float dtAngle = EyeAngles().y - m_qangLastAngle.y;
+            if (dtAngle > 180.f)
+                dtAngle -= 360.f;
+            else if (dtAngle < -180.f)
+                dtAngle += 360.f;
+
+            if (dtAngle > 0) // player turned left
             {
                 m_nStrafeTicks++;
                 if ((m_nButtons & IN_MOVELEFT) && !(m_nButtons & IN_MOVERIGHT))
@@ -678,7 +684,7 @@ void CMomentumPlayer::UpdateRunSync()
                 if (m_flSideMove < 0)
                     m_nAccelTicks++;
             }
-            else if (EyeAngles().y < m_qangLastAngle.y) // player turned right
+            else if (dtAngle < 0) // player turned right
             {
                 m_nStrafeTicks++;
                 if ((m_nButtons & IN_MOVERIGHT) && !(m_nButtons & IN_MOVELEFT))
