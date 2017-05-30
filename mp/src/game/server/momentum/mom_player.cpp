@@ -60,7 +60,7 @@ static ConVar mom_trail_color_a("mom_trail_color_a", "255", FCVAR_ARCHIVE, "Alph
 
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
-      m_flLastVelocity(0.0f), m_flLastSyncVelocity(0), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
+      m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
       m_bPrevTimerRunning(false), m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f),
       m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
 {
@@ -668,7 +668,6 @@ void CMomentumPlayer::UpdateRunSync()
 {
     if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_SrvData.m_bHasPracticeMode))
     {
-        float SyncVelocity = GetLocalVelocity().Length2DSqr(); // we always want HVEL for checking velocity sync
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
             if (EyeAngles().y > m_qangLastAngle.y) // player turned left
@@ -676,7 +675,7 @@ void CMomentumPlayer::UpdateRunSync()
                 m_nStrafeTicks++;
                 if ((m_nButtons & IN_MOVELEFT) && !(m_nButtons & IN_MOVERIGHT))
                     m_nPerfectSyncTicks++;
-                if (SyncVelocity > m_flLastSyncVelocity)
+                if (m_flSideMove < 0)
                     m_nAccelTicks++;
             }
             else if (EyeAngles().y < m_qangLastAngle.y) // player turned right
@@ -684,7 +683,7 @@ void CMomentumPlayer::UpdateRunSync()
                 m_nStrafeTicks++;
                 if ((m_nButtons & IN_MOVERIGHT) && !(m_nButtons & IN_MOVELEFT))
                     m_nPerfectSyncTicks++;
-                if (SyncVelocity > m_flLastSyncVelocity)
+                if (m_flSideMove > 0)
                     m_nAccelTicks++;
             }
         }
@@ -697,7 +696,6 @@ void CMomentumPlayer::UpdateRunSync()
         }
 
         m_qangLastAngle = EyeAngles();
-        m_flLastSyncVelocity = SyncVelocity;
     }
 }
 

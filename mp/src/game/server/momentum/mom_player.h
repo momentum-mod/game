@@ -237,7 +237,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_iLastBlock;
 
     // for strafe sync
-    float m_flLastVelocity, m_flLastSyncVelocity;
+    float m_flLastVelocity;
     QAngle m_qangLastAngle;
     int m_nPerfectSyncTicks;
     int m_nStrafeTicks;
