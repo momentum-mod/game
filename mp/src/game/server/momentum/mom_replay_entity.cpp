@@ -28,7 +28,8 @@ END_DATADESC();
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_bHasJumped(false),
       m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0), m_nOldReplayButtons(0),
-      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_cvarReplaySelection("mom_replay_selection")
+      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_cvarReplaySelection("mom_replay_selection"),
+      m_bShouldFireOffsetEvent(false)
 {
     StdDataToReplay = (DataToReplayFn)(GetProcAddress(GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
 
@@ -134,6 +135,8 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 
 void CMomentumReplayGhostEntity::UpdateStep(int Skip)
 {
+    m_LastFrame = GetCurrentStep();
+    
     // Managed by replayui now
     if (!m_pPlaybackReplay)
         return;
@@ -305,6 +308,13 @@ void CMomentumReplayGhostEntity::Think()
 
     if (StdDataToReplay)
         StdDataToReplay(&m_SrvData);
+        
+    if (m_bShouldFireOffsetEvent)
+    {
+        IGameEvent *event = gameeventmanager->CreateEvent("strafe_offset");
+        m_bShouldFireOffsetEvent = false;
+        gameeventmanager->FireEvent(event);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -444,6 +454,12 @@ void CMomentumReplayGhostEntity::HandleGhost()
 
 void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 {
+    float dtAng = EyeAngles().y - m_LastFrame->EyeAngles().y;
+    if (dtAng > 180.0)
+        dtAng -= 360;
+    else if (dtAng < -180.0)
+        dtAng += 360;
+        
     // --- STRAFE SYNC ---
     // calculate strafe sync based on replay ghost's movement, in order to update the player's HUD
 
@@ -470,7 +486,51 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
             if (SyncVelocity > m_flLastSyncVelocity)
                 m_nAccelTicks++;
         }
+        
+        /*
+         * Strafe offsets
+         */
+        if (!(currentStep->PlayerButtons() & IN_MOVERIGHT && currentStep->PlayerButtons() & IN_MOVELEFT))
+        {
+            if (currentStep->PlayerButtons() & IN_MOVELEFT) {
+                if ((m_nOldReplayButtons & IN_MOVERIGHT && m_nOldReplayButtons & IN_MOVELEFT) || !(m_nOldReplayButtons & IN_MOVELEFT))
+                {
+                    m_bKeyChanged = true;
+                    m_nKeyTransTick = gpGlobals->tickcount;
+                }
+            }
+            else if (currentStep->PlayerButtons() & IN_MOVERIGHT) {
+                if ((m_nOldReplayButtons & IN_MOVERIGHT && m_nOldReplayButtons & IN_MOVELEFT) || !(m_nOldReplayButtons & IN_MOVERIGHT))
+                {
+                    m_bKeyChanged = true;
+                    m_nKeyTransTick = gpGlobals->tickcount;
+                }
+            }
+        }
+        if (dtAng != 0.0 && ((dtAng < 0.0 && m_fPrevDtAng > 0.0) || (dtAng > 0.0 && m_fPrevDtAng < 0.0) || m_fPrevDtAng == 0.0))
+        {
+            m_bDirChanged = true;
+            m_nAngTransTick = gpGlobals->tickcount;
+        }
+        if (m_bKeyChanged && m_bDirChanged)
+        {
+            int t = m_nKeyTransTick - m_nAngTransTick;
+            m_bKeyChanged = false;
+            m_bDirChanged = false;
+            if (t > -26 && t < 26)
+            {
+                m_SrvData.m_strafeOffset = t;
+                m_bShouldFireOffsetEvent = true;
+            }
+        }
     }
+    else
+    {
+        m_bDirChanged = false;
+        m_bKeyChanged = false;
+    }
+    m_fPrevDtAng = dtAng;
+
     if (m_nStrafeTicks && m_nAccelTicks && m_nPerfectSyncTicks)
     {
         m_SrvData.m_RunData.m_flStrafeSync =

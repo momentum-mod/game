@@ -23,13 +23,14 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
     void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
     
+    //Text versions of history data, for rendering.
     char m_CurOffset[HISTWIDTH];
     char m_History1[HISTWIDTH];
     char m_History2[HISTWIDTH];
     char m_History3[HISTWIDTH];
     char m_History4[HISTWIDTH];
-    char nullMagic[2];
     
+    //Numerical offset history.
     int m_nHist1, m_nHist2, m_nHist3, m_nHist4;
     
     float m_fAvgOffset;
@@ -60,7 +61,10 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
             memcpy(m_History3, m_History2, HISTWIDTH);
             memcpy(m_History2, m_History1, HISTWIDTH);
             memcpy(m_History1, m_CurOffset, HISTWIDTH);
-            Q_snprintf(m_CurOffset, HISTWIDTH, "%i", m_pPlayer->m_SrvData.m_strafeOffset);
+            
+            C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
+            int offset = pGhost ? pGhost->m_SrvData.m_strafeOffset : m_pPlayer->m_SrvData.m_strafeOffset;
+            Q_snprintf(m_CurOffset, HISTWIDTH, "%i", offset);
         }
         else //Must be timer_state
         {
@@ -69,24 +73,20 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
         }
     }
     
-    void PaintOffset(char* str);
+    void PaintOffset(int offset, char* str);
     void Reset();
     
     C_MomentumPlayer *m_pPlayer;
-    
-    CPanelAnimationVar(float, m_histOffset, "HistOffset", "0.0");
 };
 
 DECLARE_NAMED_HUDELEMENT(CHudStrafeOffset, HudStrafeOffset);
 
 CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudStrafeOffset"),
-    m_NormFontY(0), m_histOffset(0)
+    m_NormFontY(0)
 {
     ListenForGameEvent("strafe_offset");
     ListenForGameEvent("timer_state");
-    nullMagic[0] = 'z';
-    nullMagic[1] = null;
     m_History1[0] = 'z';
     m_History2[0] = 'z';
     m_History3[0] = 'z';
@@ -118,12 +118,12 @@ bool CHudStrafeOffset::ShouldDraw()
     return (CHudElement::ShouldDraw());
 }
 
-void CHudStrafeOffset::PaintOffset(char* str)
+void CHudStrafeOffset::PaintOffset(int offset, char* str)
 {
     wchar_t uOffset[HISTWIDTH];
     ANSI_TO_UNICODE(str, uOffset);
     int xpos = (GetWide() - UTIL_ComputeStringWidth(m_hNumberFont, uOffset)) / 2;
-    surface()->DrawSetTextPos(xpos - m_histOffset, m_NormFontY);
+    surface()->DrawSetTextPos(xpos - offset, m_NormFontY);
     surface()->DrawPrintText(uOffset, HISTWIDTH);
 }
 
@@ -136,10 +136,11 @@ void CHudStrafeOffset::Paint()
     }
 
     int histStep = 36;
-
+    int histOffset = 0;
+    
     surface()->DrawSetTextFont(m_hNumberFont);
-    PaintOffset(m_CurOffset);
-    m_histOffset += histStep;
+    PaintOffset(0, m_CurOffset);
+    histOffset += histStep;
     
     surface()->DrawSetTextColor(Color(100, 120, 140, 255));
     
@@ -159,34 +160,34 @@ void CHudStrafeOffset::Paint()
     surface()->DrawPrintText(uavgOffsetStr, 6);
     
     //surface()->DrawSetTextColor(Color(100, 120, 140, 245));
-    if (Q_strcmp(m_History1, nullMagic))
+    if (m_History1[0] != 'z')
     {
-        PaintOffset(m_History1);
+        PaintOffset(histOffset, m_History1);
     }
     else
         goto CLEANUP;
-    m_histOffset += histStep;
+    histOffset += histStep;
     //surface()->DrawSetTextColor(Color(100, 120, 140, 220));
-    if (Q_strcmp(m_History2, nullMagic))
+    if (m_History2[0] != 'z')
     {
-        PaintOffset(m_History2);
+        PaintOffset(histOffset, m_History2);
     }
     else
         goto CLEANUP;
-    m_histOffset += histStep;
+    histOffset += histStep;
     //surface()->DrawSetTextColor(Color(100, 120, 140, 185));
-    if (Q_strcmp(m_History3, nullMagic))
+    if (m_History3[0] != 'z')
     {
-        PaintOffset(m_History3);
+        PaintOffset(histOffset, m_History3);
     }
     else
         goto CLEANUP;
-    m_histOffset += histStep;
+    histOffset += histStep;
     //surface()->DrawSetTextColor(Color(100, 120, 140, 110));
-    if (Q_strcmp(m_History4, nullMagic))
+    if (m_History4[0] != 'z')
     {
-        PaintOffset(m_History4);
+        PaintOffset(histOffset, m_History4);
     }
     CLEANUP:
-    m_histOffset = 0;
+    histOffset = 0;
 }

@@ -37,6 +37,7 @@ struct StdReplayDataFromServer
     int m_iTotalJumps;
     int m_nReplayButtons;
     int m_iCurrentTick;
+    int m_strafeOffset;
     CMOMRunEntityData m_RunData;
     CMomRunStats::data m_RunStatsData;
 };
