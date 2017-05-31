@@ -95,6 +95,7 @@ CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     m_History3[0] = 'z';
     m_History4[0] = 'z';
     m_NormFontY = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
+    surface()->DrawSetTextColor(100, 120, 140, 255);
 }
 
 void CHudStrafeOffset::Reset()
@@ -149,8 +150,6 @@ void CHudStrafeOffset::Paint()
     PaintOffset(0, m_CurOffset);
     histOffset += histStep;
     
-    surface()->DrawSetTextColor(Color(100, 120, 140, 255));
-    
     char avgOffsetStr[6], movingAvgOffsetStr[6]; //3 digits, a '.', a '-', and a null
     wchar_t uavgOffsetStr[6]{null}, umovingAvgOffsetStr[6]{null};
     Q_snprintf(avgOffsetStr, sizeof(avgOffsetStr), "%.2f", m_fAvgOffset);
@@ -163,7 +162,7 @@ void CHudStrafeOffset::Paint()
     
     surface()->DrawSetTextPos((GetWide() - movingavgwidth) / 2 + 64, m_NormFontY);
     surface()->DrawPrintText(umovingAvgOffsetStr, 6);
-    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 136, m_NormFontY);
+    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 144, m_NormFontY);
     surface()->DrawPrintText(uavgOffsetStr, 6);
     
     //surface()->DrawSetTextColor(Color(100, 120, 140, 245));

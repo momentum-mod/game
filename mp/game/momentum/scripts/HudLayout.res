@@ -3,9 +3,9 @@
     HudStrafeOffset
         {
             "fieldname"         "HudStrafeOffset"
-            "xpos"              "c-140"
+            "xpos"              "c-248"
             "ypos"              "453"
-            "wide"              "280"
+            "wide"              "192"
             "tall"              "21"
             "visible"           "1"
             "enabled"           "1"
