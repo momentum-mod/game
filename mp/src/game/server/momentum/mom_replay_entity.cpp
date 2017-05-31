@@ -452,6 +452,30 @@ void CMomentumReplayGhostEntity::HandleGhost()
     RemoveEffects(EF_NOSHADOW);
 }
 
+inline static bool EvaluateTransition_Keys(int dir, float dtAng, bool otherStatus)
+{
+    if (!otherStatus)
+        return true;
+    else if (dir == IN_MOVERIGHT && dtAng <= 0)
+        return true;
+    else if (dir == IN_MOVELEFT && dtAng >= 0)
+        return true;
+        
+    return false;
+}
+
+inline static bool EvaluateTransition_Ang(int keys, float dtAng, bool otherStatus)
+{
+    if (!otherStatus)
+        return true;
+    else if (keys & IN_MOVERIGHT && !(keys & IN_MOVELEFT) && dtAng <= 0)
+        return true;
+    else if (keys & IN_MOVELEFT && !(keys & IN_MOVERIGHT) && dtAng >= 0)
+        return true;
+        
+    return false;
+}
+
 void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
 {
     float dtAng = EyeAngles().y - m_LastFrame->EyeAngles().y;
@@ -495,22 +519,31 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
             if (currentStep->PlayerButtons() & IN_MOVELEFT) {
                 if ((m_nOldReplayButtons & IN_MOVERIGHT && m_nOldReplayButtons & IN_MOVELEFT) || !(m_nOldReplayButtons & IN_MOVELEFT))
                 {
-                    m_bKeyChanged = true;
-                    m_nKeyTransTick = gpGlobals->tickcount;
+                    m_bKeyChanged = EvaluateTransition_Keys(IN_MOVELEFT, dtAng, m_bDirChanged);
+                    if (m_bKeyChanged)
+                        m_nKeyTransTick = gpGlobals->tickcount;
+                    else
+                        m_bDirChanged = false;
                 }
             }
             else if (currentStep->PlayerButtons() & IN_MOVERIGHT) {
                 if ((m_nOldReplayButtons & IN_MOVERIGHT && m_nOldReplayButtons & IN_MOVELEFT) || !(m_nOldReplayButtons & IN_MOVERIGHT))
                 {
-                    m_bKeyChanged = true;
-                    m_nKeyTransTick = gpGlobals->tickcount;
+                    m_bKeyChanged = EvaluateTransition_Keys(IN_MOVERIGHT, dtAng, m_bDirChanged);
+                    if (m_bKeyChanged)
+                        m_nKeyTransTick = gpGlobals->tickcount;
+                    else
+                        m_bDirChanged = false;
                 }
             }
         }
         if (dtAng != 0.0 && ((dtAng < 0.0 && m_fPrevDtAng > 0.0) || (dtAng > 0.0 && m_fPrevDtAng < 0.0) || m_fPrevDtAng == 0.0))
         {
-            m_bDirChanged = true;
-            m_nAngTransTick = gpGlobals->tickcount;
+            m_bDirChanged = EvaluateTransition_Ang(currentStep->PlayerButtons(), dtAng, m_bKeyChanged);
+            if (m_bDirChanged)
+                m_nAngTransTick = gpGlobals->tickcount;
+            else
+                m_bKeyChanged = false;
         }
         if (m_bKeyChanged && m_bDirChanged)
         {

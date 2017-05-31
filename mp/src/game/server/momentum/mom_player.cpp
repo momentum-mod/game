@@ -722,6 +722,30 @@ void CMomentumPlayer::UpdateRunSync()
     }
 }
 
+inline static bool EvaluateTransition_Keys(int dir, float dtAng, bool otherStatus)
+{
+    if (!otherStatus)
+        return true;
+    else if (dir == IN_MOVERIGHT && dtAng <= 0)
+        return true;
+    else if (dir == IN_MOVELEFT && dtAng >= 0)
+        return true;
+        
+    return false;
+}
+
+inline static bool EvaluateTransition_Ang(int keys, float dtAng, bool otherStatus)
+{
+    if (!otherStatus)
+        return true;
+    else if (keys & IN_MOVERIGHT && !(keys & IN_MOVELEFT) && dtAng <= 0)
+        return true;
+    else if (keys & IN_MOVELEFT && !(keys & IN_MOVERIGHT) && dtAng >= 0)
+        return true;
+        
+    return false;
+}
+
 bool CMomentumPlayer::UpdateStrafeOffset(float dtAng)
 {
     bool retval = false;
@@ -732,22 +756,31 @@ bool CMomentumPlayer::UpdateStrafeOffset(float dtAng)
             if (m_nButtons & IN_MOVELEFT) {
                 if ((m_nPrevButtons & IN_MOVERIGHT && m_nPrevButtons & IN_MOVELEFT) || !(m_nPrevButtons & IN_MOVELEFT))
                 {
-                    m_bKeyChanged = true;
-                    m_nKeyTransTick = gpGlobals->tickcount;
+                    m_bKeyChanged = EvaluateTransition_Keys(IN_MOVELEFT, dtAng, m_bDirChanged);
+                    if (m_bKeyChanged)
+                        m_nKeyTransTick = gpGlobals->tickcount;
+                    else
+                        m_bDirChanged = false;
                 }
             }
             else if (m_nButtons & IN_MOVERIGHT) {
                 if ((m_nPrevButtons & IN_MOVERIGHT && m_nPrevButtons & IN_MOVELEFT) || !(m_nPrevButtons & IN_MOVERIGHT))
                 {
-                    m_bKeyChanged = true;
-                    m_nKeyTransTick = gpGlobals->tickcount;
+                    m_bKeyChanged = EvaluateTransition_Keys(IN_MOVERIGHT, dtAng, m_bKeyChanged);
+                    if (m_bKeyChanged)
+                        m_nKeyTransTick = gpGlobals->tickcount;
+                    else
+                        m_bDirChanged = false;
                 }
             }
         }
         if (dtAng != 0.0 && ((dtAng < 0.0 && m_fPrevDtAng > 0.0) || (dtAng > 0.0 && m_fPrevDtAng < 0.0) || m_fPrevDtAng == 0.0))
         {
-            m_bDirChanged = true;
-            m_nAngTransTick = gpGlobals->tickcount;
+            m_bDirChanged = EvaluateTransition_Ang(m_nButtons, dtAng, m_bKeyChanged);
+            if (m_bDirChanged)
+                m_nAngTransTick = gpGlobals->tickcount;
+            else
+                m_bKeyChanged = false;
         }
         if (m_bKeyChanged && m_bDirChanged)
         {
