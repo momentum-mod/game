@@ -14,6 +14,10 @@ using namespace vgui;
 
 #define HISTWIDTH 4
 
+static ConVar strafeoffset_draw("mom_strafeoffset_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                                "Toggles displaying the strafeoffset data. (1 = only timer , 2 = always (except practice mode))\n",
+                                true, 0, true, 2);
+
 class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
 {
     DECLARE_CLASS_SIMPLE(CHudStrafeOffset, CHudNumericDisplay);
@@ -21,7 +25,6 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
     CHudStrafeOffset(const char *pElementName);
     bool ShouldDraw() OVERRIDE;
     void Paint() OVERRIDE;
-    void OnThink() OVERRIDE;
     
     //Text versions of history data, for rendering.
     char m_CurOffset[HISTWIDTH];
@@ -94,11 +97,6 @@ CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     m_NormFontY = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
 }
 
-void CHudStrafeOffset::OnThink()
-{
-
-}
-
 void CHudStrafeOffset::Reset()
 {
     m_History1[0] = 'z';
@@ -115,7 +113,22 @@ void CHudStrafeOffset::Reset()
 
 bool CHudStrafeOffset::ShouldDraw()
 {
-    return (CHudElement::ShouldDraw());
+    if(!m_pPlayer)
+    {
+        m_pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+        if (!m_pPlayer)
+            return false;
+    }
+    
+    if (strafeoffset_draw.GetInt() == 2)
+        return true;
+        
+    C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
+    if (pGhost)
+    {
+        return (CHudElement::ShouldDraw() && pGhost->m_SrvData.m_RunData.m_bTimerRunning);
+    }
+    return (CHudElement::ShouldDraw() && m_pPlayer->m_SrvData.m_RunData.m_bTimerRunning);
 }
 
 void CHudStrafeOffset::PaintOffset(int offset, char* str)
@@ -129,13 +142,7 @@ void CHudStrafeOffset::PaintOffset(int offset, char* str)
 
 void CHudStrafeOffset::Paint()
 {
-    if(!m_pPlayer)
-    {
-        m_pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
-        return;
-    }
-
-    int histStep = 36;
+    int histStep = 44;
     int histOffset = 0;
     
     surface()->DrawSetTextFont(m_hNumberFont);
