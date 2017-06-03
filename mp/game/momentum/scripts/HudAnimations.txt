@@ -2,6 +2,12 @@ event LevelInit
 {
 }
 
+event NewStrafeOffset
+{
+    Animate HudStrafeOffset HistOffset  "24.0"  Accel 0.0 0.08
+    Animate HudStrafeOffset HistOffset "0.0"    Linear 0.08 0.0000001
+}
+
 event VersionPulse
 {
     Animate VersionLabel alpha "0" Spline 0.0 1.0

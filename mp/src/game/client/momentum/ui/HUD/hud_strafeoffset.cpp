@@ -18,13 +18,16 @@ static ConVar strafeoffset_draw("mom_strafeoffset_draw", "1", FCVAR_CLIENTDLL | 
                                 "Toggles displaying the strafeoffset data. (1 = only timer , 2 = always (except practice mode))\n",
                                 true, 0, true, 2);
 
-class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
+class CHudStrafeOffset : public CHudElement, public Panel
 {
-    DECLARE_CLASS_SIMPLE(CHudStrafeOffset, CHudNumericDisplay);
+    DECLARE_CLASS_SIMPLE(CHudStrafeOffset, Panel);
     
     CHudStrafeOffset(const char *pElementName);
     bool ShouldDraw() OVERRIDE;
     void Paint() OVERRIDE;
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
+    void Reset() OVERRIDE;
+    void LevelShutdown() OVERRIDE{ m_pPlayer = nullptr; };
     
     //Numerical offset history.
     // 0 = current, 1-4 = history, with 4 being oldest
@@ -37,7 +40,7 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
     int m_NormFontY;
     int m_SmallFontY;
 
-    CPanelAnimationVar(float, m_flHistOffset, "m_flHistOffset", "0.0");
+    CPanelAnimationVar(float, m_flHistOffset, "HistOffset", "0.0");
     
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {
@@ -46,9 +49,8 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
             C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
             int offset = pGhost ? pGhost->m_SrvData.m_strafeOffset : m_pPlayer->m_SrvData.m_strafeOffset;
 
-            //g_pClientMode->GetViewportAnimationController()->CancelAnimationsForPanel(this);
-            //g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("NewStrafeOffset");
-            m_pController->RunAnimationCommand(this, "m_flHistOffset", 24.0, 0.0, 0.08, AnimationController::INTERPOLATOR_DEACCEL, 0);
+            g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("NewStrafeOffset");
+
             float avgTemp = static_cast<float>(m_nOffsetCt) * m_fAvgOffset;
             ++m_nOffsetCt;
             m_fAvgOffset = (avgTemp + static_cast<float>(abs(offset))) / static_cast<float>(m_nOffsetCt);
@@ -67,20 +69,17 @@ class CHudStrafeOffset : public CHudElement, public CHudNumericDisplay
     }
     
     void PaintOffset(int offset, int index);
-    void Reset() OVERRIDE;
-    void OnThink() OVERRIDE{ if (m_pController) m_pController->UpdateAnimations(engine->Time()); }
     
     C_MomentumPlayer *m_pPlayer;
-    AnimationController *m_pController;
+    HFont m_hNumberFont;
 };
 
 DECLARE_NAMED_HUDELEMENT(CHudStrafeOffset, HudStrafeOffset);
 
 CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
-    : CHudElement(pElementName), CHudNumericDisplay(g_pClientMode->GetViewport(), "HudStrafeOffset"),
-    m_NormFontY(0), m_vecHistInts(0, 5)
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName),
+    m_vecHistInts(0, 5), m_NormFontY(0), m_pPlayer(nullptr)
 {
-    m_pController = new AnimationController(this);
     ListenForGameEvent("strafe_offset");
     ListenForGameEvent("timer_state");
     for (int i = 0; i < 5; i++)
@@ -96,6 +95,12 @@ void CHudStrafeOffset::Reset()
     m_fAvgOffset = 0;
     m_fMovingAvg = 0;
     m_nOffsetCt = 0;
+}
+
+void CHudStrafeOffset::ApplySchemeSettings(IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+    m_hNumberFont = pScheme->GetFont("Default", true);
 }
 
 bool CHudStrafeOffset::ShouldDraw()
@@ -121,7 +126,7 @@ void CHudStrafeOffset::PaintOffset(int offset, int indx)
     wchar_t uOffset[64];
     V_snwprintf(uOffset, 64, L"%i", m_vecHistInts[indx]);
     int xpos = (GetWide() - UTIL_ComputeStringWidth(m_hNumberFont, uOffset)) / 2;
-    surface()->DrawSetTextPos(xpos - offset - static_cast<int>(m_flHistOffset), m_NormFontY);
+    surface()->DrawSetTextPos(xpos - offset, m_NormFontY);
     surface()->DrawSetTextColor(100, 120, 140, 255 - (30 * indx));
     surface()->DrawPrintText(uOffset, wcslen(uOffset));
 }
@@ -133,7 +138,7 @@ void CHudStrafeOffset::Paint()
     
     surface()->DrawSetTextFont(m_hNumberFont);
     surface()->DrawSetTextColor(100, 120, 140, 255); // MOM_TODO: Change this to be defined in HudLayout
-    PaintOffset(0, 0);
+    PaintOffset(static_cast<int>(m_flHistOffset), 0);
     histOffset += histStep;
     
     char avgOffsetStr[6], movingAvgOffsetStr[6]; //3 digits, a '.', a '-', and a null
@@ -151,9 +156,9 @@ void CHudStrafeOffset::Paint()
     surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 144, m_NormFontY);
     surface()->DrawPrintText(uavgOffsetStr, Q_wcslen(uavgOffsetStr));
     
-    for (int i = 0; i < 5; i++)
+    for (int i = 1; i < 5; i++)
     {
-        PaintOffset(histOffset, i);
+        PaintOffset(histOffset + static_cast<int>(m_flHistOffset), i);
         histOffset += histStep;
     }
 }
