@@ -59,10 +59,10 @@ static ConVar mom_trail_color_a("mom_trail_color_a", "255", FCVAR_ARCHIVE, "Alph
     true, 0, true, 255, TrailCallback);
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
-      m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
-      m_bPrevTimerRunning(false), m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f),
-      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
+    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
+    m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10), m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
+    m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
+    m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -88,6 +88,7 @@ CMomentumPlayer::~CMomentumPlayer()
 {
     RemoveTrail();
     RemoveAllCheckpoints();
+    RemoveAllOnehops();
 }
 
 void CMomentumPlayer::Precache()
@@ -269,6 +270,9 @@ void CMomentumPlayer::Spawn()
     // Load the player's checkpoints, only if we are spawning for the first time
     if (m_rcCheckpoints.IsEmpty())
         g_MOMCheckpointSystem->LoadMapCheckpoints(this);
+
+    // Reset current checkpoint trigger upon spawn
+    m_pCurrentCheckpoint = nullptr;
 }
 
 // Obtains the player's previous origin using their current origin as a base.
@@ -480,6 +484,32 @@ void CMomentumPlayer::RemoveAllCheckpoints()
     m_rcCheckpoints.PurgeAndDeleteElements();
     m_SrvData.m_iCurrentStepCP = -1;
     m_SrvData.m_iCheckpointCount = 0;
+}
+
+void CMomentumPlayer::AddOnehop(CTriggerOnehop* pTrigger)
+{
+    if (m_vecOnehops.Count() > 0)
+    {
+        // Go backwards so we don't have to worry about anything
+        FOR_EACH_VEC_BACK(m_vecOnehops, i)
+        {
+            CTriggerOnehop *pOnehop = m_vecOnehops[i];
+            if (pOnehop && pOnehop->HasSpawnFlags(SF_TELEPORT_RESET_ONEHOP))
+                m_vecOnehops.Remove(i);
+        }
+    }
+
+    m_vecOnehops.AddToTail(pTrigger);
+}
+
+bool CMomentumPlayer::FindOnehopOnList(CTriggerOnehop* pTrigger) const
+{
+    return m_vecOnehops.Find(pTrigger) != m_vecOnehops.InvalidIndex();
+}
+
+void CMomentumPlayer::RemoveAllOnehops()
+{
+    m_vecOnehops.RemoveAll();
 }
 
 void CMomentumPlayer::ToggleDuckThisFrame(bool bState)

@@ -72,10 +72,10 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
 
     virtual void AfterTeleport(){}; // base class does nothing
 
-  private:
-
+protected:
     void HandleTeleport(CBaseEntity *);
 
+private:
     bool m_bResetVelocity;
     bool m_bResetAngles;
     CBaseEntity *pDestinationEnt;
@@ -312,10 +312,10 @@ class CFuncShootBoost : public CBreakable
 };
 
 // CTriggerMomentumPush
-class CTriggerMomentumPush : public CTriggerTeleportEnt
+class CTriggerMomentumPush : public CBaseMomentumTrigger
 {
   public:
-    DECLARE_CLASS(CTriggerMomentumPush, CTriggerTeleportEnt);
+    DECLARE_CLASS(CTriggerMomentumPush, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
     CTriggerMomentumPush();
@@ -325,19 +325,8 @@ class CTriggerMomentumPush : public CTriggerTeleportEnt
     void EndTouch(CBaseEntity *) OVERRIDE;
     // Called when (and by) either a StartTouch() or EndTouch() event happens and their requisites are met
     void OnSuccessfulTouch(CBaseEntity *);
-    float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
-    void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
-    void AfterTeleport() OVERRIDE
-    {
-        m_fStartTouchedTime = -1.0f;
-        SetDestinationEnt(nullptr);
-    }
 
   private:
-    // The time that the player initally touched the trigger
-    float m_fStartTouchedTime;
-    // Seconds to hold before activating the teleport
-    float m_fMaxHoldSeconds;
     // Force in units per seconds applied to the player
     float m_fPushForce;
     // 1: SetPlayerVelocity to final push force

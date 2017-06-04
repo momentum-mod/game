@@ -413,10 +413,11 @@ DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"), END_DATADESC(
 void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 {
     BaseClass::StartTouch(pOther);
-    if (pOther->IsPlayer())
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
-        g_pMomentumTimer->SetCurrentCheckpointTrigger(this);
-        g_pMomentumTimer->RemoveAllOnehopsFromList();
+        pPlayer->SetCurrentCheckpointTrigger(this);
+        pPlayer->RemoveAllOnehops();
     }
 }
 //----------------------------------------------------------------------------------------------
@@ -430,8 +431,9 @@ END_DATADESC();
 
 bool CFilterCheckpoint::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
-    return (g_pMomentumTimer->GetCurrentCheckpoint() &&
-            g_pMomentumTimer->GetCurrentCheckpoint()->GetCheckpointNumber() >= m_iCheckpointNumber);
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pEntity);
+    return (pPlayer && pPlayer->GetCurrentCheckpointTrigger() &&
+            pPlayer->GetCurrentCheckpointTrigger()->GetCheckpointNumber() >= m_iCheckpointNumber);
 }
 //----------------------------------------------------------------------------------------------
 
@@ -501,7 +503,9 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_teleport_checkpoint, CTriggerTeleportCheck
 
 void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 {
-    SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+        SetDestinationEnt(pPlayer->GetCurrentCheckpointTrigger());
     BaseClass::StartTouch(pOther);
 }
 //-----------------------------------------------------------------------------------------------
@@ -513,48 +517,37 @@ BEGIN_DATADESC(CTriggerOnehop)
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
 END_DATADESC();
 
-CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1){};
+CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(-1.0), m_fMaxHoldSeconds(1) {};
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
     // Needed for the Think() function of this class
     CBaseMomentumTrigger::StartTouch(pOther);
 
-    if (pOther->IsPlayer())
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
     {
         m_fStartTouchedTime = gpGlobals->realtime;
-        if (g_pMomentumTimer->FindOnehopOnList(this) != (-1))
+        if (pPlayer->FindOnehopOnList(this))
         {
-            SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-            BaseClass::StartTouch(pOther); // Does the teleporting
+            SetDestinationEnt(pPlayer->GetCurrentCheckpointTrigger());
+            HandleTeleport(pPlayer); // Does the teleporting
         }
         else
         {
-            if (g_pMomentumTimer->GetOnehopListCount() > 0)
-            {
-                // I don't know if Count gets updated for each for, so better be safe than sorry
-                // This method shouldn't be slow. Isn't it?
-                int c_MaxCount = g_pMomentumTimer->GetOnehopListCount();
-                for (int iIndex = 0; iIndex < c_MaxCount; iIndex++)
-                {
-                    CTriggerOnehop *thisOnehop = g_pMomentumTimer->FindOnehopOnList(iIndex);
-                    if (thisOnehop != nullptr && thisOnehop->HasSpawnFlags(SF_TELEPORT_RESET_ONEHOP))
-                        g_pMomentumTimer->RemoveOnehopFromList(thisOnehop);
-                }
-            }
-            g_pMomentumTimer->AddOnehopToListTail(this);
+            pPlayer->AddOnehop(this);
         }
     }
 }
 
 void CTriggerOnehop::Think()
 {
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) &&
         gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
-        SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-        BaseClass::StartTouch(pPlayer);
+        SetDestinationEnt(pPlayer->GetCurrentCheckpointTrigger());
+        HandleTeleport(pPlayer);
     }
 }
 //-----------------------------------------------------------------------------------------------
@@ -565,8 +558,9 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_resetonehop, CTriggerResetOnehop);
 void CTriggerResetOnehop::StartTouch(CBaseEntity *pOther)
 {
     BaseClass::StartTouch(pOther);
-    if (pOther->IsPlayer())
-        g_pMomentumTimer->RemoveAllOnehopsFromList();
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer)
+        pPlayer->RemoveAllOnehops();
 }
 //-----------------------------------------------------------------------------------------------
 
@@ -592,17 +586,17 @@ void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 {
     // We don't want to keep checking for tp
     m_fStartTouchedTime = -1.0f;
-    BaseClass::EndTouch(pOther);
+    CBaseMomentumTrigger::EndTouch(pOther);
 }
 
 void CTriggerMultihop::Think()
 {
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+    CMomentumPlayer* pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) &&
         gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
-        SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
-        BaseClass::StartTouch(pPlayer);
+        SetDestinationEnt(pPlayer->GetCurrentCheckpointTrigger());
+        HandleTeleport(pPlayer);
     }
 }
 //-----------------------------------------------------------------------------------------------
@@ -809,16 +803,18 @@ DEFINE_KEYFIELD(m_vPushDir, FIELD_VECTOR, "pushdir")
 , DEFINE_KEYFIELD(m_fPushForce, FIELD_FLOAT, "force"),
     DEFINE_KEYFIELD(m_iIncrease, FIELD_INTEGER, "increase") END_DATADESC();
 
-CTriggerMomentumPush::CTriggerMomentumPush() : m_fStartTouchedTime(0.0), m_fMaxHoldSeconds(1){};
+CTriggerMomentumPush::CTriggerMomentumPush(){};
 
 void CTriggerMomentumPush::StartTouch(CBaseEntity *pOther)
 {
+    BaseClass::StartTouch(pOther);
     if (pOther && HasSpawnFlags(SF_PUSH_ONSTART) && pOther->IsPlayer())
         OnSuccessfulTouch(pOther);
 }
 
 void CTriggerMomentumPush::EndTouch(CBaseEntity *pOther)
 {
+    BaseClass::EndTouch(pOther);
     if (pOther && HasSpawnFlags(SF_PUSH_ONEND) && pOther->IsPlayer())
         OnSuccessfulTouch(pOther);
 }

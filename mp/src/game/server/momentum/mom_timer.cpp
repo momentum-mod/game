@@ -113,7 +113,6 @@ void CMomentumTimer::LevelShutdownPreEntity()
     if (IsRunning())
         Stop(false);
     m_bWereCheatsActivated = false;
-    SetCurrentCheckpointTrigger(nullptr);
     SetStartTrigger(nullptr);
     SetCurrentZone(nullptr);
     ClearStartMark();
@@ -392,16 +391,6 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
     pPlayer->SetMoveType(MOVETYPE_WALK);
     pPlayer->m_SrvData.m_bHasPracticeMode = false;
 }
-
-//--------- CTriggerOnehop stuff --------------------------------
-
-int CMomentumTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger) { return onehops.AddToTail(pTrigger); }
-
-bool CMomentumTimer::RemoveOnehopFromList(CTriggerOnehop *pTrigger) { return onehops.FindAndRemove(pTrigger); }
-
-int CMomentumTimer::FindOnehopOnList(CTriggerOnehop *pTrigger) { return onehops.Find(pTrigger); }
-
-CTriggerOnehop *CMomentumTimer::FindOnehopOnList(int pIndexOnList) { return onehops.Element(pIndexOnList); }
 
 
 //--------- Commands --------------------------------
