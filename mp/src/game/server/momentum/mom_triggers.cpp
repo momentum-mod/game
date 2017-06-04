@@ -1,5 +1,6 @@
-#include "mom_triggers.h"
 #include "cbase.h"
+
+#include "mom_triggers.h"
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
