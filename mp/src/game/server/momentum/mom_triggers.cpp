@@ -1,5 +1,5 @@
-#include "cbase.h"
 #include "mom_triggers.h"
+#include "cbase.h"
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
@@ -44,8 +44,9 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
                                                  pPlayer->GetLocalVelocity().Length2D());
             g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_END);
             pPlayer->m_RunStats.SetZoneEnterTime(stageNum, g_pMomentumTimer->CalculateStageTime(stageNum));
-            pPlayer->m_RunStats.SetZoneTime(stageNum - 1, pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
-                                                              pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
+            pPlayer->m_RunStats.SetZoneTime(stageNum - 1,
+                                            pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
+                                                pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
         }
     }
     else
@@ -128,7 +129,8 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
         // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating && !pPlayer->IsUsingCPMenu())
+        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating &&
+            !pPlayer->IsUsingCPMenu())
         {
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {
@@ -317,11 +319,10 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             }
 
             // This is needed for the final stage
-            pPlayer->m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
-                                                         pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
+            pPlayer->m_RunStats.SetZoneTime(
+                zoneNum, g_pMomentumTimer->GetCurrentTime() - pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
 
             // Ending velocity checks
-            
 
             float finalVel = endvel;
             float finalVel2D = endvel2D;
@@ -356,7 +357,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             pGhost->m_SrvData.m_RunData.m_bMapFinished = true;
             pGhost->m_SrvData.m_RunData.m_bTimerRunning = false;
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
-            
+
             // Needed for hud_comparisons
             IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
             if (timerStateEvent)
@@ -385,7 +386,7 @@ void CTriggerTimerStop::EndTouch(CBaseEntity *pOther)
     int lastZoneNumber = -1;
     if (pMomPlayer)
     {
-        pMomPlayer->SetLaggedMovementValue(1.0f);  // Reset slow motion
+        pMomPlayer->SetLaggedMovementValue(1.0f);            // Reset slow motion
         pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
         lastZoneNumber = pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone;
     }
@@ -442,7 +443,7 @@ DEFINE_KEYFIELD(m_bResetVelocity, FIELD_BOOLEAN, "stop")
 
 void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
 {
-    BaseClass::StartTouch( pOther );
+    BaseClass::StartTouch(pOther);
 
     // SF_TELE_ONEXIT defaults to 0 so ents that inherit from this class and call this method DO fire the tp logic
     if (pOther && !HasSpawnFlags(SF_TELE_ONEXIT))
@@ -451,9 +452,9 @@ void CTriggerTeleportEnt::StartTouch(CBaseEntity *pOther)
     }
 }
 
-void CTriggerTeleportEnt::EndTouch(CBaseEntity* pOther)
+void CTriggerTeleportEnt::EndTouch(CBaseEntity *pOther)
 {
-    BaseClass::EndTouch( pOther );
+    BaseClass::EndTouch(pOther);
 
     if (pOther && HasSpawnFlags(SF_TELE_ONEXIT))
     {
@@ -461,7 +462,7 @@ void CTriggerTeleportEnt::EndTouch(CBaseEntity* pOther)
     }
 }
 
-void CTriggerTeleportEnt::HandleTeleport(CBaseEntity* pOther)
+void CTriggerTeleportEnt::HandleTeleport(CBaseEntity *pOther)
 {
     if (pOther)
     {
@@ -486,7 +487,7 @@ void CTriggerTeleportEnt::HandleTeleport(CBaseEntity* pOther)
             tmp.z -= pOther->WorldAlignMins().z;
 
             pOther->Teleport(&tmp, m_bResetAngles ? &pDestinationEnt->GetAbsAngles() : nullptr,
-                m_bResetVelocity ? &vec3_origin : nullptr);
+                             m_bResetVelocity ? &vec3_origin : nullptr);
             AfterTeleport();
         }
     }
@@ -548,7 +549,8 @@ void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 void CTriggerOnehop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) && gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
+    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) &&
+        gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
         SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
         BaseClass::StartTouch(pPlayer);
@@ -595,7 +597,8 @@ void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 void CTriggerMultihop::Think()
 {
     CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) && gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
+    if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) &&
+        gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
         SetDestinationEnt(g_pMomentumTimer->GetCurrentCheckpoint());
         BaseClass::StartTouch(pPlayer);
@@ -768,7 +771,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
                 finalVel = pInflictor->GetAbsVelocity();
             break;
         case 3: // The description of this method says the player velocity is increaed by final velocity,
-            // but we're just adding one vec to the other, which is not quite the same
+                // but we're just adding one vec to the other, which is not quite the same
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel += pInflictor->GetAbsVelocity();
             break;
