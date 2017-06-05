@@ -584,6 +584,20 @@ Scheme
 				"custom"	"1"
 			}
 		}
+		HudNumbersBig
+		{
+			"1"
+			{
+				"name"		"obsidian"
+				"tall"		"38"
+				"weight"	"1000"
+				"antialias" "1"
+				"additive"	"1"
+				"custom"	"1"
+			        "bold"          "1"
+                        }
+		}
+
 		HudNumbersGlow
 		{
 			"1"

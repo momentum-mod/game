@@ -3,14 +3,12 @@
     HudStrafeOffset
         {
             "fieldname"         "HudStrafeOffset"
-            "xpos"              "c-248"
-            "ypos"              "453"
+            "xpos"              "c-260"
+            "ypos"              "444"
             "wide"              "192"
             "tall"              "21"
             "visible"           "1"
             "enabled"           "1"
-            "NumberFont"        "HudNumbersSmallBold"
-            "SmallNumberFont"   "HudNumbersExtremelySmall"
         }
     //Speedometer
     HudSpeedMeter

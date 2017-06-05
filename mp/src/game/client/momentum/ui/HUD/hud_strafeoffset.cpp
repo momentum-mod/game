@@ -12,8 +12,6 @@
 
 using namespace vgui;
 
-#define HISTWIDTH 4
-
 static ConVar strafeoffset_draw("mom_strafeoffset_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                 "Toggles displaying the strafeoffset data. (1 = only timer , 2 = always (except practice mode))\n",
                                 true, 0, true, 2);
@@ -50,18 +48,8 @@ class CHudStrafeOffset : public CHudElement, public Panel
             int offset = pGhost ? pGhost->m_SrvData.m_strafeOffset : m_pPlayer->m_SrvData.m_strafeOffset;
 
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("NewStrafeOffset");
-
-            float avgTemp = static_cast<float>(m_nOffsetCt) * m_fAvgOffset;
-            ++m_nOffsetCt;
-            m_fAvgOffset = (avgTemp + static_cast<float>(abs(offset))) / static_cast<float>(m_nOffsetCt);
-            m_fMovingAvg = static_cast<float>(m_vecHistInts[0] + m_vecHistInts[1] + m_vecHistInts[2] + m_vecHistInts[3] + offset) / min(5.0, (float) m_nOffsetCt);
-            
-            // Discard oldest history
-            m_vecHistInts.Remove(4);
-            // Add current offset to history
-            m_vecHistInts.AddToHead(offset);
         }
-        else //Must be timer_state
+        else //Must be timer_statem_hNumberFont
         {
             if (pEvent->GetBool("is_running"))
                 Reset();
@@ -71,6 +59,7 @@ class CHudStrafeOffset : public CHudElement, public Panel
     void PaintOffset(int offset, int index);
     
     C_MomentumPlayer *m_pPlayer;
+    //Color m_ColorArray[5];
     HFont m_hNumberFont;
 };
 
@@ -82,6 +71,7 @@ CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
 {
     ListenForGameEvent("strafe_offset");
     ListenForGameEvent("timer_state");
+    SetPaintBackgroundEnabled(false);
     for (int i = 0; i < 5; i++)
         m_vecHistInts.AddToHead(0);
     m_NormFontY = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
@@ -100,7 +90,7 @@ void CHudStrafeOffset::Reset()
 void CHudStrafeOffset::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-    m_hNumberFont = pScheme->GetFont("Default", true);
+    m_hNumberFont = pScheme->GetFont("HudNumbersBig", false);
 }
 
 bool CHudStrafeOffset::ShouldDraw()
@@ -117,6 +107,26 @@ bool CHudStrafeOffset::ShouldDraw()
     
     C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
     C_MOMRunEntityData *pData = pGhost ? &pGhost->m_SrvData.m_RunData : &m_pPlayer->m_SrvData.m_RunData;
+    
+    //Cheese way to detect the animation being finished. Callbacks are too much work.
+    //We can only update the history once the numbers are in the right spot
+    if (m_flHistOffset >= 43.99)
+    {
+        g_pClientMode->GetViewportAnimationController()->CancelAnimationsForPanel(this);
+        m_flHistOffset = 0.0;
+        
+        int offset = pGhost ? pGhost->m_SrvData.m_strafeOffset : m_pPlayer->m_SrvData.m_strafeOffset;
+        
+        float avgTemp = static_cast<float>(m_nOffsetCt) * m_fAvgOffset;
+        ++m_nOffsetCt;
+        m_fAvgOffset = (avgTemp + static_cast<float>(abs(offset))) / static_cast<float>(m_nOffsetCt);
+        m_fMovingAvg = fabs(static_cast<float>(m_vecHistInts[0] + m_vecHistInts[1] + m_vecHistInts[2] + m_vecHistInts[3] + offset) / min(5.0, (float) m_nOffsetCt));
+        
+        // Discard oldest history
+        m_vecHistInts.Remove(4);
+        // Add current offset to history
+        m_vecHistInts.AddToHead(offset);
+    }
 
     return CHudElement::ShouldDraw() && (strafeoffset_draw.GetInt() == 2 || pData->m_bTimerRunning);
 }
@@ -137,14 +147,14 @@ void CHudStrafeOffset::Paint()
     int histOffset = 0;
     
     surface()->DrawSetTextFont(m_hNumberFont);
-    surface()->DrawSetTextColor(100, 120, 140, 255); // MOM_TODO: Change this to be defined in HudLayout
+    surface()->DrawSetTextColor(255, 255, 255, 255);
     PaintOffset(static_cast<int>(m_flHistOffset), 0);
     histOffset += histStep;
     
     char avgOffsetStr[6], movingAvgOffsetStr[6]; //3 digits, a '.', a '-', and a null
     wchar_t uavgOffsetStr[6]{null}, umovingAvgOffsetStr[6]{null};
     Q_snprintf(avgOffsetStr, sizeof(avgOffsetStr), "%.2f", m_fAvgOffset);
-    Q_snprintf(movingAvgOffsetStr, sizeof(movingAvgOffsetStr), "%.2f", m_fMovingAvg);
+    Q_snprintf(movingAvgOffsetStr, sizeof(movingAvgOffsetStr), "%.1f", m_fMovingAvg);
     ANSI_TO_UNICODE(avgOffsetStr, uavgOffsetStr);
     ANSI_TO_UNICODE(movingAvgOffsetStr, umovingAvgOffsetStr);
     
@@ -158,6 +168,8 @@ void CHudStrafeOffset::Paint()
     
     for (int i = 1; i < 5; i++)
     {
+        if (m_nOffsetCt < i)
+            break;
         PaintOffset(histOffset + static_cast<int>(m_flHistOffset), i);
         histOffset += histStep;
     }
