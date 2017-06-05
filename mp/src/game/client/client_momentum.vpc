@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
+       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\stb"
         $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
     }
 }
@@ -125,6 +125,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\ColorPicker.cpp"
                     $File "momentum\ui\ModelPanel.h"
                     $File "momentum\ui\ModelPanel.cpp"
+                    $File "momentum\ui\CMomImagePanel.cpp"
+                    $File "momentum\ui\CMomImagePanel.h"
                 }
                 
                 $Folder "Leaderboards"
