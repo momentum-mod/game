@@ -27,6 +27,8 @@ class CHudStrafeOffset : public CHudElement, public Panel
     void Reset() OVERRIDE;
     void LevelShutdown() OVERRIDE{ m_pPlayer = nullptr; };
     
+    Color m_colors[5];
+    
     //Numerical offset history.
     // 0 = current, 1-4 = history, with 4 being oldest
     CUtlVectorFixed<int, 5> m_vecHistInts;
@@ -72,6 +74,11 @@ CHudStrafeOffset::CHudStrafeOffset(const char *pElementName)
     for (int i = 0; i < 5; i++)
         m_vecHistInts.AddToHead(0);
     m_NormFontY = (GetTall() - surface()->GetFontTall(m_hNumberFont)) / 2;
+    m_colors[0] = Color(200, 200, 200, 255);
+    m_colors[1] = Color(30, 150, 210, 245);
+    m_colors[2] = Color(30, 150, 210, 220);
+    m_colors[3] = Color(30, 150, 210, 180);
+    m_colors[4] = Color(30, 150, 210, 130);
 }
 
 void CHudStrafeOffset::Reset()
@@ -87,7 +94,7 @@ void CHudStrafeOffset::Reset()
 void CHudStrafeOffset::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-    m_hNumberFont = pScheme->GetFont("HudNumbersBig", false);
+    m_hNumberFont = pScheme->GetFont("HudNumbers", false);
 }
 
 bool CHudStrafeOffset::ShouldDraw()
@@ -134,7 +141,7 @@ void CHudStrafeOffset::PaintOffset(int offset, int indx)
     V_snwprintf(uOffset, 64, L"%i", m_vecHistInts[indx]);
     int xpos = (GetWide() - UTIL_ComputeStringWidth(m_hNumberFont, uOffset)) / 2;
     surface()->DrawSetTextPos(xpos - offset, m_NormFontY);
-    surface()->DrawSetTextColor(100, 120, 140, 255 - (30 * indx));
+    surface()->DrawSetTextColor(m_colors[indx]);
     surface()->DrawPrintText(uOffset, wcslen(uOffset));
 }
 
@@ -158,9 +165,11 @@ void CHudStrafeOffset::Paint()
     int avgwidth = UTIL_ComputeStringWidth(m_hNumberFont, uavgOffsetStr);
     int movingavgwidth = UTIL_ComputeStringWidth(m_hNumberFont, umovingAvgOffsetStr);
     
-    surface()->DrawSetTextPos((GetWide() - movingavgwidth) / 2 + 64, m_NormFontY);
+    surface()->DrawSetTextPos((GetWide() - movingavgwidth) / 2 + 144, m_NormFontY);
+    surface()->DrawSetTextColor(m_colors[1]);
     surface()->DrawPrintText(umovingAvgOffsetStr, wcslen(umovingAvgOffsetStr));
-    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 144, m_NormFontY);
+    surface()->DrawSetTextPos((GetWide() - avgwidth) / 2 + 72, m_NormFontY);
+    surface()->DrawSetTextColor(m_colors[1]);
     surface()->DrawPrintText(uavgOffsetStr, Q_wcslen(uavgOffsetStr));
     
     for (int i = 1; i < 5; i++)
