@@ -44,9 +44,6 @@ class CHudStrafeOffset : public CHudElement, public Panel
     {
         if (!Q_strcmp(pEvent->GetName(), "strafe_offset"))
         {
-            C_MomentumReplayGhostEntity *pGhost = m_pPlayer->GetReplayEnt();
-            int offset = pGhost ? pGhost->m_SrvData.m_strafeOffset : m_pPlayer->m_SrvData.m_strafeOffset;
-
             g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("NewStrafeOffset");
         }
         else //Must be timer_statem_hNumberFont
