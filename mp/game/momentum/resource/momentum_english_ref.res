@@ -139,7 +139,7 @@
         "MOM_MapSelector_LessThanDiff4" "< 4"
         "MOM_MapSelector_LessThanDiff5" "< 5"
         "MOM_MapSelector_LessThanDiff6" "< 6"
-        //MOM_TODO: Is '6' the best difficulty tier to stop at?
+    //MOM_TODO: Is '6' the best difficulty tier to stop at?
         "MOM_MapSelector_MapCount" "Maps (%s1)"
         "MOM_MapSelector_Maps" "Maps"
         "MOM_MapSelector_FilterCompletedMaps" "Hide completed maps"
@@ -247,7 +247,13 @@
         "MOM_Settings_Sync_Color_Type_1" "Ugly"//MOM_TODO: Change this to be accurate
         "MOM_Settings_Sync_Color_Type_2" "Default one"
 
-        "MOM_Settings_Buttons_Label" "Key Presses"
+        
+		"MOM_Settings_StrafeOffset_Draw_Label" "When to display strafe offset data"
+		"MOM_Settings_StrafeOffset_Draw_None" "Never"
+		"MOM_Settings_StrafeOffset_Draw_Timer" "Only when running"
+		"MOM_Settings_StrafeOffset_Draw_Always" "Always"
+		
+		"MOM_Settings_Buttons_Label" "Key Presses"
         "MOM_Settings_Buttons_Show" "Display player inputs, jump count, and strafe count."
 
         "MOM_Timer_Label" "Timer"

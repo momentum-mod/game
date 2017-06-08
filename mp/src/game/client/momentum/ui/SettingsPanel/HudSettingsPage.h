@@ -22,7 +22,7 @@ class HudSettingsPage : public SettingsPage
     void OnCheckboxChecked(Panel *p) OVERRIDE;
 
 private:
-    vgui::ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
+    ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize, *m_pStrafeOffsetDisplay;
 
     vgui::CvarToggleCheckButton *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel,
         *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;

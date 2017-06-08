@@ -13,7 +13,7 @@
 using namespace vgui;
 
 static ConVar strafeoffset_draw("mom_strafeoffset_draw", "1", FCVAR_CLIENTDLL | FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                "Toggles displaying the strafeoffset data. (1 = only timer , 2 = always (except practice mode))\n",
+                                "Toggles displaying the strafeoffset data. (0 = Don't draw , 1 = only timer , 2 = always (except practice mode))\n",
                                 true, 0, true, 2);
 
 class CHudStrafeOffset : public CHudElement, public Panel

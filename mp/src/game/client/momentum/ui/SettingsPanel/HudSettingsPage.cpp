@@ -56,6 +56,13 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
 
     m_pTimerShow = FindControl<CvarToggleCheckButton>("TimerShow");
     m_pTimerShow->AddActionSignalTarget(this);
+
+    m_pStrafeOffsetDisplay = FindControl<ComboBox>("StrafeOffsetDisplay");
+    m_pStrafeOffsetDisplay->SetNumberOfEditLines(3);
+    m_pStrafeOffsetDisplay->AddItem("#MOM_Settings_StrafeOffset_Draw_None", nullptr);
+    m_pStrafeOffsetDisplay->AddItem("#MOM_Settings_StrafeOffset_Draw_Timer", nullptr);
+    m_pStrafeOffsetDisplay->AddItem("#MOM_Settings_StrafeOffset_Draw_Always", nullptr);
+    m_pStrafeOffsetDisplay->AddActionSignalTarget(this);
 }
 
 void HudSettingsPage::OnApplyChanges()
@@ -63,22 +70,26 @@ void HudSettingsPage::OnApplyChanges()
     BaseClass::OnApplyChanges();
 
     ConVarRef units("mom_hud_speedometer_units"), sync_type("mom_hud_strafesync_type"),
-        sync_color("mom_hud_strafesync_colorize"), speed_color("mom_hud_speedometer_colorize");
+        sync_color("mom_hud_strafesync_colorize"), speed_color("mom_hud_speedometer_colorize"),
+		strafe_offset("mom_strafeoffset_draw");
 
     units.SetValue(m_pSpeedometerUnits->GetActiveItem() + 1);
     sync_type.SetValue(m_pSyncType->GetActiveItem() + 1); // Sync type needs +1 added to it before setting convar!
     sync_color.SetValue(m_pSyncColorize->GetActiveItem());
     speed_color.SetValue(m_pSpeedometerColorize->GetActiveItem());
+    strafe_offset.SetValue(m_pStrafeOffsetDisplay->GetActiveItem());
 }
 
 void HudSettingsPage::LoadSettings()
 {
     ConVarRef units("mom_hud_speedometer_units"), sync_type("mom_hud_strafesync_type"),
-        sync_color("mom_hud_strafesync_colorize"), speed_color("mom_hud_speedometer_colorize");
+        sync_color("mom_hud_strafesync_colorize"), speed_color("mom_hud_speedometer_colorize"),
+		strafe_offset("mom_strafeoffset_draw");
     m_pSpeedometerUnits->ActivateItemByRow(units.GetInt() - 1);
     m_pSyncType->ActivateItemByRow(sync_type.GetInt() - 1);
     m_pSyncColorize->ActivateItemByRow(sync_color.GetInt());
     m_pSpeedometerColorize->ActivateItemByRow(speed_color.GetInt());
+    m_pStrafeOffsetDisplay->ActivateItemByRow(strafe_offset.GetInt());
 }
 
 void HudSettingsPage::OnCheckboxChecked(Panel *p)
