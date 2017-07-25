@@ -4,8 +4,6 @@
 #include "mom_replay_base.h"
 #include "utlmap.h"
 
-class CMomentumReplayGhostEntity;
-
 class CMomReplayManager
 {
   public:
@@ -30,13 +28,9 @@ class CMomReplayManager
     inline bool PlayingBack() const { return m_bPlayingBack; }
 
   private:
-    static bool RegisterCreators();
-
     CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
     bool m_bRecording;
     bool m_bPlayingBack;
     uint8 m_ucCurrentVersion;
-
-    static bool m_bDummy;
 };

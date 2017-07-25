@@ -1,5 +1,4 @@
-#ifndef MOM_REPLAY_H
-#define MOM_REPLAY_H
+#pragma once
 
 #include "cbase.h"
 #include "filesystem.h"
@@ -77,5 +76,3 @@ private:
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;
-
-#endif // MOM_REPLAY_H
