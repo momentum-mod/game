@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "mom_replay_manager.h"
 #include "filesystem.h"
-#include "mom_replay_v1.h"
+#include "mom_replay_versions.h"
 #ifndef CLIENT_DLL
 #include "momentum/mom_replay_entity.h"
 #endif

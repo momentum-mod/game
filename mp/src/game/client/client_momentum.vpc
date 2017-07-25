@@ -234,8 +234,8 @@ $Project "Client (Momentum)"
                 
                 $Folder "Versions"
                 {                   
-                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_v1.cpp"
-                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_v1.h"
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_versions.cpp"
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_versions.h"
                 }
             }
             
