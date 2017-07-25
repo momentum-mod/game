@@ -9,23 +9,6 @@
 #define REPLAY_MAGIC_LE 0x524D4F4D
 #define REPLAY_MAGIC_BE 0x4D4F4D52
 
-CUtlMap<uint8, CMomReplayManager::CReplayCreatorBase*> CMomReplayManager::m_mapCreators;
-bool CMomReplayManager::m_bDummy = CMomReplayManager::RegisterCreators();
-
-//////////////////////////////////////////////////////////////////////////
-
-bool CMomReplayManager::RegisterCreators()
-{
-    SetDefLessFunc(CMomReplayManager::m_mapCreators);
-
-    // Register any new replay versions here.
-    m_mapCreators.Insert(1, new CMomReplayManager::CReplayCreator<CMomReplayV1>());
-
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 CMomReplayManager::CMomReplayManager() :
     m_pRecordingReplay(nullptr),
     m_pPlaybackReplay(nullptr),
@@ -34,7 +17,6 @@ CMomReplayManager::CMomReplayManager() :
     m_ucCurrentVersion(0)
 {
     // DO NOT FORGET to set the latest replay version here.
-    // This could be automated but CUltMap is a piece of work.
     m_ucCurrentVersion = 1;
 }
 
@@ -56,7 +38,7 @@ CMomReplayBase* CMomReplayManager::StartRecording()
 
     m_bRecording = true;
 
-    m_pRecordingReplay = m_mapCreators.Element(m_mapCreators.Find(m_ucCurrentVersion))->CreateReplay();
+    m_pRecordingReplay = CreateEmptyReplay(m_ucCurrentVersion);
     return m_pRecordingReplay;
 }
 
@@ -71,6 +53,33 @@ void CMomReplayManager::StopRecording()
 
     delete m_pRecordingReplay;
     m_pRecordingReplay = nullptr;
+}
+
+CMomReplayBase *CMomReplayManager::CreateEmptyReplay(uint8 version)
+{
+    //Is there a more compact way to do this without introducing more intermediate objects?
+    switch(version)
+    {
+        case 1:
+            return new CMomReplayV1();
+            
+        default:
+            Log("Invalid replay version: %d\n", version);
+            return nullptr;
+    }
+}
+
+CMomReplayBase *CMomReplayManager::CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad)
+{
+    switch(version)
+    {
+        case 1:
+            return new CMomReplayV1(reader, bFullLoad);
+        
+        default:
+            Log("Invalid replay version: %d\n", version);
+            return nullptr;
+    }
 }
 
 CMomReplayBase* CMomReplayManager::LoadReplayFile(const char* pFileName, bool bFullLoad, const char* pPathID)
@@ -100,16 +109,10 @@ CMomReplayBase* CMomReplayManager::LoadReplayFile(const char* pFileName, bool bF
 
     uint8 version = reader.ReadUInt8();
 
-    if (m_mapCreators.Find(version) == m_mapCreators.InvalidIndex())
-    {
-        filesystem->Close(file);
-        return nullptr;
-    }
-
     Log("Loading replay '%s' of version '%d'...\n", pFileName, version);
 
     // MOM_TODO (OrfeasZ): Verify that replay parsing was successful.
-    CMomReplayBase * toReturn = m_mapCreators.Element(m_mapCreators.Find(version))->LoadReplay(&reader, bFullLoad);
+    CMomReplayBase * toReturn = CreateReplay(version, &reader, bFullLoad);
 
     filesystem->Close(file);
     Log("Successfully loaded replay.\n");

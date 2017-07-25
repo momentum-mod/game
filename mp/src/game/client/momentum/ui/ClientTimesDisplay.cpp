@@ -712,7 +712,8 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
             char pReplayPath[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
             CMomReplayBase *pBase = CMomReplayManager::LoadReplayFile(pReplayPath, false);
-
+            assert(pBase != nullptr);
+            
             if (pBase)
                 m_vLocalTimes.InsertNoSort(pBase);
 

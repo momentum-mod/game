@@ -373,7 +373,8 @@ CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate,
             char pReplayPath[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
             CMomReplayBase *pBase = CMomReplayManager::LoadReplayFile(pReplayPath, false);
-
+            assert(pBase != nullptr);
+                
             if (CheckReplayB(pFastest, pBase, tickrate, flags))
             {
                 pFastest = pBase;

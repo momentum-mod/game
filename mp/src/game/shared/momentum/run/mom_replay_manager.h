@@ -8,24 +8,12 @@ class CMomentumReplayGhostEntity;
 
 class CMomReplayManager
 {
-  private:
-    class CReplayCreatorBase
-    {
-      public:
-        virtual CMomReplayBase *CreateReplay() = 0;
-        virtual CMomReplayBase *LoadReplay(CBinaryReader *reader, bool bFull) = 0;
-    };
-
-    template <typename T> class CReplayCreator : public CReplayCreatorBase
-    {
-      public:
-        virtual CMomReplayBase *CreateReplay() OVERRIDE { return new T(); }
-        virtual CMomReplayBase *LoadReplay(CBinaryReader *reader, bool bFull) OVERRIDE { return new T(reader, bFull); }
-    };
-
   public:
     CMomReplayManager();
     ~CMomReplayManager();
+
+    static CMomReplayBase *CreateEmptyReplay(uint8 version);
+    static CMomReplayBase *CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad);
 
     CMomReplayBase *StartRecording();
     void StopRecording();
@@ -50,6 +38,5 @@ class CMomReplayManager
     bool m_bPlayingBack;
     uint8 m_ucCurrentVersion;
 
-    static CUtlMap<uint8, CReplayCreatorBase *> m_mapCreators;
     static bool m_bDummy;
 };
