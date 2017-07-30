@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "mom_replay_manager.h"
+#include "mom_replay_factory.h"
 #include "filesystem.h"
 #include "mom_replay_versions.h"
 #ifndef CLIENT_DLL
@@ -9,7 +9,7 @@
 #define REPLAY_MAGIC_LE 0x524D4F4D
 #define REPLAY_MAGIC_BE 0x4D4F4D52
 
-CMomReplayManager::CMomReplayManager() :
+CMomReplayFactory::CMomReplayFactory() :
     m_pRecordingReplay(nullptr),
     m_pPlaybackReplay(nullptr),
     m_bRecording(false),
@@ -20,7 +20,7 @@ CMomReplayManager::CMomReplayManager() :
     m_ucCurrentVersion = 1;
 }
 
-CMomReplayManager::~CMomReplayManager()
+CMomReplayFactory::~CMomReplayFactory()
 {
     if (m_pRecordingReplay)
         delete m_pRecordingReplay;
@@ -29,7 +29,7 @@ CMomReplayManager::~CMomReplayManager()
         delete m_pPlaybackReplay;
 }
 
-CMomReplayBase* CMomReplayManager::StartRecording()
+CMomReplayBase* CMomReplayFactory::StartRecording()
 {
     if (Recording())
         return m_pRecordingReplay;
@@ -42,7 +42,7 @@ CMomReplayBase* CMomReplayManager::StartRecording()
     return m_pRecordingReplay;
 }
 
-void CMomReplayManager::StopRecording()
+void CMomReplayFactory::StopRecording()
 {
     if (!Recording())
         return;
@@ -55,7 +55,7 @@ void CMomReplayManager::StopRecording()
     m_pRecordingReplay = nullptr;
 }
 
-CMomReplayBase *CMomReplayManager::CreateEmptyReplay(uint8 version)
+CMomReplayBase *CMomReplayFactory::CreateEmptyReplay(uint8 version)
 {
     //Is there a more compact way to do this without introducing more intermediate objects?
     switch(version)
@@ -69,7 +69,7 @@ CMomReplayBase *CMomReplayManager::CreateEmptyReplay(uint8 version)
     }
 }
 
-CMomReplayBase *CMomReplayManager::CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad)
+CMomReplayBase *CMomReplayFactory::CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad)
 {
     switch(version)
     {
@@ -82,7 +82,7 @@ CMomReplayBase *CMomReplayManager::CreateReplay(uint8 version, CBinaryReader* re
     }
 }
 
-CMomReplayBase* CMomReplayManager::LoadReplayFile(const char* pFileName, bool bFullLoad, const char* pPathID)
+CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bFullLoad, const char* pPathID)
 {
     Log("Loading a replay from '%s'...\n", pFileName);
 
@@ -121,7 +121,7 @@ CMomReplayBase* CMomReplayManager::LoadReplayFile(const char* pFileName, bool bF
 }
 
 
-CMomReplayBase *CMomReplayManager::LoadReplay(const char *pFileName, bool bFullLoad, const char *pPathID)
+CMomReplayBase *CMomReplayFactory::LoadReplay(const char *pFileName, bool bFullLoad, const char *pPathID)
 {
     if (PlayingBack())
         StopPlayback();
@@ -149,7 +149,7 @@ CMomReplayBase *CMomReplayManager::LoadReplay(const char *pFileName, bool bFullL
     return m_pPlaybackReplay;
 }
 
-void CMomReplayManager::UnloadPlayback(bool shutdown)
+void CMomReplayFactory::UnloadPlayback(bool shutdown)
 {
     SetPlayingBack(false);
 
@@ -168,7 +168,7 @@ void CMomReplayManager::UnloadPlayback(bool shutdown)
     DevLog("Successfully unloaded playback, shutdown: %i\n", shutdown);
 }
 
-bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
+bool CMomReplayFactory::StoreReplay(const char* path, const char* pathID)
 {
     if (!m_pRecordingReplay)
         return false;
@@ -194,7 +194,7 @@ bool CMomReplayManager::StoreReplay(const char* path, const char* pathID)
     return true;
 }
 
-void CMomReplayManager::StopPlayback()
+void CMomReplayFactory::StopPlayback()
 {
     if (!PlayingBack())
         return;

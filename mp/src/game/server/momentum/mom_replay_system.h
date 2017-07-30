@@ -6,7 +6,7 @@
 
 #include "run/mom_replay_data.h"
 #include <momentum/mom_player_shared.h>
-#include "run/mom_replay_manager.h"
+#include "run/mom_replay_factory.h"
 
 class CMomentumReplayGhostEntity;
 
@@ -22,7 +22,7 @@ public:
         m_fRecEndTime(-1.0f),
         m_player(nullptr)
     {
-        m_pReplayManager = new CMomReplayManager();
+        m_pReplayManager = new CMomReplayFactory();
     }
 
     virtual ~CMomentumReplaySystem() OVERRIDE
@@ -58,7 +58,7 @@ public:
     void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
 
-    inline CMomReplayManager* GetReplayManager() const { return m_pReplayManager; }
+    inline CMomReplayFactory* GetReplayManager() const { return m_pReplayManager; }
 
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
@@ -72,7 +72,7 @@ private:
     float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
 
     CMomentumPlayer *m_player;
-    CMomReplayManager* m_pReplayManager;
+    CMomReplayFactory* m_pReplayManager;
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;

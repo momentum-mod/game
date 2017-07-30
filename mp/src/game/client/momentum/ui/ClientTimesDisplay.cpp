@@ -36,7 +36,7 @@
 #include <time.h>
 #include <util/jsontokv.h>
 #include "IMessageboxPanel.h"
-#include "run/mom_replay_manager.h"
+#include "run/mom_replay_factory.h"
 
 extern IFileSystem *filesystem;
 
@@ -711,7 +711,7 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
             // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
             char pReplayPath[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
-            CMomReplayBase *pBase = CMomReplayManager::LoadReplayFile(pReplayPath, false);
+            CMomReplayBase *pBase = CMomReplayFactory::LoadReplayFile(pReplayPath, false);
             assert(pBase != nullptr);
             
             if (pBase)
