@@ -20,7 +20,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     // don't record if we're watching a preexisting replay or in practice mode
     if (!m_player->IsWatchingReplay() && !m_player->m_bHasPracticeMode)
     {
-        m_pReplayManager->StartRecording();
+        g_ReplayFactory.StartRecording();
         m_iTickCount = 1; // recoring begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
     }
@@ -34,7 +34,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     {
         replaySavedEvent->SetBool("save", false);
         gameeventmanager->FireEvent(replaySavedEvent);
-        m_pReplayManager->StopRecording();
+        g_ReplayFactory.StopRecording();
         return;
     }
 
@@ -69,10 +69,10 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     SetReplayInfo();
     SetRunStats();
 
-    int postTrimTickCount = m_pReplayManager->GetRecordingReplay()->GetFrameCount();
+    int postTrimTickCount = g_ReplayFactory.GetRecordingReplay()->GetFrameCount();
     DevLog("After trimming: %i\n", postTrimTickCount);
-    m_pReplayManager->StoreReplay(newRecordingPath);
-    m_pReplayManager->StopRecording();
+    g_ReplayFactory.StoreReplay(newRecordingPath);
+    g_ReplayFactory.StopRecording();
     // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
     Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
     
@@ -83,7 +83,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
         gameeventmanager->FireEvent(replaySavedEvent);
     }
     // Load the last run that we did in case we want to watch it
-    m_pReplayManager->LoadReplay(newRecordingPath);
+    g_ReplayFactory.LoadReplay(newRecordingPath);
 
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
@@ -100,7 +100,7 @@ void CMomentumReplaySystem::TrimReplay()
         if (newStart > m_iStartRecordingTick)
         {
             int extraFrames = newStart - m_iStartRecordingTick;
-            CMomReplayBase *pReplay = m_pReplayManager->GetRecordingReplay();
+            CMomReplayBase *pReplay = g_ReplayFactory.GetRecordingReplay();
             if (pReplay)
             {
                 // Remove the amount of extra frames from the head
@@ -117,9 +117,9 @@ void CMomentumReplaySystem::TrimReplay()
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
     // We only record frames that the player isn't pausing on
-    if (m_pReplayManager->Recording() && !engine->IsPaused())
+    if (g_ReplayFactory.Recording() && !engine->IsPaused())
     {
-        m_pReplayManager->GetRecordingReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(),
+        g_ReplayFactory.GetRecordingReplay()->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(),
                                                                       m_player->GetViewOffset(), m_player->m_nButtons));
         ++m_iTickCount; // increment recording tick
     }
@@ -130,10 +130,10 @@ void CMomentumReplaySystem::UpdateRecordingParams()
 
 void CMomentumReplaySystem::SetReplayInfo()
 {
-    if (!m_pReplayManager->Recording())
+    if (!g_ReplayFactory.Recording())
         return;
 
-    auto replay = m_pReplayManager->GetRecordingReplay();
+    auto replay = g_ReplayFactory.GetRecordingReplay();
 
     replay->SetMapName(gpGlobals->mapname.ToCStr());
     replay->SetPlayerName(m_player->GetPlayerName());
@@ -148,10 +148,10 @@ void CMomentumReplaySystem::SetReplayInfo()
 
 void CMomentumReplaySystem::SetRunStats()
 {
-    if (!m_pReplayManager->Recording())
+    if (!g_ReplayFactory.Recording())
         return;
 
-    auto stats = m_pReplayManager->GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
+    auto stats = g_ReplayFactory.GetRecordingReplay()->CreateRunStats(m_player->m_RunStats.GetTotalZones());
     *stats = static_cast<CMomRunStats>(m_player->m_RunStats);
 }
 
@@ -176,7 +176,7 @@ class CMOMReplayCommands
             char recordingName[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
 
-            auto pLoaded = g_ReplaySystem->GetReplayManager()->LoadReplay(recordingName);
+            auto pLoaded = g_ReplayFactory.LoadReplay(recordingName);
             if (pLoaded)
             {
                 if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
@@ -203,8 +203,8 @@ CON_COMMAND_AUTOCOMPLETEFILE(mom_replay_play, CMOMReplayCommands::PlayReplayFirs
 
 CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in first person), if there is one.")
 {
-    auto pPlaybackReplay = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay();
-    if (pPlaybackReplay && !g_ReplaySystem->GetReplayManager()->PlayingBack())
+    auto pPlaybackReplay = g_ReplayFactory.GetPlaybackReplay();
+    if (pPlaybackReplay && !g_ReplayFactory.PlayingBack())
     {
         pPlaybackReplay->Start(true);
         mom_replay_timescale.SetValue(1.0f);
@@ -213,9 +213,9 @@ CON_COMMAND(mom_replay_play_loaded, "Begins playing back a loaded replay (in fir
 
 CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there is one.")
 {
-    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    if (g_ReplayFactory.PlayingBack())
     {
-        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        auto pGhost = g_ReplayFactory.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
             pGhost->m_iCurrentTick = 0;
@@ -225,17 +225,17 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
 
 CON_COMMAND(mom_replay_stop, "Stops playing the current replay.")
 {
-    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    if (g_ReplayFactory.PlayingBack())
     {
-        g_ReplaySystem->GetReplayManager()->StopPlayback();
+        g_ReplayFactory.StopPlayback();
     }
 }
 
 CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
 {
-    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    if (g_ReplayFactory.PlayingBack())
     {
-        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        auto pGhost = g_ReplayFactory.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
             pGhost->m_bIsPaused = !pGhost->m_bIsPaused;
@@ -245,9 +245,9 @@ CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
 
 CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
 {
-    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    if (g_ReplayFactory.PlayingBack())
     {
-        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        auto pGhost = g_ReplayFactory.GetPlaybackReplay()->GetRunEntity();
         if (pGhost && args.ArgC() > 1)
         {
             int tick = Q_atoi(args[1]);
@@ -262,9 +262,9 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
 
 CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
 {
-    if (g_ReplaySystem->GetReplayManager()->PlayingBack())
+    if (g_ReplayFactory.PlayingBack())
     {
-        auto pGhost = g_ReplaySystem->GetReplayManager()->GetPlaybackReplay()->GetRunEntity();
+        auto pGhost = g_ReplayFactory.GetPlaybackReplay()->GetRunEntity();
         if (pGhost)
         {
             pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_RunData.m_iStartTickD;

@@ -34,3 +34,5 @@ class CMomReplayFactory
     bool m_bPlayingBack;
     uint8 m_ucCurrentVersion;
 };
+
+extern CMomReplayFactory g_ReplayFactory;

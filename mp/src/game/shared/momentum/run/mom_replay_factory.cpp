@@ -9,6 +9,8 @@
 #define REPLAY_MAGIC_LE 0x524D4F4D
 #define REPLAY_MAGIC_BE 0x4D4F4D52
 
+CMomReplayFactory g_ReplayFactory;
+
 CMomReplayFactory::CMomReplayFactory() :
     m_pRecordingReplay(nullptr),
     m_pPlaybackReplay(nullptr),

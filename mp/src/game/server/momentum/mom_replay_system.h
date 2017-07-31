@@ -22,30 +22,28 @@ public:
         m_fRecEndTime(-1.0f),
         m_player(nullptr)
     {
-        m_pReplayManager = new CMomReplayFactory();
     }
 
     virtual ~CMomentumReplaySystem() OVERRIDE
     {
-        delete m_pReplayManager;
     }
 
 public:
     // inherited member from CAutoGameSystemPerFrame
     void FrameUpdatePostEntityThink() OVERRIDE
     {
-        if (m_pReplayManager->Recording())
+        if (g_ReplayFactory.Recording())
             UpdateRecordingParams();
     }
 
     void LevelShutdownPostEntity() OVERRIDE
     {
         //Stop a recording if there is one while the level shuts down
-        if (m_pReplayManager->Recording())
+        if (g_ReplayFactory.Recording())
             StopRecording(true, false);
 
-        if (m_pReplayManager->GetPlaybackReplay())
-            m_pReplayManager->UnloadPlayback(true);
+        if (g_ReplayFactory.GetPlaybackReplay())
+            g_ReplayFactory.UnloadPlayback(true);
     }
 
     //Sets the start timer tick, this is used for trimming later on
@@ -57,8 +55,6 @@ public:
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
-
-    inline CMomReplayFactory* GetReplayManager() const { return m_pReplayManager; }
 
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
@@ -72,7 +68,6 @@ private:
     float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
 
     CMomentumPlayer *m_player;
-    CMomReplayFactory* m_pReplayManager;
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;

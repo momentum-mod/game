@@ -66,7 +66,7 @@ void CMomReplayV1::Start(bool firstperson)
             g_pMomentumTimer->Stop(false); // stop the timer just in case we started a replay while it was running...
 
         m_pEntity->StartRun(firstperson);
-        g_ReplaySystem->GetReplayManager()->SetPlayingBack(true);
+        g_ReplayFactory.SetPlayingBack(true);
     }
 #endif
 }
