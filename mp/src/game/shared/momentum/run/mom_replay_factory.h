@@ -10,13 +10,13 @@ class CMomReplayFactory
     CMomReplayFactory();
     ~CMomReplayFactory();
 
-    static CMomReplayBase *CreateEmptyReplay(uint8 version);
-    static CMomReplayBase *CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad);
+    CMomReplayBase *CreateEmptyReplay(uint8 version);
+    CMomReplayBase *CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad);
 
     CMomReplayBase *StartRecording(); //server only
     void StopRecording(); //server only
     bool StoreReplay(const char *path, const char *pathID = "MOD"); //server only
-    static CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD"); //client only
+    CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD"); //client and server (via mom_util)
     CMomReplayBase *LoadReplay(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD"); //server only
     void UnloadPlayback(bool shutdown = false); //server only
     void StopPlayback(); //self

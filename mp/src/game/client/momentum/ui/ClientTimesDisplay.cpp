@@ -711,7 +711,7 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
             // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
             char pReplayPath[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
-            CMomReplayBase *pBase = CMomReplayFactory::LoadReplayFile(pReplayPath, false);
+            CMomReplayBase *pBase = g_ReplayFactory.LoadReplayFile(pReplayPath, false);
             assert(pBase != nullptr);
             
             if (pBase)
