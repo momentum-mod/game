@@ -4,57 +4,25 @@
 #include "mom_replay_versions.h"
 #ifndef CLIENT_DLL
 #include "momentum/mom_replay_entity.h"
+#else
+#include "../../server/momentum/mom_replay_system.h"
 #endif
 
-#define REPLAY_MAGIC_LE 0x524D4F4D
-#define REPLAY_MAGIC_BE 0x4D4F4D52
 
 CMomReplayFactory g_ReplayFactory;
 
 CMomReplayFactory::CMomReplayFactory() :
-    m_pRecordingReplay(nullptr),
     m_pPlaybackReplay(nullptr),
-    m_bRecording(false),
     m_bPlayingBack(false),
     m_ucCurrentVersion(0)
 {
-    // DO NOT FORGET to set the latest replay version here.
-    m_ucCurrentVersion = 1;
+
 }
 
 CMomReplayFactory::~CMomReplayFactory()
 {
-    if (m_pRecordingReplay)
-        delete m_pRecordingReplay;
-
     if (m_pPlaybackReplay)
         delete m_pPlaybackReplay;
-}
-
-CMomReplayBase* CMomReplayFactory::StartRecording()
-{
-    if (Recording())
-        return m_pRecordingReplay;
-
-    Log("Started recording a replay...\n");
-
-    m_bRecording = true;
-
-    m_pRecordingReplay = CreateEmptyReplay(m_ucCurrentVersion);
-    return m_pRecordingReplay;
-}
-
-void CMomReplayFactory::StopRecording()
-{
-    if (!Recording())
-        return;
-
-    Log("Stopped recording a replay.\n");
-
-    m_bRecording = false;
-
-    delete m_pRecordingReplay;
-    m_pRecordingReplay = nullptr;
 }
 
 CMomReplayBase *CMomReplayFactory::CreateEmptyReplay(uint8 version)
@@ -62,6 +30,7 @@ CMomReplayBase *CMomReplayFactory::CreateEmptyReplay(uint8 version)
     //Is there a more compact way to do this without introducing more intermediate objects?
     switch(version)
     {
+        case 0: //Place 0 before the newest version's case.
         case 1:
             return new CMomReplayV1();
             
@@ -75,6 +44,7 @@ CMomReplayBase *CMomReplayFactory::CreateReplay(uint8 version, CBinaryReader* re
 {
     switch(version)
     {
+        case 0:
         case 1:
             return new CMomReplayV1(reader, bFullLoad);
         
@@ -168,32 +138,6 @@ void CMomReplayFactory::UnloadPlayback(bool shutdown)
     m_pPlaybackReplay = nullptr;
 
     DevLog("Successfully unloaded playback, shutdown: %i\n", shutdown);
-}
-
-bool CMomReplayFactory::StoreReplay(const char* path, const char* pathID)
-{
-    if (!m_pRecordingReplay)
-        return false;
-
-    auto file = filesystem->Open(path, "w+b", pathID);
-
-    if (!file)
-    {
-        filesystem->Close(file);
-        return false;
-    }
-
-    Log("Storing replay of version '%d' to '%s'...\n", m_pRecordingReplay->GetVersion(), path);
-
-    CBinaryWriter writer(file);
-
-    writer.WriteUInt32(REPLAY_MAGIC_LE);
-    writer.WriteUInt8(m_pRecordingReplay->GetVersion());
-    m_pRecordingReplay->Serialize(&writer);
-
-    filesystem->Close(file);
-
-    return true;
 }
 
 void CMomReplayFactory::StopPlayback()

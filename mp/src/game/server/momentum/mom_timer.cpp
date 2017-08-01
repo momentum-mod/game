@@ -80,7 +80,7 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */)
     }
 
     // Stop replay recording, if there was any
-    if (g_ReplayFactory.Recording())
+    if (g_ReplaySystem->m_bRecording)
         g_ReplaySystem->StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
 
     SetRunning(false);

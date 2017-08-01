@@ -13,6 +13,9 @@ class CMomentumReplayGhostEntity;
 class CMomentumReplaySystem : public CAutoGameSystemPerFrame
 {
 public:
+    bool m_bRecording;
+    CMomReplayBase *m_pReplay;
+    
     CMomentumReplaySystem(const char *pName) :
         CAutoGameSystemPerFrame(pName),
         m_bShouldStopRec(false),
@@ -22,6 +25,7 @@ public:
         m_fRecEndTime(-1.0f),
         m_player(nullptr)
     {
+        m_pReplay = g_ReplayFactory.CreateEmptyReplay(0);
     }
 
     virtual ~CMomentumReplaySystem() OVERRIDE
@@ -32,14 +36,14 @@ public:
     // inherited member from CAutoGameSystemPerFrame
     void FrameUpdatePostEntityThink() OVERRIDE
     {
-        if (g_ReplayFactory.Recording())
+        if (m_bRecording)
             UpdateRecordingParams();
     }
 
     void LevelShutdownPostEntity() OVERRIDE
     {
         //Stop a recording if there is one while the level shuts down
-        if (g_ReplayFactory.Recording())
+        if (m_bRecording)
             StopRecording(true, false);
 
         if (g_ReplayFactory.GetPlaybackReplay())
@@ -60,6 +64,7 @@ private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayInfo();
     void SetRunStats();
+    bool StoreReplay(const char* path, const char* pathID = "MOD");
 
     bool m_bShouldStopRec;
     int m_iTickCount;// MOM_TODO: Maybe remove me?

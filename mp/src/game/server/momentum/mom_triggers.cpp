@@ -148,7 +148,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             if (g_pMomentumTimer->IsRunning())
             {
                 // Used for trimming later on
-                if (g_ReplayFactory.Recording())
+                if (g_ReplaySystem->m_bRecording)
                 {
                     g_ReplaySystem->SetTimerStartTick(gpGlobals->tickcount);
                 }
@@ -215,7 +215,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         }
 
         // begin recording replay
-        if (!g_ReplayFactory.Recording())
+        if (!g_ReplaySystem->m_bRecording)
         {
             g_ReplaySystem->BeginRecording(pPlayer);
         }
