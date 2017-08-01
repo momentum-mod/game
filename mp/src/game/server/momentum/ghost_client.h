@@ -2,7 +2,7 @@
 
 #include "cbase.h"
 #include "zed_net.h"
-#include "mom_player_shared.h"
+#include "mom_player.h"
 #include "mom_shareddefs.h"
 #include "mom_online_ghost.h"
 
@@ -11,15 +11,57 @@ struct MyThreadParams_t{}; //empty class so we can force the threaded function t
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
 {
 public:
-    CMomentumGhostClient() : CAutoGameSystemPerFrame()
+    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName), m_sLobbyID(), m_sHostID()
     {
     }
-    //void PostInit() OVERRIDE;
+    //bool Init() OVERRIDE; MOM_TODO: Set state variables here?
+    void PostInit() OVERRIDE;
     //void LevelInitPreEntity() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     //void LevelShutdownPreEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
     void FrameUpdatePostEntityThink() OVERRIDE;
+    void Shutdown() OVERRIDE;
+
+
+    void HandleLobbyCreated(LobbyCreated_t *pCreated, bool IOFailure);
+
+    void StartLobby()
+    {
+        if (!(m_cLobbyCreated.IsActive() || m_sLobbyID.IsValid() || m_sLobbyID.IsLobby()))
+        {
+            SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, 10);
+            m_cLobbyCreated.Set(call, this, &CMomentumGhostClient::HandleLobbyCreated);
+            DevLog("The lobby call successfully happened!\n");
+        }
+        else
+            DevLog("The lobby could not be created because you already made one or are in one!\n");
+       
+    }
+    void LeaveLobby()
+    {
+        if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+        {
+            steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
+            DevLog("Left the lobby!\n");
+            m_sLobbyID = k_steamIDNil;
+        }
+        else
+            DevLog("Could not leave lobby, are you in one?\n");
+    }
+
+    STEAM_CALLBACK(CMomentumGhostClient, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
+    STEAM_CALLBACK(CMomentumGhostClient, HandleLobbyChatUpdate, LobbyChatUpdate_t); // Lobby chat room status has changed. This can be owner being changed, or somebody joining or leaving
+    STEAM_CALLBACK(CMomentumGhostClient, HandleLobbyChatMsg, LobbyChatMsg_t); // Lobby chat message sent here, used with SayText etc
+    STEAM_CALLBACK(CMomentumGhostClient, HandleLobbyDataUpdate, LobbyDataUpdate_t); // Something was updated for the lobby's data
+    STEAM_CALLBACK(CMomentumGhostClient, HandleLobbyJoin, GameLobbyJoinRequested_t); // We are trying to join a lobby
+    STEAM_CALLBACK(CMomentumGhostClient, HandleFriendJoin, GameRichPresenceJoinRequested_t); // Joining from a friend's "JOIN GAME" option from steam
+    STEAM_CALLBACK(CMomentumGhostClient, HandleNewP2PRequest, P2PSessionRequest_t); // Somebody is trying to talk to us
+    STEAM_CALLBACK(CMomentumGhostClient, HandleP2PConnectionFail, P2PSessionConnectFail_t); // Talking/connecting to somebody failed
+    STEAM_CALLBACK(CMomentumGhostClient, HandlePersonaCallback, PersonaStateChange_t); // Called when we get their avatar and name from steam
+
+    void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
+    void GetLobbyMemberSteamData(CSteamID pMember);
 
     static bool initGhostClient();
     static bool exitGhostClient();
@@ -42,4 +84,12 @@ private:
     static CMomentumPlayer *m_pPlayer;
     static uint64 m_SteamID;
     static ghostAppearance_t oldAppearance;
+
+    CSteamID m_sLobbyID;
+
+    CSteamID m_sHostID;
+
+    CCallResult<CMomentumGhostClient, LobbyCreated_t> m_cLobbyCreated;
 };
+
+extern CMomentumGhostClient *g_pMomentumGhostClient;

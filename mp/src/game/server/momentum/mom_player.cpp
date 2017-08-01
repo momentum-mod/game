@@ -10,6 +10,7 @@
 #include "momentum/weapon/weapon_csbasegun.h"
 #include "player_command.h"
 #include "predicted_viewmodel.h"
+#include "ghost_client.h"
 
 #include "tier0/memdbgon.h"
 
@@ -602,6 +603,12 @@ void CMomentumPlayer::RemoveTrail()
 {
     UTIL_RemoveImmediate(m_eTrail);
     m_eTrail = nullptr;
+}
+
+void CMomentumPlayer::CheckChatText(char* p, int bufsize)
+{
+    // MOM_TODO: We could further check the message here? Idk
+    g_pMomentumGhostClient->SendChatMessage(p);
 }
 
 // Overrides Teleport() so we can take care of the trail

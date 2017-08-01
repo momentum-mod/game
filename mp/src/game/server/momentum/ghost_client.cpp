@@ -2,6 +2,7 @@
 #include "ghost_client.h"
 #include "util/mom_util.h"
 #include "mom_online_ghost.h"
+#include "icommandline.h"
 
 #include "tier0/memdbgon.h"
 
@@ -22,9 +23,26 @@ ghostAppearance_t CMomentumGhostClient::oldAppearance;
 
 ThreadHandle_t netIOThread;
 CMessageQueue<int> SentPacketQueue;
+
+void CMomentumGhostClient::PostInit()
+{
+    Log("================= COMMAND LINE: %s\n", CommandLine()->GetCmdLine());
+}
+
 void CMomentumGhostClient::LevelInitPostEntity()
 {
-    if (initGhostClient()) //init ghost client
+    // MOM_TODO: AdvertiseGame needs to use k_steamIDNonSteamGS and pass the IP (as hex) and port if it is inside a server 
+    // steamapicontext->SteamUser()->AdvertiseGame(steamapicontext->SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
+    // steamapicontext->SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
+
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    {
+        DevLog("Setting the map to %s!\n", gpGlobals->mapname.ToCStr());
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", gpGlobals->mapname.ToCStr());
+    }
+        
+
+    /*if (initGhostClient()) //init ghost client
     {
         char buffer[64];
         Q_strncpy(buffer, mm_address.GetString(), sizeof(buffer));
@@ -35,20 +53,27 @@ void CMomentumGhostClient::LevelInitPostEntity()
     if (!m_ghostClientConnected)
     {
         exitGhostClient(); 
-    }
+    }*/
 }
 void CMomentumGhostClient::LevelShutdownPreEntity()
 {
-    exitGhostClient(); //set ghost client connection to false when we disconnect
-    m_ghostClientConnected = false;
+    //exitGhostClient(); //set ghost client connection to false when we disconnect
+    //m_ghostClientConnected = false;
     //ThreadJoin(netIOThread, 20);
+
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    {
+        DevLog("Setting map to null, since we're going to the menu.\n");
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", nullptr);
+    }
+    
 }
 void CMomentumGhostClient::FrameUpdatePostEntityThink()
 {
     m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
 
     // Run the thread that recieves and sends ghost data IFF we're connected to the server, AND it hasn't run before 
-    if (!m_bRanThread && isGhostClientConnected() && m_pPlayer && steamapicontext)
+    /*if (!m_bRanThread && isGhostClientConnected() && m_pPlayer && steamapicontext)
     {
         MyThreadParams_t vars; //bogus params containing NOTHING hahAHAHAhaHHa
         oldAppearance = m_pPlayer->m_playerAppearanceProps;
@@ -68,10 +93,222 @@ void CMomentumGhostClient::FrameUpdatePostEntityThink()
             SentPacketQueue.QueueMessage(PT_APPEARANCE);
             oldAppearance = m_pPlayer->m_playerAppearanceProps;
         }
-    }
+    }*/
 
 
 }
+
+void CMomentumGhostClient::Shutdown()
+{
+    LeaveLobby(); // Leave the lobby if we're still in it
+}
+
+CON_COMMAND(mom_host_lobby, "Starts hosting a lobby\n")
+{
+    DevMsg("Called command!\n");
+    g_pMomentumGhostClient->StartLobby();
+}
+
+CON_COMMAND(mom_leave_lobby, "Leave your current lobby\n")
+{
+    g_pMomentumGhostClient->LeaveLobby();
+}
+
+// So basically, if a user wants to connect to us, we're considered the host. 
+void CMomentumGhostClient::HandleNewP2PRequest(P2PSessionRequest_t* info)
+{
+    // MOM_TODO: Store their CSteamID somewhere
+    // Are we not connected to another person?
+    if (!m_sHostID.IsValid())
+    {
+        // Then we're the host
+        m_sHostID = steamapicontext->SteamUser()->GetSteamID();
+    }
+    else
+    {
+        // Somebody else is the host, forward that to them
+    }
+    // Needs to be done to open the connection with them
+    steamapicontext->SteamNetworking()->AcceptP2PSessionWithUser(info->m_steamIDRemote);
+}
+
+void CMomentumGhostClient::HandleP2PConnectionFail(P2PSessionConnectFail_t* info)
+{
+    Warning("Couldn't do Steam P2P because of the error: %i\n", info->m_eP2PSessionError);
+
+    // MOM_TODO: Make a block list that only refreshes on game restart? Helps bad connections from continuously looping
+    steamapicontext->SteamNetworking()->CloseP2PSessionWithUser(info->m_steamIDRemote);
+}
+
+void CMomentumGhostClient::SendChatMessage(char* pMessage)
+{
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    {
+        int len = Q_strlen(pMessage) + 1;
+        bool result = steamapicontext->SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
+        if (result)
+            DevLog("Sent chat message! Message: %s\n", pMessage);
+        else
+            DevLog("Did not send lobby message!\n");
+    }
+    else // MOM_TODO: Check if connected to a server and send the chat packet
+    {
+        DevLog("Could not send message because you are not connected!\n");
+    }
+}
+
+void CMomentumGhostClient::GetLobbyMemberSteamData(CSteamID pMember)
+{
+    if (steamapicontext->SteamFriends()->RequestUserInformation(pMember, false))
+    {
+        // It's calling stuff about them, we gotta wait a bit
+    }
+    else
+    {
+        // We have the data about this person, call stuff immediately
+        const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(pMember);
+        DevLog("We were able to get their name immediately: %\n", pName);
+    }
+}
+
+// Called when joining a friend from their Join Game option in steam
+void CMomentumGhostClient::HandleFriendJoin(GameRichPresenceJoinRequested_t* pJoin)
+{
+    // MOM_TODO: Have a global convar that auto blocks requests (busy vs online) 
+    // m_sHostID = pJoin->m_steamIDFriend;
+    //steamapicontext->SteamNetworking()->SendP2PPacket(pJoin->m_steamIDFriend, );
+    
+   
+}
+
+// Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
+void CMomentumGhostClient::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
+{
+    // Get the lobby owner
+    CSteamID owner = steamapicontext->SteamMatchmaking()->GetLobbyOwner(pJoin->m_steamIDLobby);
+
+    steamapicontext->SteamMatchmaking()->JoinLobby(pJoin->m_steamIDLobby);
+}
+
+// Called when we created the lobby
+void CMomentumGhostClient::HandleLobbyCreated(LobbyCreated_t* pCreated, bool ioFailure)
+{
+    if (ioFailure || !pCreated)
+    {
+        Warning("Could not create lobby due to IO error!\n");
+        return;
+    }
+
+    DevLog("Lobby created call result! We got a result %i with a steam lobby: %u\n", pCreated->m_eResult, pCreated->m_ulSteamIDLobby);
+    if (pCreated->m_eResult == k_EResultOK)
+    {
+        DevLog("Result is okay! We got a lobby bois!\n");
+        m_sLobbyID = CSteamID(pCreated->m_ulSteamIDLobby);
+
+        // Set some info
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", gpGlobals->mapname.ToCStr());
+        // MOM_TODO: Set appearance of our ghost here
+    }
+}
+
+// Called when we enter a lobby
+// NOTE: I'm not actually sure if this gets called after HandleLobbyCreated, given the user created the lobby
+// Hopefully it is, that way we can know for sure they created the lobby
+// Even then we could just set some boolean....
+void CMomentumGhostClient::HandleLobbyEnter(LobbyEnter_t* pEnter)
+{
+    if (pEnter->m_EChatRoomEnterResponse != k_EChatRoomEnterResponseSuccess)
+    {
+        DevWarning("Failed to enter chat room! Error code: %i\n", pEnter->m_EChatRoomEnterResponse);
+        return;
+    }
+
+    DevLog("Lobby entered! Lobby ID: %lld\n", pEnter->m_ulSteamIDLobby);
+
+    if (!m_sLobbyID.IsValid())
+    {
+        m_sLobbyID = CSteamID(pEnter->m_ulSteamIDLobby);
+    }
+    CSteamID localID = steamapicontext->SteamUser()->GetSteamID();
+    // Get everybody in the lobby's data
+    int numMembers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
+    for (int i = 0; i < numMembers; i++)
+    {
+        CSteamID member = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
+        if (member == localID) // If it's us, don't care
+            continue;
+        //GetLobbyMemberSteamData(member); // Get their name and avatar MOM_TODO: Does this just happen asynchronously?
+        const char *pMapName = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, "map"); // Or whatever
+        DevLog("User %lld is on map %s\n", member.ConvertToUint64(), pMapName);
+    }
+}
+
+// We got a message yaay
+void CMomentumGhostClient::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
+{
+    char *message = new char[4096];
+    int written = steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
+    DevLog("SERVER: Got a chat message! Wrote %i byte(s) into buffer.\n", written);
+    Msg("SERVER: Chat message: %s\n", message);
+    delete[] message;
+}
+
+void CMomentumGhostClient::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
+{
+    CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
+    CSteamID memberChanged = CSteamID(pParam->m_ulSteamIDMember);
+    if (pParam->m_bSuccess)
+    {
+        if (lobbyId.ConvertToUint64() == memberChanged.ConvertToUint64())
+        {
+            // The lobby itself changed
+            // We could have a new owner
+            // Or new member limit
+            // Or new lobby type
+        }
+        else
+        {
+            // Don't care if it's us that changed
+            if (memberChanged == steamapicontext->SteamUser()->GetSteamID())
+                return;
+
+            // An individual member changed
+            const char *pMapName = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, memberChanged, "map"); // Or whatever
+            DevLog("Lobby Member Changed! Map: %s\n", pMapName);
+            // MOM_TODO: Check if their map is now ours, set them as able to recv our position
+        }
+    }
+}
+
+// Somebody left/joined, or the owner of the lobby was changed
+void CMomentumGhostClient::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
+{
+    uint32 state = pParam->m_rgfChatMemberStateChange;
+    CSteamID changedPerson = CSteamID(pParam->m_ulSteamIDUserChanged);
+    if (state & k_EChatMemberStateChangeEntered)
+    {
+        // Somebody joined us! Huzzah!
+        // GetLobbyMemberSteamData(changedPerson); MOM_TODO: Does this happen asynchronously?
+
+        DevLog("A user just joined us!\n");
+    }
+    if (state & k_EChatMemberStateChangeLeft || state & k_EChatMemberStateChangeDisconnected)
+    {
+        DevLog("User left/disconnected!\n");
+    }
+}
+
+void CMomentumGhostClient::HandlePersonaCallback(PersonaStateChange_t* pParam)
+{
+    //DevLog("HandlePersonaCallback: %u with changeflags: %i\n", pParam->m_ulSteamID, pParam->m_nChangeFlags);
+    CSteamID person = CSteamID(pParam->m_ulSteamID);
+    if (pParam->m_nChangeFlags & k_EPersonaChangeName)
+    {
+        DevLog("Got the name of %lld: %s\n", pParam->m_ulSteamID, steamapicontext->SteamFriends()->GetFriendPersonaName(person));
+    }
+}
+
+
 bool CMomentumGhostClient::initGhostClient()
 {
     m_socket = zed_net_socket_t();
@@ -144,10 +381,10 @@ bool CMomentumGhostClient::connectToGhostServer(const char* host, unsigned short
 ghostNetFrame_t CMomentumGhostClient::CreateNewNetFrame(CMomentumPlayer *pPlayer)
 {
     return ghostNetFrame_t(pPlayer->EyeAngles(),
-        pPlayer->GetAbsOrigin(),
-        pPlayer->GetViewOffset(),
-        pPlayer->m_nButtons,
-        pPlayer->GetPlayerName());
+                           pPlayer->GetAbsOrigin(),
+                           pPlayer->GetViewOffset(),
+                           pPlayer->m_nButtons,
+                           pPlayer->GetPlayerName());
 }
 bool CMomentumGhostClient::SendSignonMessage()
 {
@@ -327,13 +564,13 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
                     {
                         newPlayer->Spawn();
                         ConDColorMsg(Color(255, 255, 0, 255), "Added ghost of local player: %s\nThere are now %i connected players.\n",
-                            newSignOn->newFrame.PlayerName, ghostPlayers.Size());
+                                     newSignOn->newFrame.PlayerName, ghostPlayers.Size());
 
                     }
                     else
                     {
                         ConDColorMsg(Color(255, 255, 0, 255), "Added local player %s, but did not spawn. Set mom_ghost_testing 1 to see local players.\n",
-                            newSignOn->newFrame.PlayerName);
+                                     newSignOn->newFrame.PlayerName);
                     }
                 }
             }
@@ -380,5 +617,5 @@ unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
     FirstNewFrame = true;
     return 0;
 }
-static CMomentumGhostClient s_MOMGhostClient;
+static CMomentumGhostClient s_MOMGhostClient("CMomentumGhostClient");
 CMomentumGhostClient *g_pMomentumGhostClient = &s_MOMGhostClient;

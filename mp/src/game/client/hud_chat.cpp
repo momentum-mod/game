@@ -11,6 +11,7 @@
 #include "vguicenterprint.h"
 #include "hud_basechat.h"
 #include <vgui/ILocalize.h>
+#include "tier0/memdbgon.h"
 
 
 
@@ -37,6 +38,46 @@ void CHudChat::Init( void )
 	HOOK_HUD_MESSAGE( CHudChat, SayText2 );
 	HOOK_HUD_MESSAGE( CHudChat, TextMsg );
 }
+
+void CHudChat::OnLobbyMessage(LobbyChatMsg_t* pParam)
+{
+    CSteamID msgSender = CSteamID(pParam->m_ulSteamIDUser);
+    if (pParam->m_ulSteamIDUser == steamapicontext->SteamUser()->GetSteamID().ConvertToUint64())
+    {
+        DevLog("Got our own message! Just ignoring it...\n");
+        return;
+    }
+
+    char personName[MAX_PLAYER_NAME_LENGTH];
+    Q_strncpy(personName, steamapicontext->SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
+
+    char *message = new char[4096];
+    // MOM_TODO: This won't be just text in the future, if we captialize on being able to send binary data. Wrap this is something and parse it
+    int written = steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
+    DevLog("CLIENT: written: %i\n", written);
+    Printf(CHAT_FILTER_NONE, "%s: %s", personName, message);
+    delete[] message;
+}
+
+void CHudChat::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
+{
+    uint32 state = pParam->m_rgfChatMemberStateChange;
+    CSteamID changedPerson = CSteamID(pParam->m_ulSteamIDUserChanged);
+    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(changedPerson);
+    if (state & k_EChatMemberStateChangeEntered)
+    {
+        // Somebody joined us! Huzzah!
+        // GetLobbyMemberSteamData(changedPerson); MOM_TODO: Does this happen asynchronously?
+
+        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has joined the lobby.", pName);
+    }
+    if (state & k_EChatMemberStateChangeLeft || state & k_EChatMemberStateChangeDisconnected)
+    {
+        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has left the lobby.", pName);
+    }
+}
+
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Reads in a player's Chat text from the server

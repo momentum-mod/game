@@ -224,6 +224,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
      
     // Player's apperence properties
     ghostAppearance_t m_playerAppearanceProps;
+    // Catches any messages the player sends through "say"
+    void CheckChatText(char *p, int bufsize) OVERRIDE;
 
   private:
     CountdownTimer m_ladderSurpressionTimer;
