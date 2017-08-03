@@ -17,8 +17,8 @@ class CMomReplayFactory
     CMomReplayBase *CreateEmptyReplay(uint8 version);
     CMomReplayBase *CreateReplay(uint8 version, CBinaryReader* reader, bool bFullLoad);
 
-    CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD"); //client and server (via mom_util)
-    CMomReplayBase *LoadReplay(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD"); //server only
+    //Returns a replay file and constructs a versioned replay object.
+    CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
 
     uint8 m_ucCurrentVersion;
 };

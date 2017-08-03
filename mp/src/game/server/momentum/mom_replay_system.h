@@ -67,6 +67,7 @@ public:
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
+    CMomReplayBase *LoadPlayback(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
     void UnloadPlayback(bool shutdown = false);
     void Start(bool firstperson);
     void StopPlayback();

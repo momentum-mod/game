@@ -81,7 +81,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
         gameeventmanager->FireEvent(replaySavedEvent);
     }
     // Load the last run that we did in case we want to watch it
-    g_ReplayFactory.LoadReplay(newRecordingPath);
+    LoadPlayback(newRecordingPath);
 
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
@@ -149,6 +149,32 @@ void CMomentumReplaySystem::UpdateRecordingParams()
 
     if (m_bShouldStopRec && m_fRecEndTime < gpGlobals->curtime)
         StopRecording(false, false);
+}
+
+CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool bFullLoad, const char *pPathID)
+{
+    if (m_bPlayingBack)
+        StopPlayback();
+
+    if (m_pPlaybackReplay)
+        UnloadPlayback();
+
+    m_pPlaybackReplay = g_ReplayFactory.LoadReplayFile(pFileName, bFullLoad, pPathID);
+
+    if (bFullLoad && m_pPlaybackReplay)
+    {
+        // Create the run entity here
+        CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
+        pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
+        pGhost->m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
+        pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+        pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
+        pGhost->SetPlaybackReplay(m_pPlaybackReplay);
+        pGhost->m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
+        m_pPlaybackReplay->SetRunEntity(pGhost);
+    }
+
+    return m_pPlaybackReplay;
 }
 
 void CMomentumReplaySystem::SetReplayInfo()
@@ -237,7 +263,7 @@ class CMOMReplayCommands
             char recordingName[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, filename, recordingName, MAX_PATH);
 
-            auto pLoaded = g_ReplayFactory.LoadReplay(recordingName);
+            auto pLoaded = g_ReplaySystem.LoadPlayback(recordingName);
             if (pLoaded)
             {
                 if (!Q_strcmp(STRING(gpGlobals->mapname), pLoaded->GetMapName()))
