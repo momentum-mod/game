@@ -10,8 +10,11 @@
 #include "mom_shareddefs.h"
 #include "mom_ghostdefs.h"
 
-//single-file UDP library
-#include "zed_net.h"
+#ifndef V_snprintf 
+#define V_snprintf _snprintf 
+#endif
+
+#include "steam\steam_gameserver.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -21,13 +24,12 @@
 #define thread_local __thread
 #endif
 
+#define GHOST_SERVER_VERSION "0.1"
 #define DEFAULT_MAP "triggertests"
 
 #define SECONDS_TO_TIMEOUT 10
-#define NEW_MAP_CMD "MOMENTUM_QUEUE_NEWMAP"
-#define NEW_APPEARENCES_CMD "MOMENTUM_QUEUE_NEWAPPS"
-#define NEW_PLAYER_CMD "MOMENTUM_NEWPLAYER_ADDED"
-#define NEW_FRAMES_CMD "MOMENTUM_PLEASE_SEND_MORE_FRAMES"
+
+CSteamAPIContext *steamapicontext;
 
 template <class T>class SafeQueue;
 struct playerData;
@@ -38,8 +40,8 @@ class CMOMGhostServer
 public:
     static void handlePlayer(playerData *newPlayer);
     static void handleConsoleInput();
-    static int runGhostServer(const unsigned short port, const char *mapname);
-    static void newConnection(zed_net_socket_t socket, zed_net_address_t address);
+    static bool runGhostServer(uint16_t externalPort, uint16_t steamPort, uint16_t masterServerPort, bool shouldAuthenticate, const char *mapname);
+    static void newConnection();
     static void acceptNewConnections();
     static void disconnectPlayer(playerData *player);
     static void sendNewAppearances(playerData *player);
@@ -52,7 +54,6 @@ public:
     static std::mutex m_vecPlayers_mutex;
     static std::mutex m_bShouldExit_mutex;
 private:
-    static zed_net_socket_t m_Socket;
     static int m_iTickRate;
     static char m_szMapName[96];
     static const std::chrono::seconds m_secondsToTimeout;
@@ -111,11 +112,9 @@ struct playerData
     int clientIndex;
     ghostNetFrame_t currentFrame;
     ghostAppearance_t currentLooks;
-    zed_net_socket_t remote_socket;
-    zed_net_address_t remote_address;
     uint64_t SteamID64;
-    playerData(zed_net_socket_t socket, zed_net_address_t addr, ghostNetFrame_t frame, ghostAppearance_t looks, int idx, uint64_t steamID)
-        : remote_socket(socket), remote_address(addr), clientIndex(idx), currentFrame(frame), currentLooks(looks), SteamID64(steamID)
+    playerData(ghostNetFrame_t frame, ghostAppearance_t looks, int idx, uint64_t steamID)
+        : clientIndex(idx), currentFrame(frame), currentLooks(looks), SteamID64(steamID)
     {
     }
 };

@@ -38,8 +38,8 @@ $Configuration
 	
 	$Compiler
     {
-        $AdditionalIncludeDirectories   "$BASE;$SRCDIR\thirdparty\zed_net,$SRCDIR\game\shared\momentum"
-		$PreprocessorDefinitions		"$BASE;GHOST_SERVER"
+        $AdditionalIncludeDirectories   "$BASE;$SRCDIR\game\shared\momentum"
+		$PreprocessorDefinitions		"$BASE;GHOST_SERVER;VERSION_SAFE_STEAM_API_INTERFACES"
         $AdditionalOptions				"/EHsc"
 
 	}
@@ -56,17 +56,21 @@ $Configuration
 
 $Project "GhostServer"
 {
+	$Folder "Link Libraries"
+	{
+		$Implib    "steam_api"
+	}
 	$Folder	"Header Files"
 	{
-		$File	"$SRCDIR\thirdparty\zed_net\zed_net.h"
         $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
         $File   "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
+		$File	"$SRCDIR\public\steam\steam_gameserver.h"
+
 	}
 
 	$Folder	"Source Files"
 	{
 		$File	"$SRCDIR\game\ghost_server\ghostServer.cpp"
         $File	"$SRCDIR\game\ghost_server\ghostServer.h"
-        $File   "$SRCDIR\thirdparty\zed_net\zed_net.cpp"
 	}
 }

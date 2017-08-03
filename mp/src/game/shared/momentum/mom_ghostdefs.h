@@ -7,17 +7,22 @@
 
 enum PacketTypes
 {
-    PT_SIGNON,
-    PT_SIGNOFF,
-    PT_NET_FRAME,
-    PT_APPEARANCE,
-    PT_NEWMAP,
-    PT_ACK,
+    PT_CONN_REQ,
+    PT_CONN_ACK,
+    PT_APPR_DATA,
+    PT_APPR_ACK,
+    PT_POS_DATA,
+    PT_POS_ACK,
+    PT_CHAT_DATA,
+    PT_MAP_CHANGE,
+    PT_DISC_REQ,
 
     PT_COUNT
 };
 
 #define DEFAULT_PORT 9000
+#define DEFAULT_STEAM_PORT 9001
+#define DEFAULT_MASTER_SERVER_PORT 9002
 
 //Describes all data for visual apperence of players ingame
 struct ghostAppearance_t
@@ -55,27 +60,25 @@ struct ghostAppearance_t
 struct ghostNetFrame_t
 {
     int Buttons;
-    char PlayerName[32];
+    float ViewOffset;
 #ifdef GHOST_SERVER //Can't use Vector/QAngle in ghost server
     float EyeAngle[3];
     float Position[3];
-    float ViewOffset[3];
+    float Velocity[3];
 #else   
     QAngle EyeAngle;
     Vector Position;
-    Vector ViewOffset;
-    ghostNetFrame_t(const QAngle eyeAngle, const Vector position, const Vector viewOffset,
-        const int buttons, const char* playerName)
+    Vector Velocity;
+    ghostNetFrame_t(const QAngle eyeAngle, const Vector position, const Vector velocity, 
+        const float viewOffsetZ, const int buttons)
     {
-        for (int i = 0; i < 3; i++)
-        {
-            EyeAngle[i] = eyeAngle[i];
-            Position[i] = position[i];
-            ViewOffset[i] = viewOffset[i];
+        EyeAngle = eyeAngle;
+        Position = position;
+        Velocity = velocity;
 
-        }
         Buttons = buttons;
-        Q_strncpy(PlayerName, playerName, sizeof(PlayerName));
+        ViewOffset = viewOffsetZ;
+
     }
     ghostNetFrame_t() {}
 
@@ -85,7 +88,7 @@ struct ghostNetFrame_t
             Position == other.Position &&
             ViewOffset == other.ViewOffset &&
             Buttons == other.Buttons &&
-            Q_strcmp(PlayerName, other.PlayerName) == 0;
+            Velocity == other.Velocity;
     }
 #endif //NOT_GHOST_SERVER
 };
@@ -104,12 +107,8 @@ struct ghostNewMapEvent_t
 {
     char MapName[96];
 };
-struct ghostAckPacket_t
-{
-    char AckMessage[16];
-    bool AckSuccess;
-};
 #ifndef GHOST_SERVER
+
 extern ConVar mm_updaterate;
 extern ConVar mm_timeOutDuration;
 extern ConVar mm_lerpRatio;
