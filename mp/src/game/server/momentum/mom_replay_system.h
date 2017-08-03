@@ -13,11 +13,6 @@ class CMomentumReplayGhostEntity;
 class CMomentumReplaySystem : public CAutoGameSystemPerFrame
 {
 public:
-    bool m_bRecording;
-    bool m_bPlayingBack;
-    CMomReplayBase *m_pReplay;
-    CMomReplayBase *m_pPlaybackReplay;
-    CMomentumPlayer *m_player;
     
     CMomentumReplaySystem(const char *pName) :
         CAutoGameSystemPerFrame(pName),
@@ -67,10 +62,19 @@ public:
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
+    
+    void Start(bool firstperson);
     CMomReplayBase *LoadPlayback(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
     void UnloadPlayback(bool shutdown = false);
-    void Start(bool firstperson);
     void StopPlayback();
+    
+public:
+    bool m_bRecording;
+    bool m_bPlayingBack;
+    CMomReplayBase *m_pReplay;
+    CMomReplayBase *m_pPlaybackReplay;
+    CMomentumPlayer *m_player;
+    
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayInfo();

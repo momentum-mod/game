@@ -4,11 +4,7 @@
 #include "mom_replay_versions.h"
 #ifdef GAME_DLL
 #include "momentum/mom_replay_entity.h"
-#include "../../server/momentum/mom_replay_system.h"
 #endif
-
-
-CMomReplayFactory g_ReplayFactory;
 
 CMomReplayFactory::CMomReplayFactory() :
     m_ucCurrentVersion(0)
@@ -82,3 +78,5 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
 
     return toReturn;
 }
+
+CMomReplayFactory g_ReplayFactory;
