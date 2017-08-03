@@ -87,28 +87,28 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
 CMomReplayBase *CMomReplayFactory::LoadReplay(const char *pFileName, bool bFullLoad, const char *pPathID)
 {
 #ifndef CLIENT_DLL
-    if (g_ReplaySystem->m_bPlayingBack)
-        g_ReplaySystem->StopPlayback();
+    if (g_ReplaySystem.m_bPlayingBack)
+        g_ReplaySystem.StopPlayback();
 
-    if (g_ReplaySystem->m_pPlaybackReplay)
-        g_ReplaySystem->UnloadPlayback();
+    if (g_ReplaySystem.m_pPlaybackReplay)
+        g_ReplaySystem.UnloadPlayback();
 
-    g_ReplaySystem->m_pPlaybackReplay = LoadReplayFile(pFileName, bFullLoad, pPathID);
+    g_ReplaySystem.m_pPlaybackReplay = LoadReplayFile(pFileName, bFullLoad, pPathID);
 
-    if (bFullLoad && g_ReplaySystem->m_pPlaybackReplay)
+    if (bFullLoad && g_ReplaySystem.m_pPlaybackReplay)
     {
         // Create the run entity here
         CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
-        pGhost->SetRunStats(g_ReplaySystem->m_pPlaybackReplay->GetRunStats());
-        pGhost->m_RunData.m_flRunTime = g_ReplaySystem->m_pPlaybackReplay->GetRunTime();
-        pGhost->m_RunData.m_iRunFlags = g_ReplaySystem->m_pPlaybackReplay->GetRunFlags();
-        pGhost->m_flTickRate = g_ReplaySystem->m_pPlaybackReplay->GetTickInterval();
-        pGhost->SetPlaybackReplay(g_ReplaySystem->m_pPlaybackReplay);
-        pGhost->m_RunData.m_iStartTickD = g_ReplaySystem->m_pPlaybackReplay->GetStartTick();
-        g_ReplaySystem->m_pPlaybackReplay->SetRunEntity(pGhost);
+        pGhost->SetRunStats(g_ReplaySystem.m_pPlaybackReplay->GetRunStats());
+        pGhost->m_RunData.m_flRunTime = g_ReplaySystem.m_pPlaybackReplay->GetRunTime();
+        pGhost->m_RunData.m_iRunFlags = g_ReplaySystem.m_pPlaybackReplay->GetRunFlags();
+        pGhost->m_flTickRate = g_ReplaySystem.m_pPlaybackReplay->GetTickInterval();
+        pGhost->SetPlaybackReplay(g_ReplaySystem.m_pPlaybackReplay);
+        pGhost->m_RunData.m_iStartTickD = g_ReplaySystem.m_pPlaybackReplay->GetStartTick();
+        g_ReplaySystem.m_pPlaybackReplay->SetRunEntity(pGhost);
     }
 
-    return g_ReplaySystem->m_pPlaybackReplay;
+    return g_ReplaySystem.m_pPlaybackReplay;
 #endif
     return nullptr;
 }

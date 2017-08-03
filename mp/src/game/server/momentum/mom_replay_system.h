@@ -83,4 +83,4 @@ private:
     float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
 };
 
-extern CMomentumReplaySystem *g_ReplaySystem;
+extern CMomentumReplaySystem g_ReplaySystem;

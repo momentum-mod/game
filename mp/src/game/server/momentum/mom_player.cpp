@@ -85,7 +85,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_bUsingCPMenu = false;
     m_iCurrentStepCP = -1;
     
-    g_ReplaySystem->m_player = this;
+    g_ReplaySystem.m_player = this;
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
@@ -185,9 +185,9 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
         SetLaggedMovementValue(1.0f);
 
         // Fix for the replay system not being able to listen to events
-        if (g_ReplaySystem->m_pPlaybackReplay && !pEvent->GetBool("restart"))
+        if (g_ReplaySystem.m_pPlaybackReplay && !pEvent->GetBool("restart"))
         {
-            g_ReplaySystem->UnloadPlayback();
+            g_ReplaySystem.UnloadPlayback();
         }
     }
 }
