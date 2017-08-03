@@ -14,7 +14,10 @@ class CMomentumReplaySystem : public CAutoGameSystemPerFrame
 {
 public:
     bool m_bRecording;
+    bool m_bPlayingBack;
     CMomReplayBase *m_pReplay;
+    CMomReplayBase *m_pPlaybackReplay;
+    CMomentumPlayer *m_player;
     
     CMomentumReplaySystem(const char *pName) :
         CAutoGameSystemPerFrame(pName),
@@ -30,6 +33,11 @@ public:
 
     virtual ~CMomentumReplaySystem() OVERRIDE
     {
+        if (m_pReplay)
+            delete m_pReplay;
+            
+        if (m_pPlaybackReplay)
+            delete m_pPlaybackReplay;
     }
 
 public:
@@ -46,8 +54,8 @@ public:
         if (m_bRecording)
             StopRecording(true, false);
 
-        if (g_ReplayFactory.GetPlaybackReplay())
-            g_ReplayFactory.UnloadPlayback(true);
+        if (m_pPlaybackReplay)
+            UnloadPlayback(true);
     }
 
     //Sets the start timer tick, this is used for trimming later on
@@ -59,7 +67,9 @@ public:
     void BeginRecording(CBasePlayer *pPlayer);
     void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
-
+    void UnloadPlayback(bool shutdown = false);
+    void Start(bool firstperson);
+    void StopPlayback();
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayInfo();
@@ -71,8 +81,6 @@ private:
     int m_iStartRecordingTick;//The tick that the replay started, used for trimming.
     int m_iStartTimerTick;//The tick that the player's timer starts, used for trimming.
     float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
-
-    CMomentumPlayer *m_player;
 };
 
 extern CMomentumReplaySystem *g_ReplaySystem;

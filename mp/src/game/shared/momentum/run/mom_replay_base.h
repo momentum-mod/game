@@ -46,7 +46,6 @@ class CMomReplayBase : public ISerializable
     virtual bool SetFrame(int32 index, const CReplayFrame &frame) = 0;
     virtual CMomRunStats *CreateRunStats(uint8 stages) = 0;
     virtual void RemoveFrames(int num) = 0;
-    virtual void Start(bool firstperson) = 0;
 
   protected:
     CReplayHeader m_rhHeader;

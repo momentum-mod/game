@@ -19,7 +19,6 @@ public:
     virtual bool SetFrame(int32 index, const CReplayFrame& frame) OVERRIDE;
     virtual CMomRunStats* CreateRunStats(uint8 stages) OVERRIDE;
     virtual void RemoveFrames(int num) OVERRIDE;
-    virtual void Start(bool firstperson) OVERRIDE;
 
 public:
     virtual void Serialize(CBinaryWriter* writer) OVERRIDE;

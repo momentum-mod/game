@@ -57,20 +57,6 @@ CMomRunStats *CMomReplayV1::CreateRunStats(uint8 stages)
 
 void CMomReplayV1::RemoveFrames(int num) { m_rgFrames.RemoveMultipleFromHead(num); }
 
-void CMomReplayV1::Start(bool firstperson)
-{
-#ifdef GAME_DLL
-    if (m_pEntity)
-    {
-        if (firstperson)
-            g_pMomentumTimer->Stop(false); // stop the timer just in case we started a replay while it was running...
-
-        m_pEntity->StartRun(firstperson);
-        g_ReplayFactory.SetPlayingBack(true);
-    }
-#endif
-}
-
 void CMomReplayV1::Serialize(CBinaryWriter *writer)
 {
     // Write the header.

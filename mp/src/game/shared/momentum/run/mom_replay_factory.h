@@ -11,7 +11,7 @@ class CMomReplayFactory
 {
   public:
     CMomReplayFactory();
-    ~CMomReplayFactory();
+    //~CMomReplayFactory();
 
     //Pass 0 as a version number to get whatever the latest version is.
     CMomReplayBase *CreateEmptyReplay(uint8 version);
@@ -19,16 +19,7 @@ class CMomReplayFactory
 
     CMomReplayBase *LoadReplayFile(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD"); //client and server (via mom_util)
     CMomReplayBase *LoadReplay(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD"); //server only
-    void UnloadPlayback(bool shutdown = false); //server only
-    void StopPlayback(); //self
-    void SetPlayingBack(bool playing) { m_bPlayingBack = playing; } //self
 
-    inline CMomReplayBase *GetPlaybackReplay() const { return m_pPlaybackReplay; } //server
-    inline bool PlayingBack() const { return m_bPlayingBack; } //self
-
-  private:
-    CMomReplayBase *m_pPlaybackReplay;
-    bool m_bPlayingBack;
     uint8 m_ucCurrentVersion;
 };
 
