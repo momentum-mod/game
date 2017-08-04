@@ -16,7 +16,7 @@ static MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or back
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     // don't record if we're watching a preexisting replay or in practice mode
-    if (!m_player->IsWatchingReplay() && !m_player->m_bHasPracticeMode)
+    if (!m_player->IsWatchingReplay() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
         m_bRecording = true;
         m_iTickCount = 1; // recoring begins at 1 ;)
@@ -28,16 +28,28 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
 {
     IGameEvent *replaySavedEvent = gameeventmanager->CreateEvent("replay_save");
 
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
     if (throwaway && replaySavedEvent)
     {
         replaySavedEvent->SetBool("save", false);
         gameeventmanager->FireEvent(replaySavedEvent);
+
         m_bRecording = false;
+
+        // Re-allow the player to teleport
+        if (pPlayer)
+            pPlayer->m_bAllowUserTeleports = true;
+
         return;
     }
 
     if (delay)
     {
+        // Prevent the user from teleporting, potentially breaking this delay
+        if (pPlayer)
+            pPlayer->m_bAllowUserTeleports = false;
+
         m_bShouldStopRec = true;
         m_fRecEndTime = gpGlobals->curtime + END_RECORDING_DELAY;
         return;
@@ -73,6 +85,10 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_bRecording = false;
     // Note: m_iTickCount updates in TrimReplay(). Passing it here shows the new ticks.
     Log("Recording Stopped! Ticks: %i\n", postTrimTickCount);
+
+    // Re-allow the player to teleport
+    if (pPlayer)
+        pPlayer->m_bAllowUserTeleports = true;
     
     if (replaySavedEvent)
     {
@@ -166,11 +182,11 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
         // Create the run entity here
         CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
         pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
-        pGhost->m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
-        pGhost->m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
+        pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
+        pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
         pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
         pGhost->SetPlaybackReplay(m_pPlaybackReplay);
-        pGhost->m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
+        pGhost->m_SrvData.m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
         m_pPlaybackReplay->SetRunEntity(pGhost);
     }
 
@@ -188,7 +204,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     m_pReplay->SetTickInterval(gpGlobals->interval_per_tick);
     m_pReplay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
-    m_pReplay->SetRunFlags(m_player->m_RunData.m_iRunFlags);
+    m_pReplay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
     m_pReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
 }
@@ -198,8 +214,8 @@ void CMomentumReplaySystem::SetRunStats()
     if (!m_bRecording)
         return;
 
-    auto stats = m_pReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
-    *stats = static_cast<CMomRunStats>(m_player->m_RunStats);
+    CMomRunStats* stats = m_pReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
+    m_player->m_RunStats.FullyCopyStats(stats);
 }
 
 void CMomentumReplaySystem::Start(bool firstperson)
@@ -305,7 +321,7 @@ CON_COMMAND(mom_replay_restart, "Restarts the current spectated replay, if there
         auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = 0;
+            pGhost->m_SrvData.m_iCurrentTick = 0;
         }
     }
 }
@@ -325,7 +341,7 @@ CON_COMMAND(mom_replay_pause, "Toggle pausing and playing the playback replay.")
         auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_bIsPaused = !pGhost->m_bIsPaused;
+            pGhost->m_SrvData.m_bIsPaused = !pGhost->m_SrvData.m_bIsPaused;
         }
     }
 }
@@ -340,8 +356,8 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
             int tick = Q_atoi(args[1]);
             if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
             {
-                pGhost->m_iCurrentTick = tick;
-                pGhost->m_RunData.m_bMapFinished = false;
+                pGhost->m_SrvData.m_iCurrentTick = tick;
+                pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             }
         }
     }
@@ -354,7 +370,7 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_RunData.m_iStartTickD;
+            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
     }
 }

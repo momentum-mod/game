@@ -1,5 +1,5 @@
 #!/bin/bash
 
 pushd `dirname $0`
-devtools/bin/vpc /momentum +game /mksln games
+devtools/bin/vpc /momentum +game +shaders /mksln games
 popd

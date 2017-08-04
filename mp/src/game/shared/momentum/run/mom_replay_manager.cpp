@@ -80,4 +80,3 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
 }
 
 CMomReplayFactory g_ReplayFactory;
-

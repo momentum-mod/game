@@ -34,7 +34,7 @@ void CMOMCheckpointSystem::LevelInitPreEntity()
 void CMOMCheckpointSystem::LevelShutdownPreEntity()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer && m_pCheckpointsKV && pPlayer->GetCPCount() && mom_checkpoint_save_between_sessions.GetBool())
+    if (pPlayer && m_pCheckpointsKV && mom_checkpoint_save_between_sessions.GetBool())
     {
         DevLog("Saving map %s checkpoints to %s ...\n", gpGlobals->mapname.ToCStr(), CHECKPOINTS_FILE_NAME);
         // Make the KV to save into and save into it

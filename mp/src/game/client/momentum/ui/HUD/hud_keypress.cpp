@@ -35,7 +35,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     {
         C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
         // don't show during map finished dialog
-        return showkeys.GetBool() && pMom && !pMom->m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
+        return showkeys.GetBool() && pMom && !pMom->m_SrvData.m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
     }
 
     void OnThink() OVERRIDE;
@@ -68,7 +68,8 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
   private:
     int GetTextCenter(HFont font, wchar_t *wstring);
 
-    int m_nButtons, m_nDisabledButtons, m_nStrafes, m_nJumps;
+    int m_nButtons, m_nDisabledButtons, m_nJumps;
+    uint32 m_nStrafes;
     bool m_bShouldDrawCounts;
     wchar_t m_pwFwd[BUFSIZESHORT];
     wchar_t m_pwLeft[BUFSIZESHORT];
@@ -203,9 +204,9 @@ void CHudKeyPressDisplay::OnThink()
         if (pReplayEnt)
         {
             m_bShouldDrawCounts = false; // Not worth it
-            m_nButtons = pReplayEnt->m_nReplayButtons;
-            m_nStrafes = pReplayEnt->m_iTotalStrafes;
-            m_nJumps = pReplayEnt->m_iTotalJumps;
+            m_nButtons = pReplayEnt->m_SrvData.m_nReplayButtons;
+            m_nStrafes = pReplayEnt->m_SrvData.m_iTotalStrafes;
+            m_nJumps = pReplayEnt->m_SrvData.m_iTotalJumps;
         }
         else
         {
@@ -214,7 +215,7 @@ void CHudKeyPressDisplay::OnThink()
             if (g_MOMEventListener)
             {
                 // we should only draw the strafe/jump counters when the timer is running
-                m_bShouldDrawCounts = pPlayer->m_RunData.m_bTimerRunning;
+                m_bShouldDrawCounts = pPlayer->m_SrvData.m_RunData.m_bTimerRunning;
                 if (m_bShouldDrawCounts)
                 {
                     CMomRunStats *stats = &pPlayer->m_RunStats;

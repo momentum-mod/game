@@ -217,7 +217,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
+void MomentumUtil::GenerateBogusRunStats(CMomRunStats *pStatsOut)
 {
     RandomSeed(Plat_FloatTime());
     for (int i = 0; i < MAX_STAGES; i++)
@@ -415,7 +415,7 @@ bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate,
 void MomentumUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun, RunCompare_t *into) const
 {
     Q_strcpy(into->runName, compareName);
-    into->runStats = *pRun;
+    pRun->FullyCopyStats(&into->runStatsData);
 }
 
 #define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \

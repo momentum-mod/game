@@ -28,6 +28,8 @@ enum
     SF_PUSH_ONETOUCH = 0x0200, // Only allow for one touch
     SF_PUSH_ONSTART = 0x0400,  // Modify player velocity on StartTouch
     SF_PUSH_ONEND = 0x0800,    // Modify player velocity on EndTouch
+    // CTriggerTeleport
+    SF_TELE_ONEXIT = 0x1000,  // Teleport the player on EndTouch instead of StartTouch
 };
 
 // CBaseMomentumTrigger
@@ -60,6 +62,7 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
   public:
     // This void teleports the touching entity!
     void StartTouch(CBaseEntity *) OVERRIDE;
+    void EndTouch(CBaseEntity *) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
     void SetDestinationEnt(CBaseEntity *ent) { pDestinationEnt = ent; }
     bool ShouldStopPlayer() const { return m_bResetVelocity; }
@@ -70,6 +73,9 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
     virtual void AfterTeleport(){}; // base class does nothing
 
   private:
+
+    void HandleTeleport(CBaseEntity *);
+
     bool m_bResetVelocity;
     bool m_bResetAngles;
     CBaseEntity *pDestinationEnt;
@@ -345,4 +351,20 @@ class CTriggerMomentumPush : public CTriggerTeleportEnt
     // Pointer to the destination entity if a teleport is needed
     CBaseEntity *m_Destination;
 };
+
+class CTriggerSlide : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerSlide, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+  public:
+    void Think() OVERRIDE;
+    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+
+  public:
+    bool m_bSliding, m_bStuck;
+    float m_flGravity,m_flSavedGravity;
+};
+
 #endif // TIMERTRIGGERS_H

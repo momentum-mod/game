@@ -61,7 +61,24 @@
 ]
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
-    "The entity can have its Angles and Velocity reset by boolean settings." []
+    "The entity can have its Angles and Velocity reset by boolean settings." 
+[
+	// In other places default values for the spawnflags get carried over. But for some reason, I couldn't make it happen here
+	spawnflags(flags) =
+	[
+		4096 : "Teleport the player on EndTouch() instead of StartTouch()" : 0
+		1: "Clients" : 1
+		2: "NPCs" : 0
+		4: "Pushables": 0
+		8: "Physics Objects" : 0
+		16: "Only player ally NPCs" : 0
+		32: "Only clients in vehicles" : 0
+		64: "Everything (not including physics debris)" : 0
+		512: "Only clients *not* in vehicles" : 0
+		1024: "Physics debris" : 0
+		2048: "Only NPCs in vehicles (respects player ally flag)" : 0
+	]
+]
 
 @SolidClass base(Trigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
 [
@@ -185,6 +202,15 @@
 	]
 ]
 
+@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working properly brushes must be placed under the trigger." 
+[
+	Slide(integer) : "Sliding" : 1 : "Enabled?"
+	StuckOnGround(integer) : "Stick to ground" : 1 : "Should the player get stuck to the ground while sliding? (Useful if no gravity present)"
+	Gravity(float) : "Gravity" : 0 : "Use this instead of trigger_gravity. " + 
+    "This is only set when the player touches the trigger, so once the player leaves the trigger, his gravity is reset to its previous value (befores he touches the trigger). " + 
+    "This is useful if you want speed/velocity based on strafes only, where slopes don't count for it."
+]
+
 //-------------------------------------------------------------------------
 //
 // Weapons
@@ -214,3 +240,4 @@
 @PointClass base(Weapon) studio("models/weapons/w_mach_m249para.mdl") = weapon_momentum_lmg : "LMG" []
 @PointClass base(Weapon) studio("models/weapons/w_snip_scout.mdl") = weapon_momentum_sniper : "Sniper" []
 @PointClass base(Weapon) studio("models/weapons/w_eq_fraggrenade.mdl") = weapon_momentum_grenade : "Grenade" []
+

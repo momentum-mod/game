@@ -406,6 +406,9 @@ CBaseEntity::CBaseEntity( bool bServerOnly )
 
 	SetFriction( 1.0f );
 
+    //We need to set this for gamemovement code and other physics
+    SetGravity( 1.0f );
+
 	if ( bServerOnly )
 	{
 		AddEFlags( EFL_SERVER_ONLY );
@@ -4826,7 +4829,7 @@ void CBaseEntity::PrecacheModelComponents( int nModelIndex )
 						{
 							char token[256];
 							const char *pOptions = pEvent->pszOptions();
-							nexttoken( token, pOptions, ' ' );
+							nexttoken( token, pOptions, ' ', sizeof(token) );
 							if ( token[0] ) 
 							{
 								PrecacheParticleSystem( token );

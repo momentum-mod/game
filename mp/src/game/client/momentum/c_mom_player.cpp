@@ -5,42 +5,37 @@
 
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
-RecvPropInt(RECVINFO(m_iShotsFired)),
-RecvPropInt(RECVINFO(m_iDirection)),
-RecvPropBool(RECVINFO(m_bResumeZoom)),
-RecvPropInt(RECVINFO(m_iLastZoom)),
-RecvPropBool(RECVINFO(m_bDidPlayerBhop)),
-RecvPropInt(RECVINFO(m_iSuccessiveBhops)),
-RecvPropBool(RECVINFO(m_bHasPracticeMode)),
-RecvPropBool(RECVINFO(m_bUsingCPMenu)),
-RecvPropInt(RECVINFO(m_iCurrentStepCP)),
-RecvPropInt(RECVINFO(m_iCheckpointCount)),
 RecvPropInt(RECVINFO(m_afButtonDisabled)),
-RecvPropDataTable(RECVINFO_DT(m_RunData), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunEntData)),
-RecvPropDataTable(RECVINFO_DT(m_RunStats), SPROP_PROXY_ALWAYS_YES, &REFERENCE_RECV_TABLE(DT_MOM_RunStats)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
-DEFINE_PRED_FIELD(m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
-DEFINE_PRED_FIELD(m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer()
+C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
-    m_RunData.m_bMapFinished = false;
-    m_RunData.m_flLastJumpTime = 0.0f;
-    m_bHasPracticeMode = false;
+    m_SrvData.m_RunData.m_bMapFinished = false;
+    m_SrvData.m_RunData.m_flLastJumpTime = 0.0f;
+    m_SrvData.m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
-    m_RunStats.Init();
+    m_fSliding = 0;
+    m_flStartSpeed = 0.0f;
+    m_flEndSpeed = 0.0f;
+    m_duckUntilOnGround = false;
+    m_flStamina = 0.0f;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()
 {
 
 }
-
+void C_MomentumPlayer::Spawn()
+{
+    SetNextClientThink(CLIENT_THINK_ALWAYS);
+}
 //-----------------------------------------------------------------------------
 // Purpose: Input handling
 //-----------------------------------------------------------------------------
@@ -56,11 +51,12 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 void C_MomentumPlayer::ClientThink()
 {
 	SetNextClientThink(CLIENT_THINK_ALWAYS);
+    FetchStdData(this);
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
 {
-	SetNextClientThink(CLIENT_THINK_ALWAYS);
+	//SetNextClientThink(CLIENT_THINK_ALWAYS);
 
 	BaseClass::OnDataChanged(type);
 
@@ -74,7 +70,7 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 	// networked the same value we already have.
 	SetNetworkAngles(GetLocalAngles());
 
-	SetNextClientThink(CLIENT_THINK_ALWAYS);
+	//SetNextClientThink(CLIENT_THINK_ALWAYS);
 
 	BaseClass::PostDataUpdate(updateType);
 }
