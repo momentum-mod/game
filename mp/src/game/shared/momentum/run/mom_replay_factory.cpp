@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "mom_replay_manager.h"
+#include "mom_replay_factory.h"
 #include "filesystem.h"
 #include "mom_replay_versions.h"
 #ifdef GAME_DLL

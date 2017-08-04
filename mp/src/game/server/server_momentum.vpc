@@ -80,8 +80,8 @@ $Project "Server (Momentum)"
 	            }
                 $File   "momentum\mom_replay_entity.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_data.h"
-                $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.cpp"
-                $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.h"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_factory.cpp"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_factory.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_base.h"
 
                 $Folder "Versions"

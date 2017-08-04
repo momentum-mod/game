@@ -5,7 +5,7 @@
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "tier0/memdbgon.h"
-#include "run/mom_replay_manager.h"
+#include "run/mom_replay_factory.h"
 
 extern IFileSystem *filesystem;
 

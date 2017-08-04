@@ -36,7 +36,7 @@
 #include <time.h>
 #include <util/jsontokv.h>
 #include "IMessageboxPanel.h"
-#include "run/mom_replay_manager.h"
+#include "run/mom_replay_factory.h"
 
 extern IFileSystem *filesystem;
 
