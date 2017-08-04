@@ -5,7 +5,7 @@
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "tier0/memdbgon.h"
-#include "run/mom_replay_factory.h"
+#include "run/mom_replay_manager.h"
 
 extern IFileSystem *filesystem;
 
@@ -372,6 +372,7 @@ CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate,
             // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
             char pReplayPath[MAX_PATH];
             V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
+
             CMomReplayBase *pBase = g_ReplayFactory.LoadReplayFile(pReplayPath, false);
             assert(pBase != nullptr);
                 

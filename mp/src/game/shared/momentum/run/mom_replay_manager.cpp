@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "mom_replay_factory.h"
+#include "mom_replay_manager.h"
 #include "filesystem.h"
 #include "mom_replay_versions.h"
 #ifdef GAME_DLL
@@ -80,3 +80,4 @@ CMomReplayBase* CMomReplayFactory::LoadReplayFile(const char* pFileName, bool bF
 }
 
 CMomReplayFactory g_ReplayFactory;
+
