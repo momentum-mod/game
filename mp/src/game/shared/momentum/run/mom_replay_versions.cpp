@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "mom_replay_v1.h"
+#include "mom_replay_versions.h"
 
 #ifdef GAME_DLL
 #include "momentum/mom_replay_entity.h"
@@ -56,20 +56,6 @@ CMomRunStats *CMomReplayV1::CreateRunStats(uint8 stages)
 }
 
 void CMomReplayV1::RemoveFrames(int num) { m_rgFrames.RemoveMultipleFromHead(num); }
-
-void CMomReplayV1::Start(bool firstperson)
-{
-#ifdef GAME_DLL
-    if (m_pEntity)
-    {
-        if (firstperson)
-            g_pMomentumTimer->Stop(false); // stop the timer just in case we started a replay while it was running...
-
-        m_pEntity->StartRun(firstperson);
-        g_ReplaySystem->GetReplayManager()->SetPlayingBack(true);
-    }
-#endif
-}
 
 void CMomReplayV1::Serialize(CBinaryWriter *writer)
 {
