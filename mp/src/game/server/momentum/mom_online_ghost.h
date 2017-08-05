@@ -3,6 +3,20 @@
 #include "cbase.h"
 #include "mom_ghost_base.h"
 #include "mom_ghostdefs.h"
+#include "utlstack.h"
+#include "utlqueue.h"
+
+struct ReceivedFrame
+{
+    float recvTime;
+    ghostNetFrame_t frame;
+
+    ReceivedFrame(float recvTime, ghostNetFrame_t recvFrame)
+    {
+        this->recvTime = recvTime;
+        frame = recvFrame;
+    }
+};
 
 class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity
 {
@@ -14,14 +28,13 @@ public:
     CMomentumOnlineGhostEntity();
     ~CMomentumOnlineGhostEntity();
 
-    void SetCurrentNetFrame(ghostNetFrame_t newFrame) { m_currentFrame = newFrame; }
-    ghostNetFrame_t GetCurrentNetFrame() const { return m_currentFrame; }
-    void SetGhostSteamID(uint64_t steamID) { m_u64GhostSteamID = steamID; }
-    uint64_t GetGhostSteamID() const { return m_u64GhostSteamID; }
+    void SetCurrentNetFrame(ghostNetFrame_t newFrame);
+    //ghostNetFrame_t GetCurrentNetFrame() const { return m_currentFrame; }
+    void SetGhostSteamID(CSteamID steamID) { m_GhostSteamID = steamID; }
+    CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
 
-    bool IsOnlineGhost() const OVERRIDE{ return true; }
+    bool IsOnlineGhost() const OVERRIDE { return true; }
 
-    bool HasSpawned() const { return hasSpawned; }
     void Spawn() OVERRIDE;
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
@@ -33,11 +46,11 @@ protected:
     void Think(void) OVERRIDE;
     void Precache(void) OVERRIDE;
 private:
-    ghostNetFrame_t m_currentFrame;
-    ghostNetFrame_t m_previousFrame;
+    CUtlQueue<ReceivedFrame*> m_vecFrames;
+    ReceivedFrame* m_pCurrentFrame;
+    ReceivedFrame* m_pNextFrame;
 
-    uint64_t m_u64GhostSteamID;
+    CSteamID m_GhostSteamID;
     ghostAppearance_t m_currentAppearance;
-    bool hasSpawned;
     int m_ghostButtons;
 };

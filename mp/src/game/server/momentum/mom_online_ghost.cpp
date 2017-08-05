@@ -19,10 +19,18 @@ END_DATADESC();
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
 }
-CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity()
+
+void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
 {
-    hasSpawned = false;
+    
+    // We're adding a 50ms ms buffer automatically between packets
+    m_vecFrames.Insert(new ReceivedFrame(gpGlobals->curtime + 0.05f, newFrame));
 }
+
+CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr), m_ghostButtons(0)
+{
+}
+
 void CMomentumOnlineGhostEntity::Precache(void)
 {
     BaseClass::Precache();
@@ -30,7 +38,6 @@ void CMomentumOnlineGhostEntity::Precache(void)
 void CMomentumOnlineGhostEntity::Spawn()
 {
     BaseClass::Spawn();
-    hasSpawned = true;
     SetSolid(SOLID_BBOX);
     SetNextThink(gpGlobals->curtime);
 }
@@ -39,13 +46,23 @@ void CMomentumOnlineGhostEntity::Think()
     BaseClass::Think();
     HandleGhost();
     //We have to wait some time after getting the new packets to allow the client some "space", i.e a few saved packets, in order to interpolate
-    float finalLerp = gpGlobals->interval_per_tick / (mm_lerpRatio.GetFloat() / mm_updaterate.GetFloat());
-    SetNextThink(gpGlobals->curtime + finalLerp);
+    //float finalLerp = gpGlobals->interval_per_tick / (mm_lerpRatio.GetFloat() / mm_updaterate.GetFloat());
+    // Emulate every millisecond (smooth interpolation MOM_TODO: Change this to be some convar?)
+    SetNextThink(gpGlobals->curtime + 0.001f);
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
-    if (hasSpawned)
+    if (!m_vecFrames.IsEmpty())
     {
+        if (!m_pCurrentFrame)
+            m_pCurrentFrame = m_vecFrames.RemoveAtHead();
+        if (!m_pNextFrame) // MOM_TODO: Check
+            m_pNextFrame = m_vecFrames.Head();
+
+        // Begin the interpolation
+        while (gpGlobals->curtime > m_pCurrentFrame->recvTime) // && the curtime is under the "next" frame
+            m_pCurrentFrame = m_vecFrames.RemoveAtHead();
+
         if (mm_ghostTesting.GetBool())
         {
             SetAbsOrigin(Vector(m_currentFrame.Position.x + 50, m_currentFrame.Position.y + 50, m_currentFrame.Position.z));
@@ -56,7 +73,8 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         }
         QAngle newAngles = QAngle(m_currentFrame.EyeAngle.x / 10, m_currentFrame.EyeAngle.y, m_currentFrame.EyeAngle.z);
         SetAbsAngles(newAngles);
-        SetViewOffset(m_currentFrame.ViewOffset);
+        
+        SetViewOffset(Vector(0, 0, m_currentFrame.ViewOffset));
         //SetAbsVelocity(GetSmoothedVelocity());
         //MOM_TODO: Fix this
         
@@ -77,9 +95,8 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         }
         UpdateStats(interpolatedVel);
 
-        Q_strncpy(m_pszGhostName.GetForModify(), m_currentFrame.PlayerName, sizeof(m_pszGhostName));
+        m_previousFrame = m_currentFrame;
     }
-    m_previousFrame = m_currentFrame;
 }
 void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
 {
@@ -87,7 +104,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
     {
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
-            SetAbsAngles(m_currentFrame.EyeAngle);
+            SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
             // don't render the model when we're in first person mode
             if (GetRenderMode() != kRenderNone)
             {
@@ -95,7 +112,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
                 AddEffects(EF_NOSHADOW);
             }
             bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-            if (m_currentFrame.Buttons & IN_DUCK)
+            if (m_pCurrentFrame->frame.Buttons & IN_DUCK)
             {
                 if (!isDucking)
                 {

@@ -80,7 +80,9 @@ struct ghostNetFrame_t
         ViewOffset = viewOffsetZ;
 
     }
-    ghostNetFrame_t() {}
+    ghostNetFrame_t(): Buttons(0), ViewOffset(0)
+    {
+    }
 
     bool operator==(const ghostNetFrame_t &other) const
     {

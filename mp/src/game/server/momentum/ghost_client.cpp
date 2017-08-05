@@ -8,6 +8,19 @@
 
 static ConVar mm_address("mom_ghost_address", "127.0.0.1:9000", FCVAR_HIDDEN | FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE);
 
+ConVar mm_updaterate("mom_ghost_online_updaterate", "20",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Number of updates per second to and from the ghost server.\n", true, 1.0f, true, 1000.0f);
+
+ConVar mm_timeOutDuration("mom_ghost_online_timeout_duration", "10",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Seconds to wait when timimg out from a ghost server.\n", true, 5.0f, true, 30.0f);
+
+//we have to wait a few ticks to let the interpolation catch up with our ghosts!
+ConVar mm_lerpRatio("mom_ghost_online_lerp_ratio", "2",
+    FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
+    "Number of ticks to wait before updating ghosts, to allow client to interpolate.\n", true, 0.0f, true, 10.0f);
+
 zed_net_socket_t CMomentumGhostClient::m_socket;
 zed_net_address_t CMomentumGhostClient::m_address;
 
@@ -37,65 +50,70 @@ void CMomentumGhostClient::LevelInitPostEntity()
 
     if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
-        DevLog("Setting the map to %s!\n", gpGlobals->mapname.ToCStr());
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", gpGlobals->mapname.ToCStr());
-    }
-        
+        const char *pMapName = gpGlobals->mapname.ToCStr();
+        DevLog("Setting the map to %s!\n", pMapName);
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", pMapName);
 
-    /*if (initGhostClient()) //init ghost client
-    {
-        char buffer[64];
-        Q_strncpy(buffer, mm_address.GetString(), sizeof(buffer));
-        char *host = strtok(buffer, ":");
-        unsigned short port = atoi(strtok(NULL, ":"));
-        m_ghostClientConnected = connectToGhostServer(host, port);
+        // Now check if this map is the same as somebody else's in the lobby
+        CheckToAdd(nullptr);
     }
-    if (!m_ghostClientConnected)
-    {
-        exitGhostClient(); 
-    }*/
 }
 void CMomentumGhostClient::LevelShutdownPreEntity()
 {
-    //exitGhostClient(); //set ghost client connection to false when we disconnect
-    //m_ghostClientConnected = false;
-    //ThreadJoin(netIOThread, 20);
-
     if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         DevLog("Setting map to null, since we're going to the menu.\n");
         steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", nullptr);
+
+        if (m_mapOnlineGhosts.Count() > 0)
+        {
+            m_mapOnlineGhosts.RemoveAll(); // NOTE: The game handles clearing the entities! No need to delete here.
+        }
     }
     
 }
-void CMomentumGhostClient::FrameUpdatePostEntityThink()
+void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
     m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
 
-    // Run the thread that recieves and sends ghost data IFF we're connected to the server, AND it hasn't run before 
-    /*if (!m_bRanThread && isGhostClientConnected() && m_pPlayer && steamapicontext)
+    if (m_pPlayer)
     {
-        MyThreadParams_t vars; //bogus params containing NOTHING hahAHAHAhaHHa
-        oldAppearance = m_pPlayer->m_playerAppearanceProps;
-        m_SteamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
-        // Create a new thread to handle network I/O
-        ConColorMsg(Color(0, 100, 255, 255), "Running thread\n");
-        netIOThread = CreateSimpleThread(CMomentumGhostClient::sendAndRecieveData, &vars);
-        ThreadDetach(netIOThread);
-        m_bRanThread = true;
-    }
-
-    // DO stuff with that data
-    if (isGhostClientConnected() && m_pPlayer)
-    {
-        if (!(m_pPlayer->m_playerAppearanceProps == oldAppearance) && m_pPlayer)
+        if (m_mapOnlineGhosts.Count() > 0 && m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
-            SentPacketQueue.QueueMessage(PT_APPEARANCE);
-            oldAppearance = m_pPlayer->m_playerAppearanceProps;
+            // Read data
+            uint32 size;
+            if (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
+            {
+                DevLog("Packet available! Size: %u bytes\n", size);
+                ghostNetFrame_t frame;
+                uint32 bytesRead;
+                CSteamID fromWho;
+                if (steamapicontext->SteamNetworking()->ReadP2PPacket(&frame, sizeof frame, &bytesRead, &fromWho))
+                {
+                    DevLog("Read the packet successfully! Read bytes: %u, from steamID %lld\n", bytesRead, fromWho.ConvertToUint64());
+                    unsigned short findIndex = m_mapOnlineGhosts.Find(fromWho.ConvertToUint64());
+                    if (findIndex != m_mapOnlineGhosts.InvalidIndex())
+                    {
+                        m_mapOnlineGhosts[findIndex]->SetCurrentNetFrame(frame);
+                    }
+                }
+            }
+
+            // Send data
+            unsigned short firstIndex = m_mapOnlineGhosts.FirstInorder();
+            while (firstIndex != m_mapOnlineGhosts.InvalidIndex())
+            {
+                CSteamID ghost = m_mapOnlineGhosts[firstIndex]->GetGhostSteamID();
+                ghostNetFrame_t frame = CreateNewNetFrame(m_pPlayer);
+                if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof frame, k_EP2PSendUnreliable))
+                {
+                    DevLog("Sent the packet!\n");
+                }
+            }
+
+            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
         }
-    }*/
-
-
+    }
 }
 
 void CMomentumGhostClient::Shutdown()
@@ -211,6 +229,30 @@ void CMomentumGhostClient::HandleLobbyCreated(LobbyCreated_t* pCreated, bool ioF
     }
 }
 
+void CMomentumGhostClient::StartLobby()
+{
+    if (!(m_cLobbyCreated.IsActive() || m_sLobbyID.IsValid() || m_sLobbyID.IsLobby()))
+    {
+        SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, 10);
+        m_cLobbyCreated.Set(call, this, &CMomentumGhostClient::HandleLobbyCreated);
+        DevLog("The lobby call successfully happened!\n");
+    }
+    else
+        DevLog("The lobby could not be created because you already made one or are in one!\n");
+}
+
+void CMomentumGhostClient::LeaveLobby()
+{
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    {
+        steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
+        DevLog("Left the lobby!\n");
+        m_sLobbyID = k_steamIDNil;
+    }
+    else
+        DevLog("Could not leave lobby, are you in one?\n");
+}
+
 // Called when we enter a lobby
 // NOTE: I'm not actually sure if this gets called after HandleLobbyCreated, given the user created the lobby
 // Hopefully it is, that way we can know for sure they created the lobby
@@ -273,9 +315,7 @@ void CMomentumGhostClient::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
                 return;
 
             // An individual member changed
-            const char *pMapName = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, memberChanged, "map"); // Or whatever
-            DevLog("Lobby Member Changed! Map: %s\n", pMapName);
-            // MOM_TODO: Check if their map is now ours, set them as able to recv our position
+            CheckToAdd(memberChanged); // See the todo on the method
         }
     }
 }
@@ -382,9 +422,9 @@ ghostNetFrame_t CMomentumGhostClient::CreateNewNetFrame(CMomentumPlayer *pPlayer
 {
     return ghostNetFrame_t(pPlayer->EyeAngles(),
                            pPlayer->GetAbsOrigin(),
-                           pPlayer->GetViewOffset(),
-                           pPlayer->m_nButtons,
-                           pPlayer->GetPlayerName());
+                           pPlayer->GetAbsVelocity(),
+                           pPlayer->GetViewOffset().z,
+                           pPlayer->m_nButtons);
 }
 bool CMomentumGhostClient::SendSignonMessage()
 {
@@ -436,6 +476,49 @@ bool CMomentumGhostClient::SendNetFrame(ghostNetFrame_t frame)
         return false;
     return true;
 }
+
+void CMomentumGhostClient::CheckToAdd(CSteamID *pID)
+{
+    CSteamID localID = steamapicontext->SteamUser()->GetSteamID();
+
+    if (pID)
+    {
+        const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, "map");
+        if (FStrEq(gpGlobals->mapname.ToCStr(), pOtherMap))
+        {
+            CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
+            newPlayer->SetGhostSteamID(*pID);
+            newPlayer->Spawn();
+
+            // MOM_TODO: Also get their appearance data, which for now can just be colors and trail stuff?
+            // const char *pData = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, "trail_length"); // Or whatever
+            // const char *pData2 = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, "trail_color"); // Or whatever
+            // const char *pData3 = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, "ghost_color"); // Or whatever
+
+            //newPlayer->SetCurrentNetFrame(newSignOn->newFrame);
+            //newPlayer->SetGhostAppearance(newSignOn->newApps);
+            //newPlayer->SetGhostSteamID(newSignOn->SteamID);
+
+            m_mapOnlineGhosts.Insert(pID->ConvertToUint64(), newPlayer);
+
+            if (m_flNextUpdateTime < 0)
+                m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat()); // MOM_TODO: Probably move this out of the for loop and use a boolean check instead
+        }
+    } 
+    else
+    {
+        int numMembers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
+        for (int i = 0; i < numMembers; i++)
+        {
+            CSteamID member = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
+            if (member == localID) // If it's us, don't care
+                continue;
+
+            CheckToAdd(&member);
+        }
+    }
+}
+
 //Threaded function
 unsigned CMomentumGhostClient::sendAndRecieveData(void *params)
 {

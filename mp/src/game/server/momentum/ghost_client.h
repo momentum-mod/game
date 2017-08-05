@@ -11,44 +11,24 @@ struct MyThreadParams_t{}; //empty class so we can force the threaded function t
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
 {
 public:
-    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName), m_sLobbyID(), m_sHostID()
+    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName), m_sLobbyID(), m_sHostID(), m_bHostingLobby(false), m_flNextUpdateTime(-1.0f)
     {
+        SetDefLessFunc(m_mapOnlineGhosts);
     }
+
     //bool Init() OVERRIDE; MOM_TODO: Set state variables here?
     void PostInit() OVERRIDE;
     //void LevelInitPreEntity() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     //void LevelShutdownPreEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
-    void FrameUpdatePostEntityThink() OVERRIDE;
+    void FrameUpdatePreEntityThink() OVERRIDE;
     void Shutdown() OVERRIDE;
-
 
     void HandleLobbyCreated(LobbyCreated_t *pCreated, bool IOFailure);
 
-    void StartLobby()
-    {
-        if (!(m_cLobbyCreated.IsActive() || m_sLobbyID.IsValid() || m_sLobbyID.IsLobby()))
-        {
-            SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, 10);
-            m_cLobbyCreated.Set(call, this, &CMomentumGhostClient::HandleLobbyCreated);
-            DevLog("The lobby call successfully happened!\n");
-        }
-        else
-            DevLog("The lobby could not be created because you already made one or are in one!\n");
-       
-    }
-    void LeaveLobby()
-    {
-        if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
-        {
-            steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
-            DevLog("Left the lobby!\n");
-            m_sLobbyID = k_steamIDNil;
-        }
-        else
-            DevLog("Could not leave lobby, are you in one?\n");
-    }
+    void StartLobby();
+    void LeaveLobby();
 
     STEAM_CALLBACK(CMomentumGhostClient, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
     STEAM_CALLBACK(CMomentumGhostClient, HandleLobbyChatUpdate, LobbyChatUpdate_t); // Lobby chat room status has changed. This can be owner being changed, or somebody joining or leaving
@@ -85,9 +65,16 @@ private:
     static uint64 m_SteamID;
     static ghostAppearance_t oldAppearance;
 
+    static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;
+
+    void CheckToAdd(CSteamID *pSteamID);
+
     CSteamID m_sLobbyID;
 
     CSteamID m_sHostID;
+
+    bool m_bHostingLobby;
+    float m_flNextUpdateTime;
 
     CCallResult<CMomentumGhostClient, LobbyCreated_t> m_cLobbyCreated;
 };
