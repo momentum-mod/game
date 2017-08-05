@@ -16,7 +16,7 @@ $hl2args = "-game momentum -window -w 1600 -h 900 -novid +developer 2 -console"
 
 $momentum_sym = Join-Path $path momentum # Writing as (steamworks path)/momentum
 $momentum = [System.IO.Path]::GetFullPath("..\game\momentum") # This is your local dev folder
-cmd /c mklink /d $momentum_sym $momentum
+cmd /c mklink /D $momentum_sym $momentum
 
 $data = @"
 <?xml version="1.0" encoding="utf-8"?>
