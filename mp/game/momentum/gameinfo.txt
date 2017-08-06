@@ -3,7 +3,7 @@
 	game 		"Momentum"
 	title 		""
 	title2		""
-	supportsvr	1
+	supportsvr	0
 	nodifficulty    1
 	developer	"Team Momentum"
 	developer_url   "http://momentum-mod.org"

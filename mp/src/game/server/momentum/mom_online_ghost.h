@@ -52,5 +52,4 @@ private:
 
     CSteamID m_GhostSteamID;
     ghostAppearance_t m_currentAppearance;
-    int m_ghostButtons;
 };

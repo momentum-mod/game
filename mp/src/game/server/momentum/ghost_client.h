@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cbase.h"
-#include "zed_net.h"
 #include "mom_player.h"
 #include "mom_shareddefs.h"
 #include "mom_online_ghost.h"
@@ -11,9 +10,10 @@ struct MyThreadParams_t{}; //empty class so we can force the threaded function t
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
 {
 public:
-    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName), m_sLobbyID(), m_sHostID(), m_bHostingLobby(false), m_flNextUpdateTime(-1.0f)
+    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName), m_sHostID(), m_bHostingLobby(false), m_flNextUpdateTime(-1.0f)
     {
         SetDefLessFunc(m_mapOnlineGhosts);
+        m_pInstance = this;
     }
 
     //bool Init() OVERRIDE; MOM_TODO: Set state variables here?
@@ -25,7 +25,8 @@ public:
     void FrameUpdatePreEntityThink() OVERRIDE;
     void Shutdown() OVERRIDE;
 
-    void HandleLobbyCreated(LobbyCreated_t *pCreated, bool IOFailure);
+    void CallResult_LobbyCreated(LobbyCreated_t *pCreated, bool IOFailure);
+    void CallResult_LobbyJoined(LobbyEnter_t *pEntered, bool IOFailure);
 
     void StartLobby();
     void LeaveLobby();
@@ -43,33 +44,23 @@ public:
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
     void GetLobbyMemberSteamData(CSteamID pMember);
 
-    static bool initGhostClient();
-    static bool exitGhostClient();
-    static bool connectToGhostServer(const char* host, unsigned short port);
-    static unsigned sendAndRecieveData(void *params);
-    static bool isGhostClientConnected() { return m_ghostClientConnected && (m_socket.ready == 0); }
-    static bool SendSignonMessage();
     static ghostNetFrame_t CreateNewNetFrame(CMomentumPlayer *pPlayer);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
-    static bool SendAppearanceData(ghostAppearance_t apps);
-    static bool SendNetFrame(ghostNetFrame_t frame);
-private:
-    static zed_net_socket_t m_socket;
-    static zed_net_address_t m_address;
-    static bool m_ghostClientConnected, m_bRanThread;
-    static char data[256];
 
-    static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
-    static CUtlVector<CMomentumOnlineGhostEntity*> ghostPlayers;
+    static void JoinLobbyFromString(const char *pString);
+private:
+
+    //static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
     static CMomentumPlayer *m_pPlayer;
-    static uint64 m_SteamID;
-    static ghostAppearance_t oldAppearance;
+    //static uint64 m_SteamID;
+    //static ghostAppearance_t oldAppearance;
 
     static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;
 
     void CheckToAdd(CSteamID *pSteamID);
+    void ClearCurrentGhosts();
 
-    CSteamID m_sLobbyID;
+    static CSteamID m_sLobbyID;
 
     CSteamID m_sHostID;
 
@@ -77,6 +68,8 @@ private:
     float m_flNextUpdateTime;
 
     CCallResult<CMomentumGhostClient, LobbyCreated_t> m_cLobbyCreated;
+    static CCallResult<CMomentumGhostClient, LobbyEnter_t> m_cLobbyJoined;
+    static CMomentumGhostClient *m_pInstance;
 };
 
 extern CMomentumGhostClient *g_pMomentumGhostClient;
