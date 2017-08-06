@@ -608,7 +608,7 @@ void CMomentumPlayer::RemoveTrail()
 void CMomentumPlayer::CheckChatText(char* p, int bufsize)
 {
     // MOM_TODO: We could further check the message here? Idk
-    g_pMomentumGhostClient->SendChatMessage(p);
+    g_pMomentumLobbySystem->SendChatMessage(p);
 }
 
 // Overrides Teleport() so we can take care of the trail
