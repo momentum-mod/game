@@ -65,7 +65,6 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         // When we finally get our second packet, we assign it here
         if (!m_pNextFrame && !m_vecFrames.IsEmpty())
             m_pNextFrame = m_vecFrames.RemoveAtHead();
-
         // Catch up if we hitched or something
         while (m_pNextFrame && flCurtime > m_pNextFrame->recvTime && !m_vecFrames.IsEmpty())
         {

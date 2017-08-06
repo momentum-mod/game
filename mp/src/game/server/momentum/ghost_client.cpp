@@ -125,7 +125,6 @@ void CMomentumGhostClient::Shutdown()
 
 CON_COMMAND(mom_host_lobby, "Starts hosting a lobby\n")
 {
-    DevMsg("Called command!\n");
     g_pMomentumGhostClient->StartLobby();
 }
 
@@ -136,7 +135,7 @@ CON_COMMAND(mom_leave_lobby, "Leave your current lobby\n")
 
 CON_COMMAND(connect_lobby, "Connect to a given SteamID's lobby\n")
 {
-    CMomentumGhostClient::JoinLobbyFromString(args.Arg(1));
+    g_pMomentumGhostClient->JoinLobbyFromString(args.Arg(1));
 }
 
 // So basically, if a user wants to connect to us, we're considered the host. 

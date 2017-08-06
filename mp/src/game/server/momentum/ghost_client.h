@@ -42,12 +42,14 @@ public:
     STEAM_CALLBACK(CMomentumGhostClient, HandlePersonaCallback, PersonaStateChange_t); // Called when we get their avatar and name from steam
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
+    void NotifyStartTyping(CSteamID pMember);
+    void NotifyStopTyping(CSteamID pMember);
     void GetLobbyMemberSteamData(CSteamID pMember);
 
     static ghostNetFrame_t CreateNewNetFrame(CMomentumPlayer *pPlayer);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
 
-    static void JoinLobbyFromString(const char *pString);
+    void JoinLobbyFromString(const char *pString);
 private:
 
     //static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
@@ -68,7 +70,7 @@ private:
     float m_flNextUpdateTime;
 
     CCallResult<CMomentumGhostClient, LobbyCreated_t> m_cLobbyCreated;
-    static CCallResult<CMomentumGhostClient, LobbyEnter_t> m_cLobbyJoined;
+    CCallResult<CMomentumGhostClient, LobbyEnter_t> m_cLobbyJoined;
     static CMomentumGhostClient *m_pInstance;
 };
 
