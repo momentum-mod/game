@@ -26,6 +26,8 @@ CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
 CUtlMap<uint64, CMomentumOnlineGhostEntity*> CMomentumGhostClient::m_mapOnlineGhosts;
 CSteamID CMomentumGhostClient::m_sLobbyID = k_steamIDNil;
 CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;
+float CMomentumGhostClient::m_flNextUpdateTime = -1.0f;
+bool CMomentumGhostClient::m_bIsLobbyValid = m_sLobbyID.IsValid() && m_sLobbyID.IsLobby();
 
 void CMomentumGhostClient::PostInit()
 {
@@ -40,7 +42,7 @@ void CMomentumGhostClient::LevelInitPostEntity()
     // steamapicontext->SteamUser()->AdvertiseGame(steamapicontext->SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
     // steamapicontext->SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
 
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (m_bIsLobbyValid)
     {
         const char *pMapName = gpGlobals->mapname.ToCStr();
         DevLog("Setting the map to %s!\n", pMapName);
@@ -52,7 +54,7 @@ void CMomentumGhostClient::LevelInitPostEntity()
 }
 void CMomentumGhostClient::LevelShutdownPreEntity()
 {
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (m_bIsLobbyValid)
     {
         DevLog("Setting map to null, since we're going to the menu.\n");
         steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", nullptr);
@@ -68,53 +70,13 @@ void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
     m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
 
-    if (m_pPlayer)
+    if (!m_bRanIOThread)
     {
-        if (m_mapOnlineGhosts.Count() > 0 && m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
-        {
-            // Read data
-            uint32 size;
-            if (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
-            {
-                DevLog("Packet available! Size: %u bytes where sizeof frame is %i bytes\n", size, sizeof ghostNetFrame_t);
-                if (size % sizeof ghostNetFrame_t == 0)
-                {
-                    ghostNetFrame_t frame;
-                    uint32 bytesRead;
-                    CSteamID fromWho;
-                    if (steamapicontext->SteamNetworking()->ReadP2PPacket(&frame, sizeof frame, &bytesRead, &fromWho))
-                    {
-                        DevLog("Read the packet successfully! Read bytes: %u, from steamID %lld\n", bytesRead,
-                               fromWho.ConvertToUint64());
-                        unsigned short findIndex = m_mapOnlineGhosts.Find(fromWho.ConvertToUint64());
-                        if (findIndex != m_mapOnlineGhosts.InvalidIndex())
-                        {
-                            m_mapOnlineGhosts[findIndex]->SetCurrentNetFrame(frame);
-                        }
-                    }
-                }
-            }
-
-            // Send data
-            // MOM_TODO: Change this to be server-client with the lobby owner being the "server" for everyone. 
-            // Only one packet should be sent here if you are not the lobby owner. Otherwise, send everybody's data to everybody.
-            // Right now it's just pure P2P.
-
-            // CSteamID owner = steamapicontext->SteamMatchmaking()->GetLobbyOwner(m_sLobbyID);
-
-            unsigned short firstIndex = m_mapOnlineGhosts.FirstInorder();
-            while (firstIndex != m_mapOnlineGhosts.InvalidIndex())
-            {
-                CSteamID ghost = m_mapOnlineGhosts[firstIndex]->GetGhostSteamID();
-                ghostNetFrame_t frame = CreateNewNetFrame(m_pPlayer);
-                if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof frame, k_EP2PSendUnreliable))
-                {
-                    DevLog("Sent the packet!\n");
-                }
-            }
-
-            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
-        }
+        MyThreadParams_t vars; //bogus params containing NOTHING hahAHAHAhaHHa
+        ConColorMsg(Color(0, 100, 255, 255), "Running thread\n");
+        ThreadHandle_t netIOThread = CreateSimpleThread(CMomentumGhostClient::SendAndRecieveP2PPackets, &vars);
+        ThreadDetach(netIOThread);
+        m_bRanIOThread = true;
     }
 }
 
@@ -166,7 +128,7 @@ void CMomentumGhostClient::HandleP2PConnectionFail(P2PSessionConnectFail_t* info
 
 void CMomentumGhostClient::SendChatMessage(char* pMessage)
 {
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (m_bIsLobbyValid)
     {
         int len = Q_strlen(pMessage) + 1;
         bool result = steamapicontext->SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
@@ -211,7 +173,7 @@ void CMomentumGhostClient::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
     // Get the lobby owner
     //CSteamID owner = steamapicontext->SteamMatchmaking()->GetLobbyOwner(pJoin->m_steamIDLobby);
 
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (m_bIsLobbyValid)
     {
         Warning("You are already in a lobby! Do \"mom_leave_lobby\" to leave the lobby!\n");
     }
@@ -262,7 +224,7 @@ void CMomentumGhostClient::CallResult_LobbyJoined(LobbyEnter_t* pEntered, bool I
 
 void CMomentumGhostClient::StartLobby()
 {
-    if (!(m_cLobbyCreated.IsActive() || m_sLobbyID.IsValid() || m_sLobbyID.IsLobby()))
+    if (!(m_cLobbyCreated.IsActive() || m_bIsLobbyValid))
     {
         SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, 10);
         m_cLobbyCreated.Set(call, this, &CMomentumGhostClient::CallResult_LobbyCreated);
@@ -274,7 +236,7 @@ void CMomentumGhostClient::StartLobby()
 
 void CMomentumGhostClient::LeaveLobby()
 {
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (m_bIsLobbyValid)
     {
         steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         DevLog("Left the lobby!\n");
@@ -457,7 +419,7 @@ void CMomentumGhostClient::JoinLobbyFromString(const char* pString)
 {
     if (pString)
     {
-        if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+        if (m_bIsLobbyValid)
         {
             Warning("You are already in a lobby! Do \"mom_leave_lobby\" to exit it!\n");
         }
@@ -485,6 +447,60 @@ void CMomentumGhostClient::JoinLobbyFromString(const char* pString)
         }
     }
 }
+unsigned CMomentumGhostClient::SendAndRecieveP2PPackets(void* args)
+{
+    while (m_bIsLobbyValid)
+    {
+        if (m_pPlayer)
+        {
+            if (m_mapOnlineGhosts.Count() > 0 && m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
+            {
+                // Read data
+                uint32 size;
+                if (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
+                {
+                    DevLog("Packet available! Size: %u bytes where sizeof frame is %i bytes\n", size, sizeof ghostNetFrame_t);
+                    if (size % sizeof ghostNetFrame_t == 0)
+                    {
+                        ghostNetFrame_t frame;
+                        uint32 bytesRead;
+                        CSteamID fromWho;
+                        if (steamapicontext->SteamNetworking()->ReadP2PPacket(&frame, sizeof frame, &bytesRead, &fromWho))
+                        {
+                            DevLog("Read the packet successfully! Read bytes: %u, from steamID %lld\n", bytesRead,
+                                fromWho.ConvertToUint64());
+                            uint16_t findIndex = m_mapOnlineGhosts.Find(fromWho.ConvertToUint64());
+                            if (findIndex != m_mapOnlineGhosts.InvalidIndex())
+                            {
+                                m_mapOnlineGhosts[findIndex]->SetCurrentNetFrame(frame);
+                            }
+                        }
+                    }
+                }
 
+                // Send data
+                // MOM_TODO: Change this to be server-client with the lobby owner being the "server" for everyone. 
+                // Only one packet should be sent here if you are not the lobby owner. Otherwise, send everybody's data to everybody.
+                // Right now it's just pure P2P.
+
+                // CSteamID owner = steamapicontext->SteamMatchmaking()->GetLobbyOwner(m_sLobbyID);
+
+                uint16_t firstIndex = m_mapOnlineGhosts.FirstInorder();
+                while (firstIndex != m_mapOnlineGhosts.InvalidIndex())
+                {
+                    CSteamID ghost = m_mapOnlineGhosts[firstIndex]->GetGhostSteamID();
+                    ghostNetFrame_t frame = CreateNewNetFrame(m_pPlayer);
+                    if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof frame, k_EP2PSendUnreliable))
+                    {
+                        DevLog("Sent the packet!\n");
+                    }
+                }
+
+                m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
+            }
+        }
+    }
+    return 0;
+}
 static CMomentumGhostClient s_MOMGhostClient("CMomentumGhostClient");
 CMomentumGhostClient *g_pMomentumGhostClient = &s_MOMGhostClient;

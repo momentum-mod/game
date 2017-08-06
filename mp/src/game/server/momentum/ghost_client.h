@@ -10,7 +10,8 @@ struct MyThreadParams_t{}; //empty class so we can force the threaded function t
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
 {
 public:
-    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName), m_sHostID(), m_bHostingLobby(false), m_flNextUpdateTime(-1.0f)
+    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName), 
+        m_sHostID(), m_bHostingLobby(false), m_bRanIOThread(false)
     {
         SetDefLessFunc(m_mapOnlineGhosts);
         m_pInstance = this;
@@ -46,6 +47,7 @@ public:
     void NotifyStopTyping(CSteamID pMember);
     void GetLobbyMemberSteamData(CSteamID pMember);
 
+    static unsigned SendAndRecieveP2PPackets(void *args);
     static ghostNetFrame_t CreateNewNetFrame(CMomentumPlayer *pPlayer);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
 
@@ -67,8 +69,9 @@ private:
     CSteamID m_sHostID;
 
     bool m_bHostingLobby;
-    float m_flNextUpdateTime;
-
+    bool m_bRanIOThread;
+    static float m_flNextUpdateTime; //needs to be static due to thread..
+    static bool m_bIsLobbyValid;
     CCallResult<CMomentumGhostClient, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumGhostClient, LobbyEnter_t> m_cLobbyJoined;
     static CMomentumGhostClient *m_pInstance;
