@@ -71,7 +71,6 @@ private:
     bool m_bHostingLobby;
     bool m_bRanIOThread;
     static float m_flNextUpdateTime; //needs to be static due to thread..
-    static bool m_bIsLobbyValid;
     CCallResult<CMomentumGhostClient, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumGhostClient, LobbyEnter_t> m_cLobbyJoined;
     static CMomentumGhostClient *m_pInstance;

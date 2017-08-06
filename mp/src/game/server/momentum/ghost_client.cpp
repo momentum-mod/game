@@ -27,7 +27,6 @@ CUtlMap<uint64, CMomentumOnlineGhostEntity*> CMomentumGhostClient::m_mapOnlineGh
 CSteamID CMomentumGhostClient::m_sLobbyID = k_steamIDNil;
 CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;
 float CMomentumGhostClient::m_flNextUpdateTime = -1.0f;
-bool CMomentumGhostClient::m_bIsLobbyValid = m_sLobbyID.IsValid() && m_sLobbyID.IsLobby();
 
 void CMomentumGhostClient::PostInit()
 {
@@ -42,7 +41,7 @@ void CMomentumGhostClient::LevelInitPostEntity()
     // steamapicontext->SteamUser()->AdvertiseGame(steamapicontext->SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
     // steamapicontext->SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
 
-    if (m_bIsLobbyValid)
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         const char *pMapName = gpGlobals->mapname.ToCStr();
         DevLog("Setting the map to %s!\n", pMapName);
@@ -54,7 +53,7 @@ void CMomentumGhostClient::LevelInitPostEntity()
 }
 void CMomentumGhostClient::LevelShutdownPreEntity()
 {
-    if (m_bIsLobbyValid)
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         DevLog("Setting map to null, since we're going to the menu.\n");
         steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, "map", nullptr);
@@ -128,7 +127,7 @@ void CMomentumGhostClient::HandleP2PConnectionFail(P2PSessionConnectFail_t* info
 
 void CMomentumGhostClient::SendChatMessage(char* pMessage)
 {
-    if (m_bIsLobbyValid)
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         int len = Q_strlen(pMessage) + 1;
         bool result = steamapicontext->SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
@@ -173,7 +172,7 @@ void CMomentumGhostClient::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
     // Get the lobby owner
     //CSteamID owner = steamapicontext->SteamMatchmaking()->GetLobbyOwner(pJoin->m_steamIDLobby);
 
-    if (m_bIsLobbyValid)
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         Warning("You are already in a lobby! Do \"mom_leave_lobby\" to leave the lobby!\n");
     }
@@ -224,7 +223,7 @@ void CMomentumGhostClient::CallResult_LobbyJoined(LobbyEnter_t* pEntered, bool I
 
 void CMomentumGhostClient::StartLobby()
 {
-    if (!(m_cLobbyCreated.IsActive() || m_bIsLobbyValid))
+    if (!(m_cLobbyCreated.IsActive() || m_sLobbyID.IsValid() || m_sLobbyID.IsLobby()))
     {
         SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, 10);
         m_cLobbyCreated.Set(call, this, &CMomentumGhostClient::CallResult_LobbyCreated);
@@ -236,7 +235,7 @@ void CMomentumGhostClient::StartLobby()
 
 void CMomentumGhostClient::LeaveLobby()
 {
-    if (m_bIsLobbyValid)
+    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         DevLog("Left the lobby!\n");
@@ -419,7 +418,7 @@ void CMomentumGhostClient::JoinLobbyFromString(const char* pString)
 {
     if (pString)
     {
-        if (m_bIsLobbyValid)
+        if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
         {
             Warning("You are already in a lobby! Do \"mom_leave_lobby\" to exit it!\n");
         }
@@ -449,7 +448,7 @@ void CMomentumGhostClient::JoinLobbyFromString(const char* pString)
 }
 unsigned CMomentumGhostClient::SendAndRecieveP2PPackets(void* args)
 {
-    while (m_bIsLobbyValid)
+    while (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         if (m_pPlayer)
         {
