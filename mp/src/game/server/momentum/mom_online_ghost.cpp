@@ -16,6 +16,8 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
 END_DATADESC();
 
+#define MOM_GHOST_LERP 0.1f // MOM_TODO: Change this to a convar
+
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
     m_vecFrames.Purge();
@@ -54,38 +56,56 @@ void CMomentumOnlineGhostEntity::Think()
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
-    if (!m_vecFrames.IsEmpty() || (m_pCurrentFrame && m_pNextFrame))
+    float flCurtime = gpGlobals->curtime - MOM_GHOST_LERP; // Render in a 100 ms past buffer
+
+    if (!m_pCurrentFrame)
     {
-        float flCurtime = gpGlobals->curtime - 0.1f;
-
-        // This is most likely going to be our first frame we ever get
-        if (!m_pCurrentFrame)
-            m_pCurrentFrame = m_vecFrames.RemoveAtHead();
-
-        // When we finally get our second packet, we assign it here
-        if (!m_pNextFrame && !m_vecFrames.IsEmpty())
-            m_pNextFrame = m_vecFrames.RemoveAtHead();
-        // Catch up if we hitched or something
-        while (m_pNextFrame && flCurtime > m_pNextFrame->recvTime && !m_vecFrames.IsEmpty())
+        if (!m_vecFrames.IsEmpty())
         {
-            delete m_pCurrentFrame; // Get rid of our old one ASAP
-            m_pCurrentFrame = m_pNextFrame; 
-            m_pNextFrame = m_vecFrames.RemoveAtHead();
+            ReceivedFrame *pHead = m_vecFrames.Head();
+            if (flCurtime > pHead->recvTime)
+                m_pCurrentFrame = m_vecFrames.RemoveAtHead();
         }
-        
-        if (m_pNextFrame)
+    }
+
+    if (!m_pNextFrame)
+    {
+        if (!m_vecFrames.IsEmpty())
+        {
+            if (m_pCurrentFrame)
+            {
+                ReceivedFrame *pHead = m_vecFrames.Head();
+
+                if (flCurtime < pHead->recvTime)
+                    m_pNextFrame = m_vecFrames.RemoveAtHead();
+                // else do the following loop
+
+                // MOM_TODO: The following code causes more headaches than I really need right now.
+                // It was meant to fast-forward if we've falled behind, but just commenting it out for now
+                // because it works pretty well without.
+
+                // Catch up if we hitched or something
+                /*while (flCurtime > pHead->recvTime && !m_vecFrames.IsEmpty())
+                {
+                    delete m_pCurrentFrame; // Get rid of our old one ASAP
+                    m_pCurrentFrame = m_pNextFrame; // Swap the old frame over
+                    m_pNextFrame = m_vecFrames.RemoveAtHead(); // Set next frame to pHead's value
+                    if (!m_vecFrames.IsEmpty())
+                        pHead = m_vecFrames.Head(); // Update pHead
+                }*/
+            }
+        }
+    }
+
+
+    if (m_pCurrentFrame)
+    {
+        if (m_pNextFrame) // We have both frames, let's do this
         {
             float maxvel = sv_maxvelocity.GetFloat();
 
             Vector curPos = m_pCurrentFrame->frame.Position;
             Vector nextPos = m_pNextFrame->frame.Position;
-            
-            // If you've gone a larger distance than what's expected
-            if (curPos.DistTo(nextPos) > (maxvel * sqrt(3.0) / mm_updaterate.GetFloat()))
-            {
-                DevLog("I think the ghost with steamID %lld just teleported!\n", m_GhostSteamID.ConvertToUint64());
-                return; // This causes an intentional hitch, making the while loop above handle the teleport
-            }
 
             float percent = flCurtime - m_pCurrentFrame->recvTime / (m_pNextFrame->recvTime - m_pCurrentFrame->recvTime);
             // Interpolate between our frames
@@ -111,7 +131,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
                 SetAbsVelocity(interVel);
             }
             SetViewOffset(Vector(0, 0, flOffsetInterp));
-            SetAbsAngles(interpAngle);
+            SetAbsAngles(QAngle(interpAngle.x / 10, interpAngle.y, interpAngle.z));
 
             // UpdateStats(interVel);
 
@@ -122,14 +142,14 @@ void CMomentumOnlineGhostEntity::HandleGhost()
                 m_pNextFrame = nullptr; // Set nextFrame to null so the loop resets it next time
             }
         }
-        else
+        else // Still don't have our second frame yet, this is embarassing
         {
             SetAbsOrigin(m_pCurrentFrame->frame.Position);
             QAngle newAngles = QAngle(m_pCurrentFrame->frame.EyeAngle.x / 10, m_pCurrentFrame->frame.EyeAngle.y, m_pCurrentFrame->frame.EyeAngle.z);
             SetAbsAngles(newAngles);
             SetViewOffset(Vector(0, 0, m_pCurrentFrame->frame.ViewOffset));
             SetAbsVelocity(m_pCurrentFrame->frame.Velocity);
-            if (flCurtime > m_pCurrentFrame->recvTime) // For extrapolating, this packet will be the last info we have until we get more packets
+            if (flCurtime > m_pCurrentFrame->recvTime + MOM_GHOST_LERP) // For extrapolating, this packet will be the last info we have until we get more packets
             {
                 delete m_pCurrentFrame;
                 m_pCurrentFrame = nullptr;

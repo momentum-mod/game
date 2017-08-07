@@ -24,17 +24,16 @@ public:
     void FrameUpdatePreEntityThink() OVERRIDE;
     void Shutdown() OVERRIDE;
 
-    static unsigned SendAndRecieveP2PPackets(void *args);
-    void ClearCurrentGhosts();
-    void CheckToAdd(CSteamID *pSteamID);
+    void ClearCurrentGhosts(bool);
 
-    static ghostNetFrame_t CreateNewNetFrame(CMomentumPlayer *pPlayer);
+    static ghostNetFrame_t CreateNewNetFrame(CMomentumPlayer *pPlayer = m_pPlayer);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
+
+    static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;
 
 private:
     //static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
     static CMomentumPlayer *m_pPlayer;
-    static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;
 
     static CMomentumGhostClient *m_pInstance;
 };

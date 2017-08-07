@@ -7,7 +7,7 @@
 class CMomentumLobbySystem
 {
 public:
-    CMomentumLobbySystem(const char *pName) : m_sHostID(), m_bHostingLobby(false)
+    CMomentumLobbySystem(const char *pName) : m_bHostingLobby(false)
     {
         m_pInstance = this;
     }
@@ -35,14 +35,18 @@ public:
     STEAM_CALLBACK(CMomentumLobbySystem, HandlePersonaCallback, PersonaStateChange_t); // Called when we get their avatar and name from steam
 
     static CSteamID m_sLobbyID;
-    CSteamID m_sHostID;
-    float m_flNextUpdateTime;
+    static float m_flNextUpdateTime;
+
+    static bool LobbyValid() { return m_sLobbyID.IsValid() && m_sLobbyID.IsLobby(); }
+
+    void LevelChange(const char *pMapName); // This client has changed levels to (potentially) a different map
+    void CheckToAdd(CSteamID *pID);
+
+    void SendAndRecieveP2PPackets();
 
 private:
 
     bool m_bHostingLobby;
-    static CMomentumPlayer *m_pPlayer;
-
 
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
