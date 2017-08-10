@@ -269,7 +269,7 @@ void CHudChat::OnThink()
         else if (!isSomethingTyped && m_bTyping)
         {
             steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, "isTyping", MOM_LOBBY_DATA_MEMBER_TYPING_NO);
-            m_bTyping = true;
+            m_bTyping = false;
         }
     }
 }
