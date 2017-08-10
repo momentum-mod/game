@@ -80,7 +80,8 @@ void CMomentumGhostClient::ClearCurrentGhosts(bool bRemoveGhostEnts)
 ghostNetFrame_t CMomentumGhostClient::CreateNewNetFrame(CMomentumPlayer *pPlayer)
 {
     Assert(pPlayer);
-    return ghostNetFrame_t(pPlayer->EyeAngles(),
+    return ghostNetFrame_t(
+        pPlayer->EyeAngles(),
         pPlayer->GetAbsOrigin(),
         pPlayer->GetAbsVelocity(),
         pPlayer->GetViewOffset().z,

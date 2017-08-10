@@ -407,11 +407,13 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 
         if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
+            ghostNetFrame_t frame = g_pMomentumGhostClient->CreateNewNetFrame();
+
             uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
             while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
             {
                 CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
-                ghostNetFrame_t frame = g_pMomentumGhostClient->CreateNewNetFrame();
+               
                 if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof frame, k_EP2PSendUnreliable))
                 {
                     // DevLog("Sent the packet!\n");
