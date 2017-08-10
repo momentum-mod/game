@@ -32,6 +32,10 @@ public:
     //ghostNetFrame_t GetCurrentNetFrame() const { return m_currentFrame; }
     void SetGhostSteamID(CSteamID steamID) { m_GhostSteamID = steamID; }
     CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
+    void SetGhostName(const char* pGhostName)
+    {
+        Q_strncpy(m_pszGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
+    }
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 

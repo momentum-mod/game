@@ -393,6 +393,7 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                     if (findIndex != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
                     {
                         CMomentumGhostClient::m_mapOnlineGhosts[findIndex]->SetCurrentNetFrame(frame);
+                        CMomentumGhostClient::m_mapOnlineGhosts[findIndex]->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(fromWho));
                     }
                 }
             }
