@@ -13,7 +13,6 @@
 
 #include <hud_basechat.h>
 #include "steam/steam_api.h"
-#include "vgui/IScheme.h"
 
 class CHudChat : public CBaseHudChat
 {
@@ -48,7 +47,7 @@ private:
     uint64 m_uiLobbyId;
     vgui::HFont m_hfInfoTextFont;
     bool m_bTyping;
-    bool m_bVisible;
+    bool m_bIsVisible;
 };
 
 #endif	//HUD_CHAT_H

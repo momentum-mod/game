@@ -6,11 +6,11 @@
 
 #include "cbase.h"
 
-#include "hud_basechat.h"
 #include "hud_chat.h"
 #include "hud_macros.h"
 #include "text_message.h"
 #include "vguicenterprint.h"
+#include "hud_basechat.h"
 #include <vgui/ILocalize.h>
 
 #include "tier0/memdbgon.h"
@@ -33,7 +33,7 @@ CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName)
     m_vTypingMembers = CUtlVector<CSteamID>();
     m_hfInfoTextFont = 0;
     m_uiLobbyId = 0;
-    m_bVisible = m_bTyping = false;
+    m_bIsVisible = m_bTyping = false;
 }
 
 void CHudChat::Init(void)
@@ -237,7 +237,7 @@ void CHudChat::MsgFunc_TextMsg(bf_read &msg)
 
 void CHudChat::StartMessageMode(int)
 {
-    m_bVisible = true;
+    m_bIsVisible = true;
 }
 
 
@@ -251,7 +251,7 @@ void CHudChat::StopMessageMode()
     }
 
     // Can't be typing if we close the chat
-    m_bVisible = m_bTyping = false;
+    m_bIsVisible = m_bTyping = false;
 
 }
 
@@ -299,7 +299,7 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
 void CHudChat::Paint()
 {
     BaseClass::Paint();
-    if (m_vTypingMembers.Count() > 0 && m_bVisible)
+    if (m_vTypingMembers.Count() > 0 && m_bIsVisible)
     {
         char typingText[BUFSIZ];
         // This line is a shameful reminder of my lack of control over C-strings
