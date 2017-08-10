@@ -262,6 +262,14 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
     if (pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
         DevLog("Got the name of %lld: %s\n", pParam->m_ulSteamID, steamapicontext->SteamFriends()->GetFriendPersonaName(person));
+        for (int i = 0; i < steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID); i++)
+        {
+            CSteamID member = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
+            if (member == person) // set their name IFF they are a member of our lobby
+            {
+                CMomentumGhostClient::m_mapOnlineGhosts[i]->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(person));
+            }
+        }
     }
 }
 
@@ -393,7 +401,6 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                     if (findIndex != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
                     {
                         CMomentumGhostClient::m_mapOnlineGhosts[findIndex]->SetCurrentNetFrame(frame);
-                        CMomentumGhostClient::m_mapOnlineGhosts[findIndex]->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(fromWho));
                     }
                 }
             }
