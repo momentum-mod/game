@@ -37,6 +37,7 @@ public:
     static CSteamID m_sLobbyID;
     static float m_flNextUpdateTime;
 
+    static CSteamID GetLobbyId();
     static bool LobbyValid() { return m_sLobbyID.IsValid() && m_sLobbyID.IsLobby(); }
 
     void LevelChange(const char *pMapName); // This client has changed levels to (potentially) a different map

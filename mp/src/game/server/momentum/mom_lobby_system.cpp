@@ -23,6 +23,11 @@ CON_COMMAND(connect_lobby, "Connect to a given SteamID's lobby\n")
     g_pMomentumLobbySystem->JoinLobbyFromString(args.Arg(1));
 }
 
+CON_COMMAND(mom_invite_lobby, "Invite friends to your lobby\n")
+{
+    steamapicontext->SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
+}
+
 // So basically, if a user wants to connect to us, we're considered the host. 
 void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
 {
@@ -271,6 +276,11 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
             }
         }
     }
+}
+
+CSteamID CMomentumLobbySystem::GetLobbyId()
+{
+    return m_sLobbyID;
 }
 
 void CMomentumLobbySystem::LevelChange(const char* pMapName)
