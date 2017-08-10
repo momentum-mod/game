@@ -235,8 +235,9 @@ void CHudChat::MsgFunc_TextMsg(bf_read &msg)
     }
 }
 
-void CHudChat::StartMessageMode(int)
+void CHudChat::StartMessageMode(int iMessageMode)
 {
+    BaseClass::StartMessageMode(iMessageMode);
     m_bIsVisible = true;
 }
 
