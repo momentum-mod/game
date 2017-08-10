@@ -40,11 +40,53 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonFeedback->SetBlank(false);
     m_pButtonFeedback->SetVisible(true);
     m_pButtonFeedback->SetTextAlignment(RIGHT);
+
+#ifdef DEBUG
+    m_pButtonLobby = new Button_MainMenu(this, this, "engine mom_host_lobby");
+    m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
+    m_pButtonLobby->SetButtonDescription("");
+    m_pButtonLobby->SetPriority(1);
+    m_pButtonLobby->SetBlank(false);
+    m_pButtonLobby->SetVisible(true);
+    m_pButtonLobby->SetTextAlignment(CENTER);
+    m_pButtonLobby->SetButtonType(SHARED);
+
+    m_pButtonInviteFriends = new Button_MainMenu(this, this, "engine mom_invite_lobby");
+    m_pButtonInviteFriends->SetButtonText("#GameUI2_InviteFriends");
+    m_pButtonInviteFriends->SetButtonDescription("");
+    m_pButtonInviteFriends->SetPriority(1);
+    m_pButtonInviteFriends->SetBlank(false);
+    m_pButtonInviteFriends->SetVisible(false);
+    m_pButtonInviteFriends->SetTextAlignment(CENTER);
+    m_pButtonInviteFriends->SetButtonType(SHARED);
+
+    m_bInLobby = false;
+#endif //DEBUG
+
     CreateMenu("resource2/mainmenu.res");
 
     MakeReadyForUse();
     SetZPos(0);
     RequestFocus();
+}
+
+MainMenu::~MainMenu()
+{
+    if (m_pButtonFeedback)
+    {
+        delete m_pButtonFeedback;
+    }
+#ifdef DEBUG
+    if (m_pButtonLobby)
+    {
+        delete m_pButtonLobby;
+    }
+
+    if (m_pButtonInviteFriends)
+    {
+        delete m_pButtonInviteFriends;
+    }
+#endif //DEBUG
 }
 
 void MainMenu::CreateMenu(const char *menu)
@@ -208,6 +250,21 @@ void MainMenu::DrawMainMenu()
         m_pButtonFeedback->SetPos(GameUI2().GetViewport().x - m_pButtonFeedback->GetWidth(),
                                   GameUI2().GetViewport().y - (m_pButtonFeedback->GetHeight() + m_fButtonsOffsetY));
     }
+
+#ifdef DEBUG
+    if (m_pButtonLobby)
+    {
+        m_pButtonLobby->SetPos(GameUI2().GetViewport().x - m_pButtonLobby->GetWidth(), m_fButtonsOffsetY);
+
+        if (m_pButtonInviteFriends)
+        {
+            m_pButtonInviteFriends->SetVisible(m_bInLobby);
+            m_pButtonInviteFriends->SetPos(GameUI2().GetViewport().x - m_pButtonInviteFriends->GetWidth(),
+                m_pButtonLobby->GetTall() + m_fButtonsOffsetY);
+        }
+    }
+#endif //DEBUG
+
 }
 
 void MainMenu::DrawLogo()
@@ -278,7 +335,24 @@ void MainMenu::Paint()
 void MainMenu::OnCommand(char const *cmd)
 {
     GameUI2().GetGameUI()->SendMainMenuCommand(cmd);
-
+#ifdef DEBUG
+    // MOM_TODO: Actually check if we join/leave a lobby
+    if (m_pButtonLobby && Q_strcmp(cmd, "engine mom_host_lobby") == 0 || Q_strcmp(cmd, "engine mom_leave_lobby") == 0)
+    {
+        // Does not work for connect_loby and connection errors, that's why upper todo exists
+        m_bInLobby = !m_bInLobby;
+        if (m_bInLobby)
+        {
+            m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
+            m_pButtonLobby->SetCommand("engine mom_leave_lobby");
+        }
+        else
+        {
+            m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
+            m_pButtonLobby->SetCommand("engine mom_host_lobby");
+        }
+    }
+#endif //DEBUG
     BaseClass::OnCommand(cmd);
 }
 

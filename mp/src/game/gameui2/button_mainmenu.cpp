@@ -28,6 +28,11 @@ void Button_MainMenu::SetButtonDescription(const char *description)
     m_ButtonDescription = GameUI2().GetLocalizedString(description);
 }
 
+void Button_MainMenu::SetCommand(const char* pCmd)
+{
+    Q_strncpy(m_pCmd, pCmd, sizeof(m_pCmd));
+}
+
 void Button_MainMenu::Init()
 {
     SetProportional(true);

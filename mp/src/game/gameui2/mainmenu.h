@@ -18,6 +18,8 @@ class MainMenu : public Panel2D
   public:
     MainMenu(Panel *parent);
 
+    ~MainMenu();
+
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     virtual void CreateMenu(const char *menu);
     void OnThink() OVERRIDE;
@@ -41,6 +43,12 @@ class MainMenu : public Panel2D
 
     // MOM_TODO: Remove this when it's no longer needed
     Button_MainMenu *m_pButtonFeedback;
+#ifdef DEBUG
+    Button_MainMenu *m_pButtonLobby;
+    Button_MainMenu *m_pButtonInviteFriends;
+
+    bool m_bInLobby;
+#endif //DEBUG
 
     char m_pszMenuOpenSound[MAX_PATH];
     char m_pszMenuCloseSound[MAX_PATH];
