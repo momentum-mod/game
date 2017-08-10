@@ -266,13 +266,15 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
     CSteamID person = CSteamID(pParam->m_ulSteamID);
     if (pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
-        DevLog("Got the name of %lld: %s\n", pParam->m_ulSteamID, steamapicontext->SteamFriends()->GetFriendPersonaName(person));
+        DevLog("Got the name of %lld: %s\n", person, steamapicontext->SteamFriends()->GetFriendPersonaName(person));
         for (int i = 0; i < steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID); i++)
         {
             CSteamID member = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
+            unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(member.ConvertToUint64()); //god damnit valve
+
             if (member == person) // set their name IFF they are a member of our lobby
             {
-                CMomentumGhostClient::m_mapOnlineGhosts[i]->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(person));
+                CMomentumGhostClient::m_mapOnlineGhosts[findIndx]->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(person));
             }
         }
     }
