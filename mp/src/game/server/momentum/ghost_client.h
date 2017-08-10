@@ -26,7 +26,7 @@ public:
 
     void ClearCurrentGhosts(bool);
 
-    static ghostNetFrame_t CreateNewNetFrame(CMomentumPlayer *pPlayer = m_pPlayer);
+    static bool CreateNewNetFrame(ghostNetFrame_t &frame);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
 
     static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;

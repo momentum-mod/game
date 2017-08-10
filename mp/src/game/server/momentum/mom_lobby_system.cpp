@@ -408,22 +408,24 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 
         if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
-            ghostNetFrame_t frame = g_pMomentumGhostClient->CreateNewNetFrame();
-
-            uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
-            while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+            ghostNetFrame_t frame;
+            if (g_pMomentumGhostClient->CreateNewNetFrame(frame))
             {
-                CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
-               
-                if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof frame, k_EP2PSendUnreliable))
+                uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
+                while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
                 {
-                    // DevLog("Sent the packet!\n");
+                    CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
+               
+                    if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof frame, k_EP2PSendUnreliable))
+                    {
+                        // DevLog("Sent the packet!\n");
+                    }
+
+                    index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
                 }
 
-                index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
+                m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
             }
-
-            m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
         }
     }
 }

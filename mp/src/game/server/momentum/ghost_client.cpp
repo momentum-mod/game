@@ -77,15 +77,22 @@ void CMomentumGhostClient::ClearCurrentGhosts(bool bRemoveGhostEnts)
         m_mapOnlineGhosts.RemoveAll(); // No need to purge, the game handles the entities' memory
     }
 }
-ghostNetFrame_t CMomentumGhostClient::CreateNewNetFrame(CMomentumPlayer *pPlayer)
+
+bool CMomentumGhostClient::CreateNewNetFrame(ghostNetFrame_t &into)
 {
-    Assert(pPlayer);
-    return ghostNetFrame_t(
-        pPlayer->EyeAngles(),
-        pPlayer->GetAbsOrigin(),
-        pPlayer->GetAbsVelocity(),
-        pPlayer->GetViewOffset().z,
-        pPlayer->m_nButtons);
+    if (m_pPlayer)
+    {
+        into = ghostNetFrame_t(
+            m_pPlayer->EyeAngles(),
+            m_pPlayer->GetAbsOrigin(),
+            m_pPlayer->GetAbsVelocity(),
+            m_pPlayer->GetViewOffset().z,
+            m_pPlayer->m_nButtons);
+
+        return true;
+    }
+
+    return false;
 }
 
 static CMomentumGhostClient s_MOMGhostClient("CMomentumGhostClient");

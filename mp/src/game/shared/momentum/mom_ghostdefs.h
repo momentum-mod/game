@@ -84,6 +84,16 @@ struct ghostNetFrame_t
     {
     }
 
+    ghostNetFrame_t& operator=(const ghostNetFrame_t &other)
+    {
+        Buttons = other.Buttons;
+        ViewOffset = other.ViewOffset;
+        EyeAngle = other.EyeAngle;
+        Position = other.Position;
+        Velocity = other.Velocity;
+        return *this;
+    }
+
     bool operator==(const ghostNetFrame_t &other) const
     {
         return EyeAngle == other.EyeAngle &&
