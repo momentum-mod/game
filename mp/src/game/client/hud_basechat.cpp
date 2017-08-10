@@ -459,7 +459,7 @@ void CBaseHudChatInputLine::PerformLayout()
 	m_pInput->SetBounds( w + 2, 0, wide - w - 2 , tall );
 }
 
-vgui::Panel *CBaseHudChatInputLine::GetInputPanel( void )
+CBaseHudChatEntry *CBaseHudChatInputLine::GetInputPanel(void)
 {
 	return m_pInput;
 }
@@ -1629,7 +1629,7 @@ This is a very long string that I am going to attempt to paste into the cs hud c
 // Purpose: 
 // Output : vgui::Panel
 //-----------------------------------------------------------------------------
-vgui::Panel *CBaseHudChat::GetInputPanel( void )
+CBaseHudChatEntry *CBaseHudChat::GetInputPanel(void)
 {
 #ifndef _XBOX
 	return m_pChatInput->GetInputPanel();

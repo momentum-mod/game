@@ -13,19 +13,20 @@
 
 #include <hud_basechat.h>
 #include "steam/steam_api.h"
+#include "vgui/IScheme.h"
 
 class CHudChat : public CBaseHudChat
 {
-	DECLARE_CLASS_SIMPLE( CHudChat, CBaseHudChat );
+    DECLARE_CLASS_SIMPLE(CHudChat, CBaseHudChat);
 
 public:
-	CHudChat( const char *pElementName );
+    CHudChat(const char *pElementName);
 
-	virtual void	Init( void );
+    virtual void	Init(void);
 
-	void			MsgFunc_SayText(bf_read &msg);
-	void			MsgFunc_SayText2( bf_read &msg );
-	void			MsgFunc_TextMsg(bf_read &msg);
+    void			MsgFunc_SayText(bf_read &msg);
+    void			MsgFunc_SayText2(bf_read &msg);
+    void			MsgFunc_TextMsg(bf_read &msg);
 
 
 
@@ -33,15 +34,21 @@ public:
     STEAM_CALLBACK(CHudChat, OnLobbyMessage, LobbyChatMsg_t);
     STEAM_CALLBACK(CHudChat, OnLobbyChatUpdate, LobbyChatUpdate_t);
     STEAM_CALLBACK(CHudChat, OnLobbyDataUpdate, LobbyDataUpdate_t);
+    STEAM_CALLBACK(CHudChat, OnLobbyEnter, LobbyEnter_t);
+    STEAM_CALLBACK(CHudChat, OnLobbyKicked, LobbyKicked_t);
 
-    void StartMessageMode(int iMessageModeType) OVERRIDE;
+    void StartMessageMode(int) OVERRIDE;
     void StopMessageMode() OVERRIDE;
 
     void Paint() OVERRIDE;
+    void OnThink() OVERRIDE;
 
-private: 
+private:
     CUtlVector<CSteamID> m_vTypingMembers;
     uint64 m_uiLobbyId;
+    vgui::HFont m_hfInfoTextFont;
+    bool m_bTyping;
+    bool m_bVisible;
 };
 
 #endif	//HUD_CHAT_H
