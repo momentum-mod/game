@@ -132,6 +132,12 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
         }
     }
 
+    // send to p2p server
+    if (g_pMomentumLobbySystem->LobbyValid() && pPlayer)
+    {
+        DevLog("Sending appearance update!\n");
+        g_pMomentumLobbySystem->SetAppearanceInMemberData(g_pMomentumLobbySystem->m_sLobbyID, pPlayer->m_playerAppearanceProps);
+    }
 }
 
 CMomentumPlayer::CMomentumPlayer()

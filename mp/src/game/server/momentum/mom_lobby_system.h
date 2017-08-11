@@ -4,6 +4,13 @@
 #include "mom_shareddefs.h"
 #include "ghost_client.h"
 
+#define MEMBERDATA_MAP "map"
+#define MEMBERDATA_APPS_BODYGROUP "appearance_bodygroup"
+#define MEMBERDATA_APPS_MODELCOLOR "appearance_model_rgba"
+#define MEMBERDATA_APPS_TRAILCOLOR "appearance_trail_rbga"
+#define MEMBERDATA_APPS_TRAILLENGTH "appearance_trail_length"
+#define MEMBERDATA_APPS_TRAILENABLE "appearance_trail_enable"
+#define MEMBERDATA_APPS_MODEL "appearance_model_name"
 class CMomentumLobbySystem
 {
 public:
@@ -44,6 +51,8 @@ public:
     void CheckToAdd(CSteamID *pID);
 
     void SendAndRecieveP2PPackets();
+    void SetAppearanceInMemberData(CSteamID lobbyID, ghostAppearance_t app);
+    ghostAppearance_t GetAppearanceFromMemberData(CSteamID lobbyID, CSteamID member);
 
 private:
 
