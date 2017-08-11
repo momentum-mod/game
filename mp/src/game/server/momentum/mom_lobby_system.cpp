@@ -187,7 +187,7 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
     if (pPlayer)
     {
         DevLog("Sending our appearance.\n");
-        SetAppearanceInMemberData(m_sLobbyID, pPlayer->m_playerAppearanceProps);
+        //SetAppearanceInMemberData(m_sLobbyID, pPlayer->m_playerAppearanceProps);
     }
 
     // Get everybody else's data
@@ -257,7 +257,7 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
                 return;
             }
 
-            ghostAppearance_t newApps = GetAppearanceFromMemberData(lobbyId, memberChanged);
+            /*ghostAppearance_t newApps = GetAppearanceFromMemberData(lobbyId, memberChanged);
             DevLog("Got a new appearance from %s!\n Bodygroup: %i, Color: %lu, Model: %s\n",
                 steamapicontext->SteamFriends()->GetFriendPersonaName(memberChanged), newApps.GhostModelBodygroup, newApps.GhostModelRGBAColorAsHex, newApps.GhostModel);
 
@@ -268,7 +268,7 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
                 CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
                 if (pEntity)
                     pEntity->SetGhostAppearance(newApps);
-            }
+            }*/
             CheckToAdd(&memberChanged);
         }
     }
@@ -365,7 +365,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 newPlayer->Spawn();
                 newPlayer->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(*pID));
 
-                newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(m_sLobbyID, *pID));
+               // newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(m_sLobbyID, *pID));
 
                 CMomentumGhostClient::m_mapOnlineGhosts.Insert(pID->ConvertToUint64(), newPlayer);
 

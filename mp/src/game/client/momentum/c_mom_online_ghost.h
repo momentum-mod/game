@@ -3,6 +3,7 @@
 #include "cbase.h"
 #include "c_mom_ghost_base.h"
 #include "interpolatedvar.h"
+#include "vgui_entitypanel.h"
 
 class C_MomentumOnlineGhostEntity : public C_MomentumGhostBaseEntity
 {
@@ -12,6 +13,7 @@ class C_MomentumOnlineGhostEntity : public C_MomentumGhostBaseEntity
 
 public:
     C_MomentumOnlineGhostEntity();
+    ~C_MomentumOnlineGhostEntity();
 
     void Spawn(void) OVERRIDE;
     void ClientThink(void) OVERRIDE;
@@ -22,4 +24,6 @@ public:
     char m_pszGhostName[MAX_PLAYER_NAME_LENGTH]; 
 
 private:
+
+    CEntityPanel *m_pEntityPanel;
 };

@@ -24,6 +24,8 @@ $Project "Client (Momentum)"
     {
         $File   "c_team_objectiveresource.cpp"
         $File   "c_team_objectiveresource.h"
+        
+        $File "vgui_entitypanel.cpp"
 
         $Folder "Momentum"
         {

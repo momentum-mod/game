@@ -48,8 +48,6 @@ void CMomentumOnlineGhostEntity::Think()
     HandleGhost();
     if (m_pCurrentSpecPlayer)
         HandleGhostFirstPerson();
-    //We have to wait some time after getting the new packets to allow the client some "space", i.e a few saved packets, in order to interpolate
-    //float finalLerp = gpGlobals->interval_per_tick / (mm_lerpRatio.GetFloat() / mm_updaterate.GetFloat());
     // Emulate every tick (smooth interpolation)
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick); 
 }
@@ -84,7 +82,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
     {
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
-            //SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
+            SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
             // don't render the model when we're in first person mode
             if (GetRenderMode() != kRenderNone)
             {
