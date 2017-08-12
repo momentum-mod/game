@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
+        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
         $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013;SDK_DLL"
     }
 }
@@ -314,6 +314,22 @@ $Project "Client (Momentum)"
         
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
+        
+        $Folder "Base64 Library"
+        {
+            $File "$SRCDIR\thirdparty\base64\base64.h"
+            $File "$SRCDIR\thirdparty\base64\base64.cpp"
+            {
+                $Configuration
+                {
+                    $Compiler
+                    {
+                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        $TreatWarningsAsErrors "No"
+                    }
+                }
+            }
+        }
         
         $Folder "JSON Parser"
         {

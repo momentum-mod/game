@@ -1,11 +1,10 @@
 #include "cbase.h"
 #include "mom_lobby_system.h"
+#include "base64.h"
 
 #include "tier0/memdbgon.h"
 
-
 CSteamID CMomentumLobbySystem::m_sLobbyID = k_steamIDNil;
-CMomentumLobbySystem* CMomentumLobbySystem::m_pInstance = nullptr;
 float CMomentumLobbySystem::m_flNextUpdateTime = -1.0f;
 
 CON_COMMAND(mom_host_lobby, "Starts hosting a lobby\n")
@@ -97,7 +96,7 @@ void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
     else
     {
         SteamAPICall_t call = steamapicontext->SteamMatchmaking()->JoinLobby(pJoin->m_steamIDLobby);
-        m_cLobbyJoined.Set(call, m_pInstance, &CMomentumLobbySystem::CallResult_LobbyJoined);
+        m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
     }
 }
 
@@ -181,13 +180,13 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
     }
 
     // Set our own data
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, MEMBERDATA_MAP, gpGlobals->mapname.ToCStr());
+    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
 
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     if (pPlayer)
     {
         DevLog("Sending our appearance.\n");
-        //SetAppearanceInMemberData(m_sLobbyID, pPlayer->m_playerAppearanceProps);
+        SetAppearanceInMemberData(pPlayer->m_playerAppearanceProps);
     }
 
     // Get everybody else's data
@@ -203,39 +202,34 @@ void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
     Msg("SERVER: Chat message: %s\n", message);
     delete[] message;
 }
-void CMomentumLobbySystem::SetAppearanceInMemberData(CSteamID lobbyID, ghostAppearance_t app)
+void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
 {
-    // well this is inconvenient...
-    char *key = new char[64];
-    V_snprintf(key, sizeof(key), "%i", app.GhostModelBodygroup);
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(lobbyID, MEMBERDATA_APPS_BODYGROUP, key);
-
-    V_snprintf(key, sizeof(key), "%i", app.GhostTrailLength);
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(lobbyID, MEMBERDATA_APPS_TRAILLENGTH, key);
-
-    V_snprintf(key, sizeof(key), "%i", app.GhostTrailEnable);
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(lobbyID, MEMBERDATA_APPS_TRAILENABLE, key);
-
-    V_snprintf(key, sizeof(key), "%lu", app.GhostModelRGBAColorAsHex);
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(lobbyID, MEMBERDATA_APPS_MODELCOLOR, key);
-
-    V_snprintf(key, sizeof(key), "%lu", app.GhostTrailRGBAColorAsHex);
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(lobbyID, MEMBERDATA_APPS_TRAILCOLOR, key);
-
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(lobbyID, MEMBERDATA_APPS_MODEL, app.GhostModel);
-    delete[] key;
+    char base64Appearance[1024];
+    base64_encode(&app, sizeof app, base64Appearance, 1024);
+    //DevLog("Base64 encoded appearance: %s\n", base64Appearance);
+    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
 }
-ghostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamID lobbyID, CSteamID member)
+LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamID member)
 {
+    LobbyGhostAppearance_t toReturn;
+    const char *pAppearance = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, LOBBY_DATA_APPEARANCE);
+    Q_strncpy(toReturn.base64, pAppearance, sizeof(toReturn.base64));
+    //DevLog("Got appearance Base64: %s\n", pAppearance);
     ghostAppearance_t newAppearance;
-    newAppearance.GhostModelBodygroup = atoi(steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, member, MEMBERDATA_APPS_BODYGROUP));
-    newAppearance.GhostTrailLength = atoi(steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, member, MEMBERDATA_APPS_TRAILLENGTH));
-    atoi(steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, member, MEMBERDATA_APPS_TRAILENABLE)) == 0 ? newAppearance.GhostTrailEnable = false : newAppearance.GhostTrailEnable = true;
-    newAppearance.GhostModelRGBAColorAsHex = strtoul(steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, member, MEMBERDATA_APPS_MODELCOLOR), nullptr, 0);
-    newAppearance.GhostTrailRGBAColorAsHex = strtoul(steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, member, MEMBERDATA_APPS_TRAILCOLOR), nullptr, 0);
-    Q_strncpy(newAppearance.GhostModel, steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, member, MEMBERDATA_APPS_MODEL), sizeof(newAppearance.GhostModel));
-    return newAppearance;
+    base64_decode(pAppearance, &newAppearance, sizeof ghostAppearance_t);
+    toReturn.appearance = newAppearance;
+    return toReturn;
 }
+
+CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(uint64_t id)
+{
+    uint16_t findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(id);
+    if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        return CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
+    
+    return nullptr;
+}
+
 void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
     CSteamID lobbyId = CSteamID(pParam->m_ulSteamIDLobby);
@@ -253,22 +247,13 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
         {
             // Don't care if it's us that changed
             if (memberChanged == steamapicontext->SteamUser()->GetSteamID())
-            {
                 return;
-            }
+            
+            // Check their appearance for any changes
+            CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(memberChanged);
+            if (pEntity)
+                pEntity->SetGhostAppearance(GetAppearanceFromMemberData(memberChanged));
 
-            /*ghostAppearance_t newApps = GetAppearanceFromMemberData(lobbyId, memberChanged);
-            DevLog("Got a new appearance from %s!\n Bodygroup: %i, Color: %lu, Model: %s\n",
-                steamapicontext->SteamFriends()->GetFriendPersonaName(memberChanged), newApps.GhostModelBodygroup, newApps.GhostModelRGBAColorAsHex, newApps.GhostModel);
-
-
-            unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(memberChanged.ConvertToUint64()); //god damnit valve
-            if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
-            {
-                CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
-                if (pEntity)
-                    pEntity->SetGhostAppearance(newApps);
-            }*/
             CheckToAdd(&memberChanged);
         }
     }
@@ -287,7 +272,7 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         DevLog("A user just joined us!\n");
         // Note: The lobby data update method handles adding
     }
-    if (state & k_EChatMemberStateChangeLeft || state & k_EChatMemberStateChangeDisconnected)
+    if (state & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
         DevLog("User left/disconnected!\n");
 
@@ -308,17 +293,20 @@ void CMomentumLobbySystem::HandlePersonaCallback(PersonaStateChange_t* pParam)
 {
     //DevLog("HandlePersonaCallback: %u with changeflags: %i\n", pParam->m_ulSteamID, pParam->m_nChangeFlags);
     CSteamID person = CSteamID(pParam->m_ulSteamID);
-    if (pParam->m_nChangeFlags & k_EPersonaChangeName)
+    if (pParam->m_nChangeFlags & k_EPersonaChangeName && LobbyValid())
     {
-        DevLog("Got the name of %lld: %s\n", person, steamapicontext->SteamFriends()->GetFriendPersonaName(person));
-        for (int i = 0; i < steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID); i++)
+        // Quick and ugly check to see if they're in our lobby
+        const char *pCheck = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, person, LOBBY_DATA_MAP);
+        if (pCheck)
         {
-            CSteamID member = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_sLobbyID, i);
-            unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(member.ConvertToUint64()); //god damnit valve
-
-            if (member == person) // set their name IFF they are a member of our lobby
+            // It's not null so they're here, but are they in our map?
+            CMomentumOnlineGhostEntity *pGhost = GetLobbyMemberEntity(pParam->m_ulSteamID);
+            if (pGhost)
             {
-                CMomentumGhostClient::m_mapOnlineGhosts[findIndx]->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(person));
+                // Yes they are
+                const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(person);
+                DevLog("Got the name of %lld: %s\n", pParam->m_ulSteamID, pName);
+                pGhost->SetGhostName(pName);
             }
         }
     }
@@ -334,7 +322,7 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
     if (LobbyValid())
     {
         DevLog("Setting the map to %s!\n", pMapName);
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, MEMBERDATA_MAP, pMapName);
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
 
         // Now check if this map is the same as somebody else's in the lobby
         if (pMapName)
@@ -352,7 +340,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 
     if (pID)
     {
-        const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, MEMBERDATA_MAP);
+        const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, LOBBY_DATA_MAP);
         unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(pID->ConvertToUint64());
         // Just joined this map, we haven't created them 
         if (FStrEq(gpGlobals->mapname.ToCStr(), pOtherMap))
@@ -364,13 +352,12 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 newPlayer->SetGhostSteamID(*pID);
                 newPlayer->Spawn();
                 newPlayer->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(*pID));
-
-               // newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(m_sLobbyID, *pID));
+                newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID));
 
                 CMomentumGhostClient::m_mapOnlineGhosts.Insert(pID->ConvertToUint64(), newPlayer);
 
                 if (m_flNextUpdateTime < 0)
-                    m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat()); // MOM_TODO: Probably move this out of the for loop and use a boolean check instead
+                    m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
             }
         }
         else if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
@@ -420,7 +407,7 @@ void CMomentumLobbySystem::JoinLobbyFromString(const char* pString)
                 DevLog("Got the ID! %lld\n", toJoin.ConvertToUint64());
 
                 SteamAPICall_t call = steamapicontext->SteamMatchmaking()->JoinLobby(toJoin);
-                m_cLobbyJoined.Set(call, m_pInstance, &CMomentumLobbySystem::CallResult_LobbyJoined);
+                m_cLobbyJoined.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyJoined);
             }
             else
             {
@@ -447,11 +434,9 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                 if (steamapicontext->SteamNetworking()->ReadP2PPacket(&frame, sizeof frame, &bytesRead, &fromWho))
                 {
                     //DevLog("Read the packet successfully! Read bytes: %u, from steamID %lld\n", bytesRead, fromWho.ConvertToUint64());
-                    uint16_t findIndex = CMomentumGhostClient::m_mapOnlineGhosts.Find(fromWho.ConvertToUint64());
-                    if (findIndex != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
-                    {
-                        CMomentumGhostClient::m_mapOnlineGhosts[findIndex]->SetCurrentNetFrame(frame);
-                    }
+                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                    if (pEntity)
+                        pEntity->SetCurrentNetFrame(frame);
                 }
             }
         }
@@ -487,5 +472,5 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
     }
 }
 
-static CMomentumLobbySystem s_MOMLobbySystem("CMomentumLobbySystem");
+static CMomentumLobbySystem s_MOMLobbySystem;
 CMomentumLobbySystem *g_pMomentumLobbySystem = &s_MOMLobbySystem;

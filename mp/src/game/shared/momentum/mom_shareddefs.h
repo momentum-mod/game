@@ -103,4 +103,11 @@ typedef enum FLAGS
 #define EXT_ZONE_FILE ".zon"
 #define EXT_RECORDING_FILE ".momrec"
 
+// MOM_TODO: Replace this with the custom player model
+#define ENTITY_MODEL "models/player/player_shape_base.mdl"
+
+// Change these if you want to change the flashlight sound
+#define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
+#define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
+
 #endif // MOM_SHAREDDEFS_H

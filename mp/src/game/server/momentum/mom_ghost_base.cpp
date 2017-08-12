@@ -9,7 +9,7 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
-CMomentumGhostBaseEntity::CMomentumGhostBaseEntity() : hasSpawned(false), hasSetAppearance(false)
+CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
 {
 }
 
@@ -37,33 +37,29 @@ void CMomentumGhostBaseEntity::Spawn()
     SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
     UpdateModelScale();
     SetViewOffset(VEC_VIEW_SCALED(this));
-    hasSpawned = true;
+
+    // Set the appearance to the player's appearance, pending update after spawned in
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (pPlayer)
+    {
+        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
+        //now that we've set our appearance, the ghost should be visible again.
+        SetRenderMode(kRenderTransColor);
+        if (m_ghostAppearance.GhostTrailEnable)
+        {
+            CreateTrail();
+        }
+    }
 }
 void CMomentumGhostBaseEntity::Think()
 {
     BaseClass::Think();
     
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
-    if (pPlayer && hasSpawned)
-    {
-        if (!hasSetAppearance) //stuff that should happen only once goes here
-        {
-            SetGhostAppearance(pPlayer->m_playerAppearanceProps);
-            hasSetAppearance = true; //now that we've set our appearance, the ghost should be visible again.
-            SetRenderMode(kRenderTransColor);
-            if (m_ghostAppearance.GhostTrailEnable)
-            {
-                CreateTrail();
-            }
-        }
-        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
-
-        //MOM_TODO: handle recreating trail when ghost teleports.
-    }
+    //MOM_TODO: handle recreating trail when ghost teleports.
 }
 void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
 {
-    if (bodyGroup > ghostModelBodyGroup::LAST || bodyGroup < 0)
+    if (bodyGroup > LAST || bodyGroup < 0)
     {
         Warning("CMomentumGhostBaseEntity::SetGhostBodyGroup() Error: Could not set bodygroup!");
     }
@@ -98,6 +94,21 @@ void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor,
     m_ghostAppearance.GhostTrailLength = newLen;
     CreateTrail();
 }
+
+void CMomentumGhostBaseEntity::SetGhostFlashlight(bool isOn)
+{
+    if (isOn)
+    {
+        AddEffects(EF_DIMLIGHT);
+        EmitSound(SND_FLASHLIGHT_ON); // MOM_TODO: Make this quieter than the player
+    }
+    else
+    {
+        RemoveEffects(EF_DIMLIGHT);
+        EmitSound(SND_FLASHLIGHT_OFF);
+    }
+}
+
 void CMomentumGhostBaseEntity::StartTimer(int m_iStartTick)
 {
     if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
@@ -168,6 +179,8 @@ void CMomentumGhostBaseEntity::SetGhostAppearance(ghostAppearance_t newApp)
         SetGhostTrailProperties(newApp.GhostTrailRGBAColorAsHex,
             newApp.GhostTrailLength, newApp.GhostTrailEnable);
     }
+    
+    SetGhostFlashlight(newApp.FlashlightOn);
 }
 void CMomentumGhostBaseEntity::CreateTrail()
 {

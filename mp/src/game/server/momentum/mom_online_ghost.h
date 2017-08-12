@@ -6,18 +6,6 @@
 #include "utlstack.h"
 #include "utlqueue.h"
 
-struct ReceivedFrame
-{
-    float recvTime;
-    ghostNetFrame_t frame;
-
-    ReceivedFrame(float recvTime, ghostNetFrame_t recvFrame)
-    {
-        this->recvTime = recvTime;
-        frame = recvFrame;
-    }
-};
-
 class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity
 {
     DECLARE_CLASS(CMomentumOnlineGhostEntity, CMomentumGhostBaseEntity)
@@ -37,6 +25,8 @@ public:
         Q_strncpy(m_pszGhostName.GetForModify(), pGhostName, MAX_PLAYER_NAME_LENGTH);
     }
 
+    void SetGhostAppearance(LobbyGhostAppearance_t app);
+
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
     void Spawn() OVERRIDE;
@@ -50,10 +40,10 @@ protected:
     void Think(void) OVERRIDE;
     void Precache(void) OVERRIDE;
 private:
-    CUtlQueue<ReceivedFrame*> m_vecFrames;
-    ReceivedFrame* m_pCurrentFrame;
-    ReceivedFrame* m_pNextFrame;
+    CUtlQueue<ReceivedFrame_t*> m_vecFrames;
+    ReceivedFrame_t* m_pCurrentFrame;
+    ReceivedFrame_t* m_pNextFrame;
 
     CSteamID m_GhostSteamID;
-    ghostAppearance_t m_currentAppearance;
+    LobbyGhostAppearance_t m_CurrentAppearance;
 };

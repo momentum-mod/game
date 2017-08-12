@@ -88,41 +88,32 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
-    if ( (Q_strcmp(pOldValue, mom_trail_color.GetString()) != 0 ) || // the trail color changed
-        (Q_strcmp(pOldValue, mom_trail_length.GetString()) != 0 ) || // the trail length changed
-        (Q_strcmp(pOldValue, mom_trail_enable.GetString()) != 0) ) // the trail enable bool changed
+    if (pPlayer)
     {
-        uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_trail_color.GetString());
-        if (pPlayer)
+        if ((Q_strcmp(pOldValue, mom_trail_color.GetString()) != 0) ||  // the trail color changed
+            (Q_strcmp(pOldValue, mom_trail_length.GetString()) != 0) || // the trail length changed
+            (Q_strcmp(pOldValue, mom_trail_enable.GetString()) != 0))   // the trail enable bool changed
         {
+            uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_trail_color.GetString());
             pPlayer->m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
             pPlayer->m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
             pPlayer->m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
-            pPlayer->CreateTrail(); //Refresh the trail
+            pPlayer->CreateTrail(); // Refresh the trail
         }
-    }
-    if (Q_strcmp(pOldValue, mom_ghost_color.GetString()) != 0) //the ghost body color changed
-    {
-        uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_ghost_color.GetString());
-        if (pPlayer)
+        if (Q_strcmp(pOldValue, mom_ghost_color.GetString()) != 0) // the ghost body color changed
         {
+            uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_ghost_color.GetString());
             pPlayer->m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
             Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
             pPlayer->SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
         }
-    }
-    if (Q_strcmp(pOldValue, mom_ghost_bodygroup.GetString()) != 0) //the ghost bodygroup changed
-    {
-        if (pPlayer)
+        if (Q_strcmp(pOldValue, mom_ghost_bodygroup.GetString()) != 0) // the ghost bodygroup changed
         {
             int bGroup = mom_ghost_bodygroup.GetInt();
             pPlayer->m_playerAppearanceProps.GhostModelBodygroup = bGroup;
             pPlayer->SetBodygroup(1, bGroup);
         }
-    }
-    if (Q_strcmp(pOldValue, mom_ghost_model.GetString()) != 0) //the ghost model changed
-    {
-        if (pPlayer)
+        if (Q_strcmp(pOldValue, mom_ghost_model.GetString()) != 0) // the ghost model changed
         {
             char newModel[128];
             strcpy(newModel, mom_ghost_model.GetString());
@@ -130,13 +121,8 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
             pPlayer->PrecacheModel(newModel);
             pPlayer->SetModel(newModel);
         }
-    }
 
-    // send to p2p server
-    if (g_pMomentumLobbySystem->LobbyValid() && pPlayer)
-    {
-        DevLog("Sending appearance update!\n");
-        g_pMomentumLobbySystem->SetAppearanceInMemberData(g_pMomentumLobbySystem->m_sLobbyID, pPlayer->m_playerAppearanceProps);
+        pPlayer->SendAppearanceToLobby();
     }
 }
 
@@ -265,6 +251,16 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
         {
             g_ReplaySystem->GetReplayManager()->UnloadPlayback();
         }
+    }
+}
+
+void CMomentumPlayer::SendAppearanceToLobby()
+{
+    // send to p2p server
+    if (g_pMomentumLobbySystem->LobbyValid())
+    {
+        DevLog("Sending appearance update!\n");
+        g_pMomentumLobbySystem->SetAppearanceInMemberData(m_playerAppearanceProps);
     }
 }
 

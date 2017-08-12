@@ -32,10 +32,11 @@ struct ghostAppearance_t
     uint32_t GhostTrailRGBAColorAsHex;
     uint8_t GhostTrailLength;
     bool GhostTrailEnable;
+    bool FlashlightOn;
     char GhostModel[128]; //maximum model filename is 128 chars
 
 #ifndef GHOST_SERVER
-    ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen, const bool hasTrail)
+    ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
     {
         Q_strncpy(GhostModel, playerModel, sizeof(GhostModel));
         GhostModelBodygroup = bodyGroup;
@@ -43,8 +44,23 @@ struct ghostAppearance_t
         GhostTrailRGBAColorAsHex = trailRGBA;
         GhostTrailLength = trailLen;
         GhostTrailEnable = hasTrail;
+        FlashlightOn = flashlight;
     }
-    ghostAppearance_t() {}
+    ghostAppearance_t(): GhostModelBodygroup(0), GhostModelRGBAColorAsHex(0), GhostTrailRGBAColorAsHex(0), GhostTrailLength(0), GhostTrailEnable(false), FlashlightOn(false)
+    {
+    }
+
+    ghostAppearance_t &operator=(const ghostAppearance_t &other) 
+    {
+        GhostModelBodygroup = other.GhostModelBodygroup;
+        GhostModelRGBAColorAsHex = other.GhostModelRGBAColorAsHex;
+        GhostTrailRGBAColorAsHex = other.GhostTrailRGBAColorAsHex;
+        GhostTrailLength = other.GhostTrailLength;
+        GhostTrailEnable = other.GhostTrailEnable;
+        FlashlightOn = other.FlashlightOn;
+        Q_strncpy(GhostModel, other.GhostModel, sizeof(GhostModel));
+        return *this;
+    }
     bool operator==(const ghostAppearance_t &other) const
     {
         return Q_strcmp(GhostModel, other.GhostModel) == 0 &&
@@ -52,10 +68,34 @@ struct ghostAppearance_t
             GhostModelRGBAColorAsHex == other.GhostModelRGBAColorAsHex &&
             GhostTrailRGBAColorAsHex == other.GhostTrailRGBAColorAsHex &&
             GhostTrailLength == other.GhostTrailLength &&
-            GhostTrailEnable == other.GhostTrailEnable;
+            GhostTrailEnable == other.GhostTrailEnable &&
+            FlashlightOn == other.FlashlightOn;
     }
 #endif
 };
+
+struct LobbyGhostAppearance_t
+{
+    ghostAppearance_t appearance;
+    char base64[1024]; // Used as a quick verify
+
+#ifndef GHOST_SERVER
+    LobbyGhostAppearance_t()
+    {
+        base64[0] = '\0';
+        appearance = ghostAppearance_t();
+    }
+
+    LobbyGhostAppearance_t &operator=(const LobbyGhostAppearance_t &other) 
+    {
+        appearance = other.appearance;
+        Q_strncpy(base64, other.base64, sizeof(base64));
+        return *this;
+    }
+#endif
+};
+
+
 // Based on CReplayFrame, describes data needed for ghost's physical properties 
 struct ghostNetFrame_t
 {
@@ -104,6 +144,20 @@ struct ghostNetFrame_t
     }
 #endif //NOT_GHOST_SERVER
 };
+
+struct ReceivedFrame_t
+{
+    float recvTime;
+    ghostNetFrame_t frame;
+
+    ReceivedFrame_t(float recvTime, ghostNetFrame_t recvFrame)
+    {
+        this->recvTime = recvTime;
+        frame = recvFrame;
+    }
+};
+
+
 struct ghostSignOnPacket_t
 {
     ghostNetFrame_t newFrame;

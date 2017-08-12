@@ -25,7 +25,7 @@ CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 
 void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
 {
-    m_vecFrames.Insert(new ReceivedFrame(gpGlobals->curtime, newFrame));
+    m_vecFrames.Insert(new ReceivedFrame_t(gpGlobals->curtime, newFrame));
 }
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
@@ -36,6 +36,17 @@ void CMomentumOnlineGhostEntity::Precache(void)
 {
     BaseClass::Precache();
 }
+
+void CMomentumOnlineGhostEntity::SetGhostAppearance(LobbyGhostAppearance_t app)
+{
+    if (!FStrEq(m_CurrentAppearance.base64, app.base64))
+    {
+        //DevLog("Got a new appearance!\n Bodygroup: %i, Color: %lu, Model: %s\n", app.appearance.GhostModelBodygroup, app.appearance.GhostModelRGBAColorAsHex, app.appearance.GhostModel);
+        m_CurrentAppearance = app;
+        BaseClass::SetGhostAppearance(app.appearance);
+    }
+}
+
 void CMomentumOnlineGhostEntity::Spawn()
 {
     BaseClass::Spawn();
@@ -57,7 +68,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
 
     if (!m_pCurrentFrame && !m_vecFrames.IsEmpty())
     {
-        ReceivedFrame *pHead = m_vecFrames.Head();
+        ReceivedFrame_t *pHead = m_vecFrames.Head();
         if (flCurtime > pHead->recvTime)
             m_pCurrentFrame = m_vecFrames.RemoveAtHead();
     }

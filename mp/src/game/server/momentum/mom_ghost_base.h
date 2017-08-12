@@ -40,6 +40,7 @@ public:
     virtual void SetGhostBodyGroup(int bodyGroup);
     virtual void SetGhostColor(const uint32 newHexColor);
     virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
+    virtual void SetGhostFlashlight(bool isOn);
 
     virtual void SetGhostAppearance(ghostAppearance_t app);
     virtual ghostAppearance_t GetAppearance() { return m_ghostAppearance; }
@@ -72,10 +73,6 @@ protected:
     ghostAppearance_t m_ghostAppearance;
 
 private:
-    bool trailEnable;
     CBaseEntity *m_eTrail;
-
-    bool hasSpawned;
-    bool hasSetAppearance;
 };
 #endif //GHOST_BASE

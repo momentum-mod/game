@@ -19,13 +19,6 @@
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 
-// MOM_TODO: Replace this with the custom player model
-#define ENTITY_MODEL "models/player/player_shape_base.mdl"
-
-// Change these if you want to change the flashlight sound
-#define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
-#define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
-
 // Checkpoints used in the "Checkpoint menu"
 struct Checkpoint
 {
@@ -77,13 +70,19 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     {
         AddEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_ON);
+        m_playerAppearanceProps.FlashlightOn = true;
+        SendAppearanceToLobby();
     }
 
     void FlashlightTurnOff() OVERRIDE
     {
         RemoveEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_OFF);
+        m_playerAppearanceProps.FlashlightOn = false;
+        SendAppearanceToLobby();
     }
+
+    void SendAppearanceToLobby();
 
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;

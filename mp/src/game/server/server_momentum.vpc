@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories  	"$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
+        $AdditionalIncludeDirectories  	"$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\thirdparty\base64"
         $PreprocessorDefinitions        "$BASE;SDK_DLL"
     }
 }
@@ -206,6 +206,22 @@ $Project "Server (Momentum)"
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
 
+        $Folder "Base64 Library"
+        {
+            $File "$SRCDIR\thirdparty\base64\base64.h"
+            $File "$SRCDIR\thirdparty\base64\base64.cpp"
+            {
+                $Configuration
+                {
+                    $Compiler
+                    {
+                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        $TreatWarningsAsErrors "No"
+                    }
+                }
+            }
+        }
+        
         $Folder "JSON Parser"
         {
             $File "$SRCDIR\thirdparty\gason\src\gason.h"

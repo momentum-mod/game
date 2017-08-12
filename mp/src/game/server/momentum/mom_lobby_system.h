@@ -4,19 +4,14 @@
 #include "mom_shareddefs.h"
 #include "ghost_client.h"
 
-#define MEMBERDATA_MAP "map"
-#define MEMBERDATA_APPS_BODYGROUP "appearance_bodygroup"
-#define MEMBERDATA_APPS_MODELCOLOR "appearance_model_rgba"
-#define MEMBERDATA_APPS_TRAILCOLOR "appearance_trail_rbga"
-#define MEMBERDATA_APPS_TRAILLENGTH "appearance_trail_length"
-#define MEMBERDATA_APPS_TRAILENABLE "appearance_trail_enable"
-#define MEMBERDATA_APPS_MODEL "appearance_model_name"
+#define LOBBY_DATA_MAP "map"
+#define LOBBY_DATA_APPEARANCE "appearance"
+
 class CMomentumLobbySystem
 {
 public:
-    CMomentumLobbySystem(const char *pName) : m_bHostingLobby(false)
+    CMomentumLobbySystem() : m_bHostingLobby(false)
     {
-        m_pInstance = this;
     }
 
     void CallResult_LobbyCreated(LobbyCreated_t *pCreated, bool IOFailure);
@@ -51,8 +46,11 @@ public:
     void CheckToAdd(CSteamID *pID);
 
     void SendAndRecieveP2PPackets();
-    void SetAppearanceInMemberData(CSteamID lobbyID, ghostAppearance_t app);
-    ghostAppearance_t GetAppearanceFromMemberData(CSteamID lobbyID, CSteamID member);
+    void SetAppearanceInMemberData(ghostAppearance_t app);
+    LobbyGhostAppearance_t GetAppearanceFromMemberData(CSteamID member);
+
+    CMomentumOnlineGhostEntity *GetLobbyMemberEntity(CSteamID id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
+    CMomentumOnlineGhostEntity *GetLobbyMemberEntity(uint64_t id);
 
 private:
 
@@ -60,8 +58,6 @@ private:
 
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
-    static CMomentumLobbySystem *m_pInstance;
-
 };
 
 extern CMomentumLobbySystem *g_pMomentumLobbySystem;
