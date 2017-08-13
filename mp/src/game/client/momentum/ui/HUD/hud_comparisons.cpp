@@ -186,9 +186,7 @@ void C_RunComparisons::LoadBogusComparisons()
     UnloadBogusComparisons();
     // Let's make a bogus run, shall we?
     m_rcBogusComparison = new RunCompare_t();
-    m_pBogusRunStats = new CMomRunStats();
-    m_pBogusRunStats->m_pData = &m_bogusData;
-    m_pBogusRunStats->Init();
+    m_pBogusRunStats = new CMomRunStats(&m_bogusData);
     g_pMomentumUtil->GenerateBogusRunStats(m_pBogusRunStats);
 
     // Fill the comparison with the bogus run

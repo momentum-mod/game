@@ -238,15 +238,15 @@ $Project "Client (Momentum)"
             {
                 $File "momentum\c_mom_replay_entity.h"
                 $File "momentum\c_mom_replay_entity.cpp"
-                $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.cpp"
-                $File "$SRCDIR\game\shared\momentum\run\mom_replay_manager.h"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_factory.cpp"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_factory.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_base.h"
                 $File "$SRCDIR\game\shared\momentum\run\mom_replay_data.h"
                 
                 $Folder "Versions"
                 {                   
-                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_v1.cpp"
-                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_v1.h"
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_versions.cpp"
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_versions.h"
                 }
             }
             

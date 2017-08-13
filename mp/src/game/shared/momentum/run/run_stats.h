@@ -9,21 +9,17 @@
  * USAGE: This object is pointless without an instance of CMomRunStats::data to point to.
  * By nature of the CMomRunStats::data's purpose, this class cannot own it, but it can own
  * a pointer to it. Since this class can't make what it needs to point to, it needs some construction
- * done by the creator of the instance of the class. The methods Init() and Deserialize() rely on the
- * pointer already being set, so they can't be used until after construction.
- *      What all this means is that construction is currently handled by the caller.
- * 
- * To do this, create the class, create the data, set the pointer in the class,
- * then call either the Init(uint8) method or Deserialize(CBinaryReader *reader).
+ * done by the creator of the instance of the class.
  */
 
 class CMomRunStats : public ISerializable
 {
 public:
-    //TODO: HACK: These constructors are (probably just temporarily) deprecated. We need to either make this object
-    //actually capable of constructing its self, or continue to construct it externally.
-    CMomRunStats(uint8 size = MAX_STAGES);
-    CMomRunStats(CBinaryReader *pReader);
+    struct data;
+    
+    CMomRunStats(CMomRunStats::data* pData);
+    CMomRunStats(CMomRunStats::data* pData, uint8 size);
+    CMomRunStats(CMomRunStats::data* pData, CBinaryReader *pReader);
 
     // Note: This needs updating every time the struct is updated!
     virtual void Init(uint8 size = MAX_STAGES);
@@ -63,6 +59,9 @@ public:
     virtual void SetZoneVelocityMax(int zone, float vert, float hor);
     virtual void SetZoneVelocityAvg(int zone, float vert, float hor);
     virtual void SetZoneExitSpeed(int zone, float vert, float hor);
+    
+    virtual void FullyCopyStats(CMomRunStats *to);
+    virtual void FullyCopyStats(CMomRunStats::data *to);
 
     /*
      * We encapsulate the raw data in its own struct to allow a memcpy of just the data

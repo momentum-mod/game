@@ -13,7 +13,7 @@ DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE)
 DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer()
+C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
@@ -21,8 +21,6 @@ C_MomentumPlayer::C_MomentumPlayer()
     m_SrvData.m_RunData.m_flLastJumpTime = 0.0f;
     m_SrvData.m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
-    m_RunStats.m_pData = &m_SrvData.m_RunStatsData;
-    m_RunStats.Init();
     m_fSliding = 0;
     m_flStartSpeed = 0.0f;
     m_flEndSpeed = 0.0f;

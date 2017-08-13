@@ -4,12 +4,22 @@
 
 #include "tier0/memdbgon.h"
 
-CMomRunStats::CMomRunStats(uint8 size) : m_pData(nullptr)
+CMomRunStats::CMomRunStats(CMomRunStats::data* pData)
 {
+    m_pData = pData;
+    Init(0);
 }
 
-CMomRunStats::CMomRunStats(CBinaryReader *pReader) : m_pData(nullptr) 
-{ 
+CMomRunStats::CMomRunStats(CMomRunStats::data* pData, uint8 size)
+{
+    m_pData = pData;
+    Init(size);
+}
+
+CMomRunStats::CMomRunStats(CMomRunStats::data* pData, CBinaryReader *pReader) : m_pData(nullptr) 
+{
+    m_pData = pData;
+    Deserialize(pReader);
 }
 
 void CMomRunStats::Init(uint8 size)
@@ -17,40 +27,25 @@ void CMomRunStats::Init(uint8 size)
     if (size > MAX_STAGES)
         size = MAX_STAGES;
 
-    // Set the total number of stages/checkpoints
+    memset(m_pData, 0, sizeof(CMomRunStats::data));
+    
     SetTotalZones(size);
-
-    // initialize everything to 0
-    // Note: We do m_iTotalZones + 1 because 0 is overall!
-    for (int i = 0; i < MAX_STAGES + 1; ++i)
-    {
-        SetZoneJumps(i, 0);
-        SetZoneStrafes(i, 0);
-        SetZoneStrafeSyncAvg(i, 0);
-        SetZoneStrafeSync2Avg(i, 0);
-        SetZoneEnterTime(i, 0.0f);
-        SetZoneTime(i, 0.0f);
-
-        SetZoneEnterSpeed(i, 0.0f, 0.0f);
-        SetZoneVelocityMax(i, 0.0f, 0.0f);
-        SetZoneVelocityAvg(i, 0.0f, 0.0f);
-        SetZoneExitSpeed(i, 0.0f, 0.0f);
-    }
 }
 
 CMomRunStats &CMomRunStats::operator=(const CMomRunStats &other)
 {
-    if (this == &other)
-        return *this;
-    
-    //TODO: handle this better. Maybe.
-    if (other.m_pData == nullptr)
-        return *this;
-
-    //memcpy(this->m_pData, other.m_pData, sizeof(CMomRunStats::data))
     this->m_pData = other.m_pData;
-    
     return *this;
+}
+
+void CMomRunStats::FullyCopyStats(CMomRunStats *to)
+{
+    memcpy(to->m_pData, m_pData, sizeof(CMomRunStats::data));
+}
+
+void CMomRunStats::FullyCopyStats(CMomRunStats::data *to)
+{
+    memcpy(to, m_pData, sizeof(CMomRunStats::data));
 }
 
 void CMomRunStats::Deserialize(CBinaryReader *reader)
