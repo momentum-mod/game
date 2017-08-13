@@ -7,7 +7,8 @@
 #include "util/mom_util.h"
 #include "util/os_utils.h"
 #ifdef _WIN32
-#include <windows.h>
+#pragma warning( disable: 4005 )
+#include <Windows.h>
 #endif
 #include "tier0/memdbgon.h"
 
