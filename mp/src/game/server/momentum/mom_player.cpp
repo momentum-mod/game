@@ -250,7 +250,7 @@ void CMomentumPlayer::SendAppearanceToLobby()
     // send to p2p server
     if (g_pMomentumLobbySystem->LobbyValid())
     {
-        DevLog("Sending appearance update!\n");
+        //DevLog("Sending appearance update!\n");
         g_pMomentumLobbySystem->SetAppearanceInMemberData(m_playerAppearanceProps);
     }
 }
@@ -521,6 +521,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
         {
             CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
 
+            // MOM_TODO: Allow them to at least drop the knife?
             if (type != WEAPONTYPE_KNIFE && type != WEAPONTYPE_GRENADE)
             {
                 MomentumWeaponDrop(pWeapon);

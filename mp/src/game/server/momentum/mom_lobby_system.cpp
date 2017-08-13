@@ -120,6 +120,7 @@ void CMomentumLobbySystem::CallResult_LobbyCreated(LobbyCreated_t* pCreated, boo
     }
 }
 
+// This is called when we explicitly call JoinLobby. Creating a lobby does not call this.
 void CMomentumLobbySystem::CallResult_LobbyJoined(LobbyEnter_t* pEntered, bool IOFailure)
 {
     if (!pEntered || IOFailure)
@@ -128,14 +129,7 @@ void CMomentumLobbySystem::CallResult_LobbyJoined(LobbyEnter_t* pEntered, bool I
         return;
     }
 
-    if (pEntered->m_EChatRoomEnterResponse != k_EChatRoomEnterResponseSuccess)
-    {
-        DevWarning("Failed to enter chat room! Error code: %i\n", pEntered->m_EChatRoomEnterResponse);
-    }
-    else
-    {
-        Log("Successfully joined the lobby! %lld\n", pEntered->m_ulSteamIDLobby);
-    }
+    HandleLobbyEnter(pEntered);
 }
 
 void CMomentumLobbySystem::StartLobby()
