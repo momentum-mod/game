@@ -50,7 +50,6 @@ void CMomentumOnlineGhostEntity::SetGhostAppearance(LobbyGhostAppearance_t app)
 void CMomentumOnlineGhostEntity::Spawn()
 {
     BaseClass::Spawn();
-    SetSolid(SOLID_BBOX);
     SetNextThink(gpGlobals->curtime);
 }
 void CMomentumOnlineGhostEntity::Think()

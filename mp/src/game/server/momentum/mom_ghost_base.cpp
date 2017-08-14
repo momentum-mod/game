@@ -25,7 +25,6 @@ void CMomentumGhostBaseEntity::Spawn()
     SetModel(GHOST_MODEL); //we need a model
     SetGhostBodyGroup(BODY_PROLATE_ELLIPSE);
     RemoveEffects(EF_NODRAW);
-    SetRenderMode(kRenderNone); //we don't want to draw the ghost until it can update it's appearance.
     //~~~The magic combo~~~ (collides with triggers, not with players)
     ClearSolidFlags();
     SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);

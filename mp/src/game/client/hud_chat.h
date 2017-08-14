@@ -27,11 +27,10 @@ public:
     void			MsgFunc_SayText2(bf_read &msg);
     void			MsgFunc_TextMsg(bf_read &msg);
 
-
+    void MsgFunc_LobbyUpdateMsg(bf_read &msg);
 
     // MOM_TODO: Move these elsewhere. Maybe in clientmode? Something that has access to multiple UI components.
     STEAM_CALLBACK(CHudChat, OnLobbyMessage, LobbyChatMsg_t);
-    STEAM_CALLBACK(CHudChat, OnLobbyChatUpdate, LobbyChatUpdate_t);
     STEAM_CALLBACK(CHudChat, OnLobbyDataUpdate, LobbyDataUpdate_t);
     STEAM_CALLBACK(CHudChat, OnLobbyEnter, LobbyEnter_t);
     STEAM_CALLBACK(CHudChat, OnLobbyKicked, LobbyKicked_t);

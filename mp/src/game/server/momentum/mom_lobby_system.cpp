@@ -73,22 +73,9 @@ void CMomentumLobbySystem::GetLobbyMemberSteamData(CSteamID pMember)
     }
 }
 
-// Called when joining a friend from their Join Game option in steam
-void CMomentumLobbySystem::HandleFriendJoin(GameRichPresenceJoinRequested_t* pJoin)
-{
-    // MOM_TODO: Have a global convar that auto blocks requests (busy vs online) 
-    // m_sHostID = pJoin->m_steamIDFriend;
-    //steamapicontext->SteamNetworking()->SendP2PPacket(pJoin->m_steamIDFriend, );
-
-
-}
-
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
 void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
 {
-    // Get the lobby owner
-    //CSteamID owner = steamapicontext->SteamMatchmaking()->GetLobbyOwner(pJoin->m_steamIDLobby);
-
     if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
     {
         Warning("You are already in a lobby! Do \"mom_leave_lobby\" to leave the lobby!\n");
@@ -265,6 +252,13 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
 
         DevLog("A user just joined us!\n");
         // Note: The lobby data update method handles adding
+
+        CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+        user.MakeReliable();
+        UserMessageBegin(user, "LobbyUpdateMsg");
+        WRITE_BYTE(LOBBY_UPDATE_MEMBER_JOIN);
+        WRITE_BYTES(&pParam->m_ulSteamIDUserChanged, sizeof uint64);
+        MessageEnd();
     }
     if (state & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
@@ -280,6 +274,13 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
 
             CMomentumGhostClient::m_mapOnlineGhosts.RemoveAt(findMember);
         }
+
+        CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+        user.MakeReliable();
+        UserMessageBegin(user, "LobbyUpdateMsg");
+        WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE);
+        WRITE_BYTES(&pParam->m_ulSteamIDUserChanged, sizeof uint64);
+        MessageEnd();
     }
 }
 
@@ -318,13 +319,13 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
         DevLog("Setting the map to %s!\n", pMapName);
         steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
 
+        m_flNextUpdateTime = -1.0f;
+
         // Now check if this map is the same as somebody else's in the lobby
         if (pMapName)
             CheckToAdd(nullptr);
         else
-        {
             g_pMomentumGhostClient->ClearCurrentGhosts(false);
-        }
     }
 }
 
@@ -335,7 +336,8 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
     if (pID)
     {
         const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, LOBBY_DATA_MAP);
-        unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(pID->ConvertToUint64());
+        uint64 pID_int = pID->ConvertToUint64();
+        unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(pID_int);
         // Just joined this map, we haven't created them 
         if (FStrEq(gpGlobals->mapname.ToCStr(), pOtherMap))
         {
@@ -348,10 +350,21 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 newPlayer->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(*pID));
                 newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID));
 
-                CMomentumGhostClient::m_mapOnlineGhosts.Insert(pID->ConvertToUint64(), newPlayer);
+                CMomentumGhostClient::m_mapOnlineGhosts.Insert(pID_int, newPlayer);
 
                 if (m_flNextUpdateTime < 0)
                     m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
+
+                // "_____ just joined your map."
+                if (CMomentumGhostClient::m_pPlayer)
+                {
+                    CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+                    user.MakeReliable();
+                    UserMessageBegin(user, "LobbyUpdateMsg");
+                    WRITE_BYTE(LOBBY_UPDATE_MEMBER_JOIN_MAP);
+                    WRITE_BYTES(&pID_int, sizeof uint64);
+                    MessageEnd();
+                }
             }
         }
         else if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
@@ -362,6 +375,14 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 pEntity->Remove();
             
             CMomentumGhostClient::m_mapOnlineGhosts.RemoveAt(findIndx);
+
+            // "_____ just left your map."
+            CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+            user.MakeReliable();
+            UserMessageBegin(user, "LobbyUpdateMsg");
+            WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE_MAP);
+            WRITE_BYTES(&pID_int, sizeof uint64);
+            MessageEnd();
         }
     }
     else

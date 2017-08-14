@@ -4,9 +4,6 @@
 #include "mom_shareddefs.h"
 #include "ghost_client.h"
 
-#define LOBBY_DATA_MAP "map"
-#define LOBBY_DATA_APPEARANCE "appearance"
-
 class CMomentumLobbySystem
 {
 public:
@@ -21,9 +18,7 @@ public:
     void LeaveLobby();
     void JoinLobbyFromString(const char *pString);
 
-    void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
-    void NotifyStartTyping(CSteamID pMember);
-    void NotifyStopTyping(CSteamID pMember);
+    void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message
     void GetLobbyMemberSteamData(CSteamID pMember);
 
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
@@ -31,7 +26,6 @@ public:
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyChatMsg, LobbyChatMsg_t); // Lobby chat message sent here, used with SayText etc
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyDataUpdate, LobbyDataUpdate_t); // Something was updated for the lobby's data
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyJoin, GameLobbyJoinRequested_t); // We are trying to join a lobby
-    STEAM_CALLBACK(CMomentumLobbySystem, HandleFriendJoin, GameRichPresenceJoinRequested_t); // Joining from a friend's "JOIN GAME" option from steam
     STEAM_CALLBACK(CMomentumLobbySystem, HandleNewP2PRequest, P2PSessionRequest_t); // Somebody is trying to talk to us
     STEAM_CALLBACK(CMomentumLobbySystem, HandleP2PConnectionFail, P2PSessionConnectFail_t); // Talking/connecting to somebody failed
     STEAM_CALLBACK(CMomentumLobbySystem, HandlePersonaCallback, PersonaStateChange_t); // Called when we get their avatar and name from steam

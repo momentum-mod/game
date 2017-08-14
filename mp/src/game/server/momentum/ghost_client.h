@@ -19,21 +19,24 @@ public:
     void PostInit() OVERRIDE;
     //void LevelInitPreEntity() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
-    //void LevelShutdownPreEntity() OVERRIDE;
+    void LevelShutdownPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
     void FrameUpdatePreEntityThink() OVERRIDE;
     void Shutdown() OVERRIDE;
+    // MOM_TODO uncomment this for server STEAM_CALLBACK(, HandleFriendJoin, GameRichPresenceJoinRequested_t); // Joining from a friend's "JOIN GAME" option from steam
 
     void ClearCurrentGhosts(bool);
+
+    void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
 
     static bool CreateNewNetFrame(ghostNetFrame_t &frame);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
 
     static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;
-
+    static CMomentumPlayer *m_pPlayer;
 private:
     //static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
-    static CMomentumPlayer *m_pPlayer;
+    
 
     static CMomentumGhostClient *m_pInstance;
 };

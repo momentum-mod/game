@@ -38,6 +38,14 @@ typedef enum FLAGS
     //MOM_TODO: Figure out the rest
 } RUN_FLAG;
 
+typedef enum
+{
+    LOBBY_UPDATE_MEMBER_JOIN = 0,        // Joined the lobby
+    LOBBY_UPDATE_MEMBER_JOIN_MAP,        // Joined your map
+    LOBBY_UPDATE_MEMBER_LEAVE,           // Left your lobby
+    LOBBY_UPDATE_MEMBER_LEAVE_MAP,       // Left your map
+} LOBBY_MSG_TYPE;
+
 #define PANEL_TIMES "times"
 #define IN_TIMES (1<<26)
 
@@ -109,5 +117,9 @@ typedef enum FLAGS
 // Change these if you want to change the flashlight sound
 #define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
 #define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
+
+#define LOBBY_DATA_MAP "map"
+#define LOBBY_DATA_APPEARANCE "appearance"
+#define LOBBY_DATA_TYPING "isTyping"
 
 #endif // MOM_SHAREDDEFS_H

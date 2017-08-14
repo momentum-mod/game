@@ -8,7 +8,7 @@
 #include "cbase.h"
 #include "vgui_EntityPanel.h"
 #include "ienginevgui.h"
-#ifdef TF_DLL
+#ifdef TF_CLIENT_DLL
 #include "c_BaseTFPlayer.h"
 #include "clientmode_commander.h"
 #include "hud_commander_statuspanel.h"

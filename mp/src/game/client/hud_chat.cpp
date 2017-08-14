@@ -11,18 +11,18 @@
 #include "text_message.h"
 #include "vguicenterprint.h"
 #include "hud_basechat.h"
+#include "momentum/mom_shareddefs.h"
 #include <vgui/ILocalize.h>
 
 #include "tier0/memdbgon.h"
-
-#define MOM_LOBBY_DATA_MEMBER_TYPING_YES "y"
-#define MOM_LOBBY_DATA_MEMBER_TYPING_NO "n"
+#include "clientmode.h"
 
 DECLARE_HUDELEMENT(CHudChat);
 
 DECLARE_HUD_MESSAGE(CHudChat, SayText);
 DECLARE_HUD_MESSAGE(CHudChat, SayText2);
 DECLARE_HUD_MESSAGE(CHudChat, TextMsg);
+DECLARE_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
 
 //=====================
 // CHudChat
@@ -46,6 +46,7 @@ void CHudChat::Init(void)
     HOOK_HUD_MESSAGE(CHudChat, SayText);
     HOOK_HUD_MESSAGE(CHudChat, SayText2);
     HOOK_HUD_MESSAGE(CHudChat, TextMsg);
+    HOOK_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
 }
 
 void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
@@ -61,7 +62,7 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     CSteamID msgSender = CSteamID(pParam->m_ulSteamIDUser);
     if (pParam->m_ulSteamIDUser == steamapicontext->SteamUser()->GetSteamID().ConvertToUint64())
     {
-        DevLog("Got our own message! Just ignoring it...\n");
+        //DevLog("Got our own message! Just ignoring it...\n");
         return;
     }
 
@@ -71,34 +72,9 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     char *message = new char[4096];
     // MOM_TODO: This won't be just text in the future, if we captialize on being able to send binary data. Wrap this is
     // something and parse it
-    int written = steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(
-        CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
-    DevLog("CLIENT: written: %i\n", written);
+    steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
     Printf(CHAT_FILTER_NONE, "%s: %s", personName, message);
     delete[] message;
-}
-
-void CHudChat::OnLobbyChatUpdate(LobbyChatUpdate_t *pParam)
-{
-    uint32 state = pParam->m_rgfChatMemberStateChange;
-    CSteamID changedPerson = CSteamID(pParam->m_ulSteamIDUserChanged);
-    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(changedPerson);
-    if (state & k_EChatMemberStateChangeEntered)
-    {
-        // Somebody joined us! Huzzah!
-        // GetLobbyMemberSteamData(changedPerson); MOM_TODO: Does this happen asynchronously?
-
-        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has joined the lobby.", pName);
-    }
-    if (state & k_EChatMemberStateChangeLeft || state & k_EChatMemberStateChangeDisconnected)
-    {
-        if (changedPerson == steamapicontext->SteamUser()->GetSteamID())
-        {
-            // We're the one who's leaving.
-            m_uiLobbyId = 0;
-        }
-        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has left the lobby.", pName);
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -112,7 +88,7 @@ void CHudChat::MsgFunc_SayText2(bf_read &msg)
     wchar_t szBuf[6][256];
     char untranslated_msg_text[256];
     wchar_t *msg_text = ReadLocalizedString(msg, szBuf[0], sizeof(szBuf[0]), false, untranslated_msg_text,
-        sizeof(untranslated_msg_text));
+                                            sizeof(untranslated_msg_text));
 
     // keep reading strings and using C format strings for subsituting the strings into the localised text string
     ReadChatTextString(msg, szBuf[1], sizeof(szBuf[1])); // player name
@@ -212,28 +188,49 @@ void CHudChat::MsgFunc_TextMsg(bf_read &msg)
 
     switch (msg_dest)
     {
-        case HUD_PRINTCENTER:
-            Q_snprintf(psz, sizeof(szBuf[5]), msg_text, sstr1, sstr2, sstr3, sstr4);
-            internalCenterPrint->Print(ConvertCRtoNL(psz));
-            break;
+    case HUD_PRINTCENTER:
+        Q_snprintf(psz, sizeof(szBuf[5]), msg_text, sstr1, sstr2, sstr3, sstr4);
+        internalCenterPrint->Print(ConvertCRtoNL(psz));
+        break;
 
-        case HUD_PRINTNOTIFY:
-            psz[0] = 1; // mark this message to go into the notify buffer
-            Q_snprintf(psz + 1, sizeof(szBuf[5]) - 1, msg_text, sstr1, sstr2, sstr3, sstr4);
-            Msg("%s", ConvertCRtoNL(psz));
-            break;
+    case HUD_PRINTNOTIFY:
+        psz[0] = 1; // mark this message to go into the notify buffer
+        Q_snprintf(psz + 1, sizeof(szBuf[5]) - 1, msg_text, sstr1, sstr2, sstr3, sstr4);
+        Msg("%s", ConvertCRtoNL(psz));
+        break;
 
-        case HUD_PRINTTALK:
-            Q_snprintf(psz, sizeof(szBuf[5]), msg_text, sstr1, sstr2, sstr3, sstr4);
-            Printf(CHAT_FILTER_NONE, "%s", ConvertCRtoNL(psz));
-            break;
+    case HUD_PRINTTALK:
+        Q_snprintf(psz, sizeof(szBuf[5]), msg_text, sstr1, sstr2, sstr3, sstr4);
+        Printf(CHAT_FILTER_NONE, "%s", ConvertCRtoNL(psz));
+        break;
 
-        case HUD_PRINTCONSOLE:
-            Q_snprintf(psz, sizeof(szBuf[5]), msg_text, sstr1, sstr2, sstr3, sstr4);
-            Msg("%s", ConvertCRtoNL(psz));
-            break;
+    case HUD_PRINTCONSOLE:
+        Q_snprintf(psz, sizeof(szBuf[5]), msg_text, sstr1, sstr2, sstr3, sstr4);
+        Msg("%s", ConvertCRtoNL(psz));
+        break;
     }
 }
+
+void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read& msg)
+{
+    uint8 type = msg.ReadByte();
+
+    uint64 person;
+    msg.ReadBytes(&person, sizeof uint64);
+    CSteamID personID = CSteamID(person);
+    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
+
+    bool isJoin = type <= LOBBY_UPDATE_MEMBER_JOIN_MAP;
+    bool isMap = type % 2;
+
+    // SHIELD YOUR EYES
+    Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
+        "%s has %s the %s.",
+        pName,
+        isJoin ?  "joined" : "left",
+        isMap ? "map" : "lobby");
+}
+
 
 void CHudChat::StartMessageMode(int iMessageMode)
 {
@@ -247,8 +244,7 @@ void CHudChat::StopMessageMode()
     BaseClass::StopMessageMode();
     if (m_uiLobbyId != 0) // Only if already on lobby
     {
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, "isTyping",
-            MOM_LOBBY_DATA_MEMBER_TYPING_NO);
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, LOBBY_DATA_TYPING, nullptr);
     }
 
     // Can't be typing if we close the chat
@@ -263,12 +259,12 @@ void CHudChat::OnThink()
         const int isSomethingTyped = GetInputPanel()->GetTextLength() > 0;
         if (isSomethingTyped && !m_bTyping)
         {
-            steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, "isTyping", MOM_LOBBY_DATA_MEMBER_TYPING_YES);
+            steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, LOBBY_DATA_TYPING, "y"); // Can be literally anything
             m_bTyping = true;
         }
         else if (!isSomethingTyped && m_bTyping)
         {
-            steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, "isTyping", MOM_LOBBY_DATA_MEMBER_TYPING_NO);
+            steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, LOBBY_DATA_TYPING, nullptr);
             m_bTyping = false;
         }
     }
@@ -279,21 +275,21 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
     // If something other than the lobby...
     if (pParam->m_bSuccess && pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember)
     {
+        // Typing Status
         const char *typingStatus =
-            steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_uiLobbyId, pParam->m_ulSteamIDMember, "isTyping");
-        if (typingStatus)
+            steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_uiLobbyId, pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
+        const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
+        const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
+        if (typingStatus[0])
         {
-            const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
-            const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
-            if (Q_strcmp(typingStatus, MOM_LOBBY_DATA_MEMBER_TYPING_YES) == 0 && !isValidIndex)
-            {
+            if (!isValidIndex)
                 m_vTypingMembers.AddToTail(pParam->m_ulSteamIDMember);
-            }
-            else if (Q_strcmp(typingStatus, MOM_LOBBY_DATA_MEMBER_TYPING_NO) == 0 && isValidIndex)
-            {
-                m_vTypingMembers.FastRemove(typingIndex);
-            }
         }
+        else if (isValidIndex)
+        {
+            m_vTypingMembers.FastRemove(typingIndex);
+        }
+
     }
 }
 
@@ -312,8 +308,8 @@ void CHudChat::Paint()
             for (int i = 0; i < m_vTypingMembers.Count(); i++)
             {
                 Q_strncpy(nameChunk,
-                    steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])),
-                    MAX_PLAYER_NAME_LENGTH);
+                          steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(m_vTypingMembers[i])),
+                          MAX_PLAYER_NAME_LENGTH);
                 Q_strcat(nameChunk, i < m_vTypingMembers.Count() - 1 ? ", " : " ", MAX_PLAYER_NAME_LENGTH + 2);
                 Q_strcat(typingText, nameChunk, BUFSIZ);
             }

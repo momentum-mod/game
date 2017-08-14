@@ -37,7 +37,13 @@ void CMomentumGhostClient::LevelInitPostEntity()
     // steamapicontext->SteamUser()->AdvertiseGame(steamapicontext->SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
     // steamapicontext->SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
 
+    m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     g_pMomentumLobbySystem->LevelChange(gpGlobals->mapname.ToCStr());
+}
+
+void CMomentumGhostClient::LevelShutdownPostEntity()
+{
+    m_pPlayer = nullptr;
 }
 
 void CMomentumGhostClient::LevelShutdownPreEntity()
@@ -76,6 +82,12 @@ void CMomentumGhostClient::ClearCurrentGhosts(bool bRemoveGhostEnts)
         
         m_mapOnlineGhosts.RemoveAll(); // No need to purge, the game handles the entities' memory
     }
+}
+
+void CMomentumGhostClient::SendChatMessage(char* pMessage)
+{
+    // MOM_TODO: g_pMomentumServerSystem->SendChatMessage(pMessage)
+    g_pMomentumLobbySystem->SendChatMessage(pMessage);
 }
 
 bool CMomentumGhostClient::CreateNewNetFrame(ghostNetFrame_t &into)
