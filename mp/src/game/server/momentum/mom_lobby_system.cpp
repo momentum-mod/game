@@ -36,9 +36,11 @@ void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
 
 void CMomentumLobbySystem::HandleP2PConnectionFail(P2PSessionConnectFail_t* info)
 {
-    Warning("Couldn't do Steam P2P because of the error: %i\n", info->m_eP2PSessionError);
+    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(info->m_steamIDRemote);
+    Warning("Couldn't do Steam P2P with user %s because of the error: %i\n", pName, info->m_eP2PSessionError);
 
     // MOM_TODO: Make a block list that only refreshes on game restart? Helps bad connections from continuously looping
+    
     steamapicontext->SteamNetworking()->CloseP2PSessionWithUser(info->m_steamIDRemote);
 }
 
@@ -339,7 +341,8 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
         uint64 pID_int = pID->ConvertToUint64();
         unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(pID_int);
         // Just joined this map, we haven't created them 
-        if (FStrEq(gpGlobals->mapname.ToCStr(), pOtherMap))
+        const char *pMapName = gpGlobals->mapname.ToCStr();
+        if (pMapName && FStrEq(pMapName, pOtherMap))
         {
             // Don't add them again if they reloaded this map for some reason
             if (findIndx == CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
