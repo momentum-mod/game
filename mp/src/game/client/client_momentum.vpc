@@ -31,6 +31,12 @@ $Project "Client (Momentum)"
         {
             $Folder "UI"
             {
+                $Folder "Ghost Entity Panel"
+                {
+                    $File "momentum\ui\GhostEntityPanel.h"
+                    $File "momentum\ui\GhostEntityPanel.cpp"
+                }
+                
                 $Folder "MapSelection"
                 {
                     $Folder "Headers"
@@ -70,7 +76,7 @@ $Project "Client (Momentum)"
                 {
                     $Folder "Headers"
                     {
-	                $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
+	                    $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
 	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"

@@ -27,14 +27,8 @@ void C_MomentumOnlineGhostEntity::Spawn()
     Precache();
     SetNextClientThink(CLIENT_THINK_ALWAYS);
 
-    m_pEntityPanel = new CEntityPanel(g_pClientMode->GetViewport(), "GhostEntityPanel");
-    KeyValues* pKv = new KeyValues("blah");
-    pKv->SetString("offset", "0 0");
-    pKv->SetString("size", "30 30");
-    m_pEntityPanel->Init(pKv, this);
-    m_pEntityPanel->SetVisible(true);
-    m_pEntityPanel->SetFgColor(Color(255, 255, 255, 255));
-    pKv->deleteThis();
+    m_pEntityPanel = new CGhostEntityPanel();
+    m_pEntityPanel->Init(this);
 }
 void C_MomentumOnlineGhostEntity::ClientThink()
 {

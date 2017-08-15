@@ -441,10 +441,10 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
     {
         // Read data
         uint32 size;
-        if (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
+        while (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
         {
             //DevLog("Packet available! Size: %u bytes where sizeof frame is %i bytes\n", size, sizeof ghostNetFrame_t);
-            if (size % sizeof ghostNetFrame_t == 0)
+            if (size == sizeof ghostNetFrame_t)
             {
                 ghostNetFrame_t frame;
                 uint32 bytesRead;
@@ -460,12 +460,6 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
         }
 
         // Send data
-        // MOM_TODO: Change this to be server-client with the lobby owner being the "server" for everyone.
-        // Only one packet should be sent here if you are not the lobby owner. Otherwise, send everybody's data to
-        // everybody. Right now it's just pure P2P.
-
-        // CSteamID owner = steamapicontext->SteamMatchmaking()->GetLobbyOwner(m_sLobbyID);
-
         if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
             ghostNetFrame_t frame;

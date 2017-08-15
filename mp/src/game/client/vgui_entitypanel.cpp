@@ -30,8 +30,7 @@ static MAKE_TOGGLE_CONVAR(r_drawentitypanels, "1", FLAG_HUD_CVAR, "Shows all ent
 CEntityPanel::CEntityPanel( vgui::Panel *pParent, const char *panelName )
 : BaseClass( pParent, panelName )
 {
-	SetPaintBackgroundEnabled( true );
-    SetBgColor(Color(255, 255, 255, 255));
+	SetPaintBackgroundEnabled( false );
 	m_pBaseEntity = NULL;
 
 	// FIXME: ComputeParent is yucky... can we be rid of it?

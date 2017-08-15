@@ -3,7 +3,9 @@
 #include "cbase.h"
 #include "c_mom_ghost_base.h"
 #include "interpolatedvar.h"
-#include "vgui_entitypanel.h"
+#include "GhostEntityPanel.h"
+
+class CGhostEntityPanel;
 
 class C_MomentumOnlineGhostEntity : public C_MomentumGhostBaseEntity
 {
@@ -25,5 +27,5 @@ public:
 
 private:
 
-    CEntityPanel *m_pEntityPanel;
+    CGhostEntityPanel *m_pEntityPanel;
 };
