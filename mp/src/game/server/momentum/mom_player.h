@@ -5,6 +5,7 @@
 #endif
 
 #include "cbase.h"
+
 #include "mom_blockfix.h"
 #include "momentum/mom_shareddefs.h"
 #include "player.h"
@@ -15,6 +16,8 @@
 #include <mom_modulecomms.h>
 
 class CMomentumReplayGhostEntity;
+class CTriggerOnehop;
+class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
@@ -221,13 +224,34 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void CreateTrail();
     void RemoveTrail();
 
+    // Adds the give Onehop to the hopped list.
+    // Returns: Its new index.
+    void AddOnehop(CTriggerOnehop *pTrigger);
+    // Finds a Onehop on the hopped list.
+    // Returns: true if found, else false
+    bool FindOnehopOnList(CTriggerOnehop *pTrigger) const;
+    // Removes all onehops
+    void RemoveAllOnehops();
+
+    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pCheckpoint) { m_pCurrentCheckpoint = pCheckpoint; }
+    CTriggerCheckpoint *GetCurrentCheckpointTrigger() const { return m_pCurrentCheckpoint; }
+
   private:
+    // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
-    CUtlVector<Checkpoint *> m_rcCheckpoints;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
+
+    // Spawn stuff
     EHANDLE g_pLastSpawn;
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
+
+    // Checkpoint menu
+    CUtlVector<Checkpoint *> m_rcCheckpoints;
+
+    // Trigger stuff
+    CUtlVector<CTriggerOnehop*> m_vecOnehops;
+    CTriggerCheckpoint *m_pCurrentCheckpoint;
 
     // for detecting bhop
     float m_flTicksOnGround;
@@ -237,7 +261,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_iLastBlock;
 
     // for strafe sync
-    float m_flLastVelocity, m_flLastSyncVelocity;
+    float m_flLastVelocity;
     QAngle m_qangLastAngle;
     int m_nPerfectSyncTicks;
     int m_nStrafeTicks;

@@ -29,7 +29,7 @@ class CMomentumTimer : CAutoGameSystem
       CMomentumTimer(const char *pName)
         : CAutoGameSystem(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0), m_bIsRunning(false),
           m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr), m_pEndTrigger(nullptr),
-          m_pCurrentCheckpoint(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr)
+          m_pCurrentZone(nullptr), m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr)
     {
     }
 
@@ -50,30 +50,24 @@ class CMomentumTimer : CAutoGameSystem
 
     // ------------- Timer trigger related methods ----------------------------
     // Gets the current starting trigger
-    CTriggerTimerStart *GetStartTrigger() const { return m_pStartTrigger.Get(); }
-    // Gets the current checkpoint
-    CTriggerCheckpoint *GetCurrentCheckpoint() const { return m_pCurrentCheckpoint.Get(); }
-
-    CTriggerTimerStop *GetEndTrigger() const { return m_pEndTrigger.Get(); }
-    CTriggerStage *GetCurrentStage() const { return m_pCurrentZone.Get(); }
+    CTriggerTimerStart *GetStartTrigger() const { return m_pStartTrigger; }
+    CTriggerTimerStop *GetEndTrigger() const { return m_pEndTrigger; }
+    CTriggerStage *GetCurrentStage() const { return m_pCurrentZone; }
 
     // Sets the given trigger as the start trigger
     void SetStartTrigger(CTriggerTimerStart *pTrigger)
     {
         m_iLastZone = 0; // Allows us to overwrite previous runs
-        m_pStartTrigger.Set(pTrigger);
+        m_pStartTrigger = pTrigger;
     }
 
-    // Sets the current checkpoint
-    void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pTrigger) { m_pCurrentCheckpoint.Set(pTrigger); }
-
-    void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger.Set(pTrigger); }
+    void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger = pTrigger; }
     //MOM_TODO: Change this to be the CTriggerZone class
     void SetCurrentZone(CTriggerStage *pTrigger)
     {
-        m_pCurrentZone.Set(pTrigger);
+        m_pCurrentZone = pTrigger;
     }
-    int GetCurrentZoneNumber() const { return m_pCurrentZone.Get() && m_pCurrentZone.Get()->GetStageNumber(); }
+    int GetCurrentZoneNumber() const { return m_pCurrentZone && m_pCurrentZone->GetStageNumber(); }
 
     // Calculates the stage count
     // Stores the result on m_iStageCount
@@ -101,21 +95,7 @@ class CMomentumTimer : CAutoGameSystem
     float GetCurrentTime() const { return float(gpGlobals->tickcount - m_iStartTick) * gpGlobals->interval_per_tick; }
 
     //----- Trigger_Onehop stuff -----------------------------------------
-    // Removes the given Onehop form the hopped list.
-    // Returns: True if deleted, False if not found.
-    bool RemoveOnehopFromList(CTriggerOnehop *pTrigger);
-    // Adds the give Onehop to the hopped list.
-    // Returns: Its new index.
-    int AddOnehopToListTail(CTriggerOnehop *pTrigger);
-    // Finds a Onehop on the hopped list.
-    // Returns: Its index. -1 if not found
-    int FindOnehopOnList(CTriggerOnehop *pTrigger);
-    // Removes all onehops from the list
-    void RemoveAllOnehopsFromList() { onehops.RemoveAll(); }
-    // Returns the count for the onehop list
-    int GetOnehopListCount() const { return onehops.Count(); }
-    // Finds the onehop with the given index on the list
-    CTriggerOnehop *FindOnehopOnList(int pIndexOnList);
+    
 
     //-------- Online-related timer commands -----------------------------
     // MOM_TODO: void LoadOnlineTimes();
@@ -153,13 +133,10 @@ class CMomentumTimer : CAutoGameSystem
     bool m_bWereCheatsActivated;
     bool m_bMapIsLinear;
 
-    CHandle<CTriggerTimerStart> m_pStartTrigger;
-    CHandle<CTriggerTimerStop> m_pEndTrigger;
-    CHandle<CTriggerCheckpoint> m_pCurrentCheckpoint;
-    CHandle<CTriggerStage> m_pCurrentZone; // MOM_TODO: Change to be the generic Zone trigger
+    CTriggerTimerStart *m_pStartTrigger;
+    CTriggerTimerStop *m_pEndTrigger;
+    CTriggerStage *m_pCurrentZone; // MOM_TODO: Change to be the generic Zone trigger
 
-    
-    CUtlVector<CTriggerOnehop *> onehops;
     KeyValues *m_pLocalTimes;
     // MOM_TODO: KeyValues *m_pOnlineTimes;
 

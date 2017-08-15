@@ -96,6 +96,7 @@ class CMomentumGameMovement : public CGameMovement
     virtual void StartGravity(void) OVERRIDE;
     virtual void FinishGravity(void) OVERRIDE;
     virtual void StuckGround(void);
+    virtual int ClipVelocity(Vector& in , Vector& normal , Vector& out , float overbounce);
 
   private:
     float m_flReflectNormal; // Used by rampboost fix
