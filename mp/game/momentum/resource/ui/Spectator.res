@@ -129,7 +129,41 @@
         "image"         "toggle_replay_controls"
         "mouseinputenabled" "1"
     }
-    
+    "PrevPlayerButton"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "PrevPlayerButton"
+        "xpos"          "c-64"
+        "ypos"          "16"
+        "wide"          "32"
+        "tall"          "32"
+        "autoResize"    "0"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "scaleImage"    "1"
+        "tooltiptext"   "#MOM_SpecGUI_PrevPlayer" 
+        "image"         "left_arrow_button"
+        "mouseinputenabled" "1"
+    }
+    "NextPlayerButton"
+    {
+        "ControlName"   "ImagePanel"
+        "fieldName"     "NextPlayerButton"
+        "xpos"          "c+32"
+        "ypos"          "16"
+        "wide"          "32"
+        "tall"          "32"
+        "autoResize"    "0"
+        "pinCorner"     "0"
+        "visible"       "1"
+        "enabled"       "1"
+        "scaleImage"    "1"
+        "tooltiptext"   "#MOM_SpecGUI_NextPlayer" 
+        "image"         "right_arrow_button"
+        "mouseinputenabled" "1"
+    }
+
     "DetachInfo"
     {
         "ControlName" "Label"

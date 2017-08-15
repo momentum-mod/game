@@ -256,10 +256,13 @@
 // Replay Info
 // Spec GUI
 "MOM_WatchingReplay"    "REPLAY"
+"MOM_WatchingGhost"    "SPECTATING"
 "MOM_ReplayPlayer"      "Player: %s1"
 "MOM_SpecGUI_GainControl" "Press your %duck% key to toggle mouse capture!"
 "MOM_SpecGUI_StopPlayback" "Stop Playback"
 "MOM_SpecGUI_ToggleControls" "Toggle Replay Controls"
+"MOM_SpecGUI_NextPlayer" "Spectate next player"
+"MOM_SpecGUI_PrevPlayer" "Spectate previous player"
 
 // Code
 "MOM_ReplayStatusPlaying" "Playing"

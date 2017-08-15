@@ -31,8 +31,19 @@ void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
 
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
+    ListenForGameEvent("mapfinished_panel_closed");
 }
-
+void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
+{
+    if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
+    {
+        if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
+        {
+            m_pCurrentSpecPlayer->StopSpectating();
+        }
+        m_pCurrentSpecPlayer = nullptr;
+    }
+}
 void CMomentumOnlineGhostEntity::Precache(void)
 {
     BaseClass::Precache();
@@ -89,7 +100,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
 
 void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
 {
-    if (m_pCurrentSpecPlayer)
+    if (m_pCurrentSpecPlayer && m_pCurrentFrame)
     {
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {

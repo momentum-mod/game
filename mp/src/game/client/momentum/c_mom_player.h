@@ -10,7 +10,7 @@
 #include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
 #include <mom_modulecomms.h>
-
+#include "c_mom_online_ghost.h"
 
 class C_MomentumPlayer : public C_BasePlayer
 {
@@ -45,6 +45,10 @@ class C_MomentumPlayer : public C_BasePlayer
         return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
     }
 
+    C_MomentumOnlineGhostEntity *GetOnlineGhostEnt() const
+    {
+        return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
+    }
     // TARGET ID SYSTEM
     int GetIDTarget() const;
     void UpdateIDTarget();

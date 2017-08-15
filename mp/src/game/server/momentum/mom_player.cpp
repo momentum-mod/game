@@ -964,7 +964,7 @@ void CMomentumPlayer::LimitSpeedInStartZone()
     }
     SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
 }
-// override of CBasePlayer::IsValidObserverTarget that allows us to spectate replay ghosts
+// override of CBasePlayer::IsValidObserverTarget that allows us to spectate ghosts
 bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 {
     if (target == nullptr)
@@ -973,6 +973,10 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
     if (!target->IsPlayer())
     {
         if (Q_strcmp(target->GetClassname(), "mom_replay_ghost") == 0) // target is a replay ghost
+        {
+            return true;
+        }
+        else if (Q_strcmp(target->GetClassname(), "mom_online_ghost") == 0) // target is an online ghost
         {
             return true;
         }

@@ -6,7 +6,7 @@
 #include "utlstack.h"
 #include "utlqueue.h"
 
-class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity
+class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity, public CGameEventListener
 {
     DECLARE_CLASS(CMomentumOnlineGhostEntity, CMomentumGhostBaseEntity)
     DECLARE_DATADESC();
@@ -44,6 +44,8 @@ public:
 protected:
     void Think(void) OVERRIDE;
     void Precache(void) OVERRIDE;
+    void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
+
 private:
     CUtlQueue<ReceivedFrame_t*> m_vecFrames;
     ReceivedFrame_t* m_pCurrentFrame;
