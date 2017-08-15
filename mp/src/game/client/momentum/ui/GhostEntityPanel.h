@@ -15,6 +15,7 @@ class CGhostEntityPanel : public CEntityPanel
     ~CGhostEntityPanel();
 
     void Init(C_MomentumOnlineGhostEntity *pEntity);
+    void OnTick() OVERRIDE;
 
 private:
 

@@ -11,6 +11,7 @@ LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
     SendPropString(SENDINFO(m_pszGhostName)),
+    SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)

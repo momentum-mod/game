@@ -18,7 +18,11 @@ public:
 
     void SetCurrentNetFrame(ghostNetFrame_t newFrame);
     //ghostNetFrame_t GetCurrentNetFrame() const { return m_currentFrame; }
-    void SetGhostSteamID(CSteamID steamID) { m_GhostSteamID = steamID; }
+    void SetGhostSteamID(CSteamID steamID)
+    {
+        m_GhostSteamID = steamID;
+        m_uiAccountID = m_GhostSteamID.ConvertToUint64();
+    }
     CSteamID GetGhostSteamID() const { return m_GhostSteamID; }
     void SetGhostName(const char* pGhostName)
     {
@@ -34,6 +38,7 @@ public:
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
 
+    CNetworkVar(uint32, m_uiAccountID);
     CNetworkString(m_pszGhostName, MAX_PLAYER_NAME_LENGTH);
 
 protected:

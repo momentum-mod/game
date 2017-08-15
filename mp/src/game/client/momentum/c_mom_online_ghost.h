@@ -4,6 +4,7 @@
 #include "c_mom_ghost_base.h"
 #include "interpolatedvar.h"
 #include "GhostEntityPanel.h"
+#include "steam/steam_api.h"
 
 class CGhostEntityPanel;
 
@@ -24,7 +25,8 @@ public:
 
     //recieved from CMomentumOnlineGhostEntity serverclass 
     char m_pszGhostName[MAX_PLAYER_NAME_LENGTH]; 
-
+    uint32 m_uiAccountID;
+    CSteamID m_SteamID;
 private:
 
     CGhostEntityPanel *m_pEntityPanel;

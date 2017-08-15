@@ -7,11 +7,13 @@
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumOnlineGhostEntity, DT_MOM_OnlineGhost, CMomentumOnlineGhostEntity)
     RecvPropString(RECVINFO(m_pszGhostName)),
+    RecvPropInt(RECVINFO(m_uiAccountID), SPROP_UNSIGNED),
 END_RECV_TABLE();
 
-C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_pEntityPanel(nullptr)
+C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_pEntityPanel(nullptr)
 {
     m_pszGhostName[0] = '\0';
+    m_SteamID = k_steamIDNil;
 }
 
 C_MomentumOnlineGhostEntity::~C_MomentumOnlineGhostEntity()
@@ -33,4 +35,9 @@ void C_MomentumOnlineGhostEntity::Spawn()
 void C_MomentumOnlineGhostEntity::ClientThink()
 {
     SetNextClientThink(CLIENT_THINK_ALWAYS);
+
+    if (m_uiAccountID > 0 && !m_SteamID.IsValid() && steamapicontext->SteamUtils())
+    {
+        m_SteamID = CSteamID(m_uiAccountID, k_EUniversePublic, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
+    }
 }
