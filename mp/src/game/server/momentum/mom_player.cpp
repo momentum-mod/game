@@ -117,10 +117,10 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 }
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10),
-      m_flLastVelocity(0.0f), m_flLastSyncVelocity(0), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0),
-      m_bPrevTimerRunning(false), m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f),
-      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
+    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
+    m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10), m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
+    m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
+    m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -149,6 +149,7 @@ CMomentumPlayer::~CMomentumPlayer()
 {
     RemoveTrail();
     RemoveAllCheckpoints();
+    RemoveAllOnehops();
 }
 
 void CMomentumPlayer::Precache()
@@ -369,6 +370,9 @@ void CMomentumPlayer::Spawn()
     // Load the player's checkpoints, only if we are spawning for the first time
     if (m_rcCheckpoints.IsEmpty())
         g_MOMCheckpointSystem->LoadMapCheckpoints(this);
+
+    // Reset current checkpoint trigger upon spawn
+    m_pCurrentCheckpoint = nullptr;
 }
 
 // Obtains the player's previous origin using their current origin as a base.
@@ -583,6 +587,32 @@ void CMomentumPlayer::RemoveAllCheckpoints()
     m_SrvData.m_iCheckpointCount = 0;
 }
 
+void CMomentumPlayer::AddOnehop(CTriggerOnehop* pTrigger)
+{
+    if (m_vecOnehops.Count() > 0)
+    {
+        // Go backwards so we don't have to worry about anything
+        FOR_EACH_VEC_BACK(m_vecOnehops, i)
+        {
+            CTriggerOnehop *pOnehop = m_vecOnehops[i];
+            if (pOnehop && pOnehop->HasSpawnFlags(SF_TELEPORT_RESET_ONEHOP))
+                m_vecOnehops.Remove(i);
+        }
+    }
+
+    m_vecOnehops.AddToTail(pTrigger);
+}
+
+bool CMomentumPlayer::FindOnehopOnList(CTriggerOnehop* pTrigger) const
+{
+    return m_vecOnehops.Find(pTrigger) != m_vecOnehops.InvalidIndex();
+}
+
+void CMomentumPlayer::RemoveAllOnehops()
+{
+    m_vecOnehops.RemoveAll();
+}
+
 void CMomentumPlayer::ToggleDuckThisFrame(bool bState)
 {
     if (m_Local.m_bDucked != bState)
@@ -777,23 +807,28 @@ void CMomentumPlayer::UpdateRunSync()
 {
     if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_SrvData.m_bHasPracticeMode))
     {
-        float SyncVelocity = GetLocalVelocity().Length2DSqr(); // we always want HVEL for checking velocity sync
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
-            if (EyeAngles().y > m_qangLastAngle.y) // player turned left
+            float dtAngle = EyeAngles().y - m_qangLastAngle.y;
+            if (dtAngle > 180.f)
+                dtAngle -= 360.f;
+            else if (dtAngle < -180.f)
+                dtAngle += 360.f;
+
+            if (dtAngle > 0) // player turned left
             {
                 m_nStrafeTicks++;
                 if ((m_nButtons & IN_MOVELEFT) && !(m_nButtons & IN_MOVERIGHT))
                     m_nPerfectSyncTicks++;
-                if (SyncVelocity > m_flLastSyncVelocity)
+                if (m_flSideMove < 0)
                     m_nAccelTicks++;
             }
-            else if (EyeAngles().y < m_qangLastAngle.y) // player turned right
+            else if (dtAngle < 0) // player turned right
             {
                 m_nStrafeTicks++;
                 if ((m_nButtons & IN_MOVERIGHT) && !(m_nButtons & IN_MOVELEFT))
                     m_nPerfectSyncTicks++;
-                if (SyncVelocity > m_flLastSyncVelocity)
+                if (m_flSideMove > 0)
                     m_nAccelTicks++;
             }
         }
@@ -806,7 +841,6 @@ void CMomentumPlayer::UpdateRunSync()
         }
 
         m_qangLastAngle = EyeAngles();
-        m_flLastSyncVelocity = SyncVelocity;
     }
 }
 

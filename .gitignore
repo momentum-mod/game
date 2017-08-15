@@ -35,6 +35,7 @@ ipch
 obj*/
 !devtools/*.mak
 !utils/smdlexp/smdlexp.mak
+*.a
 
 # Specific Source build products
 client.so
