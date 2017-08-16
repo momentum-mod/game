@@ -92,7 +92,7 @@ void CMomentumGhostClient::SendChatMessage(char* pMessage)
 
 bool CMomentumGhostClient::CreateNewNetFrame(ghostNetFrame_t &into)
 {
-    if (m_pPlayer)
+    if (m_pPlayer && !m_pPlayer->IsSpectatingGhost())
     {
         into = ghostNetFrame_t(
             m_pPlayer->EyeAngles(),

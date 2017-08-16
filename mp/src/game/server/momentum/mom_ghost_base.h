@@ -57,7 +57,15 @@ public:
     virtual bool IsOnlineGhost() const { return false; }
 
     void SetSpectator(CMomentumPlayer *player) { m_pCurrentSpecPlayer = player; }
-    void RemoveSpectator() { m_pCurrentSpecPlayer = nullptr; }
+    void RemoveSpectator()
+    {
+        m_pCurrentSpecPlayer = nullptr;
+        if (GetRenderMode() != kRenderTransColor)
+        {
+            SetRenderMode(kRenderTransColor);
+            RemoveEffects(EF_NOSHADOW);
+        }
+    }
     CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
 
 protected:

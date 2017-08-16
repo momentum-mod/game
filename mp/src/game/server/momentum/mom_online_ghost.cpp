@@ -12,6 +12,7 @@ LINK_ENTITY_TO_CLASS(mom_online_ghost, CMomentumOnlineGhostEntity);
 IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
     SendPropString(SENDINFO(m_pszGhostName)),
     SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
+    SendPropInt(SENDINFO(m_nGhostButtons)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
@@ -32,7 +33,9 @@ void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
     ListenForGameEvent("mapfinished_panel_closed");
+    m_nGhostButtons = 0;
 }
+
 void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
@@ -70,27 +73,42 @@ void CMomentumOnlineGhostEntity::Think()
     HandleGhost();
     if (m_pCurrentSpecPlayer)
         HandleGhostFirstPerson();
-    // Emulate every tick (smooth interpolation)
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick); 
+    // Emulate at the update rate for the smoothest interpolation
+    SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat());
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
-    float flCurtime = gpGlobals->curtime - MOM_GHOST_LERP; // Render in a 100 ms past buffer
+    float flCurtime = gpGlobals->curtime - MOM_GHOST_LERP; // Render in a 100 ms past buffer (allow some dropped packets)
 
-    if (!m_pCurrentFrame && !m_vecFrames.IsEmpty())
+    if (!m_vecFrames.IsEmpty())
     {
-        ReceivedFrame_t *pHead = m_vecFrames.Head();
-        if (flCurtime > pHead->recvTime)
-            m_pCurrentFrame = m_vecFrames.RemoveAtHead();
+        // The fast-forward logic:
+        // Realistically, we're going to have a buffer of about MOM_GHOST_LERP * update rate. So for 25 updates
+        // in a second, a lerp of 0.1 seconds would make there be about 2.5 packets in the queue at all times.
+        // If they pause, this increases to some arbitrary number of frames that we need to get rid of, immediately.
+        int upperBound = 3 + static_cast<int>(ceil(MOM_GHOST_LERP * mm_updaterate.GetFloat()));
+        while (m_vecFrames.Count() > upperBound)
+        {
+            ReceivedFrame_t *pTemp = m_vecFrames.RemoveAtHead();
+            delete pTemp;
+        }
+
+        if (!m_pCurrentFrame)
+        {
+            ReceivedFrame_t *pHead = m_vecFrames.Head();
+            if (flCurtime > pHead->recvTime)
+                m_pCurrentFrame = m_vecFrames.RemoveAtHead();
+        }
     }
 
     if (m_pCurrentFrame)
     {
         SetAbsOrigin(m_pCurrentFrame->frame.Position);
-        QAngle newAngles = QAngle(m_pCurrentFrame->frame.EyeAngle.x / 10, m_pCurrentFrame->frame.EyeAngle.y, m_pCurrentFrame->frame.EyeAngle.z);
-        SetAbsAngles(newAngles);
+        SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
         SetViewOffset(Vector(0, 0, m_pCurrentFrame->frame.ViewOffset));
         SetAbsVelocity(m_pCurrentFrame->frame.Velocity);
+
+        m_nGhostButtons = m_pCurrentFrame->frame.Buttons;
 
         // Get rid of our current frame
         delete m_pCurrentFrame;
@@ -100,11 +118,10 @@ void CMomentumOnlineGhostEntity::HandleGhost()
 
 void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
 {
-    if (m_pCurrentSpecPlayer && m_pCurrentFrame)
+    if (m_pCurrentSpecPlayer)
     {
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
-            SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
             // don't render the model when we're in first person mode
             if (GetRenderMode() != kRenderNone)
             {
@@ -112,7 +129,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
                 AddEffects(EF_NOSHADOW);
             }
             bool isDucking = (GetFlags() & FL_DUCKING) != 0;
-            if (m_pCurrentFrame->frame.Buttons & IN_DUCK)
+            if (m_nGhostButtons & IN_DUCK)
             {
                 if (!isDucking)
                 {

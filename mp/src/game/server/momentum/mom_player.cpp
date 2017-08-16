@@ -1035,7 +1035,9 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pGhostToSpectate && base)
     {
+        DevMsg("Spectating a ghost!\n");
         pGhostToSpectate->SetSpectator(this);
+        RemoveTrail();
     }
 
     return base;
