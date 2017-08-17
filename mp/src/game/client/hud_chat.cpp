@@ -216,7 +216,7 @@ void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read& msg)
     uint8 type = msg.ReadByte();
 
     uint64 person;
-    msg.ReadBytes(&person, sizeof uint64);
+    msg.ReadBytes(&person, sizeof(uint64));
     CSteamID personID = CSteamID(person);
     const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
 

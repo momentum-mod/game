@@ -56,7 +56,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
     Color GetBlackBarColor(void) { return BLACK_BAR_COLOR; }
 
-    const char *GetResFile(void) const { return "resource/UI/Spectator.res"; }
+    const char *GetResFile(void) const { return "resource/ui/Spectator.res"; }
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {

@@ -32,6 +32,7 @@
 #include "base64.h"
 #include "utlvector.h"
 #include <iostream>
+#include <string.h>
 
 static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -77,8 +78,15 @@ void base64_encode(void *pInput, unsigned int in_len, char *pOutput, size_t outL
         while ((i++ < 3))
             ret.AddToTail('=');
     }
-
-    strncpy_s(pOutput, outLen, ret.Base(), ret.Size());
+    
+    if (outLen <= ret.Size())
+    {
+        Log("Base64 encode: insufficient output buffer size\n");
+        return;
+    }
+    
+    strncpy(pOutput, ret.Base(), ret.Size());
+    pOutput[ret.Size()] = '\0';
 }
 
 void base64_decode(const char *encoded_string, void *pOutput, size_t outLen)
@@ -120,6 +128,12 @@ void base64_decode(const char *encoded_string, void *pOutput, size_t outLen)
         for (j = 0; (j < i - 1); j++)
             ret.AddToTail(char_array_3[j]);
     }
+    
+    if (outLen < ret.Size())
+    {
+        Log("Base64 decode: insufficient output buffer\n");
+        return;
+    }
 
-    memcpy_s(pOutput, outLen, ret.Base(), ret.Size());
+    memcpy(pOutput, ret.Base(), ret.Size());
 }

@@ -199,7 +199,7 @@ LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamI
     Q_strncpy(toReturn.base64, pAppearance, sizeof(toReturn.base64));
     //DevLog("Got appearance Base64: %s\n", pAppearance);
     ghostAppearance_t newAppearance;
-    base64_decode(pAppearance, &newAppearance, sizeof ghostAppearance_t);
+    base64_decode(pAppearance, &newAppearance, sizeof(ghostAppearance_t));
     toReturn.appearance = newAppearance;
     return toReturn;
 }
@@ -259,7 +259,7 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         user.MakeReliable();
         UserMessageBegin(user, "LobbyUpdateMsg");
         WRITE_BYTE(LOBBY_UPDATE_MEMBER_JOIN);
-        WRITE_BYTES(&pParam->m_ulSteamIDUserChanged, sizeof uint64);
+        WRITE_BYTES(&pParam->m_ulSteamIDUserChanged, sizeof(uint64));
         MessageEnd();
     }
     if (state & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
@@ -281,7 +281,7 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
         user.MakeReliable();
         UserMessageBegin(user, "LobbyUpdateMsg");
         WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE);
-        WRITE_BYTES(&pParam->m_ulSteamIDUserChanged, sizeof uint64);
+        WRITE_BYTES(&pParam->m_ulSteamIDUserChanged, sizeof(uint64));
         MessageEnd();
     }
 }
@@ -365,7 +365,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                     user.MakeReliable();
                     UserMessageBegin(user, "LobbyUpdateMsg");
                     WRITE_BYTE(LOBBY_UPDATE_MEMBER_JOIN_MAP);
-                    WRITE_BYTES(&pID_int, sizeof uint64);
+                    WRITE_BYTES(&pID_int, sizeof(uint64));
                     MessageEnd();
                 }
             }
@@ -384,7 +384,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             user.MakeReliable();
             UserMessageBegin(user, "LobbyUpdateMsg");
             WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE_MAP);
-            WRITE_BYTES(&pID_int, sizeof uint64);
+            WRITE_BYTES(&pID_int, sizeof(uint64));
             MessageEnd();
         }
     }
@@ -444,12 +444,12 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
         while (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
         {
             //DevLog("Packet available! Size: %u bytes where sizeof frame is %i bytes\n", size, sizeof ghostNetFrame_t);
-            if (size == sizeof ghostNetFrame_t)
+            if (size == sizeof(ghostNetFrame_t))
             {
                 ghostNetFrame_t frame;
                 uint32 bytesRead;
                 CSteamID fromWho;
-                if (steamapicontext->SteamNetworking()->ReadP2PPacket(&frame, sizeof frame, &bytesRead, &fromWho))
+                if (steamapicontext->SteamNetworking()->ReadP2PPacket(&frame, sizeof(frame), &bytesRead, &fromWho))
                 {
                     //DevLog("Read the packet successfully! Read bytes: %u, from steamID %lld\n", bytesRead, fromWho.ConvertToUint64());
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
@@ -470,7 +470,7 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                 {
                     CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
                
-                    if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof frame, k_EP2PSendUnreliable))
+                    if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof(frame), k_EP2PSendUnreliable))
                     {
                         // DevLog("Sent the packet!\n");
                     }
