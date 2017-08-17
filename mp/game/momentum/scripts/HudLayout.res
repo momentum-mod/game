@@ -172,14 +172,6 @@
         "enabled"       "1"
         "TextFont"      "Default"
     }
-    "CTargetID"
-    {
-        "fieldName"     "CTargetID"
-        "visible"       "1"
-        "enabled"       "1"
-        "text_ypos"     "200"
-        "TextFont"      "default"
-    }
     HudWeaponSelection
     {
         "fieldName" "HudWeaponSelection"

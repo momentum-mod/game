@@ -13,7 +13,7 @@ DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE)
 DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData)
+C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_iIDEntIndex(0), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
@@ -52,7 +52,30 @@ void C_MomentumPlayer::ClientThink()
 {
 	SetNextClientThink(CLIENT_THINK_ALWAYS);
     FetchStdData(this);
-    UpdateIDTarget();
+
+    if (IsObserver())
+    {
+        C_MomentumOnlineGhostEntity *pOnlineSpec = GetOnlineGhostEnt();
+        if (pOnlineSpec)
+        {
+            // Changed to spectate another ghost
+            if (m_pSpectateTarget && m_pSpectateTarget != pOnlineSpec)
+                m_pSpectateTarget->SetEntityPanelVisible(true);
+
+            m_pSpectateTarget = pOnlineSpec;
+            m_pSpectateTarget->SetEntityPanelVisible(false);
+        }
+
+    }
+    else
+    {
+        if (m_pSpectateTarget)
+        {
+            m_pSpectateTarget->SetEntityPanelVisible(true);
+            m_pSpectateTarget = nullptr;
+        }
+    }
+
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
@@ -108,65 +131,15 @@ bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
 // Overridden for Ghost entity
 Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
 {
-    C_MomentumReplayGhostEntity *pGhost = dynamic_cast<C_MomentumReplayGhostEntity*>(target);
-
+    C_MomentumGhostBaseEntity *pGhost = dynamic_cast<C_MomentumGhostBaseEntity*>(target);
     if (pGhost)
     {
         if (pGhost->GetFlags() & FL_DUCKING)
-        {
             return VEC_DUCK_VIEW_SCALED(pGhost);
-        }
 
         return VEC_VIEW_SCALED(pGhost);
     }
 
     // Resort to base class for player code
     return BaseClass::GetChaseCamViewOffset(target);
-}
-int C_MomentumPlayer::GetIDTarget() const
-{
-    return m_iIDEntIndex;
-}
-void C_MomentumPlayer::UpdateIDTarget()
-{
-    if (!IsLocalPlayer())
-        return;
-
-    // Clear old target and find a new one
-    m_iIDEntIndex = 0;
-
-    trace_t tr;
-    Vector vecStart, vecEnd;
-    VectorMA(MainViewOrigin(), MAX_TRACE_LENGTH, MainViewForward(), vecEnd);
-    VectorMA(MainViewOrigin(), 10, MainViewForward(), vecStart);
-
-    // If we're in observer mode, ignore our observer target. Otherwise, ignore ourselves.
-    if (IsObserver())
-    {
-        UTIL_TraceLine(vecStart, vecEnd, MASK_SOLID, GetObserverTarget(), COLLISION_GROUP_NONE, &tr);
-    }
-    else
-    {
-        UTIL_TraceLine(vecStart, vecEnd, MASK_SOLID, this, COLLISION_GROUP_NONE, &tr);
-    }
-    if (!tr.startsolid && tr.DidHitNonWorldEntity())
-    {
-        C_BaseEntity *pEntity = tr.m_pEnt;
-
-        if (pEntity && (pEntity != this))
-        {
-            m_iIDEntIndex = pEntity->entindex();
-            DisplayHintsForTarget(pEntity);
-        }
-    }
-}
-void C_MomentumPlayer::DisplayHintsForTarget(C_BaseEntity *pTarget)
-{
-    // If the entity provides hints, ask them if they have one for this target
-    ITargetIDProvidesHint *pHintInterface = dynamic_cast<ITargetIDProvidesHint*>(pTarget);
-    if (pHintInterface)
-    {
-        pHintInterface->DisplayHintTo(this);
-    }
-
 }

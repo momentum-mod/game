@@ -104,7 +104,10 @@ void CMomentumOnlineGhostEntity::HandleGhost()
     if (m_pCurrentFrame)
     {
         SetAbsOrigin(m_pCurrentFrame->frame.Position);
-        SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
+        //if (m_pCurrentSpecPlayer)
+            SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
+        //else
+        //    SetAbsAngles(QAngle(0, m_pCurrentFrame->frame.EyeAngle.y, m_pCurrentFrame->frame.EyeAngle.z));
         SetViewOffset(Vector(0, 0, m_pCurrentFrame->frame.ViewOffset));
         SetAbsVelocity(m_pCurrentFrame->frame.Velocity);
 

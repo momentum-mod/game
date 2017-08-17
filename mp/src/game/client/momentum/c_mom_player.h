@@ -49,13 +49,8 @@ class C_MomentumPlayer : public C_BasePlayer
     {
         return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
     }
-    // TARGET ID SYSTEM
-    int GetIDTarget() const;
-    void UpdateIDTarget();
-    void DisplayHintsForTarget(C_BaseEntity *target);
 
-    //
-
+    // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
  
     int m_afButtonDisabled;
@@ -85,6 +80,8 @@ class C_MomentumPlayer : public C_BasePlayer
     float m_flStamina;
 
     int m_iIDEntIndex;
+    C_MomentumOnlineGhostEntity *m_pViewTarget;
+    C_MomentumOnlineGhostEntity *m_pSpectateTarget;
 
     friend class CMomentumGameMovement;
 };

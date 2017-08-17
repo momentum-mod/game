@@ -9,6 +9,8 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
+static MAKE_TOGGLE_CONVAR(mom_ghost_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
+
 CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
 {
 }
@@ -99,12 +101,14 @@ void CMomentumGhostBaseEntity::SetGhostFlashlight(bool isOn)
     if (isOn)
     {
         AddEffects(EF_DIMLIGHT);
-        EmitSound(SND_FLASHLIGHT_ON); // MOM_TODO: Make this quieter than the player
+        if (mom_ghost_sounds.GetBool())
+            EmitSound(SND_FLASHLIGHT_ON);
     }
     else
     {
         RemoveEffects(EF_DIMLIGHT);
-        EmitSound(SND_FLASHLIGHT_OFF);
+        if (mom_ghost_sounds.GetBool())
+            EmitSound(SND_FLASHLIGHT_OFF);
     }
 }
 

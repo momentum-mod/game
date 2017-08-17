@@ -22,8 +22,6 @@
 #include "mom_shareddefs.h"
 
 
-static MAKE_TOGGLE_CONVAR(r_drawentitypanels, "1", FLAG_HUD_CVAR, "Shows all entity panels. 0 = OFF, 1 = ON\n");
-
 //-----------------------------------------------------------------------------
 // constructor
 //-----------------------------------------------------------------------------
@@ -191,7 +189,7 @@ bool CEntityPanel::ShouldDraw()
 	return ( ( IsLocalPlayerInTactical() && ClientModeCommander()->ShouldDrawEntity( m_pBaseEntity ) ) || 
 			 ( !IsLocalPlayerInTactical() && m_bShowInNormal) );
 #else
-    return r_drawentitypanels.GetBool();
+    return true;
 #endif
 }
 

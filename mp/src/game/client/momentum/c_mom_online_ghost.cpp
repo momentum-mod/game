@@ -41,7 +41,6 @@ void C_MomentumOnlineGhostEntity::ClientThink()
     {
         m_SteamID = CSteamID(m_uiAccountID, k_EUniversePublic, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
     }
-
 }
 
 void C_MomentumOnlineGhostEntity::SetEntityPanelVisible(bool bVisible)

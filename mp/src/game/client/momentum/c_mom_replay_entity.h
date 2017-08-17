@@ -21,8 +21,6 @@ class C_MomentumReplayGhostEntity : public C_MomentumGhostBaseEntity
     void Spawn() OVERRIDE;
     bool IsReplayGhost() const OVERRIDE { return true; }
 
-    CInterpolatedVar<Vector> m_iv_vecViewOffset;
-
     StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
