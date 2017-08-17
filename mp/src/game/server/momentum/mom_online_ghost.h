@@ -37,7 +37,23 @@ public:
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
-
+    void HideGhost()
+    {
+        // don't render the model when we're in first person mode
+        if (GetRenderMode() != kRenderNone)
+        {
+            SetRenderMode(kRenderNone);
+            AddEffects(EF_NOSHADOW);
+        }
+    }
+    void UnHideGhost()
+    {
+        if (GetRenderMode() != kRenderTransColor)
+        {
+            SetRenderMode(kRenderTransColor);
+            RemoveEffects(EF_NOSHADOW);
+        }
+    }
     CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(uint32, m_uiAccountID);
     CNetworkString(m_pszGhostName, MAX_PLAYER_NAME_LENGTH);

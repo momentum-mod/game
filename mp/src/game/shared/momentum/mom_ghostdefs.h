@@ -157,7 +157,15 @@ struct ReceivedFrame_t
     }
 };
 
+
 #ifndef GHOST_SERVER
 
+struct ghostSpecUpdate_t
+{
+    CSteamID specTarget;
+    SPECTATE_MSG_TYPE type;
+};
+
 extern ConVar mm_updaterate;
+
 #endif

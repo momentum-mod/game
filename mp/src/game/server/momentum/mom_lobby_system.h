@@ -41,8 +41,9 @@ public:
 
     void SendAndRecieveP2PPackets();
     void SetAppearanceInMemberData(ghostAppearance_t app);
-    void SetSpectatorTarget(CSteamID ghostTarget);
+    void SetSpectatorTarget(CSteamID ghostTarget, SPECTATE_MSG_TYPE type);
     void SetIsSpectating(bool bSpec);
+    void SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECTATE_MSG_TYPE type);
     bool GetIsSpectatingFromMemberData(CSteamID who);
     CSteamID GetSpectatorTargetFromMemberData(CSteamID whoIsSpectating);
     LobbyGhostAppearance_t GetAppearanceFromMemberData(CSteamID member);

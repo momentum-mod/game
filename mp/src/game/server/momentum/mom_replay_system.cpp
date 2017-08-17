@@ -375,29 +375,4 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
     }
 }
 
-CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
-{
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer && !pPlayer->IsObserver())
-    {
-        auto pNext = pPlayer->FindNextObserverTarget(false);
-        if (pNext)
-        {
-            // Setting ob target first is needed for the specGUI panel to update properly
-            pPlayer->SetObserverTarget(pNext);
-            pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
-        }
-    }
-}
-
-CON_COMMAND(mom_spectate_stop, "Stop spectating.")
-{
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
-    {
-        pPlayer->StopSpectating();
-        g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
-    }
-}
-
 CMomentumReplaySystem g_ReplaySystem("MOMReplaySystem");

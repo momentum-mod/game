@@ -224,18 +224,24 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
     uint8 type = msg.ReadByte();
 
     uint64 person, target;
-    msg.ReadBytes(&person, sizeof uint64);
+    msg.ReadBytes(&person, sizeof(uint64));
     CSteamID personID = CSteamID(person);
     const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
 
-    if (type == LOBBY_UPDATE_MEMBER_LEAVE_SPECTATE) //MOM_TODD: somehow figure out how to use this... IDK how to trigger it
+    if (type == SPEC_UPDATE_LEAVE)
     {
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
             "%s has respawned.", pName);
     }
-    else if (type == LOBBY_UPDATE_MEMBER_JOIN_SPECTATE)
+    else if (type == SPEC_UPDATE_JOIN)
     {
-        msg.ReadBytes(&target, sizeof uint64);
+        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
+            "%s is now spectating.", pName);
+    }
+    //MOM_TODO: change this message to be NOT in the chat. Just trying to get the system working for now.
+    else if (type == SPEC_UPDATE_CHANGETARGET) 
+    {
+        msg.ReadBytes(&target, sizeof(uint64));
         CSteamID targetID = CSteamID(target);
         const char *pTargetName = steamapicontext->SteamFriends()->GetFriendPersonaName(targetID);
 

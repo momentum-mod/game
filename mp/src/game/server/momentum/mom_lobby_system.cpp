@@ -235,7 +235,14 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
             // Check their appearance for any changes
             CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(memberChanged);
             if (pEntity)
+            {
                 pEntity->SetGhostAppearance(GetAppearanceFromMemberData(memberChanged));
+
+                if (!GetIsSpectatingFromMemberData(memberChanged)) //they are not spectating, so we need to make sure they are visible.
+                {
+                    pEntity->UnHideGhost();
+                }
+            }
 
             CheckToAdd(&memberChanged);
         }
@@ -343,10 +350,10 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
         // Just joined this map, we haven't created them 
         const char *pMapName = gpGlobals->mapname.ToCStr();
         bool isSpectating = GetIsSpectatingFromMemberData(*pID);
-        if (pMapName && FStrEq(pMapName, pOtherMap))
+        if (pMapName && FStrEq(pMapName, pOtherMap)) //We're on the same map
         {
             // Don't add them again if they reloaded this map for some reason
-            if (findIndx == CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+            if (findIndx == CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex() && !isSpectating) //dont try to add them again if they are spectating
             {
                 CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                 newPlayer->SetGhostSteamID(*pID);
@@ -370,37 +377,33 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                     MessageEnd();
                 }
             }
+            else if (isSpectating)
+            {
+                //they are spectating, hide their entity. If we remove it, we will stop sending them packets, which is a bad thing.
+                
+                CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];               
+                if (pEntity)
+                    pEntity->HideGhost();
+                
+            }
         }
-        else if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex() || isSpectating)
+        else if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
         {
-            // They changed map or entered spectate mode, remove their entity from the CUtlMap
+            // They changed map remove their entity from the CUtlMap
             CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
             if (pEntity)
                 pEntity->Remove();
             
             CMomentumGhostClient::m_mapOnlineGhosts.RemoveAt(findIndx);
 
-            if (isSpectating)
-            {
-                CSteamID target = GetSpectatorTargetFromMemberData(*pID);
-                CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
-                user.MakeReliable();
-                UserMessageBegin(user, "SpecUpdateMsg");
-                WRITE_BYTE(LOBBY_UPDATE_MEMBER_JOIN_SPECTATE);
-                WRITE_BYTES(pID, sizeof(uint64));
-                WRITE_BYTES(&target, sizeof(uint64));
-                MessageEnd();
-            }
-            else
-            {
-                // "_____ just left your map."
-                CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
-                user.MakeReliable();
-                UserMessageBegin(user, "LobbyUpdateMsg");
-                WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE_MAP);
-                WRITE_BYTES(&pID_int, sizeof(uint64));
-                MessageEnd();
-            }
+            // "_____ just left your map."
+            CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+            user.MakeReliable();
+            UserMessageBegin(user, "LobbyUpdateMsg");
+            WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE_MAP);
+            WRITE_BYTES(&pID_int, sizeof(uint64));
+            MessageEnd();
+            
         }
     }
     else
@@ -472,6 +475,22 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                         pEntity->SetCurrentNetFrame(frame);
                 }
             }
+            else if (size == sizeof(ghostSpecUpdate_t))
+            {
+                ghostSpecUpdate_t update;
+                uint32 bytesRead;
+                CSteamID fromWho;
+                if (steamapicontext->SteamNetworking()->ReadP2PPacket(&update, sizeof(update), &bytesRead, &fromWho))
+                {
+                    CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+                    user.MakeReliable();
+                    UserMessageBegin(user, "SpecUpdateMsg");
+                    WRITE_BYTE(update.type);
+                    WRITE_BYTES(&fromWho, sizeof(uint64));
+                    WRITE_BYTES(&update.specTarget, sizeof(uint64));
+                    MessageEnd();
+                }
+            }
         }
 
         // Send data
@@ -508,13 +527,32 @@ bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(CSteamID who)
     const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
     return specChar[0] == '1';
 }
-void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget)
+void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, SPECTATE_MSG_TYPE type)
 {
     char base64SteamID[64];
     base64_encode(&ghostTarget, sizeof(ghostTarget), base64SteamID, 64);
     //DevLog("Base64 encoded appearance: %s\n", base64Appearance);
     steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, base64SteamID);
+    SendSpectatorUpdatePacket(ghostTarget, type);
+}
+//Sends the spectator info update packet to all current ghosts
+void CMomentumLobbySystem::SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECTATE_MSG_TYPE type)
+{
+    ghostSpecUpdate_t newUpdate;
+    newUpdate.specTarget = ghostTarget;
+    newUpdate.type = type;
+    uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
+    while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+    {
+        CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
 
+        if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &newUpdate, sizeof(newUpdate), k_EP2PSendReliable))
+        {
+            DevLog("Sent the spectate update packet!\n");
+        }
+
+        index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
+    }
 }
 CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
 {

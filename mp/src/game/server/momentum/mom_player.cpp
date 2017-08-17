@@ -1026,16 +1026,9 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
     CMomentumGhostBaseEntity *pGhostToSpectate = dynamic_cast<CMomentumGhostBaseEntity *>(target);
     CMomentumGhostBaseEntity *pCurrentGhost = GetGhostEnt();
 
-    if (pCurrentGhost)
+    if (pCurrentGhost == pGhostToSpectate)
     {
-        pCurrentGhost->RemoveSpectator();
-
-        g_pMomentumLobbySystem->SetIsSpectating(false);
-        if (pGhostToSpectate->IsOnlineGhost())
-        {
-            m_sSpecTargetSteamID = CSteamID(); //reset steamID when we stop spectating
-            g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID);
-        }
+        return false;
     }
 
     bool base = BaseClass::SetObserverTarget(target);
@@ -1050,7 +1043,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         {
             CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
-            g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID);
+            g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID, SPEC_UPDATE_CHANGETARGET);
 
         }
         RemoveTrail();
@@ -1205,6 +1198,6 @@ void CMomentumPlayer::StopSpectating()
     ForceRespawn();
     SetMoveType(MOVETYPE_WALK);
     m_sSpecTargetSteamID = CSteamID(); //reset steamID when we stop spectating
-    g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID);
+    g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID, SPEC_UPDATE_LEAVE);
     g_pMomentumLobbySystem->SetIsSpectating(false);
 }

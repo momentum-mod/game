@@ -123,12 +123,7 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
     {
         if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
-            // don't render the model when we're in first person mode
-            if (GetRenderMode() != kRenderNone)
-            {
-                SetRenderMode(kRenderNone);
-                AddEffects(EF_NOSHADOW);
-            }
+            HideGhost();
             bool isDucking = (GetFlags() & FL_DUCKING) != 0;
             if (m_nGhostButtons & IN_DUCK)
             {
@@ -149,14 +144,8 @@ void CMomentumOnlineGhostEntity::HandleGhostFirstPerson()
         }
         else
         {
-            //SetAbsAngles(GetAbsAngles());
-
             // remove the nodraw effects
-            if (GetRenderMode() != kRenderTransColor)
-            {
-                SetRenderMode(kRenderTransColor);
-                RemoveEffects(EF_NOSHADOW);
-            }
+            UnHideGhost();
         }
     }
 }

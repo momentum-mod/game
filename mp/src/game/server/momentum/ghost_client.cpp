@@ -10,6 +10,32 @@ ConVar mm_updaterate("mom_ghost_online_updaterate", "25",
     FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
     "Number of updates per second for online ghosts.\n", true, 1.0f, true, 50.0f);
 
+CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
+{
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pPlayer && !pPlayer->IsObserver())
+    {
+        auto pNext = pPlayer->FindNextObserverTarget(false);
+        if (pNext)
+        {
+            CMomentumOnlineGhostEntity *pGhost = dynamic_cast<CMomentumOnlineGhostEntity*>(pNext);
+            g_pMomentumLobbySystem->SendSpectatorUpdatePacket(pGhost->GetGhostSteamID(), SPEC_UPDATE_JOIN);
+            // Setting ob target first is needed for the specGUI panel to update properly
+            pPlayer->SetObserverTarget(pNext);
+            pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+        }
+    }
+}
+
+CON_COMMAND(mom_spectate_stop, "Stop spectating.")
+{
+    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pPlayer)
+    {
+        pPlayer->StopSpectating();
+        g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
+    }
+}
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
 CUtlMap<uint64, CMomentumOnlineGhostEntity*> CMomentumGhostClient::m_mapOnlineGhosts;
 CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;

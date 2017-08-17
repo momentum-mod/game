@@ -283,6 +283,9 @@
 "GameUI2_ResumeGame" "RESUME GAME"
 "GameUI2_ResumeGameDescription" "Back into the action"
 
+"GameUI2_Spectate" "SPECTATE"
+"GameUI2_SpectateDescription" "Spectate an online ghost"
+
 "GameUI2_SelectMap" "SELECT MAP"
 "GameUI2_SelectMapDescription" "Choose a map to play"
 

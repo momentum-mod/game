@@ -44,9 +44,14 @@ typedef enum
     LOBBY_UPDATE_MEMBER_JOIN_MAP,        // Joined your map
     LOBBY_UPDATE_MEMBER_LEAVE,           // Left your lobby
     LOBBY_UPDATE_MEMBER_LEAVE_MAP,       // Left your map
-    LOBBY_UPDATE_MEMBER_JOIN_SPECTATE,   // Started spectating
-    LOBBY_UPDATE_MEMBER_LEAVE_SPECTATE   // Respawned
 } LOBBY_MSG_TYPE;
+
+typedef enum
+{
+    SPEC_UPDATE_JOIN,           // Started spectating
+    SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else!
+    SPEC_UPDATE_LEAVE           // Respawned
+} SPECTATE_MSG_TYPE;
 
 #define PANEL_TIMES "times"
 #define IN_TIMES (1<<26)
