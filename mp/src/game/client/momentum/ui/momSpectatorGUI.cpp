@@ -133,13 +133,7 @@ void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
         if (over == m_pCloseButton->GetVPanel())
         {
             SetMouseInputEnabled(false);
-            // We're piggybacking on this event because it's basically the same as the X on the mapfinished panel
-            IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
-            if (pClosePanel)
-            {
-                // Fire this event so other classes can get at this
-                gameeventmanager->FireEvent(pClosePanel);
-            }
+            engine->ClientCmd("mom_spectate_stop"); //in case the entitiy recieving this event does not exist..
         }
         else if (over == m_pShowControls->GetVPanel() && m_pReplayControls)
         {

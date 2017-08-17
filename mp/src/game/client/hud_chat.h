@@ -43,6 +43,7 @@ public:
 
 private:
     CUtlVector<CSteamID> m_vTypingMembers;
+    CUtlVector<CSteamID> m_vMomentumOfficers;
     uint64 m_uiLobbyId;
     vgui::HFont m_hfInfoTextFont;
     bool m_bTyping;

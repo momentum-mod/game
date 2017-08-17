@@ -553,6 +553,14 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECT
 
         index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
     }
+    CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+    user.MakeReliable();
+    UserMessageBegin(user, "SpecUpdateMsg");
+    CSteamID playerID = steamapicontext->SteamUser()->GetSteamID();
+    WRITE_BYTE(type);
+    WRITE_BYTES(&playerID, sizeof(uint64));
+    WRITE_BYTES(&ghostTarget, sizeof(uint64));
+    MessageEnd();
 }
 CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
 {

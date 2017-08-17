@@ -50,6 +50,17 @@ void CHudChat::Init(void)
     HOOK_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
     HOOK_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
 
+    //@tuxxi: I tired to query this automatically but we can only query steamgroups we are members of.. rip.
+    //So i'm just hard coding this here for now
+    //https://partner.steamgames.com/doc/api/ISteamFriends#RequestClanOfficerList
+
+    //MOM_TODO: query wep API for officers / members/ other groups instead of this crap
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198018587940))); //tuxxi
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197979963054))); //gocnak
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198011358548))); //ruben
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198047369620))); //rusty
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197982874432))); //juxtapo
+
 }
 
 void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
@@ -63,12 +74,19 @@ void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
 void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
 {
     CSteamID msgSender = CSteamID(pParam->m_ulSteamIDUser);
+    /*
     if (msgSender == steamapicontext->SteamUser()->GetSteamID().ConvertToUint64())
     {
         //DevLog("Got our own message! Just ignoring it...\n");
         return;
     }
-
+    */
+    bool isMomentumTeam = false;
+    FOR_EACH_VEC(m_vMomentumOfficers, i)
+    {
+        if (m_vMomentumOfficers[i] == msgSender)
+            isMomentumTeam = true;
+    }
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, steamapicontext->SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
@@ -79,8 +97,8 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     // MOM_TODO: This won't be just text in the future, if we captialize on being able to send binary data. Wrap this is
     // something and parse it
     steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
-
-    Printf(CHAT_FILTER_NONE, isSpectating ? "*SPEC* %s: %s" : "%s: %s", personName, message);
+    SetCustomColor(COLOR_RED);
+    ChatPrintf(1, CHAT_FILTER_NONE, "%c%s %s%c: %s", isMomentumTeam ? COLOR_CUSTOM : COLOR_PLAYERNAME, isSpectating ? "*SPEC*" : "", personName, COLOR_NORMAL, ConvertCRtoNL(message));
     delete[] message;
 }
 
@@ -130,11 +148,15 @@ void CHudChat::MsgFunc_SayText2(bf_read &msg)
 //-----------------------------------------------------------------------------
 void CHudChat::MsgFunc_SayText(bf_read &msg)
 {
+    /*
+    //MOM_TODO: @tuxxi: I commented this out for now because having the formatting and colors line 
+    //up with the local sayText vs the lobby SayText is a nightmare. 
     char szString[256];
 
     msg.ReadByte(); // client ID
     msg.ReadString(szString, sizeof(szString));
     Printf(CHAT_FILTER_NONE, "%s", szString);
+    */
 }
 
 // Message handler for text messages

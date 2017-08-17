@@ -131,4 +131,6 @@ typedef enum
 #define LOBBY_DATA_SPEC_TARGET "specTargetID"
 #define LOBBY_DATA_IS_SPEC "isSpectating"
 
+static const unsigned long long MOM_STEAM_GROUP_ID64 = 103582791441609755;
+
 #endif // MOM_SHAREDDEFS_H
