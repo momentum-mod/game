@@ -168,6 +168,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
     bool SetObserverTarget(CBaseEntity *target) OVERRIDE;
     CBaseEntity *FindNextObserverTarget(bool bReverse) OVERRIDE;
+    int GetNextObserverSearchStartPoint(bool bReverse) OVERRIDE;
     void CheckObserverSettings() OVERRIDE;
 
     void StopSpectating();
@@ -242,6 +243,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pCheckpoint) { m_pCurrentCheckpoint = pCheckpoint; }
     CTriggerCheckpoint *GetCurrentCheckpointTrigger() const { return m_pCurrentCheckpoint; }
 
+    CSteamID m_sSpecTargetSteamID;
+
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
@@ -282,7 +285,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_nTicksInAir;
 
     float m_flTweenVelValue;
-
     // Trail pointer
     CBaseEntity* m_eTrail;
 };

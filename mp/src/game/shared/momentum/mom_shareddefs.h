@@ -44,6 +44,8 @@ typedef enum
     LOBBY_UPDATE_MEMBER_JOIN_MAP,        // Joined your map
     LOBBY_UPDATE_MEMBER_LEAVE,           // Left your lobby
     LOBBY_UPDATE_MEMBER_LEAVE_MAP,       // Left your map
+    LOBBY_UPDATE_MEMBER_JOIN_SPECTATE,   // Started spectating
+    LOBBY_UPDATE_MEMBER_LEAVE_SPECTATE   // Respawned
 } LOBBY_MSG_TYPE;
 
 #define PANEL_TIMES "times"
@@ -121,5 +123,7 @@ typedef enum
 #define LOBBY_DATA_MAP "map"
 #define LOBBY_DATA_APPEARANCE "appearance"
 #define LOBBY_DATA_TYPING "isTyping"
+#define LOBBY_DATA_SPEC_TARGET "specTargetID"
+#define LOBBY_DATA_IS_SPEC "isSpectating"
 
 #endif // MOM_SHAREDDEFS_H

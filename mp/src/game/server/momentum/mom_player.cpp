@@ -1029,6 +1029,13 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
     if (pCurrentGhost)
     {
         pCurrentGhost->RemoveSpectator();
+
+        g_pMomentumLobbySystem->SetIsSpectating(false);
+        if (pGhostToSpectate->IsOnlineGhost())
+        {
+            m_sSpecTargetSteamID = CSteamID(); //reset steamID when we stop spectating
+            g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID);
+        }
     }
 
     bool base = BaseClass::SetObserverTarget(target);
@@ -1037,12 +1044,40 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
     {
         DevMsg("Spectating a ghost!\n");
         pGhostToSpectate->SetSpectator(this);
+
+        g_pMomentumLobbySystem->SetIsSpectating(true);
+        if (pGhostToSpectate->IsOnlineGhost())
+        {
+            CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
+            m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
+            g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID);
+
+        }
         RemoveTrail();
     }
 
     return base;
 }
+int CMomentumPlayer::GetNextObserverSearchStartPoint(bool bReverse)
+{
+    int iDir = bReverse ? -1 : 1;
 
+    int startIndex;
+
+    if (m_hObserverTarget)
+    {
+        // start using last followed player
+        startIndex = m_hObserverTarget->entindex();
+    }
+    else
+    {
+        // start using own player index
+        startIndex = this->entindex();
+    }
+
+    startIndex += iDir;
+    return startIndex;
+}
 CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 {
     int startIndex = GetNextObserverSearchStartPoint(bReverse);
@@ -1169,4 +1204,7 @@ void CMomentumPlayer::StopSpectating()
     m_hObserverTarget.Set(nullptr);
     ForceRespawn();
     SetMoveType(MOVETYPE_WALK);
+    m_sSpecTargetSteamID = CSteamID(); //reset steamID when we stop spectating
+    g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID);
+    g_pMomentumLobbySystem->SetIsSpectating(false);
 }

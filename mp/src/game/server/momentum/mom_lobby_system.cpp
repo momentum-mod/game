@@ -342,6 +342,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
         unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(pID_int);
         // Just joined this map, we haven't created them 
         const char *pMapName = gpGlobals->mapname.ToCStr();
+        bool isSpectating = GetIsSpectatingFromMemberData(*pID);
         if (pMapName && FStrEq(pMapName, pOtherMap))
         {
             // Don't add them again if they reloaded this map for some reason
@@ -370,22 +371,36 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                 }
             }
         }
-        else if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        else if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex() || isSpectating)
         {
-            // They changed map, remove their entity from the CUtlMap
+            // They changed map or entered spectate mode, remove their entity from the CUtlMap
             CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
             if (pEntity)
                 pEntity->Remove();
             
             CMomentumGhostClient::m_mapOnlineGhosts.RemoveAt(findIndx);
 
-            // "_____ just left your map."
-            CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
-            user.MakeReliable();
-            UserMessageBegin(user, "LobbyUpdateMsg");
-            WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE_MAP);
-            WRITE_BYTES(&pID_int, sizeof(uint64));
-            MessageEnd();
+            if (isSpectating)
+            {
+                CSteamID target = GetSpectatorTargetFromMemberData(*pID);
+                CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+                user.MakeReliable();
+                UserMessageBegin(user, "SpecUpdateMsg");
+                WRITE_BYTE(LOBBY_UPDATE_MEMBER_JOIN_SPECTATE);
+                WRITE_BYTES(pID, sizeof(uint64));
+                WRITE_BYTES(&target, sizeof(uint64));
+                MessageEnd();
+            }
+            else
+            {
+                // "_____ just left your map."
+                CSingleUserRecipientFilter user(CMomentumGhostClient::m_pPlayer);
+                user.MakeReliable();
+                UserMessageBegin(user, "LobbyUpdateMsg");
+                WRITE_BYTE(LOBBY_UPDATE_MEMBER_LEAVE_MAP);
+                WRITE_BYTES(&pID_int, sizeof(uint64));
+                MessageEnd();
+            }
         }
     }
     else
@@ -483,6 +498,31 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
         }
     }
 }
+void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
+{
+    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_IS_SPEC, bSpec ? "1" : "0");
+}
+//Return true if the lobby member is currently spectating.
+bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(CSteamID who)
+{
+    const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
+    return specChar[0] == '1';
+}
+void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget)
+{
+    char base64SteamID[64];
+    base64_encode(&ghostTarget, sizeof(ghostTarget), base64SteamID, 64);
+    //DevLog("Base64 encoded appearance: %s\n", base64Appearance);
+    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, base64SteamID);
 
+}
+CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
+{
+    const char *base64SteamID;
+    CSteamID toReturn;
+    base64SteamID = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_SPEC_TARGET);
+    base64_decode(base64SteamID, &toReturn, sizeof(CSteamID));
+    return toReturn;
+}
 static CMomentumLobbySystem s_MOMLobbySystem;
 CMomentumLobbySystem *g_pMomentumLobbySystem = &s_MOMLobbySystem;

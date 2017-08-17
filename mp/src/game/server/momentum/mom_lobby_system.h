@@ -41,6 +41,10 @@ public:
 
     void SendAndRecieveP2PPackets();
     void SetAppearanceInMemberData(ghostAppearance_t app);
+    void SetSpectatorTarget(CSteamID ghostTarget);
+    void SetIsSpectating(bool bSpec);
+    bool GetIsSpectatingFromMemberData(CSteamID who);
+    CSteamID GetSpectatorTargetFromMemberData(CSteamID whoIsSpectating);
     LobbyGhostAppearance_t GetAppearanceFromMemberData(CSteamID member);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(CSteamID id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }

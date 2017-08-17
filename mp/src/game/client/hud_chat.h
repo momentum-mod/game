@@ -26,7 +26,7 @@ public:
     void			MsgFunc_SayText(bf_read &msg);
     void			MsgFunc_SayText2(bf_read &msg);
     void			MsgFunc_TextMsg(bf_read &msg);
-
+    void MsgFunc_SpecUpdateMsg(bf_read &msg);
     void MsgFunc_LobbyUpdateMsg(bf_read &msg);
 
     // MOM_TODO: Move these elsewhere. Maybe in clientmode? Something that has access to multiple UI components.

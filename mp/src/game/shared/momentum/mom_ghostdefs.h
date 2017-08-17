@@ -157,26 +157,7 @@ struct ReceivedFrame_t
     }
 };
 
-
-struct ghostSignOnPacket_t
-{
-    ghostNetFrame_t newFrame;
-    ghostAppearance_t newApps;
-    uint64_t SteamID;
-    char MapName[96];
-};
-struct ghostSignOffPacket_t
-{
-    char Message[128];
-};
-struct ghostNewMapEvent_t
-{
-    char MapName[96];
-};
 #ifndef GHOST_SERVER
 
 extern ConVar mm_updaterate;
-extern ConVar mm_timeOutDuration;
-extern ConVar mm_lerpRatio;
-extern ConVar mm_ghostTesting;
 #endif

@@ -23,6 +23,7 @@ DECLARE_HUD_MESSAGE(CHudChat, SayText);
 DECLARE_HUD_MESSAGE(CHudChat, SayText2);
 DECLARE_HUD_MESSAGE(CHudChat, TextMsg);
 DECLARE_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
+DECLARE_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
 
 //=====================
 // CHudChat
@@ -47,6 +48,8 @@ void CHudChat::Init(void)
     HOOK_HUD_MESSAGE(CHudChat, SayText2);
     HOOK_HUD_MESSAGE(CHudChat, TextMsg);
     HOOK_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
+    HOOK_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
+
 }
 
 void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
@@ -60,7 +63,7 @@ void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
 void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
 {
     CSteamID msgSender = CSteamID(pParam->m_ulSteamIDUser);
-    if (pParam->m_ulSteamIDUser == steamapicontext->SteamUser()->GetSteamID().ConvertToUint64())
+    if (msgSender == steamapicontext->SteamUser()->GetSteamID().ConvertToUint64())
     {
         //DevLog("Got our own message! Just ignoring it...\n");
         return;
@@ -69,11 +72,15 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, steamapicontext->SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
+    const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_uiLobbyId, msgSender, LOBBY_DATA_IS_SPEC);
+
+    bool isSpectating = specChar[0] == '1';
     char *message = new char[4096];
     // MOM_TODO: This won't be just text in the future, if we captialize on being able to send binary data. Wrap this is
     // something and parse it
     steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
-    Printf(CHAT_FILTER_NONE, "%s: %s", personName, message);
+
+    Printf(CHAT_FILTER_NONE, isSpectating ? "*SPEC* %s: %s" : "%s: %s", personName, message);
     delete[] message;
 }
 
@@ -211,23 +218,48 @@ void CHudChat::MsgFunc_TextMsg(bf_read &msg)
     }
 }
 
+void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
+{
+    
+    uint8 type = msg.ReadByte();
+
+    uint64 person, target;
+    msg.ReadBytes(&person, sizeof uint64);
+    CSteamID personID = CSteamID(person);
+    const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
+
+    if (type == LOBBY_UPDATE_MEMBER_LEAVE_SPECTATE) //MOM_TODD: somehow figure out how to use this... IDK how to trigger it
+    {
+        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
+            "%s has respawned.", pName);
+    }
+    else if (type == LOBBY_UPDATE_MEMBER_JOIN_SPECTATE)
+    {
+        msg.ReadBytes(&target, sizeof uint64);
+        CSteamID targetID = CSteamID(target);
+        const char *pTargetName = steamapicontext->SteamFriends()->GetFriendPersonaName(targetID);
+
+        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
+            "%s is now spectating %s.", pName, pTargetName);
+    }
+  
+}
+
 void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read& msg)
 {
     uint8 type = msg.ReadByte();
+
+    bool isJoin = (type == LOBBY_UPDATE_MEMBER_JOIN_MAP) || (type == LOBBY_UPDATE_MEMBER_JOIN);
+    bool isMap = (type == LOBBY_UPDATE_MEMBER_JOIN_MAP) || (type == LOBBY_UPDATE_MEMBER_LEAVE_MAP);
 
     uint64 person;
     msg.ReadBytes(&person, sizeof(uint64));
     CSteamID personID = CSteamID(person);
     const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
-
-    bool isJoin = type <= LOBBY_UPDATE_MEMBER_JOIN_MAP;
-    bool isMap = type % 2;
-
-    // SHIELD YOUR EYES
     Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
         "%s has %s the %s.",
         pName,
-        isJoin ?  "joined" : "left",
+        isJoin ? "joined" : "left",
         isMap ? "map" : "lobby");
 }
 
