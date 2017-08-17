@@ -79,14 +79,14 @@ void base64_encode(void *pInput, unsigned int in_len, char *pOutput, size_t outL
             ret.AddToTail('=');
     }
     
-    if (outLen <= ret.Size())
+    if (outLen <= ret.Count())
     {
         Log("Base64 encode: insufficient output buffer size\n");
         return;
     }
     
-    strncpy(pOutput, ret.Base(), ret.Size());
-    pOutput[ret.Size()] = '\0';
+    Q_strncpy(pOutput, ret.Base(), ret.Count());
+    pOutput[ret.Count()] = '\0';
 }
 
 void base64_decode(const char *encoded_string, void *pOutput, size_t outLen)
@@ -129,11 +129,11 @@ void base64_decode(const char *encoded_string, void *pOutput, size_t outLen)
             ret.AddToTail(char_array_3[j]);
     }
     
-    if (outLen < ret.Size())
+    if (outLen < ret.Count())
     {
         Log("Base64 decode: insufficient output buffer\n");
         return;
     }
 
-    memcpy(pOutput, ret.Base(), ret.Size());
+    memcpy(pOutput, ret.Base(), ret.Count());
 }
