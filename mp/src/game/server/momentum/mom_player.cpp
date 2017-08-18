@@ -112,7 +112,7 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
             pPlayer->SetModel(newModel);
         }
 
-        pPlayer->SendAppearanceToLobby();
+        pPlayer->SendAppearance();
     }
 }
 
@@ -246,14 +246,9 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
-void CMomentumPlayer::SendAppearanceToLobby()
+void CMomentumPlayer::SendAppearance()
 {
-    // send to p2p server
-    if (g_pMomentumLobbySystem->LobbyValid())
-    {
-        //DevLog("Sending appearance update!\n");
-        g_pMomentumLobbySystem->SetAppearanceInMemberData(m_playerAppearanceProps);
-    }
+    g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps);
 }
 
 void CMomentumPlayer::Spawn()
@@ -353,7 +348,7 @@ void CMomentumPlayer::Spawn()
         Q_strcpy(m_playerAppearanceProps.GhostModel, mom_ghost_model.GetString());
 
         // Send our appearance to the server/lobby if we're in one
-        g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps);
+        SendAppearance();
     }
     else
     {
@@ -1036,18 +1031,16 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pGhostToSpectate && base)
     {
-        DevMsg("Spectating a ghost!\n");
+        RemoveTrail();
+
         pGhostToSpectate->SetSpectator(this);
 
-        g_pMomentumLobbySystem->SetIsSpectating(true);
-        if (pGhostToSpectate->IsOnlineGhost())
+        CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
+        if (pOnlineEnt)
         {
-            CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
-            g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID, SPEC_UPDATE_CHANGETARGET);
-
+            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost != nullptr);
         }
-        RemoveTrail();
     }
 
     return base;
@@ -1198,7 +1191,8 @@ void CMomentumPlayer::StopSpectating()
     m_hObserverTarget.Set(nullptr);
     ForceRespawn();
     SetMoveType(MOVETYPE_WALK);
-    m_sSpecTargetSteamID = CSteamID(); //reset steamID when we stop spectating
-    g_pMomentumLobbySystem->SetSpectatorTarget(m_sSpecTargetSteamID, SPEC_UPDATE_LEAVE);
-    g_pMomentumLobbySystem->SetIsSpectating(false);
+
+    // Update the lobby/server if there is one
+    m_sSpecTargetSteamID.Clear(); //reset steamID when we stop spectating
+    g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
 }

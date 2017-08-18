@@ -24,7 +24,8 @@ CON_COMMAND(connect_lobby, "Connect to a given SteamID's lobby\n")
 
 CON_COMMAND(mom_invite_lobby, "Invite friends to your lobby\n")
 {
-    steamapicontext->SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
+    if (g_pMomentumLobbySystem->LobbyValid())
+        steamapicontext->SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
 }
 
 // So basically, if a user wants to connect to us, we're considered the host. 
@@ -185,9 +186,12 @@ void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
 }
 void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
 {
-    char base64Appearance[1024];
-    base64_encode(&app, sizeof app, base64Appearance, 1024);
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
+    if (LobbyValid())
+    {
+        char base64Appearance[1024];
+        base64_encode(&app, sizeof app, base64Appearance, 1024);
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
+    }
 }
 LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamID member)
 {
@@ -535,13 +539,35 @@ void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(CSteamID who)
 {
     const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
-    return specChar[0];
+    return specChar[0] ? true : false;
 }
-void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, SPECTATE_MSG_TYPE type)
+void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, bool bStartedSpectating)
 {
-    char steamID[64];
-    Q_snprintf(steamID, 64, "%llu", ghostTarget.ConvertToUint64());
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, steamID);
+    SPECTATE_MSG_TYPE type;
+    if (bStartedSpectating)
+    {
+        type = SPEC_UPDATE_JOIN;
+        SetIsSpectating(true);
+    }
+    else if (!ghostTarget.IsValid())
+    {
+        type = SPEC_UPDATE_LEAVE;
+        SetIsSpectating(false);
+    }
+    else
+        type = SPEC_UPDATE_CHANGETARGET;
+
+    if (type != SPEC_UPDATE_LEAVE)
+    {
+        char steamID[64];
+        Q_snprintf(steamID, 64, "%llu", ghostTarget.ConvertToUint64());
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, steamID);
+    }
+    else
+    {
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, nullptr);
+    }
+    
     SendSpectatorUpdatePacket(ghostTarget, type);
 }
 //Sends the spectator info update packet to all current ghosts
@@ -569,10 +595,9 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECT
 }
 CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
 {
-    CSteamID toReturn;
     const char *steamID = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_SPEC_TARGET);
-    toReturn.SetFromString(steamID, k_EUniversePublic);
-    return toReturn;
+    uint64 id = Q_atoui64(steamID);
+    return steamID && steamID[0] ? CSteamID(id) : k_steamIDNil;
 }
 static CMomentumLobbySystem s_MOMLobbySystem;
 CMomentumLobbySystem *g_pMomentumLobbySystem = &s_MOMLobbySystem;

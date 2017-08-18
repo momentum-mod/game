@@ -75,7 +75,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
         AddEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_ON);
         m_playerAppearanceProps.FlashlightOn = true;
-        SendAppearanceToLobby();
+        SendAppearance();
     }
 
     void FlashlightTurnOff() OVERRIDE
@@ -83,10 +83,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
         RemoveEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_OFF);
         m_playerAppearanceProps.FlashlightOn = false;
-        SendAppearanceToLobby();
+        SendAppearance();
     }
 
-    void SendAppearanceToLobby();
+    void SendAppearance();
 
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;

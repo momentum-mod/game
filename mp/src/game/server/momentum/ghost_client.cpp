@@ -18,8 +18,6 @@ CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being 
         auto pNext = pPlayer->FindNextObserverTarget(false);
         if (pNext)
         {
-            CMomentumOnlineGhostEntity *pGhost = dynamic_cast<CMomentumOnlineGhostEntity*>(pNext);
-            g_pMomentumLobbySystem->SendSpectatorUpdatePacket(pGhost->GetGhostSteamID(), SPEC_UPDATE_JOIN);
             // Setting ob target first is needed for the specGUI panel to update properly
             pPlayer->SetObserverTarget(pNext);
             pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
@@ -117,6 +115,12 @@ void CMomentumGhostClient::SendAppearanceData(ghostAppearance_t appearance)
 {
     // MOM_TODO: g_pMomentumServerSystem->SetAppearance(appearance);
     g_pMomentumLobbySystem->SetAppearanceInMemberData(appearance);
+}
+
+void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpectating)
+{
+    // MOM_TODO: g_pMomentumServerSystem->SetSpectatorTarget(target, bStartedSpectating)
+    g_pMomentumLobbySystem->SetSpectatorTarget(target, bStartedSpectating);
 }
 
 bool CMomentumGhostClient::CreateNewNetFrame(ghostNetFrame_t &into)
