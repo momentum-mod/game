@@ -23,13 +23,15 @@ public:
 
     bool IsOnlineGhost() const OVERRIDE { return true; }
 
-    void SetEntityPanelVisible(bool bVisible);
-
     //recieved from CMomentumOnlineGhostEntity serverclass 
     char m_pszGhostName[MAX_PLAYER_NAME_LENGTH]; 
     uint32 m_uiAccountID;
     CSteamID m_SteamID;
     int m_nGhostButtons;
+    bool m_bSpectating; /// Is this ghost currently spectating?
+
+
+    bool m_bSpectated; // Is this ghost being spectated by us?
 
 private:
 

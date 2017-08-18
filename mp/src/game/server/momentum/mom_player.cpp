@@ -78,11 +78,15 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
 
+    ConVarRef cVar(var);
+
     if (pPlayer)
     {
-        if ((Q_strcmp(pOldValue, mom_trail_color.GetString()) != 0) ||  // the trail color changed
-            (Q_strcmp(pOldValue, mom_trail_length.GetString()) != 0) || // the trail length changed
-            (Q_strcmp(pOldValue, mom_trail_enable.GetString()) != 0))   // the trail enable bool changed
+        const char *pName = cVar.GetName();
+
+        if (FStrEq(pName, mom_trail_color.GetName()) ||// the trail color changed
+            FStrEq(pName, mom_trail_length.GetName()) || // the trail length changed
+            FStrEq(pName, mom_trail_enable.GetName())) // the trail enable bool changed
         {
             uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_trail_color.GetString());
             pPlayer->m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
@@ -90,20 +94,20 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
             pPlayer->m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
             pPlayer->CreateTrail(); // Refresh the trail
         }
-        if (Q_strcmp(pOldValue, mom_ghost_color.GetString()) != 0) // the ghost body color changed
+        else if (FStrEq(pName, mom_ghost_color.GetName())) // the ghost body color changed
         {
             uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_ghost_color.GetString());
             pPlayer->m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
             Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
             pPlayer->SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
         }
-        if (Q_strcmp(pOldValue, mom_ghost_bodygroup.GetString()) != 0) // the ghost bodygroup changed
+        else if (FStrEq(pName, mom_ghost_bodygroup.GetName())) // the ghost bodygroup changed
         {
             int bGroup = mom_ghost_bodygroup.GetInt();
             pPlayer->m_playerAppearanceProps.GhostModelBodygroup = bGroup;
             pPlayer->SetBodygroup(1, bGroup);
         }
-        if (Q_strcmp(pOldValue, mom_ghost_model.GetString()) != 0) // the ghost model changed
+        else if (FStrEq(pName, mom_ghost_model.GetName())) // the ghost model changed
         {
             char newModel[128];
             strcpy(newModel, mom_ghost_model.GetString());
@@ -1002,13 +1006,14 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 
     if (!target->IsPlayer())
     {
-        if (Q_strcmp(target->GetClassname(), "mom_replay_ghost") == 0) // target is a replay ghost
+        if (FStrEq(target->GetClassname(), "mom_replay_ghost")) // target is a replay ghost
         {
             return true;
         }
-        else if (Q_strcmp(target->GetClassname(), "mom_online_ghost") == 0) // target is an online ghost
+        if (FStrEq(target->GetClassname(), "mom_online_ghost")) // target is an online ghost
         {
-            return true;
+            CMomentumOnlineGhostEntity *pEntity = dynamic_cast<CMomentumOnlineGhostEntity*>(target);
+            return pEntity && !pEntity->m_bSpectating;
         }
         return false;
     }
@@ -1026,6 +1031,11 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
     {
         return false;
     }
+    
+    if (pCurrentGhost)
+    {
+        pCurrentGhost->RemoveSpectator();
+    }
 
     bool base = BaseClass::SetObserverTarget(target);
 
@@ -1039,7 +1049,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         if (pOnlineEnt)
         {
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
-            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost != nullptr);
+            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
         }
     }
 

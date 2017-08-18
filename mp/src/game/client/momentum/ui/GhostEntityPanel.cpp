@@ -104,6 +104,12 @@ void CGhostEntityPanel::OnTick()
         SetPaintBackgroundEnabled(isCursorOver);
         m_bPaintName = isCursorOver;
     }
+    else
+    {
+        SetPaintBackgroundEnabled(false);
+        m_bPaintName = false;
+    }
+    
     
     m_pAvatarImagePanel->SetVisible(mom_entpanels_enable_avatars.GetBool());
 
@@ -157,24 +163,21 @@ void CGhostEntityPanel::GetEntityPosition(int& sx, int& sy)
 
 void CGhostEntityPanel::ComputeAndSetSize()
 {
-    m_flScale = 1.0;
+    int panelWide, panelHigh;
+    GetSize(panelWide, panelHigh);
 
+    if (mom_entpanels_enable_avatars.GetBool())
+        m_pAvatarImagePanel->SetPos((panelWide / 2) - 16, 0);
 
     if (mom_entpanels_enable_names.GetBool())
     {
-        int panelWide, panelHigh;
-        GetSize(panelWide, panelHigh);
-
         vgui::HFont font = m_pNameLabel->GetFont();
         wchar_t playerName[MAX_PLAYER_NAME_LENGTH];
         ANSI_TO_UNICODE(m_pEntity->m_pszGhostName, playerName);
         int nameWide = UTIL_ComputeStringWidth(font, playerName) + 6;
         int fontHeight = vgui::surface()->GetFontTall(font);
 
-        m_pAvatarImagePanel->SetPos((panelWide / 2) - 16, 0);
-
         m_pNameLabel->SetPos(panelWide / 2 - (nameWide / 2), mom_entpanels_enable_avatars.GetBool() ? 33 : (panelHigh / 2 - fontHeight / 2) - 4);
-
     }
 }
 

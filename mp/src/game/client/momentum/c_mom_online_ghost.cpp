@@ -8,9 +8,10 @@ IMPLEMENT_CLIENTCLASS_DT(C_MomentumOnlineGhostEntity, DT_MOM_OnlineGhost, CMomen
     RecvPropString(RECVINFO(m_pszGhostName)),
     RecvPropInt(RECVINFO(m_uiAccountID), SPROP_UNSIGNED),
     RecvPropInt(RECVINFO(m_nGhostButtons)),
+    RecvPropBool(RECVINFO(m_bSpectating))
 END_RECV_TABLE();
 
-C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_pEntityPanel(nullptr)
+C_MomentumOnlineGhostEntity::C_MomentumOnlineGhostEntity(): m_uiAccountID(0), m_bSpectating(false), m_bSpectated(false), m_pEntityPanel(nullptr)
 {
     m_pszGhostName[0] = '\0';
     m_SteamID = k_steamIDNil;
@@ -41,10 +42,7 @@ void C_MomentumOnlineGhostEntity::ClientThink()
     {
         m_SteamID = CSteamID(m_uiAccountID, k_EUniversePublic, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
     }
-}
 
-void C_MomentumOnlineGhostEntity::SetEntityPanelVisible(bool bVisible)
-{
-    if (m_pEntityPanel)
-        m_pEntityPanel->SetVisible(bVisible);
+
+    m_pEntityPanel->SetVisible(!(m_bSpectating || m_bSpectated));
 }

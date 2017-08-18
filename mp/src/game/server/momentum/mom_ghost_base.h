@@ -60,13 +60,28 @@ public:
     void RemoveSpectator()
     {
         m_pCurrentSpecPlayer = nullptr;
+        UnHideGhost();
+    }
+    CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
+
+
+    void HideGhost()
+    {
+        // don't render the model when we're in first person mode
+        if (GetRenderMode() != kRenderNone)
+        {
+            SetRenderMode(kRenderNone);
+            AddEffects(EF_NOSHADOW);
+        }
+    }
+    void UnHideGhost()
+    {
         if (GetRenderMode() != kRenderTransColor)
         {
             SetRenderMode(kRenderTransColor);
             RemoveEffects(EF_NOSHADOW);
         }
     }
-    CMomentumPlayer* GetCurrentSpectator() { return m_pCurrentSpecPlayer; }
 
 protected:
     virtual void Think(void);

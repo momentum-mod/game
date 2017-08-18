@@ -60,10 +60,10 @@ void C_MomentumPlayer::ClientThink()
         {
             // Changed to spectate another ghost
             if (m_pSpectateTarget && m_pSpectateTarget != pOnlineSpec)
-                m_pSpectateTarget->SetEntityPanelVisible(true);
+                m_pSpectateTarget->m_bSpectated = false;
 
             m_pSpectateTarget = pOnlineSpec;
-            m_pSpectateTarget->SetEntityPanelVisible(false);
+            m_pSpectateTarget->m_bSpectated = true;
         }
 
     }
@@ -71,7 +71,7 @@ void C_MomentumPlayer::ClientThink()
     {
         if (m_pSpectateTarget)
         {
-            m_pSpectateTarget->SetEntityPanelVisible(true);
+            m_pSpectateTarget->m_bSpectated = false;
             m_pSpectateTarget = nullptr;
         }
     }

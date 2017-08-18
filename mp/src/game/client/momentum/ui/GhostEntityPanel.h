@@ -39,7 +39,6 @@ private:
     int				m_iOrgHeight;
     int				m_iOrgOffsetX;
     int				m_iOrgOffsetY;
-    float			m_flScale;
     // Offset from entity that we should draw
     int m_OffsetX, m_OffsetY;
 };

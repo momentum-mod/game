@@ -11,17 +11,13 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumOnlineGhostEntity, DT_MOM_OnlineGhost)
     SendPropString(SENDINFO(m_pszGhostName)),
     SendPropInt(SENDINFO(m_uiAccountID), -1, SPROP_UNSIGNED),
     SendPropInt(SENDINFO(m_nGhostButtons)),
+    SendPropBool(SENDINFO(m_bSpectating)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
 END_DATADESC();
 
 #define MOM_GHOST_LERP 0.1f // MOM_TODO: Change this to a convar
-
-CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
-{
-    m_vecFrames.Purge();
-}
 
 void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
 {
@@ -32,11 +28,17 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
 {
     ListenForGameEvent("mapfinished_panel_closed");
     m_nGhostButtons = 0;
+    m_bSpectating = false;
+}
+
+CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
+{
+    m_vecFrames.Purge();
 }
 
 void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
-    if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
+    if (FStrEq(pEvent->GetName(), "mapfinished_panel_closed"))
     {
         if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
         {

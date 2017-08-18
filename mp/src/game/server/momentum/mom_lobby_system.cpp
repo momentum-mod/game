@@ -59,7 +59,7 @@ void CMomentumLobbySystem::HandleP2PConnectionFail(P2PSessionConnectFail_t* info
 
 void CMomentumLobbySystem::SendChatMessage(char* pMessage)
 {
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (LobbyValid())
     {
         int len = Q_strlen(pMessage) + 1;
         bool result = steamapicontext->SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
@@ -77,7 +77,7 @@ void CMomentumLobbySystem::SendChatMessage(char* pMessage)
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
 void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
 {
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (LobbyValid())
     {
         LeaveLobby();
         Log("Leaving your current lobby to join the new one...\n");
@@ -128,7 +128,7 @@ void CMomentumLobbySystem::CallResult_LobbyJoined(LobbyEnter_t* pEntered, bool I
 
 void CMomentumLobbySystem::StartLobby()
 {
-    if (!(m_cLobbyCreated.IsActive() || m_sLobbyID.IsValid() || m_sLobbyID.IsLobby()))
+    if (!(m_cLobbyCreated.IsActive() || LobbyValid()))
     {
         SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, 10);
         m_cLobbyCreated.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyCreated);
@@ -270,11 +270,6 @@ void CMomentumLobbySystem::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam)
             if (pEntity)
             {
                 pEntity->SetGhostAppearance(GetAppearanceFromMemberData(memberChanged));
-
-                if (!GetIsSpectatingFromMemberData(memberChanged)) //they are not spectating, so we need to make sure they are visible.
-                {
-                    pEntity->UnHideGhost();
-                }
             }
 
             CheckToAdd(&memberChanged);
@@ -378,23 +373,30 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
         uint64 pID_int = pID->ConvertToUint64();
 
         unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(pID_int);
-        bool validIndx = CMomentumGhostClient::m_mapOnlineGhosts.IsValidIndex(findIndx);
+        bool validIndx = findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex();
         
         const char *pMapName = gpGlobals->mapname.ToCStr();
         const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, LOBBY_DATA_MAP);
 
-        if (pMapName && FStrEq(pMapName, pOtherMap)) //We're on the same map
+        if (pMapName && pMapName[0] && FStrEq(pMapName, pOtherMap)) //We're on the same map
         {
             bool isSpectating = GetIsSpectatingFromMemberData(*pID);
 
             // Don't add them again if they reloaded this map for some reason
-            if (!validIndx && !isSpectating) //dont try to add them again if they are spectating
+            if (!validIndx)
             {
                 CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                 newPlayer->SetGhostSteamID(*pID);
                 newPlayer->Spawn();
                 newPlayer->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(*pID));
                 newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID));
+
+                // Spawn but hide them 
+                if (isSpectating)
+                {
+                    newPlayer->m_bSpectating = true;
+                    newPlayer->HideGhost();
+                }
 
                 CMomentumGhostClient::m_mapOnlineGhosts.Insert(pID_int, newPlayer);
 
@@ -403,19 +405,9 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 
                 // "_____ just joined your map."
                 WriteMessage(LOBBY_UPDATE_MEMBER_JOIN_MAP, pID_int);
-                
-            }
-            else if (isSpectating)
-            {
-                //they are spectating, hide their entity. If we remove it, we will stop sending them packets, which is a bad thing.
-                
-                CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];               
-                if (pEntity)
-                    pEntity->HideGhost();
-                
             }
         }
-        else if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        else if (validIndx)
         {
             // They changed map remove their entity from the CUtlMap
             CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
@@ -505,6 +497,13 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                 if (steamapicontext->SteamNetworking()->ReadP2PPacket(&update, sizeof(update), &bytesRead, &fromWho))
                 {
                     uint64 fromWhoID = fromWho.ConvertToUint64(), specTargetID = update.specTarget.ConvertToUint64();
+
+                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                    if (pEntity)
+                    {
+                        pEntity->m_bSpectating = update.specTarget.IsValid();
+                        update.specTarget.IsValid() ? pEntity->HideGhost() : pEntity->UnHideGhost();
+                    }
 
                     // Write it out to the Hud Chat
                     WriteMessage(update.type, fromWhoID, specTargetID);
@@ -599,6 +598,7 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECT
     uint64 ghostID = ghostTarget.ConvertToUint64();
     WriteMessage(type, playerID, ghostID);
 }
+// MOM_TODO Move me to client?
 CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
 {
     const char *steamID = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_SPEC_TARGET);
