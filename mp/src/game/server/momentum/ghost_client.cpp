@@ -113,6 +113,12 @@ void CMomentumGhostClient::SendChatMessage(char* pMessage)
     g_pMomentumLobbySystem->SendChatMessage(pMessage);
 }
 
+void CMomentumGhostClient::SendAppearanceData(ghostAppearance_t appearance)
+{
+    // MOM_TODO: g_pMomentumServerSystem->SetAppearance(appearance);
+    g_pMomentumLobbySystem->SetAppearanceInMemberData(appearance);
+}
+
 bool CMomentumGhostClient::CreateNewNetFrame(ghostNetFrame_t &into)
 {
     if (m_pPlayer && !m_pPlayer->IsSpectatingGhost())

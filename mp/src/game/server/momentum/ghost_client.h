@@ -29,6 +29,8 @@ public:
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
 
+    void SendAppearanceData(ghostAppearance_t appearance);
+
     static bool CreateNewNetFrame(ghostNetFrame_t &frame);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
 

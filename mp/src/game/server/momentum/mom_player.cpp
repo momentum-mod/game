@@ -352,7 +352,8 @@ void CMomentumPlayer::Spawn()
 
         Q_strcpy(m_playerAppearanceProps.GhostModel, mom_ghost_model.GetString());
 
-
+        // Send our appearance to the server/lobby if we're in one
+        g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps);
     }
     else
     {

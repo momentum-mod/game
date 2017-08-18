@@ -19,7 +19,6 @@ public:
     void JoinLobbyFromString(const char *pString);
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message
-    void GetLobbyMemberSteamData(CSteamID pMember);
 
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyChatUpdate, LobbyChatUpdate_t); // Lobby chat room status has changed. This can be owner being changed, or somebody joining or leaving
@@ -52,8 +51,12 @@ public:
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(uint64_t id);
 
 private:
+    CUtlVector<CSteamID> m_vecBlocked; // Vector of blocked users (ignore updates/packets from these people)
 
     bool m_bHostingLobby;
+
+    void WriteMessage(LOBBY_MSG_TYPE type, uint64 id);
+    void WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID);
 
     CCallResult<CMomentumLobbySystem, LobbyCreated_t> m_cLobbyCreated;
     CCallResult<CMomentumLobbySystem, LobbyEnter_t> m_cLobbyJoined;
