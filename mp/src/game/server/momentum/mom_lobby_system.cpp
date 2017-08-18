@@ -169,7 +169,13 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
 
     // Set our own data
     steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());
-    // Note: Appearance is set on player spawn
+    // Note: Our appearance is also set on spawn, so no worries if we're null here.
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (pPlayer)
+    {
+        DevLog("Sending our appearance.\n");
+        SetAppearanceInMemberData(pPlayer->m_playerAppearanceProps);
+    }
 
     // Get everybody else's data
     CheckToAdd(nullptr);
