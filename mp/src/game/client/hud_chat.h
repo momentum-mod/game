@@ -23,9 +23,7 @@ public:
 
     virtual void	Init(void);
 
-    void			MsgFunc_SayText(bf_read &msg);
-    void			MsgFunc_SayText2(bf_read &msg);
-    void			MsgFunc_TextMsg(bf_read &msg);
+    void MsgFunc_SayText(bf_read &msg);
     void MsgFunc_SpecUpdateMsg(bf_read &msg);
     void MsgFunc_LobbyUpdateMsg(bf_read &msg);
 
@@ -40,12 +38,14 @@ public:
 
     void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
+    Color CHudChat::GetDefaultTextColor() OVERRIDE;
 
 private:
     CUtlVector<CSteamID> m_vTypingMembers;
     CUtlVector<CSteamID> m_vMomentumOfficers;
     uint64 m_uiLobbyId;
     vgui::HFont m_hfInfoTextFont;
+    Color m_cInfoTextColor, m_cDefaultTextColor;
     bool m_bTyping;
     bool m_bIsVisible;
 };
