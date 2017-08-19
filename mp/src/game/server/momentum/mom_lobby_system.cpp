@@ -7,26 +7,30 @@
 CSteamID CMomentumLobbySystem::m_sLobbyID = k_steamIDNil;
 float CMomentumLobbySystem::m_flNextUpdateTime = -1.0f;
 
-CON_COMMAND(mom_host_lobby, "Starts hosting a lobby\n")
+CON_COMMAND(mom_lobby_create, "Starts hosting a lobby\n")
 {
     g_pMomentumLobbySystem->StartLobby();
 }
 
-CON_COMMAND(mom_leave_lobby, "Leave your current lobby\n")
+CON_COMMAND(mom_lobby_leave, "Leave your current lobby\n")
 {
     g_pMomentumLobbySystem->LeaveLobby();
 }
 
+// Used when joining when the game isn't loaded
 CON_COMMAND(connect_lobby, "Connect to a given SteamID's lobby\n")
 {
     g_pMomentumLobbySystem->JoinLobbyFromString(args.Arg(1));
 }
 
-CON_COMMAND(mom_invite_lobby, "Invite friends to your lobby\n")
+CON_COMMAND(mom_lobby_invite, "Invite friends to your lobby\n")
 {
     if (g_pMomentumLobbySystem->LobbyValid())
         steamapicontext->SteamFriends()->ActivateGameOverlayInviteDialog(g_pMomentumLobbySystem->GetLobbyId());
 }
+
+static MAKE_CONVAR(mom_lobby_max_players, "10", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the maximum number of players allowed in lobbies you create.\n", 2, 250);
+static MAKE_CONVAR(mom_lobby_type, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Sets the type of the lobby. 0 = Invite only, 1 = Friends Only, 2 = Public\n", 0, 2);
 
 // So basically, if a user wants to connect to us, we're considered the host. 
 void CMomentumLobbySystem::HandleNewP2PRequest(P2PSessionRequest_t* info)
@@ -71,6 +75,22 @@ void CMomentumLobbySystem::SendChatMessage(char* pMessage)
     else
     {
         DevLog("Could not send message because you are not connected!\n");
+    }
+}
+
+void CMomentumLobbySystem::ResetOtherAppearanceData()
+{
+    if (LobbyValid())
+    {
+        uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
+        while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        {
+            CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[index];
+            if (pEntity)
+                pEntity->SetGhostAppearance(pEntity->GetGhostAppearance(), true);
+
+            index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
+        }
     }
 }
 
@@ -123,14 +143,16 @@ void CMomentumLobbySystem::CallResult_LobbyJoined(LobbyEnter_t* pEntered, bool I
         return;
     }
 
-    HandleLobbyEnter(pEntered);
+    DevLog("(LOBBY ENTER CALL RESULT): Got the callresult with result %i\n", pEntered->m_EChatRoomEnterResponse);
+    // Note: There's both a callback and a call result from this. 
+    // The callback handles actually entering, this is just for assurance that the call result completed.
 }
 
 void CMomentumLobbySystem::StartLobby()
 {
     if (!(m_cLobbyCreated.IsActive() || LobbyValid()))
     {
-        SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, 10);
+        SteamAPICall_t call = steamapicontext->SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>(mom_lobby_type.GetInt()), mom_lobby_max_players.GetInt());
         m_cLobbyCreated.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyCreated);
         DevLog("The lobby call successfully happened!\n");
     }
@@ -140,7 +162,7 @@ void CMomentumLobbySystem::StartLobby()
 
 void CMomentumLobbySystem::LeaveLobby()
 {
-    if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
+    if (LobbyValid())
     {
         steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         DevLog("Left the lobby!\n");
@@ -160,7 +182,7 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
         return;
     }
 
-    DevLog("Lobby entered! Lobby ID: %lld\n", pEnter->m_ulSteamIDLobby);
+    DevLog("(LOBBY ENTER CALLBACK) Lobby entered! Lobby ID: %lld\n", pEnter->m_ulSteamIDLobby);
 
     if (!m_sLobbyID.IsValid())
     {
@@ -184,6 +206,8 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
 // We got a message yaay
 void CMomentumLobbySystem::HandleLobbyChatMsg(LobbyChatMsg_t* pParam)
 {
+    // MOM_TODO: Keep this for if we ever end up using binary messages 
+
     char *message = new char[4096];
     int written = steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
     DevLog("SERVER: Got a chat message! Wrote %i byte(s) into buffer.\n", written);
@@ -204,9 +228,12 @@ LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamI
     LobbyGhostAppearance_t toReturn;
     const char *pAppearance = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, LOBBY_DATA_APPEARANCE);
     Q_strncpy(toReturn.base64, pAppearance, sizeof(toReturn.base64));
-    ghostAppearance_t newAppearance;
-    base64_decode(pAppearance, &newAppearance, sizeof(ghostAppearance_t));
-    toReturn.appearance = newAppearance;
+    if (!FStrEq(pAppearance, ""))
+    {
+        ghostAppearance_t newAppearance;
+        base64_decode(pAppearance, &newAppearance, sizeof(ghostAppearance_t));
+        toReturn.appearance = newAppearance;
+    }
     return toReturn;
 }
 
@@ -346,7 +373,7 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
         m_flNextUpdateTime = -1.0f;
 
         // Now check if this map is the same as somebody else's in the lobby
-        if (pMapName)
+        if (pMapName && !FStrEq(pMapName, ""))
             CheckToAdd(nullptr);
         else
             g_pMomentumGhostClient->ClearCurrentGhosts(false);
@@ -387,9 +414,9 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             {
                 CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                 newPlayer->SetGhostSteamID(*pID);
-                newPlayer->Spawn();
                 newPlayer->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(*pID));
-                newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID));
+                newPlayer->Spawn();
+                newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID), true); // Appearance after spawn!
 
                 // Spawn but hide them 
                 if (isSpectating)
@@ -440,7 +467,7 @@ void CMomentumLobbySystem::JoinLobbyFromString(const char* pString)
     {
         if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
         {
-            Warning("You are already in a lobby! Do \"mom_leave_lobby\" to exit it!\n");
+            Warning("You are already in a lobby! Do \"mom_lobby_leave\" to exit it!\n");
         }
         else if (m_cLobbyJoined.IsActive())
         {
@@ -562,6 +589,7 @@ void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, bool bStarte
     else
         type = SPEC_UPDATE_CHANGETARGET;
 
+    // MOM_TODO: Keep me for updating the client
     if (type != SPEC_UPDATE_LEAVE)
     {
         char steamID[64];

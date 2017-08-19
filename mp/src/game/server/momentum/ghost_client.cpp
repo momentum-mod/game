@@ -69,7 +69,8 @@ void CMomentumGhostClient::LevelShutdownPostEntity()
 
 void CMomentumGhostClient::LevelShutdownPreEntity()
 {
-    g_pMomentumLobbySystem->LevelChange(nullptr);
+    if (!FStrEq(gpGlobals->mapname.ToCStr(), "")) // Don't send our shutdown message from the menu
+        g_pMomentumLobbySystem->LevelChange(nullptr);
 }
 
 void CMomentumGhostClient::FrameUpdatePreEntityThink()
@@ -109,6 +110,13 @@ void CMomentumGhostClient::SendChatMessage(char* pMessage)
 {
     // MOM_TODO: g_pMomentumServerSystem->SendChatMessage(pMessage)
     g_pMomentumLobbySystem->SendChatMessage(pMessage);
+}
+
+void CMomentumGhostClient::ResetOtherAppearanceData()
+{
+    // MOM_TODO: g_pMomentumServerSystem->ResetOtherAppearanceData();
+    DevLog("Resetting other appearance!\n");
+    g_pMomentumLobbySystem->ResetOtherAppearanceData();
 }
 
 void CMomentumGhostClient::SendAppearanceData(ghostAppearance_t appearance)

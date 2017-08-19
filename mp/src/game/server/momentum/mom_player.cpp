@@ -54,11 +54,6 @@ static ConVar mom_ghost_color("mom_ghost_color", "FF00FFFF",
     "Set the ghost's color. Accepts HEX color value in format RRGGBBAA. if RRGGBB is supplied, Alpha is set to 0x4B",
     AppearanceCallback);
 
-static ConVar mom_ghost_model("mom_ghost_model", GHOST_MODEL,
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE | FCVAR_HIDDEN,
-    "Set the ghost's model.",
-    AppearanceCallback);
-
 static ConVar mom_trail_color("mom_trail_color", "FF00FFFF",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Set the ghost's color. Accepts HEX color value in format RRGGBBAA",
@@ -66,7 +61,7 @@ static ConVar mom_trail_color("mom_trail_color", "FF00FFFF",
 
 static ConVar mom_trail_length("mom_trail_length", "4",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Length of the trail (in seconds).", true, 1, false, 9000, AppearanceCallback);
+    "Length of the trail (in seconds).", true, 1, false, 10, AppearanceCallback);
 
 static ConVar mom_trail_enable("mom_trail_enable", "0",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -106,14 +101,6 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
             int bGroup = mom_ghost_bodygroup.GetInt();
             pPlayer->m_playerAppearanceProps.GhostModelBodygroup = bGroup;
             pPlayer->SetBodygroup(1, bGroup);
-        }
-        else if (FStrEq(pName, mom_ghost_model.GetName())) // the ghost model changed
-        {
-            char newModel[128];
-            strcpy(newModel, mom_ghost_model.GetString());
-            strcpy(pPlayer->m_playerAppearanceProps.GhostModel, newModel);
-            pPlayer->PrecacheModel(newModel);
-            pPlayer->SetModel(newModel);
         }
 
         pPlayer->SendAppearance();
@@ -349,8 +336,6 @@ void CMomentumPlayer::Spawn()
         m_playerAppearanceProps.GhostModelBodygroup = bGroup;
         SetBodygroup(1, bGroup);
 
-        Q_strcpy(m_playerAppearanceProps.GhostModel, mom_ghost_model.GetString());
-
         // Send our appearance to the server/lobby if we're in one
         SendAppearance();
     }
@@ -358,8 +343,6 @@ void CMomentumPlayer::Spawn()
     {
         Warning("Could not set appearance properties! g_pMomentumUtil is NULL!\n");
     }
-    
-        
     
     // If wanted, create trail
     if (mom_trail_enable.GetBool())

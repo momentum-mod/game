@@ -98,7 +98,7 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     // something and parse it
     steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
     SetCustomColor(COLOR_RED);
-    ChatPrintf(1, CHAT_FILTER_NONE, "%c%s %s%c: %s", isMomentumTeam ? COLOR_CUSTOM : COLOR_PLAYERNAME, isSpectating ? "*SPEC*" : "", personName, COLOR_NORMAL, ConvertCRtoNL(message));
+    ChatPrintf(1, CHAT_FILTER_NONE, "%c%s%s%c: %s", isMomentumTeam ? COLOR_CUSTOM : COLOR_PLAYERNAME, isSpectating ? "*SPEC* " : "", personName, COLOR_NORMAL, ConvertCRtoNL(message));
     delete[] message;
 }
 
@@ -260,15 +260,16 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
             "%s is now spectating.", pName);
     }
-    //MOM_TODO: change this message to be NOT in the chat. Just trying to get the system working for now.
+    //MOM_TODO: Get rid of me?
     else if (type == SPEC_UPDATE_CHANGETARGET) 
     {
         msg.ReadBytes(&target, sizeof(uint64));
         CSteamID targetID = CSteamID(target);
         const char *pTargetName = steamapicontext->SteamFriends()->GetFriendPersonaName(targetID);
 
-        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-            "%s is now spectating %s.", pName, pTargetName);
+        DevLog("%s is now spectating %s.\n", pName, pTargetName);
+        //Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
+        //    "%s is now spectating %s.", pName, pTargetName);
     }
   
 }

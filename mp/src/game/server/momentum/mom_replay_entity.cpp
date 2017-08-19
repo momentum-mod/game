@@ -66,6 +66,21 @@ void CMomentumReplayGhostEntity::Spawn()
     Precache();
     BaseClass::Spawn();
 
+    // MOM_TODO: Read the appearance data from the header of the replay and set it here?
+    // Set the appearance to the player's appearance, pending update after spawned in
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (pPlayer)
+    {
+        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
+        //now that we've set our appearance, the ghost should be visible again.
+        SetRenderMode(kRenderTransColor);
+        if (m_ghostAppearance.GhostTrailEnable)
+        {
+            CreateTrail();
+        }
+    }
+
+
     if (m_pPlaybackReplay)
         Q_strcpy(m_SrvData.m_pszPlayerName, m_pPlaybackReplay->GetPlayerName());
 }

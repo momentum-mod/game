@@ -2,6 +2,7 @@
 
 #include "mom_ghost_base.h"
 #include "util/mom_util.h"
+#include "ghost_client.h"
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumGhostBaseEntity, DT_MOM_GHOST_BASE)
 END_SEND_TABLE();
@@ -9,7 +10,16 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumGhostBaseEntity)
 END_DATADESC();
 
+void RefreshGhostData(IConVar *var, const char *pValue, float oldValue)
+{
+    g_pMomentumGhostClient->ResetOtherAppearanceData();
+}
+
 static MAKE_TOGGLE_CONVAR(mom_ghost_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_color_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, 
+    "Toggle overriding other player's ghost alpha values to the one defined in \"mom_ghost_color_alpha_override\".\n", RefreshGhostData);
+static MAKE_CONVAR_C(mom_ghost_color_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 
 CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
 {
@@ -38,25 +48,11 @@ void CMomentumGhostBaseEntity::Spawn()
     SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
     UpdateModelScale();
     SetViewOffset(VEC_VIEW_SCALED(this));
-
-    // Set the appearance to the player's appearance, pending update after spawned in
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
-    if (pPlayer)
-    {
-        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
-        //now that we've set our appearance, the ghost should be visible again.
-        SetRenderMode(kRenderTransColor);
-        if (m_ghostAppearance.GhostTrailEnable)
-        {
-            CreateTrail();
-        }
-    }
+    UnHideGhost();
 }
 void CMomentumGhostBaseEntity::Think()
 {
     BaseClass::Think();
-    
-    //MOM_TODO: handle recreating trail when ghost teleports.
 }
 void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
 {
@@ -70,29 +66,22 @@ void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
         SetBodygroup(1, bodyGroup);
     }
 }
-void CMomentumGhostBaseEntity::SetGhostModel(const char *newmodel)
-{
-    if (newmodel)
-    {
-        Q_strncpy(m_ghostAppearance.GhostModel, newmodel, strlen(newmodel)+1);
-        PrecacheModel(m_ghostAppearance.GhostModel);
-        SetModel(m_ghostAppearance.GhostModel);
-    }
-}
+
 void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
 {
     m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
     Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
     if (newColor)
     {
-        SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
+        int alpha = mom_ghost_color_alpha_override_enable.GetBool() ? mom_ghost_color_alpha_override.GetInt() : newColor->a();
+        SetRenderColor(newColor->r(), newColor->g(), newColor->b(), alpha);
     }
 }
 void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable)
 {
     m_ghostAppearance.GhostTrailEnable = enable;
     m_ghostAppearance.GhostTrailRGBAColorAsHex = newHexColor;
-    m_ghostAppearance.GhostTrailLength = newLen;
+    m_ghostAppearance.GhostTrailLength = clamp<int>(newLen, 1, 10);
     CreateTrail();
 }
 
@@ -151,7 +140,7 @@ bool CMomentumGhostBaseEntity::CanUnduck(CMomentumGhostBaseEntity *pGhost)
         }
 
         UTIL_TraceHull(pGhost->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, pGhost,
-            COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
+                       COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
 
         if (trace.startsolid || (trace.fraction != 1.0f))
             return false;
@@ -160,27 +149,23 @@ bool CMomentumGhostBaseEntity::CanUnduck(CMomentumGhostBaseEntity *pGhost)
     }
     return false;
 }
-void CMomentumGhostBaseEntity::SetGhostAppearance(ghostAppearance_t newApp)
+void CMomentumGhostBaseEntity::SetGhostAppearance(ghostAppearance_t newApp, bool bForceUpdate /* = false*/)
 {
     // only set things that NEED TO BE CHANGED!!
-    if (m_ghostAppearance.GhostModelBodygroup != newApp.GhostModelBodygroup)
+    if (m_ghostAppearance.GhostModelBodygroup != newApp.GhostModelBodygroup || bForceUpdate)
     {
         SetGhostBodyGroup(newApp.GhostModelBodygroup);
     }
-    if (Q_strcmp(m_ghostAppearance.GhostModel, newApp.GhostModel) != 0)
-    {
-        SetGhostModel(newApp.GhostModel);
-    }
-    if (m_ghostAppearance.GhostModelRGBAColorAsHex != newApp.GhostModelRGBAColorAsHex)
+    if (m_ghostAppearance.GhostModelRGBAColorAsHex != newApp.GhostModelRGBAColorAsHex || bForceUpdate)
     {
         SetGhostColor(newApp.GhostModelRGBAColorAsHex);
     }
     if (m_ghostAppearance.GhostTrailRGBAColorAsHex != newApp.GhostTrailRGBAColorAsHex || 
         m_ghostAppearance.GhostTrailLength != newApp.GhostTrailLength || 
-        m_ghostAppearance.GhostTrailEnable != newApp.GhostTrailEnable)
+        m_ghostAppearance.GhostTrailEnable != newApp.GhostTrailEnable || bForceUpdate)
     {
         SetGhostTrailProperties(newApp.GhostTrailRGBAColorAsHex,
-            newApp.GhostTrailLength, newApp.GhostTrailEnable);
+                                newApp.GhostTrailLength, newApp.GhostTrailEnable);
     }
     
     SetGhostFlashlight(newApp.FlashlightOn);
@@ -189,7 +174,7 @@ void CMomentumGhostBaseEntity::CreateTrail()
 {
     RemoveTrail();
 
-    if (!m_ghostAppearance.GhostTrailEnable) return;
+    if (!(m_ghostAppearance.GhostTrailEnable && mom_ghost_trail_enable.GetBool())) return;
 
     // Ty GhostingMod
     m_eTrail = CreateEntityByName("env_spritetrail");

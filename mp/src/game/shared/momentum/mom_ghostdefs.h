@@ -33,12 +33,10 @@ struct ghostAppearance_t
     uint8_t GhostTrailLength;
     bool GhostTrailEnable;
     bool FlashlightOn;
-    char GhostModel[128]; //maximum model filename is 128 chars
 
 #ifndef GHOST_SERVER
-    ghostAppearance_t(const char* playerModel, const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
+    ghostAppearance_t(const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
     {
-        Q_strncpy(GhostModel, playerModel, sizeof(GhostModel));
         GhostModelBodygroup = bodyGroup;
         GhostModelRGBAColorAsHex = bodyRGBA;
         GhostTrailRGBAColorAsHex = trailRGBA;
@@ -58,13 +56,11 @@ struct ghostAppearance_t
         GhostTrailLength = other.GhostTrailLength;
         GhostTrailEnable = other.GhostTrailEnable;
         FlashlightOn = other.FlashlightOn;
-        Q_strncpy(GhostModel, other.GhostModel, sizeof(GhostModel));
         return *this;
     }
     bool operator==(const ghostAppearance_t &other) const
     {
-        return Q_strcmp(GhostModel, other.GhostModel) == 0 &&
-            GhostModelBodygroup == other.GhostModelBodygroup &&
+        return GhostModelBodygroup == other.GhostModelBodygroup &&
             GhostModelRGBAColorAsHex == other.GhostModelRGBAColorAsHex &&
             GhostTrailRGBAColorAsHex == other.GhostTrailRGBAColorAsHex &&
             GhostTrailLength == other.GhostTrailLength &&

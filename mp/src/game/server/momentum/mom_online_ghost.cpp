@@ -19,6 +19,8 @@ END_DATADESC();
 
 #define MOM_GHOST_LERP 0.1f // MOM_TODO: Change this to a convar
 
+static MAKE_TOGGLE_CONVAR(mom_ghost_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
+
 void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
 {
     m_vecFrames.Insert(new ReceivedFrame_t(gpGlobals->curtime, newFrame));
@@ -52,13 +54,12 @@ void CMomentumOnlineGhostEntity::Precache(void)
     BaseClass::Precache();
 }
 
-void CMomentumOnlineGhostEntity::SetGhostAppearance(LobbyGhostAppearance_t app)
+void CMomentumOnlineGhostEntity::SetGhostAppearance(LobbyGhostAppearance_t app, bool bForceUpdate /*= false*/)
 {
-    if (!FStrEq(m_CurrentAppearance.base64, app.base64))
+    if ((!FStrEq(app.base64, "") && !FStrEq(m_CurrentAppearance.base64, app.base64)) || bForceUpdate)
     {
-        //DevLog("Got a new appearance!\n Bodygroup: %i, Color: %lu, Model: %s\n", app.appearance.GhostModelBodygroup, app.appearance.GhostModelRGBAColorAsHex, app.appearance.GhostModel);
         m_CurrentAppearance = app;
-        BaseClass::SetGhostAppearance(app.appearance);
+        BaseClass::SetGhostAppearance(app.appearance, bForceUpdate);
     }
 }
 
@@ -104,10 +105,10 @@ void CMomentumOnlineGhostEntity::HandleGhost()
     if (m_pCurrentFrame)
     {
         SetAbsOrigin(m_pCurrentFrame->frame.Position);
-        //if (m_pCurrentSpecPlayer)
+        if (m_pCurrentSpecPlayer || mom_ghost_rotations.GetBool())
             SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
-        //else
-        //    SetAbsAngles(QAngle(0, m_pCurrentFrame->frame.EyeAngle.y, m_pCurrentFrame->frame.EyeAngle.z));
+        else
+            SetAbsAngles(QAngle(0, m_pCurrentFrame->frame.EyeAngle.y, m_pCurrentFrame->frame.EyeAngle.z));
         SetViewOffset(Vector(0, 0, m_pCurrentFrame->frame.ViewOffset));
         SetAbsVelocity(m_pCurrentFrame->frame.Velocity);
 

@@ -19,6 +19,7 @@ public:
     void JoinLobbyFromString(const char *pString);
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message
+    void ResetOtherAppearanceData(); // Sent when the player changes an override appearance cvar
 
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyEnter, LobbyEnter_t); // We entered this lobby (or failed to enter)
     STEAM_CALLBACK(CMomentumLobbySystem, HandleLobbyChatUpdate, LobbyChatUpdate_t); // Lobby chat room status has changed. This can be owner being changed, or somebody joining or leaving

@@ -36,13 +36,12 @@ class CMomentumGhostBaseEntity : public CBaseAnimating
 public:
     CMomentumGhostBaseEntity();
 
-    virtual void SetGhostModel(const char *model);
     virtual void SetGhostBodyGroup(int bodyGroup);
     virtual void SetGhostColor(const uint32 newHexColor);
     virtual void SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable);
     virtual void SetGhostFlashlight(bool isOn);
 
-    virtual void SetGhostAppearance(ghostAppearance_t app);
+    virtual void SetGhostAppearance(ghostAppearance_t app, bool bForceUpdate = false);
     virtual ghostAppearance_t GetAppearance() { return m_ghostAppearance; }
 
     virtual void StartTimer(int m_iStartTick);

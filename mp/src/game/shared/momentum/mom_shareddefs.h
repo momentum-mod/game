@@ -85,6 +85,9 @@ typedef enum
 #define ANSI_TO_UNICODE(ansi, unicode) \
     g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof(unicode));
 
+// Creates a convar with a callback function
+#define MAKE_CONVAR_C(name, defaultval, flags, desc, minVal, maxVal, callback)                                                \
+    ConVar name(#name, defaultval, flags, desc, true, minVal, true, maxVal, callback)
 
 //Creates a convar, mainly used for MAKE_TOGGLE
 #define MAKE_CONVAR(name, defaultval, flags, desc, minVal, maxVal)                                                            \
@@ -92,6 +95,8 @@ typedef enum
 
 //Creates a CONVAR with 0 as the minimum value, and 1 as the max value. Useful for toggle variables.
 #define MAKE_TOGGLE_CONVAR(name, defaultval, flags, desc) MAKE_CONVAR(name, defaultval, flags, desc, 0, 1)
+
+#define MAKE_TOGGLE_CONVAR_C(name, defaultval, flags, desc, callback) MAKE_CONVAR_C(name, defaultval, flags, desc, 0, 1, callback)
 
 //Flags for a HUD cvar (usually)
 #define FLAG_HUD_CVAR (FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED)

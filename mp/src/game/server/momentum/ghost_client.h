@@ -28,7 +28,7 @@ public:
     void ClearCurrentGhosts(bool);
 
     void SendChatMessage(char *pMessage); // Sent from the player, who is trying to say a message to either a server or the lobby
-
+    void ResetOtherAppearanceData(); // Resets every ghost's appearance data, mostly done when overrides are toggled, to apply them
     void SendAppearanceData(ghostAppearance_t appearance);
     void SetSpectatorTarget(CSteamID target, bool bStartedSpectating);
 
