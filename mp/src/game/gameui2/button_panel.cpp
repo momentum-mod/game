@@ -1,3 +1,8 @@
+
+#include <string>
+#include <functional>
+#include <algorithm>
+
 #include "gameui2_interface.h"
 #include "button_panel.h"
 
@@ -5,9 +10,8 @@
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
 
-#include <string>
-#include <algorithm>
-#include <functional>
+
+
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
