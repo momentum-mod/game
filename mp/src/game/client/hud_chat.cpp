@@ -269,7 +269,7 @@ void CHudChat::Paint()
         int w, h;
         GetSize(w, h);
         vgui::surface()->DrawSetTextFont(m_hfInfoTextFont);
-        vgui::surface()->DrawSetTextPos(20, h - 32);
+        vgui::surface()->DrawSetTextPos(20, h - 24);
         vgui::surface()->DrawSetTextColor(m_cInfoTextColor);
         vgui::surface()->DrawPrintText(wcTypingText, count);
     }

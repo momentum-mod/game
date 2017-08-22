@@ -198,7 +198,7 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
         DevLog("Sending our appearance.\n");
         SetAppearanceInMemberData(pPlayer->m_playerAppearanceProps);
     }
-
+    SetGameInfoStatus();
     // Get everybody else's data
     CheckToAdd(nullptr);
 }
@@ -369,7 +369,7 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
     {
         DevLog("Setting the map to %s!\n", pMapName ? pMapName : "INVALID (main menu/loading)");
         steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
-
+        SetGameInfoStatus();
         m_flNextUpdateTime = -1.0f;
 
         // Now check if this map is the same as somebody else's in the lobby
@@ -632,6 +632,29 @@ CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
     const char *steamID = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_SPEC_TARGET);
     uint64 id = Q_atoui64(steamID);
     return steamID && steamID[0] ? CSteamID(id) : k_steamIDNil;
+}
+void CMomentumLobbySystem::SetGameInfoStatus()
+{
+    ConVarRef gm("mom_gamemode");
+    const char *gameMode;
+    switch (gm.GetInt())
+    {
+    case MOMGM_SURF:
+        gameMode = "Surfing";
+        break;
+    case MOMGM_BHOP:
+        gameMode = "Bhopping";
+        break;
+    case MOMGM_SCROLL:
+        gameMode = "Scrolling";
+    case MOMGM_UNKNOWN:
+    default:
+        gameMode = "Playing";
+    }
+    char gameInfoStr[64];
+    V_snprintf(gameInfoStr, 64, "%s on %s", gameMode, gpGlobals->mapname);
+    Log("%s\n", gameInfoStr);
+    steamapicontext->SteamFriends()->SetRichPresence("status", gameInfoStr);
 }
 static CMomentumLobbySystem s_MOMLobbySystem;
 CMomentumLobbySystem *g_pMomentumLobbySystem = &s_MOMLobbySystem;

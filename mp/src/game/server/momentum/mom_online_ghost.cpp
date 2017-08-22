@@ -74,8 +74,8 @@ void CMomentumOnlineGhostEntity::Think()
     HandleGhost();
     if (m_pCurrentSpecPlayer)
         HandleGhostFirstPerson();
-    // Emulate at the update rate for the smoothest interpolation
-    SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat());
+    // Emulate at slightly slower than the update rate for the smoothest interpolation
+    SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat() + (gpGlobals->interval_per_tick * 2));
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
