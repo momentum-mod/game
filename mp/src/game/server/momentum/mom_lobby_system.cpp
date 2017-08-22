@@ -654,9 +654,15 @@ void CMomentumLobbySystem::SetGameInfoStatus()
         gameMode = "Playing";
         break;
     }
-    char gameInfoStr[64];
-    V_snprintf(gameInfoStr, 64, "%s on %s", gameMode, gpGlobals->mapname);
-    Log("%s\n", gameInfoStr);
+    char gameInfoStr[64], connectStr[64];
+    int numPlayers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
+    V_snprintf(gameInfoStr, 64, numPlayers < 1 ? "%s on %s" : "%s on %s with %i other player", gameMode, gpGlobals->mapname, numPlayers);
+    V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
+
+    if (numPlayers > 2) //we want it to say "%i other players (emphesis on the s) if we have more than 2, i.e us and a friend is just 1 other player
+        V_strcat(gameInfoStr, "s", 64); 
+
+    steamapicontext->SteamFriends()->SetRichPresence("connect", connectStr);
     steamapicontext->SteamFriends()->SetRichPresence("status", gameInfoStr);
 }
 static CMomentumLobbySystem s_MOMLobbySystem;
