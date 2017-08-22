@@ -168,6 +168,7 @@ void CMomentumLobbySystem::LeaveLobby()
         DevLog("Left the lobby!\n");
         m_sLobbyID = k_steamIDNil;
         g_pMomentumGhostClient->ClearCurrentGhosts(true);
+        steamapicontext->SteamFriends()->ClearRichPresence();
     }
     else
         DevLog("Could not leave lobby, are you in one?\n");
@@ -647,9 +648,11 @@ void CMomentumLobbySystem::SetGameInfoStatus()
         break;
     case MOMGM_SCROLL:
         gameMode = "Scrolling";
+        break;
     case MOMGM_UNKNOWN:
     default:
         gameMode = "Playing";
+        break;
     }
     char gameInfoStr[64];
     V_snprintf(gameInfoStr, 64, "%s on %s", gameMode, gpGlobals->mapname);
