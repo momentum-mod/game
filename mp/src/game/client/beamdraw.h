@@ -128,7 +128,7 @@ public:
 };
 
 
-int ScreenTransform( const Vector& point, Vector& screen );
+bool ScreenTransform( const Vector& point, Vector& screen );
 
 void DrawSegs( int noise_divisions, float *prgNoise, const model_t* spritemodel,
 				float frame, int rendermode, const Vector& source, const Vector& delta, 

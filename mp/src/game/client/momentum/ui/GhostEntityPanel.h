@@ -23,7 +23,7 @@ class CGhostEntityPanel : public vgui::Panel
 
     void SetShouldDrawEntityName(bool bState) { m_bPaintName = bState; }
 
-    void GetEntityPosition(int& sx, int& sy);
+    bool GetEntityPosition(int& sx, int& sy);
     void ComputeAndSetSize();
 
 private:
@@ -41,4 +41,6 @@ private:
     int				m_iOrgOffsetY;
     // Offset from entity that we should draw
     int m_OffsetX, m_OffsetY;
+    // Position of the panel
+    int m_iPosX, m_iPosY;
 };

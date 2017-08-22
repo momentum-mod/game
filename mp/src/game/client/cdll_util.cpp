@@ -518,12 +518,12 @@ bool GetVectorInScreenSpace( Vector pos, int& iX, int& iY, Vector *vecOffset )
 		pos += *vecOffset;
 
 	// Transform to screen space
-	int iFacing = ScreenTransform( pos, screen );
+	bool bBehindCamera = ScreenTransform( pos, screen );
 	iX = 0.5f * ( 1.0f + screen[0] ) * ScreenWidth();
 	iY = 0.5f * ( 1.0f - screen[1] ) * ScreenHeight();
 
 	// Make sure the player's facing it
-	if ( iFacing )
+	if ( bBehindCamera )
 	{
 		// We're actually facing away from the Target. Stomp the screen position.
 		iX = -640;

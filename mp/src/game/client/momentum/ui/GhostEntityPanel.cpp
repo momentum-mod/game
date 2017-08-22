@@ -45,6 +45,7 @@ void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
     m_iOrgHeight = 128;
     m_iOrgOffsetX = m_OffsetX;
     m_iOrgOffsetY = m_OffsetY;
+    m_iPosX = m_iPosY = -1;
     
     SetVisible(true);
     vgui::ivgui()->AddTickSignal(GetVPanel());
@@ -52,15 +53,11 @@ void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
 
 void CGhostEntityPanel::OnThink()
 {
-    // Update our current position
-    int sx, sy;
-    GetEntityPosition(sx, sy);
-
     // Recalculate our size
     ComputeAndSetSize();
 
     // Set the position
-    SetPos(static_cast<int>(sx + m_OffsetX + 0.5f), static_cast<int>(sy + m_OffsetY + 0.5f));
+    SetPos(static_cast<int>(m_iPosX + m_OffsetX + 0.5f), static_cast<int>(m_iPosY + m_OffsetY + 0.5f));
 
 
     if (m_pEntity)
@@ -87,10 +84,13 @@ void CGhostEntityPanel::OnThink()
 
 void CGhostEntityPanel::OnTick()
 {
-    bool shouldDraw = ShouldDraw();
+    // Visbility checks
+    bool bEntOnScreen = GetEntityPosition(m_iPosX, m_iPosY); // Also doubles as getting the position for render
+    bool shouldDraw = ShouldDraw() && bEntOnScreen;
     if (shouldDraw != IsVisible())
     {
         SetVisible(shouldDraw);
+        SetAlpha(255 * shouldDraw);
 
         if (!shouldDraw)
             return;
@@ -99,21 +99,12 @@ void CGhostEntityPanel::OnTick()
     bool isCursorOver = IsCursorOver();
     bool areNamesEnabled = mom_entpanels_enable_names.GetBool();
     
-    if (areNamesEnabled)
-    {
-        SetPaintBackgroundEnabled(isCursorOver);
-        m_bPaintName = isCursorOver;
-    }
-    else
-    {
-        SetPaintBackgroundEnabled(false);
-        m_bPaintName = false;
-    }
-    
+    SetPaintBackgroundEnabled(areNamesEnabled && isCursorOver);
+    m_bPaintName = areNamesEnabled && isCursorOver;
     
     m_pAvatarImagePanel->SetVisible(mom_entpanels_enable_avatars.GetBool());
 
-
+    // Check fade status
     if (mom_entpanels_fade_enable.GetBool() && m_pEntity)
     {
         // Get distance to entity
@@ -148,15 +139,15 @@ bool CGhostEntityPanel::ShouldDraw()
 }
 
 
-void CGhostEntityPanel::GetEntityPosition(int& sx, int& sy)
+bool CGhostEntityPanel::GetEntityPosition(int& sx, int& sy)
 {
-    if (!m_pEntity)
+    if (!m_pEntity || !m_pEntity->IsVisible())
     {
         sx = sy = -1.0f;
-        return;
+        return false;
     }
     
-    GetVectorInScreenSpace(m_pEntity->GetAbsOrigin() + 
+    return GetVectorInScreenSpace(m_pEntity->GetAbsOrigin() + 
         (m_pEntity->GetModelPtr() ? m_pEntity->GetModelPtr()->eyeposition() : Vector(0, 0, 62)), 
         sx, sy, nullptr);
 }

@@ -34,7 +34,7 @@ ConVar cl_observercrosshair( "cl_observercrosshair", "0", FCVAR_ARCHIVE );
 
 using namespace vgui;
 
-int ScreenTransform( const Vector& point, Vector& screen );
+bool ScreenTransform( const Vector& point, Vector& screen );
 
 #ifdef TF_CLIENT_DLL
 // If running TF, we use CHudTFCrosshair instead (which is derived from CHudCrosshair)
