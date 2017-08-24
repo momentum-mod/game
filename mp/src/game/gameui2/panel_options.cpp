@@ -145,7 +145,6 @@ void Panel_Options::DrawTitle()
 {
 	std::wstring panel_title = m_PanelTitle;
 	std::transform(panel_title.begin(), panel_title.end(), panel_title.begin(), std::function<int32(int32)>(::toupper));
-	panel_title = towupper(*m_PanelTitle);
 	vgui::surface()->DrawSetTextColor(m_cTitleColor);
 	vgui::surface()->DrawSetTextFont(m_fTitleFont);
 
