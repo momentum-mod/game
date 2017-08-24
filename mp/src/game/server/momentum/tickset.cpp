@@ -2,8 +2,8 @@
 #include "Windows.h"
 #include "Psapi.h"
 #pragma comment(lib, "psapi.lib")
-#elif defined (__linux__)
-#elif defined (__APPLE__)
+#elif defined (POSIX)
+#include "util/os_utils.h"
 #endif
 
 #include "tickset.h"
@@ -16,46 +16,6 @@ const Tickrate TickSet::s_DefinedRates[] = {
     { 0.01f, "100" }
 };
 Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
-
-#ifdef __linux__
-int GetModuleInformation_Linux(const char *name, void **base, size_t *length)
-{
-    // this is the only way to do this on linux, lol
-    FILE *f = fopen("/proc/self/maps", "r");
-    if (!f)
-        return 1;
-
-    char buf[PATH_MAX+100];
-    while (!feof(f))
-    {
-        if (!fgets(buf, sizeof(buf), f))
-            break;
-
-	char *tmp = strrchr(buf, '\n');
-	if (tmp)
-            *tmp = '\0';
-
-	char *mapname = strchr(buf, '/');
-	if (!mapname)
-	    continue;
-
-        char perm[5];
-        unsigned long begin, end;
-        sscanf(buf, "%lx-%lx %4s", &begin, &end, perm);
-
-        if (strcmp(basename(mapname), name) == 0 && perm[0] == 'r' && perm[2] == 'x')
-        {
-            *base = (void*)begin;
-            *length = (size_t)end-begin;
-            fclose(f);
-            return 0;
-        }
-    }
-
-    fclose(f);
-    return 2;
-}
-#endif // __linux__
 
 inline bool TickSet::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
 {
@@ -92,25 +52,42 @@ bool TickSet::TickInit()
     auto moduleBase = info.lpBaseOfDll;
     auto moduleSize = info.SizeOfImage;
 
-    unsigned char pattern[] = { 0x8B, 0x0D, '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 0xFF, '?', 0xD9, 0x15, '?', '?', '?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
+    unsigned char pattern[] = { 0x8B, 0x0D, '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', 0xFF, '?', 0xD9, 0x15, '?', '?',
+		'?', '?', 0xDD, 0x05, '?', '?', '?', '?', 0xDB, 0xF1, 0xDD, 0x05, '?', '?', '?', '?', 0x77, 0x08, 0xD9, 0xCA, 0xDB, 0xF2, 0x76, 0x1F, 0xD9, 0xCA };
     auto p = reinterpret_cast<uintptr_t>(FindPattern(moduleBase, moduleSize, pattern, "xx????????????x?xx????xx????xxxx????xxxxxxxxxx"));
     if (p)
         interval_per_tick = *reinterpret_cast<float**>(p + 18);
-
+	
 #elif defined (__linux__)
-    void *base;
-    size_t length;
-    if (GetModuleInformation_Linux("engine.so", &base, &length))
-	return false;
-    
+	void *base;
+	size_t length;
+
+	if (GetModuleInformation_LINUX("engine.so", &base, &length))
+		return false;
+
     // mov ds:interval_per_tick, 3C75C28Fh         <-- float for 0.015
     unsigned char pattern[] = { 0xC7,0x05, '?','?','?','?', 0x8F,0xC2,0x75,0x3C, 0xE8 };
     void* addr = FindPattern(base, length, pattern, "xx????xxxxx");
     if (addr)
-        interval_per_tick = *(float**)(addr + 2);
+        interval_per_tick = *(float**)(addr + 2); //MOM_TODO: fix pointer arithmetic on void pointer?
 
-#elif defined (__APPLE__)
+#elif defined (OSX)
+	void *base;
+	size_t length;
 
+	int result = GetModuleInformation_OSX("engine.dylib", &base, &length);
+	if (result)
+		return false;
+	
+	//MOM_TODO: FIND BIT PATTERN LOL
+	/*
+	unsigned char pattern[] = {};
+	auto addr = reinterpret_cast<uintptr_t>(FindPattern(base, length, pattern, ""));
+	ConColorMsg(2, Color(255, 255, 0, 255),"Found pattern!\n");
+
+	if (addr)
+		interval_per_tick = *(float**)((char*)addr + 2);
+	*/
 #endif
 
     return (interval_per_tick ? true : false);
@@ -187,13 +164,15 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     ConVarRef tr(var);
     float toCheck = tr.GetFloat();
     if (g_pMomentumUtil->FloatEquals(toCheck, fOldValue)) return;
-    // MOM_TODO: Re-implement the bound 
-    //if (toCheck < 0.01f || toCheck > 0.015f)
-    //{
-    //    Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
-    //    var->SetValue(((ConVar*) var)->GetDefault());
-    //    return;
-    //}
+	//MOM_TODO: Re-implement the bound
+	
+	/*
+    if (toCheck < 0.01f || toCheck > 0.015f)
+    {
+        Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
+        var->SetValue(((ConVar*) var)->GetDefault());
+        return;
+    }*/
     bool result = TickSet::SetTickrate(toCheck);
     if (result)
     {
@@ -203,5 +182,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
 }
 
-// MOM_TODO: Remove the comment in the flags
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT /*| FCVAR_NOT_CONNECTED*/, "Changes the tickrate of the game.", onTickRateChange);
+static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_HIDDEN, "Changes the tickrate of the game. \
+					   Formatted as interval per tick, i.e 100 tickrate = 0.01", onTickRateChange);

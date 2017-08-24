@@ -1,10 +1,8 @@
-#ifndef TICKSET_H
-#define TICKSET_H
+#pragma once
 
 #include "cbase.h"
 #include "momentum/mom_shareddefs.h"
 #include "util/mom_util.h"
-
 
 struct Tickrate
 {
@@ -63,5 +61,3 @@ private:
     static Tickrate m_trCurrent;
     static bool m_bInGameUpdate;
 };
-
-#endif // TICKSET_H
