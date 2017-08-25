@@ -421,7 +421,7 @@ void CInput::ScaleMouse( float *x, float *y )
 		// Further re-scale by yaw and pitch magnitude if user requests alternate mode 2/4
 		// This means that they will need to up their value for m_customaccel_scale greatly (>40x) since m_pitch/yaw default
 		//  to 0.022
-		if ( m_customaccel.GetInt() == 2 || m_customaccel.GetInt() == 4 )
+		if ( m_customaccel.GetInt() == 2 )
 		{ 
 			*x *= m_yaw.GetFloat(); 
 			*y *= m_pitch->GetFloat(); 
