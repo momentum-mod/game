@@ -1,8 +1,3 @@
-
-#include <string>
-#include <functional>
-#include <algorithm>
-
 #include "gameui2_interface.h"
 #include "panel_options.h"
 
@@ -11,9 +6,11 @@
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
 
-
-
-
+#undef min
+#undef max
+#include <string>
+#include <functional>
+#include <algorithm>
 
 
 // memdbgon must be the last include file in a .cpp file!!!
