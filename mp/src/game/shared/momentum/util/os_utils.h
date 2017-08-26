@@ -21,7 +21,6 @@ extern int GetModuleInformation_OSX(const char *name, void **base, size_t *lengt
 #define GetProcAddress dlsym
 #ifdef OSX
 #define CLIENT_DLL_NAME "./momentum/bin/client.dylib" //OSX
-#include <mach-o/getsect.h>
 #include <mach-o/dyld_images.h>
 #include <mach-o/dyld.h>
 #else

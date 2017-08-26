@@ -10,7 +10,6 @@
 #include "tier0/platform.h"
 
 float* TickSet::interval_per_tick = nullptr;
-bool TickSet::m_bInGameUpdate = false;
 const Tickrate TickSet::s_DefinedRates[] = {
     { 0.015f, "66" },
     { 0.01f, "100" }
@@ -75,19 +74,24 @@ bool TickSet::TickInit()
 	void *base;
 	size_t length;
 
-	int result = GetModuleInformation_OSX("engine.dylib", &base, &length);
-	if (result)
+	if (GetModuleInformation_OSX("engine.dylib", &base, &length))
 		return false;
 	
-	//MOM_TODO: FIND BIT PATTERN LOL
-	/*
-	unsigned char pattern[] = {};
-	auto addr = reinterpret_cast<uintptr_t>(FindPattern(base, length, pattern, ""));
-	ConColorMsg(2, Color(255, 255, 0, 255),"Found pattern!\n");
-
-	if (addr)
-		interval_per_tick = *(float**)((char*)addr + 2);
-	*/
+	if (length == 12581936) //magic engine.dylib file size as of august 2017
+	{
+		interval_per_tick = reinterpret_cast<float*>((char*)base + 0x7DC120); //use offset since it's quicker than searching
+		printf("engine.dylib not updated. using offset! address: %#08x\n", interval_per_tick);
+	}
+	else //valve updated engine, try to use search pattern...
+	{
+		unsigned char pattern[] = {0x8F, 0xC2, 0x75, 0x3C, 0x78, '?', '?', 0x0C, 0x6C, '?', '?', '?', 0x01, 0x00};
+		auto addr = reinterpret_cast<uintptr_t>(FindPattern(base, length, pattern, "xxxxx??xx???xx"));
+		if (addr)
+		{
+			interval_per_tick = reinterpret_cast<float*>(addr);
+			printf("Found interval_per_tick using search! address: %#08x\n", interval_per_tick);
+		}
+	}
 #endif
 
     return (interval_per_tick ? true : false);
@@ -102,11 +106,6 @@ bool TickSet::SetTickrate(int gameMode)
     case MOMGM_SCROLL:
         //MOM_TODO: add more gamemodes
         return SetTickrate(s_DefinedRates[TICKRATE_100]);
-
-    case MOMGM_UNKNOWN:
-        if (m_bInGameUpdate) // If the user's updating this, ignore the end of map setting
-            return false;
-
     case MOMGM_SURF:
     default:
         return SetTickrate(s_DefinedRates[TICKRATE_66]);
@@ -133,25 +132,16 @@ bool TickSet::SetTickrate(float tickrate)
 
 bool TickSet::SetTickrate(Tickrate trNew)
 {
-    if (m_bInGameUpdate)
-    {
-        m_bInGameUpdate = false;
-        return false;
-    }
-
     if (trNew == m_trCurrent) return false;
 
     if (interval_per_tick)
     {
-        DevLog("Testing: %f\n", trNew.fTickRate);
         *interval_per_tick = trNew.fTickRate;
         gpGlobals->interval_per_tick = *interval_per_tick;
-        DevLog("Should have set the tickrate to %f\n", *interval_per_tick);
         m_trCurrent = trNew;
         auto pPlayer = UTIL_GetLocalPlayer();
         if (pPlayer)
         {
-            m_bInGameUpdate = true;
             engine->ClientCommand(pPlayer->edict(), "reload");
         }
         return true;
@@ -182,5 +172,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
 }
 
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_HIDDEN, "Changes the tickrate of the game. \
-					   Formatted as interval per tick, i.e 100 tickrate = 0.01", onTickRateChange);
+static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_HIDDEN,
+					   "Changes the tickrate of the game. Formatted as interval per tick, i.e 100 tickrate = 0.01", onTickRateChange);

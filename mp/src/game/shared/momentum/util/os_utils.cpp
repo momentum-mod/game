@@ -70,25 +70,19 @@ int GetModuleInformation_LINUX(const char *name, void **base, size_t *length)
 //returns the total size of the dylib binary, including header, data, ...
 size_t size_of_image(const mach_header *header)
 {
-	size_t sz =sizeof(*header);
-	sz += header->sizeofcmds;
+	size_t sz =sizeof(*header); //Size of header
+	sz += header->sizeofcmds;	//Size of load commands
 	load_command *lc = (load_command *)(header + 1);
-	for (uint32_t i = 0; i < header->ncmds; i++)
-	{
-		sz += ((segment_command *)lc)->vmsize;
+	
+	for (uint32_t i = 0; i < header->ncmds; i++) {
+		if (lc->cmd == LC_SEGMENT)
+		{
+			sz += ((segment_command*) lc)->vmsize; // Size of segment data
+		}
+		lc = (load_command*) ((char *) lc + lc->cmdsize);
 	}
-	lc = (load_command*) ((char*) lc + lc->cmdsize);
 	return sz;
-}
-//returns the address of the initilizer function of the dynamic library, or 0 if not found.
-uint32_t mod_init_addr(const mach_header *header)
-{
-	const section *sec;
-	if (sec = getsectbynamefromheader(header, "__DATA", "__mod_init_func"));
-	{
-		return sec->addr;
-	}
-	return 0;
+
 }
 //please kill me
 //https://blog.lse.epita.fr/articles/82-playing-with-mach-os-and-dyld.html
@@ -110,9 +104,9 @@ int GetModuleInformation_OSX(const char *name, void **base, size_t *length)
 		{
 			if (V_strstr(image_array[i].imageFilePath, name)) //found it!
 			{
-				printf("Found module %s!\n", name);
-				*base = (void*)mod_init_addr(image_array[i].imageLoadAddress);
-				*length = (size_t)size_of_image(image_array[i].imageLoadAddress);
+				*base = (void*)image_array[i].imageLoadAddress;
+				*length = size_of_image(image_array[i].imageLoadAddress);
+				printf("Found module %s! Base address: %#08x Length: %lu\n", name, *base, *length);
 				delete[] image_array;
 				return 0; //success!
 			}
