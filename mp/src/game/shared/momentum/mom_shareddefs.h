@@ -6,7 +6,9 @@
 
 #ifndef GHOST_SERVER
 #include "const.h"
+#ifndef GAMEUI2_DLL
 #include "shareddefs.h"
+#endif
 #endif
 // Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 // When editing this, remember to also edit version.txt on the main dir of the repo

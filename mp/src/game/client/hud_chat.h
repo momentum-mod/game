@@ -30,8 +30,6 @@ public:
     // MOM_TODO: Move these elsewhere. Maybe in clientmode? Something that has access to multiple UI components.
     STEAM_CALLBACK(CHudChat, OnLobbyMessage, LobbyChatMsg_t);
     STEAM_CALLBACK(CHudChat, OnLobbyDataUpdate, LobbyDataUpdate_t);
-    STEAM_CALLBACK(CHudChat, OnLobbyEnter, LobbyEnter_t);
-    STEAM_CALLBACK(CHudChat, OnLobbyKicked, LobbyKicked_t);
 
     void StartMessageMode(int) OVERRIDE;
     void StopMessageMode() OVERRIDE;
@@ -43,7 +41,7 @@ public:
 private:
     CUtlVector<CSteamID> m_vTypingMembers;
     CUtlVector<CSteamID> m_vMomentumOfficers;
-    uint64 m_uiLobbyId;
+
     vgui::HFont m_hfInfoTextFont;
     Color m_cInfoTextColor, m_cDefaultTextColor;
     bool m_bTyping;

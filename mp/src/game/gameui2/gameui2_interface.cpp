@@ -3,6 +3,10 @@
 #include <icommandline.h>
 #include "vgui/ILocalize.h"
 
+CSteamAPIContext* steamapicontext;
+
+#include "steam/steam_api.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -32,6 +36,15 @@ void CGameUI2::Initialize(CreateInterfaceFn appFactory)
 	m_pRenderView = static_cast<IVRenderView*>(appFactory(VENGINE_RENDERVIEW_INTERFACE_VERSION, nullptr));
     m_pMaterialSystem = static_cast<IMaterialSystem*>(appFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, nullptr));
 
+    steamapicontext = new CSteamAPIContext;
+
+    if (!SteamAPI_InitSafe())
+    {
+        Error("Could not init Steam API for GameUI2.\n");
+    }
+
+    steamapicontext->Init();
+
 	CreateInterfaceFn gameUIFactory = g_GameUI.GetFactory();
 	if (gameUIFactory)
 		m_pGameUI = static_cast<IGameUI*>(gameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
@@ -60,7 +73,8 @@ void CGameUI2::Shutdown()
         GetBasePanel()->GetMainMenu()->DeletePanel();
         GetBasePanel()->DeletePanel();
     }
-
+    SteamAPI_Shutdown();
+    delete steamapicontext;
 	ConVar_Unregister();
 	DisconnectTier3Libraries();
 	DisconnectTier2Libraries();

@@ -9,8 +9,12 @@
 #include "KeyValues.h"
 #include "filesystem.h"
 
+#include "mom_steam_helper.h"
+#include "mom_shareddefs.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
 
 using namespace vgui;
 
@@ -41,7 +45,9 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonFeedback->SetVisible(true);
     m_pButtonFeedback->SetTextAlignment(RIGHT);
 
-#ifdef DEBUG
+    m_bInLobby = false;
+    m_bIsSpectating = false;
+
     m_pButtonLobby = new Button_MainMenu(this, this, "engine mom_lobby_create");
     m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
     m_pButtonLobby->SetButtonDescription("");
@@ -59,9 +65,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonInviteFriends->SetVisible(false);
     m_pButtonInviteFriends->SetTextAlignment(CENTER);
     m_pButtonInviteFriends->SetButtonType(SHARED);
-
-    m_bInLobby = false;
-#endif //DEBUG
+    
 
     CreateMenu("resource2/mainmenu.res");
 
@@ -72,21 +76,10 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 
 MainMenu::~MainMenu()
 {
-    if (m_pButtonFeedback)
-    {
-        delete m_pButtonFeedback;
-    }
-#ifdef DEBUG
-    if (m_pButtonLobby)
-    {
-        delete m_pButtonLobby;
-    }
-
-    if (m_pButtonInviteFriends)
-    {
-        delete m_pButtonInviteFriends;
-    }
-#endif //DEBUG
+    m_pButtonFeedback->DeletePanel();
+    m_pButtonFeedback->DeletePanel();
+    m_pButtonLobby->DeletePanel();
+    m_pButtonInviteFriends->DeletePanel();
 }
 
 void MainMenu::CreateMenu(const char *menu)
@@ -108,7 +101,11 @@ void MainMenu::CreateMenu(const char *menu)
                 button->SetButtonType(IN_GAME);
             else if (!Q_strcasecmp(specifics, "mainmenu"))
                 button->SetButtonType(MAIN_MENU);
-
+            // Save a pointer to this button if it's the spectate one
+            if (Q_strcmp(dat->GetName(), "Spectate") == 0)
+            {
+                m_pButtonSpectate = button;
+            }
             m_pButtons.AddToTail(button);
         }
     }
@@ -128,6 +125,8 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *co
 
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
+    // Find a better place for this
+    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
     BaseClass::ApplySchemeSettings(pScheme);
 
     m_fButtonsSpace = atof(pScheme->GetResourceString("MainMenu.Buttons.Space"));
@@ -154,6 +153,10 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
         m_pLogoImage->SetSize(imageW, imageH);
         // Pos is handled in Paint()
     }
+    m_bLogoPlayerCount = atoi(pScheme->GetResourceString("MainMenu.Logo.PlayerCount"));
+    m_fLogoPlayerCount = pScheme->GetFont("MainMenu.Logo.PlayerCount.Font", true);
+    m_cLogoPlayerCount = pScheme->GetColor("MainMenu.Logo.PlayerCount.Color", Color(255, 255, 255, 255));
+
     m_fLogoFont = pScheme->GetFont("MainMenu.Logo.Font", true);
 
     Q_strncpy(m_pszMenuOpenSound, pScheme->GetResourceString("MainMenu.Sound.Open"), sizeof(m_pszMenuOpenSound));
@@ -166,6 +169,8 @@ void MainMenu::OnThink()
 
     if (ipanel())
         SetBounds(0, 0, GameUI2().GetViewport().x, GameUI2().GetViewport().y);
+
+    g_pMomentumSteamHelper->CheckLobby();
 }
 
 bool MainMenu::IsVisible(void)
@@ -245,26 +250,48 @@ void MainMenu::DrawMainMenu()
     }
 
     // MOM_TODO: Remove this after it's not needed
-    if (m_pButtonFeedback)
-    {
         m_pButtonFeedback->SetPos(GameUI2().GetViewport().x - m_pButtonFeedback->GetWidth(),
                                   GameUI2().GetViewport().y - (m_pButtonFeedback->GetHeight() + m_fButtonsOffsetY));
-    }
+    
 
-#ifdef DEBUG
-    if (m_pButtonLobby)
+    // New lobby state.
+    const bool isLobbyValid = g_pMomentumSteamHelper->IsLobbyValid();
+       
+    if (isLobbyValid && !m_bInLobby) // We just joined a lobby!
     {
-        m_pButtonLobby->SetPos(GameUI2().GetViewport().x - m_pButtonLobby->GetWidth(), m_fButtonsOffsetY);
-
-        if (m_pButtonInviteFriends)
-        {
-            m_pButtonInviteFriends->SetVisible(m_bInLobby);
-            m_pButtonInviteFriends->SetPos(GameUI2().GetViewport().x - m_pButtonInviteFriends->GetWidth(),
-                m_pButtonLobby->GetTall() + m_fButtonsOffsetY);
-        }
+        m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
+        m_pButtonLobby->SetCommand("engine mom_lobby_leave");
+        m_pButtonInviteFriends->SetVisible(true);
+        m_bInLobby = isLobbyValid;
     }
-#endif //DEBUG
-
+    else if (!isLobbyValid && m_bInLobby) // We left a lobby
+    {
+        m_pButtonLobby->SetButtonText("GameUI2_HostLobby");
+        m_pButtonLobby->SetCommand("engine mom_lobby_create");
+        m_pButtonInviteFriends->SetVisible(false);
+        m_bInLobby = isLobbyValid;
+    }
+    
+    const char* spectatingText = g_pMomentumSteamHelper->GetLobbyLocalMemberData(LOBBY_DATA_IS_SPEC);
+    const bool isSpectating = spectatingText != nullptr && Q_strlen(spectatingText) > 0;
+    if (isSpectating && !m_bIsSpectating) // We just started spectating
+    {
+        m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
+        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
+        m_pButtonSpectate->SetCommand("engine mom_spectate_stop");
+        m_bIsSpectating = isSpectating;
+    }
+    else if (!isSpectating && m_bIsSpectating) // We respawned
+    {
+        m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
+        m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
+        m_pButtonSpectate->SetCommand("engine mom_spectate");
+        m_bIsSpectating = isSpectating;
+    }
+    m_pButtonSpectate->SetVisible(isLobbyValid);
+    m_pButtonLobby->SetPos(GameUI2().GetViewport().x - m_pButtonLobby->GetWidth(), m_fButtonsOffsetY);
+    m_pButtonInviteFriends->SetPos(GameUI2().GetViewport().x - m_pButtonInviteFriends->GetWidth(), m_pButtonLobby->GetTall() + m_fButtonsOffsetY);
+    
 }
 
 void MainMenu::DrawLogo()
@@ -320,6 +347,14 @@ void MainMenu::DrawLogo()
             }
 
             m_pLogoImage->SetPos(SCALE(logoX), SCALE(logoY));
+            if (m_bLogoPlayerCount)
+            {
+                surface()->DrawSetTextColor(m_cLogoPlayerCount);
+                surface()->DrawSetTextFont(m_fLogoPlayerCount);
+                surface()->DrawSetTextPos(m_pLogoImage->GetXPos(), m_pLogoImage->GetTall() + m_pLogoImage->GetYPos());
+                const wchar_t* currentTotalPlayers = g_pMomentumSteamHelper->GetCurrentTotalPlayersAsString();
+                surface()->DrawPrintText(currentTotalPlayers, wcslen(currentTotalPlayers));
+            }
         }
     }
 }
@@ -335,24 +370,6 @@ void MainMenu::Paint()
 void MainMenu::OnCommand(char const *cmd)
 {
     GameUI2().GetGameUI()->SendMainMenuCommand(cmd);
-#ifdef DEBUG
-    // MOM_TODO: Actually check if we join/leave a lobby
-    if (m_pButtonLobby && Q_strcmp(cmd, "engine mom_lobby_create") == 0 || Q_strcmp(cmd, "engine mom_lobby_leave") == 0)
-    {
-        // Does not work for connect_loby and connection errors, that's why upper todo exists
-        m_bInLobby = !m_bInLobby;
-        if (m_bInLobby)
-        {
-            m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
-            m_pButtonLobby->SetCommand("engine mom_lobby_leave");
-        }
-        else
-        {
-            m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
-            m_pButtonLobby->SetCommand("engine mom_lobby_create");
-        }
-    }
-#endif //DEBUG
     BaseClass::OnCommand(cmd);
 }
 

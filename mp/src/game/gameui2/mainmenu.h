@@ -31,6 +31,7 @@ class MainMenu : public Panel2D
     void OnSetFocus() OVERRIDE;
     void OnKillFocus() OVERRIDE;
 
+
     void Activate()
     {
         MoveToFront();
@@ -41,14 +42,21 @@ class MainMenu : public Panel2D
   private:
     CUtlVector<Button_MainMenu *> m_pButtons;
 
+    // Our own buttons...
+
     // MOM_TODO: Remove this when it's no longer needed
     Button_MainMenu *m_pButtonFeedback;
-#ifdef DEBUG
+
+    bool m_bInLobby;
+
     Button_MainMenu *m_pButtonLobby;
     Button_MainMenu *m_pButtonInviteFriends;
 
-    bool m_bInLobby;
-#endif //DEBUG
+    // Pointers to main menu buttons...
+
+    Button_MainMenu *m_pButtonSpectate;
+    bool m_bIsSpectating;
+ 
 
     char m_pszMenuOpenSound[MAX_PATH];
     char m_pszMenuCloseSound[MAX_PATH];
@@ -65,13 +73,16 @@ class MainMenu : public Panel2D
     float m_fLogoOffsetX;
     float m_fLogoOffsetY;
 
+    bool m_bLogoPlayerCount;
     bool m_bLogoText;
     vgui::ImagePanel *m_pLogoImage;
     bool m_bLogoAttachToMenu;
 
     Color m_cLogoLeft;
     Color m_cLogoRight;
+    Color m_cLogoPlayerCount;
 
+    vgui::HFont m_fLogoPlayerCount;
     vgui::HFont m_fLogoFont;
     int m_nSortFlags;
     bool m_bNeedSort;

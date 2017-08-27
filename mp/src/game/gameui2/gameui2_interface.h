@@ -11,6 +11,8 @@
 #include "vgui_controls/AnimationController.h"
 #include "view_shared.h"
 
+#include "steam/steam_api.h"
+
 class IVEngineClient;
 class IEngineSound;
 class IEngineVGui;

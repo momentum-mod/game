@@ -38,7 +38,7 @@ $Configuration
 	
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;.\;$SRCDIR\vgui2\include;$SRCDIR\vgui2\controls;$SRCDIR\game\gameui2;..\..\public"
+		$AdditionalIncludeDirectories	"$BASE;.\;$SRCDIR\vgui2\include;$SRCDIR\vgui2\controls;$SRCDIR\game\gameui2;..\..\public;$SRCDIR\game\shared\momentum"
 		$PreprocessorDefinitions		"$BASE;GAMEUI2_DLL;VERSION_SAFE_STEAM_API_INTERFACES;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead"
 	}
 
@@ -64,6 +64,8 @@ $Project "GameUI2"
 	$Folder	"Header Files"
 	{
 		$File	"$SRCDIR\game\gameui2\igameui2.h"
+		$File   "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
+		$File 	"$SRCDIR\game\shared\momentum\mom_shareddefs.h"
 	}
 
 	$Folder	"Link Libraries"
@@ -128,5 +130,16 @@ $Project "GameUI2"
 		$File	"$SRCDIR\game\gameui2\basepanel.h"
 		$File	"$SRCDIR\game\gameui2\gameui2_interface.cpp"
 		$File	"$SRCDIR\game\gameui2\gameui2_interface.h"
+
+		$File 	"$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
+		{
+			$Configuration
+			{
+				$Compiler
+				{
+					$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+				}
+			}
+		}
 	}
 }

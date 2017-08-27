@@ -76,6 +76,17 @@ $Project "Server (Momentum)"
 	                $File "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
 
 	            }
+                $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
+                $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
             	$File "$SRCDIR\game\server\momentum\mom_lobby_system.h"
                 $File "$SRCDIR\game\server\momentum\mom_lobby_system.cpp"
 

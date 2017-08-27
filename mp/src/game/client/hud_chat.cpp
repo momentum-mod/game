@@ -14,8 +14,10 @@
 #include "momentum/mom_shareddefs.h"
 #include <vgui/ILocalize.h>
 
-#include "tier0/memdbgon.h"
+#include "mom_steam_helper.h"
 #include "clientmode.h"
+
+#include "tier0/memdbgon.h"
 
 DECLARE_HUDELEMENT(CHudChat);
 
@@ -33,7 +35,7 @@ CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName)
 {
     m_vTypingMembers = CUtlVector<CSteamID>();
     m_hfInfoTextFont = 0;
-    m_uiLobbyId = 0;
+
     m_bIsVisible = m_bTyping = false;
 }
 
@@ -66,17 +68,9 @@ void CHudChat::Init(void)
 
 }
 
-void CHudChat::OnLobbyEnter(LobbyEnter_t *pParam)
-{
-    if (pParam->m_EChatRoomEnterResponse == k_EChatRoomEnterResponseSuccess)
-    {
-        m_uiLobbyId = pParam->m_ulSteamIDLobby;
-    }
-}
-
 void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
 {
-    CSteamID msgSender = CSteamID(pParam->m_ulSteamIDUser);
+    const CSteamID msgSender = CSteamID(pParam->m_ulSteamIDUser);
     /*
     if (msgSender == steamapicontext->SteamUser()->GetSteamID().ConvertToUint64())
     {
@@ -88,21 +82,22 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     FOR_EACH_VEC(m_vMomentumOfficers, i)
     {
         if (m_vMomentumOfficers[i] == msgSender)
+        {
             isMomentumTeam = true;
+            break;
+        }
     }
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, steamapicontext->SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
-    const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_uiLobbyId, msgSender, LOBBY_DATA_IS_SPEC);
-
-    bool isSpectating = specChar[0] == '1';
-    char *message = new char[4096];
+    const char* spectatingText = g_pMomentumSteamHelper->GetLobbyMemberData(msgSender, LOBBY_DATA_IS_SPEC);
+    const bool isSpectating = spectatingText != nullptr && Q_strlen(spectatingText) > 0;
+    char message[4096];
     // MOM_TODO: This won't be just text in the future, if we captialize on being able to send binary data. Wrap this is
     // something and parse it
     steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
     SetCustomColor(COLOR_RED);
     ChatPrintf(1, CHAT_FILTER_NONE, "%c%s%s%c: %s", isMomentumTeam ? COLOR_CUSTOM : COLOR_PLAYERNAME, isSpectating ? "*SPEC* " : "", personName, COLOR_NORMAL, ConvertCRtoNL(message));
-    delete[] message;
 }
 
 
@@ -138,12 +133,12 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
     if (type == SPEC_UPDATE_LEAVE)
     {
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-            "%s has respawned.", pName);
+               "%s has respawned.", pName);
     }
     else if (type == SPEC_UPDATE_JOIN)
     {
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-            "%s is now spectating.", pName);
+               "%s is now spectating.", pName);
     }
     //MOM_TODO: Get rid of me?
     else if (type == SPEC_UPDATE_CHANGETARGET) 
@@ -171,10 +166,10 @@ void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read& msg)
     CSteamID personID = CSteamID(person);
     const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
     Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-        "%s has %s the %s.",
-        pName,
-        isJoin ? "joined" : "left",
-        isMap ? "map" : "lobby");
+           "%s has %s the %s.",
+           pName,
+           isJoin ? "joined" : "left",
+           isMap ? "map" : "lobby");
 }
 
 
@@ -188,10 +183,8 @@ void CHudChat::StartMessageMode(int iMessageMode)
 void CHudChat::StopMessageMode()
 {
     BaseClass::StopMessageMode();
-    if (m_uiLobbyId != 0) // Only if already on lobby
-    {
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, LOBBY_DATA_TYPING, nullptr);
-    }
+
+    g_pMomentumSteamHelper->SetLobbyMemberData(LOBBY_DATA_TYPING, nullptr);
 
     // Can't be typing if we close the chat
     m_bIsVisible = m_bTyping = false;
@@ -200,17 +193,19 @@ void CHudChat::StopMessageMode()
 
 void CHudChat::OnThink()
 {
-    if (m_uiLobbyId != 0 && GetMessageMode() != 0 && GetInputPanel())
+    g_pMomentumSteamHelper->CheckLobby(); // Maybe too often?
+
+    if (g_pMomentumSteamHelper->IsLobbyValid() && GetMessageMode() != 0 && GetInputPanel())
     {
         const int isSomethingTyped = GetInputPanel()->GetTextLength() > 0;
         if (isSomethingTyped && !m_bTyping)
         {
-            steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, LOBBY_DATA_TYPING, "y"); // Can be literally anything
+            g_pMomentumSteamHelper->SetLobbyMemberData(LOBBY_DATA_TYPING, "y");
             m_bTyping = true;
         }
         else if (!isSomethingTyped && m_bTyping)
         {
-            steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_uiLobbyId, LOBBY_DATA_TYPING, nullptr);
+            g_pMomentumSteamHelper->SetLobbyMemberData(LOBBY_DATA_TYPING, nullptr);
             m_bTyping = false;
         }
     }
@@ -222,11 +217,11 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
     if (pParam->m_bSuccess && pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember)
     {
         // Typing Status
-        const char *typingStatus =
-            steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_uiLobbyId, pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
+        const char* typingText = g_pMomentumSteamHelper->GetLobbyMemberData(pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
+        const bool isTyping = typingText != nullptr && Q_strlen(typingText) > 0;
         const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
         const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
-        if (typingStatus[0])
+        if (isTyping)
         {
             if (!isValidIndex)
                 m_vTypingMembers.AddToTail(pParam->m_ulSteamIDMember);
@@ -275,10 +270,6 @@ void CHudChat::Paint()
     }
 }
 
-void CHudChat::OnLobbyKicked(LobbyKicked_t* pParam)
-{
-    m_uiLobbyId = 0;
-}
 Color CHudChat::GetDefaultTextColor(void) //why the fuck is this not a .res file color in CHudBaseChat !?!?!?
 {
     return m_cDefaultTextColor;
