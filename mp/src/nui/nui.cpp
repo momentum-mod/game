@@ -63,6 +63,11 @@ void CMomNUI::Shutdown()
     if (!m_bInitialized)
         return;
 
+    if (m_pFrame)
+    {
+        m_pFrame->Client()->Browser()->GetHost()->CloseBrowser(true);
+    }
+
     m_bInitialized = false;
 
     CefShutdown();

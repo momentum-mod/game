@@ -1,7 +1,10 @@
 #include "cbase.h"
 #include "server_events.h"
+#include "nui.h"
 
 #include "tier0/memdbgon.h"
+
+class CMomNUI;
 
 //This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
@@ -48,6 +51,11 @@ void CMOMServerEvents::PostInit()
     {
 
     }*/
+}
+
+void CMOMServerEvents::Shutdown()
+{
+    CMomNUI::GetInstance()->Shutdown();
 }
 
 void CMOMServerEvents::LevelInitPreEntity()

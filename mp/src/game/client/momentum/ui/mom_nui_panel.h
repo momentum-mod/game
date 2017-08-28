@@ -2,8 +2,7 @@
 
 #include "vgui_controls/Panel.h"
 
-class CMomNUIPanel :
-    public vgui::Panel
+class CMomNUIPanel : public vgui::Panel
 {
 public:
     DECLARE_CLASS_SIMPLE(CMomNUIPanel, vgui::Panel);
@@ -13,19 +12,19 @@ public:
     ~CMomNUIPanel();
 
 public:
-    virtual void OnThink() override;
-    virtual void Paint() override;
-    virtual void OnCursorEntered() override;
-    virtual void OnCursorExited() override;
-    virtual void OnCursorMoved(int x, int y) override;
-    virtual void OnMousePressed(vgui::MouseCode code) override;
-    virtual void OnMouseDoublePressed(vgui::MouseCode code) override;
-    virtual void OnMouseReleased(vgui::MouseCode code) override;
-    virtual void OnMouseWheeled(int delta) override;
-    virtual void OnKeyCodePressed(vgui::KeyCode code) override;
-    virtual void OnKeyCodeTyped(vgui::KeyCode code) override;
-    virtual void OnKeyTyped(wchar_t unichar) override;
-    virtual void OnKeyCodeReleased(vgui::KeyCode code) override;
+    virtual void OnThink() OVERRIDE;
+    virtual void Paint() OVERRIDE;
+    virtual void OnCursorEntered() OVERRIDE;
+    virtual void OnCursorExited() OVERRIDE;
+    virtual void OnCursorMoved(int x, int y) OVERRIDE;
+    virtual void OnMousePressed(vgui::MouseCode code) OVERRIDE;
+    virtual void OnMouseDoublePressed(vgui::MouseCode code) OVERRIDE;
+    virtual void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
+    virtual void OnMouseWheeled(int delta) OVERRIDE;
+    virtual void OnKeyCodePressed(vgui::KeyCode code) OVERRIDE;
+    virtual void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
+    virtual void OnKeyTyped(wchar_t unichar) OVERRIDE;
+    virtual void OnKeyCodeReleased(vgui::KeyCode code) OVERRIDE;
 
 private:
     int m_iTextureID;

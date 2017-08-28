@@ -133,6 +133,8 @@ void CMomNUIPanel::OnMousePressed(vgui::MouseCode code)
         eventType = MBT_MIDDLE;
         eventFlags |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
         break;
+    default:
+        break;
     }
 
     me.modifiers = eventFlags;
@@ -166,6 +168,8 @@ void CMomNUIPanel::OnMouseDoublePressed(vgui::MouseCode code)
     case MOUSE_MIDDLE:
         eventType = MBT_MIDDLE;
         eventFlags |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+        break;
+    default:
         break;
     }
 
@@ -201,6 +205,8 @@ void CMomNUIPanel::OnMouseReleased(vgui::MouseCode code)
         eventType = MBT_MIDDLE;
         eventFlags &= ~EVENTFLAG_MIDDLE_MOUSE_BUTTON;
         break;
+    default:
+        break;
     }
 
     me.modifiers = eventFlags;
@@ -223,20 +229,34 @@ void CMomNUIPanel::OnMouseWheeled(int delta)
 
 void CMomNUIPanel::OnKeyCodePressed(vgui::KeyCode code)
 {
-    // TODO (OrfeasZ)
+    CefKeyEvent ke;
+    ke.type = KEYEVENT_KEYDOWN;
+    ke.native_key_code = code;
+
+    CMomNUI::GetInstance()->GetFrame()->Client()->Browser()->GetHost()->SendKeyEvent(ke);
 }
 
 void CMomNUIPanel::OnKeyCodeTyped(vgui::KeyCode code)
 {
-    // TODO (OrfeasZ)
+    CefKeyEvent ke;
+    ke.native_key_code = code;
+
+    CMomNUI::GetInstance()->GetFrame()->Client()->Browser()->GetHost()->SendKeyEvent(ke);
 }
 
 void CMomNUIPanel::OnKeyTyped(wchar_t unichar)
 {
-    // TODO (OrfeasZ)
+    CefKeyEvent ke;
+    ke.character = unichar;
+
+    CMomNUI::GetInstance()->GetFrame()->Client()->Browser()->GetHost()->SendKeyEvent(ke);
 }
 
 void CMomNUIPanel::OnKeyCodeReleased(vgui::KeyCode code)
 {
-    // TODO (OrfeasZ)
+    CefKeyEvent ke;
+    ke.type = KEYEVENT_KEYUP;
+    ke.native_key_code = code;
+
+    CMomNUI::GetInstance()->GetFrame()->Client()->Browser()->GetHost()->SendKeyEvent(ke);
 }

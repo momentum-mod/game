@@ -8,6 +8,7 @@ $Macro SRCDIR       "..\.."
 $Macro GAMENAME     "momentum"
 
 $Include "$SRCDIR\game\server\server_base.vpc"
+$Include "$SRCDIR\game\client\cef_include.vpc"
 
 $Configuration
 {
