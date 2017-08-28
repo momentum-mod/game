@@ -10,7 +10,7 @@
 ConVar default_fov("default_fov", "90", FCVAR_CHEAT);
 
 // The current client mode. Always ClientModeNormal in HL.
-IClientMode *g_pClientMode = NULL;
+IClientMode *g_pClientMode = nullptr;
 
 #define SCREEN_FILE		"scripts/vgui_screens.txt"
 

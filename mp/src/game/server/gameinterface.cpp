@@ -171,6 +171,7 @@ IFileSystem		*filesystem = NULL;
 #else
 extern IFileSystem *filesystem;
 #endif
+CShared *shared = NULL;
 INetworkStringTableContainer *networkstringtable = NULL;
 IStaticPropMgrServer *staticpropmgr = NULL;
 IUniformRandomStream *random = NULL;
@@ -632,6 +633,9 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	// If not running dedicated, grab the engine vgui interface
 	if ( !engine->IsDedicatedServer() )
 	{
+
+
+
 #ifdef _WIN32
 		// This interface is optional, and is only valid when running with -tools
 		serverenginetools = ( IServerEngineTools * )appSystemFactory( VSERVERENGINETOOLS_INTERFACE_VERSION, NULL );
@@ -747,9 +751,6 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	gamestatsuploader->InitConnection();
 #endif
 
-    //Momentum
-    Momentum::OnServerDLLInit();
-
 	return true;
 }
 
@@ -840,7 +841,7 @@ float CServerGameDLL::GetTickInterval( void ) const
 // [Forrest] For Counter-Strike, set default tick rate of 66 and removed -tickrate command line parameter.
 //=============================================================================
 // Ignoring this for now, server ops are abusing it
-#if !defined( TF_DLL ) && !defined( CSTRIKE_DLL ) && !defined( DOD_DLL )
+#if !defined( TF_DLL ) && !defined( CSTRIKE_DLL ) && !defined( DOD_DLL ) && !defined( SDK_DLL )
 //=============================================================================
 // HPE_END
 //=============================================================================
@@ -855,27 +856,6 @@ float CServerGameDLL::GetTickInterval( void ) const
 
 	return tickinterval;
 }
-
-static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
-{
-    float toCheck = ((ConVar*) var)->GetFloat();
-    if (toCheck == fOldValue) return;
-    if (toCheck < 0.01f || toCheck > 0.015f)
-    {
-        Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
-        var->SetValue(((ConVar*) var)->GetDefault());
-        return;
-    }
-    bool result = TickSet::SetTickrate(toCheck);
-    if (result)
-    {
-        Msg("Successfully changed the tickrate to %f!\n", toCheck);
-        gpGlobals->interval_per_tick = toCheck;
-    }
-    else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
-}
-
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_NOT_CONNECTED, "Changes the tickrate of the game.", onTickRateChange);
 
 // This is called when a new game is started. (restart, map)
 bool CServerGameDLL::GameInit( void )
@@ -1549,15 +1529,31 @@ void CServerGameDLL::RestoreGlobalState(CSaveRestoreData *s)
 
 void CServerGameDLL::Save( CSaveRestoreData *s )
 {
-	CSave saveHelper( s );
-	g_pGameSaveRestoreBlockSet->Save( &saveHelper );
+    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+    filter.MakeReliable();
+    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
+    MessageEnd();
+    Warning("************************************\n");
+    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
+    Warning("Try using the checkpoint menu instead!\n");
+    Warning("************************************\n");
+	/*CSave saveHelper( s );
+	g_pGameSaveRestoreBlockSet->Save( &saveHelper );*/
 }
 
 void CServerGameDLL::Restore( CSaveRestoreData *s, bool b)
 {
-	CRestore restore(s);
+    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+    filter.MakeReliable();
+    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
+    MessageEnd();
+    Warning("************************************\n");
+    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
+    Warning("Try using the checkpoint menu instead!\n");
+    Warning("************************************\n");
+	/*CRestore restore(s);
 	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	g_pGameSaveRestoreBlockSet->PostRestore();
+	g_pGameSaveRestoreBlockSet->PostRestore();*/
 }
 
 //-----------------------------------------------------------------------------

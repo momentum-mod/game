@@ -2054,9 +2054,9 @@ void CDynamicProp::CreateBoneFollowers()
 				pBone = pBone->GetNextKey();
 			}
 		}
-
-		modelKeyValues->deleteThis();
 	}
+
+	modelKeyValues->deleteThis();
 
 	// if we got here, we don't have a bone follower section, but if we have a ragdoll
 	// go ahead and create default bone followers for it
@@ -5147,7 +5147,7 @@ void CPropDoorRotating::MoveDone()
 //-----------------------------------------------------------------------------
 void CPropDoorRotating::AngularMove(const QAngle &vecDestAngle, float flSpeed)
 {
-	ASSERTSZ(flSpeed != 0, "AngularMove:  no speed is defined!");
+	ASSERTSZ(flSpeed != 0.0f, "AngularMove:  no speed is defined!");
 	
 	m_angGoal = vecDestAngle;
 

@@ -1,4 +1,36 @@
-            @include "base.fgd"
+@include "base.fgd"
+
+//-------------------------------------------------------------------------
+//
+// PARALLAX CUBEMAP OVERRIDES
+// (Credit Brian Charles)
+//-------------------------------------------------------------------------
+
+// Overrides the base cubemap to allow tying to a parallax_obb brush for parallax cubemaps.
+@PointClass color(0 0 255) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map."
+[
+	cubemapsize(choices) : "Cubemap Size" : 0 =
+	[
+		0 : "Default"
+		1 : "1x1"
+		2 : "2x2"
+		3 : "4x4"
+		4 : "8x8"
+		5 : "16x16"
+		6 : "32x32"
+		7 : "64x64"
+		8 : "128x128"
+		9 : "256x256"
+	]
+	sides(sidelist) : "Brush faces": : "(Optional) Brushes faces to directly attach to the env_cubemap. Press Pick then click on faces in the 3D View to select them. Use CTRL while clicking to add or remove from the selection."
+	parallaxobb(target_destination) : "Cubemap Bounds" : : "(Optional) assigns this cubemap a bounding box for parallax correction (brush entity tied to parallax_obb)."
+]
+
+@SolidClass = parallax_obb
+[
+	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
+]
+
 
 //-------------------------------------------------------------------------
 //
@@ -29,7 +61,24 @@
 ]
 
 @SolidClass base(TeleTrigger) = trigger_momentum_teleport : "A trigger volume that teleports entities that touch it. Entities are teleported to the Remote Destination. "+
-    "The entity can have its Angles and Velocity reset by boolean settings." []
+    "The entity can have its Angles and Velocity reset by boolean settings." 
+[
+	// In other places default values for the spawnflags get carried over. But for some reason, I couldn't make it happen here
+	spawnflags(flags) =
+	[
+		4096 : "Teleport the player on EndTouch() instead of StartTouch()" : 0
+		1: "Clients" : 1
+		2: "NPCs" : 0
+		4: "Pushables": 0
+		8: "Physics Objects" : 0
+		16: "Only player ally NPCs" : 0
+		32: "Only clients in vehicles" : 0
+		64: "Everything (not including physics debris)" : 0
+		512: "Only clients *not* in vehicles" : 0
+		1024: "Physics debris" : 0
+		2048: "Only NPCs in vehicles (respects player ally flag)" : 0
+	]
+]
 
 @SolidClass base(Trigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
 [
@@ -152,3 +201,43 @@
 		256 : "Use the direction vector as final force instead of calculating it by force amount" : 1
 	]
 ]
+
+@SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working properly brushes must be placed under the trigger." 
+[
+	Slide(integer) : "Sliding" : 1 : "Enabled?"
+	StuckOnGround(integer) : "Stick to ground" : 1 : "Should the player get stuck to the ground while sliding? (Useful if no gravity present)"
+	Gravity(float) : "Gravity" : 0 : "Use this instead of trigger_gravity. " + 
+    "This is only set when the player touches the trigger, so once the player leaves the trigger, his gravity is reset to its previous value (befores he touches the trigger). " + 
+    "This is useful if you want speed/velocity based on strafes only, where slopes don't count for it."
+]
+
+//-------------------------------------------------------------------------
+//
+// Weapons
+//
+//-------------------------------------------------------------------------
+@BaseClass color(0 0 200) base(Targetname, Angles) sphere(fademindist) sphere(fademaxdist) = Weapon
+[
+	spawnflags(Flags) =
+	[
+		1 : "Start constrained" : 0
+	]
+
+	output OnPlayerUse(void) : "Fires when the player +uses this weapon"
+	output OnPlayerPickup(void) : "Fires when the player picks up this weapon"
+
+	fademindist(float) : "Start Fade Dist/Pixels" : -1 : "Distance at which the prop starts to fade (<0 = use fademaxdist). If 'Screen Space Fade' is selected, this represents the number of pixels wide covered by the prop when it starts to fade."
+	fademaxdist(float) : "End Fade Dist/Pixels" : 0 : "Maximum distance at which the prop is visible (0 = don't fade out). If 'Screen Space Fade' is selected, this represents the *minimum* number of pixels wide covered by the prop when it fades."
+	fadescale(float) : "Fade Scale" : 1 : "If you specify a fade in the worldspawn, or if the engine is running under dx7, then the engine will forcibly fade out props even if fademindist/fademaxdist isn't specified." +
+												 " This scale factor gives you some control over the fade. Using 0 here turns off the forcible fades." +
+]
+
+@PointClass base(Weapon) studio("models/weapons/w_knife_t.mdl") = weapon_knife : "Knife" []
+@PointClass base(Weapon) studio("models/weapons/w_pistol.mdl") = weapon_momentum_pistol : "Pistol" []
+@PointClass base(Weapon) studio("models/weapons/w_smg1.mdl") = weapon_momentum_smg : "SMG" []
+@PointClass base(Weapon) studio("models/weapons/w_irifle.mdl") = weapon_momentum_rifle : "Rifle" []
+@PointClass base(Weapon) studio("models/weapons/w_shotgun.mdl") = weapon_momentum_shotgun : "Shotgun" []
+@PointClass base(Weapon) studio("models/weapons/w_mach_m249para.mdl") = weapon_momentum_lmg : "LMG" []
+@PointClass base(Weapon) studio("models/weapons/w_snip_scout.mdl") = weapon_momentum_sniper : "Sniper" []
+@PointClass base(Weapon) studio("models/weapons/w_eq_fraggrenade.mdl") = weapon_momentum_grenade : "Grenade" []
+

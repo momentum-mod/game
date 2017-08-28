@@ -562,6 +562,8 @@ CFishPool::CFishPool( void )
 	ListenForGameEvent( "flashbang_detonate" );
 	ListenForGameEvent( "smokegrenade_detonate" );
 	ListenForGameEvent( "bomb_exploded" );
+
+    m_waterLevel = 0.0f;
 }
 
 //-------------------------------------------------------------------------------------------------------------
@@ -581,10 +583,9 @@ void CFishPool::Spawn()
 		QAngle heading( 0.0f, RandomFloat( 0, 360.0f ), 0.0f );
 
 		CFish *fish = (CFish *)Create( "fish", GetAbsOrigin(), heading, this );
-		fish->Initialize( this, i );
-
 		if (fish)
 		{
+            fish->Initialize(this, i);
 			CHandle<CFish> hFish;
 			hFish.Set( fish );
 			m_fishes.AddToTail( hFish );

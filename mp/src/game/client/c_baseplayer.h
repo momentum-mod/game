@@ -150,7 +150,7 @@ public:
 	virtual CBaseEntity	*GetObserverTarget() const;
 	void			SetObserverTarget( EHANDLE hObserverTarget );
 
-	bool			AudioStateIsUnderwater( Vector vecMainViewOrigin );
+	bool			AudioStateIsUnderwater( const Vector &vecMainViewOrigin );
 
 	bool IsObserver() const;
 	bool IsHLTV() const;
@@ -363,7 +363,7 @@ public:
 
 	surfacedata_t *GetSurfaceData( void ) { return m_pSurfaceData; }
 
-	void SetLadderNormal( Vector vecLadderNormal ) { m_vecLadderNormal = vecLadderNormal; }
+	void SetLadderNormal( const Vector &vecLadderNormal ) { m_vecLadderNormal = vecLadderNormal; }
 
 	// Hints
 	virtual CHintSystem		*Hints( void ) { return NULL; }

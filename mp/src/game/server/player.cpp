@@ -593,8 +593,8 @@ CBasePlayer::CBasePlayer( )
 
 	m_hZoomOwner = NULL;
 
-	m_nUpdateRate = 20;  // cl_updaterate defualt
-	m_fLerpTime = 0.1f; // cl_interp default
+	m_nUpdateRate = 1.0f/TICK_INTERVAL;  // cl_updaterate defualt
+	m_fLerpTime = TICK_INTERVAL; // cl_interp default
 	m_bPredictWeapons = true;
 	m_bLagCompensation = false;
 	m_flLaggedMovementValue = 1.0f;
@@ -786,7 +786,7 @@ void CBasePlayer::SetBonusChallenge( int iBonusChallenge )
 //-----------------------------------------------------------------------------
 void CBasePlayer::SnapEyeAngles( const QAngle &viewAngles )
 {
-	pl.v_angle = viewAngles;
+	pl.v_angle.GetForModify() = viewAngles;
 	pl.fixangle = FIXANGLE_ABSOLUTE;
 }
 
@@ -3482,7 +3482,7 @@ void CBasePlayer::ProcessUsercmds( CUserCmd *cmds, int numcmds, int totalcmds,
 				ctx->cmds[ i ].forwardmove = 0;
 				ctx->cmds[ i ].sidemove = 0;
 				ctx->cmds[ i ].upmove = 0;
-				VectorCopy ( pl.v_angle, ctx->cmds[ i ].viewangles );
+				VectorCopy ( pl.v_angle.Get(), ctx->cmds[ i ].viewangles );
 			}
 		}
 
@@ -3663,7 +3663,7 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 
 	if ( pl.fixangle == FIXANGLE_NONE)
 	{
-		VectorCopy ( ucmd->viewangles, pl.v_angle );
+		VectorCopy ( ucmd->viewangles, pl.v_angle.GetForModify() );
 	}
 
 	// Handle FL_FROZEN.
@@ -3676,7 +3676,7 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		ucmd->upmove = 0;
 		ucmd->buttons = 0;
 		ucmd->impulse = 0;
-		VectorCopy ( pl.v_angle, ucmd->viewangles );
+		VectorCopy ( pl.v_angle.Get(), ucmd->viewangles );
 	}
 	else
 	{
@@ -4571,7 +4571,7 @@ void CBasePlayer::PostThink()
 					CSoundEnt::InsertSound ( SOUND_PLAYER, GetAbsOrigin(), m_Local.m_flFallVelocity, 0.2, this );
 					// Msg( "fall %f\n", m_Local.m_flFallVelocity );
 				}
-				m_Local.m_flFallVelocity = 0;
+				m_Local.m_flFallVelocity = 0.0f;
 			}
 
 			// select the proper animation for the player character	
@@ -5200,7 +5200,7 @@ int CBasePlayer::Restore( IRestore &restore )
 		SetLocalAngles( pSpawnSpot->GetLocalAngles() );
 	}
 
-	QAngle newViewAngles = pl.v_angle;
+	QAngle newViewAngles = pl.v_angle.Get();
 	newViewAngles.z = 0;	// Clear out roll
 	SetLocalAngles( newViewAngles );
 	SnapEyeAngles( newViewAngles );
@@ -6540,10 +6540,21 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 			angle.y = atof( args[5] );
 			angle.z = 0.0f;
 
-			JumptoPosition( origin, angle );
-		}
-		
-		return true;
+            #define SPECGOTO_MAX_VALUE 0xFFFF/2.0f
+
+            // This could crash the game somehow if not checked.. Thanks to Nairda.
+            if (abs(angle.x) <= 360.0f && abs(angle.y) <= 360.0f && abs(origin.x) < SPECGOTO_MAX_VALUE &&
+                abs(origin.y) < SPECGOTO_MAX_VALUE && abs(origin.z) < SPECGOTO_MAX_VALUE)
+            {
+                JumptoPosition(origin, angle);
+            }
+            else
+            {
+                engine->ClientPrintf(edict(), "spec_goto: Out-of-bounds");
+            }
+        }
+
+        return true;
 	}
 	else if ( stricmp( cmd, "playerperf" ) == 0 )
 	{
@@ -7927,6 +7938,7 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 // -------------------------------------------------------------------------------- //
 
 	BEGIN_SEND_TABLE_NOBASE(CPlayerState, DT_PlayerState)
+		SendPropQAngles(SENDINFO(v_angle), 13),
 		SendPropInt		(SENDINFO(deadflag),	1, SPROP_UNSIGNED ),
 	END_SEND_TABLE()
 

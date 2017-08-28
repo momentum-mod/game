@@ -27,6 +27,8 @@ class CBaseButton : public CBaseToggle
 public:
 
 	DECLARE_CLASS( CBaseButton, CBaseToggle );
+    
+    CBaseButton() : m_bIsBhopBlock(false) {};
 
 	void Spawn( void );
 	virtual void Precache( void );
@@ -96,6 +98,10 @@ protected:
 	COutputEvent m_OnOut;
 
 	int		m_nState;
+
+    // MOMENTUM SPECIFIC
+public:
+    bool m_bIsBhopBlock;
 };
 
 

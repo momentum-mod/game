@@ -24,6 +24,7 @@ $Group "game"
 	"vgui_controls"
 	"nui"
 	"nui_host"
+    "gameui2"
 }
 
 $Group "shaders"
@@ -57,6 +58,7 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
+    "gameui2"
 }
 
 $Group "dedicated"

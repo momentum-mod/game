@@ -61,8 +61,8 @@ ConVar debug_latch_reset_onduck( "debug_latch_reset_onduck", "1", FCVAR_CHEAT );
 #endif
 #endif
 
-// [MD] I'll remove this eventually. For now, I want the ability to A/B the optimizations.
-bool g_bMovementOptimizations = true;
+// [MD] I'll remove this eventually. For now, I want the ability to A/B the optimizations. EDIT: Let's the game roll
+bool g_bMovementOptimizations = false;
 
 // Roughly how often we want to update the info about the ground surface we're on.
 // We don't need to do this very often.
@@ -1200,6 +1200,9 @@ void CGameMovement::FinishTrackPredictionErrors( CBasePlayer *pPlayer )
 void CGameMovement::FinishMove( void )
 {
 	mv->m_nOldButtons = mv->m_nButtons;
+#if GAME_DLL
+    player->m_flSideMove = mv->m_flSideMove;
+#endif
 }
 
 #define PUNCH_DAMPING		9.0f		// bigger number makes the response more damped, smaller is less damped
@@ -2914,7 +2917,7 @@ bool CGameMovement::LadderMove( void )
 		onFloor = false;
 	}
 
-	player->SetGravity( 0 );
+	player->SetGravity( 1.0f ); //Should be always set on 1.0..
 
 	float climbSpeed = ClimbSpeed();
 
@@ -3961,7 +3964,7 @@ void CGameMovement::CheckFalling( void )
 	//
 	// Clear the fall velocity so the impact doesn't happen again.
 	//
-	player->m_Local.m_flFallVelocity = 0;
+	player->m_Local.m_flFallVelocity = 0.0f;
 }
 
 void CGameMovement::PlayerRoughLandingEffects( float fvol )

@@ -11,36 +11,36 @@
 
 #include <time.h>
 
-#include "vstdlib/pch_vstdlib.h"
-#include "vgui_controls/pch_vgui_controls.h"
-#include "vgui_controls/Frame.h"
+#include <vstdlib/pch_vstdlib.h>
+#include <vgui_controls/pch_vgui_controls.h>
+#include <vgui_controls/Frame.h>
 
 #include "tier3/tier3.h"
 
 // steam3 API
 //#include "steam/isteammasterserverupdater.h"
 //#include "steam/steam_querypackets.h"
-#include "steam/steam_api.h"
-#include "steam/isteamuser.h"
-#include "steam/isteammatchmaking.h"
-#include "steam/isteamfriends.h"
+#include <steam/steam_api.h>
+#include <steam/isteamuser.h>
+#include <steam/isteammatchmaking.h>
+#include <steam/isteamfriends.h>
 
-#include "momentum/ui/MapSelection/IMapSelector.h"
+#include "IMapSelector.h"
 //#include "ServerBrowser/IServerBrowser.h"
 //#include "IVGuiModule.h"
 //#include "vgui_controls/Controls.h"
 
 //#include "tier1/netadr.h"
-#include "FileSystem.h"
+#include <filesystem.h>
 //#include "iappinformation.h"
 //#include "proto_oob.h"
 //#include "modlist.h"
 //#include "IRunGameEngine.h"
-#include "KeyValues.h"
-#include "momentum/mom_shareddefs.h"
-#include "momentum/mom_gamerules.h"
-#include "momentum/util/mom_util.h"
-#include "OfflineMode.h"
+#include <tier1/KeyValues.h>
+#include <momentum/mom_shareddefs.h>
+#include <momentum/mom_gamerules.h>
+#include <momentum/util/mom_util.h>
+#include <OfflineMode.h>
 
 //VGUI
 #include <vgui_controls/pch_vgui_controls.h>
@@ -54,4 +54,5 @@
 #include "LocalMaps.h"
 #include "OnlineMaps.h"
 #include "MapSelectorDialog.h"
+#include "CMapListPanel.h"
 #include "cbase.h"

@@ -7,3 +7,12 @@
 	"soundlevel"	"0"
 	"wave"			"*#music/triageatdawn.mp3"
 }
+
+"Momentum.Tutorial"
+{
+    "channel" "CHAN_STATIC"
+    "volume" "1.0"
+    "pitch" "100"
+    "soundlevel" "0"
+    "wave" "*#music/tut_stage_loop.wav"
+}

@@ -599,6 +599,18 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 	return i;
 }
 
+inline int GetStringWidth(CUtlVector<wchar_t> *textStream, HFont font, int start, int end)
+{
+    int charWide = 0;
+    for (int i = start; i < end; i++)
+    {
+        wchar_t ch = textStream->Element(i);
+        charWide += surface()->GetCharacterWidth(font, ch);
+    }
+    return charWide;
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Draws a string of characters in the panel
 // Input:	iFirst - Index of the first character to draw
@@ -609,57 +621,181 @@ int RichText::PixelToCursorSpace(int cx, int cy)
 //-----------------------------------------------------------------------------
 int RichText::DrawString(int iFirst, int iLast, TRenderState &renderState, HFont font)
 {
-//	VPROF( "RichText::DrawString" );
+    //	VPROF( "RichText::DrawString" );
 
-	// Calculate the render size
-	int fontTall = surface()->GetFontTall(font);
-	// BUGBUG John: This won't exactly match the rendered size
-	int charWide = 0;
-	for ( int i = iFirst; i <= iLast; i++ )
-	{
-		wchar_t ch = m_TextStream[i];
+    // Calculate the render size
+    int fontTall = surface()->GetFontTall(font);
+    // BUGBUG John: This won't exactly match the rendered size
+    int charWide = 0;
 #if USE_GETKERNEDCHARWIDTH
-		wchar_t chBefore = 0;
-		wchar_t chAfter = 0;
-		if ( i > 0 )
-			chBefore = m_TextStream[i-1];
-		if ( i < iLast )
-			chAfter = m_TextStream[i+1];
-		float flWide = 0.0f, flabcA = 0.0f;
-		surface()->GetKernedCharWidth(font, ch, chBefore, chAfter, flWide, flabcA);
-		if ( ch == L' ' )
-			flWide = ceil( flWide );
-		charWide += floor( flWide + 0.6 );
+    for ( int i = iFirst; i <= iLast; i++ )
+    {
+        wchar_t ch = m_TextStream[i];
+        wchar_t chBefore = 0;
+        wchar_t chAfter = 0;
+        if ( i > 0 )
+            chBefore = m_TextStream[i-1];
+        if ( i < iLast )
+            chAfter = m_TextStream[i+1];
+        float flWide = 0.0f, flabcA = 0.0f;
+        surface()->GetKernedCharWidth(font, ch, chBefore, chAfter, flWide, flabcA);
+        if ( ch == L' ' )
+            flWide = ceil( flWide );
+        charWide += floor( flWide + 0.6 );
+    }
 #else
-		charWide += surface()->GetCharacterWidth(font, ch);
+    charWide = GetStringWidth(&m_TextStream, font, iFirst, iLast + 1);
 #endif
-	}
 
 	// draw selection, if any
 	int selection0 = -1, selection1 = -1;
-	GetSelectedRange(selection0, selection1);
-		
-	if (iFirst >= selection0 && iFirst < selection1)
-	{
-		// draw background selection color
-		surface()->DrawSetColor(_selectionColor);
-		surface()->DrawFilledRect(renderState.x, renderState.y, renderState.x + charWide, renderState.y + 1 + fontTall);
-		
-		// reset text color
-		surface()->DrawSetTextColor(_selectionTextColor);
-		m_bAllTextAlphaIsZero = false;
-	}
-	else
-	{
-		surface()->DrawSetTextColor(renderState.textColor);
-	}
-		
-	if ( renderState.textColor.a() != 0 )
-	{
-		m_bAllTextAlphaIsZero = false;
-		surface()->DrawSetTextPos(renderState.x, renderState.y);
-		surface()->DrawPrintText(&m_TextStream[iFirst], iLast - iFirst + 1);
-	}
+	bool gotSelRange = GetSelectedRange(selection0, selection1);
+    int lineLength = iLast - iFirst + 1;
+
+    bool startsHighlight = (iFirst < selection0 && iLast > selection0);
+    bool isHighlight = (iFirst >= selection0 && iLast <= selection1);
+    bool endsHighlight = (iFirst < selection1 && iLast > selection1);
+
+    if (gotSelRange && selection0 != selection1 && (startsHighlight || isHighlight || endsHighlight))
+    {
+        if (iFirst > selection0)
+        {
+            //Highlighting started before this line
+
+            if (iLast < selection1)
+            {
+                //This entire line should be highlighted
+
+                // draw background selection color
+                surface()->DrawSetColor(_selectionColor);
+                surface()->DrawFilledRect(renderState.x, renderState.y, renderState.x + charWide, renderState.y + 1 + fontTall);
+
+                // Set the text color to the selection color
+                surface()->DrawSetTextColor(_selectionTextColor);
+                m_bAllTextAlphaIsZero = false;
+
+                //Draw highlighted text
+                surface()->DrawSetTextPos(renderState.x, renderState.y);
+                surface()->DrawPrintText(&m_TextStream[iFirst], lineLength);
+            }
+            else
+            {
+                //Highlighting ends at this line somewhere
+
+                // Print highlighted text up to the point of it ending
+                int highlightedLength = selection1 - iFirst;
+                int highlightedWidth = GetStringWidth(&m_TextStream, font, iFirst, selection1);
+                surface()->DrawSetColor(_selectionColor);
+                surface()->DrawFilledRect(renderState.x, renderState.y, renderState.x + highlightedWidth, renderState.y + 1 + fontTall);
+
+                // Set highlighted text color
+                surface()->DrawSetTextColor(_selectionTextColor);
+
+                //Draw highlighted text
+                surface()->DrawSetTextPos(renderState.x, renderState.y);
+                surface()->DrawPrintText(&m_TextStream[iFirst], highlightedLength);
+
+                // Then print normal text
+                surface()->DrawSetTextColor(renderState.textColor);
+
+                if (renderState.textColor.a() != 0)
+                {
+                    m_bAllTextAlphaIsZero = false;
+                    surface()->DrawSetTextPos(renderState.x + highlightedWidth, renderState.y);
+                    surface()->DrawPrintText(&m_TextStream[selection1], lineLength - highlightedLength);
+                }
+            }
+        }
+        else
+        {
+            //Highlighting starts at this line 
+
+            if (iLast < selection1)
+            {
+                //Starts at this line and continues all the way off
+
+                // Print normal text first
+                int normalTextLen = selection0 - iFirst;
+                int normalTextWidth = GetStringWidth(&m_TextStream, font, iFirst, selection0);
+                surface()->DrawSetTextColor(renderState.textColor);
+                if (renderState.textColor.a() != 0)
+                {
+                    m_bAllTextAlphaIsZero = false;
+                    surface()->DrawSetTextPos(renderState.x, renderState.y);
+                    surface()->DrawPrintText(&m_TextStream[iFirst], normalTextLen);
+                }
+
+                //Then we print highlighted text
+                int highlightedTextLen = lineLength - normalTextLen;
+                int highlightedTextWidth = GetStringWidth(&m_TextStream, font, selection0, iLast + 1);
+                surface()->DrawSetColor(_selectionColor);
+                surface()->DrawFilledRect(renderState.x + normalTextWidth, renderState.y, renderState.x + normalTextWidth + highlightedTextWidth,
+                    renderState.y + 1 + fontTall);
+
+                // Set highlighted text color
+                surface()->DrawSetTextColor(_selectionTextColor);
+
+                //Draw highlighted text
+                surface()->DrawSetTextPos(renderState.x + normalTextWidth, renderState.y);
+                surface()->DrawPrintText(&m_TextStream[selection0], highlightedTextLen);
+
+            }
+            else
+            {
+                //Highlighted text is either the entire line or sandwiched between two
+                // normal texts.
+
+                //Print the first normal text (if it exists)
+                int normalText1Length = selection0 - iFirst;
+                int normalText1Width = GetStringWidth(&m_TextStream, font, iFirst, selection0);
+                surface()->DrawSetTextColor(renderState.textColor);
+
+                if (renderState.textColor.a() != 0)
+                {
+                    m_bAllTextAlphaIsZero = false;
+                    surface()->DrawSetTextPos(renderState.x, renderState.y);
+                    surface()->DrawPrintText(&m_TextStream[iFirst], normalText1Length + 1);
+                }
+
+                //Print the highlighted text sandwich
+                int highlightedTextLen = selection1 - selection0;
+                int highlightedTextWidth = GetStringWidth(&m_TextStream, font, selection0, selection1);
+                surface()->DrawSetColor(_selectionColor);
+                surface()->DrawFilledRect(renderState.x + normalText1Width, renderState.y, renderState.x + normalText1Width + highlightedTextWidth,
+                    renderState.y + 1 + fontTall);
+
+                // Set highlighted text color
+                surface()->DrawSetTextColor(_selectionTextColor);
+
+                //Draw highlighted text
+                surface()->DrawSetTextPos(renderState.x + normalText1Width, renderState.y);
+                surface()->DrawPrintText(&m_TextStream[selection0], highlightedTextLen);
+                
+
+                //Print the other normal text (if it exists)
+                int normalText2Length = iLast - selection1;
+                surface()->DrawSetTextColor(renderState.textColor);
+
+                if (renderState.textColor.a() != 0)
+                {
+                    m_bAllTextAlphaIsZero = false;
+                    surface()->DrawSetTextPos(renderState.x + normalText1Width + highlightedTextWidth, renderState.y);
+                    surface()->DrawPrintText(&m_TextStream[selection1], normalText2Length + 1);
+                }
+            }
+        }
+    } 
+    else
+    {
+        //There's no selection, print the text normally
+        surface()->DrawSetTextColor(renderState.textColor);
+        if ( renderState.textColor.a() != 0 )
+        {
+            m_bAllTextAlphaIsZero = false;
+        	surface()->DrawSetTextPos(renderState.x, renderState.y);
+        	surface()->DrawPrintText(&m_TextStream[iFirst], lineLength);
+        }
+    }
 			
 	return charWide;
 }
@@ -1564,6 +1700,7 @@ void RichText::OnMouseFocusTicked()
 //-----------------------------------------------------------------------------
 void RichText::OnCursorEntered()
 {
+    BaseClass::OnCursorEntered();
 	_mouseDragSelection = false; // outside of window dont recieve drag scrolling ticks
 }
 
@@ -1573,6 +1710,7 @@ void RichText::OnCursorEntered()
 //-----------------------------------------------------------------------------
 void RichText::OnCursorExited() 
 {
+    BaseClass::OnCursorExited();
 	// outside of window recieve drag scrolling ticks
 	if (_mouseSelection)
 	{

@@ -8,7 +8,7 @@
 #else
 #include "c_te_effect_dispatch.h"
 #endif
-#include "weapon_csbase.h"
+#include "weapon/weapon_csbase.h"
 #include "engine/ivdebugoverlay.h"
 #include "decals.h"
 
@@ -113,7 +113,6 @@ inline void UTIL_TraceLineIgnoreTwoEntities(const Vector& vecAbsStart, const Vec
     }
 }
 
-
 void CMomentumPlayer::FireBullet(
     Vector vecSrc,	// shooting postion
     const QAngle &shootAngles,  //shooting angle
@@ -156,7 +155,7 @@ void CMomentumPlayer::FireBullet(
 
     bool bFirstHit = true;
 
-    CBasePlayer *lastPlayerHit = NULL;
+    CBasePlayer *lastPlayerHit = nullptr;
 
     //MDLCACHE_CRITICAL_SECTION();
     while (fCurrentDamage > 0)
@@ -323,9 +322,9 @@ void CMomentumPlayer::FireBullet(
 
         // find exact penetration exit
         trace_t exitTr;
-        UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, NULL, &exitTr);
+        UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, nullptr, &exitTr);
 
-        if (exitTr.m_pEnt != tr.m_pEnt && exitTr.m_pEnt != NULL)
+        if (exitTr.m_pEnt != tr.m_pEnt && exitTr.m_pEnt != nullptr)
         {
             // something was blocking, trace again
             UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, exitTr.m_pEnt, COLLISION_GROUP_NONE, &exitTr);
@@ -386,15 +385,15 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     float flKickUp;
     float flKickLateral;
 
-    if (m_iShotsFired == 1) // This is the first round fired
+    if (m_SrvData.m_iShotsFired == 1) // This is the first round fired
     {
         flKickUp = up_base;
         flKickLateral = lateral_base;
     }
     else
     {
-        flKickUp = up_base + m_iShotsFired*up_modifier;
-        flKickLateral = lateral_base + m_iShotsFired*lateral_modifier;
+        flKickUp = up_base + m_SrvData.m_iShotsFired*up_modifier;
+        flKickLateral = lateral_base + m_SrvData.m_iShotsFired*lateral_modifier;
     }
 
 
@@ -404,7 +403,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     if (angle.x < -1 * up_max)
         angle.x = -1 * up_max;
 
-    if (m_iDirection == 1)
+    if (m_SrvData.m_iDirection == 1)
     {
         angle.y += flKickLateral;
         if (angle.y > lateral_max)
@@ -418,7 +417,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     }
 
     if (!SharedRandomInt("KickBack", 0, direction_change))
-        m_iDirection = 1 - m_iDirection;
+        m_SrvData.m_iDirection = 1 - m_SrvData.m_iDirection;
 
     SetPunchAngle(angle);
 }

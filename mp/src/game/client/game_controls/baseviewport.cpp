@@ -222,7 +222,6 @@ void CBaseViewport::OnScreenSizeChanged(int iOldWide, int iOldTall)
 #ifndef _XBOX
 	vgui::ipanel()->MoveToBack( m_pBackGround->GetVPanel() ); // really send it to the back 
 #endif
-
 	// hide all panels when reconnecting 
 	ShowPanel( PANEL_ALL, false );
 
@@ -283,7 +282,6 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CTeamMenu( this );
 	}
-    /*
 	else if ( Q_strcmp(PANEL_SPECMENU, szPanelName) == 0 )
 	{
 		newpanel = new CSpectatorMenu( this );
@@ -292,7 +290,6 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CSpectatorGUI( this );
 	}
-    */
 #if !defined( TF_CLIENT_DLL )
 	else if ( Q_strcmp(PANEL_NAV_PROGRESS, szPanelName) == 0 )
 	{
@@ -709,7 +706,8 @@ void CBaseViewport::ReloadScheme(const char *fromFile)
 
 	gHUD.RefreshHudTextures();
 
-	InvalidateLayout( true, true );
+    if (fromFile)
+        InvalidateLayout(true, true);
 
 	// reset the hud
 	gHUD.ResetHUD();

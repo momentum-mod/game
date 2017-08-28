@@ -42,12 +42,15 @@ void RegisterUserMessages(void)
     usermessages->Register("ReloadEffect", 2);			// a player reloading..
     usermessages->Register("PlayerAnimEvent", -1);	// jumping, firing, reload, etc.
 
-    usermessages->Register("Timer_State", 5);
+    usermessages->Register("Timer_State", 1);
     usermessages->Register("Timer_PauseTime", -1);
     usermessages->Register("Timer_Reset", 0);
     usermessages->Register("Timer_Checkpoint", 9);
     usermessages->Register("Timer_Stage", 4);
     usermessages->Register("Timer_StageCount", 4);
     //usermessages->Register("Timer_GameMode", 4);
+    usermessages->Register("MB_PlayerTriedSaveOrLoad", 0);
+    usermessages->Register("MB_NoStartOrEnd", 0);
+    usermessages->Register("MB_EditingZone", 0);
     RegisterHapticMessages();
 }

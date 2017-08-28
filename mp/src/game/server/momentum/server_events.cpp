@@ -3,16 +3,6 @@
 
 #include "tier0/memdbgon.h"
 
-void Momentum::OnServerDLLInit()
-{
-    TickSet::TickInit();
-    // MOM_TODO: connect to site
-    if (SteamAPI_IsSteamRunning())
-    {
-        mom_UTIL->GetRemoteRepoModVersion();
-    }
-}
-
 //This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
 void Momentum::GameInit()
@@ -21,37 +11,46 @@ void Momentum::GameInit()
     ConVarRef map("host_map");
     const char *pMapName = map.GetString();
     // This will only happen if the user didn't use the map selector to start a map
-
+    ConVarRef("sv_contact").SetValue("http://momentum-mod.org/contact");
     //set gamemode depending on map name
     //MOM_TODO: This needs to read map entity/momfile data and set accordingly
-    if (gm.GetInt() == MOMGM_UNKNOWN)
+
+    if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
     {
-        if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
-        {
-            gm.SetValue(MOMGM_SURF);
-        }
-        else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
-        {
-            DevLog("SETTING THE GAMEMODE!\n");
-            gm.SetValue(MOMGM_BHOP);
-        }
-        else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
-        {
-            DevLog("SETTING THE GAMEMODE!\n");
-            gm.SetValue(MOMGM_SCROLL);
-        }
-        else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
-        {
-            gm.SetValue(MOMGM_ALLOWED);
-        }
-        else
-        {
-            gm.SetValue(MOMGM_UNKNOWN);
-        }
+        gm.SetValue(MOMGM_SURF);
+    }
+    else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
+    {
+        DevLog("SETTING THE GAMEMODE!\n");
+        gm.SetValue(MOMGM_BHOP);
+    }
+    else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
+    {
+        DevLog("SETTING THE GAMEMODE!\n");
+        gm.SetValue(MOMGM_SCROLL);
+    }
+    else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
+    {
+        gm.SetValue(MOMGM_ALLOWED);
+    }
+    else
+    {
+        gm.SetValue(MOMGM_UNKNOWN);
     }
 }
 
-void CMOMServerEvents::LevelInitPostEntity()
+void CMOMServerEvents::PostInit()
+{
+    TickSet::TickInit();
+    MountAdditionalContent();
+    // MOM_TODO: connect to site
+    /*if (SteamAPI_IsSteamRunning())
+    {
+
+    }*/
+}
+
+void CMOMServerEvents::LevelInitPreEntity()
 {
     const char *pMapName = gpGlobals->mapname.ToCStr();
     // (Re-)Load zones
@@ -62,10 +61,11 @@ void CMOMServerEvents::LevelInitPostEntity()
     }
     zones = new CMapzoneData(pMapName);
     zones->SpawnMapZones();
+}
 
-    //Setup timer
-    g_Timer->OnMapStart(pMapName);
 
+void CMOMServerEvents::LevelInitPostEntity()
+{
     // Reset zone editing
     g_MapzoneEdit.Reset();
 
@@ -76,7 +76,6 @@ void CMOMServerEvents::LevelInitPostEntity()
 
 void CMOMServerEvents::LevelShutdownPreEntity()
 {
-    const char *pMapName = gpGlobals->mapname.ToCStr();
     // Unload zones
     if (zones)
     {
@@ -86,24 +85,62 @@ void CMOMServerEvents::LevelShutdownPreEntity()
 
     ConVarRef gm("mom_gamemode");
     gm.SetValue(gm.GetDefault());
+}
 
-    g_Timer->OnMapEnd(pMapName);
+void CMOMServerEvents::LevelShutdownPostEntity()
+{
+    ConVarRef fullbright("mat_fullbright");
+    // Shut off fullbright if the map enabled it
+    if (fullbright.IsValid() && fullbright.GetBool())
+        fullbright.SetValue(0);
 }
 
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     g_MapzoneEdit.Update();
 
-    if (!g_Timer->GotCaughtCheating())
+    if (!g_pMomentumTimer->GotCaughtCheating())
     {
         ConVarRef cheatsRef("sv_cheats");
         if (cheatsRef.GetBool())
         {
-            g_Timer->SetCheating(true);
-            g_Timer->Stop(false);
+            g_pMomentumTimer->SetCheating(true);
+            g_pMomentumTimer->Stop(false);
         }
     }
 }
 
+void CMOMServerEvents::MountAdditionalContent()
+{
+    // From the Valve SDK wiki
+    KeyValues *pMainFile = new KeyValues("gameinfo.txt");
+    bool bLoad = false;
+#ifndef _WINDOWS
+    // case sensitivity
+    bLoad = pMainFile->LoadFromFile(filesystem, "GameInfo.txt", "MOD");
+#endif
+    if (!bLoad)
+        bLoad = pMainFile->LoadFromFile(filesystem, "gameinfo.txt", "MOD");
+
+    if (pMainFile && bLoad)
+    {
+        KeyValues *pFileSystemInfo = pMainFile->FindKey("FileSystem");
+        if (pFileSystemInfo)
+        {
+            for (KeyValues *pKey = pFileSystemInfo->GetFirstSubKey(); pKey; pKey = pKey->GetNextKey())
+            {
+                if (Q_strcmp(pKey->GetName(), "AdditionalContentId") == 0)
+                {
+                    int appid = abs(pKey->GetInt());
+                    if (appid)
+                        if (filesystem->MountSteamContent(-appid) != FILESYSTEM_MOUNT_OK)
+                            Warning("Unable to mount extra content with appId: %i\n", appid);
+                }
+            }
+        }
+    }
+    pMainFile->deleteThis();
+}
+
 //Create the 
-CMOMServerEvents g_MOMServerEvents("MOMServerEvents");
+CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");

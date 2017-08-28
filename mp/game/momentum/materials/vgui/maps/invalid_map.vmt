@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture"  "vgui\maps\invalid_map"
+	"$translucent"  1
+	"$ignorez"	1
+}

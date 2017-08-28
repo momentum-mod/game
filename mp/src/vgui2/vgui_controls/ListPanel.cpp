@@ -2014,7 +2014,8 @@ void ListPanel::Paint()
 				surface()->SolveTraverse(render->GetVPanel());
 				int x0, y0, x1, y1;
 				render->GetClipRect(x0, y0, x1, y1);
-				if ((y1 - y0) < (m_iRowHeight - 3))
+				//if ((y1 - y0) < (m_iRowHeight - 3))
+                if ((y1 - y0) == 0)
 				{
 					bDone = true;
 					break;

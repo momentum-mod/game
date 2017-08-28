@@ -47,7 +47,7 @@ CAvatarImage::CAvatarImage( void )
 	m_iTextureID = -1;
 
 	// set up friend icon
-	m_pFriendIcon = gHUD.GetIcon( "ico_friend_indicator_avatar" );
+	m_pFriendIcon = gHUD.GetIcon( "p_icon_friend" );
 
 	m_pDefaultImage = NULL;
 
@@ -80,7 +80,7 @@ void CAvatarImage::ClearAvatarSteamID( void )
 //-----------------------------------------------------------------------------
 // Purpose: Set the CSteamID for this image; this will cause a deferred load
 //-----------------------------------------------------------------------------
-bool CAvatarImage::SetAvatarSteamID( CSteamID steamIDUser, EAvatarSize avatarSize /*= k_EAvatarSize32x32 */ )
+bool CAvatarImage::SetAvatarSteamID( const CSteamID &steamIDUser, EAvatarSize avatarSize /*= k_EAvatarSize32x32 */ )
 {
 	ClearAvatarSteamID();
 
@@ -357,7 +357,7 @@ void CAvatarImagePanel::SetPlayer( int entindex, EAvatarSize avatarSize )
 //-----------------------------------------------------------------------------
 // Purpose: Set the avatar by SteamID
 //-----------------------------------------------------------------------------
-void CAvatarImagePanel::SetPlayer(CSteamID steamIDForPlayer, EAvatarSize avatarSize )
+void CAvatarImagePanel::SetPlayer(const CSteamID &steamIDForPlayer, EAvatarSize avatarSize )
 {
 	m_pImage->ClearAvatarSteamID();
 

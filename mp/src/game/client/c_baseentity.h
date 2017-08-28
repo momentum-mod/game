@@ -1445,7 +1445,7 @@ public:
 
 	void TrackAngRotation( bool bTrack );
 
-private:
+public:
 	friend void OnRenderStart();
 
 	// Figure out the smoothly interpolated origin for all server entities. Happens right before
@@ -2148,14 +2148,14 @@ inline VarMapping_t* C_BaseEntity::GetVarMapping()
 //-----------------------------------------------------------------------------
 inline bool	C_BaseEntity::IsInterpolationEnabled()
 {
-	return s_bInterpolate;
+	return s_bInterpolate; 
 }
 
 //-----------------------------------------------------------------------------
 // Should we be interpolating during this frame? (was EF_NOINTERP)
 //-----------------------------------------------------------------------------
 inline bool C_BaseEntity::IsNoInterpolationFrame()
-{
+{				
 	return m_ubOldInterpolationFrame != m_ubInterpolationFrame;
 }
 

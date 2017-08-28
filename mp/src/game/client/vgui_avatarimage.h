@@ -16,12 +16,12 @@
 #include "c_baseplayer.h"
 
 // size of the friend background frame (see texture ico_friend_indicator_avatar)
-#define FRIEND_ICON_SIZE_X	(55)	
-#define FRIEND_ICON_SIZE_Y	(34)
+#define FRIEND_ICON_SIZE_X	(1)	
+#define FRIEND_ICON_SIZE_Y	(1)
 
 // offset of avatar within the friend icon
-#define FRIEND_ICON_AVATAR_INDENT_X	(22)
-#define FRIEND_ICON_AVATAR_INDENT_Y	(1)
+#define FRIEND_ICON_AVATAR_INDENT_X	(0)
+#define FRIEND_ICON_AVATAR_INDENT_Y	(0)
 
 // size of the standard avatar icon (unless override by SetAvatarSize)
 #define DEFAULT_AVATAR_SIZE		(32)
@@ -72,7 +72,7 @@ public:
 	// HPE_BEGIN:
 	// [tj] Added parameter to specify size. Default is 32x32.
 	//=============================================================================
-	bool SetAvatarSteamID( CSteamID steamIDUser, EAvatarSize avatarSize = k_EAvatarSize32x32 );
+	bool SetAvatarSteamID( const CSteamID &steamIDUser, EAvatarSize avatarSize = k_EAvatarSize32x32 );
 	//=============================================================================
 	// HPE_END
 	//=============================================================================
@@ -119,6 +119,7 @@ public:
 	int		GetTall() { return m_tall; }
 	int		GetAvatarWide() { return m_avatarWide; }
 	int		GetAvatarTall() { return m_avatarTall; }
+    bool    IsFriend() { return m_bFriend; }
 
 	//=============================================================================
 	// HPE_BEGIN:
@@ -210,7 +211,7 @@ public:
 	void SetPlayer( int entityIndex, EAvatarSize avatarSize = k_EAvatarSize32x32 );
 
 	// [tj] lower level function that expects a steam ID instead of a player
-	void SetPlayer(CSteamID steamIDForPlayer, EAvatarSize avatarSize	);
+	void SetPlayer(const CSteamID &steamIDForPlayer, EAvatarSize avatarSize	);
 
 	// sets whether or not the image should scale to fit the size of the ImagePanel (defaults to false)
 	void SetShouldScaleImage( bool bScaleImage );

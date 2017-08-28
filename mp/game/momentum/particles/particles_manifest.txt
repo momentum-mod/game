@@ -1,3 +1,18 @@
 particles_manifest
 {
+	"file"		"particles/error.pcf"
+
+	//HL2 Particles
+	"file"		"particles/antlion_blood.pcf"
+	"file"		"particles/combineball.pcf"
+	"file"		"particles/vortigaunt_fx.pcf"
+	"file"		"particles/rocket_fx.pcf"
+
+	//CS:S Particles
+	"file"		"particles/achievement.pcf"
+	"file"		"particles/blood_impact.pcf"
+	"file"		"particles/fire_01.pcf"
+	"file"		"particles/burning_fx.pcf"
+	"file"		"particles/water_impact.pcf"
+	"file"		"!particles/muzzleflashes.pcf"
 }

@@ -155,8 +155,8 @@ public:
 		I index;
 		friend class CUtlMemoryStack<T,I,MAX_SIZE, COMMIT_SIZE, INITIAL_COMMIT>;
 	public:
-		bool operator==( const Iterator_t it ) const		{ return index == it.index; }
-		bool operator!=( const Iterator_t it ) const		{ return index != it.index; }
+		bool operator==( const Iterator_t &it ) const		{ return index == it.index; }
+		bool operator!=( const Iterator_t &it ) const		{ return index != it.index; }
 	};
 	Iterator_t First() const								{ return Iterator_t( m_nAllocated ? 0 : InvalidIndex() ); }
 	Iterator_t Next( const Iterator_t &it ) const			{ return Iterator_t( it.index < m_nAllocated ? it.index + 1 : InvalidIndex() ); }

@@ -20,12 +20,19 @@ Scheme
 		"Gray" 				"128 128 128 150"
 		"Dark Gray" 		"64 64 64 200"
 		
+        "Light Blue" "51 122 183 255"
+        "Dark Blue" "22 69 119 255"
+        
 		"Red"                "192 28 0 140"
 		"Black"                "0 0 0 196"
 		"TransparentBlack"    "0 0 0 196"
 		"TransparentLightBlack"    "0 0 0 90"
 	
 		"Blank"                "0 0 0 1"
+
+		//"MOM.Panel.Bg"				"211 211 211 50"
+		"MomentumBlue"	"30 150 210 255"
+		"MomentumRed"	"255 75 75 255"
 
 		"MOM.Panel.Fg"				"255 255 255 125"
 		"MOM.Panel.Bg"				"0 0 0 76"
@@ -95,9 +102,9 @@ Scheme
 		Button.TextColor				"White"
 		Button.BgColor					"Blank"
 		Button.ArmedTextColor			"White"
-		Button.ArmedBgColor				"Red"
+		Button.ArmedBgColor				"MomentumBlue"
 		Button.DepressedTextColor		"White"
-		Button.DepressedBgColor			"Red"
+		Button.DepressedBgColor			"MomentumBlue"
 
 		CheckButton.TextColor			"White"
 		CheckButton.SelectedTextColor	"White"
@@ -118,9 +125,9 @@ Scheme
 		Frame.AutoSnapRange				"0"
 		FrameGrip.Color1				"Blank"
 		FrameGrip.Color2				"Blank"
-		FrameTitleButton.FgColor		"Blank"
+		FrameTitleButton.FgColor		"200 200 200 196"
 		FrameTitleButton.BgColor		"Blank"
-		FrameTitleButton.DisabledFgColor	"Blank"
+		FrameTitleButton.DisabledFgColor	"200 200 200 196"
 		FrameTitleButton.DisabledBgColor	"Blank"
 		FrameSystemButton.FgColor		"Blank"
 		FrameSystemButton.BgColor		"Blank"
@@ -145,14 +152,14 @@ Scheme
 		ListPanel.TextColor					"White"
 		ListPanel.BgColor					"TransparentBlack"
 		ListPanel.SelectedTextColor			"Black"
-		ListPanel.SelectedBgColor			"Red"
-		ListPanel.SelectedOutOfFocusBgColor	"Red"
+		ListPanel.SelectedBgColor			"Light Blue"
+		ListPanel.SelectedOutOfFocusBgColor	"Dark Blue"
 		ListPanel.EmptyListInfoTextColor	"White"
 
 		Menu.TextColor					"White"
 		Menu.BgColor					"TransparentBlack"
 		Menu.ArmedTextColor				"White"
-		Menu.ArmedBgColor				"Red"
+		Menu.ArmedBgColor				"Light Blue"
 		Menu.TextInset					"6"
 
 		Chat.TypingText					"White"
@@ -160,7 +167,7 @@ Scheme
 		Panel.FgColor					"WhiteDim"
 		Panel.BgColor					"blank"
 
-		ProgressBar.FgColor				"White"
+		ProgressBar.FgColor				"Light Blue"
 		ProgressBar.BgColor				"TransparentBlack"
 
 		PropertySheet.TextColor			"White"
@@ -191,30 +198,31 @@ Scheme
 		SectionedListPanel.TextColor		"White"
 		SectionedListPanel.BrightTextColor	"White"
 		SectionedListPanel.BgColor			"TransparentLightBlack"
-		SectionedListPanel.SelectedTextColor			"Black"
-		SectionedListPanel.SelectedBgColor				"Red"
-		SectionedListPanel.OutOfFocusSelectedTextColor	"Black"
-		SectionedListPanel.OutOfFocusSelectedBgColor	"255 255 255 32"
+		SectionedListPanel.SelectedTextColor			"White"
+		SectionedListPanel.SelectedBgColor				"Dark Blue"
+		SectionedListPanel.OutOfFocusSelectedTextColor	"White"
+		SectionedListPanel.OutOfFocusSelectedBgColor	"Light Blue"
 
-		Slider.NobColor				"108 108 108 255"
-		Slider.TextColor			"127 140 127 255"
+		Slider.NobColor				"White"//"108 108 108 255"
+		Slider.TextColor			"White"//"127 140 127 255"
+        Slider.BgColor              "Blank"
 		Slider.TrackColor			"31 31 31 255"
 		Slider.DisabledTextColor1	"117 117 117 255"
 		Slider.DisabledTextColor2	"30 30 30 255"
 
 		TextEntry.TextColor			"White"
 		TextEntry.BgColor			"TransparentBlack"
-		TextEntry.CursorColor		"White"
+		TextEntry.CursorColor		"Light Gray"
 		TextEntry.DisabledTextColor	"White"
 		TextEntry.DisabledBgColor	"Blank"
-		TextEntry.SelectedTextColor	"Black"
-		TextEntry.SelectedBgColor	"Red"
-		TextEntry.OutOfFocusSelectedBgColor	"Red"
+		TextEntry.SelectedTextColor	"Light Gray"
+		TextEntry.SelectedBgColor	"Dark Blue"
+		TextEntry.OutOfFocusSelectedBgColor	"Light Blue"
 		TextEntry.FocusEdgeColor	"TransparentBlack"
 
 		ToggleButton.SelectedTextColor	"White"
 
-		Tooltip.TextColor			"TransparentBlack"
+		Tooltip.TextColor			"White"
 		Tooltip.BgColor				"Red"
 
 		TreeView.BgColor			"TransparentBlack"
@@ -295,6 +303,7 @@ Scheme
 				"custom"	"1"
 			}
 		}
+        
 		Icons
 		{
 			"1"
@@ -1090,7 +1099,29 @@ Scheme
 				"additive" "1"
 				"antialias" "1"
 		   }
-		}	
+		}
+		"BigNoodle"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "32"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
+		"BigNoodleSmall"
+		{
+			"1"
+			{
+				"name" "BigNoodleTitling"
+				"tall" "16"
+				"weight" "0"
+				"additive" "1"
+				"antialias" "1"
+			}
+		}
 	}
 
 		//////////////////// BORDERS //////////////////////////////
@@ -1137,124 +1168,20 @@ Scheme
 				}
 			}
 		}
-		
-		TitleButtonBorder
+        
+        TitleButtonBorder
 		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
-
+		
 		TitleButtonDisabledBorder
 		{
-			"inset" "0 0 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "1 0"
-				}
-			}
-			Top
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "BgColor"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
 
 		TitleButtonDepressedBorder
 		{
-			"inset" "1 1 1 1"
-			Left
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 1"
-				}
-			}
-
-			Right
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "1 0"
-				}
-			}
-
-			Top
-			{
-				"1"
-				{
-					"color" "Border.Dark"
-					"offset" "0 0"
-				}
-			}
-
-			Bottom
-			{
-				"1"
-				{
-					"color" "Border.Bright"
-					"offset" "0 0"
-				}
-			}
+			"backgroundtype" "0"
 		}
 
 		ScrollBarButtonBorder
@@ -1747,9 +1674,10 @@ Scheme
 	{
 		"1"		"resource/HALFLIFE2.ttf"
 		"1"		"resource/MomIcons.ttf"
-		"2"		"resource/HL2MP.ttf"
+		//"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
-		"4"		"resource/cs.ttf"
+		//"4"		"resource/cs.ttf"
+        "1" "resource/BigNoodleTitling.ttf"
 	}
 
 }

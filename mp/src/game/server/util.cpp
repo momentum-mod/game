@@ -953,7 +953,7 @@ void UTIL_ScreenShakeObject( CBaseEntity *pEnt, const Vector &center, float ampl
 //			radius - Radius of effect, 0 punches all clients.
 //			bInAir - if this is false, then it will only punch players standing on the ground.
 //-----------------------------------------------------------------------------
-void UTIL_ViewPunch( const Vector &center, QAngle angPunch, float radius, bool bInAir )
+void UTIL_ViewPunch( const Vector &center, const QAngle &angPunch, float radius, bool bInAir )
 {
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
@@ -2064,13 +2064,18 @@ void UTIL_ValidateSoundName( string_t &name, const char *defaultStr )
 // Input  : token - Returns with a token, or zero length if the token was missing.
 //			str - String to parse.
 //			sep - Character to use as separator. UNDONE: allow multiple separator chars
+//          tokenLen - Length of token buffer
 // Output : Returns a pointer to the next token to be parsed.
 //-----------------------------------------------------------------------------
-const char *nexttoken(char *token, const char *str, char sep)
+const char *nexttoken(char *token, const char *str, char sep, size_t tokenLen)
 {
 	if ((str == NULL) || (*str == '\0'))
 	{
 		*token = '\0';
+        if (tokenLen)
+        {
+            *token = '\0';
+        }
 		return(NULL);
 	}
 
@@ -2078,11 +2083,24 @@ const char *nexttoken(char *token, const char *str, char sep)
 	// Copy everything up to the first separator into the return buffer.
 	// Do not include separators in the return buffer.
 	//
-	while ((*str != sep) && (*str != '\0'))
+	while ((*str != sep) && (*str != '\0') && (tokenLen > 1))
 	{
 		*token++ = *str++;
 	}
-	*token = '\0';
+
+    //
+    // If the token is too big for the return buffer, skip the rest of the token
+    //
+    while ((*str != sep) && (*str != '\0'))
+    {
+        str++;
+    }
+
+    if (tokenLen)
+    {
+        *token = '\0';
+        tokenLen--;
+    }
 
 	//
 	// Advance the pointer unless we hit the end of the input string.

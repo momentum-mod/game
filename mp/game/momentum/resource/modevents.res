@@ -27,53 +27,12 @@
 
 "modevents"
 {
-	"timer_stopped"
-	{
-		"ent" "short"
-        "time"   "float"
-		"avg_sync"	"float"
-		"avg_sync2"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
-        
-        "avg_vel"	"float"
-		"max_vel"	"float"
-		"start_vel"	"float"
-		"end_vel"	"float"
-        "avg_vel_2D"	"float"
-		"max_vel_2D"	"float"
-		"start_vel_2D"	"float"
-		"end_vel_2D"	"float"
-	}
 	"zone_enter"//When the player/ghost enters a checkpoint/stage trigger
 	{
-		"num"	"byte"//Number of the zone
-		"ent" "short"//Ent index of the ent that touched me
-		"enter_time"	"float" //time is in seconds
-		"avg_sync"	"float"
-		"avg_sync2"	"float"
-		"num_strafes"	"short"
-		"num_jumps"	"short"
-        
-        "avg_vel"	"float"
-		"max_vel"	"float"
-		"exit_vel"	"float"//previous stage's exit velocity
-        //we save both XY and XYZ, so we can look at both if need be...
-        "avg_vel_2D"	"float"
-		"max_vel_2D"	"float"
-		"exit_vel_2D"	"float"//this stage's horizontal exit velocity
 	}
     "zone_exit"//When the player exits the start trigger for the stage
     {
-        "num" "byte"
-		"ent" "byte"//Ent index
-        "enter_vel"    "float"//velocity in which the player starts the stage (exits the stage trigger)
-        "enter_vel_2D"    "float"
     }
-	"run_save"
-	{
-		"run_saved"	"bool"
-	}
     "run_upload"
     {
         "run_posted" "bool"
@@ -84,15 +43,37 @@
         "ent" "short"
 		"is_running"	"bool"
 	}
-	"keypress"
-	{
-	    "ent" "short"
-		"num_jumps"	"short"
-		"num_strafes"	"short"
-	}
     "map_init"
     {
         "is_linear" "bool"
         "num_zones" "byte"
+    }
+    "spec_target_updated" // Used by the spectator GUI
+    {
+    }
+    "mapfinished_panel_closed"
+    {
+        "restart" "bool"
+    }
+	"replay_save"
+	{
+		"filename" "string"
+        "save" "bool"
+	}
+    "weapon_fire"
+    {
+        "userid" "long"
+        "weapon" "string"
+    }
+    "bullet_impact"
+    {
+        "userid" "long"
+        "x" "float"
+        "y" "float"
+        "z" "float"
+    }
+    "gravity_change"
+    {
+        "newgravity" "float"
     }
 }

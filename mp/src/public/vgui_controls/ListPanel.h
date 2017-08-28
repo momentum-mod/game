@@ -154,6 +154,7 @@ public:
 
 	// image handling
 	virtual void SetImageList(ImageList *imageList, bool deleteImageListWhenDone);
+    virtual ImageList *GetImageList() { return m_pImageList; }
 
 	// SELECTION
 	
@@ -261,6 +262,9 @@ protected:
 public:
 	virtual void SetSortColumnEx( int iPrimarySortColumn, int iSecondarySortColumn, bool bSortAscending );
 	void GetSortColumnEx( int &iPrimarySortColumn, int &iSecondarySortColumn, bool &bSortAscending ) const;
+
+    virtual void SetRowHeight(int newHeight) { m_iRowHeight = newHeight; }
+    virtual int GetRowHeight() { return m_iRowHeight; }
 
 private:
 	// Cleans up allocations associated with a particular item

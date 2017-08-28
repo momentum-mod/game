@@ -132,7 +132,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the target name.
 	//
-	const char *psz = nexttoken(szToken, ActionData, ',');
+	const char *psz = nexttoken(szToken, ActionData, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iTarget = AllocPooledString(szToken);
@@ -141,7 +141,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the input name.
 	//
-	psz = nexttoken(szToken, psz, ',');
+    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iTargetInput = AllocPooledString(szToken);
@@ -154,7 +154,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the parameter override.
 	//
-	psz = nexttoken(szToken, psz, ',');
+    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iParameter = AllocPooledString(szToken);
@@ -163,7 +163,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the delay.
 	//
-	psz = nexttoken(szToken, psz, ',');
+    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_flDelay = atof(szToken);
@@ -172,7 +172,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the number of times to fire.
 	//
-	nexttoken(szToken, psz, ',');
+    nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_nTimesToFire = atoi(szToken);
@@ -644,8 +644,8 @@ CEventQueue g_EventQueue;
 
 CEventQueue::CEventQueue()
 {
-	m_Events.m_flFireTime = -FLT_MAX;
-	m_Events.m_pNext = NULL;
+	m_Events.m_iFireTick = INT_MIN;
+	m_Events.m_pNext = nullptr;
 
 	Init();
 }
@@ -787,8 +787,8 @@ void CEventQueue::Dump( void )
 	{
 		EventQueuePrioritizedEvent_t *next = pe->m_pNext;
 
-		Msg("   (%.2f) Target: '%s', Input: '%s', Parameter '%s'. Activator: '%s', Caller '%s'.  \n", 
-			pe->m_flFireTime, 
+		Msg("   (%d) Target: '%s', Input: '%s', Parameter '%s'. Activator: '%s', Caller '%s'.  \n", 
+			pe->m_iFireTick,
 			STRING(pe->m_iTarget), 
 			STRING(pe->m_iTargetInput), 
 			pe->m_VariantValue.String(),
@@ -812,7 +812,7 @@ void CEventQueue::AddEvent( const char *target, const char *targetInput, variant
 #ifdef TF_DLL
 	newEvent->m_flFireTime = engine->GetServerTime() + fireDelay;	// priority key in the priority queue
 #else
-	newEvent->m_flFireTime = gpGlobals->curtime + fireDelay;	// priority key in the priority queue
+	newEvent->m_iFireTick = gpGlobals->tickcount + round(fireDelay * (1.0f / gpGlobals->interval_per_tick));	// priority key in the priority queue
 #endif
 	newEvent->m_iTarget = MAKE_STRING( target );
 	newEvent->m_pEntTarget = NULL;
@@ -835,7 +835,7 @@ void CEventQueue::AddEvent( CBaseEntity *target, const char *targetInput, varian
 #ifdef TF_DLL
 	newEvent->m_flFireTime = engine->GetServerTime() + fireDelay;	// primary priority key in the priority queue
 #else
-	newEvent->m_flFireTime = gpGlobals->curtime + fireDelay;	// primary priority key in the priority queue
+	newEvent->m_iFireTick = gpGlobals->tickcount + round(fireDelay * (1.0f / gpGlobals->interval_per_tick));	// primary priority key in the priority queue
 #endif
 	newEvent->m_iTarget = NULL_STRING;
 	newEvent->m_pEntTarget = target;
@@ -866,7 +866,7 @@ void CEventQueue::AddEvent( EventQueuePrioritizedEvent_t *newEvent )
 	EventQueuePrioritizedEvent_t *pe;
 	for ( pe = &m_Events; pe->m_pNext != NULL; pe = pe->m_pNext )
 	{
-		if ( pe->m_pNext->m_flFireTime > newEvent->m_flFireTime )
+		if ( pe->m_pNext->m_iFireTick > newEvent->m_iFireTick )
 		{
 			break;
 		}
@@ -910,7 +910,7 @@ void CEventQueue::ServiceEvents( void )
 #ifdef TF_DLL
 	while ( pe != NULL && pe->m_flFireTime <= engine->GetServerTime() )
 #else
-	while ( pe != NULL && pe->m_flFireTime <= gpGlobals->curtime )
+	while ( pe != NULL && pe->m_iFireTick <= gpGlobals->tickcount )
 #endif
 	{
 		MDLCACHE_CRITICAL_SECTION();
@@ -1061,13 +1061,13 @@ void CEventQueue::CancelEventOn( CBaseEntity *pTarget, const char *sInputName )
 		return;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-
-	while (pCur != NULL)
+    const size_t inputNameSize = strlen(sInputName);
+	while (pCur != nullptr)
 	{
 		bool bDelete = false;
 		if (pCur->m_pEntTarget == pTarget)
 		{
-			if ( !Q_strncmp( STRING(pCur->m_iTargetInput), sInputName, strlen(sInputName) ) )
+            if (!Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 			{
 				// Found a matching event; delete it from the queue.
 				bDelete = true;
@@ -1096,15 +1096,12 @@ bool CEventQueue::HasEventPending( CBaseEntity *pTarget, const char *sInputName 
 		return false;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-
-	while (pCur != NULL)
+    const size_t inputNameSize = strlen(sInputName);
+	while (pCur != nullptr)
 	{
 		if (pCur->m_pEntTarget == pTarget)
 		{
-			if ( !sInputName )
-				return true;
-
-			if ( !Q_strncmp( STRING(pCur->m_iTargetInput), sInputName, strlen(sInputName) ) )
+            if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 				return true;
 		}
 
@@ -1134,7 +1131,7 @@ END_DATADESC()
 
 // save data for a single event in the queue
 BEGIN_SIMPLE_DATADESC( EventQueuePrioritizedEvent_t )
-	DEFINE_FIELD( m_flFireTime, FIELD_TIME ),
+	DEFINE_FIELD( m_iFireTick, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iTarget, FIELD_STRING ),
 	DEFINE_FIELD( m_iTargetInput, FIELD_STRING ),
 	DEFINE_FIELD( m_pActivator, FIELD_EHANDLE ),
@@ -1200,7 +1197,7 @@ int CEventQueue::Restore( IRestore &restore )
 #ifdef TF_DLL
 					  tmpEvent.m_flFireTime - engine->GetServerTime(),
 #else
-					  tmpEvent.m_flFireTime - gpGlobals->curtime,
+					  tmpEvent.m_iFireTick - gpGlobals->tickcount,
 #endif
 					  tmpEvent.m_pActivator,
 					  tmpEvent.m_pCaller,
@@ -1214,7 +1211,7 @@ int CEventQueue::Restore( IRestore &restore )
 #ifdef TF_DLL
 					  tmpEvent.m_flFireTime - engine->GetServerTime(),
 #else
-					  tmpEvent.m_flFireTime - gpGlobals->curtime,
+					  tmpEvent.m_iFireTick - gpGlobals->tickcount,
 #endif
 					  tmpEvent.m_pActivator,
 					  tmpEvent.m_pCaller,

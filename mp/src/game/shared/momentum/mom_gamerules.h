@@ -6,20 +6,26 @@
 
 #include "cbase.h"
 #include "gamerules.h"
-#include "singleplay_gamerules.h"
 #include "mom_player_shared.h"
+#include "singleplay_gamerules.h"
 
 #ifdef CLIENT_DLL
-#define CMomentum C_Momentum
+#define CMomentumGameRules C_MomentumGameRules
 #else
 #include "momentum/tickset.h"
 #endif
 
-
-class CMomentum : public CSingleplayRules
+class CMomentumGameRules : public CSingleplayRules
 {
-public:
-    DECLARE_CLASS(CMomentum, CSingleplayRules);
+  public:
+    DECLARE_CLASS(CMomentumGameRules, CSingleplayRules);
+
+    CMomentumGameRules();
+    ~CMomentumGameRules();
+
+    const CViewVectors* GetViewVectors() const OVERRIDE;
+
+    bool ShouldCollide(int collGroup1, int collGroup2) OVERRIDE;
 
 #ifdef CLIENT_DLL
 
@@ -28,45 +34,37 @@ public:
 #else
     DECLARE_SERVERCLASS_NOBASE();
 
-    //virtual void			Think(void);
+    // virtual void			Think(void);
 
-    virtual bool			ClientCommand(CBaseEntity *pEdict, const CCommand &args);
-    virtual void			PlayerSpawn(CBasePlayer *pPlayer);
-    virtual bool			IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer);
-    virtual CBaseEntity*    GetPlayerSpawnSpot(CBasePlayer *pPlayer);
-    virtual const char *GetGameDescription(void) { return "Momentum"; }
+    bool ClientCommand(CBaseEntity *pEdict, const CCommand &args) OVERRIDE;
+    void PlayerSpawn(CBasePlayer *pPlayer) OVERRIDE;
+    bool IsSpawnPointValid(CBaseEntity *pSpot, CBasePlayer *pPlayer) OVERRIDE;
+    CBaseEntity *GetPlayerSpawnSpot(CBasePlayer *pPlayer) OVERRIDE;
+
+    const char *GetGameDescription(void) OVERRIDE { return "Momentum"; }
 
     // Ammo
-    virtual void			PlayerThink(CBasePlayer *pPlayer) {}
-   // virtual float			GetAmmoDamage(CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType);
-    
-    //Players take no damage
-    float FlPlayerFallDamage(CBasePlayer *pPlayer) override {return 0.0f;}
-    virtual bool AllowDamage( CBaseEntity *pVictim, const CTakeDamageInfo &info ) {return !pVictim->IsPlayer();}
+    void PlayerThink(CBasePlayer *pPlayer) OVERRIDE {}
+    // virtual float			GetAmmoDamage(CBaseEntity *pAttacker, CBaseEntity *pVictim, int nAmmoType);
 
-private:
+    // Players take no damage
+    float FlPlayerFallDamage(CBasePlayer *pPlayer) OVERRIDE { return 0.0f; }
 
-    //void AdjustPlayerDamageTaken(CTakeDamageInfo *pInfo);
-    //float AdjustPlayerDamageInflicted(float damage);
-    Vector DropToGround(
-        CBaseEntity *pMainEnt,
-        const Vector &vPos,
-        const Vector &vMins,
-        const Vector &vMaxs);
-    int DefaultFOV(void) { return 90; }
+    bool AllowDamage(CBaseEntity *pVictim, const CTakeDamageInfo &info) OVERRIDE { return !pVictim->IsPlayer(); }
+
+    void ClientSettingsChanged(CBasePlayer *) OVERRIDE;
+
+    bool FAllowNPCs() OVERRIDE { return false; }
+
+  private:
+    // void AdjustPlayerDamageTaken(CTakeDamageInfo *pInfo);
+    // float AdjustPlayerDamageInflicted(float damage);
+    Vector DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins, const Vector &vMaxs);
+
+    int DefaultFOV(void) OVERRIDE;// { return 90; }
 #endif
-
-public:
-
-    virtual const CViewVectors* GetViewVectors() const;
-    CMomentum();
-    ~CMomentum();
-
 };
 
-inline CMomentum *GetMomentumGamerules()
-{
-    return static_cast<CMomentum*>(g_pGameRules);
-}
+inline CMomentumGameRules *GetMomentumGamerules() { return static_cast<CMomentumGameRules *>(g_pGameRules); }
 
-#endif// MOM_GAMERULES_H
+#endif // MOM_GAMERULES_H

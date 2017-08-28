@@ -27,7 +27,12 @@ $Project "fgdlib"
 
 $Project "game_shader_dx9"
 {
-	"materialsystem\stdshaders\game_shader_dx9_hl2mp.vpc" [$HL2MP]
+	"materialsystem\stdshaders\game_shader_dx9_momentum.vpc" [($WIN32||$POSIX) && $MOMENTUM]
+}
+
+$Project "gameui2"
+{
+    "game\gameui2\gameui2_base.vpc"		[($WIN32||$POSIX)]
 }
 
 $Project "glview"

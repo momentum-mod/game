@@ -7,7 +7,7 @@
 #include "cbase.h"
 #include "weapon_selection.h"
 #include "iclientmode.h"
-#include "hud_menu_static.h"
+#include "../momentum/ui/HUD/hud_menu_static.h"
 #include "history_resource.h"
 #include "input.h"
 #include "../hud_crosshair.h"
@@ -684,7 +684,8 @@ void CHudWeaponSelection::Paint()
 			xpos  = (GetWide() - width) / 2;
 			ypos  = 0;
 
-			int iActiveSlot = (pSelectedWeapon ? pSelectedWeapon->GetSlot() : -1);
+            // We have already ensured that pSelectedWeapon is not nullptr
+			int iActiveSlot = pSelectedWeapon->GetSlot();
 
 			// draw the bucket set
 			// iterate over all the weapon slots
@@ -779,11 +780,12 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 
 			// draw icon
 			col[3] *= (alpha / 255.0f);
-			if ( pWeapon->GetSpriteActive() )
+            const CHudTexture* pWeaponSpriteActive = pWeapon->GetSpriteActive();
+            if (pWeaponSpriteActive)
 			{
 				// find the center of the box to draw in
-				int iconWidth = pWeapon->GetSpriteActive()->Width();
-				int iconHeight = pWeapon->GetSpriteActive()->Height();
+                int iconWidth = pWeaponSpriteActive->Width();
+                int iconHeight = pWeaponSpriteActive->Height();
 
 				int x_offs = (boxWide - iconWidth) / 2;
 
@@ -809,7 +811,7 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 					col[3] = alpha;
 
 					// draw an active version over the top
-					pWeapon->GetSpriteActive()->DrawSelf( xpos + x_offs, ypos + y_offs, col );
+					pWeaponSpriteActive->DrawSelf( xpos + x_offs, ypos + y_offs, col );
 				}
 				
 				// draw the inactive version
@@ -845,11 +847,11 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 
 			// draw icon
 			col[3] *= (alpha / 255.0f);
-
-			if ( pWeapon->GetSpriteInactive() )
+            const CHudTexture *pWeaponSpriteInactive = pWeapon->GetSpriteInactive();
+            if (pWeaponSpriteInactive)
 			{
-				iconWidth = pWeapon->GetSpriteInactive()->Width();
-				iconHeight = pWeapon->GetSpriteInactive()->Height();
+                iconWidth = pWeaponSpriteInactive->Width();
+                iconHeight = pWeaponSpriteInactive->Height();
 
 				x_offs = (boxWide - iconWidth) / 2;
 				if ( bSelected && HUDTYPE_CAROUSEL == hud_fastswitch.GetInt() )
@@ -869,14 +871,14 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 				}
 
 				// draw the inactive version
-				pWeapon->GetSpriteInactive()->DrawSelf( xpos + x_offs, ypos + y_offs, iconWidth, iconHeight, col );
+                pWeaponSpriteInactive->DrawSelf(xpos + x_offs, ypos + y_offs, iconWidth, iconHeight, col);
 			}
-
-			if ( bSelected && pWeapon->GetSpriteActive() )
+            const CHudTexture* pWeaponSpriteActive = pWeapon->GetSpriteActive();
+            if (bSelected && pWeaponSpriteActive)
 			{
 				// find the center of the box to draw in
-				iconWidth = pWeapon->GetSpriteActive()->Width();
-				iconHeight = pWeapon->GetSpriteActive()->Height();
+                iconWidth = pWeaponSpriteActive->Width();
+                iconHeight = pWeaponSpriteActive->Height();
 
 				x_offs = (boxWide - iconWidth) / 2;
 				if ( HUDTYPE_CAROUSEL == hud_fastswitch.GetInt() )
@@ -894,13 +896,13 @@ void CHudWeaponSelection::DrawLargeWeaponBox( C_BaseCombatWeapon *pWeapon, bool 
 				{
 					if (fl >= 1.0f)
 					{
-						pWeapon->GetSpriteActive()->DrawSelf( xpos + x_offs, ypos + y_offs, col );
+                        pWeaponSpriteActive->DrawSelf(xpos + x_offs, ypos + y_offs, col);
 					}
 					else
 					{
 						// draw a percentage of the last one
 						col[3] *= fl;
-						pWeapon->GetSpriteActive()->DrawSelf( xpos + x_offs, ypos + y_offs, col );
+                        pWeaponSpriteActive->DrawSelf(xpos + x_offs, ypos + y_offs, col);
 					}
 				}
 			}

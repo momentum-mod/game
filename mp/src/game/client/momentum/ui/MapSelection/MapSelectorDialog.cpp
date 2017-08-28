@@ -2,50 +2,38 @@
 
 using namespace vgui;
 
-static CMapSelectorDialog *s_InternetDlg = NULL;
+static CMapSelectorDialog *s_InternetDlg = nullptr;
 
 CMapSelectorDialog &MapSelectorDialog()
 {
     return *CMapSelectorDialog::GetInstance();
 }
 
-
-// Returns a list of the ports that we hit when looking for 
-void GetMostCommonQueryPorts(CUtlVector<uint16> &ports)
-{
-    for (int i = 0; i <= 5; i++)
-    {
-        ports.AddToTail(27015 + i);
-        ports.AddToTail(26900 + i);
-    }
-
-    ports.AddToTail(4242); //RDKF
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(NULL, "CMapSelectorDialog")//"CServerBrowserDialog")
+CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CMapSelectorDialog")
 {
     SetParent(parent);
     s_InternetDlg = this;
-    m_pSavedData = NULL;
-    m_pFilterData = NULL;
+    m_pSavedData = nullptr;
+    m_pFilterData = nullptr;
 
     LoadUserData();
 
     m_pLocal = new CLocalMaps(this);
     //MOM_TODO: uncomment this: m_pOnline = new COnlineMaps(this);
 
-    SetMinimumSize(640, 384);
-    SetSize(640, 384);
+    SetMinimumSize(680, 400);
+    SetSize(680, 400);
 
-    m_pGameList = (IMapList*) m_pLocal;
+    m_pGameList = static_cast<IMapList*>(m_pLocal);
 
     m_pContextMenu = new CMapContextMenu(this);
 
     // property sheet
     m_pTabPanel = new PropertySheet(this, "MapTabs");
+    m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
     m_pTabPanel->AddPage(m_pLocal, "#MOM_MapSelector_LocalMaps");
     //MOM_TODO: uncomment: m_pTabPanel->AddPage(m_pOnline, "#MOM_MapSelector_OnlineMaps");
@@ -77,8 +65,10 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(NULL, "CMapS
 //-----------------------------------------------------------------------------
 CMapSelectorDialog::~CMapSelectorDialog()
 {
-    delete m_pContextMenu;
+    if (m_pContextMenu)
+        m_pContextMenu->DeletePanel();
 
+    // Attempt to save user data, if not that's okay
     SaveUserData();
 
     if (m_pSavedData)
@@ -123,7 +113,7 @@ void CMapSelectorDialog::Open()
 void CMapSelectorDialog::OnTick()
 {
     BaseClass::OnTick();
-    vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
+    //vgui::GetAnimationController()->UpdateAnimations(system()->GetFrameTime());
 }
 
 
@@ -169,6 +159,8 @@ void CMapSelectorDialog::LoadUserData()
 //-----------------------------------------------------------------------------
 void CMapSelectorDialog::SaveUserData()
 {
+    if (!g_pFullFileSystem) return;
+
     m_pSavedData->Clear();
     m_pSavedData->LoadFromFile(g_pFullFileSystem, "cfg/MapSelector.vdf", "MOD");
 
@@ -304,7 +296,7 @@ CDialogMapInfo *CMapSelectorDialog::JoinGame(IMapList *gameList, unsigned int se
     //gameDialog->Connect();
 
     // return gameDialog;
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -335,14 +327,14 @@ CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyVal
     //We're going to send just the map name to the CDialogMapInfo() constructor,
     //then to the server and populate it with leaderboard times, replays, personal bests, etc
     const char *pMapName = pMap->GetString("name", "");
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, pMapName);
+    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, pMapName);
     gameDialog->SetParent(GetVParent());
     gameDialog->AddActionSignalTarget(this);
     gameDialog->Run(pMapName);
     int i = m_vecMapInfoDialogs.AddToTail();
     m_vecMapInfoDialogs[i] = gameDialog;
     return gameDialog;
-    return NULL;
+    //return NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -350,7 +342,7 @@ CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(IMapList *gameList, KeyVal
 //-----------------------------------------------------------------------------
 CDialogMapInfo *CMapSelectorDialog::OpenMapInfoDialog(int serverIP, uint16 connPort, uint16 queryPort)
 {
-    CDialogMapInfo *gameDialog = new CDialogMapInfo(NULL, "");
+    CDialogMapInfo *gameDialog = new CDialogMapInfo(nullptr, "");
     gameDialog->AddActionSignalTarget(this);
     gameDialog->SetParent(GetVParent());
     gameDialog->Run("");
@@ -380,15 +372,16 @@ void CMapSelectorDialog::CloseAllMapInfoDialogs()
 //-----------------------------------------------------------------------------
 CDialogMapInfo *CMapSelectorDialog::GetDialogGameInfoForFriend(uint64 ulSteamIDFriend)
 {
-    FOR_EACH_VEC(m_vecMapInfoDialogs, i)
-    {
-        CDialogMapInfo *pDlg = m_vecMapInfoDialogs[i];
-        if (pDlg && pDlg->GetAssociatedFriend() == ulSteamIDFriend)
-        {
-            return pDlg;
-        }
-    }
-    return NULL;
+    //FOR_EACH_VEC(m_vecMapInfoDialogs, i)
+    //{
+    //    CDialogMapInfo *pDlg = m_vecMapInfoDialogs[i];
+    //    if (pDlg && pDlg->GetAssociatedFriend() == ulSteamIDFriend)
+    //    {
+    //        return pDlg;
+    //    }
+    //}
+    // We don't have friends
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------

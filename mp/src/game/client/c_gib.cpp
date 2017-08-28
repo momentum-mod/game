@@ -30,7 +30,7 @@ C_Gib::~C_Gib( void )
 //			vecAngularImp - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-C_Gib *C_Gib::CreateClientsideGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime )
+C_Gib *C_Gib::CreateClientsideGib(const char *pszModelName, const Vector &vecOrigin, const Vector &vecForceDir, AngularImpulse vecAngularImp, float flLifetime)
 {
 	C_Gib *pGib = new C_Gib;
 
@@ -51,7 +51,7 @@ C_Gib *C_Gib::CreateClientsideGib( const char *pszModelName, Vector vecOrigin, V
 //			vecAngularImp - 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool C_Gib::InitializeGib( const char *pszModelName, Vector vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime )
+bool C_Gib::InitializeGib( const char *pszModelName, const Vector &vecOrigin, Vector vecForceDir, AngularImpulse vecAngularImp, float flLifetime )
 {
 	if ( InitializeAsClientEntity( pszModelName, RENDER_GROUP_OPAQUE_ENTITY ) == false )
 	{

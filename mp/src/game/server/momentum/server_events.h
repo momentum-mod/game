@@ -5,14 +5,12 @@
 #endif
 
 #include "cbase.h"
-#include "movevars_shared.h"
+#include <movevars_shared.h>
 #include "mapzones.h"
-#include "Timer.h"
+#include "mom_timer.h"
 #include "mapzones_edit.h"
 
 namespace Momentum {
-
-void OnServerDLLInit();
 void GameInit();
 } // namespace Momentum
 
@@ -22,10 +20,14 @@ public:
     CMOMServerEvents(const char *pName) : CAutoGameSystemPerFrame(pName), zones(nullptr)
     {
     }
+    void PostInit() OVERRIDE;
+    void LevelInitPreEntity() OVERRIDE;
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPreEntity() OVERRIDE;
+    void LevelShutdownPostEntity() OVERRIDE;
+    void FrameUpdatePreEntityThink() OVERRIDE;
 
-    void LevelInitPostEntity() override;
-    void LevelShutdownPreEntity() override;
-    void FrameUpdatePreEntityThink() override;
+    void MountAdditionalContent();
 
 private:
     CMapzoneData* zones;

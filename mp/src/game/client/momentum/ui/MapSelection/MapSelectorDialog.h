@@ -10,25 +10,19 @@
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CMapSelectorDialog : public vgui::Frame
+class CMapSelectorDialog : public Frame
 {
     DECLARE_CLASS_SIMPLE(CMapSelectorDialog, vgui::Frame);
 
 public:
     // Construction/destruction
-    CMapSelectorDialog(vgui::VPANEL parent);
+    CMapSelectorDialog(VPANEL parent);
     ~CMapSelectorDialog(void);
 
     void		Initialize(void);
 
     // displays the dialog, moves it into focus, updates if it has to
     void		Open(void);
-    void        Close(void)
-    {
-        ConVarRef pCvar = ConVarRef("cl_showmapselection");
-        pCvar.SetValue(0);
-        BaseClass::Close();
-    }
 
     // gets server info
     mapstruct_t *GetMap(unsigned int serverID);
@@ -42,7 +36,7 @@ public:
     void UpdateStatusText(wchar_t *unicode);
 
     // context menu access
-    CMapContextMenu *GetContextMenu(vgui::Panel *pParent);
+    CMapContextMenu *GetContextMenu(Panel *pParent);
 
     // returns a pointer to a static instance of this dialog
     // valid for use only in sort functions
@@ -95,16 +89,16 @@ private:
 
 private:
     // list of all open game info dialogs
-    CUtlVector<vgui::DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
+    CUtlVector<DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
 
     // pointer to current game list
     IMapList *m_pGameList;
 
     // Status text
-    vgui::Label	*m_pStatusLabel;
+    Label	*m_pStatusLabel;
 
     // property sheet
-    vgui::PropertySheet *m_pTabPanel;
+    PropertySheet *m_pTabPanel;
 
     //Map tabs
     CLocalMaps *m_pLocal;
@@ -124,9 +118,5 @@ private:
 
 // singleton accessor
 extern CMapSelectorDialog &MapSelectorDialog();
-
-// Used by the LAN tab and the add server dialog when trying to find servers without having
-// been given any ports to look for servers on.
-void GetMostCommonQueryPorts(CUtlVector<uint16> &ports);
 
 #endif // SERVERBROWSERDIALOG_H
