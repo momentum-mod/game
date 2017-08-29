@@ -63,6 +63,9 @@ public:
 
 	virtual bool OnOpenNewTab( const char *pchURL, bool bForeground ) { return false; }
 
+    virtual void OnJSAlert(HTML_JSAlert_t *pAlert); // Called on this browser getting a JS alert
+    virtual void OnBrowserOpenNewTab(HTML_OpenLinkInNewTab_t *pCmd) {};
+
 	// configuration
 	virtual void SetScrollbarsEnabled(bool state);
 	virtual void SetContextMenuEnabled(bool state);
@@ -311,10 +314,11 @@ private:
 			return m_pchData == rhs.m_pchData ; 
 		}
 	};
-	CUtlVector<CustomCursorCache_t> m_vecHCursor;
+	CUtlVector<CustomCursorCache_t> m_vecHCursor; // MOM_TODO: REMOVEME?
 
 	CSteamAPIContext m_SteamAPIContext;
 	HHTMLBrowser m_unBrowserHandle;
+    bool IsCurrentBrowser(HHTMLBrowser other) const { return m_unBrowserHandle != INVALID_HTMLBROWSER && other == m_unBrowserHandle; }
 	CCallResult< HTML, HTML_BrowserReady_t > m_SteamCallResultBrowserReady;
 };
 
