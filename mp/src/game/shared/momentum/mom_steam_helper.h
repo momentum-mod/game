@@ -29,7 +29,7 @@ public:
     static CSteamID GetLocalSteamID();
     // Current Lobby Id
     CSteamID GetCurrentLobby() const;
-    // Is the current lobby valid? Use CheckLobby() to get up-to-date results
+    // Is the current lobby valid?
     bool IsLobbyValid() const;
     // Get the most up-to-date number of current total players we have
     int32 GetCurrentTotalPlayers() const;
@@ -46,23 +46,29 @@ public:
 
     // Ask for an update on the current total players
     void RequestCurrentTotalPlayers();
-    // Make sure we have not left the lobby. Thanks valve for not having a callback for that!
-    void CheckLobby();
     // Sets lobby data for the current player
     void SetLobbyMemberData(const char* key, const char* value) const;
+
+#ifdef GAME_DLL
+    void NotifyLobbyExit() const
+    {
+        SetLobbyMemberData("LOBBY_DATA_IS_LEAVING", "y");
+    }
+#endif
 
 
 private:
     // Callbacks
     STEAM_CALLBACK(CMomentumSteamHelper, OnLobbyEnter, LobbyEnter_t);
     STEAM_CALLBACK(CMomentumSteamHelper, OnLobbyChatUpdate, LobbyChatUpdate_t);
+    STEAM_CALLBACK(CMomentumSteamHelper, OnLobbyDataUpdate, LobbyDataUpdate_t);
 
     void OnNumberOfCurrentPlayers(NumberOfCurrentPlayers_t*, bool);
     CCallResult<CMomentumSteamHelper, NumberOfCurrentPlayers_t> m_cbPlayersCallback;
 
     // Data members
 
-    // Id of the current lobby. Use CheckLobby() to make sure it's up to date!
+    // Id of the current lobby.
     CSteamID m_siLobby;
 
     // Total amount of players right now

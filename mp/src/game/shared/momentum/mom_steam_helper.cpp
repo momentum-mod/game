@@ -30,17 +30,6 @@ void CMomentumSteamHelper::RequestCurrentTotalPlayers()
     }
 }
 
-void CMomentumSteamHelper::CheckLobby()
-{
-    // If we currently think we're on a lobby but the 0th member is not valid...
-    if (IsLobbyValid() && !steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(GetCurrentLobby(), 0).IsValid())
-    {
-        // it means we're actually not on a lobby!
-        m_siLobby = k_steamIDNil;
-        m_bCachedLobbyMembersValid = false; // Invalidate the cache too just in case
-    }
-}
-
 void CMomentumSteamHelper::SetLobbyMemberData(const char* key, const char* value) const
 {
     steamapicontext->SteamMatchmaking()->SetLobbyMemberData(GetCurrentLobby(), key, value);
@@ -104,6 +93,18 @@ void CMomentumSteamHelper::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
     {
         // Invalidate cache
         m_bCachedLobbyMembersValid = false;
+    }
+}
+
+void CMomentumSteamHelper::OnLobbyDataUpdate(LobbyDataUpdate_t* pParam)
+{
+    if (pParam->m_bSuccess && pParam->m_ulSteamIDMember == GetLocalSteamID().ConvertToUint64())
+    {
+        // Check if we're leaving the lobby...
+        if (Q_strcmp(GetLobbyLocalMemberData("LOBBY_DATA_IS_LEAVING"), "y") == 0)
+        {
+            m_siLobby = k_steamIDNil;
+        }
     }
 }
 

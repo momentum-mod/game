@@ -72,6 +72,10 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     MakeReadyForUse();
     SetZPos(0);
     RequestFocus();
+
+    ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
+    // First check here
+    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 }
 
 MainMenu::~MainMenu()
@@ -125,8 +129,6 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *co
 
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
-    // Find a better place for this
-    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
     BaseClass::ApplySchemeSettings(pScheme);
 
     m_fButtonsSpace = atof(pScheme->GetResourceString("MainMenu.Buttons.Space"));
@@ -169,8 +171,12 @@ void MainMenu::OnThink()
 
     if (ipanel())
         SetBounds(0, 0, GameUI2().GetViewport().x, GameUI2().GetViewport().y);
+}
 
-    g_pMomentumSteamHelper->CheckLobby();
+void MainMenu::OnTick()
+{
+    // We're the only one who should call this! (As we tick once every 2 mins)
+    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 }
 
 bool MainMenu::IsVisible(void)

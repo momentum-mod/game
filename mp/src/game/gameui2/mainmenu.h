@@ -23,6 +23,7 @@ class MainMenu : public Panel2D
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     virtual void CreateMenu(const char *menu);
     void OnThink() OVERRIDE;
+    void OnTick() OVERRIDE;
     bool IsVisible() OVERRIDE;
     virtual void DrawMainMenu();
     virtual void DrawLogo();
