@@ -11,6 +11,8 @@ enum SortFlags_t
     FL_SORT_MENU = 0x04
 };
 
+class MainMenuHTML;
+
 class MainMenu : public Panel2D
 {
     DECLARE_CLASS_SIMPLE(MainMenu, Panel2D);
@@ -31,6 +33,7 @@ class MainMenu : public Panel2D
     void OnSetFocus() OVERRIDE;
     void OnKillFocus() OVERRIDE;
 
+    void ReloadMenu();
 
     void Activate()
     {
@@ -43,6 +46,8 @@ class MainMenu : public Panel2D
     CUtlVector<Button_MainMenu *> m_pButtons;
 
     // Our own buttons...
+
+    MainMenuHTML *m_pMainMenuHTMLPanel;
 
     // MOM_TODO: Remove this when it's no longer needed
     Button_MainMenu *m_pButtonFeedback;
@@ -86,4 +91,8 @@ class MainMenu : public Panel2D
     vgui::HFont m_fLogoFont;
     int m_nSortFlags;
     bool m_bNeedSort;
+
+    bool m_bInGame;
+    float m_fGameVolume;
+    ConVarRef volumeRef;
 };

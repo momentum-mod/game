@@ -11,32 +11,144 @@
 
 #include "mom_steam_helper.h"
 #include "mom_shareddefs.h"
+#include "vgui_controls/HTML.h"
+#include "util/jsontokv.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#define USE_OLD_MENU 0 // MOM_TODO: Remove this and anything that relies on it being 1
 
 using namespace vgui;
 
-MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
+class MomentumURLResolver : public Panel
+{
+    DECLARE_CLASS_SIMPLE(MomentumURLResolver, Panel);
+
+    MomentumURLResolver(Panel *pParent) : BaseClass(nullptr)
+    {
+        SetAutoDelete(true);
+        SetVisible(false);
+        SetEnabled(false);
+    }
+
+protected:
+    MESSAGE_FUNC_CHARPTR_CHARPTR(OnCustomURL, "CustomURL", schema, URL)
+    {
+        DevLog("Going to custom URL %s\n", URL);
+        char pFile[128];
+        Q_strncpy(pFile, URL + Q_strlen(schema), 128); // MOM_TODO: Figure out how to substring appropriately here
+        DevLog("Finding file %s...\n", pFile);
+        char path[MAX_PATH];
+        Q_snprintf(path, MAX_PATH, "resource/html/%s.html", pFile);
+        char fullPath[1024];
+        g_pFullFileSystem->RelativePathToFullPath(path, "MOD", fullPath, 1024);
+        char finalPath[1024];
+        Q_snprintf(finalPath, 1024, "file:///%s", fullPath);
+        DevLog("Full file URL path: %s\n", finalPath);
+    }
+};
+
+class MainMenuHTML : public vgui::HTML
+{
+    DECLARE_CLASS_SIMPLE(MainMenuHTML, vgui::HTML);
+
+    MainMenuHTML(Panel *pParent, const char *pName) : BaseClass(pParent, pName, true)
+    {
+        AddActionSignalTarget(pParent);
+        m_pURLResolver = new MomentumURLResolver(this);
+        AddCustomURLHandler("mom://", m_pURLResolver);
+        SetPaintBackgroundEnabled(false);
+    }
+    ~MainMenuHTML()
+    {
+    }
+
+    void LoadMenu()
+    {
+        OpenURL("file:///C:/Users/Nick/Documents/GitHub/game/mp/game/momentum/resource/html/menu.html");
+    }
+
+    void OpenURL(const char *pURL)
+    {
+        BaseClass::OpenURL(pURL, nullptr);
+    }
+
+    void OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers) OVERRIDE 
+    {
+        char command[128];
+        const char *pLanguage = m_SteamAPIContext.SteamApps()->GetCurrentGameLanguage();
+        Q_snprintf(command, 128, "setLocalization('%s')", pLanguage);
+        RunJavascript(command);
+        SendVolumeCommand(ConVarRef("volume").GetFloat()); // The initial volume to set
+    }
+
+    void SendVolumeCommand(float flVolume)
+    {
+        char command[128];
+        Q_snprintf(command, 128, "setVolume(%.3f)", flVolume);
+        RunJavascript(command);
+    }
+
+    void OnJSAlert(HTML_JSAlert_t* pAlert) OVERRIDE
+    {
+        KeyValues *pKv = CJsonToKeyValues::ConvertJsonToKeyValues(pAlert->pchMessage);
+        KeyValuesAD autodelete(pKv);
+
+        if (pKv)
+        {
+            if (!Q_strcmp(pKv->GetString("id"), "menu"))
+            {
+                if (pKv->GetBool("special"))
+                {
+                    GameUI2().GetGameUI()->SendMainMenuCommand(pKv->GetString("com"));
+                }
+                else
+                {
+                    GameUI2().GetEngineClient()->ClientCmd_Unrestricted(pKv->GetString("com"));
+                }
+            }
+            else if (!Q_strcmp(pKv->GetString("id"), "echo"))
+            {
+                DevLog("%s\n", pKv->GetString("com"));
+            }
+        }
+
+        // This must be called!
+        DismissJSDialog(true);
+    }
+
+private:
+    MomentumURLResolver *m_pURLResolver;
+};
+
+
+
+MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("volume")
 {
     HScheme Scheme = scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
     SetScheme(Scheme);
 
-    SetProportional(false);
+    SetProportional(true);
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
     SetPaintBorderEnabled(false);
     SetPaintBackgroundEnabled(false);
     SetAutoDelete(true);
+    AddActionSignalTarget(this);
+
+    SetBounds(0, 0, GameUI2().GetViewport().x, GameUI2().GetViewport().y);
 
     m_bFocused = true;
     m_bNeedSort = false;
+    m_bInGame = false;
+    m_fGameVolume = volumeRef.GetFloat();
     m_nSortFlags = FL_SORT_SHARED;
 
     m_logoLeft = GameUI2().GetLocalizedString("#GameUI2_LogoLeft");
     m_logoRight = GameUI2().GetLocalizedString("#GameUI2_LogoRight");
     m_pLogoImage = nullptr;
+#if USE_OLD_MENU
     m_pButtonFeedback = new Button_MainMenu(this, this, "engine mom_contact_show");
     m_pButtonFeedback->SetButtonText("#GameUI2_SendFeedback");
     m_pButtonFeedback->SetButtonDescription("#GameUI2_SendFeedbackDescription");
@@ -68,7 +180,13 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     
 
     CreateMenu("resource2/mainmenu.res");
-
+#else
+    m_pMainMenuHTMLPanel = new MainMenuHTML(this, "CMainMenuHTML");
+    int wide, high;
+    GetSize(wide, high);
+    m_pMainMenuHTMLPanel->SetSize(wide, high);
+    m_pMainMenuHTMLPanel->LoadMenu();
+#endif
     MakeReadyForUse();
     SetZPos(0);
     RequestFocus();
@@ -76,10 +194,10 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 
 MainMenu::~MainMenu()
 {
-    m_pButtonFeedback->DeletePanel();
-    m_pButtonFeedback->DeletePanel();
-    m_pButtonLobby->DeletePanel();
-    m_pButtonInviteFriends->DeletePanel();
+    //m_pButtonFeedback->DeletePanel();
+    //m_pButtonFeedback->DeletePanel();
+    //m_pButtonLobby->DeletePanel();
+    //m_pButtonInviteFriends->DeletePanel();
 }
 
 void MainMenu::CreateMenu(const char *menu)
@@ -126,7 +244,8 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *co
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
     // Find a better place for this
-    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
+    //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
+#if USE_OLD_MENU
     BaseClass::ApplySchemeSettings(pScheme);
 
     m_fButtonsSpace = atof(pScheme->GetResourceString("MainMenu.Buttons.Space"));
@@ -161,6 +280,7 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 
     Q_strncpy(m_pszMenuOpenSound, pScheme->GetResourceString("MainMenu.Sound.Open"), sizeof(m_pszMenuOpenSound));
     Q_strncpy(m_pszMenuCloseSound, pScheme->GetResourceString("MainMenu.Sound.Close"), sizeof(m_pszMenuCloseSound));
+#endif
 }
 
 void MainMenu::OnThink()
@@ -170,7 +290,26 @@ void MainMenu::OnThink()
     if (ipanel())
         SetBounds(0, 0, GameUI2().GetViewport().x, GameUI2().GetViewport().y);
 
-    g_pMomentumSteamHelper->CheckLobby();
+    if (m_pMainMenuHTMLPanel)
+    {
+        if (m_bInGame != GameUI2().IsInLevel())
+        {
+            m_bInGame = GameUI2().IsInLevel();
+            char visCommand[32];
+            Q_snprintf(visCommand, 32, "updateVisibility(%s)", m_bInGame ? "true" : "false");
+            m_pMainMenuHTMLPanel->RunJavascript(visCommand);
+        }
+
+        if (!CloseEnough(m_fGameVolume, volumeRef.GetFloat(), 0.0001f))
+        {
+            m_fGameVolume = volumeRef.GetFloat();
+            m_pMainMenuHTMLPanel->SendVolumeCommand(m_fGameVolume);
+        }
+    }
+    
+        
+
+    //g_pMomentumSteamHelper->CheckLobby();
 }
 
 bool MainMenu::IsVisible(void)
@@ -363,8 +502,10 @@ void MainMenu::Paint()
 {
     BaseClass::Paint();
 
+#if USE_OLD_MENU
     DrawMainMenu();
     DrawLogo();
+#endif
 }
 
 void MainMenu::OnCommand(char const *cmd)
@@ -385,4 +526,10 @@ void MainMenu::OnKillFocus()
     BaseClass::OnKillFocus();
     m_bFocused = false;
     surface()->PlaySound(m_pszMenuCloseSound);
+}
+
+void MainMenu::ReloadMenu()
+{
+    if (m_pMainMenuHTMLPanel)
+        m_pMainMenuHTMLPanel->LoadMenu();
 }

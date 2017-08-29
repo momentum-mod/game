@@ -35,6 +35,11 @@ BasePanel::BasePanel(vgui::VPANEL parent) : BaseClass(nullptr)
     m_pMainMenu = new MainMenu(nullptr);
 }
 
+CON_COMMAND(reload_menu, "Reloads the menu\n")
+{
+    GetBasePanel()->GetMainMenu()->ReloadMenu();
+}
+
 vgui::VPANEL BasePanel::GetVPanel() { return BaseClass::GetVPanel(); }
 
 void BasePanel::Create()
