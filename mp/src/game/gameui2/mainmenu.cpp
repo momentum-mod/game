@@ -24,8 +24,7 @@ using namespace vgui;
 class MomentumURLResolver : public Panel
 {
     DECLARE_CLASS_SIMPLE(MomentumURLResolver, Panel);
-
-    MomentumURLResolver(Panel *pParent) : BaseClass(nullptr)
+    MomentumURLResolver(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
     {
         SetAutoDelete(true);
         SetVisible(false);
@@ -36,17 +35,22 @@ protected:
     MESSAGE_FUNC_CHARPTR_CHARPTR(OnCustomURL, "CustomURL", schema, URL)
     {
         DevLog("Going to custom URL %s\n", URL);
-        char pFile[128];
-        Q_strncpy(pFile, URL + Q_strlen(schema), 128); // MOM_TODO: Figure out how to substring appropriately here
+        const char* pFile = strstr(URL, "://") + 3; //+3 so we skip past the ://
         DevLog("Finding file %s...\n", pFile);
         char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "resource/html/%s.html", pFile);
+        V_snprintf(path, MAX_PATH, "resource/html/%s.html", pFile);
         char fullPath[1024];
         g_pFullFileSystem->RelativePathToFullPath(path, "MOD", fullPath, 1024);
         char finalPath[1024];
-        Q_snprintf(finalPath, 1024, "file:///%s", fullPath);
+        V_snprintf(finalPath, 1024, "file:///%s", fullPath);
+
+        for (int i = 0; i < V_strlen(finalPath); i++) 
+        {
+            if (finalPath[i] == '\\') finalPath[i] = '/';
+        }
         DevLog("Full file URL path: %s\n", finalPath);
-    }
+        PostActionSignal(new KeyValues("GoToURL", "url", finalPath));
+    } 
 };
 
 class MainMenuHTML : public vgui::HTML
@@ -56,7 +60,8 @@ class MainMenuHTML : public vgui::HTML
     MainMenuHTML(Panel *pParent, const char *pName) : BaseClass(pParent, pName, true)
     {
         AddActionSignalTarget(pParent);
-        m_pURLResolver = new MomentumURLResolver(this);
+        m_pURLResolver = new MomentumURLResolver(this, "MomentumURLResolver");
+        m_pURLResolver->AddActionSignalTarget(this);
         AddCustomURLHandler("mom://", m_pURLResolver);
         SetPaintBackgroundEnabled(false);
     }
@@ -66,14 +71,17 @@ class MainMenuHTML : public vgui::HTML
 
     void LoadMenu()
     {
-        OpenURL("file:///C:/Users/Nick/Documents/GitHub/game/mp/game/momentum/resource/html/menu.html");
+        OpenURL("mom://menu");
     }
 
     void OpenURL(const char *pURL)
     {
         BaseClass::OpenURL(pURL, nullptr);
     }
-
+    MESSAGE_FUNC_CHARPTR(OnURLResolved, "GoToURL", url)
+    {
+        OpenURL(url);
+    }
     void OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers) OVERRIDE 
     {
         char command[128];
@@ -286,7 +294,6 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 void MainMenu::OnThink()
 {
     BaseClass::OnThink();
-
     if (ipanel())
         SetBounds(0, 0, GameUI2().GetViewport().x, GameUI2().GetViewport().y);
 
