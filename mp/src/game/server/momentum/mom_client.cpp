@@ -40,7 +40,7 @@ void ClientPutInServer(edict_t *pEdict, const char *playername)
     pPlayer->SetPlayerName(playername);
     
     //Acquire client module's data recieve function
-    pPlayer->StdDataToPlayer = (DataToPlayerFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToPlayer"));
+    pPlayer->StdDataToPlayer = (DataToPlayerFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL_NAME), "StdDataToPlayer"));
 }
 
 

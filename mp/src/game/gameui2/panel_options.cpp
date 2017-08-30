@@ -6,9 +6,12 @@
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
 
+#undef min
+#undef max
 #include <string>
-#include <algorithm>
 #include <functional>
+#include <algorithm>
+
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -139,7 +142,6 @@ void Panel_Options::DrawTitle()
 {
 	std::wstring panel_title = m_PanelTitle;
 	std::transform(panel_title.begin(), panel_title.end(), panel_title.begin(), std::function<int32(int32)>(::toupper));
-	
 	vgui::surface()->DrawSetTextColor(m_cTitleColor);
 	vgui::surface()->DrawSetTextFont(m_fTitleFont);
 
