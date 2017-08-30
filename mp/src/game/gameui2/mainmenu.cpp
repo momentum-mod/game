@@ -126,6 +126,13 @@ class MainMenuHTML : public vgui::HTML
         DismissJSDialog(true);
     }
 
+    void OnMousePressed(MouseCode mc) OVERRIDE
+    {
+        if (mc != MOUSE_RIGHT)
+        {
+            BaseClass::OnMousePressed(mc);
+        }
+    }
 private:
     MomentumURLResolver *m_pURLResolver;
 };
