@@ -3,6 +3,7 @@
 #include "base64.h"
 
 #include "tier0/memdbgon.h"
+#include "mom_steam_helper.h"
 
 CSteamID CMomentumLobbySystem::m_sLobbyID = k_steamIDNil;
 float CMomentumLobbySystem::m_flNextUpdateTime = -1.0f;
@@ -164,11 +165,12 @@ void CMomentumLobbySystem::LeaveLobby()
 {
     if (LobbyValid())
     {
-        steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
-        DevLog("Left the lobby!\n");
+        g_pMomentumSteamHelper->NotifyLobbyExit();  
         m_sLobbyID = k_steamIDNil;
         g_pMomentumGhostClient->ClearCurrentGhosts(true);
+        steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         steamapicontext->SteamFriends()->ClearRichPresence();
+        DevLog("Left the lobby!\n");
     }
     else
         DevLog("Could not leave lobby, are you in one?\n");

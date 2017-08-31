@@ -79,6 +79,8 @@ class CGameUI2 : public IGameUI2
     IGameUI *m_pGameUI;
     IVRenderView *m_pRenderView;
     IMaterialSystem *m_pMaterialSystem;
+
+    CSteamAPIContext steamapicontext;
 };
 
 extern CGameUI2 &GameUI2();

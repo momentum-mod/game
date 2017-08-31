@@ -193,8 +193,6 @@ void CHudChat::StopMessageMode()
 
 void CHudChat::OnThink()
 {
-    g_pMomentumSteamHelper->CheckLobby(); // Maybe too often?
-
     if (g_pMomentumSteamHelper->IsLobbyValid() && GetMessageMode() != 0 && GetInputPanel())
     {
         const int isSomethingTyped = GetInputPanel()->GetTextLength() > 0;

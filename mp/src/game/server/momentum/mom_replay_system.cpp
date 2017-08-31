@@ -21,6 +21,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
         m_bRecording = true;
         m_iTickCount = 1; // recoring begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
+        m_pReplay = g_ReplayFactory.CreateEmptyReplay(0);
     }
 }
 
@@ -102,6 +103,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
     m_iStartTimerTick = -1;
+    m_pReplay->~CMomReplayBase();
 }
 
 bool CMomentumReplaySystem::StoreReplay(const char* path, const char* pathID)

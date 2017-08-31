@@ -8,8 +8,6 @@
 #include <strtools.h>
 
 #include <tier1/utlvector.h>
-
-
 #include "steam/steam_api.h"
 
 class CMomentumSteamHelper
@@ -26,19 +24,19 @@ public:
     // Getters
 
     // Local player steam id
-    static CSteamID GetLocalSteamID();
+    CSteamID GetLocalSteamID();
     // Current Lobby Id
     CSteamID GetCurrentLobby() const;
-    // Is the current lobby valid? Use CheckLobby() to get up-to-date results
+    // Is the current lobby valid?
     bool IsLobbyValid() const;
     // Get the most up-to-date number of current total players we have
     int32 GetCurrentTotalPlayers() const;
     // Get the most up-to-date number of current total players we have as string
     const wchar_t* GetCurrentTotalPlayersAsString() const;
     // For a given member steamid, gets the value stored for key
-    const char* GetLobbyMemberData(const CSteamID member, const char* key) const;
+    const char* GetLobbyMemberData(const CSteamID member, const char* key);
     // Gets the value stored for key for the local user.
-    const char* GetLobbyLocalMemberData(const char* key) const;
+    const char* GetLobbyLocalMemberData(const char* key);
     // Copies into vec the current list of lobby members. Returns true if cache missed
     bool GetLobbyMembers(CUtlVector<CSteamID>& vec);
 
@@ -46,23 +44,29 @@ public:
 
     // Ask for an update on the current total players
     void RequestCurrentTotalPlayers();
-    // Make sure we have not left the lobby. Thanks valve for not having a callback for that!
-    void CheckLobby();
     // Sets lobby data for the current player
-    void SetLobbyMemberData(const char* key, const char* value) const;
+    void SetLobbyMemberData(const char* key, const char* value);
+
+#ifdef GAME_DLL
+    void NotifyLobbyExit()
+    {
+        SetLobbyMemberData("LOBBY_DATA_IS_LEAVING", "y");
+    }
+#endif
 
 
 private:
     // Callbacks
     STEAM_CALLBACK(CMomentumSteamHelper, OnLobbyEnter, LobbyEnter_t);
     STEAM_CALLBACK(CMomentumSteamHelper, OnLobbyChatUpdate, LobbyChatUpdate_t);
+    STEAM_CALLBACK(CMomentumSteamHelper, OnLobbyDataUpdate, LobbyDataUpdate_t);
 
     void OnNumberOfCurrentPlayers(NumberOfCurrentPlayers_t*, bool);
     CCallResult<CMomentumSteamHelper, NumberOfCurrentPlayers_t> m_cbPlayersCallback;
 
     // Data members
 
-    // Id of the current lobby. Use CheckLobby() to make sure it's up to date!
+    // Id of the current lobby.
     CSteamID m_siLobby;
 
     // Total amount of players right now
@@ -73,6 +77,8 @@ private:
     CUtlVector<CSteamID> m_vCachedLobbyMembers;
     // Flag that indicates if the next request should re-fetch the lobby members from steam
     bool m_bCachedLobbyMembersValid;
+
+    CSteamAPIContext steamapicontext;
 
 };
 

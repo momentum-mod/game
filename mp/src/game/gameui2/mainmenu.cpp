@@ -208,14 +208,14 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("vo
     MakeReadyForUse();
     SetZPos(0);
     RequestFocus();
+
+    ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
+    // First check here
+    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 }
 
 MainMenu::~MainMenu()
 {
-    //m_pButtonFeedback->DeletePanel();
-    //m_pButtonFeedback->DeletePanel();
-    //m_pButtonLobby->DeletePanel();
-    //m_pButtonInviteFriends->DeletePanel();
 }
 
 void MainMenu::CreateMenu(const char *menu)
@@ -261,11 +261,8 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *co
 
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
-    // Find a better place for this
-    //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
-#if USE_OLD_MENU
     BaseClass::ApplySchemeSettings(pScheme);
-
+#if USE_OLD_MENU
     m_fButtonsSpace = atof(pScheme->GetResourceString("MainMenu.Buttons.Space"));
     m_fButtonsOffsetX = atof(pScheme->GetResourceString("MainMenu.Buttons.OffsetX"));
     m_fButtonsOffsetY = atof(pScheme->GetResourceString("MainMenu.Buttons.OffsetY"));
@@ -323,10 +320,13 @@ void MainMenu::OnThink()
             m_pMainMenuHTMLPanel->SendVolumeCommand(m_fGameVolume);
         }
     }
-    
         
+}
 
-    //g_pMomentumSteamHelper->CheckLobby();
+void MainMenu::OnTick()
+{
+    // We're the only one who should call this! (As we tick once every 2 mins)
+    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 }
 
 bool MainMenu::IsVisible(void)
