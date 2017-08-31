@@ -36,7 +36,7 @@ public:
 
     void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
-    Color CHudChat::GetDefaultTextColor() OVERRIDE;
+    Color GetDefaultTextColor() OVERRIDE;
 
 private:
     CUtlVector<CSteamID> m_vTypingMembers;
