@@ -1,15 +1,16 @@
 #include "mom_steam_helper.h"
-
-extern CSteamAPIContext* steamapicontext;
+#include "steam/steam_api.h"
 
 CMomentumSteamHelper::CMomentumSteamHelper() : m_siLobby(), m_i32CurrentTotalPlayers(0), m_bCachedLobbyMembersValid(false)
 {
-
+    SteamAPI_InitSafe();
+    SteamAPI_SetTryCatchCallbacks(false);
+    steamapicontext.Init();
 }
 
 CSteamID CMomentumSteamHelper::GetLocalSteamID()
 {
-    return steamapicontext->SteamUser()->GetSteamID();
+    return steamapicontext.SteamUser()->GetSteamID();
 }
 
 CSteamID CMomentumSteamHelper::GetCurrentLobby() const
@@ -26,13 +27,13 @@ void CMomentumSteamHelper::RequestCurrentTotalPlayers()
 {
     if (!m_cbPlayersCallback.IsActive())
     {
-        m_cbPlayersCallback.Set(steamapicontext->SteamUserStats()->GetNumberOfCurrentPlayers(), this, &CMomentumSteamHelper::OnNumberOfCurrentPlayers);
+        m_cbPlayersCallback.Set(steamapicontext.SteamUserStats()->GetNumberOfCurrentPlayers(), this, &CMomentumSteamHelper::OnNumberOfCurrentPlayers);
     }
 }
 
-void CMomentumSteamHelper::SetLobbyMemberData(const char* key, const char* value) const
+void CMomentumSteamHelper::SetLobbyMemberData(const char* key, const char* value)
 {
-    steamapicontext->SteamMatchmaking()->SetLobbyMemberData(GetCurrentLobby(), key, value);
+    steamapicontext.SteamMatchmaking()->SetLobbyMemberData(GetCurrentLobby(), key, value);
 }
 
 int32 CMomentumSteamHelper::GetCurrentTotalPlayers() const
@@ -45,12 +46,12 @@ const wchar_t* CMomentumSteamHelper::GetCurrentTotalPlayersAsString() const
     return &m_wsCurrentTotalPlayers[0];
 }
 
-const char* CMomentumSteamHelper::GetLobbyMemberData(const CSteamID member, const char* key) const
+const char* CMomentumSteamHelper::GetLobbyMemberData(const CSteamID member, const char* key)
 {
-    return steamapicontext->SteamMatchmaking()->GetLobbyMemberData(GetCurrentLobby(), member, key);
+    return steamapicontext.SteamMatchmaking()->GetLobbyMemberData(GetCurrentLobby(), member, key);
 }
 
-const char* CMomentumSteamHelper::GetLobbyLocalMemberData(const char* key) const
+const char* CMomentumSteamHelper::GetLobbyLocalMemberData(const char* key)
 {
     return GetLobbyMemberData(GetLocalSteamID(), key);
 }
@@ -65,11 +66,11 @@ bool CMomentumSteamHelper::GetLobbyMembers(CUtlVector<CSteamID>& vec)
         }
         else
         {
-            const int membersCount = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(GetCurrentLobby());
+            const int membersCount = steamapicontext.SteamMatchmaking()->GetNumLobbyMembers(GetCurrentLobby());
             vec.SetCount(membersCount);
             for (int i = 0; i < membersCount; ++i)
             {
-                vec[i] = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(GetCurrentLobby(), i);
+                vec[i] = steamapicontext.SteamMatchmaking()->GetLobbyMemberByIndex(GetCurrentLobby(), i);
             }
             m_bCachedLobbyMembersValid = true;
             return true;

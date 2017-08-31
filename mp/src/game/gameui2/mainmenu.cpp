@@ -80,10 +80,6 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 
 MainMenu::~MainMenu()
 {
-    m_pButtonFeedback->DeletePanel();
-    m_pButtonFeedback->DeletePanel();
-    m_pButtonLobby->DeletePanel();
-    m_pButtonInviteFriends->DeletePanel();
 }
 
 void MainMenu::CreateMenu(const char *menu)
