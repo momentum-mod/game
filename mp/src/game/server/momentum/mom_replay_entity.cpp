@@ -7,7 +7,8 @@
 #include "util/mom_util.h"
 #include "util/os_utils.h"
 #ifdef _WIN32
-#include <windows.h>
+#pragma warning( disable: 4005 )
+#include <Windows.h>
 #endif
 #include "tier0/memdbgon.h"
 
@@ -46,7 +47,7 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
     m_nOldReplayButtons(0), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
 {
-    StdDataToReplay = (DataToReplayFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToReplay"));
+    StdDataToReplay = (DataToReplayFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
     
     // Set networked vars here
     m_SrvData.m_nReplayButtons = 0;

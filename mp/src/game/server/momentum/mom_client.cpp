@@ -11,6 +11,7 @@
 #include "util/os_utils.h"
 
 #ifdef _WIN32
+#pragma warning( disable: 4005 )
 #include "Windows.h"
 #endif
 #include "tier0/vprof.h"
@@ -39,7 +40,7 @@ void ClientPutInServer(edict_t *pEdict, const char *playername)
     pPlayer->SetPlayerName(playername);
     
     //Acquire client module's data recieve function
-    pPlayer->StdDataToPlayer = (DataToPlayerFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL), "StdDataToPlayer"));
+    pPlayer->StdDataToPlayer = (DataToPlayerFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL_NAME), "StdDataToPlayer"));
 }
 
 

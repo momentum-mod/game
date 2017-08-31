@@ -5,9 +5,12 @@
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
 
+#undef min
+#undef max
 #include <string>
-#include <algorithm>
 #include <functional>
+#include <algorithm>
+
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

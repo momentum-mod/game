@@ -66,6 +66,7 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
+
     m_SrvData.m_RunData.m_iRunFlags = 0;
     m_SrvData.m_iShotsFired = 0;
     m_SrvData.m_iDirection = 0;
@@ -78,6 +79,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_iCheckpointCount = 0;
     m_SrvData.m_bUsingCPMenu = false;
     m_SrvData.m_iCurrentStepCP = -1;
+    
+    g_ReplaySystem.m_player = this;
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
@@ -178,9 +181,9 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
         SetLaggedMovementValue(1.0f);
 
         // Fix for the replay system not being able to listen to events
-        if (g_ReplaySystem->GetReplayManager()->GetPlaybackReplay() && !pEvent->GetBool("restart"))
+        if (g_ReplaySystem.m_pPlaybackReplay && !pEvent->GetBool("restart"))
         {
-            g_ReplaySystem->GetReplayManager()->UnloadPlayback();
+            g_ReplaySystem.UnloadPlayback();
         }
     }
 }
