@@ -35,21 +35,22 @@ protected:
     MESSAGE_FUNC_CHARPTR_CHARPTR(OnCustomURL, "CustomURL", schema, URL)
     {
         DevLog("Going to custom URL %s\n", URL);
-        const char* pFile = strstr(URL, "://") + 3; //+3 so we skip past the ://
+        // Substring out the file
+        const char* pFile = Q_strstr(URL, schema) + Q_strlen(schema);
         DevLog("Finding file %s...\n", pFile);
+        // Create the rough path to the file
         char path[MAX_PATH];
         V_snprintf(path, MAX_PATH, "resource/html/%s.html", pFile);
+        // Translate to full path on system
         char fullPath[1024];
         g_pFullFileSystem->RelativePathToFullPath(path, "MOD", fullPath, 1024);
+        // Append the file schema and fix the slashes
         char finalPath[1024];
         V_snprintf(finalPath, 1024, "file:///%s", fullPath);
-
-        for (int i = 0; i < V_strlen(finalPath); i++) 
-        {
-            if (finalPath[i] == '\\') finalPath[i] = '/';
-        }
+        V_FixSlashes(finalPath, '/'); // Only use forward slashes here
+        // Done! Forward this to our parent HTML class
         DevLog("Full file URL path: %s\n", finalPath);
-        PostActionSignal(new KeyValues("GoToURL", "url", finalPath));
+        PostActionSignal(new KeyValues("ResolvedURL", "url", finalPath));
     } 
 };
 
@@ -78,10 +79,12 @@ class MainMenuHTML : public vgui::HTML
     {
         BaseClass::OpenURL(pURL, nullptr);
     }
-    MESSAGE_FUNC_CHARPTR(OnURLResolved, "GoToURL", url)
+
+    MESSAGE_FUNC_CHARPTR(OnURLResolved, "ResolvedURL", url)
     {
         OpenURL(url);
     }
+
     void OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers) OVERRIDE 
     {
         char command[128];

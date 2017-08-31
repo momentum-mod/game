@@ -1299,7 +1299,7 @@ bool HTML::OnStartRequest( const char *url, const char *target, const char *pchP
 			Panel *targetPanel = m_CustomURLHandlers[i].hPanel;
 			if (targetPanel)
 			{
-				PostMessage(targetPanel, new KeyValues("CustomURL", "scheme", m_CustomURLHandlers[i].url, "url", url ) );
+				PostMessage(targetPanel, new KeyValues("CustomURL", "schema", m_CustomURLHandlers[i].url, "url", url ) );
 			}
 
 			bURLHandled = true;
