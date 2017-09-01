@@ -10,7 +10,7 @@ CMomentumSteamHelper::CMomentumSteamHelper() : m_siLobby(), m_i32CurrentTotalPla
 
 CSteamID CMomentumSteamHelper::GetLocalSteamID()
 {
-    return steamapicontext.SteamUser()->GetSteamID();
+    return steamapicontext.SteamUser() ? steamapicontext.SteamUser()->GetSteamID() : k_steamIDNil;
 }
 
 CSteamID CMomentumSteamHelper::GetCurrentLobby() const
@@ -25,7 +25,7 @@ bool CMomentumSteamHelper::IsLobbyValid() const
 
 void CMomentumSteamHelper::RequestCurrentTotalPlayers()
 {
-    if (!m_cbPlayersCallback.IsActive())
+    if (!m_cbPlayersCallback.IsActive() && steamapicontext.SteamUserStats())
     {
         m_cbPlayersCallback.Set(steamapicontext.SteamUserStats()->GetNumberOfCurrentPlayers(), this, &CMomentumSteamHelper::OnNumberOfCurrentPlayers);
     }
@@ -33,7 +33,8 @@ void CMomentumSteamHelper::RequestCurrentTotalPlayers()
 
 void CMomentumSteamHelper::SetLobbyMemberData(const char* key, const char* value)
 {
-    steamapicontext.SteamMatchmaking()->SetLobbyMemberData(GetCurrentLobby(), key, value);
+    if (steamapicontext.SteamMatchmaking())
+        steamapicontext.SteamMatchmaking()->SetLobbyMemberData(GetCurrentLobby(), key, value);
 }
 
 int32 CMomentumSteamHelper::GetCurrentTotalPlayers() const
@@ -48,7 +49,9 @@ const wchar_t* CMomentumSteamHelper::GetCurrentTotalPlayersAsString() const
 
 const char* CMomentumSteamHelper::GetLobbyMemberData(const CSteamID member, const char* key)
 {
-    return steamapicontext.SteamMatchmaking()->GetLobbyMemberData(GetCurrentLobby(), member, key);
+    return steamapicontext.SteamMatchmaking() ?
+        steamapicontext.SteamMatchmaking()->GetLobbyMemberData(GetCurrentLobby(), member, key) :
+        "";
 }
 
 const char* CMomentumSteamHelper::GetLobbyLocalMemberData(const char* key)
@@ -58,7 +61,7 @@ const char* CMomentumSteamHelper::GetLobbyLocalMemberData(const char* key)
 
 bool CMomentumSteamHelper::GetLobbyMembers(CUtlVector<CSteamID>& vec)
 {
-    if (IsLobbyValid())
+    if (IsLobbyValid() && steamapicontext.SteamMatchmaking())
     {
         if (m_bCachedLobbyMembersValid)
         {
