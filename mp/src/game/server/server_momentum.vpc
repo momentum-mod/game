@@ -51,6 +51,15 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\serialization.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
                 $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
                 {

@@ -1786,8 +1786,8 @@ void Panel::InternalCursorMoved(int x, int y)
 		}
         if (m_pTooltips->IsVisible())
             m_pTooltips->PositionWindow();
-        else
-            m_pTooltips->ShowTooltip(this);
+        //else
+        //    m_pTooltips->ShowTooltip(this);
 	}
 
 	ScreenToLocal(x, y);

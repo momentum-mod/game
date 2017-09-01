@@ -229,6 +229,15 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
 			}
             $Folder "Network"
             {
@@ -349,7 +358,7 @@ $Project "Client (Momentum)"
         
         $Folder "JSON Parser"
         {
-             $File "$SRCDIR\thirdparty\gason\src\gason.h"
+            $File "$SRCDIR\thirdparty\gason\src\gason.h"
             $File "$SRCDIR\thirdparty\gason\src\gason.cpp"
             {
                 $Configuration

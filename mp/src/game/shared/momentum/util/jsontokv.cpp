@@ -1,17 +1,42 @@
-#include "cbase.h"
-
 #include "jsontokv.h"
 
 KeyValues *CJsonToKeyValues::ConvertJsonToKeyValues(JsonNode *node)
 {
     //This iterates through the base JsonObject node
     KeyValues *pKvToReturn = new KeyValues("Response");
+    pKvToReturn->UsesEscapeSequences(true);
     while (node)
     {
         MapNode(node, pKvToReturn);
         node = node->next;
     }
     return pKvToReturn;
+}
+
+KeyValues* CJsonToKeyValues::ConvertJsonToKeyValues(const char* pJSONInput)
+{
+    KeyValues *pToReturn = nullptr;
+
+    JsonAllocator alloc; // Allocator
+    JsonValue val; // Outer object
+    
+    // Setup our input buffer (const char* -> char *)
+    size_t input = Q_strlen(pJSONInput) + 1;
+    char *pInputBuffer = new char[input];
+    Q_strncpy(pInputBuffer, pJSONInput, input);
+
+    char *endPtr; // Just for show, I guess
+
+    int status = jsonParse(pInputBuffer, &endPtr, &val, alloc);
+    if (status == JSON_OK)
+    {
+        pToReturn = ConvertJsonToKeyValues(val.toNode());
+    }
+
+    // Cleanup after ourselves
+    delete[] pInputBuffer;
+
+    return pToReturn;
 }
 
 void CJsonToKeyValues::MapNode(JsonNode *node, KeyValues *kv)

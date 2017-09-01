@@ -25,11 +25,6 @@ void CMOMClientEvents::PostInit()
     ConVarRef con_enable("con_enable");
     con_enable.SetValue(true);
 
-    if (SteamAPI_IsSteamRunning())
-    {
-        g_pMomentumUtil->GetRemoteRepoModVersion();
-    }
-
     // Mount CSS content even if it's on a different drive than SDK
     if (steamapicontext && steamapicontext->SteamApps())
     {
