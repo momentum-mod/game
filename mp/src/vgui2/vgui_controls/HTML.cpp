@@ -215,8 +215,6 @@ void HTML::OnBrowserReady( HTML_BrowserReady_t *pBrowserReady, bool bIOFailure )
 //-----------------------------------------------------------------------------
 HTML::~HTML()
 {
-	m_pContextMenu->MarkForDeletion();
-
 	if ( m_SteamAPIContext.SteamHTMLSurface() && m_unBrowserHandle != INVALID_HTMLBROWSER )
 	{
 		m_SteamAPIContext.SteamHTMLSurface()->RemoveBrowser( m_unBrowserHandle );

@@ -216,6 +216,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("vo
 
 MainMenu::~MainMenu()
 {
+    ivgui()->RemoveTickSignal(GetVPanel());
 }
 
 void MainMenu::CreateMenu(const char *menu)
