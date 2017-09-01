@@ -52,7 +52,6 @@ void Button_MainMenu::Init()
     SetPaintBackgroundEnabled(false);
     SetEnabled(true);
     SetVisible(false);
-    SetAutoDelete(true);
 }
 
 void Button_MainMenu::ApplySchemeSettings(IScheme *pScheme)
