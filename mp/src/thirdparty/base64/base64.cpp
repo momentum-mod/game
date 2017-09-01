@@ -31,6 +31,8 @@
 
 #include "base64.h"
 #include "utlvector.h"
+#undef min
+#undef max
 #include <iostream>
 #include <string.h>
 
