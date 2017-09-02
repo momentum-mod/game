@@ -19,7 +19,8 @@ END_DATADESC();
 
 #define MOM_GHOST_LERP 0.1f // MOM_TODO: Change this to a convar
 
-static MAKE_TOGGLE_CONVAR(mom_ghost_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
+static MAKE_TOGGLE_CONVAR(mom_ghost_online_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
+static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Interpolation ticks to add to rendering online ghosts.\n", 0.0f, 100.0f);
 
 void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
 {
@@ -68,14 +69,15 @@ void CMomentumOnlineGhostEntity::Spawn()
     BaseClass::Spawn();
     SetNextThink(gpGlobals->curtime);
 }
+
 void CMomentumOnlineGhostEntity::Think()
 {
     BaseClass::Think();
     HandleGhost();
     if (m_pCurrentSpecPlayer)
         HandleGhostFirstPerson();
-    // Emulate at slightly slower than the update rate for the smoothest interpolation
-    SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat() + (gpGlobals->interval_per_tick * 2.0f));
+    // Emulate at the update rate (or slightly slower) for the smoothest interpolation
+    SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat() + (gpGlobals->interval_per_tick * mom_ghost_online_interp_ticks.GetFloat()));
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
@@ -105,7 +107,7 @@ void CMomentumOnlineGhostEntity::HandleGhost()
     if (m_pCurrentFrame)
     {
         SetAbsOrigin(m_pCurrentFrame->frame.Position);
-        if (m_pCurrentSpecPlayer || mom_ghost_rotations.GetBool())
+        if (m_pCurrentSpecPlayer || mom_ghost_online_rotations.GetBool())
             SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
         else
             SetAbsAngles(QAngle(0, m_pCurrentFrame->frame.EyeAngle.y, m_pCurrentFrame->frame.EyeAngle.z));

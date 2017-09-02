@@ -115,7 +115,6 @@ void CMomentumGhostClient::SendChatMessage(char* pMessage)
 void CMomentumGhostClient::ResetOtherAppearanceData()
 {
     // MOM_TODO: g_pMomentumServerSystem->ResetOtherAppearanceData();
-    DevLog("Resetting other appearance!\n");
     g_pMomentumLobbySystem->ResetOtherAppearanceData();
 }
 
