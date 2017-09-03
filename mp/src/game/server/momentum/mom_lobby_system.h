@@ -45,7 +45,7 @@ public:
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECTATE_MSG_TYPE type);
     bool GetIsSpectatingFromMemberData(CSteamID who);
-    void SendDecalPacket(DecalPacket_t packet);
+    void SendDecalPacket(DecalPacket_t *packet);
 
     void SetGameInfoStatus();
     CSteamID GetSpectatorTargetFromMemberData(CSteamID whoIsSpectating);

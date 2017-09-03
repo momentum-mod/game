@@ -157,7 +157,7 @@ void FX_FireBullets(
     if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
     {
         DecalPacket_t decalPacket(DECAL_BULLET, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
-        g_pMomentumGhostClient->SendDecalPacket(decalPacket);
+        g_pMomentumGhostClient->SendDecalPacket(&decalPacket);
     }
 
     bDoEffects = false; // no effects on server

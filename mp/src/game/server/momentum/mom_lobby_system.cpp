@@ -619,10 +619,10 @@ bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(CSteamID who)
     return specChar[0] ? true : false;
 }
 
-void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t packet)
+void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
 {
     if (LobbyValid())
-        SendPacket(&packet);
+        SendPacket(packet);
 }
 
 void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, bool bStartedSpectating)

@@ -131,9 +131,9 @@ void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpec
     g_pMomentumLobbySystem->SetSpectatorTarget(target, bStartedSpectating);
 }
 
-void CMomentumGhostClient::SendDecalPacket(DecalPacket_t packet)
+void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
 {
-    // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(trace, iDamageType);
+    // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(packet);
     g_pMomentumLobbySystem->SendDecalPacket(packet);
 }
 
