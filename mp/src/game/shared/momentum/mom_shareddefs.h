@@ -50,7 +50,7 @@ typedef enum
 
 typedef enum
 {
-    SPEC_UPDATE_JOIN,           // Started spectating
+    SPEC_UPDATE_JOIN = 0,           // Started spectating
     SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else!
     SPEC_UPDATE_LEAVE           // Respawned
 } SPECTATE_MSG_TYPE;

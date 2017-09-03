@@ -45,6 +45,7 @@ public:
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECTATE_MSG_TYPE type);
     bool GetIsSpectatingFromMemberData(CSteamID who);
+    void SendDecalPacket(DecalPacket_t packet);
 
     void SetGameInfoStatus();
     CSteamID GetSpectatorTargetFromMemberData(CSteamID whoIsSpectating);
@@ -57,6 +58,9 @@ private:
     CUtlVector<CSteamID> m_vecBlocked; // Vector of blocked users (ignore updates/packets from these people)
 
     bool m_bHostingLobby;
+
+    // Sends a packet to a specific person, or everybody (if pTarget is null)
+    void SendPacket(MomentumPacket_t *packet, CSteamID *pTarget = nullptr, EP2PSend sendType = k_EP2PSendUnreliable);
 
     void WriteMessage(LOBBY_MSG_TYPE type, uint64 id);
     void WriteMessage(SPECTATE_MSG_TYPE type, uint64 playerID, uint64 ghostID);

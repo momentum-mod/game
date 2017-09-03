@@ -1,9 +1,11 @@
 #include "cbase.h"
 #include "mom_lobby_system.h"
 #include "base64.h"
+#include "effect_dispatch_data.h"
+#include "fx_cs_shared.h"
+#include "mom_steam_helper.h"
 
 #include "tier0/memdbgon.h"
-#include "mom_steam_helper.h"
 
 CSteamID CMomentumLobbySystem::m_sLobbyID = k_steamIDNil;
 float CMomentumLobbySystem::m_flNextUpdateTime = -1.0f;
@@ -247,6 +249,37 @@ CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(uint64_t 
         return CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
     
     return nullptr;
+}
+
+void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
+{
+    // Write the packet out to binary
+    CUtlBuffer buf(0, 1200);
+    buf.SetBigEndian(false);
+    packet->Write(buf);
+
+    if (pTarget)
+    {
+        if (steamapicontext->SteamNetworking()->SendP2PPacket(*pTarget, buf.Base(), buf.TellPut(), sendType))
+        {
+            // DevLog("Sent the packet!\n");
+        }
+    }
+    else // It's everybody
+    {
+        uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
+        while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        {
+            CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
+
+            if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, buf.Base(), buf.TellPut(), sendType))
+            {
+                // DevLog("Sent the packet!\n");
+            }
+
+            index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
+        }
+    }
 }
 
 void CMomentumLobbySystem::WriteMessage(LOBBY_MSG_TYPE type, uint64 pID_int)
@@ -505,61 +538,70 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
         uint32 size;
         while (steamapicontext->SteamNetworking()->IsP2PPacketAvailable(&size))
         {
-            //DevLog("Packet available! Size: %u bytes where sizeof frame is %i bytes\n", size, sizeof ghostNetFrame_t);
-            if (size == sizeof(ghostNetFrame_t))
+            // Read the packet's data
+            uint8 *bytes = new uint8[size];
+            uint32 bytesRead;
+            CSteamID fromWho;
+            steamapicontext->SteamNetworking()->ReadP2PPacket(bytes, size, &bytesRead, &fromWho);
+            
+            // Throw the data into a manageable reader
+            CUtlBuffer buf(bytes, size, CUtlBuffer::READ_ONLY);
+            buf.SetBigEndian(false);
+            
+            // Determine what type it is
+            uint8 type = buf.GetUnsignedChar();
+            switch (type)
             {
-                ghostNetFrame_t frame;
-                uint32 bytesRead;
-                CSteamID fromWho;
-                if (steamapicontext->SteamNetworking()->ReadP2PPacket(&frame, sizeof(frame), &bytesRead, &fromWho))
+            case PT_POS_DATA: // Position update frame
                 {
-                    //DevLog("Read the packet successfully! Read bytes: %u, from steamID %lld\n", bytesRead, fromWho.ConvertToUint64());
+                    PositionPacket_t frame(buf);
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
                     if (pEntity)
-                        pEntity->SetCurrentNetFrame(frame);
+                        pEntity->AddPositionFrame(frame);
                 }
-            }
-            else if (size == sizeof(ghostSpecUpdate_t))
-            {
-                ghostSpecUpdate_t update;
-                uint32 bytesRead;
-                CSteamID fromWho;
-                if (steamapicontext->SteamNetworking()->ReadP2PPacket(&update, sizeof(update), &bytesRead, &fromWho))
+                break;
+            case PT_DECAL_DATA:
                 {
-                    uint64 fromWhoID = fromWho.ConvertToUint64(), specTargetID = update.specTarget.ConvertToUint64();
+                    DecalPacket_t decals(buf);
+                    CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
+                    if (pEntity)
+                    {
+                        pEntity->AddDecalFrame(decals);
+                    }
+                }
+                break;
+            case PT_SPEC_UPDATE:
+                {
+                    SpecUpdatePacket_t update(buf);
+                    uint64 fromWhoID = fromWho.ConvertToUint64(), specTargetID = update.specTarget;
 
                     CMomentumOnlineGhostEntity *pEntity = GetLobbyMemberEntity(fromWho);
                     if (pEntity)
                     {
-                        pEntity->m_bSpectating = update.specTarget.IsValid();
-                        update.specTarget.IsValid() ? pEntity->HideGhost() : pEntity->UnHideGhost();
+                        pEntity->m_bSpectating = update.specTarget != 0;
+                        update.specTarget != 0 ? pEntity->HideGhost() : pEntity->UnHideGhost();
                     }
 
                     // Write it out to the Hud Chat
-                    WriteMessage(update.type, fromWhoID, specTargetID);
+                    WriteMessage(update.spec_type, fromWhoID, specTargetID);
                 }
+                break;
+            default:
+                break;
             }
+
+            // Clear the buffer and free the memory
+            buf.Purge();
+            delete[] bytes;
         }
 
-        // Send data
+        // Send position data
         if (m_flNextUpdateTime > 0 && gpGlobals->curtime > m_flNextUpdateTime)
         {
-            ghostNetFrame_t frame;
+            PositionPacket_t frame;
             if (g_pMomentumGhostClient->CreateNewNetFrame(frame))
             {
-                uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
-                while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
-                {
-                    CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
-               
-                    if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &frame, sizeof(frame), k_EP2PSendUnreliable))
-                    {
-                        // DevLog("Sent the packet!\n");
-                    }
-
-                    index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
-                }
-
+                SendPacket(&frame);
                 m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
             }
         }
@@ -576,6 +618,13 @@ bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(CSteamID who)
     const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
     return specChar[0] ? true : false;
 }
+
+void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t packet)
+{
+    if (LobbyValid())
+        SendPacket(&packet);
+}
+
 void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, bool bStartedSpectating)
 {
     SPECTATE_MSG_TYPE type;
@@ -609,26 +658,14 @@ void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, bool bStarte
 //Sends the spectator info update packet to all current ghosts
 void CMomentumLobbySystem::SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECTATE_MSG_TYPE type)
 {
-    ghostSpecUpdate_t newUpdate;
-    newUpdate.specTarget = ghostTarget;
-    newUpdate.type = type;
-    uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
-    while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
-    {
-        CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
-
-        if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, &newUpdate, sizeof(newUpdate), k_EP2PSendReliable))
-        {
-            DevLog("Sent the spectate update packet!\n");
-        }
-
-        index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
-    }
+    SpecUpdatePacket_t newUpdate(ghostTarget.ConvertToUint64(), type);
+    SendPacket(&newUpdate, nullptr, k_EP2PSendReliable);
 
     uint64 playerID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
     uint64 ghostID = ghostTarget.ConvertToUint64();
     WriteMessage(type, playerID, ghostID);
 }
+
 // MOM_TODO Move me to client?
 CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
 {
@@ -636,6 +673,7 @@ CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
     uint64 id = Q_atoui64(steamID);
     return steamID && steamID[0] ? CSteamID(id) : k_steamIDNil;
 }
+
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
     ConVarRef gm("mom_gamemode");
@@ -658,11 +696,8 @@ void CMomentumLobbySystem::SetGameInfoStatus()
     }
     char gameInfoStr[64], connectStr[64];
     int numPlayers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
-    V_snprintf(gameInfoStr, 64, numPlayers < 1 ? "%s on %s" : "%s on %s with %i other player", gameMode, gpGlobals->mapname, numPlayers);
+    V_snprintf(gameInfoStr, 64, numPlayers < 1 ? "%s on %s" : "%s on %s with %i other player%s", gameMode, gpGlobals->mapname, numPlayers, numPlayers > 2 ? "s" : "");
     V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
-
-    if (numPlayers > 2) //we want it to say "%i other players (emphesis on the s) if we have more than 2, i.e us and a friend is just 1 other player
-        V_strcat(gameInfoStr, "s", 64); 
 
     steamapicontext->SteamFriends()->SetRichPresence("connect", connectStr);
     steamapicontext->SteamFriends()->SetRichPresence("status", gameInfoStr);

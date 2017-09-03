@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "mom_online_ghost.h"
-#include "util/mom_util.h"
 #include "in_buttons.h"
+#include "fx_cs_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -22,11 +22,6 @@ END_DATADESC();
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
 static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Interpolation ticks to add to rendering online ghosts.\n", 0.0f, 100.0f);
 
-void CMomentumOnlineGhostEntity::SetCurrentNetFrame(ghostNetFrame_t newFrame)
-{
-    m_vecFrames.Insert(new ReceivedFrame_t(gpGlobals->curtime, newFrame));
-}
-
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
     ListenForGameEvent("mapfinished_panel_closed");
@@ -36,7 +31,36 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
 
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
-    m_vecFrames.Purge();
+    m_vecPositionPackets.Purge();
+}
+
+void CMomentumOnlineGhostEntity::AddPositionFrame(PositionPacket_t newFrame)
+{
+    m_vecPositionPackets.Insert(new ReceivedFrame_t<PositionPacket_t>(gpGlobals->curtime, newFrame));
+}
+
+void CMomentumOnlineGhostEntity::AddDecalFrame(DecalPacket_t decal)
+{
+    m_vecDecalPackets.Insert(new ReceivedFrame_t<DecalPacket_t>(gpGlobals->curtime, decal));
+}
+
+void CMomentumOnlineGhostEntity::FireDecal(DecalPacket_t decal)
+{
+    if (decal.decal_type == DECAL_BULLET)
+    {
+        FX_FireBullets(
+            entindex(),
+            decal.vOrigin,
+            decal.vAngle,
+            decal.iWeaponID,
+            decal.iMode,
+            decal.iSeed,
+            decal.fSpread);
+    }
+    else if (decal.decal_type == DECAL_PAINT)
+    {
+      // MOM_TODO: Spawn/fire the paint decal here   
+    }
 }
 
 void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
@@ -76,6 +100,7 @@ void CMomentumOnlineGhostEntity::Think()
     HandleGhost();
     if (m_pCurrentSpecPlayer)
         HandleGhostFirstPerson();
+
     // Emulate at the update rate (or slightly slower) for the smoothest interpolation
     SetNextThink(gpGlobals->curtime + 1.0f / mm_updaterate.GetFloat() + (gpGlobals->interval_per_tick * mom_ghost_online_interp_ticks.GetFloat()));
 }
@@ -83,34 +108,57 @@ void CMomentumOnlineGhostEntity::HandleGhost()
 {
     float flCurtime = gpGlobals->curtime - MOM_GHOST_LERP; // Render in a 100 ms past buffer (allow some dropped packets)
 
-    if (!m_vecFrames.IsEmpty())
+    if (!m_vecDecalPackets.IsEmpty())
+    {
+        // Similar fast-forward code to the positions except we aren't jumping here,
+        // we want to place these decals ASAP (sound spam incoming) and get them out of the queue.
+        int upperBound = 3 + static_cast<int>(ceil(MOM_GHOST_LERP * mm_updaterate.GetFloat()));
+        while (m_vecDecalPackets.Count() > upperBound)
+        {
+            ReceivedFrame_t<DecalPacket_t> *fireMeImmedately = m_vecDecalPackets.RemoveAtHead();
+            FireDecal(fireMeImmedately->frame);
+            delete fireMeImmedately;
+        }
+
+        if (m_vecDecalPackets.Head()->recvTime < flCurtime)
+        {
+            ReceivedFrame_t<DecalPacket_t> *fireMe = m_vecDecalPackets.RemoveAtHead();
+            FireDecal(fireMe->frame);
+            delete fireMe;
+        }
+    }
+
+    if (!m_vecPositionPackets.IsEmpty())
     {
         // The fast-forward logic:
         // Realistically, we're going to have a buffer of about MOM_GHOST_LERP * update rate. So for 25 updates
         // in a second, a lerp of 0.1 seconds would make there be about 2.5 packets in the queue at all times.
         // If they pause, this increases to some arbitrary number of frames that we need to get rid of, immediately.
         int upperBound = 3 + static_cast<int>(ceil(MOM_GHOST_LERP * mm_updaterate.GetFloat()));
-        while (m_vecFrames.Count() > upperBound)
+        while (m_vecPositionPackets.Count() > upperBound)
         {
-            ReceivedFrame_t *pTemp = m_vecFrames.RemoveAtHead();
+            ReceivedFrame_t<PositionPacket_t> *pTemp = m_vecPositionPackets.RemoveAtHead();
             delete pTemp;
         }
 
         if (!m_pCurrentFrame)
         {
-            ReceivedFrame_t *pHead = m_vecFrames.Head();
+            ReceivedFrame_t<PositionPacket_t> *pHead = m_vecPositionPackets.Head();
             if (flCurtime > pHead->recvTime)
-                m_pCurrentFrame = m_vecFrames.RemoveAtHead();
+                m_pCurrentFrame = m_vecPositionPackets.RemoveAtHead();
         }
     }
 
     if (m_pCurrentFrame)
     {
         SetAbsOrigin(m_pCurrentFrame->frame.Position);
+
+        m_vecLookAngles = m_pCurrentFrame->frame.EyeAngle;
         if (m_pCurrentSpecPlayer || mom_ghost_online_rotations.GetBool())
-            SetAbsAngles(m_pCurrentFrame->frame.EyeAngle);
+            SetAbsAngles(m_vecLookAngles);
         else
-            SetAbsAngles(QAngle(0, m_pCurrentFrame->frame.EyeAngle.y, m_pCurrentFrame->frame.EyeAngle.z));
+            SetAbsAngles(QAngle(0, m_vecLookAngles.y, m_vecLookAngles.z));
+
         SetViewOffset(Vector(0, 0, m_pCurrentFrame->frame.ViewOffset));
         SetAbsVelocity(m_pCurrentFrame->frame.Velocity);
 

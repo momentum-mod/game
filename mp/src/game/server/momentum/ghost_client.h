@@ -2,9 +2,7 @@
 
 #include "cbase.h"
 #include "mom_player.h"
-#include "mom_shareddefs.h"
 #include "mom_online_ghost.h"
-#include "mom_lobby_system.h"
 
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
 {
@@ -31,8 +29,9 @@ public:
     void ResetOtherAppearanceData(); // Resets every ghost's appearance data, mostly done when overrides are toggled, to apply them
     void SendAppearanceData(ghostAppearance_t appearance);
     void SetSpectatorTarget(CSteamID target, bool bStartedSpectating);
+    void SendDecalPacket(DecalPacket_t packet);
 
-    static bool CreateNewNetFrame(ghostNetFrame_t &frame);
+    static bool CreateNewNetFrame(PositionPacket_t &frame);
     static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
 
     static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;

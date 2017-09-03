@@ -16,8 +16,14 @@ public:
     CMomentumOnlineGhostEntity();
     ~CMomentumOnlineGhostEntity();
 
-    void SetCurrentNetFrame(ghostNetFrame_t newFrame);
-    //ghostNetFrame_t GetCurrentNetFrame() const { return m_currentFrame; }
+    // Adds a position frame to the queue for processing
+    void AddPositionFrame(PositionPacket_t newFrame);
+    // Adds a decal frame to the queue of processing
+    // Note: We have to delay the decal packets to sort of sync up to position, to make spectating more accurate.
+    void AddDecalFrame(DecalPacket_t decal);
+    // Places a decal in the world, according to the packet and decal type
+    void FireDecal(DecalPacket_t decal);
+
     void SetGhostSteamID(CSteamID steamID)
     {
         m_GhostSteamID = steamID;
@@ -44,15 +50,18 @@ public:
     CNetworkString(m_pszGhostName, MAX_PLAYER_NAME_LENGTH);
     CNetworkVar(bool, m_bSpectating);
 
+    QAngle m_vecLookAngles; // Used for storage reasons
+
 protected:
     void Think(void) OVERRIDE;
     void Precache(void) OVERRIDE;
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
-    CUtlQueue<ReceivedFrame_t*> m_vecFrames;
-    ReceivedFrame_t* m_pCurrentFrame;
-    ReceivedFrame_t* m_pNextFrame;
+    CUtlQueue<ReceivedFrame_t<PositionPacket_t>*> m_vecPositionPackets;
+    ReceivedFrame_t<PositionPacket_t>* m_pCurrentFrame;
+    ReceivedFrame_t<PositionPacket_t>* m_pNextFrame;
+    CUtlQueue<ReceivedFrame_t<DecalPacket_t>*> m_vecDecalPackets;
 
     CSteamID m_GhostSteamID;
     LobbyGhostAppearance_t m_CurrentAppearance;

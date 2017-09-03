@@ -110,10 +110,10 @@ private:
 struct playerData
 {
     int clientIndex;
-    ghostNetFrame_t currentFrame;
+    PositionPacket_t currentFrame;
     ghostAppearance_t currentLooks;
     uint64_t SteamID64;
-    playerData(ghostNetFrame_t frame, ghostAppearance_t looks, int idx, uint64_t steamID)
+    playerData(PositionPacket_t frame, ghostAppearance_t looks, int idx, uint64_t steamID)
         : clientIndex(idx), currentFrame(frame), currentLooks(looks), SteamID64(steamID)
     {
     }

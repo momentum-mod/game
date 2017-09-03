@@ -3,6 +3,7 @@
 #include "util/mom_util.h"
 #include "mom_online_ghost.h"
 #include "icommandline.h"
+#include "mom_lobby_system.h"
 
 #include "tier0/memdbgon.h"
 
@@ -130,11 +131,17 @@ void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpec
     g_pMomentumLobbySystem->SetSpectatorTarget(target, bStartedSpectating);
 }
 
-bool CMomentumGhostClient::CreateNewNetFrame(ghostNetFrame_t &into)
+void CMomentumGhostClient::SendDecalPacket(DecalPacket_t packet)
+{
+    // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(trace, iDamageType);
+    g_pMomentumLobbySystem->SendDecalPacket(packet);
+}
+
+bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
 {
     if (m_pPlayer && !m_pPlayer->IsSpectatingGhost())
     {
-        into = ghostNetFrame_t(
+        into = PositionPacket_t(
             m_pPlayer->EyeAngles(),
             m_pPlayer->GetAbsOrigin(),
             m_pPlayer->GetAbsVelocity(),
