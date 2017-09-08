@@ -29,7 +29,7 @@ enum PacketTypes
 struct MomentumPacket_t
 {
     uint8_t type;
-    virtual ~MomentumPacket_t() = default;
+    virtual ~MomentumPacket_t() {};
 
 #ifndef GHOST_SERVER
     virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(type); }

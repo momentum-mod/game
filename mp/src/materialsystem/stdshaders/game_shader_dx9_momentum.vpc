@@ -5,13 +5,8 @@
 //-----------------------------------------------------------------------------
 
 $Macro SRCDIR		"..\.."
-$Macro GAMENAME "Momentum"
-
-// ------- IF YOU ARE COMPILING ON LINUX, CHANGE THIS PATH!!! --------------
-$Macro OUTBINDIR "/home/SteamApps/sourcemods/$GAMENAME/bin"	[$LINUXALL]
-// ----------
-
-$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"	[$WIN32]
+$Macro GAMENAME "momentum"
+$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
 
 $Include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
 
