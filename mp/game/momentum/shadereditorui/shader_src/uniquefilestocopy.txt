@@ -1,6 +1,6 @@
 bin\dx_proxy.dll
-c:\program files (x86)\steam\steamapps\common\source sdk base 2013 multiplayer\bin\\tier0.dll
-c:\program files (x86)\steam\steamapps\common\source sdk base 2013 multiplayer\bin\\vstdlib.dll
+e:\steamworks\dev\momentum\bin\\tier0.dll
+e:\steamworks\dev\momentum\bin\\vstdlib.dll
 common_fxc.h
 common_hlsl_cpp_consts.h
 common_pragmas.h
@@ -10,8 +10,8 @@ common_vertexlitgeneric_dx9.h
 common_lightmappedgeneric_fxc.h
 common_flashlight_fxc.h
 common_parallax.h
-c:\program files (x86)\steam\steamapps\common\source sdk base 2013 multiplayer\bin\\shadercompile.exe
-c:\program files (x86)\steam\steamapps\common\source sdk base 2013 multiplayer\bin\\shadercompile_dll.dll
-000009_gui_blur_blend_pos_preview_vs30.fxc
-000009_gui_blur_blend_preview_vs30.fxc
-000009_gui_blur_blend_preview_ps30.fxc
+e:\steamworks\dev\momentum\bin\\shadercompile.exe
+e:\steamworks\dev\momentum\bin\\shadercompile_dll.dll
+00000A_fringe_pos_preview_vs30.fxc
+00000A_fringe_preview_vs30.fxc
+00000A_fringe_preview_ps30.fxc
