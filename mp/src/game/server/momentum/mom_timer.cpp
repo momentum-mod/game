@@ -2,6 +2,8 @@
 
 #include "in_buttons.h"
 #include "mom_timer.h"
+#include "run/run_checkpoint.h"
+#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -254,7 +256,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     int smallestCornerNum = -1;
     for (int i = 0; i < 8; i++)
     {
-        if (m_flDistFixTraceCorners[i] < smallestDist && !g_pMomentumUtil->FloatEquals(m_flDistFixTraceCorners[i], 0.0f))
+        if (m_flDistFixTraceCorners[i] < smallestDist && !CloseEnough(m_flDistFixTraceCorners[i], 0.0f, FLT_EPSILON))
         {
             smallestDist = m_flDistFixTraceCorners[i];
             smallestCornerNum = i;
@@ -303,7 +305,7 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     {
         float dist = tr.startpos.DistTo(tr.endpos);
 
-        if (!g_pMomentumUtil->FloatEquals(dist, 0.0f))
+        if (!CloseEnough(dist, 0.0f, FLT_EPSILON))
         {
             g_pMomentumTimer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
         }
@@ -409,7 +411,7 @@ class CTimerCommands
         CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
         if (start)
         {
-            Checkpoint *pStartMark = g_pMomentumTimer->GetStartMark();
+            Checkpoint_t *pStartMark = g_pMomentumTimer->GetStartMark();
             if (pStartMark)
             {
                 pPlayer->TeleportToCheckpoint(pStartMark);
@@ -484,7 +486,7 @@ class CTimerCommands
             if (desiredIndex == 1)
             {
                 // Index 1 is the start. If the timer has a mark, we use it
-                Checkpoint *startMark = g_pMomentumTimer->GetStartMark();
+                Checkpoint_t *startMark = g_pMomentumTimer->GetStartMark();
                 if (startMark)
                 {
                     pVec = &startMark->pos;

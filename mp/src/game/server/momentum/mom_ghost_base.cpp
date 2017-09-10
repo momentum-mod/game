@@ -70,11 +70,11 @@ void CMomentumGhostBaseEntity::SetGhostBodyGroup(int bodyGroup)
 void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
 {
     m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
-    Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
-    if (newColor)
+    Color newColor;
+    if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
     {
-        int alpha = mom_ghost_color_alpha_override_enable.GetBool() ? mom_ghost_color_alpha_override.GetInt() : newColor->a();
-        SetRenderColor(newColor->r(), newColor->g(), newColor->b(), alpha);
+        int alpha = mom_ghost_color_alpha_override_enable.GetBool() ? mom_ghost_color_alpha_override.GetInt() : newColor.a();
+        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), alpha);
     }
 }
 void CMomentumGhostBaseEntity::SetGhostTrailProperties(const uint32 newHexColor, int newLen, bool enable)
@@ -185,12 +185,13 @@ void CMomentumGhostBaseEntity::CreateTrail()
     m_eTrail->KeyValue("startwidth", "9.5");
     m_eTrail->KeyValue("endwidth", "1.05");
     m_eTrail->KeyValue("lifetime", m_ghostAppearance.GhostTrailLength);
-    Color *newColor = g_pMomentumUtil->GetColorFromHex(m_ghostAppearance.GhostTrailRGBAColorAsHex);
-    if (newColor)
+    Color newColor;
+    if (g_pMomentumUtil->GetColorFromHex(m_ghostAppearance.GhostTrailRGBAColorAsHex, newColor))
     {
-        m_eTrail->SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
-        m_eTrail->KeyValue("renderamt", newColor->a());
+        m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+        m_eTrail->KeyValue("renderamt", newColor.a());
     }
+
     DispatchSpawn(m_eTrail);
 }
 void CMomentumGhostBaseEntity::RemoveTrail()

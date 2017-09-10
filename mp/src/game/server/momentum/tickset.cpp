@@ -7,6 +7,7 @@
 #endif
 
 #include "tickset.h"
+#include "mom_shareddefs.h"
 #include "tier0/platform.h"
 
 float* TickSet::interval_per_tick = nullptr;
@@ -114,11 +115,11 @@ bool TickSet::SetTickrate(int gameMode)
 
 bool TickSet::SetTickrate(float tickrate)
 {
-    if (!g_pMomentumUtil->FloatEquals(m_trCurrent.fTickRate, tickrate))
+    if (!CloseEnough(m_trCurrent.fTickRate, tickrate, FLT_EPSILON))
     {
         Tickrate tr;
-        if (g_pMomentumUtil->FloatEquals(tickrate, 0.01f)) tr = s_DefinedRates[TICKRATE_100];
-        else if (g_pMomentumUtil->FloatEquals(tickrate, 0.015f)) tr = s_DefinedRates[TICKRATE_66];
+        if (CloseEnough(tickrate, 0.01f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_100];
+        else if (CloseEnough(tickrate, 0.015f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_66];
         else
         {
             tr.fTickRate = tickrate;
@@ -153,7 +154,7 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
 {
     ConVarRef tr(var);
     float toCheck = tr.GetFloat();
-    if (g_pMomentumUtil->FloatEquals(toCheck, fOldValue)) return;
+    if (CloseEnough(toCheck, fOldValue, FLT_EPSILON)) return;
 	//MOM_TODO: Re-implement the bound
 	
 	/*

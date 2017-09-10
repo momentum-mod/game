@@ -1,17 +1,17 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_player.h"
-#include "mom_online_ghost.h"
+
+struct PositionPacket_t;
+struct DecalPacket_t;
+struct ghostAppearance_t;
+class CMomentumPlayer;
+class CMomentumOnlineGhostEntity;
 
 class CMomentumGhostClient : public CAutoGameSystemPerFrame
 {
 public:
-    CMomentumGhostClient(const char *pName) : CAutoGameSystemPerFrame(pName)
-    {
-        SetDefLessFunc(m_mapOnlineGhosts);
-        m_pInstance = this;
-    }
+    CMomentumGhostClient(const char *pName);
 
     //bool Init() OVERRIDE; MOM_TODO: Set state variables here?
     void PostInit() OVERRIDE;
@@ -32,7 +32,6 @@ public:
     void SendDecalPacket(DecalPacket_t *packet);
 
     static bool CreateNewNetFrame(PositionPacket_t &frame);
-    static ghostAppearance_t CreateAppearance(CMomentumPlayer* pPlayer) { return pPlayer->m_playerAppearanceProps; }
 
     static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;
     static CMomentumPlayer *m_pPlayer;

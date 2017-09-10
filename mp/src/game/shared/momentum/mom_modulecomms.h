@@ -3,6 +3,8 @@
 #include "cbase.h"
 #include "run/run_stats.h"
 #include "threadtools.h"
+#include "run/mom_entity_run_data.h"
+
 /*
  * Members of this class will be calculated server-side but updated
  * on the client every tick.

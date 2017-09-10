@@ -1,9 +1,9 @@
 #include "cbase.h"
 #include "mom_lobby_system.h"
 #include "base64.h"
-#include "effect_dispatch_data.h"
-#include "fx_cs_shared.h"
 #include "mom_steam_helper.h"
+#include "ghost_client.h"
+#include "mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
 
@@ -85,7 +85,7 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
 {
     if (LobbyValid())
     {
-        uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
+        uint16 index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
         while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
         {
             CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[index];
@@ -242,9 +242,9 @@ LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamI
     return toReturn;
 }
 
-CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(uint64_t id)
+CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(uint64 id)
 {
-    uint16_t findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(id);
+    uint16 findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(id);
     if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
         return CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
     
@@ -267,7 +267,7 @@ void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
     }
     else // It's everybody
     {
-        uint16_t index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
+        uint16 index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
         while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
         {
             CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();

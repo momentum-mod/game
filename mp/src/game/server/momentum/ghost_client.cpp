@@ -1,6 +1,5 @@
 #include "cbase.h"
 #include "ghost_client.h"
-#include "util/mom_util.h"
 #include "mom_online_ghost.h"
 #include "icommandline.h"
 #include "mom_lobby_system.h"
@@ -45,6 +44,12 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
 CUtlMap<uint64, CMomentumOnlineGhostEntity*> CMomentumGhostClient::m_mapOnlineGhosts;
 CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;
+
+CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName)
+{
+    SetDefLessFunc(m_mapOnlineGhosts);
+    m_pInstance = this;
+}
 
 void CMomentumGhostClient::PostInit()
 {

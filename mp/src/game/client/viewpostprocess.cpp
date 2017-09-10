@@ -3065,7 +3065,7 @@ void DoSSAO(const CViewSetup &view)
 // Menu blurring, shoutouts to NicolasDe
 static ConVar mom_menu_blur("mom_menu_blur", "1", FCVAR_ARCHIVE, "Toggles the menu background blur.\n", true, 0, true, 1);
 
-void DoMenuBlurring(const CViewSetup &view)
+void DoMenuBlurring()
 {
     if (!mom_menu_blur.GetBool())
         return;

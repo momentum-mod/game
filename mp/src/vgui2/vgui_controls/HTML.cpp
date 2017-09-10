@@ -1023,8 +1023,14 @@ void HTML::AddHeader( const char *pchHeader, const char *pchValue )
 //-----------------------------------------------------------------------------
 void HTML::OnSetFocus()
 {
-	if (m_SteamAPIContext.SteamHTMLSurface())
-		m_SteamAPIContext.SteamHTMLSurface()->SetKeyFocus( m_unBrowserHandle, true );
+    if (m_SteamAPIContext.SteamHTMLSurface())
+    {
+        input()->GetCursorPosition(m_iMouseX, m_iMouseY);
+        ScreenToLocal(m_iMouseX, m_iMouseY);
+        m_SteamAPIContext.SteamHTMLSurface()->MouseMove(m_unBrowserHandle, m_iMouseX, m_iMouseY);
+        m_SteamAPIContext.SteamHTMLSurface()->SetKeyFocus(m_unBrowserHandle, true);
+    }
+		
 
 	BaseClass::OnSetFocus();
 }
@@ -1041,8 +1047,12 @@ void HTML::OnKillFocus()
 	if ( m_pContextMenu->HasFocus() )
 		return;
 
-	if (m_SteamAPIContext.SteamHTMLSurface())
-		m_SteamAPIContext.SteamHTMLSurface()->SetKeyFocus( m_unBrowserHandle, false );
+    if (m_SteamAPIContext.SteamHTMLSurface())
+    {
+        m_SteamAPIContext.SteamHTMLSurface()->SetKeyFocus(m_unBrowserHandle, false);
+        m_iMouseX = m_iMouseY = -1;
+        m_SteamAPIContext.SteamHTMLSurface()->MouseMove(m_unBrowserHandle, m_iMouseX, m_iMouseY);
+    }
 }
 
 

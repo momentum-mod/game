@@ -5,50 +5,19 @@
 #endif
 
 #include "cbase.h"
-
-#include "mom_blockfix.h"
-#include "momentum/mom_shareddefs.h"
-#include "player.h"
-#include <GameEventListener.h>
-#include <run/mom_entity_run_data.h>
-#include <momentum/util/mom_util.h>
-#include <run/run_stats.h>
-#include <mom_modulecomms.h>
-
 #include "mom_ghostdefs.h"
+#include "mom_shareddefs.h"
+#include "GameEventListener.h"
+#include "mom_modulecomms.h"
 
+struct Checkpoint_t;
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 
-// Checkpoints used in the "Checkpoint menu"
-struct Checkpoint
-{
-    bool crouched;
-    Vector pos;
-    Vector vel;
-    QAngle ang;
-    char targetName[512];
-    char targetClassName[512];
 
-    Checkpoint() : crouched(false), pos(vec3_origin), vel(vec3_origin), ang(vec3_angle)
-    {
-        targetName[0] = '\0';
-        targetClassName[0] = '\0';
-    }
-
-    Checkpoint(KeyValues *pKv)
-    {
-        Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
-        Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));
-        g_pMomentumUtil->KVLoadVector(pKv, "pos", pos);
-        g_pMomentumUtil->KVLoadVector(pKv, "vel", vel);
-        g_pMomentumUtil->KVLoadQAngles(pKv, "ang", ang);
-        crouched = pKv->GetBool("crouched");
-    }
-};
 class CMomentumGhostBaseEntity;
 
 class CMomentumPlayer : public CBasePlayer, public CGameEventListener
@@ -190,7 +159,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // MOM_TODO: For leaderboard use later on
     bool IsUsingCPMenu() const { return m_SrvData.m_bUsingCPMenu; }
     // Creates a checkpoint on the location of the player
-    Checkpoint *CreateCheckpoint();
+    Checkpoint_t *CreateCheckpoint();
     // Creates and saves a checkpoint to the checkpoint menu
     void CreateAndSaveCheckpoint();
     // Removes last checkpoint (menu) form the checkpoint lists
@@ -200,7 +169,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // Teleports the player to the checkpoint (menu) with the given index
     void TeleportToCheckpoint(int);
     // Teleports to a provided Checkpoint
-    void TeleportToCheckpoint(Checkpoint *pCP);
+    void TeleportToCheckpoint(Checkpoint_t *pCP);
     // Teleports the player to their current checkpoint
     void TeleportToCurrentCP() { TeleportToCheckpoint(m_SrvData.m_iCurrentStepCP); }
     // Sets the current checkpoint (menu) to the desired one with that index
@@ -256,7 +225,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
 
     // Checkpoint menu
-    CUtlVector<Checkpoint *> m_rcCheckpoints;
+    CUtlVector<Checkpoint_t *> m_rcCheckpoints;
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;

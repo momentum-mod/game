@@ -2181,7 +2181,7 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
     if (g_pGameUI2)
     {
         if (ConVarRef("mom_menu_blur").GetBool())
-            DoMenuBlurring(view);
+            DoMenuBlurring();
 
         ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
         if (maskTexture)

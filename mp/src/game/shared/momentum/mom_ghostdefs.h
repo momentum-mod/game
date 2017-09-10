@@ -1,8 +1,7 @@
 #pragma once
-#ifndef GHOST_SERVER //we can't include tier0 header files in the ghost server
 #include "cbase.h"
 #include "utlbuffer.h"
-#endif
+#include "mom_shareddefs.h"
 
 enum PacketTypes
 {
@@ -28,26 +27,23 @@ enum PacketTypes
 
 struct MomentumPacket_t
 {
-    uint8_t type;
+    uint8 type;
     virtual ~MomentumPacket_t() {};
 
-#ifndef GHOST_SERVER
     virtual void Write(CUtlBuffer &buf) { buf.PutUnsignedChar(type); }
-#endif
 };
 
 //Describes all data for visual apperence of players ingame
 struct ghostAppearance_t
 {
     int GhostModelBodygroup;
-    uint32_t GhostModelRGBAColorAsHex;
-    uint32_t GhostTrailRGBAColorAsHex;
-    uint8_t GhostTrailLength;
+    uint32 GhostModelRGBAColorAsHex;
+    uint32 GhostTrailRGBAColorAsHex;
+    uint8 GhostTrailLength;
     bool GhostTrailEnable;
     bool FlashlightOn;
 
-#ifndef GHOST_SERVER
-    ghostAppearance_t(const int bodyGroup, const uint32_t bodyRGBA, const uint32_t trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
+    ghostAppearance_t(const int bodyGroup, const uint32 bodyRGBA, const uint32 trailRGBA, const uint8 trailLen, const bool hasTrail, const bool flashlight)
     {
         GhostModelBodygroup = bodyGroup;
         GhostModelRGBAColorAsHex = bodyRGBA;
@@ -79,7 +75,6 @@ struct ghostAppearance_t
             GhostTrailEnable == other.GhostTrailEnable &&
             FlashlightOn == other.FlashlightOn;
     }
-#endif
 };
 
 struct LobbyGhostAppearance_t
@@ -87,7 +82,6 @@ struct LobbyGhostAppearance_t
     ghostAppearance_t appearance;
     char base64[1024]; // Used as a quick verify
 
-#ifndef GHOST_SERVER
     LobbyGhostAppearance_t()
     {
         base64[0] = '\0';
@@ -100,7 +94,6 @@ struct LobbyGhostAppearance_t
         Q_strncpy(base64, other.base64, sizeof(base64));
         return *this;
     }
-#endif
 };
 
 
@@ -109,11 +102,6 @@ struct PositionPacket_t : MomentumPacket_t
 {
     int Buttons;
     float ViewOffset;
-#ifdef GHOST_SERVER //Can't use Vector/QAngle in ghost server
-    float EyeAngle[3];
-    float Position[3];
-    float Velocity[3];
-#else   
     QAngle EyeAngle;
     Vector Position;
     Vector Velocity;
@@ -171,7 +159,6 @@ struct PositionPacket_t : MomentumPacket_t
             Buttons == other.Buttons &&
             Velocity == other.Velocity;
     }
-#endif //NOT_GHOST_SERVER
 };
 
 // Used for keeping track of when we recieve certain packets.
@@ -191,7 +178,6 @@ struct ReceivedFrame_t
 };
 
 
-#ifndef GHOST_SERVER
 
 struct SpecUpdatePacket_t : MomentumPacket_t
 {
@@ -208,7 +194,7 @@ struct SpecUpdatePacket_t : MomentumPacket_t
     SpecUpdatePacket_t(CUtlBuffer &buf)
     {
         type = PT_SPEC_UPDATE;
-        specTarget = static_cast<uint64_t>(buf.GetInt64());
+        specTarget = static_cast<uint64>(buf.GetInt64());
         spec_type = static_cast<SPECTATE_MSG_TYPE>(buf.GetInt());
     }
 
@@ -297,5 +283,3 @@ struct DecalPacket_t : MomentumPacket_t
 };
 
 extern ConVar mm_updaterate;
-
-#endif

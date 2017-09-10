@@ -4,6 +4,8 @@
 #pragma once
 #endif
 
+using namespace vgui;
+
 //-----------------------------------------------------------------------------
 // Purpose: Dialog for displaying information about a game server
 //-----------------------------------------------------------------------------
