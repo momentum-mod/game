@@ -47,6 +47,7 @@ class MainMenu : public Panel2D
     char m_pszMenuCloseSound[MAX_PATH];
 
     bool m_bInGame;
+    bool m_bInLobby;
     float m_fGameVolume;
     ConVarRef volumeRef;
 };
