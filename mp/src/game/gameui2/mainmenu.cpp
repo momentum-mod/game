@@ -132,6 +132,11 @@ class MainMenuHTML : public vgui::HTML
             {
                 DevLog("%s\n", pKv->GetString("com"));
             }
+            else if (!Q_strcmp(pKv->GetString("id"), "lobby"))
+            {
+                // Separated here in case we want to do more stuff
+                GameUI2().GetEngineClient()->ClientCmd_Unrestricted(pKv->GetString("com"));
+            }
         }
 
         // This must be called!
@@ -196,9 +201,17 @@ void MainMenu::OnThink()
 
     if (m_pMainMenuHTMLPanel)
     {
+        if (m_bInLobby != g_pMomentumSteamHelper->IsLobbyValid())
+        {
+            m_bInLobby = !m_bInLobby;
+            char visCommand[32];
+            Q_snprintf(visCommand, 32, "updateLobbyButtons(%s)", m_bInLobby ? "true" : "false");
+            m_pMainMenuHTMLPanel->RunJavascript(visCommand);
+        }
+
         if (m_bInGame != GameUI2().IsInLevel())
         {
-            m_bInGame = GameUI2().IsInLevel();
+            m_bInGame = !m_bInGame;
             char visCommand[32];
             Q_snprintf(visCommand, 32, "updateVisibility(%s)", m_bInGame ? "true" : "false");
             m_pMainMenuHTMLPanel->RunJavascript(visCommand);
