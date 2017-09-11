@@ -30,6 +30,9 @@ doLocalization(
     "GameUI2_SendFeedback": "SEND FEEDBACK",
     "GameUI2_SendFeedbackDescription": "Send feedback to the team",
 
+    "GameUI2_HostLobby": "Host lobby",
+    "GameUI2_LeaveLobby": "Leave lobby",
+    "GameUI2_InviteLobby": "Invite friends",
 
     "GameUI2_TitleOptions": "Options",
 

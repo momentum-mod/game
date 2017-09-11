@@ -22,6 +22,12 @@
                 position: absolute;
                 bottom: 0%;
             }
+
+            .lobby-menu {
+                position: absolute;
+                bottom: 0%;
+                right: 0%;
+            }
             
             .menu-buttons {
                 margin: 0;
@@ -41,6 +47,11 @@
                 color: white;
                 background-color: none;
                 transition: background-color 100ms ease-out, color 100ms ease-out
+            }
+
+            .lobby-buttons li {
+                width: auto !important;
+                font-size: 3vh !important;
             }
             
             .menu-buttons li:hover {
@@ -125,6 +136,22 @@
             </li>
         </ul>
     </div>
+    <div class="lobby-menu">
+        <ul class="menu-buttons lobby-buttons">
+            <li onclick="sendCommandToClient('mom_lobby_create\n', false, 'lobby')" class="no_lobby">
+                <div data-localize="GameUI2_HostLobby"></div>
+                <div class="menu-buttons-subtext"></div>
+            </li>
+            <li onclick="sendCommandToClient('mom_lobby_leave\n', false, 'lobby')" class="in_lobby">
+                <div data-localize="GameUI2_LeaveLobby"></div>
+                <div class="menu-buttons-subtext"></div>
+            </li>
+            <li onclick="sendCommandToClient('mom_lobby_invite\n', false, 'lobby')" class="in_lobby">
+                <div data-localize="GameUI2_InviteLobby"></div>
+                <div class="menu-buttons-subtext"></div>
+            </li>
+        </ul>
+    </div>
     
     <script>
     // Print data to the client's console
@@ -156,8 +183,18 @@
             
         inGameElems.forEach(elem => elem.style.display = inGame ? 'block' : 'none');
         inMenuElems.forEach(elem => elem.style.display = inGame ? 'none' : 'block');
+    };
+
+    function updateLobbyButtons(inLobby) {
+        const inLobbyElems = document.querySelectorAll('.in_lobby');
+        const notInLobbyElems = document.querySelectorAll('.no_lobby');
+
+        inLobbyElems.forEach(elem => elem.style.display = inLobby ? 'block' : 'none');
+        notInLobbyElems.forEach(elem => elem.style.display = inLobby ? 'none' : 'block');
     }
+
     updateVisibility(false); // Needed for the initial setting
+    updateLobbyButtons(false);
     
     function setVolume(vol) {
         hoverSound.volume = vol;
