@@ -57,4 +57,5 @@ private:
 	static float *interval_per_tick;
 
     static Tickrate m_trCurrent;
+    static bool m_bInGameUpdate;
 };
