@@ -72,7 +72,7 @@ void CMOMServerEvents::LevelInitPostEntity()
 
     //disable point_servercommand
     ConVarRef servercommand("sv_allow_point_servercommand");
-    servercommand.SetValue(MOMGM_MENU);
+    servercommand.SetValue(0);
 }
 
 void CMOMServerEvents::LevelShutdownPreEntity()
@@ -85,7 +85,7 @@ void CMOMServerEvents::LevelShutdownPreEntity()
     }
 
     ConVarRef gm("mom_gamemode");
-    gm.SetValue(gm.GetDefault());
+    gm.SetValue(MOMGM_MENU);
 }
 
 void CMOMServerEvents::LevelShutdownPostEntity()
