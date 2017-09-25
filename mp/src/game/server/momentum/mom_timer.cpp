@@ -414,7 +414,7 @@ class CTimerCommands
             Checkpoint_t *pStartMark = g_pMomentumTimer->GetStartMark();
             if (pStartMark)
             {
-                pPlayer->TeleportToCheckpoint(pStartMark);
+                pStartMark->Teleport(pPlayer);
             }
             else
             {

@@ -168,8 +168,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void RemoveAllCheckpoints();
     // Teleports the player to the checkpoint (menu) with the given index
     void TeleportToCheckpoint(int);
-    // Teleports to a provided Checkpoint
-    void TeleportToCheckpoint(Checkpoint_t *pCP);
     // Teleports the player to their current checkpoint
     void TeleportToCurrentCP() { TeleportToCheckpoint(m_SrvData.m_iCurrentStepCP); }
     // Sets the current checkpoint (menu) to the desired one with that index

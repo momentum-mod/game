@@ -535,13 +535,7 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
 
 Checkpoint_t *CMomentumPlayer::CreateCheckpoint()
 {
-    Checkpoint_t *c = new Checkpoint_t();
-    c->ang = GetAbsAngles();
-    c->pos = GetAbsOrigin();
-    c->vel = GetAbsVelocity();
-    c->crouched = IsDucked() || IsDucking();
-    Q_strncpy(c->targetName, GetEntityName().ToCStr(), sizeof(c->targetName));
-    Q_strncpy(c->targetClassName, GetClassname(), sizeof(c->targetClassName));
+    Checkpoint_t *c = new Checkpoint_t(this);
     return c;
 }
 
@@ -658,27 +652,9 @@ void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
     if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0)
         return;
-    Checkpoint_t *c = m_rcCheckpoints[newCheckpoint];
-    TeleportToCheckpoint(c);
-}
-
-void CMomentumPlayer::TeleportToCheckpoint(Checkpoint_t *pCP)
-{
-    if (!pCP)
-        return;
-
-    // Handle custom ent flags that old maps do
-    SetName(MAKE_STRING(pCP->targetName));
-    SetClassname(pCP->targetClassName);
-
-    // Handle the crouched state
-    if (pCP->crouched && !IsDucked())
-        ToggleDuckThisFrame(true);
-    else if (!pCP->crouched && IsDucked())
-        ToggleDuckThisFrame(false);
-
-    // Teleport the player
-    Teleport(&pCP->pos, &pCP->ang, &pCP->vel);
+    Checkpoint_t *pCheckpoint = m_rcCheckpoints[newCheckpoint];
+    if (pCheckpoint)
+        pCheckpoint->Teleport(this);
 }
 
 void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
@@ -694,12 +670,7 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
         char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
         Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
-        kvCP->SetString("targetName", c->targetName);
-        kvCP->SetString("targetClassName", c->targetClassName);
-        g_pMomentumUtil->KVSaveVector(kvCP, "vel", c->vel);
-        g_pMomentumUtil->KVSaveVector(kvCP, "pos", c->pos);
-        g_pMomentumUtil->KVSaveQAngles(kvCP, "ang", c->ang);
-        kvCP->SetBool("crouched", c->crouched);
+        c->Save(kvCP);
         kvCPs->AddSubKey(kvCP);
     }
 
