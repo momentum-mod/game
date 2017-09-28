@@ -2,11 +2,10 @@
 #include "cbase.h"
 
 #include "IContactPanel.h"
-#include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/pch_vgui_controls.h>
-#include "momentum/util/mom_util.h"
+#include "mom_shareddefs.h"
 
 #include "tier0/memdbgon.h"
 

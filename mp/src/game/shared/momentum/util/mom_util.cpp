@@ -1,14 +1,20 @@
 #include "cbase.h"
 
 #include "filesystem.h"
-#include "mom_player_shared.h"
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
-#include "tier0/memdbgon.h"
 #include "run/mom_replay_factory.h"
+#include <gason.h>
+#include "run/run_compare.h"
+#include "run/run_stats.h"
+#ifdef CLIENT_DLL
+#include "ChangelogPanel.h"
+#endif
+
+#include "tier0/memdbgon.h"
 
 extern IFileSystem *filesystem;
-
+#if 0
 inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
 {
     if (pData)
@@ -131,12 +137,6 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
 }
 
 #ifdef CLIENT_DLL
-void MomentumUtil::GetRemoteRepoModVersion()
-{
-    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
-                         &MomentumUtil::VersionCallback);
-}
-
 void MomentumUtil::GetRemoteChangelog()
 {
     CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog,
@@ -216,31 +216,7 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     }
     CleanupRequest(pCallback, pData);
 }
-
-void MomentumUtil::GenerateBogusRunStats(CMomRunStats *pStatsOut)
-{
-    RandomSeed(Plat_FloatTime());
-    for (int i = 0; i < MAX_STAGES; i++)
-    {
-        // Time
-        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
-        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
-
-        // Velocity
-        pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-
-        // Sync
-        pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
-        pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
-
-        // Keypress
-        pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
-        pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
-    }
-}
+#endif
 #endif
 
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime) const
@@ -320,7 +296,7 @@ Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone,
     return pFinalColor;
 }
 
-Color* MomentumUtil::GetColorFromHex(const char *hexColor)
+bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
 {
     uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
@@ -329,46 +305,50 @@ Color* MomentumUtil::GetColorFromHex(const char *hexColor)
         uint8 r = (hex & 0xFF0000) >> 16;
         uint8 g = (hex & 0x00FF00) >> 8;
         uint8 b = (hex & 0x0000FF);
-        return new Color(r, g, b);
+        into.SetColor(r, g, b, 255);
+        return true;
     }
-    else if (length == 8)
+    if (length == 8)
     {
-        uint8 r = (hex & 0xFF000000) >> 24;
-        uint8 g = (hex & 0x00FF0000) >> 16;
-        uint8 b = (hex & 0x0000FF00) >> 8;
-        uint8 a = (hex & 0x000000FF);
-        return new Color(r, g, b, a);
+        return GetColorFromHex(hex, into);
     }
     Warning("Error: Color format incorrect! Use hex code in format \"RRGGBB\" or \"RRGGBBAA\"\n");
-    return nullptr;
+    return false;
 }
 
-Color* MomentumUtil::GetColorFromHex(uint32 hex)
+bool MomentumUtil::GetColorFromHex(uint32 hex, Color &into)
 {
     uint8 r = (hex & 0xFF000000) >> 24;
     uint8 g = (hex & 0x00FF0000) >> 16;
     uint8 b = (hex & 0x0000FF00) >> 8;
     uint8 a = (hex & 0x000000FF);
-    return new Color(r, g, b, a);
+    into.SetColor(r, g, b, a);
+    return true;
 }
-uint32 MomentumUtil::GetHexFromColorString(const char *hexColor)
+uint32 MomentumUtil::GetHexFromColor(const char *hexColor)
 {
     return strtoul(hexColor, nullptr, 16);
 }
-uint32 MomentumUtil::GetHexFromColor(const Color color)
+uint32 MomentumUtil::GetHexFromColor(const Color &color)
 {
-    uint8 redByte = ((color.r() & 0xff) << 24);
-    uint8 greenByte = ((color.g() & 0xff) << 16);
-    uint8 blueByte = ((color.b() & 0xff) << 8);
-    uint8 aByte = (color.a() & 0xff);
+    uint32 redByte = ((color.r() & 0xff) << 24);
+    uint32 greenByte = ((color.g() & 0xff) << 16);
+    uint32 blueByte = ((color.b() & 0xff) << 8);
+    uint32 aByte = (color.a() & 0xff);
     return redByte + greenByte + blueByte + aByte;
+}
+
+void MomentumUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
+{
+    const uint32 colorHex = GetHexFromColor(color);
+    Q_snprintf(pBuffer, maxLen, "%x", colorHex);
 }
 
 inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
 {
     if (pCheck)
     {
-        if (pCheck->GetRunFlags() == flags && g_pMomentumUtil->FloatEquals(tickrate, pCheck->GetTickInterval()))
+        if (pCheck->GetRunFlags() == flags && CloseEnough(tickrate, pCheck->GetTickInterval(), FLT_EPSILON))
         {
             if (pFastest)
             {

@@ -227,4 +227,30 @@
         "tooltiptext" "#MOM_Settings_Pick_Trail_Color_TT"
         "actionsignallevel" "1"
     }
+    
+    "WorldLights"
+    {
+        "ControlName" "CvarToggleCheckButton"
+        "fieldName" "WorldLights"
+        "xpos"		"12"
+		"ypos"		"110"
+		"wide"		"292"
+		"tall"		"24"
+		"autoResize"		"0"
+		"pinCorner"		"0"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"		"13"
+		"labelText"		"#MOM_Settings_Worldlight_Shadows"
+        "tooltiptext" "#MOM_Settings_Worldlight_Shadows_TT"
+		"textAlignment"		"west"
+		"dulltext"		"0"
+		"brighttext"		"0"
+		"wrap"		"0"
+		"Default"		"0"
+		"selected"		"0"
+        "cvar_name"		"r_worldlight_castshadows"
+		"cvar_value"		"1"
+        "auto_wide_tocontents" "1"
+    }
 }

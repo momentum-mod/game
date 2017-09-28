@@ -1,7 +1,5 @@
 #include "pch_mapselection.h"
 
-using namespace vgui;
-
 static CMapSelectorDialog *s_InternetDlg = nullptr;
 
 CMapSelectorDialog &MapSelectorDialog()

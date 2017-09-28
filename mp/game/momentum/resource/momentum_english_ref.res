@@ -182,6 +182,8 @@
 "MOM_Settings_Save_Checkpoints" "Save user checkpoints to file on map end"
 "MOM_Settings_Enable_Trail" "Paint player's trail"
 "MOM_Settings_Pick_Trail_Color_TT" "Change trail color"
+"MOM_Settings_Worldlight_Shadows" "World lights determine shadow direction"
+"MOM_Settings_Worldlight_Shadows_TT" "When enabled, world lights will determine entity shadow direction. NOTE: Can cause significant performance decreases in some maps!"
 
 //"HUD Settings"
 "MOM_Settings_Tab_HUD" "HUD Settings"

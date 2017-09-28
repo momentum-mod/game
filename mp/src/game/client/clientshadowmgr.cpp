@@ -95,7 +95,7 @@ static ConVar r_shadowrendertotexture( "r_shadowrendertotexture", "0" );
 static ConVar r_flashlight_version2( "r_flashlight_version2", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 //Dynamic RTT shadow angles
 void WorldLightCastShadowCallback(IConVar *pVar, const char *pszOldValue, float flOldValue);
-static ConVar r_worldlight_castshadows("r_worldlight_castshadows", "1", FCVAR_CHEAT, "Allow world lights to cast shadows", true, 0, true, 1, WorldLightCastShadowCallback);
+static ConVar r_worldlight_castshadows("r_worldlight_castshadows", "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allow world lights to cast shadows", true, 0, true, 1, WorldLightCastShadowCallback);
 static ConVar r_worldlight_lerptime("r_worldlight_lerptime", "0.5", FCVAR_CHEAT);
 static ConVar r_worldlight_debug( "r_worldlight_debug", "0", FCVAR_CHEAT );
 static ConVar r_worldlight_shortenfactor( "r_worldlight_shortenfactor", "2" , FCVAR_CHEAT, "Makes shadows cast from local lights shorter" );

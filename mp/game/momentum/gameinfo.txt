@@ -14,9 +14,15 @@
 	// This needs to be gone if we're implemeting MP AND SP . If only MP, then "multiplayer_only"
 	type		singleplayer_only
 
+	// Fix for making instances work
+	GameData	"momentum.fgd"
+    // InstancePath "maps/instances" // This is the path that instances can be found in, otherwise they're relative to the parent VMF.
+
 	hidden_maps {
 		credits 1
 		background_01 1
+        test_speakers 1
+        test_hardware 1
 	}
 
 	FileSystem

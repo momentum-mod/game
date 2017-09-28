@@ -17,18 +17,19 @@
 
 
 // Gamemode for momentum
-typedef enum MOMGM
+typedef enum
 {
-    MOMGM_UNKNOWN = 0,
-    MOMGM_SURF,
-    MOMGM_BHOP,
-    MOMGM_SCROLL,
-    MOMGM_ALLOWED, //not "official gamemode" but must be allowed for other reasons
+    MOMGM_MENU = 0, // When the game is in the menu/disconnected
+    MOMGM_SURF,    // Surfing (66t, 3500 maxvel)
+    MOMGM_BHOP,    // Bhopping (100t, 10k maxvel)
+    MOMGM_SCROLL,  // Scrolling/Stamina (currently activates with kz_)
+    MOMGM_UNKNOWN, // Non-recognized map (no prefix/info ents in it)
+    MOMGM_ALLOWED, // not "official gamemode" but must be allowed for other reasons
 
 } GAMEMODES;
 
 // Run Flags
-typedef enum FLAGS
+typedef enum
 {
     RUNFLAG_NONE = 0,
     RUNFLAG_SCROLL = 1 << 0,
@@ -50,7 +51,7 @@ typedef enum
 
 typedef enum
 {
-    SPEC_UPDATE_JOIN,           // Started spectating
+    SPEC_UPDATE_JOIN = 0,           // Started spectating
     SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else!
     SPEC_UPDATE_LEAVE           // Respawned
 } SPECTATE_MSG_TYPE;

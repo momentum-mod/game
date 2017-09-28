@@ -2,7 +2,7 @@
 
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
-#include "mom_shareddefs.h"
+#include "movevars_shared.h"
 #include "mom_timer.h"
 #include "util/mom_util.h"
 #include "util/os_utils.h"
@@ -109,7 +109,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
             }
         }
 
-        if (!g_pMomentumUtil->FloatEquals(m_SrvData.m_flTickRate, gpGlobals->interval_per_tick))
+        if (!CloseEnough(m_SrvData.m_flTickRate, gpGlobals->interval_per_tick, FLT_EPSILON))
         {
             Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_SrvData.m_flTickRate,
                 gpGlobals->interval_per_tick);
@@ -488,9 +488,7 @@ void CMomentumReplayGhostEntity::CreateTrail()
 void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)
 {
     m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
-    Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
-    if (newColor)
-    {
-        SetRenderColor(newColor->r(), newColor->g(), newColor->b(), 75);
-    }
+    Color newColor;
+    if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), 75);
 }

@@ -1,8 +1,8 @@
 #include "cbase.h"
 #include "ghost_client.h"
-#include "util/mom_util.h"
 #include "mom_online_ghost.h"
 #include "icommandline.h"
+#include "mom_lobby_system.h"
 
 #include "tier0/memdbgon.h"
 
@@ -44,6 +44,12 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
 CUtlMap<uint64, CMomentumOnlineGhostEntity*> CMomentumGhostClient::m_mapOnlineGhosts;
 CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;
+
+CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName)
+{
+    SetDefLessFunc(m_mapOnlineGhosts);
+    m_pInstance = this;
+}
 
 void CMomentumGhostClient::PostInit()
 {
@@ -115,7 +121,6 @@ void CMomentumGhostClient::SendChatMessage(char* pMessage)
 void CMomentumGhostClient::ResetOtherAppearanceData()
 {
     // MOM_TODO: g_pMomentumServerSystem->ResetOtherAppearanceData();
-    DevLog("Resetting other appearance!\n");
     g_pMomentumLobbySystem->ResetOtherAppearanceData();
 }
 
@@ -131,11 +136,17 @@ void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpec
     g_pMomentumLobbySystem->SetSpectatorTarget(target, bStartedSpectating);
 }
 
-bool CMomentumGhostClient::CreateNewNetFrame(ghostNetFrame_t &into)
+void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
+{
+    // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(packet);
+    g_pMomentumLobbySystem->SendDecalPacket(packet);
+}
+
+bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
 {
     if (m_pPlayer && !m_pPlayer->IsSpectatingGhost())
     {
-        into = ghostNetFrame_t(
+        into = PositionPacket_t(
             m_pPlayer->EyeAngles(),
             m_pPlayer->GetAbsOrigin(),
             m_pPlayer->GetAbsVelocity(),

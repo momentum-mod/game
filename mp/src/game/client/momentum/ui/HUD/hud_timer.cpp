@@ -59,7 +59,6 @@ class C_HudTimer : public CHudElement, public Panel
     float GetCurrentTime();
     bool m_bIsRunning;
     bool m_bTimerRan; // MOM_TODO: What is this used for?
-    int m_iStartTick;
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -84,7 +83,7 @@ class C_HudTimer : public CHudElement, public Panel
 
   private:
     int m_iZoneCurrent, m_iZoneCount;
-    int m_iTotalTicks, m_G_iStartTickD, m_G_iCurrentTick;
+    int m_iTotalTicks, m_iStartTick, m_G_iStartTickD, m_G_iCurrentTick, m_iOldTickCount;
     int initialTall;
     bool m_bIsReplay;
     // float m_fCurrentTime;
@@ -139,6 +138,8 @@ void C_HudTimer::Init()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
     m_iTotalTicks = 0;
+    m_iOldTickCount = 0;
+    m_iStartTick = 0;
     m_G_iCurrentTick = 0;
     m_G_iStartTickD = 0;
     HOOK_HUD_MESSAGE(C_HudTimer, Timer_State);
@@ -163,8 +164,10 @@ void C_HudTimer::Reset()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
     m_iTotalTicks = 0;
+    m_iStartTick = 0;
     m_G_iCurrentTick = 0;
     m_G_iStartTickD = 0;
+    m_iOldTickCount = 0;
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iZoneCurrent = 1;
@@ -229,11 +232,9 @@ float C_HudTimer::GetCurrentTime()
     // Done, I've shouldn't have checked if tickcount wasn't the same for only one frame, but for all the frames that
     // paint is getting called.
 
-    static int OldTickCount = 0;
-
-    if (gpGlobals->tickcount != OldTickCount && !m_bIsReplay)
+    if (gpGlobals->tickcount != m_iOldTickCount && !m_bIsReplay)
     {
-        m_iTotalTicks = m_bIsRunning ? m_iTotalTicks + 1 : 0;
+        m_iTotalTicks = m_bIsRunning ? (gpGlobals->tickcount - m_iStartTick) : 0;
     }
 
     if (m_bIsReplay)
@@ -241,7 +242,7 @@ float C_HudTimer::GetCurrentTime()
         m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
     }
 
-    OldTickCount = gpGlobals->tickcount;
+    m_iOldTickCount = gpGlobals->tickcount;
 
     return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }

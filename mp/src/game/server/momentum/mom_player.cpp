@@ -11,6 +11,9 @@
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "ghost_client.h"
+#include "mom_online_ghost.h"
+#include "mom_blockfix.h"
+#include "run/run_checkpoint.h"
 
 #include "tier0/memdbgon.h"
 
@@ -56,12 +59,12 @@ static ConVar mom_ghost_color("mom_ghost_color", "FF00FFFF",
 
 static ConVar mom_trail_color("mom_trail_color", "FF00FFFF",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Set the ghost's color. Accepts HEX color value in format RRGGBBAA",
+    "Set the player's trail color. Accepts HEX color value in format RRGGBBAA",
     AppearanceCallback);
 
 static ConVar mom_trail_length("mom_trail_length", "4",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Length of the trail (in seconds).", true, 1, false, 10, AppearanceCallback);
+    "Length of the player's trail (in seconds).", true, 1, false, 10, AppearanceCallback);
 
 static ConVar mom_trail_enable("mom_trail_enable", "0",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
@@ -83,7 +86,7 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
             FStrEq(pName, mom_trail_length.GetName()) || // the trail length changed
             FStrEq(pName, mom_trail_enable.GetName())) // the trail enable bool changed
         {
-            uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_trail_color.GetString());
+            uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
             pPlayer->m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
             pPlayer->m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
             pPlayer->m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
@@ -91,10 +94,11 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
         }
         else if (FStrEq(pName, mom_ghost_color.GetName())) // the ghost body color changed
         {
-            uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_ghost_color.GetString());
+            uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
             pPlayer->m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
-            Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
-            pPlayer->SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
+            Color newColor;
+            if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+                pPlayer->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
         }
         else if (FStrEq(pName, mom_ghost_bodygroup.GetName())) // the ghost bodygroup changed
         {
@@ -322,15 +326,16 @@ void CMomentumPlayer::Spawn()
     // initilize appearance properties based on Convars
     if (g_pMomentumUtil)
     {
-        uint32 newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_trail_color.GetString());
+        uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
         m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
         m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
         m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
 
-        newHexColor = g_pMomentumUtil->GetHexFromColorString(mom_ghost_color.GetString());
+        newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
         m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
-        Color *newColor = g_pMomentumUtil->GetColorFromHex(newHexColor);
-        SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
+        Color newColor;
+        if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+            SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
 
         int bGroup = mom_ghost_bodygroup.GetInt();
         m_playerAppearanceProps.GhostModelBodygroup = bGroup;
@@ -528,21 +533,15 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
     UTIL_Remove(pWeapon);
 }
 
-Checkpoint *CMomentumPlayer::CreateCheckpoint()
+Checkpoint_t *CMomentumPlayer::CreateCheckpoint()
 {
-    Checkpoint *c = new Checkpoint();
-    c->ang = GetAbsAngles();
-    c->pos = GetAbsOrigin();
-    c->vel = GetAbsVelocity();
-    c->crouched = IsDucked() || IsDucking();
-    Q_strncpy(c->targetName, GetEntityName().ToCStr(), sizeof(c->targetName));
-    Q_strncpy(c->targetClassName, GetClassname(), sizeof(c->targetClassName));
+    Checkpoint_t *c = new Checkpoint_t(this);
     return c;
 }
 
 void CMomentumPlayer::CreateAndSaveCheckpoint()
 {
-    Checkpoint *c = CreateCheckpoint();
+    Checkpoint_t *c = CreateCheckpoint();
     m_rcCheckpoints.AddToTail(c);
     if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
         ++m_SrvData.m_iCurrentStepCP;
@@ -640,11 +639,11 @@ void CMomentumPlayer::CreateTrail()
     m_eTrail->KeyValue("startwidth", "9.5");
     m_eTrail->KeyValue("endwidth", "1.05");
     m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());
-    Color *newColor = g_pMomentumUtil->GetColorFromHex(mom_trail_color.GetString());
-    if (newColor)
+    Color newColor;
+    if (g_pMomentumUtil->GetColorFromHex(mom_trail_color.GetString(), newColor))
     {
-        m_eTrail->SetRenderColor(newColor->r(), newColor->g(), newColor->b(), newColor->a());
-        m_eTrail->KeyValue("renderamt", newColor->a());
+        m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+        m_eTrail->KeyValue("renderamt", newColor.a());
     }
     DispatchSpawn(m_eTrail);
 }   
@@ -653,27 +652,9 @@ void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
     if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0)
         return;
-    Checkpoint *c = m_rcCheckpoints[newCheckpoint];
-    TeleportToCheckpoint(c);
-}
-
-void CMomentumPlayer::TeleportToCheckpoint(Checkpoint *pCP)
-{
-    if (!pCP)
-        return;
-
-    // Handle custom ent flags that old maps do
-    SetName(MAKE_STRING(pCP->targetName));
-    SetClassname(pCP->targetClassName);
-
-    // Handle the crouched state
-    if (pCP->crouched && !IsDucked())
-        ToggleDuckThisFrame(true);
-    else if (!pCP->crouched && IsDucked())
-        ToggleDuckThisFrame(false);
-
-    // Teleport the player
-    Teleport(&pCP->pos, &pCP->ang, &pCP->vel);
+    Checkpoint_t *pCheckpoint = m_rcCheckpoints[newCheckpoint];
+    if (pCheckpoint)
+        pCheckpoint->Teleport(this);
 }
 
 void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
@@ -685,16 +666,11 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
     KeyValues *kvCPs = new KeyValues("cps");
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
-        Checkpoint *c = m_rcCheckpoints[i];
+        Checkpoint_t *c = m_rcCheckpoints[i];
         char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
         Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
-        kvCP->SetString("targetName", c->targetName);
-        kvCP->SetString("targetClassName", c->targetClassName);
-        g_pMomentumUtil->KVSaveVector(kvCP, "vel", c->vel);
-        g_pMomentumUtil->KVSaveVector(kvCP, "pos", c->pos);
-        g_pMomentumUtil->KVSaveQAngles(kvCP, "ang", c->ang);
-        kvCP->SetBool("crouched", c->crouched);
+        c->Save(kvCP);
         kvCPs->AddSubKey(kvCP);
     }
 
@@ -712,7 +688,7 @@ void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
     if (!kvCPs) return;
     FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
     {
-        Checkpoint *c = new Checkpoint(kvCheckpoint);
+        Checkpoint_t *c = new Checkpoint_t(kvCheckpoint);
         m_rcCheckpoints.AddToTail(c);
     }
 

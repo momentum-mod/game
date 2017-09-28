@@ -123,7 +123,7 @@ void CMomentumPlayer::FireBullet(
     int iDamage, // base damage
     float flRangeModifier, // damage range modifier
     CBaseEntity *pevAttacker, // shooter
-    bool bDoEffects,
+    bool bDoEffects, // Is this the client DLL?
     float x,
     float y
     )
@@ -250,6 +250,9 @@ void CMomentumPlayer::FireBullet(
 
         int iDamageType = DMG_BULLET | DMG_NEVERGIB;
 
+        bool shouldDecal = !(tr.surface.flags & (SURF_SKY | SURF_NODRAW | SURF_HINT | SURF_SKIP));
+        bool bEntNotNull = tr.m_pEnt != nullptr;
+
         if (bDoEffects)
         {
             // See if the bullet ended up underwater + started out of the water
@@ -273,22 +276,11 @@ void CMomentumPlayer::FireBullet(
                     DispatchEffect("gunshotsplash", data);
                 }
             }
-            else
+            else if (shouldDecal && bEntNotNull)
             {
-                //Do Regular hit effects
-
+                // Do Regular hit effects
                 // Don't decal nodraw surfaces
-                if (!(tr.surface.flags & (SURF_SKY | SURF_NODRAW | SURF_HINT | SURF_SKIP)))
-                {
-                    CBaseEntity *pEntity = tr.m_pEnt;
-                    //MOM_TODO: question the 
-                    if (pEntity)
-                        UTIL_ImpactTrace(&tr, iDamageType);
-                    //if (!(pEntity && pEntity->GetTeamNumber() == GetTeamNumber()))
-                    //{
-                    //    UTIL_ImpactTrace(&tr, iDamageType);
-                    //}
-                }
+                UTIL_ImpactTrace(&tr, iDamageType);
             }
         } // bDoEffects
 

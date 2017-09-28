@@ -4,6 +4,7 @@
 
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
+#include "vgui/IInput.h"
 #include "vgui_controls/ImagePanel.h"
 
 #include "KeyValues.h"
@@ -96,7 +97,18 @@ class MainMenuHTML : public vgui::HTML
         char command[128];
         Q_snprintf(command, 128, "setVolume(%.3f)", flVolume);
         RunJavascript(command);
-    } 
+    }
+
+    void OnThink() OVERRIDE
+    {
+        BaseClass::OnThink();
+
+        VPANEL over = input()->GetMouseOver();
+        if (over != GetVPanel())
+            OnKillFocus();
+        else
+            OnSetFocus();
+    }
 
     void OnJSAlert(HTML_JSAlert_t* pAlert) OVERRIDE
     {
