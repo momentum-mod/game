@@ -27,6 +27,7 @@ class MomentumURLResolver : public Panel
     {
         SetVisible(false);
         SetEnabled(false);
+        AddActionSignalTarget(pParent);
     }
 
 protected:
@@ -60,7 +61,6 @@ class MainMenuHTML : public vgui::HTML
     {
         AddActionSignalTarget(pParent);
         m_pURLResolver = new MomentumURLResolver(this, "MomentumURLResolver");
-        m_pURLResolver->AddActionSignalTarget(this);
         AddCustomURLHandler("mom://", m_pURLResolver);
         SetPaintBackgroundEnabled(false);
     }
@@ -85,17 +85,48 @@ class MainMenuHTML : public vgui::HTML
 
     void OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers) OVERRIDE 
     {
-        char command[128];
-        const char *pLanguage = m_SteamAPIContext.SteamApps()->GetCurrentGameLanguage();
-        Q_snprintf(command, 128, "setLocalization('%s')", pLanguage);
-        RunJavascript(command);
+        SendLocalizationCommand(); // Set the language
         SendVolumeCommand(ConVarRef("volume").GetFloat()); // The initial volume to set
+        SendVersionCommand(); // Send the version
     }
 
     void SendVolumeCommand(float flVolume)
     {
         char command[128];
         Q_snprintf(command, 128, "setVolume(%.3f)", flVolume);
+        RunJavascript(command);
+    }
+
+    void SendVersionCommand()
+    {
+        bool bNewVersion = false;
+
+        KeyValues *pVersionKV = new KeyValues("Version");
+        KeyValuesAD autoDelete(pVersionKV);
+        // Not if-checked here since it doesn't really matter if we don't load it
+        pVersionKV->LoadFromFile(g_pFullFileSystem, "version.txt", "MOD");
+        if (V_strcmp(pVersionKV->GetString("num", MOM_CURRENT_VERSION), MOM_CURRENT_VERSION) < 0)
+        {
+            // New version! Make the version in the top right pulse for effect!
+            bNewVersion = true;
+        }
+
+        // Set the current version either way 
+        pVersionKV->SetString("num", MOM_CURRENT_VERSION);
+
+        // Save this file either way
+        pVersionKV->SaveToFile(g_pFullFileSystem, "version.txt", "MOD");
+
+        char command[128];
+        Q_snprintf(command, 128, "setVersion('%s', %s)", MOM_CURRENT_VERSION, bNewVersion ? "true" : "false");
+        RunJavascript(command);
+    }
+
+    void SendLocalizationCommand()
+    {
+        char command[128];
+        const char *pLanguage = m_SteamAPIContext.SteamApps()->GetCurrentGameLanguage();
+        Q_snprintf(command, 128, "setLocalization('%s')", pLanguage);
         RunJavascript(command);
     }
 
@@ -134,8 +165,15 @@ class MainMenuHTML : public vgui::HTML
             }
             else if (!Q_strcmp(pKv->GetString("id"), "lobby"))
             {
-                // Separated here in case we want to do more stuff
-                GameUI2().GetEngineClient()->ClientCmd_Unrestricted(pKv->GetString("com"));
+                // Separated here because these commands require a connection to actually work through console,
+                // so we manually dispatch the commands here.
+                ConCommand *pCommand = g_pCVar->FindCommand(pKv->GetString("com"));
+                if (pCommand)
+                {
+                    CCommand blah;
+                    blah.Tokenize(pKv->GetString("com"));
+                    pCommand->Dispatch(blah);
+                }
             }
         }
 

@@ -14,7 +14,7 @@
 #include "tier0/memdbgon.h"
 
 extern IFileSystem *filesystem;
-#if 0
+
 inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
 {
     if (pData)
@@ -24,34 +24,7 @@ inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
     pData = nullptr;
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
-void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    if (bIOFailure)
-        return;
-
-    FileHandle_t file;
-    // MOM_TODO: Read the MOM_TODO DownloadMap(), we're going to need to save the zone files too
-    file = filesystem->Open("testmapdownload.bsp", "w+b", "MOD");
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        Warning("MomentumUtil::DownloadCallback: 0 body size!\n");
-        return;
-    }
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    // write the file
-    filesystem->Write(pData, size, file);
-    // save the file
-    filesystem->Close(file);
-    DevLog("Successfully written file\n");
-
-    // Free resources
-    CleanupRequest(pCallback, pData);
-}
+#if 0
 
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
@@ -74,36 +47,10 @@ void MomentumUtil::DownloadMap(const char *szMapname)
     // CreateAndSendHTTPReq(mapfileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
     // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
 }
-
-void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
-{
-    if (steamapicontext && steamapicontext->SteamHTTP())
-    {
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-        SteamAPICall_t apiHandle;
-
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            callback->Set(apiHandle, this, func);
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to post scores online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steampicontext failure.\n");
-        Warning("Could not find Steam Api Context active\n");
-    }
-}
-
 bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
-                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
-                                                KeyValues *params)
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
+    KeyValues *params)
 {
     bool bSuccess = false;
     if (steamapicontext && steamapicontext->SteamHTTP())
@@ -112,7 +59,7 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
         FOR_EACH_VALUE(params, p_value)
         {
             steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
-                                                                           p_value->GetString());
+                p_value->GetString());
         }
 
         SteamAPICall_t apiHandle;
@@ -136,11 +83,31 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
     return bSuccess;
 }
 
+#endif
+
 #ifdef CLIENT_DLL
 void MomentumUtil::GetRemoteChangelog()
 {
-    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog,
-                         &MomentumUtil::ChangelogCallback);
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, "http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt");
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            cbChangeLog.Set(apiHandle, this, &MomentumUtil::ChangelogCallback);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
+    }
+    else
+    {
+        Warning("Steampicontext failure.\n");
+        Warning("Could not find Steam Api Context active\n");
+    }
 }
 
 void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -216,7 +183,6 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
     }
     CleanupRequest(pCallback, pData);
 }
-#endif
 #endif
 
 void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime) const
