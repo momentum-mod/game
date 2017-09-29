@@ -46,7 +46,7 @@ void CMOMClientEvents::PostInit()
             // Apparently, mounting sounds from any directory that isn't included in gameinfo.txt is impossible
             // to play without restarting the entire sound system. So we do that here.
             // If we had engine code...
-            ConCommand *snd_restart = dynamic_cast<ConCommand*>(g_pCVar->FindCommand("snd_restart"));
+            ConCommand *snd_restart = g_pCVar->FindCommand("snd_restart");
             if (snd_restart)
             {
                 char const *argv[1] = { "snd_restart" };

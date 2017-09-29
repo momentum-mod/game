@@ -1,26 +1,17 @@
 #pragma once
 
 #include "cbase.h"
+#include "steam/steam_api.h"
 
 class CMomReplayBase;
 class CMomRunStats;
-struct RunCompare_t;
+
 struct HTTPRequestCompleted_t;
+struct RunCompare_t;
 
 class MomentumUtil
 {
   public:
-    /*void DownloadCallback(HTTPRequestCompleted_t *, bool);
-
-    void DownloadMap(const char *);
-
-    void CreateAndSendHTTPReq(const char *, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *,
-                              CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
-
-    bool CreateAndSendHTTPReqWithPost(const char *, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *,
-                                      CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
-
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
 
 #ifdef CLIENT_DLL
     void GetRemoteChangelog();
@@ -30,7 +21,7 @@ class MomentumUtil
     void GetRemoteRepoModVersion();
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
     void VersionCallback(HTTPRequestCompleted_t *, bool);
-#endif*/
+#endif
 
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
     bool GetColorFromHex(uint32 HEX, Color &into); // in hex color format RRGGBBAA
