@@ -15,7 +15,6 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent)
 
     m_pPickColorButton = FindControl<Button>("PickColorButton");
     m_pColorPicker = new ColorPicker(this, this);
-    m_pColorPicker->SetAutoDelete(true);
 }
 
 void GameplaySettingsPage::LoadSettings()

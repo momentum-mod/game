@@ -9,8 +9,6 @@ SettingsPageScrollPanel::SettingsPageScrollPanel(Panel *pParent, EditablePanel *
 
 SettingsPage::SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
 {
-    SetAutoDelete(true);
-
     // Set proportionality of the panels inside the dialog
     SetProportional(true);
 
@@ -23,7 +21,6 @@ SettingsPage::SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParen
     m_pScrollPanel = new SettingsPageScrollPanel(pParent, this, "ScrollablePanel");
     m_pScrollPanel->AddActionSignalTarget(this);
     m_pScrollPanel->SetProportional(true);
-    m_pScrollPanel->SetAutoDelete(true);
 }
 
 void SettingsPage::NotifyParentOfUpdate()

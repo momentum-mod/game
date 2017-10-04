@@ -56,7 +56,6 @@ class CMomentumSettingsPanel : public PropertyDialog
 CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullptr, "CMomentumSettingsPanel")
 {
     SetParent(parent);
-    SetAutoDelete(true);
     LoadControlSettings("resource/ui/SettingsPanel_Base.res");
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
