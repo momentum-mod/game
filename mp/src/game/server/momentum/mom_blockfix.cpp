@@ -63,6 +63,9 @@ void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
 
         // Let the entity know that it's a bhop block, so mom_bhop_playblocksound is able to control if we should make noises
         pDoorEnt->m_bIsBhopBlock = true;
+
+        // Fix blocks randomly stopping the player
+        pDoorEnt->SetSolid(SOLID_BSP);
     }
     else
     { // func_button block
