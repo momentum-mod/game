@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_player_shared.h"
 #include "beam_shared.h"
 
 class CMOMRulerToolMarker : public CBaseAnimating
@@ -55,6 +54,11 @@ public:
 
     void DoTrace(const bool bFirst);
     void Measure();
+
+    void LevelShutdownPreEntity() OVERRIDE
+    { 
+        Reset(); 
+    }
 
 private:
     char m_szDistanceFormat[BUFSIZ];
