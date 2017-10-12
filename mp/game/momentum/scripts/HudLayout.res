@@ -76,7 +76,7 @@
     CHudMenuStatic
     {
          "fieldName" "CHudMenuStatic"
-         //You can override "MenuItemColor" etc here (I think)
+         // To override the menu colors, look inside of the ClientScheme.res file (for "MenuColor/MenuBoxColor/MenuItemColor)"!
     }
     // Version warning
     CHudVersionInfo
