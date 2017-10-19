@@ -51,6 +51,8 @@ using namespace vgui;
 
 bool PNamesMapLessFunc(const uint64 &first, const uint64 &second) { return first < second; }
 
+#define ENABLE_ONLINE_LEADERBOARDS 0 // MOM_TODO: Removeme when working on the online section
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -300,6 +302,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
     }
 
+#if ENABLE_ONLINE_LEADERBOARDS
     if (m_pOnlineLeaderboards)
     {
         m_pOnlineLeaderboards->AddSection(m_iSectionId, "", StaticOnlineTimeSortFunc);
@@ -354,6 +357,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE,
                                                    16);
     }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -511,10 +515,12 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
         // this updates the local times file, needing a reload of it
         m_bLocalTimesNeedUpdate = true;
     }
+#if ENABLE_ONLINE_LEADERBOARDS
     else if (FStrEq(type, "run_upload"))
     {
         m_bFriendsNeedUpdate = m_bOnlineNeedUpdate = event->GetBool("run_posted");
     }
+#endif
     else if (FStrEq(type, "game_newmap"))
     {
         m_bLocalTimesLoaded = false;
@@ -545,12 +551,14 @@ void CClientTimesDisplay::Update(bool pFullUpdate)
 
     // update every X seconds
     // we don't need to update this too often. (Player is not finishing a run every second, so...)
+#if ENABLE_ONLINE_LEADERBOARDS
     m_fNextUpdateTime = gpGlobals->curtime + DELAY_NEXT_UPDATE;
 
     // This starts as true on the constructor.
     m_bFirstHeaderUpdate = false;
     m_bFirstOnlineTimesUpdate = false;
     m_bFirstFriendsTimesUpdate = false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -829,6 +837,7 @@ void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
                                                CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *callback,
                                                CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t func)
 {
+#if ENABLE_ONLINE_LEADERBOARDS
     if (steamapicontext && steamapicontext->SteamHTTP())
     {
         HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
@@ -849,6 +858,7 @@ void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
     {
         Warning("Steampicontext failure.\n");
     }
+#endif
 }
 
 void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure, bool bFriendsTimes)
@@ -1237,6 +1247,7 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
     LoadLocalTimes(pLocal);
     pLeaderboards->AddSubKey(pLocal);
 
+#if ENABLE_ONLINE_LEADERBOARDS
     m_bOnlineNeedUpdate =
         (fullUpdate && (gpGlobals->curtime - m_flLastOnlineTimeUpdate >= MIN_ONLINE_UPDATE_INTERVAL ||
                         m_bFirstOnlineTimesUpdate) ||
@@ -1248,8 +1259,13 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
          (gpGlobals->curtime - m_flLastFriendsTimeUpdate >= MAX_FRIENDS_UPDATE_INTERVAL || m_bFriendsNeedUpdate));
 
     // Fill online times only if needed
+
     LoadOnlineTimes();
     LoadFriendsTimes();
+#else
+    m_bOnlineNeedUpdate = false;
+    m_bFriendsNeedUpdate = false;
+#endif
 
     kv->AddSubKey(pLeaderboards);
     return true;
@@ -1528,18 +1544,6 @@ int CClientTimesDisplay::FindItemIDForOnlineTime(int runID, LEADERBOARDS leaderb
         }
     }
     return -1;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Sets the text of a control by name
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::MoveLabelToFront(const char *textEntryName)
-{
-    Label *entry = FindControl<Label>(textEntryName, true);
-    if (entry)
-    {
-        entry->MoveToFront();
-    }
 }
 
 //-----------------------------------------------------------------------------

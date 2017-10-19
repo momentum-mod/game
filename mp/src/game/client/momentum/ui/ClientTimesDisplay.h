@@ -159,7 +159,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     float m_fNextUpdateTime;
 
-    void MoveLabelToFront(const char *textEntryName);
     void MoveToCenterOfScreen();
     // Sets the text of the MapInfo label. If it's nullptr, it hides it
     void UpdateMapInfoLabel(const char *text = nullptr);
