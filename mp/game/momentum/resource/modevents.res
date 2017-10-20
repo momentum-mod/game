@@ -76,4 +76,8 @@
     {
         "newgravity" "float"
     }
+    "lobby_leave"
+    {
+        
+    }
 }

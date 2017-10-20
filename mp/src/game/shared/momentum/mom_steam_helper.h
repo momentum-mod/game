@@ -9,8 +9,9 @@
 
 #include <tier1/utlvector.h>
 #include "steam/steam_api.h"
+#include "../GameEventListener.h"
 
-class CMomentumSteamHelper
+class CMomentumSteamHelper : public CGameEventListener
 {
 public:
     CMomentumSteamHelper();
@@ -20,6 +21,9 @@ public:
     CMomentumSteamHelper& operator=(const CMomentumSteamHelper&) = delete;
     CMomentumSteamHelper& operator=(CMomentumSteamHelper&&) = delete;
     ~CMomentumSteamHelper() = default;
+
+    // Override
+    void FireGameEvent(IGameEvent* event) OVERRIDE;
 
     // Getters
 
@@ -46,13 +50,6 @@ public:
     void RequestCurrentTotalPlayers();
     // Sets lobby data for the current player
     void SetLobbyMemberData(const char* key, const char* value);
-
-#ifdef GAME_DLL
-    void NotifyLobbyExit()
-    {
-        SetLobbyMemberData("LOBBY_DATA_IS_LEAVING", "y");
-    }
-#endif
 
 
 private:

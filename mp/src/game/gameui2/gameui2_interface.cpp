@@ -2,12 +2,15 @@
 #include "basepanel.h"
 #include <icommandline.h>
 #include "vgui/ILocalize.h"
+#include "../GameEventListener.h"
+#include "mom_steam_helper.h"
 
 #include "steam/steam_api.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+IGameEventManager2 *gameeventmanager = nullptr;
 
 static CDllDemandLoader g_GameUI("GameUI");
 
@@ -33,6 +36,10 @@ void CGameUI2::Initialize(CreateInterfaceFn appFactory)
 	m_pSoundEmitterBase = static_cast<ISoundEmitterSystemBase*>(appFactory(SOUNDEMITTERSYSTEM_INTERFACE_VERSION, nullptr));
 	m_pRenderView = static_cast<IVRenderView*>(appFactory(VENGINE_RENDERVIEW_INTERFACE_VERSION, nullptr));
     m_pMaterialSystem = static_cast<IMaterialSystem*>(appFactory(MATERIAL_SYSTEM_INTERFACE_VERSION, nullptr));
+    gameeventmanager = static_cast<IGameEventManager2 *>(appFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, nullptr));
+
+    if (gameeventmanager)
+        g_pMomentumSteamHelper->ListenForGameEvent("lobby_leave");
 
     if (SteamAPI_InitSafe())
     {
@@ -69,6 +76,7 @@ void CGameUI2::Shutdown()
         GetBasePanel()->GetMainMenu()->DeletePanel();
         GetBasePanel()->DeletePanel();
     }
+
     steamapicontext.Clear();
 	ConVar_Unregister();
 	DisconnectTier3Libraries();

@@ -123,10 +123,16 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
     MESSAGE_FUNC_CHARPTR(OnContextWatchReplay, "ContextWatchReplay", runName);
     MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
+    MESSAGE_FUNC_CHARPTR(OnContextGoToMap, "ContextGoToMap", map);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
+    MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
     MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
+    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyCreated, LobbyCreated_t); // When we create a lobby
+    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyEnter, LobbyEnter_t); // When we enter a lobby
+    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyDataUpdate, LobbyDataUpdate_t); // People/lobby updates status
+    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyChatUpdate, LobbyChatUpdate_t); // People join/leave
 
     int TryAddAvatar(const CSteamID &);
 
@@ -143,6 +149,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // sorts players within a section
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
     static bool StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
+    static bool StaticLobbyMemberSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
@@ -152,8 +159,13 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     int FindItemIDForLocalTime(KeyValues *kvRef);
     // finds an online time in the scoreboard
     int FindItemIDForOnlineTime(int runID, LEADERBOARDS);
+    // finds a player in the lobby data panel
+    int FindItemIDForLobbyMember(uint64 steamID);
+    int FindItemIDForLobbyMember(const CSteamID &id) { return FindItemIDForLobbyMember(id.ConvertToUint64()); }
 
-    int m_iNumTeams;
+    // Lobby member panel functions
+    void AddLobbyMember(const CSteamID &steamID); // Adds a lobby member to the panel
+    void UpdateLobbyMemberData(const CSteamID &lobbyID, const CSteamID &memberID); // Updates the lobby member's status data on the panel
 
     int m_iSectionId; // the current section we are entering into
 
@@ -187,6 +199,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Button *m_pGlobalTop10Button;
     vgui::Button *m_pGlobalAroundButton;
     vgui::Button *m_pFriendsLeaderboardsButton;
+
+    vgui::SectionedListPanel *m_pLobbyMembersPanel;
 
     vgui::ToggleButton *m_pRunFilterButton;
     EditablePanel *m_pFilterPanel;

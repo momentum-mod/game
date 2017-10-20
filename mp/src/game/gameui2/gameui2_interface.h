@@ -19,6 +19,9 @@ class IEngineVGui;
 class ISoundEmitterSystemBase;
 class IVRenderView;
 class IGameUI;
+class IGameEventManager2;
+
+extern IGameEventManager2 *gameeventmanager;
 
 #define SCALE(num) vgui::scheme()->GetProportionalScaledValue(num)
 

@@ -1,11 +1,22 @@
 #include "mom_steam_helper.h"
 #include "steam/steam_api.h"
 
+extern IGameEventManager2 *gameeventmanager;
+
 CMomentumSteamHelper::CMomentumSteamHelper() : m_siLobby(), m_i32CurrentTotalPlayers(0), m_bCachedLobbyMembersValid(false)
 {
     SteamAPI_InitSafe();
     SteamAPI_SetTryCatchCallbacks(false);
     steamapicontext.Init();
+    ListenForGameEvent("lobby_leave");
+}
+
+void CMomentumSteamHelper::FireGameEvent(IGameEvent* event)
+{
+    if (!Q_strcmp(event->GetName(), "lobby_leave"))
+    {
+        m_siLobby = k_steamIDNil;
+    }
 }
 
 CSteamID CMomentumSteamHelper::GetLocalSteamID()
@@ -102,13 +113,9 @@ void CMomentumSteamHelper::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
 
 void CMomentumSteamHelper::OnLobbyDataUpdate(LobbyDataUpdate_t* pParam)
 {
-    if (pParam->m_bSuccess && pParam->m_ulSteamIDMember == GetLocalSteamID().ConvertToUint64())
+    if (pParam->m_bSuccess)
     {
-        // Check if we're leaving the lobby...
-        if (Q_strcmp(GetLobbyLocalMemberData("LOBBY_DATA_IS_LEAVING"), "y") == 0)
-        {
-            m_siLobby = k_steamIDNil;
-        }
+       
     }
 }
 

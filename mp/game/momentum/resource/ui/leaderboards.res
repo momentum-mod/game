@@ -482,8 +482,8 @@
 	{
 		"ControlName"	"Label"
 		"fieldName"		"PlayerGlobalRank"
-		"xpos"			"345"
-		"ypos"			"16"
+		"xpos"			"67"
+		"ypos"			"80"
 		"wide"			"100"
 		"tall"			"13"
 		"autoResize"	"0"
@@ -528,8 +528,8 @@
 	{
 		"ControlName"	"Label"
 		"fieldName"		"PlayerExperience"
-		"xpos"			"221"
-		"ypos"			"50"
+		"xpos"			"67"
+		"ypos"			"65"
 		"wide"			"151"
 		"tall"			"13"
 		"autoResize"	"0"
@@ -547,4 +547,24 @@
 		"textinsety"	"0"
 		"auto_wide_tocontents" "1"
 	}
+    
+    "LobbyMembers"
+    {
+        "ControlName" "SectionedListPanel"
+        "fieldName" "LobbyMembers"
+        "xpos"			"225"
+		"ypos"			"3"
+		"wide"			"240"
+		"tall"			"140"
+        "autoResize"	"0"
+		"pinCorner"		"0"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"	"2"
+        "actionsignallevel" "1"
+        "paintborder" "1"
+        "keyboardinputenabled" "1"
+        "mouseinputenabled" "1"
+        "vertical_scrollbar" "1"
+    }
 }

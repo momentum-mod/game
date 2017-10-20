@@ -31,13 +31,13 @@ public:
     void SetSpectatorTarget(CSteamID target, bool bStartedSpectating);
     void SendDecalPacket(DecalPacket_t *packet);
 
+    CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
+    CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);
+
     static bool CreateNewNetFrame(PositionPacket_t &frame);
 
-    static CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapOnlineGhosts;
     static CMomentumPlayer *m_pPlayer;
 private:
-    //static CThreadMutex m_mtxGhostPlayers, m_mtxpPlayer;
-    
 
     static CMomentumGhostClient *m_pInstance;
 };

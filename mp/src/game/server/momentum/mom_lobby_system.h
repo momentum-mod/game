@@ -9,6 +9,7 @@ class CMomentumLobbySystem
 public:
     CMomentumLobbySystem() : m_bHostingLobby(false)
     {
+        SetDefLessFunc(m_mapLobbyGhosts);
     }
 
     void CallResult_LobbyCreated(LobbyCreated_t *pCreated, bool IOFailure);
@@ -51,11 +52,15 @@ public:
     CSteamID GetSpectatorTargetFromMemberData(CSteamID whoIsSpectating);
     LobbyGhostAppearance_t GetAppearanceFromMemberData(CSteamID member);
 
-    CMomentumOnlineGhostEntity *GetLobbyMemberEntity(CSteamID id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
-    CMomentumOnlineGhostEntity *GetLobbyMemberEntity(uint64 id);
+    CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
+    CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);
+
+    void ClearCurrentGhosts(bool bRemoveEnts); // Clears the current ghosts stored in the map
 
 private:
     CUtlVector<CSteamID> m_vecBlocked; // Vector of blocked users (ignore updates/packets from these people)
+
+    CUtlMap<uint64, CMomentumOnlineGhostEntity*> m_mapLobbyGhosts;
 
     bool m_bHostingLobby;
 

@@ -85,14 +85,14 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
 {
     if (LobbyValid())
     {
-        uint16 index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
-        while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        uint16 index = m_mapLobbyGhosts.FirstInorder();
+        while (index != m_mapLobbyGhosts.InvalidIndex())
         {
-            CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[index];
+            CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[index];
             if (pEntity)
                 pEntity->SetGhostAppearance(pEntity->GetGhostAppearance(), true);
 
-            index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
+            index = m_mapLobbyGhosts.NextInorder(index);
         }
     }
 }
@@ -167,11 +167,17 @@ void CMomentumLobbySystem::LeaveLobby()
 {
     if (LobbyValid())
     {
-        g_pMomentumSteamHelper->NotifyLobbyExit();  
         m_sLobbyID = k_steamIDNil;
         g_pMomentumGhostClient->ClearCurrentGhosts(true);
         steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         steamapicontext->SteamFriends()->ClearRichPresence();
+
+        // Notify literally everything that can listen that we left
+        IGameEvent *pLeaveLobby = gameeventmanager->CreateEvent("lobby_leave");
+        if (pLeaveLobby)
+        {
+            gameeventmanager->FireEvent(pLeaveLobby);
+        }
         DevLog("Left the lobby!\n");
     }
     else
@@ -242,13 +248,35 @@ LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamI
     return toReturn;
 }
 
-CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(uint64 id)
+CMomentumOnlineGhostEntity* CMomentumLobbySystem::GetLobbyMemberEntity(const uint64 &id)
 {
-    uint16 findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(id);
-    if (findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
-        return CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
+    uint16 findIndx = m_mapLobbyGhosts.Find(id);
+    if (findIndx != m_mapLobbyGhosts.InvalidIndex())
+        return m_mapLobbyGhosts[findIndx];
     
     return nullptr;
+}
+
+void CMomentumLobbySystem::ClearCurrentGhosts(bool bRemoveEnts)
+{
+    // We have to remove every entity manually if we left this lobby
+    if (m_mapLobbyGhosts.Count() > 0)
+    {
+        if (bRemoveEnts)
+        {
+            unsigned short currIndx = m_mapLobbyGhosts.FirstInorder();
+            while (currIndx != m_mapLobbyGhosts.InvalidIndex())
+            {
+                CMomentumOnlineGhostEntity *pEnt = m_mapLobbyGhosts[currIndx];
+                if (pEnt)
+                    pEnt->Remove();
+
+                currIndx = m_mapLobbyGhosts.NextInorder(currIndx);
+            }
+        }
+
+        m_mapLobbyGhosts.RemoveAll(); // No need to purge, the game handles the entities' memory
+    }
 }
 
 void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
@@ -267,17 +295,17 @@ void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
     }
     else // It's everybody
     {
-        uint16 index = CMomentumGhostClient::m_mapOnlineGhosts.FirstInorder();
-        while (index != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        uint16 index = m_mapLobbyGhosts.FirstInorder();
+        while (index != m_mapLobbyGhosts.InvalidIndex())
         {
-            CSteamID ghost = CMomentumGhostClient::m_mapOnlineGhosts[index]->GetGhostSteamID();
+            CSteamID ghost = m_mapLobbyGhosts[index]->GetGhostSteamID();
 
             if (steamapicontext->SteamNetworking()->SendP2PPacket(ghost, buf.Base(), buf.TellPut(), sendType))
             {
                 // DevLog("Sent the packet!\n");
             }
 
-            index = CMomentumGhostClient::m_mapOnlineGhosts.NextInorder(index);
+            index = m_mapLobbyGhosts.NextInorder(index);
         }
     }
 }
@@ -356,15 +384,15 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
     {
         DevLog("User left/disconnected!\n");
 
-        uint16 findMember = CMomentumGhostClient::m_mapOnlineGhosts.Find(changedPerson.ConvertToUint64());
-        if (findMember != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex())
+        uint16 findMember = m_mapLobbyGhosts.Find(changedPerson.ConvertToUint64());
+        if (findMember != m_mapLobbyGhosts.InvalidIndex())
         {
             // Remove their entity from the CUtlMap
-            CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findMember];
+            CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[findMember];
             if (pEntity)
                 pEntity->Remove();
 
-            CMomentumGhostClient::m_mapOnlineGhosts.RemoveAt(findMember);
+            m_mapLobbyGhosts.RemoveAt(findMember);
         }
 
         WriteMessage(LOBBY_UPDATE_MEMBER_LEAVE, pParam->m_ulSteamIDUserChanged);
@@ -435,8 +463,8 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 
         uint64 pID_int = pID->ConvertToUint64();
 
-        unsigned short findIndx = CMomentumGhostClient::m_mapOnlineGhosts.Find(pID_int);
-        bool validIndx = findIndx != CMomentumGhostClient::m_mapOnlineGhosts.InvalidIndex();
+        unsigned short findIndx = m_mapLobbyGhosts.Find(pID_int);
+        bool validIndx = findIndx != m_mapLobbyGhosts.InvalidIndex();
         
         const char *pMapName = gpGlobals->mapname.ToCStr();
         const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, LOBBY_DATA_MAP);
@@ -461,7 +489,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
                     newPlayer->HideGhost();
                 }
 
-                CMomentumGhostClient::m_mapOnlineGhosts.Insert(pID_int, newPlayer);
+                m_mapLobbyGhosts.Insert(pID_int, newPlayer);
 
                 if (m_flNextUpdateTime < 0)
                     m_flNextUpdateTime = gpGlobals->curtime + (1.0f / mm_updaterate.GetFloat());
@@ -473,11 +501,11 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
         else if (validIndx)
         {
             // They changed map remove their entity from the CUtlMap
-            CMomentumOnlineGhostEntity *pEntity = CMomentumGhostClient::m_mapOnlineGhosts[findIndx];
+            CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[findIndx];
             if (pEntity)
                 pEntity->Remove();
             
-            CMomentumGhostClient::m_mapOnlineGhosts.RemoveAt(findIndx);
+            m_mapLobbyGhosts.RemoveAt(findIndx);
 
             // "_____ just left your map."
             WriteMessage(LOBBY_UPDATE_MEMBER_LEAVE_MAP, pID_int);
@@ -532,7 +560,7 @@ void CMomentumLobbySystem::JoinLobbyFromString(const char* pString)
 
 void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 {
-    if (CMomentumGhostClient::m_mapOnlineGhosts.Count() > 0)
+    if (m_mapLobbyGhosts.Count() > 0)
     {
         // Read data
         uint32 size;

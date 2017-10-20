@@ -49,8 +49,6 @@ using namespace vgui;
 #define DATESTRING "00/00/0000 00:00:00" // Entire date string
 #define TIMESTRING "00:00:00.000"        // Entire time string
 
-bool PNamesMapLessFunc(const uint64 &first, const uint64 &second) { return first < second; }
-
 #define ENABLE_ONLINE_LEADERBOARDS 0 // MOM_TODO: Removeme when working on the online section
 
 //-----------------------------------------------------------------------------
@@ -112,8 +110,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_pLocalLeaderboardsButton = FindControl<Button>("LocalLeaderboardsButton", true);
     m_pRunFilterButton = FindControl<ToggleButton>("FilterButton", true);
     m_pFilterPanel = FindControl<EditablePanel>("FilterPanel", true);
-
     m_pFilterPanel->LoadControlSettings("resource/ui/leaderboards_filter.res");
+
+    m_pLobbyMembersPanel = FindControl<SectionedListPanel>("LobbyMembers", true);
 
     m_pCurrentLeaderboards = m_pLocalLeaderboards;
 
@@ -149,6 +148,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_pLocalLeaderboardsButton->SetParent(m_pLeaderboards);
     m_pRunFilterButton->SetParent(m_pLeaderboards);
 
+    m_pLobbyMembersPanel->SetParent(m_pPlayerStats);
+
     // Get rid of the scrollbars for the panels
     // MOM_TODO: Do we want the player to be able to explore the ranks?
     m_pOnlineLeaderboards->SetVerticalScrollbar(false);
@@ -164,11 +165,12 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     ListenForGameEvent("replay_save");
     ListenForGameEvent("run_upload");
     ListenForGameEvent("game_newmap");
+    ListenForGameEvent("lobby_leave");
 
     m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
 
     m_pImageList = nullptr;
-    m_mapAvatarsToImageList.SetLessFunc(DefLessFunc(CSteamID));
+    SetDefLessFunc(m_mapAvatarsToImageList);
     m_mapAvatarsToImageList.RemoveAll();
 
     m_fLastHeaderUpdate = 0.0f;
@@ -182,8 +184,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_bMapInfoLoaded = false;
 
     flaggedRuns = RUNFLAG_NONE;
+    SetDefLessFunc(m_umMapNames);
 
-    m_umMapNames.SetLessFunc(PNamesMapLessFunc);
+    
 }
 
 //-----------------------------------------------------------------------------
@@ -276,6 +279,9 @@ void CClientTimesDisplay::Reset(bool pFullReset)
         m_pFriendsLeaderboards->RemoveAllSections();
     }
 
+    if (m_pLobbyMembersPanel)
+        m_pLobbyMembersPanel->RemoveAllSections();
+
     m_iSectionId = 0;
     m_fNextUpdateTime = 0;
     // add all the sections
@@ -300,6 +306,20 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
                                                  16);
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
+    }
+
+    if (m_pLobbyMembersPanel)
+    {
+        m_pLobbyMembersPanel->AddSection(m_iSectionId, "", StaticLobbyMemberSortFunc);
+        m_pLobbyMembersPanel->SetSectionAlwaysVisible(m_iSectionId);
+        m_pLobbyMembersPanel->SetImageList(m_pImageList, false);
+        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "avatar", "",
+            SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+            45);
+        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
+        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "map", "#MOM_MapSelector_Map", 0, NAME_WIDTH);
+
+        // MOM_TODO: Have stuff like status and whatever else?
     }
 
 #if ENABLE_ONLINE_LEADERBOARDS
@@ -528,6 +548,10 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
         m_bFriendsNeedUpdate = true;
         m_bOnlineNeedUpdate = true;
     }
+    else if (FStrEq(type, "lobby_leave"))
+    {
+        m_pLobbyMembersPanel->DeleteAllItems();
+    }
 
     // MOM_TODO: there's a crash here if you uncomment it,
     // if (IsVisible())
@@ -696,6 +720,34 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(SectionedListPanel *list, int
         return true; // this time is faster, place it up higher
     if (s1 > s2)
         return false;
+    return itemID1 < itemID2;
+}
+
+bool CClientTimesDisplay::StaticLobbyMemberSortFunc(vgui::SectionedListPanel* list, int itemID1, int itemID2)
+{
+    KeyValues *it1 = list->GetItemData(itemID1);
+    KeyValues *it2 = list->GetItemData(itemID2);
+    const char *pMapName = g_pGameRules->MapName();
+    Assert(it1 && it2 && pMapName);
+    bool is1OnMap = FStrEq(pMapName, it1->GetString("map"));
+    bool is2OnMap = FStrEq(pMapName, it2->GetString("map"));
+
+    if (is1OnMap)
+    {
+        if (is2OnMap)
+        {
+            // If both are on the same map, go by name. We're rooting for it1 to be in front here, so
+            // if strcmp returns negative, it1 is before it2. Hopefully they aren't the same string!
+            return Q_strcmp(it1->GetString("personaname"), it2->GetString("personaname")) < 0;
+        }
+        // else it1 is on our map, they go first
+        return true;
+    }
+    //else 
+    if (is2OnMap)
+        return false; // it2 goes first, since they're on our map
+
+    // If all else fails just do item ID comparison idk
     return itemID1 < itemID2;
 }
 
@@ -1611,6 +1663,23 @@ void CClientTimesDisplay::OnConfirmDeleteReplay(KeyValues* data)
     }
 }
 
+void CClientTimesDisplay::OnSpectateLobbyMember(uint64 target)
+{
+    char command[128];
+    Q_snprintf(command, 128, "mom_spectate %llu", target);
+    engine->ServerCmd(command);
+    ShowPanel(false);
+}
+
+void CClientTimesDisplay::OnContextGoToMap(const char* map)
+{
+    // MOM_TODO: We're going to need to feed this into a map downloader first, if they don't have the map!
+    char command[128];
+    Q_snprintf(command, 128, "progress_enable;map %s\n", map);
+    ShowPanel(false);
+    engine->ClientCmd_Unrestricted(command);
+}
+
 
 inline bool CheckParent(Panel *pPanel, SectionedListPanel *pParentToCheck, int itemID)
 {
@@ -1644,6 +1713,41 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             pContextMenu->AddMenuItem("VisitProfile", "#MOM_Leaderboards_SteamProfile", pKv, this);
             pContextMenu->ShowMenu();
         }
+        else if (CheckParent(pPanel, m_pLobbyMembersPanel, itemID))
+        {
+            // MOM_TODO: Rename this menu class to something more appropriate? It doesn't seem locked to only replays...
+            CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(m_pLobbyMembersPanel);
+
+            KeyValues *pKVData = m_pLobbyMembersPanel->GetItemData(itemID);
+
+            uint64 steamID = pKVData->GetUint64("steamid");
+            const char *pMap = pKVData->GetString("map");
+            const char *pOurMap = g_pGameRules->MapName();
+
+            KeyValues *pKv;
+
+            if (pOurMap && FStrEq(pMap, pOurMap))
+            {
+                pKv = new KeyValues("ContextSpectate");
+                pKv->SetUint64("target", steamID);
+                pContextMenu->AddMenuItem("SpectateLobbyMember", "#GameUI2_Spectate", pKv, this);
+            }
+            else
+            {
+                pKv = new KeyValues("ContextGoToMap");
+                pKv->SetString("map", pMap);
+                pContextMenu->AddMenuItem("GoToMap", "#MOM_Leaderboards_GoToMap", pKv, this);
+            }
+
+
+            pContextMenu->AddSeparator();
+            // Visit profile
+            pKv = new KeyValues("ContextVisitProfile");
+            pKv->SetUint64("profile", steamID);
+            pContextMenu->AddMenuItem("VisitProfile", "#MOM_Leaderboards_SteamProfile", pKv, this);
+
+            pContextMenu->ShowMenu();
+        }
     }
 }
 
@@ -1657,6 +1761,7 @@ void CClientTimesDisplay::OnContextVisitProfile(uint64 profile)
 
 void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
 {
+#if ENABLE_ONLINE_LEADERBOARDS
     if (pParam->m_nChangeFlags & k_EPersonaChangeNameFirstSet || pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
         m_umMapNames.InsertOrReplace(
@@ -1666,7 +1771,130 @@ void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
 
         OnlineTimesVectorToLeaderboards(FRIENDS_LEADERBOARDS);
     }
+#endif
 }
+
+void CClientTimesDisplay::OnLobbyCreated(LobbyCreated_t* pParam)
+{
+    // Uncomment to test the panel with a local name
+   /* KeyValues *pNewUser = new KeyValues("LobbyMember");
+
+    CSteamID steamID = steamapicontext->SteamUser()->GetSteamID();
+
+    pNewUser->SetUint64("steamid", steamID.ConvertToUint64());
+    pNewUser->SetInt("avatar", TryAddAvatar(steamID));
+    pNewUser->SetString("personaname", steamapicontext->SteamFriends()->GetPersonaName());
+    pNewUser->SetString("map", "triggertests");
+
+    m_pLobbyMembersPanel->AddItem(m_iSectionId, pNewUser);
+    pNewUser->deleteThis();*/
+}
+
+void CClientTimesDisplay::OnLobbyEnter(LobbyEnter_t* pParam)
+{
+    // Loop through the lobby and add people
+    CSteamID local = steamapicontext->SteamUser()->GetSteamID();
+    for (int i = 0; i < steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(pParam->m_ulSteamIDLobby); i++)
+    {
+        CSteamID inLobby = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(pParam->m_ulSteamIDLobby, i);
+        if (inLobby == local)
+            continue;
+
+        // Get their initial data (name, avatar, steamID)
+        AddLobbyMember(inLobby);
+        // Get their status data (map, spectating, etc)
+        UpdateLobbyMemberData(CSteamID(pParam->m_ulSteamIDLobby), inLobby);
+    }
+}
+
+void CClientTimesDisplay::OnLobbyDataUpdate(LobbyDataUpdate_t* pParam)
+{
+    if (pParam->m_ulSteamIDMember == pParam->m_ulSteamIDLobby)
+    {
+        // The lobby itself changed
+        // MOM_TODO: Have some sort of data about the lobby in this panel?
+    }
+    else
+    {
+        // A member in the lobby changed
+        CSteamID local = steamapicontext->SteamUser()->GetSteamID();
+        if (local.ConvertToUint64() != pParam->m_ulSteamIDMember)
+            UpdateLobbyMemberData(CSteamID(pParam->m_ulSteamIDLobby), CSteamID(pParam->m_ulSteamIDMember));
+    }
+}
+
+void CClientTimesDisplay::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
+{
+    if (!m_pLobbyMembersPanel)
+        return;
+
+    if (pParam->m_rgfChatMemberStateChange & k_EChatMemberStateChangeEntered)
+    {
+        // Add this user to the panel
+        AddLobbyMember(CSteamID(pParam->m_ulSteamIDUserChanged));
+    }
+    else if (pParam->m_rgfChatMemberStateChange & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
+    {
+        // Get em outta here
+        m_pLobbyMembersPanel->RemoveItem(FindItemIDForLobbyMember(pParam->m_ulSteamIDUserChanged));
+    }
+}
+
+int CClientTimesDisplay::FindItemIDForLobbyMember(uint64 steamID)
+{
+    for (int i = 0; i <= m_pLobbyMembersPanel->GetHighestItemID(); i++)
+    {
+        if (m_pLobbyMembersPanel->IsItemIDValid(i))
+        {
+            KeyValues *kv = m_pLobbyMembersPanel->GetItemData(i);
+            if (kv && (kv->GetUint64("steamid") == steamID))
+            {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+void CClientTimesDisplay::AddLobbyMember(const CSteamID &steamID)
+{
+    if (!m_pLobbyMembersPanel)
+        return;
+
+    if (FindItemIDForLobbyMember(steamID) > -1)
+        return; // MOM_TODO: Maybe remove them?
+
+    KeyValues *pNewUser = new KeyValues("LobbyMember");
+
+    pNewUser->SetUint64("steamid", steamID.ConvertToUint64());
+    pNewUser->SetInt("avatar", TryAddAvatar(steamID));
+    pNewUser->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(steamID));
+
+    m_pLobbyMembersPanel->AddItem(m_iSectionId, pNewUser);
+    pNewUser->deleteThis(); // Copied over in AddItem
+}
+
+void CClientTimesDisplay::UpdateLobbyMemberData(const CSteamID &lobbyID, const CSteamID& memberID)
+{
+    if (!m_pLobbyMembersPanel)
+        return;
+
+    int itemID = FindItemIDForLobbyMember(memberID);
+    if (itemID > -1)
+    {
+        // Old one gets deleted in the ModifyItem code, don't worry
+        KeyValues *pData = m_pLobbyMembersPanel->GetItemData(itemID)->MakeCopy();
+        if (pData)
+        {
+            const char *pMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, memberID, LOBBY_DATA_MAP);
+            pData->SetString("map", pMap);
+            // MOM_TODO: Spectating? Typing? 
+
+            m_pLobbyMembersPanel->ModifyItem(itemID, m_iSectionId, pData);
+        }
+    }
+}
+
 
 int CClientTimesDisplay::TryAddAvatar(const CSteamID &steamid)
 {
