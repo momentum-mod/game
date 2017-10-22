@@ -173,10 +173,12 @@ void CMomentumLobbySystem::LeaveLobby()
         steamapicontext->SteamFriends()->ClearRichPresence();
 
         // Notify literally everything that can listen that we left
-        IGameEvent *pLeaveLobby = gameeventmanager->CreateEvent("lobby_leave");
-        if (pLeaveLobby)
+        IGameEvent *pLeaveLobby = gameeventmanager->CreateEvent("lobby_leave", true);
+        IGameEvent *pLeaveLobbyCopy = gameeventmanager->CreateEvent("lobby_leave", true);
+        if (pLeaveLobby && pLeaveLobbyCopy)
         {
-            gameeventmanager->FireEvent(pLeaveLobby);
+            gameeventmanager->FireEvent(pLeaveLobby, true); // Server code get at me
+            gameeventmanager->FireEventClientSide(pLeaveLobbyCopy); // Client/other code get at me
         }
         DevLog("Left the lobby!\n");
     }

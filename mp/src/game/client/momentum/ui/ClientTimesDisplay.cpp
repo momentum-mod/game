@@ -1730,7 +1730,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             {
                 pKv = new KeyValues("ContextSpectate");
                 pKv->SetUint64("target", steamID);
-                pContextMenu->AddMenuItem("SpectateLobbyMember", "#GameUI2_Spectate", pKv, this);
+                pContextMenu->AddMenuItem("SpectateLobbyMember", "#MOM_Leaderboards_Spectate", pKv, this);
             }
             else
             {
@@ -1739,6 +1739,10 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
                 pContextMenu->AddMenuItem("GoToMap", "#MOM_Leaderboards_GoToMap", pKv, this);
             }
 
+            // MOM_TODO: More options here, such as:
+            // kicking the player if we're the lobby leader
+            // hiding decals (maybe toggle paint, bullets separately?)
+            // 
 
             pContextMenu->AddSeparator();
             // Visit profile
@@ -1776,8 +1780,9 @@ void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
 
 void CClientTimesDisplay::OnLobbyCreated(LobbyCreated_t* pParam)
 {
-    // Uncomment to test the panel with a local name
-   /* KeyValues *pNewUser = new KeyValues("LobbyMember");
+    // Flip the 0 to 1 to test the panel with a local name
+#if 0
+    KeyValues *pNewUser = new KeyValues("LobbyMember");
 
     CSteamID steamID = steamapicontext->SteamUser()->GetSteamID();
 
@@ -1787,7 +1792,8 @@ void CClientTimesDisplay::OnLobbyCreated(LobbyCreated_t* pParam)
     pNewUser->SetString("map", "triggertests");
 
     m_pLobbyMembersPanel->AddItem(m_iSectionId, pNewUser);
-    pNewUser->deleteThis();*/
+    pNewUser->deleteThis();
+#endif
 }
 
 void CClientTimesDisplay::OnLobbyEnter(LobbyEnter_t* pParam)
