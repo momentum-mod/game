@@ -169,7 +169,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
 
     m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
 
-    m_pImageList = nullptr;
+    m_pImageList = new ImageList(true);
     SetDefLessFunc(m_mapAvatarsToImageList);
     m_mapAvatarsToImageList.RemoveAll();
 
@@ -186,7 +186,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     flaggedRuns = RUNFLAG_NONE;
     SetDefLessFunc(m_umMapNames);
 
-    
+    SetupIcons();
 }
 
 //-----------------------------------------------------------------------------
@@ -387,36 +387,13 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    if (m_pImageList)
+    // MOM_TODO: Later down the road revisit proper cleanup of the image list (when leaving map while not in lobby?)
+    // It probably shouldn't be done here, this causes crashes with hud_reloadscheme
+    /*if (m_pImageList)
         delete m_pImageList;
-    m_pImageList = new ImageList(true);
+    m_pImageList = new ImageList(true);*/
 
-    m_mapAvatarsToImageList.RemoveAll();
-
-    for (int index = 0; index < ICON_TOTAL; index++)
-    {
-        m_IconsIndex[index] = -1;
-        IImage *image = nullptr;
-        switch (index)
-        {
-        case ICON_VIP:
-            image = scheme()->GetImage("leaderboards_icon_vip", false);
-            break;
-        case ICON_TEAMMEMBER:
-            image = scheme()->GetImage("leaderboards_icon_mom", false);
-            break;
-        case ICON_FRIEND:
-            image = scheme()->GetImage("leaderboards_icon_friends", false);
-            break;
-        default:
-            break;
-        }
-        if (image)
-        {
-            image->SetSize(16, 16);
-            m_IconsIndex[index] = m_pImageList->AddImage(image);
-        }
-    }
+    //m_mapAvatarsToImageList.RemoveAll();
 
     m_cFirstPlace = pScheme->GetColor("FirstPlace", Color(240, 210, 147, 50));
     m_cSecondPlace = pScheme->GetColor("SecondPlace", Color(175, 175, 175, 50));
@@ -1623,6 +1600,34 @@ CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(Panel *
     m_pLeaderboardReplayCMenu->SetVisible(false);
 
     return m_pLeaderboardReplayCMenu;
+}
+
+void CClientTimesDisplay::SetupIcons()
+{
+    for (int index = 0; index < ICON_TOTAL; index++)
+    {
+        m_IconsIndex[index] = -1;
+        IImage *image = nullptr;
+        switch (index)
+        {
+        case ICON_VIP:
+            image = scheme()->GetImage("leaderboards_icon_vip", false);
+            break;
+        case ICON_TEAMMEMBER:
+            image = scheme()->GetImage("leaderboards_icon_mom", false);
+            break;
+        case ICON_FRIEND:
+            image = scheme()->GetImage("leaderboards_icon_friends", false);
+            break;
+        default:
+            break;
+        }
+        if (image)
+        {
+            image->SetSize(16, 16);
+            m_IconsIndex[index] = m_pImageList->AddImage(image);
+        }
+    }
 }
 
 void CClientTimesDisplay::OnContextWatchReplay(const char *runName)

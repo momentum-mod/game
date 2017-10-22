@@ -14,6 +14,8 @@
 #include <hud_basechat.h>
 #include "steam/steam_api.h"
 
+class CHudSpectatorInfo;
+
 class CHudChat : public CBaseHudChat
 {
     DECLARE_CLASS_SIMPLE(CHudChat, CBaseHudChat);
@@ -46,6 +48,8 @@ private:
     Color m_cInfoTextColor, m_cDefaultTextColor;
     bool m_bTyping;
     bool m_bIsVisible;
+
+    CHudSpectatorInfo *m_pSpectatorInfo;
 };
 
 #endif	//HUD_CHAT_H

@@ -172,6 +172,20 @@
         "enabled"       "1"
         "TextFont"      "Default"
     }
+    
+    CHudSpectatorInfo
+    {
+        "fieldName" "CHudSpectatorInfo"
+        "xpos" "r155"
+        "ypos" "c-50"
+        "wide" "125"
+        "tall" "100"
+        "visible" "1"
+        "enabled" "1"
+        "paintbackground" "0"
+        "TextFont" "Default"
+    }
+    
     HudWeaponSelection
     {
         "fieldName" "HudWeaponSelection"

@@ -109,3 +109,4 @@ mp/game/bin/
 .idea/
 CMakeLists.txt
 *.exe
+mp/game/momentum/version.txt

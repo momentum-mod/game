@@ -107,7 +107,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     // IGameEventListener interface:
     void FireGameEvent(IGameEvent *event) OVERRIDE;
-
+    
     //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
     // Updates the local player's avatar image
     void UpdatePlayerAvatarStandalone();
@@ -117,6 +117,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
     CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
+
+    // Sets up the icons used in the leaderboard
+    void SetupIcons();
 
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);

@@ -8,12 +8,11 @@
 
 #include "hud_chat.h"
 #include "hud_macros.h"
-#include "text_message.h"
-#include "vguicenterprint.h"
 #include "hud_basechat.h"
 #include "momentum/mom_shareddefs.h"
 #include <vgui/ILocalize.h>
 
+#include "hud_spectatorinfo.h"
 #include "mom_steam_helper.h"
 #include "clientmode.h"
 
@@ -31,7 +30,7 @@ DECLARE_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
 // CHudChat
 //=====================
 
-CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName)
+CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName), m_pSpectatorInfo(nullptr)
 {
     m_vTypingMembers = CUtlVector<CSteamID>();
     m_hfInfoTextFont = 0;
@@ -122,13 +121,15 @@ void CHudChat::MsgFunc_SayText(bf_read &msg)
 
 void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
 {
-    
     uint8 type = msg.ReadByte();
 
     uint64 person, target;
     msg.ReadBytes(&person, sizeof(uint64));
     CSteamID personID = CSteamID(person);
     const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
+
+    msg.ReadBytes(&target, sizeof(uint64));
+    CSteamID targetID = CSteamID(target);
 
     if (type == SPEC_UPDATE_LEAVE)
     {
@@ -140,18 +141,20 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
                "%s is now spectating.", pName);
     }
-    //MOM_TODO: Get rid of me?
     else if (type == SPEC_UPDATE_CHANGETARGET) 
     {
-        msg.ReadBytes(&target, sizeof(uint64));
-        CSteamID targetID = CSteamID(target);
+        // MOM_TODO: Removeme?
         const char *pTargetName = steamapicontext->SteamFriends()->GetFriendPersonaName(targetID);
-
         DevLog("%s is now spectating %s.\n", pName, pTargetName);
         //Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
         //    "%s is now spectating %s.", pName, pTargetName);
     }
   
+    if (!m_pSpectatorInfo)
+        m_pSpectatorInfo = GET_HUDELEMENT(CHudSpectatorInfo);
+
+    if (m_pSpectatorInfo)
+        m_pSpectatorInfo->SpectatorUpdate(personID, targetID);
 }
 
 void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read& msg)
