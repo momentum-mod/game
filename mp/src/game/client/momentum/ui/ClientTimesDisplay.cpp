@@ -170,8 +170,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
 
     m_pImageList = new ImageList(true);
+    m_pImageListLobby = new ImageList(true);
     SetDefLessFunc(m_mapAvatarsToImageList);
-    m_mapAvatarsToImageList.RemoveAll();
+    SetDefLessFunc(m_mapLobbyIDToImageListIndx);
 
     m_fLastHeaderUpdate = 0.0f;
     m_flLastOnlineTimeUpdate = 0.0f;
@@ -387,14 +388,6 @@ void CClientTimesDisplay::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    // MOM_TODO: Later down the road revisit proper cleanup of the image list (when leaving map while not in lobby?)
-    // It probably shouldn't be done here, this causes crashes with hud_reloadscheme
-    /*if (m_pImageList)
-        delete m_pImageList;
-    m_pImageList = new ImageList(true);*/
-
-    //m_mapAvatarsToImageList.RemoveAll();
-
     m_cFirstPlace = pScheme->GetColor("FirstPlace", Color(240, 210, 147, 50));
     m_cSecondPlace = pScheme->GetColor("SecondPlace", Color(175, 175, 175, 50));
     m_cThirdPlace = pScheme->GetColor("ThirdPlace", Color(205, 127, 50, 50));
@@ -524,10 +517,24 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
         m_bMapInfoLoaded = false;
         m_bFriendsNeedUpdate = true;
         m_bOnlineNeedUpdate = true;
+
+        // Clear out the old index map and image list every map load
+        if (m_pImageList)
+            delete m_pImageList;
+
+        m_pImageList = new ImageList(true);
+        m_mapAvatarsToImageList.RemoveAll();
     }
     else if (FStrEq(type, "lobby_leave"))
     {
         m_pLobbyMembersPanel->DeleteAllItems();
+
+        // Clear out the index map and the image list when you leave the lobby
+        if (m_pImageListLobby)
+            delete m_pImageListLobby;
+
+        m_pImageListLobby = new ImageList(true);
+        m_mapLobbyIDToImageListIndx.RemoveAll();
     }
 
     // MOM_TODO: there's a crash here if you uncomment it,
@@ -1313,7 +1320,7 @@ void CClientTimesDisplay::UpdatePlayerAvatarStandaloneOnline(KeyValues *kv)
     int iImageIndex = -1;
     if (steamapicontext->SteamUser())
     {
-        CSteamID steamIDForPlayer = steamapicontext->SteamUser()->GetSteamID();
+        uint64 steamIDForPlayer = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
 
         // See if we already have that avatar in our list
         int iMapIndex = m_mapAvatarsToImageList.Find(steamIDForPlayer);
@@ -1369,7 +1376,7 @@ void CClientTimesDisplay::UpdateLeaderboardPlayerAvatar(uint64 steamid, KeyValue
     if (steamapicontext->SteamFriends())
     {
         kv->SetBool("is_friend", steamapicontext->SteamFriends()->HasFriend(steamid, k_EFriendFlagImmediate));
-        kv->SetInt("avatar", TryAddAvatar(CSteamID(steamid)));
+        kv->SetInt("avatar", TryAddAvatar(steamid, &m_mapAvatarsToImageList, m_pImageList));
     }
 }
 
@@ -1747,7 +1754,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             // MOM_TODO: More options here, such as:
             // kicking the player if we're the lobby leader
             // hiding decals (maybe toggle paint, bullets separately?)
-            // 
+            // etc
 
             pContextMenu->AddSeparator();
             // Visit profile
@@ -1876,9 +1883,9 @@ void CClientTimesDisplay::AddLobbyMember(const CSteamID &steamID)
         return; // MOM_TODO: Maybe remove them?
 
     KeyValues *pNewUser = new KeyValues("LobbyMember");
-
-    pNewUser->SetUint64("steamid", steamID.ConvertToUint64());
-    pNewUser->SetInt("avatar", TryAddAvatar(steamID));
+    uint64 steamIdInt = steamID.ConvertToUint64();
+    pNewUser->SetUint64("steamid", steamIdInt);
+    pNewUser->SetInt("avatar", TryAddAvatar(steamIdInt, &m_mapLobbyIDToImageListIndx, m_pImageListLobby));
     pNewUser->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(steamID));
 
     m_pLobbyMembersPanel->AddItem(m_iSectionId, pNewUser);
@@ -1906,17 +1913,15 @@ void CClientTimesDisplay::UpdateLobbyMemberData(const CSteamID &lobbyID, const C
     }
 }
 
-
-int CClientTimesDisplay::TryAddAvatar(const CSteamID &steamid)
+int CClientTimesDisplay::TryAddAvatar(const uint64 &steamid, CUtlMap<uint64, int> *pIDtoIndxMap, ImageList *pImageList)
 {
     // Update their avatar
-    if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils())
+    if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() && pIDtoIndxMap && pImageList)
     {
         // See if we already have that avatar in our list
-
-        int iMapIndex = m_mapAvatarsToImageList.Find(steamid);
+        const unsigned short mapIndex = pIDtoIndxMap->Find(steamid);
         int iImageIndex;
-        if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
+        if (pIDtoIndxMap->IsValidIndex(mapIndex))
         {
             CAvatarImage *pImage = new CAvatarImage();
             // 64 is enough up to full HD resolutions.
@@ -1924,12 +1929,12 @@ int CClientTimesDisplay::TryAddAvatar(const CSteamID &steamid)
 
             pImage->SetDrawFriend(false);
             pImage->SetAvatarSize(32, 32);
-            iImageIndex = m_pImageList->AddImage(pImage);
-            m_mapAvatarsToImageList.Insert(steamid, iImageIndex);
+            iImageIndex = pImageList->AddImage(pImage);
+            pIDtoIndxMap->Insert(steamid, iImageIndex);
         }
         else
         {
-            iImageIndex = m_mapAvatarsToImageList[iMapIndex];
+            iImageIndex = pIDtoIndxMap->Element(mapIndex);
         }
         return iImageIndex;
     }

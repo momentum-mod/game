@@ -91,7 +91,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void Update(bool pFullUpdate);
     void Reset(bool pFullReset);
     bool NeedsUpdate(void) OVERRIDE;
-
+    
     bool HasInputElements(void) OVERRIDE { return true; }
 
     void ShowPanel(bool bShow) OVERRIDE;
@@ -137,7 +137,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     STEAM_CALLBACK(CClientTimesDisplay, OnLobbyDataUpdate, LobbyDataUpdate_t); // People/lobby updates status
     STEAM_CALLBACK(CClientTimesDisplay, OnLobbyChatUpdate, LobbyChatUpdate_t); // People join/leave
 
-    int TryAddAvatar(const CSteamID &);
+    // Attempts to add the avatar for a given steam ID to the given image list, if it doesn't exist already
+    // exist in the given ID to index map.
+    int TryAddAvatar(const uint64 &steamID, CUtlMap<uint64, int> *pMap, vgui::ImageList *pList);
 
     // functions to override
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
@@ -180,6 +182,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
 
     vgui::ImageList *m_pImageList;
+    vgui::ImageList *m_pImageListLobby;
     Panel *m_pHeader;
     Panel *m_pPlayerStats;
     Panel *m_pLeaderboards;
@@ -210,7 +213,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     Panel *m_pCurrentLeaderboards;
 
-    CUtlMap<CSteamID, int> m_mapAvatarsToImageList;
+    CUtlMap<uint64, int> m_mapAvatarsToImageList;
+    CUtlMap<uint64, int> m_mapLobbyIDToImageListIndx;
 
     CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34"); // Avatar width doesn't scale with resolution
     CPanelAnimationVarAliasType(int, m_iNameWidth, "name_width", "136", "proportional_int");

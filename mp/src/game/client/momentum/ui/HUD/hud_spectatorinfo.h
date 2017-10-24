@@ -16,6 +16,7 @@ class CHudSpectatorInfo : public CHudElement, public vgui::Panel
     bool ShouldDraw() OVERRIDE;
 
     void Paint() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
 
     void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
 
@@ -24,8 +25,8 @@ protected:
 
 private:
     IViewPortPanel *m_pLeaderboards;
-    CUtlVector<uint64> m_vecSpectators;
     CUtlMap<uint64, wchar_t *> m_mapNameMap;
 
     CSteamID m_idLocal;
+    int m_iSpecCount;
 };
