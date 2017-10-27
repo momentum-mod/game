@@ -17,14 +17,14 @@ public:
     ~CMomentumOnlineGhostEntity();
 
     // Adds a position frame to the queue for processing
-    void AddPositionFrame(PositionPacket_t newFrame);
+    void AddPositionFrame(const PositionPacket_t &newFrame);
     // Adds a decal frame to the queue of processing
     // Note: We have to delay the decal packets to sort of sync up to position, to make spectating more accurate.
-    void AddDecalFrame(DecalPacket_t decal);
+    void AddDecalFrame(const DecalPacket_t &decal);
     // Places a decal in the world, according to the packet and decal type
-    void FireDecal(DecalPacket_t decal);
+    void FireDecal(const DecalPacket_t &decal);
 
-    void SetGhostSteamID(CSteamID steamID)
+    void SetGhostSteamID(const CSteamID &steamID)
     {
         m_GhostSteamID = steamID;
         m_uiAccountID = m_GhostSteamID.ConvertToUint64();

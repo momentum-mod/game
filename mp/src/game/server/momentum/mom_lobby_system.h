@@ -7,10 +7,8 @@ class CMomentumOnlineGhostEntity;
 class CMomentumLobbySystem
 {
 public:
-    CMomentumLobbySystem() : m_bHostingLobby(false)
-    {
-        SetDefLessFunc(m_mapLobbyGhosts);
-    }
+    CMomentumLobbySystem();
+    ~CMomentumLobbySystem();
 
     void CallResult_LobbyCreated(LobbyCreated_t *pCreated, bool IOFailure);
     void CallResult_LobbyJoined(LobbyEnter_t *pEntered, bool IOFailure);
@@ -42,15 +40,14 @@ public:
 
     void SendAndRecieveP2PPackets();
     void SetAppearanceInMemberData(ghostAppearance_t app);
-    void SetSpectatorTarget(CSteamID ghostTarget, bool bStarted);
+    void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted);
     void SetIsSpectating(bool bSpec);
-    void SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECTATE_MSG_TYPE type);
-    bool GetIsSpectatingFromMemberData(CSteamID who);
+    void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type);
+    bool GetIsSpectatingFromMemberData(const CSteamID &who);
     void SendDecalPacket(DecalPacket_t *packet);
 
     void SetGameInfoStatus();
-    CSteamID GetSpectatorTargetFromMemberData(CSteamID whoIsSpectating);
-    LobbyGhostAppearance_t GetAppearanceFromMemberData(CSteamID member);
+    LobbyGhostAppearance_t GetAppearanceFromMemberData(const CSteamID &member);
 
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const CSteamID &id) { return GetLobbyMemberEntity(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetLobbyMemberEntity(const uint64 &id);

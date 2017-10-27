@@ -117,6 +117,16 @@ void CMomentumLobbySystem::HandleLobbyJoin(GameLobbyJoinRequested_t* pJoin)
     }
 }
 
+CMomentumLobbySystem::CMomentumLobbySystem() : m_bHostingLobby(false)
+{
+    SetDefLessFunc(m_mapLobbyGhosts);
+}
+
+CMomentumLobbySystem::~CMomentumLobbySystem()
+{
+    
+}
+
 // Called when we created the lobby
 void CMomentumLobbySystem::CallResult_LobbyCreated(LobbyCreated_t* pCreated, bool ioFailure)
 {
@@ -236,7 +246,7 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
         steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
     }
 }
-LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(CSteamID member)
+LobbyGhostAppearance_t CMomentumLobbySystem::GetAppearanceFromMemberData(const CSteamID &member)
 {
     LobbyGhostAppearance_t toReturn;
     const char *pAppearance = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, member, LOBBY_DATA_APPEARANCE);
@@ -643,7 +653,7 @@ void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 }
 
 //Return true if the lobby member is currently spectating.
-bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(CSteamID who)
+bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
 {
     const char* specChar = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
     return specChar[0] ? true : false;
@@ -655,7 +665,7 @@ void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
         SendPacket(packet);
 }
 
-void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, bool bStartedSpectating)
+void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating)
 {
     SPECTATE_MSG_TYPE type;
     if (bStartedSpectating)
@@ -686,7 +696,7 @@ void CMomentumLobbySystem::SetSpectatorTarget(CSteamID ghostTarget, bool bStarte
     SendSpectatorUpdatePacket(ghostTarget, type);
 }
 //Sends the spectator info update packet to all current ghosts
-void CMomentumLobbySystem::SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECTATE_MSG_TYPE type)
+void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type)
 {
     SpecUpdatePacket_t newUpdate(ghostTarget.ConvertToUint64(), type);
     SendPacket(&newUpdate, nullptr, k_EP2PSendReliable);
@@ -694,14 +704,6 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(CSteamID ghostTarget, SPECT
     uint64 playerID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
     uint64 ghostID = ghostTarget.ConvertToUint64();
     WriteMessage(type, playerID, ghostID);
-}
-
-// MOM_TODO Move me to client?
-CSteamID CMomentumLobbySystem::GetSpectatorTargetFromMemberData(CSteamID who)
-{
-    const char *steamID = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_SPEC_TARGET);
-    uint64 id = Q_atoui64(steamID);
-    return steamID && steamID[0] ? CSteamID(id) : k_steamIDNil;
 }
 
 void CMomentumLobbySystem::SetGameInfoStatus()
@@ -724,12 +726,12 @@ void CMomentumLobbySystem::SetGameInfoStatus()
         gameMode = "Playing";
         break;
     }
-    char gameInfoStr[64], connectStr[64];
+    char gameInfoStr[64];// , connectStr[64];
     int numPlayers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_sLobbyID);
     V_snprintf(gameInfoStr, 64, numPlayers < 1 ? "%s on %s" : "%s on %s with %i other player%s", gameMode, gpGlobals->mapname, numPlayers, numPlayers > 2 ? "s" : "");
-    V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
+    //V_snprintf(connectStr, 64, "+connect_lobby %llu +map %s", m_sLobbyID, gpGlobals->mapname);
 
-    steamapicontext->SteamFriends()->SetRichPresence("connect", connectStr);
+    //steamapicontext->SteamFriends()->SetRichPresence("connect", connectStr);
     steamapicontext->SteamFriends()->SetRichPresence("status", gameInfoStr);
 }
 static CMomentumLobbySystem s_MOMLobbySystem;

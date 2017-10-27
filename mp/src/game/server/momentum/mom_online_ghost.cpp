@@ -34,17 +34,17 @@ CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
     m_vecPositionPackets.Purge();
 }
 
-void CMomentumOnlineGhostEntity::AddPositionFrame(PositionPacket_t newFrame)
+void CMomentumOnlineGhostEntity::AddPositionFrame(const PositionPacket_t &newFrame)
 {
     m_vecPositionPackets.Insert(new ReceivedFrame_t<PositionPacket_t>(gpGlobals->curtime, newFrame));
 }
 
-void CMomentumOnlineGhostEntity::AddDecalFrame(DecalPacket_t decal)
+void CMomentumOnlineGhostEntity::AddDecalFrame(const DecalPacket_t &decal)
 {
     m_vecDecalPackets.Insert(new ReceivedFrame_t<DecalPacket_t>(gpGlobals->curtime, decal));
 }
 
-void CMomentumOnlineGhostEntity::FireDecal(DecalPacket_t decal)
+void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
 {
     if (decal.decal_type == DECAL_BULLET)
     {
