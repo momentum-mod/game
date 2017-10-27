@@ -17,7 +17,7 @@
 
 #include "GameEventListener.h"
 
-#include "ReplayContextMenu.h"
+#include "LeaderboardsContextMenu.h"
 #include "momentum/mom_shareddefs.h"
 #include <KeyValues.h>
 #include <game/client/iviewport.h>
@@ -116,7 +116,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // Updates an online player's avatar image
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
-    CReplayContextMenu *GetLeaderboardReplayContextMenu(vgui::Panel *pParent);
+    CLeaderboardsContextMenu *GetLeaderboardContextMenu(vgui::Panel *pParent);
 
     // Sets up the icons used in the leaderboard
     void SetupIcons();
@@ -319,7 +319,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // Place vector times into leaderboards panel (sectionlist)
     void OnlineTimesVectorToLeaderboards(LEADERBOARDS);
 
-    CReplayContextMenu *m_pLeaderboardReplayCMenu;
+    CLeaderboardsContextMenu *m_pLeaderboardReplayCMenu;
 
     CUtlMap<uint64, const char *> m_umMapNames;
 

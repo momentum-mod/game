@@ -131,8 +131,8 @@ $Project "Client (Momentum)"
                 {
                     $File   "momentum\ui\ClientTimesDisplay.h"
                     $File   "momentum\ui\ClientTimesDisplay.cpp"
-                    $File 	"momentum\ui\ReplayContextMenu.h"
-                    $File 	"momentum\ui\ReplayContextMenu.cpp"
+                    $File 	"momentum\ui\LeaderboardsContextMenu.h"
+                    $File 	"momentum\ui\LeaderboardsContextMenu.cpp"
                 }
                 
                 $Folder "Changelog"

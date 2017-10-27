@@ -167,7 +167,7 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     ListenForGameEvent("game_newmap");
     ListenForGameEvent("lobby_leave");
 
-    m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
+    m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
 
     m_pImageList = new ImageList(true);
     m_pImageListLobby = new ImageList(true);
@@ -1593,14 +1593,14 @@ void CClientTimesDisplay::MoveToCenterOfScreen()
     SetPos((ww - GetWide()) / 2, (wt - GetTall()) / 2);
 }
 
-CReplayContextMenu *CClientTimesDisplay::GetLeaderboardReplayContextMenu(Panel *pParent)
+CLeaderboardsContextMenu *CClientTimesDisplay::GetLeaderboardContextMenu(Panel *pParent)
 {
     // create a drop down for this object's states
     // This will stop being created after the second time you open the leaderboards?
     if (m_pLeaderboardReplayCMenu)
         delete m_pLeaderboardReplayCMenu;
 
-    m_pLeaderboardReplayCMenu = new CReplayContextMenu(this);
+    m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
     m_pLeaderboardReplayCMenu->SetAutoDelete(false);
     m_pLeaderboardReplayCMenu->SetParent(pParent ? pParent : this);
     m_pLeaderboardReplayCMenu->AddActionSignalTarget(pParent ? pParent : nullptr);
@@ -1710,7 +1710,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 
             const char *pFileName = selectedRun->GetString("fileName");
 
-            CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pPanel->GetParent());
+            CLeaderboardsContextMenu *pContextMenu = GetLeaderboardContextMenu(pPanel->GetParent());
             pContextMenu->AddMenuItem("StartMap", "#MOM_Leaderboards_WatchReplay", new KeyValues("ContextWatchReplay", "runName", pFileName), this);
             pContextMenu->AddSeparator();
             pContextMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", new KeyValues("ContextDeleteReplay", "runName", pFileName), this);
@@ -1719,7 +1719,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
         else if (CheckParent(pPanel, m_pFriendsLeaderboards, itemID) || CheckParent(pPanel, m_pOnlineLeaderboards, itemID))
         {
             SectionedListPanel *pLeaderboard = static_cast<SectionedListPanel *>(pPanel->GetParent());
-            CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(pLeaderboard);
+            CLeaderboardsContextMenu *pContextMenu = GetLeaderboardContextMenu(pLeaderboard);
             KeyValues *pKv = new KeyValues("ContextVisitProfile");
             pKv->SetUint64("profile", pLeaderboard->GetItemData(itemID)->GetUint64("steamid"));
             pContextMenu->AddMenuItem("VisitProfile", "#MOM_Leaderboards_SteamProfile", pKv, this);
@@ -1727,8 +1727,7 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
         }
         else if (CheckParent(pPanel, m_pLobbyMembersPanel, itemID))
         {
-            // MOM_TODO: Rename this menu class to something more appropriate? It doesn't seem locked to only replays...
-            CReplayContextMenu *pContextMenu = GetLeaderboardReplayContextMenu(m_pLobbyMembersPanel);
+            CLeaderboardsContextMenu *pContextMenu = GetLeaderboardContextMenu(m_pLobbyMembersPanel);
 
             KeyValues *pKVData = m_pLobbyMembersPanel->GetItemData(itemID);
 
