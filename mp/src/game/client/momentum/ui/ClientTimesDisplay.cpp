@@ -169,10 +169,11 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
 
     m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
 
-    m_pImageList = new ImageList(true);
+
     m_pImageListLobby = new ImageList(true);
-    SetDefLessFunc(m_mapAvatarsToImageList);
     SetDefLessFunc(m_mapLobbyIDToImageListIndx);
+
+    InitLobbyPanelSections();
 
     m_fLastHeaderUpdate = 0.0f;
     m_flLastOnlineTimeUpdate = 0.0f;
@@ -187,7 +188,14 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     flaggedRuns = RUNFLAG_NONE;
     SetDefLessFunc(m_umMapNames);
 
+
+#if ENABLE_ONLINE_LEADERBOARDS
+    m_pImageList = new ImageList(true);
+    SetDefLessFunc(m_mapAvatarsToImageList);
     SetupIcons();
+#else
+    m_pImageList = nullptr;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -280,9 +288,6 @@ void CClientTimesDisplay::Reset(bool pFullReset)
         m_pFriendsLeaderboards->RemoveAllSections();
     }
 
-    if (m_pLobbyMembersPanel)
-        m_pLobbyMembersPanel->RemoveAllSections();
-
     m_iSectionId = 0;
     m_fNextUpdateTime = 0;
     // add all the sections
@@ -300,27 +305,11 @@ void CClientTimesDisplay::InitScoreboardSections()
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
         m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalLeaderboards->SetImageList(m_pImageList, false);
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
         m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, SCALE(m_aiColumnWidths[0]));
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
-                                                 16);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
-    }
-
-    if (m_pLobbyMembersPanel)
-    {
-        m_pLobbyMembersPanel->AddSection(m_iSectionId, "", StaticLobbyMemberSortFunc);
-        m_pLobbyMembersPanel->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLobbyMembersPanel->SetImageList(m_pImageList, false);
-        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "avatar", "",
-            SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
-            45);
-        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
-        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "map", "#MOM_MapSelector_Map", 0, NAME_WIDTH);
-
-        // MOM_TODO: Have stuff like status and whatever else?
+        //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
+        //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
     }
 
 #if ENABLE_ONLINE_LEADERBOARDS
@@ -379,6 +368,23 @@ void CClientTimesDisplay::InitScoreboardSections()
                                                    16);
     }
 #endif
+}
+
+void CClientTimesDisplay::InitLobbyPanelSections()
+{
+    if (m_pLobbyMembersPanel)
+    {
+        m_pLobbyMembersPanel->AddSection(m_iSectionId, "", StaticLobbyMemberSortFunc);
+        m_pLobbyMembersPanel->SetSectionAlwaysVisible(m_iSectionId);
+        m_pLobbyMembersPanel->SetImageList(m_pImageListLobby, false);
+        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "avatar", "",
+            SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+            45);
+        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
+        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "map", "#MOM_MapSelector_Map", 0, NAME_WIDTH);
+
+        // MOM_TODO: Have stuff like status and whatever else?
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -519,22 +525,31 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
         m_bOnlineNeedUpdate = true;
 
         // Clear out the old index map and image list every map load
+#if ENABLE_ONLINE_LEADERBOARDS
         if (m_pImageList)
             delete m_pImageList;
 
         m_pImageList = new ImageList(true);
         m_mapAvatarsToImageList.RemoveAll();
+
+        SetupIcons();
+#endif
     }
     else if (FStrEq(type, "lobby_leave"))
     {
-        m_pLobbyMembersPanel->DeleteAllItems();
-
         // Clear out the index map and the image list when you leave the lobby
-        if (m_pImageListLobby)
-            delete m_pImageListLobby;
-
-        m_pImageListLobby = new ImageList(true);
+        m_pLobbyMembersPanel->DeleteAllItems();
+        m_pLobbyMembersPanel->RemoveAllSections();
         m_mapLobbyIDToImageListIndx.RemoveAll();
+        if (m_pImageListLobby)
+        {
+            delete m_pImageListLobby;
+            m_pImageListLobby = nullptr;
+        }
+
+        // And like a phoenix, rise from the ashes
+        m_pImageListLobby = new ImageList(true);
+        InitLobbyPanelSections();
     }
 
     // MOM_TODO: there's a crash here if you uncomment it,
@@ -1795,10 +1810,10 @@ void CClientTimesDisplay::OnLobbyCreated(LobbyCreated_t* pParam)
 #if 0
     KeyValues *pNewUser = new KeyValues("LobbyMember");
 
-    CSteamID steamID = steamapicontext->SteamUser()->GetSteamID();
+    uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
 
-    pNewUser->SetUint64("steamid", steamID.ConvertToUint64());
-    pNewUser->SetInt("avatar", TryAddAvatar(steamID));
+    pNewUser->SetUint64("steamid", steamID);
+    pNewUser->SetInt("avatar", TryAddAvatar(steamID, &m_mapLobbyIDToImageListIndx, m_pImageListLobby));
     pNewUser->SetString("personaname", steamapicontext->SteamFriends()->GetPersonaName());
     pNewUser->SetString("map", "triggertests");
 
@@ -1920,11 +1935,11 @@ int CClientTimesDisplay::TryAddAvatar(const uint64 &steamid, CUtlMap<uint64, int
         // See if we already have that avatar in our list
         const unsigned short mapIndex = pIDtoIndxMap->Find(steamid);
         int iImageIndex;
-        if (pIDtoIndxMap->IsValidIndex(mapIndex))
+        if (!pIDtoIndxMap->IsValidIndex(mapIndex))
         {
             CAvatarImage *pImage = new CAvatarImage();
             // 64 is enough up to full HD resolutions.
-            pImage->SetAvatarSteamID(steamid, k_EAvatarSize64x64);
+            pImage->SetAvatarSteamID(CSteamID(steamid), k_EAvatarSize64x64);
 
             pImage->SetDrawFriend(false);
             pImage->SetAvatarSize(32, 32);

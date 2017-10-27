@@ -144,6 +144,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // functions to override
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
     void InitScoreboardSections();
+    void InitLobbyPanelSections();
     void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() OVERRIDE;
     void AddHeader(); // add the start header of the scoreboard
