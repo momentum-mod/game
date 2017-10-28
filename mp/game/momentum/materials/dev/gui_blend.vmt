@@ -1,0 +1,6 @@
+"gui_blur_blend"
+{
+    "$basetexture" "_rt_FullscreenPP"
+	"$BLUR" "_rt_BlurY"
+    "$MASK_GAMEUI" "_rt_MaskGameUI"
+}

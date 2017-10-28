@@ -8,7 +8,14 @@
 		"priority"		"100"
 		"specifics"		"ingame"
 	}
-	
+	 "Spectate"
+    {
+        "text" "#GameUI2_Spectate"
+        "description" "#GameUI2_SpectateDescription"
+        "command" "engine mom_spectate"
+        "priority" "90"
+        "specifics" "ingame"
+    }
 	"SelectMap"
 	{
 		"text"			"#GameUI2_SelectMap"

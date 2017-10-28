@@ -39,5 +39,5 @@ private:
     TextEntry *m_pYawSpeedEntry;
     ColorPicker *m_pColorPicker;
     Button *m_pPickColorButton;
-    ConVarRef m_TrailR, m_TrailG, m_TrailB, m_TrailA;
+    ConVarRef m_TrailColor;
 };

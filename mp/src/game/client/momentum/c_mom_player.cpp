@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "c_mom_player.h"
-
+#include "view.h"
 #include "tier0/memdbgon.h"
 
 
@@ -13,7 +13,7 @@ DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE)
 DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData)
+C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_iIDEntIndex(0), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
@@ -52,6 +52,30 @@ void C_MomentumPlayer::ClientThink()
 {
 	SetNextClientThink(CLIENT_THINK_ALWAYS);
     FetchStdData(this);
+
+    if (IsObserver())
+    {
+        C_MomentumOnlineGhostEntity *pOnlineSpec = GetOnlineGhostEnt();
+        if (pOnlineSpec)
+        {
+            // Changed to spectate another ghost
+            if (m_pSpectateTarget && m_pSpectateTarget != pOnlineSpec)
+                m_pSpectateTarget->m_bSpectated = false;
+
+            m_pSpectateTarget = pOnlineSpec;
+            m_pSpectateTarget->m_bSpectated = true;
+        }
+
+    }
+    else
+    {
+        if (m_pSpectateTarget)
+        {
+            m_pSpectateTarget->m_bSpectated = false;
+            m_pSpectateTarget = nullptr;
+        }
+    }
+
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
@@ -107,14 +131,11 @@ bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
 // Overridden for Ghost entity
 Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
 {
-    C_MomentumReplayGhostEntity *pGhost = dynamic_cast<C_MomentumReplayGhostEntity*>(target);
-
+    C_MomentumGhostBaseEntity *pGhost = dynamic_cast<C_MomentumGhostBaseEntity*>(target);
     if (pGhost)
     {
         if (pGhost->GetFlags() & FL_DUCKING)
-        {
             return VEC_DUCK_VIEW_SCALED(pGhost);
-        }
 
         return VEC_VIEW_SCALED(pGhost);
     }

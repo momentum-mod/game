@@ -15,9 +15,14 @@ public:
 
     //After DLL inits successfully
     void PostInit() OVERRIDE;
+    void LevelInitPreEntity() OVERRIDE;
 
     //From the Valve SDK wiki
     static void MountAdditionalContent();
+
+    // Precaching things we want to here, done every level start
+    // Used mostly for materials
+    void Precache();
 
 };
 

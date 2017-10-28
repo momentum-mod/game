@@ -16,6 +16,8 @@
         //Makes the Logo (text OR image) stick to the menu
 		"MainMenu.Logo.AttachToMenu"					"0"
 	
+		"MainMenu.Logo.PlayerCount"						"1"
+
 		"MainMenu.Buttons.OffsetX"						"32"
 		"MainMenu.Buttons.OffsetY"						"32"
 		"MainMenu.Buttons.Space"						"0"
@@ -69,6 +71,8 @@
     
 		"MainMenu.Logo.Left"							"255 255 255 255"
 		"MainMenu.Logo.Right"							"51 122 183 255"//"255 217 73 255"
+
+		"MainMenu.Logo.PlayerCount.Color"				"255 255 255 255"
 		
 		"MainMenu.Button.Background.Out"				"0 0 0 0"
 		"MainMenu.Button.Background.Over"				"0 0 0 150"
@@ -123,6 +127,17 @@
 				"tall"			"16"
 				"weight"		"400"
 				"antialias"		"1"
+			}
+		}
+		"MainMenu.Logo.PlayerCount.Font"
+		{
+			"settings"
+			{
+				"name"			"BigNoodleTitling" //"Facile Sans"
+				"tall"			"18"
+				"weight"		"300"
+				"antialias"		"1"
+				"dropshadow"	"1"
 			}
 		}
 	}

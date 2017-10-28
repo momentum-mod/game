@@ -65,6 +65,8 @@ class Button_MainMenu : public Button2D
     virtual void SetButtonType(ButtonType type) { m_nType = type; }
     virtual ButtonType GetButtonType() const { return m_nType; }
 
+    void SetCommand(const char* cmd) OVERRIDE;
+
   private:
     ButtonState m_sButtonState;
     ButtonState m_sButtonStateOld;

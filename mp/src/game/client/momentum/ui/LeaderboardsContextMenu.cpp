@@ -1,32 +1,28 @@
 #include "cbase.h"
-#include <vgui/IScheme.h>
-#include <vgui/ILocalize.h>
 #include <vgui/ISurface.h>
-#include <vgui/IVGui.h>
 #include <vgui/IInput.h>
-#include "inputsystem/iinputsystem.h"
-#include "ReplayContextMenu.h"
+#include "LeaderboardsContextMenu.h"
 
 using namespace vgui;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CReplayContextMenu::CReplayContextMenu(Panel *parent) : Menu(parent, "ReplayContextMenu")
+CLeaderboardsContextMenu::CLeaderboardsContextMenu(Panel *parent) : Menu(parent, "LeaderboardsContextMenu")
 {
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Destructor
 //-----------------------------------------------------------------------------
-CReplayContextMenu::~CReplayContextMenu()
+CLeaderboardsContextMenu::~CLeaderboardsContextMenu()
 {
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Activates the menu
 //-----------------------------------------------------------------------------
-void CReplayContextMenu::ShowMenu()
+void CLeaderboardsContextMenu::ShowMenu()
 {
     int x, y, gx, gy;
     input()->GetCursorPos(x, y);
@@ -36,7 +32,7 @@ void CReplayContextMenu::ShowMenu()
     SetMouseInputEnabled(true);
 }
 
-void CReplayContextMenu::OnCursorExitedMenuItem(int vpanel)
+void CLeaderboardsContextMenu::OnCursorExitedMenuItem(int vpanel)
 { 
     int x, y;
     input()->GetCursorPosition(x, y);

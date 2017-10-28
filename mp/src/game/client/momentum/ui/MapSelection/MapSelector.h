@@ -5,6 +5,8 @@
 #pragma once
 #endif
 
+using namespace vgui;
+
 class CMapSelectorDialog;
 
 class CMapSelector : public IMapSelector

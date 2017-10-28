@@ -1,37 +1,17 @@
-#ifndef MOM_UTIL_H
-#define MOM_UTIL_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "cbase.h"
-#include "KeyValues.h"
-#include "UtlSortVector.h"
-#include "filesystem.h"
-#include <gason.h>
-#include "run/run_compare.h"
-#include "run/run_stats.h"
 #include "steam/steam_api.h"
-#include "run/mom_replay_base.h"
 
-#ifdef CLIENT_DLL
-#include "ChangelogPanel.h"
-#endif
+class CMomReplayBase;
+class CMomRunStats;
+
+struct HTTPRequestCompleted_t;
+struct RunCompare_t;
 
 class MomentumUtil
 {
   public:
-    void DownloadCallback(HTTPRequestCompleted_t *, bool);
-
-    void DownloadMap(const char *);
-
-    void CreateAndSendHTTPReq(const char *, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *,
-                              CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t);
-
-    bool CreateAndSendHTTPReqWithPost(const char *, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *,
-                                      CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t, KeyValues *params);
-
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbDownloadCallback;
 
 #ifdef CLIENT_DLL
     void GetRemoteChangelog();
@@ -41,15 +21,15 @@ class MomentumUtil
     void GetRemoteRepoModVersion();
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
     void VersionCallback(HTTPRequestCompleted_t *, bool);
-
-    // For the ComparisonsSettingsPage
-    void GenerateBogusRunStats(CMomRunStats *pStatsOut);
 #endif
 
-    // Color GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor, Color
-    // decreasecolor);
-    Color *GetColorFromHex(const char *hexColor); // in hex color format RRGGBB
-    Color m_newColor;
+    bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
+    bool GetColorFromHex(uint32 HEX, Color &into); // in hex color format RRGGBBAA
+
+    uint32 GetHexFromColor(const char *hexColor);
+    uint32 GetHexFromColor(const Color &color);
+
+    void GetHexStringFromColor(const Color &color, char *pBuffer, int maxLen);
 
     Color GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
                                 const Color &decreasecolor) const;
@@ -63,9 +43,6 @@ class MomentumUtil
     bool GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into) const;
     void FillRunComparison(const char *compareName, CMomRunStats *kvBestRun, RunCompare_t *into) const;
 
-    bool FloatEquals(const float a, const float b, const float epsilon = FLT_EPSILON) const { return fabs(a - b) < epsilon; }
-
-    FORCEINLINE bool VectorEquals(const Vector &a, const Vector &b, const vec_t epsilon = FLT_EPSILON) const { return fabs(a.x - b.x) < epsilon && fabs(a.y - b.y) < epsilon && fabs(a.z - b.z) < epsilon; }
     // Checks if source is within a rectangle formed by leftCorner and rightCorner
     bool IsInBounds(const Vector2D &source, const Vector2D &bottomLeft, const Vector2D &topRight) const
     {
@@ -85,5 +62,3 @@ class MomentumUtil
 };
 
 extern MomentumUtil *g_pMomentumUtil;
-
-#endif // MOM_UTIL_H

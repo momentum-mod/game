@@ -11,12 +11,17 @@
 #include "vgui_controls/AnimationController.h"
 #include "view_shared.h"
 
+#include "steam/steam_api.h"
+
 class IVEngineClient;
 class IEngineSound;
 class IEngineVGui;
 class ISoundEmitterSystemBase;
 class IVRenderView;
 class IGameUI;
+class IGameEventManager2;
+
+extern IGameEventManager2 *gameeventmanager;
 
 #define SCALE(num) vgui::scheme()->GetProportionalScaledValue(num)
 
@@ -77,6 +82,8 @@ class CGameUI2 : public IGameUI2
     IGameUI *m_pGameUI;
     IVRenderView *m_pRenderView;
     IMaterialSystem *m_pMaterialSystem;
+
+    CSteamAPIContext steamapicontext;
 };
 
 extern CGameUI2 &GameUI2();

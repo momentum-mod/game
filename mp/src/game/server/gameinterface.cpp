@@ -3432,6 +3432,14 @@ void MessageWriteEHandle( CBaseEntity *pEntity )
 	g_pMsgBuffer->WriteLong( iEncodedEHandle );
 }
 
+void MessageWriteBytes(const void *pData, int size)
+{
+    if (!g_pMsgBuffer)
+        Error("WriteMessageBytes called with no active message\n");
+
+    g_pMsgBuffer->WriteBytes(pData, size);
+}
+
 // bitwise
 void MessageWriteBool( bool bValue )
 {

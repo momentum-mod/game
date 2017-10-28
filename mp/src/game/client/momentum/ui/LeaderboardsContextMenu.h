@@ -1,8 +1,4 @@
-#ifndef REPLAYCONTEXTMENU_H
-#define REPLAYCONTEXTMENU_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "cbase.h"
 #include <vgui_controls/Menu.h>
@@ -10,17 +6,14 @@
 //-----------------------------------------------------------------------------
 // Purpose: Basic right-click context menu for servers
 //-----------------------------------------------------------------------------
-class CReplayContextMenu : public vgui::Menu
+class CLeaderboardsContextMenu : public vgui::Menu
 {
 public:
-    DECLARE_CLASS_SIMPLE(CReplayContextMenu, vgui::Menu);
-    CReplayContextMenu(Panel *parent);
-    ~CReplayContextMenu();
+    DECLARE_CLASS_SIMPLE(CLeaderboardsContextMenu, vgui::Menu);
+    CLeaderboardsContextMenu(Panel *parent);
+    ~CLeaderboardsContextMenu();
 
     // call this to Activate the menu
     void ShowMenu();
     void OnCursorExitedMenuItem(int vpanel) OVERRIDE;
 };
-
-
-#endif // REPLAYCONTEXTMENU_H

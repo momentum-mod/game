@@ -257,7 +257,7 @@ public:
 #ifdef _XBOX
 	virtual bool	ShouldDraw();
 #endif
-	vgui::Panel		*GetInputPanel( void );
+	CBaseHudChatEntry *GetInputPanel( void );
 
 	static int		m_nLineCounter;
 
@@ -401,7 +401,7 @@ public:
 	virtual void	PerformLayout();
 	virtual void	ApplySchemeSettings(vgui::IScheme *pScheme);
 
-	vgui::Panel		*GetInputPanel( void );
+    CBaseHudChatEntry		*GetInputPanel(void);
 	virtual vgui::VPANEL GetCurrentKeyFocus() { return m_pInput->GetVPanel(); } 
 
 	virtual void Paint()

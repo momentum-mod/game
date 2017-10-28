@@ -1,7 +1,8 @@
 #include "cbase.h"
 #include "server_events.h"
-
+#include "mom_shareddefs.h"
 #include "tier0/memdbgon.h"
+
 
 //This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
@@ -71,7 +72,7 @@ void CMOMServerEvents::LevelInitPostEntity()
 
     //disable point_servercommand
     ConVarRef servercommand("sv_allow_point_servercommand");
-    servercommand.SetValue("0");
+    servercommand.SetValue(0);
 }
 
 void CMOMServerEvents::LevelShutdownPreEntity()
@@ -84,7 +85,7 @@ void CMOMServerEvents::LevelShutdownPreEntity()
     }
 
     ConVarRef gm("mom_gamemode");
-    gm.SetValue(gm.GetDefault());
+    gm.SetValue(MOMGM_MENU);
 }
 
 void CMOMServerEvents::LevelShutdownPostEntity()
@@ -94,7 +95,6 @@ void CMOMServerEvents::LevelShutdownPostEntity()
     if (fullbright.IsValid() && fullbright.GetBool())
         fullbright.SetValue(0);
 }
-
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
     g_MapzoneEdit.Update();
@@ -141,6 +141,4 @@ void CMOMServerEvents::MountAdditionalContent()
     }
     pMainFile->deleteThis();
 }
-
-//Create the 
 CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");

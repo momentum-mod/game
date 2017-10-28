@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared"
+        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\game\gameui2,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
         $PreprocessorDefinitions            "$BASE;GAMEUI2;SOURCE_2013;SDK_DLL"
     }
 }
@@ -24,11 +24,19 @@ $Project "Client (Momentum)"
     {
         $File   "c_team_objectiveresource.cpp"
         $File   "c_team_objectiveresource.h"
+        
+        $File "vgui_entitypanel.cpp"
 
         $Folder "Momentum"
         {
             $Folder "UI"
             {
+                $Folder "Ghost Entity Panel"
+                {
+                    $File "momentum\ui\GhostEntityPanel.h"
+                    $File "momentum\ui\GhostEntityPanel.cpp"
+                }
+                
                 $Folder "MapSelection"
                 {
                     $Folder "Headers"
@@ -68,7 +76,7 @@ $Project "Client (Momentum)"
                 {
                     $Folder "Headers"
                     {
-	                $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
+	                    $File "momentum\ui\SettingsPanel\IMomentumSettingsPanel.h"
 	                    $File "momentum\ui\SettingsPanel\SettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
@@ -103,6 +111,8 @@ $Project "Client (Momentum)"
                     $File "hl2\hud_credits.cpp"
                     $File "hud_chat.cpp"
                     $File "hl2\hud_weaponselection.cpp"
+                    $File "momentum\ui\HUD\hud_spectatorinfo.h"
+                    $File "momentum\ui\HUD\hud_spectatorinfo.cpp"
                 }
                 
                 $Folder "Controls"
@@ -121,8 +131,8 @@ $Project "Client (Momentum)"
                 {
                     $File   "momentum\ui\ClientTimesDisplay.h"
                     $File   "momentum\ui\ClientTimesDisplay.cpp"
-                    $File 	"momentum\ui\ReplayContextMenu.h"
-                    $File 	"momentum\ui\ReplayContextMenu.cpp"
+                    $File 	"momentum\ui\LeaderboardsContextMenu.h"
+                    $File 	"momentum\ui\LeaderboardsContextMenu.cpp"
                 }
                 
                 $Folder "Changelog"
@@ -221,8 +231,36 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
+			}
+            $Folder "Network"
+            {
+            	$Folder "Online Ghost"
+            	{
+	            	$File   "momentum\c_mom_online_ghost.h"
+        			$File   "momentum\c_mom_online_ghost.cpp"
+            	}
+                $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
+                $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
             }
-            
+
             $Folder "Replay"
             {
                 $File "momentum\c_mom_replay_entity.h"
@@ -284,6 +322,8 @@ $Project "Client (Momentum)"
             $File   "momentum\clientmode_mom_normal.cpp"
             $File   "momentum\mom_event_listener.h"
             $File   "momentum\mom_event_listener.cpp"
+            $File   "momentum\c_mom_ghost_base.h"
+            $File   "momentum\c_mom_ghost_base.cpp"
 
             // RTT Shadows
             $File "momentum\worldlight.h"
@@ -302,9 +342,25 @@ $Project "Client (Momentum)"
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
         
+        $Folder "Base64 Library"
+        {
+            $File "$SRCDIR\thirdparty\base64\base64.h"
+            $File "$SRCDIR\thirdparty\base64\base64.cpp"
+            {
+                $Configuration
+                {
+                    $Compiler
+                    {
+                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        $TreatWarningsAsErrors "No"
+                    }
+                }
+            }
+        }
+        
         $Folder "JSON Parser"
         {
-             $File "$SRCDIR\thirdparty\gason\src\gason.h"
+            $File "$SRCDIR\thirdparty\gason\src\gason.h"
             $File "$SRCDIR\thirdparty\gason\src\gason.cpp"
             {
                 $Configuration

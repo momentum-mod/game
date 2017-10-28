@@ -299,7 +299,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
         g_pMomentumTimer->SetEndTrigger(this);
-        if (g_pMomentumTimer->IsRunning() && !pPlayer->IsWatchingReplay())
+        if (g_pMomentumTimer->IsRunning() && !pPlayer->IsSpectatingGhost())
         {
             int zoneNum = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
 

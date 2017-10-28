@@ -7,6 +7,7 @@
 #endif
 
 #include "tickset.h"
+#include "mom_shareddefs.h"
 #include "tier0/platform.h"
 
 float* TickSet::interval_per_tick = nullptr;
@@ -15,6 +16,7 @@ const Tickrate TickSet::s_DefinedRates[] = {
     { 0.01f, "100" }
 };
 Tickrate TickSet::m_trCurrent = s_DefinedRates[TICKRATE_66];
+bool TickSet::m_bInGameUpdate = false;
 
 inline bool TickSet::DataCompare(const unsigned char* data, const unsigned char* pattern, const char* mask)
 {
@@ -106,6 +108,9 @@ bool TickSet::SetTickrate(int gameMode)
     case MOMGM_SCROLL:
         //MOM_TODO: add more gamemodes
         return SetTickrate(s_DefinedRates[TICKRATE_100]);
+    case MOMGM_MENU:
+        if (m_bInGameUpdate) // If the user's updating this, ignore the end of map setting
+            return false;
     case MOMGM_SURF:
     default:
         return SetTickrate(s_DefinedRates[TICKRATE_66]);
@@ -114,11 +119,11 @@ bool TickSet::SetTickrate(int gameMode)
 
 bool TickSet::SetTickrate(float tickrate)
 {
-    if (!g_pMomentumUtil->FloatEquals(m_trCurrent.fTickRate, tickrate))
+    if (!CloseEnough(m_trCurrent.fTickRate, tickrate, FLT_EPSILON))
     {
         Tickrate tr;
-        if (g_pMomentumUtil->FloatEquals(tickrate, 0.01f)) tr = s_DefinedRates[TICKRATE_100];
-        else if (g_pMomentumUtil->FloatEquals(tickrate, 0.015f)) tr = s_DefinedRates[TICKRATE_66];
+        if (CloseEnough(tickrate, 0.01f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_100];
+        else if (CloseEnough(tickrate, 0.015f, FLT_EPSILON)) tr = s_DefinedRates[TICKRATE_66];
         else
         {
             tr.fTickRate = tickrate;
@@ -132,6 +137,12 @@ bool TickSet::SetTickrate(float tickrate)
 
 bool TickSet::SetTickrate(Tickrate trNew)
 {
+    if (m_bInGameUpdate)
+    {
+        m_bInGameUpdate = false;
+        return false;
+    }
+
     if (trNew == m_trCurrent) return false;
 
     if (interval_per_tick)
@@ -142,6 +153,7 @@ bool TickSet::SetTickrate(Tickrate trNew)
         auto pPlayer = UTIL_GetLocalPlayer();
         if (pPlayer)
         {
+            m_bInGameUpdate = true;
             engine->ClientCommand(pPlayer->edict(), "reload");
         }
         return true;
@@ -153,7 +165,7 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
 {
     ConVarRef tr(var);
     float toCheck = tr.GetFloat();
-    if (g_pMomentumUtil->FloatEquals(toCheck, fOldValue)) return;
+    if (CloseEnough(toCheck, fOldValue, FLT_EPSILON)) return;
 	//MOM_TODO: Re-implement the bound
 	
 	/*
@@ -172,5 +184,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
 }
 
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_HIDDEN,
+static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY,
 					   "Changes the tickrate of the game. Formatted as interval per tick, i.e 100 tickrate = 0.01", onTickRateChange);

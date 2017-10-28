@@ -143,7 +143,6 @@ bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
     return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 ); 
 }
 
-
 #ifndef CLIENT_DLL
 LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
@@ -405,4 +404,14 @@ int CMomentumGameRules::DefaultFOV()
     return fov_desired.GetInt();
 }
 
+//override so it we can control who is "spec" from hud_chat instead of the server ...
+const char *CMomentumGameRules::GetChatPrefix(bool bTeamOnly, CBasePlayer *pPlayer)
+{
+    if (pPlayer && pPlayer->IsAlive() == false)
+    {
+        return "*SPEC*";
+    }
+
+    return "";
+}
 #endif

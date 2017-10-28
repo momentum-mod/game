@@ -1,0 +1,17 @@
+$Include "$SRCDIR\vpc_scripts\platform_dirs.vpc"
+$include "$SRCDIR\vpc_scripts\source_base.vpc"
+
+$Include "$SRCDIR\vpc_scripts\mm_exe_posix_base.vpc"		[$POSIX]
+$Include "$SRCDIR\vpc_scripts\mm_exe_win32_base.vpc" 	[$WIN32 || $WIN64]
+$Include "$SRCDIR\vpc_scripts\mm_exe_linix_base.vpc"		[$LINUX]
+
+$Configuration
+{
+	$Compiler
+	{
+		$PreprocessorDefinitions			"$BASE;DEV_BUILD"						[!$PUBLISH]
+		$PreprocessorDefinitions			"$BASE;_PROFILE"						[$PROFILE && !$RETAIL]
+		$PreprocessorDefinitions			"$BASE;RETAIL_ASSERTS"					[$RETAIL && $RETAILASSERTS]
+		$PreprocessorDefinitions			"$BASE;FRAME_POINTER_OMISSION_DISABLED" // This is now always true.
+	}
+}

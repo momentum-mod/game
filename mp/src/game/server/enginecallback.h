@@ -94,7 +94,7 @@ void MessageWriteAngles( const QAngle& rgflValue);
 void MessageWriteString( const char *sz );
 void MessageWriteEntity( int iValue);
 void MessageWriteEHandle( CBaseEntity *pEntity ); //encoded as a long
-
+void MessageWriteBytes(const void *pData, int nBytes);
 
 // bitwise
 void MessageWriteBool( bool bValue );
@@ -126,6 +126,7 @@ extern CSteamID GetSteamIDForPlayerIndex( int iPlayerIndex );
 #define WRITE_STRING	(MessageWriteString)
 #define WRITE_ENTITY	(MessageWriteEntity)
 #define WRITE_EHANDLE	(MessageWriteEHandle)
+#define WRITE_BYTES     (MessageWriteBytes)
 
 // Bitwise
 #define WRITE_BOOL		(MessageWriteBool)
