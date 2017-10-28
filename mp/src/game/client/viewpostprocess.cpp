@@ -3057,7 +3057,68 @@ void DoSSAO(const CViewSetup &view)
         IMaterial *pSSAOCombineMat = materials->FindMaterial("dev/ssao_combine", TEXTURE_GROUP_OTHER, true);
 
         pRenderContext->DrawScreenSpaceRectangle(pSSAOCombineMat, 0, 0, nViewportWidth, nViewportHeight, 0, 0,
-                                                 nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight,
-                                                 GetClientWorldEntity()->GetClientRenderable());
+            nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight,
+            GetClientWorldEntity()->GetClientRenderable());
     }
+}
+
+// Menu blurring, shoutouts to NicolasDe
+static ConVar mom_menu_blur("mom_menu_blur", "1", FCVAR_ARCHIVE, "Toggles the menu background blur.\n", true, 0, true, 1);
+
+void DoMenuBlurring()
+{
+    if (!mom_menu_blur.GetBool())
+        return;
+
+    CMatRenderContextPtr pRenderContext(materials);
+
+    int nViewportWidth = 0;
+    int nViewportHeight = 0;
+    int nDummy = 0;
+    pRenderContext->GetViewport(nDummy, nDummy, nViewportWidth, nViewportHeight);
+
+    ITexture *pFullscreen = materials->FindTexture("_rt_FullscreenPP", TEXTURE_GROUP_RENDER_TARGET);
+    if (!pFullscreen)
+        return;
+
+    int nSrcWidth = pFullscreen->GetActualWidth();
+    int nSrcHeight = pFullscreen->GetActualHeight();
+
+    ITexture *pBlurX = materials->FindTexture("_rt_BlurX", TEXTURE_GROUP_RENDER_TARGET);
+    ITexture *pBlurY = materials->FindTexture("_rt_BlurY", TEXTURE_GROUP_RENDER_TARGET);
+
+    CMaterialReference pFringe("dev/fringe", TEXTURE_GROUP_OTHER, true);
+    CMaterialReference pBlurXGaus("dev/blurx", TEXTURE_GROUP_OTHER, true);
+    CMaterialReference pBlurYGaus("dev/blury", TEXTURE_GROUP_OTHER, true);
+    CMaterialReference pBlend("dev/gui_blend", TEXTURE_GROUP_OTHER, true);
+
+    Assert(pBlurX || pBlurY || pFringe || pBlurXGaus || pBlurYGaus || pBlend);
+
+    Rect_t DestRect;
+    DestRect.x = 0;
+    DestRect.y = 0;
+    DestRect.width = nSrcWidth;
+    DestRect.height = nSrcHeight;
+
+    // Fringe
+    pRenderContext->CopyRenderTargetToTextureEx(pFullscreen, 0, &DestRect, nullptr);
+    pRenderContext->DrawScreenSpaceRectangle(pFringe, 0, 0, nViewportWidth, nViewportHeight, 0, 0,
+        nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight, GetClientWorldEntity()->GetClientRenderable());
+
+    // BlurX
+    pRenderContext->CopyRenderTargetToTextureEx(pBlurX, 0, &DestRect, nullptr);
+    pRenderContext->DrawScreenSpaceRectangle(pBlurXGaus, 0, 0, nViewportWidth, nViewportHeight, 0, 0,
+        nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight,
+        GetClientWorldEntity()->GetClientRenderable());
+
+    // BlurY
+    pRenderContext->CopyRenderTargetToTextureEx(pBlurY, 0, &DestRect, nullptr);
+    pRenderContext->DrawScreenSpaceRectangle(pBlurYGaus, 0, 0, nViewportWidth, nViewportHeight, 0, 0,
+        nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight,
+        GetClientWorldEntity()->GetClientRenderable());
+
+    // Blend
+    pRenderContext->DrawScreenSpaceRectangle(pBlend, 0, 0, nViewportWidth, nViewportHeight, 0, 0,
+        nSrcWidth - 1, nSrcHeight - 1, nSrcWidth, nSrcHeight,
+        GetClientWorldEntity()->GetClientRenderable());
 }

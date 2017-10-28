@@ -23,7 +23,7 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
-    LoadControlSettings("resource/UI/MapFinishedDialog.res");
+    LoadControlSettings("resource/ui/MapFinishedDialog.res");
     m_pNextZoneButton = FindControl<ImagePanel>("Next_Zone");
     m_pNextZoneButton->SetMouseInputEnabled(true);
     m_pNextZoneButton->InstallMouseHandler(this);

@@ -2,7 +2,7 @@
 
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
-#include "mom_shareddefs.h"
+#include "movevars_shared.h"
 #include "mom_timer.h"
 #include "util/mom_util.h"
 #include "util/os_utils.h"
@@ -12,38 +12,20 @@
 #endif
 #include "tier0/memdbgon.h"
 
-static ConVar mom_replay_ghost_bodygroup("mom_replay_ghost_bodygroup", "11",
+static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0",
     FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Replay ghost's body group (model)", true, 0, true, 14);
-static ConCommand mom_replay_ghost_color("mom_replay_ghost_color", CMomentumReplayGhostEntity::SetGhostColor,
-    "Set the ghost's color. Accepts HEX color value in format RRGGBB",
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE);
-static ConVar mom_replay_ghost_alpha("mom_replay_ghost_alpha", "75", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Sets the ghost's transparency, integer between 0 and 255,", true, 0, true, 255);
+    "Paint a faint beam trail on the replay. 0 = OFF, 1 = ON\n", true, 0, true, 1);
 
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
-// MOM_TODO: Network other variables that the UI will need to reference
-//SendPropInt(SENDINFO(m_nReplayButtons)),
-//SendPropInt(SENDINFO(m_iTotalStrafes)),
-//SendPropInt(SENDINFO(m_iTotalJumps)),
-SendPropFloat(SENDINFO(m_flTickRate)),
-SendPropString(SENDINFO(m_pszPlayerName)),
-SendPropInt(SENDINFO(m_iTotalTimeTicks)),
-//SendPropInt(SENDINFO(m_iCurrentTick)),
-//SendPropBool(SENDINFO(m_bIsPaused)),
-//SendPropDataTable(SENDINFO_DT(m_RunData), &REFERENCE_SEND_TABLE(DT_MOM_RunEntData)),
-//SendPropDataTable(SENDINFO_DT(m_RunStats), &REFERENCE_SEND_TABLE(DT_MOM_RunStats)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
 END_DATADESC();
 
-Color CMomentumReplayGhostEntity::m_NewGhostColor = COLOR_GREEN;
-
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
-    : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_iBodyGroup(BODY_PROLATE_ELLIPSE),
+    : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr),
     m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
     m_nOldReplayButtons(0), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
 {
@@ -52,7 +34,9 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     // Set networked vars here
     m_SrvData.m_nReplayButtons = 0;
     m_SrvData.m_iTotalStrafes = 0;
-    m_pPlayerSpectator = nullptr;
+    m_RunStats.m_pData = &(m_SrvData.m_RunStatsData);
+    m_RunStats.Init(g_pMomentumTimer->GetZoneCount());
+    m_pCurrentSpecPlayer = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
 }
 
@@ -61,8 +45,6 @@ CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() {}
 void CMomentumReplayGhostEntity::Precache(void)
 {
     BaseClass::Precache();
-    PrecacheModel(GHOST_MODEL);
-    m_GhostColor = COLOR_GREEN; // default color
 }
 
 void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
@@ -83,25 +65,24 @@ void CMomentumReplayGhostEntity::Spawn()
 {
     Precache();
     BaseClass::Spawn();
-    RemoveEffects(EF_NODRAW);
-    SetRenderMode(kRenderTransColor);
-    SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b(), 75);
-    //~~~The magic combo~~~ (collides with triggers, not with players)
-    ClearSolidFlags();
-    SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER);
-    SetMoveType(MOVETYPE_STEP);
-    SetSolid(SOLID_BBOX);
-    RemoveSolidFlags(FSOLID_NOT_SOLID);
 
-    SetModel(GHOST_MODEL);
-    // Always call CollisionBounds after you set the model
-    SetCollisionBounds(VEC_HULL_MIN, VEC_HULL_MAX);
-    SetBodygroup(1, mom_replay_ghost_bodygroup.GetInt());
-    UpdateModelScale();
-    SetViewOffset(VEC_VIEW_SCALED(this));
+    // MOM_TODO: Read the appearance data from the header of the replay and set it here?
+    // Set the appearance to the player's appearance, pending update after spawned in
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (pPlayer)
+    {
+        SetGhostAppearance(pPlayer->m_playerAppearanceProps);
+        //now that we've set our appearance, the ghost should be visible again.
+        SetRenderMode(kRenderTransColor);
+        if (m_ghostAppearance.GhostTrailEnable)
+        {
+            CreateTrail();
+        }
+    }
+
 
     if (m_pPlaybackReplay)
-        Q_strcpy(m_pszPlayerName.GetForModify(), m_pPlaybackReplay->GetPlayerName());
+        Q_strcpy(m_SrvData.m_pszPlayerName, m_pPlaybackReplay->GetPlayerName());
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
@@ -119,17 +100,18 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
     {
         if (m_bReplayFirstPerson)
         {
-            CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-            if (pPlayer && pPlayer->GetReplayEnt() != this)
+            if (!m_pCurrentSpecPlayer) m_pCurrentSpecPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+
+            if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() != this)
             {
-                pPlayer->SetObserverTarget(this);
-                pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
+                m_pCurrentSpecPlayer->SetObserverTarget(this);
+                m_pCurrentSpecPlayer->StartObserverMode(OBS_MODE_IN_EYE);
             }
         }
 
-        if (!g_pMomentumUtil->FloatEquals(m_flTickRate, gpGlobals->interval_per_tick))
+        if (!CloseEnough(m_SrvData.m_flTickRate, gpGlobals->interval_per_tick, FLT_EPSILON))
         {
-            Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_flTickRate.Get(),
+            Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_SrvData.m_flTickRate,
                 gpGlobals->interval_per_tick);
             EndRun();
             return;
@@ -137,7 +119,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 
         m_SrvData.m_iCurrentTick = 0;
         SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick)->PlayerOrigin());
-        m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
+        m_SrvData.m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
@@ -166,12 +148,11 @@ void CMomentumReplayGhostEntity::UpdateStep(int Skip)
         m_SrvData.m_iCurrentTick += Skip;
     }
 
-    m_SrvData.m_iCurrentTick = clamp<int>(m_SrvData.m_iCurrentTick, 0, m_iTotalTimeTicks);
+    m_SrvData.m_iCurrentTick = clamp<int>(m_SrvData.m_iCurrentTick, 0, m_SrvData.m_iTotalTimeTicks);
 }
 
 void CMomentumReplayGhostEntity::Think()
 {
-
     BaseClass::Think();
 
     if (!m_bIsActive)
@@ -180,25 +161,6 @@ void CMomentumReplayGhostEntity::Think()
     if (!m_pPlaybackReplay)
     {
         return;
-    }
-
-    // update color, bodygroup, and other params if they change
-    if (mom_replay_ghost_bodygroup.GetInt() != m_iBodyGroup)
-    {
-        m_iBodyGroup = mom_replay_ghost_bodygroup.GetInt();
-        SetBodygroup(1, m_iBodyGroup);
-    }
-    if (m_GhostColor != m_NewGhostColor)
-    {
-        m_GhostColor = m_NewGhostColor;
-        SetRenderColor(m_GhostColor.r(), m_GhostColor.g(), m_GhostColor.b());
-    }
-    if (mom_replay_ghost_alpha.GetInt() != m_GhostColor.a())
-    {
-        m_GhostColor.SetColor(m_GhostColor.r(), m_GhostColor.g(),
-            m_GhostColor.b(), // we have to set the previous colors in order to change alpha...
-            mom_replay_ghost_alpha.GetInt());
-        SetRenderColorA(mom_replay_ghost_alpha.GetInt());
     }
 
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
@@ -305,7 +267,7 @@ void CMomentumReplayGhostEntity::Think()
             }
         }
 
-        if (m_pPlayerSpectator)
+        if (m_pCurrentSpecPlayer)
             HandleGhostFirstPerson();
         else
             HandleGhost();
@@ -324,58 +286,21 @@ void CMomentumReplayGhostEntity::Think()
         StdDataToReplay(&m_SrvData);
 }
 
-// Ripped from gamemovement for slightly better collision
-inline bool CanUnduck(CMomentumReplayGhostEntity *pGhost)
-{
-    trace_t trace;
-    Vector newOrigin;
-
-    VectorCopy(pGhost->GetAbsOrigin(), newOrigin);
-
-    if (pGhost->GetGroundEntity() != nullptr)
-    {
-        newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
-    }
-    else
-    {
-        // If in air an letting go of croush, make sure we can offset origin to make
-        //  up for uncrouching
-        Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
-        Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
-
-        newOrigin += -0.5f * (hullSizeNormal - hullSizeCrouch);
-    }
-
-    UTIL_TraceHull(pGhost->GetAbsOrigin(), newOrigin, VEC_HULL_MIN, VEC_HULL_MAX, MASK_PLAYERSOLID, pGhost,
-        COLLISION_GROUP_PLAYER_MOVEMENT, &trace);
-
-    if (trace.startsolid || (trace.fraction != 1.0f))
-        return false;
-
-    return true;
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: called by the think function, moves and handles the ghost if we're spectating it
 //-----------------------------------------------------------------------------
 void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 {
-    if (m_pPlayerSpectator)
+    if (m_pCurrentSpecPlayer)
     {
         auto currentStep = GetCurrentStep();
         auto nextStep = GetNextStep();
-
-        if (m_pPlayerSpectator->GetObserverMode() != (OBS_MODE_IN_EYE | OBS_MODE_CHASE))
-        {
-            // we don't want to allow any other obs modes, only IN EYE and CHASE
-            m_pPlayerSpectator->ForceObserverMode(OBS_MODE_IN_EYE);
-        }
 
         SetAbsOrigin(currentStep->PlayerOrigin());
 
         QAngle angles = currentStep->EyeAngles();
 
-        if (m_pPlayerSpectator->GetObserverMode() == OBS_MODE_IN_EYE)
+        if (m_pCurrentSpecPlayer->GetObserverMode() == OBS_MODE_IN_EYE)
         {
             SetAbsAngles(angles);
             // don't render the model when we're in first person mode
@@ -421,7 +346,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         SetViewOffset(currentStep->PlayerViewOffset());
 
-        // kamay: Now timer start and end at the right time
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
         if (m_SrvData.m_nReplayButtons & IN_DUCK)
         {
@@ -513,52 +437,11 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     m_angLastEyeAngle = EyeAngles();
     m_nOldReplayButtons = currentStep->PlayerButtons();
 }
-void CMomentumReplayGhostEntity::SetGhostModel(const char *newmodel)
-{
-    if (newmodel)
-    {
-        Q_strncpy(m_pszModel, newmodel, sizeof(m_pszModel));
-        PrecacheModel(m_pszModel);
-        SetModel(m_pszModel);
-    }
-}
-void CMomentumReplayGhostEntity::SetGhostBodyGroup(int bodyGroup)
-{
-    if (bodyGroup > sizeof(ghostModelBodyGroup) || bodyGroup < 0)
-    {
-        Warning("CMomentumReplayGhostEntity::SetGhostBodyGroup() Error: Could not set bodygroup!");
-    }
-    else
-    {
-        m_iBodyGroup = bodyGroup;
-        SetBodygroup(1, bodyGroup);
-    }
-}
-void CMomentumReplayGhostEntity::SetGhostColor(const CCommand &args)
-{
-    Color *pColor = g_pMomentumUtil->GetColorFromHex(args.ArgS());
-    if (pColor)
-    {
-        m_NewGhostColor = *pColor;
-    }
-}
 
 void CMomentumReplayGhostEntity::StartTimer(int m_iStartTick)
 {
     m_SrvData.m_RunData.m_iStartTick = m_iStartTick;
-
-    if (m_pPlayerSpectator && m_pPlayerSpectator->GetReplayEnt() == this)
-    {
-        g_pMomentumTimer->DispatchTimerStateMessage(m_pPlayerSpectator, true);
-    }
-}
-
-void CMomentumReplayGhostEntity::StopTimer()
-{
-    if (m_pPlayerSpectator && m_pPlayerSpectator->GetReplayEnt() == this)
-    {
-        g_pMomentumTimer->DispatchTimerStateMessage(m_pPlayerSpectator, false);
-    }
+    BaseClass::StartTimer(m_iStartTick);
 }
 
 void CMomentumReplayGhostEntity::EndRun()
@@ -567,12 +450,12 @@ void CMomentumReplayGhostEntity::EndRun()
     m_bIsActive = false;
 
     // Make everybody stop spectating me. Goes backwards since players remove themselves.
-    if (m_pPlayerSpectator && m_pPlayerSpectator->GetReplayEnt() == this)
+    if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
     {
-        m_pPlayerSpectator->StopSpectating();
+        m_pCurrentSpecPlayer->StopSpectating();
     }
 
-    m_pPlayerSpectator = nullptr;
+    m_pCurrentSpecPlayer = nullptr;
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
@@ -596,4 +479,16 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
     }
 
     return m_pPlaybackReplay->GetFrame(nextStep);
+}
+void CMomentumReplayGhostEntity::CreateTrail()
+{
+    if (!mom_replay_trail_enable.GetBool()) return;
+    BaseClass::CreateTrail();
+}
+void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)
+{
+    m_ghostAppearance.GhostModelRGBAColorAsHex = newHexColor;
+    Color newColor;
+    if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+        SetRenderColor(newColor.r(), newColor.g(), newColor.b(), 75);
 }

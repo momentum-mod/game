@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import codecs
 import os
-from __future__ import print_function
 
 infile = 'momentum_english_ref.res'
 outfile = 'momentum_english.txt'

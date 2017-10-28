@@ -2,6 +2,7 @@
 #include "cbase.h"
 
 #include "ChangelogPanel.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
@@ -13,7 +14,6 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
 
     SetParent(parent);
     LoadControlSettings("resource/ui/ChangelogPanel.res");
-    m_pReleaseText = FindControl<URLLabel>("ReleaseText", true);
     m_pChangeLog = FindControl<RichText>("ChangeLog", true);
     m_flScrollTime = -1.0f;
 
@@ -29,7 +29,7 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
     SetVisible(false);
     SetProportional(true);
 
-    if (!m_pReleaseText || !m_pChangeLog)
+    if (!m_pChangeLog)
     {
         Assert("Missing one more gameui controls from ui/changelogpanel.res");
     }
@@ -39,23 +39,21 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
 void CChangelogPanel::Activate()
 {
     // Reset the version warning to keep reminding them
-    ConVarRef("mom_toggle_versionwarn").SetValue(0);
-
-    char m_cReleaseText[225];
-    m_pReleaseText->GetText(m_cReleaseText, sizeof(m_cReleaseText));
-    char m_cReleaseF[225];
-
-    Q_snprintf(m_cReleaseF, 225, m_cReleaseText, MOM_CURRENT_VERSION, m_cOnlineVersion);
-    m_pReleaseText->SetText(m_cReleaseF);
-    m_pReleaseText->SetURL("https://github.com/momentum-mod/game/releases");
+    // MOM_TODO: re-enable this when the steam version is newer ConVarRef("mom_toggle_versionwarn").SetValue(0);
+    g_pMomentumUtil->GetRemoteChangelog();
 
     BaseClass::Activate();
 }
 
-CON_COMMAND(mom_version, "Prints mod current installed version")
+CON_COMMAND(mom_version, "Prints mod current installed version\n")
 {
     Log("Mod currently installed version: %s\n", MOM_CURRENT_VERSION);
     // MOM_TODO: Do we want to check for new versions in the future?
+}
+
+CON_COMMAND(mom_show_changelog, "Shows the changelog for the mod.\n")
+{
+    changelogpanel->Activate();
 }
 
 // Interface this class to the rest of the DLL

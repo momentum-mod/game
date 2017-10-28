@@ -56,7 +56,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
 
     Color GetBlackBarColor(void) { return BLACK_BAR_COLOR; }
 
-    const char *GetResFile(void) const { return "resource/UI/Spectator.res"; }
+    const char *GetResFile(void) const { return "resource/ui/Spectator.res"; }
 
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE
     {
@@ -85,7 +85,7 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     vgui::Label *m_pMapLabel;
     vgui::Label *m_pTimeLabel;
 
-    vgui::ImagePanel *m_pCloseButton, *m_pShowControls;
+    vgui::ImagePanel *m_pCloseButton, *m_pShowControls, *m_pNextPlayerButton, *m_pPrevPlayerButton;
 
     C_MOMReplayUI *m_pReplayControls;
 
@@ -95,5 +95,5 @@ class CMOMSpectatorGUI : public vgui::EditablePanel, public IViewPortPanel, publ
     float m_flNextUpdateTime;
 
     wchar_t m_pwReplayPlayer[BUFSIZELOCL], m_pwGainControl[BUFSIZELOCL], m_pwWatchingReplay[BUFSIZELOCL],
-        m_pwRunTime[BUFSIZELOCL], m_pwSpecMap[BUFSIZELOCL];
+        m_pwRunTime[BUFSIZELOCL], m_pwSpecMap[BUFSIZELOCL], m_pwWatchingGhost[BUFSIZELOCL];
 };

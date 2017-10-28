@@ -7,6 +7,8 @@
 //extern class IRunGameEngine *g_pRunGameEngine;
 //extern class IAppInformation *g_pAppInformation; // can be NULL
 
+using namespace vgui;
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

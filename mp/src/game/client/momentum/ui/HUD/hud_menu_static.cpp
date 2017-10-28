@@ -10,6 +10,7 @@
 #include "clientmode.h"
 #include "vgui_controls/AnimationController.h"
 #include "vgui/ILocalize.h"
+#include "vgui/ISurface.h"
 
 #include "tier0/memdbgon.h"
 
@@ -18,6 +19,7 @@ using namespace vgui;
 CHudMenuStatic::CHudMenuStatic(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudMenuStatic")
 {
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetPaintBackgroundEnabled(false);
 };
 
 //Deeper because otherwise the animations mess with hud_mapinfo (weird)
@@ -52,6 +54,7 @@ void CHudMenuStatic::Reset(void)
 {
     g_szPrelocalisedMenuString[0] = 0;
     m_fWaitingForMore = false;
+    m_flShutoffTime = -1.0f;
 }
 
 void CHudMenuStatic::VidInit(void)
@@ -71,11 +74,17 @@ void CHudMenuStatic::OnThink()
         if (m_flShutoffTime > 0 && m_flShutoffTime <= gpGlobals->realtime)
         {
             m_bMenuDisplayed = false;
+            m_flShutoffTime = -1.0f;
         }
     }
 }
 
-void CHudMenuStatic::HideMenu(void)
+void CHudMenuStatic::LevelShutdown()
+{
+    HideMenu(true);
+}
+
+void CHudMenuStatic::HideMenu(bool bImmediate)
 {
     if (CloseFunc)
         CloseFunc();
@@ -84,8 +93,15 @@ void CHudMenuStatic::HideMenu(void)
     SelectFunc = nullptr;
 
     m_bMenuTakesInput = false;
-    m_flShutoffTime = gpGlobals->realtime + m_flOpenCloseTime;
-    g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuClose");
+    if (bImmediate)
+    {
+        m_bMenuDisplayed = false;
+    }
+    else
+    {
+         m_flShutoffTime = gpGlobals->realtime + m_flOpenCloseTime;
+         g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("MenuClose");
+    }
 }
 
 //Overridden because we want the menu to stay up after selection
@@ -128,7 +144,7 @@ void CHudMenuStatic::Paint()
 
     int y = (ScreenHeight() - tall) * 0.5f;
 
-    DrawBox(x - border / 2, y - border / 2, wide, tall, GetBgColor(), 1);
+    DrawBox(x - border / 2, y - border / 2, wide, tall, m_BoxColor, m_flSelectionAlphaOverride / 255.0f);
 
     menuColor[3] = menuColor[3] * (m_flSelectionAlphaOverride / 255.0f);
     itemColor[3] = itemColor[3] * (m_flSelectionAlphaOverride / 255.0f);
@@ -149,7 +165,7 @@ void CHudMenuStatic::Paint()
             canblur = true;
         }
 
-        vgui::surface()->DrawSetTextColor(GetFgColor());
+        surface()->DrawSetTextColor(GetFgColor());
 
         int drawLen = line->length;
         if (line->menuitem != 0)
@@ -157,7 +173,7 @@ void CHudMenuStatic::Paint()
             drawLen *= m_flTextScan;
         }
 
-        vgui::surface()->DrawSetTextFont(textFont);
+        surface()->DrawSetTextFont(textFont);
 
         PaintString(&g_szMenuString[line->startchar], drawLen,
             line->menuitem != 0 ? m_hItemFont : textFont, x, y);
@@ -176,7 +192,7 @@ void CHudMenuStatic::Paint()
                     // draw a percentage of the last one
                     Color col = clr;
                     col[3] *= fl;
-                    vgui::surface()->DrawSetTextColor(col);
+                    surface()->DrawSetTextColor(col);
                     PaintString(&g_szMenuString[line->startchar], drawLen, m_hItemFontPulsing, x, y);
                 }
             }
@@ -186,13 +202,13 @@ void CHudMenuStatic::Paint()
     }
 }
 
-void CHudMenuStatic::PaintString(const wchar_t *text, int textlen, vgui::HFont& font, int x, int y)
+void CHudMenuStatic::PaintString(const wchar_t *text, int textlen, HFont& font, int x, int y)
 {
-    vgui::surface()->DrawSetTextFont(font);
-    vgui::surface()->DrawSetTextPos(x, y);
+    surface()->DrawSetTextFont(font);
+    surface()->DrawSetTextPos(x, y);
     for (int ch = 0; ch < textlen; ch++)
     {
-        vgui::surface()->DrawUnicodeChar(text[ch]);
+        surface()->DrawUnicodeChar(text[ch]);
     }
 }
 
@@ -262,14 +278,14 @@ void CHudMenuStatic::ProcessText(void)
         Assert(l);
 
         int pixels = 0;
-        vgui::HFont font = textFont;//l->menuitem != 0 ? m_hItemFont : m_hTextFont;
+        HFont font = textFont;//l->menuitem != 0 ? m_hItemFont : m_hTextFont;
         for (int ch = 0; ch < l->length; ch++)
         {
-            pixels += vgui::surface()->GetCharacterWidth(font, g_szMenuString[ch + l->startchar]);
+            pixels += surface()->GetCharacterWidth(font, g_szMenuString[ch + l->startchar]);
         }
 
         l->pixels = pixels;
-        l->height = vgui::surface()->GetFontTall(font);
+        l->height = surface()->GetFontTall(font);
         if (pixels > m_nMaxPixels)
         {
             m_nMaxPixels = pixels;
@@ -278,12 +294,11 @@ void CHudMenuStatic::ProcessText(void)
     }
 }
 
-void CHudMenuStatic::ApplySchemeSettings(vgui::IScheme *pScheme)
+void CHudMenuStatic::ApplySchemeSettings(IScheme *pScheme)
 {
-    SetPaintBackgroundEnabled(false);
+    BaseClass::ApplySchemeSettings(pScheme);
+
     textFont = pScheme->GetFont("Default", true);
-    SetFgColor(GetSchemeColor("MOM.Panel.Fg", pScheme));
-    SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
     // set our size
     int screenWide, screenTall;
     int x, y;
@@ -296,7 +311,7 @@ void CHudMenuStatic::ApplySchemeSettings(vgui::IScheme *pScheme)
 
 void CHudMenuStatic::ShowMenu_KeyValueItems(KeyValues *pKV)
 {
-    m_flShutoffTime = -1;
+    m_flShutoffTime = -1.0f;
     m_fWaitingForMore = 0;
     m_bitsValidSlots = 0;
 

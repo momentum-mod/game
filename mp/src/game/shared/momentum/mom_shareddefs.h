@@ -4,10 +4,12 @@
 #pragma once
 #endif
 
+#ifndef GHOST_SERVER
 #include "const.h"
+#ifndef GAMEUI2_DLL
 #include "shareddefs.h"
-
-
+#endif
+#endif
 // Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 // When editing this, remember to also edit version.txt on the main dir of the repo
 // If you have any doubts, please refer to http://semver.org/
@@ -15,18 +17,19 @@
 
 
 // Gamemode for momentum
-typedef enum MOMGM
+typedef enum
 {
-    MOMGM_UNKNOWN = 0,
-    MOMGM_SURF,
-    MOMGM_BHOP,
-    MOMGM_SCROLL,
-    MOMGM_ALLOWED, //not "official gamemode" but must be allowed for other reasons
+    MOMGM_MENU = 0, // When the game is in the menu/disconnected
+    MOMGM_SURF,    // Surfing (66t, 3500 maxvel)
+    MOMGM_BHOP,    // Bhopping (100t, 10k maxvel)
+    MOMGM_SCROLL,  // Scrolling/Stamina (currently activates with kz_)
+    MOMGM_UNKNOWN, // Non-recognized map (no prefix/info ents in it)
+    MOMGM_ALLOWED, // not "official gamemode" but must be allowed for other reasons
 
 } GAMEMODES;
 
 // Run Flags
-typedef enum FLAGS
+typedef enum
 {
     RUNFLAG_NONE = 0,
     RUNFLAG_SCROLL = 1 << 0,
@@ -37,6 +40,21 @@ typedef enum FLAGS
     RUNFLAG_BONUS = 1 << 5
     //MOM_TODO: Figure out the rest
 } RUN_FLAG;
+
+typedef enum
+{
+    LOBBY_UPDATE_MEMBER_JOIN = 0,        // Joined the lobby
+    LOBBY_UPDATE_MEMBER_JOIN_MAP,        // Joined your map
+    LOBBY_UPDATE_MEMBER_LEAVE,           // Left your lobby
+    LOBBY_UPDATE_MEMBER_LEAVE_MAP,       // Left your map
+} LOBBY_MSG_TYPE;
+
+typedef enum
+{
+    SPEC_UPDATE_JOIN = 0,           // Started spectating
+    SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else!
+    SPEC_UPDATE_LEAVE           // Respawned
+} SPECTATE_MSG_TYPE;
 
 #define PANEL_TIMES "times"
 #define IN_TIMES (1<<26)
@@ -70,6 +88,9 @@ typedef enum FLAGS
 #define ANSI_TO_UNICODE(ansi, unicode) \
     g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof(unicode));
 
+// Creates a convar with a callback function
+#define MAKE_CONVAR_C(name, defaultval, flags, desc, minVal, maxVal, callback)                                                \
+    ConVar name(#name, defaultval, flags, desc, true, minVal, true, maxVal, callback)
 
 //Creates a convar, mainly used for MAKE_TOGGLE
 #define MAKE_CONVAR(name, defaultval, flags, desc, minVal, maxVal)                                                            \
@@ -77,6 +98,8 @@ typedef enum FLAGS
 
 //Creates a CONVAR with 0 as the minimum value, and 1 as the max value. Useful for toggle variables.
 #define MAKE_TOGGLE_CONVAR(name, defaultval, flags, desc) MAKE_CONVAR(name, defaultval, flags, desc, 0, 1)
+
+#define MAKE_TOGGLE_CONVAR_C(name, defaultval, flags, desc, callback) MAKE_CONVAR_C(name, defaultval, flags, desc, 0, 1, callback)
 
 //Flags for a HUD cvar (usually)
 #define FLAG_HUD_CVAR (FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_REPLICATED)
@@ -102,5 +125,20 @@ typedef enum FLAGS
 #define RECORDING_PATH "recordings"
 #define EXT_ZONE_FILE ".zon"
 #define EXT_RECORDING_FILE ".momrec"
+
+// MOM_TODO: Replace this with the custom player model
+#define ENTITY_MODEL "models/player/player_shape_base.mdl"
+
+// Change these if you want to change the flashlight sound
+#define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
+#define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
+
+#define LOBBY_DATA_MAP "map"
+#define LOBBY_DATA_APPEARANCE "appearance"
+#define LOBBY_DATA_TYPING "isTyping"
+#define LOBBY_DATA_SPEC_TARGET "specTargetID"
+#define LOBBY_DATA_IS_SPEC "isSpectating"
+
+static const unsigned long long MOM_STEAM_GROUP_ID64 = 103582791441609755;
 
 #endif // MOM_SHAREDDEFS_H

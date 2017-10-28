@@ -1,0 +1,27 @@
+// Includes
+#include "common_ps_fxc.h"
+
+const float3 color_00			: register( c0 );
+const float3 color_10			: register( c1 );
+const float3 color_11			: register( c2 );
+const float3 color_01			: register( c3 );
+
+struct PS_INPUT
+{
+	float2 vTexCoord_0			:	TEXCOORD0;
+	float3 vNormal				:	TEXCOORD1;
+};
+
+// Entry point
+float4 main( const PS_INPUT In ) : COLOR
+{
+	float3 color;
+
+	color = lerp( 
+		lerp( color_00, color_10, In.vTexCoord_0.x ),
+		lerp( color_01, color_11, In.vTexCoord_0.x ),
+		In.vTexCoord_0.y
+		);
+
+	return float4( color, 1 );
+}

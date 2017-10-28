@@ -10,7 +10,7 @@
 #include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
 #include <mom_modulecomms.h>
-
+#include "c_mom_online_ghost.h"
 
 class C_MomentumPlayer : public C_BasePlayer
 {
@@ -45,6 +45,12 @@ class C_MomentumPlayer : public C_BasePlayer
         return dynamic_cast<C_MomentumReplayGhostEntity *>(m_hObserverTarget.Get());
     }
 
+    C_MomentumOnlineGhostEntity *GetOnlineGhostEnt() const
+    {
+        return dynamic_cast<C_MomentumOnlineGhostEntity *>(m_hObserverTarget.Get());
+    }
+
+    // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
  
     int m_afButtonDisabled;
@@ -72,6 +78,10 @@ class C_MomentumPlayer : public C_BasePlayer
 
     bool m_duckUntilOnGround;
     float m_flStamina;
+
+    int m_iIDEntIndex;
+    C_MomentumOnlineGhostEntity *m_pViewTarget;
+    C_MomentumOnlineGhostEntity *m_pSpectateTarget;
 
     friend class CMomentumGameMovement;
 };

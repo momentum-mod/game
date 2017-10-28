@@ -1,0 +1,76 @@
+//-----------------------------------------------------------------------------
+//	GHOST_SERVER_BASE.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro GAMENAME 	"momentum"
+$Macro OUTBINNAME	"ghost_server"
+$Macro OUTBINDIR	"$SRCDIR\..\game\$GAMENAME\bin"
+$Macro SRCDIR		"..\.."
+
+$Include "$SRCDIR\vpc_scripts\mm_exe_base.vpc"			
+
+$Configuration	"Debug"
+{
+	$General
+	{
+		$OutputDirectory			".\Debug_$GAMENAME"			[$WIN32]
+		$IntermediateDirectory		".\Debug_$GAMENAME"			[$WIN32]
+	}
+}
+
+$Configuration	"Release"
+{
+	$General
+	{
+		$OutputDirectory			".\Release_$GAMENAME"		[$WIN32]
+		$IntermediateDirectory		".\Release_$GAMENAME"		[$WIN32]
+	}
+}
+
+$Configuration
+{
+	$General
+	{
+			$OutputDirectory			".\$GAMENAME"		[$OSXALL]
+	}
+	
+	$Compiler
+    {
+        $AdditionalIncludeDirectories   "$BASE;$SRCDIR\game\shared\momentum"
+		$PreprocessorDefinitions		"$BASE;GHOST_SERVER;VERSION_SAFE_STEAM_API_INTERFACES"
+        $AdditionalOptions				"/EHsc"
+
+	}
+
+	$Linker
+	{
+		$SystemLibraries				"iconv" [$OSXALL]
+		$SystemFrameworks				"Carbon" [$OSXALL]
+		$SystemLibraries				"rt" [$LINUXALL]
+		$IgnoreImportLibrary			"TRUE"
+		$AdditionalDependencies			"$BASE winmm.lib"	[$WIN32]
+	}
+}
+
+$Project "GhostServer"
+{
+	$Folder "Link Libraries"
+	{
+		$Implib    "steam_api"
+	}
+	$Folder	"Header Files"
+	{
+        $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
+        $File   "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
+		$File	"$SRCDIR\public\steam\steam_gameserver.h"
+
+	}
+
+	$Folder	"Source Files"
+	{
+		$File	"$SRCDIR\game\ghost_server\ghostServer.cpp"
+        $File	"$SRCDIR\game\ghost_server\ghostServer.h"
+	}
+}
