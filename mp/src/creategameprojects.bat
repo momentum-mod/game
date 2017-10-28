@@ -1,6 +1,5 @@
 @echo off
 cd /d %~dp0
-devtools\bin\vpc.exe /momentum +game +shaders /mksln momentum.sln /f
-copy momentum.sln+sln_fix.txt momentum.sln
+devtools\bin\vpc.exe /momentum +game /mksln momentum.sln /f
 Powershell.exe -ExecutionPolicy Bypass -File creategameprojects.ps1
 PAUSE

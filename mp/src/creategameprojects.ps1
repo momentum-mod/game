@@ -4,39 +4,19 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 	pause
 	exit
 }
+
 $ErrorActionPreference= 'silentlycontinue'
-$path = (Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 243750" -Name InstallLocation).InstallLocation
+# This is the path to your steamworks dev folder (depo). This should be the folder with hl2.exe inside of it.
+# Your local momentum folder will be sym linked INSIDE this folder as momentum
+$path = "E:\Steamworks\dev\Momentum"
 
-if (!$path)
-{
-    $path2 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 243750" -Name InstallLocation).InstallLocation
-    if (!$path2)
-    {
-	    Write-Warning "You should install Source SDK Base 2013 Multiplayer.`nRequesting Steam to install the app..."
-        try {
-            $cmd ="cmd.exe"
-            &$cmd "/c start steam://install/243750/"
-        }
-        catch {
-            Write-Warning "Steam is not running. Can not launch installation pop-up"
-        }
-	    pause
-	    exit
-    }
-    else 
-    {
-        ($path = $path2)
-    }
-}
-
-$hl2exe = Join-Path $path hl2.exe
+# Boot arguments
+$hl2exe = Join-Path $path hl2.exe 
 $hl2args = "-game momentum -window -w 1600 -h 900 -novid +developer 2 -console"
 
-$momentum_sym = Join-Path $path momentum
-$momentum = [System.IO.Path]::GetFullPath("..\game\momentum")
-cmd /c mklink /d $momentum_sym $momentum
-
-"`nSymbolic link created in ..\Source SDK Base 2013 Multiplayer\momentum to ..\game\momentum\"
+$momentum_sym = Join-Path $path momentum # Writing as (steamworks path)/momentum
+$momentum = [System.IO.Path]::GetFullPath("..\game\momentum") # This is your local dev folder
+cmd /c mklink /D $momentum_sym $momentum
 
 $data = @"
 <?xml version="1.0" encoding="utf-8"?>
