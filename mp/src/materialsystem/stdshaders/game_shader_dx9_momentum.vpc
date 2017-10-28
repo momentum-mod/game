@@ -64,8 +64,6 @@ $Project "Shaders (Momentum)"
 		$File	"vertexlitgeneric_dx9_helper.cpp"
 		$File	"worldvertextransition.cpp"
     
-        $File   "ssao.cpp"
-        $File   "ssao_combine.cpp"
         $File   "gaussian_blur_3x3.cpp"
 
 		$File "color_picker.cpp"

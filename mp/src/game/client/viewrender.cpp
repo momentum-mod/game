@@ -2199,11 +2199,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
     }
 #endif
 
-    if (ConVarRef("ssao_enable").GetBool())
-    {
-        DoSSAO(view);
-    }
-
 	if ( mat_viewportupscale.GetBool() && mat_viewportscale.GetFloat() < 1.0f ) 
 	{
 		CMatRenderContextPtr pRenderContext( materials );
