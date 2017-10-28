@@ -78,6 +78,10 @@
     }
     "lobby_leave"
     {
-        
     }
+    "achievement_earned"
+	{
+		"player"	"byte"		// entindex of the player
+		"achievement"	"short"		// achievement ID
+	}
 }
