@@ -311,7 +311,7 @@ void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
             // DevLog("Sent the packet!\n");
         }
     }
-    else // It's everybody
+    else if (m_mapLobbyGhosts.Count() > 0) // It's everybody
     {
         uint16 index = m_mapLobbyGhosts.FirstInorder();
         while (index != m_mapLobbyGhosts.InvalidIndex())
@@ -489,16 +489,16 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 
         if (pMapName && pMapName[0] && pOtherMap && FStrEq(pMapName, pOtherMap)) //We're on the same map
         {
-            bool isSpectating = GetIsSpectatingFromMemberData(*pID);
-
             // Don't add them again if they reloaded this map for some reason
             if (!validIndx)
             {
                 CMomentumOnlineGhostEntity *newPlayer = static_cast<CMomentumOnlineGhostEntity*>(CreateEntityByName("mom_online_ghost"));
                 newPlayer->SetGhostSteamID(*pID);
-                newPlayer->SetGhostName(steamapicontext->SteamFriends()->GetFriendPersonaName(*pID));
+                newPlayer->SetGhostName(pName);
                 newPlayer->Spawn();
                 newPlayer->SetGhostAppearance(GetAppearanceFromMemberData(*pID), true); // Appearance after spawn!
+
+                bool isSpectating = GetIsSpectatingFromMemberData(*pID);
 
                 // Spawn but hide them 
                 if (isSpectating)

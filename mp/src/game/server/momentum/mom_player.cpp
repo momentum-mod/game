@@ -145,6 +145,9 @@ CMomentumPlayer::~CMomentumPlayer()
     RemoveTrail();
     RemoveAllCheckpoints();
     RemoveAllOnehops();
+
+    // Clear our spectating status just in case we leave the map while spectating
+    g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false);
 }
 
 void CMomentumPlayer::Precache()
