@@ -177,9 +177,11 @@ void CMomentumLobbySystem::LeaveLobby()
 {
     if (LobbyValid())
     {
-        m_sLobbyID = k_steamIDNil;
-        g_pMomentumGhostClient->ClearCurrentGhosts(true);
+        // Actually leave the lobby
         steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
+        // Clear the ghosts stored in our lobby system
+        g_pMomentumGhostClient->ClearCurrentGhosts(true);
+        // Clear out any rich presence 
         steamapicontext->SteamFriends()->ClearRichPresence();
 
         // Notify literally everything that can listen that we left
@@ -190,6 +192,10 @@ void CMomentumLobbySystem::LeaveLobby()
             gameeventmanager->FireEvent(pLeaveLobby, true); // Server code get at me
             gameeventmanager->FireEventClientSide(pLeaveLobbyCopy); // Client/other code get at me
         }
+        
+        // Lastly, set the lobby ID to nil
+        m_sLobbyID = k_steamIDNil;
+
         DevLog("Left the lobby!\n");
     }
     else
@@ -481,7 +487,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
         const char *pMapName = gpGlobals->mapname.ToCStr();
         const char *pOtherMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, *pID, LOBBY_DATA_MAP);
 
-        if (pMapName && pMapName[0] && FStrEq(pMapName, pOtherMap)) //We're on the same map
+        if (pMapName && pMapName[0] && pOtherMap && FStrEq(pMapName, pOtherMap)) //We're on the same map
         {
             bool isSpectating = GetIsSpectatingFromMemberData(*pID);
 
