@@ -676,12 +676,11 @@ void CMomentumGameMovement::CategorizePosition()
 
     float flOffset = 1.0f;
 
-    point[0] = mv->GetAbsOrigin()[0];
-    point[1] = mv->GetAbsOrigin()[1];
-    point[2] = mv->GetAbsOrigin()[2] - flOffset;
+    const Vector bumpOrigin = mv->GetAbsOrigin();
 
-    Vector bumpOrigin;
-    bumpOrigin = mv->GetAbsOrigin();
+    point[0] = bumpOrigin[0];
+    point[1] = bumpOrigin[1];
+    point[2] = bumpOrigin[2] - flOffset;
 
 // Shooting up really fast.  Definitely not on ground.
 // On ladder moving up, so not on ground either
@@ -720,6 +719,8 @@ void CMomentumGameMovement::CategorizePosition()
         TryTouchGround(bumpOrigin, point, GetPlayerMins(), GetPlayerMaxs(), MASK_PLAYERSOLID,
                        COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
+        bool bHitSteepPlane = false;
+
         // Was on ground, but now suddenly am not.  If we hit a steep plane, we are not on ground
         if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
         {
@@ -728,6 +729,8 @@ void CMomentumGameMovement::CategorizePosition()
 
             if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
             {
+                bHitSteepPlane = true;
+
                 SetGroundEntity(nullptr);
                 // probably want to add a check for a +z velocity too!
                 if ((mv->m_vecVelocity.z > 0.0f) && (player->GetMoveType() != MOVETYPE_NOCLIP))
@@ -735,26 +738,15 @@ void CMomentumGameMovement::CategorizePosition()
                     player->m_surfaceFriction = 0.25f;
                 }
             }
-            else
-            {
-                if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
-                {
-                    DoLateReflect();
-                    CategorizePosition();
-
-                    return;
-                }
-
-                SetGroundEntity(&pm);
-            }
         }
-        else
+
+        if (!bHitSteepPlane)
         {
+            // If we hit a plane we can jump off of, try to do a late reflect if needed
             if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
             {
                 DoLateReflect();
                 CategorizePosition();
-
                 return;
             }
 
