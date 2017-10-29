@@ -674,7 +674,7 @@ void CMomentumGameMovement::CategorizePosition()
     if (player->IsObserver())
         return;
 
-    float flOffset = 2.0f;
+    float flOffset = 1.0f;
 
     point[0] = mv->GetAbsOrigin()[0];
     point[1] = mv->GetAbsOrigin()[1];
@@ -921,7 +921,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        if ((m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE_STUCKONGROUND) && (m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE))
+        if (m_pPlayer->m_SrvData.m_fSliding & (FL_SLIDE_STUCKONGROUND | FL_SLIDE))
             StuckGround();
     }
 
