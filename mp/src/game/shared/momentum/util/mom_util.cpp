@@ -334,7 +334,7 @@ CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate,
     if (szMapName)
     {
         char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "%s/%s*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
+        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
         V_FixSlashes(path);
 
         CMomReplayBase *pFastest = nullptr;
