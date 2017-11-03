@@ -149,6 +149,7 @@
 #endif
 
 #include "inetchannelinfo.h"
+#include "GameUI/IGameUI.h"
 extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
@@ -228,6 +229,7 @@ IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 CSysModule *g_pGameUI2Module = nullptr;
 IGameUI2* g_pGameUI2 = NULL;
 #endif
+IGameUI *gameui = nullptr;
 
 //=============================================================================
 // HPE_BEGIN
@@ -942,6 +944,9 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	if ( ( gamestatsuploader = (IUploadGameStats *)appSystemFactory( INTERFACEVERSION_UPLOADGAMESTATS, NULL )) == NULL )
 		return false;
 #endif
+
+    /*if ((gameui = static_cast<IGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr))) == nullptr)
+        return false;*/
 
 #if defined( REPLAY_ENABLED )
 	if ( IsPC() && (g_pEngineReplay = (IEngineReplay *)appSystemFactory( ENGINE_REPLAY_INTERFACE_VERSION, NULL )) == NULL )

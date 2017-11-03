@@ -60,6 +60,7 @@ $Group "everything"
 	"vvis_dll"
 	"vvis_launcher"
     "gameui2"
+    "gameui"
 }
 
 $Group "dedicated"
