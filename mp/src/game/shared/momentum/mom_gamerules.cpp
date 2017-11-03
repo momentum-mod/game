@@ -396,7 +396,7 @@ void FovChanged(IConVar *pVar, const char *pOldValue, float flOldValue)
     }
 }
 
-ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 90.0,
+ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 1.0,
     true, 179.0, FovChanged);
 
 int CMomentumGameRules::DefaultFOV()

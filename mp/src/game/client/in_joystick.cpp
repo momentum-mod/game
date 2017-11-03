@@ -111,7 +111,6 @@ extern ConVar lookspring;
 extern ConVar cl_forwardspeed;
 extern ConVar lookstrafe;
 extern ConVar in_joystick;
-extern ConVar_ServerBounded *m_pitch;
 extern ConVar l_pitchspeed;
 extern ConVar cl_sidespeed;
 extern ConVar cl_yawspeed;
@@ -744,7 +743,7 @@ void CInput::JoyStickMove( float frametime, CUserCmd *cmd )
 
 		// if mouse invert is on, invert the joystick pitch value
 		// Note: only absolute control support here - joy_advanced = 0
-		if ( m_pitch->GetFloat() < 0.0 )
+		if ( ConVarRef("m_pitch").GetFloat() < 0.0 )
 		{
 			gameAxes[GAME_AXIS_PITCH].value *= -1;
 		}

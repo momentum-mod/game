@@ -73,11 +73,10 @@ static void GravityChanged_Callback(IConVar *var, const char *pOldString, float)
 
 // MOM_TODO: Change this to be back to hidden
 ConVar	sv_gravity("sv_gravity", DEFAULT_GRAVITY_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED /*| FCVAR_DEVELOPMENTONLY*/, "World gravity."
-#ifndef CLIENT_DLL
-    , GravityChanged_Callback);
-#else
-    );
+#ifdef GAME_DLL
+    , GravityChanged_Callback
 #endif
+    );
 
 #if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_stopspeed	( "sv_stopspeed","100", FCVAR_NOTIFY | FCVAR_REPLICATED, "Minimum stopping speed when on ground." );
