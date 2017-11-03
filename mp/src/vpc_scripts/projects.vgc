@@ -30,14 +30,21 @@ $Project "game_shader_dx9"
 	"materialsystem\stdshaders\game_shader_dx9_momentum.vpc" [($WIN32||$POSIX) && $MOMENTUM]
 }
 
+$Project "gameui"
+{
+    "gameui\GameUI.vpc" [($WIN32||$POSIX)]
+}
+
 $Project "gameui2"
 {
     "game\gameui2\gameui2_base.vpc"		[($WIN32||$POSIX)]
 }
+
 $Project "ghost_server"
 {
 	"game\ghost_server\ghost_server_base.vpc"	[($WIN32||$POSIX)]
 }
+
 $Project "glview"
 {
 	"utils\glview\glview.vpc" [$WIN32]

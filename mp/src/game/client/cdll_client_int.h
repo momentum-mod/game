@@ -64,6 +64,7 @@ class CShared;
 #ifdef GAMEUI2
 class IGameUI2;
 #endif
+class IGameUI;
 
 //=============================================================================
 // HPE_BEGIN
@@ -120,6 +121,7 @@ extern IEngineClientReplay *g_pEngineClientReplay;
 #ifdef GAMEUI2
 extern IGameUI2* g_pGameUI2;
 #endif
+extern IGameUI *gameui;
 
 //=============================================================================
 // HPE_BEGIN
