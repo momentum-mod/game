@@ -27,6 +27,8 @@ class MainMenu : public Panel2D
     void OnSetFocus() OVERRIDE;
     void OnKillFocus() OVERRIDE;
 
+    void SetVisible(bool state) OVERRIDE;
+
     void ReloadMenu();
 
     void Activate()

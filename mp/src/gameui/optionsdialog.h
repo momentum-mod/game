@@ -14,15 +14,6 @@
 #include "vgui_controls/PropertyDialog.h"
 
 
-enum OptionsDialogTabStyle
-{
-	OPTIONS_DIALOG_ALL_TABS,
-	OPTIONS_DIALOG_ONLY_BINDING_TABS,
-
-	OPTIONS_DIALOG_TAB_STYLE_TOTAL
-};
-
-
 //-----------------------------------------------------------------------------
 // Purpose: Holds all the game option pages
 //-----------------------------------------------------------------------------
@@ -31,7 +22,7 @@ class COptionsDialog : public vgui::PropertyDialog
 	DECLARE_CLASS_SIMPLE( COptionsDialog, vgui::PropertyDialog );
 
 public:
-	COptionsDialog(vgui::Panel *parent, OptionsDialogTabStyle iTabStyle = OPTIONS_DIALOG_ALL_TABS );
+	COptionsDialog(vgui::Panel *parent );
 	~COptionsDialog();
 
 	void Run();

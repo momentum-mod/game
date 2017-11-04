@@ -38,6 +38,12 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 		"#GameUI_MouseFilter", 
 		"m_filter" );
 
+    m_pMouseRawCheckbox = new CCvarToggleCheckButton(
+        this,
+        "MouseRaw",
+        "#GameUI_MouseRaw",
+        "m_rawinput");
+
 	m_pJoystickCheckBox = new CCvarToggleCheckButton( 
 		this, 
 		"Joystick", 
@@ -67,6 +73,8 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 
     m_pMouseSensitivityLabel = new TextEntry(this, "SensitivityLabel");
     m_pMouseSensitivityLabel->AddActionSignalTarget(this);
+
+    //m_pMouseAccelSlider = new CCvarSlider( this, "MouseAccelerationSlider", "#GameUI_MouseAcceleration", 0.0f, 20.0f, )
 
 	m_pJoyYawSensitivitySlider = new CCvarSlider( this, "JoystickYawSlider", "#GameUI_JoystickYawSensitivity",
 		-0.5f, -7.0f, "joy_yawsensitivity", true );
