@@ -41,7 +41,6 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
 {
     g_pBasePanel = this;
 
-    
     m_bLevelLoading = false;
     m_eBackgroundState = BACKGROUND_INITIAL;
     m_flTransitionStartTime = 0.0f;
@@ -62,12 +61,13 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
     SetKeyBoardInputEnabled(false);//And we're not taking input on it
     SetMouseInputEnabled(false);//Whatsoever, because it could mess with the main menu
     SetProportional(false);
-    SetVisible(true);
-    SetPostChildPaintEnabled(true);*/
+    SetVisible(true);*/
+    SetPostChildPaintEnabled(true);
 
     g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
     m_pMainMenu = new MainMenu(nullptr);
+    SETUP_PANEL(m_pMainMenu);
 }
 
 CBasePanel::~CBasePanel()
@@ -207,11 +207,10 @@ void CBasePanel::ApplyOptionsDialogSettings()
     }
 }
 
-VPANEL CBasePanel::GetVPanel() { return BaseClass::GetVPanel(); }
-
 void CBasePanel::SetMenuAlpha(int alpha)
 {
-    m_pMainMenu->SetAlpha(alpha);
+    if (m_pMainMenu)
+        m_pMainMenu->SetAlpha(alpha);
     m_bForceTitleTextUpdate = true;
 }
 
@@ -385,19 +384,19 @@ void CBasePanel::OnThink()
 {
     BaseClass::OnThink();
 
-    //if (ipanel())
-    //    SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
+    if (ipanel())
+        SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
 }
 
 void CBasePanel::PaintBlurMask()
 {
     BaseClass::PaintBlurMask();
 
-    /*if (GameUI().IsInLevel())
+    if (GameUI().IsInLevel())
     {
         surface()->DrawSetColor(Color(255, 255, 255, 255));
         surface()->DrawFilledRect(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
-    }*/
+    }
 }
 
 void CBasePanel::ApplySchemeSettings(IScheme* pScheme)

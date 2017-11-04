@@ -20,7 +20,7 @@ void Button2D::Paint()
 {
     BaseClass::Paint();
 
-    if (GameUI().GetRenderView() && GameUI().GetMaskTexture() && GameUI().GetFrustum())
+    if (GameUI().GetMaterialSystem() && GameUI().GetRenderView() && GameUI().GetMaskTexture() && GameUI().GetFrustum())
     {
         m_bBlurEnabled = true;
 

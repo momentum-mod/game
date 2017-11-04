@@ -2178,22 +2178,24 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 	}
 
-    /*if (ConVarRef("mom_menu_blur").GetBool())
-        DoMenuBlurring();
-
-    ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
-    if (maskTexture)
+    if (gameui)
     {
-        CMatRenderContextPtr renderContext(materials);
-        renderContext->PushRenderTargetAndViewport(maskTexture);
-        renderContext->ClearColor4ub(0, 0, 0, 255);
-        renderContext->ClearBuffers(true, true, true);
-        renderContext->PopRenderTargetAndViewport();
-        CGameUI *pGameUI = static_cast<CGameUI*>(gameui);
-        pGameUI->SetFrustum(GetFrustum());
-        pGameUI->SetView(view);
-        pGameUI->SetMaskTexture(maskTexture);
-    }*/
+        if (ConVarRef("mom_menu_blur").GetBool())
+            DoMenuBlurring();
+
+        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
+        if (maskTexture)
+        {
+            CMatRenderContextPtr renderContext(materials);
+            renderContext->PushRenderTargetAndViewport(maskTexture);
+            renderContext->ClearColor4ub(0, 0, 0, 255);
+            renderContext->ClearBuffers(true, true, true);
+            renderContext->PopRenderTargetAndViewport();
+            gameui->SetFrustum(GetFrustum());
+            gameui->SetView(view);
+            gameui->SetMaskTexture(maskTexture);
+        }
+    }
 
 #ifdef GAMEUI2
     if (g_pGameUI2)

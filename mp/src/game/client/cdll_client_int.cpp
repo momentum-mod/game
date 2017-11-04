@@ -176,6 +176,8 @@ extern vgui::IInputInternal *g_InputInternal;
 #include "igameui2.h"
 #endif
 
+#include "GameUI_Interface.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -229,7 +231,8 @@ IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 CSysModule *g_pGameUI2Module = nullptr;
 IGameUI2* g_pGameUI2 = NULL;
 #endif
-IGameUI *gameui = nullptr;
+CSysModule *g_pGameUIModule = nullptr;
+CGameUI *gameui = nullptr;
 
 //=============================================================================
 // HPE_BEGIN
@@ -1172,6 +1175,28 @@ void CHLClient::PostInit()
 	}
 #endif
 
+    g_pGameUIModule = filesystem->LoadModule("gameui", "EXECUTABLE_PATH");
+    if (g_pGameUIModule)
+    {
+        ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui!\n");
+
+        CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUIModule);
+
+        gameui = appSystemFactory ? static_cast<CGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr)) : NULL;
+        if (gameui)
+        {
+            ConColorMsg(Color(0, 148, 255, 255), "Initialized IGameUI interface!\n");
+        }
+        else
+        {
+            ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI interface.\n");
+        }
+    }
+    else
+    {
+        ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui.dll!\n");
+    }
+
 #ifdef GAMEUI2
     if (!CommandLine()->CheckParm("-nogameui2"))
     {
@@ -1261,6 +1286,8 @@ void CHLClient::Shutdown( void )
     if (g_pGameUI2Module)
         Sys_UnloadModule(g_pGameUI2Module);
 #endif
+    if (g_pGameUIModule)
+        Sys_UnloadModule(g_pGameUIModule);
 
 	ParticleMgr()->Term();
 	

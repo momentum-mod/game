@@ -116,6 +116,7 @@ class CGameUI : public IGameUI
     virtual VPlane *GetFrustum() const { return m_pFrustum; }
     virtual ITexture *GetMaskTexture() const { return m_pMaskTexture; }
     virtual IVRenderView* GetRenderView() const { return m_pRenderView; }
+    virtual IMaterialSystem* GetMaterialSystem() const { return m_pMaterialSystem; }
     virtual Vector2D GetViewport() const;
     void SetView(const CViewSetup &view) { m_pView = view; }
     void SetFrustum(VPlane *frustum) { m_pFrustum = frustum; }
@@ -158,6 +159,7 @@ class CGameUI : public IGameUI
     VPlane *m_pFrustum;
     ITexture *m_pMaskTexture;
     IVRenderView *m_pRenderView;
+    IMaterialSystem *m_pMaterialSystem;
 };
 
 // Purpose: singleton accessor
