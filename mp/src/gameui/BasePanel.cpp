@@ -61,8 +61,8 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
     SetKeyBoardInputEnabled(false);//And we're not taking input on it
     SetMouseInputEnabled(false);//Whatsoever, because it could mess with the main menu
     SetProportional(false);
-    SetVisible(true);*/
-    SetPostChildPaintEnabled(true);
+    SetVisible(true);
+    SetPostChildPaintEnabled(true);*/
 
     g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
@@ -105,7 +105,6 @@ void CBasePanel::RunFrame()
             m_bPlatformMenuInitialized = true;
         }
     }
-
 }
 
 void CBasePanel::FadeToBlackAndRunEngineCommand(const char* engineCommand)
@@ -135,6 +134,8 @@ void CBasePanel::OnGameUIActivated()
         m_bEverActivated = true;
     }
 
+    m_pMainMenu->Activate();
+
     if (GameUI().IsInLevel())
     {
         OnCommand("OpenPauseMenu");
@@ -153,6 +154,8 @@ void CBasePanel::OnGameUIHidden()
     {
         PostMessage(m_hOptionsDialog.Get(), new KeyValues("GameUIHidden"));
     }
+
+    m_pMainMenu->SetVisible(false);
 
     // HACKISH: Force this dialog closed so it gets data updates upon reopening.
     Frame* pAchievementsFrame = m_hAchievementsDialog.Get();

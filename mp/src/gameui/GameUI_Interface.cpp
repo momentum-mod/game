@@ -450,7 +450,7 @@ void CGameUI::OnGameUIActivated()
     m_bActivatedUI = true;
 
     // pause the server in case it is pausable
-    engine->ClientCmd_Unrestricted( "setpause nomsg" );
+    //engine->ClientCmd_Unrestricted( "setpause nomsg" );
 
     SetSavedThisMenuSession(false);
 
@@ -466,7 +466,7 @@ void CGameUI::OnGameUIHidden()
     m_bActivatedUI = false;
 
     // unpause the game when leaving the UI
-    engine->ClientCmd_Unrestricted( "unpause nomsg" );
+    //engine->ClientCmd_Unrestricted( "unpause nomsg" );
 
     GetBasePanel()->OnGameUIHidden();
 }

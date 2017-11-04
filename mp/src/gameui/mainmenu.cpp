@@ -204,6 +204,8 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("vo
     SetPaintBorderEnabled(false);
     SetPaintBackgroundEnabled(false);
     AddActionSignalTarget(this);
+    MakePopup(false);
+    SetZPos(1);
 
     SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
 
@@ -215,10 +217,6 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("vo
     GetSize(wide, high);
     m_pMainMenuHTMLPanel->SetSize(wide, high);
     m_pMainMenuHTMLPanel->LoadMenu();
-
-    MakeReadyForUse();
-    SetZPos(0);
-    RequestFocus();
 
     ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
     // First check here
@@ -263,6 +261,19 @@ void MainMenu::OnThink()
         
 }
 
+void MainMenu::SetVisible(bool state)
+{
+    // Force to be visible
+    BaseClass::SetVisible(state);
+    /*BaseClass::SetVisible(true);
+
+    if (!state)
+    {
+        ipanel()->MoveToBack(GetVPanel());
+    }*/
+}
+
+
 void MainMenu::OnTick()
 {
     // We're the only one who should call this! (As we tick once every 2 mins)
@@ -279,20 +290,25 @@ bool MainMenu::IsVisible(void)
 
 void MainMenu::OnCommand(char const *cmd)
 {
-    GameUI().SendMainMenuCommand(cmd);
-    BaseClass::OnCommand(cmd);
+    if (!Q_strcmp(cmd, "Open"))
+    {
+        MoveToFront();
+    }
+    else
+    {
+        GameUI().SendMainMenuCommand(cmd);
+        BaseClass::OnCommand(cmd);
+    }
 }
 
 void MainMenu::OnSetFocus()
 {
     BaseClass::OnSetFocus();
-    surface()->PlaySound(m_pszMenuOpenSound);
 }
 
 void MainMenu::OnKillFocus()
 {
     BaseClass::OnKillFocus();
-    surface()->PlaySound(m_pszMenuCloseSound);
 }
 
 void MainMenu::ReloadMenu()

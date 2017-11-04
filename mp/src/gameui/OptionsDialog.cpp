@@ -27,47 +27,33 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Basic help dialog
 //-----------------------------------------------------------------------------
-COptionsDialog::COptionsDialog(vgui::Panel *parent, OptionsDialogTabStyle iTabStyle) : PropertyDialog(parent, "OptionsDialog")
+COptionsDialog::COptionsDialog(vgui::Panel *parent) : PropertyDialog(parent, "OptionsDialog")
 {
-	SetProportional( true );
-	SetDeleteSelfOnClose( true );
-	SetBounds( 
-		0, 
-		0, 
-		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 512 ),
-		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 415 ) );
-	SetSizeable( false );
+    SetDeleteSelfOnClose(true);
+    SetBounds(0, 0, 512, 406);
+    SetSizeable(false);
 
 	// debug timing code, this function takes too long
 //	double s4 = system()->GetCurrentTime();
 
-	if ( iTabStyle == OPTIONS_DIALOG_ALL_TABS )
+    SetTitle("#GameUI_Options", true);
+
+	if ( ModInfo().IsSinglePlayerOnly() && !ModInfo().NoDifficulty() )
 	{
-		SetTitle("#GameUI_Options", true);
-
-		if ( ModInfo().IsSinglePlayerOnly() && !ModInfo().NoDifficulty() )
-		{
-			AddPage(new COptionsSubDifficulty(this), "#GameUI_Difficulty");
-		}
-
-		AddPage(new COptionsSubKeyboard(this), "#GameUI_Keyboard");
-		AddPage(new COptionsSubMouse(this), "#GameUI_Mouse");
-
-		m_pOptionsSubAudio = new COptionsSubAudio(this);
-		AddPage(m_pOptionsSubAudio, "#GameUI_Audio");
-		m_pOptionsSubVideo = new COptionsSubVideo(this);
-		AddPage(m_pOptionsSubVideo, "#GameUI_Video");
-
-		if ( !ModInfo().IsSinglePlayerOnly() ) 
-		{
-			AddPage(new COptionsSubVoice(this), "#GameUI_Voice");
-		}
+		AddPage(new COptionsSubDifficulty(this), "#GameUI_Difficulty");
 	}
-	else if ( iTabStyle == OPTIONS_DIALOG_ONLY_BINDING_TABS )
-	{
-		SetTitle("#L4D360UI_Controller_Edit_Keys_Buttons", true);
 
-		AddPage(new COptionsSubKeyboard(this), "#GameUI_Console_UserSettings");
+	AddPage(new COptionsSubKeyboard(this), "#GameUI_Keyboard");
+	AddPage(new COptionsSubMouse(this), "#GameUI_Mouse");
+
+	m_pOptionsSubAudio = new COptionsSubAudio(this);
+	AddPage(m_pOptionsSubAudio, "#GameUI_Audio");
+	m_pOptionsSubVideo = new COptionsSubVideo(this);
+	AddPage(m_pOptionsSubVideo, "#GameUI_Video");
+
+	if ( !ModInfo().IsSinglePlayerOnly() ) 
+	{
+		AddPage(new COptionsSubVoice(this), "#GameUI_Voice");
 	}
 
 //	double s5 = system()->GetCurrentTime();

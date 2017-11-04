@@ -54,6 +54,7 @@ private:
 
 	CCvarNegateCheckButton		*m_pReverseMouseCheckBox;
 	CCvarToggleCheckButton		*m_pMouseFilterCheckBox;
+    CCvarToggleCheckButton *m_pMouseRawCheckbox;
 	CCvarToggleCheckButton		*m_pJoystickCheckBox;
 	CCvarToggleCheckButton		*m_pJoystickSouthpawCheckBox;
 	CCvarToggleCheckButton		*m_pQuickInfoCheckBox;
@@ -61,6 +62,9 @@ private:
 
 	CCvarSlider					*m_pMouseSensitivitySlider;
     vgui::TextEntry             *m_pMouseSensitivityLabel;
+
+    CCvarSlider *m_pMouseAccelSlider;
+    vgui::TextEntry *m_pMouseAccelLabel;
 
 	CCvarSlider					*m_pJoyYawSensitivitySlider;
 	vgui::Label					*m_pJoyYawSensitivityPreLabel;
