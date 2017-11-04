@@ -38,7 +38,6 @@ class CBasePanel : public Panel2D
     void ApplyOptionsDialogSettings();
 
     MainMenu *GetMainMenu() const { return m_pMainMenu; }
-    vgui::VPANEL GetVPanel() OVERRIDE;
 
     // fading to game
     MESSAGE_FUNC_CHARPTR(RunEngineCommand, "RunEngineCommand", command);
