@@ -69,6 +69,7 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
     m_pMouseSensitivityLabel->AddActionSignalTarget(this);
 
     m_pMouseAccelLabel = new TextEntry(this, "MouseAccelerationLabel");
+    m_pMouseAccelLabel->AddActionSignalTarget(this);
     m_pMouseAccelToggle = new CheckButton(this, "MouseAccelerationCheckbox", "#GameUI_MouseAcceleration");
     m_pMouseAccelSlider = new CCvarSlider(this, "MouseAccelerationSlider", "#GameUI_MouseAcceleration", 1.0f, 20.0f, "m_customaccel_exponent", true);
 

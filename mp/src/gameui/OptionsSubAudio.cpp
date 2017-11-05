@@ -368,22 +368,12 @@ void COptionsSubAudio::OpenThirdPartySoundCreditsDialog()
 
 COptionsSubAudioThirdPartyCreditsDlg::COptionsSubAudioThirdPartyCreditsDlg( vgui::VPANEL hParent ) : BaseClass( NULL, NULL )
 {
-	SetProportional( true );
-
-	SetTitle( "#GameUI_ThirdPartyAudio_Title", true );
-	SetSize( 
-		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 500 ),
-		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 200 ) );
-
-	MoveToCenterOfScreen();
-	SetSizeable( false );
-	SetDeleteSelfOnClose( true );
-}
-
-void COptionsSubAudioThirdPartyCreditsDlg::ApplySchemeSettings( IScheme *pScheme )
-{
-	BaseClass::ApplySchemeSettings( pScheme );
-	LoadControlSettings( "resource/OptionsSubAudioThirdPartyDlg.res" );
+    SetTitle("#GameUI_ThirdPartyAudio_Title", true);
+    SetSize(500, 200);
+    LoadControlSettings("resource/OptionsSubAudioThirdPartyDlg.res");
+    MoveToCenterOfScreen();
+    SetSizeable(false);
+    SetDeleteSelfOnClose(true);
 }
 
 void COptionsSubAudioThirdPartyCreditsDlg::Activate()

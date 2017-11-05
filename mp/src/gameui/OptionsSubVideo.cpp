@@ -373,10 +373,10 @@ public:
 		m_pShadowDetail = new ComboBox( this, "ShadowDetail", 6, false );
 		m_pShadowDetail->AddItem("#gameui_low", NULL);
 		m_pShadowDetail->AddItem("#gameui_medium", NULL);
-		/*if ( g_pMaterialSystemHardwareConfig->SupportsShadowDepthTextures() )
+		if ( materials->SupportsShadowDepthTextures() )
 		{
 			m_pShadowDetail->AddItem("#gameui_high", NULL);
-		}*/
+		}
 
 		ConVarRef mat_dxlevel( "mat_dxlevel" );
 
@@ -418,6 +418,12 @@ public:
 		m_pMotionBlur->AddItem("#gameui_disabled", NULL);
 		m_pMotionBlur->AddItem("#gameui_enabled", NULL);
 
+        m_pMulticore = new ComboBox(this, "Multicore", 2, false);
+        m_pMulticore->AddItem("#gameui_disabled", NULL);
+        m_pMulticore->AddItem("#gameui_enabled", NULL);
+
+        m_pFOVSlider = new CCvarSlider(this, "FovSlider", "", 90.0f, 179.0f, "fov_desired", false);
+
 		LoadControlSettings( "resource/OptionsSubVideoAdvancedDlg.res" );
 		MoveToCenterOfScreen();
 		SetSizeable( false );
@@ -427,15 +433,12 @@ public:
 		m_pColorCorrection->SetEnabled( mat_dxlevel.GetInt() >= 90 );
 		m_pMotionBlur->SetEnabled( mat_dxlevel.GetInt() >= 90 );
 		
+
 		if ( g_pCVar->FindVar( "fov_desired" ) == NULL )
 		{
-			Panel *pFOV = FindChildByName( "FovSlider" );
-			if ( pFOV )
-			{
-				pFOV->SetVisible( false );
-			}
+            m_pFOVSlider->SetVisible(false);
 
-			pFOV = FindChildByName( "FovLabel" );
+			Panel *pFOV = FindChildByName( "FovLabel" );
 			if ( pFOV )
 			{
 				pFOV->SetVisible( false );
@@ -558,6 +561,7 @@ public:
 		int nDXLevel = pKeyValues->GetInt( "ConVar.mat_dxlevel", 0 );
 		int nColorCorrection = pKeyValues->GetInt( "ConVar.mat_colorcorrection", 0 );
 		int nMotionBlur = pKeyValues->GetInt( "ConVar.mat_motion_blur_enabled", 0 );
+        int nMulticore = pKeyValues->GetInt("ConVar.mat_queue_mode", -1);
 
 		// Only recommend a dxlevel if there is more than one available
 		if ( m_pDXLevel->GetItemCount() > 1 )
@@ -643,6 +647,8 @@ public:
 		SetComboItemAsRecommended( m_pColorCorrection, nColorCorrection );
 
 		SetComboItemAsRecommended( m_pMotionBlur, nMotionBlur );
+
+        SetComboItemAsRecommended(m_pMulticore, -nMulticore);
 
 		pKeyValues->deleteThis();
 	}
@@ -747,11 +753,9 @@ public:
 
 		ApplyChangesToConVar( "mat_motion_blur_enabled", m_pMotionBlur->GetActiveItem() );
 		
-		CCvarSlider *pFOV = (CCvarSlider *)FindChildByName( "FOVSlider" );
-		if ( pFOV ) 
-		{
-			pFOV->ApplyChanges();
-		}
+        ApplyChangesToConVar("mat_queue_mode", -m_pMulticore->GetActiveItem());
+
+        m_pFOVSlider->ApplyChanges();
 	}
 
 	virtual void OnResetData()
@@ -856,6 +860,8 @@ public:
 
 		m_pMotionBlur->ActivateItem( mat_motion_blur_enabled.GetInt() );
 
+        m_pMulticore->ActivateItem(- ConVarRef("mat_queue_mode").GetInt());
+
 		// get current hardware dx support level
 		char dxVer[64];
 		GetNameForDXLevel( mat_dxlevel.GetInt(), dxVer, sizeof( dxVer ) );
@@ -945,6 +951,10 @@ private:
 	vgui::ComboBox *m_pColorCorrection;
 	vgui::ComboBox *m_pMotionBlur;
 	vgui::ComboBox *m_pDXLevel;
+
+    vgui::ComboBox *m_pMulticore;
+
+    CCvarSlider *m_pFOVSlider;
 
 	int m_nNumAAModes;
 	AAMode_t m_nAAModes[16];
@@ -1347,27 +1357,14 @@ void COptionsSubVideo::OpenThirdPartyVideoCreditsDialog()
 
 COptionsSubVideoThirdPartyCreditsDlg::COptionsSubVideoThirdPartyCreditsDlg( vgui::VPANEL hParent ) : BaseClass( NULL, NULL )
 {
-	SetProportional( true );
-
 	// parent is ignored, since we want look like we're steal focus from the parent (we'll become modal below)
-#ifdef SWARM_DLL
-	SetScheme( "SwarmFrameScheme" );
-#endif
 
-	SetTitle("#GameUI_ThirdPartyVideo_Title", true);
-	SetSize( 
-		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 500 ),
-		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 200 ) );
-
-	MoveToCenterOfScreen();
-	SetSizeable( false );
-	SetDeleteSelfOnClose( true );
-}
-
-void COptionsSubVideoThirdPartyCreditsDlg::ApplySchemeSettings( IScheme *pScheme )
-{
-	BaseClass::ApplySchemeSettings( pScheme );
-	LoadControlSettings( "resource/OptionsSubVideoThirdPartyDlg.res" );
+    SetTitle("#GameUI_ThirdPartyVideo_Title", true);
+    SetSize( 500, 200 );
+    LoadControlSettings("resource/OptionsSubVideoThirdPartyDlg.res");
+    MoveToCenterOfScreen();
+    SetSizeable(false);
+    SetDeleteSelfOnClose(true);
 }
 
 void COptionsSubVideoThirdPartyCreditsDlg::Activate()
