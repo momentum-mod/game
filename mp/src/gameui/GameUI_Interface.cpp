@@ -640,7 +640,7 @@ void CGameUI::OnLevelLoadingStarted(bool bShowProgressDialog)
     GetBasePanel()->OnLevelLoadingStarted();
     ShowLoadingBackgroundDialog();
 
-    if (bShowProgressDialog)
+    //if (bShowProgressDialog)
     {
         StartProgressBar();
     }
