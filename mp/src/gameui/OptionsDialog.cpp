@@ -15,8 +15,6 @@
 #include "OptionsSubMouse.h"
 #include "OptionsSubAudio.h"
 #include "OptionsSubVideo.h"
-#include "OptionsSubVoice.h"
-#include "OptionsSubDifficulty.h"
 #include "ModInfo.h"
 
 using namespace vgui;
@@ -38,11 +36,6 @@ COptionsDialog::COptionsDialog(vgui::Panel *parent) : PropertyDialog(parent, "Op
 
     SetTitle("#GameUI_Options", true);
 
-	if ( ModInfo().IsSinglePlayerOnly() && !ModInfo().NoDifficulty() )
-	{
-		AddPage(new COptionsSubDifficulty(this), "#GameUI_Difficulty");
-	}
-
 	AddPage(new COptionsSubKeyboard(this), "#GameUI_Keyboard");
 	AddPage(new COptionsSubMouse(this), "#GameUI_Mouse");
 
@@ -50,11 +43,6 @@ COptionsDialog::COptionsDialog(vgui::Panel *parent) : PropertyDialog(parent, "Op
 	AddPage(m_pOptionsSubAudio, "#GameUI_Audio");
 	m_pOptionsSubVideo = new COptionsSubVideo(this);
 	AddPage(m_pOptionsSubVideo, "#GameUI_Video");
-
-	if ( !ModInfo().IsSinglePlayerOnly() ) 
-	{
-		AddPage(new COptionsSubVoice(this), "#GameUI_Voice");
-	}
 
 //	double s5 = system()->GetCurrentTime();
 //	Msg("COptionsDialog::COptionsDialog(): %.3fms\n", (float)(s5 - s4) * 1000.0f);

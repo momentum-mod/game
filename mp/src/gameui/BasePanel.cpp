@@ -4,7 +4,6 @@
 #include "vgui/ILocalize.h"
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
-#include "VGuiSystemModuleLoader.h"
 #include "tier0/icommandline.h"
 #include "OptionsDialog.h"
 #include "steam/steam_api.h"
@@ -49,7 +48,6 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
     m_bRenderingBackgroundTransition = false;
     m_bFadingInMenus = false;
     m_bEverActivated = false;
-    m_bPlatformMenuInitialized = false;
     m_bHaveDarkenedBackground = false;
     m_bHaveDarkenedTitleText = true;
     m_bForceTitleTextUpdate = true;
@@ -87,15 +85,6 @@ void CBasePanel::RunFrame()
     vgui::GetAnimationController()->UpdateAnimations(engine->Time());
 
     UpdateBackgroundState();
-
-    if (!m_bPlatformMenuInitialized)
-    {
-        // check to see if the platform is ready to load yet
-        if (g_VModuleLoader.IsPlatformReady())
-        {
-            m_bPlatformMenuInitialized = true;
-        }
-    }
 }
 
 void CBasePanel::FadeToBlackAndRunEngineCommand(const char* engineCommand)
@@ -223,14 +212,10 @@ void CBasePanel::UpdateBackgroundState()
     {
         SetBackgroundRenderState(BACKGROUND_LOADING);
     }
-    else if (m_bEverActivated && m_bPlatformMenuInitialized)
+    else if (m_bEverActivated)
     {
         SetBackgroundRenderState(BACKGROUND_DISCONNECTED);
     }
-
-    // don't evaluate the rest until we've initialized the menus
-    if (!m_bPlatformMenuInitialized)
-        return;
 
     // check for background fill
     // fill over the top if we have any dialogs up
@@ -446,11 +431,6 @@ void CBasePanel::PaintBackground()
         surface()->DrawSetColor(0, 0, 0, m_flBackgroundFillAlpha);
         surface()->DrawFilledRect(0, 0, swide, stall);
     }
-}
-
-void CBasePanel::OnActivateModule(int moduleIndex)
-{
-    g_VModuleLoader.ActivateModule(moduleIndex);
 }
 
 void CBasePanel::RunEngineCommand(const char* command)
