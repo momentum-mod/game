@@ -77,9 +77,6 @@ public:
 
 	virtual void Activate();
 	void OnKeyCodeTyped(vgui::KeyCode code);
-
-protected:
-	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 };
 
 
