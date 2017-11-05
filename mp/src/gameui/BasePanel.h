@@ -49,7 +49,6 @@ protected:
     void PaintBackground() OVERRIDE;
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void OnCommand(const char *command) OVERRIDE{ RunMenuCommand(command); }
-    void PerformLayout() OVERRIDE;
 
 private:
     enum EBackgroundState

@@ -61,7 +61,7 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
 
 CBasePanel::~CBasePanel()
 {
-
+    g_pBasePanel = nullptr;
 }
 
 void CBasePanel::OnLevelLoadingStarted()
@@ -82,7 +82,7 @@ bool CBasePanel::IsInLoading() const
 void CBasePanel::RunFrame()
 {
     InvalidateLayout();
-    vgui::GetAnimationController()->UpdateAnimations(engine->Time());
+    GetAnimationController()->UpdateAnimations(engine->Time());
 
     UpdateBackgroundState();
 }
@@ -102,7 +102,6 @@ void CBasePanel::OnGameUIActivated()
     {
         // Don't display this again until it happens again
         engine->SetMapLoadFailed(false);
-        //ShowMessageDialog(MD_LOAD_FAILED_WARNING);
     }
 
     if (!m_bEverActivated)
@@ -169,13 +168,13 @@ void CBasePanel::OnOpenAchievementsDialog()
 #endif
 }
 
-void CBasePanel::PositionDialog(vgui::PHandle dlg)
+void CBasePanel::PositionDialog(PHandle dlg)
 {
     if (!dlg.Get())
         return;
 
     int x, y, ww, wt, wide, tall;
-    vgui::surface()->GetWorkspaceBounds(x, y, ww, wt);
+    surface()->GetWorkspaceBounds(x, y, ww, wt);
     dlg->GetSize(wide, tall);
 
     // Center it, keeping requested size
@@ -222,7 +221,8 @@ void CBasePanel::UpdateBackgroundState()
     int i;
     bool bHaveActiveDialogs = false;
     bool bIsInLevel = GameUI().IsInLevel();
-    for (i = 0; i < GetChildCount(); ++i)
+    int childCount = GetChildCount();
+    for (i = 0; i < childCount; ++i)
     {
         VPANEL child = ipanel()->GetChild(GetVPanel(), i);
         if (child
@@ -235,7 +235,8 @@ void CBasePanel::UpdateBackgroundState()
     }
     // see if the base gameui panel has dialogs hanging off it (engine stuff, console, bug reporter)
     VPANEL parent = GetVParent();
-    for (i = 0; i < ipanel()->GetChildCount(parent); ++i)
+    childCount = ipanel()->GetChildCount(parent);
+    for (i = 0; i < childCount; ++i)
     {
         VPANEL child = ipanel()->GetChild(parent, i);
         if (child
@@ -298,16 +299,6 @@ void CBasePanel::UpdateBackgroundState()
             GetAnimationController()->RunAnimationCommand(m_pMainMenu, "alpha", targetTitleAlpha, 0.0f, duration, AnimationController::INTERPOLATOR_LINEAR);
         }
 
-        /*if (m_pGameLogo)
-        {
-            vgui::GetAnimationController()->RunAnimationCommand(m_pGameLogo, "alpha", targetTitleAlpha, 0.0f, duration, AnimationController::INTERPOLATOR_LINEAR);
-        }
-
-        // Msg( "animating title (%d => %d at time %.2f)\n", m_pGameMenuButton->GetAlpha(), (int)targetTitleAlpha, engine->Time());
-        for (i = 0; i<m_pGameMenuButtons.Count(); ++i)
-        {
-            vgui::GetAnimationController()->RunAnimationCommand(m_pGameMenuButtons[i], "alpha", targetTitleAlpha, 0.0f, duration, AnimationController::INTERPOLATOR_LINEAR);
-        }*/
         m_bHaveDarkenedTitleText = bNeedDarkenedTitleText;
         m_bForceTitleTextUpdate = false;
     }
@@ -409,11 +400,6 @@ void CBasePanel::ApplySchemeSettings(IScheme* pScheme)
     // load the loading icon
     m_iLoadingImageID = surface()->CreateNewTextureID();
     surface()->DrawSetTextureFile(m_iLoadingImageID, "console/startup_loading", false, false);
-}
-
-void CBasePanel::PerformLayout()
-{
-    // MOM_TODO: Consider resizing the menu?
 }
 
 void CBasePanel::PaintBackground()
