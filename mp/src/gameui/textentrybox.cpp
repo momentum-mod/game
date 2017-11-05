@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -31,7 +31,7 @@ CTextEntryBox::CTextEntryBox(const char *title, const char *queryText, const cha
 	}
 	else
 	{
-		m_pEntry = new TextEntry( this, "TextEntry" );
+		m_pEntry = new vgui::TextEntry( this, "TextEntry" );
 		m_pCvarEntry = NULL;
 	}
 	m_pEntry->SetTabPosition(3);

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -6,9 +6,8 @@
 //
 //=============================================================================//
 
-#if !defined( _X360 )
+#ifdef _WIN32
 #include <windows.h>
-#endif
 #include <stdio.h>
 #include "UtlBuffer.h"
 #include <vgui/VGUI.h>
@@ -281,3 +280,4 @@ void UpdateLogoWAD( void *phdib, int r, int g, int b )
 	}
 
 }
+#endif

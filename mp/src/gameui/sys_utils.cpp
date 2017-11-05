@@ -1,10 +1,11 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================//
 
+#ifdef _WIN32
 #include "winlite.h"
 #include "Sys_Utils.h"
 #include "EngineInterface.h"
@@ -119,4 +120,4 @@ void Sys_DestroyWindow(WHANDLE wnd)
 {
 	//::DestroyWindow((HWND)wnd);
 }
-
+#endif

@@ -1,13 +1,17 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: Implements all the functions exported by the GameUI dll
 //
 // $NoKeywords: $
 //===========================================================================//
 
+#ifdef _WIN32
 #include <windows.h>
+
 #include <direct.h>
 #include <io.h>
+#endif
+
 #include <stdio.h>
 #include <sys/stat.h>
 #include <tier0/dbg.h>
@@ -217,7 +221,9 @@ void CGameUI::Connect(CreateInterfaceFn gameFactory)
 //-----------------------------------------------------------------------------
 int __stdcall SendShutdownMsgFunc(WHANDLE hwnd, int lparam)
 {
+#ifdef _WIN32
     Sys_PostMessage(hwnd, Sys_RegisterWindowMessage("ShutdownValvePlatform"), 0, 1);
+#endif
     return 1;
 }
 
@@ -264,6 +270,7 @@ void CGameUI::PlayGameStartupSound()
         g_pFullFileSystem->FindClose(fh);
     }
 
+#ifdef _WIN32
     // did we find any?
     if (fileNames.Count() > 0)
     {
@@ -283,6 +290,7 @@ void CGameUI::PlayGameStartupSound()
 
         fileNames.PurgeAndDeleteElements();
     }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -315,6 +323,7 @@ void CGameUI::Start()
     // localization
     g_pVGuiLocalize->AddFile("Resource/platform_%language%.txt");
     g_pVGuiLocalize->AddFile("Resource/vgui_%language%.txt");
+#ifdef _WIN32
 
     Sys_SetLastError(SYS_NO_ERROR);
 
@@ -349,7 +358,6 @@ void CGameUI::Start()
                 Sys_EnumWindows(SendShutdownMsgFunc, 1);
             }
         }
-
         // Delay playing the startup music until two frames
         // this allows cbuf commands that occur on the first frame that may start a map
         m_iPlayGameStartupSound = 2;
@@ -358,6 +366,8 @@ void CGameUI::Start()
         m_bTryingToLoadFriends = true;
         m_iFriendsLoadPauseFrames = 1;
     }
+#endif
+
 }
 
 //-----------------------------------------------------------------------------
@@ -370,6 +380,8 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 
     if (platformDir[0] == '\0')
     {
+#ifdef _WIN32
+
         // we're not under steam, so setup using path relative to game
 
         if (::GetModuleFileName((HINSTANCE)GetModuleHandle(nullptr), platformDir, bufferSize))
@@ -382,6 +394,7 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
                 return true;
             }
         }
+#endif
 
         Error("Unable to determine platform directory\n");
         return false;
@@ -403,6 +416,7 @@ void CGameUI::Shutdown()
 
     ModInfo().FreeModInfo();
 
+#ifdef _WIN32
     // release platform mutex
     // close the mutex
     if (g_hMutex)
@@ -413,7 +427,7 @@ void CGameUI::Shutdown()
     {
         Sys_ReleaseMutex(g_hWaitMutex);
     }
-
+#endif
     m_SteamAPIContext.Clear();
 
     ConVar_Unregister();
@@ -504,6 +518,7 @@ void CGameUI::RunFrame()
         }
     }
 
+#ifdef _WIN32
     if (m_bTryingToLoadFriends && m_iFriendsLoadPauseFrames-- < 1 && g_hMutex && g_hWaitMutex)
     {
         // try and load Steam platform files
@@ -547,6 +562,7 @@ void CGameUI::RunFrame()
             }
         }
     }
+#endif
 }
 
 //-----------------------------------------------------------------------------

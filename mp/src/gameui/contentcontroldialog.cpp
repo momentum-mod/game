@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <memory.h>
-#if !defined( _X360 )
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -98,7 +98,7 @@ void CContentControlDialog::Activate()
 void CContentControlDialog::ResetPassword()
 {
 	// Set initial value
-#ifndef _XBOX
+#ifdef _WIN32
 	HKEY key;
 	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Valve\\Half-Life\\Settings", 0, KEY_READ, &key))
 	{
@@ -207,7 +207,7 @@ void CContentControlDialog::OnClose()
 void CContentControlDialog::WriteToken( const char *str )
 {
 	// Set initial value
-#ifndef _XBOX
+#ifdef _WIN32
 	HKEY key;
 	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Valve\\Half-Life\\Settings", 0, KEY_WRITE, &key))
 	{
@@ -229,6 +229,7 @@ void CContentControlDialog::WriteToken( const char *str )
 //-----------------------------------------------------------------------------
 void CContentControlDialog::HashPassword(const char *newPW, char *hashBuffer, int maxlen )
 {
+#ifdef _WIN32
 	// Compute the md5 hash and save it.
 	unsigned char md5_hash[16];
 	MD5Context_t ctx;
@@ -242,6 +243,7 @@ void CContentControlDialog::HashPassword(const char *newPW, char *hashBuffer, in
 
 //	char digestedPW[ 128 ];
 	Q_strncpy( hashBuffer, hex, maxlen );
+#endif
 }
 
 //-----------------------------------------------------------------------------

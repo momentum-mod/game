@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -16,9 +16,9 @@
 #include "KeyValues.h"
 #include <vgui_controls/QueryBox.h>
 
-class vgui::Frame;
-class vgui::TextEntry;
-class vgui::Panel;
+class Frame;
+class TextEntry;
+class Panel;
 class CCvarTextEntry;
 
 //--------------------------------------------------------------------------------------------------------------
