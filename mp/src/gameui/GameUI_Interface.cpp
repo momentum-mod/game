@@ -396,8 +396,8 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
         }
 #endif
 
-        Error("Unable to determine platform directory\n");
-        return false;
+        //Error("Unable to determine platform directory\n");
+        //return false;
     }
 
     return (platformDir[0] != 0);
