@@ -22,7 +22,7 @@ $Group "game"
 	"server"
 	"tier1"
 	"vgui_controls"
-    "gameui2"
+    "gameui"
 }
 
 $Group "shaders"
@@ -59,7 +59,6 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
-    "gameui2"
     "gameui"
 }
 

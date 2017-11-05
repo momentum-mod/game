@@ -79,11 +79,8 @@
 
 //Shader editor
 #include "ShaderEditor/ShaderEditorSystem.h"
-//GameUI2
-#if defined(GAMEUI2)
-#include "igameui2.h"
-#endif
 
+// GameUI
 #include "GameUI_Interface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -2196,28 +2193,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
             gameui->SetMaskTexture(maskTexture);
         }
     }
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-    {
-        if (ConVarRef("mom_menu_blur").GetBool())
-            DoMenuBlurring();
-
-        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
-        if (maskTexture)
-        {
-            CMatRenderContextPtr renderContext(materials);
-            renderContext->PushRenderTargetAndViewport(maskTexture);
-            renderContext->ClearColor4ub(0, 0, 0, 255);
-            renderContext->ClearBuffers(true, true, true);
-            renderContext->PopRenderTargetAndViewport();
-
-            g_pGameUI2->SetFrustum(GetFrustum());
-            g_pGameUI2->SetView(view);
-            g_pGameUI2->SetMaskTexture(maskTexture);
-        }
-    }
-#endif
 
     if (ConVarRef("ssao_enable").GetBool())
     {

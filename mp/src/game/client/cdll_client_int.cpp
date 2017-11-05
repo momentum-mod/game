@@ -172,10 +172,6 @@ extern vgui::IInputInternal *g_InputInternal;
 #include "sixense/in_sixense.h"
 #endif
 
-#ifdef GAMEUI2
-#include "igameui2.h"
-#endif
-
 #include "GameUI_Interface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -227,10 +223,7 @@ IReplaySystem *g_pReplay = NULL;
 
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
-#ifdef GAMEUI2
-CSysModule *g_pGameUI2Module = nullptr;
-IGameUI2* g_pGameUI2 = NULL;
-#endif
+
 CSysModule *g_pGameUIModule = nullptr;
 CGameUI *gameui = nullptr;
 
@@ -1196,42 +1189,6 @@ void CHLClient::PostInit()
     {
         ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui.dll!\n");
     }
-
-#ifdef GAMEUI2
-    if (!CommandLine()->CheckParm("-nogameui2"))
-    {
-        const int16 modulePathLength = 2048;
-        char modulePath[modulePathLength];
-        Q_snprintf(modulePath, modulePathLength, "%s\\bin\\gameui2.dll", engine->GetGameDirectory());
-
-        g_pGameUI2Module = Sys_LoadModule(modulePath);
-        if (g_pGameUI2Module)
-        {
-            ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui2.dll\n");
-
-            CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUI2Module);
-
-            g_pGameUI2 = appSystemFactory ? static_cast<IGameUI2*>(appSystemFactory(GAMEUI2_DLL_INTERFACE_VERSION, nullptr)) : NULL;
-            if (g_pGameUI2)
-            {
-                ConColorMsg(Color(0, 148, 255, 255), "Initializing IGameUI2 interface...\n");
-
-                factorylist_t factories;
-                FactoryList_Retrieve(factories);
-                g_pGameUI2->Initialize(factories.appSystemFactory);
-                g_pGameUI2->OnInitialize();
-            }
-            else
-            {
-                ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI2 interface.\n");
-            }
-        }
-        else
-        {
-            ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui2.dll from:\n%s\n", modulePath);
-        }
-    }
-#endif //GameUI2
 }
 
 //-----------------------------------------------------------------------------
@@ -1276,16 +1233,6 @@ void CHLClient::Shutdown( void )
     gHUD.Shutdown(); 
 	VGui_Shutdown();
 
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-    {
-        g_pGameUI2->OnShutdown();
-        g_pGameUI2->Shutdown();
-    }
-
-    if (g_pGameUI2Module)
-        Sys_UnloadModule(g_pGameUI2Module);
-#endif
     if (g_pGameUIModule)
         Sys_UnloadModule(g_pGameUIModule);
 
@@ -1380,11 +1327,6 @@ void CHLClient::HudUpdate( bool bActive )
 	{
 		g_pSixenseInput->SixenseFrame( 0, NULL ); 
 	}
-#endif
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnUpdate();
 #endif
 }
 
@@ -1733,11 +1675,6 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 		CReplayRagdollRecorder::Instance().Init();
 	}
 #endif
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnLevelInitializePreEntity();
-#endif
 }
 
 
@@ -1749,11 +1686,6 @@ void CHLClient::LevelInitPostEntity( )
 	IGameSystem::LevelInitPostEntityAllSystems();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnLevelInitializePostEntity();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1819,11 +1751,6 @@ void CHLClient::LevelShutdown( void )
 	ParticleMgr()->RemoveAllEffects();
 	
 	StopAllRumbleEffects();
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnLevelShutdown();
-#endif
 
 	gHUD.LevelShutdown();
 
