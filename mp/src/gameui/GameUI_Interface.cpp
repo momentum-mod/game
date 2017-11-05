@@ -504,7 +504,6 @@ void CGameUI::RunFrame()
         }
     }
 
-#if 0
     if (m_bTryingToLoadFriends && m_iFriendsLoadPauseFrames-- < 1 && g_hMutex && g_hWaitMutex)
     {
         // try and load Steam platform files
@@ -548,7 +547,6 @@ void CGameUI::RunFrame()
             }
         }
     }
-#endif
 }
 
 //-----------------------------------------------------------------------------
