@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -21,6 +21,8 @@
 using namespace vgui;
 static char token[ 1024 ];
 
+#define __max max
+#define __min min
 void StripFloatTrailingZeros(char *str)
 {
 	// scan for a '.'
