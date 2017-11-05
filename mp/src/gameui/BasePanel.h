@@ -51,8 +51,6 @@ protected:
     void OnCommand(const char *command) OVERRIDE{ RunMenuCommand(command); }
     void PerformLayout() OVERRIDE;
 
-    MESSAGE_FUNC_INT(OnActivateModule, "ActivateModule", moduleIndex);
-
 private:
     enum EBackgroundState
     {
@@ -67,8 +65,6 @@ private:
     vgui::DHANDLE<vgui::PropertyDialog> m_hOptionsDialog;
     vgui::DHANDLE<vgui::Frame> m_hAchievementsDialog;
     MainMenu *m_pMainMenu;
-
-    bool m_bPlatformMenuInitialized;
 
     // sets the menu alpha [0..255]
     void SetMenuAlpha(int alpha);

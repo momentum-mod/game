@@ -5,31 +5,18 @@
 // $NoKeywords: $
 //===========================================================================//
 
-#ifdef _WIN32
-#include <windows.h>
-
-#include <direct.h>
-#include <io.h>
-#endif
-
 #include <stdio.h>
 #include <sys/stat.h>
 #include <tier0/dbg.h>
-
-#ifdef SendMessage
-#undef SendMessage
-#endif
+#include <time.h>
 
 #include "FileSystem.h"
 #include "GameUI_Interface.h"
-#include "Sys_Utils.h"
 #include "string.h"
 #include "tier0/icommandline.h"
 
 // interface to engine
 #include "EngineInterface.h"
-
-#include "VGuiSystemModuleLoader.h"
 
 #include "GameConsole.h"
 #include "IEngineVGUI.h"
@@ -56,10 +43,7 @@
 
 #include "BasePanel.h"
 #include "mom_steam_helper.h"
-static CBasePanel *staticPanel = nullptr;
-
 #include "engine/IEngineSound.h"
-#include "../GameEventListener.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -71,6 +55,7 @@ IEngineSound *enginesound = nullptr;
 vgui::ISurface *enginesurfacefuncs = nullptr;
 IAchievementMgr *achievementmgr = nullptr;
 IGameEventManager2 *gameeventmanager = nullptr;
+static CBasePanel *staticPanel = nullptr;
 
 class CGameUI;
 CGameUI *g_pGameUI = nullptr;
@@ -80,8 +65,6 @@ vgui::DHANDLE<CLoadingDialog> g_hLoadingDialog;
 vgui::VPANEL g_hLoadingBackgroundDialog = NULL;
 
 static CGameUI g_GameUI;
-static WHANDLE g_hMutex = NULL;
-static WHANDLE g_hWaitMutex = NULL;
 
 static IGameClientExports *g_pGameClientExports = nullptr;
 IGameClientExports *GameClientExports() { return g_pGameClientExports; }
@@ -99,11 +82,6 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CGameUI, IGameUI, GAMEUI_INTERFACE_VERSION, g_
 CGameUI::CGameUI()
 {
     g_pGameUI = this;
-    m_bTryingToLoadFriends = false;
-    m_iFriendsLoadPauseFrames = 0;
-    m_iGameIP = 0;
-    m_iGameConnectionPort = 0;
-    m_iGameQueryPort = 0;
     m_bActivatedUI = false;
     m_szPreviousStatusText[0] = 0;
     m_bHasSavedThisMenuSession = false;
@@ -212,19 +190,6 @@ void CGameUI::Connect(CreateInterfaceFn gameFactory)
     {
         Error("CGameUI::Initialize() failed to get necessary interfaces\n");
     }
-
-    m_GameFactory = gameFactory;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Callback function; sends platform Shutdown message to specified window
-//-----------------------------------------------------------------------------
-int __stdcall SendShutdownMsgFunc(WHANDLE hwnd, int lparam)
-{
-#ifdef _WIN32
-    Sys_PostMessage(hwnd, Sys_RegisterWindowMessage("ShutdownValvePlatform"), 0, 1);
-#endif
-    return 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -270,13 +235,12 @@ void CGameUI::PlayGameStartupSound()
         g_pFullFileSystem->FindClose(fh);
     }
 
-#ifdef _WIN32
     // did we find any?
     if (fileNames.Count() > 0)
     {
-        SYSTEMTIME SystemTime;
-        GetSystemTime(&SystemTime);
-        int index = SystemTime.wMilliseconds % fileNames.Count();
+        time_t t;
+        time(&t);
+        int index = t % fileNames.Count();
 
         if (fileNames.IsValidIndex(index) && fileNames[index])
         {
@@ -290,7 +254,6 @@ void CGameUI::PlayGameStartupSound()
 
         fileNames.PurgeAndDeleteElements();
     }
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -298,109 +261,28 @@ void CGameUI::PlayGameStartupSound()
 //-----------------------------------------------------------------------------
 void CGameUI::Start()
 {
-    // determine Steam location for configuration
-    if (!FindPlatformDirectory(m_szPlatformDir, sizeof(m_szPlatformDir)))
-        return;
+    // setup config file directory
+    char szConfigDir[512];
+    g_pFullFileSystem->RelativePathToFullPath("config", "PLATFORM", szConfigDir, sizeof(szConfigDir));
 
-    if (IsPC())
-    {
-        // setup config file directory
-        char szConfigDir[512];
-        Q_strncpy(szConfigDir, m_szPlatformDir, sizeof(szConfigDir));
-        Q_strncat(szConfigDir, "config", sizeof(szConfigDir), COPY_ALL_CHARACTERS);
+    DevMsg("Steam config directory: %s\n", szConfigDir);
 
-        Msg("Steam config directory: %s\n", szConfigDir);
+    g_pFullFileSystem->AddSearchPath(szConfigDir, "CONFIG");
+    g_pFullFileSystem->CreateDirHierarchy("", "CONFIG");
 
-        g_pFullFileSystem->AddSearchPath(szConfigDir, "CONFIG");
-        g_pFullFileSystem->CreateDirHierarchy("", "CONFIG");
+    // user dialog configuration
+    vgui::system()->SetUserConfigFile("InGameDialogConfig.vdf", "CONFIG");
 
-        // user dialog configuration
-        vgui::system()->SetUserConfigFile("InGameDialogConfig.vdf", "CONFIG");
-
-        g_pFullFileSystem->AddSearchPath("platform", "PLATFORM");
-    }
+    g_pFullFileSystem->AddSearchPath("platform", "PLATFORM");
+    
 
     // localization
     g_pVGuiLocalize->AddFile("Resource/platform_%language%.txt");
     g_pVGuiLocalize->AddFile("Resource/vgui_%language%.txt");
-#ifdef _WIN32
 
-    Sys_SetLastError(SYS_NO_ERROR);
-
-    if (IsPC())
-    {
-        g_hMutex = Sys_CreateMutex("ValvePlatformUIMutex");
-        g_hWaitMutex = Sys_CreateMutex("ValvePlatformWaitMutex");
-        if (g_hMutex == NULL || g_hWaitMutex == NULL || Sys_GetLastError() == SYS_ERROR_INVALID_HANDLE)
-        {
-            // error, can't get handle to mutex
-            if (g_hMutex)
-            {
-                Sys_ReleaseMutex(g_hMutex);
-            }
-            if (g_hWaitMutex)
-            {
-                Sys_ReleaseMutex(g_hWaitMutex);
-            }
-            g_hMutex = NULL;
-            g_hWaitMutex = NULL;
-            Error("Steam Error: Could not access Steam, bad mutex\n");
-            return;
-        }
-        unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
-        if (!(waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED))
-        {
-            // mutex locked, need to deactivate Steam (so we have the Friends/ServerBrowser data files)
-            // get the wait mutex, so that Steam.exe knows that we're trying to acquire ValveTrackerMutex
-            waitResult = Sys_WaitForSingleObject(g_hWaitMutex, 0);
-            if (waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED)
-            {
-                Sys_EnumWindows(SendShutdownMsgFunc, 1);
-            }
-        }
-        // Delay playing the startup music until two frames
-        // this allows cbuf commands that occur on the first frame that may start a map
-        m_iPlayGameStartupSound = 2;
-
-        // now we are set up to check every frame to see if we can friends/server browser
-        m_bTryingToLoadFriends = true;
-        m_iFriendsLoadPauseFrames = 1;
-    }
-#endif
-
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Finds which directory the platform resides in
-// Output : Returns true on success, false on failure.
-//-----------------------------------------------------------------------------
-bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
-{
-    platformDir[0] = '\0';
-
-    if (platformDir[0] == '\0')
-    {
-#ifdef _WIN32
-
-        // we're not under steam, so setup using path relative to game
-
-        if (::GetModuleFileName((HINSTANCE)GetModuleHandle(nullptr), platformDir, bufferSize))
-        {
-            char *lastslash = strrchr(platformDir, '\\'); // this should be just before the filename
-            if (lastslash)
-            {
-                *lastslash = 0;
-                Q_strncat(platformDir, "\\platform\\", bufferSize, COPY_ALL_CHARACTERS);
-                return true;
-            }
-        }
-#endif
-
-        //Error("Unable to determine platform directory\n");
-        //return false;
-    }
-
-    return (platformDir[0] != 0);
+    // Delay playing the startup music until two frames
+    // this allows cbuf commands that occur on the first frame that may start a map
+    m_iPlayGameStartupSound = 2;
 }
 
 //-----------------------------------------------------------------------------
@@ -408,26 +290,8 @@ bool CGameUI::FindPlatformDirectory(char *platformDir, int bufferSize)
 //-----------------------------------------------------------------------------
 void CGameUI::Shutdown()
 {
-    // notify all the modules of Shutdown
-    g_VModuleLoader.ShutdownPlatformModules();
-
-    // unload the modules them from memory
-    g_VModuleLoader.UnloadPlatformModules();
-
     ModInfo().FreeModInfo();
 
-#ifdef _WIN32
-    // release platform mutex
-    // close the mutex
-    if (g_hMutex)
-    {
-        Sys_ReleaseMutex(g_hMutex);
-    }
-    if (g_hWaitMutex)
-    {
-        Sys_ReleaseMutex(g_hWaitMutex);
-    }
-#endif
     m_SteamAPIContext.Clear();
 
     ConVar_Unregister();
@@ -505,7 +369,6 @@ void CGameUI::RunFrame()
 #endif
 
     // Run frames
-    g_VModuleLoader.RunFrame();
     GetBasePanel()->RunFrame();
 
     // Play the start-up music the first time we run frame
@@ -517,75 +380,6 @@ void CGameUI::RunFrame()
             PlayGameStartupSound();
         }
     }
-
-#ifdef _WIN32
-    if (m_bTryingToLoadFriends && m_iFriendsLoadPauseFrames-- < 1 && g_hMutex && g_hWaitMutex)
-    {
-        // try and load Steam platform files
-        unsigned int waitResult = Sys_WaitForSingleObject(g_hMutex, 0);
-        if (waitResult == SYS_WAIT_OBJECT_0 || waitResult == SYS_WAIT_ABANDONED)
-        {
-            // we got the mutex, so load Friends/Serverbrowser
-            // clear the loading flag
-            m_bTryingToLoadFriends = false;
-            g_VModuleLoader.LoadPlatformModules(&m_GameFactory, 1, false);
-
-            // release the wait mutex
-            Sys_ReleaseMutex(g_hWaitMutex);
-
-            // notify the game of our game name
-            const char *fullGamePath = engine->GetGameDirectory();
-            const char *pathSep = strrchr(fullGamePath, '/');
-            if (!pathSep)
-            {
-                pathSep = strrchr(fullGamePath, '\\');
-            }
-            if (pathSep)
-            {
-                KeyValues *pKV = new KeyValues("ActiveGameName");
-                pKV->SetString("name", pathSep + 1);
-                pKV->SetInt("appid", engine->GetAppID());
-                KeyValues *modinfo = new KeyValues("ModInfo");
-                if (modinfo->LoadFromFile(g_pFullFileSystem, "gameinfo.txt"))
-                {
-                    pKV->SetString("game", modinfo->GetString("game", ""));
-                }
-                modinfo->deleteThis();
-
-                g_VModuleLoader.PostMessageToAllModules(pKV);
-            }
-
-            // notify the ui of a game connect if we're already in a game
-            if (m_iGameIP)
-            {
-                SendConnectedToGameMessage();
-            }
-        }
-    }
-#endif
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called when the game connects to a server
-//-----------------------------------------------------------------------------
-void CGameUI::OLD_OnConnectToServer(const char *game, int IP, int port)
-{
-    // Nobody should use this anymore because the query port and the connection port can be different.
-    // Use OnConnectToServer2 instead.
-    Assert(false);
-    OnConnectToServer2(game, IP, port, port);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called when the game connects to a server
-//-----------------------------------------------------------------------------
-void CGameUI::OnConnectToServer2(const char *game, int IP, int connectionPort, int queryPort)
-{
-    m_iGameIP = IP;
-    m_iGameConnectionPort = connectionPort;
-    m_iGameQueryPort = queryPort;
-
-    SendConnectedToGameMessage();
 }
 
 Vector2D CGameUI::GetViewport() const
@@ -595,64 +389,11 @@ Vector2D CGameUI::GetViewport() const
     return Vector2D(wide, tall);
 }
 
-void CGameUI::SendConnectedToGameMessage()
-{
-    MEM_ALLOC_CREDIT();
-    KeyValues *kv = new KeyValues("ConnectedToGame");
-    kv->SetInt("ip", m_iGameIP);
-    kv->SetInt("connectionport", m_iGameConnectionPort);
-    kv->SetInt("queryport", m_iGameQueryPort);
-
-    g_VModuleLoader.PostMessageToAllModules(kv);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called when the game disconnects from a server
-//-----------------------------------------------------------------------------
-void CGameUI::OnDisconnectFromServer(uint8 eSteamLoginFailure)
-{
-    m_iGameIP = 0;
-    m_iGameConnectionPort = 0;
-    m_iGameQueryPort = 0;
-
-    if (g_hLoadingBackgroundDialog)
-    {
-        vgui::ivgui()->PostMessage(g_hLoadingBackgroundDialog, new KeyValues("DisconnectedFromGame"), NULL);
-    }
-
-    g_VModuleLoader.PostMessageToAllModules(new KeyValues("DisconnectedFromGame"));
-
-    if (eSteamLoginFailure == STEAMLOGINFAILURE_NOSTEAMLOGIN)
-    {
-        if (g_hLoadingDialog)
-        {
-            g_hLoadingDialog->DisplayNoSteamConnectionError();
-        }
-    }
-    else if (eSteamLoginFailure == STEAMLOGINFAILURE_VACBANNED)
-    {
-        if (g_hLoadingDialog)
-        {
-            g_hLoadingDialog->DisplayVACBannedError();
-        }
-    }
-    else if (eSteamLoginFailure == STEAMLOGINFAILURE_LOGGED_IN_ELSEWHERE)
-    {
-        if (g_hLoadingDialog)
-        {
-            g_hLoadingDialog->DisplayLoggedInElsewhereError();
-        }
-    }
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: activates the loading dialog on level load start
 //-----------------------------------------------------------------------------
 void CGameUI::OnLevelLoadingStarted(bool bShowProgressDialog)
 {
-    g_VModuleLoader.PostMessageToAllModules(new KeyValues("LoadingStarted"));
-
-    // GetUiBaseModPanelClass().OnLevelLoadingStarted( levelName, bShowProgressDialog );
     GetBasePanel()->OnLevelLoadingStarted();
     ShowLoadingBackgroundDialog();
 
@@ -671,9 +412,6 @@ void CGameUI::OnLevelLoadingStarted(bool bShowProgressDialog)
 void CGameUI::OnLevelLoadingFinished(bool bError, const char *failureReason, const char *extendedReason)
 {
     StopProgressBar(bError, failureReason, extendedReason);
-
-    // notify all the modules
-    g_VModuleLoader.PostMessageToAllModules(new KeyValues("LoadingFinished"));
 
     HideLoadingBackgroundDialog();
 
@@ -704,8 +442,6 @@ bool CGameUI::UpdateProgressBar(float progress, const char *statusText)
     }
 
     return bRedraw;
-
-    // return GetUiBaseModPanelClass().UpdateProgressBar(progress, statusText);
 }
 
 //-----------------------------------------------------------------------------

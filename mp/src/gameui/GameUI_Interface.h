@@ -47,21 +47,14 @@ class CGameUI : public IGameUI
     void PreventEngineHideGameUI();
     void AllowEngineHideGameUI();
 
-    virtual void SetLoadingBackgroundDialog(vgui::VPANEL panel);
+    void SetLoadingBackgroundDialog(vgui::VPANEL panel) OVERRIDE;;
 
     // notifications
     void OnGameUIActivated() OVERRIDE;
     void OnGameUIHidden() OVERRIDE;
-    void OLD_OnConnectToServer(const char *game, int IP, int port) OVERRIDE; // OLD: use OnConnectToServer2
-    void OnConnectToServer2(const char *game, int IP, int connectionPort, int queryPort) OVERRIDE;
-    void OnDisconnectFromServer(uint8 eSteamLoginFailure) OVERRIDE;
+
     void OnLevelLoadingStarted(bool bShowProgressDialog) OVERRIDE;
     void OnLevelLoadingFinished(bool bError, const char *failureReason, const char *extendedReason) OVERRIDE;
-
-    void OnDisconnectFromServer_OLD(uint8 eSteamLoginFailure, const char *username) OVERRIDE
-    {
-        OnDisconnectFromServer(eSteamLoginFailure);
-    }
 
     // progress
     bool UpdateProgressBar(float progress, const char *statusText) OVERRIDE;
@@ -100,6 +93,11 @@ class CGameUI : public IGameUI
     void ShowNewGameDialog(int chapter) OVERRIDE{}
     void SetMainMenuOverride(vgui::VPANEL panel) OVERRIDE{}
     void UpdatePlayerInfo(uint64 nPlayerId, const char *pName, int nTeam, byte cVoiceState, int nPlayersNeeded, bool bHost) OVERRIDE{}
+    // Connection
+    void OLD_OnConnectToServer(const char *game, int IP, int port) OVERRIDE {} // OLD: use OnConnectToServer2
+    void OnConnectToServer2(const char *game, int IP, int connectionPort, int queryPort) OVERRIDE {}
+    void OnDisconnectFromServer(uint8 eSteamLoginFailure) OVERRIDE{}
+    void OnDisconnectFromServer_OLD(uint8 eSteamLoginFailure, const char *username) OVERRIDE{}
 
     // state
     bool IsInLevel();
@@ -123,8 +121,6 @@ class CGameUI : public IGameUI
     void SetMaskTexture(ITexture *maskTexture) { m_pMaskTexture = maskTexture; }
 
   private:
-    void SendConnectedToGameMessage();
-
     virtual void StartProgressBar();
     virtual bool ContinueProgressBar(float progressFraction);
     virtual void StopProgressBar(bool bError, const char *failureReason, const char *extendedReason = NULL);
@@ -134,20 +130,9 @@ class CGameUI : public IGameUI
     virtual void SetSecondaryProgressBar(float progress /* range [0..1] */);
     virtual void SetSecondaryProgressBarText(const char *statusText);
 
-    bool FindPlatformDirectory(char *platformDir, int bufferSize);
-
-    CreateInterfaceFn m_GameFactory;
-
-    bool m_bTryingToLoadFriends : 1;
     bool m_bActivatedUI : 1;
     bool m_bHasSavedThisMenuSession : 1;
     bool m_bOpenProgressOnStart : 1;
-
-    int m_iGameIP;
-    int m_iGameConnectionPort;
-    int m_iGameQueryPort;
-
-    int m_iFriendsLoadPauseFrames;
     int m_iPlayGameStartupSound;
 
     char m_szPreviousStatusText[128];
