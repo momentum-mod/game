@@ -37,9 +37,10 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-COptionsSubKeyboard::COptionsSubKeyboard(vgui::Panel *parent) : EditablePanel(parent, "OptionsSubKeyboard" )
+COptionsSubKeyboard::COptionsSubKeyboard(vgui::Panel *parent) : PropertyPage(parent, "OptionsSubKeyboard" )
 {
-	Q_memset( m_Bindings, 0, sizeof( m_Bindings ));
+	memset( m_Bindings, 0, sizeof( m_Bindings ));
+    SetSize(0, 2);
 
 	// create the key bindings list
 	CreateKeyBindingList();
@@ -442,7 +443,7 @@ void COptionsSubKeyboard::FillInCurrentBindings( void )
 			AddBinding( item, keyName );
 
 			// remember to apply unbinding of this key when we apply
-			m_KeysToUnbind.AddToTail( bc );
+			m_KeysToUnbind.AddToTail( keyName );
 		}
 	}
 }

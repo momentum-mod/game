@@ -50,6 +50,7 @@ private:
 	}
 
     void UpdateSensitivityLabel();
+    void UpdateAccelLabel();
 	void UpdateJoystickPanels();
 
 	CCvarNegateCheckButton		*m_pReverseMouseCheckBox;
@@ -57,12 +58,12 @@ private:
     CCvarToggleCheckButton *m_pMouseRawCheckbox;
 	CCvarToggleCheckButton		*m_pJoystickCheckBox;
 	CCvarToggleCheckButton		*m_pJoystickSouthpawCheckBox;
-	CCvarToggleCheckButton		*m_pQuickInfoCheckBox;
 	CCvarToggleCheckButton		*m_pReverseJoystickCheckBox;
 
 	CCvarSlider					*m_pMouseSensitivitySlider;
     vgui::TextEntry             *m_pMouseSensitivityLabel;
 
+    vgui::CheckButton *m_pMouseAccelToggle;
     CCvarSlider *m_pMouseAccelSlider;
     vgui::TextEntry *m_pMouseAccelLabel;
 
