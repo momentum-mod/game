@@ -195,14 +195,14 @@ private:
 
 MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("volume")
 {
-    HScheme Scheme = scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
+    /*HScheme Scheme = scheme()->LoadSchemeFromFile("resource2/schememainmenu.res", "SchemeMainMenu");
     SetScheme(Scheme);
 
     SetProportional(true);
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
     SetPaintBorderEnabled(false);
-    SetPaintBackgroundEnabled(false);
+    SetPaintBackgroundEnabled(false);*/
     AddActionSignalTarget(this);
     MakePopup(false);
     SetZPos(1);
@@ -231,6 +231,9 @@ MainMenu::~MainMenu()
 void MainMenu::OnThink()
 {
     BaseClass::OnThink();
+
+    surface()->MovePopupToBack(GetVPanel());
+
     if (ipanel())
         SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
 

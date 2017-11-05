@@ -66,7 +66,7 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
 
     g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
-    m_pMainMenu = new MainMenu(nullptr);
+    m_pMainMenu = new MainMenu(this);
     SETUP_PANEL(m_pMainMenu);
 }
 
