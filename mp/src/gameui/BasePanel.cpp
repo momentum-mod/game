@@ -25,7 +25,7 @@ CBasePanel *GetBasePanel() { return g_pBasePanel; }
 
 CON_COMMAND(reload_menu, "Reloads the menu\n")
 {
-    GetBasePanel()->GetMainMenu()->ReloadMenu();
+    GetBasePanel()->GetMainMenu()->LoadMenu();
 }
 
 //-----------------------------------------------------------------------------
@@ -54,15 +54,6 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
     m_bHaveDarkenedTitleText = true;
     m_bForceTitleTextUpdate = true;
     m_BackdropColor = Color(0, 0, 0, 128);
-
-    /*SetZPos(-100);//This guy is going way back
-    SetPaintBorderEnabled(false);
-    SetPaintBackgroundEnabled(false);
-    SetKeyBoardInputEnabled(false);//And we're not taking input on it
-    SetMouseInputEnabled(false);//Whatsoever, because it could mess with the main menu
-    SetProportional(false);
-    SetVisible(true);
-    SetPostChildPaintEnabled(true);*/
 
     g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
@@ -134,7 +125,7 @@ void CBasePanel::OnGameUIActivated()
         m_bEverActivated = true;
     }
 
-    m_pMainMenu->Activate();
+    m_pMainMenu->SetVisible(true);
 
     if (GameUI().IsInLevel())
     {
