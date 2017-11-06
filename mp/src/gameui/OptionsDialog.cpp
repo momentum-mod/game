@@ -5,17 +5,17 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include "optionsdialog.h"
+#include "OptionsDialog.h"
 
 #include "vgui_controls/Button.h"
 #include "vgui_controls/PropertySheet.h"
 
 #include "KeyValues.h"
 #include "OptionsSubKeyboard.h"
-#include "optionssubmouse.h"
-#include "optionssubaudio.h"
-#include "optionssubvideo.h"
-#include "modinfo.h"
+#include "OptionsSubMouse.h"
+#include "OptionsSubAudio.h"
+#include "OptionsSubVideo.h"
+#include "ModInfo.h"
 
 using namespace vgui;
 

@@ -6,7 +6,7 @@
 //=============================================================================//
 
 
-#include "modinfo.h"
+#include "ModInfo.h"
 #include "KeyValues.h"
 #include "vgui_controls/Controls.h"
 #include "filesystem.h"

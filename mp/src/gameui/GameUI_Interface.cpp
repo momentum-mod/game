@@ -21,7 +21,7 @@
 #include "ienginevgui.h"
 #include "IGameUIFuncs.h"
 #include "LoadingDialog.h"
-#include "modinfo.h"
+#include "ModInfo.h"
 #include "game/client/IGameClientExports.h"
 #include "iachievementmgr.h"
 #include "materialsystem/imaterialsystem.h"

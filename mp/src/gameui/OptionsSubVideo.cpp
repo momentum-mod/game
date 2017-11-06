@@ -5,8 +5,8 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include "optionssubvideo.h"
-#include "cvarslider.h"
+#include "OptionsSubVideo.h"
+#include "CvarSlider.h"
 #include "EngineInterface.h"
 #include "BasePanel.h"
 #include "IGameUIFuncs.h"
@@ -18,14 +18,14 @@
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/Frame.h"
 #include "vgui_controls/QueryBox.h"
-#include "cvartogglecheckbutton.h"
+#include "CvarToggleCheckButton.h"
 #include "tier1/KeyValues.h"
 #include "vgui/IInput.h"
 #include "vgui/ILocalize.h"
 #include "vgui/ISystem.h"
 #include "tier0/icommandline.h"
 #include "tier1/convar.h"
-#include "modinfo.h"
+#include "ModInfo.h"
 
 #include "inetchannelinfo.h"
 

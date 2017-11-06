@@ -18,7 +18,7 @@
 #include <vgui/KeyCode.h>
 #include <KeyValues.h>
 
-#include "urlbutton.h"
+#include "URLButton.h"
 #include <vgui_controls/FocusNavGroup.h>
 
 // memdbgon must be the last include file in a .cpp file!!!

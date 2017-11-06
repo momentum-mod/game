@@ -7,7 +7,7 @@
 
 #include "OptionsSubKeyboard.h"
 #include "EngineInterface.h"
-#include "vcontrolslistpanel.h"
+#include "VControlsListPanel.h"
 
 #include "vgui_controls/Button.h"
 #include "vgui_controls/Label.h"

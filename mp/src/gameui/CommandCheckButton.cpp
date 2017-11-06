@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include "commandcheckbutton.h"
+#include "CommandCheckButton.h"
 #include "EngineInterface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

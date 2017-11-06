@@ -5,7 +5,7 @@
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"
 #include "tier0/icommandline.h"
-#include "optionsdialog.h"
+#include "OptionsDialog.h"
 #include "steam/steam_api.h"
 #include "EngineInterface.h"
 #include "vgui_controls/MessageBox.h"

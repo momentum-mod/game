@@ -4,10 +4,10 @@
 //
 //=============================================================================//
 
-#include "optionssubaudio.h"
+#include "OptionsSubAudio.h"
 
-#include "cvarslider.h"
-#include "modinfo.h"
+#include "CvarSlider.h"
+#include "ModInfo.h"
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/QueryBox.h"
 #include "tier1/KeyValues.h"
