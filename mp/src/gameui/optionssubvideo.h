@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -15,9 +15,9 @@
 #include <vgui_controls/ComboBox.h>
 #include <vgui_controls/PropertyPage.h>
 #include "EngineInterface.h"
-#include "igameuifuncs.h"
-#include "URLButton.h"
-#include "vgui_controls/frame.h"
+#include "IGameUIFuncs.h"
+#include "urlbutton.h"
+#include "vgui_controls/Frame.h"
 
 
 class CCvarSlider;

@@ -1,5 +1,5 @@
-#include "basepanel.h"
-#include "gameui_interface.h"
+#include "BasePanel.h"
+#include "GameUI_Interface.h"
 #include "mainmenu.h"
 
 #include "vgui/ISurface.h"

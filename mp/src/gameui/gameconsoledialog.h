@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -13,7 +13,7 @@
 
 #include "vgui_controls/consoledialog.h"
 #include <Color.h>
-#include "UtlVector.h"
+#include "utlvector.h"
 #include "EngineInterface.h"
 #include "vgui_controls/Frame.h"
 

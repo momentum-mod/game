@@ -1,4 +1,4 @@
-#include "gameui_interface.h"
+#include "GameUI_Interface.h"
 #include "frame2d.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

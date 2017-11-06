@@ -1,11 +1,11 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================//
 
-#include "CvarToggleCheckButton.h"
+#include "cvartogglecheckbutton.h"
 #include "EngineInterface.h"
 #include <vgui/IVGui.h>
 #include "tier1/KeyValues.h"

@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -14,7 +14,7 @@
 #include <vgui_controls/ComboBox.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/Panel.h>
-#include "UtlVector.h"
+#include "utlvector.h"
 
 class CLabeledCommandComboBox : public vgui::ComboBox
 {
