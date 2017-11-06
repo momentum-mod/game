@@ -1,10 +1,10 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 //=============================================================================//
 
-#include "MouseMessageForwardingPanel.h"
+#include "mousemessageforwardingpanel.h"
 #include "KeyValues.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

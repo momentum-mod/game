@@ -1,13 +1,13 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 //=============================================================================//
 
-#include "OptionsSubAudio.h"
+#include "optionssubaudio.h"
 
-#include "CvarSlider.h"
-#include "ModInfo.h"
+#include "cvarslider.h"
+#include "modinfo.h"
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/QueryBox.h"
 #include "tier1/KeyValues.h"

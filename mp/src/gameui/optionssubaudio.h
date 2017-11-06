@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -13,8 +13,8 @@
 
 #include "vgui_controls/PropertyPage.h"
 #include <language.h>
-#include "vgui_controls/frame.h"
-#include "vgui/keycode.h"
+#include "vgui_controls/Frame.h"
+#include "vgui/KeyCode.h"
 
 class CLabeledCommandComboBox;
 class CCvarSlider;

@@ -10,7 +10,7 @@
 #include <tier0/dbg.h>
 #include <time.h>
 
-#include "FileSystem.h"
+#include "filesystem.h"
 #include "GameUI_Interface.h"
 #include "string.h"
 #include "tier0/icommandline.h"
@@ -18,11 +18,11 @@
 // interface to engine
 #include "EngineInterface.h"
 
-#include "GameConsole.h"
-#include "IEngineVGUI.h"
+#include "gameconsole.h"
+#include "ienginevgui.h"
 #include "IGameUIFuncs.h"
 #include "LoadingDialog.h"
-#include "ModInfo.h"
+#include "modinfo.h"
 #include "game/client/IGameClientExports.h"
 #include "iachievementmgr.h"
 #include "materialsystem/imaterialsystem.h"

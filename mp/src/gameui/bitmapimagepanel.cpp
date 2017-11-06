@@ -1,11 +1,11 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================//
 
-#include "BitmapImagePanel.h"
+#include "bitmapimagepanel.h"
 #include <vgui/ISurface.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
