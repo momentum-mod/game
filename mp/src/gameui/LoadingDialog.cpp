@@ -23,7 +23,7 @@
 #include "tier0/icommandline.h"
 
 #include "GameUI_Interface.h"
-#include "modinfo.h"
+#include "ModInfo.h"
 #include "BasePanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

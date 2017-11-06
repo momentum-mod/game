@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright � 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -16,7 +16,7 @@
 #include <vgui_controls/PropertyPage.h>
 #include "EngineInterface.h"
 #include "IGameUIFuncs.h"
-#include "urlbutton.h"
+#include "URLButton.h"
 #include "vgui_controls/Frame.h"
 
 
