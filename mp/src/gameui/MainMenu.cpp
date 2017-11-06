@@ -1,6 +1,6 @@
 #include "BasePanel.h"
 #include "GameUI_Interface.h"
-#include "mainmenu.h"
+#include "MainMenu.h"
 
 #include "vgui/ISurface.h"
 #include "vgui/IVGui.h"

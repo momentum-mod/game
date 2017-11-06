@@ -17,8 +17,7 @@
 
 // interface to engine
 #include "EngineInterface.h"
-
-#include "gameconsole.h"
+#include "GameConsole.h"
 #include "ienginevgui.h"
 #include "IGameUIFuncs.h"
 #include "LoadingDialog.h"
@@ -39,7 +38,7 @@
 #include "vgui/ISystem.h"
 #include "vgui/IVGui.h"
 #include "vgui_controls/PHandle.h"
-#include "mainmenu.h"
+#include "MainMenu.h"
 
 #include "BasePanel.h"
 #include "mom_steam_helper.h"
