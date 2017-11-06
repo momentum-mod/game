@@ -30,7 +30,7 @@ $Project "game_shader_dx9"
 	"materialsystem\stdshaders\game_shader_dx9_momentum.vpc" [($WIN32||$POSIX) && $MOMENTUM]
 }
 
-$Project "gameui"
+$Project "GameUI"
 {
     "gameui\GameUI.vpc" [($WIN32||$POSIX)]
 }

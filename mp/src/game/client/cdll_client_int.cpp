@@ -1168,7 +1168,7 @@ void CHLClient::PostInit()
 	}
 #endif
 
-    g_pGameUIModule = filesystem->LoadModule("gameui", "EXECUTABLE_PATH");
+    g_pGameUIModule = filesystem->LoadModule("GameUI", "EXECUTABLE_PATH");
     if (g_pGameUIModule)
     {
         ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui!\n");
