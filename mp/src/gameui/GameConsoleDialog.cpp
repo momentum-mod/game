@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //===========================================================================//
 
-#include "gameconsoledialog.h"
+#include "GameConsoleDialog.h"
 #include "GameUI_Interface.h"
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"

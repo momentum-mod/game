@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include "cvartogglecheckbutton.h"
+#include "CvarToggleCheckButton.h"
 #include "EngineInterface.h"
 #include <vgui/IVGui.h>
 #include "tier1/KeyValues.h"
