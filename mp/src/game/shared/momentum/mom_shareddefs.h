@@ -6,7 +6,7 @@
 
 #ifndef GHOST_SERVER
 #include "const.h"
-#ifndef GAMEUI2_DLL
+#if defined(GAME_DLL) || defined(CLIENT_DLL)
 #include "shareddefs.h"
 #endif
 #endif
