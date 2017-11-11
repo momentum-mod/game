@@ -1023,7 +1023,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         }
         else if (pReplayEnt)
         {
-            m_sSpecTargetSteamID = CSteamID(uint64_t(1));
+            m_sSpecTargetSteamID = CSteamID(uint64(1));
             g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
         }
     }
