@@ -9,6 +9,7 @@
 #include "mom_shareddefs.h"
 #include "GameEventListener.h"
 #include "mom_modulecomms.h"
+#include "IMovementListener.h"
 
 struct Checkpoint_t;
 class CTriggerOnehop;
@@ -16,11 +17,11 @@ class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
-
+#define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 
 class CMomentumGhostBaseEntity;
 
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IMovementListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -94,7 +95,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_SrvData.m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
-    void CheckForBhop();
+    void OnPlayerJump() OVERRIDE;
+    void OnPlayerLand() OVERRIDE;
     void UpdateRunStats();
     void UpdateRunSync();
     void UpdateJumpStrafes();
@@ -230,8 +232,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     CTriggerCheckpoint *m_pCurrentCheckpoint;
 
     // for detecting bhop
-    float m_flTicksOnGround;
-    const int NUM_TICKS_TO_BHOP;
     friend class CMomentumGameMovement;
     float m_flPunishTime;
     int m_iLastBlock;

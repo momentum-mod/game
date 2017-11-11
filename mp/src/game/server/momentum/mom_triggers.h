@@ -280,12 +280,8 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerLimitMovement, CBaseMomentumTrigger);
 
   public:
-    void Think() OVERRIDE;
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
     void EndTouch(CBaseEntity *pOther) OVERRIDE;
-
-  private:
-    CountdownTimer m_BhopTimer;
 };
 
 // CFuncShootBoost

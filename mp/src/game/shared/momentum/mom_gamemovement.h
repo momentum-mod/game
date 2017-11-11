@@ -3,15 +3,15 @@
 #include "cbase.h"
 
 #include "baseplayer_shared.h"
-#include "func_ladder.h"
 #include "gamemovement.h"
 #include "mom_player_shared.h"
 
 struct surface_data_t;
-
+class IMovementListener;
 class CMomentumPlayer;
 
 #define NO_REFL_NORMAL_CHANGE -2.0f
+#define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
 #define STOP_EPSILON 0.1
 #define MAX_CLIP_PLANES 5
 
@@ -24,6 +24,8 @@ class CMomentumPlayer;
 #define DUCK_SPEED_MULTIPLIER 0.34f
 
 #define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
+
+#define FIRE_GAMEMOVEMENT_EVENT(event) FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event();}
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -98,7 +100,15 @@ class CMomentumGameMovement : public CGameMovement
     virtual void StuckGround(void);
     virtual int ClipVelocity(Vector& in , Vector& normal , Vector& out , float overbounce);
 
+    // Movement Listener
+    void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
+    void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
+    
   private:
     float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
+    CUtlVector<IMovementListener*> m_vecListeners;
+    ConVarRef mom_gamemode;
 };
+
+extern CMomentumGameMovement *g_pMomentumGameMovement;

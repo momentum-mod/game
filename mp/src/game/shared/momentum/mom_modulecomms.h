@@ -19,7 +19,9 @@ struct StdDataFromServer
     bool m_bHasPracticeMode;
     bool m_bResumeZoom;
     bool m_bDidPlayerBhop;
+    bool m_bPreventPlayerBhop;
     bool m_bUsingCPMenu;
+    int m_iLandTick; // Tick at which the player landed on the ground
     int m_iCheckpointCount;
     int m_iCurrentStepCP;
     int m_iShotsFired;

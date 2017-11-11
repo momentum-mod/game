@@ -5,6 +5,7 @@
 #include "movevars_shared.h"
 #include <rumble_shared.h>
 #include <stdarg.h>
+#include "IMovementListener.h"
 
 #include "tier0/memdbgon.h"
 
@@ -15,11 +16,10 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
-static MAKE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                   "Toggle landing punchangle. 0 = OFF, 1 = ON\n", 0, 9999);
+static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
-CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr) {}
+CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr), mom_gamemode("mom_gamemode") {}
 
 void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
 {
@@ -81,8 +81,7 @@ float CMomentumGameMovement::ClimbSpeed(void) const
 
 void CMomentumGameMovement::WalkMove()
 {
-    ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -576,6 +575,18 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false; // in air, so no effect
     }
 
+    // Prevent jump if needed
+    const bool bPlayerBhopBlocked = m_pPlayer->m_SrvData.m_bPreventPlayerBhop &&
+        gpGlobals->tickcount - m_pPlayer->m_SrvData.m_iLandTick < BHOP_DELAY_TIME;
+    if (bPlayerBhopBlocked)
+    {
+        m_pPlayer->m_afButtonDisabled |= IN_BULLRUSH; // For the HUD
+        return false;
+    }
+
+    if (m_pPlayer->m_afButtonDisabled & IN_BULLRUSH)
+        m_pPlayer->m_afButtonDisabled &= ~IN_BULLRUSH; // For the HUD
+
     // AUTOBHOP---
     // only run this code if autobhop is disabled
     if (!m_pPlayer->HasAutoBhop())
@@ -625,8 +636,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // stamina stuff (scroll/kz gamemode only)
-    ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -646,6 +656,8 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     // Flag that we jumped.
     mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
+    // Fire that we jumped
+    FIRE_GAMEMOVEMENT_EVENT(OnPlayerJump);
     return true;
 }
 
@@ -1344,6 +1356,9 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         // Subtract ground velocity at instant we hit ground jumping
         vecBaseVelocity -= newGround->GetAbsVelocity();
         vecBaseVelocity.z = newGround->GetAbsVelocity().z;
+
+        // Fire that we landed on ground
+        FIRE_GAMEMOVEMENT_EVENT(OnPlayerLand);
     }
     else if (oldGround && !newGround)
     {
@@ -1371,6 +1386,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         }
 
         mv->m_vecVelocity.z = 0.0f;
+
     }
 }
 
@@ -1556,6 +1572,7 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
 
 // Expose our interface.
 static CMomentumGameMovement g_GameMovement;
+CMomentumGameMovement *g_pMomentumGameMovement = &g_GameMovement;
 IGameMovement *g_pGameMovement = static_cast<IGameMovement *>(&g_GameMovement);
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CMomentumGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);
