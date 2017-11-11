@@ -1008,9 +1008,15 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         pGhostToSpectate->SetSpectator(this);
 
         CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
+        CMomentumReplayGhostEntity *pReplayEnt = dynamic_cast<CMomentumReplayGhostEntity *>(target);
         if (pOnlineEnt)
         {
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
+            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
+        }
+        else if (pReplayEnt)
+        {
+            m_sSpecTargetSteamID = CSteamID(uint64_t(1));
             g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
         }
     }
