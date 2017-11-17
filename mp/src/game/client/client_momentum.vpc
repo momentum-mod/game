@@ -125,6 +125,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\ScrubbableProgressBar.cpp"
                     $File "momentum\ui\ColorPicker.h"
                     $File "momentum\ui\ColorPicker.cpp"
+                    $File "momentum\ui\ModelPanel.h"
+                    $File "momentum\ui\ModelPanel.cpp"
                 }
                 
                 $Folder "Leaderboards"

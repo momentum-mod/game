@@ -25,8 +25,8 @@ class ComparisonsSettingsPage : public SettingsPage
     void InitBogusComparePanel();
 
     //These are used for closing/activating the bogus panel if this was the tab
-    void OnMainDialogClosed() const;
-    void OnMainDialogShow() const;
+    void OnMainDialogClosed() OVERRIDE;
+    void OnMainDialogShow() OVERRIDE;
 
     //Handle custom controls
     void OnApplyChanges() OVERRIDE;

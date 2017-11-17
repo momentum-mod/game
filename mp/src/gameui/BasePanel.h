@@ -88,8 +88,6 @@ private:
 
     // background fill transition
     bool m_bHaveDarkenedBackground;
-    bool m_bHaveDarkenedTitleText;
-    bool m_bForceTitleTextUpdate;
     float m_flFrameFadeInTime;
     Color m_BackdropColor;
     CPanelAnimationVar(float, m_flBackgroundFillAlpha, "m_flBackgroundFillAlpha", "0");

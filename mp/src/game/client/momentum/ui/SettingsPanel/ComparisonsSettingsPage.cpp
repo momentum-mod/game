@@ -101,13 +101,13 @@ void ComparisonsSettingsPage::InitBogusComparePanel()
     m_pComparisonsFrame->SetVisible(true);
 }
 
-void ComparisonsSettingsPage::OnMainDialogClosed() const
+void ComparisonsSettingsPage::OnMainDialogClosed()
 {
     if (m_pComparisonsFrame)
         m_pComparisonsFrame->Close();
 }
 
-void ComparisonsSettingsPage::OnMainDialogShow() const
+void ComparisonsSettingsPage::OnMainDialogShow()
 {
     if (m_pComparisonsFrame)
         m_pComparisonsFrame->SetVisible(true);

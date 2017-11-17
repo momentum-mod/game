@@ -26,22 +26,18 @@ class CMomentumSettingsPanel : public PropertyDialog
     {
         BaseClass::OnClose();
 
-        //Let the comparisons settings page know so the bogus panel can fade too
-        if (GetActivePage() && GetActivePage() == m_pCompareSettings->GetParent())
-        {
-            dynamic_cast<ComparisonsSettingsPage*>(m_pCompareSettings)->OnMainDialogClosed();
-        }
+        //Let the comparisons settings page/Replay model panel know so they can fade too
+        if (GetActivePage())
+            PostMessage(GetActivePage(), new KeyValues("OnMainDialogClosed"));
     }
 
     void Activate() OVERRIDE
     {
         BaseClass::Activate();
 
-        //Let the comparisons settings page know so the bogus panel can show back up
-        if (GetActivePage() && GetActivePage() == m_pCompareSettings->GetParent())
-        {
-            dynamic_cast<ComparisonsSettingsPage*>(m_pCompareSettings)->OnMainDialogShow();
-        }
+        //Let the comparisons settings page/replay model panel know so they can show back up
+        if (GetActivePage())
+            PostMessage(GetActivePage(), new KeyValues("OnMainDialogShow"));
     }
 
   protected:
