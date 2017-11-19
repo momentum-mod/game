@@ -335,7 +335,7 @@ void CRenderPanel::Paint()
     inf.InitDirectional(lightDir, Vector(1, 1, 1));
     g_pStudioRender->SetLocalLights(1, &inf);
 
-#define AMBIENT_ 0.05f
+#define AMBIENT_ 0.05f // Valve has theirs at 0.4f
     static Vector white[6] = {
         Vector(AMBIENT_, AMBIENT_, AMBIENT_), Vector(AMBIENT_, AMBIENT_, AMBIENT_),
         Vector(AMBIENT_, AMBIENT_, AMBIENT_), Vector(AMBIENT_, AMBIENT_, AMBIENT_),

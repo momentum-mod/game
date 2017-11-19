@@ -3,8 +3,7 @@
 #include "cbase.h"
 
 #include "SettingsPage.h"
-
-using namespace vgui;
+#include "ColorPicker.h"
 
 class CRenderPanel;
 
@@ -24,11 +23,20 @@ class ReplaysSettingsPage : public SettingsPage
 
     void OnControlModified(Panel *p) OVERRIDE;
 
+    // From the color picker
+    MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
+    void OnCommand(const char* command) OVERRIDE;
+    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
+
 private:
     void UpdateModelSettings();
 
     Frame *m_pModelPreviewFrame;
     CRenderPanel *m_pModelPreview;
 
-    ConVarRef ghost_color, ghost_bodygroup; // MOM_TODO add the rest of visible things here
+    ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color; // MOM_TODO add the rest of visible things here
+
+    CvarToggleCheckButton<ConVarRef> *m_pEnableTrail;
+    ColorPicker *m_pColorPicker;
+    Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
 };

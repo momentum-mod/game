@@ -307,7 +307,7 @@ uint32 MomentumUtil::GetHexFromColor(const Color &color)
 void MomentumUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
 {
     const uint32 colorHex = GetHexFromColor(color);
-    Q_snprintf(pBuffer, maxLen, "%x", colorHex);
+    Q_snprintf(pBuffer, maxLen, "%08x", colorHex);
 }
 
 inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
