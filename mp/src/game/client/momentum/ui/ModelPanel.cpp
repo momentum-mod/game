@@ -13,12 +13,15 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     render_offset.Init();
     render_offset_modelBase.Init();
     m_pModelInstance = nullptr;
+    m_bSizeToParent = true;
 
     ResetView();
 
     m_iDragMode = RDRAG_NONE;
     m_iCachedMpos_x = 0;
     m_iCachedMpos_y = 0;
+
+    m_nFOV = 70;
 
     __view.Identity();
     __proj.Identity();
@@ -45,18 +48,8 @@ void CRenderPanel::UpdateRenderPosition()
 
 void CRenderPanel::OnThink()
 {
-    int iInset_base = 15;
-    int iInset_Top = 110;
-
-    int parentSx, parentSy;
-    if (GetParent())
-    {
-        GetParent()->GetSize(parentSx, parentSy);
-        parentSx -= iInset_base * 2;
-        parentSy -= iInset_base + iInset_Top;
-
-        SetBounds(iInset_base, iInset_Top, parentSx, parentSy);
-    }
+    if (m_bSizeToParent)
+        SizePanelToParent();
 
     if (m_iDragMode)
     {
@@ -118,12 +111,35 @@ void CRenderPanel::ResetView()
     m_flPitch = 45;
     m_flYaw = 180;
     lightAng.Init(45, -135, 0);
+    m_nFOV = 70;
 
-    GetModelCenter(render_offset_modelBase.Base());
+    GetModelCenter(render_offset_modelBase);
 
     render_offset.Init();
 
     UpdateRenderPosition();
+    
+    if (m_bSizeToParent)
+        SizePanelToParent();
+}
+
+void CRenderPanel::SizePanelToParent()
+{
+    if (!m_bSizeToParent)
+        return;
+
+    int iInset_base = 5;
+    int iInset_Top = 25;
+
+    int parentSx, parentSy;
+    if (GetParent())
+    {
+        GetParent()->GetSize(parentSx, parentSy);
+        parentSx -= iInset_base * 2;
+        parentSy -= iInset_base + iInset_Top;
+
+        SetBounds(iInset_base, iInset_Top, parentSx, parentSy);
+    }
 }
 
 bool CRenderPanel::IsModelReady()
@@ -131,9 +147,10 @@ bool CRenderPanel::IsModelReady()
     if (!m_pModelInstance)
         return false;
 
+    MDLCACHE_CRITICAL_SECTION();
     bool bValid = !!m_pModelInstance->GetModel();
 
-    if (bValid && Q_strlen(m_szModelPath))
+    if (!bValid && Q_strlen(m_szModelPath))
     {
         const model_t *pMdl = modelinfo ? modelinfo->FindOrLoadModel(m_szModelPath) : NULL;
         if (pMdl)
@@ -155,19 +172,17 @@ void CRenderPanel::ResetModel()
     m_pModelInstance->m_flOldAnimTime = gpGlobals->curtime;
 }
 
-void CRenderPanel::GetModelCenter(float *offset)
+void CRenderPanel::GetModelCenter(Vector &vecInto)
 {
-    Q_memset(offset, 0, sizeof(float) * 3);
+    vecInto.Init();
     if (IsModelReady())
     {
         MDLCACHE_CRITICAL_SECTION();
-        if (m_pModelInstance->GetModelPtr())
+        if (m_pModelInstance->GetModel())
         {
-            const Vector &vecMin = m_pModelInstance->GetModelPtr()->hull_min();
-            const Vector &vecMax = m_pModelInstance->GetModelPtr()->hull_max();
-            Vector vecPos = (vecMin + (vecMax - vecMin) * 0.5f);
-            if (offset)
-                Q_memcpy(offset, vecPos.Base(), sizeof(float) * 3);
+            Vector mins, maxs;
+            modelinfo->GetModelRenderBounds(m_pModelInstance->GetModel(), mins, maxs);
+            VectorLerp(mins, maxs, 0.5f, vecInto);
         }
     }
 }
@@ -201,9 +216,16 @@ bool CRenderPanel::LoadModel(const char *localPath)
 
     Q_strcpy(m_szModelPath, localPath);
 
-    C_BaseFlex *pEnt = new C_BaseFlex();
-    pEnt->InitializeAsClientEntity(nullptr, RENDER_GROUP_OPAQUE_ENTITY);
     MDLCACHE_CRITICAL_SECTION();
+
+    C_BaseFlex *pEnt = new C_BaseFlex();
+    if (!pEnt->InitializeAsClientEntity(nullptr, RENDER_GROUP_OPAQUE_ENTITY))
+    {
+        pEnt->Remove();
+        return false;
+    }
+
+    pEnt->DontRecordInTools();
     pEnt->SetModelPointer(mdl);
     pEnt->Spawn();
 
@@ -272,7 +294,7 @@ void CRenderPanel::SetupView(CViewSetup &setup)
     setup.angles = render_ang;
     setup.origin = render_pos;
 
-    setup.fov = 70;
+    setup.fov = m_nFOV;
     setup.m_bOrtho = false;
 
     setup.x = x;
@@ -289,6 +311,8 @@ void CRenderPanel::Paint()
 {
     BaseClass::Paint();
 
+    MDLCACHE_CRITICAL_SECTION();
+
     modelrender->SuppressEngineLighting(true);
 
     CViewSetup setup;
@@ -298,7 +322,6 @@ void CRenderPanel::Paint()
     render->GetMatricesForView(setup, &__view, &__proj, &__ViewProj, &__ViewProjNDC);
 
     CMatRenderContextPtr pRenderContext(materials);
-
     pRenderContext->ClearColor4ub(0, 0, 0, 0);
     pRenderContext->ClearBuffers(false, true);
 
@@ -346,7 +369,6 @@ void CRenderPanel::DrawModel()
     if (!IsModelReady())
         return;
 
-    MDLCACHE_CRITICAL_SECTION();
     for (int i = 0; i < m_iNumPoseParams; i++)
         m_pModelInstance->SetPoseParameter(i, 0);
 

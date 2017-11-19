@@ -86,7 +86,7 @@ public:
 
     int GetCurrentZone() const
     {
-        return m_bLoadedBogusComparison ? MAX_STAGES - 1 : m_iCurrentZone;
+        return m_bLoadedBogusComparison ? m_pBogusRunStats->GetTotalZones() - 1 : m_iCurrentZone;
     }
 
     void ClearBogusPulse()

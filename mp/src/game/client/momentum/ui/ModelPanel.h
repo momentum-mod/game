@@ -23,7 +23,6 @@ public:
     CRenderPanel(Panel *parent, const char *pElementName);
     ~CRenderPanel();
 
-
     // VGUI Overrides
     void OnThink() OVERRIDE;
     void Paint() OVERRIDE;
@@ -36,6 +35,8 @@ public:
     void SetupView(CViewSetup &setup);
     void UpdateRenderPosition();
     void ResetView();
+    void SizePanelToParent();
+    void SetShouldSizeToParent(bool b) { m_bSizeToParent = b; SizePanelToParent(); }
     
     // Model stuff
     bool LoadModel(const char *path);
@@ -43,7 +44,7 @@ public:
     C_BaseFlex *GetModel() const { return m_pModelInstance; }
     bool IsModelReady();
     void ResetModel();
-    void GetModelCenter(float *offset);
+    void GetModelCenter(Vector &vecInto);
     void DrawModel();
 
 private:
@@ -56,6 +57,7 @@ private:
     float m_flDist;
     float m_flPitch;
     float m_flYaw;
+    int m_nFOV;
 
     Frustum frustum;
     int m_iDragMode;
@@ -70,4 +72,6 @@ private:
     C_BaseFlex *m_pModelInstance;
     char m_szModelPath[MAX_PATH];
     int m_iNumPoseParams;
+
+    bool m_bSizeToParent;
 };

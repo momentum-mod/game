@@ -25,11 +25,8 @@ ghost_bodygroup("mom_ghost_bodygroup")
 
     // Actual model preview
     m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
-    m_pModelPreview->AddActionSignalTarget(this);
-    m_pModelPreview->SetPaintBackgroundEnabled(true);
-    m_pModelPreview->SetPaintBackgroundType(2);
-    m_pModelPreview->SetSize(200, 150);
-    m_pModelPreview->SetPos(14, 30);
+    m_pModelPreview->SetPaintBorderEnabled(true);
+    m_pModelPreview->SetBorder(scheme()->GetIScheme(GetScheme())->GetBorder("Default"));
     const bool result = m_pModelPreview->LoadModel("models/player/player_shape_base.mdl");
     if (result)
         UpdateModelSettings();
@@ -45,6 +42,8 @@ ReplaysSettingsPage::~ReplaysSettingsPage()
 void ReplaysSettingsPage::LoadSettings()
 {
 
+
+    UpdateModelSettings();
 }
 
 void ReplaysSettingsPage::OnPageShow()
@@ -89,11 +88,13 @@ void ReplaysSettingsPage::UpdateModelSettings()
     if (!pModel)
         return;
 
+    // Player color
     Color ghostRenderColor;
     if (g_pMomentumUtil->GetColorFromHex(ghost_color.GetString(), ghostRenderColor))
     {
         pModel->SetRenderColor(ghostRenderColor.a(), ghostRenderColor.g(), ghostRenderColor.b(), ghostRenderColor.a());
     }
-
+    
+    // Player shape
     pModel->SetBodygroup(1, ghost_bodygroup.GetInt());
 }
