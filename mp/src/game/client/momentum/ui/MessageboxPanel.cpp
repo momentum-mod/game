@@ -26,7 +26,7 @@ MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const cha
 {
     // When toggled, will not allow the panel to be created (We don't check it here because we've done it on our 2 interfaces (Messaging and IMEssageBox)
     // this also allows us to show this even if the toggle says no! (Like, for important stuff)
-    m_pToggleCheckButton = new CvarToggleCheckButton<ConVarRef>(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
+    m_pToggleCheckButton = new CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
     AddActionSignalTarget(m_pToggleCheckButton); // Catch that OK button press
 }
 

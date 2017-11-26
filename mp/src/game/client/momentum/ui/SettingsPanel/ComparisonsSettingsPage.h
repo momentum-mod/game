@@ -73,7 +73,7 @@ class ComparisonsSettingsPage : public SettingsPage
 
 private:
 
-    CvarToggleCheckButton<ConVarRef> *m_pCompareShow, *m_pCompareFormat, *m_pTimeShowOverall,
+    CvarToggleCheckButton *m_pCompareShow, *m_pCompareFormat, *m_pTimeShowOverall,
         *m_pTimeShowZone, *m_pVelocityShow, *m_pVelocityShowAvg, *m_pVelocityShowMax, *m_pVelocityShowEnter, 
         *m_pVelocityShowExit, *m_pSyncShow, *m_pSyncShowS1, *m_pSyncShowS2, *m_pJumpShow, *m_pStrafeShow;
     TextEntry *m_pMaxZones;

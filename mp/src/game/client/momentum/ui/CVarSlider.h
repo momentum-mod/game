@@ -23,6 +23,8 @@ class CCvarSlider : public vgui::Slider
     void ApplySettings(KeyValues *inResourceData) OVERRIDE;
     void GetSettings(KeyValues *outResourceData) OVERRIDE;
 
+    const char* GetDescription() OVERRIDE;
+
     void ApplyChanges();
     float GetSliderValue();
     void SetSliderValue(float fValue);
@@ -40,6 +42,7 @@ class CCvarSlider : public vgui::Slider
     int m_iLastSliderValue;
     float m_fCurrentValue;
     char m_szCvarName[64];
+    ConVarRef m_cvar;
 
     bool m_bCreatedInCode;
     float m_flMinValue;

@@ -7,8 +7,8 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
 
-    m_pPlayBlockSound = FindControl<CvarToggleCheckButton<ConVarRef>>("PlayBlockSound");
-    m_pSaveCheckpoints = FindControl<CvarToggleCheckButton<ConVarRef>>("SaveCheckpoints");
+    m_pPlayBlockSound = FindControl<CvarToggleCheckButton>("PlayBlockSound");
+    m_pSaveCheckpoints = FindControl<CvarToggleCheckButton>("SaveCheckpoints");
     
 }
 
@@ -39,7 +39,7 @@ void GameplaySettingsPage::OnControlModified(Panel *p)
 {
     BaseClass::OnControlModified(p);
 
-    if (p == m_pYawSpeedSlider && m_pYawSpeedSlider->HasBeenModified())
+    if (p == m_pYawSpeedSlider)
     {
         UpdateSliderEntries();
     }

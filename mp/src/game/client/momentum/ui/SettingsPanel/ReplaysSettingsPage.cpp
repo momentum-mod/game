@@ -4,6 +4,9 @@
 #include "ModelPanel.h"
 #include "ienginevgui.h"
 #include "util/mom_util.h"
+#include "mom_shareddefs.h"
+
+#include "tier0/memdbgon.h"
 
 using namespace vgui;
 
@@ -18,7 +21,7 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color")
     // Outer frame for the model preview
     m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
     m_pModelPreviewFrame->SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
-    m_pModelPreviewFrame->SetSize(350, scheme()->GetProportionalScaledValue(275));
+    m_pModelPreviewFrame->SetSize(scheme()->GetProportionalScaledValue(200), scheme()->GetProportionalScaledValue(275));
     m_pModelPreviewFrame->SetMoveable(false);
     m_pModelPreviewFrame->MoveToFront();
     m_pModelPreviewFrame->SetSizeable(false);
@@ -34,7 +37,7 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color")
     m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
     m_pModelPreview->SetPaintBorderEnabled(true);
     m_pModelPreview->SetBorder(scheme()->GetIScheme(GetScheme())->GetBorder("Default"));
-    const bool result = m_pModelPreview->LoadModel("models/player/player_shape_base.mdl");
+    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
     if (result)
         UpdateModelSettings();
 
@@ -42,12 +45,16 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color")
     m_pModelPreview->MakeReadyForUse();
 
 
-    m_pEnableTrail = FindControl<CvarToggleCheckButton<ConVarRef>>("EnableTrail");
+    m_pEnableTrail = FindControl<CvarToggleCheckButton>("EnableTrail");
     m_pPickTrailColorButton = FindControl<Button>("PickTrailColorButton");
 
     m_pPickBodyColorButton = FindControl<Button>("PickBodyColorButton");
 
-    // Color Picker is shared for trail and 
+    m_pEnableColorAlphaOverride = FindControl<CvarToggleCheckButton>("EnableAlphaOverride");
+    m_pAlphaOverrideSlider = FindControl<CCvarSlider>("AlphaOverrideSlider");
+    m_pAlphaOverrideInput = FindControl<TextEntry>("AlphaOverrideEntry");
+
+    // Color Picker is shared for trail and body
     m_pColorPicker = new ColorPicker(this, this);
 }
 
@@ -76,7 +83,7 @@ void ReplaysSettingsPage::LoadSettings()
     }
 
 
-
+    UpdateSliderSettings();
     UpdateModelSettings();
 }
 
@@ -106,14 +113,27 @@ void ReplaysSettingsPage::OnTextChanged(Panel *p)
 {
     BaseClass::OnTextChanged(p);
 
-    
+    if (p == m_pAlphaOverrideInput)
+    {
+        char buf[64];
+        m_pAlphaOverrideInput->GetText(buf, 64);
+
+        float fValue = static_cast<float>(Q_atof(buf));
+        if (fValue >= 0.0f && fValue <= 255.0f)
+        {
+            m_pAlphaOverrideSlider->SetSliderValue(fValue);
+        }
+    }
 }
 
 void ReplaysSettingsPage::OnControlModified(Panel *p)
 {
     BaseClass::OnControlModified(p);
 
-    
+    if (p == m_pAlphaOverrideSlider)
+    {
+        UpdateSliderSettings();
+    }
 }
 
 void ReplaysSettingsPage::OnColorSelected(KeyValues *pKv)
@@ -172,7 +192,7 @@ void ReplaysSettingsPage::OnCommand(const char* command)
 void ReplaysSettingsPage::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-    LoadSettings();
+    LoadSettings(); // Called here so the color buttons are properly colored
 }
 
 void ReplaysSettingsPage::UpdateModelSettings()
@@ -190,4 +210,13 @@ void ReplaysSettingsPage::UpdateModelSettings()
     
     // Player shape
     pModel->SetBodygroup(1, ghost_bodygroup.GetInt());
+
+    // MOM_TODO: Show trail changes here?
+}
+
+void ReplaysSettingsPage::UpdateSliderSettings()
+{
+    char buf[64];
+    Q_snprintf(buf, sizeof(buf), "%i", static_cast<int>(m_pAlphaOverrideSlider->GetSliderValue()));
+    m_pAlphaOverrideInput->SetText(buf);
 }

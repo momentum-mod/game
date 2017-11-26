@@ -26,8 +26,8 @@ class GameplaySettingsPage : public SettingsPage
 private:
     void UpdateSliderEntries() const;
 
-    CvarToggleCheckButton<ConVarRef> *m_pPlayBlockSound;
-    CvarToggleCheckButton<ConVarRef> *m_pSaveCheckpoints;
+    CvarToggleCheckButton *m_pPlayBlockSound;
+    CvarToggleCheckButton *m_pSaveCheckpoints;
     CCvarSlider *m_pYawSpeedSlider;
     TextEntry *m_pYawSpeedEntry;
 };

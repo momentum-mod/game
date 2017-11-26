@@ -318,7 +318,7 @@ void CRenderPanel::Paint()
     CViewSetup setup;
     SetupView(setup);
 
-    render->Push3DView(setup, 0, NULL, frustum);
+    render->Push3DView(setup, 0, nullptr, frustum);
     render->GetMatricesForView(setup, &__view, &__proj, &__ViewProj, &__ViewProjNDC);
 
     CMatRenderContextPtr pRenderContext(materials);

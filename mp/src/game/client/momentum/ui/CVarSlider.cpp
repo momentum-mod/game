@@ -28,7 +28,7 @@ DECLARE_BUILD_FACTORY(CCvarSlider);
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-CCvarSlider::CCvarSlider(Panel *parent, const char *name) : Slider(parent, name)
+CCvarSlider::CCvarSlider(Panel *parent, const char *name) : Slider(parent, name), m_cvar("", true)
 {
     SetupSlider(0, 1, "", false);
     m_bCreatedInCode = false;
@@ -41,7 +41,7 @@ CCvarSlider::CCvarSlider(Panel *parent, const char *name) : Slider(parent, name)
 //-----------------------------------------------------------------------------
 CCvarSlider::CCvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
                          char const *cvarname, bool bAllowOutOfRange)
-    : Slider(parent, panelName)
+    : Slider(parent, panelName), m_cvar(cvarname)
 {
     AddActionSignalTarget(this);
 
@@ -71,6 +71,7 @@ void CCvarSlider::SetupSlider(float minValue, float maxValue, const char *cvarna
     SetTickCaptions(szMin, szMax);
 
     Q_strncpy(m_szCvarName, cvarname, sizeof(m_szCvarName));
+    m_cvar = ConVarRef(m_szCvarName);
 
     m_bModifiedOnce = false;
     m_bAllowOutOfRange = bAllowOutOfRange;
@@ -166,12 +167,10 @@ void CCvarSlider::SetTickColor(Color color) { m_TickColor = color; }
 //-----------------------------------------------------------------------------
 void CCvarSlider::Paint()
 {
-    // Get engine's current value
-    //	float curvalue = engine->pfnGetCvarFloat( m_szCvarName );
-    ConVarRef var(m_szCvarName);
-    if (!var.IsValid())
+    if (!m_cvar.IsValid())
         return;
-    float curvalue = var.GetFloat();
+
+    float curvalue = m_cvar.GetFloat();
 
     // did it get changed from under us?
     if (curvalue != m_fStartValue)
@@ -204,8 +203,7 @@ void CCvarSlider::ApplyChanges()
             m_fStartValue = float(m_iStartValue) / CVARSLIDER_SCALE_FACTOR;
         }
 
-        ConVarRef var(m_szCvarName);
-        var.SetValue(float(m_fStartValue));
+        m_cvar.SetValue(m_fStartValue);
     }
 }
 
@@ -247,8 +245,7 @@ void CCvarSlider::SetSliderValue(float fValue)
 //-----------------------------------------------------------------------------
 void CCvarSlider::Reset()
 {
-    ConVarRef var(m_szCvarName, !Q_strlen(m_szCvarName));
-    if (!var.IsValid())
+    if (!m_cvar.IsValid())
     {
         m_fCurrentValue = m_fStartValue = 0.0f;
         SetValue(0);
@@ -257,7 +254,7 @@ void CCvarSlider::Reset()
         return;
     }
 
-    float m_fStartValue = var.GetFloat();
+    m_fStartValue = m_cvar.GetFloat();
     m_fCurrentValue = m_fStartValue;
 
     int value = int(CVARSLIDER_SCALE_FACTOR * m_fStartValue);
@@ -285,13 +282,10 @@ bool CCvarSlider::HasBeenModified()
 //-----------------------------------------------------------------------------
 void CCvarSlider::OnSliderMoved()
 {
-    if (HasBeenModified())
+    if (m_iLastSliderValue != GetValue())
     {
-        if (m_iLastSliderValue != GetValue())
-        {
-            m_iLastSliderValue = GetValue();
-            m_fCurrentValue = float(m_iLastSliderValue) / CVARSLIDER_SCALE_FACTOR;
-        }
+        m_iLastSliderValue = GetValue();
+        m_fCurrentValue = float(m_iLastSliderValue) / CVARSLIDER_SCALE_FACTOR;
 
         // tell parent that we've been modified
         PostActionSignal(new KeyValues("ControlModified"));
@@ -307,4 +301,11 @@ void CCvarSlider::OnApplyChanges(void)
     {
         ApplyChanges();
     }
+}
+
+const char* CCvarSlider::GetDescription()
+{
+    static char buf[1024];
+    Q_snprintf(buf, 1024, "%s, string cvar_name, string minvalue, string maxvalue, int allowoutofrange", BaseClass::GetDescription());
+    return buf;
 }

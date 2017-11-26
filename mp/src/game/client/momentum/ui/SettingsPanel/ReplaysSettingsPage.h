@@ -4,6 +4,7 @@
 
 #include "SettingsPage.h"
 #include "ColorPicker.h"
+#include "CVarSlider.h"
 
 class CRenderPanel;
 
@@ -30,13 +31,16 @@ class ReplaysSettingsPage : public SettingsPage
 
 private:
     void UpdateModelSettings();
+    void UpdateSliderSettings();
 
     Frame *m_pModelPreviewFrame;
     CRenderPanel *m_pModelPreview;
 
     ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color; // MOM_TODO add the rest of visible things here
 
-    CvarToggleCheckButton<ConVarRef> *m_pEnableTrail;
+    CvarToggleCheckButton *m_pEnableTrail, *m_pEnableColorAlphaOverride;
+    CCvarSlider *m_pAlphaOverrideSlider;
+    TextEntry *m_pAlphaOverrideInput;
     ColorPicker *m_pColorPicker;
     Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
 };
