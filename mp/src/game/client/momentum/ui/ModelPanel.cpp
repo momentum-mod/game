@@ -346,12 +346,6 @@ void CRenderPanel::Paint()
 
     pRenderContext->SetLight(0, inf);
 
-    // Set our color to the ghost color
-    color32 col = m_pModelInstance->GetRenderColor();
-    float color[4] = {col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f};
-    render->SetColorModulation(color);
-    render->SetBlend(1.0f);
-
     MaterialFogMode_t oldFog = pRenderContext->GetFogMode();
     pRenderContext->FogMode(MATERIAL_FOG_NONE);
 
@@ -364,6 +358,14 @@ void CRenderPanel::Paint()
     modelrender->SuppressEngineLighting(false);
 }
 
+inline void SetRenderColor(C_BaseEntity* pFlex)
+{
+    color32 col = pFlex->GetRenderColor();
+    float color[4] = {col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f};
+    render->SetColorModulation(color);
+    render->SetBlend(color[3]);
+}
+
 void CRenderPanel::DrawModel()
 {
     if (!IsModelReady())
@@ -372,5 +374,6 @@ void CRenderPanel::DrawModel()
     for (int i = 0; i < m_iNumPoseParams; i++)
         m_pModelInstance->SetPoseParameter(i, 0);
 
+    SetRenderColor(m_pModelInstance);
     m_pModelInstance->DrawModel(STUDIO_RENDER);
 }
