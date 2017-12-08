@@ -197,6 +197,8 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_lmg.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.cpp"
+				$File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.cpp"
                 
                 //CS guns
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"

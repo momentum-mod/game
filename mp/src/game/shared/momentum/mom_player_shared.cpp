@@ -20,7 +20,8 @@ ConVar sv_showimpacts("sv_showimpacts", "0", FCVAR_REPLICATED, "Shows client (re
 void CMomentumPlayer::GetBulletTypeParameters(
     int iBulletType,
     float &fPenetrationPower,
-    float &flPenetrationDistance)
+    float &flPenetrationDistance,
+    bool &bPaint)
 {
 
     //MIKETODO: make ammo types come from a script file.
@@ -69,6 +70,12 @@ void CMomentumPlayer::GetBulletTypeParameters(
     {
         fPenetrationPower = 30;
         flPenetrationDistance = 2000.0;
+    }
+    else if ( IsAmmoType( iBulletType , AMMO_TYPE_PAINT ) )
+    {
+        fPenetrationPower = 0;
+        flPenetrationDistance = 0.0;
+        bPaint = true;
     }
     else
     {
@@ -139,8 +146,9 @@ void CMomentumPlayer::FireBullet(
     float flPenetrationDistance = 0;	// distance at which the bullet is capable of penetrating a wall
     float flDamageModifier = 0.5;		// default modification of bullets power after they go through a wall.
     float flPenetrationModifier = 1.f;
+    bool bPaintGun = false;
 
-    GetBulletTypeParameters(iBulletType, flPenetrationPower, flPenetrationDistance);
+    GetBulletTypeParameters( iBulletType , flPenetrationPower , flPenetrationDistance , bPaintGun );
 
 
     if (!pevAttacker)
@@ -350,7 +358,14 @@ void CMomentumPlayer::FireBullet(
         // bullet did penetrate object, exit Decal
         if (bDoEffects)
         {
-            UTIL_ImpactTrace(&exitTr, iDamageType);
+            if ( bPaintGun )
+            {
+
+            }
+            else
+            {
+                UTIL_ImpactTrace( &exitTr , iDamageType );
+            }
         }
 
         //setup new start end parameters for successive trace
