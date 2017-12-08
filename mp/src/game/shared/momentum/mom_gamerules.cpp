@@ -55,7 +55,8 @@ CAmmoDef *GetAmmoDef()
         ammoDef.AddAmmoType(AMMO_TYPE_HEGRENADE, DMG_BLAST, TRACER_LINE, 0, 0, 1 /*max carry*/, 1, 0);
         ammoDef.AddAmmoType(AMMO_TYPE_FLASHBANG, 0, TRACER_LINE, 0, 0, 2 /*max carry*/, 1, 0);
         ammoDef.AddAmmoType(AMMO_TYPE_SMOKEGRENADE, 0, TRACER_LINE, 0, 0, 1 /*max carry*/, 1, 0);
-        ammoDef.AddAmmoType(AMMO_TYPE_PAINT, 0, TRACER_LINE, 0, 0, 1 /*max carry*/, 1, 0);
+        ammoDef.AddAmmoType(AMMO_TYPE_PAINT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_paint_max",
+                            3000 * BULLET_IMPULSE_EXAGGERATION, 0);
     }
 
     return &ammoDef;
@@ -90,6 +91,7 @@ ConVar ammo_57mm_max("ammo_57mm_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_hegrenade_max("ammo_hegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_flashbang_max("ammo_flashbang_max", "2", FCVAR_REPLICATED);
 ConVar ammo_smokegrenade_max("ammo_smokegrenade_max", "1", FCVAR_REPLICATED);
+ConVar ammo_paint_max("ammo_paint_max", "-2", FCVAR_REPLICATED);
 
 CMomentumGameRules::CMomentumGameRules()
 {
@@ -99,10 +101,12 @@ CMomentumGameRules::CMomentumGameRules()
 CMomentumGameRules::~CMomentumGameRules() {}
 
 static CViewVectors g_MOMViewVectors(Vector(0, 0, 62), // eye position
-                                     //@tuxxi: this eye position does not affect the ingame camera, it only affects the
-                                     //'virtual' eye position used by the renderer.  the Z val is 64 by default, changing
-                                     // it to 62 to match the hull max fixes  the bug where the out-of-bounds area appears
-                                     // when hitting a ceiling while traveling upwards.
+                                                       //@tuxxi: this eye position does not affect the ingame camera, it
+                                                       //only affects the 'virtual' eye position used by the renderer.
+                                                       //the Z val is 64 by default, changing
+                                                       // it to 62 to match the hull max fixes  the bug where the
+                                                       // out-of-bounds area appears when hitting a ceiling while
+                                                       // traveling upwards.
 
                                      Vector(-16, -16, 0), // hull min
                                      Vector(16, 16, 62),  // hull max

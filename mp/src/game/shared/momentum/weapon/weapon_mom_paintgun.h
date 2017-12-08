@@ -16,7 +16,7 @@ class CMomentumPaintGun : public CWeaponCSBaseGun
 
     CMomentumPaintGun()
     {
-        m_flTimeToIdleAfterFire = 2.0f;
+        m_flTimeToIdleAfterFire = 1.9f;
         m_flIdleInterval = 20.0f;
     };
 
