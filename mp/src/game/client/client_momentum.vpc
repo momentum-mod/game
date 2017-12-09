@@ -168,17 +168,7 @@ $Project "Client (Momentum)"
             }
 
             $File   "momentum\client_events.h"
-
             $File   "momentum\client_events.cpp"
-            {
-                $Configuration
-                {
-                    $Compiler
-                    {
-                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-                    }
-                }
-            }
 
             $File 	"momentum\mom_run_poster.h"
             $File 	"momentum\mom_run_poster.cpp"
