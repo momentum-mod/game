@@ -1,0 +1,9 @@
+"UnlitGeneric"
+{
+	"$basetexture" "decals/paintgun"
+	"$translucent" 1
+	"$decalDynamicScale" 1
+	"$outline" 1
+	"$receiveflashlight" 1
+	"$ignorez" 1
+}
