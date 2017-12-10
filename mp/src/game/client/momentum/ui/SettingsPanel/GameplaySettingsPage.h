@@ -3,7 +3,7 @@
 #include "cbase.h"
 
 #include "SettingsPage.h"
-#include "CVarSlider.h"
+#include <vgui_controls/CVarSlider.h>
 #include <vgui_controls/Button.h>
 #include "ColorPicker.h"
 

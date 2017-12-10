@@ -4,7 +4,7 @@
 
 #include "SettingsPage.h"
 #include "ColorPicker.h"
-#include "CVarSlider.h"
+#include "vgui_controls/CVarSlider.h"
 
 class CRenderPanel;
 

@@ -5,14 +5,9 @@
 // $NoKeywords: $
 //
 //=============================================================================//
-
-#include "cbase.h"
-
-#include "CVarSlider.h"
+#include <vgui_controls/CVarSlider.h>
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
-#include <stdio.h>
-#include <vgui/IVGui.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/PropertyPage.h>
 

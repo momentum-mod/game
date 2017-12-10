@@ -2,24 +2,11 @@
 
 #include "cbase.h"
 
-#include "view.h"
-#include "menu.h"
 #include "iclientmode.h"
 #include "utlvector.h"
 #include "hudelement.h"
 #include <vgui_controls/Panel.h>
-#include "text_message.h"
-#include "hud_macros.h"
-#include "weapon_selection.h"
-
-#include <vgui_controls/Panel.h>
-#include <vgui_controls/Frame.h>
-#include <vgui/IScheme.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
-#include <vgui/VGUI.h>
 #include <KeyValues.h>
-#include <vgui_controls/AnimationController.h>
 
 
 class CHudFillableBar : public CHudElement, public vgui::Panel
@@ -36,7 +23,6 @@ public:
         SetValue(m_flInitialValue);
     };
     virtual void Reset(void) {};
-    virtual bool ShouldDraw(void) { return CHudElement::ShouldDraw(); }
 
     void Paint()
     {
@@ -95,7 +81,6 @@ public:
     float GetCurrentValue() { return m_flValue; }
 
 private:
-    void(*SelectFunc)(int);
     CPanelAnimationVarAliasType(float, m_flxPos, "xpos", "0.0", "proportional_float");
     CPanelAnimationVarAliasType(float, m_flyPos, "ypos", "0.0", "proportional_float");
     CPanelAnimationVarAliasType(float, m_flTall, "tall", "0", "proportional_float");
