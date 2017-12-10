@@ -5,7 +5,7 @@
 #include "HudSettingsPage.h"
 #include "GameplaySettingsPage.h"
 #include "ComparisonsSettingsPage.h"
-#include "ReplaysSettingsPage.h"
+#include "AppearanceSettingsPage.h"
 #include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
@@ -45,7 +45,7 @@ class CMomentumSettingsPanel : public PropertyDialog
     void OnThink() OVERRIDE;
 
   private:
-    SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pReplaysSettings;
+    SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pAppearanceSettings;
 };
 
 // Constuctor: Initializes the Panel
@@ -74,13 +74,13 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     m_pControlsSettings = new GameplaySettingsPage(this);
     m_pHudSettings = new HudSettingsPage(this);
     m_pCompareSettings = new ComparisonsSettingsPage(this);
-    m_pReplaysSettings = new ReplaysSettingsPage(this);
+    m_pAppearanceSettings = new AppearanceSettingsPage(this);
 
     //Note: we're adding the scroll panels here, because we want to be able to scroll.
     AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gameplay");
     AddPage(m_pHudSettings->GetScrollPanel(), "#MOM_Settings_Tab_HUD");
     AddPage(m_pCompareSettings->GetScrollPanel(), "#MOM_Settings_Tab_Comparisons");
-    AddPage(m_pReplaysSettings->GetScrollPanel(), "#MOM_Settings_Tab_Replays");
+    AddPage(m_pAppearanceSettings->GetScrollPanel(), "#MOM_Settings_Tab_Appearance");
     //MOM_TODO: Add the other settings panels here.
 
     SetScheme("SourceScheme");

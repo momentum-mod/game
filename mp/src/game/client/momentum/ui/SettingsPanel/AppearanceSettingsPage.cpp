@@ -1,6 +1,6 @@
 #include "cbase.h"
 
-#include "ReplaysSettingsPage.h"
+#include "AppearanceSettingsPage.h"
 #include "ModelPanel.h"
 #include "ienginevgui.h"
 #include "util/mom_util.h"
@@ -15,8 +15,8 @@ using namespace vgui;
     button->SetArmedColor(color, color); \
     button->SetSelectedColor(color, color);
 
-ReplaysSettingsPage::ReplaysSettingsPage(Panel *pParent) : BaseClass(pParent, "ReplaysSettings"), ghost_color("mom_ghost_color"),
-ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color")
+AppearanceSettingsPage::AppearanceSettingsPage(Panel *pParent) : BaseClass(pParent, "AppearanceSettings"), ghost_color("mom_ghost_color"),
+ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), ghost_trail_length("mom_trail_length")
 {
     // Outer frame for the model preview
     m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
@@ -54,15 +54,36 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color")
     m_pAlphaOverrideSlider = FindControl<CCvarSlider>("AlphaOverrideSlider");
     m_pAlphaOverrideInput = FindControl<TextEntry>("AlphaOverrideEntry");
 
+    m_pTrailLengthEntry = FindControl<TextEntry>("TrailEntry");
+
+    m_pBodygroupCombo = FindControl<ComboBox>("BodygroupCombo");
+    m_pBodygroupCombo->SetNumberOfEditLines(15);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_0", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_1", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_2", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_3", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_4", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_5", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_6", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_7", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_8", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_9", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_10", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_11", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_12", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_13", nullptr);
+    m_pBodygroupCombo->AddItem("#MOM_Settings_Bodygroup_14", nullptr);
+    m_pBodygroupCombo->AddActionSignalTarget(this);
+
     // Color Picker is shared for trail and body
     m_pColorPicker = new ColorPicker(this, this);
 }
 
-ReplaysSettingsPage::~ReplaysSettingsPage()
+AppearanceSettingsPage::~AppearanceSettingsPage()
 {
 }
 
-void ReplaysSettingsPage::LoadSettings()
+void AppearanceSettingsPage::LoadSettings()
 {
     if (m_pPickTrailColorButton)
     {
@@ -82,34 +103,36 @@ void ReplaysSettingsPage::LoadSettings()
         }
     }
 
+    m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
+    m_pTrailLengthEntry->SetText(ghost_trail_length.GetString());
 
     UpdateSliderSettings();
     UpdateModelSettings();
 }
 
-void ReplaysSettingsPage::OnPageShow()
+void AppearanceSettingsPage::OnPageShow()
 {
     if (!m_pModelPreviewFrame->IsVisible())
         m_pModelPreviewFrame->Activate();
 }
 
-void ReplaysSettingsPage::OnPageHide()
+void AppearanceSettingsPage::OnPageHide()
 {
     if (m_pModelPreviewFrame)
         m_pModelPreviewFrame->Close();
 }
 
-void ReplaysSettingsPage::OnMainDialogClosed()
+void AppearanceSettingsPage::OnMainDialogClosed()
 {
     OnPageHide();
 }
 
-void ReplaysSettingsPage::OnMainDialogShow()
+void AppearanceSettingsPage::OnMainDialogShow()
 {
     OnPageShow();
 }
 
-void ReplaysSettingsPage::OnTextChanged(Panel *p)
+void AppearanceSettingsPage::OnTextChanged(Panel *p)
 {
     BaseClass::OnTextChanged(p);
 
@@ -124,9 +147,20 @@ void ReplaysSettingsPage::OnTextChanged(Panel *p)
             m_pAlphaOverrideSlider->SetSliderValue(fValue);
         }
     }
+    else if (p == m_pBodygroupCombo)
+    {
+        ghost_bodygroup.SetValue(m_pBodygroupCombo->GetActiveItem());
+        UpdateModelSettings();
+    }
+    else if (p == m_pTrailLengthEntry)
+    {
+        char buf[3];
+        m_pTrailLengthEntry->GetText(buf, 3);
+        ghost_trail_length.SetValue(buf);
+    }
 }
 
-void ReplaysSettingsPage::OnControlModified(Panel *p)
+void AppearanceSettingsPage::OnControlModified(Panel *p)
 {
     BaseClass::OnControlModified(p);
 
@@ -136,7 +170,7 @@ void ReplaysSettingsPage::OnControlModified(Panel *p)
     }
 }
 
-void ReplaysSettingsPage::OnColorSelected(KeyValues *pKv)
+void AppearanceSettingsPage::OnColorSelected(KeyValues *pKv)
 {
     Color selected = pKv->GetColor("color");
 
@@ -162,7 +196,7 @@ void ReplaysSettingsPage::OnColorSelected(KeyValues *pKv)
     UpdateModelSettings();
 }
 
-void ReplaysSettingsPage::OnCommand(const char* command)
+void AppearanceSettingsPage::OnCommand(const char* command)
 {
     if (FStrEq(command, "picker_trail"))
     {
@@ -189,13 +223,13 @@ void ReplaysSettingsPage::OnCommand(const char* command)
     BaseClass::OnCommand(command);
 }
 
-void ReplaysSettingsPage::ApplySchemeSettings(IScheme* pScheme)
+void AppearanceSettingsPage::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
     LoadSettings(); // Called here so the color buttons are properly colored
 }
 
-void ReplaysSettingsPage::UpdateModelSettings()
+void AppearanceSettingsPage::UpdateModelSettings()
 {
     C_BaseFlex *pModel = m_pModelPreview->GetModel();
     if (!pModel)
@@ -210,11 +244,9 @@ void ReplaysSettingsPage::UpdateModelSettings()
     
     // Player shape
     pModel->SetBodygroup(1, ghost_bodygroup.GetInt());
-
-    // MOM_TODO: Show trail changes here?
 }
 
-void ReplaysSettingsPage::UpdateSliderSettings()
+void AppearanceSettingsPage::UpdateSliderSettings()
 {
     char buf[64];
     Q_snprintf(buf, sizeof(buf), "%i", static_cast<int>(m_pAlphaOverrideSlider->GetSliderValue()));

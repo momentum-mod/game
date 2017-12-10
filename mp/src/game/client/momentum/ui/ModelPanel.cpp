@@ -107,7 +107,7 @@ void CRenderPanel::OnThink()
 }
 void CRenderPanel::ResetView()
 {
-    m_flDist = 128;
+    m_flDist = 100;
     m_flPitch = 45;
     m_flYaw = 180;
     lightAng.Init(45, -135, 0);
@@ -244,6 +244,7 @@ bool CRenderPanel::LoadModel(const char *localPath)
     m_iNumPoseParams = pHdr ? pHdr->GetNumPoseParameters() : 0;
 
     m_pModelInstance = pEnt;
+    ResetView();
     return true;
 }
 
@@ -358,14 +359,6 @@ void CRenderPanel::Paint()
     modelrender->SuppressEngineLighting(false);
 }
 
-inline void SetRenderColor(C_BaseEntity* pFlex)
-{
-    color32 col = pFlex->GetRenderColor();
-    float color[4] = {col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f};
-    render->SetColorModulation(color);
-    render->SetBlend(color[3]);
-}
-
 void CRenderPanel::DrawModel()
 {
     if (!IsModelReady())
@@ -374,6 +367,14 @@ void CRenderPanel::DrawModel()
     for (int i = 0; i < m_iNumPoseParams; i++)
         m_pModelInstance->SetPoseParameter(i, 0);
 
-    SetRenderColor(m_pModelInstance);
+    SetRenderColors(m_pModelInstance);
     m_pModelInstance->DrawModel(STUDIO_RENDER);
+}
+
+void CRenderPanel::SetRenderColors(C_BaseEntity* pEnt)
+{
+    color32 col = pEnt->GetRenderColor();
+    float color[4] = { col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f };
+    render->SetColorModulation(color);
+    render->SetBlend((GetParent() ? GetParent()->GetAlpha() : GetAlpha() / 255.0f) * color[3]);
 }

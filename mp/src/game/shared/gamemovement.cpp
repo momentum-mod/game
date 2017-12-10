@@ -2286,7 +2286,7 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 
 	for (int i=0 ; i<3 ; i++)       // Determine x and y parts of velocity
 		wishvel[i] = forward[i]*fmove + right[i]*smove;
-	wishvel[2] += mv->m_flUpMove * factor;
+	wishvel[2] += mv->m_flUpMove * sv_noclipspeed_vertical.GetFloat();
 
 	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
 	wishspeed = VectorNormalize(wishdir);

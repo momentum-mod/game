@@ -46,6 +46,7 @@ public:
     void ResetModel();
     void GetModelCenter(Vector &vecInto);
     void DrawModel();
+    void SetRenderColors(C_BaseEntity *pEnt);
 
 private:
     QAngle render_ang;

@@ -81,7 +81,7 @@ $Project "Client (Momentum)"
 	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
-	                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
                     }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
@@ -89,7 +89,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
 	                $File "momentum\ui\SettingsPanel\GameplaySettingsPage.cpp"
 	                $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
-	                $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
                 }
                 
                 $Folder "HUD"

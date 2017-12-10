@@ -8,12 +8,12 @@
 
 class CRenderPanel;
 
-class ReplaysSettingsPage : public SettingsPage
+class AppearanceSettingsPage : public SettingsPage
 {
-    DECLARE_CLASS_SIMPLE(ReplaysSettingsPage, SettingsPage);
+    DECLARE_CLASS_SIMPLE(AppearanceSettingsPage, SettingsPage);
 
-    ReplaysSettingsPage(Panel *pParent);
-    ~ReplaysSettingsPage();
+    AppearanceSettingsPage(Panel *pParent);
+    ~AppearanceSettingsPage();
 
     void LoadSettings() OVERRIDE;
     void OnPageShow() OVERRIDE;
@@ -21,6 +21,7 @@ class ReplaysSettingsPage : public SettingsPage
     void OnMainDialogClosed() OVERRIDE;
     void OnMainDialogShow() OVERRIDE;
     void OnTextChanged(Panel *p) OVERRIDE;
+
 
     void OnControlModified(Panel *p) OVERRIDE;
 
@@ -36,11 +37,13 @@ private:
     Frame *m_pModelPreviewFrame;
     CRenderPanel *m_pModelPreview;
 
-    ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color; // MOM_TODO add the rest of visible things here
+    ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color, ghost_trail_length; // MOM_TODO add the rest of visible things here
+
+    ComboBox *m_pBodygroupCombo;
 
     CvarToggleCheckButton *m_pEnableTrail, *m_pEnableColorAlphaOverride;
     CCvarSlider *m_pAlphaOverrideSlider;
-    TextEntry *m_pAlphaOverrideInput;
+    TextEntry *m_pAlphaOverrideInput, *m_pTrailLengthEntry;
     ColorPicker *m_pColorPicker;
     Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
 };

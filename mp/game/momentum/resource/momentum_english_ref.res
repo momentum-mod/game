@@ -182,8 +182,6 @@
         "MOM_Settings_Practice_Safeguard" "Enable the practice mode safeguard"
         "MOM_Settings_Practice_Safeguard_TT" "The safeguard prevents you from accidentally turning on practice mode while doing a run.\nIf enabled, practice mode will not enable if you are pressing any movement keys."
         "MOM_Settings_Save_Checkpoints" "Save user checkpoints to file on map end"
-        "MOM_Settings_Enable_Trail" "Paint player's trail"
-        "MOM_Settings_Pick_Trail_Color_TT" "Change trail color"
         "MOM_Settings_Worldlight_Shadows" "World lights determine shadow direction"
         "MOM_Settings_Worldlight_Shadows_TT" "When enabled, world lights will determine entity shadow direction. NOTE: Can cause significant performance decreases in some maps!"
 
@@ -253,9 +251,29 @@
         "MOM_Settings_Compare_Show_Jumps" "Show zone jump comparisons"
         "MOM_Settings_Compare_Show_Strafes" "Show zone strafe comparisons"
 
-        //Replays
-        "MOM_Settings_Tab_Replays" "Replays"
-        "MOM_Settings_ReplayModelAlpha" "Replay model alpha:"
+        //Player Appearance
+        "MOM_Settings_Tab_Appearance" "Appearance"
+        "MOM_Settings_Ghost_Body" "Ghost Body"
+        "MOM_Settings_Bodygroup_0" "Triangular Pyramid"
+        "MOM_Settings_Bodygroup_1" "Pyramid"
+        "MOM_Settings_Bodygroup_2" "Hexagonal Pyramid"
+        "MOM_Settings_Bodygroup_3" "Cube"
+        "MOM_Settings_Bodygroup_4" "Rectangular Prism"
+        "MOM_Settings_Bodygroup_5" "Triangular Prism"
+        "MOM_Settings_Bodygroup_6" "Diamond"
+        "MOM_Settings_Bodygroup_7" "Pentagonal Prism"
+        "MOM_Settings_Bodygroup_8" "Hexagonal Prism"
+        "MOM_Settings_Bodygroup_9" "Dodecahedron"
+        "MOM_Settings_Bodygroup_10" "Sphere"
+        "MOM_Settings_Bodygroup_11" "Oval"
+        "MOM_Settings_Bodygroup_12" "Icosahedron"
+        "MOM_Settings_Bodygroup_13" "Cone"
+        "MOM_Settings_Bodygroup_14" "Cylinder"
+        "MOM_Settings_Pick_Body_Color_TT" "Change ghost body color"
+        "MOM_Settings_Ghost_Trail" "Ghost Trail"
+        "MOM_Settings_Enable_Trail" "Paint player's trail"
+        "MOM_Settings_Pick_Trail_Color_TT" "Change ghost trail color"
+        "MOM_Settings_Trail_Length" "Trail length (seconds)"
 
         // Replay Info
         // Spec GUI
@@ -278,45 +296,6 @@
         "MOM_ReplayControls" "Replay Controls"
         "MOM_ReplayTimescale" "Timescale:"
         "MOM_ReplayGoto" "Goto:"
-
-        //GameUI2
-
-        "GameUI2_LogoLeft" "Momentum"
-        "GameUI2_LogoRight" "Mod"
-
-        "GameUI2_ResumeGame" "RESUME GAME"
-        "GameUI2_ResumeGameDescription" "Back into the action"
-
-        "GameUI2_Spectate" "SPECTATE"
-        "GameUI2_SpectateDescription" "Spectate an online ghost"
-
-        "GameUI2_SelectMap" "SELECT MAP"
-        "GameUI2_SelectMapDescription" "Choose a map to play"
-
-        "GameUI2_Options" "OPTIONS"
-        "GameUI2_OptionsDescription" "Setup audio, video, mouse and other settings"
-
-        "GameUI2_MomSettings" "MOMENTUM SETTINGS"
-        "GameUI2_MomSettingsDescription" "Change Momentum-related settings"
-
-        "GameUI2_Quit2Menu" "QUIT TO MAIN MENU"
-        "GameUI2_Quit2MenuDescription" "Return to the main menu"
-
-        "GameUI2_Credits" "CREDITS"
-        "GameUI2_CreditsDescription" "See who all helped make this game"
-
-        "GameUI2_Quit" "QUIT"
-        "GameUI2_QuitDescription" "Close the game"
-
-        "GameUI2_SendFeedback" "SEND FEEDBACK"
-        "GameUI2_SendFeedbackDescription" "Send feedback to the team"
-
-
-        "GameUI2_TitleOptions" "Options"
-
-        "GameUI2_Apply" "Apply"
-        "GameUI2_Back" "Back"
-        "GameUI2_Done" "Done"
 
         //Other gameui tokens
         "MOM_NewVersion" "New update (%s -> %s) is now available. Click here to go to download page."
