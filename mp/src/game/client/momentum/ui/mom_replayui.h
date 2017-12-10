@@ -3,7 +3,6 @@
 #include "cbase.h"
 
 #include "PFrameButton.h"
-#include "ScrubbableProgressBar.h"
 #include "game/client/iviewport.h"
 #include "momentum/mom_shareddefs.h"
 #include <vgui_controls/Button.h>
@@ -13,6 +12,7 @@
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/ToggleButton.h>
 #include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/ScrubbableProgressBar.h>
 
 enum Selections
 {

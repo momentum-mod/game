@@ -212,7 +212,7 @@ void CHudStrafeSyncDisplay::Paint()
 //////////////////////////////////////////
 //           CHudStrafeSyncBar          //
 //////////////////////////////////////////
-class CHudStrafeSyncBar : public CHudFillableBar
+class CHudStrafeSyncBar : public CHudElement, public CHudFillableBar
 {
     DECLARE_CLASS_SIMPLE(CHudStrafeSyncBar, CHudFillableBar);
 
@@ -271,9 +271,9 @@ class CHudStrafeSyncBar : public CHudFillableBar
     Color normalColor, increaseColor, decreaseColor;
 };
 
-DECLARE_HUDELEMENT(CHudStrafeSyncBar);
+DECLARE_NAMED_HUDELEMENT(CHudStrafeSyncBar, CHudSyncBar);
 
-CHudStrafeSyncBar::CHudStrafeSyncBar(const char *pElementName) : CHudFillableBar("CHudSyncBar")
+CHudStrafeSyncBar::CHudStrafeSyncBar(const char *pElementName) : CHudElement(pElementName), CHudFillableBar(g_pClientMode->GetViewport(), pElementName)
 {
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }

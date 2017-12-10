@@ -1,8 +1,6 @@
-#include "cbase.h"
-
-#include "ScrubbableProgressBar.h"
+#include "vgui_controls/ScrubbableProgressBar.h"
 #include "vgui/IInput.h"
-#include "vgui_controls/Panel.h"
+#include "tier1/KeyValues.h"
 
 using namespace vgui;
 
