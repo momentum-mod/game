@@ -571,7 +571,7 @@ void EditablePanel::LoadControlSettings(const char *resourceName, const char *pa
 	// AssertMsg( g_pFullFileSystem->FileExists( resourceName ), CFmtStr( "Resource file \"%s\" not found on disk!", resourceName ).Access() );
 	if ( !g_pFullFileSystem->FileExists( resourceName ) )
 	{
-		Msg( "Resource file \"%s\" not found on disk!", resourceName );
+		Msg( "Resource file \"%s\" not found on disk!\n", resourceName );
 	}
 #endif
 	_buildGroup->LoadControlSettings(resourceName, pathID, pKeyValues, pConditions);

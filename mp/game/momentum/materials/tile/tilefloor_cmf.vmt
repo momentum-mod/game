@@ -1,0 +1,11 @@
+// envmaptint_fix
+"SDK_LightmappedGeneric"
+{
+	"$basetexture" "tile/tilefloor_cmf"
+	"$bumpmap" "tile/tilefloor_cmf_normal"
+	"$normalmapalphaenvmapmask" 1
+	"$envmap" "env_cubemap"
+	"$surfaceprop" "tile"
+	"$envmaptint" "[ .06 .06 .06 ]"
+	"%keywords" "combine"
+}

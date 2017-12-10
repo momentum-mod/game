@@ -25,7 +25,6 @@ protected:
 
 	virtual ITexture*	CreateMaskGameUITexture();
     virtual ITexture*   CreateDepthBufferTexture();
-    virtual ITexture*   CreateSSAOTexture();
     virtual ITexture*   CreateBlurTexture(bool blurX);
     virtual ITexture*   CreateFullscreenPPTexture();
 private:
@@ -33,7 +32,6 @@ private:
 
 	CTextureReference	m_MaskGameUITexture;
     CTextureReference   m_DepthBufferTexture;
-    CTextureReference   m_SSAOTexture;
     CTextureReference   m_BlurX, m_BlurY, m_FullscreenPP;
 
 	IMaterialSystem*	m_pMaterialSystem;

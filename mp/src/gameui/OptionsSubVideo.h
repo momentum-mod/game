@@ -19,9 +19,6 @@
 #include "URLButton.h"
 #include "vgui_controls/Frame.h"
 
-
-class CCvarSlider;
-
 //-----------------------------------------------------------------------------
 // Purpose: Video Details, Part of OptionsDialog
 //-----------------------------------------------------------------------------

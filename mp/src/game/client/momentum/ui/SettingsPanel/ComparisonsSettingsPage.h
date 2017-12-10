@@ -5,7 +5,7 @@
 #include "SettingsPage.h"
 #include "hud_comparisons.h"
 #include <vgui_controls/Button.h>
-#include <vgui_controls/cvartogglecheckbutton.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
 #include <vgui_controls/AnimationController.h>
@@ -25,8 +25,8 @@ class ComparisonsSettingsPage : public SettingsPage
     void InitBogusComparePanel();
 
     //These are used for closing/activating the bogus panel if this was the tab
-    void OnMainDialogClosed() const;
-    void OnMainDialogShow() const;
+    void OnMainDialogClosed() OVERRIDE;
+    void OnMainDialogShow() OVERRIDE;
 
     //Handle custom controls
     void OnApplyChanges() OVERRIDE;
@@ -73,7 +73,7 @@ class ComparisonsSettingsPage : public SettingsPage
 
 private:
 
-    CvarToggleCheckButton<ConVarRef> *m_pCompareShow, *m_pCompareFormat, *m_pTimeShowOverall,
+    CvarToggleCheckButton *m_pCompareShow, *m_pCompareFormat, *m_pTimeShowOverall,
         *m_pTimeShowZone, *m_pVelocityShow, *m_pVelocityShowAvg, *m_pVelocityShowMax, *m_pVelocityShowEnter, 
         *m_pVelocityShowExit, *m_pSyncShow, *m_pSyncShowS1, *m_pSyncShowS2, *m_pJumpShow, *m_pStrafeShow;
     TextEntry *m_pMaxZones;

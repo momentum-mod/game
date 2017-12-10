@@ -6,11 +6,10 @@
 //
 //=============================================================================//
 #include "OptionsSubMouse.h"
-//#include "CommandCheckButton.h"
 #include "KeyToggleCheckButton.h"
 #include "CvarNegateCheckButton.h"
-#include "CvarToggleCheckButton.h"
-#include "CvarSlider.h"
+#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/CVarSlider.h>
 
 #include "EngineInterface.h"
 
@@ -32,31 +31,31 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 		"#GameUI_ReverseMouse", 
 		"m_pitch" );
 	
-	m_pMouseFilterCheckBox = new CCvarToggleCheckButton( 
+	m_pMouseFilterCheckBox = new CvarToggleCheckButton( 
 		this, 
 		"MouseFilter", 
 		"#GameUI_MouseFilter", 
 		"m_filter" );
 
-    m_pMouseRawCheckbox = new CCvarToggleCheckButton(
+    m_pMouseRawCheckbox = new CvarToggleCheckButton(
         this,
         "MouseRaw",
         "#GameUI_MouseRaw",
         "m_rawinput");
 
-	m_pJoystickCheckBox = new CCvarToggleCheckButton( 
+	m_pJoystickCheckBox = new CvarToggleCheckButton( 
 		this, 
 		"Joystick", 
 		"#GameUI_Joystick", 
 		"joystick" );
 
-	m_pJoystickSouthpawCheckBox = new CCvarToggleCheckButton( 
+	m_pJoystickSouthpawCheckBox = new CvarToggleCheckButton( 
 		this, 
 		"JoystickSouthpaw", 
 		"#GameUI_JoystickSouthpaw", 
 		"joy_movement_stick" );
 
-	m_pReverseJoystickCheckBox = new CCvarToggleCheckButton( 
+	m_pReverseJoystickCheckBox = new CvarToggleCheckButton( 
 		this, 
 		"ReverseJoystick", 
 		"#GameUI_ReverseJoystick", 

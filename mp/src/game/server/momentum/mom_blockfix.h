@@ -5,9 +5,6 @@
 #endif
 
 #include "cbase.h"
-#include "buttons.h"
-#include "doors.h"
-#include "mom_player.h"
 
 #define MAX_BHOPBLOCKS 1024
 #define BLOCK_TELEPORT 0.11
@@ -17,29 +14,20 @@ class CMOMBhopBlockFixSystem : CAutoGameSystem
 {
 
   public:
-    CMOMBhopBlockFixSystem(const char *pName) : CAutoGameSystem(pName) {}
+    CMOMBhopBlockFixSystem(const char *pName);
 
-    void LevelInitPostEntity() OVERRIDE { FindBhopBlocks(); }
+    // GameSystem overrides
+    void LevelInitPostEntity() OVERRIDE;
+    void LevelShutdownPostEntity() OVERRIDE;
 
-    void LevelShutdownPostEntity() OVERRIDE { m_mapBlocks.RemoveAll(); }
-
-    bool IsBhopBlock(int entIndex) const { return (m_mapBlocks.Find(entIndex) != m_mapBlocks.InvalidIndex()); }
-
+    // Called from player
+    bool IsBhopBlock(const int &entIndex) const { return (m_mapBlocks.Find(entIndex) != m_mapBlocks.InvalidIndex()); }
     void PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *pBlock);
 
+    // Function
     void FindBhopBlocks();
-
     void FindTeleport(CBaseEntity *pBlockEnt, bool isDoor);
-
-    void AddBhopBlock(CBaseEntity *pBlockEnt, CBaseEntity *pTeleportEnt, bool isDoor)
-    {
-        bhop_block_t block = bhop_block_t();
-        block.m_pBlockEntity = pBlockEnt;
-        block.m_pTeleportTrigger = pTeleportEnt;
-        block.m_bIsDoor = isDoor;
-        AlterBhopBlock(block);
-        m_mapBlocks.Insert(pBlockEnt->entindex(), block);
-    }
+    void AddBhopBlock(CBaseEntity *pBlockEnt, CBaseEntity *pTeleportEnt, bool isDoor);
 
   private:
     struct bhop_block_t

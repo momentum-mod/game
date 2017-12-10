@@ -319,12 +319,14 @@ class PickerHelper : public Panel
 ColorPicker::ColorPicker(Panel *parent, Panel *pActionsignalTarget) : BaseClass(parent, "CColorPicker")
 {
     pTarget = nullptr;
+    pTargetCallback = nullptr;
     AddActionSignalTarget(pActionsignalTarget);
     Init();
 }
 ColorPicker::ColorPicker(Panel *parent, TextEntry *pTargetEntry) : BaseClass(parent, "CColorPicker")
 {
     pTarget = pTargetEntry;
+    pTargetCallback = nullptr;
     Init();
 }
 
@@ -338,6 +340,8 @@ ColorPicker::~ColorPicker()
 
     pDrawPicker_Hue = nullptr;
     pDrawPicker_SV = nullptr;
+    pTarget = nullptr;
+    pTargetCallback = nullptr;
 }
 
 void ColorPicker::Init()
@@ -524,6 +528,7 @@ void ColorPicker::OnCommand(const char *cmd)
             Color picked;
             Vec4DToColor(m_vecColor, picked);
             pKV->SetColor("color", picked);
+            pKV->SetPtr("targetCallback", pTargetCallback);
             PostActionSignal(pKV);
         }
         Close();

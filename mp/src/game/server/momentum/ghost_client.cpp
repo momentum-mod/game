@@ -80,12 +80,12 @@ void CMomentumGhostClient::LevelInitPostEntity()
 void CMomentumGhostClient::LevelShutdownPostEntity()
 {
     m_pPlayer = nullptr;
+    if (!FStrEq(gpGlobals->mapname.ToCStr(), "")) // Don't send our shutdown message from the menu
+        g_pMomentumLobbySystem->LevelChange(nullptr);
 }
 
 void CMomentumGhostClient::LevelShutdownPreEntity()
 {
-    if (!FStrEq(gpGlobals->mapname.ToCStr(), "")) // Don't send our shutdown message from the menu
-        g_pMomentumLobbySystem->LevelChange(nullptr);
 }
 
 void CMomentumGhostClient::FrameUpdatePreEntityThink()

@@ -760,7 +760,7 @@ void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 
         const char *mapName = g_pGameRules->MapName();
         char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "%s/%s*%s", RECORDING_PATH, mapName, EXT_RECORDING_FILE);
+        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, mapName, EXT_RECORDING_FILE);
         V_FixSlashes(path);
 
         FileFindHandle_t found;

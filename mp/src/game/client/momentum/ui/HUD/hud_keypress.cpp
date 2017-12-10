@@ -158,7 +158,9 @@ void CHudKeyPressDisplay::Paint()
         {
             m_fJumpColorUntil = gpGlobals->curtime + KEYDRAW_MIN;
         }
-        CHECK_INPUT_P(IN_JUMP);
+
+        // Bullrush is Bhop being disabled
+        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled : m_Normal);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
@@ -271,7 +273,8 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
     // jump
-    CHECK_INPUT_N(IN_JUMP);
+    // Bullrush is Bhop being disabled
+    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled : m_darkGray);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
     surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     // duck

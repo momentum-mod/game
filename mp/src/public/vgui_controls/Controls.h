@@ -91,7 +91,7 @@ class Button;
 class CheckButton;
 class CheckButtonList;
 class CircularProgressBar;
-template< class T >class CvarToggleCheckButton;
+class CvarToggleCheckButton;
 class ComboBox;
 class DirectorySelectDialog;
 class Divider;

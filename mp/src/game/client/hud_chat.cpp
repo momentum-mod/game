@@ -130,7 +130,8 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
 
     msg.ReadBytes(&target, sizeof(uint64));
     CSteamID targetID = CSteamID(target);
-
+    
+    const char* spectateText = target != 1 ? "%s is now spectating." : + "%s is now watching a replay.";
     if (type == SPEC_UPDATE_LEAVE)
     {
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
@@ -139,7 +140,7 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
     else if (type == SPEC_UPDATE_JOIN)
     {
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-               "%s is now spectating.", pName);
+               spectateText, pName);
     }
     else if (type == SPEC_UPDATE_CHANGETARGET) 
     {
