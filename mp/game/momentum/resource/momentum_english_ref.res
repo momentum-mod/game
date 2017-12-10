@@ -274,6 +274,18 @@
         "MOM_Settings_Enable_Trail" "Paint player's trail"
         "MOM_Settings_Pick_Trail_Color_TT" "Change ghost trail color"
         "MOM_Settings_Trail_Length" "Trail length (seconds)"
+        
+        //Online settings
+        "MOM_Settings_Tab_Online" "Online"
+        "MOM_Settings_Override_Alpha_Enable" "Override Online Ghost Alphas"
+        "MOM_Settings_Override_Alpha_Enable_TT" "When enabled, this setting overrides the alpha component of all online ghosts."
+        "MOM_Settings_Online_Rotations" "Enable wonky online ghost rotations"
+        "MOM_Settings_Online_Rotations_TT" "When enabled, ghosts rotate about their origin" 
+        "MOM_Settings_Online_Sounds" "Enable online ghost flashlight sounds"
+        "MOM_Settings_Online_Sounds_TT" "When enabled, other players flashlights make sounds when turned on or off"
+        "MOM_Settings_Online_Trails" "Enable online ghost trails"
+        "MOM_Settings_Online_Trails_TT" "When enabled, other players can have a trail showing their paths"
+        
 
         // Replay Info
         // Spec GUI

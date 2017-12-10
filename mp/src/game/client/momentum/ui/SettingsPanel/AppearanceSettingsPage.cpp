@@ -50,10 +50,6 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
 
     m_pPickBodyColorButton = FindControl<Button>("PickBodyColorButton");
 
-    m_pEnableColorAlphaOverride = FindControl<CvarToggleCheckButton>("EnableAlphaOverride");
-    m_pAlphaOverrideSlider = FindControl<CCvarSlider>("AlphaOverrideSlider");
-    m_pAlphaOverrideInput = FindControl<TextEntry>("AlphaOverrideEntry");
-
     m_pTrailLengthEntry = FindControl<TextEntry>("TrailEntry");
 
     m_pBodygroupCombo = FindControl<ComboBox>("BodygroupCombo");
@@ -106,7 +102,6 @@ void AppearanceSettingsPage::LoadSettings()
     m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
     m_pTrailLengthEntry->SetText(ghost_trail_length.GetString());
 
-    UpdateSliderSettings();
     UpdateModelSettings();
 }
 
@@ -135,19 +130,8 @@ void AppearanceSettingsPage::OnMainDialogShow()
 void AppearanceSettingsPage::OnTextChanged(Panel *p)
 {
     BaseClass::OnTextChanged(p);
-
-    if (p == m_pAlphaOverrideInput)
-    {
-        char buf[64];
-        m_pAlphaOverrideInput->GetText(buf, 64);
-
-        float fValue = static_cast<float>(Q_atof(buf));
-        if (fValue >= 0.0f && fValue <= 255.0f)
-        {
-            m_pAlphaOverrideSlider->SetSliderValue(fValue);
-        }
-    }
-    else if (p == m_pBodygroupCombo)
+    
+    if (p == m_pBodygroupCombo)
     {
         ghost_bodygroup.SetValue(m_pBodygroupCombo->GetActiveItem());
         UpdateModelSettings();
@@ -157,16 +141,6 @@ void AppearanceSettingsPage::OnTextChanged(Panel *p)
         char buf[3];
         m_pTrailLengthEntry->GetText(buf, 3);
         ghost_trail_length.SetValue(buf);
-    }
-}
-
-void AppearanceSettingsPage::OnControlModified(Panel *p)
-{
-    BaseClass::OnControlModified(p);
-
-    if (p == m_pAlphaOverrideSlider)
-    {
-        UpdateSliderSettings();
     }
 }
 
@@ -244,11 +218,4 @@ void AppearanceSettingsPage::UpdateModelSettings()
     
     // Player shape
     pModel->SetBodygroup(1, ghost_bodygroup.GetInt());
-}
-
-void AppearanceSettingsPage::UpdateSliderSettings()
-{
-    char buf[64];
-    Q_snprintf(buf, sizeof(buf), "%i", static_cast<int>(m_pAlphaOverrideSlider->GetSliderValue()));
-    m_pAlphaOverrideInput->SetText(buf);
 }

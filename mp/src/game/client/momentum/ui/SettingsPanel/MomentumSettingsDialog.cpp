@@ -6,6 +6,7 @@
 #include "GameplaySettingsPage.h"
 #include "ComparisonsSettingsPage.h"
 #include "AppearanceSettingsPage.h"
+#include "OnlineSettingsPage.h"
 #include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
@@ -45,7 +46,8 @@ class CMomentumSettingsPanel : public PropertyDialog
     void OnThink() OVERRIDE;
 
   private:
-    SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pAppearanceSettings;
+    SettingsPage *m_pHudSettings, *m_pControlsSettings, *m_pCompareSettings, *m_pAppearanceSettings,
+     *m_pOnlineSettings;
 };
 
 // Constuctor: Initializes the Panel
@@ -56,7 +58,7 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
 
-    SetMinimumSize(500, 500);
+    SetMinimumSize(600, 500);
     int wide, tall;
     surface()->GetScreenSize(wide, tall);
     SetPos(wide / 3, tall / 4);
@@ -69,18 +71,21 @@ CMomentumSettingsPanel::CMomentumSettingsPanel(VPANEL parent) : BaseClass(nullpt
     SetCloseButtonVisible(true);
     SetMoveable(true);
     SetVisible(false);
+    SetSizeable(true);
 
     //Create the pages here
     m_pControlsSettings = new GameplaySettingsPage(this);
     m_pHudSettings = new HudSettingsPage(this);
     m_pCompareSettings = new ComparisonsSettingsPage(this);
     m_pAppearanceSettings = new AppearanceSettingsPage(this);
+    m_pOnlineSettings = new OnlineSettingsPage(this);
 
     //Note: we're adding the scroll panels here, because we want to be able to scroll.
     AddPage(m_pControlsSettings->GetScrollPanel(), "#MOM_Settings_Tab_Gameplay");
     AddPage(m_pHudSettings->GetScrollPanel(), "#MOM_Settings_Tab_HUD");
     AddPage(m_pCompareSettings->GetScrollPanel(), "#MOM_Settings_Tab_Comparisons");
     AddPage(m_pAppearanceSettings->GetScrollPanel(), "#MOM_Settings_Tab_Appearance");
+    AddPage(m_pOnlineSettings->GetScrollPanel(), "#MOM_Settings_Tab_Online");
     //MOM_TODO: Add the other settings panels here.
 
     SetScheme("SourceScheme");

@@ -8,10 +8,7 @@
 #include <vgui_controls/ScrollableEditablePanel.h>
 #include <vgui_controls/pch_vgui_controls.h>
 
-using namespace vgui;
-
-
-class SettingsPage : public PropertyPage
+class SettingsPage : public vgui::PropertyPage
 {
     DECLARE_CLASS_SIMPLE(SettingsPage, PropertyPage);
 
@@ -56,17 +53,17 @@ class SettingsPage : public PropertyPage
         // Designed to be overridden
     }
 
-    ScrollableEditablePanel *GetScrollPanel() const { return m_pScrollPanel; }
+    vgui::ScrollableEditablePanel *GetScrollPanel() const { return m_pScrollPanel; }
 
     // Load the panel's settings
     virtual void OnPageShow() OVERRIDE { LoadSettings(); }
     virtual void OnResetData() OVERRIDE { LoadSettings(); }
     
   private:
-    ScrollableEditablePanel *m_pScrollPanel;
+    vgui::ScrollableEditablePanel *m_pScrollPanel;
 };
 
-class SettingsPageScrollPanel : public ScrollableEditablePanel
+class SettingsPageScrollPanel : public vgui::ScrollableEditablePanel
 {
     DECLARE_CLASS_SIMPLE(SettingsPageScrollPanel, ScrollableEditablePanel);
 

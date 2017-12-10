@@ -22,9 +22,6 @@ class AppearanceSettingsPage : public SettingsPage
     void OnMainDialogShow() OVERRIDE;
     void OnTextChanged(Panel *p) OVERRIDE;
 
-
-    void OnControlModified(Panel *p) OVERRIDE;
-
     // From the color picker
     MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
     void OnCommand(const char* command) OVERRIDE;
@@ -32,7 +29,7 @@ class AppearanceSettingsPage : public SettingsPage
 
 private:
     void UpdateModelSettings();
-    void UpdateSliderSettings();
+    
 
     Frame *m_pModelPreviewFrame;
     CRenderPanel *m_pModelPreview;
@@ -41,9 +38,9 @@ private:
 
     ComboBox *m_pBodygroupCombo;
 
-    CvarToggleCheckButton *m_pEnableTrail, *m_pEnableColorAlphaOverride;
-    CCvarSlider *m_pAlphaOverrideSlider;
-    TextEntry *m_pAlphaOverrideInput, *m_pTrailLengthEntry;
+    CvarToggleCheckButton *m_pEnableTrail;
+    
+    TextEntry *m_pTrailLengthEntry;
     ColorPicker *m_pColorPicker;
     Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
 };
