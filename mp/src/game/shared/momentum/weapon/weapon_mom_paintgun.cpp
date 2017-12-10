@@ -1,6 +1,10 @@
 #include "cbase.h"
 #include "weapon_mom_paintgun.h"
 
+#ifdef CLIENT_DLL
+#include "../../../game/client/momentum/ui/PaintGunPanel.h"
+#endif
+
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumPaintGun, DT_MomentumPaintGun)
@@ -22,3 +26,12 @@ void CMomentumPaintGun::RifleFire()
 }
 
 void CMomentumPaintGun::PrimaryAttack() { RifleFire(); }
+
+void CMomentumPaintGun::SecondaryAttack()
+{
+#ifndef CLIENT_DLL
+    engine->ClientCommand( this->GetPlayerOwner()->edict() , "mom_paintgunui_show" );
+#endif
+    m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
+}
+

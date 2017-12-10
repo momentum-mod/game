@@ -8,7 +8,6 @@
 #include "IEffects.h"
 #include "decals.h"
 #include "fx.h"
-#include "materialsystem/imaterialvar.h"
 #include "view.h"
 #ifdef TF_CLIENT_DLL
 #include "cdll_util.h"
@@ -211,12 +210,6 @@ bool Painting(Vector &vecOrigin, Vector &vecStart, int iHitbox, C_BaseEntity *pE
         int decalNumber = decalsystem->GetDecalIndexForName(pchDecalName);
         if (decalNumber == -1)
             return false;
-
-        IMaterial *material = materials->FindMaterial("decals/paintgun", TEXTURE_GROUP_DECAL);
-        if (material != nullptr)
-        {
-            material->ColorModulate(1.0f, 0.0f, 0.0f);
-        }
 
         bool bSkipDecal = false;
 

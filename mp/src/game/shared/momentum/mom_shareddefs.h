@@ -60,6 +60,7 @@ typedef enum
 #define IN_TIMES (1<<26)
 
 #define PANEL_REPLAY "replaycontrols"
+#define PANEL_PAINTGUN "PaintGunPanel"
 
 #define MOM_COLORIZATION_CHECK_FREQUENCY 0.1f
 

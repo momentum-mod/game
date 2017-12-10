@@ -307,7 +307,7 @@ uint32 MomentumUtil::GetHexFromColor(const Color &color)
 void MomentumUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
 {
     const uint32 colorHex = GetHexFromColor(color);
-    Q_snprintf(pBuffer, maxLen, "%x", colorHex);
+    Q_snprintf(pBuffer, maxLen, "%p", colorHex); //This prints the 00 so it can parse again the trail
 }
 
 inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)

@@ -1,0 +1,4 @@
+"resource/ui/PaintGunPanel.res"
+{
+
+}
