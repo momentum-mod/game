@@ -3,7 +3,7 @@
 #include "cbase.h"
 
 #include <vgui_controls/Button.h>
-#include <vgui_controls/cvartogglecheckbutton.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/ScrollableEditablePanel.h>
 #include <vgui_controls/pch_vgui_controls.h>
