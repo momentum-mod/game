@@ -1,7 +1,7 @@
 #include "cbase.h"
 
-#include "weapon_mom_paintgun.h"
 #include "tier0/memdbgon.h"
+#include "weapon_mom_paintgun.h"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumPaintGun, DT_MomentumPaintGun)
 

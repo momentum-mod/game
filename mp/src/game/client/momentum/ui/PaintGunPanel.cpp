@@ -96,11 +96,11 @@ PaintGunPanel::PaintGunPanel(IViewPort *pViewport) : BaseClass(nullptr, PANEL_PA
     m_pPickColorButton = FindControl<Button>("PickColorButton");
 
     Color TextureColor;
-    if ( g_pMomentumUtil->GetColorFromHex( mom_paintgun_color.GetString() , TextureColor ) )
+    if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
     {
-        m_pPickColorButton->SetDefaultColor( TextureColor , TextureColor );
-        m_pPickColorButton->SetArmedColor( TextureColor , TextureColor );
-        m_pPickColorButton->SetSelectedColor( TextureColor , TextureColor );
+        m_pPickColorButton->SetDefaultColor(TextureColor, TextureColor);
+        m_pPickColorButton->SetArmedColor(TextureColor, TextureColor);
+        m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
     }
 
     m_pSliderScale = FindControl<CCvarSlider>("SliderScale");
@@ -115,8 +115,8 @@ PaintGunPanel::PaintGunPanel(IViewPort *pViewport) : BaseClass(nullptr, PANEL_PA
 
     m_pCvarIgnoreZ = new ConVarRef("mom_paintgun_ignorez");
 
-    m_pToggleIgnoreZ = FindControl<ToggleButton>( "ToggleIgnoreZ" );
-    m_pToggleIgnoreZ->SetSelected( m_pCvarIgnoreZ->GetBool() );
+    m_pToggleIgnoreZ = FindControl<ToggleButton>("ToggleIgnoreZ");
+    m_pToggleIgnoreZ->SetSelected(m_pCvarIgnoreZ->GetBool());
 
     SetLabelText();
 
