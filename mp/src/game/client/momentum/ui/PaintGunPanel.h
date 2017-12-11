@@ -21,6 +21,7 @@ class PaintGunPanel : public Frame, public IViewPortPanel, public CGameEventList
     ~PaintGunPanel() {}
 
     virtual void Activate() OVERRIDE;
+    virtual void Close() OVERRIDE;
     virtual void OnThink() OVERRIDE;
 
     virtual const char *GetName(void) OVERRIDE { return PANEL_PAINTGUN; }

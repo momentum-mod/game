@@ -1,10 +1,6 @@
 #include "cbase.h"
+
 #include "weapon_mom_paintgun.h"
-
-#ifdef CLIENT_DLL
-#include "../../../game/client/momentum/ui/PaintGunPanel.h"
-#endif
-
 #include "tier0/memdbgon.h"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumPaintGun, DT_MomentumPaintGun)
@@ -31,15 +27,14 @@ void CMomentumPaintGun::SecondaryAttack()
 {
 #ifndef CLIENT_DLL
     bTogglePaintGunUI = !bTogglePaintGunUI;
-    if(bTogglePaintGunUI)
+    if (bTogglePaintGunUI)
     {
-        engine->ClientCommand( this->GetPlayerOwner()->edict() , "mom_paintgunui_show" );
+        engine->ClientCommand(this->GetPlayerOwner()->edict(), "mom_paintgunui_show");
     }
     else
     {
-        engine->ClientCommand( this->GetPlayerOwner()->edict() , "mom_paintgunui_close" );
+        engine->ClientCommand(this->GetPlayerOwner()->edict(), "mom_paintgunui_close");
     }
 #endif
     m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
 }
-

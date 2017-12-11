@@ -46,10 +46,10 @@ CON_COMMAND(mom_paintgunui_show, "Shows Paint Gun UI")
     if (WeaponBase->GetWeaponID() != WEAPON_PAINTGUN)
         return;
 
-    if ( PaintGunUI == nullptr )
-        PaintGunUI = new PaintGunPanel( dynamic_cast< CBaseViewport * >( g_pClientMode->GetViewport() ) );
+    if (PaintGunUI == nullptr)
+        PaintGunUI = new PaintGunPanel(dynamic_cast<CBaseViewport *>(g_pClientMode->GetViewport()));
 
-    if ( PaintGunUI != nullptr )
+    if (PaintGunUI != nullptr)
     {
         PaintGunUI->Activate();
     }
@@ -72,35 +72,41 @@ CON_COMMAND(mom_paintgunui_close, "close Paint Gun UI")
     if (WeaponBase->GetWeaponID() != WEAPON_PAINTGUN)
         return;
 
-    if ( PaintGunUI == nullptr )
-        PaintGunUI = new PaintGunPanel( dynamic_cast< CBaseViewport * >( g_pClientMode->GetViewport() ) );
-
-    if ( PaintGunUI != nullptr )
+    if (PaintGunUI != nullptr)
     {
         PaintGunUI->Close();
     }
-    else
-        DevMsg("Failed to init PaintGunUI\n");
 };
 
 PaintGunPanel::PaintGunPanel(IViewPort *pViewport) : BaseClass(nullptr, PANEL_PAINTGUN, false, false)
 {
     m_pViewport = pViewport;
 
-    SetProportional( false );
-    SetMoveable( true );
-    SetSizeable( false );
-    SetMaximizeButtonVisible( false );
-    SetMinimizeButtonVisible( false );
-    SetMenuButtonResponsive( false );
-    SetClipToParent( true ); // Needed so we won't go out of bounds
+    SetProportional(false);
+    SetMoveable(true);
+    SetSizeable(false);
+    SetMaximizeButtonVisible(false);
+    SetMinimizeButtonVisible(false);
+    SetMenuButtonResponsive(false);
+    SetClipToParent(true); // Needed so we won't go out of bounds
 
-    surface()->CreatePopup(GetVPanel(), false, true, false, true, true);
+    surface()->CreatePopup(GetVPanel(), false, false, false, true, false);
     LoadControlSettings("resource/ui/PaintGunPanel.res");
 
     m_pPickColorButton = FindControl<Button>("PickColorButton");
 
+    Color TextureColor;
+    if ( g_pMomentumUtil->GetColorFromHex( mom_paintgun_color.GetString() , TextureColor ) )
+    {
+        m_pPickColorButton->SetDefaultColor( TextureColor , TextureColor );
+        m_pPickColorButton->SetArmedColor( TextureColor , TextureColor );
+        m_pPickColorButton->SetSelectedColor( TextureColor , TextureColor );
+    }
+
     m_pSliderScale = FindControl<CCvarSlider>("SliderScale");
+    m_pSliderScale->SetValue(mom_paintgun_scale.GetFloat());
+    m_pSliderScale->ApplyChanges();
+
     m_pTextSliderScale = FindControl<TextEntry>("TextSliderScale");
 
     m_pLabelSliderScale = FindControl<Label>("LabelSliderScale");
@@ -108,15 +114,16 @@ PaintGunPanel::PaintGunPanel(IViewPort *pViewport) : BaseClass(nullptr, PANEL_PA
     m_pLabelIgnoreZ = FindControl<Label>("LabelIgnoreZ");
 
     m_pToggleIgnoreZ = FindControl<ToggleButton>("ToggleIgnoreZ");
+    m_pToggleIgnoreZ->SetSelected(m_pCvarIgnoreZ->GetBool());
+
     m_pCvarIgnoreZ = new ConVarRef("mom_paintgun_ignorez");
 
-    m_pSliderScale->SetValue(mom_paintgun_scale.GetFloat());
     SetLabelText();
 
-    m_pColorPicker = new ColorPicker( this , this );
-    m_pColorPicker->SetAutoDelete( true );
+    m_pColorPicker = new ColorPicker(this, this);
+    m_pColorPicker->SetAutoDelete(true);
 
-    SetScheme( "ClientScheme" );
+    SetScheme("ClientScheme");
 }
 
 void PaintGunPanel::SetLabelText() const
@@ -173,9 +180,25 @@ void PaintGunPanel::Activate()
     ShowPanel(true);
 }
 
+void PaintGunPanel::Close()
+{
+    BaseClass::Close();
+    ShowPanel(false);
+}
+
 void PaintGunPanel::OnThink()
 {
-    m_pColorPicker->OnThink();
+    // HACKHACK for focus, Blame Valve
+    if (!m_pColorPicker->IsVisible())
+    {
+        int x, y;
+        input()->GetCursorPosition(x, y);
+        SetKeyBoardInputEnabled(IsWithin(x, y));
+    }
+    else
+    {
+        m_pColorPicker->OnThink();
+    }
 
     m_pCvarIgnoreZ->SetValue(m_pToggleIgnoreZ->IsSelected());
 
@@ -188,15 +211,12 @@ void PaintGunPanel::OnThink()
         m_pToggleIgnoreZ->SetText("#MOM_PaintGunPanel_NIgnoreZ");
     }
 
-    if (m_pPickColorButton)
+    Color TextureColor;
+    if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
     {
-        Color TextureColor;
-        if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
-        {
-            m_pPickColorButton->SetDefaultColor(TextureColor, TextureColor);
-            m_pPickColorButton->SetArmedColor(TextureColor, TextureColor);
-            m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
-        }
+        m_pPickColorButton->SetDefaultColor(TextureColor, TextureColor);
+        m_pPickColorButton->SetArmedColor(TextureColor, TextureColor);
+        m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
     }
 
     BaseClass::OnThink();
