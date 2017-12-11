@@ -30,7 +30,15 @@ void CMomentumPaintGun::PrimaryAttack() { RifleFire(); }
 void CMomentumPaintGun::SecondaryAttack()
 {
 #ifndef CLIENT_DLL
-    engine->ClientCommand( this->GetPlayerOwner()->edict() , "mom_paintgunui_show" );
+    bTogglePaintGunUI = !bTogglePaintGunUI;
+    if(bTogglePaintGunUI)
+    {
+        engine->ClientCommand( this->GetPlayerOwner()->edict() , "mom_paintgunui_show" );
+    }
+    else
+    {
+        engine->ClientCommand( this->GetPlayerOwner()->edict() , "mom_paintgunui_close" );
+    }
 #endif
     m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
 }

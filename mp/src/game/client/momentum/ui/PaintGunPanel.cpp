@@ -1,66 +1,35 @@
 #include "cbase.h"
 
-#include "../../../public/ienginevgui.h"
-#include "../../shared/momentum/weapon/weapon_csbase.h"
 #include "PaintGunPanel.h"
+#include "clientmode_shared.h"
+#include "ienginevgui.h"
 #include "materialsystem/imaterialvar.h"
-#include "mom_shareddefs.h"
 #include "util/mom_util.h"
+#include "weapon/weapon_csbase.h"
 
-void PaintGunCallback(IConVar *var, const char *pOldValue, float flOldValue);
+PaintGunPanel *PaintGunUI = nullptr;
 
-static ConVar r_decal_paintgun_color("r_decal_paintgun_color", "0000FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                     "Amount of red on the painting textures", PaintGunCallback);
+void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue);
 
-static ConVar r_decal_paintgun_scale("r_decal_paintgun_scale", "0.1", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                     "Amount of scale on the painting textures", true, 0.0f, true, 10000.0f,
-                                     PaintGunCallback);
+static ConVar mom_paintgun_color("mom_paintgun_color", "0000FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                                 "Amount of red on the painting textures");
 
-static ConVar r_decal_paintgun_ignorez("r_decal_paintgun_ignorez", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                                       "See the painting behind walls (wall-hax)", PaintGunCallback);
+static ConVar mom_paintgun_scale("mom_paintgun_scale", "1.0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                                 "Amount of scale on the painting textures", PaintGunScaleCallback);
 
-void PaintGunCallback(IConVar *var, const char *pOldValue, float flOldValue)
+void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
-    ConVarRef cVar(var);
-
-    if (!Q_strcmp(var->GetName(), "r_decal_paintgun_scale"))
+    IMaterial *material = materials->FindMaterial("decals/paintgun", TEXTURE_GROUP_DECAL);
+    if (material != nullptr)
     {
-        IMaterial *material = materials->FindMaterial("decals/paintgun", TEXTURE_GROUP_DECAL);
-        if (material != nullptr)
+        static unsigned int nScaleCache = 0;
+        IMaterialVar *VarScale = material->FindVarFast("$decalscale", &nScaleCache);
+        if (VarScale != nullptr)
         {
-            static unsigned int nScaleCache = 0;
-            IMaterialVar *VarScale = material->FindVarFast("$decalscale", &nScaleCache);
-            if (VarScale != nullptr)
-            {
-                VarScale->SetFloatValue(r_decal_paintgun_scale.GetFloat());
-            }
-        }
-    }
-    else if (!Q_strcmp(var->GetName(), "r_decal_paintgun_color"))
-    {
-        Color MaterialColor;
-        if (g_pMomentumUtil->GetColorFromHex(r_decal_paintgun_color.GetString(), MaterialColor))
-        {
-            IMaterial *material = materials->FindMaterial("decals/paintgun", TEXTURE_GROUP_DECAL);
-            if (material != nullptr)
-            {
-                material->ColorModulate((float)MaterialColor.r() / 255, (float)MaterialColor.g() / 255,
-                                        (float)MaterialColor.b() / 255);
-                material->AlphaModulate((float)MaterialColor.a() / 255);
-            }
-        }
-    }
-    else if (!Q_strcmp(var->GetName(), "r_decal_paintgun_ignorez"))
-    {
-        IMaterial *material = materials->FindMaterial("decals/paintgun", TEXTURE_GROUP_DECAL);
-        if (material != nullptr)
-        {
-            material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, r_decal_paintgun_ignorez.GetBool());
+            VarScale->SetFloatValue(mom_paintgun_scale.GetFloat());
         }
     }
 }
-
-PaintGunPanel *paintgunui = nullptr;
 
 CON_COMMAND(mom_paintgunui_show, "Shows Paint Gun UI")
 {
@@ -77,24 +46,115 @@ CON_COMMAND(mom_paintgunui_show, "Shows Paint Gun UI")
     if (WeaponBase->GetWeaponID() != WEAPON_PAINTGUN)
         return;
 
-    if (paintgunui == nullptr)
-    {
-        paintgunui = new PaintGunPanel();
-    }
+    if ( PaintGunUI == nullptr )
+        PaintGunUI = new PaintGunPanel( dynamic_cast< CBaseViewport * >( g_pClientMode->GetViewport() ) );
 
-    if (paintgunui != nullptr)
+    if ( PaintGunUI != nullptr )
     {
-        paintgunui->Activate();
+        PaintGunUI->Activate();
     }
     else
-        DevMsg("Failed to init paintgunui\n");
+        DevMsg("Failed to init PaintGunUI\n");
 };
 
-PaintGunPanel::PaintGunPanel() : BaseClass(nullptr, PANEL_PAINTGUN, false, false)
+CON_COMMAND(mom_paintgunui_close, "close Paint Gun UI")
 {
+    CBaseCombatWeapon *Weapon = GetActiveWeapon();
+
+    if (Weapon == nullptr)
+        return;
+
+    CWeaponCSBase *WeaponBase = dynamic_cast<CWeaponCSBase *>(Weapon);
+
+    if (WeaponBase == nullptr)
+        return;
+
+    if (WeaponBase->GetWeaponID() != WEAPON_PAINTGUN)
+        return;
+
+    if ( PaintGunUI == nullptr )
+        PaintGunUI = new PaintGunPanel( dynamic_cast< CBaseViewport * >( g_pClientMode->GetViewport() ) );
+
+    if ( PaintGunUI != nullptr )
+    {
+        PaintGunUI->Close();
+    }
+    else
+        DevMsg("Failed to init PaintGunUI\n");
+};
+
+PaintGunPanel::PaintGunPanel(IViewPort *pViewport) : BaseClass(nullptr, PANEL_PAINTGUN, false, false)
+{
+    m_pViewport = pViewport;
+
+    SetProportional( false );
+    SetMoveable( true );
+    SetSizeable( false );
+    SetMaximizeButtonVisible( false );
+    SetMinimizeButtonVisible( false );
+    SetMenuButtonResponsive( false );
+    SetClipToParent( true ); // Needed so we won't go out of bounds
+
+    surface()->CreatePopup(GetVPanel(), false, true, false, true, true);
     LoadControlSettings("resource/ui/PaintGunPanel.res");
-    m_pColorPicker = new ColorPicker(this, this);
-    m_pColorPicker->SetAutoDelete(true);
+
+    m_pPickColorButton = FindControl<Button>("PickColorButton");
+
+    m_pSliderScale = FindControl<CCvarSlider>("SliderScale");
+    m_pTextSliderScale = FindControl<TextEntry>("TextSliderScale");
+
+    m_pLabelSliderScale = FindControl<Label>("LabelSliderScale");
+    m_pLabelColorButton = FindControl<Label>("LabelColorButton");
+    m_pLabelIgnoreZ = FindControl<Label>("LabelIgnoreZ");
+
+    m_pToggleIgnoreZ = FindControl<ToggleButton>("ToggleIgnoreZ");
+    m_pCvarIgnoreZ = new ConVarRef("mom_paintgun_ignorez");
+
+    m_pSliderScale->SetValue(mom_paintgun_scale.GetFloat());
+    SetLabelText();
+
+    m_pColorPicker = new ColorPicker( this , this );
+    m_pColorPicker->SetAutoDelete( true );
+
+    SetScheme( "ClientScheme" );
+}
+
+void PaintGunPanel::SetLabelText() const
+{
+    if (m_pSliderScale && m_pTextSliderScale)
+    {
+        mom_paintgun_scale.SetValue(m_pSliderScale->GetSliderValue());
+
+        char buf[64];
+        Q_snprintf(buf, sizeof(buf), "%.1f", m_pSliderScale->GetSliderValue());
+        m_pTextSliderScale->SetText(buf);
+
+        m_pSliderScale->ApplyChanges();
+    }
+}
+
+void PaintGunPanel::OnControlModified(Panel *p)
+{
+    if (p == m_pSliderScale && m_pSliderScale->HasBeenModified())
+    {
+        SetLabelText();
+    }
+}
+
+void PaintGunPanel::OnTextChanged(Panel *p)
+{
+    if (p == m_pTextSliderScale)
+    {
+        char buf[64];
+        m_pTextSliderScale->GetText(buf, 64);
+
+        float fValue = float(atof(buf));
+        if (fValue >= 0.01f && fValue <= 10.0f)
+        {
+            m_pSliderScale->SetSliderValue(fValue);
+            m_pSliderScale->ApplyChanges();
+        }
+    }
 }
 
 void PaintGunPanel::OnColorSelected(KeyValues *pKv)
@@ -104,19 +164,68 @@ void PaintGunPanel::OnColorSelected(KeyValues *pKv)
 
     char buf[64];
     g_pMomentumUtil->GetHexStringFromColor(selected, buf, sizeof(buf));
-    r_decal_paintgun_color.SetValue(buf);
+    mom_paintgun_color.SetValue(buf);
 }
 
 void PaintGunPanel::Activate()
 {
     BaseClass::Activate();
-
-    Color MaterialColor;
-    if (g_pMomentumUtil->GetColorFromHex(r_decal_paintgun_color.GetString(), MaterialColor))
-    {
-        m_pColorPicker->SetPickerColor(MaterialColor);
-        m_pColorPicker->Show();
-    }
+    ShowPanel(true);
 }
 
-void PaintGunPanel::OnThink() { BaseClass::OnThink(); }
+void PaintGunPanel::OnThink()
+{
+    m_pColorPicker->OnThink();
+
+    m_pCvarIgnoreZ->SetValue(m_pToggleIgnoreZ->IsSelected());
+
+    if (m_pToggleIgnoreZ->IsSelected())
+    {
+        m_pToggleIgnoreZ->SetText("#MOM_PaintGunPanel_IgnoreZ");
+    }
+    else
+    {
+        m_pToggleIgnoreZ->SetText("#MOM_PaintGunPanel_NIgnoreZ");
+    }
+
+    if (m_pPickColorButton)
+    {
+        Color TextureColor;
+        if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
+        {
+            m_pPickColorButton->SetDefaultColor(TextureColor, TextureColor);
+            m_pPickColorButton->SetArmedColor(TextureColor, TextureColor);
+            m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
+        }
+    }
+
+    BaseClass::OnThink();
+}
+
+void PaintGunPanel::ShowPanel(bool state)
+{
+    SetVisible(state);
+    SetMouseInputEnabled(state);
+    SetEnabled(state);
+}
+
+void PaintGunPanel::FireGameEvent(IGameEvent *pEvent)
+{
+    if (pEvent->GetBool("restart"))
+        ShowPanel(false);
+}
+
+void PaintGunPanel::OnCommand(const char *pCommand)
+{
+    if (FStrEq(pCommand, "picker"))
+    {
+        Color TextureColor;
+        if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), TextureColor))
+        {
+            m_pColorPicker->SetPickerColor(TextureColor);
+            m_pColorPicker->Show();
+        }
+    }
+
+    BaseClass::OnCommand(pCommand);
+}

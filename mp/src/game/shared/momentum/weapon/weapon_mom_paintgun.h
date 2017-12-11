@@ -18,6 +18,9 @@ class CMomentumPaintGun : public CWeaponCSBaseGun
     {
         m_flTimeToIdleAfterFire = 0.0f;
         m_flIdleInterval = 0.0f;
+#ifndef CLIENT_DLL
+        bTogglePaintGunUI = false;
+#endif
     };
 
     void PrimaryAttack() OVERRIDE;
@@ -27,4 +30,8 @@ class CMomentumPaintGun : public CWeaponCSBaseGun
 
   private:
     void RifleFire();
+
+#ifndef CLIENT_DLL
+    bool bTogglePaintGunUI;
+#endif
 };

@@ -305,6 +305,11 @@
 	"decals/paintgun" "1"
 }
 
+"PaintingIgnoreZ"
+{
+	"decals/paintgunignorez" "1"
+}
+
 "Models"
 {
 	// World Model specific decal precache.

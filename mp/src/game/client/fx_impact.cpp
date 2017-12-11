@@ -4,10 +4,11 @@
 //
 //===========================================================================//
 #include "cbase.h"
-#include "fx_impact.h"
+
 #include "IEffects.h"
 #include "decals.h"
 #include "fx.h"
+#include "fx_impact.h"
 #include "view.h"
 #ifdef TF_CLIENT_DLL
 #include "cdll_util.h"
@@ -180,72 +181,6 @@ bool Impact(Vector &vecOrigin, Vector &vecStart, int iMaterial, int iDamageType,
     bool bReportRagdollImpacts = (nFlags & IMPACT_REPORT_RAGDOLL_IMPACTS) != 0;
     if ((tr.fraction == 1.0f) || (bHitRagdoll && !bReportRagdollImpacts))
         return false;
-
-    return true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-bool Painting(Vector &vecOrigin, Vector &vecStart, int iHitbox, C_BaseEntity *pEntity, trace_t &tr, int nFlags,
-              int maxLODToDecal)
-{
-    VPROF("Painting");
-
-    Assert(pEntity);
-
-    // Clear out the trace
-    memset(&tr, 0, sizeof(trace_t));
-    tr.fraction = 1.0f;
-
-    // Setup our shot information
-    Vector shotDir = vecOrigin - vecStart;
-    float flLength = VectorNormalize(shotDir);
-    Vector traceExt;
-    VectorMA(vecStart, flLength + 8.0f, shotDir, traceExt);
-
-    if ((nFlags & IMPACT_NODECAL) == 0)
-    {
-        const char *pchDecalName = "Painting";
-        int decalNumber = decalsystem->GetDecalIndexForName(pchDecalName);
-        if (decalNumber == -1)
-            return false;
-
-        bool bSkipDecal = false;
-
-        if (!bSkipDecal)
-        {
-            if ((pEntity->entindex() == 0) && (iHitbox != 0))
-            {
-                staticpropmgr->AddDecalToStaticProp(vecStart, traceExt, iHitbox - 1, decalNumber, true, tr);
-            }
-            else if (pEntity)
-            {
-                // Here we deal with decals on entities.
-                pEntity->AddDecal(vecStart, traceExt, vecOrigin, iHitbox, decalNumber, true, tr, maxLODToDecal);
-            }
-        }
-    }
-    else
-    {
-        // Perform the trace ourselves
-        Ray_t ray;
-        ray.Init(vecStart, traceExt);
-
-        if ((pEntity->entindex() == 0) && (iHitbox != 0))
-        {
-            // Special case for world entity with hitbox (that's a static prop)
-            ICollideable *pCollideable = staticpropmgr->GetStaticPropByIndex(iHitbox - 1);
-            enginetrace->ClipRayToCollideable(ray, MASK_SHOT, pCollideable, &tr);
-        }
-        else
-        {
-            if (!pEntity)
-                return false;
-
-            enginetrace->ClipRayToEntity(ray, MASK_SHOT, pEntity, &tr);
-        }
-    }
 
     return true;
 }

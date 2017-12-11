@@ -4,4 +4,5 @@
 	"$vertexalpha" 1
 	"$decalDynamicScale" 1
 	"$decalscale" 1
+	"$ignorez" 1
 }
