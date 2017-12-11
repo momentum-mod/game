@@ -113,10 +113,10 @@ PaintGunPanel::PaintGunPanel(IViewPort *pViewport) : BaseClass(nullptr, PANEL_PA
     m_pLabelColorButton = FindControl<Label>("LabelColorButton");
     m_pLabelIgnoreZ = FindControl<Label>("LabelIgnoreZ");
 
-    m_pToggleIgnoreZ = FindControl<ToggleButton>("ToggleIgnoreZ");
-    m_pToggleIgnoreZ->SetSelected(m_pCvarIgnoreZ->GetBool());
-
     m_pCvarIgnoreZ = new ConVarRef("mom_paintgun_ignorez");
+
+    m_pToggleIgnoreZ = FindControl<ToggleButton>( "ToggleIgnoreZ" );
+    m_pToggleIgnoreZ->SetSelected( m_pCvarIgnoreZ->GetBool() );
 
     SetLabelText();
 
