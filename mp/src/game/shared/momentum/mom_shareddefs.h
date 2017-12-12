@@ -11,9 +11,8 @@
 #endif
 #endif
 // Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
-// When editing this, remember to also edit version.txt on the main dir of the repo
 // If you have any doubts, please refer to http://semver.org/
-#define MOM_CURRENT_VERSION "0.6.2"
+#define MOM_CURRENT_VERSION "0.7.0"
 
 
 // Gamemode for momentum

@@ -266,7 +266,7 @@ bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
 {
     uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
-    if (length == 6)
+    if (length < 8)
     {
         uint8 r = (hex & 0xFF0000) >> 16;
         uint8 g = (hex & 0x00FF00) >> 8;
