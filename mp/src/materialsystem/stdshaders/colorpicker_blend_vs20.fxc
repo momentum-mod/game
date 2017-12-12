@@ -1,0 +1,25 @@
+// Includes
+#include "common_vs_fxc.h"
+
+// Semantic structures
+struct VS_INPUT
+{
+	float3 vPos					:	POSITION;
+	float2 vTexCoord			:	TEXCOORD0;
+};
+
+struct VS_OUTPUT
+{
+	float4 vProjPos				:	POSITION;
+	float2 vTexCoord			:	TEXCOORD0;
+};
+
+// Entry point
+VS_OUTPUT main( const VS_INPUT In )
+{
+	VS_OUTPUT Out;
+	Out.vProjPos = mul( float4( In.vPos, 1.0f ), cViewProj );
+
+	Out.vTexCoord = In.vTexCoord;
+	return Out;
+}

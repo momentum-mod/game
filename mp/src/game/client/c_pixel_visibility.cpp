@@ -99,7 +99,7 @@ float PixelVisibility_DrawProxy( IMatRenderContext *pRenderContext, OcclusionQue
 	Vector screen[4];
 	for ( int i = 0; i < 4; i++ )
 	{
-		extern int ScreenTransform( const Vector& point, Vector& screen );
+		extern bool ScreenTransform( const Vector& point, Vector& screen );
 		if ( ScreenTransform( verts[i+1], screen[i] ) )
 			return -1;
 	}

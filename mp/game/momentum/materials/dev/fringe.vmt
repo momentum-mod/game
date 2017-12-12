@@ -1,0 +1,5 @@
+"fringe"
+{
+    "$MASK" "_rt_MaskGameUI"
+    "$SAMPLE" "_rt_FullFrameFB"
+}

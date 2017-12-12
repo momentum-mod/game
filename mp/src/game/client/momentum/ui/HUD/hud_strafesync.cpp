@@ -57,14 +57,14 @@ class CHudStrafeSyncDisplay : public CHudElement, public CHudNumericDisplay
             {
                 // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-                shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
+                shouldDrawLocal = pGhost->m_SrvData.m_RunData.m_bTimerRunning && !pGhost->m_SrvData.m_RunData.m_bMapFinished;
             }
             else
             {
-                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
-                                  ((!pPlayer->m_bHasPracticeMode &&
+                shouldDrawLocal = !pPlayer->m_SrvData.m_RunData.m_bMapFinished &&
+                                  ((!pPlayer->m_SrvData.m_bHasPracticeMode &&
                                     strafesync_draw.GetInt() == 2) ||
-                                   pPlayer->m_RunData.m_bTimerRunning);
+                                   pPlayer->m_SrvData.m_RunData.m_bTimerRunning);
             }
         }
         return strafesync_draw.GetInt() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -125,16 +125,16 @@ void CHudStrafeSyncDisplay::OnThink()
     if (pReplayEnt)
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync2;
     }
     else
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync2;
     }
 
     float clampedStrafeSync = clamp(m_localStrafeSync, 0, 100);
@@ -212,7 +212,7 @@ void CHudStrafeSyncDisplay::Paint()
 //////////////////////////////////////////
 //           CHudStrafeSyncBar          //
 //////////////////////////////////////////
-class CHudStrafeSyncBar : public CHudFillableBar
+class CHudStrafeSyncBar : public CHudElement, public CHudFillableBar
 {
     DECLARE_CLASS_SIMPLE(CHudStrafeSyncBar, CHudFillableBar);
 
@@ -229,14 +229,14 @@ class CHudStrafeSyncBar : public CHudFillableBar
             {
                 // MOM_TODO: Should we have a convar against this?
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-                shouldDrawLocal = pGhost->m_RunData.m_bTimerRunning && !pGhost->m_RunData.m_bMapFinished;
+                shouldDrawLocal = pGhost->m_SrvData.m_RunData.m_bTimerRunning && !pGhost->m_SrvData.m_RunData.m_bMapFinished;
             }
             else
             {
-                shouldDrawLocal = !pPlayer->m_RunData.m_bMapFinished &&
-                                  ((!pPlayer->m_bHasPracticeMode &&
+                shouldDrawLocal = !pPlayer->m_SrvData.m_RunData.m_bMapFinished &&
+                                  ((!pPlayer->m_SrvData.m_bHasPracticeMode &&
                                     strafesync_draw.GetInt() == 2) ||
-                                   pPlayer->m_RunData.m_bTimerRunning);
+                                   pPlayer->m_SrvData.m_RunData.m_bTimerRunning);
             }
         }
         return strafesync_drawbar.GetBool() && CHudElement::ShouldDraw() && shouldDrawLocal;
@@ -271,9 +271,9 @@ class CHudStrafeSyncBar : public CHudFillableBar
     Color normalColor, increaseColor, decreaseColor;
 };
 
-DECLARE_HUDELEMENT(CHudStrafeSyncBar);
+DECLARE_NAMED_HUDELEMENT(CHudStrafeSyncBar, CHudSyncBar);
 
-CHudStrafeSyncBar::CHudStrafeSyncBar(const char *pElementName) : CHudFillableBar("CHudSyncBar")
+CHudStrafeSyncBar::CHudStrafeSyncBar(const char *pElementName) : CHudElement(pElementName), CHudFillableBar(g_pClientMode->GetViewport(), pElementName)
 {
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
@@ -292,16 +292,16 @@ void CHudStrafeSyncBar::OnThink()
     if (pReplayEnt)
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pReplayEnt->m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pReplayEnt->m_SrvData.m_RunData.m_flStrafeSync2;
     }
     else
     {
         if (strafesync_type.GetInt() == 1) // sync1
-            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync;
+            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync;
         else if (strafesync_type.GetInt() == 2) // sync2
-            m_localStrafeSync = pPlayer->m_RunData.m_flStrafeSync2;
+            m_localStrafeSync = pPlayer->m_SrvData.m_RunData.m_flStrafeSync2;
     }
 
     switch (strafesync_colorize.GetInt())

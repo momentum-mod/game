@@ -2,6 +2,8 @@
 
 #include "in_buttons.h"
 #include "mom_timer.h"
+#include "run/run_checkpoint.h"
+#include "movevars_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -11,7 +13,7 @@ void CMomentumTimer::Start(int start)
     if (!pPlayer)
         return;
     // MOM_TODO: Allow it based on gametype
-    if (pPlayer->m_bUsingCPMenu)
+    if (pPlayer->m_SrvData.m_bUsingCPMenu)
         return;
     if (ConVarRef("mom_zone_edit").GetBool())
         return;
@@ -80,8 +82,8 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */)
     }
 
     // Stop replay recording, if there was any
-    if (g_ReplaySystem->GetReplayManager()->Recording())
-        g_ReplaySystem->StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
+    if (g_ReplaySystem.m_bRecording)
+        g_ReplaySystem.StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
 
     SetRunning(false);
     DispatchTimerStateMessage(pPlayer, m_bIsRunning);
@@ -113,7 +115,6 @@ void CMomentumTimer::LevelShutdownPreEntity()
     if (IsRunning())
         Stop(false);
     m_bWereCheatsActivated = false;
-    SetCurrentCheckpointTrigger(nullptr);
     SetStartTrigger(nullptr);
     SetCurrentZone(nullptr);
     ClearStartMark();
@@ -174,7 +175,7 @@ void CMomentumTimer::SetRunning(bool isRunning)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        pPlayer->m_RunData.m_bTimerRunning = isRunning;
+        pPlayer->m_SrvData.m_RunData.m_bTimerRunning = isRunning;
     }
 }
 void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const int zoneType)
@@ -230,6 +231,8 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
         case 7:
             tracePoint = pPlayer->GetLocalOrigin() + pPlayer->CollisionProp()->OBBMaxs();
             break;
+        default:
+            break;
         }
         // The previous trace point is the trace point "rewound" in time a single tick, scaled by player's current
         // velocity
@@ -253,7 +256,7 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     int smallestCornerNum = -1;
     for (int i = 0; i < 8; i++)
     {
-        if (m_flDistFixTraceCorners[i] < smallestDist && !g_pMomentumUtil->FloatEquals(m_flDistFixTraceCorners[i], 0.0f))
+        if (m_flDistFixTraceCorners[i] < smallestDist && !CloseEnough(m_flDistFixTraceCorners[i], 0.0f, FLT_EPSILON))
         {
             smallestDist = m_flDistFixTraceCorners[i];
             smallestCornerNum = i;
@@ -302,7 +305,7 @@ bool CTimeTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     {
         float dist = tr.startpos.DistTo(tr.endpos);
 
-        if (!g_pMomentumUtil->FloatEquals(dist, 0.0f))
+        if (!CloseEnough(dist, 0.0f, FLT_EPSILON))
         {
             g_pMomentumTimer->m_flDistFixTraceCorners[m_iCornerNumber] = dist;
         }
@@ -380,7 +383,7 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     pPlayer->SetMoveType(MOVETYPE_NOCLIP);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
-    pPlayer->m_bHasPracticeMode = true;
+    pPlayer->m_SrvData.m_bHasPracticeMode = true;
     Stop(false);
 }
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
@@ -388,18 +391,8 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
-    pPlayer->m_bHasPracticeMode = false;
+    pPlayer->m_SrvData.m_bHasPracticeMode = false;
 }
-
-//--------- CTriggerOnehop stuff --------------------------------
-
-int CMomentumTimer::AddOnehopToListTail(CTriggerOnehop *pTrigger) { return onehops.AddToTail(pTrigger); }
-
-bool CMomentumTimer::RemoveOnehopFromList(CTriggerOnehop *pTrigger) { return onehops.FindAndRemove(pTrigger); }
-
-int CMomentumTimer::FindOnehopOnList(CTriggerOnehop *pTrigger) { return onehops.Find(pTrigger); }
-
-CTriggerOnehop *CMomentumTimer::FindOnehopOnList(int pIndexOnList) { return onehops.Element(pIndexOnList); }
 
 
 //--------- Commands --------------------------------
@@ -412,40 +405,40 @@ class CTimerCommands
   public:
     static void ResetToStart()
     {
-        CMomentumPlayer *cPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
-        if (!cPlayer)
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
+        if (!pPlayer || !pPlayer->m_bAllowUserTeleports)
             return;
         CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
         if (start)
         {
-            Checkpoint *pStartMark = g_pMomentumTimer->GetStartMark();
+            Checkpoint_t *pStartMark = g_pMomentumTimer->GetStartMark();
             if (pStartMark)
             {
-                cPlayer->TeleportToCheckpoint(pStartMark);
+                pStartMark->Teleport(pPlayer);
             }
             else
             {
                 // Don't set angles if still in start zone.
                 QAngle ang = start->GetLookAngles();
-                cPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
+                pPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
             }
         }
         else
         {
-            CBaseEntity *startPoint = cPlayer->EntSelectSpawnPoint();
+            CBaseEntity *startPoint = pPlayer->EntSelectSpawnPoint();
             if (startPoint)
             {
-                cPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), &vec3_origin);
-                cPlayer->ResetRunStats();
+                pPlayer->Teleport(&startPoint->GetAbsOrigin(), &startPoint->GetAbsAngles(), &vec3_origin);
+                pPlayer->ResetRunStats();
             }
         }
     }
 
     static void ResetToCheckpoint()
     {
-        CTriggerStage *stage;
-        CBaseEntity *pPlayer = UTIL_GetCommandClient();
-        if ((stage = g_pMomentumTimer->GetCurrentStage()) != nullptr && pPlayer)
+        CTriggerStage *stage = g_pMomentumTimer->GetCurrentStage();
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetCommandClient());
+        if (stage && pPlayer && pPlayer->m_bAllowUserTeleports)
         {
             pPlayer->Teleport(&stage->WorldSpaceCenter(), nullptr, &vec3_origin);
         }
@@ -454,10 +447,10 @@ class CTimerCommands
     static void PracticeMove()
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-        if (!pPlayer)
+        if (!pPlayer || !pPlayer->m_bAllowUserTeleports)
             return;
 
-        if (!pPlayer->m_bHasPracticeMode)
+        if (!pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             int b = pPlayer->m_nButtons;
             bool safeGuard = b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP ||
@@ -480,17 +473,20 @@ class CTimerCommands
 
     static void TeleToStage(const CCommand &args)
     {
-        CBaseEntity *pPlayer = UTIL_GetLocalPlayer();
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
         const Vector *pVec = nullptr;
         const QAngle *pAng = nullptr;
         if (pPlayer && args.ArgC() >= 2)
         {
+            if (!pPlayer->m_bAllowUserTeleports)
+                return;
+
             // We get the desried index from the command (Remember that for us, args are 1 indexed)
             int desiredIndex = Q_atoi(args[1]);
             if (desiredIndex == 1)
             {
                 // Index 1 is the start. If the timer has a mark, we use it
-                Checkpoint *startMark = g_pMomentumTimer->GetStartMark();
+                Checkpoint_t *startMark = g_pMomentumTimer->GetStartMark();
                 if (startMark)
                 {
                     pVec = &startMark->pos;

@@ -86,7 +86,7 @@ public:
 
     int GetCurrentZone() const
     {
-        return m_bLoadedBogusComparison ? MAX_STAGES - 1 : m_iCurrentZone;
+        return m_bLoadedBogusComparison ? m_pBogusRunStats->GetTotalZones() - 1 : m_iCurrentZone;
     }
 
     void ClearBogusPulse()
@@ -104,7 +104,7 @@ public:
         return m_bLoadedBogusComparison ? m_rcBogusComparison : m_rcCurrentComparison;
     }
 
-    C_MomRunStats *GetRunStats() const
+    CMomRunStats *GetRunStats() const
     {
         return m_bLoadedBogusComparison ? m_pBogusRunStats : m_pRunStats;
     }
@@ -138,7 +138,9 @@ private:
     int m_iCurrentZone, m_iCurrentEntIndex;
     bool m_bLoadedComparison, m_bLoadedBogusComparison;
     RunCompare_t *m_rcCurrentComparison, *m_rcBogusComparison;
+    //m_pRunStats points to the player's/bot's CMomRunStats::data member, but the bogus one needs its own data.
     CMomRunStats *m_pRunStats, *m_pBogusRunStats;
+    CMomRunStats::data m_bogusData;
     int m_nCurrentBogusPulse;
 
 };

@@ -16,20 +16,6 @@ $Include "$SRCDIR\vpc_scripts\source_linux_base_project.vpc"
 
 $Project
 {
-	$Folder	"Source Files"
-	{
-		$File	"$SRCDIR\public\tier0\memoverride.cpp"
-		{
-			$Configuration
-			{
-				$Compiler
-				{
-					$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
-				}
-			}
-		}
-	}
-
 	$Folder	"Link Libraries" [$CLANG]
 	{
 		$File	"$SRCDIR/thirdparty/gperftools-2.0/.libs/libtcmalloc_minimal.so"

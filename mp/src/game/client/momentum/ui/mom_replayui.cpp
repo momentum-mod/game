@@ -85,7 +85,7 @@ void C_MOMReplayUI::OnThink()
             {
                 iPlayButtonSelected = m_pFastBackward->IsSelected() ? RUI_MOVEBW : RUI_MOVEFW;
 
-                if (!pGhost->m_bIsPaused)
+                if (!pGhost->m_SrvData.m_bIsPaused)
                     engine->ClientCmd("mom_replay_pause");
 
                 m_pPlayPauseResume->ForceDepressed(false);
@@ -100,32 +100,32 @@ void C_MOMReplayUI::OnThink()
                 m_iPlayButtonSelected = iPlayButtonSelected;
             }
 
-            if (!pGhost->m_bIsPaused && !m_pPlayPauseResume->IsArmed())
+            if (!pGhost->m_SrvData.m_bIsPaused && !m_pPlayPauseResume->IsArmed())
                 m_pPlayPauseResume->SetArmed(true);
 
-            m_pPlayPauseResume->SetSelected(!pGhost->m_bIsPaused);
-            m_pPlayPauseResume->SetText(pGhost->m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
+            m_pPlayPauseResume->SetSelected(!pGhost->m_SrvData.m_bIsPaused);
+            m_pPlayPauseResume->SetText(pGhost->m_SrvData.m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
-            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (TIME_TO_TICKS(END_RECORDING_DELAY));
+            m_iTotalDuration = pGhost->m_SrvData.m_iTotalTimeTicks - (TIME_TO_TICKS(END_RECORDING_DELAY));
 
             // Set overall progress
-            float fProgress = static_cast<float>(pGhost->m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
+            float fProgress = static_cast<float>(pGhost->m_SrvData.m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
             fProgress = clamp<float>(fProgress, 0.0f, 1.0f);
             m_pProgress->SetProgress(fProgress);
 
-            bool negativeTime = pGhost->m_iCurrentTick < pGhost->m_RunData.m_iStartTickD;
+            bool negativeTime = pGhost->m_SrvData.m_iCurrentTick < pGhost->m_SrvData.m_RunData.m_iStartTickD;
             // Print "Tick: %i / %i"
             wchar_t wLabelFrame[BUFSIZELOCL];
-            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, pGhost->m_iCurrentTick, m_iTotalDuration);
+            V_snwprintf(wLabelFrame, BUFSIZELOCL, m_pwReplayTimeTick, pGhost->m_SrvData.m_iCurrentTick, m_iTotalDuration);
             m_pProgressLabelFrame->SetText(wLabelFrame);
 
             // Print "Time: X:XX.XX -> X:XX.XX"
             char curtime[BUFSIZETIME], totaltime[BUFSIZETIME];
             wchar_t wCurtime[BUFSIZETIME], wTotaltime[BUFSIZETIME];
             // Get the times
-            g_pMomentumUtil->FormatTime(TICK_INTERVAL * (pGhost->m_iCurrentTick - pGhost->m_RunData.m_iStartTickD), curtime, 2,
+            g_pMomentumUtil->FormatTime(TICK_INTERVAL * (pGhost->m_SrvData.m_iCurrentTick - pGhost->m_SrvData.m_RunData.m_iStartTickD), curtime, 2,
                                  false, negativeTime);
-            g_pMomentumUtil->FormatTime(pGhost->m_RunData.m_flRunTime, totaltime, 2);
+            g_pMomentumUtil->FormatTime(pGhost->m_SrvData.m_RunData.m_flRunTime, totaltime, 2);
             // Convert to Unicode
             ANSI_TO_UNICODE(curtime, wCurtime);
             ANSI_TO_UNICODE(totaltime, wTotaltime);
@@ -134,7 +134,7 @@ void C_MOMReplayUI::OnThink()
             //V_snwprintf(pwTime, BUFSIZELOCL, m_pwReplayTime, wCurtime, wTotaltime);
             m_pProgressLabelTime->SetText(pwTime);
 
-            if (pGhost->m_RunData.m_bMapFinished)
+            if (pGhost->m_SrvData.m_RunData.m_bMapFinished)
             {
                 // Hide the panel on map finish, but show it afterwards
                 m_bWasVisible = true; // Note: This OnThink will never happen if this panel is not drawn!
@@ -224,16 +224,16 @@ void C_MOMReplayUI::OnCommand(const char *command)
     }
     else if (!Q_strcasecmp(command, "prevframe") && pGhost)
     {
-        if (pGhost->m_iCurrentTick > 0)
+        if (pGhost->m_SrvData.m_iCurrentTick > 0)
         {
-            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick - 1));
+            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_SrvData.m_iCurrentTick - 1));
         }
     }
     else if (!Q_strcasecmp(command, "nextframe") && pGhost)
     {
-        if (pGhost->m_iCurrentTick < pGhost->m_iTotalTimeTicks)
+        if (pGhost->m_SrvData.m_iCurrentTick < pGhost->m_SrvData.m_iTotalTimeTicks)
         {
-            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_iCurrentTick + 1));
+            engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_SrvData.m_iCurrentTick + 1));
         }
     }
     else if (!Q_strcasecmp(command, "gototick") && pGhost)

@@ -1,10 +1,6 @@
-#ifndef TICKSET_H
-#define TICKSET_H
+#pragma once
 
 #include "cbase.h"
-#include "momentum/mom_shareddefs.h"
-#include "util/mom_util.h"
-
 
 struct Tickrate
 {
@@ -29,7 +25,7 @@ struct Tickrate
     }
     bool operator ==(const Tickrate &other) const
     {
-        return (g_pMomentumUtil->FloatEquals(other.fTickRate, fTickRate)
+        return (CloseEnough(other.fTickRate, fTickRate, FLT_EPSILON)
             && !Q_strcmp(other.sType, sType));
     }
 };
@@ -63,5 +59,3 @@ private:
     static Tickrate m_trCurrent;
     static bool m_bInGameUpdate;
 };
-
-#endif // TICKSET_H

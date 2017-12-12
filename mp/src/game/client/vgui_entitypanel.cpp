@@ -6,21 +6,25 @@
 // $NoKeywords: $
 //=============================================================================//
 #include "cbase.h"
-#include "vgui_EntityPanel.h"
+#include "vgui_entitypanel.h"
 #include "ienginevgui.h"
+#ifdef TF_CLIENT_DLL
 #include "c_BaseTFPlayer.h"
 #include "clientmode_commander.h"
 #include "hud_commander_statuspanel.h"
-#include <KeyValues.h>
 #include "commanderoverlaypanel.h"
+#endif
+#include <KeyValues.h>
 #include <vgui/IVGui.h>
 #include "cdll_util.h"
 #include "view.h"
+#include "c_vguiscreen.h"
+#include "mom_shareddefs.h"
+
 
 //-----------------------------------------------------------------------------
 // constructor
 //-----------------------------------------------------------------------------
-
 CEntityPanel::CEntityPanel( vgui::Panel *pParent, const char *panelName )
 : BaseClass( pParent, panelName )
 {
@@ -63,13 +67,15 @@ void CEntityPanel::ComputeParent( void )
 {
 	vgui::VPANEL parent = NULL;
 
-	if ( IsLocalPlayerInTactical() || !m_bShowInNormal )
+#ifdef TF_CLIENT_DLL
+	if (IsLocalPlayerInTactical() || !m_bShowInNormal )
 	{
 		CClientModeCommander *commander = ( CClientModeCommander * )ClientModeCommander();
 		Assert( commander );
 		parent = commander->GetCommanderOverlayPanel()->GetVPanel();
 	}
 	else
+#endif
 	{
 		parent = enginevgui->GetPanel( PANEL_CLIENTDLL );
 	}
@@ -86,6 +92,7 @@ void CEntityPanel::ComputeAndSetSize( void )
 {
 	m_flScale = 1.0;
 
+#ifdef TF_CLIENT_DLL
 	// Scale the image
 	// Use different scales in tactical / normal
 	if ( IsLocalPlayerInTactical() )
@@ -97,7 +104,9 @@ void CEntityPanel::ComputeAndSetSize( void )
 		// Scale our size
 		m_flScale = 0.75 + (0.25 * (1.0 - flZoom)); // 1/2 size at max zoomed out, full size by half zoomed in
 	}
-	else if ( m_pBaseEntity )
+	else
+#endif 
+    if ( m_pBaseEntity )
 	{
 		// Get distance to entity
 		float flDistance = (m_pBaseEntity->GetRenderOrigin() - MainViewOrigin()).Length();
@@ -176,8 +185,12 @@ void CEntityPanel::GetEntityPosition( int& sx, int& sy )
 //-----------------------------------------------------------------------------
 bool CEntityPanel::ShouldDraw()
 {
+#ifdef TF_CLIENT_DLL
 	return ( ( IsLocalPlayerInTactical() && ClientModeCommander()->ShouldDrawEntity( m_pBaseEntity ) ) || 
 			 ( !IsLocalPlayerInTactical() && m_bShowInNormal) );
+#else
+    return true;
+#endif
 }
 
 
@@ -187,7 +200,7 @@ bool CEntityPanel::ShouldDraw()
 void CEntityPanel::OnTick()
 {
 	// Determine if panel parent should switch
-	ComputeParent();
+	//ComputeParent();
 
 	// If we should shouldn't draw, don't bother with any of this
 	if ( !ShouldDraw() )
@@ -211,7 +224,11 @@ void CEntityPanel::OnCursorEntered()
 {
 	if ( m_szMouseOverText[ 0 ] )
 	{
+#ifdef TF_CLIENT_DLL
 		StatusPrint( TYPE_HINT, "%s", m_szMouseOverText );
+#else
+        DevLog("Got a mouseover! %s\n", m_szMouseOverText);
+#endif
 	}
 }
 
@@ -222,7 +239,11 @@ void CEntityPanel::OnCursorExited()
 {
 	if ( m_szMouseOverText[ 0 ] )
 	{
+#ifdef TF_CLIENT_DLL
 		StatusClear();
+#else
+        DevLog("Moved out of the panel!\n");
+#endif
 	}
 }
 

@@ -153,6 +153,10 @@ protected:
 
 	void		ValidateUserCmd( CUserCmd *usercmd, int sequence_number );
 
+    // Statics that should have been member variables
+    int         s_ClearInputState;
+    void        CalcButtonBits(int& bits, int in_button, int in_ignore, kbutton_t *button, int reset);
+
 // Private Data
 private:
 	typedef struct

@@ -1,0 +1,266 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+            @font-face {
+                font-family: bigNoodle;
+                src: url('../BigNoodleTitling.ttf');
+            }
+            
+            body {
+                font-family: bigNoodle;
+                margin: 0;
+                min-height: 100vh;
+                background-color: none;
+            }
+            * {
+                font-family: inherit;
+                box-sizing: border-box;
+            }
+            
+            .menu {
+                position: absolute;
+                bottom: 0%;
+            }
+
+            .lobby-menu {
+                position: absolute;
+                bottom: 0%;
+                right: 0%;
+            }
+            
+            .version-info {
+                position: absolute;
+                top: 0%;
+                right: 0%;
+                
+                color: white;
+                cursor: default;
+                font-size: 3vh;
+                margin: 5px 5px 0 0;
+            }
+            
+            .menu-buttons {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                list-style-type: none;
+                cursor: default;
+            }
+            
+            .menu-buttons li {
+                width: 50vh;
+                user-select: none;
+                font-size: 5vh;
+                margin: 0px auto 10px 10px;
+                padding: .5vh;
+                color: white;
+                background-color: none;
+                transition: background-color 100ms ease-out, color 100ms ease-out
+            }
+
+            .lobby-buttons li {
+                width: 35vh;
+                text-align: right;
+                margin-right: 10px;
+            }
+            
+            .menu-buttons li:hover {
+                background-color: rgba(0, 0, 0, 0.588);
+                color: rgba(51, 122, 183, 1);
+            }
+            
+            .menu-buttons li:active {
+                background-color: none;
+                color: white;
+            }
+            
+            .menu-buttons-subtext {
+                font-size: 2vh;
+                padding-left: 0.5vh;
+                color: rgba(0,0,0,0);
+                transition: color 300ms linear;
+                line-height: 1.25;
+            }
+            
+            .menu-buttons li:hover .menu-buttons-subtext {
+                color: rgba(255, 255, 255, 0.784);
+            }
+            
+            .logo {
+               -moz-user-select: -moz-none;
+               -khtml-user-select: none;
+               -webkit-user-select: none;
+               user-select: none;
+            }
+            
+            @keyframes flash {
+              from, 50%, to {
+                opacity: 1;
+              }
+
+              25%, 75% {
+                opacity: 0;
+              }
+            }
+
+            .flash {
+              animation: flash 4s infinite;
+            }
+            
+        </style>
+    </head>
+    
+    <body>
+    <div class="logo">
+        <img src="logo-jux.png">
+    </div>
+    <div class="version-info logo" onclick="sendCommandToClient('mom_show_changelog\n'); 
+                                            this.className = this.className.replace(/\bflash\b/, '')" id="version">
+    </div>
+    
+    <div class="menu">
+        <ul class="menu-buttons">
+            <li class="in_game" onclick="sendCommandToClient('ResumeGame', true)">
+                <div data-localize="GameUI2_ResumeGame"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_ResumeGameDescription"></div>
+            </li>
+            <li onclick="sendCommandToClient('ShowMapSelectionPanel\n')">
+                <div data-localize="GameUI2_SelectMap"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_SelectMapDescription"></div>
+            </li>
+            
+            <li onclick="sendCommandToClient('OpenOptionsDialog', true)">
+                <div data-localize="GameUI2_Options"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_OptionsDescription"></div>
+            </li>
+            
+            <li onclick="sendCommandToClient('mom_settings_show\n')">
+                <div data-localize="GameUI2_MomSettings"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_MomSettingsDescription"></div>
+            </li>
+            
+            <li class="in_game" onclick="sendCommandToClient('disconnect\n')">
+                <div data-localize="GameUI2_Quit2Menu"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_Quit2MenuDescription"></div>
+            </li>
+            
+            <li class="main_menu" onclick="sendCommandToClient('progress_enable\n map credits\n')">
+                <div data-localize="GameUI2_Credits"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_CreditsDescription"></div>
+            </li>
+            
+            <br>
+            
+            <li onclick="sendCommandToClient('QuitNoConfirm', true)">
+                <div data-localize="GameUI2_Quit"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_QuitDescription"></div>
+            </li>
+        </ul>
+    </div>
+    <div class="lobby-menu">
+        <ul class="menu-buttons lobby-buttons">
+            <li onclick="sendCommandToClient('mom_lobby_create', false, 'lobby')" class="no_lobby">
+                <div data-localize="GameUI2_HostLobby"></div>
+                <div class="menu-buttons-subtext"></div>
+            </li>
+            <li class="in_lobby" onclick="sendCommandToClient('mom_spectate', false, 'lobby')">
+                <div data-localize="GameUI2_Spectate"></div>
+                <div class="menu-buttons-subtext" data-localize="GameUI2_SpectateDescription"></div>
+            </li>
+            <li onclick="sendCommandToClient('mom_lobby_invite', false, 'lobby')" class="in_lobby">
+                <div data-localize="GameUI2_InviteLobby"></div>
+                <div class="menu-buttons-subtext"></div>
+            </li>
+            <li onclick="sendCommandToClient('mom_lobby_leave', false, 'lobby')" class="in_lobby">
+                <div data-localize="GameUI2_LeaveLobby"></div>
+                <div class="menu-buttons-subtext"></div>
+            </li>
+        </ul>
+    </div>
+    
+    <script>
+    // Print data to the client's console
+    function log(data) {
+        sendCommandToClient(data, false, "echo");
+    }
+    
+    // ===== Sounds ====
+    const hoverSound = new Audio('../../sound/ui/button_over.wav');
+    const mouseDownSound = new Audio('../../sound/ui/button_click.wav');
+    const mouseUpSound = new Audio('../../sound/ui/button_release.wav');
+    
+    const buttons = document.querySelectorAll(".menu-buttons li");
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', () => {
+            var clone = hoverSound.cloneNode(true);
+            clone.volume = hoverSound.volume;
+            clone.play();
+        });
+        button.addEventListener('mouseup', () => mouseUpSound.play());
+        button.addEventListener('mousedown', () => mouseDownSound.play());
+    });
+    
+    // ====== INPUTS FROM C++ ============
+    function updateVisibility(inGame) {
+        
+        const inGameElems = document.querySelectorAll(".in_game");
+        const inMenuElems = document.querySelectorAll(".main_menu");
+            
+        inGameElems.forEach(elem => elem.style.display = inGame ? 'block' : 'none');
+        inMenuElems.forEach(elem => elem.style.display = inGame ? 'none' : 'block');
+    };
+
+    function updateLobbyButtons(inLobby) {
+        const inLobbyElems = document.querySelectorAll('.in_lobby');
+        const notInLobbyElems = document.querySelectorAll('.no_lobby');
+
+        inLobbyElems.forEach(elem => elem.style.display = inLobby ? 'block' : 'none');
+        notInLobbyElems.forEach(elem => elem.style.display = inLobby ? 'none' : 'block');
+    }
+
+    updateVisibility(false); // Needed for the initial setting
+    updateLobbyButtons(false);
+    
+    function setVolume(vol) {
+        hoverSound.volume = vol;
+        mouseDownSound.volume = vol;
+        mouseUpSound.volume = vol;
+    }
+    
+    function setVersion(versionString, newVersion) {
+        var elem = document.getElementById("version");
+        elem.innerText = "Version " + versionString;
+        if (newVersion)
+            elem.className += " flash";
+    }
+    
+    // ==== OUTPUTS TO C++ =============
+    // This may need further abstraction, but it gets the job done
+    function sendCommandToClient(command, isSpecial = false, idFrom = "menu") {
+        alert(JSON.stringify({id: idFrom, special:isSpecial, com:command}));
+    }
+    
+    function setLocalization(language) {
+        var ele = document.createElement("script");
+        ele.src = "../momentum_" + language + ".js";
+        document.body.appendChild(ele);
+    }
+    
+    
+    
+    // ==== ETC FUNCTIONS ========
+    // Localize the panel
+    function doLocalization(localizationData) {
+      const elementsToLocalize = document.querySelectorAll("[data-localize]");
+      
+      elementsToLocalize.forEach(element => {
+        element.innerText = localizationData[element.dataset.localize];
+      });
+    }
+    
+    </script>
+    
+    </body>
+</html>

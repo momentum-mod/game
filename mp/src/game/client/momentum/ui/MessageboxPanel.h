@@ -24,7 +24,7 @@ public:
 
     void PerformLayout() OVERRIDE;
 private:
-    CvarToggleCheckButton<ConVarRef>* m_pToggleCheckButton;
+    CvarToggleCheckButton* m_pToggleCheckButton;
 };
 
 // CChangelogPanel class

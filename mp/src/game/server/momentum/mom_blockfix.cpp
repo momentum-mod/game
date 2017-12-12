@@ -1,11 +1,28 @@
 #include "cbase.h"
 #include "mom_blockfix.h"
+#include "doors.h"
+#include "buttons.h"
+#include "mom_player.h"
 
 #include "tier0/memdbgon.h"
 
-void CMOMBhopBlockFixSystem::FindBhopBlocks()
+CMOMBhopBlockFixSystem::CMOMBhopBlockFixSystem(const char* pName) : CAutoGameSystem(pName)
 {
     SetDefLessFunc(m_mapBlocks);
+}
+
+void CMOMBhopBlockFixSystem::LevelInitPostEntity()
+{
+    FindBhopBlocks();
+}
+
+void CMOMBhopBlockFixSystem::LevelShutdownPostEntity()
+{
+    m_mapBlocks.RemoveAll();
+}
+
+void CMOMBhopBlockFixSystem::FindBhopBlocks()
+{
     //  ---- func_door ----
     CBaseEntity *ent = nullptr;
     while ((ent = gEntList.FindEntityByClassname(ent, "func_door")) != nullptr)
@@ -59,10 +76,13 @@ void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
         pDoorEnt->AcceptInput("Lock", nullptr, nullptr, emptyvarient, 0); // Lock the door bhop block
 
         // Plays the sound like normal (makes the player aware they jumped it)
-        pDoorEnt->m_ls.sLockedSound = pDoorEnt->m_NoiseMoving; 
+        pDoorEnt->m_ls.sLockedSound = pDoorEnt->m_NoiseMoving;
 
         // Let the entity know that it's a bhop block, so mom_bhop_playblocksound is able to control if we should make noises
         pDoorEnt->m_bIsBhopBlock = true;
+
+        // Fix blocks randomly stopping the player
+        pDoorEnt->SetSolid(SOLID_BSP);
     }
     else
     { // func_button block
@@ -128,6 +148,17 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
 
     enginetrace->EnumerateEntities(ray, true, &triggerTraceEnum);
 }
+
+void CMOMBhopBlockFixSystem::AddBhopBlock(CBaseEntity* pBlockEnt, CBaseEntity* pTeleportEnt, bool isDoor)
+{
+    bhop_block_t block = bhop_block_t();
+    block.m_pBlockEntity = pBlockEnt;
+    block.m_pTeleportTrigger = pTeleportEnt;
+    block.m_bIsDoor = isDoor;
+    AlterBhopBlock(block);
+    m_mapBlocks.Insert(pBlockEnt->entindex(), block);
+}
+
 // override of IEntityEnumerator's EnumEntity() for our trigger teleport filter
 bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
 {

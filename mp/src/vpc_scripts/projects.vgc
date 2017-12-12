@@ -30,9 +30,14 @@ $Project "game_shader_dx9"
 	"materialsystem\stdshaders\game_shader_dx9_momentum.vpc" [($WIN32||$POSIX) && $MOMENTUM]
 }
 
-$Project "gameui2"
+$Project "GameUI"
 {
-    "game\gameui2\gameui2_base.vpc"		[($WIN32||$POSIX)]
+    "gameui\GameUI.vpc" [($WIN32||$POSIX)]
+}
+
+$Project "ghost_server"
+{
+	"game\ghost_server\ghost_server_base.vpc"	[($WIN32||$POSIX)]
 }
 
 $Project "glview"
@@ -49,11 +54,6 @@ $Project "server"
 {
 	"game\server\server_hl2mp.vpc"		[($WIN32||$POSIX) && $HL2MP]
     "game\server\server_momentum.vpc"   [($WIN32||$POSIX) && $MOMENTUM]
-}
-
-$Project "shared"
-{
-    "game\shared\shared_momentum.vpc"   [($WIN32||$POSIX) && $MOMENTUM]
 }
 
 $Project "mathlib"
@@ -140,4 +140,5 @@ $Project "vvis_launcher"
 {
 	"utils\vvis_launcher\vvis_launcher.vpc" [$WIN32]
 }
+
 

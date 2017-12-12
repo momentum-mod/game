@@ -1318,7 +1318,6 @@ Scheme
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
-		"1"		"resource/TypoGraphica.ttf"
 		"2"		"resource/HL2EP2.ttf"
 		"3"     "resource/marlett.ttf"	
         "1"     "resource/BigNoodleTitling.ttf"

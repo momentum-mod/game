@@ -757,35 +757,6 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 void CServerGameDLL::PostInit()
 {
 	IGameSystem::PostInitAllSystems();
-
-	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
-	if (SharedModule)
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (SERVER)\n");
-
-		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
-
-		shared = appSystemFactory ? ((CShared*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
-		if (shared)
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (SERVER)\n");
-
-			shared->LoadedServer = true;
-
-			if (shared->LoadedClient && shared->LoadedServer)
-			{
-				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
-			}
-		}
-		else
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
-		}
-	}
-	else
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
-	}
 }
 
 void CServerGameDLL::DLLShutdown( void )
@@ -3459,6 +3430,14 @@ void MessageWriteEHandle( CBaseEntity *pEntity )
 	}
 	
 	g_pMsgBuffer->WriteLong( iEncodedEHandle );
+}
+
+void MessageWriteBytes(const void *pData, int size)
+{
+    if (!g_pMsgBuffer)
+        Error("WriteMessageBytes called with no active message\n");
+
+    g_pMsgBuffer->WriteBytes(pData, size);
 }
 
 // bitwise

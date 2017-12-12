@@ -4,8 +4,6 @@
 #pragma once
 #endif
 
-#include "cbase.h"
-
 class CMOMClientEvents : public CAutoGameSystem
 {
 public:
@@ -14,10 +12,13 @@ public:
     }
 
     //After DLL inits successfully
+    bool Init() OVERRIDE;
     void PostInit() OVERRIDE;
+    void LevelInitPreEntity() OVERRIDE;
 
-    //From the Valve SDK wiki
-    static void MountAdditionalContent();
+    // Precaching things we want to here, done every level start
+    // Used mostly for materials
+    void Precache();
 
 };
 

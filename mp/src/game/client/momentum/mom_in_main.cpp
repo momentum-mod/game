@@ -8,7 +8,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-static int s_ClearInputState = 0;
 static	kbutton_t	in_times;
 
 //-----------------------------------------------------------------------------
@@ -21,48 +20,26 @@ public:
     
     int GetButtonBits(int bResetState) OVERRIDE
     {
-        int bits = BaseClass::GetButtonBits(bResetState);
+        int bits = 0;
+        // First calculate all Momentum-specific toggle bits
         CalcButtonBits(bits, IN_TIMES, s_ClearInputState, &in_times, bResetState);
 
-        bits &= ~s_ClearInputState;
-
-        if (bResetState)
-        {
-            s_ClearInputState = 0;
-        }
+        // Add on the normal input bits
+        bits |= BaseClass::GetButtonBits(bResetState);
 
         return bits;
     }
 
-    void ClearInputButton(int bits) OVERRIDE
+    void LevelInit() OVERRIDE
     {
-        s_ClearInputState |= bits;
-        BaseClass::ClearInputButton(bits);
-    }
+        // Get buttons still down from the demo
+        int stillDown = GetButtonBits(0);
+        // Mark them for clearing
+        ClearInputButton(stillDown);
+        // Actually clear them
+        GetButtonBits(2);
 
-private:
-
-    void CalcButtonBits(int& bits, int in_button, int in_ignore, kbutton_t *button, bool reset)
-    {
-        // Down or still down?
-        if (button->state & 3)
-        {
-            bits |= in_button;
-        }
-
-        int clearmask = ~2;
-        if (in_ignore & in_button)
-        {
-            // This gets taken care of below in the GetButtonBits code
-            //bits &= ~in_button;
-            // Remove "still down" as well as "just down"
-            clearmask = ~3;
-        }
-
-        if (reset)
-        {
-            button->state &= clearmask;
-        }
+        BaseClass::LevelInit();
     }
 }; 
 

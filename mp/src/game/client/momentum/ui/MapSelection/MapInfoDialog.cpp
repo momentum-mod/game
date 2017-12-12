@@ -1,8 +1,4 @@
 #include "pch_mapselection.h"
-#include <util/jsontokv.h>
-#include <util/mom_util.h>
-
-using namespace vgui;
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor

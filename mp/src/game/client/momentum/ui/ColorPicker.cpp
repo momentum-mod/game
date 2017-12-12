@@ -1,9 +1,5 @@
 #include "cbase.h"
 
-#include <assert.h>
-#include <math.h>
-#define PROTECTED_THINGS_DISABLE
-
 #include "util/mom_util.h"
 #include "vgui/IInput.h"
 #include "vgui/IPanel.h"
@@ -23,80 +19,12 @@
 #include "materialsystem/imaterial.h"
 #include "materialsystem/imaterialvar.h"
 
-#include <stdio.h>
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 #define __EXTRUDE_BORDER 3
-
-static char hexLookup[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-};
-
-void IntToHex(int value, char *out, int bufSize)
-{
-    value = abs(value);
-
-    char tmpString[9];
-    int curpos = 8;
-
-    int value_cur = value;
-    while (value_cur && curpos >= 0)
-    {
-        int tmp = value_cur % 16;
-        value_cur /= 16;
-
-        tmpString[curpos] = hexLookup[tmp];
-        curpos--;
-    }
-    curpos++;
-
-    int i = 0;
-    for (; i < bufSize && curpos <= 8; i++)
-    {
-        out[i] = tmpString[curpos];
-        curpos++;
-    }
-    out[i] = '\0';
-}
-void HexToInt(const char *hexString, int &out, int bufSize)
-{
-    out = 0;
-    int multiplier = 1;
-
-    int num_min = static_cast<int>('0');
-    int text_low_min = static_cast<int>('a');
-    int text_high_min = static_cast<int>('A');
-
-    const char *walker = hexString;
-    int steps = 0;
-    while (*walker && (steps < bufSize || bufSize < 0))
-    {
-        walker++;
-        steps++;
-    }
-    walker--;
-
-    while (walker && *walker && (steps > 0 || bufSize < 0))
-    {
-        int value = 0;
-        if (*walker >= num_min && *walker <= num_min + 9)
-            value = *walker - num_min;
-        else if (*walker >= text_low_min && *walker <= text_low_min + 5)
-            value = *walker - text_low_min + 10;
-        else if (*walker >= text_high_min && *walker <= text_high_min + 5)
-            value = *walker - text_high_min + 10;
-
-        out += value * multiplier;
-
-        multiplier *= 16;
-        walker--;
-        steps--;
-    }
-}
 
 void HSV2RGB(float H, float s, float v, Vector &normalizedRGB)
 {
@@ -175,6 +103,11 @@ void SetupVguiTex(int &var, const char *tex)
         var = surface()->CreateNewTextureID();
         surface()->DrawSetTextureFile(var, tex, true, false);
     }
+}
+
+void Vec4DToColor(const Vector4D &vector, Color &into)
+{
+    into.SetColor(vector.x * 255, vector.y * 255, vector.z * 255, vector.w * 255);
 }
 
 DECLARE_BUILD_FACTORY(HSV_Select_Base);
@@ -386,12 +319,14 @@ class PickerHelper : public Panel
 ColorPicker::ColorPicker(Panel *parent, Panel *pActionsignalTarget) : BaseClass(parent, "CColorPicker")
 {
     pTarget = nullptr;
+    pTargetCallback = nullptr;
     AddActionSignalTarget(pActionsignalTarget);
     Init();
 }
 ColorPicker::ColorPicker(Panel *parent, TextEntry *pTargetEntry) : BaseClass(parent, "CColorPicker")
 {
     pTarget = pTargetEntry;
+    pTargetCallback = nullptr;
     Init();
 }
 
@@ -405,6 +340,8 @@ ColorPicker::~ColorPicker()
 
     pDrawPicker_Hue = nullptr;
     pDrawPicker_SV = nullptr;
+    pTarget = nullptr;
+    pTargetCallback = nullptr;
 }
 
 void ColorPicker::Init()
@@ -572,6 +509,12 @@ void ColorPicker::UpdateAlpha(bool bWasSlider)
     }
 
     m_vecColor[3] = static_cast<float>(newValue) / 255.0f;
+    Panel *pIgnore;
+    if (bWasSlider)
+        pIgnore = m_pAlphaSlider;
+    else 
+        pIgnore = m_pText_RGBA[3];
+    UpdateAllVars(pIgnore);
 }
 
 void ColorPicker::OnCommand(const char *cmd)
@@ -587,8 +530,10 @@ void ColorPicker::OnCommand(const char *cmd)
         else
         {
             KeyValues *pKV = new KeyValues("ColorSelected");
-            pKV->SetColor("color",
-                          Color(m_vecColor.x * 255, m_vecColor.y * 255, m_vecColor.z * 255, m_vecColor.w * 255));
+            Color picked;
+            Vec4DToColor(m_vecColor, picked);
+            pKV->SetColor("color", picked);
+            pKV->SetPtr("targetCallback", pTargetCallback);
             PostActionSignal(pKV);
         }
         Close();
@@ -633,19 +578,21 @@ void ColorPicker::OnTextChanged(Panel *pPanel)
 
     for (int i = 0; i < 3; i++)
     {
-        if (pTEntry != m_pText_RGBA[i])
-            continue;
-        m_vecColor[i] = static_cast<float>(Q_atoi(tmpText)) / 255.0f;
+        if (pTEntry == m_pText_RGBA[i])
+            m_vecColor[i] = static_cast<float>(Q_atoi(tmpText)) / 255.0f;
     }
 
     if (pTEntry == m_pText_HEX)
     {
-        for (int i = 0; i < 3; i++)
+        Color picked;
+        if (g_pMomentumUtil->GetColorFromHex(tmpText, picked))
         {
-            int iValue = 0;
-            HexToInt(tmpText + i * 2, iValue, 2);
-            m_vecColor[i] = static_cast<float>(iValue) / 255.0f;
+            for (int i = 0; i < 4; i++)
+            {
+                m_vecColor[i] = static_cast<float>(picked[i]) / 255.0f;
+            }
         }
+        
     }
 
     RGB2HSV(m_vecColor, m_vecHSV);
@@ -654,7 +601,6 @@ void ColorPicker::OnTextChanged(Panel *pPanel)
 
 void ColorPicker::UpdateAllVars(Panel *pIgnore)
 {
-    // We only update the main 3 (RGB) here, alpha is separate
     for (int i = 0; i < 4; i++)
         if (pIgnore != m_pText_RGBA[i])
         {
@@ -665,18 +611,15 @@ void ColorPicker::UpdateAllVars(Panel *pIgnore)
 
     if (pIgnore != m_pText_HEX)
     {
-        char hexString[7];
-        hexString[0] = '\0';
-        for (int i = 0; i < 3; i++)
-        {
-            char tmp[3];
-            IntToHex(m_vecColor[i] * 255, tmp, 2);
-            char tmp2[64];
-            Q_snprintf(tmp2, 64, "%02s", tmp);
-            Q_strcat(hexString, tmp2, sizeof(hexString));
-        }
+        char hexString[9];
+        Color currentColor;
+        Vec4DToColor(m_vecColor, currentColor);
+        g_pMomentumUtil->GetHexStringFromColor(currentColor, hexString, 9);
         m_pText_HEX->SetText(hexString);
     }
+
+    if (pIgnore != m_pAlphaSlider)
+        m_pAlphaSlider->SetValue(clamp<int>(m_vecColor[3] * 255.0f, 0, 255), false);
 
     if (pIgnore != m_pSelect_Hue)
         m_pSelect_Hue->SetHue(clamp(m_vecHSV.x, 0.0f, 360.0f));

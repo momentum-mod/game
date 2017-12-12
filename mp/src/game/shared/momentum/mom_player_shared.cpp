@@ -123,7 +123,7 @@ void CMomentumPlayer::FireBullet(
     int iDamage, // base damage
     float flRangeModifier, // damage range modifier
     CBaseEntity *pevAttacker, // shooter
-    bool bDoEffects,
+    bool bDoEffects, // Is this the client DLL?
     float x,
     float y
     )
@@ -250,6 +250,9 @@ void CMomentumPlayer::FireBullet(
 
         int iDamageType = DMG_BULLET | DMG_NEVERGIB;
 
+        bool shouldDecal = !(tr.surface.flags & (SURF_SKY | SURF_NODRAW | SURF_HINT | SURF_SKIP));
+        bool bEntNotNull = tr.m_pEnt != nullptr;
+
         if (bDoEffects)
         {
             // See if the bullet ended up underwater + started out of the water
@@ -273,22 +276,11 @@ void CMomentumPlayer::FireBullet(
                     DispatchEffect("gunshotsplash", data);
                 }
             }
-            else
+            else if (shouldDecal && bEntNotNull)
             {
-                //Do Regular hit effects
-
+                // Do Regular hit effects
                 // Don't decal nodraw surfaces
-                if (!(tr.surface.flags & (SURF_SKY | SURF_NODRAW | SURF_HINT | SURF_SKIP)))
-                {
-                    CBaseEntity *pEntity = tr.m_pEnt;
-                    //MOM_TODO: question the 
-                    if (pEntity)
-                        UTIL_ImpactTrace(&tr, iDamageType);
-                    //if (!(pEntity && pEntity->GetTeamNumber() == GetTeamNumber()))
-                    //{
-                    //    UTIL_ImpactTrace(&tr, iDamageType);
-                    //}
-                }
+                UTIL_ImpactTrace(&tr, iDamageType);
             }
         } // bDoEffects
 
@@ -385,15 +377,15 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     float flKickUp;
     float flKickLateral;
 
-    if (m_iShotsFired == 1) // This is the first round fired
+    if (m_SrvData.m_iShotsFired == 1) // This is the first round fired
     {
         flKickUp = up_base;
         flKickLateral = lateral_base;
     }
     else
     {
-        flKickUp = up_base + m_iShotsFired*up_modifier;
-        flKickLateral = lateral_base + m_iShotsFired*lateral_modifier;
+        flKickUp = up_base + m_SrvData.m_iShotsFired*up_modifier;
+        flKickLateral = lateral_base + m_SrvData.m_iShotsFired*lateral_modifier;
     }
 
 
@@ -403,7 +395,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     if (angle.x < -1 * up_max)
         angle.x = -1 * up_max;
 
-    if (m_iDirection == 1)
+    if (m_SrvData.m_iDirection == 1)
     {
         angle.y += flKickLateral;
         if (angle.y > lateral_max)
@@ -417,7 +409,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     }
 
     if (!SharedRandomInt("KickBack", 0, direction_change))
-        m_iDirection = 1 - m_iDirection;
+        m_SrvData.m_iDirection = 1 - m_SrvData.m_iDirection;
 
     SetPunchAngle(angle);
 }

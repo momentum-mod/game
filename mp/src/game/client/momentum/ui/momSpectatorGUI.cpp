@@ -75,11 +75,17 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
     m_pMapLabel = FindControl<Label>("MapLabel");
     m_pTimeLabel = FindControl<Label>("TimeLabel");
     m_pGainControlLabel = FindControl<Label>("DetachInfo");
+
     m_pCloseButton = FindControl<ImagePanel>("ClosePanel");
     m_pCloseButton->InstallMouseHandler(this);
 
     m_pShowControls = FindControl<ImagePanel>("ShowControls");
     m_pShowControls->InstallMouseHandler(this);
+    
+    m_pPrevPlayerButton = FindControl<ImagePanel>("PrevPlayerButton");
+    m_pPrevPlayerButton->InstallMouseHandler(this);
+    m_pNextPlayerButton = FindControl<ImagePanel>("NextPlayerButton");
+    m_pNextPlayerButton->InstallMouseHandler(this);
 
     m_pReplayControls = dynamic_cast<C_MOMReplayUI *>(m_pViewPort->FindPanelByName(PANEL_REPLAY));
 
@@ -98,9 +104,10 @@ CMOMSpectatorGUI::CMOMSpectatorGUI(IViewPort *pViewPort) : EditablePanel(nullptr
 
     FIND_LOCALIZATION(m_pwReplayPlayer, "#MOM_ReplayPlayer");
     FIND_LOCALIZATION(m_pwGainControl, "#MOM_SpecGUI_GainControl");
-    FIND_LOCALIZATION(m_pwWatchingReplay, "#MOM_WatchingReplay");
     FIND_LOCALIZATION(m_pwRunTime, "#MOM_MF_RunTime");
     FIND_LOCALIZATION(m_pwSpecMap, "#Spec_Map");
+    FIND_LOCALIZATION(m_pwWatchingGhost, "#MOM_WatchingGhost");
+    FIND_LOCALIZATION(m_pwWatchingReplay, "#MOM_WatchingReplay");
 }
 
 //-----------------------------------------------------------------------------
@@ -126,17 +133,19 @@ void CMOMSpectatorGUI::OnMousePressed(MouseCode code)
         if (over == m_pCloseButton->GetVPanel())
         {
             SetMouseInputEnabled(false);
-            // We're piggybacking on this event because it's basically the same as the X on the mapfinished panel
-            IGameEvent *pClosePanel = gameeventmanager->CreateEvent("mapfinished_panel_closed");
-            if (pClosePanel)
-            {
-                // Fire this event so other classes can get at this
-                gameeventmanager->FireEvent(pClosePanel);
-            }
+            engine->ClientCmd("mom_spectate_stop"); //in case the entitiy recieving this event does not exist..
         }
         else if (over == m_pShowControls->GetVPanel() && m_pReplayControls)
         {
             m_pReplayControls->ShowPanel(!m_pReplayControls->IsVisible());
+        }
+        else if (over == m_pNextPlayerButton->GetVPanel())
+        {
+            engine->ClientCmd("spec_next");
+        }
+        else if (over == m_pPrevPlayerButton->GetVPanel())
+        {
+            engine->ClientCmd("spec_prev");
         }
     }
 }
@@ -172,6 +181,9 @@ void CMOMSpectatorGUI::OnThink()
 //-----------------------------------------------------------------------------
 void CMOMSpectatorGUI::ShowPanel(bool bShow)
 {
+    if (engine->IsPlayingDemo())
+        return;
+
     // If we're becoming visible (for the first time)
     if (bShow && !IsVisible())
     {
@@ -241,11 +253,15 @@ void CMOMSpectatorGUI::Update()
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pReplayEnt = pPlayer->GetReplayEnt();
-        if (pReplayEnt)
+        C_MomentumOnlineGhostEntity *pOnlineGhostEnt = pPlayer->GetOnlineGhostEnt();
+
+        bool isReplayGhost = (pReplayEnt && pReplayEnt->IsReplayGhost());
+        bool isOnlineGhost = (pOnlineGhostEnt && pOnlineGhostEnt->IsOnlineGhost());
+        if (isOnlineGhost || isReplayGhost )
         {
             // Current player name
             wchar_t wPlayerName[BUFSIZELOCL], szPlayerInfo[BUFSIZELOCL];
-            ANSI_TO_UNICODE(pReplayEnt->m_pszPlayerName, wPlayerName);
+            ANSI_TO_UNICODE(isReplayGhost ? pReplayEnt->m_SrvData.m_pszPlayerName : pOnlineGhostEnt->m_pszGhostName, wPlayerName);
             g_pVGuiLocalize->ConstructString(szPlayerInfo, sizeof(szPlayerInfo), m_pwReplayPlayer, 1, wPlayerName);
 
             if (m_pPlayerLabel)
@@ -258,35 +274,60 @@ void CMOMSpectatorGUI::Update()
             if (m_pGainControlLabel)
                 m_pGainControlLabel->SetText(tempControl);
 
-            // Run time label
-            char tempRunTime[BUFSIZETIME];
-            wchar_t wTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
-            g_pMomentumUtil->FormatTime(pReplayEnt->m_RunData.m_flRunTime, tempRunTime);
-            ANSI_TO_UNICODE(tempRunTime, wTime);
-            g_pVGuiLocalize->ConstructString(wTimeLabel, sizeof(wTimeLabel), m_pwRunTime, 1, wTime);
+            if (isReplayGhost)
+            {
+                // Run time label
+                char tempRunTime[BUFSIZETIME];
+                wchar_t wTimeLabel[BUFSIZELOCL], wTime[BUFSIZETIME];
+                g_pMomentumUtil->FormatTime(pReplayEnt->m_SrvData.m_RunData.m_flRunTime, tempRunTime);
+                ANSI_TO_UNICODE(tempRunTime, wTime);
+                g_pVGuiLocalize->ConstructString(wTimeLabel, sizeof(wTimeLabel), m_pwRunTime, 1, wTime);
 
-            if (m_pTimeLabel)
-                m_pTimeLabel->SetText(wTimeLabel);
+                if (m_pTimeLabel) m_pTimeLabel->SetText(wTimeLabel);
 
-            // "REPLAY" label
-            if (m_pReplayLabel)
-                m_pReplayLabel->SetText(m_pwWatchingReplay);
+                // "REPLAY" label
+                if (m_pReplayLabel) m_pReplayLabel->SetText(m_pwWatchingReplay);
+
+                // Show the current map
+                wchar_t szMapName[1024];
+                char tempstr[128];
+                wchar_t wMapName[BUFSIZELOCL];
+                Q_FileBase(engine->GetLevelName(), tempstr, sizeof(tempstr));
+                ANSI_TO_UNICODE(tempstr, wMapName);
+                g_pVGuiLocalize->ConstructString(szMapName, sizeof(szMapName), m_pwSpecMap, 1, wMapName);
+
+                if (m_pMapLabel) m_pMapLabel->SetText(szMapName);
+
+                m_pShowControls->SetVisible(true);
+                
+                //MOM_TODO: check if an online ghost has spawned, and don't hide spec buttons?
+                m_pPrevPlayerButton->SetVisible(false);
+                m_pNextPlayerButton->SetVisible(false);
+            }
+            if (isOnlineGhost)
+            {
+                // "REPLAY" label
+                if (m_pReplayLabel) m_pReplayLabel->SetText(m_pwWatchingGhost);
+
+                if (m_pMapLabel) m_pMapLabel->SetText("");
+
+                if (m_pTimeLabel) m_pTimeLabel->SetText("");
+
+                // We don't need replay controls in online spectating!
+                m_pShowControls->SetVisible(false);
+                m_pReplayControls->ShowPanel(false);
+                m_pPrevPlayerButton->SetVisible(true);
+                m_pNextPlayerButton->SetVisible(true);
+
+            }
         }
         else
         {
-            if (m_pReplayLabel)
-                m_pReplayLabel->SetText("");
+            if (m_pReplayLabel) m_pReplayLabel->SetText("");
+
+            if (m_pMapLabel) m_pMapLabel->SetText("");
+
+            if (m_pTimeLabel) m_pTimeLabel->SetText("");
         }
     }
-
-    // Show the current map
-    wchar_t szMapName[1024];
-    char tempstr[128];
-    wchar_t wMapName[BUFSIZELOCL];
-    Q_FileBase(engine->GetLevelName(), tempstr, sizeof(tempstr));
-    ANSI_TO_UNICODE(tempstr, wMapName);
-    g_pVGuiLocalize->ConstructString(szMapName, sizeof(szMapName), m_pwSpecMap, 1, wMapName);
-
-    if (m_pMapLabel)
-        m_pMapLabel->SetText(szMapName);
 }
