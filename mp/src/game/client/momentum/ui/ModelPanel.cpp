@@ -375,6 +375,7 @@ void CRenderPanel::SetRenderColors(C_BaseEntity* pEnt)
 {
     color32 col = pEnt->GetRenderColor();
     float color[4] = { col.r / 255.0f, col.g / 255.0f, col.b / 255.0f, col.a / 255.0f };
+    float alphaBias = (GetParent() ? GetParent()->GetAlpha() : GetAlpha()) / 255.0f;
     render->SetColorModulation(color);
-    render->SetBlend((GetParent() ? GetParent()->GetAlpha() : GetAlpha() / 255.0f) * color[3]);
+    render->SetBlend(alphaBias * color[3]);
 }
