@@ -38,6 +38,7 @@ bool CMomNUIFrame::Init(const std::string& url)
 
     CefWindowInfo info;
     info.SetAsWindowless(NULL, true);
+    info.transparent_painting_enabled = true;
 
     CefBrowserSettings browserSettings;
 

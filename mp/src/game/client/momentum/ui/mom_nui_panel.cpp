@@ -41,6 +41,7 @@ CMomNUIPanel::CMomNUIPanel() :
 CMomNUIPanel::~CMomNUIPanel()
 {
     surface()->DestroyTextureID(m_iTextureID);
+    CMomNUI::DestroyInstance();
 }
 
 void CMomNUIPanel::OnThink()

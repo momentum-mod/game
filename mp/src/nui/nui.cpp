@@ -5,11 +5,7 @@
 #include "nui.h"
 #include "nui_app.h"
 #include "nui_frame.h"
-
-#ifdef _WIN32
-#include "winlite.h"
-#include "nui_util_win32.h"
-#endif
+#include "platform.h"
 
 CMomNUI* CMomNUI::m_pInstance = nullptr;
 
