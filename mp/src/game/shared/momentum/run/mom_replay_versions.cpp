@@ -21,6 +21,7 @@ CMomReplayV1::~CMomReplayV1()
         delete m_pRunStats;
         m_pRunStats = nullptr;
     }
+    m_rgFrames.Purge();
 }
 
 CMomRunStats *CMomReplayV1::GetRunStats() { return m_pRunStats; }

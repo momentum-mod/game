@@ -2270,6 +2270,12 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 	{
 		factor /= 2.0f;
 	}
+
+    // Check if we want to go up/down
+    if (mv->m_nButtons & (IN_JUMP | IN_DUCK))
+    {
+        mv->m_flUpMove = ConVarRef("cl_upspeed").GetFloat() * (mv->m_nButtons & IN_JUMP ? 1.0f : -1.0f);
+    }
 	
 	// Copy movement amounts
 	float fmove = mv->m_flForwardMove * factor;
@@ -2280,7 +2286,7 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 
 	for (int i=0 ; i<3 ; i++)       // Determine x and y parts of velocity
 		wishvel[i] = forward[i]*fmove + right[i]*smove;
-	wishvel[2] += mv->m_flUpMove * factor;
+	wishvel[2] += mv->m_flUpMove * sv_noclipspeed_vertical.GetFloat();
 
 	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
 	wishspeed = VectorNormalize(wishdir);

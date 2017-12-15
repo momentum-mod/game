@@ -22,8 +22,6 @@ using namespace vgui;
 static MAKE_TOGGLE_CONVAR(mom_comparisons, "1", FLAG_HUD_CVAR, "Shows the run comparison panel. 0 = OFF, 1 = ON");
 
 // Max stages
-// MOM_TODO: 64 stages max is a lot, perhaps reduce it to like 10? But you know people and their customization
-// options...
 static MAKE_CONVAR(mom_comparisons_max_zones, "4", FLAG_HUD_CVAR,
                    "Max number of zones to show on the comparison panel.", 1, 10);
 
@@ -167,7 +165,7 @@ void C_RunComparisons::LoadComparisons()
 
         if (pGhost)
         {
-            tickRate = pGhost->m_flTickRate;
+            tickRate = pGhost->m_SrvData.m_flTickRate;
             runFlags = pGhost->m_SrvData.m_RunData.m_iRunFlags;
         }
         else
@@ -181,19 +179,45 @@ void C_RunComparisons::LoadComparisons()
     }
 }
 
+inline void GenerateBogusRunStats(CMomRunStats *pStatsOut)
+{
+    RandomSeed(random->RandomInt(-10000, 10000));
+    for (int i = 0; i < pStatsOut->GetTotalZones(); i++)
+    {
+        // Time
+        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
+        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
+
+        // Velocity
+        pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+        pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
+
+        // Sync
+        pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
+        pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
+
+        // Keypress
+        pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
+        pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
+    }
+}
+
 void C_RunComparisons::LoadBogusComparisons()
 {
     UnloadBogusComparisons();
     // Let's make a bogus run, shall we?
-    m_rcBogusComparison = new RunCompare_t();
-    m_pBogusRunStats = new CMomRunStats(&m_bogusData);
-    g_pMomentumUtil->GenerateBogusRunStats(m_pBogusRunStats);
+    m_rcBogusComparison = new RunCompare_t(12);
+    m_pBogusRunStats = new CMomRunStats(&m_bogusData, 12);
+    GenerateBogusRunStats(m_pBogusRunStats); // Generate the bogus PB
+    GenerateBogusRunStats(&m_rcBogusComparison->runStats); // Generate the bogus WR
 
-    // Fill the comparison with the bogus run
+    // Fill the comparison with the bogus run name
     char bogusRunANSI[BUFSIZELOCL];
     LOCALIZE_TOKEN(BogusRun, "#MOM_Settings_Compare_Bogus_Run", bogusRunANSI);
+    Q_strncpy(m_rcBogusComparison->runName, bogusRunANSI, sizeof(m_rcBogusComparison->runName));
 
-    g_pMomentumUtil->FillRunComparison(bogusRunANSI, m_pBogusRunStats, m_rcBogusComparison);
     m_bLoadedBogusComparison = true;
 }
 
@@ -326,7 +350,7 @@ void C_RunComparisons::GetDiffColor(float diff, Color *into, bool positiveIsGain
     int gainColor = positiveIsGain ? m_cGain.GetRawColor() : m_cLoss.GetRawColor();
     int lossColor = positiveIsGain ? m_cLoss.GetRawColor() : m_cGain.GetRawColor();
     int rawColor;
-    if (g_pMomentumUtil->FloatEquals(diff, 0.0f))
+    if (CloseEnough(diff, 0.0f, FLT_EPSILON))
         rawColor = m_cTie.GetRawColor();
     else if (diff > 0.0f)
         rawColor = gainColor;

@@ -1,21 +1,9 @@
-#ifndef TIMER_H
-#define TIMER_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "utlvector.h"
 #include "momentum/tickset.h"
 #include "KeyValues.h"
-#include "momentum/util/mom_util.h"
-#include "filesystem.h"
 #include "mom_triggers.h"
-#include "GameEventListener.h"
-#include "tier1/checksum_sha1.h"
-#include "momentum/mom_shareddefs.h"
-#include "momentum/mom_gamerules.h"
 #include "mom_replay_system.h"
-#include "movevars_shared.h"
 #include <ctime>
 
 class CTriggerTimerStart;
@@ -121,7 +109,7 @@ class CMomentumTimer : CAutoGameSystem
     void SetGameModeConVars();
 
     void CreateStartMark();
-    Checkpoint *GetStartMark() const { return m_pStartZoneMark; }
+    Checkpoint_t *GetStartMark() const { return m_pStartZoneMark; }
     void ClearStartMark();
 
   private:
@@ -140,7 +128,7 @@ class CMomentumTimer : CAutoGameSystem
     KeyValues *m_pLocalTimes;
     // MOM_TODO: KeyValues *m_pOnlineTimes;
 
-    Checkpoint *m_pStartZoneMark;
+    Checkpoint_t *m_pStartZoneMark;
 
 public:
     // PRECISION FIX:
@@ -174,5 +162,3 @@ class CTimeTriggerTraceEnum : public IEntityEnumerator
 };
 
 extern CMomentumTimer *g_pMomentumTimer;
-
-#endif // TIMER_H

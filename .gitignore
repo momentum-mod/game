@@ -36,6 +36,8 @@ obj*/
 !devtools/*.mak
 !utils/smdlexp/smdlexp.mak
 *.a
+*.dylib
+*.plist
 
 # Specific Source build products
 client.so
@@ -83,11 +85,15 @@ game_shader_dx9.so
 game_shader_dx9.so.dbg
 game_shader_dx9_srv.so
 game_shader_dx9_srv.so.dbg
+game_shader_dx9.dylib
+game_shader_dx9.dylib.dYSM/
 gameui2.dll
 gameui2.so
 gameui2.so.dbg
 gameui2_srv.so
 gameui2_srv.so.dbg
+gameui2.dylib
+gameui2.dylib.dYSM/
 mp/game/bin/
 
 # Others
@@ -105,3 +111,5 @@ nui_host.exe
 *.cfg
 .idea/
 CMakeLists.txt
+*.exe
+mp/game/momentum/version.txt

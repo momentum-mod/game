@@ -16,11 +16,12 @@ static MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or back
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
     // don't record if we're watching a preexisting replay or in practice mode
-    if (!m_player->IsWatchingReplay() && !m_player->m_SrvData.m_bHasPracticeMode)
+    if (!m_player->IsSpectatingGhost() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
         m_bRecording = true;
         m_iTickCount = 1; // recoring begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
+        m_pReplay = g_ReplayFactory.CreateEmptyReplay(0);
     }
 }
 
@@ -102,6 +103,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
     m_iStartTimerTick = -1;
+    m_pReplay->~CMomReplayBase();
 }
 
 bool CMomentumReplaySystem::StoreReplay(const char* path, const char* pathID)
@@ -184,7 +186,7 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
         pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
         pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
         pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
-        pGhost->m_flTickRate = m_pPlaybackReplay->GetTickInterval();
+        pGhost->m_SrvData.m_flTickRate = m_pPlaybackReplay->GetTickInterval();
         pGhost->SetPlaybackReplay(m_pPlaybackReplay);
         pGhost->m_SrvData.m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
         m_pPlaybackReplay->SetRunEntity(pGhost);
@@ -354,7 +356,7 @@ CON_COMMAND(mom_replay_goto, "Go to a specific tick in the replay.")
         if (pGhost && args.ArgC() > 1)
         {
             int tick = Q_atoi(args[1]);
-            if (tick >= 0 && tick <= pGhost->m_iTotalTimeTicks)
+            if (tick >= 0 && tick <= pGhost->m_SrvData.m_iTotalTimeTicks)
             {
                 pGhost->m_SrvData.m_iCurrentTick = tick;
                 pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
@@ -370,33 +372,8 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_SrvData.m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
-    }
-}
-
-CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being played.")
-{
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer && !pPlayer->IsObserver())
-    {
-        auto pNext = pPlayer->FindNextObserverTarget(false);
-        if (pNext)
-        {
-            // Setting ob target first is needed for the specGUI panel to update properly
-            pPlayer->SetObserverTarget(pNext);
-            pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
-        }
-    }
-}
-
-CON_COMMAND(mom_spectate_stop, "Stop spectating.")
-{
-    auto pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
-    {
-        pPlayer->StopSpectating();
-        g_pMomentumTimer->DispatchTimerStateMessage(pPlayer, false);
     }
 }
 

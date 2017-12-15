@@ -46,7 +46,8 @@ CBaseMapsPage::CBaseMapsPage(vgui::Panel *parent, const char *name, const char *
 
     // get the 'all' text
     wchar_t *all = g_pVGuiLocalize->Find("#MOM_MapSelector_All");
-    Q_UnicodeToUTF8(all, m_szComboAllText, sizeof(m_szComboAllText));
+    if (all)
+        Q_UnicodeToUTF8(all, m_szComboAllText, sizeof(m_szComboAllText));
 
     // Init UI
     m_pStartMap = new Button(this, "StartMapButton", "#MOM_MapSelector_StartMap");

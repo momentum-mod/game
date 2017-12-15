@@ -106,7 +106,7 @@ void C_MOMReplayUI::OnThink()
             m_pPlayPauseResume->SetSelected(!pGhost->m_SrvData.m_bIsPaused);
             m_pPlayPauseResume->SetText(pGhost->m_SrvData.m_bIsPaused ? "#MOM_ReplayStatusPaused" : "#MOM_ReplayStatusPlaying");
 
-            m_iTotalDuration = pGhost->m_iTotalTimeTicks - (TIME_TO_TICKS(END_RECORDING_DELAY));
+            m_iTotalDuration = pGhost->m_SrvData.m_iTotalTimeTicks - (TIME_TO_TICKS(END_RECORDING_DELAY));
 
             // Set overall progress
             float fProgress = static_cast<float>(pGhost->m_SrvData.m_iCurrentTick) / static_cast<float>(m_iTotalDuration);
@@ -231,7 +231,7 @@ void C_MOMReplayUI::OnCommand(const char *command)
     }
     else if (!Q_strcasecmp(command, "nextframe") && pGhost)
     {
-        if (pGhost->m_SrvData.m_iCurrentTick < pGhost->m_iTotalTimeTicks)
+        if (pGhost->m_SrvData.m_iCurrentTick < pGhost->m_SrvData.m_iTotalTimeTicks)
         {
             engine->ServerCmd(VarArgs("mom_replay_goto %i", pGhost->m_SrvData.m_iCurrentTick + 1));
         }

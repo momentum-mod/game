@@ -134,7 +134,7 @@ void SoftwareCursorChangedCB( IConVar *pVar, const char *pOldValue, float fOldVa
 	ConVar *pConVar = (ConVar *)pVar;
 	vgui::surface()->SetSoftwareCursor( pConVar->GetBool() || UseVR() );
 }
-static ConVar cl_software_cursor ( "cl_software_cursor", "1", FCVAR_ARCHIVE, "Switches the game to use a larger software cursor instead of the normal OS cursor", SoftwareCursorChangedCB );
+static ConVar cl_software_cursor ( "cl_software_cursor", "0", FCVAR_ARCHIVE, "Switches the game to use a larger software cursor instead of the normal OS cursor", SoftwareCursorChangedCB );
 
 
 static Vector s_DemoView;
@@ -735,7 +735,7 @@ void CViewRender::SetUpViews()
 	float flFOVOffset = fDefaultFov - view.fov;
 
 	//Adjust the viewmodel's FOV to move with any FOV offsets on the viewer's end
-	view.fovViewmodel = g_pClientMode->GetViewModelFOV() - flFOVOffset;
+	view.fovViewmodel = abs(g_pClientMode->GetViewModelFOV() - flFOVOffset);
 
 	if ( UseVR() )
 	{

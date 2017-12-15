@@ -5,58 +5,23 @@
 #endif
 
 #include "cbase.h"
+#include "mom_ghostdefs.h"
+#include "mom_shareddefs.h"
+#include "GameEventListener.h"
+#include "mom_modulecomms.h"
+#include "IMovementListener.h"
 
-#include "mom_blockfix.h"
-#include "momentum/mom_shareddefs.h"
-#include "player.h"
-#include <GameEventListener.h>
-#include <run/mom_entity_run_data.h>
-#include <momentum/util/mom_util.h>
-#include <run/run_stats.h>
-#include <mom_modulecomms.h>
-
-class CMomentumReplayGhostEntity;
+struct Checkpoint_t;
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
+#define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
 
-// MOM_TODO: Replace this with the custom player model
-#define ENTITY_MODEL "models/player/player_shape_base.mdl"
+class CMomentumGhostBaseEntity;
 
-// Change these if you want to change the flashlight sound
-#define SND_FLASHLIGHT_ON "CSPlayer.FlashlightOn"
-#define SND_FLASHLIGHT_OFF "CSPlayer.FlashlightOff"
-
-// Checkpoints used in the "Checkpoint menu"
-struct Checkpoint
-{
-    bool crouched;
-    Vector pos;
-    Vector vel;
-    QAngle ang;
-    char targetName[512];
-    char targetClassName[512];
-
-    Checkpoint() : crouched(false), pos(vec3_origin), vel(vec3_origin), ang(vec3_angle)
-    {
-        targetName[0] = '\0';
-        targetClassName[0] = '\0';
-    }
-
-    Checkpoint(KeyValues *pKv)
-    {
-        Q_strncpy(targetName, pKv->GetString("targetName"), sizeof(targetName));
-        Q_strncpy(targetClassName, pKv->GetString("targetClassName"), sizeof(targetClassName));
-        g_pMomentumUtil->KVLoadVector(pKv, "pos", pos);
-        g_pMomentumUtil->KVLoadVector(pKv, "vel", vel);
-        g_pMomentumUtil->KVLoadQAngles(pKv, "ang", ang);
-        crouched = pKv->GetBool("crouched");
-    }
-};
-
-class CMomentumPlayer : public CBasePlayer, public CGameEventListener
+class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IMovementListener
 {
   public:
     DECLARE_CLASS(CMomentumPlayer, CBasePlayer);
@@ -79,13 +44,19 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     {
         AddEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_ON);
+        m_playerAppearanceProps.FlashlightOn = true;
+        SendAppearance();
     }
 
     void FlashlightTurnOff() OVERRIDE
     {
         RemoveEffects(EF_DIMLIGHT);
         EmitSound(SND_FLASHLIGHT_OFF);
+        m_playerAppearanceProps.FlashlightOn = false;
+        SendAppearance();
     }
+
+    void SendAppearance();
 
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
@@ -124,7 +95,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_SrvData.m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
-    void CheckForBhop();
+    void OnPlayerJump() OVERRIDE;
+    void OnPlayerLand() OVERRIDE;
     void UpdateRunStats();
     void UpdateRunSync();
     void UpdateJumpStrafes();
@@ -160,13 +132,14 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
 
     // Replay stuff
-    bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
-
-    CMomentumReplayGhostEntity *GetReplayEnt() const;
+    
+    bool IsSpectatingGhost() const { return m_hObserverTarget.Get() && GetGhostEnt(); }
+    CMomentumGhostBaseEntity *GetGhostEnt() const;
 
     bool IsValidObserverTarget(CBaseEntity *target) OVERRIDE;
     bool SetObserverTarget(CBaseEntity *target) OVERRIDE;
     CBaseEntity *FindNextObserverTarget(bool bReverse) OVERRIDE;
+    int GetNextObserverSearchStartPoint(bool bReverse) OVERRIDE;
     void CheckObserverSettings() OVERRIDE;
 
     void StopSpectating();
@@ -188,7 +161,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     // MOM_TODO: For leaderboard use later on
     bool IsUsingCPMenu() const { return m_SrvData.m_bUsingCPMenu; }
     // Creates a checkpoint on the location of the player
-    Checkpoint *CreateCheckpoint();
+    Checkpoint_t *CreateCheckpoint();
     // Creates and saves a checkpoint to the checkpoint menu
     void CreateAndSaveCheckpoint();
     // Removes last checkpoint (menu) form the checkpoint lists
@@ -197,8 +170,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void RemoveAllCheckpoints();
     // Teleports the player to the checkpoint (menu) with the given index
     void TeleportToCheckpoint(int);
-    // Teleports to a provided Checkpoint
-    void TeleportToCheckpoint(Checkpoint *pCP);
     // Teleports the player to their current checkpoint
     void TeleportToCurrentCP() { TeleportToCheckpoint(m_SrvData.m_iCurrentStepCP); }
     // Sets the current checkpoint (menu) to the desired one with that index
@@ -223,6 +194,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
     void CreateTrail();
     void RemoveTrail();
+     
+    // Player's apperence properties
+    ghostAppearance_t m_playerAppearanceProps;
+    // Catches any messages the player sends through "say"
+    void CheckChatText(char *p, int bufsize) OVERRIDE;
 
     // Adds the give Onehop to the hopped list.
     // Returns: Its new index.
@@ -236,6 +212,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     void SetCurrentCheckpointTrigger(CTriggerCheckpoint *pCheckpoint) { m_pCurrentCheckpoint = pCheckpoint; }
     CTriggerCheckpoint *GetCurrentCheckpointTrigger() const { return m_pCurrentCheckpoint; }
 
+    CSteamID m_sSpecTargetSteamID;
+
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
@@ -247,15 +225,13 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
 
     // Checkpoint menu
-    CUtlVector<Checkpoint *> m_rcCheckpoints;
+    CUtlVector<Checkpoint_t *> m_rcCheckpoints;
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;
     CTriggerCheckpoint *m_pCurrentCheckpoint;
 
     // for detecting bhop
-    float m_flTicksOnGround;
-    const int NUM_TICKS_TO_BHOP;
     friend class CMomentumGameMovement;
     float m_flPunishTime;
     int m_iLastBlock;
@@ -276,7 +252,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener
     int m_nTicksInAir;
 
     float m_flTweenVelValue;
-
     // Trail pointer
     CBaseEntity* m_eTrail;
 };

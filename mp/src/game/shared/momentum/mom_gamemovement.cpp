@@ -5,6 +5,7 @@
 #include "movevars_shared.h"
 #include <rumble_shared.h>
 #include <stdarg.h>
+#include "IMovementListener.h"
 
 #include "tier0/memdbgon.h"
 
@@ -15,11 +16,10 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
-static MAKE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
-                   "Toggle landing punchangle. 0 = OFF, 1 = ON\n", 0, 9999);
+static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED, "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
-CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr) {}
+CMomentumGameMovement::CMomentumGameMovement() : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr), mom_gamemode("mom_gamemode") {}
 
 void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
 {
@@ -81,8 +81,7 @@ float CMomentumGameMovement::ClimbSpeed(void) const
 
 void CMomentumGameMovement::WalkMove()
 {
-    ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -576,6 +575,18 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false; // in air, so no effect
     }
 
+    // Prevent jump if needed
+    const bool bPlayerBhopBlocked = m_pPlayer->m_SrvData.m_bPreventPlayerBhop &&
+        gpGlobals->tickcount - m_pPlayer->m_SrvData.m_iLandTick < BHOP_DELAY_TIME;
+    if (bPlayerBhopBlocked)
+    {
+        m_pPlayer->m_afButtonDisabled |= IN_BULLRUSH; // For the HUD
+        return false;
+    }
+
+    if (m_pPlayer->m_afButtonDisabled & IN_BULLRUSH)
+        m_pPlayer->m_afButtonDisabled &= ~IN_BULLRUSH; // For the HUD
+
     // AUTOBHOP---
     // only run this code if autobhop is disabled
     if (!m_pPlayer->HasAutoBhop())
@@ -625,8 +636,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
 
     // stamina stuff (scroll/kz gamemode only)
-    ConVarRef gm("mom_gamemode");
-    if (gm.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -646,6 +656,8 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     // Flag that we jumped.
     mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
+    // Fire that we jumped
+    FIRE_GAMEMOVEMENT_EVENT(OnPlayerJump);
     return true;
 }
 
@@ -674,14 +686,13 @@ void CMomentumGameMovement::CategorizePosition()
     if (player->IsObserver())
         return;
 
-    float flOffset = 2.0f;
+    float flOffset = 1.0f;
 
-    point[0] = mv->GetAbsOrigin()[0];
-    point[1] = mv->GetAbsOrigin()[1];
-    point[2] = mv->GetAbsOrigin()[2] - flOffset;
+    const Vector bumpOrigin = mv->GetAbsOrigin();
 
-    Vector bumpOrigin;
-    bumpOrigin = mv->GetAbsOrigin();
+    point[0] = bumpOrigin[0];
+    point[1] = bumpOrigin[1];
+    point[2] = bumpOrigin[2] - flOffset;
 
 // Shooting up really fast.  Definitely not on ground.
 // On ladder moving up, so not on ground either
@@ -720,6 +731,8 @@ void CMomentumGameMovement::CategorizePosition()
         TryTouchGround(bumpOrigin, point, GetPlayerMins(), GetPlayerMaxs(), MASK_PLAYERSOLID,
                        COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
+        bool bHitSteepPlane = false;
+
         // Was on ground, but now suddenly am not.  If we hit a steep plane, we are not on ground
         if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
         {
@@ -728,6 +741,8 @@ void CMomentumGameMovement::CategorizePosition()
 
             if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
             {
+                bHitSteepPlane = true;
+
                 SetGroundEntity(nullptr);
                 // probably want to add a check for a +z velocity too!
                 if ((mv->m_vecVelocity.z > 0.0f) && (player->GetMoveType() != MOVETYPE_NOCLIP))
@@ -735,26 +750,15 @@ void CMomentumGameMovement::CategorizePosition()
                     player->m_surfaceFriction = 0.25f;
                 }
             }
-            else
-            {
-                if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
-                {
-                    DoLateReflect();
-                    CategorizePosition();
-
-                    return;
-                }
-
-                SetGroundEntity(&pm);
-            }
         }
-        else
+
+        if (!bHitSteepPlane)
         {
+            // If we hit a plane we can jump off of, try to do a late reflect if needed
             if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
             {
                 DoLateReflect();
                 CategorizePosition();
-
                 return;
             }
 
@@ -921,7 +925,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        if ((m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE_STUCKONGROUND) && (m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE))
+        if (m_pPlayer->m_SrvData.m_fSliding & (FL_SLIDE_STUCKONGROUND | FL_SLIDE))
             StuckGround();
     }
 
@@ -1170,7 +1174,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         }
         // If the plane has a zero z component in the normal, then it's a
         //  step or wall
-        if (!pm.plane.normal[2])
+        if (CloseEnough(pm.plane.normal[2], 0.0f, FLT_EPSILON))
         {
             blocked |= 2; // step / wall
         }
@@ -1234,7 +1238,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         {
             for (i = 0; i < numplanes; i++)
             {
-                ClipVelocity(original_velocity, planes[i], mv->m_vecVelocity, 1);
+                ClipVelocity(original_velocity, planes[i], mv->m_vecVelocity, 1.0);
                 for (j = 0; j < numplanes; j++)
                     if (j != i)
                     {
@@ -1248,9 +1252,10 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
             // Did we go all the way through plane set
             if (i != numplanes)
-            { // go along this plane
-              // pmove.velocity is set in clipping call, no need to set again.
-                ;
+            {
+                // go along this plane
+                // pmove.velocity is set in clipping call, no need to set again.
+                //DevMsg("Moving along this plane! i: %i || numplanes: %i\n", i, numplanes);
             }
             else
             { // go along the crease
@@ -1259,6 +1264,31 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                     VectorCopy(vec3_origin, mv->m_vecVelocity);
                     break;
                 }
+
+                // Fun fact time: these next five lines of code fix (vertical) rampbug
+                if (CloseEnough(planes[0], planes[1], FLT_EPSILON))
+                {
+                    // Why did the above return true? Well, when surfing, you can "clip" into the
+                    // ramp, due to the ramp not pushing you away enough, and when that happens,
+                    // a surfer cries. So the game thinks the surfer is clipping along two of the exact
+                    // same planes. So what we do here is take the surfer's original velocity,
+                    // and add the along the normal of the surf ramp they're currently riding down,
+                    // essentially pushing them away from the ramp.
+
+                    // Note: Technically the 20.0 here can be 2.0, but that causes "jitters" sometimes, so I found 20
+                    // to be pretty safe and smooth. If it causes any unforeseen consequences, tweak it!
+                    VectorMA(original_velocity, 20.0f, planes[0], new_velocity);
+                    mv->m_vecVelocity.x = new_velocity.x;
+                    mv->m_vecVelocity.y = new_velocity.y;
+                    // Note: We don't want the player to gain any Z boost/reduce from this, gravity should be the
+                    // only force working in the Z direction!
+
+                    // Lastly, let's get out of here before the following lines of code make the surfer lose speed.
+                    break;
+                }
+
+                // Though now it's good to note: the following code is needed for when a ramp creates a "V" shape,
+                // and pinches the surfer between two planes of differing normals.
                 CrossProduct(planes[0], planes[1], dir);
                 dir.NormalizeInPlace();
                 d = dir.Dot(mv->m_vecVelocity);
@@ -1280,7 +1310,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         }
     }
 
-    if (allFraction == 0.0f)
+    if (CloseEnough(allFraction, 0.0f, FLT_EPSILON))
     {
         if (!sv_ramp_fix.GetBool())
             VectorCopy(vec3_origin, mv->m_vecVelocity); // RAMPBUG FIX #1
@@ -1326,6 +1356,9 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         // Subtract ground velocity at instant we hit ground jumping
         vecBaseVelocity -= newGround->GetAbsVelocity();
         vecBaseVelocity.z = newGround->GetAbsVelocity().z;
+
+        // Fire that we landed on ground
+        FIRE_GAMEMOVEMENT_EVENT(OnPlayerLand);
     }
     else if (oldGround && !newGround)
     {
@@ -1353,6 +1386,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         }
 
         mv->m_vecVelocity.z = 0.0f;
+
     }
 }
 
@@ -1495,18 +1529,17 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     blocked = 0x00;      // Assume unblocked.
     if (angle > 0)       // If the plane that is blocking us has a positive z component, then assume it's a floor.
         blocked |= 0x01; //
-    if (!angle)          // If the plane has no Z, it is vertical (wall/step)
+    if (CloseEnough(angle, 0.0f, FLT_EPSILON)) // If the plane has no Z, it is vertical (wall/step)
         blocked |= 0x02; //
 
     // Determine how far along plane to slide based on incoming direction.
     backoff = DotProduct(in, normal) * overbounce;
 
-    float velocity = 0.0f;
     for (i = 0; i < 3; i++)
     {
         change = normal[i] * backoff;
-        velocity = in[i] - change;
-        out[i] = velocity;
+        out[i] = in[i] - change;
+        //DevMsg("Backoff: %f || Change: %f || Velocity: %f\n", backoff, change, velocity);
     }
 
     // iterate once to make sure we aren't still moving through the plane
@@ -1514,12 +1547,14 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     if (adjust < 0.0f)
     {
         out -= (normal * adjust);
-        // Msg( "Adjustment = %lf\n", adjust );
+        //DevMsg( "Adjustment = %lf\n", adjust );
     }
 
     // Check if we loose speed while going on a slope in front of us.
-    Vector dif = mv->m_vecVelocity - out;
-    if (dif.Length2D() > 0.0f && (angle > 0.7f) && (velocity > 0.0f))
+
+    // MOM_TODO: Make this only bhop gametype?
+    /*Vector dif = mv->m_vecVelocity - out;
+    if (dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f))
     {
         out.x = mv->m_vecVelocity.x;
         out.y = mv->m_vecVelocity.y;
@@ -1529,7 +1564,7 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
         // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be 0.015 or 0.01
         mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick;
         DevMsg(2, "ClipVelocity: Fixed speed.\n");
-    }
+    }*/
 
     // Return blocking flags.
     return blocked;
@@ -1537,6 +1572,7 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
 
 // Expose our interface.
 static CMomentumGameMovement g_GameMovement;
+CMomentumGameMovement *g_pMomentumGameMovement = &g_GameMovement;
 IGameMovement *g_pGameMovement = static_cast<IGameMovement *>(&g_GameMovement);
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CMomentumGameMovement, IGameMovement, INTERFACENAME_GAMEMOVEMENT, g_GameMovement);

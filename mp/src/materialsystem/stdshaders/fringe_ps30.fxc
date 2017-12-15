@@ -1,0 +1,57 @@
+// ********************************
+// ** auto generated pixelshader **
+// ********************************
+
+#define SHADER_EDITOR_2013_COMPILE
+
+
+// Includes
+#include "common_ps_fxc.h"
+#include "common_vertexlitgeneric_dx9.h"
+#include "common_lightmappedgeneric_fxc.h"
+#include "common_flashlight_fxc.h"
+#include "common_parallax.h"
+
+
+// Samplers
+sampler _Sampler_00		: register( s0 );
+sampler _Sampler_01		: register( s1 );
+
+// User code - function bodies
+void Fringe( in float2 uv, in sampler framebuffer, in float intensity, out float4 color )
+{
+		float2 uv_shift = 2.0 * uv - 1.0;
+	float radial_gradient = uv_shift * 0.0018; //uv_shift.x * uv_shift.x + uv_shift.y * uv_shift.y;
+	
+	float2 r_shift = uv + lerp(0.0, intensity, radial_gradient);
+	float2 g_shift = uv;
+	float2 b_shift = uv - lerp(0.0, intensity, radial_gradient);
+	
+	color.r = tex2D(framebuffer, r_shift).r;
+	color.g = tex2D(framebuffer, g_shift).g;
+	color.b = tex2D(framebuffer, b_shift).b;
+	color.a = 1.0;
+}
+
+// Semantic structures
+struct PS_INPUT
+{
+	float2 vTexCoord_0			:	TEXCOORD0;
+};
+
+struct PS_OUTPUT
+{
+	float4 vColor_0				:	COLOR0;
+};
+
+// Entry point
+PS_OUTPUT main( const PS_INPUT In )
+{
+	PS_OUTPUT Out;
+	float _var0 = tex2D( _Sampler_01, In.vTexCoord_0 ).r;
+	_var0 = lerp( float( 0.350000 ), float( 2.000000 ), _var0 );
+	float4 _var1 = (float4)0;
+	Fringe( In.vTexCoord_0, _Sampler_00, _var0, _var1 );
+	Out.vColor_0 = _var1;
+	return Out;
+}

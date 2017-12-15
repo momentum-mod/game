@@ -10,6 +10,11 @@
 #include "momentum/weapon/weapon_csbasegun.h"
 #include "player_command.h"
 #include "predicted_viewmodel.h"
+#include "ghost_client.h"
+#include "mom_online_ghost.h"
+#include "mom_blockfix.h"
+#include "run/run_checkpoint.h"
+#include "mom_gamemovement.h"
 
 #include "tier0/memdbgon.h"
 
@@ -32,7 +37,6 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(CheckForBhop), 
 DEFINE_THINKFUNC(UpdateRunStats), 
 DEFINE_THINKFUNC(CalculateAverageStats), 
 DEFINE_THINKFUNC(LimitSpeedInStartZone),
@@ -40,27 +44,76 @@ END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
+void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue);
 
-void TrailCallback(IConVar *var, const char *pOldValue, float flOldValue)
+// Ghost Apperence Convars
+static ConVar mom_ghost_bodygroup("mom_ghost_bodygroup", "11",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Ghost's body group (model)", true, 0, true, 14,
+    AppearanceCallback);
+
+static ConVar mom_ghost_color("mom_ghost_color", "FF00FFFF",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Set the ghost's color. Accepts HEX color value in format RRGGBBAA. if RRGGBB is supplied, Alpha is set to 0x4B",
+    AppearanceCallback);
+
+static ConVar mom_trail_color("mom_trail_color", "FF00FFFF",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Set the player's trail color. Accepts HEX color value in format RRGGBBAA",
+    AppearanceCallback);
+
+static ConVar mom_trail_length("mom_trail_length", "4",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Length of the player's trail (in seconds).", true, 1, false, 10, AppearanceCallback);
+
+static ConVar mom_trail_enable("mom_trail_enable", "0",
+    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+    "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1, AppearanceCallback);
+
+// Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps, 
+// as well as changing the appearance locally.
+void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    ConVarRef cVar(var);
+
     if (pPlayer)
     {
-        pPlayer->CreateTrail(); //Refresh the trail
+        const char *pName = cVar.GetName();
+
+        if (FStrEq(pName, mom_trail_color.GetName()) ||// the trail color changed
+            FStrEq(pName, mom_trail_length.GetName()) || // the trail length changed
+            FStrEq(pName, mom_trail_enable.GetName())) // the trail enable bool changed
+        {
+            uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
+            pPlayer->m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
+            pPlayer->m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
+            pPlayer->m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
+            pPlayer->CreateTrail(); // Refresh the trail
+        }
+        else if (FStrEq(pName, mom_ghost_color.GetName())) // the ghost body color changed
+        {
+            uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
+            pPlayer->m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
+            Color newColor;
+            if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+                pPlayer->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+        }
+        else if (FStrEq(pName, mom_ghost_bodygroup.GetName())) // the ghost bodygroup changed
+        {
+            int bGroup = mom_ghost_bodygroup.GetInt();
+            pPlayer->m_playerAppearanceProps.GhostModelBodygroup = bGroup;
+            pPlayer->SetBodygroup(1, bGroup);
+        }
+
+        pPlayer->SendAppearance();
     }
 }
 
-static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_ARCHIVE, "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1, TrailCallback);
-static ConVar mom_trail_length("mom_trail_length", "4", FCVAR_ARCHIVE, "Length of the trail (in seconds).", true, 1, false, 9000, TrailCallback);
-static ConVar mom_trail_color_r("mom_trail_color_r", "255", FCVAR_ARCHIVE, "Red amount of the trail color.", true, 0, true, 255, TrailCallback);
-static ConVar mom_trail_color_g("mom_trail_color_g", "255", FCVAR_ARCHIVE, "Green amount of the trail color.", true, 0, true, 255, TrailCallback);
-static ConVar mom_trail_color_b("mom_trail_color_b", "255", FCVAR_ARCHIVE, "Blue amount of the trail color.", true, 0, true, 255, TrailCallback);
-static ConVar mom_trail_color_a("mom_trail_color_a", "255", FCVAR_ARCHIVE, "Alpha amount of the trail color. This also controls how bright the trail is.", 
-    true, 0, true, 255, TrailCallback);
-
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
-    m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10), m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
+    m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
     m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
     m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
@@ -75,6 +128,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_bDidPlayerBhop = false;
     m_SrvData.m_iSuccessiveBhops = 0;
     m_SrvData.m_bHasPracticeMode = false;
+    m_SrvData.m_bPreventPlayerBhop = false;
+    m_SrvData.m_iLandTick = 0;
 
     m_SrvData.m_iCheckpointCount = 0;
     m_SrvData.m_bUsingCPMenu = false;
@@ -85,6 +140,9 @@ CMomentumPlayer::CMomentumPlayer()
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
     ListenForGameEvent("mapfinished_panel_closed");
+
+    // Listen for when this player jumps and lands
+    g_pMomentumGameMovement->AddMovementListener(this);
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -92,6 +150,12 @@ CMomentumPlayer::~CMomentumPlayer()
     RemoveTrail();
     RemoveAllCheckpoints();
     RemoveAllOnehops();
+
+    // Clear our spectating status just in case we leave the map while spectating
+    g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false);
+
+    // Remove us from the gamemovement listener list
+    g_pMomentumGameMovement->RemoveMovementListener(this);
 }
 
 void CMomentumPlayer::Precache()
@@ -188,6 +252,11 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
+void CMomentumPlayer::SendAppearance()
+{
+    g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps);
+}
+
 void CMomentumPlayer::Spawn()
 {
     SetName(MAKE_STRING(m_pszDefaultEntName));
@@ -230,6 +299,8 @@ void CMomentumPlayer::Spawn()
     m_SrvData.m_RunData.m_bMapFinished = false;
     m_SrvData.m_RunData.m_iCurrentZone = 0;
     m_SrvData.m_bHasPracticeMode = false;
+    m_SrvData.m_bPreventPlayerBhop = false;
+    m_SrvData.m_iLandTick = 0;
     ResetRunStats();
     if (runSaveEvent)
     {
@@ -252,18 +323,43 @@ void CMomentumPlayer::Spawn()
     g_pMomentumTimer->DispatchMapInfo();
 
     RegisterThinkContext("THINK_EVERY_TICK");
-    RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
     RegisterThinkContext("CURTIME_FOR_START");
     RegisterThinkContext("TWEEN");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick,
                     "THINK_EVERY_TICK");
-    SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL,
                     "THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
+    
+    // initilize appearance properties based on Convars
+    if (g_pMomentumUtil)
+    {
+        uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
+        m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
+        m_playerAppearanceProps.GhostTrailLength = mom_trail_length.GetInt();
+        m_playerAppearanceProps.GhostTrailEnable = mom_trail_enable.GetBool();
+
+        newHexColor = g_pMomentumUtil->GetHexFromColor(mom_ghost_color.GetString());
+        m_playerAppearanceProps.GhostModelRGBAColorAsHex = newHexColor;
+        Color newColor;
+        if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
+            SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+
+        int bGroup = mom_ghost_bodygroup.GetInt();
+        m_playerAppearanceProps.GhostModelBodygroup = bGroup;
+        SetBodygroup(1, bGroup);
+
+        // Send our appearance to the server/lobby if we're in one
+        SendAppearance();
+    }
+    else
+    {
+        Warning("Could not set appearance properties! g_pMomentumUtil is NULL!\n");
+    }
+    
     // If wanted, create trail
     if (mom_trail_enable.GetBool())
         CreateTrail();
@@ -428,6 +524,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
         {
             CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
 
+            // MOM_TODO: Allow them to at least drop the knife?
             if (type != WEAPONTYPE_KNIFE && type != WEAPONTYPE_GRENADE)
             {
                 MomentumWeaponDrop(pWeapon);
@@ -447,21 +544,15 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
     UTIL_Remove(pWeapon);
 }
 
-Checkpoint *CMomentumPlayer::CreateCheckpoint()
+Checkpoint_t *CMomentumPlayer::CreateCheckpoint()
 {
-    Checkpoint *c = new Checkpoint();
-    c->ang = GetAbsAngles();
-    c->pos = GetAbsOrigin();
-    c->vel = GetAbsVelocity();
-    c->crouched = IsDucked() || IsDucking();
-    Q_strncpy(c->targetName, GetEntityName().ToCStr(), sizeof(c->targetName));
-    Q_strncpy(c->targetClassName, GetClassname(), sizeof(c->targetClassName));
+    Checkpoint_t *c = new Checkpoint_t(this);
     return c;
 }
 
 void CMomentumPlayer::CreateAndSaveCheckpoint()
 {
-    Checkpoint *c = CreateCheckpoint();
+    Checkpoint_t *c = CreateCheckpoint();
     m_rcCheckpoints.AddToTail(c);
     if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
         ++m_SrvData.m_iCurrentStepCP;
@@ -531,6 +622,11 @@ void CMomentumPlayer::RemoveTrail()
     m_eTrail = nullptr;
 }
 
+void CMomentumPlayer::CheckChatText(char* p, int bufsize)
+{
+    g_pMomentumGhostClient->SendChatMessage(p);
+}
+
 // Overrides Teleport() so we can take care of the trail
 void CMomentumPlayer::Teleport(const Vector* newPosition, const QAngle* newAngles, const Vector* newVelocity)
 {
@@ -554,37 +650,22 @@ void CMomentumPlayer::CreateTrail()
     m_eTrail->KeyValue("startwidth", "9.5");
     m_eTrail->KeyValue("endwidth", "1.05");
     m_eTrail->KeyValue("lifetime", mom_trail_length.GetInt());
-    m_eTrail->SetRenderColor(mom_trail_color_r.GetInt(), mom_trail_color_g.GetInt(), mom_trail_color_b.GetInt(), mom_trail_color_a.GetInt());
-    m_eTrail->KeyValue("renderamt", mom_trail_color_a.GetInt());
+    Color newColor;
+    if (g_pMomentumUtil->GetColorFromHex(mom_trail_color.GetString(), newColor))
+    {
+        m_eTrail->SetRenderColor(newColor.r(), newColor.g(), newColor.b(), newColor.a());
+        m_eTrail->KeyValue("renderamt", newColor.a());
+    }
     DispatchSpawn(m_eTrail);
-}
-
+}   
 
 void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
     if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0)
         return;
-    Checkpoint *c = m_rcCheckpoints[newCheckpoint];
-    TeleportToCheckpoint(c);
-}
-
-void CMomentumPlayer::TeleportToCheckpoint(Checkpoint *pCP)
-{
-    if (!pCP)
-        return;
-
-    // Handle custom ent flags that old maps do
-    SetName(MAKE_STRING(pCP->targetName));
-    SetClassname(pCP->targetClassName);
-
-    // Handle the crouched state
-    if (pCP->crouched && !IsDucked())
-        ToggleDuckThisFrame(true);
-    else if (!pCP->crouched && IsDucked())
-        ToggleDuckThisFrame(false);
-
-    // Teleport the player
-    Teleport(&pCP->pos, &pCP->ang, &pCP->vel);
+    Checkpoint_t *pCheckpoint = m_rcCheckpoints[newCheckpoint];
+    if (pCheckpoint)
+        pCheckpoint->Teleport(this);
 }
 
 void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
@@ -596,16 +677,11 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
     KeyValues *kvCPs = new KeyValues("cps");
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
-        Checkpoint *c = m_rcCheckpoints[i];
+        Checkpoint_t *c = m_rcCheckpoints[i];
         char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
         Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
-        kvCP->SetString("targetName", c->targetName);
-        kvCP->SetString("targetClassName", c->targetClassName);
-        g_pMomentumUtil->KVSaveVector(kvCP, "vel", c->vel);
-        g_pMomentumUtil->KVSaveVector(kvCP, "pos", c->pos);
-        g_pMomentumUtil->KVSaveQAngles(kvCP, "ang", c->ang);
-        kvCP->SetBool("crouched", c->crouched);
+        c->Save(kvCP);
         kvCPs->AddSubKey(kvCP);
     }
 
@@ -623,7 +699,7 @@ void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
     if (!kvCPs) return;
     FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
     {
-        Checkpoint *c = new Checkpoint(kvCheckpoint);
+        Checkpoint_t *c = new Checkpoint_t(kvCheckpoint);
         m_rcCheckpoints.AddToTail(c);
     }
 
@@ -648,31 +724,30 @@ void CMomentumPlayer::DisableAutoBhop()
     m_SrvData.m_RunData.m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
 }
-void CMomentumPlayer::CheckForBhop()
-{
-    if (GetGroundEntity() != nullptr)
-    {
-        m_flTicksOnGround += gpGlobals->interval_per_tick;
-        // true is player is on ground for less than 10 ticks, false if they are on ground for more s
-        m_SrvData.m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
-        if (!m_SrvData.m_bDidPlayerBhop)
-            m_SrvData.m_iSuccessiveBhops = 0;
-        if (m_nButtons & IN_JUMP)
-        {
-            m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
-            m_SrvData.m_iSuccessiveBhops++;
-            if (g_pMomentumTimer->IsRunning())
-            {
-                int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
-                m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
-                m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
-            }
-        }
-    }
-    else
-        m_flTicksOnGround = 0;
 
-    SetNextThink(gpGlobals->curtime, "CURTIME");
+void CMomentumPlayer::OnPlayerJump()
+{
+    // OnCheckBhop code 
+    m_SrvData.m_bDidPlayerBhop = gpGlobals->tickcount - m_SrvData.m_iLandTick < NUM_TICKS_TO_BHOP;
+    if (!m_SrvData.m_bDidPlayerBhop)
+        m_SrvData.m_iSuccessiveBhops = 0;
+
+    m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
+    m_SrvData.m_iSuccessiveBhops++;
+
+    // Set our runstats jump count
+    if (g_pMomentumTimer->IsRunning())
+    {
+        int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
+        m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1); // Increment total jumps
+        m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
+    }
+}
+
+void CMomentumPlayer::OnPlayerLand()
+{
+    // Set the tick that we landed on something solid (can jump off of this)
+    m_SrvData.m_iLandTick = gpGlobals->tickcount;
 }
 
 void CMomentumPlayer::UpdateRunStats()
@@ -892,7 +967,7 @@ void CMomentumPlayer::LimitSpeedInStartZone()
     }
     SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
 }
-// override of CBasePlayer::IsValidObserverTarget that allows us to spectate replay ghosts
+// override of CBasePlayer::IsValidObserverTarget that allows us to spectate ghosts
 bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 {
     if (target == nullptr)
@@ -900,9 +975,14 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 
     if (!target->IsPlayer())
     {
-        if (!Q_strcmp(target->GetClassname(), "mom_replay_ghost")) // target is a replay ghost
+        if (FStrEq(target->GetClassname(), "mom_replay_ghost")) // target is a replay ghost
         {
             return true;
+        }
+        if (FStrEq(target->GetClassname(), "mom_online_ghost")) // target is an online ghost
+        {
+            CMomentumOnlineGhostEntity *pEntity = dynamic_cast<CMomentumOnlineGhostEntity*>(target);
+            return pEntity && !pEntity->m_bSpectating;
         }
         return false;
     }
@@ -913,9 +993,14 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
 // Override of CBasePlayer::SetObserverTarget that lets us add/remove ourselves as spectors to the ghost
 bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 {
-    CMomentumReplayGhostEntity *pGhostToSpectate = dynamic_cast<CMomentumReplayGhostEntity *>(target),
-                               *pCurrentGhost = GetReplayEnt();
+    CMomentumGhostBaseEntity *pGhostToSpectate = dynamic_cast<CMomentumGhostBaseEntity *>(target);
+    CMomentumGhostBaseEntity *pCurrentGhost = GetGhostEnt();
 
+    if (pCurrentGhost == pGhostToSpectate)
+    {
+        return false;
+    }
+    
     if (pCurrentGhost)
     {
         pCurrentGhost->RemoveSpectator();
@@ -925,12 +1010,46 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pGhostToSpectate && base)
     {
+        RemoveTrail();
+
         pGhostToSpectate->SetSpectator(this);
+
+        CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
+        CMomentumReplayGhostEntity *pReplayEnt = dynamic_cast<CMomentumReplayGhostEntity *>(target);
+        if (pOnlineEnt)
+        {
+            m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
+            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
+        }
+        else if (pReplayEnt)
+        {
+            m_sSpecTargetSteamID = CSteamID(uint64(1));
+            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
+        }
     }
 
     return base;
 }
+int CMomentumPlayer::GetNextObserverSearchStartPoint(bool bReverse)
+{
+    int iDir = bReverse ? -1 : 1;
 
+    int startIndex;
+
+    if (m_hObserverTarget)
+    {
+        // start using last followed player
+        startIndex = m_hObserverTarget->entindex();
+    }
+    else
+    {
+        // start using own player index
+        startIndex = this->entindex();
+    }
+
+    startIndex += iDir;
+    return startIndex;
+}
 CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 {
     int startIndex = GetNextObserverSearchStartPoint(bReverse);
@@ -1000,7 +1119,7 @@ void CMomentumPlayer::CheckObserverSettings()
     {
         ValidateCurrentObserverTarget();
 
-        CMomentumReplayGhostEntity *target = GetReplayEnt();
+        CMomentumGhostBaseEntity *target = GetGhostEnt();
         // for ineye mode we have to copy several data to see exactly the same
 
         if (target && m_iObserverMode == OBS_MODE_IN_EYE)
@@ -1042,14 +1161,14 @@ void CMomentumPlayer::TweenSlowdownPlayer()
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "TWEEN");
 }
 
-CMomentumReplayGhostEntity *CMomentumPlayer::GetReplayEnt() const
+CMomentumGhostBaseEntity *CMomentumPlayer::GetGhostEnt() const
 {
-    return dynamic_cast<CMomentumReplayGhostEntity *>(m_hObserverTarget.Get());
+    return dynamic_cast<CMomentumGhostBaseEntity*>(m_hObserverTarget.Get());
 }
 
 void CMomentumPlayer::StopSpectating()
 {
-    CMomentumReplayGhostEntity *pGhost = GetReplayEnt();
+    CMomentumGhostBaseEntity *pGhost = GetGhostEnt();
     if (pGhost)
         pGhost->RemoveSpectator();
 
@@ -1057,4 +1176,8 @@ void CMomentumPlayer::StopSpectating()
     m_hObserverTarget.Set(nullptr);
     ForceRespawn();
     SetMoveType(MOVETYPE_WALK);
+
+    // Update the lobby/server if there is one
+    m_sSpecTargetSteamID.Clear(); //reset steamID when we stop spectating
+    g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
 }

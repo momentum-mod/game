@@ -58,12 +58,11 @@ class CChangelogPanel : public Frame
     void OnKillFocus() OVERRIDE
     {
         BaseClass::OnKillFocus();
-        Close();
+        //Close();
     }
 
   private:
     float m_flScrollTime;
-    URLLabel *m_pReleaseText;
     RichText *m_pChangeLog;
     char m_cOnlineVersion[12];
     wchar_t m_pwOnlineChangelog[4096]; // MOM_TODO: Determine a better size

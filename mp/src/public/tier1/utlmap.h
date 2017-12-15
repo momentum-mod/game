@@ -139,7 +139,9 @@ public:
 	void     Purge( )										{ m_Tree.Purge(); }
 
 	// Purges the list and calls delete on each element in it.
-	void PurgeAndDeleteElements();
+    // The deleteArray bool determines if delete[] is called, useful for maps that store elements
+    // where the element was created with new[]
+	void PurgeAndDeleteElements(const bool deleteArray = false);
 		
 	// Iteration
 	IndexType_t  FirstInorder() const						{ return m_Tree.FirstInorder(); }
@@ -219,14 +221,17 @@ protected:
 
 // Purges the list and calls delete on each element in it.
 template< typename K, typename T, typename I >
-inline void CUtlMap<K, T, I>::PurgeAndDeleteElements()
+inline void CUtlMap<K, T, I>::PurgeAndDeleteElements(const bool deleteArray /* = false */)
 {
 	for ( I i = 0; i < MaxElement(); ++i ) 
 	{
 		if ( !IsValidIndex( i ) ) 
 			continue; 
 		
-		delete Element( i );
+        if (deleteArray)
+            delete[] Element(i);
+        else
+            delete Element(i);
 	}
 
 	Purge();

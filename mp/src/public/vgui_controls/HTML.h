@@ -63,6 +63,11 @@ public:
 
 	virtual bool OnOpenNewTab( const char *pchURL, bool bForeground ) { return false; }
 
+    // Called on this browser gettings a JS alert. 
+    // NOTE: If you override this, make sure to call DismissJSDialog()!!!
+    virtual void OnJSAlert(HTML_JSAlert_t *pAlert);
+    virtual void OnBrowserOpenNewTab(HTML_OpenLinkInNewTab_t *pCmd) {};
+
 	// configuration
 	virtual void SetScrollbarsEnabled(bool state);
 	virtual void SetContextMenuEnabled(bool state);
@@ -159,7 +164,6 @@ protected:
 
 	vgui::Menu *m_pContextMenu;
 
-private:
 	STEAM_CALLBACK( HTML, BrowserNeedsPaint, HTML_NeedsPaint_t, m_NeedsPaint );
 	STEAM_CALLBACK( HTML, BrowserStartRequest, HTML_StartRequest_t, m_StartRequest );
 	STEAM_CALLBACK( HTML, BrowserURLChanged, HTML_URLChanged_t, m_URLChanged );
@@ -193,7 +197,10 @@ private:
 	MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel );
 	MESSAGE_FUNC_PTR( OnEditNewLine, "TextNewLine", panel );
 	MESSAGE_FUNC_INT( DismissJSDialog, "DismissJSDialog", result );
+    
+    CSteamAPIContext m_SteamAPIContext;
 
+private:
 	vgui::Panel *m_pInteriorPanel;
 	vgui::ScrollBar *_hbar,*_vbar;
 	vgui::DHANDLE<vgui::FileOpenDialog> m_hFileOpenDialog;
@@ -311,10 +318,10 @@ private:
 			return m_pchData == rhs.m_pchData ; 
 		}
 	};
-	CUtlVector<CustomCursorCache_t> m_vecHCursor;
+	CUtlVector<CustomCursorCache_t> m_vecHCursor; // MOM_TODO: REMOVEME?
 
-	CSteamAPIContext m_SteamAPIContext;
 	HHTMLBrowser m_unBrowserHandle;
+    bool IsCurrentBrowser(HHTMLBrowser other) const { return m_unBrowserHandle != INVALID_HTMLBROWSER && other == m_unBrowserHandle; }
 	CCallResult< HTML, HTML_BrowserReady_t > m_SteamCallResultBrowserReady;
 };
 

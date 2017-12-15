@@ -300,17 +300,13 @@ void TextTooltip::ShowTooltip(Panel *currentPanel)
 {
 	if ( s_TooltipWindow.Get() )
 	{
-		int nLen = s_TooltipWindow->GetTextLength();
-
-		if ( nLen <= 0 )
+        if (s_TooltipWindow->GetTextLength() <= 0)
 		{
 			// Empty tool tip, no need to show it
 			_makeVisible = false;
 			return;
 		}
 
-		char *pBuf = (char*)_alloca( nLen+1 );
-		s_TooltipWindow->GetText( pBuf, nLen+1 );
 		Panel *pCurrentParent = s_TooltipWindow->GetParent();
 
 		_isDirty = _isDirty || ( pCurrentParent != currentPanel );
@@ -389,7 +385,7 @@ void TextTooltip::SizeTextWindow()
 				s_TooltipWindow->GetSize( wide, tall );
 			}
 		}
-		s_TooltipWindow->GetSize( wide, tall );
+		//s_TooltipWindow->GetSize( wide, tall );
 	//	ivgui()->DPrintf("End Ratio: %f\n", (float)wide/(float)tall);		
 	}
 }

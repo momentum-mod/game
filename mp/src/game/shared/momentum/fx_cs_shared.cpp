@@ -10,6 +10,8 @@
 
 #ifndef CLIENT_DLL
 #include "ilagcompensationmanager.h"
+#include "momentum/ghost_client.h"
+#include "mom_ghostdefs.h"
 #endif
 
 
@@ -152,6 +154,12 @@ void FX_FireBullets(
         flSpread
         );
 
+    if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
+    {
+        DecalPacket_t decalPacket(DECAL_BULLET, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+        g_pMomentumGhostClient->SendDecalPacket(&decalPacket);
+    }
+
     bDoEffects = false; // no effects on server
 #endif
 
@@ -172,15 +180,25 @@ void FX_FireBullets(
 
 
     // Fire bullets, calculate impacts & effects
-
+    bool bLocalPlayerFired = true;
     if (!pPlayer)
-        return;
+    {
+        bLocalPlayerFired = false;
+#ifdef GAME_DLL
+        pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+#elif defined(CLIENT_DLL)
+        pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
+#endif
+        if (!pPlayer) // If we still can't get a player to shoot through, then get outta 'ere
+            return;
+    }
 
     StartGroupingSounds();
 
 #if !defined (CLIENT_DLL)
     // Move other players back to history positions based on local player's lag
-    lagcompensation->StartLagCompensation( pPlayer, pPlayer->GetCurrentCommand() );
+    if (bLocalPlayerFired)
+        lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());
 #endif
 
     for (int iBullet = 0; iBullet < pWeaponInfo->m_iBullets; iBullet++)
@@ -209,7 +227,8 @@ void FX_FireBullets(
     }
 
 #if !defined (CLIENT_DLL)
-    lagcompensation->FinishLagCompensation( pPlayer );
+    if (bLocalPlayerFired)
+        lagcompensation->FinishLagCompensation(pPlayer);
 #endif
 
     EndGroupingSounds();

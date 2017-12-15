@@ -79,14 +79,12 @@
 
 //Shader editor
 #include "ShaderEditor/ShaderEditorSystem.h"
-//GameUI2
-#if defined(GAMEUI2)
-#include "igameui2.h"
-#endif
+
+// GameUI
+#include "GameUI_Interface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 static void testfreezeframe_f( void )
 {
@@ -2177,9 +2175,11 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 	}
 
-#ifdef GAMEUI2
-    if (g_pGameUI2)
+    if (gameui)
     {
+        if (ConVarRef("mom_menu_blur").GetBool())
+            DoMenuBlurring();
+
         ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
         if (maskTexture)
         {
@@ -2188,17 +2188,10 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
             renderContext->ClearColor4ub(0, 0, 0, 255);
             renderContext->ClearBuffers(true, true, true);
             renderContext->PopRenderTargetAndViewport();
-
-            g_pGameUI2->SetFrustum(GetFrustum());
-            g_pGameUI2->SetView(view);
-            g_pGameUI2->SetMaskTexture(maskTexture);
+            gameui->SetFrustum(GetFrustum());
+            gameui->SetView(view);
+            gameui->SetMaskTexture(maskTexture);
         }
-    }
-#endif
-
-    if (ConVarRef("ssao_enable").GetBool())
-    {
-        DoSSAO(view);
     }
 
 	if ( mat_viewportupscale.GetBool() && mat_viewportscale.GetFloat() < 1.0f ) 

@@ -1,11 +1,17 @@
 #include "cbase.h"
 
 #include "filesystem.h"
-#include "mom_player_shared.h"
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
-#include "tier0/memdbgon.h"
 #include "run/mom_replay_factory.h"
+#include <gason.h>
+#include "run/run_compare.h"
+#include "run/run_stats.h"
+#ifdef CLIENT_DLL
+#include "ChangelogPanel.h"
+#endif
+
+#include "tier0/memdbgon.h"
 
 extern IFileSystem *filesystem;
 
@@ -18,34 +24,7 @@ inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
     pData = nullptr;
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
-void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    if (bIOFailure)
-        return;
-
-    FileHandle_t file;
-    // MOM_TODO: Read the MOM_TODO DownloadMap(), we're going to need to save the zone files too
-    file = filesystem->Open("testmapdownload.bsp", "w+b", "MOD");
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        Warning("MomentumUtil::DownloadCallback: 0 body size!\n");
-        return;
-    }
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    // write the file
-    filesystem->Write(pData, size, file);
-    // save the file
-    filesystem->Close(file);
-    DevLog("Successfully written file\n");
-
-    // Free resources
-    CleanupRequest(pCallback, pData);
-}
+#if 0
 
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
@@ -68,36 +47,10 @@ void MomentumUtil::DownloadMap(const char *szMapname)
     // CreateAndSendHTTPReq(mapfileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
     // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
 }
-
-void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
-{
-    if (steamapicontext && steamapicontext->SteamHTTP())
-    {
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-        SteamAPICall_t apiHandle;
-
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            callback->Set(apiHandle, this, func);
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to post scores online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steampicontext failure.\n");
-        Warning("Could not find Steam Api Context active\n");
-    }
-}
-
 bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
-                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
-                                                KeyValues *params)
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
+    KeyValues *params)
 {
     bool bSuccess = false;
     if (steamapicontext && steamapicontext->SteamHTTP())
@@ -106,7 +59,7 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
         FOR_EACH_VALUE(params, p_value)
         {
             steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
-                                                                           p_value->GetString());
+                p_value->GetString());
         }
 
         SteamAPICall_t apiHandle;
@@ -130,17 +83,31 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
     return bSuccess;
 }
 
-#ifdef CLIENT_DLL
-void MomentumUtil::GetRemoteRepoModVersion()
-{
-    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
-                         &MomentumUtil::VersionCallback);
-}
+#endif
 
+#ifdef CLIENT_DLL
 void MomentumUtil::GetRemoteChangelog()
 {
-    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog,
-                         &MomentumUtil::ChangelogCallback);
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, "http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt");
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            cbChangeLog.Set(apiHandle, this, &MomentumUtil::ChangelogCallback);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
+    }
+    else
+    {
+        Warning("Steampicontext failure.\n");
+        Warning("Could not find Steam Api Context active\n");
+    }
 }
 
 void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -215,31 +182,6 @@ void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFa
         }
     }
     CleanupRequest(pCallback, pData);
-}
-
-void MomentumUtil::GenerateBogusRunStats(CMomRunStats *pStatsOut)
-{
-    RandomSeed(Plat_FloatTime());
-    for (int i = 0; i < MAX_STAGES; i++)
-    {
-        // Time
-        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
-        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
-
-        // Velocity
-        pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-
-        // Sync
-        pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
-        pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
-
-        // Keypress
-        pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
-        pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
-    }
 }
 #endif
 
@@ -320,27 +262,59 @@ Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone,
     return pFinalColor;
 }
 
-Color *MomentumUtil::GetColorFromHex(const char *hexColor)
+bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
 {
-    long hex = strtol(hexColor, nullptr, 16);
+    uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
-    if (length == 6)
+    if (length < 8)
     {
-        int r = ((hex >> 16) & 0xFF); // extract RR byte
-        int g = ((hex >> 8) & 0xFF);  // extract GG byte
-        int b = ((hex)&0xFF);         // extract BB byte
-        m_newColor.SetColor(r, g, b, 75);
-        return &m_newColor;
+        uint8 r = (hex & 0xFF0000) >> 16;
+        uint8 g = (hex & 0x00FF00) >> 8;
+        uint8 b = (hex & 0x0000FF);
+        into.SetColor(r, g, b, 255);
+        return true;
     }
-    Msg("Error: Color format incorrect! Use hex code in format \"RRGGBB\"\n");
-    return nullptr;
+    if (length == 8)
+    {
+        return GetColorFromHex(hex, into);
+    }
+    Warning("Error: Color format incorrect! Use hex code in format \"RRGGBB\" or \"RRGGBBAA\"\n");
+    return false;
+}
+
+bool MomentumUtil::GetColorFromHex(uint32 hex, Color &into)
+{
+    uint8 r = (hex & 0xFF000000) >> 24;
+    uint8 g = (hex & 0x00FF0000) >> 16;
+    uint8 b = (hex & 0x0000FF00) >> 8;
+    uint8 a = (hex & 0x000000FF);
+    into.SetColor(r, g, b, a);
+    return true;
+}
+uint32 MomentumUtil::GetHexFromColor(const char *hexColor)
+{
+    return strtoul(hexColor, nullptr, 16);
+}
+uint32 MomentumUtil::GetHexFromColor(const Color &color)
+{
+    uint32 redByte = ((color.r() & 0xff) << 24);
+    uint32 greenByte = ((color.g() & 0xff) << 16);
+    uint32 blueByte = ((color.b() & 0xff) << 8);
+    uint32 aByte = (color.a() & 0xff);
+    return redByte + greenByte + blueByte + aByte;
+}
+
+void MomentumUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
+{
+    const uint32 colorHex = GetHexFromColor(color);
+    Q_snprintf(pBuffer, maxLen, "%08x", colorHex);
 }
 
 inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
 {
     if (pCheck)
     {
-        if (pCheck->GetRunFlags() == flags && g_pMomentumUtil->FloatEquals(tickrate, pCheck->GetTickInterval()))
+        if (pCheck->GetRunFlags() == flags && CloseEnough(tickrate, pCheck->GetTickInterval(), FLT_EPSILON))
         {
             if (pFastest)
             {
@@ -360,7 +334,7 @@ CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate,
     if (szMapName)
     {
         char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "%s/%s*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
+        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
         V_FixSlashes(path);
 
         CMomReplayBase *pFastest = nullptr;
