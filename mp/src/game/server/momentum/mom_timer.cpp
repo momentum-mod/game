@@ -447,14 +447,13 @@ class CTimerCommands
     static void PracticeMove()
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-        if (!pPlayer || !pPlayer->m_bAllowUserTeleports)
+        if (!pPlayer || !pPlayer->m_bAllowUserTeleports || pPlayer->IsSpectatingGhost())
             return;
 
         if (!pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             int b = pPlayer->m_nButtons;
-            bool safeGuard = b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP ||
-                             b & IN_DUCK || b & IN_WALK;
+            bool safeGuard = (b & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
             if (mom_practice_safeguard.GetBool() && safeGuard)
             {
                 Warning("You cannot enable practice mode while moving!\n");

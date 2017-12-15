@@ -661,7 +661,7 @@ void CMomentumPlayer::CreateTrail()
 
 void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
-    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0)
+    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0 || !m_bAllowUserTeleports)
         return;
     Checkpoint_t *pCheckpoint = m_rcCheckpoints[newCheckpoint];
     if (pCheckpoint)
@@ -1010,22 +1010,25 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pGhostToSpectate && base)
     {
+        // Don't allow user teleports when spectating. Checkpoints can be created, but the
+        // teleporting logic needs to not be allowed.
+        m_bAllowUserTeleports = false;
+
         RemoveTrail();
 
         pGhostToSpectate->SetSpectator(this);
 
         CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
-        CMomentumReplayGhostEntity *pReplayEnt = dynamic_cast<CMomentumReplayGhostEntity *>(target);
         if (pOnlineEnt)
         {
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
-            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
         }
-        else if (pReplayEnt)
+        else if (pGhostToSpectate->IsReplayGhost())
         {
             m_sSpecTargetSteamID = CSteamID(uint64(1));
-            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
         }
+
+        g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
     }
 
     return base;
