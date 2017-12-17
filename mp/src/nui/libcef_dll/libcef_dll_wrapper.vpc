@@ -7,7 +7,7 @@ $Configuration
     {
         $AdditionalIncludeDirectories   "$BASE;$SRCDIR\thirdparty\cef;$SRCDIR\public;$SRCDIR\nui"
         $PreprocessorDefinitions        "$BASE;WRAPPING_CEF_SHARED"
-        $AdditionalOptions              "$BASE /wd4100"
+        $AdditionalOptions              "$BASE /wd4100 /wd4127 /wd4512"
         $EnableC++Exceptions            "Yes (/EHsc)"
         $TreatWarningsAsErrors "No"
     }

@@ -3,10 +3,12 @@
 #include "clientmode_shared.h"
 #include "nui.h"
 #include "nui_frame.h"
+#include "nui_client.h"
 
 #include "vgui/IInput.h"
 #include "vgui/IVGui.h"
 #include "ienginevgui.h"
+#include <include/internal/cef_types_wrappers.h>
 
 CMomNUIPanel* g_pMomNUIPanel = nullptr;
 
@@ -33,7 +35,7 @@ CMomNUIPanel::CMomNUIPanel() :
     vgui::ivgui()->AddTickSignal(GetVPanel());
 
     SetKeyBoardInputEnabled(false);
-    SetMouseInputEnabled(false);
+    SetMouseInputEnabled(true);
 
     m_iTextureID = surface()->CreateNewTextureID(true);
 }
@@ -64,11 +66,14 @@ void CMomNUIPanel::Paint()
 {
     auto frame = CMomNUI::GetInstance()->GetFrame();
 
-    if (!frame || !frame->TextureBuffer())
+    if (!frame || !frame->TextureBuffer() || !frame->ShouldRender())
         return;
 
     if (frame->Dirty())
+    {
         surface()->DrawSetTextureRGBAEx(m_iTextureID, frame->TextureBuffer(), frame->FrameWidth(), frame->FrameHeight(), IMAGE_FORMAT_BGRA8888);
+        frame->Dirty(false);
+    }
 
     surface()->DrawSetTexture(m_iTextureID);
     surface()->DrawSetColor(Color(255, 255, 255, 255));

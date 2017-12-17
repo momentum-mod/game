@@ -8,13 +8,12 @@ $Macro SRCDIR       "..\.."
 $Macro GAMENAME     "momentum"
 
 $Include "$SRCDIR\game\client\client_base.vpc"
-$Include "$SRCDIR\game\client\cef_include.vpc"
 
 $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
+        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\nui;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64,$SRCDIR\thirdparty\cef"
         $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
     }
 }
@@ -370,5 +369,10 @@ $Project "Client (Momentum)"
                 }
             }
         }
+    }
+    
+    $Folder "Link Libraries"
+    {
+        $Lib nui
     }
 }

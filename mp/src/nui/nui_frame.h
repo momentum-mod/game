@@ -14,7 +14,7 @@ public:
     ~CMomNUIFrame();
 
 public:
-    bool Init(const std::string& url);
+    bool Init(const char *purl);
     void OnResized(uint32_t width, uint32_t height);
     void ExecuteJavascript(const std::string& code);
     void OnPaint(CefRefPtr<CefBrowser> browser, CefRenderHandler::PaintElementType type, const CefRenderHandler::RectList& dirtyRects, const void* buffer, int width, int height);
@@ -28,6 +28,7 @@ public:
 
     inline CefRefPtr<CMomNUIClient> Client() const { return m_pClient; }
 
+    void Dirty(bool newBool) { m_bDirty = newBool; }
     inline bool Dirty() { return m_bDirty; }
     inline uint8* TextureBuffer() const { return m_pTextureBuffer; }
 

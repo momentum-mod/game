@@ -3,7 +3,7 @@ $Macro OUTBINDIR    "$SRCDIR\..\game\momentum\bin"
 
 $Include "$SRCDIR\vpc_scripts\source_exe_base.vpc"
 
-$Configuration "Debug"
+$Configuration
 {
     $Compiler
     {
@@ -11,27 +11,6 @@ $Configuration "Debug"
         $PreprocessorDefinitions        "$BASE;NUI_HOST"
         $AdditionalOptions              "$BASE /wd4100"
         $EnableC++Exceptions            "Yes (/EHsc)"
-    }
-
-    $Linker
-    {
-        $AdditionalDependencies         "$BASE $SRCDIR\lib\common\cef\libcef_dll_wrapperd.lib $SRCDIR\lib\common\cef\libcef.lib"    [$WIN32]
-    }
-}
-
-$Configuration "Release"
-{
-    $Compiler
-    {
-        $AdditionalIncludeDirectories   "$BASE;..\thirdparty\cef;..\nui;..\public"
-        $PreprocessorDefinitions        "$BASE;NUI_HOST"
-        $AdditionalOptions              "$BASE /wd4100"
-        $EnableC++Exceptions            "Yes (/EHsc)"
-    }
-
-    $Linker
-    {
-        $AdditionalDependencies         "$BASE $SRCDIR\lib\common\cef\libcef_dll_wrapper.lib $SRCDIR\lib\common\cef\libcef.lib" [$WIN32]
     }
 }
 
@@ -54,5 +33,7 @@ $Project "nui_host"
         $Lib    tier2
         $Lib    tier3
         $Lib    vgui_controls
+        
+        $Libexternal "$LIBCOMMON/cef/libcef"
     }
 }

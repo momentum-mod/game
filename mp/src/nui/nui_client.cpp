@@ -28,27 +28,39 @@ void CMomNUIClient::OnAfterCreated(CefRefPtr<CefBrowser> browser)
     m_pBrowserSideRouter = CefMessageRouterBrowserSide::Create(config);
 
     // TODO (OrfeasZ): Setup our handler.
-    //m_BrowserSideRouter->AddHandler(m_Frame->Handler(), true);
+    //m_pBrowserSideRouter->AddHandler(m_pFrame->Handler(), true);
 
     m_pBrowser->GetHost()->SetFocus(true);
     m_pBrowser->GetHost()->SendFocusEvent(true);
 }
 
-void CMomNUIClient::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame)
+void CMomNUIClient::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, TransitionType transition_type)
 {
+    m_pFrame->ShouldRender(false);
 }
+
 
 void CMomNUIClient::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int statusCode)
 {
-    m_bLoaded = true;
+}
 
-    m_pBrowser->GetHost()->SetFocus(true);
-    m_pBrowser->GetHost()->SendFocusEvent(true);
-
-    while (!m_QueuedJavascript.empty())
+void CMomNUIClient::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool isLoading, bool canGoBack, bool canGoForward)
+{
+    if (!isLoading)
     {
-        m_pBrowser->GetMainFrame()->ExecuteJavaScript(m_QueuedJavascript.front(), "internal", 0);
-        m_QueuedJavascript.pop();
+        m_bLoaded = true;
+
+        m_pBrowser->GetHost()->SetFocus(true);
+        m_pBrowser->GetHost()->SendFocusEvent(true);
+
+
+        while (!m_QueuedJavascript.empty())
+        {
+            m_pBrowser->GetMainFrame()->ExecuteJavaScript(m_QueuedJavascript.front(), "internal", 0);
+            m_QueuedJavascript.pop();
+        }
+
+        m_pBrowser->GetMainFrame()->ExecuteJavaScript("setLocalization('english')", "internal", 0);
     }
 }
 

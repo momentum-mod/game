@@ -5,7 +5,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories   "$BASE;..\thirdparty\cef;..\public"
+        $AdditionalIncludeDirectories   "$BASE;$SRCDIR\thirdparty\cef;$SRCDIR\public"
         $PreprocessorDefinitions        "$BASE"
         $AdditionalOptions              "$BASE /wd4100"
         $EnableC++Exceptions            "Yes (/EHsc)"
@@ -25,5 +25,11 @@ $Project "nui"
         $File   "nui_frame.cpp"
         $File   "nui_frame.h"
         $File   "nui_predef.h"
+    }
+    
+    $Folder "Link Libraries"
+    {
+        $Lib "libcef_dll_wrapper"
+        $Libexternal "$LIBCOMMON/cef/libcef"
     }
 }

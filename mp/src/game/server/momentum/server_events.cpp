@@ -1,6 +1,5 @@
 #include "cbase.h"
 #include "server_events.h"
-#include "nui.h"
 #include "mom_shareddefs.h"
 #include "tier0/memdbgon.h"
 
@@ -55,7 +54,6 @@ void CMOMServerEvents::PostInit()
 
 void CMOMServerEvents::Shutdown()
 {
-    CMomNUI::GetInstance()->Shutdown();
 }
 
 void CMOMServerEvents::LevelInitPreEntity()

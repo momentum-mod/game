@@ -148,8 +148,6 @@
 #include "fbxsystem/fbxsystem.h"
 #endif
 
-#include "nui.h"
-
 #include "inetchannelinfo.h"
 #include "GameUI/IGameUI.h"
 extern vgui::IInputInternal *g_InputInternal;
@@ -1101,16 +1099,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 #ifndef _X360
 	HookHapticMessages(); // Always hook the messages
 #endif
-
-	// Start our custom NUI (New UI) layer.
-    // TODO (OrfeasZ): Properly pass debug flag.
-    int width, height;
-    GetClientModeNormal()->GetViewport()->GetSize(width, height);
-
-	if (CMomNUI::GetInstance()->Init(width, height, true, false))
-		Log("Successfully initialized the NUI layer.\n");
-	else
-		Error("Failed to initialize the NUI layer.\n");
 
 	return true;
 }

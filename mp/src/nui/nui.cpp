@@ -1,7 +1,6 @@
 #include "nui_predef.h"
-#include "nui_utils.h"
-#include "shaderapi/ishaderapi.h"
 
+#include "filesystem.h"
 #include "nui.h"
 #include "nui_app.h"
 #include "nui_frame.h"
@@ -72,74 +71,17 @@ void CMomNUI::Shutdown()
 bool CMomNUI::InitWin32(int width, int height, bool debug, bool host)
 {
 #if _WIN32
-    if (!host)
-    {
-        /*auto module = GetModuleHandleA("materialsystem.dll");
-
-        if (!module)
-            return false;
-
-        uint8_t* moduleBase = reinterpret_cast<uint8_t*>(module);
-        size_t sizeOfCode = CMomNUIUtils::GetSizeOfCode(module);
-
-        // Find the ShaderAPI pointer.
-        auto shaderAPIAddr = CMomNUIUtils::SearchPattern(moduleBase, sizeOfCode,
-            (uint8_t*) "\x74\xDD\x6A\x00\x68\xDD\xDD\xDD\xDD\xFF\xD6", 11);
-
-        // Find the ShaderDeviceMgr pointer.
-        auto shaderDeviceMgrAddr = CMomNUIUtils::SearchPattern(moduleBase, sizeOfCode,
-            (uint8_t*) "\x8B\x0D\xDD\xDD\xDD\xDD\x52\x89\x45\xD4", 10);
-
-        if (!shaderAPIAddr || !shaderDeviceMgrAddr)
-            return false;
-
-        // This should be the g_pShaderAPI pointer.
-        IShaderAPI** shaderAPI = (IShaderAPI**)(*(size_t*)((char*)shaderAPIAddr + 0x13));
-
-        if (!shaderAPI || !*shaderAPI)
-            return false;
-
-        // This should be the g_pShaderDeviceMgr pointer.
-        IShaderDeviceMgr** shaderDeviceMgr = (IShaderDeviceMgr**)(*(size_t*)((char*)shaderDeviceMgrAddr + 0x02));
-
-        if (!shaderDeviceMgr || !*shaderDeviceMgr)
-            return false;
-
-        m_pShaderAPI = *shaderAPI;
-        m_pShaderDeviceMgr = (CShaderDeviceMgr*)(*shaderDeviceMgr);*/
-
-        /*auto module = GetModuleHandleA("shaderapidx9.dll");
-
-        if (!module)
-            return false;
-
-        uint8_t* moduleBase = reinterpret_cast<uint8_t*>(module);
-        size_t sizeOfCode = CMomNUIUtils::GetSizeOfCode(module);
-
-        // Find the D3D device pointer.
-        auto deviceAddr = CMomNUIUtils::SearchPattern(moduleBase, sizeOfCode,
-            (uint8_t*) "\x68\xE1\x0D\x74\x5E\xA3", 6);
-
-        if (!deviceAddr)
-            return false;
-
-        // This should be the g_pShaderAPI pointer.
-        IDirect3DDevice9Ex** device = (IDirect3DDevice9Ex**) (*(size_t*) ((char*) deviceAddr + 0x06));
-
-        if (!device || !*device)
-            return false;
-
-        m_pDevice = *device;*/
-    }
-
     if (!InitCEF(width, height, debug, host))
         return false;
 
     if (!host)
     {
         m_pFrame = new CMomNUIFrame(width, height);
-        m_pFrame->Init("http://google.com");
-        m_pFrame->ShouldRender(true);
+        if (
+            m_pFrame->Init("file://C:\\Users\\Nick\\Documents\\GitHub\\game\\mp\\game\\momentum\\resource\\html\\menu.html")
+            //m_pFrame->Init("http://www.google.com")
+            )
+            m_pFrame->ShouldRender(true);
     }
 
     return true;
@@ -214,6 +156,7 @@ bool CMomNUI::InitCEF(int width, int height, bool debug, bool host)
     settings.ignore_certificate_errors = true;
     settings.log_severity = LOGSEVERITY_DISABLE;
     settings.single_process = false;
+    settings.background_color = 0x00;
 
     if (debug)
         settings.remote_debugging_port = 8884;

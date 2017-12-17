@@ -53,8 +53,8 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
 
     g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
 
-    m_pMainMenu = new MainMenu(this);
-    SETUP_PANEL(m_pMainMenu);
+    //m_pMainMenu = new MainMenu(this);
+    //SETUP_PANEL(m_pMainMenu);
 }
 
 CBasePanel::~CBasePanel()
@@ -111,7 +111,7 @@ void CBasePanel::OnGameUIActivated()
         m_bEverActivated = true;
     }
 
-    m_pMainMenu->SetVisible(true);
+    //m_pMainMenu->SetVisible(true);
 
     if (GameUI().IsInLevel())
     {
@@ -132,7 +132,7 @@ void CBasePanel::OnGameUIHidden()
         PostMessage(m_hOptionsDialog.Get(), new KeyValues("GameUIHidden"));
     }
 
-    m_pMainMenu->SetVisible(false);
+   // m_pMainMenu->SetVisible(false);
 
     // HACKISH: Force this dialog closed so it gets data updates upon reopening.
     Frame* pAchievementsFrame = m_hAchievementsDialog.Get();
@@ -189,8 +189,8 @@ void CBasePanel::ApplyOptionsDialogSettings()
 
 void CBasePanel::SetMenuAlpha(int alpha)
 {
-    if (m_pMainMenu)
-        m_pMainMenu->SetAlpha(alpha);
+    //if (m_pMainMenu)
+    //    m_pMainMenu->SetAlpha(alpha);
 }
 
 void CBasePanel::UpdateBackgroundState()
@@ -225,7 +225,8 @@ void CBasePanel::UpdateBackgroundState()
         if (child
             && ipanel()->IsVisible(child)
             && ipanel()->IsPopup(child)
-            && child != m_pMainMenu->GetVPanel())
+           // && child != m_pMainMenu->GetVPanel()
+            )
         {
             bHaveActiveDialogs = true;
         }
@@ -307,7 +308,7 @@ void CBasePanel::DrawBackgroundImage()
         // goes from [0..255]
         alpha = (frametime - m_flFadeMenuStartTime) / (m_flFadeMenuEndTime - m_flFadeMenuStartTime) * 255;
         alpha = clamp(alpha, 0, 255);
-        m_pMainMenu->SetAlpha(alpha);
+        //m_pMainMenu->SetAlpha(alpha);
         if (alpha == 255)
         {
             m_bFadingInMenus = false;

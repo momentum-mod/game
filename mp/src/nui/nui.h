@@ -1,12 +1,6 @@
 #pragma once
-
-#include "nui_predef.h"
-#include "filesystem.h"
-
 #include <include/internal/cef_ptr.h>
 
-class IShaderAPI;
-class CShaderDeviceMgr;
 class CMomNUIApp;
 class CMomNUIFrame;
 

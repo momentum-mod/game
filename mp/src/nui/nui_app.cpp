@@ -10,9 +10,9 @@ CMomNUIApp::~CMomNUIApp()
 {
 }
 
-void CMomNUIApp::OnRegisterCustomSchemes(CefRefPtr<CefSchemeRegistrar> registrar)
+void CMomNUIApp::OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
 {
-    registrar->AddCustomScheme("mom", true, false, false);
+    registrar->AddCustomScheme("mom", true, false, false, false, true, false);
 }
 
 void CMomNUIApp::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)
@@ -43,10 +43,9 @@ bool CMomNUIApp::OnBeforeNavigation(CefRefPtr<CefBrowser> browser, CefRefPtr<Cef
 
 void CMomNUIApp::OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine)
 {
-    commandLine->AppendSwitch("enable-experimental-web-platform-features");
-    commandLine->AppendSwitch("disable-gpu");
     commandLine->AppendSwitch("disable-gpu-compositing");
     commandLine->AppendSwitch("enable-begin-frame-scheduling");
+    commandLine->AppendSwitch("disable-extensions");
 }
 
 bool CMomNUIApp::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefProcessId sourceProcess, CefRefPtr<CefProcessMessage> message)

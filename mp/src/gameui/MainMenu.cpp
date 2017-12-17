@@ -74,7 +74,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("vo
     m_pURLResolver = new MomentumURLResolver(this);
     AddCustomURLHandler("mom://", m_pURLResolver);
     
-    LoadMenu(); // Load the menu initially
+    //LoadMenu(); // Load the menu initially
 
     ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
     // First check here

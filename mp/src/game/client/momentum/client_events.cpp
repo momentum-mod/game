@@ -7,6 +7,8 @@
 #include "mom_run_poster.h"
 #include "momentum/ui/IMessageboxPanel.h"
 #include "fmtstr.h"
+#include "clientmode_shared.h"
+#include "nui.h"
 
 #include "tier0/memdbgon.h"
 
@@ -52,6 +54,16 @@ void CMOMClientEvents::PostInit()
     {
         messageboxpanel->CreateMessagebox("#MOM_StartupMsg_NoSteamApiContext_Title", "#MOM_StartupMsg_NoSteamApiContext", "#MOM_IUnderstand");
     }
+
+    // Start our custom NUI (New UI) layer.
+    // TODO (OrfeasZ): Properly pass debug flag.
+    int width, height;
+    GetClientModeNormal()->GetViewport()->GetSize(width, height);
+
+    if (CMomNUI::GetInstance()->Init(width, height, true, false))
+        Log("Successfully initialized the NUI layer.\n");
+    else
+        Error("Failed to initialize the NUI layer.\n");
 }
 
 void CMOMClientEvents::LevelInitPreEntity()
