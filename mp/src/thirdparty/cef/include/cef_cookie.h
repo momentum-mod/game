@@ -38,9 +38,9 @@
 #define CEF_INCLUDE_CEF_COOKIE_H_
 #pragma once
 
+#include <vector>
 #include "include/cef_base.h"
 #include "include/cef_callback.h"
-#include <vector>
 
 class CefCookieVisitor;
 class CefSetCookieCallback;
@@ -51,7 +51,7 @@ class CefDeleteCookiesCallback;
 // any thread unless otherwise indicated.
 ///
 /*--cef(source=library,no_debugct_check)--*/
-class CefCookieManager : public virtual CefBase {
+class CefCookieManager : public virtual CefBaseRefCounted {
  public:
   ///
   // Returns the global cookie manager. By default data will be stored at
@@ -88,7 +88,7 @@ class CefCookieManager : public virtual CefBase {
   /*--cef(optional_param=callback)--*/
   virtual void SetSupportedSchemes(
       const std::vector<CefString>& schemes,
-      CefRefPtr<CefCompletionCallback> callback) =0;
+      CefRefPtr<CefCompletionCallback> callback) = 0;
 
   ///
   // Visit all cookies on the IO thread. The returned cookies are ordered by
@@ -96,7 +96,7 @@ class CefCookieManager : public virtual CefBase {
   // cannot be accessed.
   ///
   /*--cef()--*/
-  virtual bool VisitAllCookies(CefRefPtr<CefCookieVisitor> visitor) =0;
+  virtual bool VisitAllCookies(CefRefPtr<CefCookieVisitor> visitor) = 0;
 
   ///
   // Visit a subset of cookies on the IO thread. The results are filtered by the
@@ -108,7 +108,7 @@ class CefCookieManager : public virtual CefBase {
   /*--cef()--*/
   virtual bool VisitUrlCookies(const CefString& url,
                                bool includeHttpOnly,
-                               CefRefPtr<CefCookieVisitor> visitor) =0;
+                               CefRefPtr<CefCookieVisitor> visitor) = 0;
 
   ///
   // Sets a cookie given a valid URL and explicit user-provided cookie
@@ -122,7 +122,7 @@ class CefCookieManager : public virtual CefBase {
   /*--cef(optional_param=callback)--*/
   virtual bool SetCookie(const CefString& url,
                          const CefCookie& cookie,
-                         CefRefPtr<CefSetCookieCallback> callback) =0;
+                         CefRefPtr<CefSetCookieCallback> callback) = 0;
 
   ///
   // Delete all cookies that match the specified parameters. If both |url| and
@@ -139,7 +139,7 @@ class CefCookieManager : public virtual CefBase {
           optional_param=callback)--*/
   virtual bool DeleteCookies(const CefString& url,
                              const CefString& cookie_name,
-                             CefRefPtr<CefDeleteCookiesCallback> callback) =0;
+                             CefRefPtr<CefDeleteCookiesCallback> callback) = 0;
 
   ///
   // Sets the directory path that will be used for storing cookie data. If
@@ -154,7 +154,7 @@ class CefCookieManager : public virtual CefBase {
   /*--cef(optional_param=path,optional_param=callback)--*/
   virtual bool SetStoragePath(const CefString& path,
                               bool persist_session_cookies,
-                              CefRefPtr<CefCompletionCallback> callback) =0;
+                              CefRefPtr<CefCompletionCallback> callback) = 0;
 
   ///
   // Flush the backing store (if any) to disk. If |callback| is non-NULL it will
@@ -162,16 +162,15 @@ class CefCookieManager : public virtual CefBase {
   // Returns false if cookies cannot be accessed.
   ///
   /*--cef(optional_param=callback)--*/
-  virtual bool FlushStore(CefRefPtr<CefCompletionCallback> callback) =0;
+  virtual bool FlushStore(CefRefPtr<CefCompletionCallback> callback) = 0;
 };
-
 
 ///
 // Interface to implement for visiting cookie values. The methods of this class
 // will always be called on the IO thread.
 ///
 /*--cef(source=client)--*/
-class CefCookieVisitor : public virtual CefBase {
+class CefCookieVisitor : public virtual CefBaseRefCounted {
  public:
   ///
   // Method that will be called once for each cookie. |count| is the 0-based
@@ -181,40 +180,40 @@ class CefCookieVisitor : public virtual CefBase {
   // no cookies are found.
   ///
   /*--cef()--*/
-  virtual bool Visit(const CefCookie& cookie, int count, int total,
-                     bool& deleteCookie) =0;
+  virtual bool Visit(const CefCookie& cookie,
+                     int count,
+                     int total,
+                     bool& deleteCookie) = 0;
 };
-
 
 ///
 // Interface to implement to be notified of asynchronous completion via
 // CefCookieManager::SetCookie().
 ///
 /*--cef(source=client)--*/
-class CefSetCookieCallback : public virtual CefBase {
+class CefSetCookieCallback : public virtual CefBaseRefCounted {
  public:
   ///
   // Method that will be called upon completion. |success| will be true if the
   // cookie was set successfully.
   ///
   /*--cef()--*/
-  virtual void OnComplete(bool success) =0;
+  virtual void OnComplete(bool success) = 0;
 };
-
 
 ///
 // Interface to implement to be notified of asynchronous completion via
 // CefCookieManager::DeleteCookies().
 ///
 /*--cef(source=client)--*/
-class CefDeleteCookiesCallback : public virtual CefBase {
+class CefDeleteCookiesCallback : public virtual CefBaseRefCounted {
  public:
   ///
   // Method that will be called upon completion. |num_deleted| will be the
   // number of cookies that were deleted or -1 if unknown.
   ///
   /*--cef()--*/
-  virtual void OnComplete(int num_deleted) =0;
+  virtual void OnComplete(int num_deleted) = 0;
 };
 
 #endif  // CEF_INCLUDE_CEF_COOKIE_H_

@@ -31,7 +31,7 @@
 #define CEF_INCLUDE_CEF_SANDBOX_WIN_H_
 #pragma once
 
-#include "include/cef_base.h"
+#include "include/base/cef_build.h"
 
 #if defined(OS_WIN)
 
@@ -73,12 +73,8 @@ void cef_sandbox_info_destroy(void* sandbox_info);
 ///
 class CefScopedSandboxInfo {
  public:
-  CefScopedSandboxInfo() {
-    sandbox_info_ = cef_sandbox_info_create();
-  }
-  ~CefScopedSandboxInfo() {
-    cef_sandbox_info_destroy(sandbox_info_);
-  }
+  CefScopedSandboxInfo() { sandbox_info_ = cef_sandbox_info_create(); }
+  ~CefScopedSandboxInfo() { cef_sandbox_info_destroy(sandbox_info_); }
 
   void* sandbox_info() const { return sandbox_info_; }
 

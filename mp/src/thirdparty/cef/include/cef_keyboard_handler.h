@@ -46,7 +46,7 @@
 // methods of this class will be called on the UI thread.
 ///
 /*--cef(source=client)--*/
-class CefKeyboardHandler : public virtual CefBase {
+class CefKeyboardHandler : public virtual CefBaseRefCounted {
  public:
   ///
   // Called before a keyboard event is sent to the renderer. |event| contains
@@ -59,7 +59,9 @@ class CefKeyboardHandler : public virtual CefBase {
   virtual bool OnPreKeyEvent(CefRefPtr<CefBrowser> browser,
                              const CefKeyEvent& event,
                              CefEventHandle os_event,
-                             bool* is_keyboard_shortcut) { return false; }
+                             bool* is_keyboard_shortcut) {
+    return false;
+  }
 
   ///
   // Called after the renderer and JavaScript in the page has had a chance to
@@ -70,7 +72,9 @@ class CefKeyboardHandler : public virtual CefBase {
   /*--cef()--*/
   virtual bool OnKeyEvent(CefRefPtr<CefBrowser> browser,
                           const CefKeyEvent& event,
-                          CefEventHandle os_event) { return false; }
+                          CefEventHandle os_event) {
+    return false;
+  }
 };
 
 #endif  // CEF_INCLUDE_CEF_KEYBOARD_HANDLER_H_

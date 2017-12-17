@@ -24,6 +24,7 @@ $Group "game"
 	"vgui_controls"
 	"nui"
 	"nui_host"
+    "libcef_dll_wrapper"
     "game_shader_dx9"
     "GameUI"
 }
@@ -62,6 +63,7 @@ $Group "everything"
     "GameUI"
     "nui"
 	"nui_host"
+    "libcef_dll_wrapper"
 }
 
 $Group "dedicated"

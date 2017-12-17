@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Marshall A. Greenblatt. All rights reserved.
+// Copyright (c) 2017 Marshall A. Greenblatt. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -33,6 +33,8 @@
 // by hand. See the translator.README.txt file in the tools directory for
 // more information.
 //
+// $hash=0868c7d129e35c38b207b1066fd5eba0c1eef45c$
+//
 
 #ifndef CEF_INCLUDE_CAPI_CEF_BROWSER_PROCESS_HANDLER_CAPI_H_
 #define CEF_INCLUDE_CAPI_CEF_BROWSER_PROCESS_HANDLER_CAPI_H_
@@ -47,7 +49,6 @@
 extern "C" {
 #endif
 
-
 ///
 // Structure used to implement browser process callbacks. The functions of this
 // structure will be called on the browser process main thread unless otherwise
@@ -57,13 +58,13 @@ typedef struct _cef_browser_process_handler_t {
   ///
   // Base structure.
   ///
-  cef_base_t base;
+  cef_base_ref_counted_t base;
 
   ///
   // Called on the browser process UI thread immediately after the CEF context
   // has been initialized.
   ///
-  void (CEF_CALLBACK *on_context_initialized)(
+  void(CEF_CALLBACK* on_context_initialized)(
       struct _cef_browser_process_handler_t* self);
 
   ///
@@ -73,7 +74,7 @@ typedef struct _cef_browser_process_handler_t {
   // opportunity to modify the child process command line. Do not keep a
   // reference to |command_line| outside of this function.
   ///
-  void (CEF_CALLBACK *on_before_child_process_launch)(
+  void(CEF_CALLBACK* on_before_child_process_launch)(
       struct _cef_browser_process_handler_t* self,
       struct _cef_command_line_t* command_line);
 
@@ -84,7 +85,7 @@ typedef struct _cef_browser_process_handler_t {
   // cef_render_process_handler_t::on_render_thread_created() in the render
   // process. Do not keep a reference to |extra_info| outside of this function.
   ///
-  void (CEF_CALLBACK *on_render_process_thread_created)(
+  void(CEF_CALLBACK* on_render_process_thread_created)(
       struct _cef_browser_process_handler_t* self,
       struct _cef_list_value_t* extra_info);
 
@@ -92,10 +93,26 @@ typedef struct _cef_browser_process_handler_t {
   // Return the handler for printing on Linux. If a print handler is not
   // provided then printing will not be supported on the Linux platform.
   ///
-  struct _cef_print_handler_t* (CEF_CALLBACK *get_print_handler)(
+  struct _cef_print_handler_t*(CEF_CALLBACK* get_print_handler)(
       struct _cef_browser_process_handler_t* self);
-} cef_browser_process_handler_t;
 
+  ///
+  // Called from any thread when work has been scheduled for the browser process
+  // main (UI) thread. This callback is used in combination with CefSettings.
+  // external_message_pump and cef_do_message_loop_work() in cases where the CEF
+  // message loop must be integrated into an existing application message loop
+  // (see additional comments and warnings on CefDoMessageLoopWork). This
+  // callback should schedule a cef_do_message_loop_work() call to happen on the
+  // main (UI) thread. |delay_ms| is the requested delay in milliseconds. If
+  // |delay_ms| is <= 0 then the call should happen reasonably soon. If
+  // |delay_ms| is > 0 then the call should be scheduled to happen after the
+  // specified delay and any currently pending scheduled call should be
+  // cancelled.
+  ///
+  void(CEF_CALLBACK* on_schedule_message_pump_work)(
+      struct _cef_browser_process_handler_t* self,
+      int64 delay_ms);
+} cef_browser_process_handler_t;
 
 #ifdef __cplusplus
 }

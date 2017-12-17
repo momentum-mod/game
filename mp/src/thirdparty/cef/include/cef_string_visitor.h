@@ -43,13 +43,13 @@
 // Implement this interface to receive string values asynchronously.
 ///
 /*--cef(source=client)--*/
-class CefStringVisitor : public virtual CefBase {
+class CefStringVisitor : public virtual CefBaseRefCounted {
  public:
   ///
   // Method that will be executed.
   ///
   /*--cef(optional_param=string)--*/
-  virtual void Visit(const CefString& string) =0;
+  virtual void Visit(const CefString& string) = 0;
 };
 
 #endif  // CEF_INCLUDE_CEF_STRING_VISITOR_H_

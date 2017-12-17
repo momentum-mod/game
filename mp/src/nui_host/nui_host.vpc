@@ -50,6 +50,7 @@ $Project "nui_host"
     $Folder "Link Libraries"
     {
         $Lib    nui
+        $Lib    libcef_dll_wrapper
         $Lib    tier2
         $Lib    tier3
         $Lib    vgui_controls

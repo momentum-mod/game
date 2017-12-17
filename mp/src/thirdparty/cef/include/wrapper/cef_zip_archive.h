@@ -62,25 +62,25 @@ class CefZipArchive : public base::RefCountedThreadSafe<CefZipArchive> {
   // Class representing a file in the archive. Accessing the file data from
   // multiple threads is safe provided a reference to the File object is kept.
   ///
-  class File : public CefBase {
+  class File : public CefBaseRefCounted {
    public:
     ///
     // Returns the read-only data contained in the file.
     ///
-    virtual const unsigned char* GetData() const =0;
+    virtual const unsigned char* GetData() const = 0;
 
     ///
     // Returns the size of the data in the file.
     ///
-    virtual size_t GetDataSize() const =0;
+    virtual size_t GetDataSize() const = 0;
 
     ///
     // Returns a CefStreamReader object for streaming the contents of the file.
     ///
-    virtual CefRefPtr<CefStreamReader> GetStreamReader() const =0;
+    virtual CefRefPtr<CefStreamReader> GetStreamReader() const = 0;
   };
 
-  typedef std::map<CefString, CefRefPtr<File> > FileMap;
+  typedef std::map<CefString, CefRefPtr<File>> FileMap;
 
   ///
   // Create a new object.

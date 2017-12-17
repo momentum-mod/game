@@ -38,15 +38,15 @@
 #define CEF_INCLUDE_CEF_RESPONSE_H_
 #pragma once
 
-#include "include/cef_base.h"
 #include <map>
+#include "include/cef_base.h"
 
 ///
 // Class used to represent a web response. The methods of this class may be
 // called on any thread.
 ///
 /*--cef(source=library,no_debugct_check)--*/
-class CefResponse : public virtual CefBase {
+class CefResponse : public virtual CefBaseRefCounted {
  public:
   typedef std::multimap<CefString, CefString> HeaderMap;
 
@@ -60,13 +60,26 @@ class CefResponse : public virtual CefBase {
   // Returns true if this object is read-only.
   ///
   /*--cef()--*/
-  virtual bool IsReadOnly() =0;
+  virtual bool IsReadOnly() = 0;
+
+  ///
+  // Get the response error code. Returns ERR_NONE if there was no error.
+  ///
+  /*--cef(default_retval=ERR_NONE)--*/
+  virtual cef_errorcode_t GetError() = 0;
+
+  ///
+  // Set the response error code. This can be used by custom scheme handlers
+  // to return errors during initial request processing.
+  ///
+  /*--cef()--*/
+  virtual void SetError(cef_errorcode_t error) = 0;
 
   ///
   // Get the response status code.
   ///
   /*--cef()--*/
-  virtual int GetStatus() =0;
+  virtual int GetStatus() = 0;
 
   ///
   // Set the response status code.
@@ -78,7 +91,7 @@ class CefResponse : public virtual CefBase {
   // Get the response status text.
   ///
   /*--cef()--*/
-  virtual CefString GetStatusText() =0;
+  virtual CefString GetStatusText() = 0;
 
   ///
   // Set the response status text.
@@ -102,19 +115,19 @@ class CefResponse : public virtual CefBase {
   // Get the value for the specified response header field.
   ///
   /*--cef()--*/
-  virtual CefString GetHeader(const CefString& name) =0;
+  virtual CefString GetHeader(const CefString& name) = 0;
 
   ///
   // Get all response header fields.
   ///
   /*--cef()--*/
-  virtual void GetHeaderMap(HeaderMap& headerMap) =0;
+  virtual void GetHeaderMap(HeaderMap& headerMap) = 0;
 
   ///
   // Set all response header fields.
   ///
   /*--cef()--*/
-  virtual void SetHeaderMap(const HeaderMap& headerMap) =0;
+  virtual void SetHeaderMap(const HeaderMap& headerMap) = 0;
 };
 
 #endif  // CEF_INCLUDE_CEF_RESPONSE_H_

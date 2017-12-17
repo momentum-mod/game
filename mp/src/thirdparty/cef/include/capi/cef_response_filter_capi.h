@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Marshall A. Greenblatt. All rights reserved.
+// Copyright (c) 2017 Marshall A. Greenblatt. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -33,6 +33,8 @@
 // by hand. See the translator.README.txt file in the tools directory for
 // more information.
 //
+// $hash=c7126418fc448f9f75e770fda8434613eed0930d$
+//
 
 #ifndef CEF_INCLUDE_CAPI_CEF_RESPONSE_FILTER_CAPI_H_
 #define CEF_INCLUDE_CAPI_CEF_RESPONSE_FILTER_CAPI_H_
@@ -44,7 +46,6 @@
 extern "C" {
 #endif
 
-
 ///
 // Implement this structure to filter resource response content. The functions
 // of this structure will be called on the browser process IO thread.
@@ -53,38 +54,54 @@ typedef struct _cef_response_filter_t {
   ///
   // Base structure.
   ///
-  cef_base_t base;
+  cef_base_ref_counted_t base;
 
   ///
   // Initialize the response filter. Will only be called a single time. The
   // filter will not be installed if this function returns false (0).
   ///
-  int (CEF_CALLBACK *init_filter)(struct _cef_response_filter_t* self);
+  int(CEF_CALLBACK* init_filter)(struct _cef_response_filter_t* self);
 
   ///
-  // Called to filter a chunk of data. |data_in| is the input buffer containing
-  // |data_in_size| bytes of pre-filter data (|data_in| will be NULL if
-  // |data_in_size| is zero). |data_out| is the output buffer that can accept up
-  // to |data_out_size| bytes of filtered output data. Set |data_in_read| to the
-  // number of bytes that were read from |data_in|. Set |data_out_written| to
-  // the number of bytes that were written into |data_out|. If some or all of
-  // the pre-filter data was read successfully but more data is needed in order
-  // to continue filtering (filtered output is pending) return
-  // RESPONSE_FILTER_NEED_MORE_DATA. If some or all of the pre-filter data was
-  // read successfully and all available filtered output has been written return
-  // RESPONSE_FILTER_DONE. If an error occurs during filtering return
-  // RESPONSE_FILTER_ERROR. This function will be called repeatedly until there
-  // is no more data to filter (resource response is complete), |data_in_read|
-  // matches |data_in_size| (all available pre-filter bytes have been read), and
-  // the function returns RESPONSE_FILTER_DONE or RESPONSE_FILTER_ERROR. Do not
-  // keep a reference to the buffers passed to this function.
+  // Called to filter a chunk of data. Expected usage is as follows:
+  //
+  //  A. Read input data from |data_in| and set |data_in_read| to the number of
+  //     bytes that were read up to a maximum of |data_in_size|. |data_in| will
+  //     be NULL if |data_in_size| is zero.
+  //  B. Write filtered output data to |data_out| and set |data_out_written| to
+  //     the number of bytes that were written up to a maximum of
+  //     |data_out_size|. If no output data was written then all data must be
+  //     read from |data_in| (user must set |data_in_read| = |data_in_size|).
+  //  C. Return RESPONSE_FILTER_DONE if all output data was written or
+  //     RESPONSE_FILTER_NEED_MORE_DATA if output data is still pending.
+  //
+  // This function will be called repeatedly until the input buffer has been
+  // fully read (user sets |data_in_read| = |data_in_size|) and there is no more
+  // input data to filter (the resource response is complete). This function may
+  // then be called an additional time with an NULL input buffer if the user
+  // filled the output buffer (set |data_out_written| = |data_out_size|) and
+  // returned RESPONSE_FILTER_NEED_MORE_DATA to indicate that output data is
+  // still pending.
+  //
+  // Calls to this function will stop when one of the following conditions is
+  // met:
+  //
+  //  A. There is no more input data to filter (the resource response is
+  //     complete) and the user sets |data_out_written| = 0 or returns
+  //     RESPONSE_FILTER_DONE to indicate that all data has been written, or;
+  //  B. The user returns RESPONSE_FILTER_ERROR to indicate an error.
+  //
+  // Do not keep a reference to the buffers passed to this function.
   ///
-  cef_response_filter_status_t (CEF_CALLBACK *filter)(
-      struct _cef_response_filter_t* self, void* data_in, size_t data_in_size,
-      size_t* data_in_read, void* data_out, size_t data_out_size,
+  cef_response_filter_status_t(CEF_CALLBACK* filter)(
+      struct _cef_response_filter_t* self,
+      void* data_in,
+      size_t data_in_size,
+      size_t* data_in_read,
+      void* data_out,
+      size_t data_out_size,
       size_t* data_out_written);
 } cef_response_filter_t;
-
 
 #ifdef __cplusplus
 }

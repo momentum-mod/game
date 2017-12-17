@@ -47,7 +47,7 @@
 // The methods of this class will be called on the UI thread.
 ///
 /*--cef(source=client)--*/
-class CefDisplayHandler : public virtual CefBase {
+class CefDisplayHandler : public virtual CefBaseRefCounted {
  public:
   ///
   // Called when a frame's address has changed.
@@ -91,8 +91,9 @@ class CefDisplayHandler : public virtual CefBase {
   // drawing tooltips and the return value is ignored.
   ///
   /*--cef(optional_param=text)--*/
-  virtual bool OnTooltip(CefRefPtr<CefBrowser> browser,
-                         CefString& text) { return false; }
+  virtual bool OnTooltip(CefRefPtr<CefBrowser> browser, CefString& text) {
+    return false;
+  }
 
   ///
   // Called when the browser receives a status message. |value| contains the
@@ -110,7 +111,21 @@ class CefDisplayHandler : public virtual CefBase {
   virtual bool OnConsoleMessage(CefRefPtr<CefBrowser> browser,
                                 const CefString& message,
                                 const CefString& source,
-                                int line) { return false; }
+                                int line) {
+    return false;
+  }
+
+  ///
+  // Called when auto-resize is enabled via CefBrowserHost::SetAutoResizeEnabled
+  // and the contents have auto-resized. |new_size| will be the desired size in
+  // view coordinates. Return true if the resize was handled or false for
+  // default handling.
+  ///
+  /*--cef()--*/
+  virtual bool OnAutoResize(CefRefPtr<CefBrowser> browser,
+                            const CefSize& new_size) {
+    return false;
+  }
 };
 
 #endif  // CEF_INCLUDE_CEF_DISPLAY_HANDLER_H_

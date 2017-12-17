@@ -44,32 +44,32 @@
 // Generic callback interface used for asynchronous continuation.
 ///
 /*--cef(source=library)--*/
-class CefCallback : public virtual CefBase {
+class CefCallback : public virtual CefBaseRefCounted {
  public:
   ///
   // Continue processing.
   ///
   /*--cef(capi_name=cont)--*/
-  virtual void Continue() =0;
+  virtual void Continue() = 0;
 
   ///
   // Cancel processing.
   ///
   /*--cef()--*/
-  virtual void Cancel() =0;
+  virtual void Cancel() = 0;
 };
 
 ///
 // Generic callback interface used for asynchronous completion.
 ///
 /*--cef(source=client)--*/
-class CefCompletionCallback : public virtual CefBase {
+class CefCompletionCallback : public virtual CefBaseRefCounted {
  public:
   ///
   // Method that will be called once the task is complete.
   ///
   /*--cef()--*/
-  virtual void OnComplete() =0;
+  virtual void OnComplete() = 0;
 };
 
 #endif  // CEF_INCLUDE_CEF_CALLBACK_H_

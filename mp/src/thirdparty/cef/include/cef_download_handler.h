@@ -42,12 +42,11 @@
 #include "include/cef_browser.h"
 #include "include/cef_download_item.h"
 
-
 ///
 // Callback interface used to asynchronously continue a download.
 ///
 /*--cef(source=library)--*/
-class CefBeforeDownloadCallback : public virtual CefBase {
+class CefBeforeDownloadCallback : public virtual CefBaseRefCounted {
  public:
   ///
   // Call to continue the download. Set |download_path| to the full file path
@@ -56,42 +55,40 @@ class CefBeforeDownloadCallback : public virtual CefBase {
   // if you do wish to show the default "Save As" dialog.
   ///
   /*--cef(capi_name=cont,optional_param=download_path)--*/
-  virtual void Continue(const CefString& download_path, bool show_dialog) =0;
+  virtual void Continue(const CefString& download_path, bool show_dialog) = 0;
 };
-
 
 ///
 // Callback interface used to asynchronously cancel a download.
 ///
 /*--cef(source=library)--*/
-class CefDownloadItemCallback : public virtual CefBase {
+class CefDownloadItemCallback : public virtual CefBaseRefCounted {
  public:
   ///
   // Call to cancel the download.
   ///
   /*--cef()--*/
-  virtual void Cancel() =0;
+  virtual void Cancel() = 0;
 
   ///
   // Call to pause the download.
   ///
   /*--cef()--*/
-  virtual void Pause() =0;
+  virtual void Pause() = 0;
 
   ///
   // Call to resume the download.
   ///
   /*--cef()--*/
-  virtual void Resume() =0;
+  virtual void Resume() = 0;
 };
-
 
 ///
 // Class used to handle file downloads. The methods of this class will called
 // on the browser process UI thread.
 ///
 /*--cef(source=client)--*/
-class CefDownloadHandler : public virtual CefBase {
+class CefDownloadHandler : public virtual CefBaseRefCounted {
  public:
   ///
   // Called before a download begins. |suggested_name| is the suggested name for
@@ -105,7 +102,7 @@ class CefDownloadHandler : public virtual CefBase {
       CefRefPtr<CefBrowser> browser,
       CefRefPtr<CefDownloadItem> download_item,
       const CefString& suggested_name,
-      CefRefPtr<CefBeforeDownloadCallback> callback) =0;
+      CefRefPtr<CefBeforeDownloadCallback> callback) = 0;
 
   ///
   // Called when a download's status or progress information has been updated.
@@ -115,10 +112,9 @@ class CefDownloadHandler : public virtual CefBase {
   // this method.
   ///
   /*--cef()--*/
-  virtual void OnDownloadUpdated(
-      CefRefPtr<CefBrowser> browser,
-      CefRefPtr<CefDownloadItem> download_item,
-      CefRefPtr<CefDownloadItemCallback> callback) {}
+  virtual void OnDownloadUpdated(CefRefPtr<CefBrowser> browser,
+                                 CefRefPtr<CefDownloadItem> download_item,
+                                 CefRefPtr<CefDownloadItemCallback> callback) {}
 };
 
 #endif  // CEF_INCLUDE_CEF_DOWNLOAD_HANDLER_H_

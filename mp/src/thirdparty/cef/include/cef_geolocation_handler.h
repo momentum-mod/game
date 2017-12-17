@@ -46,15 +46,14 @@
 // permission requests.
 ///
 /*--cef(source=library)--*/
-class CefGeolocationCallback : public virtual CefBase {
+class CefGeolocationCallback : public virtual CefBaseRefCounted {
  public:
   ///
   // Call to allow or deny geolocation access.
   ///
   /*--cef(capi_name=cont)--*/
-  virtual void Continue(bool allow) =0;
+  virtual void Continue(bool allow) = 0;
 };
-
 
 ///
 // Implement this interface to handle events related to geolocation permission
@@ -62,7 +61,7 @@ class CefGeolocationCallback : public virtual CefBase {
 // thread.
 ///
 /*--cef(source=client)--*/
-class CefGeolocationHandler : public virtual CefBase {
+class CefGeolocationHandler : public virtual CefBaseRefCounted {
  public:
   ///
   // Called when a page requests permission to access geolocation information.
@@ -86,10 +85,8 @@ class CefGeolocationHandler : public virtual CefBase {
   // unique ID for the permission request.
   ///
   /*--cef()--*/
-  virtual void OnCancelGeolocationPermission(
-      CefRefPtr<CefBrowser> browser,
-      int request_id) {
-  }
+  virtual void OnCancelGeolocationPermission(CefRefPtr<CefBrowser> browser,
+                                             int request_id) {}
 };
 
 #endif  // CEF_INCLUDE_CEF_GEOLOCATION_HANDLER_H_

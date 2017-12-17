@@ -53,7 +53,7 @@ typedef cef_value_type_t CefValueType;
 // process and thread.
 ///
 /*--cef(source=library)--*/
-class CefValue : public virtual CefBase {
+class CefValue : public virtual CefBaseRefCounted {
  public:
   ///
   // Creates a new object.
@@ -70,20 +70,20 @@ class CefValue : public virtual CefBase {
   // invalid.
   ///
   /*--cef()--*/
-  virtual bool IsValid() =0;
+  virtual bool IsValid() = 0;
 
   ///
   // Returns true if the underlying data is owned by another object.
   ///
   /*--cef()--*/
-  virtual bool IsOwned() =0;
+  virtual bool IsOwned() = 0;
 
   ///
   // Returns true if the underlying data is read-only. Some APIs may expose
   // read-only objects.
   ///
   /*--cef()--*/
-  virtual bool IsReadOnly() =0;
+  virtual bool IsReadOnly() = 0;
 
   ///
   // Returns true if this object and |that| object have the same underlying
@@ -91,50 +91,50 @@ class CefValue : public virtual CefBase {
   // and vice-versa.
   ///
   /*--cef()--*/
-  virtual bool IsSame(CefRefPtr<CefValue> that) =0;
+  virtual bool IsSame(CefRefPtr<CefValue> that) = 0;
 
   ///
   // Returns true if this object and |that| object have an equivalent underlying
   // value but are not necessarily the same object.
   ///
   /*--cef()--*/
-  virtual bool IsEqual(CefRefPtr<CefValue> that) =0;
+  virtual bool IsEqual(CefRefPtr<CefValue> that) = 0;
 
   ///
   // Returns a copy of this object. The underlying data will also be copied.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefValue> Copy() =0;
+  virtual CefRefPtr<CefValue> Copy() = 0;
 
   ///
   // Returns the underlying value type.
   ///
   /*--cef(default_retval=VTYPE_INVALID)--*/
-  virtual CefValueType GetType() =0;
+  virtual CefValueType GetType() = 0;
 
   ///
   // Returns the underlying value as type bool.
   ///
   /*--cef()--*/
-  virtual bool GetBool() =0;
+  virtual bool GetBool() = 0;
 
   ///
   // Returns the underlying value as type int.
   ///
   /*--cef()--*/
-  virtual int GetInt() =0;
+  virtual int GetInt() = 0;
 
   ///
   // Returns the underlying value as type double.
   ///
   /*--cef()--*/
-  virtual double GetDouble() =0;
+  virtual double GetDouble() = 0;
 
   ///
   // Returns the underlying value as type string.
   ///
   /*--cef()--*/
-  virtual CefString GetString() =0;
+  virtual CefString GetString() = 0;
 
   ///
   // Returns the underlying value as type binary. The returned reference may
@@ -145,7 +145,7 @@ class CefValue : public virtual CefBase {
   // to SetBinary().
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefBinaryValue> GetBinary() =0;
+  virtual CefRefPtr<CefBinaryValue> GetBinary() = 0;
 
   ///
   // Returns the underlying value as type dictionary. The returned reference may
@@ -156,7 +156,7 @@ class CefValue : public virtual CefBase {
   // to SetDictionary().
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefDictionaryValue> GetDictionary() =0;
+  virtual CefRefPtr<CefDictionaryValue> GetDictionary() = 0;
 
   ///
   // Returns the underlying value as type list. The returned reference may
@@ -167,42 +167,42 @@ class CefValue : public virtual CefBase {
   // to SetList().
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefListValue> GetList() =0;
+  virtual CefRefPtr<CefListValue> GetList() = 0;
 
   ///
   // Sets the underlying value as type null. Returns true if the value was set
   // successfully.
   ///
   /*--cef()--*/
-  virtual bool SetNull() =0;
+  virtual bool SetNull() = 0;
 
   ///
   // Sets the underlying value as type bool. Returns true if the value was set
   // successfully.
   ///
   /*--cef()--*/
-  virtual bool SetBool(bool value) =0;
+  virtual bool SetBool(bool value) = 0;
 
   ///
   // Sets the underlying value as type int. Returns true if the value was set
   // successfully.
   ///
   /*--cef()--*/
-  virtual bool SetInt(int value) =0;
+  virtual bool SetInt(int value) = 0;
 
   ///
   // Sets the underlying value as type double. Returns true if the value was set
   // successfully.
   ///
   /*--cef()--*/
-  virtual bool SetDouble(double value) =0;
+  virtual bool SetDouble(double value) = 0;
 
   ///
   // Sets the underlying value as type string. Returns true if the value was set
   // successfully.
   ///
   /*--cef(optional_param=value)--*/
-  virtual bool SetString(const CefString& value) =0;
+  virtual bool SetString(const CefString& value) = 0;
 
   ///
   // Sets the underlying value as type binary. Returns true if the value was set
@@ -210,7 +210,7 @@ class CefValue : public virtual CefBase {
   // underlying data remains unchanged.
   ///
   /*--cef()--*/
-  virtual bool SetBinary(CefRefPtr<CefBinaryValue> value) =0;
+  virtual bool SetBinary(CefRefPtr<CefBinaryValue> value) = 0;
 
   ///
   // Sets the underlying value as type dict. Returns true if the value was set
@@ -218,7 +218,7 @@ class CefValue : public virtual CefBase {
   // underlying data remains unchanged.
   ///
   /*--cef()--*/
-  virtual bool SetDictionary(CefRefPtr<CefDictionaryValue> value) =0;
+  virtual bool SetDictionary(CefRefPtr<CefDictionaryValue> value) = 0;
 
   ///
   // Sets the underlying value as type list. Returns true if the value was set
@@ -226,23 +226,21 @@ class CefValue : public virtual CefBase {
   // underlying data remains unchanged.
   ///
   /*--cef()--*/
-  virtual bool SetList(CefRefPtr<CefListValue> value) =0;
+  virtual bool SetList(CefRefPtr<CefListValue> value) = 0;
 };
-
 
 ///
 // Class representing a binary value. Can be used on any process and thread.
 ///
 /*--cef(source=library)--*/
-class CefBinaryValue : public virtual CefBase {
+class CefBinaryValue : public virtual CefBaseRefCounted {
  public:
   ///
   // Creates a new object that is not owned by any other object. The specified
   // |data| will be copied.
   ///
   /*--cef()--*/
-  static CefRefPtr<CefBinaryValue> Create(const void* data,
-                                          size_t data_size);
+  static CefRefPtr<CefBinaryValue> Create(const void* data, size_t data_size);
 
   ///
   // Returns true if this object is valid. This object may become invalid if
@@ -251,39 +249,39 @@ class CefBinaryValue : public virtual CefBase {
   // methods if this method returns false.
   ///
   /*--cef()--*/
-  virtual bool IsValid() =0;
+  virtual bool IsValid() = 0;
 
   ///
   // Returns true if this object is currently owned by another object.
   ///
   /*--cef()--*/
-  virtual bool IsOwned() =0;
+  virtual bool IsOwned() = 0;
 
   ///
   // Returns true if this object and |that| object have the same underlying
   // data.
   ///
   /*--cef()--*/
-  virtual bool IsSame(CefRefPtr<CefBinaryValue> that) =0;
+  virtual bool IsSame(CefRefPtr<CefBinaryValue> that) = 0;
 
   ///
   // Returns true if this object and |that| object have an equivalent underlying
   // value but are not necessarily the same object.
   ///
   /*--cef()--*/
-  virtual bool IsEqual(CefRefPtr<CefBinaryValue> that) =0;
+  virtual bool IsEqual(CefRefPtr<CefBinaryValue> that) = 0;
 
   ///
   // Returns a copy of this object. The data in this object will also be copied.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefBinaryValue> Copy() =0;
+  virtual CefRefPtr<CefBinaryValue> Copy() = 0;
 
   ///
   // Returns the data size.
   ///
   /*--cef()--*/
-  virtual size_t GetSize() =0;
+  virtual size_t GetSize() = 0;
 
   ///
   // Read up to |buffer_size| number of bytes into |buffer|. Reading begins at
@@ -292,15 +290,14 @@ class CefBinaryValue : public virtual CefBase {
   /*--cef()--*/
   virtual size_t GetData(void* buffer,
                          size_t buffer_size,
-                         size_t data_offset) =0;
+                         size_t data_offset) = 0;
 };
-
 
 ///
 // Class representing a dictionary value. Can be used on any process and thread.
 ///
 /*--cef(source=library)--*/
-class CefDictionaryValue : public virtual CefBase {
+class CefDictionaryValue : public virtual CefBaseRefCounted {
  public:
   typedef std::vector<CefString> KeyList;
 
@@ -317,20 +314,20 @@ class CefDictionaryValue : public virtual CefBase {
   // methods if this method returns false.
   ///
   /*--cef()--*/
-  virtual bool IsValid() =0;
+  virtual bool IsValid() = 0;
 
   ///
   // Returns true if this object is currently owned by another object.
   ///
   /*--cef()--*/
-  virtual bool IsOwned() =0;
+  virtual bool IsOwned() = 0;
 
   ///
   // Returns true if the values of this object are read-only. Some APIs may
   // expose read-only objects.
   ///
   /*--cef()--*/
-  virtual bool IsReadOnly() =0;
+  virtual bool IsReadOnly() = 0;
 
   ///
   // Returns true if this object and |that| object have the same underlying
@@ -338,58 +335,58 @@ class CefDictionaryValue : public virtual CefBase {
   // and vice-versa.
   ///
   /*--cef()--*/
-  virtual bool IsSame(CefRefPtr<CefDictionaryValue> that) =0;
+  virtual bool IsSame(CefRefPtr<CefDictionaryValue> that) = 0;
 
   ///
   // Returns true if this object and |that| object have an equivalent underlying
   // value but are not necessarily the same object.
   ///
   /*--cef()--*/
-  virtual bool IsEqual(CefRefPtr<CefDictionaryValue> that) =0;
+  virtual bool IsEqual(CefRefPtr<CefDictionaryValue> that) = 0;
 
   ///
   // Returns a writable copy of this object. If |exclude_empty_children| is true
   // any empty dictionaries or lists will be excluded from the copy.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefDictionaryValue> Copy(bool exclude_empty_children) =0;
+  virtual CefRefPtr<CefDictionaryValue> Copy(bool exclude_empty_children) = 0;
 
   ///
   // Returns the number of values.
   ///
   /*--cef()--*/
-  virtual size_t GetSize() =0;
+  virtual size_t GetSize() = 0;
 
   ///
   // Removes all values. Returns true on success.
   ///
   /*--cef()--*/
-  virtual bool Clear() =0;
+  virtual bool Clear() = 0;
 
   ///
   // Returns true if the current dictionary has a value for the given key.
   ///
   /*--cef()--*/
-  virtual bool HasKey(const CefString& key) =0;
+  virtual bool HasKey(const CefString& key) = 0;
 
   ///
   // Reads all keys for this dictionary into the specified vector.
   ///
   /*--cef()--*/
-  virtual bool GetKeys(KeyList& keys) =0;
+  virtual bool GetKeys(KeyList& keys) = 0;
 
   ///
   // Removes the value at the specified key. Returns true is the value was
   // removed successfully.
   ///
   /*--cef()--*/
-  virtual bool Remove(const CefString& key) =0;
+  virtual bool Remove(const CefString& key) = 0;
 
   ///
   // Returns the value type for the specified key.
   ///
   /*--cef(default_retval=VTYPE_INVALID)--*/
-  virtual CefValueType GetType(const CefString& key) =0;
+  virtual CefValueType GetType(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key. For simple types the returned
@@ -399,38 +396,38 @@ class CefDictionaryValue : public virtual CefBase {
   // will modify this object.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefValue> GetValue(const CefString& key) =0;
+  virtual CefRefPtr<CefValue> GetValue(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key as type bool.
   ///
   /*--cef()--*/
-  virtual bool GetBool(const CefString& key) =0;
+  virtual bool GetBool(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key as type int.
   ///
   /*--cef()--*/
-  virtual int GetInt(const CefString& key) =0;
+  virtual int GetInt(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key as type double.
   ///
   /*--cef()--*/
-  virtual double GetDouble(const CefString& key) =0;
+  virtual double GetDouble(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key as type string.
   ///
   /*--cef()--*/
-  virtual CefString GetString(const CefString& key) =0;
+  virtual CefString GetString(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key as type binary. The returned
   // value will reference existing data.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefBinaryValue> GetBinary(const CefString& key) =0;
+  virtual CefRefPtr<CefBinaryValue> GetBinary(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key as type dictionary. The returned
@@ -438,7 +435,7 @@ class CefDictionaryValue : public virtual CefBase {
   // modify this object.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefDictionaryValue> GetDictionary(const CefString& key) =0;
+  virtual CefRefPtr<CefDictionaryValue> GetDictionary(const CefString& key) = 0;
 
   ///
   // Returns the value at the specified key as type list. The returned value
@@ -446,7 +443,7 @@ class CefDictionaryValue : public virtual CefBase {
   // this object.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefListValue> GetList(const CefString& key) =0;
+  virtual CefRefPtr<CefListValue> GetList(const CefString& key) = 0;
 
   ///
   // Sets the value at the specified key. Returns true if the value was set
@@ -457,42 +454,42 @@ class CefDictionaryValue : public virtual CefBase {
   // this object.
   ///
   /*--cef()--*/
-  virtual bool SetValue(const CefString& key, CefRefPtr<CefValue> value) =0;
+  virtual bool SetValue(const CefString& key, CefRefPtr<CefValue> value) = 0;
 
   ///
   // Sets the value at the specified key as type null. Returns true if the
   // value was set successfully.
   ///
   /*--cef()--*/
-  virtual bool SetNull(const CefString& key) =0;
+  virtual bool SetNull(const CefString& key) = 0;
 
   ///
   // Sets the value at the specified key as type bool. Returns true if the
   // value was set successfully.
   ///
   /*--cef()--*/
-  virtual bool SetBool(const CefString& key, bool value) =0;
+  virtual bool SetBool(const CefString& key, bool value) = 0;
 
   ///
   // Sets the value at the specified key as type int. Returns true if the
   // value was set successfully.
   ///
   /*--cef()--*/
-  virtual bool SetInt(const CefString& key, int value) =0;
+  virtual bool SetInt(const CefString& key, int value) = 0;
 
   ///
   // Sets the value at the specified key as type double. Returns true if the
   // value was set successfully.
   ///
   /*--cef()--*/
-  virtual bool SetDouble(const CefString& key, double value) =0;
+  virtual bool SetDouble(const CefString& key, double value) = 0;
 
   ///
   // Sets the value at the specified key as type string. Returns true if the
   // value was set successfully.
   ///
   /*--cef(optional_param=value)--*/
-  virtual bool SetString(const CefString& key, const CefString& value) =0;
+  virtual bool SetString(const CefString& key, const CefString& value) = 0;
 
   ///
   // Sets the value at the specified key as type binary. Returns true if the
@@ -503,7 +500,7 @@ class CefDictionaryValue : public virtual CefBase {
   ///
   /*--cef()--*/
   virtual bool SetBinary(const CefString& key,
-                         CefRefPtr<CefBinaryValue> value) =0;
+                         CefRefPtr<CefBinaryValue> value) = 0;
 
   ///
   // Sets the value at the specified key as type dict. Returns true if the
@@ -514,7 +511,7 @@ class CefDictionaryValue : public virtual CefBase {
   ///
   /*--cef()--*/
   virtual bool SetDictionary(const CefString& key,
-                             CefRefPtr<CefDictionaryValue> value) =0;
+                             CefRefPtr<CefDictionaryValue> value) = 0;
 
   ///
   // Sets the value at the specified key as type list. Returns true if the
@@ -524,16 +521,14 @@ class CefDictionaryValue : public virtual CefBase {
   // reference will be invalidated.
   ///
   /*--cef()--*/
-  virtual bool SetList(const CefString& key,
-                       CefRefPtr<CefListValue> value) =0;
+  virtual bool SetList(const CefString& key, CefRefPtr<CefListValue> value) = 0;
 };
-
 
 ///
 // Class representing a list value. Can be used on any process and thread.
 ///
 /*--cef(source=library)--*/
-class CefListValue : public virtual CefBase {
+class CefListValue : public virtual CefBaseRefCounted {
  public:
   ///
   // Creates a new object that is not owned by any other object.
@@ -548,20 +543,20 @@ class CefListValue : public virtual CefBase {
   // methods if this method returns false.
   ///
   /*--cef()--*/
-  virtual bool IsValid() =0;
+  virtual bool IsValid() = 0;
 
   ///
   // Returns true if this object is currently owned by another object.
   ///
   /*--cef()--*/
-  virtual bool IsOwned() =0;
+  virtual bool IsOwned() = 0;
 
   ///
   // Returns true if the values of this object are read-only. Some APIs may
   // expose read-only objects.
   ///
   /*--cef()--*/
-  virtual bool IsReadOnly() =0;
+  virtual bool IsReadOnly() = 0;
 
   ///
   // Returns true if this object and |that| object have the same underlying
@@ -569,51 +564,51 @@ class CefListValue : public virtual CefBase {
   // and vice-versa.
   ///
   /*--cef()--*/
-  virtual bool IsSame(CefRefPtr<CefListValue> that) =0;
+  virtual bool IsSame(CefRefPtr<CefListValue> that) = 0;
 
   ///
   // Returns true if this object and |that| object have an equivalent underlying
   // value but are not necessarily the same object.
   ///
   /*--cef()--*/
-  virtual bool IsEqual(CefRefPtr<CefListValue> that) =0;
+  virtual bool IsEqual(CefRefPtr<CefListValue> that) = 0;
 
   ///
   // Returns a writable copy of this object.
   ///
   /*--cef()--*/
-  virtual CefRefPtr<CefListValue> Copy() =0;
+  virtual CefRefPtr<CefListValue> Copy() = 0;
 
   ///
   // Sets the number of values. If the number of values is expanded all
   // new value slots will default to type null. Returns true on success.
   ///
   /*--cef()--*/
-  virtual bool SetSize(size_t size) =0;
+  virtual bool SetSize(size_t size) = 0;
 
   ///
   // Returns the number of values.
   ///
   /*--cef()--*/
-  virtual size_t GetSize() =0;
+  virtual size_t GetSize() = 0;
 
   ///
   // Removes all values. Returns true on success.
   ///
   /*--cef()--*/
-  virtual bool Clear() =0;
+  virtual bool Clear() = 0;
 
   ///
   // Removes the value at the specified index.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool Remove(int index) =0;
+  /*--cef()--*/
+  virtual bool Remove(size_t index) = 0;
 
   ///
   // Returns the value type at the specified index.
   ///
-  /*--cef(default_retval=VTYPE_INVALID,index_param=index)--*/
-  virtual CefValueType GetType(int index) =0;
+  /*--cef(default_retval=VTYPE_INVALID)--*/
+  virtual CefValueType GetType(size_t index) = 0;
 
   ///
   // Returns the value at the specified index. For simple types the returned
@@ -622,55 +617,55 @@ class CefListValue : public virtual CefBase {
   // returned value will reference existing data and modifications to the value
   // will modify this object.
   ///
-  /*--cef(index_param=index)--*/
-  virtual CefRefPtr<CefValue> GetValue(int index) =0;
+  /*--cef()--*/
+  virtual CefRefPtr<CefValue> GetValue(size_t index) = 0;
 
   ///
   // Returns the value at the specified index as type bool.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool GetBool(int index) =0;
+  /*--cef()--*/
+  virtual bool GetBool(size_t index) = 0;
 
   ///
   // Returns the value at the specified index as type int.
   ///
-  /*--cef(index_param=index)--*/
-  virtual int GetInt(int index) =0;
+  /*--cef()--*/
+  virtual int GetInt(size_t index) = 0;
 
   ///
   // Returns the value at the specified index as type double.
   ///
-  /*--cef(index_param=index)--*/
-  virtual double GetDouble(int index) =0;
+  /*--cef()--*/
+  virtual double GetDouble(size_t index) = 0;
 
   ///
   // Returns the value at the specified index as type string.
   ///
-  /*--cef(index_param=index)--*/
-  virtual CefString GetString(int index) =0;
+  /*--cef()--*/
+  virtual CefString GetString(size_t index) = 0;
 
   ///
   // Returns the value at the specified index as type binary. The returned
   // value will reference existing data.
   ///
-  /*--cef(index_param=index)--*/
-  virtual CefRefPtr<CefBinaryValue> GetBinary(int index) =0;
+  /*--cef()--*/
+  virtual CefRefPtr<CefBinaryValue> GetBinary(size_t index) = 0;
 
   ///
   // Returns the value at the specified index as type dictionary. The returned
   // value will reference existing data and modifications to the value will
   // modify this object.
   ///
-  /*--cef(index_param=index)--*/
-  virtual CefRefPtr<CefDictionaryValue> GetDictionary(int index) =0;
+  /*--cef()--*/
+  virtual CefRefPtr<CefDictionaryValue> GetDictionary(size_t index) = 0;
 
   ///
   // Returns the value at the specified index as type list. The returned
   // value will reference existing data and modifications to the value will
   // modify this object.
   ///
-  /*--cef(index_param=index)--*/
-  virtual CefRefPtr<CefListValue> GetList(int index) =0;
+  /*--cef()--*/
+  virtual CefRefPtr<CefListValue> GetList(size_t index) = 0;
 
   ///
   // Sets the value at the specified index. Returns true if the value was set
@@ -680,43 +675,43 @@ class CefListValue : public virtual CefBase {
   // underlying data will be referenced and modifications to |value| will modify
   // this object.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetValue(int index, CefRefPtr<CefValue> value) =0;
+  /*--cef()--*/
+  virtual bool SetValue(size_t index, CefRefPtr<CefValue> value) = 0;
 
   ///
   // Sets the value at the specified index as type null. Returns true if the
   // value was set successfully.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetNull(int index) =0;
+  /*--cef()--*/
+  virtual bool SetNull(size_t index) = 0;
 
   ///
   // Sets the value at the specified index as type bool. Returns true if the
   // value was set successfully.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetBool(int index, bool value) =0;
+  /*--cef()--*/
+  virtual bool SetBool(size_t index, bool value) = 0;
 
   ///
   // Sets the value at the specified index as type int. Returns true if the
   // value was set successfully.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetInt(int index, int value) =0;
+  /*--cef()--*/
+  virtual bool SetInt(size_t index, int value) = 0;
 
   ///
   // Sets the value at the specified index as type double. Returns true if the
   // value was set successfully.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetDouble(int index, double value) =0;
+  /*--cef()--*/
+  virtual bool SetDouble(size_t index, double value) = 0;
 
   ///
   // Sets the value at the specified index as type string. Returns true if the
   // value was set successfully.
   ///
-  /*--cef(optional_param=value,index_param=index)--*/
-  virtual bool SetString(int index, const CefString& value) =0;
+  /*--cef(optional_param=value)--*/
+  virtual bool SetString(size_t index, const CefString& value) = 0;
 
   ///
   // Sets the value at the specified index as type binary. Returns true if the
@@ -725,8 +720,8 @@ class CefListValue : public virtual CefBase {
   // Otherwise, ownership will be transferred to this object and the |value|
   // reference will be invalidated.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetBinary(int index, CefRefPtr<CefBinaryValue> value) =0;
+  /*--cef()--*/
+  virtual bool SetBinary(size_t index, CefRefPtr<CefBinaryValue> value) = 0;
 
   ///
   // Sets the value at the specified index as type dict. Returns true if the
@@ -735,8 +730,9 @@ class CefListValue : public virtual CefBase {
   // Otherwise, ownership will be transferred to this object and the |value|
   // reference will be invalidated.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetDictionary(int index, CefRefPtr<CefDictionaryValue> value) =0;
+  /*--cef()--*/
+  virtual bool SetDictionary(size_t index,
+                             CefRefPtr<CefDictionaryValue> value) = 0;
 
   ///
   // Sets the value at the specified index as type list. Returns true if the
@@ -745,8 +741,8 @@ class CefListValue : public virtual CefBase {
   // Otherwise, ownership will be transferred to this object and the |value|
   // reference will be invalidated.
   ///
-  /*--cef(index_param=index)--*/
-  virtual bool SetList(int index, CefRefPtr<CefListValue> value) =0;
+  /*--cef()--*/
+  virtual bool SetList(size_t index, CefRefPtr<CefListValue> value) = 0;
 };
 
 #endif  // CEF_INCLUDE_CEF_VALUES_H_

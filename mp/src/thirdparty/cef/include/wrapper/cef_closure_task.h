@@ -64,7 +64,7 @@
 // Example of executing a bound method:
 //
 // // Define a class.
-// class MyClass : public CefBase {
+// class MyClass : public CefBaseRefCounted {
 //  public:
 //   MyClass() {}
 //   void MyMethod(int arg) { /* do something with |arg| on the UI thread */ }
@@ -95,7 +95,8 @@ bool CefPostTask(CefThreadId threadId, const base::Closure& closure);
 ///
 // Post a Closure for delayed execution on the specified thread.
 ///
-bool CefPostDelayedTask(CefThreadId threadId, const base::Closure& closure,
+bool CefPostDelayedTask(CefThreadId threadId,
+                        const base::Closure& closure,
                         int64 delay_ms);
 
 #endif  // CEF_INCLUDE_WRAPPER_CEF_CLOSURE_TASK_H_

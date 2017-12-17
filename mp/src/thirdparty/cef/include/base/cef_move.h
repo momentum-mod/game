@@ -36,10 +36,10 @@
 // This can happen in cases where Chromium code is used directly by the
 // client application. When using Chromium code directly always include
 // the Chromium header first to avoid type conflicts.
-#elif defined(BUILDING_CEF_SHARED)
+#elif defined(USING_CHROMIUM_INCLUDES)
 // When building CEF include the Chromium header directly.
 #include "base/move.h"
-#else  // !BUILDING_CEF_SHARED
+#else  // !USING_CHROMIUM_INCLUDES
 // The following is substantially similar to the Chromium implementation.
 // If the Chromium implementation diverges the below implementation should be
 // updated to match.
@@ -240,20 +240,22 @@
 //
 // The workaround is to explicitly declare your copy constructor.
 //
-#define MOVE_ONLY_TYPE_FOR_CPP_03(type, rvalue_type) \
- private: \
-  struct rvalue_type { \
+#define MOVE_ONLY_TYPE_FOR_CPP_03(type, rvalue_type)       \
+ private:                                                  \
+  struct rvalue_type {                                     \
     explicit rvalue_type(type* object) : object(object) {} \
-    type* object; \
-  }; \
-  type(type&); \
-  void operator=(type&); \
- public: \
-  operator rvalue_type() { return rvalue_type(this); } \
-  type Pass() { return type(rvalue_type(this)); } \
-  typedef void MoveOnlyTypeForCPP03; \
+    type* object;                                          \
+  };                                                       \
+  type(type&);                                             \
+  void operator=(type&);                                   \
+                                                           \
+ public:                                                   \
+  operator rvalue_type() { return rvalue_type(this); }     \
+  type Pass() { return type(rvalue_type(this)); }          \
+  typedef void MoveOnlyTypeForCPP03;                       \
+                                                           \
  private:
- 
-#endif  // !BUILDING_CEF_SHARED
+
+#endif  // !USING_CHROMIUM_INCLUDES
 
 #endif  // CEF_INCLUDE_BASE_CEF_MOVE_H_

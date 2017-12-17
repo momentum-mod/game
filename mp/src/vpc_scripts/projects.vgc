@@ -150,3 +150,8 @@ $Project "nui_host"
 {
 	"nui_host\nui_host.vpc" [$WINDOWS]
 }
+
+$Project "libcef_dll_wrapper"
+{
+    "nui\libcef_dll\libcef_dll_wrapper.vpc"
+}
