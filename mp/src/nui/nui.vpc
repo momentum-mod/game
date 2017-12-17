@@ -24,9 +24,6 @@ $Project "nui"
         $File   "nui_client.h"
         $File   "nui_frame.cpp"
         $File   "nui_frame.h"
-        $File   "nui_util_win32.h"      [$WINDOWS]
         $File   "nui_predef.h"
-        $File   "nui_utils.cpp"
-        $File   "nui_utils.h"
     }
 }
