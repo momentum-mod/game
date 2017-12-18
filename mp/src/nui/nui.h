@@ -22,7 +22,7 @@ public:
     void Shutdown();
 
 public:
-    inline CMomNUIFrame* GetFrame() const { return m_pFrame; }
+    //inline CMomNUIFrame* GetFrame() const { return m_pFrame; }
 
 protected:
     bool InitWin32(int width, int height, bool debug, bool host);

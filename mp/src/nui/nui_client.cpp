@@ -1,11 +1,16 @@
 #include "nui_predef.h"
 #include "nui_client.h"
 #include "nui_frame.h"
+#include "nui_interface.h"
+#include "NuiBrowserListener.h"
 
-CMomNUIClient::CMomNUIClient(CMomNUIFrame* frame)
-    : m_pFrame(frame), m_bLoaded(false)
+CMomNUIClient::CMomNUIClient(CNuiInterface* pInterface)
+    : m_pNuiInterface(pInterface)
 {
-
+    CefMessageRouterConfig config;
+    config.js_query_function = "momQuery";
+    config.js_cancel_function = "momQueryCancel";
+    m_pBrowserSideRouter = CefMessageRouterBrowserSide::Create(config);
 }
 
 CMomNUIClient::~CMomNUIClient()
@@ -20,47 +25,34 @@ bool CMomNUIClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefP
 
 void CMomNUIClient::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
-    m_pBrowser = browser;
-
-    CefMessageRouterConfig config;
-    config.js_query_function = "momQuery";
-    config.js_cancel_function = "momQueryCancel";
-    m_pBrowserSideRouter = CefMessageRouterBrowserSide::Create(config);
-
+    m_pNuiInterface->OnBrowserCreated(browser);
+    
     // TODO (OrfeasZ): Setup our handler.
     //m_pBrowserSideRouter->AddHandler(m_pFrame->Handler(), true);
-
-    m_pBrowser->GetHost()->SetFocus(true);
-    m_pBrowser->GetHost()->SendFocusEvent(true);
 }
 
 void CMomNUIClient::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, TransitionType transition_type)
 {
-    m_pFrame->ShouldRender(false);
+    
+    //m_pFrame->ShouldRender(false);
 }
 
 
 void CMomNUIClient::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int statusCode)
 {
+    const char *pUrl = frame->GetURL().ToString().c_str();
+    pUrl = nullptr;
 }
 
 void CMomNUIClient::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool isLoading, bool canGoBack, bool canGoForward)
 {
     if (!isLoading)
     {
-        m_bLoaded = true;
-
-        m_pBrowser->GetHost()->SetFocus(true);
-        m_pBrowser->GetHost()->SendFocusEvent(true);
-
-
-        while (!m_QueuedJavascript.empty())
+        NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
+        if (pListener)
         {
-            m_pBrowser->GetMainFrame()->ExecuteJavaScript(m_QueuedJavascript.front(), "internal", 0);
-            m_QueuedJavascript.pop();
+            pListener->OnBrowserPageLoaded(browser->GetMainFrame()->GetURL().ToString().c_str());
         }
-
-        m_pBrowser->GetMainFrame()->ExecuteJavaScript("setLocalization('english')", "internal", 0);
     }
 }
 
@@ -76,13 +68,34 @@ bool CMomNUIClient::OnConsoleMessage(CefRefPtr<CefBrowser> browser, const CefStr
 
 bool CMomNUIClient::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    rect.Set(0, 0, m_pFrame->FrameWidth(), m_pFrame->FrameHeight());
-    return true;
+    int wide, tall;
+    NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
+    if (pListener)
+    {
+        pListener->OnBrowserSize(wide, tall);
+        rect.Set(0, 0, wide, tall);
+        return true;
+    }
+    
+    return false;
 }
 
 void CMomNUIClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList& dirtyRects, const void* buffer, int width, int height)
 {
-    m_pFrame->OnPaint(browser, type, dirtyRects, buffer, width, height);
+    if (type == PET_VIEW)
+    {
+        NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
+        if (pListener)
+        {
+            uint8* textureBuffer = (uint8*)buffer;
+            for (auto r : dirtyRects)
+            {
+                pListener->OnBrowserPaint(textureBuffer, width, height, r.x, r.y, r.width, r.height,
+                    // MOM_TODO: Figure out how to pass these scroll values... maybe store it somewhere? Not sure
+                    0, 0);
+            }
+        }
+    }
 }
 
 void CMomNUIClient::OnPopupShow(CefRefPtr<CefBrowser> browser, bool show)
@@ -93,17 +106,6 @@ void CMomNUIClient::OnPopupShow(CefRefPtr<CefBrowser> browser, bool show)
 void CMomNUIClient::OnPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect)
 {
 
-}
-
-void CMomNUIClient::ExecuteJavascript(const std::string& code)
-{
-    if (m_bLoaded)
-    {
-        m_pBrowser->GetMainFrame()->ExecuteJavaScript(code, "internal", 0);
-        return;
-    }
-
-    m_QueuedJavascript.push(code);
 }
 
 void CMomNUIClient::OnBeforeClose(CefRefPtr<CefBrowser> browser)
@@ -130,4 +132,14 @@ bool CMomNUIClient::OnBeforeBrowse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefF
         return true;
 
     return false;
+}
+
+bool CMomNUIClient::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& origin_url, JSDialogType dialog_type,
+    const CefString& message_text, const CefString& default_prompt_text, CefRefPtr<CefJSDialogCallback> callback,
+    bool& suppress_message)
+{
+    // MOM_TODO: Make this a callback
+    DevLog("Got an alert with message: %s\n", message_text.ToString().c_str());
+    callback->Continue(true, "");
+    return true;
 }

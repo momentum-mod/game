@@ -7,7 +7,7 @@
 CMomNUIFrame::CMomNUIFrame(uint32_t width, uint32_t height) :
     m_iWidth(width),
     m_iHeight(height),
-    m_bInitialized(false),
+    m_bInitialized(false), m_bShouldRender(false),
     m_pClient(nullptr),
     m_bNeedsRepaint(true),
     m_bDirty(false)
@@ -34,7 +34,7 @@ bool CMomNUIFrame::Init(const char *url)
     if (m_bInitialized)
         return true;
 
-    m_pClient = new CMomNUIClient(this);
+    //m_pClient = new CMomNUIClient(this);
 
     CefWindowInfo info;
     info.SetAsWindowless(NULL);
@@ -69,7 +69,7 @@ void CMomNUIFrame::OnResized(uint32_t width, uint32_t height)
     m_iWidth = width;
     m_iHeight = height;
 
-    m_pClient->Browser()->GetHost()->WasResized();
+    //m_pClient->Browser()->GetHost()->WasResized();
 
     m_Mutex.Lock();
 
@@ -81,11 +81,11 @@ void CMomNUIFrame::OnResized(uint32_t width, uint32_t height)
     m_Mutex.Unlock();
 }
 
-void CMomNUIFrame::ExecuteJavascript(const std::string& code)
+/*void CMomNUIFrame::ExecuteJavascript(const std::string& code)
 {
     if (m_pClient.get())
         m_pClient->ExecuteJavascript(code);
-}
+}*/
 
 void CMomNUIFrame::OnPaint(CefRefPtr<CefBrowser> browser, CefRenderHandler::PaintElementType type, const CefRenderHandler::RectList& dirtyRects, const void* buffer, int width, int height)
 {

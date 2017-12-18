@@ -58,10 +58,10 @@ void CMomNUI::Shutdown()
     if (!m_bInitialized)
         return;
 
-    if (m_pFrame)
+    /*if (m_pFrame)
     {
         m_pFrame->Client()->Browser()->GetHost()->CloseBrowser(true);
-    }
+    }*/
 
     m_bInitialized = false;
 
@@ -140,9 +140,10 @@ bool CMomNUI::InitCEF(int width, int height, bool debug, bool host)
     }
     else
     {
-        char relativeHostPath[MAX_PATH];
-        V_ComposeFileName("bin", "nui_host.exe", relativeHostPath, MAX_PATH);
-        g_pFullFileSystem->RelativePathToFullPath(relativeHostPath, "MOD", hostPath, MAX_PATH);
+        FileFindHandle_t handle;
+        const char *pFileName = g_pFullFileSystem->FindFirstEx("nui_host*", "gamebin", &handle);
+        g_pFullFileSystem->FindClose(handle);
+        g_pFullFileSystem->RelativePathToFullPath(pFileName, "gamebin", hostPath, MAX_PATH);
     }
 
     CefSettings settings;
