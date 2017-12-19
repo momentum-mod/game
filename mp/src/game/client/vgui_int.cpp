@@ -26,13 +26,12 @@
 
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
-#include "momentum/ui/mom_nui_panel.h"
-//#include "momentum/ui/IChangelogPanel.h"
-#include "momentum/ui/IContactPanel.h"
+#include "nui/INuiInterface.h"
+#include "momentum/ui/IChangelogPanel.h"
+//#include "momentum/ui/IContactPanel.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
 #include "momentum/ui/IMessageboxPanel.h"
 #include "clientmode_mom_normal.h"
-#include "ChangelogPanel.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"
@@ -263,7 +262,6 @@ void VGui_CreateGlobalPanels( void )
 #endif
 
     //Momentum
-    g_pMomNUIPanel = new CMomNUIPanel();
     VGui_CreateMomentumPanels();
 }
 
@@ -294,7 +292,6 @@ void VGui_Shutdown()
 		g_pClientMode->VGui_Shutdown();
 	}
 
-    delete g_pMomNUIPanel;
     nui->Shutdown();
 
 	// Make sure anything "marked for deletion"

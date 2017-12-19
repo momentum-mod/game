@@ -28,7 +28,7 @@ public:
 
     // Called when the browser needs paint. Not always called every frame.
     virtual void OnBrowserPaint(
-        uint8 *pBGRA, // a pointer to the B8G8R8A8 data for this surface
+        const void *pBGRA, // a pointer to the B8G8R8A8 data for this surface
         uint32 texWide,             // the total width of the pBGRA texture
         uint32 texTall,             // the total height of the pBGRA texture
         uint32 unUpdateX,           // the offset in X for the damage rect for this update

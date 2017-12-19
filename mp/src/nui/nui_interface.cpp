@@ -66,7 +66,19 @@ void CNuiInterface::Shutdown()
     if (!m_bInitialized)
         return;
 
-    // MOM_TODO: Shut down all browsers?
+    // Shut down all browsers
+    if (m_mapBrowsers.Count() > 0)
+    {
+        unsigned short browserIndex = m_mapBrowsers.FirstInorder();
+        while (browserIndex != m_mapBrowsers.InvalidIndex())
+        {
+            m_mapBrowsers.Element(browserIndex)->GetHost()->CloseBrowser(true);
+
+            m_mapBrowsers.NextInorder(browserIndex);
+        }
+
+        m_mapBrowsers.RemoveAll();
+    }
 
     m_bInitialized = false;
 

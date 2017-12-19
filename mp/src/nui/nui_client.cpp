@@ -87,10 +87,9 @@ void CMomNUIClient::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type
         NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
         if (pListener)
         {
-            uint8* textureBuffer = (uint8*)buffer;
             for (auto r : dirtyRects)
             {
-                pListener->OnBrowserPaint(textureBuffer, width, height, r.x, r.y, r.width, r.height,
+                pListener->OnBrowserPaint(buffer, width, height, r.x, r.y, r.width, r.height,
                     // MOM_TODO: Figure out how to pass these scroll values... maybe store it somewhere? Not sure
                     0, 0);
             }
