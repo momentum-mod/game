@@ -16,6 +16,9 @@ public:
     // any of these interface methods will not work until Init is called again.
     virtual void Shutdown() = 0;
 
+    // Returns true if this interface has been initialized, else false.
+    virtual bool IsInitialized() = 0;
+
     // Creates a browser for a given NuiBrowserListener.
     virtual void CreateBrowser(NuiBrowserListener *pListener, const char *pURL = nullptr) = 0;
     // Shuts down and frees the resources of the given browser.

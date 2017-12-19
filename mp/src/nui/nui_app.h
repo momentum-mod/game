@@ -12,6 +12,8 @@ public:
     CMomNUIApp();
     virtual ~CMomNUIApp();
 
+    void GetCEFProcessSettings(CefSettings &settings, const char *pHostPath);
+
 public:
     virtual CefRefPtr<CefRenderProcessHandler> GetRenderProcessHandler() OVERRIDE { return this; }
 

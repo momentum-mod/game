@@ -37,4 +37,7 @@ public:
         uint32 unUpdateTall,        // the height of the damage rect for this update
         uint32 unScrollX,           // the page scroll the browser was at when this texture was rendered
         uint32 unScrollY) = 0;      // the page scroll the browser was at when this texture was rendered
+
+    // Called when the browser has an alert dialog popping up.
+    virtual void OnBrowserJSAlertDialog(const char *pString) = 0;
 };

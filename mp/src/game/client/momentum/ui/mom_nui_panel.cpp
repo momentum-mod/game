@@ -1,12 +1,13 @@
 #include "cbase.h"
 #include "mom_nui_panel.h"
 #include "clientmode_shared.h"
-#include "nui_interface.h"
+#include "nui/INuiInterface.h"
 #include "vgui_controls/ScrollBar.h"
 
 #include "vgui/IInput.h"
 #include "vgui/IVGui.h"
 #include <src/vgui_key_translation.h>
+#include "util/jsontokv.h"
 
 CMomNUIPanel* g_pMomNUIPanel = nullptr;
 
@@ -21,10 +22,8 @@ CMomNUIPanel::CMomNUIPanel() :
     GetClientModeNormal()->GetViewport()->GetSize(width, height);
     SetBounds(0, 0, width, height);
 
-    m_pInterface = new CNuiInterface();
-    if (m_pInterface->Init())
-        m_pInterface->CreateBrowser(this, "file://C:\\Users\\Nick\\Documents\\GitHub\\game\\mp\\game\\momentum\\resource\\html\\menu.html");
-
+    if (nui->IsInitialized())
+        nui->CreateBrowser(this, "file://C:\\Users\\Nick\\Documents\\GitHub\\game\\mp\\game\\momentum\\resource\\html\\menu.html");
     m_bNeedsFullTextureUpload = false;
 
     _hbar = new ScrollBar(this, "HorizScrollBar", false);
@@ -44,8 +43,6 @@ CMomNUIPanel::CMomNUIPanel() :
     SetBuildModeEditable(false);
     SetBuildModeDeletable(false);
 
-    ivgui()->AddTickSignal(GetVPanel());
-
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(true);
 }
@@ -53,8 +50,7 @@ CMomNUIPanel::CMomNUIPanel() :
 CMomNUIPanel::~CMomNUIPanel()
 {
     surface()->DestroyTextureID(m_iTextureID);
-    m_pInterface->ShutdownBrowser(m_hBrowser);
-    delete m_pInterface;
+    nui->ShutdownBrowser(m_hBrowser);
 }
 
 void CMomNUIPanel::OnThink()
@@ -69,7 +65,7 @@ void CMomNUIPanel::OnThink()
         m_iLastWidth = width;
         m_iLastHeight = height;
 
-        m_pInterface->WasResized(m_hBrowser);
+        nui->WasResized(m_hBrowser);
     }
 }
 
@@ -91,7 +87,7 @@ void CMomNUIPanel::OnCursorEntered()
     input()->GetCursorPos(x, y);
     ScreenToLocal(x, y);
 
-    m_pInterface->MouseMove(m_hBrowser, x, y, false);
+    nui->MouseMove(m_hBrowser, x, y, false);
 }
 
 void CMomNUIPanel::OnCursorExited()
@@ -100,12 +96,12 @@ void CMomNUIPanel::OnCursorExited()
     input()->GetCursorPos(x, y);
     ScreenToLocal(x, y);
 
-    m_pInterface->MouseMove(m_hBrowser, x, y, true);
+    nui->MouseMove(m_hBrowser, x, y, true);
 }
 
 void CMomNUIPanel::OnCursorMoved(int x, int y)
 {
-    m_pInterface->MouseMove(m_hBrowser, x, y, false);
+    nui->MouseMove(m_hBrowser, x, y, false);
 }
 
 INuiInterface::EHTMLMouseButton ConvertMouseCodeToCEFCode(MouseCode code)
@@ -128,7 +124,7 @@ void CMomNUIPanel::OnMousePressed(MouseCode code)
     input()->GetCursorPos(x, y);
     ScreenToLocal(x, y);
 
-    m_pInterface->MouseDown(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
+    nui->MouseDown(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
 }
 
 void CMomNUIPanel::OnMouseDoublePressed(MouseCode code)
@@ -137,7 +133,7 @@ void CMomNUIPanel::OnMouseDoublePressed(MouseCode code)
     input()->GetCursorPos(x, y);
     ScreenToLocal(x, y);
 
-    m_pInterface->MouseDoubleClick(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
+    nui->MouseDoubleClick(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
 }
 
 void CMomNUIPanel::OnMouseReleased(MouseCode code)
@@ -146,7 +142,7 @@ void CMomNUIPanel::OnMouseReleased(MouseCode code)
     input()->GetCursorPos(x, y);
     ScreenToLocal(x, y);
 
-    m_pInterface->MouseUp(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
+    nui->MouseUp(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
 }
 
 void CMomNUIPanel::OnMouseWheeled(int delta)
@@ -158,7 +154,7 @@ void CMomNUIPanel::OnMouseWheeled(int delta)
         _vbar->SetValue(val);
     }
 
-    m_pInterface->MouseWheel(m_hBrowser, delta * 100.0 / 3.0);
+    nui->MouseWheel(m_hBrowser, delta * 100.0 / 3.0);
 }
 
 
@@ -189,7 +185,7 @@ INuiInterface::EHTMLKeyModifiers GetKeyModifiers()
 
 void CMomNUIPanel::OnKeyCodePressed(KeyCode code)
 {
-    m_pInterface->KeyDown(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
+    nui->KeyDown(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
 }
 
 void CMomNUIPanel::OnKeyCodeTyped(KeyCode code)
@@ -229,17 +225,17 @@ void CMomNUIPanel::OnKeyCodeTyped(KeyCode code)
         break;
     }
 
-    m_pInterface->KeyDown(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
+    nui->KeyDown(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
 }
 
 void CMomNUIPanel::OnKeyTyped(wchar_t unichar)
 {
-    m_pInterface->KeyChar(m_hBrowser, unichar, GetKeyModifiers());
+    nui->KeyChar(m_hBrowser, unichar, GetKeyModifiers());
 }
 
 void CMomNUIPanel::OnKeyCodeReleased(KeyCode code)
 {
-    m_pInterface->KeyUp(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
+    nui->KeyUp(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
 }
 
 void CMomNUIPanel::OnBrowserCreated(HNUIBrowser handle)
@@ -317,22 +313,60 @@ void CMomNUIPanel::OnBrowserPageLoaded(const char* pURL)
 {
     DevLog("Loaded the page %s\n", pURL);
 
-    m_pInterface->ExecuteJavascript(m_hBrowser, "setLocalization('english')");
-    m_pInterface->ExecuteJavascript(m_hBrowser, "setVolume(0.5)");
+    nui->ExecuteJavascript(m_hBrowser, "setLocalization('english')");
+    nui->ExecuteJavascript(m_hBrowser, "setVolume(0.5)");
+}
+
+void CMomNUIPanel::OnBrowserJSAlertDialog(const char* pString)
+{
+    KeyValues* pKv = CJsonToKeyValues::ConvertJsonToKeyValues(pString);
+    KeyValuesAD autodelete(pKv);
+
+    if (pKv)
+    {
+        if (!Q_strcmp(pKv->GetString("id"), "menu"))
+        {
+            if (pKv->GetBool("special"))
+            {
+                //GetBasePanel()->RunMenuCommand(pKv->GetString("com"));
+            }
+            else
+            {
+                
+                //GetBasePanel()->RunEngineCommand(pKv->GetString("com"));
+            }
+        }
+        else if (!Q_strcmp(pKv->GetString("id"), "echo"))
+        {
+            DevLog("%s\n", pKv->GetString("com"));
+        }
+        else if (!Q_strcmp(pKv->GetString("id"), "lobby"))
+        {
+            // Separated here because these commands require a connection to actually work through console,
+            // so we manually dispatch the commands here.
+            ConCommand* pCommand = g_pCVar->FindCommand(pKv->GetString("com"));
+            if (pCommand)
+            {
+                CCommand blah;
+                blah.Tokenize(pKv->GetString("com"));
+                pCommand->Dispatch(blah);
+            }
+        }
+    }
 }
 
 void CMomNUIPanel::Refresh()
 {
-    if (m_pInterface && m_hBrowser != INVALID_NUIBROWSER)
+    if (nui && m_hBrowser != INVALID_NUIBROWSER)
     {
-        m_pInterface->Reload(m_hBrowser);
+        nui->Reload(m_hBrowser);
     }
 }
 
 void CMomNUIPanel::LoadURL(const char* pURL)
 {
     if (m_hBrowser != INVALID_NUIBROWSER)
-        m_pInterface->LoadURL(m_hBrowser, pURL, nullptr);
+        nui->LoadURL(m_hBrowser, pURL, nullptr);
 }
 
 void CMomNUIPanel::OnSliderMoved()

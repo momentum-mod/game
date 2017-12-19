@@ -133,7 +133,7 @@ void VGui_CreateMomentumPanels()
     mapselector->Create(gameMenu);
     changelogpanel->Create(gameMenu);
     momentum_settings->Create(gameMenu);
-    contact_panel->Create(gameMenu);
+    //contact_panel->Create(gameMenu);
     messageboxpanel->Create(gameMenu);
 }
 
@@ -142,7 +142,7 @@ void VGui_DestroyMomentumPanels()
     mapselector->Destroy();
     changelogpanel->Destroy();
     momentum_settings->Destroy();
-    contact_panel->Destroy();
+    //contact_panel->Destroy();
     messageboxpanel->Destroy();
 }
 
@@ -197,6 +197,8 @@ static void VGui_OneTimeInit()
 
 	vgui::Panel::AddPropertyConverter( "CHudTextureHandle", &textureHandleConverter );
 
+    // Momentum
+    nui->Init();
 
     g_pMaterialSystem->AddModeChangeCallBack( &VGui_VideoMode_AdjustForModeChange );
 }
@@ -293,6 +295,7 @@ void VGui_Shutdown()
 	}
 
     delete g_pMomNUIPanel;
+    nui->Shutdown();
 
 	// Make sure anything "marked for deletion"
 	//  actually gets deleted before this dll goes away

@@ -1,8 +1,8 @@
-#include "nui_predef.h"
 #include "nui_client.h"
-#include "nui_frame.h"
 #include "nui_interface.h"
-#include "NuiBrowserListener.h"
+#include "nui/NuiBrowserListener.h"
+
+#include "tier0/memdbgon.h"
 
 CMomNUIClient::CMomNUIClient(CNuiInterface* pInterface)
     : m_pNuiInterface(pInterface)
@@ -138,8 +138,21 @@ bool CMomNUIClient::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& o
     const CefString& message_text, const CefString& default_prompt_text, CefRefPtr<CefJSDialogCallback> callback,
     bool& suppress_message)
 {
-    // MOM_TODO: Make this a callback
-    DevLog("Got an alert with message: %s\n", message_text.ToString().c_str());
+    NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
+    if (pListener)
+    {
+        if (dialog_type == JSDIALOGTYPE_ALERT)
+        {
+            pListener->OnBrowserJSAlertDialog(message_text.ToString().c_str());
+        }
+        // MOM_TODO: Add confirm and prompt dialogs?
+    }
+
     callback->Continue(true, "");
     return true;
+}
+
+void CMomNUIClient::OnScrollOffsetChanged(CefRefPtr<CefBrowser> browser, double x, double y)
+{
+    // MOM_TODO: Update the scroll stuff here for the panels that use this?
 }

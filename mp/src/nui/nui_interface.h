@@ -1,6 +1,6 @@
 #pragma once
 
-#include "INuiInterface.h"
+#include "nui/INuiInterface.h"
 #include "utlmap.h"
 #include <include/internal/cef_ptr.h>
 #include "utlqueue.h"
@@ -19,6 +19,7 @@ public:
     // INuiInterface Overrides
     bool Init() OVERRIDE;
     void Shutdown() OVERRIDE;
+    bool IsInitialized() OVERRIDE { return m_bInitialized; }
 
     void CreateBrowser(NuiBrowserListener *pListener, const char *pURL) OVERRIDE;
     void ShutdownBrowser(HNUIBrowser& handle) OVERRIDE;

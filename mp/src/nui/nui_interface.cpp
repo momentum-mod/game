@@ -1,22 +1,18 @@
-#include "nui_interface.h"
-#include "nui_client.h"
-#include "nui_app.h"
-#include "NuiBrowserListener.h"
 #include <include/cef_app.h>
+#include <include/wrapper/cef_helpers.h>
+#include "nui/NuiBrowserListener.h"
 #include "filesystem.h"
+#include "nui_app.h"
+#include "nui_client.h"
+#include "nui_interface.h"
 
 #include "tier0/memdbgon.h"
-#include <include/wrapper/cef_helpers.h>
 
-
-INuiInterface *nui = nullptr;
-
-CNuiInterface::CNuiInterface(): m_bInitialized(false)
+CNuiInterface::CNuiInterface() : m_bInitialized(false)
 {
     SetDefLessFunc(m_mapListeners);
     SetDefLessFunc(m_mapBrowsers);
     m_pNuiClient = new CMomNUIClient(this);
-    nui = this;
 }
 
 CNuiInterface::~CNuiInterface()
@@ -35,12 +31,12 @@ bool CNuiInterface::Init()
     if (m_pApp.get())
         delete m_pApp.get();
 
-    m_pApp = new CMomNUIApp();
+    m_pApp = CefRefPtr<CMomNUIApp>(new CMomNUIApp);
 
     CefMainArgs args(GetModuleHandle(NULL));
 
     int error = CefExecuteProcess(args, m_pApp, nullptr);
-    
+
     if (error >= 0)
         TerminateProcess(GetCurrentProcess(), 0);
 
@@ -52,20 +48,8 @@ bool CNuiInterface::Init()
     g_pFullFileSystem->RelativePathToFullPath(pFileName, "gamebin", hostPath, MAX_PATH);
 
     CefSettings settings;
-    settings.multi_threaded_message_loop = true;
-    CefString(&settings.product_version) = "Momentum";
-    CefString(&settings.browser_subprocess_path).FromASCII(hostPath);
-    settings.no_sandbox = true;
-    settings.pack_loading_disabled = false;
-    settings.windowless_rendering_enabled = true;
-    settings.ignore_certificate_errors = true;
-    settings.log_severity = LOGSEVERITY_DISABLE;
-    settings.single_process = false;
-    settings.background_color = 0x00;
-
-    //if (debug)
-    //    settings.remote_debugging_port = 8884;
-
+    m_pApp->GetCEFProcessSettings(settings, hostPath);
+    
     if (!CefInitialize(args, settings, m_pApp.get(), nullptr))
         return false;
 
@@ -90,7 +74,7 @@ void CNuiInterface::Shutdown()
     CefShutdown();
 }
 
-void CNuiInterface::CreateBrowser(NuiBrowserListener* pListener, const char *pURL)
+void CNuiInterface::CreateBrowser(NuiBrowserListener *pListener, const char *pURL)
 {
     if (!m_bInitialized)
         return;
@@ -121,7 +105,7 @@ void CNuiInterface::CreateBrowser(NuiBrowserListener* pListener, const char *pUR
     }
 }
 
-void CNuiInterface::ShutdownBrowser(HNUIBrowser& handle)
+void CNuiInterface::ShutdownBrowser(HNUIBrowser &handle)
 {
     if (!m_bInitialized)
         return;
@@ -131,7 +115,7 @@ void CNuiInterface::ShutdownBrowser(HNUIBrowser& handle)
     {
         m_mapBrowsers.Element(browserIndex)->GetHost()->CloseBrowser(true);
         m_mapBrowsers.RemoveAt(browserIndex);
-        
+
         unsigned short listenerIndex = m_mapListeners.Find(handle);
         if (listenerIndex != m_mapListeners.InvalidIndex())
         {
@@ -141,7 +125,7 @@ void CNuiInterface::ShutdownBrowser(HNUIBrowser& handle)
     }
 }
 
-void CNuiInterface::ExecuteJavascript(HNUIBrowser unBrowserHandle, const char* pchScript)
+void CNuiInterface::ExecuteJavascript(HNUIBrowser unBrowserHandle, const char *pchScript)
 {
     if (!m_bInitialized)
         return;
@@ -187,7 +171,7 @@ inline CefBrowserHost::MouseButtonType DetermineInputFlags(INuiInterface::EHTMLM
     return static_cast<CefBrowserHost::MouseButtonType>(b);
 }
 
-void CNuiInterface::MouseUp(HNUIBrowser& unBrowserHandle, int x, int y, EHTMLMouseButton eMouseButton)
+void CNuiInterface::MouseUp(HNUIBrowser &unBrowserHandle, int x, int y, EHTMLMouseButton eMouseButton)
 {
     if (!m_bInitialized)
         return;
@@ -203,7 +187,7 @@ void CNuiInterface::MouseUp(HNUIBrowser& unBrowserHandle, int x, int y, EHTMLMou
     }
 }
 
-void CNuiInterface::MouseDown(HNUIBrowser& unBrowserHandle, int x, int y, EHTMLMouseButton eMouseButton)
+void CNuiInterface::MouseDown(HNUIBrowser &unBrowserHandle, int x, int y, EHTMLMouseButton eMouseButton)
 {
     if (!m_bInitialized)
         return;
@@ -219,7 +203,7 @@ void CNuiInterface::MouseDown(HNUIBrowser& unBrowserHandle, int x, int y, EHTMLM
     }
 }
 
-void CNuiInterface::MouseDoubleClick(HNUIBrowser& unBrowserHandle, int x, int y, EHTMLMouseButton eMouseButton)
+void CNuiInterface::MouseDoubleClick(HNUIBrowser &unBrowserHandle, int x, int y, EHTMLMouseButton eMouseButton)
 {
     if (!m_bInitialized)
         return;
@@ -235,7 +219,7 @@ void CNuiInterface::MouseDoubleClick(HNUIBrowser& unBrowserHandle, int x, int y,
     }
 }
 
-void CNuiInterface::MouseMove(HNUIBrowser& unBrowserHandle, int x, int y, bool bMouseLeft)
+void CNuiInterface::MouseMove(HNUIBrowser &unBrowserHandle, int x, int y, bool bMouseLeft)
 {
     if (!m_bInitialized)
         return;
@@ -250,7 +234,7 @@ void CNuiInterface::MouseMove(HNUIBrowser& unBrowserHandle, int x, int y, bool b
     }
 }
 
-void CNuiInterface::MouseWheel(HNUIBrowser& unBrowserHandle, int32 nDelta)
+void CNuiInterface::MouseWheel(HNUIBrowser &unBrowserHandle, int32 nDelta)
 {
     if (!m_bInitialized)
         return;
@@ -327,7 +311,7 @@ void CNuiInterface::SetKeyFocus(HNUIBrowser unBrowserHandle, bool bHasKeyFocus)
     }
 }
 
-void CNuiInterface::LoadURL(HNUIBrowser unBrowserHandle, const char* pchURL, const char* pchPostData)
+void CNuiInterface::LoadURL(HNUIBrowser unBrowserHandle, const char *pchURL, const char *pchPostData)
 {
     if (!m_bInitialized)
         return;
@@ -398,7 +382,7 @@ void CNuiInterface::GoForward(HNUIBrowser unBrowserHandle)
     }
 }
 
-NuiBrowserListener* CNuiInterface::GetBrowserListener(HNUIBrowser handle)
+NuiBrowserListener *CNuiInterface::GetBrowserListener(HNUIBrowser handle)
 {
     unsigned short listenerIndex = m_mapListeners.Find(handle);
     if (listenerIndex != m_mapListeners.InvalidIndex())
@@ -435,3 +419,7 @@ CefRefPtr<CefBrowser> CNuiInterface::GetBrowser(HNUIBrowser handle)
     }
     return nullptr;
 }
+
+static CNuiInterface s_CNuiInterface;
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CNuiInterface, INuiInterface, NUI_INTERFACE_VERSION, s_CNuiInterface);
+INuiInterface *nui = &s_CNuiInterface;

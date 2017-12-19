@@ -1,10 +1,8 @@
 #pragma once
 
 #include "vgui_controls/Panel.h"
-#include "NuiBrowserListener.h"
-#include "INuiInterface.h"
+#include "nui/NuiBrowserListener.h"
 
-class CNuiInterface;
 namespace vgui
 {
     class ScrollBar;
@@ -15,24 +13,22 @@ class CMomNUIPanel : public vgui::Panel, public NuiBrowserListener
 public:
     DECLARE_CLASS_SIMPLE(CMomNUIPanel, vgui::Panel);
 
-public:
     CMomNUIPanel();
     ~CMomNUIPanel();
 
-public:
-    virtual void OnThink() OVERRIDE;
-    virtual void Paint() OVERRIDE;
-    virtual void OnCursorEntered() OVERRIDE;
-    virtual void OnCursorExited() OVERRIDE;
-    virtual void OnCursorMoved(int x, int y) OVERRIDE;
-    virtual void OnMousePressed(vgui::MouseCode code) OVERRIDE;
-    virtual void OnMouseDoublePressed(vgui::MouseCode code) OVERRIDE;
-    virtual void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
-    virtual void OnMouseWheeled(int delta) OVERRIDE;
-    virtual void OnKeyCodePressed(vgui::KeyCode code) OVERRIDE;
-    virtual void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
-    virtual void OnKeyTyped(wchar_t unichar) OVERRIDE;
-    virtual void OnKeyCodeReleased(vgui::KeyCode code) OVERRIDE;
+    void OnThink() OVERRIDE;
+    void Paint() OVERRIDE;
+    void OnCursorEntered() OVERRIDE;
+    void OnCursorExited() OVERRIDE;
+    void OnCursorMoved(int x, int y) OVERRIDE;
+    void OnMousePressed(vgui::MouseCode code) OVERRIDE;
+    void OnMouseDoublePressed(vgui::MouseCode code) OVERRIDE;
+    void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
+    void OnMouseWheeled(int delta) OVERRIDE;
+    void OnKeyCodePressed(vgui::KeyCode code) OVERRIDE;
+    void OnKeyCodeTyped(vgui::KeyCode code) OVERRIDE;
+    void OnKeyTyped(wchar_t unichar) OVERRIDE;
+    void OnKeyCodeReleased(vgui::KeyCode code) OVERRIDE;
 
     void OnBrowserCreated(HNUIBrowser handle) OVERRIDE;
     void OnBrowserClosed() OVERRIDE;
@@ -40,7 +36,7 @@ public:
     void OnBrowserFailedToCreate() OVERRIDE;
     void OnBrowserPaint(uint8* pBGRA, uint32 texWide, uint32 texTall, uint32 unUpdateX, uint32 unUpdateY, uint32 unUpdateWide, uint32 unUpdateTall, uint32 unScrollX, uint32 unScrollY) OVERRIDE;
     void OnBrowserPageLoaded(const char* pURL) OVERRIDE;
-
+    void OnBrowserJSAlertDialog(const char* pString) OVERRIDE;
 
     void Refresh();
 
@@ -52,7 +48,6 @@ private:
     vgui::ScrollBar *_hbar, *_vbar;
 
     HNUIBrowser m_hBrowser;
-    CNuiInterface *m_pInterface;
     int m_iTextureID;
     int m_iLastWidth;
     int m_iLastHeight;

@@ -32,19 +32,7 @@ int main(int argc, char** argv)
     strcpy(hostPath, "nui_host.exe"); // MOM_TODO: Linux and mac use different endings here
     
     CefSettings settings;
-    settings.multi_threaded_message_loop = true;
-    CefString(&settings.product_version) = "Momentum";
-    CefString(&settings.browser_subprocess_path).FromASCII(hostPath);
-    settings.no_sandbox = true;
-    settings.pack_loading_disabled = false;
-    settings.windowless_rendering_enabled = true;
-    settings.ignore_certificate_errors = true;
-    settings.log_severity = LOGSEVERITY_DISABLE;
-    settings.single_process = false;
-    settings.background_color = 0x00;
-
-    //if (debug)
-    //    settings.remote_debugging_port = 8884;
+    pApp->GetCEFProcessSettings(settings, hostPath);
 
     CefInitialize(args, settings, pApp, nullptr);
 

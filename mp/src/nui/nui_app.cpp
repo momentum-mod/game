@@ -10,6 +10,23 @@ CMomNUIApp::~CMomNUIApp()
 {
 }
 
+void CMomNUIApp::GetCEFProcessSettings(CefSettings& settings, const char* pHostPath)
+{
+    CefString(&settings.product_version) = "Momentum";
+    CefString(&settings.browser_subprocess_path).FromASCII(pHostPath);
+    settings.multi_threaded_message_loop = true;
+    settings.no_sandbox = true;
+    settings.pack_loading_disabled = false;
+    settings.windowless_rendering_enabled = true;
+    settings.ignore_certificate_errors = true;
+    settings.log_severity = LOGSEVERITY_DISABLE;
+    settings.single_process = false;
+    settings.background_color = 0x00;
+
+    // if (debug)
+    //    settings.remote_debugging_port = 8884;
+}
+
 void CMomNUIApp::OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
 {
     registrar->AddCustomScheme("mom", true, false, false, false, true, false);
