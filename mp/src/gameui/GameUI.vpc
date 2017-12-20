@@ -171,6 +171,7 @@ $Project "GameUI"
 		$Lib		choreoobjects
 		$Lib		mathlib
 		$Lib		matsys_controls
+        $Lib        nui
 		$Lib		tier1
 		$Lib		tier2
 		$Lib		tier3

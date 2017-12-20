@@ -1,13 +1,13 @@
 #pragma once
 
-#include "vgui_controls/HTML.h"
+#include "vgui_controls/NUIPanel.h"
 #include "igameevents.h"
 
 class MomentumURLResolver;
 
-class MainMenu : public vgui::HTML, public IGameEventListener2
+class MainMenu : public vgui::NUIPanel, public IGameEventListener2
 {
-    DECLARE_CLASS_SIMPLE(MainMenu, vgui::HTML);
+    DECLARE_CLASS_SIMPLE(MainMenu, vgui::NUIPanel);
 
     MainMenu(Panel *parent);
     ~MainMenu();
@@ -21,20 +21,15 @@ class MainMenu : public vgui::HTML, public IGameEventListener2
 
     void LoadMenu()
     {
-        OpenURL("mom://menu");
-    }
-
-    void OpenURL(const char *pURL)
-    {
-        BaseClass::OpenURL(pURL, nullptr);
+        LoadURL(m_pszMainMenuPath);
     }
 
     MESSAGE_FUNC_CHARPTR(OnURLResolved, "ResolvedURL", url)
     {
-        OpenURL(url);
+        LoadURL(url);
     }
 
-    void OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers) OVERRIDE;
+    //void OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers) OVERRIDE;
 
     // Commands (this code -> the browser)
     void SendVolumeCommand(); // Send if the game volume changed
@@ -44,7 +39,11 @@ class MainMenu : public vgui::HTML, public IGameEventListener2
     void SendGameStatusCommand(); // Send if we're now in game or menu
 
     // Inputs from the browser
-    void OnJSAlert(HTML_JSAlert_t* pAlert) OVERRIDE;
+    void OnBrowserJSAlertDialog(const char* pString) OVERRIDE;
+    void OnBrowserPageLoaded(const char* pURL) OVERRIDE;
+
+    // MOM_TODO: Remove this in favor of custom URL scheme handling and redirecting
+    void GetMainMenuFile(char *pOut, int outSize);
 
     void OnMousePressed(vgui::MouseCode mc) OVERRIDE;
     void OnScreenSizeChanged(int oldwide, int oldtall) OVERRIDE;
@@ -54,6 +53,8 @@ private:
  
     char m_pszMenuOpenSound[MAX_PATH];
     char m_pszMenuCloseSound[MAX_PATH];
+
+    char m_pszMainMenuPath[MAX_PATH];
 
     bool m_bInGame;
     bool m_bInLobby;

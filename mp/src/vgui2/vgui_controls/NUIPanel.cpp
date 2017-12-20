@@ -1,14 +1,13 @@
-#include "cbase.h"
-#include "mom_nui_panel.h"
+#include "vgui_controls/NUIPanel.h"
 #include "nui/INuiInterface.h"
 #include "vgui_controls/ScrollBar.h"
 #include <vgui/ISurface.h>
 #include "vgui/IInput.h"
-#include <src/vgui_key_translation.h>
+#include "../vgui2/src/vgui_key_translation.h"
 
 using namespace vgui;
 
-CMomNUIPanel::CMomNUIPanel() :
+NUIPanel::NUIPanel(Panel *pParent, const char *pName) : BaseClass(pParent, pName),
     m_pTextureBuffer(nullptr),
     m_bDirtyBuffer(true),
     m_iTextureID(0),
@@ -27,7 +26,7 @@ CMomNUIPanel::CMomNUIPanel() :
     _vbar->AddActionSignalTarget(this);
 }
 
-CMomNUIPanel::~CMomNUIPanel()
+NUIPanel::~NUIPanel()
 {
     if (m_iTextureID)
         surface()->DestroyTextureID(m_iTextureID);
@@ -37,12 +36,12 @@ CMomNUIPanel::~CMomNUIPanel()
         nui->ShutdownBrowser(m_hBrowser);
 }
 
-void CMomNUIPanel::ApplySchemeSettings(vgui::IScheme* pScheme)
+void NUIPanel::ApplySchemeSettings(vgui::IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 }
 
-void CMomNUIPanel::OnThink()
+void NUIPanel::OnThink()
 {
     BaseClass::OnThink();
 
@@ -58,7 +57,7 @@ void CMomNUIPanel::OnThink()
     }
 }
 
-void CMomNUIPanel::Paint()
+void NUIPanel::Paint()
 {
     if (m_iTextureID != 0)
     {
@@ -76,7 +75,7 @@ void CMomNUIPanel::Paint()
     }
 }
 
-void CMomNUIPanel::OnCursorEntered()
+void NUIPanel::OnCursorEntered()
 {
     BaseClass::OnCursorEntered();
 
@@ -90,7 +89,7 @@ void CMomNUIPanel::OnCursorEntered()
     nui->MouseMove(m_hBrowser, x, y, false);
 }
 
-void CMomNUIPanel::OnCursorExited()
+void NUIPanel::OnCursorExited()
 {
     BaseClass::OnCursorExited();
 
@@ -104,7 +103,7 @@ void CMomNUIPanel::OnCursorExited()
     nui->MouseMove(m_hBrowser, x, y, true);
 }
 
-void CMomNUIPanel::OnCursorMoved(int x, int y)
+void NUIPanel::OnCursorMoved(int x, int y)
 {
     BaseClass::OnCursorMoved(x, y);
 
@@ -126,7 +125,7 @@ INuiInterface::EHTMLMouseButton ConvertMouseCodeToCEFCode(MouseCode code)
     }
 }
 
-void CMomNUIPanel::OnMousePressed(MouseCode code)
+void NUIPanel::OnMousePressed(MouseCode code)
 {
     if (m_hBrowser == INVALID_NUIBROWSER)
         return;
@@ -138,7 +137,7 @@ void CMomNUIPanel::OnMousePressed(MouseCode code)
     nui->MouseDown(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
 }
 
-void CMomNUIPanel::OnMouseDoublePressed(MouseCode code)
+void NUIPanel::OnMouseDoublePressed(MouseCode code)
 {
     if (m_hBrowser == INVALID_NUIBROWSER)
         return;
@@ -150,7 +149,7 @@ void CMomNUIPanel::OnMouseDoublePressed(MouseCode code)
     nui->MouseDoubleClick(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
 }
 
-void CMomNUIPanel::OnMouseReleased(MouseCode code)
+void NUIPanel::OnMouseReleased(MouseCode code)
 {
     if (m_hBrowser == INVALID_NUIBROWSER)
         return;
@@ -162,7 +161,7 @@ void CMomNUIPanel::OnMouseReleased(MouseCode code)
     nui->MouseUp(m_hBrowser, x, y, ConvertMouseCodeToCEFCode(code));
 }
 
-void CMomNUIPanel::OnMouseWheeled(int delta)
+void NUIPanel::OnMouseWheeled(int delta)
 {
     BaseClass::OnMouseWheeled(delta);
 
@@ -205,7 +204,7 @@ INuiInterface::EHTMLKeyModifiers GetKeyModifiers()
     return static_cast<INuiInterface::EHTMLKeyModifiers>(nModifierCodes);
 }
 
-void CMomNUIPanel::OnKeyCodePressed(KeyCode code)
+void NUIPanel::OnKeyCodePressed(KeyCode code)
 {
     BaseClass::OnKeyCodePressed(code);
 
@@ -213,7 +212,7 @@ void CMomNUIPanel::OnKeyCodePressed(KeyCode code)
         nui->KeyDown(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
 }
 
-void CMomNUIPanel::OnKeyCodeTyped(KeyCode code)
+void NUIPanel::OnKeyCodeTyped(KeyCode code)
 {
     BaseClass::OnKeyCodeTyped(code);
 
@@ -258,7 +257,7 @@ void CMomNUIPanel::OnKeyCodeTyped(KeyCode code)
     nui->KeyDown(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
 }
 
-void CMomNUIPanel::OnKeyTyped(wchar_t unichar)
+void NUIPanel::OnKeyTyped(wchar_t unichar)
 {
     BaseClass::OnKeyTyped(unichar);
 
@@ -266,7 +265,7 @@ void CMomNUIPanel::OnKeyTyped(wchar_t unichar)
         nui->KeyChar(m_hBrowser, unichar, GetKeyModifiers());
 }
 
-void CMomNUIPanel::OnKeyCodeReleased(KeyCode code)
+void NUIPanel::OnKeyCodeReleased(KeyCode code)
 {
     BaseClass::OnKeyCodeReleased(code);
 
@@ -274,7 +273,7 @@ void CMomNUIPanel::OnKeyCodeReleased(KeyCode code)
         nui->KeyUp(m_hBrowser, KeyCode_VGUIToVirtualKey(code), GetKeyModifiers());
 }
 
-void CMomNUIPanel::OnSizeChanged(int newWide, int newTall)
+void NUIPanel::OnSizeChanged(int newWide, int newTall)
 {
     BaseClass::OnSizeChanged(newWide, newTall);
 
@@ -287,31 +286,31 @@ void CMomNUIPanel::OnSizeChanged(int newWide, int newTall)
     }
 }
 
-void CMomNUIPanel::OnBrowserCreated(HNUIBrowser handle)
+void NUIPanel::OnBrowserCreated(HNUIBrowser handle)
 {
     m_hBrowser = handle;
     SetVisible(true);
 }
 
-void CMomNUIPanel::OnBrowserClosed()
+void NUIPanel::OnBrowserClosed()
 {
     m_hBrowser = INVALID_NUIBROWSER;
 }
 
-void CMomNUIPanel::OnBrowserSize(int& wide, int& tall)
+void NUIPanel::OnBrowserSize(int& wide, int& tall)
 {
     GetSize(wide, tall);
 }
 
-void CMomNUIPanel::OnBrowserFailedToCreate()
+void NUIPanel::OnBrowserFailedToCreate()
 {
     m_hBrowser = INVALID_NUIBROWSER;
 }
 
-void CMomNUIPanel::OnBrowserPaint(const void* pBGRA, uint32 texWide, uint32 texTall, uint32 unUpdateX,
+void NUIPanel::OnBrowserPaint(const void* pBGRA, uint32 texWide, uint32 texTall, uint32 unUpdateX,
     uint32 unUpdateY, uint32 unUpdateWide, uint32 unUpdateTall, uint32 unScrollX, uint32 unScrollY)
 {
-
+    m_Mutex.Lock();
     //if (m_iTextureID != 0 && ((_vbar->IsVisible() && unScrollY > 0 && abs((int) unScrollY - m_scrollVertical.m_nScroll) > 5) || (_hbar->IsVisible() && unScrollX > 0 && abs((int) unScrollX - m_scrollHorizontal.m_nScroll) > 5)))
     //{
     //    m_bNeedsFullTextureUpload = true;
@@ -353,21 +352,29 @@ void CMomNUIPanel::OnBrowserPaint(const void* pBGRA, uint32 texWide, uint32 texT
 
     // need a paint next time
     Repaint();
+
+    m_Mutex.Unlock();
 }
 
-void CMomNUIPanel::Refresh()
+void NUIPanel::Refresh()
 {
     if (m_hBrowser != INVALID_NUIBROWSER)
         nui->Reload(m_hBrowser);
 }
 
-void CMomNUIPanel::LoadURL(const char* pURL)
+void NUIPanel::LoadURL(const char* pURL)
 {
     if (m_hBrowser != INVALID_NUIBROWSER)
         nui->LoadURL(m_hBrowser, pURL, nullptr);
 }
 
-void CMomNUIPanel::OnSliderMoved()
+void NUIPanel::RunJavascript(const char* pScript)
+{
+    if (m_hBrowser != INVALID_NUIBROWSER)
+        nui->ExecuteJavascript(m_hBrowser, pScript);
+}
+
+void NUIPanel::OnSliderMoved()
 {
     if (_hbar->IsVisible())
     {

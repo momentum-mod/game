@@ -110,6 +110,9 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     vgui::VGui_InitInterfacesList("GameUI", &factory, 1);
     vgui::VGui_InitMatSysInterfacesList("GameUI", &factory, 1);
 
+    // Init NUI
+    nui->Init();
+
     // load localization file
     g_pVGuiLocalize->AddFile("Resource/gameui_%language%.txt", "GAME", true);
 
@@ -276,6 +279,9 @@ void CGameUI::Start()
 //-----------------------------------------------------------------------------
 void CGameUI::Shutdown()
 {
+    // Shutdown NUI
+    nui->Shutdown();
+
     ModInfo().FreeModInfo();
 
     m_SteamAPIContext.Clear();

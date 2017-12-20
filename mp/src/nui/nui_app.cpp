@@ -29,7 +29,7 @@ void CMomNUIApp::GetCEFProcessSettings(CefSettings& settings, const char* pHostP
 
 void CMomNUIApp::OnRegisterCustomSchemes(CefRawPtr<CefSchemeRegistrar> registrar)
 {
-    registrar->AddCustomScheme("mom", true, false, false, false, true, false);
+   // registrar->AddCustomScheme("mom", true, false, false, false, true, false);
 }
 
 void CMomNUIApp::OnContextCreated(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefV8Context> context)

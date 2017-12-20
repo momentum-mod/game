@@ -72,12 +72,6 @@ $Project "Client (Momentum)"
                     }
                 }
                 
-                $Folder "NUI"
-                {
-                   $File "momentum\ui\mom_nui_panel.cpp"
-                   $File "momentum\ui\mom_nui_panel.h"
-                }
-                
                 $Folder "SettingsPanel"
                 {
                     $Folder "Headers"

@@ -27,7 +27,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 COptionsDialog::COptionsDialog(vgui::Panel *parent) : PropertyDialog(parent, "OptionsDialog")
 {
-    SetDeleteSelfOnClose(true);
+    //SetDeleteSelfOnClose(true);
     SetBounds(0, 0, 512, 406);
     SetSizeable(false);
 

@@ -1,6 +1,7 @@
 #include "nui_client.h"
 #include "nui_interface.h"
 #include "nui/NuiBrowserListener.h"
+#include "filesystem.h"
 
 #include "tier0/memdbgon.h"
 
@@ -15,7 +16,7 @@ CMomNUIClient::CMomNUIClient(CNuiInterface* pInterface)
 
 CMomNUIClient::~CMomNUIClient()
 {
-
+    
 }
 
 bool CMomNUIClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefProcessId sourceProcess, CefRefPtr<CefProcessMessage> message)
@@ -26,9 +27,6 @@ bool CMomNUIClient::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefP
 void CMomNUIClient::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
     m_pNuiInterface->OnBrowserCreated(browser);
-    
-    // TODO (OrfeasZ): Setup our handler.
-    //m_pBrowserSideRouter->AddHandler(m_pFrame->Handler(), true);
 }
 
 void CMomNUIClient::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, TransitionType transition_type)
@@ -40,30 +38,37 @@ void CMomNUIClient::OnLoadStart(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFram
 
 void CMomNUIClient::OnLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, int statusCode)
 {
-    const char *pUrl = frame->GetURL().ToString().c_str();
-    pUrl = nullptr;
+    if (frame->IsMain())
+    {
+        NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
+        if (pListener)
+        {
+            pListener->OnBrowserPageLoaded(frame->GetURL().ToString().c_str());
+        }
+    }
 }
 
 void CMomNUIClient::OnLoadingStateChange(CefRefPtr<CefBrowser> browser, bool isLoading, bool canGoBack, bool canGoForward)
 {
-    if (!isLoading)
+    /*if (!isLoading)
     {
         NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
         if (pListener)
         {
             pListener->OnBrowserPageLoaded(browser->GetMainFrame()->GetURL().ToString().c_str());
         }
-    }
+    }*/
 }
 
 void CMomNUIClient::OnBeforeContextMenu(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefContextMenuParams> params, CefRefPtr<CefMenuModel> model)
 {
-
+    model->Clear();
 }
 
 bool CMomNUIClient::OnConsoleMessage(CefRefPtr<CefBrowser> browser, const CefString& message, const CefString& source, int line)
 {
-    return false;
+    DevLog(2, "NUI Console: %s\n", message.ToString().c_str());
+    return true;
 }
 
 bool CMomNUIClient::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
@@ -137,6 +142,8 @@ bool CMomNUIClient::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& o
     const CefString& message_text, const CefString& default_prompt_text, CefRefPtr<CefJSDialogCallback> callback,
     bool& suppress_message)
 {
+    suppress_message = true;
+
     NuiBrowserListener *pListener = m_pNuiInterface->GetBrowserListener((HNUIBrowser) browser->GetIdentifier());
     if (pListener)
     {
@@ -147,8 +154,8 @@ bool CMomNUIClient::OnJSDialog(CefRefPtr<CefBrowser> browser, const CefString& o
         // MOM_TODO: Add confirm and prompt dialogs?
     }
 
-    callback->Continue(true, "");
-    return true;
+    
+    return false;
 }
 
 void CMomNUIClient::OnScrollOffsetChanged(CefRefPtr<CefBrowser> browser, double x, double y)

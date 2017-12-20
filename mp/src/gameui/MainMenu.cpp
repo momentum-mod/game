@@ -8,10 +8,11 @@
 
 #include "KeyValues.h"
 #include "filesystem.h"
+#include "fmtstr.h"
 
 #include "mom_steam_helper.h"
 #include "mom_shareddefs.h"
-#include "vgui_controls/HTML.h"
+#include "nui/INuiInterface.h"
 #include "util/jsontokv.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -38,18 +39,16 @@ protected:
         const char* pFile = Q_strstr(URL, schema) + Q_strlen(schema);
         DevLog("Finding file %s...\n", pFile);
         // Create the rough path to the file
-        char path[MAX_PATH];
-        V_snprintf(path, MAX_PATH, "resource/html/%s.html", pFile);
-        // Translate to full path on system
+        CFmtStr l = CFmtStr("resource/html/%s.html", pFile);
+        // Translate to full path on system, fix slashes
         char fullPath[1024];
-        g_pFullFileSystem->RelativePathToFullPath(path, "MOD", fullPath, 1024);
-        // Append the file schema and fix the slashes
-        char finalPath[1024];
-        V_snprintf(finalPath, 1024, "file:///%s", fullPath);
-        V_FixSlashes(finalPath, '/'); // Only use forward slashes here
+        g_pFullFileSystem->RelativePathToFullPath(l.Get(), "MOD", fullPath, 1024);
+        V_FixSlashes(fullPath, '/');
+        // Append the file schema
+        CFmtStr1024 finalPath = CFmtStr1024("file:///%s", fullPath);
         // Done! Forward this to our parent HTML class
-        DevLog("Full file URL path: %s\n", finalPath);
-        PostActionSignal(new KeyValues("ResolvedURL", "url", finalPath));
+        DevLog("Full file URL path: %s\n", finalPath.Get());
+        PostActionSignal(new KeyValues("ResolvedURL", "url", finalPath.Get()));
     }
 };
 
@@ -70,11 +69,9 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("vo
     m_bInGame = false;
     m_fGameVolume = volumeRef.GetFloat();
 
+    GetMainMenuFile(m_pszMainMenuPath, MAX_PATH);
     // Install our URL handler
-    m_pURLResolver = new MomentumURLResolver(this);
-    AddCustomURLHandler("mom://", m_pURLResolver);
-    
-    //LoadMenu(); // Load the menu initially
+    //m_pURLResolver = new MomentumURLResolver(this);
 
     ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
     // First check here
@@ -85,6 +82,10 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu"), volumeRef("vo
     {
         gameeventmanager->AddListener(this, "lobby_leave", false);
     }
+
+    // Load the menu initially
+    if (nui->IsInitialized())
+        nui->CreateBrowser(this, m_pszMainMenuPath);//, "mom://menu");
 }
 
 MainMenu::~MainMenu()
@@ -154,13 +155,6 @@ void MainMenu::FireGameEvent(IGameEvent* event)
     }
 }
 
-void MainMenu::OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers)
-{
-    SendLocalizationCommand(); // Set the language
-    SendVolumeCommand(); // The initial volume to set
-    SendVersionCommand(); // Send the version
-}
-
 void MainMenu::SendVolumeCommand()
 {
     char command[128];
@@ -196,7 +190,7 @@ void MainMenu::SendVersionCommand()
 void MainMenu::SendLocalizationCommand()
 {
     char command[128];
-    const char* pLanguage = m_SteamAPIContext.SteamApps()->GetCurrentGameLanguage();
+    const char* pLanguage = GameUI().GetSteamContext()->SteamApps()->GetCurrentGameLanguage();
     Q_snprintf(command, 128, "setLocalization('%s')", pLanguage);
     RunJavascript(command);
 }
@@ -215,9 +209,9 @@ void MainMenu::SendGameStatusCommand()
     RunJavascript(visCommand);
 }
 
-void MainMenu::OnJSAlert(HTML_JSAlert_t* pAlert)
+void MainMenu::OnBrowserJSAlertDialog(const char* pString)
 {
-    KeyValues* pKv = CJsonToKeyValues::ConvertJsonToKeyValues(pAlert->pchMessage);
+    KeyValues* pKv = CJsonToKeyValues::ConvertJsonToKeyValues(pString);
     KeyValuesAD autodelete(pKv);
 
     if (pKv)
@@ -250,9 +244,28 @@ void MainMenu::OnJSAlert(HTML_JSAlert_t* pAlert)
             }
         }
     }
+}
 
-    // This must be called!
-    DismissJSDialog(true);
+void MainMenu::OnBrowserPageLoaded(const char* pURL)
+{
+    if (Q_stristr(pURL, "menu"))
+    {
+        SendLocalizationCommand(); // Set the language
+        SendVolumeCommand(); // The initial volume to set
+        SendVersionCommand(); // Send the version
+    }
+}
+
+void MainMenu::GetMainMenuFile(char* pOut, int outSize)
+{
+    // Translate to full path on system
+    char fullPath[1024];
+    g_pFullFileSystem->RelativePathToFullPath("resource/html/menu.html", "MOD", fullPath, 1024);
+    V_FixSlashes(fullPath, '/');
+    // Append the file schema and fix the slashes
+    CFmtStr1024 finalPath = CFmtStr1024("file:///%s", fullPath);
+    DevLog("Full file URL path: %s\n", finalPath.Get());
+    Q_strncpy(pOut, finalPath.Get(), outSize);
 }
 
 void MainMenu::OnMousePressed(MouseCode mc)

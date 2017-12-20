@@ -331,6 +331,8 @@ void CNuiInterface::LoadURL(HNUIBrowser unBrowserHandle, const char *pchURL, con
     CefRefPtr<CefBrowser> browser = GetBrowser(unBrowserHandle);
     if (browser.get())
     {
+        browser->StopLoad();
+
         CefRefPtr<CefRequest> request = CefRequest::Create();
         request->SetURL(pchURL);
         if (pchPostData)

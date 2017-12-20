@@ -67,6 +67,7 @@ $Project "vgui_controls"
 		$File	"MenuItem.cpp"
 		$File	"MessageBox.cpp"
 		$File	"MessageDialog.cpp"
+        $File   "NUIPanel.cpp"
 		$File	"Panel.cpp"
 		$File	"PanelListPanel.cpp"
 		$File	"PerforceFileExplorer.cpp"
@@ -159,6 +160,7 @@ $Project "vgui_controls"
 		$File	"$SRCDIR\public\vgui_controls\MessageBox.h"
 		$File	"$SRCDIR\public\vgui_controls\MessageDialog.h"
 		$File	"$SRCDIR\public\vgui_controls\MessageMap.h"
+        $File   "$SRCDIR\public\vgui_controls\NUIPanel.h"
 		$File	"$SRCDIR\public\vgui_controls\Panel.h"
 		$File	"$SRCDIR\public\vgui_controls\PanelAnimationVar.h"
 		$File	"$SRCDIR\public\vgui_controls\PanelListPanel.h"
@@ -199,4 +201,9 @@ $Project "vgui_controls"
 		$File	"$SRCDIR\public\vgui_controls\WizardPanel.h"
 		$File	"$SRCDIR\public\vgui_controls\WizardSubPanel.h"
 	}
+    
+    $Folder "Link Libraries"
+    {
+        $Lib nui
+    }
 }
