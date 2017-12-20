@@ -158,6 +158,13 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 pPlayer->m_SrvData.m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
                 // Used for spectating later on
                 pPlayer->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
+
+                // Are we in mid air when we started? If so, our first jump should be 1, not 0
+                if (pPlayer->m_bInAirDueToJump)
+                {
+                    pPlayer->m_RunStats.SetZoneJumps(0, 1);
+                    pPlayer->m_RunStats.SetZoneJumps(pPlayer->m_SrvData.m_RunData.m_iCurrentZone, 1);
+                }
             }
         }
         else
@@ -191,8 +198,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             }
         }
     }
-    // stop thinking on end touch
-    SetNextThink(-1);
+
     BaseClass::EndTouch(pOther);
 }
 
@@ -203,27 +209,24 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         pPlayer->ResetRunStats(); // Reset run stats
-        pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
-        pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0; // also reset last jump velocity when we enter the start zone
         pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f;  // MOM_TODO: Do we want to reset this?
 
         if (g_pMomentumTimer->IsRunning())
         {
-            g_pMomentumTimer->Stop(false); // Handles stopping replay recording as well
+            g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
             g_pMomentumTimer->DispatchResetMessage();
-            // lower the player's speed if they try to jump back into the start zone
-        }
-
-        // begin recording replay
-        if (!g_ReplaySystem.m_bRecording)
-        {
-            g_ReplaySystem.BeginRecording(pPlayer);
         }
         else
         {
-            g_ReplaySystem.StopRecording(true, false);
+            // Reset last jump velocity when we enter the start zone without a timer
+            pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0;
+
+            // Handle the replay recordings
+            if (g_ReplaySystem.m_bRecording)
+                g_ReplaySystem.StopRecording(true, false);
+
             g_ReplaySystem.BeginRecording(pPlayer);
         }
     }
@@ -232,13 +235,11 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
             pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             pGhost->m_SrvData.m_RunData.m_bTimerRunning = false; // Fixed
         }
     }
-    // start thinking
-    SetNextThink(gpGlobals->curtime);
+
     BaseClass::StartTouch(pOther);
 }
 

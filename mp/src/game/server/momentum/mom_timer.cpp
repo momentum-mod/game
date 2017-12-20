@@ -58,7 +58,7 @@ void CMomentumTimer::Start(int start)
 //    Log("\n");
 //}
 
-void CMomentumTimer::Stop(bool endTrigger /* = false */)
+void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* = true*/)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
@@ -82,7 +82,7 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */)
     }
 
     // Stop replay recording, if there was any
-    if (g_ReplaySystem.m_bRecording)
+    if (g_ReplaySystem.m_bRecording && stopRecording)
         g_ReplaySystem.StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
 
     SetRunning(false);

@@ -115,7 +115,7 @@ CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
     m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
     m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
-    m_nTicksInAir(0), m_flTweenVelValue(1.0f)
+    m_nTicksInAir(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -735,6 +735,8 @@ void CMomentumPlayer::OnPlayerJump()
     m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
     m_SrvData.m_iSuccessiveBhops++;
 
+    m_bInAirDueToJump = true;
+
     // Set our runstats jump count
     if (g_pMomentumTimer->IsRunning())
     {
@@ -744,10 +746,13 @@ void CMomentumPlayer::OnPlayerJump()
     }
 }
 
+
 void CMomentumPlayer::OnPlayerLand()
 {
     // Set the tick that we landed on something solid (can jump off of this)
     m_SrvData.m_iLandTick = gpGlobals->tickcount;
+
+    m_bInAirDueToJump = false;
 }
 
 void CMomentumPlayer::UpdateRunStats()

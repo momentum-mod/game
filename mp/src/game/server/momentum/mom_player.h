@@ -214,6 +214,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     CSteamID m_sSpecTargetSteamID;
 
+    bool m_bInAirDueToJump;
+
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;

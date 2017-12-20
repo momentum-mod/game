@@ -1351,6 +1351,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
     CBaseEntity *oldGround = player->GetGroundEntity();
     Vector vecBaseVelocity = player->GetBaseVelocity();
 
+    bool bLanded = false;
     if (!oldGround && newGround)
     {
         // Subtract ground velocity at instant we hit ground jumping
@@ -1358,7 +1359,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         vecBaseVelocity.z = newGround->GetAbsVelocity().z;
 
         // Fire that we landed on ground
-        FIRE_GAMEMOVEMENT_EVENT(OnPlayerLand);
+        bLanded = true;
     }
     else if (oldGround && !newGround)
     {
@@ -1370,8 +1371,10 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
     player->SetBaseVelocity(vecBaseVelocity);
     player->SetGroundEntity(newGround);
 
-    // If we are on something...
+    if (bLanded)
+        FIRE_GAMEMOVEMENT_EVENT(OnPlayerLand);
 
+    // If we are on something...
     if (newGround)
     {
         CategorizeGroundSurface(*pm); // Snow friction override
