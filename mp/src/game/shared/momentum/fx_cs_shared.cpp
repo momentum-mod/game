@@ -195,7 +195,7 @@ void FX_FireBullets(
 
     StartGroupingSounds();
 
-#if !defined (CLIENT_DLL)
+#ifndef CLIENT_DLL
     // Move other players back to history positions based on local player's lag
     if (bLocalPlayerFired)
         lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());

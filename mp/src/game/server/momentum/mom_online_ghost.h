@@ -58,6 +58,8 @@ protected:
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
+    void DoKnifeSlash(const DecalPacket_t &packet);
+
     CUtlQueue<ReceivedFrame_t<PositionPacket_t>*> m_vecPositionPackets;
     ReceivedFrame_t<PositionPacket_t>* m_pCurrentFrame;
     ReceivedFrame_t<PositionPacket_t>* m_pNextFrame;

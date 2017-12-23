@@ -2,6 +2,7 @@
 #include "mom_online_ghost.h"
 #include "in_buttons.h"
 #include "fx_cs_shared.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
@@ -46,8 +47,9 @@ void CMomentumOnlineGhostEntity::AddDecalFrame(const DecalPacket_t &decal)
 
 void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
 {
-    if (decal.decal_type == DECAL_BULLET)
+    switch (decal.decal_type)
     {
+    case DECAL_BULLET:
         FX_FireBullets(
             entindex(),
             decal.vOrigin,
@@ -56,10 +58,14 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
             decal.iMode,
             decal.iSeed,
             decal.fSpread);
-    }
-    else if (decal.decal_type == DECAL_PAINT)
-    {
-      // MOM_TODO: Spawn/fire the paint decal here   
+        break;
+    case DECAL_PAINT:
+        // MOM_TODO: Spawn/fire the paint decal here 
+        break;
+    case DECAL_KNIFE:
+        DoKnifeSlash(decal);
+    default:
+        break;
     }
 }
 
@@ -74,6 +80,17 @@ void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
         m_pCurrentSpecPlayer = nullptr;
     }
 }
+
+void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
+{
+    trace_t tr;
+    Vector vForward;
+    // Trace data here, play miss sound and do damage if hit
+    g_pMomentumUtil->KnifeTrace(packet.vOrigin, packet.vAngle, packet.iWeaponID == 1, this, this, &tr, &vForward);
+    // Play the smacking sounds and do the decal if it actually hit
+    g_pMomentumUtil->KnifeSmack(tr, this, packet.vAngle, packet.iWeaponID == 1);
+}
+
 void CMomentumOnlineGhostEntity::Precache(void)
 {
     BaseClass::Precache();

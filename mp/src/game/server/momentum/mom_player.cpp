@@ -524,8 +524,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
         {
             CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
 
-            // MOM_TODO: Allow them to at least drop the knife?
-            if (type != WEAPONTYPE_KNIFE && type != WEAPONTYPE_GRENADE)
+            if (type != WEAPONTYPE_GRENADE)
             {
                 MomentumWeaponDrop(pWeapon);
             }

@@ -59,6 +59,9 @@ class MomentumUtil
 
     void KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave);
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
+
+    void KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker, CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut);
+    void KnifeSmack(const trace_t &tr_in, CBaseEntity *pSoundSource, const QAngle &lookAng, const bool bStab);
 };
 
 extern MomentumUtil *g_pMomentumUtil;
