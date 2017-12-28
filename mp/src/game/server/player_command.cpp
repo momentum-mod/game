@@ -465,15 +465,15 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
     // Another fix would be that the client predicts the last usercmd and sends the previous usercmd to the server. 
     // But we can't do that since it's an engine problem and because of others issues coming with that fix, for example, angles/origin not matching the prediction's one so a lot of stuffs to do behind...
 
-    RunPostThink( player );
-			
-	// Copy output
-	FinishMove( player, ucmd, g_pMoveData );
-
     // Let server invoke any needed impact functions
     VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
     moveHelper->ProcessImpacts();
     VPROF_SCOPE_END();
+
+    RunPostThink( player );
+			
+	// Copy output
+	FinishMove( player, ucmd, g_pMoveData );
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );
 
