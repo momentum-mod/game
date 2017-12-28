@@ -424,6 +424,8 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	// Call Think if one is set
 	RunThink( player, TICK_INTERVAL );
 
+    player->m_vecOldOrigin = player->GetAbsOrigin();
+
 	// Setup input.
 	SetupMove( player, ucmd, moveHelper, g_pMoveData );
 
@@ -439,41 +441,22 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		VPROF( "pVehicle->ProcessMovement()" );
 		pVehicle->ProcessMovement( player, g_pMoveData );
 	}
-
-    // If we have to restore the view angle then do so right now
-    if ( !player->IsBot() && ( gpGlobals->tickcount - player->GetLockViewanglesTickNumber() < sv_maxusrcmdprocessticks_holdaim.GetInt() ) )
-    {
-        player->pl.v_angle.GetForModify() = player->GetLockViewanglesData();
-    }
-
-
-
-    // XutaxKamay FIX: we need to RunPostThink before FinishMove! Because the client is interpolating between the previous command and the last command from gamemovement data!
-    // And not the last command and the future command that the player will make.
-    // Otherwhise it would have no data to interpolate with!
-    // Or you must be a magician to predict what actually the player will do. 
-    // (REF: C_BaseEntity::BaseInterpolate1 , LINE: 2821)
-    // As you can see, it gets the laser user command predicted as gamemovement data used for current time (GetFinalPredictedTime) 
-    // Then it removes for 1 tick (TICK_INTERVAL) to get the previous command from the gamemovement data. 
-    // Then it adds the interpolation_amount * tick_interval where interpolation_amount goes to 0.0 to 1.0
-    // Wich means basically...
-    // Interpolates the previous data to the last data computed by gamemovement within an interval
-    // So it looks smoother in game. But it makes such issues like that:  https://www.youtube.com/watch?v=VPT0-CKODNc&feature=youtu.be
-    // Viewangles are of course not a problem in our problem since they're directly made by the user, 
-    // they don't get modified in gamemovement (of course they are used for others purposes butn not modified so we don't need to check for that.
-    // Valve's interpolation seems to make a lot of bugs with the game lately but who could be fixed, not only gamemovement, but also in lag compensation, but since we're in a singleplayer, nevermind.
-    // Another fix would be that the client predicts the last usercmd and sends the previous usercmd to the server. 
-    // But we can't do that since it's an engine problem and because of others issues coming with that fix, for example, angles/origin not matching the prediction's one so a lot of stuffs to do behind...
-
-    // Let server invoke any needed impact functions
-    VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
-    moveHelper->ProcessImpacts();
-    VPROF_SCOPE_END();
-
-    RunPostThink( player );
 			
 	// Copy output
 	FinishMove( player, ucmd, g_pMoveData );
+
+	// If we have to restore the view angle then do so right now
+	if ( !player->IsBot() && ( gpGlobals->tickcount - player->GetLockViewanglesTickNumber() < sv_maxusrcmdprocessticks_holdaim.GetInt() ) )
+	{
+		player->pl.v_angle.GetForModify() = player->GetLockViewanglesData();
+	}
+
+	// Let server invoke any needed impact functions
+	VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
+	moveHelper->ProcessImpacts();
+	VPROF_SCOPE_END();
+
+	RunPostThink( player );
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );
 
