@@ -314,7 +314,6 @@ void CommentarySystem_PePlayerRunCommand( CBasePlayer *player, CUserCmd *ucmd );
 //-----------------------------------------------------------------------------
 void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *moveHelper )
 {
-
 	const float playerCurTime = player->m_nTickBase * TICK_INTERVAL; 
 	const float playerFrameTime = player->m_bGamePaused ? 0 : TICK_INTERVAL;
 	const float flTimeAllowedForProcessing = player->ConsumeMovementTimeForUserCmdProcessing( playerFrameTime );
@@ -419,11 +418,6 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		player->pl.v_angle.GetForModify() = ucmd->viewangles + player->pl.anglechange;
 	}
 
-    // Let server invoke any needed impact functions
-    VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
-    moveHelper->ProcessImpacts();
-    VPROF_SCOPE_END();
-
 	// Call standard client pre-think
 	RunPreThink( player );
 
@@ -452,6 +446,8 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
         player->pl.v_angle.GetForModify() = player->GetLockViewanglesData();
     }
 
+
+
     // XutaxKamay FIX: we need to RunPostThink before FinishMove! Because the client is interpolating between the previous command and the last command from gamemovement data!
     // And not the last command and the future command that the player will make.
     // Otherwhise it would have no data to interpolate with!
@@ -473,6 +469,11 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 			
 	// Copy output
 	FinishMove( player, ucmd, g_pMoveData );
+
+    // Let server invoke any needed impact functions
+    VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
+    moveHelper->ProcessImpacts();
+    VPROF_SCOPE_END();
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );
 
