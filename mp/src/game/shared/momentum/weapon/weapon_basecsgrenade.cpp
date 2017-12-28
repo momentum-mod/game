@@ -17,6 +17,7 @@
 #ifndef CLIENT_DLL
 
 #include "items.h"
+#include "momentum/ghost_client.h"
 
 #endif
 
@@ -363,8 +364,15 @@ void CBaseCSGrenade::ThrowGrenade()
     vecSrc = trace.endpos;
 
     Vector vecThrow = vForward * flVel + pPlayer->GetAbsVelocity();
+    int impulseInt = random->RandomInt(-1200, 1200);
 
-    EmitGrenade(vecSrc, vec3_angle, vecThrow, AngularImpulse(600, random->RandomInt(-1200, 1200), 0), pPlayer);
+#ifdef GAME_DLL
+    QAngle vecThrowOnline(vecThrow.x, vecThrow.y, vecThrow.z); // Online uses angles, but we're packing 3 floats so whatever
+    DecalPacket_t packet(DECAL_BULLET, vecSrc, vecThrowOnline, WEAPON_GRENADE, impulseInt, 0, 0.0f);
+    g_pMomentumGhostClient->SendDecalPacket(&packet);
+#endif
+
+    EmitGrenade(vecSrc, vec3_angle, vecThrow, AngularImpulse(600, impulseInt, 0), pPlayer);
 
     m_bRedraw = true;
     m_fThrowTime = 0.0f;

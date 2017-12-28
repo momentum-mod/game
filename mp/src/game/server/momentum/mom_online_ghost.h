@@ -59,6 +59,7 @@ protected:
 
 private:
     void DoKnifeSlash(const DecalPacket_t &packet);
+    void ThrowGrenade(const DecalPacket_t &packet);
 
     CUtlQueue<ReceivedFrame_t<PositionPacket_t>*> m_vecPositionPackets;
     ReceivedFrame_t<PositionPacket_t>* m_pCurrentFrame;

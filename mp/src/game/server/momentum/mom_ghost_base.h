@@ -86,6 +86,9 @@ protected:
     virtual void Think(void);
     virtual void Spawn(void);
     virtual void Precache(void);
+    void DecalTrace(trace_t* pTrace, char const* decalName) OVERRIDE {} // Don't do any DecalTracing on this entity
+    int UpdateTransmitState() OVERRIDE { return SetTransmitState(FL_EDICT_ALWAYS); }
+    int ShouldTransmit(const CCheckTransmitInfo* pInfo) OVERRIDE { return FL_EDICT_ALWAYS; }
 
     virtual void CreateTrail();
     virtual void RemoveTrail();

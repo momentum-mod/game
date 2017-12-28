@@ -4,7 +4,7 @@
 #include "tier0/memdbgon.h"
 
 //MOM_TODO: Change this model to be something custom
-#define GRENADE_MODEL "models/Weapons/w_grenade.mdl"
+#define GRENADE_MODEL "models/weapons/w_grenade.mdl"
 
 LINK_ENTITY_TO_CLASS(momgrenade_projectile, CMomGrenadeProjectile);
 PRECACHE_WEAPON_REGISTER(momgrenade_projectile);
@@ -14,7 +14,7 @@ CMomGrenadeProjectile* CMomGrenadeProjectile::Create(
     const QAngle &angles,
     const Vector &velocity,
     const AngularImpulse &angVelocity,
-    CBaseCombatCharacter *pOwner,
+    CBaseEntity *pOwner,
     float timer)
 {
     auto *pGrenade = static_cast<CMomGrenadeProjectile*>(CBaseEntity::Create("momgrenade_projectile", position, angles, pOwner));

@@ -3,6 +3,8 @@
 #include "in_buttons.h"
 #include "fx_cs_shared.h"
 #include "util/mom_util.h"
+#include "weapon/cs_weapon_parse.h"
+#include "mom_grenade_projectile.h"
 
 #include "tier0/memdbgon.h"
 
@@ -50,14 +52,22 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
     switch (decal.decal_type)
     {
     case DECAL_BULLET:
-        FX_FireBullets(
-            entindex(),
-            decal.vOrigin,
-            decal.vAngle,
-            decal.iWeaponID,
-            decal.iMode,
-            decal.iSeed,
-            decal.fSpread);
+        if (decal.iWeaponID == WEAPON_GRENADE)
+        {
+            // Grenades behave differently
+            ThrowGrenade(decal);
+        }
+        else
+        {
+            FX_FireBullets(
+                entindex(),
+                decal.vOrigin,
+                decal.vAngle,
+                decal.iWeaponID,
+                decal.iMode,
+                decal.iSeed,
+                decal.fSpread);
+        }
         break;
     case DECAL_PAINT:
         // MOM_TODO: Spawn/fire the paint decal here 
@@ -89,6 +99,14 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
     g_pMomentumUtil->KnifeTrace(packet.vOrigin, packet.vAngle, packet.iWeaponID == 1, this, this, &tr, &vForward);
     // Play the smacking sounds and do the decal if it actually hit
     g_pMomentumUtil->KnifeSmack(tr, this, packet.vAngle, packet.iWeaponID == 1);
+}
+
+void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)
+{
+    // Vector values stored in a QAngle, shhh~
+    Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
+    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.iMode, 0), this, 3.0f /*GRENADE_TIMER*/); 
+    grenade->SetDamage(0.0f); // These grenades should not do damage
 }
 
 void CMomentumOnlineGhostEntity::Precache(void)

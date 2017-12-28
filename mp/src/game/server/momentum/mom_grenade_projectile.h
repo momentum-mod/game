@@ -19,7 +19,7 @@ public:
         const QAngle &angles,
         const Vector &velocity,
         const AngularImpulse &angVelocity,
-        CBaseCombatCharacter *pOwner,
+        CBaseEntity *pOwner,
         float timer);
 
 };

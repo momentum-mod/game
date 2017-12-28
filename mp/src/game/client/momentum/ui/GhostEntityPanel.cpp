@@ -28,7 +28,7 @@ CGhostEntityPanel::CGhostEntityPanel() : Panel(g_pClientMode->GetViewport()), m_
     m_pAvatarImage = new CAvatarImage();
     m_pNameLabel = new vgui::Label(this, "GhostEntityPanelName", "");
     m_pNameLabel->SetAutoWide(true);
-    m_pAvatarImage->SetDrawFriend(true);
+    m_pAvatarImage->SetDrawFriend(false);
     m_pAvatarImage->SetAvatarSize(32, 32);
     m_pAvatarImagePanel->SetImage(m_pAvatarImage);
     m_pAvatarImagePanel->SetSize(32, 32);
@@ -64,7 +64,7 @@ void CGhostEntityPanel::OnThink()
     {
         if (!m_pAvatarImage->IsValid() && m_pEntity->m_SteamID.IsValid())
         {
-            m_pAvatarImage->SetAvatarSteamID(m_pEntity->m_SteamID, k_EAvatarSize32x32);
+            m_pAvatarImage->SetAvatarSteamID(m_pEntity->m_SteamID, k_EAvatarSize64x64);
         }
 
         // MOM_TODO: Blink the panel if they're typing? Maybe an icon or something? Idk
@@ -85,12 +85,40 @@ void CGhostEntityPanel::OnThink()
 void CGhostEntityPanel::OnTick()
 {
     // Visbility checks
+    // Check fade status
+    bool bFadeShow = true;
+    int iFadeAlpha = 255;
+    if (mom_entpanels_fade_enable.GetBool() && m_pEntity)
+    {
+        // Get distance to entity
+        float flDistance = (m_pEntity->GetRenderOrigin() - MainViewOrigin()).Length();
+
+        // Get the starting units that this panel should start to fade
+        float flFadeStart = mom_entpanels_fade_start.GetFloat();
+        // Get the distance over which it should fade
+        float flFadeDist = mom_entpanels_fade_dist.GetFloat();
+
+        if (flDistance > flFadeStart)
+        {
+            float flDiff = flDistance - flFadeStart;
+
+            // The entity being over the fade distance away makes the panel hide
+            if (flDiff > flFadeDist)
+                bFadeShow = false;
+            else // We're starting to fade, calculate it here
+                iFadeAlpha = static_cast<int>(255.0f * (1.0f - flDiff / flFadeDist));
+        }
+        // Else this distance works, fade show should be true
+    }
+
     bool bEntOnScreen = GetEntityPosition(m_iPosX, m_iPosY); // Also doubles as getting the position for render
-    bool shouldDraw = ShouldDraw() && bEntOnScreen;
+    bool shouldDraw = ShouldDraw() && bEntOnScreen && bFadeShow;
+
+    SetAlpha(shouldDraw * iFadeAlpha);
+
     if (shouldDraw != IsVisible())
     {
         SetVisible(shouldDraw);
-        SetAlpha(255 * shouldDraw);
 
         if (!shouldDraw)
             return;
@@ -99,38 +127,10 @@ void CGhostEntityPanel::OnTick()
     bool isCursorOver = IsCursorOver();
     bool areNamesEnabled = mom_entpanels_enable_names.GetBool();
     
-    SetPaintBackgroundEnabled(areNamesEnabled && isCursorOver);
     m_bPaintName = areNamesEnabled && isCursorOver;
+    SetPaintBackgroundEnabled(m_bPaintName);
     
     m_pAvatarImagePanel->SetVisible(mom_entpanels_enable_avatars.GetBool());
-
-    // Check fade status
-    if (mom_entpanels_fade_enable.GetBool() && m_pEntity)
-    {
-        // Get distance to entity
-        float flDistance = (m_pEntity->GetRenderOrigin() - MainViewOrigin()).Length();
-
-        float flFadeStart = mom_entpanels_fade_start.GetFloat();
-        float flFadeDist = mom_entpanels_fade_dist.GetFloat();
-
-        if (flDistance > flFadeStart)
-        {
-            float flDiff = flDistance - flFadeStart;
-
-            if (flDiff > flFadeDist)
-                SetVisible(false);
-            else
-            {
-                SetVisible(true);
-                SetAlpha(static_cast<int>(255.0f * (1.0f - flDiff / flFadeDist)));
-            }  
-        }
-        else
-        {
-            SetVisible(true);
-            SetAlpha(255);
-        }
-    }
 }
 
 bool CGhostEntityPanel::ShouldDraw()

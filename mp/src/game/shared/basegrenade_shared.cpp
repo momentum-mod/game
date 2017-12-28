@@ -494,19 +494,14 @@ void CBaseGrenade::Precache( void )
 // Purpose: 
 // Output : CBaseCombatCharacter
 //-----------------------------------------------------------------------------
-CBaseCombatCharacter *CBaseGrenade::GetThrower( void )
+CBaseEntity *CBaseGrenade::GetThrower( void )
 {
-	CBaseCombatCharacter *pResult = ToBaseCombatCharacter( m_hThrower );
-	if ( !pResult && GetOwnerEntity() != NULL )
-	{
-		pResult = ToBaseCombatCharacter( GetOwnerEntity() );
-	}
-	return pResult;
+    return m_hThrower;
 }
 
 //-----------------------------------------------------------------------------
 
-void CBaseGrenade::SetThrower( CBaseCombatCharacter *pThrower )
+void CBaseGrenade::SetThrower( CBaseEntity *pThrower )
 {
 	m_hThrower = pThrower;
 
