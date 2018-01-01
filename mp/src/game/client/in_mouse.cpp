@@ -48,34 +48,6 @@
 extern ConVar lookstrafe;
 extern ConVar cl_pitchdown;
 extern ConVar cl_pitchup;
-extern const ConVar *sv_cheats;
-
-class ConVar_m_pitch : public ConVar_ServerBounded
-{
-public:
-	ConVar_m_pitch() : 
-		ConVar_ServerBounded( "m_pitch","0.022", FCVAR_ARCHIVE, "Mouse pitch factor." )
-	{
-	}
-	
-	virtual float GetFloat() const
-	{
-		if ( !sv_cheats )
-			sv_cheats = cvar->FindVar( "sv_cheats" );
-
-		// If sv_cheats is on then it can be anything.
-		float flBaseValue = GetBaseFloatValue();
-		if ( !sv_cheats || sv_cheats->GetBool() )
-			return flBaseValue;
-
-		// If sv_cheats is off than it can only be 0.022 or -0.022 (if they've reversed the mouse in the options).		
-		if ( flBaseValue > 0 )
-			return 0.022f;
-		else
-			return -0.022f;
-	}
-} cvar_m_pitch;
-ConVar_ServerBounded *m_pitch = &cvar_m_pitch;
 
 extern ConVar cam_idealyaw;
 extern ConVar cam_idealpitch;
@@ -86,6 +58,7 @@ ConVar sensitivity( "sensitivity","3", FCVAR_ARCHIVE, "Mouse sensitivity.", true
 
 static ConVar m_side( "m_side","0.8", FCVAR_ARCHIVE, "Mouse side factor." );
 static ConVar m_yaw( "m_yaw","0.022", FCVAR_ARCHIVE, "Mouse yaw factor." );
+static ConVar m_pitch("m_pitch", "0.022", FCVAR_ARCHIVE, "Mouse pitch factor.");
 static ConVar m_forward( "m_forward","1", FCVAR_ARCHIVE, "Mouse forward factor." );
 
 static ConVar m_customaccel( "m_customaccel", "0", FCVAR_ARCHIVE, "Custom mouse acceleration:"
@@ -421,10 +394,10 @@ void CInput::ScaleMouse( float *x, float *y )
 		// Further re-scale by yaw and pitch magnitude if user requests alternate mode 2/4
 		// This means that they will need to up their value for m_customaccel_scale greatly (>40x) since m_pitch/yaw default
 		//  to 0.022
-		if ( m_customaccel.GetInt() == 2 || m_customaccel.GetInt() == 4 )
+		if ( m_customaccel.GetInt() == 2 )
 		{ 
 			*x *= m_yaw.GetFloat(); 
-			*y *= m_pitch->GetFloat(); 
+			*y *= m_pitch.GetFloat(); 
 		} 
 	}
 	else if ( m_customaccel.GetInt() == 3 )
@@ -511,7 +484,7 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 					Vector vTempOffset = g_ThirdPersonManager.GetCameraOffsetAngles();
 
 					// use the mouse to orbit the camera around the player, and update the idealAngle
-					vTempOffset[ PITCH ] += m_pitch->GetFloat() * mouse_y;
+					vTempOffset[ PITCH ] += m_pitch.GetFloat() * mouse_y;
 					cam_idealpitch.SetValue( vTempOffset[ PITCH ] - viewangles[ PITCH ] );
 
 					g_ThirdPersonManager.SetCameraOffsetAngles( vTempOffset );
@@ -522,7 +495,7 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 			}
 			else
 			{
-				viewangles[PITCH] += CAM_CapPitch( m_pitch->GetFloat() * mouse_y );
+				viewangles[PITCH] += CAM_CapPitch( m_pitch.GetFloat() * mouse_y );
 			}
 
 			// Check pitch bounds

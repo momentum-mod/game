@@ -49,8 +49,6 @@ CBasePanel::CBasePanel() : BaseClass(nullptr, "BaseGameUIPanel")
     m_bFadingInMenus = false;
     m_bEverActivated = false;
     m_bHaveDarkenedBackground = false;
-    m_bHaveDarkenedTitleText = true;
-    m_bForceTitleTextUpdate = true;
     m_BackdropColor = Color(0, 0, 0, 128);
 
     g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt");
@@ -193,7 +191,6 @@ void CBasePanel::SetMenuAlpha(int alpha)
 {
     if (m_pMainMenu)
         m_pMainMenu->SetAlpha(alpha);
-    m_bForceTitleTextUpdate = true;
 }
 
 void CBasePanel::UpdateBackgroundState()
@@ -269,38 +266,6 @@ void CBasePanel::UpdateBackgroundState()
 
         m_bHaveDarkenedBackground = bNeedDarkenedBackground;
         GetAnimationController()->RunAnimationCommand(this, "m_flBackgroundFillAlpha", targetAlpha, 0.0f, duration, AnimationController::INTERPOLATOR_LINEAR);
-    }
-
-    // check to see if the game title should be dimmed
-    // don't transition on level change
-    if (m_bLevelLoading)
-        return;
-
-    bool bNeedDarkenedTitleText = bHaveActiveDialogs;
-    if (m_bHaveDarkenedTitleText != bNeedDarkenedTitleText || m_bForceTitleTextUpdate)
-    {
-        float targetTitleAlpha, duration;
-        if (bHaveActiveDialogs)
-        {
-            // fade out title text
-            duration = m_flFrameFadeInTime;
-            targetTitleAlpha = 32.0f;
-        }
-        else
-        {
-            // fade in title text
-            duration = 2.0f;
-            targetTitleAlpha = 255.0f;
-        }
-
-        if (m_pMainMenu)
-        {
-            // MOM_TODO: Should this just exec some javascript for animating?
-            GetAnimationController()->RunAnimationCommand(m_pMainMenu, "alpha", targetTitleAlpha, 0.0f, duration, AnimationController::INTERPOLATOR_LINEAR);
-        }
-
-        m_bHaveDarkenedTitleText = bNeedDarkenedTitleText;
-        m_bForceTitleTextUpdate = false;
     }
 }
 

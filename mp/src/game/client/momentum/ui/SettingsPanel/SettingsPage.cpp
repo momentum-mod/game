@@ -2,15 +2,8 @@
 
 #include "SettingsPage.h"
 
-SettingsPageScrollPanel::SettingsPageScrollPanel(Panel *pParent, EditablePanel *pChild, const char *pName) : BaseClass(pParent, pChild, pName)
-{
-    m_pChild = dynamic_cast<PropertyPage*>(pChild);
-}
-
 SettingsPage::SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParent, pName)
 {
-    SetAutoDelete(true);
-
     // Set proportionality of the panels inside the dialog
     SetProportional(true);
 
@@ -23,7 +16,6 @@ SettingsPage::SettingsPage(Panel *pParent, const char *pName) : BaseClass(pParen
     m_pScrollPanel = new SettingsPageScrollPanel(pParent, this, "ScrollablePanel");
     m_pScrollPanel->AddActionSignalTarget(this);
     m_pScrollPanel->SetProportional(true);
-    m_pScrollPanel->SetAutoDelete(true);
 }
 
 void SettingsPage::NotifyParentOfUpdate()

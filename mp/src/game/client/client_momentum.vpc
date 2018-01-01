@@ -81,7 +81,8 @@ $Project "Client (Momentum)"
 	                    $File "momentum\ui\SettingsPanel\HudSettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\GameplaySettingsPage.h"
 	                    $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.h"
-	                    $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.h"
+	                    $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.h"
+                        $File "momentum\ui\SettingsPanel\OnlineSettingsPage.h"
                     }
 
                     $File "momentum\ui\SettingsPanel\MomentumSettingsDialog.cpp"
@@ -89,7 +90,8 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\SettingsPanel\HudSettingsPage.cpp"
 	                $File "momentum\ui\SettingsPanel\GameplaySettingsPage.cpp"
 	                $File "momentum\ui\SettingsPanel\ComparisonsSettingsPage.cpp"
-	                $File "momentum\ui\SettingsPanel\ReplaysSettingsPage.cpp"
+	                $File "momentum\ui\SettingsPanel\AppearanceSettingsPage.cpp"
+                    $File "momentum\ui\SettingsPanel\OnlineSettingsPage.cpp"
                 }
                 
                 $Folder "HUD"
@@ -119,12 +121,10 @@ $Project "Client (Momentum)"
                 {
                     $File "momentum\ui\PFrameButton.h"
                     $File "momentum\ui\PFrameButton.cpp"
-                    $File "momentum\ui\CVarSlider.h"
-                    $File "momentum\ui\CVarSlider.cpp"
-                    $File "momentum\ui\ScrubbableProgressBar.h"
-                    $File "momentum\ui\ScrubbableProgressBar.cpp"
                     $File "momentum\ui\ColorPicker.h"
                     $File "momentum\ui\ColorPicker.cpp"
+                    $File "momentum\ui\ModelPanel.h"
+                    $File "momentum\ui\ModelPanel.cpp"
                 }
                 
                 $Folder "Leaderboards"
@@ -166,17 +166,7 @@ $Project "Client (Momentum)"
             }
 
             $File   "momentum\client_events.h"
-
             $File   "momentum\client_events.cpp"
-            {
-                $Configuration
-                {
-                    $Compiler
-                    {
-                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
-                    }
-                }
-            }
 
             $File 	"momentum\mom_run_poster.h"
             $File 	"momentum\mom_run_poster.cpp"

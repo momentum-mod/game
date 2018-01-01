@@ -15,11 +15,11 @@ void RefreshGhostData(IConVar *var, const char *pValue, float oldValue)
     g_pMomentumGhostClient->ResetOtherAppearanceData();
 }
 
-static MAKE_TOGGLE_CONVAR(mom_ghost_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
-static MAKE_TOGGLE_CONVAR_C(mom_ghost_color_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, 
+static MAKE_TOGGLE_CONVAR(mom_ghost_online_sounds, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggle other player's flashlight sounds. 0 = OFF, 1 = ON.\n");
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_alpha_override_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, 
     "Toggle overriding other player's ghost alpha values to the one defined in \"mom_ghost_color_alpha_override\".\n", RefreshGhostData);
-static MAKE_CONVAR_C(mom_ghost_color_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
-static MAKE_TOGGLE_CONVAR_C(mom_ghost_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
+static MAKE_CONVAR_C(mom_ghost_online_alpha_override, "100", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Overrides ghosts alpha to be this value.\n", 0, 255, RefreshGhostData);
+static MAKE_TOGGLE_CONVAR_C(mom_ghost_online_trail_enable, "1", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Toggles drawing other ghost's trails. 0 = OFF, 1 = ON\n", RefreshGhostData);
 
 CMomentumGhostBaseEntity::CMomentumGhostBaseEntity(): m_pCurrentSpecPlayer(nullptr), m_eTrail(nullptr)
 {
@@ -73,7 +73,7 @@ void CMomentumGhostBaseEntity::SetGhostColor(const uint32 newHexColor)
     Color newColor;
     if (g_pMomentumUtil->GetColorFromHex(newHexColor, newColor))
     {
-        int alpha = mom_ghost_color_alpha_override_enable.GetBool() ? mom_ghost_color_alpha_override.GetInt() : newColor.a();
+        int alpha = mom_ghost_online_alpha_override_enable.GetBool() ? mom_ghost_online_alpha_override.GetInt() : newColor.a();
         SetRenderColor(newColor.r(), newColor.g(), newColor.b(), alpha);
     }
 }
@@ -90,13 +90,13 @@ void CMomentumGhostBaseEntity::SetGhostFlashlight(bool isOn)
     if (isOn)
     {
         AddEffects(EF_DIMLIGHT);
-        if (mom_ghost_sounds.GetBool())
+        if (mom_ghost_online_sounds.GetBool())
             EmitSound(SND_FLASHLIGHT_ON);
     }
     else
     {
         RemoveEffects(EF_DIMLIGHT);
-        if (mom_ghost_sounds.GetBool())
+        if (mom_ghost_online_sounds.GetBool())
             EmitSound(SND_FLASHLIGHT_OFF);
     }
 }
@@ -174,7 +174,7 @@ void CMomentumGhostBaseEntity::CreateTrail()
 {
     RemoveTrail();
 
-    if (!(m_ghostAppearance.GhostTrailEnable && mom_ghost_trail_enable.GetBool())) return;
+    if (!(m_ghostAppearance.GhostTrailEnable && mom_ghost_online_trail_enable.GetBool())) return;
 
     // Ty GhostingMod
     m_eTrail = CreateEntityByName("env_spritetrail");

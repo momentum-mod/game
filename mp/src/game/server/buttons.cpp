@@ -289,8 +289,6 @@ void CBaseButton::InputPressOut( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 int CBaseButton::OnTakeDamage( const CTakeDamageInfo &info )
 {
-	m_OnDamaged.FireOutput(m_hActivator, this);
-
 	// dvsents2: remove obselete health keyvalue from func_button
 	if (!HasSpawnFlags(SF_BUTTON_DAMAGE_ACTIVATES) && (m_iHealth == 0))
 	{
@@ -307,6 +305,8 @@ int CBaseButton::OnTakeDamage( const CTakeDamageInfo &info )
 	// dvsents2: why would activator be NULL here?
 	if ( m_hActivator == NULL )
 		return 0;
+
+    m_OnDamaged.FireOutput(m_hActivator, this);
 
 	if (m_bLocked)
 	{

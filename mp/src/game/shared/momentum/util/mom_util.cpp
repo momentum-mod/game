@@ -266,7 +266,7 @@ bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
 {
     uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
-    if (length == 6)
+    if (length < 8)
     {
         uint8 r = (hex & 0xFF0000) >> 16;
         uint8 g = (hex & 0x00FF00) >> 8;
@@ -307,7 +307,7 @@ uint32 MomentumUtil::GetHexFromColor(const Color &color)
 void MomentumUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
 {
     const uint32 colorHex = GetHexFromColor(color);
-    Q_snprintf(pBuffer, maxLen, "%p", colorHex); //This prints the 00 so it can parse again the trail
+    Q_snprintf(pBuffer, maxLen, "%08x", colorHex);
 }
 
 inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
@@ -334,7 +334,7 @@ CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate,
     if (szMapName)
     {
         char path[MAX_PATH];
-        Q_snprintf(path, MAX_PATH, "%s/%s*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
+        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
         V_FixSlashes(path);
 
         CMomReplayBase *pFastest = nullptr;

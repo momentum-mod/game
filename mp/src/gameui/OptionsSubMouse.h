@@ -15,13 +15,13 @@
 
 class CCvarNegateCheckButton;
 class CKeyToggleCheckButton;
-class CCvarToggleCheckButton;
-class CCvarSlider;
 
 namespace vgui
 {
     class Label;
     class Panel;
+    class CvarToggleCheckButton;
+    class CCvarSlider;
 }
 
 //-----------------------------------------------------------------------------
@@ -54,22 +54,19 @@ private:
 	void UpdateJoystickPanels();
 
 	CCvarNegateCheckButton		*m_pReverseMouseCheckBox;
-	CCvarToggleCheckButton		*m_pMouseFilterCheckBox;
-    CCvarToggleCheckButton *m_pMouseRawCheckbox;
-	CCvarToggleCheckButton		*m_pJoystickCheckBox;
-	CCvarToggleCheckButton		*m_pJoystickSouthpawCheckBox;
-	CCvarToggleCheckButton		*m_pReverseJoystickCheckBox;
+	vgui::CvarToggleCheckButton	*m_pMouseFilterCheckBox ,*m_pMouseRawCheckbox, *m_pJoystickCheckBox,
+        *m_pJoystickSouthpawCheckBox, *m_pReverseJoystickCheckBox;
 
-	CCvarSlider					*m_pMouseSensitivitySlider;
+    vgui::CCvarSlider					*m_pMouseSensitivitySlider;
     vgui::TextEntry             *m_pMouseSensitivityLabel;
 
     vgui::CheckButton *m_pMouseAccelToggle;
-    CCvarSlider *m_pMouseAccelSlider;
+    vgui::CCvarSlider *m_pMouseAccelSlider;
     vgui::TextEntry *m_pMouseAccelLabel;
 
-	CCvarSlider					*m_pJoyYawSensitivitySlider;
+    vgui::CCvarSlider					*m_pJoyYawSensitivitySlider;
 	vgui::Label					*m_pJoyYawSensitivityPreLabel;
-	CCvarSlider					*m_pJoyPitchSensitivitySlider;
+    vgui::CCvarSlider					*m_pJoyPitchSensitivitySlider;
 	vgui::Label					*m_pJoyPitchSensitivityPreLabel;
 };
 

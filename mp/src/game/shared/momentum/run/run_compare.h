@@ -14,6 +14,11 @@ struct RunCompare_t
     {
         runName[0] = '\0';
     }
+
+    RunCompare_t(uint8 size) : runStats(&runStatsData, size)
+    {
+        runName[0] = '\0';
+    }
 };
 
 enum ComparisonString_t

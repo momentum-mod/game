@@ -599,9 +599,9 @@ const char *ParseTokenFromString( const char **string )
 		tok++;
 	}
 
-	// read in all the alnum characters
+	// read in all the alnum characters (including underscores)
 	int pos = 0;
-	while ( V_isalnum(tok[pos]) )
+	while ( V_isalnum(tok[pos]) || tok[pos] == '_' )
 	{
 		buf[pos] = tok[pos];
 		pos++;

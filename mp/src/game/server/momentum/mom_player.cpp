@@ -14,6 +14,7 @@
 #include "mom_online_ghost.h"
 #include "mom_blockfix.h"
 #include "run/run_checkpoint.h"
+#include "mom_gamemovement.h"
 
 #include "tier0/memdbgon.h"
 
@@ -36,7 +37,6 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(CheckForBhop), 
 DEFINE_THINKFUNC(UpdateRunStats), 
 DEFINE_THINKFUNC(CalculateAverageStats), 
 DEFINE_THINKFUNC(LimitSpeedInStartZone),
@@ -113,7 +113,7 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
-    m_flTicksOnGround(0.0f), NUM_TICKS_TO_BHOP(10), m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
+    m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
     m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
     m_nTicksInAir(0), m_flTweenVelValue(1.0f)
 {
@@ -128,6 +128,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_bDidPlayerBhop = false;
     m_SrvData.m_iSuccessiveBhops = 0;
     m_SrvData.m_bHasPracticeMode = false;
+    m_SrvData.m_bPreventPlayerBhop = false;
+    m_SrvData.m_iLandTick = 0;
 
     m_SrvData.m_iCheckpointCount = 0;
     m_SrvData.m_bUsingCPMenu = false;
@@ -138,6 +140,9 @@ CMomentumPlayer::CMomentumPlayer()
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
     ListenForGameEvent("mapfinished_panel_closed");
+
+    // Listen for when this player jumps and lands
+    g_pMomentumGameMovement->AddMovementListener(this);
 }
 
 CMomentumPlayer::~CMomentumPlayer()
@@ -145,6 +150,12 @@ CMomentumPlayer::~CMomentumPlayer()
     RemoveTrail();
     RemoveAllCheckpoints();
     RemoveAllOnehops();
+
+    // Clear our spectating status just in case we leave the map while spectating
+    g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false);
+
+    // Remove us from the gamemovement listener list
+    g_pMomentumGameMovement->RemoveMovementListener(this);
 }
 
 void CMomentumPlayer::Precache()
@@ -288,6 +299,8 @@ void CMomentumPlayer::Spawn()
     m_SrvData.m_RunData.m_bMapFinished = false;
     m_SrvData.m_RunData.m_iCurrentZone = 0;
     m_SrvData.m_bHasPracticeMode = false;
+    m_SrvData.m_bPreventPlayerBhop = false;
+    m_SrvData.m_iLandTick = 0;
     ResetRunStats();
     if (runSaveEvent)
     {
@@ -310,13 +323,11 @@ void CMomentumPlayer::Spawn()
     g_pMomentumTimer->DispatchMapInfo();
 
     RegisterThinkContext("THINK_EVERY_TICK");
-    RegisterThinkContext("CURTIME");
     RegisterThinkContext("THINK_AVERAGE_STATS");
     RegisterThinkContext("CURTIME_FOR_START");
     RegisterThinkContext("TWEEN");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick,
                     "THINK_EVERY_TICK");
-    SetContextThink(&CMomentumPlayer::CheckForBhop, gpGlobals->curtime, "CURTIME");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL,
                     "THINK_AVERAGE_STATS");
     SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
@@ -707,31 +718,30 @@ void CMomentumPlayer::DisableAutoBhop()
     m_SrvData.m_RunData.m_bAutoBhop = false;
     DevLog("Disabled autobhop\n");
 }
-void CMomentumPlayer::CheckForBhop()
-{
-    if (GetGroundEntity() != nullptr)
-    {
-        m_flTicksOnGround += gpGlobals->interval_per_tick;
-        // true is player is on ground for less than 10 ticks, false if they are on ground for more s
-        m_SrvData.m_bDidPlayerBhop = (m_flTicksOnGround < NUM_TICKS_TO_BHOP * gpGlobals->interval_per_tick) != 0;
-        if (!m_SrvData.m_bDidPlayerBhop)
-            m_SrvData.m_iSuccessiveBhops = 0;
-        if (m_nButtons & IN_JUMP)
-        {
-            m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
-            m_SrvData.m_iSuccessiveBhops++;
-            if (g_pMomentumTimer->IsRunning())
-            {
-                int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
-                m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);
-                m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1);
-            }
-        }
-    }
-    else
-        m_flTicksOnGround = 0;
 
-    SetNextThink(gpGlobals->curtime, "CURTIME");
+void CMomentumPlayer::OnPlayerJump()
+{
+    // OnCheckBhop code 
+    m_SrvData.m_bDidPlayerBhop = gpGlobals->tickcount - m_SrvData.m_iLandTick < NUM_TICKS_TO_BHOP;
+    if (!m_SrvData.m_bDidPlayerBhop)
+        m_SrvData.m_iSuccessiveBhops = 0;
+
+    m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
+    m_SrvData.m_iSuccessiveBhops++;
+
+    // Set our runstats jump count
+    if (g_pMomentumTimer->IsRunning())
+    {
+        int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
+        m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1); // Increment total jumps
+        m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
+    }
+}
+
+void CMomentumPlayer::OnPlayerLand()
+{
+    // Set the tick that we landed on something solid (can jump off of this)
+    m_SrvData.m_iLandTick = gpGlobals->tickcount;
 }
 
 void CMomentumPlayer::UpdateRunStats()
@@ -999,9 +1009,15 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
         pGhostToSpectate->SetSpectator(this);
 
         CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
+        CMomentumReplayGhostEntity *pReplayEnt = dynamic_cast<CMomentumReplayGhostEntity *>(target);
         if (pOnlineEnt)
         {
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
+            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
+        }
+        else if (pReplayEnt)
+        {
+            m_sSpecTargetSteamID = CSteamID(uint64(1));
             g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
         }
     }

@@ -181,8 +181,8 @@ void C_RunComparisons::LoadComparisons()
 
 inline void GenerateBogusRunStats(CMomRunStats *pStatsOut)
 {
-    RandomSeed(Plat_FloatTime());
-    for (int i = 0; i < MAX_STAGES; i++)
+    RandomSeed(random->RandomInt(-10000, 10000));
+    for (int i = 0; i < pStatsOut->GetTotalZones(); i++)
     {
         // Time
         pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
@@ -208,15 +208,16 @@ void C_RunComparisons::LoadBogusComparisons()
 {
     UnloadBogusComparisons();
     // Let's make a bogus run, shall we?
-    m_rcBogusComparison = new RunCompare_t();
-    m_pBogusRunStats = new CMomRunStats(&m_bogusData);
-    GenerateBogusRunStats(m_pBogusRunStats);
+    m_rcBogusComparison = new RunCompare_t(12);
+    m_pBogusRunStats = new CMomRunStats(&m_bogusData, 12);
+    GenerateBogusRunStats(m_pBogusRunStats); // Generate the bogus PB
+    GenerateBogusRunStats(&m_rcBogusComparison->runStats); // Generate the bogus WR
 
-    // Fill the comparison with the bogus run
+    // Fill the comparison with the bogus run name
     char bogusRunANSI[BUFSIZELOCL];
     LOCALIZE_TOKEN(BogusRun, "#MOM_Settings_Compare_Bogus_Run", bogusRunANSI);
+    Q_strncpy(m_rcBogusComparison->runName, bogusRunANSI, sizeof(m_rcBogusComparison->runName));
 
-    g_pMomentumUtil->FillRunComparison(bogusRunANSI, m_pBogusRunStats, m_rcBogusComparison);
     m_bLoadedBogusComparison = true;
 }
 

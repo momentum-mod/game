@@ -6,7 +6,6 @@
 //=============================================================================//
 
 #include "OptionsSubVideo.h"
-#include "CvarSlider.h"
 #include "EngineInterface.h"
 #include "BasePanel.h"
 #include "IGameUIFuncs.h"
@@ -18,7 +17,7 @@
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/Frame.h"
 #include "vgui_controls/QueryBox.h"
-#include "CvarToggleCheckButton.h"
+#include "vgui_controls/CVarSlider.h"
 #include "tier1/KeyValues.h"
 #include "vgui/IInput.h"
 #include "vgui/ILocalize.h"

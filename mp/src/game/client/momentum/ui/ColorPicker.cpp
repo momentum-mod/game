@@ -319,12 +319,14 @@ class PickerHelper : public Panel
 ColorPicker::ColorPicker(Panel *parent, Panel *pActionsignalTarget) : BaseClass(parent, "CColorPicker")
 {
     pTarget = nullptr;
+    pTargetCallback = nullptr;
     AddActionSignalTarget(pActionsignalTarget);
     Init();
 }
 ColorPicker::ColorPicker(Panel *parent, TextEntry *pTargetEntry) : BaseClass(parent, "CColorPicker")
 {
     pTarget = pTargetEntry;
+    pTargetCallback = nullptr;
     Init();
 }
 
@@ -338,6 +340,8 @@ ColorPicker::~ColorPicker()
 
     pDrawPicker_Hue = nullptr;
     pDrawPicker_SV = nullptr;
+    pTarget = nullptr;
+    pTargetCallback = nullptr;
 }
 
 void ColorPicker::Init()
@@ -505,7 +509,12 @@ void ColorPicker::UpdateAlpha(bool bWasSlider)
     }
 
     m_vecColor[3] = static_cast<float>(newValue) / 255.0f;
-    UpdateAllVars(bWasSlider ? nullptr : m_pText_RGBA[3]);
+    Panel *pIgnore;
+    if (bWasSlider)
+        pIgnore = m_pAlphaSlider;
+    else 
+        pIgnore = m_pText_RGBA[3];
+    UpdateAllVars(pIgnore);
 }
 
 void ColorPicker::OnCommand(const char *cmd)
@@ -524,6 +533,7 @@ void ColorPicker::OnCommand(const char *cmd)
             Color picked;
             Vec4DToColor(m_vecColor, picked);
             pKV->SetColor("color", picked);
+            pKV->SetPtr("targetCallback", pTargetCallback);
             PostActionSignal(pKV);
         }
         Close();
@@ -607,6 +617,9 @@ void ColorPicker::UpdateAllVars(Panel *pIgnore)
         g_pMomentumUtil->GetHexStringFromColor(currentColor, hexString, 9);
         m_pText_HEX->SetText(hexString);
     }
+
+    if (pIgnore != m_pAlphaSlider)
+        m_pAlphaSlider->SetValue(clamp<int>(m_vecColor[3] * 255.0f, 0, 255), false);
 
     if (pIgnore != m_pSelect_Hue)
         m_pSelect_Hue->SetHue(clamp(m_vecHSV.x, 0.0f, 360.0f));

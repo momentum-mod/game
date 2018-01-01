@@ -6,10 +6,10 @@
 
 #include "OptionsSubAudio.h"
 
-#include "CvarSlider.h"
 #include "ModInfo.h"
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/QueryBox.h"
+#include "vgui_controls/CVarSlider.h"
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
 #include "vgui/IInput.h"

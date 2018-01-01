@@ -659,42 +659,6 @@ void CTriggerUserInput::Spawn()
 //--------- CTriggerLimitMovement -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_limitmovement, CTriggerLimitMovement);
 
-void CTriggerLimitMovement::Think()
-{
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
-    if (pPlayer && IsTouching(pPlayer))
-    {
-        if (HasSpawnFlags(LIMIT_BHOP))
-        {
-            pPlayer->DisableButtons(IN_JUMP);
-            // if player in air
-            if (pPlayer->GetGroundEntity() != nullptr)
-            {
-                // only start timer if we havent already started
-                if (!m_BhopTimer.HasStarted())
-                    m_BhopTimer.Start(FL_BHOP_TIMER);
-
-                // when finished
-                if (m_BhopTimer.IsElapsed())
-                {
-                    pPlayer->EnableButtons(IN_JUMP);
-                    m_BhopTimer.Reset();
-                }
-            }
-        }
-    }
-    // figure out if timer elapsed or not
-    if (m_BhopTimer.GetRemainingTime() <= 0)
-        m_BhopTimer.Invalidate();
-    // DevLog("Bhop Timer Remaining Time:%f\n", m_BhopTimer.GetRemainingTime());
-
-    // HACKHACK - this prevents think from running too fast, breaking the timer
-    // and preventing the player from jumping until the timer runs out
-    // Thinking every 0.25 seconds seems to feel good, but we can adjust this later
-    SetNextThink(gpGlobals->curtime + 0.25);
-    BaseClass::Think();
-}
-
 void CTriggerLimitMovement::StartTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
@@ -710,7 +674,7 @@ void CTriggerLimitMovement::StartTouch(CBaseEntity *pOther)
         }
         if (HasSpawnFlags(LIMIT_BHOP))
         {
-            pPlayer->DisableButtons(IN_JUMP);
+            pPlayer->m_SrvData.m_bPreventPlayerBhop = true;
         }
     }
 
@@ -724,9 +688,11 @@ void CTriggerLimitMovement::EndTouch(CBaseEntity *pOther)
     {
         pPlayer->EnableButtons(IN_JUMP);
         pPlayer->EnableButtons(IN_DUCK);
+        
+        if (HasSpawnFlags(LIMIT_BHOP))
+            pPlayer->m_SrvData.m_bPreventPlayerBhop = false;
     }
 
-    m_BhopTimer.Reset();
     BaseClass::EndTouch(pOther);
 }
 //-----------------------------------------------------------------------------------------------

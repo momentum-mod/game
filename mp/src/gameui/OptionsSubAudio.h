@@ -14,10 +14,10 @@
 #include "vgui_controls/PropertyPage.h"
 #include <language.h>
 #include "vgui_controls/Frame.h"
+#include <vgui_controls/CVarSlider.h>
 #include "vgui/KeyCode.h"
 
 class CLabeledCommandComboBox;
-class CCvarSlider;
 
 //-----------------------------------------------------------------------------
 // Purpose: Audio Details, Part of OptionsDialog
@@ -47,8 +47,8 @@ private:
 
 	vgui::ComboBox				*m_pSpeakerSetupCombo;
 	vgui::ComboBox				*m_pSoundQualityCombo;
-	CCvarSlider					*m_pSFXSlider;
-	CCvarSlider					*m_pMusicSlider;
+	vgui::CCvarSlider					*m_pSFXSlider;
+	vgui::CCvarSlider					*m_pMusicSlider;
 	vgui::ComboBox				*m_pCloseCaptionCombo;
 	bool						   m_bRequireRestart;
    

@@ -24,13 +24,13 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSyncColorize->AddItem("#MOM_Settings_Sync_Color_Type_2", nullptr);
     m_pSyncColorize->AddActionSignalTarget(this);
 
-    m_pSpeedometerShow = FindControl<CvarToggleCheckButton<ConVarRef>>("SpeedoShow");
+    m_pSpeedometerShow = FindControl<CvarToggleCheckButton>("SpeedoShow");
     m_pSpeedometerShow->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowLastJump = FindControl<CvarToggleCheckButton<ConVarRef>>("SpeedoShowJump");
+    m_pSpeedometerShowLastJump = FindControl<CvarToggleCheckButton>("SpeedoShowJump");
     m_pSpeedometerShowLastJump->AddActionSignalTarget(this);
 
-    m_pSpeedometerShowVerticalVel = FindControl<CvarToggleCheckButton<ConVarRef>>("ShowSpeedoHvel");
+    m_pSpeedometerShowVerticalVel = FindControl<CvarToggleCheckButton>("ShowSpeedoHvel");
     m_pSpeedometerShowVerticalVel->AddActionSignalTarget(this);
 
 
@@ -41,16 +41,16 @@ HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettin
     m_pSpeedometerColorize->AddItem("#MOM_Settings_Speedometer_Color_Type_2", nullptr);
     m_pSpeedometerColorize->AddActionSignalTarget(this);
 
-    m_pSyncShow = FindControl<CvarToggleCheckButton<ConVarRef>>("SyncShow");
+    m_pSyncShow = FindControl<CvarToggleCheckButton>("SyncShow");
     m_pSyncShow->AddActionSignalTarget(this);
 
-    m_pSyncShowBar = FindControl<CvarToggleCheckButton<ConVarRef>>("SyncShowBar");
+    m_pSyncShowBar = FindControl<CvarToggleCheckButton>("SyncShowBar");
     m_pSyncShowBar->AddActionSignalTarget(this);
 
-    m_pButtonsShow = FindControl<CvarToggleCheckButton<ConVarRef>>("ButtonsShow");
+    m_pButtonsShow = FindControl<CvarToggleCheckButton>("ButtonsShow");
     m_pButtonsShow->AddActionSignalTarget(this);
 
-    m_pTimerShow = FindControl<CvarToggleCheckButton<ConVarRef>>("TimerShow");
+    m_pTimerShow = FindControl<CvarToggleCheckButton>("TimerShow");
     m_pTimerShow->AddActionSignalTarget(this);
 }
 

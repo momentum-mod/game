@@ -23,6 +23,7 @@
 #include "datacache/imdlcache.h"
 #include "view.h"
 #include "viewrender.h"
+#include "con_nprint.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -1483,7 +1484,12 @@ inline void AddRenderableToRenderList( CClientRenderablesList &renderList, IClie
 	}
 	else
 	{
-		Warning("Warning: overflowed CClientRenderablesList group %d", group );
+        con_nprint_s overflow;
+        overflow.index = 10;
+        overflow.time_to_live = 2;
+        overflow.color[0] = overflow.color[1] = overflow.color[2] = 1.0f;
+        overflow.fixed_width_font = false;
+        engine->Con_NXPrintf(&overflow, "Warning: overflowed CClientRenderablesList group %d", group);
 	}
 }
 
