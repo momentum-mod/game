@@ -129,9 +129,17 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIO
         return;
     }
 
+    // Right now "size" is the content body size, not in string terms where the end is marked
+    // with a null terminator. GetHTTPResponseBodyData will complain if the size isn't exactly
+    // matching with above, so it has to be reallocated.
+
     uint8 *pData = new uint8[size];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    char *pDataPtr = reinterpret_cast<char *>(pData);
+
+    pData = reinterpret_cast<uint8 *>(realloc(pData, size + 1));
+    pData[size] = 0;
+
+    const char *pDataPtr = reinterpret_cast<const char *>(pData);
 
     changelogpanel->SetChangelog(pDataPtr);
 
