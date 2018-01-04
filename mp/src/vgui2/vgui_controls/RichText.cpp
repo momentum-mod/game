@@ -442,6 +442,8 @@ void RichText::SetText(const wchar_t *text)
 	m_FormatStream.AddToTail(stream);
 
 	// set the new text stream
+    m_TextStream.RemoveAll();
+
 	if ( text && *text )
 	{
 		int textLen = wcslen(text) + 1;
