@@ -17,10 +17,6 @@ class MomentumUtil
     void GetRemoteChangelog();
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbChangeLog;
     void ChangelogCallback(HTTPRequestCompleted_t *, bool);
-
-    void GetRemoteRepoModVersion();
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
-    void VersionCallback(HTTPRequestCompleted_t *, bool);
 #endif
 
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
