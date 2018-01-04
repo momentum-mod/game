@@ -22,15 +22,25 @@ class CChangelogPanel : public Frame
     // CChangelogPanel : This Class / vgui::Frame : BaseClass
 
     CChangelogPanel(VPANEL parent); // Constructor
-    ~CChangelogPanel(){};           // Destructor
+    ~CChangelogPanel()
+    {
+        free(m_pwOnlineChangelog);
+    };
 
     void SetVersion(const char *version) { Q_strncpy(m_cOnlineVersion, version, 12); }
 
     void SetChangelog(const char *pChangelog)
     {
-        ANSI_TO_UNICODE(pChangelog, m_pwOnlineChangelog);
         if (m_pChangeLog)
         {
+            if (m_pwOnlineChangelog)
+            {
+                free(m_pwOnlineChangelog);
+                m_pwOnlineChangelog = nullptr;
+            }
+
+            g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelog, &m_pwOnlineChangelog);
+
             m_pChangeLog->SetText(m_pwOnlineChangelog);
             // Delay the scrolling to a tick or so away, thanks Valve.
             m_flScrollTime = system()->GetFrameTime() + 0.010f;
@@ -65,7 +75,7 @@ class CChangelogPanel : public Frame
     float m_flScrollTime;
     RichText *m_pChangeLog;
     char m_cOnlineVersion[12];
-    wchar_t m_pwOnlineChangelog[4096]; // MOM_TODO: Determine a better size
+    wchar_t *m_pwOnlineChangelog;
 };
 
 class CChangelogInterface : public IChangelogPanel

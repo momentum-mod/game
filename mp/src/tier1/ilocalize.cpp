@@ -26,6 +26,36 @@ int ILocalize::ConvertANSIToUnicode(const char *ansi, wchar_t *unicode, int unic
 #endif
 }
 
+int ILocalize::ConvertUTF8ToUTF16(const char *utf8, wchar_t **utf16)
+{
+    if (*utf16 != nullptr)
+    {
+        return 0;
+    }
+
+    int size = Q_UTF8ToUTF16(utf8, nullptr, 0);
+    *utf16 = (wchar_t*)calloc(1, size);
+
+    size = Q_UTF8ToUTF16(utf8, *utf16, size);
+
+    return size / sizeof(wchar_t);
+}
+
+int ILocalize::ConvertUTF16ToUTF8(const wchar_t *utf16, char **utf8)
+{
+    if (*utf8 != nullptr)
+    {
+        return 0;
+    }
+
+    int size = Q_UTF16ToUTF8(utf16, nullptr, 0);
+    *utf8 = (char*)calloc(1, size);
+
+    size = Q_UTF16ToUTF8(utf16, *utf8, size);
+
+    return size;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: converts an unicode string to an english string
 //-----------------------------------------------------------------------------

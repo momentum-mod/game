@@ -10,7 +10,7 @@
 CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogPanel")
 {
     V_memset(m_cOnlineVersion, 0, sizeof(m_cOnlineVersion));
-    V_memset(m_pwOnlineChangelog, 0, sizeof(m_pwOnlineChangelog));
+    m_pwOnlineChangelog = nullptr;
 
     SetParent(parent);
     LoadControlSettings("resource/ui/ChangelogPanel.res");
