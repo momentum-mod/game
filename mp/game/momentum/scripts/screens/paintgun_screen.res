@@ -1,0 +1,4 @@
+"paintgun_screen.res"
+{
+	
+}

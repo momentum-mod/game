@@ -2,44 +2,28 @@
 
 #include "cbase.h"
 
-#include "CVarSlider.h"
-#include "ColorPicker.h"
-#include "SettingsPage.h"
-#include "game/client/iviewport.h"
-#include "mom_shareddefs.h"
-#include <vgui_controls/Button.h>
+#include <vgui_controls/EditablePanel.h>
 
-using namespace vgui;
-
-class PaintGunPanel : public Frame, public IViewPortPanel, public CGameEventListener
+namespace vgui
 {
-    DECLARE_CLASS_SIMPLE(PaintGunPanel, Frame);
+
+class Label;
+class CCvarSlider;
+class ColorPicker;
+class CvarToggleCheckButton;
+
+class PaintGunPanel : public EditablePanel, public CGameEventListener
+{
+    DECLARE_CLASS_SIMPLE(PaintGunPanel, EditablePanel);
 
   public:
-    PaintGunPanel(IViewPort *pViewport);
+    PaintGunPanel();
+    ~PaintGunPanel();
 
-    ~PaintGunPanel() {}
+    void OnThink() OVERRIDE;
+    void OnCommand(const char *pCommand) OVERRIDE;
 
-    virtual void Activate() OVERRIDE;
-    virtual void Close() OVERRIDE;
-    virtual void OnThink() OVERRIDE;
-
-    virtual const char *GetName(void) OVERRIDE { return PANEL_PAINTGUN; }
-    virtual void SetData(KeyValues *data) OVERRIDE {}
-    virtual void Reset(void) OVERRIDE{}; // clears internal state, deactivates it
-    virtual void Update(void) OVERRIDE{};
-    virtual bool NeedsUpdate(void) OVERRIDE { return false; }
-    virtual bool HasInputElements(void) OVERRIDE { return true; }
-    // VGUI functions:
-    virtual vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
-    virtual bool IsVisible() OVERRIDE { return BaseClass::IsVisible(); }; // true if panel is visible
-    virtual void SetParent(vgui::VPANEL parent) OVERRIDE { BaseClass::SetParent(parent); };
-
-    virtual void ShowPanel(bool state) OVERRIDE; // activate VGUI Frame
-
-    virtual void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
-
-    virtual void OnCommand(const char *pCommand) OVERRIDE;
+    void FireGameEvent(IGameEvent* event) OVERRIDE;
 
     void SetLabelText() const;
 
@@ -54,14 +38,12 @@ class PaintGunPanel : public Frame, public IViewPortPanel, public CGameEventList
 
     ColorPicker *m_pColorPicker;
     CCvarSlider *m_pSliderScale;
-    vgui::TextEntry *m_pTextSliderScale;
-    IViewPort *m_pViewport;
+    TextEntry *m_pTextSliderScale;
     Label *m_pLabelSliderScale;
     Label *m_pLabelColorButton;
     Label *m_pLabelIgnoreZ;
-    ToggleButton *m_pToggleIgnoreZ;
+    CvarToggleCheckButton *m_pToggleIgnoreZ, *m_pToggleViewmodel;
     Button *m_pPickColorButton;
-    ConVarRef *m_pCvarIgnoreZ;
+    C_BaseEntity *m_pVguiScreenEntity;
 };
-
-extern PaintGunPanel *PaintGunUI;
+}

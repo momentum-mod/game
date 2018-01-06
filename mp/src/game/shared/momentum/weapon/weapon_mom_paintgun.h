@@ -4,6 +4,7 @@
 #include "weapon_csbasegun.h"
 
 #ifdef CLIENT_DLL
+#include "PaintGunPanel.h"
 #define CMomentumPaintGun C_MomentumPaintGun
 #endif
 
@@ -14,24 +15,26 @@ class CMomentumPaintGun : public CWeaponCSBaseGun
     DECLARE_NETWORKCLASS();
     DECLARE_PREDICTABLE();
 
-    CMomentumPaintGun()
-    {
-        m_flTimeToIdleAfterFire = 0.0f;
-        m_flIdleInterval = 0.0f;
-#ifndef CLIENT_DLL
-        bTogglePaintGunUI = false;
-#endif
-    };
+    CMomentumPaintGun();
+    ~CMomentumPaintGun();
 
     void PrimaryAttack() OVERRIDE;
     void SecondaryAttack() OVERRIDE;
-
     CSWeaponID GetWeaponID(void) const OVERRIDE { return WEAPON_PAINTGUN; }
 
-  private:
     void RifleFire();
+    
+    void GetControlPanelInfo(int nPanelIndex, const char*& pPanelName) OVERRIDE;
 
-#ifndef CLIENT_DLL
-    bool bTogglePaintGunUI;
+#ifdef GAME_DLL
+    bool ShouldShowControlPanels() OVERRIDE;
+#endif
+
+#ifdef CLIENT_DLL
+   bool IsOverridingViewmodel() OVERRIDE;
+   int DrawOverriddenViewmodel(C_BaseViewModel* pViewmodel, int flags) OVERRIDE;
+private:
+    vgui::PaintGunPanel *m_pSettingsPanel;
+    ConVarRef m_cvarDrawPaintgun;
 #endif
 };

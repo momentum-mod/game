@@ -162,6 +162,14 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\mom_replayui.h"
                 }
                 
+                $Folder "PaintGun"
+                {
+                    $File "momentum\ui\PaintGunPanel.cpp"
+                    $File "momentum\ui\PaintGunPanel.h"
+                    $File "momentum\ui\PaintGunScreenPanel.h"
+                    $File "momentum\ui\PaintGunScreenPanel.cpp"
+                }
+                
                 $File "momentum\ui\MeasureTool.cpp"
             }
 

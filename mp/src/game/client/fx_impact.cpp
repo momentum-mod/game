@@ -162,6 +162,9 @@ bool Impact(Vector &vecOrigin, Vector &vecStart, int iMaterial, int iDamageType,
         Ray_t ray;
         ray.Init(vecStart, traceExt);
 
+        if (!pEntity)
+            return false;
+
         if ((pEntity->entindex() == 0) && (iHitbox != 0))
         {
             // Special case for world entity with hitbox (that's a static prop)
@@ -170,9 +173,6 @@ bool Impact(Vector &vecOrigin, Vector &vecStart, int iMaterial, int iDamageType,
         }
         else
         {
-            if (!pEntity)
-                return false;
-
             enginetrace->ClipRayToEntity(ray, MASK_SHOT, pEntity, &tr);
         }
     }

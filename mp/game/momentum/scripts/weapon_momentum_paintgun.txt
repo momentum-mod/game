@@ -19,11 +19,11 @@ WeaponData
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#HL2_Pulse_Rifle"
-    "viewmodel"         "models/weapons/v_irifle.mdl"
+    "viewmodel"         "models/weapons/v_mom_paintgun.mdl"
     "playermodel"       "models/weapons/w_irifle.mdl"
     
     "anim_prefix"      "anim"
-    "bucket"            "0"
+    "bucket"            "3"
     "bucket_position"   "1"
 
     "clip_size"         "30"
