@@ -1,0 +1,36 @@
+version: 2
+jobs:
+  build_mac:
+    macos:
+      xcode: "8.3.3"
+
+    working_directory: ~/mom_build
+
+    steps:
+      - checkout
+
+      - run:
+          name: Create game project files
+          command: |
+            cd mp/src
+            ./creategameprojects
+       
+      - run: 
+          name: Building the game
+          command: |
+            cd ~/mom_build/mp/src
+            xcodebuild -quiet -project games.xcodeproj -arch i386 -xcconfig devtools/release.xcconfig
+            
+      - store_artifacts:
+          path: ~/mom_build/game/mp/game/bin
+          destination: bin_mac
+
+      - store_artifacts:
+          path: ~/mom_build/game/mp/game/momentum/bin
+          destination: game_bin_mac
+
+workflows:
+  version: 2
+  build_game:
+    jobs:
+      - build_mac
