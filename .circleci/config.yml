@@ -1,5 +1,36 @@
 version: 2
 jobs:
+
+  build_linux:
+    docker:
+      - image: jimbly/steamrt-i386-gcc
+      
+    working_directory: ~/mom_build
+    
+    steps:
+      - checkout
+      
+      - run:
+          name: Create game project files
+          command: |
+            cd mp/src
+            ./creategameprojects
+            
+      - run: 
+          name: Building the game
+          command: |
+            cd ~/mom_build/mp/src
+            make -f games.mak
+
+      - run:
+          name: Zipping up artifacts
+          command: |
+            cd ~/mom_build
+            zip -r binaries_linux.zip ~/mom_build/mp/game/bin ~/mom_build/mp/game/momentum/bin
+            
+      - store_artifacts:
+          path: ~/mom_build/binaries_linux.zip
+  
   build_mac:
     macos:
       xcode: "8.3.3"
@@ -19,18 +50,20 @@ jobs:
           name: Building the game
           command: |
             cd ~/mom_build/mp/src
-            xcodebuild -quiet -project games.xcodeproj -arch i386 -xcconfig devtools/release.xcconfig
+            xcodebuild -quiet -project games.xcodeproj -configuration Release -arch i386 -xcconfig devtools/release.xcconfig
+            
+      - run:
+          name: Zipping up artifacts
+          command: |
+            cd ~/mom_build
+            zip -r binaries_mac.zip ~/mom_build/mp/game/bin ~/mom_build/mp/game/momentum/bin
             
       - store_artifacts:
-          path: ~/mom_build/mp/game/bin
-          destination: bin_mac
-
-      - store_artifacts:
-          path: ~/mom_build/mp/game/momentum/bin
-          destination: game_bin_mac
+          path: ~/mom_build/binaries_mac.zip
 
 workflows:
   version: 2
   build_game:
     jobs:
       - build_mac
+      - build_linux
