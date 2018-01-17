@@ -140,8 +140,8 @@ $Project "GameUI"
         
         $Folder "JSON Parser"
         {
-            $File "$SRCDIR\thirdparty\gason\src\gason.h"
-            $File "$SRCDIR\thirdparty\gason\src\gason.cpp"
+            $File "$SRCDIR\thirdparty\gason\gason.h"
+            $File "$SRCDIR\thirdparty\gason\gason.cpp"
             {
                 $Configuration
                 {
