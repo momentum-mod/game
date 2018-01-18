@@ -3,7 +3,7 @@ jobs:
 
   build_linux:
     docker:
-      - image: jimbly/steamrt-i386-gcc
+      - image: gocnak/sourcesdk_steamrt_image
       
     working_directory: ~/mom_build
     
