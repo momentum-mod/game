@@ -39,7 +39,7 @@ jobs:
             cd /valve/steam-runtime
             sudo ./setup.sh --target="i386 amd64" --auto-update --release
             echo "Done setting up, now to set our architecture..."
-            sudo ./shell.sh --arch=i386
+            sudo ./shell.sh --arch=i386 &
             echo "Set our architecture!"
             
       - run:
