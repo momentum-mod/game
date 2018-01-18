@@ -14,7 +14,7 @@ jobs:
           name: Installing required packages
           command: |
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends build-essential gcc-multilib g++-multilib wget curl
+            sudo apt-get install -y --no-install-recommends gcc-multilib g++-multilib
       
       - run:
           name: Downloading the Steam Runtime
@@ -53,16 +53,27 @@ jobs:
           name: Building the game
           command: |
             cd ~/mom_build/mp/src
-            sudo make -f games.mak
-
+            export MAKE_JOBS=-j8
+            sudo make -f games.mak -j8
+            
+      - run:
+          name: Cleaning up debug/etc files
+          command: |
+            cd ~/mom_build/mp/game
+            rm -rf bin/*.dbg
+            rm -rf bin/*_srv.so
+            rm -rf momentum/bin/*.dbg
+            rm -rf momentum/bin/*_srv.so
+            rm -rf momentum/bin/*.dll
+        
       - run:
           name: Zipping up artifacts
           command: |
-            cd ~/mom_build
-            zip -r binaries_linux.zip ~/mom_build/mp/game/bin ~/mom_build/mp/game/momentum/bin
+            cd ~/mom_build/mp/game
+            zip -r binaries_linux.zip bin momentum/bin
             
       - store_artifacts:
-          path: ~/mom_build/binaries_linux.zip
+          path: ~/mom_build/mp/game/binaries_linux.zip
   
   build_mac:
     macos:
@@ -84,19 +95,25 @@ jobs:
           command: |
             cd ~/mom_build/mp/src
             xcodebuild -quiet -project games.xcodeproj -configuration Release -arch i386 -xcconfig devtools/release.xcconfig
-            
+      
+      - run:
+          name: Cleaning up files...
+          command: |
+            cd ~/mom_build/mp/game/momentum/bin
+            rm -rf *.dll
+      
       - run:
           name: Zipping up artifacts
           command: |
-            cd ~/mom_build
-            zip -r binaries_mac.zip ~/mom_build/mp/game/bin ~/mom_build/mp/game/momentum/bin
+            cd ~/mom_build/mp/game
+            zip -r binaries_mac.zip bin momentum/bin
             
       - store_artifacts:
-          path: ~/mom_build/binaries_mac.zip
+          path: ~/mom_build/mp/game/binaries_mac.zip
 
 workflows:
   version: 2
   build_game:
     jobs:
-#      - build_mac
+      - build_mac
       - build_linux
