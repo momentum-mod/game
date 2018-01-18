@@ -20,7 +20,7 @@ jobs:
           name: Building the game
           command: |
             cd ~/mom_build/mp/src
-            schroot --chroot steamrt_scout_i386 -- make -f games.mak
+            make -f games.mak
 
       - run:
           name: Zipping up artifacts
