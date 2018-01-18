@@ -35,10 +35,15 @@ jobs:
             cd steam-runtime
             sudo ./setup.sh --target="i386 amd64" --auto-update --release
             sudo ./shell.sh --arch=i386
-            cd amd64/i686-unknown-linux-gnu/i686-unknown-linux-gnu/include/c++/4.6.3/
+            
+      - run:
+          name: Doing a fix to the Steam Runtime...
+          command: |
+            cd /valve/steam-runtime/amd64/i686-unknown-linux-gnu/i686-unknown-linux-gnu/include/c++/4.6.3/
             sudo sed -i '1s/^/#undef min\n#undef max\n/' limits ./bits/random.h ./bits/algorithmfwd.h ./bits/stl_algobase.h
             
       # Ready, willing, and fully enabled
+      
       - run: 
           name: Building the game
           command: |
