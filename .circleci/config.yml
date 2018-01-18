@@ -2,8 +2,7 @@ version: 2
 jobs:
 
   build_linux:
-    docker:
-      - image: gocnak/sourcesdk_steamrt_image
+    machine: true
       
     working_directory: ~/mom_build
     
@@ -16,11 +15,31 @@ jobs:
             cd mp/src
             ./creategameprojects
             
+       # Detour before building, let's set up the Steam Runtime
+      - run:
+          name: Setting up Steam Runtime
+          command: |
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential gcc-multilib g++-multilib wget curl
+            cd /
+            mkdir valve
+            cd /valve
+            wget http://media.steampowered.com/client/runtime/steam-runtime-sdk_latest.tar.xz
+            tar xvf steam-runtime-sdk_latest.tar.xz
+            mv steam-runtime-sdk_2013-09-05 steam-runtime
+            chown root:root /valve/* -R
+            cd steam-runtime
+            ./setup.sh --target="i386 amd64" --auto-update --release
+            ./shell.sh --arch=i386
+            cd amd64/i686-unknown-linux-gnu/i686-unknown-linux-gnu/include/c++/4.6.3/
+            sed -i '1s/^/#undef min\n#undef max\n/' limits ./bits/random.h ./bits/algorithmfwd.h ./bits/stl_algobase.h
+            
+      # Ready, willing, and fully enabled
       - run: 
           name: Building the game
           command: |
             cd ~/mom_build/mp/src
-            sudo make -f games.mak
+            make -f games.mak
 
       - run:
           name: Zipping up artifacts
@@ -65,5 +84,5 @@ workflows:
   version: 2
   build_game:
     jobs:
-      - build_mac
+#      - build_mac
       - build_linux
