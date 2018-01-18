@@ -15,19 +15,23 @@ jobs:
             cd mp/src
             ./creategameprojects
             
-       # Detour before building, let's set up the Steam Runtime
+      # Detour before building, let's set up the Steam Runtime
+      - run:
+          name: Installing required packages
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends build-essential gcc-multilib g++-multilib wget curl
+      
       - run:
           name: Setting up Steam Runtime
           command: |
-            apt-get update
-            apt-get install -y --no-install-recommends build-essential gcc-multilib g++-multilib wget curl
             cd /
-            mkdir valve
+            sudo mkdir valve
             cd /valve
-            wget http://media.steampowered.com/client/runtime/steam-runtime-sdk_latest.tar.xz
-            tar xvf steam-runtime-sdk_latest.tar.xz
-            mv steam-runtime-sdk_2013-09-05 steam-runtime
-            chown root:root /valve/* -R
+            sudo wget http://media.steampowered.com/client/runtime/steam-runtime-sdk_latest.tar.xz
+            sudo tar xvf steam-runtime-sdk_latest.tar.xz
+            sudo mv steam-runtime-sdk_2013-09-05 steam-runtime
+            sudo chown root:root /valve/* -R
             cd steam-runtime
             ./setup.sh --target="i386 amd64" --auto-update --release
             ./shell.sh --arch=i386
