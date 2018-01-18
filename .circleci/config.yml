@@ -8,12 +8,6 @@ jobs:
     
     steps:
       - checkout
-      
-      - run:
-          name: Create game project files
-          command: |
-            cd mp/src
-            ./creategameprojects
             
       # Detour before building, let's set up the Steam Runtime
       - run:
@@ -49,12 +43,17 @@ jobs:
             sudo sed -i '1s/^/#undef min\n#undef max\n/' limits ./bits/random.h ./bits/algorithmfwd.h ./bits/stl_algobase.h
             
       # Ready, willing, and fully enabled
+      - run:
+          name: Creating game project files
+          command: |
+            cd mp/src
+            sudo ./creategameprojects
       
       - run: 
           name: Building the game
           command: |
             cd ~/mom_build/mp/src
-            make -f games.mak
+            sudo make -f games.mak
 
       - run:
           name: Zipping up artifacts
