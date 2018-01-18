@@ -23,7 +23,7 @@ jobs:
             sudo apt-get install -y --no-install-recommends build-essential gcc-multilib g++-multilib wget curl
       
       - run:
-          name: Setting up Steam Runtime
+          name: Downloading the Steam Runtime
           command: |
             cd /
             sudo mkdir valve
@@ -32,9 +32,15 @@ jobs:
             sudo tar xvf steam-runtime-sdk_latest.tar.xz
             sudo mv steam-runtime-sdk_2013-09-05 steam-runtime
             sudo chown root:root /valve/* -R
-            cd steam-runtime
+            
+      - run:
+          name: Setting up the Steam Runtime
+          command: |
+            cd /valve/steam-runtime
             sudo ./setup.sh --target="i386 amd64" --auto-update --release
+            echo "Done setting up, now to set our architecture..."
             sudo ./shell.sh --arch=i386
+            echo "Set our architecture!"
             
       - run:
           name: Doing a fix to the Steam Runtime...
