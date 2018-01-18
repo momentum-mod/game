@@ -20,7 +20,7 @@ jobs:
           name: Building the game
           command: |
             cd ~/mom_build/mp/src
-            make -f games.mak
+            sudo make -f games.mak
 
       - run:
           name: Zipping up artifacts
