@@ -16,29 +16,29 @@ jobs:
           name: Creating game project files
           command: |
             cd mp/src
-            sudo ./creategameprojects
+            ./creategameprojects
       
       - run: 
           name: Building the game
           command: |
             cd ~/mom_build/mp/src
-            sudo make -f games.mak
+            make -f games.mak
             
       - run:
           name: Cleaning up debug/etc files
           command: |
             cd ~/mom_build/mp/game
-            sudo rm -rf bin/*.dbg
-            sudo rm -rf bin/*_srv.so
-            sudo rm -rf momentum/bin/*.dbg
-            sudo rm -rf momentum/bin/*_srv.so
-            sudo rm -rf momentum/bin/*.dll
+            rm -rf bin/*.dbg
+            rm -rf bin/*_srv.so
+            rm -rf momentum/bin/*.dbg
+            rm -rf momentum/bin/*_srv.so
+            rm -rf momentum/bin/*.dll
         
       - run:
           name: Zipping up artifacts
           command: |
             cd ~/mom_build/mp/game
-            sudo zip -r binaries_linux.zip bin momentum/bin
+            zip -r binaries_linux.zip bin momentum/bin
             
       - store_artifacts:
           path: ~/mom_build/mp/game/binaries_linux.zip
