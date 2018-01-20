@@ -2,45 +2,14 @@ version: 2
 jobs:
 
   build_linux:
-    machine: true
+    docker:
+      - image: gocnak/sourcesdk_steamrt_image
       
     working_directory: ~/mom_build
+    resource_class: large
     
     steps:
       - checkout
-            
-      # Detour before building, let's set up the Steam Runtime
-      - run:
-          name: Installing required packages
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends gcc-multilib g++-multilib
-      
-      - run:
-          name: Downloading the Steam Runtime
-          command: |
-            cd /
-            sudo mkdir valve
-            cd /valve
-            sudo wget http://media.steampowered.com/client/runtime/steam-runtime-sdk_latest.tar.xz
-            sudo tar xvf steam-runtime-sdk_latest.tar.xz
-            sudo mv steam-runtime-sdk_2013-09-05 steam-runtime
-            sudo chown root:root /valve/* -R
-            
-      - run:
-          name: Setting up the Steam Runtime
-          command: |
-            cd /valve/steam-runtime
-            sudo ./setup.sh --target="i386 amd64" --auto-update --release
-            echo "Done setting up, now to set our architecture..."
-            sudo ./shell.sh --arch=i386 &
-            echo "Set our architecture!"
-            
-      - run:
-          name: Doing a fix to the Steam Runtime...
-          command: |
-            cd /valve/steam-runtime/amd64/i686-unknown-linux-gnu/i686-unknown-linux-gnu/include/c++/4.6.3/
-            sudo sed -i '1s/^/#undef min\n#undef max\n/' limits ./bits/random.h ./bits/algorithmfwd.h ./bits/stl_algobase.h
             
       # Ready, willing, and fully enabled
       - run:
@@ -114,5 +83,5 @@ workflows:
   version: 2
   build_game:
     jobs:
-      - build_mac
+#      - build_mac
       - build_linux
