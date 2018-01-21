@@ -12,6 +12,12 @@ matrix:
     - os: osx
       osx_image: xcode8.3 # already includes Command Line Tools
 
+# Only build on master and develop
+branches:
+  only:
+  - master
+  - develop
+      
 # Create the project files
 before_script:
     # Setting up the Steam Runtime on Linux
