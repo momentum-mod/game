@@ -1,0 +1,106 @@
+# Definitely check out appveyor.com/docs/appveyor-yml/ for more info on what's in this document.
+# Change all lines with CHANGEME in a comment above them to fit your project structure.
+# Appveyor is really nice and I recommend it for anybody looking for automating their 
+# windows builds. Check it out at https://ci.appveyor.com !
+
+version: '{branch}-{build}'
+
+# We only care about master and develop for our project.
+# CHANGEME if you want Appveyor to build other branches!
+branches:
+  only:
+    - master
+    - develop
+
+# Don't build when tags are made
+skip_tags: true
+
+# At most one job during this build
+max_jobs: 1
+
+# Build image (2015 works apparently)
+image: Visual Studio 2015
+
+# Clone the project into this folder
+# You can change me, but make sure to change it for every other part of the build!
+clone_folder: c:\build
+
+# Clone to only the last 5 commits
+clone_depth: 5
+
+# Init script is called before the project is cloned. Not needed for our project, maybe for yours.
+# init:
+
+# Install script is called after cloning the repository
+install:
+
+# Let's get into this source directory, where our "creategameprojects" script normally is
+# NOTE: This will change depending on if you've changed the clone directory!
+  - cd c:\build\mp\src
+
+# It's important to note that this is what is found inside of createallprojects.bat, but our script pauses
+# to help know if something went wrong with VPC, so we directly call it here instead.
+# Further note: Our builder builds everything, including tools, because we require them for our push to Steam.
+# It is advised to just only build your game projects (server/client DLLs). Replace this line with the commands found in
+# your "creategameprojects.bat" file in your repository.
+# CHANGEME
+  - devtools\bin\vpc.exe /momentum +everything /mksln everything.sln
+
+# Another note: VPC is really lame and doesn't spit out the full solution file. The correct file is after you
+# open it in Visual Studio and save it. There's a big chunk missing at the end. Refer to momentum's "sln_fix.txt" file,
+# or push your sln file to your game's repository. You can see how the sln_file got its chunk by opening your project's sln
+# file inside of a text editor and looking near the bottom of the file. We copy that chunk over here.
+# CHANGEME
+  - copy everything.sln+sln_fix.txt everything.sln
+
+
+# Build Configuration things
+# You'll want Release binaries for your game, but feel free to change this if you really want to!
+configuration: Release
+
+# Showtime. Main build.
+build:
+# We want parallel builds so this thing is done in like 6 minutes.
+  parallel: true
+
+# Path to the Visual Studio sln or project file, relative to the clone folder
+# CHANGEME to match the solution file generated above in the install script!
+  project: mp\src\everything.sln
+
+# Verbosity of the build depends on how much spam you'll want. We'll use minimal here, but refer to
+# Google if you want to change this.
+  verbosity: minimal
+
+# Disable automatic testing
+test: off  
+  
+# After build scripts run... well, after the build, of course. Mainly here to clean some stuff up.
+after_build:
+# Gonna be deleting some PDB files, these things are nasty big and we won't want them for our build artifacts zip.
+# CHANGEME to be your correct game's name (not momentum I hope)
+  - if exist c:\build\mp\game\momentum\bin\*.pdb del /f c:\build\mp\game\momentum\bin\*.pdb
+  - if exist c:\build\mp\game\bin\*.pdb del /f c:\build\mp\game\bin\*.pdb
+
+# This is trimming the commit hash to be only around 7 characters long, much more bearable when you have it
+# sent to a slack channel or something. Feel free to CHANGEME if you don't use/don't want to shorten it.
+  - set APPVEYOR_REPO_COMMIT=%APPVEYOR_REPO_COMMIT:~0,7%
+
+
+# Lastly, and certainly not leastly (it's the reason we're doing this!), Artifacts.
+artifacts:
+
+# First one is all of the tool binary files
+# CHANGEME if you don't build everything feel free to remove this
+  - path: mp\game\bin
+    name: tools_bin_$(APPVEYOR_REPO_COMMIT)
+    type: zip
+
+# Secondly, the main output of the build, game binaries
+# CHANGEME: Our game's name is momentum, change it to be yours!
+  - path: mp\game\momentum\bin
+    name: game_bin_$(APPVEYOR_REPO_COMMIT)
+    type: zip
+    
+# It's worth to note that notifications can be set up either in this file or online. I recommend the latter.
+# You can do that in your project settings -> Notifications. Slack (and Discord's webhook with /slack at the end)
+# both work wonders.
