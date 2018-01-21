@@ -1,16 +1,16 @@
 # Definitely check out appveyor.com/docs/appveyor-yml/ for more info on what's in this document.
 # Change all lines with CHANGEME in a comment above them to fit your project structure.
 # Appveyor is really nice and I recommend it for anybody looking for automating their 
-# windows builds. Check it out at https://ci.appveyor.com
+# windows builds. Check it out at https://ci.appveyor.com !
 
-version: {branch}-{build}
+version: '{branch}-{build}'
 
 # We only care about master and develop for our project.
 # CHANGEME if you want Appveyor to build other branches!
-#branches:
-#  only:
-#    - master
-#    - develop
+branches:
+  only:
+    - master
+    - develop
 
 # Don't build when tags are made
 skip_tags: true
@@ -50,7 +50,7 @@ install:
 # CHANGEME
   - devtools\bin\vpc.exe /momentum +everything /mksln everything.sln
 
-# Another note: VPC is kinda lame and doesn't spit out the full solution file. The correct file is after you
+# Another note: VPC is really lame and doesn't spit out the full solution file. The correct file is after you
 # open it in Visual Studio and save it. There's a big chunk missing at the end. Refer to momentum's "sln_fix.txt" file,
 # or push your sln file to your game's repository. You can see how the sln_file got its chunk by opening your project's sln
 # file inside of a text editor and looking near the bottom of the file. We copy that chunk over here.
@@ -101,3 +101,7 @@ artifacts:
   - path: mp\game\momentum\bin
     name: game_bin_$(APPVEYOR_REPO_COMMIT)
     type: zip
+    
+# It's worth to note that notifications can be set up either in this file or online. I recommend the latter.
+# You can do that in your project settings -> Notifications. Slack (and Discord's webhook with /slack at the end)
+# both work wonders.
