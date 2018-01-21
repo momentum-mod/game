@@ -3,7 +3,7 @@
 # Appveyor is really nice and I recommend it for anybody looking for automating their 
 # windows builds. Check it out at https://ci.appveyor.com
 
-version: 1.0.{branch}-{build}
+version: {branch}-{build}
 
 # We only care about master and develop for our project.
 # CHANGEME if you want Appveyor to build other branches!

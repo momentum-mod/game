@@ -84,14 +84,14 @@ workflows:
   build_game:
     jobs:
       - build_mac
-        filters:
-          branches:
-            only:
-              - master
-              - develop
+          filters:
+            branches:
+              only:
+                - master
+                - develop
       - build_linux
-        filters:
-          branches:
-            only:
-              - master
-              - develop
+          filters:
+            branches:
+              only:
+                - master
+                - develop
