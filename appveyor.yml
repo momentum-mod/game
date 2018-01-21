@@ -71,6 +71,9 @@ build:
 # Google if you want to change this.
   verbosity: minimal
 
+# Disable automatic testing
+test: off  
+  
 # After build scripts run... well, after the build, of course. Mainly here to clean some stuff up.
 after_build:
 # Gonna be deleting some PDB files, these things are nasty big and we won't want them for our build artifacts zip.
