@@ -1,3 +1,0 @@
-[submodule "mp/src/thirdparty/gason"]
-	path = mp/src/thirdparty/gason
-	url = https://github.com/vivkin/gason
