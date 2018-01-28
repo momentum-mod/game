@@ -237,6 +237,8 @@ void CMomentumGameMovement::Duck(void)
     // Check to see if we are in the air.
     bool bInAir = player->GetGroundEntity() == nullptr && player->GetMoveType() != MOVETYPE_LADDER;
 
+    bool bIsSliding = (m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) != 0;
+
     if (mv->m_nButtons & IN_DUCK)
     {
         mv->m_nOldButtons |= IN_DUCK;
@@ -325,8 +327,7 @@ void CMomentumGameMovement::Duck(void)
             if (player->m_Local.m_bDucking)
             {
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_DUCK) ||
-                    !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr ||
+                if ((duckseconds > TIME_TO_DUCK) || !bIsSliding && player->GetGroundEntity() == nullptr ||
                     alreadyDucked)
                 {
                     FinishDuck();
@@ -344,7 +345,7 @@ void CMomentumGameMovement::Duck(void)
             // Try to unduck unless automovement is not allowed
             // NOTE: When not onground, you can always unduck
             if (player->m_Local.m_bAllowAutoMovement ||
-                !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
+                !bIsSliding && player->GetGroundEntity() == nullptr)
             {
                 if ((buttonsReleased & IN_DUCK) && (player->GetFlags() & FL_DUCKING))
                 {
@@ -362,7 +363,7 @@ void CMomentumGameMovement::Duck(void)
                     {
                         // Finish ducking immediately if duck time is over or not on ground
                         if ((duckseconds > TIME_TO_UNDUCK) ||
-                            !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) && player->GetGroundEntity() == nullptr)
+                            !bIsSliding && player->GetGroundEntity() == nullptr)
                         {
                             FinishUnDuck();
                         }
@@ -814,7 +815,9 @@ void CMomentumGameMovement::StartGravity(void)
 
 void CMomentumGameMovement::FullWalkMove()
 {
-    if (!(CheckWater() && !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE)))
+    bool bIsSliding = (m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE) != 0;
+
+    if (!CheckWater() || bIsSliding)
     {
         StartGravity();
     }
@@ -833,7 +836,7 @@ void CMomentumGameMovement::FullWalkMove()
     //  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
     // If sliding is set we prefer to simulate sliding than being in water.. Could be fun for some mappers
     // that want sliding/iceskating into water. Who knows.
-    if ((player->GetWaterLevel() >= WL_Waist) && !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE))
+    if ((player->GetWaterLevel() >= WL_Waist) && !bIsSliding)
     {
         if (player->GetWaterLevel() == WL_Waist)
         {
@@ -911,7 +914,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckVelocity();
 
         // Add any remaining gravitational component.
-        if (!(CheckWater() && !(m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE)))
+        if (!CheckWater() || bIsSliding)
         {
             FinishGravity();
         }
@@ -925,7 +928,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        if (m_pPlayer->m_SrvData.m_fSliding & (FL_SLIDE_STUCKONGROUND | FL_SLIDE))
+        if (bIsSliding && m_pPlayer->m_SrvData.m_fSliding & FL_SLIDE_STUCKONGROUND)
             StuckGround();
     }
 
@@ -1344,8 +1347,6 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         pm = nullptr;
     }
 
-    // CMomentumPlayer *player = GetMomentumPlayer();
-
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
 
     CBaseEntity *oldGround = player->GetGroundEntity();
@@ -1391,25 +1392,6 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
         mv->m_vecVelocity.z = 0.0f;
 
     }
-}
-
-void CMomentumGameMovement::CategorizeGroundSurface(trace_t &pm)
-{
-    IPhysicsSurfaceProps *physprops = MoveHelper()->GetSurfaceProps();
-
-    player->m_surfaceProps = pm.surface.surfaceProps;
-    player->m_pSurfaceData = physprops->GetSurfaceData(player->m_surfaceProps);
-    physprops->GetPhysicsProperties(player->m_surfaceProps, nullptr, nullptr, &player->m_surfaceFriction, nullptr);
-
-    // HACKHACK: Scale this to fudge the relationship between vphysics friction values and player friction values.
-    // A value of 0.8f feels pretty normal for vphysics, whereas 1.0f is normal for players.
-    // This scaling trivially makes them equivalent.  REVISIT if this affects low friction surfaces too much.
-    player->m_surfaceFriction *= 1.25f;
-    if (player->m_surfaceFriction > 1.0f ||
-        (player->m_pSurfaceData->game.material == 'D' && player->m_pSurfaceData->physics.friction == 0.35f))
-        player->m_surfaceFriction = 1.0f; // fix for snow friction
-
-    player->m_chTextureType = player->m_pSurfaceData->game.material;
 }
 
 void CMomentumGameMovement::CheckParameters(void)
