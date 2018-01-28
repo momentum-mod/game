@@ -1,0 +1,56 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      addons:
+        apt:
+          packages:
+            - g++-multilib
+            - gcc-multilib
+    - os: osx
+      osx_image: xcode8.3 # already includes Command Line Tools
+
+# Only build on master and develop
+branches:
+  only:
+  - master
+  - develop
+      
+# Create the project files
+before_script:
+    # Setting up the Steam Runtime on Linux
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        cd /
+        sudo mkdir valve
+        cd /valve
+        sudo wget http://media.steampowered.com/client/runtime/steam-runtime-sdk_latest.tar.xz
+        sudo tar xvf steam-runtime-sdk_latest.tar.xz
+        sudo mv steam-runtime-sdk_2013-09-05 steam-runtime
+        sudo chown root:root /valve/* -R
+        cd /valve/steam-runtime
+        sudo ./setup.sh --target="i386 amd64" --auto-update --release
+        echo "Done setting up, now to set our architecture..."
+        sudo ./shell.sh --arch=i386 &
+        echo "Set our architecture!"
+        cd /valve/steam-runtime/amd64/i686-unknown-linux-gnu/i686-unknown-linux-gnu/include/c++/4.6.3/
+        sudo sed -i '1s/^/#undef min\n#undef max\n/' limits ./bits/random.h ./bits/algorithmfwd.h ./bits/stl_algobase.h
+        cd $TRAVIS_BUILD_DIR
+    fi
+# Build the project files
+  - cd mp/src && ./creategameprojects
+
+# Build the project
+script:
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+       travis_wait 30 xcodebuild -quiet -project games.xcodeproj -arch i386 -xcconfig devtools/release.xcconfig -configuration Release 
+    fi
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+       export CXX=/valve/steam-runtime/bin/g++
+       export CC=/valve/steam-runtime/bin/gcc
+       sudo make -f games.mak CC=/valve/steam-runtime/bin/gcc CXX=/valve/steam-runtime/bin/g++
+    fi
