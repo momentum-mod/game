@@ -74,7 +74,7 @@ void CNuiInterface::Shutdown()
         {
             m_mapBrowsers.Element(browserIndex)->GetHost()->CloseBrowser(true);
 
-            m_mapBrowsers.NextInorder(browserIndex);
+            browserIndex = m_mapBrowsers.NextInorder(browserIndex);
         }
 
         m_mapBrowsers.RemoveAll();
