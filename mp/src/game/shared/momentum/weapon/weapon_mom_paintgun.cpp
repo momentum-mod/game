@@ -42,7 +42,7 @@ CMomentumPaintGun::~CMomentumPaintGun()
 void CMomentumPaintGun::RifleFire()
 {
     // Hardcoded here so people don't change the text files for easy spam
-    if (!CSBaseGunFire(0.0f, 0.05f, true))
+    if (!CSBaseGunFire(0.0f, 0.1f, true))
         return;
 }
 

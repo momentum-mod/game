@@ -6,7 +6,7 @@ WeaponData
     "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "ak"
     "MuzzleFlashScale"          "1.6"
-    "MuzzleFlashStyle"          "CS_MUZZLEFLASH_X"
+    "MuzzleFlashStyle"          "CS_MUZZLEFLASH_NONE"
     
     
     // Weapon characteristics:
@@ -15,16 +15,15 @@ WeaponData
     "Range"             "8192"
     "RangeModifier"     "1.0"
     "Bullets"           "1"
-    "CycleTime"         "0.05"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#HL2_Pulse_Rifle"
+    "printname"         "#MOM_Paint_Gun"
     "viewmodel"         "models/weapons/v_mom_paintgun.mdl"
-    "playermodel"       "models/weapons/w_irifle.mdl"
+    "playermodel"       "models/weapons/w_mom_paintgun.mdl"
     
     "anim_prefix"      "anim"
-    "bucket"            "3"
-    "bucket_position"   "1"
+    "bucket"            "4"
+    "bucket_position"   "0"
 
     "clip_size"         "30"
     

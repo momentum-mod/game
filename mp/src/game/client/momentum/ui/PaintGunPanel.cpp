@@ -1,15 +1,15 @@
 #include "cbase.h"
 
+#include <vgui_controls/Button.h>
+#include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
+#include "ColorPicker.h"
 #include "PaintGunPanel.h"
 #include "clientmode_shared.h"
 #include "materialsystem/imaterialvar.h"
 #include "util/mom_util.h"
-#include "weapon/weapon_csbase.h"
-#include "ColorPicker.h"
-#include <vgui_controls/Button.h>
-#include <vgui_controls/CVarSlider.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
 #include "vgui/IInput.h"
+#include "weapon/weapon_csbase.h"
 
 #include "tier0/memdbgon.h"
 
@@ -18,8 +18,8 @@ void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue
 static ConVar mom_paintgun_color("mom_paintgun_color", "0000FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                  "Amount of red on the painting textures");
 
-static MAKE_CONVAR_C(mom_paintgun_scale, "1.0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE, "Scale the size of the paint decal (0.001 to 3.0)\n",
-    0.001f, 3.0f, PaintGunScaleCallback);
+static MAKE_CONVAR_C(mom_paintgun_scale, "1.0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                     "Scale the size of the paint decal (0.001 to 1.5)\n", 0.001f, 1.5f, PaintGunScaleCallback);
 
 static ConVar mom_paintgun_ignorez("mom_paintgun_ignorez", "0", FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
                                    "See the paintings through walls");
@@ -46,9 +46,11 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
     SetMouseInputEnabled(true);
 
     surface()->CreatePopup(GetVPanel(), false, false, false, true, false);
-    
-    m_pToggleIgnoreZ = new CvarToggleCheckButton(this, "ToggleIgnoreZ", "#MOM_PaintGunPanel_IgnoreZ", "mom_paintgun_ignorez");
-    m_pToggleViewmodel = new CvarToggleCheckButton(this, "ToggleViewmodel", "#MOM_PaintGunPanel_Viewmodel", "mom_paintgun_drawmodel");
+
+    m_pToggleIgnoreZ =
+        new CvarToggleCheckButton(this, "ToggleIgnoreZ", "#MOM_PaintGunPanel_IgnoreZ", "mom_paintgun_ignorez");
+    m_pToggleViewmodel =
+        new CvarToggleCheckButton(this, "ToggleViewmodel", "#MOM_PaintGunPanel_Viewmodel", "mom_paintgun_drawmodel");
 
     LoadControlSettings("resource/ui/PaintGunPanel.res");
 
@@ -78,10 +80,7 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
     ListenForGameEvent("paintgun_panel");
 }
 
-PaintGunPanel::~PaintGunPanel()
-{
-
-}
+PaintGunPanel::~PaintGunPanel() {}
 
 void PaintGunPanel::SetLabelText() const
 {
@@ -181,14 +180,14 @@ void PaintGunPanel::OnCommand(const char *pCommand)
     BaseClass::OnCommand(pCommand);
 }
 
-void PaintGunPanel::FireGameEvent(IGameEvent* event)
+void PaintGunPanel::FireGameEvent(IGameEvent *event)
 {
     if (FStrEq("paintgun_panel", event->GetName()))
     {
         // Center the mouse in the panel
         int x, y, w, h;
-	    GetBounds( x, y, w, h );
-	    input()->SetCursorPos( x + ( w/2), y + (h/2) );
+        GetBounds(x, y, w, h);
+        input()->SetCursorPos(x + (w / 2), y + (h / 2));
 
         SetVisible(true);
     }

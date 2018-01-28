@@ -33,7 +33,7 @@
 		"rightText"		"#GameUI_High"
         "font" "DefaultSmall"
         "minvalue" "0.01"
-        "maxvalue" "3.0"
+        "maxvalue" "1.5"
         "cvar_name" "mom_paintgun_scale"
         "allowoutofrange" "0"
         "actionsignallevel" "1"
