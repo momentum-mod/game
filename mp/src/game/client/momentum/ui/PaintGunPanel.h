@@ -41,8 +41,7 @@ class PaintGunPanel : public EditablePanel, public CGameEventListener
     TextEntry *m_pTextSliderScale;
     Label *m_pLabelSliderScale;
     Label *m_pLabelColorButton;
-    Label *m_pLabelIgnoreZ;
-    CvarToggleCheckButton *m_pToggleIgnoreZ, *m_pToggleViewmodel;
+    CvarToggleCheckButton *m_pToggleViewmodel;
     Button *m_pPickColorButton;
     C_BaseEntity *m_pVguiScreenEntity;
 };

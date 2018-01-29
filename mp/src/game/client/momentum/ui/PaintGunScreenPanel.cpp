@@ -15,10 +15,14 @@ PaintGunScreenPanel::PaintGunScreenPanel(Panel *pParent, const char *pName)
 {
     SetScheme("ClientScheme");
     SetPaintBackgroundEnabled(false);
+
+    m_iDecalTextureID = surface()->CreateNewTextureID();
+    surface()->DrawSetTextureFile(m_iDecalTextureID, "decals/paint_decal", true, false);
 }
 
 PaintGunScreenPanel::~PaintGunScreenPanel()
 {
+    surface()->DestroyTextureID(m_iDecalTextureID);
 }
 
 void PaintGunScreenPanel::Paint()
@@ -28,13 +32,14 @@ void PaintGunScreenPanel::Paint()
     Color decalColor;
     if (g_pMomentumUtil->GetColorFromHex(m_cvarPaintColor.GetString(), decalColor))
     {
+        surface()->DrawSetTexture(m_iDecalTextureID);
         surface()->DrawSetColor(decalColor);
 
         float scale = m_cvarDecalScale.GetFloat();
         int wide, tall;
         GetSize(wide, tall);
-        int iDesiredWidth = static_cast<int>(scale / 1.5f * wide), iDesiredHeight = static_cast<int>(scale / 1.5f * tall);
+        int iDesiredWidth = static_cast<int>(scale / 1.0f * wide), iDesiredHeight = static_cast<int>(scale / 1.0f * tall);
         int x = wide / 2 - (iDesiredWidth / 2), y = tall / 2 - (iDesiredHeight / 2);
-        surface()->DrawFilledRect(x, y, x + iDesiredWidth, y + iDesiredHeight);
+        surface()->DrawTexturedRect(x, y, x + iDesiredWidth, y + iDesiredHeight);
     }
 }

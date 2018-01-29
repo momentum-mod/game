@@ -15,4 +15,6 @@ class PaintGunScreenPanel : public CVGuiScreenPanel
 private:
     C_BaseEntity *m_pVguiScreenEntity;
     ConVarRef m_cvarPaintColor, m_cvarDecalScale;
+
+    int m_iDecalTextureID;
 };

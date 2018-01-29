@@ -19,21 +19,18 @@ static ConVar mom_paintgun_color("mom_paintgun_color", "0000FFFF", FCVAR_CLIENTC
                                  "Amount of red on the painting textures");
 
 static MAKE_CONVAR_C(mom_paintgun_scale, "1.0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-                     "Scale the size of the paint decal (0.001 to 1.5)\n", 0.001f, 1.5f, PaintGunScaleCallback);
-
-static ConVar mom_paintgun_ignorez("mom_paintgun_ignorez", "0", FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE,
-                                   "See the paintings through walls");
+                     "Scale the size of the paint decal (0.001 to 1.0)\n", 0.001f, 1.0f, PaintGunScaleCallback);
 
 void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
-    IMaterial *material = materials->FindMaterial("decals/paintgun", TEXTURE_GROUP_DECAL);
+    IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);
     if (material != nullptr)
     {
         static unsigned int nScaleCache = 0;
-        IMaterialVar *VarScale = material->FindVarFast("$decalscale", &nScaleCache);
-        if (VarScale != nullptr)
+        IMaterialVar *pVarScale = material->FindVarFast("$decalscale", &nScaleCache);
+        if (pVarScale != nullptr)
         {
-            VarScale->SetFloatValue(mom_paintgun_scale.GetFloat());
+            pVarScale->SetFloatValue(0.35f * mom_paintgun_scale.GetFloat());
         }
     }
 }
@@ -47,8 +44,6 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
 
     surface()->CreatePopup(GetVPanel(), false, false, false, true, false);
 
-    m_pToggleIgnoreZ =
-        new CvarToggleCheckButton(this, "ToggleIgnoreZ", "#MOM_PaintGunPanel_IgnoreZ", "mom_paintgun_ignorez");
     m_pToggleViewmodel =
         new CvarToggleCheckButton(this, "ToggleViewmodel", "#MOM_PaintGunPanel_Viewmodel", "mom_paintgun_drawmodel");
 
@@ -70,7 +65,6 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
 
     m_pLabelSliderScale = FindControl<Label>("LabelSliderScale");
     m_pLabelColorButton = FindControl<Label>("LabelColorButton");
-    m_pLabelIgnoreZ = FindControl<Label>("LabelIgnoreZ");
 
     SetLabelText();
     m_pColorPicker = new ColorPicker(this, this);
@@ -102,9 +96,8 @@ void PaintGunPanel::OnControlModified(Panel *p)
     {
         SetLabelText();
     }
-    else if (p == m_pToggleIgnoreZ || p == m_pToggleViewmodel)
+    else if (p == m_pToggleViewmodel)
     {
-        m_pToggleIgnoreZ->ApplyChanges();
         m_pToggleViewmodel->ApplyChanges();
     }
 }

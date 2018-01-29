@@ -302,12 +302,7 @@
 
 "Painting"
 {
-	"decals/paintgun" "1"
-}
-
-"PaintingIgnoreZ"
-{
-	"decals/paintgunignorez" "1"
+	"decals/paint_decal" "1"
 }
 
 "Models"
@@ -429,5 +424,4 @@
 	"decals/smscorch1model" "1"
 	"decals/smscorch2model" "1"
 	"decals/smscorch3model" "1"
-	"decals/painting_decal" "1"
 }

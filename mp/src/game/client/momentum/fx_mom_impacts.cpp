@@ -81,7 +81,7 @@ DECLARE_CLIENT_EFFECT("Impact", ImpactCallback);
 // Purpose: Handle weapon impacts
 //-----------------------------------------------------------------------------
 bool Painting(Vector &vecOrigin, Vector &vecStart, int iHitbox, C_BaseEntity *pEntity, trace_t &tr,
-              Color color = Color(255, 255, 255, 255), bool bIgnoreZ = true, int nFlags = 0, int maxLODToDecal = ADDDECAL_TO_ALL_LODS)
+              Color color = Color(255, 255, 255, 255), int nFlags = 0)
 {
     VPROF("Painting");
 
@@ -99,7 +99,7 @@ bool Painting(Vector &vecOrigin, Vector &vecStart, int iHitbox, C_BaseEntity *pE
 
     if ((nFlags & IMPACT_NODECAL) == 0)
     {
-        int decalNumber = decalsystem->GetDecalIndexForName(bIgnoreZ ? "PaintingIgnoreZ" : "Painting");
+        int decalNumber = decalsystem->GetDecalIndexForName("Painting");
 
         if (decalNumber == -1)
             return false;
@@ -113,7 +113,7 @@ bool Painting(Vector &vecOrigin, Vector &vecStart, int iHitbox, C_BaseEntity *pE
         {
             // Here we deal with decals on entities.
             pEntity->AddColoredDecal(vecStart, traceExt, vecOrigin, iHitbox, decalNumber, true, tr, color,
-                                        maxLODToDecal);
+                ADDDECAL_TO_ALL_LODS, nFlags | 0x01 /*FDECAL_PERMANENT*/);
         }
     }
     else
@@ -157,11 +157,11 @@ void PaintingCallback(const CEffectData &data)
     }
 
     Color color;
-    ConVarRef mom_paintgun_color("mom_paintgun_color"), mom_paintgun_ignorez("mom_paintgun_ignorez");
+    ConVarRef mom_paintgun_color("mom_paintgun_color");
     if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), color))
     {
         // If we hit, perform our custom effects and play the sound
-        if (Painting(vecOrigin, vecStart, iHitbox, pEntity, tr, color, mom_paintgun_ignorez.GetBool()))
+        if (Painting(vecOrigin, vecStart, iHitbox, pEntity, tr, color))
         {
             // Check for custom effects based on the Decal index
             // MOM_TODO: Custom impact effects here? Or at least pass no flecks as a flag

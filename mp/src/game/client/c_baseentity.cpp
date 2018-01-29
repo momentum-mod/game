@@ -3713,7 +3713,7 @@ void C_BaseEntity::AddDecal( const Vector& rayStart, const Vector& rayEnd,
 
 //-----------------------------------------------------------------------------
 void C_BaseEntity::AddColoredDecal( const Vector& rayStart, const Vector& rayEnd,
-	const Vector& decalCenter, int hitbox, int decalIndex, bool doTrace, trace_t& tr, Color cColor, int maxLODToDecal )
+	const Vector& decalCenter, int hitbox, int decalIndex, bool doTrace, trace_t& tr, Color cColor, int maxLODToDecal, int nFlags )
 {
 	Ray_t ray;
 	ray.Init( rayStart, rayEnd );
@@ -3750,7 +3750,7 @@ void C_BaseEntity::AddColoredDecal( const Vector& rayStart, const Vector& rayEnd
 	case mod_brush:
 		{
 			color32 cColor32 = { (byte)cColor.r(), (byte)cColor.g(), (byte)cColor.b(), (byte)cColor.a() };
-			effects->DecalColorShoot( decalIndex, index, model, GetAbsOrigin(), GetAbsAngles(), decalCenter, 0, 0, cColor32 );
+			effects->DecalColorShoot( decalIndex, index, model, GetAbsOrigin(), GetAbsAngles(), decalCenter, 0, nFlags, cColor32 );
 		}
 		break;
 

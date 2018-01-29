@@ -137,9 +137,9 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
     AngleVectors(shootAngles, &vecDirShooting, &vecRight, &vecUp);
 
     // MIKETODO: put all the ammo parameters into a script file and allow for CS-specific params.
-    float flPenetrationPower = 0;    // thickness of a wall that this bullet can penetrate
-    float flPenetrationDistance = 0; // distance at which the bullet is capable of penetrating a wall
-    float flDamageModifier = 0.5;    // default modification of bullets power after they go through a wall.
+    float flPenetrationPower = 0.0f;    // thickness of a wall that this bullet can penetrate
+    float flPenetrationDistance = 0.0f; // distance at which the bullet is capable of penetrating a wall
+    float flDamageModifier = 0.5f;    // default modification of bullets power after they go through a wall.
     float flPenetrationModifier = 1.f;
     bool bPaintGun = false;
 
@@ -281,14 +281,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
             }
             else if (shouldDecal && bEntNotNull)
             {
-                if (!bPaintGun)
-                {
-                    UTIL_ImpactTrace(&tr, iDamageType);
-                }
-                else
-                {
-                    UTIL_ImpactTrace(&tr, iDamageType, "Painting");
-                }
+                UTIL_ImpactTrace(&tr, iDamageType, bPaintGun ? "Painting" : nullptr);
             }
         } // bDoEffects
 
@@ -358,14 +351,7 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         // bullet did penetrate object, exit Decal
         if (bDoEffects)
         {
-            if (!bPaintGun)
-            {
-                UTIL_ImpactTrace(&tr, iDamageType);
-            }
-            else
-            {
-                UTIL_ImpactTrace(&tr, iDamageType, "Painting");
-            }
+            UTIL_ImpactTrace(&tr, iDamageType, bPaintGun ? "Painting" : nullptr);
         }
 
         // setup new start end parameters for successive trace
