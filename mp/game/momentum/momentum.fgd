@@ -206,7 +206,7 @@
 [
 	StuckOnGround(integer) : "Stuck to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddently down"
 	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding?"
-	DisableGravity(integer) : "Gravity" : 0 : "Disable gravity while sliding."
+	DisableGravity(integer) : "Disable Gravity" : 0 : "Disable gravity while sliding."
 ]
 
 //-------------------------------------------------------------------------
