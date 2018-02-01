@@ -825,8 +825,9 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 BEGIN_DATADESC(CTriggerSlide)
 DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
 , DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
-    DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity") END_DATADESC();
-
+    DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity")
+    //,DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
+    END_DATADESC();
 
 // We do this , because maps could have multiples triggers colliding
 void CTriggerSlide::Think()
@@ -840,6 +841,7 @@ void CTriggerSlide::Think()
             pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
             pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
             pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
+            //pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
         }
     }
 
@@ -856,6 +858,7 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
         pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
         pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
+        //pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
     }
 
     BaseClass::StartTouch(pOther);

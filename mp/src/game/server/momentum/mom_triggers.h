@@ -349,7 +349,7 @@ class CTriggerSlide : public CBaseMomentumTrigger
 
   public:
     bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity;
-    // float m_flGravity,m_flSavedGravity;
+    //float m_flSlideGravity;
 };
 
 #endif // TIMERTRIGGERS_H
