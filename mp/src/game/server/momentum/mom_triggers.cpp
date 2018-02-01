@@ -829,6 +829,9 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
     //,DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
     END_DATADESC();
 
+
+bool g_bIsTouchingAnotherTrigger = false;
+
 // We do this , because maps could have multiples triggers colliding
 void CTriggerSlide::Think()
 {
@@ -841,7 +844,12 @@ void CTriggerSlide::Think()
             pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
             pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
             pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
+            g_bIsTouchingAnotherTrigger = true;
             //pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
+        }
+        else
+        {
+            g_bIsTouchingAnotherTrigger = false;
         }
     }
 
@@ -867,7 +875,7 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    if ( pPlayer && !g_bIsTouchingAnotherTrigger )
     {
         pPlayer->m_SrvData.m_SlideData.Reset();
     }
