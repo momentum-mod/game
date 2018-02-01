@@ -348,8 +348,8 @@ class CTriggerSlide : public CBaseMomentumTrigger
     void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
-    bool m_bSliding, m_bStuck;
-    float m_flGravity,m_flSavedGravity;
+    bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity;
+    // float m_flGravity,m_flSavedGravity;
 };
 
 #endif // TIMERTRIGGERS_H

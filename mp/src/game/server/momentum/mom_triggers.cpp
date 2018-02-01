@@ -1,11 +1,11 @@
 #include "cbase.h"
 
-#include "mom_triggers.h"
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "mom_timer.h"
+#include "mom_triggers.h"
 #include "movevars_shared.h"
 #include "tier0/memdbgon.h"
 
@@ -45,9 +45,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
                                                  pPlayer->GetLocalVelocity().Length2D());
             g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_END);
             pPlayer->m_RunStats.SetZoneEnterTime(stageNum, g_pMomentumTimer->CalculateStageTime(stageNum));
-            pPlayer->m_RunStats.SetZoneTime(stageNum - 1,
-                                            pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
-                                                pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
+            pPlayer->m_RunStats.SetZoneTime(stageNum - 1, pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
+                                                              pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
         }
     }
     else
@@ -211,7 +210,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         pPlayer->ResetRunStats(); // Reset run stats
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
-        pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f;  // MOM_TODO: Do we want to reset this?
+        pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
 
         if (g_pMomentumTimer->IsRunning())
         {
@@ -321,8 +320,8 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             }
 
             // This is needed for the final stage
-            pPlayer->m_RunStats.SetZoneTime(
-                zoneNum, g_pMomentumTimer->GetCurrentTime() - pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
+            pPlayer->m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
+                                                         pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
 
             // Ending velocity checks
 
@@ -518,7 +517,7 @@ BEGIN_DATADESC(CTriggerOnehop)
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
 END_DATADESC();
 
-CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(-1.0), m_fMaxHoldSeconds(1) {};
+CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(-1.0), m_fMaxHoldSeconds(1){};
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
@@ -592,7 +591,7 @@ void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 
 void CTriggerMultihop::Think()
 {
-    CMomentumPlayer* pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) &&
         gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
@@ -689,7 +688,7 @@ void CTriggerLimitMovement::EndTouch(CBaseEntity *pOther)
     {
         pPlayer->EnableButtons(IN_JUMP);
         pPlayer->EnableButtons(IN_DUCK);
-        
+
         if (HasSpawnFlags(LIMIT_BHOP))
             pPlayer->m_SrvData.m_bPreventPlayerBhop = false;
     }
@@ -733,7 +732,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
                 finalVel = pInflictor->GetAbsVelocity();
             break;
         case 3: // The description of this method says the player velocity is increaed by final velocity,
-                // but we're just adding one vec to the other, which is not quite the same
+            // but we're just adding one vec to the other, which is not quite the same
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel += pInflictor->GetAbsVelocity();
             break;
@@ -824,35 +823,24 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
 BEGIN_DATADESC(CTriggerSlide)
-DEFINE_KEYFIELD(m_bSliding, FIELD_BOOLEAN, "Slide")
-, DEFINE_KEYFIELD(m_bStuck, FIELD_BOOLEAN, "StuckOnGround"),
-    DEFINE_KEYFIELD(m_flGravity, FIELD_FLOAT, "Gravity") END_DATADESC();
+DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
+, DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
+    DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity") END_DATADESC();
 
-// The mapper could disable one of these flags with an ouput I guess? I don't know.
+
+// We do this , because maps could have multiples triggers colliding
 void CTriggerSlide::Think()
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer && IsTouching(pPlayer))
+    if (pPlayer)
     {
-        if (m_bSliding)
+        if (IsTouching(pPlayer))
         {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
+            pPlayer->m_SrvData.m_SlideData.SetEnabled();
+            pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
+            pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
+            pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
         }
-        else
-        {
-            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE;
-        }
-
-        if (m_bStuck)
-        {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
-        }
-        else
-        {
-            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
-        }
-
-        pPlayer->SetGravity(m_flGravity);
     }
 
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
@@ -861,22 +849,13 @@ void CTriggerSlide::Think()
 
 void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 {
-    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        if (m_bSliding)
-        {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
-        }
-
-        if (m_bStuck)
-        {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
-        }
-
-        m_flSavedGravity = pPlayer->GetGravity();
-        pPlayer->SetGravity(m_flGravity);
+        pPlayer->m_SrvData.m_SlideData.SetEnabled();
+        pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
+        pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
+        pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
     }
 
     BaseClass::StartTouch(pOther);
@@ -884,14 +863,11 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 
 void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 {
-    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {
-        pPlayer->SetGravity(m_flSavedGravity);
-        pPlayer->m_SrvData.m_fSliding = 0;
+        pPlayer->m_SrvData.m_SlideData.Reset();
     }
-
     BaseClass::EndTouch(pOther);
 }
 //-----------------------------------------------------------------------------------------------
