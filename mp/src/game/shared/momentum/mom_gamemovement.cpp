@@ -1553,7 +1553,8 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     // MOM_TODO: Make this only bhop gametype?
     // Enable this when we konw that we are sliding.
     Vector dif = mv->m_vecVelocity - out;
-    if ((dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f)) && (m_pPlayer->m_SrvData.m_SlideData.IsEnabled()))
+    if ((dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f)) &&
+        (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && m_pPlayer->m_SrvData.m_SlideData.IsFixUpsideSlope()))
     {
         out.x = mv->m_vecVelocity.x;
         out.y = mv->m_vecVelocity.y;

@@ -825,7 +825,8 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 BEGIN_DATADESC(CTriggerSlide)
 DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
 , DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
-    DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity")
+    DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity"),
+    DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope")
     //,DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
     END_DATADESC();
 
@@ -842,6 +843,7 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
         pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
         pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
+        pPlayer->m_SrvData.m_SlideData.SetFixUpsideSlope(m_bFixUpsideSlope);
         pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
         // engine->Con_NPrintf( 0, "StartTouch: %i\n" , entindex() );
         // pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
