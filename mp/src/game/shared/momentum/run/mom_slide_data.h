@@ -18,7 +18,8 @@ class CMomPlayerSlideData
         m_bStuckToGround = false;
         m_bAllowingJump = false;
         m_bEnableGravity = false;
-        //m_flGravity = 1.0f;
+        m_uiTouchCounter = 0;
+        // m_flGravity = 1.0f;
     }
 
     FORCEINLINE bool IsEnabled() { return m_bIsEnabled; }
@@ -39,13 +40,20 @@ class CMomPlayerSlideData
 
     FORCEINLINE void SetEnableGravity(bool bEnable = true) { m_bEnableGravity = bEnable; }
 
-    //FORCEINLINE void SetGravity(float flGravity) { m_flGravity = flGravity; }
+    FORCEINLINE void IncTouchCounter() { m_uiTouchCounter++; }
+
+    FORCEINLINE void DecTouchCounter() { m_uiTouchCounter--; }
+
+    FORCEINLINE int GetTouchCounter() { return m_uiTouchCounter; }
+
+    // FORCEINLINE void SetGravity(float flGravity) { m_flGravity = flGravity; }
 
   private:
     bool m_bIsEnabled;
     bool m_bStuckToGround;
     bool m_bAllowingJump;
     bool m_bEnableGravity;
-    //MOM_TODO: Not sure if mapper would like to have a gravity value here, but he could do it with another trigger anyway.
-    //float m_flGravity;
+    uint m_uiTouchCounter;
+    // MOM_TODO: Not sure if mapper would like to have a gravity value here, but he could do it with another trigger
+    // anyway. float m_flGravity;
 };

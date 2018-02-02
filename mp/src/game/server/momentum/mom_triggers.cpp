@@ -832,39 +832,17 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
 // Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because endtouch was
 // called for one trigger but the player was actually into another trigger, so we must check if we were inside of any of
 // thoses.
-bool g_bIsInTrigger[MAX_EDICTS][MAX_EDICTS];
-
-// We do this , because maps could have multiples triggers colliding
-void CTriggerSlide::Think()
-{
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
-    {
-        if (IsTouching(pPlayer))
-        {
-            pPlayer->m_SrvData.m_SlideData.SetEnabled();
-            pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
-            pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
-            pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
-            // pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
-        }
-    }
-
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
-    BaseClass::Think();
-}
-
 void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer)
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
+
+    if (pPlayer != nullptr)
     {
         pPlayer->m_SrvData.m_SlideData.SetEnabled();
         pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
         pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
         pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
-
-        g_bIsInTrigger[entindex()][pPlayer->entindex()] = true;
+        pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
         // engine->Con_NPrintf( 0, "StartTouch: %i\n" , entindex() );
         // pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
     }
@@ -874,21 +852,13 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 
 void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 {
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
 
-    if (pPlayer)
+    if (pPlayer != nullptr)
     {
-        g_bIsInTrigger[entindex()][pPlayer->entindex()] = false;
+        pPlayer->m_SrvData.m_SlideData.DecTouchCounter();
 
-        bool bIsInAnotherTrigger = false;
-
-        for (int i = 0; i < MAX_EDICTS; i++)
-        {
-            if (g_bIsInTrigger[i][pPlayer->entindex()])
-                bIsInAnotherTrigger = true;
-        }
-
-        if (!bIsInAnotherTrigger)
+        if (pPlayer->m_SrvData.m_SlideData.GetTouchCounter() == 0)
             pPlayer->m_SrvData.m_SlideData.Reset();
 
         // engine->Con_NPrintf( 1 , "EndTouch: %i\n" , entindex() );

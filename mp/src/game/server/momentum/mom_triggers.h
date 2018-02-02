@@ -4,10 +4,10 @@
 #pragma once
 #endif
 
+#include <momentum/mom_gamerules.h>
 #include "filters.h"
 #include "func_break.h"
 #include "triggers.h"
-#include <momentum/mom_gamerules.h>
 
 // spawnflags
 enum
@@ -15,21 +15,20 @@ enum
     // CTriggerTimerStart
     SF_LIMIT_LEAVE_SPEED = 0x0001, // Limit speed if player bhopped in start zone?
     SF_USE_LOOKANGLES = 0x0002,    // Use look angles?
-    // CTriggerOneHop
+                                // CTriggerOneHop
     SF_TELEPORT_RESET_ONEHOP = 0x0010, // Reset hop state if player hops onto another different onehop
-    // CTriggerLimitMove
+                                       // CTriggerLimitMove
     LIMIT_JUMP = 0x0020,   // prevent player from jumping
     LIMIT_CROUCH = 0x0040, // prevent player from croching
     LIMIT_BHOP = 0x0080,   // prevent player from bhopping
-    // CFuncShootBost and CTriggerMomentumPush
-    SF_PUSH_DIRECTION_AS_FINAL_FORCE =
-        0x0100, // Use the direction vector as final force instead of calculating it by force amount
-    // CTriggerMomentumPush
+                         // CFuncShootBost and CTriggerMomentumPush
+    SF_PUSH_DIRECTION_AS_FINAL_FORCE = 0x0100, // Use the direction vector as final force instead of calculating it by
+                                               // force amount CTriggerMomentumPush
     SF_PUSH_ONETOUCH = 0x0200, // Only allow for one touch
     SF_PUSH_ONSTART = 0x0400,  // Modify player velocity on StartTouch
     SF_PUSH_ONEND = 0x0800,    // Modify player velocity on EndTouch
-    // CTriggerTeleport
-    SF_TELE_ONEXIT = 0x1000,  // Teleport the player on EndTouch instead of StartTouch
+                            // CTriggerTeleport
+    SF_TELE_ONEXIT = 0x1000, // Teleport the player on EndTouch instead of StartTouch
 };
 
 // CBaseMomentumTrigger
@@ -72,10 +71,10 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
 
     virtual void AfterTeleport(){}; // base class does nothing
 
-protected:
+  protected:
     void HandleTeleport(CBaseEntity *);
 
-private:
+  private:
     bool m_bResetVelocity;
     bool m_bResetAngles;
     CBaseEntity *pDestinationEnt;
@@ -343,13 +342,12 @@ class CTriggerSlide : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    void Think() OVERRIDE;
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
     void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
     bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity;
-    //float m_flSlideGravity;
+    // float m_flSlideGravity;
 };
 
 #endif // TIMERTRIGGERS_H
