@@ -21,7 +21,6 @@ C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_
     m_SrvData.m_RunData.m_flLastJumpTime = 0.0f;
     m_SrvData.m_bHasPracticeMode = false;
     m_afButtonDisabled = 0;
-    m_fSliding = 0;
     m_flStartSpeed = 0.0f;
     m_flEndSpeed = 0.0f;
     m_duckUntilOnGround = false;

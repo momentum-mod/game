@@ -936,6 +936,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
+        // MOM_TODO: The player can't jump with it.
         if (bIsSliding && m_pPlayer->m_SrvData.m_SlideData.IsStuckGround())
         {
             StuckGround();
@@ -962,8 +963,10 @@ void CMomentumGameMovement::StuckGround(void)
 
     ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
 
-    CTraceFilterSimple tracefilter(player, COLLISION_GROUP_NONE);
-    enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
+    {
+        CTraceFilterSimple tracefilter(player, COLLISION_GROUP_NONE);
+        enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
+    }
 
     float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
 
@@ -1548,8 +1551,9 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     // Check if we loose speed while going on a slope in front of us.
 
     // MOM_TODO: Make this only bhop gametype?
-    /*Vector dif = mv->m_vecVelocity - out;
-    if (dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f))
+    // Enable this when we konw that we are sliding.
+    Vector dif = mv->m_vecVelocity - out;
+    if ((dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f)) && (m_pPlayer->m_SrvData.m_SlideData.IsEnabled()))
     {
         out.x = mv->m_vecVelocity.x;
         out.y = mv->m_vecVelocity.y;
@@ -1557,8 +1561,10 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
         // (Could be better by being more close to the slope, but for player it seems to be close enough)
         // @Gocnak: Technically the "adjust" code above does this, but to each axis, with a much higher value.
         // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be 0.015 or
-    0.01 mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick; DevMsg(2, "ClipVelocity: Fixed speed.\n");
-    }*/
+        // 0.01
+        mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick;
+        DevMsg(2, "ClipVelocity: Fixed speed.\n");
+    }
 
     // Return blocking flags.
     return blocked;

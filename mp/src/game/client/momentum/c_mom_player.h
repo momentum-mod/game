@@ -54,7 +54,6 @@ class C_MomentumPlayer : public C_BasePlayer
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
  
     int m_afButtonDisabled;
-    int m_fSliding;
 
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
