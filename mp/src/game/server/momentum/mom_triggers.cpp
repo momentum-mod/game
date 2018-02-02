@@ -832,7 +832,7 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
 
 //Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because endtouch was called for one trigger but the player was actually
 //into another trigger, so we must check if we were inside of any of thoses.
-bool g_bIsTouchingAnotherTrigger[MAX_EDICTS];
+bool g_bIsInTrigger[MAX_EDICTS][MAX_EDICTS];
 
 // We do this , because maps could have multiples triggers colliding
 void CTriggerSlide::Think()
@@ -846,12 +846,7 @@ void CTriggerSlide::Think()
             pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
             pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
             pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
-            g_bIsTouchingAnotherTrigger[pPlayer->entindex()] = true;
             //pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
-        }
-        else
-        {
-            g_bIsTouchingAnotherTrigger[pPlayer->entindex()] = false;
         }
     }
 
@@ -868,6 +863,9 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
         pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
         pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
+
+        g_bIsInTrigger[entindex()][pPlayer->entindex()] = true;
+        //engine->Con_NPrintf( 0, "StartTouch: %i\n" , entindex() );
         //pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
     }
 
@@ -877,10 +875,25 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if ( pPlayer && !g_bIsTouchingAnotherTrigger[pPlayer->entindex()] )
+
+    if ( pPlayer )
     {
-        pPlayer->m_SrvData.m_SlideData.Reset();
+        g_bIsInTrigger[entindex()][pPlayer->entindex()] = false;
+
+        bool bIsInAnotherTrigger = false;
+
+        for ( int i = 0; i < MAX_EDICTS; i++ )
+        {
+            if ( g_bIsInTrigger[i][pPlayer->entindex()] )
+                bIsInAnotherTrigger = true;
+        }
+
+        if (!bIsInAnotherTrigger)
+            pPlayer->m_SrvData.m_SlideData.Reset();
+
+        //engine->Con_NPrintf( 1 , "EndTouch: %i\n" , entindex() );
     }
+
     BaseClass::EndTouch(pOther);
 }
 //-----------------------------------------------------------------------------------------------
