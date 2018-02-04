@@ -12,10 +12,14 @@ class CMomGrenadeProjectile : public CBaseGrenade
     DECLARE_CLASS(CMomGrenadeProjectile, CBaseGrenade);
     DECLARE_NETWORKCLASS();
 
+#ifndef CLIENT_DLL
     // Overrides.
     void Spawn() OVERRIDE;
     void Precache() OVERRIDE;
     void BounceSound(void) OVERRIDE;
+#else
+    virtual void Spawn();
+#endif
 
   public:
     // This gets sent to the client and placed in the client's interpolation history
@@ -57,10 +61,10 @@ class CMomGrenadeProjectile : public CBaseGrenade
     virtual void ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity);
 
     float m_flDetonateTime;
-#endif
 
   public:
     // Grenade stuff.
     static CMomGrenadeProjectile *Create(const Vector &position, const QAngle &angles, const Vector &velocity,
                                          const AngularImpulse &angVelocity, CBaseEntity *pOwner, float timer);
+#endif
 };
