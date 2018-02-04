@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "mom_online_ghost.h"
 #include "in_buttons.h"
-#include "fx_cs_shared.h"
+#include "fx_mom_shared.h"
 #include "util/mom_util.h"
 #include "weapon/cs_weapon_parse.h"
 #include "mom_grenade_projectile.h"

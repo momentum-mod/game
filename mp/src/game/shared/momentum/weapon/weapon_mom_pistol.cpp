@@ -1,6 +1,6 @@
 #include "cbase.h"
 #include "weapon_mom_pistol.h"
-#include "fx_cs_shared.h"
+#include "fx_mom_shared.h"
 
 #include "tier0/memdbgon.h"
 

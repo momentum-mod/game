@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "momentum/fx_cs_shared.h"
+#include "momentum/fx_mom_shared.h"
 #include "momentum/c_mom_player.h"
 #include "c_basetempentity.h"
 #include <cliententitylist.h>

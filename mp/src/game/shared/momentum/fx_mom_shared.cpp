@@ -5,7 +5,7 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "fx_cs_shared.h"
+#include "fx_mom_shared.h"
 #include "weapon/weapon_csbase.h"
 
 #ifndef CLIENT_DLL
