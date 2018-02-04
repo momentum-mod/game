@@ -190,7 +190,6 @@ $Project "Client (Momentum)"
                 
                 //CS guns
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"
-                
                 $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.cpp"
@@ -199,8 +198,6 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbasegun.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbasegun.h"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_basecsgrenade.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_basecsgrenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.h"
             }
