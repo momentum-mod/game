@@ -4,9 +4,7 @@ WeaponData
     "CrosshairMinDistance"      "4"
     "CrosshairDeltaDistance"    "4"
     "BuiltRightHanded"          "1"
-    "PlayerAnimationExtension"  "ak"
-    "MuzzleFlashScale"          "1.6"
-    "MuzzleFlashStyle"          "CS_MUZZLEFLASH_NONE"
+    "MuzzleFlashScale"          "1.0"
     
     
     // Weapon characteristics:
@@ -32,11 +30,12 @@ WeaponData
 
     "weight"            "25"
     "item_flags"        "0"
+    "autoswitchfrom" "0"
 
     // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
     SoundData
     {
-        "single_shot"       "Weapon_AR2.Single"
+        "single_shot"       "Weapon_Paintgun.Single"
     }
 
     // Weapon Sprite data is loaded by the Client DLL.

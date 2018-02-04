@@ -47,6 +47,8 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
     m_pToggleViewmodel =
         new CvarToggleCheckButton(this, "ToggleViewmodel", "#MOM_PaintGunPanel_Viewmodel", "mom_paintgun_drawmodel");
 
+    m_pToggleSound = new CvarToggleCheckButton(this, "ToggleSound", "#MOM_PaintGunPanel_Sound", "mom_paintgun_shoot_sound");
+
     LoadControlSettings("resource/ui/PaintGunPanel.res");
 
     m_pPickColorButton = FindControl<Button>("PickColorButton");
@@ -96,9 +98,10 @@ void PaintGunPanel::OnControlModified(Panel *p)
     {
         SetLabelText();
     }
-    else if (p == m_pToggleViewmodel)
+    else if (p == m_pToggleViewmodel || p == m_pToggleSound)
     {
         m_pToggleViewmodel->ApplyChanges();
+        m_pToggleSound->ApplyChanges();
     }
 }
 

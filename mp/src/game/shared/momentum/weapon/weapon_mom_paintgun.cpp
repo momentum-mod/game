@@ -67,6 +67,7 @@ void PaintGunDraw(IConVar *var, const char *pOldValue, float flOldValue)
 }
 
 static MAKE_TOGGLE_CONVAR_C(mom_paintgun_drawmodel, "1", FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, "Draws the viewmodel of the paintgun. 0 = OFF, 1 = ON\n", PaintGunDraw);
+static MAKE_TOGGLE_CONVAR(mom_paintgun_shoot_sound, "1", FCVAR_ARCHIVE | FCVAR_CLIENTCMD_CAN_EXECUTE, "Toggles the paintgun's primary fire noise. 0 = OFF, 1 = ON\n");
 
 bool CMomentumPaintGun::ShouldShowControlPanels()
 {

@@ -214,6 +214,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     CSteamID m_sSpecTargetSteamID;
 
+
+    void DoMuzzleFlash() OVERRIDE;
+
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;

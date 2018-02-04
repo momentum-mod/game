@@ -101,6 +101,24 @@
         "cvar_name" "mom_paintgun_drawmodel"
         "cvar_value" "1"
     }
+    
+    "ToggleSound"
+    {
+        "ControlName" "CvarToggleCheckButton"
+        "fieldName" "ToggleSound"
+        "xpos" "11"
+        "ypos" "90"
+		"wide"	"96"
+		"tall"	"16"
+        "visible"		"1"
+		"enabled"		"1"
+        "font" "DefaultSmall"
+        "labelText"		"#MOM_PaintGunPanel_Sound"
+        "textAlignment" "west"
+        "auto_wide_tocontents" "1"
+        "cvar_name" "mom_paintgun_shoot_sound"
+        "cvar_value" "1"
+    }
 	
 	"PickColorButton"
     {
@@ -112,7 +130,7 @@
         "visible" "1"
         "enabled" "1"
         "labelText" ""
-        "tooltiptext" "#MOM_PaintGunPanel_Color"
+        "tooltiptext" "#MOM_PaintGunPanel_Color_TT"
         "actionsignallevel" "1"
     }
 	
@@ -131,7 +149,7 @@
 		"tabPosition"		"0"
 		"labelText"		"#MOM_PaintGunPanel_Color"
         "font" "DefaultSmall"
-		"textAlignment"		"west"
+		"textAlignment"		"east"
 		"dulltext"		"0"
 		"brighttext"		"0"
 		"wrap"		"0"

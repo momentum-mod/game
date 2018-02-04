@@ -26,6 +26,8 @@ class CMomentumPaintGun : public CWeaponCSBaseGun
     
     void GetControlPanelInfo(int nPanelIndex, const char*& pPanelName) OVERRIDE;
 
+    void DoMuzzleFlash() OVERRIDE {};
+
 #ifdef GAME_DLL
     bool ShouldShowControlPanels() OVERRIDE;
 #endif
