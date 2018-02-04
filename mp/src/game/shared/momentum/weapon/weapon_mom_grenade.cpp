@@ -22,7 +22,7 @@ IMPLEMENT_NETWORKCLASS_ALIASED(MomentumGrenade, DT_MomentumGrenade)
 BEGIN_NETWORK_TABLE(CMomentumGrenade, DT_MomentumGrenade)
 #ifndef CLIENT_DLL
 SendPropBool(SENDINFO(m_bRedraw)), SendPropBool(SENDINFO(m_bPinPulled)),
-    SendPropFloat(SENDINFO(m_fThrowTime), 0, SPROP_NOSCALE),
+SendPropFloat(SENDINFO(m_fThrowTime), 0, SPROP_NOSCALE),
 #else
 RecvPropBool(RECVINFO(m_bRedraw)), RecvPropBool(RECVINFO(m_bPinPulled)), RecvPropFloat(RECVINFO(m_fThrowTime)),
 #endif
@@ -294,9 +294,10 @@ void CMomentumGrenade::StartGrenadeThrow() { m_fThrowTime = gpGlobals->curtime +
 #else
 
 BEGIN_DATADESC(CMomentumGrenade)
-DEFINE_FIELD(m_bRedraw, FIELD_BOOLEAN), END_DATADESC()
+DEFINE_FIELD(m_bRedraw, FIELD_BOOLEAN), 
+END_DATADESC()
 
-                                            int CMomentumGrenade::CapabilitiesGet()
+int CMomentumGrenade::CapabilitiesGet()
 {
     return bits_CAP_WEAPON_RANGE_ATTACK1;
 }
