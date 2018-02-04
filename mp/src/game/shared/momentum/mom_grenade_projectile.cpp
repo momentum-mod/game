@@ -35,8 +35,8 @@ END_NETWORK_TABLE()
 // MOM_TODO: Change this model to be something custom
 #define GRENADE_MODEL "models/weapons/w_grenade.mdl"
 
-LINK_ENTITY_TO_CLASS(momgrenade_projectile, CMomGrenadeProjectile);
-PRECACHE_WEAPON_REGISTER(momgrenade_projectile);
+LINK_ENTITY_TO_CLASS(mom_grenade_projectile, CMomGrenadeProjectile);
+PRECACHE_WEAPON_REGISTER(mom_grenade_projectile);
 
 #ifdef CLIENT_DLL
 
@@ -96,11 +96,11 @@ void CMomGrenadeProjectile::Spawn()
     SetModel(GRENADE_MODEL);
     BaseClass::Spawn();
 
-    SetSolidFlags( FSOLID_NOT_STANDABLE );
-    SetMoveType( MOVETYPE_FLYGRAVITY , MOVECOLLIDE_FLY_CUSTOM );
-    SetSolid( SOLID_BBOX );	// So it will collide with physics props!		
-    // smaller, cube bounding box so we rest on the ground		
-    SetSize( Vector( -2 , -2 , -2 ) , Vector( 2 , 2 , 2 ) );
+    SetSolidFlags(FSOLID_NOT_STANDABLE);
+    SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_CUSTOM);
+    SetSolid(SOLID_BBOX); // So it will collide with physics props!
+    // smaller, cube bounding box so we rest on the ground
+    SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
 }
 
 void CMomGrenadeProjectile::Precache()
@@ -119,7 +119,7 @@ CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, con
                                                      CBaseEntity *pOwner, float timer)
 {
     auto *pGrenade =
-        static_cast<CMomGrenadeProjectile *>(CBaseEntity::Create("momgrenade_projectile", position, angles, pOwner));
+        static_cast<CMomGrenadeProjectile *>(CBaseEntity::Create("mom_grenade_projectile", position, angles, pOwner));
 
     // Set the timer for 1 second less than requested. We're going to issue a SOUND_DANGER
     // one second before detonation.
