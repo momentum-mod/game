@@ -111,7 +111,7 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     vgui::VGui_InitMatSysInterfacesList("GameUI", &factory, 1);
 
     // Init NUI
-    nui->Init();
+    nui->Init(null, null);
 
     // load localization file
     g_pVGuiLocalize->AddFile("Resource/gameui_%language%.txt", "GAME", true);

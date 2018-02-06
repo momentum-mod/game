@@ -5,6 +5,12 @@
 #include "nui_app.h"
 #include "nui_client.h"
 #include "nui_interface.h"
+#ifdef OS_LINUX
+#define EXTERNAL_APP
+#include "../game/shared/momentum/util/os_utils.h"
+#include <sys/types.h>
+#include <signal.h>
+#endif
 
 #include "tier0/memdbgon.h"
 
@@ -23,7 +29,7 @@ CNuiInterface::~CNuiInterface()
         delete m_pNuiClient;
 }
 
-bool CNuiInterface::Init()
+bool CNuiInterface::Init(int argc, char** argv)
 {
     if (m_bInitialized)
         return true;
@@ -33,13 +39,21 @@ bool CNuiInterface::Init()
 
     m_pApp = CefRefPtr<CMomNUIApp>(new CMomNUIApp);
 
+#ifdef OS_WIN
     CefMainArgs args(GetModuleHandle(NULL));
-
+#else
+    CefMainArgs args(argc, argv);
+#endif
     int error = CefExecuteProcess(args, m_pApp, nullptr);
 
     if (error >= 0)
+    {
+#ifdef OS_WIN
         TerminateProcess(GetCurrentProcess(), 0);
-
+#else
+        kill((__pid_t)GetModuleHandle(NULL), SIGTERM);
+#endif
+    }
     char hostPath[MAX_PATH];
 
     FileFindHandle_t handle;
@@ -92,7 +106,11 @@ void CNuiInterface::CreateBrowser(NuiBrowserListener *pListener, const char *pUR
         return;
 
     CefWindowInfo info;
+#ifdef OS_WIN
     info.SetAsWindowless(nullptr);
+#elseif OS_LINUX
+    info.SetAsWindowless(nullptr, true);
+#endif
     info.windowless_rendering_enabled = true;
 
     CefBrowserSettings browserSettings;

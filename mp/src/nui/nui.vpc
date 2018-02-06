@@ -27,6 +27,6 @@ $Project "nui"
     $Folder "Link Libraries"
     {
         $Lib "libcef_dll_wrapper"
-        $Libexternal "$LIBCOMMON/cef/libcef"
+        $Libexternal "$SRCDIR/lib/common/cef/libcef"
     }
 }

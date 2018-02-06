@@ -11,7 +11,7 @@ abstract_class INuiInterface : public IBaseInterface
 public:
     // Initialize the CEF process. Returns true if successfully initted, else false.
     // Once successfully initted, a browser can be created with CreateBrowser().
-    virtual bool Init() = 0;
+    virtual bool Init(int argc, char** argv) = 0;
     // Shut down the CEF process entirely. After calling this method,
     // any of these interface methods will not work until Init is called again.
     virtual void Shutdown() = 0;

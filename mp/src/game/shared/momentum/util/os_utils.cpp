@@ -8,9 +8,7 @@ void *GetModuleHandle(const char *name)
 
 	if( name == NULL )
 	{
-		// hmm, how can this be handled under linux....
-		// is it even needed?
-		return NULL;
+        return dlopen(NULL, RTLD_LAZY);
 	}
 
     if( (handle=dlopen(name, RTLD_LAZY))==NULL)

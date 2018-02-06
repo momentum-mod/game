@@ -17,7 +17,7 @@ public:
     ~CNuiInterface();
 
     // INuiInterface Overrides
-    bool Init() OVERRIDE;
+    bool Init(int argc, char **argv) OVERRIDE;
     void Shutdown() OVERRIDE;
     bool IsInitialized() OVERRIDE { return m_bInitialized; }
 
