@@ -175,7 +175,11 @@ void FX_FireBullets(
 
     if (bDoEffects)
     {
-        FX_WeaponSound(iPlayerIndex, SINGLE, vOrigin, pWeaponInfo);
+        // Do an extra paintgun check here
+        const bool bPreventShootSound = (pWeaponInfo->m_WeaponType == WEAPONTYPE_PAINT && !ConVarRef("mom_paintgun_shoot_sound").GetBool());
+        
+        if (!bPreventShootSound)
+            FX_WeaponSound(iPlayerIndex, SINGLE, vOrigin, pWeaponInfo);
     }
 
 

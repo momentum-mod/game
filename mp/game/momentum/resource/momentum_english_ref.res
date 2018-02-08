@@ -352,5 +352,13 @@
 
         "MOM_MB_DeleteRunConfirmation" "NOTE: If you delete a local run, keep in mind that there's currently no way to get it back!"
 
+        // Paint gun panel
+        "MOM_PaintGunPanel_SliderText" "Decal scale:"
+        "MOM_PaintGunPanel_Viewmodel" "Paintgun Viewmodel Visible"
+        "MOM_PaintGunPanel_Sound" "Paintgun Shoot Sound Enabled"
+        "MOM_PaintGunPanel_Color" "Decal color:"
+        "MOM_PaintGunPanel_Color_TT" "Change the color of the paint"
+        "MOM_Paint_Gun" "Paint Gun"
+        
     }
 }

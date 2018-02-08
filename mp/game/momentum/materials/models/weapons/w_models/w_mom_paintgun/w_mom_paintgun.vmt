@@ -1,0 +1,21 @@
+"VertexLitGeneric"
+{
+    //Base (albedo) texture, with spec mask on alpha channel
+    $basetexture models/weapons/w_models/w_mom_paintgun/w_mom_paintgun
+    // Guns are usually metal
+    $surfaceprop metal
+    
+    // Normal map
+    $bumpmap models/weapons/w_models/w_mom_paintgun/w_mom_paintgun_normal
+    // Env map needed for reflection
+    //$envmap env_cubemap
+    // NOTE: This causes $envmapmask (specmap) to not work, 
+    // so we need to compile the specmap as the alpha channel of the albedo texture.
+    // Then, we can use the following to make it work:
+    //$normalmapalphaenvmapmask 1
+    
+    // Misc env_map settings
+    //"$envmaptint" "[ 0.25 0.25 0.25 ]"
+    //"$envmapcontrast" 0 //1
+    //"$envmapsaturation" .1//1
+}

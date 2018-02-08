@@ -7,7 +7,7 @@
 #include "mom_system_checkpoint.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
-#include "momentum/weapon/weapon_csbasegun.h"
+#include "weapon/weapon_csbasegun.h"
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "ghost_client.h"
@@ -522,13 +522,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
 
         if (pWeapon)
         {
-            CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
-
-            // MOM_TODO: Allow them to at least drop the knife?
-            if (type != WEAPONTYPE_KNIFE && type != WEAPONTYPE_GRENADE)
-            {
-                MomentumWeaponDrop(pWeapon);
-            }
+            MomentumWeaponDrop(pWeapon);
         }
 
         return true;
@@ -604,6 +598,16 @@ bool CMomentumPlayer::FindOnehopOnList(CTriggerOnehop* pTrigger) const
 void CMomentumPlayer::RemoveAllOnehops()
 {
     m_vecOnehops.RemoveAll();
+}
+
+void CMomentumPlayer::DoMuzzleFlash()
+{
+    // Don't do the muzzle flash for the paint gun
+    CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
+    if (!(pWeapon && pWeapon->GetWeaponID() == WEAPON_PAINTGUN))
+    {
+        BaseClass::DoMuzzleFlash();
+    }
 }
 
 void CMomentumPlayer::ToggleDuckThisFrame(bool bState)

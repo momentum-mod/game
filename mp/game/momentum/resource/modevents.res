@@ -84,4 +84,8 @@
 		"player"	"byte"		// entindex of the player
 		"achievement"	"short"		// achievement ID
 	}
+    "paintgun_panel"
+    {
+        "show" "bool"
+    }
 }

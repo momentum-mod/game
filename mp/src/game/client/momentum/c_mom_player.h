@@ -59,7 +59,7 @@ class C_MomentumPlayer : public C_BasePlayer
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
-    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
+    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,bool &bIsPaintAmmo);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
                     int iBulletType, int iDamage, float flRangeModifier, CBaseEntity *pevAttacker, bool bDoEffects,

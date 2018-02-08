@@ -776,7 +776,7 @@ public:
 										const Vector& decalCenter, int hitbox, int decalIndex, bool doTrace, trace_t& tr, int maxLODToDecal = ADDDECAL_TO_ALL_LODS );
 
 	virtual void					AddColoredDecal( const Vector& rayStart, const Vector& rayEnd,
-		const Vector& decalCenter, int hitbox, int decalIndex, bool doTrace, trace_t& tr, Color cColor, int maxLODToDecal = ADDDECAL_TO_ALL_LODS );
+		const Vector& decalCenter, int hitbox, int decalIndex, bool doTrace, trace_t& tr, Color cColor, int maxLODToDecal = ADDDECAL_TO_ALL_LODS, int nFlags = 0 );
 
 	// A method to remove all decals from an entity
 	void							RemoveAllDecals( void );
