@@ -582,6 +582,11 @@ int	C_VGuiScreen::DrawModel( int flags )
 	if (IsBackfacing(CurrentViewOrigin()))
 		return 0;
 
+    // Are we attached to a viewmodel that's hidden?
+    if (IsAttachedToViewModel() && pLocalPlayer && pLocalPlayer->GetViewModel(0, false) && 
+        pLocalPlayer->GetViewModel(0, false)->IsEffectActive(EF_NODRAW))
+        return 0;
+
 	// Recompute the panel-to-world center
 	// FIXME: Can this be cached off?
 	ComputePanelToWorld();

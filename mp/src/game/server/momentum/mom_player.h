@@ -115,7 +115,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     //Pointer is acquired in mom_client.cpp
     void (*StdDataToPlayer)(StdDataFromServer* from);
 
-    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance);
+    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance, bool &bPaint);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
                     int iBulletType, int iDamage, float flRangeModifier, CBaseEntity *pevAttacker, bool bDoEffects,
@@ -215,6 +215,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     CSteamID m_sSpecTargetSteamID;
 
     bool m_bInAirDueToJump;
+
+    void DoMuzzleFlash() OVERRIDE;
 
   private:
     // Ladder stuff

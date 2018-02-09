@@ -50,6 +50,7 @@ static const char * s_WeaponAliasInfo[] =
     "momentum_lmg", //WEAPON_LMG
     "momentum_grenade", //WEAPON_GRENADE
     "knife",	// WEAPON_KNIFE
+    "momentum_paintgun", // WEAPON_PAINTGUN
     nullptr,		// WEAPON_NONE
 };
 
@@ -173,6 +174,7 @@ bool IsPrimaryWeapon(int id)
     case WEAPON_SHOTGUN:
     case WEAPON_SMG:
     case WEAPON_LMG:
+    case WEAPON_PAINTGUN:
         return true;
     }
 
@@ -211,6 +213,9 @@ int GetShellForAmmoType(const char *ammoname)
 
     if (!Q_strcmp(BULLET_PLAYER_57MM, ammoname))
         return CS_SHELL_57;
+
+    if (!Q_strcmp(AMMO_TYPE_PAINT, ammoname))
+        return CS_SHELL_PAINT;
 
     // default 9 mm
     return CS_SHELL_9MM;

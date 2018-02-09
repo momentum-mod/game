@@ -31,14 +31,15 @@ WeaponTypeInfo s_weaponTypeInfo[] = {
     {WEAPONTYPE_MACHINEGUN, "machinegun"},
     {WEAPONTYPE_MACHINEGUN, "mg"},
     {WEAPONTYPE_GRENADE, "Grenade"},
+    {WEAPONTYPE_PAINT, "PaintGun"},
     {WEAPONTYPE_UNKNOWN, nullptr},
 };
 
 //--------------------------------------------------------------------------------------------------------------
 static const char *WeaponNames[WEAPON_MAX] = {
-    "weapon_none",         "weapon_momentum_pistol", "weapon_momentum_rifle", "weapon_momentum_shotgun",
-    "weapon_momentum_smg", "weapon_momentum_sniper", "weapon_momentum_lmg",   "weapon_momentum_grenade",
-    "weapon_knife"};
+    "weapon_none",         "weapon_momentum_pistol",  "weapon_momentum_rifle", "weapon_momentum_shotgun",
+    "weapon_momentum_smg", "weapon_momentum_sniper",  "weapon_momentum_lmg",   "weapon_momentum_grenade",
+    "weapon_knife",        "weapon_momentum_paintgun"};
 
 //--------------------------------------------------------------------------------------------------------------
 CCSWeaponInfo *GetWeaponInfo(CSWeaponID weaponID)
@@ -174,7 +175,6 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
     m_flRangeModifier = pKeyValuesData->GetFloat("RangeModifier", 0.98f);
     m_iBullets = pKeyValuesData->GetInt("Bullets", 1);
 
-
     const char *pTypeString = pKeyValuesData->GetString("WeaponType", nullptr);
 
     m_WeaponType = WEAPONTYPE_UNKNOWN;
@@ -213,6 +213,10 @@ void CCSWeaponInfo::Parse(KeyValues *pKeyValuesData, const char *szWeaponName)
     else if (Q_stricmp(pTypeString, "Grenade") == 0)
     {
         m_WeaponType = WEAPONTYPE_GRENADE;
+    }
+    else if (Q_stricmp(pTypeString, "PaintGun") == 0)
+    {
+        m_WeaponType = WEAPONTYPE_PAINT;
     }
     else
     {

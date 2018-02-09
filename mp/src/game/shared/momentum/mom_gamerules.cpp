@@ -1,10 +1,10 @@
 #include "cbase.h"
 #include "mom_gamerules.h"
-#include "weapon/cs_ammodef.h"
-#include "weapon/weapon_csbase.h"
-#include "voice_gamemgr.h"
 #include "mathlib/mathlib.h"
 #include "mom_shareddefs.h"
+#include "voice_gamemgr.h"
+#include "weapon/cs_ammodef.h"
+#include "weapon/weapon_csbase.h"
 
 #include "tier0/memdbgon.h"
 
@@ -12,18 +12,19 @@ REGISTER_GAMERULES_CLASS(CMomentumGameRules);
 
 // shared ammo definition
 // JAY: Trying to make a more physical bullet response
-#define BULLET_MASS_GRAINS_TO_LB(grains)	(0.002285*(grains)/16.0f)
-#define BULLET_MASS_GRAINS_TO_KG(grains)	lbs2kg(BULLET_MASS_GRAINS_TO_LB(grains))
+#define BULLET_MASS_GRAINS_TO_LB(grains) (0.002285 * (grains) / 16.0f)
+#define BULLET_MASS_GRAINS_TO_KG(grains) lbs2kg(BULLET_MASS_GRAINS_TO_LB(grains))
 
 // exaggerate all of the forces, but use real numbers to keep them consistent
-#define BULLET_IMPULSE_EXAGGERATION			1	
+#define BULLET_IMPULSE_EXAGGERATION 1
 
 // convert a velocity in ft/sec and a mass in grains to an impulse in kg in/s
-#define BULLET_IMPULSE(grains, ftpersec)	((ftpersec)*12*BULLET_MASS_GRAINS_TO_KG(grains)*BULLET_IMPULSE_EXAGGERATION)
+#define BULLET_IMPULSE(grains, ftpersec)                                                                               \
+    ((ftpersec)*12 * BULLET_MASS_GRAINS_TO_KG(grains) * BULLET_IMPULSE_EXAGGERATION)
 
 static CAmmoDef ammoDef;
 
-CAmmoDef* GetAmmoDef()
+CAmmoDef *GetAmmoDef()
 {
     static bool bInitted = false;
 
@@ -31,19 +32,31 @@ CAmmoDef* GetAmmoDef()
     {
         bInitted = true;
 
-        ammoDef.AddAmmoType(BULLET_PLAYER_50AE, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_50AE_max", 2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
-        ammoDef.AddAmmoType(BULLET_PLAYER_762MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_762mm_max", 2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
-        ammoDef.AddAmmoType(BULLET_PLAYER_556MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_556mm_max", 2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
-        ammoDef.AddAmmoType(BULLET_PLAYER_556MM_BOX, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_556mm_box_max", 2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
-        ammoDef.AddAmmoType(BULLET_PLAYER_338MAG, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_338mag_max", 2800 * BULLET_IMPULSE_EXAGGERATION, 0, 12, 16);
-        ammoDef.AddAmmoType(BULLET_PLAYER_9MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_9mm_max", 2000 * BULLET_IMPULSE_EXAGGERATION, 0, 5, 10);
-        ammoDef.AddAmmoType(BULLET_PLAYER_BUCKSHOT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_buckshot_max", 600 * BULLET_IMPULSE_EXAGGERATION, 0, 3, 6);
-        ammoDef.AddAmmoType(BULLET_PLAYER_45ACP, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_45acp_max", 2100 * BULLET_IMPULSE_EXAGGERATION, 0, 6, 10);
-        ammoDef.AddAmmoType(BULLET_PLAYER_357SIG, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_357sig_max", 2000 * BULLET_IMPULSE_EXAGGERATION, 0, 4, 8);
-        ammoDef.AddAmmoType(BULLET_PLAYER_57MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_57mm_max", 2000 * BULLET_IMPULSE_EXAGGERATION, 0, 4, 8);
-        ammoDef.AddAmmoType(AMMO_TYPE_HEGRENADE, DMG_BLAST, TRACER_LINE, 0, 0, 1/*max carry*/, 1, 0);
-        ammoDef.AddAmmoType(AMMO_TYPE_FLASHBANG, 0, TRACER_LINE, 0, 0, 2/*max carry*/, 1, 0);
-        ammoDef.AddAmmoType(AMMO_TYPE_SMOKEGRENADE, 0, TRACER_LINE, 0, 0, 1/*max carry*/, 1, 0);
+        ammoDef.AddAmmoType(BULLET_PLAYER_50AE, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_50AE_max",
+                            2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
+        ammoDef.AddAmmoType(BULLET_PLAYER_762MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_762mm_max",
+                            2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
+        ammoDef.AddAmmoType(BULLET_PLAYER_556MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_556mm_max",
+                            2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
+        ammoDef.AddAmmoType(BULLET_PLAYER_556MM_BOX, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_556mm_box_max",
+                            2400 * BULLET_IMPULSE_EXAGGERATION, 0, 10, 14);
+        ammoDef.AddAmmoType(BULLET_PLAYER_338MAG, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_338mag_max",
+                            2800 * BULLET_IMPULSE_EXAGGERATION, 0, 12, 16);
+        ammoDef.AddAmmoType(BULLET_PLAYER_9MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_9mm_max",
+                            2000 * BULLET_IMPULSE_EXAGGERATION, 0, 5, 10);
+        ammoDef.AddAmmoType(BULLET_PLAYER_BUCKSHOT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_buckshot_max",
+                            600 * BULLET_IMPULSE_EXAGGERATION, 0, 3, 6);
+        ammoDef.AddAmmoType(BULLET_PLAYER_45ACP, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_45acp_max",
+                            2100 * BULLET_IMPULSE_EXAGGERATION, 0, 6, 10);
+        ammoDef.AddAmmoType(BULLET_PLAYER_357SIG, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_357sig_max",
+                            2000 * BULLET_IMPULSE_EXAGGERATION, 0, 4, 8);
+        ammoDef.AddAmmoType(BULLET_PLAYER_57MM, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_57mm_max",
+                            2000 * BULLET_IMPULSE_EXAGGERATION, 0, 4, 8);
+        ammoDef.AddAmmoType(AMMO_TYPE_HEGRENADE, DMG_BLAST, TRACER_LINE, 0, 0, 1 /*max carry*/, 1, 0);
+        ammoDef.AddAmmoType(AMMO_TYPE_FLASHBANG, 0, TRACER_LINE, 0, 0, 2 /*max carry*/, 1, 0);
+        ammoDef.AddAmmoType(AMMO_TYPE_SMOKEGRENADE, 0, TRACER_LINE, 0, 0, 1 /*max carry*/, 1, 0);
+        ammoDef.AddAmmoType(AMMO_TYPE_PAINT, DMG_BULLET, TRACER_LINE, 0, 0, "ammo_paint_max",
+                            3000 * BULLET_IMPULSE_EXAGGERATION, 0);
     }
 
     return &ammoDef;
@@ -78,40 +91,37 @@ ConVar ammo_57mm_max("ammo_57mm_max", "-2", FCVAR_REPLICATED);
 ConVar ammo_hegrenade_max("ammo_hegrenade_max", "1", FCVAR_REPLICATED);
 ConVar ammo_flashbang_max("ammo_flashbang_max", "2", FCVAR_REPLICATED);
 ConVar ammo_smokegrenade_max("ammo_smokegrenade_max", "1", FCVAR_REPLICATED);
+ConVar ammo_paint_max("ammo_paint_max", "-2", FCVAR_REPLICATED);
 
 CMomentumGameRules::CMomentumGameRules()
 {
-    //m_iGameMode = 0;
+    // m_iGameMode = 0;
 }
 
-CMomentumGameRules::~CMomentumGameRules()
-{
-}
+CMomentumGameRules::~CMomentumGameRules() {}
 
-static CViewVectors g_MOMViewVectors(
-    Vector(0, 0, 62),		// eye position
-    //@tuxxi: this eye position does not affect the ingame camera, it only affects the 'virtual' eye position used by the renderer.
-    //the Z val is 64 by default, changing it to 62 to match the hull max fixes 
-    //the bug where the out-of-bounds area appears when hitting a ceiling while traveling upwards.
+static CViewVectors g_MOMViewVectors(Vector(0, 0, 62), // eye position
+                                                       //@tuxxi: this eye position does not affect the ingame camera, it
+                                                       //only affects the 'virtual' eye position used by the renderer.
+                                                       //the Z val is 64 by default, changing
+                                                       // it to 62 to match the hull max fixes  the bug where the
+                                                       // out-of-bounds area appears when hitting a ceiling while
+                                                       // traveling upwards.
 
-    Vector(-16, -16, 0),	// hull min
-    Vector(16, 16, 62),	// hull max
+                                     Vector(-16, -16, 0), // hull min
+                                     Vector(16, 16, 62),  // hull max
 
-    Vector(-16, -16, 0),	// duck hull min
-    Vector(16, 16, 45),	// duck hull max
-    Vector(0, 0, 45),		// duck view
+                                     Vector(-16, -16, 0), // duck hull min
+                                     Vector(16, 16, 45),  // duck hull max
+                                     Vector(0, 0, 45),    // duck view
 
-    Vector(-10, -10, -10),	// observer hull min
-    Vector(10, 10, 10),	// observer hull max
+                                     Vector(-10, -10, -10), // observer hull min
+                                     Vector(10, 10, 10),    // observer hull max
 
-    Vector(0, 0, 14)		// dead view height
-    );
+                                     Vector(0, 0, 14) // dead view height
+);
 
-const CViewVectors *CMomentumGameRules::GetViewVectors() const
-{
-    return &g_MOMViewVectors;
-}
-
+const CViewVectors *CMomentumGameRules::GetViewVectors() const { return &g_MOMViewVectors; }
 
 bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
 {
@@ -121,26 +131,25 @@ bool CMomentumGameRules::ShouldCollide(int collisionGroup0, int collisionGroup1)
         V_swap(collisionGroup0, collisionGroup1);
     }
 
-    //Don't stand on COLLISION_GROUP_WEAPONs
-    if( collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT &&
-        collisionGroup1 == COLLISION_GROUP_WEAPON )
+    // Don't stand on COLLISION_GROUP_WEAPONs
+    if (collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT && collisionGroup1 == COLLISION_GROUP_WEAPON)
     {
         return false;
     }
 
-    if ( (collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT) &&
-        collisionGroup1 == COLLISION_GROUP_PUSHAWAY )
+    if ((collisionGroup0 == COLLISION_GROUP_PLAYER || collisionGroup0 == COLLISION_GROUP_PLAYER_MOVEMENT) &&
+        collisionGroup1 == COLLISION_GROUP_PUSHAWAY)
     {
         return false;
     }
 
-    if ( collisionGroup0 == COLLISION_GROUP_DEBRIS && collisionGroup1 == COLLISION_GROUP_PUSHAWAY )
+    if (collisionGroup0 == COLLISION_GROUP_DEBRIS && collisionGroup1 == COLLISION_GROUP_PUSHAWAY)
     {
         // let debris and multiplayer objects collide
         return true;
     }
 
-    return BaseClass::ShouldCollide( collisionGroup0, collisionGroup1 ); 
+    return BaseClass::ShouldCollide(collisionGroup0, collisionGroup1);
 }
 
 #ifndef CLIENT_DLL
@@ -148,13 +157,8 @@ LINK_ENTITY_TO_CLASS(info_player_terrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_counterterrorist, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_player_logo, CPointEntity);
 
-
-
-Vector CMomentumGameRules::DropToGround(
-    CBaseEntity *pMainEnt,
-    const Vector &vPos,
-    const Vector &vMins,
-    const Vector &vMaxs)
+Vector CMomentumGameRules::DropToGround(CBaseEntity *pMainEnt, const Vector &vPos, const Vector &vMins,
+                                        const Vector &vMaxs)
 {
     trace_t trace;
     UTIL_TraceHull(vPos, vPos + Vector(0, 0, -500), vMins, vMaxs, MASK_SOLID, pMainEnt, COLLISION_GROUP_NONE, &trace);
@@ -209,7 +213,7 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
     return pPlayer->ClientCommand(args);
 }
 
-static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldValue)
+static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldValue)
 {
     ConVarRef gm(var);
     int gamemode = gm.GetInt();
@@ -220,27 +224,30 @@ static void OnGamemodeChanged(IConVar *var, const char* pOldValue, float fOldVal
         gm.SetValue(gm.GetDefault());
         return;
     }
+    
     TickSet::SetTickrate(gamemode);
 
-    //set the value of sv_tickrate so it updates when gamemode changes the tickrate.
+    // set the value of sv_tickrate so it updates when gamemode changes the tickrate.
     ConVarRef tr("sv_tickrate");
-    tr.SetValue(TickSet::GetTickrate()); 
+    tr.SetValue(TickSet::GetTickrate());
 }
 
-static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", true, 0, false, 0, OnGamemodeChanged);
+static ConVar gamemode("mom_gamemode", "0", FCVAR_REPLICATED | FCVAR_NOT_CONNECTED | FCVAR_HIDDEN, "", true, 0, false,
+                       0, OnGamemodeChanged);
 
 static MAKE_TOGGLE_CONVAR(mom_bhop_playblocksound, "1", FCVAR_ARCHIVE, "Makes the door bhop blocks silent or not");
 
-void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
+void CMomentumGameRules::PlayerSpawn(CBasePlayer *pPlayer)
 {
-    if (pPlayer) {
+    if (pPlayer)
+    {
 
         ConVarRef map("host_map");
         const char *pMapName = map.GetString();
 
         if (gpGlobals->eLoadType == MapLoad_Background || !Q_strcmp(pMapName, "credits"))
         {
-            //Hide timer/speedometer on background maps
+            // Hide timer/speedometer on background maps
             pPlayer->m_Local.m_iHideHUD |= HIDEHUD_WEAPONSELECTION;
         }
         else
@@ -249,48 +256,39 @@ void CMomentumGameRules::PlayerSpawn(CBasePlayer* pPlayer)
             pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_WEAPONSELECTION;
         }
 
-
-        //MOM_TODO: could this change to gamemode != ALLOWED ?
+        // MOM_TODO: could this change to gamemode != ALLOWED ?
     }
 }
 
-
 class CVoiceGameMgrHelper : public IVoiceGameMgrHelper
 {
-public:
-    bool CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity) OVERRIDE
-    {
-        return true;
-    }
+  public:
+    bool CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker, bool &bProximity) OVERRIDE { return true; }
 };
 CVoiceGameMgrHelper g_VoiceGameMgrHelper;
 IVoiceGameMgrHelper *g_pVoiceGameMgrHelper = &g_VoiceGameMgrHelper;
-
 
 //-----------------------------------------------------------------------------
 // Purpose: MULTIPLAYER BODY QUE HANDLING
 //-----------------------------------------------------------------------------
 class CCorpse : public CBaseAnimating
 {
-public:
+  public:
     DECLARE_CLASS(CCorpse, CBaseAnimating);
     DECLARE_SERVERCLASS();
 
-    int ObjectCaps(void) OVERRIDE
-    { return FCAP_DONT_SAVE; }
+    int ObjectCaps(void) OVERRIDE { return FCAP_DONT_SAVE; }
 
-public:
+  public:
     CNetworkVar(int, m_nReferencePlayer);
 };
 
 IMPLEMENT_SERVERCLASS_ST(CCorpse, DT_Corpse)
-SendPropInt(SENDINFO(m_nReferencePlayer), 10, SPROP_UNSIGNED)
-END_SEND_TABLE()
+SendPropInt(SENDINFO(m_nReferencePlayer), 10, SPROP_UNSIGNED) END_SEND_TABLE()
 
-LINK_ENTITY_TO_CLASS(bodyque, CCorpse);
+    LINK_ENTITY_TO_CLASS(bodyque, CCorpse);
 
-
-CCorpse		*g_pBodyQueueHead;
+CCorpse *g_pBodyQueueHead;
 
 void InitBodyQue(void)
 {
@@ -336,7 +334,7 @@ void CopyToBodyQue(CBaseAnimating *pCorpse)
     g_pBodyQueueHead = static_cast<CCorpse *>(pHead->GetOwnerEntity());
 }
 
-//Overidden for FOV changes
+// Overidden for FOV changes
 void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
 {
     const char *pszName = engine->GetClientConVarValue(pPlayer->entindex(), "name");
@@ -352,7 +350,7 @@ void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
 
         UTIL_ClientPrintAll(HUD_PRINTTALK, text);
 
-        IGameEvent * event = gameeventmanager->CreateEvent("player_changename");
+        IGameEvent *event = gameeventmanager->CreateEvent("player_changename");
         if (event)
         {
             event->SetInt("userid", pPlayer->GetUserID());
@@ -368,7 +366,7 @@ void CMomentumGameRules::ClientSettingsChanged(CBasePlayer *pPlayer)
     if (pszFov)
     {
         int iFov = atoi(pszFov);
-        //iFov = clamp(iFov, 75, 90);
+        // iFov = clamp(iFov, 75, 90);
         pPlayer->SetDefaultFOV(iFov);
     }
 
@@ -395,12 +393,9 @@ void FovChanged(IConVar *pVar, const char *pOldValue, float flOldValue)
 ConVar fov_desired("fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.\n", true, 1.0,
     true, 179.0, FovChanged);
 
-int CMomentumGameRules::DefaultFOV()
-{
-    return fov_desired.GetInt();
-}
+int CMomentumGameRules::DefaultFOV() { return fov_desired.GetInt(); }
 
-//override so it we can control who is "spec" from hud_chat instead of the server ...
+// override so it we can control who is "spec" from hud_chat instead of the server ...
 const char *CMomentumGameRules::GetChatPrefix(bool bTeamOnly, CBasePlayer *pPlayer)
 {
     if (pPlayer && pPlayer->IsAlive() == false)
