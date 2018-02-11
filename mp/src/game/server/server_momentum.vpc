@@ -141,10 +141,6 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.cpp"
-				
-                //Server-sided grenade projectile
-                $File "momentum\mom_grenade_projectile.h"
-                $File "momentum\mom_grenade_projectile.cpp"
                 
                 //CS guns
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"    

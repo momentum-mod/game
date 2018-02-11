@@ -5,6 +5,7 @@
 #include "util/mom_util.h"
 #include "weapon/cs_weapon_parse.h"
 #include "mom_grenade_projectile.h"
+#include "te_effect_dispatch.h"
 
 #include "tier0/memdbgon.h"
 
@@ -70,7 +71,7 @@ void CMomentumOnlineGhostEntity::FireDecal(const DecalPacket_t &decal)
         }
         break;
     case DECAL_PAINT:
-        // MOM_TODO: Spawn/fire the paint decal here 
+        DoPaint(decal);
         break;
     case DECAL_KNIFE:
         DoKnifeSlash(decal);
@@ -89,6 +90,55 @@ void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
         }
         m_pCurrentSpecPlayer = nullptr;
     }
+}
+
+void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
+{
+    Vector vecDirShooting;
+    AngleVectors(packet.vAngle, &vecDirShooting);
+
+    Vector vecEnd = packet.vOrigin + vecDirShooting * 8192.0f;
+    //VectorMA(packet.vOrigin, 8192.0f, vecDirShooting, vecEnd);
+    trace_t tr; // main enter bullet trace
+
+    Ray_t ray;
+    ray.Init(packet.vOrigin, vecEnd);
+    CTraceFilterSkipTwoEntities traceFilter(this, UTIL_GetLocalPlayer(), COLLISION_GROUP_NONE);
+    enginetrace->TraceRay(ray, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, &traceFilter, &tr);
+    if (r_visualizetraces.GetBool())
+    {
+        DebugDrawLine(tr.startpos, tr.endpos, 255, 0, 0, true, -1.0f);
+    }
+
+    /*{
+        CTraceFilterSkipTwoEntities filter(this, nullptr, COLLISION_GROUP_NONE);
+
+        // Check for player hitboxes extending outside their collision bounds
+        const float rayExtension = 40.0f;
+        UTIL_ClipTraceToPlayers(vecSrc, vecEnd + vecDir * rayExtension,
+            MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, &filter, &tr);
+    }*/
+
+    if (tr.fraction == 1.0f)
+        return; // we didn't hit anything, stop tracing shoot
+
+
+    CBaseEntity *pEntity = tr.m_pEnt;
+
+    // Build the impact data
+    CEffectData data;
+    data.m_vOrigin = tr.endpos;
+    data.m_vStart = tr.startpos;
+    data.m_nSurfaceProp = tr.surface.surfaceProps;
+    data.m_nDamageType = DMG_BULLET | DMG_NEVERGIB;
+    data.m_nHitBox = tr.hitbox;
+    data.m_nEntIndex = pEntity->entindex();
+    // Build the custom online ghost data
+    data.m_bCustomColors = true; // Used to determine if an online entity
+    data.m_nAttachmentIndex = packet.iWeaponID; // Color data
+    data.m_flScale = packet.fSpread; // Scale of decal
+
+    DispatchEffect("Painting", data);
 }
 
 void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)

@@ -12,6 +12,7 @@
 #include "ilagcompensationmanager.h"
 #include "momentum/ghost_client.h"
 #include "mom_ghostdefs.h"
+#include "util/mom_util.h"
 #endif
 
 
@@ -156,7 +157,20 @@ void FX_FireBullets(
 
     if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
     {
-        DecalPacket_t decalPacket(DECAL_BULLET, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+        DecalPacket_t decalPacket;
+        if (iWeaponID == WEAPON_PAINTGUN)
+        {
+            Color decalColor;
+            if (!g_pMomentumUtil->GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
+                decalColor = COLOR_WHITE;
+            
+            decalPacket = DecalPacket_t(DECAL_PAINT, vOrigin, vAngles, decalColor.GetRawColor(), 0, 0, ConVarRef("mom_paintgun_scale").GetFloat());
+        }
+        else
+        {
+            decalPacket = DecalPacket_t(DECAL_BULLET, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+        }
+
         g_pMomentumGhostClient->SendDecalPacket(&decalPacket);
     }
 

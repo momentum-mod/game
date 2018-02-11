@@ -17,6 +17,9 @@ class MomentumUtil
     void GetRemoteChangelog();
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbChangeLog;
     void ChangelogCallback(HTTPRequestCompleted_t *, bool);
+
+    void UpdatePaintDecalScale(float fNewScale, float *fOldScale = nullptr);
+
 #endif
 
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA

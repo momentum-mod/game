@@ -97,42 +97,24 @@ bool Painting(Vector &vecOrigin, Vector &vecStart, int iHitbox, C_BaseEntity *pE
     Vector traceExt;
     VectorMA(vecStart, flLength + 8.0f, shotDir, traceExt);
 
-    if ((nFlags & IMPACT_NODECAL) == 0)
+    int decalNumber = decalsystem->GetDecalIndexForName("Painting");
+
+    if (decalNumber == -1)
+        return false;
+
+    if (!pEntity)
+        return false;
+
+    if ((pEntity->entindex() == 0) && (iHitbox != 0))
     {
-        int decalNumber = decalsystem->GetDecalIndexForName("Painting");
-
-        if (decalNumber == -1)
-            return false;
-
-        if ((pEntity->entindex() == 0) && (iHitbox != 0))
-        {
-            staticpropmgr->AddColorDecalToStaticProp(vecStart, traceExt, iHitbox - 1, decalNumber, true, tr, true,
-                                                        color);
-        }
-        else if (pEntity)
-        {
-            // Here we deal with decals on entities.
-            pEntity->AddColoredDecal(vecStart, traceExt, vecOrigin, iHitbox, decalNumber, true, tr, color,
-                ADDDECAL_TO_ALL_LODS, nFlags | 0x01 /*FDECAL_PERMANENT*/);
-        }
+        staticpropmgr->AddColorDecalToStaticProp(vecStart, traceExt, iHitbox - 1, decalNumber, true, tr, true,
+                                                    color);
     }
     else
     {
-        // Perform the trace ourselves
-        Ray_t ray;
-        ray.Init(vecStart, traceExt);
-
-        if (!pEntity)
-            return false;
-
-        if ((pEntity->entindex() == 0) && (iHitbox != 0))
-        {
-            // Special case for world entity with hitbox (that's a static prop)
-            ICollideable *pCollideable = staticpropmgr->GetStaticPropByIndex(iHitbox - 1);
-            enginetrace->ClipRayToCollideable(ray, MASK_SHOT, pCollideable, &tr);
-        }
-        else
-            enginetrace->ClipRayToEntity(ray, MASK_SHOT, pEntity, &tr);
+        // Here we deal with decals on entities.
+        pEntity->AddColoredDecal(vecStart, traceExt, vecOrigin, iHitbox, decalNumber, true, tr, color,
+            ADDDECAL_TO_ALL_LODS, nFlags);
     }
 
     return true;
@@ -157,16 +139,33 @@ void PaintingCallback(const CEffectData &data)
     }
 
     Color color;
-    ConVarRef mom_paintgun_color("mom_paintgun_color");
-    if (g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), color))
+    float flOldRadius = -1.0f;
+
+    // Are we an online entity?
+    if (data.m_bCustomColors)
     {
-        // If we hit, perform our custom effects and play the sound
-        if (Painting(vecOrigin, vecStart, iHitbox, pEntity, tr, color))
-        {
-            // Check for custom effects based on the Decal index
-            // MOM_TODO: Custom impact effects here? Or at least pass no flecks as a flag
-            //PerformCustomEffects(vecOrigin, tr, vecShotDir, iMaterial, 1.0);
-        }
+        color.SetRawColor(data.m_nAttachmentIndex);
+        g_pMomentumUtil->UpdatePaintDecalScale(data.m_flScale, &flOldRadius);
+    }
+    else
+    {
+        ConVarRef mom_paintgun_color("mom_paintgun_color"), paintgun_scale("mom_paintgun_scale");
+        g_pMomentumUtil->GetColorFromHex(mom_paintgun_color.GetString(), color);
+        g_pMomentumUtil->UpdatePaintDecalScale(paintgun_scale.GetFloat());
+    }
+
+    // If we hit, perform our custom effects and play the sound
+    if (Painting(vecOrigin, vecStart, iHitbox, pEntity, tr, color, data.m_bCustomColors ? 0 : 0x01))
+    {
+        // Check for custom effects based on the Decal index
+        // MOM_TODO: Custom impact effects here? Or at least pass no flecks as a flag
+        //PerformCustomEffects(vecOrigin, tr, vecShotDir, iMaterial, 1.0);
+    }
+
+    // If our old radius was changed, change it back to ours
+    if (flOldRadius > -0.5f)
+    {
+        g_pMomentumUtil->UpdatePaintDecalScale(flOldRadius);
     }
 
     // MOM_TODO: Custom impact sounds here?

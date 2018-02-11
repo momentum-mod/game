@@ -58,6 +58,7 @@ protected:
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
 private:
+    void DoPaint(const DecalPacket_t &packet);
     void DoKnifeSlash(const DecalPacket_t &packet);
     void ThrowGrenade(const DecalPacket_t &packet);
 

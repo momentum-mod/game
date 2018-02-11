@@ -23,16 +23,7 @@ static MAKE_CONVAR_C(mom_paintgun_scale, "1.0", FCVAR_CLIENTCMD_CAN_EXECUTE | FC
 
 void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
-    IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);
-    if (material != nullptr)
-    {
-        static unsigned int nScaleCache = 0;
-        IMaterialVar *pVarScale = material->FindVarFast("$decalscale", &nScaleCache);
-        if (pVarScale != nullptr)
-        {
-            pVarScale->SetFloatValue(0.35f * mom_paintgun_scale.GetFloat());
-        }
-    }
+    g_pMomentumUtil->UpdatePaintDecalScale(mom_paintgun_scale.GetFloat());
 }
 
 PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintGunPanel")

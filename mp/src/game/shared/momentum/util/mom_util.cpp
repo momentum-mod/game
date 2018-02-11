@@ -10,6 +10,7 @@
 #include "effect_dispatch_data.h"
 #ifdef CLIENT_DLL
 #include "ChangelogPanel.h"
+#include "materialsystem/imaterialvar.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -141,6 +142,24 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIO
     changelogpanel->SetChangelog(pDataPtr);
 
     CleanupRequest(pCallback, pData);
+}
+
+void MomentumUtil::UpdatePaintDecalScale(float fNewScale, float* fOldScale)
+{
+    IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);
+    if (material != nullptr)
+    {
+        static unsigned int nScaleCache = 0;
+        IMaterialVar *pVarScale = material->FindVarFast("$decalscale", &nScaleCache);
+        if (pVarScale != nullptr)
+        {
+            if (fOldScale)
+                *fOldScale = pVarScale->GetFloatValue();
+
+            pVarScale->SetFloatValue(0.35f * fNewScale);
+        }
+    }
+
 }
 #endif
 
