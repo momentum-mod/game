@@ -139,13 +139,12 @@ void PaintingCallback(const CEffectData &data)
     }
 
     Color color;
-    float flOldRadius = -1.0f;
 
     // Are we an online entity?
     if (data.m_bCustomColors)
     {
-        color.SetRawColor(data.m_nAttachmentIndex);
-        g_pMomentumUtil->UpdatePaintDecalScale(data.m_flScale, &flOldRadius);
+        color.SetRawColor(iDamageType);
+        g_pMomentumUtil->UpdatePaintDecalScale(data.m_flScale);
     }
     else
     {
@@ -160,12 +159,6 @@ void PaintingCallback(const CEffectData &data)
         // Check for custom effects based on the Decal index
         // MOM_TODO: Custom impact effects here? Or at least pass no flecks as a flag
         //PerformCustomEffects(vecOrigin, tr, vecShotDir, iMaterial, 1.0);
-    }
-
-    // If our old radius was changed, change it back to ours
-    if (flOldRadius > -0.5f)
-    {
-        g_pMomentumUtil->UpdatePaintDecalScale(flOldRadius);
     }
 
     // MOM_TODO: Custom impact sounds here?

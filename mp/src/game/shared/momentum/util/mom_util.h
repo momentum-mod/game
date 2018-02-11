@@ -18,7 +18,7 @@ class MomentumUtil
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbChangeLog;
     void ChangelogCallback(HTTPRequestCompleted_t *, bool);
 
-    void UpdatePaintDecalScale(float fNewScale, float *fOldScale = nullptr);
+    void UpdatePaintDecalScale(float fNewScale);
 
 #endif
 

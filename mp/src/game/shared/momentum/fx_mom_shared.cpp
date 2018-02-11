@@ -163,7 +163,7 @@ void FX_FireBullets(
             Color decalColor;
             if (!g_pMomentumUtil->GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
                 decalColor = COLOR_WHITE;
-            
+
             decalPacket = DecalPacket_t(DECAL_PAINT, vOrigin, vAngles, decalColor.GetRawColor(), 0, 0, ConVarRef("mom_paintgun_scale").GetFloat());
         }
         else

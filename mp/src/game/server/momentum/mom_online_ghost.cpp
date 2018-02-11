@@ -130,12 +130,11 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     data.m_vOrigin = tr.endpos;
     data.m_vStart = tr.startpos;
     data.m_nSurfaceProp = tr.surface.surfaceProps;
-    data.m_nDamageType = DMG_BULLET | DMG_NEVERGIB;
     data.m_nHitBox = tr.hitbox;
     data.m_nEntIndex = pEntity->entindex();
     // Build the custom online ghost data
     data.m_bCustomColors = true; // Used to determine if an online entity
-    data.m_nAttachmentIndex = packet.iWeaponID; // Color data
+    data.m_nDamageType = packet.iWeaponID; // Color data
     data.m_flScale = packet.fSpread; // Scale of decal
 
     DispatchEffect("Painting", data);

@@ -144,7 +144,7 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIO
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::UpdatePaintDecalScale(float fNewScale, float* fOldScale)
+void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
 {
     IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);
     if (material != nullptr)
@@ -153,9 +153,6 @@ void MomentumUtil::UpdatePaintDecalScale(float fNewScale, float* fOldScale)
         IMaterialVar *pVarScale = material->FindVarFast("$decalscale", &nScaleCache);
         if (pVarScale != nullptr)
         {
-            if (fOldScale)
-                *fOldScale = pVarScale->GetFloatValue();
-
             pVarScale->SetFloatValue(0.35f * fNewScale);
         }
     }
