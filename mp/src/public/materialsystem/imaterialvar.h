@@ -167,6 +167,12 @@ public:
 		return m_VecVal.Base();
 	}
 
+    // Oh well. Let's force it and say it's fast!
+    FORCEINLINE float *GetVecValueFast()
+    {
+        return m_VecVal.Base();
+    }
+
 	FORCEINLINE void GetVecValueFast( float *val, int numcomps ) const 
 	{
 		Assert( ( numcomps >0 ) && ( numcomps <= 4 ) );
