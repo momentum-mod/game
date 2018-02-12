@@ -157,6 +157,11 @@ public:
 		return m_intVal;
 	}
 
+    FORCEINLINE int &GetIntValueFast( void )
+    {
+        return m_intVal;
+    }
+
 	FORCEINLINE float GetFloatValueFast( void ) const
 	{
 		return m_VecVal[0];

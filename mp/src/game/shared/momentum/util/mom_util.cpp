@@ -151,10 +151,15 @@ void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
     {
         static unsigned int nScaleCache = 0;
         IMaterialVar *pVarScale = material->FindVarFast("$decalscale", &nScaleCache);
+
         if (pVarScale != nullptr)
         {
-            for (int i = 0; i < 4; i++)
-                pVarScale->GetVecValueFast()[i] = 0.35f * fNewScale;
+            float flNewValue = 0.35f * fNewScale;
+
+            pVarScale->GetVecValueFast()[0] = pVarScale->GetVecValueFast()[1] = pVarScale->GetVecValueFast()[2] =
+                pVarScale->GetVecValueFast()[3] = flNewValue;
+
+            pVarScale->GetIntValueFast() = (int)flNewValue;
         }
     }
 
