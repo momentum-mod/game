@@ -182,22 +182,6 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
 
         bFirstHit = false;
 
-#ifndef CLIENT_DLL
-        //
-        // Propogate a bullet impact event
-        // @todo Add this for shotgun pellets (which dont go thru here)
-        //
-        IGameEvent *event = gameeventmanager->CreateEvent("bullet_impact");
-        if (event)
-        {
-            event->SetInt("userid", GetUserID());
-            event->SetFloat("x", tr.endpos.x);
-            event->SetFloat("y", tr.endpos.y);
-            event->SetFloat("z", tr.endpos.z);
-            gameeventmanager->FireEvent(event);
-        }
-#endif
-
         /************* MATERIAL DETECTION ***********/
         surfacedata_t *pSurfaceData = physprops->GetSurfaceData(tr.surface.surfaceProps);
         int iEnterMaterial = pSurfaceData->game.material;

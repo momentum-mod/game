@@ -14,21 +14,6 @@
 #include "weapon_parse.h"
 
 //--------------------------------------------------------------------------------------------------------
-enum CSWeaponType
-{
-    WEAPONTYPE_KNIFE = 0,
-    WEAPONTYPE_PISTOL,
-    WEAPONTYPE_SUBMACHINEGUN,
-    WEAPONTYPE_RIFLE,
-    WEAPONTYPE_SHOTGUN,
-    WEAPONTYPE_SNIPER_RIFLE,
-    WEAPONTYPE_MACHINEGUN,
-    WEAPONTYPE_GRENADE,
-    WEAPONTYPE_PAINT,
-    WEAPONTYPE_UNKNOWN
-};
-
-//--------------------------------------------------------------------------------------------------------
 enum CSWeaponID
 {
     WEAPON_NONE = 0,
@@ -47,25 +32,8 @@ enum CSWeaponID
 };
 
 //--------------------------------------------------------------------------------------------------------
-const char *WeaponClassAsString(CSWeaponType weaponType);
-
-//--------------------------------------------------------------------------------------------------------
-CSWeaponType WeaponClassFromString(const char *weaponType);
-
-//--------------------------------------------------------------------------------------------------------
 enum CSWeaponID;
 
-//--------------------------------------------------------------------------------------------------------
-const char *WeaponClassAsString(CSWeaponType weaponType);
-
-//--------------------------------------------------------------------------------------------------------
-CSWeaponType WeaponClassFromString(const char *weaponType);
-
-//--------------------------------------------------------------------------------------------------------
-CSWeaponType WeaponClassFromWeaponID(CSWeaponID weaponID);
-
-//--------------------------------------------------------------------------------------------------------
-CSWeaponType WeaponClassFromWeaponID(CSWeaponID weaponID);
 
 //--------------------------------------------------------------------------------------------------------
 class CCSWeaponInfo : public FileWeaponInfo_t
@@ -76,9 +44,6 @@ class CCSWeaponInfo : public FileWeaponInfo_t
     CCSWeaponInfo();
 
     void Parse(KeyValues *pKeyValuesData, const char *szWeaponName) OVERRIDE;
-
-  public:
-    CSWeaponType m_WeaponType;
 
     int m_iCrosshairMinDistance;
     int m_iCrosshairDeltaDistance;

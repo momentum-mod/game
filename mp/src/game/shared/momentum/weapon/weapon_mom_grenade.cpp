@@ -3,10 +3,8 @@
 #include "basegrenade_shared.h"
 #include "datacache/imdlcache.h"
 #include "engine/IEngineSound.h"
-#include "gamerules.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
-#include "npcevent.h"
 #include "weapon_csbase.h"
 
 #ifdef GAME_DLL
@@ -15,7 +13,7 @@
 
 #include "tier0/memdbgon.h"
 
-#define GRENADE_TIMER 3.0f // Seconds
+#define GRENADE_TIMER 1.5f // Seconds
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumGrenade, DT_MomentumGrenade)
 
@@ -221,24 +219,9 @@ void CMomentumGrenade::ItemPostFrame()
         SendWeaponAnim(ACT_VM_THROW);
         SetWeaponIdleTime(gpGlobals->curtime + SequenceDuration());
 
-        m_flNextPrimaryAttack =
-            gpGlobals->curtime + SequenceDuration(); // we're still throwing, so reset our next primary attack
+        // we're still throwing, so reset our next primary attack
+        m_flNextPrimaryAttack = gpGlobals->curtime + SequenceDuration(); 
 
-#ifndef CLIENT_DLL
-        IGameEvent *event = gameeventmanager->CreateEvent("weapon_fire");
-        if (event)
-        {
-            const char *weaponName = STRING(m_iClassname);
-            if (strncmp(weaponName, "weapon_", 7) == 0)
-            {
-                weaponName += 7;
-            }
-
-            event->SetInt("userid", pPlayer->GetUserID());
-            event->SetString("weapon", weaponName);
-            gameeventmanager->FireEvent(event);
-        }
-#endif
     }
     else if ((m_fThrowTime > 0) && (m_fThrowTime < gpGlobals->curtime))
     {
@@ -264,10 +247,10 @@ void CMomentumGrenade::ItemPostFrame()
                 pPlayer->SwitchToNextBestWeapon(this);
             }
 #endif
-            return; // don't animate this grenade any more!
+            // don't animate this grenade any more!
         }
     }
-    else if (!m_bRedraw)
+    else
     {
         BaseClass::ItemPostFrame();
     }

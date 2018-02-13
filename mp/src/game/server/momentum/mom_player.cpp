@@ -519,12 +519,10 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     if (FStrEq(cmd, "drop"))
     {
         CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
-
+        
         if (pWeapon)
         {
-            CSWeaponType type = pWeapon->GetCSWpnData().m_WeaponType;
-
-            if (type != WEAPONTYPE_GRENADE)
+            if (pWeapon->GetWeaponID() != WEAPON_GRENADE)
             {
                 MomentumWeaponDrop(pWeapon);
             }

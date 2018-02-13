@@ -6,6 +6,7 @@
 #include "weapon/cs_weapon_parse.h"
 #include "mom_grenade_projectile.h"
 #include "te_effect_dispatch.h"
+#include "weapon/weapon_csbase.h"
 
 #include "tier0/memdbgon.h"
 
@@ -98,7 +99,7 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     AngleVectors(packet.vAngle, &vecDirShooting);
 
     Vector vecEnd = packet.vOrigin + vecDirShooting * 8192.0f;
-    //VectorMA(packet.vOrigin, 8192.0f, vecDirShooting, vecEnd);
+
     trace_t tr; // main enter bullet trace
 
     Ray_t ray;
@@ -110,18 +111,8 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
         DebugDrawLine(tr.startpos, tr.endpos, 255, 0, 0, true, -1.0f);
     }
 
-    /*{
-        CTraceFilterSkipTwoEntities filter(this, nullptr, COLLISION_GROUP_NONE);
-
-        // Check for player hitboxes extending outside their collision bounds
-        const float rayExtension = 40.0f;
-        UTIL_ClipTraceToPlayers(vecSrc, vecEnd + vecDir * rayExtension,
-            MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, &filter, &tr);
-    }*/
-
     if (tr.fraction == 1.0f)
         return; // we didn't hit anything, stop tracing shoot
-
 
     CBaseEntity *pEntity = tr.m_pEnt;
 
@@ -138,6 +129,22 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     data.m_flScale = packet.fSpread; // Scale of decal
 
     DispatchEffect("Painting", data);
+
+    // Play the paintgun sound
+    CCSWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
+    if (pWeaponInfo)
+    {
+        // If we have some sounds from the weapon classname.txt file, play a random one of them
+        const char *shootsound = pWeaponInfo->aShootSounds[SINGLE];
+        if (!shootsound || !shootsound[0])
+            return;
+
+        CBroadcastRecipientFilter filter;
+        if (!te->CanPredict())
+            return;
+
+        EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
+    }
 }
 
 void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)

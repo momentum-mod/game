@@ -124,21 +124,11 @@ void FX_FireBullets(
     CMomentumPlayer *pPlayer = ToCMOMPlayer( UTIL_PlayerByIndex( iPlayerIndex) );
 #endif
 
-    const char * weaponAlias = WeaponIDToAlias(iWeaponID);
+    CCSWeaponInfo *pWeaponInfo = GetWeaponInfo((CSWeaponID) iWeaponID);
 
-    if (!weaponAlias)
+    if (!pWeaponInfo)
     {
-        DevMsg("FX_FireBullets: weapon alias for ID %i not found\n", iWeaponID);
-        return;
-    }
-
-    char wpnName[128];
-    Q_snprintf(wpnName, sizeof(wpnName), "weapon_%s", weaponAlias);
-    WEAPON_FILE_INFO_HANDLE	hWpnInfo = LookupWeaponInfoSlot(wpnName);
-
-    if (hWpnInfo == GetInvalidWeaponInfoHandle())
-    {
-        DevMsg("FX_FireBullets: LookupWeaponInfoSlot failed for weapon %s\n", wpnName);
+        DevMsg("FX_FireBullets: Cannot find weapon info for ID %i\n", iWeaponID);
         return;
     }
 
@@ -179,8 +169,6 @@ void FX_FireBullets(
 
     iSeed++;
 
-    CCSWeaponInfo *pWeaponInfo = static_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
-
     int		iDamage = pWeaponInfo->m_iDamage;
     float	flRange = pWeaponInfo->m_flRange;
     int		iPenetration = pWeaponInfo->m_iPenetration;
@@ -190,7 +178,7 @@ void FX_FireBullets(
     if (bDoEffects)
     {
         // Do an extra paintgun check here
-        const bool bPreventShootSound = (pWeaponInfo->m_WeaponType == WEAPONTYPE_PAINT && !ConVarRef("mom_paintgun_shoot_sound").GetBool());
+        const bool bPreventShootSound = (iWeaponID == WEAPON_PAINTGUN && !ConVarRef("mom_paintgun_shoot_sound").GetBool());
         
         if (!bPreventShootSound)
             FX_WeaponSound(iPlayerIndex, SINGLE, vOrigin, pWeaponInfo);

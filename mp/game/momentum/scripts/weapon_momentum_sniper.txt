@@ -1,6 +1,5 @@
 WeaponData
 {
-    "WeaponType"                "SniperRifle"
     "CrosshairMinDistance"      "5"
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "0"
