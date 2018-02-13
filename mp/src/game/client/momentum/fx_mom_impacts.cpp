@@ -138,7 +138,7 @@ void PaintingCallback(const CEffectData &data)
         return;
     }
 
-    // Let's only allow the word for now...
+    // Let's only allow the world for now...
     if (pEntity->entindex() != 0)
         return;
 
