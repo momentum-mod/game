@@ -138,6 +138,10 @@ void PaintingCallback(const CEffectData &data)
         return;
     }
 
+    // Let's only allow the word for now...
+    if (pEntity->entindex() != 0)
+        return;
+
     Color color;
 
     // Are we an online entity?

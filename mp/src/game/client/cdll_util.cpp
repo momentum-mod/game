@@ -391,6 +391,16 @@ void UTIL_ImpactTrace( trace_t *pTrace, int iDamageType, const char *pCustomImpa
 	if ( pTrace->surface.flags & SURF_NODRAW )
 		return;
 
+    // Ignore hitboxes here?
+
+    /*
+    if ( !strcmp( "Painting" , pCustomImpactName ) )
+    {
+        if ( pTrace->surface.flags & SURF_HITBOX )
+            return;
+    } 
+    */
+
 	pEntity->ImpactTrace( pTrace, iDamageType, pCustomImpactName );
 }
 
