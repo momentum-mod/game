@@ -156,13 +156,10 @@ void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
         {
             float flNewValue = 0.35f * fNewScale;
 
-            pVarScale->GetVecValueFast()[0] = pVarScale->GetVecValueFast()[1] = pVarScale->GetVecValueFast()[2] =
-                pVarScale->GetVecValueFast()[3] = flNewValue;
-
-            pVarScale->GetIntValueFast() = (int)flNewValue;
+            pVarScale->SetFloatValueFast(flNewValue);
+            pVarScale->SetIntValueFast((int) flNewValue);
         }
     }
-
 }
 #endif
 
