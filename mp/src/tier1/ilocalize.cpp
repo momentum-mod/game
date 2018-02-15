@@ -36,7 +36,11 @@ int ILocalize::ConvertUTF8ToUTF16(const char *utf8, wchar_t **utf16)
     int size = Q_UTF8ToUTF16(utf8, nullptr, 0);
     *utf16 = (wchar_t*)calloc(1, size);
 
+#ifdef POSIX
+    size = Q_UTF8ToUnicode(utf8, *utf16, size);
+#else
     size = Q_UTF8ToUTF16(utf8, *utf16, size);
+#endif
 
     return size / sizeof(wchar_t);
 }
@@ -48,10 +52,19 @@ int ILocalize::ConvertUTF16ToUTF8(const wchar_t *utf16, char **utf8)
         return 0;
     }
 
+#ifdef POSIX
+    int size = Q_UnicodeToUTF8(utf16, nullptr, 0);
+#else
     int size = Q_UTF16ToUTF8(utf16, nullptr, 0);
+#endif
+
     *utf8 = (char*)calloc(1, size);
 
+#ifdef POSIX
+    size = Q_UnicodeToUTF8(utf16, *utf8, size);
+#else
     size = Q_UTF16ToUTF8(utf16, *utf8, size);
+#endif
 
     return size;
 }
