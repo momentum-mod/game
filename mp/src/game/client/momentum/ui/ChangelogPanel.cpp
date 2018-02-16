@@ -3,8 +3,13 @@
 
 #include "ChangelogPanel.h"
 #include "util/mom_util.h"
+#include "mom_shareddefs.h"
+#include "vgui_controls/RichText.h"
+#include "vgui/ILocalize.h"
+#include "vgui/ISystem.h"
 
 #include "tier0/memdbgon.h"
+
 
 // Constuctor: Initializes the Panel
 CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogPanel")
@@ -35,6 +40,35 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
     }
 }
 
+CChangelogPanel::~CChangelogPanel()
+{
+    free(m_pwOnlineChangelog);
+}
+
+void CChangelogPanel::SetChangelog(const char* pChangelog)
+{
+    if (m_pChangeLog)
+    {
+        if (m_pwOnlineChangelog)
+        {
+            free(m_pwOnlineChangelog);
+            m_pwOnlineChangelog = nullptr;
+        }
+
+        g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelog, &m_pwOnlineChangelog);
+
+        m_pChangeLog->SetText(m_pwOnlineChangelog);
+        // Delay the scrolling to a tick or so away, thanks Valve.
+        m_flScrollTime = system()->GetFrameTime() + 0.010f;
+    }
+}
+
+void CChangelogPanel::ApplySchemeSettings(IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+    m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall"));
+} 
+
 // Called when the versions don't match (there's an update)
 void CChangelogPanel::Activate()
 {
@@ -43,6 +77,26 @@ void CChangelogPanel::Activate()
     g_pMomentumUtil->GetRemoteChangelog();
 
     BaseClass::Activate();
+}
+
+void CChangelogPanel::OnThink()
+{
+    BaseClass::OnThink();
+    if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
+    {
+        m_pChangeLog->GotoTextStart();
+        m_flScrollTime = -1.0f;
+    }
+}
+
+CChangelogInterface::CChangelogInterface()
+{
+    pPanel = nullptr;
+}
+
+void CChangelogInterface::Create(vgui::VPANEL parent)
+{
+    pPanel = new CChangelogPanel(parent);
 }
 
 CON_COMMAND(mom_version, "Prints mod current installed version\n")
@@ -58,4 +112,4 @@ CON_COMMAND(mom_show_changelog, "Shows the changelog for the mod.\n")
 
 // Interface this class to the rest of the DLL
 static CChangelogInterface g_Changelog;
-IChangelogPanel *changelogpanel = static_cast<IChangelogPanel *>(&g_Changelog);
+IChangelogPanel *changelogpanel = &g_Changelog;

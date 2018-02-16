@@ -102,6 +102,7 @@ class CGameUI : public IGameUI
     // state
     bool IsInLevel();
     bool IsInBackgroundLevel();
+    bool IsInMenu();
     bool IsInMultiplayer();
     bool HasSavedThisMenuSession();
     void SetSavedThisMenuSession(bool bState);

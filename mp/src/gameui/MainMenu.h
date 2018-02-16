@@ -1,13 +1,20 @@
 #pragma once
 
-#include "vgui_controls/HTML.h"
+#include "vgui2d/panel2d.h"
 #include "igameevents.h"
 
-class MomentumURLResolver;
+#include "button_mainmenu.h"
 
-class MainMenu : public vgui::HTML, public IGameEventListener2
+enum SortFlags_t
 {
-    DECLARE_CLASS_SIMPLE(MainMenu, vgui::HTML);
+    FL_SORT_SHARED = 1 << 0,
+    FL_SORT_INGAME = 1 << 1,
+    FL_SORT_MENU = 1 << 2
+};
+
+class MainMenu : public Panel2D, public IGameEventListener2
+{
+    DECLARE_CLASS_SIMPLE(MainMenu, Panel2D);
 
     MainMenu(Panel *parent);
     ~MainMenu();
@@ -19,44 +26,64 @@ class MainMenu : public vgui::HTML, public IGameEventListener2
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
 
-    void LoadMenu()
-    {
-        OpenURL("mom://menu");
-    }
-
-    void OpenURL(const char *pURL)
-    {
-        BaseClass::OpenURL(pURL, nullptr);
-    }
-
-    MESSAGE_FUNC_CHARPTR(OnURLResolved, "ResolvedURL", url)
-    {
-        OpenURL(url);
-    }
-
-    void OnFinishRequest(const char* url, const char* pageTitle, const CUtlMap<CUtlString, CUtlString>& headers) OVERRIDE;
-
-    // Commands (this code -> the browser)
-    void SendVolumeCommand(); // Send if the game volume changed
-    void SendVersionCommand(); // Send for the version of the game
-    void SendLocalizationCommand(); // Send for the language of the game
-    void SendLobbyUpdateCommand(); // Send if we join/leave a lobby
-    void SendGameStatusCommand(); // Send if we're now in game or menu
-
-    // Inputs from the browser
-    void OnJSAlert(HTML_JSAlert_t* pAlert) OVERRIDE;
-
-    void OnMousePressed(vgui::MouseCode mc) OVERRIDE;
     void OnScreenSizeChanged(int oldwide, int oldtall) OVERRIDE;
 
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
+    void CreateMenu();
+    void DrawMainMenu();
+    void DrawLogo();
+    void CheckVersion();
+    void Paint() OVERRIDE;
+
+
+    void Activate()
+    {
+        MoveToFront();
+        SetVisible(true);
+        SetEnabled(true);
+    }
+
 private:
-    MomentumURLResolver *m_pURLResolver;
- 
+    CUtlVector<Button_MainMenu *> m_pButtons;
+
+    // Our own buttons...
+    Button_MainMenu *m_pButtonLobby;
+    Button_MainMenu *m_pButtonInviteFriends;
+
+    // Pointers to main menu buttons...
+
+    Button_MainMenu *m_pButtonSpectate;
+    bool m_bIsSpectating, m_bInGame, m_bInLobby;
+
+
     char m_pszMenuOpenSound[MAX_PATH];
     char m_pszMenuCloseSound[MAX_PATH];
 
-    bool m_bInGame;
-    bool m_bInLobby;
-    float m_fGameVolume;
-    ConVarRef volumeRef;
+    bool m_bFocused;
+    wchar_t *m_logoLeft;
+    wchar_t *m_logoRight;
+
+    float m_fButtonsSpace;
+
+    float m_fButtonsOffsetX;
+    float m_fButtonsOffsetY;
+
+    float m_fLogoOffsetX;
+    float m_fLogoOffsetY;
+
+    bool m_bLogoPlayerCount;
+    bool m_bLogoText;
+    vgui::ImagePanel *m_pLogoImage;
+    bool m_bLogoAttachToMenu;
+
+    Color m_cLogoLeft;
+    Color m_cLogoRight;
+    Color m_cLogoPlayerCount;
+
+    vgui::HFont m_fLogoPlayerCount;
+    vgui::HFont m_fLogoFont;
+    int m_nSortFlags;
+    bool m_bNeedSort;
+
+    vgui::Label *m_pVersionLabel;
 };

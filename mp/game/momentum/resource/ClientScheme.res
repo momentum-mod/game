@@ -1673,11 +1673,11 @@ Scheme
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
-		"1"		"resource/MomIcons.ttf"
+		"1"		"resource/font/MomIcons.ttf"
 		//"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
 		//"4"		"resource/cs.ttf"
-        "1" "resource/BigNoodleTitling.ttf"
+        "1" "resource/font/BigNoodleTitling.ttf"
 	}
 
 }

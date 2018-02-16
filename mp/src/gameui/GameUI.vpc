@@ -44,6 +44,7 @@ $Project "GameUI"
 		$File	"$SRCDIR\public\vgui_controls\vgui_controls.cpp"
 		$File	"$SRCDIR\common\language.cpp"
         $File   "MainMenu.cpp"
+        $File "button_mainmenu.cpp"
 	}
 
 	$Folder	"Header Files"
@@ -58,6 +59,7 @@ $Project "GameUI"
 		$File	"PanelListPanel.h"
 		$File	"TextEntryBox.h"
         $File   "MainMenu.h"
+        $File "button_mainmenu.h"
         $File "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
         $File "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
 	}

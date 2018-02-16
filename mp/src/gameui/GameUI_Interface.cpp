@@ -357,6 +357,8 @@ void CGameUI::RunFrame()
     // Run frames
     GetBasePanel()->RunFrame();
 
+    vgui::GetAnimationController()->UpdateAnimations(engine->Time());
+
     // Play the start-up music the first time we run frame
     if (m_iPlayGameStartupSound > 0)
     {
@@ -556,12 +558,7 @@ bool CGameUI::SetShowProgressText(bool show)
 //-----------------------------------------------------------------------------
 bool CGameUI::IsInLevel()
 {
-    const char *levelName = engine->GetLevelName();
-    if (levelName && levelName[0] && !engine->IsLevelMainMenuBackground())
-    {
-        return true;
-    }
-    return false;
+    return engine->IsInGame() && !engine->IsLevelMainMenuBackground();
 }
 
 //-----------------------------------------------------------------------------
@@ -569,12 +566,12 @@ bool CGameUI::IsInLevel()
 //-----------------------------------------------------------------------------
 bool CGameUI::IsInBackgroundLevel()
 {
-    const char *levelName = engine->GetLevelName();
-    if (levelName && levelName[0] && engine->IsLevelMainMenuBackground())
-    {
-        return true;
-    }
-    return false;
+    return (engine->IsInGame() && engine->IsLevelMainMenuBackground());
+}
+
+bool CGameUI::IsInMenu()
+{
+    return IsInBackgroundLevel() || GetBasePanel()->GetMenuBackgroundState() == BACKGROUND_DISCONNECTED;
 }
 
 //-----------------------------------------------------------------------------
