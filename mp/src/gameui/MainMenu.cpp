@@ -15,10 +15,10 @@
 #include "fmtstr.h"
 
 #include "vgui_controls/ImagePanel.h"
+#include "vgui_controls/AnimationController.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-#include "vgui_controls/AnimationController.h"
 
 using namespace vgui;
 
@@ -49,6 +49,9 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
         gameeventmanager->AddListener(this, "spec_stop", false);
     }
 
+    if (!GetAnimationController()->SetScriptFile(GetVPanel(), "scripts/HudAnimations.txt"))
+        AssertMsg(0, "Couldn't load the animations!");
+
     HScheme hScheme = scheme()->LoadSchemeFromFile("resource/schememainmenu.res", "SchemeMainMenu");
     SetScheme(hScheme);
 
@@ -66,8 +69,6 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
     m_pButtonLobby->SetButtonDescription("");
     m_pButtonLobby->SetEngineCommand("mom_lobby_create");
-    m_pButtonLobby->SetPriority(1);
-    m_pButtonLobby->SetBlank(false);
     m_pButtonLobby->SetVisible(true);
     m_pButtonLobby->SetTextAlignment(RIGHT);
     m_pButtonLobby->SetButtonType(SHARED);
@@ -76,9 +77,6 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonInviteFriends->SetButtonText("#GameUI2_InviteLobby");
     m_pButtonInviteFriends->SetButtonDescription("");
     m_pButtonInviteFriends->SetEngineCommand("mom_lobby_invite");
-    m_pButtonInviteFriends->SetPriority(1);
-    m_pButtonInviteFriends->SetBlank(false);
-    m_pButtonInviteFriends->SetVisible(false);
     m_pButtonInviteFriends->SetTextAlignment(RIGHT);
     m_pButtonInviteFriends->SetButtonType(SHARED);
 
@@ -87,15 +85,13 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
     m_pButtonSpectate->SetEngineCommand("mom_spectate");
     m_pButtonSpectate->SetPriority(90);
-    m_pButtonSpectate->SetBlank(false);
-    m_pButtonSpectate->SetVisible(false);
     m_pButtonSpectate->SetButtonType(IN_GAME);
-    m_pButtons.AddToTail(m_pButtonSpectate);
+    m_pButtonSpectate->SetTextAlignment(RIGHT);
 
-    m_pVersionLabel = new Label(this, "VersionLabel", CFmtStr("Version %s", MOM_CURRENT_VERSION));
+    m_pVersionLabel = new Button(this, "VersionLabel", CFmtStr("Version %s", MOM_CURRENT_VERSION).Access(), this, "ShowVersion");
+    m_pVersionLabel->SetPaintBackgroundEnabled(false);
     m_pVersionLabel->SetAutoWide(true);
-    // MOM_TODO: finish implementing this
-
+    m_pVersionLabel->SetAutoTall(true);
     // MOM_TODO: LoadControlSettings("resource/ui/MainMenuLayout.res");
 
     CheckVersion();
@@ -171,6 +167,11 @@ void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
 
 void MainMenu::OnCommand(char const *cmd)
 {
+    if (!Q_strcmp(cmd, "ShowVersion"))
+    {
+        GetBasePanel()->RunEngineCommand("mom_show_changelog\n");
+        GetAnimationController()->StartAnimationSequence(this, "VersionPulseStop");
+    }
 
      GameUI().SendMainMenuCommand(cmd);
      BaseClass::OnCommand(cmd);
@@ -183,12 +184,14 @@ void MainMenu::FireGameEvent(IGameEvent* event)
         m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_create");
         m_pButtonInviteFriends->SetVisible(false);
+        m_pButtonSpectate->SetVisible(false);
     }
     else if (!Q_strcmp(event->GetName(), "lobby_join"))
     {
         m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
         m_pButtonLobby->SetEngineCommand("mom_lobby_leave");
         m_pButtonInviteFriends->SetVisible(true);
+        m_pButtonSpectate->SetVisible(true);
     }
     else if (!Q_strcmp(event->GetName(), "spec_start"))
     {
@@ -257,8 +260,6 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *co
 
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
-    // Find a better place for this
-    //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
     BaseClass::ApplySchemeSettings(pScheme);
 
     m_fButtonsSpace = Q_atof(pScheme->GetResourceString("MainMenu.Buttons.Space"));
@@ -288,6 +289,13 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
     m_cLogoPlayerCount = pScheme->GetColor("MainMenu.Logo.PlayerCount.Color", Color(255, 255, 255, 255));
 
     m_fLogoFont = pScheme->GetFont("MainMenu.Logo.Font", true);
+
+    m_hFontVersionLabel = pScheme->GetFont("MainMenu.VersionLabel.Font", true);
+    if (m_pVersionLabel)
+    {
+        m_pVersionLabel->SetFont(m_hFontVersionLabel);
+        m_pVersionLabel->InvalidateLayout(true, true);
+    }
 
     Q_strncpy(m_pszMenuOpenSound, pScheme->GetResourceString("MainMenu.Sound.Open"), sizeof(m_pszMenuOpenSound));
     Q_strncpy(m_pszMenuCloseSound, pScheme->GetResourceString("MainMenu.Sound.Close"), sizeof(m_pszMenuCloseSound));
@@ -363,8 +371,16 @@ void MainMenu::DrawMainMenu()
 
     const Vector2D vp = GameUI().GetViewport();
 
-    m_pButtonLobby->SetPos(vp.x - m_pButtonLobby->GetWidth(), vp.y - m_pButtonLobby->GetTall() - m_fButtonsOffsetY);
-    m_pButtonInviteFriends->SetPos(vp.x - m_pButtonInviteFriends->GetWidth(), vp.y - m_pButtonLobby->GetTall() - m_pButtonInviteFriends->GetTall() - m_fButtonsOffsetY);
+    m_pButtonLobby->SetPos(vp.x - m_pButtonLobby->GetWidth() - m_fButtonsOffsetX, 
+        vp.y - m_pButtonLobby->GetTall() - m_fButtonsOffsetY);
+
+    m_pButtonInviteFriends->SetPos(vp.x - m_pButtonInviteFriends->GetWidth() - m_fButtonsOffsetX, 
+        m_pButtonLobby->GetYPos() - m_pButtonInviteFriends->GetTall() - m_fButtonsSpace);
+
+    m_pButtonSpectate->SetPos(vp.x - m_pButtonSpectate->GetWidth() - m_fButtonsOffsetX, 
+        m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_fButtonsSpace);
+
+    m_pVersionLabel->SetPos(vp.x - m_pVersionLabel->GetWide() - 4, 2);
 }
 
 void MainMenu::DrawLogo()
@@ -436,8 +452,6 @@ void MainMenu::DrawLogo()
 
 void MainMenu::CheckVersion()
 {
-    bool bNewVersion = false;
-
     KeyValues* pVersionKV = new KeyValues("Version");
     KeyValuesAD autoDelete(pVersionKV);
     // Not if-checked here since it doesn't really matter if we don't load it
@@ -445,9 +459,7 @@ void MainMenu::CheckVersion()
     if (V_strcmp(pVersionKV->GetString("num", MOM_CURRENT_VERSION), MOM_CURRENT_VERSION) < 0)
     {
         // New version! Make the version in the top right pulse for effect!
-        bNewVersion = true;
-        vgui::GetAnimationController()->StartAnimationSequence("");
-        // MOM_TODO: Make the version label flash/flicker/etc here
+        GetAnimationController()->StartAnimationSequence(this, "VersionPulse");
     }
 
     // Set the current version either way 

@@ -278,10 +278,11 @@ void Button_MainMenu::DrawButton_Blur()
     surface()->DrawFilledRect(0, 0, m_fWidth + 0, m_fHeight + 0);
 }
 
-inline int CalculateDescOffsetFromAlignment(TextAlignment align, int mainTextSize, int mainTextPos, int descWide, float m_fDescOffsetX)
+inline int CalculateDescOffsetFromAlignment(TextAlignment align, float buttonWide, int mainTextSize, int mainTextPos, int descWide, float m_fDescOffsetX)
 {
     int toReturn;
     int descOffset = static_cast<int>(m_fDescOffsetX);
+    int butWide = static_cast<int>(buttonWide);
     switch (align)
     {
     default:
@@ -292,7 +293,9 @@ inline int CalculateDescOffsetFromAlignment(TextAlignment align, int mainTextSiz
         toReturn = descOffset;//Doesn't matter for center
         break;
     case RIGHT:
-        toReturn = descWide <= mainTextSize ? (mainTextSize - descWide + descOffset) : descOffset;
+        toReturn = descWide <= mainTextSize ? 
+            (mainTextSize - descWide + descOffset) : // Shift off the difference so we line up with the text's start
+            butWide - (mainTextPos + mainTextSize) + descOffset; // Shift our end to match the end of the main text
         break;
     }
 
@@ -345,7 +348,7 @@ void Button_MainMenu::DrawDescription()
     surface()->DrawSetTextFont(m_fDescriptionFont);
     int descWide, descTall;
     surface()->GetTextSize(m_fDescriptionFont, m_ButtonDescription, descWide, descTall);
-    int offsetX = CalculateDescOffsetFromAlignment(m_iTextAlignment, m_iTextSizeX, m_iTextPositionX, descWide, m_fDescriptionOffsetX);
+    int offsetX = CalculateDescOffsetFromAlignment(m_iTextAlignment, m_fWidth, m_iTextSizeX, m_iTextPositionX, descWide, m_fDescriptionOffsetX);
     int descriptionX = CalculateTextXFromAlignment(m_iTextAlignment, m_fWidth, descWide, offsetX);
 
     surface()->DrawSetTextPos(descriptionX, m_iTextPositionY + m_iTextSizeY + m_fDescriptionOffsetY);

@@ -76,6 +76,7 @@ private:
     Color m_cLogoRight;
     Color m_cLogoPlayerCount;
 
+    vgui::HFont m_hFontVersionLabel;
     vgui::HFont m_fLogoPlayerCount;
     vgui::HFont m_fLogoFont;
     int m_nSortFlags;

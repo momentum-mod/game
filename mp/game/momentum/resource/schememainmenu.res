@@ -140,6 +140,17 @@
 				"dropshadow"	"1"
 			}
 		}
+        
+        "MainMenu.VersionLabel.Font"
+        {
+            "settings"
+            {
+                "name" "BigNoodleTitling"
+                "tall" "20"
+                "weight" "300"
+                "antialias" "1"
+            }
+        }
 	}
 
 	"CustomFontFiles"
