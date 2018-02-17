@@ -29,7 +29,7 @@ class Button_MainMenu : public Button2D
     DECLARE_CLASS_SIMPLE(Button_MainMenu, Button2D);
 
   public:
-    Button_MainMenu(Panel *parent, Panel *pActionSignalTarget = nullptr, const char *pCmd = nullptr);
+    Button_MainMenu(Panel *parent, Panel *pActionSignalTarget = nullptr, const char *pCmd = "");
 
     virtual void Init();
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
@@ -65,11 +65,11 @@ class Button_MainMenu : public Button2D
     virtual ButtonType GetButtonType() const { return m_nType; }
 
     void SetCommand(const char* cmd) OVERRIDE;
+    void SetEngineCommand(const char *cmd);
 
   private:
     ButtonState m_sButtonState;
     ButtonState m_sButtonStateOld;
-    char m_pCmd[256];
     wchar_t *m_ButtonText;
     wchar_t *m_ButtonDescription;
     int32 m_iPriority;

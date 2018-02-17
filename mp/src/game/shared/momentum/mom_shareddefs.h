@@ -86,6 +86,13 @@ typedef enum
 #define ANSI_TO_UNICODE(ansi, unicode) \
     g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof(unicode));
 
+// Fires an IGameEvent game-wide, so that anything that is listening can hear it
+#define FIRE_GAME_WIDE_EVENT(eventName) \
+    IGameEvent *eventServer = gameeventmanager->CreateEvent(eventName, true); \
+    IGameEvent *eventClient = gameeventmanager->CreateEvent(eventName, true); \
+    if (eventServer && eventClient) \
+    { gameeventmanager->FireEvent(eventServer, true); gameeventmanager->FireEventClientSide(eventClient); }
+
 // Creates a convar with a callback function
 #define MAKE_CONVAR_C(name, defaultval, flags, desc, minVal, maxVal, callback)                                                \
     ConVar name(#name, defaultval, flags, desc, true, minVal, true, maxVal, callback)

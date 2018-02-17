@@ -8,23 +8,25 @@
 		"priority"		"100"
 		"specifics"		"ingame"
 	}
-	 "Spectate"
-    {
-        "text" "#GameUI2_Spectate"
-        "description" "#GameUI2_SpectateDescription"
-        "command" "engine mom_spectate"
-        "priority" "90"
-        "specifics" "ingame"
-    }
 	"SelectMap"
 	{
 		"text"			"#GameUI2_SelectMap"
 		"description"	"#GameUI2_SelectMapDescription"
-		"command"		"engine ShowMapSelectionPanel"
+        "EngineCommand" "ShowMapSelectionPanel"
 		"priority"		"99"
 		"specifics"		"shared"
 	}
 	
+    // Declared in code
+    // "Spectate"
+    // {
+        // "text" "#GameUI2_Spectate"
+        // "description" "#GameUI2_SpectateDescription"
+        // "EngineCommand" "mom_spectate"
+        // "priority" "90"
+        // "specifics" "ingame"
+    // }
+    
 	"Options"
 	{
 		"text"			"#GameUI2_Options"
@@ -38,7 +40,7 @@
     {
         "text" "#GameUI2_MomSettings"
         "description" "#GameUI2_MomSettingsDescription"
-        "command" "engine mom_settings_show"
+        "EngineCommand" "mom_settings_show"
         "priority" "60"
         "specifics" "shared"
     }
@@ -47,7 +49,7 @@
     {
         "text" "#GameUI2_Quit2Menu"
         "description" "#GameUI2_Quit2MenuDescription"
-        "command" "engine disconnect"
+        "EngineCommand" "disconnect"
         "priority" "50"
         "specifics" "ingame"
     }
@@ -56,7 +58,7 @@
     {
         "text" "#GameUI2_Credits"
         "description" "#GameUI2_CreditsDescription"
-        "command" "engine progress_enable \n map credits"
+        "EngineCommand" "map credits"
         "priority" "50"
         "specifics" "mainmenu"
     }

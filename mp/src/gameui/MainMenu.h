@@ -35,7 +35,6 @@ class MainMenu : public Panel2D, public IGameEventListener2
     void CheckVersion();
     void Paint() OVERRIDE;
 
-
     void Activate()
     {
         MoveToFront();
@@ -43,18 +42,15 @@ class MainMenu : public Panel2D, public IGameEventListener2
         SetEnabled(true);
     }
 
+    MESSAGE_FUNC_PARAMS(OnMenuButtonCommand, "MenuButtonCommand", pKv);
+
 private:
     CUtlVector<Button_MainMenu *> m_pButtons;
 
     // Our own buttons...
     Button_MainMenu *m_pButtonLobby;
     Button_MainMenu *m_pButtonInviteFriends;
-
-    // Pointers to main menu buttons...
-
     Button_MainMenu *m_pButtonSpectate;
-    bool m_bIsSpectating, m_bInGame, m_bInLobby;
-
 
     char m_pszMenuOpenSound[MAX_PATH];
     char m_pszMenuCloseSound[MAX_PATH];
@@ -65,11 +61,9 @@ private:
 
     float m_fButtonsSpace;
 
-    float m_fButtonsOffsetX;
-    float m_fButtonsOffsetY;
+    float m_fButtonsOffsetX, m_fButtonsOffsetY;
 
-    float m_fLogoOffsetX;
-    float m_fLogoOffsetY;
+    float m_fLogoOffsetX, m_fLogoOffsetY;
 
     int m_iLogoWidth, m_iLogoHeight;
 

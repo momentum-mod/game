@@ -19,7 +19,6 @@ Button_MainMenu::Button_MainMenu(Panel *parent, Panel *pActionSignalTarget, cons
     : BaseClass(parent, "", "", pActionSignalTarget, pCmd), m_ButtonText(nullptr), m_ButtonDescription(nullptr)
 {
     Init();
-    Q_strncpy(m_pCmd, pCmd, sizeof(m_pCmd));
 }
 
 void Button_MainMenu::SetButtonText(const char *text)
@@ -46,7 +45,12 @@ void Button_MainMenu::SetButtonDescription(const char *description)
 
 void Button_MainMenu::SetCommand(const char* pCmd)
 {
-    Q_strncpy(m_pCmd, pCmd, sizeof(m_pCmd));
+    BaseClass::SetCommand(new KeyValues("MenuButtonCommand", "command", pCmd));
+}
+
+void Button_MainMenu::SetEngineCommand(const char* cmd)
+{
+    BaseClass::SetCommand(new KeyValues("MenuButtonCommand", "EngineCommand", cmd));
 }
 
 void Button_MainMenu::Init()
@@ -407,30 +411,26 @@ void Button_MainMenu::AdditionalCursorCheck()
 
 void Button_MainMenu::OnMousePressed(MouseCode code)
 {
-    if (IsBlank())
+    if (m_bIsBlank)
         return;
 
     if (code == MOUSE_LEFT)
     {
-        if (m_sDepressedSoundName != UTL_INVAL_SYMBOL)
-            surface()->PlaySound(g_ButtonSoundNames.String(m_sDepressedSoundName));
-
         m_sButtonState = Pressed;
     }
+
+    BaseClass::OnMousePressed(code);
 }
 
 void Button_MainMenu::OnMouseReleased(MouseCode code)
 {
-    if (IsBlank())
+    if (m_bIsBlank)
         return;
 
     if (code == MOUSE_LEFT)
     {
-        if (m_sReleasedSoundName != UTL_INVAL_SYMBOL)
-            surface()->PlaySound(g_ButtonSoundNames.String(m_sReleasedSoundName));
-
         m_sButtonState = Released;
-
-        GetParent()->OnCommand(m_pCmd);
     }
+
+    BaseClass::OnMouseReleased(code);
 }

@@ -185,13 +185,7 @@ void CMomentumLobbySystem::LeaveLobby()
         steamapicontext->SteamFriends()->ClearRichPresence();
 
         // Notify literally everything that can listen that we left
-        IGameEvent *pLeaveLobby = gameeventmanager->CreateEvent("lobby_leave", true);
-        IGameEvent *pLeaveLobbyCopy = gameeventmanager->CreateEvent("lobby_leave", true);
-        if (pLeaveLobby && pLeaveLobbyCopy)
-        {
-            gameeventmanager->FireEvent(pLeaveLobby, true); // Server code get at me
-            gameeventmanager->FireEventClientSide(pLeaveLobbyCopy); // Client/other code get at me
-        }
+        FIRE_GAME_WIDE_EVENT("lobby_leave");
         
         // Lastly, set the lobby ID to nil
         m_sLobbyID = k_steamIDNil;
@@ -217,6 +211,8 @@ void CMomentumLobbySystem::HandleLobbyEnter(LobbyEnter_t* pEnter)
     {
         m_sLobbyID = CSteamID(pEnter->m_ulSteamIDLobby);
     }
+
+    FIRE_GAME_WIDE_EVENT("lobby_join");
 
     // Set our own data
     steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, gpGlobals->mapname.ToCStr());

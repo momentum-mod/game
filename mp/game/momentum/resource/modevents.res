@@ -67,6 +67,15 @@
     "lobby_leave"
     {
     }
+    "lobby_join"
+    {
+    }
+    "spec_start"
+    {
+    }
+    "spec_stop"
+    {
+    }
     "achievement_earned"
 	{
 		"player"	"byte"		// entindex of the player

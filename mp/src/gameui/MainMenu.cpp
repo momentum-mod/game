@@ -18,6 +18,7 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+#include "vgui_controls/AnimationController.h"
 
 using namespace vgui;
 
@@ -35,9 +36,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     // Set our initial size
     SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
 
-    m_bInGame = false;
-
-    ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
+    //ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
     // First check here
     //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 
@@ -45,6 +44,9 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     if (gameeventmanager)
     {
         gameeventmanager->AddListener(this, "lobby_leave", false);
+        gameeventmanager->AddListener(this, "lobby_join", false);
+        gameeventmanager->AddListener(this, "spec_start", false);
+        gameeventmanager->AddListener(this, "spec_stop", false);
     }
 
     HScheme hScheme = scheme()->LoadSchemeFromFile("resource/schememainmenu.res", "SchemeMainMenu");
@@ -58,32 +60,41 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     GameUI().GetLocalizedString("#GameUI2_LogoRight", &m_logoRight);
     m_pLogoImage = nullptr;
 
-    m_bInLobby = false;
-    m_bIsSpectating = false;
+    CreateMenu();
 
-    m_pButtonLobby = new Button_MainMenu(this, this, "engine mom_lobby_create");
+    m_pButtonLobby = new Button_MainMenu(this, this);
     m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
     m_pButtonLobby->SetButtonDescription("");
+    m_pButtonLobby->SetEngineCommand("mom_lobby_create");
     m_pButtonLobby->SetPriority(1);
     m_pButtonLobby->SetBlank(false);
     m_pButtonLobby->SetVisible(true);
-    m_pButtonLobby->SetTextAlignment(CENTER);
+    m_pButtonLobby->SetTextAlignment(RIGHT);
     m_pButtonLobby->SetButtonType(SHARED);
 
-    m_pButtonInviteFriends = new Button_MainMenu(this, this, "engine mom_lobby_invite");
-    m_pButtonInviteFriends->SetButtonText("#GameUI2_InviteFriends");
+    m_pButtonInviteFriends = new Button_MainMenu(this, this);
+    m_pButtonInviteFriends->SetButtonText("#GameUI2_InviteLobby");
     m_pButtonInviteFriends->SetButtonDescription("");
+    m_pButtonInviteFriends->SetEngineCommand("mom_lobby_invite");
     m_pButtonInviteFriends->SetPriority(1);
     m_pButtonInviteFriends->SetBlank(false);
     m_pButtonInviteFriends->SetVisible(false);
-    m_pButtonInviteFriends->SetTextAlignment(CENTER);
+    m_pButtonInviteFriends->SetTextAlignment(RIGHT);
     m_pButtonInviteFriends->SetButtonType(SHARED);
+
+    m_pButtonSpectate = new Button_MainMenu(this, this);
+    m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
+    m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
+    m_pButtonSpectate->SetEngineCommand("mom_spectate");
+    m_pButtonSpectate->SetPriority(90);
+    m_pButtonSpectate->SetBlank(false);
+    m_pButtonSpectate->SetVisible(false);
+    m_pButtonSpectate->SetButtonType(IN_GAME);
+    m_pButtons.AddToTail(m_pButtonSpectate);
 
     m_pVersionLabel = new Label(this, "VersionLabel", CFmtStr("Version %s", MOM_CURRENT_VERSION));
     m_pVersionLabel->SetAutoWide(true);
     // MOM_TODO: finish implementing this
-
-    CreateMenu();
 
     // MOM_TODO: LoadControlSettings("resource/ui/MainMenuLayout.res");
 
@@ -96,6 +107,12 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 MainMenu::~MainMenu()
 {
     ivgui()->RemoveTickSignal(GetVPanel());
+
+    // Stop listening for events
+    if (gameeventmanager)
+    {
+        gameeventmanager->RemoveListener(this);
+    }
 }
 
 void MainMenu::OnThink()
@@ -111,18 +128,6 @@ void MainMenu::OnThink()
     // Needed so the menu doesn't cover any other engine panels. Blame the closed-source Surface code
     // for moving the menu to the front when it gains focus, automatically. *sigh*
     surface()->MovePopupToBack(GetVPanel());
-
-    if (m_bInLobby != g_pMomentumSteamHelper->IsLobbyValid())
-    {
-        m_bInLobby = !m_bInLobby;
-        //SendLobbyUpdateCommand();
-    }
-
-    if (m_bInGame != GameUI().IsInLevel())
-    {
-        m_bInGame = !m_bInGame;
-        //SendGameStatusCommand();
-    }
 }
 
 
@@ -140,8 +145,33 @@ bool MainMenu::IsVisible(void)
     return BaseClass::IsVisible();
 }
 
+void MainMenu::OnMenuButtonCommand(KeyValues* pKv)
+{
+    const char *pNormalCommand = pKv->GetString("command", nullptr);
+    const char *pEngineCommand = pKv->GetString("EngineCommand", nullptr);
+    if (pNormalCommand)
+    {
+        GameUI().SendMainMenuCommand(pNormalCommand);
+    }
+    else if (pEngineCommand)
+    {
+        ConCommand* pCommand = g_pCVar->FindCommand(pEngineCommand);
+        if (pCommand) // can we directly call this command?
+        {
+            CCommand blah;
+            blah.Tokenize(pEngineCommand);
+            pCommand->Dispatch(blah);
+        }
+        else // fallback to old code
+        {
+            GetBasePanel()->RunEngineCommand(pEngineCommand);
+        }
+    }
+}
+
 void MainMenu::OnCommand(char const *cmd)
 {
+
      GameUI().SendMainMenuCommand(cmd);
      BaseClass::OnCommand(cmd);
 }
@@ -150,8 +180,27 @@ void MainMenu::FireGameEvent(IGameEvent* event)
 {
     if (!Q_strcmp(event->GetName(), "lobby_leave"))
     {
-        m_bInLobby = false;
-        //SendLobbyUpdateCommand();
+        m_pButtonLobby->SetButtonText("#GameUI2_HostLobby");
+        m_pButtonLobby->SetEngineCommand("mom_lobby_create");
+        m_pButtonInviteFriends->SetVisible(false);
+    }
+    else if (!Q_strcmp(event->GetName(), "lobby_join"))
+    {
+        m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
+        m_pButtonLobby->SetEngineCommand("mom_lobby_leave");
+        m_pButtonInviteFriends->SetVisible(true);
+    }
+    else if (!Q_strcmp(event->GetName(), "spec_start"))
+    {
+        m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
+        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
+        m_pButtonSpectate->SetEngineCommand("mom_spectate_stop");
+    }
+    else if (!Q_strcmp(event->GetName(), "spec_stop"))
+    {
+        m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
+        m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
+        m_pButtonSpectate->SetEngineCommand("mom_spectate");
     }
 }
 
@@ -161,26 +210,34 @@ void MainMenu::CreateMenu()
 
     KeyValues *datafile = new KeyValues("MainMenu");
     datafile->UsesEscapeSequences(true);
-    if (datafile->LoadFromFile(g_pFullFileSystem, "resource/mainmenu.res"))
+    if (datafile->LoadFromFile(g_pFullFileSystem, "resource/mainmenu.res", "GAME"))
     {
         FOR_EACH_SUBKEY(datafile, dat)
         {
-            Button_MainMenu *button = new Button_MainMenu(this, this, dat->GetString("command", ""));
+            Button_MainMenu *button = new Button_MainMenu(this, this, "");
             button->SetPriority(dat->GetInt("priority", 1));
             button->SetButtonText(dat->GetString("text", "no text"));
             button->SetButtonDescription(dat->GetString("description", "no description"));
             button->SetBlank(dat->GetBool("blank"));
+
+            const char *pCommand = dat->GetString("command", nullptr);
+            if (pCommand)
+            {
+                button->SetCommand(pCommand);
+            }
+            else
+            {
+                pCommand = dat->GetString("EngineCommand", nullptr);
+                if (pCommand)
+                    button->SetEngineCommand(pCommand);
+            }
 
             const char *specifics = dat->GetString("specifics", "shared");
             if (!Q_strcasecmp(specifics, "ingame"))
                 button->SetButtonType(IN_GAME);
             else if (!Q_strcasecmp(specifics, "mainmenu"))
                 button->SetButtonType(MAIN_MENU);
-            // Save a pointer to this button if it's the spectate one
-            if (Q_strcmp(dat->GetName(), "Spectate") == 0)
-            {
-                m_pButtonSpectate = button;
-            }
+
             m_pButtons.AddToTail(button);
         }
     }
@@ -304,45 +361,10 @@ void MainMenu::DrawMainMenu()
         }
     }
 
+    const Vector2D vp = GameUI().GetViewport();
 
-    // New lobby state.
-    const bool isLobbyValid = g_pMomentumSteamHelper->IsLobbyValid();
-
-    if (isLobbyValid && !m_bInLobby) // We just joined a lobby!
-    {
-        m_pButtonLobby->SetButtonText("#GameUI2_LeaveLobby");
-        m_pButtonLobby->SetCommand("engine mom_lobby_leave");
-        m_pButtonInviteFriends->SetVisible(true);
-        m_bInLobby = isLobbyValid;
-    }
-    else if (!isLobbyValid && m_bInLobby) // We left a lobby
-    {
-        m_pButtonLobby->SetButtonText("GameUI2_HostLobby");
-        m_pButtonLobby->SetCommand("engine mom_lobby_create");
-        m_pButtonInviteFriends->SetVisible(false);
-        m_bInLobby = isLobbyValid;
-    }
-
-    const char* spectatingText = g_pMomentumSteamHelper->GetLobbyLocalMemberData(LOBBY_DATA_IS_SPEC);
-    const bool isSpectating = spectatingText != nullptr && Q_strlen(spectatingText) > 0;
-    if (isSpectating && !m_bIsSpectating) // We just started spectating
-    {
-        m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
-        m_pButtonSpectate->SetCommand("engine mom_spectate_stop");
-        m_bIsSpectating = isSpectating;
-    }
-    else if (!isSpectating && m_bIsSpectating) // We respawned
-    {
-        m_pButtonSpectate->SetButtonText("#GameUI2_Spectate");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_SpectateDescription");
-        m_pButtonSpectate->SetCommand("engine mom_spectate");
-        m_bIsSpectating = isSpectating;
-    }
-    m_pButtonSpectate->SetVisible(isLobbyValid);
-    m_pButtonLobby->SetPos(GameUI().GetViewport().x - m_pButtonLobby->GetWidth(), m_fButtonsOffsetY);
-    m_pButtonInviteFriends->SetPos(GameUI().GetViewport().x - m_pButtonInviteFriends->GetWidth(), m_pButtonLobby->GetTall() + m_fButtonsOffsetY);
-
+    m_pButtonLobby->SetPos(vp.x - m_pButtonLobby->GetWidth(), vp.y - m_pButtonLobby->GetTall() - m_fButtonsOffsetY);
+    m_pButtonInviteFriends->SetPos(vp.x - m_pButtonInviteFriends->GetWidth(), vp.y - m_pButtonLobby->GetTall() - m_pButtonInviteFriends->GetTall() - m_fButtonsOffsetY);
 }
 
 void MainMenu::DrawLogo()
@@ -424,6 +446,7 @@ void MainMenu::CheckVersion()
     {
         // New version! Make the version in the top right pulse for effect!
         bNewVersion = true;
+        vgui::GetAnimationController()->StartAnimationSequence("");
         // MOM_TODO: Make the version label flash/flicker/etc here
     }
 
@@ -432,10 +455,6 @@ void MainMenu::CheckVersion()
 
     // Save this file either way
     pVersionKV->SaveToFile(g_pFullFileSystem, "version.txt", "MOD");
-
-/*    char command[128];
-    Q_snprintf(command, 128, "setVersion('%s', %s)", MOM_CURRENT_VERSION, bNewVersion ? "true" : "false");
-    RunJavascript(command);*/
 }
 
 void MainMenu::Paint()
