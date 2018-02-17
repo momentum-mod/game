@@ -121,6 +121,8 @@ class CGameUI : public IGameUI
     void SetFrustum(VPlane *frustum) { m_pFrustum = frustum; }
     void SetMaskTexture(ITexture *maskTexture) { m_pMaskTexture = maskTexture; }
 
+    void GetLocalizedString(const char *pToken, wchar_t **pOut);
+
   private:
     virtual void StartProgressBar();
     virtual bool ContinueProgressBar(float progressFraction);

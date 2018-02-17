@@ -4,6 +4,7 @@
 #include "vgui/ILocalize.h"
 #include "vgui/ISurface.h"
 #include "vgui/IInput.h"
+#include "vgui_controls/AnimationController.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -29,7 +30,7 @@ void Button_MainMenu::SetButtonText(const char *text)
         m_ButtonText = nullptr;
     }
 
-    g_pVGuiLocalize->ConvertUTF8ToUTF16(text, &m_ButtonText);
+    GameUI().GetLocalizedString(text, &m_ButtonText);
 }
 
 void Button_MainMenu::SetButtonDescription(const char *description)
@@ -40,7 +41,7 @@ void Button_MainMenu::SetButtonDescription(const char *description)
         m_ButtonDescription = nullptr;
     }
 
-    g_pVGuiLocalize->ConvertUTF8ToUTF16(description, &m_ButtonDescription);
+    GameUI().GetLocalizedString(description, &m_ButtonDescription);
 }
 
 void Button_MainMenu::SetCommand(const char* pCmd)
@@ -251,6 +252,9 @@ void Button_MainMenu::OnThink()
 {
     BaseClass::OnThink();
 
+    if (m_bIsBlank)
+        return;
+
     Animations();
     AdditionalCursorCheck();
 }
@@ -346,6 +350,9 @@ void Button_MainMenu::DrawDescription()
 
 void Button_MainMenu::Paint()
 {
+    if (m_bIsBlank)
+        return;
+
     BaseClass::Paint();
 
     DrawButton();
@@ -363,20 +370,20 @@ void Button_MainMenu::PaintBlurMask()
 
 void Button_MainMenu::OnCursorExited()
 {
-    BaseClass::OnCursorExited();
-
-    if (IsBlank())
+    if (m_bIsBlank)
         return;
+
+    BaseClass::OnCursorExited();
 
     m_sButtonState = Out;
 }
 
 void Button_MainMenu::OnCursorEntered()
 {
-    BaseClass::OnCursorEntered();
-
-    if (IsBlank())
+    if (m_bIsBlank)
         return;
+
+    BaseClass::OnCursorEntered();
 
     m_sButtonState = Over;
 }
@@ -386,7 +393,7 @@ void Button_MainMenu::AdditionalCursorCheck()
     if (!input())
         return;
 
-    if (IsBlank())
+    if (m_bIsBlank)
         return;
 
     // Essentially IsCursorOver, needed because animations mess up IsCursorOver

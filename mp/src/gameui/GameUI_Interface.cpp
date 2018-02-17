@@ -111,13 +111,14 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     vgui::VGui_InitMatSysInterfacesList("GameUI", &factory, 1);
 
     // load localization file
-    g_pVGuiLocalize->AddFile("Resource/gameui_%language%.txt", "GAME", true);
+    g_pVGuiLocalize->AddFile("resource/gameui_%language%.txt", "GAME", true);
+    g_pVGuiLocalize->AddFile("resource/momentum_%language%.txt", "GAME", true);
 
     // load mod info
     ModInfo().LoadCurrentGameInfo();
 
     // load localization file for kb_act.lst
-    g_pVGuiLocalize->AddFile("Resource/valve_%language%.txt", "GAME", true);
+    g_pVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME", true);
 
     enginevguifuncs = static_cast<IEngineVGui *>(factory(VENGINE_VGUI_VERSION, nullptr));
     enginesurfacefuncs = static_cast<vgui::ISurface *>(factory(VGUI_SURFACE_INTERFACE_VERSION, nullptr));
@@ -357,8 +358,6 @@ void CGameUI::RunFrame()
     // Run frames
     GetBasePanel()->RunFrame();
 
-    vgui::GetAnimationController()->UpdateAnimations(engine->Time());
-
     // Play the start-up music the first time we run frame
     if (m_iPlayGameStartupSound > 0)
     {
@@ -430,6 +429,28 @@ bool CGameUI::UpdateProgressBar(float progress, const char *statusText)
     }
 
     return bRedraw;
+}
+
+void CGameUI::GetLocalizedString(const char* pToken, wchar_t** pOut)
+{
+    if (pToken[0] == '#')
+    {
+        wchar_t *pLocalizedString = g_pVGuiLocalize->Find(pToken);
+        if (pLocalizedString)
+        {
+            const size_t sizeInBytes = (Q_wcslen(pLocalizedString) + 1) * sizeof(wchar_t);
+            *pOut = static_cast<wchar_t*>(calloc(1, sizeInBytes));
+            Q_wcsncpy(*pOut, pLocalizedString, sizeInBytes);
+        }
+        else
+        {
+            g_pVGuiLocalize->ConvertUTF8ToUTF16(pToken, pOut);
+        }
+    }
+    else
+    {
+        g_pVGuiLocalize->ConvertUTF8ToUTF16(pToken, pOut);
+    }
 }
 
 //-----------------------------------------------------------------------------

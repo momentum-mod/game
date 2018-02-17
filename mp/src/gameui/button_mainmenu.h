@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vgui2d/button2d.h"
-#include "vgui_controls/AnimationController.h"
 
 enum ButtonState
 {

@@ -60,16 +60,6 @@
         "priority" "50"
         "specifics" "mainmenu"
     }
-    
-    "Blank"
-    {
-        "text" ""
-        "description" ""
-        "command" ""
-        "priority" "20"
-        "specifics" "shared"
-        "blank" "1"
-    }
 
 	"Quit"
 	{

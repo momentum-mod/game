@@ -39,7 +39,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 
     ivgui()->AddTickSignal(GetVPanel(), 120000); // Tick every 2 minutes
     // First check here
-    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
+    //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
 
     // Listen for game events
     if (gameeventmanager)
@@ -50,13 +50,12 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     HScheme hScheme = scheme()->LoadSchemeFromFile("resource/schememainmenu.res", "SchemeMainMenu");
     SetScheme(hScheme);
 
-
     m_bFocused = true;
     m_bNeedSort = false;
     m_nSortFlags = FL_SORT_SHARED;
 
-    //m_logoLeft = GameUI2().GetLocalizedString("#GameUI2_LogoLeft");
-    //m_logoRight = GameUI2().GetLocalizedString("#GameUI2_LogoRight");
+    GameUI().GetLocalizedString("#GameUI2_LogoLeft", &m_logoLeft);
+    GameUI().GetLocalizedString("#GameUI2_LogoRight", &m_logoRight);
     m_pLogoImage = nullptr;
 
     m_bInLobby = false;
@@ -202,7 +201,7 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *co
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
     // Find a better place for this
-    g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
+    //g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
     BaseClass::ApplySchemeSettings(pScheme);
 
     m_fButtonsSpace = Q_atof(pScheme->GetResourceString("MainMenu.Buttons.Space"));
@@ -221,13 +220,11 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
         else
             m_pLogoImage = new ImagePanel(this, "GameLogo");
 
-        m_pLogoImage->SetAutoDelete(true);
         m_pLogoImage->SetShouldScaleImage(true);
         m_pLogoImage->SetImage(pScheme->GetResourceString("MainMenu.Logo.Image"));
-        int imageW = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width"));
-        int imageH = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height"));
-        m_pLogoImage->SetSize(imageW, imageH);
-        // Pos is handled in Paint()
+        m_iLogoWidth = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width"));
+        m_iLogoHeight = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height"));
+        // Size and pos are handled in Paint()
     }
     m_bLogoPlayerCount = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.PlayerCount"));
     m_fLogoPlayerCount = pScheme->GetFont("MainMenu.Logo.PlayerCount.Font", true);
@@ -277,7 +274,7 @@ void MainMenu::DrawMainMenu()
         m_bNeedSort = (!m_bNeedSort && !(m_nSortFlags & FL_SORT_INGAME));
         m_nSortFlags |= FL_SORT_INGAME;
     }
-    else if (GameUI().IsInBackgroundLevel())
+    else if (GameUI().IsInMenu())
     {
         m_nSortFlags &= ~FL_SORT_INGAME;
 
@@ -379,37 +376,39 @@ void MainMenu::DrawLogo()
         surface()->DrawSetTextPos(logoX + logoW, logoY);
         surface()->DrawPrintText(m_logoRight, wcslen(m_logoRight));
     }
-    else
+    // This is a logo, but let's make sure it's still valid
+    else if (m_pLogoImage)
     {
-        // This is a logo, but let's make sure it's still valid
-        if (m_pLogoImage)
+        int logoX, logoY;
+        if (m_pButtons.Count() <= 0 || m_bLogoAttachToMenu == false)
         {
-            int logoX, logoY;
-            if (m_pButtons.Count() <= 0 || m_bLogoAttachToMenu == false)
-            {
-                logoX = m_fLogoOffsetX;
-                logoY = m_fLogoOffsetY;
-            }
-            else
-            {
-                int32 x0, y0;
-                m_pButtons[0]->GetPos(x0, y0);
-                logoX = m_fButtonsOffsetX + m_fLogoOffsetX;
-                int imageHeight, dummy;
-                m_pLogoImage->GetImage()->GetSize(dummy, imageHeight);
-                logoY = y0 - (imageHeight + m_fLogoOffsetY);
-            }
-
-            m_pLogoImage->SetPos(logoX, logoY);
-            /*if (m_bLogoPlayerCount)
-            {
-                surface()->DrawSetTextColor(m_cLogoPlayerCount);
-                surface()->DrawSetTextFont(m_fLogoPlayerCount);
-                surface()->DrawSetTextPos(m_pLogoImage->GetXPos(), m_pLogoImage->GetTall() + m_pLogoImage->GetYPos());
-                const wchar_t* currentTotalPlayers = g_pMomentumSteamHelper->GetCurrentTotalPlayersAsString();
-                surface()->DrawPrintText(currentTotalPlayers, wcslen(currentTotalPlayers));
-            }*/
+            logoX = m_fLogoOffsetX;
+            logoY = m_fLogoOffsetY;
         }
+        else
+        {
+            int32 x0, y0;
+            m_pButtons[0]->GetPos(x0, y0);
+            logoX = m_fButtonsOffsetX + m_fLogoOffsetX;
+            int imageHeight, dummy;
+            m_pLogoImage->GetImage()->GetSize(dummy, imageHeight);
+            logoY = y0 - (imageHeight + m_fLogoOffsetY);
+        }
+
+        m_pLogoImage->SetPos(logoX, logoY);
+
+        int scaledWidth = scheme()->GetProportionalScaledValue(m_iLogoWidth);
+        int scaledHeight = scheme()->GetProportionalScaledValue(m_iLogoHeight);
+        m_pLogoImage->SetSize(scaledWidth, scaledHeight);
+
+        /*if (m_bLogoPlayerCount)
+        {
+            surface()->DrawSetTextColor(m_cLogoPlayerCount);
+            surface()->DrawSetTextFont(m_fLogoPlayerCount);
+            surface()->DrawSetTextPos(m_pLogoImage->GetXPos(), m_pLogoImage->GetTall() + m_pLogoImage->GetYPos());
+            const wchar_t* currentTotalPlayers = g_pMomentumSteamHelper->GetCurrentTotalPlayersAsString();
+            surface()->DrawPrintText(currentTotalPlayers, wcslen(currentTotalPlayers));
+        }*/
     }
 }
 

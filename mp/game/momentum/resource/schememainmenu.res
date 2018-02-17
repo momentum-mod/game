@@ -6,12 +6,12 @@
         "MainMenu.Logo.Text"                            "0"
         //Note: The following is only used if the above is "0"
         "MainMenu.Logo.Image"                           "menu/logo"//This is based in materials/vgui !!
-        "MainMenu.Logo.Image.Width"                     "480"
-        "MainMenu.Logo.Image.Height"                    "100"
+        "MainMenu.Logo.Image.Width"                     "350"
+        "MainMenu.Logo.Image.Height"                    "75"
         
         //Note: These are used for position if the logo is not attached to the menu
-		"MainMenu.Logo.OffsetX"							"0"
-		"MainMenu.Logo.OffsetY"							"0"
+		"MainMenu.Logo.OffsetX"							"2"
+		"MainMenu.Logo.OffsetY"							"2"
 
         //Makes the Logo (text OR image) stick to the menu
 		"MainMenu.Logo.AttachToMenu"					"0"

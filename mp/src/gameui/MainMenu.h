@@ -71,6 +71,8 @@ private:
     float m_fLogoOffsetX;
     float m_fLogoOffsetY;
 
+    int m_iLogoWidth, m_iLogoHeight;
+
     bool m_bLogoPlayerCount;
     bool m_bLogoText;
     vgui::ImagePanel *m_pLogoImage;
