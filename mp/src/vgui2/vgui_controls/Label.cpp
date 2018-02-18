@@ -304,8 +304,6 @@ void Label::SetText(const char *text)
 		SetHotkey(CalculateHotkey(text));
 	}
 
-	m_bAutoSizeDirty = m_bAutoWideToContents || m_bAutoTallToContents;
-
 	InvalidateLayout();
 	Repaint();
 }
@@ -315,8 +313,6 @@ void Label::SetText(const char *text)
 //-----------------------------------------------------------------------------
 void Label::SetText(const wchar_t *unicodeString, bool bClearUnlocalizedSymbol)
 {
-	m_bAutoSizeDirty = m_bAutoWideToContents || m_bAutoTallToContents;
-
 	if ( unicodeString && _textImage->GetUText() && !Q_wcscmp(unicodeString,_textImage->GetUText()) )
 		return;
 
@@ -1311,8 +1307,6 @@ void Label::PerformLayout()
 
 		HandleAutoSizing();
 
-		HandleAutoSizing();
-
 		return;
 	}
 
@@ -1381,14 +1375,12 @@ void Label::SetAllCaps( bool bAllCaps )
 void Label::SetAutoWide(bool bSize)
 {
     m_bAutoWideToContents = bSize;
-    m_bAutoSizeDirty = bSize;
     InvalidateLayout();
 }
 
 void Label::SetAutoTall(bool bTall)
 {
     m_bAutoTallToContents = bTall;
-    m_bAutoSizeDirty = bTall;
     InvalidateLayout();
 }
 
@@ -1405,5 +1397,10 @@ void Label::HandleAutoSizing( void )
 	}
 }
 
+// Overridden because auto sizing needs to happen when the layout is invalidated
+void Label::InvalidateLayout(bool layoutNow, bool reloadScheme)
+{
+    m_bAutoSizeDirty = m_bAutoTallToContents || m_bAutoWideToContents;
 
-
+    BaseClass::InvalidateLayout(layoutNow, reloadScheme);
+}

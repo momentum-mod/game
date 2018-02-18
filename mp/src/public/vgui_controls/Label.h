@@ -158,6 +158,7 @@ public:
 
     void SetAutoWide(bool bSize);
     void SetAutoTall(bool bTall);
+    void InvalidateLayout(bool layoutNow = false, bool reloadScheme = false) OVERRIDE;
 
 protected:
 	virtual void PerformLayout();
