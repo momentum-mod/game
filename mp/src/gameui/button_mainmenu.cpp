@@ -1,5 +1,5 @@
 #include "button_mainmenu.h"
-#include "gameui_interface.h"
+#include "GameUI_Interface.h"
 
 #include "vgui/ILocalize.h"
 #include "vgui/ISurface.h"
