@@ -22,10 +22,10 @@
 		"MainMenu.Buttons.OffsetY"						"32"
 		"MainMenu.Buttons.Space"						"0"
 	
-		"MainMenu.Button.Width.Out"						"324"
+		"MainMenu.Button.Width.Out"						"384"
 		"MainMenu.Button.Width.Over"					"384"
 		"MainMenu.Button.Width.Pressed"					"384"
-		"MainMenu.Button.Width.Released"				"324"
+		"MainMenu.Button.Width.Released"				"384"
 
 		"MainMenu.Button.Height.Out"					"74"
 		"MainMenu.Button.Height.Over"					"74"
