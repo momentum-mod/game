@@ -1,3 +1,40 @@
+0.7.1
+Paint Me Like One of Your French Girls
+    Added a paintgun, can spawn it with give weapon_momentum_paintgun
+    Right click allows for a menu to change settings
+    Networked packets for online lobbies
+    
+You Get a Decal, and You Get a Decal!
+    Added grenades to lobbies
+    Added knife decals to lobbies
+    
+Begone, Blindness!
+    Replaced HTML menu with old VGUI one from 0.6.2
+
+Fix Me? No, Fix You!
+    Mouse sensitivity has proper 0.0001 lower bound
+    Raw input now saves and loads correctly
+    Volume sliders now apply correctly
+    Mouse acceleration properly loads
+    Fixed unscaled sprites to have hammer's default 0.25 scale
+    Fixed dev console pausing the game
+    Prevent teleporting and practice mode while spectating
+    Reset the default shift bind to be +speed (instead of +walk)
+    Fixed jump count not accurately reflecting first jump out of the start zone
+    Fixed last jump speed being reset if strafing back into the start zone
+    Fixed replays being truncated early if strafing back into start zone
+    Fixed recommended video options strings for Linux/Mac
+    Fixed player names to default to yellow in lobby chat
+    Fixed weapon sounds for CS:S weapons/entities
+    Fixed shotgun pellet spread for lobbies
+    Fixed players being unable to drop the knife
+    Fixed online ghost entity panel visibility bugs
+    Fixed extra character being copied in RichText (developer console, changelog, etc)
+    Fixed tickrate command to not reset tickrate for bhop maps
+    Fixed trigger_momentum_slide bugs
+    Fixed sniper locking zoom after shooting and zooming at the same time
+    Fixed sniper not setting correct FOV after shooting and zooming at the same time
+
 0.7.0
 Play With Me!
     Using Steam's Matchmaking/P2P APIs, Momentum now allows for online gameplay with invited, friends, or anyone
@@ -61,44 +98,3 @@ I Can't Hold All These Bugfixes
     Removed defunct SSAO shader
     Removed a lot of miscellaneous files from the game directory
     Disabled Dynamic RTT Shadows by default due to poor performance in some maps
-    
-    
-0.6.2
-You Got a Purdy Map
-    Saul Rennison's Dynamic RTT Shadows - More accurate shadows cast by world lights
-    Brian Charles' Parallax-Corrected Cubemaps - More accurate reflections for cubemaps on world geometry
-    (Both of these can be found in live examples in the triggertests map!)
-    
-Small Features Added
-    Disabled inputs - The keypress HUD element now shows disabled keys set by triggers
-    Invalid run start - A sound now plays if the run cannot be started (will be expanded upon)
-    Checkpoint saving - Maps save which checkpoint you were on when you end the map
-    mom_punchangle_enable - Landing punchangle has been disabled by default now, can be scaled by this cvar
-    mom_speedometer_colorize 2 - New colorization method suggested by Acta
-    mom_stage_tele - Teleport to the start of a specific stage number (1 = start)
-    showRuler - Shows a menu to measure distance in-game (in units)
-    sv_gravity - Allow players to change gravity in-game
-    sv_tickrate - In-game changes force a reload, allowing replays of different tickrate to be played
-    
-RIP Tim, You Shall Be Missed
-    .tim files are completely removed, in favor of reading replay files
-    (This means all replays prior to this update will be ignored due to a new format)
-    
-Yet to Come
-    Overhauled Map Selector (0.7.0) -- we included a preview of what the main panel will look like!
-    
-Fixes
-    Fixed credits.bsp's invalid textures
-    Fixed crash when running mod in Offline mode on Steam (thanks .Enjoy!)
-    Fixed lots of minute bugs in Linux (fonts, layouts, etc) [more to come!]
-    Fixed bug with main menu buttons animating even when not in focus
-    Fixed sv_tickrate now updating when set by gamemode code
-    Fixed bug with start zone exit velocity
-    Fixed bug with mounted maps not properly loading sounds packed in the map when on a separate drive
-    Fixed bug with checkpoints saving out of order when the player had > 10 checkpoints
-    Fixed bug with timer layout with regards to stage time comparisons
-    Fixed various Valve slip-ups and optimized pristine 2004 code
-    
-    (Under the Hood)
-    Fixed smoothing groups not being applied to brushes (thanks tgnottingham!)
-    Fixed hammer not loading custom shaders (Thanks Biohazard!)
