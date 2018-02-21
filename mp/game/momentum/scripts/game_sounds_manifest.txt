@@ -24,4 +24,7 @@ game_sounds_manifest
 
 	 // Level sounds
 	"preload_file"		"scripts/level_sounds_general.txt"
+
+	// CS:S Specific
+	"precache_file"		"scripts/game_sounds_weapons_css.txt"
 }

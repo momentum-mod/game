@@ -60,23 +60,20 @@
 		"filename" "string"
         "save" "bool"
 	}
-    "weapon_fire"
-    {
-        "userid" "long"
-        "weapon" "string"
-    }
-    "bullet_impact"
-    {
-        "userid" "long"
-        "x" "float"
-        "y" "float"
-        "z" "float"
-    }
     "gravity_change"
     {
         "newgravity" "float"
     }
     "lobby_leave"
+    {
+    }
+    "lobby_join"
+    {
+    }
+    "spec_start"
+    {
+    }
+    "spec_stop"
     {
     }
     "achievement_earned"

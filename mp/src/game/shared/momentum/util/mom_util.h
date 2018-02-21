@@ -18,9 +18,8 @@ class MomentumUtil
     CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbChangeLog;
     void ChangelogCallback(HTTPRequestCompleted_t *, bool);
 
-    void GetRemoteRepoModVersion();
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbVersionCallback;
-    void VersionCallback(HTTPRequestCompleted_t *, bool);
+    void UpdatePaintDecalScale(float fNewScale);
+
 #endif
 
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
@@ -59,6 +58,9 @@ class MomentumUtil
 
     void KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave);
     void KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto);
+
+    void KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker, CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut);
+    void KnifeSmack(const trace_t &tr_in, CBaseEntity *pSoundSource, const QAngle &lookAng, const bool bStab);
 };
 
 extern MomentumUtil *g_pMomentumUtil;

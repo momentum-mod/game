@@ -1,0 +1,71 @@
+"gravel"
+{
+	"friction"	"0.8"
+}
+
+"snow"
+{
+	"friction"	"0.8"
+	"stepleft"	"Snow.StepLeft"
+	"stepright"	"Snow.StepRight"
+}
+
+"metalgrate"
+{
+	"friction"	"0.8"
+	"stepleft"	"Metalgrate.StepLeft"
+	"stepright"	"Metalgrate.StepRight"
+}
+
+"metalvehicle"
+{
+	"base"		"metal"
+	"thickness"	"0.1"
+	"density"	"2700"
+	"elasticity"	"0.2"
+	"friction"	"0.8"
+
+	"audioreflectivity" "0.33"
+	"audioroughnessfactor" "0.1"
+	"audioHardMinVelocity"	"500" // 500
+
+	"impactHardThreshold" "0.5"   
+  
+
+	"impacthard"	"SolidMetal.ImpactHard"
+	"impactsoft"	"SolidMetal.ImpactSoft"
+	"scraperough"	"SolidMetal.ScrapeRough"
+	"scrapesmooth"	"SolidMetal.ScrapeSmooth"
+
+
+	"gamematerial"	"M"
+}
+	
+
+
+"brass_bell_large"
+{
+	"bulletimpact"	"BrassBell.C"
+}
+
+"brass_bell_medium"
+{
+	"bulletimpact"	"BrassBell.D"
+}
+
+"brass_bell_small"
+{
+	"bulletimpact"	"BrassBell.E"
+}
+
+"brass_bell_smallest"
+{
+	"bulletimpact"	"BrassBell.F"
+}
+
+"hay"
+{
+	"base"		"wood"
+	"stepleft"	"Grass.StepLeft"
+	"stepright"	"Grass.StepRight"
+}

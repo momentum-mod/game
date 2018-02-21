@@ -30,7 +30,7 @@ class CMomentumTimer : CAutoGameSystem
     // Strats the timer for the given starting tick
     void Start(int startTick);
     // Stops the timer
-    void Stop(bool = false);
+    void Stop(bool endTrigger = false, bool bStopRecording = true);
     // Is the timer running?
     bool IsRunning() const { return m_bIsRunning; }
     // Set the running status of the timer

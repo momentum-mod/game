@@ -1,6 +1,5 @@
 WeaponData
 {
-    "WeaponType"                "SubMachinegun"
     "CrosshairMinDistance"      "7"
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"

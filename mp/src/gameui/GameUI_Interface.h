@@ -102,6 +102,7 @@ class CGameUI : public IGameUI
     // state
     bool IsInLevel();
     bool IsInBackgroundLevel();
+    bool IsInMenu();
     bool IsInMultiplayer();
     bool HasSavedThisMenuSession();
     void SetSavedThisMenuSession(bool bState);
@@ -119,6 +120,8 @@ class CGameUI : public IGameUI
     void SetView(const CViewSetup &view) { m_pView = view; }
     void SetFrustum(VPlane *frustum) { m_pFrustum = frustum; }
     void SetMaskTexture(ITexture *maskTexture) { m_pMaskTexture = maskTexture; }
+
+    void GetLocalizedString(const char *pToken, wchar_t **pOut);
 
   private:
     virtual void StartProgressBar();

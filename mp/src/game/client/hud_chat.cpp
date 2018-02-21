@@ -6,15 +6,15 @@
 
 #include "cbase.h"
 
+#include <vgui/ILocalize.h>
+#include "hud_basechat.h"
 #include "hud_chat.h"
 #include "hud_macros.h"
-#include "hud_basechat.h"
 #include "momentum/mom_shareddefs.h"
-#include <vgui/ILocalize.h>
 
+#include "clientmode.h"
 #include "hud_spectatorinfo.h"
 #include "mom_steam_helper.h"
-#include "clientmode.h"
 
 #include "tier0/memdbgon.h"
 
@@ -41,12 +41,13 @@ CHudChat::CHudChat(const char *pElementName) : BaseClass(pElementName), m_pSpect
 void CHudChat::Init(void)
 {
     BaseClass::Init();
-    m_hfInfoTextFont =
-        vgui::scheme()->GetIScheme(vgui::scheme()->GetScheme("ChatScheme"))->GetFont("ChatFont");
-    m_cInfoTextColor =
-        vgui::scheme()->GetIScheme(vgui::scheme()->GetScheme("ChatScheme"))->GetColor("OffWhite", COLOR_WHITE);
-    m_cDefaultTextColor =
-        vgui::scheme()->GetIScheme(vgui::scheme()->GetScheme("ChatScheme"))->GetColor("OffWhite", COLOR_WHITE);
+    IScheme *pChatScheme = scheme()->GetIScheme(scheme()->GetScheme("ChatScheme"));
+    if (pChatScheme)
+    {
+        m_hfInfoTextFont = pChatScheme->GetFont("ChatFont");
+        m_cInfoTextColor = pChatScheme->GetColor("OffWhite", COLOR_WHITE);
+        m_cDefaultTextColor = pChatScheme->GetColor("OffWhite", COLOR_WHITE);
+    }
 
     HOOK_HUD_MESSAGE(CHudChat, SayText);
     HOOK_HUD_MESSAGE(CHudChat, SayText2);
@@ -55,16 +56,15 @@ void CHudChat::Init(void)
     HOOK_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
 
     //@tuxxi: I tired to query this automatically but we can only query steamgroups we are members of.. rip.
-    //So i'm just hard coding this here for now
-    //https://partner.steamgames.com/doc/api/ISteamFriends#RequestClanOfficerList
+    // So i'm just hard coding this here for now
+    // https://partner.steamgames.com/doc/api/ISteamFriends#RequestClanOfficerList
 
-    //MOM_TODO: query wep API for officers / members/ other groups instead of this crap
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198018587940))); //tuxxi
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197979963054))); //gocnak
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198011358548))); //ruben
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198047369620))); //rusty
-    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197982874432))); //juxtapo
-
+    // MOM_TODO: query wep API for officers / members/ other groups instead of this crap
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198018587940))); // tuxxi
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197979963054))); // gocnak
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198011358548))); // ruben
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561198047369620))); // rusty
+    m_vMomentumOfficers.AddToTail(CSteamID(uint64(76561197982874432))); // juxtapo
 }
 
 void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
@@ -89,16 +89,21 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
     char personName[MAX_PLAYER_NAME_LENGTH];
     Q_strncpy(personName, steamapicontext->SteamFriends()->GetFriendPersonaName(msgSender), MAX_PLAYER_NAME_LENGTH);
 
-    const char* spectatingText = g_pMomentumSteamHelper->GetLobbyMemberData(msgSender, LOBBY_DATA_IS_SPEC);
+    const char *spectatingText = g_pMomentumSteamHelper->GetLobbyMemberData(msgSender, LOBBY_DATA_IS_SPEC);
     const bool isSpectating = spectatingText != nullptr && Q_strlen(spectatingText) > 0;
     char message[4096];
     // MOM_TODO: This won't be just text in the future, if we captialize on being able to send binary data. Wrap this is
     // something and parse it
-    steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID, nullptr, message, 4096, nullptr);
+    steamapicontext->SteamMatchmaking()->GetLobbyChatEntry(CSteamID(pParam->m_ulSteamIDLobby), pParam->m_iChatID,
+                                                           nullptr, message, 4096, nullptr);
     SetCustomColor(COLOR_RED);
-    ChatPrintf(1, CHAT_FILTER_NONE, "%c%s%s%c: %s", isMomentumTeam ? COLOR_CUSTOM : COLOR_PLAYERNAME, isSpectating ? "*SPEC* " : "", personName, COLOR_NORMAL, ConvertCRtoNL(message));
+    ChatPrintf(1, CHAT_FILTER_NONE, "%c%s%s%c: %s", 
+               isMomentumTeam ? COLOR_CUSTOM : COLOR_PLAYERNAME,
+               isSpectating ? "*SPEC* " : "", 
+               personName,
+               COLOR_NORMAL,
+               ConvertCRtoNL(message));
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -109,8 +114,8 @@ void CHudChat::OnLobbyMessage(LobbyChatMsg_t *pParam)
 void CHudChat::MsgFunc_SayText(bf_read &msg)
 {
     /*
-    //MOM_TODO: @tuxxi: I commented this out for now because having the formatting and colors line 
-    //up with the local sayText vs the lobby SayText is a nightmare. 
+    //MOM_TODO: @tuxxi: I commented this out for now because having the formatting and colors line
+    //up with the local sayText vs the lobby SayText is a nightmare.
     char szString[256];
 
     msg.ReadByte(); // client ID
@@ -119,7 +124,7 @@ void CHudChat::MsgFunc_SayText(bf_read &msg)
     */
 }
 
-void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
+void CHudChat::MsgFunc_SpecUpdateMsg(bf_read &msg)
 {
     uint8 type = msg.ReadByte();
 
@@ -130,27 +135,25 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
 
     msg.ReadBytes(&target, sizeof(uint64));
     CSteamID targetID = CSteamID(target);
-    
-    const char* spectateText = target != 1 ? "%s is now spectating." : + "%s is now watching a replay.";
+
+    const char *spectateText = target != 1 ? "%s is now spectating." : +"%s is now watching a replay.";
     if (type == SPEC_UPDATE_LEAVE)
     {
-        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-               "%s has respawned.", pName);
+        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has respawned.", pName);
     }
     else if (type == SPEC_UPDATE_JOIN)
     {
-        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-               spectateText, pName);
+        Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, spectateText, pName);
     }
-    else if (type == SPEC_UPDATE_CHANGETARGET) 
+    else if (type == SPEC_UPDATE_CHANGETARGET)
     {
         // MOM_TODO: Removeme?
         const char *pTargetName = steamapicontext->SteamFriends()->GetFriendPersonaName(targetID);
         DevLog("%s is now spectating %s.\n", pName, pTargetName);
-        //Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
+        // Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
         //    "%s is now spectating %s.", pName, pTargetName);
     }
-  
+
     if (!m_pSpectatorInfo)
         m_pSpectatorInfo = GET_HUDELEMENT(CHudSpectatorInfo);
 
@@ -158,7 +161,7 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read& msg)
         m_pSpectatorInfo->SpectatorUpdate(personID, targetID);
 }
 
-void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read& msg)
+void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read &msg)
 {
     uint8 type = msg.ReadByte();
 
@@ -169,20 +172,15 @@ void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read& msg)
     msg.ReadBytes(&person, sizeof(uint64));
     CSteamID personID = CSteamID(person);
     const char *pName = steamapicontext->SteamFriends()->GetFriendPersonaName(personID);
-    Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG,
-           "%s has %s the %s.",
-           pName,
-           isJoin ? "joined" : "left",
+    Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has %s the %s.", pName, isJoin ? "joined" : "left",
            isMap ? "map" : "lobby");
 }
-
 
 void CHudChat::StartMessageMode(int iMessageMode)
 {
     BaseClass::StartMessageMode(iMessageMode);
     m_bIsVisible = true;
 }
-
 
 void CHudChat::StopMessageMode()
 {
@@ -192,7 +190,6 @@ void CHudChat::StopMessageMode()
 
     // Can't be typing if we close the chat
     m_bIsVisible = m_bTyping = false;
-
 }
 
 void CHudChat::OnThink()
@@ -219,7 +216,8 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
     if (pParam->m_bSuccess && pParam->m_ulSteamIDLobby != pParam->m_ulSteamIDMember)
     {
         // Typing Status
-        const char* typingText = g_pMomentumSteamHelper->GetLobbyMemberData(pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
+        const char *typingText =
+            g_pMomentumSteamHelper->GetLobbyMemberData(pParam->m_ulSteamIDMember, LOBBY_DATA_TYPING);
         const bool isTyping = typingText != nullptr && Q_strlen(typingText) > 0;
         const int typingIndex = m_vTypingMembers.Find(pParam->m_ulSteamIDMember);
         const bool isValidIndex = m_vTypingMembers.IsValidIndex(typingIndex);
@@ -232,7 +230,6 @@ void CHudChat::OnLobbyDataUpdate(LobbyDataUpdate_t *pParam)
         {
             m_vTypingMembers.FastRemove(typingIndex);
         }
-
     }
 }
 
@@ -272,7 +269,7 @@ void CHudChat::Paint()
     }
 }
 
-Color CHudChat::GetDefaultTextColor(void) //why the fuck is this not a .res file color in CHudBaseChat !?!?!?
+Color CHudChat::GetDefaultTextColor(void) // why the fuck is this not a .res file color in CHudBaseChat !?!?!?
 {
     return m_cDefaultTextColor;
 }

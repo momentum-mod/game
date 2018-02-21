@@ -56,15 +56,12 @@ void CMOMClientEvents::PostInit()
 
 void CMOMClientEvents::LevelInitPreEntity()
 {
-    Precache();
+    //Precache();
 }
 
 void CMOMClientEvents::Precache()
 {
-    PrecacheMaterial("dev/blurx");
-    PrecacheMaterial("dev/blury");
-    PrecacheMaterial("dev/fringe");
-    PrecacheMaterial("dev/gui_blend");
+    // MOM_TODO: Precache anything here
 }
 
 CMOMClientEvents g_MOMClientEvents("CMOMClientEvents");

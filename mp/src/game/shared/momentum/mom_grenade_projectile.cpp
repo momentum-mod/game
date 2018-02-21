@@ -1,93 +1,89 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-//=============================================================================//
-
 #include "cbase.h"
-#include "basecsgrenade_projectile.h"
+#include "mom_grenade_projectile.h"
 #include "mom_player_shared.h"
 
+#include "tier0/memdbgon.h"
 
 extern ConVar sv_gravity;
 
-
 #ifndef CLIENT_DLL
 
+#include "KeyValues.h"
 #include "soundent.h"
 #include "te_effect_dispatch.h"
-#include "KeyValues.h"
 
-BEGIN_DATADESC(CBaseCSGrenadeProjectile)
+BEGIN_DATADESC(CMomGrenadeProjectile)
 DEFINE_THINKFUNC(DangerSoundThink),
 END_DATADESC()
 
 #endif
 
-
-IMPLEMENT_NETWORKCLASS_ALIASED(BaseCSGrenadeProjectile, DT_BaseCSGrenadeProjectile)
-
-BEGIN_NETWORK_TABLE(CBaseCSGrenadeProjectile, DT_BaseCSGrenadeProjectile)
+IMPLEMENT_NETWORKCLASS_ALIASED(MomGrenadeProjectile, DT_MomGrenadeProjectile)
+BEGIN_NETWORK_TABLE(CMomGrenadeProjectile, DT_MomGrenadeProjectile)
 #ifdef CLIENT_DLL
-RecvPropVector( RECVINFO( m_vInitialVelocity ) )
+RecvPropVector(RECVINFO(m_vInitialVelocity))
 #else
 SendPropVector(SENDINFO(m_vInitialVelocity),
-20,		// nbits
-0,		// flags
--3000,	// low value
-3000	// high value
-)
+               20,    // nbits
+               0,     // flags
+               -3000, // low value
+               3000   // high value
+               )
 #endif
 END_NETWORK_TABLE()
 
+// MOM_TODO: Change this model to be something custom
+#define GRENADE_MODEL "models/weapons/w_grenade.mdl"
+
+LINK_ENTITY_TO_CLASS(mom_grenade_projectile, CMomGrenadeProjectile);
+PRECACHE_WEAPON_REGISTER(mom_grenade_projectile);
 
 #ifdef CLIENT_DLL
 
-
-void CBaseCSGrenadeProjectile::PostDataUpdate( DataUpdateType_t type )
+void CMomGrenadeProjectile::PostDataUpdate(DataUpdateType_t type)
 {
-    BaseClass::PostDataUpdate( type );
+    BaseClass::PostDataUpdate(type);
 
-    if ( type == DATA_UPDATE_CREATED )
+    if (type == DATA_UPDATE_CREATED)
     {
-        // Now stick our initial velocity into the interpolation history 
-        CInterpolatedVar< Vector > &interpolator = GetOriginInterpolator();
+        // Now stick our initial velocity into the interpolation history
+        CInterpolatedVar<Vector> &interpolator = GetOriginInterpolator();
 
         interpolator.ClearHistory();
-		float changeTime = GetLastChangeTime(LATCH_SIMULATION_VAR);
+        float changeTime = GetLastChangeTime(LATCH_SIMULATION_VAR);
 
         // Add a sample 1 second back.
         Vector vCurOrigin = GetLocalOrigin() - m_vInitialVelocity;
-        interpolator.AddToHead( changeTime - 1.0, &vCurOrigin, false );
+        interpolator.AddToHead(changeTime - 1.0, &vCurOrigin, false);
 
         // Add the current sample.
         vCurOrigin = GetLocalOrigin();
-        interpolator.AddToHead( changeTime, &vCurOrigin, false );
+        interpolator.AddToHead(changeTime, &vCurOrigin, false);
     }
 }
 
-int CBaseCSGrenadeProjectile::DrawModel( int flags )
+int CMomGrenadeProjectile::DrawModel(int flags)
 {
     // During the first half-second of our life, don't draw ourselves if he's
     // still playing his throw animation.
     // (better yet, we could draw ourselves in his hand).
-    if ( GetThrower() != C_BasePlayer::GetLocalPlayer() )
+    if (GetThrower() != C_BasePlayer::GetLocalPlayer())
     {
-        if ( gpGlobals->curtime - m_flSpawnTime < 0.5 )
+        if (gpGlobals->curtime - m_flSpawnTime < 0.5)
         {
-            //MOM_TODO: inspect the below
-            //CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer*>( GetThrower() );
-            //if ( pPlayer && pPlayer->m_PlayerAnimState->IsThrowingGrenade() )
+            // MOM_TODO: inspect the below
+            // CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer*>( GetThrower() );
+            // if ( pPlayer && pPlayer->m_PlayerAnimState->IsThrowingGrenade() )
             //{
             //	return 0;
             //}
         }
     }
 
-    return BaseClass::DrawModel( flags );
+    return BaseClass::DrawModel(flags);
 }
 
-void CBaseCSGrenadeProjectile::Spawn()
+void CMomGrenadeProjectile::Spawn()
 {
     m_flSpawnTime = gpGlobals->curtime;
     BaseClass::Spawn();
@@ -95,19 +91,59 @@ void CBaseCSGrenadeProjectile::Spawn()
 
 #else
 
-void CBaseCSGrenadeProjectile::Spawn(void)
+void CMomGrenadeProjectile::Spawn()
 {
+    SetModel(GRENADE_MODEL);
     BaseClass::Spawn();
 
     SetSolidFlags(FSOLID_NOT_STANDABLE);
     SetMoveType(MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_CUSTOM);
-    SetSolid(SOLID_BBOX);	// So it will collide with physics props!
-
+    SetSolid(SOLID_BBOX); // So it will collide with physics props!
     // smaller, cube bounding box so we rest on the ground
     SetSize(Vector(-2, -2, -2), Vector(2, 2, 2));
 }
 
-void CBaseCSGrenadeProjectile::DangerSoundThink(void)
+void CMomGrenadeProjectile::Precache()
+{
+    PrecacheModel(GRENADE_MODEL);
+
+    PrecacheScriptSound("MOMGrenade.Bounce");
+
+    BaseClass::Precache();
+}
+
+void CMomGrenadeProjectile::BounceSound() { EmitSound("MOMGrenade.Bounce"); }
+
+CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, const QAngle &angles,
+                                                     const Vector &velocity, const AngularImpulse &angVelocity,
+                                                     CBaseEntity *pOwner, float timer)
+{
+    auto *pGrenade =
+        static_cast<CMomGrenadeProjectile *>(CBaseEntity::Create("mom_grenade_projectile", position, angles, pOwner));
+
+    // Set the timer for 1 second less than requested. We're going to issue a SOUND_DANGER
+    // one second before detonation.
+    pGrenade->SetDetonateTimerLength(timer);
+    pGrenade->SetAbsVelocity(velocity);
+    pGrenade->SetupInitialTransmittedGrenadeVelocity(velocity);
+    pGrenade->SetThrower(pOwner);
+
+    pGrenade->SetGravity(GetGrenadeGravity());
+    pGrenade->SetFriction(GetGrenadeFriction());
+    pGrenade->SetElasticity(GetGrenadeElasticity());
+
+    pGrenade->m_flDamage = 100;
+    pGrenade->m_DmgRadius = pGrenade->m_flDamage * 3.5f;
+    pGrenade->ApplyLocalAngularVelocityImpulse(angVelocity);
+
+    // make NPCs afaid of it while in the air
+    pGrenade->SetThink(&CMomGrenadeProjectile::DangerSoundThink);
+    pGrenade->SetNextThink(gpGlobals->curtime);
+
+    return pGrenade;
+}
+
+void CMomGrenadeProjectile::DangerSoundThink(void)
 {
     if (!IsInWorld())
     {
@@ -131,25 +167,22 @@ void CBaseCSGrenadeProjectile::DangerSoundThink(void)
     }
 }
 
-//Sets the time at which the grenade will explode
-void CBaseCSGrenadeProjectile::SetDetonateTimerLength(float timer)
-{
-    m_flDetonateTime = gpGlobals->curtime + timer;
-}
+// Sets the time at which the grenade will explode
+void CMomGrenadeProjectile::SetDetonateTimerLength(float timer) { m_flDetonateTime = gpGlobals->curtime + timer; }
 
-void CBaseCSGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity)
+void CMomGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector &vecVelocity)
 {
-    //Assume all surfaces have the same elasticity
+    // Assume all surfaces have the same elasticity
     float flSurfaceElasticity = 1.0;
 
-    //Don't bounce off of players with perfect elasticity
+    // Don't bounce off of players with perfect elasticity
     if (trace.m_pEnt && trace.m_pEnt->IsPlayer())
     {
         flSurfaceElasticity = 0.3;
     }
 
     // if its breakable glass and we kill it, don't bounce.
-    // give some damage to the glass, and if it breaks, pass 
+    // give some damage to the glass, and if it breaks, pass
     // through it.
     bool breakthrough = false;
 
@@ -195,7 +228,7 @@ void CBaseCSGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector 
     float flSpeedSqr = DotProduct(vecVelocity, vecVelocity);
 
     // Stop if on ground.
-    if (trace.plane.normal.z > 0.7f)			// Floor
+    if (trace.plane.normal.z > 0.7f) // Floor
     {
         // Verify that we have an entity.
         CBaseEntity *pEntity = trace.m_pEnt;
@@ -214,7 +247,7 @@ void CBaseCSGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector 
             SetAbsVelocity(vec3_origin);
             SetLocalAngularVelocity(vec3_angle);
 
-            //align to the ground so we're not standing on end
+            // align to the ground so we're not standing on end
             QAngle angle;
             VectorAngles(trace.plane.normal, angle);
 
@@ -233,7 +266,8 @@ void CBaseCSGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector 
             float flScale = vecDelta.Dot(vecBaseDir);
 
             VectorScale(vecAbsVelocity, (1.0f - trace.fraction) * gpGlobals->frametime, vecVelocity);
-            VectorMA(vecVelocity, (1.0f - trace.fraction) * gpGlobals->frametime, GetBaseVelocity() * flScale, vecVelocity);
+            VectorMA(vecVelocity, (1.0f - trace.fraction) * gpGlobals->frametime, GetBaseVelocity() * flScale,
+                     vecVelocity);
             PhysicsPushEntity(vecVelocity, &trace);
         }
     }
@@ -256,14 +290,14 @@ void CBaseCSGrenadeProjectile::ResolveFlyCollisionCustom(trace_t &trace, Vector 
     BounceSound();
 }
 
-void CBaseCSGrenadeProjectile::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity)
+void CMomGrenadeProjectile::SetupInitialTransmittedGrenadeVelocity(const Vector &velocity)
 {
     m_vInitialVelocity = velocity;
 }
 
-#define	MAX_WATER_SURFACE_DISTANCE	512
+#define MAX_WATER_SURFACE_DISTANCE 512
 
-void CBaseCSGrenadeProjectile::Splash()
+void CMomGrenadeProjectile::Splash()
 {
     Vector centerPoint = GetAbsOrigin();
     Vector normal(0, 0, 1);
@@ -287,7 +321,7 @@ void CBaseCSGrenadeProjectile::Splash()
         }
         else
         {
-            //NOTENOTE: We somehow got into a splash without being near water?
+            // NOTENOTE: We somehow got into a splash without being near water?
             Assert(0);
         }
     }
@@ -301,7 +335,7 @@ void CBaseCSGrenadeProjectile::Splash()
         // Use default values, we're really deep
     }
 
-    CEffectData	data;
+    CEffectData data;
     data.m_vOrigin = centerPoint;
     data.m_vNormal = normal;
     data.m_flScale = random->RandomFloat(1.0f, 2.0f);
@@ -313,5 +347,4 @@ void CBaseCSGrenadeProjectile::Splash()
 
     DispatchEffect("gunshotsplash", data);
 }
-
-#endif // !CLIENT_DLL
+#endif

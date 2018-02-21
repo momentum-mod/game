@@ -5,6 +5,15 @@
 
 class MainMenu;
 
+enum EBackgroundState
+{
+    BACKGROUND_INITIAL,
+    BACKGROUND_LOADING,
+    BACKGROUND_MAINMENU,
+    BACKGROUND_LEVEL,
+    BACKGROUND_DISCONNECTED
+};
+
 class CBasePanel : public Panel2D
 {
     DECLARE_CLASS_SIMPLE(CBasePanel, Panel2D);
@@ -43,6 +52,8 @@ class CBasePanel : public Panel2D
     MESSAGE_FUNC_CHARPTR(RunEngineCommand, "RunEngineCommand", command);
     MESSAGE_FUNC_CHARPTR(RunMenuCommand, "RunMenuCommand", command);
     
+    EBackgroundState GetMenuBackgroundState() { return m_eBackgroundState; }
+
 protected:
     void OnThink() OVERRIDE;
     void PaintBlurMask() OVERRIDE;
@@ -51,14 +62,7 @@ protected:
     void OnCommand(const char *command) OVERRIDE{ RunMenuCommand(command); }
 
 private:
-    enum EBackgroundState
-    {
-        BACKGROUND_INITIAL,
-        BACKGROUND_LOADING,
-        BACKGROUND_MAINMENU,
-        BACKGROUND_LEVEL,
-        BACKGROUND_DISCONNECTED
-    };
+
     void SetBackgroundRenderState(EBackgroundState state);
 
     vgui::DHANDLE<vgui::PropertyDialog> m_hOptionsDialog;

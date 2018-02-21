@@ -115,7 +115,7 @@ CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
     m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
     m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
-    m_nTicksInAir(0), m_flTweenVelValue(1.0f)
+    m_nTicksInAir(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -519,10 +519,13 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     if (FStrEq(cmd, "drop"))
     {
         CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
-
+        
         if (pWeapon)
         {
-            MomentumWeaponDrop(pWeapon);
+            if (pWeapon->GetWeaponID() != WEAPON_GRENADE)
+            {
+                MomentumWeaponDrop(pWeapon);
+            }
         }
 
         return true;
@@ -665,7 +668,7 @@ void CMomentumPlayer::CreateTrail()
 
 void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
-    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0)
+    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0 || !m_bAllowUserTeleports)
         return;
     Checkpoint_t *pCheckpoint = m_rcCheckpoints[newCheckpoint];
     if (pCheckpoint)
@@ -739,6 +742,8 @@ void CMomentumPlayer::OnPlayerJump()
     m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
     m_SrvData.m_iSuccessiveBhops++;
 
+    m_bInAirDueToJump = true;
+
     // Set our runstats jump count
     if (g_pMomentumTimer->IsRunning())
     {
@@ -748,10 +753,13 @@ void CMomentumPlayer::OnPlayerJump()
     }
 }
 
+
 void CMomentumPlayer::OnPlayerLand()
 {
     // Set the tick that we landed on something solid (can jump off of this)
     m_SrvData.m_iLandTick = gpGlobals->tickcount;
+
+    m_bInAirDueToJump = false;
 }
 
 void CMomentumPlayer::UpdateRunStats()
@@ -1014,21 +1022,29 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pGhostToSpectate && base)
     {
+        // Don't allow user teleports when spectating. Checkpoints can be created, but the
+        // teleporting logic needs to not be allowed.
+        m_bAllowUserTeleports = false;
+
         RemoveTrail();
 
         pGhostToSpectate->SetSpectator(this);
 
         CMomentumOnlineGhostEntity *pOnlineEnt = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
-        CMomentumReplayGhostEntity *pReplayEnt = dynamic_cast<CMomentumReplayGhostEntity *>(target);
         if (pOnlineEnt)
         {
             m_sSpecTargetSteamID = pOnlineEnt->GetGhostSteamID();
-            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
         }
-        else if (pReplayEnt)
+        else if (pGhostToSpectate->IsReplayGhost())
         {
             m_sSpecTargetSteamID = CSteamID(uint64(1));
-            g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
+        }
+
+        g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, pCurrentGhost == nullptr);
+
+        if (pCurrentGhost == nullptr)
+        {
+            FIRE_GAME_WIDE_EVENT("spec_start");
         }
     }
 
@@ -1181,6 +1197,8 @@ void CMomentumPlayer::StopSpectating()
     ForceRespawn();
     SetMoveType(MOVETYPE_WALK);
 
+    FIRE_GAME_WIDE_EVENT("spec_stop");
+   
     // Update the lobby/server if there is one
     m_sSpecTargetSteamID.Clear(); //reset steamID when we stop spectating
     g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);

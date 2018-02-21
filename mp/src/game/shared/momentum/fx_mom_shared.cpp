@@ -5,13 +5,14 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "fx_cs_shared.h"
+#include "fx_mom_shared.h"
 #include "weapon/weapon_csbase.h"
 
 #ifndef CLIENT_DLL
 #include "ilagcompensationmanager.h"
 #include "momentum/ghost_client.h"
 #include "mom_ghostdefs.h"
+#include "util/mom_util.h"
 #endif
 
 
@@ -123,21 +124,11 @@ void FX_FireBullets(
     CMomentumPlayer *pPlayer = ToCMOMPlayer( UTIL_PlayerByIndex( iPlayerIndex) );
 #endif
 
-    const char * weaponAlias = WeaponIDToAlias(iWeaponID);
+    CCSWeaponInfo *pWeaponInfo = GetWeaponInfo((CSWeaponID) iWeaponID);
 
-    if (!weaponAlias)
+    if (!pWeaponInfo)
     {
-        DevMsg("FX_FireBullets: weapon alias for ID %i not found\n", iWeaponID);
-        return;
-    }
-
-    char wpnName[128];
-    Q_snprintf(wpnName, sizeof(wpnName), "weapon_%s", weaponAlias);
-    WEAPON_FILE_INFO_HANDLE	hWpnInfo = LookupWeaponInfoSlot(wpnName);
-
-    if (hWpnInfo == GetInvalidWeaponInfoHandle())
-    {
-        DevMsg("FX_FireBullets: LookupWeaponInfoSlot failed for weapon %s\n", wpnName);
+        DevMsg("FX_FireBullets: Cannot find weapon info for ID %i\n", iWeaponID);
         return;
     }
 
@@ -156,7 +147,20 @@ void FX_FireBullets(
 
     if (pPlayer) // Only send this packet if it was us firing the bullet(s) all along
     {
-        DecalPacket_t decalPacket(DECAL_BULLET, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+        DecalPacket_t decalPacket;
+        if (iWeaponID == WEAPON_PAINTGUN)
+        {
+            Color decalColor;
+            if (!g_pMomentumUtil->GetColorFromHex(ConVarRef("mom_paintgun_color").GetString(), decalColor))
+                decalColor = COLOR_WHITE;
+
+            decalPacket = DecalPacket_t(DECAL_PAINT, vOrigin, vAngles, decalColor.GetRawColor(), 0, 0, ConVarRef("mom_paintgun_scale").GetFloat());
+        }
+        else
+        {
+            decalPacket = DecalPacket_t(DECAL_BULLET, vOrigin, vAngles, iWeaponID, iMode, iSeed, flSpread);
+        }
+
         g_pMomentumGhostClient->SendDecalPacket(&decalPacket);
     }
 
@@ -164,8 +168,6 @@ void FX_FireBullets(
 #endif
 
     iSeed++;
-
-    CCSWeaponInfo *pWeaponInfo = static_cast<CCSWeaponInfo*>(GetFileWeaponInfoFromHandle(hWpnInfo));
 
     int		iDamage = pWeaponInfo->m_iDamage;
     float	flRange = pWeaponInfo->m_flRange;
@@ -176,7 +178,7 @@ void FX_FireBullets(
     if (bDoEffects)
     {
         // Do an extra paintgun check here
-        const bool bPreventShootSound = (pWeaponInfo->m_WeaponType == WEAPONTYPE_PAINT && !ConVarRef("mom_paintgun_shoot_sound").GetBool());
+        const bool bPreventShootSound = (iWeaponID == WEAPON_PAINTGUN && !ConVarRef("mom_paintgun_shoot_sound").GetBool());
         
         if (!bPreventShootSound)
             FX_WeaponSound(iPlayerIndex, SINGLE, vOrigin, pWeaponInfo);
@@ -199,7 +201,7 @@ void FX_FireBullets(
 
     StartGroupingSounds();
 
-#if !defined (CLIENT_DLL)
+#ifndef CLIENT_DLL
     // Move other players back to history positions based on local player's lag
     if (bLocalPlayerFired)
         lagcompensation->StartLagCompensation(pPlayer, pPlayer->GetCurrentCommand());

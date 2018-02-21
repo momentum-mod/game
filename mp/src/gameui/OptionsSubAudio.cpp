@@ -39,6 +39,8 @@ enum SoundQuality_e
 //-----------------------------------------------------------------------------
 COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, NULL)
 {
+    SetSize(20, 20);
+
 	m_pSFXSlider = new CCvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume" );
 	m_pMusicSlider = new CCvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "Snd_MusicVolume" );
 	
@@ -61,7 +63,7 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 
    m_pSpokenLanguageCombo = new ComboBox (this, "AudioSpokenLanguage", 6, false );
 
-	LoadControlSettings("Resource\\OptionsSubAudio.res");
+	LoadControlSettings("resource/optionssubaudio.res");
 }
 
 //-----------------------------------------------------------------------------
@@ -370,7 +372,7 @@ COptionsSubAudioThirdPartyCreditsDlg::COptionsSubAudioThirdPartyCreditsDlg( vgui
 {
     SetTitle("#GameUI_ThirdPartyAudio_Title", true);
     SetSize(500, 200);
-    LoadControlSettings("resource/OptionsSubAudioThirdPartyDlg.res");
+    LoadControlSettings("resource/optionssubaudiothirdpartydlg.res");
     MoveToCenterOfScreen();
     SetSizeable(false);
     SetDeleteSelfOnClose(true);

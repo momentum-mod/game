@@ -99,8 +99,8 @@ public:
 		m_iszBounceSound = MAKE_STRING( pszBounceSound );
 	}
 
-	CBaseCombatCharacter *GetThrower( void );
-	void				  SetThrower( CBaseCombatCharacter *pThrower );
+	CBaseEntity *GetThrower( void );
+	void				  SetThrower( CBaseEntity *pThrower );
 	CBaseEntity *GetOriginalThrower() { return m_hOriginalThrower; }
 
 #if !defined( CLIENT_DLL )

@@ -237,6 +237,10 @@ void CSprite::Spawn( void )
 		scale = clamp( (float) m_flSpriteScale, 0.f, MAX_SPRITE_SCALE );
 	}
 
+    // Fix: If the mapper forgot to set the scale of their sprite, set the default hammer scale of 0.25
+    if (CloseEnough(scale, 0.0f, FLT_EPSILON))
+        scale = 0.25f;
+
 	//Set our state
 	SetBrightness( m_clrRender->a );
 	SetScale( scale );

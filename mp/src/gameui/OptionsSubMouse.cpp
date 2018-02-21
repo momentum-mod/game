@@ -25,6 +25,8 @@ using namespace vgui;
 
 COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, NULL)
 {
+    SetSize(20, 20);
+
 	m_pReverseMouseCheckBox = new CCvarNegateCheckButton( 
 		this, 
 		"ReverseMouse", 
@@ -62,7 +64,7 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 		"joy_inverty" );
 
 	m_pMouseSensitivitySlider = new CCvarSlider( this, "Slider", "#GameUI_MouseSensitivity",
-		1.0f, 20.0f, "sensitivity", true );
+        0.0001f, 20.0f, "sensitivity", true);
 
     m_pMouseSensitivityLabel = new TextEntry(this, "SensitivityLabel");
     m_pMouseSensitivityLabel->AddActionSignalTarget(this);
@@ -80,7 +82,7 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 		0.5f, 7.0f, "joy_pitchsensitivity", true );
 	m_pJoyPitchSensitivityPreLabel = new Label(this, "JoystickPitchSensitivityPreLabel", "#GameUI_JoystickLookSpeedPitch" );
 
-	LoadControlSettings("Resource\\OptionsSubMouse.res");
+	LoadControlSettings("resource/optionssubmouse.res");
 
     //float sensitivity = engine->pfnGetCvarFloat( "sensitivity" );
 	ConVarRef var( "sensitivity" );
@@ -89,7 +91,7 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 		float sensitivity = var.GetFloat();
 
 		char buf[64];
-		Q_snprintf(buf, sizeof(buf), " %.1f", sensitivity);
+		Q_snprintf(buf, sizeof(buf), "%.3f", sensitivity);
 		m_pMouseSensitivityLabel->SetText(buf);
 	}
     ConVarRef accel("m_customaccel_exponent");
@@ -98,7 +100,7 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
         float acc = accel.GetFloat();
 
         char buf[64];
-        Q_snprintf(buf, sizeof(buf), " %.1f", acc);
+        Q_snprintf(buf, sizeof(buf), "%.3f", acc);
         m_pMouseAccelLabel->SetText(buf);
     }
 
@@ -119,6 +121,7 @@ void COptionsSubMouse::OnResetData()
 {
 	m_pReverseMouseCheckBox->Reset();
 	m_pMouseFilterCheckBox->Reset();
+    m_pMouseRawCheckbox->Reset();
 	m_pJoystickCheckBox->Reset();
 	m_pJoystickSouthpawCheckBox->Reset();
 	m_pMouseSensitivitySlider->Reset();
@@ -126,6 +129,12 @@ void COptionsSubMouse::OnResetData()
 	m_pJoyYawSensitivitySlider->Reset();
 	m_pJoyPitchSensitivitySlider->Reset();
     m_pMouseAccelSlider->Reset();
+
+    m_pMouseAccelToggle->SetSelected(ConVarRef("m_customaccel").GetInt() == 3);
+
+    bool bEnabled = m_pMouseAccelToggle->IsSelected();
+    m_pMouseAccelSlider->SetEnabled(bEnabled);
+    m_pMouseAccelLabel->SetEnabled(bEnabled);
 }
 
 //-----------------------------------------------------------------------------
@@ -135,6 +144,7 @@ void COptionsSubMouse::OnApplyChanges()
 {
 	m_pReverseMouseCheckBox->ApplyChanges();
 	m_pMouseFilterCheckBox->ApplyChanges();
+    m_pMouseRawCheckbox->ApplyChanges();
 	m_pJoystickCheckBox->ApplyChanges();
 	m_pJoystickSouthpawCheckBox->ApplyChanges();
 	m_pMouseSensitivitySlider->ApplyChanges();
@@ -197,8 +207,8 @@ void COptionsSubMouse::OnTextChanged(Panel *panel)
         char buf[64];
         m_pMouseSensitivityLabel->GetText(buf, 64);
 
-        float fValue = (float) atof(buf);
-        if (fValue >= 1.0)
+        float fValue = Q_atof(buf);
+        if (fValue >= 0.0001f)
         {
             m_pMouseSensitivitySlider->SetSliderValue(fValue);
             PostActionSignal(new KeyValues("ApplyButtonEnable"));
@@ -209,7 +219,7 @@ void COptionsSubMouse::OnTextChanged(Panel *panel)
         char buf[64];
         m_pMouseAccelLabel->GetText(buf, 64);
 
-        float fVal = static_cast<float>(Q_atof(buf));
+        float fVal = Q_atof(buf);
         if (fVal > 1.0f)
         {
             m_pMouseAccelSlider->SetSliderValue(fVal);
@@ -224,14 +234,14 @@ void COptionsSubMouse::OnTextChanged(Panel *panel)
 void COptionsSubMouse::UpdateSensitivityLabel()
 {
     char buf[64];
-    Q_snprintf(buf, sizeof( buf ), " %.1f", m_pMouseSensitivitySlider->GetSliderValue());
+    Q_snprintf(buf, sizeof( buf ), "%.3f", m_pMouseSensitivitySlider->GetSliderValue());
     m_pMouseSensitivityLabel->SetText(buf);
 }
 
 void COptionsSubMouse::UpdateAccelLabel()
 {
     char buf[64];
-    Q_snprintf(buf, sizeof(buf), " %.1f", m_pMouseAccelSlider->GetSliderValue());
+    Q_snprintf(buf, sizeof(buf), "%.3f", m_pMouseAccelSlider->GetSliderValue());
     m_pMouseAccelLabel->SetText(buf);
 }
 

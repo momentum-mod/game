@@ -778,10 +778,13 @@ CLIENTEFFECT_REGISTER_BEGIN( PrecacheViewRender )
 CLIENTEFFECT_REGISTER_END()
 #endif
 
-CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
-    CLIENTEFFECT_MATERIAL("dev/ssao")
-    CLIENTEFFECT_MATERIAL("dev/ssaoblur")
-    CLIENTEFFECT_MATERIAL("dev/ssao_combine")
+CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffects)
+
+    // Precache menu blur
+    CLIENTEFFECT_MATERIAL("dev/blurx")
+    CLIENTEFFECT_MATERIAL("dev/blury")
+    CLIENTEFFECT_MATERIAL("dev/fringe")
+    CLIENTEFFECT_MATERIAL("dev/gui_blend")
 
 	CLIENTEFFECT_MATERIAL( "dev/blurfiltery_and_add_nohdr" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx" )

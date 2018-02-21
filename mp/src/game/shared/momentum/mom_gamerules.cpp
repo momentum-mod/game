@@ -216,19 +216,16 @@ bool CMomentumGameRules::ClientCommand(CBaseEntity *pEdict, const CCommand &args
 static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldValue)
 {
     ConVarRef gm(var);
-    int toCheck = gm.GetInt();
-    if (toCheck < 0)
+    int gamemode = gm.GetInt();
+    if (gamemode < 0)
     {
         // This will never happen. but better be safe than sorry, right?
         DevWarning("Cannot set a game mode under 0!\n");
         gm.SetValue(gm.GetDefault());
         return;
     }
-    bool result = TickSet::SetTickrate(toCheck);
-    if (result)
-        DevMsg("Successfully changed the tickrate to %f!\n", TickSet::GetTickrate());
-    else
-        DevWarning("Failed to change interval per tick!\n");
+    
+    TickSet::SetTickrate(gamemode);
 
     // set the value of sv_tickrate so it updates when gamemode changes the tickrate.
     ConVarRef tr("sv_tickrate");

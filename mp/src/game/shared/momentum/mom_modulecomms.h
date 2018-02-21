@@ -4,6 +4,7 @@
 #include "run/run_stats.h"
 #include "threadtools.h"
 #include "run/mom_entity_run_data.h"
+#include "run/mom_slide_data.h"
 
 /*
  * Members of this class will be calculated server-side but updated
@@ -27,9 +28,9 @@ struct StdDataFromServer
     int m_iShotsFired;
     int m_iDirection;
     int m_iLastZoom;
-    int m_fSliding;
     int m_iSuccessiveBhops;
     CMOMRunEntityData m_RunData;
+    CMomPlayerSlideData m_SlideData;
     CMomRunStats::data m_RunStatsData;
 };
 

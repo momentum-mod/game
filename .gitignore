@@ -24,8 +24,12 @@ ipch
 *.vcxproj.filters
 *.pdb
 *.lib
+
+# Visual Studio 2017
 *.VC.db
-*.VC.VC.opendb
+*.VC.opendb
+*.VC.db-shm
+*.VC.db-wal
 
 # OSX/Linux build products
 *.mak

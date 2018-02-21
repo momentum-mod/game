@@ -18,12 +18,11 @@
 // Gamemode for momentum
 typedef enum
 {
-    MOMGM_MENU = 0, // When the game is in the menu/disconnected
-    MOMGM_SURF,    // Surfing (66t, 3500 maxvel)
-    MOMGM_BHOP,    // Bhopping (100t, 10k maxvel)
-    MOMGM_SCROLL,  // Scrolling/Stamina (currently activates with kz_)
-    MOMGM_UNKNOWN, // Non-recognized map (no prefix/info ents in it)
-    MOMGM_ALLOWED, // not "official gamemode" but must be allowed for other reasons
+    MOMGM_SURF = 0, // Surfing (66t, 3500 maxvel)
+    MOMGM_BHOP,     // Bhopping (100t, 10k maxvel)
+    MOMGM_SCROLL,   // Scrolling/Stamina (currently activates with kz_)
+    MOMGM_UNKNOWN,  // Non-recognized map (no prefix/info ents in it)
+    MOMGM_ALLOWED,  // not "official gamemode" but must be allowed for other reasons
 
 } GAMEMODES;
 
@@ -86,6 +85,13 @@ typedef enum
 //Takes input ansi and converts, using g_pVGuiLocalize, to unicode
 #define ANSI_TO_UNICODE(ansi, unicode) \
     g_pVGuiLocalize->ConvertANSIToUnicode(ansi, unicode, sizeof(unicode));
+
+// Fires an IGameEvent game-wide, so that anything that is listening can hear it
+#define FIRE_GAME_WIDE_EVENT(eventName) \
+    IGameEvent *eventServer = gameeventmanager->CreateEvent(eventName, true); \
+    IGameEvent *eventClient = gameeventmanager->CreateEvent(eventName, true); \
+    if (eventServer && eventClient) \
+    { gameeventmanager->FireEvent(eventServer, true); gameeventmanager->FireEventClientSide(eventClient); }
 
 // Creates a convar with a callback function
 #define MAKE_CONVAR_C(name, defaultval, flags, desc, minVal, maxVal, callback)                                                \

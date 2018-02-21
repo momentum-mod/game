@@ -157,6 +157,8 @@ public:
 	void SetAllCaps( bool bAllCaps );
 
     void SetAutoWide(bool bSize);
+    void SetAutoTall(bool bTall);
+    void InvalidateLayout(bool layoutNow = false, bool reloadScheme = false) OVERRIDE;
 
 protected:
 	virtual void PerformLayout();
@@ -216,8 +218,9 @@ private:
 	bool	m_bWrap;
 	bool	m_bCenterWrap;
 	bool	m_bAllCaps;
-	bool	m_bAutoWideToContents;
-	bool	m_bAutoWideDirty;
+	bool m_bAutoWideToContents;
+    bool m_bAutoTallToContents;
+	bool m_bAutoSizeDirty;
 	bool	m_bUseProportionalInsets;
 
 };

@@ -1365,10 +1365,10 @@ Color CBaseHudChat::GetClientColor( int clientIndex )
 	{
 		return g_ColorGreen;
 	}
-	else if( g_PR )
+	/*else if( g_PR )
 	{
 		return g_ColorGrey;
-	}
+	}*/
 
 	return g_ColorYellow;
 }

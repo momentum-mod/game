@@ -214,6 +214,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     CSteamID m_sSpecTargetSteamID;
 
+    bool m_bInAirDueToJump;
 
     void DoMuzzleFlash() OVERRIDE;
 
