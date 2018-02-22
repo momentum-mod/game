@@ -9,7 +9,6 @@ class IChangelogPanel
     virtual void Destroy(void) = 0;
     virtual void Activate(void) = 0;
     virtual void Close() = 0;
-    virtual void SetVersion(const char *pVersion) const = 0;
     virtual void SetChangelog(const char *pChangelog) const = 0;
 };
 

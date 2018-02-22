@@ -2,6 +2,24 @@ event LevelInit
 {
 }
 
+event VersionPulse
+{
+    Animate VersionLabel alpha "0" Spline 0.0 1.0
+    Animate VersionLabel alpha "255" Spline 1.0 1.0
+    RunEvent VersionPulseLoop 2.0
+}
+
+event VersionPulseLoop
+{
+    RunEvent VersionPulse 0.0
+}
+
+event VersionPulseStop
+{
+    StopEvent VersionPulse 0.0
+    Animate VersionLabel alpha 255 Linear 0.0 0.000001
+}
+
 event MenuPulse
 {
 	Animate CHudMenuStatic		Blur		"7"			Linear	0.0		0.1

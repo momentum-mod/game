@@ -7,8 +7,10 @@
 #include <gason.h>
 #include "run/run_compare.h"
 #include "run/run_stats.h"
+#include "effect_dispatch_data.h"
 #ifdef CLIENT_DLL
 #include "ChangelogPanel.h"
+#include "materialsystem/imaterialvar.h"
 #endif
 
 #include "tier0/memdbgon.h"
@@ -128,60 +130,36 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIO
         return;
     }
 
-    uint8 *pData = new uint8[size];
+    // Right now "size" is the content body size, not in string terms where the end is marked
+    // with a null terminator.
+
+    uint8 *pData = new uint8[size + 1];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    char *pDataPtr = reinterpret_cast<char *>(pData);
+    pData[size] = 0;
+
+    const char *pDataPtr = reinterpret_cast<const char *>(pData);
 
     changelogpanel->SetChangelog(pDataPtr);
 
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
 {
-    // 502 is usually returned if Steam is set to offline mode. Thanks .Enjoy for reporting this one!
-    if (bIOFailure || (pCallback && pCallback->m_eStatusCode == k_EHTTPStatusCode502BadGateway))
-        return;
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
+    IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);
+    if (material != nullptr)
     {
-        Warning("MomentumUtil::VersionCallback: 0 body size!\n");
-        return;
-    }
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    const char separator[2] = ".";
-    CSplitString storedVersion(MOM_CURRENT_VERSION, separator);
-    CSplitString repoVersion(pDataPtr, separator);
-    // Above check for 502 fixes crash with Steam being offline, but just to be on the safe side, we double check we can get all the version numbers
-    if (repoVersion.Count() >= 3)
-    {
-        char versionValue[15];
-        Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
+        static unsigned int nScaleCache = 0;
+        IMaterialVar *pVarScale = material->FindVarFast("$decalscale", &nScaleCache);
 
-        for (int i = 0; i < 3; i++)
+        if (pVarScale != nullptr)
         {
-            int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
-            if (repo > local)
-            {
-                if (developer.GetInt() < 2) // If we're developers, we probably know what version we are at.
-                {
-                    changelogpanel->SetVersion(versionValue);
-                    GetRemoteChangelog();
-                    changelogpanel->Activate();
-                }
-                break;
-            }
-            if (repo < local)
-            {
-                // The local version is higher than the repo version, do not show this panel
-                break;
-            }
+            float flNewValue = 0.35f * fNewScale;
+
+            pVarScale->SetFloatValueFast(flNewValue);
+            pVarScale->SetIntValueFast((int) flNewValue);
         }
     }
-    CleanupRequest(pCallback, pData);
 }
 #endif
 
@@ -422,6 +400,190 @@ void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAn
 void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &angInto)
 {
     LOAD_3D_FROM_KV(kvFrom, pName, angInto);
+}
+
+inline void FindHullIntersection(const Vector &vecSrc, trace_t &tr, const Vector &mins, const Vector &maxs, CBaseEntity *pEntity)
+{
+    int			i, j, k;
+    float		distance;
+    Vector minmaxs[2] = { mins, maxs };
+    trace_t tmpTrace;
+    Vector		vecHullEnd = tr.endpos;
+    Vector		vecEnd;
+
+    distance = 1e6f;
+
+    vecHullEnd = vecSrc + ((vecHullEnd - vecSrc) * 2);
+    UTIL_TraceLine(vecSrc, vecHullEnd, MASK_SOLID, pEntity, COLLISION_GROUP_NONE, &tmpTrace);
+    if (tmpTrace.fraction < 1.0)
+    {
+        tr = tmpTrace;
+        return;
+    }
+
+    for (i = 0; i < 2; i++)
+    {
+        for (j = 0; j < 2; j++)
+        {
+            for (k = 0; k < 2; k++)
+            {
+                vecEnd.x = vecHullEnd.x + minmaxs[i][0];
+                vecEnd.y = vecHullEnd.y + minmaxs[j][1];
+                vecEnd.z = vecHullEnd.z + minmaxs[k][2];
+
+                UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pEntity, COLLISION_GROUP_NONE, &tmpTrace);
+                if (tmpTrace.fraction < 1.0)
+                {
+                    float thisDistance = (tmpTrace.endpos - vecSrc).Length();
+                    if (thisDistance < distance)
+                    {
+                        tr = tmpTrace;
+                        distance = thisDistance;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void MomentumUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool bStab, CBaseEntity *pAttacker,
+    CBaseEntity *pSoundSource, trace_t* trOutput, Vector* vForwardOut)
+{
+    float fRange = bStab ? 32.0f : 48.0f; // knife range
+
+    AngleVectors(lookAng, vForwardOut);
+    Vector vecSrc = vecShootPos;
+    Vector vecEnd = vecSrc + *vForwardOut * fRange;
+
+    UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
+
+    //check for hitting glass
+#ifndef CLIENT_DLL
+    CTakeDamageInfo glassDamage(pAttacker, pAttacker, 42.0f, DMG_BULLET | DMG_NEVERGIB);
+    pSoundSource->TraceAttackToTriggers(glassDamage, trOutput->startpos, trOutput->endpos, *vForwardOut);
+#endif
+
+    if (trOutput->fraction >= 1.0)
+    {
+        Vector head_hull_mins(-16, -16, -18);
+        Vector head_hull_maxs(16, 16, 18);
+        UTIL_TraceHull(vecSrc, vecEnd, head_hull_mins, head_hull_maxs, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
+        if (trOutput->fraction < 1.0)
+        {
+            // Calculate the point of intersection of the line (or hull) and the object we hit
+            // This is and approximation of the "best" intersection
+            CBaseEntity *pHit = trOutput->m_pEnt;
+            if (!pHit || pHit->IsBSPModel())
+                FindHullIntersection(vecSrc, *trOutput, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, pAttacker);
+            //vecEnd = trOutput->endpos;	// This is the point on the actual surface (the hull could have hit space)
+        }
+    }
+
+    bool bDidHit = trOutput->fraction < 1.0f;
+
+
+    if (!bDidHit)
+    {
+        // play wiff or swish sound
+        CPASAttenuationFilter filter(pSoundSource);
+        filter.UsePredictionRules();
+        CBaseEntity::EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.Slash");
+    }
+#ifndef CLIENT_DLL
+    else
+    {
+        // play thwack, smack, or dong sound
+
+        CBaseEntity *pEntity = trOutput->m_pEnt;
+
+        ClearMultiDamage();
+
+        float flDamage = 42.0f;
+
+        if ( bStab )
+        {
+            flDamage = 65.0f;
+
+            if ( pEntity && pEntity->IsPlayer() )
+            {
+                Vector vTragetForward;
+
+                AngleVectors( pEntity->GetAbsAngles(), &vTragetForward );
+
+                Vector2D vecLOS = (pEntity->GetAbsOrigin() - pAttacker->GetAbsOrigin()).AsVector2D();
+                Vector2DNormalize( vecLOS );
+
+                float flDot = vecLOS.Dot( vTragetForward.AsVector2D() );
+
+                //Triple the damage if we are stabbing them in the back.
+                if ( flDot > 0.80f )
+                    flDamage *= 3.0f;
+            }
+        }
+        else
+        {
+            /*if ( bFirstSwing )
+            {
+                // first swing does full damage
+                flDamage = 20;
+            }
+            else
+            {
+                // subsequent swings do less	
+                flDamage = 15;
+            }*/
+            flDamage = 20.0f;
+        }
+
+        CTakeDamageInfo info( pAttacker, pAttacker, flDamage, DMG_BULLET | DMG_NEVERGIB );
+
+        CalculateMeleeDamageForce( &info, *vForwardOut, trOutput->endpos, 1.0f/flDamage );
+        pEntity->DispatchTraceAttack( info, *vForwardOut, trOutput ); 
+        ApplyMultiDamage();
+    }
+#endif
+}
+
+void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, const QAngle& lookAng, const bool bStab)
+{
+    if (!trIn.m_pEnt || (trIn.surface.flags & SURF_SKY))
+        return;
+
+    if (trIn.fraction == 1.0)
+        return;
+
+    if (trIn.m_pEnt)
+    {
+        CPASAttenuationFilter filter(pSoundSource);
+        filter.UsePredictionRules();
+
+        if (trIn.m_pEnt->IsPlayer())
+        {
+            pSoundSource->EmitSound(filter, pSoundSource->entindex(), bStab ? "Weapon_Knife.Stab" : "Weapon_Knife.Hit");
+        }
+        else
+        {
+            pSoundSource->EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.HitWall");
+        }
+    }
+
+    CEffectData data;
+    data.m_vOrigin = trIn.endpos;
+    data.m_vStart = trIn.startpos;
+    data.m_nSurfaceProp = trIn.surface.surfaceProps;
+    data.m_nDamageType = DMG_SLASH;
+    data.m_nHitBox = trIn.hitbox;
+#ifdef CLIENT_DLL
+    data.m_hEntity = trIn.m_pEnt->GetRefEHandle();
+#else
+    data.m_nEntIndex = trIn.m_pEnt->entindex();
+#endif
+
+    CPASFilter filter(data.m_vOrigin);
+    data.m_vAngles = lookAng;
+    data.m_fFlags = 0x1;	//IMPACT_NODECAL;
+
+    te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
 }
 
 static MomentumUtil s_momentum_util;

@@ -58,7 +58,7 @@ void CMomentumTimer::Start(int start)
 //    Log("\n");
 //}
 
-void CMomentumTimer::Stop(bool endTrigger /* = false */)
+void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* = true*/)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
@@ -82,7 +82,7 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */)
     }
 
     // Stop replay recording, if there was any
-    if (g_ReplaySystem.m_bRecording)
+    if (g_ReplaySystem.m_bRecording && stopRecording)
         g_ReplaySystem.StopRecording(!endTrigger || m_bWereCheatsActivated, endTrigger);
 
     SetRunning(false);
@@ -447,14 +447,13 @@ class CTimerCommands
     static void PracticeMove()
     {
         CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-        if (!pPlayer || !pPlayer->m_bAllowUserTeleports)
+        if (!pPlayer || !pPlayer->m_bAllowUserTeleports || pPlayer->IsSpectatingGhost())
             return;
 
         if (!pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             int b = pPlayer->m_nButtons;
-            bool safeGuard = b & IN_FORWARD || b & IN_LEFT || b & IN_RIGHT || b & IN_BACK || b & IN_JUMP ||
-                             b & IN_DUCK || b & IN_WALK;
+            bool safeGuard = (b & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
             if (mom_practice_safeguard.GetBool() && safeGuard)
             {
                 Warning("You cannot enable practice mode while moving!\n");

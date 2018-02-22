@@ -1,6 +1,5 @@
 WeaponData
 {
-    "WeaponType"                "Grenade"
     "CrosshairMinDistance"      "8"
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"

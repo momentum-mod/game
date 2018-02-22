@@ -1,10 +1,10 @@
 #pragma once
 
-#include "vgui_controls/Panel.h"
+#include "vgui_controls/EditablePanel.h"
 
-class Panel2D : public vgui::Panel
+class Panel2D : public vgui::EditablePanel
 {
-	DECLARE_CLASS_SIMPLE(Panel2D, vgui::Panel);
+	DECLARE_CLASS_SIMPLE(Panel2D, vgui::EditablePanel);
 
 public:
 	Panel2D();

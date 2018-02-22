@@ -1,11 +1,11 @@
 #include "cbase.h"
 
-#include "mom_triggers.h"
 #include "in_buttons.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "mom_timer.h"
+#include "mom_triggers.h"
 #include "movevars_shared.h"
 #include "tier0/memdbgon.h"
 
@@ -45,9 +45,8 @@ void CTriggerStage::StartTouch(CBaseEntity *pOther)
                                                  pPlayer->GetLocalVelocity().Length2D());
             g_pMomentumTimer->CalculateTickIntervalOffset(pPlayer, g_pMomentumTimer->ZONETYPE_END);
             pPlayer->m_RunStats.SetZoneEnterTime(stageNum, g_pMomentumTimer->CalculateStageTime(stageNum));
-            pPlayer->m_RunStats.SetZoneTime(stageNum - 1,
-                                            pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
-                                                pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
+            pPlayer->m_RunStats.SetZoneTime(stageNum - 1, pPlayer->m_RunStats.GetZoneEnterTime(stageNum) -
+                                                              pPlayer->m_RunStats.GetZoneEnterTime(stageNum - 1));
         }
     }
     else
@@ -158,6 +157,13 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                 pPlayer->m_SrvData.m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
                 // Used for spectating later on
                 pPlayer->m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
+
+                // Are we in mid air when we started? If so, our first jump should be 1, not 0
+                if (pPlayer->m_bInAirDueToJump)
+                {
+                    pPlayer->m_RunStats.SetZoneJumps(0, 1);
+                    pPlayer->m_RunStats.SetZoneJumps(pPlayer->m_SrvData.m_RunData.m_iCurrentZone, 1);
+                }
             }
         }
         else
@@ -191,8 +197,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             }
         }
     }
-    // stop thinking on end touch
-    SetNextThink(-1);
+
     BaseClass::EndTouch(pOther);
 }
 
@@ -203,27 +208,24 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     if (pPlayer)
     {
         pPlayer->ResetRunStats(); // Reset run stats
-        pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
-        pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0; // also reset last jump velocity when we enter the start zone
-        pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f;  // MOM_TODO: Do we want to reset this?
+        pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
 
         if (g_pMomentumTimer->IsRunning())
         {
-            g_pMomentumTimer->Stop(false); // Handles stopping replay recording as well
+            g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
             g_pMomentumTimer->DispatchResetMessage();
-            // lower the player's speed if they try to jump back into the start zone
-        }
-
-        // begin recording replay
-        if (!g_ReplaySystem.m_bRecording)
-        {
-            g_ReplaySystem.BeginRecording(pPlayer);
         }
         else
         {
-            g_ReplaySystem.StopRecording(true, false);
+            // Reset last jump velocity when we enter the start zone without a timer
+            pPlayer->m_SrvData.m_RunData.m_flLastJumpVel = 0;
+
+            // Handle the replay recordings
+            if (g_ReplaySystem.m_bRecording)
+                g_ReplaySystem.StopRecording(true, false);
+
             g_ReplaySystem.BeginRecording(pPlayer);
         }
     }
@@ -232,13 +234,11 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
-            pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
             pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             pGhost->m_SrvData.m_RunData.m_bTimerRunning = false; // Fixed
         }
     }
-    // start thinking
-    SetNextThink(gpGlobals->curtime);
+
     BaseClass::StartTouch(pOther);
 }
 
@@ -320,8 +320,8 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             }
 
             // This is needed for the final stage
-            pPlayer->m_RunStats.SetZoneTime(
-                zoneNum, g_pMomentumTimer->GetCurrentTime() - pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
+            pPlayer->m_RunStats.SetZoneTime(zoneNum, g_pMomentumTimer->GetCurrentTime() -
+                                                         pPlayer->m_RunStats.GetZoneEnterTime(zoneNum));
 
             // Ending velocity checks
 
@@ -517,7 +517,7 @@ BEGIN_DATADESC(CTriggerOnehop)
 DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
 END_DATADESC();
 
-CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(-1.0), m_fMaxHoldSeconds(1) {};
+CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(-1.0), m_fMaxHoldSeconds(1){};
 
 void CTriggerOnehop::StartTouch(CBaseEntity *pOther)
 {
@@ -591,7 +591,7 @@ void CTriggerMultihop::EndTouch(CBaseEntity *pOther)
 
 void CTriggerMultihop::Think()
 {
-    CMomentumPlayer* pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer && m_fStartTouchedTime > 0 && IsTouching(pPlayer) &&
         gpGlobals->realtime - m_fStartTouchedTime >= m_fMaxHoldSeconds)
     {
@@ -688,7 +688,7 @@ void CTriggerLimitMovement::EndTouch(CBaseEntity *pOther)
     {
         pPlayer->EnableButtons(IN_JUMP);
         pPlayer->EnableButtons(IN_DUCK);
-        
+
         if (HasSpawnFlags(LIMIT_BHOP))
             pPlayer->m_SrvData.m_bPreventPlayerBhop = false;
     }
@@ -732,7 +732,7 @@ int CFuncShootBoost::OnTakeDamage(const CTakeDamageInfo &info)
                 finalVel = pInflictor->GetAbsVelocity();
             break;
         case 3: // The description of this method says the player velocity is increaed by final velocity,
-                // but we're just adding one vec to the other, which is not quite the same
+            // but we're just adding one vec to the other, which is not quite the same
             if (finalVel.LengthSqr() < pInflictor->GetAbsVelocity().LengthSqr())
                 finalVel += pInflictor->GetAbsVelocity();
             break;
@@ -823,59 +823,30 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
 BEGIN_DATADESC(CTriggerSlide)
-DEFINE_KEYFIELD(m_bSliding, FIELD_BOOLEAN, "Slide")
-, DEFINE_KEYFIELD(m_bStuck, FIELD_BOOLEAN, "StuckOnGround"),
-    DEFINE_KEYFIELD(m_flGravity, FIELD_FLOAT, "Gravity") END_DATADESC();
+DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
+, DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
+    DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity"),
+    DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope")
+    //,DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
+    END_DATADESC();
 
-// The mapper could disable one of these flags with an ouput I guess? I don't know.
-void CTriggerSlide::Think()
-{
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
-    if (pPlayer && IsTouching(pPlayer))
-    {
-        if (m_bSliding)
-        {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
-        }
-        else
-        {
-            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE;
-        }
-
-        if (m_bStuck)
-        {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
-        }
-        else
-        {
-            pPlayer->m_SrvData.m_fSliding &= ~FL_SLIDE_STUCKONGROUND;
-        }
-
-        pPlayer->SetGravity(m_flGravity);
-    }
-
-    SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
-    BaseClass::Think();
-}
-
+// Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because endtouch was
+// called for one trigger but the player was actually into another trigger, so we must check if we were inside of any of
+// thoses.
 void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 {
-    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer)
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
+
+    if (pPlayer != nullptr)
     {
-        if (m_bSliding)
-        {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE;
-        }
-
-        if (m_bStuck)
-        {
-            pPlayer->m_SrvData.m_fSliding |= FL_SLIDE_STUCKONGROUND;
-        }
-
-        m_flSavedGravity = pPlayer->GetGravity();
-        pPlayer->SetGravity(m_flGravity);
+        pPlayer->m_SrvData.m_SlideData.SetEnabled();
+        pPlayer->m_SrvData.m_SlideData.SetAllowingJump(m_bAllowingJump);
+        pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
+        pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
+        pPlayer->m_SrvData.m_SlideData.SetFixUpsideSlope(m_bFixUpsideSlope);
+        pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
+        // engine->Con_NPrintf( 0, "StartTouch: %i\n" , entindex() );
+        // pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
     }
 
     BaseClass::StartTouch(pOther);
@@ -883,12 +854,16 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 
 void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 {
-    // ToCMOMPlayer already has checks for nullptr and !IsPlayer()
-    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
-    if (pPlayer)
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
+
+    if (pPlayer != nullptr)
     {
-        pPlayer->SetGravity(m_flSavedGravity);
-        pPlayer->m_SrvData.m_fSliding = 0;
+        pPlayer->m_SrvData.m_SlideData.DecTouchCounter();
+
+        if (pPlayer->m_SrvData.m_SlideData.GetTouchCounter() == 0)
+            pPlayer->m_SrvData.m_SlideData.Reset();
+
+        // engine->Con_NPrintf( 1 , "EndTouch: %i\n" , entindex() );
     }
 
     BaseClass::EndTouch(pOther);

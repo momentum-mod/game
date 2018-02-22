@@ -18,16 +18,17 @@ void Momentum::GameInit()
 
     if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
     {
+        DevLog("Setting game mode to surf (GM# %d)\n", MOMGM_SURF);
         gm.SetValue(MOMGM_SURF);
     }
     else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
     {
-        DevLog("SETTING THE GAMEMODE!\n");
+        DevLog("Setting game mode to bhop (GM# %d)\n", MOMGM_BHOP);
         gm.SetValue(MOMGM_BHOP);
     }
     else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
     {
-        DevLog("SETTING THE GAMEMODE!\n");
+        DevLog("Setting game mode to scroll (GM# %d)\n", MOMGM_SCROLL);
         gm.SetValue(MOMGM_SCROLL);
     }
     else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
@@ -36,6 +37,7 @@ void Momentum::GameInit()
     }
     else
     {
+        DevLog("Setting game mode to unknown\n");
         gm.SetValue(MOMGM_UNKNOWN);
     }
 }
@@ -83,9 +85,6 @@ void CMOMServerEvents::LevelShutdownPreEntity()
         delete zones;
         zones = nullptr;
     }
-
-    ConVarRef gm("mom_gamemode");
-    gm.SetValue(MOMGM_MENU);
 }
 
 void CMOMServerEvents::LevelShutdownPostEntity()

@@ -50,8 +50,6 @@ class CMomentumGameMovement : public CGameMovement
     virtual void WalkMove(void);
     virtual void CheckForLadders(bool);
 
-    virtual void CategorizeGroundSurface(trace_t &);
-
     // Override fall damage
     virtual void CheckFalling();
 

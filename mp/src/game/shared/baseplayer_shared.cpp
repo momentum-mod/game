@@ -853,7 +853,7 @@ bool CBasePlayer::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex 
 
 		CBaseViewModel *pViewModel = GetViewModel( viewmodelindex );
 		Assert( pViewModel );
-		if ( pViewModel )
+		if ( pViewModel && pViewModel->IsEffectActive(EF_NODRAW) )
 			pViewModel->RemoveEffects( EF_NODRAW );
 		ResetAutoaim( );
 		return true;

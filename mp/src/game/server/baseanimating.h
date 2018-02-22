@@ -283,7 +283,7 @@ public:
 	virtual void	ModifyOrAppendCriteria( AI_CriteriaSet& set );
 
 	// Send a muzzle flash event to the client for this entity.
-	void DoMuzzleFlash();
+    virtual void DoMuzzleFlash();
 
 	// Fire
 	virtual void Ignite( float flFlameLifetime, bool bNPCOnly = true, float flSize = 0.0f, bool bCalledByLevelDesigner = false );

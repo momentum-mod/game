@@ -1,6 +1,5 @@
 WeaponData
 {
-    "WeaponType"                "Machinegun"
     "CrosshairMinDistance"      "6"
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"

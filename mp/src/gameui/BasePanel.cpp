@@ -24,7 +24,7 @@ CBasePanel *GetBasePanel() { return g_pBasePanel; }
 
 CON_COMMAND(reload_menu, "Reloads the menu\n")
 {
-    GetBasePanel()->GetMainMenu()->LoadMenu();
+    GetBasePanel()->GetMainMenu()->CreateMenu();
 }
 
 //-----------------------------------------------------------------------------

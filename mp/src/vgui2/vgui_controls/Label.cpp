@@ -89,8 +89,9 @@ void Label::Init()
 	m_bWrap = false;
 	m_bCenterWrap = false;
 	m_bAutoWideToContents = false;
+    m_bAutoTallToContents = false;
 	m_bUseProportionalInsets = false;
-	m_bAutoWideDirty = false;
+	m_bAutoSizeDirty = false;
 
 //	SetPaintBackgroundEnabled(false);
 }
@@ -303,8 +304,6 @@ void Label::SetText(const char *text)
 		SetHotkey(CalculateHotkey(text));
 	}
 
-	m_bAutoWideDirty = m_bAutoWideToContents;
-
 	InvalidateLayout();
 	Repaint();
 }
@@ -314,8 +313,6 @@ void Label::SetText(const char *text)
 //-----------------------------------------------------------------------------
 void Label::SetText(const wchar_t *unicodeString, bool bClearUnlocalizedSymbol)
 {
-	m_bAutoWideDirty = m_bAutoWideToContents;
-
 	if ( unicodeString && _textImage->GetUText() && !Q_wcscmp(unicodeString,_textImage->GetUText()) )
 		return;
 
@@ -1015,9 +1012,9 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 		_textImage->SetSize(wide, tall);
 	}
 
-	if ( m_bAutoWideToContents )
+	if ( m_bAutoWideToContents || m_bAutoTallToContents )
 	{
-		m_bAutoWideDirty = true;
+		m_bAutoSizeDirty = true;
 		HandleAutoSizing();
 	}
 
@@ -1120,6 +1117,7 @@ void Label::GetSettings( KeyValues *outResourceData )
 		outResourceData->SetInt("textinsety", _textInset[1]);
 	}
 	outResourceData->SetInt("auto_wide_tocontents", ( m_bAutoWideToContents ? 1 : 0 ));
+    outResourceData->SetInt("auto_tall_tocontents", (m_bAutoTallToContents ? 1 : 0));
 	outResourceData->SetInt("use_proportional_insets", ( m_bUseProportionalInsets ? 1 : 0 ));
 }
 
@@ -1243,6 +1241,7 @@ void Label::ApplySettings( KeyValues *inResourceData )
 	SetCenterWrap( bWrapText );
 
 	m_bAutoWideToContents = inResourceData->GetInt("auto_wide_tocontents", 0) > 0;
+    m_bAutoTallToContents = inResourceData->GetInt("auto_tall_tocontents", 0) > 0;
 
 	bWrapText = inResourceData->GetInt("wrap", 0) > 0;
 	SetWrap( bWrapText );
@@ -1305,8 +1304,6 @@ void Label::PerformLayout()
 			else
 				_textImage->SetSize(twide, ttall);
 		}
-
-		HandleAutoSizing();
 
 		HandleAutoSizing();
 
@@ -1378,22 +1375,32 @@ void Label::SetAllCaps( bool bAllCaps )
 void Label::SetAutoWide(bool bSize)
 {
     m_bAutoWideToContents = bSize;
-    m_bAutoWideDirty = bSize;
+    InvalidateLayout();
+}
+
+void Label::SetAutoTall(bool bTall)
+{
+    m_bAutoTallToContents = bTall;
     InvalidateLayout();
 }
 
 void Label::HandleAutoSizing( void )
 {
-	if ( m_bAutoWideDirty )
+	if ( m_bAutoSizeDirty )
 	{
-		m_bAutoWideDirty = false;
+		m_bAutoSizeDirty = false;
 
 		// Only change our width to match our content
 		int wide, tall;
 		GetContentSize(wide, tall);
-		SetSize(wide, GetTall());
+		SetSize(m_bAutoWideToContents ? wide : GetWide(), m_bAutoTallToContents ? tall : GetTall());
 	}
 }
 
+// Overridden because auto sizing needs to happen when the layout is invalidated
+void Label::InvalidateLayout(bool layoutNow, bool reloadScheme)
+{
+    m_bAutoSizeDirty = m_bAutoTallToContents || m_bAutoWideToContents;
 
-
+    BaseClass::InvalidateLayout(layoutNow, reloadScheme);
+}

@@ -300,6 +300,11 @@
 	"decals/security_camera_detachment" "1"
 }
 
+"Painting"
+{
+	"decals/paint_decal" "1"
+}
+
 "Models"
 {
 	// World Model specific decal precache.

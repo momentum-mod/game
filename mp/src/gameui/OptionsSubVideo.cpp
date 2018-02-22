@@ -470,7 +470,7 @@ public:
 
 		// append the recommended flag
 		wchar_t newText[512];
-		_snwprintf( newText, sizeof(newText) / sizeof(wchar_t), L"%s *", text );
+        V_snwprintf(newText, sizeof(newText) / sizeof(wchar_t), L"%ls *", text);
 
 		// reset
 		combo->UpdateItem(iItem, newText, NULL);
@@ -965,7 +965,7 @@ private:
 COptionsSubVideo::COptionsSubVideo(vgui::Panel *parent) : PropertyPage(parent, NULL)
 {
 	m_bRequireRestart = false;
-
+    SetSize(20, 20);
 	m_pGammaButton = new Button( this, "GammaButton", "#GameUI_AdjustGamma" );
 	m_pGammaButton->SetCommand(new KeyValues("OpenGammaDialog"));
 	m_pMode = new ComboBox(this, "Resolution", 8, false);
@@ -1010,7 +1010,7 @@ COptionsSubVideo::COptionsSubVideo(vgui::Panel *parent) : PropertyPage(parent, N
 	m_pWindowed->AddItem( "#GameUI_Fullscreen", NULL );
 	m_pWindowed->AddItem( "#GameUI_Windowed", NULL );
 
-	LoadControlSettings("Resource\\OptionsSubVideo.res");
+	LoadControlSettings("resource/optionssubvideo.res");
 
 	// Moved down here so we can set the Drop down's 
 	// menu state after the default (disabled) value is loaded
@@ -1360,7 +1360,7 @@ COptionsSubVideoThirdPartyCreditsDlg::COptionsSubVideoThirdPartyCreditsDlg( vgui
 
     SetTitle("#GameUI_ThirdPartyVideo_Title", true);
     SetSize( 500, 200 );
-    LoadControlSettings("resource/OptionsSubVideoThirdPartyDlg.res");
+    LoadControlSettings("resource/optionssubvideothirdpartydlg.res");
     MoveToCenterOfScreen();
     SetSizeable(false);
     SetDeleteSelfOnClose(true);

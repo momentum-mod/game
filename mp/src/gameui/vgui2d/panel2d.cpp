@@ -4,12 +4,12 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-Panel2D::Panel2D() : BaseClass()
+Panel2D::Panel2D() : BaseClass(nullptr, "Panel")
 {
 	
 }
 
-Panel2D::Panel2D(vgui::Panel* parent) : BaseClass(parent)
+Panel2D::Panel2D(vgui::Panel* parent) : BaseClass(parent, "Panel")
 {
 	
 }

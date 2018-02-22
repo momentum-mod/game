@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories  	"$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src,$SRCDIR\thirdparty\base64"
+        $AdditionalIncludeDirectories  	"$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\thirdparty\base64"
         $PreprocessorDefinitions        "$BASE;SDK_DLL"
     }
 }
@@ -139,24 +139,17 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_lmg.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.cpp"
-                
-                //Server-sided grenade projectile
-                $File "momentum\mom_grenade_projectile.h"
-                $File "momentum\mom_grenade_projectile.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.cpp"
                 
                 //CS guns
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"
-                
-                $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"    
                 $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbasegun.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbasegun.h"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_basecsgrenade.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_basecsgrenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.h"
             }
@@ -167,6 +160,8 @@ $Project "Server (Momentum)"
             $File   "momentum\mapzones.cpp"
             $File   "momentum\mapzones_edit.h"
             $File   "momentum\mapzones_edit.cpp"
+			$File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.h"
             $File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_gamemovement.h"
             $File   "$SRCDIR\game\shared\momentum\mom_gamerules.cpp"
@@ -182,13 +177,15 @@ $Project "Server (Momentum)"
             $File   "momentum\mom_player.h"
             $File   "momentum\te_shotgun_shot.cpp"
             $File   "momentum\te_shotgun_shot.h"
-            $File   "$SRCDIR\game\shared\momentum\fx_cs_shared.h"
-            $File   "$SRCDIR\game\shared\momentum\fx_cs_shared.cpp"
+            $File   "$SRCDIR\game\shared\momentum\fx_mom_shared.h"
+            $File   "$SRCDIR\game\shared\momentum\fx_mom_shared.cpp"
             $File   "momentum\mom_gameinterface.cpp"
             $File   "momentum\mom_eventlog.cpp"
             $File   "momentum\mom_playermove.cpp"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.cpp"
+            $File "$SRCDIR\game\shared\momentum\run\mom_slide_data.h"
+            $File "$SRCDIR\game\shared\momentum\run\mom_slide_data.cpp"
             $File "$SRCDIR\game\shared\momentum\run\run_stats.h"
             $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
             $File "$SRCDIR\game\shared\momentum\run\run_compare.h"
@@ -226,8 +223,8 @@ $Project "Server (Momentum)"
         
         $Folder "JSON Parser"
         {
-            $File "$SRCDIR\thirdparty\gason\src\gason.h"
-            $File "$SRCDIR\thirdparty\gason\src\gason.cpp"
+            $File "$SRCDIR\thirdparty\gason\gason.h"
+            $File "$SRCDIR\thirdparty\gason\gason.cpp"
             {
                 $Configuration
                 {

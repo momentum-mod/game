@@ -1,6 +1,5 @@
 WeaponData
 {
-    "WeaponType"                "Pistol"
     "CrosshairMinDistance"      "8"
     "CrosshairDeltaDistance"    "3"
     "BuiltRightHanded"          "1"

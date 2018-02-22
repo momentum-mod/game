@@ -20,7 +20,6 @@
 extern int ClassnameToWeaponID(const char *classname);
 extern int AliasToWeaponID(const char *alias);
 extern const char *WeaponIDToAlias(int id);
-extern const char *GetTranslatedWeaponAlias(const char *alias);
 extern bool IsPrimaryWeapon(int id);
 extern bool IsSecondaryWeapon(int id);
 extern int GetShellForAmmoType(const char *ammoname);
@@ -44,6 +43,7 @@ extern int GetShellForAmmoType(const char *ammoname);
 #define AMMO_TYPE_HEGRENADE "AMMO_TYPE_HEGRENADE"
 #define AMMO_TYPE_FLASHBANG "AMMO_TYPE_FLASHBANG"
 #define AMMO_TYPE_SMOKEGRENADE "AMMO_TYPE_SMOKEGRENADE"
+#define AMMO_TYPE_PAINT "AMMO_TYPE_PAINT"
 
 #define CROSSHAIR_CONTRACT_PIXELS_PER_SECOND 7.0f
 
@@ -107,7 +107,7 @@ class CWeaponCSBase : public CBaseCombatWeapon
     bool IsPredicted() const OVERRIDE { return true; }
 
     // Pistols reset m_iShotsFired to 0 when the attack button is released.
-    bool IsPistol() const { return GetCSWpnData().m_WeaponType == WEAPONTYPE_PISTOL; }
+    bool IsPistol() const { return GetWeaponID() == WEAPON_PISTOL; }
 
     CMomentumPlayer *GetPlayerOwner() const;
 
@@ -116,7 +116,7 @@ class CWeaponCSBase : public CBaseCombatWeapon
     // Get CS-specific weapon data.
     CCSWeaponInfo const &GetCSWpnData() const;
 
-    // Get specific CS weapon ID (ie: WEAPON_AK47, etc)
+    // Get specific weapon ID
     virtual CSWeaponID GetWeaponID(void) const { return WEAPON_NONE; }
 
     // return true if this weapon has a silencer equipped

@@ -1,0 +1,94 @@
+WeaponData
+{
+    "CrosshairMinDistance"      "4"
+    "CrosshairDeltaDistance"    "4"
+    "BuiltRightHanded"          "1"
+    "MuzzleFlashScale"          "1.0"
+    
+    
+    // Weapon characteristics:
+    "Penetration"       "1"
+    "Damage"            "1"
+    "Range"             "8192"
+    "RangeModifier"     "1.0"
+    "Bullets"           "1"
+    
+    // Weapon data is loaded by both the Game and Client DLLs.
+    "printname"         "#MOM_Paint_Gun"
+    "viewmodel"         "models/weapons/v_mom_paintgun.mdl"
+    "playermodel"       "models/weapons/w_mom_paintgun.mdl"
+    
+    "anim_prefix"      "anim"
+    "bucket"            "4"
+    "bucket_position"   "0"
+
+    "clip_size"         "30"
+    
+    "primary_ammo"          "AMMO_TYPE_PAINT"
+    "secondary_ammo"        "None"
+
+    "weight"            "25"
+    "item_flags"        "0"
+    "autoswitchfrom" "0"
+
+    // Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+    SoundData
+    {
+        "single_shot"       "Weapon_Paintgun.Single"
+    }
+
+    // Weapon Sprite data is loaded by the Client DLL.
+    TextureData
+    {
+        //Weapon Select Images
+        "weapon"
+		{
+				"font"		"WeaponIcons"
+				"character"	"l"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"l"
+		}
+		"weapon_small"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"l"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"u"
+		}
+        "crosshair"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+        "autoaim"
+        {
+                "file"      "sprites/crosshairs"
+                "x"         "0"
+                "y"         "48"
+                "width"     "24"
+                "height"    "24"
+        }
+    }
+    ModelBounds
+    {
+        Viewmodel
+        {
+            Mins    "-9 -3 -13"
+            Maxs    "30 11 0"
+        }
+        World
+        {
+            Mins    "-9 -9 -9"
+            Maxs    "30 9 7"
+        }
+    }
+}

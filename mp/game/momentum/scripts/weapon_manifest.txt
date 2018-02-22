@@ -1,13 +1,14 @@
 weapon_manifest
 {
     //Momentum-related guns
-	"file" "scripts/weapon_momentum_pistol.txt"
+    "file" "scripts/weapon_momentum_pistol.txt"
     "file" "scripts/weapon_momentum_rifle.txt"
     "file" "scripts/weapon_momentum_smg.txt"
     "file" "scripts/weapon_momentum_shotgun.txt"
     "file" "scripts/weapon_momentum_sniper.txt"
     "file" "scripts/weapon_momentum_lmg.txt"
     "file" "scripts/weapon_momentum_grenade.txt"
+    "file" "scripts/weapon_momentum_paintgun.txt"
     
     //CS Guns (MOM_TODO: Needs migration!)
     "file" "scripts/weapon_knife.txt"

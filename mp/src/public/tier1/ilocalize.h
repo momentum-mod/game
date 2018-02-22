@@ -91,10 +91,20 @@ public:
 	// returns the number of wchar_t in resulting string, including null terminator
 	static int ConvertANSIToUnicode(const char *ansi, OUT_Z_BYTECAP(unicodeBufferSizeInBytes) wchar_t *unicode, int unicodeBufferSizeInBytes);
 
+    // Converts given multi byte character array to wchar, whatever that is on this system.
+    // Output parameter *utf16 must be nullptr before getting passed in here as it will be allocated within.
+    // Returns amount of characters that the *utf16 buffer contains, including null terminator, not size in bytes (which would be multiply sizeof(wchar_t)).
+    static int ConvertUTF8ToUTF16(const char *utf8, wchar_t **utf16);
+
 	// converts an unicode string to an english string
 	// unrepresentable characters are converted to system default
 	// returns the number of characters in resulting string, including null terminator
 	static int ConvertUnicodeToANSI(const wchar_t *unicode, OUT_Z_BYTECAP(ansiBufferSize) char *ansi, int ansiBufferSize);
+
+    // Converts from a wchar character array to a dynamic multi byte array.
+    // Output parameter *utf8 must be nullptr before getting passed in here as it will be allocated within.
+    // Returns amount of characters that the *utf8 buffer contains, including null terminator, not size in bytes.
+    static int ConvertUTF16ToUTF8(const wchar_t *utf16, char **utf8);
 
 	// builds a localized formatted string
 	// uses the format strings first: %s1, %s2, ...  unicode strings (wchar_t *)

@@ -209,7 +209,8 @@ struct SpecUpdatePacket_t : MomentumPacket_t
 typedef enum
 {
     DECAL_BULLET = 0,
-    DECAL_PAINT
+    DECAL_PAINT,
+    DECAL_KNIFE
     // etc
 
 } DECAL_TYPE;
@@ -222,7 +223,7 @@ struct DecalPacket_t : MomentumPacket_t
     Vector vOrigin;
     QAngle vAngle;
 
-    int iWeaponID; // or colorRed
+    int iWeaponID; // or colorRed or bStab for knife
     int iMode;     // or colorGreen
     int iSeed;     // or colorBlue
     float fSpread; // or Radius of decal
@@ -232,7 +233,7 @@ struct DecalPacket_t : MomentumPacket_t
         type = PT_DECAL_DATA;
     }
 
-    DecalPacket_t(DECAL_TYPE decalType, Vector origin, QAngle angle, int weaponID, int mode, int seed, int spread)
+    DecalPacket_t(DECAL_TYPE decalType, Vector origin, QAngle angle, int weaponID, int mode, int seed, float spread)
     {
         type = PT_DECAL_DATA;
         decal_type = decalType;
