@@ -159,10 +159,15 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)
 {
-    // Vector values stored in a QAngle, shhh~
-    Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
-    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.iMode, 0), this, 3.0f /*GRENADE_TIMER*/); 
-    grenade->SetDamage(0.0f); // These grenades should not do damage
+    CCSWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
+    if (pGrenadeInfo)
+    {
+        // Vector values stored in a QAngle, shhh~
+        Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
+        auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.iMode, 0), this, pGrenadeInfo->szWorldModel);
+        grenade->SetDamage(0.0f); // These grenades should not do damage
+
+    }
 }
 
 void CMomentumOnlineGhostEntity::Precache(void)
