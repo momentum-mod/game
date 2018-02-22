@@ -1,14 +1,12 @@
 //========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================//
 
 #include "CvarTextEntry.h"
 #include "EngineInterface.h"
-#include <vgui/IVGui.h>
-#include "IGameUIFuncs.h"
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
 
@@ -19,94 +17,76 @@ using namespace vgui;
 
 static const int MAX_CVAR_TEXT = 64;
 
-CCvarTextEntry::CCvarTextEntry( Panel *parent, const char *panelName, char const *cvarname )
- : TextEntry( parent, panelName)
+CCvarTextEntry::CCvarTextEntry(Panel *parent, const char *panelName, char const *cvarname)
+    : TextEntry(parent, panelName), m_cvarRef(cvarname, true)
 {
-	m_pszCvarName = cvarname ? strdup( cvarname ) : NULL;
-	m_pszStartValue[0] = 0;
+    m_pszStartValue[0] = 0;
 
-	if ( m_pszCvarName )
-	{
-		Reset();
-	}
-
-	AddActionSignalTarget( this );
+    if (m_cvarRef.IsValid())
+    {
+        Reset();
+    }
+    
+    AddActionSignalTarget(this);
 }
 
 CCvarTextEntry::~CCvarTextEntry()
 {
-	if ( m_pszCvarName )
-	{
-		free( m_pszCvarName );
-	}
 }
 
 void CCvarTextEntry::ApplySchemeSettings(IScheme *pScheme)
 {
-	BaseClass::ApplySchemeSettings(pScheme);
-	if (GetMaximumCharCount() < 0 || GetMaximumCharCount() > MAX_CVAR_TEXT)
-	{
-		SetMaximumCharCount(MAX_CVAR_TEXT - 1);
-	}
+    BaseClass::ApplySchemeSettings(pScheme);
+    if (GetMaximumCharCount() < 0 || GetMaximumCharCount() > MAX_CVAR_TEXT)
+    {
+        SetMaximumCharCount(MAX_CVAR_TEXT - 1);
+    }
 }
 
-void CCvarTextEntry::ApplyChanges( bool immediate )
+void CCvarTextEntry::ApplyChanges()
 {
-	if ( !m_pszCvarName )
-		return;
+    if (!m_cvarRef.IsValid())
+        return;
 
-	char szText[ MAX_CVAR_TEXT ];
-	GetText( szText, MAX_CVAR_TEXT );
+    char szText[MAX_CVAR_TEXT];
+    GetText(szText, MAX_CVAR_TEXT);
 
-	if ( !szText[ 0 ] )
-		return;
+    if (!szText[0])
+        return;
 
-	if ( immediate )
-	{
-		// set immediately - don't wait for the next frame
-		ConVarRef newCvar( m_pszCvarName );
-		newCvar.SetValue( szText );
-	}
-	else
-	{
-		char szCommand[ 256 ];
-		sprintf( szCommand, "%s \"%s\"\n", m_pszCvarName, szText );
-		engine->ClientCmd_Unrestricted( szCommand );
-	}
+    m_cvarRef.SetValue(szText);
 
-	Q_strncpy( m_pszStartValue, szText, sizeof( m_pszStartValue ) );
+    Q_strncpy(m_pszStartValue, szText, sizeof(m_pszStartValue));
 }
 
 void CCvarTextEntry::Reset()
 {
-//	char *value = engine->pfnGetCvarString( m_pszCvarName );
-	ConVarRef var( m_pszCvarName );
-	if ( !var.IsValid() )
-		return;
-	const char *value = var.GetString();
-	if ( value && value[ 0 ] )
-	{
-		SetText( value );
-		Q_strncpy( m_pszStartValue, value, sizeof( m_pszStartValue ) );
-	}
+    if (!m_cvarRef.IsValid())
+        return;
+
+    const char *value = m_cvarRef.GetString();
+    if (value && value[0])
+    {
+        SetText(value);
+        Q_strncpy(m_pszStartValue, value, sizeof(m_pszStartValue));
+    }
 }
 
 bool CCvarTextEntry::HasBeenModified()
 {
-	char szText[ MAX_CVAR_TEXT ];
-	GetText( szText, MAX_CVAR_TEXT );
+    char szText[MAX_CVAR_TEXT];
+    GetText(szText, MAX_CVAR_TEXT);
 
-	return stricmp( szText, m_pszStartValue ) != 0 ? true : false;
+    return stricmp(szText, m_pszStartValue) != 0 ? true : false;
 }
-
 
 void CCvarTextEntry::OnTextChanged()
 {
-	if ( !m_pszCvarName )
-		return;
-	
-	if (HasBeenModified())
-	{
-		PostActionSignal(new KeyValues("ControlModified"));
-	}
+    if (!m_cvarRef.IsValid())
+        return;
+
+    if (HasBeenModified())
+    {
+        PostActionSignal(new KeyValues("ControlModified"));
+    }
 }

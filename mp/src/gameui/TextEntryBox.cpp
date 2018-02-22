@@ -93,7 +93,7 @@ void CTextEntryBox::OnCommand(const char *command)
 	{
 		if (m_pCvarEntry)
 		{
-			m_pCvarEntry->ApplyChanges( true );
+			m_pCvarEntry->ApplyChanges();
 		}
 	}
 
