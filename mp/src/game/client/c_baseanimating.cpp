@@ -3604,7 +3604,7 @@ bool C_BaseAnimating::DispatchMuzzleEffect( const char *options, bool isFirstPer
 	int			weaponType = 0;
 
 	// Get the first parameter
-	p = nexttoken( token, p, ' ' );
+	p = nexttoken( token, p, ' ', sizeof(token) );
 
 	// Find the weapon type
 	if ( token[0] ) 
@@ -3648,7 +3648,7 @@ bool C_BaseAnimating::DispatchMuzzleEffect( const char *options, bool isFirstPer
 	}
 
 	// Get the second parameter
-	p = nexttoken( token, p, ' ' );
+	p = nexttoken( token, p, ' ', sizeof(token) );
 
 	int	attachmentIndex = -1;
 
@@ -3759,7 +3759,7 @@ void C_BaseAnimating::FireEvent( const Vector& origin, const QAngle& angles, int
 
 			// Get the particle effect name
 			const char *p = options;
-			p = nexttoken(token, p, ' ');
+			p = nexttoken(token, p, ' ', sizeof(token));
 
 			const char* mtoken = ModifyEventParticles( token );
 			if ( !mtoken || mtoken[0] == '\0' )
@@ -3767,7 +3767,7 @@ void C_BaseAnimating::FireEvent( const Vector& origin, const QAngle& angles, int
 			Q_strncpy( szParticleEffect, mtoken, sizeof(szParticleEffect) );
 
 			// Get the attachment type
-			p = nexttoken(token, p, ' ');
+            p = nexttoken(token, p, ' ', sizeof(token));
 
 			iAttachType = GetAttachTypeFromString( token );
 			if ( iAttachType == -1 )
@@ -3777,7 +3777,7 @@ void C_BaseAnimating::FireEvent( const Vector& origin, const QAngle& angles, int
 			}
 
 			// Get the attachment point index
-			p = nexttoken(token, p, ' ');
+            p = nexttoken(token, p, ' ', sizeof(token));
 			if ( token[0] )
 			{
 				iAttachment = atoi(token);
@@ -3981,11 +3981,11 @@ void C_BaseAnimating::FireEvent( const Vector& origin, const QAngle& angles, int
 			const char *p = options;
 
 			// Bodygroup Name
-			p = nexttoken(token, p, ' ');
+            p = nexttoken(token, p, ' ', sizeof(token));
 			Q_strncpy( szBodygroupName, token, sizeof(szBodygroupName) );
 
 			// Get the desired value
-			p = nexttoken(token, p, ' ');
+            p = nexttoken(token, p, ' ', sizeof(token));
 			value = token[0] ? atoi( token ) : 0;
 
 			int index = FindBodygroupByName( szBodygroupName );
@@ -4022,13 +4022,13 @@ void C_BaseAnimating::FireObsoleteEvent( const Vector& origin, const QAngle& ang
 
 			const char *p = options;
 
-			p = nexttoken(token, p, ' ');
+            p = nexttoken(token, p, ' ', sizeof(token));
 			Q_strncpy( effectFunc, token, sizeof(effectFunc) );
 
-			p = nexttoken(token, p, ' ');
+            p = nexttoken(token, p, ' ', sizeof(token));
 			iAttachment = token[0] ? atoi(token) : -1;
 
-			p = nexttoken(token, p, ' ');
+            p = nexttoken(token, p, ' ', sizeof(token));
 			iParam = token[0] ? atoi(token) : 0;
 
 			if ( iAttachment != -1 && m_Attachments.Count() >= iAttachment )

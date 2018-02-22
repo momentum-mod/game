@@ -757,35 +757,6 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 void CServerGameDLL::PostInit()
 {
 	IGameSystem::PostInitAllSystems();
-
-	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
-	if (SharedModule)
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (SERVER)\n");
-
-		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
-
-		shared = appSystemFactory ? ((CShared*)appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, NULL)) : NULL;
-		if (shared)
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (SERVER)\n");
-
-			shared->LoadedServer = true;
-
-			if (shared->LoadedClient && shared->LoadedServer)
-			{
-				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
-			}
-		}
-		else
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
-		}
-	}
-	else
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
-	}
 }
 
 void CServerGameDLL::DLLShutdown( void )
@@ -870,7 +841,7 @@ float CServerGameDLL::GetTickInterval( void ) const
 // [Forrest] For Counter-Strike, set default tick rate of 66 and removed -tickrate command line parameter.
 //=============================================================================
 // Ignoring this for now, server ops are abusing it
-#if !defined( TF_DLL ) && !defined( CSTRIKE_DLL ) && !defined( DOD_DLL )
+#if !defined( TF_DLL ) && !defined( CSTRIKE_DLL ) && !defined( DOD_DLL ) && !defined( SDK_DLL )
 //=============================================================================
 // HPE_END
 //=============================================================================
@@ -885,29 +856,6 @@ float CServerGameDLL::GetTickInterval( void ) const
 
 	return tickinterval;
 }
-
-static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
-{
-    float toCheck = ((ConVar*) var)->GetFloat();
-    if (mom_UTIL->FloatEquals(toCheck, fOldValue)) return;
-    // MOM_TODO: Re-implement the bound 
-    //if (toCheck < 0.01f || toCheck > 0.015f)
-    //{
-    //    Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
-    //    var->SetValue(((ConVar*) var)->GetDefault());
-    //    return;
-    //}
-    bool result = TickSet::SetTickrate(toCheck);
-    if (result)
-    {
-        Msg("Successfully changed the tickrate to %f!\n", toCheck);
-        gpGlobals->interval_per_tick = toCheck;
-    }
-    else Warning("Failed to hook interval per tick, cannot set tick rate!\n");
-}
-
-// MOM_TODO: Remove the comment in the flags
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT /*| FCVAR_NOT_CONNECTED*/, "Changes the tickrate of the game.", onTickRateChange);
 
 // This is called when a new game is started. (restart, map)
 bool CServerGameDLL::GameInit( void )
@@ -3482,6 +3430,14 @@ void MessageWriteEHandle( CBaseEntity *pEntity )
 	}
 	
 	g_pMsgBuffer->WriteLong( iEncodedEHandle );
+}
+
+void MessageWriteBytes(const void *pData, int size)
+{
+    if (!g_pMsgBuffer)
+        Error("WriteMessageBytes called with no active message\n");
+
+    g_pMsgBuffer->WriteBytes(pData, size);
 }
 
 // bitwise

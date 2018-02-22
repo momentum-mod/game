@@ -25,11 +25,14 @@ protected:
 
 	virtual ITexture*	CreateMaskGameUITexture();
     virtual ITexture*   CreateDepthBufferTexture();
+    virtual ITexture*   CreateBlurTexture(bool blurX);
+    virtual ITexture*   CreateFullscreenPPTexture();
 private:
 	Vector2D			m_pOldViewport;
 
 	CTextureReference	m_MaskGameUITexture;
     CTextureReference   m_DepthBufferTexture;
+    CTextureReference   m_BlurX, m_BlurY, m_FullscreenPP;
 
 	IMaterialSystem*	m_pMaterialSystem;
 };

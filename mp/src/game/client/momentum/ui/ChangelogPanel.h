@@ -3,15 +3,7 @@
 #include "cbase.h"
 
 #include "IChangelogPanel.h"
-#include <vgui/ILocalize.h>
-#include <vgui/ISystem.h>
-#include <vgui/IVGui.h>
-#include <vgui_controls/Button.h>
 #include <vgui_controls/Frame.h>
-#include <vgui_controls/RichText.h>
-#include <vgui_controls/URLLabel.h>
-
-#include "momentum/mom_shareddefs.h"
 
 using namespace vgui;
 
@@ -22,51 +14,20 @@ class CChangelogPanel : public Frame
     // CChangelogPanel : This Class / vgui::Frame : BaseClass
 
     CChangelogPanel(VPANEL parent); // Constructor
-    ~CChangelogPanel(){};           // Destructor
+    ~CChangelogPanel();;
 
-    void SetVersion(const char *version) { Q_strncpy(m_cOnlineVersion, version, 12); }
+    void SetChangelog(const char* pChangelog);
 
-    void SetChangelog(const char *pChangelog)
-    {
-        ANSI_TO_UNICODE(pChangelog, m_pwOnlineChangelog);
-        if (m_pChangeLog)
-        {
-            m_pChangeLog->SetText(m_pwOnlineChangelog);
-            // Delay the scrolling to a tick or so away, thanks Valve.
-            m_flScrollTime = system()->GetFrameTime() + 0.010f;
-        }
-    }
-
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
-    {
-        BaseClass::ApplySchemeSettings(pScheme);
-        m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall"));
-    }
+    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
 
     void Activate() OVERRIDE;
-
-    void OnThink() OVERRIDE
-    {
-        BaseClass::OnThink();
-        if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
-        {
-            m_pChangeLog->GotoTextStart();
-            m_flScrollTime = -1.0f;
-        }
-    }
-
-    void OnKillFocus() OVERRIDE
-    {
-        BaseClass::OnKillFocus();
-        Close();
-    }
+    void OnThink() OVERRIDE;
 
   private:
     float m_flScrollTime;
-    URLLabel *m_pReleaseText;
     RichText *m_pChangeLog;
     char m_cOnlineVersion[12];
-    wchar_t m_pwOnlineChangelog[4096]; // MOM_TODO: Determine a better size
+    wchar_t *m_pwOnlineChangelog;
 };
 
 class CChangelogInterface : public IChangelogPanel
@@ -75,9 +36,10 @@ class CChangelogInterface : public IChangelogPanel
     CChangelogPanel *pPanel;
 
   public:
-    CChangelogInterface() { pPanel = nullptr; }
+    CChangelogInterface();
     virtual ~CChangelogInterface() {}
-    void Create(vgui::VPANEL parent) OVERRIDE { pPanel = new CChangelogPanel(parent); }
+    void Create(vgui::VPANEL parent) OVERRIDE;
+
     void Destroy() OVERRIDE
     {
         if (pPanel)
@@ -99,14 +61,6 @@ class CChangelogInterface : public IChangelogPanel
         if (pPanel)
         {
             pPanel->Close();
-        }
-    }
-
-    void SetVersion(const char *pVersion) const OVERRIDE
-    {
-        if (pPanel)
-        {
-            pPanel->SetVersion(pVersion);
         }
     }
 

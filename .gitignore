@@ -24,8 +24,12 @@ ipch
 *.vcxproj.filters
 *.pdb
 *.lib
+
+# Visual Studio 2017
 *.VC.db
-*.VC.VC.opendb
+*.VC.opendb
+*.VC.db-shm
+*.VC.db-wal
 
 # OSX/Linux build products
 *.mak
@@ -35,6 +39,9 @@ ipch
 obj*/
 !devtools/*.mak
 !utils/smdlexp/smdlexp.mak
+*.a
+*.dylib
+*.plist
 
 # Specific Source build products
 client.so
@@ -56,8 +63,8 @@ server.dylib.dSYM/
 
 Debug/
 Release/
-Release_mod_hl2/
-Debug_mod_hl2/
+Release_*momentum/
+Debug_*momentum/
 save/
 cmake*/
 
@@ -75,19 +82,23 @@ voice_ban.dt
 *.tmp
 
 # Momentum
-*.tim
 *.zon
 *.momrec
+game_shader_dx9.dll
+game_shader_dx9.so
+game_shader_dx9.so.dbg
+game_shader_dx9_srv.so
+game_shader_dx9_srv.so.dbg
+game_shader_dx9.dylib
+game_shader_dx9.dylib.dYSM/
 gameui2.dll
 gameui2.so
 gameui2.so.dbg
 gameui2_srv.so
 gameui2_srv.so.dbg
-shared.dll
-shared.so
-shared.so.dbg
-shared_srv.so
-shared_srv.so.dbg
+gameui2.dylib
+gameui2.dylib.dYSM/
+mp/game/bin/
 
 # Others
 *.cache
@@ -102,3 +113,5 @@ shared_srv.so.dbg
 .idea/
 CMakeLists.txt
 mp/game/momentum/cfg/pet.txt
+*.exe
+mp/game/momentum/version.txt

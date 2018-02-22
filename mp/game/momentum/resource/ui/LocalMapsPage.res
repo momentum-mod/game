@@ -95,10 +95,10 @@
         "Command"       "AddServerByName"
         "Default"       "0"
     }
-    "gamelist"
+    "MapList"
     {
         "ControlName"       "ListPanel"
-        "fieldName"     "gamelist"
+        "fieldName"     "MapList"
         "xpos"      "8"
         "ypos"      "8"
         "wide"      "608"

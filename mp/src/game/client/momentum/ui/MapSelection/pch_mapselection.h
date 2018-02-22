@@ -40,6 +40,9 @@
 #include <momentum/mom_shareddefs.h>
 #include <momentum/mom_gamerules.h>
 #include <momentum/util/mom_util.h>
+#include <run/mom_replay_base.h>
+#include <gason.h>
+#include <momentum/util/jsontokv.h>
 #include <OfflineMode.h>
 
 //VGUI
@@ -54,4 +57,5 @@
 #include "LocalMaps.h"
 #include "OnlineMaps.h"
 #include "MapSelectorDialog.h"
+#include "CMapListPanel.h"
 #include "cbase.h"

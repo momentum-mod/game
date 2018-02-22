@@ -770,7 +770,7 @@ public:
 	void	InputHandleMapEvent( inputdata_t &inputdata );
 
 	surfacedata_t *GetSurfaceData( void ) { return m_pSurfaceData; }
-	void SetLadderNormal( Vector vecLadderNormal ) { m_vecLadderNormal = vecLadderNormal; }
+	void SetLadderNormal( const Vector &vecLadderNormal ) { m_vecLadderNormal = vecLadderNormal; }
 
 	// Here so that derived classes can use the expresser
 	virtual CAI_Expresser *GetExpresser() { return NULL; };

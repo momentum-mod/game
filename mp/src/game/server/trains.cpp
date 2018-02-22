@@ -2119,7 +2119,7 @@ void CFuncTrackTrain::UpdateOrientationAtPathTracks( CPathTrack *pPrev, CPathTra
 void CFuncTrackTrain::UpdateOrientationBlend( TrainOrientationType_t eOrientationType, CPathTrack *pPrev, CPathTrack *pNext, const Vector &nextPos, float flInterval )
 {
 	// Get the angles to blend from.
-	QAngle angPrev = pPrev->GetOrientation( IsDirForward() );
+    QAngle angPrev = pPrev ? pPrev->GetOrientation(IsDirForward()) : vec3_angle;
 	FixupAngles( angPrev );
 
 	// Get the angles to blend to. 

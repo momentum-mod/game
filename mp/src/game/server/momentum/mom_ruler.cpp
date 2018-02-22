@@ -2,6 +2,7 @@
 
 #include "mom_ruler.h"
 #include <vgui/ILocalize.h>
+#include "mom_shareddefs.h"
 #include "vgui_controls/InputDialog.h"  // ReSharper, for some reason, found that including this was necessary. Ty!
 
 #include "tier0/memdbgon.h"
@@ -55,42 +56,48 @@ void CMOMRulerTool::PostInit()
     LOCALIZE_TOKEN(distanceFormat, "#MOM_Ruler_Distance", m_szDistanceFormat);
 }
 
+// Create a laser that will signal that both points are connected
 void CMOMRulerTool::ConnectMarks()
 {
     if (!m_pFirstMark || !m_pSecondMark) return; // If we can't attach to anything, simply return.
-    // Create a laser that will signal that both points are connected
-
-    if (m_pBeamConnector)
+    
+    // If the beam doesn't exist, create it
+    if (!m_pBeamConnector)
     {
-        UTIL_Remove(m_pBeamConnector);
+        m_pBeamConnector = CMOMRulerToolBeam::CreateBeam("sprites/laserbeam.vmt", mom_ruler_width.GetFloat());
+        m_pBeamConnector->EntsInit(m_pFirstMark, m_pSecondMark);
+        m_pBeamConnector->SetColor(115, 80, 255); // MOM_TODO: Potentially make these all customizable?
+        m_pBeamConnector->SetBrightness(128);
+        m_pBeamConnector->SetFrameRate(1.0f);
+        m_pBeamConnector->SetFrame(random->RandomInt(0, 2));
     }
 
-    m_pBeamConnector = CBeam::BeamCreate("sprites/laserbeam.vmt", mom_ruler_width.GetFloat());
-    m_pBeamConnector->PointsInit(m_pFirstMark->GetAbsOrigin(), m_pSecondMark->GetAbsOrigin());
-    m_pBeamConnector->SetColor(115, 80, 255); // MOM_TODO: Potentially make these all customizable?
-    m_pBeamConnector->SetBrightness(128);
-    m_pBeamConnector->SetNoise(0.0f);
+    // Set it to use the custom variables (duration, width, etc)
+    m_pBeamConnector->RelinkBeam();
     m_pBeamConnector->SetEndWidth(mom_ruler_width.GetFloat());
     m_pBeamConnector->SetWidth(mom_ruler_width.GetFloat());
-    m_pBeamConnector->LiveForTime(mom_ruler_duration.GetFloat());
-    m_pBeamConnector->SetFrameRate(1.0f);
-    m_pBeamConnector->SetFrame(random->RandomInt(0, 2));
+    m_pBeamConnector->OnForDuration(mom_ruler_duration.GetFloat());
+        
+    // Turn it on if it was turned off
+    m_pBeamConnector->TurnOn();
 }
 
 void CMOMRulerTool::Reset()
 {
     // We reset to our default state
-    UTIL_Remove(m_pFirstMark);
-    UTIL_Remove(m_pSecondMark);
-    UTIL_Remove(m_pBeamConnector);
-
-    m_pFirstMark = m_pSecondMark = nullptr;
+    UTIL_RemoveImmediate(m_pFirstMark);
+    UTIL_RemoveImmediate(m_pSecondMark);
+    UTIL_RemoveImmediate(m_pBeamConnector);
+    
+    m_pBeamConnector = nullptr;
+    m_pFirstMark = nullptr;
+    m_pSecondMark = nullptr;
 
     m_vFirstPoint = vec3_invalid;
     m_vSecondPoint = vec3_invalid;
 }
 
-void CMOMRulerTool::DoTrace(bool bFirst)
+void CMOMRulerTool::DoTrace(const bool bFirst)
 {
     CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
     if (!pPlayer)
@@ -104,30 +111,31 @@ void CMOMRulerTool::DoTrace(bool bFirst)
     if (!tr.DidHit())
         return;
 
-    //CMOMRulerToolMarker *pMarker = bFirst ? m_pFirstMark : m_pSecondMark;
-    Color renderColor = bFirst ? Color(255, 255, 255, 255) : Color(0, 0, 0, 255);
-    // We have checked if the player is looking at something within the max length units of the ruler itself. if so, set the point
+    const Color renderColor = bFirst ? Color(255, 255, 255, 255) : Color(0, 0, 0, 255);
+    // We have checked if the player is looking at something within the max length units of the ruler itself.
+    // The below allows us to set the point location using pointer magic
     Vector *pVec = bFirst ? &m_vFirstPoint : &m_vSecondPoint;
     *pVec = tr.endpos;
+    // Yay no more copy/paste boolean conditionals
+    CMOMRulerToolMarker **pMark = bFirst ? &m_pFirstMark : &m_pSecondMark;
     // If we're null, we gotta stop being lazy and make something of ourselves
-    if (!(bFirst ? m_pFirstMark : m_pSecondMark))
+    if (!*pMark)
     {
-        (bFirst ? m_pFirstMark : m_pSecondMark) = static_cast<CMOMRulerToolMarker *>(CreateEntityByName("mom_ruler_mark"));
-        if (bFirst ? m_pFirstMark : m_pSecondMark)
+        *pMark = static_cast<CMOMRulerToolMarker *>(CreateEntityByName("mom_ruler_mark"));
+        if (*pMark)
         {
-            (bFirst ? m_pFirstMark : m_pSecondMark)->Spawn();
+            (*pMark)->Spawn();
             // To distinguish between each mark, the first one is "whiter", second is "blacker"
-            (bFirst ? m_pFirstMark : m_pSecondMark)->SetRenderColor(renderColor.r(), renderColor.g(), renderColor.b(), renderColor.a());
+            (*pMark)->SetRenderColor(renderColor.r(), renderColor.g(), renderColor.b(), renderColor.a());
         }
     }
     // Now we're either created, or were never null in the first place
-    if (bFirst ? m_pFirstMark : m_pSecondMark)
+    if (*pMark)
     {
-        // Get rid of the beam if it's already there, because we're moving
-        if (m_pBeamConnector) 
-            UTIL_Remove(m_pBeamConnector);
-
-        (bFirst ? m_pFirstMark : m_pSecondMark)->MoveTo(tr.endpos);
+        if (m_pBeamConnector && m_pBeamConnector->IsOn())
+            m_pBeamConnector->TurnOff();
+        
+        (*pMark)->MoveTo(*pVec);
         DevMsg("%s point set in (%.4f, %.4f, %.4f)\n", bFirst ? "First" : "Second", pVec->x, pVec->y, pVec->z);
     }
 }
@@ -144,6 +152,7 @@ void CMOMRulerTool::Measure()
             char distString[BUFSIZ];
             Q_snprintf(distString, BUFSIZ, m_szDistanceFormat, m_vFirstPoint.DistTo(m_vSecondPoint));
             m_pBeamConnector->EntityText(0, distString, mom_ruler_duration.GetFloat());
+            Msg(distString);
         }
     }
     else

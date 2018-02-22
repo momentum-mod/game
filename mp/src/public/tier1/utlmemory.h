@@ -61,8 +61,8 @@ public:
 		Iterator_t( I i ) : index( i ) {}
 		I index;
 
-		bool operator==( const Iterator_t it ) const	{ return index == it.index; }
-		bool operator!=( const Iterator_t it ) const	{ return index != it.index; }
+		bool operator==( const Iterator_t &it ) const	{ return index == it.index; }
+		bool operator!=( const Iterator_t &it ) const	{ return index != it.index; }
 	};
 	Iterator_t First() const							{ return Iterator_t( IsIdxValid( 0 ) ? 0 : InvalidIndex() ); }
 	Iterator_t Next( const Iterator_t &it ) const		{ return Iterator_t( IsIdxValid( it.index + 1 ) ? it.index + 1 : InvalidIndex() ); }
@@ -259,8 +259,8 @@ public:
 	public:
 		Iterator_t( int i ) : index( i ) {}
 		int index;
-		bool operator==( const Iterator_t it ) const	{ return index == it.index; }
-		bool operator!=( const Iterator_t it ) const	{ return index != it.index; }
+		bool operator==( const Iterator_t &it ) const	{ return index == it.index; }
+		bool operator!=( const Iterator_t &it ) const	{ return index != it.index; }
 	};
 	Iterator_t First() const							{ return Iterator_t( IsIdxValid( 0 ) ? 0 : InvalidIndex() ); }
 	Iterator_t Next( const Iterator_t &it ) const		{ return Iterator_t( IsIdxValid( it.index + 1 ) ? it.index + 1 : InvalidIndex() ); }
@@ -387,8 +387,8 @@ public:
 		Iterator_t( int i, int _limit ) : index( i ), limit( _limit ) {}
 		int index;
 		int limit;
-		bool operator==( const Iterator_t it ) const	{ return index == it.index; }
-		bool operator!=( const Iterator_t it ) const	{ return index != it.index; }
+		bool operator==( const Iterator_t &it ) const	{ return index == it.index; }
+		bool operator!=( const Iterator_t &it ) const	{ return index != it.index; }
 	};
 	Iterator_t First() const							{ int limit = NumAllocated(); return Iterator_t( limit ? 0 : InvalidIndex(), limit ); }
 	Iterator_t Next( const Iterator_t &it ) const		{ return Iterator_t( ( it.index + 1 < it.limit ) ? it.index + 1 : InvalidIndex(), it.limit ); }

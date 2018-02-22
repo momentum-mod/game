@@ -245,7 +245,7 @@ Scheme
 		"HudIcon_Green"		"0 160 0 255"
 		"HudIcon_Red"		"160 0 0 255"
 
-		// CHudMenu
+		// CHudMenu/CHudStaticMenu
 		"ItemColor"		"255 167 42 200"	// default 255 167 42 255
 		"MenuColor"		"233 208 173 255"
 		"MenuBoxBg"		"0 0 0 100"
@@ -1673,11 +1673,11 @@ Scheme
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
-		"1"		"resource/MomIcons.ttf"
+		"1"		"resource/font/MomIcons.ttf"
 		//"2"		"resource/HL2MP.ttf"
 		"3"		"resource/HL2crosshairs.ttf"
 		//"4"		"resource/cs.ttf"
-        "1" "resource/BigNoodleTitling.ttf"
+        "1" "resource/font/BigNoodleTitling.ttf"
 	}
 
 }

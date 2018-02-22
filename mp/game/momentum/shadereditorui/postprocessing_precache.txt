@@ -3,6 +3,6 @@
 	"effect_00"
 	{
 		"effect_path"		"shadereditorui\canvas\post_processing_graphs\ppe_project9.txt"
-		"effect_start_enabled"		"1"
+		"effect_start_enabled"		"0"
 	}
 }

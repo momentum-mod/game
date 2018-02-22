@@ -18,19 +18,6 @@
 		"resfile"		"scripts/screens/vgui_test_screen.res"
 	}
 
-	"teleport_countdown_screen"
-	{
-		// Defined in c_info_teleporter_countdown.cpp
-		"type"			"teleport_countdown_screen"
-
-		// These describe the dimensions of the screen *in pixels*
-		"pixelswide"	480
-		"pixelshigh"	240
-
-		// This is the name of the .res file to load up and apply to the vgui panel
-		"resfile"		"scripts/screens/teleport_countdown_screen.res"
-	}
-
 	"slideshow_display_screen"
 	{
 		"type"		"slideshow_display_screen"
@@ -39,4 +26,14 @@
 		"acceptsinput"  0
 		"resfile"	"scripts/screens/slideshow_display_screen.res"
 	}
+    
+    "paintgun_screen"
+    {
+        "type" "paintgun_screen"
+        
+        "pixelswide" "256"
+        "pixelshigh" "128"
+        "acceptsinput" 0
+        "resfile" "scripts/screens/paintgun_screen.res"
+    }
 }

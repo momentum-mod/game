@@ -336,17 +336,19 @@ FileWeaponInfo_t::FileWeaponInfo_t()
 	iAmmo2Type = 0;
 	m_bMeleeWeapon = false;
 	iSpriteCount = 0;
-	iconActive = 0;
-	iconInactive = 0;
-	iconAmmo = 0;
-	iconAmmo2 = 0;
-	iconCrosshair = 0;
-	iconAutoaim = 0;
-	iconZoomedCrosshair = 0;
-	iconZoomedAutoaim = 0;
+	iconActive = nullptr;
+    iconInactive = nullptr;
+    iconAmmo = nullptr;
+    iconAmmo2 = nullptr;
+    iconCrosshair = nullptr;
+    iconAutoaim = nullptr;
+    iconZoomedCrosshair = nullptr;
+    iconZoomedAutoaim = nullptr;
 	bShowUsageHint = false;
 	m_bAllowFlipping = true;
 	m_bBuiltRightHanded = true;
+
+    iconSmall = nullptr;
 }
 
 #ifdef CLIENT_DLL

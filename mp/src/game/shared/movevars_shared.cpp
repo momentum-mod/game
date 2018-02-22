@@ -30,11 +30,53 @@ float GetCurrentGravity( void )
 		return ( sv_gravity.GetFloat() * TFGameRules()->GetGravityMultiplier() );
 	}
 #endif 
-
 	return sv_gravity.GetFloat();
 }
 
-ConVar	sv_gravity("sv_gravity", DEFAULT_GRAVITY_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY, "World gravity.");
+inline void UpdatePhysicsGravity(const float gravity)
+{
+    if (physenv)
+        physenv->SetGravity(Vector(0,0,-gravity));
+}
+
+#ifdef CLIENT_DLL
+class CGravityChange : public CGameEventListener, public CAutoGameSystem
+{
+public:
+    bool Init() OVERRIDE
+    {
+        ListenForGameEvent("gravity_change");
+        return true;
+    }
+    void FireGameEvent(IGameEvent *event) OVERRIDE
+    {
+        UpdatePhysicsGravity(event->GetFloat("newgravity"));
+    }
+};
+static CGravityChange s_GravityChange;
+#else
+static void GravityChanged_Callback(IConVar *var, const char *pOldString, float)
+{
+    ConVarRef grav(var);
+    UpdatePhysicsGravity(grav.GetFloat());
+    if (gpGlobals->mapname != NULL_STRING)
+    {
+        IGameEvent *event = gameeventmanager->CreateEvent("gravity_change");
+        if (event)
+        {
+            event->SetFloat("newgravity", grav.GetFloat());
+            gameeventmanager->FireEvent(event);
+        }
+    }
+}
+#endif
+
+// MOM_TODO: Change this to be back to hidden
+ConVar	sv_gravity("sv_gravity", DEFAULT_GRAVITY_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED /*| FCVAR_DEVELOPMENTONLY*/, "World gravity."
+#ifdef GAME_DLL
+    , GravityChanged_Callback
+#endif
+    );
 
 #if defined( DOD_DLL ) || defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 ConVar	sv_stopspeed	( "sv_stopspeed","100", FCVAR_NOTIFY | FCVAR_REPLICATED, "Minimum stopping speed when on ground." );
@@ -44,6 +86,7 @@ ConVar	sv_stopspeed	( "sv_stopspeed","75", FCVAR_NOTIFY | FCVAR_REPLICATED | FCV
 
 ConVar	sv_noclipaccelerate( "sv_noclipaccelerate", "5", FCVAR_NOTIFY | FCVAR_ARCHIVE | FCVAR_REPLICATED);
 ConVar	sv_noclipspeed	( "sv_noclipspeed", "14", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar sv_noclipspeed_vertical("sv_noclipspeed_vertical", "7", FCVAR_NOTIFY | FCVAR_ARCHIVE | FCVAR_REPLICATED);
 ConVar	sv_specaccelerate( "sv_specaccelerate", "5", FCVAR_NOTIFY | FCVAR_ARCHIVE | FCVAR_REPLICATED);
 ConVar	sv_specspeed	( "sv_specspeed", "3", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVAR_REPLICATED);
 ConVar	sv_specnoclip	( "sv_specnoclip", "1", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVAR_REPLICATED);
@@ -61,7 +104,7 @@ ConVar	sv_maxspeed		( "sv_maxspeed", "260",  FCVAR_REPLICATED | FCVAR_DEVELOPMEN
 #if defined( CSTRIKE_DLL ) || defined( HL1MP_DLL )
 	ConVar	sv_accelerate	( "sv_accelerate", "10", FCVAR_NOTIFY | FCVAR_REPLICATED);
 #else
-	ConVar	sv_accelerate	( "sv_accelerate", "5", FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY);
+	ConVar	sv_accelerate	( "sv_accelerate", "5", FCVAR_NOTIFY | FCVAR_REPLICATED /*| FCVAR_DEVELOPMENTONLY*/);
 #endif // CSTRIKE_DLL
 	
 #endif//_XBOX

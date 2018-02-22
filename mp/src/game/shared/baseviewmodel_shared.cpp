@@ -86,6 +86,9 @@ void CBaseViewModel::Spawn( void )
 	SetSolid( SOLID_NONE );
 }
 
+#if defined (SDK_DLL) && !defined (CLIENT_DLL)
+#define VGUI_CONTROL_PANELS
+#endif
 
 #if defined ( CSTRIKE_DLL ) && !defined ( CLIENT_DLL )
 #define VGUI_CONTROL_PANELS
@@ -299,7 +302,7 @@ void CBaseViewModel::RemoveEffects( int nEffects )
 {
 	if ( nEffects & EF_NODRAW )
 	{
-		SetControlPanelsActive( true );
+		SetControlPanelsActive( m_hWeapon.Get() && m_hWeapon.Get()->ShouldShowControlPanels() );
 	}
 
 	BaseClass::RemoveEffects( nEffects );

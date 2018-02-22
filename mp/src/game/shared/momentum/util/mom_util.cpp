@@ -1,9 +1,18 @@
 #include "cbase.h"
 
 #include "filesystem.h"
-#include "mom_player_shared.h"
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
+#include "run/mom_replay_factory.h"
+#include <gason.h>
+#include "run/run_compare.h"
+#include "run/run_stats.h"
+#include "effect_dispatch_data.h"
+#ifdef CLIENT_DLL
+#include "ChangelogPanel.h"
+#include "materialsystem/imaterialvar.h"
+#endif
+
 #include "tier0/memdbgon.h"
 
 extern IFileSystem *filesystem;
@@ -17,34 +26,7 @@ inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
     pData = nullptr;
     steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
-void MomentumUtil::DownloadCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    if (bIOFailure)
-        return;
-
-    FileHandle_t file;
-    // MOM_TODO: Read the MOM_TODO DownloadMap(), we're going to need to save the zone files too
-    file = filesystem->Open("testmapdownload.bsp", "w+b", "MOD");
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        Warning("MomentumUtil::DownloadCallback: 0 body size!\n");
-        return;
-    }
-    DevLog("Size of body: %u\n", size);
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    // write the file
-    filesystem->Write(pData, size, file);
-    // save the file
-    filesystem->Close(file);
-    DevLog("Successfully written file\n");
-
-    // Free resources
-    CleanupRequest(pCallback, pData);
-}
+#if 0
 
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
@@ -67,36 +49,10 @@ void MomentumUtil::DownloadMap(const char *szMapname)
     // CreateAndSendHTTPReq(mapfileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
     // CreateAndSendHTTPReq(zonFileURL, &cbDownloadCallback, &MomentumUtil::DownloadCallback);
 }
-
-void MomentumUtil::CreateAndSendHTTPReq(const char *szURL, CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                        CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func)
-{
-    if (steamapicontext && steamapicontext->SteamHTTP())
-    {
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
-        SteamAPICall_t apiHandle;
-
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            callback->Set(apiHandle, this, func);
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to post scores online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steampicontext failure.\n");
-        Warning("Could not find Steam Api Context active\n");
-    }
-}
-
 bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
-                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-                                                CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
-                                                KeyValues *params)
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
+    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
+    KeyValues *params)
 {
     bool bSuccess = false;
     if (steamapicontext && steamapicontext->SteamHTTP())
@@ -105,7 +61,7 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
         FOR_EACH_VALUE(params, p_value)
         {
             steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
-                                                                           p_value->GetString());
+                p_value->GetString());
         }
 
         SteamAPICall_t apiHandle;
@@ -129,17 +85,31 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
     return bSuccess;
 }
 
-#ifdef CLIENT_DLL
-void MomentumUtil::GetRemoteRepoModVersion()
-{
-    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/version.txt", &cbVersionCallback,
-                         &MomentumUtil::VersionCallback);
-}
+#endif
 
+#ifdef CLIENT_DLL
 void MomentumUtil::GetRemoteChangelog()
 {
-    CreateAndSendHTTPReq("http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt", &cbChangeLog,
-                         &MomentumUtil::ChangelogCallback);
+    if (steamapicontext && steamapicontext->SteamHTTP())
+    {
+        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, "http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt");
+        SteamAPICall_t apiHandle;
+
+        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        {
+            cbChangeLog.Set(apiHandle, this, &MomentumUtil::ChangelogCallback);
+        }
+        else
+        {
+            Warning("Failed to send HTTP Request to post scores online!\n");
+            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+        }
+    }
+    else
+    {
+        Warning("Steampicontext failure.\n");
+        Warning("Could not find Steam Api Context active\n");
+    }
 }
 
 void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -160,102 +130,40 @@ void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIO
         return;
     }
 
-    uint8 *pData = new uint8[size];
+    // Right now "size" is the content body size, not in string terms where the end is marked
+    // with a null terminator.
+
+    uint8 *pData = new uint8[size + 1];
     steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    char *pDataPtr = reinterpret_cast<char *>(pData);
+    pData[size] = 0;
+
+    const char *pDataPtr = reinterpret_cast<const char *>(pData);
 
     changelogpanel->SetChangelog(pDataPtr);
 
     CleanupRequest(pCallback, pData);
 }
 
-void MomentumUtil::VersionCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
+void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
 {
-    // 502 is usually returned if Steam is set to offline mode. Thanks .Enjoy for reporting this one!
-    if (bIOFailure || (pCallback && pCallback->m_eStatusCode == k_EHTTPStatusCode502BadGateway))
-        return;
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
+    IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);
+    if (material != nullptr)
     {
-        Warning("MomentumUtil::VersionCallback: 0 body size!\n");
-        return;
-    }
-    uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    char *pDataPtr = reinterpret_cast<char *>(pData);
-    const char separator[2] = ".";
-    CSplitString storedVersion(MOM_CURRENT_VERSION, separator);
-    CSplitString repoVersion(pDataPtr, separator);
-    // Above check for 502 fixes crash with Steam being offline, but just to be on the safe side, we double check we can get all the version numbers
-    if (repoVersion.Count() >= 3)
-    {
-        char versionValue[15];
-        Q_snprintf(versionValue, 15, "%s.%s.%s", repoVersion.Element(0), repoVersion.Element(1), repoVersion.Element(2));
+        static unsigned int nScaleCache = 0;
+        IMaterialVar *pVarScale = material->FindVarFast("$decalscale", &nScaleCache);
 
-        for (int i = 0; i < 3; i++)
+        if (pVarScale != nullptr)
         {
-            int repo = Q_atoi(repoVersion.Element(i)), local = Q_atoi(storedVersion.Element(i));
-            if (repo > local)
-            {
-                if (developer.GetInt() < 2) // If we're developers, we probably know what version we are at.
-                {
-                    changelogpanel->SetVersion(versionValue);
-                    GetRemoteChangelog();
-                    changelogpanel->Activate();
-                }
-                break;
-            }
-            if (repo < local)
-            {
-                // The local version is higher than the repo version, do not show this panel
-                break;
-            }
+            float flNewValue = 0.35f * fNewScale;
+
+            pVarScale->SetFloatValueFast(flNewValue);
+            pVarScale->SetIntValueFast((int) flNewValue);
         }
-    }
-    CleanupRequest(pCallback, pData);
-}
-
-void MomentumUtil::GenerateBogusComparison(KeyValues *kvOut)
-{
-    // RandomSeed(Plat_FloatTime());
-    for (int i = 1; i < MAX_STAGES; i++)
-    {
-        KeyValues *kvZone = new KeyValues("zone");
-        kvOut->AddSubKey(kvZone);
-    }
-
-    KeyValues *kvTotal = new KeyValues("total");
-    kvOut->AddSubKey(kvTotal);
-}
-
-void MomentumUtil::GenerateBogusRunStats(C_MomRunStats *pStatsOut)
-{
-    RandomSeed(Plat_FloatTime());
-    for (int i = 0; i < MAX_STAGES; i++)
-    {
-        // Time
-        pStatsOut->SetZoneTime(i, RandomFloat(25.0f, 250.0f));
-        pStatsOut->SetZoneEnterTime(i, i == 1 ? 0.0f : RandomFloat(25.0f, 250.0f));
-
-        // Velocity
-        pStatsOut->SetZoneVelocityMax(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneVelocityAvg(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneExitSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-        pStatsOut->SetZoneEnterSpeed(i, RandomFloat(0.0f, 7000.0f), RandomFloat(0.0f, 4949.0f));
-
-        // Sync
-        pStatsOut->SetZoneStrafeSyncAvg(i, RandomFloat(65.0f, 100.0f));
-        pStatsOut->SetZoneStrafeSync2Avg(i, RandomFloat(65.0f, 100.0f));
-
-        // Keypress
-        pStatsOut->SetZoneJumps(i, RandomInt(3, 100));
-        pStatsOut->SetZoneStrafes(i, RandomInt(40, 1500));
     }
 }
 #endif
 
-void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, bool fileName, bool negativeTime) const
+void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, const int precision, const bool fileName, const bool negativeTime) const
 {
     // We want the absolute value to format! Negatives (if any) should be added post-format!
     m_flSecondsTime = fabs(m_flSecondsTime);
@@ -317,8 +225,8 @@ void MomentumUtil::FormatTime(float m_flSecondsTime, char *pOut, int precision, 
     }
 }
 
-Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color normalcolor, Color increasecolor,
-                                          Color decreasecolor) const
+Color MomentumUtil::GetColorFromVariation(const float variation, float deadZone, const Color &normalcolor, const Color &increasecolor,
+                                          const Color &decreasecolor) const
 {
     // variation is current velocity minus previous velocity.
     Color pFinalColor = normalcolor;
@@ -332,126 +240,134 @@ Color MomentumUtil::GetColorFromVariation(float variation, float deadZone, Color
     return pFinalColor;
 }
 
-Color *MomentumUtil::GetColorFromHex(const char *hexColor)
+bool MomentumUtil::GetColorFromHex(const char *hexColor, Color &into)
 {
-    long hex = strtol(hexColor, nullptr, 16);
+    uint32 hex = strtoul(hexColor, nullptr, 16);
     int length = Q_strlen(hexColor);
-    if (length == 6)
+    if (length < 8)
     {
-        int r = ((hex >> 16) & 0xFF); // extract RR byte
-        int g = ((hex >> 8) & 0xFF);  // extract GG byte
-        int b = ((hex)&0xFF);         // extract BB byte
-        m_newColor.SetColor(r, g, b, 75);
-        return &m_newColor;
+        uint8 r = (hex & 0xFF0000) >> 16;
+        uint8 g = (hex & 0x00FF00) >> 8;
+        uint8 b = (hex & 0x0000FF);
+        into.SetColor(r, g, b, 255);
+        return true;
     }
-    Msg("Error: Color format incorrect! Use hex code in format \"RRGGBB\"\n");
-    return nullptr;
+    if (length == 8)
+    {
+        return GetColorFromHex(hex, into);
+    }
+    Warning("Error: Color format incorrect! Use hex code in format \"RRGGBB\" or \"RRGGBBAA\"\n");
+    return false;
 }
 
-KeyValues *MomentumUtil::GetBestTime(KeyValues *kvMap, const char *szMapName, float tickrate, int flags)
+bool MomentumUtil::GetColorFromHex(uint32 hex, Color &into)
 {
-    if (kvMap && szMapName)
-    {
-        char path[MAX_PATH], mapName[MAX_PATH];
-        Q_snprintf(mapName, MAX_PATH, "%s%s", szMapName, EXT_TIME_FILE);
-        V_ComposeFileName(MAP_FOLDER, mapName, path, MAX_PATH);
-        if (kvMap->LoadFromFile(filesystem, path, "MOD"))
-        {
-            if (!kvMap->IsEmpty())
-            {
-                CUtlSortVector<KeyValues *, CTimeSortFunc> sortedTimes;
+    uint8 r = (hex & 0xFF000000) >> 24;
+    uint8 g = (hex & 0x00FF0000) >> 16;
+    uint8 b = (hex & 0x0000FF00) >> 8;
+    uint8 a = (hex & 0x000000FF);
+    into.SetColor(r, g, b, a);
+    return true;
+}
+uint32 MomentumUtil::GetHexFromColor(const char *hexColor)
+{
+    return strtoul(hexColor, nullptr, 16);
+}
+uint32 MomentumUtil::GetHexFromColor(const Color &color)
+{
+    uint32 redByte = ((color.r() & 0xff) << 24);
+    uint32 greenByte = ((color.g() & 0xff) << 16);
+    uint32 blueByte = ((color.b() & 0xff) << 8);
+    uint32 aByte = (color.a() & 0xff);
+    return redByte + greenByte + blueByte + aByte;
+}
 
-                FOR_EACH_SUBKEY(kvMap, kv)
-                {
-                    int kvflags = kv->GetInt("flags");
-                    float kvrate = kv->GetFloat("rate");
-                    if (kvflags == flags && FloatEquals(kvrate, tickrate))
-                    {
-                        sortedTimes.InsertNoSort(kv);
-                    }
-                }
-                if (!sortedTimes.IsEmpty())
-                {
-                    sortedTimes.RedoSort();
-                    KeyValues *toReturn = kvMap->FindKey(sortedTimes[0]->GetName());
-                    sortedTimes.Purge();
-                    return toReturn;
-                }
+void MomentumUtil::GetHexStringFromColor(const Color& color, char* pBuffer, int maxLen)
+{
+    const uint32 colorHex = GetHexFromColor(color);
+    Q_snprintf(pBuffer, maxLen, "%08x", colorHex);
+}
+
+inline bool CheckReplayB(CMomReplayBase *pFastest, CMomReplayBase *pCheck, float tickrate, uint32 flags)
+{
+    if (pCheck)
+    {
+        if (pCheck->GetRunFlags() == flags && CloseEnough(tickrate, pCheck->GetTickInterval(), FLT_EPSILON))
+        {
+            if (pFastest)
+            {
+                return pCheck->GetRunTime() < pFastest->GetRunTime();
             }
+            
+            return true;
         }
     }
+
+    return false;
+}
+
+//!!! NOTE: The value returned here MUST BE DELETED, otherwise you get a memory leak!
+CMomReplayBase *MomentumUtil::GetBestTime(const char *szMapName, float tickrate, uint32 flags) const
+{
+    if (szMapName)
+    {
+        char path[MAX_PATH];
+        Q_snprintf(path, MAX_PATH, "%s/%s-*%s", RECORDING_PATH, szMapName, EXT_RECORDING_FILE);
+        V_FixSlashes(path);
+
+        CMomReplayBase *pFastest = nullptr;
+
+        FileFindHandle_t found;
+        const char *pFoundFile = filesystem->FindFirstEx(path, "MOD", &found);
+        while (pFoundFile)
+        {
+            // NOTE: THIS NEEDS TO BE MANUALLY CLEANED UP!
+            char pReplayPath[MAX_PATH];
+            V_ComposeFileName(RECORDING_PATH, pFoundFile, pReplayPath, MAX_PATH);
+
+            CMomReplayBase *pBase = g_ReplayFactory.LoadReplayFile(pReplayPath, false);
+            assert(pBase != nullptr);
+                
+            if (CheckReplayB(pFastest, pBase, tickrate, flags))
+            {
+                pFastest = pBase;
+            }
+            else // Not faster, get rid of it
+            {
+                delete pBase;
+            }
+
+            pFoundFile = filesystem->FindNext(found);
+        }
+
+        filesystem->FindClose(found);
+        return pFastest;
+    }
     return nullptr;
 }
 
-bool MomentumUtil::GetRunComparison(const char *szMapName, float tickRate, int flags, RunCompare_t *into)
+bool MomentumUtil::GetRunComparison(const char *szMapName, const float tickRate, const int flags, RunCompare_t *into) const
 {
-    bool toReturn = false;
     if (into && szMapName)
     {
-        KeyValues *kvMap = new KeyValues(szMapName);
-        KeyValues *bestRun = GetBestTime(kvMap, szMapName, tickRate, flags);
+        CMomReplayBase *bestRun = GetBestTime(szMapName, tickRate, flags);
         if (bestRun)
         {
             // MOM_TODO: this may not be a PB, for now it is, but we'll load times from online.
             // I'm thinking the name could be like "(user): (Time)"
-            FillRunComparison("Personal Best", bestRun, into);
+            FillRunComparison("Personal Best", bestRun->GetRunStats(), into);
+            delete bestRun;
             DevLog("Loaded run comparisons for %s !\n", into->runName);
-            toReturn = true;
+            return true;
         }
-
-        kvMap->deleteThis();
     }
-    return toReturn;
+    return false;
 }
 
-void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, RunCompare_t *into)
+void MomentumUtil::FillRunComparison(const char *compareName, CMomRunStats *pRun, RunCompare_t *into) const
 {
     Q_strcpy(into->runName, compareName);
-
-    FOR_EACH_SUBKEY(kvRun, kv)
-    {
-        // Stages/checkpoints data
-        if (!Q_strnicmp(kv->GetName(), "zone", strlen("zone")))
-        {
-            // Splits
-            into->overallSplits.AddToTail(kv->GetFloat("enter_time"));
-            into->zoneSplits.AddToTail(kv->GetFloat("time"));
-            // Keypress
-            into->zoneJumps.AddToTail(kv->GetInt("num_jumps"));
-            into->zoneStrafes.AddToTail(kv->GetInt("num_strafes"));
-            // Sync
-            into->zoneAvgSync1.AddToTail(kv->GetFloat("avg_sync"));
-            into->zoneAvgSync2.AddToTail(kv->GetFloat("avg_sync2"));
-            // Velocity (3D and Horizontal)
-            for (int i = 0; i < 2; i++)
-            {
-                bool horizontalVel = (i == 1);
-                into->zoneAvgVels[i].AddToTail(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                into->zoneMaxVels[i].AddToTail(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneEnterVels[i].AddToTail(kv->GetFloat(horizontalVel ? "enter_vel_2D" : "enter_vel"));
-                into->zoneExitVels[i].AddToTail(kv->GetFloat(horizontalVel ? "exit_vel_2D" : "exit_vel"));
-            }
-        }
-        // Overall stats
-        else if (!Q_strcmp(kv->GetName(), "total"))
-        {
-            // Keypress
-            into->zoneJumps.AddToHead(kv->GetInt("jumps"));
-            into->zoneStrafes.AddToHead(kv->GetInt("strafes"));
-            // Sync
-            into->zoneAvgSync1.AddToHead(kv->GetFloat("avgsync"));
-            into->zoneAvgSync2.AddToHead(kv->GetFloat("avgsync2"));
-            // Velocity (3D and Horizontal)
-            for (int i = 0; i < 2; i++)
-            {
-                bool horizontalVel = (i == 1);
-                into->zoneAvgVels[i].AddToHead(kv->GetFloat(horizontalVel ? "avg_vel_2D" : "avg_vel"));
-                into->zoneMaxVels[i].AddToHead(kv->GetFloat(horizontalVel ? "max_vel_2D" : "max_vel"));
-                into->zoneExitVels[i].AddToHead(kv->GetFloat(horizontalVel ? "end_vel_2D" : "end_vel"));
-                into->zoneEnterVels[i].AddToHead(kv->GetFloat(horizontalVel ? "start_vel_2D" : "start_vel"));
-            }
-        }
-    }
+    pRun->FullyCopyStats(&into->runStatsData);
 }
 
 #define SAVE_3D_TO_KV(kvInto, pName, toSave)                                                                           \
@@ -466,7 +382,7 @@ void MomentumUtil::FillRunComparison(const char *compareName, KeyValues *kvRun, 
         return;                                                                                                        \
     sscanf(kvFrom->GetString(pName), "%f %f %f", &into.x, &into.y, &into.z);
 
-void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, Vector &toSave)
+void MomentumUtil::KVSaveVector(KeyValues *kvInto, const char *pName, const Vector &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
@@ -476,7 +392,7 @@ void MomentumUtil::KVLoadVector(KeyValues *kvFrom, const char *pName, Vector &ve
     LOAD_3D_FROM_KV(kvFrom, pName, vecInto);
 }
 
-void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, QAngle &toSave)
+void MomentumUtil::KVSaveQAngles(KeyValues *kvInto, const char *pName, const QAngle &toSave)
 {
     SAVE_3D_TO_KV(kvInto, pName, toSave);
 }
@@ -486,5 +402,189 @@ void MomentumUtil::KVLoadQAngles(KeyValues *kvFrom, const char *pName, QAngle &a
     LOAD_3D_FROM_KV(kvFrom, pName, angInto);
 }
 
+inline void FindHullIntersection(const Vector &vecSrc, trace_t &tr, const Vector &mins, const Vector &maxs, CBaseEntity *pEntity)
+{
+    int			i, j, k;
+    float		distance;
+    Vector minmaxs[2] = { mins, maxs };
+    trace_t tmpTrace;
+    Vector		vecHullEnd = tr.endpos;
+    Vector		vecEnd;
+
+    distance = 1e6f;
+
+    vecHullEnd = vecSrc + ((vecHullEnd - vecSrc) * 2);
+    UTIL_TraceLine(vecSrc, vecHullEnd, MASK_SOLID, pEntity, COLLISION_GROUP_NONE, &tmpTrace);
+    if (tmpTrace.fraction < 1.0)
+    {
+        tr = tmpTrace;
+        return;
+    }
+
+    for (i = 0; i < 2; i++)
+    {
+        for (j = 0; j < 2; j++)
+        {
+            for (k = 0; k < 2; k++)
+            {
+                vecEnd.x = vecHullEnd.x + minmaxs[i][0];
+                vecEnd.y = vecHullEnd.y + minmaxs[j][1];
+                vecEnd.z = vecHullEnd.z + minmaxs[k][2];
+
+                UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pEntity, COLLISION_GROUP_NONE, &tmpTrace);
+                if (tmpTrace.fraction < 1.0)
+                {
+                    float thisDistance = (tmpTrace.endpos - vecSrc).Length();
+                    if (thisDistance < distance)
+                    {
+                        tr = tmpTrace;
+                        distance = thisDistance;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void MomentumUtil::KnifeTrace(const Vector& vecShootPos, const QAngle& lookAng, bool bStab, CBaseEntity *pAttacker,
+    CBaseEntity *pSoundSource, trace_t* trOutput, Vector* vForwardOut)
+{
+    float fRange = bStab ? 32.0f : 48.0f; // knife range
+
+    AngleVectors(lookAng, vForwardOut);
+    Vector vecSrc = vecShootPos;
+    Vector vecEnd = vecSrc + *vForwardOut * fRange;
+
+    UTIL_TraceLine(vecSrc, vecEnd, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
+
+    //check for hitting glass
+#ifndef CLIENT_DLL
+    CTakeDamageInfo glassDamage(pAttacker, pAttacker, 42.0f, DMG_BULLET | DMG_NEVERGIB);
+    pSoundSource->TraceAttackToTriggers(glassDamage, trOutput->startpos, trOutput->endpos, *vForwardOut);
+#endif
+
+    if (trOutput->fraction >= 1.0)
+    {
+        Vector head_hull_mins(-16, -16, -18);
+        Vector head_hull_maxs(16, 16, 18);
+        UTIL_TraceHull(vecSrc, vecEnd, head_hull_mins, head_hull_maxs, MASK_SOLID, pAttacker, COLLISION_GROUP_NONE, trOutput);
+        if (trOutput->fraction < 1.0)
+        {
+            // Calculate the point of intersection of the line (or hull) and the object we hit
+            // This is and approximation of the "best" intersection
+            CBaseEntity *pHit = trOutput->m_pEnt;
+            if (!pHit || pHit->IsBSPModel())
+                FindHullIntersection(vecSrc, *trOutput, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, pAttacker);
+            //vecEnd = trOutput->endpos;	// This is the point on the actual surface (the hull could have hit space)
+        }
+    }
+
+    bool bDidHit = trOutput->fraction < 1.0f;
+
+
+    if (!bDidHit)
+    {
+        // play wiff or swish sound
+        CPASAttenuationFilter filter(pSoundSource);
+        filter.UsePredictionRules();
+        CBaseEntity::EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.Slash");
+    }
+#ifndef CLIENT_DLL
+    else
+    {
+        // play thwack, smack, or dong sound
+
+        CBaseEntity *pEntity = trOutput->m_pEnt;
+
+        ClearMultiDamage();
+
+        float flDamage = 42.0f;
+
+        if ( bStab )
+        {
+            flDamage = 65.0f;
+
+            if ( pEntity && pEntity->IsPlayer() )
+            {
+                Vector vTragetForward;
+
+                AngleVectors( pEntity->GetAbsAngles(), &vTragetForward );
+
+                Vector2D vecLOS = (pEntity->GetAbsOrigin() - pAttacker->GetAbsOrigin()).AsVector2D();
+                Vector2DNormalize( vecLOS );
+
+                float flDot = vecLOS.Dot( vTragetForward.AsVector2D() );
+
+                //Triple the damage if we are stabbing them in the back.
+                if ( flDot > 0.80f )
+                    flDamage *= 3.0f;
+            }
+        }
+        else
+        {
+            /*if ( bFirstSwing )
+            {
+                // first swing does full damage
+                flDamage = 20;
+            }
+            else
+            {
+                // subsequent swings do less	
+                flDamage = 15;
+            }*/
+            flDamage = 20.0f;
+        }
+
+        CTakeDamageInfo info( pAttacker, pAttacker, flDamage, DMG_BULLET | DMG_NEVERGIB );
+
+        CalculateMeleeDamageForce( &info, *vForwardOut, trOutput->endpos, 1.0f/flDamage );
+        pEntity->DispatchTraceAttack( info, *vForwardOut, trOutput ); 
+        ApplyMultiDamage();
+    }
+#endif
+}
+
+void MomentumUtil::KnifeSmack(const trace_t& trIn, CBaseEntity *pSoundSource, const QAngle& lookAng, const bool bStab)
+{
+    if (!trIn.m_pEnt || (trIn.surface.flags & SURF_SKY))
+        return;
+
+    if (trIn.fraction == 1.0)
+        return;
+
+    if (trIn.m_pEnt)
+    {
+        CPASAttenuationFilter filter(pSoundSource);
+        filter.UsePredictionRules();
+
+        if (trIn.m_pEnt->IsPlayer())
+        {
+            pSoundSource->EmitSound(filter, pSoundSource->entindex(), bStab ? "Weapon_Knife.Stab" : "Weapon_Knife.Hit");
+        }
+        else
+        {
+            pSoundSource->EmitSound(filter, pSoundSource->entindex(), "Weapon_Knife.HitWall");
+        }
+    }
+
+    CEffectData data;
+    data.m_vOrigin = trIn.endpos;
+    data.m_vStart = trIn.startpos;
+    data.m_nSurfaceProp = trIn.surface.surfaceProps;
+    data.m_nDamageType = DMG_SLASH;
+    data.m_nHitBox = trIn.hitbox;
+#ifdef CLIENT_DLL
+    data.m_hEntity = trIn.m_pEnt->GetRefEHandle();
+#else
+    data.m_nEntIndex = trIn.m_pEnt->entindex();
+#endif
+
+    CPASFilter filter(data.m_vOrigin);
+    data.m_vAngles = lookAng;
+    data.m_fFlags = 0x1;	//IMPACT_NODECAL;
+
+    te->DispatchEffect(filter, 0.0, data.m_vOrigin, "KnifeSlash", data);
+}
+
 static MomentumUtil s_momentum_util;
-MomentumUtil *mom_UTIL = &s_momentum_util;
+MomentumUtil *g_pMomentumUtil = &s_momentum_util;

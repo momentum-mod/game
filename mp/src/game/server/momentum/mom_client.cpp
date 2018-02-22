@@ -8,10 +8,17 @@
 #include "game.h"
 #include "player_resource.h"
 #include "engine/IEngineSound.h"
+#include "util/os_utils.h"
 
+#ifdef _WIN32
+#pragma warning( disable: 4005 )
+#include "Windows.h"
+#endif
 #include "tier0/vprof.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+
+
 #include "tier0/memdbgon.h"
 
 void Host_Say(edict_t *pEdict, bool teamonly);
@@ -31,6 +38,9 @@ void ClientPutInServer(edict_t *pEdict, const char *playername)
     // Allocate a CBasePlayer for pev, and call spawn
     CMomentumPlayer *pPlayer = CMomentumPlayer::CreatePlayer("player", pEdict);
     pPlayer->SetPlayerName(playername);
+    
+    //Acquire client module's data recieve function
+    pPlayer->StdDataToPlayer = (DataToPlayerFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL_NAME), "StdDataToPlayer"));
 }
 
 

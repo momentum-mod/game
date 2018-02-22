@@ -10,6 +10,7 @@
 #include "mom_timer.h"
 #include "mapzones_edit.h"
 
+
 namespace Momentum {
 void GameInit();
 } // namespace Momentum
@@ -21,6 +22,7 @@ public:
     {
     }
     void PostInit() OVERRIDE;
+    void LevelInitPreEntity() OVERRIDE;
     void LevelInitPostEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
     void LevelShutdownPostEntity() OVERRIDE;
@@ -31,5 +33,6 @@ public:
 private:
     CMapzoneData* zones;
 };
+
 
 #endif // SERVER_EVENTS_H

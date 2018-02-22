@@ -459,7 +459,7 @@
 		"allowColorOverrides"		"0"
 		"textHidden"		"0"
 		"editable"		"1"
-		"maxchars"		"6"
+		"maxchars"		"8"
 		"NumericInputOnly"		"0"
 		"unicode"		"0"
 	}

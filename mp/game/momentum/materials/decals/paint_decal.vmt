@@ -1,0 +1,10 @@
+"UnlitGeneric"
+{
+    "$basetexture" "decals/paint_decal"
+    
+    "$decal" 1
+	"$vertexcolor" 1
+	"$vertexalpha" 1
+	"$decalDynamicScale" 1
+	"$decalscale" 0.5
+}

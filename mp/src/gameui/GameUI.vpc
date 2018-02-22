@@ -1,0 +1,195 @@
+//-----------------------------------------------------------------------------
+//	GAMEUI.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$macro SRCDIR		".."
+$Macro OUTBINDIR	"$SRCDIR\..\game\bin"
+
+$Include "$SRCDIR\vpc_scripts\source_dll_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;.\;$SRCDIR\vgui2\include;$SRCDIR\vgui2\controls;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason"
+		$PreprocessorDefinitions		"$BASE;GAMEUI_EXPORTS;VERSION_SAFE_STEAM_API_INTERFACES"
+	}
+    
+    $Linker
+	{
+		$SystemLibraries				"iconv" [$OSXALL]
+		$SystemFrameworks				"Carbon" [$OSXALL]
+		$SystemLibraries				"rt" [$LINUXALL]
+		$IgnoreImportLibrary			"TRUE"
+		$AdditionalDependencies			"$BASE winmm.lib"	[$WIN32]
+        //$AdditionalDependencies			"$BASE Ws2_32.lib odbc32.lib odbccp32.lib Shlwapi.lib" [$WIN32]
+		$AdditionalDependencies			"$BASE wsock32.lib Ws2_32.lib" [$BUILD_REPLAY]
+	}
+}
+
+$Project "GameUI"
+{
+	$Folder	"Source Files"
+	{
+		$File	"BasePanel.cpp"
+		$File	"GameConsole.cpp"
+		$File	"GameUI_Interface.cpp"
+		$File	"ModInfo.cpp"
+		$File	"MouseMessageForwardingPanel.cpp"
+		$File	"PanelListPanel.cpp"
+		$File	"RunGameEngine.cpp"
+		$File	"TextEntryBox.cpp"
+		$File	"$SRCDIR\public\vgui_controls\vgui_controls.cpp"
+		$File	"$SRCDIR\common\language.cpp"
+        $File   "MainMenu.cpp"
+        $File "button_mainmenu.cpp"
+	}
+
+	$Folder	"Header Files"
+	{
+		$File	"BasePanel.h"
+		$File	"EngineInterface.h"
+		$File	"GameConsole.h"
+		$File	"GameUI_Interface.h"
+		$File	"LoadingDialog.h"
+		$File	"ModInfo.h"
+		$File	"MouseMessageForwardingPanel.h"
+		$File	"PanelListPanel.h"
+		$File	"TextEntryBox.h"
+        $File   "MainMenu.h"
+        $File "button_mainmenu.h"
+        $File "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
+        $File "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
+	}
+
+	$Folder	"Public Header Files"
+	{
+		$File	"$SRCDIR\public\iachievementmgr.h"
+		$File	"$SRCDIR\public\game\client\IGameClientExports.h"
+		$File	"$SRCDIR\common\GameUI\IGameUI.h"
+		$File	"$SRCDIR\public\IGameUIFuncs.h"
+		$File	"$SRCDIR\public\tier1\interface.h"
+		$File	"$SRCDIR\common\IRunGameEngine.h"
+		$File	"$SRCDIR\common\IVGuiModule.h"
+		$File	"$SRCDIR\common\IVGuiModuleLoader.h"
+		$File	"$SRCDIR\Public\savegame_version.h"
+		$File	"$SRCDIR\common\language.h"
+	}
+
+	$Folder	"Controls"
+	{
+		$File	"BitmapImagePanel.cpp"
+		$File	"BitmapImagePanel.h"
+		$File	"CommandCheckButton.cpp"
+		$File	"CommandCheckButton.h"
+		$File	"CvarNegateCheckButton.cpp"
+		$File	"CvarNegateCheckButton.h"
+		$File	"CvarTextEntry.cpp"
+		$File	"CvarTextEntry.h"
+		$File	"KeyToggleCheckButton.cpp"
+		$File	"KeyToggleCheckButton.h"
+		$File	"LabeledCommandComboBox.cpp"
+		$File	"LabeledCommandComboBox.h"
+		$File	"URLButton.cpp"
+		$File	"URLButton.h"
+		$File	"VControlsListPanel.cpp"
+		$File	"VControlsListPanel.h"
+	}
+
+	$Folder	"Dialogs"
+	{
+		$File	"GameConsoleDialog.cpp"
+		$File	"GameConsoleDialog.h"
+		$File	"LoadingDialog.cpp"
+	}
+
+	$Folder	"Options Dialog"
+	{
+		$File	"OptionsDialog.cpp"
+		$File	"OptionsDialog.h"
+		$File	"OptionsSubAudio.cpp"
+		$File	"OptionsSubAudio.h"
+		$File	"OptionsSubKeyboard.cpp"
+		$File	"OptionsSubKeyboard.h"
+		$File	"OptionsSubMouse.cpp"
+		$File	"OptionsSubMouse.h"
+		$File	"OptionsSubVideo.cpp"
+		$File	"OptionsSubVideo.h"
+	}
+    
+    $Folder	"VGUI 2D"
+	{
+        $File	"vgui2d\button2d.cpp"
+        $File	"vgui2d\button2d.h"
+        $File	"vgui2d\frame2d.cpp"
+        $File	"vgui2d\frame2d.h"
+        $File	"vgui2d\panel2d.cpp"
+        $File	"vgui2d\panel2d.h"
+	}
+    
+    $File 	"$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
+		{
+			$Configuration
+			{
+				$Compiler
+				{
+					$Create/UsePrecompiledHeader	"Not Using Precompiled Headers"
+				}
+			}
+		}
+        
+        $Folder "JSON Parser"
+        {
+            $File "$SRCDIR\thirdparty\gason\gason.h"
+            $File "$SRCDIR\thirdparty\gason\gason.cpp"
+            {
+                $Configuration
+                {
+                    $Compiler
+                    {
+                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        $TreatWarningsAsErrors "No"
+                    }
+                }
+            }
+            $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
+            $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+            {
+                $Configuration
+                {
+                     $Compiler
+                    {
+                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                    }
+                }
+            }
+        }
+	
+	$Folder	"Link Libraries"
+	{
+		$Lib		bitmap
+		$Lib		choreoobjects
+		$Lib		mathlib
+		$Lib		matsys_controls
+		$Lib		tier1
+		$Lib		tier2
+		$Lib		tier3
+		$Lib		vgui_controls
+		$Lib		vtf
+		$ImpLib		steam_api
+		
+		$Lib $LIBCOMMON/libcrypto [$POSIX]
+
+		$ImpLib	"$LIBCOMMON\curl"	  [$OSXALL]
+
+		$Lib	"$LIBCOMMON\libcurl" [$WIN32]
+		$Lib   "libz" [$WIN32]
+
+		$Libexternal libz [$LINUXALL]
+		$Libexternal "$LIBCOMMON/libcurl" [$LINUXALL]
+		$Libexternal "$LIBCOMMON/libcurlssl" [$LINUXALL]
+		$Libexternal "$LIBCOMMON/libssl" [$LINUXALL]
+ 	}
+}

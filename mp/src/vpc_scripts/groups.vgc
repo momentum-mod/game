@@ -12,42 +12,40 @@ $Group "gamedlls"
 {
 	"client"
 	"server"
-	"shared"
 }
 
 $Group "game"
 {
-	"shared"
 	"client"
 	"mathlib"
 	"raytrace"
 	"server"
 	"tier1"
 	"vgui_controls"
-    "gameui2"
+    "game_shader_dx9"
+    "GameUI"
 }
 
 $Group "shaders"
 {
 	"game_shader_dx9"
 }
-
+$Group "ghost_server"
+{
+	"ghost_server"
+}
 $Group "everything"
 {
 	"captioncompiler"
 	"client"
-	"shared"
 	"fgdlib"
 	"game_shader_dx9"
 	"glview"
 	"height2normal"
 	"mathlib"
 	"motionmapper"
-	"phonemeextractor"
 	"raytrace"
-	"qc_eyes"
 	"server"
-	"serverplugin_empty"
 	"tgadiff"
 	"tier1"
 	"vbsp"
@@ -59,7 +57,7 @@ $Group "everything"
 	"vtfdiff"
 	"vvis_dll"
 	"vvis_launcher"
-    	"gameui2"
+    "GameUI"
 }
 
 $Group "dedicated"

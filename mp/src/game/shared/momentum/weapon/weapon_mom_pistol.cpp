@@ -1,8 +1,8 @@
 #include "cbase.h"
 #include "weapon_mom_pistol.h"
-#include "fx_cs_shared.h"
 #include "particle_parse.h"
 #include "debugoverlay_shared.h"
+#include "fx_mom_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -148,9 +148,9 @@ void CMomentumPistol::PistolFire()
     }
     else
     {
-        ++pPlayer->m_iShotsFired;
+        ++pPlayer->m_SrvData.m_iShotsFired;
 
-        if (pPlayer->m_iShotsFired > 1)
+        if (pPlayer->m_SrvData.m_iShotsFired > 1)
             return;
     }
 

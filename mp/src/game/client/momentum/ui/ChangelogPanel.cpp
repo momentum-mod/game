@@ -2,18 +2,23 @@
 #include "cbase.h"
 
 #include "ChangelogPanel.h"
+#include "util/mom_util.h"
+#include "mom_shareddefs.h"
+#include "vgui_controls/RichText.h"
+#include "vgui/ILocalize.h"
+#include "vgui/ISystem.h"
 
 #include "tier0/memdbgon.h"
+
 
 // Constuctor: Initializes the Panel
 CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogPanel")
 {
     V_memset(m_cOnlineVersion, 0, sizeof(m_cOnlineVersion));
-    V_memset(m_pwOnlineChangelog, 0, sizeof(m_pwOnlineChangelog));
+    m_pwOnlineChangelog = nullptr;
 
     SetParent(parent);
     LoadControlSettings("resource/ui/ChangelogPanel.res");
-    m_pReleaseText = FindControl<URLLabel>("ReleaseText", true);
     m_pChangeLog = FindControl<RichText>("ChangeLog", true);
     m_flScrollTime = -1.0f;
 
@@ -29,35 +34,82 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
     SetVisible(false);
     SetProportional(true);
 
-    if (!m_pReleaseText || !m_pChangeLog)
+    if (!m_pChangeLog)
     {
         Assert("Missing one more gameui controls from ui/changelogpanel.res");
     }
 }
 
+CChangelogPanel::~CChangelogPanel()
+{
+    free(m_pwOnlineChangelog);
+}
+
+void CChangelogPanel::SetChangelog(const char* pChangelog)
+{
+    if (m_pChangeLog)
+    {
+        if (m_pwOnlineChangelog)
+        {
+            free(m_pwOnlineChangelog);
+            m_pwOnlineChangelog = nullptr;
+        }
+
+        g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelog, &m_pwOnlineChangelog);
+
+        m_pChangeLog->SetText(m_pwOnlineChangelog);
+        // Delay the scrolling to a tick or so away, thanks Valve.
+        m_flScrollTime = system()->GetFrameTime() + 0.010f;
+    }
+}
+
+void CChangelogPanel::ApplySchemeSettings(IScheme* pScheme)
+{
+    BaseClass::ApplySchemeSettings(pScheme);
+    m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall"));
+} 
+
 // Called when the versions don't match (there's an update)
 void CChangelogPanel::Activate()
 {
     // Reset the version warning to keep reminding them
-    ConVarRef("mom_toggle_versionwarn").SetValue(0);
-
-    char m_cReleaseText[225];
-    m_pReleaseText->GetText(m_cReleaseText, sizeof(m_cReleaseText));
-    char m_cReleaseF[225];
-
-    Q_snprintf(m_cReleaseF, 225, m_cReleaseText, MOM_CURRENT_VERSION, m_cOnlineVersion);
-    m_pReleaseText->SetText(m_cReleaseF);
-    m_pReleaseText->SetURL("https://github.com/momentum-mod/game/releases");
+    // MOM_TODO: re-enable this when the steam version is newer ConVarRef("mom_toggle_versionwarn").SetValue(0);
+    g_pMomentumUtil->GetRemoteChangelog();
 
     BaseClass::Activate();
 }
 
-CON_COMMAND(mom_version, "Prints mod current installed version")
+void CChangelogPanel::OnThink()
+{
+    BaseClass::OnThink();
+    if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
+    {
+        m_pChangeLog->GotoTextStart();
+        m_flScrollTime = -1.0f;
+    }
+}
+
+CChangelogInterface::CChangelogInterface()
+{
+    pPanel = nullptr;
+}
+
+void CChangelogInterface::Create(vgui::VPANEL parent)
+{
+    pPanel = new CChangelogPanel(parent);
+}
+
+CON_COMMAND(mom_version, "Prints mod current installed version\n")
 {
     Log("Mod currently installed version: %s\n", MOM_CURRENT_VERSION);
     // MOM_TODO: Do we want to check for new versions in the future?
 }
 
+CON_COMMAND(mom_show_changelog, "Shows the changelog for the mod.\n")
+{
+    changelogpanel->Activate();
+}
+
 // Interface this class to the rest of the DLL
 static CChangelogInterface g_Changelog;
-IChangelogPanel *changelogpanel = static_cast<IChangelogPanel *>(&g_Changelog);
+IChangelogPanel *changelogpanel = &g_Changelog;

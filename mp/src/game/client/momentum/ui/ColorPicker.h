@@ -107,8 +107,11 @@ class ColorPicker : public Frame
 
     void Paint() OVERRIDE;
 
+    void SetTargetCallback(Panel *pPanel) { pTargetCallback = pPanel; }
+
   private:
     TextEntry *pTarget;
+    Panel *pTargetCallback; // Target used in the ColorPicked command
 
     Vector4D m_vecColor;
     Vector m_vecHSV;

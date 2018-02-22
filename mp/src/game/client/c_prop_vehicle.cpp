@@ -25,7 +25,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-int ScreenTransform( const Vector& point, Vector& screen );
+bool ScreenTransform( const Vector& point, Vector& screen );
 
 extern ConVar default_fov;
 extern ConVar joy_response_move_vehicle;

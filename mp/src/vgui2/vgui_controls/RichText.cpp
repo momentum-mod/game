@@ -442,15 +442,12 @@ void RichText::SetText(const wchar_t *text)
 	m_FormatStream.AddToTail(stream);
 
 	// set the new text stream
-	m_TextStream.RemoveAll();
+    m_TextStream.RemoveAll();
+
 	if ( text && *text )
 	{
 		int textLen = wcslen(text) + 1;
-		m_TextStream.EnsureCapacity(textLen);
-		for(int i = 0; i < textLen; i++)
-		{
-			m_TextStream.AddToTail(text[i]);
-		}
+        m_TextStream.CopyArray(text, textLen);
 	}
 	GotoTextStart();
 	SelectNone();
@@ -2343,7 +2340,7 @@ void RichText::CopySelected()
 	if (GetSelectedRange(x0, x1))
 	{
 		CUtlVector<wchar_t> buf;
-		for (int i = x0; i <= x1; i++)
+		for (int i = x0; i < x1; i++)
 		{
 			if ( m_TextStream.IsValidIndex(i) == false )
 				 continue;

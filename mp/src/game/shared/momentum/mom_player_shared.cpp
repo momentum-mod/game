@@ -8,22 +8,21 @@
 #else
 #include "c_te_effect_dispatch.h"
 #endif
-#include "weapon/weapon_csbase.h"
-#include "engine/ivdebugoverlay.h"
 #include "decals.h"
+#include "engine/ivdebugoverlay.h"
+#include "weapon/weapon_csbase.h"
 
 #include "tier0/memdbgon.h"
 
+ConVar
+    sv_showimpacts("sv_showimpacts", "0", FCVAR_REPLICATED,
+                   "Shows client (red) and server (blue) bullet impact point (1=both, 2=client-only, 3=server-only)");
 
-ConVar sv_showimpacts("sv_showimpacts", "0", FCVAR_REPLICATED, "Shows client (red) and server (blue) bullet impact point (1=both, 2=client-only, 3=server-only)");
-
-void CMomentumPlayer::GetBulletTypeParameters(
-    int iBulletType,
-    float &fPenetrationPower,
-    float &flPenetrationDistance)
+void CMomentumPlayer::GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,
+                                              bool &bPaint)
 {
 
-    //MIKETODO: make ammo types come from a script file.
+    // MIKETODO: make ammo types come from a script file.
     if (IsAmmoType(iBulletType, BULLET_PLAYER_50AE))
     {
         fPenetrationPower = 30;
@@ -34,8 +33,7 @@ void CMomentumPlayer::GetBulletTypeParameters(
         fPenetrationPower = 39;
         flPenetrationDistance = 5000.0;
     }
-    else if (IsAmmoType(iBulletType, BULLET_PLAYER_556MM) ||
-        IsAmmoType(iBulletType, BULLET_PLAYER_556MM_BOX))
+    else if (IsAmmoType(iBulletType, BULLET_PLAYER_556MM) || IsAmmoType(iBulletType, BULLET_PLAYER_556MM_BOX))
     {
         fPenetrationPower = 35;
         flPenetrationDistance = 4000.0;
@@ -70,6 +68,12 @@ void CMomentumPlayer::GetBulletTypeParameters(
         fPenetrationPower = 30;
         flPenetrationDistance = 2000.0;
     }
+    else if (IsAmmoType(iBulletType, AMMO_TYPE_PAINT))
+    {
+        fPenetrationPower = 0;
+        flPenetrationDistance = 0.0;
+        bPaint = true;
+    }
     else
     {
         // What kind of ammo is this?
@@ -88,7 +92,7 @@ static bool TraceToExit(Vector &start, Vector &dir, Vector &end, float flStepSiz
     {
         flDistance += flStepSize;
 
-        end = start + flDistance *dir;
+        end = start + flDistance * dir;
 
         if ((UTIL_PointContents(end) & MASK_SOLID) == 0)
         {
@@ -100,8 +104,9 @@ static bool TraceToExit(Vector &start, Vector &dir, Vector &end, float flStepSiz
     return false;
 }
 
-inline void UTIL_TraceLineIgnoreTwoEntities(const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask,
-    const IHandleEntity *ignore, const IHandleEntity *ignore2, int collisionGroup, trace_t *ptr)
+inline void UTIL_TraceLineIgnoreTwoEntities(const Vector &vecAbsStart, const Vector &vecAbsEnd, unsigned int mask,
+                                            const IHandleEntity *ignore, const IHandleEntity *ignore2,
+                                            int collisionGroup, trace_t *ptr)
 {
     Ray_t ray;
     ray.Init(vecAbsStart, vecAbsEnd);
@@ -113,43 +118,38 @@ inline void UTIL_TraceLineIgnoreTwoEntities(const Vector& vecAbsStart, const Vec
     }
 }
 
-void CMomentumPlayer::FireBullet(
-    Vector vecSrc,	// shooting postion
-    const QAngle &shootAngles,  //shooting angle
-    float vecSpread, // spread vector
-    float flDistance, // max distance 
-    int iPenetration, // how many obstacles can be penetrated
-    int iBulletType, // ammo type
-    int iDamage, // base damage
-    float flRangeModifier, // damage range modifier
-    CBaseEntity *pevAttacker, // shooter
-    bool bDoEffects,
-    float x,
-    float y
-    )
+void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
+                                 const QAngle &shootAngles, // shooting angle
+                                 float vecSpread,           // spread vector
+                                 float flDistance,          // max distance
+                                 int iPenetration,          // how many obstacles can be penetrated
+                                 int iBulletType,           // ammo type
+                                 int iDamage,               // base damage
+                                 float flRangeModifier,     // damage range modifier
+                                 CBaseEntity *pevAttacker,  // shooter
+                                 bool bDoEffects,           // Is this the client DLL?
+                                 float x, float y)
 {
-    float fCurrentDamage = iDamage;   // damage of the bullet at it's current trajectory
-    float flCurrentDistance = 0.0;  //distance that the bullet has traveled so far
+    float fCurrentDamage = iDamage; // damage of the bullet at it's current trajectory
+    float flCurrentDistance = 0.0;  // distance that the bullet has traveled so far
 
     Vector vecDirShooting, vecRight, vecUp;
     AngleVectors(shootAngles, &vecDirShooting, &vecRight, &vecUp);
 
     // MIKETODO: put all the ammo parameters into a script file and allow for CS-specific params.
-    float flPenetrationPower = 0;		// thickness of a wall that this bullet can penetrate
-    float flPenetrationDistance = 0;	// distance at which the bullet is capable of penetrating a wall
-    float flDamageModifier = 0.5;		// default modification of bullets power after they go through a wall.
+    float flPenetrationPower = 0.0f;    // thickness of a wall that this bullet can penetrate
+    float flPenetrationDistance = 0.0f; // distance at which the bullet is capable of penetrating a wall
+    float flDamageModifier = 0.5f;    // default modification of bullets power after they go through a wall.
     float flPenetrationModifier = 1.f;
+    bool bPaintGun = false;
 
-    GetBulletTypeParameters(iBulletType, flPenetrationPower, flPenetrationDistance);
-
+    GetBulletTypeParameters(iBulletType, flPenetrationPower, flPenetrationDistance, bPaintGun);
 
     if (!pevAttacker)
-        pevAttacker = this;  // the default attacker is ourselves
+        pevAttacker = this; // the default attacker is ourselves
 
-    // add the spray 
-    Vector vecDir = vecDirShooting +
-        x * vecSpread * vecRight +
-        y * vecSpread * vecUp;
+    // add the spray
+    Vector vecDir = vecDirShooting + x * vecSpread * vecRight + y * vecSpread * vecUp;
 
     VectorNormalize(vecDir);
 
@@ -157,20 +157,22 @@ void CMomentumPlayer::FireBullet(
 
     CBasePlayer *lastPlayerHit = nullptr;
 
-    //MDLCACHE_CRITICAL_SECTION();
+    // MDLCACHE_CRITICAL_SECTION();
     while (fCurrentDamage > 0)
     {
         Vector vecEnd = vecSrc + vecDir * flDistance;
 
         trace_t tr; // main enter bullet trace
 
-        UTIL_TraceLineIgnoreTwoEntities(vecSrc, vecEnd, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, this, lastPlayerHit, COLLISION_GROUP_NONE, &tr);
+        UTIL_TraceLineIgnoreTwoEntities(vecSrc, vecEnd, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, this,
+                                        lastPlayerHit, COLLISION_GROUP_NONE, &tr);
         {
             CTraceFilterSkipTwoEntities filter(this, lastPlayerHit, COLLISION_GROUP_NONE);
 
             // Check for player hitboxes extending outside their collision bounds
             const float rayExtension = 40.0f;
-            UTIL_ClipTraceToPlayers(vecSrc, vecEnd + vecDir * rayExtension, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, &filter, &tr);
+            UTIL_ClipTraceToPlayers(vecSrc, vecEnd + vecDir * rayExtension,
+                                    MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, &filter, &tr);
         }
 
         lastPlayerHit = ToBasePlayer(tr.m_pEnt);
@@ -178,30 +180,13 @@ void CMomentumPlayer::FireBullet(
         if (tr.fraction == 1.0f)
             break; // we didn't hit anything, stop tracing shoot
 
-
         bFirstHit = false;
-
-#ifndef CLIENT_DLL
-        //
-        // Propogate a bullet impact event
-        // @todo Add this for shotgun pellets (which dont go thru here)
-        //
-        IGameEvent * event = gameeventmanager->CreateEvent("bullet_impact");
-        if (event)
-        {
-            event->SetInt("userid", GetUserID());
-            event->SetFloat("x", tr.endpos.x);
-            event->SetFloat("y", tr.endpos.y);
-            event->SetFloat("z", tr.endpos.z);
-            gameeventmanager->FireEvent(event);
-        }
-#endif
 
         /************* MATERIAL DETECTION ***********/
         surfacedata_t *pSurfaceData = physprops->GetSurfaceData(tr.surface.surfaceProps);
         int iEnterMaterial = pSurfaceData->game.material;
 
-        //GetMaterialParameters(iEnterMaterial, flPenetrationModifier, flDamageModifier);
+        // GetMaterialParameters(iEnterMaterial, flPenetrationModifier, flDamageModifier);
 
         bool hitGrate = ((tr.contents & CONTENTS_GRATE) == 1);
 
@@ -218,7 +203,8 @@ void CMomentumPlayer::FireBullet(
         if (sv_showimpacts.GetInt() == 1 || sv_showimpacts.GetInt() == 2)
         {
             // draw red client impact markers
-            debugoverlay->AddBoxOverlay(tr.endpos, Vector(-2, -2, -2), Vector(2, 2, 2), QAngle(0, 0, 0), 255, 0, 0, 127, 4);
+            debugoverlay->AddBoxOverlay(tr.endpos, Vector(-2, -2, -2), Vector(2, 2, 2), QAngle(0, 0, 0), 255, 0, 0, 127,
+                                        4);
 
             if (tr.m_pEnt && tr.m_pEnt->IsPlayer())
             {
@@ -240,7 +226,7 @@ void CMomentumPlayer::FireBullet(
         }
 #endif
 
-        //calculate the damage based on the distance the bullet travelled.
+        // calculate the damage based on the distance the bullet travelled.
         flCurrentDistance += tr.fraction * flDistance;
         fCurrentDamage *= pow(flRangeModifier, (flCurrentDistance / 500));
 
@@ -250,17 +236,21 @@ void CMomentumPlayer::FireBullet(
 
         int iDamageType = DMG_BULLET | DMG_NEVERGIB;
 
+        bool shouldDecal = !(tr.surface.flags & (SURF_SKY | SURF_NODRAW | SURF_HINT | SURF_SKIP));
+        bool bEntNotNull = tr.m_pEnt != nullptr;
+
         if (bDoEffects)
         {
             // See if the bullet ended up underwater + started out of the water
             if (enginetrace->GetPointContents(tr.endpos) & (CONTENTS_WATER | CONTENTS_SLIME))
             {
                 trace_t waterTrace;
-                UTIL_TraceLine(vecSrc, tr.endpos, (MASK_SHOT | CONTENTS_WATER | CONTENTS_SLIME), this, COLLISION_GROUP_NONE, &waterTrace);
+                UTIL_TraceLine(vecSrc, tr.endpos, (MASK_SHOT | CONTENTS_WATER | CONTENTS_SLIME), this,
+                               COLLISION_GROUP_NONE, &waterTrace);
 
                 if (waterTrace.allsolid != 1)
                 {
-                    CEffectData	data;
+                    CEffectData data;
                     data.m_vOrigin = waterTrace.endpos;
                     data.m_vNormal = waterTrace.plane.normal;
                     data.m_flScale = random->RandomFloat(8, 12);
@@ -273,22 +263,9 @@ void CMomentumPlayer::FireBullet(
                     DispatchEffect("gunshotsplash", data);
                 }
             }
-            else
+            else if (shouldDecal && bEntNotNull)
             {
-                //Do Regular hit effects
-
-                // Don't decal nodraw surfaces
-                if (!(tr.surface.flags & (SURF_SKY | SURF_NODRAW | SURF_HINT | SURF_SKIP)))
-                {
-                    CBaseEntity *pEntity = tr.m_pEnt;
-                    //MOM_TODO: question the 
-                    if (pEntity)
-                        UTIL_ImpactTrace(&tr, iDamageType);
-                    //if (!(pEntity && pEntity->GetTeamNumber() == GetTeamNumber()))
-                    //{
-                    //    UTIL_ImpactTrace(&tr, iDamageType);
-                    //}
-                }
+                UTIL_ImpactTrace(&tr, iDamageType, bPaintGun ? "Painting" : nullptr);
             }
         } // bDoEffects
 
@@ -327,7 +304,8 @@ void CMomentumPlayer::FireBullet(
         if (exitTr.m_pEnt != tr.m_pEnt && exitTr.m_pEnt != nullptr)
         {
             // something was blocking, trace again
-            UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, exitTr.m_pEnt, COLLISION_GROUP_NONE, &exitTr);
+            UTIL_TraceLine(penetrationEnd, tr.endpos, MASK_SOLID | CONTENTS_DEBRIS | CONTENTS_HITBOX, exitTr.m_pEnt,
+                           COLLISION_GROUP_NONE, &exitTr);
         }
 
         // get material at exit point
@@ -336,12 +314,11 @@ void CMomentumPlayer::FireBullet(
 
         hitGrate = hitGrate && (exitTr.contents & CONTENTS_GRATE);
 
-        // if enter & exit point is wood or metal we assume this is 
+        // if enter & exit point is wood or metal we assume this is
         // a hollow crate or barrel and give a penetration bonus
         if (iEnterMaterial == iExitMaterial)
         {
-            if (iExitMaterial == CHAR_TEX_WOOD ||
-                iExitMaterial == CHAR_TEX_METAL)
+            if (iExitMaterial == CHAR_TEX_WOOD || iExitMaterial == CHAR_TEX_METAL)
             {
                 flPenetrationModifier *= 2;
             }
@@ -358,10 +335,10 @@ void CMomentumPlayer::FireBullet(
         // bullet did penetrate object, exit Decal
         if (bDoEffects)
         {
-            UTIL_ImpactTrace(&exitTr, iDamageType);
+            UTIL_ImpactTrace(&tr, iDamageType, bPaintGun ? "Painting" : nullptr);
         }
 
-        //setup new start end parameters for successive trace
+        // setup new start end parameters for successive trace
 
         flPenetrationPower -= flTraceDistance / flPenetrationModifier;
         flCurrentDistance += flTraceDistance;
@@ -377,25 +354,24 @@ void CMomentumPlayer::FireBullet(
         // reduce penetration counter
         iPenetration--;
     }
-
 }
 
-void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max, float lateral_max, int direction_change)
+void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier,
+                               float up_max, float lateral_max, int direction_change)
 {
     float flKickUp;
     float flKickLateral;
 
-    if (m_iShotsFired == 1) // This is the first round fired
+    if (m_SrvData.m_iShotsFired == 1) // This is the first round fired
     {
         flKickUp = up_base;
         flKickLateral = lateral_base;
     }
     else
     {
-        flKickUp = up_base + m_iShotsFired*up_modifier;
-        flKickLateral = lateral_base + m_iShotsFired*lateral_modifier;
+        flKickUp = up_base + m_SrvData.m_iShotsFired * up_modifier;
+        flKickLateral = lateral_base + m_SrvData.m_iShotsFired * lateral_modifier;
     }
-
 
     QAngle angle = GetPunchAngle();
 
@@ -403,7 +379,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     if (angle.x < -1 * up_max)
         angle.x = -1 * up_max;
 
-    if (m_iDirection == 1)
+    if (m_SrvData.m_iDirection == 1)
     {
         angle.y += flKickLateral;
         if (angle.y > lateral_max)
@@ -417,7 +393,7 @@ void CMomentumPlayer::KickBack(float up_base, float lateral_base, float up_modif
     }
 
     if (!SharedRandomInt("KickBack", 0, direction_change))
-        m_iDirection = 1 - m_iDirection;
+        m_SrvData.m_iDirection = 1 - m_SrvData.m_iDirection;
 
     SetPunchAngle(angle);
 }

@@ -52,5 +52,8 @@ void RegisterUserMessages(void)
     usermessages->Register("MB_PlayerTriedSaveOrLoad", 0);
     usermessages->Register("MB_NoStartOrEnd", 0);
     usermessages->Register("MB_EditingZone", 0);
+    usermessages->Register("LobbyUpdateMsg", 9);
+    usermessages->Register("SpecUpdateMsg", 17);
+
     RegisterHapticMessages();
 }

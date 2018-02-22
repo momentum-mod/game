@@ -3,8 +3,8 @@
 #include "cbase.h"
 
 #include "SettingsPage.h"
-#include "CVarSlider.h"
 #include "CVarTextEntry.h"
+#include <vgui_controls/CVarSlider.h>
 #include <vgui_controls/Button.h>
 #include "ColorPicker.h"
 
@@ -26,25 +26,14 @@ class GameplaySettingsPage : public SettingsPage
 
     void OnCheckboxChecked(Panel *p) OVERRIDE;
 
-    void OnCommand(const char *pCommand) OVERRIDE;
-
-    // From the color picker
-    MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
-
 private:
-
     void UpdateSliderEntries() const;
 
-    CvarToggleCheckButton<ConVarRef> *m_pPlayBlockSound;
-    CvarToggleCheckButton<ConVarRef> *m_pSaveCheckpoints;
-    CvarToggleCheckButton<ConVarRef> *m_pEnableTrail;
+    CvarToggleCheckButton *m_pPlayBlockSound;
+    CvarToggleCheckButton *m_pSaveCheckpoints;
     CCvarSlider *m_pYawSpeedSlider;
     TextEntry *m_pYawSpeedEntry;
 
     CCvarTextEntry *m_pLowerSpeedCVarEntry;
-    CvarToggleCheckButton<ConVarRef> *m_pLowerSpeed;
-
-    ColorPicker *m_pColorPicker;
-    Button *m_pPickColorButton;
-    ConVarRef m_TrailR, m_TrailG, m_TrailB, m_TrailA;
+    CvarToggleCheckButton *m_pLowerSpeed;
 };

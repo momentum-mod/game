@@ -79,14 +79,12 @@
 
 //Shader editor
 #include "ShaderEditor/ShaderEditorSystem.h"
-//GameUI2
-#if defined(GAMEUI2)
-#include "igameui2.h"
-#endif
+
+// GameUI
+#include "GameUI_Interface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
 
 static void testfreezeframe_f( void )
 {
@@ -780,7 +778,14 @@ CLIENTEFFECT_REGISTER_BEGIN( PrecacheViewRender )
 CLIENTEFFECT_REGISTER_END()
 #endif
 
-CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
+CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffects)
+
+    // Precache menu blur
+    CLIENTEFFECT_MATERIAL("dev/blurx")
+    CLIENTEFFECT_MATERIAL("dev/blury")
+    CLIENTEFFECT_MATERIAL("dev/fringe")
+    CLIENTEFFECT_MATERIAL("dev/gui_blend")
+
 	CLIENTEFFECT_MATERIAL( "dev/blurfiltery_and_add_nohdr" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx" )
 	CLIENTEFFECT_MATERIAL( "dev/blurfilterx_nohdr" )
@@ -2173,6 +2178,25 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 	}
 
+    if (gameui)
+    {
+        if (ConVarRef("mom_menu_blur").GetBool())
+            DoMenuBlurring();
+
+        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
+        if (maskTexture)
+        {
+            CMatRenderContextPtr renderContext(materials);
+            renderContext->PushRenderTargetAndViewport(maskTexture);
+            renderContext->ClearColor4ub(0, 0, 0, 255);
+            renderContext->ClearBuffers(true, true, true);
+            renderContext->PopRenderTargetAndViewport();
+            gameui->SetFrustum(GetFrustum());
+            gameui->SetView(view);
+            gameui->SetMaskTexture(maskTexture);
+        }
+    }
+
 	if ( mat_viewportupscale.GetBool() && mat_viewportscale.GetFloat() < 1.0f ) 
 	{
 		CMatRenderContextPtr pRenderContext( materials );
@@ -2206,25 +2230,6 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 	{
 		saveRenderTarget = g_pSourceVR->GetRenderTarget( (ISourceVirtualReality::VREye)(view.m_eStereoEye - 1), ISourceVirtualReality::RT_Color );
 	}
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-    {
-        ITexture* maskTexture = materials->FindTexture("_rt_MaskGameUI", TEXTURE_GROUP_RENDER_TARGET);
-        if (maskTexture)
-        {
-            CMatRenderContextPtr renderContext(materials);
-            renderContext->PushRenderTargetAndViewport(maskTexture);
-            renderContext->ClearColor4ub(0, 0, 0, 255);
-            renderContext->ClearBuffers(true, true, true);
-            renderContext->PopRenderTargetAndViewport();
-
-            g_pGameUI2->SetFrustum(GetFrustum());
-            g_pGameUI2->SetView(view);
-            g_pGameUI2->SetMaskTexture(maskTexture);
-        }
-    }
-#endif
 
 	// Draw the 2D graphics
 	render->Push2DView( view, 0, saveRenderTarget, GetFrustum() );

@@ -3,12 +3,7 @@
 #include "cbase.h"
 
 #include "hudelement.h"
-#include "menu.h"
-#include "utlvector.h"
 #include <vgui_controls/Panel.h>
-#include <KeyValues.h>
-#include <vgui/ISurface.h>
-#include <vgui_controls/Frame.h>
 
 class CHudMenuStatic : public CHudElement, public vgui::Panel
 {
@@ -26,9 +21,10 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     void Reset(void) OVERRIDE;
     bool ShouldDraw(void) OVERRIDE;
     virtual bool IsMenuDisplayed();
-    void HideMenu(void);
+    void HideMenu(bool bImmediate = false);
     void Paint() OVERRIDE;
     void OnThink() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
 
     // Overrides
     // Called from a CON_COMMAND most likely.
@@ -87,7 +83,7 @@ class CHudMenuStatic : public CHudElement, public vgui::Panel
     CPanelAnimationVar(vgui::HFont, m_hItemFont, "ItemFont", "Default");
     CPanelAnimationVar(vgui::HFont, m_hItemFontPulsing, "ItemFontPulsing", "Default"); //"MenuItemFontPulsing");
 
-    CPanelAnimationVar(Color, m_MenuColor, "MenuColor", "BgColor");
-    CPanelAnimationVar(Color, m_ItemColor, "MenuItemColor", "FgColor");
-    CPanelAnimationVar(Color, m_BoxColor, "MenuBoxColor", "BgColor");
+    CPanelAnimationVar(Color, m_MenuColor, "MenuColor", "MenuColor");
+    CPanelAnimationVar(Color, m_ItemColor, "MenuItemColor", "ItemColor");
+    CPanelAnimationVar(Color, m_BoxColor, "MenuBoxColor", "MenuBoxBg");
 };

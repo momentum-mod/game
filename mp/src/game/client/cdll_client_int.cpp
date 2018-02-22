@@ -149,6 +149,7 @@
 #endif
 
 #include "inetchannelinfo.h"
+#include "GameUI/IGameUI.h"
 extern vgui::IInputInternal *g_InputInternal;
 
 //=============================================================================
@@ -171,9 +172,7 @@ extern vgui::IInputInternal *g_InputInternal;
 #include "sixense/in_sixense.h"
 #endif
 
-#ifdef GAMEUI2
-#include "igameui2.h"
-#endif
+#include "GameUI_Interface.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -224,10 +223,9 @@ IReplaySystem *g_pReplay = NULL;
 
 IHaptics* haptics = NULL;// NVNT haptics system interface singleton
 
-#ifdef GAMEUI2
-CSysModule *g_pGameUI2Module = nullptr;
-IGameUI2* g_pGameUI2 = NULL;
-#endif
+
+CSysModule *g_pGameUIModule = nullptr;
+CGameUI *gameui = nullptr;
 
 //=============================================================================
 // HPE_BEGIN
@@ -943,6 +941,9 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 		return false;
 #endif
 
+    /*if ((gameui = static_cast<IGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr))) == nullptr)
+        return false;*/
+
 #if defined( REPLAY_ENABLED )
 	if ( IsPC() && (g_pEngineReplay = (IEngineReplay *)appSystemFactory( ENGINE_REPLAY_INTERFACE_VERSION, NULL )) == NULL )
 		return false;
@@ -1167,70 +1168,27 @@ void CHLClient::PostInit()
 	}
 #endif
 
-#ifdef GAMEUI2
-    if (!CommandLine()->CheckParm("-nogameui2"))
+    g_pGameUIModule = filesystem->LoadModule("GameUI", "EXECUTABLE_PATH");
+    if (g_pGameUIModule)
     {
-        const int16 modulePathLength = 2048;
-        char modulePath[modulePathLength];
-        Q_snprintf(modulePath, modulePathLength, "%s\\bin\\gameui2.dll", engine->GetGameDirectory());
+        ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui!\n");
 
-        g_pGameUI2Module = Sys_LoadModule(modulePath);
-        if (g_pGameUI2Module)
+        CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUIModule);
+
+        gameui = appSystemFactory ? static_cast<CGameUI*>(appSystemFactory(GAMEUI_INTERFACE_VERSION, nullptr)) : NULL;
+        if (gameui)
         {
-            ConColorMsg(Color(0, 148, 255, 255), "Loaded gameui2.dll\n");
-
-            CreateInterfaceFn appSystemFactory = Sys_GetFactory(g_pGameUI2Module);
-
-            g_pGameUI2 = appSystemFactory ? static_cast<IGameUI2*>(appSystemFactory(GAMEUI2_DLL_INTERFACE_VERSION, nullptr)) : NULL;
-            if (g_pGameUI2)
-            {
-                ConColorMsg(Color(0, 148, 255, 255), "Initializing IGameUI2 interface...\n");
-
-                factorylist_t factories;
-                FactoryList_Retrieve(factories);
-                g_pGameUI2->Initialize(factories.appSystemFactory);
-                g_pGameUI2->OnInitialize();
-            }
-            else
-            {
-                ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI2 interface.\n");
-            }
+            ConColorMsg(Color(0, 148, 255, 255), "Initialized IGameUI interface!\n");
         }
         else
         {
-            ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui2.dll from:\n%s\n", modulePath);
+            ConColorMsg(Color(0, 148, 255, 255), "Unable to pull IGameUI interface.\n");
         }
     }
-
-	CSysModule* SharedModule = filesystem->LoadModule("shared", "GAMEBIN", false);
-	if (SharedModule)
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Loaded shared.dll (CLIENT)\n");
-
-		CreateInterfaceFn appSystemFactory = Sys_GetFactory(SharedModule);
-
-		shared = appSystemFactory ? static_cast<CShared*>(appSystemFactory(INTERFACEVERSION_SHAREDGAMEDLL, nullptr)) : NULL;
-		if (shared)
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Loaded shared interface (CLIENT)\n");
-			
-			shared->LoadedClient = true;
-
-			if (shared->LoadedClient && shared->LoadedServer)
-			{
-				ConColorMsg(Color(0, 255, 255, 255), "Loaded shared interface from server & client!\n");
-			}
-		}
-		else
-		{
-			ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared interface\n");
-		}
-	}
-	else
-	{
-		ConColorMsg(Color(0, 148, 255, 255), "Unable to load shared.dll\n");
-	}
-#endif
+    else
+    {
+        ConColorMsg(Color(0, 148, 255, 255), "Unable to load gameui.dll!\n");
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -1275,16 +1233,8 @@ void CHLClient::Shutdown( void )
     gHUD.Shutdown(); 
 	VGui_Shutdown();
 
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-    {
-        g_pGameUI2->OnShutdown();
-        g_pGameUI2->Shutdown();
-    }
-
-    if (g_pGameUI2Module)
-        Sys_UnloadModule(g_pGameUI2Module);
-#endif
+    if (g_pGameUIModule)
+        Sys_UnloadModule(g_pGameUIModule);
 
 	ParticleMgr()->Term();
 	
@@ -1377,11 +1327,6 @@ void CHLClient::HudUpdate( bool bActive )
 	{
 		g_pSixenseInput->SixenseFrame( 0, NULL ); 
 	}
-#endif
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnUpdate();
 #endif
 }
 
@@ -1730,11 +1675,6 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 		CReplayRagdollRecorder::Instance().Init();
 	}
 #endif
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnLevelInitializePreEntity();
-#endif
 }
 
 
@@ -1746,11 +1686,6 @@ void CHLClient::LevelInitPostEntity( )
 	IGameSystem::LevelInitPostEntityAllSystems();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnLevelInitializePostEntity();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1816,11 +1751,6 @@ void CHLClient::LevelShutdown( void )
 	ParticleMgr()->RemoveAllEffects();
 	
 	StopAllRumbleEffects();
-
-#ifdef GAMEUI2
-    if (g_pGameUI2)
-        g_pGameUI2->OnLevelShutdown();
-#endif
 
 	gHUD.LevelShutdown();
 

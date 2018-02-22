@@ -69,5 +69,15 @@
 	"wave"	"common/wpn_select.wav"
 }
 
+"Weapon_Paintgun.Single"
+{
+    "channel" "CHAN_WEAPON"
+    "volume" "0.32"
+    "soundlevel" "SNDLVL_GUNFIRE"
+    "pitch" "PITCH_NORM"
+    
+    "wave" "weapons/paintgun/paintgun_shot.wav"
+}
+
 
 

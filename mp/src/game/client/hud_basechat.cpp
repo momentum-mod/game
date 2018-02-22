@@ -459,7 +459,7 @@ void CBaseHudChatInputLine::PerformLayout()
 	m_pInput->SetBounds( w + 2, 0, wide - w - 2 , tall );
 }
 
-vgui::Panel *CBaseHudChatInputLine::GetInputPanel( void )
+CBaseHudChatEntry *CBaseHudChatInputLine::GetInputPanel(void)
 {
 	return m_pInput;
 }
@@ -1065,7 +1065,7 @@ void CBaseHudChat::OnTick( void )
 		m_pChatInput->GetBounds( iInputX, iInputY, iInputW, iInputH );
 		GetBounds( iChatX, iChatY, iChatW, iChatH );
 
-		m_pChatInput->SetBounds( iInputX, iChatH - (m_iFontHeight * 1.75), iInputW, m_iFontHeight );
+		m_pChatInput->SetBounds( iInputX, iChatH - (m_iFontHeight * 1.75) - 20, iInputW, m_iFontHeight );
 
 		//Resize the History Panel so it fits more lines depending on the screen resolution.
 		int iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH;
@@ -1074,7 +1074,7 @@ void CBaseHudChat::OnTick( void )
 
 		iChatHistoryH = (iChatH - (m_iFontHeight * 2.25)) - iChatHistoryY;
 
-		GetChatHistory()->SetBounds( iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH );
+		GetChatHistory()->SetBounds( iChatHistoryX, iChatHistoryY, iChatHistoryW, iChatHistoryH - 20 );
 	}
 
 	FadeChatHistory();
@@ -1211,7 +1211,6 @@ void CBaseHudChat::StartMessageMode( int iMessageModeType )
 	m_pFilterPanel->SetVisible( false );
 
 	engine->ClientCmd_Unrestricted( "gameui_preventescapetoshow\n" );
-		
 #endif
 }
 
@@ -1366,10 +1365,10 @@ Color CBaseHudChat::GetClientColor( int clientIndex )
 	{
 		return g_ColorGreen;
 	}
-	else if( g_PR )
+	/*else if( g_PR )
 	{
 		return g_ColorGrey;
-	}
+	}*/
 
 	return g_ColorYellow;
 }
@@ -1630,7 +1629,7 @@ This is a very long string that I am going to attempt to paste into the cs hud c
 // Purpose: 
 // Output : vgui::Panel
 //-----------------------------------------------------------------------------
-vgui::Panel *CBaseHudChat::GetInputPanel( void )
+CBaseHudChatEntry *CBaseHudChat::GetInputPanel(void)
 {
 #ifndef _XBOX
 	return m_pChatInput->GetInputPanel();
@@ -1710,9 +1709,10 @@ void CBaseHudChat::ChatPrintf( int iPlayerIndex, int iFilter, const char *fmt, .
 	va_end(marker);
 
 	// Strip any trailing '\n'
-	if ( strlen( msg ) > 0 && msg[ strlen( msg )-1 ] == '\n' )
+    const size_t pMsgSize = strlen(msg);
+    if (pMsgSize > 0 && msg[pMsgSize - 1] == '\n')
 	{
-		msg[ strlen( msg ) - 1 ] = 0;
+        msg[pMsgSize - 1] = 0;
 	}
 
 	// Strip leading \n characters ( or notify/color signifiers ) for empty string check

@@ -33,10 +33,6 @@
     "zone_exit"//When the player exits the start trigger for the stage
     {
     }
-	"run_save"
-	{
-		"run_saved"	"bool"
-	}
     "run_upload"
     {
         "run_posted" "bool"
@@ -62,17 +58,31 @@
 	"replay_save"
 	{
 		"filename" "string"
+        "save" "bool"
 	}
-    "weapon_fire"
+    "gravity_change"
     {
-        "userid" "long"
-        "weapon" "string"
+        "newgravity" "float"
     }
-    "bullet_impact"
+    "lobby_leave"
     {
-        "userid" "long"
-        "x" "float"
-        "y" "float"
-        "z" "float"
+    }
+    "lobby_join"
+    {
+    }
+    "spec_start"
+    {
+    }
+    "spec_stop"
+    {
+    }
+    "achievement_earned"
+	{
+		"player"	"byte"		// entindex of the player
+		"achievement"	"short"		// achievement ID
+	}
+    "paintgun_panel"
+    {
+        "show" "bool"
     }
 }

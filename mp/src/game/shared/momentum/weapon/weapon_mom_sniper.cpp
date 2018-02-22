@@ -14,35 +14,46 @@ END_PREDICTION_DATA();
 LINK_ENTITY_TO_CLASS(weapon_momentum_sniper, CMomentumSniper);
 PRECACHE_WEAPON_REGISTER(weapon_momentum_sniper);
 
+CMomentumSniper::CMomentumSniper()
+{
+    m_flIdleInterval = 60.0f;
+    m_flTimeToIdleAfterFire = 1.8f;
+    m_iRequestedFOV = 0;
+}
+
 void CMomentumSniper::SecondaryAttack()
 {
-#ifndef CLIENT_DLL
     CMomentumPlayer *pPlayer = GetPlayerOwner();
     if (!pPlayer)
-    {
-        Assert(pPlayer != nullptr);
         return;
+    
+    int iFOV = pPlayer->GetFOV();
+    float flRate = 0.05f;
+
+    if (iFOV >= pPlayer->GetDefaultFOV())
+    {
+        m_iRequestedFOV = 40;
+        flRate = 0.15f; // Initial zoom is slower than others
+    }
+    else if (iFOV >= 40)
+    {
+        m_iRequestedFOV = 15;
+    }
+    else if (iFOV >= 15)
+    {
+        m_iRequestedFOV = pPlayer->GetDefaultFOV();
     }
 
-    if (pPlayer->GetFOV() == pPlayer->GetDefaultFOV())
-    {
-        pPlayer->SetFOV(pPlayer, 40, 0.15f);
-    }
-    else if (pPlayer->GetFOV() == 40)
-    {
-        pPlayer->SetFOV(pPlayer, 15, 0.05);
-    }
-    else if (pPlayer->GetFOV() == 15)
-    {
-        pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV(), 0.05f);
-    }
+#ifndef CLIENT_DLL
+
+    pPlayer->SetFOV(pPlayer, m_iRequestedFOV, flRate);
 
     // MOM_TODO: Consider LJ gametype
     // pPlayer->ResetMaxSpeed();
 #endif
 
-    m_flNextSecondaryAttack = gpGlobals->curtime + 0.3;
-    m_zoomFullyActiveTime = gpGlobals->curtime + 0.15; // The worst zoom time from above.
+    m_flNextSecondaryAttack = gpGlobals->curtime + 0.3f;
+    m_zoomFullyActiveTime = gpGlobals->curtime + 0.15f; // The worst zoom time from above.
 
 #ifndef CLIENT_DLL
     // If this isn't guarded, the sound will be emitted twice, once by the server and once by the client.
@@ -62,8 +73,8 @@ void CMomentumSniper::SniperFire()
 
     if (pPlayer->GetFOV() != pPlayer->GetDefaultFOV())
     {
-        pPlayer->m_bResumeZoom = true;
-        pPlayer->m_iLastZoom = pPlayer->GetFOV();
+        pPlayer->m_SrvData.m_bResumeZoom = true;
+        pPlayer->m_SrvData.m_iLastZoom = m_iRequestedFOV;
 
 #ifndef CLIENT_DLL
         pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV(), 0.05f);

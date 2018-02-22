@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-        $AdditionalIncludeDirectories   "$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason\src"
+        $AdditionalIncludeDirectories  	"$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\thirdparty\base64"
         $PreprocessorDefinitions        "$BASE;SDK_DLL"
     }
 }
@@ -44,9 +44,6 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\mom_util.h"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\baseautocompletefilelist.h"
-                $File "$SRCDIR\game\shared\momentum\util\run_stats.h"
-                $File "$SRCDIR\game\shared\momentum\util\run_stats.cpp"
-                $File "$SRCDIR\game\shared\momentum\util\run_compare.h"
                 $File "$SRCDIR\game\shared\momentum\util\binary_writer.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\binary_writer.h"
                 $File "$SRCDIR\game\shared\momentum\util\binary_reader.cpp"
@@ -54,23 +51,70 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\util\serialization.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
             }
-            
+            $Folder "Network"
+	        {
+	        	 $Folder "Ghost Client"
+		        {
+
+	            	$File "$SRCDIR\game\server\momentum\ghost_client.h"
+	                $File "$SRCDIR\game\server\momentum\ghost_client.cpp"
+	            	$File "$SRCDIR\game\server\momentum\mom_online_ghost.h"
+	                $File "$SRCDIR\game\server\momentum\mom_online_ghost.cpp"
+
+	                $File "$SRCDIR\game\shared\momentum\mom_ghostdefs.h"
+
+	            }
+                $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.h"
+                $File   "$SRCDIR\game\shared\momentum\mom_steam_helper.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
+            	$File "$SRCDIR\game\server\momentum\mom_lobby_system.h"
+                $File "$SRCDIR\game\server\momentum\mom_lobby_system.cpp"
+
+            }
             $Folder "Replays"
             {
                 $File   "momentum\mom_replay_system.cpp"
                 $File   "momentum\mom_replay_system.h"
                 $File   "momentum\mom_replay_entity.cpp"
                 $File   "momentum\mom_replay_entity.h"
-                $File   "momentum\mom_replay_data.h"
-                $File   "momentum\mom_replay_manager.cpp"
-                $File   "momentum\mom_replay_manager.h"
-                $File   "momentum\mom_replay_base.h"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_data.h"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_factory.cpp"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_factory.h"
+                $File "$SRCDIR\game\shared\momentum\run\mom_replay_base.h"
 
                 $Folder "Versions"
                 {                   
-                    $File   "momentum\mom_replay_v1.cpp"
-                    $File   "momentum\mom_replay_v1.h"
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_versions.cpp"
+                    $File "$SRCDIR\game\shared\momentum\run\mom_replay_versions.h"
                 }
             }
             
@@ -95,24 +139,17 @@ $Project "Server (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_lmg.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_grenade.cpp"
-                
-                //Server-sided grenade projectile
-                $File "momentum\mom_grenade_projectile.h"
-                $File "momentum\mom_grenade_projectile.cpp"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_mom_paintgun.cpp"
                 
                 //CS guns
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"
-                
-                $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\basecsgrenade_projectile.h"
+                $File "$SRCDIR\game\shared\momentum\weapon\weapon_cs_guns.cpp"    
                 $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\cs_weapon_parse.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbase.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbasegun.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_csbasegun.h"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_basecsgrenade.cpp"
-                $File "$SRCDIR\game\shared\momentum\weapon\weapon_basecsgrenade.h"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.cpp"
                 $File "$SRCDIR\game\shared\momentum\weapon\weapon_knife.h"
             }
@@ -123,6 +160,8 @@ $Project "Server (Momentum)"
             $File   "momentum\mapzones.cpp"
             $File   "momentum\mapzones_edit.h"
             $File   "momentum\mapzones_edit.cpp"
+			$File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.h"
             $File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_gamemovement.h"
             $File   "$SRCDIR\game\shared\momentum\mom_gamerules.cpp"
@@ -131,24 +170,34 @@ $Project "Server (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_player_shared.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_usermessages.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
+            $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.h"
             $File   "momentum\mom_client.cpp"
             $File   "momentum\mom_player.cpp"
             $File   "momentum\mom_player.h"
             $File   "momentum\te_shotgun_shot.cpp"
             $File   "momentum\te_shotgun_shot.h"
-            $File   "$SRCDIR\game\shared\momentum\fx_cs_shared.h"
-            $File   "$SRCDIR\game\shared\momentum\fx_cs_shared.cpp"
+            $File   "$SRCDIR\game\shared\momentum\fx_mom_shared.h"
+            $File   "$SRCDIR\game\shared\momentum\fx_mom_shared.cpp"
             $File   "momentum\mom_gameinterface.cpp"
             $File   "momentum\mom_eventlog.cpp"
             $File   "momentum\mom_playermove.cpp"
-            $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.h"
-            $File "$SRCDIR\game\shared\momentum\mom_entity_run_data.cpp"
+            $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.h"
+            $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.cpp"
+            $File "$SRCDIR\game\shared\momentum\run\mom_slide_data.h"
+            $File "$SRCDIR\game\shared\momentum\run\mom_slide_data.cpp"
+            $File "$SRCDIR\game\shared\momentum\run\run_stats.h"
+            $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
+            $File "$SRCDIR\game\shared\momentum\run\run_compare.h"
+            $File "$SRCDIR\game\shared\momentum\run\run_checkpoint.h"
             $File "momentum\mom_system_checkpoint.cpp"
             $File "momentum\mom_system_checkpoint.h"
             $File "momentum\mom_ruler.h"
             $File "momentum\mom_ruler.cpp"
             $File   "momentum\mom_timer.h"
             $File   "momentum\mom_timer.cpp"
+         	$File "momentum\mom_ghost_base.h"
+            $File "momentum\mom_ghost_base.cpp"
         }
         
         $File "hl2\Func_Monitor.cpp"
@@ -156,10 +205,26 @@ $Project "Server (Momentum)"
         $File   "$SRCDIR\game\shared\predicted_viewmodel.cpp"
 		$File   "$SRCDIR\game\shared\predicted_viewmodel.h"
 
+        $Folder "Base64 Library"
+        {
+            $File "$SRCDIR\thirdparty\base64\base64.h"
+            $File "$SRCDIR\thirdparty\base64\base64.cpp"
+            {
+                $Configuration
+                {
+                    $Compiler
+                    {
+                        $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        $TreatWarningsAsErrors "No"
+                    }
+                }
+            }
+        }
+        
         $Folder "JSON Parser"
         {
-            $File "$SRCDIR\thirdparty\gason\src\gason.h"
-            $File "$SRCDIR\thirdparty\gason\src\gason.cpp"
+            $File "$SRCDIR\thirdparty\gason\gason.h"
+            $File "$SRCDIR\thirdparty\gason\gason.cpp"
             {
                 $Configuration
                 {

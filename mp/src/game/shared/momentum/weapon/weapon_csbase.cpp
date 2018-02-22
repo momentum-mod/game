@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: Laser Rifle & Shield combo
 //
@@ -50,70 +50,13 @@ static const char * s_WeaponAliasInfo[] =
     "momentum_lmg", //WEAPON_LMG
     "momentum_grenade", //WEAPON_GRENADE
     "knife",	// WEAPON_KNIFE
+    "momentum_paintgun", // WEAPON_PAINTGUN
     nullptr,		// WEAPON_NONE
-};
-
-struct WeaponAliasTranslationInfoStruct
-{
-    char *m_alias;
-    char *m_translatedAlias;
-};
-
-static const WeaponAliasTranslationInfoStruct s_WeaponAliasTranslationInfo[] =
-{
-    { "cv47", "ak47" },
-    { "defender", "galil" },
-    { "krieg552", "sg552" },
-    { "magnum", "awp" },
-    { "d3au1", "g3sg1" },
-    { "clarion", "famas" },
-    { "bullpup", "aug" },
-    { "krieg550", "sg550" },
-    { "9x19mm", "glock" },
-    { "km45", "usp" },
-    { "228compact", "p228" },
-    { "nighthawk", "deagle" },
-    { "elites", "elite" },
-    { "fn57", "fiveseven" },
-    { "12gauge", "m3" },
-    { "autoshotgun", "xm1014" },
-    { "mp", "tmp" },
-    { "smg", "mp5navy" },
-    { "mp5", "mp5navy" },
-    { "c90", "p90" },
-    { "vest", "kevlar" },
-    { "vesthelm", "assaultsuit" },
-    { "smokegrenade", "sgren" },
-    { "smokegrenade", "sgren" },
-    { "nvgs", "nightvision" },
-
-    { "", "" } // this needs to be last
 };
 
 bool IsAmmoType(int iAmmoType, const char *pAmmoName)
 {
     return GetAmmoDef()->Index(pAmmoName) == iAmmoType;
-}
-
-//--------------------------------------------------------------------------------------------------------
-//
-// Given an alias, return the translated alias.
-//
-const char * GetTranslatedWeaponAlias(const char *alias)
-{
-    int i = 0;
-    const WeaponAliasTranslationInfoStruct *info = &(s_WeaponAliasTranslationInfo[i]);
-
-    while (info->m_alias[0] != 0)
-    {
-        if (Q_stricmp(alias, info->m_alias) == 0)
-        {
-            return info->m_translatedAlias;
-        }
-        info = &(s_WeaponAliasTranslationInfo[++i]);
-    }
-
-    return alias;
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -173,6 +116,7 @@ bool IsPrimaryWeapon(int id)
     case WEAPON_SHOTGUN:
     case WEAPON_SMG:
     case WEAPON_LMG:
+    case WEAPON_PAINTGUN:
         return true;
     }
 
@@ -211,6 +155,9 @@ int GetShellForAmmoType(const char *ammoname)
 
     if (!Q_strcmp(BULLET_PLAYER_57MM, ammoname))
         return CS_SHELL_57;
+
+    if (!Q_strcmp(AMMO_TYPE_PAINT, ammoname))
+        return CS_SHELL_PAINT;
 
     // default 9 mm
     return CS_SHELL_9MM;
@@ -285,6 +232,10 @@ CWeaponCSBase::CWeaponCSBase()
 #else
     m_iDefaultExtraAmmo = 0;
 #endif
+
+    m_flAccuracy = 1.0f;
+    m_flDecreaseShotsFired = 0.0f;
+    m_iExtraPrimaryAmmo = 0;
 }
 
 
@@ -360,7 +311,7 @@ void CWeaponCSBase::ItemPostFrame()
     {
         if (m_iClip2 != -1 && !pPlayer->GetAmmoCount(GetSecondaryAmmoType()))
         {
-            m_bFireOnEmpty = TRUE;
+            m_bFireOnEmpty = true;
         }
 
         SecondaryAttack();
@@ -371,43 +322,15 @@ void CWeaponCSBase::ItemPostFrame()
     {
         if ((m_iClip1 == 0/* && pszAmmo1()*/) || (GetMaxClip1() == -1 && !pPlayer->GetAmmoCount(GetPrimaryAmmoType())))
         {
-            m_bFireOnEmpty = TRUE;
+            m_bFireOnEmpty = true;
         }
 
-#ifndef CLIENT_DLL
-            // allow the bots to react to the gunfire
-            if (GetCSWpnData().m_WeaponType != WEAPONTYPE_GRENADE)
-            {
-                IGameEvent * event = gameeventmanager->CreateEvent((HasAmmo()) ? "weapon_fire" : "weapon_fire_on_empty");
-                if (event)
-                {
-                    const char *weaponName = STRING(m_iClassname);
-                    if (strncmp(weaponName, "weapon_", 7) == 0)
-                    {
-                        weaponName += 7;
-                    }
-
-                    event->SetInt("userid", pPlayer->GetUserID());
-                    event->SetString("weapon", weaponName);
-                    gameeventmanager->FireEvent(event);
-                }
-            }
-#endif
         PrimaryAttack();
         //---
     }
     else if (pPlayer->m_nButtons & IN_RELOAD && GetMaxClip1() != WEAPON_NOCLIP && !m_bInReload && m_flNextPrimaryAttack < gpGlobals->curtime)
     {
         // reload when reload is pressed, or if no buttons are down and weapon is empty.
-#ifndef CLIENT_DLL
-            // allow the bots to react to the reload
-            //IGameEvent * event = gameeventmanager->CreateEvent( "weapon_reload" );
-            //if( event )
-            //{
-            //	event->SetInt( "userid", pPlayer->GetUserID() );
-            //	gameeventmanager->FireEvent( event );
-            //}
-#endif
          Reload();
     }
     else if (!(pPlayer->m_nButtons & (IN_ATTACK | IN_ATTACK2)))
@@ -420,8 +343,8 @@ void CWeaponCSBase::ItemPostFrame()
         {
             m_bDelayFire = false;
 
-            if (pPlayer->m_iShotsFired > 15)
-                pPlayer->m_iShotsFired = 15;
+            if (pPlayer->m_SrvData.m_iShotsFired > 15)
+                pPlayer->m_SrvData.m_iShotsFired = 15;
 
             m_flDecreaseShotsFired = gpGlobals->curtime + 0.4;
         }
@@ -431,14 +354,14 @@ void CWeaponCSBase::ItemPostFrame()
         // if it's a pistol then set the shots fired to 0 after the player releases a button
         if (IsPistol())
         {
-            pPlayer->m_iShotsFired = 0;
+            pPlayer->m_SrvData.m_iShotsFired = 0;
         }
         else
         {
-            if ((pPlayer->m_iShotsFired > 0) && (m_flDecreaseShotsFired < gpGlobals->curtime))
+            if ((pPlayer->m_SrvData.m_iShotsFired > 0) && (m_flDecreaseShotsFired < gpGlobals->curtime))
             {
                 m_flDecreaseShotsFired = gpGlobals->curtime + 0.0225;
-                pPlayer->m_iShotsFired--;
+                --pPlayer->m_SrvData.m_iShotsFired;
             }
         }
 
@@ -656,9 +579,9 @@ bool CWeaponCSBase::Deploy()
 
     if (pPlayer)
     {
-        pPlayer->m_iShotsFired = 0;
-        pPlayer->m_bResumeZoom = false;
-        pPlayer->m_iLastZoom = 0;
+        pPlayer->m_SrvData.m_iShotsFired = 0;
+        pPlayer->m_SrvData.m_bResumeZoom = false;
+        pPlayer->m_SrvData.m_iLastZoom = 0;
         pPlayer->SetFOV(pPlayer, 0);
     }
 #endif
@@ -773,7 +696,7 @@ void CWeaponCSBase::DrawCrosshair()
         return;
 
     // no crosshair for sniper rifles
-    if (GetCSWpnData().m_WeaponType == WEAPONTYPE_SNIPER_RIFLE)
+    if (GetWeaponID() == WEAPON_SNIPER)
         return;
 
     int iDistance = GetCSWpnData().m_iCrosshairMinDistance; // The minimum distance the crosshair can achieve...
@@ -790,7 +713,7 @@ void CWeaponCSBase::DrawCrosshair()
             iDistance *= 1.5f;
     }
 
-    if (pPlayer->m_iShotsFired > m_iAmmoLastCheck)
+    if (pPlayer->m_SrvData.m_iShotsFired > m_iAmmoLastCheck)
     {
         m_flCrosshairDistance = min(15, m_flCrosshairDistance + iDeltaDistance);
     }
@@ -799,7 +722,7 @@ void CWeaponCSBase::DrawCrosshair()
         m_flCrosshairDistance -= 0.1f + m_flCrosshairDistance * 0.013;
     }
 
-    m_iAmmoLastCheck = pPlayer->m_iShotsFired;
+    m_iAmmoLastCheck = pPlayer->m_SrvData.m_iShotsFired;
 
     if (m_flCrosshairDistance < iDistance)
         m_flCrosshairDistance = iDistance;
@@ -1088,7 +1011,7 @@ bool CWeaponCSBase::Reload()
     if (!pPlayer)
         return false;
 
-    pPlayer->m_iShotsFired = 0;
+    pPlayer->m_SrvData.m_iShotsFired = 0;
 
     bool retval = BaseClass::Reload();
 
@@ -1162,7 +1085,7 @@ bool CWeaponCSBase::DefaultPistolReload()
     if (!DefaultReload(GetCSWpnData().iDefaultClip1, 0, ACT_VM_RELOAD))
         return false;
 
-    pPlayer->m_iShotsFired = 0;
+    pPlayer->m_SrvData.m_iShotsFired = 0;
 
 #ifdef CLIENT_DLL
     m_bInReloadAnimation = true;

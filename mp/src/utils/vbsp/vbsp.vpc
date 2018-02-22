@@ -102,6 +102,7 @@ $Project "Vbsp"
 		$File	"vbsp.h"
 		$File	"worldvertextransitionfixup.h"
 		$File	"writebsp.h"
+		$File	"matrixinvert.h"
 
 		$Folder	"Common header files"
 		{

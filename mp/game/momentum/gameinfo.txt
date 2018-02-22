@@ -3,7 +3,7 @@
 	game 		"Momentum"
 	title 		""
 	title2		""
-	supportsvr	1
+	supportsvr	0
 	nodifficulty    1
 	developer	"Team Momentum"
 	developer_url   "http://momentum-mod.org"
@@ -14,15 +14,21 @@
 	// This needs to be gone if we're implemeting MP AND SP . If only MP, then "multiplayer_only"
 	type		singleplayer_only
 
+	// Fix for making instances work
+	GameData	"momentum.fgd"
+    // InstancePath "maps/instances" // This is the path that instances can be found in, otherwise they're relative to the parent VMF.
+
 	hidden_maps {
 		credits 1
 		background_01 1
+        test_speakers 1
+        test_hardware 1
 	}
 
 	FileSystem
 	{
-		SteamAppId				243750 // This sets the app ID in Steam. This is the Source SDK Base 2013 Multiplayer
-        
+		SteamAppId				669270 // Source SDK Base 2013 Multiplayer = 243750
+
 		//
 		// The code that loads this file automatically does a few things here:
 		//

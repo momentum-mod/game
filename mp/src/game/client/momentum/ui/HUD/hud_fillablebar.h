@@ -2,56 +2,36 @@
 
 #include "cbase.h"
 
-#include "view.h"
-#include "menu.h"
-#include "iclientmode.h"
-#include "utlvector.h"
-#include "hudelement.h"
 #include <vgui_controls/Panel.h>
-#include "text_message.h"
-#include "hud_macros.h"
-#include "weapon_selection.h"
 
-#include <vgui_controls/Panel.h>
-#include <vgui_controls/Frame.h>
-#include <vgui/IScheme.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
-#include <vgui/VGUI.h>
-#include <KeyValues.h>
-#include <vgui_controls/AnimationController.h>
-
-
-class CHudFillableBar : public CHudElement, public vgui::Panel
+class CHudFillableBar : public vgui::Panel
 {
     DECLARE_CLASS_SIMPLE(CHudFillableBar, vgui::Panel);
 
-public:
-
-    CHudFillableBar(const char* pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), pElementName){}
-
-    void Init(void) 
+    CHudFillableBar(vgui::Panel *pParent, const char* pElementName) : Panel(pParent, pElementName), m_flxPos(0),
+                                                m_flyPos(0), m_flTall(0), m_flWide(0), m_flInitialValue(0),
+                                                m_flValue(0), m_flDesiredValue(0), m_flInterpTime(0),
+                                                m_flInterpFromTime(0)
     {
         SetPaintBackgroundEnabled(false);
         SetValue(m_flInitialValue);
-    };
-    virtual void Reset(void) {};
-    virtual bool ShouldDraw(void) { return CHudElement::ShouldDraw(); }
+    }
 
-    void Paint()
+    void Paint() OVERRIDE
     {
         Paint(m_FillColor);
     }
 
-    void Paint(Color BoxColor)
+    void Paint(const Color BoxColor)
     {
-        if (GetCurrentValue() != 0)
+        if (!CloseEnough(m_flValue, 0.0f, FLT_EPSILON))
         {
-            DrawBox(m_flxPos, m_flyPos, m_flWide * (GetCurrentValue() / 100), m_flTall, BoxColor, 1);
+            DrawBox(m_flxPos, m_flyPos, m_flWide * (m_flValue / 100), m_flTall, BoxColor, 1.0f);
         }
         DrawHollowBox(m_flxPos, m_flyPos, m_flWide, m_flTall, m_BackgroundColor, 1, 2, 2);
     }
-    virtual void OnThink()
+
+    void OnThink() OVERRIDE
     {
         if (m_flInterpTime > 0 && m_flInterpFromTime > 0)
         {
@@ -66,7 +46,6 @@ public:
             }
         }
     }
-    void PaintString(const wchar_t *text, int textlen, vgui::HFont& font, int x, int y);
 
     // Direct setvalue. Use override for interpolation
     // @pPercent: max->100 , min->0
@@ -92,10 +71,10 @@ public:
             m_flDesiredValue = -1;
         }
     }
-    float GetCurrentValue() { return m_flValue; }
+
+    float GetCurrentValue() const { return m_flValue; }
 
 private:
-    void(*SelectFunc)(int);
     CPanelAnimationVarAliasType(float, m_flxPos, "xpos", "0.0", "proportional_float");
     CPanelAnimationVarAliasType(float, m_flyPos, "ypos", "0.0", "proportional_float");
     CPanelAnimationVarAliasType(float, m_flTall, "tall", "0", "proportional_float");
@@ -112,5 +91,4 @@ private:
     float m_flInterpTime;
     // When did we start interpolating?
     float m_flInterpFromTime;
-    
 };

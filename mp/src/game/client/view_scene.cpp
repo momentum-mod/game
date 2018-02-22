@@ -52,7 +52,7 @@ void ViewTransform( const Vector &worldSpace, Vector &viewSpace )
 //-----------------------------------------------------------------------------
 // Purpose: Transforms a world-space position into a 2D position inside a supplied frustum.
 //-----------------------------------------------------------------------------
-int FrustumTransform( const VMatrix &worldToSurface, const Vector& point, Vector& screen )
+bool FrustumTransform( const VMatrix &worldToSurface, const Vector& point, Vector& screen )
 {
 	// UNDONE: Clean this up some, handle off-screen vertices
 	float w;
@@ -88,9 +88,9 @@ int FrustumTransform( const VMatrix &worldToSurface, const Vector& point, Vector
 // Purpose: UNDONE: Clean this up some, handle off-screen vertices
 // Input  : *point - 
 //			*screen - 
-// Output : int
+// Output : bool - True if the entity is hidden behind the camera (not on screen)
 //-----------------------------------------------------------------------------
-int ScreenTransform( const Vector& point, Vector& screen )
+bool ScreenTransform( const Vector& point, Vector& screen )
 {
 	// UNDONE: Clean this up some, handle off-screen vertices
 	return FrustumTransform ( engine->WorldToScreenMatrix(), point, screen );
@@ -100,7 +100,7 @@ int ScreenTransform( const Vector& point, Vector& screen )
 // Purpose: Same as ScreenTransform, but transforms to HUD space.
 //			These are totally different things in VR mode!
 //-----------------------------------------------------------------------------
-int HudTransform( const Vector& point, Vector& screen )
+bool HudTransform( const Vector& point, Vector& screen )
 {
 	if ( UseVR() )
 	{

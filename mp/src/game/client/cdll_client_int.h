@@ -60,10 +60,7 @@ class IEngineClientReplay;
 class IReplayScreenshotManager;
 class CSteamID;
 class CShared;
-
-#ifdef GAMEUI2
-class IGameUI2;
-#endif
+class CGameUI;
 
 //=============================================================================
 // HPE_BEGIN
@@ -116,10 +113,7 @@ extern IReplayManager *g_pReplayManager;
 extern IReplayScreenshotManager *g_pReplayScreenshotManager;
 extern IEngineReplay *g_pEngineReplay;
 extern IEngineClientReplay *g_pEngineClientReplay;
-
-#ifdef GAMEUI2
-extern IGameUI2* g_pGameUI2;
-#endif
+extern CGameUI *gameui;
 
 //=============================================================================
 // HPE_BEGIN

@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+    body {
+        font-family: Arial;
+        margin: 0;
+        height: 100vh;
+    }
+    * {
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+    .chat-window {
+        width: 100%;
+        height: 100%;
+        background: rgb(50,50,50);
+    }
+    .chat-window * {
+        color: white;
+    }
+    .chat-messages {
+        height: calc(100% - 28px);
+        overflow: auto;
+        padding: 8px;
+    }
+    .chat-message {
+        line-height: 1.4;
+        font-size: 5vw;
+    }
+    .chat-message .user {
+        color: lightblue;
+    }
+    .message-form {
+        height: 28px;
+        position: relative;
+        display: flex;
+        margin: 0;
+    }
+    .message-form input {
+        border: 1px solid rgb(20, 20, 20);
+        background: rgb(40, 40, 40);
+        outline: none !important;
+        height: 100%;
+        padding: 0 4px;
+    }
+    .message-entry {
+        width: calc(100% - 100px);
+        border-right: none !important;
+    }
+    .message-entry-btn {
+        width: 100px;
+        cursor: pointer;
+    }
+</style>
+    </head>
+    <body>
+        <div class="chat-window">
+    <div class="chat-messages" id="chat-messages">
+        <div class="chat-message">
+            <span class="user">Rock</span>: Test 123
+        </div>
+        <div class="chat-message">
+            <span class="user">Gocnak</span>: Wow nice chat
+        </div>
+        <div class="chat-message">
+            <span class="user">Rock</span>: Hey thanks nice game
+        </div>
+    </div>
+    <form autocomplete="off" class="message-form" id="message-form">
+        <input type="text" class="message-entry" id="message-field">
+        <input type="submit" value="Submit" class="message-entry-btn">
+    </form>
+</div>
+
+<script>
+    // Somehow set this value from C++ code
+    var user = "Rock";
+ 
+    function onUserSubmitForm(chatMessage) {
+        // Handle the user sending a chat message.
+        // My example just adds the message to the page
+        // But you can send it to the C++ code to send
+        // To other players if you want
+ 
+        addChatMessage(user, chatMessage);  
+    }
+   
+    // Somehow call this function from C++ when
+    // another user sends a chat message
+    function addChatMessage(username, message) {
+        var chatMessagesElement = document.getElementById("chat-messages");
+        chatMessagesElement.innerHTML +="<div class=\"chat-message\">"+
+                                            "<span class=\"user\">"+username+"</span>: "+message+
+                                        "</div>";
+    }
+ 
+    function _submitForm(e) {
+        var messageFieldElement = document.getElementById("message-field");
+        if(messageFieldElement.value) {
+            onUserSubmitForm(messageFieldElement.value);
+            messageFieldElement.value = "";
+        }
+        e.preventDefault();
+    }
+ 
+    var messageFormElement = document.getElementById("message-form");
+    messageFormElement.addEventListener("submit", _submitForm);
+</script>
+    </body>
+</html>

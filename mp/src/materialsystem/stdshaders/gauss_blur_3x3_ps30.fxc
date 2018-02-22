@@ -1,0 +1,34 @@
+// Original shader by brooknovak
+#include "common_ps_fxc.h"
+
+sampler texturesampler			: register( s0 );
+
+float2	g_TexelSize				: register( c0 );
+
+struct PS_INPUT
+{
+	HALF2 vTexCoord			:	TEXCOORD0;
+};
+
+// Blurs using a 3x3 filter kernel
+float4 main( const PS_INPUT i ) : COLOR
+{
+	// TOP ROW
+	float4 s11 = tex2D( texturesampler, i.vTexCoord + float2( -g_TexelSize ) );						// LEFT
+	float4 s12 = tex2D( texturesampler, i.vTexCoord + float2( 0, -g_TexelSize.y ) );				// MIDDLE
+	float4 s13 = tex2D( texturesampler, i.vTexCoord + float2( g_TexelSize.x , -g_TexelSize.y ) );	// RIGHT
+ 
+	// MIDDLE ROW
+	float4 s21 = tex2D( texturesampler, i.vTexCoord + float2( -g_TexelSize.x, 0 ) );				// LEFT
+	float4 col = tex2D( texturesampler, i.vTexCoord );												// DEAD CENTER
+	float4 s23 = tex2D( texturesampler, i.vTexCoord + float2( -g_TexelSize.x, 0 ) );				// RIGHT
+ 
+	// LAST ROW
+	float4 s31 = tex2D( texturesampler, i.vTexCoord + float2( -g_TexelSize.x, g_TexelSize.y ) );	// LEFT
+	float4 s32 = tex2D( texturesampler, i.vTexCoord + float2( 0, g_TexelSize.y ) );					// MIDDLE
+	float4 s33 = tex2D( texturesampler, i.vTexCoord + float2( g_TexelSize ) );						// RIGHT
+ 
+	// Average the color with surrounding samples
+	col = ( col + s11 + s12 + s13 + s21 + s23 + s31 + s32 + s33 ) / 9;
+	return col;
+}

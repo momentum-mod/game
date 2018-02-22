@@ -132,7 +132,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the target name.
 	//
-	const char *psz = nexttoken(szToken, ActionData, ',');
+	const char *psz = nexttoken(szToken, ActionData, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iTarget = AllocPooledString(szToken);
@@ -141,7 +141,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the input name.
 	//
-	psz = nexttoken(szToken, psz, ',');
+    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iTargetInput = AllocPooledString(szToken);
@@ -154,7 +154,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the parameter override.
 	//
-	psz = nexttoken(szToken, psz, ',');
+    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_iParameter = AllocPooledString(szToken);
@@ -163,7 +163,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the delay.
 	//
-	psz = nexttoken(szToken, psz, ',');
+    psz = nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_flDelay = atof(szToken);
@@ -172,7 +172,7 @@ CEventAction::CEventAction( const char *ActionData )
 	//
 	// Parse the number of times to fire.
 	//
-	nexttoken(szToken, psz, ',');
+    nexttoken(szToken, psz, ',', sizeof(szToken));
 	if (szToken[0] != '\0')
 	{
 		m_nTimesToFire = atoi(szToken);
@@ -1061,13 +1061,13 @@ void CEventQueue::CancelEventOn( CBaseEntity *pTarget, const char *sInputName )
 		return;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-
-	while (pCur != NULL)
+    const size_t inputNameSize = strlen(sInputName);
+	while (pCur != nullptr)
 	{
 		bool bDelete = false;
 		if (pCur->m_pEntTarget == pTarget)
 		{
-			if ( !Q_strncmp( STRING(pCur->m_iTargetInput), sInputName, strlen(sInputName) ) )
+            if (!Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 			{
 				// Found a matching event; delete it from the queue.
 				bDelete = true;
@@ -1096,15 +1096,12 @@ bool CEventQueue::HasEventPending( CBaseEntity *pTarget, const char *sInputName 
 		return false;
 
 	EventQueuePrioritizedEvent_t *pCur = m_Events.m_pNext;
-
-	while (pCur != NULL)
+    const size_t inputNameSize = strlen(sInputName);
+	while (pCur != nullptr)
 	{
 		if (pCur->m_pEntTarget == pTarget)
 		{
-			if ( !sInputName )
-				return true;
-
-			if ( !Q_strncmp( STRING(pCur->m_iTargetInput), sInputName, strlen(sInputName) ) )
+            if (!sInputName || !Q_strncmp(STRING(pCur->m_iTargetInput), sInputName, inputNameSize))
 				return true;
 		}
 

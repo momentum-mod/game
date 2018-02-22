@@ -26,11 +26,12 @@
 
 //Momentum
 #include "momentum/ui/MapSelection/IMapSelector.h"
-#include "momentum/ui/IChangelogPanel.h"
+//#include "momentum/ui/IChangelogPanel.h"
 #include "momentum/ui/IContactPanel.h"
 #include "momentum/ui/SettingsPanel/IMomentumSettingsPanel.h"
 #include "momentum/ui/IMessageboxPanel.h"
 #include "clientmode_mom_normal.h"
+#include "ChangelogPanel.h"
 
 #ifdef SIXENSE
 #include "sixense/in_sixense.h"

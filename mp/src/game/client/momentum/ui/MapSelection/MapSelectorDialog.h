@@ -7,6 +7,8 @@
 //extern class IRunGameEngine *g_pRunGameEngine;
 //extern class IAppInformation *g_pAppInformation; // can be NULL
 
+using namespace vgui;
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -118,9 +120,5 @@ private:
 
 // singleton accessor
 extern CMapSelectorDialog &MapSelectorDialog();
-
-// Used by the LAN tab and the add server dialog when trying to find servers without having
-// been given any ports to look for servers on.
-void GetMostCommonQueryPorts(CUtlVector<uint16> &ports);
 
 #endif // SERVERBROWSERDIALOG_H

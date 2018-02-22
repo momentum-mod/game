@@ -1030,8 +1030,8 @@ Scheme
 	CustomFontFiles
 	{
 		"1"		"resource/HALFLIFE2.ttf"
-		"1"		"resource/MomIcons.ttf"
-        "1" "resource/BigNoodleTitling.ttf"
+		"1"		"resource/font/MomIcons.ttf"
+        "1" "resource/font/BigNoodleTitling.ttf"
 	}
 
 }

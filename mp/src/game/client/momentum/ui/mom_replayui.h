@@ -2,9 +2,7 @@
 
 #include "cbase.h"
 
-#include "CVarSlider.h"
 #include "PFrameButton.h"
-#include "ScrubbableProgressBar.h"
 #include "game/client/iviewport.h"
 #include "momentum/mom_shareddefs.h"
 #include <vgui_controls/Button.h>
@@ -13,6 +11,8 @@
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/ToggleButton.h>
+#include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/ScrubbableProgressBar.h>
 
 enum Selections
 {
@@ -73,7 +73,7 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
     vgui::PFrameButton *m_pFastBackward;
     vgui::Button *m_pGo;
 
-    CCvarSlider *m_pTimescaleSlider;
+    vgui::CCvarSlider *m_pTimescaleSlider;
     vgui::TextEntry *m_pTimescaleEntry;
     vgui::Label *m_pTimescaleLabel;
 

@@ -2,6 +2,24 @@ event LevelInit
 {
 }
 
+event VersionPulse
+{
+    Animate VersionLabel alpha "0" Spline 0.0 1.0
+    Animate VersionLabel alpha "255" Spline 1.0 1.0
+    RunEvent VersionPulseLoop 2.0
+}
+
+event VersionPulseLoop
+{
+    RunEvent VersionPulse 0.0
+}
+
+event VersionPulseStop
+{
+    StopEvent VersionPulse 0.0
+    Animate VersionLabel alpha 255 Linear 0.0 0.000001
+}
+
 event MenuPulse
 {
 	Animate CHudMenuStatic		Blur		"7"			Linear	0.0		0.1
@@ -22,7 +40,8 @@ event MenuOpen
 	Animate CHudMenuStatic SelectionAlpha 	"255"		Linear 0.0 0.1
 	Animate CHudMenuStatic FgColor		"FgColor"		Linear 0.0 0.1
 	Animate CHudMenuStatic MenuColor		"MenuColor"	Linear  0.0 0.1
-	Animate CHudMenuStatic ItemColor		"ItemColor"	Linear 0.0 0.1
+    Animate CHudMenuStatic MenuBoxColor     "MenuBoxBg"  Linear  0.0 0.1
+	Animate CHudMenuStatic MenuItemColor		"ItemColor"	Linear 0.0 0.1
 	Animate CHudMenuStatic TextScan		"1"		Linear 0.0 0.1
 
 	// Undo any blur
@@ -36,7 +55,8 @@ event MenuClose
 	Animate CHudMenuStatic SelectionAlpha 	"0" Linear 0.0 1
 	Animate CHudMenuStatic FgColor		"0 0 0 0" Linear 0.0 1
 	Animate CHudMenuStatic MenuColor		"0 0 0 0" Linear 0.0 1
-	Animate CHudMenuStatic ItemColor		"0 0 0 0" Linear 0.0 1
+    Animate CHudMenuStatic MenuBoxColor     "0 0 0 0" Linear 0.0 1
+	Animate CHudMenuStatic MenuItemColor	"0 0 0 0" Linear 0.0 1
 }
 
 //Fades out the stage enter speed 

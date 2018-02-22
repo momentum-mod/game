@@ -1,4 +1,5 @@
 #include "cbase.h"
+
 #include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
@@ -58,7 +59,6 @@ class C_HudTimer : public CHudElement, public Panel
     float GetCurrentTime();
     bool m_bIsRunning;
     bool m_bTimerRan; // MOM_TODO: What is this used for?
-    int m_iStartTick;
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -83,7 +83,7 @@ class C_HudTimer : public CHudElement, public Panel
 
   private:
     int m_iZoneCurrent, m_iZoneCount;
-    int m_iTotalTicks, m_G_iStartTickD, m_G_iCurrentTick;
+    int m_iTotalTicks, m_iStartTick, m_G_iStartTickD, m_G_iCurrentTick, m_iOldTickCount;
     int initialTall;
     bool m_bIsReplay;
     // float m_fCurrentTime;
@@ -123,7 +123,8 @@ DECLARE_HUDELEMENT(C_HudTimer);
 DECLARE_HUD_MESSAGE(C_HudTimer, Timer_State);
 DECLARE_HUD_MESSAGE(C_HudTimer, Timer_Reset);
 
-C_HudTimer::C_HudTimer(const char *pElementName) : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
+C_HudTimer::C_HudTimer(const char *pElementName)
+    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "HudTimer")
 {
     // This is already set for HUD elements, but still...
     SetProportional(true);
@@ -137,6 +138,8 @@ void C_HudTimer::Init()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
     m_iTotalTicks = 0;
+    m_iOldTickCount = 0;
+    m_iStartTick = 0;
     m_G_iCurrentTick = 0;
     m_G_iStartTickD = 0;
     HOOK_HUD_MESSAGE(C_HudTimer, Timer_State);
@@ -161,8 +164,10 @@ void C_HudTimer::Reset()
 {
     // We reset only if it was a run not a replay -> lets check if shared was valid first
     m_iTotalTicks = 0;
+    m_iStartTick = 0;
     m_G_iCurrentTick = 0;
     m_G_iStartTickD = 0;
+    m_iOldTickCount = 0;
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iZoneCurrent = 1;
@@ -190,11 +195,9 @@ void C_HudTimer::MsgFunc_Timer_State(bf_read &msg)
     {
         // VGUI_ANIMATE("TimerStart");
         // Checking again, even if we just checked 8 lines before
-        if (pPlayer != nullptr)
-        {
-            pPlayer->EmitSound("Momentum.StartTimer");
-            m_bTimerRan = true;
-        }
+
+        pPlayer->EmitSound("Momentum.StartTimer");
+        m_bTimerRan = true;
     }
     else // stopped
     {
@@ -212,11 +215,8 @@ void C_HudTimer::MsgFunc_Timer_State(bf_read &msg)
         }
 
         // VGUI_ANIMATE("TimerStop");
-        if (pPlayer != nullptr)
-        {
-            m_bTimerRan = true;
-            pPlayer->EmitSound("Momentum.StopTimer");
-        }
+        m_bTimerRan = true;
+        pPlayer->EmitSound("Momentum.StopTimer");
 
         // MOM_TODO: (Beta+) show scoreboard animation with new position on leaderboards?
     }
@@ -232,11 +232,9 @@ float C_HudTimer::GetCurrentTime()
     // Done, I've shouldn't have checked if tickcount wasn't the same for only one frame, but for all the frames that
     // paint is getting called.
 
-    static int OldTickCount = 0;
-
-    if (gpGlobals->tickcount != OldTickCount && !m_bIsReplay)
+    if (gpGlobals->tickcount != m_iOldTickCount && !m_bIsReplay)
     {
-        m_iTotalTicks = m_bIsRunning ? m_iTotalTicks + 1 : 0;
+        m_iTotalTicks = m_bIsRunning ? (gpGlobals->tickcount - m_iStartTick) : 0;
     }
 
     if (m_bIsReplay)
@@ -244,7 +242,7 @@ float C_HudTimer::GetCurrentTime()
         m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
     }
 
-    OldTickCount = gpGlobals->tickcount;
+    m_iOldTickCount = gpGlobals->tickcount;
 
     return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }
@@ -264,19 +262,19 @@ void C_HudTimer::OnThink()
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
-            m_G_iCurrentTick = pGhost->m_iCurrentTick;
-            m_G_iStartTickD = pGhost->m_RunData.m_iStartTickD;
-            runData = &pGhost->m_RunData;
+            m_G_iCurrentTick = pGhost->m_SrvData.m_iCurrentTick;
+            m_G_iStartTickD = pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            runData = &pGhost->m_SrvData.m_RunData;
         }
         else
         {
             m_bIsReplay = false;
-            m_bShowCheckpoints = pLocal->m_bUsingCPMenu;
-            m_iCheckpointCurrent = pLocal->m_iCurrentStepCP + 1;
-            m_iCheckpointCount = pLocal->m_iCheckpointCount;
-            m_bPlayerHasPracticeMode = pLocal->m_bHasPracticeMode;
+            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingCPMenu;
+            m_iCheckpointCurrent = pLocal->m_SrvData.m_iCurrentStepCP + 1;
+            m_iCheckpointCount = pLocal->m_SrvData.m_iCheckpointCount;
+            m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
-            runData = &pLocal->m_RunData;
+            runData = &pLocal->m_SrvData.m_RunData;
         }
 
         m_bIsRunning = runData->m_bTimerRunning;
@@ -292,7 +290,7 @@ void C_HudTimer::OnThink()
 void C_HudTimer::Paint(void)
 {
     // Format the run's time
-    mom_UTIL->FormatTime(GetCurrentTime(), m_pszString, 2);
+    g_pMomentumUtil->FormatTime(GetCurrentTime(), m_pszString, 2);
     ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
 
     if (m_bShowCheckpoints)
@@ -330,8 +328,7 @@ void C_HudTimer::Paint(void)
     // find out status of timer (no timer/practice mode)
     if (!m_bIsRunning)
     {
-        Q_strncpy(m_pszStringStatus,
-                  m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized,
+        Q_strncpy(m_pszStringStatus, m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized,
                   sizeof(m_pszStringStatus));
         ANSI_TO_UNICODE(m_pszStringStatus, m_pwCurrentStatus);
     }
@@ -363,6 +360,7 @@ void C_HudTimer::Paint(void)
                              m_bIsRunning ? wcslen(m_pwCurrentTime) : wcslen(m_pwCurrentStatus));
 
     surface()->DrawSetTextFont(m_hSmallTextFont);
+
     if (m_bShowCheckpoints)
     {
         if (center_cps)
@@ -389,9 +387,7 @@ void C_HudTimer::Paint(void)
             prevStageXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, prevStageString) / 2;
 
             // Inline the comparison (affects split xpos)
-            int extra = hasComparison ? UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) : 0;
-            stageSplitXPos =
-                GetWide() / 2 - (UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + extra) / 2;
+            stageSplitXPos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) / 2;
         }
 
         // Print the previous stage
@@ -412,12 +408,10 @@ void C_HudTimer::Paint(void)
             wchar_t comparisonUnicode[BUFSIZELOCL];
             ANSI_TO_UNICODE(comparisonANSI, comparisonUnicode);
 
-            // This will be right below where the time begins to print, but is unwanted
-            // int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
-            // splitY += yToIncrement;
+            // This will be right below where the time begins to print
+            int compare_xpos = GetWide() / 2 - UTIL_ComputeStringWidth(m_hSmallTextFont, comparisonANSI) / 2;
+            splitY += yToIncrement;
 
-            // Find the xpos of the comparison string
-            int compare_xpos = stageSplitXPos + UTIL_ComputeStringWidth(m_hSmallTextFont, m_pszStageTimeString) + 2;
             // Print the comparison
             surface()->DrawSetTextPos(compare_xpos, splitY);
             surface()->DrawSetTextColor(compareColor);

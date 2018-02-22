@@ -1,11 +1,11 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Â© 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
 //=============================================================================//
 
 #include "cbase.h"
-#include "fx_cs_shared.h"
+#include "fx_mom_shared.h"
 #include "mom_player_shared.h"
 #include "weapon_csbasegun.h"
 
@@ -46,7 +46,7 @@ bool CWeaponCSBaseGun::Deploy()
         return false;
 
     m_flAccuracy = 0.2;
-    pPlayer->m_iShotsFired = 0;
+    pPlayer->m_SrvData.m_iShotsFired = 0;
     m_bDelayFire = false;
     m_zoomFullyActiveTime = -1.0f;
 
@@ -60,18 +60,18 @@ void CWeaponCSBaseGun::ItemPostFrame()
     if (!pPlayer)
         return;
 
-    if ((m_flNextPrimaryAttack <= gpGlobals->curtime) && (pPlayer->m_bResumeZoom))
+    if ((m_flNextPrimaryAttack <= gpGlobals->curtime) && (pPlayer->m_SrvData.m_bResumeZoom))
     {
 #ifndef CLIENT_DLL
-        pPlayer->SetFOV(pPlayer, pPlayer->m_iLastZoom, 0.05f);
+        pPlayer->SetFOV(pPlayer, pPlayer->m_SrvData.m_iLastZoom, 0.05f);
         m_zoomFullyActiveTime =
             gpGlobals->curtime +
             0.05f; // Make sure we think that we are zooming on the server so we don't get instant acc bonus
 
-        if (pPlayer->GetFOV() == pPlayer->m_iLastZoom)
+        if (pPlayer->GetFOV() == pPlayer->m_SrvData.m_iLastZoom)
         {
             // return the fade level in zoom.
-            pPlayer->m_bResumeZoom = false;
+            pPlayer->m_SrvData.m_bResumeZoom = false;
         }
 #endif
     }
@@ -124,7 +124,7 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
         return false;
 
     m_bDelayFire = true;
-    pPlayer->m_iShotsFired++;
+    pPlayer->m_SrvData.m_iShotsFired++;
 
 // Out of ammo?
 #ifdef WEAPONS_USE_AMMO
@@ -146,14 +146,6 @@ bool CWeaponCSBaseGun::CSBaseGunFire(float flSpread, float flCycleTime, bool bPr
 
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);
-
-    //MOM_TODO (fix): Kamay-> the crosshair position is 1 tick behind the shooting position, 
-    //a possible fix would be to take the old origin instead the new one calculated or set this before the gamemovement code (but maybe that will not correspond to viewoffset so... Old origin), 
-    //but we will need to remember that the localplayer position is 1 tick after aswell on DEMOS (i don't know the reasons of why yet)
-    //Tested it under CS:S (even csgo should work), just add a bot with bot_stop 1 on a surf map get velocity, and then try to aim exactly at the head with host_timescale (makes things easier)
-    //Shoot and you'll notice that you're not exactly shooting at the right position
-    //and that you are 1 tick after where you should be aiming at. 
-    //Trying to think of good fix now than setting just the old origin.
 
     FX_FireBullets(pPlayer->entindex(), pPlayer->Weapon_ShootPosition(),
                    pPlayer->EyeAngles() + 2.0f * pPlayer->GetPunchAngle(), GetWeaponID(),
@@ -208,7 +200,7 @@ bool CWeaponCSBaseGun::Reload()
 #endif
 
     m_flAccuracy = 0.2;
-    pPlayer->m_iShotsFired = 0;
+    pPlayer->m_SrvData.m_iShotsFired = 0;
     m_bDelayFire = false;
 
     return true;

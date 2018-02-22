@@ -19,10 +19,11 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     m_iMaxPageTitleWidth = 0;
 
     ListenForGameEvent("timer_state");
+    ListenForGameEvent("replay_save");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
-    LoadControlSettings("resource/UI/MapFinishedDialog.res");
+    LoadControlSettings("resource/ui/MapFinishedDialog.res");
     m_pNextZoneButton = FindControl<ImagePanel>("Next_Zone");
     m_pNextZoneButton->SetMouseInputEnabled(true);
     m_pNextZoneButton->InstallMouseHandler(this);
@@ -77,7 +78,6 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
             C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
             if (g_MOMEventListener && pPlayer)
             {
-                m_bRunSaved = g_MOMEventListener->m_bTimeDidSave;
                 m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
                 //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
                 //Is it going to be a localized string, except for errors that have to be specific?
@@ -86,17 +86,16 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 m_iVelocityType = hvel.GetBool();
 
                 C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-                float lastRunTime;
                 if (pGhost)
                 {
                     m_pRunStats = &pGhost->m_RunStats;
-                    lastRunTime = pGhost->m_RunData.m_flRunTime;
+                    m_pRunData = &pGhost->m_SrvData.m_RunData;
                     m_bIsGhost = true;
                 }
                 else
                 {
                     m_pRunStats = &pPlayer->m_RunStats;
-                    lastRunTime = pPlayer->m_RunData.m_flRunTime;
+                    m_pRunData = &pPlayer->m_SrvData.m_RunData;
                     m_bIsGhost = false;
                 }
 
@@ -105,14 +104,18 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
                 m_pRunSaveStatus->SetVisible(!m_bIsGhost);
                 m_pRepeatButton->GetTooltip()->SetText(m_bIsGhost ? m_pszRepeatToolTipReplay : m_pszRepeatToolTipMap);
 
-                mom_UTIL->FormatTime(lastRunTime, m_pszEndRunTime);
-                
                 CMOMSpectatorGUI *pPanel = dynamic_cast<CMOMSpectatorGUI*>(gViewPortInterface->FindPanelByName(PANEL_SPECGUI));
                 if (pPanel && pPanel->IsVisible())
                     SetMouseInputEnabled(pPanel->IsMouseInputEnabled());
             }
         }
     }
+    else if (FStrEq(pEvent->GetName(), "replay_save"))
+    {
+        m_bRunSaved = pEvent->GetBool("save");
+        // MOM_TODO: There's a file name parameter as well, do we want to use it here?
+    }
+    //MOM_TODO: Listen for the upload event and set it here?
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
@@ -122,7 +125,7 @@ bool CHudMapFinishedDialog::ShouldDraw()
     if (pPlayer)
     {
         C_MomentumReplayGhostEntity *pGhost = pPlayer->GetReplayEnt();
-        CMOMRunEntityData *pData = (pGhost ? &pGhost->m_RunData : &pPlayer->m_RunData);
+        CMOMRunEntityData *pData = (pGhost ? &pGhost->m_SrvData.m_RunData : &pPlayer->m_SrvData.m_RunData);
         shouldDrawLocal = pData && pData->m_bMapFinished;
     }
 
@@ -300,6 +303,7 @@ void CHudMapFinishedDialog::Paint()
     //"Time:" shows up when m_iCurrentPage  == 0
     if (m_iCurrentPage < 1)// == 0, but I'm lazy to do an else-if
     {
+        g_pMomentumUtil->FormatTime(m_pRunData ? m_pRunData->m_flRunTime : 0.0f, m_pszEndRunTime);
         ANSI_TO_UNICODE(m_pszEndRunTime, unicodeTime);
         g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwOverallTime, 1, unicodeTime);
 
@@ -312,7 +316,7 @@ void CHudMapFinishedDialog::Paint()
     {
         //"Zone Time:" shows up when m_iCurrentPage > 0
         char ansiTime[BUFSIZETIME];
-        mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->GetZoneTime(m_iCurrentPage) : 0.0f, ansiTime);
+        g_pMomentumUtil->FormatTime(m_pRunStats ? m_pRunStats->GetZoneTime(m_iCurrentPage) : 0.0f, ansiTime);
         ANSI_TO_UNICODE(ansiTime, unicodeTime);
         g_pVGuiLocalize->ConstructString(currentZoneOverall, sizeof(currentZoneOverall), m_pwZoneTime, 1, unicodeTime);
         m_pZoneOverallTime->SetText(currentZoneOverall);//"Zone time" (time for that zone)
@@ -324,7 +328,7 @@ void CHudMapFinishedDialog::Paint()
             m_pZoneEnterTime->SetEnabled(true);
             m_pZoneEnterTime->SetVisible(true);
             wchar_t zoneEnterTime[BUFSIZELOCL];
-            mom_UTIL->FormatTime(m_pRunStats ? m_pRunStats->GetZoneEnterTime(m_iCurrentPage) : 0.0f, ansiTime);
+            g_pMomentumUtil->FormatTime(m_pRunStats ? m_pRunStats->GetZoneEnterTime(m_iCurrentPage) : 0.0f, ansiTime);
             ANSI_TO_UNICODE(ansiTime, unicodeTime);
             g_pVGuiLocalize->ConstructString(zoneEnterTime, sizeof(zoneEnterTime), m_pwZoneEnterTime, 1, unicodeTime);
             m_pZoneEnterTime->SetText(zoneEnterTime);//"Zone enter time:" (time entered that zone)
