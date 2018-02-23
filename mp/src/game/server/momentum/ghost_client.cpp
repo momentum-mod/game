@@ -123,10 +123,10 @@ void CMomentumGhostClient::SendAppearanceData(ghostAppearance_t appearance)
     g_pMomentumLobbySystem->SetAppearanceInMemberData(appearance);
 }
 
-void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpectating)
+void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpectating, bool bLeftMap)
 {
     // MOM_TODO: g_pMomentumServerSystem->SetSpectatorTarget(target, bStartedSpectating)
-    g_pMomentumLobbySystem->SetSpectatorTarget(target, bStartedSpectating);
+    g_pMomentumLobbySystem->SetSpectatorTarget(target, bStartedSpectating, bLeftMap);
 }
 
 void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)

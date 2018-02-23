@@ -86,7 +86,7 @@ void CHudSpectatorInfo::LevelShutdown()
 void CHudSpectatorInfo::SpectatorUpdate(const CSteamID& person, const CSteamID& target)
 {
     unsigned short indx = m_mapNameMap.Find(person.ConvertToUint64());
-    bool found = indx != m_mapNameMap.InvalidIndex();
+    const bool found = indx != m_mapNameMap.InvalidIndex();
 
     if (target == m_idLocal && !found)
     {

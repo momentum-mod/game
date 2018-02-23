@@ -50,8 +50,9 @@ typedef enum
 typedef enum
 {
     SPEC_UPDATE_JOIN = 0,           // Started spectating
-    SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else!
-    SPEC_UPDATE_LEAVE           // Respawned
+    SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
+    SPEC_UPDATE_STOP,           // Stopped spectating; respawned
+    SPEC_UPDATE_LEAVE_MAP       // This player left the map
 } SPECTATE_MSG_TYPE;
 
 #define PANEL_TIMES "times"

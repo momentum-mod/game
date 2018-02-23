@@ -136,8 +136,8 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read &msg)
     msg.ReadBytes(&target, sizeof(uint64));
     CSteamID targetID = CSteamID(target);
 
-    const char *spectateText = target != 1 ? "%s is now spectating." : +"%s is now watching a replay.";
-    if (type == SPEC_UPDATE_LEAVE)
+    const char *spectateText = target != 1 ? "%s is now spectating." : "%s is now watching a replay.";
+    if (type == SPEC_UPDATE_STOP)
     {
         Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has respawned.", pName);
     }

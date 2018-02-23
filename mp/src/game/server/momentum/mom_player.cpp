@@ -152,7 +152,7 @@ CMomentumPlayer::~CMomentumPlayer()
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
-    g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false);
+    g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
 
     // Remove us from the gamemovement listener list
     g_pMomentumGameMovement->RemoveMovementListener(this);
