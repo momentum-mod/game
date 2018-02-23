@@ -727,7 +727,12 @@ bool CClientTimesDisplay::StaticLobbyMemberSortFunc(vgui::SectionedListPanel* li
     KeyValues *it1 = list->GetItemData(itemID1);
     KeyValues *it2 = list->GetItemData(itemID2);
     const char *pMapName = g_pGameRules->MapName();
-    Assert(it1 && it2 && pMapName);
+
+    if (!pMapName)
+        return false;
+
+    Assert(it1 && it2);
+
     bool is1OnMap = FStrEq(pMapName, it1->GetString("map"));
     bool is2OnMap = FStrEq(pMapName, it2->GetString("map"));
 
