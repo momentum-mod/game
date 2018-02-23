@@ -40,7 +40,7 @@ public:
 
     void SendAndRecieveP2PPackets();
     void SetAppearanceInMemberData(ghostAppearance_t app);
-    void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeftMap = false);
+    void SetSpectatorTarget(const CSteamID &ghostTarget, bool bStarted, bool bLeft = false);
     void SetIsSpectating(bool bSpec);
     void SendSpectatorUpdatePacket(const CSteamID &ghostTarget, SPECTATE_MSG_TYPE type);
     bool GetIsSpectatingFromMemberData(const CSteamID &who);
