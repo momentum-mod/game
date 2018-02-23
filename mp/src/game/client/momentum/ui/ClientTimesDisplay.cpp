@@ -69,6 +69,8 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_iPlayerIndexSymbol = KeyValuesSystem()->GetSymbolForString("playerIndex");
     m_nCloseKey = BUTTON_CODE_INVALID;
 
+    m_iSectionId = 0;
+
     m_bGetTop10Scores = true;
     m_bLoadedLocalPlayerAvatar = false;
 
@@ -839,6 +841,27 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
         // MOM_TODO: Convert the run flags to pictures
 
         kvInto->AddSubKey(kvLocalTimeFormatted);
+    }
+}
+
+void CClientTimesDisplay::PopulateLobbyPanel()
+{
+    if (!m_idLobby.IsValid())
+        return;
+
+    const CSteamID local = steamapicontext->SteamUser()->GetSteamID();
+    const int numLobbyMembers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_idLobby);
+
+    for (int i = 0; i < numLobbyMembers; i++)
+    {
+        const CSteamID inLobby = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_idLobby, i);
+        if (inLobby == local)
+            continue;
+
+        // Get their initial data (name, avatar, steamID)
+        AddLobbyMember(inLobby);
+        // Get their status data (map, spectating, etc)
+        UpdateLobbyMemberData(inLobby);
     }
 }
 
@@ -1830,18 +1853,10 @@ void CClientTimesDisplay::OnLobbyCreated(LobbyCreated_t* pParam)
 void CClientTimesDisplay::OnLobbyEnter(LobbyEnter_t* pParam)
 {
     // Loop through the lobby and add people
-    CSteamID local = steamapicontext->SteamUser()->GetSteamID();
-    for (int i = 0; i < steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(pParam->m_ulSteamIDLobby); i++)
-    {
-        CSteamID inLobby = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(pParam->m_ulSteamIDLobby, i);
-        if (inLobby == local)
-            continue;
-
-        // Get their initial data (name, avatar, steamID)
-        AddLobbyMember(inLobby);
-        // Get their status data (map, spectating, etc)
-        UpdateLobbyMemberData(CSteamID(pParam->m_ulSteamIDLobby), inLobby);
-    }
+    m_idLobby = CSteamID(pParam->m_ulSteamIDLobby);
+    
+    // Add everyone now
+    PopulateLobbyPanel();
 }
 
 void CClientTimesDisplay::OnLobbyDataUpdate(LobbyDataUpdate_t* pParam)
@@ -1856,7 +1871,7 @@ void CClientTimesDisplay::OnLobbyDataUpdate(LobbyDataUpdate_t* pParam)
         // A member in the lobby changed
         CSteamID local = steamapicontext->SteamUser()->GetSteamID();
         if (local.ConvertToUint64() != pParam->m_ulSteamIDMember)
-            UpdateLobbyMemberData(CSteamID(pParam->m_ulSteamIDLobby), CSteamID(pParam->m_ulSteamIDMember));
+            UpdateLobbyMemberData(CSteamID(pParam->m_ulSteamIDMember));
     }
 }
 
@@ -1899,7 +1914,7 @@ void CClientTimesDisplay::AddLobbyMember(const CSteamID &steamID)
         return;
 
     if (FindItemIDForLobbyMember(steamID) > -1)
-        return; // MOM_TODO: Maybe remove them?
+        return;
 
     KeyValues *pNewUser = new KeyValues("LobbyMember");
     uint64 steamIdInt = steamID.ConvertToUint64();
@@ -1911,9 +1926,9 @@ void CClientTimesDisplay::AddLobbyMember(const CSteamID &steamID)
     pNewUser->deleteThis(); // Copied over in AddItem
 }
 
-void CClientTimesDisplay::UpdateLobbyMemberData(const CSteamID &lobbyID, const CSteamID& memberID)
+void CClientTimesDisplay::UpdateLobbyMemberData(const CSteamID& memberID)
 {
-    if (!m_pLobbyMembersPanel)
+    if (!m_pLobbyMembersPanel || !m_idLobby.IsValid())
         return;
 
     int itemID = FindItemIDForLobbyMember(memberID);
@@ -1923,11 +1938,12 @@ void CClientTimesDisplay::UpdateLobbyMemberData(const CSteamID &lobbyID, const C
         KeyValues *pData = m_pLobbyMembersPanel->GetItemData(itemID)->MakeCopy();
         if (pData)
         {
-            const char *pMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(lobbyID, memberID, LOBBY_DATA_MAP);
+            const char *pMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_MAP);
             pData->SetString("map", pMap);
             // MOM_TODO: Spectating? Typing? 
 
             m_pLobbyMembersPanel->ModifyItem(itemID, m_iSectionId, pData);
+            pData->deleteThis();
         }
     }
 }
