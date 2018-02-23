@@ -1521,6 +1521,10 @@ AnimationController::Value_t AnimationController::GetValue(ActiveAnimation_t& an
 				val.c = col[2];
 				val.d = col[3];
 			}
+            else if (kv && kv->GetDataType() == KeyValues::TYPE_INT)
+            {
+                val.a = (float)kv->GetInt();
+            }
 		}
 		else
 		{
