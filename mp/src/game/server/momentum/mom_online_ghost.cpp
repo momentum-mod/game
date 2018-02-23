@@ -37,6 +37,7 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
     m_vecPositionPackets.Purge();
+    m_vecDecalPackets.Purge();
 }
 
 void CMomentumOnlineGhostEntity::AddPositionFrame(const PositionPacket_t &newFrame)

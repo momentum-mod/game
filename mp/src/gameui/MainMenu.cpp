@@ -196,7 +196,6 @@ void MainMenu::FireGameEvent(IGameEvent* event)
     else if (!Q_strcmp(event->GetName(), "spec_start"))
     {
         m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
         m_pButtonSpectate->SetEngineCommand("mom_spectate_stop");
     }
     else if (!Q_strcmp(event->GetName(), "spec_stop"))
