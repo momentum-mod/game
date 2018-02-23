@@ -394,6 +394,7 @@
         "GameUI2_HostLobby" "Host lobby"
         "GameUI2_LeaveLobby" "Leave lobby"
         "GameUI2_InviteLobby" "Invite friends"
+        "GameUI2_Respawn" "Respawn"
 
         "GameUI2_TitleOptions" "Options"
 
