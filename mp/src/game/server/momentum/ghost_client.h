@@ -38,7 +38,7 @@ public:
 
     static CMomentumPlayer *m_pPlayer;
 private:
-
+    ConVarRef m_cvarHostTimescale;
     static CMomentumGhostClient *m_pInstance;
 };
 

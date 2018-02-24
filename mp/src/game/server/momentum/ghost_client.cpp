@@ -55,7 +55,7 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
 CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;
 
-CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName)
+CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName), m_cvarHostTimescale("host_timescale")
 {
     m_pInstance = this;
 }
@@ -131,8 +131,12 @@ void CMomentumGhostClient::SetSpectatorTarget(CSteamID target, bool bStartedSpec
 
 void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
 {
-    // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(packet);
-    g_pMomentumLobbySystem->SendDecalPacket(packet);
+    if (CloseEnough(m_cvarHostTimescale.GetFloat(), 1.0f, FLT_EPSILON))
+    {
+        // MOM_TODO: g_pMomentumServerSystem->SendDecalPacket(packet);
+        g_pMomentumLobbySystem->SendDecalPacket(packet);
+    }
+    // MOM_TODO: else let the player know their decal packets aren't being sent?
 }
 
 CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(const uint64& id)
