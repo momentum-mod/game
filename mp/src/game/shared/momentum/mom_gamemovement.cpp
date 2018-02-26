@@ -11,6 +11,7 @@
 
 extern bool g_bMovementOptimizations;
 // remove this eventually
+ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
 
 #ifndef CLIENT_DLL
@@ -21,7 +22,7 @@ static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPL
 #endif
 
 CMomentumGameMovement::CMomentumGameMovement()
-    : m_flReflectNormal(NO_REFL_NORMAL_CHANGE), m_pPlayer(nullptr), mom_gamemode("mom_gamemode")
+    : m_pPlayer(nullptr), mom_gamemode("mom_gamemode")
 {
 }
 
@@ -734,18 +735,14 @@ void CMomentumGameMovement::CategorizePosition()
         TryTouchGround(bumpOrigin, point, GetPlayerMins(), GetPlayerMaxs(), MASK_PLAYERSOLID,
                        COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-        bool bHitSteepPlane = false;
-
         // Was on ground, but now suddenly am not.  If we hit a steep plane, we are not on ground
-        if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
+        if (!pm.m_pEnt || pm.plane.normal[2] <= 0.7f)
         {
             // Test four sub-boxes, to see if any of them would have found shallower slope we could actually stand on
             TryTouchGroundInQuadrants(bumpOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-            if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
+            if (!pm.m_pEnt || pm.plane.normal[2] <= 0.7f)
             {
-                bHitSteepPlane = true;
-
                 SetGroundEntity(nullptr);
                 // probably want to add a check for a +z velocity too!
                 if ((mv->m_vecVelocity.z > 0.0f) && (player->GetMoveType() != MOVETYPE_NOCLIP))
@@ -754,15 +751,23 @@ void CMomentumGameMovement::CategorizePosition()
                 }
             }
         }
-
-        if (!bHitSteepPlane)
+        else
         {
-            // If we hit a plane we can jump off of, try to do a late reflect if needed
-            if (m_flReflectNormal == NO_REFL_NORMAL_CHANGE)
+            if (sv_slope_fix.GetBool())
             {
-                DoLateReflect();
-                CategorizePosition();
-                return;
+                // Make sure we apply clip velocity on slopes/surfs before setting the ground entity and nulling out velocity.z
+                if (player->GetGroundEntity() == nullptr)
+                {
+                    if (pm.plane.normal.z > 0.7f && pm.plane.normal.z < 1.0f)
+                    {
+                        ClipVelocity(mv->m_vecVelocity, pm.plane.normal, mv->m_vecVelocity, 1.0f);
+                    }
+                    else if (pm.plane.normal.z <= 0.7f)
+                    {
+                        ClipVelocity(mv->m_vecVelocity, pm.plane.normal, mv->m_vecVelocity,
+                            1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                    }
+                }
             }
 
             SetGroundEntity(&pm); // Otherwise, point to index of ent under us.
@@ -902,10 +907,7 @@ void CMomentumGameMovement::FullWalkMove()
 
         // Make sure velocity is valid.
         CheckVelocity();
-
-        // By default assume we did the reflect for WalkMove()
-        m_flReflectNormal = 1.0f;
-
+        
         if (player->GetGroundEntity() != nullptr)
         {
             WalkMove();
@@ -1017,9 +1019,7 @@ void CMomentumGameMovement::AirMove(void)
 
     // Add in any base velocity to the current velocity.
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
-
-    m_flReflectNormal = NO_REFL_NORMAL_CHANGE;
-
+    
     TryPlayerMove();
 
     // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or
@@ -1027,36 +1027,6 @@ void CMomentumGameMovement::AirMove(void)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
     CheckForLadders(false);
-    // return bDidReflect;
-}
-
-void CMomentumGameMovement::DoLateReflect(void)
-{
-    // Don't attempt to reflect after this.
-    // Return below was causing recursion.
-    m_flReflectNormal = 1.0f;
-
-    if (mv->m_vecVelocity.Length() == 0.0f || player->GetGroundEntity() != nullptr)
-        return;
-
-    Vector prevpos = mv->m_vecAbsOrigin;
-    Vector prevvel = mv->m_vecVelocity;
-
-    VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
-
-    // Since we're doing two moves in one frame, only apply changes if we did the reflect and we gained speed.
-    TryPlayerMove();
-    if (m_flReflectNormal == 1.0f || prevvel.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
-    {
-        VectorCopy(prevpos, mv->m_vecAbsOrigin);
-        VectorCopy(prevvel, mv->m_vecVelocity);
-    }
-    else
-    {
-        VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
-
-        DevMsg("Successful late reflect! Normal: %.2f\n", m_flReflectNormal);
-    }
 }
 
 int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrace)
@@ -1226,20 +1196,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             // Is this a floor/slope that the player can walk on?
             if (planes[0][2] > 0.7)
             {
-                // We only reflect if our velocity isn't going into the slope we're jumping on
-                if (planes[0][2] < 1.0) // and if it's not the horizontal floor
-                {
-                    Vector planeScaled;
-                    VectorMultiply(mv->m_vecVelocity, planes[0],
-                                   planeScaled); // First get our plane normal up to scale with our velocity
-                    if (DotProduct(mv->m_vecVelocity, planeScaled) >
-                        0.0f) // If our velocity is NOT going into the slope
-                    {
-                        m_flReflectNormal = planes[0][2]; // Determines if we should late reflect in CategorizePosition
-                        // (we only boost the player if the game doesn't give them one)
-                    }
-                }
-
                 ClipVelocity(original_velocity, planes[0], new_velocity, 1);
                 VectorCopy(new_velocity, original_velocity);
             }
