@@ -13,6 +13,8 @@ extern bool g_bMovementOptimizations;
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
+ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
+ConVar sv_ramp_retrace_scale("sv_ramp_retrace_length", "0.5", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
 
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
@@ -1038,19 +1040,26 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     Vector planes[MAX_CLIP_PLANES];
     Vector primal_velocity, original_velocity;
     Vector new_velocity;
+    Vector fixed_origin;
+    Vector valid_plane;
     int i, j;
     trace_t pm;
     Vector end;
     float time_left, allFraction;
     int blocked;
-
-    numbumps = 4; // Bump up to four times
+    bool stuck_on_ramp;
+    bool has_valid_plane;
+    numbumps = sv_ramp_bumpcount.GetInt();
 
     blocked = 0;   // Assume not blocked
     numplanes = 0; //  and not sliding along any planes
 
+    stuck_on_ramp = false; // lets assume client isnt stuck already
+    has_valid_plane = false; // no plane info gathered yet
+
     VectorCopy(mv->m_vecVelocity, original_velocity); // Store original velocity
     VectorCopy(mv->m_vecVelocity, primal_velocity);
+    VectorCopy(mv->GetAbsOrigin(), fixed_origin);
 
     allFraction = 0;
     time_left = gpGlobals->frametime; // Total time for this movement operation.
@@ -1062,8 +1071,54 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         if (mv->m_vecVelocity.Length() == 0.0)
             break;
 
+        if (stuck_on_ramp && sv_ramp_fix.GetBool())
+        {
+            if (pm.plane.normal.z > 0.0f && pm.plane.normal.z < 1.0f)
+            {
+                valid_plane = pm.plane.normal;
+                has_valid_plane = true;
+            }
+            else
+            {
+                for (i = numplanes; i-- > 0; )
+                {
+                    if (planes[i].z > 0.0f && planes[i].z < 1.0f)
+                    {
+                        valid_plane = planes[i];
+                        has_valid_plane = true;
+                        break;
+                    }
+                }
+            }
+
+            if (valid_plane.z > 0.7f && valid_plane.z < 1.0f)
+            {
+                ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity, 1);
+                VectorCopy(new_velocity, original_velocity);
+            }
+            else if (valid_plane.z > 0.0f && valid_plane.z <= 0.7f)
+            {
+                ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity,
+                    1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+            }
+            else if ((pm.fraction == 1.0f || pm.allsolid) && !has_valid_plane) // We were actually going to be stuck, lets try and fix it...
+            {
+                // No plane info, how can we properly set a retrace point without risking something bad to happen
+                // If someone can figure out a better way to do this part while having 0 plane info that would be great!
+                time_left *= 0.5f;
+            }
+
+            if (has_valid_plane)
+            {
+                // By using fixed_origin like this, we ensure it will be different for each bump
+                VectorMA(fixed_origin, sv_ramp_retrace_scale.GetFloat(), valid_plane, fixed_origin); // So any surf ramp will work (upside down and normal)
+                time_left *= 0.95f; // This will alter the end position slightly, and hopefully fix the stuck issues
+            }
+        }
+
         // Assume we can move all the way from the current origin to the
         //  end point.
+
         VectorMA(mv->GetAbsOrigin(), time_left, mv->m_vecVelocity, end);
 
         // See if we can make it from origin to end point.
@@ -1088,29 +1143,42 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         }
         else
         {
-            TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+            if (stuck_on_ramp&& has_valid_plane && sv_ramp_fix.GetBool())
+            {
+                TracePlayerBBox(fixed_origin, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+            }
+            else
+            {
+                TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+            }
         }
 
-        allFraction += pm.fraction;
+        // Apparently we can be stuck with pm.allsolid without having valid plane info ok..
+        // also check if our traceray got stuck in the ramp, and if so lets try and clip velocity and retrace.
+        if ((pm.allsolid ||
+            (CloseEnough(pm.fraction, 0.0f, FLT_EPSILON) && pm.plane.normal.z > 0.0f && pm.plane.normal.z < 1.0f && bumpcount))
+            && sv_ramp_fix.GetBool())
+        {
+            stuck_on_ramp = true;
+            continue;
+        }
 
         // If we started in a solid object, or we were in solid space
         //  the whole way, zero out our velocity and return that we
         //  are blocked by floor and wall.
-        if (pm.allsolid)
+        if (pm.allsolid && !sv_ramp_fix.GetBool())
         {
             // entity is trapped in another solid
             VectorCopy(vec3_origin, mv->m_vecVelocity);
             return 4;
         }
 
-        // This part can stuck the player on some surf maps, like surf_ski_2_nova
-        // So I've added the rampfix convar here.
         // If we moved some portion of the total distance, then
         //  copy the end position into the pmove.origin and
         //  zero the plane counter.
         if (pm.fraction > 0)
         {
-            if ((numbumps > 0 && pm.fraction == 1) && !sv_ramp_fix.GetBool())
+            if ((numbumps > 0 && pm.fraction == 1))
             {
                 // There's a precision issue with terrain tracing that can cause a swept box to successfully trace
                 // when the end position is stuck in the triangle.  Re-run the test with an uswept box to catch that
@@ -1120,9 +1188,17 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 TracePlayerBBox(pm.endpos, pm.endpos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, stuck);
                 if (stuck.startsolid || stuck.fraction != 1.0f)
                 {
-                    Msg("Player will become stuck!!!\n");
-                    VectorCopy(vec3_origin, mv->m_vecVelocity);
-                    break;
+                    if (sv_ramp_fix.GetBool())
+                    {
+                        stuck_on_ramp = true;
+                        continue;
+                    }
+                    else
+                    {
+                        Msg("Player will become stuck!!! allfrac: %f pm: %i, %f, %f, %f vs stuck: %i, %f, %f\n", allFraction, pm.startsolid, pm.fraction, pm.plane.normal.z, pm.fractionleftsolid, stuck.startsolid, stuck.fraction, stuck.plane.normal.z);
+                        VectorCopy(vec3_origin, mv->m_vecVelocity);
+                        break;
+                    }
                 }
             }
 
@@ -1134,15 +1210,23 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 Msg("Player will become stuck!!!\n");
             }
 #endif
+            if (sv_ramp_fix.GetBool())
+            {
+                stuck_on_ramp = false;
+            }
+
             // actually covered some distance
-            mv->SetAbsOrigin(pm.endpos);
             VectorCopy(mv->m_vecVelocity, original_velocity);
+            mv->SetAbsOrigin(pm.endpos);
+            VectorCopy(mv->GetAbsOrigin(), fixed_origin);
+            allFraction += pm.fraction;
             numplanes = 0;
         }
 
+
         // If we covered the entire distance, we are done
         //  and can return.
-        if (pm.fraction == 1)
+        if (CloseEnough(pm.fraction, 1.0f, FLT_EPSILON))
         {
             break; // moved the entire distance
         }
@@ -1277,8 +1361,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             if (d <= 0)
             {
                 // Con_DPrintf("Back\n");
-                if (!sv_ramp_fix.GetBool())
-                    VectorCopy(vec3_origin, mv->m_vecVelocity); // RAMPBUG FIX #2
+                VectorCopy(vec3_origin, mv->m_vecVelocity);
                 break;
             }
         }
@@ -1286,8 +1369,9 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
     if (CloseEnough(allFraction, 0.0f, FLT_EPSILON))
     {
-        if (!sv_ramp_fix.GetBool())
-            VectorCopy(vec3_origin, mv->m_vecVelocity); // RAMPBUG FIX #1
+        // We dont want to touch this!
+        // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity that can build up for ever.
+        VectorCopy(vec3_origin, mv->m_vecVelocity);
     }
 
     // Check if they slammed into a wall
