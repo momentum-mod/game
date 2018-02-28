@@ -937,4 +937,56 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 
     BaseClass::EndTouch(pOther);
 }
+
+//-----------------------------------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_reversespeed, CTriggerReverseSpeed);
+
+BEGIN_DATADESC(CTriggerReverseSpeed)
+DEFINE_KEYFIELD(m_bRevertHorizontalSpeed, FIELD_BOOLEAN, "ReverseHorizontal")
+, DEFINE_KEYFIELD(m_bRevertVerticalSpeed, FIELD_BOOLEAN, "ReverseVertical") END_DATADESC();
+
+void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
+{
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
+
+    if (pPlayer != nullptr)
+    {
+        // Reverse x/y velocity.
+        if (m_bRevertHorizontalSpeed)
+        {
+            Vector vecVelocity = pPlayer->GetAbsVelocity();
+            float zVelBackup = vecVelocity.z;
+            vecVelocity.z = 0.0f;
+
+            float flSpeedAmount = vecVelocity.Length2D();
+
+            // We need to compute its direction now to reverse the speed properly.
+            QAngle qDirVelocity;
+            VectorNormalizeFast(vecVelocity);
+            VectorAngles(vecVelocity, qDirVelocity);
+
+            // Revert the direction
+            qDirVelocity.y = AngleNormalize(qDirVelocity.y - 180.0f);
+
+            // Apply the speed.
+            Vector vecNewVelocity;
+            AngleVectors(qDirVelocity, &vecNewVelocity);
+            vecNewVelocity.x *= flSpeedAmount;
+            vecNewVelocity.y *= flSpeedAmount;
+            vecNewVelocity.z = zVelBackup;
+
+            pPlayer->SetAbsVelocity(vecNewVelocity);
+        }
+
+        // Reverse z velocity.
+        if (m_bRevertVerticalSpeed)
+        {
+            Vector vecVelocity = pPlayer->GetAbsVelocity();
+            vecVelocity.z = -vecVelocity.z;
+            pPlayer->SetAbsVelocity(vecVelocity);
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------------------------
