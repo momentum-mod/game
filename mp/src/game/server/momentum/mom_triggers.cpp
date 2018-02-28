@@ -918,6 +918,39 @@ void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
             pPlayer->SetAbsVelocity(vecVelocity);
         }
     }
+
+    BaseClass::StartTouch(pOther);
+}
+
+//-----------------------------------------------------------------------------------------------
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_setspeed, CTriggerSetSpeed);
+
+BEGIN_DATADESC(CTriggerSetSpeed)
+DEFINE_KEYFIELD(m_flSpeedAmount, FIELD_FLOAT, "SpeedAmount")
+, DEFINE_KEYFIELD(m_angWishDirection, FIELD_VECTOR, "Direction") END_DATADESC();
+
+void CTriggerSetSpeed::StartTouch(CBaseEntity *pOther)
+{
+    CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
+
+    if (pPlayer != nullptr)
+    {
+        // As far I know, you can get the same direction by just playing with x/y ,
+        // for getting the same direction as the z angle, except if there is a gimbal lock on the given angle.
+        // I didn't look much about it, but it's pretty interesting. Gotta investigate.
+
+        // Compute velocity direction.
+        Vector vecNewVelocity;
+        AngleVectors(m_angWishDirection, &vecNewVelocity);
+
+        // Apply the speed.
+        vecNewVelocity *= m_flSpeedAmount;
+
+        pPlayer->SetAbsVelocity(vecNewVelocity);
+    }
+
+    BaseClass::StartTouch(pOther);
 }
 
 //-----------------------------------------------------------------------------------------------

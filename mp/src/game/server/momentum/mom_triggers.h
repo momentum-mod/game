@@ -352,13 +352,27 @@ class CTriggerSlide : public CBaseMomentumTrigger
 
 class CTriggerReverseSpeed : public CBaseMomentumTrigger
 {
-    DECLARE_CLASS( CTriggerReverseSpeed , CBaseMomentumTrigger );
+    DECLARE_CLASS(CTriggerReverseSpeed, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
-public:
-    void StartTouch( CBaseEntity *pOther ) OVERRIDE;
-public:
-    bool m_bRevertHorizontalSpeed , m_bRevertVerticalSpeed;
+  public:
+    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+
+  public:
+    bool m_bRevertHorizontalSpeed, m_bRevertVerticalSpeed;
+};
+
+class CTriggerSetSpeed : public CBaseMomentumTrigger
+{
+    DECLARE_CLASS(CTriggerSetSpeed, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+  public:
+    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+
+  public:
+    float m_flSpeedAmount;
+    QAngle m_angWishDirection;
 };
 
 #endif // TIMERTRIGGERS_H

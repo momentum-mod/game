@@ -217,6 +217,12 @@
 	ReverseVertical(integer) : "Reverse vertical speed" : 1 : "Reverse the z velocity."
 ]
 
+@SolidClass base(Trigger) = trigger_momentum_setspeed : "Trigger for setting speed of the momentum player." 
+[
+	SpeedAmount(float) : "Speed amount" : 500 : "Set here the speed length for the velocity direction."
+	Direction(angle) : "Direction (Pitch Yaw Roll)" : "0 0 0" : "Direction of the speed applied."
+]
+
 //-------------------------------------------------------------------------
 //
 // Weapons
