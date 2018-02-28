@@ -996,8 +996,11 @@ void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_setspeed, CTriggerSetSpeed);
 
 BEGIN_DATADESC(CTriggerSetSpeed)
-DEFINE_KEYFIELD(m_flSpeedAmount, FIELD_FLOAT, "SpeedAmount")
-, DEFINE_KEYFIELD(m_angWishDirection, FIELD_VECTOR, "Direction") END_DATADESC();
+DEFINE_KEYFIELD(m_bKeepHorizontalSpeed, FIELD_BOOLEAN, "KeepHorizontalSpeed"),
+    DEFINE_KEYFIELD(m_bKeepVerticalSpeed, FIELD_BOOLEAN, "KeepVerticalSpeed"),
+    DEFINE_KEYFIELD(m_flHorizontalSpeedAmount, FIELD_FLOAT, "HorizontalSpeedAmount"),
+    DEFINE_KEYFIELD(m_flVerticalSpeedAmount, FIELD_FLOAT, "VerticalSpeedAmount"),
+    DEFINE_KEYFIELD(m_angWishDirection, FIELD_VECTOR, "Direction") END_DATADESC();
 
 void CTriggerSetSpeed::StartTouch(CBaseEntity *pOther)
 {
@@ -1009,14 +1012,32 @@ void CTriggerSetSpeed::StartTouch(CBaseEntity *pOther)
         // for getting the same direction as the z angle, except if there is a gimbal lock on the given angle.
         // I didn't look much about it, but it's pretty interesting. Gotta investigate.
 
-        // Compute velocity direction.
+        // Compute velocity direction only from y angle. We ignore these because if the mapper set -90 and 180
+        // , the results on x/y axis velocity direction will be close to 0
+        // and result that the horizontal speed amount won't be set correctly.
+        // Since vertical speed can be set manually anyway, we can ignore and zero the x and z axis on the angle.
+        m_angWishDirection.x = m_angWishDirection.z = 0.0f;
+
         Vector vecNewVelocity;
         AngleVectors(m_angWishDirection, &vecNewVelocity);
 
-        // Apply the speed.
-        vecNewVelocity *= m_flSpeedAmount;
+        Vector vecNewFinalVelocity = pPlayer->GetAbsVelocity();
 
-        pPlayer->SetAbsVelocity(vecNewVelocity);
+        // Apply the speed.
+        vecNewVelocity.x *= m_flHorizontalSpeedAmount;
+        vecNewVelocity.y *= m_flHorizontalSpeedAmount;
+        vecNewVelocity.z = m_flVerticalSpeedAmount;
+
+        if (!m_bKeepVerticalSpeed)
+            vecNewFinalVelocity.z = vecNewVelocity.z;
+
+        if (!m_bKeepHorizontalSpeed)
+        {
+            vecNewFinalVelocity.x = vecNewVelocity.x;
+            vecNewFinalVelocity.y = vecNewVelocity.y;
+        }
+
+        pPlayer->SetAbsVelocity(vecNewFinalVelocity);
     }
 
     BaseClass::StartTouch(pOther);
