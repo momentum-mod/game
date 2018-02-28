@@ -27,7 +27,10 @@ CLocalMaps::~CLocalMaps()
 void CLocalMaps::OnPageShow()
 {
     if (!m_bLoadedMaps)
+    {
         GetNewMapList();
+        GetWorkshopItems();
+    }
 
     StartRefresh();
 }
@@ -76,11 +79,11 @@ void CLocalMaps::FillMapstruct(mapstruct_t *m)
     //Game mode
     m->m_iGameMode = MOMGM_UNKNOWN;
     float tickRate = 0.015f;
-    if (!Q_strnicmp(m->m_szMapName, "surf_", 5))
+    if (!V_strnicmp(m->m_szMapName, "surf_", 5))
     {
         m->m_iGameMode = MOMGM_SURF;
     }
-    else if (!Q_strnicmp(m->m_szMapName, "bhop_", 5))
+    else if (!V_strnicmp(m->m_szMapName, "bhop_", 5))
     {
         m->m_iGameMode = MOMGM_BHOP;
         tickRate = 0.01f;
@@ -113,30 +116,7 @@ void CLocalMaps::GetNewMapList()
     const char *pMapName = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "GAME", &found);
     while (pMapName)
     {       
-        //DevLog("FOUND MAP %s!\n", pMapName);
-        
-        mapdisplay_t map = mapdisplay_t();
-        mapstruct_t m = mapstruct_t();
-        map.m_bDoNotRefresh = true;
-
-        //Map name
-        Q_FileBase(pMapName, m.m_szMapName, MAX_PATH);
-        //DevLog("Stripped name: %s\n", m.m_szMapName);
-
-        FillMapstruct(&m);
-
-        // Map image
-        if (g_pMomentumUtil->MapThumbnailExists(m.m_szMapName))
-        {
-            DevLog("FOUND IMAGE FOR %s!\n", m.m_szMapName);
-            char imagePath[MAX_PATH];
-            Q_snprintf(imagePath, MAX_PATH, "maps/%s", m.m_szMapName);
-            map.m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(scheme()->GetImage(imagePath, false));
-        }
-
-        map.m_mMap = m;
-        m_vecMaps.AddToTail(map);
-
+        AddNewMapToVector(pMapName);
         pMapName = g_pFullFileSystem->FindNext(found);
     }
     g_pFullFileSystem->FindClose(found);
@@ -144,6 +124,29 @@ void CLocalMaps::GetNewMapList()
     m_bLoadedMaps = true;
 
     ApplyGameFilters();
+}
+
+void CLocalMaps::AddNewMapToVector(const char* mapname)
+{
+    mapdisplay_t map = mapdisplay_t();
+    mapstruct_t m = mapstruct_t();
+    map.m_bDoNotRefresh = true;
+
+    //Map name
+    V_FileBase(mapname, m.m_szMapName, MAX_PATH);
+    FillMapstruct(&m);
+
+    // Map image
+    if (g_pMomentumUtil->MapThumbnailExists(m.m_szMapName))
+    {
+        DevLog("FOUND IMAGE FOR %s!\n", m.m_szMapName);
+        char imagePath[MAX_PATH];
+        Q_snprintf(imagePath, MAX_PATH, "maps/%s", m.m_szMapName);
+        map.m_iMapImageIndex = m_pMapList->GetImageList()->AddImage(scheme()->GetImage(imagePath, false));
+    }
+
+    map.m_mMap = m;
+    m_vecMaps.AddToTail(map);
 }
 
 //-----------------------------------------------------------------------------
@@ -236,6 +239,81 @@ void CLocalMaps::ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool
 void CLocalMaps::SetEmptyListText()
 {
     m_pMapList->SetEmptyListText("#MOM_MapSelector_NoMaps");
+}
+
+void CLocalMaps::GetWorkshopItems()
+{
+    //get a vector of all the item handles
+    const uint32 numItems = steamapicontext->SteamUGC()->GetNumSubscribedItems();
+    const auto vecItems = new PublishedFileId_t[numItems];
+    steamapicontext->SteamUGC()->GetSubscribedItems(vecItems, numItems);
+
+    //check them all
+    for(uint32 i = 0; i < numItems; ++i)
+    {
+        const auto currentItem = vecItems[i];
+        const uint32 flags = steamapicontext->SteamUGC()->GetItemState(currentItem);
+        if (!(flags & k_EItemStateSubscribed)) //we're not subscribed to this item - how did this even happen?
+            continue;
+            
+        if (!(flags & k_EItemStateInstalled) || flags & k_EItemStateNeedsUpdate) //we're subscribed, but item is not installed, OR item requires an update
+        {
+            const auto call = steamapicontext->SteamUGC()->DownloadItem(currentItem, true); 
+            if (call)
+            {
+                m_DownloadCompleteCallback.Set(call, this, &CLocalMaps::OnWorkshopDownloadComplete);
+            }
+        }
+        else if (flags & k_EItemStateInstalled)
+        {
+            //item is already installed, lets add it to the list!
+            AddWorkshopItemToLocalMaps(currentItem);
+        }
+    }
+    delete[] vecItems;
+}
+
+//asynchronous call result for workshop item download
+void CLocalMaps::OnWorkshopDownloadComplete(DownloadItemResult_t* pCallback, bool bIOFailure)
+{
+    if (bIOFailure || !(pCallback->m_eResult & k_EResultOK ))
+    {
+        Warning("Steam workshop item failed to download! ID: %llu Error code: %d",
+            pCallback->m_nPublishedFileId,
+            pCallback->m_eResult);
+        return;
+    }
+    AddWorkshopItemToLocalMaps(pCallback->m_nPublishedFileId);
+}
+
+void CLocalMaps::AddWorkshopItemToLocalMaps(PublishedFileId_t id)
+{
+    //get info about the item from SteamUGC
+    uint64 sizeOnDisk;
+    char szFolder[MAX_PATH];
+    uint32 timeStamp;
+    if (!steamapicontext->SteamUGC()->GetItemInstallInfo(id, &sizeOnDisk, szFolder, sizeof(szFolder), &timeStamp))
+    {
+        Warning("Could not get content for workshop item %llu. The item has no content or is not installed!\n", id);
+        return;
+    }
+
+    //find the first bsp file in the workshop folder
+    FileFindHandle_t found;
+    char pOutPath[MAX_PATH];
+    V_ComposeFileName(szFolder, "*.bsp", pOutPath, MAX_PATH);
+    const char *pMapName = g_pFullFileSystem->FindFirst(pOutPath, &found);
+
+    while (pMapName) //add multiple maps if the workshop item contained more than one
+    {
+        AddNewMapToVector(pMapName);
+        //MOM_TODO: add thumbnail images? 
+
+        pMapName = g_pFullFileSystem->FindNext(found); 
+    }
+
+    //now our workshop items are added, refresh the map list again
+    StartRefresh();
 }
 
 //-----------------------------------------------------------------------------
