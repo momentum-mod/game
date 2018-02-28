@@ -17,26 +17,30 @@ public:
     ~CLocalMaps();
 
     // property page handlers
-    virtual void OnPageShow();
+    virtual void OnPageShow() override;
 
     // IGameList handlers
     // returns true if the game list supports the specified ui elements
-    virtual bool SupportsItem(InterfaceItem_e item);
+    virtual bool SupportsItem(InterfaceItem_e item) override;
 
     // Control which button are visible.
     void ManualShowButtons(bool bShowConnect, bool bShowRefreshAll, bool bShowFilter);
 
     //Filters based on the filter data
-    void StartRefresh() OVERRIDE;
-    void GetNewMapList();//called upon loading
+    void StartRefresh() override;
+    void GetNewMapList() override;//called upon loading
+    void AddNewMapToVector(const char* mapname);
 
-    virtual void OnMapStart() { BaseClass::OnMapStart(); }
+    virtual void OnMapStart() override { BaseClass::OnMapStart(); }
 
     // Tell the game list what to put in there when there are no games found.
     virtual void SetEmptyListText();
 
-    //virtual void LoadFilterSettings() {};//MOM_TODO: Make this sort by name/gametype/difficulty?
+    void GetWorkshopItems();
+    void OnWorkshopDownloadComplete(DownloadItemResult_t *pCallback, bool bIOFailure);
+    CCallResult<CLocalMaps, DownloadItemResult_t> m_DownloadCompleteCallback;
 
+    void AddWorkshopItemToLocalMaps(PublishedFileId_t id);
 private:
     // context menu message handlers
     MESSAGE_FUNC_INT(OnOpenContextMenu, "OpenContextMenu", itemID);
@@ -45,7 +49,7 @@ private:
     bool m_bLoadedMaps;
 
     //Fills a mapstruct with data read from local files
-    void FillMapstruct(mapstruct_t *);
+    static void FillMapstruct(mapstruct_t *);
 };
 
 #endif // LOCALMAPS_H
