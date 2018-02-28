@@ -183,7 +183,7 @@ void CLocalMaps::StartRefresh()
                 m_pMapList->RemoveItem(pMap->m_iListID);
                 pMap->m_iListID = GetInvalidMapListID();
             }
-            return;
+            continue;
         }
 
         // update UI
@@ -301,11 +301,12 @@ void CLocalMaps::AddWorkshopItemToLocalMaps(PublishedFileId_t id)
     //find the first bsp file in the workshop folder
     FileFindHandle_t found;
     char pOutPath[MAX_PATH];
-    V_ComposeFileName(szFolder, "*.bsp", pOutPath, MAX_PATH);
+    V_ComposeFileName(szFolder, "maps/*.bsp", pOutPath, MAX_PATH);
     const char *pMapName = g_pFullFileSystem->FindFirst(pOutPath, &found);
 
     while (pMapName) //add multiple maps if the workshop item contained more than one
     {
+        g_pFullFileSystem->AddSearchPath(szFolder, "GAME");
         AddNewMapToVector(pMapName);
         //MOM_TODO: add thumbnail images? 
 
