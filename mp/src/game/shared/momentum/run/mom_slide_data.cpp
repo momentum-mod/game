@@ -9,6 +9,6 @@ CMomPlayerSlideData::CMomPlayerSlideData(const CMomPlayerSlideData &src) { *this
 
 CMomPlayerSlideData &CMomPlayerSlideData::operator=(const CMomPlayerSlideData &src)
 {
-    memcpy(this, &src, sizeof(CMomPlayerSlideData));
+     memcpy(this, &src, sizeof(CMomPlayerSlideData));
     return *this;
 }
