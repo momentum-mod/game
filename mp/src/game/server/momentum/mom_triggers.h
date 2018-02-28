@@ -387,8 +387,9 @@ class CTriggerSetSpeed : public CBaseMomentumTrigger
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
-    float m_flSpeedAmount;
+    float m_flHorizontalSpeedAmount, m_flVerticalSpeedAmount;
     QAngle m_angWishDirection;
+    bool m_bKeepHorizontalSpeed, m_bKeepVerticalSpeed;
 };
 
 #endif // TIMERTRIGGERS_H
