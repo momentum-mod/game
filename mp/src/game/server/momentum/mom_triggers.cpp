@@ -940,20 +940,20 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 
 //-----------------------------------------------------------------------------------------------
 
-LINK_ENTITY_TO_CLASS(trigger_momentum_reversespeed, CTriggerReverseSpeed);
+LINK_ENTITY_TO_CLASS(trigger_momentum_bouncespeed, CTriggerBounceSpeed);
 
-BEGIN_DATADESC(CTriggerReverseSpeed)
-DEFINE_KEYFIELD(m_bRevertHorizontalSpeed, FIELD_BOOLEAN, "ReverseHorizontal")
-, DEFINE_KEYFIELD(m_bRevertVerticalSpeed, FIELD_BOOLEAN, "ReverseVertical") END_DATADESC();
+BEGIN_DATADESC(CTriggerBounceSpeed)
+DEFINE_KEYFIELD(m_bBounceHorizontalSpeed, FIELD_BOOLEAN, "BounceHorizontal")
+, DEFINE_KEYFIELD(m_bBounceVerticalSpeed, FIELD_BOOLEAN, "BounceVertical") END_DATADESC();
 
-void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
+void CTriggerBounceSpeed::StartTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
 
     if (pPlayer != nullptr)
     {
         // Reverse x/y velocity.
-        if (m_bRevertHorizontalSpeed)
+        if (m_bBounceHorizontalSpeed)
         {
             Vector vecVelocity = pPlayer->GetAbsVelocity();
             float zVelBackup = vecVelocity.z;
@@ -980,7 +980,7 @@ void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
         }
 
         // Reverse z velocity.
-        if (m_bRevertVerticalSpeed)
+        if (m_bBounceVerticalSpeed)
         {
             Vector vecVelocity = pPlayer->GetAbsVelocity();
             vecVelocity.z = -vecVelocity.z;
