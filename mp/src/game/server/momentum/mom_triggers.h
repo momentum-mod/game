@@ -350,16 +350,16 @@ class CTriggerSlide : public CBaseMomentumTrigger
     // float m_flSlideGravity;
 };
 
-class CTriggerReverseSpeed : public CBaseMomentumTrigger
+class CTriggerBounceSpeed : public CBaseMomentumTrigger
 {
-    DECLARE_CLASS(CTriggerReverseSpeed, CBaseMomentumTrigger);
+    DECLARE_CLASS(CTriggerBounceSpeed, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
   public:
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
-    bool m_bRevertHorizontalSpeed, m_bRevertVerticalSpeed;
+    bool m_bBounceHorizontalSpeed, m_bBounceVerticalSpeed;
 };
 
 class CTriggerSetSpeed : public CBaseMomentumTrigger

@@ -211,10 +211,10 @@
 	//GravityValue(float) : "Gravity Value" : 1.0 : "Gravity value while sliding. (this is the gravity used while being on a slope."
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_reversespeed : "Trigger for reversing speed of the momentum player." 
+@SolidClass base(Trigger) = trigger_momentum_bouncespeed : "Trigger for bouncing the speed of the momentum player." 
 [
-	ReverseHorizontal(integer) : "Reverse horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
-	ReverseVertical(integer) : "Reverse vertical speed" : 1 : "Reverse the z velocity."
+	BounceHorizontal(integer) : "Bounce horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
+	BounceVertical(integer) : "Bounce vertical speed" : 1 : "Reverse the z velocity."
 ]
 
 @SolidClass base(Trigger) = trigger_momentum_setspeed : "Trigger for setting speed of the momentum player." 
