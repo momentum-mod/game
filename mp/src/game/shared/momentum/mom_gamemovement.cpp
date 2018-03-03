@@ -1223,7 +1223,10 @@ void CMomentumGameMovement::FullWalkMove()
         // Was jump button pressed?
         if (mv->m_nButtons & IN_JUMP)
         {
-            CheckJumpButton();
+            // If we jump, then we avoid to get stuck to ground with sliding stuffs otherwhise we can't really jump.
+            // We will just wait for the next starttouch of the slide trigger.
+            if (CheckJumpButton())
+                m_pPlayer->m_SrvData.m_SlideData.Reset();
         }
         else
         {
@@ -1305,7 +1308,6 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        // MOM_TODO: The player can't jump with it.
         if (bIsSliding && m_pPlayer->m_SrvData.m_SlideData.IsStuckGround())
         {
             StuckGround();
@@ -1339,8 +1341,8 @@ void CMomentumGameMovement::StuckGround(void)
 
     float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
 
-    if (abs(fAdjust) < 4096.0f) // Check if it's reasonable. If yes then apply our adjustement + our offset
-        vAbsOrigin.z -= fAdjust;
+    // Apply our adjustement + our offset
+    vAbsOrigin.z -= fAdjust;
 
     mv->SetAbsOrigin(vAbsOrigin);
 }
