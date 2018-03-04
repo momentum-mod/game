@@ -944,7 +944,9 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_bouncespeed, CTriggerBounceSpeed);
 
 BEGIN_DATADESC(CTriggerBounceSpeed)
 DEFINE_KEYFIELD(m_bBounceHorizontalSpeed, FIELD_BOOLEAN, "BounceHorizontal")
-, DEFINE_KEYFIELD(m_bBounceVerticalSpeed, FIELD_BOOLEAN, "BounceVertical") END_DATADESC();
+, DEFINE_KEYFIELD(m_bBounceVerticalSpeed, FIELD_BOOLEAN, "BounceVertical"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink") END_DATADESC();
 
 void CTriggerBounceSpeed::StartTouch(CBaseEntity *pOther)
 {
@@ -986,10 +988,84 @@ void CTriggerBounceSpeed::StartTouch(CBaseEntity *pOther)
             vecVelocity.z = -vecVelocity.z;
             pPlayer->SetAbsVelocity(vecVelocity);
         }
+
+        vecCalculatedVel = pPlayer->GetAbsVelocity();
     }
 
     BaseClass::StartTouch(pOther);
+
+    if (m_bOnThink)
+    {
+        SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+
+    m_bShouldThink = true;
 }
+
+void CTriggerBounceSpeed::Think()
+{
+    BaseClass::Think();
+
+    if (m_bOnThink)
+    {
+        CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+        if (pPlayer != nullptr && m_bShouldThink)
+        {
+            // Shall we will use the already calculated vel here, if we recalculate we could be stuck into a trigger since it
+            // will take the new velocity already bounced?
+            // If the interval is high enough it shouldn't matter.
+            //pPlayer->SetAbsVelocity(vecCalculatedVel);
+
+            // Reverse x/y velocity.
+            if ( m_bBounceHorizontalSpeed )
+            {
+                Vector vecVelocity = pPlayer->GetAbsVelocity();
+                float zVelBackup = vecVelocity.z;
+                vecVelocity.z = 0.0f;
+
+                float flSpeedAmount = vecVelocity.Length2D();
+
+                // We need to compute its direction now to reverse the speed properly.
+                QAngle qDirVelocity;
+                VectorNormalizeFast( vecVelocity );
+                VectorAngles( vecVelocity , qDirVelocity );
+
+                // Revert the direction
+                qDirVelocity.y = AngleNormalize( qDirVelocity.y - 180.0f );
+
+                // Apply the speed.
+                Vector vecNewVelocity;
+                AngleVectors( qDirVelocity , &vecNewVelocity );
+                vecNewVelocity.x *= flSpeedAmount;
+                vecNewVelocity.y *= flSpeedAmount;
+                vecNewVelocity.z = zVelBackup;
+
+                pPlayer->SetAbsVelocity( vecNewVelocity );
+            }
+
+            // Reverse z velocity.
+            if ( m_bBounceVerticalSpeed )
+            {
+                Vector vecVelocity = pPlayer->GetAbsVelocity();
+                vecVelocity.z = -vecVelocity.z;
+                pPlayer->SetAbsVelocity( vecVelocity );
+            }
+        }
+
+        SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+}
+
+void CTriggerBounceSpeed::EndTouch(CBaseEntity *pOther) { m_bShouldThink = false; }
 
 //-----------------------------------------------------------------------------------------------
 
@@ -1000,7 +1076,9 @@ DEFINE_KEYFIELD(m_bKeepHorizontalSpeed, FIELD_BOOLEAN, "KeepHorizontalSpeed"),
     DEFINE_KEYFIELD(m_bKeepVerticalSpeed, FIELD_BOOLEAN, "KeepVerticalSpeed"),
     DEFINE_KEYFIELD(m_flHorizontalSpeedAmount, FIELD_FLOAT, "HorizontalSpeedAmount"),
     DEFINE_KEYFIELD(m_flVerticalSpeedAmount, FIELD_FLOAT, "VerticalSpeedAmount"),
-    DEFINE_KEYFIELD(m_angWishDirection, FIELD_VECTOR, "Direction") END_DATADESC();
+    DEFINE_KEYFIELD(m_angWishDirection, FIELD_VECTOR, "Direction"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink") END_DATADESC();
 
 void CTriggerSetSpeed::StartTouch(CBaseEntity *pOther)
 {
@@ -1038,9 +1116,44 @@ void CTriggerSetSpeed::StartTouch(CBaseEntity *pOther)
         }
 
         pPlayer->SetAbsVelocity(vecNewFinalVelocity);
+        vecCalculatedVel = vecNewFinalVelocity;
     }
 
     BaseClass::StartTouch(pOther);
+
+    if (m_bOnThink)
+    {
+        SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+
+    m_bShouldThink = true;
 }
+
+void CTriggerSetSpeed::Think()
+{
+    BaseClass::Think();
+
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer != nullptr && m_bShouldThink)
+    {
+        pPlayer->SetAbsVelocity(vecCalculatedVel);
+    }
+
+    if (m_bOnThink)
+    {
+        SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+}
+
+void CTriggerSetSpeed::EndTouch(CBaseEntity *pOther) { m_bShouldThink = false; }
 
 //-----------------------------------------------------------------------------------------------
