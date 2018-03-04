@@ -215,6 +215,8 @@
 [
 	BounceHorizontal(integer) : "Bounce horizontal speed" : 1 : "Reverse accordingly the velocity based on x/y axis."
 	BounceVertical(integer) : "Bounce vertical speed" : 1 : "Reverse the z velocity."
+	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
+	Interval(float) : "Interval" : 1 : "Set here the speed length based on x/y axis for the velocity direction."
 ]
 
 @SolidClass base(Trigger) = trigger_momentum_setspeed : "Trigger for setting speed of the momentum player." 
@@ -224,6 +226,8 @@
 	HorizontalSpeedAmount(float) : "Horizontal speed amount" : 500 : "Set here the speed length based on x/y axis for the velocity direction."
 	VerticalSpeedAmount(float) : "Vertical speed amount" : 100 : "Set here the speed based on z axis for the velocity direction."
 	Direction(angle) : "Direction (Pitch Yaw Roll)" : "0 0 0" : "Direction of the speed applied. Keep in mind that only Y angle is taken into account because vertical speed can be set already."
+	OnThink(integer) : "Update every intervals" : 0 : "If you want to make the trigger updating for each defined interval, set it to 1."
+	Interval(float) : "Interval" : 1 : "Set here the speed length based on x/y axis for the velocity direction."
 ]
 
 //-------------------------------------------------------------------------

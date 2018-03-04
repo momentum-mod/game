@@ -357,9 +357,14 @@ class CTriggerBounceSpeed : public CBaseMomentumTrigger
 
   public:
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void Think(void) OVERRIDE;
+    void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
     bool m_bBounceHorizontalSpeed, m_bBounceVerticalSpeed;
+    float m_flInterval;
+    bool m_bOnThink, m_bShouldThink;
+    Vector vecCalculatedVel;
 };
 
 class CTriggerSetSpeed : public CBaseMomentumTrigger
@@ -369,11 +374,16 @@ class CTriggerSetSpeed : public CBaseMomentumTrigger
 
   public:
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void Think(void) OVERRIDE;
+    void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
     float m_flHorizontalSpeedAmount, m_flVerticalSpeedAmount;
     QAngle m_angWishDirection;
     bool m_bKeepHorizontalSpeed, m_bKeepVerticalSpeed;
+    float m_flInterval;
+    bool m_bOnThink, m_bShouldThink;
+    Vector vecCalculatedVel;
 };
 
 #endif // TIMERTRIGGERS_H
