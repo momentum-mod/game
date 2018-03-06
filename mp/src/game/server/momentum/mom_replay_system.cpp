@@ -95,6 +95,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     {
         replaySavedEvent->SetBool("save", true);
         replaySavedEvent->SetString("filename", newRecordingName);
+        replaySavedEvent->SetInt("time", static_cast<int>(m_pReplay->GetRunTime() * 1000.0f));
         gameeventmanager->FireEvent(replaySavedEvent);
     }
     // Load the last run that we did in case we want to watch it

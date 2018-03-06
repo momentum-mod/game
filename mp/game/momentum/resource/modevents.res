@@ -59,6 +59,7 @@
 	{
 		"filename" "string"
         "save" "bool"
+        "time" "long" // time in milliseconds
 	}
     "gravity_change"
     {
