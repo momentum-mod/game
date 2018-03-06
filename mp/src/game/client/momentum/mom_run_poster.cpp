@@ -2,26 +2,81 @@
 
 #include "filesystem.h"
 #include "mom_run_poster.h"
+#include "mom_shareddefs.h"
+
+#include <tier0/memdbgon.h>
 
 extern IFileSystem *filesystem;
 
-CRunPoster::CRunPoster() {}
+#define ENABLE_HTTP_LEADERBOARDS 0
+
+CRunPoster::CRunPoster(): m_hCurrentLeaderboard(0)
+{
+}
 
 CRunPoster::~CRunPoster() {}
 
-void CRunPoster::Init()
+void CRunPoster::PostInit()
 {
     // We need to listen for "replay_save"
     ListenForGameEvent("replay_save");
 }
 
+void CRunPoster::LevelInitPostEntity()
+{
+    const char *pMapName = MapName();
+    if (pMapName)
+    {
+        SteamAPICall_t findCall = steamapicontext->SteamUserStats()->FindLeaderboard(pMapName);
+        m_cLeaderboardFindResult.Set(findCall, this, &CRunPoster::OnLeaderboardFind);
+    }
+}
+
+void CRunPoster::LevelShutdownPreClearSteamAPIContext()
+{
+    m_hCurrentLeaderboard = 0;
+}
+
 void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 {
-    if (!Q_strcmp("replay_save", pEvent->GetName()) && pEvent->GetBool("save"))
+    if (pEvent->GetBool("save"))
     {
-        char filePath[MAX_PATH];
+        if (!m_hCurrentLeaderboard)
+        {
+            Warning("Could not upload run: leaderboard doesn't exist!\n");
+            // MOM_TODO: Make the run_posted event here with the above message?
+            return;
+        }
+
+        // Upload the score
+        int runTime = pEvent->GetInt("time"); // Time in milliseconds
+        if (!runTime)
+        {
+           Warning("Could not upload run: time is 0 milliseconds!\n");
+           // MOM_TODO: Make the run_posted event here with the above message?
+           return;
+        }
+
+        SteamAPICall_t uploadScore = steamapicontext->SteamUserStats()->UploadLeaderboardScore(m_hCurrentLeaderboard, 
+            k_ELeaderboardUploadScoreMethodKeepBest, runTime, nullptr, 0);
+        m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
+
+        // MOM_TODO: Append the replay file to the leaderboard entry
+        /*char filePath[MAX_PATH];
         const char *filename = pEvent->GetString("filename");
         Q_ComposeFileName(RECORDING_PATH, filename, filePath, MAX_PATH);
+
+        // Get the full path to the recording
+        char fullPath[MAX_PATH];
+        g_pFullFileSystem->RelativePathToFullPath_safe(filePath, "MOD", fullPath);
+
+        // Upload this bad boy
+        //steamapicontext->SteamUGC()->CreateItem(steamapicontext->SteamUtils()->GetAppID(), k_EWorkshopFileTypeGameManagedItem);
+        // OR
+        SteamAPICall_t UGCcall = steamapicontext->SteamRemoteStorage()->FileShare(fullPath); // Not sure if this is right...
+        m_cUGCUploaded.Set(UGCcall, this, &OnUGCUploaded);*/
+
+#if ENABLE_HTTP_LEADERBOARDS
         CUtlBuffer buf;
         if (steamapicontext && steamapicontext->SteamHTTP() && filesystem->ReadFile(filePath, "MOD", buf))
         {
@@ -45,9 +100,63 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
                 steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
             }
         }
+#endif
     }
 }
 
+void CRunPoster::OnLeaderboardFind(LeaderboardFindResult_t* pResult, bool bIOFailure)
+{
+    if (bIOFailure || !pResult->m_bLeaderboardFound)
+    {
+        Warning("No leaderboard found for map %s!\n", MapName());
+        return;
+    }
+
+    m_hCurrentLeaderboard = pResult->m_hSteamLeaderboard;
+}
+
+void CRunPoster::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t* pResult, bool bIOFailure)
+{
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("run_upload");
+
+    if (bIOFailure || !pResult->m_bSuccess)
+    {
+        pEvent->SetBool("run_posted", false);
+        // MOM_TODO: If it didn't upload, hijack the run_upload event with a message here?
+        return;
+    }
+
+    pEvent->SetBool("run_posted", true);
+    if (gameeventmanager->FireEvent(pEvent))
+        ConColorMsg(Color(0, 255, 0, 255), "Uploaded run to the leaderboards, check it out!\n");
+    // Still need to upload UGC... (already taken care of in FireEvent)
+}
+
+void CRunPoster::OnLeaderboardUGCSet(LeaderboardUGCSet_t* pResult, bool bIOFailure)
+{
+    if (bIOFailure || pResult->m_eResult != k_EResultOK)
+    {
+        Warning("Failed to upload replay file to leaderboard! Result: %i\n", pResult->m_eResult);
+        return;
+    }
+
+    // MOM_TODO: This is chronologically the last step to uploading a run. Fire the event here?
+    //ConColorMsg(Color(0, 255, 0, 255), "Uploaded replay file to leaderboards, check it out!\n");
+}
+
+void CRunPoster::OnUGCUploaded(RemoteStorageFileShareResult_t* pResult, bool bIOFailure)
+{
+    if (bIOFailure || pResult->m_eResult != k_EResultOK)
+    {
+        Warning("Could not upload user replay file! Result %i\n", pResult->m_eResult);
+        return;
+    }
+
+    // Now we attach to the leaderboard
+    //SteamAPICall_t UGCLeaderboardCall = steamapicontext->SteamUserStats()->AttachLeaderboardUGC(m_hCurrentLeaderboard, pResult->m_hFile);
+}
+
+#if ENABLE_HTTP_LEADERBOARDS
 void CRunPoster::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
 {
     // if (bIOFailure)
@@ -113,6 +222,7 @@ void CRunPoster::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFai
     // pDataPtr = nullptr;
     // steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
+#endif
 
 static CRunPoster s_momRunposter;
 CRunPoster *g_MOMRunPoster = &s_momRunposter;

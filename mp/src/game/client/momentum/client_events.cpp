@@ -37,7 +37,6 @@ bool CMOMClientEvents::Init()
 void CMOMClientEvents::PostInit()
 {
     g_MOMEventListener->Init(); // Hook into game events
-    //g_MOMRunPoster->Init();     // Get ready to post runs...
 
     // enable console by default
     ConVarRef con_enable("con_enable");
