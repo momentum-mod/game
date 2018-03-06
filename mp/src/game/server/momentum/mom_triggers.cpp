@@ -477,7 +477,8 @@ void CTriggerTimerStop::EndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_checkpoint, CTriggerCheckpoint);
 
 BEGIN_DATADESC(CTriggerCheckpoint)
-DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"), END_DATADESC();
+DEFINE_KEYFIELD(m_iCheckpointNumber, FIELD_INTEGER, "checkpoint"),
+    DEFINE_OUTPUT(m_ResetOnehops, "OnResetOnehops") END_DATADESC();
 
 void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
 {
@@ -485,6 +486,7 @@ void CTriggerCheckpoint::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
+        m_ResetOnehops.FireOutput(pPlayer, this);
         pPlayer->SetCurrentCheckpointTrigger(this);
         pPlayer->RemoveAllOnehops();
     }
@@ -583,8 +585,8 @@ void CTriggerTeleportCheckpoint::StartTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_onehop, CTriggerOnehop);
 
 BEGIN_DATADESC(CTriggerOnehop)
-DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold")
-END_DATADESC();
+DEFINE_KEYFIELD(m_fMaxHoldSeconds, FIELD_FLOAT, "hold"),
+    DEFINE_OUTPUT(m_hopNoLongerJumpable, "OnHopNoLongerJumpable") END_DATADESC();
 
 CTriggerOnehop::CTriggerOnehop() : m_fStartTouchedTime(-1.0), m_fMaxHoldSeconds(1){};
 
@@ -617,19 +619,43 @@ void CTriggerOnehop::Think()
     {
         SetDestinationEnt(pPlayer->GetCurrentCheckpointTrigger());
         HandleTeleport(pPlayer);
+
+        if (!m_bhopNoLongerJumpableFired)
+        {
+            m_hopNoLongerJumpable.FireOutput(pPlayer, this);
+            m_bhopNoLongerJumpableFired = true;
+        }
     }
 }
+
+void CTriggerOnehop::EndTouch(CBaseEntity *pOther)
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
+    if (pPlayer != nullptr)
+    {
+        m_hopNoLongerJumpable.FireOutput(pPlayer, this);
+        m_bhopNoLongerJumpableFired = true;
+    }
+}
+
 //-----------------------------------------------------------------------------------------------
 
 //------- CTriggerResetOnehop -------------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_resetonehop, CTriggerResetOnehop);
+
+BEGIN_DATADESC(CTriggerResetOnehop)
+DEFINE_OUTPUT(m_ResetOnehops, "OnResetOnehops")
+END_DATADESC();
 
 void CTriggerResetOnehop::StartTouch(CBaseEntity *pOther)
 {
     BaseClass::StartTouch(pOther);
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
+    {
+        m_ResetOnehops.FireOutput(pPlayer, this);
         pPlayer->RemoveAllOnehops();
+    }
 }
 //-----------------------------------------------------------------------------------------------
 
@@ -1016,13 +1042,12 @@ void CTriggerBounceSpeed::Think()
 
         if (pPlayer != nullptr && m_bShouldThink)
         {
-            // Shall we will use the already calculated vel here, if we recalculate we could be stuck into a trigger since it
-            // will take the new velocity already bounced?
-            // If the interval is high enough it shouldn't matter.
-            //pPlayer->SetAbsVelocity(vecCalculatedVel);
+            // Shall we will use the already calculated vel here, if we recalculate we could be stuck into a trigger
+            // since it will take the new velocity already bounced? If the interval is high enough it shouldn't matter.
+            // pPlayer->SetAbsVelocity(vecCalculatedVel);
 
             // Reverse x/y velocity.
-            if ( m_bBounceHorizontalSpeed )
+            if (m_bBounceHorizontalSpeed)
             {
                 Vector vecVelocity = pPlayer->GetAbsVelocity();
                 float zVelBackup = vecVelocity.z;
@@ -1032,28 +1057,28 @@ void CTriggerBounceSpeed::Think()
 
                 // We need to compute its direction now to reverse the speed properly.
                 QAngle qDirVelocity;
-                VectorNormalizeFast( vecVelocity );
-                VectorAngles( vecVelocity , qDirVelocity );
+                VectorNormalizeFast(vecVelocity);
+                VectorAngles(vecVelocity, qDirVelocity);
 
                 // Revert the direction
-                qDirVelocity.y = AngleNormalize( qDirVelocity.y - 180.0f );
+                qDirVelocity.y = AngleNormalize(qDirVelocity.y - 180.0f);
 
                 // Apply the speed.
                 Vector vecNewVelocity;
-                AngleVectors( qDirVelocity , &vecNewVelocity );
+                AngleVectors(qDirVelocity, &vecNewVelocity);
                 vecNewVelocity.x *= flSpeedAmount;
                 vecNewVelocity.y *= flSpeedAmount;
                 vecNewVelocity.z = zVelBackup;
 
-                pPlayer->SetAbsVelocity( vecNewVelocity );
+                pPlayer->SetAbsVelocity(vecNewVelocity);
             }
 
             // Reverse z velocity.
-            if ( m_bBounceVerticalSpeed )
+            if (m_bBounceVerticalSpeed)
             {
                 Vector vecVelocity = pPlayer->GetAbsVelocity();
                 vecVelocity.z = -vecVelocity.z;
-                pPlayer->SetAbsVelocity( vecVelocity );
+                pPlayer->SetAbsVelocity(vecVelocity);
             }
         }
 
