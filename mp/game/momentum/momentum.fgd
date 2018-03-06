@@ -105,9 +105,15 @@
     checkpoint(integer) : "Checkpoint Number" : -1 : "An optional number to assign to this checkpoint, used by filter_activator_checkpoint."
 ]
 
-@SolidClass base(TeleTrigger) = trigger_momentum_teleport_checkpoint : "Trigger that teleports to the last trigger_momentum_timer_checkpoint." []
+@SolidClass base(TeleTrigger) = trigger_momentum_teleport_checkpoint : "Trigger that teleports to the last trigger_momentum_timer_checkpoint." 
+[
+	output OnResetOnehops(void) : "Fires when all hops are being reset."
+]
 
-@SolidClass base(Trigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." []
+@SolidClass base(Trigger) = trigger_momentum_resetonehop : "Trigger that resets one hops." 
+[
+	output OnResetOnehops(void) : "Fires when all hops are being reset."
+]
 
 @SolidClass base(HopTrigger) = trigger_momentum_onehop : "Trigger that only allows for one hop."
 [
@@ -116,8 +122,8 @@
 		2 : "Reset hop state if player hops onto another different onehop" : 1
 	]
 	// Features being worked
-	//output OnTimerReset(void) : "Fires when the timer of the trigger is reset"
-	//output OnHopNoLongerJumpable(void) : "Fires when the hop is no longer jumpable"
+	output OnHopNoLongerJumpable(void) : "Fires when the hop is no longer jumpable"
+	//output OnResetOnehop(void) : "Fires when the hop is being reset."
 ]
 
 @SolidClass base(HopTrigger) = trigger_momentum_multihop : "Trigger that allows for multiple hops, as long as the player hops." []
