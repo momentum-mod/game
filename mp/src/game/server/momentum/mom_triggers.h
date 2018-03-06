@@ -111,6 +111,8 @@ class CTriggerCheckpoint : public CBaseMomentumTrigger
 
   private:
     int m_iCheckpointNumber;
+    // Fires when it resets all one hops.
+    COutputEvent m_ResetOnehops;
 };
 
 // CTriggerStage
@@ -209,26 +211,39 @@ class CTriggerOnehop : public CTriggerTeleportEnt
     float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think() OVERRIDE;
+    void EndTouch(CBaseEntity *) OVERRIDE;
     void AfterTeleport() OVERRIDE
     {
         m_fStartTouchedTime = -1.0f;
         SetDestinationEnt(nullptr);
     }
 
+    void SethopNoLongerJumpableFired(bool bState) { m_bhopNoLongerJumpableFired = bState; }
+
   private:
     // The time that the player initally touched the trigger
     float m_fStartTouchedTime;
     // Seconds to hold before activating the teleport
     float m_fMaxHoldSeconds;
+    // Fires the output when the player cannot go back to the trigger
+    COutputEvent m_hopNoLongerJumpable;
+    // Is m_hopNoLongerJumpable was already fired?
+    bool m_bhopNoLongerJumpableFired;
 };
 
 // CTriggerResetOnehop
 class CTriggerResetOnehop : public CBaseMomentumTrigger
 {
+  public:
     DECLARE_CLASS(CTriggerResetOnehop, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
 
   public:
     void StartTouch(CBaseEntity *) OVERRIDE;
+
+  private:
+    // Fires when it resets all one hops.
+    COutputEvent m_ResetOnehops;
 };
 
 // CTriggerMultihop
