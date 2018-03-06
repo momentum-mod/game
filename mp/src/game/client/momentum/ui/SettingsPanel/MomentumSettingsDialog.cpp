@@ -10,6 +10,7 @@
 #include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/pch_vgui_controls.h>
+#include "clientmode.h"
 
 #include "tier0/memdbgon.h"
 
