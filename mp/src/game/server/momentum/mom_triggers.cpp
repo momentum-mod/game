@@ -311,7 +311,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
 
             // Check to see if we should calculate the timer offset fix
-            if (ContainsPosition(pPlayer->GetPrevOrigin()))
+            if (ContainsPosition(pPlayer->GetPreviousOrigin()))
                 DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
             else
             {
