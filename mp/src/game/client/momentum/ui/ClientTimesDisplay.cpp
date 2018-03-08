@@ -1730,7 +1730,7 @@ void CClientTimesDisplay::OnContextGoToMap(const char* map)
 {
     // MOM_TODO: We're going to need to feed this into a map downloader first, if they don't have the map!
     char command[128];
-    Q_snprintf(command, 128, "progress_enable;map %s\n", map);
+    Q_snprintf(command, 128, "map %s\n", map);
     ShowPanel(false);
     engine->ClientCmd_Unrestricted(command);
 }
