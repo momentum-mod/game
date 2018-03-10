@@ -242,7 +242,7 @@
 	}
 	"LowerSpeedEntry"
 	{
-        "ControlName" "CCvarTextEntry"
+        "ControlName" "CvarTextEntry"
         "fieldName" "LowerSpeedEntry"
 		"xpos"		"12"
 		"ypos"		"90"
@@ -265,12 +265,6 @@
         "actionsignallevel" "1"
 		"NumericInputOnly" "1"
 		"cvar_name" "mom_weapon_speed_lower"
-		// This is only useful if NumericInputOnly is 1
-		// These 4 settings defs are: 2, 0, 2, 0
-		"hasminvalue" "2" // (Pseudo) boolean value. 0 for false, 1 for true, 2 for "let the cvar decide"
-		"minvalue" "0" // Both min and max values are inclusive. Ignored if above input is either 0 or 2 (2 will use convar def)
-		"hasmaxvalue" "2" // (Pseudo) boolean value. 0 for false, 1 for true, 2 for "let the cvar decide"
-		"maxvalue" "0" // In this case, it does not matter what goes here, above setting lets us ignore this one (would also happen with 0 instead of 2)
     }
 
     "WorldLights"

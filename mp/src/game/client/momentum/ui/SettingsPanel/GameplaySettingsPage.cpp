@@ -1,13 +1,17 @@
 #include "cbase.h"
 
 #include "GameplaySettingsPage.h"
+#include <vgui_controls/CvarTextEntry.h>
+#include <vgui_controls/CVarSlider.h>
+
+using namespace vgui;
 
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
 
-    m_pLowerSpeedCVarEntry = FindControl<CCvarTextEntry>("LowerSpeedEntry");
+    m_pLowerSpeedCVarEntry = FindControl<CvarTextEntry>("LowerSpeedEntry");
     m_pLowerSpeed = FindControl<CvarToggleCheckButton>("LowerWeaponButton");
 
     m_pPlayBlockSound = FindControl<CvarToggleCheckButton>("PlayBlockSound");

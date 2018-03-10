@@ -9,29 +9,25 @@
 
 #include <vgui/KeyCode.h>
 
-#include "CvarTextEntry.h"
+#include "vgui_controls/CvarTextEntry.h"
 #include "TextEntryBox.h"
 #include <vgui_controls/TextEntry.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
 using namespace vgui;
 
 //--------------------------------------------------------------------------------------------------------------
-CTextEntryBox::CTextEntryBox(const char *title, const char *queryText, const char *entryText, bool isCvar, vgui::Panel *parent) : QueryBox(title, queryText,parent)
+CTextEntryBox::CTextEntryBox(const char *title, const char *queryText, const char *entryText, bool isCvar, Panel *parent) : QueryBox(title, queryText,parent)
 {
 	if (isCvar)
 	{
-		m_pEntry = m_pCvarEntry = new CCvarTextEntry( this, "TextEntry", entryText );
+		m_pEntry = m_pCvarEntry = new CvarTextEntry( this, "TextEntry", entryText );
 	}
 	else
 	{
-		m_pEntry = new vgui::TextEntry( this, "TextEntry" );
+		m_pEntry = new TextEntry( this, "TextEntry" );
 		m_pCvarEntry = NULL;
 	}
 	m_pEntry->SetTabPosition(3);

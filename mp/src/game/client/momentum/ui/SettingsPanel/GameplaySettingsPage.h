@@ -3,12 +3,6 @@
 #include "cbase.h"
 
 #include "SettingsPage.h"
-#include "CVarTextEntry.h"
-#include <vgui_controls/CVarSlider.h>
-#include <vgui_controls/Button.h>
-#include "ColorPicker.h"
-
-using namespace vgui;
 
 class GameplaySettingsPage : public SettingsPage
 {
@@ -29,11 +23,11 @@ class GameplaySettingsPage : public SettingsPage
 private:
     void UpdateSliderEntries() const;
 
-    CvarToggleCheckButton *m_pPlayBlockSound;
-    CvarToggleCheckButton *m_pSaveCheckpoints;
-    CCvarSlider *m_pYawSpeedSlider;
-    TextEntry *m_pYawSpeedEntry;
+    vgui::CvarToggleCheckButton *m_pPlayBlockSound;
+    vgui::CvarToggleCheckButton *m_pSaveCheckpoints;
+    vgui::CCvarSlider *m_pYawSpeedSlider;
+    vgui::TextEntry *m_pYawSpeedEntry;
 
-    CCvarTextEntry *m_pLowerSpeedCVarEntry;
-    CvarToggleCheckButton *m_pLowerSpeed;
+    vgui::CvarTextEntry *m_pLowerSpeedCVarEntry;
+    vgui::CvarToggleCheckButton *m_pLowerSpeed;
 };

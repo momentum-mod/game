@@ -5,8 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include "CvarTextEntry.h"
-#include "EngineInterface.h"
+#include "vgui_controls/CvarTextEntry.h"
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
 
@@ -17,7 +16,9 @@ using namespace vgui;
 
 static const int MAX_CVAR_TEXT = 64;
 
-CCvarTextEntry::CCvarTextEntry(Panel *parent, const char *panelName, char const *cvarname)
+DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CvarTextEntry, "");
+
+CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname)
     : TextEntry(parent, panelName), m_cvarRef(cvarname, true)
 {
     m_pszStartValue[0] = 0;
@@ -30,11 +31,7 @@ CCvarTextEntry::CCvarTextEntry(Panel *parent, const char *panelName, char const 
     AddActionSignalTarget(this);
 }
 
-CCvarTextEntry::~CCvarTextEntry()
-{
-}
-
-void CCvarTextEntry::ApplySchemeSettings(IScheme *pScheme)
+void CvarTextEntry::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
     if (GetMaximumCharCount() < 0 || GetMaximumCharCount() > MAX_CVAR_TEXT)
@@ -43,7 +40,40 @@ void CCvarTextEntry::ApplySchemeSettings(IScheme *pScheme)
     }
 }
 
-void CCvarTextEntry::ApplyChanges()
+void CvarTextEntry::ApplySettings(KeyValues* inResourceData)
+{
+    BaseClass::ApplySettings(inResourceData);
+
+    const char *cvarName = inResourceData->GetString("cvar_name", "");
+
+    m_cvarRef.Init(cvarName, true);
+
+    if (m_cvarRef.IsValid())
+    {
+        Reset();
+    }
+}
+
+void CvarTextEntry::GetSettings(KeyValues* pOutResource)
+{
+    BaseClass::GetSettings(pOutResource);
+
+    pOutResource->SetString("cvar_name", m_cvarRef.GetName());
+}
+
+const char* CvarTextEntry::GetDescription()
+{
+    static char buf[1024];
+    Q_snprintf(buf, sizeof(buf), "%s, string cvar_name", BaseClass::GetDescription());
+    return buf;
+}
+
+void CvarTextEntry::OnApplyChanges()
+{
+    ApplyChanges();
+}
+
+void CvarTextEntry::ApplyChanges()
 {
     if (!m_cvarRef.IsValid())
         return;
@@ -59,7 +89,7 @@ void CCvarTextEntry::ApplyChanges()
     Q_strncpy(m_pszStartValue, szText, sizeof(m_pszStartValue));
 }
 
-void CCvarTextEntry::Reset()
+void CvarTextEntry::Reset()
 {
     if (!m_cvarRef.IsValid())
         return;
@@ -72,7 +102,7 @@ void CCvarTextEntry::Reset()
     }
 }
 
-bool CCvarTextEntry::HasBeenModified()
+bool CvarTextEntry::HasBeenModified()
 {
     char szText[MAX_CVAR_TEXT];
     GetText(szText, MAX_CVAR_TEXT);
@@ -80,7 +110,7 @@ bool CCvarTextEntry::HasBeenModified()
     return stricmp(szText, m_pszStartValue) != 0 ? true : false;
 }
 
-void CCvarTextEntry::OnTextChanged()
+void CvarTextEntry::OnTextChanged()
 {
     if (!m_cvarRef.IsValid())
         return;

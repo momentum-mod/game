@@ -56,5 +56,6 @@ USING_BUILD_FACTORY( CTreeViewListControl );
 USING_BUILD_FACTORY( URLLabel );
 USING_BUILD_FACTORY(ScrubbableProgressBar);
 USING_BUILD_FACTORY(CCvarSlider);
+USING_BUILD_FACTORY(CvarTextEntry);
 
 int g_nYou_Must_Add_Public_Vgui_Controls_Vgui_ControlsCpp_To_Your_Project = 0;
