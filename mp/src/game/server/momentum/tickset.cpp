@@ -174,5 +174,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     TickSet::SetTickrate(tickrate);
 }
 
-static ConVar tickRate("sv_tickrate", "0.015", FCVAR_CHEAT,
+static ConVar tickRate("sv_tickrate", "0.015", 0,
 					   "Changes the tickrate of the game. Formatted as interval per tick, i.e 100 tickrate = 0.01", onTickRateChange);

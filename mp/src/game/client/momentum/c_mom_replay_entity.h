@@ -1,9 +1,7 @@
 #pragma once
 
 #include "cbase.h"
-#include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
-#include <../interpolatedvar.h>
 #include "mom_modulecomms.h"
 #include "c_mom_ghost_base.h"
 

@@ -18,25 +18,25 @@
 	
 		//"MainMenu.Logo.PlayerCount"						"1"
 
-		"MainMenu.Buttons.OffsetX"						"32"
-		"MainMenu.Buttons.OffsetY"						"32"
+		"MainMenu.Buttons.OffsetX"						"16"
+		"MainMenu.Buttons.OffsetY"						"16"
 		"MainMenu.Buttons.Space"						"0"
 	
-		"MainMenu.Button.Width.Out"						"384"
-		"MainMenu.Button.Width.Over"					"384"
-		"MainMenu.Button.Width.Pressed"					"384"
-		"MainMenu.Button.Width.Released"				"384"
+		"MainMenu.Button.Width.Out"						"197"
+		"MainMenu.Button.Width.Over"					"197"
+		"MainMenu.Button.Width.Pressed"					"197"
+		"MainMenu.Button.Width.Released"				"197"
 
-		"MainMenu.Button.Height.Out"					"74"
-		"MainMenu.Button.Height.Over"					"74"
-		"MainMenu.Button.Height.Pressed"				"74"
-		"MainMenu.Button.Height.Released"				"74"
+		"MainMenu.Button.Height.Out"					"37"
+		"MainMenu.Button.Height.Over"					"37"
+		"MainMenu.Button.Height.Pressed"				"37"
+		"MainMenu.Button.Height.Released"				"37"
 
 		"MainMenu.Button.Text.OffsetX"					"10"
 		"MainMenu.Button.Text.OffsetY"					"0"
 
 		"MainMenu.Button.Description.OffsetX"			"1"
-		"MainMenu.Button.Description.OffsetY"			"-9"
+		"MainMenu.Button.Description.OffsetY"			"-5"
 
 		"MainMenu.Button.Description.Hide.Out"			"1"
 		"MainMenu.Button.Description.Hide.Over"			"0"
@@ -48,6 +48,7 @@
 		"MainMenu.Button.Background.Blur.Pressed"		"0"
 		"MainMenu.Button.Background.Blur.Released"		"0"
         
+        // Length (in seconds) of the animations
         "MainMenu.Button.Animation.Width"				"0.15"
 		"MainMenu.Button.Animation.Height"				"0.25"
 		"MainMenu.Button.Animation.Background"			"0.2"
@@ -124,7 +125,7 @@
 			"settings"
 			{
 				"name"			"Noto Sans"
-				"tall"			"16"
+				"tall"			"11"
 				"weight"		"400"
 				"antialias"		"1"
 			}

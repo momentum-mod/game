@@ -100,8 +100,6 @@ inline void CheckTimer()
 
 CON_COMMAND_F(mom_checkpoint_create, "Creates a checkpoint that saves a player's state.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-    CheckTimer();
-
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (pPlayer)
     {

@@ -30,8 +30,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     SetPaintBorderEnabled(false);
     SetPaintBackgroundEnabled(false);
     AddActionSignalTarget(this);
-    MakePopup(false);
-    SetZPos(1);
+    SetZPos(0);
 
     // Set our initial size
     SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
@@ -88,7 +87,7 @@ MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
     m_pButtonSpectate->SetButtonType(IN_GAME);
     m_pButtonSpectate->SetTextAlignment(RIGHT);
 
-    m_pVersionLabel = new Button(this, "VersionLabel", CFmtStr("Version %s", MOM_CURRENT_VERSION).Access(), this, "ShowVersion");
+    m_pVersionLabel = new Button(this, "VersionLabel", CFmtStr("v%s", MOM_CURRENT_VERSION).Access(), this, "ShowVersion");
     m_pVersionLabel->SetPaintBackgroundEnabled(false);
     m_pVersionLabel->SetAutoWide(true);
     m_pVersionLabel->SetAutoTall(true);
@@ -109,21 +108,6 @@ MainMenu::~MainMenu()
     {
         gameeventmanager->RemoveListener(this);
     }
-}
-
-void MainMenu::OnThink()
-{
-    BaseClass::OnThink();
-    
-    VPANEL over = input()->GetMouseOver();
-    if (over != GetVPanel())
-        OnKillFocus();
-    else
-        OnSetFocus();
-
-    // Needed so the menu doesn't cover any other engine panels. Blame the closed-source Surface code
-    // for moving the menu to the front when it gains focus, automatically. *sigh*
-    surface()->MovePopupToBack(GetVPanel());
 }
 
 
@@ -196,7 +180,6 @@ void MainMenu::FireGameEvent(IGameEvent* event)
     else if (!Q_strcmp(event->GetName(), "spec_start"))
     {
         m_pButtonSpectate->SetButtonText("#GameUI2_Respawn");
-        m_pButtonSpectate->SetButtonDescription("#GameUI2_RespawnDescription");
         m_pButtonSpectate->SetEngineCommand("mom_spectate_stop");
     }
     else if (!Q_strcmp(event->GetName(), "spec_stop"))
@@ -258,15 +241,17 @@ int32 __cdecl ButtonsPositionTop(Button_MainMenu *const *s1, Button_MainMenu *co
     return ((*s1)->GetPriority() < (*s2)->GetPriority());
 }
 
+#define SC(val) scheme()->GetProportionalScaledValueEx(GetScheme(), val)
+
 void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_fButtonsSpace = Q_atof(pScheme->GetResourceString("MainMenu.Buttons.Space"));
-    m_fButtonsOffsetX = Q_atof(pScheme->GetResourceString("MainMenu.Buttons.OffsetX"));
-    m_fButtonsOffsetY = Q_atof(pScheme->GetResourceString("MainMenu.Buttons.OffsetY"));
-    m_fLogoOffsetX = Q_atof(pScheme->GetResourceString("MainMenu.Logo.OffsetX"));
-    m_fLogoOffsetY = Q_atof(pScheme->GetResourceString("MainMenu.Logo.OffsetY"));
+    m_iButtonsSpace = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.Space")));
+    m_iButtonsOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetX")));
+    m_iButtonsOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Buttons.OffsetY")));
+    m_iLogoOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetX")));
+    m_iLogoOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.OffsetY")));
     m_cLogoLeft = GetSchemeColor("MainMenu.Logo.Left", pScheme);
     m_cLogoRight = GetSchemeColor("MainMenu.Logo.Right", pScheme);
     m_bLogoAttachToMenu = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.AttachToMenu"));
@@ -280,8 +265,8 @@ void MainMenu::ApplySchemeSettings(IScheme *pScheme)
 
         m_pLogoImage->SetShouldScaleImage(true);
         m_pLogoImage->SetImage(pScheme->GetResourceString("MainMenu.Logo.Image"));
-        m_iLogoWidth = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width"));
-        m_iLogoHeight = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height"));
+        m_iLogoWidth = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Width")));
+        m_iLogoHeight = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Logo.Image.Height")));
         // Size and pos are handled in Paint()
     }
     m_bLogoPlayerCount = Q_atoi(pScheme->GetResourceString("MainMenu.Logo.PlayerCount"));
@@ -360,25 +345,25 @@ void MainMenu::DrawMainMenu()
         {
             int32 x0, y0;
             pNextVisible->GetPos(x0, y0);
-            m_pButtons[i]->SetPos(m_fButtonsOffsetX, y0 - (m_pButtons[i]->GetHeight() + m_fButtonsSpace));
+            m_pButtons[i]->SetPos(m_iButtonsOffsetX, y0 - (m_pButtons[i]->GetHeight() + m_iButtonsSpace));
         }
         else
         {
-            m_pButtons[i]->SetPos(m_fButtonsOffsetX,
-                GameUI().GetViewport().y - (m_fButtonsOffsetY + m_pButtons[i]->GetHeight()));
+            m_pButtons[i]->SetPos(m_iButtonsOffsetX,
+                GameUI().GetViewport().y - (m_iButtonsOffsetY + m_pButtons[i]->GetHeight()));
         }
     }
 
     const Vector2D vp = GameUI().GetViewport();
 
-    m_pButtonLobby->SetPos(vp.x - m_pButtonLobby->GetWidth() - m_fButtonsOffsetX, 
-        vp.y - m_pButtonLobby->GetTall() - m_fButtonsOffsetY);
+    m_pButtonLobby->SetPos(vp.x - m_pButtonLobby->GetWidth() - m_iButtonsOffsetX, 
+        vp.y - m_pButtonLobby->GetTall() - m_iButtonsOffsetY);
 
-    m_pButtonInviteFriends->SetPos(vp.x - m_pButtonInviteFriends->GetWidth() - m_fButtonsOffsetX, 
-        m_pButtonLobby->GetYPos() - m_pButtonInviteFriends->GetTall() - m_fButtonsSpace);
+    m_pButtonInviteFriends->SetPos(vp.x - m_pButtonInviteFriends->GetWidth() - m_iButtonsOffsetX, 
+        m_pButtonLobby->GetYPos() - m_pButtonInviteFriends->GetTall() - m_iButtonsSpace);
 
-    m_pButtonSpectate->SetPos(vp.x - m_pButtonSpectate->GetWidth() - m_fButtonsOffsetX, 
-        m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_fButtonsSpace);
+    m_pButtonSpectate->SetPos(vp.x - m_pButtonSpectate->GetWidth() - m_iButtonsOffsetX, 
+        m_pButtonInviteFriends->GetYPos() - m_pButtonSpectate->GetTall() - m_iButtonsSpace);
 
     m_pVersionLabel->SetPos(vp.x - m_pVersionLabel->GetWide() - 4, 2);
 }
@@ -396,15 +381,15 @@ void MainMenu::DrawLogo()
         int32 logoX, logoY;
         if (m_pButtons.Count() <= 0 || m_bLogoAttachToMenu == false)
         {
-            logoX = m_fLogoOffsetX;
-            logoY = m_fLogoOffsetY;
+            logoX = m_iLogoOffsetX;
+            logoY = m_iLogoOffsetY;
         }
         else
         {
             int32 x0, y0;
             m_pButtons[0]->GetPos(x0, y0);
-            logoX = m_fButtonsOffsetX + m_fLogoOffsetX;
-            logoY = y0 - (logoH + m_fLogoOffsetY);
+            logoX = m_iButtonsOffsetX + m_iLogoOffsetX;
+            logoY = y0 - (logoH + m_iLogoOffsetY);
         }
         surface()->DrawSetTextPos(logoX, logoY);
         surface()->DrawPrintText(m_logoLeft, wcslen(m_logoLeft));
@@ -420,24 +405,22 @@ void MainMenu::DrawLogo()
         int logoX, logoY;
         if (m_pButtons.Count() <= 0 || m_bLogoAttachToMenu == false)
         {
-            logoX = m_fLogoOffsetX;
-            logoY = m_fLogoOffsetY;
+            logoX = m_iLogoOffsetX;
+            logoY = m_iLogoOffsetY;
         }
         else
         {
             int32 x0, y0;
             m_pButtons[0]->GetPos(x0, y0);
-            logoX = m_fButtonsOffsetX + m_fLogoOffsetX;
+            logoX = m_iButtonsOffsetX + m_iLogoOffsetX;
             int imageHeight, dummy;
             m_pLogoImage->GetImage()->GetSize(dummy, imageHeight);
-            logoY = y0 - (imageHeight + m_fLogoOffsetY);
+            logoY = y0 - (imageHeight + m_iLogoOffsetY);
         }
 
         m_pLogoImage->SetPos(logoX, logoY);
 
-        int scaledWidth = scheme()->GetProportionalScaledValue(m_iLogoWidth);
-        int scaledHeight = scheme()->GetProportionalScaledValue(m_iLogoHeight);
-        m_pLogoImage->SetSize(scaledWidth, scaledHeight);
+        m_pLogoImage->SetSize(m_iLogoWidth, m_iLogoHeight);
 
         /*if (m_bLogoPlayerCount)
         {
@@ -475,10 +458,4 @@ void MainMenu::Paint()
 
     DrawMainMenu();
     DrawLogo();
-}
-
-void MainMenu::OnScreenSizeChanged(int oldwide, int oldtall)
-{
-    if (ipanel())
-        SetBounds(0, 0, GameUI().GetViewport().x, GameUI().GetViewport().y);
 }

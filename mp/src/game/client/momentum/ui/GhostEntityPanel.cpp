@@ -2,19 +2,24 @@
 
 #include "GhostEntityPanel.h"
 #include "clientmode.h"
-
-#include "tier0/memdbgon.h"
 #include "view.h"
 #include "mom_shareddefs.h"
 #include "vgui/IVGui.h"
 #include "vgui/ILocalize.h"
+#include "vgui_controls/ImagePanel.h"
+#include <vgui_controls/Label.h>
+#include <vgui/ISurface.h>
+#include "vgui_avatarimage.h"
+#include "c_mom_online_ghost.h"
 
+#include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 static MAKE_TOGGLE_CONVAR(mom_entpanels_enable, "1", FLAG_HUD_CVAR, "Shows all entity panels. 0 = OFF, 1 = ON\n");
 
 static MAKE_TOGGLE_CONVAR(mom_entpanels_enable_avatars, "1", FLAG_HUD_CVAR, "Enables drawing the entity Steam avatars on entity panels. 0 = OFF, 1 = ON\n");
 static MAKE_TOGGLE_CONVAR(mom_entpanels_enable_names, "1", FLAG_HUD_CVAR, "Enables drawing the entity's name on entity panels. 0 = OFF, 1 = ON\n");
-
 
 static MAKE_TOGGLE_CONVAR(mom_entpanels_fade_enable, "1", FLAG_HUD_CVAR, "Fades entity panels after a certain distance, over a certain distance. 0 = OFF, 1 = ON\n");
 static MAKE_CONVAR(mom_entpanels_fade_dist, "100", FLAG_HUD_CVAR, "The amount of units to linearly fade the entity panel over.\n", 1, MAX_TRACE_LENGTH);
@@ -24,9 +29,9 @@ CGhostEntityPanel::CGhostEntityPanel() : Panel(g_pClientMode->GetViewport()), m_
 {
     SetPaintBackgroundEnabled(false);
 
-    m_pAvatarImagePanel = new vgui::ImagePanel(this, "GhostEntityPanelAvatar");
+    m_pAvatarImagePanel = new ImagePanel(this, "GhostEntityPanelAvatar");
     m_pAvatarImage = new CAvatarImage();
-    m_pNameLabel = new vgui::Label(this, "GhostEntityPanelName", "");
+    m_pNameLabel = new Label(this, "GhostEntityPanelName", "");
     m_pNameLabel->SetAutoWide(true);
     m_pAvatarImage->SetDrawFriend(false);
     m_pAvatarImage->SetAvatarSize(32, 32);
@@ -48,7 +53,7 @@ void CGhostEntityPanel::Init(C_MomentumOnlineGhostEntity* pEnt)
     m_iPosX = m_iPosY = -1;
     
     SetVisible(true);
-    vgui::ivgui()->AddTickSignal(GetVPanel());
+    ivgui()->AddTickSignal(GetVPanel());
 }
 
 void CGhostEntityPanel::OnThink()
@@ -162,11 +167,11 @@ void CGhostEntityPanel::ComputeAndSetSize()
 
     if (mom_entpanels_enable_names.GetBool())
     {
-        vgui::HFont font = m_pNameLabel->GetFont();
+        HFont font = m_pNameLabel->GetFont();
         wchar_t playerName[MAX_PLAYER_NAME_LENGTH];
         ANSI_TO_UNICODE(m_pEntity->m_pszGhostName, playerName);
         int nameWide = UTIL_ComputeStringWidth(font, playerName) + 6;
-        int fontHeight = vgui::surface()->GetFontTall(font);
+        int fontHeight = surface()->GetFontTall(font);
 
         m_pNameLabel->SetPos(panelWide / 2 - (nameWide / 2), mom_entpanels_enable_avatars.GetBool() ? 33 : (panelHigh / 2 - fontHeight / 2) - 4);
     }

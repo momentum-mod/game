@@ -1190,7 +1190,6 @@ void CBaseMapsPage::OnMapStart()
     //engine->ServerCmd(VarArgs("mom_gamemode %i", MOMGM_BHOP));//MOM_TODO this is testing, replace with m.m_iGamemode
 
     // Start the map
-    engine->ExecuteClientCmd("progress_enable\n");
     engine->ExecuteClientCmd(VarArgs("map %s\n", kv->GetString("map")));
 }
 

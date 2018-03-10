@@ -3,7 +3,7 @@
 #include "mom_ruler.h"
 #include <vgui/ILocalize.h>
 #include "mom_shareddefs.h"
-#include "vgui_controls/InputDialog.h"  // ReSharper, for some reason, found that including this was necessary. Ty!
+#include "tier3/tier3.h"
 
 #include "tier0/memdbgon.h"
 
