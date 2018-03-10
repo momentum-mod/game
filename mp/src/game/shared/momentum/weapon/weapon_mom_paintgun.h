@@ -6,6 +6,8 @@
 #ifdef CLIENT_DLL
 #include "PaintGunPanel.h"
 #define CMomentumPaintGun C_MomentumPaintGun
+#else
+extern ConVar mom_paintgun_shoot_sound;
 #endif
 
 class CMomentumPaintGun : public CWeaponCSBaseGun

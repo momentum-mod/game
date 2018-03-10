@@ -1,6 +1,9 @@
 #include "cbase.h"
 
 #include "PFrameButton.h"
+#include <vgui/IInput.h>
+
+#include <tier0/memdbgon.h>
 
 using namespace vgui;
 

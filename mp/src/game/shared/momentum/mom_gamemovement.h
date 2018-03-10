@@ -74,7 +74,6 @@ class CMomentumGameMovement : public CGameMovement
     // Overrides for fixing rampboost
     virtual int TryPlayerMove(Vector *pFirstDest = nullptr, trace_t *pFirstTrace = nullptr);
     virtual void FullWalkMove();
-    virtual void DoLateReflect();
     virtual void CategorizePosition();
 
     void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE
@@ -103,7 +102,6 @@ class CMomentumGameMovement : public CGameMovement
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
     
   private:
-    float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener*> m_vecListeners;
     ConVarRef mom_gamemode;

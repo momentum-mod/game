@@ -75,6 +75,8 @@ void Button_MainMenu::Init()
     SetAutoDelete(true);
 }
 
+#define SC(val) scheme()->GetProportionalScaledValueEx(GetScheme(), val)
+
 void Button_MainMenu::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
@@ -87,33 +89,33 @@ void Button_MainMenu::ApplySchemeSettings(IScheme *pScheme)
     SetArmedSound(pScheme->GetResourceString("MainMenu.Button.Sound.Armed"));
     SetDepressedSound(pScheme->GetResourceString("MainMenu.Button.Sound.Depressed"));
     SetReleasedSound(pScheme->GetResourceString("MainMenu.Button.Sound.Released"));
+    
+    m_iWidth = m_iWidthOut = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Out")));
+    m_iWidthOver = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Over")));
+    m_iWidthPressed = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Pressed")));
+    m_iWidthReleased = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Width.Released")));
 
-    m_fWidth = m_fWidthOut = atof(pScheme->GetResourceString("MainMenu.Button.Width.Out"));
-    m_fWidthOver = atof(pScheme->GetResourceString("MainMenu.Button.Width.Over"));
-    m_fWidthPressed = atof(pScheme->GetResourceString("MainMenu.Button.Width.Pressed"));
-    m_fWidthReleased = atof(pScheme->GetResourceString("MainMenu.Button.Width.Released"));
+    m_iHeight = m_iHeightOut = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Out")));
+    m_iHeightOver = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Over")));
+    m_iHeightPressed = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Pressed")));
+    m_iHeightReleased = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Height.Released")));
 
-    m_fHeight = m_fHeightOut = atof(pScheme->GetResourceString("MainMenu.Button.Height.Out"));
-    m_fHeightOver = atof(pScheme->GetResourceString("MainMenu.Button.Height.Over"));
-    m_fHeightPressed = atof(pScheme->GetResourceString("MainMenu.Button.Height.Pressed"));
-    m_fHeightReleased = atof(pScheme->GetResourceString("MainMenu.Button.Height.Released"));
+    m_iTextOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetX")));
+    m_iTextOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Text.OffsetY")));
 
-    m_fTextOffsetX = atof(pScheme->GetResourceString("MainMenu.Button.Text.OffsetX"));
-    m_fTextOffsetY = atof(pScheme->GetResourceString("MainMenu.Button.Text.OffsetY"));
+    m_iDescriptionOffsetX = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetX")));
+    m_iDescriptionOffsetY = SC(Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.OffsetY")));
 
-    m_fDescriptionOffsetX = atof(pScheme->GetResourceString("MainMenu.Button.Description.OffsetX"));
-    m_fDescriptionOffsetY = atof(pScheme->GetResourceString("MainMenu.Button.Description.OffsetY"));
+    m_bDescriptionHideOut = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Out"));
+    m_bDescriptionHideOver = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Over"));
+    m_bDescriptionHidePressed = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Pressed"));
+    m_bDescriptionHideReleased = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Released"));
 
-    m_bDescriptionHideOut = atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Out"));
-    m_bDescriptionHideOver = atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Over"));
-    m_bDescriptionHidePressed = atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Pressed"));
-    m_bDescriptionHideReleased = atoi(pScheme->GetResourceString("MainMenu.Button.Description.Hide.Released"));
-
-    m_fAnimationWidth = atof(pScheme->GetResourceString("MainMenu.Button.Animation.Width"));
-    m_fAnimationHeight = atof(pScheme->GetResourceString("MainMenu.Button.Animation.Height"));
-    m_fAnimationBackground = atof(pScheme->GetResourceString("MainMenu.Button.Animation.Background"));
-    m_fAnimationText = atof(pScheme->GetResourceString("MainMenu.Button.Animation.Text"));
-    m_fAnimationDescription = atof(pScheme->GetResourceString("MainMenu.Button.Animation.Description"));
+    m_fAnimationWidth = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Width"));
+    m_fAnimationHeight = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Height"));
+    m_fAnimationBackground = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Background"));
+    m_fAnimationText = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Text"));
+    m_fAnimationDescription = Q_atof(pScheme->GetResourceString("MainMenu.Button.Animation.Description"));
 
     m_cBackground = m_cBackgroundOut = GetSchemeColor("MainMenu.Button.Background.Out", pScheme);
     m_cBackgroundOver = GetSchemeColor("MainMenu.Button.Background.Over", pScheme);
@@ -136,13 +138,13 @@ void Button_MainMenu::ApplySchemeSettings(IScheme *pScheme)
     m_cDescriptionReleased = GetSchemeColor("MainMenu.Button.Description.Released", pScheme);
 
     m_cBackgroundBlurAlpha = Color(0, 0, 0, 0);
-    m_bBackgroundBlurOut = atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Out"));
-    m_bBackgroundBlurOver = atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Over"));
-    m_bBackgroundBlurPressed = atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Pressed"));
-    m_bBackgroundBlurReleased = atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Released"));
+    m_bBackgroundBlurOut = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Out"));
+    m_bBackgroundBlurOver = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Over"));
+    m_bBackgroundBlurPressed = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Pressed"));
+    m_bBackgroundBlurReleased = Q_atoi(pScheme->GetResourceString("MainMenu.Button.Background.Blur.Released"));
 
-    m_fTextFont = pScheme->GetFont("MainMenu.Button.Text.Font", IsProportional());
-    m_fDescriptionFont = pScheme->GetFont("MainMenu.Button.Description.Font", false);
+    m_fTextFont = pScheme->GetFont("MainMenu.Button.Text.Font", true);
+    m_fDescriptionFont = pScheme->GetFont("MainMenu.Button.Description.Font", true);
 
     m_sButtonState = m_sButtonStateOld = Out;
 }
@@ -154,9 +156,9 @@ void Button_MainMenu::Animations()
         switch (m_sButtonState)
         {
         case Out:
-            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthOut, 0.0f, m_fAnimationWidth,
+            GetAnimationController()->RunAnimationCommand(this, "m_iWidth", m_iWidthOut, 0.0f, m_fAnimationWidth,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightOut, 0.0f, m_fAnimationHeight,
+            GetAnimationController()->RunAnimationCommand(this, "m_iHeight", m_iHeightOut, 0.0f, m_fAnimationHeight,
                                                    AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOut, 0.0f,
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -172,9 +174,9 @@ void Button_MainMenu::Animations()
             break;
 
         case Over:
-            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthOver, 0.0f, m_fAnimationWidth,
+            GetAnimationController()->RunAnimationCommand(this, "m_iWidth", m_iWidthOver, 0.0f, m_fAnimationWidth,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightOver, 0.0f, m_fAnimationHeight,
+            GetAnimationController()->RunAnimationCommand(this, "m_iHeight", m_iHeightOver, 0.0f, m_fAnimationHeight,
                                                    AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOver, 0.0f,
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -190,9 +192,9 @@ void Button_MainMenu::Animations()
             break;
 
         case Pressed:
-            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthPressed, 0.0f, m_fAnimationWidth,
+            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_iWidthPressed, 0.0f, m_fAnimationWidth,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightPressed, 0.0f, m_fAnimationHeight,
+            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_iHeightPressed, 0.0f, m_fAnimationHeight,
                                                    AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundPressed, 0.0f,
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -209,9 +211,9 @@ void Button_MainMenu::Animations()
             break;
 
         case Released:
-            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthReleased, 0.0f, m_fAnimationWidth,
+            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_iWidthReleased, 0.0f, m_fAnimationWidth,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightReleased, 0.0f, m_fAnimationHeight,
+            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_iHeightReleased, 0.0f, m_fAnimationHeight,
                                                    AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundReleased, 0.0f,
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -228,9 +230,9 @@ void Button_MainMenu::Animations()
             break;
 
         default:
-            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_fWidthOut, 0.0f, m_fAnimationWidth,
+            GetAnimationController()->RunAnimationCommand(this, "m_fWidth", m_iWidthOut, 0.0f, m_fAnimationWidth,
                                                    AnimationController::INTERPOLATOR_LINEAR);
-            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_fHeightOut, 0.0f, m_fAnimationHeight,
+            GetAnimationController()->RunAnimationCommand(this, "m_fHeight", m_iHeightOut, 0.0f, m_fAnimationHeight,
                                                    AnimationController::INTERPOLATOR_LINEAR);
             GetAnimationController()->RunAnimationCommand(this, "m_cBackground", m_cBackgroundOut, 0.0f,
                                                    m_fAnimationBackground, AnimationController::INTERPOLATOR_LINEAR);
@@ -249,7 +251,7 @@ void Button_MainMenu::Animations()
         m_sButtonStateOld = m_sButtonState;
     }
 
-    SetSize(m_fWidth, m_fHeight);
+    SetSize(m_iWidth, m_iHeight);
 }
 
 void Button_MainMenu::OnThink()
@@ -266,60 +268,55 @@ void Button_MainMenu::OnThink()
 void Button_MainMenu::DrawButton()
 {
     surface()->DrawSetColor(m_cBackground);
-    surface()->DrawFilledRect(0, 0, static_cast<int>(m_fWidth), static_cast<int>(m_fHeight));
+    surface()->DrawFilledRect(0, 0, m_iWidth, m_iHeight);
 
     surface()->DrawSetColor(m_cBackgroundOutline);
-    surface()->DrawOutlinedRect(0, 0, static_cast<int>(m_fWidth), static_cast<int>(m_fHeight));
+    surface()->DrawOutlinedRect(0, 0, m_iWidth, m_iHeight);
 }
 
 void Button_MainMenu::DrawButton_Blur()
 {
     surface()->DrawSetColor(m_cBackgroundBlurAlpha);
-    surface()->DrawFilledRect(0, 0, m_fWidth + 0, m_fHeight + 0);
+    surface()->DrawFilledRect(0, 0, m_iWidth + 0, m_iHeight + 0);
 }
 
-inline int CalculateDescOffsetFromAlignment(TextAlignment align, float buttonWide, int mainTextSize, int mainTextPos, int descWide, float m_fDescOffsetX)
+void Button_MainMenu::CalculateTextX(int textOffset, int textWide, int &out)
+{
+    switch (m_iTextAlignment)
+    {
+    default:
+    case LEFT: // LEFT ALIGN
+        out = textOffset;
+        break;
+    case CENTER: // CENTER
+        out = m_iWidth / 2 - textWide / 2;
+        break;
+    case RIGHT: // RIGHT ALIGN
+        out = m_iWidth - textOffset - textWide;
+        break;
+    }
+}
+
+int Button_MainMenu::CalculateDescOffsetX(int descWide)
 {
     int toReturn;
-    int descOffset = static_cast<int>(m_fDescOffsetX);
-    int butWide = static_cast<int>(buttonWide);
-    switch (align)
+    int descOffset = m_iDescriptionOffsetX;
+    switch (m_iTextAlignment)
     {
     default:
     case LEFT:
-        toReturn = mainTextPos + descOffset;
+        toReturn = m_iTextPositionX + descOffset;
         break;
     case CENTER:
         toReturn = descOffset;//Doesn't matter for center
         break;
     case RIGHT:
-        toReturn = descWide <= mainTextSize ? 
-            (mainTextSize - descWide + descOffset) : // Shift off the difference so we line up with the text's start
-            butWide - (mainTextPos + mainTextSize) + descOffset; // Shift our end to match the end of the main text
+        toReturn = descWide <= m_iTextSizeX ? 
+            (m_iTextSizeX - descWide + descOffset) : // Shift off the difference so we line up with the text's start
+            m_iWidth - (m_iTextPositionX + m_iTextSizeX) + descOffset; // Shift our end to match the end of the main text
         break;
     }
 
-    return toReturn;
-}
-
-inline int CalculateTextXFromAlignment(TextAlignment align, float buttonWide, int textWide, float m_fTextOffsetX)
-{
-    int toReturn;
-    int iTextOffset = static_cast<int>(m_fTextOffsetX);
-    int iButtonWide = static_cast<int>(buttonWide);
-    switch (align)
-    {
-    default:
-    case LEFT: // LEFT ALIGN
-        toReturn = iTextOffset;
-        break;
-    case CENTER: // CENTER
-        toReturn = iButtonWide / 2 - textWide / 2;
-        break;
-    case RIGHT: // RIGHT ALIGN
-        toReturn = iButtonWide - iTextOffset - textWide;
-        break;
-    }
     return toReturn;
 }
 
@@ -329,8 +326,8 @@ void Button_MainMenu::DrawText()
     surface()->DrawSetTextFont(m_fTextFont);
 
     surface()->GetTextSize(m_fTextFont, m_ButtonText, m_iTextSizeX, m_iTextSizeY);
-    m_iTextPositionX = CalculateTextXFromAlignment(m_iTextAlignment, m_fWidth, m_iTextSizeX, m_fTextOffsetX);
-    m_iTextPositionY = m_fHeight / 2 - m_iTextSizeY / 2 + m_fTextOffsetY;
+    CalculateTextX(m_iTextOffsetX, m_iTextSizeX, m_iTextPositionX);
+    m_iTextPositionY = m_iHeight / 2 - m_iTextSizeY / 2 + m_iTextOffsetY;
 
     surface()->DrawSetTextPos(m_iTextPositionX, m_iTextPositionY);
     surface()->DrawPrintText(m_ButtonText, Q_wcslen(m_ButtonText));
@@ -348,10 +345,11 @@ void Button_MainMenu::DrawDescription()
     surface()->DrawSetTextFont(m_fDescriptionFont);
     int descWide, descTall;
     surface()->GetTextSize(m_fDescriptionFont, m_ButtonDescription, descWide, descTall);
-    int offsetX = CalculateDescOffsetFromAlignment(m_iTextAlignment, m_fWidth, m_iTextSizeX, m_iTextPositionX, descWide, m_fDescriptionOffsetX);
-    int descriptionX = CalculateTextXFromAlignment(m_iTextAlignment, m_fWidth, descWide, offsetX);
+    int offsetX = CalculateDescOffsetX(descWide);
+    int descriptionX;
+    CalculateTextX(offsetX, descWide, descriptionX);
 
-    surface()->DrawSetTextPos(descriptionX, m_iTextPositionY + m_iTextSizeY + m_fDescriptionOffsetY);
+    surface()->DrawSetTextPos(descriptionX, m_iTextPositionY + m_iTextSizeY + m_iDescriptionOffsetY);
     surface()->DrawPrintText(m_ButtonDescription, Q_wcslen(m_ButtonDescription));
 }
 

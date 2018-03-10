@@ -2,8 +2,6 @@
 
 #include "cbase.h"
 #include "mom_ghost_base.h"
-#include "mom_ghostdefs.h"
-#include "utlstack.h"
 #include "utlqueue.h"
 
 class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity, public CGameEventListener

@@ -148,16 +148,18 @@ public:
 class CTimeTriggerTraceEnum : public IEntityEnumerator
 {
   public:
-    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity, int zoneType, int cornerNum)
-        : m_iZoneType(zoneType), m_iCornerNumber(cornerNum), m_pRay(pRay)
+    CTimeTriggerTraceEnum(Ray_t *pRay, Vector velocity)
+        : m_vecVelocity(velocity), m_pRay(pRay)
     {
+        m_flOffset = 0.0f;
     }
 
     bool EnumEntity(IHandleEntity *pHandleEntity) OVERRIDE;
+    float GetOffset() { return m_flOffset; }
 
   private:
-    int m_iZoneType;
-    int m_iCornerNumber;
+    float m_flOffset;
+    Vector m_vecVelocity;
     Ray_t *m_pRay;
 };
 

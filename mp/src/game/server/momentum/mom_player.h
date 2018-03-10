@@ -18,6 +18,7 @@ class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
 #define NUM_TICKS_TO_BHOP 10 // The number of ticks a player can be on a ground before considered "not bunnyhopping"
+#define MAX_PREVIOUS_ORIGINS 3 // The number of previous origins saved
 
 class CMomentumGhostBaseEntity;
 
@@ -145,8 +146,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void StopSpectating();
 
     // Used by momentum triggers
-    Vector GetPrevOrigin(void) const;
-    Vector GetPrevOrigin(const Vector &base) const;
+    Vector GetPreviousOrigin(unsigned int previous_count = 0) const;
+    void NewPreviousOrigin(Vector origin);
 
     // for calc avg
     int m_nZoneAvgCount[MAX_STAGES];
@@ -217,7 +218,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool m_bInAirDueToJump;
 
     void DoMuzzleFlash() OVERRIDE;
-
+    void PostThink();
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
@@ -251,6 +252,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     int m_nPrevButtons;
 
     char m_pszDefaultEntName[128];
+
+    // Used by momentum triggers
+    Vector m_vecPreviousOrigins[MAX_PREVIOUS_ORIGINS];
 
     // Start zone thinkfunc
     int m_nTicksInAir;

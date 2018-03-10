@@ -1,6 +1,7 @@
 #include "cbase.h"
 #include "c_mom_online_ghost.h"
 #include "mom_player_shared.h"
+#include "GhostEntityPanel.h"
 
 #include "tier0/memdbgon.h"
 

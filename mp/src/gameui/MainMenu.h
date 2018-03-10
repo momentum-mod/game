@@ -19,14 +19,11 @@ class MainMenu : public Panel2D, public IGameEventListener2
     MainMenu(Panel *parent);
     ~MainMenu();
 
-    void OnThink() OVERRIDE;
     void OnTick() OVERRIDE;
     bool IsVisible() OVERRIDE;
     void OnCommand(char const *cmd) OVERRIDE;
 
     void FireGameEvent(IGameEvent* event) OVERRIDE;
-
-    void OnScreenSizeChanged(int oldwide, int oldtall) OVERRIDE;
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
     void CreateMenu();
@@ -59,11 +56,11 @@ private:
     wchar_t *m_logoLeft;
     wchar_t *m_logoRight;
 
-    float m_fButtonsSpace;
+    int m_iButtonsSpace;
 
-    float m_fButtonsOffsetX, m_fButtonsOffsetY;
+    int m_iButtonsOffsetX, m_iButtonsOffsetY;
 
-    float m_fLogoOffsetX, m_fLogoOffsetY;
+    int m_iLogoOffsetX, m_iLogoOffsetY;
 
     int m_iLogoWidth, m_iLogoHeight;
 
