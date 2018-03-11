@@ -1,29 +1,9 @@
 #pragma once
 
 #include "cbase.h"
-#include "run/run_compare.h"
-#include "hudelement.h"
-#include "hud_numericdisplay.h"
-#include "hud_macros.h"
-#include "utlvector.h"
-#include "KeyValues.h"
-#include "iclientmode.h"
-#include "steam/steam_api.h"
-#include "view.h"
-#include "menu.h"
-#include "vgui_helpers.h"
-
 #include <vgui_controls/Panel.h>
-#include <vgui_controls/Frame.h>
-#include <vgui/IScheme.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
-#include <vgui_controls/AnimationController.h>
-
-#include "mom_event_listener.h"
-#include "momentum/util/mom_util.h"
-#include "mom_player_shared.h"
-#include "mom_shareddefs.h"
+#include <hudelement.h>
+#include "run/run_compare.h"
 
 using namespace vgui;
 
@@ -32,7 +12,6 @@ class C_RunComparisons : public CHudElement, public Panel
     DECLARE_CLASS_SIMPLE(C_RunComparisons, Panel);
 
 public:
-    C_RunComparisons();
     C_RunComparisons(const char* pElementName);
     ~C_RunComparisons();
 

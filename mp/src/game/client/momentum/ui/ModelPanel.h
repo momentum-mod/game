@@ -1,11 +1,8 @@
 #pragma once
 
 #include "cbase.h"
-using namespace vgui;
 
-#include <vgui_controls/Frame.h>
-#include <vgui_controls/Label.h>
-#include <vgui_controls/Controls.h>
+#include <vgui_controls/Panel.h>
 
 enum
 {
@@ -26,8 +23,8 @@ public:
     // VGUI Overrides
     void OnThink() OVERRIDE;
     void Paint() OVERRIDE;
-    void OnMousePressed(MouseCode code) OVERRIDE;
-    void OnMouseReleased(MouseCode code) OVERRIDE;
+    void OnMousePressed(vgui::MouseCode code) OVERRIDE;
+    void OnMouseReleased(vgui::MouseCode code) OVERRIDE;
     void OnCursorMoved(int x, int y) OVERRIDE;
     void OnMouseWheeled(int delta) OVERRIDE;
 

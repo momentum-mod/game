@@ -1,7 +1,5 @@
 #pragma once
 
-#include "vgui/IVGui.h"
-
 class IChangelogPanel
 {
   public:

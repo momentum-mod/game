@@ -1,6 +1,8 @@
 $modelname "weapons\v_mom_pistol.mdl"
 $cdmaterials "models\weapons\w_models\w_mom_pistol"
 
+$attachment "barrel" "Slide" 0.00 3.20 0.00 rotate -0 -0 -0
+
 $scale 0.5
 $body studio "reference.dmx"
 $surfaceprop "weapon"

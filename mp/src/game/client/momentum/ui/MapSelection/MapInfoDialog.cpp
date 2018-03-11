@@ -145,7 +145,7 @@ void CDialogMapInfo::ApplyConnectCommand(const char *mapName)
 {
     char command[256];
     // send engine command to change servers
-    Q_snprintf(command, Q_ARRAYSIZE(command), "progress_enable;map %s\n", mapName);
+    Q_snprintf(command, Q_ARRAYSIZE(command), "map %s\n", mapName);
     engine->ExecuteClientCmd(command);
 }
 

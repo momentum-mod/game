@@ -1,5 +1,7 @@
 #include "cbase.h"
 #include "weapon_mom_pistol.h"
+#include "particle_parse.h"
+#include "debugoverlay_shared.h"
 #include "fx_mom_shared.h"
 
 #include "tier0/memdbgon.h"
@@ -39,6 +41,12 @@ void CMomentumPistol::Spawn()
     m_flAccuracy = 0.9;
     m_flNextPrimaryAttack = 0.0f;
     m_flNextSecondaryAttack = 0.0f;
+}
+
+void CMomentumPistol::Precache()
+{
+    BaseClass::Precache();
+    PrecacheParticleSystem("weapon_muzzle_smoke");
 }
 
 bool CMomentumPistol::Deploy()
@@ -125,7 +133,6 @@ void CMomentumPistol::ItemPostFrame()
     BaseClass::ItemPostFrame();
 }
 
-
 void CMomentumPistol::PistolFire()
 {
     CMomentumPlayer *pPlayer = GetPlayerOwner();
@@ -165,6 +172,16 @@ void CMomentumPistol::PistolFire()
 #endif
 
     pPlayer->DoMuzzleFlash();
+
+    Vector vecShootOrigin2;  //The origin of the shot 
+    QAngle	angShootDir2;    //The angle of the shot
+
+    //We need to figure out where to place the particle effect, so look up where the muzzle is
+    DispatchParticleEffect("weapon_muzzle_smoke", PATTACH_POINT_FOLLOW, GetPlayerOwner()->GetViewModel(), LookupAttachment("barrel"));
+    //GetAttachment(LookupAttachment("barrel"), vecShootOrigin2, angShootDir2);
+
+    //debugoverlay->AddTextOverlay(vecShootOrigin2 + pPlayer->EyePosition(), 5.0f, "HERE'S THE BARREL!");
+    //DispatchParticleEffect("weapon_muzzle_smoke", vecShootOrigin2, angShootDir2);
 
     // player "shoot" animation
     pPlayer->SetAnimation(PLAYER_ATTACK1);

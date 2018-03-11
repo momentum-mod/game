@@ -6,6 +6,8 @@
 #include "vgui/ISurface.h"
 #include "view_shared.h"
 
+using namespace vgui;
+
 CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(parent, pElementName)
 {
     render_ang.Init();

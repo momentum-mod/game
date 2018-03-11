@@ -27,6 +27,8 @@ END_DATADESC();
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
 static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Interpolation ticks to add to rendering online ghosts.\n", 0.0f, 100.0f);
 
+extern ConVar mom_paintgun_shoot_sound;
+
 CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullptr), m_pNextFrame(nullptr)
 {
     ListenForGameEvent("mapfinished_panel_closed");
@@ -37,6 +39,7 @@ CMomentumOnlineGhostEntity::CMomentumOnlineGhostEntity(): m_pCurrentFrame(nullpt
 CMomentumOnlineGhostEntity::~CMomentumOnlineGhostEntity()
 {
     m_vecPositionPackets.Purge();
+    m_vecDecalPackets.Purge();
 }
 
 void CMomentumOnlineGhostEntity::AddPositionFrame(const PositionPacket_t &newFrame)
@@ -131,19 +134,22 @@ void CMomentumOnlineGhostEntity::DoPaint(const DecalPacket_t& packet)
     DispatchEffect("Painting", data);
 
     // Play the paintgun sound
-    CCSWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
-    if (pWeaponInfo)
+    if (mom_paintgun_shoot_sound.GetBool())
     {
-        // If we have some sounds from the weapon classname.txt file, play a random one of them
-        const char *shootsound = pWeaponInfo->aShootSounds[SINGLE];
-        if (!shootsound || !shootsound[0])
-            return;
+        CCSWeaponInfo *pWeaponInfo = GetWeaponInfo(WEAPON_PAINTGUN);
+        if (pWeaponInfo)
+        {
+            // If we have some sounds from the weapon classname.txt file, play a random one of them
+            const char *shootsound = pWeaponInfo->aShootSounds[SINGLE];
+            if (!shootsound || !shootsound[0])
+                return;
 
-        CBroadcastRecipientFilter filter;
-        if (!te->CanPredict())
-            return;
+            CBroadcastRecipientFilter filter;
+            if (!te->CanPredict())
+                return;
 
-        EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
+            EmitSound(filter, entindex(), shootsound, &packet.vOrigin);
+        }
     }
 }
 
@@ -159,10 +165,15 @@ void CMomentumOnlineGhostEntity::DoKnifeSlash(const DecalPacket_t &packet)
 
 void CMomentumOnlineGhostEntity::ThrowGrenade(const DecalPacket_t& packet)
 {
-    // Vector values stored in a QAngle, shhh~
-    Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
-    auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.iMode, 0), this, 3.0f /*GRENADE_TIMER*/); 
-    grenade->SetDamage(0.0f); // These grenades should not do damage
+    CCSWeaponInfo *pGrenadeInfo = GetWeaponInfo(WEAPON_GRENADE);
+    if (pGrenadeInfo)
+    {
+        // Vector values stored in a QAngle, shhh~
+        Vector vecThrow(packet.vAngle.x, packet.vAngle.y, packet.vAngle.z);
+        auto grenade = CMomGrenadeProjectile::Create(packet.vOrigin, vec3_angle, vecThrow, AngularImpulse(600, packet.iMode, 0), this, pGrenadeInfo->szWorldModel);
+        grenade->SetDamage(0.0f); // These grenades should not do damage
+
+    }
 }
 
 void CMomentumOnlineGhostEntity::Precache(void)
