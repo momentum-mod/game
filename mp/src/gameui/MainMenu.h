@@ -20,6 +20,7 @@ class MainMenu : public Panel2D, public IGameEventListener2
     ~MainMenu();
 
     void OnTick() OVERRIDE;
+    void OnThink() OVERRIDE;
     bool IsVisible() OVERRIDE;
     void OnCommand(char const *cmd) OVERRIDE;
 
