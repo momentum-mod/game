@@ -352,7 +352,7 @@ void COptionsSubAudio::OnCommand( const char *command )
 //-----------------------------------------------------------------------------
 void COptionsSubAudio::RunTestSpeakers()
 {
-	engine->ClientCmd_Unrestricted( "disconnect\nwait\nwait\nsv_lan 1\nsetmaster enable\nmaxplayers 1\n\nhostname \"Speaker Test\"\nprogress_enable\nmap test_speakers\n" );
+	engine->ClientCmd_Unrestricted( "disconnect\nwait\nwait\nsv_lan 1\nsetmaster enable\nmaxplayers 1\n\nhostname \"Speaker Test\"\nmap test_speakers\n" );
 }
 
 //-----------------------------------------------------------------------------

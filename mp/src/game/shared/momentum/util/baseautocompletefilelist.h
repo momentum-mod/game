@@ -4,12 +4,7 @@
 //
 // $NoKeywords: $
 //===========================================================================//
-
-#ifndef BASEAUTOCOMPLETEFILELIST_H
-#define BASEAUTOCOMPLETEFILELIST_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "tier1/convar.h"
 
@@ -48,14 +43,6 @@ private:
 //-----------------------------------------------------------------------------
 // Purpose: Utility to quicky generate a simple console command with file name autocompletion
 //-----------------------------------------------------------------------------
-#if !defined( _XBOX )
 #define CON_COMMAND_AUTOCOMPLETEFILE( name, func, description, subdirectory, extension )				\
    DECLARE_AUTOCOMPLETION_FUNCTION( name, subdirectory, extension )										\
    static ConCommand name##_command( #name, func, description, 0, AUTOCOMPLETION_FUNCTION( name ) ); 
-
-#else
-	#define CON_COMMAND_AUTOCOMPLETEFILE( name, func, description, subdirectory, extension )				\
-	static ConCommand name##_command( #name, func, description ); 
-
-#endif
-#endif // BASEAUTOCOMPLETEFILELIST_H

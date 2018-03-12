@@ -177,6 +177,8 @@ void CMomentumLobbySystem::LeaveLobby()
 {
     if (LobbyValid())
     {
+        SetSpectatorTarget(k_steamIDNil, false, true);
+
         // Actually leave the lobby
         steamapicontext->SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         // Clear the ghosts stored in our lobby system
@@ -667,7 +669,7 @@ void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
         SendPacket(packet);
 }
 
-void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating)
+void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating, bool bLeft)
 {
     SPECTATE_MSG_TYPE type;
     if (bStartedSpectating)
@@ -677,22 +679,22 @@ void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool 
     }
     else if (!ghostTarget.IsValid())
     {
-        type = SPEC_UPDATE_LEAVE;
+        type = bLeft ? SPEC_UPDATE_LEAVE : SPEC_UPDATE_STOP;
         SetIsSpectating(false);
     }
     else
         type = SPEC_UPDATE_CHANGETARGET;
 
     // MOM_TODO: Keep me for updating the client
-    if (type != SPEC_UPDATE_LEAVE)
+    if (type == SPEC_UPDATE_STOP || type == SPEC_UPDATE_LEAVE)
+    {
+        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, nullptr);
+    }
+    else
     {
         char steamID[64];
         Q_snprintf(steamID, 64, "%llu", ghostTarget.ConvertToUint64());
         steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, steamID);
-    }
-    else
-    {
-        steamapicontext->SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_SPEC_TARGET, nullptr);
     }
     
     SendSpectatorUpdatePacket(ghostTarget, type);

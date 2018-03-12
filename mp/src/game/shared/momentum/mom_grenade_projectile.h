@@ -65,6 +65,6 @@ class CMomGrenadeProjectile : public CBaseGrenade
   public:
     // Grenade stuff.
     static CMomGrenadeProjectile *Create(const Vector &position, const QAngle &angles, const Vector &velocity,
-                                         const AngularImpulse &angVelocity, CBaseEntity *pOwner, float timer);
+                                         const AngularImpulse &angVelocity, CBaseEntity *pOwner, const char *pModelPath);
 #endif
 };

@@ -2,6 +2,12 @@
 
 #include "ComparisonsSettingsPage.h"
 #include <ienginevgui.h>
+#include "clientmode.h"
+#include "hud_comparisons.h"
+
+#include <tier0/memdbgon.h>
+
+using namespace vgui;
 
 ComparisonsSettingsPage::ComparisonsSettingsPage(Panel *pParent) : BaseClass(pParent, "ComparisonsSettings")
 {
@@ -332,4 +338,34 @@ int ComparisonsSettingsPage::DetermineBogusPulse(Panel *panel) const
     }
 
     return bogusPulse;
+}
+
+void ComparisonsSettingsPage::CursorEnteredCallback(vgui::Panel *panel)
+{
+    int bogusPulse = DetermineBogusPulse(panel);
+
+    m_pBogusComparisonsPanel->SetBogusPulse(bogusPulse);
+    if (bogusPulse > 0)
+    {
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(m_pComparisonsFrame,
+                                                                                "PulseComparePanel");
+    }
+}
+
+void ComparisonsSettingsPage::CursorExitedCallback(vgui::Panel *panel)
+{
+    if (DetermineBogusPulse(panel) > 0)
+    {
+        m_pBogusComparisonsPanel->ClearBogusPulse();
+        g_pClientMode->GetViewportAnimationController()->StartAnimationSequence(m_pComparisonsFrame,
+                                                                                "StopPulseComparePanel");
+    }
+}
+
+void ComparisonsSettingsPage::OnComparisonResize(int wide, int tall)
+{
+    int scaledPad = scheme()->GetProportionalScaledValue(15);
+    m_pComparisonsFrame->SetSize(wide + scaledPad, tall + float(scaledPad) * 1.5f);
+    m_pBogusComparisonsPanel->SetPos(m_pComparisonsFrame->GetXPos() + scaledPad / 2,
+                                     m_pComparisonsFrame->GetYPos() + scaledPad);
 }

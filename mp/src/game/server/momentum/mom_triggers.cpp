@@ -129,8 +129,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
 
         // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
         // do not start timer if player is in practice mode or it's already running.
-        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating &&
-            !pPlayer->IsUsingCPMenu())
+        if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating)
         {
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {
@@ -207,6 +206,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
+        pPlayer->SetUsingCPMenu(false); // It'll get set to true if they teleport to a CP out of here
         pPlayer->ResetRunStats(); // Reset run stats
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
@@ -311,7 +311,7 @@ void CTriggerTimerStop::StartTouch(CBaseEntity *pOther)
             pPlayer->m_RunStats.SetZoneExitSpeed(zoneNum, endvel, endvel2D);
 
             // Check to see if we should calculate the timer offset fix
-            if (ContainsPosition(pPlayer->GetPrevOrigin()))
+            if (ContainsPosition(pPlayer->GetPreviousOrigin()))
                 DevLog("PrevOrigin inside of end trigger, not calculating offset!\n");
             else
             {

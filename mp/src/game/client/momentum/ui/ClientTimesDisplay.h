@@ -184,7 +184,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     // Lobby member panel functions
     void AddLobbyMember(const CSteamID &steamID); // Adds a lobby member to the panel
-    void UpdateLobbyMemberData(const CSteamID &lobbyID, const CSteamID &memberID); // Updates the lobby member's status data on the panel
+    void UpdateLobbyMemberData(const CSteamID &memberID); // Updates the lobby member's status data on the panel
 
     int m_iSectionId; // the current section we are entering into
 
@@ -270,6 +270,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
+
+    CSteamID m_idLobby;
+    void PopulateLobbyPanel();
     
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline

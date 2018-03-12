@@ -1,19 +1,27 @@
 #include "cbase.h"
 
 #include "GameplaySettingsPage.h"
+#include <vgui_controls/CvarTextEntry.h>
+#include <vgui_controls/CVarSlider.h>
+
+using namespace vgui;
 
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
     m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
 
+    m_pLowerSpeedCVarEntry = FindControl<CvarTextEntry>("LowerSpeedEntry");
+    m_pLowerSpeed = FindControl<CvarToggleCheckButton>("LowerWeaponButton");
+
     m_pPlayBlockSound = FindControl<CvarToggleCheckButton>("PlayBlockSound");
     m_pSaveCheckpoints = FindControl<CvarToggleCheckButton>("SaveCheckpoints");
-    
 }
 
 void GameplaySettingsPage::LoadSettings()
 {
+    if (m_pLowerSpeedCVarEntry && m_pLowerSpeed)
+        m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
     UpdateSliderEntries();
     
 }
@@ -42,6 +50,15 @@ void GameplaySettingsPage::OnControlModified(Panel *p)
     if (p == m_pYawSpeedSlider)
     {
         UpdateSliderEntries();
+    }
+}
+
+void GameplaySettingsPage::OnCheckboxChecked(Panel* p)
+{
+    BaseClass::OnCheckboxChecked(p);
+    if (p == m_pLowerSpeed && m_pLowerSpeedCVarEntry)
+    {
+        m_pLowerSpeedCVarEntry->SetEnabled(m_pLowerSpeed->IsSelected());
     }
 }
 

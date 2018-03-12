@@ -1,9 +1,6 @@
 #pragma once
 
 #include <vgui_controls/Button.h>
-#include <vgui_controls/Panel.h>
-#include <vgui_controls/Frame.h>
-#include <vgui/IInput.h>
 
 namespace vgui
 {
