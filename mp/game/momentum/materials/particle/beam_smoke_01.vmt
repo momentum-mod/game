@@ -1,0 +1,15 @@
+"Sprite"
+{
+	"$basetexture" "particle/beam_smoke_01"
+	"$additive" "1"
+	$translucent 1
+	"$vertexcolor"		1
+	"$nocull"			1
+	//"$spriteorientation" "parallel_upright"
+	//"$spriteorigin" "[ 0.50 0.50 ]"
+	"$spriterendermode" 5
+	//$overbrightfactor 15
+}
+
+
+

@@ -6,7 +6,6 @@ WeaponData
     "PlayerAnimationExtension"  "gren"
     "MuzzleFlashScale"          "0"
     "MuzzleFlashStyle"          "CS_MUZZLEFLASH_NONE"
-    "AddonModel"                "models/weapons/w_eq_fraggrenade_thrown.mdl"
 
     // Weapon characteristics:
     "Penetration"       "1"
@@ -17,8 +16,8 @@ WeaponData
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#HL2_Grenade"
-	"viewmodel"         "models/weapons/v_grenade.mdl"
-	"playermodel"       "models/items/grenadeAmmo.mdl"
+	"viewmodel"         "models/weapons/v_mom_grenade.mdl"
+	"playermodel"       "models/weapons/w_mom_grenade.mdl"
     
     "anim_prefix"       "anim"
     "bucket"            "3"

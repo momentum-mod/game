@@ -213,6 +213,8 @@ public:
 
 	// sets whether or not number input only is allowed
 	void SetAllowNumericInputOnly(bool state);
+    // gets wheter or not number input only is allowed
+    bool GetAllowNumericInputOnly() const;
 
 	// By default, we draw the language shortname on the right hand side of the control
 	void SetDrawLanguageIDAtLeft( bool state );

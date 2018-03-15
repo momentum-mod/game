@@ -1,16 +1,13 @@
 #include "cbase.h"
 #include "mom_grenade_projectile.h"
-#include "mom_player_shared.h"
+#ifndef CLIENT_DLL
+#include "soundent.h"
+#include "te_effect_dispatch.h"
+#endif
 
 #include "tier0/memdbgon.h"
 
-extern ConVar sv_gravity;
-
 #ifndef CLIENT_DLL
-
-#include "KeyValues.h"
-#include "soundent.h"
-#include "te_effect_dispatch.h"
 
 BEGIN_DATADESC(CMomGrenadeProjectile)
 DEFINE_THINKFUNC(DangerSoundThink),
@@ -31,9 +28,6 @@ SendPropVector(SENDINFO(m_vInitialVelocity),
                )
 #endif
 END_NETWORK_TABLE()
-
-// MOM_TODO: Change this model to be something custom
-#define GRENADE_MODEL "models/weapons/w_grenade.mdl"
 
 LINK_ENTITY_TO_CLASS(mom_grenade_projectile, CMomGrenadeProjectile);
 PRECACHE_WEAPON_REGISTER(mom_grenade_projectile);
@@ -93,7 +87,6 @@ void CMomGrenadeProjectile::Spawn()
 
 void CMomGrenadeProjectile::Spawn()
 {
-    SetModel(GRENADE_MODEL);
     BaseClass::Spawn();
 
     SetSolidFlags(FSOLID_NOT_STANDABLE);
@@ -105,8 +98,6 @@ void CMomGrenadeProjectile::Spawn()
 
 void CMomGrenadeProjectile::Precache()
 {
-    PrecacheModel(GRENADE_MODEL);
-
     PrecacheScriptSound("MOMGrenade.Bounce");
 
     BaseClass::Precache();
@@ -116,14 +107,15 @@ void CMomGrenadeProjectile::BounceSound() { EmitSound("MOMGrenade.Bounce"); }
 
 CMomGrenadeProjectile *CMomGrenadeProjectile::Create(const Vector &position, const QAngle &angles,
                                                      const Vector &velocity, const AngularImpulse &angVelocity,
-                                                     CBaseEntity *pOwner, float timer)
+                                                     CBaseEntity *pOwner, const char *pModel)
 {
-    auto *pGrenade =
-        static_cast<CMomGrenadeProjectile *>(CBaseEntity::Create("mom_grenade_projectile", position, angles, pOwner));
+    auto *pGrenade = static_cast<CMomGrenadeProjectile *>(CreateNoSpawn("mom_grenade_projectile", position, angles, pOwner));
+    pGrenade->SetModel(pModel);
+    DispatchSpawn(pGrenade);
 
     // Set the timer for 1 second less than requested. We're going to issue a SOUND_DANGER
     // one second before detonation.
-    pGrenade->SetDetonateTimerLength(timer);
+    pGrenade->SetDetonateTimerLength(1.5f);
     pGrenade->SetAbsVelocity(velocity);
     pGrenade->SetupInitialTransmittedGrenadeVelocity(velocity);
     pGrenade->SetThrower(pOwner);

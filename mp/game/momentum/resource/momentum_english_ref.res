@@ -184,7 +184,10 @@
         "MOM_Settings_Save_Checkpoints" "Save user checkpoints to file on map end"
         "MOM_Settings_Worldlight_Shadows" "World lights determine shadow direction"
         "MOM_Settings_Worldlight_Shadows_TT" "When enabled, world lights will determine entity shadow direction. NOTE: Can cause significant performance decreases in some maps!"
-
+        "MOM_Settings_LowerWeapon" "Lower the weapon after a certain amount of speed"
+        "MOM_Settings_SpeedToLower" "The amount of speed to lower the weapon at"
+        
+        
         //"HUD Settings"
         "MOM_Settings_Tab_HUD" "HUD Settings"
         "MOM_Settings_Speedometer_Label" "Speedometer"

@@ -8,12 +8,12 @@
 #include "weapon_csbase.h"
 
 #ifdef GAME_DLL
+#include "items.h"
+#include "momentum/ghost_client.h"
 #include <momentum/mom_grenade_projectile.h>
 #endif
 
 #include "tier0/memdbgon.h"
-
-#define GRENADE_TIMER 1.5f // Seconds
 
 IMPLEMENT_NETWORKCLASS_ALIASED(MomentumGrenade, DT_MomentumGrenade)
 
@@ -41,11 +41,8 @@ PRECACHE_WEAPON_REGISTER(weapon_momentum_grenade);
 void CMomentumGrenade::EmitGrenade(const Vector &vecSrc, const QAngle &vecAngles, const Vector &vecVel,
                                    AngularImpulse angImpulse, CBasePlayer *pPlayer)
 {
-    CMomGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pPlayer, GRENADE_TIMER);
+    CMomGrenadeProjectile::Create(vecSrc, vecAngles, vecVel, angImpulse, pPlayer, GetWorldModel());
 }
-
-#include "items.h"
-#include "momentum/ghost_client.h"
 
 #endif
 

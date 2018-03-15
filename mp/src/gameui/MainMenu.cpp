@@ -24,6 +24,7 @@ using namespace vgui;
 
 MainMenu::MainMenu(Panel *parent) : BaseClass(parent, "MainMenu")
 {
+    MakePopup(false);
     SetProportional(true);
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
@@ -115,6 +116,13 @@ void MainMenu::OnTick()
 {
     // We're the only one who should call this! (As we tick once every 2 mins)
     g_pMomentumSteamHelper->RequestCurrentTotalPlayers();
+}
+
+void MainMenu::OnThink()
+{
+    BaseClass::OnThink();
+
+    surface()->MovePopupToBack(GetVPanel());
 }
 
 bool MainMenu::IsVisible(void)
