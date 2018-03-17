@@ -345,6 +345,7 @@ class CTimerCommands
                 QAngle ang = start->GetLookAngles();
                 pPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
             }
+            pPlayer->ResetRunStats();
         }
         else
         {
