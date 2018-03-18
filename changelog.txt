@@ -1,3 +1,28 @@
+0.7.2
+Small Additions
+    New grenade model by BlockBuilder57 and SethJH
+    Smoke trail on the pistol barrel
+    Cvar to lower weapon after a certain amount of speed
+    
+Big Money Bugfixes
+    The main menu should scale to resolution now
+    Potentially fixed all rampbugs
+    Fixed slopejump boosts to be consistent
+    
+Small Money Bugfixes
+    Added missing token for "Respawn" button in menu
+    Fixed crash upon starting a map after joining lobby from menu
+    Fixed "(player) has respawned" being printed for those who leave the lobby
+    Fixed Spectator names UI not updating after your spectator left the lobby while spectating you
+    Fixed bugs with lobby member UI when joining lobby from menu
+    Fixed decal packet spam if host_timescale is not 1
+    Fixed bug where players would gain speed if stuck in geometry
+    Fixed bug where tickrate would reset to 66 tick for bhop maps when turning off sv_cheats
+    Fixed timer stopping when creating checkpoints (timer now only stops when you teleport to the checkpoint)
+    Fixed timer not starting when checkpoint menu was open
+    Fixed soundscapes on Linux (thanks TotallyMehis!)
+
+
 0.7.1
 Paint Me Like One of Your French Girls
     Added a paintgun, can spawn it with give weapon_momentum_paintgun
@@ -34,67 +59,3 @@ Fix Me? No, Fix You!
     Fixed trigger_momentum_slide bugs
     Fixed sniper locking zoom after shooting and zooming at the same time
     Fixed sniper not setting correct FOV after shooting and zooming at the same time
-
-0.7.0
-Play With Me!
-    Using Steam's Matchmaking/P2P APIs, Momentum now allows for online gameplay with invited, friends, or anyone
-    Cross-map HUD chat when in a lobby
-    Panel in the leaderboards to show who is in your lobby, and to join their map
-    Panel in the HUD to show who is spectating you
-    Panel over the heads of ghosts to show their positions through walls
-    Bullet decals are networked (minus shotguns and knife slashes)
-
-HTML5 Main Menu + Custom GameUI
-    Using Steam API's HTMLSurface class, with the SDK's HTML VGUI wrapper
-    The main menu can be found at resource/html/menu.html
-    Changelog is in the top right, opened by clicking the version number
-    Custom GameUI allows for:
-        Custom menu (yay!)
-        Custom options panel
-        Custom developer console (with proper text highlighting)
-        Custom loading screens
-        Ability to not pause the game when pressing ESC in game
-    
-Does This Bodygroup Make Me Look Fat?
-    Added "Appearance" tab to Momentum Settings
-        See your Ghost's shape and color in a live preview panel
-        Change trail color and length
-    Added "Online" tab to Momentum Settings
-        Toggle some things related to lobbies
-    
-Slip 'n' Slide, Up and Down
-    trigger_momentum_slide aims to replace trigger_push 800
-    Added vertical noclip movement
-        Jumping in noclip will send you upwards
-        Crouching in noclip will send you downwards
-        Control how fast it all happens with sv_noclipspeed_vertical
-    
-This One's For You, Steve Jobs
-    We didn't forget about you Mac OSX users out there!
-    Every build now includes an equivalent Linux and Mac OSX build to Windows
-    
-I Can't Hold All These Bugfixes
-    Fixed vertical rampbugs
-    Fixed bug where players would "hover" one unit above the ground upon landing
-    Fixed sv_tickrate to apply correctly
-    Fixed instances not working in hammer
-    Fixed HUD menus not closing on map end, now with proper fading
-    Fixed menu blur and color picker shaders not working on Linux
-    Fixed color picker VGUI panel to properly include Alpha
-    Fixed the timer pausing the time displayed when hidden (leaderboards brought up)
-    Fixed players dead-stopping on func_door bhop blocks (thanks .george!)
-    Fixed a crash with the momentum ruler tool
-    Fixed a crash with going OoB on larger maps and opening console
-    Fixed raytrace false sharing debug counters for faster map compiles (thanks ryandmaclean!)
-    Fixed being unable to use buttons through clipbrushes (thanks tgnottingham!)
-    Fixed bug where similar-named map run times would show up in leaderboards on other maps
-    Fixed fov_desired's lower limit to be 1 instead of 90
-    Fixed momentum_trigger_limitmovement's bhop flag to properly block player bhops
-    Fixed bogus run comparisons in the Momentum Settings panel
-    Fixed parallax-corrected cubemaps for Linux (and probably Mac)
-    Fixed bug with viewmodels rotating as the player zoomed in
-    Un-hid sv_tickrate in release binaries (for now)
-    Un-hid sv_accelerate in release binaries (for now)
-    Removed defunct SSAO shader
-    Removed a lot of miscellaneous files from the game directory
-    Disabled Dynamic RTT Shadows by default due to poor performance in some maps

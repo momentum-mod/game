@@ -112,5 +112,6 @@ mp/game/bin/
 *.cfg
 .idea/
 CMakeLists.txt
+mp/game/momentum/cfg/pet.txt
 *.exe
 mp/game/momentum/version.txt

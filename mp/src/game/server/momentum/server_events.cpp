@@ -109,6 +109,12 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
     }
 }
 
+void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
+{
+    engine->ServerCommand("unpause\n");
+}
+
+
 void CMOMServerEvents::MountAdditionalContent()
 {
     // From the Valve SDK wiki

@@ -1,5 +1,10 @@
 particles_manifest
 {
+	//Momentum Particles
+	"file" "particles/weapons.pcf"
+
+
+
 	"file"		"particles/error.pcf"
 
 	//HL2 Particles
