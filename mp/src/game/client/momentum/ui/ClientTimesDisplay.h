@@ -113,8 +113,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
     // Updates the local player's avatar image
     void UpdatePlayerAvatarStandalone();
-    // This updates the local player's avatar in the online/friends leaderboards
-    void UpdatePlayerAvatarStandaloneOnline(KeyValues *);
     // Updates an online player's avatar image
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
@@ -132,6 +130,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
     MESSAGE_FUNC_CHARPTR(OnContextGoToMap, "ContextGoToMap", map);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
+    MESSAGE_FUNC_UINT64(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", UGC);
     MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
     MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
 
@@ -149,6 +148,9 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void OnLeaderboardGlobalScoresDownloaded(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
     CCallResult<CClientTimesDisplay, LeaderboardScoresDownloaded_t> m_cLeaderboardFriendsScoresDownloaded;
     void OnLeaderboardFriendScoresDownloaded(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
+
+    CCallResult<CClientTimesDisplay, RemoteStorageDownloadUGCResult_t> m_cOnlineReplayDownloaded;
+    void OnOnlineReplayDownloaded(RemoteStorageDownloadUGCResult_t *pResult, bool bIOFailure);
 
     // Attempts to add the avatar for a given steam ID to the given image list, if it doesn't exist already
     // exist in the given ID to index map.
@@ -213,7 +215,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
     vgui::ImagePanel *m_pPlayerAvatar;
-    vgui::ImagePanel *m_pMomentumLogo;
     vgui::Button *m_pLocalLeaderboardsButton;
     vgui::Button *m_pGlobalLeaderboardsButton;
     vgui::Button *m_pGlobalTop10Button;

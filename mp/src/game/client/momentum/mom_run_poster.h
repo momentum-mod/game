@@ -29,4 +29,8 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
 
     CCallResult<CRunPoster, RemoteStorageFileShareResult_t> m_cUGCUploaded;
     void OnUGCUploaded(RemoteStorageFileShareResult_t *pResult, bool bIOFailure);
+
+private:
+    char m_szFileName[MAX_PATH];
+    char m_szFilePath[MAX_PATH];
 };

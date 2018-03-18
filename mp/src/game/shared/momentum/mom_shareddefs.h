@@ -129,6 +129,7 @@ typedef enum
 
 #define MAP_FOLDER "maps"
 #define RECORDING_PATH "recordings"
+#define RECORDING_ONLINE_PATH "online"
 #define EXT_ZONE_FILE ".zon"
 #define EXT_RECORDING_FILE ".momrec"
 
