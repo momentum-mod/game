@@ -57,7 +57,8 @@
     }
 	"replay_save"
 	{
-		"filename" "string"
+		"filename" "string" // the file name itself with extension
+        "filepath" "string" // the full path + file name, used for file writing
         "save" "bool"
         "time" "long" // time in milliseconds
 	}

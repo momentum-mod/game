@@ -57,24 +57,15 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
            return;
         }
 
+        // Save the name and path for uploading in the callback of the score
+        Q_strncpy(m_szFileName, pEvent->GetString("filename"), MAX_PATH);
+        Q_strncpy(m_szFilePath, pEvent->GetString("filepath"), MAX_PATH);
+
+        // Set our score
         SteamAPICall_t uploadScore = steamapicontext->SteamUserStats()->UploadLeaderboardScore(m_hCurrentLeaderboard, 
             k_ELeaderboardUploadScoreMethodKeepBest, runTime, nullptr, 0);
         m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
 
-        // MOM_TODO: Append the replay file to the leaderboard entry
-        /*char filePath[MAX_PATH];
-        const char *filename = pEvent->GetString("filename");
-        Q_ComposeFileName(RECORDING_PATH, filename, filePath, MAX_PATH);
-
-        // Get the full path to the recording
-        char fullPath[MAX_PATH];
-        g_pFullFileSystem->RelativePathToFullPath_safe(filePath, "MOD", fullPath);
-
-        // Upload this bad boy
-        //steamapicontext->SteamUGC()->CreateItem(steamapicontext->SteamUtils()->GetAppID(), k_EWorkshopFileTypeGameManagedItem);
-        // OR
-        SteamAPICall_t UGCcall = steamapicontext->SteamRemoteStorage()->FileShare(fullPath); // Not sure if this is right...
-        m_cUGCUploaded.Set(UGCcall, this, &OnUGCUploaded);*/
 
 #if ENABLE_HTTP_LEADERBOARDS
         CUtlBuffer buf;
@@ -119,29 +110,64 @@ void CRunPoster::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t* pResult,
 {
     IGameEvent *pEvent = gameeventmanager->CreateEvent("run_upload");
 
+    bool bSuccess = true;
     if (bIOFailure || !pResult->m_bSuccess)
     {
-        pEvent->SetBool("run_posted", false);
+        bSuccess = false;
         // MOM_TODO: If it didn't upload, hijack the run_upload event with a message here?
-        return;
     }
 
-    pEvent->SetBool("run_posted", true);
+    pEvent->SetBool("run_posted", bSuccess);
+
     if (gameeventmanager->FireEvent(pEvent))
-        ConColorMsg(Color(0, 255, 0, 255), "Uploaded run to the leaderboards, check it out!\n");
-    // Still need to upload UGC... (already taken care of in FireEvent)
+    {
+        if (bSuccess)
+        {
+            // Now we can (try to) upload this replay file to the Steam Cloud for attaching to this new leaderboard score
+            CUtlBuffer fileBuffer;
+            if (filesystem->ReadFile(m_szFilePath, "MOD", fileBuffer))
+            {
+                if (steamapicontext->SteamRemoteStorage()->FileWrite(m_szFileName, fileBuffer.Base(), fileBuffer.TellPut()))
+                {
+                    SteamAPICall_t UGCcall = steamapicontext->SteamRemoteStorage()->FileShare(m_szFileName);
+                    m_cUGCUploaded.Set(UGCcall, this, &CRunPoster::OnUGCUploaded);
+                }
+            }
+            else
+            {
+                DevWarning("Couldn't read file %s!\n", m_szFilePath);
+            }
+
+            ConColorMsg(Color(0, 255, 0, 255), "Uploaded run to the leaderboards, check it out!\n");
+        }
+        else
+        {
+            Warning("Could not upload your leaderboard score, sorry!\n");
+        }
+    }
 }
 
 void CRunPoster::OnLeaderboardUGCSet(LeaderboardUGCSet_t* pResult, bool bIOFailure)
 {
+    bool bSuccess = true;
     if (bIOFailure || pResult->m_eResult != k_EResultOK)
     {
+        bSuccess = false;
         Warning("Failed to upload replay file to leaderboard! Result: %i\n", pResult->m_eResult);
-        return;
     }
 
-    // MOM_TODO: This is chronologically the last step to uploading a run. Fire the event here?
-    //ConColorMsg(Color(0, 255, 0, 255), "Uploaded replay file to leaderboards, check it out!\n");
+    // Either way we need to delete the file from Steam Cloud now, don't use quota
+    if (steamapicontext->SteamRemoteStorage()->FileDelete(m_szFileName))
+    {
+        DevLog("Successfully deleted the uploaded run on the Steam Cloud at %s\n", m_szFileName);
+    }
+
+    // Clear out the paths here
+    m_szFileName[0] = 0;
+    m_szFilePath[0] = 0;
+
+    if (bSuccess)
+        ConColorMsg(Color(0, 255, 0, 255), "Uploaded replay file to leaderboards, check it out!\n");
 }
 
 void CRunPoster::OnUGCUploaded(RemoteStorageFileShareResult_t* pResult, bool bIOFailure)
@@ -153,7 +179,8 @@ void CRunPoster::OnUGCUploaded(RemoteStorageFileShareResult_t* pResult, bool bIO
     }
 
     // Now we attach to the leaderboard
-    //SteamAPICall_t UGCLeaderboardCall = steamapicontext->SteamUserStats()->AttachLeaderboardUGC(m_hCurrentLeaderboard, pResult->m_hFile);
+    SteamAPICall_t UGCLeaderboardCall = steamapicontext->SteamUserStats()->AttachLeaderboardUGC(m_hCurrentLeaderboard, pResult->m_hFile);
+    m_cLeaderboardUGCSet.Set(UGCLeaderboardCall, this, &CRunPoster::OnLeaderboardUGCSet);
 }
 
 #if ENABLE_HTTP_LEADERBOARDS
