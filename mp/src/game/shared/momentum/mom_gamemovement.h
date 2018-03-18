@@ -68,6 +68,9 @@ class CMomentumGameMovement : public CGameMovement
     virtual float ClimbSpeed(void) const;
     virtual float LadderLateralMultiplier(void) const;
 
+    // Validate tracerays
+    bool IsValidMovementTrace(trace_t &tr);
+
     // Override for fixing punchangle
     virtual void DecayPunchAngle(void) OVERRIDE;
 
@@ -83,6 +86,8 @@ class CMomentumGameMovement : public CGameMovement
 
         BaseClass::ProcessMovement(pBasePlayer, pMove);
     }
+
+	void Friction(void);
 
     // Duck
     virtual void Duck(void);
