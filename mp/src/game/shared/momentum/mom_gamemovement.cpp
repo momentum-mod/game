@@ -14,7 +14,7 @@ extern bool g_bMovementOptimizations;
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
-ConVar sv_ramp_retrace_scale("sv_ramp_retrace_length", "0.5", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
+ConVar sv_ramp_retrace_scale("sv_ramp_retrace_length", "0.1", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
 
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
@@ -704,25 +704,18 @@ void CMomentumGameMovement::PlayerMove()
         // This is needed because we have taller models with the old collision bounds.
 
         const float eyeClearance = 12.0f; // eye pos must be this far below the ceiling
-
+        
         Vector offset = player->GetViewOffset();
 
         Vector vHullMin = GetPlayerMins(player->m_Local.m_bDucked);
-        vHullMin.z = 0.0f;
         Vector vHullMax = GetPlayerMaxs(player->m_Local.m_bDucked);
+        vHullMax.z = player->m_Local.m_bDucked ? VEC_DUCK_VIEW.z : VEC_VIEW.z;
 
-        Vector start = player->GetAbsOrigin();
-        start.z += vHullMax.z;
+        Vector start = mv->GetAbsOrigin();
+
         Vector end = start;
-        end.z += eyeClearance - vHullMax.z;
-        end.z += player->m_Local.m_bDucked ? VEC_DUCK_VIEW.z : VEC_VIEW.z;
-
-        vHullMax.z = 0.0f;
-
-        Vector fudge(1, 1, 0.f);
-        vHullMin += fudge;
-        vHullMax -= fudge;
-
+        end.z += eyeClearance;
+        
         trace_t trace;
         Ray_t ray;
         ray.Init(start, end, vHullMin, vHullMax);
@@ -730,7 +723,8 @@ void CMomentumGameMovement::PlayerMove()
 
         if (trace.fraction < 1.0f)
         {
-            float est = start.z + trace.fraction * (end.z - start.z) - player->GetAbsOrigin().z - eyeClearance;
+            float est = vHullMax.z + trace.endpos.z - mv->GetAbsOrigin().z - eyeClearance;
+
             if ((player->GetFlags() & FL_DUCKING) == 0 && !player->m_Local.m_bDucking && !player->m_Local.m_bDucked)
             {
                 offset.z = est;
