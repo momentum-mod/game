@@ -151,13 +151,7 @@ public:
 	}
 #endif // DBGFLAG_VALIDATE
 
-	ISteamHTMLSurface *SteamHTMLSurface() { return m_SteamAPIContext.SteamHTMLSurface(); }
-
-	void OnHTMLMouseMoved( int x, int y )
-	{
-		if ( m_SteamAPIContext.SteamHTMLSurface() )
-			m_SteamAPIContext.SteamHTMLSurface()->MouseMove( m_unBrowserHandle, x, y );
-	}
+    void OnHTMLMouseMoved(int x, int y);
 
 protected:
 	virtual void ApplySchemeSettings( IScheme *pScheme );
@@ -197,8 +191,6 @@ protected:
 	MESSAGE_FUNC_PTR( OnTextChanged, "TextChanged", panel );
 	MESSAGE_FUNC_PTR( OnEditNewLine, "TextNewLine", panel );
 	MESSAGE_FUNC_INT( DismissJSDialog, "DismissJSDialog", result );
-    
-    CSteamAPIContext m_SteamAPIContext;
 
 private:
 	vgui::Panel *m_pInteriorPanel;

@@ -151,10 +151,10 @@ void COptionsSubAudio::OnResetData()
    // In a Steam environment we get the current language 
 #if !defined( NO_STEAM )
    // When Steam isn't running we can't get the language info... 
-   if ( GameUI().GetSteamContext()->SteamApps() )
+   if ( SteamApps() )
    {
-       Q_strncpy(szCurrentLanguage, GameUI().GetSteamContext()->SteamApps()->GetCurrentGameLanguage(), sizeof(szCurrentLanguage));
-       Q_strncpy(szAvailableLanguages, GameUI().GetSteamContext()->SteamApps()->GetAvailableGameLanguages(), sizeof(szAvailableLanguages));
+       Q_strncpy(szCurrentLanguage, SteamApps()->GetCurrentGameLanguage(), sizeof(szCurrentLanguage));
+       Q_strncpy(szAvailableLanguages, SteamApps()->GetAvailableGameLanguages(), sizeof(szAvailableLanguages));
    }
 #endif
 

@@ -70,8 +70,8 @@ void CMomentumGhostClient::PostInit()
 void CMomentumGhostClient::LevelInitPostEntity()
 {
     // MOM_TODO: AdvertiseGame needs to use k_steamIDNonSteamGS and pass the IP (as hex) and port if it is inside a server 
-    // steamapicontext->SteamUser()->AdvertiseGame(steamapicontext->SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
-    // steamapicontext->SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
+    // SteamUser()->AdvertiseGame(SteamUser()->GetSteamID(), 0, 0); // Gives game info of current server, useful if actually on server
+    // SteamFriends()->SetRichPresence("connect", "blah"); // Allows them to click "Join game" from Steam
 
     m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     g_pMomentumLobbySystem->LevelChange(gpGlobals->mapname.ToCStr());

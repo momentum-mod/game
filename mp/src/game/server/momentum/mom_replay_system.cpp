@@ -4,8 +4,8 @@
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "util/baseautocompletefilelist.h"
-#include "util/mom_util.h"
 #include "fmtstr.h"
+#include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
 
@@ -248,7 +248,7 @@ void CMomentumReplaySystem::SetReplayInfo()
 
     m_pReplay->SetMapName(gpGlobals->mapname.ToCStr());
     m_pReplay->SetPlayerName(m_player->GetPlayerName());
-    ISteamUser *pUser = steamapicontext->SteamUser();
+    ISteamUser *pUser = SteamUser();
     m_pReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     m_pReplay->SetTickInterval(gpGlobals->interval_per_tick);
     m_pReplay->SetRunTime(g_pMomentumTimer->GetLastRunTime());

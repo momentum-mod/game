@@ -70,8 +70,6 @@ class CGameUI : public IGameUI
     void OnConfirmQuit() OVERRIDE;
     bool IsMainMenuVisible() OVERRIDE;
 
-    CSteamAPIContext *GetSteamContext() { return &m_SteamAPIContext; }
-
     // ====== UNUSED ========
     // Xbox 360
     void OnCreditsFinished() OVERRIDE {}
@@ -140,8 +138,6 @@ class CGameUI : public IGameUI
 
     char m_szPreviousStatusText[128];
     char m_szPlatformDir[MAX_PATH];
-
-    CSteamAPIContext m_SteamAPIContext;
 
     CViewSetup m_pView;
     VPlane *m_pFrustum;

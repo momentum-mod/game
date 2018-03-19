@@ -491,14 +491,14 @@ bool CClientScoreBoardDialog::GetPlayerScoreInfo(int playerIndex, KeyValues *kv)
 void CClientScoreBoardDialog::UpdatePlayerAvatar( int playerIndex, KeyValues *kv )
 {
 	// Update their avatar
-	if ( kv && ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() )
+	if ( kv && ShowAvatars() && SteamFriends() && SteamUtils() )
 	{
 		player_info_t pi;
 		if ( engine->GetPlayerInfo( playerIndex, &pi ) )
 		{
 			if ( pi.friendsID )
 			{
-				CSteamID steamIDForPlayer( pi.friendsID, 1, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
+				CSteamID steamIDForPlayer( pi.friendsID, 1, SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual );
 
 				// See if we already have that avatar in our list
 				int iMapIndex = m_mapAvatarsToImageList.Find( steamIDForPlayer );

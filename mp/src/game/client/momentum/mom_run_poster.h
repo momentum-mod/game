@@ -27,8 +27,11 @@ class CRunPoster : public CGameEventListener, public CAutoGameSystem
     CCallResult<CRunPoster, LeaderboardUGCSet_t> m_cLeaderboardUGCSet;
     void OnLeaderboardUGCSet(LeaderboardUGCSet_t *pResult, bool bIOFailure);
 
-    CCallResult<CRunPoster, RemoteStorageFileShareResult_t> m_cUGCUploaded;
-    void OnUGCUploaded(RemoteStorageFileShareResult_t *pResult, bool bIOFailure);
+    CCallResult<CRunPoster, RemoteStorageFileWriteAsyncComplete_t> m_cFileUploaded;
+    void OnFileUploaded(RemoteStorageFileWriteAsyncComplete_t* pResult, bool bIOFailure);
+
+    CCallResult<CRunPoster, RemoteStorageFileShareResult_t> m_cFileShared;
+    void OnFileShared(RemoteStorageFileShareResult_t *pResult, bool bIOFailure);
 
 private:
     char m_szFileName[MAX_PATH];

@@ -406,7 +406,7 @@ void CBasePanel::RunMenuCommand(const char* command)
     }
     else if (!Q_stricmp(command, "OpenAchievementsDialog"))
     {
-        if (!GameUI().GetSteamContext()->SteamUser() || !GameUI().GetSteamContext()->SteamUser()->BLoggedOn())
+        if (!SteamUser() || !SteamUser()->BLoggedOn())
         {
             MessageBox *pMessageBox = new MessageBox("#GameUI_Achievements_SteamRequired_Title", "#GameUI_Achievements_SteamRequired_Message");
             pMessageBox->DoModal();
