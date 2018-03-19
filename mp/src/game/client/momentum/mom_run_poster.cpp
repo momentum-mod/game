@@ -27,7 +27,7 @@ void CRunPoster::LevelInitPostEntity()
     const char *pMapName = MapName();
     if (pMapName)
     {
-        SteamAPICall_t findCall = steamapicontext->SteamUserStats()->FindLeaderboard(pMapName);
+        SteamAPICall_t findCall = SteamUserStats()->FindLeaderboard(pMapName);
         m_cLeaderboardFindResult.Set(findCall, this, &CRunPoster::OnLeaderboardFind);
     }
 }
@@ -62,25 +62,25 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
         Q_strncpy(m_szFilePath, pEvent->GetString("filepath"), MAX_PATH);
 
         // Set our score
-        SteamAPICall_t uploadScore = steamapicontext->SteamUserStats()->UploadLeaderboardScore(m_hCurrentLeaderboard, 
+        SteamAPICall_t uploadScore = SteamUserStats()->UploadLeaderboardScore(m_hCurrentLeaderboard, 
             k_ELeaderboardUploadScoreMethodKeepBest, runTime, nullptr, 0);
         m_cLeaderboardScoreUploaded.Set(uploadScore, this, &CRunPoster::OnLeaderboardScoreUploaded);
 
 
 #if ENABLE_HTTP_LEADERBOARDS
         CUtlBuffer buf;
-        if (steamapicontext && steamapicontext->SteamHTTP() && filesystem->ReadFile(filePath, "MOD", buf))
+        if (SteamHTTP() && filesystem->ReadFile(filePath, "MOD", buf))
         {
             char szURL[MAX_PATH] = "http://momentum-mod.org/postscore/";
-            HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
+            HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
             int size = buf.Size();
             char *data = new char[size];
             buf.Get(data, size);
-            steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "file", data);
+            SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, "file", data);
 
             SteamAPICall_t apiHandle;
 
-            if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+            if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
             {
                 Warning("Run sent.\n");
                 (&cbPostTimeCallback)->Set(apiHandle, this, &CRunPoster::PostTimeCallback);
@@ -88,7 +88,7 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
             else
             {
                 Warning("Failed to send HTTP Request to send run!\n");
-                steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+                SteamHTTP()->ReleaseHTTPRequest(handle); // GC
             }
         }
 #endif
@@ -127,11 +127,8 @@ void CRunPoster::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t* pResult,
             CUtlBuffer fileBuffer;
             if (filesystem->ReadFile(m_szFilePath, "MOD", fileBuffer))
             {
-                if (steamapicontext->SteamRemoteStorage()->FileWrite(m_szFileName, fileBuffer.Base(), fileBuffer.TellPut()))
-                {
-                    SteamAPICall_t UGCcall = steamapicontext->SteamRemoteStorage()->FileShare(m_szFileName);
-                    m_cUGCUploaded.Set(UGCcall, this, &CRunPoster::OnUGCUploaded);
-                }
+                SteamAPICall_t write = SteamRemoteStorage()->FileWriteAsync(m_szFileName, fileBuffer.Base(), fileBuffer.TellPut());
+                m_cFileUploaded.Set(write, this, &CRunPoster::OnFileUploaded);
             }
             else
             {
@@ -157,7 +154,7 @@ void CRunPoster::OnLeaderboardUGCSet(LeaderboardUGCSet_t* pResult, bool bIOFailu
     }
 
     // Either way we need to delete the file from Steam Cloud now, don't use quota
-    if (steamapicontext->SteamRemoteStorage()->FileDelete(m_szFileName))
+    if (SteamRemoteStorage()->FileDelete(m_szFileName))
     {
         DevLog("Successfully deleted the uploaded run on the Steam Cloud at %s\n", m_szFileName);
     }
@@ -170,7 +167,19 @@ void CRunPoster::OnLeaderboardUGCSet(LeaderboardUGCSet_t* pResult, bool bIOFailu
         ConColorMsg(Color(0, 255, 0, 255), "Uploaded replay file to leaderboards, check it out!\n");
 }
 
-void CRunPoster::OnUGCUploaded(RemoteStorageFileShareResult_t* pResult, bool bIOFailure)
+void CRunPoster::OnFileUploaded(RemoteStorageFileWriteAsyncComplete_t* pResult, bool bIOFailure)
+{
+    if (pResult->m_eResult != k_EResultOK || bIOFailure)
+    {
+        Warning("Could not upload steam cloud file! Result: %i\n", pResult->m_eResult);
+        return;
+    }
+
+    SteamAPICall_t UGCcall = SteamRemoteStorage()->FileShare(m_szFileName);
+    m_cFileShared.Set(UGCcall, this, &CRunPoster::OnFileShared);
+}
+
+void CRunPoster::OnFileShared(RemoteStorageFileShareResult_t* pResult, bool bIOFailure)
 {
     if (bIOFailure || pResult->m_eResult != k_EResultOK)
     {
@@ -179,7 +188,7 @@ void CRunPoster::OnUGCUploaded(RemoteStorageFileShareResult_t* pResult, bool bIO
     }
 
     // Now we attach to the leaderboard
-    SteamAPICall_t UGCLeaderboardCall = steamapicontext->SteamUserStats()->AttachLeaderboardUGC(m_hCurrentLeaderboard, pResult->m_hFile);
+    SteamAPICall_t UGCLeaderboardCall = SteamUserStats()->AttachLeaderboardUGC(m_hCurrentLeaderboard, pResult->m_hFile);
     m_cLeaderboardUGCSet.Set(UGCLeaderboardCall, this, &CRunPoster::OnLeaderboardUGCSet);
 }
 
@@ -189,7 +198,7 @@ void CRunPoster::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFai
     // if (bIOFailure)
     //    return;
     // uint32 size;
-    // steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    // SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     // if (size == 0)
     //{
     //    Warning("MomentumUtil::PostTimeCallback: 0 body size!\n");
@@ -197,7 +206,7 @@ void CRunPoster::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFai
     //}
     // DevLog("Size of body: %u\n", size);
     // uint8 *pData = new uint8[size];
-    // steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    // SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
     // IGameEvent *runUploadedEvent = gameeventmanager->CreateEvent("run_upload");
 
@@ -247,7 +256,7 @@ void CRunPoster::PostTimeCallback(HTTPRequestCompleted_t *pCallback, bool bIOFai
     //    delete[] pDataPtr;
     //}
     // pDataPtr = nullptr;
-    // steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    // SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 #endif
 

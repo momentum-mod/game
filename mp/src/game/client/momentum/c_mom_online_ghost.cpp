@@ -39,9 +39,9 @@ void C_MomentumOnlineGhostEntity::ClientThink()
 {
     SetNextClientThink(CLIENT_THINK_ALWAYS);
 
-    if (m_uiAccountID > 0 && !m_SteamID.IsValid() && steamapicontext->SteamUtils())
+    if (m_uiAccountID > 0 && !m_SteamID.IsValid() && SteamUtils())
     {
-        m_SteamID = CSteamID(m_uiAccountID, k_EUniversePublic, steamapicontext->SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
+        m_SteamID = CSteamID(m_uiAccountID, k_EUniversePublic, SteamUtils()->GetConnectedUniverse(), k_EAccountTypeIndividual);
     }
 
 

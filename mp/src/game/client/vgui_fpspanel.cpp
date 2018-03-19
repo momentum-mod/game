@@ -352,10 +352,10 @@ void CFPSPanel::Paint()
 	
 	if ( cl_showbattery.GetInt() > 0 )
 	{
-		if ( steamapicontext && steamapicontext->SteamUtils() && 
+		if ( SteamUtils() && 
 			( m_lastBatteryPercent == -1.0f || (gpGlobals->realtime - m_lastBatteryPercent) > 10.0f ) )
 		{
-			m_BatteryPercent = steamapicontext->SteamUtils()->GetCurrentBatteryPower();
+			m_BatteryPercent = SteamUtils()->GetCurrentBatteryPower();
 			m_lastBatteryPercent = gpGlobals->realtime;
 		}
 		
