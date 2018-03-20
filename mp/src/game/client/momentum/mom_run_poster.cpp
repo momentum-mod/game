@@ -27,7 +27,7 @@ void CRunPoster::LevelInitPostEntity()
     const char *pMapName = MapName();
     if (pMapName)
     {
-        SteamAPICall_t findCall = SteamUserStats()->FindLeaderboard(pMapName);
+        SteamAPICall_t findCall = SteamUserStats()->FindOrCreateLeaderboard(pMapName, k_ELeaderboardSortMethodAscending, k_ELeaderboardDisplayTypeTimeMilliSeconds);
         m_cLeaderboardFindResult.Set(findCall, this, &CRunPoster::OnLeaderboardFind);
     }
 }
@@ -97,9 +97,9 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 
 void CRunPoster::OnLeaderboardFind(LeaderboardFindResult_t* pResult, bool bIOFailure)
 {
-    if (bIOFailure || !pResult->m_bLeaderboardFound)
+    if (bIOFailure)
     {
-        Warning("No leaderboard found for map %s!\n", MapName());
+        Warning("Failed to create leaderboard for map %s!\n", MapName());
         return;
     }
 
@@ -132,7 +132,7 @@ void CRunPoster::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t* pResult,
             }
             else
             {
-                DevWarning("Couldn't read file %s!\n", m_szFilePath);
+                DevWarning("Couldn't read replay file %s!\n", m_szFilePath);
             }
 
             ConColorMsg(Color(0, 255, 0, 255), "Uploaded run to the leaderboards, check it out!\n");
