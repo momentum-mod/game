@@ -887,8 +887,9 @@ void CMomentumGameMovement::FullWalkMove()
         {
             // If we jump, then we avoid to get stuck to ground with sliding stuffs otherwhise we can't really jump.
             // We will just wait for the next starttouch of the slide trigger.
-            if (CheckJumpButton())
-                m_pPlayer->m_SrvData.m_SlideData.Reset();
+            // Causes issues with the touchcount, so we leave it like this way.
+            //if (CheckJumpButton())
+               //m_pPlayer->m_SrvData.m_SlideData.Reset();
         }
         else
         {

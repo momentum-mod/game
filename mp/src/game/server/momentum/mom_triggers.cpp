@@ -886,7 +886,7 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
     {
         pPlayer->m_SrvData.m_SlideData.DecTouchCounter();
 
-        if (pPlayer->m_SrvData.m_SlideData.GetTouchCounter() == 0)
+        if (pPlayer->m_SrvData.m_SlideData.GetTouchCounter() <= 0)
             pPlayer->m_SrvData.m_SlideData.Reset();
 
         // engine->Con_NPrintf( 1 , "EndTouch: %i\n" , entindex() );
