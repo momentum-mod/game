@@ -25,7 +25,8 @@ class CMomentumPlayer;
 
 #define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
 
-#define FIRE_GAMEMOVEMENT_EVENT(event) FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event();}
+#define FIRE_GAMEMOVEMENT_EVENT(event)                                                                                 \
+    FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event(); }
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -96,17 +97,18 @@ class CMomentumGameMovement : public CGameMovement
     virtual void StartGravity(void) OVERRIDE;
     virtual void FinishGravity(void) OVERRIDE;
     virtual void StuckGround(void);
-    virtual int ClipVelocity(Vector& in , Vector& normal , Vector& out , float overbounce);
+    virtual void LimitStartZoneSpeed(void);
+    virtual int ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce);
 
     // Movement Listener
     void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
-    
+
   private:
     float m_flReflectNormal; // Used by rampboost fix
     bool m_bWasInAir;
     CMomentumPlayer *m_pPlayer;
-    CUtlVector<IMovementListener*> m_vecListeners;
+    CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
 };
 
