@@ -23,6 +23,8 @@ class CMomentumPlayer;
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
 
+#define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
+
 #define FIRE_GAMEMOVEMENT_EVENT(event)                                                                                 \
     FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event(); }
 
@@ -97,6 +99,7 @@ class CMomentumGameMovement : public CGameMovement
     virtual void StartGravity(void) OVERRIDE;
     virtual void FinishGravity(void) OVERRIDE;
     virtual void StuckGround(void);
+    virtual void LimitStartZoneSpeed(void);
     virtual int ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce);
 
     // Movement Listener

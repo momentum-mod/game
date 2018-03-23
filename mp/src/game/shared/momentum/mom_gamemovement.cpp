@@ -1319,29 +1319,7 @@ void CMomentumGameMovement::FullWalkMove()
             StuckGround();
         }
 
-        if (player->GetGroundEntity() != nullptr)
-        {
-            Vector vecNewVelocity = mv->m_vecVelocity;
-            float flMaxSpeed = mv->m_flMaxSpeed;
-
-            if (m_pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed 
-                 && m_bWasInAir
-                 && vecNewVelocity.Length2D() > flMaxSpeed )
-            {
-                float zSaved = mv->m_vecVelocity.z;
-
-                VectorNormalizeFast(vecNewVelocity);
-
-                vecNewVelocity *= flMaxSpeed;
-                vecNewVelocity.z = zSaved;
-                mv->m_vecVelocity = vecNewVelocity;
-                m_bWasInAir = false;
-            }
-        }
-        else
-        {
-            m_bWasInAir = true;
-        }
+        LimitStartZoneSpeed();
     }
 
     if ((m_nOldWaterLevel == WL_NotInWater && player->GetWaterLevel() != WL_NotInWater) ||
@@ -1351,6 +1329,32 @@ void CMomentumGameMovement::FullWalkMove()
 #if !defined(CLIENT_DLL)
         player->Splash();
 #endif
+    }
+}
+
+void CMomentumGameMovement::LimitStartZoneSpeed(void)
+{
+    Vector vecNewVelocity = mv->m_vecVelocity;
+    if (player->GetGroundEntity() != nullptr)
+    {
+        float flMaxSpeed = mv->m_flMaxSpeed;
+
+        if (m_pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed && m_bWasInAir &&
+            vecNewVelocity.Length2D() > flMaxSpeed)
+        {
+            float zSaved = vecNewVelocity.z;
+
+            VectorNormalizeFast(vecNewVelocity);
+
+            vecNewVelocity *= flMaxSpeed;
+            vecNewVelocity.z = zSaved;
+            mv->m_vecVelocity = vecNewVelocity;
+            m_bWasInAir = false;
+        }
+    }
+    else
+    {
+        m_bWasInAir = true;
     }
 }
 
