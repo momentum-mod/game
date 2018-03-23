@@ -104,6 +104,7 @@ class CMomentumGameMovement : public CGameMovement
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
 
   private:
+    bool m_bWasInAir;
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
