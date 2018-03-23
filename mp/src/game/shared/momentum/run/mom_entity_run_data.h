@@ -30,4 +30,5 @@ public:
     int m_iStartTick; //Tick that the entity started its timer
 	int m_iStartTickD; //The tick difference between timer and record
     float m_flRunTime; //The time taken to do their most recent run
+    bool m_bShouldLimitPlayerSpeed;
 };

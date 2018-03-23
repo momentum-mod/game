@@ -19,4 +19,5 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_bMapFinished = false;
     m_bTimerRunning = false;
     m_flRunTime = 0.0f;
+    m_bShouldLimitPlayerSpeed = false;
 }

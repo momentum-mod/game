@@ -132,8 +132,10 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
         if (!g_pMomentumTimer->IsRunning() && !pPlayer->m_SrvData.m_bHasPracticeMode && !bCheating &&
             !pPlayer->IsUsingCPMenu())
         {
+            /*
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {
+                
                 Vector velocity = pOther->GetAbsVelocity();
                 // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
                 // It only has a NormalizeInPlace... Not simple enough for me
@@ -143,7 +145,12 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                     vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));
                     pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                 }
+                
             }
+            */
+
+            pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed = false;
+
             g_pMomentumTimer->Start(gpGlobals->tickcount);
             // The Start method could return if CP menu or prac mode is activated here
             if (g_pMomentumTimer->IsRunning())
@@ -211,6 +218,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
         pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
+        pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed = IsLimitingSpeed();
 
         if (g_pMomentumTimer->IsRunning())
         {

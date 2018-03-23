@@ -104,6 +104,7 @@ class CMomentumGameMovement : public CGameMovement
     
   private:
     float m_flReflectNormal; // Used by rampboost fix
+    bool m_bWasInAir;
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener*> m_vecListeners;
     ConVarRef mom_gamemode;
