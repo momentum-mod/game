@@ -1014,6 +1014,6 @@ $Project
         $Lib    tier1
 		$Lib	tier2
 		$Lib	tier3
-		$Libexternal    steam_api
+		$ImpLib    steam_api
 	}
 }
