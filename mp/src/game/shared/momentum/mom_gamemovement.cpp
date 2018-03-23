@@ -16,6 +16,9 @@ ConVar sv_ramp_fix("sv_ramp_fix", "1");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
 ConVar sv_ramp_retrace_scale("sv_ramp_retrace_length", "0.1", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
 
+ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED, "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
+ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED, "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f, true, 1.0f);
+
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
@@ -220,10 +223,10 @@ void CMomentumGameMovement::WalkMove()
         return;
     }
 
-    // first try just moving to the destination    
+    // first try just moving to the destination  
     dest[0] = mv->GetAbsOrigin()[0] + mv->m_vecVelocity[0] * gpGlobals->frametime;
     dest[1] = mv->GetAbsOrigin()[1] + mv->m_vecVelocity[1] * gpGlobals->frametime;
-    dest[2] = mv->GetAbsOrigin()[2] + mv->m_vecVelocity[1] * gpGlobals->frametime;
+    dest[2] = mv->GetAbsOrigin()[2] + mv->m_vecVelocity[2] * gpGlobals->frametime;
 
     // first try moving directly to the next spot
     TracePlayerBBox(mv->GetAbsOrigin(), dest, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
@@ -242,7 +245,7 @@ void CMomentumGameMovement::WalkMove()
     }
 
     // Don't walk up stairs if not on ground.
-    if (oldground == NULL && player->GetWaterLevel() == 0)
+    if (oldground == nullptr && player->GetWaterLevel() == 0)
     {
         // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
         VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
@@ -263,81 +266,195 @@ void CMomentumGameMovement::WalkMove()
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
     StayOnGround();
-    CheckForLadders(m_pPlayer->GetGroundEntity() != nullptr);
-}
-
-void CMomentumGameMovement::CheckForLadders(bool wasOnGround)
-{
-    if (!wasOnGround)
-    {
-        // If we're higher than the last place we were on the ground, bail - obviously we're not dropping
-        // past a ladder we might want to grab.
-        if (mv->GetAbsOrigin().z > m_pPlayer->m_lastStandingPos.z)
-            return;
-
-        Vector dir = -m_pPlayer->m_lastStandingPos + mv->GetAbsOrigin();
-        if (!dir.x && !dir.y)
-        {
-            // If we're dropping straight down, we don't know which way to look for a ladder.  Oh well.
-            return;
-        }
-
-        dir.z = 0.0f;
-        float dist = dir.NormalizeInPlace();
-        if (dist > 64.0f)
-        {
-            // Don't grab ladders too far behind us.
-            return;
-        }
-
-        trace_t trace;
-
-        TracePlayerBBox(mv->GetAbsOrigin(), m_pPlayer->m_lastStandingPos - dir * (5 + dist),
-                        (PlayerSolidMask() & (~CONTENTS_PLAYERCLIP)), COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-
-        if (trace.fraction != 1.0f && OnLadder(trace) && trace.plane.normal.z != 1.0f)
-        {
-            if (m_pPlayer->CanGrabLadder(trace.endpos, trace.plane.normal))
-            {
-                m_pPlayer->SetMoveType(MOVETYPE_LADDER);
-                m_pPlayer->SetMoveCollide(MOVECOLLIDE_DEFAULT);
-
-                m_pPlayer->SetLadderNormal(trace.plane.normal);
-                mv->m_vecVelocity.Init();
-
-                // The ladder check ignored playerclips, to fix a bug exposed by de_train, where a clipbrush is
-                // flush with a ladder.  This causes the above tracehull to fail unless we ignore playerclips.
-                // However, we have to check for playerclips before we snap to that pos, so we don't warp a
-                // player into a clipbrush.
-                TracePlayerBBox(mv->GetAbsOrigin(), m_pPlayer->m_lastStandingPos - dir * (5 + dist), PlayerSolidMask(),
-                                COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-
-                mv->SetAbsOrigin(trace.endpos);
-            }
-        }
-    }
-    else
-    {
-        m_pPlayer->m_lastStandingPos = mv->GetAbsOrigin();
-    }
 }
 
 bool CMomentumGameMovement::LadderMove(void)
 {
-    bool isOnLadder = BaseClass::LadderMove();
-    if (isOnLadder && m_pPlayer)
-    {
-        m_pPlayer->SurpressLadderChecks(mv->GetAbsOrigin(), m_pPlayer->m_vecLadderNormal);
-    }
-    return isOnLadder;
-}
+    trace_t pm;
+    bool onFloor;
+    Vector floor;
+    Vector wishdir;
+    Vector end;
 
-bool CMomentumGameMovement::OnLadder(trace_t &trace)
-{
-    if (CloseEnough(trace.plane.normal.z, 1.0f))
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
         return false;
 
-    return BaseClass::OnLadder(trace);
+    if (!GameHasLadders())
+    {
+        return false;
+    }
+
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
+    {
+        m_pPlayer->SetGrabbableLadderTime(m_pPlayer->GetGrabbableLadderTime() - gpGlobals->frametime);
+    }
+
+    // If I'm already moving on a ladder, use the previous ladder direction
+    if (player->GetMoveType() == MOVETYPE_LADDER)
+    {
+        wishdir = -player->m_vecLadderNormal;
+    }
+    else
+    {
+        // otherwise, use the direction player is attempting to move
+        if (mv->m_flForwardMove || mv->m_flSideMove)
+        {
+            for (int i = 0; i<3; i++)       // Determine x and y parts of velocity
+                wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
+
+            VectorNormalize(wishdir);
+        }
+        else
+        {
+            // Player is not attempting to move, no ladder behavior
+            return false;
+        }
+    }
+
+    // wishdir points toward the ladder if any exists
+
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f && m_bCheckForGrabbableLadder)
+    {
+        Vector temp = mv->m_vecVelocity * 2.0f;
+
+        temp.z = -temp.z;
+
+        VectorNormalize(temp);
+        VectorMA(mv->GetAbsOrigin(), 10.0f, -temp, end);
+    }
+    else
+    {
+        VectorMA(mv->GetAbsOrigin(), LadderDistance(), wishdir, end);
+    }
+
+    TracePlayerBBox(mv->GetAbsOrigin(), end, LadderMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+    // no ladder in that direction, return
+    if (pm.fraction == 1.0f || pm.plane.normal.z == 1.0f || !OnLadder(pm))
+    {
+        return false;
+    }
+
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f && m_bCheckForGrabbableLadder)
+    {
+        mv->m_vecVelocity.Init();
+        mv->SetAbsOrigin(pm.endpos);
+        m_pPlayer->SetGrabbableLadderTime(0.1f);
+    }
+
+    player->SetMoveType(MOVETYPE_LADDER);
+    player->SetMoveCollide(MOVECOLLIDE_DEFAULT);
+
+    // On ladder, convert movement to be relative to the ladder
+    player->SetLadderNormal(pm.plane.normal);
+    
+    VectorCopy(mv->GetAbsOrigin(), floor);
+    floor[2] += GetPlayerMins()[2] - 1;
+
+    if (enginetrace->GetPointContents(floor) == CONTENTS_SOLID || player->GetGroundEntity() != nullptr)
+    {
+        onFloor = true;
+    }
+    else
+    {
+        onFloor = false;
+    }
+
+    player->SetGravity(1.0f); //Should be always set on 1.0..
+
+    float climbSpeed = ClimbSpeed();
+
+    float forwardSpeed = 0, rightSpeed = 0;
+    if (mv->m_nButtons & IN_BACK)
+        forwardSpeed -= climbSpeed;
+
+    if (mv->m_nButtons & IN_FORWARD)
+        forwardSpeed += climbSpeed;
+
+    if (mv->m_nButtons & IN_MOVELEFT)
+        rightSpeed -= climbSpeed;
+
+    if (mv->m_nButtons & IN_MOVERIGHT)
+        rightSpeed += climbSpeed;
+
+    if (mv->m_nButtons & IN_JUMP)
+    {
+        player->SetMoveType(MOVETYPE_WALK);
+        player->SetMoveCollide(MOVECOLLIDE_DEFAULT);
+
+        VectorScale(pm.plane.normal, 270, mv->m_vecVelocity);
+    }
+    else
+    {
+        if (forwardSpeed != 0 || rightSpeed != 0)
+        {
+            Vector velocity, perp, cross, lateral, tmp;
+
+            //ALERT(at_console, "pev %.2f %.2f %.2f - ",
+            //    pev->velocity.x, pev->velocity.y, pev->velocity.z);
+            // Calculate player's intended velocity
+            //Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
+            VectorScale(m_vecForward, forwardSpeed, velocity);
+            VectorMA(velocity, rightSpeed, m_vecRight, velocity);
+
+            // Perpendicular in the ladder plane
+            VectorCopy(vec3_origin, tmp);
+            tmp[2] = 1;
+            CrossProduct(tmp, pm.plane.normal, perp);
+            VectorNormalize(perp);
+
+            // decompose velocity into ladder plane
+            float normal = DotProduct(velocity, pm.plane.normal);
+
+            // This is the velocity into the face of the ladder
+            VectorScale(pm.plane.normal, normal, cross);
+
+            // This is the player's additional velocity
+            VectorSubtract(velocity, cross, lateral);
+
+            // This turns the velocity into the face of the ladder into velocity that
+            // is roughly vertically perpendicular to the face of the ladder.
+            // NOTE: It IS possible to face up and move down or face down and move up
+            // because the velocity is a sum of the directional velocity and the converted
+            // velocity through the face of the ladder -- by design.
+            CrossProduct(pm.plane.normal, perp, tmp);
+
+            //=============================================================================
+            // HPE_BEGIN
+            // [sbodenbender] make ladders easier to climb in cstrike
+            //=============================================================================
+            // break lateral into direction along tmp (up the ladder) and direction along perp (perpendicular to ladder)
+            float tmpDist = DotProduct(tmp, lateral);
+            float perpDist = DotProduct(perp, lateral);
+
+            Vector angleVec = perp * perpDist;
+            angleVec += cross;
+            // angleVec is our desired movement in the ladder normal/perpendicular plane
+            VectorNormalize(angleVec);
+            float angleDot = DotProduct(angleVec, pm.plane.normal);
+            // angleDot is our angle of incidence to the laddernormal in the ladder normal/perpendicular plane
+
+            if (angleDot < sv_ladder_angle.GetFloat())
+                lateral = (tmp * tmpDist) + (perp * sv_ladder_dampen.GetFloat() * perpDist);
+            //=============================================================================
+            // HPE_END
+            //=============================================================================
+
+            VectorMA(lateral, -normal, tmp, mv->m_vecVelocity);
+
+            if (onFloor && normal > 0)    // On ground moving away from the ladder
+            {
+                VectorMA(mv->m_vecVelocity, MAX_CLIMB_SPEED, pm.plane.normal, mv->m_vecVelocity);
+            }
+            //pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
+        }
+        else
+        {
+            mv->m_vecVelocity.Init();
+        }
+    }
+
+    return true;
 }
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
@@ -1131,14 +1248,25 @@ void CMomentumGameMovement::FullWalkMove()
         if (player->GetGroundEntity() != nullptr)
         {
             WalkMove();
+
+            CategorizePosition();
+            m_bCheckForGrabbableLadder = m_pPlayer->GetGroundEntity() == nullptr;
+            if (m_bCheckForGrabbableLadder)
+            {
+                // Next 0.1 seconds you can grab the ladder
+                m_pPlayer->SetGrabbableLadderTime(0.1f);
+                LadderMove();
+                m_bCheckForGrabbableLadder = false;
+            }
         }
         else
         {
             AirMove(); // Take into account movement when in air.
         }
 
-        // Set final flags.
         CategorizePosition();
+
+        // Set final flags.
 
         // Make sure velocity is valid.
         CheckVelocity();
@@ -1246,7 +1374,12 @@ void CMomentumGameMovement::AirMove(void)
     // maybe another monster?)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
-    CheckForLadders(false);
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
+    {
+        m_bCheckForGrabbableLadder = true;
+        LadderMove();
+        m_bCheckForGrabbableLadder = false;
+    }
 }
 
 int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrace)

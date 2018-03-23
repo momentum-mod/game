@@ -389,34 +389,6 @@ void CMomentumPlayer::NewPreviousOrigin(Vector origin)
     m_vecPreviousOrigins[0] = origin;
 }
 
-void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
-{
-    m_ladderSurpressionTimer.Start(1.0f);
-    m_lastLadderPos = pos;
-    m_lastLadderNormal = normal;
-}
-
-bool CMomentumPlayer::CanGrabLadder(const Vector &pos, const Vector &normal)
-{
-    if (m_ladderSurpressionTimer.GetRemainingTime() <= 0.0f)
-    {
-        return true;
-    }
-
-    const float MaxDist = 64.0f;
-    if (pos.AsVector2D().DistToSqr(m_lastLadderPos.AsVector2D()) < MaxDist * MaxDist)
-    {
-        return false;
-    }
-
-    if (normal != m_lastLadderNormal)
-    {
-        return true;
-    }
-
-    return false;
-}
-
 CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
 {
     CBaseEntity *pStart = nullptr;

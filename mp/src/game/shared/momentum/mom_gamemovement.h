@@ -36,7 +36,6 @@ class CMomentumGameMovement : public CGameMovement
 
     // Overrides
     virtual bool LadderMove(void);         // REPLACED
-    virtual bool OnLadder(trace_t &trace); // REPLACED
     virtual void SetGroundEntity(trace_t *pm);
 
     virtual bool CanAccelerate(void)
@@ -48,7 +47,6 @@ class CMomentumGameMovement : public CGameMovement
     virtual void PlayerMove(void);
     virtual void AirMove(void); // Overridden for rampboost fix
     virtual void WalkMove(void);
-    virtual void CheckForLadders(bool);
 
     // Override fall damage
     virtual void CheckFalling();
@@ -110,6 +108,8 @@ class CMomentumGameMovement : public CGameMovement
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener*> m_vecListeners;
     ConVarRef mom_gamemode;
+
+    bool m_bCheckForGrabbableLadder;
 };
 
 extern CMomentumGameMovement *g_pMomentumGameMovement;
