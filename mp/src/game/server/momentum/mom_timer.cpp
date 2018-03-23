@@ -376,12 +376,14 @@ class CTimerCommands
 
         if (!pPlayer->m_SrvData.m_bHasPracticeMode)
         {
-            int b = pPlayer->m_nButtons;
-            bool safeGuard = (b & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
-            if (mom_practice_safeguard.GetBool() && safeGuard)
+            if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
             {
-                Warning("You cannot enable practice mode while moving!\n");
-                return;
+                bool safeGuard = (pPlayer->m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
+                if (safeGuard)
+                {
+                    Warning("You cannot enable practice mode while moving, while the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
+                    return;
+                }
             }
 
             g_pMomentumTimer->EnablePractice(pPlayer);
