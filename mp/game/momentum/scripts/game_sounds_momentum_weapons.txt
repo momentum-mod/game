@@ -48,27 +48,6 @@
 //	SNDLVL_140dB	= 140,	// 0.2
 //	SNDLVL_150dB	= 150,	// 0.2
 
-
-"Weapon_MOMGUN.Single"
-{
-	"channel"	"CHAN_ITEM"
-	"volume"	"0.32"
-	"soundlevel"  "SNDLVL_NONE"
-	"pitch"	"PITCH_NORM"
-
-	"wave"	"common/wpn_denyselect.wav"
-}
-
-"Weapon_MOMGUN.Reload"
-{
-	"channel"	"CHAN_ITEM"
-	"volume"	"0.32"
-	"soundlevel"  "SNDLVL_NONE"
-	"pitch"	"PITCH_NORM"
-
-	"wave"	"common/wpn_select.wav"
-}
-
 "Weapon_Paintgun.Single"
 {
     "channel" "CHAN_WEAPON"
@@ -79,5 +58,13 @@
     "wave" "weapons/paintgun/paintgun_shot.wav"
 }
 
-
+"Weapon_Rifle.Single"
+{
+    "channel" "CHAN_WEAPON"
+    "volume" "0.32"
+    "soundlevel" "SNDLVL_GUNFIRE"
+    "pitch" "PITCH_NORM"
+    
+    "wave" "weapons/rifle/Energy_Rifle_Lower_Bass.wav"
+}
 
