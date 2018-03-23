@@ -58,14 +58,6 @@ extern ConVar developer;
 
 #define DEBUG_ACHIEVEMENTS_IN_RELEASE 0
 
-#ifdef SWDS
-// Hack this for now until we get steam_api recompiling in the Steam codebase.
-ISteamUserStats *SteamUserStats()
-{
-	return NULL;
-}
-#endif
-
 //-----------------------------------------------------------------------------
 // Purpose: Write helper
 //-----------------------------------------------------------------------------
