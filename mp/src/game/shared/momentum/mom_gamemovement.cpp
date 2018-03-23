@@ -1253,6 +1253,11 @@ void CMomentumGameMovement::FullWalkMove()
         if (mv->m_nButtons & IN_JUMP)
         {
             CheckJumpButton();
+            // If we jump, then we avoid to get stuck to ground with sliding stuffs otherwhise we can't really jump.
+            // We will just wait for the next starttouch of the slide trigger.
+            // Causes issues with the touchcount, so we leave it like this way.
+            // if (CheckJumpButton())
+            // m_pPlayer->m_SrvData.m_SlideData.Reset();
         }
         else
         {
@@ -1312,6 +1317,30 @@ void CMomentumGameMovement::FullWalkMove()
         if (bIsSliding && m_pPlayer->m_SrvData.m_SlideData.IsStuckGround())
         {
             StuckGround();
+        }
+
+        if (player->GetGroundEntity() != nullptr)
+        {
+            Vector vecNewVelocity = mv->m_vecVelocity;
+            float flMaxSpeed = mv->m_flMaxSpeed;
+
+            if (m_pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed 
+                 && m_bWasInAir
+                 && vecNewVelocity.Length2D() > flMaxSpeed )
+            {
+                float zSaved = mv->m_vecVelocity.z;
+
+                VectorNormalizeFast(vecNewVelocity);
+
+                vecNewVelocity *= flMaxSpeed;
+                vecNewVelocity.z = zSaved;
+                mv->m_vecVelocity = vecNewVelocity;
+                m_bWasInAir = false;
+            }
+        }
+        else
+        {
+            m_bWasInAir = true;
         }
     }
 
