@@ -219,11 +219,16 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     void DoMuzzleFlash() OVERRIDE;
     void PostThink();
+
+    // Ladder stuff
+    float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
+    void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
+    float m_flGrabbableLadderTime;
 
     // Spawn stuff
     EHANDLE g_pLastSpawn;
