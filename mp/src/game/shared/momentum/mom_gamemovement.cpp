@@ -966,7 +966,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
     {
         float flMaxSpeed = mv->m_flMaxSpeed;
 
-        if (m_pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed && m_bWasInAir &&
+        if (m_pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed && m_bWasInAir &&
             vecNewVelocity.Length2D() > flMaxSpeed)
         {
             float zSaved = vecNewVelocity.z;

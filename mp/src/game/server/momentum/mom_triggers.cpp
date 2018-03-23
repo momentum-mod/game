@@ -149,7 +149,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             }
             */
 
-            pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed = false;
+            pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = false;
 
             g_pMomentumTimer->Start(gpGlobals->tickcount);
             // The Start method could return if CP menu or prac mode is activated here
@@ -218,7 +218,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
         pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
-        pPlayer->m_SrvData.m_RunData.m_bShouldLimitPlayerSpeed = IsLimitingSpeed();
+        pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed = IsLimitingSpeed();
 
         if (g_pMomentumTimer->IsRunning())
         {

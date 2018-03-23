@@ -29,6 +29,7 @@ struct StdDataFromServer
     int m_iDirection;
     int m_iLastZoom;
     int m_iSuccessiveBhops;
+    bool m_bShouldLimitPlayerSpeed;
     CMOMRunEntityData m_RunData;
     CMomPlayerSlideData m_SlideData;
     CMomRunStats::data m_RunStatsData;
