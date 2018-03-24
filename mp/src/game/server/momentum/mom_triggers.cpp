@@ -140,7 +140,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             /*
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {
-                
+                
                 Vector velocity = pOther->GetAbsVelocity();
                 // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
                 // It only has a NormalizeInPlace... Not simple enough for me
@@ -150,7 +150,7 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                     vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));
                     pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                 }
-                
+                
             }
             */
 
@@ -881,7 +881,8 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
         pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
         pPlayer->m_SrvData.m_SlideData.SetFixUpsideSlope(m_bFixUpsideSlope);
-        pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
+        pPlayer->m_SrvData.m_SlideData.SetTouchTrigger(entindex());
+        // pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
         // engine->Con_NPrintf( 0, "StartTouch: %i\n" , entindex() );
         // pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
     }
@@ -895,10 +896,14 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 
     if (pPlayer != nullptr)
     {
-        pPlayer->m_SrvData.m_SlideData.DecTouchCounter();
-
-        if (pPlayer->m_SrvData.m_SlideData.GetTouchCounter() <= 0)
+        pPlayer->m_SrvData.m_SlideData.SetTouchTrigger(entindex(), false);
+        if (!pPlayer->m_SrvData.m_SlideData.IsTouchingOneTrigger())
             pPlayer->m_SrvData.m_SlideData.Reset();
+
+        // pPlayer->m_SrvData.m_SlideData.DecTouchCounter();
+
+        // if (pPlayer->m_SrvData.m_SlideData.GetTouchCounter() <= 0)
+        // pPlayer->m_SrvData.m_SlideData.Reset();
 
         // engine->Con_NPrintf( 1 , "EndTouch: %i\n" , entindex() );
     }
