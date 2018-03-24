@@ -176,8 +176,6 @@ void CMomentumLobbySystem::LeaveLobby()
 {
     if (LobbyValid())
     {
-        SetSpectatorTarget(k_steamIDNil, false, true);
-
         // Actually leave the lobby
         SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         // Clear the ghosts stored in our lobby system

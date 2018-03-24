@@ -154,11 +154,7 @@ void CHudChat::MsgFunc_SpecUpdateMsg(bf_read &msg)
         //    "%s is now spectating %s.", pName, pTargetName);
     }
 
-    if (!m_pSpectatorInfo)
-        m_pSpectatorInfo = GET_HUDELEMENT(CHudSpectatorInfo);
-
-    if (m_pSpectatorInfo)
-        m_pSpectatorInfo->SpectatorUpdate(personID, targetID);
+    SpectatorUpdate(personID, target);
 }
 
 void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read &msg)
@@ -174,6 +170,9 @@ void CHudChat::MsgFunc_LobbyUpdateMsg(bf_read &msg)
     const char *pName = SteamFriends()->GetFriendPersonaName(personID);
     Printf(CHAT_FILTER_JOINLEAVE | CHAT_FILTER_SERVERMSG, "%s has %s the %s.", pName, isJoin ? "joined" : "left",
            isMap ? "map" : "lobby");
+
+    if (!isJoin)
+        SpectatorUpdate(personID, k_steamIDNil);
 }
 
 void CHudChat::StartMessageMode(int iMessageMode)
@@ -272,4 +271,13 @@ void CHudChat::Paint()
 Color CHudChat::GetDefaultTextColor(void) // why the fuck is this not a .res file color in CHudBaseChat !?!?!?
 {
     return m_cDefaultTextColor;
+}
+
+void CHudChat::SpectatorUpdate(const CSteamID &personID, const CSteamID &target)
+{
+    if (!m_pSpectatorInfo)
+        m_pSpectatorInfo = GET_HUDELEMENT(CHudSpectatorInfo);
+
+    if (m_pSpectatorInfo)
+        m_pSpectatorInfo->SpectatorUpdate(personID, target);
 }

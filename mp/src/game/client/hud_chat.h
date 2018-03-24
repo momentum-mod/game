@@ -41,6 +41,8 @@ public:
     Color GetDefaultTextColor() OVERRIDE;
 
 private:
+    void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
+
     CUtlVector<CSteamID> m_vTypingMembers;
     CUtlVector<CSteamID> m_vMomentumOfficers;
 
