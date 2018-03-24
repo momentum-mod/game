@@ -107,8 +107,8 @@
     CHudKeyPressDisplay
     {
         "fieldName"     "CHudKeyPressDisplay"
-        "xpos"          "c+265"
-        "ypos"          "c+150"
+        "xpos"          "r175"
+        "ypos"          "r100"
         "wide"          "150"
         "tall"          "100"
         "visible"       "1"
@@ -118,8 +118,8 @@
         "lower_row_ypos"    "35"
         "jump_row_ypos" "45"
         "duck_row_ypos" "55"
-        "strafe_count_xpos" "100"
-        "jump_count_xpos"   "100"
+        "strafe_count_xpos" "110"
+        "jump_count_xpos"   "110"
         "TextFont"      "MomentumIcons"
         "CounterTextFont"       "HudNumbersVerySmall"
         "WordTextFont"  "HudNumbersVerySmall"
