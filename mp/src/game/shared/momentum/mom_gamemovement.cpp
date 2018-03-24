@@ -14,7 +14,9 @@ extern bool g_bMovementOptimizations;
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
-ConVar sv_ramp_retrace_scale("sv_ramp_retrace_length", "0.1", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
+ConVar sv_ramp_retrace_length("sv_ramp_retrace_length", "0.1", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
+ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps", true, 0.0f, true, 5.f);
+ConVar sv_considered_on_ground("sv_considered_on_ground", "2.0", 0, "Amount of units you have to be above the ground to be considered on ground", true, 0.0f, true, 5.f);
 
 ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED, "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
 ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED, "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f, true, 1.0f);
@@ -868,6 +870,8 @@ void CMomentumGameMovement::PlayerMove()
 
 bool CMomentumGameMovement::CheckJumpButton()
 {
+    trace_t pm;
+
     // Avoid nullptr access, return false if somehow we don't have a player
     if (!player)
         return false;
@@ -964,18 +968,10 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Acclerate upward
     // If we are ducking...
     float startz = mv->m_vecVelocity[2];
-    if (player->m_Local.m_bDucking || player->GetFlags() & FL_DUCKING || m_pPlayer->m_duckUntilOnGround)
-    {
-        mv->m_vecVelocity[2] = g_bMovementOptimizations
-                                   ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
-                                   : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
-    }
-    else
-    {
-        mv->m_vecVelocity[2] += g_bMovementOptimizations
+    
+    mv->m_vecVelocity[2] += g_bMovementOptimizations
                                     ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
                                     : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
-    }
 
     // stamina stuff (scroll/kz gamemode only)
     if (mom_gamemode.GetInt() == MOMGM_SCROLL)
@@ -995,6 +991,26 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.1f;
+
+    // First do a trace all the way down to the ground
+    TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin() + Vector(0.0f, 0.0f, -(sv_considered_on_ground.GetFloat() + 0.1f)), PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+    // Did we hit ground (ground is at max 2 units away so fraction cant be 1.0f)
+    if (pm.fraction != 1.0f &&
+        !pm.startsolid &&
+        !pm.allsolid)
+    {
+        // Now we find 1.5f above ground
+        TracePlayerBBox(pm.endpos, pm.endpos + Vector(0.0f, 0.0f, sv_jump_z_offset.GetFloat()), PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+        if (pm.fraction == 1.0f &&
+            !pm.startsolid &&
+            !pm.allsolid)
+        {
+            // Everything is p100
+            mv->SetAbsOrigin(pm.endpos);
+        }
+    }
 
     // Flag that we jumped.
     mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
@@ -1028,7 +1044,7 @@ void CMomentumGameMovement::CategorizePosition()
     if (player->IsObserver())
         return;
 
-    float flOffset = 2.0f;
+    float flOffset = sv_considered_on_ground.GetFloat();
 
     const Vector bumpOrigin = mv->GetAbsOrigin();
 
@@ -1264,9 +1280,8 @@ void CMomentumGameMovement::FullWalkMove()
             AirMove(); // Take into account movement when in air.
         }
 
-        CategorizePosition();
-
         // Set final flags.
+        CategorizePosition();
 
         // Make sure velocity is valid.
         CheckVelocity();
@@ -1463,7 +1478,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             else // We were actually going to be stuck, lets try and find a valid plane..
             {
                 // this way we know fixed_origin isnt going to be stuck
-                float offsets[] = { -(sv_ramp_retrace_scale.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1), 0.0f, (sv_ramp_retrace_scale.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1) };
+                float offsets[] = { -(sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1), 0.0f, (sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1) };
                 int valid_planes = 0;
 
                 // we have 0 plane info, so lets increase our bbox and search in all 27 directions to get a valid plane!
@@ -1515,7 +1530,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
             if (has_valid_plane)
             {
-                VectorMA(fixed_origin, sv_ramp_retrace_scale.GetFloat(), valid_plane, fixed_origin);
+                VectorMA(fixed_origin, sv_ramp_retrace_length.GetFloat(), valid_plane, fixed_origin);
                 fixed_origins++;
             }
             else
