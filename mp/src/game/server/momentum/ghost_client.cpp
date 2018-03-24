@@ -150,10 +150,16 @@ bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
 {
     if (m_pPlayer && !m_pPlayer->IsSpectatingGhost())
     {
+        const Vector &orig = m_pPlayer->GetAbsOrigin(), &vel = m_pPlayer->GetAbsVelocity();
+        const QAngle &eye = m_pPlayer->EyeAngles();
+
+        if (!(orig.IsValid() && vel.IsValid() && eye.IsValid()))
+            return false;
+
         into = PositionPacket_t(
-            m_pPlayer->EyeAngles(),
-            m_pPlayer->GetAbsOrigin(),
-            m_pPlayer->GetAbsVelocity(),
+            eye,
+            orig,
+            vel,
             m_pPlayer->GetViewOffset().z,
             m_pPlayer->m_nButtons);
 
