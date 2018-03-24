@@ -381,9 +381,9 @@ class CTriggerSlide : public CBaseMomentumTrigger
     // float m_flSlideGravity;
 };
 
-class CTriggerBounceSpeed : public CBaseMomentumTrigger
+class CTriggerReverseSpeed : public CBaseMomentumTrigger
 {
-    DECLARE_CLASS(CTriggerBounceSpeed, CBaseMomentumTrigger);
+    DECLARE_CLASS(CTriggerReverseSpeed, CBaseMomentumTrigger);
     DECLARE_DATADESC();
 
   public:
@@ -392,7 +392,7 @@ class CTriggerBounceSpeed : public CBaseMomentumTrigger
     void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
-    bool m_bBounceHorizontalSpeed, m_bBounceVerticalSpeed;
+    bool m_bReverseHorizontalSpeed, m_bReverseVerticalSpeed;
     float m_flInterval;
     bool m_bOnThink, m_bShouldThink;
     Vector vecCalculatedVel;
