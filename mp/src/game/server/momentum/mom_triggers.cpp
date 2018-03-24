@@ -140,7 +140,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
             /*
             if (IsLimitingSpeed() && pPlayer->DidPlayerBhop())
             {
-                
                 Vector velocity = pOther->GetAbsVelocity();
                 // Isn't it nice how Vector2D.h doesn't have Normalize() on it?
                 // It only has a NormalizeInPlace... Not simple enough for me
@@ -150,7 +149,6 @@ void CTriggerTimerStart::EndTouch(CBaseEntity *pOther)
                     vel2D = ((vel2D / vel2D.Length()) * (m_fBhopLeaveSpeed));
                     pOther->SetAbsVelocity(Vector(vel2D.x, vel2D.y, velocity.z));
                 }
-                
             }
             */
 
@@ -913,22 +911,22 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 
 //-----------------------------------------------------------------------------------------------
 
-LINK_ENTITY_TO_CLASS(trigger_momentum_bouncespeed, CTriggerBounceSpeed);
+LINK_ENTITY_TO_CLASS(trigger_momentum_reversespeed, CTriggerReverseSpeed);
 
-BEGIN_DATADESC(CTriggerBounceSpeed)
-DEFINE_KEYFIELD(m_bBounceHorizontalSpeed, FIELD_BOOLEAN, "BounceHorizontal")
-, DEFINE_KEYFIELD(m_bBounceVerticalSpeed, FIELD_BOOLEAN, "BounceVertical"),
+BEGIN_DATADESC(CTriggerReverseSpeed)
+DEFINE_KEYFIELD(m_bReverseHorizontalSpeed, FIELD_BOOLEAN, "ReverseHorizontal")
+, DEFINE_KEYFIELD(m_bReverseVerticalSpeed, FIELD_BOOLEAN, "ReverseVertical"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink") END_DATADESC();
 
-void CTriggerBounceSpeed::StartTouch(CBaseEntity *pOther)
+void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
 
     if (pPlayer != nullptr)
     {
         // Reverse x/y velocity.
-        if (m_bBounceHorizontalSpeed)
+        if (m_bReverseHorizontalSpeed)
         {
             Vector vecVelocity = pPlayer->GetAbsVelocity();
             float zVelBackup = vecVelocity.z;
@@ -955,7 +953,7 @@ void CTriggerBounceSpeed::StartTouch(CBaseEntity *pOther)
         }
 
         // Reverse z velocity.
-        if (m_bBounceVerticalSpeed)
+        if (m_bReverseVerticalSpeed)
         {
             Vector vecVelocity = pPlayer->GetAbsVelocity();
             vecVelocity.z = -vecVelocity.z;
@@ -979,7 +977,7 @@ void CTriggerBounceSpeed::StartTouch(CBaseEntity *pOther)
     m_bShouldThink = true;
 }
 
-void CTriggerBounceSpeed::Think()
+void CTriggerReverseSpeed::Think()
 {
     BaseClass::Think();
 
@@ -990,11 +988,11 @@ void CTriggerBounceSpeed::Think()
         if (pPlayer != nullptr && m_bShouldThink)
         {
             // Shall we will use the already calculated vel here, if we recalculate we could be stuck into a trigger
-            // since it will take the new velocity already bounced? If the interval is high enough it shouldn't matter.
+            // since it will take the new velocity already Reversed? If the interval is high enough it shouldn't matter.
             // pPlayer->SetAbsVelocity(vecCalculatedVel);
 
             // Reverse x/y velocity.
-            if (m_bBounceHorizontalSpeed)
+            if (m_bReverseHorizontalSpeed)
             {
                 Vector vecVelocity = pPlayer->GetAbsVelocity();
                 float zVelBackup = vecVelocity.z;
@@ -1021,7 +1019,7 @@ void CTriggerBounceSpeed::Think()
             }
 
             // Reverse z velocity.
-            if (m_bBounceVerticalSpeed)
+            if (m_bReverseVerticalSpeed)
             {
                 Vector vecVelocity = pPlayer->GetAbsVelocity();
                 vecVelocity.z = -vecVelocity.z;
@@ -1037,7 +1035,7 @@ void CTriggerBounceSpeed::Think()
     }
 }
 
-void CTriggerBounceSpeed::EndTouch(CBaseEntity *pOther) { m_bShouldThink = false; }
+void CTriggerReverseSpeed::EndTouch(CBaseEntity *pOther) { m_bShouldThink = false; }
 
 //-----------------------------------------------------------------------------------------------
 
