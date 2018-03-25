@@ -826,9 +826,9 @@ void CMomentumGameMovement::PlayerMove()
         
         Vector offset = player->GetViewOffset();
 
-        Vector vHullMin = GetPlayerMins(player->m_Local.m_bDucked);
-        Vector vHullMax = GetPlayerMaxs(player->m_Local.m_bDucked);
-        vHullMax.z = player->m_Local.m_bDucked ? VEC_DUCK_VIEW.z : VEC_VIEW.z;
+        Vector vHullMin = GetPlayerMins((player->m_Local.m_bDucked && !player->m_Local.m_bDucking));
+        Vector vHullMax = GetPlayerMaxs((player->m_Local.m_bDucked && !player->m_Local.m_bDucking));
+        vHullMax.z = (player->m_Local.m_bDucked && !player->m_Local.m_bDucking) ? VEC_DUCK_VIEW.z : VEC_VIEW.z;
 
         Vector start = mv->GetAbsOrigin();
 
@@ -1464,7 +1464,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 }
             }
 
-            if (valid_plane.z >= 0.7f && valid_plane.z < 1.0f)
+            if (valid_plane.z >= 0.7f && valid_plane.z <= 1.0f)
             {
                 ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity, 1);
                 VectorCopy(mv->m_vecVelocity, original_velocity);
@@ -1578,7 +1578,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             }
         }
 
-        if (bumpcount && sv_ramp_fix.GetBool() && !IsValidMovementTrace(pm))
+        if (bumpcount && sv_ramp_fix.GetBool() && player->GetGroundEntity() == nullptr && !IsValidMovementTrace(pm))
         {
             has_valid_plane = false;
             stuck_on_ramp = true;
@@ -1600,7 +1600,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  zero the plane counter.
         if (pm.fraction > 0)
         {
-            if ((!bumpcount || !sv_ramp_fix.GetBool()) && numbumps > 0 && pm.fraction == 1)
+            if ((!bumpcount || player->GetGroundEntity() != nullptr || !sv_ramp_fix.GetBool()) && numbumps > 0 && pm.fraction == 1)
             {
                 // There's a precision issue with terrain tracing that can cause a swept box to successfully trace
                 // when the end position is stuck in the triangle.  Re-run the test with an uswept box to catch that
