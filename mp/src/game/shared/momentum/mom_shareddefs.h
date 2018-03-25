@@ -12,7 +12,7 @@
 #endif
 // Main Version (0 is prealpha, 1 is alpha, 2 is beta and 3 is release)​.Main feature push (increment by one for each)​.​Small commits or hotfixes​
 // If you have any doubts, please refer to http://semver.org/
-#define MOM_CURRENT_VERSION "0.7.1"
+#define MOM_CURRENT_VERSION "0.7.2"
 
 
 // Gamemode for momentum
@@ -50,8 +50,9 @@ typedef enum
 typedef enum
 {
     SPEC_UPDATE_JOIN = 0,           // Started spectating
-    SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else!
-    SPEC_UPDATE_LEAVE           // Respawned
+    SPEC_UPDATE_CHANGETARGET,    // Is now spectating someone else
+    SPEC_UPDATE_STOP,           // Stopped spectating; respawned
+    SPEC_UPDATE_LEAVE       // This player left the map/lobby
 } SPECTATE_MSG_TYPE;
 
 #define PANEL_TIMES "times"

@@ -1,12 +1,10 @@
 #pragma once
 
 #include "cbase.h"
-#include "c_mom_online_ghost.h"
-#include "vgui_entitypanel.h"
-#include "vgui_avatarimage.h"
-#include "hudelement.h"
+#include <vgui_controls/Panel.h>
 
 class C_MomentumOnlineGhostEntity;
+class CAvatarImage;
 
 class CGhostEntityPanel : public vgui::Panel
 {

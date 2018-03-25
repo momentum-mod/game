@@ -3927,6 +3927,10 @@ void TextEntry::SetAllowNumericInputOnly(bool state)
 	m_bAllowNumericInputOnly = state;
 }
 
+bool TextEntry::GetAllowNumericInputOnly() const
+{
+    return m_bAllowNumericInputOnly;
+}
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : forward - 

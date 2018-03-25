@@ -51,8 +51,8 @@ class Button_MainMenu : public Button2D
     virtual void SetButtonText(const char *text);
     virtual void SetButtonDescription(const char *description);
 
-    int32 GetWidth() const { return m_fWidth; }
-    int32 GetHeight() const { return m_fHeight; }
+    int32 GetWidth() const { return m_iWidth; }
+    int32 GetHeight() const { return m_iHeight; }
 
     virtual void SetPriority(int32 Priority) { m_iPriority = Priority; }
     int32 GetPriority() const { return m_iPriority; }
@@ -68,6 +68,10 @@ class Button_MainMenu : public Button2D
     void SetEngineCommand(const char *cmd);
 
   private:
+
+    void CalculateTextX(int textOffset, int textWide, int &out);
+    int CalculateDescOffsetX(int descWide);
+
     ButtonState m_sButtonState;
     ButtonState m_sButtonStateOld;
     wchar_t *m_ButtonText;
@@ -78,35 +82,36 @@ class Button_MainMenu : public Button2D
     int32 m_iTextSizeX;
     int32 m_iTextSizeY;
 
-    CPanelAnimationVar(float, m_fWidth, "m_fWidth", "340");
-    CPanelAnimationVar(float, m_fHeight, "m_fHeight", "0");
+    CPanelAnimationVar(int, m_iWidth, "m_iWidth", "340");
+    CPanelAnimationVar(int, m_iHeight, "m_iHeight", "0");
     CPanelAnimationVar(Color, m_cBackground, "m_cBackground", "0 0 0 0");
     CPanelAnimationVar(Color, m_cBackgroundOutline, "m_cBackgroundOutline", "0 0 0 0");
     CPanelAnimationVar(Color, m_cText, "m_cText", "0 0 0 0");
     CPanelAnimationVar(Color, m_cDescription, "m_cDescription", "0 0 0 0");
     CPanelAnimationVar(Color, m_cBackgroundBlurAlpha, "m_cBackgroundBlurAlpha", "0 0 0 0");
 
-    float m_fWidthOut;
-    float m_fWidthOver;
-    float m_fWidthPressed;
-    float m_fWidthReleased;
+    int m_iWidthOut;
+    int m_iWidthOver;
+    int m_iWidthPressed;
+    int m_iWidthReleased;
 
-    float m_fHeightOut;
-    float m_fHeightOver;
-    float m_fHeightPressed;
-    float m_fHeightReleased;
+    int m_iHeightOut;
+    int m_iHeightOver;
+    int m_iHeightPressed;
+    int m_iHeightReleased;
 
-    float m_fTextOffsetX;
-    float m_fTextOffsetY;
+    int m_iTextOffsetX;
+    int m_iTextOffsetY;
 
-    float m_fDescriptionOffsetX;
-    float m_fDescriptionOffsetY;
+    int m_iDescriptionOffsetX;
+    int m_iDescriptionOffsetY;
 
     bool m_bDescriptionHideOut;
     bool m_bDescriptionHideOver;
     bool m_bDescriptionHidePressed;
     bool m_bDescriptionHideReleased;
 
+    // Animation durations (in seconds)
     float m_fAnimationWidth;
     float m_fAnimationHeight;
     float m_fAnimationBackground;

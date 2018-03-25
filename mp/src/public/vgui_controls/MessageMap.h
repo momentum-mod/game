@@ -348,7 +348,7 @@ private:
 
 // This is the macro which implements creation of each type of panel
 // It creates a function which instances an object of the specified type
-// It them hooks that function up to the helper list so that the CHud objects can create
+// It then hooks that function up to the helper list so that the CHud objects can create
 //  the elements by name, with no header file dependency, etc.
 #define DECLARE_BUILD_FACTORY( className )										\
 	static vgui::Panel *Create_##className( void )							\

@@ -152,7 +152,7 @@ CMomentumPlayer::~CMomentumPlayer()
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
-    g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false);
+    g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
 
     // Remove us from the gamemovement listener list
     g_pMomentumGameMovement->RemoveMovementListener(this);
@@ -374,17 +374,19 @@ void CMomentumPlayer::Spawn()
     m_pCurrentCheckpoint = nullptr;
 }
 
-// Obtains the player's previous origin using their current origin as a base.
-Vector CMomentumPlayer::GetPrevOrigin(void) const { return GetPrevOrigin(GetLocalOrigin()); }
-
-// Obtains the player's previous origin using a vector as the base, subtracting one tick's worth of velocity.
-Vector CMomentumPlayer::GetPrevOrigin(const Vector &base) const
+// Obtains a player's previous origin X ticks backwards (0 is still previous, depends when this is called ofc!)
+Vector CMomentumPlayer::GetPreviousOrigin(unsigned int previous_count) const
 {
-    Vector velocity = GetLocalVelocity();
-    Vector prevOrigin(base.x - (velocity.x * gpGlobals->interval_per_tick),
-                      base.y - (velocity.y * gpGlobals->interval_per_tick),
-                      base.z - (velocity.z * gpGlobals->interval_per_tick));
-    return prevOrigin;
+    return previous_count < MAX_PREVIOUS_ORIGINS ? m_vecPreviousOrigins[previous_count] : Vector(0.0f, 0.0f, 0.0f);
+}
+
+void CMomentumPlayer::NewPreviousOrigin(Vector origin)
+{
+    for (int i = MAX_PREVIOUS_ORIGINS; i--> 1; )
+    {
+        m_vecPreviousOrigins[i] = m_vecPreviousOrigins[i - 1];
+    }
+    m_vecPreviousOrigins[0] = origin;
 }
 
 void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
@@ -1207,4 +1209,11 @@ void CMomentumPlayer::StopSpectating()
     // Update the lobby/server if there is one
     m_sSpecTargetSteamID.Clear(); //reset steamID when we stop spectating
     g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
+}
+
+void CMomentumPlayer::PostThink()
+{
+    // Update previous origins
+    NewPreviousOrigin(GetLocalOrigin());
+    BaseClass::PostThink();
 }

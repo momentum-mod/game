@@ -6,20 +6,9 @@
 //=============================================================================//
 
 // Author: Matthew D. Campbell (matt@turtlerockstudios.com), 2003
-
-#ifndef TEXTENTRYBOX_H
-#define TEXTENTRYBOX_H
-#ifdef _WIN32
 #pragma once
-#endif
 
-#include "KeyValues.h"
 #include <vgui_controls/QueryBox.h>
-
-class Frame;
-class TextEntry;
-class Panel;
-class CCvarTextEntry;
 
 //--------------------------------------------------------------------------------------------------------------
 /**
@@ -28,22 +17,19 @@ class CCvarTextEntry;
 class CTextEntryBox : public vgui::QueryBox
 {
 public:
-	CTextEntryBox(const char *title, const char *labelText, const char *entryText, bool isCvar, vgui::Panel *parent = NULL);
+    DECLARE_CLASS_SIMPLE(CTextEntryBox, vgui::QueryBox);
+
+	CTextEntryBox(const char *title, const char *labelText, const char *entryText, bool isCvar, Panel *parent = NULL);
 
 	virtual ~CTextEntryBox();
  
 	virtual void PerformLayout();						///< Layout override to position the label and text entry
-	virtual void ShowWindow(vgui::Frame *pFrameOver);	///< Show window override to give focus to text entry
-
-private:
-	typedef vgui::QueryBox BaseClass;
+	virtual void ShowWindow(Frame *pFrameOver);	///< Show window override to give focus to text entry
 
 protected:
-	CCvarTextEntry	*m_pCvarEntry;
+    vgui::CvarTextEntry	*m_pCvarEntry;
 	vgui::TextEntry	*m_pEntry;
 
 	virtual void OnKeyCodeTyped(vgui::KeyCode code);
 	void OnCommand( const char *command);			///< Handle button presses
 };
-
-#endif // CVARTEXTENTRYBOX_H
