@@ -103,9 +103,8 @@ void CGameUI::Initialize(CreateInterfaceFn factory)
     ConnectTier2Libraries(&factory, 1);
     ConVar_Register(FCVAR_CLIENTDLL);
     ConnectTier3Libraries(&factory, 1);
-
+    
     SteamAPI_InitSafe();
-    m_SteamAPIContext.Init();
 
     vgui::VGui_InitInterfacesList("GameUI", &factory, 1);
     vgui::VGui_InitMatSysInterfacesList("GameUI", &factory, 1);
@@ -278,8 +277,6 @@ void CGameUI::Start()
 void CGameUI::Shutdown()
 {
     ModInfo().FreeModInfo();
-
-    m_SteamAPIContext.Clear();
 
     ConVar_Unregister();
     DisconnectTier3Libraries();

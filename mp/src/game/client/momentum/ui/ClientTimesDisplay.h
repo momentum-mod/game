@@ -41,6 +41,8 @@
 #define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
 #define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
 
+#define ENABLE_HTTP_LEADERBOARDS 0
+
 class CUtlSortVectorTimeValue
 {
 public:
@@ -53,7 +55,7 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
-class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener
+class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener, public CAutoGameSystem
 {
   private:
     DECLARE_CLASS_SIMPLE(CClientTimesDisplay, vgui::EditablePanel);
@@ -111,8 +113,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
     // Updates the local player's avatar image
     void UpdatePlayerAvatarStandalone();
-    // This updates the local player's avatar in the online/friends leaderboards
-    void UpdatePlayerAvatarStandaloneOnline(KeyValues *);
     // Updates an online player's avatar image
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
@@ -121,6 +121,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // Sets up the icons used in the leaderboard
     void SetupIcons();
 
+    void LevelInitPostEntity() OVERRIDE;
+
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
@@ -128,6 +130,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
     MESSAGE_FUNC_CHARPTR(OnContextGoToMap, "ContextGoToMap", map);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
+    MESSAGE_FUNC_UINT64(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", UGC);
     MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
     MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
 
@@ -136,6 +139,18 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     STEAM_CALLBACK(CClientTimesDisplay, OnLobbyEnter, LobbyEnter_t); // When we enter a lobby
     STEAM_CALLBACK(CClientTimesDisplay, OnLobbyDataUpdate, LobbyDataUpdate_t); // People/lobby updates status
     STEAM_CALLBACK(CClientTimesDisplay, OnLobbyChatUpdate, LobbyChatUpdate_t); // People join/leave
+
+    // Leaderboards API
+    SteamLeaderboard_t m_hCurrentLeaderboard;
+    CCallResult<CClientTimesDisplay, LeaderboardFindResult_t> m_cLeaderboardFindResult;
+    void OnLeaderboardFindResult(LeaderboardFindResult_t *pResult, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, LeaderboardScoresDownloaded_t> m_cLeaderboardGlobalScoresDownloaded;
+    void OnLeaderboardGlobalScoresDownloaded(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, LeaderboardScoresDownloaded_t> m_cLeaderboardFriendsScoresDownloaded;
+    void OnLeaderboardFriendScoresDownloaded(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
+
+    CCallResult<CClientTimesDisplay, RemoteStorageDownloadUGCResult_t> m_cOnlineReplayDownloaded;
+    void OnOnlineReplayDownloaded(RemoteStorageDownloadUGCResult_t *pResult, bool bIOFailure);
 
     // Attempts to add the avatar for a given steam ID to the given image list, if it doesn't exist already
     // exist in the given ID to index map.
@@ -200,7 +215,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
     vgui::ImagePanel *m_pPlayerAvatar;
-    vgui::ImagePanel *m_pMomentumLogo;
     vgui::Button *m_pLocalLeaderboardsButton;
     vgui::Button *m_pGlobalLeaderboardsButton;
     vgui::Button *m_pGlobalTop10Button;
@@ -226,6 +240,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     // Online API Pre-Alpha functions
 
+#if ENABLE_HTTP_LEADERBOARDS
     void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
     void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
@@ -239,6 +254,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
 
     void ParseTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure, bool bFriendsTimes);
+#endif
 
   private:
     int m_iPlayerIndexSymbol;

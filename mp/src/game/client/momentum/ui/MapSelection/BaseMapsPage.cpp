@@ -1136,7 +1136,7 @@ void CBaseMapsPage::StopRefresh()
 #ifndef NO_STEAM
     // Stop the server list refreshing
     //MOM_TODO: implement the following by HTTP request for online maps?
-    // steamapicontext->SteamHTTP()->ReleaseHTTPRequest()
+    // SteamHTTP()->ReleaseHTTPRequest()
 
     //if (SteamMatchmakingServers())
     //    SteamMatchmakingServers()->CancelQuery(m_eMatchMakingType);
@@ -1151,7 +1151,7 @@ void CBaseMapsPage::StopRefresh()
 bool CBaseMapsPage::IsRefreshing()
 {
     //MOM_TODO: 
-    // steamapicontext->SteamUtils()->IsAPICallCompleted() on the HTTP request for the online
+    // SteamUtils()->IsAPICallCompleted() on the HTTP request for the online
     return false;
 }
 

@@ -75,8 +75,6 @@ private:
     // Flag that indicates if the next request should re-fetch the lobby members from steam
     bool m_bCachedLobbyMembersValid;
 
-    CSteamAPIContext steamapicontext;
-
 };
 
 extern CMomentumSteamHelper *g_pMomentumSteamHelper;

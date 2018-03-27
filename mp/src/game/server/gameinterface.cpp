@@ -140,11 +140,6 @@ extern IParticleSystemQuery *g_pParticleSystemQuery;
 extern ConVar commentary;
 
 #ifndef NO_STEAM
-// this context is not available on dedicated servers
-// WARNING! always check if interfaces are available before using
-static CSteamAPIContext s_SteamAPIContext;	
-CSteamAPIContext *steamapicontext = &s_SteamAPIContext;
-
 // this context is not available on a pure client connected to a remote server.
 // WARNING! always check if interfaces are available before using
 static CSteamGameServerAPIContext s_SteamGameServerAPIContext;
@@ -584,7 +579,7 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 		return false;
 
 #ifndef _X360
-	s_SteamAPIContext.Init();
+	SteamAPI_Init();
 	s_SteamGameServerAPIContext.Init();
 #endif
 
@@ -801,10 +796,11 @@ void CServerGameDLL::DLLShutdown( void )
 #endif
 
 #ifndef _X360
-	s_SteamAPIContext.Clear(); // Steam API context shutdown
+	
 	s_SteamGameServerAPIContext.Clear();
 #endif	
 
+    SteamAPI_Shutdown();
 	gameeventmanager = NULL;
 	
 	DisconnectTier3Libraries();
