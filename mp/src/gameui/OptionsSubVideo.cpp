@@ -654,10 +654,8 @@ public:
 
 	void ApplyChangesToConVar( const char *pConVarName, int value )
 	{
-		Assert( cvar->FindVar( pConVarName ) );
-		char szCmd[256];
-		Q_snprintf( szCmd, sizeof(szCmd), "%s %d\n", pConVarName, value );
-		engine->ClientCmd_Unrestricted( szCmd );
+        ConVarRef var(pConVarName);
+        var.SetValue(value);
 	}
 
 	virtual void ApplyChanges()
@@ -1307,6 +1305,7 @@ void COptionsSubVideo::OpenAdvanced()
 	}
 
 	m_hOptionsSubVideoAdvancedDlg->Activate();
+    OnDataChanged();
 }
 
 vgui::DHANDLE<class CGammaDialog> COptionsSubVideo::m_hGammaDialog;

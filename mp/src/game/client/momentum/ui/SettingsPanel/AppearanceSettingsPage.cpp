@@ -37,13 +37,9 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
     m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
     m_pModelPreview->SetPaintBorderEnabled(true);
     m_pModelPreview->SetBorder(scheme()->GetIScheme(GetScheme())->GetBorder("Default"));
-    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
-    if (result)
-        UpdateModelSettings();
 
     m_pModelPreview->SetVisible(true);
     m_pModelPreview->MakeReadyForUse();
-
 
     m_pEnableTrail = FindControl<CvarToggleCheckButton>("EnableTrail");
     m_pPickTrailColorButton = FindControl<Button>("PickTrailColorButton");
@@ -101,14 +97,16 @@ void AppearanceSettingsPage::LoadSettings()
 
     m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
     m_pTrailLengthEntry->SetText(ghost_trail_length.GetString());
-
-    UpdateModelSettings();
 }
 
 void AppearanceSettingsPage::OnPageShow()
 {
     if (!m_pModelPreviewFrame->IsVisible())
         m_pModelPreviewFrame->Activate();
+
+    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
+    if (result)
+        UpdateModelSettings();
 }
 
 void AppearanceSettingsPage::OnPageHide()
@@ -205,7 +203,8 @@ void AppearanceSettingsPage::ApplySchemeSettings(IScheme* pScheme)
 
 void AppearanceSettingsPage::UpdateModelSettings()
 {
-    C_BaseFlex *pModel = m_pModelPreview->GetModel();
+    MDLCACHE_CRITICAL_SECTION();
+    CModelPanelModel *pModel = m_pModelPreview->GetModel();
     if (!pModel)
         return;
 
