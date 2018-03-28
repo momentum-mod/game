@@ -4,14 +4,59 @@
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "util/baseautocompletefilelist.h"
-#include "util/mom_util.h"
-#include "utlbuffer.h"
+#include "fmtstr.h"
+#include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
 
 static MAKE_CONVAR(mom_replay_timescale, "1.0", FCVAR_NONE,
                    "The timescale of a replay. > 1 is faster, < 1 is slower. \n", 0.01f, 10.0f);
 static MAKE_CONVAR(mom_replay_selection, "0", FCVAR_NONE, "Going forward or backward in the replayui \n", 0, 2);
+
+CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
+    CAutoGameSystemPerFrame(pName), m_bRecording(false), m_bPlayingBack(false), m_pPlaybackReplay(nullptr),
+    m_player(nullptr),
+    m_bShouldStopRec(false),
+    m_iTickCount(0),
+    m_iStartRecordingTick(-1),
+    m_iStartTimerTick(-1),
+    m_fRecEndTime(-1.0f)
+{
+    m_pReplay = g_ReplayFactory.CreateEmptyReplay(0);
+}
+
+CMomentumReplaySystem::~CMomentumReplaySystem()
+{
+    if (m_pReplay)
+        delete m_pReplay;
+
+    if (m_pPlaybackReplay)
+        delete m_pPlaybackReplay;
+}
+
+void CMomentumReplaySystem::FrameUpdatePostEntityThink()
+{
+    if (m_bRecording)
+        UpdateRecordingParams();
+}
+
+void CMomentumReplaySystem::LevelShutdownPostEntity()
+{
+    //Stop a recording if there is one while the level shuts down
+    if (m_bRecording)
+        StopRecording(true, false);
+
+    if (m_pPlaybackReplay)
+        UnloadPlayback(true);
+}
+
+void CMomentumReplaySystem::PostInit()
+{
+    // We have to create the directory here just in case it doesn't exist yet
+    filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD");
+    CFmtStr path("%s/%s/", RECORDING_PATH, RECORDING_ONLINE_PATH);
+    filesystem->CreateDirHierarchy(path.Get(), "MOD");
+}
 
 void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
 {
@@ -70,8 +115,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
     V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH);
 
-    // We have to create the directory here just in case it doesn't exist yet
-    filesystem->CreateDirHierarchy(RECORDING_PATH, "MOD");
+    
 
     DevLog("Before trimming: %i\n", m_iTickCount);
     TrimReplay();
@@ -95,6 +139,8 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     {
         replaySavedEvent->SetBool("save", true);
         replaySavedEvent->SetString("filename", newRecordingName);
+        replaySavedEvent->SetString("filepath", newRecordingPath);
+        replaySavedEvent->SetInt("time", static_cast<int>(m_pReplay->GetRunTime() * 1000.0f));
         gameeventmanager->FireEvent(replaySavedEvent);
     }
     // Load the last run that we did in case we want to watch it
@@ -202,7 +248,7 @@ void CMomentumReplaySystem::SetReplayInfo()
 
     m_pReplay->SetMapName(gpGlobals->mapname.ToCStr());
     m_pReplay->SetPlayerName(m_player->GetPlayerName());
-    ISteamUser *pUser = steamapicontext->SteamUser();
+    ISteamUser *pUser = SteamUser();
     m_pReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
     m_pReplay->SetTickInterval(gpGlobals->interval_per_tick);
     m_pReplay->SetRunTime(g_pMomentumTimer->GetLastRunTime());

@@ -138,6 +138,7 @@
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
         "vertical_scrollbar" "0" // MOM_TODO: Do we want the player to be able to explore more?
+        //"linespacing" "32"
 	}
 	"LocalLeaderboards"
 	{
@@ -176,6 +177,7 @@
         "keyboardinputenabled" "1"
         "mouseinputenabled" "1"
         "vertical_scrollbar" "0" // MOM_TODO: Do we want the player to be able to explore more?
+        //"linespacing" "32"
 	}
     "LocalLeaderboardsButton"
     {
@@ -401,20 +403,6 @@
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"	"1"
-	}
-	"MomentumLogo"
-	{
-		"ControlName"	"ImagePanel"
-		"fieldName"		"MomentumLogo"
-		"xpos"			"376"
-		"ypos"			"0"
-		"wide"			"256"
-		"tall"			"64"
-		"autoResize"	"0"
-		"pinCorner"		"0"
-		"visible"		"0"
-		"enabled"		"1"
-		"image"			"menu/logo"
 	}
 	"PlayerAvatar"
 	{

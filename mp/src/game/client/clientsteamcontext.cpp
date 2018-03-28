@@ -11,8 +11,6 @@ CClientSteamContext  &ClientSteamContext()
 	return g_ClientSteamContext;
 }
 
-CSteamAPIContext *steamapicontext = &g_ClientSteamContext;
-
 //-----------------------------------------------------------------------------
 CClientSteamContext::CClientSteamContext() 
 #if !defined(NO_STEAM)
@@ -45,7 +43,7 @@ void CClientSteamContext::Shutdown()
 	m_bActive = false;
 	m_bLoggedOn = false;
 #if !defined( NO_STEAM )
-	Clear(); // Steam API context shutdown
+	SteamAPI_Shutdown(); // Steam API context shutdown
 #endif
 }
 
@@ -60,9 +58,9 @@ void CClientSteamContext::Activate()
 	m_bActive = true;
 
 #if !defined( NO_STEAM )
-	SteamAPI_InitSafe(); // ignore failure, that will fall out later when they don't get a valid logon cookie
+	SteamAPI_Init(); // ignore failure, that will fall out later when they don't get a valid logon cookie
 	SteamAPI_SetTryCatchCallbacks( false ); // We don't use exceptions, so tell steam not to use try/catch in callback handlers
-	Init(); // Steam API context init
+	//Init(); // Steam API context init
 	
 	UpdateLoggedOnState();
 	Msg( "CClientSteamContext logged on = %d\n", m_bLoggedOn );

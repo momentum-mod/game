@@ -80,10 +80,6 @@ void SectionedListPanelHeader::ApplySchemeSettings(IScheme *pScheme)
 	{
 		SetFont( hFont );
 	}
-	else
-	{
-		SetFont(pScheme->GetFont("DefaultVerySmall", IsProportional()));
-	}
 }
 
 void SectionedListPanelHeader::Paint()
@@ -965,27 +961,24 @@ void SectionedListPanel::LayoutPanels(int &contentTall)
 		// HPE_END
 		//=============================================================================
 
-		if (iStart == -1 && section.m_bAlwaysVisible)
+		if (iStart != -1 || !section.m_bAlwaysVisible)
 		{
-		}
-		else
-		{
-			// arrange all the items in this section underneath
-			for (int i = iStart; i <= iEnd; i++)
-			{
-				CItemButton *item = m_SortedItems[i]; //items[i];
-				item->SetBounds(x, y, wide, m_iLineSpacing);
+		    // arrange all the items in this section underneath
+		    for (int i = iStart; i <= iEnd; i++)
+		    {
+		        CItemButton *item = m_SortedItems[i]; //items[i];
+		        item->SetBounds(x, y, wide, m_iLineSpacing);
 				
-				// setup edit mode
-				if (m_hEditModePanel.Get() && m_iEditModeItemID == item->GetID())
-				{
-					int cx, cwide;
-					item->GetCellBounds(1, cx, cwide);
-					m_hEditModePanel->SetBounds(cx, y, cwide, tall);
-				}
+		        // setup edit mode
+		        if (m_hEditModePanel.Get() && m_iEditModeItemID == item->GetID())
+		        {
+		            int cx, cwide;
+		            item->GetCellBounds(1, cx, cwide);
+		            m_hEditModePanel->SetBounds(cx, y, cwide, tall);
+		        }
 
-				y += m_iLineSpacing;
-			}
+		        y += m_iLineSpacing;
+		    }
 		}
 
 		// Add space, if needed to fulfill minimum requested content height

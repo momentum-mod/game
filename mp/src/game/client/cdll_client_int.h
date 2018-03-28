@@ -52,7 +52,6 @@ class ISceneFileCache;
 class IXboxSystem;	// Xbox 360 only
 class IMatchmaking;
 class IVideoServices;
-class CSteamAPIContext;
 class IClientReplayContext;
 class IReplayManager;
 class IEngineReplay;
@@ -106,7 +105,6 @@ extern IXboxSystem *xboxsystem;	// Xbox 360 only
 extern IMatchmaking *matchmaking;
 extern IVideoServices *g_pVideo;
 extern IUploadGameStats *gamestatsuploader;
-extern CSteamAPIContext *steamapicontext;
 extern IReplaySystem *g_pReplay;
 extern IClientReplayContext *g_pClientReplayContext;
 extern IReplayManager *g_pReplayManager;

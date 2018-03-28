@@ -1011,8 +1011,9 @@ $Project
 		$Lib	dmxloader
 		$Lib	mathlib
 		$Lib	particles
+        $Lib    tier1
 		$Lib	tier2
 		$Lib	tier3
-		$ImpLibexternal steam_api
+		$ImpLib    steam_api
 	}
 }
