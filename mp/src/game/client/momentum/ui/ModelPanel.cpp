@@ -205,11 +205,12 @@ void CRenderPanel::DestroyModel()
 
     m_pModelInstance = nullptr;
     m_szModelPath[0] = '\0';
-    m_iNumPoseParams = 0;
 }
 
 bool CRenderPanel::LoadModel(const char *localPath)
 {
+    MDLCACHE_CRITICAL_SECTION();
+
     DestroyModel();
 
     const model_t *mdl = modelinfo->FindOrLoadModel(localPath);
@@ -218,9 +219,7 @@ bool CRenderPanel::LoadModel(const char *localPath)
 
     Q_strcpy(m_szModelPath, localPath);
 
-    MDLCACHE_CRITICAL_SECTION();
-
-    C_BaseFlex *pEnt = new C_BaseFlex();
+    CModelPanelModel *pEnt = new CModelPanelModel();
     if (!pEnt->InitializeAsClientEntity(nullptr, RENDER_GROUP_OPAQUE_ENTITY))
     {
         pEnt->Remove();
@@ -239,11 +238,7 @@ bool CRenderPanel::LoadModel(const char *localPath)
 
     // leave it alone.
     pEnt->RemoveFromLeafSystem();
-    cl_entitylist->RemoveEntity(pEnt->GetRefEHandle());
     pEnt->CollisionProp()->DestroyPartitionHandle();
-
-    CStudioHdr *pHdr = pEnt->GetModelPtr();
-    m_iNumPoseParams = pHdr ? pHdr->GetNumPoseParameters() : 0;
 
     m_pModelInstance = pEnt;
     ResetView();
@@ -365,9 +360,6 @@ void CRenderPanel::DrawModel()
 {
     if (!IsModelReady())
         return;
-
-    for (int i = 0; i < m_iNumPoseParams; i++)
-        m_pModelInstance->SetPoseParameter(i, 0);
 
     SetRenderColors(m_pModelInstance);
     m_pModelInstance->DrawModel(STUDIO_RENDER);
