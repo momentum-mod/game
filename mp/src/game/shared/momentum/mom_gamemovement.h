@@ -23,8 +23,6 @@ class CMomentumPlayer;
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
 
-#define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
-
 #define FIRE_GAMEMOVEMENT_EVENT(event) FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event();}
 
 class CMomentumGameMovement : public CGameMovement
