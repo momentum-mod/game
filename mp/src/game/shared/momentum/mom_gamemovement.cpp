@@ -9,7 +9,6 @@
 
 #include "tier0/memdbgon.h"
 
-extern bool g_bMovementOptimizations;
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
@@ -165,27 +164,16 @@ void CMomentumGameMovement::WalkMove()
     smove = mv->m_flSideMove;
 
     // Zero out z components of movement vectors
-    if (g_bMovementOptimizations)
-    {
-        if (forward[2] != 0)
-        {
-            forward[2] = 0;
-            VectorNormalize(forward);
-        }
-
-        if (right[2] != 0)
-        {
-            right[2] = 0;
-            VectorNormalize(right);
-        }
-    }
-    else
+    if (forward[2] != 0)
     {
         forward[2] = 0;
-        right[2] = 0;
+        VectorNormalize(forward);
+    }
 
-        VectorNormalize(forward);  // Normalize remainder of vectors.
-        VectorNormalize(right);    // 
+    if (right[2] != 0)
+    {
+        right[2] = 0;
+        VectorNormalize(right);
     }
 
     for (i = 0; i<2; i++)       // Determine x and y parts of velocity
@@ -969,9 +957,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     // If we are ducking...
     float startz = mv->m_vecVelocity[2];
     
-    mv->m_vecVelocity[2] += g_bMovementOptimizations
-                                    ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
-                                    : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
+    mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
 
     // stamina stuff (scroll/kz gamemode only)
     if (mom_gamemode.GetInt() == MOMGM_SCROLL)
@@ -1546,28 +1532,21 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         VectorMA(fixed_origin, time_left, mv->m_vecVelocity, end);
 
         // See if we can make it from origin to end point.
-        if (g_bMovementOptimizations)
-        {
-            // If their velocity Z is 0, then we can avoid an extra trace here during WalkMove.
-            if (pFirstDest && end == *pFirstDest)
-                pm = *pFirstTrace;
-            else
-            {
-#if defined(PLAYER_GETTING_STUCK_TESTING)
-                trace_t foo;
-                TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin(), PlayerSolidMask(),
-                                COLLISION_GROUP_PLAYER_MOVEMENT, foo);
-                if (foo.startsolid || foo.fraction != 1.0f)
-                {
-                    Msg("bah\n");
-                }
-#endif
-                TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
-            }
-        }
+        // If their velocity Z is 0, then we can avoid an extra trace here during WalkMove.
+        if (pFirstDest && end == *pFirstDest)
+            pm = *pFirstTrace;
         else
         {
-            if (stuck_on_ramp&& has_valid_plane && sv_ramp_fix.GetBool())
+#if defined(PLAYER_GETTING_STUCK_TESTING)
+            trace_t foo;
+            TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin(), PlayerSolidMask(),
+                            COLLISION_GROUP_PLAYER_MOVEMENT, foo);
+            if (foo.startsolid || foo.fraction != 1.0f)
+            {
+                Msg("bah\n");
+            }
+#endif
+            if (stuck_on_ramp && has_valid_plane && sv_ramp_fix.GetBool())
             {
                 TracePlayerBBox(fixed_origin, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
                 pm.plane.normal = valid_plane;
