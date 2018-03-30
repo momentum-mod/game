@@ -33,7 +33,6 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
 
 CRenderPanel::~CRenderPanel()
 {
-    DestroyModel();
 }
 
 void CRenderPanel::UpdateRenderPosition()
