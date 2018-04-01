@@ -4,13 +4,9 @@
 	title 		""
 	title2		""
 	supportsvr	0
-	nodifficulty    1
 	developer	"Team Momentum"
 	developer_url   "http://momentum-mod.org"
-	//gamelogo	1
-
-	icon		"resource/icon"
-
+    
 	// This needs to be gone if we're implemeting MP AND SP . If only MP, then "multiplayer_only"
 	type		singleplayer_only
 
