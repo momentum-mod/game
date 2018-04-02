@@ -93,9 +93,8 @@ bool TickSet::TickInit()
 	}
 #endif //__linux__ or OSX
 #endif //WIN32
-    return static_cast<bool>(interval_per_tick);
+    return interval_per_tick ? true : false;
 }
-
 
 bool TickSet::SetTickrate(int gameMode)
 {
@@ -171,5 +170,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     TickSet::SetTickrate(tickrate);
 }
 
-static ConVar tickRate("sv_tickrate", "0.015", 0,
-					   "Changes the tickrate of the game. Formatted as interval per tick, i.e 100 tickrate = 0.01", onTickRateChange);
+static ConVar intervalPerTick("sv_interval_per_tick", "0.015", 0,
+					   "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01", onTickRateChange);

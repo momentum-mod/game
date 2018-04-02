@@ -1,6 +1,6 @@
 #include "os_utils.h"
 
-
+#ifdef POSIX
 void *GetModuleHandle(const char *name)
 {
 	void *handle;
@@ -115,4 +115,5 @@ int GetModuleInformation(const char *name, void **base, size_t *length)
 	return 2; //failed to find task info
 }
 
+#endif //POSIX
 #endif //OSX

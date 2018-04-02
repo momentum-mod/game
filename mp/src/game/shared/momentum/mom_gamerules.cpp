@@ -241,8 +241,8 @@ static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldVal
     
     TickSet::SetTickrate(gamemode);
 
-    // set the value of sv_tickrate so it updates when gamemode changes the tickrate.
-    ConVarRef tr("sv_tickrate");
+    // set the value of sv_interval_per_tick so it updates when gamemode changes the tickrate.
+    ConVarRef tr("sv_interval_per_tick");
     tr.SetValue(TickSet::GetTickrate());
 }
 
