@@ -304,17 +304,17 @@ Scheme
 			}
 		}
         
-		Icons
-		{
-			"1"
-			 {
-			"name"  "obsidianweaps" // obsidianweaps.ttf
-			"tall"  "28"
-			"weight" "0"
-			"additive" "1"
-			"antialias" "1"
-			 }
-		}
+        MomHudDropText
+        {
+            "1"
+			{
+				"name"		"Verdana"
+				"tall"		"12"
+				"weight"	"500"
+				"antialias" "1"
+                "dropshadow" "1"
+			}
+        }
 		// fonts are used in order that they are listed
 		// fonts are used in order that they are listed
 		"DebugFixed"
@@ -344,7 +344,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"9"
 				"weight"	"700"
 				"antialias" "1"
@@ -352,7 +352,7 @@ Scheme
 			}
 			"2"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"12"
 				"weight"	"700"
 				"antialias" "1"
@@ -360,7 +360,7 @@ Scheme
 			}
 			"3"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"14"
 				"weight"	"900"
 				"antialias" "1"
@@ -368,7 +368,7 @@ Scheme
 			}
 			"4"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"20"
 				"weight"	"900"
 				"antialias" "1"
@@ -376,7 +376,7 @@ Scheme
 			}
 			"5"
 			{
-				"name"		"obsidian"//Verdana
+				"name"		"Verdana"
 				"tall"		"24"
 				"weight"	"900"
 				"antialias" "1"
@@ -388,7 +388,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"12"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
@@ -396,7 +396,7 @@ Scheme
 			}
 			"2"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"13"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
@@ -404,7 +404,7 @@ Scheme
 			}
 			"3"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"14"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
@@ -413,7 +413,7 @@ Scheme
 			}
 			"4"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"20"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
@@ -422,7 +422,7 @@ Scheme
 			}
 			"5"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"24"
 				"weight"	"0"
 				"range"		"0x0000 0x017F"
@@ -431,7 +431,7 @@ Scheme
 			}
 			"6"
 			{
-				"name"		"obsidian"//Arial
+				"name"		"Verdana"//Arial
 				"tall"		"12"
 				"range" 		"0x0000 0x00FF"
 				"weight"		"0"
@@ -495,32 +495,6 @@ Scheme
 				"tall"		"11"
 				"range" 		"0x0000 0x00FF"
 				"weight"		"0"
-			}
-		}
-		ObsidianWeaponIcons
-		{
-			"1"
-			{
-				"name"		"obsidianweaps"
-				"tall"		"64"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		ObsidianWeaponIconsSelected
-		{
-			"1"
-			{
-				"name"		"obsidianweaps"
-				"tall"		"64"
-				"weight"	"0"
-				"antialias" "1"
-				"blur"		"5"
-				"scanlines"	"2"
-				"additive"	"1"
-				"custom"	"1"
 			}
 		}
 		WeaponIcons
@@ -643,7 +617,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"32"
 				"weight"	"0"
 				"antialias" "1"
@@ -655,7 +629,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"32"
 				"weight"	"0"
 				"blur"		"4"
@@ -669,7 +643,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"16"
 				"weight"	"1000"
 				"additive"	"1"
@@ -681,7 +655,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"16"
 				"weight"	"1000"
 				"additive"	"1"
@@ -694,7 +668,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"11"
 				"weight"	"1000"
 				"additive"	"1"
@@ -706,7 +680,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"9"
 				"weight"	"600"
 				"additive"	"1"
@@ -718,7 +692,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"16"
 				"weight"	"1000"
 				"blur"		"2" //4
@@ -898,7 +872,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"50"
 				"weight"	"0"
 				"antialias" "1"
@@ -912,7 +886,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"25"
 				"weight"	"0"
 				"antialias" "1"
@@ -924,7 +898,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"obsidian"
+				"name"		"Verdana"
 				"tall"		"15"
 				"weight"	"0"
 				"antialias" "1"
@@ -1083,17 +1057,6 @@ Scheme
 		   "1"
 		   {
 				"name"  "HL2MP"
-				"tall"  "32"
-				"weight" "0"
-				"additive" "1"
-				"antialias" "1"
-		   }
-		}
-		"ObsidianTypeDeath"
-		{
-		   "1"
-		   {
-				"name"  "obsidianweaps"
 				"tall"  "32"
 				"weight" "0"
 				"additive" "1"

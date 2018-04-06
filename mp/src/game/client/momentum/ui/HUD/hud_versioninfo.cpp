@@ -1,30 +1,22 @@
 #include "cbase.h"
-#include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "menu.h"
-#include "time.h"
 #include <vgui/ILocalize.h>
-#include <vgui/ISurface.h>
-#include <vgui_controls/Panel.h>
 #include "mom_shareddefs.h"
+#include <vgui_controls/Label.h>
 
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
-class CHudVersionInfo : public CHudElement, public Panel
+class CHudVersionInfo : public CHudElement, public Label
 {
-    DECLARE_CLASS_SIMPLE(CHudVersionInfo, Panel);
+    DECLARE_CLASS_SIMPLE(CHudVersionInfo, Label);
 
   public:
     CHudVersionInfo(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE { return CHudElement::ShouldDraw(); }
-
-    void Paint() OVERRIDE;
-
-    void Init() OVERRIDE;
+    void VidInit() OVERRIDE;
 
   protected:
     CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
@@ -36,7 +28,7 @@ class CHudVersionInfo : public CHudElement, public Panel
 DECLARE_HUDELEMENT(CHudVersionInfo);
 
 CHudVersionInfo::CHudVersionInfo(const char *pElementName)
-    : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudVersionInfo")
+    : CHudElement(pElementName), Label(g_pClientMode->GetViewport(), "CHudVersionInfo", "")
 {
     SetPaintBackgroundEnabled(false);
     SetProportional(true);
@@ -45,22 +37,16 @@ CHudVersionInfo::CHudVersionInfo(const char *pElementName)
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
 
-void CHudVersionInfo::Init()
+void CHudVersionInfo::VidInit()
 {
     char m_pszStringVersion[BUFSIZELOCL];
     char strVersion[BUFSIZELOCL];
-    LOCALIZE_TOKEN(BuildVersion, "#MOM_BuildVersion", strVersion);
+    LOCALIZE_TOKEN(BuildVersion, "#MOM_StartupMsg_Prealpha_Title", strVersion);
 
     Q_snprintf(m_pszStringVersion, sizeof(m_pszStringVersion), "%s %s",
                strVersion, // BuildVerison localization
                MOM_CURRENT_VERSION);
     g_pVGuiLocalize->ConvertANSIToUnicode(m_pszStringVersion, uVersionText, sizeof(m_pszStringVersion));
-}
-
-void CHudVersionInfo::Paint()
-{
-    surface()->DrawSetTextPos(0, 0);
-    surface()->DrawSetTextFont(m_hTextFont);
-    surface()->DrawSetTextColor(225, 225, 225, 225);
-    surface()->DrawPrintText(uVersionText, wcslen(uVersionText));
+    SetFont(m_hTextFont);
+    SetText(uVersionText);
 }
