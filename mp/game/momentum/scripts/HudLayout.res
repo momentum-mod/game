@@ -82,13 +82,19 @@
     CHudVersionInfo
     {
         "fieldName"     "CHudVersionInfo"
-        "xpos"          "640"
-        "ypos"          "460"
+        "xpos"          "10" // This is basically the X pin offset
+        "ypos"          "rs1.0" // Used to shove it in the bottom left corner
         "visible"       "1"
         "enabled"       "1"
-        "wide"          "200"
+        "wide"          "20"
         "tall"          "20"
-        "TextFont"      "HudHintTextSmall"
+        "TextFont"      "MomHudDropText"
+        "AutoResize" "3"
+        "PinCorner" "2"
+        "PinnedCornerOffsetX" "10"
+        "PinnedCornerOffsetY" "5"
+        "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     CHudSyncBar
     {
@@ -156,8 +162,8 @@
         "status_ypos" "c+125"//y-pos for the map status 
         "mapinfo_xpos" "10"//xpos for the map info (author/difficulty/etc)
         "mapinfo_ypos" "10"//ypos for the map info
-        "StatusFont" "HudHintTextSmall"//Font for the current map area/status
-        "MapInfoFont" "HudHintTextSmall"//Font for the map information
+        "StatusFont" "MomHudDropText"//Font for the current map area/status
+        "MapInfoFont" "MomHudDropText"//Font for the map information
         "TextColor" "MOM.Panel.Fg"
     }
     
