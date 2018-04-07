@@ -19,6 +19,7 @@
 "+showtimes"    "#MOM_Controls_ToggleTimes"
 "mom_practice"  "#MOM_Controls_Practice"
 "showRuler"		"#MOM_Ruler_ToggleMenu"
+"messagemode"   "#Valve_Chat_Message"
 "blank"			"=========================="
 "blank"			"#Valve_Combat_Title"
 "blank"			"=========================="
