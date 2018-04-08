@@ -141,11 +141,6 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\ChangelogPanel.cpp"
                     $File   "momentum\ui\ChangelogPanel.h"
                 }
-                $Folder "Feedback"
-                {
-                    $File 	"momentum\ui\ContactPanel.cpp"
-                    $File 	"momentum\ui\IContactPanel.h"
-                }
                 
                 $Folder "Messagebox"
                 {
