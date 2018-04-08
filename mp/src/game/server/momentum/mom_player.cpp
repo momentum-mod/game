@@ -197,6 +197,10 @@ void CMomentumPlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
     {
         VectorCopy(ucmd->viewangles, pl.v_angle.GetForModify());
     }
+	else if (pl.fixangle == FIXANGLE_ABSOLUTE)
+	{
+		VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
+	}
 
     // Handle FL_FROZEN.
     if (GetFlags() & FL_FROZEN)
