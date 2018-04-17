@@ -4,7 +4,6 @@
 #include "info_camera_link.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
-#include "mom_system_checkpoint.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
 #include "weapon/weapon_csbasegun.h"
@@ -13,8 +12,9 @@
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
 #include "mom_blockfix.h"
-#include "run/run_checkpoint.h"
+#include "mom_system_saveloc.h"
 #include "mom_gamemovement.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
 
@@ -131,9 +131,9 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_bPreventPlayerBhop = false;
     m_SrvData.m_iLandTick = 0;
 
-    m_SrvData.m_iCheckpointCount = 0;
-    m_SrvData.m_bUsingCPMenu = false;
-    m_SrvData.m_iCurrentStepCP = -1;
+    m_SrvData.m_iSavelocCount = 0;
+    m_SrvData.m_bUsingSavelocMenu = false;
+    m_SrvData.m_iCurrentSavelocIndx = -1;
     
     g_ReplaySystem.m_player = this;
 
@@ -148,7 +148,7 @@ CMomentumPlayer::CMomentumPlayer()
 CMomentumPlayer::~CMomentumPlayer()
 {
     RemoveTrail();
-    RemoveAllCheckpoints();
+    RemoveAllSavelocs();
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
@@ -371,8 +371,8 @@ void CMomentumPlayer::Spawn()
     SetNextThink(gpGlobals->curtime);
 
     // Load the player's checkpoints, only if we are spawning for the first time
-    if (m_rcCheckpoints.IsEmpty())
-        g_MOMCheckpointSystem->LoadMapCheckpoints(this);
+    if (m_rcSavelocs.IsEmpty())
+        g_MOMSavelocSystem->LoadMapSaveLocs(this);
 
     // Reset current checkpoint trigger upon spawn
     m_pCurrentCheckpoint = nullptr;
@@ -519,40 +519,40 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
     UTIL_Remove(pWeapon);
 }
 
-Checkpoint_t *CMomentumPlayer::CreateCheckpoint()
+SavedLocation_t *CMomentumPlayer::CreateSaveloc()
 {
-    Checkpoint_t *c = new Checkpoint_t(this);
+    SavedLocation_t *c = new SavedLocation_t(this);
     return c;
 }
 
-void CMomentumPlayer::CreateAndSaveCheckpoint()
+void CMomentumPlayer::CreateAndSaveLocation()
 {
-    Checkpoint_t *c = CreateCheckpoint();
-    m_rcCheckpoints.AddToTail(c);
-    if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
-        ++m_SrvData.m_iCurrentStepCP;
+    SavedLocation_t *c = CreateSaveloc();
+    m_rcSavelocs.AddToTail(c);
+    if (m_SrvData.m_iCurrentSavelocIndx == m_SrvData.m_iSavelocCount - 1)
+        ++m_SrvData.m_iCurrentSavelocIndx;
     else
-        m_SrvData.m_iCurrentStepCP = m_SrvData.m_iCheckpointCount; // Set it to the new checkpoint's index
-    ++m_SrvData.m_iCheckpointCount;
+        m_SrvData.m_iCurrentSavelocIndx = m_SrvData.m_iSavelocCount; // Set it to the new checkpoint's index
+    ++m_SrvData.m_iSavelocCount;
 }
 
-void CMomentumPlayer::RemoveLastCheckpoint()
+void CMomentumPlayer::RemoveLastSaveloc()
 {
-    if (m_rcCheckpoints.IsEmpty())
+    if (m_rcSavelocs.IsEmpty())
         return;
-    m_rcCheckpoints.Remove(m_SrvData.m_iCurrentStepCP);
+    m_rcSavelocs.Remove(m_SrvData.m_iCurrentSavelocIndx);
     // If there's one element left, we still need to decrease currentStep to -1
-    if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
-        --m_SrvData.m_iCurrentStepCP;
+    if (m_SrvData.m_iCurrentSavelocIndx == m_SrvData.m_iSavelocCount - 1)
+        --m_SrvData.m_iCurrentSavelocIndx;
     // else we want it to shift forward one until it catches back up to the last checkpoint
-    --m_SrvData.m_iCheckpointCount;
+    --m_SrvData.m_iSavelocCount;
 }
 
-void CMomentumPlayer::RemoveAllCheckpoints()
+void CMomentumPlayer::RemoveAllSavelocs()
 {
-    m_rcCheckpoints.PurgeAndDeleteElements();
-    m_SrvData.m_iCurrentStepCP = -1;
-    m_SrvData.m_iCheckpointCount = 0;
+    m_rcSavelocs.PurgeAndDeleteElements();
+    m_SrvData.m_iCurrentSavelocIndx = -1;
+    m_SrvData.m_iSavelocCount = 0;
 }
 
 void CMomentumPlayer::AddOnehop(CTriggerOnehop* pTrigger)
@@ -644,25 +644,25 @@ void CMomentumPlayer::CreateTrail()
     DispatchSpawn(m_eTrail);
 }   
 
-void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
+void CMomentumPlayer::TeleportToSavelocIndex(int newCheckpoint)
 {
-    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0 || !m_bAllowUserTeleports)
+    if (newCheckpoint > m_rcSavelocs.Count() || newCheckpoint < 0 || !m_bAllowUserTeleports)
         return;
-    Checkpoint_t *pCheckpoint = m_rcCheckpoints[newCheckpoint];
+    SavedLocation_t *pCheckpoint = m_rcSavelocs[newCheckpoint];
     if (pCheckpoint)
         pCheckpoint->Teleport(this);
 }
 
-void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
+void CMomentumPlayer::SaveSavelocsToFile(KeyValues *kvInto)
 {
     // Set the current index
-    kvInto->SetInt("cur", m_SrvData.m_iCurrentStepCP);
+    kvInto->SetInt("cur", m_SrvData.m_iCurrentSavelocIndx);
 
     // Add all your checkpoints
     KeyValues *kvCPs = new KeyValues("cps");
-    FOR_EACH_VEC(m_rcCheckpoints, i)
+    FOR_EACH_VEC(m_rcSavelocs, i)
     {
-        Checkpoint_t *c = m_rcCheckpoints[i];
+        SavedLocation_t *c = m_rcSavelocs[i];
         char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
         Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
@@ -674,21 +674,21 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
     kvInto->AddSubKey(kvCPs);
 }
 
-void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
+void CMomentumPlayer::LoadSavelocsFromFile(KeyValues *kvFrom)
 {
     if (!kvFrom || kvFrom->IsEmpty()) return;
 
-    m_SrvData.m_iCurrentStepCP = kvFrom->GetInt("cur");
+    m_SrvData.m_iCurrentSavelocIndx = kvFrom->GetInt("cur");
 
     KeyValues *kvCPs = kvFrom->FindKey("cps");
     if (!kvCPs) return;
     FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
     {
-        Checkpoint_t *c = new Checkpoint_t(kvCheckpoint);
-        m_rcCheckpoints.AddToTail(c);
+        SavedLocation_t *c = new SavedLocation_t(kvCheckpoint);
+        m_rcSavelocs.AddToTail(c);
     }
 
-    m_SrvData.m_iCheckpointCount = m_rcCheckpoints.Count();
+    m_SrvData.m_iSavelocCount = m_rcSavelocs.Count();
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
@@ -926,7 +926,7 @@ void CMomentumPlayer::CalculateAverageStats()
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !m_SrvData.m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !m_SrvData.m_bUsingSavelocMenu) // MOM_TODO: && g_Timer->IsForILs()
     {
         if (GetGroundEntity() == nullptr && !m_SrvData.m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;

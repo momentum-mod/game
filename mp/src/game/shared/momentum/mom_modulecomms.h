@@ -21,10 +21,10 @@ struct StdDataFromServer
     bool m_bResumeZoom;
     bool m_bDidPlayerBhop;
     bool m_bPreventPlayerBhop;
-    bool m_bUsingCPMenu;
+    bool m_bUsingSavelocMenu;
     int m_iLandTick; // Tick at which the player landed on the ground
-    int m_iCheckpointCount;
-    int m_iCurrentStepCP;
+    int m_iSavelocCount;
+    int m_iCurrentSavelocIndx;
     int m_iShotsFired;
     int m_iDirection;
     int m_iLastZoom;
