@@ -3,19 +3,13 @@
 #include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
-#include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "menu.h"
 #include "utlvector.h"
-#include "vgui_helpers.h"
-#include "view.h"
 
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vgui_controls/AnimationController.h>
-#include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 
 #include "mom_event_listener.h"
@@ -112,11 +106,11 @@ class C_HudTimer : public CHudElement, public Panel
     bool m_bShowCheckpoints;
     bool m_bMapFinished;
     bool m_bMapIsLinear;
-    int m_iCheckpointCount, m_iCheckpointCurrent;
+    int m_iSavelocCount, m_iSavelocCurrent;
     CMomRunStats *m_pRunStats;
     char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL],
-        noTimerLocalized[BUFSIZELOCL];
+        noTimerLocalized[BUFSIZELOCL], savelocLocalized[BUFSIZELOCL];
 };
 
 DECLARE_HUDELEMENT(C_HudTimer);
@@ -152,6 +146,7 @@ void C_HudTimer::Init()
     // cache localization strings
     FIND_LOCALIZATION(m_pwStageStartString, "#MOM_Stage_Start");
     LOCALIZE_TOKEN(Checkpoint, "#MOM_Checkpoint", cpLocalized);
+    LOCALIZE_TOKEN(SaveLoc, "#MOM_SavedLocation", savelocLocalized);
     LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
     LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
     LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
@@ -177,8 +172,8 @@ void C_HudTimer::Reset()
     m_bPlayerInZone = false;
     m_bMapFinished = false;
     m_bMapIsLinear = false;
-    m_iCheckpointCount = 0;
-    m_iCheckpointCurrent = 0;
+    m_iSavelocCount = 0;
+    m_iSavelocCurrent = 0;
     m_pRunStats = nullptr;
 }
 
@@ -257,8 +252,8 @@ void C_HudTimer::OnThink()
         if (pGhost)
         {
             m_bShowCheckpoints = false;
-            m_iCheckpointCurrent = 0;
-            m_iCheckpointCount = 0;
+            m_iSavelocCurrent = 0;
+            m_iSavelocCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
@@ -269,9 +264,9 @@ void C_HudTimer::OnThink()
         else
         {
             m_bIsReplay = false;
-            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingCPMenu;
-            m_iCheckpointCurrent = pLocal->m_SrvData.m_iCurrentStepCP + 1;
-            m_iCheckpointCount = pLocal->m_SrvData.m_iCheckpointCount;
+            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingSavelocMenu;
+            m_iSavelocCurrent = pLocal->m_SrvData.m_iCurrentSavelocIndx + 1;
+            m_iSavelocCount = pLocal->m_SrvData.m_iSavelocCount;
             m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_SrvData.m_RunData;
@@ -296,9 +291,9 @@ void C_HudTimer::Paint(void)
     if (m_bShowCheckpoints)
     {
         Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "%s %i/%i",
-                   cpLocalized,          // Checkpoint localization
-                   m_iCheckpointCurrent, // CurrentCP
-                   m_iCheckpointCount    // CPCount
+                   savelocLocalized,     // Saveloc localization
+                   m_iSavelocCurrent, // CurrentCP
+                   m_iSavelocCount    // CPCount
                    );
 
         ANSI_TO_UNICODE(m_pszStringCps, m_pwCurrentCheckpoints);

@@ -109,7 +109,7 @@ class CMomentumTimer : CAutoGameSystem
     void SetGameModeConVars();
 
     void CreateStartMark();
-    Checkpoint_t *GetStartMark() const { return m_pStartZoneMark; }
+    SavedLocation_t *GetStartMark() const { return m_pStartZoneMark; }
     void ClearStartMark();
 
   private:
@@ -128,7 +128,7 @@ class CMomentumTimer : CAutoGameSystem
     KeyValues *m_pLocalTimes;
     // MOM_TODO: KeyValues *m_pOnlineTimes;
 
-    Checkpoint_t *m_pStartZoneMark;
+    SavedLocation_t *m_pStartZoneMark;
 
 public:
     // PRECISION FIX:

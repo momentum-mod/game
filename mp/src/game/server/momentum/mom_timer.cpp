@@ -2,8 +2,8 @@
 
 #include "in_buttons.h"
 #include "mom_timer.h"
-#include "run/run_checkpoint.h"
 #include "movevars_shared.h"
+#include "mom_system_saveloc.h"
 
 #include "tier0/memdbgon.h"
 
@@ -13,7 +13,7 @@ void CMomentumTimer::Start(int start)
     if (!pPlayer)
         return;
     // MOM_TODO: Allow it based on gametype
-    if (pPlayer->m_SrvData.m_bUsingCPMenu)
+    if (pPlayer->m_SrvData.m_bUsingSavelocMenu)
         return;
     if (ConVarRef("mom_zone_edit").GetBool())
         return;
@@ -286,7 +286,7 @@ void CMomentumTimer::CreateStartMark()
         // Rid the previous one
         ClearStartMark();
 
-        m_pStartZoneMark = pPlayer->CreateCheckpoint();
+        m_pStartZoneMark = pPlayer->CreateSaveloc();
         m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
         DevLog("Successfully created a starting mark!\n");
     }
@@ -334,7 +334,7 @@ class CTimerCommands
         CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
         if (start)
         {
-            Checkpoint_t *pStartMark = g_pMomentumTimer->GetStartMark();
+            SavedLocation_t *pStartMark = g_pMomentumTimer->GetStartMark();
             if (pStartMark)
             {
                 pStartMark->Teleport(pPlayer);
@@ -411,7 +411,7 @@ class CTimerCommands
             if (desiredIndex == 1)
             {
                 // Index 1 is the start. If the timer has a mark, we use it
-                Checkpoint_t *startMark = g_pMomentumTimer->GetStartMark();
+                SavedLocation_t *startMark = g_pMomentumTimer->GetStartMark();
                 if (startMark)
                 {
                     pVec = &startMark->pos;

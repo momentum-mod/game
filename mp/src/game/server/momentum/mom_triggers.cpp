@@ -206,7 +206,7 @@ void CTriggerTimerStart::StartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        pPlayer->SetUsingCPMenu(false); // It'll get set to true if they teleport to a CP out of here
+        pPlayer->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
         pPlayer->ResetRunStats(); // Reset run stats
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
