@@ -1753,6 +1753,18 @@ void TextEntry::OnKeyCodeTyped(KeyCode code)
 				fallThrough = true;
 			}
 			break;
+        case KEY_BACKSPACE:
+            {
+                int wordLeft = GetWordLeft();
+                DeleteSelectedRange(wordLeft, _cursorPos);
+            }
+            break;
+        case KEY_DELETE:
+            {
+                int wordRight = GetWordRight();
+                DeleteSelectedRange(_cursorPos, wordRight);
+            }
+            break;
 		default:
 			{
 				fallThrough = true;
@@ -2600,31 +2612,39 @@ bool TextEntry::IsCursorOffLeftSideOfWindow(int cursorPos)
 	return (cx <= 0);
 }
 
+int TextEntry::GetWordRight()
+{
+    int ret = _cursorPos;
+
+    // search right until we hit a whitespace character or a newline
+    while (++ret < m_TextStream.Count())
+    {
+        if (iswspace(m_TextStream[ret]))
+            break;
+    }
+
+    // search right until we hit an nonspace character
+    while (++ret < m_TextStream.Count())
+    {
+        if (!iswspace(m_TextStream[ret]))
+            break;
+    }
+
+    if (ret > m_TextStream.Count())
+        ret = m_TextStream.Count();
+
+    return ret;
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Move the cursor over to the Start of the next word to the right
 //-----------------------------------------------------------------------------
 void TextEntry::GotoWordRight()
 {
 	SelectCheck();
-	
-	// search right until we hit a whitespace character or a newline
-	while (++_cursorPos < m_TextStream.Count())
-	{
-		if (iswspace(m_TextStream[_cursorPos]))
-			break;
-	}
-	
-	// search right until we hit an nonspace character
-	while (++_cursorPos < m_TextStream.Count())
-	{
-		if (!iswspace(m_TextStream[_cursorPos]))
-			break;
-	}
-	
-	if (_cursorPos > m_TextStream.Count())
-		_cursorPos = m_TextStream.Count();
-	
-	// now we are at the start of the next word
+
+    _cursorPos = GetWordRight();
 		
 	// scroll right if we need to
 	ScrollRight();
@@ -2634,36 +2654,47 @@ void TextEntry::GotoWordRight()
 	Repaint();
 }
 
+int TextEntry::GetWordLeft()
+{
+    int ret = _cursorPos;
+
+    if (ret < 1)
+        return ret;
+
+    // search left until we hit an nonspace character
+    while (--ret >= 0)
+    {
+        if (!iswspace(m_TextStream[ret]))
+            break;
+    }
+
+    // search left until we hit a whitespace character
+    while (--ret >= 0)
+    {
+        if (iswspace(m_TextStream[ret]))
+        {
+            break;
+        }
+    }
+
+    // we end one character off
+    ret++;
+    // now we are at the Start of the previous word
+    return ret;
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Move the cursor over to the Start of the next word to the left
 //-----------------------------------------------------------------------------
 void TextEntry::GotoWordLeft()
 {
 	SelectCheck();
-	
+
+    _cursorPos = GetWordLeft();
+
 	if (_cursorPos < 1)
 		return;
-	
-	// search left until we hit an nonspace character
-	while (--_cursorPos >= 0)
-	{
-		if (!iswspace(m_TextStream[_cursorPos]))
-			break;
-	}
-	
-	// search left until we hit a whitespace character
-	while (--_cursorPos >= 0)
-	{
-		if (iswspace(m_TextStream[_cursorPos]))
-		{
-			break;
-		}
-	}
-	
-	// we end one character off
-	_cursorPos++;
-	// now we are at the Start of the previous word
-	
 	
 	// scroll left if we need to
 	ScrollLeft();
@@ -3103,6 +3134,47 @@ void TextEntry::Backspace()
 	Repaint();
 }
 
+void TextEntry::DeleteSelectedRange(int x0, int x1)
+{
+    if (!IsEditable())
+        return;
+
+    // if the line is empty, don't do anything
+    if (m_TextStream.Count() == 0)
+        return;
+
+    // Don't delete if it's going nowhere
+    if (x0 == x1)
+        return;
+
+    SaveUndoState();
+
+    // shift chars left one starting after cursor position, then make the line one smaller
+    int dif = x1 - x0;
+    for (int i = 0; i < dif; ++i)
+    {
+        m_TextStream.Remove(x0);
+    }
+
+    // clear any selection
+    SelectNone();
+    ResetCursorBlink();
+
+    // move the cursor to just after the deleted section
+    _cursorPos = x0;
+
+    _dataChanged = true;
+
+    _recalculateBreaksIndex = 0;
+    m_LineBreaks.RemoveAll();
+    m_LineBreaks.AddToTail(BUFFER_SIZE);
+
+    CalcBreakIndex();
+
+    LayoutVerticalScrollBarSlider();
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Deletes the current selection, if any, moving the cursor to the Start
 //			of the selection
@@ -3123,8 +3195,10 @@ void TextEntry::DeleteSelected()
 		// no selection, don't touch anything
 		return;
 	}
+
+    DeleteSelectedRange(x0, x1);
 	
-	SaveUndoState();
+	/*SaveUndoState();
 	
 	// shift chars left one starting after cursor position, then make the line one smaller
 	int dif = x1 - x0;
@@ -3148,7 +3222,7 @@ void TextEntry::DeleteSelected()
 
 	CalcBreakIndex();
 	
-	LayoutVerticalScrollBarSlider();
+	LayoutVerticalScrollBarSlider();*/
 }
 
 //-----------------------------------------------------------------------------
@@ -3176,14 +3250,16 @@ void TextEntry::Delete()
 		if (_cursorPos >= m_TextStream.Count())
 			return;
 	}
+
+    DeleteSelectedRange(x0, x1);
 	
-	SaveUndoState();
+	/*SaveUndoState();
 	
 	// shift chars left one starting after cursor position, then make the line one smaller
 	int dif = x1 - x0;
 	for (int i = 0; i < dif; i++)
 	{
-		m_TextStream.Remove((int)x0);
+		m_TextStream.Remove(x0);
 	}
 	
 	ResetCursorBlink();
@@ -3202,7 +3278,7 @@ void TextEntry::Delete()
 
 	CalcBreakIndex();
 	
-	LayoutVerticalScrollBarSlider();
+	LayoutVerticalScrollBarSlider();*/
 }
 
 //-----------------------------------------------------------------------------
