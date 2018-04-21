@@ -19,9 +19,10 @@ public:
     DECLARE_CLASS(CModelPanelModel, C_BaseFlex);
 
     bool IsMenuModel() const OVERRIDE { return true; }
+    bool ShouldInterpolate() OVERRIDE { return false; }
 };
 
-class CRenderPanel : public vgui::Panel
+class CRenderPanel : public vgui::Panel, public CGameEventListener
 {
     DECLARE_CLASS_SIMPLE(CRenderPanel, vgui::Panel);
 
@@ -54,6 +55,8 @@ public:
     void DrawModel();
     void SetRenderColors(C_BaseEntity *pEnt);
 
+    void FireGameEvent(IGameEvent* event) OVERRIDE;
+
 private:
     QAngle render_ang;
     Vector render_pos;
@@ -80,4 +83,5 @@ private:
     char m_szModelPath[MAX_PATH];
 
     bool m_bSizeToParent;
+
 };

@@ -1582,6 +1582,11 @@ void CHLClient::StartStatsReporting( HANDLE handle, bool bArbitrated )
 //-----------------------------------------------------------------------------
 void CHLClient::InvalidateMdlCache()
 {
+    // See ModelPanel.cpp for why this is here
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("invalid_mdl_cache");
+    if (pEvent)
+        gameeventmanager->FireEventClientSide(pEvent);
+
 	C_BaseAnimating *pAnimating;
 	for ( C_BaseEntity *pEntity = ClientEntityList().FirstBaseEntity(); pEntity; pEntity = ClientEntityList().NextBaseEntity(pEntity) )
 	{

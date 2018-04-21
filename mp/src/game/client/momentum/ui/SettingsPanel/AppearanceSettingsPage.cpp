@@ -20,6 +20,7 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
 {
     // Outer frame for the model preview
     m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
+    m_pModelPreviewFrame->SetProportional(true);
     m_pModelPreviewFrame->SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     m_pModelPreviewFrame->SetSize(scheme()->GetProportionalScaledValue(200), scheme()->GetProportionalScaledValue(275));
     m_pModelPreviewFrame->SetMoveable(false);
@@ -97,16 +98,16 @@ void AppearanceSettingsPage::LoadSettings()
 
     m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
     m_pTrailLengthEntry->SetText(ghost_trail_length.GetString());
+
+    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
+    if (result)
+        UpdateModelSettings();
 }
 
 void AppearanceSettingsPage::OnPageShow()
 {
     if (!m_pModelPreviewFrame->IsVisible())
         m_pModelPreviewFrame->Activate();
-
-    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
-    if (result)
-        UpdateModelSettings();
 }
 
 void AppearanceSettingsPage::OnPageHide()
