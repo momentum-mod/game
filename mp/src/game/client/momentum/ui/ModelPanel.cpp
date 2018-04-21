@@ -29,6 +29,8 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     __proj.Identity();
     __ViewProj.Identity();
     __ViewProjNDC.Identity();
+
+    ListenForGameEvent("invalid_mdl_cache");
 }
 
 CRenderPanel::~CRenderPanel()
@@ -153,7 +155,7 @@ bool CRenderPanel::IsModelReady()
 
     if (!bValid && Q_strlen(m_szModelPath))
     {
-        const model_t *pMdl = modelinfo ? modelinfo->FindOrLoadModel(m_szModelPath) : NULL;
+        const model_t *pMdl = modelinfo ? engine->LoadModel(m_szModelPath) : nullptr;
         if (pMdl)
             m_pModelInstance->SetModelPointer(pMdl);
         bValid = !!pMdl;
@@ -212,7 +214,7 @@ bool CRenderPanel::LoadModel(const char *localPath)
 
     DestroyModel();
 
-    const model_t *mdl = modelinfo->FindOrLoadModel(localPath);
+    const model_t *mdl = engine->LoadModel(localPath);
     if (!mdl)
         return false;
 
@@ -238,9 +240,17 @@ bool CRenderPanel::LoadModel(const char *localPath)
     // leave it alone.
     pEnt->RemoveFromLeafSystem();
     pEnt->CollisionProp()->DestroyPartitionHandle();
+    // Needs to be removed from the client entity list so that map start/end does not delete it ...
+    cl_entitylist->RemoveEntity(pEnt->GetRefEHandle());
+    // ... but this causes an unintended crash. When the player changes model detail, the game will crash
+    // because this model does not invalidate its MdlCache (the client DLL engine interface calls it
+    // for every entity it keeps track of in the entity list! *rolleyes*)
+    // So we listen for the "invalid_mdl_cache" event (see constructor) to be able to manually call it,
+    // while manually saving our entity from the perils of start/end map.
 
     m_pModelInstance = pEnt;
     ResetView();
+
     return true;
 }
 
@@ -371,4 +381,10 @@ void CRenderPanel::SetRenderColors(C_BaseEntity* pEnt)
     float alphaBias = (GetParent() ? GetParent()->GetAlpha() : GetAlpha()) / 255.0f;
     render->SetColorModulation(color);
     render->SetBlend(alphaBias * color[3]);
+}
+
+void CRenderPanel::FireGameEvent(IGameEvent* event)
+{
+    if (m_pModelInstance)
+        m_pModelInstance->InvalidateMdlCache();
 }

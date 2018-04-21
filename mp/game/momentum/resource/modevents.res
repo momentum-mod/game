@@ -87,4 +87,7 @@
     {
         "show" "bool"
     }
+    "invalid_mdl_cache"
+    {
+    }
 }
