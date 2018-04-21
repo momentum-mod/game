@@ -134,6 +134,7 @@ public:
 	virtual void Undo();
 	virtual void SaveUndoState();
 	virtual void SetFont(HFont font);
+    virtual HFont GetFont();
 	virtual void SetTextHidden(bool bHideText);
 	virtual void SetEditable(bool state);
 	virtual bool IsEditable();

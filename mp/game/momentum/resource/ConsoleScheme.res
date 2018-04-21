@@ -384,29 +384,6 @@ Scheme
 				"outline"	"1"
 			}
 		}
-		"ChapterTitle"	[$X360]
-		{
-			"1"
-			{
-				"name"			"Tahoma"
-				"tall"			"20"
-				"tall_hidef"	"28"
-				"weight"		"2000"
-				"outline"		"1"
-			}
-		}
-		"ChapterTitleBlur"	[$X360]
-		{
-			"1"
-			{
-				"name"			"Tahoma"
-				"tall"			"20"
-				"tall_hidef"	"28"
-				"weight"		"2000"
-				"blur"			"3"
-				"blur_hidef"	"5"
-			}
-		}
 		"MenuLarge"
 		{
 			"1"
@@ -464,26 +441,11 @@ Scheme
 			}
 		}
 		
-		GameUIButtons
-		{
-			"1"	[$X360]
-			{
-				"bitmap"	"1"
-				"name"		"Buttons"
-				"scalex"	"0.63"
-				"scaley"	"0.63"
-				"scalex_hidef"	"1.0"
-				"scaley_hidef"	"1.0"
-				"scalex_lodef"	"0.75"
-				"scaley_lodef"	"0.75"
-			}
-		}
 		"ConsoleText"
 		{
 			"1"
 			{
 				"name"		 "Lucida Console" [$WINDOWS]
-				"name"		 "Lucida Console" [$X360]
 				"name"		 "Lucida Console" [$OSX]
 				"name"		 "Verdana" [$LINUX]
 				"tall"		"14" [$LINUX]
@@ -492,6 +454,21 @@ Scheme
                 "antialias" "1"
 			}
 		}
+        
+        "ConsoleEntryText"
+        {
+            "1"
+            {
+                //"name" "Lucida Console" [$WINDOWS]
+                //"name" "Lucida Console" [$OSX]
+                //"name" "Verdana" [$LINUX]
+                "name" "Verdana"
+                "tall" "14" [$LINUX]
+                "tall" "8"
+                "weight" "500"
+                "antialias" "1"
+            }
+        }
 
 		// this is the symbol font
 		"Marlett"
@@ -631,48 +608,6 @@ Scheme
 //			}
 		}
 
-		"CloseCaption_Normal"
-		{
-			"1"
-			{
-				"name"		"Tahoma" [!$POSIX]
-				"name"		"Verdana" [$POSIX]
-				"tall"		"16"
-				"weight"	"500"
-			}
-		}
-		"CloseCaption_Italic"
-		{
-			"1"
-			{
-				"name"		"Tahoma"
-				"tall"		"16"
-				"weight"	"500"
-				"italic"	"1"
-			}
-		}
-		"CloseCaption_Bold"
-		{
-			"1"
-			{
-				"name"		"Tahoma" [!$POSIX]
-				"name"		"Verdana Bold" [$POSIX]
-				"tall"		"16"
-				"weight"	"900"
-			}
-		}
-		"CloseCaption_BoldItalic"
-		{
-			"1"
-			{
-				"name"		"Tahoma" [!$POSIX]
-				"name"		"Verdana Bold Italic" [$POSIX]
-				"tall"		"16"
-				"weight"	"900"
-				"italic"	"1"
-			}
-		}
-
 		TitleFont
 		{
 			"1"
@@ -694,32 +629,6 @@ Scheme
 				"weight"	"400"
 				"antialias"	"1"
 				"custom"	"1"
-			}
-		}
-
-		AppchooserGameTitleFont	[$X360]
-		{
-			"1"
-			{
-				"name"			"Trebuchet MS"
-				"tall"			"16"
-				"tall_hidef"	"24"
-				"weight"		"900"
-				"antialias"		"1"
-			}
-		}
-
-		AppchooserGameTitleFontBlur	[$X360]
-		{
-			"1"
-			{
-				"name"			"Trebuchet MS"
-				"tall"			"16"
-				"tall_hidef"	"24"
-				"weight"		"900"
-				"blur"			"3"
-				"blur_hidef"	"5"
-				"antialias"		"1"
 			}
 		}
 		
