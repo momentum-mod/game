@@ -316,6 +316,9 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
 	m_pSubmit = new Button(this, "ConsoleSubmit", "#Console_Submit");
 	m_pSubmit->SetCommand("submit");
 	m_pSubmit->SetVisible( !m_bStatusVersion );
+    m_pSubmit->SetContentAlignment(Label::a_center);
+    m_pSubmit->SetAutoWide(true);
+    m_pSubmit->SetAutoTall(true);
 
 	CNonFocusableMenu *pCompletionList = new CNonFocusableMenu( this, "CompletionList" );
 	m_pCompletionList = pCompletionList;
@@ -325,6 +328,10 @@ CConsolePanel::CConsolePanel( vgui::Panel *pParent, const char *pName, bool bSta
 	m_pEntry->AddActionSignalTarget(this);
 	m_pEntry->SendNewLine(true);
 	pCompletionList->SetFocusPanel( m_pEntry );
+
+    m_pEntry->PinToSibling("ConsoleHistory", PIN_TOPLEFT, PIN_BOTTOMLEFT);
+    m_pSubmit->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_TOPRIGHT);
+    pCompletionList->PinToSibling("ConsoleEntry", PIN_TOPLEFT, PIN_BOTTOMLEFT);
 
 	// need to set up default colors, since ApplySchemeSettings won't be called until later
 	m_PrintColor = Color(216, 222, 211, 255);
@@ -842,22 +849,16 @@ void CConsolePanel::PerformLayout()
 	if ( !m_bStatusVersion )
 	{
 		const int inset = 8;
-		const int entryHeight = 24;
+		const int entryHeight = surface()->GetFontTall(m_pEntry->GetFont());
 		const int topHeight = 4;
 		const int entryInset = 4;
-		const int submitWide = 64;
-		const int submitInset = 7; // x inset to pull the submit button away from the frame grab
+		const int submitWide = m_pSubmit->GetWide();
 
 		m_pHistory->SetPos(inset, inset + topHeight); 
 		m_pHistory->SetSize(wide - (inset * 2), tall - (entryInset * 2 + inset * 2 + topHeight + entryHeight));
 		m_pHistory->InvalidateLayout();
 
-		int nSubmitXPos = wide - ( inset + submitWide + submitInset );
-		m_pSubmit->SetPos( nSubmitXPos, tall - (entryInset * 2 + entryHeight));
-		m_pSubmit->SetSize( submitWide, entryHeight);
-		 
-		m_pEntry->SetPos( inset, tall - (entryInset * 2 + entryHeight) );
-		m_pEntry->SetSize( nSubmitXPos - entryInset - 2 * inset, entryHeight);
+	     m_pEntry->SetSize( wide - submitWide - 2 * inset, entryHeight);
 	}
 	else
 	{
@@ -882,25 +883,6 @@ void CConsolePanel::PerformLayout()
 //-----------------------------------------------------------------------------
 void CConsolePanel::UpdateCompletionListPosition()
 {
-	int ex, ey;
-	m_pEntry->GetPos(ex, ey);
-
-	if ( !m_bStatusVersion )
-	{
-		// Position below text entry
-		ey += m_pEntry->GetTall();
-	}
-	else
-	{
-		// Position above text entry
-		int menuwide, menutall;
-		m_pCompletionList->GetSize( menuwide, menutall );
-		ey -= ( menutall + 4 );
-	}
-
-	LocalToScreen( ex, ey );
-	m_pCompletionList->SetPos( ex, ey );
-
 	if ( m_pCompletionList->IsVisible() )
 	{
 		m_pEntry->RequestFocus();
@@ -1132,9 +1114,16 @@ CConsoleDialog::CConsoleDialog( vgui::Panel *pParent, const char *pName, bool bS
 {
 	// initialize dialog
 	SetVisible( false );
+    SetProportional(!bStatusVersion);
 	SetTitle( "#Console_Title", true );
 	m_pConsolePanel = new CConsolePanel( this, "ConsolePage", bStatusVersion );
 	m_pConsolePanel->AddActionSignalTarget( this );
+
+    HScheme consoleScheme = scheme()->LoadSchemeFromFile("ConsoleScheme.res", "ConsoleScheme");
+    if (consoleScheme)
+    {
+        SetScheme(consoleScheme);
+    }
 }
 
 void CConsoleDialog::OnScreenSizeChanged( int iOldWide, int iOldTall )
@@ -1173,6 +1162,8 @@ void CConsoleDialog::PerformLayout()
 	int x, y, w, h;
 	GetClientArea( x, y, w, h );
 	m_pConsolePanel->SetBounds( x, y, w, h );
+
+    SetMinimumSize(scheme()->GetProportionalScaledValue(200), scheme()->GetProportionalScaledValue(100));
 }
 
 

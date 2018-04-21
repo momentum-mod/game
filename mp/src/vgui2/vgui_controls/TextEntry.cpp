@@ -3683,6 +3683,12 @@ void TextEntry::SetFont(HFont font)
 	Repaint();
 }
 
+HFont TextEntry::GetFont()
+{
+    return _font;
+}
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Called when the scrollbar slider is moved
 //-----------------------------------------------------------------------------
