@@ -2370,7 +2370,8 @@ CSaveRestoreData *SaveInit( int size );
 // Save/restore system hooks
 CSaveRestoreData  *CHLClient::SaveInit( int size )
 {
-	return ::SaveInit(size);
+    return nullptr;
+	//return ::SaveInit(size);
 }
 
 void CHLClient::SaveWriteFields( CSaveRestoreData *pSaveData, const char *pname, void *pBaseData, datamap_t *pMap, typedescription_t *pFields, int fieldCount )
@@ -2405,16 +2406,16 @@ void CHLClient::WriteSaveHeaders( CSaveRestoreData *s )
 
 void CHLClient::ReadRestoreHeaders( CSaveRestoreData *s )
 {
-	//CRestore restoreHelper( s );
-	//g_pGameSaveRestoreBlockSet->PreRestore();
-	//g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
+	CRestore restoreHelper( s );
+	g_pGameSaveRestoreBlockSet->PreRestore();
+	g_pGameSaveRestoreBlockSet->ReadRestoreHeaders( &restoreHelper );
 }
 
 void CHLClient::Restore( CSaveRestoreData *s, bool b )
 {
-	//CRestore restore(s);
-	//g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	//g_pGameSaveRestoreBlockSet->PostRestore();
+	CRestore restore(s);
+	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
+	g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 static CUtlVector<EHANDLE> g_RestoredEntities;

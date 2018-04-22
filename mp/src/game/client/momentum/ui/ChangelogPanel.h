@@ -14,7 +14,7 @@ class CChangelogPanel : public Frame
     // CChangelogPanel : This Class / vgui::Frame : BaseClass
 
     CChangelogPanel(VPANEL parent); // Constructor
-    ~CChangelogPanel();;
+    ~CChangelogPanel();
 
     void SetChangelog(const char* pChangelog);
 
