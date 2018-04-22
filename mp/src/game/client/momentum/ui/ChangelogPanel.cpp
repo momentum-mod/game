@@ -17,10 +17,12 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
     V_memset(m_cOnlineVersion, 0, sizeof(m_cOnlineVersion));
     m_pwOnlineChangelog = nullptr;
 
+    SetProportional(true);
     SetParent(parent);
+    SetTitle("#MOM_ChangeLog", false);
+    m_pChangeLog = new RichText(this, "ChangeLog");
+
     LoadControlSettings("resource/ui/ChangelogPanel.res");
-    m_pChangeLog = FindControl<RichText>("ChangeLog", true);
-    m_flScrollTime = -1.0f;
 
     SetKeyBoardInputEnabled(true);
     SetMouseInputEnabled(true);
@@ -28,16 +30,10 @@ CChangelogPanel::CChangelogPanel(VPANEL parent) : BaseClass(nullptr, "ChangelogP
     SetMinimizeButtonVisible(false);
     SetMaximizeButtonVisible(false);
     SetCloseButtonVisible(true);
-    SetSizeable(false);
+    SetSizeable(true);
     SetMinimumSize(400, 250);
     SetMoveable(true);
     SetVisible(false);
-    SetProportional(true);
-
-    if (!m_pChangeLog)
-    {
-        Assert("Missing one more gameui controls from ui/changelogpanel.res");
-    }
 }
 
 CChangelogPanel::~CChangelogPanel()
@@ -58,15 +54,13 @@ void CChangelogPanel::SetChangelog(const char* pChangelog)
         g_pVGuiLocalize->ConvertUTF8ToUTF16(pChangelog, &m_pwOnlineChangelog);
 
         m_pChangeLog->SetText(m_pwOnlineChangelog);
-        // Delay the scrolling to a tick or so away, thanks Valve.
-        m_flScrollTime = system()->GetFrameTime() + 0.010f;
     }
 }
 
 void CChangelogPanel::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
-    m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall"));
+    m_pChangeLog->SetFont(pScheme->GetFont("DefaultSmall", IsProportional()));
 } 
 
 // Called when the versions don't match (there's an update)
@@ -77,16 +71,6 @@ void CChangelogPanel::Activate()
     g_pMomentumUtil->GetRemoteChangelog();
 
     BaseClass::Activate();
-}
-
-void CChangelogPanel::OnThink()
-{
-    BaseClass::OnThink();
-    if (m_flScrollTime > 0.0f && system()->GetFrameTime() > m_flScrollTime)
-    {
-        m_pChangeLog->GotoTextStart();
-        m_flScrollTime = -1.0f;
-    }
 }
 
 CChangelogInterface::CChangelogInterface()

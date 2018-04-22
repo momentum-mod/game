@@ -1587,16 +1587,19 @@ void RichText::LayoutVerticalScrollBarSlider()
 	//if (!_vertScrollBar->IsVisible())
 	//	return;
 
-
 	// see where the scrollbar currently is
 	int previousValue = _vertScrollBar->GetValue();
 	bool bCurrentlyAtEnd = false;
-	int rmin, rmax;
-	_vertScrollBar->GetRange(rmin, rmax);
-	if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
-	{
-		bCurrentlyAtEnd = true;
-	}
+    if (_vertScrollBar->GetSlider()->IsSliderVisible())
+    {
+        int rmin, rmax;
+        _vertScrollBar->GetRange(rmin, rmax);
+        if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
+        {
+            bCurrentlyAtEnd = true;
+        }
+    }
+	
 	
 	// work out position to put scrollbar, factoring in insets
 	int wide, tall;

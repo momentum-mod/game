@@ -21,10 +21,8 @@ class CChangelogPanel : public Frame
     void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
 
     void Activate() OVERRIDE;
-    void OnThink() OVERRIDE;
 
   private:
-    float m_flScrollTime;
     RichText *m_pChangeLog;
     char m_cOnlineVersion[12];
     wchar_t *m_pwOnlineChangelog;
