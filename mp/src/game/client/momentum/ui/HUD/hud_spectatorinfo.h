@@ -3,7 +3,8 @@
 #include "cbase.h"
 #include "vgui_controls/Panel.h"
 #include "hudelement.h"
-#include "baseviewport.h"
+
+class IViewPortPanel;
 
 class CHudSpectatorInfo : public CHudElement, public vgui::Panel
 {
@@ -21,12 +22,12 @@ class CHudSpectatorInfo : public CHudElement, public vgui::Panel
     void SpectatorUpdate(const CSteamID &person, const CSteamID &target);
 
 protected:
-    CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
+    CPanelAnimationVar(vgui::HFont, m_hTextFont, "TextFont", "Default");
 
 private:
     IViewPortPanel *m_pLeaderboards;
     CUtlMap<uint64, wchar_t *> m_mapNameMap;
 
-    CSteamID m_idLocal;
+    uint64 m_idLocal;
     int m_iSpecCount;
 };

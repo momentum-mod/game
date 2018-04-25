@@ -3,6 +3,8 @@
 #include "clientmode.h"
 #include "mom_shareddefs.h"
 #include "vgui/ILocalize.h"
+#include "steam/steam_api.h"
+#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
 
@@ -22,7 +24,7 @@ m_pLeaderboards(nullptr)
     SetMouseInputEnabled(false);
     SetDefLessFunc(m_mapNameMap);
 
-    m_idLocal = SteamUser()->GetSteamID();
+    m_idLocal = SteamUser()->GetSteamID().ConvertToUint64();
 }
 
 CHudSpectatorInfo::~CHudSpectatorInfo()
@@ -88,7 +90,7 @@ void CHudSpectatorInfo::SpectatorUpdate(const CSteamID& person, const CSteamID& 
     unsigned short indx = m_mapNameMap.Find(person.ConvertToUint64());
     const bool found = indx != m_mapNameMap.InvalidIndex();
 
-    if (target == m_idLocal && !found)
+    if (target.ConvertToUint64() == m_idLocal && !found)
     {
         const char *pName = SteamFriends()->GetFriendPersonaName(person);
         wchar_t pNameUnicode[MAX_PLAYER_NAME_LENGTH];
