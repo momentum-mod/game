@@ -59,6 +59,7 @@ void CHudMenuStatic::Reset(void)
 
 void CHudMenuStatic::VidInit(void)
 {
+    HideMenu(true);
 }
 
 void CHudMenuStatic::OnThink()
