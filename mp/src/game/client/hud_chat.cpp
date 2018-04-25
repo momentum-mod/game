@@ -15,6 +15,7 @@
 #include "clientmode.h"
 #include "hud_spectatorinfo.h"
 #include "mom_steam_helper.h"
+#include "vgui/IScheme.h"
 
 #include "tier0/memdbgon.h"
 
@@ -25,6 +26,8 @@ DECLARE_HUD_MESSAGE(CHudChat, SayText2);
 DECLARE_HUD_MESSAGE(CHudChat, TextMsg);
 DECLARE_HUD_MESSAGE(CHudChat, LobbyUpdateMsg);
 DECLARE_HUD_MESSAGE(CHudChat, SpecUpdateMsg);
+
+using namespace vgui;
 
 //=====================
 // CHudChat
