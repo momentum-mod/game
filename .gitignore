@@ -116,3 +116,4 @@ CMakeLists.txt
 mp/game/momentum/cfg/pet.txt
 *.exe
 mp/game/momentum/version.txt
+mp/game/momentum/downloadlists/
