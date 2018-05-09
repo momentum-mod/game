@@ -59,6 +59,7 @@ URLButton::URLButton(Panel *parent, const char *panelName, const wchar_t *wszTex
 //-----------------------------------------------------------------------------
 void URLButton::Init()
 {
+    InitSettings();
 	_buttonFlags.SetFlag( USE_CAPTURE_MOUSE | BUTTON_BORDER_ENABLED );
 
 	_mouseClickMask = 0;
@@ -426,7 +427,7 @@ void URLButton::GetSettings( KeyValues *outResourceData )
 	outResourceData->SetInt("default", _buttonFlags.IsFlagSet( DEFAULT_BUTTON ) );
 	if ( m_bSelectionStateSaved )
 	{
-		outResourceData->SetInt( "selected", IsSelected() );
+		outResourceData->SetBool( "selected", IsSelected() );
 	}
 }
 
@@ -444,6 +445,8 @@ void URLButton::ApplySettings( KeyValues *inResourceData )
 		SetCommand(cmd);
 	}
 
+    _buttonFlags.SetFlag(DEFAULT_BUTTON, inResourceData->GetBool("default", false));
+
 	// saved selection state
 	int iSelected = inResourceData->GetInt( "selected", -1 );
 	if ( iSelected != -1 )
@@ -453,15 +456,13 @@ void URLButton::ApplySettings( KeyValues *inResourceData )
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: Describes editing details
-//-----------------------------------------------------------------------------
-const char *URLButton::GetDescription( void )
+void URLButton::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, string command, int default", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"command", TYPE_STRING},
+    {"default", TYPE_BOOL},
+    {"selected", TYPE_BOOL}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------

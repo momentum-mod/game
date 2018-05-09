@@ -29,10 +29,10 @@ DECLARE_BUILD_FACTORY( AnimatingImagePanel );
 //-----------------------------------------------------------------------------
 AnimatingImagePanel::AnimatingImagePanel(Panel *parent, const char *name) : Panel(parent, name)
 {
+    InitSettings();
 	m_iCurrentImage = 0;
 	m_iFrameTimeMillis = 100;	// 10Hz frame rate
 	m_iNextFrameTime = 0;
-	m_pImageName = NULL;
 	m_bFiltered = false;
 	m_bScaleImage = false;
 	m_bAnimating = false;
@@ -141,10 +141,10 @@ void AnimatingImagePanel::OnTick()
 void AnimatingImagePanel::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
-	if (m_pImageName)
-	{
-		outResourceData->SetString("image", m_pImageName);
-	}
+	outResourceData->SetString("image", m_pImageName);
+    outResourceData->SetBool("scaleImage", m_bScaleImage);
+    outResourceData->SetInt("frames", m_Frames.Count());
+    outResourceData->SetInt("anim_framerate", m_iFrameTimeMillis);
 }
 
 //-----------------------------------------------------------------------------
@@ -154,15 +154,12 @@ void AnimatingImagePanel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 
-	const char *imageName = inResourceData->GetString("image", NULL);
-	if (imageName)
+    m_bScaleImage = inResourceData->GetBool("scaleImage", false);
+	const char *imageName = inResourceData->GetString("image");
+	if (*imageName)
 	{
-		m_bScaleImage = ( inResourceData->GetInt( "scaleImage", 0 ) == 1 );
-
-		delete [] m_pImageName;
-		int len = Q_strlen(imageName) + 1;
-		m_pImageName = new char[len];
-		Q_strncpy(m_pImageName, imageName, len);
+        m_pImageName.Purge();
+        m_pImageName = imageName;
 
 		// add in the command
 		LoadAnimation(m_pImageName, inResourceData->GetInt("frames"));
@@ -171,14 +168,14 @@ void AnimatingImagePanel::ApplySettings(KeyValues *inResourceData)
 	m_iFrameTimeMillis = inResourceData->GetInt( "anim_framerate", 100 );
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Get editing details
-//-----------------------------------------------------------------------------
-const char *AnimatingImagePanel::GetDescription()
+void AnimatingImagePanel::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, string image", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"image", TYPE_STRING},
+    {"scaleImage", TYPE_BOOL},
+    {"frames", TYPE_INTEGER},
+    {"anim_framerate", TYPE_INTEGER}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------

@@ -24,8 +24,7 @@ namespace vgui
 
         void ApplySettings(KeyValues *inResourceData) OVERRIDE;
         void GetSettings(KeyValues *outResourceData) OVERRIDE;
-
-        const char* GetDescription() OVERRIDE;
+        void InitSettings() OVERRIDE;
 
         void ApplyChanges();
         float GetSliderValue();

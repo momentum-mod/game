@@ -92,7 +92,7 @@ protected:
 
 	virtual void ApplySettings(KeyValues *inResourceData);
 	virtual void GetSettings(KeyValues *outResourceData);
-	virtual const char *GetDescription();
+	void InitSettings() OVERRIDE;
 	virtual void PerformLayout();
 
 	RadioButton *FindBestRadioButton(int direction);

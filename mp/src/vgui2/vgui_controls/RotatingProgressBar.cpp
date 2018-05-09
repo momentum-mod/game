@@ -31,14 +31,15 @@ DECLARE_BUILD_FACTORY( RotatingProgressBar );
 //-----------------------------------------------------------------------------
 RotatingProgressBar::RotatingProgressBar(Panel *parent, const char *panelName) : ProgressBar(parent, panelName)
 {
-	m_flStartRadians = 0;
-	m_flEndRadians = 0;
-	m_flLastAngle = 0;
+    InitSettings();
+	m_flStartRadians = 0.0f;
+	m_flEndRadians = 0.0f;
+	m_flLastAngle = 0.0f;
 
 	m_nTextureId = -1;
-	m_pszImageName = NULL;
+	m_pszImageName = nullptr;
 
-	m_flTickDelay = 30;
+	m_flTickDelay = 30.0f;
 
 	ivgui()->AddTickSignal(GetVPanel(), m_flTickDelay );
 
@@ -50,13 +51,13 @@ RotatingProgressBar::RotatingProgressBar(Panel *parent, const char *panelName) :
 //-----------------------------------------------------------------------------
 RotatingProgressBar::~RotatingProgressBar()
 {
-	if ( vgui::surface() && m_nTextureId != -1 )
+	if ( surface() && m_nTextureId != -1 )
 	{
-		vgui::surface()->DestroyTextureID( m_nTextureId );
+		surface()->DestroyTextureID( m_nTextureId );
 		m_nTextureId = -1;
 	}
 
-	delete [] m_pszImageName;
+	m_pszImageName.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -64,15 +65,15 @@ RotatingProgressBar::~RotatingProgressBar()
 //-----------------------------------------------------------------------------
 void RotatingProgressBar::ApplySettings(KeyValues *inResourceData)
 {
-	const char *imageName = inResourceData->GetString("image", "");
+	const char *imageName = inResourceData->GetString("image");
 	if (*imageName)
 	{
 		SetImage( imageName );
 	}
 
 	// Find min and max rotations in radians
-	m_flStartRadians = DEG2RAD(inResourceData->GetFloat( "start_degrees", 0 ) );
-	m_flEndRadians = DEG2RAD( inResourceData->GetFloat( "end_degrees", 0 ) );
+	m_flStartRadians = DEG2RAD(inResourceData->GetFloat( "start_degrees" ) );
+	m_flEndRadians = DEG2RAD( inResourceData->GetFloat( "end_degrees") );
 
 	// Start at 0 progress
 	m_flLastAngle = m_flStartRadians;
@@ -85,12 +86,42 @@ void RotatingProgressBar::ApplySettings(KeyValues *inResourceData)
 	m_flRotOriginX = inResourceData->GetFloat( "rot_origin_x_percent", 0.5f );
 	m_flRotOriginY = inResourceData->GetFloat( "rot_origin_y_percent", 0.5f );
 
-	m_flRotatingX = inResourceData->GetFloat( "rotating_x", 0 );
-	m_flRotatingY = inResourceData->GetFloat( "rotating_y", 0 );
-	m_flRotatingWide = inResourceData->GetFloat( "rotating_wide", 0 );
-	m_flRotatingTall = inResourceData->GetFloat( "rotating_tall", 0 );
+	m_flRotatingX = inResourceData->GetFloat( "rotating_x" );
+	m_flRotatingY = inResourceData->GetFloat( "rotating_y");
+	m_flRotatingWide = inResourceData->GetFloat( "rotating_wide" );
+	m_flRotatingTall = inResourceData->GetFloat( "rotating_tall" );
 	
 	BaseClass::ApplySettings( inResourceData );
+}
+
+void RotatingProgressBar::GetSettings(KeyValues* outResourceData)
+{
+    BaseClass::GetSettings(outResourceData);
+
+    outResourceData->SetString("image", m_pszImageName);
+    outResourceData->SetFloat("start_degrees", RAD2DEG(m_flStartRadians));
+    outResourceData->SetFloat("end_degrees", RAD2DEG(m_flEndRadians));
+
+    outResourceData->SetFloat("approach_speed", RAD2DEG((m_flApproachSpeed * 1000.0f) / m_flTickDelay));
+
+    outResourceData->SetFloat("rotating_x", m_flRotatingX);
+    outResourceData->SetFloat("rotating_y", m_flRotatingY);
+    outResourceData->SetFloat("rotating_wide", m_flRotatingWide);
+    outResourceData->SetFloat("rotating_tall", m_flRotatingTall);
+}
+
+void RotatingProgressBar::InitSettings()
+{
+    BEGIN_PANEL_SETTINGS()
+    {"image", TYPE_STRING},
+    {"start_degrees", TYPE_FLOAT},
+    {"end_degrees", TYPE_FLOAT},
+    {"approach_speed", TYPE_FLOAT},
+    {"rotating_x", TYPE_FLOAT},
+    {"rotating_y", TYPE_FLOAT},
+    {"rotating_wide", TYPE_FLOAT},
+    {"rotating_tall", TYPE_FLOAT},
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -100,7 +131,7 @@ void RotatingProgressBar::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	if ( m_pszImageName && strlen( m_pszImageName ) > 0 )
+	if ( !m_pszImageName.IsEmpty() )
 	{
 		if ( m_nTextureId == -1 )
 		{
@@ -116,17 +147,8 @@ void RotatingProgressBar::ApplySchemeSettings(IScheme *pScheme)
 //-----------------------------------------------------------------------------
 void RotatingProgressBar::SetImage(const char *imageName)
 {
-	if ( m_pszImageName )
-	{
-		delete [] m_pszImageName;
-		m_pszImageName = NULL;
-	}
-
-	const char *pszDir = "vgui/";
-	int len = Q_strlen(imageName) + 1;
-	len += strlen(pszDir);
-	m_pszImageName = new char[ len ];
-	Q_snprintf( m_pszImageName, len, "%s%s", pszDir, imageName );
+	m_pszImageName.Purge();
+    m_pszImageName.Format("vgui/%s", imageName);
 	InvalidateLayout(false, true); // force applyschemesettings to run
 }
 
@@ -162,8 +184,8 @@ void RotatingProgressBar::Paint()
 	// desired rotation is GetProgress() ( 0.0 -> 1.0 ) mapped into
 	// ( m_flStartDegrees -> m_flEndDegrees )
 
-	vgui::surface()->DrawSetTexture( m_nTextureId );
-	vgui::surface()->DrawSetColor( Color(255,255,255,255) );
+	surface()->DrawSetTexture( m_nTextureId );
+	surface()->DrawSetColor( Color(255,255,255,255) );
 
 	int wide, tall;
 	GetSize( wide, tall );
@@ -196,5 +218,5 @@ void RotatingProgressBar::Paint()
 		vert[i].m_Position = result;
 	}
 
-	vgui::surface()->DrawTexturedPolygon( 4, vert );
+	surface()->DrawTexturedPolygon( 4, vert );
 }

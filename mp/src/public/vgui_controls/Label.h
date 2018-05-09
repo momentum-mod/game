@@ -180,7 +180,7 @@ protected:
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	virtual void GetSettings( KeyValues *outResourceData );
 	virtual void ApplySettings( KeyValues *inResourceData );
-	virtual const char *GetDescription( void );
+    void InitSettings() OVERRIDE;
 
 	MESSAGE_FUNC_PARAMS( OnDialogVariablesChanged, "DialogVariables", dialogVariables );
 
@@ -209,9 +209,9 @@ private:
 	EColorState _textColorState;
 
 	PHandle		_associate;
-	char	  *_associateName;
+    CUtlString _associateName;
 
-	char	  *_fontOverrideName;
+    CUtlString _fontOverrideName;
 
 	wchar_t	   _hotkey;		// the hotkey contained in the text
 

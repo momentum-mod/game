@@ -23,7 +23,7 @@ using namespace vgui;
 
 vgui::Panel *URLLabel_Factory()
 {
-	return new URLLabel(NULL, NULL, "URLLabel", NULL);
+	return new URLLabel(nullptr, nullptr, "URLLabel", nullptr);
 }
 
 DECLARE_BUILD_FACTORY_CUSTOM( URLLabel, URLLabel_Factory );
@@ -32,9 +32,9 @@ DECLARE_BUILD_FACTORY_CUSTOM( URLLabel, URLLabel_Factory );
 //-----------------------------------------------------------------------------
 URLLabel::URLLabel(Panel *parent, const char *panelName, const char *text, const char *pszURL) : Label(parent, panelName, text)
 {
-    m_pszURL = NULL;
+    InitSettings();
+    m_pszURL = nullptr;
 	m_bUnderline = false;
-    m_iURLSize = 0;
     if (pszURL && strlen(pszURL) > 0)
     {
         SetURL(pszURL);
@@ -46,9 +46,9 @@ URLLabel::URLLabel(Panel *parent, const char *panelName, const char *text, const
 //-----------------------------------------------------------------------------
 URLLabel::URLLabel(Panel *parent, const char *panelName, const wchar_t *wszText, const char *pszURL) : Label(parent, panelName, wszText)
 {
-    m_pszURL = NULL;
+    InitSettings();
+    m_pszURL = nullptr;
 	m_bUnderline = false;
-    m_iURLSize = 0;
     if (pszURL && strlen(pszURL) > 0)
     {
         SetURL(pszURL);
@@ -60,8 +60,7 @@ URLLabel::URLLabel(Panel *parent, const char *panelName, const wchar_t *wszText,
 //-----------------------------------------------------------------------------
 URLLabel::~URLLabel()
 {
-    if (m_pszURL)
-        delete [] m_pszURL;
+    m_pszURL.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -69,14 +68,8 @@ URLLabel::~URLLabel()
 //-----------------------------------------------------------------------------
 void URLLabel::SetURL(const char *pszURL)
 {
-	int iNewURLSize = strlen(pszURL);
-	if (iNewURLSize > m_iURLSize || !m_pszURL)
-	{
-		delete [] m_pszURL;
-		m_pszURL = new char [iNewURLSize + 1];
-	}
-	strcpy(m_pszURL, pszURL);
-	m_iURLSize = iNewURLSize;
+    m_pszURL.Purge();
+    m_pszURL = pszURL;
 }
 
 //-----------------------------------------------------------------------------
@@ -86,7 +79,7 @@ void URLLabel::OnMousePressed(MouseCode code)
 {
     if (code == MOUSE_LEFT)
     {
-        if (m_pszURL)
+        if (!m_pszURL.IsEmpty())
 		{
 	        system()->ShellExecute("open", m_pszURL);
 		}
@@ -100,7 +93,7 @@ void URLLabel::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 
-	const char *pszURL = inResourceData->GetString("URLText", NULL);
+	const char *pszURL = inResourceData->GetString("URLText", nullptr);
 	if (pszURL)
 	{
 		if (pszURL[0] == '#')
@@ -128,20 +121,7 @@ void URLLabel::GetSettings( KeyValues *outResourceData )
 {
 	BaseClass::GetSettings(outResourceData);
 
-	if (m_pszURL)
-	{
-		outResourceData->SetString("URLText", m_pszURL);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns a description of the label string
-//-----------------------------------------------------------------------------
-const char *URLLabel::GetDescription( void )
-{
-	static char buf[1024];
-	_snprintf(buf, sizeof(buf), "%s, string URLText", BaseClass::GetDescription());
-	return buf;
+	outResourceData->SetString("URLText", m_pszURL);
 }
 
 //-----------------------------------------------------------------------------
@@ -154,5 +134,12 @@ void URLLabel::ApplySchemeSettings(IScheme *pScheme)
 	SetFont( pScheme->GetFont( "DefaultUnderline", IsProportional() ) );
     BaseClass::ApplySchemeSettings(pScheme);
     SetCursor(dc_hand);
+}
+
+void URLLabel::InitSettings()
+{
+    BEGIN_PANEL_SETTINGS()
+    {"URLText", TYPE_STRING}
+    END_PANEL_SETTINGS();
 }
 

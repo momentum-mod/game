@@ -16,14 +16,6 @@
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/ProgressBar.h>
 
-enum progress_textures_t
-{
-	PROGRESS_TEXTURE_FG,
-	PROGRESS_TEXTURE_BG,
-
-	NUM_PROGRESS_TEXTURES,
-};
-
 namespace vgui
 {
 
@@ -38,11 +30,8 @@ public:
 	CircularProgressBar(Panel *parent, const char *panelName);
 	~CircularProgressBar();
 
-	virtual void ApplySettings(KeyValues *inResourceData);
-	virtual void ApplySchemeSettings(IScheme *pScheme);
-
-	void SetFgImage(const char *imageName) { SetImage( imageName, PROGRESS_TEXTURE_FG ); }
-	void SetBgImage(const char *imageName) { SetImage( imageName, PROGRESS_TEXTURE_BG ); }
+	void SetFgImage(const char *imageName) { SetImage( imageName, true ); }
+	void SetBgImage(const char *imageName) { SetImage( imageName, false ); }
 
 	enum CircularProgressDir_e
 	{
@@ -54,19 +43,23 @@ public:
 	void SetStartSegment( int val ) { m_iStartSegment = val; }
 
 protected:
-	virtual void Paint();
-	virtual void PaintBackground();
+	void Paint() OVERRIDE;
+	void PaintBackground() OVERRIDE;
+    void ApplySettings(KeyValues *inResourceData) OVERRIDE;
+    void GetSettings(KeyValues* outResourceData) OVERRIDE;
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
+    void InitSettings() OVERRIDE;
 	
 	void DrawCircleSegment( Color c, float flEndDegrees, bool clockwise /* = true */ );
-	void SetImage(const char *imageName, progress_textures_t iPos);
+	void SetImage(const char *imageName, bool isFg);
 
 private:
 	int m_iProgressDirection;
 	int m_iStartSegment;
 
-	int m_nTextureId[NUM_PROGRESS_TEXTURES];
-	char *m_pszImageName[NUM_PROGRESS_TEXTURES];
-	int   m_lenImageName[NUM_PROGRESS_TEXTURES];
+	int m_nTextureIdFG, m_nTextureIdBG;
+	CUtlString m_ImageFGName;
+    CUtlString m_ImageBGName;
 };
 
 } // namespace vgui

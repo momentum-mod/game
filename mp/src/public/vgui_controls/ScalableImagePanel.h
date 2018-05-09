@@ -35,7 +35,7 @@ namespace vgui
 		virtual void GetSettings(KeyValues *outResourceData);
 		virtual void ApplySettings(KeyValues *inResourceData);
 		virtual void PerformLayout( void );
-		virtual const char *GetDescription();
+		void InitSettings() OVERRIDE;
 
 	private:
 		int m_iSrcCornerHeight;	// in pixels, how tall is the corner inside the image
@@ -48,9 +48,7 @@ namespace vgui
 		float m_flCornerWidthPercent;	// corner width as percentage of image width
 		float m_flCornerHeightPercent;	// same for height
 
-		char *m_pszImageName;
-
-		char *m_pszDrawColorName;
+		CUtlString m_pszImageName, m_pszDrawColorName;
 		Color m_DrawColor;
 	};
 
