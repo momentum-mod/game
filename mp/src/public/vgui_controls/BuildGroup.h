@@ -157,8 +157,8 @@ private:
 	int		  _dragStartPanelSize[ 2 ];
 	Panel   * _currentPanel;
 	CUtlVector<PHandle> _panelDar;
-	char	*m_pResourceName;
-	char	*m_pResourcePathID;
+	CUtlString m_pResourceName;
+	CUtlString m_pResourcePathID;
 	PHandle	 m_hBuildDialog;
 	Panel   *m_pBuildContext;  // the panel from which the build dialog gets all the information it needs
 	Panel   *m_pParentPanel;   // panel to create new controls in

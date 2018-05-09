@@ -248,7 +248,7 @@ protected:
 	virtual void SetCharAt(wchar_t ch, int index); // set the value of a char in the text buffer
 	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void GetSettings( KeyValues *outResourceData );
-	virtual const char *GetDescription( void );
+    void InitSettings() OVERRIDE;
 	virtual void FireActionSignal();
 	virtual bool GetSelectedRange(int& cx0,int& cx1);
 	virtual void CursorToPixelSpace(int cursorPos, int &cx, int &cy);

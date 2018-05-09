@@ -135,7 +135,7 @@ protected:
 	// Get control settings for editing
 	virtual void GetSettings( KeyValues *outResourceData );
 	virtual void ApplySettings( KeyValues *inResourceData );
-	virtual const char *GetDescription( void );
+    void InitSettings() OVERRIDE;
 
 	KeyValues *GetActionMessage();
 

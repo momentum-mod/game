@@ -12,12 +12,9 @@
 #include <vgui_controls/CircularProgressBar.h>
 #include <vgui_controls/Controls.h>
 
-#include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <KeyValues.h>
-
-#include "mathlib/mathlib.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
@@ -31,14 +28,12 @@ DECLARE_BUILD_FACTORY( CircularProgressBar );
 //-----------------------------------------------------------------------------
 CircularProgressBar::CircularProgressBar(Panel *parent, const char *panelName) : ProgressBar(parent, panelName)
 {
-	m_iProgressDirection = CircularProgressBar::PROGRESS_CCW;
+    InitSettings();
+	m_iProgressDirection = PROGRESS_CCW;
 
-	for ( int i = 0; i < NUM_PROGRESS_TEXTURES; i++ )
-	{
-		m_nTextureId[i] = -1;
-		m_pszImageName[i] = NULL;
-		m_lenImageName[i] = 0;
-	}
+    m_ImageBGName = nullptr;
+    m_ImageFGName = nullptr;
+    m_nTextureIdFG = m_nTextureIdBG = -1;
 
 	m_iStartSegment = 0;
 }
@@ -48,17 +43,13 @@ CircularProgressBar::CircularProgressBar(Panel *parent, const char *panelName) :
 //-----------------------------------------------------------------------------
 CircularProgressBar::~CircularProgressBar()
 {
-	for ( int i = 0; i < NUM_PROGRESS_TEXTURES; i++ )
-	{
-		if ( vgui::surface() && m_nTextureId[i] )
-		{
-			vgui::surface()->DestroyTextureID( m_nTextureId[i] );
-			m_nTextureId[i] = -1;
-		}
+    surface()->DestroyTextureID(m_nTextureIdFG);
+    surface()->DestroyTextureID(m_nTextureIdBG);
 
-		delete [] m_pszImageName[i];
-		m_lenImageName[i] = 0;
-	}
+    m_nTextureIdFG = m_nTextureIdBG = -1;
+
+    m_ImageFGName.Purge();
+    m_ImageBGName.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -66,12 +57,8 @@ CircularProgressBar::~CircularProgressBar()
 //-----------------------------------------------------------------------------
 void CircularProgressBar::ApplySettings(KeyValues *inResourceData)
 {
-	for ( int i = 0; i < NUM_PROGRESS_TEXTURES; i++ )
-	{
-		delete [] m_pszImageName[i];
-		m_pszImageName[i] = NULL;
-		m_lenImageName[i] = 0;
-	}
+	m_ImageFGName.Purge();
+    m_ImageBGName.Purge();
 
 	const char *imageName = inResourceData->GetString("fg_image", "");
 	if (*imageName)
@@ -87,6 +74,14 @@ void CircularProgressBar::ApplySettings(KeyValues *inResourceData)
 	BaseClass::ApplySettings( inResourceData );
 }
 
+void CircularProgressBar::GetSettings(KeyValues* outResourceData)
+{
+    BaseClass::GetSettings(outResourceData);
+
+    outResourceData->SetString("fg_image", m_ImageFGName);
+    outResourceData->SetString("bg_image", m_ImageBGName);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -98,44 +93,38 @@ void CircularProgressBar::ApplySchemeSettings(IScheme *pScheme)
 	SetBgColor(GetSchemeColor("CircularProgressBar.BgColor", pScheme));
 	SetBorder(NULL);
 
-	for ( int i = 0; i < NUM_PROGRESS_TEXTURES; i++ )
-	{
-		if ( m_pszImageName[i] && strlen( m_pszImageName[i] ) > 0 )
-		{
-			if ( m_nTextureId[i] == -1 )
-			{
-				m_nTextureId[i] = surface()->CreateNewTextureID();
-			}
+    if (!m_ImageFGName.IsEmpty())
+    {
+        if (m_nTextureIdFG == -1)
+            m_nTextureIdFG = surface()->CreateNewTextureID();
 
-			surface()->DrawSetTextureFile( m_nTextureId[i], m_pszImageName[i], true, false);
-		}
-	}
+        surface()->DrawSetTextureFile(m_nTextureIdFG, m_ImageFGName, true, false);
+    }
+
+    if (!m_ImageBGName.IsEmpty())
+    {
+        if (m_nTextureIdBG == -1)
+            m_nTextureIdBG = surface()->CreateNewTextureID();
+
+        surface()->DrawSetTextureFile(m_nTextureIdBG, m_ImageBGName, true, false);
+    }
+}
+
+void CircularProgressBar::InitSettings()
+{
+    BEGIN_PANEL_SETTINGS()
+    {"fg_image", TYPE_STRING},
+    {"bg_image", TYPE_STRING}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: sets an image by file name
 //-----------------------------------------------------------------------------
-void CircularProgressBar::SetImage(const char *imageName, progress_textures_t iPos)
+void CircularProgressBar::SetImage(const char *imageName, bool isFG)
 {
-	const char *pszDir = "vgui/";
-	int len = Q_strlen(imageName) + 1;
-	len += strlen(pszDir);
-	
-	if ( m_pszImageName[iPos] && ( m_lenImageName[iPos] < len ) )
-	{
-		// If we already have a buffer, but it is too short, then free the buffer
-		delete [] m_pszImageName[iPos];
-		m_pszImageName[iPos] = NULL;
-		m_lenImageName[iPos] = 0;
-	}
-
-	if ( !m_pszImageName[iPos] )
-	{
-		m_pszImageName[iPos] = new char[ len ];
-		m_lenImageName[iPos] = len;
-	}
-
-	Q_snprintf( m_pszImageName[iPos], len, "%s%s", pszDir, imageName );
+    (isFG ? m_ImageFGName : m_ImageBGName).Purge();
+    (isFG ? m_ImageFGName : m_ImageBGName).Format("vgui/%s", imageName);
 	InvalidateLayout(false, true); // force applyschemesettings to run
 }
 
@@ -145,14 +134,14 @@ void CircularProgressBar::SetImage(const char *imageName, progress_textures_t iP
 void CircularProgressBar::PaintBackground()
 {
 	// If we don't have a Bg image, use the foreground
-	int iTextureID = m_nTextureId[PROGRESS_TEXTURE_BG] != -1 ? m_nTextureId[PROGRESS_TEXTURE_BG] : m_nTextureId[PROGRESS_TEXTURE_FG];
-	vgui::surface()->DrawSetTexture( iTextureID );
-	vgui::surface()->DrawSetColor( GetBgColor() );
+	int iTextureID = m_nTextureIdBG != -1 ? m_nTextureIdBG : m_nTextureIdFG;
+	surface()->DrawSetTexture( iTextureID );
+	surface()->DrawSetColor( GetBgColor() );
 
 	int wide, tall;
 	GetSize(wide, tall);
 
-	vgui::surface()->DrawTexturedRect( 0, 0, wide, tall );
+	surface()->DrawTexturedRect( 0, 0, wide, tall );
 }
 
 //-----------------------------------------------------------------------------
@@ -212,8 +201,8 @@ circular_progress_segment_t Segments[8] =
 // we draw starting from the top ( 0 progress )
 void CircularProgressBar::DrawCircleSegment( Color c, float flEndProgress, bool bClockwise )
 {
-	if ( m_nTextureId[PROGRESS_TEXTURE_FG] == -1 )
-		return;
+    if (m_nTextureIdFG == -1)
+        return;
 
 	int wide, tall;
 	GetSize(wide, tall);
@@ -224,8 +213,8 @@ void CircularProgressBar::DrawCircleSegment( Color c, float flEndProgress, bool 
 	float flHalfWide = (float)wide / 2;
 	float flHalfTall = (float)tall / 2;
 
-	vgui::surface()->DrawSetTexture( m_nTextureId[PROGRESS_TEXTURE_FG] );
-	vgui::surface()->DrawSetColor( c );
+	surface()->DrawSetTexture( m_nTextureIdFG );
+	surface()->DrawSetColor( c );
 
 	// TODO - if we want to progress CCW, reverse a few things
 
@@ -236,7 +225,7 @@ void CircularProgressBar::DrawCircleSegment( Color c, float flEndProgress, bool 
 	{
 		if ( flEndProgressRadians > Segments[cur_wedge].minProgressRadians)
 		{
-			vgui::Vertex_t v[3];
+			Vertex_t v[3];
 
 			// vert 0 is ( 0.5, 0.5 )
 			v[0].m_Position.Init( flHalfWide, flHalfTall );
@@ -282,7 +271,7 @@ void CircularProgressBar::DrawCircleSegment( Color c, float flEndProgress, bool 
 			v[1].m_Position.Init( flHalfWide + flWide * ( Segments[i].vert1x - 0.5 ), flHalfTall + flTall * ( Segments[i].vert1y - 0.5 ) );
 			v[1].m_TexCoord.Init( Segments[i].vert1x, Segments[i].vert1y );
 
-			vgui::surface()->DrawTexturedPolygon( 3, v );
+			surface()->DrawTexturedPolygon( 3, v );
 		}
 
 		cur_wedge++;

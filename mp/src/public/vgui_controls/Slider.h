@@ -41,7 +41,7 @@ public:
 	virtual void SetTickCaptions(const wchar_t *left, const wchar_t *right);
 	virtual void SetTickCaptions(const char *left, const char *right);
 	virtual void SetNumTicks(int ticks);
-	virtual void SetThumbWidth( int width );
+	virtual void SetThumbWidth( float width );
 	virtual int	 EstimateValueAtPos( int localMouseX, int localMouseY );
 	virtual void SetInverted( bool bInverted );
 	
@@ -67,7 +67,7 @@ protected:
 	virtual void ApplySchemeSettings(IScheme *pScheme);
 	virtual void GetSettings(KeyValues *outResourceData);
 	virtual void ApplySettings(KeyValues *inResourceData);
-	virtual const char *GetDescription();
+    void InitSettings() OVERRIDE;
 #ifdef _X360
 	virtual void OnKeyCodePressed(KeyCode code);
 #endif

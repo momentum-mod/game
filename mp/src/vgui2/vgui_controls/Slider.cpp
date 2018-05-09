@@ -35,24 +35,25 @@ static const float NOB_SIZE = 8.0f;
 //-----------------------------------------------------------------------------
 Slider::Slider(Panel *parent, const char *panelName ) : BaseClass(parent, panelName)
 {
+    InitSettings();
 	m_bIsDragOnRepositionNob = false;
 	_dragging = false;
 	_value = 0;
 	_range[0] = 0;
 	_range[1] = 0;
 	_buttonOffset = 0;
-	_sliderBorder = NULL;
-	_insetBorder = NULL;
+	_sliderBorder = nullptr;
+	_insetBorder = nullptr;
 	m_nNumTicks = 10;
-	_leftCaption = NULL;
-	_rightCaption = NULL;
+	_leftCaption = nullptr;
+	_rightCaption = nullptr;
 
 	_subrange[ 0 ] = 0;
 	_subrange[ 1 ] = 0;
 	m_bUseSubRange = false;
 	m_bInverted = false;
 
-	SetThumbWidth( 8 );
+	SetThumbWidth( 8.0f );
 	RecomputeNobPosFromValue();
 	AddActionSignalTarget(this);
 	SetBlockDragChaining( true );
@@ -314,12 +315,22 @@ void Slider::GetSettings(KeyValues *outResourceData)
 		_leftCaption->GetUnlocalizedText(buf, sizeof(buf));
 		outResourceData->SetString("leftText", buf);
 	}
+    else
+        outResourceData->SetString("leftText", "");
 	
 	if (_rightCaption)
 	{
 		_rightCaption->GetUnlocalizedText(buf, sizeof(buf));
 		outResourceData->SetString("rightText", buf);
 	}
+    else
+	    outResourceData->SetString("rightText", "");
+
+    outResourceData->SetInt("numTicks", m_nNumTicks);
+    outResourceData->SetFloat("thumbwidth", _nobSize);
+
+    outResourceData->SetInt("rangeMin", _range[0]);
+    outResourceData->SetInt("rangeMax", _range[1]);
 }
 
 //-----------------------------------------------------------------------------
@@ -329,36 +340,34 @@ void Slider::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 
-	const char *left = inResourceData->GetString("leftText", NULL);
-	const char *right = inResourceData->GetString("rightText", NULL);
+	const char *left = inResourceData->GetString("leftText", nullptr);
+	const char *right = inResourceData->GetString("rightText", nullptr);
 
-	int thumbWidth = inResourceData->GetInt("thumbwidth", 0);
-	if (thumbWidth != 0)
+	float thumbWidth = inResourceData->GetFloat("thumbwidth", 8.0f);
+	if (thumbWidth > 0.0f)
 	{
 		SetThumbWidth(thumbWidth);
 	}
 
 	SetTickCaptions(left, right);
 
-	int nNumTicks = inResourceData->GetInt( "numTicks", -1 );
+	int nNumTicks = inResourceData->GetInt( "numTicks", 10 );
 	if ( nNumTicks >= 0 )
 	{
 		SetNumTicks( nNumTicks );
 	}
 
-	int nCurrentRange[2];
-	GetRange( nCurrentRange[0], nCurrentRange[1] );
-	KeyValues *pRangeMin = inResourceData->FindKey( "rangeMin", false );
-	KeyValues *pRangeMax = inResourceData->FindKey( "rangeMax", false );
+	const char *pRangeMin = inResourceData->GetString( "rangeMin" );
+	const char *pRangeMax = inResourceData->GetString( "rangeMax" );
 	bool bDoClamp = false;
-	if ( pRangeMin )
+	if ( *pRangeMin )
 	{
-		_range[0] = inResourceData->GetInt( "rangeMin" );
+		_range[0] = Q_atoi(pRangeMin);
 		bDoClamp = true;
 	}
-	if ( pRangeMax )
+	if ( *pRangeMax )
 	{
-		_range[1] = inResourceData->GetInt( "rangeMax" );
+		_range[1] = Q_atoi(pRangeMax);
 		bDoClamp = true;
 	}
 
@@ -368,14 +377,16 @@ void Slider::ApplySettings(KeyValues *inResourceData)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-const char *Slider::GetDescription()
+void Slider::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, string leftText, string rightText", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"leftText", TYPE_STRING},
+    {"rightText", TYPE_STRING},
+    {"thumbwidth", TYPE_FLOAT},
+    {"numTicks", TYPE_INTEGER},
+    {"rangeMin", TYPE_INTEGER},
+    {"rangeMax", TYPE_INTEGER}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -474,7 +485,7 @@ void Slider::DrawTickLabels()
 	    surface()->DrawSetTextColor( m_DisabledTextColor1 ); //vgui::Color( 127, 140, 127, 255 ) );
 
 
-	if ( _leftCaption != NULL )
+	if ( _leftCaption != nullptr )
 	{
 		_leftCaption->SetPos(0, y);
         if (IsEnabled())
@@ -489,7 +500,7 @@ void Slider::DrawTickLabels()
 		_leftCaption->Paint();
 	}
 
-	if ( _rightCaption != NULL)
+	if ( _rightCaption != nullptr)
 	{
 		int rwide, rtall;
 		_rightCaption->GetSize(rwide, rtall);
@@ -940,9 +951,9 @@ void Slider::SetButtonOffset(int buttonOffset)
 	_buttonOffset=buttonOffset;
 }
 
-void Slider::SetThumbWidth( int width )
+void Slider::SetThumbWidth( float width )
 {
-	_nobSize = (float)width;
+	_nobSize = width;
 }
 
 

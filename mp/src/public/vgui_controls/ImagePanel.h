@@ -33,7 +33,7 @@ public:
 	virtual void SetImage(IImage *image);
 	virtual void SetImage(const char *imageName);
 	virtual IImage *GetImage();
-	char *GetImageName();
+	const char *GetImageName();
 
 	void SetShouldCenterImage( bool state ) { m_bCenterImage = state; }
 	bool GetShouldCenterImage() const { return m_bCenterImage; }
@@ -66,15 +66,13 @@ public:
 protected:
 	virtual void PaintBackground();
 	virtual void GetSettings(KeyValues *outResourceData);
-	virtual const char *GetDescription();
+	void InitSettings() OVERRIDE;
 	virtual void OnSizeChanged(int newWide, int newTall);
 	virtual void ApplySchemeSettings( IScheme *pScheme );
 
 private:
 	IImage *m_pImage;
-	char *m_pszImageName;
-	char *m_pszFillColorName;
-	char *m_pszDrawColorName;
+	CUtlString m_pszImageName, m_pszFillColorName, m_pszDrawColorName;
 	bool m_bPositionImage;
 	bool m_bCenterImage;
 	bool m_bScaleImage;

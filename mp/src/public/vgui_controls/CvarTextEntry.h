@@ -23,7 +23,7 @@ namespace vgui
         void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
         void ApplySettings(KeyValues* inResourceData) OVERRIDE;
         void GetSettings(KeyValues* outResourceData) OVERRIDE;
-        const char* GetDescription() OVERRIDE;
+        void InitSettings() OVERRIDE;
         void Reset();
         bool HasBeenModified();
 

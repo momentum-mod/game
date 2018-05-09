@@ -46,7 +46,7 @@ class CNonFocusableMenu : public Menu
 public:
 	CNonFocusableMenu( Panel *parent, const char *panelName )
 		: BaseClass( parent, panelName ),
-		m_pFocus( 0 )
+		m_pFocus( nullptr )
 	{
 	}
 
@@ -113,76 +113,48 @@ private:
 // Things the user typed in and hit submit/return with
 CHistoryItem::CHistoryItem( void )
 {
-	m_text = NULL;
-	m_extraText = NULL;
 	m_bHasExtra = false;
 }
 
 CHistoryItem::CHistoryItem( const char *text, const char *extra )
 {
 	Assert( text );
-	m_text = NULL;
-	m_extraText = NULL;
 	m_bHasExtra = false;
 	SetText( text , extra );
 }
 
 CHistoryItem::CHistoryItem( const CHistoryItem& src )
 {
-	m_text = NULL;
-	m_extraText = NULL;
 	m_bHasExtra = false;
 	SetText( src.GetText(), src.GetExtra() );
 }
 
 CHistoryItem::~CHistoryItem( void )
 {
-	delete[] m_text;
-	delete[] m_extraText;
-	m_text = NULL;
+    m_text.Purge();
+    m_extraText.Purge();
 }
 
 const char *CHistoryItem::GetText() const
 {
-	if ( m_text )
-	{
-		return m_text;
-	}
-	else
-	{
-		return "";
-	}
+    return m_text.Get();
 }
 
 const char *CHistoryItem::GetExtra() const
 {
-	if ( m_extraText )
-	{
-		return m_extraText;
-	}
-	else
-	{
-		return NULL;
-	}
+    return m_extraText.IsEmpty() ? nullptr : m_extraText.Get();
 }
 
 void CHistoryItem::SetText( const char *text, const char *extra )
 {
-	delete[] m_text;
-	int len = strlen( text ) + 1;
-
-	m_text = new char[ len ];
-	Q_memset( m_text, 0x0, len );
-	Q_strncpy( m_text, text, len );
+    m_text.Purge();
+    m_text = text;
 
 	if ( extra )
 	{
 		m_bHasExtra = true;
-		delete[] m_extraText;
-		int elen = strlen( extra ) + 1;
-		m_extraText = new char[ elen ];
-		Q_memset( m_extraText, 0x0, elen);
-		Q_strncpy( m_extraText, extra, elen );
+        m_extraText.Purge();
+        m_extraText = extra;
 	}
 	else
 	{
@@ -199,8 +171,8 @@ void CHistoryItem::SetText( const char *text, const char *extra )
 CConsolePanel::CompletionItem::CompletionItem( void )
 {
 	m_bIsCommand = true;
-	m_pCommand = NULL;
-	m_pText = NULL;
+	m_pCommand = nullptr;
+	m_pText = nullptr;
 }
 
 CConsolePanel::CompletionItem::CompletionItem( const CompletionItem& src )
@@ -213,7 +185,7 @@ CConsolePanel::CompletionItem::CompletionItem( const CompletionItem& src )
 	}
 	else
 	{
-		m_pText = NULL;
+		m_pText = nullptr;
 	}
 }
 
@@ -230,7 +202,7 @@ CConsolePanel::CompletionItem& CConsolePanel::CompletionItem::operator =( const 
 	}
 	else
 	{
-		m_pText = NULL;
+		m_pText = nullptr;
 	}
 
 	return *this;
@@ -241,7 +213,7 @@ CConsolePanel::CompletionItem::~CompletionItem( void )
 	if ( m_pText )
 	{
 		delete m_pText;
-		m_pText = NULL;
+		m_pText = nullptr;
 	}
 }
 
@@ -444,10 +416,10 @@ static ConCommand *FindAutoCompleteCommmandFromPartial( const char *partial )
 
 	ConCommand *cmd = g_pCVar->FindCommand( command );
 	if ( !cmd )
-		return NULL;
+		return nullptr;
 
 	if ( !cmd->CanAutoComplete() )
-		return NULL;
+		return nullptr;
 
 	return cmd;
 }
@@ -471,7 +443,7 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 			CompletionItem *comp = new CompletionItem();
 			m_CompletionList.AddToTail( comp );
 			comp->m_bIsCommand = false;
-			comp->m_pCommand = NULL;
+			comp->m_pCommand = nullptr;
 			comp->m_pText = new CHistoryItem( *item );
 		}
 		return;
@@ -500,7 +472,7 @@ void CConsolePanel::RebuildCompletionList(const char *text)
 			CompletionItem *item = new CompletionItem();
 			m_CompletionList.AddToTail( item );
 			item->m_bIsCommand = false;
-			item->m_pCommand = NULL;
+			item->m_pCommand = nullptr;
 			item->m_pText = new CHistoryItem( commands[ i ].String() );
 		}
 	}
@@ -738,11 +710,13 @@ void CConsolePanel::OnCommand(const char *command)
 		// submit the entry as a console commmand
 		char szCommand[256];
 		m_pEntry->GetText(szCommand, sizeof(szCommand));
-		PostActionSignal( new KeyValues( "CommandSubmitted", "command", szCommand ) );
+        CUtlString comm(szCommand);
+        comm.Trim(); // Do whitespace trimming here so we're all good for later on
+		PostActionSignal( new KeyValues( "CommandSubmitted", "command", comm.Get() ) );
 
 		// add to the history
 		Print("] ");
-		Print(szCommand);
+		Print(comm);
 		Print("\n");
 
 		// clear the field
@@ -754,18 +728,20 @@ void CConsolePanel::OnCommand(const char *command)
 		// always go the end of the buffer when the user has typed something
 		m_pHistory->GotoTextEnd();
 
-		// Add the command to the history
-		char *extra = strchr(szCommand, ' ');
+        // Extract the extra variables, if any
+        CUtlString ex;
+		const char *extra = strchr(comm, ' ');
 		if ( extra )
 		{
-			*extra = '\0';
-			extra++;
+            int indx = extra - comm.Get();
+            ex = comm.Slice(indx+1);
+            comm.SetLength(indx);
 		}
 
-		if ( Q_strlen( szCommand ) > 0 )
-		{
-			AddToHistory( szCommand, extra );
-		}
+        // Add the command to the history
+        if (!comm.IsEmpty())
+            AddToHistory(comm, ex);
+
 		m_pCompletionList->SetVisible(false);
 	}
 	else
@@ -938,7 +914,7 @@ void CConsolePanel::Hide()
 	RebuildCompletionList("");
 }
 
-void CConsolePanel::AddToHistory( const char *commandText, const char *extraText )
+void CConsolePanel::AddToHistory( CUtlString &command, CUtlString &extra )
 {
 	// Newest at end, oldest at head
 	while ( m_CommandHistory.Count() >= MAX_HISTORY_ITEMS )
@@ -947,64 +923,24 @@ void CConsolePanel::AddToHistory( const char *commandText, const char *extraText
 		m_CommandHistory.Remove( 0 );
 	}
 
-	// strip the space off the end of the command before adding it to the history
-	// If this code gets cleaned up then we should remove the redundant calls to strlen,
-	// the check for whether _alloca succeeded, and should use V_strncpy instead of the
-	// error prone memset/strncpy sequence.
-	char *command = static_cast<char *>( _alloca( (strlen( commandText ) + 1 ) * sizeof( char ) ));
-	if ( command )
-	{
-		memset( command, 0x0, strlen( commandText ) + 1 );
-		strncpy( command, commandText, strlen( commandText ));
-		// There is no actual bug here, just some sloppy/odd code.
-		// src\vgui2\vgui_controls\consoledialog.cpp(974): warning C6053: The prior call to 'strncpy' might not zero-terminate string 'command'
-		ANALYZE_SUPPRESS( 6053 )
-		if ( command[ strlen( command ) -1 ] == ' ' )
-		{
-			 command[ strlen( command ) -1 ] = '\0';
-		}
-	}
-
-	// strip the quotes off the extra text
-	char *extra = NULL;
-
-	if ( extraText )
-	{
-		extra = static_cast<char *>( malloc( (strlen( extraText ) + 1 ) * sizeof( char ) ));
-		if ( extra )
-		{
-			memset( extra, 0x0, strlen( extraText ) + 1 );
-			strncpy( extra, extraText, strlen( extraText )); // +1 to dodge the starting quote
-			
-			// Strip trailing spaces
-			int i = strlen( extra ) - 1; 
-			while ( i >= 0 &&  // Check I before referencing i == -1 into the extra array!
-				extra[ i ] == ' ' )
-			{
-				extra[ i ] = '\0';
-				i--;
-			}
-		}
-	}
-
 	// If it's already there, then remove since we'll add it to the end instead
-	CHistoryItem *item = NULL;
+	CHistoryItem *item = nullptr;
 	for ( int i = m_CommandHistory.Count() - 1; i >= 0; i-- )
 	{
 		item = &m_CommandHistory[ i ];
 		if ( !item )
 			continue;
 
-		if ( stricmp( item->GetText(), command ) )
+		if (!command.IsEqual_CaseInsensitive(item->GetText()))
 			continue;
 
-		if ( extra || item->GetExtra() )
+		if ( !extra.IsEmpty() || item->GetExtra() )
 		{
-			if ( !extra || !item->GetExtra() )
+			if ( extra.IsEmpty() || !item->GetExtra() )
 				continue;
 
 			// stricmp so two commands with the same starting text get added
-			if ( stricmp( item->GetExtra(), extra ) )	
+			if (!extra.IsEqual_CaseInsensitive(item->GetExtra()))	
 				continue;
 		}
 		m_CommandHistory.Remove( i );
@@ -1016,8 +952,6 @@ void CConsolePanel::AddToHistory( const char *commandText, const char *extraText
 
 	m_iNextCompletion = 0;
 	RebuildCompletionList( m_szPartialText );
-
-	free( extra );
 }
 
 void CConsolePanel::GetConsoleText( char *pchText, size_t bufSize ) const

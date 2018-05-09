@@ -189,7 +189,7 @@ protected:
 
 	// Get control settings for editing
 	virtual void GetSettings( KeyValues *outResourceData );
-	virtual const char *GetDescription( void );
+    void InitSettings() OVERRIDE;
 
 	KeyValues *GetActionMessage();
 	void PlayButtonReleasedSound();
@@ -228,7 +228,7 @@ protected:
 
 	bool				_paint;
 
-	unsigned short	   m_sArmedSoundName, m_sDepressedSoundName, m_sReleasedSoundName;
+	CUtlString   m_sArmedSoundName, m_sDepressedSoundName, m_sReleasedSoundName;
 	bool m_bSelectionStateSaved;
 	bool m_bStaySelectedOnClick;
 };

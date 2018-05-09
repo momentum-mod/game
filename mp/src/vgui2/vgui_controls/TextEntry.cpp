@@ -46,6 +46,7 @@ DECLARE_BUILD_FACTORY( TextEntry );
 //-----------------------------------------------------------------------------
 TextEntry::TextEntry(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
+    InitSettings();
 	SetTriplePressAllowed( true );
 
 	_font = INVALID_FONT;
@@ -3823,11 +3824,11 @@ void TextEntry::ApplySettings( KeyValues *inResourceData )
 	_font = scheme()->GetIScheme( GetScheme() )->GetFont( inResourceData->GetString( "font", "Default" ), IsProportional() );
 	SetFont( _font );
 
-	SetTextHidden((bool)inResourceData->GetInt("textHidden", 0));
-	SetEditable((bool)inResourceData->GetInt("editable", 1));
+	SetTextHidden(inResourceData->GetBool("textHidden", false));
+	SetEditable(inResourceData->GetBool("editable", true));
 	SetMaximumCharCount(inResourceData->GetInt("maxchars", -1));
-	SetAllowNumericInputOnly(inResourceData->GetInt("NumericInputOnly", 0));
-	SetAllowNonAsciiCharacters(inResourceData->GetInt("unicode", 0));
+	SetAllowNumericInputOnly(inResourceData->GetBool("NumericInputOnly", false));
+	SetAllowNonAsciiCharacters(inResourceData->GetBool("unicode", false));
 	SelectAllOnFirstFocus(inResourceData->GetInt("selectallonfirstfocus", 0));
 }
 
@@ -3837,21 +3838,26 @@ void TextEntry::ApplySettings( KeyValues *inResourceData )
 void TextEntry::GetSettings( KeyValues *outResourceData )
 {
 	BaseClass::GetSettings( outResourceData );
-	outResourceData->SetInt("textHidden", _hideText);
-	outResourceData->SetInt("editable", IsEditable());
+	outResourceData->SetBool("textHidden", _hideText);
+	outResourceData->SetBool("editable", _editable);
 	outResourceData->SetInt("maxchars", GetMaximumCharCount());
-	outResourceData->SetInt("NumericInputOnly", m_bAllowNumericInputOnly);
-	outResourceData->SetInt("unicode", m_bAllowNonAsciiCharacters);
+	outResourceData->SetBool("NumericInputOnly", m_bAllowNumericInputOnly);
+	outResourceData->SetBool("unicode", m_bAllowNonAsciiCharacters);
+    outResourceData->SetBool("selectallonfirstfocus", _selectAllOnFirstFocus);
+    outResourceData->SetString("font", scheme()->GetIScheme(GetScheme())->GetFontName(_font));
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-const char *TextEntry::GetDescription()
+void TextEntry::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, bool textHidden, bool editable, bool unicode, bool NumericInputOnly, int maxchars", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"font", TYPE_STRING},
+    {"textHidden", TYPE_BOOL},
+    {"editable", TYPE_BOOL},
+    {"maxchars", TYPE_INTEGER},
+    {"NumericInputOnly", TYPE_BOOL},
+    {"unicode", TYPE_BOOL},
+    {"selectallonfirstfocus", TYPE_BOOL}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------

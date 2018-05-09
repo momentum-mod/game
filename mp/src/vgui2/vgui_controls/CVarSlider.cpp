@@ -25,6 +25,7 @@ DECLARE_BUILD_FACTORY(CCvarSlider);
 //-----------------------------------------------------------------------------
 CCvarSlider::CCvarSlider(Panel *parent, const char *name) : Slider(parent, name), m_cvar("", true)
 {
+    InitSettings();
     SetupSlider(0.0f, 1.0f, "", false);
     m_bCreatedInCode = false;
 
@@ -38,6 +39,7 @@ CCvarSlider::CCvarSlider(Panel *parent, const char *panelName, char const *capti
                          char const *cvarname, bool bAllowOutOfRange)
     : Slider(parent, panelName), m_cvar(cvarname)
 {
+    InitSettings();
     AddActionSignalTarget(this);
 
     SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange);
@@ -87,25 +89,24 @@ void CCvarSlider::ApplySettings(KeyValues *inResourceData)
 {
     BaseClass::ApplySettings(inResourceData);
 
+    float minValue = inResourceData->GetFloat("minvalue", 0.0f);
+    float maxValue = inResourceData->GetFloat("maxvalue", 1.0f);
+    const char *cvarname = inResourceData->GetString("cvar_name");
+    bool bAllowOutOfRange = inResourceData->GetBool("allowoutofrange");
+
     if (!m_bCreatedInCode)
-    {
-        float minValue = inResourceData->GetFloat("minvalue", 0.0f);
-        float maxValue = inResourceData->GetFloat("maxvalue", 1.0f);
-        const char *cvarname = inResourceData->GetString("cvar_name", "");
-        bool bAllowOutOfRange = inResourceData->GetBool("allowoutofrange");
         SetupSlider(minValue, maxValue, cvarname, bAllowOutOfRange);
 
-        if (GetParent())
+    if (GetParent())
+    {
+        // HACK: If our parent is a property page, we want the dialog containing it
+        if (dynamic_cast<PropertyPage *>(GetParent()) && GetParent()->GetParent())
         {
-            // HACK: If our parent is a property page, we want the dialog containing it
-            if (dynamic_cast<PropertyPage *>(GetParent()) && GetParent()->GetParent())
-            {
-                GetParent()->GetParent()->AddActionSignalTarget(this);
-            }
-            else
-            {
-                GetParent()->AddActionSignalTarget(this);
-            }
+            GetParent()->GetParent()->AddActionSignalTarget(this);
+        }
+        else
+        {
+            GetParent()->AddActionSignalTarget(this);
         }
     }
 }
@@ -117,13 +118,10 @@ void CCvarSlider::GetSettings(KeyValues *outResourceData)
 {
     BaseClass::GetSettings(outResourceData);
 
-    if (!m_bCreatedInCode)
-    {
-        outResourceData->SetFloat("minvalue", m_flMinValue);
-        outResourceData->SetFloat("maxvalue", m_flMaxValue);
-        outResourceData->SetString("cvar_name", m_szCvarName);
-        outResourceData->SetBool("allowoutofrange", m_bAllowOutOfRange);
-    }
+    outResourceData->SetFloat("minvalue", m_flMinValue);
+    outResourceData->SetFloat("maxvalue", m_flMaxValue);
+    outResourceData->SetString("cvar_name", m_szCvarName);
+    outResourceData->SetBool("allowoutofrange", m_bAllowOutOfRange);
 }
 
 void CCvarSlider::SetCVarName(char const *cvarname)
@@ -296,9 +294,12 @@ void CCvarSlider::OnApplyChanges(void)
     }
 }
 
-const char* CCvarSlider::GetDescription()
+void CCvarSlider::InitSettings()
 {
-    static char buf[1024];
-    Q_snprintf(buf, 1024, "%s, string cvar_name, string minvalue, string maxvalue, int allowoutofrange", BaseClass::GetDescription());
-    return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"cvar_name", TYPE_STRING},
+    {"minvalue", TYPE_FLOAT},
+    {"maxvalue", TYPE_FLOAT},
+    {"allowoutofrange", TYPE_BOOL}
+    END_PANEL_SETTINGS();
 }

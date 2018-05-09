@@ -45,7 +45,7 @@ public:
 	
 	virtual void ApplySettings(KeyValues *inResourceData);
 	virtual void GetSettings(KeyValues *outResourceData);
-	virtual const char *GetDescription();
+    void InitSettings() OVERRIDE;
 
 	// returns the number of segment blocks drawn
 	int GetDrawnSegmentCount();
@@ -82,7 +82,7 @@ private:
 	int _segmentWide;
 	int m_iBarInset;
 	int m_iBarMargin;
-	char *m_pszDialogVar;
+	CUtlString m_pszDialogVar;
 };
 
 //-----------------------------------------------------------------------------

@@ -22,6 +22,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 WizardSubPanel::WizardSubPanel(Panel *parent, const char *panelName) : EditablePanel(parent, panelName), _wizardPanel(NULL)
 {
+    InitSettings();
 	SetVisible(false);
 	m_iDesiredWide = 0;
 	m_iDesiredTall = 0;
@@ -42,6 +43,14 @@ void WizardSubPanel::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 	SetBgColor(GetSchemeColor("WizardSubPanel.BgColor",pScheme));
+}
+
+void WizardSubPanel::InitSettings()
+{
+    BEGIN_PANEL_SETTINGS()
+    {"WizardWide", TYPE_INTEGER},
+    {"WizardTall", TYPE_INTEGER}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -74,16 +83,6 @@ void WizardSubPanel::ApplySettings(KeyValues *inResourceData)
 	}
 
 	SetVisible(bVisible);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: build mode description
-//-----------------------------------------------------------------------------
-const char *WizardSubPanel::GetDescription()
-{
-	static char buf[1024];
-	_snprintf(buf, sizeof(buf), "%s, int WizardWide, int WizardTall", BaseClass::GetDescription());
-	return buf;
 }
 
 //-----------------------------------------------------------------------------

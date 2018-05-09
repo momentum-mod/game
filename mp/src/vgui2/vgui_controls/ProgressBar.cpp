@@ -29,8 +29,9 @@ DECLARE_BUILD_FACTORY( ProgressBar );
 //-----------------------------------------------------------------------------
 ProgressBar::ProgressBar(Panel *parent, const char *panelName) : Panel(parent, panelName)
 {
+    InitSettings();
 	_progress = 0.0f;
-	m_pszDialogVar = NULL;
+	m_pszDialogVar = nullptr;
 	SetSegmentInfo( 4, 8 );
 	SetBarInset( 4 );
 	SetMargin( 0 );
@@ -42,7 +43,7 @@ ProgressBar::ProgressBar(Panel *parent, const char *panelName) : Panel(parent, p
 //-----------------------------------------------------------------------------
 ProgressBar::~ProgressBar()
 {
-	delete [] m_pszDialogVar;
+	m_pszDialogVar.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -342,8 +343,8 @@ void ProgressBar::ApplySettings(KeyValues *inResourceData)
 	const char *dialogVar = inResourceData->GetString("variable", "");
 	if (dialogVar && *dialogVar)
 	{
-		m_pszDialogVar = new char[strlen(dialogVar) + 1];
-		strcpy(m_pszDialogVar, dialogVar);
+        m_pszDialogVar.Purge();
+		m_pszDialogVar = dialogVar;
 	}
 
 	BaseClass::ApplySettings(inResourceData);
@@ -358,21 +359,17 @@ void ProgressBar::GetSettings(KeyValues *outResourceData)
 	outResourceData->SetFloat("progress", _progress );
     outResourceData->SetInt("segment_gap", _segmentGap);
     outResourceData->SetInt("segment_width", _segmentWide);
-
-	if (m_pszDialogVar)
-	{
-		outResourceData->SetString("variable", m_pszDialogVar);
-	}
+	outResourceData->SetString("variable", m_pszDialogVar);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Returns a string description of the panel fields for use in the UI
-//-----------------------------------------------------------------------------
-const char *ProgressBar::GetDescription( void )
+void ProgressBar::InitSettings()
 {
-	static char buf[1024];
-	_snprintf(buf, sizeof(buf), "%s, string progress, string variable", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"progress", TYPE_STRING},
+    {"segment_gap", TYPE_INTEGER},
+    {"segment_width", TYPE_INTEGER},
+    {"variable", TYPE_STRING}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -380,7 +377,7 @@ const char *ProgressBar::GetDescription( void )
 //-----------------------------------------------------------------------------
 void ProgressBar::OnDialogVariablesChanged(KeyValues *dialogVariables)
 {
-	if (m_pszDialogVar)
+	if (!m_pszDialogVar.IsEmpty())
 	{
 		int val = dialogVariables->GetInt(m_pszDialogVar, -1);
 		if (val >= 0.0f)

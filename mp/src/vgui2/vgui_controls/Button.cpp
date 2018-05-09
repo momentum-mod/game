@@ -26,9 +26,6 @@
 
 using namespace vgui;
 
-// global list of all the names of all the sounds played by buttons
-CUtlSymbolTable g_ButtonSoundNames;
-
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT( Button, Button );
 
 //-----------------------------------------------------------------------------
@@ -62,6 +59,7 @@ Button::Button(Panel *parent, const char *panelName, const wchar_t *wszText, Pan
 //-----------------------------------------------------------------------------
 void Button::Init()
 {
+    InitSettings();
 	_buttonFlags.SetFlag( USE_CAPTURE_MOUSE | BUTTON_BORDER_ENABLED );
 
 	_mouseClickMask = 0;
@@ -71,9 +69,9 @@ void Button::Init()
 	_keyFocusBorder = NULL;
 	m_bSelectionStateSaved = false;
 	m_bStaySelectedOnClick = false;
-	m_sArmedSoundName = UTL_INVAL_SYMBOL;
-	m_sDepressedSoundName = UTL_INVAL_SYMBOL;
-	m_sReleasedSoundName = UTL_INVAL_SYMBOL;
+	m_sArmedSoundName = nullptr;
+	m_sDepressedSoundName = nullptr;
+	m_sReleasedSoundName = nullptr;
 	SetTextInset(6, 0);
 	SetMouseClickEnabled( MOUSE_LEFT, true );
 	SetButtonActivationType(ACTIVATE_ONPRESSEDANDRELEASED);
@@ -224,9 +222,9 @@ void Button::SetArmed(bool state)
 		InvalidateLayout(false);
 
 		// play any sounds specified
-		if (state && m_sArmedSoundName != UTL_INVAL_SYMBOL)
+		if (state && !m_sArmedSoundName.IsEmpty())
 		{
-			surface()->PlaySound(g_ButtonSoundNames.String(m_sArmedSoundName));
+			surface()->PlaySound(m_sArmedSoundName);
 		}
 	}
 }
@@ -248,9 +246,9 @@ KeyValues *Button::GetActionMessage()
 void Button::PlayButtonReleasedSound()
 {
 	// check for playing a transition sound
-	if ( m_sReleasedSoundName != UTL_INVAL_SYMBOL )
+	if ( !m_sReleasedSoundName.IsEmpty() )
 	{
-		surface()->PlaySound( g_ButtonSoundNames.String( m_sReleasedSoundName ) );
+		surface()->PlaySound(m_sReleasedSoundName);
 	}
 }
 
@@ -647,14 +645,8 @@ void Button::SetAsDefaultButton(int state)
 //-----------------------------------------------------------------------------
 void Button::SetArmedSound(const char *sound)
 {
-	if (sound)
-	{
-		m_sArmedSoundName = g_ButtonSoundNames.AddString(sound);
-	}
-	else
-	{
-		m_sArmedSoundName = UTL_INVAL_SYMBOL;
-	}
+    m_sArmedSoundName.Purge();
+    m_sArmedSoundName = sound;
 }
 
 //-----------------------------------------------------------------------------
@@ -662,14 +654,8 @@ void Button::SetArmedSound(const char *sound)
 //-----------------------------------------------------------------------------
 void Button::SetDepressedSound(const char *sound)
 {
-	if (sound)
-	{
-		m_sDepressedSoundName = g_ButtonSoundNames.AddString(sound);
-	}
-	else
-	{
-		m_sDepressedSoundName = UTL_INVAL_SYMBOL;
-	}
+    m_sDepressedSoundName.Purge();
+    m_sDepressedSoundName = sound;
 }
 
 //-----------------------------------------------------------------------------
@@ -677,14 +663,8 @@ void Button::SetDepressedSound(const char *sound)
 //-----------------------------------------------------------------------------
 void Button::SetReleasedSound(const char *sound)
 {
-	if (sound)
-	{
-		m_sReleasedSoundName = g_ButtonSoundNames.AddString(sound);
-	}
-	else
-	{
-		m_sReleasedSoundName = UTL_INVAL_SYMBOL;
-	}
+    m_sReleasedSoundName.Purge();
+    m_sReleasedSoundName = sound;
 }
 
 //-----------------------------------------------------------------------------
@@ -820,11 +800,33 @@ void Button::GetSettings( KeyValues *outResourceData )
 	{
 		outResourceData->SetString("command", _actionMessage->GetString("command", ""));
 	}
-	outResourceData->SetInt("default", _buttonFlags.IsFlagSet( DEFAULT_BUTTON ) );
+	outResourceData->SetBool("default", _buttonFlags.IsFlagSet( DEFAULT_BUTTON ) );
 	if ( m_bSelectionStateSaved )
 	{
-		outResourceData->SetInt( "selected", IsSelected() );
+		outResourceData->SetBool( "selected", IsSelected() );
 	}
+
+    outResourceData->SetBool("stayselectedonclick", m_bStaySelectedOnClick);
+
+    outResourceData->SetString("sound_armed", m_sArmedSoundName);
+    outResourceData->SetString("sound_depressed", m_sDepressedSoundName);
+    outResourceData->SetString("sound_released", m_sReleasedSoundName);
+
+    outResourceData->SetInt("button_activation_type", _activationType);
+}
+
+void Button::InitSettings()
+{
+    BEGIN_PANEL_SETTINGS()
+    {"command", TYPE_STRING},
+    {"default", TYPE_BOOL},
+    {"selected", TYPE_BOOL},
+    {"stayselectedonclick", TYPE_BOOL},
+    {"sound_armed", TYPE_STRING},
+    {"sound_depressed", TYPE_STRING},
+    {"sound_released", TYPE_STRING},
+    {"button_activation_type", TYPE_INTEGER}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -875,17 +877,6 @@ void Button::ApplySettings( KeyValues *inResourceData )
 	}
 
 	_activationType = (ActivationType_t)inResourceData->GetInt( "button_activation_type", ACTIVATE_ONRELEASED );
-}
-
-
-//-----------------------------------------------------------------------------
-// Purpose: Describes editing details
-//-----------------------------------------------------------------------------
-const char *Button::GetDescription( void )
-{
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, string command, int default", BaseClass::GetDescription());
-	return buf;
 }
 
 //-----------------------------------------------------------------------------
@@ -943,9 +934,9 @@ void Button::OnMousePressed(MouseCode code)
 	}
 
 	// play activation sound
-	if (m_sDepressedSoundName != UTL_INVAL_SYMBOL)
+	if (!m_sDepressedSoundName.IsEmpty())
 	{
-		surface()->PlaySound(g_ButtonSoundNames.String(m_sDepressedSoundName));
+		surface()->PlaySound(m_sDepressedSoundName);
 	}
 
 	if (IsUseCaptureMouseEnabled() && _activationType == ACTIVATE_ONPRESSEDANDRELEASED)

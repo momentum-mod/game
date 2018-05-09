@@ -54,7 +54,6 @@ DECLARE_BUILD_FACTORY( EditablePanel );
 EditablePanel::EditablePanel(Panel *parent, const char *panelName) : Panel(parent, panelName), m_NavGroup(this)
 {
 	_buildGroup = new BuildGroup(this, this);
-	m_pszConfigName = NULL;
 	m_iConfigID = 0;
 	m_pDialogVariables = NULL;
 	m_bShouldSkipAutoResize = false;
@@ -69,7 +68,6 @@ EditablePanel::EditablePanel(Panel *parent, const char *panelName) : Panel(paren
 EditablePanel::EditablePanel(Panel *parent, const char *panelName, HScheme hScheme) : Panel(parent, panelName, hScheme), m_NavGroup(this)
 {
 	_buildGroup = new BuildGroup(this, this);
-	m_pszConfigName = NULL;
 	m_iConfigID = 0;
 	m_pDialogVariables = NULL;
 	m_bShouldSkipAutoResize = false;
@@ -85,7 +83,7 @@ EditablePanel::EditablePanel(Panel *parent, const char *panelName, HScheme hSche
 //-----------------------------------------------------------------------------
 EditablePanel::~EditablePanel()
 {
-	delete [] m_pszConfigName;
+	m_pszConfigName.Purge();
 	delete _buildGroup;
 
 	if (m_pDialogVariables)
@@ -594,10 +592,8 @@ void EditablePanel::LoadUserConfig(const char *configName, int dialogID)
 {
 	KeyValues *data = system()->GetUserConfigFileData(configName, dialogID);
 
-	delete [] m_pszConfigName;
-	int len = Q_strlen(configName) + 1;
-	m_pszConfigName = new char[ len ];
-	Q_strncpy(m_pszConfigName, configName, len );
+    m_pszConfigName.Purge();
+    m_pszConfigName = configName;
 	m_iConfigID = dialogID;
 
 	// apply our user config settings (this will recurse through our children)
@@ -612,7 +608,7 @@ void EditablePanel::LoadUserConfig(const char *configName, int dialogID)
 //-----------------------------------------------------------------------------
 void EditablePanel::SaveUserConfig()
 {
-	if (m_pszConfigName)
+	if (!m_pszConfigName.IsEmpty())
 	{
 		KeyValues *data = system()->GetUserConfigFileData(m_pszConfigName, m_iConfigID);
 

@@ -153,7 +153,7 @@ private:
 	KeyValues *m_pDialogVariables;
 
 	// the wide and tall to which all controls are locked - used for autolayout deltas
-	char *m_pszConfigName;
+	CUtlString m_pszConfigName;
 	int m_iConfigID;
 	bool m_bShouldSkipAutoResize;
 };
