@@ -475,7 +475,7 @@
 	}
 	"Bloom"
 	{
-		"ControlName"		"CCvarToggleCheckButton"
+		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"Bloom"
 		"xpos"		"170"
 		"ypos"		"316"
@@ -890,7 +890,7 @@
 	}
 	"FovSlider"
 	{
-		"ControlName"		"CCvarSlider"
+		"ControlName"		"CvarSlider"
 		"fieldName"		"FovSlider"
 		"xpos"		"176"
 		"ypos"		"252"

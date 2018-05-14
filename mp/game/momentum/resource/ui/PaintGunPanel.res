@@ -15,7 +15,7 @@
 	
 	"SliderScale"
     {
-        "ControlName" "CCvarSlider"
+        "ControlName" "CvarSlider"
         "fieldName" "SliderScale"
         "xpos" "100"
         "ypos" "10"

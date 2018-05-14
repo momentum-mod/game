@@ -50,7 +50,7 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
 
     m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
 
-    m_pTimescaleSlider = FindControl<CCvarSlider>("TimescaleSlider");
+    m_pTimescaleSlider = FindControl<CvarSlider>("TimescaleSlider");
     m_pTimescaleLabel = FindControl<Label>("TimescaleLabel");
     m_pTimescaleEntry = FindControl<TextEntry>("TimescaleEntry");
     SetLabelText();

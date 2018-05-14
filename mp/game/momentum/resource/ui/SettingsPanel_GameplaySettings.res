@@ -16,7 +16,7 @@
     
     "YawSpeed"
     {
-        "ControlName" "CCvarSlider"
+        "ControlName" "CvarSlider"
         "fieldName" "YawSpeed"
         "xpos" "4"
         "ypos" "16"

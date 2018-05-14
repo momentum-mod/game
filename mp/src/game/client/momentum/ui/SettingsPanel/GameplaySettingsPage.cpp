@@ -8,7 +8,7 @@ using namespace vgui;
 
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
-    m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
+    m_pYawSpeedSlider = FindControl<CvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
 
     m_pLowerSpeedCVarEntry = FindControl<CvarTextEntry>("LowerSpeedEntry");

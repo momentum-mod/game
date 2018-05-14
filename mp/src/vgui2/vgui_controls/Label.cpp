@@ -696,6 +696,10 @@ void Label::SizeToContents()
 //-----------------------------------------------------------------------------
 void Label::SetFont(HFont font)
 {
+    IScheme *pScheme = scheme()->GetIScheme(GetScheme());
+    _fontOverrideName.Purge();
+    _fontOverrideName = pScheme->GetFontName(font);
+
 	_textImage->SetFont(font);
 	Repaint();
 }
@@ -1098,7 +1102,7 @@ void Label::GetSettings( KeyValues *outResourceData )
 	outResourceData->SetBool("dulltext", (_textColorState == CS_DULL));
 	outResourceData->SetBool("brighttext", (_textColorState == CS_BRIGHT));
 
-	if (_fontOverrideName)
+	if (!_fontOverrideName.IsEmpty())
 	{
 		outResourceData->SetString("font", _fontOverrideName);
 	}

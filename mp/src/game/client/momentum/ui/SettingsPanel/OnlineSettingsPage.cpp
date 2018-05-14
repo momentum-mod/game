@@ -11,7 +11,7 @@ OnlineSettingsPage::OnlineSettingsPage(Panel* pParent) : BaseClass(pParent, "Onl
 
 
     m_pEnableColorAlphaOverride = FindControl<CvarToggleCheckButton>("EnableAlphaOverride");
-    m_pAlphaOverrideSlider = FindControl<CCvarSlider>("AlphaOverrideSlider");
+    m_pAlphaOverrideSlider = FindControl<CvarSlider>("AlphaOverrideSlider");
     m_pAlphaOverrideInput = FindControl<TextEntry>("AlphaOverrideEntry");
 }
 

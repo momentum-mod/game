@@ -73,7 +73,7 @@ class C_MOMReplayUI : public vgui::Frame, public IViewPortPanel, public CGameEve
     vgui::PFrameButton *m_pFastBackward;
     vgui::Button *m_pGo;
 
-    vgui::CCvarSlider *m_pTimescaleSlider;
+    vgui::CvarSlider *m_pTimescaleSlider;
     vgui::TextEntry *m_pTimescaleEntry;
     vgui::Label *m_pTimescaleLabel;
 

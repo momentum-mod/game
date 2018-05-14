@@ -13,7 +13,7 @@
 
 #include <vgui_controls/PropertyPage.h>
 
-class CCvarNegateCheckButton;
+class CvarNegateCheckButton;
 class CKeyToggleCheckButton;
 
 namespace vgui
@@ -21,7 +21,7 @@ namespace vgui
     class Label;
     class Panel;
     class CvarToggleCheckButton;
-    class CCvarSlider;
+    class CvarSlider;
 }
 
 //-----------------------------------------------------------------------------
@@ -53,20 +53,20 @@ private:
     void UpdateAccelLabel();
 	void UpdateJoystickPanels();
 
-	CCvarNegateCheckButton		*m_pReverseMouseCheckBox;
+	CvarNegateCheckButton		*m_pReverseMouseCheckBox;
 	vgui::CvarToggleCheckButton	*m_pMouseFilterCheckBox ,*m_pMouseRawCheckbox, *m_pJoystickCheckBox,
         *m_pJoystickSouthpawCheckBox, *m_pReverseJoystickCheckBox;
 
-    vgui::CCvarSlider					*m_pMouseSensitivitySlider;
+    vgui::CvarSlider					*m_pMouseSensitivitySlider;
     vgui::TextEntry             *m_pMouseSensitivityLabel;
 
     vgui::CheckButton *m_pMouseAccelToggle;
-    vgui::CCvarSlider *m_pMouseAccelSlider;
+    vgui::CvarSlider *m_pMouseAccelSlider;
     vgui::TextEntry *m_pMouseAccelLabel;
 
-    vgui::CCvarSlider					*m_pJoyYawSensitivitySlider;
+    vgui::CvarSlider					*m_pJoyYawSensitivitySlider;
 	vgui::Label					*m_pJoyYawSensitivityPreLabel;
-    vgui::CCvarSlider					*m_pJoyPitchSensitivitySlider;
+    vgui::CvarSlider					*m_pJoyPitchSensitivitySlider;
 	vgui::Label					*m_pJoyPitchSensitivityPreLabel;
 };
 

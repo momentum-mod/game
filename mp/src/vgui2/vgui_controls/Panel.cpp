@@ -176,7 +176,7 @@ private:
 	CUtlVector< DragHelperPanel_t >	m_PaintList;
 };
 
-vgui::DHANDLE< CDragDropHelperPanel >	s_DragDropHelper;
+DHANDLE< CDragDropHelperPanel >	s_DragDropHelper;
 #endif
 
 #if defined( VGUI_USEKEYBINDINGMAPS )
@@ -678,9 +678,6 @@ void Panel::Init( int x, int y, int wide, int tall )
 {
     InitSettings();
 
-	_panelName = nullptr;
-	_tooltipText = nullptr;
-	_pinToSibling = nullptr;
 	m_hMouseEventHandler = nullptr;
 	_pinCornerToSibling = PIN_TOPLEFT;
 	_pinToSiblingCorner = PIN_TOPLEFT;
@@ -751,13 +748,6 @@ void Panel::Init( int x, int y, int wide, int tall )
 	m_NavToRelay = nullptr;
 	m_NavActivate = nullptr;
 	m_NavBack = nullptr;
-	m_sNavUpName = nullptr;
-	m_sNavDownName = nullptr;
-	m_sNavLeftName = nullptr;
-	m_sNavRightName = nullptr;
-	m_sNavToRelayName = nullptr;
-	m_sNavActivateName = nullptr;
-	m_sNavBackName = nullptr;
 
 	m_PassUnhandledInput = true;
 	m_LastNavDirection = ND_NONE;
@@ -867,10 +857,7 @@ void Panel::SetName( const char *panelName )
 //-----------------------------------------------------------------------------
 const char *Panel::GetName()
 {
-	if (_panelName)
-		return _panelName;
-
-	return "";
+    return _panelName.Get();
 }
 
 //-----------------------------------------------------------------------------
@@ -878,7 +865,7 @@ const char *Panel::GetName()
 //-----------------------------------------------------------------------------
 const char *Panel::GetModuleName()
 {
-	return vgui::GetControlsModuleName();
+	return GetControlsModuleName();
 }
 
 //-----------------------------------------------------------------------------
@@ -1725,7 +1712,7 @@ Panel *Panel::HasHotkey(wchar_t key)
 }
 
 #if defined( VGUI_USEDRAGDROP )
-static vgui::PHandle	g_DragDropCapture;
+static PHandle	g_DragDropCapture;
 #endif // VGUI_USEDRAGDROP
 
 void Panel::InternalCursorMoved(int x, int y)
@@ -2490,7 +2477,7 @@ wchar_t const *Panel::KeyCodeModifiersToDisplayString( KeyCode code, int modifie
 	}
 
 	static wchar_t unicode[ 256 ];
-	V_swprintf_safe( unicode, L"%S%s", sz, Panel::KeyCodeToDisplayString( (KeyCode)code ) );
+	V_swprintf_safe( unicode, L"%S%s", sz, KeyCodeToDisplayString( (KeyCode)code ) );
 	return unicode;
 }
 
@@ -3079,7 +3066,7 @@ void Panel::OnKeyCodePressed(KeyCode code)
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateUp() )
 		{
 			vgui_nav_lock.SetValue( 1 );
-			vgui::surface()->PlaySound( "UI/menu_focus.wav" );
+			surface()->PlaySound( "UI/menu_focus.wav" );
 			handled = true;
 		}
 		break;
@@ -3090,7 +3077,7 @@ void Panel::OnKeyCodePressed(KeyCode code)
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateDown() )
 		{
 			vgui_nav_lock.SetValue( 1 );
-			vgui::surface()->PlaySound( "UI/menu_focus.wav" );
+			surface()->PlaySound( "UI/menu_focus.wav" );
 			handled = true;
 		}
 		break;
@@ -3101,7 +3088,7 @@ void Panel::OnKeyCodePressed(KeyCode code)
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateLeft() )
 		{
 			vgui_nav_lock.SetValue( 1 );
-			vgui::surface()->PlaySound( "UI/menu_focus.wav" );
+			surface()->PlaySound( "UI/menu_focus.wav" );
 			handled = true;
 		}
 		break;
@@ -3112,7 +3099,7 @@ void Panel::OnKeyCodePressed(KeyCode code)
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateRight() )
 		{
 			vgui_nav_lock.SetValue( 1 );
-			vgui::surface()->PlaySound( "UI/menu_focus.wav" );
+			surface()->PlaySound( "UI/menu_focus.wav" );
 			handled = true;
 		}
 		break;
@@ -3120,7 +3107,7 @@ void Panel::OnKeyCodePressed(KeyCode code)
 		if ( ( !vgui_nav_lock.IsValid() || vgui_nav_lock.GetInt() == 0 ) && NavigateBack() )
 		{
 			vgui_nav_lock.SetValue( 1 );
-			vgui::surface()->PlaySound( "UI/menu_focus.wav" );
+			surface()->PlaySound( "UI/menu_focus.wav" );
 			handled = true;
 		}
 		break;
@@ -3134,7 +3121,7 @@ void Panel::OnKeyCodePressed(KeyCode code)
 
 void Panel::OnKeyCodeTyped(KeyCode keycode)
 {
-	vgui::KeyCode code = GetBaseButtonCode( keycode );
+	KeyCode code = GetBaseButtonCode( keycode );
 
 	// handle focus change
 	if ( IsX360() || IsConsoleStylePanel() )
@@ -3832,7 +3819,7 @@ void Panel::InvalidateLayout( bool layoutNow, bool reloadScheme )
 	
 		for (int i = 0; i < GetChildCount(); i++)
 		{
-			vgui::Panel* panel = GetChild(i);
+			Panel* panel = GetChild(i);
 			if( panel )
 			{
 				panel->InvalidateLayout(layoutNow, true);
@@ -4149,6 +4136,7 @@ void Panel::ApplyAutoResizeSettings(KeyValues *inResourceData)
 	int nUnpinnedCornerOffsetX = 0, nUnpinnedCornerOffsetY = 0;
 	switch( pinCorner )
 	{
+    default:
 	case PIN_TOPLEFT:
 		nPinnedCornerOffsetX = x;
 		nPinnedCornerOffsetY = y;
@@ -4179,32 +4167,10 @@ void Panel::ApplyAutoResizeSettings(KeyValues *inResourceData)
 	}
 
 	// Allow specific overrides in the resource file
-	if ( IsProportional() )
-	{
-		if ( inResourceData->FindKey( "PinnedCornerOffsetX" ) )
-		{
-			nPinnedCornerOffsetX = scheme()->GetProportionalScaledValueEx( GetScheme(), inResourceData->GetInt( "PinnedCornerOffsetX" ) );
-		}
-		if ( inResourceData->FindKey( "PinnedCornerOffsetY" ) )
-		{
-			nPinnedCornerOffsetY =	scheme()->GetProportionalScaledValueEx( GetScheme(), inResourceData->GetInt( "PinnedCornerOffsetY" ) );
-		}
-		if ( inResourceData->FindKey( "UnpinnedCornerOffsetX" ) )
-		{
-			nUnpinnedCornerOffsetX = scheme()->GetProportionalScaledValueEx( GetScheme(), inResourceData->GetInt( "UnpinnedCornerOffsetX" ) );
-		}
-		if ( inResourceData->FindKey( "UnpinnedCornerOffsetY" ) )
-		{
-			nUnpinnedCornerOffsetY = scheme()->GetProportionalScaledValueEx( GetScheme(), inResourceData->GetInt( "UnpinnedCornerOffsetY" ) );
-		}
-	}
-	else
-	{
-		nPinnedCornerOffsetX = inResourceData->GetInt( "PinnedCornerOffsetX", nPinnedCornerOffsetX );
-		nPinnedCornerOffsetY = inResourceData->GetInt( "PinnedCornerOffsetY", nPinnedCornerOffsetY );
-		nUnpinnedCornerOffsetX = inResourceData->GetInt( "UnpinnedCornerOffsetX", nUnpinnedCornerOffsetX );
-		nUnpinnedCornerOffsetY = inResourceData->GetInt( "UnpinnedCornerOffsetY", nUnpinnedCornerOffsetY );
-	}
+    nPinnedCornerOffsetX = GetScaledVal(inResourceData->GetInt("PinnedCornerOffsetX", nPinnedCornerOffsetX));
+    nPinnedCornerOffsetY = GetScaledVal(inResourceData->GetInt("PinnedCornerOffsetY", nPinnedCornerOffsetY));
+    nUnpinnedCornerOffsetX = GetScaledVal(inResourceData->GetInt("UnpinnedCornerOffsetX", nUnpinnedCornerOffsetX));
+    nUnpinnedCornerOffsetY = GetScaledVal(inResourceData->GetInt("UnpinnedCornerOffsetY", nUnpinnedCornerOffsetY));
 
 	if ( autoResize == AUTORESIZE_NO )
 	{
@@ -4213,6 +4179,65 @@ void Panel::ApplyAutoResizeSettings(KeyValues *inResourceData)
 
 	SetAutoResize( pinCorner, autoResize, nPinnedCornerOffsetX, nPinnedCornerOffsetY, nUnpinnedCornerOffsetX, nUnpinnedCornerOffsetY );
 }
+
+void Panel::CalculateAutoResize(int parentWide, int parentTall)
+{
+    AutoResize_e resize = GetAutoResize();
+
+    if (resize != AUTORESIZE_NO)
+    {
+        bool bResizeHoriz = (resize == AUTORESIZE_RIGHT || resize == AUTORESIZE_DOWNANDRIGHT);
+        bool bResizeVert = (resize == AUTORESIZE_DOWN || resize == AUTORESIZE_DOWNANDRIGHT);
+
+        int x, y, w, h;
+        GetBounds(x, y, w, h);
+
+        const int px = m_nPinDeltaX, py = m_nPinDeltaY;
+
+        const int ox = m_nResizeDeltaX, oy = m_nResizeDeltaY;
+
+        int ex;
+        int ey;
+        PinCorner_e pinCorner = GetPinCorner();
+        if (pinCorner == PIN_TOPRIGHT || pinCorner == PIN_BOTTOMRIGHT)
+        {
+            // move along with the right edge
+            ex = parentWide + px;
+            x = bResizeHoriz ? ox : ex - w;
+        }
+        else
+        {
+            x = px;
+            ex = bResizeHoriz ? parentWide + ox : px + w;
+        }
+
+        if (pinCorner == PIN_BOTTOMLEFT || pinCorner == PIN_BOTTOMRIGHT)
+        {
+            // move along with the right edge
+            ey = parentTall + py;
+            y = bResizeVert ? oy : ey - h;
+        }
+        else
+        {
+            y = py;
+            ey = bResizeVert ? parentTall + oy : py + h;
+        }
+
+        // Clamp..
+        if (ex < x)
+        {
+            ex = x;
+        }
+        if (ey < y)
+        {
+            ey = y;
+        }
+
+        SetBounds(x, y, ex - x, ey - y);
+        InvalidateLayout();
+    }
+}
+
 
 ConVar panel_test_title_safe( "panel_test_title_safe", "0", FCVAR_CHEAT, "Test vgui panel positioning with title safe indentation" );
 
@@ -4576,7 +4601,7 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 			// Don't title safe internal boundaries for split screen viewports
 			int splitX = 0;
 			int splitY = 0;
-			vgui::surface()->OffsetAbsPos( splitX, splitY );
+			surface()->OffsetAbsPos( splitX, splitY );
 
 			bool bHorizontalSplit = ( alignScreenTall != screenTall );
 			bool bVerticalSplit = ( alignScreenWide != screenWide );
@@ -4773,7 +4798,7 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 
 
 	// Allow overriding of colors. Used mostly by HUD elements, where scheme color usage is often undesired.
-	IScheme *pScheme = vgui::scheme()->GetIScheme( GetScheme() );
+	IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
 	for ( int i = 0; i < m_OverridableColorEntries.Count(); i++ )
 	{
 		// Need to ensure the key exists, so we don't overwrite existing colors when it's not set.
@@ -4914,10 +4939,10 @@ void Panel::GetSettings( KeyValues *outResourceData )
 
 	outResourceData->SetInt("AutoResize", GetAutoResize());
 	outResourceData->SetInt("PinCorner", GetPinCorner());
-    outResourceData->SetInt("PinnedCornerOffsetX", m_nPinDeltaX);
-    outResourceData->SetInt("PinnedCornerOffsetY", m_nPinDeltaY);
-    outResourceData->SetInt("UnpinnedCornerOffsetX", m_nResizeDeltaX);
-    outResourceData->SetInt("UnpinnedCornerOffsetY", m_nResizeDeltaY);
+    outResourceData->SetInt("PinnedCornerOffsetX", GetNormalizedVal(m_nPinDeltaX));
+    outResourceData->SetInt("PinnedCornerOffsetY", GetNormalizedVal(m_nPinDeltaY));
+    outResourceData->SetInt("UnpinnedCornerOffsetX", GetNormalizedVal(m_nResizeDeltaX));
+    outResourceData->SetInt("UnpinnedCornerOffsetY", GetNormalizedVal(m_nResizeDeltaY));
 
 	//=============================================================================
 	// HPE_BEGIN:
@@ -5151,7 +5176,7 @@ MessageMapItem_t Panel::m_MessageMap[] =
 };
 
 // IMPLEMENT_PANELMAP( Panel, NULL )
-PanelMap_t Panel::m_PanelMap = { Panel::m_MessageMap, ARRAYSIZE(Panel::m_MessageMap), "Panel", nullptr };
+PanelMap_t Panel::m_PanelMap = { m_MessageMap, ARRAYSIZE(Panel::m_MessageMap), "Panel", nullptr };
 PanelMap_t *Panel::GetPanelMap( void ) { return &m_PanelMap; }
 
 //-----------------------------------------------------------------------------
@@ -5931,7 +5956,7 @@ void Panel::SetMouseInputEnabled( bool state )
 	{
 	GetChild(i)->SetMouseInput(state);
 	}*/
-	vgui::surface()->CalculateMouseVisible();
+	surface()->CalculateMouseVisible();
 }
 
 bool Panel::IsKeyBoardInputEnabled()
@@ -5944,7 +5969,7 @@ bool Panel::IsMouseInputEnabled()
 	return ipanel()->IsMouseInputEnabled( GetVPanel() );
 }
 
-class CFloatProperty : public vgui::IPanelAnimationPropertyConverter
+class CFloatProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -5966,7 +5991,7 @@ public:
 	}
 };
 
-class CProportionalFloatProperty : public vgui::IPanelAnimationPropertyConverter
+class CProportionalFloatProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -5994,7 +6019,7 @@ public:
 	}
 };
 
-class CIntProperty : public vgui::IPanelAnimationPropertyConverter
+class CIntProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -6016,7 +6041,7 @@ public:
 	}
 };
 
-class CProportionalIntProperty : public vgui::IPanelAnimationPropertyConverter
+class CProportionalIntProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -6043,7 +6068,7 @@ public:
 	}
 };
 
-class CProportionalIntWithScreenspacePropertyX : public vgui::IPanelAnimationPropertyConverter
+class CProportionalIntWithScreenspacePropertyX : public IPanelAnimationPropertyConverter
 {
 public:
 	int	ExtractValue( Panel *panel, const char *pszKey )
@@ -6116,7 +6141,7 @@ public:
 	}
 };
 
-class CColorProperty : public vgui::IPanelAnimationPropertyConverter
+class CColorProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -6127,7 +6152,7 @@ public:
 	
 	virtual void SetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
 	{
-		vgui::IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
+		IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
 		Assert( scheme );
 		if ( scheme )
 		{
@@ -6147,7 +6172,7 @@ public:
 
 	virtual void InitFromDefault( Panel *panel, PanelAnimationMapEntry *entry )
 	{
-		vgui::IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
+		IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
 		Assert( scheme );
 		if ( scheme )
 		{
@@ -6157,7 +6182,7 @@ public:
 	}
 };
 
-class CBoolProperty : public vgui::IPanelAnimationPropertyConverter
+class CBoolProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -6186,7 +6211,7 @@ public:
 	}
 };
 
-class CStringProperty : public vgui::IPanelAnimationPropertyConverter
+class CStringProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -6208,12 +6233,12 @@ public:
 	}
 };
 
-class CHFontProperty : public vgui::IPanelAnimationPropertyConverter
+class CHFontProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
 	{
-		vgui::IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
+		IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
 		Assert( scheme );
 		if ( scheme )
 		{
@@ -6225,7 +6250,7 @@ public:
 	
 	virtual void SetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
 	{
-		vgui::IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
+		IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
 		Assert( scheme );
 		if ( scheme )
 		{
@@ -6237,7 +6262,7 @@ public:
 
 	virtual void InitFromDefault( Panel *panel, PanelAnimationMapEntry *entry )
 	{
-		vgui::IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
+		IScheme *scheme = vgui::scheme()->GetIScheme( panel->GetScheme() );
 		Assert( scheme );
 		if ( scheme )
 		{
@@ -6247,7 +6272,7 @@ public:
 	}
 };
 
-class CTextureIdProperty : public vgui::IPanelAnimationPropertyConverter
+class CTextureIdProperty : public IPanelAnimationPropertyConverter
 {
 public:
 	virtual void GetData( Panel *panel, KeyValues *kv, PanelAnimationMapEntry *entry )
@@ -7222,7 +7247,7 @@ void Panel::OnContinueDragging()
 
 	Assert( m_pDragDrop->m_DragData.Count() );
 
-	vgui::PHandle oldDrop = m_pDragDrop->m_hCurrentDrop;
+	PHandle oldDrop = m_pDragDrop->m_hCurrentDrop;
 
 	// See what's under that
 	m_pDragDrop->m_hCurrentDrop = nullptr;
@@ -7608,12 +7633,12 @@ Panel *Panel::FindDropTargetPanel()
 
 int Panel::GetScaledVal(int normalizedValue)
 {
-    return scheme()->GetProportionalScaledValueEx(GetScheme(), normalizedValue);
+    return IsProportional() ? scheme()->GetProportionalScaledValueEx(GetScheme(), normalizedValue) : normalizedValue;
 }
 
 int Panel::GetNormalizedVal(int scaledValue)
 {
-    return scheme()->GetProportionalNormalizedValueEx(GetScheme(), scaledValue);
+    return IsProportional() ? scheme()->GetProportionalNormalizedValueEx(GetScheme(), scaledValue) : scaledValue;
 }
 
 
@@ -8025,7 +8050,7 @@ void Panel::NavigateToChild( Panel *pNavigateTo )
 {
 	for( int i = 0; i != GetChildCount(); ++i )
 	{
-		vgui::Panel *pChild = GetChild(i);
+		Panel *pChild = GetChild(i);
 		if( pChild )
 			pChild->NavigateFrom();
 	}
@@ -8040,10 +8065,10 @@ Panel* Panel::SetNavUp( Panel* navUp )
 	Panel* lastNav = m_NavUp;
 	m_NavUp = navUp;
 
+    m_sNavUpName.Purge();
+
 	if( navUp )
 		m_sNavUpName = navUp->GetName();
-	else
-		m_sNavUpName.Clear();
 
 	return lastNav;
 }
@@ -8056,10 +8081,10 @@ Panel* Panel::SetNavDown( Panel* navDown )
 	Panel* lastNav = m_NavDown;
 	m_NavDown = navDown;
 
+    m_sNavDownName.Purge();
+
 	if( navDown )
 		m_sNavDownName = navDown->GetName();
-	else
-		m_sNavDownName.Clear();
 
 	return lastNav;
 }
@@ -8072,10 +8097,10 @@ Panel* Panel::SetNavLeft( Panel* navLeft )
 	Panel* lastNav = m_NavLeft;
 	m_NavLeft = navLeft;
 
+    m_sNavLeftName.Purge();
+
 	if( navLeft )
 		m_sNavLeftName = navLeft->GetName();
-	else
-		m_sNavLeftName.Clear();
 
 	return lastNav;
 }
@@ -8088,10 +8113,10 @@ Panel* Panel::SetNavRight( Panel* navRight )
 	Panel* lastNav = m_NavRight;
 	m_NavRight = navRight;
 
+    m_sNavRightName.Purge();
+
 	if( navRight )
 		m_sNavRightName = navRight->GetName();
-	else
-		m_sNavRightName.Clear();
 
 	return lastNav;
 }
@@ -8101,6 +8126,10 @@ Panel* Panel::SetNavToRelay( Panel* navToRelay )
 	Panel* lastNav = m_NavToRelay;
 	m_NavToRelay = navToRelay;
 
+    m_sNavToRelayName.Purge();
+    if (navToRelay)
+        m_sNavToRelayName = navToRelay->GetName();
+
 	return lastNav;
 }
 
@@ -8109,6 +8138,10 @@ Panel* Panel::SetNavActivate( Panel* navActivate )
 	Panel* lastNav = m_NavActivate;
 	m_NavActivate = navActivate;
 
+    m_sNavActivateName.Purge();
+    if (navActivate)
+        m_sNavActivateName = navActivate->GetName();
+
 	return lastNav;
 }
 
@@ -8116,6 +8149,10 @@ Panel* Panel::SetNavBack( Panel* navBack )
 {
 	Panel* lastNav = m_NavBack;
 	m_NavBack = navBack;
+
+    m_sNavBackName.Purge();
+    if (navBack)
+        m_sNavBackName = navBack->GetName();
 
 	return lastNav;
 }
@@ -8219,7 +8256,7 @@ void Panel::SetNavBack( const char* controlName )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-vgui::Panel* Panel::GetNavUp( Panel *first )
+Panel* Panel::GetNavUp( Panel *first )
 {
 	if ( !m_NavUp && m_sNavUpName.Length() > 0 )
 	{
@@ -8243,7 +8280,7 @@ vgui::Panel* Panel::GetNavUp( Panel *first )
 		}
 	}
 
-	vgui::Panel* nextPanel = m_NavUp;
+	Panel* nextPanel = m_NavUp;
 	if( m_NavUp && m_NavUp != first && !m_NavUp->IsVisible() )
 	{
 		Panel *firstPanel = first == nullptr ? this : first;
@@ -8253,7 +8290,7 @@ vgui::Panel* Panel::GetNavUp( Panel *first )
 	return nextPanel;
 }
 
-vgui::Panel* Panel::GetNavDown( Panel *first )
+Panel* Panel::GetNavDown( Panel *first )
 {
 	if ( !m_NavDown && m_sNavDownName.Length() > 0 )
 	{
@@ -8277,7 +8314,7 @@ vgui::Panel* Panel::GetNavDown( Panel *first )
 		}
 	}
 
-	vgui::Panel* nextPanel = m_NavDown;
+	Panel* nextPanel = m_NavDown;
 	if( m_NavDown && m_NavDown != first && !m_NavDown->IsVisible() )
 	{
 		Panel *firstPanel = first == nullptr ? this : first;
@@ -8287,7 +8324,7 @@ vgui::Panel* Panel::GetNavDown( Panel *first )
 	return nextPanel;
 }
 
-vgui::Panel* Panel::GetNavLeft( Panel *first )
+Panel* Panel::GetNavLeft( Panel *first )
 {
 	if ( !m_NavLeft && m_sNavLeftName.Length() > 0 )
 	{
@@ -8311,7 +8348,7 @@ vgui::Panel* Panel::GetNavLeft( Panel *first )
 		}
 	}
 
-	vgui::Panel* nextPanel = m_NavLeft;
+	Panel* nextPanel = m_NavLeft;
 	if( m_NavLeft && m_NavLeft != first && !m_NavLeft->IsVisible() )
 	{
 		Panel *firstPanel = first == nullptr ? this : first;
@@ -8321,7 +8358,7 @@ vgui::Panel* Panel::GetNavLeft( Panel *first )
 	return nextPanel;
 }
 
-vgui::Panel* Panel::GetNavRight( Panel *first )
+Panel* Panel::GetNavRight( Panel *first )
 {
 	if ( !m_NavRight && m_sNavRightName.Length() > 0 )
 	{
@@ -8345,7 +8382,7 @@ vgui::Panel* Panel::GetNavRight( Panel *first )
 		}
 	}
 
-	vgui::Panel* nextPanel = m_NavRight;
+	Panel* nextPanel = m_NavRight;
 	if( m_NavRight && m_NavRight != first && !m_NavRight->IsVisible() )
 	{
 		Panel *firstPanel = first == nullptr ? this : first;
@@ -8355,7 +8392,7 @@ vgui::Panel* Panel::GetNavRight( Panel *first )
 	return nextPanel;
 }
 
-vgui::Panel* Panel::GetNavToRelay( Panel *first )
+Panel* Panel::GetNavToRelay( Panel *first )
 {
 	if ( !m_NavToRelay && m_sNavToRelayName.Length() > 0 )
 	{
@@ -8379,7 +8416,7 @@ vgui::Panel* Panel::GetNavToRelay( Panel *first )
 		}
 	}
 
-	vgui::Panel* nextPanel = m_NavToRelay;
+	Panel* nextPanel = m_NavToRelay;
 	if ( m_NavToRelay && m_NavToRelay != first && !m_NavToRelay->IsVisible() )
 	{
 		Panel *firstPanel = first == nullptr ? this : first;
@@ -8389,7 +8426,7 @@ vgui::Panel* Panel::GetNavToRelay( Panel *first )
 	return nextPanel;
 }
 
-vgui::Panel* Panel::GetNavActivate( Panel *first )
+Panel* Panel::GetNavActivate( Panel *first )
 {
 	if ( !m_NavActivate && m_sNavActivateName.Length() > 0 )
 	{
@@ -8413,7 +8450,7 @@ vgui::Panel* Panel::GetNavActivate( Panel *first )
 		}
 	}
 
-	vgui::Panel* nextPanel = m_NavActivate;
+	Panel* nextPanel = m_NavActivate;
 	if ( m_NavActivate && m_NavActivate != first && !m_NavActivate->IsVisible() )
 	{
 		Panel *firstPanel = first == nullptr ? this : first;
@@ -8423,7 +8460,7 @@ vgui::Panel* Panel::GetNavActivate( Panel *first )
 	return nextPanel;
 }
 
-vgui::Panel* Panel::GetNavBack( Panel *first )
+Panel* Panel::GetNavBack( Panel *first )
 {
 	if ( !m_NavBack && m_sNavBackName.Length() > 0 )
 	{
@@ -8447,7 +8484,7 @@ vgui::Panel* Panel::GetNavBack( Panel *first )
 		}
 	}
 
-	vgui::Panel* nextPanel = m_NavBack;
+	Panel* nextPanel = m_NavBack;
 	if ( m_NavBack && m_NavBack != first && !m_NavBack->IsVisible() )
 	{
 		Panel *firstPanel = first == nullptr ? this : first;
@@ -8457,37 +8494,37 @@ vgui::Panel* Panel::GetNavBack( Panel *first )
 	return nextPanel;
 }
 
-vgui::Panel* Panel::GetNavUpPanel()
+Panel* Panel::GetNavUpPanel()
 {
 	return m_NavUp;
 }
 
-vgui::Panel* Panel::GetNavDownPanel()
+Panel* Panel::GetNavDownPanel()
 {
 	return m_NavDown;
 }
 
-vgui::Panel* Panel::GetNavLeftPanel()
+Panel* Panel::GetNavLeftPanel()
 {
 	return m_NavLeft;
 }
 
-vgui::Panel* Panel::GetNavRightPanel()
+Panel* Panel::GetNavRightPanel()
 {
 	return m_NavRight;
 }
 
-vgui::Panel* Panel::GetNavToRelayPanel()
+Panel* Panel::GetNavToRelayPanel()
 {
 	return m_NavToRelay;
 }
 
-vgui::Panel* Panel::GetNavActivatePanel()
+Panel* Panel::GetNavActivatePanel()
 {
 	return m_NavActivate;
 }
 
-vgui::Panel* Panel::GetNavBackPanel()
+Panel* Panel::GetNavBackPanel()
 {
 	return m_NavBack;
 }
