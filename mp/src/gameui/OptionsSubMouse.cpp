@@ -27,7 +27,7 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 {
     SetSize(20, 20);
 
-	m_pReverseMouseCheckBox = new CCvarNegateCheckButton( 
+	m_pReverseMouseCheckBox = new CvarNegateCheckButton( 
 		this, 
 		"ReverseMouse", 
 		"#GameUI_ReverseMouse", 
@@ -63,7 +63,7 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
 		"#GameUI_ReverseJoystick", 
 		"joy_inverty" );
 
-	m_pMouseSensitivitySlider = new CCvarSlider( this, "Slider", "#GameUI_MouseSensitivity",
+	m_pMouseSensitivitySlider = new CvarSlider( this, "Slider", "#GameUI_MouseSensitivity",
         0.0001f, 20.0f, "sensitivity", true);
 
     m_pMouseSensitivityLabel = new TextEntry(this, "SensitivityLabel");
@@ -72,13 +72,13 @@ COptionsSubMouse::COptionsSubMouse(vgui::Panel *parent) : PropertyPage(parent, N
     m_pMouseAccelLabel = new TextEntry(this, "MouseAccelerationLabel");
     m_pMouseAccelLabel->AddActionSignalTarget(this);
     m_pMouseAccelToggle = new CheckButton(this, "MouseAccelerationCheckbox", "#GameUI_MouseAcceleration");
-    m_pMouseAccelSlider = new CCvarSlider(this, "MouseAccelerationSlider", "#GameUI_MouseAcceleration", 1.0f, 20.0f, "m_customaccel_exponent", true);
+    m_pMouseAccelSlider = new CvarSlider(this, "MouseAccelerationSlider", "#GameUI_MouseAcceleration", 1.0f, 20.0f, "m_customaccel_exponent", true);
 
-	m_pJoyYawSensitivitySlider = new CCvarSlider( this, "JoystickYawSlider", "#GameUI_JoystickYawSensitivity",
+	m_pJoyYawSensitivitySlider = new CvarSlider( this, "JoystickYawSlider", "#GameUI_JoystickYawSensitivity",
 		-0.5f, -7.0f, "joy_yawsensitivity", true );
 	m_pJoyYawSensitivityPreLabel = new Label(this, "JoystickYawSensitivityPreLabel", "#GameUI_JoystickLookSpeedYaw" );
 
-	m_pJoyPitchSensitivitySlider = new CCvarSlider( this, "JoystickPitchSlider", "#GameUI_JoystickPitchSensitivity",
+	m_pJoyPitchSensitivitySlider = new CvarSlider( this, "JoystickPitchSlider", "#GameUI_JoystickPitchSensitivity",
 		0.5f, 7.0f, "joy_pitchsensitivity", true );
 	m_pJoyPitchSensitivityPreLabel = new Label(this, "JoystickPitchSensitivityPreLabel", "#GameUI_JoystickLookSpeedPitch" );
 

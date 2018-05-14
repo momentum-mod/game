@@ -175,75 +175,19 @@ void EditablePanel::OnSizeChanged(int wide, int tall)
 	BaseClass::OnSizeChanged(wide, tall);
 	InvalidateLayout();
 
-	for (int i = 0; i < GetChildCount(); i++)
-	{
-		// perform auto-layout on the child panel
-		Panel *child = GetChild(i);
-		if ( !child )
-			continue;
+    if (!m_bShouldSkipAutoResize)
+    {
+        for (int i = 0; i < GetChildCount(); i++)
+        {
+            // perform auto-layout on the child panel
+            Panel *child = GetChild(i);
+            if (!child)
+                continue;
 
-		int x, y, w, h;
-		child->GetBounds( x, y, w, h );
+            child->CalculateAutoResize(wide, tall);
+        }
+    }
 
-		int px, py;
-		child->GetPinOffset( px, py );
-
-		int ox, oy;
-		child->GetResizeOffset( ox, oy );
-
-		int ex;
-		int ey;
-
-		AutoResize_e resize = child->GetAutoResize(); 
-		bool bResizeHoriz = ( resize == AUTORESIZE_RIGHT || resize == AUTORESIZE_DOWNANDRIGHT );
-		bool bResizeVert = ( resize == AUTORESIZE_DOWN || resize == AUTORESIZE_DOWNANDRIGHT );
-
-		// The correct version of this code would say:
-		// if ( resize != AUTORESIZE_NO )
-		// but we're very close to shipping and this causes artifacts in other vgui panels that now
-		// depend on this bug.  So, I've added m_bShouldSkipAutoResize, which defaults to false but can
-		// be set using "skip_autoresize" in a .res file
-		if ( !m_bShouldSkipAutoResize )
-		{
-			PinCorner_e pinCorner = child->GetPinCorner();
-			if ( pinCorner == PIN_TOPRIGHT || pinCorner == PIN_BOTTOMRIGHT )
-			{
-				// move along with the right edge
-				ex = wide + px;
-				x = bResizeHoriz ? ox : ex - w;
-			}
-			else
-			{
-				x = px;
-				ex = bResizeHoriz ? wide + ox : px + w;
-			}
-
-			if ( pinCorner == PIN_BOTTOMLEFT || pinCorner == PIN_BOTTOMRIGHT )
-			{
-				// move along with the right edge
-				ey = tall + py;
-				y = bResizeVert ? oy : ey - h;
-			}
-			else
-			{
-				y = py;
-				ey = bResizeVert ? tall + oy : py + h;
-			}
-
-			// Clamp..
-			if ( ex < x )
-			{
-				ex = x;
-			}
-			if ( ey < y )
-			{
-				ey = y;
-			}
-
-			child->SetBounds( x, y, ex - x, ey - y );
-			child->InvalidateLayout();
-		}
-	}
 	Repaint();
 }
 

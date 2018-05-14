@@ -52,7 +52,7 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
         m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
     }
 
-    m_pSliderScale = FindControl<CCvarSlider>("SliderScale");
+    m_pSliderScale = FindControl<CvarSlider>("SliderScale");
 
     m_pTextSliderScale = FindControl<TextEntry>("TextSliderScale");
 

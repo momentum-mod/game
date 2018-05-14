@@ -17,38 +17,30 @@
 
 using namespace vgui;
 
-CCvarNegateCheckButton::CCvarNegateCheckButton( Panel *parent, const char *panelName, const char *text, 
+CvarNegateCheckButton::CvarNegateCheckButton( Panel *parent, const char *panelName, const char *text, 
 	const char *cvarname )
- : CheckButton( parent, panelName, text )
+ : CheckButton( parent, panelName, text ), m_cvarRef(cvarname)
 {
-	m_pszCvarName = cvarname ? strdup( cvarname ) : NULL;
 	Reset();
 	AddActionSignalTarget( this );
 }
 
-CCvarNegateCheckButton::~CCvarNegateCheckButton()
+CvarNegateCheckButton::~CvarNegateCheckButton()
 {
-	free( m_pszCvarName );
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CCvarNegateCheckButton::Paint()
+void CvarNegateCheckButton::Paint()
 {
-	if ( !m_pszCvarName )
+	if ( !m_cvarRef.IsValid())
 	{
 		BaseClass::Paint();
 		return;
 	}
 
-	// Look up current value
-//	float value = engine->pfnGetCvarFloat( m_pszCvarName );
-	ConVarRef var( m_pszCvarName );
-	if ( !var.IsValid() )
-		return;
-
-	float value = var.GetFloat();
+	float value = m_cvarRef.GetFloat();
 		
 	if ( value < 0 )
 	{
@@ -69,15 +61,12 @@ void CCvarNegateCheckButton::Paint()
 	BaseClass::Paint();
 }
 
-void CCvarNegateCheckButton::Reset()
+void CvarNegateCheckButton::Reset()
 {
-	// Look up current value
-//	float value = engine->pfnGetCvarFloat( m_pszCvarName );
-	ConVarRef var( m_pszCvarName );
-	if ( !var.IsValid() )
+	if ( !m_cvarRef.IsValid() )
 		return;
 
-	float value = var.GetFloat();
+	float value = m_cvarRef.GetFloat();
 		
 	if ( value < 0 )
 	{
@@ -90,7 +79,7 @@ void CCvarNegateCheckButton::Reset()
 	SetSelected(m_bStartState);
 }
 
-bool CCvarNegateCheckButton::HasBeenModified()
+bool CvarNegateCheckButton::HasBeenModified()
 {
 	return IsSelected() != m_bStartState;
 }
@@ -99,18 +88,17 @@ bool CCvarNegateCheckButton::HasBeenModified()
 // Purpose: 
 // Input  : *panel - 
 //-----------------------------------------------------------------------------
-void CCvarNegateCheckButton::SetSelected( bool state )
+void CvarNegateCheckButton::SetSelected( bool state )
 {
 	BaseClass::SetSelected( state );
 }
 
-void CCvarNegateCheckButton::ApplyChanges()
+void CvarNegateCheckButton::ApplyChanges()
 {
-	if ( !m_pszCvarName || !m_pszCvarName[ 0 ] ) 
+	if ( !m_cvarRef.IsValid() ) 
 		return;
 
-	ConVarRef var( m_pszCvarName );
-	float value = var.GetFloat();
+	float value = m_cvarRef.GetFloat();
 	
 	value = (float)fabs( value );
 	if (value < 0.00001)
@@ -123,11 +111,11 @@ void CCvarNegateCheckButton::ApplyChanges()
 	value = -value;
 
 	float ans = m_bStartState ? value : -value;
-	var.SetValue( ans );
+    m_cvarRef.SetValue( ans );
 }
 
 
-void CCvarNegateCheckButton::OnButtonChecked()
+void CvarNegateCheckButton::OnButtonChecked()
 {
 	if (HasBeenModified())
 	{

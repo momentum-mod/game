@@ -28,7 +28,7 @@ private:
     void UpdateSliderSettings();
 
 
-    vgui::CCvarSlider *m_pAlphaOverrideSlider;
+    vgui::CvarSlider *m_pAlphaOverrideSlider;
     vgui::TextEntry *m_pAlphaOverrideInput;
     vgui::CvarToggleCheckButton *m_pEnableColorAlphaOverride;
 };

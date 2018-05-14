@@ -18,6 +18,7 @@
 
 using namespace vgui;
 
+USING_BUILD_FACTORY(AnalogBar);
 USING_BUILD_FACTORY( Button );
 USING_BUILD_FACTORY( EditablePanel );
 USING_BUILD_FACTORY( ImagePanel );
@@ -27,6 +28,7 @@ USING_BUILD_FACTORY( ToggleButton );
 USING_BUILD_FACTORY( AnimatingImagePanel );
 USING_BUILD_FACTORY( CBitmapImagePanel );
 USING_BUILD_FACTORY( CheckButton );
+USING_BUILD_FACTORY(CheckButtonList);
 USING_BUILD_FACTORY( ComboBox );
 USING_BUILD_FACTORY( CvarToggleCheckButton );
 USING_BUILD_FACTORY( Divider );
@@ -55,7 +57,7 @@ USING_BUILD_FACTORY( TreeView );
 USING_BUILD_FACTORY( CTreeViewListControl );
 USING_BUILD_FACTORY( URLLabel );
 USING_BUILD_FACTORY(ScrubbableProgressBar);
-USING_BUILD_FACTORY(CCvarSlider);
+USING_BUILD_FACTORY(CvarSlider);
 USING_BUILD_FACTORY(CvarTextEntry);
 
 int g_nYou_Must_Add_Public_Vgui_Controls_Vgui_ControlsCpp_To_Your_Project = 0;

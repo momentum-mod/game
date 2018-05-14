@@ -8,7 +8,7 @@ namespace vgui
 {
 
 class Label;
-class CCvarSlider;
+class CvarSlider;
 class ColorPicker;
 class CvarToggleCheckButton;
 
@@ -37,7 +37,7 @@ class PaintGunPanel : public EditablePanel, public CGameEventListener
     MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
 
     ColorPicker *m_pColorPicker;
-    CCvarSlider *m_pSliderScale;
+    CvarSlider *m_pSliderScale;
     TextEntry *m_pTextSliderScale;
     Label *m_pLabelSliderScale;
     Label *m_pLabelColorButton;
