@@ -257,7 +257,7 @@ void BuildGroup::DrawRulers()
 	_rulerNumber[1]->GetSize(twide,ttall);
 	_rulerNumber[1]->SetPos(cx-twide + 3, cy/2-ttall/2);
 	
-	Q_snprintf (textstring, sizeof( textstring ), "%d", cy);
+	Q_snprintf (textstring, sizeof( textstring ), "%d", cx);
 	_rulerNumber[2]->SetText(textstring);
 	_rulerNumber[2]->GetContentSize(twide,ttall);
 	_rulerNumber[2]->SetSize(twide,ttall);
