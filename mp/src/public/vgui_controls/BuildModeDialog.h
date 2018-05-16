@@ -56,6 +56,8 @@ protected:
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual bool IsBuildGroupEnabled();
 
+    void OnScreenSizeChanged(int iOldWide, int iOldTall) OVERRIDE;
+
 private:
 	void CreateControls();
 	
@@ -89,6 +91,8 @@ private:
 
 	class PanelList;
 	PanelList *m_pPanelList;
+
+    HFont m_Font;
 
 	Button *m_pSaveButton;
 	Button *m_pApplyButton;
