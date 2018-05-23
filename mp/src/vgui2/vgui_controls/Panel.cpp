@@ -4000,11 +4000,12 @@ void Panel::GetResizeOffset( int &dx, int &dy )
 //-----------------------------------------------------------------------------
 void Panel::PinToSibling( const char *pszSibling, PinCorner_e pinOurCorner, PinCorner_e pinSibling )
 {
-	_pinCornerToSibling = pinOurCorner;
-	_pinToSiblingCorner = pinSibling;
-
-	if ( m_pinSibling.Get() && _pinToSibling.IsEqual_CaseSensitive(pszSibling) )
+	if ( m_pinSibling.Get() && _pinToSibling.IsEqual_CaseSensitive(pszSibling) &&
+        pinOurCorner == _pinCornerToSibling && pinSibling == _pinCornerToSibling)
 		return;
+
+    _pinCornerToSibling = pinOurCorner;
+    _pinToSiblingCorner = pinSibling;
 
     _pinToSibling.Purge();
 
