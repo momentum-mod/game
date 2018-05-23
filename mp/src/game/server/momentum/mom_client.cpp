@@ -10,10 +10,7 @@
 #include "engine/IEngineSound.h"
 #include "util/os_utils.h"
 
-#ifdef _WIN32
-#pragma warning( disable: 4005 )
-#include "Windows.h"
-#endif
+
 #include "tier0/vprof.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

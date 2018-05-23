@@ -43,6 +43,9 @@
 
 #define ENABLE_HTTP_LEADERBOARDS 0
 
+class SavelocReqFrame;
+class LobbyMembersPanel;
+
 class CUtlSortVectorTimeValue
 {
 public:
@@ -98,8 +101,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     void ShowPanel(bool bShow) OVERRIDE;
 
-    bool ShowAvatars() { return IsPC(); }
-
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
     vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
 
@@ -132,13 +133,11 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
     MESSAGE_FUNC_UINT64(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", UGC);
     MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
+    MESSAGE_FUNC_UINT64(OnContextReqSavelocs, "ContextReqSavelocs", target);
     MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyCreated, LobbyCreated_t); // When we create a lobby
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyEnter, LobbyEnter_t); // When we enter a lobby
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyDataUpdate, LobbyDataUpdate_t); // People/lobby updates status
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyChatUpdate, LobbyChatUpdate_t); // People join/leave
+
 
     // Leaderboards API
     SteamLeaderboard_t m_hCurrentLeaderboard;
@@ -159,7 +158,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // functions to override
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
     void InitScoreboardSections();
-    void InitLobbyPanelSections();
     void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() OVERRIDE;
     void AddHeader(); // add the start header of the scoreboard
@@ -170,7 +168,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // sorts players within a section
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
     static bool StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
-    static bool StaticLobbyMemberSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
+
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
@@ -180,13 +178,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     int FindItemIDForLocalTime(KeyValues *kvRef);
     // finds an online time in the scoreboard
     int FindItemIDForOnlineTime(int runID, LEADERBOARDS);
-    // finds a player in the lobby data panel
-    int FindItemIDForLobbyMember(uint64 steamID);
-    int FindItemIDForLobbyMember(const CSteamID &id) { return FindItemIDForLobbyMember(id.ConvertToUint64()); }
 
-    // Lobby member panel functions
-    void AddLobbyMember(const CSteamID &steamID); // Adds a lobby member to the panel
-    void UpdateLobbyMemberData(const CSteamID &memberID); // Updates the lobby member's status data on the panel
 
     int m_iSectionId; // the current section we are entering into
 
@@ -198,7 +190,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
 
     vgui::ImageList *m_pImageList;
-    vgui::ImageList *m_pImageListLobby;
     Panel *m_pHeader;
     Panel *m_pPlayerStats;
     Panel *m_pLeaderboards;
@@ -221,7 +212,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::Button *m_pGlobalAroundButton;
     vgui::Button *m_pFriendsLeaderboardsButton;
 
-    vgui::SectionedListPanel *m_pLobbyMembersPanel;
+    LobbyMembersPanel *m_pLobbyMembersPanel;
+    SavelocReqFrame *m_pSavelocReqFrame;
 
     vgui::ToggleButton *m_pRunFilterButton;
     EditablePanel *m_pFilterPanel;
@@ -229,7 +221,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     Panel *m_pCurrentLeaderboards;
 
     CUtlMap<uint64, int> m_mapAvatarsToImageList;
-    CUtlMap<uint64, int> m_mapLobbyIDToImageListIndx;
 
     CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34"); // Avatar width doesn't scale with resolution
     CPanelAnimationVarAliasType(int, m_iNameWidth, "name_width", "136", "proportional_int");
@@ -272,8 +263,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
 
-    CSteamID m_idLobby;
-    void PopulateLobbyPanel();
+
     
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline

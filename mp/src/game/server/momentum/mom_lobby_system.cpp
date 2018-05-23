@@ -3,6 +3,7 @@
 #include "base64.h"
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
+#include "mom_system_saveloc.h"
 
 #include "tier0/memdbgon.h"
 
@@ -94,6 +95,12 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
             index = m_mapLobbyGhosts.NextInorder(index);
         }
     }
+}
+
+void CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* p)
+{
+    if (LobbyValid())
+        SendPacket(p, &target, k_EP2PSendReliable);
 }
 
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
@@ -295,7 +302,8 @@ void CMomentumLobbySystem::ClearCurrentGhosts(bool bRemoveEnts)
 void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
 {
     // Write the packet out to binary
-    CUtlBuffer buf(0, 1200);
+    int size = sendType >= k_EP2PSendReliable ? 1000000 : 1200;
+    CUtlBuffer buf(0, size);
     buf.SetBigEndian(false);
     packet->Write(buf);
 
@@ -396,6 +404,9 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
     if (state & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
     {
         DevLog("User left/disconnected!\n");
+
+        // Check if they're a saveloc requester
+        g_pMOMSavelocSystem->RequesterLeft(changedPerson.ConvertToUint64());
 
         uint16 findMember = m_mapLobbyGhosts.Find(changedPerson.ConvertToUint64());
         if (findMember != m_mapLobbyGhosts.InvalidIndex())
@@ -520,6 +531,9 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             
             m_mapLobbyGhosts.RemoveAt(findIndx);
 
+            // Remove them if they're a requester
+            g_pMOMSavelocSystem->RequesterLeft(pID_int);
+
             // "_____ just left your map."
             WriteMessage(LOBBY_UPDATE_MEMBER_LEAVE_MAP, pID_int);
         }
@@ -625,6 +639,94 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 
                     // Write it out to the Hud Chat
                     WriteMessage(update.spec_type, fromWhoID, specTargetID);
+                }
+                break;
+
+            case PT_SAVELOC_REQ:
+                {
+                    DevMsg("Got a saveloc req packet!\n");
+                    SavelocReqPacket_t saveloc(buf);
+
+                    // Done/fail states:
+                    // 1. They hit "cancel" (most common)
+                    // 2. They leave the map (same as 1, just accidental maybe)
+                    // 3. They leave the lobby/server (manually, due to power outage, etc)
+                    // 4. We leave the map
+                    // 5. We leave the lobby/server
+                    // 6. They get the savelocs they need
+
+                    // Of the above, 1 and 6 are the ones that are manually sent.
+                    // 2<->5 can be automatically detected with lobby/server hooks
+
+                    // Fail requirements:
+                    // Requester: set "requesting" to false, close the request UI
+                    // Requestee: remove requester from requesters vector
+
+                    switch (saveloc.stage)
+                    {
+                    case 0:
+                    default:
+                        DevWarning("Invalid stage for the saveloc request packet!\n");
+                        break;
+                    case 1:
+                        {
+                            Msg("Got a stage 1 saveloc request packet!\n");
+                            // Somebody wants our savelocs, let the saveloc system handle this
+                            g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
+
+                            // Send them our saveloc count
+                            SavelocReqPacket_t response;
+                            response.stage = 2;
+                            response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
+
+                            SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                        }
+                        break;
+                    case 2:
+                        {
+                            Msg("Got a stage 2 saveloc request packet!\n");
+                            // We got the number of savelocs, pass this to the client
+                            KeyValues *pKV = new KeyValues("req_savelocs");
+                            pKV->SetInt("stage", 2);
+                            pKV->SetInt("count", saveloc.saveloc_count);
+                            g_pModuleComms->FireEvent(pKV);
+                        }
+                        break;
+                    case 3:
+                        {
+                            // Somebody sent us the number of the savelocs they want, saveloc system pls help
+                            SavelocReqPacket_t response;
+                            response.stage = 4;
+                            response.saveloc_count = saveloc.saveloc_count;
+
+                            if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
+                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                        }
+                        break;
+                    case 4:
+                        {
+                            // We got their savelocs, add it to the player's list of savelocs
+                            if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
+                            {
+                                // Send them a packet that we're all good
+                                SavelocReqPacket_t response;
+                                response.stage = -1;
+                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
+
+                                // Send ourselves an event saying we're all good
+                                KeyValues *pKv = new KeyValues("req_savelocs");
+                                pKv->SetInt("stage", -1);
+                                g_pModuleComms->FireEvent(pKv);
+                            }
+                        }
+                        break;
+                    case -1: // The other player is all done/cancelled
+                        {
+                            // Remove the requester
+                            g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+                        }
+                        break;
+                    }
                 }
                 break;
             default:

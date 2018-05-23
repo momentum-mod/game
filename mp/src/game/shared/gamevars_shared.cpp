@@ -22,14 +22,10 @@ void MPForceCameraCallback( IConVar *var, const char *pOldString, float flOldVal
 
 // some shared cvars used by game rules
 ConVar mp_forcecamera( 
-	"mp_forcecamera", 
-#ifdef CSTRIKE
-	"0", 
-#else
-	"1",
-#endif
+	"mp_forcecamera",
+	"0",
 	FCVAR_REPLICATED,
-	"Restricts spectator modes for dead players"
+	"Restricts spectator modes. 0 = ALL\n"
 #ifdef GAME_DLL
 	, MPForceCameraCallback 
 #endif

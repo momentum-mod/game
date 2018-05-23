@@ -165,6 +165,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     SavedLocation_t *CreateSaveloc();
     // Creates and saves a checkpoint to the saveloc menu
     void CreateAndSaveLocation();
+    // Add a Saveloc to the list
+    void AddSaveloc(SavedLocation_t *saveloc);
     // Removes last saveloc (menu) form the saveloc lists
     void RemoveLastSaveloc();
     // Removes every saveloc (menu) on the saveloc list
@@ -177,6 +179,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void SetCurrentSavelocMenuIndex(int iNewNum) { m_SrvData.m_iCurrentSavelocIndx = iNewNum; }
     // Gets the total amount of menu savelocs
     int GetSavelocCount() const { return m_rcSavelocs.Size(); }
+    // Gets a saveloc given an index (number)
+    SavedLocation_t *GetSaveloc(int indx) { return indx > -1 && indx < m_rcSavelocs.Count() ? m_rcSavelocs[indx] : nullptr;}
     // Sets wheter or not we're using the Saveloc Menu
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu) { m_SrvData.m_bUsingSavelocMenu = bIsUsingSLMenu; }
@@ -235,7 +239,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
 
     // Checkpoint menu
-    CUtlVector<SavedLocation_t *> m_rcSavelocs;
+    CUtlVector<SavedLocation_t*> m_rcSavelocs;
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;

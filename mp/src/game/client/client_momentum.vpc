@@ -133,6 +133,10 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\ClientTimesDisplay.cpp"
                     $File 	"momentum\ui\LeaderboardsContextMenu.h"
                     $File 	"momentum\ui\LeaderboardsContextMenu.cpp"
+                    $File "momentum\ui\SavelocRequestFrame.h"
+                    $File "momentum\ui\SavelocRequestFrame.cpp"
+                    $File "momentum\ui\LobbyMembersPanel.h"
+                    $File "momentum\ui\LobbyMembersPanel.cpp"
                 }
                 
                 $Folder "Changelog"

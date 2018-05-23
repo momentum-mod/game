@@ -6,10 +6,7 @@
 #include "mom_timer.h"
 #include "util/mom_util.h"
 #include "util/os_utils.h"
-#ifdef _WIN32
-#pragma warning( disable: 4005 )
-#include <Windows.h>
-#endif
+
 #include "tier0/memdbgon.h"
 
 static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0",
