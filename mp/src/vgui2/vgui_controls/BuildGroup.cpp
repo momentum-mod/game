@@ -928,8 +928,7 @@ void BuildGroup::LoadControlSettings(const char *controlResourceName, const char
 
 	if (m_pParentPanel)
 	{
-		m_pParentPanel->InvalidateLayout();
-		m_pParentPanel->Repaint();
+		m_pParentPanel->InvalidateLayout(true);
 	}
 
 	if ( rDat != pPreloadedKeyValues )

@@ -1241,7 +1241,7 @@ void CHLClient::Shutdown( void )
 	ClearKeyValuesCache();
 
 #ifndef NO_STEAM
-	ClientSteamContext().Shutdown();
+	//ClientSteamContext().Shutdown();
 #endif
 
 #ifdef WORKSHOP_IMPORT_ENABLED

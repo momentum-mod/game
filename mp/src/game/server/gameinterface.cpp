@@ -800,7 +800,7 @@ void CServerGameDLL::DLLShutdown( void )
 	s_SteamGameServerAPIContext.Clear();
 #endif	
 
-    SteamAPI_Shutdown();
+    //SteamAPI_Shutdown();
 	gameeventmanager = NULL;
 	
 	DisconnectTier3Libraries();

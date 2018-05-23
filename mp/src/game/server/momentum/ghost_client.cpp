@@ -53,11 +53,9 @@ CON_COMMAND(mom_spectate_stop, "Stop spectating.")
     }
 }
 CMomentumPlayer* CMomentumGhostClient::m_pPlayer = nullptr;
-CMomentumGhostClient *CMomentumGhostClient::m_pInstance = nullptr;
 
 CMomentumGhostClient::CMomentumGhostClient(const char* pName) : CAutoGameSystemPerFrame(pName), m_cvarHostTimescale("host_timescale")
 {
-    m_pInstance = this;
 }
 
 void CMomentumGhostClient::PostInit()
@@ -90,7 +88,8 @@ void CMomentumGhostClient::LevelShutdownPreEntity()
 
 void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
-    m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    if (!m_pPlayer)
+        m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     g_pMomentumLobbySystem->SendAndRecieveP2PPackets();
 }
 
@@ -137,6 +136,12 @@ void CMomentumGhostClient::SendDecalPacket(DecalPacket_t *packet)
         g_pMomentumLobbySystem->SendDecalPacket(packet);
     }
     // MOM_TODO: else let the player know their decal packets aren't being sent?
+}
+
+void CMomentumGhostClient::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* packet)
+{
+    // MOM_TODO: g_pMomentumServerSystem->SendSavelocReqPacket(target, packet);
+    g_pMomentumLobbySystem->SendSavelocReqPacket(target, packet);
 }
 
 CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(const uint64& id)
