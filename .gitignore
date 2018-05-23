@@ -92,13 +92,6 @@ game_shader_dx9_srv.so
 game_shader_dx9_srv.so.dbg
 game_shader_dx9.dylib
 game_shader_dx9.dylib.dYSM/
-gameui2.dll
-gameui2.so
-gameui2.so.dbg
-gameui2_srv.so
-gameui2_srv.so.dbg
-gameui2.dylib
-gameui2.dylib.dYSM/
 mp/game/bin/
 
 # Others
