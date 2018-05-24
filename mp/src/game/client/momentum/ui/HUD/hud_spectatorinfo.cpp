@@ -3,10 +3,13 @@
 #include "clientmode.h"
 #include "mom_shareddefs.h"
 #include "vgui/ILocalize.h"
+#include "vgui/ISurface.h"
 #include "steam/steam_api.h"
 #include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 DECLARE_HUDELEMENT(CHudSpectatorInfo);
 

@@ -7,8 +7,6 @@
 
 #include "cbase.h"
 
-#include <stdio.h>
-
 #include "ClientTimesDisplay.h"
 #include "inputsystem/iinputsystem.h"
 #include <cdll_client_int.h>
@@ -19,12 +17,14 @@
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vstdlib/IKeyValuesSystem.h>
 
 #include <KeyValues.h>
 #include <vgui_controls/ImageList.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/SectionedListPanel.h>
+#include "vgui_controls/TextImage.h"
+#include "vgui_controls/ToggleButton.h"
+#include "LeaderboardsContextMenu.h"
 
 #include <game/client/iviewport.h>
 
@@ -41,6 +41,7 @@
 #include "clientmode.h"
 #include "SavelocRequestFrame.h"
 #include "LobbyMembersPanel.h"
+#include "mom_modulecomms.h"
 
 extern IFileSystem *filesystem;
 

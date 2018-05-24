@@ -3,8 +3,21 @@
 #include "mom_shareddefs.h"
 #include <game/client/iviewport.h>
 #include "momSpectatorGUI.h"
+#include "clientmode.h"
+#include "mom_player_shared.h"
+
+#include <vgui_controls/ImagePanel.h>
+#include "vgui_controls/Tooltip.h"
+#include <vgui/IInput.h>
+#include "vgui/ISurface.h"
+#include "vgui/ILocalize.h"
+
+#include "mom_event_listener.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 

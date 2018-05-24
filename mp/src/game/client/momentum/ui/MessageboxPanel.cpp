@@ -4,9 +4,12 @@
 #include "MessageboxPanel.h"
 #include "mom_shareddefs.h"
 #include <vgui_controls/CvarToggleCheckButton.h>
+#include "hud_macros.h"
 
 static MAKE_TOGGLE_CONVAR(mom_toggle_nostartorend, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if No Start or End should be shown.\n");
 static MAKE_TOGGLE_CONVAR(mom_toggle_versionwarn, "0", FCVAR_HIDDEN | FCVAR_ARCHIVE, "Controls if the initial version warning should be shown.\n");
+
+using namespace vgui;
 
 void __MsgFunc_MB_PlayerTriedSaveOrLoad(bf_read &msg)
 {
@@ -26,7 +29,7 @@ MessageBoxVarRef::MessageBoxVarRef(const char* title, const char* msg, const cha
 {
     // When toggled, will not allow the panel to be created (We don't check it here because we've done it on our 2 interfaces (Messaging and IMEssageBox)
     // this also allows us to show this even if the toggle says no! (Like, for important stuff)
-    m_pToggleCheckButton = new CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
+    m_pToggleCheckButton = new vgui::CvarToggleCheckButton(this, "MessageboxVarRef", "#MOM_MB_DontShowAgain", cvar);
     AddActionSignalTarget(m_pToggleCheckButton); // Catch that OK button press
 }
 

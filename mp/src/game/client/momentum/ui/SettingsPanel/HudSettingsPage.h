@@ -3,12 +3,7 @@
 #include "cbase.h"
 
 #include "SettingsPage.h"
-#include <vgui_controls/Button.h>
-#include <vgui_controls/CvarToggleCheckButton.h>
 #include <vgui_controls/Frame.h>
-#include <vgui_controls/pch_vgui_controls.h>
-
-using namespace vgui;
 
 class HudSettingsPage : public SettingsPage
 {
@@ -27,8 +22,8 @@ class HudSettingsPage : public SettingsPage
     void OnCheckboxChecked(Panel *p) OVERRIDE;
 
 private:
-    ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
+    vgui::ComboBox *m_pSpeedometerUnits, *m_pSyncType, *m_pSyncColorize, *m_pSpeedometerColorize;
 
-    CvarToggleCheckButton *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel,
+    vgui::CvarToggleCheckButton *m_pSpeedometerShow, *m_pSpeedometerShowLastJump, *m_pSpeedometerShowVerticalVel,
         *m_pSyncShow, *m_pSyncShowBar, *m_pButtonsShow, *m_pShowVersion, *m_pTimerShow;
 };

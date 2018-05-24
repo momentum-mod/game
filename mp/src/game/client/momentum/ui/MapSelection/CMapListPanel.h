@@ -14,8 +14,8 @@ public:
 
     virtual void OnKeyCodeTyped(vgui::KeyCode code);
 
-    virtual void ApplySchemeSettings(IScheme *pScheme);
-    virtual void SetFont(HFont font)
+    virtual void ApplySchemeSettings(vgui::IScheme *pScheme);
+    virtual void SetFont(vgui::HFont font)
     {
         int oldHeight = GetRowHeight();
         BaseClass::SetFont(font);
