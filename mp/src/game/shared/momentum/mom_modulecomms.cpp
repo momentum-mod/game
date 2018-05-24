@@ -1,6 +1,5 @@
 #include "cbase.h"
 #include "run/run_stats.h"
-#include "mom_player_shared.h"
 #include "mom_modulecomms.h"
 #include "util/os_utils.h"
 
@@ -110,7 +109,7 @@ void ModuleCommunication::FireEvent(KeyValues* pKv, bool fireLocal /* = true */)
         OnEvent(pCopy); //pCopy->deleteThis is called in here
 }
 
-void ModuleCommunication::ListenForEvent(const char* pName, EventListener *listener)
+void ModuleCommunication::ListenForEvent(const char* pName, CUtlDelegate<void (KeyValues*)> listener)
 {
     int found = m_dictListeners.Find(pName);
     if (m_dictListeners.IsValidIndex(found))
@@ -130,7 +129,6 @@ void ModuleCommunication::ListenForEvent(const char* pName, EventListener *liste
 
 void ModuleCommunication::OnEvent(KeyValues* pKv)
 {
-
     // Find the event listeners for this particular event
     int found = m_dictListeners.Find(pKv->GetName());
     if (m_dictListeners.IsValidIndex(found))
@@ -139,7 +137,7 @@ void ModuleCommunication::OnEvent(KeyValues* pKv)
         EventListenerContainer *pContainer = m_vecListeners[indx];
         FOR_EACH_LL(pContainer->m_listeners, i)
         {
-            pContainer->m_listeners[i]->FireEvent(pKv);
+            pContainer->m_listeners[i](pKv);
         }
     }
     else

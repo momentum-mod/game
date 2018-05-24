@@ -5,6 +5,7 @@
 #include "vgui_controls/Label.h"
 #include "vgui_controls/Button.h"
 #include "tier1/fmtstr.h"
+#include "mom_modulecomms.h"
 
 #include "tier0/memdbgon.h"
 
@@ -33,7 +34,7 @@ SavelocReqFrame::SavelocReqFrame() : BaseClass(nullptr, "SavelocReqFrame"), m_iS
 
     m_pRequestButton->SetEnabled(false);
 
-    g_pModuleComms->ListenForEvent("req_savelocs", this);
+    g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &SavelocReqFrame::FireEvent));
 
     SetVisible(false);
 }

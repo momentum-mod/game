@@ -6,6 +6,7 @@
 #include "run/mom_entity_run_data.h"
 #include "run/mom_slide_data.h"
 #include "tier1/utllinkedlist.h"
+#include <utldelegate.h>
 
 /*
  * Members of this class will be calculated server-side but updated
@@ -95,11 +96,13 @@ typedef void (*DataToReplayFn)(StdReplayDataFromServer*);
  */
 typedef void (*EventFireFn)(KeyValues *pKv);
 
+/*
 abstract_class EventListener
 {
 public:
     virtual void FireEvent(KeyValues *pKv) = 0;
 };
+*/
 
 struct EventListenerContainer
 {
@@ -107,7 +110,7 @@ struct EventListenerContainer
     {
         m_listeners.RemoveAll();
     }
-    CUtlLinkedList<EventListener*> m_listeners;
+    CUtlLinkedList<CUtlDelegate<void (KeyValues*)>> m_listeners;
 };
 
 class ModuleCommunication : public CAutoGameSystem
@@ -123,7 +126,7 @@ public:
     // fireLocal is controlling whether the event is fired on the same DLL it is created on
     void FireEvent(KeyValues *pKv, bool fireLocal = true);
     void OnEvent(KeyValues *pKv); // The event has been caught by the recieving end
-    void ListenForEvent(const char *pName, EventListener *listener);
+    void ListenForEvent(const char *pName, CUtlDelegate<void (KeyValues *)> listener);
 
 private:
     void (*CallMeToFireEvent)(KeyValues *pKv);

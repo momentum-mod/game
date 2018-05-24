@@ -4,6 +4,7 @@
 #include "mom_shareddefs.h"
 #include "util/mom_util.h"
 #include "ghost_client.h"
+#include "mom_modulecomms.h"
 
 #include "tier0/memdbgon.h"
 
@@ -99,7 +100,7 @@ CMOMSaveLocSystem::CMOMSaveLocSystem(const char* pName): CAutoGameSystem(pName)
     m_pSavedLocsKV = new KeyValues(pName);
     m_iRequesting = 0;
 
-    g_pModuleComms->ListenForEvent("req_savelocs", this);
+    g_pModuleComms->ListenForEvent("req_savelocs", UtlMakeDelegate(this, &CMOMSaveLocSystem::FireEvent));
 }
 
 CMOMSaveLocSystem::~CMOMSaveLocSystem()
