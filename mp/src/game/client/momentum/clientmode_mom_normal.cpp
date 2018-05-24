@@ -18,10 +18,12 @@
 
 extern bool g_bRollingCredits;
 
+using namespace vgui;
+
 //-----------------------------------------------------------------------------
 // Globals
 //-----------------------------------------------------------------------------
-vgui::HScheme g_hVGuiCombineScheme = 0;
+HScheme g_hVGuiCombineScheme = 0;
 
 // Instance the singleton and expose the interface to it.
 IClientMode *GetClientModeNormal()
@@ -39,7 +41,7 @@ class CHudViewport : public CBaseViewport
     DECLARE_CLASS_SIMPLE(CHudViewport, CBaseViewport);
 
   protected:
-    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE
+    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
     {
         BaseClass::ApplySchemeSettings(pScheme);
 

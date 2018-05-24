@@ -6,6 +6,12 @@
 #include "util/mom_util.h"
 #include "mom_shareddefs.h"
 
+#include <vgui_controls/Frame.h>
+#include <vgui_controls/ComboBox.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
+
+#include "ColorPicker.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;

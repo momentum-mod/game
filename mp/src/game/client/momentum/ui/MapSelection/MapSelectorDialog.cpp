@@ -7,6 +7,8 @@ CMapSelectorDialog &MapSelectorDialog()
     return *CMapSelectorDialog::GetInstance();
 }
 
+using namespace vgui;
+
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -30,7 +32,7 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
     m_pContextMenu = new CMapContextMenu(this);
 
     // property sheet
-    m_pTabPanel = new PropertySheet(this, "MapTabs");
+    m_pTabPanel = new vgui::PropertySheet(this, "MapTabs");
     m_pTabPanel->SetSize(10, 10); // Fix "parent not sized yet" spew
     m_pTabPanel->SetTabWidth(72);
     m_pTabPanel->AddPage(m_pLocal, "#MOM_MapSelector_LocalMaps");
@@ -38,7 +40,7 @@ CMapSelectorDialog::CMapSelectorDialog(vgui::VPANEL parent) : Frame(nullptr, "CM
 
     m_pTabPanel->AddActionSignalTarget(this);
 
-    m_pStatusLabel = new Label(this, "StatusLabel", "");
+    m_pStatusLabel = new vgui::Label(this, "StatusLabel", "");
 
     LoadControlSettingsAndUserConfig("resource/ui/DialogMapSelector.res");
 

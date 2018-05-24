@@ -12,20 +12,11 @@
 #endif
 
 #include "cbase.h"
-
 #include "steam/steam_api.h"
-
 #include "GameEventListener.h"
-
-#include "LeaderboardsContextMenu.h"
-#include "momentum/mom_shareddefs.h"
-#include <KeyValues.h>
 #include <game/client/iviewport.h>
-#include <vgui_controls/pch_vgui_controls.h>
-#include <vgui_controls/EditablePanel.h>
-#include <vgui_controls/SectionedListPanel.h>
-#include <vgui_controls/TextImage.h>
 #include "run/mom_replay_base.h"
+#include "vgui_controls/EditablePanel.h"
 
 #define TYPE_NOTEAM 0 // NOTEAM must be zero :)
 #define TYPE_TEAM 1   // a section for a single team
@@ -45,6 +36,7 @@
 
 class SavelocReqFrame;
 class LobbyMembersPanel;
+class CLeaderboardsContextMenu;
 
 class CUtlSortVectorTimeValue
 {

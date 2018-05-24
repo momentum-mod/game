@@ -3,6 +3,7 @@
 #include "GameplaySettingsPage.h"
 #include <vgui_controls/CvarTextEntry.h>
 #include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
 
 using namespace vgui;
 
