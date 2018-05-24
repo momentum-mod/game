@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cbase.h"
-#include "steam/steam_api.h"
 
 class CMomReplayBase;
 class CMomRunStats;
@@ -14,12 +13,7 @@ class MomentumUtil
   public:
 
 #ifdef CLIENT_DLL
-    void GetRemoteChangelog();
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> cbChangeLog;
-    void ChangelogCallback(HTTPRequestCompleted_t *, bool);
-
     void UpdatePaintDecalScale(float fNewScale);
-
 #endif
 
     bool GetColorFromHex(const char *hexColor, Color &into); // in hex color format RRGGBB or RRGGBBAA
