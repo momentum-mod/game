@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_modulecomms.h"
 
 class CMomentumPlayer;
 struct SavelocReqPacket_t;
@@ -36,7 +35,7 @@ struct SavedLocation_t
     void Write(CUtlBuffer &mem);
 };
 
-class CMOMSaveLocSystem : public CAutoGameSystem, public EventListener
+class CMOMSaveLocSystem : public CAutoGameSystem
 {
 public:
     CMOMSaveLocSystem(const char* pName);
@@ -45,8 +44,7 @@ public:
     void LevelInitPreEntity() OVERRIDE;
     void LevelShutdownPreEntity() OVERRIDE;
 
-    void FireEvent(KeyValues* pKv) OVERRIDE;
-
+    void FireEvent(KeyValues* pKv);
 
     void LoadMapSaveLocs(CMomentumPlayer *pPlayer) const;
 

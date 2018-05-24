@@ -1,8 +1,7 @@
 #pragma once
 #include "vgui_controls/Frame.h"
-#include "mom_modulecomms.h"
 
-class SavelocReqFrame : public vgui::Frame, public EventListener
+class SavelocReqFrame : public vgui::Frame
 {
 public:
     DECLARE_CLASS_SIMPLE(SavelocReqFrame, Frame);
@@ -16,7 +15,7 @@ public:
 
     void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
-    void FireEvent(KeyValues* pKv) OVERRIDE;
+    void FireEvent(KeyValues* pKv);
 
     void OnCommand(const char* command) OVERRIDE;
 
