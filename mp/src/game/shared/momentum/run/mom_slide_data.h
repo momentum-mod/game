@@ -20,6 +20,8 @@ class CMomPlayerSlideData
         m_bEnableGravity = false;
         m_bFixUpsideSlope = false;
         m_uiTouchCounter = 0;
+        memset(m_bTouchingTrigger, 0, sizeof(m_bTouchingTrigger));
+        // m_iTouchCounter = 0;
         // m_flGravity = 1.0f;
     }
 
