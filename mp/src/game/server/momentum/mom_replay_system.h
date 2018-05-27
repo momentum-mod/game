@@ -39,7 +39,7 @@ public:
 
     bool m_bRecording;
     bool m_bPlayingBack;
-    CMomReplayBase *m_pReplay;
+    CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
     CMomentumPlayer *m_player;
     

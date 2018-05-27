@@ -142,6 +142,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     CBaseEntity *FindNextObserverTarget(bool bReverse) OVERRIDE;
     int GetNextObserverSearchStartPoint(bool bReverse) OVERRIDE;
     void CheckObserverSettings() OVERRIDE;
+    void ValidateCurrentObserverTarget() OVERRIDE;
+    void TravelSpectateTargets(bool bReverse); // spec_next and spec_prev pass into here
 
     void StopSpectating();
 

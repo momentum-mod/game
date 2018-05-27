@@ -22,13 +22,13 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName):
     m_iStartTimerTick(-1),
     m_fRecEndTime(-1.0f)
 {
-    m_pReplay = g_ReplayFactory.CreateEmptyReplay(0);
+    m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
 }
 
 CMomentumReplaySystem::~CMomentumReplaySystem()
 {
-    if (m_pReplay)
-        delete m_pReplay;
+    if (m_pRecordingReplay)
+        delete m_pRecordingReplay;
 
     if (m_pPlaybackReplay)
         delete m_pPlaybackReplay;
@@ -66,7 +66,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
         m_bRecording = true;
         m_iTickCount = 1; // recoring begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
-        m_pReplay = g_ReplayFactory.CreateEmptyReplay(0);
+        m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
     }
 }
 
@@ -124,7 +124,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     SetReplayInfo();
     SetRunStats();
 
-    int postTrimTickCount = m_pReplay->GetFrameCount();
+    int postTrimTickCount = m_pRecordingReplay->GetFrameCount();
     DevLog("After trimming: %i\n", postTrimTickCount);
     StoreReplay(newRecordingPath);
     m_bRecording = false;
@@ -140,7 +140,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
         replaySavedEvent->SetBool("save", true);
         replaySavedEvent->SetString("filename", newRecordingName);
         replaySavedEvent->SetString("filepath", newRecordingPath);
-        replaySavedEvent->SetInt("time", static_cast<int>(m_pReplay->GetRunTime() * 1000.0f));
+        replaySavedEvent->SetInt("time", static_cast<int>(m_pRecordingReplay->GetRunTime() * 1000.0f));
         gameeventmanager->FireEvent(replaySavedEvent);
     }
     // Load the last run that we did in case we want to watch it
@@ -149,12 +149,12 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // Reset the m_i*Tick s
     m_iStartRecordingTick = -1;
     m_iStartTimerTick = -1;
-    m_pReplay->~CMomReplayBase();
+    m_pRecordingReplay->~CMomReplayBase();
 }
 
 bool CMomentumReplaySystem::StoreReplay(const char* path, const char* pathID)
 {
-    if (!m_pReplay)
+    if (!m_pRecordingReplay)
         return false;
 
     auto file = filesystem->Open(path, "w+b", pathID);
@@ -165,13 +165,13 @@ bool CMomentumReplaySystem::StoreReplay(const char* path, const char* pathID)
         return false;
     }
 
-    Log("Storing replay of version '%d' to '%s'...\n", g_ReplaySystem.m_pReplay->GetVersion(), path);
+    Log("Storing replay of version '%d' to '%s'...\n", g_ReplaySystem.m_pRecordingReplay->GetVersion(), path);
 
     CBinaryWriter writer(file);
 
     writer.WriteUInt32(REPLAY_MAGIC_LE);
-    writer.WriteUInt8(m_pReplay->GetVersion());
-    m_pReplay->Serialize(&writer);
+    writer.WriteUInt8(m_pRecordingReplay->GetVersion());
+    m_pRecordingReplay->Serialize(&writer);
 
     filesystem->Close(file);
 
@@ -188,11 +188,11 @@ void CMomentumReplaySystem::TrimReplay()
         if (newStart > m_iStartRecordingTick)
         {
             int extraFrames = newStart - m_iStartRecordingTick;
-            if (m_pReplay)
+            if (m_pRecordingReplay)
             {
                 // Remove the amount of extra frames from the head
                 // MOM_TODO: If the map allows for prespeed in the trigger, we don't want to trim it!
-                m_pReplay->RemoveFrames(extraFrames);
+                m_pRecordingReplay->RemoveFrames(extraFrames);
                 // Add our extraFrames because we may have stayed in the start zone
                 m_iStartRecordingTick += extraFrames;
                 m_iTickCount -= extraFrames;
@@ -206,7 +206,7 @@ void CMomentumReplaySystem::UpdateRecordingParams()
     // We only record frames that the player isn't pausing on
     if (m_bRecording && !engine->IsPaused())
     {
-        m_pReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(),
+        m_pRecordingReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(),
                                                                       m_player->GetViewOffset(), m_player->m_nButtons));
         ++m_iTickCount; // increment recording tick
     }
@@ -246,15 +246,15 @@ void CMomentumReplaySystem::SetReplayInfo()
     if (!m_bRecording)
         return;
 
-    m_pReplay->SetMapName(gpGlobals->mapname.ToCStr());
-    m_pReplay->SetPlayerName(m_player->GetPlayerName());
+    m_pRecordingReplay->SetMapName(gpGlobals->mapname.ToCStr());
+    m_pRecordingReplay->SetPlayerName(m_player->GetPlayerName());
     ISteamUser *pUser = SteamUser();
-    m_pReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
-    m_pReplay->SetTickInterval(gpGlobals->interval_per_tick);
-    m_pReplay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
-    m_pReplay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
-    m_pReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
-    m_pReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
+    m_pRecordingReplay->SetPlayerSteamID(pUser ? pUser->GetSteamID().ConvertToUint64() : 0);
+    m_pRecordingReplay->SetTickInterval(gpGlobals->interval_per_tick);
+    m_pRecordingReplay->SetRunTime(g_pMomentumTimer->GetLastRunTime());
+    m_pRecordingReplay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
+    m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
+    m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
 }
 
 void CMomentumReplaySystem::SetRunStats()
@@ -262,7 +262,7 @@ void CMomentumReplaySystem::SetRunStats()
     if (!m_bRecording)
         return;
 
-    CMomRunStats* stats = m_pReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
+    CMomRunStats* stats = m_pRecordingReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
     m_player->m_RunStats.FullyCopyStats(stats);
 }
 
