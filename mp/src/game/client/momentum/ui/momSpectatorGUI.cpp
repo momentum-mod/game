@@ -189,8 +189,6 @@ void CMOMSpectatorGUI::ShowPanel(bool bShow)
     {
         m_bSpecScoreboard = false;
         SetMouseInputEnabled(true);
-        if (m_pReplayControls && !m_pReplayControls->IsVisible())
-            m_pReplayControls->ShowPanel(true);
     }
 
     SetVisible(bShow);
@@ -249,6 +247,12 @@ void CMOMSpectatorGUI::Update()
         m_pTopBar->SetPos(0, 0);
     }
 
+    // Duck bind to release mouse
+    wchar_t tempControl[BUFSIZELOCL];
+    UTIL_ReplaceKeyBindings(m_pwGainControl, sizeof m_pwGainControl, tempControl, sizeof tempControl);
+    if (m_pGainControlLabel)
+        m_pGainControlLabel->SetText(tempControl);
+
     CMomentumPlayer *pPlayer = ToCMOMPlayer(CBasePlayer::GetLocalPlayer());
     if (pPlayer)
     {
@@ -266,13 +270,6 @@ void CMOMSpectatorGUI::Update()
 
             if (m_pPlayerLabel)
                 m_pPlayerLabel->SetText(szPlayerInfo);
-
-
-            // Duck bind to release mouse
-            wchar_t tempControl[BUFSIZELOCL];
-            UTIL_ReplaceKeyBindings(m_pwGainControl, sizeof m_pwGainControl, tempControl, sizeof tempControl);
-            if (m_pGainControlLabel)
-                m_pGainControlLabel->SetText(tempControl);
 
             if (isReplayGhost)
             {
@@ -298,7 +295,11 @@ void CMOMSpectatorGUI::Update()
 
                 if (m_pMapLabel) m_pMapLabel->SetText(szMapName);
 
-                m_pShowControls->SetVisible(true);
+                if (m_pShowControls)
+                    m_pShowControls->SetVisible(true);
+
+                if (m_pReplayControls && !m_pReplayControls->IsVisible())
+                    m_pReplayControls->ShowPanel(true);
                 
                 //MOM_TODO: check if an online ghost has spawned, and don't hide spec buttons?
                 m_pPrevPlayerButton->SetVisible(false);
@@ -323,11 +324,14 @@ void CMOMSpectatorGUI::Update()
         }
         else
         {
-            if (m_pReplayLabel) m_pReplayLabel->SetText("");
-
-            if (m_pMapLabel) m_pMapLabel->SetText("");
-
-            if (m_pTimeLabel) m_pTimeLabel->SetText("");
+            if (m_pReplayLabel) 
+                m_pReplayLabel->SetText("");
+            if (m_pMapLabel) 
+                m_pMapLabel->SetText("");
+            if (m_pTimeLabel) 
+                m_pTimeLabel->SetText("");
+            if (m_pPlayerLabel)
+                m_pPlayerLabel->SetText("");
         }
     }
 }

@@ -527,7 +527,10 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             // They changed map remove their entity from the CUtlMap
             CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[findIndx];
             if (pEntity)
+            {
+                pEntity->UpdatePlayerSpectate();
                 pEntity->Remove();
+            }
             
             m_mapLobbyGhosts.RemoveAt(findIndx);
 

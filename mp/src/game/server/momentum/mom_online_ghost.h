@@ -42,7 +42,9 @@ public:
     void HandleGhost() OVERRIDE;
     void HandleGhostFirstPerson() OVERRIDE;
     void UpdateStats(const Vector &ghostVel) OVERRIDE; // for hud display..
-    
+
+    void UpdatePlayerSpectate();
+
     CNetworkVar(int, m_nGhostButtons);
     CNetworkVar(uint32, m_uiAccountID);
     CNetworkString(m_pszGhostName, MAX_PLAYER_NAME_LENGTH);

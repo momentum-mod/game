@@ -88,10 +88,6 @@ void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
     if (FStrEq(pEvent->GetName(), "mapfinished_panel_closed"))
     {
-        if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
-        {
-            m_pCurrentSpecPlayer->StopSpectating();
-        }
         m_pCurrentSpecPlayer = nullptr;
     }
 }
@@ -339,4 +335,12 @@ void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
     */
+}
+
+void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
+{
+    if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
+    {
+        m_pCurrentSpecPlayer->TravelSpectateTargets(true);
+    }
 }

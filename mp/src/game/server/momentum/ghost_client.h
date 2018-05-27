@@ -36,6 +36,8 @@ public:
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);
 
+    CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineGhostMap();
+
     static bool CreateNewNetFrame(PositionPacket_t &frame);
 
     static CMomentumPlayer *m_pPlayer;

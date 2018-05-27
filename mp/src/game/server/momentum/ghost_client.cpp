@@ -33,6 +33,11 @@ CON_COMMAND(mom_spectate, "Start spectating if there are ghosts currently being 
             pPlayer->SetObserverTarget(pTarget);
             pPlayer->StartObserverMode(OBS_MODE_IN_EYE);
         }
+        else
+        {
+            // Not valid but they still want to spectate? Let's go in roaming mode
+            pPlayer->StartObserverMode(OBS_MODE_ROAMING);
+        }
     }
 }
 
@@ -149,6 +154,14 @@ CMomentumOnlineGhostEntity* CMomentumGhostClient::GetOnlineGhostEntityFromID(con
     // MOM_TODO: Obviously determine if we're in a lobby or server here
     // MOM_TODO: g_pMomentumServerSystem->GetServerMemberEntity(id);
     return g_pMomentumLobbySystem->GetLobbyMemberEntity(id);
+}
+
+CUtlMap<uint64, CMomentumOnlineGhostEntity*> *CMomentumGhostClient::GetOnlineGhostMap()
+{
+    // MOM_TODO: if (g_pMomentumServerSystem->IsConnected()) // or something
+    //            g_pMomentumServerSystem->GetOnlineEntMap();
+    // else
+    return g_pMomentumLobbySystem->GetOnlineEntMap();
 }
 
 bool CMomentumGhostClient::CreateNewNetFrame(PositionPacket_t &into)
