@@ -1293,6 +1293,13 @@ void CMomentumGameMovement::FullWalkMove()
             AirMove(); // Take into account movement when in air.
         }
 
+        if (bIsSliding)
+        {
+            // Fixes some inaccuraces while going up slopes.
+            // This should fix also the issue by being stuck on them.
+            StayOnGround();
+        }
+
         // Set final flags.
         CategorizePosition();
 
