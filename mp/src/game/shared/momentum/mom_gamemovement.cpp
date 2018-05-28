@@ -1158,7 +1158,7 @@ void CMomentumGameMovement::FinishGravity(void)
     if (player->m_flWaterJumpTime)
         return;
 
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.IsGravityEnabled())
+    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
         return;
 
     // Get the correct velocity for the end of the dt
@@ -1169,7 +1169,7 @@ void CMomentumGameMovement::FinishGravity(void)
 
 void CMomentumGameMovement::StartGravity(void)
 {
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.IsGravityEnabled())
+    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
         return;
 
     // Add gravity so they'll be in the correct position during movement
@@ -1255,9 +1255,11 @@ void CMomentumGameMovement::FullWalkMove()
             // If we jump, then we avoid to get stuck to ground with sliding stuffs otherwhise we can't really jump.
             // We will just wait for the next starttouch of the slide trigger.
             // Should be fixed now.
-            if (CheckJumpButton() && m_pPlayer->m_SrvData.m_SlideData.IsAllowingJump() &&
-                m_pPlayer->m_SrvData.m_SlideData.IsStuckGround())
-                m_pPlayer->m_SrvData.m_SlideData.Reset();
+            if (CheckJumpButton() 
+                 && m_pPlayer->m_SrvData.m_SlideData.IsEnabled()
+                 && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsAllowingJump() &&
+                m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsStuckGround())
+                m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->Reset();
         }
         else
         {
@@ -1321,7 +1323,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        if (bIsSliding && m_pPlayer->m_SrvData.m_SlideData.IsStuckGround())
+        if (bIsSliding && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsStuckGround())
         {
             StuckGround();
         }
@@ -1374,10 +1376,12 @@ void CMomentumGameMovement::StuckGround(void)
 
     Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
 
-    float flMinZ = m_pPlayer->m_SrvData.m_SlideData.m_flCurrentTriggerMinZ.Element(0);
+    float flMinZ = m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->GetDistance();
 
     // Get our distance from our trigger so we don't go more far than that.
     float flDist = vAbsOrigin.z - flMinZ;
+
+    engine->Con_NPrintf(0, "%f", flDist);
 
     // Was somehow under the trigger?
     if (flDist <= 0.0f)
@@ -1906,7 +1910,7 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
     if ((m_pPlayer->m_SrvData.m_SlideData.IsEnabled()) &&
-        (!(mv->m_nButtons & IN_JUMP) || !m_pPlayer->m_SrvData.m_SlideData.IsAllowingJump()))
+        (!(mv->m_nButtons & IN_JUMP) || !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsAllowingJump()))
     {
         pm = nullptr;
     }
