@@ -470,6 +470,7 @@ void CBaseTrigger::StartTouch(CBaseEntity *pOther)
 		}
 
 		m_OnStartTouch.FireOutput(pOther, this);
+        OnStartTouch(pOther);
 
 		if ( bAdded && ( m_hTouchingEntities.Count() == 1 ) )
 		{
@@ -497,6 +498,7 @@ void CBaseTrigger::EndTouch(CBaseEntity *pOther)
 		//if ( !m_bDisabled )
 		//{
 			m_OnEndTouch.FireOutput(pOther, this);
+            OnEndTouch(pOther);
 		//}
 
 		// If there are no more entities touching this trigger, fire the lost all touches
