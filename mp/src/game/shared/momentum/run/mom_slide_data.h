@@ -8,21 +8,15 @@ class CMomPlayerSlideData
     CMomPlayerSlideData();
     ~CMomPlayerSlideData();
 
-    CMomPlayerSlideData(const CMomPlayerSlideData &);
-
-    CMomPlayerSlideData &operator=(const CMomPlayerSlideData &);
-
     FORCEINLINE void Reset()
     {
         m_bIsEnabled = false;
         m_bStuckToGround = false;
         m_bAllowingJump = false;
         m_bEnableGravity = false;
-        m_bFixUpsideSlope = false;
-        m_uiTouchCounter = 0;
-        m_flCurrentTriggerMinZ = 0.0f;
-        memset(m_bTouchingTrigger, 0, sizeof(m_bTouchingTrigger));
-        // m_iTouchCounter = 0;
+        m_bFixUpsideSlope = false; 
+        // memset(m_bTouchingTrigger, 0, sizeof(m_bTouchingTrigger));
+        m_iTouchCounter = 0;
         // m_flGravity = 1.0f;
     }
 
@@ -36,8 +30,6 @@ class CMomPlayerSlideData
 
     FORCEINLINE bool IsFixUpsideSlope() { return m_bFixUpsideSlope; }
 
-    FORCEINLINE float GetCurrentTriggerMinZ() { return m_flCurrentTriggerMinZ; }
-
     FORCEINLINE void SetEnabled() { m_bIsEnabled = true; }
 
     FORCEINLINE void SetDisabled() { m_bIsEnabled = false; }
@@ -50,10 +42,9 @@ class CMomPlayerSlideData
 
     FORCEINLINE void SetFixUpsideSlope(bool bEnable = true) { m_bFixUpsideSlope = bEnable; }
 
-    FORCEINLINE void IncTouchCounter() { m_uiTouchCounter++; }
+    /*
 
-    FORCEINLINE void DecTouchCounter() { m_uiTouchCounter--; }
-    FORCEINLINE void SetCurrentTriggerMinZ(float flValue) { m_flCurrentTriggerMinZ = flValue; }
+    FORCEINLINE void SetTouchTrigger(int iIndex, bool bEnable = true) { m_bTouchingTrigger[iIndex] = bEnable; }
 
     bool IsTouchingOneTrigger()
     {
@@ -70,18 +61,17 @@ class CMomPlayerSlideData
 
         return bReturn;
     }
+    */
 
-    /*
-
+   
     FORCEINLINE void IncTouchCounter() { m_iTouchCounter++; }
 
     FORCEINLINE void DecTouchCounter() { m_iTouchCounter--; }
 
     FORCEINLINE int GetTouchCounter() { return m_iTouchCounter; }
-
-    FORCEINLINE int GetTouchCounter() { return m_uiTouchCounter; }
-
     // FORCEINLINE void SetGravity(float flGravity) { m_flGravity = flGravity; }
+
+    CUtlVector<float> m_flCurrentTriggerMinZ;
 
   private:
     bool m_bIsEnabled;
@@ -91,9 +81,8 @@ class CMomPlayerSlideData
     bool m_bFixUpsideSlope;
     uint m_uiTouchCounter;
     // TO BE SURE THAT IT WON'T BUG AGAIN WITH CAPS.
-    bool m_bTouchingTrigger[MAX_EDICTS + 1];
-    float m_flCurrentTriggerMinZ;
-    // int m_iTouchCounter;
+    // bool m_bTouchingTrigger[MAX_EDICTS + 1];
+    int m_iTouchCounter;
     // MOM_TODO: Not sure if mapper would like to have a gravity value here, but he could do it with another trigger
     // anyway. float m_flGravity;
 };

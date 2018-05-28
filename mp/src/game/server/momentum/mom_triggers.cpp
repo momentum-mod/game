@@ -950,15 +950,16 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
         pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
         pPlayer->m_SrvData.m_SlideData.SetFixUpsideSlope(m_bFixUpsideSlope);
-        pPlayer->m_SrvData.m_SlideData.SetTouchTrigger(entindex());
+        // pPlayer->m_SrvData.m_SlideData.SetTouchTrigger(entindex());
 
         // We trust that Mins are really the Mins.
         Vector vWorldMin = GetAbsOrigin() + GetCollideable()->OBBMins();
 
         // This doesn't work if trigger overlap I think, I need to search a proper solution for it.
-        pPlayer->m_SrvData.m_SlideData.SetCurrentTriggerMinZ(vWorldMin.z);
+        // EDIT: should do the work.
+        pPlayer->m_SrvData.m_SlideData.m_flCurrentTriggerMinZ.AddToHead(vWorldMin.z);
 
-        // pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
+        pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
         // engine->Con_NPrintf( 0, "StartTouch: %i\n" , entindex() );
         // pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
     }
@@ -972,10 +973,20 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 
     if (pPlayer != nullptr)
     {
+        /*
+        pPlayer->m_SrvData.m_SlideData.SetTouchTrigger(entindex(), false);
+        if (!pPlayer->m_SrvData.m_SlideData.IsTouchingOneTrigger())
+            pPlayer->m_SrvData.m_SlideData.Reset();
+        */
+
         pPlayer->m_SrvData.m_SlideData.DecTouchCounter();
 
         if (pPlayer->m_SrvData.m_SlideData.GetTouchCounter() <= 0)
             pPlayer->m_SrvData.m_SlideData.Reset();
+
+         Vector vWorldMin = GetAbsOrigin() + GetCollideable()->OBBMins();
+
+         pPlayer->m_SrvData.m_SlideData.m_flCurrentTriggerMinZ.FindAndFastRemove(vWorldMin.z);
 
         // engine->Con_NPrintf( 1 , "EndTouch: %i\n" , entindex() );
     }
