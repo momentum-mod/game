@@ -1374,10 +1374,14 @@ void CMomentumGameMovement::StuckGround(void)
 
     Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
 
-    float flMinZ = m_pPlayer->m_SrvData.m_SlideData.GetCurrentTriggerMinZ();
+    float flMinZ = m_pPlayer->m_SrvData.m_SlideData.m_flCurrentTriggerMinZ.Element(0);
 
     // Get our distance from our trigger so we don't go more far than that.
     float flDist = vAbsOrigin.z - flMinZ;
+
+    // Was somehow under the trigger?
+    if (flDist <= 0.0f)
+        return;
 
     vEnd[2] -= flDist;
 
@@ -1390,12 +1394,14 @@ void CMomentumGameMovement::StuckGround(void)
 
     if (tr.fraction != 1.0f)
     {
-        float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
+        float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction);
 
         // Apply our adjustement + our offset
         vAbsOrigin.z -= fAdjust;
 
         mv->SetAbsOrigin(vAbsOrigin);
+
+        StayOnGround();
     }
 }
 
