@@ -25,10 +25,10 @@ enum
     SF_PUSH_DIRECTION_AS_FINAL_FORCE = 0x0100, // Use the direction vector as final force instead of calculating it by
                                                // force amount CTriggerMomentumPush
     SF_PUSH_ONETOUCH = 0x0200,                 // Only allow for one touch
-    SF_PUSH_ONSTART = 0x0400,                  // Modify player velocity on StartTouch
-    SF_PUSH_ONEND = 0x0800,                    // Modify player velocity on EndTouch
+    SF_PUSH_ONSTART = 0x0400,                  // Modify player velocity on OnStartTouch
+    SF_PUSH_ONEND = 0x0800,                    // Modify player velocity on OnEndTouch
                                                // CTriggerTeleport
-    SF_TELE_ONEXIT = 0x1000,                   // Teleport the player on EndTouch instead of StartTouch
+    SF_TELE_ONEXIT = 0x1000,                   // Teleport the player on OnEndTouch instead of OnStartTouch
 };
 
 // CBaseMomentumTrigger
@@ -48,8 +48,8 @@ class CTriggerTimerStop : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerTimerStop, CBaseMomentumTrigger);
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
-    void EndTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
 };
 
 // CTriggerTeleportEnt
@@ -60,8 +60,8 @@ class CTriggerTeleportEnt : public CBaseMomentumTrigger
 
   public:
     // This void teleports the touching entity!
-    void StartTouch(CBaseEntity *) OVERRIDE;
-    void EndTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
     // Used by children classes to define what ent to teleport to (see CTriggerOneHop)
     void SetDestinationEnt(CBaseEntity *ent) { pDestinationEnt = ent; }
     bool ShouldStopPlayer() const { return m_bResetVelocity; }
@@ -87,7 +87,7 @@ class CTriggerCheckpoint : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
     // the following is only used by CFilterCheckpoint
     virtual int GetCheckpointNumber() const { return m_iCheckpointNumber; }
     // The following is used by mapzones.cpp
@@ -107,8 +107,8 @@ class CTriggerStage : public CTriggerCheckpoint
     DECLARE_DATADESC();
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
-    void EndTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
     void Spawn() OVERRIDE
     {
         SetCheckpointNumber(-1);
@@ -134,8 +134,8 @@ class CTriggerTimerStart : public CTriggerStage
     CTriggerTimerStart();
 
   public:
-    void EndTouch(CBaseEntity *) OVERRIDE;
-    void StartTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
     void Spawn() OVERRIDE;
 
     // The start is always the first stage/checkpoint
@@ -178,7 +178,7 @@ class CTriggerTeleportCheckpoint : public CTriggerTeleportEnt
     DECLARE_CLASS(CTriggerTeleportCheckpoint, CTriggerTeleportEnt);
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
 };
 
 // CTriggerOnehop
@@ -191,14 +191,14 @@ class CTriggerOnehop : public CTriggerTeleportEnt
     CTriggerOnehop();
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
     float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think() OVERRIDE;
-    void EndTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
     void AfterTeleport() OVERRIDE
     {
-        m_fStartTouchedTime = -1.0f;
+        m_fOnStartTouchedTime = -1.0f;
         SetDestinationEnt(nullptr);
     }
 
@@ -206,7 +206,7 @@ class CTriggerOnehop : public CTriggerTeleportEnt
 
   private:
     // The time that the player initally touched the trigger
-    float m_fStartTouchedTime;
+    float m_fOnStartTouchedTime;
     // Seconds to hold before activating the teleport
     float m_fMaxHoldSeconds;
     // Fires the output when the player cannot go back to the trigger
@@ -223,7 +223,7 @@ class CTriggerResetOnehop : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
 
   private:
     // Fires when it resets all one hops.
@@ -240,20 +240,20 @@ class CTriggerMultihop : public CTriggerTeleportEnt
     CTriggerMultihop();
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
-    void EndTouch(CBaseEntity *) OVERRIDE;
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
     float GetHoldTeleportTime() const { return m_fMaxHoldSeconds; }
     void SetHoldTeleportTime(const float pHoldTime) { m_fMaxHoldSeconds = pHoldTime; }
     void Think() OVERRIDE;
     void AfterTeleport() OVERRIDE
     {
-        m_fStartTouchedTime = -1.0f;
+        m_fOnStartTouchedTime = -1.0f;
         SetDestinationEnt(nullptr);
     }
 
   private:
     // The time that the player initally touched the trigger. -1 if not checking for teleport
-    float m_fStartTouchedTime;
+    float m_fOnStartTouchedTime;
     // Seconds to hold before activating the teleport
     float m_fMaxHoldSeconds;
 };
@@ -294,8 +294,8 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
     DECLARE_CLASS(CTriggerLimitMovement, CBaseMomentumTrigger);
 
   public:
-    void StartTouch(CBaseEntity *pOther) OVERRIDE;
-    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 };
 
 // CFuncShootBoost
@@ -331,9 +331,9 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
     CTriggerMomentumPush();
 
   public:
-    void StartTouch(CBaseEntity *) OVERRIDE;
-    void EndTouch(CBaseEntity *) OVERRIDE;
-    // Called when (and by) either a StartTouch() or EndTouch() event happens and their requisites are met
+    void OnStartTouch(CBaseEntity *) OVERRIDE;
+    void OnEndTouch(CBaseEntity *) OVERRIDE;
+    // Called when (and by) either a OnStartTouch() or OnEndTouch() event happens and their requisites are met
     void OnSuccessfulTouch(CBaseEntity *);
 
   private:
@@ -357,8 +357,8 @@ class CTriggerSlide : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    void StartTouch(CBaseEntity *pOther) OVERRIDE;
-    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
     bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity, m_bFixUpsideSlope;
@@ -371,9 +371,9 @@ class CTriggerReverseSpeed : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void Think(void) OVERRIDE;
-    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
     bool m_bReverseHorizontalSpeed, m_bReverseVerticalSpeed;
@@ -388,9 +388,9 @@ class CTriggerSetSpeed : public CBaseMomentumTrigger
     DECLARE_DATADESC();
 
   public:
-    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void Think(void) OVERRIDE;
-    void EndTouch(CBaseEntity *pOther) OVERRIDE;
+    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
   public:
     float m_flHorizontalSpeedAmount, m_flVerticalSpeedAmount;
