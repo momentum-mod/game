@@ -1366,11 +1366,20 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
 
 void CMomentumGameMovement::StuckGround(void)
 {
+    // The proper way for it is to calculate where we are in the trigger and get the distance between the surface below
+    // the box. So it doesn't go dumbly all under the map.
+
     trace_t tr;
     Ray_t ray;
 
     Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
-    vEnd[2] -= 8192.0f; // 8192 should be enough
+
+    float flMinZ = m_pPlayer->m_SrvData.m_SlideData.GetCurrentTriggerMinZ();
+
+    // Get our distance from our trigger so we don't go more far than that.
+    float flDist = vAbsOrigin.z - flMinZ;
+
+    vEnd[2] -= flDist;
 
     ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
 
@@ -1379,12 +1388,15 @@ void CMomentumGameMovement::StuckGround(void)
         enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
     }
 
-    float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
+    if (tr.fraction != 1.0f)
+    {
+        float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
 
-    // Apply our adjustement + our offset
-    vAbsOrigin.z -= fAdjust;
+        // Apply our adjustement + our offset
+        vAbsOrigin.z -= fAdjust;
 
-    mv->SetAbsOrigin(vAbsOrigin);
+        mv->SetAbsOrigin(vAbsOrigin);
+    }
 }
 
 void CMomentumGameMovement::AirMove(void)
@@ -1843,8 +1855,25 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     {
         // We dont want to touch this!
         // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity that
-        // can build up for ever.
-        VectorCopy(vec3_origin, mv->m_vecVelocity);
+        // can build up for ever. VectorCopy(vec3_origin, mv->m_vecVelocity);
+
+        // Let's retrace in case we can go on our wanted direction.
+        TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+        if (!CloseEnough(pm.fraction, 0.0f, FLT_EPSILON))
+        {
+            // Adjust if we found somewhere to land.
+            // We just skip the bug and set the end position.
+            // It's a bit hacky but works.
+            mv->SetAbsOrigin(pm.endpos);
+
+            // Adjust to be sure that we are on ground.
+            StayOnGround();
+        }
+        else
+        {
+            VectorCopy(vec3_origin, mv->m_vecVelocity);
+        }
     }
 
     // Check if they slammed into a wall
@@ -2076,7 +2105,7 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
         // @Gocnak: Technically the "adjust" code above does this, but to each axis, with a much higher value.
         // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be 0.015 or
         // 0.01
-        mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick;
+        mv->m_vecAbsOrigin.z += abs(dif.z);
         DevMsg(2, "ClipVelocity: Fixed speed.\n");
     }
 

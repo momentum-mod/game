@@ -950,7 +950,15 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.SetStuckToGround(m_bStuckOnGround);
         pPlayer->m_SrvData.m_SlideData.SetEnableGravity(!m_bDisableGravity);
         pPlayer->m_SrvData.m_SlideData.SetFixUpsideSlope(m_bFixUpsideSlope);
-        pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
+        pPlayer->m_SrvData.m_SlideData.SetTouchTrigger(entindex());
+
+        // We trust that Mins are really the Mins.
+        Vector vWorldMin = GetAbsOrigin() + GetCollideable()->OBBMins();
+
+        // This doesn't work if trigger overlap I think, I need to search a proper solution for it.
+        pPlayer->m_SrvData.m_SlideData.SetCurrentTriggerMinZ(vWorldMin.z);
+
+        // pPlayer->m_SrvData.m_SlideData.IncTouchCounter();
         // engine->Con_NPrintf( 0, "StartTouch: %i\n" , entindex() );
         // pPlayer->m_SrvData.m_SlideData.SetGravity(m_flSlideGravity);
     }
