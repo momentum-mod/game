@@ -19,6 +19,7 @@ class CMomPlayerSlideData
         m_bAllowingJump = false;
         m_bEnableGravity = false;
         m_bFixUpsideSlope = false;
+        m_flCurrentTriggerMinZ = 0.0f;
         memset(m_bTouchingTrigger, 0, sizeof(m_bTouchingTrigger));
         // m_iTouchCounter = 0;
         // m_flGravity = 1.0f;
@@ -34,6 +35,8 @@ class CMomPlayerSlideData
 
     FORCEINLINE bool IsFixUpsideSlope() { return m_bFixUpsideSlope; }
 
+    FORCEINLINE float GetCurrentTriggerMinZ() { return m_flCurrentTriggerMinZ; }
+
     FORCEINLINE void SetEnabled() { m_bIsEnabled = true; }
 
     FORCEINLINE void SetDisabled() { m_bIsEnabled = false; }
@@ -47,6 +50,8 @@ class CMomPlayerSlideData
     FORCEINLINE void SetFixUpsideSlope(bool bEnable = true) { m_bFixUpsideSlope = bEnable; }
 
     FORCEINLINE void SetTouchTrigger(int iIndex, bool bEnable = true) { m_bTouchingTrigger[iIndex] = bEnable; }
+
+    FORCEINLINE void SetCurrentTriggerMinZ(float flValue) { m_flCurrentTriggerMinZ = flValue; }
 
     bool IsTouchingOneTrigger()
     {
@@ -84,7 +89,8 @@ class CMomPlayerSlideData
     bool m_bFixUpsideSlope;
     // TO BE SURE THAT IT WON'T BUG AGAIN WITH CAPS.
     bool m_bTouchingTrigger[MAX_EDICTS + 1];
-    //int m_iTouchCounter;
+    float m_flCurrentTriggerMinZ;
+    // int m_iTouchCounter;
     // MOM_TODO: Not sure if mapper would like to have a gravity value here, but he could do it with another trigger
     // anyway. float m_flGravity;
 };
