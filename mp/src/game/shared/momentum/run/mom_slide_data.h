@@ -56,7 +56,7 @@ class CMomSlideData
 class CMomPlayerSlideData
 {
   public:
-    CMomPlayerSlideData() : m_vecSlideData()
+    CMomPlayerSlideData()
     {
         SetDisabled();
     }
@@ -70,7 +70,6 @@ class CMomPlayerSlideData
     FORCEINLINE void SetDisabled()
     {
         m_bIsEnabled = false;
-        m_vecSlideData.RemoveAll();
     }
 
     FORCEINLINE CMomSlideData *GetCurrent() { return &m_vecSlideData.Element(0); }

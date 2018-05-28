@@ -833,6 +833,8 @@ void CMomentumGameMovement::FullWalkMove()
 {
     bool bIsSliding = m_pPlayer->m_SrvData.m_SlideData.IsEnabled();
 
+    Vector vecOldOrigin = mv->GetAbsOrigin();
+
     if (!CheckWater())
     {
         StartGravity();
@@ -924,6 +926,21 @@ void CMomentumGameMovement::FullWalkMove()
         {
             // Fixes some inaccuraces while going up slopes.
             // This should fix also the issue by being stuck on them.
+
+            Vector vecVelocity = mv->m_vecVelocity;
+
+            trace_t pm;
+            Vector vecNewOrigin = mv->GetAbsOrigin();
+
+            TracePlayerBBox(vecOldOrigin, vecNewOrigin, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+            StepMove(vecNewOrigin, pm);
+
+            mv->m_vecVelocity = vecVelocity;
+
+            if (pm.fraction == 1.0f)
+                mv->SetAbsOrigin(vecNewOrigin);
+
             StayOnGround();
         }
 
