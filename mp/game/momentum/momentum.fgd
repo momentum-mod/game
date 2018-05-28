@@ -216,7 +216,7 @@
 @SolidClass base(Trigger) = trigger_momentum_slide : "Trigger for sliding/iceskating zone. To make it working properly brushes must be placed under the trigger." 
 [
 	StuckOnGround(integer) : "Stuck to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddently down"
-	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding?"
+	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding? (doesn't work with stuckonground option.)"
 	DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to loose speed while going up or increase speed while going down)"
 	FixUpsideSlope(integer) : "Fix Upside Slopes" : 0 : "When sometimes mounting a slope, you loose velocity, enable this to not loose speed while going up on the slopes."
 	//GravityValue(float) : "Gravity Value" : 1.0 : "Gravity value while sliding. (this is the gravity used while being on a slope."

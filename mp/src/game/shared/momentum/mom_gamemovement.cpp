@@ -1313,8 +1313,6 @@ void CMomentumGameMovement::FullWalkMove()
 
             if (pm.fraction == 1.0f)
                 mv->SetAbsOrigin(vecNewOrigin);
-
-            StayOnGround();
         }
 
         // Set final flags.
@@ -1924,10 +1922,13 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
-    if ((m_pPlayer->m_SrvData.m_SlideData.IsEnabled()) &&
-        (!(mv->m_nButtons & IN_JUMP) || !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsAllowingJump()))
+    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled())
     {
-        pm = nullptr;
+        if (m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsStuckGround())
+            pm = nullptr;
+
+        if (!((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsAllowingJump()))
+            pm = nullptr;
     }
 
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
