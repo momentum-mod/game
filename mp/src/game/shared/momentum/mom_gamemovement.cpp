@@ -831,9 +831,9 @@ void CMomentumGameMovement::StartGravity(void)
 
 void CMomentumGameMovement::FullWalkMove()
 {
-    bool bIsSliding = m_pPlayer->m_SrvData.m_SlideData.IsEnabled();
+    Vector vecOldOrigin;
 
-    Vector vecOldOrigin = mv->GetAbsOrigin();
+    bool bIsSliding = m_pPlayer->m_SrvData.m_SlideData.IsEnabled();
 
     if (!CheckWater())
     {
@@ -912,6 +912,9 @@ void CMomentumGameMovement::FullWalkMove()
 
         // Make sure velocity is valid.
         CheckVelocity();
+
+        if (bIsSliding)
+            vecOldOrigin = mv->GetAbsOrigin();
 
         if (player->GetGroundEntity() != nullptr)
         {
