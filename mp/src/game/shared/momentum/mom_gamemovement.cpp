@@ -1376,7 +1376,7 @@ void CMomentumGameMovement::StuckGround(void)
     // Get our distance from our trigger so we don't go more far than that.
     float flDist = vAbsOrigin.z - flMinZ;
 
-    engine->Con_NPrintf(0, "%i %f", m_pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size(), flDist);
+    // engine->Con_NPrintf(0, "%i %f", m_pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size(), flDist);
 
     // Was somehow under the trigger?
     if (flDist <= 0.0f)
