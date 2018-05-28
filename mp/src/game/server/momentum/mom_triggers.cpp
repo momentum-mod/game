@@ -870,6 +870,11 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
 // thoses.
 void CTriggerSlide::StartTouch(CBaseEntity *pOther)
 {
+    BaseClass::StartTouch(pOther);
+
+    if (!PassesTriggerFilters(pOther))
+        return;
+
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
 
     if (pPlayer != nullptr)
@@ -888,12 +893,15 @@ void CTriggerSlide::StartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.m_vecSlideData.AddToHead(SlideData);
         pPlayer->m_SrvData.m_SlideData.SetEnabled();
     }
-
-    BaseClass::StartTouch(pOther);
 }
 
 void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 {
+    BaseClass::EndTouch(pOther);
+
+    if (!PassesTriggerFilters(pOther))
+        return;
+
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
 
     if (pPlayer != nullptr)
@@ -914,8 +922,6 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
             pPlayer->m_SrvData.m_SlideData.SetDisabled();
         }
     }
-
-    BaseClass::EndTouch(pOther);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -930,6 +936,11 @@ DEFINE_KEYFIELD(m_bReverseHorizontalSpeed, FIELD_BOOLEAN, "ReverseHorizontal")
 
 void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
 {
+    BaseClass::StartTouch(pOther);
+
+    if (!PassesTriggerFilters(pOther))
+        return;
+
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
 
     if (pPlayer != nullptr)
@@ -972,8 +983,6 @@ void CTriggerReverseSpeed::StartTouch(CBaseEntity *pOther)
         vecCalculatedVel = pPlayer->GetAbsVelocity();
     }
 
-    BaseClass::StartTouch(pOther);
-
     if (m_bOnThink)
     {
         SetNextThink(gpGlobals->curtime + m_flInterval);
@@ -996,6 +1005,10 @@ void CTriggerReverseSpeed::Think()
 
         if (pPlayer != nullptr && m_bShouldThink)
         {
+
+            if (!PassesTriggerFilters(pPlayer))
+                return;
+
             // Shall we will use the already calculated vel here, if we recalculate we could be stuck into a trigger
             // since it will take the new velocity already Reversed? If the interval is high enough it shouldn't matter.
             // pPlayer->SetAbsVelocity(vecCalculatedVel);
@@ -1044,7 +1057,11 @@ void CTriggerReverseSpeed::Think()
     }
 }
 
-void CTriggerReverseSpeed::EndTouch(CBaseEntity *pOther) { m_bShouldThink = false; }
+void CTriggerReverseSpeed::EndTouch(CBaseEntity *pOther)
+{
+    BaseClass::EndTouch(pOther);
+    m_bShouldThink = false;
+}
 
 //-----------------------------------------------------------------------------------------------
 
@@ -1061,6 +1078,11 @@ DEFINE_KEYFIELD(m_bKeepHorizontalSpeed, FIELD_BOOLEAN, "KeepHorizontalSpeed"),
 
 void CTriggerSetSpeed::StartTouch(CBaseEntity *pOther)
 {
+    BaseClass::StartTouch(pOther);
+
+    if (!PassesTriggerFilters(pOther))
+        return;
+
     CMomentumPlayer *pPlayer = dynamic_cast<CMomentumPlayer *>(pOther);
 
     if (pPlayer != nullptr)
@@ -1098,8 +1120,6 @@ void CTriggerSetSpeed::StartTouch(CBaseEntity *pOther)
         vecCalculatedVel = vecNewFinalVelocity;
     }
 
-    BaseClass::StartTouch(pOther);
-
     if (m_bOnThink)
     {
         SetNextThink(gpGlobals->curtime + m_flInterval);
@@ -1120,6 +1140,9 @@ void CTriggerSetSpeed::Think()
 
     if (pPlayer != nullptr && m_bShouldThink)
     {
+        if (!PassesTriggerFilters(pPlayer))
+            return;
+
         pPlayer->SetAbsVelocity(vecCalculatedVel);
     }
 
@@ -1133,6 +1156,10 @@ void CTriggerSetSpeed::Think()
     }
 }
 
-void CTriggerSetSpeed::EndTouch(CBaseEntity *pOther) { m_bShouldThink = false; }
+void CTriggerSetSpeed::EndTouch(CBaseEntity *pOther)
+{
+    BaseClass::EndTouch(pOther);
+    m_bShouldThink = false;
+}
 
 //-----------------------------------------------------------------------------------------------
