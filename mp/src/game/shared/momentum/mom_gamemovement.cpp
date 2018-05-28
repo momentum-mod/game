@@ -801,7 +801,8 @@ void CMomentumGameMovement::FinishGravity(void)
     if (player->m_flWaterJumpTime)
         return;
 
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
+    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
+        !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
         return;
 
     // Get the correct velocity for the end of the dt
@@ -812,7 +813,8 @@ void CMomentumGameMovement::FinishGravity(void)
 
 void CMomentumGameMovement::StartGravity(void)
 {
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
+    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
+        !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
         return;
 
     // Add gravity so they'll be in the correct position during movement
@@ -891,14 +893,7 @@ void CMomentumGameMovement::FullWalkMove()
         // Was jump button pressed?
         if (mv->m_nButtons & IN_JUMP)
         {
-            // If we jump, then we avoid to get stuck to ground with sliding stuffs otherwhise we can't really jump.
-            // We will just wait for the next starttouch of the slide trigger.
-            // Should be fixed now.
-            if (CheckJumpButton() 
-                 && m_pPlayer->m_SrvData.m_SlideData.IsEnabled()
-                 && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsAllowingJump() &&
-                m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsStuckGround())
-                m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->Reset();
+            CheckJumpButton();
         }
         else
         {
@@ -1010,6 +1005,8 @@ void CMomentumGameMovement::StuckGround(void)
 
     // Get our distance from our trigger so we don't go more far than that.
     float flDist = vAbsOrigin.z - flMinZ;
+
+    engine->Con_NPrintf(0, "%i %f", m_pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size(), flDist);
 
     // Was somehow under the trigger?
     if (flDist <= 0.0f)
@@ -1672,7 +1669,8 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     // Enable this when we konw that we are sliding.
     Vector dif = mv->m_vecVelocity - out;
     if ((dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f)) &&
-        (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsFixUpsideSlope()))
+        (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
+         m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsFixUpsideSlope()))
     {
         out.x = mv->m_vecVelocity.x;
         out.y = mv->m_vecVelocity.y;

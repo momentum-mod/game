@@ -898,7 +898,8 @@ void CTriggerSlide::EndTouch(CBaseEntity *pOther)
 
     if (pPlayer != nullptr)
     {
-        for (int i = 0; i != pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size(); i++)
+        for (int i = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size();
+             i != -1; i--)
         {
             auto Element = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Element(i);
 
