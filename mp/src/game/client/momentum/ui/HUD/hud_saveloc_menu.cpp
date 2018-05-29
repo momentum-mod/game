@@ -19,10 +19,16 @@ static void SelectMenuItem(int menu_item)
     case 4://cycle backwards through savelocs
         engine->ExecuteClientCmd("mom_saveloc_nav_prev");
         break;
-    case 5://remove current saveloc
+    case 5:// Go to the first saveloc
+        engine->ExecuteClientCmd("mom_saveloc_nav_first");
+        break;
+    case 6:// Go to the last saveloc
+        engine->ExecuteClientCmd("mom_saveloc_nav_last");
+        break;
+    case 7://remove current saveloc
         engine->ExecuteClientCmd("mom_saveloc_remove_current");
         break;
-    case 6://remove every saveloc
+    case 8://remove every saveloc
         engine->ExecuteClientCmd("mom_saveloc_remove_all");
         break;
     case 0://They closed the menu
@@ -54,11 +60,13 @@ CON_COMMAND(mom_saveloc_show, "Opens the Saved Locations Menu.\n")
         }
         else
         {
-            KeyValues* pKv = new KeyValues("CP Menu");
+            KeyValues* pKv = new KeyValues("Saveloc Menu");
             pKv->AddSubKey(new KeyValues("#MOM_Menu_SaveCurLoc"));
             pKv->AddSubKey(new KeyValues("#MOM_Menu_ToCurrentSL"));
             pKv->AddSubKey(new KeyValues("#MOM_Menu_ToNextSL"));
             pKv->AddSubKey(new KeyValues("#MOM_Menu_ToPrevSL"));
+            pKv->AddSubKey(new KeyValues("#MOM_Menu_ToFirstSL"));
+            pKv->AddSubKey(new KeyValues("#MOM_Menu_ToLastSL"));
             pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveCurrentSL"));
             pKv->AddSubKey(new KeyValues("#MOM_Menu_RemoveEverySL"));
             savelocMenu->ShowMenu(pKv, SelectMenuItem, OnClose);

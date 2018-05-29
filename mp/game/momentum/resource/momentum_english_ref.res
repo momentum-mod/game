@@ -17,6 +17,8 @@
         "MOM_Menu_ToCurrentSL" "Teleport to Current Saved Location"
         "MOM_Menu_ToNextSL" "Next Saved Location"
         "MOM_Menu_ToPrevSL" "Previous Saved Location"
+        "MOM_Menu_ToFirstSL" "First Saved Location"
+        "MOM_Menu_ToLastSL" "Last Saved Location"
         "MOM_Menu_RemoveCurrentSL" "Remove Current Saved Location"
         "MOM_Menu_RemoveEverySL" "Remove Every Saved Location"
         "MOM_Menu_Cancel" "Close Menu"

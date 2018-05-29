@@ -352,6 +352,26 @@ CON_COMMAND_F(mom_saveloc_nav_prev, "Goes backwards through the saveloc list, wh
         pPlayer->TeleportToCurrentSaveloc();
     }
 }
+CON_COMMAND_F(mom_saveloc_nav_first, "Goes to the first saveloc in the list, teleporting the player to it.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pPlayer && pPlayer->GetSavelocCount() > 0)
+    {
+        CheckTimer(pPlayer);
+        pPlayer->SetCurrentSavelocMenuIndex(0);
+        pPlayer->TeleportToCurrentSaveloc();
+    }
+}
+CON_COMMAND_F(mom_saveloc_nav_last, "Goes to the last saveloc in the list, teleporting the player to it.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
+{
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+    if (pPlayer && pPlayer->GetSavelocCount() > 0)
+    {
+        CheckTimer(pPlayer);
+        pPlayer->SetCurrentSavelocMenuIndex(pPlayer->GetSavelocCount() - 1);
+        pPlayer->TeleportToCurrentSaveloc();
+    }
+}
 CON_COMMAND_F(mom_saveloc_remove_current, "Removes the previously created saveloc.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());

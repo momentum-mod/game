@@ -647,7 +647,6 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 
             case PT_SAVELOC_REQ:
                 {
-                    DevMsg("Got a saveloc req packet!\n");
                     SavelocReqPacket_t saveloc(buf);
 
                     // Done/fail states:
@@ -673,7 +672,7 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                         break;
                     case 1:
                         {
-                            Msg("Got a stage 1 saveloc request packet!\n");
+                            DevLog(2, "Received a stage 1 saveloc request packet!\n");
                             // Somebody wants our savelocs, let the saveloc system handle this
                             g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
 
@@ -687,7 +686,7 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                         break;
                     case 2:
                         {
-                            Msg("Got a stage 2 saveloc request packet!\n");
+                            DevLog(2, "Received a stage 2 saveloc request packet!\n");
                             // We got the number of savelocs, pass this to the client
                             KeyValues *pKV = new KeyValues("req_savelocs");
                             pKV->SetInt("stage", 2);
@@ -697,6 +696,7 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                         break;
                     case 3:
                         {
+                            DevLog(2, "Received a stage 3 saveloc request packet!\n");
                             // Somebody sent us the number of the savelocs they want, saveloc system pls help
                             SavelocReqPacket_t response;
                             response.stage = 4;
@@ -708,6 +708,7 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                         break;
                     case 4:
                         {
+                            DevLog(2, "Received a stage 4 saveloc request packet!\n");
                             // We got their savelocs, add it to the player's list of savelocs
                             if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
                             {
@@ -726,6 +727,7 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                     case -1: // The other player is all done/cancelled
                         {
                             // Remove the requester
+                            DevLog(2, "Received a stage -1 saveloc request packet!\n");
                             g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
                         }
                         break;
