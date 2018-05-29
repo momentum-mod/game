@@ -1078,7 +1078,7 @@ inline void CUtlBuffer::Purge()
 
 inline void CUtlBuffer::CopyBuffer( const CUtlBuffer &buffer )
 {
-	CopyBuffer( buffer.Base(), buffer.TellPut() );
+	CopyBuffer( buffer.Base(), buffer.IsReadOnly() ? buffer.TellMaxPut() : buffer.TellPut() );
 }
 
 inline void	CUtlBuffer::CopyBuffer( const void *pubData, int cubData )
