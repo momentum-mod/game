@@ -37,6 +37,7 @@ extern ConVar sv_waterdist;
 extern ConVar sv_specaccelerate;
 extern ConVar sv_specspeed;
 extern ConVar sv_specnoclip;
+extern ConVar sv_swimsound;
 
 // Vehicle convars
 extern ConVar r_VehicleViewDampen;
