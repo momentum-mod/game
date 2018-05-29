@@ -2353,6 +2353,9 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 //-----------------------------------------------------------------------------
 void CGameMovement::PlaySwimSound()
 {
+    if (!sv_swimsound.GetBool())
+        return;
+
 	MoveHelper()->StartSound( mv->GetAbsOrigin(), "Player.Swim" );
 }
 
