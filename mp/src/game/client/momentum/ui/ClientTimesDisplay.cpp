@@ -26,8 +26,6 @@
 #include "vgui_controls/ToggleButton.h"
 #include "LeaderboardsContextMenu.h"
 
-#include <game/client/iviewport.h>
-
 #include "filesystem.h"
 #include <util/mom_util.h>
 #include "vgui_avatarimage.h"
@@ -55,6 +53,15 @@ using namespace vgui;
 #define TIMESTRING "00:00:00.000"        // Entire time string
 
 #define ENABLE_ONLINE_LEADERBOARDS 1 // MOM_TODO: Removeme when working on the online section
+
+class CUtlSortVectorTimeValue
+{
+public:
+    bool Less(CMomReplayBase *lhs, CMomReplayBase *rhs, void *) const
+    {
+        return lhs->GetRunTime() < rhs->GetRunTime();
+    }
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -182,11 +189,18 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
 
     flaggedRuns = RUNFLAG_NONE;
     SetDefLessFunc(m_umMapNames);
-
+    SetDefLessFunc(m_mapAvatarsToImageList);
 
 #if ENABLE_ONLINE_LEADERBOARDS
-    m_pImageList = new ImageList(true);
-    SetDefLessFunc(m_mapAvatarsToImageList);
+    // MOM_TODO: HACKHACK: this is changed to false because deleting a scheme image is a no-no.
+    // While we do know that the image list will only hold scheme and avatar images, we cannot delete
+    // either one. We do not have to delete the scheme images, as they are cached, and the avatar images
+    // are also cached, but indefinitely. There's a memory leak with avatar images, since every image just
+    // keeps creating Texture IDs and never destroying them, so if you download a lot of *different* avatars 
+    // (play a lot of maps and look at the leaderboards for them), you could start to see the perf impact of it.
+    // I'll leave it as a HACKHACK for now because this is ugly and that memory needs freed after a while, but may
+    // be unnoticeable for most people... we'll see how big the memory leak impact really is.
+    m_pImageList = new ImageList(false);
     SetupIcons();
     m_hCurrentLeaderboard = 0;
 #else
@@ -200,6 +214,12 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
 CClientTimesDisplay::~CClientTimesDisplay()
 {
     m_pCurrentLeaderboards = nullptr;
+
+    if (m_pImageList)
+        delete m_pImageList;
+
+    m_umMapNames.RemoveAll();
+    m_mapAvatarsToImageList.RemoveAll();
 
     if (m_pLeaderboardReplayCMenu)
     {
@@ -312,8 +332,8 @@ void CClientTimesDisplay::InitScoreboardSections()
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
         m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, SCALE(m_aiColumnWidths[0]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, GetScaledVal(m_aiColumnWidths[2]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, GetScaledVal(m_aiColumnWidths[0]));
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
@@ -326,7 +346,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pOnlineLeaderboards->SetImageList(m_pImageList, false);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-                                                  SCALE(m_aiColumnWidths[1]));
+                                                  GetScaledVal(m_aiColumnWidths[1]));
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "", SectionedListPanel::COLUMN_IMAGE,
                                                   DEFAULT_AVATAR_SIZE);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
@@ -335,7 +355,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE,
                                                   16);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, GetScaledVal(m_aiColumnWidths[2]));
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
                                                   16);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
@@ -351,7 +371,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pFriendsLeaderboards->SetImageList(m_pImageList, false);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-                                                   SCALE(m_aiColumnWidths[1]));
+                                                   GetScaledVal(m_aiColumnWidths[1]));
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "",
                                                    SectionedListPanel::COLUMN_IMAGE,
                                                    DEFAULT_AVATAR_SIZE);
@@ -362,7 +382,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE,
                                                    16);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
-                                                   SectionedListPanel::COLUMN_CENTER, SCALE(m_aiColumnWidths[2]));
+                                                   SectionedListPanel::COLUMN_CENTER, GetScaledVal(m_aiColumnWidths[2]));
         // Scroll only icon
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
                                                    16);
@@ -619,8 +639,8 @@ void CClientTimesDisplay::AddHeader()
         // Set the author label to be at the end of this label
         int wide, tall;
         m_pMapName->GetContentSize(wide, tall);
-        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + SCALE(4),
-                             m_pMapName->GetYPos() + tall - SCALE(surface()->GetFontTall(m_pMapAuthor->GetFont())));
+        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + GetScaledVal(4),
+                             m_pMapName->GetYPos() + tall - GetScaledVal(surface()->GetFontTall(m_pMapAuthor->GetFont())));
     }
 
 #if ENABLE_HTTP_LEADERBOARDS
@@ -1757,7 +1777,7 @@ void CClientTimesDisplay::LevelInitPostEntity()
     if (m_pImageList)
         delete m_pImageList;
 
-    m_pImageList = new ImageList(true);
+    m_pImageList = new ImageList(false);
     m_mapAvatarsToImageList.RemoveAll();
 
     SetupIcons();
