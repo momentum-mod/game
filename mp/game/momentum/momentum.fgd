@@ -250,7 +250,7 @@
 	Accelerate(float) : "Accelerate speed" : 5 : "Set here the default ground accelerate speed value."
 	Friction(integer) : "Friction" : 4 : "Set here the default friction value. The lower the number, the more slippery the player will move, the higher the number, the more slower and gripped the player is to the floor. 4 is default."
 	BackSpeed(float) : "Back speed" : "0.6" : "How much to slow down backwards motion."
-	StopSpeed(float) : "Stop speed" : 100 : "Set here the default ground accelerate speed value."
+	StopSpeed(float) : "Stop speed" : 75 : "Set here the default ground accelerate speed value."
 	StepSize(float) : "Step size" : 18 : "Vertical view fixup when eyes are near a new plane."
 	WaterDist(float) : "Water distance" : 12 : "Vertical view fixup when eyes are near water plane."
 	FootSteps(integer) : "Foot steps sound" : 1 : "Enable/Disable foot steps sounds."
