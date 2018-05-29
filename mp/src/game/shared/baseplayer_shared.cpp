@@ -667,7 +667,10 @@ void CBasePlayer::UpdateStepSound( surfacedata_t *psurface, const Vector &vecOri
 //-----------------------------------------------------------------------------
 void CBasePlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force )
 {
-	if ( gpGlobals->maxClients > 1 && !sv_footsteps.GetFloat() )
+    if (!sv_footsteps.GetFloat())
+        return;
+
+	if ( gpGlobals->maxClients > 1 )
 		return;
 
 #if defined( CLIENT_DLL )
