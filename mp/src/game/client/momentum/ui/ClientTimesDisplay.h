@@ -11,20 +11,11 @@
 #pragma once
 #endif
 
-#include "cbase.h"
 #include "steam/steam_api.h"
 #include "GameEventListener.h"
 #include <game/client/iviewport.h>
-#include "run/mom_replay_base.h"
 #include "vgui_controls/EditablePanel.h"
-
-#define TYPE_NOTEAM 0 // NOTEAM must be zero :)
-#define TYPE_TEAM 1   // a section for a single team
-#define TYPE_PLAYERS 2
-#define TYPE_SPECTATORS 3 // a section for a spectator group
-#define TYPE_BLANK 4
-
-#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
+#include "mom_shareddefs.h"
 
 #define DELAY_NEXT_UPDATE 10.0f           // Delay for the next API update, in seconds
 #define MIN_ONLINE_UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
@@ -37,15 +28,8 @@
 class SavelocReqFrame;
 class LobbyMembersPanel;
 class CLeaderboardsContextMenu;
-
-class CUtlSortVectorTimeValue
-{
-public:
-    bool Less(CMomReplayBase *lhs, CMomReplayBase *rhs, void *) const
-    {
-        return lhs->GetRunTime() < rhs->GetRunTime();
-    }
-};
+class CUtlSortVectorTimeValue;
+class CMomReplayBase;
 
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
@@ -79,7 +63,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CClientTimesDisplay(IViewPort *pViewPort);
     ~CClientTimesDisplay();
 
-    const char *GetName(void) OVERRIDE { return PANEL_TIMES; }
+    const char* GetName(void) OVERRIDE { return PANEL_TIMES; }
 
     void SetData(KeyValues *data) OVERRIDE{};
 

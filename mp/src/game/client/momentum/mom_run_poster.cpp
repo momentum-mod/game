@@ -117,29 +117,32 @@ void CRunPoster::OnLeaderboardScoreUploaded(LeaderboardScoreUploaded_t* pResult,
         // MOM_TODO: If it didn't upload, hijack the run_upload event with a message here?
     }
 
-    pEvent->SetBool("run_posted", bSuccess);
-
-    if (gameeventmanager->FireEvent(pEvent))
+    if (pEvent)
     {
-        if (bSuccess)
+        pEvent->SetBool("run_posted", bSuccess);
+
+        if (gameeventmanager->FireEvent(pEvent))
         {
-            // Now we can (try to) upload this replay file to the Steam Cloud for attaching to this new leaderboard score
-            CUtlBuffer fileBuffer;
-            if (filesystem->ReadFile(m_szFilePath, "MOD", fileBuffer))
+            if (bSuccess)
             {
-                SteamAPICall_t write = SteamRemoteStorage()->FileWriteAsync(m_szFileName, fileBuffer.Base(), fileBuffer.TellPut());
-                m_cFileUploaded.Set(write, this, &CRunPoster::OnFileUploaded);
+                // Now we can (try to) upload this replay file to the Steam Cloud for attaching to this new leaderboard score
+                CUtlBuffer fileBuffer;
+                if (filesystem->ReadFile(m_szFilePath, "MOD", fileBuffer))
+                {
+                    SteamAPICall_t write = SteamRemoteStorage()->FileWriteAsync(m_szFileName, fileBuffer.Base(), fileBuffer.TellPut());
+                    m_cFileUploaded.Set(write, this, &CRunPoster::OnFileUploaded);
+                }
+                else
+                {
+                    DevWarning("Couldn't read replay file %s!\n", m_szFilePath);
+                }
+
+                ConColorMsg(Color(0, 255, 0, 255), "Uploaded run to the leaderboards, check it out!\n");
             }
             else
             {
-                DevWarning("Couldn't read replay file %s!\n", m_szFilePath);
+                Warning("Could not upload your leaderboard score, sorry!\n");
             }
-
-            ConColorMsg(Color(0, 255, 0, 255), "Uploaded run to the leaderboards, check it out!\n");
-        }
-        else
-        {
-            Warning("Could not upload your leaderboard score, sorry!\n");
         }
     }
 }
