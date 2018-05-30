@@ -240,7 +240,7 @@ void CMOMSaveLocSystem::OnSavelocRequestEvent(KeyValues* pKv)
 
 void CMOMSaveLocSystem::AddSavelocRequester(const uint64& newReq)
 {
-    if (m_vecRequesters.Find(newReq) != m_vecRequesters.InvalidIndex())
+    if (!m_vecRequesters.HasElement(newReq))
         m_vecRequesters.AddToTail(newReq);
 }
 
