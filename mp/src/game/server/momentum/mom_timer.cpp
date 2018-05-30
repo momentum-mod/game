@@ -4,6 +4,10 @@
 #include "mom_timer.h"
 #include "movevars_shared.h"
 #include "mom_system_saveloc.h"
+#include "mom_triggers.h"
+#include "mom_player_shared.h"
+#include "mom_replay_system.h"
+#include <ctime>
 
 #include "tier0/memdbgon.h"
 
@@ -13,7 +17,7 @@ void CMomentumTimer::Start(int start)
     if (!pPlayer)
         return;
     // MOM_TODO: Allow it based on gametype
-    if (pPlayer->m_SrvData.m_bUsingSavelocMenu)
+    if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
         return;
     if (ConVarRef("mom_zone_edit").GetBool())
         return;
@@ -119,6 +123,11 @@ void CMomentumTimer::LevelShutdownPreEntity()
     SetCurrentZone(nullptr);
     ClearStartMark();
 }
+
+int CMomentumTimer::GetCurrentZoneNumber() const
+{
+    return m_pCurrentZone && m_pCurrentZone->GetStageNumber();
+} 
 
 // MOM_TODO: This needs to update to include checkpoint triggers placed in linear
 // maps to allow players to compare at certain points.
@@ -286,7 +295,7 @@ void CMomentumTimer::CreateStartMark()
         // Rid the previous one
         ClearStartMark();
 
-        m_pStartZoneMark = pPlayer->CreateSaveloc();
+        m_pStartZoneMark = g_pMOMSavelocSystem->CreateSaveloc();
         m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
         DevLog("Successfully created a starting mark!\n");
     }

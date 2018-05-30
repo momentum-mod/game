@@ -1,10 +1,10 @@
 #pragma once
 
-#include "cbase.h"
 #include "mom_replay_data.h"
 #include <momentum/util/serialization.h>
 
 class CMomentumReplayGhostEntity;
+class CMomRunStats;
 
 class CMomReplayBase : public ISerializable
 {

@@ -11,7 +11,6 @@
 #include "mom_modulecomms.h"
 #include "IMovementListener.h"
 
-struct SavedLocation_t;
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 
@@ -159,37 +158,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool ClientCommand(const CCommand &args) OVERRIDE;
     void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
 
-    // Gets the current menu Saveloc index
-    int GetCurrentSavelocMenuIndex() const { return m_SrvData.m_iCurrentSavelocIndx; }
-    // MOM_TODO: For leaderboard use later on
-    bool IsUsingSaveLocMenu() const { return m_SrvData.m_bUsingSavelocMenu; }
-    // Creates a saveloc on the location of the player
-    SavedLocation_t *CreateSaveloc();
-    // Creates and saves a checkpoint to the saveloc menu
-    void CreateAndSaveLocation();
-    // Add a Saveloc to the list
-    void AddSaveloc(SavedLocation_t *saveloc);
-    // Removes last saveloc (menu) form the saveloc lists
-    void RemoveLastSaveloc();
-    // Removes every saveloc (menu) on the saveloc list
-    void RemoveAllSavelocs();
-    // Teleports the player to the saveloc (menu) with the given index
-    void TeleportToSavelocIndex(int);
-    // Teleports the player to their current Saved Location
-    void TeleportToCurrentSaveloc() { TeleportToSavelocIndex(m_SrvData.m_iCurrentSavelocIndx); }
-    // Sets the current saveloc (menu) to the desired one with that index
-    void SetCurrentSavelocMenuIndex(int iNewNum) { m_SrvData.m_iCurrentSavelocIndx = iNewNum; }
-    // Gets the total amount of menu savelocs
-    int GetSavelocCount() const { return m_rcSavelocs.Size(); }
-    // Gets a saveloc given an index (number)
-    SavedLocation_t *GetSaveloc(int indx) { return indx > -1 && indx < m_rcSavelocs.Count() ? m_rcSavelocs[indx] : nullptr;}
-    // Sets wheter or not we're using the Saveloc Menu
-    // WARNING! No verification is done. It is up to the caller to don't give false information
-    void SetUsingSavelocMenu(bool bIsUsingSLMenu) { m_SrvData.m_bUsingSavelocMenu = bIsUsingSLMenu; }
-
-    void SaveSavelocsToFile(KeyValues *kvInto);
-    void LoadSavelocsFromFile(KeyValues *kvFrom);
-
     void ToggleDuckThisFrame(bool bState);
 
     int &GetPerfectSyncTicks() { return m_nPerfectSyncTicks; }
@@ -197,7 +165,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     int &GetAccelTicks() { return m_nAccelTicks; }
 
     // Trail Methods
-
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
     void CreateTrail();
     void RemoveTrail();
@@ -224,7 +191,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool m_bInAirDueToJump;
 
     void DoMuzzleFlash() OVERRIDE;
-    void PostThink();
+    void PostThink() OVERRIDE;
 
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
@@ -239,9 +206,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     // Spawn stuff
     EHANDLE g_pLastSpawn;
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
-
-    // Checkpoint menu
-    CUtlVector<SavedLocation_t*> m_rcSavelocs;
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;

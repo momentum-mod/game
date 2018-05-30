@@ -1,18 +1,12 @@
-#ifndef MOM_REPLAY_GHOST_H
-#define MOM_REPLAY_GHOST_H
-
 #pragma once
 
-#include "cbase.h"
-#include "in_buttons.h"
-#include "run/mom_entity_run_data.h"
-#include "mom_player.h"
-#include "run/mom_replay_data.h"
-#include "mom_replay_system.h"
-#include <GameEventListener.h>
 #include "mom_ghost_base.h"
+#include "GameEventListener.h"
+#include "mom_modulecomms.h"
 
-class CMomentumPlayer;
+class CMomRunStats;
+class CMomReplayBase;
+class CReplayFrame;
 
 class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGameEventListener
 {
@@ -42,7 +36,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     inline void SetRunFlags(uint32 flags) { m_SrvData.m_RunData.m_iRunFlags = flags; }
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick); }
+    CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
     
     bool IsReplayEnt() { return true; }
@@ -74,5 +68,3 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;
 };
-
-#endif // MOM_REPLAY_GHOST_H

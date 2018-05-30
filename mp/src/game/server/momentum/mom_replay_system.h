@@ -1,8 +1,6 @@
 #pragma once
 
-#include "cbase.h"
-
-#include "run/mom_replay_factory.h"
+#include "run/mom_replay_base.h"
 
 class CMomentumReplayGhostEntity;
 class CMomentumPlayer;

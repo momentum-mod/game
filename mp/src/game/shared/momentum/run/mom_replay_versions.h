@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cbase.h"
 #include "mom_replay_base.h"
+#include "run_stats.h"
 
 class CMomReplayV1 : public CMomReplayBase
 {

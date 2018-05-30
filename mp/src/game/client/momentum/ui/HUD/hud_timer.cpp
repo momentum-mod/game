@@ -54,6 +54,8 @@ class C_HudTimer : public CHudElement, public Panel
     bool m_bIsRunning;
     bool m_bTimerRan; // MOM_TODO: What is this used for?
 
+    void OnSavelocUpdateEvent(KeyValues *pKv);
+
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
     CPanelAnimationVar(Color, m_TextColor, "TextColor", "FgColor");
@@ -103,10 +105,11 @@ class C_HudTimer : public CHudElement, public Panel
     bool m_bPlayerInZone;
     bool m_bWereCheatsActivated;
     bool m_bPlayerHasPracticeMode;
-    bool m_bShowCheckpoints;
+    bool m_bShowSavelocs;
+    bool m_bPlayerUsingSavelocMenu;
     bool m_bMapFinished;
     bool m_bMapIsLinear;
-    int m_iSavelocCount, m_iSavelocCurrent;
+    int m_iSavelocCount, m_iSavelocCurrent, m_iPlayerSavelocCurrent, m_iPlayerSavelocCount;
     CMomRunStats *m_pRunStats;
     char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL],
@@ -126,6 +129,8 @@ C_HudTimer::C_HudTimer(const char *pElementName)
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_bIsReplay = false;
+
+    g_pModuleComms->ListenForEvent("saveloc_upd8", UtlMakeDelegate(this, &C_HudTimer::OnSavelocUpdateEvent));
 }
 
 void C_HudTimer::Init()
@@ -166,14 +171,14 @@ void C_HudTimer::Reset()
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iZoneCurrent = 1;
-    m_bShowCheckpoints = false;
+    m_bShowSavelocs = false;
+    m_bPlayerUsingSavelocMenu = false;
     m_bWereCheatsActivated = false;
     m_bPlayerHasPracticeMode = false;
     m_bPlayerInZone = false;
     m_bMapFinished = false;
     m_bMapIsLinear = false;
-    m_iSavelocCount = 0;
-    m_iSavelocCurrent = 0;
+    m_iSavelocCount = m_iPlayerSavelocCount = m_iSavelocCurrent = m_iSavelocCurrent = 0;
     m_pRunStats = nullptr;
 }
 
@@ -242,6 +247,13 @@ float C_HudTimer::GetCurrentTime()
     return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }
 
+void C_HudTimer::OnSavelocUpdateEvent(KeyValues* pKv)
+{
+    m_bPlayerUsingSavelocMenu = pKv->GetBool("using");
+    m_iPlayerSavelocCount = pKv->GetInt("count");
+    m_iPlayerSavelocCurrent = pKv->GetInt("current", -1) + 1;
+}
+
 void C_HudTimer::OnThink()
 {
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
@@ -251,7 +263,7 @@ void C_HudTimer::OnThink()
         C_MOMRunEntityData *runData;
         if (pGhost)
         {
-            m_bShowCheckpoints = false;
+            m_bShowSavelocs = false;
             m_iSavelocCurrent = 0;
             m_iSavelocCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
@@ -264,9 +276,9 @@ void C_HudTimer::OnThink()
         else
         {
             m_bIsReplay = false;
-            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingSavelocMenu;
-            m_iSavelocCurrent = pLocal->m_SrvData.m_iCurrentSavelocIndx + 1;
-            m_iSavelocCount = pLocal->m_SrvData.m_iSavelocCount;
+            m_bShowSavelocs = m_bPlayerUsingSavelocMenu;
+            m_iSavelocCurrent = m_iPlayerSavelocCurrent;
+            m_iSavelocCount = m_iPlayerSavelocCount;
             m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_SrvData.m_RunData;
@@ -288,7 +300,7 @@ void C_HudTimer::Paint(void)
     g_pMomentumUtil->FormatTime(GetCurrentTime(), m_pszString, 2);
     ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
 
-    if (m_bShowCheckpoints)
+    if (m_bShowSavelocs)
     {
         Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "%s %i/%i",
                    savelocLocalized,     // Saveloc localization
@@ -356,7 +368,7 @@ void C_HudTimer::Paint(void)
 
     surface()->DrawSetTextFont(m_hSmallTextFont);
 
-    if (m_bShowCheckpoints)
+    if (m_bShowSavelocs)
     {
         if (center_cps)
         {

@@ -6,6 +6,8 @@
 #include "momentum/mom_timer.h"
 #endif
 
+#include "tier0/memdbgon.h"
+
 CMomReplayV1::CMomReplayV1(CBinaryReader *reader, bool bFull)
     : CMomReplayBase(CReplayHeader(reader), bFull), m_pRunStats(nullptr)
 {

@@ -4,6 +4,7 @@
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "run/mom_replay_factory.h"
+#include "run/mom_replay_base.h"
 #include <gason.h>
 #include "run/run_compare.h"
 #include "run/run_stats.h"
