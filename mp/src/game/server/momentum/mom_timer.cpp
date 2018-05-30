@@ -289,15 +289,21 @@ void CMomentumTimer::CreateStartMark()
     if (!pPlayer)
         return;
 
-    CTriggerTimerStart *start = GetStartTrigger();
-    if (start && start->IsTouching(pPlayer))
+    if (m_pStartTrigger && m_pStartTrigger->IsTouching(pPlayer))
     {
         // Rid the previous one
         ClearStartMark();
 
         m_pStartZoneMark = g_pMOMSavelocSystem->CreateSaveloc();
-        m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
-        DevLog("Successfully created a starting mark!\n");
+        if (m_pStartZoneMark)
+        {
+            m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
+            DevLog("Successfully created a starting mark!\n");
+        }
+        else
+        {
+            Warning("Could not create the start mark for some reason!\n");
+        }
     }
 }
 

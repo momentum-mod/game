@@ -701,7 +701,6 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                             // Somebody sent us the number of the savelocs they want, saveloc system pls help
                             SavelocReqPacket_t response;
                             response.stage = 4;
-                            response.saveloc_count = saveloc.saveloc_count;
 
                             if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
                                 SendPacket(&response, &fromWho, k_EP2PSendReliable);
