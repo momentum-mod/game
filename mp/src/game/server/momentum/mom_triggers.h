@@ -418,7 +418,7 @@ class CTriggerSpeedThreshold : public CBaseMomentumTrigger
     void Think() OVERRIDE;
 
   private:
-    bool m_iAboveOrBelow;
+    int m_iAboveOrBelow;
     bool m_bHorizontal, m_bVertical;
     float m_flHorizontalSpeed;
     float m_flVerticalSpeed;
