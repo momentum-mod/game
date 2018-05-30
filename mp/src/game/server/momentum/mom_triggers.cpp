@@ -1145,3 +1145,75 @@ void CTriggerSetSpeed::OnEndTouch(CBaseEntity *pOther)
 }
 
 //-----------------------------------------------------------------------------------------------
+
+void CTriggerSpeedThreshold::OnStartTouch(CBaseEntity *pOther) { CheckSpeed(ToCMOMPlayer(pOther)); }
+
+void CTriggerSpeedThreshold::CheckSpeed(CMomentumPlayer *pPlayer)
+{
+    if (pPlayer != nullptr)
+    {
+        Vector Velocity = pPlayer->GetAbsVelocity();
+
+        if (m_bHorizontal)
+        {
+            float zAbs = abs(Velocity.z);
+
+            if (m_iAboveOrBelow == TRIGGERSPEEDTHRESHOLD_ABOVE)
+            {
+                if (zAbs > m_flHorizontalSpeed)
+                {
+                    m_OnThresholdEvent.FireOutput(pPlayer, this);
+                }
+            }
+            else
+            {
+                if (zAbs < m_flHorizontalSpeed)
+                {
+                    m_OnThresholdEvent.FireOutput(pPlayer, this);
+                }
+            }
+        }
+
+        if (m_bVertical)
+        {
+            float Vel2D = Velocity.Length2D();
+
+            if (m_iAboveOrBelow == TRIGGERSPEEDTHRESHOLD_ABOVE)
+            {
+                if (Vel2D > m_flVerticalSpeed)
+                {
+                    m_OnThresholdEvent.FireOutput(pPlayer, this);
+                }
+            }
+            else
+            {
+                if (Vel2D < m_flVerticalSpeed)
+                {
+                    m_OnThresholdEvent.FireOutput(pPlayer, this);
+                }
+            }
+        }
+    }
+
+    if (m_bOnThink)
+    {
+        SetNextThink(gpGlobals->curtime + m_flInterval);
+    }
+    else
+    {
+        SetNextThink(TICK_NEVER_THINK);
+    }
+}
+
+void CTriggerSpeedThreshold::Think() { CheckSpeed(ToCMOMPlayer(UTIL_GetLocalPlayer())); }
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_speedthreshold, CTriggerSpeedThreshold);
+
+BEGIN_DATADESC(CTriggerSpeedThreshold)
+DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
+    DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "Vertical"), DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
+    DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
+    DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
+    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") END_DATADESC();

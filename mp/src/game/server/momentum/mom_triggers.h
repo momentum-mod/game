@@ -401,4 +401,30 @@ class CTriggerSetSpeed : public CBaseMomentumTrigger
     Vector vecCalculatedVel;
 };
 
+class CTriggerSpeedThreshold : public CBaseMomentumTrigger
+{
+    enum
+    {
+        TRIGGERSPEEDTHRESHOLD_ABOVE,
+        TRIGGERSPEEDTHRESHOLD_BELOW
+    };
+
+    DECLARE_CLASS(CTriggerSpeedThreshold, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+  public:
+    void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
+    void CheckSpeed(CMomentumPlayer *pPlayer);
+    void Think() OVERRIDE;
+
+  private:
+    bool m_iAboveOrBelow;
+    bool m_bHorizontal, m_bVertical;
+    float m_flHorizontalSpeed;
+    float m_flVerticalSpeed;
+    bool m_bOnThink;
+    float m_flInterval;
+    COutputEvent m_OnThresholdEvent;
+};
+
 #endif // TIMERTRIGGERS_H
