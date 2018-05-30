@@ -432,6 +432,7 @@ class CTriggerSpeedThreshold : public CBaseMomentumTrigger
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void CheckSpeed(CMomentumPlayer *pPlayer);
     void Think() OVERRIDE;
+    void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
   private:
     int m_iAboveOrBelow;
@@ -440,6 +441,7 @@ class CTriggerSpeedThreshold : public CBaseMomentumTrigger
     float m_flVerticalSpeed;
     bool m_bOnThink;
     float m_flInterval;
+    bool m_bShouldThink;
     COutputEvent m_OnThresholdEvent;
 };
 
