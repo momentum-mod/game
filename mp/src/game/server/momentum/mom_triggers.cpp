@@ -1203,15 +1203,30 @@ void CTriggerSpeedThreshold::CheckSpeed(CMomentumPlayer *pPlayer)
     {
         SetNextThink(TICK_NEVER_THINK);
     }
+
+    m_bShouldThink = true;
 }
 
-void CTriggerSpeedThreshold::Think() { CheckSpeed(ToCMOMPlayer(UTIL_GetLocalPlayer())); }
+void CTriggerSpeedThreshold::Think()
+{
+    BaseClass::Think();
+
+    if (m_bShouldThink)
+        CheckSpeed(ToCMOMPlayer(UTIL_GetLocalPlayer()));
+}
+
+void CTriggerSpeedThreshold::OnEndTouch(CBaseEntity *pOther)
+{
+    BaseClass::OnEndTouch(pOther);
+    m_bShouldThink = false;
+}
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_speedthreshold, CTriggerSpeedThreshold);
 
 BEGIN_DATADESC(CTriggerSpeedThreshold)
 DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
-    DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "Vertical"), DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
+    DEFINE_KEYFIELD(m_bVertical, FIELD_BOOLEAN, "Vertical"),
+    DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
     DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
     DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
