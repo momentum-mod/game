@@ -93,15 +93,13 @@ public:
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
 
-    // Saves the current map's savelocs into the appropriate keyvalues file
-    void SaveCurrentSavelocs(KeyValues *pKvInto);
-
     // Sets the momentum player
     void SetPlayer(CMomentumPlayer* pPlayer) { m_pPlayer = pPlayer; }
 
 private:
     void CheckTimer(); // Check the timer to see if we should stop it
-    void FireUpdateEvent(); // Fire the event when we change our saveloc vector in any way, or stop using the saveloc menu
+    void FireUpdateEvent(); // Fire tan event to the UI when we change our saveloc vector in any way, or stop using the saveloc menu
+    void UpdateRequesters(); // Update any requesters with the updated saveloc count
 
     KeyValues *m_pSavedLocsKV;
     CUtlVector<uint64> m_vecRequesters;

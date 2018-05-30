@@ -280,6 +280,7 @@ bool CMOMSaveLocSystem::FillSavelocReq(const bool sending, SavelocReqPacket_t *i
 
     if (sending)
     {
+        int count = 0;
         // Go through each requested saveloc and copy the binary into outputBuf
         for (int i = 0; i < input->saveloc_count; i++)
         {
@@ -289,18 +290,32 @@ bool CMOMSaveLocSystem::FillSavelocReq(const bool sending, SavelocReqPacket_t *i
             if (savedLoc)
             {
                 savedLoc->Write(outputBuf->dataBuf);
+                count++;
             }
         }
+
+        if (!count) // If we didn't have any savelocs to give, get outta here
+            return false;
+
+        // We set the count here because we may have a different number of savelocs than requested
+        // (eg. when we delete some savelocs while the packet to request the original amount/indicies is still live)
+        outputBuf->saveloc_count = count;
     }
     else // receiving savelocs
     {
         // They gave us their savelocs, read them and add them to the player
-        for (int i = 0; i < input->saveloc_count; i++)
+        if (input->saveloc_count)
         {
-            // Memory managed by the player, when they exit the level
-            SavedLocation_t *newSavedLoc = new SavedLocation_t;
-            newSavedLoc->Read(input->dataBuf);
-            AddSaveloc(newSavedLoc);
+            for (int i = 0; i < input->saveloc_count; i++)
+            {
+                // Memory managed by the player, when they exit the level
+                SavedLocation_t *newSavedLoc = new SavedLocation_t;
+                newSavedLoc->Read(input->dataBuf);
+                m_rcSavelocs.AddToTail(newSavedLoc);
+            }
+
+            FireUpdateEvent();
+            UpdateRequesters();
         }
     }
 
@@ -315,6 +330,7 @@ SavedLocation_t* CMOMSaveLocSystem::CreateSaveloc()
 void CMOMSaveLocSystem::CreateAndSaveLocation()
 {
     AddSaveloc(CreateSaveloc());
+    UpdateRequesters();
 }
 
 void CMOMSaveLocSystem::AddSaveloc(SavedLocation_t* saveloc)
@@ -345,14 +361,16 @@ void CMOMSaveLocSystem::RemoveCurrentSaveloc()
     // else we want it to shift forward one until it catches back up to the last checkpoint
 
     FireUpdateEvent();
+    UpdateRequesters();
 }
 
 void CMOMSaveLocSystem::RemoveAllSavelocs()
 {
     m_rcSavelocs.PurgeAndDeleteElements();
-    m_iCurrentSavelocIndx = 0;
+    m_iCurrentSavelocIndx = -1;
 
     FireUpdateEvent();
+    UpdateRequesters();
 }
 
 void CMOMSaveLocSystem::GotoNextSaveloc()
@@ -450,6 +468,23 @@ void CMOMSaveLocSystem::FireUpdateEvent()
 
     // Fire only to the Client DLL
     g_pModuleComms->FireEvent(pSavelocInit, false);
+}
+
+void CMOMSaveLocSystem::UpdateRequesters()
+{
+    if (m_vecRequesters.IsEmpty())
+        return;
+
+    // Send them our saveloc count
+    SavelocReqPacket_t response;
+    response.stage = 2;
+    response.saveloc_count = m_rcSavelocs.Count();
+
+    FOR_EACH_VEC(m_vecRequesters, i)
+    {
+        CSteamID requester(m_vecRequesters[i]);
+        g_pMomentumGhostClient->SendSavelocReqPacket(requester, &response);
+    }
 }
 
 CON_COMMAND_F(mom_saveloc_create, "Creates a saveloc that saves a player's state.\n", FCVAR_CLIENTCMD_CAN_EXECUTE)
