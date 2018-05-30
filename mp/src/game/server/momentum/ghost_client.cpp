@@ -3,6 +3,8 @@
 #include "mom_online_ghost.h"
 #include "icommandline.h"
 #include "mom_lobby_system.h"
+#include "mom_player_shared.h"
+#include "mom_timer.h"
 
 #include "tier0/memdbgon.h"
 

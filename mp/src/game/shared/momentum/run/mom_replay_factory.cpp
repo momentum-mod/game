@@ -6,6 +6,8 @@
 #include "momentum/mom_replay_entity.h"
 #endif
 
+#include "tier0/memdbgon.h"
+
 CMomReplayFactory::CMomReplayFactory() :
     m_ucCurrentVersion(0)
 {

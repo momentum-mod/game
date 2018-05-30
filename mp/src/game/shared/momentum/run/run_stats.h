@@ -1,8 +1,6 @@
 #pragma once
 
-#include "cbase.h"
-#include "filesystem.h"
-#include "../mom_shareddefs.h"
+#include "mom_shareddefs.h"
 #include "util/serialization.h"
 
 /*

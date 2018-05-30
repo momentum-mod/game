@@ -40,6 +40,7 @@
 #include "SavelocRequestFrame.h"
 #include "LobbyMembersPanel.h"
 #include "mom_modulecomms.h"
+#include "run/mom_replay_base.h"
 
 extern IFileSystem *filesystem;
 

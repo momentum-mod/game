@@ -1,15 +1,14 @@
 #pragma once
 
-#include "momentum/tickset.h"
-#include "KeyValues.h"
-#include "mom_triggers.h"
-#include "mom_replay_system.h"
-#include <ctime>
+#include "mom_shareddefs.h"
 
+struct SavedLocation_t;
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
 class CTriggerOnehop;
 class CTriggerStage;
+class CTriggerTimerStop;
+class CMomentumPlayer;
 
 class CMomentumTimer : CAutoGameSystem
 {
@@ -55,7 +54,8 @@ class CMomentumTimer : CAutoGameSystem
     {
         m_pCurrentZone = pTrigger;
     }
-    int GetCurrentZoneNumber() const { return m_pCurrentZone && m_pCurrentZone->GetStageNumber(); }
+
+    int GetCurrentZoneNumber() const;
 
     // Calculates the stage count
     // Stores the result on m_iStageCount

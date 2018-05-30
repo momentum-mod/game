@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cbase.h"
 #include "mom_ghost_base.h"
 #include "utlqueue.h"
+#include "GameEventListener.h"
 
 class CMomentumOnlineGhostEntity : public CMomentumGhostBaseEntity, public CGameEventListener
 {

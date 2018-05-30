@@ -1,11 +1,13 @@
 #include "cbase.h"
 
 #include "mom_timer.h"
+#include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "util/baseautocompletefilelist.h"
 #include "fmtstr.h"
 #include "steam/steam_api.h"
+#include "run/mom_replay_factory.h"
 
 #include "tier0/memdbgon.h"
 

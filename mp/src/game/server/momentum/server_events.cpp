@@ -1,6 +1,8 @@
 #include "cbase.h"
 #include "server_events.h"
 #include "mom_shareddefs.h"
+#include "tickset.h"
+
 #include "tier0/memdbgon.h"
 
 

@@ -1,11 +1,13 @@
 #include "cbase.h"
 
 #include "mom_replay_entity.h"
-#include "mom_replay_system.h"
 #include "movevars_shared.h"
 #include "mom_timer.h"
 #include "util/mom_util.h"
 #include "util/os_utils.h"
+#include "mom_player_shared.h"
+#include "mom_replay_system.h"
+#include "in_buttons.h"
 
 #include "tier0/memdbgon.h"
 
@@ -456,6 +458,11 @@ void CMomentumReplayGhostEntity::EndRun()
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
+}
+
+CReplayFrame* CMomentumReplayGhostEntity::GetCurrentStep()
+{
+    return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick);
 }
 
 CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
