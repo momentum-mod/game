@@ -2,8 +2,12 @@
 
 #include "in_buttons.h"
 #include "mom_timer.h"
-#include "run/run_checkpoint.h"
 #include "movevars_shared.h"
+#include "mom_system_saveloc.h"
+#include "mom_triggers.h"
+#include "mom_player_shared.h"
+#include "mom_replay_system.h"
+#include <ctime>
 
 #include "tier0/memdbgon.h"
 
@@ -13,7 +17,7 @@ void CMomentumTimer::Start(int start)
     if (!pPlayer)
         return;
     // MOM_TODO: Allow it based on gametype
-    if (pPlayer->m_SrvData.m_bUsingCPMenu)
+    if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
         return;
     if (ConVarRef("mom_zone_edit").GetBool())
         return;
@@ -119,6 +123,11 @@ void CMomentumTimer::LevelShutdownPreEntity()
     SetCurrentZone(nullptr);
     ClearStartMark();
 }
+
+int CMomentumTimer::GetCurrentZoneNumber() const
+{
+    return m_pCurrentZone && m_pCurrentZone->GetStageNumber();
+} 
 
 // MOM_TODO: This needs to update to include checkpoint triggers placed in linear
 // maps to allow players to compare at certain points.
@@ -280,15 +289,21 @@ void CMomentumTimer::CreateStartMark()
     if (!pPlayer)
         return;
 
-    CTriggerTimerStart *start = GetStartTrigger();
-    if (start && start->IsTouching(pPlayer))
+    if (m_pStartTrigger && m_pStartTrigger->IsTouching(pPlayer))
     {
         // Rid the previous one
         ClearStartMark();
 
-        m_pStartZoneMark = pPlayer->CreateCheckpoint();
-        m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
-        DevLog("Successfully created a starting mark!\n");
+        m_pStartZoneMark = g_pMOMSavelocSystem->CreateSaveloc();
+        if (m_pStartZoneMark)
+        {
+            m_pStartZoneMark->vel = vec3_origin; // Rid the velocity
+            DevLog("Successfully created a starting mark!\n");
+        }
+        else
+        {
+            Warning("Could not create the start mark for some reason!\n");
+        }
     }
 }
 
@@ -334,7 +349,7 @@ class CTimerCommands
         CTriggerTimerStart *start = g_pMomentumTimer->GetStartTrigger();
         if (start)
         {
-            Checkpoint_t *pStartMark = g_pMomentumTimer->GetStartMark();
+            SavedLocation_t *pStartMark = g_pMomentumTimer->GetStartMark();
             if (pStartMark)
             {
                 pStartMark->Teleport(pPlayer);
@@ -345,6 +360,7 @@ class CTimerCommands
                 QAngle ang = start->GetLookAngles();
                 pPlayer->Teleport(&start->WorldSpaceCenter(), (start->HasLookAngles() ? &ang : nullptr), &vec3_origin);
             }
+            pPlayer->ResetRunStats();
         }
         else
         {
@@ -375,12 +391,14 @@ class CTimerCommands
 
         if (!pPlayer->m_SrvData.m_bHasPracticeMode)
         {
-            int b = pPlayer->m_nButtons;
-            bool safeGuard = (b & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
-            if (mom_practice_safeguard.GetBool() && safeGuard)
+            if (g_pMomentumTimer->IsRunning() && mom_practice_safeguard.GetBool())
             {
-                Warning("You cannot enable practice mode while moving!\n");
-                return;
+                bool safeGuard = (pPlayer->m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT | IN_BACK | IN_JUMP | IN_DUCK | IN_WALK)) != 0;
+                if (safeGuard)
+                {
+                    Warning("You cannot enable practice mode while moving, while the timer is running! Toggle this with \"mom_practice_safeguard\"!\n");
+                    return;
+                }
             }
 
             g_pMomentumTimer->EnablePractice(pPlayer);
@@ -408,7 +426,7 @@ class CTimerCommands
             if (desiredIndex == 1)
             {
                 // Index 1 is the start. If the timer has a mark, we use it
-                Checkpoint_t *startMark = g_pMomentumTimer->GetStartMark();
+                SavedLocation_t *startMark = g_pMomentumTimer->GetStartMark();
                 if (startMark)
                 {
                     pVec = &startMark->pos;

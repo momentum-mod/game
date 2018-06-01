@@ -4,7 +4,6 @@
 #include "info_camera_link.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
-#include "mom_system_checkpoint.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
 #include "weapon/weapon_csbasegun.h"
@@ -13,8 +12,10 @@
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
 #include "mom_blockfix.h"
-#include "run/run_checkpoint.h"
+#include "mom_system_saveloc.h"
 #include "mom_gamemovement.h"
+#include "util/mom_util.h"
+#include "mom_replay_system.h"
 
 #include "tier0/memdbgon.h"
 
@@ -131,15 +132,15 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_bPreventPlayerBhop = false;
     m_SrvData.m_iLandTick = 0;
 
-    m_SrvData.m_iCheckpointCount = 0;
-    m_SrvData.m_bUsingCPMenu = false;
-    m_SrvData.m_iCurrentStepCP = -1;
+
     
     g_ReplaySystem.m_player = this;
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
 
     ListenForGameEvent("mapfinished_panel_closed");
+
+    g_pMOMSavelocSystem->SetPlayer(this);
 
     // Listen for when this player jumps and lands
     g_pMomentumGameMovement->AddMovementListener(this);
@@ -148,11 +149,12 @@ CMomentumPlayer::CMomentumPlayer()
 CMomentumPlayer::~CMomentumPlayer()
 {
     RemoveTrail();
-    RemoveAllCheckpoints();
     RemoveAllOnehops();
 
     // Clear our spectating status just in case we leave the map while spectating
     g_pMomentumGhostClient->SetSpectatorTarget(k_steamIDNil, false, true);
+
+    g_pMOMSavelocSystem->SetPlayer(nullptr);
 
     // Remove us from the gamemovement listener list
     g_pMomentumGameMovement->RemoveMovementListener(this);
@@ -197,6 +199,10 @@ void CMomentumPlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
     {
         VectorCopy(ucmd->viewangles, pl.v_angle.GetForModify());
     }
+	else if (pl.fixangle == FIXANGLE_ABSOLUTE)
+	{
+		VectorCopy(pl.v_angle.GetForModify(), ucmd->viewangles);
+	}
 
     // Handle FL_FROZEN.
     if (GetFlags() & FL_FROZEN)
@@ -366,10 +372,6 @@ void CMomentumPlayer::Spawn()
 
     SetNextThink(gpGlobals->curtime);
 
-    // Load the player's checkpoints, only if we are spawning for the first time
-    if (m_rcCheckpoints.IsEmpty())
-        g_MOMCheckpointSystem->LoadMapCheckpoints(this);
-
     // Reset current checkpoint trigger upon spawn
     m_pCurrentCheckpoint = nullptr;
 }
@@ -387,34 +389,6 @@ void CMomentumPlayer::NewPreviousOrigin(Vector origin)
         m_vecPreviousOrigins[i] = m_vecPreviousOrigins[i - 1];
     }
     m_vecPreviousOrigins[0] = origin;
-}
-
-void CMomentumPlayer::SurpressLadderChecks(const Vector &pos, const Vector &normal)
-{
-    m_ladderSurpressionTimer.Start(1.0f);
-    m_lastLadderPos = pos;
-    m_lastLadderNormal = normal;
-}
-
-bool CMomentumPlayer::CanGrabLadder(const Vector &pos, const Vector &normal)
-{
-    if (m_ladderSurpressionTimer.GetRemainingTime() <= 0.0f)
-    {
-        return true;
-    }
-
-    const float MaxDist = 64.0f;
-    if (pos.AsVector2D().DistToSqr(m_lastLadderPos.AsVector2D()) < MaxDist * MaxDist)
-    {
-        return false;
-    }
-
-    if (normal != m_lastLadderNormal)
-    {
-        return true;
-    }
-
-    return false;
 }
 
 CBaseEntity *CMomentumPlayer::EntSelectSpawnPoint()
@@ -518,6 +492,16 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
 
         return true;
     }
+    if (FStrEq(cmd, "spec_next")) // chase next player
+    {
+        TravelSpectateTargets(false);
+        return true;
+    }
+    if (FStrEq(cmd, "spec_prev")) // chase previous player
+    {
+        TravelSpectateTargets(true);
+        return true;
+    }
     if (FStrEq(cmd, "drop"))
     {
         CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
@@ -541,42 +525,6 @@ void CMomentumPlayer::MomentumWeaponDrop(CBaseCombatWeapon *pWeapon)
     Weapon_Drop(pWeapon, nullptr, nullptr);
     pWeapon->StopFollowingEntity();
     UTIL_Remove(pWeapon);
-}
-
-Checkpoint_t *CMomentumPlayer::CreateCheckpoint()
-{
-    Checkpoint_t *c = new Checkpoint_t(this);
-    return c;
-}
-
-void CMomentumPlayer::CreateAndSaveCheckpoint()
-{
-    Checkpoint_t *c = CreateCheckpoint();
-    m_rcCheckpoints.AddToTail(c);
-    if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
-        ++m_SrvData.m_iCurrentStepCP;
-    else
-        m_SrvData.m_iCurrentStepCP = m_SrvData.m_iCheckpointCount; // Set it to the new checkpoint's index
-    ++m_SrvData.m_iCheckpointCount;
-}
-
-void CMomentumPlayer::RemoveLastCheckpoint()
-{
-    if (m_rcCheckpoints.IsEmpty())
-        return;
-    m_rcCheckpoints.Remove(m_SrvData.m_iCurrentStepCP);
-    // If there's one element left, we still need to decrease currentStep to -1
-    if (m_SrvData.m_iCurrentStepCP == m_SrvData.m_iCheckpointCount - 1)
-        --m_SrvData.m_iCurrentStepCP;
-    // else we want it to shift forward one until it catches back up to the last checkpoint
-    --m_SrvData.m_iCheckpointCount;
-}
-
-void CMomentumPlayer::RemoveAllCheckpoints()
-{
-    m_rcCheckpoints.PurgeAndDeleteElements();
-    m_SrvData.m_iCurrentStepCP = -1;
-    m_SrvData.m_iCheckpointCount = 0;
 }
 
 void CMomentumPlayer::AddOnehop(CTriggerOnehop* pTrigger)
@@ -666,53 +614,6 @@ void CMomentumPlayer::CreateTrail()
         m_eTrail->KeyValue("renderamt", newColor.a());
     }
     DispatchSpawn(m_eTrail);
-}   
-
-void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
-{
-    if (newCheckpoint > m_rcCheckpoints.Count() || newCheckpoint < 0 || !m_bAllowUserTeleports)
-        return;
-    Checkpoint_t *pCheckpoint = m_rcCheckpoints[newCheckpoint];
-    if (pCheckpoint)
-        pCheckpoint->Teleport(this);
-}
-
-void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
-{
-    // Set the current index
-    kvInto->SetInt("cur", m_SrvData.m_iCurrentStepCP);
-
-    // Add all your checkpoints
-    KeyValues *kvCPs = new KeyValues("cps");
-    FOR_EACH_VEC(m_rcCheckpoints, i)
-    {
-        Checkpoint_t *c = m_rcCheckpoints[i];
-        char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
-        Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
-        KeyValues *kvCP = new KeyValues(szCheckpointNum);
-        c->Save(kvCP);
-        kvCPs->AddSubKey(kvCP);
-    }
-
-    // Save them into the keyvalues
-    kvInto->AddSubKey(kvCPs);
-}
-
-void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
-{
-    if (!kvFrom || kvFrom->IsEmpty()) return;
-
-    m_SrvData.m_iCurrentStepCP = kvFrom->GetInt("cur");
-
-    KeyValues *kvCPs = kvFrom->FindKey("cps");
-    if (!kvCPs) return;
-    FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
-    {
-        Checkpoint_t *c = new Checkpoint_t(kvCheckpoint);
-        m_rcCheckpoints.AddToTail(c);
-    }
-
-    m_SrvData.m_iCheckpointCount = m_rcCheckpoints.Count();
 }
 
 void CMomentumPlayer::Touch(CBaseEntity *pOther)
@@ -950,7 +851,7 @@ void CMomentumPlayer::CalculateAverageStats()
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
 void CMomentumPlayer::LimitSpeedInStartZone()
 {
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !m_SrvData.m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
     {
         if (GetGroundEntity() == nullptr && !m_SrvData.m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
@@ -1024,7 +925,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     if (pGhostToSpectate && base)
     {
-        // Don't allow user teleports when spectating. Checkpoints can be created, but the
+        // Don't allow user teleports when spectating. Savelocs can be created, but the
         // teleporting logic needs to not be allowed.
         m_bAllowUserTeleports = false;
 
@@ -1052,15 +953,35 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
 
     return base;
 }
+
 int CMomentumPlayer::GetNextObserverSearchStartPoint(bool bReverse)
 {
-    int iDir = bReverse ? -1 : 1;
+    return BaseClass::GetNextObserverSearchStartPoint(bReverse);
+    /*int iDir = bReverse ? -1 : 1;
 
     int startIndex;
-
+    g_pMomentumGhostClient->GetOnlineGhostEntityFromID();
+    g_ReplaySystem.m_pPlaybackReplay;
     if (m_hObserverTarget)
     {
         // start using last followed player
+        CMomentumGhostBaseEntity *entity = dynamic_cast<CMomentumGhostBaseEntity*>(m_hObserverTarget.Get());
+        if (entity)
+        {
+            if (entity->IsReplayGhost())
+            {
+                // If we're spectating the replay ghost, check our online map
+                CUtlMap<uint64, CMomentumOnlineGhostEntity*> *onlineGhosts = g_pMomentumGhostClient->GetOnlineGhostMap();
+                if (onlineGhosts->Count() > 0)
+                {
+                    
+                }
+            }
+            else
+            {
+                
+            }
+        }
         startIndex = m_hObserverTarget->entindex();
     }
     else
@@ -1068,35 +989,99 @@ int CMomentumPlayer::GetNextObserverSearchStartPoint(bool bReverse)
         // start using own player index
         startIndex = this->entindex();
     }
-
     startIndex += iDir;
-    return startIndex;
+    startIndex = WrapClamp(startIndex, 1, gEntList.NumberOfEntities());
+
+    return startIndex;*/
 }
+
 CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 {
-    int startIndex = GetNextObserverSearchStartPoint(bReverse);
-
-    int currentIndex = startIndex;
-    int iDir = bReverse ? -1 : 1;
-
-    do
+    CUtlMap<uint64, CMomentumOnlineGhostEntity*> *onlineGhosts = g_pMomentumGhostClient->GetOnlineGhostMap();
+    if (m_hObserverTarget)
     {
-        CBaseEntity *nextTarget = UTIL_EntityByIndex(currentIndex);
-
-        if (IsValidObserverTarget(nextTarget))
+        // start using last followed player
+        CMomentumGhostBaseEntity *entity = GetGhostEnt();
+        if (entity)
         {
-            return nextTarget; // found next valid player
+            if (entity->IsReplayGhost())
+            {
+                // If we're spectating the replay ghost, check our online map
+                if (onlineGhosts->Count() > 0)
+                {
+                    return bReverse ? onlineGhosts->Element(onlineGhosts->LastInorder()) : onlineGhosts->Element(onlineGhosts->FirstInorder());
+                }
+            }
+            else if (entity->IsOnlineGhost())
+            {
+                // Was an online ghost, find its index
+                CMomentumOnlineGhostEntity *onlineEnt = dynamic_cast<CMomentumOnlineGhostEntity*>(entity);
+
+                CMomentumGhostBaseEntity *pCurrentReplayEnt = nullptr;
+                if (g_ReplaySystem.m_pPlaybackReplay)
+                {
+                    pCurrentReplayEnt = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+                }
+
+                if (onlineEnt)
+                {
+                    unsigned short indx = onlineGhosts->Find(onlineEnt->GetGhostSteamID().ConvertToUint64());
+                    if (onlineGhosts->Count() > 1)
+                    {
+                        if (indx == onlineGhosts->LastInorder())
+                        {
+                            if (bReverse)
+                            {
+                                return onlineGhosts->Element(onlineGhosts->PrevInorder(indx));
+                            }
+                            // Check the replay ghost, if not there, go to head of map
+                            if (pCurrentReplayEnt)
+                            {
+                                return pCurrentReplayEnt;
+                            }
+
+                            return onlineGhosts->Element(onlineGhosts->FirstInorder());
+                        }
+                        if (indx == onlineGhosts->FirstInorder())
+                        {
+                            if (bReverse)
+                            {
+                                // Check the replay ghost, if not there, go to head of map
+                                if (pCurrentReplayEnt)
+                                {
+                                    return pCurrentReplayEnt;
+                                }
+                                return onlineGhosts->Element(onlineGhosts->LastInorder());
+                            }
+                            return onlineGhosts->Element(onlineGhosts->NextInorder(indx));
+                        }
+                        // in the middle of the list, iterate it like normal
+                        return bReverse ? onlineGhosts->Element(onlineGhosts->PrevInorder(indx)) : onlineGhosts->Element(onlineGhosts->NextInorder(indx));
+                    }
+
+                    // Check the replay ghost, if not there, don't do anything, we're already spectating
+                    if (pCurrentReplayEnt)
+                    {
+                        return pCurrentReplayEnt;
+                    }
+                }
+            }
         }
-
-        currentIndex += iDir;
-
-        // Loop through the entities
-        if (currentIndex > gEntList.NumberOfEntities())
-            currentIndex = 1;
-        else if (currentIndex < 1)
-            currentIndex = gEntList.NumberOfEntities();
-
-    } while (currentIndex != startIndex);
+    }
+    else
+    {
+        if (g_ReplaySystem.m_pPlaybackReplay)
+        {
+            return g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
+        }
+        else
+        {
+            if (onlineGhosts->Count() > 0)
+            {
+                return onlineGhosts->Element(onlineGhosts->FirstInorder());
+            }
+        }
+    }
 
     return nullptr;
 }
@@ -1104,31 +1089,6 @@ CBaseEntity *CMomentumPlayer::FindNextObserverTarget(bool bReverse)
 // Overridden for custom IN_EYE check
 void CMomentumPlayer::CheckObserverSettings()
 {
-    // check if we are in forced mode and may go back to old mode
-    if (m_bForcedObserverMode)
-    {
-        CBaseEntity *target = m_hObserverTarget;
-
-        if (!IsValidObserverTarget(target))
-        {
-            // if old target is still invalid, try to find valid one
-            target = FindNextObserverTarget(false);
-        }
-
-        if (target)
-        {
-            // we found a valid target
-            m_bForcedObserverMode = false;        // disable force mode
-            SetObserverMode(m_iObserverLastMode); // switch to last mode
-            SetObserverTarget(target);            // goto target
-
-            // TODO check for HUD icons
-            return;
-        }
-        // else stay in forced mode, no changes
-        return;
-    }
-
     // make sure our last mode is valid
     if (m_iObserverLastMode < OBS_MODE_FIXED)
     {
@@ -1136,8 +1096,8 @@ void CMomentumPlayer::CheckObserverSettings()
     }
 
     // check if our spectating target is still a valid one
-    if (m_iObserverMode == OBS_MODE_IN_EYE || m_iObserverMode == OBS_MODE_CHASE || m_iObserverMode == OBS_MODE_FIXED ||
-        m_iObserverMode == OBS_MODE_POI)
+    if (m_iObserverMode == OBS_MODE_IN_EYE || m_iObserverMode == OBS_MODE_CHASE || m_iObserverMode == OBS_MODE_FIXED 
+        || m_iObserverMode == OBS_MODE_POI)
     {
         ValidateCurrentObserverTarget();
 
@@ -1161,13 +1121,61 @@ void CMomentumPlayer::CheckObserverSettings()
             {
                 SetViewOffset(target->GetViewOffset());
             }
-            return;
         }
     }
-
-    // Call base class for player check
-    BaseClass::CheckObserverSettings();
 }
+
+void CMomentumPlayer::ValidateCurrentObserverTarget()
+{
+    if (!IsValidObserverTarget(m_hObserverTarget.Get()))
+    {
+        // our target is not valid, try to find new target
+        CBaseEntity *target = FindNextObserverTarget(false);
+        if (target)
+        {
+            // switch to new valid target
+            SetObserverTarget(target);
+        }
+        else
+        {
+            // roam player view right where it is
+            ForceObserverMode(OBS_MODE_ROAMING);
+            m_hObserverTarget.Set(nullptr); // no target to follow
+
+            // Let the client know too!
+            IGameEvent *event = gameeventmanager->CreateEvent("spec_target_updated");
+            if (event)
+            {
+                gameeventmanager->FireEventClientSide(event);
+            }
+        }
+    }
+}
+
+void CMomentumPlayer::TravelSpectateTargets(bool bReverse)
+{
+    if (GetObserverMode() > OBS_MODE_FIXED)
+    {
+        // set new spectator mode
+        CBaseEntity *target = FindNextObserverTarget(bReverse);
+        if (target)
+        {
+            if (m_bForcedObserverMode)
+            {
+                // If we found a valid target
+                m_bForcedObserverMode = false;        // disable forced mode
+                SetObserverMode(m_iObserverLastMode); // switch to last mode
+            }
+            // goto target
+            SetObserverTarget(target);
+        }
+    }
+    else if (GetObserverMode() == OBS_MODE_FREEZECAM)
+    {
+        AttemptToExitFreezeCam();
+    }
+}
+
 
 void CMomentumPlayer::TweenSlowdownPlayer()
 {

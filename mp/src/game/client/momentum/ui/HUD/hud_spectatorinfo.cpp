@@ -3,8 +3,13 @@
 #include "clientmode.h"
 #include "mom_shareddefs.h"
 #include "vgui/ILocalize.h"
+#include "vgui/ISurface.h"
+#include "steam/steam_api.h"
+#include "baseviewport.h"
 
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 DECLARE_HUDELEMENT(CHudSpectatorInfo);
 
@@ -22,7 +27,10 @@ m_pLeaderboards(nullptr)
     SetMouseInputEnabled(false);
     SetDefLessFunc(m_mapNameMap);
 
-    m_idLocal = SteamUser()->GetSteamID();
+    if (SteamUser())
+        m_idLocal = SteamUser()->GetSteamID().ConvertToUint64();
+    else
+        m_idLocal = 0;
 }
 
 CHudSpectatorInfo::~CHudSpectatorInfo()
@@ -88,8 +96,9 @@ void CHudSpectatorInfo::SpectatorUpdate(const CSteamID& person, const CSteamID& 
     unsigned short indx = m_mapNameMap.Find(person.ConvertToUint64());
     const bool found = indx != m_mapNameMap.InvalidIndex();
 
-    if (target == m_idLocal && !found)
+    if (target.ConvertToUint64() == m_idLocal && !found)
     {
+        CHECK_STEAM_API(SteamFriends());
         const char *pName = SteamFriends()->GetFriendPersonaName(person);
         wchar_t pNameUnicode[MAX_PLAYER_NAME_LENGTH];
         wchar_t *pNameCopy = new wchar_t[MAX_PLAYER_NAME_LENGTH];

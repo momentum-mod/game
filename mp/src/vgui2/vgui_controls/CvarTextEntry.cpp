@@ -21,6 +21,7 @@ DECLARE_BUILD_FACTORY_DEFAULT_TEXT(CvarTextEntry, "");
 CvarTextEntry::CvarTextEntry(Panel *parent, const char *panelName, char const *cvarname)
     : TextEntry(parent, panelName), m_cvarRef(cvarname, true)
 {
+    InitSettings();
     m_pszStartValue[0] = 0;
 
     if (m_cvarRef.IsValid())
@@ -61,11 +62,11 @@ void CvarTextEntry::GetSettings(KeyValues* pOutResource)
     pOutResource->SetString("cvar_name", m_cvarRef.GetName());
 }
 
-const char* CvarTextEntry::GetDescription()
+void CvarTextEntry::InitSettings()
 {
-    static char buf[1024];
-    Q_snprintf(buf, sizeof(buf), "%s, string cvar_name", BaseClass::GetDescription());
-    return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"cvar_name", TYPE_STRING}
+    END_PANEL_SETTINGS();
 }
 
 void CvarTextEntry::OnApplyChanges()

@@ -69,8 +69,8 @@ Label::Label(Panel *parent, const char *panelName, const wchar_t *wszText) : Bas
 Label::~Label()
 {
 	delete _textImage;
-	delete [] _associateName;
-	delete [] _fontOverrideName;
+    _associateName.Purge();
+    _fontOverrideName.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -78,14 +78,15 @@ Label::~Label()
 //-----------------------------------------------------------------------------
 void Label::Init()
 {
+    InitSettings();
 	_contentAlignment = a_west;
 	_textColorState = CS_NORMAL;
 	_textInset[0] = 0;
 	_textInset[1] = 0;
 	_hotkey = 0;
-	_associate = NULL;
-	_associateName = NULL;
-	_fontOverrideName = NULL;
+	_associate = nullptr;
+	_associateName = nullptr;
+	_fontOverrideName = nullptr;
 	m_bWrap = false;
 	m_bCenterWrap = false;
 	m_bAutoWideToContents = false;
@@ -411,7 +412,7 @@ void Label::ComputeAlignment(int &tx0, int &ty0, int &tx1, int &ty1)
 		int iWide, iTall;
 		image->GetSize(iWide, iTall);
 		if (iWide > wide) // if the image is larger than the label just do a west alignment
-			actualXAlignment = Label::a_west;
+			actualXAlignment = a_west;
 		
 		// get the max height
 		maxY = max(maxY, iTall);
@@ -428,25 +429,25 @@ void Label::ComputeAlignment(int &tx0, int &ty0, int &tx1, int &ty1)
 	switch (actualXAlignment)
 	{
 		// left
-		case Label::a_northwest:
-		case Label::a_west:
-		case Label::a_southwest:
+		case a_northwest:
+		case a_west:
+		case a_southwest:
 		{
 			tx0 = 0;
 			break;
 		}
 		// center
-		case Label::a_north:
-		case Label::a_center:
-		case Label::a_south:
+		case a_north:
+		case a_center:
+		case a_south:
 		{
 			tx0 = (wide - tWide) / 2;
 			break;
 		}
 		// right
-		case Label::a_northeast:
-		case Label::a_east:
-		case Label::a_southeast:
+		case a_northeast:
+		case a_east:
+		case a_southeast:
 		{
 			tx0 = wide - tWide;
 			break;
@@ -457,25 +458,25 @@ void Label::ComputeAlignment(int &tx0, int &ty0, int &tx1, int &ty1)
 	switch (_contentAlignment)
 	{
 		//top
-		case Label::a_northwest:
-		case Label::a_north:
-		case Label::a_northeast:
+		case a_northwest:
+		case a_north:
+		case a_northeast:
 		{
 			ty0 = 0;
 			break;
 		}
 		// center
-		case Label::a_west:
-		case Label::a_center:
-		case Label::a_east:
+		case a_west:
+		case a_center:
+		case a_east:
 		{
 			ty0 = (tall - tTall) / 2;
 			break;
 		}
 		// south
-		case Label::a_southwest:
-		case Label::a_south:
-		case Label::a_southeast:
+		case a_southwest:
+		case a_south:
+		case a_southeast:
 		{
 			ty0 = tall - tTall;
 			break;
@@ -498,8 +499,7 @@ void Label::Paint()
 	if (_associateName)
 	{
 		SetAssociatedControl(FindSiblingByName(_associateName));
-		delete [] _associateName;
-		_associateName = NULL;
+        _associateName.Purge();
 	}
 
 	int labelWide, labelTall;
@@ -524,17 +524,17 @@ void Label::Paint()
 			switch ( _contentAlignment )
 			{
 				// left
-				case Label::a_northwest:
-				case Label::a_west:
-				case Label::a_southwest:
+				case a_northwest:
+				case a_west:
+				case a_southwest:
 				{
 					x += _textInset[0];
 					break;
 				}
 				// right
-				case Label::a_northeast:
-				case Label::a_east:
-				case Label::a_southeast:
+				case a_northeast:
+				case a_east:
+				case a_southeast:
 				{
 					x -= _textInset[0];
 					break;
@@ -553,7 +553,7 @@ void Label::Paint()
 		image->SetPos(x, y);
 
 		// fix up y for center-aligned text
-		if (_contentAlignment == Label::a_west || _contentAlignment == Label::a_center || _contentAlignment == Label::a_east)
+		if (_contentAlignment == a_west || _contentAlignment == a_center || _contentAlignment == a_east)
 		{
 			int iw, it;
 			image->GetSize(iw, it);
@@ -696,6 +696,10 @@ void Label::SizeToContents()
 //-----------------------------------------------------------------------------
 void Label::SetFont(HFont font)
 {
+    IScheme *pScheme = scheme()->GetIScheme(GetScheme());
+    _fontOverrideName.Purge();
+    _fontOverrideName = pScheme->GetFontName(font);
+
 	_textImage->SetFont(font);
 	Repaint();
 }
@@ -998,7 +1002,7 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 	{
 		//tell it how big it is
 		int wide, tall;
-		Panel::GetSize(wide, tall);
+		GetSize(wide, tall);
 		wide -= _textInset[0];		// take inset into account
 		_textImage->SetSize(wide, tall);
 
@@ -1095,30 +1099,30 @@ void Label::GetSettings( KeyValues *outResourceData )
 		outResourceData->SetString("associate", _associate->GetName());
 	}
 
-	outResourceData->SetInt("dulltext", (int)(_textColorState == CS_DULL));
-	outResourceData->SetInt("brighttext", (int)(_textColorState == CS_BRIGHT));
+	outResourceData->SetBool("dulltext", (_textColorState == CS_DULL));
+	outResourceData->SetBool("brighttext", (_textColorState == CS_BRIGHT));
 
-	if (_fontOverrideName)
+	if (!_fontOverrideName.IsEmpty())
 	{
 		outResourceData->SetString("font", _fontOverrideName);
 	}
 	
-	outResourceData->SetInt("wrap", ( m_bWrap ? 1 : 0 ));
-	outResourceData->SetInt("centerwrap", ( m_bCenterWrap ? 1 : 0 ));
+	outResourceData->SetBool("wrap", m_bWrap);
+	outResourceData->SetBool("centerwrap", m_bCenterWrap);
 
 	if ( m_bUseProportionalInsets )
 	{
-		outResourceData->SetInt("textinsetx", scheme()->GetProportionalNormalizedValueEx( GetScheme(), _textInset[0] ) );
-		outResourceData->SetInt("textinsety", _textInset[1]);
+		outResourceData->SetInt("textinsetx", GetNormalizedVal(_textInset[0] ) );
+		outResourceData->SetInt("textinsety", GetNormalizedVal(_textInset[1]));
 	}
 	else
 	{
 		outResourceData->SetInt("textinsetx", _textInset[0]);
 		outResourceData->SetInt("textinsety", _textInset[1]);
 	}
-	outResourceData->SetInt("auto_wide_tocontents", ( m_bAutoWideToContents ? 1 : 0 ));
-    outResourceData->SetInt("auto_tall_tocontents", (m_bAutoTallToContents ? 1 : 0));
-	outResourceData->SetInt("use_proportional_insets", ( m_bUseProportionalInsets ? 1 : 0 ));
+	outResourceData->SetBool("auto_wide_tocontents", m_bAutoWideToContents);
+    outResourceData->SetBool("auto_tall_tocontents", m_bAutoTallToContents);
+	outResourceData->SetBool("use_proportional_insets", m_bUseProportionalInsets);
 }
 
 //-----------------------------------------------------------------------------
@@ -1197,19 +1201,13 @@ void Label::ApplySettings( KeyValues *inResourceData )
 
 	// the control we are to be associated with may not have been created yet,
 	// so keep a pointer to it's name and calculate it when we can
-	const char *associateName = inResourceData->GetString("associate", "");
-	if (associateName[0] != 0)
-	{
-		int len = Q_strlen(associateName) + 1;
-		_associateName = new char[ len ];
-		Q_strncpy( _associateName, associateName, len );
-	}
+    _associateName = inResourceData->GetString("associate", "");
 
-	if (inResourceData->GetInt("dulltext", 0) == 1)
+	if (inResourceData->GetBool("dulltext", false))
 	{
 		SetTextColorState(CS_DULL);
 	}
-	else if (inResourceData->GetInt("brighttext", 0) == 1)
+	else if (inResourceData->GetBool("brighttext", false))
 	{
 		SetTextColorState(CS_BRIGHT);
 	}
@@ -1224,53 +1222,61 @@ void Label::ApplySettings( KeyValues *inResourceData )
 
 	if (*overrideFont)
 	{
-		delete [] _fontOverrideName;
-		int len = Q_strlen(overrideFont) + 1;
-		_fontOverrideName = new char[ len ];
-		Q_strncpy(_fontOverrideName, overrideFont, len );
+        _fontOverrideName.Purge();
+        _fontOverrideName = overrideFont;
 		SetFont(pScheme->GetFont(_fontOverrideName, IsProportional()));
 	}
 	else if (_fontOverrideName)
 	{
-		delete [] _fontOverrideName;
-		_fontOverrideName = NULL;
+        _fontOverrideName.Purge();
 		SetFont(pScheme->GetFont("Default", IsProportional()));
 	}
 
-	bool bWrapText = inResourceData->GetInt("centerwrap", 0) > 0;
+	bool bWrapText = inResourceData->GetBool("centerwrap", false);
 	SetCenterWrap( bWrapText );
 
-	m_bAutoWideToContents = inResourceData->GetInt("auto_wide_tocontents", 0) > 0;
-    m_bAutoTallToContents = inResourceData->GetInt("auto_tall_tocontents", 0) > 0;
+	m_bAutoWideToContents = inResourceData->GetBool("auto_wide_tocontents", false);
+    m_bAutoTallToContents = inResourceData->GetBool("auto_tall_tocontents", false);
 
-	bWrapText = inResourceData->GetInt("wrap", 0) > 0;
+	bWrapText = inResourceData->GetBool("wrap", false);
 	SetWrap( bWrapText );
 
 	int inset_x = inResourceData->GetInt("textinsetx", _textInset[0]);
 	int inset_y = inResourceData->GetInt("textinsety", _textInset[1]);
 	// Had to play it safe and add a new key for backwards compatibility
-	m_bUseProportionalInsets = inResourceData->GetInt("use_proportional_insets", 0) > 0;
+	m_bUseProportionalInsets = inResourceData->GetBool("use_proportional_insets", false);
 	if ( m_bUseProportionalInsets )
 	{
-		inset_x = scheme()->GetProportionalScaledValueEx( GetScheme(), inset_x );
+		inset_x = GetScaledVal(inset_x);
+        inset_y = GetScaledVal(inset_y);
 	}
 
 	SetTextInset( inset_x, inset_y );
 
-	bool bAllCaps = inResourceData->GetInt("allcaps", 0) > 0;
+	bool bAllCaps = inResourceData->GetBool("allcaps", false);
 	SetAllCaps( bAllCaps );
 
 	InvalidateLayout(true);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Returns a description of the label string
-//-----------------------------------------------------------------------------
-const char *Label::GetDescription( void )
+void Label::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, string labelText, string associate, alignment textAlignment, int wrap, int dulltext, int brighttext, string font", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"labelText", TYPE_STRING},
+    {"associate", TYPE_STRING},
+    {"textAlignment", TYPE_ALIGNMENT},
+    {"wrap", TYPE_BOOL},
+    {"centerwrap", TYPE_BOOL},
+    {"dulltext", TYPE_BOOL},
+    {"brighttext", TYPE_BOOL},
+    {"allcaps", TYPE_BOOL},
+    {"use_proportional_insets", TYPE_BOOL},
+    {"textinsetx", TYPE_INTEGER},
+    {"textinsety", TYPE_INTEGER},
+    {"auto_wide_tocontents", TYPE_BOOL},
+    {"auto_tall_tocontents", TYPE_BOOL},
+    {"font", TYPE_STRING}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -1281,7 +1287,7 @@ const char *Label::GetDescription( void )
 void Label::PerformLayout()
 {
 	int wide, tall;
-	Panel::GetSize(wide, tall);
+	GetSize(wide, tall);
 	wide -= _textInset[0]; // take inset into account
 
 	// if we just have a textImage, this is trivial.

@@ -4,7 +4,6 @@
 #pragma once
 #endif
 
-#include <momentum/mom_gamerules.h>
 #include "filters.h"
 #include "func_break.h"
 #include "triggers.h"

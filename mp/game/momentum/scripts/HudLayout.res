@@ -82,13 +82,19 @@
     CHudVersionInfo
     {
         "fieldName"     "CHudVersionInfo"
-        "xpos"          "640"
-        "ypos"          "460"
+        "xpos"          "10" // This is basically the X pin offset
+        "ypos"          "rs1.0" // Used to shove it in the bottom left corner
         "visible"       "1"
         "enabled"       "1"
-        "wide"          "200"
+        "wide"          "20"
         "tall"          "20"
-        "TextFont"      "HudHintTextSmall"
+        "TextFont"      "MomHudDropText"
+        "AutoResize" "3"
+        "PinCorner" "2"
+        "PinnedCornerOffsetX" "10"
+        "PinnedCornerOffsetY" "5"
+        "auto_wide_tocontents" "1"
+        "auto_tall_tocontents" "1"
     }
     CHudSyncBar
     {
@@ -107,8 +113,8 @@
     CHudKeyPressDisplay
     {
         "fieldName"     "CHudKeyPressDisplay"
-        "xpos"          "c+265"
-        "ypos"          "c+150"
+        "xpos"          "r175"
+        "ypos"          "r100"
         "wide"          "150"
         "tall"          "100"
         "visible"       "1"
@@ -118,8 +124,8 @@
         "lower_row_ypos"    "35"
         "jump_row_ypos" "45"
         "duck_row_ypos" "55"
-        "strafe_count_xpos" "100"
-        "jump_count_xpos"   "100"
+        "strafe_count_xpos" "110"
+        "jump_count_xpos"   "110"
         "TextFont"      "MomentumIcons"
         "CounterTextFont"       "HudNumbersVerySmall"
         "WordTextFont"  "HudNumbersVerySmall"
@@ -156,21 +162,20 @@
         "status_ypos" "c+125"//y-pos for the map status 
         "mapinfo_xpos" "10"//xpos for the map info (author/difficulty/etc)
         "mapinfo_ypos" "10"//ypos for the map info
-        "StatusFont" "HudHintTextSmall"//Font for the current map area/status
-        "MapInfoFont" "HudHintTextSmall"//Font for the map information
+        "StatusFont" "MomHudDropText"//Font for the current map area/status
+        "MapInfoFont" "MomHudDropText"//Font for the map information
         "TextColor" "MOM.Panel.Fg"
     }
     
     "CHudMapFinishedDialog"
     {
         "fieldName"     "CHudMapFinishedDialog"
-        "xpos"          "c-110"
-        "ypos"          "c-150"
-        "wide"          "220"
-        "tall"          "175"
-        "visible"       "1"
-        "enabled"       "1"
         "TextFont"      "Default"
+        // See resource/ui/MapFinishedDialog.res to change these
+        //"xpos"          "c-110"
+        //"ypos"          "c-150"
+        //"wide"          "220"
+        //"tall"          "180"
     }
     
     CHudSpectatorInfo

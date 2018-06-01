@@ -1,6 +1,10 @@
 #include "cbase.h"
 
 #include "HudSettingsPage.h"
+#include "vgui_controls/ComboBox.h"
+#include "vgui_controls/CvarToggleCheckButton.h"
+
+using namespace vgui;
 
 HudSettingsPage::HudSettingsPage(Panel *pParent) : BaseClass(pParent, "HudSettings")
 {

@@ -5,6 +5,13 @@
 #include "clientmode.h"
 #include "hud_comparisons.h"
 
+#include <vgui_controls/Label.h>
+#include <vgui_controls/ComboBox.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
+#include <vgui_controls/Tooltip.h>
+#include <vgui_controls/Frame.h>
+#include <vgui_controls/AnimationController.h>
+
 #include <tier0/memdbgon.h>
 
 using namespace vgui;

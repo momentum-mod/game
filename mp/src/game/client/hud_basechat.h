@@ -12,13 +12,10 @@
 #endif
 
 #include "hudelement.h"
-#include <vgui_controls/Panel.h>
-#include "vgui_basepanel.h"
-#include "vgui_controls/Frame.h"
-#include <vgui_controls/TextEntry.h>
 #include <vgui_controls/RichText.h>
-#include <vgui_controls/Button.h>
 #include <vgui_controls/CheckButton.h>
+#include <vgui_controls/TextEntry.h>
+#include <vgui_controls/EditablePanel.h>
 
 class CBaseHudChatInputLine;
 class CBaseHudChatEntry;
@@ -27,6 +24,7 @@ class CHudChatFilterPanel;
 namespace vgui
 {
 	class IScheme;
+    class Panel;
 };
 
 #define CHATLINE_NUM_FLASHES 8.0f

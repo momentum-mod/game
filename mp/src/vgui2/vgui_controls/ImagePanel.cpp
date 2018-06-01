@@ -29,10 +29,11 @@ DECLARE_BUILD_FACTORY( ImagePanel );
 //-----------------------------------------------------------------------------
 ImagePanel::ImagePanel(Panel *parent, const char *name) : Panel(parent, name)
 {
-	m_pImage = NULL;
-	m_pszImageName = NULL;
-	m_pszFillColorName = NULL;
-	m_pszDrawColorName = NULL;	// HPE addition
+    InitSettings();
+	m_pImage = nullptr;
+	m_pszImageName = nullptr;
+	m_pszFillColorName = nullptr;
+	m_pszDrawColorName = nullptr;	// HPE addition
 	m_bCenterImage = false;
 	m_bScaleImage = false;
 	m_bTileImage = false;
@@ -55,9 +56,9 @@ ImagePanel::ImagePanel(Panel *parent, const char *name) : Panel(parent, name)
 //-----------------------------------------------------------------------------
 ImagePanel::~ImagePanel()
 {
-	delete [] m_pszImageName;
-	delete [] m_pszFillColorName;
-	delete [] m_pszDrawColorName;	// HPE addition
+    m_pszImageName.Purge();
+    m_pszFillColorName.Purge();
+    m_pszDrawColorName.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -82,13 +83,11 @@ void ImagePanel::SetImage(IImage *image)
 //-----------------------------------------------------------------------------
 void ImagePanel::SetImage(const char *imageName)
 {
-	if ( imageName && m_pszImageName && V_stricmp( imageName, m_pszImageName ) == 0 )
+	if ( imageName && !m_pszImageName.IsEmpty() && m_pszImageName.IsEqual_CaseInsensitive(imageName))
 		return;
 
-	int len = Q_strlen(imageName) + 1;
-	delete [] m_pszImageName;
-	m_pszImageName = new char[ len ];
-	Q_strncpy(m_pszImageName, imageName, len );
+    m_pszImageName.Purge();
+    m_pszImageName = imageName;
 	InvalidateLayout(false, true); // force applyschemesettings to run
 }
 
@@ -241,31 +240,17 @@ void ImagePanel::PaintBackground()
 void ImagePanel::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
-	if (m_pszImageName)
-	{
-		outResourceData->SetString("image", m_pszImageName);
-	}
-	if (m_pszFillColorName)
-	{
-		outResourceData->SetString("fillcolor", m_pszFillColorName);
-	}
+	outResourceData->SetString("image", m_pszImageName);
+	outResourceData->SetString("fillcolor", m_pszFillColorName);
 
 	//=============================================================================
 	// HPE_BEGIN:
 	// [pfreese] Added support for specifying drawcolor
 	//=============================================================================
-	if (m_pszDrawColorName)
-	{
-		outResourceData->SetString("drawcolor", m_pszDrawColorName);
-	}
+	outResourceData->SetString("drawcolor", m_pszDrawColorName);
 	//=============================================================================
 	// HPE_END
 	//=============================================================================
-
-	if (GetBorder())
-	{
-		outResourceData->SetString("border", GetBorder()->GetName());
-	}
 
 	outResourceData->GetInt("positionImage", m_bPositionImage );
 	outResourceData->SetInt("scaleImage", m_bScaleImage);
@@ -275,24 +260,36 @@ void ImagePanel::GetSettings(KeyValues *outResourceData)
 	outResourceData->SetInt("tileVertically", m_bTileVertically);
 }
 
+void ImagePanel::InitSettings()
+{
+    BEGIN_PANEL_SETTINGS()
+    {"image", TYPE_STRING},
+    {"fillcolor", TYPE_STRING},
+    {"drawcolor", TYPE_STRING},
+    {"positionImage", TYPE_BOOL},
+    {"scaleImage", TYPE_BOOL},
+    {"scaleAmount", TYPE_FLOAT},
+    {"tileImage", TYPE_BOOL},
+    {"tileHorizontally", TYPE_BOOL},
+    {"tileVertically", TYPE_BOOL}
+    END_PANEL_SETTINGS();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Applies designer settings from res file
 //-----------------------------------------------------------------------------
 void ImagePanel::ApplySettings(KeyValues *inResourceData)
 {
-	delete [] m_pszImageName;
-	delete [] m_pszFillColorName;
-	delete [] m_pszDrawColorName;	// HPE addition
-	m_pszImageName = NULL;
-	m_pszFillColorName = NULL;
-	m_pszDrawColorName = NULL;		// HPE addition
+	m_pszImageName.Purge();
+    m_pszFillColorName.Purge();
+    m_pszDrawColorName.Purge();
 
-	m_bPositionImage = inResourceData->GetInt("positionImage", 1);
-	m_bScaleImage = inResourceData->GetInt("scaleImage", 0);
+	m_bPositionImage = inResourceData->GetBool("positionImage", true);
+	m_bScaleImage = inResourceData->GetBool("scaleImage", false);
 	m_fScaleAmount = inResourceData->GetFloat("scaleAmount", 0.0f);
-	m_bTileImage = inResourceData->GetInt("tileImage", 0);
-	m_bTileHorizontally = inResourceData->GetInt("tileHorizontally", m_bTileImage);
-	m_bTileVertically = inResourceData->GetInt("tileVertically", m_bTileImage);
+	m_bTileImage = inResourceData->GetBool("tileImage", false);
+	m_bTileHorizontally = inResourceData->GetBool("tileHorizontally", m_bTileImage);
+	m_bTileVertically = inResourceData->GetBool("tileVertically", m_bTileImage);
 	const char *imageName = inResourceData->GetString("image", "");
 	if ( *imageName )
 	{
@@ -303,9 +300,7 @@ void ImagePanel::ApplySettings(KeyValues *inResourceData)
 	if (*pszFillColor)
 	{
 		int r = 0, g = 0, b = 0, a = 255;
-		int len = Q_strlen(pszFillColor) + 1;
-		m_pszFillColorName = new char[ len ];
-		Q_strncpy( m_pszFillColorName, pszFillColor, len );
+        m_pszFillColorName = pszFillColor;
 
 		if (sscanf(pszFillColor, "%d %d %d %d", &r, &g, &b, &a) >= 3)
 		{
@@ -327,9 +322,7 @@ void ImagePanel::ApplySettings(KeyValues *inResourceData)
 	if (*pszDrawColor)
 	{
 		int r = 255, g = 255, b = 255, a = 255;
-		int len = Q_strlen(pszDrawColor) + 1;
-		m_pszDrawColorName = new char[ len ];
-		Q_strncpy( m_pszDrawColorName, pszDrawColor, len );
+        m_pszDrawColorName = pszDrawColor;
 
 		if (sscanf(pszDrawColor, "%d %d %d %d", &r, &g, &b, &a) >= 3)
 		{
@@ -346,13 +339,6 @@ void ImagePanel::ApplySettings(KeyValues *inResourceData)
 	// HPE_END
 	//=============================================================================
 
-	const char *pszBorder = inResourceData->GetString("border", "");
-	if (*pszBorder)
-	{
-		IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
-		SetBorder(pScheme->GetBorder(pszBorder));
-	}
-
 	BaseClass::ApplySettings(inResourceData);
 }
 
@@ -362,20 +348,10 @@ void ImagePanel::ApplySettings(KeyValues *inResourceData)
 void ImagePanel::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings(pScheme);
-	if ( m_pszImageName && strlen( m_pszImageName ) > 0 )
+	if ( !m_pszImageName.IsEmpty() )
 	{
 		SetImage(scheme()->GetImage(m_pszImageName, m_bScaleImage));
 	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Describes editing details
-//-----------------------------------------------------------------------------
-const char *ImagePanel::GetDescription()
-{
-	static char buf[1024];
-	_snprintf(buf, sizeof(buf), "%s, string image, string border, string fillcolor, bool scaleImage", BaseClass::GetDescription());
-	return buf;
 }
 
 //-----------------------------------------------------------------------------
@@ -423,7 +399,7 @@ Color ImagePanel::GetFillColor()
 	return m_FillColor;
 }
 
-char *ImagePanel::GetImageName()
+const char *ImagePanel::GetImageName()
 {
 	return m_pszImageName;
 }
@@ -445,9 +421,8 @@ bool ImagePanel::EvictImage()
 	// clear out our cached concept of it
 	// as it may change
 	// the next SetImage() will re-establish
-	m_pImage = NULL;
-	delete [] m_pszImageName;
-	m_pszImageName = NULL;
+	m_pImage = nullptr;
+    m_pszImageName.Purge();
 
 	return true;
 }

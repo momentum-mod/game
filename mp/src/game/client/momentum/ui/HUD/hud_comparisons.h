@@ -5,9 +5,7 @@
 #include <hudelement.h>
 #include "run/run_compare.h"
 
-using namespace vgui;
-
-class C_RunComparisons : public CHudElement, public Panel
+class C_RunComparisons : public CHudElement, public vgui::Panel
 {
     DECLARE_CLASS_SIMPLE(C_RunComparisons, Panel);
 
@@ -38,7 +36,7 @@ public:
     int GetMaximumTall();
     void SetMaxWide(int);
 
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE
     {
         Panel::ApplySchemeSettings(pScheme);
         m_hTextFont = pScheme->GetFont("HudHintTextSmall", true);
@@ -90,7 +88,7 @@ public:
 
 protected:
     Color m_cGain, m_cLoss, m_cTie;
-    HFont m_hTextFont;
+    vgui::HFont m_hTextFont;
 
     //Number of pixels between each component of the comparison panel,
     //given mom_comparisons_format_output is 1

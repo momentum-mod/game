@@ -97,6 +97,9 @@ public:
 	virtual int GetTextLength() const;
 	virtual bool IsTextFullySelected() const;
 
+    virtual int GetWordLeft(); // Get the index of the start of the word to the left
+    virtual int GetWordRight(); // Get the index of the start of the word to the right
+
 	// editing
 	virtual void GotoLeft();		// move cursor one char left
 	virtual void GotoRight();		// move cursor one char right
@@ -129,11 +132,13 @@ public:
 	MESSAGE_FUNC( ShowIMECandidates, "DoShowIMECandidates" );
 	MESSAGE_FUNC( HideIMECandidates, "DoHideIMECandidates" );
 	MESSAGE_FUNC( UpdateIMECandidates, "DoUpdateIMECandidates" );
-	
+
+    virtual void DeleteSelectedRange(int x0, int x1);
 	virtual void DeleteSelected();
 	virtual void Undo();
 	virtual void SaveUndoState();
 	virtual void SetFont(HFont font);
+    virtual HFont GetFont();
 	virtual void SetTextHidden(bool bHideText);
 	virtual void SetEditable(bool state);
 	virtual bool IsEditable();
@@ -243,7 +248,7 @@ protected:
 	virtual void SetCharAt(wchar_t ch, int index); // set the value of a char in the text buffer
 	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void GetSettings( KeyValues *outResourceData );
-	virtual const char *GetDescription( void );
+    void InitSettings() OVERRIDE;
 	virtual void FireActionSignal();
 	virtual bool GetSelectedRange(int& cx0,int& cx1);
 	virtual void CursorToPixelSpace(int cursorPos, int &cx, int &cy);

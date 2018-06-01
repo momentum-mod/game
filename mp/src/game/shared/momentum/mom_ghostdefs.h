@@ -17,6 +17,7 @@ enum PacketTypes
 
     PT_DECAL_DATA,
     PT_SPEC_UPDATE,
+    PT_SAVELOC_REQ,
 
     PT_COUNT
 };
@@ -276,10 +277,63 @@ struct DecalPacket_t : MomentumPacket_t
         buf.PutUnsignedChar(decal_type);
         buf.Put(&vOrigin, sizeof(Vector));
         buf.Put(&vAngle, sizeof(QAngle));
-        buf.PutInt(iWeaponID);
+        buf.PutInt(iWeaponID); // MOM_TODO: We don't use all 32 bits here, write a lower precision?
         buf.PutInt(iMode);
         buf.PutInt(iSeed);
         buf.PutFloat(fSpread);
+    }
+};
+
+struct SavelocReqPacket_t : MomentumPacket_t
+{
+    // Stage type
+    int stage;
+
+    // Stage == 2 ? (The number of savelocs we have to offer)
+    // Stage == (3 || 4) ? (The number of savelocs we have chosen to download)
+    int saveloc_count;
+
+    // Stage == 3 ? (The selected nums of savelocs to download)
+    // Stage == 4 ? (The actual saveloc data, in binary)
+    CUtlBuffer dataBuf;
+
+    SavelocReqPacket_t(): stage(0), saveloc_count(0)
+    {
+        type = PT_SAVELOC_REQ;
+        dataBuf.SetBigEndian(false);
+    }
+
+    SavelocReqPacket_t(CUtlBuffer &buf)
+    {
+        type = PT_SAVELOC_REQ;
+        stage = buf.GetInt();
+        if (stage == 2)
+        {
+            saveloc_count = buf.GetInt();
+        }
+        else if (stage > 2)
+        {
+            dataBuf.CopyBuffer(buf);
+            // The CopyBuffer method clears the dataBuf and swallows everything inside of buf.
+            // We first need to skip over the 5 bytes used for type + stage
+            dataBuf.SeekGet(CUtlBuffer::SEEK_CURRENT, 5);
+            // And now pull out the saveloc count
+            saveloc_count = dataBuf.GetInt();
+            // And now our buffer's Get is currently in the location for reading the data
+        }
+    }
+
+    void Write(CUtlBuffer& buf) OVERRIDE
+    {
+        MomentumPacket_t::Write(buf);
+        buf.PutInt(stage);
+        if (stage > 1)
+        {
+            buf.PutInt(saveloc_count);
+
+            if (stage > 2)
+                buf.Put(dataBuf.Base(), dataBuf.TellPut());
+        }
     }
 };
 

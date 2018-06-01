@@ -752,6 +752,7 @@ public:
 //-----------------------------------------------------------------------------
 Frame::Frame(Panel *parent, const char *panelName, bool showTaskbarIcon /*=true*/, bool bPopup /*=true*/ ) : EditablePanel(parent, panelName)
 {
+    InitSettings();
 	// frames start invisible, to avoid having window flicker in on taskbar
 	SetVisible(false);
 	if ( bPopup )
@@ -1763,7 +1764,7 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 		IScheme *pScheme = scheme()->GetIScheme( GetScheme() );
 		if ( pScheme )
 		{
-			m_hCustomTitleFont = pScheme->GetFont( titlefont );
+			m_hCustomTitleFont = pScheme->GetFont( titlefont, IsProportional() );
 		}
 	}
 
@@ -1781,7 +1782,9 @@ void Frame::ApplySettings(KeyValues *inResourceData)
 void Frame::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
-	outResourceData->SetInt("settitlebarvisible", _drawTitleBar );
+
+    outResourceData->SetBool("setclosebuttonvisible", _closeButton->IsVisible());
+	outResourceData->SetBool("settitlebarvisible", _drawTitleBar );
 
 	if (_title)
 	{
@@ -1793,20 +1796,30 @@ void Frame::GetSettings(KeyValues *outResourceData)
 		}
 	}
 
+    if (m_hCustomTitleFont != INVALID_FONT)
+    {
+        IScheme *pScheme = scheme()->GetIScheme(GetScheme());
+        if (pScheme)
+        {
+            outResourceData->SetString("title_font", pScheme->GetFontName(m_hCustomTitleFont));
+        }
+    }
+
 	if ( m_iClientInsetXOverridden )
 	{
 		outResourceData->SetInt( "clientinsetx_override", m_iClientInsetX );
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: returns a description of the settings possible for a frame
-//-----------------------------------------------------------------------------
-const char *Frame::GetDescription()
+void Frame::InitSettings()
 {
-	static char buf[512];
-	Q_snprintf(buf, sizeof(buf), "%s, string title", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"title", TYPE_STRING},
+    {"setclosebuttonvisible", TYPE_BOOL},
+    {"settitlebarvisible", TYPE_BOOL},
+    {"title_font", TYPE_STRING},
+    {"clientinsetx_override", TYPE_INTEGER}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------

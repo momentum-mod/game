@@ -3,6 +3,10 @@
 #include "mom_ghost_base.h"
 #include "util/mom_util.h"
 #include "ghost_client.h"
+#include "mom_player_shared.h"
+#include "mom_timer.h"
+
+#include "tier0/memdbgon.h"
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumGhostBaseEntity, DT_MOM_GHOST_BASE)
 END_SEND_TABLE();

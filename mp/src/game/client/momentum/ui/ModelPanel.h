@@ -12,7 +12,17 @@ enum
     RDRAG_POS,
 };
 
-class CRenderPanel : public vgui::Panel
+class CModelPanelModel : public C_BaseFlex
+{
+public:
+    CModelPanelModel() {}
+    DECLARE_CLASS(CModelPanelModel, C_BaseFlex);
+
+    bool IsMenuModel() const OVERRIDE { return true; }
+    bool ShouldInterpolate() OVERRIDE { return false; }
+};
+
+class CRenderPanel : public vgui::Panel, public CGameEventListener
 {
     DECLARE_CLASS_SIMPLE(CRenderPanel, vgui::Panel);
 
@@ -38,12 +48,14 @@ public:
     // Model stuff
     bool LoadModel(const char *path);
     void DestroyModel();
-    C_BaseFlex *GetModel() const { return m_pModelInstance; }
     bool IsModelReady();
+    CModelPanelModel *GetModel() { return m_pModelInstance;}
     void ResetModel();
     void GetModelCenter(Vector &vecInto);
     void DrawModel();
     void SetRenderColors(C_BaseEntity *pEnt);
+
+    void FireGameEvent(IGameEvent* event) OVERRIDE;
 
 private:
     QAngle render_ang;
@@ -67,9 +79,9 @@ private:
     VMatrix __ViewProj;
     VMatrix __ViewProjNDC;
 
-    C_BaseFlex *m_pModelInstance;
+    CModelPanelModel *m_pModelInstance;
     char m_szModelPath[MAX_PATH];
-    int m_iNumPoseParams;
 
     bool m_bSizeToParent;
+
 };

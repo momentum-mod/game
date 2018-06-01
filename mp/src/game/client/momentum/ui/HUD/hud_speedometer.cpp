@@ -3,25 +3,19 @@
 #include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "iinput.h"
-#include "in_buttons.h"
 #include "mom_shareddefs.h"
 #include "run/run_compare.h"
-#include "vgui_helpers.h"
 
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/AnimationController.h>
-#include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "c_mom_replay_entity.h"
 #include "momentum/util/mom_util.h"
-#include "vphysics_interface.h"
-#include <math.h>
 #include "baseviewport.h"
 
 #include "tier0/memdbgon.h"

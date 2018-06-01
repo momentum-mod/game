@@ -1,8 +1,6 @@
 #pragma once
 
-#include "cbase.h"
-
-#include "run/mom_replay_factory.h"
+#include "run/mom_replay_base.h"
 
 class CMomentumReplayGhostEntity;
 class CMomentumPlayer;
@@ -39,7 +37,7 @@ public:
 
     bool m_bRecording;
     bool m_bPlayingBack;
-    CMomReplayBase *m_pReplay;
+    CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
     CMomentumPlayer *m_player;
     

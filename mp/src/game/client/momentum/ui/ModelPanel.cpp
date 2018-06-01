@@ -29,11 +29,12 @@ CRenderPanel::CRenderPanel(Panel *parent, const char *pElementName) : BaseClass(
     __proj.Identity();
     __ViewProj.Identity();
     __ViewProjNDC.Identity();
+
+    ListenForGameEvent("invalid_mdl_cache");
 }
 
 CRenderPanel::~CRenderPanel()
 {
-    DestroyModel();
 }
 
 void CRenderPanel::UpdateRenderPosition()
@@ -154,7 +155,7 @@ bool CRenderPanel::IsModelReady()
 
     if (!bValid && Q_strlen(m_szModelPath))
     {
-        const model_t *pMdl = modelinfo ? modelinfo->FindOrLoadModel(m_szModelPath) : NULL;
+        const model_t *pMdl = modelinfo ? engine->LoadModel(m_szModelPath) : nullptr;
         if (pMdl)
             m_pModelInstance->SetModelPointer(pMdl);
         bValid = !!pMdl;
@@ -205,22 +206,21 @@ void CRenderPanel::DestroyModel()
 
     m_pModelInstance = nullptr;
     m_szModelPath[0] = '\0';
-    m_iNumPoseParams = 0;
 }
 
 bool CRenderPanel::LoadModel(const char *localPath)
 {
+    MDLCACHE_CRITICAL_SECTION();
+
     DestroyModel();
 
-    const model_t *mdl = modelinfo->FindOrLoadModel(localPath);
+    const model_t *mdl = engine->LoadModel(localPath);
     if (!mdl)
         return false;
 
     Q_strcpy(m_szModelPath, localPath);
 
-    MDLCACHE_CRITICAL_SECTION();
-
-    C_BaseFlex *pEnt = new C_BaseFlex();
+    CModelPanelModel *pEnt = new CModelPanelModel();
     if (!pEnt->InitializeAsClientEntity(nullptr, RENDER_GROUP_OPAQUE_ENTITY))
     {
         pEnt->Remove();
@@ -239,14 +239,18 @@ bool CRenderPanel::LoadModel(const char *localPath)
 
     // leave it alone.
     pEnt->RemoveFromLeafSystem();
-    cl_entitylist->RemoveEntity(pEnt->GetRefEHandle());
     pEnt->CollisionProp()->DestroyPartitionHandle();
-
-    CStudioHdr *pHdr = pEnt->GetModelPtr();
-    m_iNumPoseParams = pHdr ? pHdr->GetNumPoseParameters() : 0;
+    // Needs to be removed from the client entity list so that map start/end does not delete it ...
+    cl_entitylist->RemoveEntity(pEnt->GetRefEHandle());
+    // ... but this causes an unintended crash. When the player changes model detail, the game will crash
+    // because this model does not invalidate its MdlCache (the client DLL engine interface calls it
+    // for every entity it keeps track of in the entity list! *rolleyes*)
+    // So we listen for the "invalid_mdl_cache" event (see constructor) to be able to manually call it,
+    // while manually saving our entity from the perils of start/end map.
 
     m_pModelInstance = pEnt;
     ResetView();
+
     return true;
 }
 
@@ -366,9 +370,6 @@ void CRenderPanel::DrawModel()
     if (!IsModelReady())
         return;
 
-    for (int i = 0; i < m_iNumPoseParams; i++)
-        m_pModelInstance->SetPoseParameter(i, 0);
-
     SetRenderColors(m_pModelInstance);
     m_pModelInstance->DrawModel(STUDIO_RENDER);
 }
@@ -380,4 +381,10 @@ void CRenderPanel::SetRenderColors(C_BaseEntity* pEnt)
     float alphaBias = (GetParent() ? GetParent()->GetAlpha() : GetAlpha()) / 255.0f;
     render->SetColorModulation(color);
     render->SetBlend(alphaBias * color[3]);
+}
+
+void CRenderPanel::FireGameEvent(IGameEvent* event)
+{
+    if (m_pModelInstance)
+        m_pModelInstance->InvalidateMdlCache();
 }

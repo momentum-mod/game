@@ -6,6 +6,12 @@
 #include "util/mom_util.h"
 #include "mom_shareddefs.h"
 
+#include <vgui_controls/Frame.h>
+#include <vgui_controls/ComboBox.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
+
+#include "ColorPicker.h"
+
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
@@ -20,6 +26,7 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
 {
     // Outer frame for the model preview
     m_pModelPreviewFrame = new Frame(nullptr, "ModelPreviewFrame");
+    m_pModelPreviewFrame->SetProportional(true);
     m_pModelPreviewFrame->SetParent(enginevgui->GetPanel(PANEL_GAMEUIDLL));
     m_pModelPreviewFrame->SetSize(scheme()->GetProportionalScaledValue(200), scheme()->GetProportionalScaledValue(275));
     m_pModelPreviewFrame->SetMoveable(false);
@@ -37,13 +44,9 @@ ghost_bodygroup("mom_ghost_bodygroup"), ghost_trail_color("mom_trail_color"), gh
     m_pModelPreview = new CRenderPanel(m_pModelPreviewFrame, "ModelPreview");
     m_pModelPreview->SetPaintBorderEnabled(true);
     m_pModelPreview->SetBorder(scheme()->GetIScheme(GetScheme())->GetBorder("Default"));
-    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
-    if (result)
-        UpdateModelSettings();
 
     m_pModelPreview->SetVisible(true);
     m_pModelPreview->MakeReadyForUse();
-
 
     m_pEnableTrail = FindControl<CvarToggleCheckButton>("EnableTrail");
     m_pPickTrailColorButton = FindControl<Button>("PickTrailColorButton");
@@ -102,7 +105,9 @@ void AppearanceSettingsPage::LoadSettings()
     m_pBodygroupCombo->ActivateItemByRow(ghost_bodygroup.GetInt());
     m_pTrailLengthEntry->SetText(ghost_trail_length.GetString());
 
-    UpdateModelSettings();
+    const bool result = m_pModelPreview->LoadModel(ENTITY_MODEL);
+    if (result)
+        UpdateModelSettings();
 }
 
 void AppearanceSettingsPage::OnPageShow()
@@ -205,7 +210,8 @@ void AppearanceSettingsPage::ApplySchemeSettings(IScheme* pScheme)
 
 void AppearanceSettingsPage::UpdateModelSettings()
 {
-    C_BaseFlex *pModel = m_pModelPreview->GetModel();
+    MDLCACHE_CRITICAL_SECTION();
+    CModelPanelModel *pModel = m_pModelPreview->GetModel();
     if (!pModel)
         return;
 

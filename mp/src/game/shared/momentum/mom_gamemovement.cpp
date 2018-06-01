@@ -9,12 +9,16 @@
 
 #include "tier0/memdbgon.h"
 
-extern bool g_bMovementOptimizations;
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
-ConVar sv_ramp_retrace_scale("sv_ramp_retrace_length", "0.5", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
+ConVar sv_ramp_retrace_length("sv_ramp_retrace_length", "0.1", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
+ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps", true, 0.0f, true, 5.f);
+ConVar sv_considered_on_ground("sv_considered_on_ground", "2.0", 0, "Amount of units you have to be above the ground to be considered on ground", true, 0.0f, true, 5.f);
+
+ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED, "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
+ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED, "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f, true, 1.0f);
 
 #ifndef CLIENT_DLL
 #include "env_player_surface_trigger.h"
@@ -81,6 +85,33 @@ void CMomentumGameMovement::DecayPunchAngle(void)
 
 float CMomentumGameMovement::LadderLateralMultiplier(void) const { return mv->m_nButtons & IN_DUCK ? 1.0f : 0.5f; }
 
+bool CMomentumGameMovement::IsValidMovementTrace(trace_t &tr)
+{
+    trace_t stuck;
+
+    // Apparently we can be stuck with pm.allsolid without having valid plane info ok..
+    if (tr.allsolid || tr.startsolid)
+        return false;
+
+    // We didnt move anywhere, bad trace..
+    if (CloseEnough(tr.fraction, 0.0f, FLT_EPSILON))
+        return false;
+
+    // Maybe we dont need this one
+    if (CloseEnough(tr.fraction, 0.0f, FLT_EPSILON) && CloseEnough(tr.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON))
+        return false;
+
+    // Is the plane deformed or some stupid shit?
+    if (fabs(tr.plane.normal.x) > 1.0f || fabs(tr.plane.normal.y) > 1.0f || fabs(tr.plane.normal.z) > 1.0f)
+        return false;
+
+    TracePlayerBBox(tr.endpos, tr.endpos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, stuck);
+    if (stuck.startsolid || !CloseEnough(stuck.fraction, 1.0f, FLT_EPSILON))
+        return false;
+
+    return true;
+}
+
 float CMomentumGameMovement::ClimbSpeed(void) const
 {
     return (mv->m_nButtons & IN_DUCK ? BaseClass::ClimbSpeed() * DUCK_SPEED_MULTIPLIER : BaseClass::ClimbSpeed());
@@ -88,6 +119,18 @@ float CMomentumGameMovement::ClimbSpeed(void) const
 
 void CMomentumGameMovement::WalkMove()
 {
+    int i;
+
+    Vector wishvel;
+    float spd;
+    float fmove, smove;
+    Vector wishdir;
+    float wishspeed;
+
+    Vector dest;
+    trace_t pm;
+    Vector forward, right, up;
+
     if (mom_gamemode.GetInt() == MOMGM_SCROLL)
     {
         if (m_pPlayer->m_flStamina > 0)
@@ -111,82 +154,297 @@ void CMomentumGameMovement::WalkMove()
         }
     }
 
-    BaseClass::WalkMove();
-    CheckForLadders(m_pPlayer->GetGroundEntity() != nullptr);
-}
+    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up);  // Determine movement angles
 
-void CMomentumGameMovement::CheckForLadders(bool wasOnGround)
-{
-    if (!wasOnGround)
+    CHandle< CBaseEntity > oldground;
+    oldground = player->GetGroundEntity();
+
+    // Copy movement amounts
+    fmove = mv->m_flForwardMove;
+    smove = mv->m_flSideMove;
+
+    // Zero out z components of movement vectors
+    if (forward[2] != 0)
     {
-        // If we're higher than the last place we were on the ground, bail - obviously we're not dropping
-        // past a ladder we might want to grab.
-        if (mv->GetAbsOrigin().z > m_pPlayer->m_lastStandingPos.z)
-            return;
-
-        Vector dir = -m_pPlayer->m_lastStandingPos + mv->GetAbsOrigin();
-        if (!dir.x && !dir.y)
-        {
-            // If we're dropping straight down, we don't know which way to look for a ladder.  Oh well.
-            return;
-        }
-
-        dir.z = 0.0f;
-        float dist = dir.NormalizeInPlace();
-        if (dist > 64.0f)
-        {
-            // Don't grab ladders too far behind us.
-            return;
-        }
-
-        trace_t trace;
-
-        TracePlayerBBox(mv->GetAbsOrigin(), m_pPlayer->m_lastStandingPos - dir * (5 + dist),
-                        (PlayerSolidMask() & (~CONTENTS_PLAYERCLIP)), COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-
-        if (trace.fraction != 1.0f && OnLadder(trace) && trace.plane.normal.z != 1.0f)
-        {
-            if (m_pPlayer->CanGrabLadder(trace.endpos, trace.plane.normal))
-            {
-                m_pPlayer->SetMoveType(MOVETYPE_LADDER);
-                m_pPlayer->SetMoveCollide(MOVECOLLIDE_DEFAULT);
-
-                m_pPlayer->SetLadderNormal(trace.plane.normal);
-                mv->m_vecVelocity.Init();
-
-                // The ladder check ignored playerclips, to fix a bug exposed by de_train, where a clipbrush is
-                // flush with a ladder.  This causes the above tracehull to fail unless we ignore playerclips.
-                // However, we have to check for playerclips before we snap to that pos, so we don't warp a
-                // player into a clipbrush.
-                TracePlayerBBox(mv->GetAbsOrigin(), m_pPlayer->m_lastStandingPos - dir * (5 + dist), PlayerSolidMask(),
-                                COLLISION_GROUP_PLAYER_MOVEMENT, trace);
-
-                mv->SetAbsOrigin(trace.endpos);
-            }
-        }
+        forward[2] = 0;
+        VectorNormalize(forward);
     }
-    else
+
+    if (right[2] != 0)
     {
-        m_pPlayer->m_lastStandingPos = mv->GetAbsOrigin();
+        right[2] = 0;
+        VectorNormalize(right);
     }
+
+    for (i = 0; i<2; i++)       // Determine x and y parts of velocity
+        wishvel[i] = forward[i] * fmove + right[i] * smove;
+
+    wishvel[2] = 0.0f;             // Zero out z part of velocity
+
+    VectorCopy(wishvel, wishdir);   // Determine maginitude of speed of move
+    wishspeed = VectorNormalize(wishdir);
+
+    //
+    // Clamp to server defined max speed
+    //
+    if ((wishspeed != 0.0f) && (wishspeed > mv->m_flMaxSpeed))
+    {
+        VectorScale(wishvel, mv->m_flMaxSpeed / wishspeed, wishvel);
+        wishspeed = mv->m_flMaxSpeed;
+    }
+
+    // Set pmove velocity
+    // Commented these 2 out, so we wont be 2 units above the ground
+    // This only happens when the player jumps straight up and lands while standing still
+    //mv->m_vecVelocity[2] = 0;
+    Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
+    //mv->m_vecVelocity[2] = 0;
+
+    // Add in any base velocity to the current velocity.
+    VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
+
+    spd = VectorLength(mv->m_vecVelocity);
+
+    if (CloseEnough(spd, 0.0f))
+    {
+        mv->m_vecVelocity.Init();
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
+        return;
+    }
+
+    // first try just moving to the destination  
+    dest[0] = mv->GetAbsOrigin()[0] + mv->m_vecVelocity[0] * gpGlobals->frametime;
+    dest[1] = mv->GetAbsOrigin()[1] + mv->m_vecVelocity[1] * gpGlobals->frametime;
+    dest[2] = mv->GetAbsOrigin()[2] + mv->m_vecVelocity[2] * gpGlobals->frametime;
+
+    // first try moving directly to the next spot
+    TracePlayerBBox(mv->GetAbsOrigin(), dest, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+    // If we made it all the way, then copy trace end as new player position.
+    mv->m_outWishVel += wishdir * wishspeed;
+
+    if (pm.fraction == 1)
+    {
+        mv->SetAbsOrigin(pm.endpos);
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
+
+        StayOnGround();
+        return;
+    }
+
+    // Don't walk up stairs if not on ground.
+    if (oldground == nullptr && player->GetWaterLevel() == 0)
+    {
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
+        return;
+    }
+
+    // If we are jumping out of water, don't do anything more.
+    if (player->m_flWaterJumpTime)
+    {
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
+        return;
+    }
+
+    StepMove(dest, pm);
+
+    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+    VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
+
+    StayOnGround();
 }
 
 bool CMomentumGameMovement::LadderMove(void)
 {
-    bool isOnLadder = BaseClass::LadderMove();
-    if (isOnLadder && m_pPlayer)
-    {
-        m_pPlayer->SurpressLadderChecks(mv->GetAbsOrigin(), m_pPlayer->m_vecLadderNormal);
-    }
-    return isOnLadder;
-}
+    trace_t pm;
+    bool onFloor;
+    Vector floor;
+    Vector wishdir;
+    Vector end;
 
-bool CMomentumGameMovement::OnLadder(trace_t &trace)
-{
-    if (trace.plane.normal.z == 1.0f)
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
         return false;
 
-    return BaseClass::OnLadder(trace);
+    if (!GameHasLadders())
+    {
+        return false;
+    }
+
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
+    {
+        m_pPlayer->SetGrabbableLadderTime(m_pPlayer->GetGrabbableLadderTime() - gpGlobals->frametime);
+    }
+
+    // If I'm already moving on a ladder, use the previous ladder direction
+    if (player->GetMoveType() == MOVETYPE_LADDER)
+    {
+        wishdir = -player->m_vecLadderNormal;
+    }
+    else
+    {
+        // otherwise, use the direction player is attempting to move
+        if (mv->m_flForwardMove || mv->m_flSideMove)
+        {
+            for (int i = 0; i<3; i++)       // Determine x and y parts of velocity
+                wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
+
+            VectorNormalize(wishdir);
+        }
+        else
+        {
+            // Player is not attempting to move, no ladder behavior
+            return false;
+        }
+    }
+
+    // wishdir points toward the ladder if any exists
+
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f && m_bCheckForGrabbableLadder)
+    {
+        Vector temp = mv->m_vecVelocity * 2.0f;
+
+        temp.z = -temp.z;
+
+        VectorNormalize(temp);
+        VectorMA(mv->GetAbsOrigin(), 10.0f, -temp, end);
+    }
+    else
+    {
+        VectorMA(mv->GetAbsOrigin(), LadderDistance(), wishdir, end);
+    }
+
+    TracePlayerBBox(mv->GetAbsOrigin(), end, LadderMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+    // no ladder in that direction, return
+    if (pm.fraction == 1.0f || pm.plane.normal.z == 1.0f || !OnLadder(pm))
+    {
+        return false;
+    }
+
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f && m_bCheckForGrabbableLadder)
+    {
+        mv->m_vecVelocity.Init();
+        mv->SetAbsOrigin(pm.endpos);
+        m_pPlayer->SetGrabbableLadderTime(0.1f);
+    }
+
+    player->SetMoveType(MOVETYPE_LADDER);
+    player->SetMoveCollide(MOVECOLLIDE_DEFAULT);
+
+    // On ladder, convert movement to be relative to the ladder
+    player->SetLadderNormal(pm.plane.normal);
+    
+    VectorCopy(mv->GetAbsOrigin(), floor);
+    floor[2] += GetPlayerMins()[2] - 1;
+
+    if (enginetrace->GetPointContents(floor) == CONTENTS_SOLID || player->GetGroundEntity() != nullptr)
+    {
+        onFloor = true;
+    }
+    else
+    {
+        onFloor = false;
+    }
+
+    player->SetGravity(1.0f); //Should be always set on 1.0..
+
+    float climbSpeed = ClimbSpeed();
+
+    float forwardSpeed = 0, rightSpeed = 0;
+    if (mv->m_nButtons & IN_BACK)
+        forwardSpeed -= climbSpeed;
+
+    if (mv->m_nButtons & IN_FORWARD)
+        forwardSpeed += climbSpeed;
+
+    if (mv->m_nButtons & IN_MOVELEFT)
+        rightSpeed -= climbSpeed;
+
+    if (mv->m_nButtons & IN_MOVERIGHT)
+        rightSpeed += climbSpeed;
+
+    if (mv->m_nButtons & IN_JUMP)
+    {
+        player->SetMoveType(MOVETYPE_WALK);
+        player->SetMoveCollide(MOVECOLLIDE_DEFAULT);
+
+        VectorScale(pm.plane.normal, 270, mv->m_vecVelocity);
+    }
+    else
+    {
+        if (forwardSpeed != 0 || rightSpeed != 0)
+        {
+            Vector velocity, perp, cross, lateral, tmp;
+
+            //ALERT(at_console, "pev %.2f %.2f %.2f - ",
+            //    pev->velocity.x, pev->velocity.y, pev->velocity.z);
+            // Calculate player's intended velocity
+            //Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
+            VectorScale(m_vecForward, forwardSpeed, velocity);
+            VectorMA(velocity, rightSpeed, m_vecRight, velocity);
+
+            // Perpendicular in the ladder plane
+            VectorCopy(vec3_origin, tmp);
+            tmp[2] = 1;
+            CrossProduct(tmp, pm.plane.normal, perp);
+            VectorNormalize(perp);
+
+            // decompose velocity into ladder plane
+            float normal = DotProduct(velocity, pm.plane.normal);
+
+            // This is the velocity into the face of the ladder
+            VectorScale(pm.plane.normal, normal, cross);
+
+            // This is the player's additional velocity
+            VectorSubtract(velocity, cross, lateral);
+
+            // This turns the velocity into the face of the ladder into velocity that
+            // is roughly vertically perpendicular to the face of the ladder.
+            // NOTE: It IS possible to face up and move down or face down and move up
+            // because the velocity is a sum of the directional velocity and the converted
+            // velocity through the face of the ladder -- by design.
+            CrossProduct(pm.plane.normal, perp, tmp);
+
+            //=============================================================================
+            // HPE_BEGIN
+            // [sbodenbender] make ladders easier to climb in cstrike
+            //=============================================================================
+            // break lateral into direction along tmp (up the ladder) and direction along perp (perpendicular to ladder)
+            float tmpDist = DotProduct(tmp, lateral);
+            float perpDist = DotProduct(perp, lateral);
+
+            Vector angleVec = perp * perpDist;
+            angleVec += cross;
+            // angleVec is our desired movement in the ladder normal/perpendicular plane
+            VectorNormalize(angleVec);
+            float angleDot = DotProduct(angleVec, pm.plane.normal);
+            // angleDot is our angle of incidence to the laddernormal in the ladder normal/perpendicular plane
+
+            if (angleDot < sv_ladder_angle.GetFloat())
+                lateral = (tmp * tmpDist) + (perp * sv_ladder_dampen.GetFloat() * perpDist);
+            //=============================================================================
+            // HPE_END
+            //=============================================================================
+
+            VectorMA(lateral, -normal, tmp, mv->m_vecVelocity);
+
+            if (onFloor && normal > 0)    // On ground moving away from the ladder
+            {
+                VectorMA(mv->m_vecVelocity, MAX_CLIMB_SPEED, pm.plane.normal, mv->m_vecVelocity);
+            }
+            //pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
+        }
+        else
+        {
+            mv->m_vecVelocity.Init();
+        }
+    }
+
+    return true;
 }
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
@@ -232,6 +490,82 @@ bool CMomentumGameMovement::CanUnduck()
         return false;
 
     return true;
+}
+
+void CMomentumGameMovement::Friction(void)
+{
+    float    speed, newspeed, control;
+    float    friction;
+    float    drop;
+
+    // Friction should be affected by z velocity
+    Vector    velocity = mv->m_vecVelocity;
+    velocity.z = 0.0f;
+
+    // If we are in water jump cycle, don't apply friction
+    if (player->m_flWaterJumpTime)
+        return;
+
+    // Calculate speed
+    speed = VectorLength(velocity);
+
+    // If too slow, return
+    if (speed < 0.1f)
+    {
+        return;
+    }
+
+    drop = 0;
+
+    // apply ground friction
+    if (player->GetGroundEntity() != NULL)  // On an entity that is the ground
+    {
+        friction = sv_friction.GetFloat() * player->m_surfaceFriction;
+
+        // Bleed off some speed, but if we have less than the bleed
+        //  threshold, bleed the threshold amount.
+
+        if (IsX360())
+        {
+            if (player->m_Local.m_bDucked)
+            {
+                control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
+            }
+            else
+            {
+#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
+                control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
+#else
+                control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
+#endif
+            }
+        }
+        else
+        {
+            control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
+        }
+
+        // Add the amount to the drop amount.
+        drop += control*friction*gpGlobals->frametime;
+    }
+
+    // scale the velocity
+    newspeed = speed - drop;
+    if (newspeed < 0)
+        newspeed = 0;
+
+    if (newspeed != speed)
+    {
+        // Determine proportion of old speed we are using.
+        newspeed /= speed;
+        // Adjust velocity according to proportion.
+        VectorScale(velocity, newspeed, velocity);
+    }
+
+    mv->m_outWishVel -= (1.f - newspeed) * velocity;
+
+    mv->m_vecVelocity.x = velocity.x;
+    mv->m_vecVelocity.y = velocity.y;
 }
 
 void CMomentumGameMovement::Duck(void)
@@ -434,7 +768,6 @@ void CMomentumGameMovement::FinishUnDuck(void)
 //-----------------------------------------------------------------------------
 void CMomentumGameMovement::FinishDuck(void)
 {
-
     Vector hullSizeNormal = VEC_HULL_MAX - VEC_HULL_MIN;
     Vector hullSizeCrouch = VEC_DUCK_HULL_MAX - VEC_DUCK_HULL_MIN;
 
@@ -446,7 +779,6 @@ void CMomentumGameMovement::FinishDuck(void)
 
     if (!player->m_Local.m_bDucked)
     {
-
         Vector org = mv->GetAbsOrigin();
 
         if (player->GetGroundEntity() != nullptr)
@@ -479,25 +811,18 @@ void CMomentumGameMovement::PlayerMove()
         // This is needed because we have taller models with the old collision bounds.
 
         const float eyeClearance = 12.0f; // eye pos must be this far below the ceiling
-
+        
         Vector offset = player->GetViewOffset();
 
-        Vector vHullMin = GetPlayerMins(player->m_Local.m_bDucked);
-        vHullMin.z = 0.0f;
-        Vector vHullMax = GetPlayerMaxs(player->m_Local.m_bDucked);
+        Vector vHullMin = GetPlayerMins((player->m_Local.m_bDucked && !player->m_Local.m_bDucking));
+        Vector vHullMax = GetPlayerMaxs((player->m_Local.m_bDucked && !player->m_Local.m_bDucking));
+        vHullMax.z = (player->m_Local.m_bDucked && !player->m_Local.m_bDucking) ? VEC_DUCK_VIEW.z : VEC_VIEW.z;
 
-        Vector start = player->GetAbsOrigin();
-        start.z += vHullMax.z;
+        Vector start = mv->GetAbsOrigin();
+
         Vector end = start;
-        end.z += eyeClearance - vHullMax.z;
-        end.z += player->m_Local.m_bDucked ? VEC_DUCK_VIEW.z : VEC_VIEW.z;
-
-        vHullMax.z = 0.0f;
-
-        Vector fudge(1, 1, 0.f);
-        vHullMin += fudge;
-        vHullMax -= fudge;
-
+        end.z += eyeClearance;
+        
         trace_t trace;
         Ray_t ray;
         ray.Init(start, end, vHullMin, vHullMax);
@@ -505,7 +830,8 @@ void CMomentumGameMovement::PlayerMove()
 
         if (trace.fraction < 1.0f)
         {
-            float est = start.z + trace.fraction * (end.z - start.z) - player->GetAbsOrigin().z - eyeClearance;
+            float est = vHullMax.z + trace.endpos.z - mv->GetAbsOrigin().z - eyeClearance;
+
             if ((player->GetFlags() & FL_DUCKING) == 0 && !player->m_Local.m_bDucking && !player->m_Local.m_bDucked)
             {
                 offset.z = est;
@@ -532,6 +858,8 @@ void CMomentumGameMovement::PlayerMove()
 
 bool CMomentumGameMovement::CheckJumpButton()
 {
+    trace_t pm;
+
     // Avoid nullptr access, return false if somehow we don't have a player
     if (!player)
         return false;
@@ -628,18 +956,8 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Acclerate upward
     // If we are ducking...
     float startz = mv->m_vecVelocity[2];
-    if ((player->m_Local.m_bDucking) || (player->GetFlags() & FL_DUCKING))
-    {
-        mv->m_vecVelocity[2] = g_bMovementOptimizations
-                                   ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
-                                   : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
-    }
-    else
-    {
-        mv->m_vecVelocity[2] += g_bMovementOptimizations
-                                    ? flGroundFactor * GROUND_FACTOR_MULTIPLIER
-                                    : flGroundFactor * sqrt(2.f * 800.f * 57.0f); // 2 * gravity * height
-    }
+    
+    mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
 
     // stamina stuff (scroll/kz gamemode only)
     if (mom_gamemode.GetInt() == MOMGM_SCROLL)
@@ -659,6 +977,26 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     mv->m_outWishVel.z += mv->m_vecVelocity[2] - startz;
     mv->m_outStepHeight += 0.1f;
+
+    // First do a trace all the way down to the ground
+    TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin() + Vector(0.0f, 0.0f, -(sv_considered_on_ground.GetFloat() + 0.1f)), PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+    // Did we hit ground (ground is at max 2 units away so fraction cant be 1.0f)
+    if (pm.fraction != 1.0f &&
+        !pm.startsolid &&
+        !pm.allsolid)
+    {
+        // Now we find 1.5f above ground
+        TracePlayerBBox(pm.endpos, pm.endpos + Vector(0.0f, 0.0f, sv_jump_z_offset.GetFloat()), PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+        if (pm.fraction == 1.0f &&
+            !pm.startsolid &&
+            !pm.allsolid)
+        {
+            // Everything is p100
+            mv->SetAbsOrigin(pm.endpos);
+        }
+    }
 
     // Flag that we jumped.
     mv->m_nOldButtons |= IN_JUMP; // don't jump again until released
@@ -692,7 +1030,7 @@ void CMomentumGameMovement::CategorizePosition()
     if (player->IsObserver())
         return;
 
-    float flOffset = 1.0f;
+    float flOffset = sv_considered_on_ground.GetFloat();
 
     const Vector bumpOrigin = mv->GetAbsOrigin();
 
@@ -738,12 +1076,12 @@ void CMomentumGameMovement::CategorizePosition()
                        COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
         // Was on ground, but now suddenly am not.  If we hit a steep plane, we are not on ground
-        if (!pm.m_pEnt || pm.plane.normal[2] <= 0.7f)
+        if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
         {
             // Test four sub-boxes, to see if any of them would have found shallower slope we could actually stand on
             TryTouchGroundInQuadrants(bumpOrigin, point, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-            if (!pm.m_pEnt || pm.plane.normal[2] <= 0.7f)
+            if (!pm.m_pEnt || pm.plane.normal[2] < 0.7f)
             {
                 SetGroundEntity(nullptr);
                 // probably want to add a check for a +z velocity too!
@@ -760,11 +1098,11 @@ void CMomentumGameMovement::CategorizePosition()
                 // Make sure we apply clip velocity on slopes/surfs before setting the ground entity and nulling out velocity.z
                 if (player->GetGroundEntity() == nullptr)
                 {
-                    if (pm.plane.normal.z > 0.7f && pm.plane.normal.z < 1.0f)
+                    if (pm.plane.normal.z >= 0.7f && pm.plane.normal.z < 1.0f)
                     {
                         ClipVelocity(mv->m_vecVelocity, pm.plane.normal, mv->m_vecVelocity, 1.0f);
                     }
-                    else if (pm.plane.normal.z <= 0.7f)
+                    else if (pm.plane.normal.z < 0.7f)
                     {
                         ClipVelocity(mv->m_vecVelocity, pm.plane.normal, mv->m_vecVelocity,
                             1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
@@ -903,7 +1241,6 @@ void CMomentumGameMovement::FullWalkMove()
         //  we don't slow when standing still, relative to the conveyor.
         if (player->GetGroundEntity() != nullptr)
         {
-            mv->m_vecVelocity[2] = 0.0f;
             Friction();
         }
 
@@ -913,6 +1250,16 @@ void CMomentumGameMovement::FullWalkMove()
         if (player->GetGroundEntity() != nullptr)
         {
             WalkMove();
+
+            CategorizePosition();
+            m_bCheckForGrabbableLadder = m_pPlayer->GetGroundEntity() == nullptr;
+            if (m_bCheckForGrabbableLadder)
+            {
+                // Next 0.1 seconds you can grab the ladder
+                m_pPlayer->SetGrabbableLadderTime(0.1f);
+                LadderMove();
+                m_bCheckForGrabbableLadder = false;
+            }
         }
         else
         {
@@ -1028,7 +1375,12 @@ void CMomentumGameMovement::AirMove(void)
     // maybe another monster?)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
-    CheckForLadders(false);
+    if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
+    {
+        m_bCheckForGrabbableLadder = true;
+        LadderMove();
+        m_bCheckForGrabbableLadder = false;
+    }
 }
 
 int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrace)
@@ -1042,7 +1394,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     Vector new_velocity;
     Vector fixed_origin;
     Vector valid_plane;
-    int i, j;
+    int i, j, h, fixed_origins;
     trace_t pm;
     Vector end;
     float time_left, allFraction;
@@ -1053,6 +1405,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
     blocked = 0;   // Assume not blocked
     numplanes = 0; //  and not sliding along any planes
+    fixed_origins = 0; // Assume no fixed origins yet
 
     stuck_on_ramp = false; // lets assume client isnt stuck already
     has_valid_plane = false; // no plane info gathered yet
@@ -1065,6 +1418,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     time_left = gpGlobals->frametime; // Total time for this movement operation.
 
     new_velocity.Init();
+    valid_plane.Init();
 
     for (bumpcount = 0; bumpcount < numbumps; bumpcount++)
     {
@@ -1073,79 +1427,129 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
         if (stuck_on_ramp && sv_ramp_fix.GetBool())
         {
-            if (pm.plane.normal.z > 0.0f && pm.plane.normal.z < 1.0f)
+            if (!has_valid_plane)
             {
-                valid_plane = pm.plane.normal;
-                has_valid_plane = true;
-            }
-            else
-            {
-                for (i = numplanes; i-- > 0; )
+                if (!CloseEnough(pm.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) && valid_plane != pm.plane.normal)
                 {
-                    if (planes[i].z > 0.0f && planes[i].z < 1.0f)
+                    valid_plane = pm.plane.normal;
+                    has_valid_plane = true;
+                }
+                else
+                {
+                    for (i = numplanes; i-- > 0; )
                     {
-                        valid_plane = planes[i];
-                        has_valid_plane = true;
-                        break;
+                        if (!CloseEnough(planes[i], Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) &&
+                            fabs(planes[i].x) <= 1.0f && fabs(planes[i].y) <= 1.0f && fabs(planes[i].z) <= 1.0f &&
+                            valid_plane != planes[i])
+                        {
+                            valid_plane = planes[i];
+                            has_valid_plane = true;
+                            break;
+                        }
                     }
                 }
             }
 
-            if (valid_plane.z > 0.7f && valid_plane.z < 1.0f)
+            if (valid_plane.z >= 0.7f && valid_plane.z <= 1.0f)
             {
                 ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity, 1);
-                VectorCopy(new_velocity, original_velocity);
+                VectorCopy(mv->m_vecVelocity, original_velocity);
             }
-            else if (valid_plane.z > 0.0f && valid_plane.z <= 0.7f)
+            else if (has_valid_plane)
             {
                 ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity,
                     1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                VectorCopy(mv->m_vecVelocity, original_velocity);
             }
-            else if ((pm.fraction == 1.0f || pm.allsolid) && !has_valid_plane) // We were actually going to be stuck, lets try and fix it...
+            else // We were actually going to be stuck, lets try and find a valid plane..
             {
-                // No plane info, how can we properly set a retrace point without risking something bad to happen
-                // If someone can figure out a better way to do this part while having 0 plane info that would be great!
-                time_left *= 0.5f;
+                // this way we know fixed_origin isnt going to be stuck
+                float offsets[] = { -(sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1), 0.0f, (sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1) };
+                int valid_planes = 0;
+
+                // we have 0 plane info, so lets increase our bbox and search in all 27 directions to get a valid plane!
+                for (i = 0; i < 3; i++)
+                {
+                    for (j = 0; j < 3; j++)
+                    {
+                        for (h = 0; h < 3; h++)
+                        {
+                            Vector offset = { offsets[i], offsets[j], offsets[h] };
+                            Vector offset_mins = offset / 2.0f;
+                            Vector offset_maxs = offset / 2.0f;
+
+                            if (offset.x > 0.0f)
+                                offset_mins.x /= 2.0f;
+                            if (offset.y > 0.0f)
+                                offset_mins.y /= 2.0f;
+                            if (offset.z > 0.0f)
+                                offset_mins.z /= 2.0f;
+
+                            if (offset.x < 0.0f)
+                                offset_maxs.x /= 2.0f;
+                            if (offset.y < 0.0f)
+                                offset_maxs.y /= 2.0f;
+                            if (offset.z < 0.0f)
+                                offset_maxs.z /= 2.0f;
+
+                            Ray_t ray;
+                            ray.Init(fixed_origin + offset, end - offset, GetPlayerMins() - offset_mins, GetPlayerMaxs() + offset_maxs);
+                            UTIL_TraceRay(ray, PlayerSolidMask(), mv->m_nPlayerHandle.Get(), COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
+
+                            // Only use non deformed planes and planes with values where the start point is not from a solid
+                            if (fabs(pm.plane.normal.x) <= 1.0f && fabs(pm.plane.normal.y) <= 1.0f && fabs(pm.plane.normal.z) <= 1.0f && !CloseEnough(pm.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) && !pm.startsolid)
+                            {
+                                valid_planes++;
+                                valid_plane += pm.plane.normal;
+                            }
+                        }
+                    }
+                }
+
+                if (valid_planes && !CloseEnough(valid_plane, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON))
+                {
+                    has_valid_plane = true;
+                    valid_plane /= (float)valid_planes;
+                    continue;
+                }
             }
 
             if (has_valid_plane)
             {
-                // By using fixed_origin like this, we ensure it will be different for each bump
-                VectorMA(fixed_origin, sv_ramp_retrace_scale.GetFloat(), valid_plane, fixed_origin); // So any surf ramp will work (upside down and normal)
-                time_left *= 0.95f; // This will alter the end position slightly, and hopefully fix the stuck issues
+                VectorMA(fixed_origin, sv_ramp_retrace_length.GetFloat(), valid_plane, fixed_origin);
+                fixed_origins++;
+            }
+            else
+            {
+                stuck_on_ramp = false;
+                continue;
             }
         }
 
         // Assume we can move all the way from the current origin to the
         //  end point.
 
-        VectorMA(mv->GetAbsOrigin(), time_left, mv->m_vecVelocity, end);
+        VectorMA(fixed_origin, time_left, mv->m_vecVelocity, end);
 
         // See if we can make it from origin to end point.
-        if (g_bMovementOptimizations)
-        {
-            // If their velocity Z is 0, then we can avoid an extra trace here during WalkMove.
-            if (pFirstDest && end == *pFirstDest)
-                pm = *pFirstTrace;
-            else
-            {
-#if defined(PLAYER_GETTING_STUCK_TESTING)
-                trace_t foo;
-                TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin(), PlayerSolidMask(),
-                                COLLISION_GROUP_PLAYER_MOVEMENT, foo);
-                if (foo.startsolid || foo.fraction != 1.0f)
-                {
-                    Msg("bah\n");
-                }
-#endif
-                TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
-            }
-        }
+        // If their velocity Z is 0, then we can avoid an extra trace here during WalkMove.
+        if (pFirstDest && end == *pFirstDest)
+            pm = *pFirstTrace;
         else
         {
-            if (stuck_on_ramp&& has_valid_plane && sv_ramp_fix.GetBool())
+#if defined(PLAYER_GETTING_STUCK_TESTING)
+            trace_t foo;
+            TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin(), PlayerSolidMask(),
+                            COLLISION_GROUP_PLAYER_MOVEMENT, foo);
+            if (foo.startsolid || foo.fraction != 1.0f)
+            {
+                Msg("bah\n");
+            }
+#endif
+            if (stuck_on_ramp && has_valid_plane && sv_ramp_fix.GetBool())
             {
                 TracePlayerBBox(fixed_origin, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+                pm.plane.normal = valid_plane;
             }
             else
             {
@@ -1153,12 +1557,9 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             }
         }
 
-        // Apparently we can be stuck with pm.allsolid without having valid plane info ok..
-        // also check if our traceray got stuck in the ramp, and if so lets try and clip velocity and retrace.
-        if ((pm.allsolid ||
-            (CloseEnough(pm.fraction, 0.0f, FLT_EPSILON) && pm.plane.normal.z > 0.0f && pm.plane.normal.z < 1.0f && bumpcount))
-            && sv_ramp_fix.GetBool())
+        if (bumpcount && sv_ramp_fix.GetBool() && player->GetGroundEntity() == nullptr && !IsValidMovementTrace(pm))
         {
+            has_valid_plane = false;
             stuck_on_ramp = true;
             continue;
         }
@@ -1178,7 +1579,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  zero the plane counter.
         if (pm.fraction > 0)
         {
-            if ((numbumps > 0 && pm.fraction == 1))
+            if ((!bumpcount || player->GetGroundEntity() != nullptr || !sv_ramp_fix.GetBool()) && numbumps > 0 && pm.fraction == 1)
             {
                 // There's a precision issue with terrain tracing that can cause a swept box to successfully trace
                 // when the end position is stuck in the triangle.  Re-run the test with an uswept box to catch that
@@ -1186,19 +1587,18 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 // If we detect getting stuck, don't allow the movement
                 trace_t stuck;
                 TracePlayerBBox(pm.endpos, pm.endpos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, stuck);
-                if (stuck.startsolid || stuck.fraction != 1.0f)
+
+                if ((stuck.startsolid || stuck.fraction != 1.0f) && !bumpcount && sv_ramp_fix.GetBool())
                 {
-                    if (sv_ramp_fix.GetBool())
-                    {
-                        stuck_on_ramp = true;
-                        continue;
-                    }
-                    else
-                    {
-                        Msg("Player will become stuck!!! allfrac: %f pm: %i, %f, %f, %f vs stuck: %i, %f, %f\n", allFraction, pm.startsolid, pm.fraction, pm.plane.normal.z, pm.fractionleftsolid, stuck.startsolid, stuck.fraction, stuck.plane.normal.z);
-                        VectorCopy(vec3_origin, mv->m_vecVelocity);
-                        break;
-                    }
+                    has_valid_plane = false;
+                    stuck_on_ramp = true;
+                    continue;
+                }
+                else if (stuck.startsolid || stuck.fraction != 1.0f)
+                {
+                    Msg("Player will become stuck!!! allfrac: %f pm: %i, %f, %f, %f vs stuck: %i, %f, %f\n", allFraction, pm.startsolid, pm.fraction, pm.plane.normal.z, pm.fractionleftsolid, stuck.startsolid, stuck.fraction, stuck.plane.normal.z);
+                    VectorCopy(vec3_origin, mv->m_vecVelocity);
+                    break;
                 }
             }
 
@@ -1212,6 +1612,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 #endif
             if (sv_ramp_fix.GetBool())
             {
+                has_valid_plane = false;
                 stuck_on_ramp = false;
             }
 
@@ -1222,7 +1623,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             allFraction += pm.fraction;
             numplanes = 0;
         }
-
 
         // If we covered the entire distance, we are done
         //  and can return.
@@ -1238,7 +1638,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
 
         // If the plane we hit has a high z component in the normal, then
         //  it's probably a floor
-        if (pm.plane.normal[2] > 0.7)
+        if (pm.plane.normal[2] >= 0.7)
         {
             blocked |= 1; // floor
         }
@@ -1278,7 +1678,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         if (numplanes == 1 && player->GetMoveType() == MOVETYPE_WALK && player->GetGroundEntity() == nullptr)
         {
             // Is this a floor/slope that the player can walk on?
-            if (planes[0][2] > 0.7)
+            if (planes[0][2] >= 0.7)
             {
                 ClipVelocity(original_velocity, planes[0], new_velocity, 1);
                 VectorCopy(new_velocity, original_velocity);
@@ -1593,7 +1993,7 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     // MOM_TODO: Make this only bhop gametype?
     // Enable this when we konw that we are sliding.
     Vector dif = mv->m_vecVelocity - out;
-    if ((dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f)) &&
+    if ((dif.Length2D() > 0.0f && (angle >= 0.7f) && (out[2] > 0.0f)) &&
         (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && m_pPlayer->m_SrvData.m_SlideData.IsFixUpsideSlope()))
     {
         out.x = mv->m_vecVelocity.x;

@@ -207,7 +207,7 @@
 	}
     "TimescaleSlider"
     {
-        "ControlName" "CCvarSlider"
+        "ControlName" "CvarSlider"
         "fieldName" "TimescaleSlider"
         "xpos" "95"
         "ypos" "148"

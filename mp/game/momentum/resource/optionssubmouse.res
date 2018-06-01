@@ -2,7 +2,7 @@
 {
 	"ReverseMouse"
 	{
-		"ControlName"		"CCvarNegateCheckButton"
+		"ControlName"		"CvarNegateCheckButton"
 		"fieldName"		"ReverseMouse"
 		"xpos"		"28"
 		"ypos"		"9"
@@ -31,7 +31,7 @@
 	}
 	"MouseFilter"
 	{
-		"ControlName"		"CCvarToggleCheckButton"
+		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"MouseFilter"
 		"xpos"		"200"
 		"ypos"		"10"
@@ -60,7 +60,7 @@
 	}
 	"MouseRaw"
 	{
-		"ControlName"		"CCvarToggleCheckButton"
+		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"MouseRaw"
 		"xpos"		"30"
 		"ypos"		"70"
@@ -120,7 +120,7 @@
 	}
 	"Joystick"
 	{
-		"ControlName"		"CCvarToggleCheckButton"
+		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"Joystick"
 		"xpos"		"28"
 		"ypos"		"148"
@@ -148,7 +148,7 @@
 	}
 	"JoystickSouthpaw"
 	{
-		"ControlName"		"CCvarToggleCheckButton"
+		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"JoystickSouthpaw"
 		"xpos"		"62"
 		"ypos"		"202"
@@ -176,7 +176,7 @@
 	}
 	"ReverseJoystick"
 	{
-		"ControlName"		"CCvarToggleCheckButton"
+		"ControlName"		"CvarToggleCheckButton"
 		"fieldName"		"ReverseJoystick"
 		"xpos"		"62"
 		"ypos"		"176"
@@ -204,7 +204,7 @@
 	}
 	"Slider"
 	{
-		"ControlName"		"CCvarSlider"
+		"ControlName"		"CvarSlider"
 		"fieldName"		"Slider"
 		"xpos"		"200"
 		"ypos"		"40"
@@ -245,7 +245,7 @@
 	}
 	"MouseAccelerationSlider"
 	{
-		"ControlName"		"CCvarSlider"
+		"ControlName"		"CvarSlider"
 		"fieldName"		"MouseAccelerationSlider"
 		"xpos"		"200"
 		"ypos"		"100"
@@ -290,7 +290,7 @@
 	}
 	"JoystickYawSlider"
 	{
-		"ControlName"		"CCvarSlider"
+		"ControlName"		"CvarSlider"
 		"fieldName"		"JoystickYawSlider"
 		"xpos"		"232"
 		"ypos"		"237"
@@ -337,7 +337,7 @@
 	}
 	"JoystickPitchSlider"
 	{
-		"ControlName"		"CCvarSlider"
+		"ControlName"		"CvarSlider"
 		"fieldName"		"JoystickPitchSlider"
 		"xpos"		"232"
 		"ypos"		"274"

@@ -7,6 +7,7 @@
 
 #include "vgui_controls/pch_vgui_controls.h"
 #include "vgui/ILocalize.h"
+#include <utlbuffer.h>
 
 // memdbgon must be the last include file in a .cpp file
 #include "tier0/memdbgon.h"
@@ -142,12 +143,13 @@ DECLARE_BUILD_FACTORY( RichText );
 //-----------------------------------------------------------------------------
 RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, panelName)
 {
+    InitSettings();
 	m_bAllTextAlphaIsZero = false;
 	_font = INVALID_FONT;
 	m_hFontUnderline = INVALID_FONT;
 
 	m_bRecalcLineBreaks = true;
-	m_pszInitialText = NULL;
+	m_pszInitialText = nullptr;
 	_cursorPos = 0;
 	_mouseSelection = false;
 	_mouseDragSelection = false;
@@ -156,12 +158,12 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 	_recalcSavedRenderState = true;
 	_maxCharCount = (64 * 1024);
 	AddActionSignalTarget(this);
-	m_pInterior = new RichTextInterior( this, NULL );
+	m_pInterior = new RichTextInterior( this, nullptr );
 
 	//a -1 for _select[0] means that the selection is empty
 	_select[0] = -1;
 	_select[1] = -1;
-	m_pEditMenu = NULL;
+	m_pEditMenu = nullptr;
 	
 	SetCursor(dc_ibeam);
 	
@@ -210,7 +212,7 @@ RichText::RichText(Panel *parent, const char *panelName) : BaseClass(parent, pan
 //-----------------------------------------------------------------------------
 RichText::~RichText()
 {
-	delete [] m_pszInitialText;
+	m_pszInitialText.Purge();
 	delete m_pEditMenu;
 }
 
@@ -924,7 +926,7 @@ void RichText::Paint()
 					surface()->DrawSetTextFont( hFontCurrent );
 					
 					// set up the panel
-					ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : NULL;
+					ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : nullptr;
 					
 					if (clickPanel)
 					{
@@ -970,7 +972,7 @@ void RichText::Paint()
 			{
 				// move to the next URL
 				_clickableTextIndex++;
-				ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : NULL;
+				ClickPanel *clickPanel = _clickableTextPanels.IsValidIndex( _clickableTextIndex ) ? _clickableTextPanels[_clickableTextIndex] : nullptr;
 				if (clickPanel)
 				{
 					clickPanel->SetPos(renderState.x, renderState.y);
@@ -1587,16 +1589,19 @@ void RichText::LayoutVerticalScrollBarSlider()
 	//if (!_vertScrollBar->IsVisible())
 	//	return;
 
-
 	// see where the scrollbar currently is
 	int previousValue = _vertScrollBar->GetValue();
 	bool bCurrentlyAtEnd = false;
-	int rmin, rmax;
-	_vertScrollBar->GetRange(rmin, rmax);
-	if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
-	{
-		bCurrentlyAtEnd = true;
-	}
+    if (_vertScrollBar->GetSlider()->IsSliderVisible())
+    {
+        int rmin, rmax;
+        _vertScrollBar->GetRange(rmin, rmax);
+        if (rmax && (previousValue + rmin + _vertScrollBar->GetRangeWindow() == rmax))
+        {
+            bCurrentlyAtEnd = true;
+        }
+    }
+	
 	
 	// work out position to put scrollbar, factoring in insets
 	int wide, tall;
@@ -2503,21 +2508,19 @@ void RichText::ApplySettings(KeyValues *inResourceData)
 {
 	BaseClass::ApplySettings(inResourceData);
 	SetMaximumCharCount(inResourceData->GetInt("maxchars", -1));
-	SetVerticalScrollbar(inResourceData->GetInt("scrollbar", 1));
+	SetVerticalScrollbar(inResourceData->GetBool("scrollbar", true));
 
 	// get the starting text, if any
 	const char *text = inResourceData->GetString("text", "");
 	if (*text)
 	{
-		delete [] m_pszInitialText;
-		int len = Q_strlen(text) + 1;
-		m_pszInitialText = new char[ len ];
-		Q_strncpy( m_pszInitialText, text, len );
+        m_pszInitialText.Purge();
+        m_pszInitialText = text;
 		SetText(text);
 	}
 	else
 	{
-		const char *textfilename = inResourceData->GetString("textfile", NULL);
+		const char *textfilename = inResourceData->GetString("textfile", nullptr);
 		if ( textfilename )
 		{
 			FileHandle_t f = g_pFullFileSystem->Open( textfilename, "rt" );
@@ -2527,13 +2530,20 @@ void RichText::ApplySettings(KeyValues *inResourceData)
 				return;
 			}
 
-			int len = g_pFullFileSystem->Size( f );
-			delete [] m_pszInitialText;
-			m_pszInitialText = new char[ len + 1 ];
-			g_pFullFileSystem->Read( m_pszInitialText, len, f );
-			m_pszInitialText[len - 1] = 0;
-			SetText( m_pszInitialText );
-
+            CUtlBuffer textBuf(0, 0, CUtlBuffer::TEXT_BUFFER);
+            if (g_pFullFileSystem->ReadToBuffer(f, textBuf))
+            {
+                m_pszInitialTextFile.Purge();
+                m_pszInitialTextFile = textfilename;
+                m_pszInitialText.Purge();
+                m_pszInitialText = textBuf.String();
+                SetText(m_pszInitialText);
+            }
+            else
+            {
+                Warning("RichText: textfile %s could not be read!\n", textfilename);
+            }
+           
 			g_pFullFileSystem->Close( f );
 		}
 	}
@@ -2547,20 +2557,18 @@ void RichText::GetSettings(KeyValues *outResourceData)
 	BaseClass::GetSettings(outResourceData);
 	outResourceData->SetInt("maxchars", _maxCharCount);
 	outResourceData->SetInt("scrollbar", _vertScrollBar->IsVisible() );
-	if (m_pszInitialText)
-	{
-		outResourceData->SetString("text", m_pszInitialText);
-	}
+	outResourceData->SetString("text", m_pszInitialText);
+    outResourceData->SetString("textfile", m_pszInitialTextFile);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-const char *RichText::GetDescription()
+void RichText::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, string text, bool scrollbar", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"text", TYPE_STRING},
+    {"textfile", TYPE_STRING},
+    {"maxchars", TYPE_INTEGER},
+    {"scrollbar", TYPE_BOOL}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -2698,7 +2706,7 @@ int RichText::ParseTextStringForUrls( const char *text, int startPos, char *pchU
 		{
 			// scan ahead for another '.'
 			bool bPeriodFound = false;
-			for (const char *ch = text + i + 5; ch != 0; ch++)
+			for (const char *ch = text + i + 5; ch != nullptr; ch++)
 			{
 				if (*ch == '.')
 				{

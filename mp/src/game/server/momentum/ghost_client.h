@@ -4,6 +4,7 @@
 
 struct PositionPacket_t;
 struct DecalPacket_t;
+struct SavelocReqPacket_t;
 struct ghostAppearance_t;
 class CMomentumPlayer;
 class CMomentumOnlineGhostEntity;
@@ -30,16 +31,18 @@ public:
     void SendAppearanceData(ghostAppearance_t appearance);
     void SetSpectatorTarget(CSteamID target, bool bStartedSpectating, bool bLeft = false);
     void SendDecalPacket(DecalPacket_t *packet);
+    void SendSavelocReqPacket(CSteamID &target, SavelocReqPacket_t *packet);
 
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const CSteamID &id) { return GetOnlineGhostEntityFromID(id.ConvertToUint64()); }
     CMomentumOnlineGhostEntity *GetOnlineGhostEntityFromID(const uint64 &id);
+
+    CUtlMap<uint64, CMomentumOnlineGhostEntity*> *GetOnlineGhostMap();
 
     static bool CreateNewNetFrame(PositionPacket_t &frame);
 
     static CMomentumPlayer *m_pPlayer;
 private:
     ConVarRef m_cvarHostTimescale;
-    static CMomentumGhostClient *m_pInstance;
 };
 
 extern CMomentumGhostClient *g_pMomentumGhostClient;

@@ -3,6 +3,8 @@
 #include "base64.h"
 #include "ghost_client.h"
 #include "mom_online_ghost.h"
+#include "mom_system_saveloc.h"
+#include "mom_player_shared.h"
 
 #include "tier0/memdbgon.h"
 
@@ -67,6 +69,7 @@ void CMomentumLobbySystem::SendChatMessage(char* pMessage)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         int len = Q_strlen(pMessage) + 1;
         bool result = SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
         if (result)
@@ -94,6 +97,12 @@ void CMomentumLobbySystem::ResetOtherAppearanceData()
             index = m_mapLobbyGhosts.NextInorder(index);
         }
     }
+}
+
+void CMomentumLobbySystem::SendSavelocReqPacket(CSteamID& target, SavelocReqPacket_t* p)
+{
+    if (LobbyValid())
+        SendPacket(p, &target, k_EP2PSendReliable);
 }
 
 // Called when trying to join somebody else's lobby. We need to actually call JoinLobby here.
@@ -164,6 +173,7 @@ void CMomentumLobbySystem::StartLobby()
 {
     if (!(m_cLobbyCreated.IsActive() || LobbyValid()))
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         SteamAPICall_t call = SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>(mom_lobby_type.GetInt()), mom_lobby_max_players.GetInt());
         m_cLobbyCreated.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyCreated);
         DevLog("The lobby call successfully happened!\n");
@@ -176,8 +186,6 @@ void CMomentumLobbySystem::LeaveLobby()
 {
     if (LobbyValid())
     {
-        SetSpectatorTarget(k_steamIDNil, false, true);
-
         // Actually leave the lobby
         SteamMatchmaking()->LeaveLobby(m_sLobbyID);
         // Clear the ghosts stored in our lobby system
@@ -244,6 +252,7 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         char base64Appearance[1024];
         base64_encode(&app, sizeof app, base64Appearance, 1024);
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
@@ -297,12 +306,14 @@ void CMomentumLobbySystem::ClearCurrentGhosts(bool bRemoveEnts)
 void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarget, EP2PSend sendType /* = k_EP2PSendUnreliable*/)
 {
     // Write the packet out to binary
-    CUtlBuffer buf(0, 1200);
+    int size = sendType >= k_EP2PSendReliable ? 1000000 : 1200;
+    CUtlBuffer buf(0, size);
     buf.SetBigEndian(false);
     packet->Write(buf);
 
     if (pTarget)
     {
+        CHECK_STEAM_API(SteamNetworking());
         if (SteamNetworking()->SendP2PPacket(*pTarget, buf.Base(), buf.TellPut(), sendType))
         {
             // DevLog("Sent the packet!\n");
@@ -310,6 +321,7 @@ void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
     }
     else if (m_mapLobbyGhosts.Count() > 0) // It's everybody
     {
+        CHECK_STEAM_API(SteamNetworking());
         uint16 index = m_mapLobbyGhosts.FirstInorder();
         while (index != m_mapLobbyGhosts.InvalidIndex())
         {
@@ -399,6 +411,9 @@ void CMomentumLobbySystem::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam)
     {
         DevLog("User left/disconnected!\n");
 
+        // Check if they're a saveloc requester
+        g_pMOMSavelocSystem->RequesterLeft(changedPerson.ConvertToUint64());
+
         uint16 findMember = m_mapLobbyGhosts.Find(changedPerson.ConvertToUint64());
         if (findMember != m_mapLobbyGhosts.InvalidIndex())
         {
@@ -446,6 +461,7 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         DevLog("Setting the map to %s!\n", pMapName ? pMapName : "INVALID (main menu/loading)");
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
         SetGameInfoStatus();
@@ -461,10 +477,14 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
 
 void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 {
+    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API(SteamMatchmaking());
+
     CSteamID localID = SteamUser()->GetSteamID();
 
     if (pID)
     {
+        CHECK_STEAM_API(SteamFriends());
         const char *pName = SteamFriends()->GetFriendPersonaName(*pID);
 
         // Check if this person was block communication'd
@@ -518,9 +538,15 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
             // They changed map remove their entity from the CUtlMap
             CMomentumOnlineGhostEntity *pEntity = m_mapLobbyGhosts[findIndx];
             if (pEntity)
+            {
+                pEntity->UpdatePlayerSpectate();
                 pEntity->Remove();
+            }
             
             m_mapLobbyGhosts.RemoveAt(findIndx);
+
+            // Remove them if they're a requester
+            g_pMOMSavelocSystem->RequesterLeft(pID_int);
 
             // "_____ just left your map."
             WriteMessage(LOBBY_UPDATE_MEMBER_LEAVE_MAP, pID_int);
@@ -542,6 +568,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 
 void CMomentumLobbySystem::JoinLobbyFromString(const char* pString)
 {
+    CHECK_STEAM_API(SteamMatchmaking());
     if (pString)
     {
         if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
@@ -629,6 +656,95 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
                     WriteMessage(update.spec_type, fromWhoID, specTargetID);
                 }
                 break;
+
+            case PT_SAVELOC_REQ:
+                {
+                    SavelocReqPacket_t saveloc(buf);
+
+                    // Done/fail states:
+                    // 1. They hit "cancel" (most common)
+                    // 2. They leave the map (same as 1, just accidental maybe)
+                    // 3. They leave the lobby/server (manually, due to power outage, etc)
+                    // 4. We leave the map
+                    // 5. We leave the lobby/server
+                    // 6. They get the savelocs they need
+
+                    // Of the above, 1 and 6 are the ones that are manually sent.
+                    // 2<->5 can be automatically detected with lobby/server hooks
+
+                    // Fail requirements:
+                    // Requester: set "requesting" to false, close the request UI
+                    // Requestee: remove requester from requesters vector
+
+                    switch (saveloc.stage)
+                    {
+                    case 0:
+                    default:
+                        DevWarning("Invalid stage for the saveloc request packet!\n");
+                        break;
+                    case 1:
+                        {
+                            DevLog(2, "Received a stage 1 saveloc request packet!\n");
+                            // Somebody wants our savelocs, let the saveloc system handle this
+                            g_pMOMSavelocSystem->AddSavelocRequester(fromWho.ConvertToUint64());
+
+                            // Send them our saveloc count
+                            SavelocReqPacket_t response;
+                            response.stage = 2;
+                            response.saveloc_count = g_pMOMSavelocSystem->GetSavelocCount();
+
+                            SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                        }
+                        break;
+                    case 2:
+                        {
+                            DevLog(2, "Received a stage 2 saveloc request packet!\n");
+                            // We got the number of savelocs, pass this to the client
+                            KeyValues *pKV = new KeyValues("req_savelocs");
+                            pKV->SetInt("stage", 2);
+                            pKV->SetInt("count", saveloc.saveloc_count);
+                            g_pModuleComms->FireEvent(pKV);
+                        }
+                        break;
+                    case 3:
+                        {
+                            DevLog(2, "Received a stage 3 saveloc request packet!\n");
+                            // Somebody sent us the number of the savelocs they want, saveloc system pls help
+                            SavelocReqPacket_t response;
+                            response.stage = 4;
+
+                            if (g_pMOMSavelocSystem->FillSavelocReq(true, &saveloc, &response))
+                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
+                        }
+                        break;
+                    case 4:
+                        {
+                            DevLog(2, "Received a stage 4 saveloc request packet!\n");
+                            // We got their savelocs, add it to the player's list of savelocs
+                            if (g_pMOMSavelocSystem->FillSavelocReq(false, &saveloc, nullptr))
+                            {
+                                // Send them a packet that we're all good
+                                SavelocReqPacket_t response;
+                                response.stage = -1;
+                                SendPacket(&response, &fromWho, k_EP2PSendReliable);
+
+                                // Send ourselves an event saying we're all good
+                                KeyValues *pKv = new KeyValues("req_savelocs");
+                                pKv->SetInt("stage", -1);
+                                g_pModuleComms->FireEvent(pKv);
+                            }
+                        }
+                        break;
+                    case -1: // The other player is all done/cancelled
+                        {
+                            // Remove the requester
+                            DevLog(2, "Received a stage -1 saveloc request packet!\n");
+                            g_pMOMSavelocSystem->RequesterLeft(fromWho.ConvertToUint64());
+                        }
+                        break;
+                    }
+                }
+                break;
             default:
                 break;
             }
@@ -652,12 +768,15 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 }
 void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 {
-    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_IS_SPEC, bSpec ? "1" : nullptr);
+    if (SteamMatchmaking())
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_IS_SPEC, bSpec ? "1" : nullptr);
 }
 
 //Return true if the lobby member is currently spectating.
 bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
 {
+    if (!SteamMatchmaking())
+        return false;
     const char* specChar = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
     return specChar[0] ? true : false;
 }
@@ -670,6 +789,8 @@ void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
 
 void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating, bool bLeft)
 {
+    CHECK_STEAM_API(SteamMatchmaking());
+
     SPECTATE_MSG_TYPE type;
     if (bStartedSpectating)
     {
@@ -711,6 +832,7 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget
 
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
+    CHECK_STEAM_API(SteamFriends());
     ConVarRef gm("mom_gamemode");
     const char *gameMode;
     switch (gm.GetInt())

@@ -11,7 +11,6 @@
 #include "mom_modulecomms.h"
 #include "IMovementListener.h"
 
-struct Checkpoint_t;
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
 
@@ -142,6 +141,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     CBaseEntity *FindNextObserverTarget(bool bReverse) OVERRIDE;
     int GetNextObserverSearchStartPoint(bool bReverse) OVERRIDE;
     void CheckObserverSettings() OVERRIDE;
+    void ValidateCurrentObserverTarget() OVERRIDE;
+    void TravelSpectateTargets(bool bReverse); // spec_next and spec_prev pass into here
 
     void StopSpectating();
 
@@ -157,33 +158,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool ClientCommand(const CCommand &args) OVERRIDE;
     void MomentumWeaponDrop(CBaseCombatWeapon *pWeapon);
 
-    // Gets the current menu checkpoint index
-    int GetCurrentCPMenuStep() const { return m_SrvData.m_iCurrentStepCP; }
-    // MOM_TODO: For leaderboard use later on
-    bool IsUsingCPMenu() const { return m_SrvData.m_bUsingCPMenu; }
-    // Creates a checkpoint on the location of the player
-    Checkpoint_t *CreateCheckpoint();
-    // Creates and saves a checkpoint to the checkpoint menu
-    void CreateAndSaveCheckpoint();
-    // Removes last checkpoint (menu) form the checkpoint lists
-    void RemoveLastCheckpoint();
-    // Removes every checkpoint (menu) on the checkpoint list
-    void RemoveAllCheckpoints();
-    // Teleports the player to the checkpoint (menu) with the given index
-    void TeleportToCheckpoint(int);
-    // Teleports the player to their current checkpoint
-    void TeleportToCurrentCP() { TeleportToCheckpoint(m_SrvData.m_iCurrentStepCP); }
-    // Sets the current checkpoint (menu) to the desired one with that index
-    void SetCurrentCPMenuStep(int iNewNum) { m_SrvData.m_iCurrentStepCP = iNewNum; }
-    // Gets the total amount of menu checkpoints
-    int GetCPCount() const { return m_rcCheckpoints.Size(); }
-    // Sets wheter or not we're using the CPMenu
-    // WARNING! No verification is done. It is up to the caller to don't give false information
-    void SetUsingCPMenu(bool bIsUsingCPMenu) { m_SrvData.m_bUsingCPMenu = bIsUsingCPMenu; }
-
-    void SaveCPsToFile(KeyValues *kvInto);
-    void LoadCPsFromFile(KeyValues *kvFrom);
-
     void ToggleDuckThisFrame(bool bState);
 
     int &GetPerfectSyncTicks() { return m_nPerfectSyncTicks; }
@@ -191,7 +165,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     int &GetAccelTicks() { return m_nAccelTicks; }
 
     // Trail Methods
-
     void Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity) OVERRIDE;
     void CreateTrail();
     void RemoveTrail();
@@ -218,19 +191,21 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     bool m_bInAirDueToJump;
 
     void DoMuzzleFlash() OVERRIDE;
-    void PostThink();
+    void PostThink() OVERRIDE;
+
+    // Ladder stuff
+    float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
+    void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
   private:
     // Ladder stuff
     CountdownTimer m_ladderSurpressionTimer;
     Vector m_lastLadderNormal;
     Vector m_lastLadderPos;
+    float m_flGrabbableLadderTime;
 
     // Spawn stuff
     EHANDLE g_pLastSpawn;
     bool SelectSpawnSpot(const char *pEntClassName, CBaseEntity *&pSpot);
-
-    // Checkpoint menu
-    CUtlVector<Checkpoint_t *> m_rcCheckpoints;
 
     // Trigger stuff
     CUtlVector<CTriggerOnehop*> m_vecOnehops;

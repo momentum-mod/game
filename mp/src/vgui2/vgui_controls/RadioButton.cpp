@@ -72,6 +72,7 @@ DECLARE_BUILD_FACTORY_DEFAULT_TEXT( RadioButton, RadioButton );
 //-----------------------------------------------------------------------------
 RadioButton::RadioButton(Panel *parent, const char *panelName, const char *text) : ToggleButton(parent, panelName, text)
 {
+    InitSettings();
  	SetContentAlignment(a_west);
 
 	// create the image
@@ -274,14 +275,11 @@ void RadioButton::GetSettings(KeyValues *outResourceData)
 	outResourceData->SetInt("TabPosition", GetRadioTabPosition());
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Describe editing details
-//-----------------------------------------------------------------------------
-const char *RadioButton::GetDescription( void )
+void RadioButton::InitSettings()
 {
-	static char buf[1024];
-	Q_snprintf(buf, sizeof(buf), "%s, int SubTabPosition", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"SubTabPosition", TYPE_INTEGER}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------

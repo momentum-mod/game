@@ -34,13 +34,12 @@ protected:
 	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void GetSettings( KeyValues *outResourceData );
 	virtual void ApplySchemeSettings(IScheme *pScheme);
-	virtual const char *GetDescription( void );
+	void InitSettings() OVERRIDE;
 
 	const char *GetURL( void ) { return m_pszURL; }
 
 private:
-    char    *m_pszURL;
-    int     m_iURLSize;
+    CUtlString m_pszURL;
 	bool	m_bUnderline;
 };
 

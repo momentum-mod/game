@@ -7,8 +7,6 @@
 #include "vgui_controls/Panel.h"
 #include "vgui_controls/TextEntry.h"
 
-using namespace vgui;
-
 class PickerHelper;
 
 namespace vgui

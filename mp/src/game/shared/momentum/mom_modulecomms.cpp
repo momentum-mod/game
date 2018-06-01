@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "run/run_stats.h"
-#include "mom_player_shared.h"
 #include "mom_modulecomms.h"
+#include "util/os_utils.h"
 
 #ifdef CLIENT_DLL
 
@@ -55,7 +55,99 @@ void FetchStdReplayData(C_MomentumReplayGhostEntity *pGhost)
     }
 }
 
+
+// The server will hook into this function to fire the event on the client (server -> client)
+DLL_EXPORT void FireEventFromServer(KeyValues *pKv)
+{
+    g_pModuleComms->OnEvent(pKv);
+}
+
 #else //Is not CLIENT_DLL
 
+// The client hooks into this function to pass an event to the server (client -> server)
+DLL_EXPORT void FireEventFromClient(KeyValues *pKv)
+{
+    g_pModuleComms->OnEvent(pKv);
+}
 
 #endif //CLIENT_DLL
+
+ModuleCommunication::ModuleCommunication() : CAutoGameSystem("ModuleCommunication"), CallMeToFireEvent(nullptr)
+{
+}
+
+bool ModuleCommunication::Init()
+{
+    CallMeToFireEvent = (EventFireFn) (GetProcAddress(
+#ifdef CLIENT_DLL
+        GetModuleHandle(SERVER_DLL_NAME), "FireEventFromClient" // client -> server
+#else
+        GetModuleHandle(CLIENT_DLL_NAME), "FireEventFromServer" // server -> client
+#endif
+    ));
+
+    return true;
+}
+
+void ModuleCommunication::Shutdown()
+{
+    m_dictListeners.RemoveAll();
+    m_vecListeners.PurgeAndDeleteElements();
+}
+
+
+void ModuleCommunication::FireEvent(KeyValues* pKv, bool fireLocal /* = true */)
+{
+    KeyValues *pCopy = fireLocal ? pKv->MakeCopy() : nullptr;
+
+    // This fires across the DLL boundary
+    if (CallMeToFireEvent)
+        CallMeToFireEvent(pKv); // pKv->deleteThis is called in here
+
+    // This fires it for the DLL we're currently on, allowing "local" listeners for events
+    if (fireLocal)
+        OnEvent(pCopy); //pCopy->deleteThis is called in here
+}
+
+void ModuleCommunication::ListenForEvent(const char* pName, CUtlDelegate<void (KeyValues*)> listener)
+{
+    int found = m_dictListeners.Find(pName);
+    if (m_dictListeners.IsValidIndex(found))
+    {
+        int indx = m_dictListeners[found];
+        m_vecListeners[indx]->m_listeners.AddToTail(listener);
+    }
+    else
+    {
+        EventListenerContainer *pContainer = new EventListenerContainer;
+        pContainer->m_listeners.AddToTail(listener);
+        int indx = m_vecListeners.AddToTail(pContainer);
+        m_dictListeners.Insert(pName, indx);
+    }
+}
+
+
+void ModuleCommunication::OnEvent(KeyValues* pKv)
+{
+    // Find the event listeners for this particular event
+    int found = m_dictListeners.Find(pKv->GetName());
+    if (m_dictListeners.IsValidIndex(found))
+    {
+        int indx = m_dictListeners[found];
+        EventListenerContainer *pContainer = m_vecListeners[indx];
+        FOR_EACH_LL(pContainer->m_listeners, i)
+        {
+            pContainer->m_listeners[i](pKv);
+        }
+    }
+    else
+    {
+        Warning("Firing modulecom event %s with no registered listeners!\n", pKv->GetName());
+    }
+
+    pKv->deleteThis();
+}
+
+//Expose this to the DLL
+static ModuleCommunication mod;
+ModuleCommunication *g_pModuleComms = &mod;

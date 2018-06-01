@@ -4,6 +4,7 @@
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "run/mom_replay_factory.h"
+#include "run/mom_replay_base.h"
 #include <gason.h>
 #include "run/run_compare.h"
 #include "run/run_stats.h"
@@ -90,62 +91,6 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
 #endif
 
 #ifdef CLIENT_DLL
-void MomentumUtil::GetRemoteChangelog()
-{
-    if (SteamHTTP())
-    {
-        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, "http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt");
-        SteamAPICall_t apiHandle;
-
-        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            cbChangeLog.Set(apiHandle, this, &MomentumUtil::ChangelogCallback);
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to post scores online!\n");
-            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steampicontext failure.\n");
-        Warning("Could not find Steam Api Context active\n");
-    }
-}
-
-void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    const char *pError = "Error loading changelog!";
-    if (bIOFailure)
-    {
-        pError = "Error loading changelog due to bIOFailure!";
-        changelogpanel->SetChangelog(pError);
-        return;
-    }
-    uint32 size;
-    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
-        changelogpanel->SetChangelog(pError);
-        return;
-    }
-
-    // Right now "size" is the content body size, not in string terms where the end is marked
-    // with a null terminator.
-
-    uint8 *pData = new uint8[size + 1];
-    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    pData[size] = 0;
-
-    const char *pDataPtr = reinterpret_cast<const char *>(pData);
-
-    changelogpanel->SetChangelog(pDataPtr);
-
-    CleanupRequest(pCallback, pData);
-}
-
 void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
 {
     IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);

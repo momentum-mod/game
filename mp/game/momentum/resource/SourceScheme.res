@@ -487,8 +487,9 @@ Scheme
 				"name"		 "Lucida Console" [$OSX]
 				"name"		 "Verdana" [$LINUX]
 				"tall"		"14" [$LINUX]
-				"tall"		"10"
+				"tall"		"8"
 				"weight"	"500"
+                "antialias" "1"
 			}
 		}
 

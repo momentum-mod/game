@@ -10,15 +10,9 @@
 
 // viewport interface for the rest of the dll
 #include <game/client/iviewport.h>
-
-#include <utlqueue.h> // a vector based queue template to manage our VGUI menu queue
 #include <vgui_controls/Frame.h>
-#include "vguitextwindow.h"
-#include "vgui/ISurface.h"
 #include "commandmenu.h"
 #include <igameevents.h>
-
-using namespace vgui;
 
 class IBaseFileSystem;
 class IGameUIFuncs;
@@ -55,9 +49,9 @@ public:
 	
 #ifndef _XBOX
 	virtual int GetViewPortScheme() { return m_pBackGround->GetScheme(); }
-	virtual VPANEL GetViewPortPanel() { return m_pBackGround->GetVParent(); }
+	virtual vgui::VPANEL GetViewPortPanel() { return m_pBackGround->GetVParent(); }
 #endif
-	virtual AnimationController *GetAnimationController() { return m_pAnimController; }
+	virtual vgui::AnimationController *GetAnimationController() { return m_pAnimController; }
 
 	virtual void ShowBackGround(bool bShow) 
 	{ 
@@ -95,7 +89,7 @@ protected:
 		}
 	private:
 
-		virtual void ApplySchemeSettings(IScheme *pScheme)
+		virtual void ApplySchemeSettings(vgui::IScheme *pScheme)
 		{
 			BaseClass::ApplySchemeSettings(pScheme);
 			SetBgColor(pScheme->GetColor("ViewportBG", Color( 0,0,0,0 ) )); 
@@ -112,7 +106,7 @@ protected:
 			BaseClass::PerformLayout();
 		}
 
-		virtual void OnMousePressed(MouseCode code) { }// don't respond to mouse clicks
+		virtual void OnMousePressed(vgui::MouseCode code) { }// don't respond to mouse clicks
 		virtual vgui::VPANEL IsWithinTraverse( int x, int y, bool traversePopups )
 		{
 			return ( vgui::VPANEL )0;

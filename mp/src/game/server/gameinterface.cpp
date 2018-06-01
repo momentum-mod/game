@@ -800,7 +800,7 @@ void CServerGameDLL::DLLShutdown( void )
 	s_SteamGameServerAPIContext.Clear();
 #endif	
 
-    SteamAPI_Shutdown();
+    //SteamAPI_Shutdown();
 	gameeventmanager = NULL;
 	
 	DisconnectTier3Libraries();
@@ -1476,7 +1476,16 @@ void CServerGameDLL::CreateNetworkStringTables( void )
 
 CSaveRestoreData *CServerGameDLL::SaveInit( int size )
 {
-	return ::SaveInit(size);
+    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+    filter.MakeReliable();
+    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
+    MessageEnd();
+    Warning("************************************\n");
+    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
+    Warning("Try using the saveloc menu instead!\n");
+    Warning("************************************\n");
+    return nullptr;
+	//return ::SaveInit(size);
 }
 
 //-----------------------------------------------------------------------------
@@ -1525,31 +1534,15 @@ void CServerGameDLL::RestoreGlobalState(CSaveRestoreData *s)
 
 void CServerGameDLL::Save( CSaveRestoreData *s )
 {
-    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
-    filter.MakeReliable();
-    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
-    MessageEnd();
-    Warning("************************************\n");
-    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
-    Warning("Try using the checkpoint menu instead!\n");
-    Warning("************************************\n");
-	/*CSave saveHelper( s );
-	g_pGameSaveRestoreBlockSet->Save( &saveHelper );*/
+    CSave saveHelper( s );
+	g_pGameSaveRestoreBlockSet->Save( &saveHelper );
 }
 
 void CServerGameDLL::Restore( CSaveRestoreData *s, bool b)
 {
-    CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
-    filter.MakeReliable();
-    UserMessageBegin(filter, "MB_PlayerTriedSaveOrLoad");
-    MessageEnd();
-    Warning("************************************\n");
-    Warning("MOMENTUM DOES NOT ALLOW SAVE/LOAD!\n");
-    Warning("Try using the checkpoint menu instead!\n");
-    Warning("************************************\n");
-	/*CRestore restore(s);
+    CRestore restore(s);
 	g_pGameSaveRestoreBlockSet->Restore( &restore, b );
-	g_pGameSaveRestoreBlockSet->PostRestore();*/
+	g_pGameSaveRestoreBlockSet->PostRestore();
 }
 
 //-----------------------------------------------------------------------------

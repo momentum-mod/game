@@ -4,15 +4,15 @@
 
 namespace vgui
 {
-    class CCvarSlider : public vgui::Slider
+    class CvarSlider : public vgui::Slider
     {
-        DECLARE_CLASS_SIMPLE(CCvarSlider, vgui::Slider);
+        DECLARE_CLASS_SIMPLE(CvarSlider, vgui::Slider);
 
     public:
-        CCvarSlider(Panel *parent, const char *panelName);
-        CCvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
+        CvarSlider(Panel *parent, const char *panelName);
+        CvarSlider(Panel *parent, const char *panelName, char const *caption, float minValue, float maxValue,
             char const *cvarname, bool bAllowOutOfRange = false);
-        ~CCvarSlider();
+        ~CvarSlider();
 
         void SetupSlider(float minValue, float maxValue, const char *cvarname, bool bAllowOutOfRange);
 
@@ -24,8 +24,7 @@ namespace vgui
 
         void ApplySettings(KeyValues *inResourceData) OVERRIDE;
         void GetSettings(KeyValues *outResourceData) OVERRIDE;
-
-        const char* GetDescription() OVERRIDE;
+        void InitSettings() OVERRIDE;
 
         void ApplyChanges();
         float GetSliderValue();

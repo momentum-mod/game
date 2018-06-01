@@ -14,9 +14,7 @@
 #include <vgui_controls/EditablePanel.h>
 #include "hudelement.h"
 
-using namespace vgui;
-
-class CAchievementNotificationPanel : public CHudElement, public EditablePanel
+class CAchievementNotificationPanel : public CHudElement, public vgui::EditablePanel
 {
 	DECLARE_CLASS_SIMPLE( CAchievementNotificationPanel, EditablePanel );
 
@@ -24,7 +22,7 @@ public:
 	CAchievementNotificationPanel( const char *pElementName );
 
 	virtual void	Init();
-	virtual void	ApplySchemeSettings( IScheme *scheme );
+	virtual void	ApplySchemeSettings(vgui::IScheme *scheme );
 	virtual bool	ShouldDraw( void );
 	virtual void	PerformLayout( void );
 	virtual void	LevelInit( void ) { m_flHideTime = 0; }
@@ -39,10 +37,10 @@ private:
 
 	float m_flHideTime;
 
-	Label *m_pLabelHeading;
-	Label *m_pLabelTitle;
+    vgui::Label *m_pLabelHeading;
+    vgui::Label *m_pLabelTitle;
 	EditablePanel *m_pPanelBackground;
-	ImagePanel *m_pIcon;
+    vgui::ImagePanel *m_pIcon;
 
 	struct Notification_t
 	{

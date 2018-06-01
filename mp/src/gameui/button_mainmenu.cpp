@@ -11,8 +11,6 @@
 
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT(Button_MainMenu, Button_MainMenu);
 
-extern CUtlSymbolTable g_ButtonSoundNames;
-
 using namespace vgui;
 
 Button_MainMenu::Button_MainMenu(Panel *parent, Panel *pActionSignalTarget, const char *pCmd)

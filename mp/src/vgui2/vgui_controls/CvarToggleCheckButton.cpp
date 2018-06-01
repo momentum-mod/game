@@ -28,6 +28,7 @@ DECLARE_BUILD_FACTORY_CUSTOM( CvarToggleCheckButton, Create_CvarToggleCheckButto
 CvarToggleCheckButton::CvarToggleCheckButton(Panel *parent, const char *panelName, const char *text, char const *cvarname, bool ignoreMissingCvar)
     : CheckButton(parent, panelName, text), m_cvar((cvarname) ? cvarname : "", (cvarname) ? ignoreMissingCvar : true)
 {
+    InitSettings();
     m_bIgnoreMissingCvar = ignoreMissingCvar;
 
     if (m_cvar.IsValid())
@@ -159,9 +160,10 @@ void CvarToggleCheckButton::GetSettings(KeyValues *pOutResource)
     pOutResource->SetString("cvar_value", m_cvar.GetString());
 }
 
-const char* CvarToggleCheckButton::GetDescription()
+void CvarToggleCheckButton::InitSettings()
 {
-    static char buf[1024];
-    Q_snprintf(buf, sizeof(buf), "%s, string cvar_name, string cvar_value", BaseClass::GetDescription());
-    return buf;
+    BEGIN_PANEL_SETTINGS()
+    {"cvar_name", TYPE_STRING},
+    {"cvar_value", TYPE_STRING}
+    END_PANEL_SETTINGS();
 }

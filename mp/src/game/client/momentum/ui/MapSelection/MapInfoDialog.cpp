@@ -1,9 +1,10 @@
 #include "pch_mapselection.h"
 
+using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo")
+CDialogMapInfo::CDialogMapInfo(Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo")
 {
     SetBounds(0, 0, 512, 512);
     SetMinimumSize(416, 340);

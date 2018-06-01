@@ -3,10 +3,12 @@
 #include "cbase.h"
 
 #include "SettingsPage.h"
-#include "ColorPicker.h"
-#include "vgui_controls/CVarSlider.h"
 
 class CRenderPanel;
+namespace vgui
+{
+    class ColorPicker;
+}
 
 class AppearanceSettingsPage : public SettingsPage
 {
@@ -25,22 +27,22 @@ class AppearanceSettingsPage : public SettingsPage
     // From the color picker
     MESSAGE_FUNC_PARAMS(OnColorSelected, "ColorSelected", pKv);
     void OnCommand(const char* command) OVERRIDE;
-    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
 private:
     void UpdateModelSettings();
-    
 
-    Frame *m_pModelPreviewFrame;
+
+    vgui::Frame *m_pModelPreviewFrame;
     CRenderPanel *m_pModelPreview;
 
     ConVarRef ghost_color, ghost_bodygroup, ghost_trail_color, ghost_trail_length; // MOM_TODO add the rest of visible things here
 
-    ComboBox *m_pBodygroupCombo;
+    vgui::ComboBox *m_pBodygroupCombo;
 
-    CvarToggleCheckButton *m_pEnableTrail;
-    
-    TextEntry *m_pTrailLengthEntry;
-    ColorPicker *m_pColorPicker;
-    Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
+    vgui::CvarToggleCheckButton *m_pEnableTrail;
+
+    vgui::TextEntry *m_pTrailLengthEntry;
+    vgui::ColorPicker *m_pColorPicker;
+    vgui::Button *m_pPickTrailColorButton, *m_pPickBodyColorButton;
 };

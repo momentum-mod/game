@@ -4,21 +4,16 @@
 #pragma once
 #endif
 
-//extern class IRunGameEngine *g_pRunGameEngine;
-//extern class IAppInformation *g_pAppInformation; // can be NULL
-
-using namespace vgui;
-
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-class CMapSelectorDialog : public Frame
+class CMapSelectorDialog : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CMapSelectorDialog, vgui::Frame);
 
 public:
     // Construction/destruction
-    CMapSelectorDialog(VPANEL parent);
+    CMapSelectorDialog(vgui::VPANEL parent);
     ~CMapSelectorDialog(void);
 
     void		Initialize(void);
@@ -91,16 +86,16 @@ private:
 
 private:
     // list of all open game info dialogs
-    CUtlVector<DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
+    CUtlVector<vgui::DHANDLE<CDialogMapInfo> > m_vecMapInfoDialogs;
 
     // pointer to current game list
     IMapList *m_pGameList;
 
     // Status text
-    Label	*m_pStatusLabel;
+    vgui::Label	*m_pStatusLabel;
 
     // property sheet
-    PropertySheet *m_pTabPanel;
+    vgui::PropertySheet *m_pTabPanel;
 
     //Map tabs
     CLocalMaps *m_pLocal;

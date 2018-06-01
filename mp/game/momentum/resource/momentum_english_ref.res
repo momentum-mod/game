@@ -7,19 +7,26 @@
         "MOM_Controls_Title" "MOMENTUM CONTROLS"
         "MOM_Controls_Restart" "Restart run"
         "MOM_Controls_Reset" "Reset to start of current stage"
-        "MOM_Controls_ToggleMenu" "Toggle showing Checkpoint Menu"
+        "MOM_Controls_ToggleSavelocMenu" "Toggle showing Saved Locations Menu"
         "MOM_Controls_Practice" "Toggle Practice Mode"
         "MOM_Controls_ToggleTimes" "Toggle showing leaderboards"
         "MOM_Controls_Drop" "Drop current weapon"
 
-    //CP Menu
-        "MOM_Menu_CreateCP" "Create A Checkpoint"
-        "MOM_Menu_ToPreviousCP" "Teleport to Previous Checkpoint"
-        "MOM_Menu_ToNextCP" "Next Checkpoint"
-        "MOM_Menu_ToLastCP" "Last Checkpoint"
-        "MOM_Menu_RemoveCurrentCP" "Remove Current Checkpoint"
-        "MOM_Menu_RemoveEveryCP" "Remove Every Checkpoint"
+    //Saveloc Menu
+        "MOM_Menu_SaveCurLoc" "Save Current Location"
+        "MOM_Menu_ToCurrentSL" "Teleport to Current Saved Location"
+        "MOM_Menu_ToNextSL" "Next Saved Location"
+        "MOM_Menu_ToPrevSL" "Previous Saved Location"
+        "MOM_Menu_ToFirstSL" "First Saved Location"
+        "MOM_Menu_ToLastSL" "Last Saved Location"
+        "MOM_Menu_RemoveCurrentSL" "Remove Current Saved Location"
+        "MOM_Menu_RemoveEverySL" "Remove Every Saved Location"
         "MOM_Menu_Cancel" "Close Menu"
+        
+    // Saveloc Request Frame
+        "MOM_Saveloc_Frame" "Request Savelocs"
+        "MOM_Saveloc_Frame_Request" "Request"
+        "MOM_Saveloc_Frame_Toggle" "Toggle All"
 
     //In-game leaderboards
         "MOM_Name" "Name"
@@ -58,6 +65,7 @@
         "MOM_RunFlag_Reset" "Reset Flags"
 
     //Timer
+        "MOM_SavedLocation" "Saveloc"
         "MOM_Checkpoint" "Checkpoint"
         "MOM_Stage" "Stage"
         "MOM_Stage_Start" "Stage %s1 Start"

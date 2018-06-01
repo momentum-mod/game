@@ -22,7 +22,7 @@ END_SEND_TABLE();
 BEGIN_DATADESC(CMomentumOnlineGhostEntity)
 END_DATADESC();
 
-#define MOM_GHOST_LERP 0.1f // MOM_TODO: Change this to a convar
+static MAKE_CONVAR(mom_ghost_online_lerp, "0.5", FCVAR_REPLICATED | FCVAR_ARCHIVE, "The amount of time to render in the past (in seconds).\n", 0.1f, 2.0f);
 
 static MAKE_TOGGLE_CONVAR(mom_ghost_online_rotations, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Allows wonky rotations of ghosts to be set.\n");
 static MAKE_CONVAR(mom_ghost_online_interp_ticks, "0", FCVAR_REPLICATED | FCVAR_ARCHIVE, "Interpolation ticks to add to rendering online ghosts.\n", 0.0f, 100.0f);
@@ -88,10 +88,6 @@ void CMomentumOnlineGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
     if (FStrEq(pEvent->GetName(), "mapfinished_panel_closed"))
     {
-        if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
-        {
-            m_pCurrentSpecPlayer->StopSpectating();
-        }
         m_pCurrentSpecPlayer = nullptr;
     }
 }
@@ -193,7 +189,7 @@ void CMomentumOnlineGhostEntity::SetGhostAppearance(LobbyGhostAppearance_t app, 
 void CMomentumOnlineGhostEntity::Spawn()
 {
     BaseClass::Spawn();
-    SetNextThink(gpGlobals->curtime);
+    SetNextThink(gpGlobals->curtime + mom_ghost_online_lerp.GetFloat());
 }
 
 void CMomentumOnlineGhostEntity::Think()
@@ -208,13 +204,13 @@ void CMomentumOnlineGhostEntity::Think()
 }
 void CMomentumOnlineGhostEntity::HandleGhost()
 {
-    float flCurtime = gpGlobals->curtime - MOM_GHOST_LERP; // Render in a 100 ms past buffer (allow some dropped packets)
+    float flCurtime = gpGlobals->curtime - mom_ghost_online_lerp.GetFloat(); // Render in a predetermined past buffer (allow some dropped packets)
 
     if (!m_vecDecalPackets.IsEmpty())
     {
         // Similar fast-forward code to the positions except we aren't jumping here,
         // we want to place these decals ASAP (sound spam incoming) and get them out of the queue.
-        int upperBound = 3 + static_cast<int>(ceil(MOM_GHOST_LERP * mm_updaterate.GetFloat()));
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
         while (m_vecDecalPackets.Count() > upperBound)
         {
             ReceivedFrame_t<DecalPacket_t> *fireMeImmedately = m_vecDecalPackets.RemoveAtHead();
@@ -235,8 +231,8 @@ void CMomentumOnlineGhostEntity::HandleGhost()
         // The fast-forward logic:
         // Realistically, we're going to have a buffer of about MOM_GHOST_LERP * update rate. So for 25 updates
         // in a second, a lerp of 0.1 seconds would make there be about 2.5 packets in the queue at all times.
-        // If they pause, this increases to some arbitrary number of frames that we need to get rid of, immediately.
-        int upperBound = 3 + static_cast<int>(ceil(MOM_GHOST_LERP * mm_updaterate.GetFloat()));
+        // If there's ever any excess, we need to get rid of it, immediately.
+        int upperBound = static_cast<int>(ceil(mom_ghost_online_lerp.GetFloat() * mm_updaterate.GetFloat()));
         while (m_vecPositionPackets.Count() > upperBound)
         {
             ReceivedFrame_t<PositionPacket_t> *pTemp = m_vecPositionPackets.RemoveAtHead();
@@ -339,4 +335,12 @@ void CMomentumOnlineGhostEntity::UpdateStats(const Vector &vel)
             (float(m_nAccelTicks) / float(m_nStrafeTicks)) * 100.0f; // ticks gaining speed / ticks strafing
     }
     */
+}
+
+void CMomentumOnlineGhostEntity::UpdatePlayerSpectate()
+{
+    if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() == this)
+    {
+        m_pCurrentSpecPlayer->TravelSpectateTargets(true);
+    }
 }

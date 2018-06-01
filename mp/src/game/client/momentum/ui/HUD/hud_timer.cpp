@@ -3,19 +3,13 @@
 #include "baseviewport.h"
 #include "hud_comparisons.h"
 #include "hud_macros.h"
-#include "hud_numericdisplay.h"
 #include "hudelement.h"
 #include "iclientmode.h"
-#include "menu.h"
 #include "utlvector.h"
-#include "vgui_helpers.h"
-#include "view.h"
 
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vgui_controls/AnimationController.h>
-#include <vgui_controls/Frame.h>
 #include <vgui_controls/Panel.h>
 
 #include "mom_event_listener.h"
@@ -59,6 +53,8 @@ class C_HudTimer : public CHudElement, public Panel
     float GetCurrentTime();
     bool m_bIsRunning;
     bool m_bTimerRan; // MOM_TODO: What is this used for?
+
+    void OnSavelocUpdateEvent(KeyValues *pKv);
 
   protected:
     CPanelAnimationVar(float, m_flBlur, "Blur", "0");
@@ -109,14 +105,15 @@ class C_HudTimer : public CHudElement, public Panel
     bool m_bPlayerInZone;
     bool m_bWereCheatsActivated;
     bool m_bPlayerHasPracticeMode;
-    bool m_bShowCheckpoints;
+    bool m_bShowSavelocs;
+    bool m_bPlayerUsingSavelocMenu;
     bool m_bMapFinished;
     bool m_bMapIsLinear;
-    int m_iCheckpointCount, m_iCheckpointCurrent;
+    int m_iSavelocCount, m_iSavelocCurrent, m_iPlayerSavelocCurrent, m_iPlayerSavelocCount;
     CMomRunStats *m_pRunStats;
     char stLocalized[BUFSIZELOCL], cpLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
         startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], practiceModeLocalized[BUFSIZELOCL],
-        noTimerLocalized[BUFSIZELOCL];
+        noTimerLocalized[BUFSIZELOCL], savelocLocalized[BUFSIZELOCL];
 };
 
 DECLARE_HUDELEMENT(C_HudTimer);
@@ -132,6 +129,8 @@ C_HudTimer::C_HudTimer(const char *pElementName)
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
     m_bIsReplay = false;
+
+    g_pModuleComms->ListenForEvent("saveloc_upd8", UtlMakeDelegate(this, &C_HudTimer::OnSavelocUpdateEvent));
 }
 
 void C_HudTimer::Init()
@@ -152,6 +151,7 @@ void C_HudTimer::Init()
     // cache localization strings
     FIND_LOCALIZATION(m_pwStageStartString, "#MOM_Stage_Start");
     LOCALIZE_TOKEN(Checkpoint, "#MOM_Checkpoint", cpLocalized);
+    LOCALIZE_TOKEN(SaveLoc, "#MOM_SavedLocation", savelocLocalized);
     LOCALIZE_TOKEN(Stage, "#MOM_Stage", stLocalized);
     LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
     LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
@@ -171,14 +171,14 @@ void C_HudTimer::Reset()
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iZoneCurrent = 1;
-    m_bShowCheckpoints = false;
+    m_bShowSavelocs = false;
+    m_bPlayerUsingSavelocMenu = false;
     m_bWereCheatsActivated = false;
     m_bPlayerHasPracticeMode = false;
     m_bPlayerInZone = false;
     m_bMapFinished = false;
     m_bMapIsLinear = false;
-    m_iCheckpointCount = 0;
-    m_iCheckpointCurrent = 0;
+    m_iSavelocCount = m_iPlayerSavelocCount = m_iSavelocCurrent = m_iSavelocCurrent = 0;
     m_pRunStats = nullptr;
 }
 
@@ -247,6 +247,13 @@ float C_HudTimer::GetCurrentTime()
     return static_cast<float>(m_iTotalTicks) * gpGlobals->interval_per_tick;
 }
 
+void C_HudTimer::OnSavelocUpdateEvent(KeyValues* pKv)
+{
+    m_bPlayerUsingSavelocMenu = pKv->GetBool("using");
+    m_iPlayerSavelocCount = pKv->GetInt("count");
+    m_iPlayerSavelocCurrent = pKv->GetInt("current", -1) + 1;
+}
+
 void C_HudTimer::OnThink()
 {
     C_MomentumPlayer *pLocal = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
@@ -256,9 +263,9 @@ void C_HudTimer::OnThink()
         C_MOMRunEntityData *runData;
         if (pGhost)
         {
-            m_bShowCheckpoints = false;
-            m_iCheckpointCurrent = 0;
-            m_iCheckpointCount = 0;
+            m_bShowSavelocs = false;
+            m_iSavelocCurrent = 0;
+            m_iSavelocCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
             m_bPlayerHasPracticeMode = false;
@@ -269,9 +276,9 @@ void C_HudTimer::OnThink()
         else
         {
             m_bIsReplay = false;
-            m_bShowCheckpoints = pLocal->m_SrvData.m_bUsingCPMenu;
-            m_iCheckpointCurrent = pLocal->m_SrvData.m_iCurrentStepCP + 1;
-            m_iCheckpointCount = pLocal->m_SrvData.m_iCheckpointCount;
+            m_bShowSavelocs = m_bPlayerUsingSavelocMenu;
+            m_iSavelocCurrent = m_iPlayerSavelocCurrent;
+            m_iSavelocCount = m_iPlayerSavelocCount;
             m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_SrvData.m_RunData;
@@ -293,12 +300,12 @@ void C_HudTimer::Paint(void)
     g_pMomentumUtil->FormatTime(GetCurrentTime(), m_pszString, 2);
     ANSI_TO_UNICODE(m_pszString, m_pwCurrentTime);
 
-    if (m_bShowCheckpoints)
+    if (m_bShowSavelocs)
     {
         Q_snprintf(m_pszStringCps, sizeof(m_pszStringCps), "%s %i/%i",
-                   cpLocalized,          // Checkpoint localization
-                   m_iCheckpointCurrent, // CurrentCP
-                   m_iCheckpointCount    // CPCount
+                   savelocLocalized,     // Saveloc localization
+                   m_iSavelocCurrent, // CurrentCP
+                   m_iSavelocCount    // CPCount
                    );
 
         ANSI_TO_UNICODE(m_pszStringCps, m_pwCurrentCheckpoints);
@@ -361,7 +368,7 @@ void C_HudTimer::Paint(void)
 
     surface()->DrawSetTextFont(m_hSmallTextFont);
 
-    if (m_bShowCheckpoints)
+    if (m_bShowSavelocs)
     {
         if (center_cps)
         {
