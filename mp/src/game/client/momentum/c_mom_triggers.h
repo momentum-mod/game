@@ -1,6 +1,10 @@
 #pragma once
 
 #include "cbase.h"
+#include "mom_gamemovement.h"
+
+class CMomentumGameMovement;
+extern CMomentumGameMovement *g_pMomentumGameMovement;
 
 class C_BaseMomentumTrigger : public C_BaseEntity
 {
@@ -32,4 +36,7 @@ class C_TriggerSlide : public C_BaseMomentumTrigger
   public:
     DECLARE_CLASS(C_TriggerSlide, C_BaseEntity);
     DECLARE_CLIENTCLASS();
+    CNetworkVar(bool, m_bTouching);
+
+    void PostDataUpdate(DataUpdateType_t) OVERRIDE;
 };

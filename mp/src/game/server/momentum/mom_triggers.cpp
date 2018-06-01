@@ -978,12 +978,12 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
     END_DATADESC();
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
-END_SEND_TABLE()
+SendPropBool(SENDINFO(m_bTouching)), END_SEND_TABLE()
 
-// Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because OnEndTouch was
-// called for one trigger but the player was actually into another trigger, so we must check if we were inside of any of
-// thoses.
-void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
+    // Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because OnEndTouch
+    // was called for one trigger but the player was actually into another trigger, so we must check if we were inside
+    // of any of thoses.
+    void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
 
@@ -999,6 +999,10 @@ void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
         SlideData.SetEntityIndex(entindex());
         pPlayer->m_SrvData.m_SlideData.m_vecSlideData.AddToHead(SlideData);
         pPlayer->m_SrvData.m_SlideData.SetEnabled();
+
+        // That's hacky as fuck.
+        g_pMomentumGameMovement->GetSlideTrigger() = reinterpret_cast<CTriggerSlide *>(this);
+        m_bTouching = true;
     }
 }
 
@@ -1025,6 +1029,9 @@ void CTriggerSlide::OnEndTouch(CBaseEntity *pOther)
         {
             pPlayer->m_SrvData.m_SlideData.SetDisabled();
         }
+
+        g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
+        m_bTouching = false;
     }
 }
 
