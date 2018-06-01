@@ -38,9 +38,9 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
-    
+
     bool IsReplayEnt() { return true; }
-    void (*StdDataToReplay)(StdReplayDataFromServer* from);
+    void (*StdDataToReplay)(StdReplayDataFromServer *from);
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
@@ -48,8 +48,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
-    //override of color so that replayghosts are always somewhat transparent.
-    void SetGhostColor(const uint32 newColor) OVERRIDE; 
+    // override of color so that replayghosts are always somewhat transparent.
+    void SetGhostColor(const uint32 newColor) OVERRIDE;
 
   protected:
     void Think(void) OVERRIDE;
@@ -58,6 +58,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     void CreateTrail() OVERRIDE;
+
   private:
     CMomReplayBase *m_pPlaybackReplay;
 
@@ -67,4 +68,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;
+    int m_iPracticeTimeStampStart, m_iPracticeTimeStampEnd; // Practice tickstamps.
+    int m_iTickRemainder; // Used for practice timestamps, this will be used for setting the right step for our ghost
+                          // replay system.
 };

@@ -77,6 +77,7 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     wchar_t m_pwRight[BUFSIZESHORT];
     wchar_t m_pwJump[BUFSIZELOCL];
     wchar_t m_pwDuck[BUFSIZELOCL];
+    wchar_t m_pwStrafe[BUFSIZELOCL];
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
 };
@@ -98,6 +99,7 @@ void CHudKeyPressDisplay::Init()
     wcscpy(m_pwLeft, L"A");
     wcscpy(m_pwBack, L"S");
     wcscpy(m_pwRight, L"D");
+    wcscpy(m_pwStrafe, L"O");
 
     // localize jump and duck strings
     FIND_LOCALIZATION(m_pwJump, "#MOM_Jump");
@@ -166,6 +168,13 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     }
 
+    if (m_nButtons & IN_STRAFE)
+    {
+        CHECK_INPUT_P(IN_STRAFE);
+        surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), ( lower_row_ypos + top_row_ypos) / 2.0f );
+        surface()->DrawPrintText(m_pwStrafe, wcslen(m_pwStrafe));
+    }
+
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
 
@@ -177,7 +186,8 @@ void CHudKeyPressDisplay::Paint()
         }
 
         // Bullrush is Bhop being disabled
-        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled : m_Normal);
+        surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled
+                                                                                                       : m_Normal);
         surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
         surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     }
@@ -287,11 +297,17 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     int text_right = GetTextCenter(m_hTextFont, m_pwRight) + UTIL_ComputeStringWidth(m_hTextFont, m_pwRight);
     surface()->DrawSetTextPos(text_right, mid_row_ypos);
     surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
+
+    CHECK_INPUT_N(IN_STRAFE);
+    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), (lower_row_ypos + top_row_ypos) / 2.0f);
+    surface()->DrawPrintText(m_pwStrafe, wcslen(m_pwStrafe));
+
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
     // jump
     // Bullrush is Bhop being disabled
-    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled : m_darkGray);
+    surface()->DrawSetTextColor((m_nDisabledButtons & IN_JUMP || m_nDisabledButtons & IN_BULLRUSH) ? m_Disabled
+                                                                                                   : m_darkGray);
     surface()->DrawSetTextPos(GetTextCenter(m_hWordTextFont, m_pwJump), jump_row_ypos);
     surface()->DrawPrintText(m_pwJump, wcslen(m_pwJump));
     // duck

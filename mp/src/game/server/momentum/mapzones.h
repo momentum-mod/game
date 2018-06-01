@@ -22,8 +22,9 @@ public:
     CMapzone();
     CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
         const int, const bool, const bool, const float, 
-        const bool, const float, const float, 
-        const string_t, const bool,
+        const bool, const float, const float,
+        const string_t, const bool, 
+        const int, const int, const int, const bool,
         const CUtlVector<Vector>&, const float);
     ~CMapzone();
 
@@ -57,6 +58,9 @@ private:
     CBaseEntity* m_trigger;
     CUtlVector<Vector> m_vZonePoints; 
     float m_pointzoneheight;
+    int m_iendzonenumber, m_istartzonenumber;
+    int m_ilimittype;
+    bool m_bstartonjump;
 };
 
 class CMapzoneData

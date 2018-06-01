@@ -84,8 +84,11 @@
 
 @SolidClass base(Trigger) = trigger_momentum_timer_start : "Trigger that starts the timer." 
 [
-	bhopleavespeed(float) : "Max leave speed if player bhopped" : 250 : "Max speed (Units Per Second) the player will be able to leave the trigger if they bhopped inside the start zone, and 'Limit leave speed if player bhopped' flag is set."
+	bhopleavespeed(float) : "Max leave speed" : 250 : "Max speed (Units Per Second) the player will be able to leave the trigger depending of the limit speed type inside the start zone."
 	lookangles(angle) : "Look angles" : "0 0 0" : "Where player will look when teleported to start."
+	StartOnJump(integer) : "Start timer on jump" : 1 : "Start the timer when the player jump in the start zone/trigger zone."
+	LimitSpeedType(integer) : "Limit speed type" : 0 : "0) Limit the speed of the player no matter what. 1) Limit the speed only in air. 2) Limit the speed only on ground. 3) Limit the speed only on landing."
+	ZoneNumber(integer) : "Number of zone" : 0 : "0 Is the main zone, and all others numbers are for bonus zones."
 	spawnflags(flags) =
 	[
 		1 : "Limit leave speed" : 1
@@ -93,7 +96,10 @@
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." []
+@SolidClass base(Trigger) = trigger_momentum_timer_stop : "Trigger that stops the timer." 
+[
+	ZoneNumber(integer) : "Number of zone" : 0 : "0 Is the main zone, and all others numbers are for bonus zones."
+]
 
 @SolidClass base(Trigger) = trigger_momentum_timer_stage : "Starting trigger for each stage of a map. trigger_momentum_timer_start is automatically stage 1!"
 [
@@ -219,6 +225,7 @@
 	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding? (doesn't work with stuckonground option.)"
 	DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to loose speed while going up or increase speed while going down)"
 	FixUpsideSlope(integer) : "Fix Upside Slopes" : 0 : "When sometimes mounting a slope, you loose velocity, enable this to not loose speed while going up on the slopes."
+	//TraceDown(float) : "Maxium traceray distance" : 64 : "If you're inside the trigger, that will be maximum the traceray distance that goes down in units with stuck to ground feature. Useful if you have no brushes under that amount of units. So it doesn't traceray for the skybox under for example."
 	//GravityValue(float) : "Gravity Value" : 1.0 : "Gravity value while sliding. (this is the gravity used while being on a slope."
 ]
 

@@ -183,10 +183,20 @@ void CTriggerStage::OnEndTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, CTriggerTimerStart);
 
 BEGIN_DATADESC(CTriggerTimerStart)
-DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed")
-, DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles") END_DATADESC();
+// Since the  m_fBhopLeaveSpeed key is mostly used in a lot of cases, we will use this as reference instead.
+// Don't know if we should use m_flMaxSpeed instead, but yeah.
+DEFINE_KEYFIELD(m_fBhopLeaveSpeed, FIELD_FLOAT, "bhopleavespeed"),
+    DEFINE_KEYFIELD(m_angLook, FIELD_VECTOR, "lookangles"),
+    DEFINE_KEYFIELD(m_bTimerStartOnJump, FIELD_BOOLEAN, "StartOnJump"),
+    DEFINE_KEYFIELD(m_iLimitSpeedType, FIELD_INTEGER, "LimitSpeedType"),
+    DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "ZoneNumber") END_DATADESC();
 
-CTriggerTimerStart::CTriggerTimerStart() : m_angLook(vec3_angle), m_fBhopLeaveSpeed(250){};
+IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStart, DT_TriggerTimerStart)
+END_SEND_TABLE()
+
+CTriggerTimerStart::CTriggerTimerStart()
+    : m_angLook(vec3_angle), m_fBhopLeaveSpeed(250), m_bTimerStartOnJump(false), m_iZoneNumber(0),
+      m_iLimitSpeedType(SPEED_NORMAL_LIMIT){};
 
 void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
 {
@@ -221,8 +231,9 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
                 
             }
             */
+            g_pMomentumTimer->m_bShouldUseStartZoneOffset = true;
 
-            g_pMomentumTimer->Start(gpGlobals->tickcount);
+            g_pMomentumTimer->Start(gpGlobals->tickcount, pPlayer->m_SrvData.m_RunData.m_iBonusZone);
             // The Start method could return if CP menu or prac mode is activated here
             if (g_pMomentumTimer->IsRunning())
             {
@@ -246,15 +257,19 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
         }
         else
         {
+            g_pMomentumTimer->m_bShouldUseStartZoneOffset = false;
             // MOM_TODO: Find a better way of doing this
             // If we can't start the run, play a warning sound
-            pPlayer->EmitSound("Watermelon.Scrape");
+            // pPlayer->EmitSound("Watermelon.Scrape");
         }
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = false;
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
     }
     else
     {
+        // This can't be done anymore here due that the player can start timer in start zone while jumping.
+
+        /*
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
@@ -274,6 +289,7 @@ void CTriggerTimerStart::OnEndTouch(CBaseEntity *pOther)
                 gameeventmanager->FireEvent(timerStateEvent);
             }
         }
+        */
     }
 
     BaseClass::OnEndTouch(pOther);
@@ -314,6 +330,7 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
         CMomentumReplayGhostEntity *pGhost = dynamic_cast<CMomentumReplayGhostEntity *>(pOther);
         if (pGhost)
         {
+            pGhost->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
             pGhost->m_SrvData.m_RunData.m_bMapFinished = false;
             pGhost->m_SrvData.m_RunData.m_bTimerRunning = false; // Fixed
         }
@@ -370,6 +387,13 @@ void CTriggerTimerStart::SetHasLookAngles(const bool bHasLook)
 //----------- CTriggerTimerStop ----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, CTriggerTimerStop);
 
+BEGIN_DATADESC(CTriggerTimerStop)
+DEFINE_KEYFIELD(m_iZoneNumber, FIELD_INTEGER, "ZoneNumber")
+END_DATADESC();
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerTimerStop, DT_TriggerTimerStop)
+END_SEND_TABLE()
+
 void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
 {
     IGameEvent *stageEvent = nullptr;
@@ -379,7 +403,9 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
         CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
 
         g_pMomentumTimer->SetEndTrigger(this);
-        if (g_pMomentumTimer->IsRunning() && !pPlayer->IsSpectatingGhost())
+
+        if (g_pMomentumTimer->IsRunning() && !pPlayer->IsSpectatingGhost() &&
+            pPlayer->m_SrvData.m_RunData.m_iBonusZone == m_iZoneNumber && !pPlayer->m_SrvData.m_bHasPracticeMode)
         {
             int zoneNum = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
 
@@ -425,8 +451,14 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
             pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
         }
 
-        stageEvent = gameeventmanager->CreateEvent("zone_enter");
+        // Set only if timer is starting, so the previous stage is saved if the map is not complete even if they go
+        // to the end zone?
+        pPlayer->m_SrvData.m_RunData.m_iOldZone = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
+        pPlayer->m_SrvData.m_RunData.m_iOldBonusZone = pPlayer->m_SrvData.m_RunData.m_iBonusZone;
+        pPlayer->m_SrvData.m_RunData.m_iCurrentZone = 0;
+        pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
 
+        stageEvent = gameeventmanager->CreateEvent("zone_enter");
         pPlayer->m_SrvData.m_RunData.m_bIsInZone = true;
     }
     else
@@ -435,9 +467,11 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
         if (pGhost)
         {
             stageEvent = gameeventmanager->CreateEvent("zone_enter");
-            pGhost->m_SrvData.m_RunData.m_bMapFinished = true;
-            pGhost->m_SrvData.m_RunData.m_bTimerRunning = false;
             pGhost->m_SrvData.m_RunData.m_bIsInZone = true;
+            pGhost->m_SrvData.m_RunData.m_iOldZone = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
+            pGhost->m_SrvData.m_RunData.m_iOldBonusZone = pGhost->m_SrvData.m_RunData.m_iBonusZone;
+            pGhost->m_SrvData.m_RunData.m_iCurrentZone = 0;
+            pGhost->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
 
             // Needed for hud_comparisons
             IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
@@ -448,7 +482,12 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
 
                 gameeventmanager->FireEvent(timerStateEvent);
             }
+
+            pGhost->m_SrvData.m_RunData.m_bMapFinished = true;
+            pGhost->m_SrvData.m_RunData.m_bTimerRunning = false;
+
             pGhost->StopTimer();
+
             // MOM_TODO: Maybe play effects if the player is racing against us and lost?
         }
     }
@@ -464,12 +503,12 @@ void CTriggerTimerStop::OnStartTouch(CBaseEntity *pOther)
 void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
 {
     CMomentumPlayer *pMomPlayer = ToCMOMPlayer(pOther);
-    int lastZoneNumber = -1;
     if (pMomPlayer)
     {
         pMomPlayer->SetLaggedMovementValue(1.0f);            // Reset slow motion
         pMomPlayer->m_SrvData.m_RunData.m_bIsInZone = false; // Update status
-        lastZoneNumber = pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone;
+        pMomPlayer->m_SrvData.m_RunData.m_iCurrentZone = pMomPlayer->m_SrvData.m_RunData.m_iOldZone;
+        pMomPlayer->m_SrvData.m_RunData.m_iBonusZone = pMomPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
     }
     else
     {
@@ -477,7 +516,8 @@ void CTriggerTimerStop::OnEndTouch(CBaseEntity *pOther)
         if (pGhost)
         {
             pGhost->m_SrvData.m_RunData.m_bIsInZone = false;
-            lastZoneNumber = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
+            pGhost->m_SrvData.m_RunData.m_iCurrentZone = pGhost->m_SrvData.m_RunData.m_iOldZone;
+            pGhost->m_SrvData.m_RunData.m_iBonusZone = pGhost->m_SrvData.m_RunData.m_iOldBonusZone;
         }
     }
     BaseClass::OnEndTouch(pOther);
@@ -929,12 +969,16 @@ void CTriggerMomentumPush::OnSuccessfulTouch(CBaseEntity *pOther)
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, CTriggerSlide);
 
 BEGIN_DATADESC(CTriggerSlide)
-DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround")
-, DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
+DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
+    DEFINE_KEYFIELD(m_bAllowingJump, FIELD_BOOLEAN, "AllowingJump"),
     DEFINE_KEYFIELD(m_bDisableGravity, FIELD_BOOLEAN, "DisableGravity"),
-    DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope")
+    DEFINE_KEYFIELD(m_bFixUpsideSlope, FIELD_BOOLEAN, "FixUpsideSlope"),
+
     //,DEFINE_KEYFIELD(m_flSlideGravity, FIELD_FLOAT, "GravityValue")
     END_DATADESC();
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
+END_SEND_TABLE()
 
 // Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because OnEndTouch was
 // called for one trigger but the player was actually into another trigger, so we must check if we were inside of any of
@@ -953,11 +997,6 @@ void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
         SlideData.SetEnableGravity(!m_bDisableGravity);
         SlideData.SetFixUpsideSlope(m_bFixUpsideSlope);
         SlideData.SetEntityIndex(entindex());
-
-        // We trust that Mins are really the Mins.
-        Vector vWorldMin = GetAbsOrigin() + GetCollideable()->OBBMins();
-        SlideData.SetDistance(vWorldMin.z);
-
         pPlayer->m_SrvData.m_SlideData.m_vecSlideData.AddToHead(SlideData);
         pPlayer->m_SrvData.m_SlideData.SetEnabled();
     }
