@@ -117,11 +117,4 @@ class CMomentumGameMovement : public CGameMovement
     CTriggerSlide *m_TriggerSlide;
 };
 
-class CTraceFilterOnlyTriggerSlide : public CTraceFilter
-{
-  public:
-    CTraceFilterOnlyTriggerSlide(){};
-    // bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask) OVERRIDE;
-};
-
 extern CMomentumGameMovement *g_pMomentumGameMovement;

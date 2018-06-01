@@ -9,6 +9,7 @@ extern CMomentumGameMovement *g_pMomentumGameMovement;
 class C_BaseMomentumTrigger : public C_BaseEntity
 {
     DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseEntity);
+
   public:
     void DrawOutlineOBBs(const Color &color);
 };

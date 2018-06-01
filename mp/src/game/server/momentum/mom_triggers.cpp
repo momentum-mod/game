@@ -910,12 +910,13 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
     END_DATADESC();
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
-SendPropBool(SENDINFO(m_bTouching)), END_SEND_TABLE()
+SendPropBool(SENDINFO(m_bTouching)), END_SEND_TABLE();
 
-    // Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because OnEndTouch
-    // was called for one trigger but the player was actually into another trigger, so we must check if we were inside
-    // of any of thoses.
-    void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
+// Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because OnEndTouch
+// was called for one trigger but the player was actually into another trigger, so we must check if we were inside
+// of any of thoses.
+
+void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
 
