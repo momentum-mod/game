@@ -1389,7 +1389,7 @@ void CMomentumGameMovement::StuckGround(void)
         |            |            |                    We can't also considerate that the trigger is only a rectangle, so stuffs can be really complicated since I'm bad at maths.
         -------------B-------------                    
                      |                                 To solve this problem, we can get the distance between PLAYER ORIGIN and SURFACE, and substract it with B & C. 
-                     |
+                     |                                 Or better, check if B-C < 0.0 wich means basically if the surface hits the trigger.
                      |
     _________________C___________________ 
     _____________________________________               
@@ -1409,7 +1409,7 @@ void CMomentumGameMovement::StuckGround(void)
     // So a trigger can be that huge? I doub't it. But we might change the value in case.
     vEnd.z -= 8192.0f;
 
-    ray.Init(vAbsOrigin, vEnd);
+    ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
 
     {
         CTraceFilterSimple tracefilter(player, COLLISION_GROUP_NONE);
@@ -1430,12 +1430,13 @@ void CMomentumGameMovement::StuckGround(void)
         if (tr_Point_B.m_pEnt == m_TriggerSlide)
         {
             // Yep gotcha.
-            float flDist__A_B = (vAbsOrigin.z - tr_Point_B.endpos.z);
+            float flDist__B_C = (tr_Point_C.endpos.z - tr_Point_B.endpos.z);
 
-            if (flDist__A_B <= 0.0f)
+            // If the surface was in the trigger, we can apply the stuck to ground.
+            if (CloseEnough(flDist__B_C, FLT_EPSILON))
             {
                 // If the distance is good, we can start being on the surface and follow it.
-                mv->SetAbsOrigin(tr_Point_B.endpos);
+                mv->SetAbsOrigin(tr_Point_C.endpos);
 
                 StayOnGround();
             }
