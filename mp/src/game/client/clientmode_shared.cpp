@@ -34,6 +34,7 @@
 #include "c_playerresource.h"
 #include "cam_thirdperson.h"
 #include <vgui/ILocalize.h>
+#include <vgui/ISurface.h>
 #include "hud_vote.h"
 #include "ienginevgui.h"
 #include "sourcevr/isourcevirtualreality.h"

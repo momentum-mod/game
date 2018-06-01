@@ -16,6 +16,7 @@
 #include "hud_spectatorinfo.h"
 #include "mom_steam_helper.h"
 #include "vgui/IScheme.h"
+#include <vgui/ISurface.h>
 
 #include "tier0/memdbgon.h"
 
@@ -264,10 +265,10 @@ void CHudChat::Paint()
         const int count = g_pVGuiLocalize->ConvertANSIToUnicode(typingText, wcTypingText, BUFSIZ);
         int w, h;
         GetSize(w, h);
-        vgui::surface()->DrawSetTextFont(m_hfInfoTextFont);
-        vgui::surface()->DrawSetTextPos(20, h - 24);
-        vgui::surface()->DrawSetTextColor(m_cInfoTextColor);
-        vgui::surface()->DrawPrintText(wcTypingText, count);
+        surface()->DrawSetTextFont(m_hfInfoTextFont);
+        surface()->DrawSetTextPos(20, h - 24);
+        surface()->DrawSetTextColor(m_cInfoTextColor);
+        surface()->DrawPrintText(wcTypingText, count);
     }
 }
 

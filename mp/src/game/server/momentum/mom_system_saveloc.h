@@ -88,7 +88,7 @@ public:
     // Gets the total amount of menu savelocs
     int GetSavelocCount() const { return m_rcSavelocs.Size(); }
     // Gets a saveloc given an index (number)
-    SavedLocation_t *GetSaveloc(int indx) { return indx < m_rcSavelocs.Count() ? m_rcSavelocs[indx] : nullptr; }
+    SavedLocation_t *GetSaveloc(int indx) { return indx > -1 && indx < m_rcSavelocs.Count() ? m_rcSavelocs[indx] : nullptr; }
     // Sets wheter or not we're using the Saveloc Menu
     // WARNING! No verification is done. It is up to the caller to don't give false information
     void SetUsingSavelocMenu(bool bIsUsingSLMenu);
