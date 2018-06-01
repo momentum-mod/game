@@ -6,6 +6,7 @@
 
 #include "filters.h"
 #include "func_break.h"
+#include "mom_gamemovement.h"
 #include "triggers.h"
 
 #include "mapzones_build.h"
@@ -412,8 +413,14 @@ class CTriggerSlide : public CBaseMomentumTrigger
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
+
   public:
     bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity, m_bFixUpsideSlope;
+    CNetworkVar(bool, m_bTouching);
 };
 
 class CTriggerReverseSpeed : public CBaseMomentumTrigger
