@@ -7,6 +7,7 @@
 #include "mom_modulecomms.h"
 #include "mom_ghostdefs.h"
 #include "mom_player_shared.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -329,8 +330,13 @@ SavedLocation_t* CMOMSaveLocSystem::CreateSaveloc()
 
 void CMOMSaveLocSystem::CreateAndSaveLocation()
 {
-    AddSaveloc(CreateSaveloc());
-    UpdateRequesters();
+    SavedLocation_t *created = CreateSaveloc();
+    if (created)
+    {
+        AddSaveloc(created);
+        ClientPrint(m_pPlayer, HUD_PRINTTALK, CFmtStr("Saveloc #%i created!", m_rcSavelocs.Count()));
+        UpdateRequesters();
+    }
 }
 
 void CMOMSaveLocSystem::AddSaveloc(SavedLocation_t* saveloc)
