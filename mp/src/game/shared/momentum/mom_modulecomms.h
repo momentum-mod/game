@@ -18,7 +18,7 @@
 struct StdDataFromServer
 {
     //MOM_TODO: Deprecate the usage of weapon data? (m_iLastZoom m_iShotsFired m_bResumeZoom m_iDirection)
-    
+    bool m_bIsTimerPaused;
     bool m_bHasPracticeMode;
     bool m_bResumeZoom;
     bool m_bDidPlayerBhop;
@@ -36,6 +36,8 @@ struct StdDataFromServer
 
 struct StdReplayDataFromServer
 {
+    bool m_bHasPracticeMode;
+    bool m_bWasInRun;
     bool m_bIsPaused;
     int m_iTotalStrafes;
     int m_iTotalJumps;

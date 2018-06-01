@@ -9,6 +9,7 @@
 #include <vgui/ISurface.h>
 #include <vgui_controls/Panel.h>
 
+#include "baseviewport.h"
 #include "mom_event_listener.h"
 #include "mom_player_shared.h"
 #include "mom_shareddefs.h"
@@ -38,9 +39,9 @@ class C_HudMapInfo : public CHudElement, public Panel
     void Reset() OVERRIDE;
     void Paint() OVERRIDE;
     bool ShouldDraw() OVERRIDE
-    { 
+    {
         IViewPortPanel *pLeaderboards = gViewPortInterface->FindPanelByName(PANEL_TIMES);
-        return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible(); 
+        return CHudElement::ShouldDraw() && pLeaderboards && !pLeaderboards->IsVisible();
     }
 
     void ApplySchemeSettings(IScheme *pScheme) OVERRIDE
@@ -69,11 +70,12 @@ class C_HudMapInfo : public CHudElement, public Panel
         m_pwCurrentStatus[BUFSIZELOCL];
 
     char stageLocalized[BUFSIZELOCL], checkpointLocalized[BUFSIZELOCL], linearLocalized[BUFSIZELOCL],
-        startZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL], m_pszStringStatus[BUFSIZELOCL],
-        m_pszStringStages[BUFSIZELOCL], noZonesLocalized[BUFSIZELOCL],
+        bonusLocalized[BUFSIZELOCL], bonusstartLocalized[BUFSIZELOCL], bonusendLocalized[BUFSIZELOCL],
+        startZoneLocalized[BUFSIZELOCL], endZoneLocalized[BUFSIZELOCL], mapFinishedLocalized[BUFSIZELOCL],
+        m_pszStringStatus[BUFSIZELOCL], m_pszStringStages[BUFSIZELOCL], noZonesLocalized[BUFSIZELOCL],
         mapNameLabelLocalized[BUFSIZELOCL], mapAuthorLabelLocalized[BUFSIZELOCL], mapDiffLabelLocalized[BUFSIZELOCL];
 
-    int m_iZoneCount, m_iZoneCurrent;
+    int m_iZoneCount, m_iZoneCurrent, m_iBonusZone;
     bool m_bPlayerInZone, m_bMapFinished, m_bMapLinear;
 };
 
@@ -104,12 +106,14 @@ void C_HudMapInfo::OnThink()
             m_iZoneCurrent = pGhost->m_SrvData.m_RunData.m_iCurrentZone;
             m_bPlayerInZone = pGhost->m_SrvData.m_RunData.m_bIsInZone;
             m_bMapFinished = pGhost->m_SrvData.m_RunData.m_bMapFinished;
+            m_iBonusZone = pGhost->m_SrvData.m_RunData.m_iBonusZone;
         }
         else
         {
             m_iZoneCurrent = pLocal->m_SrvData.m_RunData.m_iCurrentZone;
             m_bPlayerInZone = pLocal->m_SrvData.m_RunData.m_bIsInZone;
             m_bMapFinished = pLocal->m_SrvData.m_RunData.m_bMapFinished;
+            m_iBonusZone = pLocal->m_SrvData.m_RunData.m_iBonusZone;
         }
 
         m_iZoneCount = g_MOMEventListener->m_iMapZoneCount;
@@ -121,10 +125,14 @@ void C_HudMapInfo::Init()
 {
     // LOCALIZE STUFF HERE:
     FIND_LOCALIZATION(m_pwStageStartString, "#MOM_Stage_Start");
+    LOCALIZE_TOKEN(Bonus, "#MOM_Bonus", bonusLocalized);
+    LOCALIZE_TOKEN(BonusStart, "#MOM_Bonus_Start", bonusstartLocalized);
+    LOCALIZE_TOKEN(BonusEnd, "#MOM_Bonus_End", bonusendLocalized);
     LOCALIZE_TOKEN(Stage, "#MOM_Stage", stageLocalized);
     LOCALIZE_TOKEN(Checkpoint, "#MOM_Checkpoint", checkpointLocalized);
     LOCALIZE_TOKEN(Linear, "#MOM_Linear", linearLocalized);
     LOCALIZE_TOKEN(InsideStart, "#MOM_InsideStartZone", startZoneLocalized);
+    LOCALIZE_TOKEN(InsideEnd, "#MOM_InsideEndZone", endZoneLocalized);
     LOCALIZE_TOKEN(MapFinished, "#MOM_MapFinished", mapFinishedLocalized);
     LOCALIZE_TOKEN(NoCheckpoint, "#MOM_Status_NoZones", noZonesLocalized);
     LOCALIZE_TOKEN(MapName, "#MOM_Map_Name", mapNameLabelLocalized);
@@ -143,18 +151,28 @@ void C_HudMapInfo::Reset()
 
 void C_HudMapInfo::Paint()
 {
-    if (m_iZoneCount > 0)
+    if (m_iZoneCount > 0 && m_iBonusZone == 0)
     {
         // Current stage(checkpoint)/total stages(checkpoints)
         Q_snprintf(m_pszStringStages, sizeof(m_pszStringStages), "%s %i/%i",
                    m_bMapLinear ? checkpointLocalized : stageLocalized, // "Stage" / "Checkpoint"
-                   m_iZoneCurrent,                                     // Current stage/checkpoint
-                   m_iZoneCount                                        // Total number of stages/checkpoints
-                   );
+                   m_iZoneCurrent,                                      // Current stage/checkpoint
+                   m_iZoneCount                                         // Total number of stages/checkpoints
+        );
     }
     else
-    { // No stages/checkpoints found
-        Q_strncpy(m_pszStringStages, noZonesLocalized, sizeof(m_pszStringStages));
+    {
+        if (m_iBonusZone > 0)
+        {
+            char bufBonus[BUFSIZELOCL];
+            sprintf_s(bufBonus, bonusLocalized, m_iBonusZone);
+            // No stages/checkpoints found
+            Q_strncpy(m_pszStringStages, bufBonus, sizeof(m_pszStringStages));
+        }
+        else
+        {
+            Q_strncpy(m_pszStringStages, linearLocalized, sizeof(m_pszStringStages));
+        }
     }
 
     ANSI_TO_UNICODE(m_pszStringStages, m_pwCurrentStages);
@@ -164,9 +182,34 @@ void C_HudMapInfo::Paint()
     {
         if (m_iZoneCurrent == 1)
         {
-            // Start zone
-            Q_strncpy(m_pszStringStatus, startZoneLocalized, sizeof(m_pszStringStatus));
-            ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
+            if (m_iBonusZone == 0)
+            {
+                // Start zone
+                Q_strncpy(m_pszStringStatus, startZoneLocalized, sizeof(m_pszStringStatus));
+                ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
+            }
+            else
+            {
+                char bufBonus[BUFSIZELOCL];
+                sprintf_s(bufBonus, bonusstartLocalized, m_iBonusZone);
+                Q_strncpy(m_pszStringStatus, bufBonus, sizeof(m_pszStringStatus));
+                ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
+            }
+        }
+        else if (m_iZoneCurrent == 0)
+        {
+            if (m_iBonusZone == 0)
+            {
+                Q_strncpy(m_pszStringStatus, endZoneLocalized, sizeof(m_pszStringStatus));
+                ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
+            }
+            else
+            {
+                char bufBonus[BUFSIZELOCL];
+                sprintf_s(bufBonus, bonusendLocalized, m_iBonusZone);
+                Q_strncpy(m_pszStringStatus, bufBonus, sizeof(m_pszStringStatus));
+                ANSI_TO_UNICODE(m_pszStringStatus, m_pwStageStartLabel);
+            }
         }
         else if (m_bPlayerInZone && m_bMapFinished) // don't check for zone # in case the player skipped one somehow
         {
@@ -176,7 +219,7 @@ void C_HudMapInfo::Paint()
         }
         else
         {
-            //Note: The player will never be inside a "checkpoint" zone
+            // Note: The player will never be inside a "checkpoint" zone
             // Stage # Start
             wchar_t stageCurrent[128]; // 00'\0' and max stages is 64
 

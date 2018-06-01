@@ -11,11 +11,17 @@
 
 #include "tier0/memdbgon.h"
 
-void CMomentumTimer::Start(int start)
+void CMomentumTimer::Start(int start, int iBonusZone)
 {
+    SetPaused(false);
+    g_ReplaySystem.SetPaused(false);
+
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     if (!pPlayer)
         return;
+
+    pPlayer->m_SrvData.m_bIsTimerPaused = false;
+
     // MOM_TODO: Allow it based on gametype
     if (g_pMOMSavelocSystem->IsUsingSaveLocMenu())
         return;
@@ -62,8 +68,34 @@ void CMomentumTimer::Start(int start)
 //    Log("\n");
 //}
 
+void CMomentumTimer::TogglePause()
+{
+    m_bPaused = !m_bPaused;
+
+    g_ReplaySystem.TogglePause();
+
+    // Add pause counter.
+
+    if (!m_bPaused)
+    {
+        m_iStartTick += (gpGlobals->tickcount - m_iPausedTick);
+    }
+
+    CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
+
+    if (pPlayer)
+    {
+        pPlayer->m_SrvData.m_bIsTimerPaused = m_bPaused;
+    }
+
+    m_iPausedTick = gpGlobals->tickcount;
+}
+
 void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* = true*/)
 {
+    SetPaused(false);
+    g_ReplaySystem.SetPaused(false);
+
     CMomentumPlayer *pPlayer = ToCMOMPlayer(UTIL_GetLocalPlayer());
     IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
 
@@ -83,6 +115,8 @@ void CMomentumTimer::Stop(bool endTrigger /* = false */, bool stopRecording /* =
             timerStateEvent->SetBool("is_running", false);
             gameeventmanager->FireEvent(timerStateEvent);
         }
+
+        pPlayer->m_SrvData.m_bIsTimerPaused = false;
     }
 
     // Stop replay recording, if there was any
@@ -135,13 +169,21 @@ void CMomentumTimer::RequestZoneCount()
 {
     CTriggerStage *stage =
         static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_stage"));
-    int iCount =
-        gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start") ? 1 : 0; // CTriggerStart counts as one
+
+    int iCount = 0;
     while (stage)
     {
         iCount++;
         stage = static_cast<CTriggerStage *>(gEntList.FindEntityByClassname(stage, "trigger_momentum_timer_stage"));
     }
+
+    // If there is a zone and atleast a stage, then we can add the start zone.
+    if (iCount > 0)
+    {
+        if (gEntList.FindEntityByClassname(nullptr, "trigger_momentum_timer_start"))
+            iCount += 1;
+    }
+
     m_iZoneCount = iCount;
 }
 // This function is called every time CTriggerStage::StartTouch is called
@@ -158,6 +200,25 @@ float CMomentumTimer::CalculateStageTime(int stage)
     m_iLastZone = stage;
     return m_flZoneEnterTime[stage];
 }
+
+float CMomentumTimer::GetLastRunTime()
+{
+    if (m_iEndTick == 0)
+        return 0.0f;
+
+    float originalTime = static_cast<float>(m_iEndTick - m_iStartTick) * gpGlobals->interval_per_tick;
+    // apply precision fix, adding offset from start as well as subtracting offset from end.
+    // offset from end is 1 tick - fraction offset, since we started trace outside of the end zone.
+    if (m_bShouldUseStartZoneOffset)
+    {
+        return originalTime + m_flTickOffsetFix[1] - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
+    }
+    else
+    {
+        return originalTime - (gpGlobals->interval_per_tick - m_flTickOffsetFix[0]);
+    }
+}
+
 void CMomentumTimer::DispatchResetMessage()
 {
     CSingleUserRecipientFilter user(UTIL_GetLocalPlayer());
@@ -194,9 +255,9 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
 
     Ray_t ray;
     Vector start, end, offset;
-	
-    // Since EndTouch is called after PostThink (which is where previous origins are stored) we need to go 1 more tick in the previous data
-    // to get the real previous origin.
+
+    // Since EndTouch is called after PostThink (which is where previous origins are stored) we need to go 1 more tick
+    // in the previous data to get the real previous origin.
     if (zoneType == ZONETYPE_START) // EndTouch
     {
         start = pPlayer->GetLocalOrigin();
@@ -212,7 +273,8 @@ void CMomentumTimer::CalculateTickIntervalOffset(CMomentumPlayer *pPlayer, const
     CTimeTriggerTraceEnum endTriggerTraceEnum(&ray, pPlayer->GetAbsVelocity());
     enginetrace->EnumerateEntities(ray, true, &endTriggerTraceEnum);
 
-    DevLog("Time offset was %f seconds (%s)\n", endTriggerTraceEnum.GetOffset(), zoneType == ZONETYPE_START ? "EndTouch" : "StartTouch");
+    DevLog("Time offset was %f seconds (%s)\n", endTriggerTraceEnum.GetOffset(),
+           zoneType == ZONETYPE_START ? "EndTouch" : "StartTouch");
     SetIntervalOffset(GetCurrentZoneNumber(), endTriggerTraceEnum.GetOffset());
 }
 
@@ -322,16 +384,44 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode ON!\n");
     pPlayer->AddEFlags(EFL_NOCLIP_ACTIVE);
     pPlayer->m_SrvData.m_bHasPracticeMode = true;
-    Stop(false);
+
+    // Only when timer is running;
+    if (m_bIsRunning)
+    {
+        pPlayer->m_SrvData.m_RunData.m_iOldBonusZone = pPlayer->m_SrvData.m_RunData.m_iBonusZone;
+        pPlayer->m_SrvData.m_RunData.m_iOldZone = pPlayer->m_SrvData.m_RunData.m_iCurrentZone;
+        pPlayer->m_SrvData.m_RunData.m_vecLastPos = pPlayer->GetAbsOrigin();
+        pPlayer->m_SrvData.m_RunData.m_angLastAng = pPlayer->GetAbsAngles();
+        pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = pPlayer->GetAbsVelocity();
+        pPlayer->m_SrvData.m_RunData.m_vecLastViewOffset = pPlayer->GetViewOffset();
+        pPlayer->m_SrvData.m_RunData.m_practicetimestamp.m_iStart = gpGlobals->tickcount - m_iStartTick;
+        //TogglePause();
+    }
+
+    // Stop(false); // Keep running
 }
+
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
 {
     pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
     ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Practice mode OFF!\n");
     pPlayer->SetMoveType(MOVETYPE_WALK);
     pPlayer->m_SrvData.m_bHasPracticeMode = false;
-}
 
+    // Only when timer is running;
+    if (m_bIsRunning)
+    {
+        pPlayer->m_SrvData.m_RunData.m_iBonusZone = pPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
+        pPlayer->m_SrvData.m_RunData.m_iCurrentZone = pPlayer->m_SrvData.m_RunData.m_iOldZone;
+        pPlayer->SetAbsOrigin(pPlayer->m_SrvData.m_RunData.m_vecLastPos);
+        pPlayer->SnapEyeAngles(pPlayer->m_SrvData.m_RunData.m_angLastAng);
+        pPlayer->SetAbsVelocity(pPlayer->m_SrvData.m_RunData.m_vecLastVelocity);
+        pPlayer->SetViewOffset(pPlayer->m_SrvData.m_RunData.m_vecLastViewOffset);
+        pPlayer->m_qangLastAngle = pPlayer->m_SrvData.m_RunData.m_angLastAng;
+        pPlayer->m_SrvData.m_RunData.m_practicetimestamp.m_iEnd = gpGlobals->tickcount - m_iStartTick;
+        //TogglePause();
+    }
+}
 
 //--------- Commands --------------------------------
 static MAKE_TOGGLE_CONVAR(
@@ -448,7 +538,8 @@ class CTimerCommands
                 // stuff so...)
                 CTriggerStage *pStage = nullptr;
 
-                while ((pStage = static_cast<CTriggerStage*>(gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
+                while ((pStage = static_cast<CTriggerStage *>(
+                            gEntList.FindEntityByClassname(pStage, "trigger_momentum_timer_stage"))) != nullptr)
                 {
                     if (pStage && pStage->GetStageNumber() == desiredIndex)
                     {
@@ -468,7 +559,7 @@ class CTimerCommands
                 pPlayer->PhysicsCheckForEntityUntouch();
                 // Stop *after* the teleport
                 g_pMomentumTimer->Stop();
-            } 
+            }
             else
             {
                 Warning("Could not teleport to stage %i! Perhaps it doesn't exist?\n", desiredIndex);

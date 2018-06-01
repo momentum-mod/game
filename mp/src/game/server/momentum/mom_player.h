@@ -105,7 +105,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void TweenSlowdownPlayer();
     void ResetRunStats();
     void CalculateAverageStats();
-    void LimitSpeedInStartZone();
+    void LimitSpeedInStartZone(Vector &vRealVelocity);
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
 
@@ -190,6 +190,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     bool m_bInAirDueToJump;
 
+    // Strafe sync.
+    int m_nPerfectSyncTicks;
+    int m_nStrafeTicks;
+    int m_nAccelTicks;
+    QAngle m_qangLastAngle;
+
     void DoMuzzleFlash() OVERRIDE;
     void PostThink() OVERRIDE;
 
@@ -218,10 +224,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     // for strafe sync
     float m_flLastVelocity;
-    QAngle m_qangLastAngle;
-    int m_nPerfectSyncTicks;
-    int m_nStrafeTicks;
-    int m_nAccelTicks;
 
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
@@ -231,11 +233,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     // Used by momentum triggers
     Vector m_vecPreviousOrigins[MAX_PREVIOUS_ORIGINS];
 
-    // Start zone thinkfunc
-    int m_nTicksInAir;
-
     float m_flTweenVelValue;
     // Trail pointer
     CBaseEntity* m_eTrail;
+    bool m_bWasInAir;
+    bool m_bShouldLimitSpeed;
 };
 #endif // MOMPLAYER_H

@@ -6,6 +6,13 @@
 #include "gamemovement.h"
 #include "mom_player_shared.h"
 
+#ifdef CLIENT_DLL
+#include "c_mom_triggers.h"
+#define CTriggerSlide C_TriggerSlide
+#else
+#include "../momentum/mom_triggers.h"
+#endif
+
 struct surface_data_t;
 class IMovementListener;
 class CMomentumPlayer;
@@ -78,13 +85,7 @@ class CMomentumGameMovement : public CGameMovement
     virtual void FullWalkMove();
     virtual void CategorizePosition();
 
-    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE
-    {
-        m_pPlayer = ToCMOMPlayer(pBasePlayer);
-        Assert(m_pPlayer);
-
-        BaseClass::ProcessMovement(pBasePlayer, pMove);
-    }
+    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE;
 
     void Friction(void);
 
@@ -108,6 +109,7 @@ class CMomentumGameMovement : public CGameMovement
 
   private:
     bool m_bWasInAir;
+    float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
@@ -116,3 +118,9 @@ class CMomentumGameMovement : public CGameMovement
 };
 
 extern CMomentumGameMovement *g_pMomentumGameMovement;
+
+class CTraceFilterOnlyTriggerSlide : public CTraceFilter
+{
+  public:
+    bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask) OVERRIDE;
+};
