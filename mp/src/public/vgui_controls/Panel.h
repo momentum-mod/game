@@ -348,6 +348,7 @@ class Panel : public IClientPanel, virtual IForceVirtualInheritancePanel
 
     void CalculateAutoResize(int parentWide, int parentTall);
 
+    void PinToSibling(Panel *pSibling, PinCorner_e pinOurCorner, PinCorner_e pinSiblingCorner);
     void PinToSibling(const char *pszSibling, PinCorner_e pinOurCorner, PinCorner_e pinSibling);
     void UpdateSiblingPin(void);
 

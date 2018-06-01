@@ -1,5 +1,16 @@
 "resource/ui/MapFinishedDialog.res"
 {
+    // Check HudLayout.res for the main panel's settings
+    "CHudMapFinishedDialog"
+    {
+        "fieldName"     "CHudMapFinishedDialog"
+        "xpos"          "c-110"
+        "ypos"          "c-150"
+        "wide"          "220"
+        "tall"          "180"
+        "TextFont"      "Default"
+    }
+    
     "Prev_Zone"
     {
         "ControlName"   "ImagePanel"
@@ -80,7 +91,7 @@
     {
         "ControlName" "Label"
         "fieldName"  "Current_Zone"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
+        "font"          "Default"//Set by "TextFont" 
         "xpos"          "13"
         "ypos"          "2"
         "wide"          "100"
@@ -99,9 +110,9 @@
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Overall_Time"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "20"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "12"
+        "ypos"          "15"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -118,9 +129,9 @@
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Enter_Time"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "30"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -131,15 +142,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Overall_Time"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Strafes"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Strafes"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "40"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -150,15 +164,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Enter_Time"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Jumps"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Jumps"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "50"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -169,15 +186,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Strafes"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Vel_Enter"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Vel_Enter"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "60"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -188,15 +208,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Jumps"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Vel_Exit"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Vel_Exit"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "70"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -207,15 +230,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Vel_Enter"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Vel_Avg"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Vel_Avg"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "80"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -226,15 +252,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Vel_Exit"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Vel_Max"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Vel_Max"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "90"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -245,15 +274,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Vel_Avg"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Sync1"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Sync1"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "100"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -264,15 +296,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Vel_Max"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Zone_Sync2"
     {
         "ControlName" "Label"
         "fieldName"  "Zone_Sync2"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "110"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -283,15 +318,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Sync1"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Run_Save_Status"
     {
         "ControlName" "Label"
         "fieldName"  "Run_Save_Status"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "130"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "15"
         "wide"          "100"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -302,15 +340,18 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Zone_Sync2"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Run_Upload_Status"
     {
         "ControlName" "Label"
         "fieldName"  "Run_Upload_Status"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "20"
-        "ypos"          "140"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "0"
         "wide"          "120"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
@@ -321,25 +362,29 @@
         "textAlignment" "west"
         "dulltext"      "0"
         "brighttext"    "0"
+        "pin_to_sibling"		"Run_Save_Status"
+		"pin_corner_to_sibling"		"0"
+		"pin_to_sibling_corner"		"2"
     }
     
     "Detach_Mouse"
     {
         "ControlName" "Label"
         "fieldName" "Detach_Mouse"
-        "font"          "Default"//Set by "TextFont" in HudLayout.res
-        "xpos"          "4"
-        "ypos"          "160"
-        "wide"          "150"
+        "font"          "Default"//Set by "TextFont" 
+        "xpos"          "0"
+        "ypos"          "rs1.5"
+        "wide"          "f0"
         "tall"          "10"//Set by font size
         "autoResize"    "1"
         "pinCorner"     "0"
         "visible"       "1"
         "enabled"       "1"
         "labelText"     "#MOM_MF_DetachMouse"
-        "textAlignment" "west"
+        "textAlignment" "center"
         "dulltext"      "0"
         "brighttext"    "0"
+        "proportionalToParent" "1"
     }
     
     styles
