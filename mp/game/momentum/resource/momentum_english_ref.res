@@ -22,6 +22,11 @@
         "MOM_Menu_RemoveCurrentSL" "Remove Current Saved Location"
         "MOM_Menu_RemoveEverySL" "Remove Every Saved Location"
         "MOM_Menu_Cancel" "Close Menu"
+        
+    // Saveloc Request Frame
+        "MOM_Saveloc_Frame" "Request Savelocs"
+        "MOM_Saveloc_Frame_Request" "Request"
+        "MOM_Saveloc_Frame_Toggle" "Toggle All"
 
     //In-game leaderboards
         "MOM_Name" "Name"

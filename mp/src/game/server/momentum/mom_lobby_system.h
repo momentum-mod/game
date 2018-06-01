@@ -1,7 +1,6 @@
 #pragma once
-//#include "cbase.h"
+
 #include "mom_ghostdefs.h"
-//#include "steam/steam_api.h"
 
 class CMomentumOnlineGhostEntity;
 

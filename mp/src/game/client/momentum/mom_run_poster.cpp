@@ -27,6 +27,7 @@ void CRunPoster::LevelInitPostEntity()
     const char *pMapName = MapName();
     if (pMapName)
     {
+        CHECK_STEAM_API(SteamUserStats());
         SteamAPICall_t findCall = SteamUserStats()->FindOrCreateLeaderboard(pMapName, k_ELeaderboardSortMethodAscending, k_ELeaderboardDisplayTypeTimeMilliSeconds);
         m_cLeaderboardFindResult.Set(findCall, this, &CRunPoster::OnLeaderboardFind);
     }
@@ -41,6 +42,8 @@ void CRunPoster::FireGameEvent(IGameEvent *pEvent)
 {
     if (pEvent->GetBool("save"))
     {
+        CHECK_STEAM_API(SteamUserStats());
+
         if (!m_hCurrentLeaderboard)
         {
             Warning("Could not upload run: leaderboard doesn't exist!\n");

@@ -1784,8 +1784,11 @@ void CClientTimesDisplay::LevelInitPostEntity()
     SetupIcons();
 
     // Get our current leaderboard
-    SteamAPICall_t find = SteamUserStats()->FindLeaderboard(g_pGameRules->MapName());
-    m_cLeaderboardFindResult.Set(find, this, &CClientTimesDisplay::OnLeaderboardFindResult);
+    if (SteamUserStats())
+    {
+        SteamAPICall_t find = SteamUserStats()->FindLeaderboard(g_pGameRules->MapName());
+        m_cLeaderboardFindResult.Set(find, this, &CClientTimesDisplay::OnLeaderboardFindResult);
+    }
 #endif
 }
 
@@ -1923,13 +1926,12 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 
             pKv = new KeyValues("ContextReqSavelocs");
             pKv->SetUint64("target", steamID);
-            pContextMenu->AddMenuItem("ReqSavelocs", "#MOM_Online_ReqSavelocs", pKv, this);
+            pContextMenu->AddMenuItem("ReqSavelocs", "#MOM_Saveloc_Frame", pKv, this);
 
             // MOM_TODO: More options here, such as:
             // kicking the player if we're the lobby leader
             // hiding decals (maybe toggle paint, bullets separately?)
             // etc
-
             pContextMenu->AddSeparator();
             // Visit profile
             pKv = new KeyValues("ContextVisitProfile");
