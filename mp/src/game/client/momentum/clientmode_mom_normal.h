@@ -12,13 +12,13 @@
 #pragma once
 #endif
 
-#include "clientmode_shared.h"
-#include "hud_menu_static.h"
-#include "hud_mapfinished.h"
-#include "ClientTimesDisplay.h"
-#include "momSpectatorGUI.h"
 #include <vgui/Cursor.h>
 #include <vgui_controls/EditablePanel.h>
+#include "ClientTimesDisplay.h"
+#include "clientmode_shared.h"
+#include "hud_mapfinished.h"
+#include "hud_menu_static.h"
+#include "momSpectatorGUI.h"
 
 class CHudViewport;
 
@@ -40,7 +40,7 @@ class ClientModeMOMNormal : public ClientModeShared
 
     void Init() OVERRIDE;
     bool ShouldDrawCrosshair(void) OVERRIDE;
-    //NOTE: This includes mouse inputs!!!
+    // NOTE: This includes mouse inputs!!!
     int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
     int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
 

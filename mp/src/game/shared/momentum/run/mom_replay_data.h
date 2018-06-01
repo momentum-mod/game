@@ -3,6 +3,9 @@
 #include "cbase.h"
 #include <momentum/util/serialization.h>
 #include <run/run_stats.h>
+#include "mom_entity_run_data.h"
+
+typedef CCopyableUtlVector<practicetimestamps_s> Vector_PracticeTimeStamps;
 
 // A single frame of the replay.
 class CReplayFrame : public ISerializable
@@ -81,6 +84,17 @@ class CReplayHeader : public ISerializable
         m_iRunFlags = reader->ReadUInt32();
         m_iRunDate = reader->ReadInt64();
         m_iStartDif = reader->ReadInt32();
+        m_iBonusZone = reader->ReadInt32();
+
+        int SizeOfPracticeTimeStamps = reader->ReadInt32();
+
+        for (auto i = 0; i != SizeOfPracticeTimeStamps; i++)
+        {
+            practicetimestamps_s practicetimestamp;
+            practicetimestamp.m_iStart = reader->ReadInt32();
+            practicetimestamp.m_iEnd = reader->ReadInt32();
+            m_vecPracticeTimeStamps.AddToHead(practicetimestamp);
+        }
     }
 
   public:
@@ -94,9 +108,18 @@ class CReplayHeader : public ISerializable
         writer->WriteUInt32(m_iRunFlags);
         writer->WriteInt64(m_iRunDate);
         writer->WriteInt32(m_iStartDif);
+        writer->WriteInt32(m_iBonusZone);
+        writer->WriteInt32(m_vecPracticeTimeStamps.Size());
+
+        for (auto i = 0; i != m_vecPracticeTimeStamps.Size(); i++)
+        {
+            auto Element = m_vecPracticeTimeStamps.Element(i);
+            writer->WriteInt32(Element.m_iStart);
+            writer->WriteInt32(Element.m_iEnd);
+        }
     }
 
-    virtual CReplayHeader &operator=(const CReplayHeader& other)
+    virtual CReplayHeader &operator=(const CReplayHeader &other)
     {
         Q_strncpy(m_szMapName, other.m_szMapName, sizeof(m_szMapName));
         Q_strncpy(m_szPlayerName, other.m_szPlayerName, sizeof(m_szPlayerName));
@@ -106,6 +129,8 @@ class CReplayHeader : public ISerializable
         m_iRunFlags = other.m_iRunFlags;
         m_iRunDate = other.m_iRunDate;
         m_iStartDif = other.m_iStartDif;
+        m_iBonusZone = other.m_iBonusZone;
+        m_vecPracticeTimeStamps = other.m_vecPracticeTimeStamps;
         return *this;
     }
 
@@ -118,4 +143,9 @@ class CReplayHeader : public ISerializable
     uint32 m_iRunFlags;       // The flags the player ran with.
     time_t m_iRunDate;        // The date this run was achieved.
     int m_iStartDif;          // The difference between the tick of the start timer and record
+    int m_iBonusZone;         // The bonus zone. This will be needed for leaderboards to check the bonus runs.
+    // Sadly we can't know when the player had practice mode, until we make a special button in the
+    // cusercmd structure.
+    // So we must record everything about it.
+    Vector_PracticeTimeStamps m_vecPracticeTimeStamps;
 };

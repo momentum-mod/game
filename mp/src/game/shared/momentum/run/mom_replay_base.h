@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cbase.h"
-#include "mom_replay_data.h"
 #include <momentum/util/serialization.h>
+#include "mom_replay_data.h"
 
 class CMomentumReplayGhostEntity;
 
@@ -24,7 +24,9 @@ class CMomReplayBase : public ISerializable
     virtual int GetStartTick() { return m_rhHeader.m_iStartDif; }
     virtual uint32 GetRunFlags() { return m_rhHeader.m_iRunFlags; }
     virtual time_t GetRunDate() { return m_rhHeader.m_iRunDate; }
+    virtual int32 GetBonusZone() { return m_rhHeader.m_iBonusZone; }
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
+    virtual Vector_PracticeTimeStamps *GetPracticeTimeStamps() { return &m_rhHeader.m_vecPracticeTimeStamps; }
 
   public:
     virtual void SetMapName(const char *name) { Q_strcpy(m_rhHeader.m_szMapName, name); }
@@ -35,7 +37,12 @@ class CMomReplayBase : public ISerializable
     virtual void SetStartTick(int iStart) { m_rhHeader.m_iStartDif = iStart; }
     virtual void SetRunFlags(uint32 runFlags) { m_rhHeader.m_iRunFlags = runFlags; }
     virtual void SetRunDate(time_t date) { m_rhHeader.m_iRunDate = date; }
+    virtual void SetBonusZone(int32 bonus) { m_rhHeader.m_iBonusZone = bonus; }
     virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
+    virtual void SetPracticeTimeStamps(Vector_PracticeTimeStamps *timestamps)
+    {
+        m_rhHeader.m_vecPracticeTimeStamps = *timestamps;
+    }
 
   public:
     virtual uint8 GetVersion() = 0;

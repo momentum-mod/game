@@ -1,8 +1,8 @@
 #include "cbase.h"
 
-#include "mom_timer.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
+#include "mom_timer.h"
 #include "util/baseautocompletefilelist.h"
 #include "util/mom_util.h"
 #include "utlbuffer.h"
@@ -18,6 +18,7 @@ void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
     // don't record if we're watching a preexisting replay or in practice mode
     if (!m_player->IsSpectatingGhost() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
+        m_vecPracticeTimeStamps.RemoveAll();
         m_bRecording = true;
         m_iTickCount = 1; // recoring begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
@@ -65,7 +66,8 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     Q_snprintf(runTime, MAX_PATH, "%.3f", g_pMomentumTimer->GetLastRunTime());
     // It's weird.
 
-    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s-%s%s", gpGlobals->mapname.ToCStr(), runDate, runTime, EXT_RECORDING_FILE);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s-%s%s", gpGlobals->mapname.ToCStr(), runDate, runTime,
+               EXT_RECORDING_FILE);
 
     // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
     V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH);
@@ -90,7 +92,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // Re-allow the player to teleport
     if (pPlayer)
         pPlayer->m_bAllowUserTeleports = true;
-    
+
     if (replaySavedEvent)
     {
         replaySavedEvent->SetBool("save", true);
@@ -106,7 +108,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_pReplay->~CMomReplayBase();
 }
 
-bool CMomentumReplaySystem::StoreReplay(const char* path, const char* pathID)
+bool CMomentumReplaySystem::StoreReplay(const char *path, const char *pathID)
 {
     if (!m_pReplay)
         return false;
@@ -157,11 +159,27 @@ void CMomentumReplaySystem::TrimReplay()
 
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
+    static bool bHadPracticeMode = false;
+
     // We only record frames that the player isn't pausing on
-    if (m_bRecording && !engine->IsPaused())
+    if (m_bRecording && !engine->IsPaused() && !m_bPaused)
     {
-        m_pReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(),
-                                                                      m_player->GetViewOffset(), m_player->m_nButtons));
+        if (!m_player->m_SrvData.m_bHasPracticeMode)
+        {
+            if (bHadPracticeMode)
+            {
+                m_vecPracticeTimeStamps.AddToHead(m_player->m_SrvData.m_RunData.m_practicetimestamp);
+                bHadPracticeMode = false;
+            }
+
+            m_pReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->GetViewOffset(),
+                                             m_player->m_nButtons));
+        }
+        else
+        {
+            bHadPracticeMode = true;
+        }
+
         ++m_iTickCount; // increment recording tick
     }
 
@@ -171,6 +189,8 @@ void CMomentumReplaySystem::UpdateRecordingParams()
 
 CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool bFullLoad, const char *pPathID)
 {
+    m_vecPracticeTimeStamps.RemoveAll();
+
     if (m_bPlayingBack)
         StopPlayback();
 
@@ -182,7 +202,8 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
     if (bFullLoad && m_pPlaybackReplay)
     {
         // Create the run entity here
-        CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
+        CMomentumReplayGhostEntity *pGhost =
+            static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
         pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
         pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
         pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
@@ -190,6 +211,7 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
         pGhost->SetPlaybackReplay(m_pPlaybackReplay);
         pGhost->m_SrvData.m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
         m_pPlaybackReplay->SetRunEntity(pGhost);
+        m_vecPracticeTimeStamps = *m_pPlaybackReplay->GetPracticeTimeStamps();
     }
 
     return m_pPlaybackReplay;
@@ -209,6 +231,8 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pReplay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
     m_pReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
+    m_pReplay->SetBonusZone(g_pMomentumTimer->m_iBonusZone);
+    m_pReplay->SetPracticeTimeStamps(&m_vecPracticeTimeStamps);
 }
 
 void CMomentumReplaySystem::SetRunStats()
@@ -216,19 +240,35 @@ void CMomentumReplaySystem::SetRunStats()
     if (!m_bRecording)
         return;
 
-    CMomRunStats* stats = m_pReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
+    CMomRunStats *stats = m_pReplay->CreateRunStats(m_player->m_RunStats.GetTotalZones());
     m_player->m_RunStats.FullyCopyStats(stats);
 }
+
+void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
 
 void CMomentumReplaySystem::Start(bool firstperson)
 {
     if (m_player)
     {
+        SetWasInReplay();
+
+        m_player->m_SrvData.m_RunData.m_vecLastPos = m_player->GetAbsOrigin();
+        m_player->m_SrvData.m_RunData.m_angLastAng = m_player->GetAbsAngles();
+        m_player->m_SrvData.m_RunData.m_vecLastVelocity = m_player->GetAbsVelocity();
+        m_player->m_SrvData.m_RunData.m_vecLastViewOffset = m_player->GetViewOffset();
+        memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
+        m_nSavedAccelTicks = m_player->m_nAccelTicks;
+        m_nSavedPerfectSyncTicks = m_player->m_nPerfectSyncTicks;
+        m_nSavedStrafeTicks = m_player->m_nStrafeTicks;
         CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
-        
-        if (firstperson)
-            g_pMomentumTimer->Stop(false); // stop the timer just in case we started a replay while it was running...
-            
+
+        // if (firstperson && g_pMomentumTimer->IsRunning())
+        // g_pMomentumTimer->TogglePause();
+
+        // Keep timer running.
+        // if (firstperson)
+        // g_pMomentumTimer->Stop(false); // stop the timer just in case we started a replay while it was running...
+
         if (pGhost)
             pGhost->StartRun(firstperson);
 
@@ -239,7 +279,7 @@ void CMomentumReplaySystem::Start(bool firstperson)
 void CMomentumReplaySystem::UnloadPlayback(bool shutdown)
 {
     m_bPlayingBack = false;
-    
+
     if (m_pPlaybackReplay)
     {
         if (m_pPlaybackReplay->GetRunEntity() && !shutdown)
@@ -372,7 +412,8 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_SrvData.m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            pGhost->m_SrvData.m_iCurrentTick =
+                pGhost->m_SrvData.m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
     }
 }

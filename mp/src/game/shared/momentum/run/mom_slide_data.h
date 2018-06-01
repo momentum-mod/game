@@ -14,7 +14,6 @@ class CMomSlideData
         m_bAllowingJump = false;
         m_bEnableGravity = false;
         m_bFixUpsideSlope = false;
-        m_flDistance = 0.0f;
         m_iEntityIndex = -1;
     }
 
@@ -26,8 +25,6 @@ class CMomSlideData
 
     FORCEINLINE bool IsFixUpsideSlope() { return m_bFixUpsideSlope; }
 
-    FORCEINLINE float GetDistance() { return m_flDistance; }
-
     FORCEINLINE int GetEntityIndex() { return m_iEntityIndex; }
 
     FORCEINLINE void SetStuckToGround(bool bEnable = true) { m_bStuckToGround = bEnable; }
@@ -38,8 +35,6 @@ class CMomSlideData
 
     FORCEINLINE void SetFixUpsideSlope(bool bEnable = true) { m_bFixUpsideSlope = bEnable; }
 
-    FORCEINLINE void SetDistance(float flValue) { m_flDistance = flValue; }
-
     FORCEINLINE void SetEntityIndex(int iEntityIndex) { m_iEntityIndex = iEntityIndex; }
 
   private:
@@ -47,7 +42,6 @@ class CMomSlideData
     bool m_bAllowingJump;
     bool m_bEnableGravity;
     bool m_bFixUpsideSlope;
-    float m_flDistance;
     int m_iEntityIndex;
     // MOM_TODO: Not sure if mapper would like to have a gravity value here, but he could do it with another trigger
     // anyway. float m_flGravity;

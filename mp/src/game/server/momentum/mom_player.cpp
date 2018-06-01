@@ -1,20 +1,20 @@
 #include "cbase.h"
 
+#include "ghost_client.h"
 #include "in_buttons.h"
 #include "info_camera_link.h"
+#include "mom_blockfix.h"
+#include "mom_gamemovement.h"
+#include "mom_online_ghost.h"
 #include "mom_player.h"
 #include "mom_replay_entity.h"
 #include "mom_system_checkpoint.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
-#include "weapon/weapon_csbasegun.h"
 #include "player_command.h"
 #include "predicted_viewmodel.h"
-#include "ghost_client.h"
-#include "mom_online_ghost.h"
-#include "mom_blockfix.h"
 #include "run/run_checkpoint.h"
-#include "mom_gamemovement.h"
+#include "weapon/weapon_csbasegun.h"
 
 #include "tier0/memdbgon.h"
 
@@ -32,45 +32,38 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
-    SendPropInt(SENDINFO(m_afButtonDisabled)),
-END_SEND_TABLE();
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINFO(m_afButtonDisabled)),
+    END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-DEFINE_THINKFUNC(UpdateRunStats), 
-DEFINE_THINKFUNC(CalculateAverageStats), 
-DEFINE_THINKFUNC(LimitSpeedInStartZone),
-END_DATADESC();
+DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
+    END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 PRECACHE_REGISTER(player);
 void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue);
 
 // Ghost Apperence Convars
-static ConVar mom_ghost_bodygroup("mom_ghost_bodygroup", "11",
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Ghost's body group (model)", true, 0, true, 14,
-    AppearanceCallback);
+static ConVar mom_ghost_bodygroup("mom_ghost_bodygroup", "11", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                                  "Ghost's body group (model)", true, 0, true, 14, AppearanceCallback);
 
-static ConVar mom_ghost_color("mom_ghost_color", "FF00FFFF",
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+static ConVar mom_ghost_color(
+    "mom_ghost_color", "FF00FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
     "Set the ghost's color. Accepts HEX color value in format RRGGBBAA. if RRGGBB is supplied, Alpha is set to 0x4B",
     AppearanceCallback);
 
-static ConVar mom_trail_color("mom_trail_color", "FF00FFFF",
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Set the player's trail color. Accepts HEX color value in format RRGGBBAA",
-    AppearanceCallback);
+static ConVar mom_trail_color("mom_trail_color", "FF00FFFF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                              "Set the player's trail color. Accepts HEX color value in format RRGGBBAA",
+                              AppearanceCallback);
 
-static ConVar mom_trail_length("mom_trail_length", "4",
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Length of the player's trail (in seconds).", true, 1, false, 10, AppearanceCallback);
+static ConVar mom_trail_length("mom_trail_length", "4", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                               "Length of the player's trail (in seconds).", true, 1, false, 10, AppearanceCallback);
 
-static ConVar mom_trail_enable("mom_trail_enable", "0",
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1, AppearanceCallback);
+static ConVar mom_trail_enable("mom_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                               "Paint a faint beam trail on the player. 0 = OFF, 1 = ON\n", true, 0, true, 1,
+                               AppearanceCallback);
 
-// Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps, 
+// Handles ALL appearance changes by setting the proper appearance value in m_playerAppearanceProps,
 // as well as changing the appearance locally.
 void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 {
@@ -82,9 +75,9 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
     {
         const char *pName = cVar.GetName();
 
-        if (FStrEq(pName, mom_trail_color.GetName()) ||// the trail color changed
+        if (FStrEq(pName, mom_trail_color.GetName()) ||  // the trail color changed
             FStrEq(pName, mom_trail_length.GetName()) || // the trail length changed
-            FStrEq(pName, mom_trail_enable.GetName())) // the trail enable bool changed
+            FStrEq(pName, mom_trail_enable.GetName()))   // the trail enable bool changed
         {
             uint32 newHexColor = g_pMomentumUtil->GetHexFromColor(mom_trail_color.GetString());
             pPlayer->m_playerAppearanceProps.GhostTrailRGBAColorAsHex = newHexColor;
@@ -112,10 +105,10 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 }
 
 CMomentumPlayer::CMomentumPlayer()
-    : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
-    m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
-    m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
-    m_nTicksInAir(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
+    : m_duckUntilOnGround(false), m_flStamina(0.0f),
+      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
+      m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
+      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -134,7 +127,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_iCheckpointCount = 0;
     m_SrvData.m_bUsingCPMenu = false;
     m_SrvData.m_iCurrentStepCP = -1;
-    
+
     g_ReplaySystem.m_player = this;
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
@@ -252,10 +245,7 @@ void CMomentumPlayer::FireGameEvent(IGameEvent *pEvent)
     }
 }
 
-void CMomentumPlayer::SendAppearance()
-{
-    g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps);
-}
+void CMomentumPlayer::SendAppearance() { g_pMomentumGhostClient->SendAppearanceData(m_playerAppearanceProps); }
 
 void CMomentumPlayer::Spawn()
 {
@@ -265,8 +255,9 @@ void CMomentumPlayer::Spawn()
     // BASECLASS SPAWN MUST BE AFTER SETTING THE MODEL, OTHERWISE A NULL HAPPENS!
     BaseClass::Spawn();
     AddFlag(FL_GODMODE);
-    // this removes the flag that was added while switching to spectator mode which prevented the player from activating triggers
-    RemoveSolidFlags(FSOLID_NOT_SOLID); 
+    // this removes the flag that was added while switching to spectator mode which prevented the player from activating
+    // triggers
+    RemoveSolidFlags(FSOLID_NOT_SOLID);
     // do this here because we can't get a local player in the timer class
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
@@ -295,13 +286,26 @@ void CMomentumPlayer::Spawn()
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     m_bAllowUserTeleports = true;
-    m_SrvData.m_RunData.m_bIsInZone = false;
-    m_SrvData.m_RunData.m_bMapFinished = false;
-    m_SrvData.m_RunData.m_iCurrentZone = 0;
-    m_SrvData.m_bHasPracticeMode = false;
-    m_SrvData.m_bPreventPlayerBhop = false;
-    m_SrvData.m_iLandTick = 0;
-    ResetRunStats();
+
+    bool bWasInReplay = false;
+
+    // Reset only if we were not in a replay.
+    if (!g_ReplaySystem.GetWasInReplay())
+    {
+        m_SrvData.m_RunData.m_bIsInZone = false;
+        m_SrvData.m_RunData.m_bMapFinished = false;
+        m_SrvData.m_RunData.m_iCurrentZone = 0;
+        m_SrvData.m_bHasPracticeMode = false;
+        m_SrvData.m_bPreventPlayerBhop = false;
+        m_SrvData.m_iLandTick = 0;
+        ResetRunStats();
+    }
+    // Else we set our previous angles and position.
+    else
+    {
+        bWasInReplay = true;
+    }
+
     if (runSaveEvent)
     {
         runSaveEvent->SetBool("save", false);
@@ -324,16 +328,15 @@ void CMomentumPlayer::Spawn()
 
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("THINK_AVERAGE_STATS");
-    RegisterThinkContext("CURTIME_FOR_START");
+    // RegisterThinkContext("CURTIME_FOR_START");
     RegisterThinkContext("TWEEN");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick,
                     "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL,
                     "THINK_AVERAGE_STATS");
-    SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
+    // SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
-    
     // initilize appearance properties based on Convars
     if (g_pMomentumUtil)
     {
@@ -359,7 +362,7 @@ void CMomentumPlayer::Spawn()
     {
         Warning("Could not set appearance properties! g_pMomentumUtil is NULL!\n");
     }
-    
+
     // If wanted, create trail
     if (mom_trail_enable.GetBool())
         CreateTrail();
@@ -372,6 +375,24 @@ void CMomentumPlayer::Spawn()
 
     // Reset current checkpoint trigger upon spawn
     m_pCurrentCheckpoint = nullptr;
+
+    if (bWasInReplay)
+    {
+        SetAbsOrigin(m_SrvData.m_RunData.m_vecLastPos);
+        // SetAbsAngles or SetLocalAngles won't work, we need to make it for the fix_angle.
+        SnapEyeAngles(m_SrvData.m_RunData.m_angLastAng);
+        m_qangLastAngle = m_SrvData.m_RunData.m_angLastAng;
+        SetAbsVelocity(m_SrvData.m_RunData.m_vecLastVelocity);
+        SetViewOffset(m_SrvData.m_RunData.m_vecLastViewOffset);
+        g_ReplaySystem.SetWasInReplay(false);
+        memcpy(m_RunStats.m_pData, g_ReplaySystem.SavedRunStats()->m_pData, sizeof(CMomRunStats::data));
+        m_nAccelTicks = g_ReplaySystem.m_nSavedAccelTicks;
+        m_nPerfectSyncTicks = g_ReplaySystem.m_nSavedPerfectSyncTicks;
+        m_nStrafeTicks = g_ReplaySystem.m_nSavedStrafeTicks;
+
+        // if (g_pMomentumTimer->IsRunning())
+        // g_pMomentumTimer->TogglePause();
+    }
 }
 
 // Obtains a player's previous origin X ticks backwards (0 is still previous, depends when this is called ofc!)
@@ -382,7 +403,7 @@ Vector CMomentumPlayer::GetPreviousOrigin(unsigned int previous_count) const
 
 void CMomentumPlayer::NewPreviousOrigin(Vector origin)
 {
-    for (int i = MAX_PREVIOUS_ORIGINS; i--> 1; )
+    for (int i = MAX_PREVIOUS_ORIGINS; i-- > 1;)
     {
         m_vecPreviousOrigins[i] = m_vecPreviousOrigins[i - 1];
     }
@@ -521,7 +542,7 @@ bool CMomentumPlayer::ClientCommand(const CCommand &args)
     if (FStrEq(cmd, "drop"))
     {
         CWeaponCSBase *pWeapon = dynamic_cast<CWeaponCSBase *>(GetActiveWeapon());
-        
+
         if (pWeapon)
         {
             if (pWeapon->GetWeaponID() != WEAPON_GRENADE)
@@ -579,7 +600,7 @@ void CMomentumPlayer::RemoveAllCheckpoints()
     m_SrvData.m_iCheckpointCount = 0;
 }
 
-void CMomentumPlayer::AddOnehop(CTriggerOnehop* pTrigger)
+void CMomentumPlayer::AddOnehop(CTriggerOnehop *pTrigger)
 {
     if (m_vecOnehops.Count() > 0)
     {
@@ -595,7 +616,7 @@ void CMomentumPlayer::AddOnehop(CTriggerOnehop* pTrigger)
     m_vecOnehops.AddToTail(pTrigger);
 }
 
-bool CMomentumPlayer::FindOnehopOnList(CTriggerOnehop* pTrigger) const
+bool CMomentumPlayer::FindOnehopOnList(CTriggerOnehop *pTrigger) const
 {
     return m_vecOnehops.Find(pTrigger) != m_vecOnehops.InvalidIndex();
 }
@@ -636,13 +657,10 @@ void CMomentumPlayer::RemoveTrail()
     m_eTrail = nullptr;
 }
 
-void CMomentumPlayer::CheckChatText(char* p, int bufsize)
-{
-    g_pMomentumGhostClient->SendChatMessage(p);
-}
+void CMomentumPlayer::CheckChatText(char *p, int bufsize) { g_pMomentumGhostClient->SendChatMessage(p); }
 
 // Overrides Teleport() so we can take care of the trail
-void CMomentumPlayer::Teleport(const Vector* newPosition, const QAngle* newAngles, const Vector* newVelocity)
+void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngles, const Vector *newVelocity)
 {
     // No need to remove the trail here, CreateTrail() already does it for us
     BaseClass::Teleport(newPosition, newAngles, newVelocity);
@@ -653,7 +671,8 @@ void CMomentumPlayer::CreateTrail()
 {
     RemoveTrail();
 
-    if (!mom_trail_enable.GetBool()) return;
+    if (!mom_trail_enable.GetBool())
+        return;
 
     // Ty GhostingMod
     m_eTrail = CreateEntityByName("env_spritetrail");
@@ -671,7 +690,7 @@ void CMomentumPlayer::CreateTrail()
         m_eTrail->KeyValue("renderamt", newColor.a());
     }
     DispatchSpawn(m_eTrail);
-}   
+}
 
 void CMomentumPlayer::TeleportToCheckpoint(int newCheckpoint)
 {
@@ -692,7 +711,7 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
     FOR_EACH_VEC(m_rcCheckpoints, i)
     {
         Checkpoint_t *c = m_rcCheckpoints[i];
-        char szCheckpointNum[10]; // 999 million checkpoints is pretty generous
+        char szCheckpointNum[10];                                        // 999 million checkpoints is pretty generous
         Q_snprintf(szCheckpointNum, sizeof(szCheckpointNum), "%09i", i); // %09 because '\0' is the last (10)
         KeyValues *kvCP = new KeyValues(szCheckpointNum);
         c->Save(kvCP);
@@ -705,12 +724,14 @@ void CMomentumPlayer::SaveCPsToFile(KeyValues *kvInto)
 
 void CMomentumPlayer::LoadCPsFromFile(KeyValues *kvFrom)
 {
-    if (!kvFrom || kvFrom->IsEmpty()) return;
+    if (!kvFrom || kvFrom->IsEmpty())
+        return;
 
     m_SrvData.m_iCurrentStepCP = kvFrom->GetInt("cur");
 
     KeyValues *kvCPs = kvFrom->FindKey("cps");
-    if (!kvCPs) return;
+    if (!kvCPs)
+        return;
     FOR_EACH_SUBKEY(kvCPs, kvCheckpoint)
     {
         Checkpoint_t *c = new Checkpoint_t(kvCheckpoint);
@@ -741,7 +762,7 @@ void CMomentumPlayer::DisableAutoBhop()
 
 void CMomentumPlayer::OnPlayerJump()
 {
-    // OnCheckBhop code 
+    // OnCheckBhop code
     m_SrvData.m_bDidPlayerBhop = gpGlobals->tickcount - m_SrvData.m_iLandTick < NUM_TICKS_TO_BHOP;
     if (!m_SrvData.m_bDidPlayerBhop)
         m_SrvData.m_iSuccessiveBhops = 0;
@@ -751,18 +772,109 @@ void CMomentumPlayer::OnPlayerJump()
 
     m_bInAirDueToJump = true;
 
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
+        m_SrvData.m_RunData.m_bTimerStartOnJump)
+    {
+        bool bCheating = GetMoveType() == MOVETYPE_NOCLIP;
+
+        // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
+        // do not start timer if player is in practice mode or it's already running.
+        if (!g_pMomentumTimer->IsRunning() && !m_SrvData.m_bHasPracticeMode && !bCheating)
+        {
+            g_pMomentumTimer->m_bShouldUseStartZoneOffset = false;
+
+            g_pMomentumTimer->Start(gpGlobals->tickcount, m_SrvData.m_RunData.m_iBonusZone);
+            // The Start method could return if CP menu or prac mode is activated here
+            if (g_pMomentumTimer->IsRunning())
+            {
+                // Used for trimming later on
+                if (g_ReplaySystem.m_bRecording)
+                {
+                    g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
+                }
+
+                m_SrvData.m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
+                // Used for spectating later on
+                m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
+
+                // Are we in mid air when we started? If so, our first jump should be 1, not 0
+                if (m_bInAirDueToJump)
+                {
+                    m_RunStats.SetZoneJumps(0, 1);
+                    m_RunStats.SetZoneJumps(m_SrvData.m_RunData.m_iCurrentZone, 1);
+                }
+            }
+        }
+        else
+        {
+            g_pMomentumTimer->m_bShouldUseStartZoneOffset = true;
+            // MOM_TODO: Find a better way of doing this
+            // If we can't start the run, play a warning sound
+            // EmitSound("Watermelon.Scrape");
+        }
+
+        m_SrvData.m_RunData.m_bMapFinished = false;
+    }
+
     // Set our runstats jump count
     if (g_pMomentumTimer->IsRunning())
     {
         int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
-        m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1); // Increment total jumps
+        m_RunStats.SetZoneJumps(0, m_RunStats.GetZoneJumps(0) + 1);                     // Increment total jumps
         m_RunStats.SetZoneJumps(currentZone, m_RunStats.GetZoneJumps(currentZone) + 1); // Increment zone jumps
     }
 }
 
-
 void CMomentumPlayer::OnPlayerLand()
 {
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
+        m_SrvData.m_RunData.m_bTimerStartOnJump)
+    {
+
+        // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
+        // MOM_TODO: Check what's wrong.
+
+        /*
+        Vector vecNewVelocity = GetAbsVelocity();
+
+        float flMaxSpeed = GetPlayerMaxSpeed();
+
+        if (m_SrvData.m_bShouldLimitPlayerSpeed && vecNewVelocity.Length2D() > flMaxSpeed)
+        {
+            float zSaved = vecNewVelocity.z;
+
+            VectorNormalizeFast(vecNewVelocity);
+
+            vecNewVelocity *= flMaxSpeed;
+            vecNewVelocity.z = zSaved;
+            SetAbsVelocity(vecNewVelocity);
+        }
+        */
+
+        SetUsingCPMenu(false); // It'll get set to true if they teleport to a CP out of here
+        ResetRunStats();       // Reset run stats
+        m_SrvData.m_RunData.m_bMapFinished = false;
+        m_SrvData.m_RunData.m_bTimerRunning = false;
+        m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
+
+        if (g_pMomentumTimer->IsRunning())
+        {
+            g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
+            g_pMomentumTimer->DispatchResetMessage();
+        }
+        else
+        {
+            // Reset last jump velocity when we enter the start zone without a timer
+            m_SrvData.m_RunData.m_flLastJumpVel = 0;
+
+            // Handle the replay recordings
+            if (g_ReplaySystem.m_bRecording)
+                g_ReplaySystem.StopRecording(true, false);
+
+            g_ReplaySystem.BeginRecording(this);
+        }
+    }
+
     // Set the tick that we landed on something solid (can jump off of this)
     m_SrvData.m_iLandTick = gpGlobals->tickcount;
 
@@ -771,21 +883,25 @@ void CMomentumPlayer::OnPlayerLand()
 
 void CMomentumPlayer::UpdateRunStats()
 {
-    // ---- Jumps and Strafes ----
-    UpdateJumpStrafes();
+    // If we're in practicing mode, don't update.
+    if (!m_SrvData.m_bHasPracticeMode)
+    {
+        // ---- Jumps and Strafes ----
+        UpdateJumpStrafes();
 
-    //  ---- MAX VELOCITY ----
-    UpdateMaxVelocity();
-    // ----------
+        //  ---- MAX VELOCITY ----
+        UpdateMaxVelocity();
+        // ----------
 
-    //  ---- STRAFE SYNC -----
-    UpdateRunSync();
-    // ----------
+        //  ---- STRAFE SYNC -----
+        UpdateRunSync();
+        // ----------
+    }
 
     // this might be used in a later update
     // m_flLastVelocity = velocity;
-    
-    StdDataToPlayer(&m_SrvData); 
+
+    StdDataToPlayer(&m_SrvData);
 
     // think once per tick
     SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
@@ -793,7 +909,8 @@ void CMomentumPlayer::UpdateRunStats()
 
 void CMomentumPlayer::UpdateRunSync()
 {
-    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_SrvData.m_bHasPracticeMode))
+    if (g_pMomentumTimer->IsRunning() ||
+        (ConVarRef("mom_strafesync_draw").GetInt() == 2))
     {
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
@@ -838,7 +955,7 @@ void CMomentumPlayer::UpdateJumpStrafes()
         return;
 
     int currentZone = m_SrvData.m_RunData.m_iCurrentZone;
-    if (!m_bPrevTimerRunning)                   // timer started on this tick
+    if (!m_bPrevTimerRunning) // timer started on this tick
     {
         // Compare against successive bhops to avoid incrimenting when the player was in the air without jumping
         // (for surf)
@@ -953,15 +1070,13 @@ void CMomentumPlayer::CalculateAverageStats()
 // This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
 // bhop.
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
-void CMomentumPlayer::LimitSpeedInStartZone()
+void CMomentumPlayer::LimitSpeedInStartZone(Vector &vRealVelocity)
 {
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !m_SrvData.m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
-    {
-        if (GetGroundEntity() == nullptr && !m_SrvData.m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
-            m_nTicksInAir++;
-        else
-            m_nTicksInAir = 0;
+    m_bShouldLimitSpeed = false;
 
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
+        !m_SrvData.m_bUsingCPMenu) // MOM_TODO: && g_Timer->IsForILs()
+    {
         // set bhop flag to true so we can't prespeed with practice mode
         if (m_SrvData.m_bHasPracticeMode)
             m_SrvData.m_bDidPlayerBhop = true;
@@ -970,21 +1085,55 @@ void CMomentumPlayer::LimitSpeedInStartZone()
         ConVarRef gm("mom_gamemode");
         CTriggerTimerStart *startTrigger = g_pMomentumTimer->GetStartTrigger();
         // This does not look pretty but saves us a branching. The checks are:
-        // no nullptr, correct gamemode, is limiting leave speed and 
+        // no nullptr, correct gamemode, is limiting leave speed and
         //    enough ticks on air have passed
-        if (startTrigger && (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL) && startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED) &&
-            (!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS))
+        if (startTrigger && startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
         {
-            Vector velocity = GetLocalVelocity();
-            float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
-            if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
+            bool bShouldLimitSpeed = true;
+
+            if (GetGroundEntity() != nullptr)
             {
-                // New velocity is the unitary form of the current vel vector times the max speed amount
-                SetAbsVelocity((velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed());
+                if (m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_INAIR)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                if (!m_bWasInAir && m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_ONLAND)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                m_bWasInAir = false;
+            }
+            else
+            {
+                if (m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_GROUND)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                m_bWasInAir = true;
+            }
+
+            if (bShouldLimitSpeed)
+            {
+                Vector velocity = vRealVelocity;
+                float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
+
+                if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
+                {
+                    float flOldz = velocity.z;
+                    VectorNormalizeFast(velocity);
+                    velocity *= startTrigger->GetMaxLeaveSpeed();
+                    velocity.z = flOldz;
+                    // New velocity is the unitary form of the current vel vector times the max speed amount
+                    vRealVelocity = velocity;
+                    m_bShouldLimitSpeed = true;
+                }
             }
         }
     }
-    SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
+    // SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
 }
 // override of CBasePlayer::IsValidObserverTarget that allows us to spectate ghosts
 bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
@@ -1000,7 +1149,7 @@ bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)
         }
         if (FStrEq(target->GetClassname(), "mom_online_ghost")) // target is an online ghost
         {
-            CMomentumOnlineGhostEntity *pEntity = dynamic_cast<CMomentumOnlineGhostEntity*>(target);
+            CMomentumOnlineGhostEntity *pEntity = dynamic_cast<CMomentumOnlineGhostEntity *>(target);
             return pEntity && !pEntity->m_bSpectating;
         }
         return false;
@@ -1019,7 +1168,7 @@ bool CMomentumPlayer::SetObserverTarget(CBaseEntity *target)
     {
         return false;
     }
-    
+
     if (pCurrentGhost)
     {
         pCurrentGhost->RemoveSpectator();
@@ -1190,7 +1339,7 @@ void CMomentumPlayer::TweenSlowdownPlayer()
 
 CMomentumGhostBaseEntity *CMomentumPlayer::GetGhostEnt() const
 {
-    return dynamic_cast<CMomentumGhostBaseEntity*>(m_hObserverTarget.Get());
+    return dynamic_cast<CMomentumGhostBaseEntity *>(m_hObserverTarget.Get());
 }
 
 void CMomentumPlayer::StopSpectating()
@@ -1205,9 +1354,9 @@ void CMomentumPlayer::StopSpectating()
     SetMoveType(MOVETYPE_WALK);
 
     FIRE_GAME_WIDE_EVENT("spec_stop");
-   
+
     // Update the lobby/server if there is one
-    m_sSpecTargetSteamID.Clear(); //reset steamID when we stop spectating
+    m_sSpecTargetSteamID.Clear(); // reset steamID when we stop spectating
     g_pMomentumGhostClient->SetSpectatorTarget(m_sSpecTargetSteamID, false);
 }
 

@@ -31,6 +31,14 @@ enum
     SF_TELE_ONEXIT = 0x1000,                   // Teleport the player on OnEndTouch instead of OnStartTouch
 };
 
+enum
+{
+    SPEED_NORMAL_LIMIT,
+    SPEED_LIMIT_INAIR,
+    SPEED_LIMIT_GROUND,
+    SPEED_LIMIT_ONLAND,
+};
+
 // CBaseMomentumTrigger
 class CBaseMomentumTrigger : public CTriggerMultiple
 {
@@ -46,10 +54,21 @@ class CBaseMomentumTrigger : public CTriggerMultiple
 class CTriggerTimerStop : public CBaseMomentumTrigger
 {
     DECLARE_CLASS(CTriggerTimerStop, CBaseMomentumTrigger);
+    DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
 
   public:
     void OnStartTouch(CBaseEntity *) OVERRIDE;
     void OnEndTouch(CBaseEntity *) OVERRIDE;
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
+
+    int &ZoneNumber() { return m_iZoneNumber; };
+
+  private:
+    int m_iZoneNumber;
 };
 
 // CTriggerTeleportEnt
@@ -129,6 +148,7 @@ class CTriggerTimerStart : public CTriggerStage
 {
   public:
     DECLARE_CLASS(CTriggerTimerStart, CTriggerStage);
+    DECLARE_NETWORKCLASS();
     DECLARE_DATADESC();
 
     CTriggerTimerStart();
@@ -136,6 +156,12 @@ class CTriggerTimerStart : public CTriggerStage
   public:
     void OnEndTouch(CBaseEntity *) OVERRIDE;
     void OnStartTouch(CBaseEntity *) OVERRIDE;
+
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
+
     void Spawn() OVERRIDE;
 
     // The start is always the first stage/checkpoint
@@ -151,12 +177,21 @@ class CTriggerTimerStart : public CTriggerStage
     void SetIsLimitingSpeed(const bool pIsLimitingSpeed);
     void SetHasLookAngles(const bool bHasLook);
     bool HasLookAngles() const { return HasSpawnFlags(SF_USE_LOOKANGLES); }
+    bool &StartOnJump() { return m_bTimerStartOnJump; }
+    int &LimitSpeedType() { return m_iLimitSpeedType; }
+    int &ZoneNumber() { return m_iZoneNumber; }
 
   private:
     QAngle m_angLook;
 
     // How fast can player leave start trigger if they bhopped?
     float m_fBhopLeaveSpeed;
+    // This might be needed in case for some maps where the start zone is above a descent, when there is a wall in
+    // front: ref bhop_w1s1
+    bool m_bTimerStartOnJump;
+    int m_iLimitSpeedType;
+    // 0 is main start zone, others are bonuses.
+    int m_iZoneNumber;
 };
 
 // CFilterCheckpoint
@@ -354,6 +389,7 @@ class CTriggerMomentumPush : public CBaseMomentumTrigger
 class CTriggerSlide : public CBaseMomentumTrigger
 {
     DECLARE_CLASS(CTriggerSlide, CBaseMomentumTrigger);
+    DECLARE_NETWORKCLASS();
     DECLARE_DATADESC();
 
   public:
@@ -362,7 +398,6 @@ class CTriggerSlide : public CBaseMomentumTrigger
 
   public:
     bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity, m_bFixUpsideSlope;
-    // float m_flSlideGravity;
 };
 
 class CTriggerReverseSpeed : public CBaseMomentumTrigger

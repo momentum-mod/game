@@ -4,13 +4,13 @@
 #pragma once
 
 #include "cbase.h"
-#include "in_buttons.h"
-#include "run/mom_entity_run_data.h"
-#include "mom_player.h"
-#include "run/mom_replay_data.h"
-#include "mom_replay_system.h"
 #include <GameEventListener.h>
+#include "in_buttons.h"
 #include "mom_ghost_base.h"
+#include "mom_player.h"
+#include "mom_replay_system.h"
+#include "run/mom_entity_run_data.h"
+#include "run/mom_replay_data.h"
 
 class CMomentumPlayer;
 
@@ -42,11 +42,15 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     inline void SetRunFlags(uint32 flags) { m_SrvData.m_RunData.m_iRunFlags = flags; }
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame *GetCurrentStep() { return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick); }
+    CReplayFrame *GetCurrentStep()
+    {
+        return m_pPlaybackReplay->GetFrame(
+            max(min(m_SrvData.m_iCurrentTick - m_iTickRemainder, m_pPlaybackReplay->GetFrameCount() - 1), 0));
+    }
     CReplayFrame *GetNextStep();
-    
+
     bool IsReplayEnt() { return true; }
-    void (*StdDataToReplay)(StdReplayDataFromServer* from);
+    void (*StdDataToReplay)(StdReplayDataFromServer *from);
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
@@ -54,8 +58,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
-    //override of color so that replayghosts are always somewhat transparent.
-    void SetGhostColor(const uint32 newColor) OVERRIDE; 
+    // override of color so that replayghosts are always somewhat transparent.
+    void SetGhostColor(const uint32 newColor) OVERRIDE;
 
   protected:
     void Think(void) OVERRIDE;
@@ -64,6 +68,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     void CreateTrail() OVERRIDE;
+
   private:
     CMomReplayBase *m_pPlaybackReplay;
 
@@ -73,6 +78,9 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;
+    int m_iPracticeTimeStampStart, m_iPracticeTimeStampEnd; // Practice tickstamps.
+    int m_iTickRemainder; // Used for practice timestamps, this will be used for setting the right step for our ghost
+                          // replay system.
 };
 
 #endif // MOM_REPLAY_GHOST_H

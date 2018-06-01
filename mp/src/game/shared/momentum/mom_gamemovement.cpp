@@ -26,6 +26,15 @@ static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPL
 
 CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr), mom_gamemode("mom_gamemode") {}
 
+void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *data)
+{
+    m_pPlayer = ToCMOMPlayer(pPlayer);
+    Assert(m_pPlayer);
+
+    BaseClass::ProcessMovement(pPlayer, data);
+    LimitStartZoneSpeed();
+}
+
 void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
 {
     if (fvol > 0.0)
@@ -915,7 +924,6 @@ void CMomentumGameMovement::FullWalkMove()
 
         if (bIsSliding)
             vecOldOrigin = mv->GetAbsOrigin();
-
         if (player->GetGroundEntity() != nullptr)
         {
             WalkMove();
@@ -970,8 +978,6 @@ void CMomentumGameMovement::FullWalkMove()
         {
             StuckGround();
         }
-
-        LimitStartZoneSpeed();
     }
 
     if ((m_nOldWaterLevel == WL_NotInWater && player->GetWaterLevel() != WL_NotInWater) ||
@@ -986,27 +992,9 @@ void CMomentumGameMovement::FullWalkMove()
 
 void CMomentumGameMovement::LimitStartZoneSpeed(void)
 {
-    Vector vecNewVelocity = mv->m_vecVelocity;
-    if (player->GetGroundEntity() != nullptr)
-    {
-        float flMaxSpeed = mv->m_flMaxSpeed;
-
-        if (m_pPlayer->m_SrvData.m_bShouldLimitPlayerSpeed && m_bWasInAir && vecNewVelocity.Length2D() > flMaxSpeed)
-        {
-            float zSaved = vecNewVelocity.z;
-
-            VectorNormalizeFast(vecNewVelocity);
-
-            vecNewVelocity *= flMaxSpeed;
-            vecNewVelocity.z = zSaved;
-            mv->m_vecVelocity = vecNewVelocity;
-            m_bWasInAir = false;
-        }
-    }
-    else
-    {
-        m_bWasInAir = true;
-    }
+#ifndef CLIENT_DLL
+    m_pPlayer->LimitSpeedInStartZone(mv->m_vecVelocity);
+#endif
 }
 
 void CMomentumGameMovement::StuckGround(void)
@@ -1019,18 +1007,25 @@ void CMomentumGameMovement::StuckGround(void)
 
     Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
 
-    float flMinZ = m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->GetDistance();
+    vEnd[2] -= 8192.0f;
+
+    ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
+
+    {
+        CTraceFilterOnlyTriggerSlide tracefilter;
+        enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
+    }
 
     // Get our distance from our trigger so we don't go more far than that.
-    float flDist = vAbsOrigin.z - flMinZ;
+    float flDist = vAbsOrigin.z - tr.endpos.z;
 
-    // engine->Con_NPrintf(0, "%i %f", m_pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size(), flDist);
+    engine->Con_NPrintf(0, "%i %f", m_pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size(), flDist);
 
     // Was somehow under the trigger?
     if (flDist <= 0.0f)
         return;
 
-    vEnd[2] -= flDist;
+    vEnd[2] = vAbsOrigin.z - flDist;
 
     ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
 
@@ -1493,7 +1488,6 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
     if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
         (!((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsAllowingJump()) ||
          m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsStuckGround()))
-
         pm = nullptr;
 
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
@@ -1703,6 +1697,35 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
 
     // Return blocking flags.
     return blocked;
+}
+
+bool CTraceFilterOnlyTriggerSlide::ShouldHitEntity(IHandleEntity *pEntity, int contentsMask)
+{
+#ifdef CLIENT_DLL
+    auto pEnt = cl_entitylist->GetClientEntityFromHandle(pEntity->GetRefEHandle());
+#else
+    auto pEnt = gEntList.GetBaseEntity(pEntity->GetRefEHandle());
+#endif
+
+    if (pEnt != nullptr)
+    {
+#ifdef CLIENT_DLL
+        auto ClientClass = pEnt->GetClientClass();
+
+        if (!strcmp(ClientClass->GetName(), "CTriggerSlide"))
+        {
+            return true;
+        }
+#else
+ 
+        if (!strcmp(pEnt->GetClassname(), "CTriggerSlide"))
+        {
+            return true;
+        }
+#endif
+    }
+
+    return false;
 }
 
 // Expose our interface.
