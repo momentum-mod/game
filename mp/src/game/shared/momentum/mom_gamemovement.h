@@ -5,6 +5,7 @@
 #include "baseplayer_shared.h"
 #include "gamemovement.h"
 #include "mom_player_shared.h"
+#include "utlvector.h"
 
 #ifdef CLIENT_DLL
 #include "c_mom_triggers.h"
@@ -13,6 +14,7 @@
 #include "../momentum/mom_triggers.h"
 #endif
 
+class CTriggerSlide;
 struct surface_data_t;
 class IMovementListener;
 class CMomentumPlayer;
@@ -104,18 +106,22 @@ class CMomentumGameMovement : public CGameMovement
     void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
 
+    CTriggerSlide *&GetSlideTrigger() { return m_TriggerSlide; }
+
   private:
     bool m_bWasInAir;
     float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
+    CTriggerSlide *m_TriggerSlide;
 };
-
-extern CMomentumGameMovement *g_pMomentumGameMovement;
 
 class CTraceFilterOnlyTriggerSlide : public CTraceFilter
 {
   public:
-    bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask) OVERRIDE;
+    CTraceFilterOnlyTriggerSlide(){};
+    // bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask) OVERRIDE;
 };
+
+extern CMomentumGameMovement *g_pMomentumGameMovement;

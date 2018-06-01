@@ -29,9 +29,10 @@ END_RECV_TABLE();
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
 
-IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
-END_RECV_TABLE();
+#undef CTriggerSlide
 
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
+RecvPropBool(RECVINFO(m_bTouching)) END_RECV_TABLE();
 
 //-----------------------------------------------------------------------------
 // Box vertices
@@ -198,4 +199,18 @@ int C_TriggerTimerStop::DrawModel(int flags)
     }
 
     return BaseClass::DrawModel(flags);
+}
+
+void C_TriggerSlide::PostDataUpdate(DataUpdateType_t updatetype)
+{
+    BaseClass::PostDataUpdate(updatetype);
+
+    if (m_bTouching)
+    {
+        g_pMomentumGameMovement->GetSlideTrigger() = reinterpret_cast<C_TriggerSlide *>(this);
+    }
+    else
+    {
+        g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
+    }
 }

@@ -380,10 +380,10 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
         pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = pPlayer->GetAbsVelocity();
         pPlayer->m_SrvData.m_RunData.m_vecLastViewOffset = pPlayer->GetViewOffset();
         pPlayer->m_SrvData.m_RunData.m_practicetimestamp.m_iStart = gpGlobals->tickcount - m_iStartTick;
-        //TogglePause();
+        // TogglePause();
     }
-
-    // Stop(false); // Keep running
+    else
+        Stop(false); // Keep running
 }
 
 void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
@@ -404,7 +404,7 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
         pPlayer->SetViewOffset(pPlayer->m_SrvData.m_RunData.m_vecLastViewOffset);
         pPlayer->m_qangLastAngle = pPlayer->m_SrvData.m_RunData.m_angLastAng;
         pPlayer->m_SrvData.m_RunData.m_practicetimestamp.m_iEnd = gpGlobals->tickcount - m_iStartTick;
-        //TogglePause();
+        // TogglePause();
     }
 }
 
