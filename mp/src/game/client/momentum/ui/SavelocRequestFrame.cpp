@@ -20,15 +20,15 @@ SavelocReqFrame::SavelocReqFrame() : BaseClass(nullptr, "SavelocReqFrame"), m_iS
     SetMouseInputEnabled(true);
     SetKeyBoardInputEnabled(true);
     SetSizeable(false); // MOM_TODO: Make it sizeable?
-    SetTitle("Saveloc Sharing", true);
+    SetTitle("#MOM_Saveloc_Frame", true);
 
     SetScheme("SourceScheme");
 
     m_pSavelocSelect = new CheckButtonList(this, "SavelocSelect");
-    m_pRequestButton = new Button(this, "RequestButton", "Request"/*"#MOM_SavelocFrame_Request"*/, this, "Request");
+    m_pRequestButton = new Button(this, "RequestButton", "#MOM_Saveloc_Frame_Request", this, "Request");
     m_pCancelButton = new Button(this, "CancelButton", "#GameUI_Cancel", this, "Cancel");
     m_pStatusLabel = new Label(this, "StatusLabel", "Obtaining saveloc count...");
-    m_pToggleAllButton = new Button(this, "ToggleAll", "Toggle All", this, "ToggleSelect");
+    m_pToggleAllButton = new Button(this, "ToggleAll", "#MOM_Saveloc_Frame_Toggle", this, "ToggleSelect");
 
     LoadControlSettings("resource/ui/SavelocReqFrame.res");
 

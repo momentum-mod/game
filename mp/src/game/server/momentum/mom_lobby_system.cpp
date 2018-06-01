@@ -69,6 +69,7 @@ void CMomentumLobbySystem::SendChatMessage(char* pMessage)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         int len = Q_strlen(pMessage) + 1;
         bool result = SteamMatchmaking()->SendLobbyChatMsg(m_sLobbyID, pMessage, len);
         if (result)
@@ -172,6 +173,7 @@ void CMomentumLobbySystem::StartLobby()
 {
     if (!(m_cLobbyCreated.IsActive() || LobbyValid()))
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         SteamAPICall_t call = SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>(mom_lobby_type.GetInt()), mom_lobby_max_players.GetInt());
         m_cLobbyCreated.Set(call, this, &CMomentumLobbySystem::CallResult_LobbyCreated);
         DevLog("The lobby call successfully happened!\n");
@@ -250,6 +252,7 @@ void CMomentumLobbySystem::SetAppearanceInMemberData(ghostAppearance_t app)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         char base64Appearance[1024];
         base64_encode(&app, sizeof app, base64Appearance, 1024);
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_APPEARANCE, base64Appearance);
@@ -310,6 +313,7 @@ void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
 
     if (pTarget)
     {
+        CHECK_STEAM_API(SteamNetworking());
         if (SteamNetworking()->SendP2PPacket(*pTarget, buf.Base(), buf.TellPut(), sendType))
         {
             // DevLog("Sent the packet!\n");
@@ -317,6 +321,7 @@ void CMomentumLobbySystem::SendPacket(MomentumPacket_t *packet, CSteamID *pTarge
     }
     else if (m_mapLobbyGhosts.Count() > 0) // It's everybody
     {
+        CHECK_STEAM_API(SteamNetworking());
         uint16 index = m_mapLobbyGhosts.FirstInorder();
         while (index != m_mapLobbyGhosts.InvalidIndex())
         {
@@ -456,6 +461,7 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
 {
     if (LobbyValid())
     {
+        CHECK_STEAM_API(SteamMatchmaking());
         DevLog("Setting the map to %s!\n", pMapName ? pMapName : "INVALID (main menu/loading)");
         SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_MAP, pMapName);
         SetGameInfoStatus();
@@ -471,10 +477,14 @@ void CMomentumLobbySystem::LevelChange(const char* pMapName)
 
 void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 {
+    CHECK_STEAM_API(SteamUser());
+    CHECK_STEAM_API(SteamMatchmaking());
+
     CSteamID localID = SteamUser()->GetSteamID();
 
     if (pID)
     {
+        CHECK_STEAM_API(SteamFriends());
         const char *pName = SteamFriends()->GetFriendPersonaName(*pID);
 
         // Check if this person was block communication'd
@@ -558,6 +568,7 @@ void CMomentumLobbySystem::CheckToAdd(CSteamID *pID)
 
 void CMomentumLobbySystem::JoinLobbyFromString(const char* pString)
 {
+    CHECK_STEAM_API(SteamMatchmaking());
     if (pString)
     {
         if (m_sLobbyID.IsValid() && m_sLobbyID.IsLobby())
@@ -757,12 +768,15 @@ void CMomentumLobbySystem::SendAndRecieveP2PPackets()
 }
 void CMomentumLobbySystem::SetIsSpectating(bool bSpec)
 {
-    SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_IS_SPEC, bSpec ? "1" : nullptr);
+    if (SteamMatchmaking())
+        SteamMatchmaking()->SetLobbyMemberData(m_sLobbyID, LOBBY_DATA_IS_SPEC, bSpec ? "1" : nullptr);
 }
 
 //Return true if the lobby member is currently spectating.
 bool CMomentumLobbySystem::GetIsSpectatingFromMemberData(const CSteamID &who)
 {
+    if (!SteamMatchmaking())
+        return false;
     const char* specChar = SteamMatchmaking()->GetLobbyMemberData(m_sLobbyID, who, LOBBY_DATA_IS_SPEC);
     return specChar[0] ? true : false;
 }
@@ -775,6 +789,8 @@ void CMomentumLobbySystem::SendDecalPacket(DecalPacket_t *packet)
 
 void CMomentumLobbySystem::SetSpectatorTarget(const CSteamID &ghostTarget, bool bStartedSpectating, bool bLeft)
 {
+    CHECK_STEAM_API(SteamMatchmaking());
+
     SPECTATE_MSG_TYPE type;
     if (bStartedSpectating)
     {
@@ -816,6 +832,7 @@ void CMomentumLobbySystem::SendSpectatorUpdatePacket(const CSteamID &ghostTarget
 
 void CMomentumLobbySystem::SetGameInfoStatus()
 {
+    CHECK_STEAM_API(SteamFriends());
     ConVarRef gm("mom_gamemode");
     const char *gameMode;
     switch (gm.GetInt())

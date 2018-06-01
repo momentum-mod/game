@@ -27,7 +27,10 @@ m_pLeaderboards(nullptr)
     SetMouseInputEnabled(false);
     SetDefLessFunc(m_mapNameMap);
 
-    m_idLocal = SteamUser()->GetSteamID().ConvertToUint64();
+    if (SteamUser())
+        m_idLocal = SteamUser()->GetSteamID().ConvertToUint64();
+    else
+        m_idLocal = 0;
 }
 
 CHudSpectatorInfo::~CHudSpectatorInfo()
@@ -95,6 +98,7 @@ void CHudSpectatorInfo::SpectatorUpdate(const CSteamID& person, const CSteamID& 
 
     if (target.ConvertToUint64() == m_idLocal && !found)
     {
+        CHECK_STEAM_API(SteamFriends());
         const char *pName = SteamFriends()->GetFriendPersonaName(person);
         wchar_t pNameUnicode[MAX_PLAYER_NAME_LENGTH];
         wchar_t *pNameCopy = new wchar_t[MAX_PLAYER_NAME_LENGTH];
