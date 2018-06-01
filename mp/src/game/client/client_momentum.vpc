@@ -234,6 +234,17 @@ $Project "Client (Momentum)"
                         }
                     }
                 }
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
 			}
             $Folder "Network"
             {
