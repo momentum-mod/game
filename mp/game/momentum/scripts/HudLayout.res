@@ -170,13 +170,12 @@
     "CHudMapFinishedDialog"
     {
         "fieldName"     "CHudMapFinishedDialog"
-        "xpos"          "c-110"
-        "ypos"          "c-150"
-        "wide"          "220"
-        "tall"          "175"
-        "visible"       "1"
-        "enabled"       "1"
         "TextFont"      "Default"
+        // See resource/ui/MapFinishedDialog.res to change these
+        //"xpos"          "c-110"
+        //"ypos"          "c-150"
+        //"wide"          "220"
+        //"tall"          "180"
     }
     
     CHudSpectatorInfo

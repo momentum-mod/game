@@ -3995,6 +3995,12 @@ void Panel::GetResizeOffset( int &dx, int &dy )
 	dy = m_nResizeDeltaY;
 }
 
+void Panel::PinToSibling(Panel* pSibling, PinCorner_e pinOurCorner, PinCorner_e pinSiblingCorner)
+{
+    if (pSibling)
+        PinToSibling(pSibling->GetName(), pinOurCorner, pinSiblingCorner);
+}
+
 //-----------------------------------------------------------------------------
 // Tells this panel that it should pin itself to the corner of a specified sibling panel
 //-----------------------------------------------------------------------------

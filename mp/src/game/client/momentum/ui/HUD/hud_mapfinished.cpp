@@ -25,6 +25,8 @@ DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
 CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetProportional(true);
     SetSize(10, 10); // Fix "not sized yet" spew
     m_pRunStats = nullptr;
     m_bIsGhost = false;
@@ -73,8 +75,6 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     SetPaintBackgroundType(2);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    SetProportional(true);
 }
 
 CHudMapFinishedDialog::~CHudMapFinishedDialog()
@@ -148,11 +148,24 @@ bool CHudMapFinishedDialog::ShouldDraw()
     return CHudElement::ShouldDraw() && shouldDrawLocal && m_pRunStats;
 }
 
-
 void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
+    m_pDetachMouseLabel->SetFont(m_hTextFont);
+    m_pCurrentZoneLabel->SetFont(m_hTextFont);
+    m_pZoneOverallTime->SetFont(m_hTextFont);
+    m_pZoneEnterTime->SetFont(m_hTextFont);
+    m_pZoneJumps->SetFont(m_hTextFont);
+    m_pZoneStrafes->SetFont(m_hTextFont);
+    m_pZoneVelEnter->SetFont(m_hTextFont);
+    m_pZoneVelExit->SetFont(m_hTextFont);
+    m_pZoneVelAvg->SetFont(m_hTextFont);
+    m_pZoneVelMax->SetFont(m_hTextFont);
+    m_pZoneSync1->SetFont(m_hTextFont);
+    m_pZoneSync2->SetFont(m_hTextFont);
+    m_pRunSaveStatus->SetFont(m_hTextFont);
+    m_pRunUploadStatus->SetFont(m_hTextFont);
 }
 
 inline void FireMapFinishedClosedEvent(bool restart)
@@ -248,7 +261,7 @@ void CHudMapFinishedDialog::Reset()
 {
     //default values
     m_pRunStats = nullptr;
-    strcpy(m_pszEndRunTime, "00:00:00.000"); 
+    strcpy(m_pszEndRunTime, "00:00:00.000");
 }
 
 void CHudMapFinishedDialog::SetVisible(bool b)
@@ -428,16 +441,6 @@ void CHudMapFinishedDialog::Paint()
 
 void CHudMapFinishedDialog::OnThink()
 {
+    BaseClass::OnThink();
     m_pDetachMouseLabel->SetVisible(!IsMouseInputEnabled());
-
-    //Center the detach mouse label
-    if (m_pDetachMouseLabel->IsVisible())
-    {
-        int wide = GetWide();
-        char text[BUFSIZELOCL];
-        m_pDetachMouseLabel->GetText(text, BUFSIZELOCL);
-        HFont font = m_pDetachMouseLabel->GetFont();
-        int stringWidth = UTIL_ComputeStringWidth(font, text);
-        m_pDetachMouseLabel->SetPos((wide / 2) - stringWidth / 2, m_pDetachMouseLabel->GetYPos());
-    }
 }
