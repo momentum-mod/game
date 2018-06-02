@@ -6,6 +6,16 @@
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
 #include "movevars_shared.h"
+#include "mom_player_shared.h"
+#include "mom_modulecomms.h"
+#include "rumble_shared.h"
+
+#ifdef CLIENT_DLL
+#include "c_mom_triggers.h"
+#else
+#include "env_player_surface_trigger.h"
+#include "momentum/mom_triggers.h"
+#endif
 
 #include "tier0/memdbgon.h"
 
@@ -35,7 +45,7 @@ static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPL
 #endif
 
 CMomentumGameMovement::CMomentumGameMovement()
-    : m_pPlayer(nullptr), mom_gamemode("mom_gamemode"), m_TriggerSlide(nullptr)
+    : m_pPlayer(nullptr), mom_gamemode("mom_gamemode")
 {
 }
 
@@ -499,7 +509,7 @@ bool CMomentumGameMovement::CanUnduck()
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_SrvData.m_SlideData.IsEnabled())
+    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_CurrentSlideTrigger)
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -608,7 +618,7 @@ void CMomentumGameMovement::Duck(void)
     // Check to see if we are in the air.
     bool bInAir = player->GetGroundEntity() == nullptr && player->GetMoveType() != MOVETYPE_LADDER;
 
-    bool bIsSliding = m_pPlayer->m_SrvData.m_SlideData.IsEnabled();
+    bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
     if (mv->m_nButtons & IN_DUCK)
     {
@@ -765,7 +775,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_SrvData.m_SlideData.IsEnabled())
+    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_CurrentSlideTrigger)
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -1170,8 +1180,7 @@ void CMomentumGameMovement::FinishGravity(void)
     if (player->m_flWaterJumpTime)
         return;
 
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
-        !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
+    if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
     // Get the correct velocity for the end of the dt
@@ -1182,8 +1191,7 @@ void CMomentumGameMovement::FinishGravity(void)
 
 void CMomentumGameMovement::StartGravity(void)
 {
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
-        !m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsGravityEnabled())
+    if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
     // Add gravity so they'll be in the correct position during movement
@@ -1202,7 +1210,7 @@ void CMomentumGameMovement::FullWalkMove()
 {
     Vector vecOldOrigin;
 
-    bool bIsSliding = m_pPlayer->m_SrvData.m_SlideData.IsEnabled();
+    bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
     if (!CheckWater())
     {
@@ -1347,7 +1355,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        if (bIsSliding && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsStuckGround())
+        if (bIsSliding && m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround)
         {
             StuckGround();
         }
@@ -1372,7 +1380,7 @@ void CMomentumGameMovement::LimitStartZoneSpeed(void)
 
 void CMomentumGameMovement::StuckGround(void)
 {
-    if (m_TriggerSlide == nullptr)
+    if (!m_pPlayer || !m_pPlayer->m_CurrentSlideTrigger.Get())
         return;
 
     // clang-format off
@@ -1400,7 +1408,6 @@ void CMomentumGameMovement::StuckGround(void)
     // the box. So it doesn't go dumbly all under the map.
 
     // clang-format on
-
     trace_t tr_Point_C;
     Ray_t ray;
 
@@ -1424,10 +1431,10 @@ void CMomentumGameMovement::StuckGround(void)
 
         // Get B point.
         trace_t tr_Point_B;
-        enginetrace->ClipRayToEntity(ray, MASK_ALL, m_TriggerSlide, &tr_Point_B);
+        enginetrace->ClipRayToEntity(ray, MASK_ALL, m_pPlayer->m_CurrentSlideTrigger, &tr_Point_B);
 
         // Did we hit our trigger?
-        if (tr_Point_B.m_pEnt == m_TriggerSlide)
+        if (m_pPlayer->m_CurrentSlideTrigger == tr_Point_B.m_pEnt)
         {
             // Yep gotcha.
             float flDist__B_C = (tr_Point_C.endpos.z - tr_Point_B.endpos.z);
@@ -1946,9 +1953,9 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
-        (!((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsAllowingJump()) ||
-         m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsStuckGround()))
+    if (m_pPlayer->m_CurrentSlideTrigger &&
+        (!((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround) ||
+         m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround))
         pm = nullptr;
 
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
@@ -2141,9 +2148,8 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     // MOM_TODO: Make this only bhop gametype?
     // Enable this when we konw that we are sliding.
     Vector dif = mv->m_vecVelocity - out;
-    if ((dif.Length2D() > 0.0f && (angle > 0.7f) && (out[2] > 0.0f)) &&
-        (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() &&
-         m_pPlayer->m_SrvData.m_SlideData.GetCurrent()->IsFixUpsideSlope()))
+    if ((dif.Length2D() > 0.0f && (angle >= 0.7f) && (out[2] > 0.0f)) &&
+        (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bFixUpsideSlope))
     {
         out.x = mv->m_vecVelocity.x;
         out.y = mv->m_vecVelocity.y;

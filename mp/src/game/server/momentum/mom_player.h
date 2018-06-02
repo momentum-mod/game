@@ -4,7 +4,6 @@
 #pragma once
 #endif
 
-#include "cbase.h"
 #include "mom_ghostdefs.h"
 #include "mom_shareddefs.h"
 #include "GameEventListener.h"
@@ -13,6 +12,7 @@
 
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
+class CTriggerSlide;
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
@@ -108,6 +108,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void LimitSpeedInStartZone(Vector &vRealVelocity);
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
+    CNetworkHandle(CTriggerSlide, m_CurrentSlideTrigger);
+
+    CUtlVector<CTriggerSlide*> m_vecSlideTriggers;
 
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
