@@ -27,13 +27,6 @@ LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stop, C_TriggerTimerStop);
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerTimerStop, DT_TriggerTimerStop, CTriggerTimerStop)
 END_RECV_TABLE();
 
-LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
-
-#undef CTriggerSlide
-
-IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
-RecvPropBool(RECVINFO(m_bTouching)) END_RECV_TABLE();
-
 //-----------------------------------------------------------------------------
 // Box vertices
 //-----------------------------------------------------------------------------
@@ -201,12 +194,12 @@ int C_TriggerTimerStop::DrawModel(int flags)
     return BaseClass::DrawModel(flags);
 }
 
-void C_TriggerSlide::PostDataUpdate(DataUpdateType_t updatetype)
-{
-    BaseClass::PostDataUpdate(updatetype);
 
-    if (m_bTouching)
-    {
-        g_pMomentumGameMovement->GetSlideTrigger() = this->GetBaseEntity();
-    }
-}
+LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
+RecvPropBool(RECVINFO(m_bStuckOnGround)),
+RecvPropBool(RECVINFO(m_bAllowingJump)),
+RecvPropBool(RECVINFO(m_bDisableGravity)),
+RecvPropBool(RECVINFO(m_bFixUpsideSlope)),
+END_RECV_TABLE();

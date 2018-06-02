@@ -4,7 +4,6 @@
 #include "run/run_stats.h"
 #include "threadtools.h"
 #include "run/mom_entity_run_data.h"
-#include "run/mom_slide_data.h"
 #include "tier1/utllinkedlist.h"
 #include <utldelegate.h>
 
@@ -30,7 +29,6 @@ struct StdDataFromServer
     int m_iSuccessiveBhops;
     bool m_bShouldLimitPlayerSpeed;
     CMOMRunEntityData m_RunData;
-    CMomPlayerSlideData m_SlideData;
     CMomRunStats::data m_RunStatsData;
 };
 

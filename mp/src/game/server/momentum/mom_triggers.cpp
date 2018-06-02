@@ -911,39 +911,11 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
     END_DATADESC();
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
-SendPropBool(SENDINFO(m_bTouching)), END_SEND_TABLE();
-
-// Sometimes when a trigger is touching another trigger, it disables the slide when it shouldn't, because OnEndTouch
-// was called for one trigger but the player was actually into another trigger, so we must check if we were inside
-// of any of thoses.
-
-void CTriggerSlide::CheckTriggers(CMomentumPlayer *pPlayer)
-{
-    if (pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size() <= 0)
-        return;
-
-    // We're are in all those triggers except that only the current one matter, so we can use the right trigger in
-    // gamemovement.
-
-    for (int i = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size() - 1; i != 0; i--)
-    {
-        auto Element = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Element(i);
-
-        CTriggerSlide *TriggerSlide = dynamic_cast<CTriggerSlide *>(
-            gEntList.GetBaseEntity(gEntList.LookupEntityByNetworkIndex(Element.GetEntityIndex())->GetRefEHandle()));
-
-        TriggerSlide->m_bTouching = false;
-    }
-
-    // We're inside that one currently.
-
-    CTriggerSlide *CurrentTriggerSlide = dynamic_cast<CTriggerSlide *>(gEntList.GetBaseEntity(
-        gEntList.LookupEntityByNetworkIndex(pPlayer->m_SrvData.m_SlideData.GetCurrent()->GetEntityIndex())
-            ->GetRefEHandle()));
-
-    CurrentTriggerSlide->m_bTouching = true;
-    g_pMomentumGameMovement->GetSlideTrigger() = CurrentTriggerSlide;
-}
+SendPropBool(SENDINFO(m_bStuckOnGround)),
+SendPropBool(SENDINFO(m_bAllowingJump)),
+SendPropBool(SENDINFO(m_bDisableGravity)),
+SendPropBool(SENDINFO(m_bFixUpsideSlope)),
+END_SEND_TABLE();
 
 void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
 {
@@ -953,15 +925,8 @@ void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
 
     if (pPlayer != nullptr)
     {
-        CMomSlideData SlideData;
-        SlideData.SetAllowingJump(m_bAllowingJump);
-        SlideData.SetStuckToGround(m_bStuckOnGround);
-        SlideData.SetEnableGravity(!m_bDisableGravity);
-        SlideData.SetFixUpsideSlope(m_bFixUpsideSlope);
-        SlideData.SetEntityIndex(entindex());
-        pPlayer->m_SrvData.m_SlideData.m_vecSlideData.AddToHead(SlideData);
-        pPlayer->m_SrvData.m_SlideData.SetEnabled();
-        CheckTriggers(pPlayer);
+        pPlayer->m_vecSlideTriggers.AddToHead(this);
+        pPlayer->m_CurrentSlideTrigger = this;
     }
 }
 
@@ -973,24 +938,14 @@ void CTriggerSlide::OnEndTouch(CBaseEntity *pOther)
 
     if (pPlayer != nullptr)
     {
-        for (int i = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size() - 1; i != -1; i--)
+        pPlayer->m_vecSlideTriggers.FindAndRemove(this);
+
+        if (pPlayer->m_CurrentSlideTrigger.Get() == this)
         {
-            auto Element = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Element(i);
-
-            if (Element.GetEntityIndex() == entindex())
-            {
-                pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Remove(i);
-            }
-        }
-
-        CheckTriggers(pPlayer);
-
-        // No more triggers.
-        if (pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size() <= 0)
-        {
-            g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
-            m_bTouching = false;
-            pPlayer->m_SrvData.m_SlideData.SetDisabled();
+            if (!pPlayer->m_vecSlideTriggers.IsEmpty())
+                pPlayer->m_CurrentSlideTrigger = pPlayer->m_vecSlideTriggers[0];
+            else
+                pPlayer->m_CurrentSlideTrigger = nullptr;
         }
     }
 }

@@ -13,11 +13,7 @@
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_csbasegun.h"
-#include "ghost_client.h"
-#include "mom_online_ghost.h"
-#include "mom_blockfix.h"
 #include "mom_system_saveloc.h"
-#include "mom_gamemovement.h"
 #include "util/mom_util.h"
 #include "mom_replay_system.h"
 
@@ -37,8 +33,10 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
-SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINFO(m_afButtonDisabled)),
-    END_SEND_TABLE();
+SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), 
+SendPropInt(SENDINFO(m_afButtonDisabled)),
+SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
+END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
 DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), /*DEFINE_THINKFUNC(LimitSpeedInStartZone),*/
@@ -117,6 +115,8 @@ CMomentumPlayer::CMomentumPlayer()
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
+
+    m_CurrentSlideTrigger = nullptr;
 
     m_SrvData.m_RunData.m_iRunFlags = 0;
     m_SrvData.m_iShotsFired = 0;

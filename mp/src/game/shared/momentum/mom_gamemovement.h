@@ -1,16 +1,11 @@
 #pragma once
 
-#include "cbase.h"
-
 #include "gamemovement.h"
-#include "utlvector.h"
 
 #ifdef CLIENT_DLL
-//#define CTriggerSlide C_TriggerSlide
 #define CMomentumPlayer C_MomentumPlayer
 #endif
 
-//class CTriggerSlide;
 class CMomentumPlayer;
 struct surface_data_t;
 class IMovementListener;
@@ -103,16 +98,12 @@ class CMomentumGameMovement : public CGameMovement
     void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
 
-    CBaseEntity *&GetSlideTrigger() { return m_TriggerSlide; }
-
   private:
     bool m_bWasInAir;
     float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
-    //CTriggerSlide *m_TriggerSlide;
-    CBaseEntity *m_TriggerSlide;
 
     bool m_bCheckForGrabbableLadder;
 };

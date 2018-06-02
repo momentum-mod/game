@@ -340,8 +340,6 @@ $Project "Client (Momentum)"
             
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.h"
             $File "$SRCDIR\game\shared\momentum\run\mom_entity_run_data.cpp"
-            $File "$SRCDIR\game\shared\momentum\run\mom_slide_data.h"
-            $File "$SRCDIR\game\shared\momentum\run\mom_slide_data.cpp"
             
             $Folder "Project-9"
             {
