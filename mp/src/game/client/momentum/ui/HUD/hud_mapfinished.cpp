@@ -3,8 +3,21 @@
 #include "mom_shareddefs.h"
 #include <game/client/iviewport.h>
 #include "momSpectatorGUI.h"
+#include "clientmode.h"
+#include "mom_player_shared.h"
+
+#include <vgui_controls/ImagePanel.h>
+#include "vgui_controls/Tooltip.h"
+#include <vgui/IInput.h>
+#include "vgui/ISurface.h"
+#include "vgui/ILocalize.h"
+
+#include "mom_event_listener.h"
+#include "util/mom_util.h"
 
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 
@@ -12,6 +25,8 @@ DECLARE_HUDELEMENT_DEPTH(CHudMapFinishedDialog, 70);
 CHudMapFinishedDialog::CHudMapFinishedDialog(const char *pElementName) : 
 CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinishedDialog")
 {
+    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
+    SetProportional(true);
     SetSize(10, 10); // Fix "not sized yet" spew
     m_pRunStats = nullptr;
     m_bIsGhost = false;
@@ -20,6 +35,7 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
 
     ListenForGameEvent("timer_state");
     ListenForGameEvent("replay_save");
+    ListenForGameEvent("run_upload");
 
     surface()->CreatePopup(GetVPanel(), false, false, false, false, false);
     
@@ -59,8 +75,6 @@ CHudElement(pElementName), BaseClass(g_pClientMode->GetViewport(), "CHudMapFinis
     SetPaintBackgroundType(2);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
-    SetHiddenBits(HIDEHUD_WEAPONSELECTION);
-    SetProportional(true);
 }
 
 CHudMapFinishedDialog::~CHudMapFinishedDialog()
@@ -76,12 +90,8 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
         if (!pEvent->GetBool("is_running", true))
         {
             C_MomentumPlayer * pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-            if (g_MOMEventListener && pPlayer)
+            if (pPlayer)
             {
-                m_bRunUploaded = g_MOMEventListener->m_bTimeDidUpload;
-                //MOM_TODO: g_MOMEventListener has a m_szMapUploadStatus, do we want it on this panel?
-                //Is it going to be a localized string, except for errors that have to be specific?
-
                 ConVarRef hvel("mom_speedometer_hvel");
                 m_iVelocityType = hvel.GetBool();
 
@@ -115,7 +125,10 @@ void CHudMapFinishedDialog::FireGameEvent(IGameEvent* pEvent)
         m_bRunSaved = pEvent->GetBool("save");
         // MOM_TODO: There's a file name parameter as well, do we want to use it here?
     }
-    //MOM_TODO: Listen for the upload event and set it here?
+    else if (FStrEq(pEvent->GetName(), "run_upload"))
+    {
+        m_bRunUploaded = pEvent->GetBool("run_posted");
+    }
 }
 
 bool CHudMapFinishedDialog::ShouldDraw()
@@ -135,11 +148,24 @@ bool CHudMapFinishedDialog::ShouldDraw()
     return CHudElement::ShouldDraw() && shouldDrawLocal && m_pRunStats;
 }
 
-
 void CHudMapFinishedDialog::ApplySchemeSettings(IScheme *pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
     SetBgColor(GetSchemeColor("MOM.Panel.Bg", pScheme));
+    m_pDetachMouseLabel->SetFont(m_hTextFont);
+    m_pCurrentZoneLabel->SetFont(m_hTextFont);
+    m_pZoneOverallTime->SetFont(m_hTextFont);
+    m_pZoneEnterTime->SetFont(m_hTextFont);
+    m_pZoneJumps->SetFont(m_hTextFont);
+    m_pZoneStrafes->SetFont(m_hTextFont);
+    m_pZoneVelEnter->SetFont(m_hTextFont);
+    m_pZoneVelExit->SetFont(m_hTextFont);
+    m_pZoneVelAvg->SetFont(m_hTextFont);
+    m_pZoneVelMax->SetFont(m_hTextFont);
+    m_pZoneSync1->SetFont(m_hTextFont);
+    m_pZoneSync2->SetFont(m_hTextFont);
+    m_pRunSaveStatus->SetFont(m_hTextFont);
+    m_pRunUploadStatus->SetFont(m_hTextFont);
 }
 
 inline void FireMapFinishedClosedEvent(bool restart)
@@ -235,7 +261,7 @@ void CHudMapFinishedDialog::Reset()
 {
     //default values
     m_pRunStats = nullptr;
-    strcpy(m_pszEndRunTime, "00:00:00.000"); 
+    strcpy(m_pszEndRunTime, "00:00:00.000");
 }
 
 void CHudMapFinishedDialog::SetVisible(bool b)
@@ -415,16 +441,6 @@ void CHudMapFinishedDialog::Paint()
 
 void CHudMapFinishedDialog::OnThink()
 {
+    BaseClass::OnThink();
     m_pDetachMouseLabel->SetVisible(!IsMouseInputEnabled());
-
-    //Center the detach mouse label
-    if (m_pDetachMouseLabel->IsVisible())
-    {
-        int wide = GetWide();
-        char text[BUFSIZELOCL];
-        m_pDetachMouseLabel->GetText(text, BUFSIZELOCL);
-        HFont font = m_pDetachMouseLabel->GetFont();
-        int stringWidth = UTIL_ComputeStringWidth(font, text);
-        m_pDetachMouseLabel->SetPos((wide / 2) - stringWidth / 2, m_pDetachMouseLabel->GetYPos());
-    }
 }

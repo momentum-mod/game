@@ -1,22 +1,15 @@
-"VertexLitGeneric"
+VertexLitGeneric
 {
-	// Base albedo with selfillum on alpha
-    $basetexture models/weapons/w_models/w_mom_grenade/w_mom_grenade
-	// Normal map
-	$bumpmap models/weapons/w_models/w_mom_grenade/w_mom_grenade_norm
-	$surfaceprop metal
-	
-	// Not working, something to do with selfillum?
-	$envmap env_cubemap
-	//$envmapmask	models/weapons/w_models/w_mom_grenade/w_mom_grenade_spec
-	
-	
-	$envmaptint "[ 0.1 0.1 0.1 ]"
-    $envmapcontrast 0 //1
-    $envmapsaturation .1//1
-	
-	// Treat normal map's alpha as the enviroment mask (specular)
-	$normalmapalphaenvmapmask 1
-	// Illumination map
+	$basetexture "models/weapons/w_models/w_mom_grenade/w_mom_grenade"
+	$bumpmap "models/weapons/w_models/w_mom_grenade/w_mom_grenade_norm"
+	$surfaceprop Metal
+
+	$phong 1
+	$phongfresnelranges "[0.16 0.58 1]"
+	$phongexponent 6
+	$phongboost 0.57
+
 	$selfillum 1
+	$selfillum_envmapmask_alpha 1
+	$selfillumtint "[0.59 0.59 0.59]"
 }

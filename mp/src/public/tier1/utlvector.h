@@ -149,7 +149,10 @@ public:
 	// Memory deallocation
 	void Purge();
 
-	// Purges the list and calls delete on each element in it.
+    // Calls delete on an element and removes (purges) it from the list
+    void PurgeAndDeleteElement(int elem);
+
+	// Calls delete on each element and removes all elements from (purges) the list.
 	void PurgeAndDeleteElements();
 
 	// Compacts the vector to the number of elements actually in use 
@@ -1167,6 +1170,14 @@ inline void CUtlVector<T, A>::Purge()
 	ResetDbgInfo();
 }
 
+template <typename T, class A>
+inline void CUtlVector<T, A>::PurgeAndDeleteElement(int elem)
+{
+    Assert( elem >= 0 && elem < m_Size );
+
+    delete Element(elem);
+    Remove(elem);
+}
 
 template< typename T, class A >
 inline void CUtlVector<T, A>::PurgeAndDeleteElements()

@@ -62,7 +62,7 @@ ConVar debug_latch_reset_onduck( "debug_latch_reset_onduck", "1", FCVAR_CHEAT );
 #endif
 
 // [MD] I'll remove this eventually. For now, I want the ability to A/B the optimizations. EDIT: Let's the game roll
-bool g_bMovementOptimizations = false;
+bool g_bMovementOptimizations = true;
 
 // Roughly how often we want to update the info about the ground surface we're on.
 // We don't need to do this very often.
@@ -2270,12 +2270,6 @@ void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
 	{
 		factor /= 2.0f;
 	}
-
-    // Check if we want to go up/down
-    if (mv->m_nButtons & (IN_JUMP | IN_DUCK))
-    {
-        mv->m_flUpMove = ConVarRef("cl_upspeed").GetFloat() * (mv->m_nButtons & IN_JUMP ? 1.0f : -1.0f);
-    }
 	
 	// Copy movement amounts
 	float fmove = mv->m_flForwardMove * factor;

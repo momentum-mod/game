@@ -100,20 +100,34 @@ CMomentumGameRules::CMomentumGameRules()
 
 CMomentumGameRules::~CMomentumGameRules() {}
 
-static CViewVectors g_MOMViewVectors(Vector(0, 0, 62), // eye position
-                                                       //@tuxxi: this eye position does not affect the ingame camera, it
-                                                       //only affects the 'virtual' eye position used by the renderer.
-                                                       //the Z val is 64 by default, changing
-                                                       // it to 62 to match the hull max fixes  the bug where the
-                                                       // out-of-bounds area appears when hitting a ceiling while
-                                                       // traveling upwards.
+/* Values dumped from CS:S client.dll
+.data:104A11A0 ; Vector3 m_vView
+.data:104A11A0 m_vView         Vector3 <0.0, 0.0, 64.0>
+.data:104A11AC ; Vector3 m_vHullMin
+.data:104A11AC m_vHullMin      Vector3 <-16.0, -16.0, 0.0>
+.data:104A11B8 ; Vector3 m_vHullMax
+.data:104A11B8 m_vHullMax      Vector3 <16.0, 16.0, 62.0>
+.data:104A11C4 ; Vector3 m_vDuckHullMin
+.data:104A11C4 m_vDuckHullMin  Vector3 <-16.0, -16.0, 0.0>
+.data:104A11D0 ; Vector3 m_vDuckHullMax
+.data:104A11D0 m_vDuckHullMax  Vector3 <16.0, 16.0, 45.0>
+.data:104A11DC ; Vector3 m_vDuckView
+.data:104A11DC m_vDuckView     Vector3 <0.0, 0.0, 47.0>
+.data:104A11E8 ; Vector3 m_vObsHullMin
+.data:104A11E8 m_vObsHullMin   Vector3 <-10.0, -10.0, -10.0>
+.data:104A11F4 ; Vector3 m_vObsHullMax
+.data:104A11F4 m_vObsHullMax   Vector3 <10.0, 10.0, 10.0>
+.data:104A1200 ; Vector3 m_vDeadViewHeight
+.data:104A1200 m_vDeadViewHeight Vector3 <0.0, 0.0, 14.0>
+*/
 
+static CViewVectors g_MOMViewVectors(Vector(0, 0, 64), // eye position
                                      Vector(-16, -16, 0), // hull min
                                      Vector(16, 16, 62),  // hull max
 
                                      Vector(-16, -16, 0), // duck hull min
                                      Vector(16, 16, 45),  // duck hull max
-                                     Vector(0, 0, 45),    // duck view
+                                     Vector(0, 0, 47),    // duck view
 
                                      Vector(-10, -10, -10), // observer hull min
                                      Vector(10, 10, 10),    // observer hull max
@@ -227,8 +241,8 @@ static void OnGamemodeChanged(IConVar *var, const char *pOldValue, float fOldVal
     
     TickSet::SetTickrate(gamemode);
 
-    // set the value of sv_tickrate so it updates when gamemode changes the tickrate.
-    ConVarRef tr("sv_tickrate");
+    // set the value of sv_interval_per_tick so it updates when gamemode changes the tickrate.
+    ConVarRef tr("sv_interval_per_tick");
     tr.SetValue(TickSet::GetTickrate());
 }
 

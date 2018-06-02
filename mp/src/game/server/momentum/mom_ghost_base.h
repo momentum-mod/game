@@ -1,11 +1,10 @@
-#ifndef GHOST_BASE
-#define GHOST_BASE 
 #pragma once
 
-#include "cbase.h"
-#include "mom_timer.h"
+#include "mom_ghostdefs.h"
 
 #define GHOST_MODEL "models/player/player_shape_base.mdl"
+
+class CMomentumPlayer;
 
 enum ghostModelBodyGroup
 {
@@ -26,7 +25,6 @@ enum ghostModelBodyGroup
     BODY_CYLINDER,
     LAST
 };
-class CMomentumPlayer;
 class CMomentumGhostBaseEntity : public CBaseAnimating
 {
     DECLARE_CLASS(CMomentumGhostBaseEntity, CBaseAnimating);
@@ -100,4 +98,3 @@ protected:
 private:
     CBaseEntity *m_eTrail;
 };
-#endif //GHOST_BASE

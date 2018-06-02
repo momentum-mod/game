@@ -7,8 +7,6 @@
 
 #include "cbase.h"
 
-#include <stdio.h>
-
 #include "ClientTimesDisplay.h"
 #include "inputsystem/iinputsystem.h"
 #include <cdll_client_int.h>
@@ -19,14 +17,14 @@
 #include <vgui/ILocalize.h>
 #include <vgui/IScheme.h>
 #include <vgui/ISurface.h>
-#include <vstdlib/IKeyValuesSystem.h>
 
 #include <KeyValues.h>
 #include <vgui_controls/ImageList.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/SectionedListPanel.h>
-
-#include <game/client/iviewport.h>
+#include "vgui_controls/TextImage.h"
+#include "vgui_controls/ToggleButton.h"
+#include "LeaderboardsContextMenu.h"
 
 #include "filesystem.h"
 #include <util/mom_util.h>
@@ -37,6 +35,12 @@
 #include <util/jsontokv.h>
 #include "IMessageboxPanel.h"
 #include "run/mom_replay_factory.h"
+#include "fmtstr.h"
+#include "clientmode.h"
+#include "SavelocRequestFrame.h"
+#include "LobbyMembersPanel.h"
+#include "mom_modulecomms.h"
+#include "run/mom_replay_base.h"
 
 extern IFileSystem *filesystem;
 
@@ -49,7 +53,16 @@ using namespace vgui;
 #define DATESTRING "00/00/0000 00:00:00" // Entire date string
 #define TIMESTRING "00:00:00.000"        // Entire time string
 
-#define ENABLE_ONLINE_LEADERBOARDS 0 // MOM_TODO: Removeme when working on the online section
+#define ENABLE_ONLINE_LEADERBOARDS 1 // MOM_TODO: Removeme when working on the online section
+
+class CUtlSortVectorTimeValue
+{
+public:
+    bool Less(CMomReplayBase *lhs, CMomReplayBase *rhs, void *) const
+    {
+        return lhs->GetRunTime() < rhs->GetRunTime();
+    }
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -86,13 +99,17 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     // SetScheme("ClientScheme");
     SetScheme(scheme()->LoadSchemeFromFile("resource/LeaderboardsScheme.res", "LeaderboardsScheme"));
 
+    m_pLobbyMembersPanel = new LobbyMembersPanel(this);
+    m_pSavelocReqFrame = new SavelocReqFrame();
+
+    m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
+
     LoadControlSettings("resource/ui/leaderboards.res");
 
     m_pHeader = FindChildByName("Header", true);
     m_pMapName = FindControl<Label>("MapName", true);
     m_pMapAuthor = FindControl<Label>("MapAuthor", true);
     m_pMapDetails = FindControl<Label>("MapDetails", true);
-    m_pMomentumLogo = FindControl<ImagePanel>("MomentumLogo", true);
     m_pPlayerStats = FindChildByName("PlayerStats", true);
     m_pPlayerAvatar = FindControl<ImagePanel>("PlayerAvatar", true);
     m_pPlayerName = FindControl<Label>("PlayerName", true);
@@ -114,11 +131,9 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_pFilterPanel = FindControl<EditablePanel>("FilterPanel", true);
     m_pFilterPanel->LoadControlSettings("resource/ui/leaderboards_filter.res");
 
-    m_pLobbyMembersPanel = FindControl<SectionedListPanel>("LobbyMembers", true);
-
     m_pCurrentLeaderboards = m_pLocalLeaderboards;
 
-    if (!m_pHeader || !m_pMapName || !m_pPlayerStats || !m_pPlayerAvatar || !m_pPlayerName || !m_pMomentumLogo ||
+    if (!m_pHeader || !m_pMapName || !m_pPlayerStats || !m_pPlayerAvatar || !m_pPlayerName ||
         !m_pPlayerMapRank || !m_pPlayerGlobalRank || !m_pLeaderboards || !m_pOnlineLeaderboards ||
         !m_pLocalLeaderboards || !m_pFriendsLeaderboards || !m_pPlayerPersonalBest || !m_pLoadingOnlineTimes ||
         !m_pPlayerExperience || !m_pGlobalLeaderboardsButton || !m_pFriendsLeaderboardsButton ||
@@ -132,7 +147,6 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_pMapAuthor->SetParent(m_pHeader);
     m_pMapDetails->SetParent(m_pHeader);
     m_pPlayerStats->SetParent(m_pLeaderboards);
-    m_pMomentumLogo->SetParent(m_pPlayerStats);
     m_pPlayerAvatar->SetParent(m_pPlayerStats);
     m_pPlayerName->SetParent(m_pPlayerStats);
     m_pPlayerMapRank->SetParent(m_pPlayerStats);
@@ -158,24 +172,11 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
     m_pLocalLeaderboards->SetVerticalScrollbar(false);
     m_pFriendsLeaderboards->SetVerticalScrollbar(false);
 
-    m_pMomentumLogo->GetImage()->SetSize(scheme()->GetProportionalScaledValue(256),
-                                         scheme()->GetProportionalScaledValue(64));
-
     m_iDesiredHeight = GetTall();
 
     // update scoreboard instantly if on of these events occur
     ListenForGameEvent("replay_save");
     ListenForGameEvent("run_upload");
-    ListenForGameEvent("game_newmap");
-    ListenForGameEvent("lobby_leave");
-
-    m_pLeaderboardReplayCMenu = new CLeaderboardsContextMenu(this);
-
-
-    m_pImageListLobby = new ImageList(true);
-    SetDefLessFunc(m_mapLobbyIDToImageListIndx);
-
-    InitLobbyPanelSections();
 
     m_fLastHeaderUpdate = 0.0f;
     m_flLastOnlineTimeUpdate = 0.0f;
@@ -189,12 +190,20 @@ CClientTimesDisplay::CClientTimesDisplay(IViewPort *pViewPort) :
 
     flaggedRuns = RUNFLAG_NONE;
     SetDefLessFunc(m_umMapNames);
-
+    SetDefLessFunc(m_mapAvatarsToImageList);
 
 #if ENABLE_ONLINE_LEADERBOARDS
-    m_pImageList = new ImageList(true);
-    SetDefLessFunc(m_mapAvatarsToImageList);
+    // MOM_TODO: HACKHACK: this is changed to false because deleting a scheme image is a no-no.
+    // While we do know that the image list will only hold scheme and avatar images, we cannot delete
+    // either one. We do not have to delete the scheme images, as they are cached, and the avatar images
+    // are also cached, but indefinitely. There's a memory leak with avatar images, since every image just
+    // keeps creating Texture IDs and never destroying them, so if you download a lot of *different* avatars 
+    // (play a lot of maps and look at the leaderboards for them), you could start to see the perf impact of it.
+    // I'll leave it as a HACKHACK for now because this is ugly and that memory needs freed after a while, but may
+    // be unnoticeable for most people... we'll see how big the memory leak impact really is.
+    m_pImageList = new ImageList(false);
     SetupIcons();
+    m_hCurrentLeaderboard = 0;
 #else
     m_pImageList = nullptr;
 #endif
@@ -207,11 +216,28 @@ CClientTimesDisplay::~CClientTimesDisplay()
 {
     m_pCurrentLeaderboards = nullptr;
 
+    if (m_pImageList)
+        delete m_pImageList;
+
+    m_umMapNames.RemoveAll();
+    m_mapAvatarsToImageList.RemoveAll();
+
     if (m_pLeaderboardReplayCMenu)
     {
         m_pLeaderboardReplayCMenu->DeletePanel();
         m_pLeaderboardReplayCMenu = nullptr;
     }
+
+    if (m_cLeaderboardFindResult.IsActive())
+        m_cLeaderboardFindResult.Cancel();
+
+    if (m_cLeaderboardFriendsScoresDownloaded.IsActive())
+        m_cLeaderboardFriendsScoresDownloaded.Cancel();
+
+    if (m_cLeaderboardGlobalScoresDownloaded.IsActive())
+        m_cLeaderboardGlobalScoresDownloaded.Cancel();
+
+#if ENABLE_HTTP_LEADERBOARDS
     if (cbGetFriendsTimesCallback.IsActive())
         cbGetFriendsTimesCallback.Cancel();
 
@@ -223,7 +249,7 @@ CClientTimesDisplay::~CClientTimesDisplay()
 
     if (cbGetPlayerDataForMapCallback.IsActive())
         cbGetPlayerDataForMapCallback.Cancel();
-    // MOM_TODO: Ensure a good destructor
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -307,8 +333,8 @@ void CClientTimesDisplay::InitScoreboardSections()
     {
         m_pLocalLeaderboards->AddSection(m_iSectionId, "", StaticLocalTimeSortFunc);
         m_pLocalLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
-        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, SCALE(m_aiColumnWidths[0]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "time", "#MOM_Time", 0, GetScaledVal(m_aiColumnWidths[2]));
+        m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "date", "#MOM_Date", 0, GetScaledVal(m_aiColumnWidths[0]));
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE, 16);
         //m_pLocalLeaderboards->AddColumnToSection(m_iSectionId, "flags_bonus", "", SectionedListPanel::COLUMN_IMAGE, 16);
@@ -321,9 +347,8 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pOnlineLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pOnlineLeaderboards->SetImageList(m_pImageList, false);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-                                                  SCALE(m_aiColumnWidths[1]));
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "",
-                                                  SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+                                                  GetScaledVal(m_aiColumnWidths[1]));
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "", SectionedListPanel::COLUMN_IMAGE,
                                                   DEFAULT_AVATAR_SIZE);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
                                                   SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
@@ -331,7 +356,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_vip", "", SectionedListPanel::COLUMN_IMAGE, 16);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE,
                                                   16);
-        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, SCALE(m_aiColumnWidths[2]));
+        m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time", 0, GetScaledVal(m_aiColumnWidths[2]));
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
                                                   16);
         m_pOnlineLeaderboards->AddColumnToSection(m_iSectionId, "flags_movement", "", SectionedListPanel::COLUMN_IMAGE,
@@ -347,9 +372,9 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->SetSectionAlwaysVisible(m_iSectionId);
         m_pFriendsLeaderboards->SetImageList(m_pImageList, false);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "rank", "#MOM_Rank", SectionedListPanel::COLUMN_CENTER,
-                                                   SCALE(m_aiColumnWidths[1]));
+                                                   GetScaledVal(m_aiColumnWidths[1]));
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "avatar", "",
-                                                   SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
+                                                   SectionedListPanel::COLUMN_IMAGE,
                                                    DEFAULT_AVATAR_SIZE);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name",
                                                    SectionedListPanel::COLUMN_CENTER, NAME_WIDTH);
@@ -358,7 +383,7 @@ void CClientTimesDisplay::InitScoreboardSections()
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "icon_friend", "", SectionedListPanel::COLUMN_IMAGE,
                                                    16);
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "time_f", "#MOM_Time",
-                                                   SectionedListPanel::COLUMN_CENTER, SCALE(m_aiColumnWidths[2]));
+                                                   SectionedListPanel::COLUMN_CENTER, GetScaledVal(m_aiColumnWidths[2]));
         // Scroll only icon
         m_pFriendsLeaderboards->AddColumnToSection(m_iSectionId, "flags_input", "", SectionedListPanel::COLUMN_IMAGE,
                                                    16);
@@ -370,23 +395,6 @@ void CClientTimesDisplay::InitScoreboardSections()
                                                    16);
     }
 #endif
-}
-
-void CClientTimesDisplay::InitLobbyPanelSections()
-{
-    if (m_pLobbyMembersPanel)
-    {
-        m_pLobbyMembersPanel->AddSection(m_iSectionId, "", StaticLobbyMemberSortFunc);
-        m_pLobbyMembersPanel->SetSectionAlwaysVisible(m_iSectionId);
-        m_pLobbyMembersPanel->SetImageList(m_pImageListLobby, false);
-        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "avatar", "",
-            SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER,
-            45);
-        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "personaname", "#MOM_Name", 0, NAME_WIDTH);
-        m_pLobbyMembersPanel->AddColumnToSection(m_iSectionId, "map", "#MOM_MapSelector_Map", 0, NAME_WIDTH);
-
-        // MOM_TODO: Have stuff like status and whatever else?
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -519,40 +527,6 @@ void CClientTimesDisplay::FireGameEvent(IGameEvent *event)
         m_bFriendsNeedUpdate = m_bOnlineNeedUpdate = event->GetBool("run_posted");
     }
 #endif
-    else if (FStrEq(type, "game_newmap"))
-    {
-        m_bLocalTimesLoaded = false;
-        m_bMapInfoLoaded = false;
-        m_bFriendsNeedUpdate = true;
-        m_bOnlineNeedUpdate = true;
-
-        // Clear out the old index map and image list every map load
-#if ENABLE_ONLINE_LEADERBOARDS
-        if (m_pImageList)
-            delete m_pImageList;
-
-        m_pImageList = new ImageList(true);
-        m_mapAvatarsToImageList.RemoveAll();
-
-        SetupIcons();
-#endif
-    }
-    else if (FStrEq(type, "lobby_leave"))
-    {
-        // Clear out the index map and the image list when you leave the lobby
-        m_pLobbyMembersPanel->DeleteAllItems();
-        m_pLobbyMembersPanel->RemoveAllSections();
-        m_mapLobbyIDToImageListIndx.RemoveAll();
-        if (m_pImageListLobby)
-        {
-            delete m_pImageListLobby;
-            m_pImageListLobby = nullptr;
-        }
-
-        // And like a phoenix, rise from the ashes
-        m_pImageListLobby = new ImageList(true);
-        InitLobbyPanelSections();
-    }
 
     // MOM_TODO: there's a crash here if you uncomment it,
     // if (IsVisible())
@@ -641,11 +615,14 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
         m_pPlayerPersonalBest->SetText(pbLocalized);
         m_pPlayerExperience->SetText(xpLocalized);
 
+#if ENABLE_HTTP_LEADERBOARDS
         char requrl[MAX_PATH];
         // Mapname, tickrate, rank, radius
         Q_snprintf(requrl, MAX_PATH, "%s/getusermaprank/%s/%llu", MOM_APIDOMAIN, g_pGameRules->MapName(),
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback);
+#endif
+
         m_fLastHeaderUpdate = gpGlobals->curtime;
     }
 
@@ -663,16 +640,18 @@ void CClientTimesDisplay::AddHeader()
         // Set the author label to be at the end of this label
         int wide, tall;
         m_pMapName->GetContentSize(wide, tall);
-        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + SCALE(4),
-                             m_pMapName->GetYPos() + tall - SCALE(surface()->GetFontTall(m_pMapAuthor->GetFont())));
+        m_pMapAuthor->SetPos(m_pMapName->GetXPos() + wide + GetScaledVal(4),
+                             m_pMapName->GetYPos() + tall - GetScaledVal(surface()->GetFontTall(m_pMapAuthor->GetFont())));
     }
 
+#if ENABLE_HTTP_LEADERBOARDS
     if (m_pMapDetails && !m_bMapInfoLoaded)
     {
         char requrl[MAX_PATH];
         Q_snprintf(requrl, MAX_PATH, "%s/getmapinfo/%s", MOM_APIDOMAIN, g_pGameRules->MapName());
         CreateAndSendHTTPReq(requrl, &cbGetMapInfoCallback, &CClientTimesDisplay::GetMapInfoCallback);
     }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -724,42 +703,9 @@ bool CClientTimesDisplay::StaticOnlineTimeSortFunc(SectionedListPanel *list, int
     return itemID1 < itemID2;
 }
 
-bool CClientTimesDisplay::StaticLobbyMemberSortFunc(vgui::SectionedListPanel* list, int itemID1, int itemID2)
-{
-    KeyValues *it1 = list->GetItemData(itemID1);
-    KeyValues *it2 = list->GetItemData(itemID2);
-    const char *pMapName = g_pGameRules->MapName();
-
-    if (!pMapName)
-        return false;
-
-    Assert(it1 && it2);
-
-    bool is1OnMap = FStrEq(pMapName, it1->GetString("map"));
-    bool is2OnMap = FStrEq(pMapName, it2->GetString("map"));
-
-    if (is1OnMap)
-    {
-        if (is2OnMap)
-        {
-            // If both are on the same map, go by name. We're rooting for it1 to be in front here, so
-            // if strcmp returns negative, it1 is before it2. Hopefully they aren't the same string!
-            return Q_strcmp(it1->GetString("personaname"), it2->GetString("personaname")) < 0;
-        }
-        // else it1 is on our map, they go first
-        return true;
-    }
-    //else 
-    if (is2OnMap)
-        return false; // it2 goes first, since they're on our map
-
-    // If all else fails just do item ID comparison idk
-    return itemID1 < itemID2;
-}
-
 void CClientTimesDisplay::LoadLocalTimes(KeyValues *kv)
 {
-    /*steamapicontext->SteamFriends()->RequestUserInformation()*/
+    /*SteamFriends()->RequestUserInformation()*/
     if (!m_bLocalTimesLoaded || m_bLocalTimesNeedUpdate)
     {
         // Clear the local times for a refresh
@@ -844,27 +790,6 @@ void CClientTimesDisplay::ConvertLocalTimes(KeyValues *kvInto)
     }
 }
 
-void CClientTimesDisplay::PopulateLobbyPanel()
-{
-    if (!m_idLobby.IsValid())
-        return;
-
-    const CSteamID local = steamapicontext->SteamUser()->GetSteamID();
-    const int numLobbyMembers = steamapicontext->SteamMatchmaking()->GetNumLobbyMembers(m_idLobby);
-
-    for (int i = 0; i < numLobbyMembers; i++)
-    {
-        const CSteamID inLobby = steamapicontext->SteamMatchmaking()->GetLobbyMemberByIndex(m_idLobby, i);
-        if (inLobby == local)
-            continue;
-
-        // Get their initial data (name, avatar, steamID)
-        AddLobbyMember(inLobby);
-        // Get their status data (map, spectating, etc)
-        UpdateLobbyMemberData(inLobby);
-    }
-}
-
 void CClientTimesDisplay::ConvertOnlineTimes(KeyValues *kv, float seconds)
 {
     char timeString[BUFSIZETIME];
@@ -873,10 +798,197 @@ void CClientTimesDisplay::ConvertOnlineTimes(KeyValues *kv, float seconds)
     kv->SetString("time_f", timeString);
 }
 
+void CClientTimesDisplay::OnLeaderboardFindResult(LeaderboardFindResult_t* pParam, bool bIOFailure)
+{
+    if (pParam->m_bLeaderboardFound)
+    {
+        m_hCurrentLeaderboard = pParam->m_hSteamLeaderboard;
+        m_bOnlineNeedUpdate = true;
+    }
+}
+
+void CClientTimesDisplay::OnLeaderboardGlobalScoresDownloaded(LeaderboardScoresDownloaded_t* pResult, bool bIOFailure)
+{
+    if (bIOFailure)
+    {
+        m_bOnlineTimesLoaded = false;
+        m_bOnlineNeedUpdate = true;
+        Warning("OnLeaderboardTop10ScoresDownloaded:: bIOFailure\n");
+        return;
+    }
+
+    // By now we're pretty sure everything will be ok, so we can do this
+    m_vOnlineTimes.PurgeAndDeleteElements();
+
+    for (int i = 0; i < pResult->m_cEntryCount; i++)
+    {
+        LeaderboardEntry_t entry;
+        SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &entry, nullptr, 0);
+        
+        // MOM_TODO: Convert this entry to something (KeyValues) in the leaderboards
+        KeyValues *kvEntry = new KeyValues("Entry");
+        // Time is handled by the converter
+        kvEntry->SetFloat("time", (float) entry.m_nScore / 1000.0f);
+
+        // SteamID, Avatar, and Persona Name
+        uint64 steamID = entry.m_steamIDUser.ConvertToUint64();
+        kvEntry->SetUint64("steamid", steamID);
+        ISteamFriends *steamFriends = SteamFriends();
+        if (steamFriends && SteamUser())
+        {
+            UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
+
+            // persona name
+            if (!steamFriends->RequestUserInformation(entry.m_steamIDUser, true))
+            {
+                kvEntry->SetString("personaname", steamFriends->GetFriendPersonaName(entry.m_steamIDUser));
+            }
+            else
+            {
+                kvEntry->SetString("personaname", "Unknown");
+            }
+        }
+
+        // Persona name for the time they accomplished the run
+        //kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname_t"));
+
+        // Rank
+        kvEntry->SetInt("rank", entry.m_nGlobalRank);
+        // MOM_TODO: Implement the other end of this (rank is not a number)
+
+        // Tickrate
+        //kvEntry->SetInt("rate", static_cast<int>(pRun->GetFloat("rate")));
+
+        // Date
+        //kvEntry->SetString("date", pRun->GetString("date"));
+
+        // ID
+        kvEntry->SetInt("id", entry.m_nGlobalRank);
+
+        // UGC Handle
+        kvEntry->SetUint64("UGC", entry.m_hUGC);
+
+        // Is part of the momentum team?
+        //kvEntry->SetBool("tm", pRun->GetBool("tm"));
+
+        // Is vip?
+        //kvEntry->SetBool("vip", pRun->GetBool("vip"));
+
+        // Add this baby to the online times vector
+        TimeOnline *ot = new TimeOnline(kvEntry);
+        // Convert the time
+        ConvertOnlineTimes(ot->m_kv, ot->time_sec);
+        m_vOnlineTimes.AddToTail(ot);
+    }
+
+    m_bOnlineTimesLoaded = true;
+    m_bOnlineNeedUpdate = false;
+    m_flLastOnlineTimeUpdate = gpGlobals->curtime;
+    Update();
+}
+
+void CClientTimesDisplay::OnLeaderboardFriendScoresDownloaded(LeaderboardScoresDownloaded_t* pResult, bool bIOFailure)
+{
+    if (bIOFailure)
+    {
+        m_bFriendsTimesLoaded = false;
+        m_bFriendsNeedUpdate = true;
+        Warning("OnLeaderboardFriendScoresDownloaded:: bIOFailure\n");
+        return;
+    }
+
+    // By now we're pretty sure everything will be ok, so we can do this
+    m_vFriendsTimes.PurgeAndDeleteElements();
+
+    for (int i = 0; i < pResult->m_cEntryCount; i++)
+    {
+        LeaderboardEntry_t entry;
+        SteamUserStats()->GetDownloadedLeaderboardEntry(pResult->m_hSteamLeaderboardEntries, i, &entry, nullptr, 0);
+
+        // MOM_TODO: Convert this entry to something (KeyValues) in the leaderboards
+        KeyValues *kvEntry = new KeyValues("Entry");
+        // Time is handled by the converter
+        kvEntry->SetFloat("time", (float) entry.m_nScore / 1000.0f);
+
+        // SteamID, Avatar, and Persona Name
+        uint64 steamID = entry.m_steamIDUser.ConvertToUint64();
+        kvEntry->SetUint64("steamid", steamID);
+        ISteamFriends *steamFriends = SteamFriends();
+        if (steamFriends && SteamUser())
+        {
+            UpdateLeaderboardPlayerAvatar(steamID, kvEntry);
+
+            // persona name
+            if (!steamFriends->RequestUserInformation(entry.m_steamIDUser, true))
+            {
+                kvEntry->SetString("personaname", steamFriends->GetFriendPersonaName(entry.m_steamIDUser));
+            }
+            else
+            {
+                kvEntry->SetString("personaname", "Unknown");
+            }
+        }
+
+        // Persona name for the time they accomplished the run
+        //kvEntry->SetString("personaname_onruntime", pRun->GetString("personaname_t"));
+
+        // Rank
+        kvEntry->SetInt("rank", entry.m_nGlobalRank);
+        // MOM_TODO: Implement the other end of this (rank is not a number)
+
+        // Tickrate
+        //kvEntry->SetInt("rate", static_cast<int>(pRun->GetFloat("rate")));
+
+        // Date
+        //kvEntry->SetString("date", pRun->GetString("date"));
+
+        // ID
+        kvEntry->SetInt("id", entry.m_nGlobalRank);
+
+        // UGC Handle
+        kvEntry->SetUint64("UGC", entry.m_hUGC);
+
+        // Is part of the momentum team?
+        //kvEntry->SetBool("tm", pRun->GetBool("tm"));
+
+        // Is vip?
+        //kvEntry->SetBool("vip", pRun->GetBool("vip"));
+
+        // Add this baby to the online times vector
+        TimeOnline *ot = new TimeOnline(kvEntry);
+        // Convert the time
+        ConvertOnlineTimes(ot->m_kv, ot->time_sec);
+        m_vFriendsTimes.AddToTail(ot);
+    }
+
+    m_bFriendsTimesLoaded = true;
+    m_bFriendsNeedUpdate = false;
+    m_flLastFriendsTimeUpdate = gpGlobals->curtime;
+    Update();
+}
+
+
 void CClientTimesDisplay::LoadOnlineTimes()
 {
     if (!m_bOnlineTimesLoaded || m_bOnlineNeedUpdate)
     {
+
+        if (m_hCurrentLeaderboard)
+        {
+            SteamAPICall_t global = SteamUserStats()->DownloadLeaderboardEntries(m_hCurrentLeaderboard, 
+                        m_bGetTop10Scores ? k_ELeaderboardDataRequestGlobal : k_ELeaderboardDataRequestGlobalAroundUser, 
+                        m_bGetTop10Scores ? 1 : -5, 
+                        m_bGetTop10Scores ? 10 : 5);
+            m_cLeaderboardGlobalScoresDownloaded.Set(global, this, &CClientTimesDisplay::OnLeaderboardGlobalScoresDownloaded);
+
+            m_bOnlineTimesLoaded = true;
+            m_bOnlineNeedUpdate = false;
+
+            m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
+        }
+
+
+#if ENABLE_HTTP_LEADERBOARDS
         char requrl[BUFSIZ], format[BUFSIZ];
         // Mapname, tickrate, rank, radius
 
@@ -890,10 +1002,7 @@ void CClientTimesDisplay::LoadOnlineTimes()
 
         // This url is not real, just for testing purposes. It returns a json list with the serialization of the scores
         CreateAndSendHTTPReq(requrl, &cbGetOnlineTimesCallback, &CClientTimesDisplay::GetOnlineTimesCallback);
-        m_bOnlineNeedUpdate = false;
-        m_flLastOnlineTimeUpdate = gpGlobals->curtime;
-
-        m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
+#endif
     }
 }
 
@@ -901,28 +1010,38 @@ void CClientTimesDisplay::LoadFriendsTimes()
 {
     if ((!m_bFriendsTimesLoaded || m_bFriendsNeedUpdate) && !m_bUnauthorizedFriendlist)
     {
+#if ENABLE_HTTP_LEADERBOARDS
         char requrl[BUFSIZ];
         Q_snprintf(requrl, BUFSIZ, "%s/getfriendscores/%llu/10/1/%s/%d", MOM_APIDOMAIN,
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64(), g_pGameRules->MapName(),
                    flaggedRuns);
         CreateAndSendHTTPReq(requrl, &cbGetFriendsTimesCallback, &CClientTimesDisplay::GetFriendsTimesCallback);
-        m_bFriendsNeedUpdate = false;
-        m_flLastFriendsTimeUpdate = gpGlobals->curtime;
-        m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
+#endif
+        if (m_hCurrentLeaderboard)
+        {
+            // MOM_TODO: 10, for now
+            SteamAPICall_t friends = SteamUserStats()->DownloadLeaderboardEntries(m_hCurrentLeaderboard, k_ELeaderboardDataRequestFriends, 1, 10);
+            m_cLeaderboardFriendsScoresDownloaded.Set(friends, this, &CClientTimesDisplay::OnLeaderboardFriendScoresDownloaded);
+
+            m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
+
+            m_bFriendsTimesLoaded = true;
+            m_bFriendsNeedUpdate = false;
+        }
     }
 }
 
+#if ENABLE_HTTP_LEADERBOARDS
 void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
                                                CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> *callback,
                                                CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t func)
 {
-#if ENABLE_ONLINE_LEADERBOARDS
-    if (steamapicontext && steamapicontext->SteamHTTP())
+    if (steamapicontext && SteamHTTP())
     {
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
 
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
         {
             Warning("%s - Callback set for %s.\n", __FUNCTION__, szURL);
             callback->Set(apiHandle, this, func);
@@ -930,14 +1049,13 @@ void CClientTimesDisplay::CreateAndSendHTTPReq(const char *szURL,
         else
         {
             Warning("Failed to send HTTP Request to post scores online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
     {
         Warning("Steampicontext failure.\n");
     }
-#endif
 }
 
 void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, bool bIOFailure, bool bFriendsTimes)
@@ -985,7 +1103,7 @@ void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, 
     }
 
     uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
 
     if (size == 0)
     {
@@ -995,7 +1113,7 @@ void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, 
 
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
     JsonValue val; // Outer object
     JsonAllocator alloc;
@@ -1032,12 +1150,12 @@ void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, 
                     // SteamID, Avatar, and Persona Name
                     uint64 steamID = Q_atoui64(pRun->GetString("steamid"));
                     kvEntry->SetUint64("steamid", steamID);
-                    ISteamFriends *steamFriends = steamapicontext->SteamFriends();
-                    if (steamFriends && steamapicontext->SteamUser())
+                    ISteamFriends *steamFriends = SteamFriends();
+                    if (steamFriends && SteamUser())
                     {
                         if (ShowAvatars())
                         {
-                            uint64 localSteamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
+                            uint64 localSteamID = SteamUser()->GetSteamID().ConvertToUint64();
                             // These handle setting "avatar" for kvEntry
                             if (localSteamID == steamID)
                             {
@@ -1110,7 +1228,7 @@ void CClientTimesDisplay::ParseTimesCallback(HTTPRequestCompleted_t* pCallback, 
     // Last but not least, free resources
     delete[] pData;
     pData = nullptr;
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
 void CClientTimesDisplay::GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -1130,7 +1248,7 @@ void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pC
         return;
 
     uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
 
     if (size == 0)
     {
@@ -1140,7 +1258,7 @@ void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pC
 
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
     JsonValue val; // Outer object
     JsonAllocator alloc;
@@ -1230,7 +1348,7 @@ void CClientTimesDisplay::GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pC
     delete[] pData;
     pData = nullptr;
     alloc.deallocate();
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
 void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
@@ -1254,7 +1372,7 @@ void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, 
     }
 
     uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
 
     if (size == 0)
     {
@@ -1264,7 +1382,7 @@ void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, 
 
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
     JsonValue val; // Outer object
     JsonAllocator alloc;
@@ -1307,8 +1425,10 @@ void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, 
     delete[] pData;
     pData = nullptr;
     alloc.deallocate();
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
+#endif
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Updates the leaderboard lists
@@ -1350,75 +1470,41 @@ bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
     return true;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
-void CClientTimesDisplay::UpdatePlayerAvatarStandaloneOnline(KeyValues *kv)
-{
-    // Load it if it hasn't been already
-    if (!m_bLoadedLocalPlayerAvatar)
-        UpdatePlayerAvatarStandalone();
-
-    // Update their avatar
-    int iImageIndex = -1;
-    if (steamapicontext->SteamUser())
-    {
-        uint64 steamIDForPlayer = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
-
-        // See if we already have that avatar in our list
-        int iMapIndex = m_mapAvatarsToImageList.Find(steamIDForPlayer);
-        
-        if (iMapIndex == m_mapAvatarsToImageList.InvalidIndex())
-        {
-            iImageIndex = m_pImageList->AddImage(m_pPlayerAvatar->GetImage());
-            m_mapAvatarsToImageList.Insert(steamIDForPlayer, iImageIndex);
-        }
-        else
-            iImageIndex = m_mapAvatarsToImageList[iMapIndex];
-    }
-
-    kv->SetBool("is_friend", false);
-    kv->SetInt("avatar", iImageIndex);
-}
-
 void CClientTimesDisplay::UpdatePlayerAvatarStandalone()
 {
     // Update their avatar
-    if (ShowAvatars())
+    if (SteamUser())
     {
-        if (steamapicontext && steamapicontext->SteamUser())
+        if (!m_bLoadedLocalPlayerAvatar)
         {
-            if (!m_bLoadedLocalPlayerAvatar)
-            {
-                CSteamID steamIDForPlayer = steamapicontext->SteamUser()->GetSteamID();
+            CSteamID steamIDForPlayer = SteamUser()->GetSteamID();
 
-                CAvatarImage *pImage = new CAvatarImage();
-                // 64 is enough up to full HD resolutions.
-                pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
+            CAvatarImage *pImage = new CAvatarImage();
+            // 64 is enough up to full HD resolutions.
+            pImage->SetAvatarSteamID(steamIDForPlayer, k_EAvatarSize64x64);
 
-                pImage->SetDrawFriend(false);
-                pImage->SetAvatarSize(64, 64); // Deliberately non scaling, the ImagePanel does that for us
+            pImage->SetDrawFriend(false);
+            pImage->SetAvatarSize(64, 64); // Deliberately non scaling, the ImagePanel does that for us
 
-                // Get rid of the other image if it was there
-                m_pPlayerAvatar->EvictImage();
+            // Get rid of the other image if it was there
+            m_pPlayerAvatar->EvictImage();
 
-                m_pPlayerAvatar->SetImage(pImage);
-                m_bLoadedLocalPlayerAvatar = true;
-            }
+            m_pPlayerAvatar->SetImage(pImage);
+            m_bLoadedLocalPlayerAvatar = true;
         }
-        else
-        {
-            m_pPlayerAvatar->SetImage("default_steam");
-        }
+    }
+    else
+    {
+        m_pPlayerAvatar->SetImage("default_steam");
     }
 }
 
 void CClientTimesDisplay::UpdateLeaderboardPlayerAvatar(uint64 steamid, KeyValues *kv)
 {
     // Update their avatar
-    if (steamapicontext->SteamFriends())
+    if (SteamFriends())
     {
-        kv->SetBool("is_friend", steamapicontext->SteamFriends()->HasFriend(steamid, k_EFriendFlagImmediate));
+        kv->SetBool("is_friend", SteamFriends()->HasFriend(steamid, k_EFriendFlagImmediate));
         kv->SetInt("avatar", TryAddAvatar(steamid, &m_mapAvatarsToImageList, m_pImageList));
     }
 }
@@ -1680,6 +1766,32 @@ void CClientTimesDisplay::SetupIcons()
     }
 }
 
+void CClientTimesDisplay::LevelInitPostEntity()
+{
+    m_bLocalTimesLoaded = false;
+    m_bMapInfoLoaded = false;
+    m_bFriendsNeedUpdate = true;
+    m_bOnlineNeedUpdate = true;
+
+    // Clear out the old index map and image list every map load
+#if ENABLE_ONLINE_LEADERBOARDS
+    if (m_pImageList)
+        delete m_pImageList;
+
+    m_pImageList = new ImageList(false);
+    m_mapAvatarsToImageList.RemoveAll();
+
+    SetupIcons();
+
+    // Get our current leaderboard
+    if (SteamUserStats())
+    {
+        SteamAPICall_t find = SteamUserStats()->FindLeaderboard(g_pGameRules->MapName());
+        m_cLeaderboardFindResult.Set(find, this, &CClientTimesDisplay::OnLeaderboardFindResult);
+    }
+#endif
+}
+
 void CClientTimesDisplay::OnContextWatchReplay(const char *runName)
 {
     if (runName)
@@ -1726,6 +1838,18 @@ void CClientTimesDisplay::OnSpectateLobbyMember(uint64 target)
     ShowPanel(false);
 }
 
+void CClientTimesDisplay::OnContextReqSavelocs(uint64 target)
+{
+    KeyValues *pReq = new KeyValues("req_savelocs");
+    // Stage 1 is request the count, make the other player make a copy of their savelocs for us
+    pReq->SetInt("stage", 1);
+    pReq->SetUint64("target", target);
+    g_pModuleComms->FireEvent(pReq);
+
+    m_pSavelocReqFrame->Activate(target);
+}
+
+
 void CClientTimesDisplay::OnContextGoToMap(const char* map)
 {
     // MOM_TODO: We're going to need to feed this into a map downloader first, if they don't have the map!
@@ -1758,14 +1882,21 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
             pContextMenu->AddSeparator();
             pContextMenu->AddMenuItem("DeleteRun", "#MOM_Leaderboards_DeleteReplay", new KeyValues("ContextDeleteReplay", "runName", pFileName), this);
             pContextMenu->ShowMenu();
-        } 
+        }
         else if (CheckParent(pPanel, m_pFriendsLeaderboards, itemID) || CheckParent(pPanel, m_pOnlineLeaderboards, itemID))
         {
             SectionedListPanel *pLeaderboard = static_cast<SectionedListPanel *>(pPanel->GetParent());
             CLeaderboardsContextMenu *pContextMenu = GetLeaderboardContextMenu(pLeaderboard);
+            KeyValues *pKVItemData = pLeaderboard->GetItemData(itemID);
+
             KeyValues *pKv = new KeyValues("ContextVisitProfile");
-            pKv->SetUint64("profile", pLeaderboard->GetItemData(itemID)->GetUint64("steamid"));
+            pKv->SetUint64("profile", pKVItemData->GetUint64("steamid"));
             pContextMenu->AddMenuItem("VisitProfile", "#MOM_Leaderboards_SteamProfile", pKv, this);
+
+            KeyValues *pKvUGC = new KeyValues("ContextWatchOnlineReplay");
+            pKvUGC->SetUint64("UGC", pKVItemData->GetUint64("UGC"));
+            pContextMenu->AddMenuItem("WatchOnlineReplay", "#MOM_Leaderboards_WatchReplay", pKvUGC, this);
+
             pContextMenu->ShowMenu();
         }
         else if (CheckParent(pPanel, m_pLobbyMembersPanel, itemID))
@@ -1793,11 +1924,14 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
                 pContextMenu->AddMenuItem("GoToMap", "#MOM_Leaderboards_GoToMap", pKv, this);
             }
 
+            pKv = new KeyValues("ContextReqSavelocs");
+            pKv->SetUint64("target", steamID);
+            pContextMenu->AddMenuItem("ReqSavelocs", "#MOM_Saveloc_Frame", pKv, this);
+
             // MOM_TODO: More options here, such as:
             // kicking the player if we're the lobby leader
             // hiding decals (maybe toggle paint, bullets separately?)
             // etc
-
             pContextMenu->AddSeparator();
             // Visit profile
             pKv = new KeyValues("ContextVisitProfile");
@@ -1811,11 +1945,70 @@ void CClientTimesDisplay::OnItemContextMenu(KeyValues *pData)
 
 void CClientTimesDisplay::OnContextVisitProfile(uint64 profile)
 {
-    if (profile != 0 && steamapicontext && steamapicontext->SteamFriends())
+    if (profile != 0 && SteamFriends())
     {
-        steamapicontext->SteamFriends()->ActivateGameOverlayToUser("steamid", CSteamID(profile));
+        SteamFriends()->ActivateGameOverlayToUser("steamid", CSteamID(profile));
     }
 }
+
+void CClientTimesDisplay::OnContextWatchOnlineReplay(uint64 UGC)
+{
+    DevLog("Attempting to download UGC %llu\n", UGC);
+
+    SteamAPICall_t download = SteamRemoteStorage()->UGCDownload(UGC, 0);
+    m_cOnlineReplayDownloaded.Set(download, this, &CClientTimesDisplay::OnOnlineReplayDownloaded);
+}
+
+void CClientTimesDisplay::OnOnlineReplayDownloaded(RemoteStorageDownloadUGCResult_t* pResult, bool bIOFailure)
+{
+
+    if (bIOFailure || pResult->m_eResult != k_EResultOK)
+    {
+        Warning("Couldn't download the online replay! %i\n", pResult->m_eResult);
+        return;
+    }
+
+    CFmtStr path("%s/%s/%s", RECORDING_PATH, RECORDING_ONLINE_PATH, pResult->m_pchFileName);
+    bool bReplayExists = false;
+
+    if (filesystem->FileExists(path.Get(), "MOD"))
+    {
+        DevMsg("Replay already exists! Playing it...\n");
+        bReplayExists = true; 
+    }
+    else
+    {
+        DevMsg("Replay doesn't exist, trying to download it...\n");
+        byte *data = new byte[pResult->m_nSizeInBytes];
+        if (SteamRemoteStorage()->UGCRead(pResult->m_hFile, data, pResult->m_nSizeInBytes, 0, k_EUGCRead_ContinueReadingUntilFinished))
+        {
+            CUtlBuffer buf;
+            buf.AssumeMemory(data, pResult->m_nSizeInBytes, pResult->m_nSizeInBytes, CUtlBuffer::READ_ONLY);
+
+            if (filesystem->WriteFile(path.Get(), "MOD", buf))
+            {
+                DevMsg("Downloaded online replay %s! Playing it...\n", pResult->m_pchFileName);
+                bReplayExists = true;
+            }
+            else
+            {
+                DevWarning("Failed to write the file for the online replay!\n");
+            }
+            // CUtlBuffer clears memory here as it destructs from scope
+        }
+    }
+
+    if (bReplayExists)
+    {
+        CFmtStr command("mom_replay_play %s/%s\n", RECORDING_ONLINE_PATH, pResult->m_pchFileName);
+        engine->ClientCmd(command.Get());
+    }
+    else
+    {
+        DevWarning("Online replay does not exist and could not be downloaded!\n");
+    }
+}
+
 
 void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
 {
@@ -1823,7 +2016,7 @@ void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
     if (pParam->m_nChangeFlags & k_EPersonaChangeNameFirstSet || pParam->m_nChangeFlags & k_EPersonaChangeName)
     {
         m_umMapNames.InsertOrReplace(
-            pParam->m_ulSteamID, steamapicontext->SteamFriends()->GetFriendPersonaName(CSteamID(pParam->m_ulSteamID)));
+            pParam->m_ulSteamID, SteamFriends()->GetFriendPersonaName(CSteamID(pParam->m_ulSteamID)));
 
         OnlineTimesVectorToLeaderboards(ONLINE_LEADERBOARDS);
 
@@ -1832,126 +2025,10 @@ void CClientTimesDisplay::OnPersonaStateChange(PersonaStateChange_t *pParam)
 #endif
 }
 
-void CClientTimesDisplay::OnLobbyCreated(LobbyCreated_t* pParam)
-{
-    // Flip the 0 to 1 to test the panel with a local name
-#if 0
-    KeyValues *pNewUser = new KeyValues("LobbyMember");
-
-    uint64 steamID = steamapicontext->SteamUser()->GetSteamID().ConvertToUint64();
-
-    pNewUser->SetUint64("steamid", steamID);
-    pNewUser->SetInt("avatar", TryAddAvatar(steamID, &m_mapLobbyIDToImageListIndx, m_pImageListLobby));
-    pNewUser->SetString("personaname", steamapicontext->SteamFriends()->GetPersonaName());
-    pNewUser->SetString("map", "triggertests");
-
-    m_pLobbyMembersPanel->AddItem(m_iSectionId, pNewUser);
-    pNewUser->deleteThis();
-#endif
-}
-
-void CClientTimesDisplay::OnLobbyEnter(LobbyEnter_t* pParam)
-{
-    // Loop through the lobby and add people
-    m_idLobby = CSteamID(pParam->m_ulSteamIDLobby);
-    
-    // Add everyone now
-    PopulateLobbyPanel();
-}
-
-void CClientTimesDisplay::OnLobbyDataUpdate(LobbyDataUpdate_t* pParam)
-{
-    if (pParam->m_ulSteamIDMember == pParam->m_ulSteamIDLobby)
-    {
-        // The lobby itself changed
-        // MOM_TODO: Have some sort of data about the lobby in this panel?
-    }
-    else
-    {
-        // A member in the lobby changed
-        CSteamID local = steamapicontext->SteamUser()->GetSteamID();
-        if (local.ConvertToUint64() != pParam->m_ulSteamIDMember)
-            UpdateLobbyMemberData(CSteamID(pParam->m_ulSteamIDMember));
-    }
-}
-
-void CClientTimesDisplay::OnLobbyChatUpdate(LobbyChatUpdate_t* pParam)
-{
-    if (!m_pLobbyMembersPanel)
-        return;
-
-    if (pParam->m_rgfChatMemberStateChange & k_EChatMemberStateChangeEntered)
-    {
-        // Add this user to the panel
-        AddLobbyMember(CSteamID(pParam->m_ulSteamIDUserChanged));
-    }
-    else if (pParam->m_rgfChatMemberStateChange & (k_EChatMemberStateChangeLeft | k_EChatMemberStateChangeDisconnected))
-    {
-        // Get em outta here
-        m_pLobbyMembersPanel->RemoveItem(FindItemIDForLobbyMember(pParam->m_ulSteamIDUserChanged));
-    }
-}
-
-int CClientTimesDisplay::FindItemIDForLobbyMember(uint64 steamID)
-{
-    for (int i = 0; i <= m_pLobbyMembersPanel->GetHighestItemID(); i++)
-    {
-        if (m_pLobbyMembersPanel->IsItemIDValid(i))
-        {
-            KeyValues *kv = m_pLobbyMembersPanel->GetItemData(i);
-            if (kv && (kv->GetUint64("steamid") == steamID))
-            {
-                return i;
-            }
-        }
-    }
-    return -1;
-}
-
-void CClientTimesDisplay::AddLobbyMember(const CSteamID &steamID)
-{
-    if (!m_pLobbyMembersPanel)
-        return;
-
-    if (FindItemIDForLobbyMember(steamID) > -1)
-        return;
-
-    KeyValues *pNewUser = new KeyValues("LobbyMember");
-    uint64 steamIdInt = steamID.ConvertToUint64();
-    pNewUser->SetUint64("steamid", steamIdInt);
-    pNewUser->SetInt("avatar", TryAddAvatar(steamIdInt, &m_mapLobbyIDToImageListIndx, m_pImageListLobby));
-    pNewUser->SetString("personaname", steamapicontext->SteamFriends()->GetFriendPersonaName(steamID));
-
-    m_pLobbyMembersPanel->AddItem(m_iSectionId, pNewUser);
-    pNewUser->deleteThis(); // Copied over in AddItem
-}
-
-void CClientTimesDisplay::UpdateLobbyMemberData(const CSteamID& memberID)
-{
-    if (!m_pLobbyMembersPanel || !m_idLobby.IsValid())
-        return;
-
-    int itemID = FindItemIDForLobbyMember(memberID);
-    if (itemID > -1)
-    {
-        // Old one gets deleted in the ModifyItem code, don't worry
-        KeyValues *pData = m_pLobbyMembersPanel->GetItemData(itemID)->MakeCopy();
-        if (pData)
-        {
-            const char *pMap = steamapicontext->SteamMatchmaking()->GetLobbyMemberData(m_idLobby, memberID, LOBBY_DATA_MAP);
-            pData->SetString("map", pMap);
-            // MOM_TODO: Spectating? Typing? 
-
-            m_pLobbyMembersPanel->ModifyItem(itemID, m_iSectionId, pData);
-            pData->deleteThis();
-        }
-    }
-}
-
 int CClientTimesDisplay::TryAddAvatar(const uint64 &steamid, CUtlMap<uint64, int> *pIDtoIndxMap, ImageList *pImageList)
 {
     // Update their avatar
-    if (ShowAvatars() && steamapicontext->SteamFriends() && steamapicontext->SteamUtils() && pIDtoIndxMap && pImageList)
+    if (pIDtoIndxMap && pImageList)
     {
         // See if we already have that avatar in our list
         const unsigned short mapIndex = pIDtoIndxMap->Find(steamid);
@@ -2017,7 +2094,7 @@ void CClientTimesDisplay::OnCommand(const char *pCommand)
         // Show the right type of leaderboards
         m_pCurrentLeaderboards->SetVisible(false);
         m_pCurrentLeaderboards =
-            isGlobal ? m_pOnlineLeaderboards : isLocal ? m_pLocalLeaderboards : m_pFriendsLeaderboards;
+            isGlobal ? m_pOnlineLeaderboards : (isLocal ? m_pLocalLeaderboards : m_pFriendsLeaderboards);
         m_pCurrentLeaderboards->SetVisible(true);
 
         m_pGlobalLeaderboardsButton->SetEnabled(!isGlobal && !isFriends);
@@ -2036,6 +2113,7 @@ void CClientTimesDisplay::OnCommand(const char *pCommand)
             m_pGlobalAroundButton->SetEnabled(true);
             m_pGlobalTop10Button->SetEnabled(true);
         }
+        Update();
     }
     else if (isFilter)
     {

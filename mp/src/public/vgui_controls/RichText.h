@@ -131,7 +131,7 @@ protected:
 
 	virtual void ApplySettings( KeyValues *inResourceData );
 	virtual void GetSettings( KeyValues *outResourceData );
-	virtual const char *GetDescription( void );
+	void InitSettings() OVERRIDE;
 	MESSAGE_FUNC_WCHARPTR( OnSetText, "SetText", text );
 	MESSAGE_FUNC( OnSliderMoved, "ScrollBarSliderMoved" ); // respond to scroll bar events
 	virtual void OnKillFocus();
@@ -259,7 +259,8 @@ private:
 	// sub-controls
 	Menu				*m_pEditMenu;		// cut/copy/paste popup
 
-	char				*m_pszInitialText;	// initial text
+	CUtlString m_pszInitialText;	// initial text
+    CUtlString m_pszInitialTextFile; // textfile used for initial text
 
 	// saved state
 	bool _recalcSavedRenderState;

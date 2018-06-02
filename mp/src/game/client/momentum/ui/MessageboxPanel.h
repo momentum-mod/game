@@ -3,20 +3,12 @@
 #include "cbase.h"
 
 #include "IMessageboxPanel.h"
-#include "hud_macros.h"
-#include "usermessages.h"
 #include <vgui/ILocalize.h>
 #include <vgui/ISystem.h>
-#include <vgui/IVGui.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/MessageBox.h>
 
-#include "momentum/mom_shareddefs.h"
-
-using namespace vgui;
-
-
-class MessageBoxVarRef : public MessageBox
+class MessageBoxVarRef : public vgui::MessageBox
 {
 public:
     MessageBoxVarRef(const char *title, const char *msg, const char *cvar);
@@ -24,16 +16,16 @@ public:
 
     void PerformLayout() OVERRIDE;
 private:
-    CvarToggleCheckButton* m_pToggleCheckButton;
+    vgui::CvarToggleCheckButton* m_pToggleCheckButton;
 };
 
 // CChangelogPanel class
-class CMessageboxPanel : public Frame  // We're not a child of MessageBox for a good reason. I guess...
+class CMessageboxPanel : public vgui::Frame  // We're not a child of MessageBox for a good reason. I guess...
 {
     DECLARE_CLASS_SIMPLE(CMessageboxPanel, Frame);
     // CChangelogPanel : This Class / vgui::Frame : BaseClass
 
-    CMessageboxPanel(VPANEL parent); // Constructor
+    CMessageboxPanel(vgui::VPANEL parent); // Constructor
     ~CMessageboxPanel();             // Destructor
 
     void Close() OVERRIDE;
@@ -52,10 +44,10 @@ class CMessageboxPanel : public Frame  // We're not a child of MessageBox for a 
     // This function deletes all the messageboxes
     void FlushMessageboxes();
     // Removes the HPanel messagebox
-    void FlushMessageboxes(HPanel pHPanel);
+    void FlushMessageboxes(vgui::HPanel pHPanel);
 
   private:
-    CUtlVector<MessageBox *> m_mbItems;
+    CUtlVector<vgui::MessageBox *> m_mbItems;
 };
 
 class CMessageboxInterface : public IMessageboxPanel
@@ -66,7 +58,7 @@ class CMessageboxInterface : public IMessageboxPanel
   public:
     CMessageboxInterface() { pPanel = nullptr; }
     virtual ~CMessageboxInterface() {}
-    void Create(VPANEL parent) OVERRIDE { pPanel = new CMessageboxPanel(parent); }
+    void Create(vgui::VPANEL parent) OVERRIDE { pPanel = new CMessageboxPanel(parent); }
 
     void Destroy() OVERRIDE
     {
@@ -94,7 +86,7 @@ class CMessageboxInterface : public IMessageboxPanel
     }
 
     // is the default parameter specifier needed here?
-    Panel *CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept = nullptr) OVERRIDE
+    vgui::Panel *CreateMessagebox(const char *pTitle, const char *pMessage, const char *pAccept = nullptr) OVERRIDE
     {
         if (pPanel)
         {
@@ -103,7 +95,7 @@ class CMessageboxInterface : public IMessageboxPanel
         return nullptr;
     }
 
-    Panel *CreateConfirmationBox(Panel *pTarget, const char *pTitle, const char *pMessage, KeyValues *okCommand,
+    vgui::Panel *CreateConfirmationBox(vgui::Panel *pTarget, const char *pTitle, const char *pMessage, KeyValues *okCommand,
         KeyValues *cancelCommand, const char *pAcceptText = nullptr, const char *pCancelText = nullptr) OVERRIDE
     {
         if (pPanel)
@@ -113,7 +105,7 @@ class CMessageboxInterface : public IMessageboxPanel
         return nullptr;
     }
 
-    Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char *cvar, const char *pAccept = nullptr) OVERRIDE
+    vgui::Panel *CreateMessageboxVarRef(const char *pTitle, const char *pMessage, const char *cvar, const char *pAccept = nullptr) OVERRIDE
     {
         if (pPanel)
         {
@@ -130,7 +122,7 @@ class CMessageboxInterface : public IMessageboxPanel
         }
     }
 
-    void FlushMessageboxes(HPanel pHp) OVERRIDE
+    void FlushMessageboxes(vgui::HPanel pHp) OVERRIDE
     {
         if (pPanel)
         {

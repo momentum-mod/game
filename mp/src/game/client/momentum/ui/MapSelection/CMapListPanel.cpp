@@ -21,7 +21,7 @@ void CMapListPanel::OnKeyCodeTyped(vgui::KeyCode code)
     BaseClass::OnKeyCodeTyped(code);
 }
 
-void CMapListPanel::ApplySchemeSettings(IScheme* pScheme)
+void CMapListPanel::ApplySchemeSettings(vgui::IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 

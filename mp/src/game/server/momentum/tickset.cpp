@@ -59,12 +59,14 @@ bool TickSet::TickInit()
     if (p)
         interval_per_tick = *reinterpret_cast<float**>(p + 18);
 	
-#elif defined (__linux__)
+#else //POSIX
 	void *base;
 	size_t length;
-
-	if (GetModuleInformation_LINUX("engine.so", &base, &length))
+	
+	if (GetModuleInformation(ENGINE_DLL_NAME, &base, &length))
 		return false;
+
+#ifdef __linux__
 
     // mov ds:interval_per_tick, 3C75C28Fh         <-- float for 0.015
     unsigned char pattern[] = { 0xC7,0x05, '?','?','?','?', 0x8F,0xC2,0x75,0x3C, 0xE8 };
@@ -73,11 +75,6 @@ bool TickSet::TickInit()
         interval_per_tick = *(float**)(addr + 2); //MOM_TODO: fix pointer arithmetic on void pointer?
 
 #elif defined (OSX)
-	void *base;
-	size_t length;
-
-	if (GetModuleInformation_OSX("engine.dylib", &base, &length))
-		return false;
 	
 	if (length == 12581936) //magic engine.dylib file size as of august 2017
 	{
@@ -94,11 +91,10 @@ bool TickSet::TickInit()
 			printf("Found interval_per_tick using search! address: %#08x\n", interval_per_tick);
 		}
 	}
-#endif
-
-    return (interval_per_tick ? true : false);
+#endif //__linux__ or OSX
+#endif //WIN32
+    return interval_per_tick ? true : false;
 }
-
 
 bool TickSet::SetTickrate(int gameMode)
 {
@@ -174,5 +170,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     TickSet::SetTickrate(tickrate);
 }
 
-static ConVar tickRate("sv_tickrate", "0.015", 0,
-					   "Changes the tickrate of the game. Formatted as interval per tick, i.e 100 tickrate = 0.01", onTickRateChange);
+static ConVar intervalPerTick("sv_interval_per_tick", "0.015", 0,
+					   "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01", onTickRateChange);

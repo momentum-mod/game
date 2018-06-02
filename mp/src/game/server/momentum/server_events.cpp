@@ -1,6 +1,8 @@
 #include "cbase.h"
 #include "server_events.h"
 #include "mom_shareddefs.h"
+#include "tickset.h"
+
 #include "tier0/memdbgon.h"
 
 
@@ -108,6 +110,12 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
         }
     }
 }
+
+void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
+{
+    engine->ServerCommand("unpause\n");
+}
+
 
 void CMOMServerEvents::MountAdditionalContent()
 {

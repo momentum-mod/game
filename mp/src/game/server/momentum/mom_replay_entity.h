@@ -1,18 +1,12 @@
-#ifndef MOM_REPLAY_GHOST_H
-#define MOM_REPLAY_GHOST_H
-
 #pragma once
 
-#include "cbase.h"
-#include <GameEventListener.h>
-#include "in_buttons.h"
 #include "mom_ghost_base.h"
-#include "mom_player.h"
-#include "mom_replay_system.h"
-#include "run/mom_entity_run_data.h"
-#include "run/mom_replay_data.h"
+#include "GameEventListener.h"
+#include "mom_modulecomms.h"
 
-class CMomentumPlayer;
+class CMomRunStats;
+class CMomReplayBase;
+class CReplayFrame;
 
 class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGameEventListener
 {
@@ -42,11 +36,7 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     inline void SetRunFlags(uint32 flags) { m_SrvData.m_RunData.m_iRunFlags = flags; }
     void SetPlaybackReplay(CMomReplayBase *pPlayback) { m_pPlaybackReplay = pPlayback; }
 
-    CReplayFrame *GetCurrentStep()
-    {
-        return m_pPlaybackReplay->GetFrame(
-            max(min(m_SrvData.m_iCurrentTick - m_iTickRemainder, m_pPlaybackReplay->GetFrameCount() - 1), 0));
-    }
+    CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
 
     bool IsReplayEnt() { return true; }
@@ -82,5 +72,3 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     int m_iTickRemainder; // Used for practice timestamps, this will be used for setting the right step for our ghost
                           // replay system.
 };
-
-#endif // MOM_REPLAY_GHOST_H

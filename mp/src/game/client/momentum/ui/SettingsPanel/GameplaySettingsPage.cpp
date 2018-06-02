@@ -3,12 +3,13 @@
 #include "GameplaySettingsPage.h"
 #include <vgui_controls/CvarTextEntry.h>
 #include <vgui_controls/CVarSlider.h>
+#include <vgui_controls/CvarToggleCheckButton.h>
 
 using namespace vgui;
 
 GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, "GameplaySettings")
 {
-    m_pYawSpeedSlider = FindControl<CCvarSlider>("YawSpeed");
+    m_pYawSpeedSlider = FindControl<CvarSlider>("YawSpeed");
     m_pYawSpeedEntry = FindControl<TextEntry>("YawSpeedEntry");
 
     m_pLowerSpeedCVarEntry = FindControl<CvarTextEntry>("LowerSpeedEntry");

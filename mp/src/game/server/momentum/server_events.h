@@ -28,6 +28,8 @@ public:
     void LevelShutdownPostEntity() OVERRIDE;
     void FrameUpdatePreEntityThink() OVERRIDE;
 
+    STEAM_CALLBACK(CMOMServerEvents, OnGameOverlay, GameOverlayActivated_t);
+
     void MountAdditionalContent();
 
 private:

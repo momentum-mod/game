@@ -3,8 +3,11 @@
 #include <vgui_controls/BuildGroup.h>
 #include <vgui_controls/Label.h>
 #include <vgui_controls/ProgressBar.h>
-
 #include <vgui_controls/TextEntry.h>
+
+#include <vgui/ISurface.h>
+#include <vgui/ILocalize.h>
+#include <vgui/IInput.h>
 
 #include "hud_mapfinished.h"
 #include "mom_player_shared.h"
@@ -14,6 +17,8 @@
 #include "momSpectatorGUI.h"
 
 #include <tier0/memdbgon.h>
+
+using namespace vgui;
 
 C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY, false, false)
 {
@@ -50,7 +55,7 @@ C_MOMReplayUI::C_MOMReplayUI(IViewPort *pViewport) : Frame(nullptr, PANEL_REPLAY
 
     m_pGotoTick = FindControl<TextEntry>("ReplayGoToTick");
 
-    m_pTimescaleSlider = FindControl<CCvarSlider>("TimescaleSlider");
+    m_pTimescaleSlider = FindControl<CvarSlider>("TimescaleSlider");
     m_pTimescaleLabel = FindControl<Label>("TimescaleLabel");
     m_pTimescaleEntry = FindControl<TextEntry>("TimescaleEntry");
     SetLabelText();

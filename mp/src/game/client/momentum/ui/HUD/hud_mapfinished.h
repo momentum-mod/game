@@ -3,31 +3,16 @@
 #include "cbase.h"
 
 #include "hudelement.h"
-#include "hud_numericdisplay.h"
-#include "iclientmode.h"
-#include "menu.h"
-#include "time.h"
+#include <vgui_controls/EditablePanel.h>
 
-#include <vgui_controls/Panel.h>
-#include <vgui_controls/pch_vgui_controls.h>
-#include <vgui_controls/Frame.h>
-#include <vgui/IScheme.h>
-#include <vgui/ISurface.h>
-#include <vgui/ILocalize.h>
-#include <vgui_controls/AnimationController.h>
-
-#include "vgui_helpers.h"
 #include "mom_shareddefs.h"
-#include "mom_player_shared.h"
-#include "mom_shareddefs.h"
-#include "mom_event_listener.h"
-#include "util/mom_util.h"
 
-using namespace vgui;
+class CMomRunStats;
+class C_MOMRunEntityData;
 
-class CHudMapFinishedDialog : public CHudElement, public EditablePanel
+class CHudMapFinishedDialog : public CHudElement, public vgui::EditablePanel
 {
-    DECLARE_CLASS_SIMPLE(CHudMapFinishedDialog, EditablePanel);
+    DECLARE_CLASS_SIMPLE(CHudMapFinishedDialog, vgui::EditablePanel);
 
 public:
     CHudMapFinishedDialog(const char *pElementName);
@@ -43,12 +28,12 @@ public:
 
     bool IsBuildGroupEnabled() OVERRIDE { return false; }
 
-    void OnMousePressed(MouseCode code) OVERRIDE;
+    void OnMousePressed(vgui::MouseCode code) OVERRIDE;
 
-    void ApplySchemeSettings(IScheme *pScheme) OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
 protected:
-    CPanelAnimationVar(HFont, m_hTextFont, "TextFont", "Default");
+    CPanelAnimationVar(vgui::HFont, m_hTextFont, "TextFont", "Default");
 
 private:
     wchar_t m_pwCurrentPageOverall[BUFSIZELOCL];
@@ -80,28 +65,28 @@ private:
     char m_pszRightArrowToolTip[BUFSIZELOCL];
     char m_pszLeftArrowToolTip[BUFSIZELOCL];
 
-    ImagePanel *m_pPlayReplayButton;
-    ImagePanel *m_pClosePanelButton;
-    ImagePanel *m_pRepeatButton;
-    ImagePanel *m_pNextZoneButton;
-    ImagePanel *m_pPrevZoneButton;
-    Label *m_pDetachMouseLabel;
-    Label *m_pCurrentZoneLabel;
-    Label *m_pZoneOverallTime;//Also known as "Zone Time"
-    Label *m_pZoneEnterTime;
-    Label *m_pZoneJumps;
-    Label *m_pZoneStrafes;
-    Label *m_pZoneVelEnter;
-    Label *m_pZoneVelExit;
-    Label *m_pZoneVelAvg;
-    Label *m_pZoneVelMax;
-    Label *m_pZoneSync1;
-    Label *m_pZoneSync2;
-    Label *m_pRunSaveStatus;
-    Label *m_pRunUploadStatus;
+    vgui::ImagePanel *m_pPlayReplayButton;
+    vgui::ImagePanel *m_pClosePanelButton;
+    vgui::ImagePanel *m_pRepeatButton;
+    vgui::ImagePanel *m_pNextZoneButton;
+    vgui::ImagePanel *m_pPrevZoneButton;
+    vgui::Label *m_pDetachMouseLabel;
+    vgui::Label *m_pCurrentZoneLabel;
+    vgui::Label *m_pZoneOverallTime;//Also known as "Zone Time"
+    vgui::Label *m_pZoneEnterTime;
+    vgui::Label *m_pZoneJumps;
+    vgui::Label *m_pZoneStrafes;
+    vgui::Label *m_pZoneVelEnter;
+    vgui::Label *m_pZoneVelExit;
+    vgui::Label *m_pZoneVelAvg;
+    vgui::Label *m_pZoneVelMax;
+    vgui::Label *m_pZoneSync1;
+    vgui::Label *m_pZoneSync2;
+    vgui::Label *m_pRunSaveStatus;
+    vgui::Label *m_pRunUploadStatus;
 
     CMomRunStats* m_pRunStats;
-    CMOMRunEntityData *m_pRunData;
+    C_MOMRunEntityData *m_pRunData;
 
     bool m_bRunSaved, m_bRunUploaded, m_bIsGhost;
 

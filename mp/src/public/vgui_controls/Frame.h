@@ -162,7 +162,7 @@ protected:
 	virtual void ApplySettings(KeyValues *inResourceData);
 	// records the settings into the resource data
 	virtual void GetSettings(KeyValues *outResourceData);
-	virtual const char *GetDescription( void );
+    void InitSettings() OVERRIDE;
 
 	// gets the default position and size on the screen to appear the first time (defaults to centered)
 	virtual bool GetDefaultScreenPosition(int &x, int &y, int &wide, int &tall);

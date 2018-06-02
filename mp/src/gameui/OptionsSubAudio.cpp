@@ -41,8 +41,8 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 {
     SetSize(20, 20);
 
-	m_pSFXSlider = new CCvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume" );
-	m_pMusicSlider = new CCvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "Snd_MusicVolume" );
+	m_pSFXSlider = new CvarSlider( this, "SFXSlider", "#GameUI_SoundEffectVolume", 0.0f, 1.0f, "volume" );
+	m_pMusicSlider = new CvarSlider( this, "MusicSlider", "#GameUI_MusicVolume", 0.0f, 1.0f, "Snd_MusicVolume" );
 	
 	m_pCloseCaptionCombo = new ComboBox( this, "CloseCaptionCheck", 6, false );
 	m_pCloseCaptionCombo->AddItem( "#GameUI_NoClosedCaptions", NULL );
@@ -151,10 +151,10 @@ void COptionsSubAudio::OnResetData()
    // In a Steam environment we get the current language 
 #if !defined( NO_STEAM )
    // When Steam isn't running we can't get the language info... 
-   if ( GameUI().GetSteamContext()->SteamApps() )
+   if ( SteamApps() )
    {
-       Q_strncpy(szCurrentLanguage, GameUI().GetSteamContext()->SteamApps()->GetCurrentGameLanguage(), sizeof(szCurrentLanguage));
-       Q_strncpy(szAvailableLanguages, GameUI().GetSteamContext()->SteamApps()->GetAvailableGameLanguages(), sizeof(szAvailableLanguages));
+       Q_strncpy(szCurrentLanguage, SteamApps()->GetCurrentGameLanguage(), sizeof(szCurrentLanguage));
+       Q_strncpy(szAvailableLanguages, SteamApps()->GetAvailableGameLanguages(), sizeof(szAvailableLanguages));
    }
 #endif
 

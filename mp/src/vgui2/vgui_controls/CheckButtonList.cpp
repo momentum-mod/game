@@ -14,6 +14,7 @@
 
 using namespace vgui;
 
+DECLARE_BUILD_FACTORY(CheckButtonList);
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
@@ -171,6 +172,41 @@ bool CheckButtonList::IsItemChecked(int itemID)
 void CheckButtonList::SetItemCheckable(int itemID, bool state)
 {
 	m_CheckItems[itemID].checkButton->SetCheckButtonCheckable(state);
+}
+
+void CheckButtonList::ToggleSelectAll(bool bEnabled, bool bSilent /* = false */)
+{
+    if (!m_CheckItems.IsEmpty())
+    {
+        FOR_EACH_VEC(m_CheckItems, i)
+        {
+            CheckButton *pButton = m_CheckItems[i].checkButton;
+
+            if (bSilent)
+                pButton->SetSilentMode(true);
+
+            // Only fire the change if we really need to
+            if (pButton->IsSelected() != bEnabled)
+                pButton->SetSelected(bEnabled);
+
+            if (bSilent)
+                pButton->SetSilentMode(false);
+        }
+    }
+}
+
+bool CheckButtonList::AllItemsChecked()
+{
+    if (m_CheckItems.IsEmpty())
+        return false;
+
+    FOR_EACH_VEC(m_CheckItems, i)
+    {
+        if (!m_CheckItems[i].checkButton->IsSelected())
+            return false; // Only takes one to spoil it
+    }
+
+    return true;
 }
 
 //-----------------------------------------------------------------------------

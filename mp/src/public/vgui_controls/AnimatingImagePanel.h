@@ -48,14 +48,15 @@ protected:
 
 	virtual void GetSettings(KeyValues *outResourceData);
 	virtual void ApplySettings(KeyValues *inResourceData);
-	virtual const char *GetDescription();
+
+    void InitSettings() OVERRIDE;
 
 private:
 	int m_iCurrentImage;
 	int m_iNextFrameTime;
 	int m_iFrameTimeMillis;
 	CUtlVector<IImage *> m_Frames;
-	char *m_pImageName;
+	CUtlString m_pImageName;
 	bool m_bAnimating;
 	bool m_bFiltered;
 	bool m_bScaleImage;

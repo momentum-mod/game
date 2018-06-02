@@ -31,6 +31,8 @@ namespace vgui
 		~RotatingProgressBar();
 
 		virtual void ApplySettings(KeyValues *inResourceData);
+        void GetSettings(KeyValues* outResourceData) OVERRIDE;
+        void InitSettings() OVERRIDE;
 		virtual void ApplySchemeSettings(IScheme *pScheme);
 
 		void SetImage( const char *imageName );
@@ -42,7 +44,7 @@ namespace vgui
 
 	private:
 		int m_nTextureId;
-		char *m_pszImageName;
+		CUtlString m_pszImageName;
 
 		float m_flStartRadians;
 		float m_flEndRadians;

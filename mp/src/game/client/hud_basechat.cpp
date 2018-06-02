@@ -16,19 +16,18 @@
 #include "text_message.h"
 #include <vgui/ILocalize.h>
 #include "vguicenterprint.h"
-#include "vgui/KeyCode.h"
-#include <KeyValues.h>
 #include "ienginevgui.h"
 #include "c_playerresource.h"
 #include "ihudlcd.h"
 #include "vgui/IInput.h"
-#include "vgui/ILocalize.h"
+#include <vgui/ISurface.h>
 #include "multiplay_gamerules.h"
 #include "voice_status.h"
 
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 #define CHAT_WIDTH_PERCENTAGE 0.6f
 
@@ -202,8 +201,8 @@ wchar_t* ReadChatTextString( bf_read &msg, OUT_Z_BYTECAP(outSizeInBytes) wchar_t
 // Input  : *parent - 
 //			*panelName - 
 //-----------------------------------------------------------------------------
-CBaseHudChatLine::CBaseHudChatLine( vgui::Panel *parent, const char *panelName ) : 
-	vgui::RichText( parent, panelName )
+CBaseHudChatLine::CBaseHudChatLine( Panel *parent, const char *panelName ) : 
+	RichText( parent, panelName )
 {
 	m_hFont = m_hFontMarlett = 0;
 	m_flExpireTime = 0.0f;
@@ -226,7 +225,7 @@ CBaseHudChatLine::~CBaseHudChatLine()
 }
 	
 
-void CBaseHudChatLine::ApplySchemeSettings(vgui::IScheme *pScheme)
+void CBaseHudChatLine::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
@@ -381,23 +380,23 @@ void CBaseHudChatLine::Expire( void )
 // Purpose: The prompt and text entry area for chat messages
 //-----------------------------------------------------------------------------
 #ifndef _XBOX
-CBaseHudChatInputLine::CBaseHudChatInputLine( vgui::Panel *parent, char const *panelName ) : 
-	vgui::Panel( parent, panelName )
+CBaseHudChatInputLine::CBaseHudChatInputLine( Panel *parent, char const *panelName ) : 
+	Panel( parent, panelName )
 {
 	SetMouseInputEnabled( false );
 
-	m_pPrompt = new vgui::Label( this, "ChatInputPrompt", L"Enter text:" );
+	m_pPrompt = new Label( this, "ChatInputPrompt", L"Enter text:" );
 
 	m_pInput = new CBaseHudChatEntry( this, "ChatInput", parent );	
 	m_pInput->SetMaximumCharCount( 127 );
 }
 
-void CBaseHudChatInputLine::ApplySchemeSettings(vgui::IScheme *pScheme)
+void CBaseHudChatInputLine::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 	
 	// FIXME:  Outline
-	vgui::HFont hFont = pScheme->GetFont( "ChatFont" );
+	HFont hFont = pScheme->GetFont( "ChatFont" );
 
 	m_pPrompt->SetFont( hFont );
 	m_pInput->SetFont( hFont );
@@ -406,7 +405,7 @@ void CBaseHudChatInputLine::ApplySchemeSettings(vgui::IScheme *pScheme)
 
 	SetPaintBackgroundEnabled( true );
 	m_pPrompt->SetPaintBackgroundEnabled( true );
-	m_pPrompt->SetContentAlignment( vgui::Label::a_west );
+	m_pPrompt->SetContentAlignment( Label::a_west );
 	m_pPrompt->SetTextInset( 2, 0 );
 
 	m_pInput->SetMouseInputEnabled( true );
@@ -466,19 +465,19 @@ CBaseHudChatEntry *CBaseHudChatInputLine::GetInputPanel(void)
 #endif //_XBOX
 
 
-CHudChatFilterButton::CHudChatFilterButton( vgui::Panel *pParent, const char *pName, const char *pText ) : 
+CHudChatFilterButton::CHudChatFilterButton( Panel *pParent, const char *pName, const char *pText ) : 
 BaseClass( pParent, pName, pText )
 {
 }
 
-CHudChatFilterCheckButton::CHudChatFilterCheckButton( vgui::Panel *pParent, const char *pName, const char *pText, int iFlag ) : 
+CHudChatFilterCheckButton::CHudChatFilterCheckButton( Panel *pParent, const char *pName, const char *pText, int iFlag ) : 
 BaseClass( pParent, pName, pText )
 {
 	m_iFlag = iFlag;
 }
 
 
-CHudChatFilterPanel::CHudChatFilterPanel( vgui::Panel *pParent, const char *pName ) : BaseClass ( pParent, pName )
+CHudChatFilterPanel::CHudChatFilterPanel( Panel *pParent, const char *pName ) : BaseClass ( pParent, pName )
 {
 	pParent->SetSize( 10, 10 ); // Quiet "parent not sized yet" spew
 	SetParent( pParent );
@@ -502,7 +501,7 @@ CHudChatFilterPanel::CHudChatFilterPanel( vgui::Panel *pParent, const char *pNam
     
 }
 
-void CHudChatFilterPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
+void CHudChatFilterPanel::ApplySchemeSettings(IScheme *pScheme)
 {
 	LoadControlSettings( "resource/UI/ChatFilters.res" );
 
@@ -514,7 +513,7 @@ void CHudChatFilterPanel::ApplySchemeSettings(vgui::IScheme *pScheme)
 	SetFgColor( pScheme->GetColor( "Blank", GetFgColor() ) );
 }
 
-void CHudChatFilterPanel::OnFilterButtonChecked( vgui::Panel *panel )
+void CHudChatFilterPanel::OnFilterButtonChecked( Panel *panel )
 {
 	CHudChatFilterCheckButton *pButton = dynamic_cast < CHudChatFilterCheckButton * > ( panel );
 
@@ -582,15 +581,15 @@ void CHudChatFilterButton::DoClick( void )
 	}
 }
 
-CHudChatHistory::CHudChatHistory( vgui::Panel *pParent, const char *panelName ) : BaseClass( pParent, "HudChatHistory" )
+CHudChatHistory::CHudChatHistory( Panel *pParent, const char *panelName ) : BaseClass( pParent, "HudChatHistory" )
 {
-	vgui::HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ChatScheme.res", "ChatScheme");
+	HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ChatScheme.res", "ChatScheme");
 	SetScheme(scheme);
 
 	InsertFade( -1, -1 );
 }
 
-void CHudChatHistory::ApplySchemeSettings( vgui::IScheme *pScheme )
+void CHudChatHistory::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
@@ -605,17 +604,17 @@ int CBaseHudChat::m_nLineCounter = 1;
 CBaseHudChat::CBaseHudChat( const char *pElementName )
 : CHudElement( pElementName ), BaseClass( NULL, "HudChat" )
 {
-	vgui::Panel *pParent = g_pClientMode->GetViewport();
+	Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
 
-	vgui::HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ChatScheme.res", "ChatScheme" );
+	HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ChatScheme.res", "ChatScheme" );
 	SetScheme(scheme);
 
 	g_pVGuiLocalize->AddFile( "resource/chat_%language%.txt" );
 
 	m_nMessageMode = 0;
 
-	vgui::ivgui()->AddTickSignal( GetVPanel() );
+	ivgui()->AddTickSignal( GetVPanel() );
 
 	// (We don't actually want input until they bring up the chat line).
 	MakePopup();
@@ -677,7 +676,7 @@ CHudChatFilterPanel *CBaseHudChat::GetChatFilterPanel( void )
 
 		if ( m_pFilterPanel )
 		{
-			vgui::HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ChatScheme.res", "ChatScheme");
+			HScheme scheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ChatScheme.res", "ChatScheme");
 
 			m_pFilterPanel->SetScheme( scheme );
 			m_pFilterPanel->InvalidateLayout( true, true );
@@ -691,7 +690,7 @@ CHudChatFilterPanel *CBaseHudChat::GetChatFilterPanel( void )
 	return m_pFilterPanel;
 }
 
-void CBaseHudChat::ApplySchemeSettings( vgui::IScheme *pScheme )
+void CBaseHudChat::ApplySchemeSettings( IScheme *pScheme )
 {
 	LoadControlSettings( "resource/UI/BaseChat.res" );
 
@@ -1054,8 +1053,8 @@ void CBaseHudChat::OnTick( void )
 
 	if ( line )
 	{
-		vgui::HFont font = line->GetFont();
-		m_iFontHeight = vgui::surface()->GetFontTall( font ) + 2;
+		HFont font = line->GetFont();
+		m_iFontHeight = surface()->GetFontTall( font ) + 2;
 
 		// Put input area at bottom
 
@@ -1093,7 +1092,7 @@ int CBaseHudChat::ComputeBreakChar( int width, const char *text, int textlen )
 {
 #ifndef _XBOX
 	CBaseHudChatLine *line = m_ChatLine;
-	vgui::HFont font = line->GetFont();
+	HFont font = line->GetFont();
 
 	int currentlen = 0;
 	int lastbreak = textlen;
@@ -1112,7 +1111,7 @@ int CBaseHudChat::ComputeBreakChar( int width, const char *text, int textlen )
 
 		int a,b,c;
 
-		vgui::surface()->GetCharABCwide(font, wch[0], a, b, c);
+		surface()->GetCharABCwide(font, wch[0], a, b, c);
 		currentlen += a + b + c;
 
 		if ( currentlen >= width )
@@ -1192,11 +1191,11 @@ void CBaseHudChat::StartMessageMode( int iMessageModeType )
 		GetChatHistory()->SetVisible( true );
 	}
 
-	vgui::SETUP_PANEL( this );
+	SETUP_PANEL( this );
 	SetKeyBoardInputEnabled( true );
 	SetMouseInputEnabled( true );
 	m_pChatInput->SetVisible( true );
-	vgui::surface()->CalculateMouseVisible();
+	surface()->CalculateMouseVisible();
 	m_pChatInput->RequestFocus();
 	m_pChatInput->SetPaintBorderEnabled( true );
 	m_pChatInput->SetMouseInputEnabled( true );
@@ -1204,7 +1203,7 @@ void CBaseHudChat::StartMessageMode( int iMessageModeType )
 	//Place the mouse cursor near the text so people notice it.
 	int x, y, w, h;
 	GetChatHistory()->GetBounds( x, y, w, h );
-	vgui::input()->SetCursorPos( x + ( w/2), y + (h/2) );
+	input()->SetCursorPos( x + ( w/2), y + (h/2) );
 
 	m_flHistoryFadeTime = gpGlobals->curtime + CHAT_HISTORY_FADE_TIME;
 
@@ -1326,7 +1325,7 @@ Color CBaseHudChat::GetTextColorForClient( TextColor colorNum, int clientIndex )
 
 	case COLOR_ACHIEVEMENT:
 		{
-			vgui::IScheme *pSourceScheme = vgui::scheme()->GetIScheme( vgui::scheme()->GetScheme( "SourceScheme" ) ); 
+			IScheme *pSourceScheme = scheme()->GetIScheme( scheme()->GetScheme( "SourceScheme" ) ); 
 			if ( pSourceScheme )
 			{
 				c = pSourceScheme->GetColor( "SteamLightGreen", GetBgColor() );
@@ -1348,7 +1347,7 @@ Color CBaseHudChat::GetTextColorForClient( TextColor colorNum, int clientIndex )
 //-----------------------------------------------------------------------------
 void CBaseHudChat::SetCustomColor( const char *pszColorName )
 {
-	vgui::IScheme *pScheme = vgui::scheme()->GetIScheme( vgui::scheme()->GetScheme( "ClientScheme" ) );
+	IScheme *pScheme = scheme()->GetIScheme( scheme()->GetScheme( "ClientScheme" ) );
 	SetCustomColor( pScheme->GetColor( pszColorName, Color(255,255,255,255) ) );
 }
 
@@ -1534,6 +1533,7 @@ void CBaseHudChatLine::Colorize( int alpha )
 
 	wchar_t wText[4096];
 	Color color;
+
 	for ( int i=0; i<m_textRanges.Count(); ++i )
 	{
 		wchar_t * start = m_text + m_textRanges[i].start;
@@ -1550,8 +1550,6 @@ void CBaseHudChatLine::Colorize( int alpha )
 
 			InsertColorChange( color );
 			InsertString( wText );
-
-			CBaseHudChat *pChat = dynamic_cast<CBaseHudChat*>(GetParent() );
 
 			if ( pChat && pChat->GetChatHistory() )
 			{	
@@ -1817,6 +1815,9 @@ void CBaseHudChat::ChatPrintf( int iPlayerIndex, int iFilter, const char *fmt, .
 		line->SetNameColor( clrNameColor );
 
 		line->InsertAndColorizeText( wbuf, iPlayerIndex );
+
+        if (m_nMessageMode == MM_NONE)
+            m_pChatHistory->GotoTextEnd();
 	}
 }
 

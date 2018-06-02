@@ -32,14 +32,10 @@ CSubRectImage::CSubRectImage( const char *filename, bool hardwareFiltered, int s
 	sub[ 3 ] = subh;
 
 	_filtered = hardwareFiltered;
-	// HACKHACK - force VGUI materials to be in the vgui/ directory
-	//			 This needs to be revisited once GoldSRC is grandfathered off.
-	//!! need to make this work with goldsrc
-	int size = strlen(filename) + 1 + strlen("vgui/");
-	_filename = (char *)malloc( size );
-	Assert( _filename );
-
-	Q_snprintf( _filename, size, "vgui/%s", filename );
+    // HACKHACK - force VGUI materials to be in the vgui/ directory
+    //			 This needs to be revisited once GoldSRC is grandfathered off.
+    //!! need to make this work with goldsrc
+    _filename.Format("vgui/%s", filename);
 
 	_id = SUBRECT_INVALID_TEXTURE;
 	_uploaded = false;
@@ -53,16 +49,13 @@ CSubRectImage::CSubRectImage( const char *filename, bool hardwareFiltered, int s
 
 CSubRectImage::~CSubRectImage()
 {
-	if ( vgui::surface() && _id != SUBRECT_INVALID_TEXTURE )
+	if ( surface() && _id != SUBRECT_INVALID_TEXTURE )
 	{
-		vgui::surface()->DestroyTextureID( _id );
+		surface()->DestroyTextureID( _id );
 		_id = SUBRECT_INVALID_TEXTURE;
 	}
 
-	if ( _filename )
-	{
-		free( _filename );
-	}
+    _filename.Purge();
 }
 
 //-----------------------------------------------------------------------------

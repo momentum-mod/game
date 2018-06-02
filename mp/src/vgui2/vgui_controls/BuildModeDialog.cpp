@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <utlvector.h>
+#include <utlbuffer.h>
 
 #include <vgui/IInput.h>
 #include <vgui/ILocalize.h>
@@ -38,9 +39,13 @@ using namespace vgui;
 
 struct PanelItem_t
 {
-	PanelItem_t() : m_EditLabel(NULL) {}
+	PanelItem_t() : m_EditLabel(nullptr), m_EditPanel(nullptr), m_pCombo(nullptr), m_EditButton(nullptr),
+	                m_iType(0)
+    {
+        m_szName[0] = '\0';
+    }
 
-	Panel *m_EditLabel;
+	Label *m_EditLabel;
 	TextEntry *m_EditPanel;
 	ComboBox *m_pCombo;
 	Button *m_EditButton;
@@ -62,7 +67,7 @@ public:
 	{
 		BaseClass::ApplySchemeSettings( scheme );
 
-		SetFont( scheme->GetFont( "DefaultVerySmall" ) );
+		SetFont( scheme->GetFont( "DefaultVerySmall", IsProportional() ) );
 	}
 };
 
@@ -75,7 +80,7 @@ public:
 
 	CUtlVector<PanelItem_t> m_PanelList;
 
-	void AddItem( Panel *label, TextEntry *edit, ComboBox *combo, Button *button, const char *name, int type )
+	void AddItem( Label *label, TextEntry *edit, ComboBox *combo, Button *button, const char *name, int type )
 	{
 		PanelItem_t item;
 		item.m_EditLabel = label;
@@ -102,6 +107,23 @@ public:
 		m_pControls->RemoveAll();
 	}
 
+    void SetFont(HFont font)
+	{
+	    FOR_EACH_VEC(m_PanelList, i)
+	    {
+            PanelItem_t t = m_PanelList[i];
+
+            if (t.m_EditPanel)
+                t.m_EditPanel->SetFont(font);
+            if (t.m_EditButton)
+                t.m_EditButton->SetFont(font);
+            if (t.m_EditLabel)
+                t.m_EditLabel->SetFont(font);
+            if (t.m_pCombo)
+                t.m_pCombo->SetFont(font);
+	    }
+	}
+
 	KeyValues *m_pResourceData;
 	PanelListPanel *m_pControls;
 };
@@ -116,13 +138,13 @@ class BuildModeLocalizedStringEditDialog : public Frame
 public:
 
 #pragma warning( disable : 4355 )
-	BuildModeLocalizedStringEditDialog() : Frame(this, NULL)
+	BuildModeLocalizedStringEditDialog() : Frame(this, nullptr)
 	{
-		m_pTokenEntry = new TextEntry(this, NULL);
-		m_pValueEntry = new TextEntry(this, NULL);
-		m_pFileCombo = new ComboBox(this, NULL, 12, false);
-		m_pOKButton = new Button(this, NULL, "OK");
-		m_pCancelButton = new Button(this, NULL, "Cancel");
+		m_pTokenEntry = new TextEntry(this, nullptr);
+		m_pValueEntry = new TextEntry(this, nullptr);
+		m_pFileCombo = new ComboBox(this, nullptr, 12, false);
+		m_pOKButton = new Button(this, nullptr, "OK");
+		m_pCancelButton = new Button(this, nullptr, "Cancel");
 
 		m_pCancelButton->SetCommand("Close");
 		m_pOKButton->SetCommand("OK");
@@ -130,7 +152,7 @@ public:
 		// add the files to the combo
 		for (int i = 0; i < g_pVGuiLocalize->GetLocalizationFileCount(); i++)
 		{
-			m_pFileCombo->AddItem(g_pVGuiLocalize->GetLocalizationFileName(i), NULL);
+			m_pFileCombo->AddItem(g_pVGuiLocalize->GetLocalizationFileName(i), nullptr);
 		}
 	}
 #pragma warning( default : 4355 )
@@ -229,20 +251,21 @@ int GetBuildModeDialogCount()
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-BuildModeDialog::BuildModeDialog(BuildGroup *buildGroup) : Frame(buildGroup->GetContextPanel(), "BuildModeDialog")
+BuildModeDialog::BuildModeDialog(BuildGroup *buildGroup) : Frame(nullptr, "BuildModeDialog")
 {
-	SetMinimumSize(300, 256);
+    SetProportional(true);
+    SetMinimumSize(GetScaledVal(250), GetScaledVal(256));
 	SetSize(300, 420);
-	m_pCurrentPanel = NULL;
-	m_pEditableParents = NULL;
-	m_pEditableChildren = NULL;
-	m_pNextChild = NULL;
-	m_pPrevChild = NULL;
+	m_pCurrentPanel = nullptr;
+	m_pEditableParents = nullptr;
+	m_pEditableChildren = nullptr;
+	m_pNextChild = nullptr;
+	m_pPrevChild = nullptr;
 	m_pBuildGroup = buildGroup;
-	_undoSettings = NULL;
-	_copySettings = NULL;
+	_undoSettings = nullptr;
+	_copySettings = nullptr;
 	_autoUpdate = false;
-	MakePopup();
+    m_Font = 0;
 	SetTitle("VGUI Build Mode Editor", true);
 
 	CreateControls();
@@ -352,14 +375,14 @@ void BuildModeDialog::CreateControls()
 	m_pFileSelectionCombo = new ComboBox(this, "FileSelectionCombo", 10, false);
 	for ( i = 0; i < m_pBuildGroup->GetRegisteredControlSettingsFileCount(); i++)
 	{
-		m_pFileSelectionCombo->AddItem(m_pBuildGroup->GetRegisteredControlSettingsFileByIndex(i), NULL);
+		m_pFileSelectionCombo->AddItem(m_pBuildGroup->GetRegisteredControlSettingsFileByIndex(i), nullptr);
 	}
 	if (m_pFileSelectionCombo->GetItemCount() < 2)
 	{
 		m_pFileSelectionCombo->SetEnabled(false);
 	}
 
-	int buttonH = 18;
+	int buttonH = GetScaledVal(18);
 
 	// status info at top of dialog
 	m_pStatusLabel = new Label(this, "StatusLabel", "[nothing currently selected]");
@@ -367,27 +390,31 @@ void BuildModeDialog::CreateControls()
 	m_pStatusLabel->SetTall( buttonH );
 	m_pDivider = new Divider(this, "Divider");
 	// drop-down combo box for adding new controls
-	m_pAddNewControlCombo = new ComboBox(this, NULL, 30, false);
-	m_pAddNewControlCombo->SetSize(116, buttonH);
+	m_pAddNewControlCombo = new ComboBox(this, nullptr, 30, false);
+	m_pAddNewControlCombo->SetSize(GetScaledVal(116), buttonH);
 	m_pAddNewControlCombo->SetOpenDirection(Menu::DOWN);
 
-	m_pEditableParents = new CBuildModeNavCombo( this, NULL, 15, false, true, m_pBuildGroup->GetContextPanel() );
-	m_pEditableParents->SetSize(116, buttonH);
+	m_pEditableParents = new CBuildModeNavCombo( this, nullptr, 15, false, true, m_pBuildGroup->GetContextPanel() );
+	m_pEditableParents->SetSize(GetScaledVal(116), buttonH);
 	m_pEditableParents->SetOpenDirection(Menu::DOWN);
 
-	m_pEditableChildren = new CBuildModeNavCombo( this, NULL, 15, false, false, m_pBuildGroup->GetContextPanel() );
-	m_pEditableChildren->SetSize(116, buttonH);
+	m_pEditableChildren = new CBuildModeNavCombo( this, nullptr, 15, false, false, m_pBuildGroup->GetContextPanel() );
+	m_pEditableChildren->SetSize(GetScaledVal(116), buttonH);
 	m_pEditableChildren->SetOpenDirection(Menu::DOWN);
 
 	m_pNextChild = new Button( this, "NextChild", "Next", this );
 	m_pNextChild->SetCommand( new KeyValues( "OnChangeChild", "direction", 1 ) );
+    m_pNextChild->SetAutoWide(true);
+    m_pNextChild->SetContentAlignment(Label::a_center);
 
 	m_pPrevChild = new Button( this, "PrevChild", "Prev", this );
 	m_pPrevChild->SetCommand( new KeyValues( "OnChangeChild", "direction", -1 ) );
+    m_pPrevChild->SetAutoWide(true);
+    m_pPrevChild->SetContentAlignment(Label::a_center);
 
 	// controls that can be added
 	// this list comes from controls EditablePanel can create by name.
-	int defaultItem = m_pAddNewControlCombo->AddItem("None", NULL);
+	int defaultItem = m_pAddNewControlCombo->AddItem("None", nullptr);
 
 	CUtlVector< char const * >	names;
 	CBuildFactoryHelper::GetFactoryNames( names );
@@ -401,22 +428,30 @@ void BuildModeDialog::CreateControls()
 
 	for ( i = sorted.FirstInorder(); i != sorted.InvalidIndex(); i = sorted.NextInorder( i ) )
 	{
-		m_pAddNewControlCombo->AddItem( sorted[ i ], NULL );
+		m_pAddNewControlCombo->AddItem( sorted[ i ], nullptr );
 	}
 
 	m_pAddNewControlCombo->ActivateItem(defaultItem);
 
 	m_pExitButton = new Button(this, "ExitButton", "&Exit");
-	m_pExitButton->SetSize(64, buttonH);
+	m_pExitButton->SetSize(GetScaledVal(64), buttonH);
+    m_pExitButton->SetAutoWide(true);
+    m_pExitButton->SetContentAlignment(Label::a_center);
 
 	m_pSaveButton = new Button(this, "SaveButton", "&Save");
-	m_pSaveButton->SetSize(64, buttonH);
+	m_pSaveButton->SetSize(GetScaledVal(64), buttonH);
+    m_pSaveButton->SetAutoWide(true);
+    m_pSaveButton->SetContentAlignment(Label::a_center);
 	
 	m_pApplyButton = new Button(this, "ApplyButton", "&Apply");
-	m_pApplyButton->SetSize(64, buttonH);
+	m_pApplyButton->SetSize(GetScaledVal(64), buttonH);
+    m_pApplyButton->SetAutoWide(true);
+    m_pApplyButton->SetContentAlignment(Label::a_center);
 
 	m_pReloadLocalization = new Button( this, "Localization", "&Reload Localization" );
-	m_pReloadLocalization->SetSize( 100, buttonH );
+	m_pReloadLocalization->SetSize(GetScaledVal(100), buttonH );
+    m_pReloadLocalization->SetAutoWide(true);
+    m_pReloadLocalization->SetContentAlignment(Label::a_center);
 
 	m_pExitButton->SetCommand("Exit");
 	m_pSaveButton->SetCommand("Save");
@@ -424,12 +459,16 @@ void BuildModeDialog::CreateControls()
 	m_pReloadLocalization->SetCommand( new KeyValues( "ReloadLocalization" ) );
 
 	m_pDeleteButton = new Button(this, "DeletePanelButton", "Delete");
-	m_pDeleteButton->SetSize(64, buttonH);
+	m_pDeleteButton->SetSize(GetScaledVal(64), buttonH);
 	m_pDeleteButton->SetCommand("DeletePanel");
+    m_pDeleteButton->SetAutoWide(true);
+    m_pDeleteButton->SetContentAlignment(Label::a_center);
 
 	m_pVarsButton = new MenuButton(this, "VarsButton", "Variables");
-	m_pVarsButton->SetSize(72, buttonH);
+	m_pVarsButton->SetSize(GetScaledVal(72), buttonH);
 	m_pVarsButton->SetOpenDirection(Menu::UP);
+    m_pVarsButton->SetAutoWide(true);
+    m_pVarsButton->SetContentAlignment(Label::a_center);
 	
 	// iterate the vars
 	KeyValues *vars = m_pBuildGroup->GetDialogVariables();
@@ -440,7 +479,7 @@ void BuildModeDialog::CreateControls()
 		Menu *menu = new Menu(m_pVarsButton, "VarsMenu");
 
 		// set all the variables to be copied to the clipboard when selected
-		for (KeyValues *kv = vars->GetFirstSubKey(); kv != NULL; kv = kv->GetNextKey())
+		for (KeyValues *kv = vars->GetFirstSubKey(); kv != nullptr; kv = kv->GetNextKey())
 		{
 			char buf[32];
 			_snprintf(buf, sizeof(buf), "%%%s%%", kv->GetName());
@@ -476,19 +515,20 @@ void BuildModeDialog::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	HFont font =  pScheme->GetFont( "DefaultVerySmall" );
-	m_pStatusLabel->SetFont( font );
-	m_pReloadLocalization->SetFont( font );
-	m_pExitButton->SetFont( font );
-	m_pSaveButton->SetFont( font );
-	m_pApplyButton->SetFont( font );
-	m_pAddNewControlCombo->SetFont( font );
-	m_pEditableParents->SetFont( font );
-	m_pEditableChildren->SetFont( font );
-	m_pDeleteButton->SetFont( font );
-	m_pVarsButton->SetFont( font );
-	m_pPrevChild->SetFont( font );
-	m_pNextChild->SetFont( font );
+	m_Font = pScheme->GetFont( "DefaultVerySmall", IsProportional() );
+    m_pPanelList->SetFont(m_Font);
+	m_pStatusLabel->SetFont(m_Font);
+	m_pReloadLocalization->SetFont(m_Font);
+	m_pExitButton->SetFont(m_Font);
+	m_pSaveButton->SetFont(m_Font);
+	m_pApplyButton->SetFont(m_Font);
+	m_pAddNewControlCombo->SetFont(m_Font);
+	m_pEditableParents->SetFont(m_Font);
+	m_pEditableChildren->SetFont(m_Font);
+	m_pDeleteButton->SetFont(m_Font);
+	m_pVarsButton->SetFont(m_Font);
+	m_pPrevChild->SetFont(m_Font);
+	m_pNextChild->SetFont(m_Font);
 }
 
 //-----------------------------------------------------------------------------
@@ -499,7 +539,12 @@ void BuildModeDialog::PerformLayout()
 	BaseClass::PerformLayout();
 
 	// layout parameters
-	const int BORDER_GAP = 16, YGAP_SMALL = 4, YGAP_LARGE = 8, TITLE_HEIGHT = 24, BOTTOM_CONTROLS_HEIGHT = 145, XGAP = 6;
+	const int BORDER_GAP = GetScaledVal(16), 
+    YGAP_SMALL = GetScaledVal(4), 
+    YGAP_LARGE = GetScaledVal(8), 
+    TITLE_HEIGHT = GetScaledVal(24), 
+    BOTTOM_CONTROLS_HEIGHT = GetScaledVal(145), 
+    XGAP = GetScaledVal(6);
 
 	int wide, tall;
 	GetSize(wide, tall);
@@ -540,13 +585,13 @@ void BuildModeDialog::PerformLayout()
 	// divider
 	xpos = BORDER_GAP;
 	ypos -= (YGAP_LARGE + m_pDivider->GetTall());
-	m_pDivider->SetBounds(xpos, ypos, wide - (xpos + BORDER_GAP), 2);
+    m_pDivider->SetBounds(xpos, ypos, wide - (xpos + BORDER_GAP), 2);
 
 	ypos -= (YGAP_LARGE  + m_pVarsButton->GetTall());
 
 	xpos = BORDER_GAP;
 	m_pEditableParents->SetPos( xpos, ypos );
-	m_pEditableChildren->SetPos( xpos + 150, ypos );
+	m_pEditableChildren->SetPos( xpos + GetScaledVal(150), ypos );
 
 	ypos -= (YGAP_LARGE + 18 );
 	xpos = BORDER_GAP;
@@ -555,11 +600,11 @@ void BuildModeDialog::PerformLayout()
 	xpos += ( XGAP ) + m_pReloadLocalization->GetWide();
 	
 	m_pPrevChild->SetPos( xpos, ypos );
-	m_pPrevChild->SetSize( 64, m_pReloadLocalization->GetTall() );
+	m_pPrevChild->SetSize( GetScaledVal(64), m_pReloadLocalization->GetTall() );
 	xpos += ( XGAP ) + m_pPrevChild->GetWide();
 
 	m_pNextChild->SetPos( xpos, ypos );
-	m_pNextChild->SetSize( 64, m_pReloadLocalization->GetTall() );
+	m_pNextChild->SetSize( GetScaledVal(64), m_pReloadLocalization->GetTall() );
 
 	ypos -= (YGAP_LARGE  + m_pVarsButton->GetTall());
 	xpos = BORDER_GAP;
@@ -580,41 +625,6 @@ void BuildModeDialog::RemoveAllControls( void )
 {
 	// free the array
 	m_pPanelList->RemoveAll();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: simple helper function to get a token from a string
-// Input  : char **string - pointer to the string pointer, which will be incremented
-// Output : const char * - pointer to the token
-//-----------------------------------------------------------------------------
-const char *ParseTokenFromString( const char **string )
-{
-	static char buf[128];
-	buf[0] = 0;
-
-	// find the first alnum character
-	const char *tok = *string;
-	while ( !V_isalnum(*tok) && *tok != 0 )
-	{
-		tok++;
-	}
-
-	// read in all the alnum characters (including underscores)
-	int pos = 0;
-	while ( V_isalnum(tok[pos]) || tok[pos] == '_' )
-	{
-		buf[pos] = tok[pos];
-		pos++;
-	}
-
-	// null terminate the token
-	buf[pos] = 0;
-
-	// update the main string pointer
-	*string = &(tok[pos]);
-
-	// return a pointer to the static buffer
-	return buf;
 }
 
 void BuildModeDialog::OnTextKillFocus()
@@ -654,160 +664,106 @@ void BuildModeDialog::SetActiveControl(Panel *controlToEdit)
 		return;
 	}
 
-	// get the control description string
-	const char *controlDesc = m_pCurrentPanel->GetDescription();
+	// get the control's settings and create controls based on the type
+    CUtlVector<PanelSetting_t> *vecSettings = &m_pCurrentPanel->GetPanelSettings();
+    int tabPosition = 1;
+    FOR_EACH_VEC(*vecSettings, i)
+    {
+        PanelSetting_t setting = vecSettings->Element(i);
 
-	// parse out the control description
-	int tabPosition = 1;
-	while (1)
-	{
-		const char *dataType = ParseTokenFromString(&controlDesc);
+        int itemHeight = GetScaledVal(18);
 
-		// finish when we have no more tokens
-		if (*dataType == 0)
-			break;
+        // build a control & label
+        Label *label = new Label(this, nullptr, setting.name);
+        label->SetSize(GetScaledVal(96), itemHeight);
+        label->SetContentAlignment(Label::a_east);
 
-		// default the data type to a string
-		int datat = TYPE_STRING;
+        TextEntry *edit = nullptr;
+        ComboBox *editCombo = nullptr;
+        Button *editButton = nullptr;
+        if (setting.type == TYPE_ALIGNMENT)
+        {
+            // drop-down combo box
+            editCombo = new ComboBox(this, nullptr, 9, false);
+            editCombo->AddItem("north-west", nullptr);
+            editCombo->AddItem("north", nullptr);
+            editCombo->AddItem("north-east", nullptr);
+            editCombo->AddItem("west", nullptr);
+            editCombo->AddItem("center", nullptr);
+            editCombo->AddItem("east", nullptr);
+            editCombo->AddItem("south-west", nullptr);
+            editCombo->AddItem("south", nullptr);
+            editCombo->AddItem("south-east", nullptr);
 
-		if (!stricmp(dataType, "int"))
-		{
-			datat = TYPE_STRING; //!! just for now
-		}
-		else if (!stricmp(dataType, "alignment"))
-		{
-			datat = TYPE_ALIGNMENT;
-		}
-		else if (!stricmp(dataType, "autoresize"))
-		{
-			datat = TYPE_AUTORESIZE;
-		}
-		else if (!stricmp(dataType, "corner"))
-		{
-			datat = TYPE_CORNER;
-		}
-		else if (!stricmp(dataType, "localize"))
-		{
-			datat = TYPE_LOCALIZEDSTRING;
-		}
+            edit = editCombo;
+        }
+        else if (setting.type == TYPE_AUTORESIZE)
+        {
+            // drop-down combo box
+            editCombo = new ComboBox(this, nullptr, 4, false);
+            editCombo->AddItem("0 - no auto-resize", nullptr);
+            editCombo->AddItem("1 - resize right", nullptr);
+            editCombo->AddItem("2 - resize down", nullptr);
+            editCombo->AddItem("3 - down & right", nullptr);
 
-		// get the field name
-		const char *fieldName = ParseTokenFromString(&controlDesc);
+            edit = editCombo;
+        }
+        else if (setting.type == TYPE_CORNER)
+        {
+            // drop-down combo box
+            editCombo = new ComboBox(this, nullptr, 8, false);
+            editCombo->AddItem("0 - top-left", nullptr);
+            editCombo->AddItem("1 - top-right", nullptr);
+            editCombo->AddItem("2 - bottom-left", nullptr);
+            editCombo->AddItem("3 - bottom-right", nullptr);
+            editCombo->AddItem("4 - center-top", nullptr);
+            editCombo->AddItem("5 - center-right", nullptr);
+            editCombo->AddItem("6 - center-bottom", nullptr);
+            editCombo->AddItem("7 - center-left", nullptr);
 
-		int itemHeight = 18;
+            edit = editCombo;
+        }
+        else if (setting.type == TYPE_LOCALIZEDSTRING)
+        {
+            editButton = new Button(this, nullptr, "...");
+            editButton->SetParent(this);
+            editButton->AddActionSignalTarget(this);
+            editButton->SetTabPosition(tabPosition++);
+            editButton->SetTall(itemHeight);
+            label->SetAssociatedControl(editButton);
+        }
+        else
+        {
+            // normal string edit
+            edit = new CSmallTextEntry(this, nullptr);
+        }
 
-		// build a control & label
-		Label *label = new Label(this, NULL, fieldName);
-		label->SetSize(96, itemHeight);
-		label->SetContentAlignment(Label::a_east);
+        if (edit)
+        {
+            edit->SetTall(itemHeight);
+            edit->SetParent(this);
+            edit->AddActionSignalTarget(this);
+            edit->SetTabPosition(tabPosition++);
+            edit->SetAllowNumericInputOnly(setting.type == TYPE_INTEGER || setting.type == TYPE_FLOAT || setting.type == TYPE_BOOL);
+            label->SetAssociatedControl(edit);
+        }
 
-		TextEntry *edit = NULL;
-		ComboBox *editCombo = NULL;
-		Button *editButton = NULL;
-		if (datat == TYPE_ALIGNMENT)
-		{
-			// drop-down combo box
-			editCombo = new ComboBox(this, NULL, 9, false);
-			editCombo->AddItem("north-west", NULL);
-			editCombo->AddItem("north", NULL);
-			editCombo->AddItem("north-east", NULL);
-			editCombo->AddItem("west", NULL);
-			editCombo->AddItem("center", NULL);
-			editCombo->AddItem("east", NULL);
-			editCombo->AddItem("south-west", NULL);
-			editCombo->AddItem("south", NULL);
-			editCombo->AddItem("south-east", NULL);
-		
-			edit = editCombo;
-		}
-		else if (datat == TYPE_AUTORESIZE)
-		{
-			// drop-down combo box
-			editCombo = new ComboBox(this, NULL, 4, false);
-			editCombo->AddItem( "0 - no auto-resize", NULL);
-			editCombo->AddItem( "1 - resize right", NULL);
-			editCombo->AddItem( "2 - resize down", NULL);
-			editCombo->AddItem( "3 - down & right", NULL);
-		
-			edit = editCombo;
-		}
-		else if (datat == TYPE_CORNER)
-		{
-			// drop-down combo box
-			editCombo = new ComboBox(this, NULL, 4, false);
-			editCombo->AddItem("0 - top-left", NULL);
-			editCombo->AddItem("1 - top-right", NULL);
-			editCombo->AddItem("2 - bottom-left", NULL);
-			editCombo->AddItem("3 - bottom-right", NULL);
-		
-			edit = editCombo;
-		}
-		else if (datat == TYPE_LOCALIZEDSTRING)
-		{
-			editButton = new Button(this, NULL, "...");
-			editButton->SetParent(this);
-			editButton->AddActionSignalTarget(this);
-			editButton->SetTabPosition(tabPosition++);
-			editButton->SetTall( itemHeight );
-			label->SetAssociatedControl(editButton);
-		}
-		else
-		{
-			// normal string edit
-			edit = new CSmallTextEntry(this, NULL);
-		}
+        // add to our control list
+        m_pPanelList->AddItem(label, edit, editCombo, editButton, setting.name, setting.type);
 
-		if (edit)
-		{
-			edit->SetTall( itemHeight );
-			edit->SetParent(this);
-			edit->AddActionSignalTarget(this);
-			edit->SetTabPosition(tabPosition++);
-			label->SetAssociatedControl(edit);
-		}
-
-		HFont smallFont = scheme()->GetIScheme( GetScheme() )->GetFont( "DefaultVerySmall" );
-
-		if ( label )
-		{
-			label->SetFont( smallFont );
-		}
-		if ( edit )
-		{
-			edit->SetFont( smallFont );
-		}
-		if ( editCombo )
-		{
-			editCombo->SetFont( smallFont );
-		}
-		if ( editButton )
-		{
-			editButton->SetFont( smallFont );
-		}
-
-		// add to our control list
-		m_pPanelList->AddItem(label, edit, editCombo, editButton, fieldName, datat);
-
-		if ( edit )
-		{
-			m_pPanelList->m_pControls->AddItem(label, edit);
-		}
-		else
-		{
-			m_pPanelList->m_pControls->AddItem(label, editButton);
-		}
-	}
+        if (edit)
+        {
+            m_pPanelList->m_pControls->AddItem(label, edit);
+        }
+        else
+        {
+            m_pPanelList->m_pControls->AddItem(label, editButton);
+        }
+    }
 
 	// check and see if the current panel is a Label
 	// iterate through the class hierarchy 
-	if ( controlToEdit->IsBuildModeDeletable() )
-	{
-		m_pDeleteButton->SetEnabled(true);
-	}
-	else
-	{
-		m_pDeleteButton->SetEnabled(false);	
-	}
+    m_pDeleteButton->SetEnabled(controlToEdit->IsBuildModeDeletable());
 
 	// update the property data in the dialog
 	UpdateControlData(m_pCurrentPanel);
@@ -823,7 +779,7 @@ void BuildModeDialog::SetActiveControl(Panel *controlToEdit)
 	}
 
 	m_pApplyButton->SetEnabled(false);
-	InvalidateLayout();
+	InvalidateLayout(false, true);
 	Repaint();
 }
 
@@ -890,11 +846,9 @@ void BuildModeDialog::OnCommand(const char *command)
 	{
 		// apply the current data and save it to disk
 		ApplyDataToControls();
-		if (m_pBuildGroup->SaveControlSettings())
-		{
-			// disable save button until another change has been made
-			m_pSaveButton->SetEnabled(false);
-		}
+		m_pBuildGroup->SaveControlSettings();
+        // disable save button until another change has been made
+        m_pSaveButton->SetEnabled(false);
 	}
 	else if (!stricmp(command, "Exit"))
 	{
@@ -939,7 +893,7 @@ void BuildModeDialog::OnDeletePanel()
 	SetActiveControl(m_pBuildGroup->GetCurrentPanel());
 
 	_undoSettings->deleteThis();
-	_undoSettings = NULL;
+	_undoSettings = nullptr;
 	m_pSaveButton->SetEnabled(true);
 }
 
@@ -982,39 +936,12 @@ void BuildModeDialog::ApplyDataToControls()
 	}
 
 	// create a section to store settings
-	// m_pPanelList->m_pResourceData->getSection( m_pCurrentPanel->GetName(), true );
-	KeyValues *dat = new KeyValues( m_pCurrentPanel->GetName() );
-
-	// loop through the textedit filling in settings
-	for ( int i = 0; i < m_pPanelList->m_PanelList.Size(); i++ )
-	{
-		const char *name = m_pPanelList->m_PanelList[i].m_szName;
-		char buf[512];
-		if (m_pPanelList->m_PanelList[i].m_EditPanel)
-		{
-			m_pPanelList->m_PanelList[i].m_EditPanel->GetText(buf, sizeof(buf));
-		}
-		else
-		{
-			m_pPanelList->m_PanelList[i].m_EditButton->GetText(buf, sizeof(buf));
-		}
-
-		switch (m_pPanelList->m_PanelList[i].m_iType)
-		{
-		case TYPE_CORNER:
-		case TYPE_AUTORESIZE:
-			// the integer value is assumed to be the first part of the string for these items
-			dat->SetInt(name, atoi(buf));
-			break;
-
-		default:
-			dat->SetString(name, buf);
-			break;
-		}
-	}
+    KeyValues *dat = new KeyValues(m_pCurrentPanel->GetName());
+    StoreSettings(dat);
 
 	// dat is built, hand it back to the control
 	m_pCurrentPanel->ApplySettings( dat );
+    dat->deleteThis();
 
 	if ( m_pBuildGroup->GetContextPanel() )
 	{
@@ -1035,17 +962,18 @@ void BuildModeDialog::StoreUndoSettings()
 	{
 		if (_undoSettings)
 			_undoSettings->deleteThis();
-		_undoSettings = NULL;
+		_undoSettings = nullptr;
 		return; 
 	}
 
 	if (_undoSettings)
 	{
 		_undoSettings->deleteThis();
-		_undoSettings = NULL;
+		_undoSettings = nullptr;
 	}
 
-	_undoSettings = StoreSettings();
+    _undoSettings = new KeyValues(m_pCurrentPanel->GetName());
+	StoreSettings(_undoSettings);
 }
 
 
@@ -1059,7 +987,7 @@ void BuildModeDialog::DoUndo()
 		m_pCurrentPanel->ApplySettings( _undoSettings );
 		UpdateControlData(m_pCurrentPanel);
 		_undoSettings->deleteThis();
-		_undoSettings = NULL;
+		_undoSettings = nullptr;
 	}
 
 	m_pSaveButton->SetEnabled(true);
@@ -1073,10 +1001,11 @@ void BuildModeDialog::DoCopy()
 	if (_copySettings)
 	{
 		_copySettings->deleteThis();
-		_copySettings = NULL;
+		_copySettings = nullptr;
 	}
 
-	_copySettings = StoreSettings();
+    _copySettings = new KeyValues(m_pCurrentPanel->GetName());
+	StoreSettings(_copySettings);
 	Q_strncpy (_copyClassName, m_pCurrentPanel->GetClassName(), sizeof( _copyClassName ) );
 }
 
@@ -1104,40 +1033,40 @@ void BuildModeDialog::DoPaste()
 //-----------------------------------------------------------------------------
 // Purpose: Store the settings of the current panel in a keyValues
 //-----------------------------------------------------------------------------
-KeyValues *BuildModeDialog::StoreSettings()
+void BuildModeDialog::StoreSettings(KeyValues *storedSettings)
 {
-	KeyValues *storedSettings;
-	storedSettings = new KeyValues( m_pCurrentPanel->GetName() );
-
 	// loop through the textedit filling in settings
 	for ( int i = 0; i < m_pPanelList->m_PanelList.Size(); i++ )
 	{
-		const char *name = m_pPanelList->m_PanelList[i].m_szName;
-		char buf[512];
-		if (m_pPanelList->m_PanelList[i].m_EditPanel)
-		{
-			m_pPanelList->m_PanelList[i].m_EditPanel->GetText(buf, sizeof(buf));
-		}
-		else
-		{
-			m_pPanelList->m_PanelList[i].m_EditButton->GetText(buf, sizeof(buf));
-		}
+        PanelItem_t *item = &m_pPanelList->m_PanelList[i];
 
-		switch (m_pPanelList->m_PanelList[i].m_iType)
-		{
-		case TYPE_CORNER:
-		case TYPE_AUTORESIZE:
-			// the integer value is assumed to be the first part of the string for these items
-			storedSettings->SetInt(name, atoi(buf));
-			break;
+		const char *name = item->m_szName;
 
-		default:
-			storedSettings->SetString(name, buf);
-			break;
-		}
+        switch (item->m_iType)
+        {
+        case TYPE_CORNER:
+        case TYPE_AUTORESIZE:
+            if (item->m_pCombo)
+                storedSettings->SetInt(name, item->m_pCombo->GetActiveItem());
+            break;
+
+        default:
+            {
+                char buf[512];
+                if (item->m_EditPanel)
+                {
+                    item->m_EditPanel->GetText(buf, sizeof(buf));
+                }
+                else if (item->m_EditButton)
+                {
+                    item->m_EditButton->GetText(buf, sizeof(buf));
+                }
+
+                storedSettings->SetString(name, buf);
+            }
+            break;
+        }
 	}
-
-	return storedSettings;
 }
 
 
@@ -1150,6 +1079,11 @@ void BuildModeDialog::OnKeyCodeTyped(KeyCode code)
 	{
 		ApplyDataToControls();
 	}
+    else if (code == KEY_R && (input()->IsKeyDown(KEY_LCONTROL) || input()->IsKeyDown(KEY_RCONTROL)))
+    {
+        if (m_pBuildGroup)
+            m_pBuildGroup->ToggleRulerDisplay();
+    }
 	else
 	{
 		Frame::OnKeyCodeTyped(code);
@@ -1170,7 +1104,7 @@ void BuildModeDialog::OnTextChanged( Panel *panel )
 		if (stricmp(newFile, m_pBuildGroup->GetResourceName()) != 0)
 		{
 			// file has changed, reload
-			SetActiveControl(NULL);
+			SetActiveControl(nullptr);
 			m_pBuildGroup->ChangeControlSettingsFile(newFile);
 		}
 		return;
@@ -1380,6 +1314,14 @@ bool BuildModeDialog::IsBuildGroupEnabled()
 	return false;
 }
 
+void BuildModeDialog::OnScreenSizeChanged(int iOldWide, int iOldTall)
+{
+    BaseClass::OnScreenSizeChanged(iOldWide, iOldTall);
+
+    SetMinimumSize(GetScaledVal(250), GetScaledVal(256));
+    InvalidateLayout(true, true);
+}
+
 void BuildModeDialog::OnChangeChild( int direction )
 {
 	Assert( direction == 1 || direction == -1 );
@@ -1391,7 +1333,7 @@ void BuildModeDialog::OnChangeChild( int direction )
 
 	if ( !current || current == context )
 	{
-		current = NULL;
+		current = nullptr;
 		if ( context->GetChildCount() > 0 )
 		{
 			current = context->GetChild( 0 );

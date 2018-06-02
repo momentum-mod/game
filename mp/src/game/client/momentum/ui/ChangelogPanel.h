@@ -4,28 +4,28 @@
 
 #include "IChangelogPanel.h"
 #include <vgui_controls/Frame.h>
-
-using namespace vgui;
+#include "steam/steam_api.h"
 
 // CChangelogPanel class
-class CChangelogPanel : public Frame
+class CChangelogPanel : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CChangelogPanel, Frame);
-    // CChangelogPanel : This Class / vgui::Frame : BaseClass
 
-    CChangelogPanel(VPANEL parent); // Constructor
-    ~CChangelogPanel();;
+    CChangelogPanel(vgui::VPANEL parent); // Constructor
+    ~CChangelogPanel();
 
     void SetChangelog(const char* pChangelog);
 
-    void ApplySchemeSettings(IScheme* pScheme) OVERRIDE;
+    void ApplySchemeSettings(vgui::IScheme* pScheme) OVERRIDE;
 
     void Activate() OVERRIDE;
-    void OnThink() OVERRIDE;
 
   private:
-    float m_flScrollTime;
-    RichText *m_pChangeLog;
+    void GetRemoteChangelog();
+    CCallResult<CChangelogPanel, HTTPRequestCompleted_t> m_callResult;
+    void ChangelogCallback(HTTPRequestCompleted_t *pParam, bool bIOFailure);
+
+    vgui::RichText *m_pChangeLog;
     char m_cOnlineVersion[12];
     wchar_t *m_pwOnlineChangelog;
 };

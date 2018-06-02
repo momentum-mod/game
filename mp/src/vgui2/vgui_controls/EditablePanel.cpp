@@ -54,7 +54,6 @@ DECLARE_BUILD_FACTORY( EditablePanel );
 EditablePanel::EditablePanel(Panel *parent, const char *panelName) : Panel(parent, panelName), m_NavGroup(this)
 {
 	_buildGroup = new BuildGroup(this, this);
-	m_pszConfigName = NULL;
 	m_iConfigID = 0;
 	m_pDialogVariables = NULL;
 	m_bShouldSkipAutoResize = false;
@@ -69,7 +68,6 @@ EditablePanel::EditablePanel(Panel *parent, const char *panelName) : Panel(paren
 EditablePanel::EditablePanel(Panel *parent, const char *panelName, HScheme hScheme) : Panel(parent, panelName, hScheme), m_NavGroup(this)
 {
 	_buildGroup = new BuildGroup(this, this);
-	m_pszConfigName = NULL;
 	m_iConfigID = 0;
 	m_pDialogVariables = NULL;
 	m_bShouldSkipAutoResize = false;
@@ -85,7 +83,7 @@ EditablePanel::EditablePanel(Panel *parent, const char *panelName, HScheme hSche
 //-----------------------------------------------------------------------------
 EditablePanel::~EditablePanel()
 {
-	delete [] m_pszConfigName;
+	m_pszConfigName.Purge();
 	delete _buildGroup;
 
 	if (m_pDialogVariables)
@@ -177,75 +175,19 @@ void EditablePanel::OnSizeChanged(int wide, int tall)
 	BaseClass::OnSizeChanged(wide, tall);
 	InvalidateLayout();
 
-	for (int i = 0; i < GetChildCount(); i++)
-	{
-		// perform auto-layout on the child panel
-		Panel *child = GetChild(i);
-		if ( !child )
-			continue;
+    if (!m_bShouldSkipAutoResize)
+    {
+        for (int i = 0; i < GetChildCount(); i++)
+        {
+            // perform auto-layout on the child panel
+            Panel *child = GetChild(i);
+            if (!child)
+                continue;
 
-		int x, y, w, h;
-		child->GetBounds( x, y, w, h );
+            child->CalculateAutoResize(wide, tall);
+        }
+    }
 
-		int px, py;
-		child->GetPinOffset( px, py );
-
-		int ox, oy;
-		child->GetResizeOffset( ox, oy );
-
-		int ex;
-		int ey;
-
-		AutoResize_e resize = child->GetAutoResize(); 
-		bool bResizeHoriz = ( resize == AUTORESIZE_RIGHT || resize == AUTORESIZE_DOWNANDRIGHT );
-		bool bResizeVert = ( resize == AUTORESIZE_DOWN || resize == AUTORESIZE_DOWNANDRIGHT );
-
-		// The correct version of this code would say:
-		// if ( resize != AUTORESIZE_NO )
-		// but we're very close to shipping and this causes artifacts in other vgui panels that now
-		// depend on this bug.  So, I've added m_bShouldSkipAutoResize, which defaults to false but can
-		// be set using "skip_autoresize" in a .res file
-		if ( !m_bShouldSkipAutoResize )
-		{
-			PinCorner_e pinCorner = child->GetPinCorner();
-			if ( pinCorner == PIN_TOPRIGHT || pinCorner == PIN_BOTTOMRIGHT )
-			{
-				// move along with the right edge
-				ex = wide + px;
-				x = bResizeHoriz ? ox : ex - w;
-			}
-			else
-			{
-				x = px;
-				ex = bResizeHoriz ? wide + ox : px + w;
-			}
-
-			if ( pinCorner == PIN_BOTTOMLEFT || pinCorner == PIN_BOTTOMRIGHT )
-			{
-				// move along with the right edge
-				ey = tall + py;
-				y = bResizeVert ? oy : ey - h;
-			}
-			else
-			{
-				y = py;
-				ey = bResizeVert ? tall + oy : py + h;
-			}
-
-			// Clamp..
-			if ( ex < x )
-			{
-				ex = x;
-			}
-			if ( ey < y )
-			{
-				ey = y;
-			}
-
-			child->SetBounds( x, y, ex - x, ey - y );
-			child->InvalidateLayout();
-		}
-	}
 	Repaint();
 }
 
@@ -594,10 +536,8 @@ void EditablePanel::LoadUserConfig(const char *configName, int dialogID)
 {
 	KeyValues *data = system()->GetUserConfigFileData(configName, dialogID);
 
-	delete [] m_pszConfigName;
-	int len = Q_strlen(configName) + 1;
-	m_pszConfigName = new char[ len ];
-	Q_strncpy(m_pszConfigName, configName, len );
+    m_pszConfigName.Purge();
+    m_pszConfigName = configName;
 	m_iConfigID = dialogID;
 
 	// apply our user config settings (this will recurse through our children)
@@ -612,7 +552,7 @@ void EditablePanel::LoadUserConfig(const char *configName, int dialogID)
 //-----------------------------------------------------------------------------
 void EditablePanel::SaveUserConfig()
 {
-	if (m_pszConfigName)
+	if (!m_pszConfigName.IsEmpty())
 	{
 		KeyValues *data = system()->GetUserConfigFileData(m_pszConfigName, m_iConfigID);
 

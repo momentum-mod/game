@@ -1,9 +1,7 @@
 #pragma once
 
-#include "cbase.h"
 #include <momentum/util/serialization.h>
-#include <run/run_stats.h>
-#include "mom_entity_run_data.h"
+#include "run/mom_entity_run_data.h"
 
 typedef CCopyableUtlVector<practicetimestamps_s> Vector_PracticeTimeStamps;
 

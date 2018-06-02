@@ -146,7 +146,7 @@
 	}
 	"AlphaOverrideSlider"
 	{
-		"ControlName"		"CCvarSlider"
+		"ControlName"		"CvarSlider"
 		"fieldName"		"AlphaOverrideSlider"
 		"xpos"		"13"
 		"ypos"		"148"

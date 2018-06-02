@@ -5,8 +5,6 @@
 #pragma once
 #endif
 
-using namespace vgui;
-
 class CMapSelectorDialog;
 
 class CMapSelector : public IMapSelector
@@ -15,7 +13,7 @@ public:
     CMapSelector();
     ~CMapSelector();
 
-    void Create(VPANEL parent) OVERRIDE;
+    void Create(vgui::VPANEL parent) OVERRIDE;
     void Destroy() OVERRIDE;
     void Activate() OVERRIDE;
     void Deactivate() OVERRIDE;
@@ -24,7 +22,7 @@ public:
     void CloseAllMapInfoDialogs();
 
 private:
-    DHANDLE<CMapSelectorDialog> m_hMapsDlg;
+    vgui::DHANDLE<CMapSelectorDialog> m_hMapsDlg;
 };
 
 extern IMapSelector* mapselector;

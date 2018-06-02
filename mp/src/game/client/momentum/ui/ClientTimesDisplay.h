@@ -11,29 +11,11 @@
 #pragma once
 #endif
 
-#include "cbase.h"
-
 #include "steam/steam_api.h"
-
 #include "GameEventListener.h"
-
-#include "LeaderboardsContextMenu.h"
-#include "momentum/mom_shareddefs.h"
-#include <KeyValues.h>
 #include <game/client/iviewport.h>
-#include <vgui_controls/pch_vgui_controls.h>
-#include <vgui_controls/EditablePanel.h>
-#include <vgui_controls/SectionedListPanel.h>
-#include <vgui_controls/TextImage.h>
-#include "run/mom_replay_base.h"
-
-#define TYPE_NOTEAM 0 // NOTEAM must be zero :)
-#define TYPE_TEAM 1   // a section for a single team
-#define TYPE_PLAYERS 2
-#define TYPE_SPECTATORS 3 // a section for a spectator group
-#define TYPE_BLANK 4
-
-#define SCALE(num) scheme()->GetProportionalScaledValueEx(GetScheme(), (num))
+#include "vgui_controls/EditablePanel.h"
+#include "mom_shareddefs.h"
 
 #define DELAY_NEXT_UPDATE 10.0f           // Delay for the next API update, in seconds
 #define MIN_ONLINE_UPDATE_INTERVAL 15.0f  // The amount of seconds minimum between online checks
@@ -41,19 +23,18 @@
 #define MIN_FRIENDS_UPDATE_INTERVAL 15.0f // The amount of seconds minimum between online checks
 #define MAX_FRIENDS_UPDATE_INTERVAL 45.0f // The amount of seconds maximum between online checks
 
-class CUtlSortVectorTimeValue
-{
-public:
-    bool Less(CMomReplayBase *lhs, CMomReplayBase *rhs, void *) const
-    {
-        return lhs->GetRunTime() < rhs->GetRunTime();
-    }
-};
+#define ENABLE_HTTP_LEADERBOARDS 0
+
+class SavelocReqFrame;
+class LobbyMembersPanel;
+class CLeaderboardsContextMenu;
+class CUtlSortVectorTimeValue;
+class CMomReplayBase;
 
 //-----------------------------------------------------------------------------
 // Purpose: Game ScoreBoard
 //-----------------------------------------------------------------------------
-class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener
+class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, public CGameEventListener, public CAutoGameSystem
 {
   private:
     DECLARE_CLASS_SIMPLE(CClientTimesDisplay, vgui::EditablePanel);
@@ -82,7 +63,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     CClientTimesDisplay(IViewPort *pViewPort);
     ~CClientTimesDisplay();
 
-    const char *GetName(void) OVERRIDE { return PANEL_TIMES; }
+    const char* GetName(void) OVERRIDE { return PANEL_TIMES; }
 
     void SetData(KeyValues *data) OVERRIDE{};
 
@@ -95,8 +76,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     bool HasInputElements(void) OVERRIDE { return true; }
 
     void ShowPanel(bool bShow) OVERRIDE;
-
-    bool ShowAvatars() { return IsPC(); }
 
     // both vgui::Frame and IViewPortPanel define these, so explicitly define them here as passthroughs to vgui
     vgui::VPANEL GetVPanel(void) OVERRIDE { return BaseClass::GetVPanel(); }
@@ -111,8 +90,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     //void UpdatePlayerAvatar(int playerIndex, KeyValues *kv);
     // Updates the local player's avatar image
     void UpdatePlayerAvatarStandalone();
-    // This updates the local player's avatar in the online/friends leaderboards
-    void UpdatePlayerAvatarStandaloneOnline(KeyValues *);
     // Updates an online player's avatar image
     void UpdateLeaderboardPlayerAvatar(uint64, KeyValues *kv);
 
@@ -121,6 +98,8 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // Sets up the icons used in the leaderboard
     void SetupIcons();
 
+    void LevelInitPostEntity() OVERRIDE;
+
   protected:
     MESSAGE_FUNC_INT(OnPollHideCode, "PollHideCode", code);
     MESSAGE_FUNC_PARAMS(OnItemContextMenu, "ItemContextMenu", data); // Catching from SectionedListPanel
@@ -128,14 +107,25 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     MESSAGE_FUNC_CHARPTR(OnContextDeleteReplay, "ContextDeleteReplay", runName);
     MESSAGE_FUNC_CHARPTR(OnContextGoToMap, "ContextGoToMap", map);
     MESSAGE_FUNC_UINT64(OnContextVisitProfile, "ContextVisitProfile", profile);
+    MESSAGE_FUNC_UINT64(OnContextWatchOnlineReplay, "ContextWatchOnlineReplay", UGC);
     MESSAGE_FUNC_UINT64(OnSpectateLobbyMember, "ContextSpectate", target);
+    MESSAGE_FUNC_UINT64(OnContextReqSavelocs, "ContextReqSavelocs", target);
     MESSAGE_FUNC_PARAMS(OnConfirmDeleteReplay, "ConfirmDeleteReplay", data);
 
     STEAM_CALLBACK(CClientTimesDisplay, OnPersonaStateChange, PersonaStateChange_t);
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyCreated, LobbyCreated_t); // When we create a lobby
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyEnter, LobbyEnter_t); // When we enter a lobby
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyDataUpdate, LobbyDataUpdate_t); // People/lobby updates status
-    STEAM_CALLBACK(CClientTimesDisplay, OnLobbyChatUpdate, LobbyChatUpdate_t); // People join/leave
+
+
+    // Leaderboards API
+    SteamLeaderboard_t m_hCurrentLeaderboard;
+    CCallResult<CClientTimesDisplay, LeaderboardFindResult_t> m_cLeaderboardFindResult;
+    void OnLeaderboardFindResult(LeaderboardFindResult_t *pResult, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, LeaderboardScoresDownloaded_t> m_cLeaderboardGlobalScoresDownloaded;
+    void OnLeaderboardGlobalScoresDownloaded(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
+    CCallResult<CClientTimesDisplay, LeaderboardScoresDownloaded_t> m_cLeaderboardFriendsScoresDownloaded;
+    void OnLeaderboardFriendScoresDownloaded(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
+
+    CCallResult<CClientTimesDisplay, RemoteStorageDownloadUGCResult_t> m_cOnlineReplayDownloaded;
+    void OnOnlineReplayDownloaded(RemoteStorageDownloadUGCResult_t *pResult, bool bIOFailure);
 
     // Attempts to add the avatar for a given steam ID to the given image list, if it doesn't exist already
     // exist in the given ID to index map.
@@ -144,7 +134,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // functions to override
     bool GetPlayerTimes(KeyValues *outPlayerInfo, bool fullUpdate);
     void InitScoreboardSections();
-    void InitLobbyPanelSections();
     void UpdatePlayerInfo(KeyValues *outPlayerInfo, bool fullUpdate);
     void OnThink() OVERRIDE;
     void AddHeader(); // add the start header of the scoreboard
@@ -155,7 +144,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     // sorts players within a section
     static bool StaticLocalTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
     static bool StaticOnlineTimeSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
-    static bool StaticLobbyMemberSortFunc(vgui::SectionedListPanel *list, int itemID1, int itemID2);
+
 
     void ApplySchemeSettings(vgui::IScheme *pScheme) OVERRIDE;
 
@@ -165,13 +154,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     int FindItemIDForLocalTime(KeyValues *kvRef);
     // finds an online time in the scoreboard
     int FindItemIDForOnlineTime(int runID, LEADERBOARDS);
-    // finds a player in the lobby data panel
-    int FindItemIDForLobbyMember(uint64 steamID);
-    int FindItemIDForLobbyMember(const CSteamID &id) { return FindItemIDForLobbyMember(id.ConvertToUint64()); }
 
-    // Lobby member panel functions
-    void AddLobbyMember(const CSteamID &steamID); // Adds a lobby member to the panel
-    void UpdateLobbyMemberData(const CSteamID &memberID); // Updates the lobby member's status data on the panel
 
     int m_iSectionId; // the current section we are entering into
 
@@ -183,7 +166,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     void UpdateMapInfoLabel(const char *author, const int tier, const char *layout, const int bonus);
 
     vgui::ImageList *m_pImageList;
-    vgui::ImageList *m_pImageListLobby;
     Panel *m_pHeader;
     Panel *m_pPlayerStats;
     Panel *m_pLeaderboards;
@@ -200,14 +182,14 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     vgui::SectionedListPanel *m_pLocalLeaderboards;
     vgui::SectionedListPanel *m_pFriendsLeaderboards;
     vgui::ImagePanel *m_pPlayerAvatar;
-    vgui::ImagePanel *m_pMomentumLogo;
     vgui::Button *m_pLocalLeaderboardsButton;
     vgui::Button *m_pGlobalLeaderboardsButton;
     vgui::Button *m_pGlobalTop10Button;
     vgui::Button *m_pGlobalAroundButton;
     vgui::Button *m_pFriendsLeaderboardsButton;
 
-    vgui::SectionedListPanel *m_pLobbyMembersPanel;
+    LobbyMembersPanel *m_pLobbyMembersPanel;
+    SavelocReqFrame *m_pSavelocReqFrame;
 
     vgui::ToggleButton *m_pRunFilterButton;
     EditablePanel *m_pFilterPanel;
@@ -215,7 +197,6 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     Panel *m_pCurrentLeaderboards;
 
     CUtlMap<uint64, int> m_mapAvatarsToImageList;
-    CUtlMap<uint64, int> m_mapLobbyIDToImageListIndx;
 
     CPanelAnimationVar(int, m_iAvatarWidth, "avatar_width", "34"); // Avatar width doesn't scale with resolution
     CPanelAnimationVarAliasType(int, m_iNameWidth, "name_width", "136", "proportional_int");
@@ -226,6 +207,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
 
     // Online API Pre-Alpha functions
 
+#if ENABLE_HTTP_LEADERBOARDS
     void GetOnlineTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
     CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t> cbGetOnlineTimesCallback;
     void GetPlayerDataForMapCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure);
@@ -239,6 +221,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
                               CCallResult<CClientTimesDisplay, HTTPRequestCompleted_t>::func_t);
 
     void ParseTimesCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure, bool bFriendsTimes);
+#endif
 
   private:
     int m_iPlayerIndexSymbol;
@@ -256,8 +239,7 @@ class CClientTimesDisplay : public vgui::EditablePanel, public IViewPortPanel, p
     IViewPort *m_pViewPort;
     ButtonCode_t m_nCloseKey;
 
-    CSteamID m_idLobby;
-    void PopulateLobbyPanel();
+
     
     void ConvertOnlineTimes(KeyValues *kv, float seconds);
     struct TimeOnline

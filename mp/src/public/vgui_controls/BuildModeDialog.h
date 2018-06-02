@@ -37,7 +37,7 @@ public:
 	MESSAGE_FUNC_PTR( UpdateControlData, "UpdateControlData", panel );
 
 	// Store the current settings of all panels in the build group.
-	virtual KeyValues *StoreSettings();
+	virtual void StoreSettings(KeyValues *pKvInto);
 
 	// Store the current settings of the current panel 
 	MESSAGE_FUNC( StoreUndoSettings, "StoreUndo" );
@@ -55,6 +55,8 @@ protected:
 	virtual void OnCommand( const char *command );
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual bool IsBuildGroupEnabled();
+
+    void OnScreenSizeChanged(int iOldWide, int iOldTall) OVERRIDE;
 
 private:
 	void CreateControls();
@@ -90,6 +92,8 @@ private:
 	class PanelList;
 	PanelList *m_pPanelList;
 
+    HFont m_Font;
+
 	Button *m_pSaveButton;
 	Button *m_pApplyButton;
 	Button *m_pExitButton;
@@ -108,17 +112,7 @@ private:
 	void RemoveAllControls( void );
 	void UpdateEditControl(PanelItem_t &panelItem, const char *datstring);
 
-	enum {
-		TYPE_STRING,
-		TYPE_INTEGER,
-		TYPE_COLOR,
-		TYPE_ALIGNMENT,
-		TYPE_AUTORESIZE,
-		TYPE_CORNER,
-		TYPE_LOCALIZEDSTRING,
-	};
-
-	vgui::DHANDLE< Menu >	m_hContextMenu;
+    vgui::DHANDLE< Menu >	m_hContextMenu;
 
 	ComboBox	*m_pEditableParents;
 	ComboBox	*m_pEditableChildren;

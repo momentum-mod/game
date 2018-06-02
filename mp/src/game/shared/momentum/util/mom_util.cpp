@@ -4,6 +4,7 @@
 #include "mom_util.h"
 #include "momentum/mom_shareddefs.h"
 #include "run/mom_replay_factory.h"
+#include "run/mom_replay_base.h"
 #include <gason.h>
 #include "run/run_compare.h"
 #include "run/run_stats.h"
@@ -12,6 +13,8 @@
 #include "ChangelogPanel.h"
 #include "materialsystem/imaterialvar.h"
 #endif
+
+#include "steam/steam_api.h"
 
 #include "tier0/memdbgon.h"
 
@@ -24,13 +27,13 @@ inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
         delete[] pData;
     }
     pData = nullptr;
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 #if 0
 
 void MomentumUtil::DownloadMap(const char *szMapname)
 {
-    if (!steamapicontext->SteamHTTP())
+    if (!SteamHTTP())
     {
         Warning("Failed to download map, cannot access HTTP!\n");
         return;
@@ -55,18 +58,18 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
     KeyValues *params)
 {
     bool bSuccess = false;
-    if (steamapicontext && steamapicontext->SteamHTTP())
+    if (steamapicontext && SteamHTTP())
     {
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
+        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
         FOR_EACH_VALUE(params, p_value)
         {
-            steamapicontext->SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
+            SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
                 p_value->GetString());
         }
 
         SteamAPICall_t apiHandle;
 
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
         {
             Warning("Report sent.\n");
             callback->Set(apiHandle, this, func);
@@ -75,7 +78,7 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
         else
         {
             Warning("Failed to send HTTP Request to report bug online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
@@ -88,62 +91,6 @@ bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
 #endif
 
 #ifdef CLIENT_DLL
-void MomentumUtil::GetRemoteChangelog()
-{
-    if (steamapicontext && steamapicontext->SteamHTTP())
-    {
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, "http://raw.githubusercontent.com/momentum-mod/game/master/changelog.txt");
-        SteamAPICall_t apiHandle;
-
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            cbChangeLog.Set(apiHandle, this, &MomentumUtil::ChangelogCallback);
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to post scores online!\n");
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steampicontext failure.\n");
-        Warning("Could not find Steam Api Context active\n");
-    }
-}
-
-void MomentumUtil::ChangelogCallback(HTTPRequestCompleted_t *pCallback, bool bIOFailure)
-{
-    const char *pError = "Error loading changelog!";
-    if (bIOFailure)
-    {
-        pError = "Error loading changelog due to bIOFailure!";
-        changelogpanel->SetChangelog(pError);
-        return;
-    }
-    uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
-    if (size == 0)
-    {
-        pError = "MomentumUtil::ChangelogCallback: 0 body size!\n";
-        changelogpanel->SetChangelog(pError);
-        return;
-    }
-
-    // Right now "size" is the content body size, not in string terms where the end is marked
-    // with a null terminator.
-
-    uint8 *pData = new uint8[size + 1];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
-    pData[size] = 0;
-
-    const char *pDataPtr = reinterpret_cast<const char *>(pData);
-
-    changelogpanel->SetChangelog(pDataPtr);
-
-    CleanupRequest(pCallback, pData);
-}
-
 void MomentumUtil::UpdatePaintDecalScale(float fNewScale)
 {
     IMaterial *material = materials->FindMaterial("decals/paint_decal", TEXTURE_GROUP_DECAL);

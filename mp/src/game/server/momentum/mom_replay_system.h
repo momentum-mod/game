@@ -1,48 +1,24 @@
 #pragma once
 
-#include "cbase.h"
-#include "filesystem.h"
-#include "utlbuffer.h"
-#include "utlvector.h"
-
-#include <momentum/mom_player_shared.h>
-#include "run/mom_replay_data.h"
-#include "run/mom_replay_factory.h"
+#include "run/mom_replay_base.h"
 
 class CMomentumReplayGhostEntity;
+class CMomentumPlayer;
 
 class CMomentumReplaySystem : public CAutoGameSystemPerFrame
 {
-  public:
-    CMomentumReplaySystem(const char *pName)
-        : CAutoGameSystemPerFrame(pName), m_bShouldStopRec(false), m_iTickCount(0), m_iStartRecordingTick(-1),
-          m_iStartTimerTick(-1), m_fRecEndTime(-1.0f), m_player(nullptr), m_bWasInReplay(0), m_SavedRunStats(new CMomRunStats::data)
-    {
-        m_pReplay = g_ReplayFactory.CreateEmptyReplay(0);
-    }
+public:
 
-    virtual ~CMomentumReplaySystem() OVERRIDE
-    {
-        if (m_pReplay)
-            delete m_pReplay;
+    CMomentumReplaySystem(const char* pName);
 
-        if (m_pPlaybackReplay)
-            delete m_pPlaybackReplay;
-    }
+    virtual ~CMomentumReplaySystem() OVERRIDE;
 
-  public:
     // inherited member from CAutoGameSystemPerFrame
-    void FrameUpdatePostEntityThink() OVERRIDE { UpdateRecordingParams(); }
+    void FrameUpdatePostEntityThink() OVERRIDE;
 
-    void LevelShutdownPostEntity() OVERRIDE
-    {
-        // Stop a recording if there is one while the level shuts down
-        if (m_bRecording)
-            StopRecording(true, false);
+    void LevelShutdownPostEntity() OVERRIDE;
 
-        if (m_pPlaybackReplay)
-            UnloadPlayback(true);
-    }
+    void PostInit() OVERRIDE;
 
     // Sets the start timer tick, this is used for trimming later on
     void SetTimerStartTick(int tick) { m_iStartTimerTick = tick; }
@@ -65,12 +41,11 @@ class CMomentumReplaySystem : public CAutoGameSystemPerFrame
 
     Vector_PracticeTimeStamps *GetPracticeTimeStamps() { return &m_vecPracticeTimeStamps; };
 
-    CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
+    //CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
 
-  public:
     bool m_bRecording;
     bool m_bPlayingBack;
-    CMomReplayBase *m_pReplay;
+    CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
     CMomentumPlayer *m_player;
     int m_nSavedPerfectSyncTicks;
@@ -91,7 +66,7 @@ class CMomentumReplaySystem : public CAutoGameSystemPerFrame
     bool m_bWasInReplay;
     bool m_bPaused;
     Vector_PracticeTimeStamps m_vecPracticeTimeStamps;
-    CMomRunStats m_SavedRunStats;
+    //CMomRunStats m_SavedRunStats;
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;

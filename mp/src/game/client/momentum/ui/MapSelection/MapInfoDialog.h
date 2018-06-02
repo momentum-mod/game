@@ -4,12 +4,10 @@
 #pragma once
 #endif
 
-using namespace vgui;
-
 //-----------------------------------------------------------------------------
 // Purpose: Dialog for displaying information about a game server
 //-----------------------------------------------------------------------------
-class CDialogMapInfo : public Frame
+class CDialogMapInfo : public vgui::Frame
 {
     DECLARE_CLASS_SIMPLE(CDialogMapInfo, vgui::Frame);
 
@@ -50,16 +48,16 @@ protected:
 
 private:
 
-    static int PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelItem &p1, const ListPanelItem &p2);
+    static int PlayerTimeColumnSortFunc(vgui::ListPanel *pPanel, const vgui::ListPanelItem &p1, const vgui::ListPanelItem &p2);
 
     // methods
     void RequestInfo(const char* mapName);
     void ConnectToServer();
     void ApplyConnectCommand(const char *mapName);
 
-    Button *m_pConnectButton;
-    Button *m_pCloseButton;
-    ListPanel *m_pPlayerList;
+    vgui::Button *m_pConnectButton;
+    vgui::Button *m_pCloseButton;
+    vgui::ListPanel *m_pPlayerList;
 
     enum { PING_TIMES_MAX = 4 };
 

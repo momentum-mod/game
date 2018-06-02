@@ -138,6 +138,14 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawSetTextPos(text_left, mid_row_ypos);
         surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
     }
+    // Turning left with turnbind
+    if (m_nButtons & IN_LEFT)
+    {
+        CHECK_INPUT_P(IN_RIGHT);
+        int text_left = GetTextCenter(m_hTextFont, m_pwLeft) - (UTIL_ComputeStringWidth(m_hTextFont, m_pwLeft) * 2);
+        surface()->DrawSetTextPos(text_left, mid_row_ypos);
+        surface()->DrawPrintText(m_pwLeft, wcslen(m_pwLeft));
+    }
     if (m_nButtons & IN_BACK)
     {
         CHECK_INPUT_P(IN_BACK);
@@ -152,11 +160,20 @@ void CHudKeyPressDisplay::Paint()
         surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     }
 
+    // Using +strafe
     if (m_nButtons & IN_STRAFE)
     {
         CHECK_INPUT_P(IN_STRAFE);
         surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), ( lower_row_ypos + top_row_ypos) / 2.0f );
         surface()->DrawPrintText(m_pwStrafe, wcslen(m_pwStrafe));
+    }
+    // Turning right with turnbind
+    if (m_nButtons & IN_RIGHT)
+    {
+        CHECK_INPUT_P(IN_RIGHT);
+        int text_right = GetTextCenter(m_hTextFont, m_pwRight) + (UTIL_ComputeStringWidth(m_hTextFont, m_pwRight) * 2);
+        surface()->DrawSetTextPos(text_right, mid_row_ypos);
+        surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
     }
 
     // reset text font for jump/duck

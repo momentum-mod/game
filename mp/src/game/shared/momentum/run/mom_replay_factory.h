@@ -1,11 +1,10 @@
 #pragma once
 
-#include "cbase.h"
-#include "mom_replay_base.h"
-#include "utlmap.h"
-
 #define REPLAY_MAGIC_LE 0x524D4F4D
 #define REPLAY_MAGIC_BE 0x4D4F4D52
+
+class CMomReplayBase;
+class CBinaryReader;
 
 class CMomReplayFactory
 {

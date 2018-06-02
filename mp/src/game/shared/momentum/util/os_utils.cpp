@@ -1,7 +1,6 @@
 #include "os_utils.h"
 
 #ifdef POSIX
-
 void *GetModuleHandle(const char *name)
 {
 	void *handle;
@@ -26,8 +25,10 @@ void *GetModuleHandle(const char *name)
 	dlclose(handle);
 	return handle;
 }
+#ifdef __linux__
+
 //returns 0 if successful
-int GetModuleInformation_LINUX(const char *name, void **base, size_t *length)
+int GetModuleInformation(const char *name, void **base, size_t *length)
 {
 	// this is the only way to do this on linux, lol
 	FILE *f = fopen("/proc/self/maps", "r");
@@ -64,6 +65,7 @@ int GetModuleInformation_LINUX(const char *name, void **base, size_t *length)
 	fclose(f);
 	return 2;
 }
+#endif //LINUX
 
 #ifdef OSX
 //from https://stackoverflow.com/questions/28846503/getting-sizeofimage-and-entrypoint-of-dylib-module
@@ -86,7 +88,7 @@ size_t size_of_image(const mach_header *header)
 }
 //please kill me
 //https://blog.lse.epita.fr/articles/82-playing-with-mach-os-and-dyld.html
-int GetModuleInformation_OSX(const char *name, void **base, size_t *length)
+int GetModuleInformation(const char *name, void **base, size_t *length)
 {
 	task_t task;
 	task_dyld_info dlyd_info;
@@ -94,11 +96,9 @@ int GetModuleInformation_OSX(const char *name, void **base, size_t *length)
 	
 	if (task_info(mach_task_self_, TASK_DYLD_INFO, (task_info_t)&dlyd_info, &count) == KERN_SUCCESS) //request info regarding dylibs in this task (hl2_osx)
 	{
-		mach_vm_address_t image_infos = dlyd_info.all_image_info_addr;
-		dyld_all_image_infos *infos = (dyld_all_image_infos*)image_infos;
-		uint32_t image_count = infos->infoArrayCount;
-		const dyld_image_info *image_array =  new dyld_image_info[image_count];
-		image_array = infos->infoArray;
+		dyld_all_image_infos *infos = (dyld_all_image_infos*)dlyd_info.all_image_info_addr;
+		const uint32_t image_count = infos->infoArrayCount;
+		const dyld_image_info *image_array = infos->infoArray;
 		
 		for(int i = image_count-1; i >= 0; i--) //iterate through all dylibs backwards (since engine.dylib is likely to have been loaded near the end)
 		{
@@ -107,15 +107,13 @@ int GetModuleInformation_OSX(const char *name, void **base, size_t *length)
 				*base = (void*)image_array[i].imageLoadAddress;
 				*length = size_of_image(image_array[i].imageLoadAddress);
 				printf("Found module %s! Base address: %#08x Length: %lu\n", name, *base, *length);
-				delete[] image_array;
 				return 0; //success!
 			}
 		}
-		delete[] image_array;
 		return 1; //failed to find the given process
 	}
 	return 2; //failed to find task info
 }
 
+#endif //POSIX
 #endif //OSX
-#endif // POSIX

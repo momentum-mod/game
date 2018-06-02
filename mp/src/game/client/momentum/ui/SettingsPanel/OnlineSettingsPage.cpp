@@ -2,16 +2,15 @@
 
 #include "OnlineSettingsPage.h"
 #include "vgui_controls/CVarSlider.h"
+#include "vgui_controls/TextEntry.h"
+#include <vgui_controls/CvarToggleCheckButton.h>
 
 using namespace vgui;
 
 OnlineSettingsPage::OnlineSettingsPage(Panel* pParent) : BaseClass(pParent, "OnlineSettings")
 {
-    
-
-
     m_pEnableColorAlphaOverride = FindControl<CvarToggleCheckButton>("EnableAlphaOverride");
-    m_pAlphaOverrideSlider = FindControl<CCvarSlider>("AlphaOverrideSlider");
+    m_pAlphaOverrideSlider = FindControl<CvarSlider>("AlphaOverrideSlider");
     m_pAlphaOverrideInput = FindControl<TextEntry>("AlphaOverrideEntry");
 }
 

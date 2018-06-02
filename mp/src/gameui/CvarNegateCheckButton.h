@@ -13,14 +13,14 @@
 
 #include <vgui_controls/CheckButton.h>
 
-class CCvarNegateCheckButton : public vgui::CheckButton
+class CvarNegateCheckButton : public vgui::CheckButton
 {
-	DECLARE_CLASS_SIMPLE( CCvarNegateCheckButton, vgui::CheckButton );
+	DECLARE_CLASS_SIMPLE( CvarNegateCheckButton, vgui::CheckButton );
 
 public:
-	CCvarNegateCheckButton( vgui::Panel *parent, const char *panelName, const char *text, 
+	CvarNegateCheckButton( vgui::Panel *parent, const char *panelName, const char *text, 
 		char const *cvarname );
-	~CCvarNegateCheckButton();
+	~CvarNegateCheckButton();
 
 	virtual void	SetSelected( bool state );
 	virtual void	Paint();
@@ -32,7 +32,7 @@ public:
 private:
 	MESSAGE_FUNC( OnButtonChecked, "CheckButtonChecked" );
 
-	char			*m_pszCvarName;
+    ConVarRef m_cvarRef;
 	bool			m_bStartState;
 };
 

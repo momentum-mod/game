@@ -2,22 +2,19 @@
 
 #include "cbase.h"
 
-#include "baseplayer_shared.h"
 #include "gamemovement.h"
-#include "mom_player_shared.h"
 #include "utlvector.h"
 
 #ifdef CLIENT_DLL
-#include "c_mom_triggers.h"
-#define CTriggerSlide C_TriggerSlide
-#else
-#include "../momentum/mom_triggers.h"
+//#define CTriggerSlide C_TriggerSlide
+#define CMomentumPlayer C_MomentumPlayer
 #endif
 
-class CTriggerSlide;
+//class CTriggerSlide;
+class CMomentumPlayer;
 struct surface_data_t;
 class IMovementListener;
-class CMomentumPlayer;
+
 
 #define NO_REFL_NORMAL_CHANGE -2.0f
 #define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
@@ -32,10 +29,7 @@ class CMomentumPlayer;
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
 
-#define GROUND_FACTOR_MULTIPLIER 301.99337741082998788946739227784f
-
-#define FIRE_GAMEMOVEMENT_EVENT(event)                                                                                 \
-    FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event(); }
+#define FIRE_GAMEMOVEMENT_EVENT(event) FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event();}
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -46,7 +40,6 @@ class CMomentumGameMovement : public CGameMovement
 
     // Overrides
     virtual bool LadderMove(void);         // REPLACED
-    virtual bool OnLadder(trace_t &trace); // REPLACED
     virtual void SetGroundEntity(trace_t *pm);
 
     virtual bool CanAccelerate(void)
@@ -58,7 +51,6 @@ class CMomentumGameMovement : public CGameMovement
     virtual void PlayerMove(void);
     virtual void AirMove(void); // Overridden for rampboost fix
     virtual void WalkMove(void);
-    virtual void CheckForLadders(bool);
 
     // Override fall damage
     virtual void CheckFalling();
@@ -78,6 +70,9 @@ class CMomentumGameMovement : public CGameMovement
     virtual float ClimbSpeed(void) const;
     virtual float LadderLateralMultiplier(void) const;
 
+    // Validate tracerays
+    bool IsValidMovementTrace(trace_t &tr);
+
     // Override for fixing punchangle
     virtual void DecayPunchAngle(void) OVERRIDE;
 
@@ -87,6 +82,8 @@ class CMomentumGameMovement : public CGameMovement
     virtual void CategorizePosition();
 
     void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE;
+
+	void Friction(void);
 
     // Duck
     virtual void Duck(void);
@@ -106,7 +103,7 @@ class CMomentumGameMovement : public CGameMovement
     void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
 
-    CTriggerSlide *&GetSlideTrigger() { return m_TriggerSlide; }
+    //CTriggerSlide *GetSlideTrigger() { return m_TriggerSlide; }
 
   private:
     bool m_bWasInAir;
@@ -114,7 +111,10 @@ class CMomentumGameMovement : public CGameMovement
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
-    CTriggerSlide *m_TriggerSlide;
+    //CTriggerSlide *m_TriggerSlide;
+    CBaseEntity *m_TriggerSlide;
+
+    bool m_bCheckForGrabbableLadder;
 };
 
 extern CMomentumGameMovement *g_pMomentumGameMovement;

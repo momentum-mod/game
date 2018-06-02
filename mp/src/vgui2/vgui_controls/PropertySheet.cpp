@@ -120,7 +120,7 @@ private:
 	PropertySheet	*m_pParent;
 	Panel			*m_pPage;
 	ImagePanel		*m_pImage;
-	char			*m_pszImageName;
+	CUtlString m_pszImageName;
 	bool			m_bShowContextLabel;
 	bool			m_bAttemptingDrop;
 	ContextLabel	*m_pContextLabel;
@@ -132,8 +132,8 @@ public:
 		Button( (Panel *)parent, panelName, text),
 		m_pParent( parent ),
 		m_pPage( page ),
-		m_pImage( 0 ),
-		m_pszImageName( 0 ),
+		m_pImage( nullptr ),
+		m_pszImageName( nullptr ),
 		m_bShowContextLabel( showContextButton ),
 		m_bAttemptingDrop( false ),
 		m_hoverActivatePageTime( hoverActivatePageTime ),
@@ -147,10 +147,7 @@ public:
 		if ( imageName )
 		{
 			m_pImage = new ImagePanel( this, text );
-			int buflen = Q_strlen( imageName ) + 1;
-			m_pszImageName = new char[ buflen ];
-			Q_strncpy( m_pszImageName, imageName, buflen );
-
+            m_pszImageName = imageName;
 		}
 		SetMouseClickEnabled( MOUSE_RIGHT, true );
 		m_pContextLabel = m_bShowContextLabel ? new ContextLabel( this, "Context", "9" ) : NULL;
@@ -161,7 +158,7 @@ public:
 
 	~PageTab()
 	{
-		delete[] m_pszImageName;
+        m_pszImageName.Purge();
 	}
 
 	virtual void Paint()

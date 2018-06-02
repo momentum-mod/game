@@ -34,8 +34,8 @@ DECLARE_BUILD_FACTORY( AnalogBar );
 //-----------------------------------------------------------------------------
 AnalogBar::AnalogBar(Panel *parent, const char *panelName) : Panel(parent, panelName)
 {
+    InitSettings();
 	_analogValue = 0.0f;
-	m_pszDialogVar = NULL;
 	SetSegmentInfo( 2, 6 );
 	SetBarInset( 0 );
 	m_iAnalogValueDirection = PROGRESS_EAST;
@@ -49,7 +49,7 @@ AnalogBar::AnalogBar(Panel *parent, const char *panelName) : Panel(parent, panel
 //-----------------------------------------------------------------------------
 AnalogBar::~AnalogBar()
 {
-	delete [] m_pszDialogVar;
+    m_pszDialogVar.Purge();
 }
 
 //-----------------------------------------------------------------------------
@@ -369,12 +369,7 @@ void AnalogBar::ApplySettings(KeyValues *inResourceData)
 {
 	_analogValue = inResourceData->GetFloat("analogValue", 0.0f);
 
-	const char *dialogVar = inResourceData->GetString("variable", "");
-	if (dialogVar && *dialogVar)
-	{
-		m_pszDialogVar = new char[strlen(dialogVar) + 1];
-		strcpy(m_pszDialogVar, dialogVar);
-	}
+	m_pszDialogVar = inResourceData->GetString("variable");
 
 	BaseClass::ApplySettings(inResourceData);
 }
@@ -386,21 +381,15 @@ void AnalogBar::GetSettings(KeyValues *outResourceData)
 {
 	BaseClass::GetSettings(outResourceData);
 	outResourceData->SetFloat("analogValue", _analogValue );
-
-	if (m_pszDialogVar)
-	{
-		outResourceData->SetString("variable", m_pszDialogVar);
-	}
+	outResourceData->SetString("variable", m_pszDialogVar);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Returns a string description of the panel fields for use in the UI
-//-----------------------------------------------------------------------------
-const char *AnalogBar::GetDescription( void )
+void AnalogBar::InitSettings()
 {
-	static char buf[1024];
-	_snprintf(buf, sizeof(buf), "%s, string analogValue, string variable", BaseClass::GetDescription());
-	return buf;
+    BEGIN_PANEL_SETTINGS()
+        {"analogValue", TYPE_FLOAT},
+        {"variable", TYPE_STRING}
+    END_PANEL_SETTINGS();
 }
 
 //-----------------------------------------------------------------------------
@@ -408,7 +397,7 @@ const char *AnalogBar::GetDescription( void )
 //-----------------------------------------------------------------------------
 void AnalogBar::OnDialogVariablesChanged(KeyValues *dialogVariables)
 {
-	if (m_pszDialogVar)
+	if (!m_pszDialogVar.IsEmpty())
 	{
 		int val = dialogVariables->GetInt(m_pszDialogVar, -1);
 		if (val >= 0.0f)

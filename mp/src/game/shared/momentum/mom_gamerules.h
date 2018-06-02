@@ -5,8 +5,6 @@
 #endif
 
 #include "cbase.h"
-#include "gamerules.h"
-#include "mom_player_shared.h"
 #include "singleplay_gamerules.h"
 
 #ifdef CLIENT_DLL

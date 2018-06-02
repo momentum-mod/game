@@ -1,9 +1,10 @@
 #include "pch_mapselection.h"
 
+using namespace vgui;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------
-CDialogMapInfo::CDialogMapInfo(vgui::Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo")
+CDialogMapInfo::CDialogMapInfo(Panel *parent, const char *mapname) : Frame(parent, "DialogMapInfo")
 {
     SetBounds(0, 0, 512, 512);
     SetMinimumSize(416, 340);
@@ -212,14 +213,14 @@ int CDialogMapInfo::PlayerTimeColumnSortFunc(ListPanel *pPanel, const ListPanelI
 
 void CDialogMapInfo::GetMapInfo(const char* mapname)
 {
-    if (steamapicontext && steamapicontext->SteamHTTP())
+    if (SteamHTTP())
     {
         char szURL[BUFSIZ];
         Q_snprintf(szURL, BUFSIZ, "%s/getmapinfo/%s", MOM_APIDOMAIN, mapname);
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
 
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
         {
             m_bPlayerListUpdatePending = true;
             cbGetMapInfoCallback.Set(apiHandle, this, &CDialogMapInfo::GetMapInfoCallback);
@@ -227,7 +228,7 @@ void CDialogMapInfo::GetMapInfo(const char* mapname)
         else
         {
             Warning("%s - Failed to send HTTP Request to get map info!\n", __FUNCTION__);
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
@@ -258,7 +259,7 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
     }
 
     uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
     if (size == 0)
     {
         Warning("%s - 0 body size!\n", __FUNCTION__);
@@ -267,7 +268,7 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
 
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
     JsonValue val; // Outer object
     JsonAllocator alloc;
@@ -346,25 +347,25 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
 
     //Cleanup
     alloc.deallocate();
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
     delete[] pData;
 }
 void CDialogMapInfo::Get10MapTimes(const char* mapname)
 {
-    if (steamapicontext && steamapicontext->SteamHTTP())
+    if (SteamHTTP())
     {
         char szURL[BUFSIZ];
         Q_snprintf(szURL, BUFSIZ, "%s/getscores/1/%s/10", MOM_APIDOMAIN, mapname);
-        HTTPRequestHandle handle = steamapicontext->SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
+        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodGET, szURL);
         SteamAPICall_t apiHandle;
-        if (steamapicontext->SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
         {
             cbGet10MapTimesCallback.Set(apiHandle, this, &CDialogMapInfo::Get10MapTimesCallback);
         }
         else
         {
             Warning("%s - Failed to send HTTP Request to get map scores!\n", __FUNCTION__);
-            steamapicontext->SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
         }
     }
     else
@@ -394,7 +395,7 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
     }
 
     uint32 size;
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
 
     if (size == 0)
     {
@@ -404,7 +405,7 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
 
     DevLog("Size of body: %u\n", size);
     uint8 *pData = new uint8[size];
-    steamapicontext->SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
 
     JsonValue val; // Outer object
     JsonAllocator alloc;
@@ -458,6 +459,6 @@ void CDialogMapInfo::Get10MapTimesCallback(HTTPRequestCompleted_t *pCallback, bo
     }
     // Last but not least, free resources
     alloc.deallocate();
-    steamapicontext->SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
     delete[] pData;
 }

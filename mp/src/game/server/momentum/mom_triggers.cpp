@@ -1,12 +1,13 @@
 #include "cbase.h"
 
 #include "in_buttons.h"
-#include "mom_player.h"
+#include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
-#include "movevars_shared.h"
+#include "mom_system_saveloc.h"
+
 #include "tier0/memdbgon.h"
 
 // CBaseMomentumTrigger
@@ -233,8 +234,8 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
         pPlayer->m_SrvData.m_RunData.m_bTimerStartOnJump = m_bTimerStartOnJump;
         pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType = m_iLimitSpeedType;
-        pPlayer->SetUsingCPMenu(false); // It'll get set to true if they teleport to a CP out of here
         pPlayer->ResetRunStats();       // Reset run stats
+        g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
         pPlayer->m_SrvData.m_RunData.m_bTimerRunning = false;
         pPlayer->m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
@@ -934,7 +935,7 @@ void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
         pPlayer->m_SrvData.m_SlideData.SetEnabled();
 
         // That's hacky as fuck.
-        g_pMomentumGameMovement->GetSlideTrigger() = reinterpret_cast<CTriggerSlide *>(this);
+        //g_pMomentumGameMovement->GetSlideTrigger() = reinterpret_cast<CTriggerSlide *>(this);
         m_bTouching = true;
     }
 }
@@ -963,7 +964,7 @@ void CTriggerSlide::OnEndTouch(CBaseEntity *pOther)
             pPlayer->m_SrvData.m_SlideData.SetDisabled();
         }
 
-        g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
+        //g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
         m_bTouching = false;
     }
 }

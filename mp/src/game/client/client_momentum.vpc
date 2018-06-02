@@ -106,7 +106,7 @@ $Project "Client (Momentum)"
                     $File "momentum\ui\HUD\hud_speedometer.cpp"
                     $File "momentum\ui\HUD\hud_strafesync.cpp"
                     $File "momentum\ui\HUD\hud_timer.cpp"
-                    $File "momentum\ui\HUD\hud_cp_menu.cpp"
+                    $File "momentum\ui\HUD\hud_saveloc_menu.cpp"
                     $File "momentum\ui\HUD\hud_menu_static.h"
                     $File "momentum\ui\HUD\hud_menu_static.cpp"
                     $File "momentum\ui\HUD\hud_fillablebar.h"
@@ -133,6 +133,10 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\ClientTimesDisplay.cpp"
                     $File 	"momentum\ui\LeaderboardsContextMenu.h"
                     $File 	"momentum\ui\LeaderboardsContextMenu.cpp"
+                    $File "momentum\ui\SavelocRequestFrame.h"
+                    $File "momentum\ui\SavelocRequestFrame.cpp"
+                    $File "momentum\ui\LobbyMembersPanel.h"
+                    $File "momentum\ui\LobbyMembersPanel.cpp"
                 }
                 
                 $Folder "Changelog"
@@ -140,11 +144,6 @@ $Project "Client (Momentum)"
                     $File   "momentum\ui\IChangelogPanel.h"
                     $File   "momentum\ui\ChangelogPanel.cpp"
                     $File   "momentum\ui\ChangelogPanel.h"
-                }
-                $Folder "Feedback"
-                {
-                    $File 	"momentum\ui\ContactPanel.cpp"
-                    $File 	"momentum\ui\IContactPanel.h"
                 }
                 
                 $Folder "Messagebox"
@@ -226,6 +225,17 @@ $Project "Client (Momentum)"
                 $File "$SRCDIR\game\shared\momentum\run\run_stats.cpp"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.h"
                 $File "$SRCDIR\game\shared\momentum\util\jsontokv.cpp"
+                {
+                    $Configuration
+                    {
+                        $Compiler
+                        {
+                            $Create/UsePrecompiledHeader    "Not Using Precompiled Headers"
+                        }
+                    }
+                }
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.h"
+                $File "$SRCDIR\game\shared\momentum\util\os_utils.cpp"
                 {
                     $Configuration
                     {

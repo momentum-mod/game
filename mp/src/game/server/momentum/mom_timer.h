@@ -1,15 +1,14 @@
 #pragma once
 
-#include <ctime>
-#include "KeyValues.h"
-#include "mom_replay_system.h"
-#include "mom_triggers.h"
-#include "momentum/tickset.h"
+#include "mom_shareddefs.h"
 
+struct SavedLocation_t;
 class CTriggerTimerStart;
 class CTriggerCheckpoint;
 class CTriggerOnehop;
 class CTriggerStage;
+class CTriggerTimerStop;
+class CMomentumPlayer;
 
 class CMomentumTimer : CAutoGameSystem
 {
@@ -18,6 +17,7 @@ class CMomentumTimer : CAutoGameSystem
         : CAutoGameSystem(pName), m_iZoneCount(0), m_iStartTick(0), m_iEndTick(0), m_iLastZone(0), m_iLastRunDate(0),
           m_bIsRunning(false), m_bWereCheatsActivated(false), m_bMapIsLinear(false), m_pStartTrigger(nullptr),
           m_pEndTrigger(nullptr), m_pCurrentZone(nullptr), m_pLocalTimes(nullptr), m_pStartZoneMark(nullptr),
+          m_bShouldUseStartZoneOffset(false), m_iBonusZone(0),
           m_bPaused(false), m_iPausedTick(0)
     {
     }
@@ -53,9 +53,13 @@ class CMomentumTimer : CAutoGameSystem
     }
 
     void SetEndTrigger(CTriggerTimerStop *pTrigger) { m_pEndTrigger = pTrigger; }
-    // MOM_TODO: Change this to be the CTriggerZone class
-    void SetCurrentZone(CTriggerStage *pTrigger) { m_pCurrentZone = pTrigger; }
-    int GetCurrentZoneNumber() const { return m_pCurrentZone && m_pCurrentZone->GetStageNumber(); }
+    //MOM_TODO: Change this to be the CTriggerZone class
+    void SetCurrentZone(CTriggerStage *pTrigger)
+    {
+        m_pCurrentZone = pTrigger;
+    }
+
+    int GetCurrentZoneNumber() const;
 
     // Calculates the stage count
     // Stores the result on m_iStageCount
@@ -87,26 +91,17 @@ class CMomentumTimer : CAutoGameSystem
 
     // Have the cheats been turned on in this session?
     bool GotCaughtCheating() const { return m_bWereCheatsActivated; };
-    void SetCheating(bool newBool)
-    {
-        UTIL_ShowMessage("CHEATER", UTIL_GetLocalPlayer());
-        Stop(false);
-        m_bWereCheatsActivated = newBool;
-    }
+    void SetCheating(bool newBool);
 
     void SetGameModeConVars();
 
     void CreateStartMark();
-    Checkpoint_t *GetStartMark() const { return m_pStartZoneMark; }
+    SavedLocation_t *GetStartMark() const { return m_pStartZoneMark; }
     void ClearStartMark();
 
     int GetBonus() { return m_iBonusZone; }
 
-    void SetPaused(bool bEnable = true)
-    {
-        m_bPaused = bEnable;
-        g_ReplaySystem.SetPaused(bEnable);
-    }
+    void SetPaused(bool bEnable = true);
 
     bool GetPaused() { return m_bPaused; }
 
@@ -127,7 +122,7 @@ class CMomentumTimer : CAutoGameSystem
     KeyValues *m_pLocalTimes;
     // MOM_TODO: KeyValues *m_pOnlineTimes;
 
-    Checkpoint_t *m_pStartZoneMark;
+    SavedLocation_t *m_pStartZoneMark;
 
   public:
     // PRECISION FIX:

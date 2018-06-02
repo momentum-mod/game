@@ -205,12 +205,12 @@ void C_TriggerSlide::PostDataUpdate(DataUpdateType_t updatetype)
 {
     BaseClass::PostDataUpdate(updatetype);
 
-    if (m_bTouching)
+    /*if (m_bTouching)
     {
         g_pMomentumGameMovement->GetSlideTrigger() = reinterpret_cast<C_TriggerSlide *>(this);
     }
     else
     {
         g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
-    }
+    }*/
 }

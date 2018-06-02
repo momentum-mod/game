@@ -8,8 +8,6 @@
 #include "cbase.h"
 #include <cdll_client_int.h>
 #include <cdll_util.h>
-#include <globalvars_base.h>
-#include <icvar.h>
 #include <filesystem.h>
 
 #include "commandmenu.h"
@@ -18,6 +16,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+using namespace vgui;
 
 CommandMenu::CommandMenu( Panel *parent, const char *panelName, IViewPort * viewport) : Menu( parent, panelName )
 { 
@@ -49,7 +48,7 @@ CommandMenu::~CommandMenu()
 	ClearMenu();
 }
 
-void CommandMenu::OnMessage(const KeyValues *params, VPANEL fromPanel)
+void CommandMenu::OnMessage(const KeyValues *params, vgui::VPANEL fromPanel)
 {
 	char text[255];
 	bool bHandled = false;

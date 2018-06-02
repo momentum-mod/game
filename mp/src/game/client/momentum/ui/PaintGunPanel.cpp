@@ -9,9 +9,12 @@
 #include "materialsystem/imaterialvar.h"
 #include "util/mom_util.h"
 #include "vgui/IInput.h"
+#include "vgui/ISurface.h"
 #include "weapon/weapon_csbase.h"
 
 #include "tier0/memdbgon.h"
+
+using namespace vgui;
 
 void PaintGunScaleCallback(IConVar *var, const char *pOldValue, float flOldValue);
 
@@ -52,7 +55,7 @@ PaintGunPanel::PaintGunPanel() : BaseClass(g_pClientMode->GetViewport(), "PaintG
         m_pPickColorButton->SetSelectedColor(TextureColor, TextureColor);
     }
 
-    m_pSliderScale = FindControl<CCvarSlider>("SliderScale");
+    m_pSliderScale = FindControl<CvarSlider>("SliderScale");
 
     m_pTextSliderScale = FindControl<TextEntry>("TextSliderScale");
 

@@ -34,6 +34,7 @@
 #include "c_playerresource.h"
 #include "cam_thirdperson.h"
 #include <vgui/ILocalize.h>
+#include <vgui/ISurface.h>
 #include "hud_vote.h"
 #include "ienginevgui.h"
 #include "sourcevr/isourcevirtualreality.h"
@@ -68,13 +69,15 @@ extern ConVar replay_rendersetting_renderglow;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+using namespace vgui;
+
 #define ACHIEVEMENT_ANNOUNCEMENT_MIN_TIME 10
 
 class CHudWeaponSelection;
 class CHudChat;
 class CHudVote;
 
-static vgui::HContext s_hVGuiContext = DEFAULT_VGUI_CONTEXT;
+static HContext s_hVGuiContext = DEFAULT_VGUI_CONTEXT;
 
 ConVar cl_drawhud( "cl_drawhud", "1", FCVAR_CHEAT, "Enable the rendering of the hud" );
 ConVar hud_takesshots( "hud_takesshots", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Auto-save a scoreboard screenshot at the end of a map." );
@@ -374,7 +377,7 @@ void ClientModeShared::Init()
 #endif
 #endif
 
-	m_CursorNone = vgui::dc_none;
+	m_CursorNone = dc_none;
 
 	HOOK_MESSAGE( VGUIMenu );
 	HOOK_MESSAGE( Rumble );
@@ -796,7 +799,7 @@ bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 // Purpose: 
 // Output : vgui::Panel
 //-----------------------------------------------------------------------------
-vgui::Panel *ClientModeShared::GetMessagePanel()
+Panel *ClientModeShared::GetMessagePanel()
 {
 	if ( m_pChatElement && m_pChatElement->GetInputPanel() && m_pChatElement->GetInputPanel()->IsVisible() )
 		return m_pChatElement->GetInputPanel();
@@ -845,7 +848,7 @@ void ClientModeShared::LevelInit( const char *newmap )
 	// Create a vgui context for all of the in-game vgui panels...
 	if ( s_hVGuiContext == DEFAULT_VGUI_CONTEXT )
 	{
-		s_hVGuiContext = vgui::ivgui()->CreateContext();
+		s_hVGuiContext = ivgui()->CreateContext();
 	}
 
 	// Reset any player explosion/shock effects
@@ -867,7 +870,7 @@ void ClientModeShared::LevelShutdown( void )
 	}
 	if ( s_hVGuiContext != DEFAULT_VGUI_CONTEXT )
 	{
-		vgui::ivgui()->DestroyContext( s_hVGuiContext );
+		ivgui()->DestroyContext( s_hVGuiContext );
  		s_hVGuiContext = DEFAULT_VGUI_CONTEXT;
 	}
 
@@ -879,7 +882,7 @@ void ClientModeShared::LevelShutdown( void )
 
 void ClientModeShared::Enable()
 {
-	vgui::VPANEL pRoot = VGui_GetClientDLLRootPanel();
+	VPANEL pRoot = VGui_GetClientDLLRootPanel();
 
 	// Add our viewport to the root panel.
 	if( pRoot != 0 )
@@ -892,7 +895,7 @@ void ClientModeShared::Enable()
 	m_pViewport->SetProportional( true );
 
 	m_pViewport->SetCursor( m_CursorNone );
-	vgui::surface()->SetCursor( m_CursorNone );
+	surface()->SetCursor( m_CursorNone );
 
 	m_pViewport->SetVisible( true );
 	if ( m_pViewport->IsKeyBoardInputEnabled() )
@@ -906,12 +909,12 @@ void ClientModeShared::Enable()
 
 void ClientModeShared::Disable()
 {
-	vgui::VPANEL pRoot = VGui_GetClientDLLRootPanel();
+	VPANEL pRoot = VGui_GetClientDLLRootPanel();
 
 	// Remove our viewport from the root panel.
 	if( pRoot != 0 )
 	{
-		m_pViewport->SetParent( (vgui::VPANEL)NULL );
+		m_pViewport->SetParent( (VPANEL)NULL );
 	}
 
 	m_pViewport->SetVisible( false );
@@ -920,13 +923,13 @@ void ClientModeShared::Disable()
 
 void ClientModeShared::Layout()
 {
-	vgui::VPANEL pRoot = VGui_GetClientDLLRootPanel();
+	VPANEL pRoot = VGui_GetClientDLLRootPanel();
 	int wide, tall;
 
 	// Make the viewport fill the root panel.
 	if( pRoot != 0 )
 	{
-		vgui::ipanel()->GetSize(pRoot, wide, tall);
+		ipanel()->GetSize(pRoot, wide, tall);
 
 		bool changed = wide != m_nRootSize[ 0 ] || tall != m_nRootSize[ 1 ];
 		m_nRootSize[ 0 ] = wide;
@@ -1504,14 +1507,14 @@ void ClientModeShared::DisplayReplayReminder()
 //-----------------------------------------------------------------------------
 // In-game VGUI context 
 //-----------------------------------------------------------------------------
-void ClientModeShared::ActivateInGameVGuiContext( vgui::Panel *pPanel )
+void ClientModeShared::ActivateInGameVGuiContext( Panel *pPanel )
 {
-	vgui::ivgui()->AssociatePanelWithContext( s_hVGuiContext, pPanel->GetVPanel() );
-	vgui::ivgui()->ActivateContext( s_hVGuiContext );
+	ivgui()->AssociatePanelWithContext( s_hVGuiContext, pPanel->GetVPanel() );
+	ivgui()->ActivateContext( s_hVGuiContext );
 }
 
 void ClientModeShared::DeactivateInGameVGuiContext()
 {
-	vgui::ivgui()->ActivateContext( DEFAULT_VGUI_CONTEXT );
+	ivgui()->ActivateContext( DEFAULT_VGUI_CONTEXT );
 }
 

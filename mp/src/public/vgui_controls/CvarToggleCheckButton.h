@@ -34,7 +34,7 @@ class CvarToggleCheckButton : public CheckButton
     void Paint() OVERRIDE;
     void ApplySettings(KeyValues *inResourceData) OVERRIDE;
     void GetSettings(KeyValues *outResources) OVERRIDE;
-    const char *GetDescription() OVERRIDE;
+    void InitSettings() OVERRIDE;
 
   private:
     // Called when the OK / Apply button is pressed.  Changed data should be written into cvar.

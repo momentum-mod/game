@@ -38,8 +38,8 @@ public:
 	bool HasExtra() { return m_bHasExtra; }
 
 private:
-	char		*m_text;
-	char		*m_extraText;
+	CUtlString m_text;
+	CUtlString m_extraText;
 	bool		m_bHasExtra;
 };
 
@@ -105,7 +105,7 @@ protected:
 	MESSAGE_FUNC( CloseCompletionList, "CloseCompletionList" );
 	MESSAGE_FUNC_CHARPTR( OnMenuItemSelected, "CompletionCommand", command );
 	void ClearCompletionList();
-	void AddToHistory( const char *commandText, const char *extraText );
+	void AddToHistory( CUtlString &commandText, CUtlString &extraText );
 
 	// vgui overrides
 	virtual void PerformLayout();
