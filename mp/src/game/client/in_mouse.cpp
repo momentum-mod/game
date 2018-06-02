@@ -529,16 +529,16 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 		}
 	}
 
-    if (m_strafe_option.GetBool())
+    if (m_strafe_option.GetBool() && (in_strafe.state & 1))
     {
         static ConVarRef sv_maxspeed("sv_maxspeed");
         float flMaxSpeed = sv_maxspeed.GetFloat();
 
         Vector vMouseDirection(mouse_x, -mouse_y, 0.0f);
         vMouseDirection.NormalizeInPlace();
-
-        cmd->forwardmove += vMouseDirection.y * flMaxSpeed;
-        cmd->sidemove += vMouseDirection.x * flMaxSpeed;
+        
+        cmd->forwardmove = vMouseDirection.y * flMaxSpeed;
+        cmd->sidemove = vMouseDirection.x * flMaxSpeed;
     }
 
 	// Finally, add mouse state to usercmd.
