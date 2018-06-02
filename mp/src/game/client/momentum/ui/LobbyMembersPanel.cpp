@@ -148,7 +148,7 @@ int LobbyMembersPanel::FindItemIDForLobbyMember(uint64 steamID)
 void LobbyMembersPanel::OnLobbyCreated(LobbyCreated_t* pParam)
 {
     // Flip the 0 to 1 to test the panel with a local name
-#if 1
+#if 0
     KeyValues *pNewUser = new KeyValues("LobbyMember");
 
     uint64 steamID = SteamUser()->GetSteamID().ConvertToUint64();
