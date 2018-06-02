@@ -4,9 +4,9 @@
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
+#include "mom_system_saveloc.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
-#include "mom_system_saveloc.h"
 
 #include "tier0/memdbgon.h"
 
@@ -301,6 +301,9 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
+        pPlayer->m_SrvData.m_RunData.m_iBonusZone = m_iZoneNumber;
+        pPlayer->m_SrvData.m_RunData.m_bTimerStartOnJump = m_bTimerStartOnJump;
+        pPlayer->m_SrvData.m_RunData.m_iLimitSpeedType = m_iLimitSpeedType;
         g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
         pPlayer->ResetRunStats(); // Reset run stats
         pPlayer->m_SrvData.m_RunData.m_bMapFinished = false;
@@ -984,6 +987,34 @@ SendPropBool(SENDINFO(m_bTouching)), END_SEND_TABLE();
 // was called for one trigger but the player was actually into another trigger, so we must check if we were inside
 // of any of thoses.
 
+void CTriggerSlide::CheckTriggers(CMomentumPlayer *pPlayer)
+{
+    if (pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size() <= 0)
+        return;
+
+    // We're are in all those triggers except that only the current one matter, so we can use the right trigger in
+    // gamemovement.
+
+    for (int i = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size() - 1; i != 0; i--)
+    {
+        auto Element = pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Element(i);
+
+        CTriggerSlide *TriggerSlide = dynamic_cast<CTriggerSlide *>(
+            gEntList.GetBaseEntity(gEntList.LookupEntityByNetworkIndex(Element.GetEntityIndex())->GetRefEHandle()));
+
+        TriggerSlide->m_bTouching = false;
+    }
+
+    // We're inside that one currently.
+
+    CTriggerSlide *CurrentTriggerSlide = dynamic_cast<CTriggerSlide *>(gEntList.GetBaseEntity(
+        gEntList.LookupEntityByNetworkIndex(pPlayer->m_SrvData.m_SlideData.GetCurrent()->GetEntityIndex())
+            ->GetRefEHandle()));
+
+    CurrentTriggerSlide->m_bTouching = true;
+    g_pMomentumGameMovement->GetSlideTrigger() = CurrentTriggerSlide;
+}
+
 void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
@@ -1000,10 +1031,7 @@ void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
         SlideData.SetEntityIndex(entindex());
         pPlayer->m_SrvData.m_SlideData.m_vecSlideData.AddToHead(SlideData);
         pPlayer->m_SrvData.m_SlideData.SetEnabled();
-
-        // That's hacky as fuck.
-        g_pMomentumGameMovement->GetSlideTrigger() = reinterpret_cast<CTriggerSlide *>(this);
-        m_bTouching = true;
+        CheckTriggers(pPlayer);
     }
 }
 
@@ -1022,12 +1050,16 @@ void CTriggerSlide::OnEndTouch(CBaseEntity *pOther)
             if (Element.GetEntityIndex() == entindex())
             {
                 pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Remove(i);
-                break;
             }
         }
 
+        CheckTriggers(pPlayer);
+
+        // No more triggers.
         if (pPlayer->m_SrvData.m_SlideData.m_vecSlideData.Size() <= 0)
         {
+            g_pMomentumGameMovement->GetSlideTrigger() = nullptr;
+            m_bTouching = false;
             pPlayer->m_SrvData.m_SlideData.SetDisabled();
         }
 
