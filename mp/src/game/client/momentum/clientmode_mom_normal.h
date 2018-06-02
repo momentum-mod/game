@@ -44,6 +44,8 @@ class ClientModeMOMNormal : public ClientModeShared
     int HudElementKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
     int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
 
+    bool DoPostScreenSpaceEffects(const CViewSetup* pSetup) OVERRIDE;
+
     void SetupPointers();
 
   public:

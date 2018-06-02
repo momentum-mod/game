@@ -14,7 +14,7 @@ $Configuration
     $Compiler
     {
        $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
-        $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
+        $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL;GLOWS_ENABLE"
     }
 }
 

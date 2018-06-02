@@ -14,7 +14,7 @@ $Configuration
     $Compiler
     {
         $AdditionalIncludeDirectories  	"$BASE;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\thirdparty\base64"
-        $PreprocessorDefinitions        "$BASE;SDK_DLL"
+        $PreprocessorDefinitions        "$BASE;SDK_DLL;GLOWS_ENABLE"
     }
 }
 
