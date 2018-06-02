@@ -395,6 +395,10 @@ class CTriggerSlide : public CBaseMomentumTrigger
   public:
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
+    int UpdateTransmitState() // always send to all clients
+    {
+        return SetTransmitState(FL_EDICT_ALWAYS);
+    }
 
   public:
     CNetworkVar(bool, m_bStuckOnGround);
