@@ -1,20 +1,12 @@
 #pragma once
 
-#include "cbase.h"
-
-#include "baseplayer_shared.h"
 #include "gamemovement.h"
-#include "mom_player_shared.h"
-#include "utlvector.h"
 
 #ifdef CLIENT_DLL
-#include "c_mom_triggers.h"
-#define CTriggerSlide C_TriggerSlide
-#else
-#include "../momentum/mom_triggers.h"
+#define CMomentumPlayer C_MomentumPlayer
 #endif
 
-class CTriggerSlide;
+class CMomentumPlayer;
 struct surface_data_t;
 class IMovementListener;
 class CMomentumPlayer;
@@ -108,8 +100,6 @@ class CMomentumGameMovement : public CGameMovement
     // Movement Listener
     void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
-
-    CTriggerSlide *&GetSlideTrigger() { return m_TriggerSlide; }
 
   private:
     bool m_bWasInAir;

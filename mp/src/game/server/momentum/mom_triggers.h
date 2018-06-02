@@ -413,16 +413,11 @@ class CTriggerSlide : public CBaseMomentumTrigger
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
 
-    int UpdateTransmitState() // always send to all clients
-    {
-        return SetTransmitState(FL_EDICT_ALWAYS);
-    }
-
-    void CheckTriggers(CMomentumPlayer *pPlayer);
-
   public:
-    bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity, m_bFixUpsideSlope;
-    CNetworkVar(bool, m_bTouching);
+    CNetworkVar(bool, m_bStuckOnGround);
+    CNetworkVar(bool, m_bAllowingJump);
+    CNetworkVar(bool, m_bDisableGravity);
+    CNetworkVar(bool, m_bFixUpsideSlope);
 };
 
 class CTriggerReverseSpeed : public CBaseMomentumTrigger

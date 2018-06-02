@@ -12,6 +12,8 @@
 #include "c_mom_online_ghost.h"
 #include "c_mom_replay_entity.h"
 
+class C_TriggerSlide;
+
 class C_MomentumPlayer : public C_BasePlayer
 {
   public:
@@ -57,6 +59,8 @@ class C_MomentumPlayer : public C_BasePlayer
 
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
+
+    CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
 
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,
                                  bool &bIsPaintAmmo);
