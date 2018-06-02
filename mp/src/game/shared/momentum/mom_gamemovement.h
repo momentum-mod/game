@@ -103,7 +103,7 @@ class CMomentumGameMovement : public CGameMovement
     void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
 
-    //CTriggerSlide *GetSlideTrigger() { return m_TriggerSlide; }
+    CBaseEntity *&GetSlideTrigger() { return m_TriggerSlide; }
 
   private:
     bool m_bWasInAir;

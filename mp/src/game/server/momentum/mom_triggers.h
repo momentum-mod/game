@@ -401,6 +401,8 @@ class CTriggerSlide : public CBaseMomentumTrigger
         return SetTransmitState(FL_EDICT_ALWAYS);
     }
 
+    void CheckTriggers(CMomentumPlayer *pPlayer);
+
   public:
     bool m_bStuckOnGround, m_bAllowingJump, m_bDisableGravity, m_bFixUpsideSlope;
     CNetworkVar(bool, m_bTouching);
