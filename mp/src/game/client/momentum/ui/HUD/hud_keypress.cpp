@@ -299,10 +299,6 @@ void CHudKeyPressDisplay::DrawKeyTemplates()
     surface()->DrawSetTextPos(text_right, mid_row_ypos);
     surface()->DrawPrintText(m_pwRight, wcslen(m_pwRight));
 
-    CHECK_INPUT_N(IN_STRAFE);
-    surface()->DrawSetTextPos(GetTextCenter(m_hTextFont, m_pwStrafe), (lower_row_ypos + top_row_ypos) / 2.0f);
-    surface()->DrawPrintText(m_pwStrafe, wcslen(m_pwStrafe));
-
     // reset text font for jump/duck
     surface()->DrawSetTextFont(m_hWordTextFont);
     // jump
