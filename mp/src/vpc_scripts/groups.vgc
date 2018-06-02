@@ -36,6 +36,7 @@ $Group "ghost_server"
 }
 $Group "everything"
 {
+	"zonetool"
 	"captioncompiler"
 	"client"
 	"fgdlib"

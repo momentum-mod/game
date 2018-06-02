@@ -2318,8 +2318,10 @@ void LoadBSPFile( const char *filename )
 	// parse any additional lumps
 	Lumps_Parse();
 
+#ifndef ZONETOOL
 	// everything has been copied out
 	CloseBSPFile();
+#endif
 
 	g_Swap.ActivateByteSwapping( false );
 }
