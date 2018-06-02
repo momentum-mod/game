@@ -56,6 +56,8 @@ extern ConVar thirdperson_platformer;
 static ConVar m_filter( "m_filter","0", FCVAR_ARCHIVE, "Mouse filtering (set this to 1 to average the mouse over 2 frames)." );
 ConVar sensitivity( "sensitivity","3", FCVAR_ARCHIVE, "Mouse sensitivity.", true, 0.0001f, true, 10000000 );
 
+static ConVar m_strafe_option("m_strafe_option", "0", FCVAR_ARCHIVE,
+                              "0) Is the old system for +strafe 1) New system for +strafe.");
 static ConVar m_side( "m_side","0.8", FCVAR_ARCHIVE, "Mouse side factor." );
 static ConVar m_yaw( "m_yaw","0.022", FCVAR_ARCHIVE, "Mouse yaw factor." );
 static ConVar m_pitch("m_pitch", "0.022", FCVAR_ARCHIVE, "Mouse pitch factor.");
@@ -460,9 +462,12 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 	}
 	else
 	{
-		// If holding strafe key or mlooking and have lookstrafe set to true, then apply
-		//  horizontal mouse movement to sidemove.
-		cmd->sidemove += m_side.GetFloat() * mouse_x;
+        if (!m_strafe_option.GetBool())
+        {
+            // If holding strafe key or mlooking and have lookstrafe set to true, then apply
+            //  horizontal mouse movement to sidemove.
+            cmd->sidemove += m_side.GetFloat() * mouse_x;
+        }
 	}
 
 	// If mouselooking and not holding strafe key, then use vertical mouse
@@ -517,11 +522,24 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
 			cmd->upmove -= m_forward.GetFloat() * mouse_y;
 		} 
 		else */
+        if (!m_strafe_option.GetBool())
 		{
 			// Default is to apply vertical mouse movement as a forward key press.
 			cmd->forwardmove -= m_forward.GetFloat() * mouse_y;
 		}
 	}
+
+    if (m_strafe_option.GetBool())
+    {
+        static ConVarRef sv_maxspeed("sv_maxspeed");
+        float flMaxSpeed = sv_maxspeed.GetFloat();
+
+        Vector vMouseDirection(mouse_x, -mouse_y, 0.0f);
+        vMouseDirection.NormalizeInPlace();
+
+        cmd->forwardmove += vMouseDirection.y * flMaxSpeed;
+        cmd->sidemove += vMouseDirection.x * flMaxSpeed;
+    }
 
 	// Finally, add mouse state to usercmd.
 	// NOTE:  Does rounding to int cause any issues?  ywb 1/17/04
