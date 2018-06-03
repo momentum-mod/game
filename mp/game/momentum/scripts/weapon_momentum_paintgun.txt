@@ -14,7 +14,7 @@ WeaponData
     "Bullets"           "1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#MOM_Paint_Gun"
+    "printname"         "#MOM_Weapon_Paintgun"
     "viewmodel"         "models/weapons/v_mom_paintgun.mdl"
     "playermodel"       "models/weapons/w_mom_paintgun.mdl"
     
@@ -44,22 +44,22 @@ WeaponData
         "weapon"
 		{
 				"font"		"WeaponIcons"
-				"character"	"l"
+				"character"	"t"
 		}
 		"weapon_s"
 		{	
 				"font"		"WeaponIconsSelected"
-				"character"	"l"
+				"character"	"t"
 		}
 		"weapon_small"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"l"
+				"character"	"t"
 		}
 		"ammo"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"u"
+				"character"	"t"
 		}
         "crosshair"
         {

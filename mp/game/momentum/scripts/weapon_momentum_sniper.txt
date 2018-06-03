@@ -16,7 +16,7 @@ WeaponData
     "CycleTime"         "1.25"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#Cstrike_WPNHUD_Scout"
+    "printname"         "#MOM_Weapon_Sniper"
     "viewmodel"         "models/weapons/v_snip_scout.mdl"
     "playermodel"       "models/weapons/w_snip_scout.mdl"
     
@@ -46,18 +46,18 @@ WeaponData
     {
         "weapon"
         {
-                "font"      "CSweaponsSmall"
-                "character" "N"
+                "font"      "WeaponIcons"
+                "character" "n"
         }
         "weapon_s"
         {   
-                "font"      "CSweapons"
-                "character" "N"
+                "font"      "WeaponIconsSelected"
+                "character" "n"
         }
         "ammo"
         {
-                "font"      "CSTypeDeath"
-                "character"     "V"
+                "font"      "WeaponIconsSmall"
+                "character"     "n"
         }
         "autoaim"
         {

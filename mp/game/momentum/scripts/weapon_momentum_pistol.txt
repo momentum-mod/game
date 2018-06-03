@@ -15,7 +15,7 @@ WeaponData
     "CycleTime"         "0.15"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#HL2_Pistol"
+    "printname"         "#MOM_Weapon_Pistol"
     "viewmodel"         "models/weapons/v_mom_pistol.mdl"
     "playermodel"       "models/weapons/w_mom_pistol.mdl"
     "anim_prefix"       "anim"
@@ -42,17 +42,17 @@ WeaponData
         "weapon"
         {
                 "font"      "WeaponIcons"
-                "character" "d"
+                "character" "p"
         }
         "weapon_s"
         {   
                 "font"      "WeaponIconsSelected"
-                "character" "d"
+                "character" "p"
         }
         "weapon_small"
         {
                 "font"      "WeaponIconsSmall"
-                "character" "d"
+                "character" "p"
         }
         "ammo"
         {

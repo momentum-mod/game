@@ -501,7 +501,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"HalfLife2"
+				"name"		"MomIcons"
 				"tall"		"64"
 				"weight"	"0"
 				"antialias" "1"
@@ -513,7 +513,7 @@ Scheme
 		{
 			"1"
 			{
-				"name"		"HalfLife2"
+				"name"		"MomIcons"
 				"tall"		"64"
 				"weight"	"0"
 				"antialias" "1"
@@ -523,55 +523,14 @@ Scheme
 				"custom"	"1"
 			}
 		}
-		CSWeaponIcons
+        WeaponIconsSmall
 		{
 			"1"
 			{
-				"name"		"cs"
-				"tall"		"64"
+				"name"		"MomIcons"
+				"tall"		"32"
 				"weight"	"0"
 				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		CSWeaponIconsSelected
-		{
-			"1"
-			{
-				"name"		"cs"
-				"tall"		"64"
-				"weight"	"0"
-				"antialias" "1"
-				"blur"		"5"
-				"scanlines"	"2"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		//Contain the missing icons
-		CustomWeaponIcons
-		{
-			"1"
-			{
-				"name"		"Custom"
-				"tall"		"64"
-				"weight"	"0"
-				"antialias" "1"
-				"additive"	"1"
-				"custom"	"1"
-			}
-		}
-		CustomWeaponIconsSelected
-		{
-			"1"
-			{
-				"name"		"Custom"
-				"tall"		"64"
-				"weight"	"0"
-				"antialias" "1"
-				"blur"		"5"
-				"scanlines"	"2"
 				"additive"	"1"
 				"custom"	"1"
 			}
