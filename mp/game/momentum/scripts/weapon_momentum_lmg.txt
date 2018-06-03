@@ -17,7 +17,7 @@ WeaponData
     "CycleTime"         "0.08"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#Cstrike_WPNHUD_M249"
+    "printname"         "#MOM_Weapon_LMG"
     "viewmodel"         "models/weapons/v_mach_m249para.mdl"
     "playermodel"       "models/weapons/w_mach_m249para.mdl"
     
@@ -47,18 +47,18 @@ WeaponData
     {
         "weapon"
         {
-                "font"      "CSweaponsSmall"
-                "character" "Z"
+                "font"      "WeaponIcons"
+                "character" "l"
         }
         "weapon_s"
         {   
-                "font"      "CSweapons"
-                "character" "Z"
+                "font"      "WeaponIconsSelected"
+                "character" "l"
         }
         "ammo"
         {
-                "font"      "CSTypeDeath"
-                "character"     "N"
+                "font"      "WeaponIconsSmall"
+                "character"     "l"
         }
         "crosshair"
         {

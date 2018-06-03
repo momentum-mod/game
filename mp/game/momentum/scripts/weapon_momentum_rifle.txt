@@ -17,7 +17,7 @@ WeaponData
     "CycleTime"         "0.1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#HL2_Pulse_Rifle"
+    "printname"         "#MOM_Weapon_Rifle"
     "viewmodel"         "models/weapons/v_irifle.mdl"
     "playermodel"       "models/weapons/w_irifle.mdl"
     
@@ -46,22 +46,22 @@ WeaponData
         "weapon"
 		{
 				"font"		"WeaponIcons"
-				"character"	"l"
+				"character"	"r"
 		}
 		"weapon_s"
 		{	
 				"font"		"WeaponIconsSelected"
-				"character"	"l"
+				"character"	"r"
 		}
 		"weapon_small"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"l"
+				"character"	"r"
 		}
 		"ammo"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"u"
+				"character"	"r"
 		}
         "crosshair"
         {

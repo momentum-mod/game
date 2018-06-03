@@ -15,7 +15,7 @@ WeaponData
     "Bullets"           "1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#HL2_Grenade"
+    "printname"         "#MOM_Weapon_Grenade"
 	"viewmodel"         "models/weapons/v_mom_grenade.mdl"
 	"playermodel"       "models/weapons/w_mom_grenade.mdl"
     
@@ -42,22 +42,22 @@ WeaponData
         "weapon"
 		{
 				"font"		"WeaponIcons"
-				"character"	"k"
+				"character"	"g"
 		}
 		"weapon_s"
 		{	
 				"font"		"WeaponIconsSelected"
-				"character"	"k"
+				"character"	"g"
 		}
 		"weapon_small"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"k"
+				"character"	"g"
 		}
 		"ammo"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"v"
+				"character"	"g"
 		}
         "crosshair"
         {
