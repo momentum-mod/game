@@ -16,7 +16,7 @@ WeaponData
     "CycleTime"         "0.07"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#HL2_SMG1"
+    "printname"         "#MOM_Weapon_SMG"
     "viewmodel"         "models/weapons/v_smg1.mdl"
     "playermodel"       "models/weapons/w_smg1.mdl"
     
@@ -44,22 +44,22 @@ WeaponData
         "weapon"
 		{
 				"font"		"WeaponIcons"
-				"character"	"a"
+				"character"	"s"
 		}
 		"weapon_s"
 		{	
 				"font"		"WeaponIconsSelected"
-				"character"	"a"
+				"character"	"s"
 		}
 		"weapon_small"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"a"
+				"character"	"s"
 		}
 		"ammo"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"r"
+				"character"	"s"
 		}
         "crosshair"
         {

@@ -14,7 +14,7 @@ WeaponData
     "CycleTime"         "0.25"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#HL2_Shotgun"
+    "printname"         "#MOM_Weapon_Shotgun"
     "viewmodel"         "models/weapons/v_mom_shotgun.mdl"
     "playermodel"       "models/weapons/w_mom_shotgun.mdl"
     
@@ -45,22 +45,22 @@ WeaponData
         "weapon"
 		{
 				"font"		"WeaponIcons"
-				"character"	"b"
+				"character"	"h"
 		}
 		"weapon_s"
 		{	
 				"font"		"WeaponIconsSelected"
-				"character"	"b"
+				"character"	"h"
 		}
 		"weapon_small"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"b"
+				"character"	"h"
 		}
 		"ammo"
 		{
 				"font"		"WeaponIconsSmall"
-				"character"	"s"
+				"character"	"h"
 		}
         "crosshair"
         {

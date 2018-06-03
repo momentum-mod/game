@@ -3,6 +3,17 @@
     "Language" "English"
     "Tokens"
     {
+    // Weapons
+        "MOM_Weapon_SMG" "Bullet Sinkhole"
+        "MOM_Weapon_Paintgun" "Graffiti Enabler"
+        "MOM_Weapon_Knife" "Stabby McStabface"
+        "MOM_Weapon_Grenade" "Spontaneous Combustion"
+        "MOM_Weapon_LMG" "Overcompensating"
+        "MOM_Weapon_Pistol" "Pea Shooter"
+        "MOM_Weapon_Rifle" "Shoot Their Eyes Out"
+        "MOM_Weapon_Shotgun" "For Zombie Invasions Only"
+        "MOM_Weapon_Sniper" "360 Noscoper"
+    
     //Controls
         "MOM_Controls_Title" "MOMENTUM CONTROLS"
         "MOM_Controls_Restart" "Restart run"
@@ -369,7 +380,6 @@
         "MOM_PaintGunPanel_Sound" "Paintgun Shoot Sound Enabled"
         "MOM_PaintGunPanel_Color" "Decal color:"
         "MOM_PaintGunPanel_Color_TT" "Change the color of the paint"
-        "MOM_Paint_Gun" "Paint Gun"
         
         // Main menu
         "GameUI2_LogoLeft" "Momentum"

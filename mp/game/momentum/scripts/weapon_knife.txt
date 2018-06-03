@@ -17,7 +17,7 @@ WeaponData
     "Bullets"           "1"
     
     // Weapon data is loaded by both the Game and Client DLLs.
-    "printname"         "#Cstrike_WPNHUD_Knife"
+    "printname"         "#MOM_Weapon_Knife"
     "viewmodel"         "models/weapons/v_knife_t.mdl"
     "playermodel"       "models/weapons/w_knife_t.mdl"
     "anim_prefix"       "anim"
@@ -46,13 +46,13 @@ WeaponData
     {
         "weapon"
         {
-                "font"      "CSweaponsSmall"
-                "character" "J"
+                "font"      "WeaponIcons"
+                "character" "k"
         }
         "weapon_s"
         {   
-                "font"      "CSweapons"
-                "character" "J"
+                "font"      "WeaponIconsSelected"
+                "character" "k"
         }
         "ammo"
         {
