@@ -77,8 +77,12 @@ static int Nonce{1};
 #ifndef DISCORD_DISABLE_IO_THREAD
 static void Discord_UpdateConnection(void);
 class IoThreadHolder {
+public:
+	IoThreadHolder() {
+		keepRunning = true;
+	}
 private:
-    std::atomic_bool keepRunning{true};
+    std::atomic_bool keepRunning;
     std::mutex waitForIOMutex;
     std::condition_variable waitForIOActivity;
     std::thread ioThread;
