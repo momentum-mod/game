@@ -24,6 +24,7 @@ $Group "game"
 	"vgui_controls"
     "game_shader_dx9"
     "GameUI"
+    "discord-rpc"
 }
 
 $Group "shaders"
@@ -58,6 +59,7 @@ $Group "everything"
 	"vvis_dll"
 	"vvis_launcher"
     "GameUI"
+    "discord-rpc"
 }
 
 $Group "dedicated"

@@ -1,0 +1,41 @@
+//-----------------------------------------------------------------------------
+//  DISCORD-RPC.VPC
+//
+//  Project Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR       "..\.."
+$Include "$SRCDIR\vpc_scripts\source_lib_base.vpc"
+
+$Configuration
+{
+    $Compiler
+    {
+        $AdditionalIncludeDirectories   "$SRCDIR\thirdparty\discord-rpc\include;$SRCDIR\public\thirdparty\rapidjson\include;"
+        $PreprocessorDefinitions        "DISCORD_WINDOWS;constexpr=const;_XKEYCHECK_H;_ITERATOR_DEBUG_LEVEL=0;" [$WINDOWS]
+        $TreatWarningsAsErrors          "No (/WX-)"
+    }
+}
+
+$Project "discord-rpc"
+{
+    $Folder "Header Files"
+    {
+        $File   "$SRCDIR\thirdparty\discord-rpc\include\discord_rpc.h"
+        $File   "$SRCDIR\thirdparty\discord-rpc\include\discord_register.h"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\rpc_connection.h"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\serialization.h"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\connection.h"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\backoff.h"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\msg_queue.h"
+    }
+
+    $Folder "Source Files"
+    {
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_rpc.cpp"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\rpc_connection.cpp"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\serialization.cpp"
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\connection_win.cpp" [$WINDOWS]
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_win.cpp" [$WINDOWS]
+    }
+}
