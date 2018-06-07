@@ -403,5 +403,7 @@ inline const char* TexInfo_TexName( int iTexInfo )
 	return TexDataStringTable_GetString( dtexdata[texinfo[iTexInfo].texdata].nameStringTableID );
 }
 
+extern dheader_t *g_pBSPHeader;
+
 
 #endif // BSPLIB_H

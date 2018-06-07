@@ -59,20 +59,42 @@ int	CMapFile::c_areaportals = 0;
 void CMapFile::Init( void )
 {
 	entity_num = 0;
-	num_entities = 0;
+    num_entities = ::num_entities;
 
-	nummapplanes = 0;
-	memset( mapplanes, 0, sizeof( mapplanes ) );
+#ifdef ZONETOOL
 
-	nummapbrushes = 0;
-	memset( mapbrushes, 0, sizeof( mapbrushes ) );
+    map_mins = dmodels[0].mins;
+    map_maxs = dmodels[0].maxs;
 
-	nummapbrushsides = 0;
-	memset( brushsides, 0, sizeof( brushsides ) );
+    // So it loads correctly and adds automatically to the global variables for the bsp lib. (should but needs checking.)
+    // We might actually add them manually if it doesn't work and it's a lot of work.
+    nummapplanes = numplanes;
+    memset(mapplanes, 0, sizeof(mapplanes));
 
-	memset( side_brushtextures, 0, sizeof( side_brushtextures ) );
+    nummapbrushes = numbrushes;
+    memset(mapbrushes, 0, sizeof(mapbrushes));
 
-	memset( planehash, 0, sizeof( planehash ) );
+    nummapbrushsides = numbrushsides;
+    memset(brushsides, 0, sizeof(brushsides));
+
+    memset(side_brushtextures, 0, sizeof(side_brushtextures));
+
+    memset(planehash, 0, sizeof(planehash));
+
+#else
+    nummapplanes = 0;
+    memset(mapplanes, 0, sizeof(mapplanes));
+
+    nummapbrushes = 0;
+    memset(mapbrushes, 0, sizeof(mapbrushes));
+
+    nummapbrushsides = 0;
+    memset(brushsides, 0, sizeof(brushsides));
+
+    memset(side_brushtextures, 0, sizeof(side_brushtextures));
+
+    memset(planehash, 0, sizeof(planehash));
+#endif
 
 	m_ConnectionPairs = NULL;
 
@@ -1900,6 +1922,9 @@ void CMapFile::ForceFuncAreaPortalWindowContents()
 	{
 		entity_t *e = &entities[i];
 
+        if (!e->origin.IsValid())
+            continue;
+
 		const char *pClassName = ValueForKey( e, "classname" );
 
 		// Don't do this on "normal" func_areaportal entities.  Those are tied to doors
@@ -2101,6 +2126,9 @@ void CMapFile::CheckForInstances( const char *pszFileName )
 	// automatically done in this processing.
 	for ( int i = 0; i < num_entities; i++ )
 	{
+        if (!entities[i].origin.IsValid())
+            continue;
+
 		char *pEntity = ValueForKey( &entities[ i ], "classname" );
 		if ( !strcmp( pEntity, "func_instance" ) )
 		{
@@ -2698,7 +2726,7 @@ bool LoadMapFile( const char *pszFileName )
     // fill out parallax obb matrix array
     for (int i = 0; i < g_nCubemapSamples; i++)
     {
-        if (g_pParallaxObbStrs[i][0] != '\0')
+        if (g_pParallaxObbStrs[i] != nullptr && g_pParallaxObbStrs[i][0] != '\0')
         {
             entity_t *obbEnt = EntityByName(g_pParallaxObbStrs[i]);
             g_pParallaxObbStrs[i] = ValueForKey(obbEnt, "transformationmatrix");
@@ -2708,6 +2736,8 @@ bool LoadMapFile( const char *pszFileName )
     for (int i = 0; i < g_MainMap->num_entities; i++)
     {
         entity_t *mapent = &g_MainMap->entities[i];
+        if (!mapent->origin.IsValid())
+            continue;
         const char *pClassName = ValueForKey(mapent, "classname");
         if (!strcmp("parallax_obb", pClassName))
         {
@@ -2761,8 +2791,10 @@ bool LoadMapFile( const char *pszFileName )
 
 	if ( g_MainMap == g_LoadingMap )
 	{
+#ifndef ZONETOOL
 		num_entities = g_MainMap->num_entities;
 		memcpy( entities, g_MainMap->entities, sizeof( g_MainMap->entities ) );
+#endif
 	}
 	g_LoadingMap->ForceFuncAreaPortalWindowContents();
 
