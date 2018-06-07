@@ -498,8 +498,9 @@ CPhysConvex *CPlaneList::BuildConvexForBrush( int brushnumber, float shrink, CPh
 		dbrushside_t *pside = dbrushsides + i + dbrushes[brushnumber].firstside;
 		if ( pside->bevel )
 			continue;
+        
+        dplane_t *pplane = dplanes + pside->planenum;
 
-		dplane_t *pplane = dplanes + pside->planenum;
 		float shrinkThisPlane = shrink;
 
 		if ( i < g_MainMap->mapbrushes[brushnumber].numsides )
@@ -511,6 +512,7 @@ CPhysConvex *CPlaneList::BuildConvexForBrush( int brushnumber, float shrink, CPh
 				shrinkThisPlane = 0;
 			}
 		}
+
 		// Make sure shrinking won't swallow geometry along this axis.
 		if ( pCollideTest && shrinkThisPlane != 0 )
 		{
@@ -528,7 +530,10 @@ CPhysConvex *CPlaneList::BuildConvexForBrush( int brushnumber, float shrink, CPh
 		}
 		AddListPlane( &temp, pplane->normal[0], pplane->normal[1], pplane->normal[2], pplane->dist - shrinkThisPlane );
 	}
-	return physcollision->ConvexFromPlanes( (float *)temp.Base(), temp.Count(), m_merge );
+
+    auto ConvPlanes = physcollision->ConvexFromPlanes((float *)temp.Base(), temp.Count(), m_merge);
+
+    return ConvPlanes;
 }
 
 int CPlaneList::AddBrushes( void )
@@ -1311,7 +1316,7 @@ static void ConvertWorldBrushesToPhysCollide( CUtlVector<CPhysCollisionEntry *> 
 }
 
 // adds any world, terrain, and water collision models to the collision list
-static void BuildWorldPhysModel( CUtlVector<CPhysCollisionEntry *> &collisionList, float shrinkSize, float mergeTolerance )
+void BuildWorldPhysModel( CUtlVector<CPhysCollisionEntry *> &collisionList, float shrinkSize, float mergeTolerance )
 {
 	ConvertWorldBrushesToPhysCollide( collisionList, shrinkSize, mergeTolerance, MASK_SOLID );
 	ConvertWorldBrushesToPhysCollide( collisionList, shrinkSize, mergeTolerance, CONTENTS_PLAYERCLIP );
@@ -1337,7 +1342,7 @@ static void BuildWorldPhysModel( CUtlVector<CPhysCollisionEntry *> &collisionLis
 
 
 // adds a collision entry for this brush model
-static void ConvertModelToPhysCollide( CUtlVector<CPhysCollisionEntry *> &collisionList, int modelIndex, int contents, float shrinkSize, float mergeTolerance )
+void ConvertModelToPhysCollide( CUtlVector<CPhysCollisionEntry *> &collisionList, int modelIndex, int contents, float shrinkSize, float mergeTolerance )
 {
 	int i;
 	CPlaneList planes( shrinkSize, mergeTolerance );

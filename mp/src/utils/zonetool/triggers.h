@@ -1,11 +1,33 @@
 #pragma once
-
-#include "bsplib.h"
-#include "cmdlib.h"
-#include "filesystem.h"
-#include "keyvalues.h"
 #include "string_t.h"
-#include "utlbuffer.h"
+
+#define DO_ONCE_SCOPE(Code)                                                                                            \
+    \
+{                                                                                                                 \
+        \
+static bool bCodeRun = false;                                                                                          \
+        \
+if(!bCodeRun)                                                                                                          \
+        \
+{                                                                                                             \
+            Code;                                                                                                      \
+            bCodeRun = true;                                                                                           \
+        \
+}                                                                                                             \
+    \
+}
+
+#define DO_ONCE(Code)                                                                                                  \
+    \
+static bool bCodeRun = false;                                                                                          \
+    \
+if(!bCodeRun)                                                                                                          \
+    \
+{                                                                                                                 \
+        Code;                                                                                                          \
+        bCodeRun = true;                                                                                               \
+    \
+}
 
 enum
 {
@@ -26,7 +48,6 @@ enum
                                                // CTriggerTeleport
     SF_TELE_ONEXIT = 0x1000,                   // Teleport the player on EndTouch instead of StartTouch
 };
-
 
 // All triggers used in the zon file.
 enum e_Triggers
@@ -63,7 +84,7 @@ class CTriggerMomentumTimerStart
     CBaseMomentumTrigger Base;
 };
 
-// 
+//
 class CTriggerMomentumTimerStop
 {
   public:
@@ -134,8 +155,4 @@ class CBSPTriggers
 };
 
 extern int GetTriggerType(const char *classname);
-extern void ProcessBaseTriggerSubKey(KeyValues *subKey, CBaseMomentumTrigger *BaseTrigger);
-extern void ProcessSubKeyBaseTrigger(KeyValues *subKey, CBaseMomentumTrigger *BaseTrigger);
 extern char m_TriggersName[triggers_max][64];
-extern char m_ZoneFileTriggersName[triggers_max][64];
-extern int GetZoneFileTriggerType(const char *zonename);
