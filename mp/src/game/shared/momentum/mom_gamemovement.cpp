@@ -1295,6 +1295,7 @@ void CMomentumGameMovement::FullWalkMove()
 
         if (bIsSliding)
             vecOldOrigin = mv->GetAbsOrigin();
+
         if (player->GetGroundEntity() != nullptr)
         {
             WalkMove();
@@ -1914,19 +1915,18 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         // Let's retrace in case we can go on our wanted direction.
         TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-        if (!CloseEnough(pm.fraction, 0.0f, FLT_EPSILON))
+        // If we found something we stop.
+        if (pm.fraction != 1.0f)
         {
-            // Adjust if we found somewhere to land.
-            // We just skip the bug and set the end position.
-            // It's a bit hacky but works.
-            mv->SetAbsOrigin(pm.endpos);
+            VectorCopy(vec3_origin, mv->m_vecVelocity);
+        }
+        // Otherwhise we just set our next pos and we ignore the bug.
+        else
+        {
+            mv->SetAbsOrigin(end);
 
             // Adjust to be sure that we are on ground.
             StayOnGround();
-        }
-        else
-        {
-            VectorCopy(vec3_origin, mv->m_vecVelocity);
         }
     }
 
