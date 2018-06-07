@@ -14,23 +14,24 @@
 // spawnflags
 enum
 {
+    // starts on 0x1000 - SF_TRIGGER_DISALLOW_BOTS
     // CTriggerTimerStart
-    SF_LIMIT_LEAVE_SPEED = 0x0001,             // Limit speed if player bhopped in start zone?
-    SF_USE_LOOKANGLES = 0x0002,                // Use look angles?
-                                               // CTriggerOneHop
-    SF_TELEPORT_RESET_ONEHOP = 0x0010,         // Reset hop state if player hops onto another different onehop
-                                               // CTriggerLimitMove
-    LIMIT_JUMP = 0x0020,                       // prevent player from jumping
-    LIMIT_CROUCH = 0x0040,                     // prevent player from croching
-    LIMIT_BHOP = 0x0080,                       // prevent player from bhopping
-                                               // CFuncShootBost and CTriggerMomentumPush
-    SF_PUSH_DIRECTION_AS_FINAL_FORCE = 0x0100, // Use the direction vector as final force instead of calculating it by
-                                               // force amount CTriggerMomentumPush
-    SF_PUSH_ONETOUCH = 0x0200,                 // Only allow for one touch
-    SF_PUSH_ONSTART = 0x0400,                  // Modify player velocity on OnStartTouch
-    SF_PUSH_ONEND = 0x0800,                    // Modify player velocity on OnEndTouch
-                                               // CTriggerTeleport
-    SF_TELE_ONEXIT = 0x1000,                   // Teleport the player on OnEndTouch instead of OnStartTouch
+    SF_LIMIT_LEAVE_SPEED = 1 << 13,             // Limit speed if player bhopped in start zone?
+    SF_USE_LOOKANGLES = 1 << 14,                // Use look angles?
+                                                // CTriggerOneHop
+    SF_TELEPORT_RESET_ONEHOP = 1 << 15,         // Reset hop state if player hops onto another different onehop
+                                                // CTriggerLimitMove
+    LIMIT_JUMP = 1 << 16,                       // prevent player from jumping
+    LIMIT_CROUCH = 1 << 17,                     // prevent player from croching
+    LIMIT_BHOP = 1 << 18,                       // prevent player from bhopping
+                                                // CFuncShootBost and CTriggerMomentumPush
+    SF_PUSH_DIRECTION_AS_FINAL_FORCE = 1 << 19, // Use the direction vector as final force instead of calculating it by
+                                                // force amount CTriggerMomentumPush
+    SF_PUSH_ONETOUCH = 1 << 20,                 // Only allow for one touch
+    SF_PUSH_ONSTART = 1 << 21,                  // Modify player velocity on OnStartTouch
+    SF_PUSH_ONEND = 1 << 22,                    // Modify player velocity on OnEndTouch
+                                                // CTriggerTeleport
+    SF_TELE_ONEXIT = 1 << 23,                   // Teleport the player on OnEndTouch instead of OnStartTouch
 };
 
 enum
