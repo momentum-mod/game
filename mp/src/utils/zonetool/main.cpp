@@ -1,589 +1,457 @@
+#include "byteswap.h"
+#include "detail.h"
+#include "disp_vbsp.h"
+#include "ivp.h"
+#include "loadcmdline.h"
+#include "map.h"
+#include "materialsub.h"
+#include "materialsystem/imaterialsystem.h"
+#include "physdll.h"
+#include "tier0/icommandline.h"
+#include "tools_minidump.h"
 #include "triggers.h"
+#include "utilmatlib.h"
+#include "vbsp.h"
+#include "worldvertextransitionfixup.h"
+#include "writebsp.h"
 
-const char *stofloat(float flValue)
-{
-    char buf[32];
-    sprintf(buf, "%f", flValue);
-    return buf;
-}
+// parameters for conversion to vphysics
+#define NO_SHRINK 0.0f
+// NOTE: vphysics maintains a minimum separation radius between objects
+// This radius is set to 0.25, but it's symmetric.  So shrinking potentially moveable
+// brushes by 0.5 in every direction ensures that these brushes can be constructed
+// touching the world, and constrained in place without collisions or friction
+// UNDONE: Add a key to disable this shrinking if necessary
+#define VPHYSICS_SHRINK (0.5f) // shrink BSP brushes by this much for collision
+#define VPHYSICS_MERGE 0.01f   // me
 
-const char *stoint(int iValue)
-{
-    char buf[32];
-    sprintf(buf, "%i", iValue);
-    return buf;
-}
+extern qboolean onlyents;
+extern qboolean dumpcollide;
 
-const char *stobool(bool bValue)
-{
-    char buf[32];
-    sprintf(buf, "%i", bValue);
-    return buf;
-}
+extern ChunkFileResult_t LoadEntityCallback(CChunkFile *pFile, int nParam);
+extern void ProcessModels();
+extern void ProcessSubModel();
+extern void ProcessWorldModel();
+extern void FixupOnlyEntsOccluderEntities();
+extern void EmitBrushes();
+extern void EmitPhysCollision();
+extern void EmitPlanes();
+extern void BuildWorldPhysModel(CUtlVector<CPhysCollisionEntry *> &collisionList, float shrinkSize,
+                                float mergeTolerance);
+extern void ConvertModelToPhysCollide(CUtlVector<CPhysCollisionEntry *> &collisionList, int modelIndex, int contents,
+                                      float shrinkSize, float mergeTolerance);
+extern IPhysicsSurfaceProps *physprops;
+extern void CompactTexinfos();
 
-const char *stoVector(Vector Value)
-{
-    char buf[128];
-    sprintf(buf, "%f %f %f", Value.x, Value.y, Value.z);
-    return buf;
-}
-
-const char *stoQAngle(QAngle Value)
-{
-    char buf[128];
-    sprintf(buf, "%f %f %f", Value.x, Value.y, Value.z);
-    return buf;
-}
+extern void EmitOccluderBrushes();
 
 int main(int nbargs, char **args)
 {
+    // if only ents, it doesn't load brushes etc we don't want that.
+    // onlyents = true;
+    dumpcollide = true;
+    MathLib_Init();
+
     if (nbargs < 1)
     {
         Msg("Drag all your .bsp files on the program, they will be automatically converted into .zon files.\n");
         return 0;
     }
 
-// Determine which filesystem to use.
-#if defined(_WIN32)
-    char *szFsModule = "filesystem_stdio.dll";
-#elif defined(OSX)
-    char *szFsModule = "filesystem_stdio.dylib";
-#elif defined(LINUX)
-    char *szFsModule = "filesystem_stdio.so";
-#else
-#error
-#endif
+    CommandLine()->CreateCmdLine(nbargs, args);
+    CUtlString vproject_arg(args[0]);
+    vproject_arg = vproject_arg.StripFilename();
+    vproject_arg = vproject_arg.Slice(0, vproject_arg.Length() - 3);
+    char buf[1024];
+    sprintf(buf, "-vproject -game %smomentum", vproject_arg.Get());
+    CommandLine()->CreateCmdLine(buf);
 
-    CSysModule *pFileSystemModule = Sys_LoadModule(szFsModule);
-    Assert(pFileSystemModule);
+    CmdLib_InitFileSystem(args[0]);
 
-    CreateInterfaceFn fileSystemFactory = Sys_GetFactory(pFileSystemModule);
+    // Setup the logfile.
+    char logFile[512];
+    _snprintf(logFile, sizeof(logFile), "%s.log", source);
+    SetSpewFunctionLogFile(logFile);
 
-    g_pFileSystem = (IFileSystem *)fileSystemFactory(FILESYSTEM_INTERFACE_VERSION, nullptr);
+    PhysicsDLLPath("vphysics.dll");
+    LoadSurfaceProperties();
 
-    if (g_pFileSystem == nullptr)
+    ThreadSetDefault();
+    numthreads = 1; // multiple threads aren't helping...
+
+    char materialPath[MAX_PATH];
+    sprintf(materialPath, "%smaterials", gamedir);
+    InitMaterialSystem(materialPath, CmdLib_GetFileSystemFactory());
+    Msg("materialPath: %s\n", materialPath);
+
+    if ((g_nDXLevel != 0) && (g_nDXLevel < 80))
     {
-        Msg("Couldn't get filesystem interface\n");
-        return 0;
+        g_BumpAll = false;
     }
 
-    CUtlVector<entity_t *> vecTriggerEntities(0);
-
-    for (int i = 1; i < nbargs; i++)
+    if (g_luxelScale == 1.0f)
     {
-        const char *pFilePath = args[i];
+        if (g_nDXLevel == 70)
+        {
+            g_luxelScale = 4.0f;
+        }
+    }
+
+    for (int iarg = 1; iarg < nbargs; iarg++)
+    {
+        const char *pFilePath = args[iarg];
+
+        CUtlString sFilePath(pFilePath);
 
         // If it's a bsp file, we convert triggers into zon file.
-        if (CUtlString(pFilePath).GetExtension() == CUtlString("bsp"))
+        if (sFilePath.GetExtension() == CUtlString("bsp"))
         {
-            // Unload and close the last bsp file for the next iteration.
-            UnloadBSPFile();
-            CloseBSPFile();
+            // Get vmf file.
+            CUtlString sFilePath_VMF(sFilePath.StripExtension() + ".vmf");
 
-            // Load bsp file.
+            // Load bsp.
             LoadBSPFile(pFilePath);
-
-            // Check also if the signature to be sure it's a bsp file.
-            if (g_pBSPHeader == nullptr || g_pBSPHeader->ident != IDBSPHEADER)
-            {
-                Msg("(.bsp -> .zon)%s was not a bsp file!\n", pFilePath);
-                continue;
-            }
-
-            // Parse all entities inside the bsp.
             ParseEntities();
 
-            // Iterate through all entities and get all triggers wanted.
-            for (int iEnt = 0; iEnt < num_entities; iEnt++)
+            PrintBSPFileSizes();
+
+            LoadMapFile(sFilePath_VMF.Get());
+
+            g_MainMap->map_mins = dmodels[0].mins;
+            g_MainMap->map_maxs = dmodels[0].maxs;
+
+            PrintBSPFileSizes();
+
+            int iOldModelNumber = nummodels;
+
+            int iOldNumEntities = num_entities;
+
             {
-                entity_t *pEnt = &entities[iEnt];
-
-                // Iterate through all pairs to get keyvalues.
-                for (auto pEp = pEnt->epairs; pEp; pEp = pEp->next)
+                for (int i = num_entities; i < g_MainMap->num_entities; i++)
                 {
-                    // classname string contains the entity type (trigger_momentum_timer_start, etc...).
-                    if (!strcmp(pEp->key, "classname"))
-                    {
-                        for (auto numtrigger = 0; numtrigger != triggers_max; numtrigger++)
-                        {
-                            char *TriggerName = m_TriggersName[numtrigger];
+                    memcpy(&entities[num_entities], &g_MainMap->entities[i], sizeof(entity_t));
 
-                            if (!strcmp(pEp->value, TriggerName))
-                            {
-                                // Gotcha.
-                                vecTriggerEntities.AddToHead(pEnt);
-                            }
-                        }
-                    }
+                    char ModelNumber[10], swithoutModelNumber[10];
+                    sprintf(ModelNumber, "*%i", iOldModelNumber);
+                    sprintf(swithoutModelNumber, "%i", iOldModelNumber);
+                    SetKeyValue(&entities[num_entities], "model", ModelNumber);
+                    // Random
+                    SetKeyValue(&entities[num_entities], "hammerid",
+                                CUtlString(CUtlString("5461") + CUtlString(swithoutModelNumber)).Get());
+
+                    iOldModelNumber++;
+                    num_entities++;
                 }
             }
 
-            // Now we have all our triggers, we can generate the zon file.
-            CBSPTriggers BSPTriggers;
+            iOldModelNumber = nummodels;
 
-            // Iterate through all triggers found.
-            for (auto i = 0; i != vecTriggerEntities.Size(); i++)
+            // num_entities += g_MainMap->num_entities;
+            // EmitInitialDispInfos();
+            // EmitOccluderBrushes();
+
+            // Process our current model, we need to check if g_MainMap is used wrongly in those functions, but as
+            // looked a lot of times, I don't know where could be the problem here. But it must be here I think.
+            for (entity_num = iOldNumEntities; entity_num < num_entities; ++entity_num)
             {
-                auto triggerentity = vecTriggerEntities.Element(i);
-
-#ifdef _DEBUG
-                Msg("------- entity %p -------\n", triggerentity);
-
-                for (auto pEp = triggerentity->epairs; pEp; pEp = pEp->next)
-                {
-                    Msg("%s = %s\n", pEp->key, pEp->value);
-                }
-#endif
-
-                // Get the trigger type from its class name. (trigger_momentum_timer_start, etc...)
-                int triggertype = GetTriggerType(ValueForKey(triggerentity, "classname"));
-
-                // Duho, check if forgot one trigger inside the GetTriggerType, but it shouldn't happen.
-                if (triggertype == -1)
+                entity_t *pEntity = &entities[entity_num];
+                if (!pEntity->numbrushes)
                     continue;
 
-                CBaseMomentumTrigger BaseTrigger;
+                qprintf("############### model %i ###############\n", nummodels);
 
-                // Get the trigger origin's
-                GetVectorForKey(triggerentity, "origin", BaseTrigger.m_vecPos);
+                BeginModel();
 
-                // Models contains informations about the collision, so mins, and maxs, face numbers, etc...
-                auto ModelNumber = IntForKey(triggerentity, "model");
+                if (entity_num == 0)
+                {
+                    ProcessWorldModel();
+                }
+                else
+                {
+                    ProcessSubModel();
+                }
 
-                // Get our wanted model.
-                auto Model = &dmodels[ModelNumber];
+                EndModel();
+            }
 
-                BaseTrigger.m_vecMins = Model->mins;
-                BaseTrigger.m_vecMaxs = Model->maxs;
+            {
+                int i, j, bnum, s, x;
+                dbrush_t *db;
+                mapbrush_t *b;
+                dbrushside_t *cp;
+                Vector normal;
+                vec_t dist;
+                int planenum;
 
-                // Get the spawnflags of triggers. (used for LimitBhopSpeed inside the start zone, etc...)
-                BaseTrigger.m_spawnflags = IntForKey(triggerentity, "spawnflags");
+                // We add only the brushes we need, otherwhise it just copy empty brushes and we don't want that.
+                for (bnum = numbrushes; bnum < g_MainMap->nummapbrushes; bnum++)
+                {
+                    b = &g_MainMap->mapbrushes[bnum];
+                    db = &dbrushes[bnum];
 
-                // This needs to be updated in case mapzones.cpp changed in server project!
-                switch (triggertype)
-                {
-                // Start zone
-                case trigger_momentum_timer_start:
-                {
-                    CTriggerMomentumTimerStart Trigger;
-                    Trigger.m_bhopleavespeed = FloatForKey(triggerentity, "bhopleavespeed");
-                    GetAnglesForKey(triggerentity, "lookangles", Trigger.m_lookangles);
-                    Trigger.m_StartOnJump = IntForKey(triggerentity, "StartOnJump") != 0;
-                    Trigger.m_LimitSpeedType = IntForKey(triggerentity, "LimitSpeedType");
-                    Trigger.m_ZoneNumber = IntForKey(triggerentity, "ZoneNumber");
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumTimerStart.AddToHead(Trigger);
-                    break;
+                    db->contents = b->contents;
+                    db->firstside = numbrushsides;
+                    db->numsides = b->numsides;
+                    for (j = 0; j < b->numsides; j++)
+                    {
+                        if (numbrushsides == MAX_MAP_BRUSHSIDES)
+                            Error("MAX_MAP_BRUSHSIDES");
+                        cp = &dbrushsides[numbrushsides];
+                        numbrushsides++;
+                        cp->planenum = b->original_sides[j].planenum;
+                        cp->texinfo = b->original_sides[j].texinfo;
+                        if (cp->texinfo == -1)
+                        {
+                            cp->texinfo = g_MainMap->g_ClipTexinfo;
+                        }
+                        cp->bevel = b->original_sides[j].bevel;
+                    }
+
+                    // add any axis planes not contained in the brush to bevel off corners
+                    for (x = 0; x < 3; x++)
+                        for (s = -1; s <= 1; s += 2)
+                        {
+                            // add the plane
+                            VectorCopy(vec3_origin, normal);
+                            normal[x] = s;
+                            if (s == -1)
+                                dist = -b->mins[x];
+                            else
+                                dist = b->maxs[x];
+                            planenum = g_MainMap->FindFloatPlane(normal, dist);
+                            for (i = 0; i < b->numsides; i++)
+                                if (b->original_sides[i].planenum == planenum)
+                                    break;
+                            if (i == b->numsides)
+                            {
+                                if (numbrushsides >= MAX_MAP_BRUSHSIDES)
+                                    Error("MAX_MAP_BRUSHSIDES");
+
+                                dbrushsides[numbrushsides].planenum = planenum;
+                                dbrushsides[numbrushsides].texinfo = dbrushsides[numbrushsides - 1].texinfo;
+                                numbrushsides++;
+                                db->numsides++;
+                            }
+                        }
                 }
-                // End zone
-                case trigger_momentum_timer_stop:
+
+                numbrushes = g_MainMap->nummapbrushes;
+            }
+
+            // Copy new planes, only the ones we need.
+            {
+                int i;
+                dplane_t *dp;
+
+                auto planestoadd = g_MainMap->nummapplanes - numplanes;
+                int ioldnumplanes = numplanes;
+
+                for (i = 0; i < planestoadd; i++)
                 {
-                    CTriggerMomentumTimerStop Trigger;
-                    Trigger.m_ZoneNumber = IntForKey(triggerentity, "ZoneNumber");
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumTimerStop.AddToHead(Trigger);
-                    break;
-                }
-                // One hop
-                case trigger_momentum_onehop:
-                {
-                    CTriggerMomentumOneHop Trigger;
-                    Trigger.m_hold = FloatForKey(triggerentity, "hold");
-                    Trigger.m_resetang = IntForKey(triggerentity, "resetang") != 0;
-                    Trigger.m_stop = FloatForKey(triggerentity, "stop") != 0;
-                    Trigger.m_target = castable_string_t(ValueForKey(triggerentity, "targetname"));
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumOneHop.AddToHead(Trigger);
-                    break;
-                }
-                // Reset one hop
-                case trigger_momentum_resetonehop:
-                {
-                    CTriggerMomentumResetOneHop Trigger;
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumResetOneHop.AddToHead(Trigger);
-                    break;
-                }
-                // Checkpoint
-                case trigger_momentum_checkpoint:
-                {
-                    CTriggerMomentumCheckPoint Trigger;
-                    Trigger.m_checkpoint = IntForKey(triggerentity, "checkpoint");
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumCheckPoint.AddToHead(Trigger);
-                    break;
-                }
-                // Teleport checkpoint
-                case trigger_momentum_teleport_checkpoint:
-                {
-                    CTriggerMomentumTeleportCheckPoint Trigger;
-                    Trigger.m_resetang = IntForKey(triggerentity, "resetang") != 0;
-                    Trigger.m_stop = FloatForKey(triggerentity, "stop") != 0;
-                    Trigger.m_target = castable_string_t(ValueForKey(triggerentity, "targetname"));
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumTeleportCheckPoint.AddToHead(Trigger);
-                    break;
-                }
-                // Multihop
-                case trigger_momentum_multihop:
-                {
-                    CTriggerMomentumMultiHop Trigger;
-                    Trigger.m_hold = FloatForKey(triggerentity, "hold");
-                    Trigger.m_resetang = IntForKey(triggerentity, "resetang") != 0;
-                    Trigger.m_stop = FloatForKey(triggerentity, "stop") != 0;
-                    Trigger.m_target = castable_string_t(ValueForKey(triggerentity, "targetname"));
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumMultiHop.AddToHead(Trigger);
-                    break;
-                }
-                // Stage
-                case trigger_momentum_timer_stage:
-                {
-                    CTriggerMomentumTimerStage Trigger;
-                    Trigger.m_stage = IntForKey(triggerentity, "stage");
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumTimerStage.AddToHead(Trigger);
-                    break;
-                }
-                // ??? Seems like it missed something, but it shouldn't happen.
-                default:
-                    break;
+                    auto mp = &g_MainMap->mapplanes[i + ioldnumplanes];
+                    dp = &dplanes[numplanes];
+                    VectorCopy(mp->normal, dp->normal);
+                    dp->dist = mp->dist;
+                    dp->type = mp->type;
+                    numplanes++;
                 }
             }
 
-            // Get our new file path for .zon file.
-            CUtlString sFilePath(pFilePath);
-            CUtlString sPathToWrite = sFilePath.StripFilename();
-            CUtlString sMapName = sFilePath.GetBaseFilename();
-            sPathToWrite += "\\";
-            sPathToWrite += sMapName + ".zon";
-
-            // Create keyvalues for our new zone file.
-            KeyValues *ZoneKV = new KeyValues(sMapName.Get());
-
-            // This needs to be updated in case mapzones.cpp changed in server project!
-
-            // Iterate through all triggers elements and add the subkeyvalue with corresponding informations.
-
-            // ProcessBaseTriggerSubKey include everything releated to positions, angles and collisions (mins & maxs).
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTimerStart.Size(); i++)
             {
-                auto Element = BSPTriggers.m_TriggersMomentumTimerStart.Element(i);
+                // Create all collisions to our models
+                // , tested and it seems to produce correctly the binary, (compared with the original's collisions data
+                // with dumps to be sure its same bytes, and it is).
 
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_timer_start]);
-
-                SubZoneKey->SetFloat("bhopleavespeed", Element.m_bhopleavespeed);
-                SubZoneKey->SetBool("limitingspeed", (Element.Base.m_spawnflags & SF_LIMIT_LEAVE_SPEED) ? true : false);
-                SubZoneKey->SetBool("StartOnJump", Element.m_StartOnJump);
-                SubZoneKey->SetInt("LimitSpeedType", Element.m_LimitSpeedType);
-                SubZoneKey->SetInt("ZoneNumber", Element.m_ZoneNumber);
-                SubZoneKey->SetFloat("yaw", Element.m_lookangles[YAW]);
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTimerStop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumTimerStop.Element(i);
-
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_timer_stop]);
-                SubZoneKey->SetInt("ZoneNumber", Element.m_ZoneNumber);
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumOneHop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumOneHop.Element(i);
-
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_onehop]);
-                SubZoneKey->SetBool("stop", Element.m_stop);
-                SubZoneKey->SetBool("resetang", Element.m_resetang);
-                SubZoneKey->SetFloat("hold", Element.m_hold);
-                SubZoneKey->SetString("destinationname", Element.m_target.ToCStr());
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumResetOneHop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumResetOneHop.Element(i);
-
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_resetonehop]);
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumMultiHop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumMultiHop.Element(i);
-
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_multihop]);
-                SubZoneKey->SetBool("stop", Element.m_stop);
-                SubZoneKey->SetBool("resetang", Element.m_resetang);
-                SubZoneKey->SetFloat("hold", Element.m_hold);
-                SubZoneKey->SetString("destinationname", Element.m_target.ToCStr());
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumCheckPoint.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumCheckPoint.Element(i);
-
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_checkpoint]);
-                SubZoneKey->SetInt("number", Element.m_checkpoint);
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTeleportCheckPoint.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumTeleportCheckPoint.Element(i);
-
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_teleport_checkpoint]);
-                SubZoneKey->SetBool("stop", Element.m_stop);
-                SubZoneKey->SetBool("resetang", Element.m_resetang);
-                SubZoneKey->SetString("destinationname", Element.m_target.ToCStr());
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTimerStage.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumTimerStage.Element(i);
-
-                KeyValues *SubZoneKey = new KeyValues(m_ZoneFileTriggersName[trigger_momentum_timer_stage]);
-                SubZoneKey->SetInt("number", Element.m_stage);
-                ProcessBaseTriggerSubKey(SubZoneKey, &Element.Base);
-                ZoneKV->AddSubKey(SubZoneKey);
-            }
-
-            // Save our keyvalues in the new zone file.
-            if (!ZoneKV->SaveToFile(g_pFileSystem, sPathToWrite.Get()))
-            {
-                Msg("Couldn't write the new zone for %s\n", sMapName.Get());
-            }
-
-            // delete.
-            ZoneKV->deleteThis();
-        }
-        // If it's a zon file, we read and write the bsp with assuming that it's on the same path.
-        else if (CUtlString(pFilePath).GetExtension() == CUtlString("zon"))
-        {
-            CUtlString sFilePath(pFilePath);
-            CUtlString sPathToWrite = sFilePath.StripFilename();
-            CUtlString sMapName = sFilePath.GetBaseFilename();
-            sPathToWrite += "\\";
-            sPathToWrite += sMapName + ".bsp";
-
-            KeyValues *ZoneKV = new KeyValues(sMapName.Get());
-
-            // Read keyvalues.
-            ZoneKV->LoadFromFile(g_pFileSystem, pFilePath);
-
-            if (ZoneKV->IsEmpty())
-            {
-                Msg("Couldn't read %s zone file!\n", pFilePath);
-                continue;
-            }
-
-            CBSPTriggers BSPTriggers;
-
-            // Load all zones in our vectors of triggers.
-            for (auto SubZoneKey = ZoneKV->GetFirstSubKey(); SubZoneKey; SubZoneKey = SubZoneKey->GetNextKey())
-            {
-                auto zonename = SubZoneKey->GetName();
-                auto triggertype = GetZoneFileTriggerType(zonename);
-
-                CBaseMomentumTrigger BaseTrigger;
-                ProcessSubKeyBaseTrigger(SubZoneKey, &BaseTrigger);
-
-                // This needs to be updated in case mapzones.cpp changed in server project!
-                switch (triggertype)
+                CreateInterfaceFn physicsFactory = GetPhysicsFactory();
+                if (physicsFactory)
                 {
-                // Start zone
-                case trigger_momentum_timer_start:
+                    physcollision = (IPhysicsCollision *)physicsFactory(VPHYSICS_COLLISION_INTERFACE_VERSION, NULL);
+                }
+
+                if (!physcollision)
                 {
-                    CTriggerMomentumTimerStart Trigger;
-                    Trigger.Base = BaseTrigger;
-                    Trigger.m_bhopleavespeed = SubZoneKey->GetFloat("bhopleavespeed");
-                    Trigger.Base.m_spawnflags = SubZoneKey->GetBool("limitingspeed") ? SF_LIMIT_LEAVE_SPEED : 0;
-                    Trigger.m_StartOnJump = SubZoneKey->GetBool("StartOnJump");
-                    Trigger.m_LimitSpeedType = SubZoneKey->GetInt("LimitSpeedType");
-                    Trigger.m_ZoneNumber = SubZoneKey->GetInt("ZoneNumber");
-                    Trigger.m_lookangles[YAW] = SubZoneKey->GetFloat("yaw");
-                    BSPTriggers.m_TriggersMomentumTimerStart.AddToHead(Trigger);
-                    break;
+                    Warning("!!! WARNING: Can't build collision data!\n");
+                    return 0;
                 }
-                // End zone
-                case trigger_momentum_timer_stop:
+
+                CUtlVector<CPhysCollisionEntry *> collisionList[MAX_MAP_MODELS];
+                CTextBuffer *pTextBuffer[MAX_MAP_MODELS];
+
+                int physModelCount = 0, totalSize = 0;
+
+                int start = Plat_FloatTime();
+
+                Msg("Building Physics collision data...\n");
+
+                int i, j;
+                for (i = iOldModelNumber; i < nummodels; i++)
                 {
-                    CTriggerMomentumTimerStop Trigger;
-                    Trigger.Base = BaseTrigger;
-                    Trigger.m_ZoneNumber = SubZoneKey->GetInt("ZoneNumber");
-                    BSPTriggers.m_TriggersMomentumTimerStop.AddToHead(Trigger);
-                    break;
+                    ConvertModelToPhysCollide(collisionList[i], i,
+                                              MASK_SOLID | CONTENTS_PLAYERCLIP | CONTENTS_MONSTERCLIP | MASK_WATER,
+                                              VPHYSICS_SHRINK, VPHYSICS_MERGE);
+
+                    pTextBuffer[i] = NULL;
+                    if (!collisionList[i].Count())
+                        continue;
+
+                    // if we've got collision models, write their script for processing in the game
+                    pTextBuffer[i] = new CTextBuffer;
+                    for (j = 0; j < collisionList[i].Count(); j++)
+                    {
+                        // dump a text file for visualization
+                        if (dumpcollide)
+                        {
+                            collisionList[i][j]->DumpCollide(pTextBuffer[i], i, j);
+                        }
+                        // each model knows how to write its script
+                        collisionList[i][j]->WriteToTextBuffer(pTextBuffer[i], i, j);
+                        // total up the binary section's size
+                        totalSize += collisionList[i][j]->GetCollisionBinarySize() + sizeof(int);
+                    }
+
+                    pTextBuffer[i]->Terminate();
+
+                    // total lump size includes the text buffers (scripts)
+                    totalSize += pTextBuffer[i]->GetSize();
+
+                    physModelCount++;
                 }
-                // One hop
-                case trigger_momentum_onehop:
+
+                //  add one for tail of list marker
+                physModelCount++;
+
+                // Save up our original collision data.
+
+                // - 1 model because the last one is to tell when it's ended in models enumerations.
+                auto OldCollideSize = g_PhysCollideSize - sizeof(dphysmodel_t);
+                auto pOldPhysCollide = malloc(OldCollideSize);
+
+                memcpy(pOldPhysCollide, g_pPhysCollide, OldCollideSize);
+
+                // DWORD align the lump because AddLump assumes that it is DWORD aligned.
+                byte *ptr;
+                g_PhysCollideSize = totalSize + (physModelCount * sizeof(dphysmodel_t)) + OldCollideSize;
+                g_pPhysCollide = (byte *)malloc((g_PhysCollideSize + 3) & ~3);
+                memset(g_pPhysCollide, 0, g_PhysCollideSize);
+                ptr = g_pPhysCollide;
+
+                for (i = iOldModelNumber; i < nummodels; i++)
                 {
-                    CTriggerMomentumOneHop Trigger;
-                    Trigger.Base = BaseTrigger;
-                    Trigger.m_stop = SubZoneKey->GetBool("stop");
-                    Trigger.m_resetang = SubZoneKey->GetBool("resetang");
-                    Trigger.m_hold = SubZoneKey->GetFloat("hold");
-                    Trigger.m_target = MAKE_STRING(SubZoneKey->GetString("destinationname"));
-                    BSPTriggers.m_TriggersMomentumOneHop.AddToHead(Trigger);
-                    break;
+                    if (pTextBuffer[i])
+                    {
+                        int j;
+
+                        dphysmodel_t model;
+
+                        model.modelIndex = i;
+                        model.solidCount = collisionList[i].Count();
+                        model.dataSize = sizeof(int) * model.solidCount;
+
+                        for (j = 0; j < model.solidCount; j++)
+                        {
+                            model.dataSize += collisionList[i][j]->GetCollisionBinarySize();
+                        }
+                        model.keydataSize = pTextBuffer[i]->GetSize();
+
+                        // store the header
+                        memcpy(ptr, &model, sizeof(model));
+                        ptr += sizeof(model);
+
+                        for (j = 0; j < model.solidCount; j++)
+                        {
+                            int collideSize = collisionList[i][j]->GetCollisionBinarySize();
+
+                            // write size
+                            memcpy(ptr, &collideSize, sizeof(int));
+                            ptr += sizeof(int);
+
+                            // now write the collision model
+                            collisionList[i][j]->WriteCollisionBinary(reinterpret_cast<char *>(ptr));
+                            ptr += collideSize;
+                        }
+
+                        memcpy(ptr, pTextBuffer[i]->GetData(), pTextBuffer[i]->GetSize());
+                        ptr += pTextBuffer[i]->GetSize();
+                    }
+
+                    delete pTextBuffer[i];
                 }
-                // Reset one hop
-                case trigger_momentum_resetonehop:
-                {
-                    CTriggerMomentumResetOneHop Trigger;
-                    Trigger.Base = BaseTrigger;
-                    BSPTriggers.m_TriggersMomentumResetOneHop.AddToHead(Trigger);
-                    break;
-                }
-                // Checkpoint
-                case trigger_momentum_checkpoint:
-                {
-                    CTriggerMomentumCheckPoint Trigger;
-                    Trigger.Base = BaseTrigger;
-                    Trigger.m_checkpoint = SubZoneKey->GetInt("number");
-                    BSPTriggers.m_TriggersMomentumCheckPoint.AddToHead(Trigger);
-                    break;
-                }
-                // Teleport checkpoint
-                case trigger_momentum_teleport_checkpoint:
-                {
-                    CTriggerMomentumTeleportCheckPoint Trigger;
-                    Trigger.Base = BaseTrigger;
-                    Trigger.m_stop = SubZoneKey->GetBool("stop");
-                    Trigger.m_resetang = SubZoneKey->GetBool("resetang");
-                    Trigger.m_target = MAKE_STRING(SubZoneKey->GetString("destinationname"));
-                    break;
-                }
-                // Multihop
-                case trigger_momentum_multihop:
-                {
-                    CTriggerMomentumMultiHop Trigger;
-                    Trigger.Base = BaseTrigger;
-                    Trigger.m_stop = SubZoneKey->GetBool("stop");
-                    Trigger.m_resetang = SubZoneKey->GetBool("resetang");
-                    Trigger.m_hold = SubZoneKey->GetFloat("hold");
-                    Trigger.m_target = MAKE_STRING(SubZoneKey->GetString("destinationname"));
-                    BSPTriggers.m_TriggersMomentumMultiHop.AddToHead(Trigger);
-                    break;
-                }
-                // Stage
-                case trigger_momentum_timer_stage:
-                {
-                    CTriggerMomentumTimerStage Trigger;
-                    Trigger.Base = BaseTrigger;
-                    Trigger.m_stage = SubZoneKey->GetInt("number");
-                    BSPTriggers.m_TriggersMomentumTimerStage.AddToHead(Trigger);
-                    break;
-                }
-                // ??? Seems like it missed something, but it shouldn't happen.
-                default:
-                    break;
-                }
-            }
 
-            ZoneKV->deleteThis();
+                // Copy old collisions.
+                memcpy(ptr, pOldPhysCollide, OldCollideSize);
+                ptr += OldCollideSize;
 
-            // Unload and close the last bsp file for the next iteration.
-            UnloadBSPFile();
-            CloseBSPFile();
+                dphysmodel_t model;
 
-            // Load bsp file.
-            LoadBSPFile(sPathToWrite.Get());
-
-            // Check also if the signature to be sure it's a bsp file.
-            if (g_pBSPHeader == nullptr || g_pBSPHeader->ident != IDBSPHEADER)
-            {
-                Msg("(.zon -> .bsp) %s was not a bsp file!\n", pFilePath);
-                continue;
-            }
-
-            // Convert the vectors of triggers into .bsp files.
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTimerStart.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumTimerStart.Element(i);
-                auto pEnt = &entities[num_entities];
-                SetKeyValue(pEnt, "bhopleavespeed", stofloat(Element.m_bhopleavespeed));
-                SetKeyValue(pEnt, "lookangles", stoQAngle(Element.m_lookangles));
-                SetKeyValue(pEnt, "StartOnJump", stobool(Element.m_StartOnJump));
-                SetKeyValue(pEnt, "ZoneNumber", stobool(Element.m_ZoneNumber));
-                num_entities++;
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTimerStop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumTimerStop.Element(i);
-                auto pEnt = &entities[num_entities];
-                num_entities++;
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumOneHop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumOneHop.Element(i);
-                auto pEnt = &entities[num_entities];
-                num_entities++;
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumResetOneHop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumResetOneHop.Element(i);
-                auto pEnt = &entities[num_entities];
-                num_entities++;
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumMultiHop.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumMultiHop.Element(i);
-                auto pEnt = &entities[num_entities];
-                num_entities++;
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumCheckPoint.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumCheckPoint.Element(i);
-                auto pEnt = &entities[num_entities];
-                num_entities++;
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTeleportCheckPoint.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumTeleportCheckPoint.Element(i);
-                auto pEnt = &entities[num_entities];
-                num_entities++;
-            }
-
-            for (auto i = 0; i != BSPTriggers.m_TriggersMomentumTimerStage.Size(); i++)
-            {
-                auto Element = BSPTriggers.m_TriggersMomentumTimerStage.Element(i);
-                auto pEnt = &entities[num_entities];
-                num_entities++;
+                // Mark end of list
+                model.modelIndex = -1;
+                model.dataSize = -1;
+                model.keydataSize = 0;
+                model.solidCount = 0;
+                memcpy(ptr, &model, sizeof(model));
+                ptr += sizeof(model);
+                Assert((ptr - g_pPhysCollide) == g_PhysCollideSize);
+                Msg("done (%d) (%d bytes)\n", (int)(Plat_FloatTime() - start), g_PhysCollideSize);
+                free(pOldPhysCollide);
             }
 
             UnparseEntities();
-            WriteBSPFile(sPathToWrite.Get());
-        }
-        else
-        {
-            // Somehow it wasn't a bsp or a zon file when the user dragged the files.
-            Msg("%s was not a valid file!\n", pFilePath);
+
+            // Write our new bsp file.
+            CUtlString pNewFilePath(pFilePath);
+            pNewFilePath = pNewFilePath.StripExtension();
+            pNewFilePath += "_new.bsp";
+
+            PrintBSPFileSizes();
+            WriteBSPFile(pNewFilePath.Get());
+
+            LoadMapFile(sFilePath_VMF.Get());
+
+            // Some test if somehow all our models weren't written. But should never happen.
+            /*LoadBSPFile(pNewFilePath.Get());
+
+            ParseEntities();
+
+            byte *ptr = g_pPhysCollide;
+            byte *basePtr = ptr;
+
+            dphysmodel_t physModel;
+
+            CUtlVector<vcollide_t> vec_collides;
+
+            // physics data is variable length.  The last physmodel is a NULL pointer
+            // with modelIndex -1, dataSize -1
+            do
+            {
+                memcpy(&physModel, ptr, sizeof(physModel));
+                ptr += sizeof(physModel);
+
+                if (physModel.dataSize > 0)
+                {
+                    vcollide_t collide;
+                    physcollision->VCollideLoad(&collide, physModel.solidCount, (const char *)ptr,
+                                                physModel.dataSize + physModel.keydataSize);
+                    ptr += physModel.dataSize;
+                    ptr += physModel.keydataSize;
+
+                    vec_collides.AddToHead(collide);
+                }
+
+                // avoid infinite loop on badly formed file
+                if ((int)(ptr - basePtr) > g_PhysCollideSize)
+                    break;
+
+            } while (physModel.dataSize > 0);
+
+            vcollide_t vcollide = vec_collides.Element(vec_collides.Count()-2);
+            vcollide_t oldvcollide = vec_collides.Element(vec_collides.Count() - 3);
+
+            vcollide = vcollide;
+            oldvcollide = oldvcollide;
+
+            UnparseEntities();
+            PrintBSPFileSizes();
+            WriteBSPFile(pNewFilePath.Get());*/
         }
     }
-
-    // Be sure we cleared the bsp file out.
-    UnloadBSPFile();
-    CloseBSPFile();
-
-    system("pause");
-
-    return 1;
 }
