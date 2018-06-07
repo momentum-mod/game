@@ -68,7 +68,7 @@
 	// In other places default values for the spawnflags get carried over. But for some reason, I couldn't make it happen here
 	spawnflags(flags) =
 	[
-		4096 : "Teleport the player on EndTouch() instead of StartTouch()" : 0
+		8388608 : "Teleport the player on EndTouch() instead of StartTouch()" : 0
 		1: "Clients" : 1
 		2: "NPCs" : 0
 		4: "Pushables": 0
@@ -91,8 +91,8 @@
 	ZoneNumber(integer) : "Number of zone" : 0 : "0 Is the main zone, and all others numbers are for bonus zones."
 	spawnflags(flags) =
 	[
-		1 : "Limit leave speed" : 1
-		2 : "Use look angles" : 0
+		8192 : "Limit leave speed" : 1
+		‭16384‬ : "Use look angles" : 0
 	]
 ]
 
@@ -125,7 +125,7 @@
 [
 	spawnflags(flags) =
 	[
-		2 : "Reset hop state if player hops onto another different onehop" : 1
+		32768 : "Reset hop state if player hops onto another different onehop" : 1
 	]
 	// Features being worked
 	output OnHopNoLongerJumpable(void) : "Fires when the hop is no longer jumpable"
@@ -155,9 +155,9 @@
 [
 	spawnflags(flags) = 
 	[ 
-		32: "Prevent the player from jumping" : 0
-		64: "Prevent the player from ducking" : 0
-		128: "Prevent the player from bhopping" : 0
+		‭65536‬: "Prevent the player from jumping" : 0
+		131072: "Prevent the player from ducking" : 0
+		‭262144‬: "Prevent the player from bhopping" : 0
 	]
 ]
 
@@ -190,7 +190,7 @@
     ]
     spawnflags(flags) = 
 	[ 
-		256: "Use the direction vector as final force instead of calculating it by force amount" : 0
+		‭524288‬: "Use the direction vector as final force instead of calculating it by force amount" : 0
 	]
 
     // THIS THROWS AN ERROR, BUT AS IT HIDES IT-> WE STAY WITH IT FOR NOW
@@ -212,10 +212,10 @@
     ]
 	spawnflags(flags) = 
 	[ 
-		512 : "Only allow for one touch before reseting" : 1
-		1024 : "Modify player velocity on StartTouch" : 0
-		2048 : "Modify player velocity on EndTouch" : 1
-		256 : "Use the direction vector as final force instead of calculating it by force amount" : 1
+		1048576‬ : "Only allow for one touch before reseting" : 1
+		‭2097152‬ : "Modify player velocity on StartTouch" : 0
+		‭4194304‬ : "Modify player velocity on EndTouch" : 1
+		‭524288‬ : "Use the direction vector as final force instead of calculating it by force amount" : 1
 	]
 ]
 
