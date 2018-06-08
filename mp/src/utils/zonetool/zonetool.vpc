@@ -176,12 +176,10 @@ $Folder	"Source Files"
 		}
 	$Folder	"Header Files"
 	{
-		$File "triggers.h"
 	}
 	$Folder	"Source Files"
 	{
 		$File	"main.cpp"
-		$File "triggers.cpp"
 	}
 
 	$Folder	"Link Libraries"
