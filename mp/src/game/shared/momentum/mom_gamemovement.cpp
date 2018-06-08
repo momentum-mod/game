@@ -4,9 +4,9 @@
 #include "IMovementListener.h"
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
-#include "movevars_shared.h"
-#include "mom_player_shared.h"
 #include "mom_modulecomms.h"
+#include "mom_player_shared.h"
+#include "movevars_shared.h"
 #include "rumble_shared.h"
 
 #ifdef CLIENT_DLL
@@ -22,12 +22,19 @@
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
 ConVar sv_ramp_bumpcount("sv_ramp_bumpcount", "8", 0, "Helps with fixing surf/ramp bugs", true, 4, true, 16);
-ConVar sv_ramp_retrace_length("sv_ramp_retrace_length", "0.1", 0, "Amount of units used in offset for retraces", true, 0.0f, true, 5.f);
-ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps", true, 0.0f, true, 5.f);
-ConVar sv_considered_on_ground("sv_considered_on_ground", "2.0", 0, "Amount of units you have to be above the ground to be considered on ground", true, 0.0f, true, 5.f);
+ConVar sv_ramp_retrace_length("sv_ramp_retrace_length", "0.1", 0, "Amount of units used in offset for retraces", true,
+                              0.0f, true, 5.f);
+ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps",
+                        true, 0.0f, true, 5.f);
+ConVar sv_considered_on_ground("sv_considered_on_ground", "2.0", 0,
+                               "Amount of units you have to be above the ground to be considered on ground", true, 0.0f,
+                               true, 5.f);
 
-ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED, "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
-ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED, "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f, true, 1.0f);
+ConVar sv_ladder_dampen("sv_ladder_dampen", "0.2", FCVAR_REPLICATED,
+                        "Amount to dampen perpendicular movement on a ladder", true, 0.0f, true, 1.0f);
+ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED,
+                       "Cos of angle of incidence to ladder perpendicular for applying ladder_dampen", true, -1.0f,
+                       true, 1.0f);
 
 #ifndef CLIENT_DLL
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
@@ -35,10 +42,7 @@ static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPL
                           "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
-CMomentumGameMovement::CMomentumGameMovement()
-    : m_pPlayer(nullptr), mom_gamemode("mom_gamemode")
-{
-}
+CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr), mom_gamemode("mom_gamemode") {}
 
 void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *data)
 {
@@ -115,7 +119,8 @@ bool CMomentumGameMovement::IsValidMovementTrace(trace_t &tr)
         return false;
 
     // Maybe we dont need this one
-    if (CloseEnough(tr.fraction, 0.0f, FLT_EPSILON) && CloseEnough(tr.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON))
+    if (CloseEnough(tr.fraction, 0.0f, FLT_EPSILON) &&
+        CloseEnough(tr.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON))
         return false;
 
     // Is the plane deformed or some stupid shit?
@@ -171,9 +176,9 @@ void CMomentumGameMovement::WalkMove()
         }
     }
 
-    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up);  // Determine movement angles
+    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
 
-    CHandle< CBaseEntity > oldground;
+    CHandle<CBaseEntity> oldground;
     oldground = player->GetGroundEntity();
 
     // Copy movement amounts
@@ -193,12 +198,12 @@ void CMomentumGameMovement::WalkMove()
         VectorNormalize(right);
     }
 
-    for (i = 0; i<2; i++)       // Determine x and y parts of velocity
+    for (i = 0; i < 2; i++) // Determine x and y parts of velocity
         wishvel[i] = forward[i] * fmove + right[i] * smove;
 
-    wishvel[2] = 0.0f;             // Zero out z part of velocity
+    wishvel[2] = 0.0f; // Zero out z part of velocity
 
-    VectorCopy(wishvel, wishdir);   // Determine maginitude of speed of move
+    VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
     wishspeed = VectorNormalize(wishdir);
 
     //
@@ -213,9 +218,9 @@ void CMomentumGameMovement::WalkMove()
     // Set pmove velocity
     // Commented these 2 out, so we wont be 2 units above the ground
     // This only happens when the player jumps straight up and lands while standing still
-    //mv->m_vecVelocity[2] = 0;
+    // mv->m_vecVelocity[2] = 0;
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
-    //mv->m_vecVelocity[2] = 0;
+    // mv->m_vecVelocity[2] = 0;
 
     // Add in any base velocity to the current velocity.
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
@@ -225,12 +230,13 @@ void CMomentumGameMovement::WalkMove()
     if (CloseEnough(spd, 0.0f))
     {
         mv->m_vecVelocity.Init();
-        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
+        // (or maybe another monster?)
         VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
         return;
     }
 
-    // first try just moving to the destination  
+    // first try just moving to the destination
     dest[0] = mv->GetAbsOrigin()[0] + mv->m_vecVelocity[0] * gpGlobals->frametime;
     dest[1] = mv->GetAbsOrigin()[1] + mv->m_vecVelocity[1] * gpGlobals->frametime;
     dest[2] = mv->GetAbsOrigin()[2] + mv->m_vecVelocity[2] * gpGlobals->frametime;
@@ -244,7 +250,8 @@ void CMomentumGameMovement::WalkMove()
     if (pm.fraction == 1)
     {
         mv->SetAbsOrigin(pm.endpos);
-        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
+        // (or maybe another monster?)
         VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
         StayOnGround();
@@ -254,7 +261,8 @@ void CMomentumGameMovement::WalkMove()
     // Don't walk up stairs if not on ground.
     if (oldground == nullptr && player->GetWaterLevel() == 0)
     {
-        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
+        // (or maybe another monster?)
         VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
         return;
     }
@@ -262,14 +270,16 @@ void CMomentumGameMovement::WalkMove()
     // If we are jumping out of water, don't do anything more.
     if (player->m_flWaterJumpTime)
     {
-        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+        // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
+        // (or maybe another monster?)
         VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
         return;
     }
 
     StepMove(dest, pm);
 
-    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
+    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or
+    // maybe another monster?)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
     StayOnGround();
@@ -306,7 +316,7 @@ bool CMomentumGameMovement::LadderMove(void)
         // otherwise, use the direction player is attempting to move
         if (mv->m_flForwardMove || mv->m_flSideMove)
         {
-            for (int i = 0; i<3; i++)       // Determine x and y parts of velocity
+            for (int i = 0; i < 3; i++) // Determine x and y parts of velocity
                 wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
 
             VectorNormalize(wishdir);
@@ -354,7 +364,7 @@ bool CMomentumGameMovement::LadderMove(void)
 
     // On ladder, convert movement to be relative to the ladder
     player->SetLadderNormal(pm.plane.normal);
-    
+
     VectorCopy(mv->GetAbsOrigin(), floor);
     floor[2] += GetPlayerMins()[2] - 1;
 
@@ -367,7 +377,7 @@ bool CMomentumGameMovement::LadderMove(void)
         onFloor = false;
     }
 
-    player->SetGravity(1.0f); //Should be always set on 1.0..
+    player->SetGravity(1.0f); // Should be always set on 1.0..
 
     float climbSpeed = ClimbSpeed();
 
@@ -397,10 +407,10 @@ bool CMomentumGameMovement::LadderMove(void)
         {
             Vector velocity, perp, cross, lateral, tmp;
 
-            //ALERT(at_console, "pev %.2f %.2f %.2f - ",
+            // ALERT(at_console, "pev %.2f %.2f %.2f - ",
             //    pev->velocity.x, pev->velocity.y, pev->velocity.z);
             // Calculate player's intended velocity
-            //Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
+            // Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
             VectorScale(m_vecForward, forwardSpeed, velocity);
             VectorMA(velocity, rightSpeed, m_vecRight, velocity);
 
@@ -449,11 +459,11 @@ bool CMomentumGameMovement::LadderMove(void)
 
             VectorMA(lateral, -normal, tmp, mv->m_vecVelocity);
 
-            if (onFloor && normal > 0)    // On ground moving away from the ladder
+            if (onFloor && normal > 0) // On ground moving away from the ladder
             {
                 VectorMA(mv->m_vecVelocity, MAX_CLIMB_SPEED, pm.plane.normal, mv->m_vecVelocity);
             }
-            //pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
+            // pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
         }
         else
         {
@@ -511,12 +521,12 @@ bool CMomentumGameMovement::CanUnduck()
 
 void CMomentumGameMovement::Friction(void)
 {
-    float    speed, newspeed, control;
-    float    friction;
-    float    drop;
+    float speed, newspeed, control;
+    float friction;
+    float drop;
 
     // Friction should be affected by z velocity
-    Vector    velocity = mv->m_vecVelocity;
+    Vector velocity = mv->m_vecVelocity;
     velocity.z = 0.0f;
 
     // If we are in water jump cycle, don't apply friction
@@ -535,7 +545,7 @@ void CMomentumGameMovement::Friction(void)
     drop = 0;
 
     // apply ground friction
-    if (player->GetGroundEntity() != NULL)  // On an entity that is the ground
+    if (player->GetGroundEntity() != NULL) // On an entity that is the ground
     {
         friction = sv_friction.GetFloat() * player->m_surfaceFriction;
 
@@ -550,7 +560,7 @@ void CMomentumGameMovement::Friction(void)
             }
             else
             {
-#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
+#if defined(TF_DLL) || defined(TF_CLIENT_DLL)
                 control = (speed < sv_stopspeed.GetFloat()) ? sv_stopspeed.GetFloat() : speed;
 #else
                 control = (speed < sv_stopspeed.GetFloat()) ? (sv_stopspeed.GetFloat() * 2.0f) : speed;
@@ -563,7 +573,7 @@ void CMomentumGameMovement::Friction(void)
         }
 
         // Add the amount to the drop amount.
-        drop += control*friction*gpGlobals->frametime;
+        drop += control * friction * gpGlobals->frametime;
     }
 
     // scale the velocity
@@ -828,7 +838,7 @@ void CMomentumGameMovement::PlayerMove()
         // This is needed because we have taller models with the old collision bounds.
 
         const float eyeClearance = 12.0f; // eye pos must be this far below the ceiling
-        
+
         Vector offset = player->GetViewOffset();
 
         Vector vHullMin = GetPlayerMins((player->m_Local.m_bDucked && !player->m_Local.m_bDucking));
@@ -839,7 +849,7 @@ void CMomentumGameMovement::PlayerMove()
 
         Vector end = start;
         end.z += eyeClearance;
-        
+
         trace_t trace;
         Ray_t ray;
         ray.Init(start, end, vHullMin, vHullMax);
@@ -973,7 +983,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Acclerate upward
     // If we are ducking...
     float startz = mv->m_vecVelocity[2];
-    
+
     mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
 
     // stamina stuff (scroll/kz gamemode only)
@@ -996,19 +1006,18 @@ bool CMomentumGameMovement::CheckJumpButton()
     mv->m_outStepHeight += 0.1f;
 
     // First do a trace all the way down to the ground
-    TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin() + Vector(0.0f, 0.0f, -(sv_considered_on_ground.GetFloat() + 0.1f)), PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+    TracePlayerBBox(mv->GetAbsOrigin(),
+                    mv->GetAbsOrigin() + Vector(0.0f, 0.0f, -(sv_considered_on_ground.GetFloat() + 0.1f)),
+                    PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
     // Did we hit ground (ground is at max 2 units away so fraction cant be 1.0f)
-    if (pm.fraction != 1.0f &&
-        !pm.startsolid &&
-        !pm.allsolid)
+    if (pm.fraction != 1.0f && !pm.startsolid && !pm.allsolid)
     {
         // Now we find 1.5f above ground
-        TracePlayerBBox(pm.endpos, pm.endpos + Vector(0.0f, 0.0f, sv_jump_z_offset.GetFloat()), PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+        TracePlayerBBox(pm.endpos, pm.endpos + Vector(0.0f, 0.0f, sv_jump_z_offset.GetFloat()), PlayerSolidMask(),
+                        COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
-        if (pm.fraction == 1.0f &&
-            !pm.startsolid &&
-            !pm.allsolid)
+        if (pm.fraction == 1.0f && !pm.startsolid && !pm.allsolid)
         {
             // Everything is p100
             mv->SetAbsOrigin(pm.endpos);
@@ -1363,7 +1372,7 @@ void CMomentumGameMovement::StuckGround(void)
     /*
         How it works:
 
-                  TRIGGER                              A-B segment is the distance we want to get to compare if, when we were inside the trigger, the trigger touched a solid surface.             
+                  TRIGGER                              A-B segment is the distance we want to get to compare if, when we were inside the trigger, the trigger touched a solid surface under our feets.             
         ---------------------------                    In this way, we can avoid teleporting the player directly to the skybox stupidly. And makes less efforts for putting the trigger.
         |                         |                   
         |      PLAYER ORIGIN      |                     
@@ -1415,7 +1424,7 @@ void CMomentumGameMovement::StuckGround(void)
             float flDist__B_C = (tr_Point_C.endpos.z - tr_Point_B.endpos.z);
 
             // If the surface was in the trigger, we can apply the stuck to ground.
-            if (CloseEnough(flDist__B_C, FLT_EPSILON))
+            if (CloseEnough(flDist__B_C, 0.0f))
             {
                 // If the distance is good, we can start being on the surface and follow it.
                 mv->SetAbsOrigin(tr_Point_C.endpos);
@@ -1504,8 +1513,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     bool has_valid_plane;
     numbumps = sv_ramp_bumpcount.GetInt();
 
-    blocked = 0;   // Assume not blocked
-    numplanes = 0; //  and not sliding along any planes
+    blocked = 0;       // Assume not blocked
+    numplanes = 0;     //  and not sliding along any planes
     fixed_origins = 0; // Assume no fixed origins yet
 
     stuck_on_ramp = false;   // lets assume client isnt stuck already
@@ -1530,14 +1539,15 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         {
             if (!has_valid_plane)
             {
-                if (!CloseEnough(pm.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) && valid_plane != pm.plane.normal)
+                if (!CloseEnough(pm.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) &&
+                    valid_plane != pm.plane.normal)
                 {
                     valid_plane = pm.plane.normal;
                     has_valid_plane = true;
                 }
                 else
                 {
-                    for (i = numplanes; i-- > 0; )
+                    for (i = numplanes; i-- > 0;)
                     {
                         if (!CloseEnough(planes[i], Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) &&
                             fabs(planes[i].x) <= 1.0f && fabs(planes[i].y) <= 1.0f && fabs(planes[i].z) <= 1.0f &&
@@ -1559,13 +1569,16 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             else if (has_valid_plane)
             {
                 ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity,
-                    1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
+                             1.0 + sv_bounce.GetFloat() * (1 - player->m_surfaceFriction));
                 VectorCopy(mv->m_vecVelocity, original_velocity);
             }
             else // We were actually going to be stuck, lets try and find a valid plane..
             {
                 // this way we know fixed_origin isnt going to be stuck
-                float offsets[] = { -(sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1), 0.0f, (sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1) };
+                float offsets[] = {
+                    -(sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1),
+                    0.0f,
+                    (sv_ramp_retrace_length.GetFloat() / sv_ramp_bumpcount.GetFloat()) * (float)(fixed_origins + 1)};
                 int valid_planes = 0;
 
                 // we have 0 plane info, so lets increase our bbox and search in all 27 directions to get a valid plane!
@@ -1575,7 +1588,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                     {
                         for (h = 0; h < 3; h++)
                         {
-                            Vector offset = { offsets[i], offsets[j], offsets[h] };
+                            Vector offset = {offsets[i], offsets[j], offsets[h]};
                             Vector offset_mins = offset / 2.0f;
                             Vector offset_maxs = offset / 2.0f;
 
@@ -1594,11 +1607,16 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                                 offset_maxs.z /= 2.0f;
 
                             Ray_t ray;
-                            ray.Init(fixed_origin + offset, end - offset, GetPlayerMins() - offset_mins, GetPlayerMaxs() + offset_maxs);
-                            UTIL_TraceRay(ray, PlayerSolidMask(), mv->m_nPlayerHandle.Get(), COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
+                            ray.Init(fixed_origin + offset, end - offset, GetPlayerMins() - offset_mins,
+                                     GetPlayerMaxs() + offset_maxs);
+                            UTIL_TraceRay(ray, PlayerSolidMask(), mv->m_nPlayerHandle.Get(),
+                                          COLLISION_GROUP_PLAYER_MOVEMENT, &pm);
 
-                            // Only use non deformed planes and planes with values where the start point is not from a solid
-                            if (fabs(pm.plane.normal.x) <= 1.0f && fabs(pm.plane.normal.y) <= 1.0f && fabs(pm.plane.normal.z) <= 1.0f && !CloseEnough(pm.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) && !pm.startsolid)
+                            // Only use non deformed planes and planes with values where the start point is not from a
+                            // solid
+                            if (fabs(pm.plane.normal.x) <= 1.0f && fabs(pm.plane.normal.y) <= 1.0f &&
+                                fabs(pm.plane.normal.z) <= 1.0f &&
+                                !CloseEnough(pm.plane.normal, Vector(0.0f, 0.0f, 0.0f), FLT_EPSILON) && !pm.startsolid)
                             {
                                 valid_planes++;
                                 valid_plane += pm.plane.normal;
@@ -1640,8 +1658,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         {
 #if defined(PLAYER_GETTING_STUCK_TESTING)
             trace_t foo;
-            TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin(), PlayerSolidMask(),
-                            COLLISION_GROUP_PLAYER_MOVEMENT, foo);
+            TracePlayerBBox(mv->GetAbsOrigin(), mv->GetAbsOrigin(), PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT,
+                            foo);
             if (foo.startsolid || foo.fraction != 1.0f)
             {
                 Msg("bah\n");
@@ -1680,7 +1698,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //  zero the plane counter.
         if (pm.fraction > 0)
         {
-            if ((!bumpcount || player->GetGroundEntity() != nullptr || !sv_ramp_fix.GetBool()) && numbumps > 0 && pm.fraction == 1)
+            if ((!bumpcount || player->GetGroundEntity() != nullptr || !sv_ramp_fix.GetBool()) && numbumps > 0 &&
+                pm.fraction == 1)
             {
                 // There's a precision issue with terrain tracing that can cause a swept box to successfully trace
                 // when the end position is stuck in the triangle.  Re-run the test with an uswept box to catch that
@@ -1697,7 +1716,9 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 }
                 else if (stuck.startsolid || stuck.fraction != 1.0f)
                 {
-                    Msg("Player will become stuck!!! allfrac: %f pm: %i, %f, %f, %f vs stuck: %i, %f, %f\n", allFraction, pm.startsolid, pm.fraction, pm.plane.normal.z, pm.fractionleftsolid, stuck.startsolid, stuck.fraction, stuck.plane.normal.z);
+                    Msg("Player will become stuck!!! allfrac: %f pm: %i, %f, %f, %f vs stuck: %i, %f, %f\n",
+                        allFraction, pm.startsolid, pm.fraction, pm.plane.normal.z, pm.fractionleftsolid,
+                        stuck.startsolid, stuck.fraction, stuck.plane.normal.z);
                     VectorCopy(vec3_origin, mv->m_vecVelocity);
                     break;
                 }

@@ -58,6 +58,8 @@ ConVar sensitivity( "sensitivity","3", FCVAR_ARCHIVE, "Mouse sensitivity.", true
 
 static ConVar m_strafe_option("m_strafe_option", "0", FCVAR_ARCHIVE,
                               "0) Is the old system for +strafe 1) New system for +strafe.");
+static ConVar m_strafe_option_factor("m_strafe_option_factor", "2.0", FCVAR_ARCHIVE,
+                              "Mouse factor for +strafe option.");
 static ConVar m_side( "m_side","0.8", FCVAR_ARCHIVE, "Mouse side factor." );
 static ConVar m_yaw( "m_yaw","0.022", FCVAR_ARCHIVE, "Mouse yaw factor." );
 static ConVar m_pitch("m_pitch", "0.022", FCVAR_ARCHIVE, "Mouse pitch factor.");
@@ -534,9 +536,11 @@ void CInput::ApplyMouse( QAngle& viewangles, CUserCmd *cmd, float mouse_x, float
         static ConVarRef sv_maxspeed("sv_maxspeed");
         float flMaxSpeed = sv_maxspeed.GetFloat();
 
+        mouse_x *= m_strafe_option_factor.GetFloat();
+        mouse_y *= m_strafe_option_factor.GetFloat();
+
         Vector vMouseDirection(mouse_x, -mouse_y, 0.0f);
-        vMouseDirection.NormalizeInPlace();
-        
+
         cmd->forwardmove = vMouseDirection.y * flMaxSpeed;
         cmd->sidemove = vMouseDirection.x * flMaxSpeed;
     }
