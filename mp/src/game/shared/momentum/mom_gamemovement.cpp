@@ -5,9 +5,9 @@
 #include "IMovementListener.h"
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
-#include "movevars_shared.h"
-#include "mom_player_shared.h"
 #include "mom_modulecomms.h"
+#include "mom_player_shared.h"
+#include "movevars_shared.h"
 #include "rumble_shared.h"
 
 #ifdef CLIENT_DLL
@@ -44,10 +44,7 @@ static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPL
                           "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
-CMomentumGameMovement::CMomentumGameMovement()
-    : m_pPlayer(nullptr), mom_gamemode("mom_gamemode")
-{
-}
+CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr), mom_gamemode("mom_gamemode") {}
 
 void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *data)
 {
@@ -1389,7 +1386,7 @@ void CMomentumGameMovement::StuckGround(void)
     /*
         How it works:
 
-                  TRIGGER                              A-B segment is the distance we want to get to compare if, when we were inside the trigger, the trigger touched a solid surface.             
+                  TRIGGER                              A-B segment is the distance we want to get to compare if, when we were inside the trigger, the trigger touched a solid surface under our feets.             
         ---------------------------                    In this way, we can avoid teleporting the player directly to the skybox stupidly. And makes less efforts for putting the trigger.
         |                         |                   
         |      PLAYER ORIGIN      |                     
@@ -1441,7 +1438,7 @@ void CMomentumGameMovement::StuckGround(void)
             float flDist__B_C = (tr_Point_C.endpos.z - tr_Point_B.endpos.z);
 
             // If the surface was in the trigger, we can apply the stuck to ground.
-            if (CloseEnough(flDist__B_C, FLT_EPSILON))
+            if (CloseEnough(flDist__B_C, 0.0f))
             {
                 // If the distance is good, we can start being on the surface and follow it.
                 mv->SetAbsOrigin(tr_Point_C.endpos);
