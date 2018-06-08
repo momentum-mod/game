@@ -1,3 +1,4 @@
+#include "KeyValues.h"
 #include "byteswap.h"
 #include "detail.h"
 #include "disp_vbsp.h"
@@ -9,8 +10,8 @@
 #include "physdll.h"
 #include "tier0/icommandline.h"
 #include "tools_minidump.h"
-#include "triggers.h"
 #include "utilmatlib.h"
+#include "utlbuffer.h"
 #include "vbsp.h"
 #include "worldvertextransitionfixup.h"
 #include "writebsp.h"
@@ -29,27 +30,48 @@ extern qboolean onlyents;
 extern qboolean dumpcollide;
 
 extern ChunkFileResult_t LoadEntityCallback(CChunkFile *pFile, int nParam);
-extern void ProcessModels();
 extern void ProcessSubModel();
-extern void ProcessWorldModel();
-extern void FixupOnlyEntsOccluderEntities();
-extern void EmitBrushes();
 extern void EmitPhysCollision();
-extern void EmitPlanes();
-extern void BuildWorldPhysModel(CUtlVector<CPhysCollisionEntry *> &collisionList, float shrinkSize,
-                                float mergeTolerance);
 extern void ConvertModelToPhysCollide(CUtlVector<CPhysCollisionEntry *> &collisionList, int modelIndex, int contents,
                                       float shrinkSize, float mergeTolerance);
-extern IPhysicsSurfaceProps *physprops;
-extern void CompactTexinfos();
 
-extern void EmitOccluderBrushes();
+extern IPhysicsSurfaceProps *physprops;
+
+char c_Entity1[] = {'e', 'n', 't', 'i', 't', 'y'};
+char c_Entity2[] = {'\"', 'e', 'n', 't', 'i', 't', 'y', '\"'};
+
+// Whitelist only triggers for now, because I need to fix func_occluder and some others entities.
+// This is temporary, as keyvalues doesn't work properly with it.
+// We need to also name all our trigger with momentum keyword, so it skips all the others triggers.
+char c_Trigger[] = {0x22, 0x63, 0x6C, 0x61, 0x73, 0x73, 0x6E, 0x61, 0x6D, 0x65, 0x22, 0x20, 0x22, 0x74, 0x72,
+                    0x69, 0x67, 0x67, 0x65, 0x72, 0x5F, 0x6D, 0x6F, 0x6D, 0x65, 0x6E, 0x74, 0x75, 0x6D}; // -> "classname" "trigger_momentum
+
+bool memcontains(char *src, char *dst, int sizeofdst, int sizebuffer)
+{
+    for (int i = 0; i != sizebuffer; i++)
+    {
+        for (int j = 0; j != sizeofdst; j++)
+        {
+            if (src[j] != dst[j])
+                goto Next;
+        }
+
+        return true;
+
+    Next:
+        src++;
+    }
+
+    return false;
+}
 
 int main(int nbargs, char **args)
 {
     // if only ents, it doesn't load brushes etc we don't want that.
     // onlyents = true;
-    dumpcollide = true;
+
+    // dumpcollide = true;
+
     MathLib_Init();
 
     if (nbargs < 1)
@@ -62,26 +84,22 @@ int main(int nbargs, char **args)
     CUtlString vproject_arg(args[0]);
     vproject_arg = vproject_arg.StripFilename();
     vproject_arg = vproject_arg.Slice(0, vproject_arg.Length() - 3);
-    char buf[1024];
-    sprintf(buf, "-vproject -game %smomentum", vproject_arg.Get());
-    CommandLine()->CreateCmdLine(buf);
+
+    char project[1024];
+    sprintf(project, "-vproject -game %smomentum", vproject_arg.Get());
+    CommandLine()->CreateCmdLine(project);
 
     CmdLib_InitFileSystem(args[0]);
-
-    // Setup the logfile.
-    char logFile[512];
-    _snprintf(logFile, sizeof(logFile), "%s.log", source);
-    SetSpewFunctionLogFile(logFile);
 
     PhysicsDLLPath("vphysics.dll");
     LoadSurfaceProperties();
 
     ThreadSetDefault();
-    numthreads = 1; // multiple threads aren't helping...
 
     char materialPath[MAX_PATH];
     sprintf(materialPath, "%smaterials", gamedir);
     InitMaterialSystem(materialPath, CmdLib_GetFileSystemFactory());
+
     Msg("materialPath: %s\n", materialPath);
 
     if ((g_nDXLevel != 0) && (g_nDXLevel < 80))
@@ -109,21 +127,92 @@ int main(int nbargs, char **args)
             // Get vmf file.
             CUtlString sFilePath_VMF(sFilePath.StripExtension() + ".vmf");
 
+            CUtlBuffer VMF_Read;
+
+            if (!g_pFullFileSystem->ReadFile(sFilePath_VMF.Get(), 0, VMF_Read))
+            {
+                Msg("Couldn't read %s.vmf", sFilePath_VMF.GetBaseFilename());
+                continue;
+            }
+
+            auto bufRead = reinterpret_cast<char *>(malloc(VMF_Read.Size()));
+            memcpy(bufRead, VMF_Read.Base(), VMF_Read.Size());
+
+            CUtlBuffer bufWrite;
+
+            auto bufRead_Pos = bufRead;
+
+            auto bufRead_EndPos = bufRead + VMF_Read.Size();
+
+            while (bufRead_Pos != bufRead_EndPos)
+            {
+
+                if (!memcmp(bufRead_Pos, c_Entity1, sizeof(c_Entity1)) ||
+                    !memcmp(bufRead_Pos, c_Entity2, sizeof(c_Entity2)))
+                {
+                    // Accolades counters.
+                    auto iCountAcc = 0;
+
+                    // Where the entity keyvalue start.
+                    auto bufRead_Entity = bufRead_Pos;
+
+                    while (*bufRead_Entity != '{') // First {
+                    {
+                        bufRead_Entity++;
+                    }
+
+                    // Skip {
+                    bufRead_Entity++;
+
+                    iCountAcc = 1;
+
+                    // Get the size of all characters in the subkeys of the entity
+                    while (iCountAcc != 0)
+                    {
+                        if (*bufRead_Entity == '{')
+                        {
+                            iCountAcc++;
+                        }
+
+                        if (*bufRead_Entity == '}')
+                        {
+                            iCountAcc--;
+                        }
+
+                        bufRead_Entity++;
+                    }
+
+                    auto Size = bufRead_Entity - bufRead_Pos + 1; // +1 for \n
+
+                    // Skip this entity if it doesn't contains trigger.
+                    if (memcontains(bufRead_Pos, c_Trigger, sizeof(c_Trigger), Size))
+                    {
+                        bufWrite.Put(bufRead_Pos, Size);
+                    }
+                }
+
+                bufRead_Pos++;
+            }
+
+            auto sFilePath_VMFTMP = (sFilePath_VMF + "tmp");
+
+            if (!g_pFullFileSystem->WriteFile(sFilePath_VMFTMP.Get(), 0, bufWrite))
+            {
+                Msg("Couldn't write tmp file: %s", sFilePath_VMF.UnqualifiedFilename().Get());
+                continue;
+            }
+
             // Load bsp.
             LoadBSPFile(pFilePath);
             ParseEntities();
 
             PrintBSPFileSizes();
 
-            LoadMapFile(sFilePath_VMF.Get());
-
-            g_MainMap->map_mins = dmodels[0].mins;
-            g_MainMap->map_maxs = dmodels[0].maxs;
+            LoadMapFile(sFilePath_VMFTMP.Get());
 
             PrintBSPFileSizes();
 
             int iOldModelNumber = nummodels;
-
             int iOldNumEntities = num_entities;
 
             {
@@ -135,6 +224,7 @@ int main(int nbargs, char **args)
                     sprintf(ModelNumber, "*%i", iOldModelNumber);
                     sprintf(swithoutModelNumber, "%i", iOldModelNumber);
                     SetKeyValue(&entities[num_entities], "model", ModelNumber);
+
                     // Random
                     SetKeyValue(&entities[num_entities], "hammerid",
                                 CUtlString(CUtlString("5461") + CUtlString(swithoutModelNumber)).Get());
@@ -146,34 +236,24 @@ int main(int nbargs, char **args)
 
             iOldModelNumber = nummodels;
 
-            // num_entities += g_MainMap->num_entities;
-            // EmitInitialDispInfos();
-            // EmitOccluderBrushes();
-
             // Process our current model, we need to check if g_MainMap is used wrongly in those functions, but as
             // looked a lot of times, I don't know where could be the problem here. But it must be here I think.
+
             for (entity_num = iOldNumEntities; entity_num < num_entities; ++entity_num)
             {
                 entity_t *pEntity = &entities[entity_num];
+
                 if (!pEntity->numbrushes)
                     continue;
 
-                qprintf("############### model %i ###############\n", nummodels);
-
                 BeginModel();
 
-                if (entity_num == 0)
-                {
-                    ProcessWorldModel();
-                }
-                else
-                {
-                    ProcessSubModel();
-                }
+                ProcessSubModel();
 
                 EndModel();
             }
 
+            // We add only the brushes we need, otherwhise it just copy empty brushes and we don't want that.
             {
                 int i, j, bnum, s, x;
                 dbrush_t *db;
@@ -183,7 +263,6 @@ int main(int nbargs, char **args)
                 vec_t dist;
                 int planenum;
 
-                // We add only the brushes we need, otherwhise it just copy empty brushes and we don't want that.
                 for (bnum = numbrushes; bnum < g_MainMap->nummapbrushes; bnum++)
                 {
                     b = &g_MainMap->mapbrushes[bnum];
@@ -196,14 +275,17 @@ int main(int nbargs, char **args)
                     {
                         if (numbrushsides == MAX_MAP_BRUSHSIDES)
                             Error("MAX_MAP_BRUSHSIDES");
+
                         cp = &dbrushsides[numbrushsides];
                         numbrushsides++;
                         cp->planenum = b->original_sides[j].planenum;
                         cp->texinfo = b->original_sides[j].texinfo;
+
                         if (cp->texinfo == -1)
                         {
                             cp->texinfo = g_MainMap->g_ClipTexinfo;
                         }
+
                         cp->bevel = b->original_sides[j].bevel;
                     }
 
@@ -213,15 +295,21 @@ int main(int nbargs, char **args)
                         {
                             // add the plane
                             VectorCopy(vec3_origin, normal);
+
                             normal[x] = s;
+
                             if (s == -1)
                                 dist = -b->mins[x];
                             else
                                 dist = b->maxs[x];
+
                             planenum = g_MainMap->FindFloatPlane(normal, dist);
+
                             for (i = 0; i < b->numsides; i++)
+
                                 if (b->original_sides[i].planenum == planenum)
                                     break;
+
                             if (i == b->numsides)
                             {
                                 if (numbrushsides >= MAX_MAP_BRUSHSIDES)
@@ -284,6 +372,7 @@ int main(int nbargs, char **args)
                 Msg("Building Physics collision data...\n");
 
                 int i, j;
+
                 for (i = iOldModelNumber; i < nummodels; i++)
                 {
                     ConvertModelToPhysCollide(collisionList[i], i,
@@ -291,11 +380,13 @@ int main(int nbargs, char **args)
                                               VPHYSICS_SHRINK, VPHYSICS_MERGE);
 
                     pTextBuffer[i] = NULL;
+
                     if (!collisionList[i].Count())
                         continue;
 
                     // if we've got collision models, write their script for processing in the game
                     pTextBuffer[i] = new CTextBuffer;
+
                     for (j = 0; j < collisionList[i].Count(); j++)
                     {
                         // dump a text file for visualization
@@ -303,8 +394,10 @@ int main(int nbargs, char **args)
                         {
                             collisionList[i][j]->DumpCollide(pTextBuffer[i], i, j);
                         }
+
                         // each model knows how to write its script
                         collisionList[i][j]->WriteToTextBuffer(pTextBuffer[i], i, j);
+
                         // total up the binary section's size
                         totalSize += collisionList[i][j]->GetCollisionBinarySize() + sizeof(int);
                     }
@@ -329,18 +422,16 @@ int main(int nbargs, char **args)
                 memcpy(pOldPhysCollide, g_pPhysCollide, OldCollideSize);
 
                 // DWORD align the lump because AddLump assumes that it is DWORD aligned.
-                byte *ptr;
                 g_PhysCollideSize = totalSize + (physModelCount * sizeof(dphysmodel_t)) + OldCollideSize;
                 g_pPhysCollide = (byte *)malloc((g_PhysCollideSize + 3) & ~3);
                 memset(g_pPhysCollide, 0, g_PhysCollideSize);
-                ptr = g_pPhysCollide;
+
+                byte *ptr = g_pPhysCollide;
 
                 for (i = iOldModelNumber; i < nummodels; i++)
                 {
                     if (pTextBuffer[i])
                     {
-                        int j;
-
                         dphysmodel_t model;
 
                         model.modelIndex = i;
@@ -390,8 +481,11 @@ int main(int nbargs, char **args)
                 model.solidCount = 0;
                 memcpy(ptr, &model, sizeof(model));
                 ptr += sizeof(model);
+
                 Assert((ptr - g_pPhysCollide) == g_PhysCollideSize);
+
                 Msg("done (%d) (%d bytes)\n", (int)(Plat_FloatTime() - start), g_PhysCollideSize);
+
                 free(pOldPhysCollide);
             }
 
@@ -404,54 +498,8 @@ int main(int nbargs, char **args)
 
             PrintBSPFileSizes();
             WriteBSPFile(pNewFilePath.Get());
-
-            LoadMapFile(sFilePath_VMF.Get());
-
-            // Some test if somehow all our models weren't written. But should never happen.
-            /*LoadBSPFile(pNewFilePath.Get());
-
-            ParseEntities();
-
-            byte *ptr = g_pPhysCollide;
-            byte *basePtr = ptr;
-
-            dphysmodel_t physModel;
-
-            CUtlVector<vcollide_t> vec_collides;
-
-            // physics data is variable length.  The last physmodel is a NULL pointer
-            // with modelIndex -1, dataSize -1
-            do
-            {
-                memcpy(&physModel, ptr, sizeof(physModel));
-                ptr += sizeof(physModel);
-
-                if (physModel.dataSize > 0)
-                {
-                    vcollide_t collide;
-                    physcollision->VCollideLoad(&collide, physModel.solidCount, (const char *)ptr,
-                                                physModel.dataSize + physModel.keydataSize);
-                    ptr += physModel.dataSize;
-                    ptr += physModel.keydataSize;
-
-                    vec_collides.AddToHead(collide);
-                }
-
-                // avoid infinite loop on badly formed file
-                if ((int)(ptr - basePtr) > g_PhysCollideSize)
-                    break;
-
-            } while (physModel.dataSize > 0);
-
-            vcollide_t vcollide = vec_collides.Element(vec_collides.Count()-2);
-            vcollide_t oldvcollide = vec_collides.Element(vec_collides.Count() - 3);
-
-            vcollide = vcollide;
-            oldvcollide = oldvcollide;
-
-            UnparseEntities();
-            PrintBSPFileSizes();
-            WriteBSPFile(pNewFilePath.Get());*/
         }
     }
+
+    system("pause");
 }

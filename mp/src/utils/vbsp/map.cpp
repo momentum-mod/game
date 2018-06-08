@@ -62,7 +62,6 @@ void CMapFile::Init( void )
     num_entities = ::num_entities;
 
 #ifdef ZONETOOL
-
     map_mins = dmodels[0].mins;
     map_maxs = dmodels[0].maxs;
 
