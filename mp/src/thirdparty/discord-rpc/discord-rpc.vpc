@@ -12,7 +12,7 @@ $Configuration
     $Compiler
     {
         $AdditionalIncludeDirectories   "$SRCDIR\thirdparty\discord-rpc\include;$SRCDIR\public\thirdparty\rapidjson\include;"
-        $PreprocessorDefinitions        "DISCORD_WINDOWS;constexpr=const;_XKEYCHECK_H;_ITERATOR_DEBUG_LEVEL=0;" [$WINDOWS]
+        $PreprocessorDefinitions        "DISCORD_WINDOWS;constexpr=const;_XKEYCHECK_H;_ITERATOR_DEBUG_LEVEL=0;DISCORD_DISABLE_IO_THREAD=1" [$WINDOWS]
         $TreatWarningsAsErrors          "No (/WX-)"
     }
 }
