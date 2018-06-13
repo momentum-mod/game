@@ -496,7 +496,7 @@ void Label::Paint()
 	ComputeAlignment(tx0, ty0, tx1, ty1);
 
 	// calculate who our associate is if we haven't already
-	if (_associateName)
+	if (!_associateName.IsEmpty())
 	{
 		SetAssociatedControl(FindSiblingByName(_associateName));
         _associateName.Purge();
@@ -988,7 +988,7 @@ void Label::ApplySchemeSettings(IScheme *pScheme)
 {
 	BaseClass::ApplySchemeSettings(pScheme);
 
-	if (_fontOverrideName)
+	if (!_fontOverrideName.IsEmpty())
 	{
 		// use the custom specified font since we have one set
 		SetFont(pScheme->GetFont(_fontOverrideName, IsProportional()));
@@ -1201,7 +1201,7 @@ void Label::ApplySettings( KeyValues *inResourceData )
 
 	// the control we are to be associated with may not have been created yet,
 	// so keep a pointer to it's name and calculate it when we can
-    _associateName = inResourceData->GetString("associate", "");
+    _associateName = inResourceData->GetString("associate", nullptr);
 
 	if (inResourceData->GetBool("dulltext", false))
 	{
@@ -1226,7 +1226,7 @@ void Label::ApplySettings( KeyValues *inResourceData )
         _fontOverrideName = overrideFont;
 		SetFont(pScheme->GetFont(_fontOverrideName, IsProportional()));
 	}
-	else if (_fontOverrideName)
+	else if (!_fontOverrideName.IsEmpty())
 	{
         _fontOverrideName.Purge();
 		SetFont(pScheme->GetFont("Default", IsProportional()));

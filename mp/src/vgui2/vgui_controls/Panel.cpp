@@ -1757,7 +1757,7 @@ void Panel::InternalCursorMoved(int x, int y)
 
 	if (m_pTooltips)
 	{
-		if ( _tooltipText )
+		if ( !_tooltipText.IsEmpty() )
 		{
 			m_pTooltips->SetText( _tooltipText );
 		}
@@ -1784,7 +1784,7 @@ void Panel::InternalCursorEntered()
 	{
 		m_pTooltips->ResetDelay();
 
-		if ( _tooltipText )
+		if ( !_tooltipText.IsEmpty() )
 		{
 			m_pTooltips->SetText( _tooltipText );
 		}
@@ -5893,7 +5893,7 @@ void Panel::SetTooltip( BaseTooltip *pToolTip, const char *pszText )
 //-----------------------------------------------------------------------------
 const char *Panel::GetEffectiveTooltipText() const
 {
-	if ( _tooltipText )
+	if ( !_tooltipText.IsEmpty() )
 	{
 		return _tooltipText;
 	}
