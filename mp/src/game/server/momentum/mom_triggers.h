@@ -6,10 +6,10 @@
 
 #include "filters.h"
 #include "func_break.h"
-#include "mom_gamemovement.h"
 #include "triggers.h"
-
 #include "mapzones_build.h"
+
+class CMomentumPlayer;
 
 // spawnflags
 enum
