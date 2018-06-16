@@ -6,8 +6,9 @@
 
 #include "filters.h"
 #include "func_break.h"
-#include "mom_gamemovement.h"
 #include "triggers.h"
+
+class CMomentumPlayer;
 
 // spawnflags
 enum
