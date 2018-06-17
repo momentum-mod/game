@@ -1,0 +1,12 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/props/mcgravel/mom_hdlogo_ao"
+	"$bumpmap" "models/props/mcgravel/mom_hdlogo_n"
+	"$surfaceprop" "Metal"
+
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[0.60 0.60 0.60]"
+	"$envmapcontrast" "1"
+
+	"$color2" "[0.90 0.90 0.90]"
+}
