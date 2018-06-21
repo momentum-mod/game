@@ -57,6 +57,8 @@ private:
    vgui::DHANDLE<class COptionsSubAudioThirdPartyCreditsDlg> m_OptionsSubAudioThirdPartyCreditsDlg;
    ELanguage         m_nCurrentAudioLanguage;
    static char             *m_pchUpdatedAudioLanguage;
+
+    vgui::CvarToggleCheckButton *m_pMuteLoseFocus;
 };
 
 
