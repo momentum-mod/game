@@ -117,6 +117,20 @@ typedef enum
     Warning("%s->%s(): %d -- Steam API Interface %s could not be loaded! You may be offline or Steam may not be running!\n",  \
     __FILE__, __FUNCTION__, __LINE__, #steam_interface); return; }
 
+// For some reason if calling console commands through the engine does not work, this seems to do the trick
+// Notes: It is wrapped in its own scope so pCommand is redefined if this is used more than once
+//        You cannot have an '\n' at the end of the `command_name` argument using this method
+#define DISPATCH_CON_COMMAND(command_name, full_command) { \
+    ConCommand* pCommand = g_pCVar->FindCommand(command_name); \
+    if (pCommand) { \
+        CCommand cc; \
+        cc.Tokenize(full_command); \
+        pCommand->Dispatch(cc); \
+    } else { \
+        Warning("%s->%s():%d -- Could not find console command: %s\n", \
+            __FILE__, __FUNCTION__, __LINE__, #command_name); \
+    }}
+
 // I'm a deadbeat, so I did this to stop having to worry about what MOM_APIDOMAIN is
 // Set this macro to 0 to use momentum-mod.org as the webdomain, otherwise it uses the local domain (Or whatever you set)
 // Make sure this is 0 when you push!

@@ -13,8 +13,8 @@ $Configuration
 {
     $Compiler
     {
-       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
-        $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
+       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64;$SRCDIR\thirdparty\discord-rpc\include"
+        $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL;DISCORD_DISABLE_IO_THREAD=1"
     }
 }
 
@@ -264,6 +264,10 @@ $Project "Client (Momentum)"
                         }
                     }
                 }
+
+                $File "$SRCDIR\game\client\momentum\mom_system_discord.h"
+                $File "$SRCDIR\game\client\momentum\mom_system_discord.cpp"
+
             }
 
             $Folder "Replay"
@@ -367,6 +371,12 @@ $Project "Client (Momentum)"
             }
         }
         
+        $Folder "discord-rpc Library"
+        {
+            $File "$SRCDIR\thirdparty\discord-rpc\include\discord_register.h"
+            $File "$SRCDIR\thirdparty\discord-rpc\include\discord_rpc.h"
+        }
+
         $Folder "JSON Parser"
         {
             $File "$SRCDIR\thirdparty\gason\gason.h"
