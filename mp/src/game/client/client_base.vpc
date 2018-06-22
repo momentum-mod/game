@@ -1251,7 +1251,11 @@ $Project
 		$Lib		vgui_controls
 		$Lib		vtf
 		$ImpLib		steam_api
-		
+
+        $Lib            discord-rpc [$WIN32]
+        $Libexternal    discord-rpc [$LINUXALL]
+        $ImpLib         discord-rpc [$OSXALL]
+
 		$Libexternal $LIBCOMMON/libcrypto [$OSXALL]
 		$Libexternal "$SRCDIR\lib\common\$(CRYPTOPPDIR)\libcrypto" [$LINUXALL]
 
