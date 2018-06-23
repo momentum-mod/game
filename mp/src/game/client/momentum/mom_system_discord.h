@@ -8,17 +8,11 @@
 // Set by the discord API as the max
 #define DISCORD_MAX_BUFFER_SIZE 128
 
-// How many frames to wait before updating discord
-// (some things are still updated each frame such as checking callbacks)
-#ifndef DISCORD_FRAME_UPDATE_FREQ
-    #define DISCORD_FRAME_UPDATE_FREQ 600
-#endif
-
 // A class to manage the Discord Rich Presence feature
 // Uses the discord-rpc library
 // Libary source code is here: https://github.com/discordapp/discord-rpc
 // Docs are here: https://discordapp.com/developers/docs/rich-presence/how-to
-class CMomentumDiscord : public CAutoGameSystemPerFrame, CGameEventListener {
+class CMomentumDiscord : public CAutoGameSystemPerFrame, public CGameEventListener {
 
 public:
     CMomentumDiscord(const char *pName);
@@ -46,6 +40,7 @@ public:
     };
     CSteamID m_sSteamLobbyID;
     CSteamID m_sSteamUserID;
+    bool m_bInMap;
     
     // Custom methods
     static const char* GetMapOfPlayerFromSteamID(CSteamID* steamID);
@@ -54,7 +49,6 @@ public:
     static void SpecPlayerFromSteamId(const char* steamID);
     void ClearDiscordFields(bool clearPartyFields=true);
     void GetSteamUserID();
-    bool InMap();
     void OnSteamLobbyUpdate();
     void SpectateTargetFromDiscord();
 
@@ -63,26 +57,30 @@ public:
     // join the correct lobby. These members help with that functionality
     char m_szSpectateTargetLobby[DISCORD_MAX_BUFFER_SIZE];
     char m_szSpectateTargetUser[DISCORD_MAX_BUFFER_SIZE];
-    uint64 m_ulSpectateTargetUser = 0;
-    JoinSpectateState m_kJoinSpectateState = Null;
+    uint64 m_ulSpectateTargetUser;
+    JoinSpectateState m_kJoinSpectateState;
 
     // Discord Presence Payload Fields
     // https://discordapp.com/developers/docs/rich-presence/how-to#updating-presence
     char m_szDiscordState[DISCORD_MAX_BUFFER_SIZE];           // the user's current party status
     char m_szDiscordDetails[DISCORD_MAX_BUFFER_SIZE];         // what the player is currently doing
-    int64_t m_iDiscordStartTimestamp = 0;                     // epoch seconds for game start - including will show time as "elapsed"
-    int64_t m_iDiscordEndTimestamp = 0;                       // epoch seconds for game end - including will show time as "remaining"
+    int64_t m_iDiscordStartTimestamp;                     // epoch seconds for game start - including will show time as "elapsed"
+    int64_t m_iDiscordEndTimestamp;                       // epoch seconds for game end - including will show time as "remaining"
     char m_szDiscordLargeImageKey[DISCORD_MAX_BUFFER_SIZE];   // name of the uploaded image for the large profile artwork
     char m_szDiscordLargeImageText[DISCORD_MAX_BUFFER_SIZE];  // tooltip for the largeImageKey
     char m_szDiscordSmallImageKey[DISCORD_MAX_BUFFER_SIZE];   // name of the uploaded image for the small profile artwork
     char m_szDiscordSmallImageText[DISCORD_MAX_BUFFER_SIZE];  // tootltip for the smallImageKey
     char m_szDiscordPartyId[DISCORD_MAX_BUFFER_SIZE];         // id of the player's party, lobby, or group
-    int m_iDiscordPartySize = 0;                              // current size of the player's party, lobby, or group 1
-    int m_iDiscordPartyMax = 0;                               // maximum size of the player's party, lobby, or group 5
+    int m_iDiscordPartySize;                              // current size of the player's party, lobby, or group 1
+    int m_iDiscordPartyMax;                               // maximum size of the player's party, lobby, or group 5
     char m_szDiscordMatchSecret[DISCORD_MAX_BUFFER_SIZE];     // [deprecated Notify Me feature, may be re-used in future]
     char m_szDiscordSpectateSecret[DISCORD_MAX_BUFFER_SIZE];  // unique hashed string for Spectate button
     char m_szDiscordJoinSecret[DISCORD_MAX_BUFFER_SIZE];      // unique hashed string for chat invitations and Ask to Join
-    int8_t m_iDiscordInstance = 0;                            // [deprecated Notify Me feature, may be re-used in future]
+    int8_t m_iDiscordInstance;                            // [deprecated Notify Me feature, may be re-used in future]
+
+    // Payload helper fields
+    char m_szInMenusStatusString[DISCORD_MAX_BUFFER_SIZE];   // Status string to use when player is in the menu
+    char m_szInMenusLargeImage[DISCORD_MAX_BUFFER_SIZE];     // Large image key to use when player is in the menus
 
     // Static vars
     static const char* s_pDiscordAppID;
@@ -90,10 +88,7 @@ public:
 
 private:
     // Custom members
-    static const int s_iMaxBufferSize = DISCORD_MAX_BUFFER_SIZE;
-    static const char* s_pszInMenusStatusString;
-    static const char* s_pszInMenusLargeImage;
-    int m_iUpdateFrame = 0;
+    int m_iUpdateFrame;
 
     // Custom methods
     void DiscordInit();

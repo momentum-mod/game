@@ -7,12 +7,14 @@
 #include "tier0/memdbgon.h"
 
 // MOM_TODO: Change this to the official Discord App ID (currently it is under Connor's test account)
-const char* CMomentumDiscord::s_pDiscordAppID = "452297955718987776";
-const char* CMomentumDiscord::s_pSteamAppID = "669270";
+#define DISCORD_APP_ID "452297955718987776"
+#define MOM_STEAM_ID "669270"
 
-const char* CMomentumDiscord::s_pszInMenusStatusString = "In Menus";
-const char* CMomentumDiscord::s_pszInMenusLargeImage = "mom";
-
+// How many frames to wait before updating discord
+// (some things are still updated each frame such as checking callbacks)
+#ifndef DISCORD_FRAME_UPDATE_FREQ
+    #define DISCORD_FRAME_UPDATE_FREQ 600
+#endif
 
 #ifdef DEBUG
 CON_COMMAND(mom_discord_debug, "Help debug discord integration\n") {
@@ -23,6 +25,18 @@ CON_COMMAND(mom_discord_debug, "Help debug discord integration\n") {
 #endif
 
 CMomentumDiscord::CMomentumDiscord(const char *pName) {
+    m_ulSpectateTargetUser = 0;
+    m_szSpectateTargetUser[0] = '\0';
+    m_kJoinSpectateState = Null;
+    m_iDiscordStartTimestamp = 0;
+    m_iDiscordEndTimestamp = 0;
+    m_iDiscordPartySize = 0;
+    m_iDiscordPartyMax = 0;
+    m_iDiscordInstance = 0;
+    m_iUpdateFrame = 0;
+    m_bInMap = false;
+
+    // Discord fields
     m_szDiscordState[0] = '\0';
     m_szDiscordDetails[0] = '\0';
     m_szDiscordLargeImageKey[0] = '\0';
@@ -36,7 +50,8 @@ CMomentumDiscord::CMomentumDiscord(const char *pName) {
     m_sSteamLobbyID = CSteamID();
     m_sSteamUserID = CSteamID();
 
-    m_szSpectateTargetUser[0] = '\0';
+    V_strncpy(m_szInMenusStatusString, "In Menus", DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szInMenusLargeImage, "mom", DISCORD_MAX_BUFFER_SIZE);
 };
 
 // ---------------------------- CAutoGameSystem ----------------------------- //
@@ -48,14 +63,16 @@ void CMomentumDiscord::PostInit() {
     DiscordInit();
 
     // Default discord information
-    V_strncpy(m_szDiscordState, s_pszInMenusStatusString, DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordLargeImageKey, s_pszInMenusLargeImage, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordState, m_szInMenusStatusString, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordLargeImageKey, m_szInMenusLargeImage, DISCORD_MAX_BUFFER_SIZE);
 
     GetSteamUserID();
 }
 
 // Called each time a map is joined before entities are initialized
 void CMomentumDiscord::LevelInitPreEntity() {
+    m_bInMap = true;
+
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt()) {
         case MOMGM_SURF:
@@ -91,9 +108,10 @@ void CMomentumDiscord::LevelInitPostEntity() {
 
 // Called each time a map is left
 void CMomentumDiscord::LevelShutdownPreEntity() {
+    m_bInMap = false;
     ClearDiscordFields(false); // Pass false to retain party/lobby related fields
-    V_strncpy(m_szDiscordState, s_pszInMenusStatusString, DISCORD_MAX_BUFFER_SIZE);
-    V_strncpy(m_szDiscordLargeImageKey, s_pszInMenusLargeImage, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordState, m_szInMenusStatusString, DISCORD_MAX_BUFFER_SIZE);
+    V_strncpy(m_szDiscordLargeImageKey, m_szInMenusLargeImage, DISCORD_MAX_BUFFER_SIZE);
 }
 
 // Called every frame
@@ -142,7 +160,7 @@ void CMomentumDiscord::HandleLobbyDataUpdate(LobbyDataUpdate_t* pParam) {
 }
 
 void CMomentumDiscord::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam) {
-    if (CSteamID(pParam->m_ulSteamIDLobby) != m_sSteamLobbyID) {
+    if (pParam->m_ulSteamIDLobby != m_sSteamLobbyID.ConvertToUint64()) {
         m_sSteamLobbyID = CSteamID(pParam->m_ulSteamIDLobby);
         UpdateDiscordPartyIdFromSteam();
     }
@@ -155,22 +173,17 @@ void CMomentumDiscord::HandleLobbyChatUpdate(LobbyChatUpdate_t* pParam) {
 // Called when there is a game event we are listening for
 // Subscribe to events in `PostInit`
 void CMomentumDiscord::FireGameEvent(IGameEvent* event) {
-    if (!Q_strcmp(event->GetName(), "lobby_leave")) {
+    //if (!Q_strcmp(event->GetName(), "lobby_leave")) {
         m_sSteamLobbyID.Clear();
         m_iDiscordPartySize = 0;
         m_iDiscordPartyMax = 0;
         m_szDiscordPartyId[0] = '\0';
         m_szDiscordJoinSecret[0] = '\0';
         m_szDiscordSpectateSecret[0] = '\0';
-    }
+    //}
 }
 
 // ----------------------------- Custom Methods ----------------------------- //
-
-// Returns true if the player is in a map, false otherwise
-bool CMomentumDiscord::InMap() {
-    return MapName() != nullptr;
-}
 
 // Gets the current user's steam ID
 void CMomentumDiscord::GetSteamUserID() {
@@ -320,7 +333,7 @@ void CMomentumDiscord::UpdateDiscordPartyIdFromSteam() {
             DISCORD_MAX_BUFFER_SIZE);
         }
 
-        if (InMap()) {
+        if (m_bInMap) {
             // If the user is in a map then add a valid spectate secret (the same as the join secret only with an 'S')
             // MOM_TODO: Check the `mom_lobby_type` cvar first
             m_szDiscordSpectateSecret[0] = 'S';
@@ -338,7 +351,7 @@ void CMomentumDiscord::UpdateDiscordPartyIdFromSteam() {
 }
 
 // Clears out all of the discord fields (optionally can preserve the party ID fields)
-void CMomentumDiscord::ClearDiscordFields(bool clearPartyFields /*=false*/) {
+void CMomentumDiscord::ClearDiscordFields(bool clearPartyFields /*=true*/) {
     m_szDiscordState[0] = '\0';
     m_szDiscordDetails[0] = '\0';
     m_iDiscordStartTimestamp = 0;
@@ -369,7 +382,7 @@ void CMomentumDiscord::DiscordInit() {
     handlers.joinGame = CMomentumDiscord::HandleDiscordJoin;
     handlers.spectateGame = CMomentumDiscord::HandleDiscordSpectate;
     handlers.joinRequest = CMomentumDiscord::HandleDiscordJoinRequest;
-    Discord_Initialize(CMomentumDiscord::s_pDiscordAppID, &handlers, 1, CMomentumDiscord::s_pSteamAppID);
+    Discord_Initialize(DISCORD_APP_ID, &handlers, 1, MOM_STEAM_ID);
 }
 
 
@@ -474,7 +487,7 @@ void CMomentumDiscord::HandleDiscordSpectate(const char* secret) {
         const char* targetMapName = GetMapOfPlayerFromSteamID(&targetPlayerSteamID);
 
         bool inSameLobby = g_pMomentumDiscord->m_sSteamLobbyID.ConvertToUint64() == V_atoui64(g_pMomentumDiscord->m_szSpectateTargetLobby);
-        bool inSameMap = g_pMomentumDiscord->InMap() && g_pMomentumDiscord->MapName()[0] && targetMapName && !V_strcmp(targetMapName, g_pMomentumDiscord->MapName());
+        bool inSameMap = g_pMomentumDiscord->m_bInMap && g_pMomentumDiscord->MapName()[0] && targetMapName && !V_strcmp(targetMapName, g_pMomentumDiscord->MapName());
 
         // Set our starting state before we go into the SpectateTargetFromDiscord state machine
         if (inSameLobby && inSameMap) {
