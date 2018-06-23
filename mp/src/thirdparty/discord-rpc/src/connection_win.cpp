@@ -13,7 +13,11 @@ int GetProcessId()
 }
 
 struct BaseConnectionWin : public BaseConnection {
-    HANDLE pipe{INVALID_HANDLE_VALUE};
+    HANDLE pipe;
+
+    BaseConnectionWin() {
+        pipe = INVALID_HANDLE_VALUE;
+    }
 };
 
 static BaseConnectionWin Connection;
