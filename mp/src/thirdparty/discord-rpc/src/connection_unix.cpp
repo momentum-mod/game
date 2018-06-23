@@ -15,7 +15,11 @@ int GetProcessId()
 }
 
 struct BaseConnectionUnix : public BaseConnection {
-    int sock{-1};
+    int sock;
+
+    BaseConnectionUnix() {
+        sock = -1;
+    }
 };
 
 static BaseConnectionUnix Connection;
