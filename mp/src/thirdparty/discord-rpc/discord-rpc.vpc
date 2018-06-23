@@ -13,6 +13,8 @@ $Configuration
     {
         $AdditionalIncludeDirectories   "$SRCDIR\thirdparty\discord-rpc\include;$SRCDIR\public\thirdparty\rapidjson\include;"
         $PreprocessorDefinitions        "DISCORD_WINDOWS;constexpr=const;_XKEYCHECK_H;_ITERATOR_DEBUG_LEVEL=0;DISCORD_DISABLE_IO_THREAD=1" [$WINDOWS]
+        $PreprocessorDefinitions        "DISCORD_LINUX;constexpr=const;_XKEYCHECK_H;_ITERATOR_DEBUG_LEVEL=0;DISCORD_DISABLE_IO_THREAD=1" [$LINUX]
+        $PreprocessorDefinitions        "DISCORD_OSX;constexpr=const;_XKEYCHECK_H;_ITERATOR_DEBUG_LEVEL=0;DISCORD_DISABLE_IO_THREAD=1" [$OSX]
         $TreatWarningsAsErrors          "No (/WX-)"
     }
 }
@@ -37,5 +39,8 @@ $Project "discord-rpc"
         $File   "$SRCDIR\thirdparty\discord-rpc\src\serialization.cpp"
         $File   "$SRCDIR\thirdparty\discord-rpc\src\connection_win.cpp" [$WINDOWS]
         $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_win.cpp" [$WINDOWS]
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\connection_unix.cpp" [$POSIX]
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_linux.cpp" [$LINUX]
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_osx.cpp" [$OSX]
     }
 }
