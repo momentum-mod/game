@@ -38,8 +38,8 @@ $Project "discord-rpc"
         $File   "$SRCDIR\thirdparty\discord-rpc\src\rpc_connection.cpp"
         $File   "$SRCDIR\thirdparty\discord-rpc\src\serialization.cpp"
         $File   "$SRCDIR\thirdparty\discord-rpc\src\connection_win.cpp" [$WINDOWS]
-        $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_win.cpp" [$WINDOWS]
         $File   "$SRCDIR\thirdparty\discord-rpc\src\connection_unix.cpp" [$POSIX]
+        $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_win.cpp" [$WINDOWS]
         $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_linux.cpp" [$LINUX]
         $File   "$SRCDIR\thirdparty\discord-rpc\src\discord_register_osx.cpp" [$OSX]
     }
