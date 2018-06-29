@@ -17,13 +17,11 @@ enum
     // CTriggerTimerStart
     SF_LIMIT_LEAVE_SPEED = 1 << 13,             // Limit speed if player bhopped in start zone?
     SF_USE_LOOKANGLES = 1 << 14,                // Use look angles?
-                                                // CTriggerOneHop
+
+    // CTriggerOneHop
     SF_TELEPORT_RESET_ONEHOP = 1 << 15,         // Reset hop state if player hops onto another different onehop
-                                                // CTriggerLimitMove
-    LIMIT_JUMP = 1 << 16,                       // prevent player from jumping
-    LIMIT_CROUCH = 1 << 17,                     // prevent player from croching
-    LIMIT_BHOP = 1 << 18,                       // prevent player from bhopping
-                                                // CFuncShootBost and CTriggerMomentumPush
+
+    // CFuncShootBost and CTriggerMomentumPush
     SF_PUSH_DIRECTION_AS_FINAL_FORCE = 1 << 19, // Use the direction vector as final force instead of calculating it by
                                                 // force amount CTriggerMomentumPush
     SF_PUSH_ONETOUCH = 1 << 20,                 // Only allow for one touch
@@ -333,6 +331,19 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
   public:
     void OnStartTouch(CBaseEntity *pOther) OVERRIDE;
     void OnEndTouch(CBaseEntity *pOther) OVERRIDE;
+
+    // spawnflags
+    // starts on 0x1000 (or 1 << 12) - SF_TRIGGER_DISALLOW_BOTS
+    enum
+    {
+        SF_LIMIT_FORWARD = 1 << 13,                    // prevent moving forward
+        SF_LIMIT_LEFT = 1 << 14,                       // prevent moving to the left
+        SF_LIMIT_RIGHT = 1 << 15,                      // prevent moving to the right
+        SF_LIMIT_BACK = 1 << 16,                       // prevent moving backwards
+        SF_LIMIT_JUMP = 1 << 17,                       // prevent player from jumping
+        SF_LIMIT_CROUCH = 1 << 18,                     // prevent player from crouching
+        SF_LIMIT_BHOP = 1 << 19                        // prevent player from bhopping
+    };
 };
 
 // CFuncShootBoost

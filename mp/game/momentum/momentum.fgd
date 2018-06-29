@@ -151,13 +151,17 @@
 	]
 ]
 
-@SolidClass base(Trigger) = trigger_momentum_limitmovement : "Trigger that prevents the player from doing specific movements."
+@SolidClass base(Trigger) = trigger_momentum_limitmovement : "Trigger that prevents the player from doing specific keypress movements."
 [
 	spawnflags(flags) = 
-	[	
-		65536: "Prevent the player from jumping" : 0
-		131072: "Prevent the player from ducking" : 0
-		262144: "Prevent the player from bhopping" : 0
+	[
+		8192: "Prevent the player from moving forward" : 0
+		16384: "Prevent the player from moving to the left" : 0
+		32768: "Prevent the player from moving to the right" : 0
+        65536: "Prevent the player from moving backward" : 0
+		131072: "Prevent the player from jumping" : 0
+        262144: "Prevent the player from crouching" : 0
+		524288: "Prevent the player from bhopping" : 0
 	]
 ]
 

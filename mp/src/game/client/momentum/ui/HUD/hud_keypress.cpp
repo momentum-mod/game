@@ -31,16 +31,11 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
 
     CHudKeyPressDisplay(const char *pElementName);
 
-    bool ShouldDraw() OVERRIDE
-    {
-        C_MomentumPlayer *pMom = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
-        // don't show during map finished dialog
-        return showkeys.GetBool() && pMom && !pMom->m_SrvData.m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
-    }
-
+    bool ShouldDraw() OVERRIDE;
     void OnThink() OVERRIDE;
     void Paint() OVERRIDE;
     void Init() OVERRIDE;
+    void LevelShutdown() OVERRIDE;
     void Reset() OVERRIDE;
     void DrawKeyTemplates();
 
@@ -80,6 +75,8 @@ class CHudKeyPressDisplay : public CHudElement, public Panel
     wchar_t m_pwStrafe[BUFSIZELOCL];
     float m_fJumpColorUntil;
     float m_fDuckColorUntil;
+
+    CMomentumPlayer *m_pPlayer;
 };
 
 DECLARE_HUDELEMENT(CHudKeyPressDisplay);
@@ -87,11 +84,19 @@ DECLARE_HUDELEMENT(CHudKeyPressDisplay);
 CHudKeyPressDisplay::CHudKeyPressDisplay(const char *pElementName)
     : CHudElement(pElementName), Panel(g_pClientMode->GetViewport(), "CHudKeyPressDisplay")
 {
+    m_pPlayer = nullptr;
     SetProportional(true);
     SetKeyBoardInputEnabled(false);
     SetMouseInputEnabled(false);
     SetHiddenBits(HIDEHUD_WEAPONSELECTION);
 }
+
+bool CHudKeyPressDisplay::ShouldDraw()
+{
+    // don't show during map finished dialog
+    return showkeys.GetBool() && m_pPlayer && !m_pPlayer->m_SrvData.m_RunData.m_bMapFinished && CHudElement::ShouldDraw();
+}
+
 void CHudKeyPressDisplay::Init()
 {
     // init wchar with display values
@@ -109,6 +114,11 @@ void CHudKeyPressDisplay::Init()
 
     m_nButtons = 0;
     m_nDisabledButtons = 0;
+}
+
+void CHudKeyPressDisplay::LevelShutdown()
+{
+    m_pPlayer = nullptr;
 }
 
 // Checks to see if this input was blocked, and if so, paint it red.
@@ -269,6 +279,9 @@ void CHudKeyPressDisplay::Reset()
     m_nDisabledButtons = 0;
     m_fDuckColorUntil = 0;
     m_fJumpColorUntil = 0;
+
+    // Set our player pointer every spawn, better than every frame
+    m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
 }
 int CHudKeyPressDisplay::GetTextCenter(HFont font, wchar_t *wstring)
 {
