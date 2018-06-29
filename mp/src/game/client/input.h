@@ -124,9 +124,9 @@ protected:
 	void		AddKeyButton( const char *name, kbutton_t *pkb );
 	// Mouse/keyboard movement input helpers
 	void		ScaleMovements( CUserCmd *cmd );
-	void		ComputeForwardMove( CUserCmd *cmd );
-	void		ComputeUpwardMove( CUserCmd *cmd );
-	void		ComputeSideMove( CUserCmd *cmd );
+    virtual void		ComputeForwardMove(CUserCmd *cmd);
+    virtual void		ComputeUpwardMove(CUserCmd *cmd);
+    virtual void		ComputeSideMove(CUserCmd *cmd);
 	void		AdjustAngles ( float frametime );
 	void		ClampAngles( QAngle& viewangles );
 	void		AdjustPitch( float speed, QAngle& viewangles );

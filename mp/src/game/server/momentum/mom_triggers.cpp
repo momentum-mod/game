@@ -813,18 +813,20 @@ void CTriggerLimitMovement::OnStartTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        if (HasSpawnFlags(LIMIT_JUMP))
-        {
+        if (m_spawnflags & SF_LIMIT_FORWARD)
+            pPlayer->DisableButtons(IN_FORWARD);
+        if (m_spawnflags & SF_LIMIT_LEFT)
+            pPlayer->DisableButtons(IN_MOVELEFT);
+        if (m_spawnflags & SF_LIMIT_RIGHT)
+            pPlayer->DisableButtons(IN_MOVERIGHT);
+        if (m_spawnflags & SF_LIMIT_BACK)
+            pPlayer->DisableButtons(IN_BACK);
+        if (m_spawnflags & SF_LIMIT_JUMP)
             pPlayer->DisableButtons(IN_JUMP);
-        }
-        if (HasSpawnFlags(LIMIT_CROUCH))
-        {
+        if (m_spawnflags & SF_LIMIT_CROUCH)
             pPlayer->DisableButtons(IN_DUCK);
-        }
-        if (HasSpawnFlags(LIMIT_BHOP))
-        {
+        if (m_spawnflags & SF_LIMIT_BHOP)
             pPlayer->m_SrvData.m_bPreventPlayerBhop = true;
-        }
     }
 
     BaseClass::OnStartTouch(pOther);
@@ -835,10 +837,19 @@ void CTriggerLimitMovement::OnEndTouch(CBaseEntity *pOther)
     CMomentumPlayer *pPlayer = ToCMOMPlayer(pOther);
     if (pPlayer)
     {
-        pPlayer->EnableButtons(IN_JUMP);
-        pPlayer->EnableButtons(IN_DUCK);
-
-        if (HasSpawnFlags(LIMIT_BHOP))
+        if (m_spawnflags & SF_LIMIT_FORWARD)
+            pPlayer->EnableButtons(IN_FORWARD);
+        if (m_spawnflags & SF_LIMIT_LEFT)
+            pPlayer->EnableButtons(IN_MOVELEFT);
+        if (m_spawnflags & SF_LIMIT_RIGHT)
+            pPlayer->EnableButtons(IN_MOVERIGHT);
+        if (m_spawnflags & SF_LIMIT_BACK)
+            pPlayer->EnableButtons(IN_BACK);
+        if (m_spawnflags & SF_LIMIT_JUMP)
+            pPlayer->EnableButtons(IN_JUMP);
+        if (m_spawnflags & SF_LIMIT_CROUCH)
+            pPlayer->EnableButtons(IN_DUCK);
+        if (m_spawnflags & SF_LIMIT_BHOP)
             pPlayer->m_SrvData.m_bPreventPlayerBhop = false;
     }
 
