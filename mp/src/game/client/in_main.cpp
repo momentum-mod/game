@@ -120,7 +120,7 @@ kbutton_t	in_moveright;
 kbutton_t	in_graph;  
 kbutton_t	in_joyspeed;		// auto-speed key from the joystick (only works for player movement, not vehicles)
 
-static	kbutton_t	in_klook;
+kbutton_t	in_klook;
 kbutton_t	in_left;
 kbutton_t	in_right;
 static	kbutton_t	in_lookup;
