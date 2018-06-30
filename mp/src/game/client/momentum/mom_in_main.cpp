@@ -63,9 +63,17 @@ void CMOMInput::ComputeForwardMove(CUserCmd* cmd)
     CMomentumPlayer *m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (m_pPlayer)
     {
+        int iButtons = 0;
+
+        // If tick_count is 0 then it's extramousesample calling it
+        if (cmd->tick_count <= 0)
+            iButtons = GetButtonBits(0);
+        else
+            iButtons = GetButtonBits(1);
+
         // Clamp left if needed
-        if ((m_pPlayer->m_afButtonDisabled & IN_FORWARD && cmd->buttons & IN_FORWARD) ||
-            (m_pPlayer->m_afButtonDisabled & IN_BACK && cmd->buttons & IN_BACK))
+        if (((m_pPlayer->m_afButtonDisabled & IN_FORWARD) && (iButtons & IN_FORWARD)) ||
+            ((m_pPlayer->m_afButtonDisabled & IN_BACK) && (iButtons & IN_BACK)))
         {
             cmd->forwardmove = 0.0f;
         }
@@ -79,9 +87,17 @@ void CMOMInput::ComputeSideMove(CUserCmd* cmd)
     CMomentumPlayer *m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (m_pPlayer)
     {
+        int iButtons = 0;
+
+        // If tick_count is 0 then it's extramousesample calling it
+        if (cmd->tick_count <= 0)
+            iButtons = GetButtonBits(0);
+        else
+            iButtons = GetButtonBits(1);
+
         // Clamp left if needed
-        if ((m_pPlayer->m_afButtonDisabled & IN_MOVELEFT && cmd->buttons & IN_MOVELEFT) ||
-            (m_pPlayer->m_afButtonDisabled & IN_MOVERIGHT && cmd->buttons & IN_MOVERIGHT))
+        if (((m_pPlayer->m_afButtonDisabled & IN_MOVELEFT) && (iButtons & IN_MOVELEFT)) ||
+            ((m_pPlayer->m_afButtonDisabled & IN_MOVERIGHT) && (iButtons & IN_MOVERIGHT)))
         {
             cmd->sidemove = 0.0f;
         }
