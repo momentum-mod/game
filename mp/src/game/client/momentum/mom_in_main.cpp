@@ -52,6 +52,10 @@ void CMOMInput::LevelInit()
     BaseClass::LevelInit();
 }
 
+// Sometimes sidemove/forward can be not in the right direction because of the sample time used for the keyboard if when you press simultaneously keys so
+// we better check keys so it's more instantaneous, also a problem could occur if the player used +strafe too. 
+// (Could be a funny way to make the player guess what to use for movements when both are blocked)
+
 void CMOMInput::ComputeForwardMove(CUserCmd* cmd)
 {
     BaseClass::ComputeForwardMove(cmd);
@@ -59,15 +63,11 @@ void CMOMInput::ComputeForwardMove(CUserCmd* cmd)
     CMomentumPlayer *m_pPlayer = ToCMOMPlayer(C_BasePlayer::GetLocalPlayer());
     if (m_pPlayer)
     {
-        // Clamp forwards if needed
-        if (m_pPlayer->m_afButtonDisabled & IN_FORWARD && cmd->forwardmove > 0)
+        // Clamp left if needed
+        if ((m_pPlayer->m_afButtonDisabled & IN_FORWARD && cmd->buttons & IN_FORWARD) ||
+            (m_pPlayer->m_afButtonDisabled & IN_BACK && cmd->buttons & IN_BACK))
         {
-            cmd->forwardmove = 0;
-        }
-        // Clamp backwards if needed
-        if (m_pPlayer->m_afButtonDisabled & IN_BACK && cmd->forwardmove < 0)
-        {
-            cmd->forwardmove = 0;
+            cmd->forwardmove = 0.0f;
         }
     }
 }
@@ -80,14 +80,10 @@ void CMOMInput::ComputeSideMove(CUserCmd* cmd)
     if (m_pPlayer)
     {
         // Clamp left if needed
-        if (m_pPlayer->m_afButtonDisabled & IN_MOVELEFT && cmd->sidemove < 0)
+        if ((m_pPlayer->m_afButtonDisabled & IN_MOVELEFT && cmd->buttons & IN_MOVELEFT) ||
+            (m_pPlayer->m_afButtonDisabled & IN_MOVERIGHT && cmd->buttons & IN_MOVERIGHT))
         {
-            cmd->sidemove = 0;
-        }
-        // Clamp right if needed
-        if (m_pPlayer->m_afButtonDisabled & IN_MOVERIGHT && cmd->sidemove > 0)
-        {
-            cmd->sidemove = 0;
+            cmd->sidemove = 0.0f;
         }
     }
 }
