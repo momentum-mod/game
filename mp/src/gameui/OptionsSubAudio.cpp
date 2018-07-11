@@ -10,6 +10,7 @@
 #include "vgui_controls/ComboBox.h"
 #include "vgui_controls/QueryBox.h"
 #include "vgui_controls/CVarSlider.h"
+#include <vgui_controls/CvarToggleCheckButton.h>
 #include "tier1/KeyValues.h"
 #include "tier1/convar.h"
 #include "vgui/IInput.h"
@@ -63,6 +64,8 @@ COptionsSubAudio::COptionsSubAudio(vgui::Panel *parent) : PropertyPage(parent, N
 
    m_pSpokenLanguageCombo = new ComboBox (this, "AudioSpokenLanguage", 6, false );
 
+   m_pMuteLoseFocus = new CvarToggleCheckButton(this, "snd_mute_losefocus", "#GameUI_SndMuteLoseFocus", "snd_mute_losefocus");
+
 	LoadControlSettings("resource/optionssubaudio.res");
 }
 
@@ -81,7 +84,7 @@ void COptionsSubAudio::OnResetData()
 	m_bRequireRestart = false;
 	m_pSFXSlider->Reset();
 	m_pMusicSlider->Reset();
-
+    m_pMuteLoseFocus->Reset();
 
 	// reset the combo boxes
 
@@ -198,6 +201,7 @@ void COptionsSubAudio::OnApplyChanges()
 {
 	m_pSFXSlider->ApplyChanges();
 	m_pMusicSlider->ApplyChanges();
+    m_pMuteLoseFocus->ApplyChanges();
 
 	// set the cvars appropriately
 	// Tracker 28933:  Note we can't do this because closecaption is marked
