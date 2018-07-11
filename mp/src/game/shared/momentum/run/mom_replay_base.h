@@ -26,7 +26,6 @@ class CMomReplayBase : public ISerializable
     virtual time_t GetRunDate() { return m_rhHeader.m_iRunDate; }
     virtual int32 GetBonusZone() { return m_rhHeader.m_iBonusZone; }
     virtual CMomentumReplayGhostEntity *GetRunEntity() { return m_pEntity; }
-    virtual Vector_PracticeTimeStamps *GetPracticeTimeStamps() { return &m_rhHeader.m_vecPracticeTimeStamps; }
 
   public:
     virtual void SetMapName(const char *name) { Q_strcpy(m_rhHeader.m_szMapName, name); }
@@ -39,10 +38,6 @@ class CMomReplayBase : public ISerializable
     virtual void SetRunDate(time_t date) { m_rhHeader.m_iRunDate = date; }
     virtual void SetBonusZone(int32 bonus) { m_rhHeader.m_iBonusZone = bonus; }
     virtual void SetRunEntity(CMomentumReplayGhostEntity *pEnt) { m_pEntity = pEnt; }
-    virtual void SetPracticeTimeStamps(Vector_PracticeTimeStamps *timestamps)
-    {
-        m_rhHeader.m_vecPracticeTimeStamps = *timestamps;
-    }
 
   public:
     virtual uint8 GetVersion() = 0;

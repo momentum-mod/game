@@ -61,14 +61,13 @@ void CMomentumReplaySystem::PostInit()
     filesystem->CreateDirHierarchy(path.Get(), "MOD");
 }
 
-void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
+void CMomentumReplaySystem::BeginRecording()
 {
     // don't record if we're watching a preexisting replay or in practice mode
     if (!m_player->IsSpectatingGhost() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
-        m_vecPracticeTimeStamps.RemoveAll();
         m_bRecording = true;
-        m_iTickCount = 1; // recoring begins at 1 ;)
+        m_iTickCount = 1; // recording begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
         m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
     }
@@ -208,29 +207,19 @@ void CMomentumReplaySystem::TrimReplay()
 
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
-    static bool bHadPracticeMode = false;
-
     // We only record frames that the player isn't pausing on
     if (m_bRecording && !engine->IsPaused() && !m_bPaused)
     {
-        if (!m_player->m_SrvData.m_bHasPracticeMode)
+        if (!m_player->m_SrvData.m_bHasPracticeMode) // MOM_TODO: && !m_player->IsSpectating
         {
-            if (bHadPracticeMode)
-            {
-                m_vecPracticeTimeStamps.AddToHead(m_player->m_SrvData.m_RunData.m_practicetimestamp);
-                bHadPracticeMode = false;
-            }
-
             m_pRecordingReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->GetViewOffset(),
                                              m_player->m_nButtons));
         }
         else
         {
-            bHadPracticeMode = true;
+            // MOM_TODO: The last frame should be repeated until the player returns to their run
         }
 
-        //m_pRecordingReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(),
-        //                                                              m_player->GetViewOffset(), m_player->m_nButtons));
         ++m_iTickCount; // increment recording tick
     }
 
@@ -240,8 +229,6 @@ void CMomentumReplaySystem::UpdateRecordingParams()
 
 CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool bFullLoad, const char *pPathID)
 {
-    m_vecPracticeTimeStamps.RemoveAll();
-
     if (m_bPlayingBack)
         StopPlayback();
 
@@ -262,7 +249,6 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
         pGhost->SetPlaybackReplay(m_pPlaybackReplay);
         pGhost->m_SrvData.m_RunData.m_iStartTickD = m_pPlaybackReplay->GetStartTick();
         m_pPlaybackReplay->SetRunEntity(pGhost);
-        m_vecPracticeTimeStamps = *m_pPlaybackReplay->GetPracticeTimeStamps();
     }
 
     return m_pPlaybackReplay;
@@ -283,7 +269,6 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
     m_pRecordingReplay->SetBonusZone(g_pMomentumTimer->m_iBonusZone);
-    m_pRecordingReplay->SetPracticeTimeStamps(&m_vecPracticeTimeStamps);
 }
 
 void CMomentumReplaySystem::SetRunStats()
@@ -306,19 +291,12 @@ void CMomentumReplaySystem::Start(bool firstperson)
         m_player->m_SrvData.m_RunData.m_vecLastPos = m_player->GetAbsOrigin();
         m_player->m_SrvData.m_RunData.m_angLastAng = m_player->GetAbsAngles();
         m_player->m_SrvData.m_RunData.m_vecLastVelocity = m_player->GetAbsVelocity();
-        m_player->m_SrvData.m_RunData.m_vecLastViewOffset = m_player->GetViewOffset();
+        m_player->m_SrvData.m_RunData.m_fLastViewOffset = m_player->GetViewOffset().z;
         //memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
         m_nSavedAccelTicks = m_player->m_nAccelTicks;
         m_nSavedPerfectSyncTicks = m_player->m_nPerfectSyncTicks;
         m_nSavedStrafeTicks = m_player->m_nStrafeTicks;
         CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
-
-        // if (firstperson && g_pMomentumTimer->IsRunning())
-        // g_pMomentumTimer->TogglePause();
-
-        // Keep timer running.
-        // if (firstperson)
-        // g_pMomentumTimer->Stop(false); // stop the timer just in case we started a replay while it was running...
 
         if (pGhost)
             pGhost->StartRun(firstperson);
