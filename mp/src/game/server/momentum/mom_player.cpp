@@ -389,7 +389,7 @@ void CMomentumPlayer::Spawn()
         SnapEyeAngles(m_SrvData.m_RunData.m_angLastAng);
         m_qangLastAngle = m_SrvData.m_RunData.m_angLastAng;
         SetAbsVelocity(m_SrvData.m_RunData.m_vecLastVelocity);
-        SetViewOffset(m_SrvData.m_RunData.m_vecLastViewOffset);
+        SetViewOffset(Vector(0,0, m_SrvData.m_RunData.m_fLastViewOffset));
         g_ReplaySystem.SetWasInReplay(false);
         memcpy(m_RunStats.m_pData, g_ReplaySystem.SavedRunStats()->m_pData, sizeof(CMomRunStats::data));
         m_nAccelTicks = g_ReplaySystem.m_nSavedAccelTicks;
@@ -774,7 +774,7 @@ void CMomentumPlayer::OnPlayerLand()
             if (g_ReplaySystem.m_bRecording)
                 g_ReplaySystem.StopRecording(true, false);
 
-            g_ReplaySystem.BeginRecording(this);
+            g_ReplaySystem.BeginRecording();
         }
     }
 
