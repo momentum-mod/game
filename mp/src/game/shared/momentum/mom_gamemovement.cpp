@@ -1907,24 +1907,31 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     {
         // We dont want to touch this!
         // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity
-        // that can build up for ever. VectorCopy(vec3_origin, mv->m_vecVelocity);
-
-        // Let's retrace in case we can go on our wanted direction.
-        TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
-
-        // If we found something we stop.
-        if (pm.fraction != 1.0f)
+        // that can build up for ever. 
+        // ...
+        // However, if the player is currently sliding, another trace is needed to make sure the player does not
+        // get stuck on an obtuse angle (slope to a flat ground) [eg bhop_w1s2]
+        if (m_pPlayer->m_CurrentSlideTrigger.Get())
         {
+            // Let's retrace in case we can go on our wanted direction.
+            TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+            // If we found something we stop.
+            if (pm.fraction < 1.0f)
+            {
+                VectorCopy(vec3_origin, mv->m_vecVelocity);
+            }
+            // Otherwise we just set our next pos and we ignore the bug.
+            else
+            {
+                mv->SetAbsOrigin(end);
+
+                // Adjust to be sure that we are on ground.
+                StayOnGround();
+            }
+        }
+        else // otherwise default behavior
             VectorCopy(vec3_origin, mv->m_vecVelocity);
-        }
-        // Otherwhise we just set our next pos and we ignore the bug.
-        else
-        {
-            mv->SetAbsOrigin(end);
-
-            // Adjust to be sure that we are on ground.
-            StayOnGround();
-        }
     }
 
     // Check if they slammed into a wall
