@@ -216,11 +216,9 @@ void CMomentumGameMovement::WalkMove()
     }
 
     // Set pmove velocity
-    // Commented these 2 out, so we wont be 2 units above the ground
-    // This only happens when the player jumps straight up and lands while standing still
-    // mv->m_vecVelocity[2] = 0;
+    mv->m_vecVelocity[2] = 0;
     Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
-    // mv->m_vecVelocity[2] = 0;
+    mv->m_vecVelocity[2] = 0;
 
     // Add in any base velocity to the current velocity.
     VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
@@ -347,7 +345,7 @@ bool CMomentumGameMovement::LadderMove(void)
     TracePlayerBBox(mv->GetAbsOrigin(), end, LadderMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
 
     // no ladder in that direction, return
-    if (pm.fraction == 1.0f || pm.plane.normal.z == 1.0f || !OnLadder(pm))
+    if (CloseEnough(pm.fraction, 1.0f) || CloseEnough(pm.plane.normal.z, 1.0f) || !OnLadder(pm))
     {
         return false;
     }
