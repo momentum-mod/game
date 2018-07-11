@@ -325,7 +325,7 @@ void CTriggerTimerStart::OnStartTouch(CBaseEntity *pOther)
             if (g_ReplaySystem.m_bRecording)
                 g_ReplaySystem.StopRecording(true, false);
 
-            g_ReplaySystem.BeginRecording(pPlayer);
+            g_ReplaySystem.BeginRecording();
         }
     }
     else

@@ -24,5 +24,5 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_vecLastPos.Init();
     m_angLastAng.Init();
     m_vecLastVelocity.Init();
-    m_vecLastViewOffset.Init();
+    m_fLastViewOffset = 0.0f;
 }

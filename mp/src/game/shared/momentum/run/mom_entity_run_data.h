@@ -10,24 +10,6 @@
 #define CMOMRunEntityData C_MOMRunEntityData
 #endif
 
-struct practicetimestamps_s
-{
-    practicetimestamps_s( int iStart = 0 , int iEnd = 0 )
-    {
-        m_iStart = iStart;
-        m_iEnd = iEnd;
-    }
-
-    practicetimestamps_s &operator=(const practicetimestamps_s &other)
-    {
-        m_iStart = other.m_iStart;
-        m_iEnd = other.m_iEnd;
-        return *this;
-    }
-
-    int m_iStart, m_iEnd;
-};
-
 class CMOMRunEntityData
 {
   public:
@@ -55,6 +37,5 @@ class CMOMRunEntityData
     Vector m_vecLastPos;                      // Saved location before the replay was played or practice mode.
     QAngle m_angLastAng;                      // Saved angles before the replay was played or practice mode.
     Vector m_vecLastVelocity;                 // Saved velocity before the replay was played or practice mode.
-    Vector m_vecLastViewOffset;               // Saved viewoffset before the replay was played or practice mode.
-    practicetimestamps_s m_practicetimestamp; // Save timestamps of practice mode if the player had it on during a run.
+    float m_fLastViewOffset;               // Saved viewoffset before the replay was played or practice mode.
 };
