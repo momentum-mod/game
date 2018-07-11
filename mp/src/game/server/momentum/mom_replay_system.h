@@ -23,7 +23,7 @@ public:
     // Sets the start timer tick, this is used for trimming later on
     void SetTimerStartTick(int tick) { m_iStartTimerTick = tick; }
 
-    void BeginRecording(CBasePlayer *pPlayer);
+    void BeginRecording();
     void StopRecording(bool throwaway, bool delay);
     void TrimReplay(); // Trims a replay's start down to only include a defined amount of time in the start trigger
 
@@ -32,16 +32,14 @@ public:
     void UnloadPlayback(bool shutdown = false);
     void StopPlayback();
 
-    void SetWasInReplay(bool bEnable = true) { m_bWasInReplay = true; };
+    void SetWasInReplay(bool bEnable = true) { m_bWasInReplay = bEnable; };
     bool GetWasInReplay() { return m_bWasInReplay; };
     void SetPaused(bool bEnable = true) { m_bPaused = bEnable; };
     bool GetPaused() { return m_bPaused; };
 
     void TogglePause();
 
-    Vector_PracticeTimeStamps *GetPracticeTimeStamps() { return &m_vecPracticeTimeStamps; };
-
-    CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
+    //CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
 
   public:
     bool m_bRecording;
@@ -66,8 +64,7 @@ public:
     float m_fRecEndTime;       // The time to end the recording, if delay was passed as true to StopRecording()
     bool m_bWasInReplay;
     bool m_bPaused;
-    Vector_PracticeTimeStamps m_vecPracticeTimeStamps;
-    CMomRunStats m_SavedRunStats;
+    //CMomRunStats m_SavedRunStats;
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;

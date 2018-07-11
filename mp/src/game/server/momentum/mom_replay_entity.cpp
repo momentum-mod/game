@@ -28,8 +28,7 @@ END_DATADESC();
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_bHasJumped(false),
       m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0), m_nOldReplayButtons(0),
-      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_iPracticeTimeStampStart(0),
-      m_iPracticeTimeStampEnd(0)
+      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_cvarReplaySelection("mom_replay_selection")
 {
     StdDataToReplay = (DataToReplayFn)(GetProcAddress(GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
 
@@ -53,7 +52,6 @@ void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
         if (pEvent->GetBool("restart"))
         {
             m_SrvData.m_RunData.m_bMapFinished = false;
-            m_iTickRemainder = 0;
         }
         else
             EndRun();
@@ -82,23 +80,17 @@ void CMomentumReplayGhostEntity::Spawn()
         }
     }
 
-    m_iTickRemainder = 0;
-
     if (m_pPlaybackReplay)
         Q_strcpy(m_SrvData.m_pszPlayerName, m_pPlaybackReplay->GetPlayerName());
 }
 
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 {
-    m_iTickRemainder = 0;
     m_bReplayFirstPerson = firstPerson;
     m_SrvData.m_bWasInRun = g_pMomentumTimer->GetPaused();
 
     Spawn();
     m_SrvData.m_iTotalStrafes = 0;
-    m_iTickRemainder = 0;
-    m_iPracticeTimeStampStart = 0;
-    m_iPracticeTimeStampEnd = 0;
     m_SrvData.m_RunData.m_bMapFinished = false;
     m_bIsActive = true;
     m_bHasJumped = false;
@@ -129,17 +121,7 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
         m_SrvData.m_iCurrentTick = 0;
         SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick)->PlayerOrigin());
 
-        int iTotalPractice = 0;
-
-        auto TimeStamps = g_ReplaySystem.GetPracticeTimeStamps();
-
-        for (auto i = 0; i != TimeStamps->Size(); i++)
-        {
-            auto Element = TimeStamps->Element(i);
-            iTotalPractice += Element.m_iEnd - Element.m_iStart;
-        }
-
-        m_SrvData.m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1 + iTotalPractice;
+        m_SrvData.m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
@@ -306,39 +288,6 @@ void CMomentumReplayGhostEntity::Think()
             }
         }
 
-        // First we need to set our remainder to 0.
-        // Remainder is used to know how many ticks should be removed from the current tick to get at the right position/step (replayframe)
-        // after being stuck in practice mode.
-        m_iTickRemainder = 0;
-
-        auto TimeStamps = g_ReplaySystem.GetPracticeTimeStamps();
-
-        // TimeStamps should and will be always in the right order, 0 to X.
-        for (auto i = 0; i != TimeStamps->Size(); i++)
-        {
-            auto TimeStamp = TimeStamps->Element(i);
-
-            // If the current tick is higher than the starts practice tickstamps we add it to our remainder.
-            // We also add the delta because the timer started after the recording.
-            if (m_SrvData.m_iCurrentTick >= TimeStamp.m_iStart + m_SrvData.m_RunData.m_iStartTickD)
-            {
-                // Save up
-                m_iPracticeTimeStampStart = TimeStamp.m_iStart;
-                m_iPracticeTimeStampEnd = TimeStamp.m_iEnd;
-                // Let's add the difference to know how much tickstamps have been passed already.
-                m_iTickRemainder += m_iPracticeTimeStampEnd - m_iPracticeTimeStampStart;
-            }
-            else
-            {
-                // Seems like the current tick wasn't yet on that timestamp. Ignore it.
-                break;
-            }
-        }
-
-        // Add our delta to compare with the current tick in recording.
-        m_iPracticeTimeStampStart += m_SrvData.m_RunData.m_iStartTickD;
-        m_iPracticeTimeStampEnd += m_SrvData.m_RunData.m_iStartTickD;
-
         if (m_pCurrentSpecPlayer)
             HandleGhostFirstPerson();
         else
@@ -368,9 +317,10 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         CReplayFrame *currentStep = nullptr;
         CReplayFrame *nextStep = nullptr;
 
+        // MOM_TODO
         // If the player is in practice, let's stuck the player, if the current tick is between the start and end of
         // timestamps.
-        if (m_SrvData.m_iCurrentTick >= m_iPracticeTimeStampStart &&
+        /*if (m_SrvData.m_iCurrentTick >= m_iPracticeTimeStampStart &&
             m_SrvData.m_iCurrentTick <= m_iPracticeTimeStampEnd)
         {
             m_SrvData.m_bHasPracticeMode = true;
@@ -381,7 +331,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             nextStep = currentStep = m_pPlaybackReplay->GetFrame(
                 m_iPracticeTimeStampStart - (m_iTickRemainder - (m_iPracticeTimeStampEnd - m_iPracticeTimeStampStart)));
         }
-        else
+        else*/
         {
             // Otherwhise process normally.
             nextStep = GetNextStep();
@@ -436,7 +386,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         if (m_SrvData.m_RunData.m_bTimerRunning)
             UpdateStats(interpolatedVel);
 
-        SetViewOffset(currentStep->PlayerViewOffset());
+        SetViewOffset(Vector(0, 0, currentStep->PlayerViewOffset()));
 
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
         if (m_SrvData.m_nReplayButtons & IN_DUCK)
@@ -464,7 +414,7 @@ void CMomentumReplayGhostEntity::HandleGhost()
 
     // If the player is in practice, let's stuck the player, if the current tick is between the start and end of
     // timestamps.
-    if (m_SrvData.m_iCurrentTick >= m_iPracticeTimeStampStart && m_SrvData.m_iCurrentTick <= m_iPracticeTimeStampEnd)
+    /*if (m_SrvData.m_iCurrentTick >= m_iPracticeTimeStampStart && m_SrvData.m_iCurrentTick <= m_iPracticeTimeStampEnd)
     {
         m_SrvData.m_bHasPracticeMode = true;
         // To get the real tick of where the practice mode have been enabled, we need to add the tick remainder,
@@ -474,7 +424,7 @@ void CMomentumReplayGhostEntity::HandleGhost()
         currentStep = m_pPlaybackReplay->GetFrame(
             m_iPracticeTimeStampStart - (m_iTickRemainder - (m_iPracticeTimeStampEnd - m_iPracticeTimeStampStart)));
     }
-    else
+    else*/
     {
         // Otherwhise process normally.
         currentStep = GetCurrentStep();
@@ -530,16 +480,15 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     }
 
     // --- JUMP AND STRAFE COUNTER ---
-    // MOM_TODO: This needs to calculate better. It currently counts every other jump, and sometimes spams (player on
-    // ground for a while)
-    if (!m_bHasJumped && GetGroundEntity() != nullptr && GetFlags() & FL_ONGROUND &&
+    // MOM_TODO: This needs to hook up to the "player jumped" replay tick event
+    /*if (!m_bHasJumped && GetGroundEntity() != nullptr && GetFlags() & FL_ONGROUND &&
         currentStep->PlayerButtons() & IN_JUMP)
     {
         m_bHasJumped = true;
         m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
         m_SrvData.m_RunData.m_flLastJumpTime = gpGlobals->curtime;
         m_SrvData.m_iTotalJumps++;
-    }
+    }*/
 
     if ((currentStep->PlayerButtons() & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) ||
         (currentStep->PlayerButtons() & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)))
@@ -571,19 +520,18 @@ void CMomentumReplayGhostEntity::EndRun()
 
     // Remove me from the game (destructs me and deletes this pointer on the next game frame)
     Remove();
-    m_iTickRemainder = 0;
 }
 
 CReplayFrame* CMomentumReplayGhostEntity::GetCurrentStep()
 {
-    return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick);
+    return m_pPlaybackReplay->GetFrame(max(min(m_SrvData.m_iCurrentTick, m_pPlaybackReplay->GetFrameCount() - 1), 0));
 }
 
 CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
-    int nextStep = m_SrvData.m_iCurrentTick - m_iTickRemainder;
+    int nextStep = m_SrvData.m_iCurrentTick;
 
-    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_SrvData.m_bIsPaused)
+    if ((m_cvarReplaySelection.GetInt() == 1) && m_SrvData.m_bIsPaused)
     {
         --nextStep;
 

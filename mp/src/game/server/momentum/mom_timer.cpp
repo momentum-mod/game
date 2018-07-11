@@ -393,9 +393,9 @@ void CMomentumTimer::EnablePractice(CMomentumPlayer *pPlayer)
         pPlayer->m_SrvData.m_RunData.m_vecLastPos = pPlayer->GetAbsOrigin();
         pPlayer->m_SrvData.m_RunData.m_angLastAng = pPlayer->GetAbsAngles();
         pPlayer->m_SrvData.m_RunData.m_vecLastVelocity = pPlayer->GetAbsVelocity();
-        pPlayer->m_SrvData.m_RunData.m_vecLastViewOffset = pPlayer->GetViewOffset();
-        pPlayer->m_SrvData.m_RunData.m_practicetimestamp.m_iStart = gpGlobals->tickcount - m_iStartTick;
-        // TogglePause();
+        pPlayer->m_SrvData.m_RunData.m_fLastViewOffset = pPlayer->GetViewOffset().z;
+
+        // MOM_TODO: Mark this as a "entered practice mode" event in the replay
     }
     else
         Stop(false); // Keep running
@@ -413,13 +413,11 @@ void CMomentumTimer::DisablePractice(CMomentumPlayer *pPlayer)
     {
         pPlayer->m_SrvData.m_RunData.m_iBonusZone = pPlayer->m_SrvData.m_RunData.m_iOldBonusZone;
         pPlayer->m_SrvData.m_RunData.m_iCurrentZone = pPlayer->m_SrvData.m_RunData.m_iOldZone;
-        pPlayer->SetAbsOrigin(pPlayer->m_SrvData.m_RunData.m_vecLastPos);
-        pPlayer->SnapEyeAngles(pPlayer->m_SrvData.m_RunData.m_angLastAng);
-        pPlayer->SetAbsVelocity(pPlayer->m_SrvData.m_RunData.m_vecLastVelocity);
-        pPlayer->SetViewOffset(pPlayer->m_SrvData.m_RunData.m_vecLastViewOffset);
+        pPlayer->Teleport(&pPlayer->m_SrvData.m_RunData.m_vecLastPos, &pPlayer->m_SrvData.m_RunData.m_angLastAng, &pPlayer->m_SrvData.m_RunData.m_vecLastVelocity);
+        pPlayer->SetViewOffset(Vector(0, 0, pPlayer->m_SrvData.m_RunData.m_fLastViewOffset));
         pPlayer->m_qangLastAngle = pPlayer->m_SrvData.m_RunData.m_angLastAng;
-        pPlayer->m_SrvData.m_RunData.m_practicetimestamp.m_iEnd = gpGlobals->tickcount - m_iStartTick;
-        // TogglePause();
+
+        // MOM_TODO : Mark this as a "exited practice mode" event in the replay
     }
 }
 

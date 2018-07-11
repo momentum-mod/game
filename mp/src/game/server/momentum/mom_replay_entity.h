@@ -64,11 +64,10 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     bool m_bHasJumped;
 
+    ConVarRef m_cvarReplaySelection;
+
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;
     float m_flLastSyncVelocity;
     int m_nStrafeTicks, m_nPerfectSyncTicks, m_nAccelTicks, m_nOldReplayButtons, m_iTickElapsed;
-    int m_iPracticeTimeStampStart, m_iPracticeTimeStampEnd; // Practice tickstamps.
-    int m_iTickRemainder; // Used for practice timestamps, this will be used for setting the right step for our ghost
-                          // replay system.
 };
