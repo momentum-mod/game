@@ -23,7 +23,8 @@ class CMomentumPlayer;
 
 #define DUCK_SPEED_MULTIPLIER 0.34f
 
-#define FIRE_GAMEMOVEMENT_EVENT(event) FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event();}
+#define FIRE_GAMEMOVEMENT_EVENT(event)                                                                                 \
+    FOR_EACH_VEC(m_vecListeners, i) { m_vecListeners[i]->event(); }
 
 class CMomentumGameMovement : public CGameMovement
 {
@@ -33,7 +34,7 @@ class CMomentumGameMovement : public CGameMovement
     CMomentumGameMovement();
 
     // Overrides
-    virtual bool LadderMove(void);         // REPLACED
+    virtual bool LadderMove(void); // REPLACED
     virtual void SetGroundEntity(trace_t *pm);
 
     virtual bool CanAccelerate(void)
@@ -83,7 +84,7 @@ class CMomentumGameMovement : public CGameMovement
         BaseClass::ProcessMovement(pBasePlayer, pMove);
     }
 
-	void Friction(void);
+    void Friction(void);
 
     // Duck
     virtual void Duck(void);
@@ -96,15 +97,15 @@ class CMomentumGameMovement : public CGameMovement
     virtual void StartGravity(void) OVERRIDE;
     virtual void FinishGravity(void) OVERRIDE;
     virtual void StuckGround(void);
-    virtual int ClipVelocity(Vector& in , Vector& normal , Vector& out , float overbounce);
+    virtual int ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce);
 
     // Movement Listener
     void AddMovementListener(IMovementListener *pListener) { m_vecListeners.AddToTail(pListener); }
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
-    
+
   private:
     CMomentumPlayer *m_pPlayer;
-    CUtlVector<IMovementListener*> m_vecListeners;
+    CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;
 
     bool m_bCheckForGrabbableLadder;
