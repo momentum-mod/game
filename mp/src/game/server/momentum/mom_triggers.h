@@ -1,11 +1,8 @@
-#ifndef TIMERTRIGGERS_H
-#define TIMERTRIGGERS_H
-#ifdef _WIN32
 #pragma once
-#endif
 
 #include "filters.h"
 #include "func_break.h"
+#include "modelentities.h"
 #include "triggers.h"
 #include "mapzones_build.h"
 
@@ -16,11 +13,11 @@ enum
 {
     // starts on 0x1000 - SF_TRIGGER_DISALLOW_BOTS
     // CTriggerTimerStart
-    SF_LIMIT_LEAVE_SPEED = 1 << 13,             // Limit speed if player bhopped in start zone?
-    SF_USE_LOOKANGLES = 1 << 14,                // Use look angles?
+    SF_LIMIT_LEAVE_SPEED = 1 << 13, // Limit speed if player bhopped in start zone?
+    SF_USE_LOOKANGLES = 1 << 14,    // Use look angles?
 
     // CTriggerOneHop
-    SF_TELEPORT_RESET_ONEHOP = 1 << 15,         // Reset hop state if player hops onto another different onehop
+    SF_TELEPORT_RESET_ONEHOP = 1 << 15, // Reset hop state if player hops onto another different onehop
 
     // CFuncShootBost and CTriggerMomentumPush
     SF_PUSH_DIRECTION_AS_FINAL_FORCE = 1 << 19, // Use the direction vector as final force instead of calculating it by
@@ -352,13 +349,13 @@ class CTriggerLimitMovement : public CBaseMomentumTrigger
     // starts on 0x1000 (or 1 << 12) - SF_TRIGGER_DISALLOW_BOTS
     enum
     {
-        SF_LIMIT_FORWARD = 1 << 13,                    // prevent moving forward
-        SF_LIMIT_LEFT = 1 << 14,                       // prevent moving to the left
-        SF_LIMIT_RIGHT = 1 << 15,                      // prevent moving to the right
-        SF_LIMIT_BACK = 1 << 16,                       // prevent moving backwards
-        SF_LIMIT_JUMP = 1 << 17,                       // prevent player from jumping
-        SF_LIMIT_CROUCH = 1 << 18,                     // prevent player from crouching
-        SF_LIMIT_BHOP = 1 << 19                        // prevent player from bhopping
+        SF_LIMIT_FORWARD = 1 << 13, // prevent moving forward
+        SF_LIMIT_LEFT = 1 << 14,    // prevent moving to the left
+        SF_LIMIT_RIGHT = 1 << 15,   // prevent moving to the right
+        SF_LIMIT_BACK = 1 << 16,    // prevent moving backwards
+        SF_LIMIT_JUMP = 1 << 17,    // prevent player from jumping
+        SF_LIMIT_CROUCH = 1 << 18,  // prevent player from crouching
+        SF_LIMIT_BHOP = 1 << 19     // prevent player from bhopping
     };
 };
 
@@ -500,4 +497,20 @@ class CTriggerSpeedThreshold : public CBaseMomentumTrigger
     COutputEvent m_OnThresholdEvent;
 };
 
-#endif // TIMERTRIGGERS_H
+class CFuncMomentumBrush : public CFuncBrush
+{
+public:
+    DECLARE_CLASS(CFuncMomentumBrush, CFuncBrush);
+    DECLARE_DATADESC();
+
+    CFuncMomentumBrush();
+
+    void Spawn() OVERRIDE;
+
+    bool IsOn() const OVERRIDE;
+    void TurnOn() OVERRIDE;
+    void TurnOff() OVERRIDE;
+
+    int m_iStageEnable;
+    byte m_iDisabledAlpha;
+};
