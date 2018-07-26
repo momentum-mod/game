@@ -7,6 +7,7 @@
 #include "mom_system_saveloc.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
+#include "mom_system_progress.h"
 
 #include "tier0/memdbgon.h"
 
@@ -992,11 +993,8 @@ DEFINE_KEYFIELD(m_bStuckOnGround, FIELD_BOOLEAN, "StuckOnGround"),
     END_DATADESC();
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerSlide, DT_TriggerSlide)
-SendPropBool(SENDINFO(m_bStuckOnGround)),
-SendPropBool(SENDINFO(m_bAllowingJump)),
-SendPropBool(SENDINFO(m_bDisableGravity)),
-SendPropBool(SENDINFO(m_bFixUpsideSlope)),
-END_SEND_TABLE();
+SendPropBool(SENDINFO(m_bStuckOnGround)), SendPropBool(SENDINFO(m_bAllowingJump)),
+    SendPropBool(SENDINFO(m_bDisableGravity)), SendPropBool(SENDINFO(m_bFixUpsideSlope)), END_SEND_TABLE();
 
 void CTriggerSlide::OnStartTouch(CBaseEntity *pOther)
 {
@@ -1348,3 +1346,82 @@ DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
     DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
     DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") END_DATADESC();
+
+LINK_ENTITY_TO_CLASS(func_momentum_brush, CFuncMomentumBrush);
+
+BEGIN_DATADESC(CFuncMomentumBrush)
+DEFINE_KEYFIELD(m_iStageEnable, FIELD_INTEGER, "StageEnable"), 
+DEFINE_KEYFIELD(m_iDisabledAlpha, FIELD_CHARACTER, "DisabledAlpha"),
+END_DATADESC();
+
+CFuncMomentumBrush::CFuncMomentumBrush()
+{
+    m_iStageEnable = 0;
+    m_iDisabledAlpha = 100;
+}
+
+void CFuncMomentumBrush::Spawn()
+{
+    // On spawn, we need to check if this brush should be enabled
+
+    SetMoveType(MOVETYPE_PUSH); // so it doesn't get pushed by anything
+    SetRenderMode(kRenderTransAlpha);
+
+    SetSolid(SOLID_VPHYSICS);
+    AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID);
+
+    if (m_iSolidity == BRUSHSOLID_NEVER)
+    {
+        AddSolidFlags(FSOLID_NOT_SOLID);
+    }
+
+    SetModel(STRING(GetModelName()));
+
+    if (g_pMomentumProgress->ShouldEnableBrush(m_iStageEnable))
+        TurnOn();
+    else
+        TurnOff();
+
+    // If it can't move/go away, it's really part of the world
+    if (!GetEntityName() || !m_iParent)
+        AddFlag(FL_WORLDBRUSH);
+
+    CreateVPhysics();
+
+    // Slam the object back to solid - if we really want it to be solid.
+    if (m_bSolidBsp)
+    {
+        SetSolid(SOLID_BSP);
+    }
+}
+
+bool CFuncMomentumBrush::IsOn() const
+{
+    return !m_iDisabled;
+}
+
+void CFuncMomentumBrush::TurnOn()
+{
+    // Turning this brush "on" means making it 100% solid and visible
+    if (IsOn())
+        return;
+
+    // MOM_TODO: The below is probably needed later on, after mappers make the map
+    /*if (!g_pMomentumProgress->ShouldEnableBrush(m_iStageEnable))
+        return;*/
+
+    RemoveSolidFlags(FSOLID_NOT_SOLID);
+    SetRenderColorA(255);
+    m_iDisabled = false;
+}
+
+void CFuncMomentumBrush::TurnOff()
+{
+    // Turning this brush "off" means making it non-solid, and only translucent
+    if (!IsOn())
+        return;
+
+    AddSolidFlags(FSOLID_NOT_SOLID);
+    SetRenderColorA(m_iDisabledAlpha);
+    m_iDisabled = true;
+}
