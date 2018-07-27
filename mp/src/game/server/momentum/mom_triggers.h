@@ -511,6 +511,9 @@ public:
     void TurnOn() OVERRIDE;
     void TurnOff() OVERRIDE;
 
+    void StartTouch(CBaseEntity* pOther) OVERRIDE;
+    void EndTouch(CBaseEntity* pOther) OVERRIDE;
+
     int m_iStageEnable;
     byte m_iDisabledAlpha;
 };
