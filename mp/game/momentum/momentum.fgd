@@ -279,29 +279,17 @@
 	output OnThreshold(void) : "Fires when the speed is on the threshold."
 ]
 
-@SolidClass base(Targetname, Parentname, Origin, Inputfilter, EnableDisable, Shadow) = func_momentum_brush : 
+@SolidClass base(Targetname, Parentname, Origin, Inputfilter, Shadow) = func_momentum_brush : 
 	"Brush entity used for the final stages in the campaign" 
 [
-	spawnflags(flags) =
-	[
-		2: "Ignore player +USE" : 1
-	]
-
-	_minlight(string) : "Minimum Light Level" : : "The minimum level of ambient light that hits this brush."
-
-	solidbsp(choices) : "Solid BSP" : 0 : "Set this if this brush is in heirarchy with a moving object of some kind, and the player can stand on this brush." =
-	[
-		0 : "No"
-		1 : "Yes"
-	]
-	vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush casts lightmap shadows." =
+	vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush should cast lightmap shadows." =
 	[
 		0 : "No"
 		1 : "Yes"
 	]
 
     StageEnable(integer) : "Unlock Stage" : 0 : "The stage that the player needs to beat for this brush to be enabled on spawn."
-	DisabledAlpha(integer) : "Disabled Alpha" : 100 : "The amount of translucency this brush has when disabled. 0 is transparent, 255 is solid."
+	DisabledAlpha(integer) : "Disabled Alpha" : 100 : "The amount of translucency this brush has when disabled. 0 is transparent, 255 is opaque."
 ]
 
 //-------------------------------------------------------------------------

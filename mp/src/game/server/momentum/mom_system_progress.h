@@ -7,8 +7,8 @@ class CMomentumProgress : public CAutoGameSystem
   public:
     CMomentumProgress();
 
-
     void BeatStage(int stage);
+    void Reset();
 
     bool ShouldEnableBrush(int stage);
 
