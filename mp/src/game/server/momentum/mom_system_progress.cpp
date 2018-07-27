@@ -17,6 +17,12 @@ void CMomentumProgress::BeatStage(int stage)
     // MOM_TODO: Save the progress here
 }
 
+void CMomentumProgress::Reset()
+{
+    for (int i = 0; i < 7; i++)
+        m_progresses[i] = 0;
+}
+
 bool CMomentumProgress::ShouldEnableBrush(int stage)
 {
     return (m_progresses[m_CurrentWorld] & (1 << stage)) == (1 << stage);
@@ -37,9 +43,14 @@ void CMomentumProgress::LevelShutdownPostEntity()
 
 }
 
-CON_COMMAND(beat_stage, "Tests the Beat Stage code.")
+CON_COMMAND(mom_prog_beat_stage, "Tests the Beat Stage code.")
 {
     g_pMomentumProgress->BeatStage(Q_atoi(args.Arg(1)));
+}
+
+CON_COMMAND(mom_prog_reset, "Resets progress")
+{
+    g_pMomentumProgress->Reset();
 }
 
 CMomentumProgress s_Progress;
