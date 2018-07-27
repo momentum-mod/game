@@ -8,6 +8,7 @@
 #include "mom_timer.h"
 #include "mom_triggers.h"
 #include "mom_system_progress.h"
+#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -1365,15 +1366,11 @@ void CFuncMomentumBrush::Spawn()
     // On spawn, we need to check if this brush should be enabled
 
     SetMoveType(MOVETYPE_PUSH); // so it doesn't get pushed by anything
-    SetRenderMode(kRenderTransAlpha);
+    SetRenderMode(kRenderTransAlpha); // Allows alpha override
 
-    SetSolid(SOLID_VPHYSICS);
+    SetSolid(SOLID_BSP); // Seems to have the best collision for standing/jumping (see the bhop block fix system)
     AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID);
-
-    if (m_iSolidity == BRUSHSOLID_NEVER)
-    {
-        AddSolidFlags(FSOLID_NOT_SOLID);
-    }
+    AddSolidFlags(FSOLID_TRIGGER); // Allow us to touch the player
 
     SetModel(STRING(GetModelName()));
 
@@ -1385,14 +1382,8 @@ void CFuncMomentumBrush::Spawn()
     // If it can't move/go away, it's really part of the world
     if (!GetEntityName() || !m_iParent)
         AddFlag(FL_WORLDBRUSH);
-
+    
     CreateVPhysics();
-
-    // Slam the object back to solid - if we really want it to be solid.
-    if (m_bSolidBsp)
-    {
-        SetSolid(SOLID_BSP);
-    }
 }
 
 bool CFuncMomentumBrush::IsOn() const
@@ -1424,4 +1415,23 @@ void CFuncMomentumBrush::TurnOff()
     AddSolidFlags(FSOLID_NOT_SOLID);
     SetRenderColorA(m_iDisabledAlpha);
     m_iDisabled = true;
+}
+
+void CFuncMomentumBrush::StartTouch(CBaseEntity* pOther)
+{
+    BaseClass::StartTouch(pOther);
+    // MOM_TODO: Show a UI that says which stage needs unlocking
+    if (pOther->IsPlayer())
+    {
+        if (m_iDisabled)
+            ClientPrint((CBasePlayer*)pOther, HUD_PRINTCENTER, 
+                        CFmtStr("Beat Stage %i To Make This Solid!", m_iStageEnable).Get());
+    }
+}
+
+void CFuncMomentumBrush::EndTouch(CBaseEntity* pOther)
+{
+    BaseClass::EndTouch(pOther);
+    // MOM_TODO: Hide the UI
+    // if (m_iDisabled && pOther->IsPlayer()) or something
 }
