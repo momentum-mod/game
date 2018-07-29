@@ -279,8 +279,7 @@
 	output OnThreshold(void) : "Fires when the speed is on the threshold."
 ]
 
-@SolidClass base(Targetname, Parentname, Origin, Inputfilter, Shadow) = func_momentum_brush : 
-	"Brush entity used for the final stages in the campaign" 
+@SolidClass base(Targetname, Parentname, Origin, Inputfilter, Shadow) = func_momentum_brush : "Brush entity used for the final stages in the campaign" 
 [
 	vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush should cast lightmap shadows." =
 	[
@@ -288,8 +287,26 @@
 		1 : "Yes"
 	]
 
-    StageEnable(integer) : "Unlock Stage" : 0 : "The stage that the player needs to beat for this brush to be enabled on spawn."
-	DisabledAlpha(integer) : "Disabled Alpha" : 100 : "The amount of translucency this brush has when disabled. 0 is transparent, 255 is opaque."
+    Invert(choices) : "Invert behavior" : 0 : "Set this to Yes if the behavior of the brush should be inverted (Yes = If the player has the stage beaten, the brush should be Disabled)." = 
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+
+    World(integer) : "Progress World" : -1 : "The world of the stage the player has to beat. -1 is the current world."
+    Stage(integer) : "Progress Stage" : 0 : "The stage that the player needs to beat for this brush to consider activating (or deactivating if inverted)."
+	DisabledAlpha(integer) : "Disabled Alpha" : 102 : "The amount of translucency this brush has when disabled. 0 is transparent, 255 is opaque."
+    DisableUI(choices) : "Disable UI Popup" : 0 : "If set to Yes, disables the UI popup/warning that occurs when the user touches the deactivated brush." =
+    [
+        0 : "No"
+        1 : "Yes"
+    ]
+]
+
+@FilterClass base(Targetname) = filter_momentum_progress : "Filter that checks to see if the local player has beat the given stage of a given world."
+[
+    World(integer) : "World Number" : -1 : "The world of the stage that needs to be beaten. -1 defaults to the current world number."
+    Stage(integer) : "Stage Number" : 0 : "The stage number that has to be beaten."
 ]
 
 //-------------------------------------------------------------------------

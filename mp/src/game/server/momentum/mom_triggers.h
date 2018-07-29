@@ -514,6 +514,24 @@ public:
     void StartTouch(CBaseEntity* pOther) OVERRIDE;
     void EndTouch(CBaseEntity* pOther) OVERRIDE;
 
-    int m_iStageEnable;
+    int m_iStage;
+    int m_iWorld;
+    bool m_bInverted;
+    bool m_bDisableUI;
     byte m_iDisabledAlpha;
+};
+
+class CFilterMomentumProgress : public CBaseFilter
+{
+public:
+    DECLARE_CLASS(CFilterMomentumProgress, CBaseFilter);
+    DECLARE_DATADESC();
+
+    CFilterMomentumProgress();
+
+protected:
+    bool PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity) OVERRIDE;
+
+private:
+    int m_iWorld, m_iStage;
 };
