@@ -23,9 +23,13 @@ void CMomentumProgress::Reset()
         m_progresses[i] = 0;
 }
 
-bool CMomentumProgress::ShouldEnableBrush(int stage)
+bool CMomentumProgress::IsStageBeat(int stage, int world /*= -1*/)
 {
-    return (m_progresses[m_CurrentWorld] & (1 << stage)) == (1 << stage);
+    // Default to current world if out of bounds
+    if (world < 0 || world > 6)
+        world = m_CurrentWorld;
+
+    return (m_progresses[world] & (1 << stage)) == (1 << stage);
 }
 
 void CMomentumProgress::PostInit()

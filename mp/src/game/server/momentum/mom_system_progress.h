@@ -10,7 +10,7 @@ class CMomentumProgress : public CAutoGameSystem
     void BeatStage(int stage);
     void Reset();
 
-    bool ShouldEnableBrush(int stage);
+    bool IsStageBeat(int stage, int world = -1);
 
 protected:
     void PostInit() OVERRIDE; // Load
