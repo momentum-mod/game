@@ -1271,21 +1271,29 @@ DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
     DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
     DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
     DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
-    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), 
+DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
-    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") END_DATADESC();
+    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") 
+END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(func_momentum_brush, CFuncMomentumBrush);
 
 BEGIN_DATADESC(CFuncMomentumBrush)
-DEFINE_KEYFIELD(m_iStageEnable, FIELD_INTEGER, "StageEnable"), 
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"), 
 DEFINE_KEYFIELD(m_iDisabledAlpha, FIELD_CHARACTER, "DisabledAlpha"),
+DEFINE_KEYFIELD(m_bInverted, FIELD_BOOLEAN, "Invert"),
+DEFINE_KEYFIELD(m_bDisableUI, FIELD_BOOLEAN, "DisableUI"),
 END_DATADESC();
 
 CFuncMomentumBrush::CFuncMomentumBrush()
 {
-    m_iStageEnable = 0;
-    m_iDisabledAlpha = 100;
+    m_iWorld = -1;
+    m_iStage = 0;
+    m_iDisabledAlpha = 102;
+    m_bInverted = false;
+    m_bDisableUI = false;
 }
 
 void CFuncMomentumBrush::Spawn()
@@ -1301,7 +1309,7 @@ void CFuncMomentumBrush::Spawn()
 
     SetModel(STRING(GetModelName()));
 
-    if (g_pMomentumProgress->ShouldEnableBrush(m_iStageEnable))
+    if (g_pMomentumProgress->IsStageBeat(m_iStage, m_iWorld))
         TurnOn();
     else
         TurnOff();
@@ -1315,7 +1323,7 @@ void CFuncMomentumBrush::Spawn()
 
 bool CFuncMomentumBrush::IsOn() const
 {
-    return !m_iDisabled;
+    return (m_bInverted ? m_iDisabled != 0 : m_iDisabled == 0);
 }
 
 void CFuncMomentumBrush::TurnOn()
@@ -1328,9 +1336,14 @@ void CFuncMomentumBrush::TurnOn()
     /*if (!g_pMomentumProgress->ShouldEnableBrush(m_iStageEnable))
         return;*/
 
-    RemoveSolidFlags(FSOLID_NOT_SOLID);
-    SetRenderColorA(255);
-    m_iDisabled = false;
+    if (m_bInverted)
+       AddSolidFlags(FSOLID_NOT_SOLID);
+    else
+       RemoveSolidFlags(FSOLID_NOT_SOLID);
+
+    SetRenderColorA(m_bInverted ? m_iDisabledAlpha : 255);
+
+    m_iDisabled = m_bInverted;
 }
 
 void CFuncMomentumBrush::TurnOff()
@@ -1339,20 +1352,28 @@ void CFuncMomentumBrush::TurnOff()
     if (!IsOn())
         return;
 
-    AddSolidFlags(FSOLID_NOT_SOLID);
-    SetRenderColorA(m_iDisabledAlpha);
-    m_iDisabled = true;
+    if (m_bInverted)
+        RemoveSolidFlags(FSOLID_NOT_SOLID);    
+    else
+        AddSolidFlags(FSOLID_NOT_SOLID);
+
+    SetRenderColorA(m_bInverted ? 255 : m_iDisabledAlpha);
+
+    m_iDisabled = !m_bInverted;
 }
 
 void CFuncMomentumBrush::StartTouch(CBaseEntity* pOther)
 {
     BaseClass::StartTouch(pOther);
     // MOM_TODO: Show a UI that says which stage needs unlocking
-    if (pOther->IsPlayer())
+    if (!m_bDisableUI)
     {
-        if (m_iDisabled)
-            ClientPrint((CBasePlayer*)pOther, HUD_PRINTCENTER, 
-                        CFmtStr("Beat Stage %i To Make This Solid!", m_iStageEnable).Get());
+        if (pOther->IsPlayer())
+        {
+            if (m_iDisabled)
+                ClientPrint((CBasePlayer*)pOther, HUD_PRINTCENTER, 
+                            CFmtStr("Beat Stage %i To Make This Solid!", m_iStage).Get());
+        }
     }
 }
 
@@ -1361,4 +1382,27 @@ void CFuncMomentumBrush::EndTouch(CBaseEntity* pOther)
     BaseClass::EndTouch(pOther);
     // MOM_TODO: Hide the UI
     // if (m_iDisabled && pOther->IsPlayer()) or something
+}
+
+
+LINK_ENTITY_TO_CLASS(filter_momentum_progress, CFilterMomentumProgress);
+BEGIN_DATADESC(CFilterMomentumProgress)
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage")
+END_DATADESC();
+
+CFilterMomentumProgress::CFilterMomentumProgress()
+{
+    m_iWorld = -1;
+    m_iStage = 0;
+}
+
+bool CFilterMomentumProgress::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
+{
+    // So far the only entity that is a player is the local player
+    if (pEntity->IsPlayer())
+    {
+        return g_pMomentumProgress->IsStageBeat(m_iStage, m_iWorld);
+    }
+    return false;
 }
