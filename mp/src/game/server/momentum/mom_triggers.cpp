@@ -1406,3 +1406,73 @@ bool CFilterMomentumProgress::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity
     }
     return false;
 }
+
+
+LINK_ENTITY_TO_CLASS(trigger_momentum_campaign_changelevel, CTriggerCampaignChangelevel);
+
+BEGIN_DATADESC(CTriggerCampaignChangelevel)
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
+DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
+DEFINE_KEYFIELD(m_MapOverride, FIELD_STRING, "map_name_override")
+END_DATADESC();
+
+CTriggerCampaignChangelevel::CTriggerCampaignChangelevel()
+{
+    m_iWorld = -1;
+    m_iStage = 0;
+    m_iGametype = 0;
+}
+
+void CTriggerCampaignChangelevel::Spawn()
+{
+    
+}
+
+void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
+{
+    BaseClass::OnStartTouch(pOther);
+
+    if (pOther->IsPlayer())
+    {
+        if (!m_MapOverride)
+        {
+            if (m_iWorld == -1)
+            {
+                // Go back to the Hub
+                engine->ServerCommand("map mom_hub");
+            }
+            else
+            {
+                // Otherwise go to a specific world stage
+
+                // Build the string
+                const char *pMapPrefix;
+                switch (m_iGametype)
+                {
+                case GAMEMODE_SURF:
+                case GAMEMODE_TRICKSURF:
+                    pMapPrefix = "surf_";
+                    break;
+                case GAMEMODE_BHOP:
+                    pMapPrefix = "bhop_";
+                    break;
+                case GAMEMODE_KZ:
+                    pMapPrefix = "kz_";
+                    break;
+                    // MOM_TODO: Add the rest of the gametypes here
+                default:
+                    pMapPrefix = "";
+                    break;
+                }
+
+                engine->ServerCommand(CFmtStr("map %sw%is%i", pMapPrefix, m_iWorld, m_iStage).Get());
+            }
+        }
+        else
+        {
+            // Go to the specific map
+            engine->ServerCommand(CFmtStr("map %s", m_MapOverride.ToCStr()).Get());
+        }
+    }
+}

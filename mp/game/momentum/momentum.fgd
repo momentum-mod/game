@@ -227,10 +227,8 @@
 [
 	StuckOnGround(integer) : "Stuck to ground" : 0 : "Should the player get stuck to the ground while sliding? (Useful in case the slope is going suddently down"
 	AllowingJump(integer) : "Allow jump button" : 1 : "Can the player jump while sliding? (doesn't work with stuckonground option.)"
-	DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to loose speed while going up or increase speed while going down)"
-	FixUpsideSlope(integer) : "Fix Upside Slopes" : 0 : "When sometimes mounting a slope, you loose velocity, enable this to not loose speed while going up on the slopes."
-	//TraceDown(float) : "Maxium traceray distance" : 64 : "If you're inside the trigger, that will be maximum the traceray distance that goes down in units with stuck to ground feature. Useful if you have no brushes under that amount of units. So it doesn't traceray for the skybox under for example."
-	//GravityValue(float) : "Gravity Value" : 1.0 : "Gravity value while sliding. (this is the gravity used while being on a slope."
+	DisableGravity(integer) : "Disable Gravity" : 0 : "Disable entirely the gravity code while sliding. (useful when you don't want to lose speed while going up or increase speed while going down)"
+	FixUpsideSlope(integer) : "Fix Upside Slopes" : 0 : "When sometimes mounting a slope, you lose velocity, enable this to not lose speed while going up on the slopes."
 ]
 
 @SolidClass base(Trigger) = trigger_momentum_reversespeed : "Trigger for reversing the speed of the momentum player." 
@@ -279,7 +277,13 @@
 	output OnThreshold(void) : "Fires when the speed is on the threshold."
 ]
 
-@SolidClass base(Targetname, Parentname, Origin, Inputfilter, Shadow) = func_momentum_brush : "Brush entity used for the final stages in the campaign" 
+@BaseClass = Campaign
+[
+    World(integer) : "World Number" : -1 : "The world number the stage is in. -1 (usually) defaults to the current world."
+    Stage(integer) : "Stage Number" : 0 : "The stage number."
+]
+
+@SolidClass base(Targetname, Parentname, Origin, Inputfilter, Shadow, Campaign) = func_momentum_brush : "Brush entity used for the final stages in the campaign. The brush activates when the given stage of the given world is beat (or not beat, if this brush is inverted)" 
 [
 	vrad_brush_cast_shadows(choices) : "Shadows" : 0 : "Set this if this brush should cast lightmap shadows." =
 	[
@@ -293,8 +297,6 @@
         1 : "Yes"
     ]
 
-    World(integer) : "Progress World" : -1 : "The world of the stage the player has to beat. -1 is the current world."
-    Stage(integer) : "Progress Stage" : 0 : "The stage that the player needs to beat for this brush to consider activating (or deactivating if inverted)."
 	DisabledAlpha(integer) : "Disabled Alpha" : 102 : "The amount of translucency this brush has when disabled. 0 is transparent, 255 is opaque."
     DisableUI(choices) : "Disable UI Popup" : 0 : "If set to Yes, disables the UI popup/warning that occurs when the user touches the deactivated brush." =
     [
@@ -303,10 +305,28 @@
     ]
 ]
 
-@FilterClass base(Targetname) = filter_momentum_progress : "Filter that checks to see if the local player has beat the given stage of a given world."
+@FilterClass base(Targetname, Campaign) = filter_momentum_progress : "Filter that checks to see if the local player has beat the given stage of a given world."
 [
-    World(integer) : "World Number" : -1 : "The world of the stage that needs to be beaten. -1 defaults to the current world number."
-    Stage(integer) : "Stage Number" : 0 : "The stage number that has to be beaten."
+]
+
+@BaseClass = GameTypes
+[
+    gametype(choices) : "Game Type" : 0 : "The game type of the map." =
+    [
+        0 : "Unknown"
+        1 : "Allowed"
+        2 : "Surf"
+        3 : "Bhop"
+        4 : "Kz (Climbing)"
+        5 : "Tricksurf"
+        6 : "Trikz"
+        7 : "RJ"
+    ]
+]
+
+@SolidClass base(Trigger, GameTypes, Campaign) = trigger_momentum_campaign_changelevel : "Trigger that changes the level to the specified world's stage of a given gametype. World number of -1 will teleport to the Hub." 
+[
+	map_name_override(string) : "Map Name Override" : "" : "If set, this trigger will load this specific map name."
 ]
 
 //-------------------------------------------------------------------------
