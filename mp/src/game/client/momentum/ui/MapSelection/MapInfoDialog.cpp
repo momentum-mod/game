@@ -233,7 +233,8 @@ void CDialogMapInfo::GetMapInfoCallback(KeyValues *pKvResponse)
         return;
     }
 
-    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict || pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode409Conflict || pCallback->m_eStatusCode ==
+    k_EHTTPStatusCode404NotFound)
     {
         char locl[BUFSIZELOCL];
         LOCALIZE_TOKEN(staged, "MOM_API_Unavailable", locl);
@@ -316,10 +317,10 @@ void CDialogMapInfo::GetMapInfoCallback(KeyValues *pKvResponse)
                 const char *gameType;
                 switch (gameMode)
                 {
-                    case MOMGM_SURF:
+                    case GAMEMODE_SURF:
                         gameType = "Surf";
                         break;
-                    case MOMGM_BHOP:
+                    case GAMEMODE_BHOP:
                         gameType = "Bunnyhop";
                         break;
                     default:

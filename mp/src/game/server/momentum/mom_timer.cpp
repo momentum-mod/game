@@ -316,23 +316,23 @@ void CMomentumTimer::SetGameModeConVars()
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
     {
-    case MOMGM_SURF:
+    case GAMEMODE_SURF:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(150);
         sv_maxspeed.SetValue(260);
         break;
-    case MOMGM_BHOP:
+    case GAMEMODE_BHOP:
         sv_maxvelocity.SetValue(100000);
         sv_airaccelerate.SetValue(1000);
         sv_maxspeed.SetValue(260);
         break;
-    case MOMGM_SCROLL:
+    case GAMEMODE_KZ:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(100);
         sv_maxspeed.SetValue(250);
         break;
-    case MOMGM_UNKNOWN:
-    case MOMGM_ALLOWED:
+    case GAMEMODE_UNKNOWN:
+    case GAMEMODE_ALLOWED:
         sv_maxvelocity.SetValue(3500);
         sv_airaccelerate.SetValue(150);
         sv_maxspeed.SetValue(260);

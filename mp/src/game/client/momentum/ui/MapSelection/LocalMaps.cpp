@@ -94,15 +94,15 @@ bool MapHasStages(const char* szMap)
 void CLocalMaps::FillMapstruct(mapstruct_t *m)
 {
     //Game mode
-    m->m_iGameMode = MOMGM_UNKNOWN;
+    m->m_iGameMode = GAMEMODE_UNKNOWN;
     float tickRate = 0.015f;
     if (!V_strnicmp(m->m_szMapName, "surf_", 5))
     {
-        m->m_iGameMode = MOMGM_SURF;
+        m->m_iGameMode = GAMEMODE_SURF;
     }
     else if (!V_strnicmp(m->m_szMapName, "bhop_", 5))
     {
-        m->m_iGameMode = MOMGM_BHOP;
+        m->m_iGameMode = GAMEMODE_BHOP;
         tickRate = 0.01f;
     }
 

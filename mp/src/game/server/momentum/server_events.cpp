@@ -19,33 +19,32 @@ void Momentum::GameInit()
     ConVarRef map("host_map");
     const char *pMapName = map.GetString();
     // This will only happen if the user didn't use the map selector to start a map
-    ConVarRef("sv_contact").SetValue("http://momentum-mod.org/contact");
+
     //set gamemode depending on map name
     //MOM_TODO: This needs to read map entity/momfile data and set accordingly
-
     if (!Q_strnicmp(pMapName, "surf_", strlen("surf_")))
     {
-        DevLog("Setting game mode to surf (GM# %d)\n", MOMGM_SURF);
-        gm.SetValue(MOMGM_SURF);
+        DevLog("Setting game mode to surf (GM# %d)\n", GAMEMODE_SURF);
+        gm.SetValue(GAMEMODE_SURF);
     }
     else if (!Q_strnicmp(pMapName, "bhop_", strlen("bhop_")))
     {
-        DevLog("Setting game mode to bhop (GM# %d)\n", MOMGM_BHOP);
-        gm.SetValue(MOMGM_BHOP);
+        DevLog("Setting game mode to bhop (GM# %d)\n", GAMEMODE_BHOP);
+        gm.SetValue(GAMEMODE_BHOP);
     }
     else if (!Q_strnicmp(pMapName, "kz_", strlen("kz_")))
     {
-        DevLog("Setting game mode to scroll (GM# %d)\n", MOMGM_SCROLL);
-        gm.SetValue(MOMGM_SCROLL);
+        DevLog("Setting game mode to scroll (GM# %d)\n", GAMEMODE_KZ);
+        gm.SetValue(GAMEMODE_KZ);
     }
     else if (!Q_strcmp(pMapName, "background") || !Q_strcmp(pMapName, "credits"))
     {
-        gm.SetValue(MOMGM_ALLOWED);
+        gm.SetValue(GAMEMODE_ALLOWED);
     }
     else
     {
         DevLog("Setting game mode to unknown\n");
-        gm.SetValue(MOMGM_UNKNOWN);
+        gm.SetValue(GAMEMODE_UNKNOWN);
     }
 }
 
