@@ -529,7 +529,6 @@ public:
     CTriggerCampaignChangelevel();
 
 protected:
-    void Spawn() OVERRIDE;
     void OnStartTouch(CBaseEntity* pOther) OVERRIDE;
 
 private:

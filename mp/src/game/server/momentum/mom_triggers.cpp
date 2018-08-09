@@ -1424,11 +1424,6 @@ CTriggerCampaignChangelevel::CTriggerCampaignChangelevel()
     m_iGametype = 0;
 }
 
-void CTriggerCampaignChangelevel::Spawn()
-{
-    
-}
-
 void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
 {
     BaseClass::OnStartTouch(pOther);
@@ -1440,7 +1435,7 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
             if (m_iWorld == -1)
             {
                 // Go back to the Hub
-                engine->ServerCommand("map mom_hub");
+                engine->ClientCommand(pOther->edict(), "map mom_hub\n");
             }
             else
             {
@@ -1466,13 +1461,13 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
                     break;
                 }
 
-                engine->ServerCommand(CFmtStr("map %sw%is%i", pMapPrefix, m_iWorld, m_iStage).Get());
+                engine->ClientCommand(pOther->edict(), CFmtStr("map %sw%i_s%i\n", pMapPrefix, m_iWorld, m_iStage).Get());
             }
         }
         else
         {
             // Go to the specific map
-            engine->ServerCommand(CFmtStr("map %s", m_MapOverride.ToCStr()).Get());
+            engine->ClientCommand(pOther->edict(), CFmtStr("map %s\n", m_MapOverride.ToCStr()).Get());
         }
     }
 }
