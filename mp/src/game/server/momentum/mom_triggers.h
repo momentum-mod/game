@@ -535,3 +535,21 @@ protected:
 private:
     int m_iWorld, m_iStage;
 };
+
+class CTriggerCampaignChangelevel : public CBaseMomentumTrigger
+{
+public:
+    DECLARE_CLASS(CTriggerCampaignChangelevel, CBaseMomentumTrigger);
+    DECLARE_DATADESC();
+
+    CTriggerCampaignChangelevel();
+
+protected:
+    void Spawn() OVERRIDE;
+    void OnStartTouch(CBaseEntity* pOther) OVERRIDE;
+
+private:
+    int m_iWorld, m_iStage, m_iGametype;
+    string_t m_MapOverride;
+
+};
