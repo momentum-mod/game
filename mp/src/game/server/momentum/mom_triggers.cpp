@@ -1471,3 +1471,30 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
         }
     }
 }
+
+
+LINK_ENTITY_TO_CLASS(info_momentum_map, CMomentumMapInfo);
+
+BEGIN_DATADESC(CMomentumMapInfo)
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
+DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
+DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
+DEFINE_KEYFIELD(m_MapAuthor, FIELD_STRING, "author")
+END_DATADESC();
+
+CMomentumMapInfo::CMomentumMapInfo(): m_iWorld(-1), m_iStage(0), m_iGametype(0)
+{
+}
+
+void CMomentumMapInfo::Spawn()
+{
+    BaseClass::Spawn();
+
+    KeyValues *pKv = new KeyValues("map_info");
+    pKv->SetInt("world", m_iWorld);
+    pKv->SetInt("stage", m_iStage);
+    pKv->SetInt("gametype", m_iGametype);
+    pKv->SetString("author", m_MapAuthor.ToCStr());
+    g_pModuleComms->FireEvent(pKv);
+    // MOM_TODO: Handle this event in Client (UI) and Timer?
+}

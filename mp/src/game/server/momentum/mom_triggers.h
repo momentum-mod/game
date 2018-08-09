@@ -534,5 +534,20 @@ protected:
 private:
     int m_iWorld, m_iStage, m_iGametype;
     string_t m_MapOverride;
+};
 
+class CMomentumMapInfo : public CPointEntity
+{
+public:
+    DECLARE_CLASS(CMomentumMapInfo, CPointEntity);
+    DECLARE_DATADESC();
+
+    CMomentumMapInfo();
+
+protected:
+    void Spawn() OVERRIDE;
+
+private:
+    int m_iWorld, m_iStage, m_iGametype;
+    string_t m_MapAuthor;
 };
