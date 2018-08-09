@@ -453,9 +453,8 @@ void CMOMSaveLocSystem::CheckTimer()
 
         switch (gamemode.GetInt())
         {
-        case MOMGM_SURF:
-        case MOMGM_BHOP:
-        case MOMGM_SCROLL:
+        case GAMEMODE_SURF:
+        case GAMEMODE_BHOP:
             g_pMomentumTimer->Stop(false);
         default:
             break;

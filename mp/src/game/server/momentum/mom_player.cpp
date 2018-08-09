@@ -269,11 +269,11 @@ void CMomentumPlayer::Spawn()
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
     {
-    case MOMGM_SCROLL:
+    case GAMEMODE_KZ:
         DisableAutoBhop();
         break;
-    case MOMGM_BHOP:
-    case MOMGM_SURF:
+    case GAMEMODE_BHOP:
+    case GAMEMODE_SURF:
     {
         if (!g_pMomentumTimer->GetZoneCount())
         {
@@ -283,7 +283,7 @@ void CMomentumPlayer::Spawn()
             MessageEnd();
         }
     }
-    case MOMGM_UNKNOWN:
+    case GAMEMODE_UNKNOWN:
     default:
         EnableAutoBhop();
         break;

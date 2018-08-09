@@ -153,7 +153,7 @@ void CMomentumGameMovement::WalkMove()
     trace_t pm;
     Vector forward, right, up;
 
-    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == GAMEMODE_KZ)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -985,7 +985,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
 
     // stamina stuff (scroll/kz gamemode only)
-    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == GAMEMODE_KZ)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
