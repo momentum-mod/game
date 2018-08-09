@@ -18,13 +18,19 @@
 // Gamemode for momentum
 enum GAMEMODES
 {
-    MOMGM_SURF = 0, // Surfing (66t, 3500 maxvel)
-    MOMGM_BHOP,     // Bhopping (100t, 10k maxvel)
-    MOMGM_SCROLL,   // Scrolling/Stamina (currently activates with kz_)
-    MOMGM_UNKNOWN,  // Non-recognized map (no prefix/info ents in it)
-    MOMGM_ALLOWED,  // not "official gamemode" but must be allowed for other reasons
+    GAMEMODE_UNKNOWN = 0, // Non-recognized map (no info ents in it)
+    GAMEMODE_ALLOWED, // not "official gamemode" but must be allowed for other reasons
+    GAMEMODE_SURF,// Surfing (66t, 3500 maxvel)
+    GAMEMODE_BHOP, // Bhopping (100t, 10k maxvel)
+    GAMEMODE_KZ, // Scrolling/Stamina (currently activates with kz_)
+    GAMEMODE_TRICKSURF,
+    GAMEMODE_TRIKZ,
+    GAMEMODE_RJ,
+    // MOM_TODO: etc
 
-};
+    // NOTE NOTE: IF YOU UPDATE THIS, UPDATE MOMENTUM.FGD's "GameTypes" BASECLASS!
+
+} GAMEMODE;
 
 // Run Flags
 enum RUN_FLAG

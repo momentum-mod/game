@@ -863,16 +863,16 @@ void CMomentumLobbySystem::SetGameInfoStatus()
     const char *gameMode;
     switch (gm.GetInt())
     {
-    case MOMGM_SURF:
+    case GAMEMODE_SURF:
         gameMode = "Surfing";
         break;
-    case MOMGM_BHOP:
+    case GAMEMODE_BHOP:
         gameMode = "Bhopping";
         break;
-    case MOMGM_SCROLL:
-        gameMode = "Scrolling";
+    case GAMEMODE_KZ:
+        gameMode = "Climbing";
         break;
-    case MOMGM_UNKNOWN:
+    case GAMEMODE_UNKNOWN:
     default:
         gameMode = "Playing";
         break;

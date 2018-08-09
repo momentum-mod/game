@@ -1445,7 +1445,7 @@ void CClientTimesDisplay::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, 
 bool CClientTimesDisplay::GetPlayerTimes(KeyValues *kv, bool fullUpdate)
 {
     ConVarRef gm("mom_gamemode");
-    if (!kv || gm.GetInt() == MOMGM_ALLOWED)
+    if (!kv || gm.GetInt() == GAMEMODE_ALLOWED)
         return false;
 
     KeyValues *pLeaderboards = new KeyValues("leaderboards");
