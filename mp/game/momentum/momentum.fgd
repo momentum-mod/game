@@ -329,6 +329,11 @@
 	map_name_override(string) : "Map Name Override" : "" : "If set, this trigger will load this specific map name."
 ]
 
+@PointClass base(Targetname, Campaign, GameTypes) = info_momentum_map : "An entity used to describe map information."
+[
+    author(string) : "Map Author" : "" : "The map's original author(s)."
+]
+
 //-------------------------------------------------------------------------
 //
 // Weapons

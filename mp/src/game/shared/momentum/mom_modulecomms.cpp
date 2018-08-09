@@ -142,7 +142,7 @@ void ModuleCommunication::OnEvent(KeyValues* pKv)
     }
     else
     {
-        Warning("Firing modulecom event %s with no registered listeners!\n", pKv->GetName());
+        Warning("Trying to fire modulecom event %s with no registered listeners!\n", pKv->GetName());
     }
 
     pKv->deleteThis();
