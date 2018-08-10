@@ -7,7 +7,7 @@
         //Note: The following is only used if the above is "0"
         "MainMenu.Logo.Image"                           "menu/logo"//This is based in materials/vgui !!
         "MainMenu.Logo.Image.Width"                     "350"
-        "MainMenu.Logo.Image.Height"                    "75"
+        "MainMenu.Logo.Image.Height"                    "90"
         
         //Note: These are used for position if the logo is not attached to the menu
 		"MainMenu.Logo.OffsetX"							"2"
