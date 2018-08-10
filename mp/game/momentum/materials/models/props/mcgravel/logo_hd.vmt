@@ -1,6 +1,6 @@
 VertexLitGeneric
 {
-	"$basetexture" "models/props/mcgravel/mom_hdlogo_ao"
+	"$basetexture" "models/props/mcgravel/mom_hdlogo_d"
 	"$bumpmap" "models/props/mcgravel/mom_hdlogo_n"
 	"$surfaceprop" "Metal"
 
