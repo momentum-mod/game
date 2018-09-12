@@ -14,6 +14,9 @@ GameplaySettingsPage::GameplaySettingsPage(Panel *pParent) : BaseClass(pParent, 
 
     m_pLowerSpeedCVarEntry = FindControl<CvarTextEntry>("LowerSpeedEntry");
     m_pLowerSpeed = FindControl<CvarToggleCheckButton>("LowerWeaponButton");
+    
+    m_pOverlappingKeys = FindControl<CvarToggleCheckButton>("OverlappingKeys");
+    m_pReleaseForwardOnJump = FindControl<CvarToggleCheckButton>("ReleaseForwardOnJump");
 
     m_pPlayBlockSound = FindControl<CvarToggleCheckButton>("PlayBlockSound");
     m_pSaveCheckpoints = FindControl<CvarToggleCheckButton>("SaveCheckpoints");
