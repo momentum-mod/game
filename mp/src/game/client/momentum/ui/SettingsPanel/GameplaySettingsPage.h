@@ -23,6 +23,9 @@ class GameplaySettingsPage : public SettingsPage
 private:
     void UpdateSliderEntries() const;
 
+    vgui::CvarToggleCheckButton *m_pOverlappingKeys;
+    vgui::CvarToggleCheckButton *m_pReleaseForwardOnJump;
+
     vgui::CvarToggleCheckButton *m_pPlayBlockSound;
     vgui::CvarToggleCheckButton *m_pSaveCheckpoints;
     vgui::CvarSlider *m_pYawSpeedSlider;
