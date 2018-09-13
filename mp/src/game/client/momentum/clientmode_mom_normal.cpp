@@ -278,8 +278,15 @@ int ClientModeMOMNormal::MovementDirection(const QAngle viewangles, const Vector
 
 bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
 {
+	if (!cmd->command_number)
+    {
+        return BaseClass::CreateMove(flInputSampleTime, cmd);
+	}
+
     C_BasePlayer *local_player = C_BasePlayer::GetLocalPlayer();
     static int dominant_buttons = 0;
+    static int prev_flags = 0;
+
     int mdir;
 
     if (!local_player)
@@ -289,7 +296,8 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
 
     mdir = MovementDirection(cmd->viewangles, local_player->GetAbsVelocity());
 
-    if (mom_release_forward_on_jump.GetBool() && FL_ONGROUND & local_player->GetFlags() && local_player->GetGroundEntity() &&
+    if (mom_release_forward_on_jump.GetBool() && prev_flags & FL_ONGROUND && FL_ONGROUND & local_player->GetFlags() &&
+        local_player->GetGroundEntity() &&
         cmd->buttons & IN_JUMP)
     {
         switch (mdir)
@@ -373,6 +381,8 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
             dominant_buttons &= ~(IN_MOVELEFT | IN_MOVERIGHT);
         }
 	}
+
+    prev_flags = local_player->GetFlags();
 
     return BaseClass::CreateMove(flInputSampleTime, cmd);
 }
