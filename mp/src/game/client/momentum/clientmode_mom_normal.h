@@ -27,6 +27,15 @@ namespace vgui
 typedef unsigned long HScheme;
 }
 
+enum
+{
+    MD_NONE = 0,
+    MD_Forwards,
+    MD_Sideways,
+    MD_Sideways2,
+    MD_Backwards,
+};
+
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -45,6 +54,8 @@ class ClientModeMOMNormal : public ClientModeShared
     int HandleSpectatorKeyInput(int down, ButtonCode_t keynum, const char *pszCurrentBinding) OVERRIDE;
 
     void SetupPointers();
+    int MovementDirection(const QAngle viewangles, const Vector velocity);
+    bool CreateMove(float flInputSampleTime, CUserCmd *cmd);
 
   public:
     CHudMenuStatic *m_pHudMenuStatic;
