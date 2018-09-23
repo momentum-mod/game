@@ -2,7 +2,7 @@ WeaponData
 {
     "CrosshairMinDistance"      "5"
     "CrosshairDeltaDistance"    "3"
-    "BuiltRightHanded"          "0"
+    "BuiltRightHanded"          "1"
     "PlayerAnimationExtension"  "scout"
     "MuzzleFlashScale"          "1.1"
     
@@ -17,8 +17,8 @@ WeaponData
     
     // Weapon data is loaded by both the Game and Client DLLs.
     "printname"         "#MOM_Weapon_Sniper"
-    "viewmodel"         "models/weapons/v_snip_scout.mdl"
-    "playermodel"       "models/weapons/w_snip_scout.mdl"
+    "viewmodel"         "models/weapons/mom_sniper.mdl"
+    "playermodel"       "models/weapons/mom_sniper.mdl"
     
     "anim_prefix"       "anim"
     "bucket"            "0"

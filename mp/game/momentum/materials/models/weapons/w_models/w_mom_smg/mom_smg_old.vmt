@@ -1,0 +1,15 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/weapons/w_models/w_mom_smg/smg_old_ao"
+	"$bumpmap" "models/weapons/w_models/w_mom_smg/smg_old_n"
+	"$surfaceprop" "Weapon"
+
+	"$phong" "1"
+	"$phongfresnelranges" "[0.04 0.02 1]"
+	"$phongwarptexture" "models/weapons/w_models/w_mom_sniper/mom_sniper_ao"
+	"$phongalbedotint" "1"
+	"$phongexponent" "7"
+	"$phongboost" "2"
+
+	"$color2" "[0.50 0.50 0.50]"
+}
