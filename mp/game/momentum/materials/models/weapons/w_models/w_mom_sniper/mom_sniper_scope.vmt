@@ -1,0 +1,11 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/weapons/w_models/w_mom_sniper/mom_sniper_ao"
+	"$bumpmap" "models/weapons/w_models/w_mom_sniper/mom_sniper_n"
+	"$surfaceprop" "Weapon"
+
+	"$envmap" "env_cubemap"
+	"$envmapcontrast" "1"
+
+	"$color2" "[0 7.28 15.31]"
+}
