@@ -120,7 +120,7 @@ kbutton_t	in_moveright;
 kbutton_t	in_graph;  
 kbutton_t	in_joyspeed;		// auto-speed key from the joystick (only works for player movement, not vehicles)
 
-static	kbutton_t	in_klook;
+kbutton_t	in_klook;
 kbutton_t	in_left;
 kbutton_t	in_right;
 static	kbutton_t	in_lookup;
@@ -1467,6 +1467,7 @@ int CInput::GetButtonBits( int bResetState )
 	CalcButtonBits( bits, IN_GRENADE1, s_ClearInputState, &in_grenade1, bResetState );
 	CalcButtonBits( bits, IN_GRENADE2, s_ClearInputState, &in_grenade2, bResetState );
 	CalcButtonBits( bits, IN_ATTACK3, s_ClearInputState, &in_attack3, bResetState );
+    CalcButtonBits( bits, IN_STRAFE, s_ClearInputState, &in_strafe, bResetState);
 
 	if ( KeyState(&in_ducktoggle) )
 	{

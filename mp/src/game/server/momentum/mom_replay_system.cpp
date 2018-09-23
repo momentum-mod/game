@@ -4,6 +4,7 @@
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
+#include "mom_timer.h"
 #include "util/baseautocompletefilelist.h"
 #include "fmtstr.h"
 #include "steam/steam_api.h"
@@ -60,13 +61,13 @@ void CMomentumReplaySystem::PostInit()
     filesystem->CreateDirHierarchy(path.Get(), "MOD");
 }
 
-void CMomentumReplaySystem::BeginRecording(CBasePlayer *pPlayer)
+void CMomentumReplaySystem::BeginRecording()
 {
     // don't record if we're watching a preexisting replay or in practice mode
     if (!m_player->IsSpectatingGhost() && !m_player->m_SrvData.m_bHasPracticeMode)
     {
         m_bRecording = true;
-        m_iTickCount = 1; // recoring begins at 1 ;)
+        m_iTickCount = 1; // recording begins at 1 ;)
         m_iStartRecordingTick = gpGlobals->tickcount;
         m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
     }
@@ -112,7 +113,8 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     Q_snprintf(runTime, MAX_PATH, "%.3f", g_pMomentumTimer->GetLastRunTime());
     // It's weird.
 
-    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s-%s%s", gpGlobals->mapname.ToCStr(), runDate, runTime, EXT_RECORDING_FILE);
+    Q_snprintf(newRecordingName, MAX_PATH, "%s-%s-%s%s", gpGlobals->mapname.ToCStr(), runDate, runTime,
+               EXT_RECORDING_FILE);
 
     // V_ComposeFileName calls all relevant filename functions for us! THANKS GABEN
     V_ComposeFileName(RECORDING_PATH, newRecordingName, newRecordingPath, MAX_PATH);
@@ -136,7 +138,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     // Re-allow the player to teleport
     if (pPlayer)
         pPlayer->m_bAllowUserTeleports = true;
-    
+
     if (replaySavedEvent)
     {
         replaySavedEvent->SetBool("save", true);
@@ -154,7 +156,7 @@ void CMomentumReplaySystem::StopRecording(bool throwaway, bool delay)
     m_pRecordingReplay->~CMomReplayBase();
 }
 
-bool CMomentumReplaySystem::StoreReplay(const char* path, const char* pathID)
+bool CMomentumReplaySystem::StoreReplay(const char *path, const char *pathID)
 {
     if (!m_pRecordingReplay)
         return false;
@@ -206,10 +208,18 @@ void CMomentumReplaySystem::TrimReplay()
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
     // We only record frames that the player isn't pausing on
-    if (m_bRecording && !engine->IsPaused())
+    if (m_bRecording && !engine->IsPaused() && !m_bPaused)
     {
-        m_pRecordingReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(),
-                                                                      m_player->GetViewOffset(), m_player->m_nButtons));
+        if (!m_player->m_SrvData.m_bHasPracticeMode) // MOM_TODO: && !m_player->IsSpectating
+        {
+            m_pRecordingReplay->AddFrame(CReplayFrame(m_player->EyeAngles(), m_player->GetAbsOrigin(), m_player->GetViewOffset(),
+                                             m_player->m_nButtons));
+        }
+        else
+        {
+            // MOM_TODO: The last frame should be repeated until the player returns to their run
+        }
+
         ++m_iTickCount; // increment recording tick
     }
 
@@ -230,7 +240,8 @@ CMomReplayBase *CMomentumReplaySystem::LoadPlayback(const char *pFileName, bool 
     if (bFullLoad && m_pPlaybackReplay)
     {
         // Create the run entity here
-        CMomentumReplayGhostEntity *pGhost = static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
+        CMomentumReplayGhostEntity *pGhost =
+            static_cast<CMomentumReplayGhostEntity *>(CreateEntityByName("mom_replay_ghost"));
         pGhost->SetRunStats(m_pPlaybackReplay->GetRunStats());
         pGhost->m_SrvData.m_RunData.m_flRunTime = m_pPlaybackReplay->GetRunTime();
         pGhost->m_SrvData.m_RunData.m_iRunFlags = m_pPlaybackReplay->GetRunFlags();
@@ -257,6 +268,7 @@ void CMomentumReplaySystem::SetReplayInfo()
     m_pRecordingReplay->SetRunFlags(m_player->m_SrvData.m_RunData.m_iRunFlags);
     m_pRecordingReplay->SetRunDate(g_pMomentumTimer->GetLastRunDate());
     m_pRecordingReplay->SetStartTick(m_iStartTimerTick - m_iStartRecordingTick);
+    m_pRecordingReplay->SetBonusZone(g_pMomentumTimer->m_iBonusZone);
 }
 
 void CMomentumReplaySystem::SetRunStats()
@@ -268,15 +280,24 @@ void CMomentumReplaySystem::SetRunStats()
     m_player->m_RunStats.FullyCopyStats(stats);
 }
 
+void CMomentumReplaySystem::TogglePause() { m_bPaused = !m_bPaused; }
+
 void CMomentumReplaySystem::Start(bool firstperson)
 {
     if (m_player)
     {
+        SetWasInReplay();
+
+        m_player->m_SrvData.m_RunData.m_vecLastPos = m_player->GetAbsOrigin();
+        m_player->m_SrvData.m_RunData.m_angLastAng = m_player->GetAbsAngles();
+        m_player->m_SrvData.m_RunData.m_vecLastVelocity = m_player->GetAbsVelocity();
+        m_player->m_SrvData.m_RunData.m_fLastViewOffset = m_player->GetViewOffset().z;
+        //memcpy(m_SavedRunStats.m_pData, m_player->m_RunStats.m_pData, sizeof(CMomRunStats::data));
+        m_nSavedAccelTicks = m_player->m_nAccelTicks;
+        m_nSavedPerfectSyncTicks = m_player->m_nPerfectSyncTicks;
+        m_nSavedStrafeTicks = m_player->m_nStrafeTicks;
         CMomentumReplayGhostEntity *pGhost = m_pPlaybackReplay->GetRunEntity();
-        
-        if (firstperson)
-            g_pMomentumTimer->Stop(false); // stop the timer just in case we started a replay while it was running...
-            
+
         if (pGhost)
             pGhost->StartRun(firstperson);
 
@@ -287,7 +308,7 @@ void CMomentumReplaySystem::Start(bool firstperson)
 void CMomentumReplaySystem::UnloadPlayback(bool shutdown)
 {
     m_bPlayingBack = false;
-    
+
     if (m_pPlaybackReplay)
     {
         if (m_pPlaybackReplay->GetRunEntity() && !shutdown)
@@ -420,7 +441,8 @@ CON_COMMAND(mom_replay_goto_end, "Go to the end of the replay.")
         auto pGhost = g_ReplaySystem.m_pPlaybackReplay->GetRunEntity();
         if (pGhost)
         {
-            pGhost->m_SrvData.m_iCurrentTick = pGhost->m_SrvData.m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
+            pGhost->m_SrvData.m_iCurrentTick =
+                pGhost->m_SrvData.m_iTotalTimeTicks - pGhost->m_SrvData.m_RunData.m_iStartTickD;
         }
     }
 }

@@ -14,6 +14,8 @@
 #include "mom_triggers.h"
 #include "player_command.h"
 #include "predicted_viewmodel.h"
+#include "weapon/weapon_csbasegun.h"
+#include "mom_system_saveloc.h"
 #include "util/mom_util.h"
 #include "weapon/weapon_csbasegun.h"
 
@@ -33,15 +35,17 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 }
 
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MomentumPlayer)
-	SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"), SendPropInt(SENDINFO(m_afButtonDisabled)),
+	SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
     SendPropInt(SENDINFO(m_afButtonDisabled), 0, SPROP_CHANGES_OFTEN),
 	SendPropBool(SENDINFO(m_bAutoBhop)),
 	SendPropFloat(SENDINFO(m_flStamina), 0, SPROP_NOSCALE|SPROP_CHANGES_OFTEN),
+	SendPropEHandle(SENDINFO(m_CurrentSlideTrigger)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
 	DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), DEFINE_THINKFUNC(LimitSpeedInStartZone),
 END_DATADESC();
+
 
 LINK_ENTITY_TO_CLASS(player, CMomentumPlayer);
 
@@ -112,12 +116,14 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 CMomentumPlayer::CMomentumPlayer()
     : m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
       m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
-      m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
+      m_nPrevButtons(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
 {
     m_duckUntilOnGround = false;
     m_flStamina = 0.f;
     m_flPunishTime = -1;
     m_iLastBlock = -1;
+
+    m_CurrentSlideTrigger = nullptr;
 
     m_SrvData.m_RunData.m_iRunFlags = 0;
     m_SrvData.m_iShotsFired = 0;
@@ -271,11 +277,11 @@ void CMomentumPlayer::Spawn()
     ConVarRef gm("mom_gamemode");
     switch (gm.GetInt())
     {
-    case MOMGM_SCROLL:
+    case GAMEMODE_KZ:
         DisableAutoBhop();
         break;
-    case MOMGM_BHOP:
-    case MOMGM_SURF:
+    case GAMEMODE_BHOP:
+    case GAMEMODE_SURF:
     {
         if (!g_pMomentumTimer->GetZoneCount())
         {
@@ -285,7 +291,7 @@ void CMomentumPlayer::Spawn()
             MessageEnd();
         }
     }
-    case MOMGM_UNKNOWN:
+    case GAMEMODE_UNKNOWN:
     default:
         EnableAutoBhop();
         break;
@@ -295,13 +301,26 @@ void CMomentumPlayer::Spawn()
     IGameEvent *runUploadEvent = gameeventmanager->CreateEvent("run_upload");
     IGameEvent *timerStartEvent = gameeventmanager->CreateEvent("timer_state");
     m_bAllowUserTeleports = true;
-    m_SrvData.m_RunData.m_bIsInZone = false;
-    m_SrvData.m_RunData.m_bMapFinished = false;
-    m_SrvData.m_RunData.m_iCurrentZone = 0;
-    m_SrvData.m_bHasPracticeMode = false;
-    m_SrvData.m_bPreventPlayerBhop = false;
-    m_SrvData.m_iLandTick = 0;
-    ResetRunStats();
+
+    bool bWasInReplay = false;
+
+    // Reset only if we were not in a replay.
+    if (!g_ReplaySystem.GetWasInReplay())
+    {
+        m_SrvData.m_RunData.m_bIsInZone = false;
+        m_SrvData.m_RunData.m_bMapFinished = false;
+        m_SrvData.m_RunData.m_iCurrentZone = 0;
+        m_SrvData.m_bHasPracticeMode = false;
+        m_SrvData.m_bPreventPlayerBhop = false;
+        m_SrvData.m_iLandTick = 0;
+        ResetRunStats();
+    }
+    // Else we set our previous angles and position.
+    else
+    {
+        bWasInReplay = true;
+    }
+
     if (runSaveEvent)
     {
         runSaveEvent->SetBool("save", false);
@@ -324,13 +343,13 @@ void CMomentumPlayer::Spawn()
 
     RegisterThinkContext("THINK_EVERY_TICK");
     RegisterThinkContext("THINK_AVERAGE_STATS");
-    RegisterThinkContext("CURTIME_FOR_START");
+    // RegisterThinkContext("CURTIME_FOR_START");
     RegisterThinkContext("TWEEN");
     SetContextThink(&CMomentumPlayer::UpdateRunStats, gpGlobals->curtime + gpGlobals->interval_per_tick,
                     "THINK_EVERY_TICK");
     SetContextThink(&CMomentumPlayer::CalculateAverageStats, gpGlobals->curtime + AVERAGE_STATS_INTERVAL,
                     "THINK_AVERAGE_STATS");
-    SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
+    // SetContextThink(&CMomentumPlayer::LimitSpeedInStartZone, gpGlobals->curtime, "CURTIME_FOR_START");
     SetContextThink(&CMomentumPlayer::TweenSlowdownPlayer, gpGlobals->curtime, "TWEEN");
 
     // initilize appearance properties based on Convars
@@ -367,6 +386,24 @@ void CMomentumPlayer::Spawn()
 
     // Reset current checkpoint trigger upon spawn
     m_pCurrentCheckpoint = nullptr;
+
+    if (bWasInReplay)
+    {
+        SetAbsOrigin(m_SrvData.m_RunData.m_vecLastPos);
+        // SetAbsAngles or SetLocalAngles won't work, we need to make it for the fix_angle.
+        SnapEyeAngles(m_SrvData.m_RunData.m_angLastAng);
+        m_qangLastAngle = m_SrvData.m_RunData.m_angLastAng;
+        SetAbsVelocity(m_SrvData.m_RunData.m_vecLastVelocity);
+        SetViewOffset(Vector(0,0, m_SrvData.m_RunData.m_fLastViewOffset));
+        g_ReplaySystem.SetWasInReplay(false);
+        //memcpy(m_RunStats.m_pData, g_ReplaySystem.SavedRunStats()->m_pData, sizeof(CMomRunStats::data));
+        m_nAccelTicks = g_ReplaySystem.m_nSavedAccelTicks;
+        m_nPerfectSyncTicks = g_ReplaySystem.m_nSavedPerfectSyncTicks;
+        m_nStrafeTicks = g_ReplaySystem.m_nSavedStrafeTicks;
+
+        // if (g_pMomentumTimer->IsRunning())
+        // g_pMomentumTimer->TogglePause();
+    }
 }
 
 // Obtains a player's previous origin X ticks backwards (0 is still previous, depends when this is called ofc!)
@@ -541,7 +578,15 @@ bool CMomentumPlayer::FindOnehopOnList(CTriggerOnehop *pTrigger) const
     return m_vecOnehops.Find(pTrigger) != m_vecOnehops.InvalidIndex();
 }
 
-void CMomentumPlayer::RemoveAllOnehops() { m_vecOnehops.RemoveAll(); }
+void CMomentumPlayer::RemoveAllOnehops()
+{
+    for (auto i : m_vecOnehops)
+    {
+        i->SethopNoLongerJumpableFired(false);
+    }
+
+    m_vecOnehops.RemoveAll();
+}
 
 void CMomentumPlayer::DoMuzzleFlash()
 {
@@ -633,6 +678,50 @@ void CMomentumPlayer::OnPlayerJump()
 
     m_bInAirDueToJump = true;
 
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
+        m_SrvData.m_RunData.m_bTimerStartOnJump)
+    {
+        bool bCheating = GetMoveType() == MOVETYPE_NOCLIP;
+
+        // surf or other gamemodes has timer start on exiting zone, bhop timer starts when the player jumps
+        // do not start timer if player is in practice mode or it's already running.
+        if (!g_pMomentumTimer->IsRunning() && !m_SrvData.m_bHasPracticeMode && !bCheating)
+        {
+            g_pMomentumTimer->m_bShouldUseStartZoneOffset = false;
+
+            g_pMomentumTimer->Start(gpGlobals->tickcount, m_SrvData.m_RunData.m_iBonusZone);
+            // The Start method could return if CP menu or prac mode is activated here
+            if (g_pMomentumTimer->IsRunning())
+            {
+                // Used for trimming later on
+                if (g_ReplaySystem.m_bRecording)
+                {
+                    g_ReplaySystem.SetTimerStartTick(gpGlobals->tickcount);
+                }
+
+                m_SrvData.m_RunData.m_bTimerRunning = g_pMomentumTimer->IsRunning();
+                // Used for spectating later on
+                m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
+
+                // Are we in mid air when we started? If so, our first jump should be 1, not 0
+                if (m_bInAirDueToJump)
+                {
+                    m_RunStats.SetZoneJumps(0, 1);
+                    m_RunStats.SetZoneJumps(m_SrvData.m_RunData.m_iCurrentZone, 1);
+                }
+            }
+        }
+        else
+        {
+            g_pMomentumTimer->m_bShouldUseStartZoneOffset = true;
+            // MOM_TODO: Find a better way of doing this
+            // If we can't start the run, play a warning sound
+            // EmitSound("Watermelon.Scrape");
+        }
+
+        m_SrvData.m_RunData.m_bMapFinished = false;
+    }
+
     // Set our runstats jump count
     if (g_pMomentumTimer->IsRunning())
     {
@@ -644,6 +733,54 @@ void CMomentumPlayer::OnPlayerJump()
 
 void CMomentumPlayer::OnPlayerLand()
 {
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
+        m_SrvData.m_RunData.m_bTimerStartOnJump)
+    {
+
+        // Doesn't seem to work here, seems like it doesn't get applied to gamemovement's.
+        // MOM_TODO: Check what's wrong.
+
+        /*
+        Vector vecNewVelocity = GetAbsVelocity();
+
+        float flMaxSpeed = GetPlayerMaxSpeed();
+
+        if (m_SrvData.m_bShouldLimitPlayerSpeed && vecNewVelocity.Length2D() > flMaxSpeed)
+        {
+            float zSaved = vecNewVelocity.z;
+
+            VectorNormalizeFast(vecNewVelocity);
+
+            vecNewVelocity *= flMaxSpeed;
+            vecNewVelocity.z = zSaved;
+            SetAbsVelocity(vecNewVelocity);
+        }
+        */
+
+        g_pMOMSavelocSystem->SetUsingSavelocMenu(false); // It'll get set to true if they teleport to a CP out of here
+        ResetRunStats();       // Reset run stats
+        m_SrvData.m_RunData.m_bMapFinished = false;
+        m_SrvData.m_RunData.m_bTimerRunning = false;
+        m_SrvData.m_RunData.m_flRunTime = 0.0f; // MOM_TODO: Do we want to reset this?
+
+        if (g_pMomentumTimer->IsRunning())
+        {
+            g_pMomentumTimer->Stop(false, false); // Don't stop our replay just yet
+            g_pMomentumTimer->DispatchResetMessage();
+        }
+        else
+        {
+            // Reset last jump velocity when we enter the start zone without a timer
+            m_SrvData.m_RunData.m_flLastJumpVel = 0;
+
+            // Handle the replay recordings
+            if (g_ReplaySystem.m_bRecording)
+                g_ReplaySystem.StopRecording(true, false);
+
+            g_ReplaySystem.BeginRecording();
+        }
+    }
+
     // Set the tick that we landed on something solid (can jump off of this)
     m_SrvData.m_iLandTick = gpGlobals->tickcount;
 
@@ -652,21 +789,25 @@ void CMomentumPlayer::OnPlayerLand()
 
 void CMomentumPlayer::UpdateRunStats()
 {
-    // ---- Jumps and Strafes ----
-    UpdateJumpStrafes();
+    // If we're in practicing mode, don't update.
+    if (!m_SrvData.m_bHasPracticeMode)
+    {
+        // ---- Jumps and Strafes ----
+        UpdateJumpStrafes();
 
-    //  ---- MAX VELOCITY ----
-    UpdateMaxVelocity();
-    // ----------
+        //  ---- MAX VELOCITY ----
+        UpdateMaxVelocity();
+        // ----------
 
-    //  ---- STRAFE SYNC -----
-    UpdateRunSync();
-    // ----------
+        //  ---- STRAFE SYNC -----
+        UpdateRunSync();
+        // ----------
+    }
 
     // this might be used in a later update
     // m_flLastVelocity = velocity;
 
-    //StdDataToPlayer(&m_SrvData);
+    StdDataToPlayer(&m_SrvData);
 
     // think once per tick
     BaseClass::SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");
@@ -674,9 +815,7 @@ void CMomentumPlayer::UpdateRunStats()
 
 void CMomentumPlayer::UpdateRunSync()
 {
-    return;
-    if (g_pMomentumTimer->IsRunning() ||
-                (ConVarRef("mom_strafesync_draw").GetInt() == 2 && !m_SrvData.m_bHasPracticeMode))
+    if (g_pMomentumTimer->IsRunning() || (ConVarRef("mom_strafesync_draw").GetInt() == 2))
     {
         if (!(GetFlags() & (FL_ONGROUND | FL_INWATER)) && GetMoveType() != MOVETYPE_LADDER)
         {
@@ -836,17 +975,17 @@ void CMomentumPlayer::CalculateAverageStats()
 // This is to prevent prespeeding and is different per gamemode due to the different respective playstyles of surf and
 // bhop.
 // MOM_TODO: Update this to extend to start zones of stages (if doing ILs)
-void CMomentumPlayer::LimitSpeedInStartZone()
+void CMomentumPlayer::LimitSpeedInStartZone(Vector &vRealVelocity)
 {
-    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 &&
-        !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
+    m_bShouldLimitSpeed = false;
+    if (m_SrvData.m_RunData.m_bIsInZone && m_SrvData.m_RunData.m_iCurrentZone == 1 && !g_pMOMSavelocSystem->IsUsingSaveLocMenu()) // MOM_TODO: && g_Timer->IsForILs()
     {
-        if (GetGroundEntity() == nullptr &&
-            !m_SrvData.m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
+        /*if (GetGroundEntity() == nullptr && !m_SrvData.m_bHasPracticeMode) // don't count ticks in air if we're in practice mode
             m_nTicksInAir++;
         else
-            m_nTicksInAir = 0;
-
+            m_nTicksInAir = 0;*/
+        
+        
         // set bhop flag to true so we can't prespeed with practice mode
         if (m_SrvData.m_bHasPracticeMode)
             m_SrvData.m_bDidPlayerBhop = true;
@@ -857,20 +996,53 @@ void CMomentumPlayer::LimitSpeedInStartZone()
         // This does not look pretty but saves us a branching. The checks are:
         // no nullptr, correct gamemode, is limiting leave speed and
         //    enough ticks on air have passed
-        if (startTrigger && (gm.GetInt() == MOMGM_BHOP || gm.GetInt() == MOMGM_SCROLL) &&
-            startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED) &&
-            (!g_pMomentumTimer->IsRunning() && m_nTicksInAir > MAX_AIRTIME_TICKS))
+        if (startTrigger && startTrigger->HasSpawnFlags(SF_LIMIT_LEAVE_SPEED))
         {
-            Vector velocity = GetLocalVelocity();
-            float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
-            if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
+            bool bShouldLimitSpeed = true;
+
+            if (GetGroundEntity() != nullptr)
             {
-                // New velocity is the unitary form of the current vel vector times the max speed amount
-                SetAbsVelocity((velocity / velocity.Length()) * startTrigger->GetMaxLeaveSpeed());
+                if (m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_INAIR)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                if (!m_bWasInAir && m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_ONLAND)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                m_bWasInAir = false;
+            }
+            else
+            {
+                if (m_SrvData.m_RunData.m_iLimitSpeedType == SPEED_LIMIT_GROUND)
+                {
+                    bShouldLimitSpeed = false;
+                }
+
+                m_bWasInAir = true;
+            }
+
+            if (bShouldLimitSpeed)
+            {
+                Vector velocity = vRealVelocity;
+                float PunishVelSquared = startTrigger->GetMaxLeaveSpeed() * startTrigger->GetMaxLeaveSpeed();
+
+                if (velocity.Length2DSqr() > PunishVelSquared) // more efficent to check against the square of velocity
+                {
+                    float flOldz = velocity.z;
+                    VectorNormalizeFast(velocity);
+                    velocity *= startTrigger->GetMaxLeaveSpeed();
+                    velocity.z = flOldz;
+                    // New velocity is the unitary form of the current vel vector times the max speed amount
+                    vRealVelocity = velocity;
+                    m_bShouldLimitSpeed = true;
+                }
             }
         }
     }
-    SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
+    // SetNextThink(gpGlobals->curtime, "CURTIME_FOR_START");
 }
 // override of CBasePlayer::IsValidObserverTarget that allows us to spectate ghosts
 bool CMomentumPlayer::IsValidObserverTarget(CBaseEntity *target)

@@ -20,38 +20,50 @@ public:
 
     void PostInit() OVERRIDE;
 
-    //Sets the start timer tick, this is used for trimming later on
-    void SetTimerStartTick(int tick)
-    {
-        m_iStartTimerTick = tick;
-    }
+    // Sets the start timer tick, this is used for trimming later on
+    void SetTimerStartTick(int tick) { m_iStartTimerTick = tick; }
 
-    void BeginRecording(CBasePlayer *pPlayer);
+    void BeginRecording();
     void StopRecording(bool throwaway, bool delay);
-    void TrimReplay(); //Trims a replay's start down to only include a defined amount of time in the start trigger
-    
+    void TrimReplay(); // Trims a replay's start down to only include a defined amount of time in the start trigger
+
     void Start(bool firstperson);
     CMomReplayBase *LoadPlayback(const char *pFileName, bool bFullLoad = true, const char *pPathID = "MOD");
     void UnloadPlayback(bool shutdown = false);
     void StopPlayback();
+
+    void SetWasInReplay(bool bEnable = true) { m_bWasInReplay = bEnable; };
+    bool GetWasInReplay() { return m_bWasInReplay; };
+    void SetPaused(bool bEnable = true) { m_bPaused = bEnable; };
+    bool GetPaused() { return m_bPaused; };
+
+    void TogglePause();
+
+    //CMomRunStats *SavedRunStats() { return &m_SavedRunStats; }
 
     bool m_bRecording;
     bool m_bPlayingBack;
     CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
     CMomentumPlayer *m_player;
-    
-private:
+    int m_nSavedPerfectSyncTicks;
+    int m_nSavedStrafeTicks;
+    int m_nSavedAccelTicks;
+
+  private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayInfo();
     void SetRunStats();
-    bool StoreReplay(const char* path, const char* pathID = "MOD");
+    bool StoreReplay(const char *path, const char *pathID = "MOD");
 
     bool m_bShouldStopRec;
-    int m_iTickCount;// MOM_TODO: Maybe remove me?
-    int m_iStartRecordingTick;//The tick that the replay started, used for trimming.
-    int m_iStartTimerTick;//The tick that the player's timer starts, used for trimming.
-    float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
+    int m_iTickCount;          // MOM_TODO: Maybe remove me?
+    int m_iStartRecordingTick; // The tick that the replay started, used for trimming.
+    int m_iStartTimerTick;     // The tick that the player's timer starts, used for trimming.
+    float m_fRecEndTime;       // The time to end the recording, if delay was passed as true to StopRecording()
+    bool m_bWasInReplay;
+    bool m_bPaused;
+    //CMomRunStats m_SavedRunStats;
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;

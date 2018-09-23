@@ -23,7 +23,7 @@ public:
     CMapzone(const int, Vector*, QAngle*, Vector*, Vector*,
         const int, const bool, const bool, const float, 
         const bool, const float, const float, 
-        const string_t, const bool);
+        const string_t, const bool, const int, const int, const int,const bool);
     ~CMapzone();
 
     void SpawnZone();
@@ -54,6 +54,9 @@ private:
     Vector* m_scaleMins;
     Vector* m_scaleMaxs;
     CBaseEntity* m_trigger;
+    int m_iendzonenumber, m_istartzonenumber;
+    int m_ilimittype;
+    bool m_bstartonjump;
 };
 
 class CMapzoneData

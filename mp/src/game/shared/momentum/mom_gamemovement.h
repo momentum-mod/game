@@ -1,14 +1,15 @@
 #pragma once
 
-#include "cbase.h"
-
-#include "baseplayer_shared.h"
 #include "gamemovement.h"
-#include "mom_player_shared.h"
 
+#ifdef CLIENT_DLL
+#define CMomentumPlayer C_MomentumPlayer
+#endif
+
+class CMomentumPlayer;
 struct surface_data_t;
 class IMovementListener;
-class CMomentumPlayer;
+
 
 #define NO_REFL_NORMAL_CHANGE -2.0f
 #define BHOP_DELAY_TIME 15 // Time to delay successive bhops by, in ticks
@@ -76,13 +77,7 @@ class CMomentumGameMovement : public CGameMovement
     virtual void FullWalkMove();
     virtual void CategorizePosition();
 
-    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE
-    {
-        m_pPlayer = ToCMOMPlayer(pBasePlayer);
-        Assert(m_pPlayer);
-
-        BaseClass::ProcessMovement(pBasePlayer, pMove);
-    }
+    void ProcessMovement(CBasePlayer *pBasePlayer, CMoveData *pMove) OVERRIDE;
 
     void Friction(void);
 
@@ -97,6 +92,8 @@ class CMomentumGameMovement : public CGameMovement
     virtual void StartGravity(void) OVERRIDE;
     virtual void FinishGravity(void) OVERRIDE;
     virtual void StuckGround(void);
+
+    virtual void LimitStartZoneSpeed(void);
     virtual int ClipVelocity(Vector &in, Vector &normal, Vector &out, float overbounce);
 
     // Movement Listener
@@ -104,6 +101,8 @@ class CMomentumGameMovement : public CGameMovement
     void RemoveMovementListener(IMovementListener *pListener) { m_vecListeners.FindAndFastRemove(pListener); }
 
   private:
+    bool m_bWasInAir;
+    float m_flReflectNormal; // Used by rampboost fix
     CMomentumPlayer *m_pPlayer;
     CUtlVector<IMovementListener *> m_vecListeners;
     ConVarRef mom_gamemode;

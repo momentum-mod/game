@@ -327,10 +327,10 @@ void CDialogMapInfo::GetMapInfoCallback(HTTPRequestCompleted_t *pCallback, bool 
             const char *gameType;
             switch (gameMode)
             {
-            case MOMGM_SURF:
+            case GAMEMODE_SURF:
                 gameType = "Surf";
                 break;
-            case MOMGM_BHOP:
+            case GAMEMODE_BHOP:
                 gameType = "Bunnyhop";
                 break;
             default:

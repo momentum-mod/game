@@ -12,7 +12,10 @@
 #pragma once
 #endif
 
-face_t *MergeDetailTree( tree_t *worldtree, int brush_start, int brush_end );
+struct face_t;
+struct tree_t;
+
+face_t *MergeDetailTree(tree_t *worldtree, int brush_start, int brush_end);
 
 
 #endif // DETAIL_H

@@ -4,7 +4,6 @@
 #pragma once
 #endif
 
-#include "cbase.h"
 #include "mom_ghostdefs.h"
 #include "mom_shareddefs.h"
 #include "GameEventListener.h"
@@ -13,6 +12,7 @@
 
 class CTriggerOnehop;
 class CTriggerCheckpoint; // MOM_TODO: Will change with the linear map support
+class CTriggerSlide;
 
 // The player can spend this many ticks in the air inside the start zone before their speed is limited
 #define MAX_AIRTIME_TICKS 15
@@ -96,9 +96,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void TweenSlowdownPlayer();
     void ResetRunStats();
     void CalculateAverageStats();
-    void LimitSpeedInStartZone();
+    void LimitSpeedInStartZone(Vector &vRealVelocity);
 
     IMPLEMENT_NETWORK_VAR_FOR_DERIVED(m_afButtonDisabled);
+    CNetworkHandle(CTriggerSlide, m_CurrentSlideTrigger);
+
+    CUtlVector<CTriggerSlide*> m_vecSlideTriggers;
 
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
@@ -181,6 +184,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     bool m_bInAirDueToJump;
 
+    // Strafe sync.
+    int m_nPerfectSyncTicks;
+    int m_nStrafeTicks;
+    int m_nAccelTicks;
+    QAngle m_qangLastAngle;
+
     void DoMuzzleFlash() OVERRIDE;
     void PostThink() OVERRIDE;
 
@@ -211,10 +220,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     // for strafe sync
     float m_flLastVelocity;
-    QAngle m_qangLastAngle;
-    int m_nPerfectSyncTicks;
-    int m_nStrafeTicks;
-    int m_nAccelTicks;
 
     bool m_bPrevTimerRunning;
     int m_nPrevButtons;
@@ -224,11 +229,10 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     // Used by momentum triggers
     Vector m_vecPreviousOrigins[MAX_PREVIOUS_ORIGINS];
 
-    // Start zone thinkfunc
-    int m_nTicksInAir;
-
     float m_flTweenVelValue;
     // Trail pointer
     CBaseEntity* m_eTrail;
+    bool m_bWasInAir;
+    bool m_bShouldLimitSpeed;
 };
 #endif // MOMPLAYER_H

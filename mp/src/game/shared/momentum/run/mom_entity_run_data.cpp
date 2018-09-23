@@ -18,4 +18,10 @@ CMOMRunEntityData::CMOMRunEntityData()
     m_bMapFinished = false;
     m_bTimerRunning = false;
     m_flRunTime = 0.0f;
+    m_iOldZone = 0;
+    m_iBonusZone = 0;
+    m_vecLastPos.Init();
+    m_angLastAng.Init();
+    m_vecLastVelocity.Init();
+    m_fLastViewOffset = 0.0f;
 }

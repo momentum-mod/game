@@ -73,6 +73,7 @@ config.cfg
 server_blacklist.txt
 gamestate.txt
 checkpoints.txt
+progress.dat
 savedlocs.txt
 *.ain
 stats.txt

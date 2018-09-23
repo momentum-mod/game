@@ -38,9 +38,9 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
 
     CReplayFrame* GetCurrentStep();
     CReplayFrame *GetNextStep();
-    
+
     bool IsReplayEnt() { return true; }
-    void (*StdDataToReplay)(StdReplayDataFromServer* from);
+    void (*StdDataToReplay)(StdReplayDataFromServer *from);
 
     bool m_bIsActive;
     bool m_bReplayFirstPerson;
@@ -48,8 +48,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     StdReplayDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
-    //override of color so that replayghosts are always somewhat transparent.
-    void SetGhostColor(const uint32 newColor) OVERRIDE; 
+    // override of color so that replayghosts are always somewhat transparent.
+    void SetGhostColor(const uint32 newColor) OVERRIDE;
 
   protected:
     void Think(void) OVERRIDE;
@@ -58,10 +58,13 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     void FireGameEvent(IGameEvent *pEvent) OVERRIDE;
 
     void CreateTrail() OVERRIDE;
+
   private:
     CMomReplayBase *m_pPlaybackReplay;
 
     bool m_bHasJumped;
+
+    ConVarRef m_cvarReplaySelection;
 
     // for faking strafe sync calculations
     QAngle m_angLastEyeAngle;

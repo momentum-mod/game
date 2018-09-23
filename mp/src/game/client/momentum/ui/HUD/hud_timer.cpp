@@ -82,6 +82,9 @@ class C_HudTimer : public CHudElement, public Panel
     int m_iTotalTicks, m_iStartTick, m_G_iStartTickD, m_G_iCurrentTick, m_iOldTickCount;
     int initialTall;
     bool m_bIsReplay;
+    //bool m_bWasInRun;
+    //int m_iPausedTicks;
+
     // float m_fCurrentTime;
 
     wchar_t m_pwCurrentTime[BUFSIZETIME];
@@ -140,6 +143,7 @@ void C_HudTimer::Init()
     m_iOldTickCount = 0;
     m_iStartTick = 0;
     m_G_iCurrentTick = 0;
+    //m_iPausedTicks = 0;
     m_G_iStartTickD = 0;
     HOOK_HUD_MESSAGE(C_HudTimer, Timer_State);
     HOOK_HUD_MESSAGE(C_HudTimer, Timer_Reset);
@@ -168,6 +172,14 @@ void C_HudTimer::Reset()
     m_G_iCurrentTick = 0;
     m_G_iStartTickD = 0;
     m_iOldTickCount = 0;
+    /*
+    if (!m_bWasInRun)
+        m_iPausedTicks = 0;
+    else
+        //Delayed by 1 tick somehow.
+        m_iPausedTicks += 1;
+    */
+    //m_bPaused = false;
     m_bIsRunning = false;
     m_bTimerRan = false;
     m_iZoneCurrent = 1;
@@ -234,11 +246,26 @@ float C_HudTimer::GetCurrentTime()
 
     if (gpGlobals->tickcount != m_iOldTickCount && !m_bIsReplay)
     {
-        m_iTotalTicks = m_bIsRunning ? (gpGlobals->tickcount - m_iStartTick) : 0;
+        //if (!m_bPaused)
+        {
+            m_iTotalTicks = m_bIsRunning ? (gpGlobals->tickcount - (m_iStartTick /*+ m_iPausedTicks*/)) : 0;
+        }
+        /*else
+        {
+            m_iPausedTicks++;
+        }*/
     }
 
     if (m_bIsReplay)
     {
+        /*
+        // We can ignore checks if it has been run because the hud timer will reset the paused tick anyway.
+        if (gpGlobals->tickcount != m_iOldTickCount && m_bWasInRun)
+        {
+            m_iPausedTicks++;
+        }
+        */
+
         m_iTotalTicks = m_G_iCurrentTick - m_G_iStartTickD;
     }
 
@@ -268,10 +295,11 @@ void C_HudTimer::OnThink()
             m_iSavelocCount = 0;
             m_pRunStats = &pGhost->m_RunStats;
             m_bIsReplay = true;
-            m_bPlayerHasPracticeMode = false;
+            m_bPlayerHasPracticeMode = pGhost->m_SrvData.m_bHasPracticeMode;
             m_G_iCurrentTick = pGhost->m_SrvData.m_iCurrentTick;
             m_G_iStartTickD = pGhost->m_SrvData.m_RunData.m_iStartTickD;
             runData = &pGhost->m_SrvData.m_RunData;
+            //m_bWasInRun = pGhost->m_SrvData.m_bWasInRun;
         }
         else
         {
@@ -282,6 +310,7 @@ void C_HudTimer::OnThink()
             m_bPlayerHasPracticeMode = pLocal->m_SrvData.m_bHasPracticeMode;
             m_pRunStats = &pLocal->m_RunStats;
             runData = &pLocal->m_SrvData.m_RunData;
+            //m_bPaused = pLocal->m_SrvData.m_bIsTimerPaused;
         }
 
         m_bIsRunning = runData->m_bTimerRunning;
@@ -307,7 +336,6 @@ void C_HudTimer::Paint(void)
                    m_iSavelocCurrent, // CurrentCP
                    m_iSavelocCount    // CPCount
                    );
-
         ANSI_TO_UNICODE(m_pszStringCps, m_pwCurrentCheckpoints);
     }
 
@@ -333,7 +361,7 @@ void C_HudTimer::Paint(void)
     }
 
     // find out status of timer (no timer/practice mode)
-    if (!m_bIsRunning)
+    // if (!m_bIsRunning)
     {
         Q_strncpy(m_pszStringStatus, m_bPlayerHasPracticeMode ? practiceModeLocalized : noTimerLocalized,
                   sizeof(m_pszStringStatus));
@@ -351,8 +379,16 @@ void C_HudTimer::Paint(void)
     if (center_time)
     {
         int timeWide;
-        surface()->GetTextSize(m_bIsRunning ? m_hTimerFont : m_hTextFont,
-                               m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, timeWide, dummy);
+        if (!m_bPlayerHasPracticeMode)
+        {
+            surface()->GetTextSize(m_bIsRunning ? m_hTimerFont : m_hTextFont,
+                                   m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus, timeWide, dummy);
+        }
+        else
+        {
+            surface()->GetTextSize(m_hTextFont, m_pwCurrentStatus, timeWide, dummy);
+        }
+
         int offsetToCenter = ((totalWide - timeWide) / 2);
         surface()->DrawSetTextPos(offsetToCenter, time_ypos);
     }
@@ -363,8 +399,16 @@ void C_HudTimer::Paint(void)
 
     // draw either timer display or the timer status
     // If the timer isn't running, it'll print "No timer" or "Practice mode"
-    surface()->DrawPrintText(m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus,
-                             m_bIsRunning ? wcslen(m_pwCurrentTime) : wcslen(m_pwCurrentStatus));
+
+    if (!m_bPlayerHasPracticeMode)
+    {
+        surface()->DrawPrintText(m_bIsRunning ? m_pwCurrentTime : m_pwCurrentStatus,
+                                 m_bIsRunning ? wcslen(m_pwCurrentTime) : wcslen(m_pwCurrentStatus));
+    }
+    else
+    {
+        surface()->DrawPrintText(m_pwCurrentStatus, wcslen(m_pwCurrentStatus));
+    }
 
     surface()->DrawSetTextFont(m_hSmallTextFont);
 

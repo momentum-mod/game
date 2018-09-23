@@ -4,7 +4,6 @@
 #include "run/run_stats.h"
 #include "threadtools.h"
 #include "run/mom_entity_run_data.h"
-#include "run/mom_slide_data.h"
 #include "tier1/utllinkedlist.h"
 #include <utldelegate.h>
 
@@ -18,7 +17,7 @@
 struct StdDataFromServer
 {
     //MOM_TODO: Deprecate the usage of weapon data? (m_iLastZoom m_iShotsFired m_bResumeZoom m_iDirection)
-    
+    bool m_bIsTimerPaused;
     bool m_bHasPracticeMode;
     bool m_bResumeZoom;
     bool m_bDidPlayerBhop;
@@ -28,13 +27,15 @@ struct StdDataFromServer
     int m_iDirection;
     int m_iLastZoom;
     int m_iSuccessiveBhops;
+    bool m_bShouldLimitPlayerSpeed;
     CMOMRunEntityData m_RunData;
-    CMomPlayerSlideData m_SlideData;
     CMomRunStats::data m_RunStatsData;
 };
 
 struct StdReplayDataFromServer
 {
+    bool m_bHasPracticeMode;
+    bool m_bWasInRun;
     bool m_bIsPaused;
     int m_iTotalStrafes;
     int m_iTotalJumps;

@@ -1,6 +1,8 @@
 #include "cbase.h"
 #include "c_mom_player.h"
 #include "view.h"
+#include "c_mom_triggers.h"
+
 #include "tier0/memdbgon.h"
 
 
@@ -8,6 +10,7 @@ IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MomentumPlayer, CMomentumPlayer)
 	RecvPropInt(RECVINFO(m_afButtonDisabled)),
 	RecvPropBool(RECVINFO(m_bAutoBhop)),
 	RecvPropFloat(RECVINFO(m_flStamina)),
+	RecvPropEHandle(RECVINFO(m_CurrentSlideTrigger)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
@@ -28,6 +31,8 @@ C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_
     m_flEndSpeed = 0.0f;
     m_duckUntilOnGround = false;
     m_flStamina = 0.0f;
+
+    m_CurrentSlideTrigger = nullptr;
 }
 
 C_MomentumPlayer::~C_MomentumPlayer()

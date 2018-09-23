@@ -1,11 +1,20 @@
 #include "cbase.h"
 
-#include <rumble_shared.h>
 #include <stdarg.h>
 #include "IMovementListener.h"
 #include "in_buttons.h"
 #include "mom_gamemovement.h"
+#include "mom_modulecomms.h"
+#include "mom_player_shared.h"
 #include "movevars_shared.h"
+#include "rumble_shared.h"
+
+#ifdef CLIENT_DLL
+#include "c_mom_triggers.h"
+#else
+#include "env_player_surface_trigger.h"
+#include "momentum/mom_triggers.h"
+#endif
 
 #include "tier0/memdbgon.h"
 
@@ -18,6 +27,7 @@ ConVar sv_ramp_initial_retrace_length("sv_ramp_initial_retrace_length", "0.01", 
 ConVar sv_jump_z_offset("sv_jump_z_offset", "1.5", 0, "Amount of units in axis z to offset every time a player jumps",
                         true, 0.0f, true, 5.f);
 ConVar sv_considered_on_ground("sv_considered_on_ground", "1.0", 0,
+
                                "Amount of units you have to be above the ground to be considered on ground", true, 0.0f,
                                true, 5.f);
 
@@ -28,13 +38,21 @@ ConVar sv_ladder_angle("sv_ladder_angle", "-0.707", FCVAR_REPLICATED,
                        true, 1.0f);
 
 #ifndef CLIENT_DLL
-#include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
 static MAKE_TOGGLE_CONVAR(mom_punchangle_enable, "0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
                           "Toggle landing punchangle. 0 = OFF, 1 = ON\n");
 #endif
 
 CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr), mom_gamemode("mom_gamemode") {}
+
+void CMomentumGameMovement::ProcessMovement(CBasePlayer *pPlayer, CMoveData *data)
+{
+    m_pPlayer = ToCMOMPlayer(pPlayer);
+    Assert(m_pPlayer);
+
+    BaseClass::ProcessMovement(pPlayer, data);
+    LimitStartZoneSpeed();
+}
 
 void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
 {
@@ -145,7 +163,7 @@ void CMomentumGameMovement::WalkMove()
     trace_t pm;
     Vector forward, right, up;
 
-    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == GAMEMODE_KZ)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -487,7 +505,7 @@ bool CMomentumGameMovement::CanUnduck()
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_SrvData.m_SlideData.IsEnabled())
+    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_CurrentSlideTrigger)
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -596,7 +614,7 @@ void CMomentumGameMovement::Duck(void)
     // Check to see if we are in the air.
     bool bInAir = player->GetGroundEntity() == nullptr && player->GetMoveType() != MOVETYPE_LADDER;
 
-    bool bIsSliding = m_pPlayer->m_SrvData.m_SlideData.IsEnabled();
+    bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
     if (mv->m_nButtons & IN_DUCK)
     {
@@ -753,7 +771,7 @@ void CMomentumGameMovement::FinishUnDuck(void)
 
     VectorCopy(mv->GetAbsOrigin(), newOrigin);
 
-    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_SrvData.m_SlideData.IsEnabled())
+    if (player->GetGroundEntity() != nullptr || m_pPlayer->m_CurrentSlideTrigger)
     {
         newOrigin += VEC_DUCK_HULL_MIN - VEC_HULL_MIN;
     }
@@ -978,7 +996,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     mv->m_vecVelocity[2] += flGroundFactor * sqrt(2.f * GetCurrentGravity() * 57.0f); // 2 * gravity * height
 
     // stamina stuff (scroll/kz gamemode only)
-    if (mom_gamemode.GetInt() == MOMGM_SCROLL)
+    if (mom_gamemode.GetInt() == GAMEMODE_KZ)
     {
         if (m_pPlayer->m_flStamina > 0)
         {
@@ -1158,7 +1176,7 @@ void CMomentumGameMovement::FinishGravity(void)
     if (player->m_flWaterJumpTime)
         return;
 
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.IsGravityEnabled())
+    if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
     // Get the correct velocity for the end of the dt
@@ -1169,7 +1187,7 @@ void CMomentumGameMovement::FinishGravity(void)
 
 void CMomentumGameMovement::StartGravity(void)
 {
-    if (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && !m_pPlayer->m_SrvData.m_SlideData.IsGravityEnabled())
+    if (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bDisableGravity)
         return;
 
     // Add gravity so they'll be in the correct position during movement
@@ -1186,7 +1204,9 @@ void CMomentumGameMovement::StartGravity(void)
 
 void CMomentumGameMovement::FullWalkMove()
 {
-    bool bIsSliding = m_pPlayer->m_SrvData.m_SlideData.IsEnabled();
+    Vector vecOldOrigin;
+
+    bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
 
     if (!CheckWater())
     {
@@ -1265,6 +1285,9 @@ void CMomentumGameMovement::FullWalkMove()
         // Make sure velocity is valid.
         CheckVelocity();
 
+        if (bIsSliding)
+            vecOldOrigin = mv->GetAbsOrigin();
+
         if (player->GetGroundEntity() != nullptr)
         {
             WalkMove();
@@ -1282,6 +1305,26 @@ void CMomentumGameMovement::FullWalkMove()
         else
         {
             AirMove(); // Take into account movement when in air.
+        }
+
+        if (bIsSliding)
+        {
+            // Fixes some inaccuraces while going up slopes.
+            // This should fix also the issue by being stuck on them.
+
+            Vector vecVelocity = mv->m_vecVelocity;
+
+            trace_t pm;
+            Vector vecNewOrigin = mv->GetAbsOrigin();
+
+            TracePlayerBBox(vecOldOrigin, vecNewOrigin, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+            StepMove(vecNewOrigin, pm);
+
+            mv->m_vecVelocity = vecVelocity;
+
+            if (pm.fraction == 1.0f)
+                mv->SetAbsOrigin(vecNewOrigin);
         }
 
         // Set final flags.
@@ -1305,8 +1348,7 @@ void CMomentumGameMovement::FullWalkMove()
         CheckFalling();
 
         // Stuck the player to ground, if flag on sliding is set so.
-        // MOM_TODO: The player can't jump with it.
-        if (bIsSliding && m_pPlayer->m_SrvData.m_SlideData.IsStuckGround())
+        if (bIsSliding && m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround)
         {
             StuckGround();
         }
@@ -1322,27 +1364,86 @@ void CMomentumGameMovement::FullWalkMove()
     }
 }
 
+void CMomentumGameMovement::LimitStartZoneSpeed(void)
+{
+#ifndef CLIENT_DLL
+    m_pPlayer->LimitSpeedInStartZone(mv->m_vecVelocity);
+#endif
+}
+
 void CMomentumGameMovement::StuckGround(void)
 {
-    trace_t tr;
+    if (!m_pPlayer || !m_pPlayer->m_CurrentSlideTrigger.Get())
+        return;
+
+    // clang-format off
+
+    /*
+        How it works:
+
+                  TRIGGER                              A-B segment is the distance we want to get to compare if, when we were inside the trigger, the trigger touched a solid surface under our feets.             
+        ---------------------------                    In this way, we can avoid teleporting the player directly to the skybox stupidly. And makes less efforts for putting the trigger.
+        |                         |                   
+        |      PLAYER ORIGIN      |                     
+        |            A            |                    The Problem: Since we can't trace directly PLAYER_ORIGIN to A as the ClipTraceToEntity is considerating that the player is being in a solid,
+        |            |            |                    it avoids the trace between A & B so we can't calculate it like this.
+        |            |            |                    We can't also considerate that the trigger is only a rectangle, so stuffs can be really complicated since I'm bad at maths.
+        -------------B-------------                    
+                     |                                 To solve this problem, we can get the distance between PLAYER ORIGIN and SURFACE, and substract it with B & C. 
+                     |                                 Or better, check if B-C < 0.0 wich means basically if the surface hits the trigger.
+                     |
+    _________________C___________________ 
+    _____________________________________               
+                   SURFACE
+    */
+
+    // The proper way for it is to calculate where we are in the trigger and get the distance between the surface below
+    // the box. So it doesn't go dumbly all under the map.
+
+    // clang-format on
+    trace_t tr_Point_C;
     Ray_t ray;
 
     Vector vAbsOrigin = mv->GetAbsOrigin(), vEnd = vAbsOrigin;
-    vEnd[2] -= 8192.0f; // 8192 should be enough
+
+    // So a trigger can be that huge? I doub't it. But we might change the value in case.
+    vEnd.z -= 8192.0f;
 
     ray.Init(vAbsOrigin, vEnd, GetPlayerMins(), GetPlayerMaxs());
 
     {
         CTraceFilterSimple tracefilter(player, COLLISION_GROUP_NONE);
-        enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr);
+        enginetrace->TraceRay(ray, MASK_PLAYERSOLID, &tracefilter, &tr_Point_C);
     }
 
-    float fAdjust = ((vEnd[2] - vAbsOrigin[2]) * -tr.fraction) - 2.0f;
+    // If we didn't find any ground, we stop here.
+    if (tr_Point_C.fraction != 1.0f)
+    {
+        // Now we need to get the B point.
+        ray.Init(tr_Point_C.endpos, vAbsOrigin);
 
-    if (abs(fAdjust) < 4096.0f) // Check if it's reasonable. If yes then apply our adjustement + our offset
-        vAbsOrigin.z -= fAdjust;
+        // Get B point.
+        trace_t tr_Point_B;
+        enginetrace->ClipRayToEntity(ray, MASK_ALL, m_pPlayer->m_CurrentSlideTrigger, &tr_Point_B);
 
-    mv->SetAbsOrigin(vAbsOrigin);
+        // Did we hit our trigger?
+        if (m_pPlayer->m_CurrentSlideTrigger == tr_Point_B.m_pEnt)
+        {
+            // Yep gotcha.
+            float flDist__B_C = (tr_Point_C.endpos.z - tr_Point_B.endpos.z);
+
+            // If the surface was in the trigger, we can apply the stuck to ground.
+            if (CloseEnough(flDist__B_C, 0.0f))
+            {
+                // If the distance is good, we can start being on the surface and follow it.
+                mv->SetAbsOrigin(tr_Point_C.endpos);
+
+                StayOnGround();
+            }
+
+            // engine->Con_NPrintf(0, "%i %f", m_pPlayer->m_SrvData.m_SlideData.IsEnabled(), flDist__A_B);
+        }
+    }
 }
 
 void CMomentumGameMovement::AirMove(void)
@@ -1389,8 +1490,8 @@ void CMomentumGameMovement::AirMove(void)
 
     TryPlayerMove();
 
-    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or
-    // maybe another monster?)
+    // Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor
+    // (or maybe another monster?)
     VectorSubtract(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity);
 
     if (m_pPlayer->GetGrabbableLadderTime() > 0.0f)
@@ -1487,6 +1588,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                 // this way we know fixed_origin isnt going to be stuck
                 float offsets[] = {(bumpcount * 2) * -sv_ramp_initial_retrace_length.GetFloat(), 0.0f,
                                    (bumpcount * 2) * sv_ramp_initial_retrace_length.GetFloat()};
+
                 int valid_planes = 0;
 
                 // we have 0 plane info, so lets increase our bbox and search in all 27 directions to get a valid plane!
@@ -1497,7 +1599,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                         for (h = 0; h < 3; h++)
                         {
                             Vector offset = {offsets[i], offsets[j], offsets[h]};
-
                             Vector offset_mins = offset / 2.0f;
                             Vector offset_maxs = offset / 2.0f;
 
@@ -1703,8 +1804,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         //
 
         // reflect player velocity
-        // Only give this a try for first impact plane because you can get yourself stuck in an acute corner by jumping
-        // in place
+        // Only give this a try for first impact plane because you can get yourself stuck in an acute corner by
+        // jumping in place
         //  and pressing forward and nobody was really using this bounce/reflection feature anyway...
         if (numplanes == 1 && player->GetMoveType() == MOVETYPE_WALK && player->GetGroundEntity() == nullptr)
         {
@@ -1763,8 +1864,8 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
                     // and add the along the normal of the surf ramp they're currently riding down,
                     // essentially pushing them away from the ramp.
 
-                    // Note: Technically the 20.0 here can be 2.0, but that causes "jitters" sometimes, so I found 20
-                    // to be pretty safe and smooth. If it causes any unforeseen consequences, tweak it!
+                    // Note: Technically the 20.0 here can be 2.0, but that causes "jitters" sometimes, so I found
+                    // 20 to be pretty safe and smooth. If it causes any unforeseen consequences, tweak it!
                     VectorMA(original_velocity, 20.0f, planes[0], new_velocity);
                     mv->m_vecVelocity.x = new_velocity.x;
                     mv->m_vecVelocity.y = new_velocity.y;
@@ -1800,9 +1901,32 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     if (CloseEnough(allFraction, 0.0f, FLT_EPSILON))
     {
         // We dont want to touch this!
-        // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity that
-        // can build up for ever.
-        VectorCopy(vec3_origin, mv->m_vecVelocity);
+        // If a client is triggering this, and if they are on a surf ramp they will stand still but gain velocity
+        // that can build up for ever. 
+        // ...
+        // However, if the player is currently sliding, another trace is needed to make sure the player does not
+        // get stuck on an obtuse angle (slope to a flat ground) [eg bhop_w1s2]
+        if (m_pPlayer->m_CurrentSlideTrigger.Get())
+        {
+            // Let's retrace in case we can go on our wanted direction.
+            TracePlayerBBox(mv->GetAbsOrigin(), end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+
+            // If we found something we stop.
+            if (pm.fraction < 1.0f)
+            {
+                VectorCopy(vec3_origin, mv->m_vecVelocity);
+            }
+            // Otherwise we just set our next pos and we ignore the bug.
+            else
+            {
+                mv->SetAbsOrigin(end);
+
+                // Adjust to be sure that we are on ground.
+                StayOnGround();
+            }
+        }
+        else // otherwise default behavior
+            VectorCopy(vec3_origin, mv->m_vecVelocity);
     }
 
     // Check if they slammed into a wall
@@ -1828,11 +1952,10 @@ void CMomentumGameMovement::SetGroundEntity(trace_t *pm)
 {
     // We check jump button because the player might want jumping while sliding
     // And it's more fun like this
-    if ((m_pPlayer->m_SrvData.m_SlideData.IsEnabled()) &&
-        (!(mv->m_nButtons & IN_JUMP) || !m_pPlayer->m_SrvData.m_SlideData.IsAllowingJump()))
-    {
+    if (m_pPlayer->m_CurrentSlideTrigger &&
+        (!((mv->m_nButtons & IN_JUMP) && m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround) ||
+         m_pPlayer->m_CurrentSlideTrigger->m_bStuckOnGround))
         pm = nullptr;
-    }
 
     CBaseEntity *newGround = pm ? pm->m_pEnt : nullptr;
 
@@ -2025,16 +2148,16 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     // Enable this when we konw that we are sliding.
     Vector dif = mv->m_vecVelocity - out;
     if ((dif.Length2D() > 0.0f && (angle >= 0.7f) && (out[2] > 0.0f)) &&
-        (m_pPlayer->m_SrvData.m_SlideData.IsEnabled() && m_pPlayer->m_SrvData.m_SlideData.IsFixUpsideSlope()))
+        (m_pPlayer->m_CurrentSlideTrigger && m_pPlayer->m_CurrentSlideTrigger->m_bFixUpsideSlope))
     {
         out.x = mv->m_vecVelocity.x;
         out.y = mv->m_vecVelocity.y;
         // Avoid being stuck into the slope.. Or velocity reset incoming!
         // (Could be better by being more close to the slope, but for player it seems to be close enough)
         // @Gocnak: Technically the "adjust" code above does this, but to each axis, with a much higher value.
-        // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be 0.015 or
-        // 0.01
-        mv->m_vecAbsOrigin.z += abs(dif.z) * gpGlobals->interval_per_tick;
+        // Tickrate will work, but keep in mind tickrates can get pretty big, though realistically this will be
+        // 0.015 or 0.01
+        mv->m_vecAbsOrigin.z += abs(dif.z);
         DevMsg(2, "ClipVelocity: Fixed speed.\n");
     }
 
@@ -2042,7 +2165,6 @@ int CMomentumGameMovement::ClipVelocity(Vector &in, Vector &normal, Vector &out,
     return blocked;
 }
 
-// Expose our interface.
 static CMomentumGameMovement g_GameMovement;
 CMomentumGameMovement *g_pMomentumGameMovement = &g_GameMovement;
 IGameMovement *g_pGameMovement = static_cast<IGameMovement *>(&g_GameMovement);

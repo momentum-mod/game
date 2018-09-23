@@ -7,7 +7,7 @@ class CReplayFrame : public ISerializable
 {
   public:
     CReplayFrame()
-        : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_vPlayerViewOffset(0, 0, 0), m_iPlayerButtons(0)
+        : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_fPlayerViewOffset(0.0f), m_iPlayerButtons(0)
     {
     }
 
@@ -21,15 +21,13 @@ class CReplayFrame : public ISerializable
         m_vPlayerOrigin.y = reader->ReadFloat();
         m_vPlayerOrigin.z = reader->ReadFloat();
 
-        m_vPlayerViewOffset.x = reader->ReadFloat();
-        m_vPlayerViewOffset.y = reader->ReadFloat();
-        m_vPlayerViewOffset.z = reader->ReadFloat();
+        m_fPlayerViewOffset = reader->ReadFloat();
 
         m_iPlayerButtons = reader->ReadInt32();
     }
 
     CReplayFrame(const QAngle &eye, const Vector &origin, const Vector &viewoffset, int buttons)
-        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_vPlayerViewOffset(viewoffset), m_iPlayerButtons(buttons)
+        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_fPlayerViewOffset(viewoffset.z), m_iPlayerButtons(buttons)
     {
     }
 
@@ -44,9 +42,7 @@ class CReplayFrame : public ISerializable
         writer->WriteFloat(m_vPlayerOrigin.y);
         writer->WriteFloat(m_vPlayerOrigin.z);
 
-        writer->WriteFloat(m_vPlayerViewOffset.x);
-        writer->WriteFloat(m_vPlayerViewOffset.y);
-        writer->WriteFloat(m_vPlayerViewOffset.z);
+        writer->WriteFloat(m_fPlayerViewOffset);
 
         writer->WriteInt32(m_iPlayerButtons);
     }
@@ -54,13 +50,13 @@ class CReplayFrame : public ISerializable
   public:
     inline QAngle EyeAngles() const { return m_angEyeAngles; }
     inline Vector PlayerOrigin() const { return m_vPlayerOrigin; }
-    inline Vector PlayerViewOffset() const { return m_vPlayerViewOffset; }
+    inline float PlayerViewOffset() const { return m_fPlayerViewOffset; }
     inline int PlayerButtons() const { return m_iPlayerButtons; }
 
   private:
     QAngle m_angEyeAngles;
     Vector m_vPlayerOrigin;
-    Vector m_vPlayerViewOffset;
+    float m_fPlayerViewOffset;
     int m_iPlayerButtons;
 };
 
@@ -79,6 +75,7 @@ class CReplayHeader : public ISerializable
         m_iRunFlags = reader->ReadUInt32();
         m_iRunDate = reader->ReadInt64();
         m_iStartDif = reader->ReadInt32();
+        m_iBonusZone = reader->ReadInt32();
     }
 
   public:
@@ -92,9 +89,10 @@ class CReplayHeader : public ISerializable
         writer->WriteUInt32(m_iRunFlags);
         writer->WriteInt64(m_iRunDate);
         writer->WriteInt32(m_iStartDif);
+        writer->WriteInt32(m_iBonusZone);
     }
 
-    virtual CReplayHeader &operator=(const CReplayHeader& other)
+    virtual CReplayHeader &operator=(const CReplayHeader &other)
     {
         Q_strncpy(m_szMapName, other.m_szMapName, sizeof(m_szMapName));
         Q_strncpy(m_szPlayerName, other.m_szPlayerName, sizeof(m_szPlayerName));
@@ -104,6 +102,7 @@ class CReplayHeader : public ISerializable
         m_iRunFlags = other.m_iRunFlags;
         m_iRunDate = other.m_iRunDate;
         m_iStartDif = other.m_iStartDif;
+        m_iBonusZone = other.m_iBonusZone;
         return *this;
     }
 
@@ -116,4 +115,5 @@ class CReplayHeader : public ISerializable
     uint32 m_iRunFlags;       // The flags the player ran with.
     time_t m_iRunDate;        // The date this run was achieved.
     int m_iStartDif;          // The difference between the tick of the start timer and record
+    int m_iBonusZone;         // The bonus zone. This will be needed for leaderboards to check the bonus runs.
 };

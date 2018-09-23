@@ -5,12 +5,14 @@
 #endif
 
 #include "cbase.h"
-#include "c_mom_replay_entity.h"
+#include <mom_modulecomms.h>
 #include <momentum/mom_shareddefs.h>
 #include <run/mom_entity_run_data.h>
 #include <run/run_stats.h>
-#include <mom_modulecomms.h>
 #include "c_mom_online_ghost.h"
+#include "c_mom_replay_entity.h"
+
+class C_TriggerSlide;
 
 class C_MomentumPlayer : public C_BasePlayer
 {
@@ -49,13 +51,16 @@ class C_MomentumPlayer : public C_BasePlayer
 
     // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
- 
+
+    CNetworkVar(int, m_afButtonDisabled);
+
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
-    CNetworkVar(int, m_afButtonDisabled);
-    
-    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,bool &bIsPaintAmmo);
+    CNetworkHandle(C_TriggerSlide, m_CurrentSlideTrigger); 
+
+    void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,
+                                 bool &bIsPaintAmmo);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
                     int iBulletType, int iDamage, float flRangeModifier, CBaseEntity *pevAttacker, bool bDoEffects,

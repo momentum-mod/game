@@ -3,17 +3,18 @@
 #include "mom_replay_entity.h"
 #include "movevars_shared.h"
 #include "mom_timer.h"
+#include "movevars_shared.h"
 #include "util/mom_util.h"
 #include "util/os_utils.h"
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include "in_buttons.h"
-
 #include "tier0/memdbgon.h"
 
-static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0",
-    FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
-    "Paint a faint beam trail on the replay. 0 = OFF, 1 = ON\n", true, 0, true, 1);
+#undef CreateEvent
+
+static ConVar mom_replay_trail_enable("mom_replay_trail_enable", "0", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
+                                      "Paint a faint beam trail on the replay. 0 = OFF, 1 = ON\n", true, 0, true, 1);
 
 LINK_ENTITY_TO_CLASS(mom_replay_ghost, CMomentumReplayGhostEntity);
 
@@ -24,12 +25,12 @@ BEGIN_DATADESC(CMomentumReplayGhostEntity)
 END_DATADESC();
 
 CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
-    : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr),
-    m_bHasJumped(false), m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0),
-    m_nOldReplayButtons(0), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount())
+    : m_bIsActive(false), m_bReplayFirstPerson(false), m_pPlaybackReplay(nullptr), m_bHasJumped(false),
+      m_flLastSyncVelocity(0), m_nStrafeTicks(0), m_nPerfectSyncTicks(0), m_nAccelTicks(0), m_nOldReplayButtons(0),
+      m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_cvarReplaySelection("mom_replay_selection")
 {
-    StdDataToReplay = (DataToReplayFn)(GetProcAddress( GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
-    
+    StdDataToReplay = (DataToReplayFn)(GetProcAddress(GetModuleHandle(CLIENT_DLL_NAME), "StdDataToReplay"));
+
     // Set networked vars here
     m_SrvData.m_nReplayButtons = 0;
     m_SrvData.m_iTotalStrafes = 0;
@@ -41,17 +42,16 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
 
 CMomentumReplayGhostEntity::~CMomentumReplayGhostEntity() {}
 
-void CMomentumReplayGhostEntity::Precache(void)
-{
-    BaseClass::Precache();
-}
+void CMomentumReplayGhostEntity::Precache(void) { BaseClass::Precache(); }
 
 void CMomentumReplayGhostEntity::FireGameEvent(IGameEvent *pEvent)
 {
     if (!Q_strcmp(pEvent->GetName(), "mapfinished_panel_closed"))
     {
         if (pEvent->GetBool("restart"))
+        {
             m_SrvData.m_RunData.m_bMapFinished = false;
+        }
         else
             EndRun();
     }
@@ -71,14 +71,13 @@ void CMomentumReplayGhostEntity::Spawn()
     if (pPlayer)
     {
         SetGhostAppearance(pPlayer->m_playerAppearanceProps);
-        //now that we've set our appearance, the ghost should be visible again.
+        // now that we've set our appearance, the ghost should be visible again.
         SetRenderMode(kRenderTransColor);
         if (m_ghostAppearance.GhostTrailEnable)
         {
             CreateTrail();
         }
     }
-
 
     if (m_pPlaybackReplay)
         Q_strcpy(m_SrvData.m_pszPlayerName, m_pPlaybackReplay->GetPlayerName());
@@ -87,6 +86,7 @@ void CMomentumReplayGhostEntity::Spawn()
 void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
 {
     m_bReplayFirstPerson = firstPerson;
+    m_SrvData.m_bWasInRun = g_pMomentumTimer->GetPaused();
 
     Spawn();
     m_SrvData.m_iTotalStrafes = 0;
@@ -99,7 +99,8 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
     {
         if (m_bReplayFirstPerson)
         {
-            if (!m_pCurrentSpecPlayer) m_pCurrentSpecPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+            if (!m_pCurrentSpecPlayer)
+                m_pCurrentSpecPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
 
             if (m_pCurrentSpecPlayer && m_pCurrentSpecPlayer->GetGhostEnt() != this)
             {
@@ -111,13 +112,14 @@ void CMomentumReplayGhostEntity::StartRun(bool firstPerson)
         if (!CloseEnough(m_SrvData.m_flTickRate, gpGlobals->interval_per_tick, FLT_EPSILON))
         {
             Warning("The tickrate is not equal (%f -> %f)! Stopping replay.\n", m_SrvData.m_flTickRate,
-                gpGlobals->interval_per_tick);
+                    gpGlobals->interval_per_tick);
             EndRun();
             return;
         }
 
         m_SrvData.m_iCurrentTick = 0;
         SetAbsOrigin(m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick)->PlayerOrigin());
+
         m_SrvData.m_iTotalTimeTicks = m_pPlaybackReplay->GetFrameCount() - 1;
 
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
@@ -162,10 +164,29 @@ void CMomentumReplayGhostEntity::Think()
         return;
     }
 
+    if (m_SrvData.m_iCurrentTick == m_SrvData.m_RunData.m_iStartTickD)
+    {
+        m_SrvData.m_RunData.m_bIsInZone = false;
+        m_SrvData.m_RunData.m_bMapFinished = false;
+        m_SrvData.m_RunData.m_bTimerRunning = true;
+        m_SrvData.m_RunData.m_iStartTick = gpGlobals->tickcount;
+        StartTimer(gpGlobals->tickcount);
+
+        // Needed for hud_comparisons
+        IGameEvent *timerStateEvent = gameeventmanager->CreateEvent("timer_state");
+        if (timerStateEvent)
+        {
+            timerStateEvent->SetInt("ent", entindex());
+            timerStateEvent->SetBool("is_running", true);
+
+            gameeventmanager->FireEvent(timerStateEvent);
+        }
+    }
+
     float m_flTimeScale = ConVarRef("mom_replay_timescale").GetFloat();
 
     // move the ghost
-    if (m_SrvData.m_iCurrentTick < 0 || m_SrvData.m_iCurrentTick + 1 >= m_pPlaybackReplay->GetFrameCount())
+    if (m_SrvData.m_iCurrentTick < 0 || m_SrvData.m_iCurrentTick + 1 >= m_SrvData.m_iTotalTimeTicks)
     {
         // If we're not looping and we've reached the end of the video then stop and wait for the player
         // to make a choice about if it should repeat, or end.
@@ -225,7 +246,7 @@ void CMomentumReplayGhostEntity::Think()
                 // current one depending on the average of current steps and next steps.
                 if (m_iTickElapsed >= iInvTicksAverage)
                 {
-                    //BLOCK1
+                    // BLOCK1
 
                     // If the average of next steps are higher than current steps, the current step must be called here.
                     // Otherwhise the next step must be called.
@@ -237,14 +258,14 @@ void CMomentumReplayGhostEntity::Think()
                     // If we don't do this, we will be in late of 1 tick.
 
                     /* --------------------------------------------------------------------------------------------------------------------------
-                    For example if m_flTimeScale = 3,5 -> then iInvTicksAverage is equal to 2 (1/0.5), and that we're resetting iTickElapsed on 0,
-                    it means that we will wait 2 ticks before being on that BLOCK1.
-                    And we dont want that because, we want the 1/2 of time the code running on both blocks and not 1/3 on BLOCK1 then 2/3 on BLOCK2,
-                    when timescale is 3,5.
-                    If we wait 2 ticks on BLOCK2 and only 1 on BLOCK1, logically, it won't correspond to 3,5 of m_flTimeScale.
-                    So we're doing like this way: iTickElapsed = 1, or iInvTicksAverage = iInvTicksAverage - 1, 
-                    to make it correspond perfectly to timescale.
-                    I hope you understood what I've meant. If not then contact that XutaxKamay ***** and tell him to fix his comments.
+                    For example if m_flTimeScale = 3,5 -> then iInvTicksAverage is equal to 2 (1/0.5), and that we're
+                    resetting iTickElapsed on 0, it means that we will wait 2 ticks before being on that BLOCK1. And we
+                    dont want that because, we want the 1/2 of time the code running on both blocks and not 1/3 on
+                    BLOCK1 then 2/3 on BLOCK2, when timescale is 3,5. If we wait 2 ticks on BLOCK2 and only 1 on BLOCK1,
+                    logically, it won't correspond to 3,5 of m_flTimeScale. So we're doing like this way: iTickElapsed =
+                    1, or iInvTicksAverage = iInvTicksAverage - 1, to make it correspond perfectly to timescale. I hope
+                    you understood what I've meant. If not then contact that XutaxKamay ***** and tell him to fix his
+                    comments.
                     ------------------------------------------------------------------------------------------------------------------------------
                     */
 
@@ -253,7 +274,7 @@ void CMomentumReplayGhostEntity::Think()
                 else
                 {
 
-                    //BLOCK2
+                    // BLOCK2
 
                     // If the average of next steps are higher than current steps, the next step must be called here.
                     // Otherwhise the current step must be called.
@@ -280,7 +301,7 @@ void CMomentumReplayGhostEntity::Think()
     {
         SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
     }
-    
+
     if (StdDataToReplay)
         StdDataToReplay(&m_SrvData);
 }
@@ -292,8 +313,31 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 {
     if (m_pCurrentSpecPlayer)
     {
-        auto currentStep = GetCurrentStep();
-        auto nextStep = GetNextStep();
+        CReplayFrame *currentStep = nullptr;
+        CReplayFrame *nextStep = nullptr;
+
+        // MOM_TODO
+        // If the player is in practice, let's stuck the player, if the current tick is between the start and end of
+        // timestamps.
+        /*if (m_SrvData.m_iCurrentTick >= m_iPracticeTimeStampStart &&
+            m_SrvData.m_iCurrentTick <= m_iPracticeTimeStampEnd)
+        {
+            m_SrvData.m_bHasPracticeMode = true;
+            // To get the real tick of where the practice mode have been enabled, we need to add the tick remainder,
+            // but since we want to be stuck at the start of the timestamp and not in the end of our timestamp, we need
+            // to get how many ticks have elapsed between those two, and substract it. Usually this calculation is
+            // useless if m_iTickRemainder had only increment once in the loop for getting the timestamps.
+            nextStep = currentStep = m_pPlaybackReplay->GetFrame(
+                m_iPracticeTimeStampStart - (m_iTickRemainder - (m_iPracticeTimeStampEnd - m_iPracticeTimeStampStart)));
+        }
+        else*/
+        {
+            // Otherwhise process normally.
+            nextStep = GetNextStep();
+            currentStep = GetCurrentStep();
+
+            m_SrvData.m_bHasPracticeMode = false;
+        }
 
         SetAbsOrigin(currentStep->PlayerOrigin());
 
@@ -322,7 +366,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
             }
         }
 
-
         // interpolate vel from difference in origin
         const Vector &pPlayerCurrentOrigin = currentStep->PlayerOrigin();
         const Vector &pPlayerNextOrigin = nextStep->PlayerOrigin();
@@ -331,7 +374,6 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         const float distZ = fabs(pPlayerCurrentOrigin.z - pPlayerNextOrigin.z);
         const Vector interpolatedVel = Vector(distX, distY, distZ) / gpGlobals->interval_per_tick;
         const float maxvel = sv_maxvelocity.GetFloat();
-
 
         // Fixes an issue with teleporting
         if (interpolatedVel.x <= maxvel && interpolatedVel.y <= maxvel && interpolatedVel.z <= maxvel)
@@ -343,7 +385,7 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
         if (m_SrvData.m_RunData.m_bTimerRunning)
             UpdateStats(interpolatedVel);
 
-        SetViewOffset(currentStep->PlayerViewOffset());
+        SetViewOffset(Vector(0, 0, currentStep->PlayerViewOffset()));
 
         bool isDucking = (GetFlags() & FL_DUCKING) != 0;
         if (m_SrvData.m_nReplayButtons & IN_DUCK)
@@ -367,12 +409,32 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
 void CMomentumReplayGhostEntity::HandleGhost()
 {
-    auto currentStep = GetCurrentStep();
+    CReplayFrame *currentStep = nullptr;
+
+    // If the player is in practice, let's stuck the player, if the current tick is between the start and end of
+    // timestamps.
+    /*if (m_SrvData.m_iCurrentTick >= m_iPracticeTimeStampStart && m_SrvData.m_iCurrentTick <= m_iPracticeTimeStampEnd)
+    {
+        m_SrvData.m_bHasPracticeMode = true;
+        // To get the real tick of where the practice mode have been enabled, we need to add the tick remainder,
+        // but since we want to be stuck at the start of the timestamp and not in the end of our timestamp, we need to
+        // get how many ticks have elapsed between those two, and substract it. Usually this calculation is useless if
+        // m_iTickRemainder had only increment once in the loop for getting the timestamps.
+        currentStep = m_pPlaybackReplay->GetFrame(
+            m_iPracticeTimeStampStart - (m_iTickRemainder - (m_iPracticeTimeStampEnd - m_iPracticeTimeStampStart)));
+    }
+    else*/
+    {
+        // Otherwhise process normally.
+        currentStep = GetCurrentStep();
+
+        m_SrvData.m_bHasPracticeMode = false;
+    }
 
     SetAbsOrigin(currentStep->PlayerOrigin());
-    SetAbsAngles(QAngle(
-        currentStep->EyeAngles().x / 10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
-        currentStep->EyeAngles().y, currentStep->EyeAngles().z));
+    SetAbsAngles(QAngle(currentStep->EyeAngles().x /
+                            10, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
+                        currentStep->EyeAngles().y, currentStep->EyeAngles().z));
 
     // remove the nodraw effects
     SetRenderMode(kRenderTransColor);
@@ -417,16 +479,15 @@ void CMomentumReplayGhostEntity::UpdateStats(const Vector &ghostVel)
     }
 
     // --- JUMP AND STRAFE COUNTER ---
-    // MOM_TODO: This needs to calculate better. It currently counts every other jump, and sometimes spams (player on
-    // ground for a while)
-    if (!m_bHasJumped && GetGroundEntity() != nullptr && GetFlags() & FL_ONGROUND &&
+    // MOM_TODO: This needs to hook up to the "player jumped" replay tick event
+    /*if (!m_bHasJumped && GetGroundEntity() != nullptr && GetFlags() & FL_ONGROUND &&
         currentStep->PlayerButtons() & IN_JUMP)
     {
         m_bHasJumped = true;
         m_SrvData.m_RunData.m_flLastJumpVel = GetLocalVelocity().Length2D();
         m_SrvData.m_RunData.m_flLastJumpTime = gpGlobals->curtime;
         m_SrvData.m_iTotalJumps++;
-    }
+    }*/
 
     if ((currentStep->PlayerButtons() & IN_MOVELEFT && !(m_nOldReplayButtons & IN_MOVELEFT)) ||
         (currentStep->PlayerButtons() & IN_MOVERIGHT && !(m_nOldReplayButtons & IN_MOVERIGHT)))
@@ -462,14 +523,14 @@ void CMomentumReplayGhostEntity::EndRun()
 
 CReplayFrame* CMomentumReplayGhostEntity::GetCurrentStep()
 {
-    return m_pPlaybackReplay->GetFrame(m_SrvData.m_iCurrentTick);
+    return m_pPlaybackReplay->GetFrame(max(min(m_SrvData.m_iCurrentTick, m_pPlaybackReplay->GetFrameCount() - 1), 0));
 }
 
 CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 {
     int nextStep = m_SrvData.m_iCurrentTick;
 
-    if ((ConVarRef("mom_replay_selection").GetInt() == 1) && m_SrvData.m_bIsPaused)
+    if ((m_cvarReplaySelection.GetInt() == 1) && m_SrvData.m_bIsPaused)
     {
         --nextStep;
 
@@ -486,7 +547,8 @@ CReplayFrame *CMomentumReplayGhostEntity::GetNextStep()
 }
 void CMomentumReplayGhostEntity::CreateTrail()
 {
-    if (!mom_replay_trail_enable.GetBool()) return;
+    if (!mom_replay_trail_enable.GetBool())
+        return;
     BaseClass::CreateTrail();
 }
 void CMomentumReplayGhostEntity::SetGhostColor(const uint32 newHexColor)

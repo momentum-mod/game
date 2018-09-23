@@ -14,6 +14,8 @@
 #include "momSpectatorGUI.h"
 #include "momentum/mom_shareddefs.h"
 
+#include "clienteffectprecachesystem.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -202,6 +204,20 @@ int ClientModeMOMNormal::HandleSpectatorKeyInput(int down, ButtonCode_t keynum, 
     }
 
     return 1;
+}
+
+CLIENTEFFECT_REGISTER_BEGIN(PrecachePostProcessingEffectsGlow)
+CLIENTEFFECT_MATERIAL("dev/glow_color")
+CLIENTEFFECT_MATERIAL("dev/halo_add_to_screen")
+CLIENTEFFECT_REGISTER_END_CONDITIONAL(engine->GetDXSupportLevel() >= 90)
+
+bool ClientModeMOMNormal::DoPostScreenSpaceEffects(const CViewSetup* pSetup)
+{
+#ifdef GLOW_ENABLE
+    g_GlowObjectManager.RenderGlowEffects(pSetup, 0);
+#endif
+
+    return BaseClass::DoPostScreenSpaceEffects(pSetup);
 }
 
 void ClientModeMOMNormal::SetupPointers()
