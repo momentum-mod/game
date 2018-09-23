@@ -4,16 +4,19 @@
 #include "tier0/memdbgon.h"
 
 
-IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
-RecvPropInt(RECVINFO(m_afButtonDisabled)),
+IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MomentumPlayer, CMomentumPlayer)
+	RecvPropInt(RECVINFO(m_afButtonDisabled)),
+	RecvPropBool(RECVINFO(m_bAutoBhop)),
+	RecvPropFloat(RECVINFO(m_flStamina)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA(C_MomentumPlayer)
-DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
-DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+    DEFINE_PRED_FIELD_TOL(m_flStamina, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, 0.1f),
+	DEFINE_PRED_FIELD(m_SrvData.m_iShotsFired, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_SrvData.m_iDirection, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
-C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_iIDEntIndex(0), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
+C_MomentumPlayer::C_MomentumPlayer() : m_RunStats(&m_SrvData.m_RunStatsData), m_pViewTarget(nullptr), m_pSpectateTarget(nullptr)
 {
     ConVarRef scissor("r_flashlightscissor");
     scissor.SetValue("0");
@@ -75,6 +78,7 @@ void C_MomentumPlayer::ClientThink()
         }
     }
 
+	BaseClass::ClientThink();
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
@@ -96,35 +100,6 @@ void C_MomentumPlayer::PostDataUpdate(DataUpdateType_t updateType)
 	//SetNextClientThink(CLIENT_THINK_ALWAYS);
 
 	BaseClass::PostDataUpdate(updateType);
-}
-
-
-void C_MomentumPlayer::SurpressLadderChecks(const Vector& pos, const Vector& normal)
-{
-    m_ladderSurpressionTimer.Start(1.0f);
-    m_lastLadderPos = pos;
-    m_lastLadderNormal = normal;
-}
-
-bool C_MomentumPlayer::CanGrabLadder(const Vector& pos, const Vector& normal)
-{
-    if (m_ladderSurpressionTimer.GetRemainingTime() <= 0.0f)
-    {
-        return true;
-    }
-
-    const float MaxDist = 64.0f;
-    if (pos.AsVector2D().DistToSqr(m_lastLadderPos.AsVector2D()) < MaxDist * MaxDist)
-    {
-        return false;
-    }
-
-    if (normal != m_lastLadderNormal)
-    {
-        return true;
-    }
-
-    return false;
 }
 
 // Overridden for Ghost entity

@@ -5,7 +5,6 @@
 
 CMOMRunEntityData::CMOMRunEntityData()
 {
-    m_bAutoBhop = false;
     m_iSuccessiveBhops = 0;
     m_flStrafeSync = 0.0f;
     m_flStrafeSync2 = 0.0f;

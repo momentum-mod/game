@@ -14,6 +14,8 @@
 
 class C_MomentumPlayer : public C_BasePlayer
 {
+    friend class CMomentumGameMovement;
+
   public:
     DECLARE_CLASS(C_MomentumPlayer, C_BasePlayer);
     DECLARE_CLIENTCLASS();
@@ -29,13 +31,8 @@ class C_MomentumPlayer : public C_BasePlayer
     void Spawn() OVERRIDE;
     virtual void ClientThink(void);
 
-    Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
-
-    void SurpressLadderChecks(const Vector &pos, const Vector &normal);
-    bool CanGrabLadder(const Vector &pos, const Vector &normal);
     bool DidPlayerBhop() { return m_SrvData.m_bDidPlayerBhop; }
-    bool HasAutoBhop() { return m_SrvData.m_RunData.m_bAutoBhop; }
-    // void ResetStrafeSync();
+    bool HasAutoBhop() { return m_bAutoBhop; }
 
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
 
@@ -53,11 +50,11 @@ class C_MomentumPlayer : public C_BasePlayer
     // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
  
-    int m_afButtonDisabled;
-
     StdDataFromServer m_SrvData;
     CMomRunStats m_RunStats;
 
+    CNetworkVar(int, m_afButtonDisabled);
+    
     void GetBulletTypeParameters(int iBulletType, float &fPenetrationPower, float &flPenetrationDistance,bool &bIsPaintAmmo);
 
     void FireBullet(Vector vecSrc, const QAngle &shootAngles, float vecSpread, float flDistance, int iPenetration,
@@ -74,20 +71,14 @@ class C_MomentumPlayer : public C_BasePlayer
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
   private:
-    // Ladder stuff
-    CountdownTimer m_ladderSurpressionTimer;
-    Vector m_lastLadderNormal;
-    Vector m_lastLadderPos;
     float m_flGrabbableLadderTime;
-
     bool m_duckUntilOnGround;
-    float m_flStamina;
 
-    int m_iIDEntIndex;
+    CNetworkVar(float, m_flStamina);
+    CNetworkVar(bool, m_bAutoBhop);
+
     C_MomentumOnlineGhostEntity *m_pViewTarget;
     C_MomentumOnlineGhostEntity *m_pSpectateTarget;
-
-    friend class CMomentumGameMovement;
 };
 
 #endif

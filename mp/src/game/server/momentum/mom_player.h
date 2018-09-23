@@ -76,23 +76,14 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     bool CanBreatheUnderwater() const OVERRIDE { return true; }
 
-    // LADDERS
-    void SurpressLadderChecks(const Vector &pos, const Vector &normal);
-    bool CanGrabLadder(const Vector &pos, const Vector &normal);
-    Vector m_lastStandingPos; // used by the gamemovement code for finding ladders
-
     // SPAWNING
     CBaseEntity *EntSelectSpawnPoint() OVERRIDE;
-
-    // used by CMomentumGameMovement
-    bool m_duckUntilOnGround;
-    float m_flStamina;
 
     bool m_bAllowUserTeleports;
 
     void EnableAutoBhop();
     void DisableAutoBhop();
-    bool HasAutoBhop() const { return m_SrvData.m_RunData.m_bAutoBhop; }
+    bool HasAutoBhop() const { return m_bAutoBhop; }
     bool DidPlayerBhop() const { return m_SrvData.m_bDidPlayerBhop; }
     // think function for detecting if player bhopped
     void OnPlayerJump() OVERRIDE;
@@ -197,10 +188,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }
     void SetGrabbableLadderTime(float new_time) { m_flGrabbableLadderTime = new_time; }
   private:
+    // used by CMomentumGameMovement
+    bool m_duckUntilOnGround;
+    CNetworkVar(float, m_flStamina);
+
     // Ladder stuff
-    CountdownTimer m_ladderSurpressionTimer;
-    Vector m_lastLadderNormal;
-    Vector m_lastLadderPos;
     float m_flGrabbableLadderTime;
 
     // Spawn stuff
@@ -213,6 +205,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     // for detecting bhop
     friend class CMomentumGameMovement;
+    CNetworkVar(bool, m_bAutoBhop);
     float m_flPunishTime;
     int m_iLastBlock;
 
