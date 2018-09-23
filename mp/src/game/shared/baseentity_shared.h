@@ -55,6 +55,16 @@ enum InvalidatePhysicsBits_t
 	ANIMATION_CHANGED	= 0x8,
 };
 
+//-----------------------------------------------------------------------------
+// Things that toggle (buttons/triggers/doors) need this
+//-----------------------------------------------------------------------------
+enum TOGGLE_STATE
+{
+	TS_AT_TOP,
+	TS_AT_BOTTOM,
+	TS_GOING_UP,
+	TS_GOING_DOWN
+};
 
 #if defined( CLIENT_DLL )
 #include "c_baseentity.h"

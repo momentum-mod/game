@@ -43,7 +43,7 @@ CPDumpPanel::CPDumpPanel( const char *pElementName ) :
 	vgui::Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
 
-	SetProportional( false );
+	SetProportional( true );
 }
 
 CPDumpPanel::~CPDumpPanel()
@@ -53,7 +53,7 @@ CPDumpPanel::~CPDumpPanel()
 
 void CPDumpPanel::ApplySettings( KeyValues *inResourceData )
 {
-	SetProportional( false );
+	SetProportional( true );
 
 	BaseClass::ApplySettings( inResourceData );
 }
@@ -62,7 +62,7 @@ void CPDumpPanel::ApplySchemeSettings( vgui::IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-	SetProportional( false );
+	SetProportional( true );
 	SetPaintBackgroundEnabled( false );
 }
 
