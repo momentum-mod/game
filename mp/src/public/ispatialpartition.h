@@ -37,6 +37,9 @@ enum
 	PARTITION_CLIENT_STATIC_PROPS		= (1 << 5),
 	PARTITION_ENGINE_STATIC_PROPS		= (1 << 6),
 	PARTITION_CLIENT_NON_STATIC_EDICTS	= (1 << 7),		// everything except the static props
+	PARTITION_CLIENT_TRIGGER_ENTITIES	= (1 << 8),		// client side prediction related triggers
+	PARTITION_CLIENT_IK_ATTACHMENT		= (1 << 9),		// Can be used as an IK attachment
+	PARTITION_ENGINE_PUSHABLE			= (1 << 10),	// everything with a movetype that can be pushed by MOVETYPE_PUSH ents
 };
 
 // Use this to look for all client edicts.
@@ -44,7 +47,8 @@ enum
 	PARTITION_CLIENT_NON_STATIC_EDICTS |	\
 	PARTITION_CLIENT_STATIC_PROPS |			\
 	PARTITION_CLIENT_RESPONSIVE_EDICTS |	\
-	PARTITION_CLIENT_SOLID_EDICTS			\
+	PARTITION_CLIENT_SOLID_EDICTS |			\
+	PARTITION_CLIENT_TRIGGER_ENTITIES \
 	)
 
 

@@ -25,7 +25,7 @@
 #include "ndebugoverlay.h"
 #include "ivoiceserver.h"
 #include <stdarg.h>
-#include "movehelper_server.h"
+#include "imovehelper.h"
 #include "networkstringtable_gamedll.h"
 #include "filesystem.h"
 #include "func_areaportalwindow.h"

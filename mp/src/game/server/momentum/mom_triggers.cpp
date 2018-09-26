@@ -1,14 +1,14 @@
 #include "cbase.h"
 
+#include "fmtstr.h"
 #include "in_buttons.h"
 #include "mom_player_shared.h"
 #include "mom_replay_entity.h"
 #include "mom_replay_system.h"
+#include "mom_system_progress.h"
 #include "mom_system_saveloc.h"
 #include "mom_timer.h"
 #include "mom_triggers.h"
-#include "mom_system_progress.h"
-#include "fmtstr.h"
 
 #include "tier0/memdbgon.h"
 
@@ -1271,21 +1271,17 @@ DEFINE_KEYFIELD(m_iAboveOrBelow, FIELD_INTEGER, "AboveOrBelow"),
     DEFINE_KEYFIELD(m_bHorizontal, FIELD_BOOLEAN, "Horizontal"),
     DEFINE_KEYFIELD(m_flVerticalSpeed, FIELD_FLOAT, "VerticalSpeed"),
     DEFINE_KEYFIELD(m_flHorizontalSpeed, FIELD_FLOAT, "HorizontalSpeed"),
-    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), 
-DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
+    DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"), DEFINE_KEYFIELD(m_flInterval, FIELD_FLOAT, "Interval"),
     DEFINE_KEYFIELD(m_bOnThink, FIELD_BOOLEAN, "OnThink"),
-    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") 
-END_DATADESC();
+    DEFINE_OUTPUT(m_OnThresholdEvent, "OnThreshold") END_DATADESC();
 
 LINK_ENTITY_TO_CLASS(func_momentum_brush, CFuncMomentumBrush);
 
 BEGIN_DATADESC(CFuncMomentumBrush)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"), 
-DEFINE_KEYFIELD(m_iDisabledAlpha, FIELD_CHARACTER, "DisabledAlpha"),
-DEFINE_KEYFIELD(m_bInverted, FIELD_BOOLEAN, "Invert"),
-DEFINE_KEYFIELD(m_bDisableUI, FIELD_BOOLEAN, "DisableUI"),
-END_DATADESC();
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"), DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
+    DEFINE_KEYFIELD(m_iDisabledAlpha, FIELD_CHARACTER, "DisabledAlpha"),
+    DEFINE_KEYFIELD(m_bInverted, FIELD_BOOLEAN, "Invert"), DEFINE_KEYFIELD(m_bDisableUI, FIELD_BOOLEAN, "DisableUI"),
+    END_DATADESC();
 
 CFuncMomentumBrush::CFuncMomentumBrush()
 {
@@ -1300,7 +1296,7 @@ void CFuncMomentumBrush::Spawn()
 {
     // On spawn, we need to check if this brush should be enabled
 
-    SetMoveType(MOVETYPE_PUSH); // so it doesn't get pushed by anything
+    SetMoveType(MOVETYPE_PUSH);       // so it doesn't get pushed by anything
     SetRenderMode(kRenderTransAlpha); // Allows alpha override
 
     SetSolid(SOLID_BSP); // Seems to have the best collision for standing/jumping (see the bhop block fix system)
@@ -1317,14 +1313,11 @@ void CFuncMomentumBrush::Spawn()
     // If it can't move/go away, it's really part of the world
     if (!GetEntityName() || !m_iParent)
         AddFlag(FL_WORLDBRUSH);
-    
+
     CreateVPhysics();
 }
 
-bool CFuncMomentumBrush::IsOn() const
-{
-    return (m_bInverted ? m_iDisabled != 0 : m_iDisabled == 0);
-}
+bool CFuncMomentumBrush::IsOn() const { return (m_bInverted ? m_iDisabled != 0 : m_iDisabled == 0); }
 
 void CFuncMomentumBrush::TurnOn()
 {
@@ -1337,9 +1330,9 @@ void CFuncMomentumBrush::TurnOn()
         return;*/
 
     if (m_bInverted)
-       AddSolidFlags(FSOLID_NOT_SOLID);
+        AddSolidFlags(FSOLID_NOT_SOLID);
     else
-       RemoveSolidFlags(FSOLID_NOT_SOLID);
+        RemoveSolidFlags(FSOLID_NOT_SOLID);
 
     SetRenderColorA(m_bInverted ? m_iDisabledAlpha : 255);
 
@@ -1353,7 +1346,7 @@ void CFuncMomentumBrush::TurnOff()
         return;
 
     if (m_bInverted)
-        RemoveSolidFlags(FSOLID_NOT_SOLID);    
+        RemoveSolidFlags(FSOLID_NOT_SOLID);
     else
         AddSolidFlags(FSOLID_NOT_SOLID);
 
@@ -1362,7 +1355,7 @@ void CFuncMomentumBrush::TurnOff()
     m_iDisabled = !m_bInverted;
 }
 
-void CFuncMomentumBrush::StartTouch(CBaseEntity* pOther)
+void CFuncMomentumBrush::StartTouch(CBaseEntity *pOther)
 {
     BaseClass::StartTouch(pOther);
     // MOM_TODO: Show a UI that says which stage needs unlocking
@@ -1371,25 +1364,22 @@ void CFuncMomentumBrush::StartTouch(CBaseEntity* pOther)
         if (pOther->IsPlayer())
         {
             if (m_iDisabled)
-                ClientPrint((CBasePlayer*)pOther, HUD_PRINTCENTER, 
+                ClientPrint((CBasePlayer *)pOther, HUD_PRINTCENTER,
                             CFmtStr("Beat Stage %i To Make This Solid!", m_iStage).Get());
         }
     }
 }
 
-void CFuncMomentumBrush::EndTouch(CBaseEntity* pOther)
+void CFuncMomentumBrush::EndTouch(CBaseEntity *pOther)
 {
     BaseClass::EndTouch(pOther);
     // MOM_TODO: Hide the UI
     // if (m_iDisabled && pOther->IsPlayer()) or something
 }
 
-
 LINK_ENTITY_TO_CLASS(filter_momentum_progress, CFilterMomentumProgress);
 BEGIN_DATADESC(CFilterMomentumProgress)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage")
-END_DATADESC();
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"), DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage") END_DATADESC();
 
 CFilterMomentumProgress::CFilterMomentumProgress()
 {
@@ -1397,7 +1387,7 @@ CFilterMomentumProgress::CFilterMomentumProgress()
     m_iStage = 0;
 }
 
-bool CFilterMomentumProgress::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity* pEntity)
+bool CFilterMomentumProgress::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
     // So far the only entity that is a player is the local player
     if (pEntity->IsPlayer())
@@ -1407,15 +1397,12 @@ bool CFilterMomentumProgress::PassesFilterImpl(CBaseEntity* pCaller, CBaseEntity
     return false;
 }
 
-
 LINK_ENTITY_TO_CLASS(trigger_momentum_campaign_changelevel, CTriggerCampaignChangelevel);
 
 BEGIN_DATADESC(CTriggerCampaignChangelevel)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
-DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
-DEFINE_KEYFIELD(m_MapOverride, FIELD_STRING, "map_name_override")
-END_DATADESC();
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"), DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
+    DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
+    DEFINE_KEYFIELD(m_MapOverride, FIELD_STRING, "map_name_override") END_DATADESC();
 
 CTriggerCampaignChangelevel::CTriggerCampaignChangelevel()
 {
@@ -1424,7 +1411,7 @@ CTriggerCampaignChangelevel::CTriggerCampaignChangelevel()
     m_iGametype = 0;
 }
 
-void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
+void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity *pOther)
 {
     BaseClass::OnStartTouch(pOther);
 
@@ -1461,7 +1448,8 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
                     break;
                 }
 
-                engine->ClientCommand(pOther->edict(), CFmtStr("map %sw%i_s%i\n", pMapPrefix, m_iWorld, m_iStage).Get());
+                engine->ClientCommand(pOther->edict(),
+                                      CFmtStr("map %sw%i_s%i\n", pMapPrefix, m_iWorld, m_iStage).Get());
             }
         }
         else
@@ -1472,19 +1460,14 @@ void CTriggerCampaignChangelevel::OnStartTouch(CBaseEntity* pOther)
     }
 }
 
-
 LINK_ENTITY_TO_CLASS(info_momentum_map, CMomentumMapInfo);
 
 BEGIN_DATADESC(CMomentumMapInfo)
-DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"),
-DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
-DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
-DEFINE_KEYFIELD(m_MapAuthor, FIELD_STRING, "author")
-END_DATADESC();
+DEFINE_KEYFIELD(m_iWorld, FIELD_INTEGER, "World"), DEFINE_KEYFIELD(m_iStage, FIELD_INTEGER, "Stage"),
+    DEFINE_KEYFIELD(m_iGametype, FIELD_INTEGER, "gametype"),
+    DEFINE_KEYFIELD(m_MapAuthor, FIELD_STRING, "author") END_DATADESC();
 
-CMomentumMapInfo::CMomentumMapInfo(): m_iWorld(-1), m_iStage(0), m_iGametype(0)
-{
-}
+CMomentumMapInfo::CMomentumMapInfo() : m_iWorld(-1), m_iStage(0), m_iGametype(0) {}
 
 void CMomentumMapInfo::Spawn()
 {
@@ -1498,3 +1481,103 @@ void CMomentumMapInfo::Spawn()
     g_pModuleComms->FireEvent(pKv);
     // MOM_TODO: Handle this event in Client (UI) and Timer?
 }
+
+//-----------------------------------------------------------------------------
+// Teleport trigger
+//-----------------------------------------------------------------------------
+const int SF_TELEPORT_PRESERVE_ANGLES = 0x20; // Preserve angles even when a local landmark is not specified
+
+LINK_ENTITY_TO_CLASS(trigger_teleport, CTriggerTeleport);
+
+BEGIN_DATADESC(CTriggerTeleport)
+DEFINE_KEYFIELD(m_iLandmark, FIELD_STRING, "landmark"),
+    // DEFINE_KEYFIELD(m_iszModel, FIELD_STRING, "model"),
+END_DATADESC();
+
+IMPLEMENT_SERVERCLASS_ST(CTriggerTeleport, DT_TriggerTeleport)
+SendPropString(SENDINFO(m_iszModel)), END_SEND_TABLE()
+
+void CTriggerTeleport::Spawn(void)
+{
+    Q_strncpy(m_iszModel.GetForModify(), STRING(GetModelName()), MAX_TRIGGER_NAME);
+    InitTrigger();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Teleports the entity that touched us to the location of our target,
+//			setting the toucher's angles to our target's angles if they are a
+//			player.
+//
+//			If a landmark was specified, the toucher is offset from the target
+//			by their initial offset from the landmark and their angles are
+//			left alone.
+//
+// Input  : pOther - The entity that touched us.
+//-----------------------------------------------------------------------------
+void CTriggerTeleport::Touch(CBaseEntity *pOther)
+{
+	CBaseEntity *pentTarget = NULL;
+
+    if (!PassesTriggerFilters(pOther))
+    {
+        return;
+    }
+
+    // The activator and caller are the same
+    pentTarget = gEntList.FindEntityByName(pentTarget, m_target, NULL, pOther, pOther);
+    if (!pentTarget)
+    {
+        return;
+    }
+
+    //
+    // If a landmark was specified, offset the player relative to the landmark.
+    //
+    CBaseEntity *pentLandmark = NULL;
+    Vector vecLandmarkOffset(0, 0, 0);
+    if (m_iLandmark != NULL_STRING)
+    {
+        // The activator and caller are the same
+        pentLandmark = gEntList.FindEntityByName(pentLandmark, m_iLandmark, NULL, pOther, pOther);
+        if (pentLandmark)
+        {
+            vecLandmarkOffset = pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
+        }
+    }
+
+    pOther->SetGroundEntity(NULL);
+
+    Vector tmp = pentTarget->GetAbsOrigin();
+
+    if (!pentLandmark && pOther->IsPlayer())
+    {
+        // make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
+        tmp.z -= pOther->WorldAlignMins().z;
+    }
+
+    //
+    // Only modify the toucher's angles and zero their velocity if no landmark was specified.
+    //
+    const QAngle *pAngles = NULL;
+    Vector *pVelocity = NULL;
+
+#ifdef HL1_DLL
+    Vector vecZero(0, 0, 0);
+#endif
+
+    if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
+    {
+        pAngles = &pentTarget->GetAbsAngles();
+
+#ifdef HL1_DLL
+        pVelocity = &vecZero;
+#else
+        pVelocity = NULL; // BUGBUG - This does not set the player's velocity to zero!!!
+#endif
+    }
+
+    tmp += vecLandmarkOffset;
+    pOther->Teleport(&tmp, pAngles, pVelocity);
+}
+
+int CTriggerTeleport::UpdateTransmitState() { return SetTransmitState(FL_EDICT_ALWAYS); }

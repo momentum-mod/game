@@ -37,7 +37,7 @@ static class CTriggerOutlineRenderer : public IBrushRenderer, public CAutoGameSy
         m_verticeCount = 0;
     }
 
-    bool RenderBrushModelSurface(IClientEntity* pBaseEntity, IBrushSurface* pBrushSurface) OVERRIDE
+    bool RenderBrushModelSurface(IClientEntity *pBaseEntity, IBrushSurface *pBrushSurface) OVERRIDE
     {
         const int vertices = pBrushSurface->GetVertexCount();
         if (vertices > m_verticeCount)
@@ -55,7 +55,7 @@ static class CTriggerOutlineRenderer : public IBrushRenderer, public CAutoGameSy
 
         CMeshBuilder builder;
         builder.Begin(pRenderContext->GetDynamicMesh(true, 0, 0, outlineMaterial), MATERIAL_LINE_LOOP, vertices);
-        for ( int i = 0; i < vertices; i++ )
+        for (int i = 0; i < vertices; i++)
         {
             const BrushVertex_t &vertex = m_pVertices[i];
             builder.Position3fv(vertex.m_Pos.Base());
@@ -125,7 +125,8 @@ int C_TriggerTimerStart::DrawModel(int flags)
 bool C_TriggerTimerStop::ShouldDraw() { return true; }
 
 int C_TriggerTimerStop::DrawModel(int flags)
-{    if (mom_startzone_outline_enable.GetBool() && (flags & STUDIO_RENDER) != 0 &&
+{
+    if (mom_startzone_outline_enable.GetBool() && (flags & STUDIO_RENDER) != 0 &&
         (flags & (STUDIO_SHADOWDEPTHTEXTURE | STUDIO_SHADOWDEPTHTEXTURE)) == 0)
     {
         if (g_pMomentumUtil->GetColorFromHex(mom_endzone_color.GetString(), outlineRenderer.outlineColor))
@@ -144,5 +145,66 @@ int C_TriggerTimerStop::DrawModel(int flags)
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
-RecvPropBool(RECVINFO(m_bStuckOnGround)), RecvPropBool(RECVINFO(m_bAllowingJump)),
-    RecvPropBool(RECVINFO(m_bDisableGravity)), RecvPropBool(RECVINFO(m_bFixUpsideSlope)), END_RECV_TABLE();
+	RecvPropBool(RECVINFO(m_bStuckOnGround)), RecvPropBool(RECVINFO(m_bAllowingJump)),
+	RecvPropBool(RECVINFO(m_bDisableGravity)), RecvPropBool(RECVINFO(m_bFixUpsideSlope)),
+END_RECV_TABLE();
+
+
+void TriggerTeleportProxy_Model(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+	// TODO Make this a bit cleaner, look at code from CBaseTrigger::InitTrigger()
+    CBaseEntity *entity = (CBaseEntity *)pStruct;
+    entity->SetModelName(pData->m_Value.m_pString);
+    entity->SetModel(pData->m_Value.m_pString);
+    entity->SetSolid(SOLID_BSP);
+    entity->AddSolidFlags(FSOLID_TRIGGER);
+    entity->SetMoveType(MOVETYPE_NONE);
+
+    entity->PhysicsTouchTriggers();
+}
+
+LINK_ENTITY_TO_CLASS(trigger_teleport, C_TriggerTeleport);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerTeleport, DT_TriggerTeleport, CTriggerTeleport)
+	RecvPropString(RECVINFO(m_iszModel), NULL, TriggerTeleportProxy_Model),
+END_RECV_TABLE();
+
+void C_TriggerTeleport::Spawn(void)
+{
+
+}
+
+void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
+{
+    Msg("############################ Start Touch! ###############################\n");
+}
+
+void C_TriggerTeleport::Touch(CBaseEntity *pOther)
+{
+    Msg("############################ Touch! ###############################\n");
+}
+
+C_BaseMomentumTrigger::C_BaseMomentumTrigger()
+{
+
+}
+
+void C_BaseMomentumTrigger::Spawn(void)
+{
+
+}
+
+void C_BaseMomentumTrigger::InitTrigger()
+{
+
+}
+
+bool C_BaseMomentumTrigger::PointIsWithin(const Vector &vecPoint)
+{
+    Ray_t ray;
+    trace_t tr;
+    ICollideable *pCollide = CollisionProp();
+    ray.Init(vecPoint, vecPoint);
+    enginetrace->ClipRayToCollideable(ray, MASK_ALL, pCollide, &tr);
+    return (tr.startsolid);
+}

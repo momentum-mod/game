@@ -812,7 +812,6 @@ $Project
 		$File	"$SRCDIR\common\language.h"
 		$File	"lerp_functions.h"
 		$File	"menu.h"
-		$File	"movehelper_client.h"
 		$File	"mumble.h"
 		$File	"networkstringtable_clientdll.h"
 		$File	"panelmetaclassmgr.h"

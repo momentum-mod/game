@@ -7,6 +7,8 @@
 
 class CMomentumPlayer;
 
+#define MAX_TRIGGER_NAME 128
+
 // spawnflags
 enum
 {
@@ -550,4 +552,23 @@ protected:
 private:
     int m_iWorld, m_iStage, m_iGametype;
     string_t m_MapAuthor;
+};
+
+class CTriggerTeleport : public CBaseTrigger
+{
+  public:
+    DECLARE_CLASS(CTriggerTeleport, CBaseTrigger);
+    DECLARE_NETWORKCLASS();
+    DECLARE_DATADESC();
+
+
+
+    void Spawn(void) OVERRIDE;
+    void Touch(CBaseEntity *pOther) OVERRIDE;
+    int UpdateTransmitState() OVERRIDE;
+    string_t m_iLandmark;
+
+  private:
+    CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
+
 };

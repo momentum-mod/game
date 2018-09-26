@@ -2330,12 +2330,15 @@ void C_BasePlayer::PhysicsSimulate( void )
 		ctx->cmd.impulse = 0;
 		VectorCopy ( pl.v_angle.Get(), ctx->cmd.viewangles );
 	}
-
+	
 	// Run the next command
+	MoveHelper()->SetHost(this);
 	prediction->RunCommand( 
 		this, 
 		&ctx->cmd, 
-		MoveHelper() );
+		MoveHelper());
+
+	MoveHelper()->SetHost(NULL);
 #endif
 }
 

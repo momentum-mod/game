@@ -11,7 +11,7 @@
 #include "mathlib/mathlib.h"
 #include "client.h"
 #include "player_command.h"
-#include "movehelper_server.h"
+#include "imovehelper.h"
 #include "iservervehicle.h"
 #include "tier0/vprof.h"
 

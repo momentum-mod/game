@@ -94,8 +94,9 @@ void CMomentumGhostClient::LevelShutdownPreEntity()
 
 void CMomentumGhostClient::FrameUpdatePreEntityThink()
 {
-    if (!m_pPlayer)
-        m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
+    // TODO This doesnt work properly with a dedicated server
+    //if (!m_pPlayer)
+        //m_pPlayer = ToCMOMPlayer(UTIL_GetListenServerHost());
     g_pMomentumLobbySystem->SendAndRecieveP2PPackets();
 }
 

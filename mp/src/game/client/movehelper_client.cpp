@@ -24,6 +24,7 @@ public:
 	virtual			~CMoveHelperClient( void );
 
 	char const*		GetName( EntityHandle_t handle ) const;
+	
 
 	// touch lists
 	virtual void	ResetTouchList( void );
@@ -42,8 +43,9 @@ public:
 	virtual void	PlaybackEventFull( int flags, int clientindex, unsigned short eventindex, float delay, Vector& origin, Vector& angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 );
 	virtual IPhysicsSurfaceProps *GetSurfaceProps( void );
 
-	virtual bool IsWorldEntity( const CBaseHandle &handle );
-
+	virtual bool	IsWorldEntity( const CBaseHandle &handle );
+	
+	void			SetHost( CBaseEntity *host );
 private:
 	// results, tallied on client and server, but only used by server to run SV_Impact.
 	// we store off our velocity in the trace_t structure so that we can determine results
@@ -60,6 +62,8 @@ private:
 	};
 
 	CUtlVector<touchlist_t>			m_TouchList;
+
+	CBaseEntity*	m_pHost;
 };	
 
 //-----------------------------------------------------------------------------
@@ -74,8 +78,9 @@ static CMoveHelperClient s_MoveHelperClient;
 //-----------------------------------------------------------------------------
 // Constructor 
 //-----------------------------------------------------------------------------
-CMoveHelperClient::CMoveHelperClient( void )
+CMoveHelperClient::CMoveHelperClient( void ) : m_TouchList( 0, 128 )
 {
+	m_pHost = nullptr;
 	SetSingleton( this );
 }
 
@@ -128,22 +133,18 @@ bool CMoveHelperClient::AddToTouched( const trace_t& tr, const Vector& impactvel
 
 void CMoveHelperClient::ProcessImpacts( void )
 {
-	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-	if ( !pPlayer )
-		return;
+	Assert( m_pHost );
 
 	// Relink in order to build absorigin and absmin/max to reflect any changes
 	//  from prediction.  Relink will early out on SOLID_NOT
-
-	// TODO: Touch triggers on the client
-	//pPlayer->PhysicsTouchTriggers();
+	m_pHost->PhysicsTouchTriggers();
 
 	// Don't bother if the player ain't solid
-	if ( pPlayer->IsSolidFlagSet( FSOLID_NOT_SOLID ) )
+	if ( m_pHost->IsSolidFlagSet( FSOLID_NOT_SOLID ) )
 		return;
 
 	// Save off the velocity, cause we need to temporarily reset it
-	Vector vel = pPlayer->GetAbsVelocity();
+	Vector vel = m_pHost->GetAbsVelocity();
 
 	// Touch other objects that were intersected during the movement.
 	for (int i = 0 ; i < m_TouchList.Size(); i++)
@@ -153,22 +154,22 @@ void CMoveHelperClient::ProcessImpacts( void )
 		if ( !entity )
 			continue;
 
-		Assert( entity != pPlayer );
+		Assert( entity != m_pHost );
 		// Don't ever collide with self!!!!
-		if ( entity == pPlayer )
+		if ( entity == m_pHost )
 			continue;
 
 		// Reconstruct trace results.
 		m_TouchList[i].trace.m_pEnt = entity;
 
 		// Use the velocity we had when we collided, so boxes will move, etc.
-		pPlayer->SetAbsVelocity( m_TouchList[i].deltavelocity );
+		m_pHost->SetAbsVelocity( m_TouchList[i].deltavelocity );
 
-		entity->PhysicsImpact( pPlayer, m_TouchList[i].trace );
+		entity->PhysicsImpact( m_pHost, m_TouchList[i].trace );
 	}
 
 	// Restore the velocity
-	pPlayer->SetAbsVelocity( vel );
+	m_pHost->SetAbsVelocity( vel );
 
 	// So no stuff is ever left over, sigh...
 	ResetTouchList();
@@ -278,4 +279,16 @@ void CMoveHelperClient::PlayerSetAnimation( PLAYER_ANIM eAnim )
 bool CMoveHelperClient::IsWorldEntity( const CBaseHandle &handle )
 {
 	return handle == cl_entitylist->GetNetworkableHandle( 0 );
+}
+
+//-----------------------------------------------------------------------------
+// Indicates which entity we're going to move
+//-----------------------------------------------------------------------------
+
+void CMoveHelperClient::SetHost( CBaseEntity *host )
+{
+	m_pHost = host;
+
+	// In case any stuff is ever left over, sigh...
+	ResetTouchList();
 }

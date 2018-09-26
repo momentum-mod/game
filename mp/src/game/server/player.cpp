@@ -36,7 +36,7 @@
 #include "IEffects.h"
 #include "vstdlib/random.h"
 #include "engine/IEngineSound.h"
-#include "movehelper_server.h"
+#include "imovehelper.h"
 #include "igamemovement.h"
 #include "saverestoretypes.h"
 #include "iservervehicle.h"
@@ -3174,8 +3174,8 @@ void CBasePlayer::RunNullCommand( void )
 	float flTimeBase = gpGlobals->curtime;
 	SetTimeBase( flTimeBase );
 
-	MoveHelperServer()->SetHost( this );
-	PlayerRunCommand( &cmd, MoveHelperServer() );
+	MoveHelper()->SetHost( this );
+	PlayerRunCommand( &cmd, MoveHelper() );
 
 	// save off the last good usercmd
 	SetLastUserCommand( cmd );
@@ -3184,7 +3184,7 @@ void CBasePlayer::RunNullCommand( void )
 	gpGlobals->frametime = flOldFrametime;
 	gpGlobals->curtime = flOldCurtime;
 
-	MoveHelperServer()->SetHost( NULL );
+	MoveHelper()->SetHost( NULL );
 }
 
 //-----------------------------------------------------------------------------
@@ -3343,7 +3343,7 @@ void CBasePlayer::PhysicsSimulate( void )
 	{
 		m_flLastUserCommandTime = savetime;
 
-		MoveHelperServer()->SetHost( this );
+		MoveHelper()->SetHost( this );
 
 		// Suppress predicted events, etc.
 		if ( IsPredictingWeapons() )
@@ -3353,7 +3353,7 @@ void CBasePlayer::PhysicsSimulate( void )
 
 		for ( int i = 0; i < commandsToRun; ++i )
 		{
-			PlayerRunCommand( &vecAvailCommands[ i ], MoveHelperServer() );
+			PlayerRunCommand( &vecAvailCommands[ i ], MoveHelper() );
 
 			// Update our vphysics object.
 			if ( m_pPhysicsController )
@@ -3368,7 +3368,7 @@ void CBasePlayer::PhysicsSimulate( void )
 		// Always reset after running commands
 		IPredictionSystem::SuppressHostEvents( NULL );
 
-		MoveHelperServer()->SetHost( NULL );
+		MoveHelper()->SetHost( NULL );
 
 		// Copy in final origin from simulation
 		CPlayerSimInfo *pi = NULL;
@@ -9283,8 +9283,8 @@ void CPlayerInfo::RunPlayerMove( CBotCmd *ucmd )
 
 		m_pParent->SetTimeBase( gpGlobals->curtime );
 
-		MoveHelperServer()->SetHost( m_pParent );
-		m_pParent->PlayerRunCommand( &cmd, MoveHelperServer() );
+		MoveHelper()->SetHost( m_pParent );
+		m_pParent->PlayerRunCommand( &cmd, MoveHelper() );
 
 		// save off the last good usercmd
 		m_pParent->SetLastUserCommand( cmd );
@@ -9295,7 +9295,7 @@ void CPlayerInfo::RunPlayerMove( CBotCmd *ucmd )
 		// Restore the globals..
 		gpGlobals->frametime = flOldFrametime;
 		gpGlobals->curtime = flOldCurtime;
-		MoveHelperServer()->SetHost( NULL );
+		MoveHelper()->SetHost( NULL );
 	}
 }
 

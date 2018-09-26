@@ -453,7 +453,6 @@ $Project
 		$File	"modelentities.cpp"
 		$File	"$SRCDIR\game\shared\ModelSoundsCache.cpp"
 		$File	"movehelper_server.cpp"
-		$File	"movehelper_server.h"
 		$File	"movement.cpp"
 		$File	"$SRCDIR\game\shared\movevars_shared.cpp"
 		$File	"movie_explosion.h"

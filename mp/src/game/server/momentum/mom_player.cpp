@@ -43,7 +43,7 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MomentumPlayer)
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumPlayer)
-	DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), DEFINE_THINKFUNC(LimitSpeedInStartZone),
+	DEFINE_THINKFUNC(UpdateRunStats), DEFINE_THINKFUNC(CalculateAverageStats), DEFINE_THINKFUNC(TweenSlowdownPlayer),
 END_DATADESC();
 
 
@@ -807,7 +807,7 @@ void CMomentumPlayer::UpdateRunStats()
     // this might be used in a later update
     // m_flLastVelocity = velocity;
 
-    StdDataToPlayer(&m_SrvData);
+    //StdDataToPlayer(&m_SrvData);
 
     // think once per tick
     BaseClass::SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick, "THINK_EVERY_TICK");

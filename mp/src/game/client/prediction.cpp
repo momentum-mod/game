@@ -937,6 +937,9 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 
 	FinishMove( player, ucmd, g_pMoveData );
 
+    // Let client invoke any needed impact functions
+    moveHelper->ProcessImpacts();
+
 	RunPostThink( player );
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );
