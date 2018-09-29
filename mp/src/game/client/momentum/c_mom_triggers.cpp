@@ -288,7 +288,12 @@ CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
 
 void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 {
-	Msg("# %i # C_TriggerTeleport::StartTouch\n", CBaseEntity::sm_bDisableTouchFuncs);
+	Msg("# C_TriggerTeleport::StartTouch\n");
+}
+
+void C_TriggerTeleport::Touch(CBaseEntity *pOther)
+{
+	Msg("# C_TriggerTeleport::Touch\n");
 	CBaseEntity *pentTarget = NULL;
 
 	if (!PassesTriggerFilters(pOther))
@@ -308,56 +313,30 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 	pOther->SetGroundEntity(NULL);
 
 	QAngle tmp_angle = pentTarget->GetAbsAngles();
+	Vector tmp = pentTarget->GetAbsOrigin();
 
 	pOther->m_angNetworkAngles = tmp_angle;
 	pOther->SetLocalAngles(tmp_angle);
 
-
-	if (C_BasePlayer::GetLocalPlayer() == pOther)
-	{
-		engine->SetViewAngles(tmp_angle);
-		prediction->SetLocalViewAngles(tmp_angle);
-		pOther->LocalEyeAngles();
-	}
-}
-
-void C_TriggerTeleport::Touch(CBaseEntity *pOther)
-{
-	Msg("# %i # C_TriggerTeleport::Touch\n", CBaseEntity::sm_bDisableTouchFuncs);
-	CBaseEntity *pentTarget = NULL;
-
-	if (!PassesTriggerFilters(pOther))
-	{
-		return;
-	}
-
-	// The activator and caller are the same
-	pentTarget = FindEntityByClassAndName(pentTarget, m_iszTarget.Get());
-
-	if (!pentTarget)
-	{
-		Msg("[Client] Could not find target!\n");
-		return;
-	}
-
-	pOther->SetGroundEntity(NULL);
-
-	Vector tmp = pentTarget->GetAbsOrigin();
-	
 	pOther->m_vecNetworkOrigin = tmp;
-	//pOther->m_vecOldOrigin = tmp;
 	pOther->SetLocalOrigin(tmp);
 	pOther->SetAbsOrigin(tmp);
 
 	if (C_BasePlayer::GetLocalPlayer() == pOther)
 	{
+		if (prediction->GetIsFirstTimePredicted())
+		{
+			engine->SetViewAngles(tmp_angle);
+		}
+
+		prediction->SetLocalViewAngles(tmp_angle);
 		prediction->SetViewOrigin(tmp);
 	}
 }
 
 void C_TriggerTeleport::EndTouch(CBaseEntity *pOther)
 {
-	Msg("# %i # C_TriggerTeleport::EndTouch\n", CBaseEntity::sm_bDisableTouchFuncs);
+	Msg("# C_TriggerTeleport::EndTouch\n");
 }
 LINK_ENTITY_TO_CLASS(info_teleport_destination, C_PointEntity);
 

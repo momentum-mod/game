@@ -75,6 +75,8 @@ public:
 
 	virtual void	RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *moveHelper );
 
+	bool			GetIsInPrediction() { return m_bInPrediction; }
+	bool			GetIsFirstTimePredicted() { return m_bFirstTimePredicted; }
 // Internal
 protected:
 	virtual void	SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move );
