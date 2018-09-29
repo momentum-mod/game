@@ -693,7 +693,6 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 
 	player->m_RefEHandle = move->m_nPlayerHandle;
 
-	player->m_vecVelocity = move->m_vecVelocity;
 
 	player->m_vecNetworkOrigin = move->GetAbsOrigin();
 	
@@ -704,7 +703,9 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 	//player->m_flMaxspeed = move->m_flClientMaxSpeed;
 	
 	m_hLastGround = player->GetGroundEntity();
- 
+
+	player->SetLocalAngles(move->m_vecAngles);
+	player->SetLocalVelocity(move->m_vecVelocity);
 	player->SetLocalOrigin( move->GetAbsOrigin() );
 
 	IClientVehicle *pVehicle = player->GetVehicle();
@@ -911,7 +912,6 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 
 	player->SetLocalViewAngles( ucmd->viewangles );
 
-
 	// Call standard client pre-think
 	RunPreThink( player );
 
@@ -919,10 +919,7 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 	RunThink( player, TICK_INTERVAL );
 
 	// Setup input.
-	{
-	
-		SetupMove( player, ucmd, moveHelper, g_pMoveData );
-	}
+	SetupMove( player, ucmd, moveHelper, g_pMoveData );
 
 	// RUN MOVEMENT
 	if ( !pVehicle )
@@ -937,8 +934,10 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 
 	FinishMove( player, ucmd, g_pMoveData );
 
-    // Let client invoke any needed impact functions
-    moveHelper->ProcessImpacts();
+	// Let client invoke any needed impact functions
+	VPROF_SCOPE_BEGIN("moveHelper->ProcessImpacts");
+	moveHelper->ProcessImpacts();
+	VPROF_SCOPE_END();
 
 	RunPostThink( player );
 
@@ -1665,6 +1664,8 @@ void CPrediction::Update( int startframe, bool validframe,
 		received_new_world_update = false;
 	}
 
+	CBaseEntity::sm_bDisableTouchFuncs = received_new_world_update;
+
 	m_nPreviousStartFrame = startframe;
 
 	// Save off current timer values, etc.
@@ -1845,7 +1846,7 @@ void CPrediction::SetLocalViewAngles( QAngle& ang )
 	C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
 	if ( !player )
 		return;
-
+	
 	player->SetLocalViewAngles( ang );
 }
 

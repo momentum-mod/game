@@ -468,6 +468,7 @@ public:
 	float GetFloat( void ) const;
 	int GetInt( void ) const;
 	bool GetBool() const { return !!GetInt(); }
+	void AddFlags(int flags) { m_pConVarState->AddFlags(flags); }
 	const char *GetString( void ) const;
 
 	void SetValue( const char *pValue );

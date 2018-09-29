@@ -516,7 +516,8 @@ BEGIN_PREDICTION_DATA_NO_BASE( C_BaseEntity )
 //	DEFINE_PRED_FIELD( m_pMovePeer, FIELD_EHANDLE ),
 //	DEFINE_PRED_FIELD( m_pMovePrevPeer, FIELD_EHANDLE ),
 
-	DEFINE_PRED_FIELD_TOL( m_vecNetworkOrigin, FIELD_VECTOR, FTYPEDESC_INSENDTABLE, coordTolerance ),
+	//DEFINE_PRED_FIELD_TOL( m_vecNetworkOrigin, FIELD_VECTOR, FTYPEDESC_INSENDTABLE, coordTolerance ),
+	DEFINE_PRED_FIELD( m_vecNetworkOrigin, FIELD_VECTOR, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_angNetworkAngles, FIELD_VECTOR, FTYPEDESC_INSENDTABLE | FTYPEDESC_NOERRORCHECK ),
 	DEFINE_FIELD( m_vecAbsOrigin, FIELD_VECTOR ),
 	DEFINE_FIELD( m_angAbsRotation, FIELD_VECTOR ),
@@ -4690,7 +4691,7 @@ void C_BaseEntity::PreEntityPacketReceived( int commands_acknowledged )
 
 	// That networked data will be copied forward into the starting slot for the next prediction round
 #endif
-}	
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Called every time PreEntityPacket received is called
@@ -4842,7 +4843,12 @@ C_BaseEntity *C_BaseEntity::Instance( int iEnt )
 #pragma warning( pop )
 #endif
 
-//-----------------------------------------------------------------------------
+const char *C_BaseEntity::GetName(void)
+{
+	return m_iszName.Get();
+}
+
+    //-----------------------------------------------------------------------------
 // Purpose: 
 // Output : char const
 //-----------------------------------------------------------------------------

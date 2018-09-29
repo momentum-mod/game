@@ -141,11 +141,7 @@ bool TickSet::SetTickrate(Tickrate trNew)
         *interval_per_tick = trNew.fTickRate;
         gpGlobals->interval_per_tick = *interval_per_tick;
         m_trCurrent = trNew;
-        auto pPlayer = UTIL_GetLocalPlayer();
-        if (pPlayer)
-        {
-            engine->ClientCommand(pPlayer->edict(), "reload");
-        }
+
         DevLog("Interval per tick set to %f\n", trNew.fTickRate);
         return true;
     }
@@ -156,11 +152,28 @@ bool TickSet::SetTickrate(Tickrate trNew)
 static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValue)
 {
     ConVarRef tr(var);
+    ConVarRef sv_mincmdrate("sv_mincmdrate");
+    ConVarRef sv_maxcmdrate("sv_maxcmdrate");
+    ConVarRef sv_maxupdaterate("sv_maxupdaterate");
+
     float tickrate = tr.GetFloat();
-    if (CloseEnough(tickrate, TickSet::GetTickrate(), FLT_EPSILON)) return;
-	//MOM_TODO: Re-implement the bound
-	
-	/*
+    
+    sv_mincmdrate.AddFlags(FCVAR_NOTIFY);
+    sv_maxcmdrate.AddFlags(FCVAR_NOTIFY);
+    sv_maxupdaterate.AddFlags(FCVAR_NOTIFY);
+
+    sv_mincmdrate.SetValue(1.f / tickrate);
+    sv_maxcmdrate.SetValue(1.f / tickrate);
+    sv_maxupdaterate.SetValue(1.f / tickrate);
+
+    if (CloseEnough(tickrate, TickSet::GetTickrate(), FLT_EPSILON))
+    {
+        return;
+    }
+
+    //MOM_TODO: Re-implement the bound
+
+    /*
     if (toCheck < 0.01f || toCheck > 0.015f)
     {
         Warning("Cannot set a tickrate any lower than 66 or higher than 100!\n");
@@ -170,5 +183,5 @@ static void onTickRateChange(IConVar *var, const char* pOldValue, float fOldValu
     TickSet::SetTickrate(tickrate);
 }
 
-static ConVar intervalPerTick("sv_interval_per_tick", "0.015", 0,
+static ConVar sv_interval_per_tick("sv_interval_per_tick", "0.015", FCVAR_REPLICATED | FCVAR_NOTIFY,
 					   "Changes the interval per tick of the engine. Interval per tick is 1/tickrate, so 100 tickrate = 0.01", onTickRateChange);

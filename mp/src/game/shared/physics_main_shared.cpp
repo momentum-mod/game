@@ -928,7 +928,7 @@ void CBaseEntity::PhysicsRemoveGroundList( CBaseEntity *ent )
 //-----------------------------------------------------------------------------
 void CBaseEntity::PhysicsTouch( CBaseEntity *pentOther )
 {
-	if ( pentOther )
+	if ( pentOther /*&& !CBaseEntity::sm_bDisableTouchFuncs*/ )
 	{
 		if ( !(IsMarkedForDeletion() || pentOther->IsMarkedForDeletion()) )
 		{
@@ -943,7 +943,7 @@ void CBaseEntity::PhysicsTouch( CBaseEntity *pentOther )
 //-----------------------------------------------------------------------------
 void CBaseEntity::PhysicsStartTouch( CBaseEntity *pentOther )
 {
-	if ( pentOther )
+	if ( pentOther && !CBaseEntity::sm_bDisableTouchFuncs )
 	{
 		if ( !(IsMarkedForDeletion() || pentOther->IsMarkedForDeletion()) )
 		{
@@ -1010,10 +1010,7 @@ touchlink_t *CBaseEntity::PhysicsMarkEntityAsTouched( CBaseEntity *other )
 				// update stamp
 				link->touchStamp = touchStamp;
 				
-				if ( !CBaseEntity::sm_bDisableTouchFuncs )
-				{
-					PhysicsTouch( other );
-				}
+				PhysicsTouch( other );
 
 				// no more to do
 				return link;
@@ -1051,10 +1048,7 @@ touchlink_t *CBaseEntity::PhysicsMarkEntityAsTouched( CBaseEntity *other )
 	if ( bShouldTouch && !other->IsSolidFlagSet(FSOLID_TRIGGER) )
 	{
 		link->flags |= FTOUCHLINK_START_TOUCH;
-		if ( !CBaseEntity::sm_bDisableTouchFuncs )
-		{
-			PhysicsStartTouch( other );
-		}
+		PhysicsStartTouch( other );
 	}
 
 	return link;

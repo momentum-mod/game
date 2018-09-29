@@ -69,7 +69,7 @@ struct CSoundParameters;
 typedef unsigned int			AimEntsListHandle_t;
 
 #define		INVALID_AIMENTS_LIST_HANDLE		(AimEntsListHandle_t)~0
-
+#define MAX_POINT_NAME 128
 extern void RecvProxy_IntToColor32( const CRecvProxyData *pData, void *pStruct, void *pOut );
 extern void RecvProxy_LocalVelocity( const CRecvProxyData *pData, void *pStruct, void *pOut );
 
@@ -864,6 +864,7 @@ public:
 // Methods implemented on both client and server
 public:
 	void							SetSize( const Vector &vecMin, const Vector &vecMax ); // UTIL_SetSize( pev, mins, maxs );
+	char const						*GetName( void );
 	char const						*GetClassname( void );
 	char const						*GetDebugName( void );
 	static int						PrecacheModel( const char *name ); 
@@ -1282,6 +1283,7 @@ public:
 	RenderMode_t GetRenderMode() const;
 
 public:	
+	CNetworkString(m_iszName, MAX_POINT_NAME);
 
 	// Determine what entity this corresponds to
 	int								index;	

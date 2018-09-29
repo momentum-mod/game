@@ -14,10 +14,16 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+IMPLEMENT_SERVERCLASS_ST(CPointEntity, DT_PointEntity)
+	SendPropString(SENDINFO(m_iszName)),
+END_SEND_TABLE()
+
 // Landmark class
 void CPointEntity::Spawn( void )
 {
+	SetTransmitState(FL_EDICT_ALWAYS);
 	SetSolid( SOLID_NONE );
+	Q_strncpy(m_iszName.GetForModify(), GetDebugName(), MAX_POINT_NAME);
 //	UTIL_SetSize(this, vec3_origin, vec3_origin);
 }
 
