@@ -152,11 +152,15 @@ void CPhysicsPushedEntities::ComputeRotationalPushDirection( CBaseEntity *pBlock
 		// HACKHACK: Use move dir to guess which corner of the box determines contact and rotate the box so
 		// that corner remains in the same local position.
 		// BUGBUG: This will break, but not as badly as the previous solution!!!
-		Vector vecAbsMins, vecAbsMaxs;
-		pBlocker->CollisionProp()->WorldSpaceAABB( &vecAbsMins, &vecAbsMaxs );
-		start.x = (pMove->x < 0) ? vecAbsMaxs.x : vecAbsMins.x;
-		start.y = (pMove->y < 0) ? vecAbsMaxs.y : vecAbsMins.y;
-		start.z = (pMove->z < 0) ? vecAbsMaxs.z : vecAbsMins.z;
+
+        // Uncomment this code if you want rotating objects to slowly shift away objects standing/touching this
+		//Vector vecAbsMins, vecAbsMaxs;
+		//pBlocker->CollisionProp()->WorldSpaceAABB( &vecAbsMins, &vecAbsMaxs );
+
+		//start.x = (pMove->x < 0) ? vecAbsMaxs.x : vecAbsMins.x;
+		//start.y = (pMove->y < 0) ? vecAbsMaxs.y : vecAbsMins.y;
+		//start.z = (pMove->z < 0) ? vecAbsMaxs.z : vecAbsMins.z;
+		
 		
 		CBasePlayer *pPlayer = ToBasePlayer(pBlocker);
 		if ( pPlayer )
