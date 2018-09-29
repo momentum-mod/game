@@ -94,8 +94,6 @@ class C_TriggerTeleport : public C_BaseMomentumTrigger
     DECLARE_CLIENTCLASS();
 
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
-    void Touch(CBaseEntity *pOther) OVERRIDE;
-    void EndTouch(CBaseEntity *pOther) OVERRIDE;
 
     CNetworkString(m_iszTarget, MAX_POINT_NAME);
     CNetworkString(m_iszModel, MAX_TRIGGER_NAME);

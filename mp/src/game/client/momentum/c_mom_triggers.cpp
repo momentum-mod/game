@@ -289,11 +289,6 @@ CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
 void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 {
 	Msg("# C_TriggerTeleport::StartTouch\n");
-}
-
-void C_TriggerTeleport::Touch(CBaseEntity *pOther)
-{
-	Msg("# C_TriggerTeleport::Touch\n");
 	CBaseEntity *pentTarget = NULL;
 
 	if (!PassesTriggerFilters(pOther))
@@ -322,11 +317,14 @@ void C_TriggerTeleport::Touch(CBaseEntity *pOther)
 	pOther->SetLocalOrigin(tmp);
 	pOther->SetAbsOrigin(tmp);
 
-	if (C_BasePlayer::GetLocalPlayer() == pOther)
+	C_BasePlayer* player = C_BasePlayer::GetLocalPlayer();
+	if (player == pOther)
 	{
+		// We need to do it this way to set viewangles at the same frame as the new orign is viewed to the screen
 		if (prediction->GetIsFirstTimePredicted())
 		{
-			engine->SetViewAngles(tmp_angle);
+			player->m_bFixViewAngle = true;
+			player->m_vecFixedViewAngles = tmp_angle;
 		}
 
 		prediction->SetLocalViewAngles(tmp_angle);
@@ -334,10 +332,6 @@ void C_TriggerTeleport::Touch(CBaseEntity *pOther)
 	}
 }
 
-void C_TriggerTeleport::EndTouch(CBaseEntity *pOther)
-{
-	Msg("# C_TriggerTeleport::EndTouch\n");
-}
 LINK_ENTITY_TO_CLASS(info_teleport_destination, C_PointEntity);
 
 IMPLEMENT_CLIENTCLASS_DT(C_PointEntity, DT_PointEntity, CPointEntity)

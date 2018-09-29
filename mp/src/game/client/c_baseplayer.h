@@ -404,7 +404,9 @@ protected:
 
 public:
 	int m_StuckLast;
-	
+	bool m_bFixViewAngle;
+	QAngle m_vecFixedViewAngles;
+
 	// Data for only the local player
 	CNetworkVarEmbedded( CPlayerLocalData, m_Local );
 
