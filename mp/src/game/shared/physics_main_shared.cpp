@@ -928,7 +928,7 @@ void CBaseEntity::PhysicsRemoveGroundList( CBaseEntity *ent )
 //-----------------------------------------------------------------------------
 void CBaseEntity::PhysicsTouch( CBaseEntity *pentOther )
 {
-	if ( pentOther /*&& !CBaseEntity::sm_bDisableTouchFuncs*/ )
+	if ( pentOther && !CBaseEntity::sm_bDisableTouchFuncs )
 	{
 		if ( !(IsMarkedForDeletion() || pentOther->IsMarkedForDeletion()) )
 		{
