@@ -380,7 +380,11 @@ SendProp SendPropFloat(
 		Assert( sizeofVar == 0 || sizeofVar == 4 );
 	}
 
-	if ( nBits <= 0 || nBits == 32 )
+	flags |= SPROP_NOSCALE;
+    fLowValue = 0.f;
+    fHighValue = 0.f;
+
+	/*if ( nBits <= 0 || nBits == 32 )
 	{
 		flags |= SPROP_NOSCALE;
 		fLowValue = 0.f;
@@ -395,7 +399,7 @@ SendProp SendPropFloat(
 			fHighValue = fHighValue - ((fHighValue - fLowValue) / (1 << nBits));
 		else if (flags & SPROP_ROUNDUP)
 			fLowValue = fLowValue + ((fHighValue - fLowValue) / (1 << nBits));
-	}
+	}*/
 
 	ret.m_Type = DPT_Float;
 	ret.m_pVarName = pVarName;
@@ -430,8 +434,8 @@ SendProp SendPropVector(
 		Assert(sizeofVar == sizeof(Vector));
 	}
 
-	if ( nBits == 32 )
-		flags |= SPROP_NOSCALE;
+	flags = SPROP_NOSCALE;
+    nBits = 32;
 
 	ret.m_Type = DPT_Vector;
 	ret.m_pVarName = pVarName;
@@ -466,8 +470,8 @@ SendProp SendPropVectorXY(
 		Assert(sizeofVar == sizeof(Vector));
 	}
 
-	if ( nBits == 32 )
-		flags |= SPROP_NOSCALE;
+	flags = SPROP_NOSCALE;
+    nBits = 32;
 
 	ret.m_Type = DPT_VectorXY;
 	ret.m_pVarName = pVarName;
@@ -537,9 +541,9 @@ SendProp SendPropAngle(
 	{
 		Assert(sizeofVar == 4);
 	}
-
-	if ( nBits == 32 )
-		flags |= SPROP_NOSCALE;
+	
+	flags = SPROP_NOSCALE;
+	nBits = 32;
 
 	ret.m_Type = DPT_Float;
 	ret.m_pVarName = pVarName;
@@ -571,8 +575,8 @@ SendProp SendPropQAngles(
 		Assert(sizeofVar == 4);
 	}
 
-	if ( nBits == 32 )
-		flags |= SPROP_NOSCALE;
+	flags = SPROP_NOSCALE;
+    nBits = 32;
 
 	ret.m_Type = DPT_Vector;
 	ret.m_pVarName = pVarName;
