@@ -1278,6 +1278,9 @@ void CPrediction::RunSimulation( int current_command, float curtime, CUserCmd *c
 //-----------------------------------------------------------------------------
 void CPrediction::Untouch( void )
 {
+    if (CBaseEntity::sm_bDisableTouchFuncs)
+        return;
+
 #if !defined( NO_ENTITY_PREDICTION )
 	int numpredictables = predictables->GetPredictableCount();
 
@@ -1647,6 +1650,11 @@ bool CPrediction::PerformPrediction( bool received_new_world_update, C_BasePlaye
 
 	m_bInPrediction = false;
 
+	// If we recieved a world update and we predicted our commands, we should have predicted touch entities.
+	// So we can safely activate touch functions again for the next update.
+    if (CBaseEntity::sm_bDisableTouchFuncs)
+        CBaseEntity::sm_bDisableTouchFuncs = false;
+
 	
 	// Somehow we looped past the end of the list (severe lag), don't predict at all
 	if ( i > MULTIPLAYER_BACKUP )
@@ -1682,8 +1690,9 @@ void CPrediction::Update( int startframe, bool validframe,
 	{
 		received_new_world_update = false;
 	}
-
-	CBaseEntity::sm_bDisableTouchFuncs = received_new_world_update;
+    // If we recieved a world update we disable touch functions, so we don't do extra prediction on them.
+    else
+		CBaseEntity::sm_bDisableTouchFuncs = true;
 
 	m_nPreviousStartFrame = startframe;
 
