@@ -65,10 +65,12 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
         // Play step sound for current texture.
         player->PlayStepSound(const_cast<Vector &>(mv->GetAbsOrigin()), player->m_pSurfaceData, fvol, true);
 
-#ifndef CLIENT_DLL
         //
         // Knock the screen around a little bit, temporary effect (IF ENABLED)
         //
+#ifdef CLIENT_DLL
+        static ConVarRef mom_punchangle_enable("mom_punchangle_enable");
+#endif
         if (mom_punchangle_enable.GetBool())
         {
             player->m_Local.m_vecPunchAngle.Set(ROLL, player->m_Local.m_flFallVelocity * 0.013 *
@@ -80,6 +82,7 @@ void CMomentumGameMovement::PlayerRoughLandingEffects(float fvol)
             }
         }
 
+#ifndef CLIENT_DLL
         player->RumbleEffect((fvol > 0.85f) ? (RUMBLE_FALL_LONG) : (RUMBLE_FALL_SHORT), 0, RUMBLE_FLAGS_NONE);
 #endif
     }
@@ -1366,6 +1369,7 @@ void CMomentumGameMovement::FullWalkMove()
 
 void CMomentumGameMovement::LimitStartZoneSpeed(void)
 {
+	//MOM_TODO: we might do this for client aswell so it is predicted.
 #ifndef CLIENT_DLL
     m_pPlayer->LimitSpeedInStartZone(mv->m_vecVelocity);
 #endif

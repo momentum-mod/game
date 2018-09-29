@@ -693,7 +693,6 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 
 	player->m_RefEHandle = move->m_nPlayerHandle;
 
-
 	player->m_vecNetworkOrigin = move->GetAbsOrigin();
 	
 	player->m_Local.m_nOldButtons = move->m_nButtons;
@@ -704,6 +703,7 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 	
 	m_hLastGround = player->GetGroundEntity();
 
+	// Use SetLocal<var> so we trigger InvalidatePhysicsRecursive
 	player->SetLocalAngles(move->m_vecAngles);
 	player->SetLocalVelocity(move->m_vecVelocity);
 	player->SetLocalOrigin( move->GetAbsOrigin() );
@@ -714,14 +714,33 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 		pVehicle->FinishMove( player, ucmd, move ); 
 	}
 
+
+	// Copy of server:
+
+	// Convert final pitch to body pitch
+    float pitch = move->m_vecAngles[PITCH];
+
+	if (pitch > 180.0f)
+	{
+		pitch -= 360.0f;
+	}
+
+	pitch = clamp(pitch, -90.f, 90.f);
+	move->m_vecAngles[PITCH] = pitch;
+	player->SetPoseParameter(player->LookupPoseParameter("body_pitch"), pitch);
+
 	// Sanity checks
 	if ( player->m_hConstraintEntity )
 		Assert( move->m_vecConstraintCenter == player->m_hConstraintEntity->GetAbsOrigin() );
 	else
 		Assert( move->m_vecConstraintCenter == player->m_vecConstraintCenter );
+
 	Assert( move->m_flConstraintRadius == player->m_flConstraintRadius );
 	Assert( move->m_flConstraintWidth == player->m_flConstraintWidth );
 	Assert( move->m_flConstraintSpeedFactor == player->m_flConstraintSpeedFactor );
+	
+	// End of copy of server.
+
 #endif
 }
 
