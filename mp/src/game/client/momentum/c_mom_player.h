@@ -32,11 +32,18 @@ class C_MomentumPlayer : public C_BasePlayer
     bool CreateMove(float flInputSampleTime, CUserCmd *pCmd) OVERRIDE;
     void Spawn() OVERRIDE;
     virtual void ClientThink(void);
+	void Touch(CBaseEntity *pOther) OVERRIDE;
 
     bool DidPlayerBhop() { return m_SrvData.m_bDidPlayerBhop; }
     bool HasAutoBhop() { return m_bAutoBhop; }
 
     bool IsWatchingReplay() const { return m_hObserverTarget.Get() && GetReplayEnt(); }
+
+	// Used by g_MomentumBlockFix door/button fix code
+	int GetLastBlock() const { return m_iLastBlock; }
+	float GetPunishTime() const { return m_flPunishTime; }
+	void SetPunishTime(float newTime) { m_flPunishTime = newTime; }
+	void SetLastBlock(int lastBlock) { m_iLastBlock = lastBlock; }
 
     // Returns the replay entity that the player is watching (first person only)
     C_MomentumReplayGhostEntity *GetReplayEnt() const
@@ -78,6 +85,9 @@ class C_MomentumPlayer : public C_BasePlayer
   private:
     float m_flGrabbableLadderTime;
     bool m_duckUntilOnGround;
+
+	float m_flPunishTime;
+	int m_iLastBlock;
 
     CNetworkVar(float, m_flStamina);
     CNetworkVar(bool, m_bAutoBhop);

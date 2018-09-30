@@ -15,6 +15,8 @@
 class CBaseToggle : public CBaseEntity
 {
 	DECLARE_CLASS( CBaseToggle, CBaseEntity );
+	DECLARE_SERVERCLASS();
+
 public:
 	CBaseToggle();
 
@@ -27,8 +29,8 @@ public:
 	float				m_flWait;
 	float				m_flLip;
 
-	Vector				m_vecPosition1;
-	Vector				m_vecPosition2;
+	CNetworkVector(m_vecPosition1);
+	CNetworkVector(m_vecPosition2);
 
 	QAngle				m_vecMoveAng;
 	QAngle				m_vecAngle1;

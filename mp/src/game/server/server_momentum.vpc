@@ -118,8 +118,6 @@ $Project "Server (Momentum)"
                 }
             }
             
-            $File   "momentum\mom_blockfix.h"
-            $File   "momentum\mom_blockfix.cpp"
             $File   "momentum\mom_triggers.h"
             $File   "momentum\mom_triggers.cpp"
 
@@ -160,6 +158,8 @@ $Project "Server (Momentum)"
             $File   "momentum\mapzones.cpp"
             $File   "momentum\mapzones_edit.h"
             $File   "momentum\mapzones_edit.cpp"
+			$File   "$SRCDIR\game\shared\momentum\mom_blockfix.cpp"
+            $File   "$SRCDIR\game\shared\momentum\mom_blockfix.h"
 			$File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_grenade_projectile.h"
             $File   "$SRCDIR\game\shared\momentum\mom_gamemovement.cpp"

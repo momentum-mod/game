@@ -6,22 +6,22 @@
 
 #include "tier0/memdbgon.h"
 
-CMOMBhopBlockFixSystem::CMOMBhopBlockFixSystem(const char* pName) : CAutoGameSystem(pName)
+CMomentumBhopBlockFixSystem::CMomentumBhopBlockFixSystem(const char* pName) : CAutoGameSystem(pName)
 {
     SetDefLessFunc(m_mapBlocks);
 }
 
-void CMOMBhopBlockFixSystem::LevelInitPostEntity()
+void CMomentumBhopBlockFixSystem::LevelInitPostEntity()
 {
     FindBhopBlocks();
 }
 
-void CMOMBhopBlockFixSystem::LevelShutdownPostEntity()
+void CMomentumBhopBlockFixSystem::LevelShutdownPostEntity()
 {
     m_mapBlocks.RemoveAll();
 }
 
-void CMOMBhopBlockFixSystem::FindBhopBlocks()
+void CMomentumBhopBlockFixSystem::FindBhopBlocks()
 {
     //  ---- func_door ----
     CBaseEntity *ent = nullptr;
@@ -58,7 +58,7 @@ void CMOMBhopBlockFixSystem::FindBhopBlocks()
         }
     }
 }
-void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
+void CMomentumBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
 {
     if (block.m_bIsDoor)
     {
@@ -100,7 +100,7 @@ void CMOMBhopBlockFixSystem::AlterBhopBlock(bhop_block_t block)
     }
 }
 
-void CMOMBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *pBlock)
+void CMomentumBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *pBlock)
 {
     CMomentumPlayer *pPlayer = static_cast<CMomentumPlayer *>(pPlayerEnt);
     float diff = gpGlobals->curtime - pPlayer->GetPunishTime();
@@ -124,7 +124,7 @@ void CMOMBhopBlockFixSystem::PlayerTouch(CBaseEntity *pPlayerEnt, CBaseEntity *p
     }
 }
 
-void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
+void CMomentumBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
 {
     if (!pBlockEnt->CollisionProp()->IsBoundsDefinedInEntitySpace())
         return;
@@ -149,7 +149,7 @@ void CMOMBhopBlockFixSystem::FindTeleport(CBaseEntity *pBlockEnt, bool isDoor)
     enginetrace->EnumerateEntities(ray, true, &triggerTraceEnum);
 }
 
-void CMOMBhopBlockFixSystem::AddBhopBlock(CBaseEntity* pBlockEnt, CBaseEntity* pTeleportEnt, bool isDoor)
+void CMomentumBhopBlockFixSystem::AddBhopBlock(CBaseEntity* pBlockEnt, CBaseEntity* pTeleportEnt, bool isDoor)
 {
     bhop_block_t block = bhop_block_t();
     block.m_pBlockEntity = pBlockEnt;
@@ -175,12 +175,12 @@ bool CTeleportTriggerTraceEnum::EnumEntity(IHandleEntity *pHandleEntity)
     if (tr.fraction < 1.0f) // tr.fraction = 1.0 means the trace completed
     {
         // arguments are initilized in the constructor of CTeleportTriggerTraceEnum
-        g_MOMBlockFixer->AddBhopBlock(pEntBlock, pEnt, bIsDoor);
+        g_MomentumBlockFixer->AddBhopBlock(pEntBlock, pEnt, bIsDoor);
         return false;//Stop, we hit our target.
     }
     //Continue until fraction == 1.0f
     return true;
 }
 
-static CMOMBhopBlockFixSystem s_MOMBlockFixer("CMOMBhopBlockFixSystem");
-CMOMBhopBlockFixSystem *g_MOMBlockFixer = &s_MOMBlockFixer;
+static CMomentumBhopBlockFixSystem s_MomentumBlockFixer("CMOMBhopBlockFixSystem");
+CMomentumBhopBlockFixSystem *g_MomentumBlockFixer = &s_MomentumBlockFixer;

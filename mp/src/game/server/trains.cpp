@@ -303,17 +303,17 @@ void CFuncPlat::Setup( void )
 	// Set size and link into world
 	SetModel( STRING( GetModelName() ) );
 
-	m_vecPosition1 = GetLocalOrigin();	//Top
-	m_vecPosition2 = GetLocalOrigin();	//Bottom
+	m_vecPosition1.GetForModify() = GetLocalOrigin();	//Top
+	m_vecPosition2.GetForModify() = GetLocalOrigin();	//Bottom
 
 	if ( m_flHeight != 0 )
 	{
-		m_vecPosition2.z = GetLocalOrigin().z - m_flHeight;
+		m_vecPosition2.GetForModify().z = GetLocalOrigin().z - m_flHeight;
 	}
 	else
 	{
 		// NOTE: This works because the angles were set to vec3_angle above
-		m_vecPosition2.z = GetLocalOrigin().z - CollisionProp()->OBBSize().z + 8;
+		m_vecPosition2.GetForModify().z = GetLocalOrigin().z - CollisionProp()->OBBSize().z + 8;
 	}
 
 	if (m_flSpeed == 0)
@@ -349,13 +349,13 @@ void CFuncPlat::Spawn( )
 	// and is brought down by that button.  Otherwise, it starts at BOTTOM.
 	if ( GetEntityName() != NULL_STRING )
 	{
-		UTIL_SetOrigin( this, m_vecPosition1);
+		UTIL_SetOrigin( this, m_vecPosition1.Get());
 		m_toggle_state = TS_AT_TOP;
 		SetUse( &CFuncPlat::PlatUse );
 	}
 	else
 	{
-		UTIL_SetOrigin( this, m_vecPosition2);
+		UTIL_SetOrigin( this, m_vecPosition2.Get());
 		m_toggle_state = TS_AT_BOTTOM;
 	}
 	CreateVPhysics();
@@ -392,7 +392,7 @@ void CPlatTrigger::SpawnInsideTrigger( CFuncPlat *pPlatform )
 	CCollisionProperty *pCollision = m_pPlatform->CollisionProp();
 	Vector vecTMin = pCollision->OBBMins() + Vector ( 25 , 25 , 0 );
 	Vector vecTMax = pCollision->OBBMaxs() + Vector ( 25 , 25 , 8 );
-	vecTMin.z = vecTMax.z - ( m_pPlatform->m_vecPosition1.z - m_pPlatform->m_vecPosition2.z + 8 );
+	vecTMin.z = vecTMax.z - ( m_pPlatform->m_vecPosition1.Get().z - m_pPlatform->m_vecPosition2.Get().z + 8 );
 	if ( pCollision->OBBSize().x <= 50 )
 	{
 		vecTMin.x = (pCollision->OBBMins().x + pCollision->OBBMaxs().x) / 2;
@@ -510,7 +510,7 @@ void CFuncPlat::GoDown( void )
 	ASSERT(m_toggle_state == TS_AT_TOP || m_toggle_state == TS_GOING_UP);
 	m_toggle_state = TS_GOING_DOWN;
 	SetMoveDone(&CFuncPlat::CallHitBottom);
-	LinearMove(m_vecPosition2, m_flSpeed);
+	LinearMove(m_vecPosition2.Get(), m_flSpeed);
 }
 
 
@@ -549,7 +549,7 @@ void CFuncPlat::GoUp( void )
 	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
 	m_toggle_state = TS_GOING_UP;
 	SetMoveDone(&CFuncPlat::CallHitTop);
-	LinearMove(m_vecPosition1, m_flSpeed);
+	LinearMove(m_vecPosition1.Get(), m_flSpeed);
 }
 
 
@@ -2920,20 +2920,20 @@ void CFuncTrackChange::Spawn( void )
 {
 	Setup();
 	if ( FBitSet( m_spawnflags, SF_TRACK_DONT_MOVE ) )
-		m_vecPosition2.z = GetLocalOrigin().z;
+		m_vecPosition2.GetForModify().z = GetLocalOrigin().z;
 
 	SetupRotation();
 
 	if ( FBitSet( m_spawnflags, SF_TRACK_STARTBOTTOM ) )
 	{
-		UTIL_SetOrigin( this, m_vecPosition2);
+		UTIL_SetOrigin( this, m_vecPosition2.Get());
 		m_toggle_state = TS_AT_BOTTOM;
 		SetLocalAngles( m_start );
 		m_targetState = TS_AT_TOP;
 	}
 	else
 	{
-		UTIL_SetOrigin( this, m_vecPosition1);
+		UTIL_SetOrigin( this, m_vecPosition1.Get());
 		m_toggle_state = TS_AT_TOP;
 		SetLocalAngles( m_end );
 		m_targetState = TS_AT_BOTTOM;

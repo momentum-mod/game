@@ -6,6 +6,7 @@
 #endif
 
 #include "cbase.h"
+#include "c_mom_basetoggle.h"
 #include "prediction.h"
 
 #define MAX_TRIGGER_NAME 128
@@ -31,19 +32,13 @@ enum
 	SF_TRIGGER_DISALLOW_BOTS                = 0x1000,   // Bots are not allowed to fire this trigger
 };
 
-class C_BaseMomentumTrigger : public C_BaseEntity
+class C_BaseMomentumTrigger : public C_BaseToggle
 {
-    DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseEntity);
+    DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseToggle);
 	DECLARE_CLIENTCLASS();
 
   public:
     C_BaseMomentumTrigger(){};
-
-    int GetSpawnFlags(void) const;
-    void AddSpawnFlags(int nFlags);
-    void RemoveSpawnFlags(int nFlags);
-    void ClearSpawnFlags(void);
-    bool HasSpawnFlags(int nFlags) const;
 
     bool PointIsWithin(const Vector &vecPoint);
     bool PassesTriggerFilters(CBaseEntity *pOther);
@@ -51,7 +46,6 @@ class C_BaseMomentumTrigger : public C_BaseEntity
 
 	virtual void InitTrigger() {};
 
-    CNetworkVar(int, m_iSpawnFlags);
     CNetworkString(m_iszTarget, MAX_POINT_NAME);
     CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
 

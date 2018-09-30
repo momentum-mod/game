@@ -17,7 +17,7 @@
 
 	#include "iclientvehicle.h"
 	#include "prediction.h"
-	#include "c_basedoor.h"
+	#include "c_mom_doors.h"
 	#include "c_world.h"
 	#include "view.h"
 	#include "client_virtualreality.h"

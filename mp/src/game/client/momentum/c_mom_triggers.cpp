@@ -20,12 +20,6 @@ static ConVar mom_startzone_color("mom_startzone_color", "00FF00FF", FCVAR_CLIEN
 static ConVar mom_endzone_color("mom_endzone_color", "FF0000FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                 "Color of the end zone.");
 
-inline int C_BaseMomentumTrigger::GetSpawnFlags(void) const { return m_iSpawnFlags; }
-inline void C_BaseMomentumTrigger::AddSpawnFlags(int nFlags) { m_iSpawnFlags |= nFlags; }
-inline void C_BaseMomentumTrigger::RemoveSpawnFlags(int nFlags) { m_iSpawnFlags &= ~nFlags; }
-inline void C_BaseMomentumTrigger::ClearSpawnFlags(void) { m_iSpawnFlags = 0; }
-inline bool C_BaseMomentumTrigger::HasSpawnFlags(int nFlags) const { return (m_iSpawnFlags & nFlags) != 0; }
-
 void C_BaseMomentumTrigger::UpdatePartitionListEntry()
 {
 	::partition->RemoveAndInsert( 
@@ -290,20 +284,20 @@ IMPLEMENT_CLIENTCLASS_DT(C_TriggerTeleport, DT_TriggerTeleport, CTriggerTeleport
 	RecvPropString(RECVINFO(m_iszLandmark)),
 END_RECV_TABLE();
 
-CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
+CBaseEntity *FindEntityByClassname(CBaseEntity *pEnt, const char *szName)
 {
-    CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
+	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
 
-    while (pNext != nullptr)
-    {
-        if (Q_strcmp(pNext->GetName(), szName) == 0)
-        {
-            return pNext;
-        }
+	while (pNext != nullptr)
+	{
+		if (Q_strcmp(pNext->GetName(), szName) == 0)
+		{
+			return pNext;
+		}
 
-        pNext = cl_entitylist->NextBaseEntity(pNext);
-    }
-    return nullptr;
+		pNext = cl_entitylist->NextBaseEntity(pNext);
+	}
+	return nullptr;
 }
 
 void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
@@ -317,7 +311,7 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 	}
 
 	// The activator and caller are the same
-	pentTarget = FindEntityByClassAndName(pentTarget, m_iszTarget.Get());
+	pentTarget = FindEntityByClassname(pentTarget, m_iszTarget.Get());
 
 	if (!pentTarget)
 	{
@@ -329,7 +323,7 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 	if (m_iszLandmark.Get()[0] != 0)
 	{
 		// The activator and caller are the same
-		pentLandmark = FindEntityByClassAndName(pentLandmark, m_iszLandmark.Get());
+		pentLandmark = FindEntityByClassname(pentLandmark, m_iszLandmark.Get());
 
 		if (pentLandmark)
 		{
@@ -448,7 +442,7 @@ void C_TriggerPush::Touch(CBaseEntity * pOther)
 		return;
 
 	C_BasePlayer* player = (C_BasePlayer*)pOther;
-	player->GetUserID();
+
 	// Transform the push dir into global space
 	Vector vecAbsDir;
 	VectorRotate( m_vecPushDir.Get(), EntityToWorldTransform(), vecAbsDir );
@@ -458,7 +452,6 @@ void C_TriggerPush::Touch(CBaseEntity * pOther)
 		((player->GetTickBase() == m_nTickBasePush && player->GetUserID() == m_iUserID) ||
 		(m_nTickBasePush == -1 && m_iUserID == INVALID_USER_ID)))
 	{
-		Msg("Tickbase: %i\n", player->GetTickBase());
 		pOther->ApplyAbsVelocityImpulse( m_flPushSpeed * vecAbsDir );
 
 		if ( vecAbsDir.z > 0 )

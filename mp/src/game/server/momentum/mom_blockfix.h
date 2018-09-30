@@ -10,11 +10,10 @@
 #define BLOCK_TELEPORT 0.11
 #define BLOCK_COOLDOWN 1.0
 
-class CMOMBhopBlockFixSystem : CAutoGameSystem
+class CMomentumBhopBlockFixSystem : CAutoGameSystem
 {
-
   public:
-    CMOMBhopBlockFixSystem(const char *pName);
+    CMomentumBhopBlockFixSystem(const char *pName);
 
     // GameSystem overrides
     void LevelInitPostEntity() OVERRIDE;
@@ -56,6 +55,6 @@ class CTeleportTriggerTraceEnum : public IEntityEnumerator
     Ray_t *m_pRay;
 };
 
-extern CMOMBhopBlockFixSystem *g_MOMBlockFixer;
+extern CMomentumBhopBlockFixSystem *g_MomentumBlockFixer;
 
 #endif // DOORFIX_H

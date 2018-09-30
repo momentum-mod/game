@@ -34,7 +34,7 @@
 #include "effect_dispatch_data.h"
 #include "c_te_effect_dispatch.h"
 #include "c_props.h"
-#include "c_basedoor.h"
+#include "c_mom_doors.h"
 
 // NOTE: Always include this last!
 #include "tier0/memdbgon.h"
@@ -425,7 +425,7 @@ bool C_LocalTempEntity::Frame( float frametime, int framenumber )
 				if ( (flags & FTENT_COLLIDEPROPS) && trace.m_pEnt )
 				{
 					bool bIsDynamicProp = ( NULL != dynamic_cast<CDynamicProp *>( trace.m_pEnt ) );
-					bool bIsDoor = ( NULL != dynamic_cast<CBaseDoor *>( trace.m_pEnt ) );
+					bool bIsDoor = ( NULL != dynamic_cast<C_BaseDoor *>( trace.m_pEnt ) );
 					if ( !bIsDynamicProp && !bIsDoor && !trace.m_pEnt->IsWorld() ) // Die on props, doors, and the world.
 						return true;
 				}

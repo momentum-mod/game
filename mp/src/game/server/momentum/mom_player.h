@@ -118,7 +118,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     void KickBack(float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max,
                   float lateral_max, int direction_change);
 
-    // Used by g_MOMBlockFix door/button fix code
+    // Used by g_MomentumBlockFix door/button fix code
     void Touch(CBaseEntity *) OVERRIDE;
     int GetLastBlock() const { return m_iLastBlock; }
     float GetPunishTime() const { return m_flPunishTime; }

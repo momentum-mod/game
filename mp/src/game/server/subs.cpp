@@ -136,6 +136,8 @@ enum togglemovetypes_t
 	MOVE_TOGGLE_ANGULAR = 2,
 };
 
+LINK_ENTITY_TO_CLASS(toggle, CBaseToggle);
+
 // Global Savedata for Toggle
 BEGIN_DATADESC( CBaseToggle )
 
@@ -157,6 +159,11 @@ BEGIN_DATADESC( CBaseToggle )
 
 END_DATADESC()
 
+IMPLEMENT_SERVERCLASS_ST(CBaseToggle, DT_BaseToggle)
+	SendPropVector(SENDINFO(m_vecPosition1)),
+	SendPropVector(SENDINFO(m_vecPosition2)),
+	SendPropInt(SENDINFO(m_spawnflags)),
+END_SEND_TABLE()
 
 CBaseToggle::CBaseToggle()
 {

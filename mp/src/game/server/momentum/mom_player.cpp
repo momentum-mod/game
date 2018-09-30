@@ -653,8 +653,8 @@ void CMomentumPlayer::Touch(CBaseEntity *pOther)
 {
     BaseClass::Touch(pOther);
 
-    if (g_MOMBlockFixer->IsBhopBlock(pOther->entindex()))
-        g_MOMBlockFixer->PlayerTouch(this, pOther);
+    if (g_MomentumBlockFixer->IsBhopBlock(pOther->entindex()))
+        g_MomentumBlockFixer->PlayerTouch(this, pOther);
 }
 
 void CMomentumPlayer::EnableAutoBhop()

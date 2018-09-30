@@ -2,6 +2,7 @@
 #include "c_mom_player.h"
 #include "view.h"
 #include "c_mom_triggers.h"
+#include "mom_blockfix.h"
 
 #include "tier0/memdbgon.h"
 
@@ -84,6 +85,14 @@ void C_MomentumPlayer::ClientThink()
     }
 
 	BaseClass::ClientThink();
+}
+
+void C_MomentumPlayer::Touch(C_BaseEntity *pOther)
+{
+	BaseClass::Touch(pOther);
+
+	if (g_MomentumBlockFixer->IsBhopBlock(pOther->entindex()))
+		g_MomentumBlockFixer->PlayerTouch(this, pOther);
 }
 
 void C_MomentumPlayer::OnDataChanged(DataUpdateType_t type)
