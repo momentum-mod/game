@@ -33,6 +33,7 @@ enum
 class C_BaseMomentumTrigger : public C_BaseEntity
 {
     DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseEntity);
+	DECLARE_CLIENTCLASS();
 
   public:
     C_BaseMomentumTrigger(){};
@@ -46,8 +47,9 @@ class C_BaseMomentumTrigger : public C_BaseEntity
     bool PointIsWithin(const Vector &vecPoint);
     bool PassesTriggerFilters(CBaseEntity *pOther);
 
-    // Make networked?
     CNetworkVar(int, m_iSpawnFlags);
+    CNetworkString(m_iszTarget, MAX_POINT_NAME);
+    CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
 
   private:
     bool m_bDisabled;
@@ -94,9 +96,6 @@ class C_TriggerTeleport : public C_BaseMomentumTrigger
     DECLARE_CLIENTCLASS();
 
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
-
-    CNetworkString(m_iszTarget, MAX_POINT_NAME);
-    CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
 };
 
 class C_PointEntity : public C_BaseEntity

@@ -14,6 +14,8 @@
 #include "basetoggle.h"
 #include "entityoutput.h"
 
+#define MAX_TRIGGER_NAME 128
+
 //
 // Spawnflags
 //
@@ -42,6 +44,8 @@ enum
 class CBaseTrigger : public CBaseToggle
 {
 	DECLARE_CLASS( CBaseTrigger, CBaseToggle );
+	DECLARE_NETWORKCLASS();
+
 public:
 	CBaseTrigger();
 	
@@ -86,6 +90,10 @@ public:
 	bool		m_bDisabled;
 	string_t	m_iFilterName;
 	CHandle<class CBaseFilter>	m_hFilter;
+
+	CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
+	CNetworkString(m_iszTarget, MAX_POINT_NAME);
+	CNetworkVar(int, m_iSpawnFlags);
 
 protected:
 

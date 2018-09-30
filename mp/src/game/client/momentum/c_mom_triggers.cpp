@@ -24,6 +24,28 @@ inline void C_BaseMomentumTrigger::RemoveSpawnFlags(int nFlags) { m_iSpawnFlags 
 inline void C_BaseMomentumTrigger::ClearSpawnFlags(void) { m_iSpawnFlags = 0; }
 inline bool C_BaseMomentumTrigger::HasSpawnFlags(int nFlags) const { return (m_iSpawnFlags & nFlags) != 0; }
 
+void TriggerProxy_Model(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+	C_BaseMomentumTrigger *entity = (C_BaseMomentumTrigger *)pStruct;
+	entity->SetModelName(pData->m_Value.m_pString);
+
+	if (entity->SetModel(pData->m_Value.m_pString))
+	{
+		entity->SetSolid(SOLID_BSP);
+		entity->AddSolidFlags(FSOLID_TRIGGER);
+		entity->SetMoveType(MOVETYPE_NONE);
+
+		Q_strncpy((char *)entity->m_iszModel.Get(), pData->m_Value.m_pString, MAX_TRIGGER_NAME);
+		entity->PhysicsTouchTriggers();
+	}
+}
+
+IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseTrigger, CBaseTrigger)
+	RecvPropString(RECVINFO(m_iszModel), NULL, TriggerProxy_Model),
+	RecvPropString(RECVINFO(m_iszTarget)),
+	RecvPropInt(RECVINFO(m_iSpawnFlags)),
+END_RECV_TABLE();
+
 bool C_BaseMomentumTrigger::PointIsWithin(const Vector &vecPoint)
 {
     Ray_t ray;
@@ -246,28 +268,15 @@ int C_TriggerTimerStop::DrawModel(int flags)
 LINK_ENTITY_TO_CLASS(trigger_momentum_slide, C_TriggerSlide);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerSlide, DT_TriggerSlide, CTriggerSlide)
-RecvPropBool(RECVINFO(m_bStuckOnGround)), RecvPropBool(RECVINFO(m_bAllowingJump)),
-    RecvPropBool(RECVINFO(m_bDisableGravity)), RecvPropBool(RECVINFO(m_bFixUpsideSlope)), END_RECV_TABLE();
-
-void TriggerProxy_Model(const CRecvProxyData *pData, void *pStruct, void *pOut)
-{
-    // TODO Make this a bit cleaner, look at code from CBaseTrigger::InitTrigger()
-    C_TriggerTeleport *entity = (C_TriggerTeleport *)pStruct;
-    entity->SetModelName(pData->m_Value.m_pString);
-    entity->SetModel(pData->m_Value.m_pString);
-    entity->SetSolid(SOLID_BSP);
-    entity->AddSolidFlags(FSOLID_TRIGGER);
-    entity->SetMoveType(MOVETYPE_NONE);
-
-    Q_strncpy((char *)entity->m_iszModel.Get(), pData->m_Value.m_pString, MAX_TRIGGER_NAME);
-    entity->PhysicsTouchTriggers();
-}
+	RecvPropBool(RECVINFO(m_bStuckOnGround)),
+	RecvPropBool(RECVINFO(m_bAllowingJump)),
+	RecvPropBool(RECVINFO(m_bDisableGravity)),
+	RecvPropBool(RECVINFO(m_bFixUpsideSlope)),
+END_RECV_TABLE();
 
 LINK_ENTITY_TO_CLASS(trigger_teleport, C_TriggerTeleport);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerTeleport, DT_TriggerTeleport, CTriggerTeleport)
-	RecvPropString(RECVINFO(m_iszTarget)), RecvPropString(RECVINFO(m_iszModel), NULL, TriggerProxy_Model),
-	RecvPropInt(RECVINFO(m_iSpawnFlags)),
 END_RECV_TABLE();
 
 CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
@@ -288,7 +297,6 @@ CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
 
 void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 {
-	Msg("# C_TriggerTeleport::StartTouch\n");
 	CBaseEntity *pentTarget = NULL;
 
 	if (!PassesTriggerFilters(pOther))

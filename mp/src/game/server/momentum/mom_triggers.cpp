@@ -1495,16 +1495,11 @@ DEFINE_KEYFIELD(m_iLandmark, FIELD_STRING, "landmark"),
 END_DATADESC();
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTeleport, DT_TriggerTeleport)
-	SendPropString(SENDINFO(m_iszTarget)),
-	SendPropString(SENDINFO(m_iszModel)),
-	SendPropInt(SENDINFO(m_iSpawnFlags)),
 END_SEND_TABLE()
 
 void CTriggerTeleport::Spawn(void)
 {
-    m_iSpawnFlags = m_spawnflags;
-    Q_strncpy(m_iszTarget.GetForModify(), STRING(m_target), MAX_POINT_NAME);
-    Q_strncpy(m_iszModel.GetForModify(), STRING(GetModelName()), MAX_TRIGGER_NAME);
+    BaseClass::Spawn();
     InitTrigger();
 }
 
@@ -1521,7 +1516,7 @@ void CTriggerTeleport::Spawn(void)
 //-----------------------------------------------------------------------------
 void CTriggerTeleport::Touch(CBaseEntity *pOther)
 {
-	CBaseEntity *pentTarget = NULL;
+    CBaseEntity *pentTarget = NULL;
 
     if (!PassesTriggerFilters(pOther))
     {

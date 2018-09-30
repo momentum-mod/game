@@ -564,11 +564,7 @@ class CTriggerTeleport : public CBaseTrigger
     void Spawn(void) OVERRIDE;
     void Touch(CBaseEntity *pOther) OVERRIDE;
     int UpdateTransmitState() OVERRIDE;
-    string_t m_iLandmark;
 
-  private:
-    CNetworkString(m_iszTarget, MAX_POINT_NAME);
-    CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
-    CNetworkVar(int, m_iSpawnFlags);
+    string_t m_iLandmark;
 
 };
