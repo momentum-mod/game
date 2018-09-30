@@ -110,12 +110,16 @@ public:
 	DECLARE_CLASS(C_TriggerPush, C_BaseMomentumTrigger);
 	DECLARE_CLIENTCLASS();
 
+	void Spawn(void) OVERRIDE;
 	void Activate( void ) OVERRIDE;
 	void Touch( CBaseEntity *pOther ) OVERRIDE;
 	
 	CNetworkVar(float, m_flAlternateTicksFix); // Scale factor to apply to the push speed when running with alternate ticks
 	CNetworkVar(float, m_flPushSpeed);
 	CNetworkVector(m_vecPushDir);
+
+	int m_nTickBasePush;
+	int m_iUserID;
 };
 
 class C_PointEntity : public C_BaseEntity

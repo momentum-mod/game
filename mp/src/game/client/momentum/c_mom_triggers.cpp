@@ -420,6 +420,13 @@ IMPLEMENT_CLIENTCLASS_DT(C_TriggerPush, DT_TriggerPush, CTriggerPush)
 	RecvPropVector(RECVINFO(m_vecPushDir), 0, TriggerPushProxy_PushDir),
 END_RECV_TABLE();
 
+void C_TriggerPush::Spawn(void)
+{
+	m_iUserID = INVALID_USER_ID;
+	m_nTickBasePush = -1;
+	BaseClass::Spawn();
+}
+
 void C_TriggerPush::Activate(void)
 {
 	BaseClass::Activate();
@@ -437,19 +444,30 @@ void C_TriggerPush::Touch(CBaseEntity * pOther)
 	if (pOther->GetMoveParent())
 		return;
 
+	if (!pOther->IsPlayer())
+		return;
+
+	C_BasePlayer* player = (C_BasePlayer*)pOther;
+	player->GetUserID();
 	// Transform the push dir into global space
 	Vector vecAbsDir;
 	VectorRotate( m_vecPushDir.Get(), EntityToWorldTransform(), vecAbsDir );
 
 	// Instant trigger, just transfer velocity and remove
-	if (HasSpawnFlags(SF_TRIG_PUSH_ONCE))
+	if (HasSpawnFlags(SF_TRIG_PUSH_ONCE) &&
+		((player->GetTickBase() == m_nTickBasePush && player->GetUserID() == m_iUserID) ||
+		(m_nTickBasePush == -1 && m_iUserID == INVALID_USER_ID)))
 	{
+		Msg("Tickbase: %i\n", player->GetTickBase());
 		pOther->ApplyAbsVelocityImpulse( m_flPushSpeed * vecAbsDir );
 
 		if ( vecAbsDir.z > 0 )
 		{
 			pOther->SetGroundEntity( NULL );
 		}
+
+		m_iUserID = player->GetUserID();
+		m_nTickBasePush = player->GetTickBase();
 		return;
 	}
 

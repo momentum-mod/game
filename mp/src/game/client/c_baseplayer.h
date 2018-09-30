@@ -277,6 +277,7 @@ public:
 
 	void						UpdateButtonState( int nUserCmdButtonMask );
 	int							GetImpulse( void ) const;
+	int							GetTickBase() { return m_nTickBase; }
 
 	virtual void				Simulate();
 
