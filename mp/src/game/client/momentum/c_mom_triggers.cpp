@@ -5,6 +5,8 @@
 
 #include "tier0/memdbgon.h"
 
+const int SF_TELEPORT_PRESERVE_ANGLES = 0x20; // Preserve angles even when a local landmark is not specified
+
 static ConVar mom_startzone_outline_enable("mom_startzone_outline_enable", "1",
                                            FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                            "Enable outline for start zone.");
@@ -306,8 +308,8 @@ CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
 
 void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 {
-	Msg("StartTouch -> %s, %s\n", m_iszLandmark.Get(), m_iszTarget.Get());
 	CBaseEntity *pentTarget = NULL;
+	CBaseEntity *pentLandmark = NULL;
 
 	if (!PassesTriggerFilters(pOther))
 	{
@@ -323,13 +325,36 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 		return;
 	}
 
+	Vector vecLandmarkOffset(0, 0, 0);
+	if (m_iszLandmark.Get()[0] != 0)
+	{
+		// The activator and caller are the same
+		pentLandmark = FindEntityByClassAndName(pentLandmark, m_iszLandmark.Get());
+
+		if (pentLandmark)
+		{
+			vecLandmarkOffset = pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
+		}
+	}
+
+	Vector tmp = pentTarget->GetAbsOrigin();
+	QAngle tmp_angle = pentTarget->GetAbsAngles();
+
+	if (!pentLandmark && pOther->IsPlayer())
+	{
+		// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
+		tmp.z -= pOther->WorldAlignMins().z;
+	}
+
+	tmp += vecLandmarkOffset;
+	
 	pOther->SetGroundEntity(NULL);
 
-	QAngle tmp_angle = pentTarget->GetAbsAngles();
-	Vector tmp = pentTarget->GetAbsOrigin();
-
-	pOther->m_angNetworkAngles = tmp_angle;
-	pOther->SetLocalAngles(tmp_angle);
+	if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
+	{
+		pOther->m_angNetworkAngles = tmp_angle;
+		pOther->SetLocalAngles(tmp_angle);
+	}
 
 	pOther->m_vecNetworkOrigin = tmp;
 	pOther->SetLocalOrigin(tmp);
@@ -339,13 +364,17 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 	if (player == pOther)
 	{
 		// We need to do it this way to set viewangles at the same frame as the new orign is viewed to the screen
-		if (prediction->GetIsFirstTimePredicted())
+		if (prediction->GetIsFirstTimePredicted() && !pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
 		{
 			player->m_bFixViewAngle = true;
 			player->m_vecFixedViewAngles = tmp_angle;
 		}
 
-		prediction->SetLocalViewAngles(tmp_angle);
+		if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
+		{
+			prediction->SetLocalViewAngles(tmp_angle);
+		}
+
 		prediction->SetViewOrigin(tmp);
 	}
 }
