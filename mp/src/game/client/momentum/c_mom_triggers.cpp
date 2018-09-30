@@ -387,5 +387,109 @@ END_RECV_TABLE();
 
 void C_PointEntity::Spawn()
 {
-    SetSolid(SOLID_NONE);
+	SetSolid(SOLID_NONE);
+}
+
+LINK_ENTITY_TO_CLASS(trigger_push, C_TriggerPush);
+
+void TriggerPushProxy_PushDir(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+	C_TriggerPush *entity = (C_TriggerPush *)pStruct;
+
+	*(float*)&entity->m_vecPushDir.Get().x = pData->m_Value.m_Vector[0];
+	*(float*)&entity->m_vecPushDir.Get().y = pData->m_Value.m_Vector[1];
+	*(float*)&entity->m_vecPushDir.Get().z = pData->m_Value.m_Vector[2];
+	
+	// Convert pushdir from angles to a vector
+	Vector vecAbsDir;
+	QAngle angPushDir = QAngle(entity->m_vecPushDir.Get().x, entity->m_vecPushDir.Get().y, entity->m_vecPushDir.Get().z);
+	AngleVectors(angPushDir, &vecAbsDir);
+
+	// Transform the vector into entity space
+	VectorIRotate( vecAbsDir, entity->EntityToWorldTransform(), (Vector)entity->m_vecPushDir.Get() );
+
+	if (entity->m_flSpeed == 0)
+	{
+		entity->m_flSpeed = 100;
+	}
+}
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerPush, DT_TriggerPush, CTriggerPush)
+	RecvPropFloat(RECVINFO(m_flAlternateTicksFix)),
+	RecvPropFloat(RECVINFO(m_flPushSpeed)),
+	RecvPropVector(RECVINFO(m_vecPushDir), 0, TriggerPushProxy_PushDir),
+END_RECV_TABLE();
+
+void C_TriggerPush::Activate(void)
+{
+	BaseClass::Activate();
+}
+
+void C_TriggerPush::Touch(CBaseEntity * pOther)
+{
+	if ( !pOther->IsSolid() || (pOther->GetMoveType() == MOVETYPE_PUSH || pOther->GetMoveType() == MOVETYPE_NONE ) )
+		return;
+
+	if (!PassesTriggerFilters(pOther))
+		return;
+
+	// FIXME: If something is hierarchically attached, should we try to push the parent?
+	if (pOther->GetMoveParent())
+		return;
+
+	// Transform the push dir into global space
+	Vector vecAbsDir;
+	VectorRotate( m_vecPushDir.Get(), EntityToWorldTransform(), vecAbsDir );
+
+	// Instant trigger, just transfer velocity and remove
+	if (HasSpawnFlags(SF_TRIG_PUSH_ONCE))
+	{
+		pOther->ApplyAbsVelocityImpulse( m_flPushSpeed * vecAbsDir );
+
+		if ( vecAbsDir.z > 0 )
+		{
+			pOther->SetGroundEntity( NULL );
+		}
+		return;
+	}
+
+	switch( pOther->GetMoveType() )
+	{
+	case MOVETYPE_NONE:
+	case MOVETYPE_PUSH:
+	case MOVETYPE_NOCLIP:
+		break;
+
+	case MOVETYPE_VPHYSICS:
+		{
+			IPhysicsObject *pPhys = pOther->VPhysicsGetObject();
+			if ( pPhys )
+			{
+				// UNDONE: Assume the velocity is for a 100kg object, scale with mass
+				pPhys->ApplyForceCenter( m_flPushSpeed * vecAbsDir * 100.0f * gpGlobals->frametime );
+				return;
+			}
+		}
+		break;
+
+	default:
+		{
+			Vector vecPush = (m_flPushSpeed * vecAbsDir);
+			if (pOther->GetFlags() & FL_BASEVELOCITY)
+			{
+				vecPush = vecPush + pOther->GetBaseVelocity();
+			}
+			if (vecPush.z > 0 && (pOther->GetFlags() & FL_ONGROUND))
+			{
+				pOther->SetGroundEntity(NULL);
+				Vector origin = pOther->GetAbsOrigin();
+				origin.z += 1.0f;
+				pOther->SetAbsOrigin(origin);
+			}
+
+			pOther->SetBaseVelocity(vecPush);
+			pOther->AddFlag(FL_BASEVELOCITY);
+		}
+		break;
+	}
 }

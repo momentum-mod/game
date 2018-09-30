@@ -49,6 +49,8 @@ class C_BaseMomentumTrigger : public C_BaseEntity
     bool PassesTriggerFilters(CBaseEntity *pOther);
 	void UpdatePartitionListEntry() OVERRIDE;
 
+	virtual void InitTrigger() {};
+
     CNetworkVar(int, m_iSpawnFlags);
     CNetworkString(m_iszTarget, MAX_POINT_NAME);
     CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
@@ -93,13 +95,27 @@ class C_TriggerSlide : public C_BaseMomentumTrigger
 
 class C_TriggerTeleport : public C_BaseMomentumTrigger
 {
-  public:
-    DECLARE_CLASS(C_TriggerTeleport, C_BaseMomentumTrigger);
-    DECLARE_CLIENTCLASS();
+public:
+	DECLARE_CLASS(C_TriggerTeleport, C_BaseMomentumTrigger);
+	DECLARE_CLIENTCLASS();
 
-    void StartTouch(CBaseEntity *pOther) OVERRIDE;
+	void StartTouch(CBaseEntity *pOther) OVERRIDE;
 
-    CNetworkString(m_iszLandmark, MAX_LANDMARK_NAME);
+	CNetworkString(m_iszLandmark, MAX_LANDMARK_NAME);
+};
+
+class C_TriggerPush : public C_BaseMomentumTrigger
+{
+public:
+	DECLARE_CLASS(C_TriggerPush, C_BaseMomentumTrigger);
+	DECLARE_CLIENTCLASS();
+
+	void Activate( void ) OVERRIDE;
+	void Touch( CBaseEntity *pOther ) OVERRIDE;
+	
+	CNetworkVar(float, m_flAlternateTicksFix); // Scale factor to apply to the push speed when running with alternate ticks
+	CNetworkVar(float, m_flPushSpeed);
+	CNetworkVector(m_vecPushDir);
 };
 
 class C_PointEntity : public C_BaseEntity

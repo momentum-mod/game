@@ -2177,18 +2177,18 @@ class CTriggerPush : public CBaseTrigger
 {
 public:
 	DECLARE_CLASS( CTriggerPush, CBaseTrigger );
+	DECLARE_SERVERCLASS();
 
 	void Spawn( void );
 	void Activate( void );
 	void Touch( CBaseEntity *pOther );
-	void Untouch( CBaseEntity *pOther );
-
-	Vector m_vecPushDir;
+	int UpdateTransmitState( void );
 
 	DECLARE_DATADESC();
 	
-	float m_flAlternateTicksFix; // Scale factor to apply to the push speed when running with alternate ticks
-	float m_flPushSpeed;
+	CNetworkVar(float, m_flAlternateTicksFix); // Scale factor to apply to the push speed when running with alternate ticks
+	CNetworkVar(float, m_flPushSpeed);
+	CNetworkVector(m_vecPushDir);
 };
 
 BEGIN_DATADESC( CTriggerPush )
@@ -2199,6 +2199,12 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( trigger_push, CTriggerPush );
 
+IMPLEMENT_SERVERCLASS_ST(CTriggerPush, DT_TriggerPush)
+	SendPropFloat(SENDINFO(m_flAlternateTicksFix)),
+	SendPropFloat(SENDINFO(m_flPushSpeed)),
+	SendPropVector(SENDINFO(m_vecPushDir)),
+END_SEND_TABLE()
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Called when spawning, after keyvalues have been handled.
@@ -2207,11 +2213,11 @@ void CTriggerPush::Spawn()
 {
 	// Convert pushdir from angles to a vector
 	Vector vecAbsDir;
-	QAngle angPushDir = QAngle(m_vecPushDir.x, m_vecPushDir.y, m_vecPushDir.z);
+	QAngle angPushDir = QAngle(m_vecPushDir.Get().x, m_vecPushDir.Get().y, m_vecPushDir.Get().z);
 	AngleVectors(angPushDir, &vecAbsDir);
 
 	// Transform the vector into entity space
-	VectorIRotate( vecAbsDir, EntityToWorldTransform(), m_vecPushDir );
+	VectorIRotate( vecAbsDir, EntityToWorldTransform(), m_vecPushDir.GetForModify() );
 
 	BaseClass::Spawn();
 
@@ -2262,7 +2268,7 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 
 	// Transform the push dir into global space
 	Vector vecAbsDir;
-	VectorRotate( m_vecPushDir, EntityToWorldTransform(), vecAbsDir );
+	VectorRotate( m_vecPushDir.Get(), EntityToWorldTransform(), vecAbsDir );
 
 	// Instant trigger, just transfer velocity and remove
 	if (HasSpawnFlags(SF_TRIG_PUSH_ONCE))
@@ -2339,6 +2345,11 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 		}
 		break;
 	}
+}
+
+int CTriggerPush::UpdateTransmitState()
+{
+	return SetTransmitState(FL_EDICT_ALWAYS);
 }
 
 LINK_ENTITY_TO_CLASS( info_teleport_destination, CPointEntity );
