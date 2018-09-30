@@ -9,6 +9,7 @@
 #include "prediction.h"
 
 #define MAX_TRIGGER_NAME 128
+#define MAX_LANDMARK_NAME 128
 //
 // Spawnflags
 //
@@ -46,6 +47,7 @@ class C_BaseMomentumTrigger : public C_BaseEntity
 
     bool PointIsWithin(const Vector &vecPoint);
     bool PassesTriggerFilters(CBaseEntity *pOther);
+	void UpdatePartitionListEntry() OVERRIDE;
 
     CNetworkVar(int, m_iSpawnFlags);
     CNetworkString(m_iszTarget, MAX_POINT_NAME);
@@ -96,6 +98,8 @@ class C_TriggerTeleport : public C_BaseMomentumTrigger
     DECLARE_CLIENTCLASS();
 
     void StartTouch(CBaseEntity *pOther) OVERRIDE;
+
+    CNetworkString(m_iszLandmark, MAX_LANDMARK_NAME);
 };
 
 class C_PointEntity : public C_BaseEntity

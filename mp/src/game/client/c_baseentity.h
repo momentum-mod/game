@@ -442,6 +442,7 @@ private:
 	bool			VPhysicsInitSetup();
 public:
 
+	virtual void	UpdatePartitionListEntry();
 	void			VPhysicsSetObject( IPhysicsObject *pPhysics );
 	// destroy and remove the physics object for this entity
 	virtual void	VPhysicsDestroyObject( void );
@@ -637,7 +638,6 @@ public:
 // C_BaseEntity local functions
 public:
 
-	void UpdatePartitionListEntry();
 
 	// This can be used to setup the entity as a client-only entity. 
 	// Override this to perform per-entity clientside setup

@@ -1495,11 +1495,15 @@ DEFINE_KEYFIELD(m_iLandmark, FIELD_STRING, "landmark"),
 END_DATADESC();
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTeleport, DT_TriggerTeleport)
+	SendPropString(SENDINFO(m_iszLandmark)),
 END_SEND_TABLE()
 
 void CTriggerTeleport::Spawn(void)
 {
     BaseClass::Spawn();
+
+    Q_strncpy(m_iszLandmark.GetForModify(), STRING(m_iLandmark), MAX_LANDMARK_NAME);
+
     InitTrigger();
 }
 

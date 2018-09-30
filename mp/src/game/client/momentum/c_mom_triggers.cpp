@@ -24,6 +24,14 @@ inline void C_BaseMomentumTrigger::RemoveSpawnFlags(int nFlags) { m_iSpawnFlags 
 inline void C_BaseMomentumTrigger::ClearSpawnFlags(void) { m_iSpawnFlags = 0; }
 inline bool C_BaseMomentumTrigger::HasSpawnFlags(int nFlags) const { return (m_iSpawnFlags & nFlags) != 0; }
 
+void C_BaseMomentumTrigger::UpdatePartitionListEntry()
+{
+	::partition->RemoveAndInsert( 
+		PARTITION_CLIENT_SOLID_EDICTS | PARTITION_CLIENT_RESPONSIVE_EDICTS | PARTITION_CLIENT_NON_STATIC_EDICTS,  // remove
+		PARTITION_CLIENT_TRIGGER_ENTITIES,  // add
+		CollisionProp()->GetPartitionHandle() );
+}
+
 void TriggerProxy_Model(const CRecvProxyData *pData, void *pStruct, void *pOut)
 {
 	C_BaseMomentumTrigger *entity = (C_BaseMomentumTrigger *)pStruct;
@@ -277,6 +285,7 @@ END_RECV_TABLE();
 LINK_ENTITY_TO_CLASS(trigger_teleport, C_TriggerTeleport);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerTeleport, DT_TriggerTeleport, CTriggerTeleport)
+	RecvPropString(RECVINFO(m_iszLandmark)),
 END_RECV_TABLE();
 
 CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
@@ -297,6 +306,7 @@ CBaseEntity *FindEntityByClassAndName(CBaseEntity *pEnt, const char *szName)
 
 void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 {
+	Msg("StartTouch -> %s, %s\n", m_iszLandmark.Get(), m_iszTarget.Get());
 	CBaseEntity *pentTarget = NULL;
 
 	if (!PassesTriggerFilters(pOther))

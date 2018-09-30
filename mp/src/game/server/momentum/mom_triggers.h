@@ -8,6 +8,7 @@
 class CMomentumPlayer;
 
 #define MAX_TRIGGER_NAME 128
+#define MAX_LANDMARK_NAME 128
 
 // spawnflags
 enum
@@ -566,5 +567,6 @@ class CTriggerTeleport : public CBaseTrigger
     int UpdateTransmitState() OVERRIDE;
 
     string_t m_iLandmark;
+	CNetworkString(m_iszLandmark, MAX_LANDMARK_NAME);
 
 };

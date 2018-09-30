@@ -2752,7 +2752,7 @@ void CBaseEntity::PhysicsTouchTriggers(const Vector *pPrevAbsOrigin)
                 Vector vecWorldMins, vecWorldMaxs;
                 pSolidCollide->WorldSpaceSurroundingBounds(&vecWorldMins, &vecWorldMaxs);
 
-                partition->EnumerateElementsInBox(PARTITION_ALL_CLIENT_EDICTS, vecWorldMins, vecWorldMaxs, false,
+                partition->EnumerateElementsInBox(PARTITION_CLIENT_TRIGGER_ENTITIES, vecWorldMins, vecWorldMaxs, false,
                                                   &touchEnumerator);
 
                 touchEnumerator.HandleTouchedEntities();
@@ -2762,7 +2762,7 @@ void CBaseEntity::PhysicsTouchTriggers(const Vector *pPrevAbsOrigin)
                 CTouchLinks_ClientSide touchEnumerator(pEntity, pPrevAbsOrigin, true);
 
                 // A version that checks against an extruded ray indicating the motion
-                partition->EnumerateElementsAlongRay(PARTITION_ALL_CLIENT_EDICTS, touchEnumerator.m_Ray, false,
+                partition->EnumerateElementsAlongRay(PARTITION_CLIENT_TRIGGER_ENTITIES, touchEnumerator.m_Ray, false,
                                                      &touchEnumerator);
 
                 touchEnumerator.HandleTouchedEntities();
