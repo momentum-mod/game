@@ -37,6 +37,9 @@ extern ConVar hl2_episodic;
 #define		FCAP_WCEDIT_POSITION		0x40000000		// Can change position and update Hammer in edit mode
 #define		FCAP_DONT_SAVE				0x80000000		// Don't save this
 
+#define MAX_TRIGGER_NAME 32
+#define MAX_LANDMARK_NAME 32
+#define	MAX_POINT_NAME 32
 
 // How many bits are used to transmit parent attachment indices?
 #define NUM_PARENTATTACHMENT_BITS	6

@@ -7,9 +7,6 @@
 
 class CMomentumPlayer;
 
-#define MAX_TRIGGER_NAME 128
-#define MAX_LANDMARK_NAME 128
-
 // spawnflags
 enum
 {

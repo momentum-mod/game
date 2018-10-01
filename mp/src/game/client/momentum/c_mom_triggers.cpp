@@ -35,20 +35,20 @@ void TriggerProxy_Model(const CRecvProxyData *pData, void *pStruct, void *pOut)
 
 	if (entity->SetModel(pData->m_Value.m_pString))
 	{
-		entity->SetSolid(SOLID_BSP);
-		entity->AddSolidFlags(FSOLID_TRIGGER);
-		entity->SetMoveType(MOVETYPE_NONE);
-
 		Q_strncpy((char *)entity->m_iszModel.Get(), pData->m_Value.m_pString, MAX_TRIGGER_NAME);
 		entity->PhysicsTouchTriggers();
 	}
 }
 
 IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseTrigger, CBaseTrigger)
-	RecvPropString(RECVINFO(m_iszModel), NULL, TriggerProxy_Model),
 	RecvPropString(RECVINFO(m_iszTarget)),
-	RecvPropInt(RECVINFO(m_iSpawnFlags)),
+	//RecvPropString(RECVINFO(m_iszModel), NULL, TriggerProxy_Model),
 END_RECV_TABLE();
+
+BEGIN_PREDICTION_DATA( C_BaseMomentumTrigger )
+	DEFINE_FIELD(m_iszTarget, FIELD_STRING),
+	//DEFINE_FIELD(m_iszModel, FIELD_STRING),
+END_PREDICTION_DATA()
 
 bool C_BaseMomentumTrigger::PointIsWithin(const Vector &vecPoint)
 {
@@ -140,9 +140,14 @@ bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity *pOther)
         // CBaseFilter *pFilter = m_hFilter.Get();
         // return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
     }
-    Msg("[Client] Wat: %08X, %08X, %08X\n", (pOther->GetFlags() & FL_CLIENT) == FL_CLIENT,
-        HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS), m_iSpawnFlags);
     return false;
+}
+
+void C_BaseMomentumTrigger::Spawn()
+{
+	SetSolid(SOLID_BSP);
+	AddSolidFlags(FSOLID_TRIGGER);
+	SetMoveType(MOVETYPE_NONE);
 }
 
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_start, C_TriggerTimerStart);
@@ -315,7 +320,6 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 
 	if (!pentTarget)
 	{
-		Msg("[Client] Could not find target!\n");
 		return;
 	}
 
@@ -352,20 +356,20 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 
 	pOther->m_vecNetworkOrigin = tmp;
 	pOther->SetLocalOrigin(tmp);
-	pOther->SetAbsOrigin(tmp);
+	//pOther->SetAbsOrigin(tmp);
 
 	C_BasePlayer* player = C_BasePlayer::GetLocalPlayer();
 	if (player == pOther)
 	{
-		// We need to do it this way to set viewangles at the same frame as the new orign is viewed to the screen
-		if (prediction->GetIsFirstTimePredicted() && !pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
-		{
-			player->m_bFixViewAngle = true;
-			player->m_vecFixedViewAngles = tmp_angle;
-		}
-
 		if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
 		{
+			// We need to do it this way to set viewangles at the same frame as the new orign is viewed to the screen
+			if (prediction->GetIsFirstTimePredicted())
+			{
+				player->m_bFixViewAngle = true;
+				player->m_vecFixedViewAngles = tmp_angle;
+			}
+
 			prediction->SetLocalViewAngles(tmp_angle);
 		}
 

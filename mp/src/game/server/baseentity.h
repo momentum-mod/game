@@ -12,7 +12,6 @@
 #endif
 
 #define TEAMNUM_NUM_BITS	6
-#define MAX_POINT_NAME		128
 
 #include "entitylist.h"
 #include "entityoutput.h"

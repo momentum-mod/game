@@ -127,8 +127,7 @@ LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
 
 IMPLEMENT_SERVERCLASS_ST(CBaseTrigger, DT_BaseTrigger)
 	SendPropString(SENDINFO(m_iszTarget)),
-	SendPropString(SENDINFO(m_iszModel)),
-	SendPropInt(SENDINFO(m_iSpawnFlags)),
+	//SendPropString(SENDINFO(m_iszModel)),
 END_SEND_TABLE()
 
 CBaseTrigger::CBaseTrigger()
@@ -162,7 +161,6 @@ void CBaseTrigger::InputTouchTest( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 void CBaseTrigger::Spawn()
 {
-	m_iSpawnFlags = m_spawnflags;
 	Q_strncpy(m_iszTarget.GetForModify(), STRING(m_target), MAX_POINT_NAME);
 	Q_strncpy(m_iszModel.GetForModify(), STRING(GetModelName()), MAX_TRIGGER_NAME);
 

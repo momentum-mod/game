@@ -67,7 +67,10 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( func_button, CBaseButton );
 
-
+IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseButton, DT_BaseButton)
+	SendPropVector(SENDINFO(m_vecPosition1)),
+	SendPropVector(SENDINFO(m_vecPosition2)),
+END_SEND_TABLE()
 
 void CBaseButton::Precache( void )
 {

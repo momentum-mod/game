@@ -390,12 +390,12 @@ void RecvProxy_ToolRecording( const CRecvProxyData *pData, void *pStruct, void *
 // Expose it to the engine.
 IMPLEMENT_CLIENTCLASS(C_BaseEntity, DT_BaseEntity, CBaseEntity);
 
-static void RecvProxy_MoveType( const CRecvProxyData *pData, void *pStruct, void *pOut )
+void RecvProxy_MoveType( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	((C_BaseEntity*)pStruct)->SetMoveType( (MoveType_t)(pData->m_Value.m_Int) );
 }
 
-static void RecvProxy_MoveCollide( const CRecvProxyData *pData, void *pStruct, void *pOut )
+void RecvProxy_MoveCollide( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	((C_BaseEntity*)pStruct)->SetMoveCollide( (MoveCollide_t)(pData->m_Value.m_Int) );
 }

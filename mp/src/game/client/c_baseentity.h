@@ -69,7 +69,7 @@ struct CSoundParameters;
 typedef unsigned int			AimEntsListHandle_t;
 
 #define		INVALID_AIMENTS_LIST_HANDLE		(AimEntsListHandle_t)~0
-#define MAX_POINT_NAME 128
+
 extern void RecvProxy_IntToColor32( const CRecvProxyData *pData, void *pStruct, void *pOut );
 extern void RecvProxy_LocalVelocity( const CRecvProxyData *pData, void *pStruct, void *pOut );
 

@@ -159,10 +159,15 @@ BEGIN_DATADESC( CBaseToggle )
 
 END_DATADESC()
 
-IMPLEMENT_SERVERCLASS_ST(CBaseToggle, DT_BaseToggle)
-	SendPropVector(SENDINFO(m_vecPosition1)),
-	SendPropVector(SENDINFO(m_vecPosition2)),
+IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseToggle, DT_BaseToggle)
+	SendPropDataTable(SENDINFO_DT(m_Collision), &REFERENCE_SEND_TABLE(DT_CollisionProperty)),
+	SendPropVector(SENDINFO(m_vecOrigin), 0,  SPROP_NOSCALE|SPROP_COORD|SPROP_CHANGES_OFTEN ),
+	SendPropQAngles(SENDINFO(m_angRotation), 0, SPROP_NOSCALE|SPROP_CHANGES_OFTEN ),
+	SendPropInt(SENDINFO(m_fEffects),EF_MAX_BITS, SPROP_UNSIGNED),
+	SendPropModelIndex(SENDINFO(m_nModelIndex)),
+	SendPropInt(SENDINFO(m_CollisionGroup), 5, SPROP_UNSIGNED),
 	SendPropInt(SENDINFO(m_spawnflags)),
+	SendPropInt(SENDINFO_NAME(m_MoveCollide, movecollide), MOVECOLLIDE_MAX_BITS, SPROP_UNSIGNED),
 END_SEND_TABLE()
 
 CBaseToggle::CBaseToggle()

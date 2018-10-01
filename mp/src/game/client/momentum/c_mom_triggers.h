@@ -9,8 +9,6 @@
 #include "c_mom_basetoggle.h"
 #include "prediction.h"
 
-#define MAX_TRIGGER_NAME 128
-#define MAX_LANDMARK_NAME 128
 //
 // Spawnflags
 //
@@ -36,6 +34,7 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 {
     DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseToggle);
 	DECLARE_CLIENTCLASS();
+	DECLARE_PREDICTABLE();
 
   public:
     C_BaseMomentumTrigger(){};
@@ -43,11 +42,12 @@ class C_BaseMomentumTrigger : public C_BaseToggle
     bool PointIsWithin(const Vector &vecPoint);
     bool PassesTriggerFilters(CBaseEntity *pOther);
 	void UpdatePartitionListEntry() OVERRIDE;
+	void Spawn() OVERRIDE;
 
 	virtual void InitTrigger() {};
 
-    CNetworkString(m_iszTarget, MAX_POINT_NAME);
-    CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
+	CNetworkString(m_iszTarget, MAX_POINT_NAME);
+	CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
 
   private:
     bool m_bDisabled;
@@ -85,6 +85,14 @@ class C_TriggerSlide : public C_BaseMomentumTrigger
     CNetworkVar(bool, m_bAllowingJump);
     CNetworkVar(bool, m_bDisableGravity);
     CNetworkVar(bool, m_bFixUpsideSlope);
+};
+
+class C_TriggerMultiple : public C_BaseMomentumTrigger
+{
+public:
+	DECLARE_CLASS(C_TriggerMultiple, C_BaseMomentumTrigger);
+	DECLARE_CLIENTCLASS();
+
 };
 
 class C_TriggerTeleport : public C_BaseMomentumTrigger

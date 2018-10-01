@@ -14,8 +14,6 @@
 #include "basetoggle.h"
 #include "entityoutput.h"
 
-#define MAX_TRIGGER_NAME 128
-
 //
 // Spawnflags
 //
@@ -91,9 +89,8 @@ public:
 	string_t	m_iFilterName;
 	CHandle<class CBaseFilter>	m_hFilter;
 
-	CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
 	CNetworkString(m_iszTarget, MAX_POINT_NAME);
-	CNetworkVar(int, m_iSpawnFlags);
+	CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
 
 protected:
 
