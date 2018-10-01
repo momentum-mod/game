@@ -127,6 +127,7 @@ LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
 
 IMPLEMENT_SERVERCLASS_ST(CBaseTrigger, DT_BaseTrigger)
 	SendPropString(SENDINFO(m_iszTarget)),
+	SendPropString(SENDINFO(m_iszFilter)),
 	//SendPropString(SENDINFO(m_iszModel)),
 END_SEND_TABLE()
 
@@ -163,7 +164,8 @@ void CBaseTrigger::Spawn()
 {
 	Q_strncpy(m_iszTarget.GetForModify(), STRING(m_target), MAX_POINT_NAME);
 	Q_strncpy(m_iszModel.GetForModify(), STRING(GetModelName()), MAX_TRIGGER_NAME);
-
+	Q_strncpy(m_iszFilter.GetForModify(), STRING(m_iFilterName), MAX_FILTER_NAME);
+	
 	if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) || HasSpawnFlags( SF_TRIGGER_ONLY_NPCS_IN_VEHICLES ) )
 	{
 		// Automatically set this trigger to work with NPC's.
@@ -913,6 +915,8 @@ bool IsTakingTriggerHurtDamageAtPoint( const Vector &vecPoint )
 // ##################################################################################
 LINK_ENTITY_TO_CLASS( trigger_multiple, CTriggerMultiple );
 
+IMPLEMENT_SERVERCLASS_ST(CTriggerMultiple, DT_TriggerMultiple)
+END_SEND_TABLE()
 
 BEGIN_DATADESC( CTriggerMultiple )
 
@@ -945,6 +949,10 @@ void CTriggerMultiple::Spawn( void )
 	SetTouch( &CTriggerMultiple::MultiTouch );
 }
 
+int CTriggerMultiple::UpdateTransmitState( void )
+{
+	return SetTransmitState(FL_EDICT_ALWAYS);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Touch function. Activates the trigger.

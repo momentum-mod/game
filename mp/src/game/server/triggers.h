@@ -91,6 +91,7 @@ public:
 
 	CNetworkString(m_iszTarget, MAX_POINT_NAME);
 	CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
+	CNetworkString(m_iszFilter, MAX_FILTER_NAME);
 
 protected:
 
@@ -116,8 +117,11 @@ protected:
 class CTriggerMultiple : public CBaseTrigger
 {
 	DECLARE_CLASS( CTriggerMultiple, CBaseTrigger );
+	DECLARE_SERVERCLASS();
+
 public:
 	void Spawn( void );
+	int UpdateTransmitState( void );
 	void MultiTouch( CBaseEntity *pOther );
 	void MultiWaitOver( void );
 	void ActivateMultiTrigger(CBaseEntity *pActivator);

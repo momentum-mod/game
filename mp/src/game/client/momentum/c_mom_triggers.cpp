@@ -20,6 +20,150 @@ static ConVar mom_startzone_color("mom_startzone_color", "00FF00FF", FCVAR_CLIEN
 static ConVar mom_endzone_color("mom_endzone_color", "FF0000FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                 "Color of the end zone.");
 
+IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseTrigger, CBaseTrigger)
+	RecvPropString(RECVINFO(m_iszTarget)),
+	RecvPropString(RECVINFO(m_iszFilter)),
+	//RecvPropString(RECVINFO(m_iszModel), NULL, TriggerProxy_Model),
+END_RECV_TABLE();
+
+BEGIN_PREDICTION_DATA( C_BaseMomentumTrigger )
+	DEFINE_FIELD(m_iszTarget, FIELD_STRING),
+	DEFINE_FIELD(m_iszFilter, FIELD_STRING),
+	//DEFINE_FIELD(m_iszModel, FIELD_STRING),
+END_PREDICTION_DATA()
+
+bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity * pOther)
+{
+	// First test spawn flag filters
+	if (HasSpawnFlags(SF_TRIGGER_ALLOW_ALL) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS) && (pOther->GetFlags() & FL_CLIENT)) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_NPCS) && (pOther->GetFlags() & FL_NPC)) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_PUSHABLES) && FClassnameIs(pOther, "func_pushable")) ||
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS))
+	{
+		if (pOther->GetFlags() & FL_NPC)
+		{
+			// TODO Make npc stuff
+			/*CAI_BaseNPC *pNPC = pOther->MyNPCPointer();
+
+			if (HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS))
+			{
+			if (!pNPC || !pNPC->IsPlayerAlly())
+			{
+			return false;
+			}
+			}
+
+			if (HasSpawnFlags(SF_TRIGGER_ONLY_NPCS_IN_VEHICLES))
+			{
+			if (!pNPC || !pNPC->IsInAVehicle())
+			return false;
+			}*/
+			return false;
+		}
+
+		bool bOtherIsPlayer = pOther->IsPlayer();
+
+		if (bOtherIsPlayer)
+		{
+			CBasePlayer *pPlayer = (CBasePlayer *)pOther;
+			if (!pPlayer->IsAlive())
+				return false;
+
+			// TODO Make vehicle stuff
+			if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES))
+			{
+				if (!pPlayer->IsInAVehicle())
+				{
+					return false;
+				}
+
+				// Make sure we're also not exiting the vehicle at the moment
+				/*IServerVehicle *pVehicleServer = pPlayer->GetVehicle();
+				if (pVehicleServer == NULL)
+				return false;
+
+				if (pVehicleServer->IsPassengerExiting())
+				return false;*/
+			}
+
+			if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES))
+			{
+				if (pPlayer->IsInAVehicle())
+				{
+					return false;
+				}
+			}
+
+			// TODO Make bots stuff
+			/*if (HasSpawnFlags(SF_TRIGGER_DISALLOW_BOTS))
+			{
+			if (pPlayer->IsFakeClient())
+			return false;
+			}*/
+		}
+
+		return true;
+
+		// TODO Make filter stuff
+		// CBaseFilter *pFilter = m_hFilter.Get();
+		// return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
+	}
+	return false;
+}
+
+void C_BaseMomentumTrigger::InputEnable(inputdata_t & inputdata)
+{
+}
+
+void C_BaseMomentumTrigger::InputDisable(inputdata_t & inputdata)
+{
+}
+
+void C_BaseMomentumTrigger::InputToggle(inputdata_t & inputdata)
+{
+}
+
+void C_BaseMomentumTrigger::InputTouchTest(inputdata_t & inputdata)
+{
+}
+
+void C_BaseMomentumTrigger::InputStartTouch(inputdata_t & inputdata)
+{
+}
+
+void C_BaseMomentumTrigger::InputEndTouch(inputdata_t & inputdata)
+{
+}
+
+void C_BaseMomentumTrigger::StartTouch(CBaseEntity * pOther)
+{
+}
+
+void C_BaseMomentumTrigger::EndTouch(CBaseEntity * pOther)
+{
+}
+
+bool C_BaseMomentumTrigger::IsTouching(CBaseEntity * pOther)
+{
+	return false;
+}
+
+CBaseEntity * C_BaseMomentumTrigger::GetTouchedEntityOfType(const char * sClassName)
+{
+	return nullptr;
+}
+
+bool C_BaseMomentumTrigger::PointIsWithin(const Vector & vecPoint)
+{
+	Ray_t ray;
+	trace_t tr;
+	ICollideable *pCollide = CollisionProp();
+	ray.Init(vecPoint, vecPoint);
+	enginetrace->ClipRayToCollideable(ray, MASK_ALL, pCollide, &tr);
+	return (tr.startsolid);
+}
+
 void C_BaseMomentumTrigger::UpdatePartitionListEntry()
 {
 	::partition->RemoveAndInsert( 
@@ -38,109 +182,6 @@ void TriggerProxy_Model(const CRecvProxyData *pData, void *pStruct, void *pOut)
 		Q_strncpy((char *)entity->m_iszModel.Get(), pData->m_Value.m_pString, MAX_TRIGGER_NAME);
 		entity->PhysicsTouchTriggers();
 	}
-}
-
-IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseTrigger, CBaseTrigger)
-	RecvPropString(RECVINFO(m_iszTarget)),
-	//RecvPropString(RECVINFO(m_iszModel), NULL, TriggerProxy_Model),
-END_RECV_TABLE();
-
-BEGIN_PREDICTION_DATA( C_BaseMomentumTrigger )
-	DEFINE_FIELD(m_iszTarget, FIELD_STRING),
-	//DEFINE_FIELD(m_iszModel, FIELD_STRING),
-END_PREDICTION_DATA()
-
-bool C_BaseMomentumTrigger::PointIsWithin(const Vector &vecPoint)
-{
-    Ray_t ray;
-    trace_t tr;
-    ICollideable *pCollide = CollisionProp();
-    ray.Init(vecPoint, vecPoint);
-    enginetrace->ClipRayToCollideable(ray, MASK_ALL, pCollide, &tr);
-    return (tr.startsolid);
-}
-
-bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity *pOther)
-{
-    // First test spawn flag filters
-    if (HasSpawnFlags(SF_TRIGGER_ALLOW_ALL) ||
-        (HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS) && (pOther->GetFlags() & FL_CLIENT)) ||
-        (HasSpawnFlags(SF_TRIGGER_ALLOW_NPCS) && (pOther->GetFlags() & FL_NPC)) ||
-        (HasSpawnFlags(SF_TRIGGER_ALLOW_PUSHABLES) && FClassnameIs(pOther, "func_pushable")) ||
-        (HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS))
-    {
-        if (pOther->GetFlags() & FL_NPC)
-        {
-            // TODO Make npc stuff
-            /*CAI_BaseNPC *pNPC = pOther->MyNPCPointer();
-
-            if (HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS))
-            {
-                if (!pNPC || !pNPC->IsPlayerAlly())
-                {
-                    return false;
-                }
-            }
-
-            if (HasSpawnFlags(SF_TRIGGER_ONLY_NPCS_IN_VEHICLES))
-            {
-                if (!pNPC || !pNPC->IsInAVehicle())
-                    return false;
-            }*/
-            Msg("[Client] PassesTriggerFilters is NPC");
-            return false;
-        }
-
-        bool bOtherIsPlayer = pOther->IsPlayer();
-
-        if (bOtherIsPlayer)
-        {
-            CBasePlayer *pPlayer = (CBasePlayer *)pOther;
-            if (!pPlayer->IsAlive())
-                return false;
-
-            // TODO Make vehicle stuff
-            if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES))
-            {
-                if (!pPlayer->IsInAVehicle())
-                {
-                    Msg("[Client] PassesTriggerFilters is not inside vehicle");
-                    return false;
-                }
-
-                // Make sure we're also not exiting the vehicle at the moment
-                /*IServerVehicle *pVehicleServer = pPlayer->GetVehicle();
-                if (pVehicleServer == NULL)
-                    return false;
-
-                if (pVehicleServer->IsPassengerExiting())
-                    return false;*/
-            }
-
-            if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES))
-            {
-                if (pPlayer->IsInAVehicle())
-                {
-                    Msg("[Client] PassesTriggerFilters is inside vehicle");
-                    return false;
-                }
-            }
-
-            // TODO Make bots stuff
-            /*if (HasSpawnFlags(SF_TRIGGER_DISALLOW_BOTS))
-            {
-                if (pPlayer->IsFakeClient())
-                    return false;
-            }*/
-        }
-
-        return true;
-
-        // TODO Make filter stuff
-        // CBaseFilter *pFilter = m_hFilter.Get();
-        // return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
-    }
-    return false;
 }
 
 void C_BaseMomentumTrigger::Spawn()
@@ -356,7 +397,6 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 
 	pOther->m_vecNetworkOrigin = tmp;
 	pOther->SetLocalOrigin(tmp);
-	//pOther->SetAbsOrigin(tmp);
 
 	C_BasePlayer* player = C_BasePlayer::GetLocalPlayer();
 	if (player == pOther)
@@ -506,5 +546,59 @@ void C_TriggerPush::Touch(CBaseEntity * pOther)
 			pOther->AddFlag(FL_BASEVELOCITY);
 		}
 		break;
+	}
+}
+
+LINK_ENTITY_TO_CLASS(trigger_multiple, C_TriggerMultiple);
+
+IMPLEMENT_CLIENTCLASS_DT(C_TriggerMultiple, DT_TriggerMultiple, CTriggerMultiple)
+END_RECV_TABLE();
+
+void C_TriggerMultiple::Spawn(void)
+{
+	BaseClass::Spawn();
+
+	if (m_flWait == 0)
+	{
+		m_flWait = 0.2;
+	}
+
+	SetTouch( &C_TriggerMultiple::MultiTouch );
+}
+
+void C_TriggerMultiple::MultiTouch(CBaseEntity * pOther)
+{
+	if (PassesTriggerFilters(pOther))
+	{
+		ActivateMultiTrigger( pOther );
+	}
+}
+
+void C_TriggerMultiple::MultiWaitOver(void)
+{
+	SetThink( NULL );
+}
+
+void C_TriggerMultiple::ActivateMultiTrigger(CBaseEntity * pActivator)
+{
+	if (GetNextThink() > gpGlobals->curtime)
+		return;         // still waiting for reset time
+
+	m_hActivator = pActivator;
+
+	//m_OnTrigger.FireOutput(m_hActivator, this);
+
+	if (m_flWait > 0)
+	{
+		SetThink( &C_TriggerMultiple::MultiWaitOver );
+		SetNextThink( gpGlobals->curtime + m_flWait );
+	}
+	else
+	{
+		// we can't just remove (self) here, because this is a touch function
+		// called while C code is looping through area links...
+		SetTouch( NULL );
+		SetNextThink( gpGlobals->curtime + 0.1f );
+		SetThink(  &C_TriggerMultiple::SUB_Remove );
 	}
 }

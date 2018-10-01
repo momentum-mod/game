@@ -40,6 +40,7 @@ extern ConVar hl2_episodic;
 #define MAX_TRIGGER_NAME 32
 #define MAX_LANDMARK_NAME 32
 #define	MAX_POINT_NAME 32
+#define	MAX_FILTER_NAME 32
 
 // How many bits are used to transmit parent attachment indices?
 #define NUM_PARENTATTACHMENT_BITS	6
