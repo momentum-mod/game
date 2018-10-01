@@ -17,7 +17,7 @@
 #include "tier0/memdbgon.h"
 
 #ifdef CLIENT_DLL
-extern CBaseEntity *FindEntityByClassname(CBaseEntity *pEnt, const char *szName);
+extern CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const int iCRC);
 #endif
 
 CMomentumBhopBlockFixSystem::CMomentumBhopBlockFixSystem(const char* pName) : CAutoGameSystem(pName)
@@ -37,10 +37,15 @@ void CMomentumBhopBlockFixSystem::LevelShutdownPostEntity()
 
 void CMomentumBhopBlockFixSystem::FindBhopBlocks()
 {
-    //  ---- func_door ----
-    CBaseEntity *ent = nullptr;
+	//  ---- func_door ----
+	CBaseEntity *ent = nullptr;
 #ifdef CLIENT_DLL
-    while ((ent = FindEntityByClassname(ent, "func_door")) != nullptr)
+	CRC32_t crc;
+	CRC32_Init(&crc);
+	CRC32_ProcessBuffer(&crc, "func_door", Q_strlen("func_door"));
+	CRC32_Final(&crc);
+
+    while ((ent = FindEntityByClassnameCRC(ent, crc)) != nullptr)
 #else
     while ((ent = gEntList.FindEntityByClassname(ent, "func_door")) != nullptr)
 #endif
@@ -67,9 +72,13 @@ void CMomentumBhopBlockFixSystem::FindBhopBlocks()
     }
     ent = nullptr;
 
-    // ---- func_button ----
+	// ---- func_button ----
 #ifdef CLIENT_DLL
-    while ((ent = FindEntityByClassname(ent, "func_button")) != nullptr)
+	CRC32_Init(&crc);
+	CRC32_ProcessBuffer(&crc, "func_button", Q_strlen("func_button"));
+	CRC32_Final(&crc);
+
+    while ((ent = FindEntityByClassnameCRC(ent, crc)) != nullptr)
 #else
     while ((ent = gEntList.FindEntityByClassname(ent, "func_button")) != nullptr)
 #endif

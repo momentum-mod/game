@@ -126,9 +126,8 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
 
 IMPLEMENT_SERVERCLASS_ST(CBaseTrigger, DT_BaseTrigger)
-	SendPropString(SENDINFO(m_iszTarget)),
-	SendPropString(SENDINFO(m_iszFilter)),
-	//SendPropString(SENDINFO(m_iszModel)),
+	SendPropInt(SENDINFO(m_iTargetCRC)),
+	SendPropInt(SENDINFO(m_iFilterCRC)),
 END_SEND_TABLE()
 
 CBaseTrigger::CBaseTrigger()
@@ -162,10 +161,25 @@ void CBaseTrigger::InputTouchTest( inputdata_t &inputdata )
 //------------------------------------------------------------------------------
 void CBaseTrigger::Spawn()
 {
-	Q_strncpy(m_iszTarget.GetForModify(), STRING(m_target), MAX_POINT_NAME);
-	Q_strncpy(m_iszModel.GetForModify(), STRING(GetModelName()), MAX_TRIGGER_NAME);
-	Q_strncpy(m_iszFilter.GetForModify(), STRING(m_iFilterName), MAX_FILTER_NAME);
-	
+	CRC32_t crc;
+	if (Q_strlen(STRING(m_target)))
+	{
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, STRING(m_target), Q_strlen(STRING(m_target)));
+		CRC32_Final(&crc);
+
+		m_iTargetCRC = crc;
+	}
+
+	if (Q_strlen(STRING(m_iFilterName)))
+	{
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, STRING(m_iFilterName), Q_strlen(STRING(m_iFilterName)));
+		CRC32_Final(&crc);
+
+		m_iFilterCRC = crc;
+	}
+
 	if ( HasSpawnFlags( SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS ) || HasSpawnFlags( SF_TRIGGER_ONLY_NPCS_IN_VEHICLES ) )
 	{
 		// Automatically set this trigger to work with NPC's.
@@ -2359,7 +2373,6 @@ int CTriggerPush::UpdateTransmitState()
 }
 
 LINK_ENTITY_TO_CLASS( info_teleport_destination, CPointEntity );
-
 
 //-----------------------------------------------------------------------------
 // Teleport Relative trigger

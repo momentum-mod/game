@@ -20,6 +20,7 @@
 #include "ServerNetworkProperty.h"
 #include "shareddefs.h"
 #include "engine/ivmodelinfo.h"
+#include "checksum_crc.h"
 
 class CDamageModifier;
 class CDmgAccumulator;
@@ -1591,6 +1592,7 @@ private:
 	CNetworkVarForDerived( int, m_fFlags );
 
 	string_t m_iName;	// name used to identify this entity
+	CNetworkVar(int, m_iNameCRC);
 
 	// Damage modifiers
 	friend class CDamageModifier;
@@ -1935,7 +1937,6 @@ inline void CBaseEntity::SetName( string_t newName )
 {
 	m_iName = newName;
 }
-
 
 inline bool CBaseEntity::NameMatches( const char *pszNameOrWildcard )
 {
@@ -2643,8 +2644,6 @@ public:
 	void	Spawn( void );
 	virtual int	ObjectCaps( void ) { return BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	virtual bool KeyValue( const char *szKeyName, const char *szValue );
-private:
-	CNetworkString(m_iszName, MAX_POINT_NAME);
 };
 
 // Has a position + size

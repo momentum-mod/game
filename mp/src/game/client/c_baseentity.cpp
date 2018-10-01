@@ -431,7 +431,8 @@ END_RECV_TABLE()
 
 BEGIN_RECV_TABLE_NOBASE(C_BaseEntity, DT_BaseEntity)
 	RecvPropDataTable( "AnimTimeMustBeFirst", 0, 0, &REFERENCE_RECV_TABLE(DT_AnimTimeMustBeFirst) ),
-	RecvPropInt( RECVINFO(m_flSimulationTime), 0, RecvProxy_SimulationTime ),
+	RecvPropInt( RECVINFO( m_flSimulationTime ), 0, RecvProxy_SimulationTime ),
+	RecvPropInt( RECVINFO( m_iNameCRC )),
 	RecvPropInt( RECVINFO( m_ubInterpolationFrame ) ),
 
 	RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ),
@@ -446,7 +447,7 @@ BEGIN_RECV_TABLE_NOBASE(C_BaseEntity, DT_BaseEntity)
 #else
 	RecvPropInt( RECVINFO(m_nModelIndex) ),
 #endif
-
+	
 	RecvPropInt(RECVINFO(m_fEffects), 0, RecvProxy_EffectFlags ),
 	RecvPropInt(RECVINFO(m_nRenderMode)),
 	RecvPropInt(RECVINFO(m_nRenderFX)),
@@ -491,6 +492,7 @@ BEGIN_PREDICTION_DATA_NO_BASE( C_BaseEntity )
 	// These have a special proxy to handle send/receive
 	DEFINE_PRED_TYPEDESCRIPTION( m_Collision, CCollisionProperty ),
 
+	DEFINE_PRED_FIELD( m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_MoveType, FIELD_CHARACTER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_MoveCollide, FIELD_CHARACTER, FTYPEDESC_INSENDTABLE ),
 
@@ -4843,9 +4845,9 @@ C_BaseEntity *C_BaseEntity::Instance( int iEnt )
 #pragma warning( pop )
 #endif
 
-const char *C_BaseEntity::GetName(void)
+const int C_BaseEntity::GetNameCRC(void)
 {
-	return m_iszName.Get();
+	return m_iNameCRC;
 }
 
     //-----------------------------------------------------------------------------

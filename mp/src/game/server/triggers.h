@@ -13,6 +13,7 @@
 
 #include "basetoggle.h"
 #include "entityoutput.h"
+#include "checksum_crc.h"
 
 //
 // Spawnflags
@@ -89,9 +90,8 @@ public:
 	string_t	m_iFilterName;
 	CHandle<class CBaseFilter>	m_hFilter;
 
-	CNetworkString(m_iszTarget, MAX_POINT_NAME);
-	CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
-	CNetworkString(m_iszFilter, MAX_FILTER_NAME);
+	CNetworkVar(int, m_iTargetCRC);
+	CNetworkVar(int, m_iFilterCRC);
 
 protected:
 

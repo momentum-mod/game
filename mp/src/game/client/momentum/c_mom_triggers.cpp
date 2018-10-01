@@ -21,15 +21,13 @@ static ConVar mom_endzone_color("mom_endzone_color", "FF0000FF", FCVAR_CLIENTCMD
                                 "Color of the end zone.");
 
 IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseTrigger, CBaseTrigger)
-	RecvPropString(RECVINFO(m_iszTarget)),
-	RecvPropString(RECVINFO(m_iszFilter)),
-	//RecvPropString(RECVINFO(m_iszModel), NULL, TriggerProxy_Model),
+	RecvPropInt(RECVINFO(m_iTargetCRC)),
+	RecvPropInt(RECVINFO(m_iFilterCRC)),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA( C_BaseMomentumTrigger )
-	DEFINE_FIELD(m_iszTarget, FIELD_STRING),
-	DEFINE_FIELD(m_iszFilter, FIELD_STRING),
-	//DEFINE_FIELD(m_iszModel, FIELD_STRING),
+	DEFINE_FIELD(m_iTargetCRC, FIELD_INTEGER),
+	DEFINE_FIELD(m_iFilterCRC, FIELD_INTEGER),
 END_PREDICTION_DATA()
 
 bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity * pOther)
@@ -170,18 +168,6 @@ void C_BaseMomentumTrigger::UpdatePartitionListEntry()
 		PARTITION_CLIENT_SOLID_EDICTS | PARTITION_CLIENT_RESPONSIVE_EDICTS | PARTITION_CLIENT_NON_STATIC_EDICTS,  // remove
 		PARTITION_CLIENT_TRIGGER_ENTITIES,  // add
 		CollisionProp()->GetPartitionHandle() );
-}
-
-void TriggerProxy_Model(const CRecvProxyData *pData, void *pStruct, void *pOut)
-{
-	C_BaseMomentumTrigger *entity = (C_BaseMomentumTrigger *)pStruct;
-	entity->SetModelName(pData->m_Value.m_pString);
-
-	if (entity->SetModel(pData->m_Value.m_pString))
-	{
-		Q_strncpy((char *)entity->m_iszModel.Get(), pData->m_Value.m_pString, MAX_TRIGGER_NAME);
-		entity->PhysicsTouchTriggers();
-	}
 }
 
 void C_BaseMomentumTrigger::Spawn()
@@ -327,16 +313,20 @@ END_RECV_TABLE();
 LINK_ENTITY_TO_CLASS(trigger_teleport, C_TriggerTeleport);
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerTeleport, DT_TriggerTeleport, CTriggerTeleport)
-	RecvPropString(RECVINFO(m_iszLandmark)),
+	RecvPropInt(RECVINFO(m_iLandmarkCRC)),
 END_RECV_TABLE();
 
-CBaseEntity *FindEntityByClassname(CBaseEntity *pEnt, const char *szName)
+BEGIN_PREDICTION_DATA( C_TriggerTeleport )
+	DEFINE_FIELD(m_iLandmarkCRC, FIELD_INTEGER),
+END_PREDICTION_DATA()
+
+CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const int iCRC)
 {
 	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
 
 	while (pNext != nullptr)
 	{
-		if (Q_strcmp(pNext->GetName(), szName) == 0)
+		if (pNext->GetNameCRC() == iCRC)
 		{
 			return pNext;
 		}
@@ -357,36 +347,33 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 	}
 
 	// The activator and caller are the same
-	pentTarget = FindEntityByClassname(pentTarget, m_iszTarget.Get());
+	pentTarget = FindEntityByClassnameCRC(pentTarget, m_iTargetCRC);
 
 	if (!pentTarget)
 	{
 		return;
 	}
 
-	Vector vecLandmarkOffset(0, 0, 0);
-	if (m_iszLandmark.Get()[0] != 0)
+	Vector tmp = pentTarget->GetAbsOrigin();
+	QAngle tmp_angle = pentTarget->GetAbsAngles();
+
+	if (m_iLandmarkCRC != 0)
 	{
 		// The activator and caller are the same
-		pentLandmark = FindEntityByClassname(pentLandmark, m_iszLandmark.Get());
+		pentLandmark = FindEntityByClassnameCRC(pentLandmark, m_iLandmarkCRC);
 
 		if (pentLandmark)
 		{
-			vecLandmarkOffset = pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
+			tmp += pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
 		}
 	}
-
-	Vector tmp = pentTarget->GetAbsOrigin();
-	QAngle tmp_angle = pentTarget->GetAbsAngles();
 
 	if (!pentLandmark && pOther->IsPlayer())
 	{
 		// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
 		tmp.z -= pOther->WorldAlignMins().z;
 	}
-
-	tmp += vecLandmarkOffset;
-	
+		
 	pOther->SetGroundEntity(NULL);
 
 	if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
@@ -419,9 +406,15 @@ void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 
 LINK_ENTITY_TO_CLASS(info_teleport_destination, C_PointEntity);
 
-IMPLEMENT_CLIENTCLASS_DT(C_PointEntity, DT_PointEntity, CPointEntity)
-	RecvPropString(RECVINFO(m_iszName)),
+IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_PointEntity, DT_PointEntity, CPointEntity)
+	RecvPropVector(RECVINFO_NAME(m_vecNetworkOrigin, m_vecOrigin)),
+	RecvPropQAngles(RECVINFO_NAME(m_angNetworkAngles, m_angRotation)),
 END_RECV_TABLE();
+
+BEGIN_PREDICTION_DATA_NO_BASE( C_PointEntity )
+	DEFINE_PRED_FIELD( m_vecNetworkOrigin, FIELD_VECTOR, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_angNetworkAngles, FIELD_VECTOR, FTYPEDESC_INSENDTABLE ),
+END_PREDICTION_DATA()
 
 void C_PointEntity::Spawn()
 {

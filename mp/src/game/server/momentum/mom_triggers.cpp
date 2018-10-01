@@ -1495,16 +1495,25 @@ DEFINE_KEYFIELD(m_iLandmark, FIELD_STRING, "landmark"),
 END_DATADESC();
 
 IMPLEMENT_SERVERCLASS_ST(CTriggerTeleport, DT_TriggerTeleport)
-	SendPropString(SENDINFO(m_iszLandmark)),
+	SendPropInt(SENDINFO(m_iLandmarkCRC)),
 END_SEND_TABLE()
 
 void CTriggerTeleport::Spawn(void)
 {
-    BaseClass::Spawn();
+	if (Q_strlen(STRING(m_iLandmark)))
+	{
+		CRC32_t crc;
 
-    Q_strncpy(m_iszLandmark.GetForModify(), STRING(m_iLandmark), MAX_LANDMARK_NAME);
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, STRING(m_iLandmark), Q_strlen(STRING(m_iLandmark)));
+		CRC32_Final(&crc);
 
-    InitTrigger();
+		m_iLandmarkCRC = crc;
+	}
+
+	BaseClass::Spawn();
+
+	InitTrigger();
 }
 
 //-----------------------------------------------------------------------------

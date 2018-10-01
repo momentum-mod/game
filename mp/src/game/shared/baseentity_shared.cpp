@@ -409,6 +409,13 @@ bool CBaseEntity::KeyValue(const char *szKeyName, const char *szValue)
 
     if (FStrEq(szKeyName, "targetname"))
     {
+		CRC32_t crc;
+
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, szValue, Q_strlen(szValue));
+		CRC32_Final(&crc);
+
+		m_iNameCRC.GetForModify() = crc;
         m_iName = AllocPooledString(szValue);
         return true;
     }

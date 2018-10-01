@@ -60,9 +60,8 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 
 	bool PointIsWithin( const Vector &vecPoint );
 
-	CNetworkString(m_iszTarget, MAX_POINT_NAME);
-	CNetworkString(m_iszModel, MAX_TRIGGER_NAME);
-	CNetworkString(m_iszFilter, MAX_FILTER_NAME);
+	CNetworkVar(int, m_iTargetCRC);
+	CNetworkVar(int, m_iFilterCRC);
 
 private:
 	bool m_bDisabled;
@@ -107,10 +106,11 @@ class C_TriggerTeleport : public C_BaseMomentumTrigger
 public:
 	DECLARE_CLASS(C_TriggerTeleport, C_BaseMomentumTrigger);
 	DECLARE_CLIENTCLASS();
+	DECLARE_PREDICTABLE();
 
 	void StartTouch(CBaseEntity *pOther) OVERRIDE;
 
-	CNetworkString(m_iszLandmark, MAX_LANDMARK_NAME);
+	CNetworkVar(int, m_iLandmarkCRC);
 };
 
 class C_TriggerPush : public C_BaseMomentumTrigger
@@ -151,6 +151,7 @@ class C_PointEntity : public C_BaseEntity
   public:
     DECLARE_CLASS(C_PointEntity, C_BaseEntity);
     DECLARE_CLIENTCLASS();
+	DECLARE_PREDICTABLE();
 
     void Spawn() OVERRIDE;
 };

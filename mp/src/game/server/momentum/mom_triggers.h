@@ -564,6 +564,5 @@ class CTriggerTeleport : public CBaseTrigger
     int UpdateTransmitState() OVERRIDE;
 
     string_t m_iLandmark;
-	CNetworkString(m_iszLandmark, MAX_LANDMARK_NAME);
-
+	CNetworkVar(int, m_iLandmarkCRC);
 };
