@@ -611,6 +611,13 @@ void CPrediction::SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *
 	VPROF( "CPrediction::SetupMove" );
 
 	move->m_bFirstRunOfFunctions = IsFirstTimePredicted();
+
+    // This is needed to re-run CategorizePosition so after a teleport it can predicts correctly ground entity and so on.
+    move->m_bGameCodeMovedPlayer = false;
+    if (player->GetPreviouslyPredictedOrigin() != player->GetAbsOrigin())
+    {
+        move->m_bGameCodeMovedPlayer = true;
+    }
 	
 	move->m_nPlayerHandle = player->GetClientHandle();
 	move->m_vecVelocity		= player->GetAbsVelocity();
