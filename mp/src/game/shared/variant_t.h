@@ -11,12 +11,8 @@
 #pragma once
 #endif
 
-
-#include "ehandle.h"
+#include "cbase.h"
 #include "mathlib/vmatrix.h"
-
-class CBaseEntity;
-
 
 //
 // A variant class for passing data in entity input/output connections.
