@@ -415,7 +415,7 @@ bool CBaseEntity::KeyValue(const char *szKeyName, const char *szValue)
 		CRC32_ProcessBuffer(&crc, szValue, Q_strlen(szValue));
 		CRC32_Final(&crc);
 
-		m_iNameCRC.GetForModify() = crc;
+		m_iNameCRC = crc;
         m_iName = AllocPooledString(szValue);
         return true;
     }

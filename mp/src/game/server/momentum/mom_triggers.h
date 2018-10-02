@@ -564,5 +564,5 @@ class CTriggerTeleport : public CBaseTrigger
     int UpdateTransmitState() OVERRIDE;
 
     string_t m_iLandmark;
-	CNetworkVar(int, m_iLandmarkCRC);
+	CNetworkVar(unsigned int, m_iLandmarkCRC);
 };

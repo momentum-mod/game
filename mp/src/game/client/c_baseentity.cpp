@@ -432,10 +432,10 @@ END_RECV_TABLE()
 BEGIN_RECV_TABLE_NOBASE(C_BaseEntity, DT_BaseEntity)
 	RecvPropDataTable( "AnimTimeMustBeFirst", 0, 0, &REFERENCE_RECV_TABLE(DT_AnimTimeMustBeFirst) ),
 	RecvPropInt( RECVINFO( m_flSimulationTime ), 0, RecvProxy_SimulationTime ),
-	RecvPropInt( RECVINFO( m_iNameCRC )),
-	RecvPropInt( RECVINFO( m_ubInterpolationFrame ) ),
 
-	RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ),
+	RecvPropVector( RECVINFO_NAME( m_vecNetworkOrigin, m_vecOrigin ) ), 
+    RecvPropInt(RECVINFO(m_ubInterpolationFrame)),
+    RecvPropInt(RECVINFO(m_iNameCRC)),
 #if PREDICTION_ERROR_CHECK_LEVEL > 1 
 	RecvPropVector( RECVINFO_NAME( m_angNetworkAngles, m_angRotation ) ),
 #else
@@ -4845,7 +4845,7 @@ C_BaseEntity *C_BaseEntity::Instance( int iEnt )
 #pragma warning( pop )
 #endif
 
-const int C_BaseEntity::GetNameCRC(void)
+const unsigned int C_BaseEntity::GetNameCRC(void)
 {
 	return m_iNameCRC;
 }
@@ -6074,7 +6074,24 @@ bool C_BaseEntity::IsFloating()
 {
 	// NOTE: This is only here because it's called by game shared.
 	// The server uses it to lower falling impact damage
-	return false;
+    if (!IsEFlagSet(EFL_TOUCHING_FLUID))
+        return false;
+
+    IPhysicsObject *pObject = VPhysicsGetObject();
+    if (!pObject)
+        return false;
+
+    int nMaterialIndex = pObject->GetMaterialIndex();
+
+    float flDensity;
+    float flThickness;
+    float flFriction;
+    float flElasticity;
+    physprops->GetPhysicsProperties(nMaterialIndex, &flDensity, &flThickness, &flFriction, &flElasticity);
+
+    // FIXME: This really only works for water at the moment..
+    // Owing the check for density == 1000
+    return (flDensity < 1000.0f);
 }
 
 
