@@ -7993,6 +7993,7 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 
 		SendPropInt			( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
 		SendPropFloat		( SENDINFO( m_flLaggedMovementValue ), 0, SPROP_NOSCALE ),
+        SendPropVector      ( SENDINFO( m_vecPreviouslyPredictedOrigin ), 0, SPROP_NOSCALE),
 
 	END_SEND_TABLE()
 

@@ -1168,7 +1168,7 @@ protected:
 	float	m_flVehicleViewFOV;			// FOV of the vehicle driver
 	int		m_nVehicleViewSavedFrame;	// Used to mark which frame was the last one the view was calculated for
 
-	Vector m_vecPreviouslyPredictedOrigin; // Used to determine if non-gamemovement game code has teleported, or tweaked the player's origin
+	CNetworkVar( Vector, m_vecPreviouslyPredictedOrigin ); // Used to determine if non-gamemovement game code has teleported, or tweaked the player's origin
 	int		m_nBodyPitchPoseParam;
 
 	CNetworkString( m_szLastPlaceName, MAX_PLACE_NAME_LENGTH );

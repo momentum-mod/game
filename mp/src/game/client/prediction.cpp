@@ -614,7 +614,7 @@ void CPrediction::SetupMove( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper *
 
     // This is needed to re-run CategorizePosition so after a teleport it can predicts correctly ground entity and so on.
     move->m_bGameCodeMovedPlayer = false;
-    if (player->GetPreviouslyPredictedOrigin() != player->GetAbsOrigin())
+    if (player->GetPreviouslyPredictedOrigin() != player->GetNetworkOrigin())
     {
         move->m_bGameCodeMovedPlayer = true;
     }
@@ -714,6 +714,8 @@ void CPrediction::FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *m
 	player->SetLocalAngles(move->m_vecAngles);
 	player->SetLocalVelocity(move->m_vecVelocity);
 	player->SetLocalOrigin( move->GetAbsOrigin() );
+
+    player->SetPreviouslyPredictedOrigin( move->GetAbsOrigin() );
 
 	IClientVehicle *pVehicle = player->GetVehicle();
 	if (pVehicle)
