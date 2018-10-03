@@ -12,7 +12,7 @@
 #endif
 
 #include "basetoggle.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "checksum_crc.h"
 
 //

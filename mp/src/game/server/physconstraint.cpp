@@ -7,7 +7,7 @@
 
 #include "cbase.h"
 #include "physics.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "engine/IEngineSound.h"
 #include "igamesystem.h"
 #include "physics_saverestore.h"

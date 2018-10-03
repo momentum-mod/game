@@ -12,7 +12,7 @@
 #endif
 
 #include "baseentity.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 
 
 #define SF_MESSAGE_ONCE			0x0001		// Fade in, not out

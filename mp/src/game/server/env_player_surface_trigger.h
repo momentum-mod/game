@@ -11,7 +11,7 @@
 #endif
 
 #include "baseentity.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 
 //-----------------------------------------------------------------------------
 // Purpose: Entity that fires outputs whenever the player stands on a different surface

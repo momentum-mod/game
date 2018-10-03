@@ -11,7 +11,7 @@
 #pragma once
 
 #include "basetoggle.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 
 
 class IPhysicsFluidController;

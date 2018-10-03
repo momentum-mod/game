@@ -8,9 +8,9 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "entityinput.h"
-#include "entityoutput.h"
-#include "eventqueue.h"
+#include "mom_entityinput.h"
+#include "mom_entityoutput.h"
+#include "mom_eventqueue.h"
 #include "mathlib/mathlib.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

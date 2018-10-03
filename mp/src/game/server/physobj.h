@@ -15,7 +15,7 @@
 #include "physics.h"
 #endif
 
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "func_break.h"
 #include "player_pickup.h"
 

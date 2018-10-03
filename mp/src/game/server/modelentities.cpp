@@ -5,7 +5,7 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "ndebugoverlay.h"
 #include "modelentities.h"
 

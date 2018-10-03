@@ -31,6 +31,10 @@ BEGIN_DATADESC( CBaseFilter )
 
 END_DATADESC()
 
+IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseFilter, DT_BaseFilter)
+	SendPropInt(SENDINFO(m_iNameCRC)),
+END_SEND_TABLE();
+
 //-----------------------------------------------------------------------------
 
 bool CBaseFilter::PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
@@ -240,10 +244,12 @@ bool CFilterMultiple::PassesDamageFilterImpl(const CTakeDamageInfo &info)
 class CFilterName : public CBaseFilter
 {
 	DECLARE_CLASS( CFilterName, CBaseFilter );
+	DECLARE_NETWORKCLASS();
 	DECLARE_DATADESC();
 
 public:
 	string_t m_iFilterName;
+	CNetworkVar(int, m_iFilterNameCRC);
 
 	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
 	{
@@ -268,6 +274,9 @@ BEGIN_DATADESC( CFilterName )
 
 END_DATADESC()
 
+IMPLEMENT_SERVERCLASS_ST(CFilterName, DT_FilterName)
+	SendPropInt(SENDINFO(m_iFilterNameCRC)),
+END_SEND_TABLE();
 
 
 // ###################################################################

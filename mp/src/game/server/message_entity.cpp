@@ -8,7 +8,7 @@
 #include "cbase.h"
 #include "basecombatweapon.h"
 #include "explode.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "gamerules.h"
 #include "ammodef.h"
 #include "in_buttons.h"

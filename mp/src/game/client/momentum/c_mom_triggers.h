@@ -7,11 +7,10 @@
 
 #include "cbase.h"
 #include "c_mom_basetoggle.h"
+#include "c_mom_filters.h"
 #include "prediction.h"
 
-//
-// Spawnflags
-//
+#include "mom_entityoutput.h"
 
 class C_BaseMomentumTrigger : public C_BaseToggle
 {
@@ -24,15 +23,12 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 
 	void UpdatePartitionListEntry() OVERRIDE;
 	void Spawn() OVERRIDE;
-
-	/*void Activate( void );
-	virtual void PostClientActive( void );
-	void InitTrigger( void );
-
+	
 	void Enable( void );
 	void Disable( void );
+
 	void UpdateOnRemove( void );
-	void TouchTest(  void );*/
+	void TouchTest(  void );
 
 	// Input handlers
 	virtual void InputEnable( inputdata_t &inputdata );
@@ -41,6 +37,9 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 	virtual void InputTouchTest ( inputdata_t &inputdata );
 	virtual void InputStartTouch( inputdata_t &inputdata );
 	virtual void InputEndTouch( inputdata_t &inputdata );
+
+	virtual void OnStartTouchAll(CBaseEntity *pOther);
+	virtual void OnEndTouchAll(CBaseEntity *pOther);
 
 	virtual bool UsesFilter( void ){ return ( m_hFilter.Get() != NULL ); }
 	virtual bool PassesTriggerFilters(CBaseEntity *pOther);
@@ -51,8 +50,6 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 
 	virtual void OnStartTouch(CBaseEntity *pOther) {}
 	virtual void OnEndTouch(CBaseEntity *pOther) {}
-	virtual void StartTouchAll() {}
-	virtual void EndTouchAll() {}
 
 	bool IsTouching( CBaseEntity *pOther );
 
@@ -63,10 +60,20 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 	CNetworkVar(int, m_iTargetCRC);
 	CNetworkVar(int, m_iFilterCRC);
 
-private:
+	// Outputs
+	COutputEvent m_OnStartTouch;
+	COutputEvent m_OnStartTouchAll;
+	COutputEvent m_OnEndTouch;
+	COutputEvent m_OnEndTouchAll;
+	COutputEvent m_OnTouching;
+	COutputEvent m_OnNotTouching;
+
+	// Entities currently being touched by this trigger
+	CUtlVector< EHANDLE >	m_hTouchingEntities;
+
 	bool m_bDisabled;
 	string_t m_iFilterName;
-	CHandle<class CBaseFilter> m_hFilter;
+	CHandle<class C_BaseFilter> m_hFilter;
 };
 
 class C_TriggerTimerStart : public C_BaseMomentumTrigger

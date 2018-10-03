@@ -25,8 +25,8 @@
 #pragma once
 #endif
 
-#include "baseentity.h"
-#include "entityoutput.h"
+#include "cbase.h"
+#include "mom_entityoutput.h"
 
 // ###################################################################
 //	> BaseFilter
@@ -34,6 +34,7 @@
 class CBaseFilter : public CLogicalEntity
 {
 	DECLARE_CLASS( CBaseFilter, CLogicalEntity );
+	DECLARE_NETWORKCLASS();
 
 public:
 

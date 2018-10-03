@@ -10,7 +10,7 @@
 #include "entitylist.h"
 #include "util.h"
 #include "physics.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "player.h"
 #include "in_buttons.h"
 #include "basecombatweapon.h"

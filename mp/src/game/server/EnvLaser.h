@@ -13,7 +13,7 @@
 
 #include "baseentity.h"
 #include "beam_shared.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 
 
 class CSprite;

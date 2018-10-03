@@ -19,7 +19,7 @@
 #include "igamesystem.h"
 #include "mapentities_shared.h"
 #include "point_template.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "TemplateEntities.h"
 #include "utldict.h"
 

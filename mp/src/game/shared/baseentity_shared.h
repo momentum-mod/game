@@ -11,7 +11,6 @@
 #pragma once
 #endif
 
-
 extern ConVar hl2_episodic;
 
 // Simple shared header file for common base entities
@@ -42,6 +41,19 @@ extern ConVar hl2_episodic;
 
 // Maximum number of vphysics objects per entity
 #define VPHYSICS_MAX_OBJECT_LIST_COUNT	1024
+
+#include "variant_t.h"
+
+//
+// Structure passed to input handlers.
+//
+struct inputdata_t
+{
+	CBaseEntity *pActivator;		// The entity that initially caused this chain of output events.
+	CBaseEntity *pCaller;			// The entity that fired this particular output.
+	variant_t value;				// The data parameter for this output.
+	int nOutputID;					// The unique ID of the output that was fired.
+};
 
 //-----------------------------------------------------------------------------
 // For invalidate physics recursive

@@ -28,7 +28,7 @@
 
 // Game DLL Headers
 #include "soundent.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "fmtstr.h"
 #include "gameweaponmanager.h"
 

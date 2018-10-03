@@ -20,15 +20,98 @@ static ConVar mom_startzone_color("mom_startzone_color", "00FF00FF", FCVAR_CLIEN
 static ConVar mom_endzone_color("mom_endzone_color", "FF0000FF", FCVAR_CLIENTCMD_CAN_EXECUTE | FCVAR_ARCHIVE,
                                 "Color of the end zone.");
 
+CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const int iCRC)
+{
+	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
+
+	while (pNext != nullptr)
+	{
+		if (pNext->GetNameCRC() == iCRC)
+		{
+			return pNext;
+		}
+
+		pNext = cl_entitylist->NextBaseEntity(pNext);
+	}
+	return nullptr;
+}
+
+void RecvProxy_FilterCRC(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+	C_BaseMomentumTrigger *entity = (C_BaseMomentumTrigger *) pStruct;
+
+	entity->m_iFilterCRC = pData->m_Value.m_Int;
+
+	entity->m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByClassnameCRC(nullptr, entity->m_iFilterCRC));
+}
+
 IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseTrigger, CBaseTrigger)
 	RecvPropInt(RECVINFO(m_iTargetCRC)),
-	RecvPropInt(RECVINFO(m_iFilterCRC)),
+	RecvPropInt(RECVINFO(m_iFilterCRC), NULL, RecvProxy_FilterCRC),
 END_RECV_TABLE();
 
 BEGIN_PREDICTION_DATA( C_BaseMomentumTrigger )
 	DEFINE_FIELD(m_iTargetCRC, FIELD_INTEGER),
 	DEFINE_FIELD(m_iFilterCRC, FIELD_INTEGER),
 END_PREDICTION_DATA()
+
+void C_BaseMomentumTrigger::Enable(void)
+{
+	m_bDisabled = false;
+
+	if ( VPhysicsGetObject())
+	{
+		VPhysicsGetObject()->EnableCollisions( true );
+	}
+
+	if (!IsSolidFlagSet( FSOLID_TRIGGER ))
+	{
+		AddSolidFlags( FSOLID_TRIGGER ); 
+		PhysicsTouchTriggers();
+	}
+}
+
+void C_BaseMomentumTrigger::Disable(void)
+{
+	m_bDisabled = true;
+
+	if ( VPhysicsGetObject())
+	{
+		VPhysicsGetObject()->EnableCollisions( false );
+	}
+
+	if (IsSolidFlagSet(FSOLID_TRIGGER))
+	{
+		RemoveSolidFlags( FSOLID_TRIGGER ); 
+		PhysicsTouchTriggers();
+	}
+}
+
+void C_BaseMomentumTrigger::UpdateOnRemove(void)
+{
+	if ( VPhysicsGetObject())
+	{
+		VPhysicsGetObject()->RemoveTrigger();
+	}
+
+	BaseClass::UpdateOnRemove();
+}
+
+void C_BaseMomentumTrigger::TouchTest(void)
+{
+	// If the trigger is disabled don't test to see if anything is touching it.
+	if ( !m_bDisabled )
+	{
+		if ( m_hTouchingEntities.Count() !=0 )
+		{
+			m_OnTouching.FireOutput( this, this );
+		}
+		else
+		{
+			m_OnNotTouching.FireOutput( this, this );
+		}
+	}
+}
 
 bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity * pOther)
 {
@@ -103,53 +186,147 @@ bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity * pOther)
 
 		return true;
 
-		// TODO Make filter stuff
-		// CBaseFilter *pFilter = m_hFilter.Get();
-		// return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
+		C_BaseFilter *pFilter = m_hFilter.Get();
+		return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
 	}
 	return false;
 }
 
 void C_BaseMomentumTrigger::InputEnable(inputdata_t & inputdata)
 {
+	Enable();
 }
 
 void C_BaseMomentumTrigger::InputDisable(inputdata_t & inputdata)
 {
+	Disable();
 }
 
 void C_BaseMomentumTrigger::InputToggle(inputdata_t & inputdata)
 {
+	if (IsSolidFlagSet( FSOLID_TRIGGER ))
+	{
+		RemoveSolidFlags(FSOLID_TRIGGER);
+	}
+	else
+	{
+		AddSolidFlags(FSOLID_TRIGGER);
+	}
+
+	PhysicsTouchTriggers();
 }
 
 void C_BaseMomentumTrigger::InputTouchTest(inputdata_t & inputdata)
 {
+	TouchTest();
 }
 
 void C_BaseMomentumTrigger::InputStartTouch(inputdata_t & inputdata)
 {
+	//Pretend we just touched the trigger.
+	StartTouch( inputdata.pCaller );
 }
 
 void C_BaseMomentumTrigger::InputEndTouch(inputdata_t & inputdata)
 {
+	//And... pretend we left the trigger.
+	EndTouch( inputdata.pCaller );	
+}
+
+void C_BaseMomentumTrigger::OnStartTouchAll(CBaseEntity * pOther)
+{
+	m_OnStartTouchAll.FireOutput( pOther, this );
+}
+
+void C_BaseMomentumTrigger::OnEndTouchAll(CBaseEntity * pOther)
+{
+	m_OnEndTouchAll.FireOutput(pOther, this);
 }
 
 void C_BaseMomentumTrigger::StartTouch(CBaseEntity * pOther)
 {
+	if (PassesTriggerFilters(pOther) )
+	{
+		EHANDLE hOther;
+		hOther = pOther;
+
+		bool bAdded = false;
+		if ( m_hTouchingEntities.Find( hOther ) == m_hTouchingEntities.InvalidIndex() )
+		{
+			m_hTouchingEntities.AddToTail( hOther );
+			bAdded = true;
+		}
+
+		m_OnStartTouch.FireOutput(pOther, this);
+
+		if ( bAdded && ( m_hTouchingEntities.Count() == 1 ) )
+		{
+			// First entity to touch us that passes our filters
+			OnStartTouchAll( pOther );
+		}
+	}
 }
 
 void C_BaseMomentumTrigger::EndTouch(CBaseEntity * pOther)
 {
+	if ( IsTouching( pOther ) )
+	{
+		EHANDLE hOther;
+		hOther = pOther;
+		m_hTouchingEntities.FindAndRemove( hOther );
+
+		//FIXME: Without this, triggers fire their EndTouch outputs when they are disabled!
+		//if ( !m_bDisabled )
+		//{
+		m_OnEndTouch.FireOutput(pOther, this);
+		//}
+
+		// If there are no more entities touching this trigger, fire the lost all touches
+		// Loop through the touching entities backwards. Clean out old ones, and look for existing
+		bool bFoundOtherTouchee = false;
+		int iSize = m_hTouchingEntities.Count();
+		for ( int i = iSize-1; i >= 0; i-- )
+		{
+			EHANDLE hOther;
+			hOther = m_hTouchingEntities[i];
+
+			if ( !hOther )
+			{
+				m_hTouchingEntities.Remove( i );
+			}
+			else
+			{
+				bFoundOtherTouchee = true;
+			}
+		}
+
+		//FIXME: Without this, triggers fire their EndTouch outputs when they are disabled!
+		// Didn't find one?
+		if ( !bFoundOtherTouchee /*&& !m_bDisabled*/ )
+		{
+			OnEndTouchAll( pOther );
+		}
+	}
 }
 
 bool C_BaseMomentumTrigger::IsTouching(CBaseEntity * pOther)
 {
-	return false;
+	EHANDLE hOther;
+	hOther = pOther;
+	return ( m_hTouchingEntities.Find( hOther ) != m_hTouchingEntities.InvalidIndex() );
 }
 
 CBaseEntity * C_BaseMomentumTrigger::GetTouchedEntityOfType(const char * sClassName)
 {
-	return nullptr;
+	int iCount = m_hTouchingEntities.Count();
+	for ( int i = 0; i < iCount; i++ )
+	{
+		CBaseEntity *pEntity = m_hTouchingEntities[i];
+		if ( FClassnameIs( pEntity, sClassName ) )
+			return pEntity;
+	}
+
+	return NULL;
 }
 
 bool C_BaseMomentumTrigger::PointIsWithin(const Vector & vecPoint)
@@ -320,26 +497,10 @@ BEGIN_PREDICTION_DATA( C_TriggerTeleport )
 	DEFINE_FIELD(m_iLandmarkCRC, FIELD_INTEGER),
 END_PREDICTION_DATA()
 
-CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const int iCRC)
-{
-	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
-
-	while (pNext != nullptr)
-	{
-		if (pNext->GetNameCRC() == iCRC)
-		{
-			return pNext;
-		}
-
-		pNext = cl_entitylist->NextBaseEntity(pNext);
-	}
-	return nullptr;
-}
-
 void C_TriggerTeleport::StartTouch(CBaseEntity *pOther)
 {
-	CBaseEntity *pentTarget = NULL;
-	CBaseEntity *pentLandmark = NULL;
+	CBaseEntity *pentTarget = nullptr;
+	CBaseEntity *pentLandmark = nullptr;
 
 	if (!PassesTriggerFilters(pOther))
 	{

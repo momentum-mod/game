@@ -1,5 +1,6 @@
-#ifndef DOORFIX_H
-#define DOORFIX_H
+#ifndef _MOM_BLOCKFIX_H_
+#define _MOM_BLOCKFIX_H_
+
 #ifdef _WIN32
 #pragma once
 #endif
@@ -57,4 +58,4 @@ class CTeleportTriggerTraceEnum : public IEntityEnumerator
 
 extern CMomentumBhopBlockFixSystem *g_MomentumBlockFixer;
 
-#endif // DOORFIX_H
+#endif

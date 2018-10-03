@@ -6,7 +6,7 @@
 
 #include "cbase.h"
 #include "baseentity.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "convar.h"
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

@@ -26,7 +26,6 @@
 #include "ai_hull.h"
 #include "ai_utils.h"
 #include "ai_moveshoot.h"
-#include "entityoutput.h"
 #include "utlvector.h"
 #include "activitylist.h"
 #include "bitstring.h"
@@ -37,6 +36,7 @@
 #include "ai_navigator.h"
 #include "tier1/functors.h"
 
+#include "mom_entityoutput.h"
 
 #define PLAYER_SQUADNAME "player_squad"
 

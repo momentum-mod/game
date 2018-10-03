@@ -9,7 +9,7 @@
 #include "sceneentity.h"
 #include "ai_playerally.h"
 #include "saverestore_utlmap.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "ai_behavior_lead.h"
 #include "gameinterface.h"
 

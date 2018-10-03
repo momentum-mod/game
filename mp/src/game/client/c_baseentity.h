@@ -861,6 +861,10 @@ public:
 	void							ToggleBBoxVisualization( int fVisFlags );
 	void							DrawBBoxVisualizations( void );
 
+	// handles an input (usually caused by outputs)
+	// returns true if the the value in the pass in should be set, false if the input is to be ignored
+	virtual bool AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID );
+
 // Methods implemented on both client and server
 public:
 	void							SetSize( const Vector &vecMin, const Vector &vecMax ); // UTIL_SetSize( pev, mins, maxs );

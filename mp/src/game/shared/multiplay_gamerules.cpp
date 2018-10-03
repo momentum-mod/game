@@ -14,12 +14,12 @@
 #include "filesystem.h"
 #include "mp_shareddefs.h"
 #include "utlbuffer.h"
+#include "mom_eventqueue.h"
 
 #ifdef CLIENT_DLL
 
 #else
 
-	#include "eventqueue.h"
 	#include "player.h"
 	#include "basecombatweapon.h"
 	#include "gamerules.h"

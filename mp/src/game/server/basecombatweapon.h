@@ -12,7 +12,7 @@
 #pragma once
 #endif
 
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "basecombatweapon_shared.h"
 
 //-----------------------------------------------------------------------------

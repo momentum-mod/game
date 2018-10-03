@@ -29,7 +29,7 @@
 #include "physics_prop_ragdoll.h"
 #include "physics_impact_damage.h"
 #include "saverestore_utlvector.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "world.h"
 #include "globalstate.h"
 #include "items.h"

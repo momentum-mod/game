@@ -9,7 +9,7 @@
 #define AI_SCRIPTCONDITIONS_H
 
 #include "baseentity.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "simtimer.h"
 #include "ai_npcstate.h"
 

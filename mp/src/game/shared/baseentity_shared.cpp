@@ -2865,3 +2865,123 @@ bool CBaseEntity::IsToolRecording() const
 #endif
 }
 #endif
+
+ConVar ent_messages_draw( "ent_messages_draw", "0", FCVAR_CHEAT, "Visualizes all entity input/output activity." );
+
+//-----------------------------------------------------------------------------
+// Purpose: calls the appropriate message mapped function in the entity according
+//			to the fired action.
+// Input  : char *szInputName - input destination
+//			*pActivator - entity which initiated this sequence of actions
+//			*pCaller - entity from which this event is sent
+// Output : Returns true on success, false on failure.
+//-----------------------------------------------------------------------------
+bool CBaseEntity::AcceptInput( const char *szInputName, CBaseEntity *pActivator, CBaseEntity *pCaller, variant_t Value, int outputID )
+{
+	if ( ent_messages_draw.GetBool() )
+	{
+		if ( pCaller != NULL )
+		{
+			NDebugOverlay::Line( pCaller->GetAbsOrigin(), GetAbsOrigin(), 255, 255, 255, false, 3 );
+			NDebugOverlay::Box( pCaller->GetAbsOrigin(), Vector(-4, -4, -4), Vector(4, 4, 4), 255, 0, 0, 0, 3 );
+		}
+
+		NDebugOverlay::Text( GetAbsOrigin(), szInputName, false, 3 );	
+		NDebugOverlay::Box( GetAbsOrigin(), Vector(-4, -4, -4), Vector(4, 4, 4), 0, 255, 0, 0, 3 );
+	}
+
+	// loop through the data description list, restoring each data desc block
+	for ( datamap_t *dmap = GetDataDescMap(); dmap != NULL; dmap = dmap->baseMap )
+	{
+		// search through all the actions in the data description, looking for a match
+		for ( int i = 0; i < dmap->dataNumFields; i++ )
+		{
+			if ( dmap->dataDesc[i].flags & FTYPEDESC_INPUT )
+			{
+				if ( !Q_stricmp(dmap->dataDesc[i].externalName, szInputName) )
+				{
+					// found a match
+
+					char szBuffer[256];
+					// mapper debug message
+					if (pCaller != NULL)
+					{
+						Q_snprintf(
+							szBuffer,
+							sizeof(szBuffer),
+							"(%0.2f) input %s: %s.%s(%s)\n",
+							gpGlobals->curtime,
+							pCaller->GetClassname(),
+							GetDebugName(),
+							szInputName,
+							Value.String() );
+					}
+					else
+					{
+						Q_snprintf( szBuffer, sizeof(szBuffer), "(%0.2f) input <NULL>: %s.%s(%s)\n", gpGlobals->curtime, GetDebugName(), szInputName, Value.String() );
+					}
+					DevMsg( 2, "%s", szBuffer );
+#ifdef GAME_DLL
+					ADD_DEBUG_HISTORY( HISTORY_ENTITY_IO, szBuffer );
+
+					if (m_debugOverlays & OVERLAY_MESSAGE_BIT)
+					{
+						DrawInputOverlay(szInputName,pCaller,Value);
+					}
+#endif
+
+					// convert the value if necessary
+					if ( Value.FieldType() != dmap->dataDesc[i].fieldType )
+					{
+						if ( !(Value.FieldType() == FIELD_VOID && dmap->dataDesc[i].fieldType == FIELD_STRING) ) // allow empty strings
+						{
+							if ( !Value.Convert( (fieldtype_t)dmap->dataDesc[i].fieldType ) )
+							{
+								// bad conversion
+								Warning( "!! ERROR: bad input/output link:\n!! %s(%s,%s) doesn't match type from %s(%s)\n", 
+									STRING(m_iClassname), GetDebugName(), szInputName, 
+									( pCaller != NULL ) ? pCaller->GetClassname() : "<null>",
+									( pCaller != NULL ) ? pCaller->GetDebugName() : "<null>" );
+								return false;
+							}
+						}
+					}
+
+					// call the input handler, or if there is none just set the value
+					inputfunc_t pfnInput = dmap->dataDesc[i].inputFunc;
+
+					if ( pfnInput )
+					{ 
+						// Package the data into a struct for passing to the input handler.
+						inputdata_t data;
+						data.pActivator = pActivator;
+						data.pCaller = pCaller;
+						data.value = Value;
+						data.nOutputID = outputID;
+
+						(this->*pfnInput)( data );
+					}
+					else if ( dmap->dataDesc[i].flags & FTYPEDESC_KEY )
+					{
+						// set the value directly
+						Value.SetOther( ((char*)this) + dmap->dataDesc[i].fieldOffset[ TD_OFFSET_NORMAL ]);
+
+						// TODO: if this becomes evil and causes too many full entity updates, then we should make
+						// a macro like this:
+						//
+						// define MAKE_INPUTVAR(x) void Note##x##Modified() { x.GetForModify(); }
+						//
+						// Then the datadesc points at that function and we call it here. The only pain is to add
+						// that function for all the DEFINE_INPUT calls.
+						NetworkStateChanged();
+					}
+
+					return true;
+				}
+			}
+		}
+	}
+
+	DevMsg( 2, "unhandled input: (%s) -> (%s,%s)\n", szInputName, STRING(m_iClassname), GetDebugName()/*,", from (%s,%s)" STRING(pCaller->m_iClassname), STRING(pCaller->m_iName)*/ );
+	return false;
+}

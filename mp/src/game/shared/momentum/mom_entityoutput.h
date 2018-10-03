@@ -6,6 +6,12 @@
 #endif
 
 #include "cbase.h"
+#include "variant_t.h"
+#include "isaverestore.h"
+#include "gamestringpool.h"
+
+#include "mom_eventqueue.h"
+#include "mom_entitylistpool.h"
 
 #define EVENT_FIRE_ALWAYS	-1
 
@@ -23,18 +29,10 @@
 	#define COutputVector C_OutputVector
 	#define COutputPositionVector C_OutputPositionVector
 	#define COutputColor32 C_OutputColor32
-
-	//
-	// Structure passed to input handlers.
-	//
-	struct inputdata_t
-	{
-		CBaseEntity *pActivator;		// The entity that initially caused this chain of output events.
-		CBaseEntity *pCaller;			// The entity that fired this particular output.
-		variant_t value;				// The data parameter for this output.
-		int nOutputID;					// The unique ID of the output that was fired.
-	};
+#else
+	#include "env_debughistory.h"
 #endif
+
 
 //-----------------------------------------------------------------------------
 // Purpose: A COutputEvent consists of an array of these CEventActions. 
@@ -97,6 +95,7 @@ public:
 protected:
 	variant_t m_Value;
 	CEventAction *m_ActionList;
+
 	DECLARE_SIMPLE_DATADESC();
 
 	CBaseEntityOutput() {} // this class cannot be created, only it's children

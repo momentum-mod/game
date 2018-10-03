@@ -56,7 +56,7 @@
 #include "props.h"
 #include "timedeventmgr.h"
 #include "gameinterface.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "hltvdirector.h"
 #if defined( REPLAY_ENABLED )
 #include "replay/iserverreplaycontext.h"

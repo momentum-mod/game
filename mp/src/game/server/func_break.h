@@ -10,7 +10,7 @@
 #define FUNC_BREAK_H
 #pragma once
 
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "props.h"
 
 typedef enum { expRandom = 0, expDirected, expUsePrecise} Explosions;

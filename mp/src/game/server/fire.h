@@ -11,7 +11,7 @@
 #pragma once
 #endif
 
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "fire_smoke.h"
 #include "plasma.h"
 

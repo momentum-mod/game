@@ -8,7 +8,7 @@
 #include "cbase.h"
 #include "engine/IEngineSound.h"
 #include "baseentity.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "recipientfilter.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

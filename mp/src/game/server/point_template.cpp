@@ -5,8 +5,8 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "entityinput.h"
-#include "entityoutput.h"
+#include "mom_entityinput.h"
+#include "mom_entityoutput.h"
 #include "TemplateEntities.h"
 #include "point_template.h"
 #include "saverestore_utlvector.h"

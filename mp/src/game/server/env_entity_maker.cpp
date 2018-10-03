@@ -7,7 +7,7 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "TemplateEntities.h"
 #include "point_template.h"
 

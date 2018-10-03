@@ -20,7 +20,8 @@
 
 #include "props.h"
 #include "locksounds.h"
-#include "entityoutput.h"
+
+#include "mom_entityoutput.h"
 
 extern ConVar g_debug_doors;
 

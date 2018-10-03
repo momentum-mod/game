@@ -12,7 +12,7 @@
 #include "engine/IEngineSound.h"
 #include "tier1/strtools.h"
 #include "buttons.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

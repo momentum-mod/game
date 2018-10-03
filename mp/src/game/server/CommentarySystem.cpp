@@ -17,7 +17,7 @@
 #include "soundenvelope.h"
 #include "utldict.h"
 #include "isaverestore.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "saverestore_utlvector.h"
 #include "gamestats.h"
 #include "ai_basenpc.h"

@@ -14,7 +14,7 @@
 #define TEAMNUM_NUM_BITS	6
 
 #include "entitylist.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "networkvar.h"
 #include "collisionproperty.h"
 #include "ServerNetworkProperty.h"
@@ -200,17 +200,6 @@ enum Class_T
 };
 
 #endif
-
-//
-// Structure passed to input handlers.
-//
-struct inputdata_t
-{
-	CBaseEntity *pActivator;		// The entity that initially caused this chain of output events.
-	CBaseEntity *pCaller;			// The entity that fired this particular output.
-	variant_t value;				// The data parameter for this output.
-	int nOutputID;					// The unique ID of the output that was fired.
-};
 
 // Serializable list of context as set by entity i/o and used for deducing proper
 //  speech state, et al.

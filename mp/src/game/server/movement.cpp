@@ -7,7 +7,7 @@
 
 #include "cbase.h"
 #include "entitylist.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "keyframe/keyframe.h" // BUG: this needs to move if keyframe is a standard thing
 
 #include "mathlib/mathlib.h"	// FIXME: why do we still need this?

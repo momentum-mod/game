@@ -12,7 +12,7 @@
 #pragma once
 #endif
 
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "player_pickup.h"
 #include "vphysics/constraints.h"
 

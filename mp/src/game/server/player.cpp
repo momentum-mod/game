@@ -16,7 +16,7 @@
 #include "game.h"
 #include "entityapi.h"
 #include "entitylist.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "worldsize.h"
 #include "isaverestore.h"
 #include "globalstate.h"

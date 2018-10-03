@@ -17,7 +17,7 @@
 #include "isaverestore.h"
 #include "activitylist.h"
 #include "eventlist.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "ai_network.h"
 #include "ai_schedule.h"
 #include "ai_networkmanager.h"

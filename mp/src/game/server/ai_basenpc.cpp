@@ -14,7 +14,7 @@
 #include "soundent.h"
 #include "decals.h"
 #include "entitylist.h"
-#include "eventqueue.h"
+#include "mom_eventqueue.h"
 #include "entityapi.h"
 #include "bitstring.h"
 #include "gamerules.h"		// For g_pGameRules

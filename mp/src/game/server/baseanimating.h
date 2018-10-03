@@ -11,7 +11,7 @@
 #endif
 
 #include "baseentity.h"
-#include "entityoutput.h"
+#include "mom_entityoutput.h"
 #include "studio.h"
 #include "datacache/idatacache.h"
 #include "tier0/threadtools.h"

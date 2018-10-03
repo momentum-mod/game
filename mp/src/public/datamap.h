@@ -7,6 +7,7 @@
 
 #ifndef DATAMAP_H
 #define DATAMAP_H
+
 #ifdef _WIN32
 #pragma once
 #endif
@@ -20,7 +21,11 @@
 #include "tier0/memdbgon.h"
 
 // SINGLE_INHERITANCE restricts the size of CBaseEntity pointers-to-member-functions to 4 bytes
+#ifdef CLIENT_DLL
+class C_BaseEntity;
+#else
 class SINGLE_INHERITANCE CBaseEntity;
+#endif
 struct inputdata_t;
 
 #define INVALID_TIME (FLT_MAX * -1.0) // Special value not rebased on save/load
@@ -238,8 +243,11 @@ class ISaveRestoreOps;
 //
 // Function prototype for all input handlers.
 //
+#ifdef CLIENT_DLL
+typedef void (C_BaseEntity::*inputfunc_t)(inputdata_t &data);
+#else
 typedef void (CBaseEntity::*inputfunc_t)(inputdata_t &data);
-
+#endif
 struct datamap_t;
 struct typedescription_t;
 
