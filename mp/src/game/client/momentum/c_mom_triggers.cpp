@@ -36,6 +36,7 @@ CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const unsigned int iCRC
 	return nullptr;
 }
 
+// Incase server decides to change the filter name
 void RecvProxy_FilterCRC(const CRecvProxyData *pData, void *pStruct, void *pOut)
 {
 	C_BaseMomentumTrigger *entity = (C_BaseMomentumTrigger *) pStruct;
@@ -184,7 +185,7 @@ bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity * pOther)
 			}*/
 		}
 
-		return true;
+		UpdateFilter();
 
 		C_BaseFilter *pFilter = m_hFilter.Get();
 		return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
@@ -267,6 +268,10 @@ void C_BaseMomentumTrigger::StartTouch(CBaseEntity * pOther)
 	}
 }
 
+void C_BaseMomentumTrigger::Touch(CBaseEntity * pOther)
+{
+}
+
 void C_BaseMomentumTrigger::EndTouch(CBaseEntity * pOther)
 {
 	if ( IsTouching( pOther ) )
@@ -337,6 +342,16 @@ bool C_BaseMomentumTrigger::PointIsWithin(const Vector & vecPoint)
 	ray.Init(vecPoint, vecPoint);
 	enginetrace->ClipRayToCollideable(ray, MASK_ALL, pCollide, &tr);
 	return (tr.startsolid);
+}
+
+void C_BaseMomentumTrigger::UpdateFilter()
+{
+	// We do this since, since we dont know what order the entities are sent in, so a trigger might be sent
+	// before the client know about the filter entity
+	if (prediction->GetIsFirstTimePredicted() && m_hFilter.Get() == nullptr)
+	{
+		m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByClassnameCRC(nullptr, m_iFilterCRC));
+	}
 }
 
 void C_BaseMomentumTrigger::UpdatePartitionListEntry()

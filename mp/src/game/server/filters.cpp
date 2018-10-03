@@ -42,13 +42,11 @@ bool CBaseFilter::PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
 	return true;
 }
 
-
 bool CBaseFilter::PassesFilter( CBaseEntity *pCaller, CBaseEntity *pEntity )
 {
 	bool baseResult = PassesFilterImpl( pCaller, pEntity );
 	return (m_bNegated) ? !baseResult : baseResult;
 }
-
 
 bool CBaseFilter::PassesDamageFilter(const CTakeDamageInfo &info)
 {
@@ -56,6 +54,10 @@ bool CBaseFilter::PassesDamageFilter(const CTakeDamageInfo &info)
 	return (m_bNegated) ? !baseResult : baseResult;
 }
 
+int CBaseFilter::UpdateTransmitState()
+{
+	return SetTransmitState(FL_EDICT_ALWAYS);
+}
 
 bool CBaseFilter::PassesDamageFilterImpl( const CTakeDamageInfo &info )
 {
@@ -249,7 +251,22 @@ class CFilterName : public CBaseFilter
 
 public:
 	string_t m_iFilterName;
-	CNetworkVar(int, m_iFilterNameCRC);
+	CNetworkVar(unsigned int, m_iFilterNameCRC);
+
+	virtual void Spawn()
+	{
+		BaseClass::Spawn();
+
+		CRC32_t crc;
+		if (Q_strlen(STRING(m_target)))
+		{
+			CRC32_Init(&crc);
+			CRC32_ProcessBuffer(&crc, STRING(m_iFilterName), Q_strlen(STRING(m_iFilterName)));
+			CRC32_Final(&crc);
+
+			m_iFilterNameCRC = crc;
+		}
+	}
 
 	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
 	{

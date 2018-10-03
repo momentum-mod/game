@@ -46,6 +46,7 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 
 	// Touch handlers
 	virtual void StartTouch(CBaseEntity *pOther);
+	virtual void Touch(CBaseEntity* pOther);
 	virtual void EndTouch(CBaseEntity *pOther);
 
 	virtual void OnStartTouch(CBaseEntity *pOther) {}
@@ -56,6 +57,7 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 	CBaseEntity *GetTouchedEntityOfType( const char *sClassName );
 
 	bool PointIsWithin( const Vector &vecPoint );
+	void UpdateFilter();
 
 	CNetworkVar(unsigned int, m_iTargetCRC);
     CNetworkVar(unsigned int, m_iFilterCRC);

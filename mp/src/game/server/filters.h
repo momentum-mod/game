@@ -31,9 +31,9 @@
 // ###################################################################
 //	> BaseFilter
 // ###################################################################
-class CBaseFilter : public CLogicalEntity
+class CBaseFilter : public CBaseEntity
 {
-	DECLARE_CLASS( CBaseFilter, CLogicalEntity );
+	DECLARE_CLASS( CBaseFilter, CBaseEntity );
 	DECLARE_NETWORKCLASS();
 
 public:
@@ -42,6 +42,8 @@ public:
 
 	bool PassesFilter( CBaseEntity *pCaller, CBaseEntity *pEntity );
 	bool PassesDamageFilter( const CTakeDamageInfo &info );
+
+	virtual int UpdateTransmitState();
 
 	bool m_bNegated;
 

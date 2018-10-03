@@ -227,6 +227,7 @@ bool variant_t::Convert( fieldtype_t newType )
 					if ( iszVal != NULL_STRING )
 					{
 #ifdef GAME_DLL
+						// MOM_TODO: Client needs to do this
 						// FIXME: do we need to pass an activator in here?
 						ent = gEntList.FindEntityByName( NULL, iszVal );
 #endif
@@ -247,6 +248,7 @@ bool variant_t::Convert( fieldtype_t newType )
 				{
 					// take the entities targetname as the string
 #ifdef GAME_DLL
+					// MOM_TODO: Client needs to do this
 					string_t iszStr = NULL_STRING;
 #endif
 					if ( eVal != NULL )

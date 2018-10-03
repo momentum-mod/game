@@ -49,6 +49,7 @@ class CEventQueueSaveLoadProxy : public CBaseEntity
 		// Now remove myself, because the CEventQueue_SaveRestoreBlockHandler
 		// will handle future saves.
 #ifdef GAME_DLL
+		// MOM_TODO: Does client need to do this?
 		UTIL_Remove( this );
 #endif
 		return iReturn;
@@ -289,12 +290,14 @@ void CEventQueue::ServiceEvents( void )
 		{
 			// In the context the event, the searching entity is also the caller
 #ifdef GAME_DLL
+			// MOM_TODO: Client needs to do this
 			CBaseEntity *pSearchingEntity = pe->m_pCaller;
 #endif
 			CBaseEntity *target = NULL;
 			while ( 1 )
 			{
 #ifdef GAME_DLL
+				// MOM_TODO: Client needs to do this
 				target = gEntList.FindEntityByName( target, pe->m_iTarget, pSearchingEntity, pe->m_pActivator, pe->m_pCaller );
 #endif
 				if ( !target )
@@ -322,6 +325,7 @@ void CEventQueue::ServiceEvents( void )
 				while ( 1 )
 				{
 #ifdef GAME_DLL
+					// MOM_TODO: Client needs to do this
 					target = gEntList.FindEntityByClassname( target, STRING(pe->m_iTarget) );
 #endif
 					if ( !target )

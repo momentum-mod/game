@@ -24,6 +24,8 @@ public:
 	bool PassesFilter( CBaseEntity *pCaller, CBaseEntity *pEntity );
 	bool PassesDamageFilter( const CTakeDamageInfo &info );
 
+	virtual void Spawn();
+
 	bool m_bNegated;
 
 	// Inputs

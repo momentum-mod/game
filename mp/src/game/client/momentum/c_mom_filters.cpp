@@ -22,6 +22,10 @@ bool C_BaseFilter::PassesDamageFilter(const CTakeDamageInfo & info)
 	return false;
 }
 
+void C_BaseFilter::Spawn()
+{
+}
+
 void C_BaseFilter::InputTestActivator(inputdata_t & inputdata)
 {
 }
