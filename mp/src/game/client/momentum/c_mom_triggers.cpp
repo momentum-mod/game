@@ -399,8 +399,6 @@ void C_TriggerTeleport::Touch(CBaseEntity *pOther)
 
 			prediction->SetLocalViewAngles(tmp_angle);
 		}
-
-		prediction->SetViewOrigin(tmp);
 	}
 }
 
