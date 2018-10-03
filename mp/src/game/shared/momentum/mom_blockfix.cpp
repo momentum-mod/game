@@ -17,7 +17,7 @@
 #include "tier0/memdbgon.h"
 
 #ifdef CLIENT_DLL
-extern CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const int iCRC);
+extern CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const unsigned int iCRC);
 #endif
 
 CMomentumBhopBlockFixSystem::CMomentumBhopBlockFixSystem(const char* pName) : CAutoGameSystem(pName)

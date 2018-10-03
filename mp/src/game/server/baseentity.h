@@ -1581,7 +1581,7 @@ private:
 	CNetworkVarForDerived( int, m_fFlags );
 
 	string_t m_iName;	// name used to identify this entity
-	CNetworkVar(int, m_iNameCRC);
+	CNetworkVar(unsigned int, m_iNameCRC);
 
 	// Damage modifiers
 	friend class CDamageModifier;

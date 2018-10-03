@@ -1580,10 +1580,10 @@ void CTriggerTeleport::Touch(CBaseEntity *pOther)
 
     if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
     {
-		if (!GameRules()->IsMultiplayer())
+		/*if (!GameRules()->IsMultiplayer())
 		{
 			pAngles = &pentTarget->GetAbsAngles();
-		}
+		}*/
 
 #ifdef HL1_DLL
         pVelocity = &vecZero;

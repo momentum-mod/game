@@ -41,7 +41,7 @@ class C_FilterName : public C_BaseFilter
 	DECLARE_CLIENTCLASS();
 
 public:
-	CNetworkVar(int, m_iFilterNameCRC);
+	CNetworkVar(unsigned int, m_iFilterNameCRC);
 
 	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
 	{
@@ -51,7 +51,7 @@ public:
 		CRC32_Final(&crc);
 
 		// special check for !player as GetEntityName for player won't return "!player" as a name
-		if (crc == (CRC32_t)m_iFilterNameCRC)
+		if (crc == m_iFilterNameCRC)
 		{
 			return pEntity->IsPlayer();
 		}

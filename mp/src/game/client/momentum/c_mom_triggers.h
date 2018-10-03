@@ -57,8 +57,8 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 
 	bool PointIsWithin( const Vector &vecPoint );
 
-	CNetworkVar(int, m_iTargetCRC);
-	CNetworkVar(int, m_iFilterCRC);
+	CNetworkVar(unsigned int, m_iTargetCRC);
+    CNetworkVar(unsigned int, m_iFilterCRC);
 
 	// Outputs
 	COutputEvent m_OnStartTouch;
@@ -115,9 +115,9 @@ public:
 	DECLARE_CLIENTCLASS();
 	DECLARE_PREDICTABLE();
 
-	void StartTouch(CBaseEntity *pOther) OVERRIDE;
+	void Touch(CBaseEntity *pOther) OVERRIDE;
 
-	CNetworkVar(int, m_iLandmarkCRC);
+	CNetworkVar(unsigned int, m_iLandmarkCRC);
 };
 
 class C_TriggerPush : public C_BaseMomentumTrigger

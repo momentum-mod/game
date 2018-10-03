@@ -90,8 +90,8 @@ public:
 	string_t	m_iFilterName;
 	CHandle<class CBaseFilter>	m_hFilter;
 
-	CNetworkVar(int, m_iTargetCRC);
-	CNetworkVar(int, m_iFilterCRC);
+	CNetworkVar(unsigned int, m_iTargetCRC);
+    CNetworkVar(unsigned int, m_iFilterCRC);
 
 protected:
 

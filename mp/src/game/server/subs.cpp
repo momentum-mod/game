@@ -17,7 +17,8 @@
 IMPLEMENT_SERVERCLASS_ST_NOBASE(CPointEntity, DT_PointEntity)
 	SendPropVector(SENDINFO(m_vecOrigin), 0,  SPROP_NOSCALE|SPROP_COORD|SPROP_CHANGES_OFTEN ),
 	SendPropQAngles(SENDINFO(m_angRotation), 0, SPROP_NOSCALE|SPROP_CHANGES_OFTEN ),
-END_SEND_TABLE()
+    SendPropInt(SENDINFO(m_iNameCRC)) 
+    END_SEND_TABLE()
 
 // Landmark class
 void CPointEntity::Spawn( void )

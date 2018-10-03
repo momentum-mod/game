@@ -868,7 +868,7 @@ public:
 // Methods implemented on both client and server
 public:
 	void							SetSize( const Vector &vecMin, const Vector &vecMax ); // UTIL_SetSize( pev, mins, maxs );
-	int	const						GetNameCRC( void );
+	unsigned int const				GetNameCRC( void );
 	char const						*GetClassname( void );
 	char const						*GetDebugName( void );
 	static int						PrecacheModel( const char *name ); 
@@ -1288,7 +1288,7 @@ public:
 	RenderMode_t GetRenderMode() const;
 
 public:	
-	CNetworkVar(int, m_iNameCRC);
+	CNetworkVar(unsigned int, m_iNameCRC);
 
 	// Determine what entity this corresponds to
 	int								index;	
