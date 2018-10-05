@@ -301,7 +301,7 @@ $Project "Client (Momentum)"
 
             $Folder "Shared" [$WIN32]
             {
-                $Folder "Shared" [$WIN32]
+                $Folder "Entities" [$WIN32]
                 {
 			        $File   "$SRCDIR\game\shared\momentum\entities\mom_basetoggle.cpp"
                     $File   "$SRCDIR\game\shared\momentum\entities\mom_basetoggle.h"
