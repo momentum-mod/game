@@ -9,7 +9,7 @@ LINK_ENTITY_TO_CLASS(filter, CBaseFilter);
 #ifdef CLIENT_DLL // Client prediction and recv table
 BEGIN_PREDICTION_DATA_NO_BASE(CBaseFilter)
 	DEFINE_PRED_FIELD(m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
-END_PREDICTION_DATA()
+END_PREDICTION_DATA();
 
 #undef CBaseFilter // Undefine so we can type the real server class name for recv table
 

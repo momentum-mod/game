@@ -13,7 +13,7 @@ LINK_ENTITY_TO_CLASS(func_water, CBaseDoor);
 #ifdef CLIENT_DLL // Client prediction and recv table
 BEGIN_PREDICTION_DATA(CBaseDoor)
 	DEFINE_PRED_FIELD(m_flWaveHeight, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
-END_PREDICTION_DATA()
+END_PREDICTION_DATA();
 
 #undef CBaseDoor // Undefine so we can type the real server class name for recv table
 

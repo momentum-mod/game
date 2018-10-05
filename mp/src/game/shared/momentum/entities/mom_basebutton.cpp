@@ -8,7 +8,7 @@ LINK_ENTITY_TO_CLASS(func_button, CBaseButton);
 
 #ifdef CLIENT_DLL // Client prediction and recv table
 BEGIN_PREDICTION_DATA(CBaseButton) // MOM_TODO: Add _NO_BASE stuff to predict here
-END_PREDICTION_DATA()
+END_PREDICTION_DATA();
 
 #undef CBaseButton // Undefine so we can type the real server class name for recv table
 

@@ -10,10 +10,10 @@ LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
 
 #ifdef CLIENT_DLL // Client prediction and recv table
 BEGIN_PREDICTION_DATA(CBaseTrigger)
-	DEFINE_FIELD(m_bDisabled, FIELD_BOOL),
-	DEFINE_FIELD(m_iTargetCRC, FIELD_INTEGER),
-	DEFINE_FIELD(m_iFilterCRC, FIELD_INTEGER),
-END_PREDICTION_DATA()
+	DEFINE_PRED_FIELD(m_bDisabled, FIELD_BOOL, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_iTargetCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_iFilterCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+END_PREDICTION_DATA();
 
 #undef CBaseTrigger // Undefine so we can type the real server class name for recv table
 

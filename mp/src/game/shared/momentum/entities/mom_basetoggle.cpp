@@ -11,7 +11,7 @@ extern void RecvProxy_EffectFlags(const CRecvProxyData *pData, void *pStruct, vo
 extern void RecvProxy_MoveCollide(const CRecvProxyData *pData, void *pStruct, void *pOut);
 
 BEGIN_PREDICTION_DATA_NO_BASE(CBaseToggle)
-	DEFINE_PRED_TYPEDESCRIPTION( m_Collision, CCollisionProperty),
+	DEFINE_PRED_TYPEDESCRIPTION(m_Collision, CCollisionProperty),
 	DEFINE_PRED_FIELD(m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_iSpawnFlags, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_nModelIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
@@ -20,7 +20,7 @@ BEGIN_PREDICTION_DATA_NO_BASE(CBaseToggle)
 	DEFINE_PRED_FIELD(m_CollisionGroup, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_fEffects, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_FIELD(m_iEFlags, FIELD_INTEGER),
-END_PREDICTION_DATA()
+END_PREDICTION_DATA();
 
 #undef CBaseToggle // Undefine so we can type the real server class name for recv table
 
