@@ -11,7 +11,7 @@
 #define BUILDSTAGE_HEIGHT       3
 
 #include "mapzones.h"
-#include "mom_triggers.h"
+#include "mom_triggers_old.h"
 
 extern ConVar mom_zone_edit;
 

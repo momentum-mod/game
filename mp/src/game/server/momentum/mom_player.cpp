@@ -11,7 +11,7 @@
 #include "mom_replay_system.h"
 #include "mom_system_saveloc.h"
 #include "mom_timer.h"
-#include "mom_triggers.h"
+#include "mom_triggers_old.h"
 #include "player_command.h"
 #include "predicted_viewmodel.h"
 #include "weapon/weapon_csbasegun.h"

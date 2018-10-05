@@ -5,7 +5,7 @@
 #endif
 
 #include "filesystem.h"
-#include "mom_triggers.h"
+#include "mom_triggers_old.h"
 
 #define MOMZONETYPE_START       0
 #define MOMZONETYPE_CP          1

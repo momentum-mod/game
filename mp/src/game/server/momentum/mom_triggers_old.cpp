@@ -8,7 +8,7 @@
 #include "mom_system_progress.h"
 #include "mom_system_saveloc.h"
 #include "mom_timer.h"
-#include "mom_triggers.h"
+#include "mom_triggers_old.h"
 
 #include "tier0/memdbgon.h"
 

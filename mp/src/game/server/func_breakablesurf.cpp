@@ -9,7 +9,7 @@
 
 #include "cbase.h"
 #include "ndebugoverlay.h"
-#include "filters.h"
+#include "mom_basefilter.h"
 #include "player.h"
 #include "func_breakablesurf.h"
 #include "shattersurfacetypes.h"

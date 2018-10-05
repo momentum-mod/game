@@ -59,7 +59,7 @@
 #include "vstdlib/random.h"
 #include "engine/IEngineSound.h"
 #include "tier1/strtools.h"
-#include "doors.h"
+#include "mom_basedoor.h"
 #include "BasePropDoor.h"
 #include "saverestore_utlvector.h"
 #include "npcevent.h"
@@ -69,7 +69,7 @@
 #include "saverestore_bitstring.h"
 #include "checksum_crc.h"
 #include "iservervehicle.h"
-#include "filters.h"
+#include "mom_basefilter.h"
 #ifdef HL2_DLL
 #include "npc_bullseye.h"
 #include "hl2_player.h"

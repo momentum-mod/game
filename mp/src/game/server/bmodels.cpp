@@ -5,13 +5,13 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "doors.h"
+#include "mom_basedoor.h"
 #include "mathlib/mathlib.h"
 #include "physics.h"
 #include "ndebugoverlay.h"
 #include "engine/IEngineSound.h"
 #include "globals.h"
-#include "filters.h"
+#include "mom_basefilter.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

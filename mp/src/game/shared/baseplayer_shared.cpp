@@ -17,7 +17,6 @@
 
 	#include "iclientvehicle.h"
 	#include "prediction.h"
-	#include "c_mom_doors.h"
 	#include "c_world.h"
 	#include "view.h"
 	#include "client_virtualreality.h"
@@ -29,13 +28,14 @@
 	#include "iservervehicle.h"
 	#include "trains.h"
 	#include "world.h"
-	#include "doors.h"
 	#include "ai_basenpc.h"
 	#include "env_zoom.h"
 
 	extern int TrainSpeed(int iSpeed, int iMax);
 	
 #endif
+
+#include "mom_basedoor.h"
 
 #if defined( CSTRIKE_DLL )
 #include "weapon_c4.h"

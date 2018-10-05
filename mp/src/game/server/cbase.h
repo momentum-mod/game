@@ -78,8 +78,9 @@
 #include "soundflags.h"
 #include "networkvar.h"
 #include "baseentity_shared.h"
-#include "basetoggle.h"
 #include "igameevents.h"
+
+#include "mom_basetoggle.h"
 
 // saverestore.h declarations
 class ISave;

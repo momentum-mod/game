@@ -34,7 +34,7 @@
 #include "saverestore_utlvector.h"
 #include "bone_setup.h"
 #include "vcollide_parse.h"
-#include "filters.h"
+#include "mom_basefilter.h"
 #include "te_effect_dispatch.h"
 #include "AI_Criteria.h"
 #include "AI_ResponseSystem.h"

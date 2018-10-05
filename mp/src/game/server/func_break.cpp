@@ -7,7 +7,7 @@
 
 #include "cbase.h"
 #include "player.h"
-#include "filters.h"
+#include "mom_basefilter.h"
 #include "func_break.h"
 #include "decals.h"
 #include "explode.h"

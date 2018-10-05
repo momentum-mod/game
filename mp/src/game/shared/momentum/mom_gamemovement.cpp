@@ -13,7 +13,7 @@
 #include "c_mom_triggers.h"
 #else
 #include "env_player_surface_trigger.h"
-#include "momentum/mom_triggers.h"
+#include "momentum/mom_triggers_old.h"
 #endif
 
 #include "tier0/memdbgon.h"

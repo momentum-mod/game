@@ -4,7 +4,7 @@
 #include "mom_timer.h"
 #include "movevars_shared.h"
 #include "mom_system_saveloc.h"
-#include "mom_triggers.h"
+#include "mom_triggers_old.h"
 #include "mom_player_shared.h"
 #include "mom_replay_system.h"
 #include <ctime>

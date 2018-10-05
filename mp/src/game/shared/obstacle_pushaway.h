@@ -14,7 +14,7 @@
 #ifndef CLIENT_DLL
 #include "func_breakablesurf.h"
 #include "BasePropDoor.h"
-#include "doors.h"
+#include "mom_basedoor.h"
 #endif // CLIENT_DLL
 
 //--------------------------------------------------------------------------------------------------------------

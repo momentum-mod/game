@@ -5,7 +5,7 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "filters.h"
+#include "mom_basefilter.h"
 #include "entitylist.h"
 #include "ai_squad.h"
 #include "ai_basenpc.h"
@@ -14,75 +14,12 @@
 #include "tier0/memdbgon.h"
 
 // ###################################################################
-//	> BaseFilter
-// ###################################################################
-LINK_ENTITY_TO_CLASS(filter_base, CBaseFilter);
-
-BEGIN_DATADESC( CBaseFilter )
-
-	DEFINE_KEYFIELD(m_bNegated, FIELD_BOOLEAN, "Negated"),
-
-	// Inputs
-	DEFINE_INPUTFUNC( FIELD_INPUT, "TestActivator", InputTestActivator ),
-
-	// Outputs
-	DEFINE_OUTPUT( m_OnPass, "OnPass"),
-	DEFINE_OUTPUT( m_OnPass, "OnPass"),
-	DEFINE_OUTPUT( m_OnFail, "OnFail"),
-
-END_DATADESC()
-
-IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseFilter, DT_BaseFilter)
-	SendPropInt(SENDINFO(m_iNameCRC)),
-END_SEND_TABLE();
-
-//-----------------------------------------------------------------------------
-
-bool CBaseFilter::PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
-{
-	return true;
-}
-
-bool CBaseFilter::PassesFilter( CBaseEntity *pCaller, CBaseEntity *pEntity )
-{
-	bool baseResult = PassesFilterImpl( pCaller, pEntity );
-	return (m_bNegated) ? !baseResult : baseResult;
-}
-
-bool CBaseFilter::PassesDamageFilter(const CTakeDamageInfo &info)
-{
-	bool baseResult = PassesDamageFilterImpl(info);
-	return (m_bNegated) ? !baseResult : baseResult;
-}
-
-bool CBaseFilter::PassesDamageFilterImpl( const CTakeDamageInfo &info )
-{
-	return PassesFilterImpl( NULL, info.GetAttacker() );
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Input handler for testing the activator. If the activator passes the
-//			filter test, the OnPass output is fired. If not, the OnFail output is fired.
-//-----------------------------------------------------------------------------
-void CBaseFilter::InputTestActivator( inputdata_t &inputdata )
-{
-	if ( PassesFilter( inputdata.pCaller, inputdata.pActivator ) )
-	{
-		m_OnPass.FireOutput( inputdata.pActivator, this );
-	}
-	else
-	{
-		m_OnFail.FireOutput( inputdata.pActivator, this );
-	}
-}
-
-
-// ###################################################################
 //	> FilterMultiple
 //
 //   Allows one to filter through mutiple filters
 // ###################################################################
 #define MAX_FILTERS 5
+
 enum filter_t
 {
 	FILTER_AND,

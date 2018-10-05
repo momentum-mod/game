@@ -13,7 +13,7 @@ $Configuration
 {
     $Compiler
     {
-       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
+       $AdditionalIncludeDirectories       "$BASE;$SRCDIR\gameui,.\momentum\ui\HUD,.\momentum\ui\MainMenu,.\momentum\ui\SettingsPanel,.\momentum\ui\MapSelection,.\momentum\ui,.\momentum;$SRCDIR\game\shared\momentum;$SRCDIR\game\shared\momentum\entities;$SRCDIR\thirdparty\gason,$SRCDIR\vgui2,$SRCDIR\public,$SRCDIR\game\shared,$SRCDIR\thirdparty\base64"
         $PreprocessorDefinitions            "$BASE;SOURCE_2013;SDK_DLL"
     }
 }
@@ -311,6 +311,8 @@ $Project "Client (Momentum)"
                     $File   "$SRCDIR\game\shared\momentum\entities\mom_basedoor.h"
 			        $File   "$SRCDIR\game\shared\momentum\entities\mom_basefilter.cpp"
                     $File   "$SRCDIR\game\shared\momentum\entities\mom_basefilter.h"
+			        $File   "$SRCDIR\game\shared\momentum\entities\mom_basetrigger.cpp"
+                    $File   "$SRCDIR\game\shared\momentum\entities\mom_basetrigger.h"
 			        $File   "$SRCDIR\game\shared\momentum\entities\mom_triggers.cpp"
                     $File   "$SRCDIR\game\shared\momentum\entities\mom_triggers.h"
 			        $File   "$SRCDIR\game\shared\momentum\entities\mom_buttons.cpp"
@@ -353,8 +355,6 @@ $Project "Client (Momentum)"
             $File   "$SRCDIR\game\shared\momentum\mom_shareddefs.h"
             $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.cpp"
             $File   "$SRCDIR\game\shared\momentum\mom_modulecomms.h"
-            $File   "momentum\c_mom_basetoggle.cpp"
-            $File   "momentum\c_mom_basetoggle.h"
             $File   "momentum\c_mom_buttons.cpp"
             $File   "momentum\c_mom_buttons.h"
             $File   "momentum\c_mom_doors.cpp"

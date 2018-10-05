@@ -6,8 +6,8 @@
 #include "c_mom_doors.h"
 #include "c_mom_buttons.h"
 #else
-#include "doors.h"
-#include "buttons.h"
+#include "mom_basedoor.h"
+#include "mom_basebutton.h"
 #endif
 
 #include "tier0/memdbgon.h"

@@ -26,38 +26,7 @@
 #endif
 
 #include "cbase.h"
+#include "mom_basefilter.h"
 #include "mom_entityoutput.h"
-
-// ###################################################################
-//	> BaseFilter
-// ###################################################################
-class CBaseFilter : public CBaseEntity
-{
-	DECLARE_CLASS( CBaseFilter, CBaseEntity );
-	DECLARE_NETWORKCLASS();
-
-public:
-
-	DECLARE_DATADESC();
-
-	bool PassesFilter( CBaseEntity *pCaller, CBaseEntity *pEntity );
-	bool PassesDamageFilter( const CTakeDamageInfo &info );
-
-	//virtual int UpdateTransmitState();
-
-	bool m_bNegated;
-
-	// Inputs
-	void InputTestActivator( inputdata_t &inputdata );
-
-	// Outputs
-	COutputEvent	m_OnPass;		// Fired when filter is passed
-	COutputEvent	m_OnFail;		// Fired when filter is failed
-
-protected:
-
-	virtual bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity );
-	virtual bool PassesDamageFilterImpl(const CTakeDamageInfo &info);
-};
 
 #endif // FILTERS_H
