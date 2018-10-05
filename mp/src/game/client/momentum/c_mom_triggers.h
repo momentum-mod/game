@@ -59,8 +59,6 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 	bool PointIsWithin( const Vector &vecPoint );
 	void UpdateFilter();
 
-	CNetworkVar(unsigned int, m_iTargetCRC);
-    CNetworkVar(unsigned int, m_iFilterCRC);
 
 	// Outputs
 	COutputEvent m_OnStartTouch;
@@ -73,9 +71,12 @@ class C_BaseMomentumTrigger : public C_BaseToggle
 	// Entities currently being touched by this trigger
 	CUtlVector< EHANDLE >	m_hTouchingEntities;
 
-	bool m_bDisabled;
 	string_t m_iFilterName;
 	CHandle<class C_BaseFilter> m_hFilter;
+
+	CNetworkVar(bool, m_bDisabled);
+	CNetworkVar(unsigned int, m_iTargetCRC);
+	CNetworkVar(unsigned int, m_iFilterCRC);
 };
 
 class C_TriggerTimerStart : public C_BaseMomentumTrigger

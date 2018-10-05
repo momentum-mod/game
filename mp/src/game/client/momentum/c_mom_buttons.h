@@ -21,7 +21,7 @@
 class C_BaseButton : public C_BaseToggle
 {
 	DECLARE_CLASS(C_BaseButton, C_BaseToggle);
-	DECLARE_CLIENTCLASS();
+	//DECLARE_CLIENTCLASS();
 
 public:
 	C_BaseButton() : m_bIsBhopBlock(false) {};

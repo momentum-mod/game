@@ -50,7 +50,7 @@ class CBaseDoor : public CBaseToggle
 public:
 	DECLARE_CLASS( CBaseDoor, CBaseToggle );
 
-	DECLARE_SERVERCLASS();
+	//DECLARE_SERVERCLASS();
 
 	CBaseDoor() : m_bIsBhopBlock(false) {};
 

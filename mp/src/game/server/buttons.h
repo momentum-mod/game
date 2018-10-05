@@ -26,7 +26,7 @@ class CBaseButton : public CBaseToggle
 {
 public:
 	DECLARE_CLASS( CBaseButton, CBaseToggle );
-	DECLARE_SERVERCLASS();
+	//DECLARE_SERVERCLASS();
 
 	CBaseButton() : m_bIsBhopBlock(false) {};
 

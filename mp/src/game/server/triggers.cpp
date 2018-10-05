@@ -126,6 +126,7 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
 
 IMPLEMENT_SERVERCLASS_ST(CBaseTrigger, DT_BaseTrigger)
+	SendPropBool(SENDINFO(m_bDisabled)),
 	SendPropInt(SENDINFO(m_iTargetCRC)),
 	SendPropInt(SENDINFO(m_iFilterCRC)),
 END_SEND_TABLE()

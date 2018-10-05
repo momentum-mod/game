@@ -43,7 +43,7 @@ public:
 	bool PassesFilter( CBaseEntity *pCaller, CBaseEntity *pEntity );
 	bool PassesDamageFilter( const CTakeDamageInfo &info );
 
-	virtual int UpdateTransmitState();
+	//virtual int UpdateTransmitState();
 
 	bool m_bNegated;
 

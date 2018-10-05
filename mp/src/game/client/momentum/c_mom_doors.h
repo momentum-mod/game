@@ -31,7 +31,7 @@
 class C_BaseDoor : public C_BaseToggle
 {
 	DECLARE_CLASS(C_BaseDoor, C_BaseToggle);
-	DECLARE_CLIENTCLASS();
+	//DECLARE_CLIENTCLASS();
 
 public:
 	C_BaseDoor() : m_bIsBhopBlock(false), m_flWaveHeight(0.f) {};

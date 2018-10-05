@@ -102,9 +102,9 @@ LINK_ENTITY_TO_CLASS( func_water, CBaseDoor );
 
 
 // SendTable stuff.
-IMPLEMENT_SERVERCLASS_ST(CBaseDoor, DT_BaseDoor)
+/*IMPLEMENT_SERVERCLASS_ST(CBaseDoor, DT_BaseDoor)
 	SendPropFloat	(SENDINFO(m_flWaveHeight),		8,	SPROP_ROUNDUP,	0.0f,	8.0f),
-END_SEND_TABLE()
+END_SEND_TABLE()*/
 
 #define DOOR_SENTENCEWAIT	6
 #define DOOR_SOUNDWAIT		1

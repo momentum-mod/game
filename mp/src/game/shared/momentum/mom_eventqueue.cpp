@@ -146,11 +146,7 @@ void CEventQueue::Dump( void )
 	EventQueuePrioritizedEvent_t *pe = m_Events.m_pNext;
 
 	Msg("Dumping event queue. Current time is: %.2f\n",
-#ifdef TF_DLL
-		engine->GetServerTime()
-#else
 		gpGlobals->curtime
-#endif
 	);
 
 	while ( pe != NULL )
@@ -179,11 +175,7 @@ void CEventQueue::AddEvent( const char *target, const char *targetInput, variant
 {
 	// build the new event
 	EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
-#ifdef TF_DLL
-	newEvent->m_flFireTime = engine->GetServerTime() + fireDelay;	// priority key in the priority queue
-#else
 	newEvent->m_iFireTick = gpGlobals->tickcount + round(fireDelay * (1.0f / gpGlobals->interval_per_tick));	// priority key in the priority queue
-#endif
 	newEvent->m_iTarget = MAKE_STRING( target );
 	newEvent->m_pEntTarget = NULL;
 	newEvent->m_iTargetInput = MAKE_STRING( targetInput );
@@ -202,11 +194,7 @@ void CEventQueue::AddEvent( CBaseEntity *target, const char *targetInput, varian
 {
 	// build the new event
 	EventQueuePrioritizedEvent_t *newEvent = new EventQueuePrioritizedEvent_t;
-#ifdef TF_DLL
-	newEvent->m_flFireTime = engine->GetServerTime() + fireDelay;	// primary priority key in the priority queue
-#else
 	newEvent->m_iFireTick = gpGlobals->tickcount + round(fireDelay * (1.0f / gpGlobals->interval_per_tick));	// primary priority key in the priority queue
-#endif
 	newEvent->m_iTarget = NULL_STRING;
 	newEvent->m_pEntTarget = target;
 	newEvent->m_iTargetInput = MAKE_STRING( targetInput );
@@ -270,6 +258,11 @@ void CEventQueue::RemoveEvent( EventQueuePrioritizedEvent_t *pe )
 //-----------------------------------------------------------------------------
 void CEventQueue::ServiceEvents( void )
 {
+#ifdef CLIENT_DLL
+	//Msg("[Client] CEventQueue::ServiceEvent\n");
+#else
+	//Msg("[Server] CEventQueue::ServiceEvent\n");
+#endif
 #ifdef GAME_DLL
 	if (!CBaseEntity::Debug_ShouldStep())
 	{
@@ -494,6 +487,7 @@ bool CEventQueue::HasEventPending( CBaseEntity *pTarget, const char *sInputName 
 	return false;
 }
 
+// MOM_TODO: This is only called from CServerGameDLL::GameFrame where should we add it to client?
 void ServiceEventQueue( void )
 {
 	VPROF("ServiceEventQueue()");

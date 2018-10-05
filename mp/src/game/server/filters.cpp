@@ -27,6 +27,7 @@ BEGIN_DATADESC( CBaseFilter )
 
 	// Outputs
 	DEFINE_OUTPUT( m_OnPass, "OnPass"),
+	DEFINE_OUTPUT( m_OnPass, "OnPass"),
 	DEFINE_OUTPUT( m_OnFail, "OnFail"),
 
 END_DATADESC()
@@ -52,11 +53,6 @@ bool CBaseFilter::PassesDamageFilter(const CTakeDamageInfo &info)
 {
 	bool baseResult = PassesDamageFilterImpl(info);
 	return (m_bNegated) ? !baseResult : baseResult;
-}
-
-int CBaseFilter::UpdateTransmitState()
-{
-	return SetTransmitState(FL_EDICT_ALWAYS);
 }
 
 bool CBaseFilter::PassesDamageFilterImpl( const CTakeDamageInfo &info )
@@ -266,6 +262,11 @@ public:
 
 			m_iFilterNameCRC = crc;
 		}
+	}
+
+	virtual int UpdateTransmitState()
+	{
+		return SetTransmitState(FL_EDICT_ALWAYS);
 	}
 
 	bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )

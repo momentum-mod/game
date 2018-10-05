@@ -11,7 +11,6 @@
 
 #ifdef CLIENT_DLL
 	#define CMultiInputVar C_MultiInputVar
-
 #endif
 
 //-----------------------------------------------------------------------------

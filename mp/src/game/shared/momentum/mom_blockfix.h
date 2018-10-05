@@ -7,6 +7,10 @@
 
 #include "cbase.h"
 
+#ifdef CLIENT_DLL
+	#define CMomentumBhopBlockFixSystem C_MomentumBhopBlockFixSystem
+#endif
+
 #define MAX_BHOPBLOCKS 1024
 #define BLOCK_TELEPORT 0.11
 #define BLOCK_COOLDOWN 1.0

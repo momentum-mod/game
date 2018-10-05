@@ -5,10 +5,6 @@
 #ifdef CLIENT_DLL
 #include "c_mom_doors.h"
 #include "c_mom_buttons.h"
-
-#define CBaseButton C_BaseButton
-#define CBaseDoor C_BaseDoor
-
 #else
 #include "doors.h"
 #include "buttons.h"

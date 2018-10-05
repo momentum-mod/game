@@ -47,6 +47,7 @@ void RecvProxy_FilterCRC(const CRecvProxyData *pData, void *pStruct, void *pOut)
 }
 
 IMPLEMENT_CLIENTCLASS_DT(C_BaseMomentumTrigger, DT_BaseTrigger, CBaseTrigger)
+	RecvPropBool(RECVINFO(m_bDisabled)),
 	RecvPropInt(RECVINFO(m_iTargetCRC)),
 	RecvPropInt(RECVINFO(m_iFilterCRC), NULL, RecvProxy_FilterCRC),
 END_RECV_TABLE();
@@ -58,6 +59,7 @@ END_PREDICTION_DATA()
 
 void C_BaseMomentumTrigger::Enable(void)
 {
+	Msg("[Client] C_BaseMomentumTrigger::Enable\n");
 	m_bDisabled = false;
 
 	if ( VPhysicsGetObject())
@@ -74,6 +76,7 @@ void C_BaseMomentumTrigger::Enable(void)
 
 void C_BaseMomentumTrigger::Disable(void)
 {
+	Msg("[Client] C_BaseMomentumTrigger::Disable\n");
 	m_bDisabled = true;
 
 	if ( VPhysicsGetObject())
@@ -187,7 +190,13 @@ bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity * pOther)
 
 		UpdateFilter();
 
+		if (m_iFilterCRC != 0 && m_hFilter.Get() == nullptr)
+		{
+			return false;
+		}
+
 		C_BaseFilter *pFilter = m_hFilter.Get();
+		Msg("[Client] PassesFiltersBla %08X, %08X\n", m_iFilterCRC, pFilter);
 		return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
 	}
 	return false;
@@ -195,16 +204,19 @@ bool C_BaseMomentumTrigger::PassesTriggerFilters(CBaseEntity * pOther)
 
 void C_BaseMomentumTrigger::InputEnable(inputdata_t & inputdata)
 {
+	Msg("[Client] C_BaseMomentumTrigger::InputEnable\n");
 	Enable();
 }
 
 void C_BaseMomentumTrigger::InputDisable(inputdata_t & inputdata)
 {
+	Msg("[Client] C_BaseMomentumTrigger::InputDisable\n");
 	Disable();
 }
 
 void C_BaseMomentumTrigger::InputToggle(inputdata_t & inputdata)
 {
+	Msg("[Client] C_BaseMomentumTrigger::InputToggle\n");
 	if (IsSolidFlagSet( FSOLID_TRIGGER ))
 	{
 		RemoveSolidFlags(FSOLID_TRIGGER);
