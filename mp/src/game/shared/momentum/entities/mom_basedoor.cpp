@@ -11,18 +11,18 @@ LINK_ENTITY_TO_CLASS(func_water, CBaseDoor);
 
 
 #ifdef CLIENT_DLL // Client prediction and recv table
-BEGIN_PREDICTION_DATA(CBaseDoor)
+BEGIN_PREDICTION_DATA(CBaseDoor) // MOM_TODO: Add _NO_BASE stuff to predict here
 	DEFINE_PRED_FIELD(m_flWaveHeight, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
 #undef CBaseDoor // Undefine so we can type the real server class name for recv table
 
-IMPLEMENT_CLIENTCLASS_DT(C_BaseDoor, DT_BaseDoor, CBaseDoor)
+IMPLEMENT_CLIENTCLASS_DT(C_BaseDoor, DT_BaseDoor, CBaseDoor) // MOM_TODO: Add _NO_BASE stuff to predict here
 	RecvPropFloat(RECVINFO(m_flWaveHeight)),
 END_RECV_TABLE();
 #define CBaseDoor C_BaseDoor // Redefine for rest of the code
 #else // Server save data and send table
-IMPLEMENT_SERVERCLASS_ST(CBaseDoor, DT_BaseDoor)
+IMPLEMENT_SERVERCLASS_ST(CBaseDoor, DT_BaseDoor) // MOM_TODO: Add _NO_BASE stuff to predict here
 	SendPropFloat(SENDINFO(m_flWaveHeight), 8, SPROP_ROUNDUP, 0.0f, 8.0f),
 END_SEND_TABLE();
 

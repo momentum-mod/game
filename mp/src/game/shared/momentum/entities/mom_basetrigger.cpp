@@ -9,7 +9,7 @@ ConVar showtriggers( "showtriggers", "0", FCVAR_CHEAT, "Shows trigger brushes" )
 LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
 
 #ifdef CLIENT_DLL // Client prediction and recv table
-BEGIN_PREDICTION_DATA(CBaseTrigger)
+BEGIN_PREDICTION_DATA(CBaseTrigger) // MOM_TODO: Add _NO_BASE stuff to predict here
 	DEFINE_PRED_FIELD(m_bDisabled, FIELD_BOOL, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_iTargetCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_iFilterCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
@@ -17,14 +17,14 @@ END_PREDICTION_DATA();
 
 #undef CBaseTrigger // Undefine so we can type the real server class name for recv table
 
-IMPLEMENT_CLIENTCLASS_DT(C_BaseTrigger, DT_BaseTrigger, CBaseTrigger)
+IMPLEMENT_CLIENTCLASS_DT(C_BaseTrigger, DT_BaseTrigger, CBaseTrigger) // MOM_TODO: Add _NO_BASE stuff to predict here
 	RecvPropBool(RECVINFO(m_bDisabled)),
 	RecvPropInt(RECVINFO(m_iTargetCRC)),
 	RecvPropInt(RECVINFO(m_iFilterCRC)),
 END_RECV_TABLE();
 #define CBaseTrigger C_BaseTrigger // Redefine for rest of the code
 #else // Server save data and send table
-IMPLEMENT_SERVERCLASS_ST(CBaseTrigger, DT_BaseTrigger)
+IMPLEMENT_SERVERCLASS_ST(CBaseTrigger, DT_BaseTrigger) // MOM_TODO: Add _NO_BASE stuff to predict here
 	SendPropBool(SENDINFO(m_bDisabled)),
 	SendPropInt(SENDINFO(m_iTargetCRC)),
 	SendPropInt(SENDINFO(m_iFilterCRC)),

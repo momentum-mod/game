@@ -12,6 +12,16 @@
 #define CBaseFilter C_BaseFilter
 #endif
 
+#define MAX_FILTERS 5
+
+#define SF_FILTER_ENEMY_NO_LOSE_AQUIRED	(1<<0)
+
+enum filter_t
+{
+	FILTER_AND,
+	FILTER_OR,
+};
+
 class CBaseFilter : public CBaseEntity
 {
 public:
