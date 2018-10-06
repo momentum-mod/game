@@ -9,10 +9,8 @@
 #include "mom_basedoor.h"
 
 #ifdef CLIENT_DLL
-#define CBaseDoor C_BaseDoor
+#define CRotDoor C_RotDoor
 #else
-#include "locksounds.h"
-#include "physics_npc_solver.h"
 #endif
 
 /*func_door_rotating

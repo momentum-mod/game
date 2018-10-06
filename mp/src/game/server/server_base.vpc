@@ -258,8 +258,6 @@ $Project
 		$File	"bitstring.h"
 		$File	"bmodels.cpp"
 		$File	"$SRCDIR\public\bone_setup.h"
-		$File	"buttons.cpp"
-		$File	"buttons.h"
 		$File	"cbase.cpp"
 		$File	"cbase.h"
 		$File	"$SRCDIR\game\shared\choreoactor.h"

@@ -13,7 +13,7 @@
 #define _NAV_H_
 
 #include "modelentities.h"		// for CFuncBrush
-#include "doors.h"
+#include "mom_basedoor.h"
 
 /**
  * Below are several constants used by the navigation system.
