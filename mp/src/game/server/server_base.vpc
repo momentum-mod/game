@@ -283,8 +283,6 @@ $Project
 		$File	"$SRCDIR\game\shared\debugoverlay_shared.cpp"
 		$File	"$SRCDIR\game\shared\debugoverlay_shared.h"
 		$File	"$SRCDIR\game\shared\decals.cpp"
-		$File	"doors.cpp"
-		$File	"doors.h"
 		$File	"dynamiclight.cpp"
 		$File	"$SRCDIR\public\edict.h"
 		$File	"$SRCDIR\public\editor_sendcommand.h"
