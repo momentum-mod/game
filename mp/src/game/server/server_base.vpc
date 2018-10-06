@@ -340,7 +340,6 @@ $Project
 		$File	"EventLog.cpp"
 		$File	"explode.cpp"
 		$File	"explode.h"
-		$File	"filters.cpp"
 		$File	"fire.cpp"
 		$File	"fire.h"
 		$File	"fire_smoke.cpp"

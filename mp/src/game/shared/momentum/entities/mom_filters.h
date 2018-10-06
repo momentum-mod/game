@@ -11,6 +11,11 @@
 #ifdef CLIENT_DLL
 #define CFilterMultiple C_FilterMultiple
 #define CFilterName C_FilterName
+#define CFilterTeam C_FilterTeam
+#define CFilterClass C_FilterClass
+#define CFilterMassGreater C_FilterMassGreater
+#define CFilterDamageType C_FilterDamageType
+#define CFilterEnemy C_FilterEnemy
 #else
 #include "ai_basenpc.h"
 #include "ai_squad.h"

@@ -511,16 +511,16 @@ int CBaseTrigger::DrawDebugTextOverlays(void)
 		// --------------
 		// Print Target
 		// --------------
-		char tempstr[255];
+		const char* str;
 		if (IsSolidFlagSet(FSOLID_TRIGGER))
 		{
-			Q_strncpy(tempstr, "State: Enabled", sizeof(tempstr));
+			str = "State: Enabled";
 		}
 		else
 		{
-			Q_strncpy(tempstr, "State: Disabled", sizeof(tempstr));
+			str = "State: Disabled";
 		}
-		EntityText(text_offset, tempstr, 0);
+		EntityText(text_offset, str, 0);
 		text_offset++;
 	}
 	return text_offset;
