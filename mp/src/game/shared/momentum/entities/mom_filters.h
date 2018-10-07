@@ -36,6 +36,7 @@ public:
 #endif
 
 	// Shared things
+	virtual void Spawn(void);
 	virtual bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity);
 	virtual bool PassesDamageFilterImpl(const CTakeDamageInfo &info);
 	virtual void Activate(void);
@@ -43,6 +44,8 @@ public:
 	filter_t	m_nFilterType;
 	string_t	m_iFilterName[MAX_FILTERS];
 	EHANDLE		m_hFilter[MAX_FILTERS];
+
+	CNetworkArray(unsigned int, m_iFilterNameArrayCRC, MAX_FILTERS);
 #ifdef GAME_DLL // Server specific things
 public:
 	DECLARE_DATADESC();
@@ -108,9 +111,11 @@ public:
 #endif
 
 	// Shared things
+	virtual void Spawn(void);
 	virtual bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity);
 
 	string_t m_iFilterClass;
+	CNetworkVar(unsigned int, m_iFilterClassCRC);
 #ifdef GAME_DLL // Server specific things
 public:
 	DECLARE_DATADESC();
@@ -132,7 +137,7 @@ public:
 	// Shared things
 	virtual bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity);
 
-	float m_fFilterMass;
+	CNetworkVar(float, m_fFilterMass);
 #ifdef GAME_DLL // Server specific things
 public:
 	DECLARE_DATADESC();
@@ -155,13 +160,14 @@ public:
 	virtual bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity);
 	virtual bool PassesDamageFilterImpl(const CTakeDamageInfo &info);
 
-	int m_iDamageType;
+	CNetworkVar(int, m_iDamageType);
 #ifdef GAME_DLL // Server specific things
 public:
 	DECLARE_DATADESC();
 #endif
 };
 
+#ifdef GAME_DLL // Do we even need this since we dont have any damage things
 // ###################################################################
 //	> FilterEnemy
 // ###################################################################
@@ -193,5 +199,5 @@ public:
 	DECLARE_DATADESC();
 #endif
 };
-
+#endif
 #endif

@@ -13,10 +13,12 @@ END_PREDICTION_DATA();
 #undef CFilterMultiple // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT(C_FilterMultiple, DT_FilterMultiple, CFilterMultiple)
+	RecvPropArray3(RECVINFO_ARRAY(m_iFilterNameArrayCRC), RecvPropInt(RECVINFO_ARRAY(m_iFilterNameArrayCRC))),
 END_RECV_TABLE();
 #define CFilterMultiple C_FilterMultiple // Redefine for rest of the code
 #else // Server save data and send table
 IMPLEMENT_SERVERCLASS_ST(CFilterMultiple, DT_FilterMultiple)
+	SendPropArray3(SENDINFO_ARRAY3(m_iFilterNameArrayCRC), SendPropInt(SENDINFO_ARRAY(m_iFilterNameArrayCRC))),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CFilterMultiple)
@@ -34,6 +36,10 @@ BEGIN_DATADESC(CFilterMultiple)
 	DEFINE_ARRAY(m_hFilter, FIELD_EHANDLE, MAX_FILTERS),
 END_DATADESC();
 #endif
+
+void CFilterMultiple::Spawn(void)
+{
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Returns true if the entity passes our filter, false if not.
@@ -128,7 +134,7 @@ void CFilterMultiple::Activate(void)
 	{
 		if (m_iFilterName[i] != NULL_STRING)
 		{
-			CBaseEntity *pEntity = gEntList.FindEntityByName(NULL, m_iFilterName[i]);
+			CBaseEntity *pEntity = FindEntityByNameCRC(NULL, m_iFilterNameArrayCRC[i]);
 			CBaseFilter *pFilter = dynamic_cast<CBaseFilter *>(pEntity);
 			if (pFilter == NULL)
 			{
@@ -170,7 +176,7 @@ void CFilterName::Spawn(void)
 	BaseClass::Spawn();
 
 	CRC32_t crc;
-	if (Q_strlen(STRING(m_target)))
+	if (Q_strlen(STRING(m_iFilterName)))
 	{
 		CRC32_Init(&crc);
 		CRC32_ProcessBuffer(&crc, STRING(m_iFilterName), Q_strlen(STRING(m_iFilterName)));
@@ -182,14 +188,23 @@ void CFilterName::Spawn(void)
 
 bool CFilterName::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
-	// special check for !player as GetEntityName for player won't return "!player" as a name
-	if (FStrEq(STRING(m_iFilterName), "!player"))
+	static CRC32_t crc = 0;
+
+	if (crc == 0)
 	{
-		return pEntity->IsPlayer();
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, "!player", Q_strlen("!player"));
+		CRC32_Final(&crc);
+	}
+
+	// special check for !player as GetEntityName for player won't return "!player" as a name
+	if (m_iFilterNameCRC == crc)
+	{
+		return (pEntity->IsPlayer());
 	}
 	else
 	{
-		return pEntity->NameMatches(STRING(m_iFilterName));
+		return (pEntity->GetNameCRC == m_iFilterNameCRC);
 	}
 }
 
@@ -227,10 +242,14 @@ END_PREDICTION_DATA();
 #undef CFilterClass // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT(C_FilterClass, DT_FilterClass, CFilterClass)
+	RecvPropInt(RECVINFO(m_iClassnameCRC)),
+	RecvPropInt(RECVINFO(m_iFilterClassCRC)),
 END_RECV_TABLE();
 #define CFilterClass C_FilterClass // Redefine for rest of the code
 #else // Server save data and send table
 IMPLEMENT_SERVERCLASS_ST(CFilterClass, DT_FilterClass)
+	SendPropInt(SENDINFO(m_iClassnameCRC)),
+	SendPropInt(SENDINFO(m_iFilterClassCRC)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CFilterClass)
@@ -238,9 +257,24 @@ BEGIN_DATADESC(CFilterClass)
 END_DATADESC();
 #endif
 
+void CFilterClass::Spawn(void)
+{
+	BaseClass::Spawn();
+
+	CRC32_t crc;
+	if (Q_strlen(STRING(m_iFilterClass)))
+	{
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, STRING(m_iFilterClass), Q_strlen(STRING(m_iFilterClass)));
+		CRC32_Final(&crc);
+
+		m_iFilterClassCRC = crc;
+	}
+}
+
 bool CFilterClass::PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity )
 {
-	return pEntity->ClassMatches( STRING(m_iFilterClass) );
+	return pEntity->GetClassnameCRC() == m_iFilterClassCRC;
 }
 
 LINK_ENTITY_TO_CLASS( filter_activator_mass_greater, CFilterMassGreater );
@@ -252,10 +286,12 @@ END_PREDICTION_DATA();
 #undef CFilterMassGreater // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT(C_FilterMassGreater, DT_FilterMassGreater, CFilterMassGreater)
+	RecvPropFloat(RECVINFO(m_fFilterMass)),
 END_RECV_TABLE();
 #define CFilterMassGreater C_FilterMassGreater // Redefine for rest of the code
 #else // Server save data and send table
 IMPLEMENT_SERVERCLASS_ST(CFilterMassGreater, DT_FilterMassGreater)
+	SendPropFloat(SENDINFO(m_fFilterMass)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CFilterMassGreater)
@@ -280,10 +316,12 @@ END_PREDICTION_DATA();
 #undef CFilterMassGreater // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT(C_FilterDamageType, DT_FilterDamageType, CFilterDamageType)
+	RecvPropInt(RECVINFO(m_iDamageType)),
 END_RECV_TABLE();
 #define CFilterDamageType C_FilterDamageType // Redefine for rest of the code
 #else // Server save data and send table
 IMPLEMENT_SERVERCLASS_ST(CFilterDamageType, DT_FilterDamageType)
+	SendPropInt(SENDINFO(m_iDamageType)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CFilterDamageType)
@@ -293,7 +331,9 @@ END_DATADESC();
 
 bool CFilterDamageType::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity )
 {
+#ifdef GAME_DLL
 	ASSERT( false );
+#endif
 	return true;
 }
 
@@ -302,6 +342,7 @@ bool CFilterDamageType::PassesDamageFilterImpl(const CTakeDamageInfo &info)
 	return info.GetDamageType() == m_iDamageType;
 }
 
+#ifdef GAME_DLL
 LINK_ENTITY_TO_CLASS(filter_enemy, CFilterEnemy);
 
 #ifdef CLIENT_DLL // Client prediction and recv table
@@ -525,3 +566,4 @@ bool CFilterEnemy::PassesMobbedFilter(CBaseEntity *pCaller, CBaseEntity *pEnemy)
 
 	return true;
 }
+#endif
