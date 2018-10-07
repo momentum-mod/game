@@ -19,6 +19,7 @@
 #include "prediction.h"
 #include "c_ai_basenpc.h"
 #include "iclientvehicle.h"
+#include "util_shared.h"
 #else
 #include "ai_basenpc.h"
 #include "iservervehicle.h"

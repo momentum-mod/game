@@ -28,7 +28,7 @@ void RecvProxy_FilterCRC(const CRecvProxyData *pData, void *pStruct, void *pOut)
 	CBaseTrigger *entity = (CBaseTrigger *) pStruct;
 
 	entity->m_iFilterCRC = pData->m_Value.m_Int;
-	entity->m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByClassnameCRC(nullptr, entity->m_iFilterCRC));
+	entity->m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByNameCRC(nullptr, entity->m_iFilterCRC));
 }
 
 #undef CBaseTrigger // Undefine so we can type the real server class name for recv table
@@ -95,7 +95,7 @@ void CBaseTrigger::UpdateFilter(void)
 	// before the client know about the filter entity
 	if (prediction->GetIsFirstTimePredicted() && m_hFilter.Get() == nullptr)
 	{
-		m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByClassnameCRC(nullptr, m_iFilterCRC));
+		m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByNameCRC(nullptr, m_iFilterCRC));
 	}
 }
 #endif
