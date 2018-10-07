@@ -2624,17 +2624,6 @@ inline bool FClassnameIs(CBaseEntity *pEntity, const char *szClassname)
 	return pEntity->ClassMatches(szClassname); 
 }
 
-class CPointEntity : public CBaseEntity
-{
-public:
-	DECLARE_CLASS( CPointEntity, CBaseEntity );
-	DECLARE_NETWORKCLASS();
-
-	void	Spawn( void );
-	virtual int	ObjectCaps( void ) { return BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
-	virtual bool KeyValue( const char *szKeyName, const char *szValue );
-};
-
 // Has a position + size
 class CServerOnlyEntity : public CBaseEntity
 {

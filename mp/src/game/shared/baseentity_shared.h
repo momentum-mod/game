@@ -89,6 +89,8 @@ enum TOGGLE_STATE
 
 #endif
 
+#include "mom_pointentity.h"
+
 #if !defined( NO_ENTITY_PREDICTION )
 // CBaseEntity inlines
 inline bool CBaseEntity::IsPlayerSimulated( void ) const

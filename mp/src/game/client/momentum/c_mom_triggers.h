@@ -156,14 +156,4 @@ public:
 	//COutputEvent m_OnTrigger;
 };
 
-class C_PointEntity : public C_BaseEntity
-{
-  public:
-    DECLARE_CLASS(C_PointEntity, C_BaseEntity);
-    DECLARE_CLIENTCLASS();
-	DECLARE_PREDICTABLE();
-
-    void Spawn() OVERRIDE;
-};
-
 #endif

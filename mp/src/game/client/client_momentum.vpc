@@ -321,6 +321,8 @@ $Project "Client (Momentum)"
                     $File   "$SRCDIR\game\shared\momentum\entities\mom_doors.h"
 			        $File   "$SRCDIR\game\shared\momentum\entities\mom_filters.cpp"
                     $File   "$SRCDIR\game\shared\momentum\entities\mom_filters.h"
+			        $File   "$SRCDIR\game\shared\momentum\entities\mom_pointentity.cpp"
+                    $File   "$SRCDIR\game\shared\momentum\entities\mom_pointentity.h"
                 }
                 
                 $File   "$SRCDIR\game\shared\momentum\mom_entityoutput.cpp"

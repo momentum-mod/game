@@ -590,25 +590,6 @@ void C_TriggerTeleport::Touch(CBaseEntity *pOther)
 	}
 }
 
-LINK_ENTITY_TO_CLASS(info_teleport_destination, C_PointEntity);
-
-IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_PointEntity, DT_PointEntity, CPointEntity)
-	RecvPropVector(RECVINFO_NAME(m_vecNetworkOrigin, m_vecOrigin)),
-    RecvPropQAngles( RECVINFO_NAME( m_angNetworkAngles , m_angRotation ) ), 
-    RecvPropInt(RECVINFO(m_iNameCRC)),
-    END_RECV_TABLE();
-
-BEGIN_PREDICTION_DATA_NO_BASE( C_PointEntity )
-	DEFINE_PRED_FIELD( m_vecNetworkOrigin, FIELD_VECTOR, FTYPEDESC_INSENDTABLE ),
-	DEFINE_PRED_FIELD( m_angNetworkAngles, FIELD_VECTOR, FTYPEDESC_INSENDTABLE ),
-    DEFINE_PRED_FIELD( m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
-    END_PREDICTION_DATA()
-
-void C_PointEntity::Spawn()
-{
-	SetSolid(SOLID_NONE);
-}
-
 LINK_ENTITY_TO_CLASS(trigger_push, C_TriggerPush);
 
 void TriggerPushProxy_PushDir(const CRecvProxyData *pData, void *pStruct, void *pOut)
