@@ -56,7 +56,6 @@ public:
 #endif
 
 	// Shared things
-	virtual void Spawn(void);
 	bool CreateVPhysics();
 	// This is ONLY used by the node graph to test movement through a door
 	virtual void SetToggleState(int state);
@@ -66,6 +65,7 @@ public:
 
 #ifdef GAME_DLL // Server specific things
 public:
+	virtual void Spawn(void);
 	DECLARE_DATADESC();
 #endif
 };

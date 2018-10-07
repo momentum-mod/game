@@ -7,6 +7,7 @@
 
 #include "cbase.h"
 
+#include "checksum_crc.h"
 #include "gamestringpool.h"
 
 #ifdef CLIENT_DLL
@@ -96,6 +97,7 @@ public:
 							// deactivated.
 
 	// Networked vars
+	CNetworkVar(unsigned int, m_iMasterCRC);
 	CNetworkVector(m_vecPosition1);
 	CNetworkVector(m_vecPosition2);
 

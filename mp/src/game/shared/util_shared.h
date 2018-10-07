@@ -622,6 +622,8 @@ bool				UTIL_IsHolidayActive( /*EHoliday*/ int eHoliday );
 // holidays overlapping, the list order will act as priority.
 const char		   *UTIL_GetActiveHolidayString();
 
+bool		UTIL_IsMasterCRCTriggered	(unsigned int iMaster, CBaseEntity *pActivator);
+
 CBaseEntity *FindEntityByNameCRC(CBaseEntity *pEnt, const unsigned int iCRC);
 CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const unsigned int iCRC);
 

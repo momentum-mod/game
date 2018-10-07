@@ -66,160 +66,15 @@ BEGIN_DATADESC(CBaseButton)
 END_DATADESC();
 #endif
 
-//-----------------------------------------------------------------------------
-// Purpose: play door or button locked or unlocked sounds. 
-//			NOTE: this routine is shared by doors and buttons
-// Input  : pEdict - 
-//			pls - 
-//			flocked - if true, play 'door is locked' sound, otherwise play 'door
-//				is unlocked' sound.
-//			fbutton - 
-//-----------------------------------------------------------------------------
-void PlayLockSounds(CBaseEntity *pEdict, locksound_t *pls, int flocked, int fbutton)
-{
-	CBaseDoor *pDoor = dynamic_cast<CBaseDoor*>(pEdict);
-	// Dynamic_cast is more expensive than a normal cast, so we should only do it if we need it.
-	// As pDoor will be nullptr if it's not a Door, then it has to be a Button, and that is the only moment when
-	// we need to dynamic_cast pEdict into button. This way we save a dynamic_cast most of the times (Most blocks are doors)
-	CBaseButton *pButton = pDoor ? nullptr : dynamic_cast<CBaseButton*>(pEdict);
-	bool isMomentumBlock = pDoor ? pDoor->m_bIsBhopBlock : (pButton ? pButton->m_bIsBhopBlock : false);
-	bool shouldPlayBhopSound = ConVarRef("mom_bhop_playblocksound").GetBool();
-	if (pEdict->HasSpawnFlags(SF_DOOR_SILENT) || (isMomentumBlock && !shouldPlayBhopSound))
-	{
-		return;
-	}
-	float flsoundwait = (fbutton) ? BUTTON_SOUNDWAIT : DOOR_SOUNDWAIT;
-
-	if (flocked)
-	{
-		int		fplaysound = (pls->sLockedSound != NULL_STRING && gpGlobals->curtime > pls->flwaitSound);
-		int		fplaysentence = (pls->sLockedSentence != NULL_STRING && !pls->bEOFLocked && gpGlobals->curtime > pls->flwaitSentence);
-		float	fvol = (fplaysound && fplaysentence) ? 0.25f : 1.0f;
-
-		// if there is a locked sound, and we've debounced, play sound
-		if (fplaysound)
-		{
-			// play 'door locked' sound
-			CPASAttenuationFilter filter(pEdict);
-
-			EmitSound_t ep;
-			ep.m_nChannel = CHAN_ITEM;
-			ep.m_pSoundName = (char*)STRING(pls->sLockedSound);
-			ep.m_flVolume = fvol;
-			ep.m_SoundLevel = SNDLVL_NORM;
-
-			CBaseEntity::EmitSound(filter, pEdict->entindex(), ep);
-			pls->flwaitSound = gpGlobals->curtime + flsoundwait;
-		}
-
-		// if there is a sentence, we've not played all in list, and we've debounced, play sound
-		if (fplaysentence)
-		{
-			// play next 'door locked' sentence in group
-			int iprev = pls->iLockedSentence;
-
-			pls->iLockedSentence = SENTENCEG_PlaySequentialSz(pEdict->edict(),
-				STRING(pls->sLockedSentence),
-				0.85f,
-				SNDLVL_NORM,
-				0,
-				100,
-				pls->iLockedSentence,
-				FALSE);
-			pls->iUnlockedSentence = 0;
-
-			// make sure we don't keep calling last sentence in list
-			pls->bEOFLocked = (iprev == pls->iLockedSentence);
-
-			pls->flwaitSentence = gpGlobals->curtime + DOOR_SENTENCEWAIT;
-		}
-	}
-	else
-	{
-		// UNLOCKED SOUND
-
-		int fplaysound = (pls->sUnlockedSound != NULL_STRING && gpGlobals->curtime > pls->flwaitSound);
-		int fplaysentence = (pls->sUnlockedSentence != NULL_STRING && !pls->bEOFUnlocked && gpGlobals->curtime > pls->flwaitSentence);
-		float fvol;
-
-		// if playing both sentence and sound, lower sound volume so we hear sentence
-		fvol = (fplaysound && fplaysentence) ? 0.25f : 1.0f;
-
-		// play 'door unlocked' sound if set
-		if (fplaysound)
-		{
-			CPASAttenuationFilter filter(pEdict);
-
-			EmitSound_t ep;
-			ep.m_nChannel = CHAN_ITEM;
-			ep.m_pSoundName = (char*)STRING(pls->sUnlockedSound);
-			ep.m_flVolume = fvol;
-			ep.m_SoundLevel = SNDLVL_NORM;
-
-			CBaseEntity::EmitSound(filter, pEdict->entindex(), ep);
-			pls->flwaitSound = gpGlobals->curtime + flsoundwait;
-		}
-
-		// play next 'door unlocked' sentence in group
-		if (fplaysentence)
-		{
-			int iprev = pls->iUnlockedSentence;
-
-			pls->iUnlockedSentence = SENTENCEG_PlaySequentialSz(pEdict->edict(), STRING(pls->sUnlockedSentence),
-				0.85, SNDLVL_NORM, 0, 100, pls->iUnlockedSentence, FALSE);
-			pls->iLockedSentence = 0;
-
-			// make sure we don't keep calling last sentence in list
-			pls->bEOFUnlocked = (iprev == pls->iUnlockedSentence);
-			pls->flwaitSentence = gpGlobals->curtime + DOOR_SENTENCEWAIT;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Button sound table.
-//			Also used by CBaseDoor to get 'touched' door lock/unlock sounds
-// Input  : sound - index of sound to look up.
-// Output : Returns a pointer to the corresponding sound file.
-//-----------------------------------------------------------------------------
-string_t MakeButtonSound(int sound)
-{
-	char tmp[1024];
-	Q_snprintf(tmp, sizeof(tmp), "Buttons.snd%d", sound);
-	return AllocPooledString(tmp);
-}
-
+#ifdef CLIENT_DLL
 void CBaseButton::Spawn(void)
 {
-	//----------------------------------------------------
-	//determine sounds for buttons
-	//a sound of 0 should not make a sound
-	//----------------------------------------------------
-	if (m_sounds)
-	{
-		m_sNoise = MakeButtonSound(m_sounds);
-		PrecacheScriptSound(m_sNoise.ToCStr());
-	}
-	else
-	{
-		m_sNoise = NULL_STRING;
-	}
-
-	Precache();
-
-	if (HasSpawnFlags(SF_BUTTON_SPARK_IF_OFF))// this button should spark in OFF state
-	{
-		SetThink(&CBaseButton::ButtonSpark);
-		SetNextThink(gpGlobals->curtime + 0.5f);// no hurry, make sure everything else spawns
-	}
-
 	// Convert movedir from angles to a vector
 	QAngle angMoveDir = QAngle(m_vecMoveDir.x, m_vecMoveDir.y, m_vecMoveDir.z);
 	AngleVectors(angMoveDir, &m_vecMoveDir);
 
 	SetMoveType(MOVETYPE_PUSH);
 	SetSolid(SOLID_BSP);
-	SetModel(STRING(GetModelName()));
 
 	if (m_flSpeed == 0)
 	{
@@ -283,9 +138,8 @@ void CBaseButton::Spawn(void)
 	{
 		SetTouch(NULL);
 	}
-
-	CreateVPhysics();
 }
+#endif
 
 bool CBaseButton::CreateVPhysics(void)
 {
@@ -312,19 +166,25 @@ void CBaseButton::ButtonActivate(void)
 		EmitSound(filter, entindex(), ep);
 	}
 
-	if (!UTIL_IsMasterTriggered(m_sMaster, m_hActivator) || m_bLocked)
+	if (!UTIL_IsMasterCRCTriggered(m_iMasterCRC, m_hActivator) || m_bLocked)
 	{
+#ifdef GAME_DLL
 		// button is locked, play locked sound
 		PlayLockSounds(this, &m_ls, TRUE, TRUE);
+#endif
 		return;
 	}
+#ifdef GAME_DLL
 	else
 	{
 		// button is unlocked, play unlocked sound
 		PlayLockSounds(this, &m_ls, FALSE, TRUE);
 	}
+#endif
 
+#ifdef GAME_DLL
 	ASSERT(m_toggle_state == TS_AT_BOTTOM);
+#endif
 	m_toggle_state = TS_GOING_UP;
 
 	SetMoveDone(&CBaseButton::TriggerAndWait);
@@ -351,10 +211,12 @@ void CBaseButton::ButtonTouch(CBaseEntity *pOther)
 	if (code == BUTTON_NOTHING)
 		return;
 
-	if (!UTIL_IsMasterTriggered(m_sMaster, pOther) || m_bLocked)
+	if (!UTIL_IsMasterCRCTriggered(m_iMasterCRC, pOther) || m_bLocked)
 	{
+#ifdef GAME_DLL
 		// play button locked sound
 		PlayLockSounds(this, &m_ls, TRUE, TRUE);
+#endif
 		return;
 	}
 
@@ -388,25 +250,16 @@ void CBaseButton::ButtonTouch(CBaseEntity *pOther)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Think function that emits sparks at random intervals.
-//-----------------------------------------------------------------------------
-void CBaseButton::ButtonSpark(void)
-{
-	SetThink(&CBaseButton::ButtonSpark);
-	SetNextThink(gpGlobals->curtime + 0.1 + random->RandomFloat(0, 1.5));// spark again at random interval
-
-	DoSpark(this, WorldSpaceCenter(), 1, 1, true, vec3_origin);
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Button has reached the "pressed/top" position. Fire its OnIn output,
 //			and pause before returning to "unpressed/bottom".
 //-----------------------------------------------------------------------------
 void CBaseButton::TriggerAndWait(void)
 {
+#ifdef GAME_DLL
 	ASSERT(m_toggle_state == TS_GOING_UP);
+#endif
 
-	if (!UTIL_IsMasterTriggered(m_sMaster, m_hActivator) || m_bLocked)
+	if (!UTIL_IsMasterCRCTriggered(m_iMasterCRC, m_hActivator) || m_bLocked)
 	{
 		return;
 	}
@@ -486,12 +339,14 @@ void CBaseButton::ButtonBackHome(void)
 		SetTouch(NULL);
 	}
 
+#ifdef GAME_DLL
 	// reset think for a sparking button
 	if (HasSpawnFlags(SF_BUTTON_SPARK_IF_OFF))
 	{
 		SetThink(&CBaseButton::ButtonSpark);
 		SetNextThink(gpGlobals->curtime + 0.5f);// no hurry
 	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -553,7 +408,9 @@ void CBaseButton::ButtonUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 //-----------------------------------------------------------------------------
 bool CBaseButton::OnUseLocked(CBaseEntity *pActivator)
 {
+#ifdef GAME_DLL
 	PlayLockSounds(this, &m_ls, TRUE, TRUE);
+#endif
 
 	if (gpGlobals->curtime > m_flUseLockedTime)
 	{
@@ -605,8 +462,10 @@ void CBaseButton::Press(CBaseEntity *pActivator, BUTTON_CODE eCode)
 	// FIXME: consolidate all the button press code into one place!
 	if (m_bLocked)
 	{
+#ifdef GAME_DLL
 		// play button locked sound
 		PlayLockSounds(this, &m_ls, TRUE, TRUE);
+#endif
 		return;
 	}
 
@@ -775,6 +634,104 @@ BUTTON_CODE CBaseButton::ButtonResponseToTouch( void )
 }
 
 #ifdef GAME_DLL
+void CBaseButton::Spawn(void)
+{
+	//----------------------------------------------------
+	//determine sounds for buttons
+	//a sound of 0 should not make a sound
+	//----------------------------------------------------
+	if (m_sounds)
+	{
+		m_sNoise = MakeButtonSound(m_sounds);
+		PrecacheScriptSound(m_sNoise.ToCStr());
+	}
+	else
+	{
+		m_sNoise = NULL_STRING;
+	}
+
+	Precache();
+
+	if (HasSpawnFlags(SF_BUTTON_SPARK_IF_OFF))// this button should spark in OFF state
+	{
+		SetThink(&CBaseButton::ButtonSpark);
+		SetNextThink(gpGlobals->curtime + 0.5f);// no hurry, make sure everything else spawns
+	}
+
+	// Convert movedir from angles to a vector
+	QAngle angMoveDir = QAngle(m_vecMoveDir.x, m_vecMoveDir.y, m_vecMoveDir.z);
+	AngleVectors(angMoveDir, &m_vecMoveDir);
+
+	SetMoveType(MOVETYPE_PUSH);
+	SetSolid(SOLID_BSP);
+	SetModel(STRING(GetModelName()));
+
+	if (m_flSpeed == 0)
+	{
+		m_flSpeed = 40;
+	}
+
+	m_takedamage = DAMAGE_YES;
+
+	if (m_flWait == 0)
+	{
+		m_flWait = 1;
+	}
+
+	if (m_flLip == 0)
+	{
+		m_flLip = 4;
+	}
+
+	m_toggle_state = TS_AT_BOTTOM;
+	m_vecPosition1 = GetLocalOrigin();
+
+	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
+	Vector vecButtonOBB = CollisionProp()->OBBSize();
+	vecButtonOBB -= Vector(2, 2, 2);
+	m_vecPosition2 = m_vecPosition1 + (m_vecMoveDir * (DotProductAbs(m_vecMoveDir, vecButtonOBB) - m_flLip));
+
+	// Is this a non-moving button?
+	if (((m_vecPosition2 - m_vecPosition1).Length() < 1) || HasSpawnFlags(SF_BUTTON_DONTMOVE))
+	{
+		m_vecPosition2 = m_vecPosition1;
+	}
+
+	m_fStayPushed = (m_flWait == -1 ? TRUE : FALSE);
+	m_fRotating = FALSE;
+
+	if (HasSpawnFlags(SF_BUTTON_LOCKED))
+	{
+		m_bLocked = true;
+	}
+
+	//
+	// If using activates the button, set its use function.
+	//
+	if (HasSpawnFlags(SF_BUTTON_USE_ACTIVATES))
+	{
+		SetUse(&CBaseButton::ButtonUse);
+	}
+	else
+	{
+		SetUse(NULL);
+	}
+
+	//
+	// If touching activates the button, set its touch function.
+	//
+	if (HasSpawnFlags(SF_BUTTON_TOUCH_ACTIVATES))
+	{
+		SetTouch(&CBaseButton::ButtonTouch);
+	}
+	else
+	{
+		SetTouch(NULL);
+	}
+
+	CreateVPhysics();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Cache user-entity-field values until spawn is called.
 // Input  : szKeyName - 
@@ -805,6 +762,11 @@ bool CBaseButton::KeyValue(const char *szKeyName, const char *szValue)
 	}
 
 	return true;
+}
+
+int CBaseButton::UpdateTransmitState()
+{
+	return SetTransmitState(FL_EDICT_ALWAYS);
 }
 
 void CBaseButton::Precache(void)
@@ -869,6 +831,17 @@ int	CBaseButton::ObjectCaps(void)
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Think function that emits sparks at random intervals.
+//-----------------------------------------------------------------------------
+void CBaseButton::ButtonSpark(void)
+{
+	SetThink(&CBaseButton::ButtonSpark);
+	SetNextThink(gpGlobals->curtime + 0.1 + random->RandomFloat(0, 1.5));// spark again at random interval
+
+	DoSpark(this, WorldSpaceCenter(), 1, 1, true, vec3_origin);
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 int CBaseButton::DrawDebugTextOverlays()
 {
@@ -902,6 +875,129 @@ int CBaseButton::DrawDebugTextOverlays()
 		text_offset++;
 	}
 	return text_offset;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: play door or button locked or unlocked sounds. 
+//			NOTE: this routine is shared by doors and buttons
+// Input  : pEdict - 
+//			pls - 
+//			flocked - if true, play 'door is locked' sound, otherwise play 'door
+//				is unlocked' sound.
+//			fbutton - 
+//-----------------------------------------------------------------------------
+void PlayLockSounds(CBaseEntity *pEdict, locksound_t *pls, int flocked, int fbutton)
+{
+	CBaseDoor *pDoor = dynamic_cast<CBaseDoor*>(pEdict);
+	// Dynamic_cast is more expensive than a normal cast, so we should only do it if we need it.
+	// As pDoor will be nullptr if it's not a Door, then it has to be a Button, and that is the only moment when
+	// we need to dynamic_cast pEdict into button. This way we save a dynamic_cast most of the times (Most blocks are doors)
+	CBaseButton *pButton = pDoor ? nullptr : dynamic_cast<CBaseButton*>(pEdict);
+	bool isMomentumBlock = pDoor ? pDoor->m_bIsBhopBlock : (pButton ? pButton->m_bIsBhopBlock : false);
+	bool shouldPlayBhopSound = ConVarRef("mom_bhop_playblocksound").GetBool();
+	if (pEdict->HasSpawnFlags(SF_DOOR_SILENT) || (isMomentumBlock && !shouldPlayBhopSound))
+	{
+		return;
+	}
+	float flsoundwait = (fbutton) ? BUTTON_SOUNDWAIT : DOOR_SOUNDWAIT;
+
+	if (flocked)
+	{
+		int		fplaysound = (pls->sLockedSound != NULL_STRING && gpGlobals->curtime > pls->flwaitSound);
+		int		fplaysentence = (pls->sLockedSentence != NULL_STRING && !pls->bEOFLocked && gpGlobals->curtime > pls->flwaitSentence);
+		float	fvol = (fplaysound && fplaysentence) ? 0.25f : 1.0f;
+
+		// if there is a locked sound, and we've debounced, play sound
+		if (fplaysound)
+		{
+			// play 'door locked' sound
+			CPASAttenuationFilter filter(pEdict);
+
+			EmitSound_t ep;
+			ep.m_nChannel = CHAN_ITEM;
+			ep.m_pSoundName = (char*)STRING(pls->sLockedSound);
+			ep.m_flVolume = fvol;
+			ep.m_SoundLevel = SNDLVL_NORM;
+
+			CBaseEntity::EmitSound(filter, pEdict->entindex(), ep);
+			pls->flwaitSound = gpGlobals->curtime + flsoundwait;
+		}
+
+		// if there is a sentence, we've not played all in list, and we've debounced, play sound
+		if (fplaysentence)
+		{
+			// play next 'door locked' sentence in group
+			int iprev = pls->iLockedSentence;
+
+			pls->iLockedSentence = SENTENCEG_PlaySequentialSz(pEdict->edict(),
+				STRING(pls->sLockedSentence),
+				0.85f,
+				SNDLVL_NORM,
+				0,
+				100,
+				pls->iLockedSentence,
+				FALSE);
+			pls->iUnlockedSentence = 0;
+
+			// make sure we don't keep calling last sentence in list
+			pls->bEOFLocked = (iprev == pls->iLockedSentence);
+
+			pls->flwaitSentence = gpGlobals->curtime + DOOR_SENTENCEWAIT;
+		}
+	}
+	else
+	{
+		// UNLOCKED SOUND
+
+		int fplaysound = (pls->sUnlockedSound != NULL_STRING && gpGlobals->curtime > pls->flwaitSound);
+		int fplaysentence = (pls->sUnlockedSentence != NULL_STRING && !pls->bEOFUnlocked && gpGlobals->curtime > pls->flwaitSentence);
+		float fvol;
+
+		// if playing both sentence and sound, lower sound volume so we hear sentence
+		fvol = (fplaysound && fplaysentence) ? 0.25f : 1.0f;
+
+		// play 'door unlocked' sound if set
+		if (fplaysound)
+		{
+			CPASAttenuationFilter filter(pEdict);
+
+			EmitSound_t ep;
+			ep.m_nChannel = CHAN_ITEM;
+			ep.m_pSoundName = (char*)STRING(pls->sUnlockedSound);
+			ep.m_flVolume = fvol;
+			ep.m_SoundLevel = SNDLVL_NORM;
+
+			CBaseEntity::EmitSound(filter, pEdict->entindex(), ep);
+			pls->flwaitSound = gpGlobals->curtime + flsoundwait;
+		}
+
+		// play next 'door unlocked' sentence in group
+		if (fplaysentence)
+		{
+			int iprev = pls->iUnlockedSentence;
+
+			pls->iUnlockedSentence = SENTENCEG_PlaySequentialSz(pEdict->edict(), STRING(pls->sUnlockedSentence),
+				0.85, SNDLVL_NORM, 0, 100, pls->iUnlockedSentence, FALSE);
+			pls->iLockedSentence = 0;
+
+			// make sure we don't keep calling last sentence in list
+			pls->bEOFUnlocked = (iprev == pls->iUnlockedSentence);
+			pls->flwaitSentence = gpGlobals->curtime + DOOR_SENTENCEWAIT;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Button sound table.
+//			Also used by CBaseDoor to get 'touched' door lock/unlock sounds
+// Input  : sound - index of sound to look up.
+// Output : Returns a pointer to the corresponding sound file.
+//-----------------------------------------------------------------------------
+string_t MakeButtonSound(int sound)
+{
+	char tmp[1024];
+	Q_snprintf(tmp, sizeof(tmp), "Buttons.snd%d", sound);
+	return AllocPooledString(tmp);
 }
 
 #endif

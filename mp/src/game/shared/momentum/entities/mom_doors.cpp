@@ -25,6 +25,32 @@ END_DATADESC();
 #endif
 
 //-----------------------------------------------------------------------------
+
+bool CRotDoor::CreateVPhysics()
+{
+	if (!IsSolidFlagSet(FSOLID_NOT_SOLID))
+	{
+		VPhysicsInitShadow(false, false);
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : state - 
+//-----------------------------------------------------------------------------
+// This is ONLY used by the node graph to test movement through a door
+void CRotDoor::SetToggleState(int state)
+{
+	if (state == TS_AT_TOP)
+		SetLocalAngles(m_vecAngle2);
+	else
+		SetLocalAngles(m_vecAngle1);
+}
+
+#ifdef GAME_DLL
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CRotDoor::Spawn(void)
@@ -85,28 +111,4 @@ void CRotDoor::Spawn(void)
 		SetSolid(SOLID_BSP);
 	}
 }
-
-//-----------------------------------------------------------------------------
-
-bool CRotDoor::CreateVPhysics()
-{
-	if (!IsSolidFlagSet(FSOLID_NOT_SOLID))
-	{
-		VPhysicsInitShadow(false, false);
-	}
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : state - 
-//-----------------------------------------------------------------------------
-// This is ONLY used by the node graph to test movement through a door
-void CRotDoor::SetToggleState(int state)
-{
-	if (state == TS_AT_TOP)
-		SetLocalAngles(m_vecAngle2);
-	else
-		SetLocalAngles(m_vecAngle1);
-}
+#endif

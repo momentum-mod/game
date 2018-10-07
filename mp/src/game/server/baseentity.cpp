@@ -2576,19 +2576,6 @@ void CBaseEntity::VPhysicsUpdatePusher( IPhysicsObject *pPhysics )
 }
 
 
-void CBaseEntity::SetMoveDoneTime( float flDelay )
-{
-	if (flDelay >= 0)
-	{
-		m_flMoveDoneTime = GetLocalTime() + flDelay;
-	}
-	else
-	{
-		m_flMoveDoneTime = -1;
-	}
-	CheckHasGamePhysicsSimulation();
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Relinks all of a parents children into the collision tree
 //-----------------------------------------------------------------------------

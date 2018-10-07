@@ -1176,8 +1176,30 @@ const char* UTIL_GetActiveHolidayString()
 #endif
 }
 
+bool UTIL_IsMasterCRCTriggered(unsigned int iMaster, CBaseEntity *pActivator)
+{
+	if (iMaster != 0)
+	{
+		CBaseEntity *pMaster = FindEntityByNameCRC(NULL, iMaster);
+		if (pMaster && (pMaster->ObjectCaps() & FCAP_MASTER))
+		{
+			return pMaster->IsTriggered(pActivator);
+		}
+
+		Warning("Master was null or not a master!\n");
+	}
+
+	// if this isn't a master entity, just say yes.
+	return true;
+}
+
 CBaseEntity *FindEntityByNameCRC(CBaseEntity *pEnt, const unsigned int iCRC)
 {
+	if (iCRC == 0)
+	{
+		return nullptr;
+	}
+
 #ifdef CLIENT_DLL
 	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
 #else
@@ -1191,9 +1213,9 @@ CBaseEntity *FindEntityByNameCRC(CBaseEntity *pEnt, const unsigned int iCRC)
 		}
 
 #ifdef CLIENT_DLL
-		pNext = cl_entitylist->NextBaseEntity(pEnt);
+		pNext = cl_entitylist->NextBaseEntity(pNext);
 #else
-		pNext = gEntList.NextEnt(pEnt);
+		pNext = gEntList.NextEnt(pNext);
 #endif
 	}
 	return pNext;
@@ -1201,6 +1223,11 @@ CBaseEntity *FindEntityByNameCRC(CBaseEntity *pEnt, const unsigned int iCRC)
 
 CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const unsigned int iCRC)
 {
+	if (iCRC == 0)
+	{
+		return nullptr;
+	}
+
 #ifdef CLIENT_DLL
 	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
 #else
@@ -1208,15 +1235,15 @@ CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const unsigned int iCRC
 #endif
 	while (pNext != nullptr)
 	{
-		if (pNext->GetNameCRC() == iCRC) // MOM_TODO: Change to ClassnameCRC
+		if (pNext->GetClassnameCRC() == iCRC)
 		{
 			return pNext;
 		}
 
 #ifdef CLIENT_DLL
-		pNext = cl_entitylist->NextBaseEntity(pEnt);
+		pNext = cl_entitylist->NextBaseEntity(pNext);
 #else
-		pNext = gEntList.NextEnt(pEnt);
+		pNext = gEntList.NextEnt(pNext);
 #endif
 	}
 	return pNext;

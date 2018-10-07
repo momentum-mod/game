@@ -24,6 +24,14 @@ BEGIN_DATADESC(CRotButton)
 END_DATADESC();
 #endif
 
+bool CRotButton::CreateVPhysics(void)
+{
+	VPhysicsInitShadow(false, false);
+	return true;
+}
+
+#ifdef GAME_DLL
+
 void CRotButton::Spawn(void)
 {
 	//----------------------------------------------------
@@ -99,12 +107,7 @@ void CRotButton::Spawn(void)
 
 	CreateVPhysics();
 }
-
-bool CRotButton::CreateVPhysics(void)
-{
-	VPhysicsInitShadow(false, false);
-	return true;
-}
+#endif
 
 //-----------------------------------------------------------------------------
 // CMomentaryRotButton
@@ -161,113 +164,6 @@ BEGIN_DATADESC(CMomentaryRotButton)
 	DEFINE_FIELD(m_bDisabled, FIELD_BOOLEAN)
 END_DATADESC();
 #endif
-
-//-----------------------------------------------------------------------------
-// Purpose: Called when spawning, after keyvalues have been handled.
-//-----------------------------------------------------------------------------
-void CMomentaryRotButton::Spawn(void)
-{
-	CBaseToggle::AxisDir();
-
-	m_bUpdateTarget = true;
-
-	if (m_flSpeed == 0)
-	{
-		m_flSpeed = 100;
-	}
-
-	// Clamp start position and issue bounds warning
-	if (m_flStartPosition < 0.0f || m_flStartPosition > 1.0f)
-	{
-		Warning("WARNING: Momentary door (%s) start position not between 0 and 1.  Clamping.\n", GetDebugName());
-		m_flStartPosition = clamp(m_IdealYaw, 0.f, 1.f);
-	}
-
-	// Check direction fields (for backward compatibility)
-	if (m_direction != 1 && m_direction != -1)
-	{
-		m_direction = 1;
-	}
-
-	if (m_flMoveDistance < 0)
-	{
-		m_vecMoveAng = m_vecMoveAng * -1;
-		m_flMoveDistance = -m_flMoveDistance;
-	}
-
-	m_start = GetLocalAngles() - m_vecMoveAng * m_flMoveDistance * m_flStartPosition;
-	m_end = GetLocalAngles() + m_vecMoveAng * m_flMoveDistance * (1 - m_flStartPosition);
-
-	m_IdealYaw = m_flStartPosition;
-
-	// Force start direction at end points
-	if (m_flStartPosition == 0.0)
-	{
-		m_direction = -1;
-	}
-	else if (m_flStartPosition == 1.0)
-	{
-		m_direction = 1;
-	}
-
-	if (HasSpawnFlags(SF_BUTTON_LOCKED))
-	{
-		m_bLocked = true;
-	}
-
-	if (HasSpawnFlags(SF_BUTTON_USE_ACTIVATES))
-	{
-		if (m_sounds)
-		{
-			m_sNoise = MakeButtonSound(m_sounds);
-			PrecacheScriptSound(m_sNoise.ToCStr());
-		}
-		else
-		{
-			m_sNoise = NULL_STRING;
-		}
-
-		m_lastUsed = 0;
-		UpdateTarget(0, this);
-	}
-
-#ifdef HL1_DLL
-	SetSolid(SOLID_BSP);
-#else
-	SetSolid(SOLID_VPHYSICS);
-#endif
-	if (HasSpawnFlags(SF_ROTBUTTON_NOTSOLID))
-	{
-		AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID);
-		AddSolidFlags(FSOLID_NOT_SOLID);
-	}
-
-	SetMoveType(MOVETYPE_PUSH);
-	SetModel(STRING(GetModelName()));
-
-	CreateVPhysics();
-
-	// Slam the object back to solid - if we really want it to be solid.
-	if (m_bSolidBsp)
-	{
-		SetSolid(SOLID_BSP);
-	}
-
-	m_bDisabled = false;
-}
-
-int	CMomentaryRotButton::ObjectCaps(void)
-{
-	int flags = BaseClass::ObjectCaps();
-	if (!HasSpawnFlags(SF_BUTTON_USE_ACTIVATES))
-	{
-		return flags;
-	}
-	else
-	{
-		return (flags | FCAP_CONTINUOUS_USE | FCAP_USE_IN_RADIUS);
-	}
-}
 
 
 //-----------------------------------------------------------------------------
@@ -721,6 +617,113 @@ void CMomentaryRotButton::UpdateThink(void)
 }
 
 #ifdef GAME_DLL
+//-----------------------------------------------------------------------------
+// Purpose: Called when spawning, after keyvalues have been handled.
+//-----------------------------------------------------------------------------
+void CMomentaryRotButton::Spawn(void)
+{
+	CBaseToggle::AxisDir();
+
+	m_bUpdateTarget = true;
+
+	if (m_flSpeed == 0)
+	{
+		m_flSpeed = 100;
+	}
+
+	// Clamp start position and issue bounds warning
+	if (m_flStartPosition < 0.0f || m_flStartPosition > 1.0f)
+	{
+		Warning("WARNING: Momentary door (%s) start position not between 0 and 1.  Clamping.\n", GetDebugName());
+		m_flStartPosition = clamp(m_IdealYaw, 0.f, 1.f);
+	}
+
+	// Check direction fields (for backward compatibility)
+	if (m_direction != 1 && m_direction != -1)
+	{
+		m_direction = 1;
+	}
+
+	if (m_flMoveDistance < 0)
+	{
+		m_vecMoveAng = m_vecMoveAng * -1;
+		m_flMoveDistance = -m_flMoveDistance;
+	}
+
+	m_start = GetLocalAngles() - m_vecMoveAng * m_flMoveDistance * m_flStartPosition;
+	m_end = GetLocalAngles() + m_vecMoveAng * m_flMoveDistance * (1 - m_flStartPosition);
+
+	m_IdealYaw = m_flStartPosition;
+
+	// Force start direction at end points
+	if (m_flStartPosition == 0.0)
+	{
+		m_direction = -1;
+	}
+	else if (m_flStartPosition == 1.0)
+	{
+		m_direction = 1;
+	}
+
+	if (HasSpawnFlags(SF_BUTTON_LOCKED))
+	{
+		m_bLocked = true;
+	}
+
+	if (HasSpawnFlags(SF_BUTTON_USE_ACTIVATES))
+	{
+		if (m_sounds)
+		{
+			m_sNoise = MakeButtonSound(m_sounds);
+			PrecacheScriptSound(m_sNoise.ToCStr());
+		}
+		else
+		{
+			m_sNoise = NULL_STRING;
+		}
+
+		m_lastUsed = 0;
+		UpdateTarget(0, this);
+	}
+
+#ifdef HL1_DLL
+	SetSolid(SOLID_BSP);
+#else
+	SetSolid(SOLID_VPHYSICS);
+#endif
+	if (HasSpawnFlags(SF_ROTBUTTON_NOTSOLID))
+	{
+		AddEFlags(EFL_USE_PARTITION_WHEN_NOT_SOLID);
+		AddSolidFlags(FSOLID_NOT_SOLID);
+	}
+
+	SetMoveType(MOVETYPE_PUSH);
+	SetModel(STRING(GetModelName()));
+
+	CreateVPhysics();
+
+	// Slam the object back to solid - if we really want it to be solid.
+	if (m_bSolidBsp)
+	{
+		SetSolid(SOLID_BSP);
+	}
+
+	m_bDisabled = false;
+}
+
+int	CMomentaryRotButton::ObjectCaps(void)
+{
+	int flags = BaseClass::ObjectCaps();
+	if (!HasSpawnFlags(SF_BUTTON_USE_ACTIVATES))
+	{
+		return flags;
+	}
+	else
+	{
+		return (flags | FCAP_CONTINUOUS_USE | FCAP_USE_IN_RADIUS);
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Draw any debug text overlays
 // Output : Current text offset from the top

@@ -171,21 +171,6 @@ BEGIN_DATADESC(CFilterName)
 END_DATADESC();
 #endif
 
-void CFilterName::Spawn(void)
-{
-	BaseClass::Spawn();
-
-	CRC32_t crc;
-	if (Q_strlen(STRING(m_iFilterName)))
-	{
-		CRC32_Init(&crc);
-		CRC32_ProcessBuffer(&crc, STRING(m_iFilterName), Q_strlen(STRING(m_iFilterName)));
-		CRC32_Final(&crc);
-
-		m_iFilterNameCRC = crc;
-	}
-}
-
 bool CFilterName::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 {
 	static CRC32_t crc = 0;
@@ -207,6 +192,23 @@ bool CFilterName::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 		return (pEntity->GetNameCRC() == m_iFilterNameCRC);
 	}
 }
+
+#ifdef GAME_DLL
+void CFilterName::Spawn(void)
+{
+	BaseClass::Spawn();
+
+	CRC32_t crc;
+	if (Q_strlen(STRING(m_iFilterName)))
+	{
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, STRING(m_iFilterName), Q_strlen(STRING(m_iFilterName)));
+		CRC32_Final(&crc);
+
+		m_iFilterNameCRC = crc;
+	}
+}
+#endif
 
 LINK_ENTITY_TO_CLASS(filter_activator_team, CFilterTeam);
 
@@ -307,6 +309,7 @@ bool CFilterMassGreater::PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pE
 	return ( pEntity->VPhysicsGetObject()->GetMass() > m_fFilterMass );
 }
 
+#if defined(CLIENT_DLL) && defined(GAME_DLL)
 LINK_ENTITY_TO_CLASS(filter_damage_type, CFilterDamageType);
 
 #ifdef CLIENT_DLL // Client prediction and recv table
@@ -342,7 +345,6 @@ bool CFilterDamageType::PassesDamageFilterImpl(const CTakeDamageInfo &info)
 	return info.GetDamageType() == m_iDamageType;
 }
 
-#ifdef GAME_DLL
 LINK_ENTITY_TO_CLASS(filter_enemy, CFilterEnemy);
 
 #ifdef CLIENT_DLL // Client prediction and recv table

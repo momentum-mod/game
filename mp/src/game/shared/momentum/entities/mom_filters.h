@@ -65,13 +65,13 @@ public:
 #endif
 
 	// Shared things
-	virtual void Spawn(void);
 	virtual bool PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity);
 
 	string_t m_iFilterName;
 	CNetworkVar(unsigned int, m_iFilterNameCRC);
 #ifdef GAME_DLL // Server specific things
 public:
+	virtual void Spawn(void);
 	DECLARE_DATADESC();
 #endif
 };
@@ -144,6 +144,7 @@ public:
 #endif
 };
 
+#if defined(CLIENT_DLL) && defined(GAME_DLL)
 // ###################################################################
 //	> FilterDamageType
 // ###################################################################
@@ -167,7 +168,6 @@ public:
 #endif
 };
 
-#ifdef GAME_DLL // Do we even need this since we dont have any damage things
 // ###################################################################
 //	> FilterEnemy
 // ###################################################################
@@ -200,4 +200,5 @@ public:
 #endif
 };
 #endif
+
 #endif

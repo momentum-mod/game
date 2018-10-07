@@ -105,6 +105,7 @@ public:
 	string_t	m_NoiseArrivedClosed;		//End sound
 	string_t	m_ChainTarget;		///< Entity name to pass Touch and Use events to
 
+	CNetworkVar(unsigned int, m_iChainTargetCRC);
 	CNetworkVar(float, m_flWaveHeight);
 
 	// Outputs
@@ -142,7 +143,7 @@ private:
 #ifdef GAME_DLL // Server specific things
 public:
 	virtual bool ShouldBlockNav() const OVERRIDE { return false; }
-
+	virtual int UpdateTransmitState();
 	virtual void Precache(void);
 	virtual bool KeyValue(const char *szKeyName, const char *szValue);
 	virtual int	ObjectCaps(void)

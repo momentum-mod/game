@@ -914,11 +914,19 @@ public:
 
 	virtual bool			IsCurrentlyTouching( void ) const;
 
+
+	// fundamental callbacks
+	void (C_BaseEntity ::*m_pfnTouch)( C_BaseEntity *pOther );
+	void (C_BaseEntity ::*m_pfnUse)( C_BaseEntity *pActivator, C_BaseEntity *pCaller, USE_TYPE useType, float value );
+	void (C_BaseEntity ::*m_pfnBlocked)( C_BaseEntity *pOther );
+
+	virtual void			Use( C_BaseEntity *pActivator, C_BaseEntity *pCaller, USE_TYPE useType, float value );
 	virtual void			StartTouch( C_BaseEntity *pOther );
 	virtual void			Touch( C_BaseEntity *pOther ); 
 	virtual void			EndTouch( C_BaseEntity *pOther );
-
-	void (C_BaseEntity ::*m_pfnTouch)( C_BaseEntity *pOther );
+	virtual void			StartBlocked( C_BaseEntity *pOther ) {}
+	virtual void			Blocked( C_BaseEntity *pOther );
+	virtual void			EndBlocked( void ) {}
 
 	void					PhysicsStep( void );
 
@@ -1020,6 +1028,7 @@ public:
 	virtual bool					IsPlayer( void ) const { return false; };
 	virtual bool					IsBaseCombatCharacter( void ) { return false; };
 	virtual C_BaseCombatCharacter	*MyCombatCharacterPointer( void ) { return NULL; }
+	virtual bool					IsTriggered( C_BaseEntity *pActivator ) { return true; }
 	virtual bool					IsNPC( void ) { return false; }
 	C_AI_BaseNPC					*MyNPCPointer( void ); 
 	virtual bool					IsNextBot() { return false; }
@@ -1145,6 +1154,10 @@ public:
 	void	NetworkStateChanged( void *pVar )			{ }
 	void	NetworkStateSetUpdateInterval( float N )	{ }
 	void	NetworkStateForceUpdate()					{ }
+
+	// interface function pts
+	void (CBaseEntity::*m_pfnMoveDone)(void);
+	virtual void MoveDone( void ) { if (m_pfnMoveDone) (this->*m_pfnMoveDone)();};
 
 	// Think functions with contexts
 	int		RegisterThinkContext( const char *szContext );
@@ -1396,6 +1409,11 @@ public:
 
 	float							GetElasticity( void ) const;
 
+	float							GetLocalTime( void ) const;
+	void							IncrementLocalTime( float flTimeDelta );
+	float							GetMoveDoneTime( ) const;
+	void							SetMoveDoneTime( float flTime );
+
 	int								GetTextureFrameIndex( void );
 	void							SetTextureFrameIndex( int iIndex );
 
@@ -1611,6 +1629,13 @@ public:
 	// Physics state
 	float							m_flElasticity;
 
+	// was pev->ltime
+	float							m_flLocalTime;
+	// local time at the beginning of this frame
+	float							m_flVPhysicsUpdateLocalTime;
+	// local time the movement has ended
+	float							m_flMoveDoneTime;
+
 	float							m_flShadowCastDistance;
 	EHANDLE							m_ShadowDirUseOtherEntity;
 
@@ -1761,13 +1786,26 @@ inline bool FClassnameIs( C_BaseEntity *pEntity, const char *szClassname )
 #define SetContextThink( a, b, context ) ThinkSet( static_cast <void (CBaseEntity::*)(void)> (a), (b), context )
 
 #ifdef _DEBUG
-#define SetTouch( a ) TouchSet( static_cast <void (C_BaseEntity::*)(C_BaseEntity *)> (a), #a )
 
+#define SetTouch( a ) TouchSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
+#define SetUse( a ) UseSet( static_cast <void (CBaseEntity::*)(	CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )> (a), #a )
+#define SetBlocked( a ) BlockedSet( static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a), #a )
+
+#define SetMoveDone( a ) \
+	do \
+	{ \
+		m_pfnMoveDone = static_cast <void (CBaseEntity::*)(void)> (a); \
+		FunctionCheck( (void *)*((int *)((char *)this + ( offsetof(CBaseEntity,m_pfnMoveDone)))), "BaseMoveFunc" ); \
+	} while ( 0 )
 #else
-#define SetTouch( a ) m_pfnTouch = static_cast <void (C_BaseEntity::*)(C_BaseEntity *)> (a)
 
+#define SetTouch( a ) m_pfnTouch = static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a)
+#define SetUse( a ) m_pfnUse = static_cast <void (CBaseEntity::*)( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )> (a)
+#define SetBlocked( a ) m_pfnBlocked = static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a)
+
+#define SetMoveDone( a ) \
+		(void)(m_pfnMoveDone = static_cast <void (CBaseEntity::*)(void)> (a))
 #endif
-
 
 //-----------------------------------------------------------------------------
 // An inline version the game code can use
@@ -2276,5 +2314,20 @@ inline bool C_BaseEntity::ShouldRecordInTools() const
 }
 
 C_BaseEntity *CreateEntityByName( const char *className );
+
+inline float C_BaseEntity::GetLocalTime( void ) const
+{ 
+	return m_flLocalTime; 
+}
+
+inline void C_BaseEntity::IncrementLocalTime( float flTimeDelta )
+{ 
+	m_flLocalTime += flTimeDelta; 
+}
+
+inline float C_BaseEntity::GetMoveDoneTime( ) const
+{
+	return (m_flMoveDoneTime >= 0) ? m_flMoveDoneTime - GetLocalTime() : -1;
+}
 
 #endif // C_BASEENTITY_H

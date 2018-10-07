@@ -293,7 +293,9 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 	{
 		if (pOther->GetFlags() & FL_NPC)
 		{
+#ifdef GAME_DLL // MOM_TODO: Eventually add IsPlayerAlly to "CAI_BaseNPC"
 			CAI_BaseNPC *pNPC = pOther->MyNPCPointer();
+#endif
 
 			if (HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS))
 			{

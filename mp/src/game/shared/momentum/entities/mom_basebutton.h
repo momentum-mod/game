@@ -10,6 +10,8 @@
 #include "mom_basedoor.h"
 #include "mom_entityoutput.h"
 
+#include "takedamageinfo.h"
+
 #ifdef CLIENT_DLL
 #define CBaseButton C_BaseButton
 #else
@@ -55,7 +57,6 @@ protected:
 	void ButtonActivate(void);
 
 	void ButtonTouch(::CBaseEntity *pOther);
-	void ButtonSpark(void);
 	void TriggerAndWait(void);
 	void ButtonReturn(void);
 	void ButtonBackHome(void);
@@ -106,9 +107,11 @@ public:
 
 #ifdef GAME_DLL // Server specific things
 public:
+	virtual int UpdateTransmitState();
 	virtual void Precache(void);
 	virtual bool KeyValue(const char *szKeyName, const char *szValue);
 	virtual int	ObjectCaps(void);
+	void ButtonSpark(void);
 	int DrawDebugTextOverlays();
 
 protected:
@@ -117,6 +120,8 @@ protected:
 #endif
 };
 
+#ifdef GAME_DLL
 extern string_t MakeButtonSound(int sound);
 extern void PlayLockSounds(CBaseEntity *pEdict, locksound_t *pls, int flocked, int fbutton);
+#endif
 #endif

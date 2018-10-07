@@ -24,11 +24,11 @@ public:
 #endif
 
 	// Shared things
-	virtual void Spawn(void);
 	bool CreateVPhysics(void);
 
 #ifdef GAME_DLL // Server specific things
 public:
+	virtual void Spawn(void);
 	DECLARE_DATADESC();
 #endif
 };
@@ -50,10 +50,6 @@ public:
 #endif
 
 	// Shared things
-	static CMomentaryRotButton *Instance(edict_t *pent) { return (CMomentaryRotButton *)GetContainingEntity(pent); }
-
-	virtual void	Spawn(void);
-	virtual int	ObjectCaps(void);
 	bool	CreateVPhysics(void);
 	void	Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void	UseMoveDone(void);
@@ -107,6 +103,9 @@ protected:
 
 #ifdef GAME_DLL // Server specific things
 public:
+	static CMomentaryRotButton *Instance(edict_t *pent) { return (CMomentaryRotButton *)GetContainingEntity(pent); }
+	virtual void Spawn(void);
+	virtual int ObjectCaps(void);
 	int		DrawDebugTextOverlays(void);
 	DECLARE_DATADESC();
 #endif

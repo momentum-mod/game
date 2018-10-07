@@ -9,9 +9,11 @@ LINK_ENTITY_TO_CLASS(toggle, CBaseToggle);
 #ifdef CLIENT_DLL // Client prediction and recv table
 extern void RecvProxy_EffectFlags(const CRecvProxyData *pData, void *pStruct, void *pOut);
 extern void RecvProxy_MoveCollide(const CRecvProxyData *pData, void *pStruct, void *pOut);
+extern void RecvProxy_MoveType(const CRecvProxyData *pData, void *pStruct, void *pOut);
 
 BEGIN_PREDICTION_DATA_NO_BASE(CBaseToggle)
 	DEFINE_PRED_TYPEDESCRIPTION(m_Collision, CCollisionProperty),
+	DEFINE_PRED_FIELD(m_iMasterCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_spawnflags, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_nModelIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
@@ -28,12 +30,14 @@ IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_BaseToggle, DT_BaseToggle, CBaseToggle)
 	RecvPropDataTable(RECVINFO_DT(m_Collision), 0, &REFERENCE_RECV_TABLE(DT_CollisionProperty)),
 	RecvPropVector(RECVINFO_NAME(m_vecNetworkOrigin, m_vecOrigin)),
 	RecvPropQAngles(RECVINFO_NAME(m_angNetworkAngles, m_angRotation)),
+	RecvPropInt(RECVINFO(m_iMasterCRC)),
 	RecvPropInt(RECVINFO(m_iNameCRC)),
 	RecvPropInt(RECVINFO(m_nModelIndex)),
 	RecvPropInt(RECVINFO(m_CollisionGroup)),
 	RecvPropInt(RECVINFO(m_fEffects), 0, RecvProxy_EffectFlags ),
 	RecvPropInt(RECVINFO(m_spawnflags)),
 	RecvPropInt( "movecollide", 0, SIZEOF_IGNORE, 0, RecvProxy_MoveCollide ),
+	RecvPropInt( "movetype", 0, SIZEOF_IGNORE, 0, RecvProxy_MoveType ),
 END_RECV_TABLE();
 #define CBaseToggle C_BaseToggle // Redefine for rest of the code
 #else // Server save data and send table
@@ -42,6 +46,7 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseToggle, DT_BaseToggle)
 	SendPropVector(SENDINFO(m_vecOrigin), 0,  SPROP_NOSCALE|SPROP_COORD|SPROP_CHANGES_OFTEN ),
 	SendPropQAngles(SENDINFO(m_angRotation), 0, SPROP_NOSCALE|SPROP_CHANGES_OFTEN ),
 	SendPropInt(SENDINFO(m_fEffects),EF_MAX_BITS, SPROP_UNSIGNED),
+	SendPropInt(SENDINFO(m_iMasterCRC)),
 	SendPropInt(SENDINFO(m_iNameCRC)),
 	SendPropModelIndex(SENDINFO(m_nModelIndex)),
 	SendPropInt(SENDINFO(m_CollisionGroup), 5, SPROP_UNSIGNED),
@@ -93,6 +98,12 @@ bool CBaseToggle::KeyValue(const char *szKeyName, const char *szValue)
 	}
 	else if (FStrEq(szKeyName, "master"))
 	{
+		CRC32_t crc; 
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, szKeyName, Q_strlen(szKeyName));
+		CRC32_Final(&crc);
+
+		m_iMasterCRC = crc;
 		m_sMaster = AllocPooledString(szValue);
 	}
 	else if (FStrEq(szKeyName, "distance"))
@@ -206,7 +217,7 @@ void CBaseToggle::AngularMoveDone(void)
 // DVS TODO: obselete, remove?
 bool CBaseToggle::IsLockedByMaster(void)
 {
-	if (m_sMaster != NULL_STRING && !UTIL_IsMasterTriggered(m_sMaster, m_hActivator))
+	if (m_sMaster != NULL_STRING && !UTIL_IsMasterCRCTriggered(m_iMasterCRC, m_hActivator))
 		return true;
 	else
 		return false;

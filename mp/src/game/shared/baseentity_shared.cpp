@@ -2985,3 +2985,16 @@ bool CBaseEntity::AcceptInput( const char *szInputName, CBaseEntity *pActivator,
 	DevMsg( 2, "unhandled input: (%s) -> (%s,%s)\n", szInputName, STRING(m_iClassname), GetDebugName()/*,", from (%s,%s)" STRING(pCaller->m_iClassname), STRING(pCaller->m_iName)*/ );
 	return false;
 }
+
+void CBaseEntity::SetMoveDoneTime( float flDelay ) // MOM_TODO: Does GetLocalTime() work properly? or do we even need this...
+{
+	if (flDelay >= 0)
+	{
+		m_flMoveDoneTime = GetLocalTime() + flDelay;
+	}
+	else
+	{
+		m_flMoveDoneTime = -1;
+	}
+	CheckHasGamePhysicsSimulation();
+}

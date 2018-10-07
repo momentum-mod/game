@@ -220,6 +220,30 @@ void C_BaseEntity::PhysicsParent( void )
 {
 	PhysicsRunThink();
 }
+//-----------------------------------------------------------------------------
+// Purpose: Dispatches use events to this entity's use handler, set via SetUse.
+// Input  : pActivator - 
+//			pCaller - 
+//			useType - 
+//			value - 
+//-----------------------------------------------------------------------------
+void C_BaseEntity::Use( C_BaseEntity *pActivator, C_BaseEntity *pCaller, USE_TYPE useType, float value ) 
+{
+	if ( m_pfnUse != NULL ) 
+	{
+		(this->*m_pfnUse)( pActivator, pCaller, useType, value );
+	}
+	/*else
+	{
+		//
+		// We don't handle use events. Forward to our parent, if any.
+		//
+		if ( m_pParent != NULL )
+		{
+			m_pParent->Use( pActivator, pCaller, useType, value );
+		}
+	}*/
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Not yet supported on client .dll
@@ -258,6 +282,27 @@ void C_BaseEntity::EndTouch( C_BaseEntity *pOther )
 //		m_pParent->EndTouch( pOther );
 //	}
 }
+
+//-----------------------------------------------------------------------------
+// Purpose: Dispatches blocked events to this entity's blocked handler, set via SetBlocked.
+// Input  : pOther - The entity that is blocking us.
+//-----------------------------------------------------------------------------
+void C_BaseEntity::Blocked( C_BaseEntity *pOther )
+{ 
+	if ( m_pfnBlocked )
+	{
+		(this->*m_pfnBlocked)( pOther );
+	}
+
+	//
+	// Forward the blocked event to our parent, if any.
+	//
+	// if ( m_pParent != NULL )
+	// {
+	// 	m_pParent->Blocked( pOther );
+	// }
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
