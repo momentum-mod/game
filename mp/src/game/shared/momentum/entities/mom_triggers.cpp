@@ -50,7 +50,9 @@ void CTriggerMultiple::Spawn(void)
 		m_flWait = 0.2;
 	}
 
+#ifdef GAME_DLL
 	ASSERTSZ(m_iHealth == 0, "trigger_multiple with health");
+#endif
 	SetTouch(&CTriggerMultiple::MultiTouch);
 }
 
@@ -197,7 +199,7 @@ void CTriggerLook::Touch(CBaseEntity *pOther)
 	// --------------------------------
 	if (m_hLookTarget == NULL)
 	{
-		m_hLookTarget = GetNextTarget();
+		m_hLookTarget = FindEntityByNameCRC(nullptr, m_iTargetCRC);
 		if (m_hLookTarget == NULL)
 		{
 			return;
@@ -211,9 +213,14 @@ void CTriggerLook::Touch(CBaseEntity *pOther)
 		// ----------------------------------------
 		// Check that toucher is facing the target
 		// ----------------------------------------
+#ifdef CLIENT_DLL
+		QAngle vLookDir;
+#else
 		Vector vLookDir;
+#endif
 		if (HasSpawnFlags(SF_TRIGGERLOOK_USEVELOCITY))
 		{
+#ifdef GAME_DLL
 			vLookDir = pOther->GetAbsVelocity();
 			if (vLookDir == vec3_origin)
 			{
@@ -225,16 +232,21 @@ void CTriggerLook::Touch(CBaseEntity *pOther)
 				}
 			}
 			VectorNormalize(vLookDir);
+#endif
 		}
 		else
 		{
+#ifdef CLIENT_DLL
+			vLookDir = ((CBaseCombatCharacter*)pOther)->GetAbsAngles();
+#else
 			vLookDir = ((CBaseCombatCharacter*)pOther)->EyeDirection3D();
+#endif
 		}
 
 		Vector vTargetDir = m_hLookTarget->GetAbsOrigin() - pOther->EyePosition();
 		VectorNormalize(vTargetDir);
 
-		float fDotPr = DotProduct(vLookDir, vTargetDir);
+		float fDotPr = DotProduct(*reinterpret_cast<Vector*>(&vLookDir), vTargetDir);
 		if (fDotPr > m_flFieldOfView)
 		{
 			// Is it the first time I'm looking?
@@ -355,6 +367,7 @@ int CTriggerLook::DrawDebugTextOverlays(void)
 	}
 	return text_offset;
 }
+#endif
 
 // ##################################################################################
 //	>> TriggerPush
@@ -368,12 +381,34 @@ LINK_ENTITY_TO_CLASS(trigger_push, CTriggerPush);
 BEGIN_PREDICTION_DATA(CTriggerPush)
 END_PREDICTION_DATA();
 
+void TriggerPushProxy_PushDir(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+	CTriggerPush *entity = (CTriggerPush *)pStruct;
+
+	*(float*)&entity->m_vecPushDir.Get().x = pData->m_Value.m_Vector[0];
+	*(float*)&entity->m_vecPushDir.Get().y = pData->m_Value.m_Vector[1];
+	*(float*)&entity->m_vecPushDir.Get().z = pData->m_Value.m_Vector[2];
+
+	// Convert pushdir from angles to a vector
+	Vector vecAbsDir;
+	QAngle angPushDir = QAngle(entity->m_vecPushDir.Get().x, entity->m_vecPushDir.Get().y, entity->m_vecPushDir.Get().z);
+	AngleVectors(angPushDir, &vecAbsDir);
+
+	// Transform the vector into entity space
+	VectorIRotate( vecAbsDir, entity->EntityToWorldTransform(), (Vector)entity->m_vecPushDir.Get() );
+
+	if (entity->m_flSpeed == 0)
+	{
+		entity->m_flSpeed = 100;
+	}
+}
+
 #undef CTriggerPush // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT(C_TriggerPush, DT_TriggerPush, CTriggerPush)
 	RecvPropFloat(RECVINFO(m_flAlternateTicksFix)),
 	RecvPropFloat(RECVINFO(m_flPushSpeed)),
-	RecvPropVector(RECVINFO(m_vecPushDir)),
+	RecvPropVector(RECVINFO(m_vecPushDir), 0, TriggerPushProxy_PushDir),
 END_RECV_TABLE();
 #define CTriggerPush C_TriggerPush // Redefine for rest of the code
 #else // Server save data and send table
@@ -395,6 +430,10 @@ END_DATADESC();
 //-----------------------------------------------------------------------------
 void CTriggerPush::Spawn()
 {
+#ifdef CLIENT_DLL
+	m_iUserID = INVALID_USER_ID;
+	m_nTickBasePush = -1;
+#endif
 	// Convert pushdir from angles to a vector
 	Vector vecAbsDir;
 	QAngle angPushDir = QAngle(m_vecPushDir.Get().x, m_vecPushDir.Get().y, m_vecPushDir.Get().z);
@@ -448,12 +487,25 @@ void CTriggerPush::Touch(CBaseEntity *pOther)
 	if (pOther->GetMoveParent())
 		return;
 
+#ifdef CLIENT_DLL
+	if (!pOther->IsPlayer())
+		return;
+
+	CBasePlayer* player = (CBasePlayer*)pOther;
+#endif
+
 	// Transform the push dir into global space
 	Vector vecAbsDir;
 	VectorRotate(m_vecPushDir.Get(), EntityToWorldTransform(), vecAbsDir);
 
 	// Instant trigger, just transfer velocity and remove
-	if (HasSpawnFlags(SF_TRIG_PUSH_ONCE))
+	if (HasSpawnFlags(SF_TRIG_PUSH_ONCE)
+#ifdef CLIENT_DLL
+		&&
+		((player->GetTickBase() == m_nTickBasePush && player->GetUserID() == m_iUserID) ||
+		(m_nTickBasePush == -1 && m_iUserID == INVALID_USER_ID))
+#endif
+		)
 	{
 		pOther->ApplyAbsVelocityImpulse(m_flPushSpeed * vecAbsDir);
 
@@ -461,7 +513,12 @@ void CTriggerPush::Touch(CBaseEntity *pOther)
 		{
 			pOther->SetGroundEntity(NULL);
 		}
+#ifdef CLIENT_DLL
+		m_iUserID = player->GetUserID();
+		m_nTickBasePush = player->GetTickBase();
+#else // We dont need this on client as it gets deleted via networking the deletion
 		UTIL_Remove(this);
+#endif
 		return;
 	}
 
@@ -486,19 +543,6 @@ void CTriggerPush::Touch(CBaseEntity *pOther)
 
 	default:
 	{
-#if defined( HL2_DLL )
-		// HACK HACK  HL2 players on ladders will only be disengaged if the sf is set, otherwise no push occurs.
-		if (pOther->IsPlayer() &&
-			pOther->GetMoveType() == MOVETYPE_LADDER)
-		{
-			if (!HasSpawnFlags(SF_TRIG_PUSH_AFFECT_PLAYER_ON_LADDER))
-			{
-				// Ignore the push
-				return;
-			}
-		}
-#endif
-
 		Vector vecPush = (m_flPushSpeed * vecAbsDir);
 		if ((pOther->GetFlags() & FL_BASEVELOCITY)/* && !lagcompensation->IsCurrentlyDoingLagCompensation()*/) // lol
 		{
@@ -510,17 +554,7 @@ void CTriggerPush::Touch(CBaseEntity *pOther)
 			Vector origin = pOther->GetAbsOrigin();
 			origin.z += 1.0f;
 			pOther->SetAbsOrigin(origin);
-		}
-
-#ifdef HL1_DLL
-		// Apply the z velocity as a force so it counteracts gravity properly
-		Vector vecImpulse(0, 0, vecPush.z * 0.025);//magic hack number
-
-		pOther->ApplyAbsVelocityImpulse(vecImpulse);
-
-		// apply x, y as a base velocity so we travel at constant speed on conveyors
-		vecPush.z = 0;
-#endif			
+		}		
 
 		pOther->SetBaseVelocity(vecPush);
 		pOther->AddFlag(FL_BASEVELOCITY);
@@ -528,7 +562,6 @@ void CTriggerPush::Touch(CBaseEntity *pOther)
 	break;
 	}
 }
-#endif
 
 // ##################################################################################
 //	>> TriggerTeleport
@@ -573,7 +606,8 @@ const int SF_TELEPORT_PRESERVE_ANGLES = 0x20; // Preserve angles even when a loc
 //-----------------------------------------------------------------------------
 void CTriggerTeleport::Touch(CBaseEntity *pOther)
 {
-	CBaseEntity *pentTarget = NULL;
+	CBaseEntity *pentTarget = nullptr;
+	CBaseEntity *pentLandmark = nullptr;
 
 	if (!PassesTriggerFilters(pOther))
 	{
@@ -581,36 +615,34 @@ void CTriggerTeleport::Touch(CBaseEntity *pOther)
 	}
 
 	// The activator and caller are the same
-	pentTarget = gEntList.FindEntityByName(pentTarget, m_target, NULL, pOther, pOther);
+	pentTarget = FindEntityByNameCRC(pentTarget, m_iTargetCRC);
+
 	if (!pentTarget)
 	{
 		return;
 	}
 
-	//
-	// If a landmark was specified, offset the player relative to the landmark.
-	//
-	CBaseEntity *pentLandmark = NULL;
-	Vector vecLandmarkOffset(0, 0, 0);
-	if (m_iLandmark != NULL_STRING)
+	Vector tmp = pentTarget->GetAbsOrigin();
+	QAngle tmp_angle = pentTarget->GetAbsAngles();
+
+	if (m_iLandmarkCRC != 0)
 	{
 		// The activator and caller are the same
-		pentLandmark = gEntList.FindEntityByName(pentLandmark, m_iLandmark, NULL, pOther, pOther);
+		pentLandmark = FindEntityByNameCRC(pentLandmark, m_iLandmarkCRC);
+
 		if (pentLandmark)
 		{
-			vecLandmarkOffset = pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
+			tmp += pOther->GetAbsOrigin() - pentLandmark->GetAbsOrigin();
 		}
 	}
-
-	pOther->SetGroundEntity(NULL);
-
-	Vector tmp = pentTarget->GetAbsOrigin();
 
 	if (!pentLandmark && pOther->IsPlayer())
 	{
 		// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
 		tmp.z -= pOther->WorldAlignMins().z;
 	}
+
+	pOther->SetGroundEntity(NULL);
 
 	//
 	// Only modify the toucher's angles and zero their velocity if no landmark was specified.
@@ -620,16 +652,36 @@ void CTriggerTeleport::Touch(CBaseEntity *pOther)
 
 	if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
 	{
-		/*if (!GameRules()->IsMultiplayer())
-		{
-		pAngles = &pentTarget->GetAbsAngles();
-		}*/
+#ifdef CLIENT_DLL
+		pOther->m_angNetworkAngles = tmp_angle;
+		pOther->SetLocalAngles(tmp_angle);
+#endif
 
 		pVelocity = NULL; // BUGBUG - This does not set the player's velocity to zero!!!
 	}
 
-	tmp += vecLandmarkOffset;
+#ifdef CLIENT_DLL
+	pOther->m_vecNetworkOrigin = tmp;
+	pOther->SetLocalOrigin(tmp);
+
+	C_BasePlayer* player = C_BasePlayer::GetLocalPlayer();
+	if (player == pOther)
+	{
+		if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
+		{
+			// We need to do it this way to set viewangles at the same frame as the new orign is viewed to the screen
+			if (prediction->GetIsFirstTimePredicted())
+			{
+				player->m_bFixViewAngle = true;
+				player->m_vecFixedViewAngles = tmp_angle;
+			}
+
+			prediction->SetLocalViewAngles(tmp_angle);
+		}
+	}
+#else
 	pOther->Teleport(&tmp, pAngles, pVelocity);
+#endif
 }
 
 #ifdef GAME_DLL

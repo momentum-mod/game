@@ -129,6 +129,9 @@ public:
 	DECLARE_NETWORKCLASS();
 #ifdef CLIENT_DLL // Client specific things
 	DECLARE_PREDICTABLE();
+
+	int m_nTickBasePush;
+	int m_iUserID;
 #endif
 
 	// Shared things
