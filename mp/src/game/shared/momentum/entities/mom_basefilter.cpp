@@ -9,17 +9,20 @@ LINK_ENTITY_TO_CLASS(filter, CBaseFilter);
 #ifdef CLIENT_DLL // Client prediction and recv table
 BEGIN_PREDICTION_DATA_NO_BASE(CBaseFilter)
 	DEFINE_PRED_FIELD(m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_bNegated, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
 
 #undef CBaseFilter // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_BaseFilter, DT_BaseFilter, CBaseFilter)
 	RecvPropInt(RECVINFO(m_iNameCRC)),
+	RecvPropBool(RECVINFO(m_bNegated)),
 END_RECV_TABLE();
 #define CBaseFilter C_BaseFilter // Redefine for rest of the code
 #else // Server save data and send table
 IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseFilter, DT_BaseFilter)
 	SendPropInt(SENDINFO(m_iNameCRC)),
+	SendPropBool(RECVINFO(m_bNegated)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CBaseFilter)

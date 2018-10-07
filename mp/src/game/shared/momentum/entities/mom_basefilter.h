@@ -8,6 +8,8 @@
 #include "cbase.h"
 #include "mom_entityoutput.h"
 
+#include "takedamageinfo.h"
+
 #ifdef CLIENT_DLL
 #define CBaseFilter C_BaseFilter
 #endif
@@ -44,7 +46,7 @@ public:
 	COutputEvent	m_OnFail;		// Fired when filter is failed
 
 	// Vars
-	bool m_bNegated;
+	CNetworkVar(bool, m_bNegated);
 
 protected:
 	virtual bool PassesFilterImpl( CBaseEntity *pCaller, CBaseEntity *pEntity );
