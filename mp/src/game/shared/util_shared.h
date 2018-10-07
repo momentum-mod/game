@@ -622,5 +622,7 @@ bool				UTIL_IsHolidayActive( /*EHoliday*/ int eHoliday );
 // holidays overlapping, the list order will act as priority.
 const char		   *UTIL_GetActiveHolidayString();
 
+CBaseEntity *FindEntityByNameCRC(CBaseEntity *pEnt, const unsigned int iCRC);
+CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const unsigned int iCRC);
 
 #endif // UTIL_SHARED_H

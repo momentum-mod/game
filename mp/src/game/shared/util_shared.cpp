@@ -1175,3 +1175,49 @@ const char* UTIL_GetActiveHolidayString()
 	return NULL;
 #endif
 }
+
+CBaseEntity *FindEntityByNameCRC(CBaseEntity *pEnt, const unsigned int iCRC)
+{
+#ifdef CLIENT_DLL
+	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
+#else
+	CBaseEntity *pNext = gEntList.NextEnt(pEnt);
+#endif
+	while (pNext != nullptr)
+	{
+		if (pNext->GetNameCRC() == iCRC)
+		{
+			return pNext;
+		}
+
+#ifdef CLIENT_DLL
+		pNext = cl_entitylist->NextBaseEntity(pEnt);
+#else
+		pNext = gEntList.NextEnt(pEnt);
+#endif
+	}
+	return pNext;
+}
+
+CBaseEntity *FindEntityByClassnameCRC(CBaseEntity *pEnt, const unsigned int iCRC)
+{
+#ifdef CLIENT_DLL
+	CBaseEntity *pNext = cl_entitylist->NextBaseEntity(pEnt);
+#else
+	CBaseEntity *pNext = gEntList.NextEnt(pEnt);
+#endif
+	while (pNext != nullptr)
+	{
+		if (pNext->GetNameCRC() == iCRC) // MOM_TODO: Change to ClassnameCRC
+		{
+			return pNext;
+		}
+
+#ifdef CLIENT_DLL
+		pNext = cl_entitylist->NextBaseEntity(pEnt);
+#else
+		pNext = gEntList.NextEnt(pEnt);
+#endif
+	}
+	return pNext;
+}
