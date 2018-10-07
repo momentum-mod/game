@@ -22,7 +22,7 @@ END_RECV_TABLE();
 #else // Server save data and send table
 IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseFilter, DT_BaseFilter)
 	SendPropInt(SENDINFO(m_iNameCRC)),
-	SendPropBool(RECVINFO(m_bNegated)),
+	SendPropBool(SENDINFO(m_bNegated)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CBaseFilter)

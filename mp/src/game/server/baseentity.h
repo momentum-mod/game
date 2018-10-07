@@ -581,7 +581,6 @@ private:
 	void		TransformStepData_ParentToParent( CBaseEntity *pOldParent, CBaseEntity *pNewParent );
 	void		TransformStepData_ParentToWorld( CBaseEntity *pParent );
 
-
 public:
 	int			GetSpawnFlags( void ) const;
 	void		AddSpawnFlags( int nFlags );

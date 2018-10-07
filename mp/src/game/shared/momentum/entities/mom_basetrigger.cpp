@@ -8,19 +8,35 @@ ConVar showtriggers( "showtriggers", "0", FCVAR_CHEAT, "Shows trigger brushes" )
 
 LINK_ENTITY_TO_CLASS( trigger, CBaseTrigger );
 
+#ifdef CLIENT_DLL
+#define CAI_BaseNPC C_AI_BaseNPC
+#define IVehicle IClientVehicle
+#else
+#define IVehicle IServerVehicle
+#endif
+
 #ifdef CLIENT_DLL // Client prediction and recv table
 BEGIN_PREDICTION_DATA(CBaseTrigger) // MOM_TODO: Add _NO_BASE stuff to predict here
-	DEFINE_PRED_FIELD(m_bDisabled, FIELD_BOOL, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_bDisabled, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_iTargetCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_iFilterCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 END_PREDICTION_DATA();
+
+// Incase server decides to change the filter name
+void RecvProxy_FilterCRC(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+	CBaseTrigger *entity = (CBaseTrigger *) pStruct;
+
+	entity->m_iFilterCRC = pData->m_Value.m_Int;
+	entity->m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByClassnameCRC(nullptr, entity->m_iFilterCRC));
+}
 
 #undef CBaseTrigger // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT(C_BaseTrigger, DT_BaseTrigger, CBaseTrigger) // MOM_TODO: Add _NO_BASE stuff to predict here
 	RecvPropBool(RECVINFO(m_bDisabled)),
 	RecvPropInt(RECVINFO(m_iTargetCRC)),
-	RecvPropInt(RECVINFO(m_iFilterCRC)),
+	RecvPropInt(RECVINFO(m_iFilterCRC), NULL, RecvProxy_FilterCRC),
 END_RECV_TABLE();
 #define CBaseTrigger C_BaseTrigger // Redefine for rest of the code
 #else // Server save data and send table
@@ -55,81 +71,38 @@ BEGIN_DATADESC(CBaseTrigger)
 	DEFINE_OUTPUT(m_OnNotTouching, "OnNotTouching"),
 END_DATADESC();
 #endif
+
+#ifdef CLIENT_DLL
+
+void CBaseTrigger::Spawn(void)
+{
+	SetSolid(SOLID_BSP);
+	AddSolidFlags(FSOLID_TRIGGER);
+	SetMoveType(MOVETYPE_NONE);
+}
+
+void CBaseTrigger::UpdatePartitionListEntry(void)
+{
+	::partition->RemoveAndInsert( 
+		PARTITION_CLIENT_SOLID_EDICTS | PARTITION_CLIENT_RESPONSIVE_EDICTS | PARTITION_CLIENT_NON_STATIC_EDICTS,  // remove
+		PARTITION_CLIENT_TRIGGER_ENTITIES,  // add
+		CollisionProp()->GetPartitionHandle() );
+}
+
+void CBaseTrigger::UpdateFilter(void)
+{
+	// We do this since, since we dont know what order the entities are sent in, so a trigger might be sent
+	// before the client know about the filter entity
+	if (prediction->GetIsFirstTimePredicted() && m_hFilter.Get() == nullptr)
+	{
+		m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByClassnameCRC(nullptr, m_iFilterCRC));
+	}
+}
+#endif
+
 CBaseTrigger::CBaseTrigger()
 {
 	AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
-}
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void CBaseTrigger::Spawn()
-{
-	CRC32_t crc;
-	if (Q_strlen(STRING(m_target)))
-	{
-		CRC32_Init(&crc);
-		CRC32_ProcessBuffer(&crc, STRING(m_target), Q_strlen(STRING(m_target)));
-		CRC32_Final(&crc);
-
-		m_iTargetCRC = crc;
-	}
-
-	if (Q_strlen(STRING(m_iFilterName)))
-	{
-		CRC32_Init(&crc);
-		CRC32_ProcessBuffer(&crc, STRING(m_iFilterName), Q_strlen(STRING(m_iFilterName)));
-		CRC32_Final(&crc);
-
-		m_iFilterCRC = crc;
-	}
-
-	if (HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS) || HasSpawnFlags(SF_TRIGGER_ONLY_NPCS_IN_VEHICLES))
-	{
-		// Automatically set this trigger to work with NPC's.
-		AddSpawnFlags(SF_TRIGGER_ALLOW_NPCS);
-	}
-
-	if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES))
-	{
-		AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
-	}
-
-	if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES))
-	{
-		AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
-	}
-}
-
-//------------------------------------------------------------------------------
-// Purpose :
-//------------------------------------------------------------------------------
-void CBaseTrigger::Activate(void)
-{
-	// Get a handle to my filter entity if there is one
-	if (m_iFilterName != NULL_STRING)
-	{
-		m_hFilter = dynamic_cast<CBaseFilter *>(gEntList.FindEntityByName(NULL, m_iFilterName));
-	}
-
-	BaseClass::Activate();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Called after player becomes active in the game
-//-----------------------------------------------------------------------------
-void CBaseTrigger::PostClientActive(void)
-{
-	BaseClass::PostClientActive();
-
-	if (!m_bDisabled)
-	{
-		PhysicsTouchTriggers();
-	}
-}
-
-int CBaseTrigger::UpdateTransmitState(void)
-{
-	return SetTransmitState(FL_EDICT_ALWAYS);
 }
 
 //-----------------------------------------------------------------------------
@@ -137,7 +110,11 @@ int CBaseTrigger::UpdateTransmitState(void)
 //-----------------------------------------------------------------------------
 void CBaseTrigger::InitTrigger()
 {
+#ifdef GAME_DLL
 	SetSolid(GetParent() ? SOLID_VPHYSICS : SOLID_BSP);
+#else
+	SetSolid(SOLID_VPHYSICS);
+#endif
 	AddSolidFlags(FSOLID_NOT_SOLID);
 	if (m_bDisabled)
 	{
@@ -320,16 +297,22 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 
 			if (HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS))
 			{
+#ifdef GAME_DLL // MOM_TODO: Eventually add IsPlayerAlly to "CAI_BaseNPC"
 				if (!pNPC || !pNPC->IsPlayerAlly())
-				{
 					return false;
-				}
+#else
+				return false;
+#endif
 			}
 
 			if (HasSpawnFlags(SF_TRIGGER_ONLY_NPCS_IN_VEHICLES))
 			{
+#ifdef GAME_DLL // MOM_TODO: Eventually add IsInAVehicle to "CAI_BaseNPC"
 				if (!pNPC || !pNPC->IsInAVehicle())
 					return false;
+#else
+				return false;
+#endif
 			}
 		}
 
@@ -345,14 +328,17 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 			{
 				if (!pPlayer->IsInAVehicle())
 					return false;
-
+				
 				// Make sure we're also not exiting the vehicle at the moment
-				IServerVehicle *pVehicleServer = pPlayer->GetVehicle();
-				if (pVehicleServer == NULL)
+				IVehicle *pVehicle = pPlayer->GetVehicle();
+				if (pVehicle == NULL)
 					return false;
-
-				if (pVehicleServer->IsPassengerExiting())
+#ifdef GAME_DLL // MOM_TODO: Eventually add IsPassengerExiting to "IVehicle"
+				if (pVehicle->IsPassengerExiting())
 					return false;
+#else
+				return false;
+#endif
 			}
 
 			if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES))
@@ -363,10 +349,23 @@ bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 
 			if (HasSpawnFlags(SF_TRIGGER_DISALLOW_BOTS))
 			{
+#ifdef GAME_DLL // MOM_TODO: Eventually add IsFakeClient to "CBasePlayer"
 				if (pPlayer->IsFakeClient())
 					return false;
+#else
+				return false;
+#endif
 			}
 		}
+
+#ifdef CLIENT_DLL
+		UpdateFilter();
+
+		if (m_iFilterCRC != 0 && m_hFilter.Get() == nullptr)
+		{
+			return false;
+		}
+#endif
 
 		CBaseFilter *pFilter = m_hFilter.Get();
 		return (!pFilter) ? true : pFilter->PassesFilter(this, pOther);
@@ -503,6 +502,78 @@ bool CBaseTrigger::PointIsWithin(const Vector &vecPoint)
 }
 
 #ifdef GAME_DLL
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void CBaseTrigger::Spawn()
+{
+	CRC32_t crc;
+	if (Q_strlen(STRING(m_target)))
+	{
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, STRING(m_target), Q_strlen(STRING(m_target)));
+		CRC32_Final(&crc);
+
+		m_iTargetCRC = crc;
+	}
+
+	if (Q_strlen(STRING(m_iFilterName)))
+	{
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, STRING(m_iFilterName), Q_strlen(STRING(m_iFilterName)));
+		CRC32_Final(&crc);
+
+		m_iFilterCRC = crc;
+	}
+
+	if (HasSpawnFlags(SF_TRIGGER_ONLY_PLAYER_ALLY_NPCS) || HasSpawnFlags(SF_TRIGGER_ONLY_NPCS_IN_VEHICLES))
+	{
+		// Automatically set this trigger to work with NPC's.
+		AddSpawnFlags(SF_TRIGGER_ALLOW_NPCS);
+	}
+
+	if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_IN_VEHICLES))
+	{
+		AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
+	}
+
+	if (HasSpawnFlags(SF_TRIGGER_ONLY_CLIENTS_OUT_OF_VEHICLES))
+	{
+		AddSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS);
+	}
+}
+
+//------------------------------------------------------------------------------
+// Purpose :
+//------------------------------------------------------------------------------
+void CBaseTrigger::Activate(void)
+{
+	// Get a handle to my filter entity if there is one
+	if (m_iFilterName != NULL_STRING)
+	{
+		m_hFilter = dynamic_cast<CBaseFilter *>(gEntList.FindEntityByName(NULL, m_iFilterName));
+	}
+
+	BaseClass::Activate();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Called after player becomes active in the game
+//-----------------------------------------------------------------------------
+void CBaseTrigger::PostClientActive(void)
+{
+	BaseClass::PostClientActive();
+
+	if (!m_bDisabled)
+	{
+		PhysicsTouchTriggers();
+	}
+}
+
+int CBaseTrigger::UpdateTransmitState(void)
+{
+	return SetTransmitState(FL_EDICT_ALWAYS);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Draw any debug text overlays
 // Output : Current text offset from the top

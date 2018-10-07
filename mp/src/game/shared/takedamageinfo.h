@@ -11,7 +11,7 @@
 #pragma once
 #endif
 
-
+#include "cbase.h"
 #include "networkvar.h" // todo: change this when DECLARE_CLASS is moved into a better location.
 
 // Used to initialize m_flBaseDamage to something that we know pretty much for sure

@@ -7,6 +7,8 @@
 
 #include "cbase.h"
 
+#include "gamestringpool.h"
+
 #ifdef CLIENT_DLL
 #define CBaseToggle C_BaseToggle
 #endif

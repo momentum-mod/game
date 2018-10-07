@@ -533,7 +533,7 @@ void CBaseButton::TriggerAndWait(void)
 //-----------------------------------------------------------------------------
 void CBaseButton::ButtonReturn(void)
 {
-	ASSERT(m_toggle_state == TS_AT_TOP);
+	Assert(m_toggle_state == TS_AT_TOP);
 	m_toggle_state = TS_GOING_DOWN;
 
 	SetMoveDone(&CBaseButton::ButtonBackHome);
@@ -552,7 +552,7 @@ void CBaseButton::ButtonReturn(void)
 //-----------------------------------------------------------------------------
 void CBaseButton::ButtonBackHome(void)
 {
-	ASSERT(m_toggle_state == TS_GOING_DOWN);
+	Assert(m_toggle_state == TS_GOING_DOWN);
 	m_toggle_state = TS_AT_BOTTOM;
 
 	m_OnOut.FireOutput(m_hActivator, this);

@@ -16,6 +16,9 @@
 
 #ifdef CLIENT_DLL
 #define CBaseTrigger C_BaseTrigger
+#include "prediction.h"
+#include "c_ai_basenpc.h"
+#include "iclientvehicle.h"
 #else
 #include "ai_basenpc.h"
 #include "iservervehicle.h"
@@ -46,15 +49,15 @@ public:
 	DECLARE_NETWORKCLASS();
 #ifdef CLIENT_DLL // Client specific things
 	DECLARE_PREDICTABLE();
+
+	virtual void UpdatePartitionListEntry(void);
+	void UpdateFilter(void);
 #endif
 
 	// Shared things
 	CBaseTrigger();
 
 	virtual void Spawn(void);
-	virtual void Activate(void);
-	virtual void PostClientActive(void);
-	virtual int UpdateTransmitState(void);
 
 	void InitTrigger(void);
 
@@ -114,6 +117,10 @@ protected:
 
 #ifdef GAME_DLL // Server specific things
 public:
+	virtual void Activate(void);
+	virtual void PostClientActive(void);
+	virtual int UpdateTransmitState(void);
+
 	int	 DrawDebugTextOverlays(void);
 
 	DECLARE_DATADESC();

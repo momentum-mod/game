@@ -1106,6 +1106,13 @@ public:
 
 	void				SetRemovalFlag( bool bRemove );
 
+	// Spawnflags...
+	int			GetSpawnFlags( void ) const;
+	void		AddSpawnFlags( int nFlags );
+	void		RemoveSpawnFlags( int nFlags );
+	void		ClearSpawnFlags( void );
+	bool		HasSpawnFlags( int nFlags ) const;
+
 	// Effects...
 	bool				IsEffectActive( int nEffectMask ) const;
 	void				AddEffects( int nEffects );
@@ -1289,7 +1296,7 @@ public:
 
 public:	
 	CNetworkVar(unsigned int, m_iNameCRC);
-
+	int								m_spawnflags;
 	// Determine what entity this corresponds to
 	int								index;	
 
@@ -1829,6 +1836,30 @@ inline const model_t *C_BaseEntity::GetModel( void ) const
 inline int C_BaseEntity::GetModelIndex( void ) const
 {
 	return m_nModelIndex;
+}
+
+inline int C_BaseEntity::GetSpawnFlags( void ) const
+{ 
+	return m_spawnflags; 
+}
+
+inline void C_BaseEntity::AddSpawnFlags( int nFlags ) 
+{ 
+	m_spawnflags |= nFlags; 
+}
+inline void C_BaseEntity::RemoveSpawnFlags( int nFlags ) 
+{ 
+	m_spawnflags &= ~nFlags; 
+}
+
+inline void C_BaseEntity::ClearSpawnFlags( void ) 
+{ 
+	m_spawnflags = 0; 
+}
+
+inline bool C_BaseEntity::HasSpawnFlags( int nFlags ) const
+{ 
+	return (m_spawnflags & nFlags) != 0; 
 }
 
 //-----------------------------------------------------------------------------

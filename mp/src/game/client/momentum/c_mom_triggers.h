@@ -6,103 +6,36 @@
 #endif
 
 #include "cbase.h"
-#include "c_mom_basetoggle.h"
-#include "c_mom_filters.h"
+#include "mom_basetrigger.h"
+#include "mom_basefilter.h"
 #include "prediction.h"
 
 #include "mom_entityoutput.h"
 
-class C_BaseMomentumTrigger : public C_BaseToggle
-{
-    DECLARE_CLASS(C_BaseMomentumTrigger, C_BaseToggle);
-	DECLARE_CLIENTCLASS();
-	DECLARE_PREDICTABLE();
-
-  public:
-    C_BaseMomentumTrigger(){};
-
-	void UpdatePartitionListEntry() OVERRIDE;
-	void Spawn() OVERRIDE;
-	
-	void Enable( void );
-	void Disable( void );
-
-	void UpdateOnRemove( void );
-	void TouchTest(  void );
-
-	// Input handlers
-	virtual void InputEnable( inputdata_t &inputdata );
-	virtual void InputDisable( inputdata_t &inputdata );
-	virtual void InputToggle( inputdata_t &inputdata );
-	virtual void InputTouchTest ( inputdata_t &inputdata );
-	virtual void InputStartTouch( inputdata_t &inputdata );
-	virtual void InputEndTouch( inputdata_t &inputdata );
-
-	virtual void OnStartTouchAll(CBaseEntity *pOther);
-	virtual void OnEndTouchAll(CBaseEntity *pOther);
-
-	virtual bool UsesFilter( void ){ return ( m_hFilter.Get() != NULL ); }
-	virtual bool PassesTriggerFilters(CBaseEntity *pOther);
-
-	// Touch handlers
-	virtual void StartTouch(CBaseEntity *pOther);
-	virtual void Touch(CBaseEntity* pOther);
-	virtual void EndTouch(CBaseEntity *pOther);
-
-	virtual void OnStartTouch(CBaseEntity *pOther) {}
-	virtual void OnEndTouch(CBaseEntity *pOther) {}
-
-	bool IsTouching( CBaseEntity *pOther );
-
-	CBaseEntity *GetTouchedEntityOfType( const char *sClassName );
-
-	bool PointIsWithin( const Vector &vecPoint );
-	void UpdateFilter();
-
-
-	// Outputs
-	COutputEvent m_OnStartTouch;
-	COutputEvent m_OnStartTouchAll;
-	COutputEvent m_OnEndTouch;
-	COutputEvent m_OnEndTouchAll;
-	COutputEvent m_OnTouching;
-	COutputEvent m_OnNotTouching;
-
-	// Entities currently being touched by this trigger
-	CUtlVector< EHANDLE >	m_hTouchingEntities;
-
-	string_t m_iFilterName;
-	CHandle<class C_BaseFilter> m_hFilter;
-
-	CNetworkVar(bool, m_bDisabled);
-	CNetworkVar(unsigned int, m_iTargetCRC);
-	CNetworkVar(unsigned int, m_iFilterCRC);
-};
-
-class C_TriggerTimerStart : public C_BaseMomentumTrigger
+class C_TriggerTimerStart : public CBaseTrigger
 {
   public:
-    DECLARE_CLASS(C_TriggerTimerStart, C_BaseMomentumTrigger);
+    DECLARE_CLASS(C_TriggerTimerStart, CBaseTrigger);
     DECLARE_CLIENTCLASS();
 
     bool ShouldDraw(void) OVERRIDE;
     int DrawModel(int flags) OVERRIDE;
 };
 
-class C_TriggerTimerStop : public C_BaseMomentumTrigger
+class C_TriggerTimerStop : public CBaseTrigger
 {
   public:
-    DECLARE_CLASS(C_TriggerTimerStop, C_BaseMomentumTrigger);
+    DECLARE_CLASS(C_TriggerTimerStop, CBaseTrigger);
     DECLARE_CLIENTCLASS();
 
     bool ShouldDraw(void) OVERRIDE;
     int DrawModel(int flags) OVERRIDE;
 };
 
-class C_TriggerSlide : public C_BaseMomentumTrigger
+class C_TriggerSlide : public CBaseTrigger
 {
   public:
-    DECLARE_CLASS(C_TriggerSlide, C_BaseMomentumTrigger);
+    DECLARE_CLASS(C_TriggerSlide, CBaseTrigger);
     DECLARE_CLIENTCLASS();
 
     CNetworkVar(bool, m_bStuckOnGround);
@@ -111,10 +44,10 @@ class C_TriggerSlide : public C_BaseMomentumTrigger
     CNetworkVar(bool, m_bFixUpsideSlope);
 };
 
-class C_TriggerTeleport : public C_BaseMomentumTrigger
+class C_TriggerTeleport : public CBaseTrigger
 {
 public:
-	DECLARE_CLASS(C_TriggerTeleport, C_BaseMomentumTrigger);
+	DECLARE_CLASS(C_TriggerTeleport, CBaseTrigger);
 	DECLARE_CLIENTCLASS();
 	DECLARE_PREDICTABLE();
 
@@ -123,10 +56,10 @@ public:
 	CNetworkVar(unsigned int, m_iLandmarkCRC);
 };
 
-class C_TriggerPush : public C_BaseMomentumTrigger
+class C_TriggerPush : public CBaseTrigger
 {
 public:
-	DECLARE_CLASS(C_TriggerPush, C_BaseMomentumTrigger);
+	DECLARE_CLASS(C_TriggerPush, CBaseTrigger);
 	DECLARE_CLIENTCLASS();
 
 	void Spawn(void) OVERRIDE;
@@ -141,10 +74,10 @@ public:
 	int m_iUserID;
 };
 
-class C_TriggerMultiple : public C_BaseMomentumTrigger
+class C_TriggerMultiple : public CBaseTrigger
 {
 public:
-	DECLARE_CLASS(C_TriggerMultiple, C_BaseMomentumTrigger);
+	DECLARE_CLASS(C_TriggerMultiple, CBaseTrigger);
 	DECLARE_CLIENTCLASS();
 
 	void Spawn( void );

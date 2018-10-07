@@ -13,7 +13,7 @@ extern void RecvProxy_MoveCollide(const CRecvProxyData *pData, void *pStruct, vo
 BEGIN_PREDICTION_DATA_NO_BASE(CBaseToggle)
 	DEFINE_PRED_TYPEDESCRIPTION(m_Collision, CCollisionProperty),
 	DEFINE_PRED_FIELD(m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
-	DEFINE_PRED_FIELD(m_iSpawnFlags, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_spawnflags, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_nModelIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_vecNetworkOrigin, FIELD_VECTOR, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_angNetworkAngles, FIELD_VECTOR, FTYPEDESC_INSENDTABLE),
@@ -32,7 +32,7 @@ IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_BaseToggle, DT_BaseToggle, CBaseToggle)
 	RecvPropInt(RECVINFO(m_nModelIndex)),
 	RecvPropInt(RECVINFO(m_CollisionGroup)),
 	RecvPropInt(RECVINFO(m_fEffects), 0, RecvProxy_EffectFlags ),
-	RecvPropInt(RECVINFO_NAME(m_iSpawnFlags, m_spawnflags)),
+	RecvPropInt(RECVINFO(m_spawnflags)),
 	RecvPropInt( "movecollide", 0, SIZEOF_IGNORE, 0, RecvProxy_MoveCollide ),
 END_RECV_TABLE();
 #define CBaseToggle C_BaseToggle // Redefine for rest of the code
@@ -113,7 +113,9 @@ bool CBaseToggle::KeyValue(const char *szKeyName, const char *szValue)
 //-----------------------------------------------------------------------------
 void CBaseToggle::LinearMove(const Vector &vecDest, float flSpeed)
 {
+#ifdef GAME_DLL
 	ASSERTSZ(flSpeed != 0.0f, "LinearMove:  no speed is defined!");
+#endif
 
 	m_vecFinalDest = vecDest;
 
@@ -156,7 +158,9 @@ void CBaseToggle::LinearMoveDone(void)
 //-----------------------------------------------------------------------------
 void CBaseToggle::AngularMove(const QAngle &vecDestAngle, float flSpeed)
 {
+#ifdef GAME_DLL
 	ASSERTSZ(flSpeed != 0.0f, "AngularMove:  no speed is defined!");
+#endif
 
 	m_vecFinalAngle = vecDestAngle;
 
