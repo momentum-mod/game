@@ -48,9 +48,7 @@ public:
 	CBaseDoor() : m_bIsBhopBlock(false) {};
 
 	virtual void Spawn(void);
-	virtual void Precache(void);
 	virtual void Activate(void);
-	virtual bool KeyValue(const char *szKeyName, const char *szValue);
 
 	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	virtual void StartBlocked(CBaseEntity *pOther);
@@ -133,8 +131,6 @@ public:
 	bool		m_bLoopMoveSound;			// Move sound loops until stopped
 	bool		m_bIsBhopBlock;
 
-	virtual bool ShouldBlockNav() const OVERRIDE { return false; }
-
 private:
 	void ChainUse(void);	///< Chains +use on through to m_ChainTarget
 	void ChainTouch(CBaseEntity *pOther);	///< Chains touch on through to m_ChainTarget
@@ -145,6 +141,10 @@ private:
 
 #ifdef GAME_DLL // Server specific things
 public:
+	virtual bool ShouldBlockNav() const OVERRIDE { return false; }
+
+	virtual void Precache(void);
+	virtual bool KeyValue(const char *szKeyName, const char *szValue);
 	virtual int	ObjectCaps(void)
 	{
 		int flags = BaseClass::ObjectCaps();

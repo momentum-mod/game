@@ -56,37 +56,4 @@ public:
 	CNetworkVar(unsigned int, m_iLandmarkCRC);
 };
 
-class C_TriggerPush : public CBaseTrigger
-{
-public:
-	DECLARE_CLASS(C_TriggerPush, CBaseTrigger);
-	DECLARE_CLIENTCLASS();
-
-	void Spawn(void) OVERRIDE;
-	void Activate( void ) OVERRIDE;
-	void Touch( CBaseEntity *pOther ) OVERRIDE;
-	
-	CNetworkVar(float, m_flAlternateTicksFix); // Scale factor to apply to the push speed when running with alternate ticks
-	CNetworkVar(float, m_flPushSpeed);
-	CNetworkVector(m_vecPushDir);
-
-	int m_nTickBasePush;
-	int m_iUserID;
-};
-
-class C_TriggerMultiple : public CBaseTrigger
-{
-public:
-	DECLARE_CLASS(C_TriggerMultiple, CBaseTrigger);
-	DECLARE_CLIENTCLASS();
-
-	void Spawn( void );
-	void MultiTouch( CBaseEntity *pOther );
-	void MultiWaitOver( void );
-	void ActivateMultiTrigger(CBaseEntity *pActivator);
-
-	// Outputs
-	//COutputEvent m_OnTrigger;
-};
-
 #endif

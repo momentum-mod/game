@@ -627,6 +627,13 @@ CBaseEntity *CBaseEntity::GetFollowedEntity()
 
 void CBaseEntity::SetClassname( const char *className )
 {
+	CRC32_t crc;
+
+	CRC32_Init(&crc);
+	CRC32_ProcessBuffer(&crc, className, Q_strlen(className));
+	CRC32_Final(&crc);
+
+	m_iClassnameCRC = crc;
 	m_iClassname = AllocPooledString( className );
 }
 

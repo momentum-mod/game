@@ -204,7 +204,7 @@ bool CFilterName::PassesFilterImpl(CBaseEntity *pCaller, CBaseEntity *pEntity)
 	}
 	else
 	{
-		return (pEntity->GetNameCRC == m_iFilterNameCRC);
+		return (pEntity->GetNameCRC() == m_iFilterNameCRC);
 	}
 }
 

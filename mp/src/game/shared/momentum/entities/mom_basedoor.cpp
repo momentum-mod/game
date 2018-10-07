@@ -192,78 +192,6 @@ void CBaseDoor::Spawn(void)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CBaseDoor::Precache(void)
-{
-	//Fill in a default value if necessary
-	if (IsRotatingDoor())
-	{
-		UTIL_ValidateSoundName(m_NoiseMoving, "RotDoorSound.DefaultMove");
-		UTIL_ValidateSoundName(m_NoiseArrived, "RotDoorSound.DefaultArrive");
-		UTIL_ValidateSoundName(m_ls.sLockedSound, "RotDoorSound.DefaultLocked");
-		UTIL_ValidateSoundName(m_ls.sUnlockedSound, "DoorSound.Null");
-	}
-	else
-	{
-		UTIL_ValidateSoundName(m_NoiseMoving, "DoorSound.DefaultMove");
-		UTIL_ValidateSoundName(m_NoiseArrived, "DoorSound.DefaultArrive");
-#ifndef HL1_DLL		
-		UTIL_ValidateSoundName(m_ls.sLockedSound, "DoorSound.DefaultLocked");
-#endif
-		UTIL_ValidateSoundName(m_ls.sUnlockedSound, "DoorSound.Null");
-	}
-
-#ifdef HL1_DLL
-	if (m_ls.sLockedSound != NULL_STRING && strlen((char*)STRING(m_ls.sLockedSound)) < 4)
-	{
-		// Too short to be ANYTHING ".wav", so it must be an old index into a long-lost
-		// array of sound choices. slam it to a known "deny" sound. We lose the designer's
-		// original selection, but we don't get unresponsive doors.
-		m_ls.sLockedSound = AllocPooledString("buttons/button2.wav");
-	}
-#endif//HL1_DLL
-
-	//Precache them all
-	PrecacheScriptSound((char *)STRING(m_NoiseMoving));
-	PrecacheScriptSound((char *)STRING(m_NoiseArrived));
-	PrecacheScriptSound((char *)STRING(m_NoiseMovingClosed));
-	PrecacheScriptSound((char *)STRING(m_NoiseArrivedClosed));
-	PrecacheScriptSound((char *)STRING(m_ls.sLockedSound));
-	PrecacheScriptSound((char *)STRING(m_ls.sUnlockedSound));
-
-	//Get sentence group names, for doors which are directly 'touched' to open
-	switch (m_bLockedSentence)
-	{
-	case 1: m_ls.sLockedSentence = AllocPooledString("NA"); break; // access denied
-	case 2: m_ls.sLockedSentence = AllocPooledString("ND"); break; // security lockout
-	case 3: m_ls.sLockedSentence = AllocPooledString("NF"); break; // blast door
-	case 4: m_ls.sLockedSentence = AllocPooledString("NFIRE"); break; // fire door
-	case 5: m_ls.sLockedSentence = AllocPooledString("NCHEM"); break; // chemical door
-	case 6: m_ls.sLockedSentence = AllocPooledString("NRAD"); break; // radiation door
-	case 7: m_ls.sLockedSentence = AllocPooledString("NCON"); break; // gen containment
-	case 8: m_ls.sLockedSentence = AllocPooledString("NH"); break; // maintenance door
-	case 9: m_ls.sLockedSentence = AllocPooledString("NG"); break; // broken door
-
-	default: m_ls.sLockedSentence = NULL_STRING; break;
-	}
-
-	switch (m_bUnlockedSentence)
-	{
-	case 1: m_ls.sUnlockedSentence = AllocPooledString("EA"); break; // access granted
-	case 2: m_ls.sUnlockedSentence = AllocPooledString("ED"); break; // security door
-	case 3: m_ls.sUnlockedSentence = AllocPooledString("EF"); break; // blast door
-	case 4: m_ls.sUnlockedSentence = AllocPooledString("EFIRE"); break; // fire door
-	case 5: m_ls.sUnlockedSentence = AllocPooledString("ECHEM"); break; // chemical door
-	case 6: m_ls.sUnlockedSentence = AllocPooledString("ERAD"); break; // radiation door
-	case 7: m_ls.sUnlockedSentence = AllocPooledString("ECON"); break; // gen containment
-	case 8: m_ls.sUnlockedSentence = AllocPooledString("EH"); break; // maintenance door
-
-	default: m_ls.sUnlockedSentence = NULL_STRING; break;
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 void CBaseDoor::Activate(void)
 {
 	BaseClass::Activate();
@@ -318,28 +246,6 @@ void CBaseDoor::Activate(void)
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Cache user-entity-field values until spawn is called.
-// Input  : szKeyName - 
-//			szValue - 
-// Output : Returns true.
-//-----------------------------------------------------------------------------
-bool CBaseDoor::KeyValue(const char *szKeyName, const char *szValue)
-{
-	if (FStrEq(szKeyName, "locked_sentence"))
-	{
-		m_bLockedSentence = atof(szValue);
-	}
-	else if (FStrEq(szKeyName, "unlocked_sentence"))
-	{
-		m_bUnlockedSentence = atof(szValue);
-	}
-	else
-		return BaseClass::KeyValue(szKeyName, szValue);
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
 // Purpose: Called when the player uses the door.
 // Input  : pActivator - 
 //			pCaller - 
@@ -356,7 +262,9 @@ void CBaseDoor::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 	// We can't +use this if it can't be +used
 	if (m_hActivator != NULL && m_hActivator->IsPlayer() && HasSpawnFlags(SF_DOOR_PUSE) == false)
 	{
+#ifdef GAME_DLL
 		PlayLockSounds(this, &m_ls, TRUE, FALSE);
+#endif
 		return;
 	}
 
@@ -385,7 +293,9 @@ void CBaseDoor::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 		if (m_bLocked)
 		{
 			m_OnLockedUse.FireOutput(pActivator, pCaller);
+#ifdef GAME_DLL 
 			PlayLockSounds(this, &m_ls, TRUE, FALSE);
+#endif
 		}
 		else
 		{
@@ -419,7 +329,8 @@ void CBaseDoor::StartBlocked(CBaseEntity *pOther)
 //-----------------------------------------------------------------------------
 void CBaseDoor::Blocked(CBaseEntity *pOther)
 {
-	// Hurt the blocker a little.
+	// Damage is not a thing in momentum
+	/* Hurt the blocker a little.
 	if (m_flBlockDamage)
 	{
 		// if the door is marked "force closed" or it has a negative wait, then there's nothing to do but 
@@ -429,7 +340,7 @@ void CBaseDoor::Blocked(CBaseEntity *pOther)
 		if ((m_bForceClosed || m_flWait < 0) && pOther->GetMoveType() == MOVETYPE_VPHYSICS &&
 			(pOther->m_takedamage == DAMAGE_NO || pOther->m_takedamage == DAMAGE_EVENTS_ONLY))
 		{
-			EntityPhysics_CreateSolver(this, pOther, true, 4.0f); // MOM_TODO: Client needs to do this?
+			EntityPhysics_CreateSolver(this, pOther, true, 4.0f);
 		}
 		else
 		{
@@ -440,7 +351,7 @@ void CBaseDoor::Blocked(CBaseEntity *pOther)
 	else if (pOther && !pOther->IsPlayer() && m_bIgnoreNonPlayerEntsOnBlock)
 	{
 		return;
-	}
+	}*/
 
 	// If we're set to force ourselves closed, keep going
 	if (m_bForceClosed)
@@ -591,39 +502,29 @@ void CBaseDoor::DoorTouch(CBaseEntity *pOther)
 	// Ignore touches by anything but players.
 	if (!pOther->IsPlayer())
 	{
-#ifdef HL1_DLL
-		if (PassesBlockTouchFilter(pOther) && m_toggle_state == TS_GOING_DOWN)
-		{
-			DoorGoUp();
-		}
-#endif
 		return;
 	}
 
 	// If door is not opened by touch, do nothing.
 	if (!HasSpawnFlags(SF_DOOR_PTOUCH))
 	{
-#ifdef HL1_DLL
-		if (m_toggle_state == TS_AT_BOTTOM)
-		{
-			PlayLockSounds(this, &m_ls, TRUE, FALSE);
-		}
-#endif//HL1_DLL
-
 		return;
 	}
 
+#ifdef GAME_DLL
 	// If door has master, and it's not ready to trigger, 
 	// play 'locked' sound.
 	if (m_sMaster != NULL_STRING && !UTIL_IsMasterTriggered(m_sMaster, pOther))
 	{
 		PlayLockSounds(this, &m_ls, TRUE, FALSE);
 	}
-
+#endif
 	if (m_bLocked)
 	{
 		m_OnLockedUse.FireOutput(pOther, pOther);
+#ifdef GAME_DLL
 		PlayLockSounds(this, &m_ls, TRUE, FALSE);
+#endif
 		return;
 	}
 
@@ -654,8 +555,10 @@ int CBaseDoor::DoorActivate(void)
 	else
 	{
 		// door should open
+#ifdef GAME_DLL
 		// play door unlock sounds
 		PlayLockSounds(this, &m_ls, FALSE, FALSE);
+#endif
 
 		if (m_toggle_state != TS_AT_TOP && m_toggle_state != TS_GOING_UP)
 		{
@@ -672,12 +575,11 @@ int CBaseDoor::DoorActivate(void)
 //-----------------------------------------------------------------------------
 void CBaseDoor::DoorGoUp(void)
 {
-	edict_t	*pevActivator;
-
 	UpdateAreaPortals(true);
+#ifdef GAME_DLL
 	// It could be going-down, if blocked.
 	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
-
+#endif
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
 	if (!HasSpawnFlags(SF_DOOR_SILENT))
@@ -698,8 +600,6 @@ void CBaseDoor::DoorGoUp(void)
 
 		if (m_hActivator != NULL)
 		{
-			pevActivator = m_hActivator->edict();
-
 			if (!HasSpawnFlags(SF_DOOR_ONEWAY) && m_vecMoveAng.y) 		// Y axis rotation, move away from the player
 			{
 				// Positive is CCW, negative is CW, so make 'sign' 1 or -1 based on which way we want to open.
@@ -786,7 +686,9 @@ void CBaseDoor::DoorHitTop(void)
 		EmitSound(filter, entindex(), ep);
 	}
 
+#ifdef GAME_DLL
 	ASSERT(m_toggle_state == TS_GOING_UP);
+#endif
 	m_toggle_state = TS_AT_TOP;
 
 	// toggle-doors don't come down automatically, they wait for refire.
@@ -841,7 +743,9 @@ void CBaseDoor::DoorHitBottom(void)
 		EmitSound(filter, entindex(), ep);
 	}
 
+#ifdef GAME_DLL
 	ASSERT(m_toggle_state == TS_GOING_DOWN);
+#endif
 	m_toggle_state = TS_AT_BOTTOM;
 
 	// Re-instate touch method, cycle is complete
@@ -964,8 +868,10 @@ void CBaseDoor::InputOpen(inputdata_t &inputdata)
 		if (m_bLocked)
 			return;
 
+#ifdef GAME_DLL
 		// Play door unlock sounds.
 		PlayLockSounds(this, &m_ls, false, false);
+#endif
 		DoorGoUp();
 	}
 }
@@ -1130,3 +1036,99 @@ void CBaseDoor::CloseAreaPortalsThink(void)
 	UpdateAreaPortals(false);
 	SetContextThink(NULL, gpGlobals->curtime, CLOSE_AREAPORTAL_THINK_CONTEXT);
 }
+
+#ifdef GAME_DLL
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseDoor::Precache(void)
+{
+	//Fill in a default value if necessary
+	if (IsRotatingDoor())
+	{
+		UTIL_ValidateSoundName(m_NoiseMoving, "RotDoorSound.DefaultMove");
+		UTIL_ValidateSoundName(m_NoiseArrived, "RotDoorSound.DefaultArrive");
+		UTIL_ValidateSoundName(m_ls.sLockedSound, "RotDoorSound.DefaultLocked");
+		UTIL_ValidateSoundName(m_ls.sUnlockedSound, "DoorSound.Null");
+	}
+	else
+	{
+		UTIL_ValidateSoundName(m_NoiseMoving, "DoorSound.DefaultMove");
+		UTIL_ValidateSoundName(m_NoiseArrived, "DoorSound.DefaultArrive");
+#ifndef HL1_DLL		
+		UTIL_ValidateSoundName(m_ls.sLockedSound, "DoorSound.DefaultLocked");
+#endif
+		UTIL_ValidateSoundName(m_ls.sUnlockedSound, "DoorSound.Null");
+	}
+
+#ifdef HL1_DLL
+	if (m_ls.sLockedSound != NULL_STRING && strlen((char*)STRING(m_ls.sLockedSound)) < 4)
+	{
+		// Too short to be ANYTHING ".wav", so it must be an old index into a long-lost
+		// array of sound choices. slam it to a known "deny" sound. We lose the designer's
+		// original selection, but we don't get unresponsive doors.
+		m_ls.sLockedSound = AllocPooledString("buttons/button2.wav");
+	}
+#endif//HL1_DLL
+
+	//Precache them all
+	PrecacheScriptSound((char *)STRING(m_NoiseMoving));
+	PrecacheScriptSound((char *)STRING(m_NoiseArrived));
+	PrecacheScriptSound((char *)STRING(m_NoiseMovingClosed));
+	PrecacheScriptSound((char *)STRING(m_NoiseArrivedClosed));
+	PrecacheScriptSound((char *)STRING(m_ls.sLockedSound));
+	PrecacheScriptSound((char *)STRING(m_ls.sUnlockedSound));
+
+	//Get sentence group names, for doors which are directly 'touched' to open
+	switch (m_bLockedSentence)
+	{
+	case 1: m_ls.sLockedSentence = AllocPooledString("NA"); break; // access denied
+	case 2: m_ls.sLockedSentence = AllocPooledString("ND"); break; // security lockout
+	case 3: m_ls.sLockedSentence = AllocPooledString("NF"); break; // blast door
+	case 4: m_ls.sLockedSentence = AllocPooledString("NFIRE"); break; // fire door
+	case 5: m_ls.sLockedSentence = AllocPooledString("NCHEM"); break; // chemical door
+	case 6: m_ls.sLockedSentence = AllocPooledString("NRAD"); break; // radiation door
+	case 7: m_ls.sLockedSentence = AllocPooledString("NCON"); break; // gen containment
+	case 8: m_ls.sLockedSentence = AllocPooledString("NH"); break; // maintenance door
+	case 9: m_ls.sLockedSentence = AllocPooledString("NG"); break; // broken door
+
+	default: m_ls.sLockedSentence = NULL_STRING; break;
+	}
+
+	switch (m_bUnlockedSentence)
+	{
+	case 1: m_ls.sUnlockedSentence = AllocPooledString("EA"); break; // access granted
+	case 2: m_ls.sUnlockedSentence = AllocPooledString("ED"); break; // security door
+	case 3: m_ls.sUnlockedSentence = AllocPooledString("EF"); break; // blast door
+	case 4: m_ls.sUnlockedSentence = AllocPooledString("EFIRE"); break; // fire door
+	case 5: m_ls.sUnlockedSentence = AllocPooledString("ECHEM"); break; // chemical door
+	case 6: m_ls.sUnlockedSentence = AllocPooledString("ERAD"); break; // radiation door
+	case 7: m_ls.sUnlockedSentence = AllocPooledString("ECON"); break; // gen containment
+	case 8: m_ls.sUnlockedSentence = AllocPooledString("EH"); break; // maintenance door
+
+	default: m_ls.sUnlockedSentence = NULL_STRING; break;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Cache user-entity-field values until spawn is called.
+// Input  : szKeyName - 
+//			szValue - 
+// Output : Returns true.
+//-----------------------------------------------------------------------------
+bool CBaseDoor::KeyValue(const char *szKeyName, const char *szValue)
+{
+	if (FStrEq(szKeyName, "locked_sentence"))
+	{
+		m_bLockedSentence = atof(szValue);
+	}
+	else if (FStrEq(szKeyName, "unlocked_sentence"))
+	{
+		m_bUnlockedSentence = atof(szValue);
+	}
+	else
+		return BaseClass::KeyValue(szKeyName, szValue);
+
+	return true;
+}
+#endif

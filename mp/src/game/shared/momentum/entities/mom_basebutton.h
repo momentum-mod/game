@@ -48,8 +48,6 @@ public:
 	CBaseButton() : m_bIsBhopBlock(false) {};
 
 	virtual void Spawn(void);
-	virtual void Precache(void);
-	virtual bool KeyValue(const char *szKeyName, const char *szValue);
 
 	bool CreateVPhysics(void);
 
@@ -108,6 +106,8 @@ public:
 
 #ifdef GAME_DLL // Server specific things
 public:
+	virtual void Precache(void);
+	virtual bool KeyValue(const char *szKeyName, const char *szValue);
 	virtual int	ObjectCaps(void);
 	int DrawDebugTextOverlays();
 

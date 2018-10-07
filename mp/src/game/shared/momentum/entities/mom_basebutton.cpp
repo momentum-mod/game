@@ -287,90 +287,6 @@ void CBaseButton::Spawn(void)
 	CreateVPhysics();
 }
 
-void CBaseButton::Precache(void)
-{
-	// get door button sounds, for doors which require buttons to open
-	if (m_bLockedSound)
-	{
-		m_ls.sLockedSound = MakeButtonSound((int)m_bLockedSound);
-		PrecacheScriptSound(m_ls.sLockedSound.ToCStr());
-	}
-
-	if (m_bUnlockedSound)
-	{
-		m_ls.sUnlockedSound = MakeButtonSound((int)m_bUnlockedSound);
-		PrecacheScriptSound(m_ls.sUnlockedSound.ToCStr());
-	}
-
-	// get sentence group names, for doors which are directly 'touched' to open
-
-	switch (m_bLockedSentence)
-	{
-	case 1: m_ls.sLockedSentence = MAKE_STRING("NA"); break; // access denied
-	case 2: m_ls.sLockedSentence = MAKE_STRING("ND"); break; // security lockout
-	case 3: m_ls.sLockedSentence = MAKE_STRING("NF"); break; // blast door
-	case 4: m_ls.sLockedSentence = MAKE_STRING("NFIRE"); break; // fire door
-	case 5: m_ls.sLockedSentence = MAKE_STRING("NCHEM"); break; // chemical door
-	case 6: m_ls.sLockedSentence = MAKE_STRING("NRAD"); break; // radiation door
-	case 7: m_ls.sLockedSentence = MAKE_STRING("NCON"); break; // gen containment
-	case 8: m_ls.sLockedSentence = MAKE_STRING("NH"); break; // maintenance door
-	case 9: m_ls.sLockedSentence = MAKE_STRING("NG"); break; // broken door
-
-	default: m_ls.sLockedSentence = NULL_STRING; break;
-	}
-
-	switch (m_bUnlockedSentence)
-	{
-	case 1: m_ls.sUnlockedSentence = MAKE_STRING("EA"); break; // access granted
-	case 2: m_ls.sUnlockedSentence = MAKE_STRING("ED"); break; // security door
-	case 3: m_ls.sUnlockedSentence = MAKE_STRING("EF"); break; // blast door
-	case 4: m_ls.sUnlockedSentence = MAKE_STRING("EFIRE"); break; // fire door
-	case 5: m_ls.sUnlockedSentence = MAKE_STRING("ECHEM"); break; // chemical door
-	case 6: m_ls.sUnlockedSentence = MAKE_STRING("ERAD"); break; // radiation door
-	case 7: m_ls.sUnlockedSentence = MAKE_STRING("ECON"); break; // gen containment
-	case 8: m_ls.sUnlockedSentence = MAKE_STRING("EH"); break; // maintenance door
-
-	default: m_ls.sUnlockedSentence = NULL_STRING; break;
-	}
-
-	if (m_sNoise != NULL_STRING)
-	{
-		PrecacheScriptSound(STRING(m_sNoise));
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Cache user-entity-field values until spawn is called.
-// Input  : szKeyName - 
-//			szValue - 
-// Output : Returns true if handled, false if not.
-//-----------------------------------------------------------------------------
-bool CBaseButton::KeyValue(const char *szKeyName, const char *szValue)
-{
-	if (FStrEq(szKeyName, "locked_sound"))
-	{
-		m_bLockedSound = atof(szValue);
-	}
-	else if (FStrEq(szKeyName, "locked_sentence"))
-	{
-		m_bLockedSentence = atof(szValue);
-	}
-	else if (FStrEq(szKeyName, "unlocked_sound"))
-	{
-		m_bUnlockedSound = atof(szValue);
-	}
-	else if (FStrEq(szKeyName, "unlocked_sentence"))
-	{
-		m_bUnlockedSentence = atof(szValue);
-	}
-	else
-	{
-		return BaseClass::KeyValue(szKeyName, szValue);
-	}
-
-	return true;
-}
-
 bool CBaseButton::CreateVPhysics(void)
 {
 	VPhysicsInitShadow(false, false);
@@ -859,6 +775,90 @@ BUTTON_CODE CBaseButton::ButtonResponseToTouch( void )
 }
 
 #ifdef GAME_DLL
+//-----------------------------------------------------------------------------
+// Purpose: Cache user-entity-field values until spawn is called.
+// Input  : szKeyName - 
+//			szValue - 
+// Output : Returns true if handled, false if not.
+//-----------------------------------------------------------------------------
+bool CBaseButton::KeyValue(const char *szKeyName, const char *szValue)
+{
+	if (FStrEq(szKeyName, "locked_sound"))
+	{
+		m_bLockedSound = atof(szValue);
+	}
+	else if (FStrEq(szKeyName, "locked_sentence"))
+	{
+		m_bLockedSentence = atof(szValue);
+	}
+	else if (FStrEq(szKeyName, "unlocked_sound"))
+	{
+		m_bUnlockedSound = atof(szValue);
+	}
+	else if (FStrEq(szKeyName, "unlocked_sentence"))
+	{
+		m_bUnlockedSentence = atof(szValue);
+	}
+	else
+	{
+		return BaseClass::KeyValue(szKeyName, szValue);
+	}
+
+	return true;
+}
+
+void CBaseButton::Precache(void)
+{
+	// get door button sounds, for doors which require buttons to open
+	if (m_bLockedSound)
+	{
+		m_ls.sLockedSound = MakeButtonSound((int)m_bLockedSound);
+		PrecacheScriptSound(m_ls.sLockedSound.ToCStr());
+	}
+
+	if (m_bUnlockedSound)
+	{
+		m_ls.sUnlockedSound = MakeButtonSound((int)m_bUnlockedSound);
+		PrecacheScriptSound(m_ls.sUnlockedSound.ToCStr());
+	}
+
+	// get sentence group names, for doors which are directly 'touched' to open
+
+	switch (m_bLockedSentence)
+	{
+	case 1: m_ls.sLockedSentence = MAKE_STRING("NA"); break; // access denied
+	case 2: m_ls.sLockedSentence = MAKE_STRING("ND"); break; // security lockout
+	case 3: m_ls.sLockedSentence = MAKE_STRING("NF"); break; // blast door
+	case 4: m_ls.sLockedSentence = MAKE_STRING("NFIRE"); break; // fire door
+	case 5: m_ls.sLockedSentence = MAKE_STRING("NCHEM"); break; // chemical door
+	case 6: m_ls.sLockedSentence = MAKE_STRING("NRAD"); break; // radiation door
+	case 7: m_ls.sLockedSentence = MAKE_STRING("NCON"); break; // gen containment
+	case 8: m_ls.sLockedSentence = MAKE_STRING("NH"); break; // maintenance door
+	case 9: m_ls.sLockedSentence = MAKE_STRING("NG"); break; // broken door
+
+	default: m_ls.sLockedSentence = NULL_STRING; break;
+	}
+
+	switch (m_bUnlockedSentence)
+	{
+	case 1: m_ls.sUnlockedSentence = MAKE_STRING("EA"); break; // access granted
+	case 2: m_ls.sUnlockedSentence = MAKE_STRING("ED"); break; // security door
+	case 3: m_ls.sUnlockedSentence = MAKE_STRING("EF"); break; // blast door
+	case 4: m_ls.sUnlockedSentence = MAKE_STRING("EFIRE"); break; // fire door
+	case 5: m_ls.sUnlockedSentence = MAKE_STRING("ECHEM"); break; // chemical door
+	case 6: m_ls.sUnlockedSentence = MAKE_STRING("ERAD"); break; // radiation door
+	case 7: m_ls.sUnlockedSentence = MAKE_STRING("ECON"); break; // gen containment
+	case 8: m_ls.sUnlockedSentence = MAKE_STRING("EH"); break; // maintenance door
+
+	default: m_ls.sUnlockedSentence = NULL_STRING; break;
+	}
+
+	if (m_sNoise != NULL_STRING)
+	{
+		PrecacheScriptSound(STRING(m_sNoise));
+	}
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Enables or disables the use capability based on our spawnflags.
 //-----------------------------------------------------------------------------

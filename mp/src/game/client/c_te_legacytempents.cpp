@@ -34,7 +34,7 @@
 #include "effect_dispatch_data.h"
 #include "c_te_effect_dispatch.h"
 #include "c_props.h"
-#include "c_mom_doors.h"
+#include "mom_doors.h"
 
 // NOTE: Always include this last!
 #include "tier0/memdbgon.h"

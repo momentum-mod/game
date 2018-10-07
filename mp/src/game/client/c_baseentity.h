@@ -258,8 +258,10 @@ public:
 	IClientUnknown*					GetIClientUnknown()	{ return this; }
 	virtual C_BaseAnimating*		GetBaseAnimating() { return NULL; }
 	virtual void					SetClassname( const char *className );
+	unsigned int					GetClassnameCRC() { return m_iClassnameCRC; }
 
 	string_t						m_iClassname;
+	unsigned int					m_iClassnameCRC;
 
 // IClientUnknown overrides.
 public:

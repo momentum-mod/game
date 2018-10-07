@@ -656,6 +656,8 @@ public:
 	// classname access
 	void		SetClassname( const char *className );
 	const char* GetClassname();
+	unsigned int GetClassnameCRC() { return m_iClassnameCRC; }
+	unsigned int GetNameCRC() { return m_iNameCRC; }
 
 	// Debug Overlays
 	void		 EntityText( int text_offset, const char *text, float flDuration, int r = 255, int g = 255, int b = 255, int a = 255 );
@@ -755,6 +757,7 @@ private:
 
 public:
 	// members
+	CNetworkVar(unsigned int, m_iClassnameCRC);
 	string_t m_iClassname;  // identifier for entity creation and save/restore
 	string_t m_iGlobalname; // identifier for carrying entity across level transitions
 	string_t m_iParent;	// the name of the entities parent; linked into m_pParent during Activate()
