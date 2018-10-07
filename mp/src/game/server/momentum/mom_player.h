@@ -7,6 +7,7 @@
 #include "cbase.h"
 #include "mom_ghostdefs.h"
 #include "mom_shareddefs.h"
+#include "mom_tas.h"
 #include "GameEventListener.h"
 #include "mom_modulecomms.h"
 #include "IMovementListener.h"
@@ -189,6 +190,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
     CSteamID m_sSpecTargetSteamID;
 
     bool m_bInAirDueToJump;
+
+    CTASRecording *m_TASRecords;
+    CUserCmd m_SavedUserCmd;
 
     void DoMuzzleFlash() OVERRIDE;
     void PostThink() OVERRIDE;

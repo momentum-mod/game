@@ -1,12 +1,12 @@
 #include "cbase.h"
-#include "player_command.h"
-#include "player.h"
+#include "gamestats.h"
 #include "igamemovement.h"
 #include "ipredictionsystem.h"
 #include "iservervehicle.h"
 #include "mom_player.h"
+#include "player.h"
+#include "player_command.h"
 #include "vehicle_base.h"
-#include "gamestats.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -14,20 +14,18 @@
 class CMOMPlayerMove : public CPlayerMove
 {
     DECLARE_CLASS(CMOMPlayerMove, CPlayerMove);
-public:
-    CMOMPlayerMove() :
-        m_bWasInVehicle(false),
-        m_bVehicleFlipped(false),
-        m_bInGodMode(true),
-        m_bInNoClip(false)
+
+  public:
+    CMOMPlayerMove() : m_bWasInVehicle(false), m_bVehicleFlipped(false), m_bInGodMode(true), m_bInNoClip(false)
     {
         m_vecSaveOrigin.Init();
     }
 
     void SetupMove(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move);
     void FinishMove(CBasePlayer *player, CUserCmd *ucmd, CMoveData *move);
+    void RunCommand(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *moveHelper);
 
-private:
+  private:
     Vector m_vecSaveOrigin;
     bool m_bWasInVehicle;
     bool m_bVehicleFlipped;
@@ -43,10 +41,7 @@ static CMOMPlayerMove g_PlayerMove;
 //-----------------------------------------------------------------------------
 // Singleton accessor
 //-----------------------------------------------------------------------------
-CPlayerMove *PlayerMove()
-{
-    return &g_PlayerMove;
-}
+CPlayerMove *PlayerMove() { return &g_PlayerMove; }
 
 //
 
@@ -58,7 +53,7 @@ IPredictionSystem *IPredictionSystem::g_pPredictionSystems = nullptr;
 void CMOMPlayerMove::SetupMove(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move)
 {
     // Call the default SetupMove code.
-	player->AvoidPhysicsProps(ucmd);
+    player->AvoidPhysicsProps(ucmd);
     BaseClass::SetupMove(player, ucmd, pHelper, move);
 
     // Convert to HL2 data.
@@ -98,12 +93,11 @@ void CMOMPlayerMove::SetupMove(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
     }*/
 }
 
-
 void CMOMPlayerMove::FinishMove(CBasePlayer *player, CUserCmd *ucmd, CMoveData *move)
 {
     // Call the default FinishMove code.
     BaseClass::FinishMove(player, ucmd, move);
-    //if (gpGlobals->frametime != 0)
+    // if (gpGlobals->frametime != 0)
     //{
     //    float distance = 0.0f;
     //    IServerVehicle *pVehicle = player->GetVehicle();
@@ -147,12 +141,13 @@ void CMOMPlayerMove::FinishMove(CBasePlayer *player, CUserCmd *ucmd, CMoveData *
     //    }
     //    if (distance > 0)
     //    {
-    //        gamestats->Event_PlayerTraveled(player, distance, pVehicle ? true : false, !pVehicle && static_cast< CHL2_Player * >(player)->IsSprinting());
+    //        gamestats->Event_PlayerTraveled(player, distance, pVehicle ? true : false, !pVehicle && static_cast<
+    //        CHL2_Player * >(player)->IsSprinting());
     //    }
     //}
 
-    //bool bGodMode = (player->GetFlags() & FL_GODMODE) ? true : false;
-    //if (m_bInGodMode != bGodMode)
+    // bool bGodMode = (player->GetFlags() & FL_GODMODE) ? true : false;
+    // if (m_bInGodMode != bGodMode)
     //{
     //    m_bInGodMode = bGodMode;
     //    if (bGodMode)
@@ -160,8 +155,6 @@ void CMOMPlayerMove::FinishMove(CBasePlayer *player, CUserCmd *ucmd, CMoveData *
     //        gamestats->Event_PlayerEnteredGodMode(player);
     //    }
     //}
-
-
 
     bool bNoClip = (player->GetMoveType() == MOVETYPE_NOCLIP);
     if (m_bInNoClip != bNoClip)
@@ -171,5 +164,22 @@ void CMOMPlayerMove::FinishMove(CBasePlayer *player, CUserCmd *ucmd, CMoveData *
         {
             gamestats->Event_PlayerEnteredNoClip(player);
         }
+    }
+}
+
+void CMOMPlayerMove::RunCommand(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *moveHelper)
+{
+    CMomentumPlayer *pMOMPlayer = dynamic_cast<CMomentumPlayer *>(player);
+
+    if (pMOMPlayer != nullptr)
+    {
+        pMOMPlayer->m_SavedUserCmd = *ucmd;
+    }
+
+    BaseClass::RunCommand(player, ucmd, moveHelper);
+
+    if (pMOMPlayer != nullptr)
+    {
+        pMOMPlayer->m_TASRecords->PushHead();
     }
 }

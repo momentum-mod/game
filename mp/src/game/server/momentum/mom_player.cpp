@@ -114,9 +114,8 @@ void AppearanceCallback(IConVar *var, const char *pOldValue, float flOldValue)
 
 CMomentumPlayer::CMomentumPlayer()
     : m_duckUntilOnGround(false), m_flStamina(0.0f), m_RunStats(&m_SrvData.m_RunStatsData, g_pMomentumTimer->GetZoneCount()), m_pCurrentCheckpoint(nullptr),
-    m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0),
-    m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false), m_nPrevButtons(0),
-    m_nTicksInAir(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false)
+    m_flLastVelocity(0.0f), m_nPerfectSyncTicks(0), m_nStrafeTicks(0), m_nAccelTicks(0), m_bPrevTimerRunning(false),
+      m_nPrevButtons(0), m_nTicksInAir(0), m_flTweenVelValue(1.0f), m_bInAirDueToJump(false), m_TASRecords(nullptr)
 {
     m_flPunishTime = -1;
     m_iLastBlock = -1;
@@ -132,8 +131,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_SrvData.m_bPreventPlayerBhop = false;
     m_SrvData.m_iLandTick = 0;
 
+    m_TASRecords = new CTASRecording(this);
 
-    
     g_ReplaySystem.m_player = this;
 
     Q_strncpy(m_pszDefaultEntName, GetEntityName().ToCStr(), sizeof m_pszDefaultEntName);
@@ -158,6 +157,8 @@ CMomentumPlayer::~CMomentumPlayer()
 
     // Remove us from the gamemovement listener list
     g_pMomentumGameMovement->RemoveMovementListener(this);
+
+    delete m_TASRecords;
 }
 
 void CMomentumPlayer::Precache()

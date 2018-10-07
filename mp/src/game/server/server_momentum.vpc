@@ -117,6 +117,11 @@ $Project "Server (Momentum)"
                     $File "$SRCDIR\game\shared\momentum\run\mom_replay_versions.h"
                 }
             }
+			$Folder "TAS"
+			{
+				$File "$SRCDIR\game\server\momentum\mom_tas.h"
+				$File "$SRCDIR\game\server\momentum\mom_tas.cpp"
+			}
             
             $File   "momentum\mom_blockfix.h"
             $File   "momentum\mom_blockfix.cpp"
