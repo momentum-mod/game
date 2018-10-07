@@ -127,6 +127,11 @@ void CBaseTrigger::PostClientActive(void)
 	}
 }
 
+int CBaseTrigger::UpdateTransmitState(void)
+{
+	return SetTransmitState(FL_EDICT_ALWAYS);
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

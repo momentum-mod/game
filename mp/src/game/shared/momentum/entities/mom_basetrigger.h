@@ -10,6 +10,7 @@
 #include "mom_basefilter.h"
 #include "mom_entityoutput.h"
 
+#include "networkvar.h"
 #include "checksum_crc.h"
 #include "saverestore_utlvector.h"
 
@@ -53,6 +54,7 @@ public:
 	virtual void Spawn(void);
 	virtual void Activate(void);
 	virtual void PostClientActive(void);
+	virtual int UpdateTransmitState(void);
 
 	void InitTrigger(void);
 

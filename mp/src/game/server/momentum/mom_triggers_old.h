@@ -551,18 +551,3 @@ private:
     int m_iWorld, m_iStage, m_iGametype;
     string_t m_MapAuthor;
 };
-
-class CTriggerTeleport : public CBaseTrigger
-{
-  public:
-    DECLARE_CLASS(CTriggerTeleport, CBaseTrigger);
-    DECLARE_NETWORKCLASS();
-    DECLARE_DATADESC();
-
-    void Spawn(void) OVERRIDE;
-    void Touch(CBaseEntity *pOther) OVERRIDE;
-    int UpdateTransmitState() OVERRIDE;
-
-    string_t m_iLandmark;
-	CNetworkVar(unsigned int, m_iLandmarkCRC);
-};

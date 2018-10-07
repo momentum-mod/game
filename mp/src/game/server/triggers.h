@@ -11,34 +11,7 @@
 #pragma once
 #endif
 
-#include "mom_basetrigger.h"
-
-//-----------------------------------------------------------------------------
-// Purpose: Variable sized repeatable trigger.  Must be targeted at one or more entities.
-//			If "delay" is set, the trigger waits some time after activating before firing.
-//			"wait" : Seconds between triggerings. (.2 default/minimum)
-//-----------------------------------------------------------------------------
-class CTriggerMultiple : public CBaseTrigger
-{
-	DECLARE_CLASS( CTriggerMultiple, CBaseTrigger );
-	DECLARE_SERVERCLASS();
-
-public:
-	void Spawn( void );
-	int UpdateTransmitState( void );
-	void MultiTouch( CBaseEntity *pOther );
-	void MultiWaitOver( void );
-	void ActivateMultiTrigger(CBaseEntity *pActivator);
-
-	DECLARE_DATADESC();
-
-	// Outputs
-	COutputEvent m_OnTrigger;
-};
-
-// Global list of triggers that care about weapon fire
-extern CUtlVector< CHandle<CTriggerMultiple> >	g_hWeaponFireTriggers;
-
+#include "mom_triggers.h"
 
 //------------------------------------------------------------------------------
 // Base VPhysics trigger implementation
