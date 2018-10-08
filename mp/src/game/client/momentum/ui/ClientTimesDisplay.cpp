@@ -2071,6 +2071,7 @@ void CClientTimesDisplay::OnCommand(const char *pCommand)
     bool isFlagSideways = FStrEq(pCommand, "ToggleSideways");
     bool isFlagBackwards = FStrEq(pCommand, "ToggleBackwards");
     bool isFlagBonus = FStrEq(pCommand, "ToggleBonus");
+    bool isFlagTAS = FStrEq(pCommand, "ToggleTAS");
     if (isTop10 || isAround)
     {
         m_pFriendsLeaderboardsButton->SetEnabled(true);
@@ -2155,6 +2156,10 @@ void CClientTimesDisplay::OnCommand(const char *pCommand)
     else if (isFlagBonus)
     {
         flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_BONUS);
+    }
+    else if (isFlagTAS)
+    {
+        flaggedRuns = static_cast<RUN_FLAG>(flaggedRuns ^ RUNFLAG_TAS);
     }
     else
     {

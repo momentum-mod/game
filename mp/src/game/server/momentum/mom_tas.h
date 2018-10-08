@@ -2,13 +2,6 @@
 
 class CMomentumPlayer;
 
-enum eStatusOfTAS
-{
-    TAS_STOPPED = -1,
-    TAS_RECORDING = 0,
-    TAS_PLAYING = 1,
-};
-
 struct FrameOfTASData
 {
     FrameOfTASData();
@@ -39,7 +32,13 @@ class CTASRecording
 
     ~CTASRecording();
 
-    void PushHead();
+    void Reset();
+
+    void Think();
+
+    void Start();
+
+    void Stop();
 
     void Erase(int iFrames);
 
@@ -49,4 +48,6 @@ class CTASRecording
 
     CUtlVector<FrameOfTASData> m_vecTASData;
     CMomentumPlayer *m_pPlayer;
+    eStatusOfTAS m_Status, m_OldStatus;
+    int m_iChosenFrame, m_iPauseTickCount;
 };

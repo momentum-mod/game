@@ -112,6 +112,8 @@ class CMomentumTimer : CAutoGameSystem
     SavedLocation_t *GetStartMark() const { return m_pStartZoneMark; }
     void ClearStartMark();
 
+    int &GetStartTick() { return m_iStartTick; }
+
   private:
     int m_iZoneCount;
     int m_iStartTick, m_iEndTick;

@@ -35,7 +35,8 @@ typedef enum
     RUNFLAG_HSW = 1 << 2,
     RUNFLAG_SW = 1 << 3,
     RUNFLAG_BW = 1 << 4,
-    RUNFLAG_BONUS = 1 << 5
+    RUNFLAG_BONUS = 1 << 5,
+    RUNFLAG_TAS = 1 << 6
     //MOM_TODO: Figure out the rest
 } RUN_FLAG;
 
@@ -54,6 +55,13 @@ typedef enum
     SPEC_UPDATE_STOP,           // Stopped spectating; respawned
     SPEC_UPDATE_LEAVE       // This player left the map/lobby
 } SPECTATE_MSG_TYPE;
+
+typedef enum
+{
+    TAS_STOPPED = -1,
+    TAS_RECORDING,
+    TAS_PAUSE,
+} eStatusOfTAS;
 
 #define PANEL_TIMES "times"
 #define IN_TIMES (1<<26)

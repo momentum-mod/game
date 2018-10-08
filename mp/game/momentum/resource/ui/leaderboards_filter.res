@@ -118,6 +118,21 @@
         "actionsignallevel" "2"
         "Font"			"BigNoodleSmall"
     }
+	"TAS"
+    {
+        "ControlName" "ToggleButton"
+        "fieldName" "TAS"
+        "xpos" "5"
+        "ypos" "155"
+        "wide"		"88"
+		"tall"		"16"
+        "labelText" "#MOM_RunFlag_TAS"
+        "auto_wide_tocontents" "1"
+        "textAlignment" "center"
+        "command" "ToggleTAS"
+        "actionsignallevel" "2"
+        "Font"			"BigNoodleSmall"
+    }
 
 	"Reset"
     {

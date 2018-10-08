@@ -171,15 +171,17 @@ void CMOMPlayerMove::RunCommand(CBasePlayer *player, CUserCmd *ucmd, IMoveHelper
 {
     CMomentumPlayer *pMOMPlayer = dynamic_cast<CMomentumPlayer *>(player);
 
+    bool bShouldStuckPlayer = false;
+
     if (pMOMPlayer != nullptr)
     {
         pMOMPlayer->m_SavedUserCmd = *ucmd;
+        pMOMPlayer->m_TASRecords->Think();
+
+        if (pMOMPlayer->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS)
+            bShouldStuckPlayer = pMOMPlayer->m_TASRecords->m_Status == TAS_PAUSE;
     }
 
-    BaseClass::RunCommand(player, ucmd, moveHelper);
-
-    if (pMOMPlayer != nullptr)
-    {
-        pMOMPlayer->m_TASRecords->PushHead();
-    }
+    if (!bShouldStuckPlayer)
+        BaseClass::RunCommand(player, ucmd, moveHelper);
 }
