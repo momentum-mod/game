@@ -15,6 +15,7 @@ BEGIN_PREDICTION_DATA_NO_BASE(CBaseToggle)
 	DEFINE_PRED_TYPEDESCRIPTION(m_Collision, CCollisionProperty),
 	DEFINE_PRED_FIELD(m_iMasterCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_iNameCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_iDamageFilterCRC, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_spawnflags, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_nModelIndex, FIELD_INTEGER, FTYPEDESC_INSENDTABLE),
 	DEFINE_PRED_FIELD(m_vecNetworkOrigin, FIELD_VECTOR, FTYPEDESC_INSENDTABLE),
@@ -32,6 +33,7 @@ IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_BaseToggle, DT_BaseToggle, CBaseToggle)
 	RecvPropQAngles(RECVINFO_NAME(m_angNetworkAngles, m_angRotation)),
 	RecvPropInt(RECVINFO(m_iMasterCRC)),
 	RecvPropInt(RECVINFO(m_iNameCRC)),
+	RecvPropInt(RECVINFO(m_iDamageFilterCRC)),
 	RecvPropInt(RECVINFO(m_nModelIndex)),
 	RecvPropInt(RECVINFO(m_CollisionGroup)),
 	RecvPropInt(RECVINFO(m_fEffects), 0, RecvProxy_EffectFlags ),
@@ -48,6 +50,7 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE(CBaseToggle, DT_BaseToggle)
 	SendPropInt(SENDINFO(m_fEffects),EF_MAX_BITS, SPROP_UNSIGNED),
 	SendPropInt(SENDINFO(m_iMasterCRC)),
 	SendPropInt(SENDINFO(m_iNameCRC)),
+	SendPropInt(SENDINFO(m_iDamageFilterCRC)),
 	SendPropModelIndex(SENDINFO(m_nModelIndex)),
 	SendPropInt(SENDINFO(m_CollisionGroup), 5, SPROP_UNSIGNED),
 	SendPropInt(SENDINFO(m_spawnflags)),
@@ -95,6 +98,17 @@ bool CBaseToggle::KeyValue(const char *szKeyName, const char *szValue)
 	else if (FStrEq(szKeyName, "wait"))
 	{
 		m_flWait = atof(szValue);
+	}
+	else if (FStrEq(szKeyName, "damagefilter"))
+	{
+		CRC32_t crc; 
+		CRC32_Init(&crc);
+		CRC32_ProcessBuffer(&crc, szKeyName, Q_strlen(szKeyName));
+		CRC32_Final(&crc);
+
+		m_iDamageFilterCRC = crc;
+
+		return BaseClass::KeyValue(szKeyName, szValue);
 	}
 	else if (FStrEq(szKeyName, "master"))
 	{

@@ -371,7 +371,6 @@ public:
 	bool					ShouldShowHints( void ) { return Hints() ? Hints()->ShouldShowHints() : false; }
 	bool 					HintMessage( int hint, bool bForce = false, bool bOnlyIfClear = false ) { return Hints() ? Hints()->HintMessage( hint, bForce, bOnlyIfClear ) : false; }
 	void 					HintMessage( const char *pMessage ) { if (Hints()) Hints()->HintMessage( pMessage ); }
-
 	virtual	IMaterial *GetHeadLabelMaterial( void );
 
 	// Fog

@@ -100,7 +100,7 @@ public:
 	string_t	m_iFilterName;
 	CHandle<class CBaseFilter>	m_hFilter;
 
-	CNetworkVar(bool, m_bDisabled);
+	CNetworkVar(unsigned int, m_bDisabled);
 	CNetworkVar(unsigned int, m_iTargetCRC);
 	CNetworkVar(unsigned int, m_iFilterCRC);
 

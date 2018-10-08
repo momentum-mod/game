@@ -24,6 +24,7 @@
 #include "ispatialpartition.h"
 
 #ifdef CLIENT_DLL
+#include "mom_basefilter.h"
 #include "c_te_effect_dispatch.h"
 #else
 #include "func_break.h"
@@ -2997,4 +2998,88 @@ void CBaseEntity::SetMoveDoneTime( float flDelay ) // MOM_TODO: Does GetLocalTim
 		m_flMoveDoneTime = -1;
 	}
 	CheckHasGamePhysicsSimulation();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Scale damage done and call OnTakeDamage
+//-----------------------------------------------------------------------------
+int CBaseEntity::TakeDamage( const CTakeDamageInfo &inputInfo )
+{
+	if ( !g_pGameRules )
+		return 0;
+
+	bool bHasPhysicsForceDamage = !g_pGameRules->Damage_NoPhysicsForce( inputInfo.GetDamageType() );
+	if ( bHasPhysicsForceDamage && inputInfo.GetDamageType() != DMG_GENERIC )
+	{
+		// If you hit this assert, you've called TakeDamage with a damage type that requires a physics damage
+		// force & position without specifying one or both of them. Decide whether your damage that's causing 
+		// this is something you believe should impart physics force on the receiver. If it is, you need to 
+		// setup the damage force & position inside the CTakeDamageInfo (Utility functions for this are in
+		// takedamageinfo.cpp. If you think the damage shouldn't cause force (unlikely!) then you can set the 
+		// damage type to DMG_GENERIC, or | DMG_CRUSH if you need to preserve the damage type for purposes of HUD display.
+
+		if ( inputInfo.GetDamageForce() == vec3_origin || inputInfo.GetDamagePosition() == vec3_origin )
+		{
+			static int warningCount = 0;
+			if ( ++warningCount < 10 )
+			{
+				if ( inputInfo.GetDamageForce() == vec3_origin )
+				{
+					DevWarning( "CBaseEntity::TakeDamage:  with inputInfo.GetDamageForce() == vec3_origin\n" );
+				}
+				if ( inputInfo.GetDamagePosition() == vec3_origin )
+				{
+					DevWarning( "CBaseEntity::TakeDamage:  with inputInfo.GetDamagePosition() == vec3_origin\n" );
+				}
+			}
+		}
+	}
+
+#ifdef CLIENT_DLL	
+	CBaseFilter *pFilter = (CBaseFilter *)(FindEntityByNameCRC(nullptr, m_iDamageFilterCRC));
+	if (pFilter && !pFilter->PassesDamageFilter(inputInfo))
+	{
+		return 0;
+	}
+#else
+	// Make sure our damage filter allows the damage.
+	if ( !PassesDamageFilter( inputInfo ))
+	{
+		return 0;
+	}
+#endif
+
+#ifdef GAME_DLL
+	if( !g_pGameRules->AllowDamage(this, inputInfo) )
+	{
+		return 0;
+	}
+#endif
+
+	extern bool PhysIsInCallback();
+	if ( PhysIsInCallback() )
+	{
+#ifdef GAME_DLL
+		PhysCallbackDamage( this, inputInfo );
+#endif
+	}
+	else
+	{
+		CTakeDamageInfo info = inputInfo;
+
+#ifdef GAME_DLL
+		// Scale the damage by the attacker's modifier.
+		if ( info.GetAttacker() )
+		{
+			info.ScaleDamage( info.GetAttacker()->GetAttackDamageScale( this ) );
+		}
+
+		// Scale the damage by my own modifiers
+		info.ScaleDamage( GetReceivedDamageScale( info.GetAttacker() ) );
+#endif
+
+		//Msg("%s took %.2f Damage, at %.2f\n", GetClassname(), info.GetDamage(), gpGlobals->curtime );
+		return OnTakeDamage( info );
+	}
+	return 0;
 }

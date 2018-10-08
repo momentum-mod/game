@@ -211,14 +211,12 @@ void ApplyMultiDamage( void )
 	if ( !g_MultiDamage.GetTarget() )
 		return;
 
-#ifndef CLIENT_DLL
 	const CBaseEntity *host = te->GetSuppressHost();
 	te->SetSuppressHost( NULL );
 		
 	g_MultiDamage.GetTarget()->TakeDamage( g_MultiDamage );
 
 	te->SetSuppressHost( (CBaseEntity*)host );
-#endif
 
 	// Damage is done, clear it out
 	ClearMultiDamage();

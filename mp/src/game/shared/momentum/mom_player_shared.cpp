@@ -6,6 +6,7 @@
 #ifdef GAME_DLL
 #include "te_effect_dispatch.h"
 #else
+#include "takedamageinfo.h"
 #include "c_te_effect_dispatch.h"
 #endif
 #include "decals.h"
@@ -270,18 +271,16 @@ void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting postion
         } // bDoEffects
 
         // add damage to entity that we hit
-
-#ifndef CLIENT_DLL
+		
         ClearMultiDamage();
 
         CTakeDamageInfo info(pevAttacker, pevAttacker, fCurrentDamage, iDamageType);
         CalculateBulletDamageForce(&info, iBulletType, vecDir, tr.endpos);
         tr.m_pEnt->DispatchTraceAttack(info, vecDir, &tr);
-
+#ifdef GAME_DLL
         TraceAttackToTriggers(info, tr.startpos, tr.endpos, vecDir);
-
-        ApplyMultiDamage();
 #endif
+        ApplyMultiDamage();
 
         // check if bullet can penetarte another entity
         if (iPenetration == 0 && !hitGrate)

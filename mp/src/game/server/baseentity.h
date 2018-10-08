@@ -1136,6 +1136,7 @@ public:
 	// Damage filtering
 	string_t	m_iszDamageFilterName;	// The name of the entity to use as our damage filter.
 	EHANDLE		m_hDamageFilter;		// The entity that controls who can damage us.
+	CNetworkVar(unsigned int, m_iDamageFilterCRC);
 
 	// Debugging / devolopment fields
 	int				m_debugOverlays;	// For debug only (bitfields)

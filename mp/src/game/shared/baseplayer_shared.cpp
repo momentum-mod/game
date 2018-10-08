@@ -2099,4 +2099,3 @@ bool fogparams_t::operator !=( const fogparams_t& other ) const
 
 	return false;
 }
-

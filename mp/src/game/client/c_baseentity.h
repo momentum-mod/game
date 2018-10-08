@@ -334,6 +334,10 @@ public:
 	// This function returns a value that scales all damage done by this entity.
 	// Use CDamageModifier to hook in damage modifiers on a guy.
 	virtual float					GetAttackDamageScale( void );
+	virtual int						TakeDamage( const CTakeDamageInfo &inputInfo );
+	virtual int						OnTakeDamage( const CTakeDamageInfo &inputInfo ) { return 0; };
+
+	unsigned int					m_iDamageFilterCRC;
 
 // IClientNetworkable implementation.
 public:

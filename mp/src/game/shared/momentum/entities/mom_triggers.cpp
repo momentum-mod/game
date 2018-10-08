@@ -642,14 +642,14 @@ void CTriggerTeleport::Touch(CBaseEntity *pOther)
 		tmp.z -= pOther->WorldAlignMins().z;
 	}
 
-	pOther->SetGroundEntity(NULL);
+	pOther->SetGroundEntity(nullptr);
 
 #ifdef GAME_DLL
 	//
 	// Only modify the toucher's angles and zero their velocity if no landmark was specified.
 	//
-	const QAngle *pAngles = NULL;
-	Vector *pVelocity = NULL;
+	const QAngle *pAngles = nullptr;
+	Vector *pVelocity = nullptr;
 #endif
 
 	if (!pentLandmark && !HasSpawnFlags(SF_TELEPORT_PRESERVE_ANGLES))
@@ -658,8 +658,10 @@ void CTriggerTeleport::Touch(CBaseEntity *pOther)
 		pOther->m_angNetworkAngles = tmp_angle;
 		pOther->SetLocalAngles(tmp_angle);
 #else
-		pAngles = &tmp_angle;
-		pVelocity = NULL; // BUGBUG - This does not set the player's velocity to zero!!!
+		if (AI_IsSinglePlayer())
+		{
+			pAngles = &tmp_angle;
+		}
 #endif
 	}
 

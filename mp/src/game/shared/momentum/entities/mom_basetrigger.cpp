@@ -31,17 +31,26 @@ void RecvProxy_FilterCRC(const CRecvProxyData *pData, void *pStruct, void *pOut)
 	entity->m_hFilter = dynamic_cast<C_BaseFilter *>(FindEntityByNameCRC(nullptr, entity->m_iFilterCRC));
 }
 
+// Incase server decides to change the filter name
+void RecvProxy_Disabled(const CRecvProxyData *pData, void *pStruct, void *pOut)
+{
+	CBaseTrigger *entity = (CBaseTrigger *) pStruct;
+
+	entity->m_bDisabled = pData->m_Value.m_Int;
+	entity->m_bDisabled == 1 ? entity->Disable() : entity->Enable();
+}
+
 #undef CBaseTrigger // Undefine so we can type the real server class name for recv table
 
 IMPLEMENT_CLIENTCLASS_DT(C_BaseTrigger, DT_BaseTrigger, CBaseTrigger) // MOM_TODO: Add _NO_BASE stuff to predict here
-	RecvPropBool(RECVINFO(m_bDisabled)),
+	RecvPropInt(RECVINFO(m_bDisabled), NULL, RecvProxy_Disabled),
 	RecvPropInt(RECVINFO(m_iTargetCRC)),
 	RecvPropInt(RECVINFO(m_iFilterCRC), NULL, RecvProxy_FilterCRC),
 END_RECV_TABLE();
 #define CBaseTrigger C_BaseTrigger // Redefine for rest of the code
 #else // Server save data and send table
 IMPLEMENT_SERVERCLASS_ST(CBaseTrigger, DT_BaseTrigger) // MOM_TODO: Add _NO_BASE stuff to predict here
-	SendPropBool(SENDINFO(m_bDisabled)),
+	SendPropInt(SENDINFO(m_bDisabled)),
 	SendPropInt(SENDINFO(m_iTargetCRC)),
 	SendPropInt(SENDINFO(m_iFilterCRC)),
 END_SEND_TABLE();
@@ -126,7 +135,9 @@ void CBaseTrigger::InitTrigger()
 	}
 
 	SetMoveType(MOVETYPE_NONE);
+#ifdef GAME_DLL
 	SetModel(STRING(GetModelName()));    // set size and link into world
+#endif
 	if (showtriggers.GetInt() == 0)
 	{
 		AddEffects(EF_NODRAW);
@@ -201,7 +212,6 @@ void CBaseTrigger::TouchTest(void)
 	{
 		if (m_hTouchingEntities.Count() != 0)
 		{
-
 			m_OnTouching.FireOutput(this, this);
 		}
 		else
@@ -275,21 +285,17 @@ void CBaseTrigger::InputEndTouch(inputdata_t &inputdata)
 //-----------------------------------------------------------------------------
 bool CBaseTrigger::PassesTriggerFilters(CBaseEntity *pOther)
 {
-	// First test spawn flag filters
+	if (m_bDisabled)
+	{
+		return false;
+	}
+
+	// Test spawn flag filters
 	if (HasSpawnFlags(SF_TRIGGER_ALLOW_ALL) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_CLIENTS) && (pOther->GetFlags() & FL_CLIENT)) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_NPCS) && (pOther->GetFlags() & FL_NPC)) ||
 		(HasSpawnFlags(SF_TRIGGER_ALLOW_PUSHABLES) && FClassnameIs(pOther, "func_pushable")) ||
-		(HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS)
-#if defined( HL2_EPISODIC ) || defined( TF_DLL )		
-		||
-		(HasSpawnFlags(SF_TRIG_TOUCH_DEBRIS) &&
-		(pOther->GetCollisionGroup() == COLLISION_GROUP_DEBRIS ||
-			pOther->GetCollisionGroup() == COLLISION_GROUP_DEBRIS_TRIGGER ||
-			pOther->GetCollisionGroup() == COLLISION_GROUP_INTERACTIVE_DEBRIS)
-			)
-#endif
-		)
+		(HasSpawnFlags(SF_TRIGGER_ALLOW_PHYSICS) && pOther->GetMoveType() == MOVETYPE_VPHYSICS))
 	{
 		if (pOther->GetFlags() & FL_NPC)
 		{
