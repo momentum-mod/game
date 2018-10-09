@@ -196,6 +196,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public IM
 
     void DoMuzzleFlash() OVERRIDE;
     void PostThink() OVERRIDE;
+    void Think(void) OVERRIDE;
 
     // Ladder stuff
     float GetGrabbableLadderTime() const { return m_flGrabbableLadderTime; }

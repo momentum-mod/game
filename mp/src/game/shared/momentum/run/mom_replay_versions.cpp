@@ -59,6 +59,7 @@ CMomRunStats *CMomReplayV1::CreateRunStats(uint8 stages)
 }
 
 void CMomReplayV1::RemoveFrames(int num) { m_rgFrames.RemoveMultipleFromHead(num); }
+void CMomReplayV1::RemoveFramesMult(int elm, int num) { m_rgFrames.RemoveMultiple(elm, num); }
 
 void CMomReplayV1::Serialize(CBinaryWriter *writer)
 {

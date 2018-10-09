@@ -7,7 +7,7 @@ struct FrameOfTASData
     FrameOfTASData();
 
     FrameOfTASData(const QAngle &angViewAngles, const Vector &vecPosition, const Vector &vecViewOffset,
-                   const Vector &vecAbsVelocity);
+                   const Vector &vecAbsVelocity, int &iButtons);
 
     ~FrameOfTASData();
 
@@ -23,6 +23,8 @@ struct FrameOfTASData
     Vector m_vecPosition;
     Vector m_vecViewOffset;
     Vector m_vecAbsVelocity;
+    // MOM_TODO: Buttons for stats
+    int m_iButtons;
 };
 
 class CTASRecording
@@ -44,10 +46,42 @@ class CTASRecording
 
     FrameOfTASData *GetFrame(int iFrame);
 
+    FrameOfTASData *GetCurFrame();
+
+    // MOM_TODO: Looks unsmooth for angles, to interpolate angles we could use InterpolateAngles with gpGlobals->interpolation_amount.
+    template <bool bUseCurrentFrame = true, bool bSetOnlyOnceAnglesThisFrame = true> void SetFrame(int iFrame = 0)
+    {
+        if (bUseCurrentFrame)
+            iFrame = m_iChosenFrame;
+
+        auto chosenFrame = GetFrame(iFrame);
+        m_pPlayer->SetAbsOrigin(chosenFrame->m_vecPosition);
+
+        if (bSetOnlyOnceAnglesThisFrame)
+        {
+            if ( m_iSetFrame != iFrame )
+            {
+                m_pPlayer->SnapEyeAngles(chosenFrame->m_angViewAngles);
+                m_pPlayer->SetLocalAngles(chosenFrame->m_angViewAngles);
+            }
+        }
+        else
+        {
+            m_pPlayer->SnapEyeAngles(chosenFrame->m_angViewAngles);
+            m_pPlayer->SetLocalAngles(chosenFrame->m_angViewAngles);
+        }
+
+        m_pPlayer->SetAbsVelocity(chosenFrame->m_vecAbsVelocity);
+        m_pPlayer->SetViewOffset(chosenFrame->m_vecViewOffset);
+
+        m_iSetFrame = iFrame;
+    }
+
     int NumberOfFrames();
 
     CUtlVector<FrameOfTASData> m_vecTASData;
     CMomentumPlayer *m_pPlayer;
     eStatusOfTAS m_Status, m_OldStatus;
-    int m_iChosenFrame, m_iPauseTickCount;
+    int m_iChosenFrame, m_iPauseTickCount, m_iFramesElapsed, m_iSetFrame;
+    float m_flTimeScale;
 };

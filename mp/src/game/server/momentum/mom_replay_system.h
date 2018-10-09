@@ -40,18 +40,17 @@ public:
     CMomReplayBase *m_pRecordingReplay;
     CMomReplayBase *m_pPlaybackReplay;
     CMomentumPlayer *m_player;
+    bool m_bShouldStopRec;
+    int m_iTickCount;          // MOM_TODO: Maybe remove me?
+    int m_iStartRecordingTick; // The tick that the replay started, used for trimming.
+    int m_iStartTimerTick;     // The tick that the player's timer starts, used for trimming.
+    float m_fRecEndTime;       // The time to end the recording, if delay was passed as true to StopRecording()
     
 private:
     void UpdateRecordingParams(); // called every game frame after entities think and update
     void SetReplayInfo();
     void SetRunStats();
     bool StoreReplay(const char* path, const char* pathID = "MOD");
-
-    bool m_bShouldStopRec;
-    int m_iTickCount;// MOM_TODO: Maybe remove me?
-    int m_iStartRecordingTick;//The tick that the replay started, used for trimming.
-    int m_iStartTimerTick;//The tick that the player's timer starts, used for trimming.
-    float m_fRecEndTime;// The time to end the recording, if delay was passed as true to StopRecording()
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;

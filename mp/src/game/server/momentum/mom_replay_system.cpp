@@ -205,6 +205,9 @@ void CMomentumReplaySystem::TrimReplay()
 
 void CMomentumReplaySystem::UpdateRecordingParams()
 {
+    if ((m_player->m_TASRecords->m_Status == TAS_PAUSE) && (m_player->m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS))
+        return;
+
     // We only record frames that the player isn't pausing on
     if (m_bRecording && !engine->IsPaused())
     {

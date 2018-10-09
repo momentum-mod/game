@@ -266,6 +266,7 @@ void CMomentumPlayer::SendAppearance()
 
 void CMomentumPlayer::Spawn()
 {
+    SetNextThink(gpGlobals->curtime);
     SetName(MAKE_STRING(m_pszDefaultEntName));
     SetModel(ENTITY_MODEL);
     SetBodygroup(1, 11); // BODY_PROLATE_ELLIPSE
@@ -1220,4 +1221,139 @@ void CMomentumPlayer::PostThink()
     // Update previous origins
     NewPreviousOrigin(GetLocalOrigin());
     BaseClass::PostThink();
+}
+
+void CMomentumPlayer::Think()
+{
+    BaseClass::Think();
+
+    if ((m_SrvData.m_RunData.m_iRunFlags & RUNFLAG_TAS) && (m_TASRecords->m_Status == TAS_PAUSE))
+    {
+        auto lambda_UpdateStep = [this](int Skip) {
+            if (ConVarRef("mom_tas_selection").GetInt() == 2)
+                m_TASRecords->m_iChosenFrame -= Skip;
+            else if (ConVarRef("mom_tas_selection").GetInt() == 1)
+                m_TASRecords->m_iChosenFrame += Skip;
+
+            m_TASRecords->m_iChosenFrame =
+                clamp<int>(m_TASRecords->m_iChosenFrame, 0, m_TASRecords->m_vecTASData.Size() - 1);
+        };
+
+        if (m_TASRecords->m_iChosenFrame < 0 || m_TASRecords->m_iChosenFrame >= m_TASRecords->m_vecTASData.Size())
+        {
+            // If we're not looping and we've reached the end of the tas records then stop and wait for the player
+            // to make a choice about if it should repeat, or end.
+            SetAbsVelocity(vec3_origin);
+        }
+        else
+        {
+            if (m_TASRecords->m_flTimeScale <= 1.0f)
+                lambda_UpdateStep(1);
+            else
+            {
+                // MOM_TODO: IMPORTANT! Remember, this is probably not the proper way of speeding up the replay.
+                // Because it skips the steps that normaly the engine would have "compensated".
+                // So it can results to unsmooth results, but this is probably the best you can get.
+                // Until we can find something else to modify timescale properly.
+                // We do it this way, because SetNextThink / engine doesn't allow faster updates at this timescale.
+
+                // Calculate our next step
+                int iNextStep = static_cast<int>(m_TASRecords->m_flTimeScale) + 1;
+
+                // Calculate the average of ticks that will be used for the next step or the current one
+                float fTicksAverage = (1.0f - (static_cast<float>(iNextStep) - m_TASRecords->m_flTimeScale));
+
+                // If it's null, then we just run the current step
+                if (fTicksAverage == 0.0f)
+                {
+                    lambda_UpdateStep(iNextStep - 1);
+                }
+
+                // Otherwhise if it's 1 we must run the next step
+                else if (fTicksAverage == 1.0f)
+                {
+                    lambda_UpdateStep(iNextStep);
+                }
+
+                // Else, we calculate when we should be on the next step or the current one
+                else
+                {
+
+                    // If we should first update on the next step or not
+                    bool bShouldNextStepInstead = false;
+
+                    // If the next step that must be runned is higher than the current steps:
+                    // We invert roles between current steps and next steps.
+                    if (fTicksAverage > 0.5f)
+                    {
+                        fTicksAverage = 0.5f - (fTicksAverage - 0.5f);
+                        bShouldNextStepInstead = true;
+                    }
+
+                    // Actually we don't need to check for the tickrate, we will let engine compensate it.
+                    float fInvTicksAverage = 1.0f / fTicksAverage;
+
+                    int iInvTicksAverage = static_cast<int>(fInvTicksAverage + 0.5f);
+
+                    // 1) If the ticks elapsed is higher or equal to the ticks calculated we must run the next step or
+                    // the current one depending on the average of current steps and next steps.
+                    if (m_TASRecords->m_iFramesElapsed >= iInvTicksAverage)
+                    {
+                        // BLOCK1
+
+                        // If the average of next steps are higher than current steps, the current step must be called
+                        // here. Otherwhise the next step must be called.
+
+                        lambda_UpdateStep(bShouldNextStepInstead ? (iNextStep - 1) : iNextStep);
+
+                        // Reset our elapsed ticks, to know when we will perform a new current step or a new next step.
+                        // At tick 1, because we're increasing only elapsed ticks after the condition of 1) and not
+                        // before. If we don't do this, we will be in late of 1 tick.
+
+                        /* --------------------------------------------------------------------------------------------------------------------------
+                        For example if m_flTimeScale = 3,5 -> then iInvTicksAverage is equal to 2 (1/0.5), and that
+                        we're resetting iTickElapsed on 0, it means that we will wait 2 ticks before being on that
+                        BLOCK1. And we dont want that because, we want the 1/2 of time the code running on both blocks
+                        and not 1/3 on BLOCK1 then 2/3 on BLOCK2, when timescale is 3,5. If we wait 2 ticks on BLOCK2
+                        and only 1 on BLOCK1, logically, it won't correspond to 3,5 of m_flTimeScale. So we're doing
+                        like this way: iTickElapsed = 1, or iInvTicksAverage = iInvTicksAverage - 1, to make it
+                        correspond perfectly to timescale. I hope you understood what I've meant. If not then contact
+                        that XutaxKamay ***** and tell him to fix his comments.
+                        ------------------------------------------------------------------------------------------------------------------------------
+                        */
+
+                        m_TASRecords->m_iFramesElapsed = 1;
+                    }
+                    else
+                    {
+
+                        // BLOCK2
+
+                        // If the average of next steps are higher than current steps, the next step must be called
+                        // here. Otherwhise the current step must be called.
+
+                        lambda_UpdateStep(bShouldNextStepInstead ? (iNextStep) : (iNextStep - 1));
+
+                        // Wait for the ticks elapsing before we change to our current step or our next step.
+                        m_TASRecords->m_iFramesElapsed++;
+                    }
+                }
+            }
+
+            m_TASRecords->SetFrame();
+        }
+
+        if (m_TASRecords->m_flTimeScale <= 1.0f)
+        {
+            SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick * (1.0f / m_TASRecords->m_flTimeScale));
+        }
+        else
+        {
+            SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+        }
+    }
+    else
+    {
+        SetNextThink(gpGlobals->curtime + gpGlobals->interval_per_tick);
+    }
 }
