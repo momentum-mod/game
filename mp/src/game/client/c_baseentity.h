@@ -119,6 +119,7 @@ typedef CHandle<C_BaseEntity> EHANDLE; // The client's version of EHANDLE.
 
 typedef void (C_BaseEntity::*BASEPTR)(void);
 typedef void (C_BaseEntity::*ENTITYFUNCPTR)(C_BaseEntity *pOther );
+typedef void (C_BaseEntity::*USEPTR)( C_BaseEntity *pActivator, C_BaseEntity *pCaller, USE_TYPE useType, float value );
 
 // For entity creation on the client
 typedef C_BaseEntity* (*DISPATCHFUNCTION)( void );
@@ -1191,13 +1192,27 @@ public:
 	int		GetCreationTick() const;
 
 #ifdef _DEBUG
-	void FunctionCheck( void *pFunction, const char *name );
+	//void FunctionCheck( void *pFunction, const char *name );
 
 	ENTITYFUNCPTR TouchSet( ENTITYFUNCPTR func, char *name ) 
 	{ 
-		//COMPILE_TIME_ASSERT( sizeof(func) == 4 );
+		//COMPILE_TIME_ASSERT( sizeof(func) == ENTITYFUNCPTR_SIZE );
 		m_pfnTouch = func; 
 		//FunctionCheck( *(reinterpret_cast<void **>(&m_pfnTouch)), name ); 
+		return func;
+	}
+	USEPTR	UseSet( USEPTR func, char *name ) 
+	{ 
+		//COMPILE_TIME_ASSERT( sizeof(func) == ENTITYFUNCPTR_SIZE );
+		m_pfnUse = func; 
+		//FunctionCheck( *(reinterpret_cast<void **>(&m_pfnUse)), name ); 
+		return func;
+	}
+	ENTITYFUNCPTR	BlockedSet( ENTITYFUNCPTR func, char *name ) 
+	{ 
+		//COMPILE_TIME_ASSERT( sizeof(func) == ENTITYFUNCPTR_SIZE );
+		m_pfnBlocked = func; 
+		//FunctionCheck( *(reinterpret_cast<void **>(&m_pfnBlocked)), name ); 
 		return func;
 	}
 #endif
