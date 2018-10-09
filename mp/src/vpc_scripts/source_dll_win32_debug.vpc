@@ -90,7 +90,7 @@ $Configuration "Debug"
 		$BufferSecurityCheck				"Yes"
 		$EnableFunctionLevelLinking
 		$EnableEnhancedInstructionSet
-		$FloatingPointModel					"Fast (/fp:fast)"
+		$FloatingPointModel					"Precise (/fp:precise)"
 		$EnableFloatingPointExceptions
 
 		// Language
