@@ -37,7 +37,8 @@ CMapzone::~CMapzone()
 CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMins,
     Vector* pScaleMaxs, const int pIndex, const bool pShouldStop, const bool pShouldTilt,
     const float pHoldTime, const bool pLimitSpeed, const float pBhopLeaveSpeed, const float flYaw,
-    const string_t pLinkedEnt, const bool pCheckOnlyXY)
+    const string_t pLinkedEnt, const bool pCheckOnlyXY,
+    const CUtlVector<Vector> &points, float height)
 {
     m_type = pType;
     m_pos = pPos;
@@ -56,6 +57,8 @@ CMapzone::CMapzone(const int pType, Vector* pPos, QAngle* pRot, Vector* pScaleMi
     m_limitbhop = false;
     m_maxleavespeed = 0.0f;
     m_trigger = nullptr;
+    m_vZonePoints.CopyArray(points.Base(), points.Count());
+    m_pointzoneheight = height;
 }
 
 void CMapzone::SpawnZone()
@@ -133,12 +136,39 @@ void CMapzone::SpawnZone()
 
     if (m_trigger)
     {
+        auto pMomTrigger = static_cast<CBaseMomentumTrigger *>(m_trigger);
+
+
+        // HACK - STREAMLINE ME
+        CMomBaseZoneBuilder* pBaseBuilder;
+
+        if (m_vZonePoints.Count() > 0)
+        {
+            auto pBuilder = new CMomPointZoneBuilder;
+
+            pBuilder->CopyPoints(m_vZonePoints);
+            pBuilder->SetHeight(m_pointzoneheight);
+
+            pBaseBuilder = pBuilder;
+        }
+        else
+        {
+            auto pBuilder = new CMomBoxZoneBuilder;
+
+            pBuilder->SetBounds(*m_pos, *m_scaleMins, *m_scaleMaxs);
+            pBuilder->BuildZone();
+
+            pBaseBuilder = pBuilder;
+        }
+
         m_trigger->Spawn();
+
+        pBaseBuilder->BuildZone();
+        pBaseBuilder->FinishZone(pMomTrigger);
+
         m_trigger->Activate();
-        m_trigger->SetAbsOrigin(*m_pos);
-        m_trigger->SetSize(*m_scaleMins, *m_scaleMaxs);
-        m_trigger->SetAbsAngles(*m_rot);
-        m_trigger->SetSolid(SOLID_BBOX);
+
+        delete pBaseBuilder;
     }
 }
 
@@ -228,18 +258,17 @@ static void saveZonFile(const char* szMapName)
         }
         if (subKey)
         {
-            subKey->SetFloat("xPos", pEnt->GetAbsOrigin().x);
-            subKey->SetFloat("yPos", pEnt->GetAbsOrigin().y);
-            subKey->SetFloat("zPos", pEnt->GetAbsOrigin().z);
-            subKey->SetFloat("xRot", pEnt->GetAbsAngles().x);
-            subKey->SetFloat("yRot", pEnt->GetAbsAngles().y);
-            subKey->SetFloat("zRot", pEnt->GetAbsAngles().z);
-            subKey->SetFloat("xScaleMins", pEnt->WorldAlignMins().x);
-            subKey->SetFloat("yScaleMins", pEnt->WorldAlignMins().y);
-            subKey->SetFloat("zScaleMins", pEnt->WorldAlignMins().z);
-            subKey->SetFloat("xScaleMaxs", pEnt->WorldAlignMaxs().x);
-            subKey->SetFloat("yScaleMaxs", pEnt->WorldAlignMaxs().y);
-            subKey->SetFloat("zScaleMaxs", pEnt->WorldAlignMaxs().z);
+            auto pMomTrigger = static_cast<CBaseMomentumTrigger*>(pEnt);
+
+            auto pBuilder = pMomTrigger->GetZoneBuilder();
+
+            if (!pBuilder->Save(subKey))
+            {
+                Warning("Failed to save zone to file!\n");
+            }
+
+            delete pBuilder;
+
             zoneKV->AddSubKey(subKey);
         }
         pEnt = gEntList.FindEntityByClassname(pEnt, "trigger_momentum_*");
@@ -339,6 +368,20 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
         // Go through checkpoints
         for (KeyValues *cp = zoneKV->GetFirstSubKey(); cp; cp = cp->GetNextKey())
         {
+            // HACK - STREAMLINE ME
+            CUtlVector<Vector> points;
+            float pointzoneheight = 0.0f;
+            if (cp->FindKey("point_points"))
+            {
+                auto pBuilder = new CMomPointZoneBuilder();
+                pBuilder->Load(cp);
+
+                pointzoneheight = pBuilder->GetHeight();
+                points.CopyArray(pBuilder->GetPoints().Base(), pBuilder->GetPoints().Count());
+
+                delete pBuilder;
+            }
+
             // Load position information (will default to 0 if the keys don't exist)
             Vector* pos = new Vector(cp->GetFloat("xPos"), cp->GetFloat("yPos"), cp->GetFloat("zPos"));
             QAngle* rot = new QAngle(cp->GetFloat("xRot"), cp->GetFloat("yRot"), cp->GetFloat("zRot"));
@@ -419,7 +462,7 @@ bool CMapzoneData::LoadFromFile(const char *szMapName)
 
             // Add element
             m_zones.AddToTail(new CMapzone(zoneType, pos, rot, scaleMins, scaleMaxs, index, shouldStop, shouldTilt,
-                holdTime, limitingspeed, bhopleavespeed, start_yaw, MAKE_STRING(linkedtrigger), checkonlyxy));
+                holdTime, limitingspeed, bhopleavespeed, start_yaw, MAKE_STRING(linkedtrigger), checkonlyxy, points, pointzoneheight));
         }
         DevLog("Successfully loaded map zone file %s!\n", zoneFilePath);
         toReturn = true;

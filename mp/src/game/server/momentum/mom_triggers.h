@@ -8,6 +8,8 @@
 #include "func_break.h"
 #include "triggers.h"
 
+#include "mapzones_build.h"
+
 // spawnflags
 enum
 {
@@ -39,6 +41,21 @@ class CBaseMomentumTrigger : public CTriggerMultiple
     void Spawn() OVERRIDE;
     // Used to calculate if a position is inside of this trigger's bounds
     bool ContainsPosition(const Vector &pos) { return CollisionProp()->IsPointInBounds(pos); }
+
+
+    // Point-based zones need a custom collision check
+    void InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs);
+    virtual bool TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr) OVERRIDE;
+
+    // Create a new zone builder (remember to delete!)
+    CMomBaseZoneBuilder* GetZoneBuilder() const;
+
+  private:
+    // Point-based zone editing
+    CUtlVector<Vector> m_vZonePoints;
+    float m_flPointZoneHeight;
+
+    friend class CMomPointZoneBuilder;
 };
 
 // CTriggerTimerStop
