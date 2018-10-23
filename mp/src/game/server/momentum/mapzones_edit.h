@@ -4,60 +4,61 @@
 #pragma once
 #endif
 
-#define BUILDSTAGE_NONE         0
-#define BUILDSTAGE_START        1
-//#define BUILDSTAGE_ROTATE     2
-#define BUILDSTAGE_END          2
-#define BUILDSTAGE_HEIGHT       3
-
+#include "mapzones_build.h"
 #include "mapzones.h"
+#include "mom_player.h"
 #include "mom_triggers.h"
 
-extern ConVar mom_zone_edit;
-
-class CMapzoneEdit
+class CMomZoneEdit : public CAutoGameSystemPerFrame
 {
 public:
-    CMapzoneEdit() : m_flReticleDist(256.0), m_nBuildStage( BUILDSTAGE_NONE ), m_bEditing(false), m_bFirstEdit(false) {};
+    CMomZoneEdit();
+    ~CMomZoneEdit();
 
-    void Build( Vector *aimpos, int type, int forcestage = BUILDSTAGE_NONE );
 
-    // Draw lines and update the zone height.
-    void Update();
+    bool IsEditing() const { return m_bEditing; }
+    void StopEditing();
 
-    void Reset();
 
-    int GetBuildStage() { return m_nBuildStage; }
-    void SetBuildStage( int stage ) { m_nBuildStage = stage; }
+    virtual void LevelInitPostEntity() OVERRIDE;
+    virtual void FrameUpdatePostEntityThink() OVERRIDE;
+
+
+    void OnCreate(int zonetype);
+    void OnMark(int zonetype);
+    void OnRemove();
+    void OnCancel();
+
+    bool GetCurrentBuildSpot(CMomentumPlayer *pPlayer, Vector &vecPos);
+
 
     void IncreaseZoom( float dist ) { m_flReticleDist = fminf( m_flReticleDist + dist, 2048.0f ); }
     void DecreaseZoom( float dist ) { m_flReticleDist = fmaxf( m_flReticleDist - dist, 16.0f ); }
-    float GetZoom() { return m_flReticleDist; }
-    void SetZoom( float dist ) { m_flReticleDist = fmaxf( fminf( dist, 2048.0f ), 16.0f ); }
-    
-    // Placeholder, move this somewhere else if other files start using the zone types.
-    int GetEntityZoneType( CBaseEntity *pEnt );
-    
-    // start/stop/stage
-    int ShortNameToZoneType( const char *in );
+
+
+    static void     VectorSnapToGrid(Vector &dest, float gridsize);
+    static float    SnapToGrid(float fl, float gridsize);
+    static void     DrawReticle(const Vector &pos, float retsize);
+    static void     DrawZoneLine(const Vector &start, const Vector &end, float t);
+
+    static int                      GetEntityZoneType(CBaseEntity *pEnt);
+    static CBaseMomentumTrigger     *CreateZoneEntity(int type);
+    static void                     SetZoneProps(CBaseEntity *pEnt);
+    static int                      ShortNameToZoneType(const char *in);
+
+    CMomBaseZoneBuilder     *GetBuilder();
+    CMomentumPlayer         *GetPlayerBuilder() const;
 
 private:
-    int m_nBuildStage;
-    float m_flReticleDist;
-    Vector m_vecBuildStart;
-    Vector m_vecBuildEnd;
     bool m_bEditing;
+    static bool m_bFirstEdit;
 
-    float GetZoneHeightToPlayer( CBasePlayer *pPlayer );
-    void SetZoneProps( CBaseEntity *pEnt );
-    float SnapToGrid( float fl, float gridsize );
-    void VectorSnapToGrid( Vector *dest, float gridsize );
-    void DrawReticle( Vector *pos, float retsize );
+    float m_flReticleDist;
 
-    // Have we edited the zones (mom_zone_edit 1) already
-    bool m_bFirstEdit;
+    int m_iPrevBuilder;
+    CMomBaseZoneBuilder* m_pBuilder;
 };
 
-extern CMapzoneEdit g_MapzoneEdit;
+extern CMomZoneEdit g_MomZoneEdit;
 
 #endif // MAPZONES_EDIT_H

@@ -18,6 +18,74 @@ void CBaseMomentumTrigger::Spawn()
     m_debugOverlays |= (OVERLAY_BBOX_BIT | OVERLAY_TEXT_BIT);
 }
 
+CMomBaseZoneBuilder* CBaseMomentumTrigger::GetZoneBuilder() const
+{
+    if (m_vZonePoints.Count() > 0)
+    {
+        auto pBuilder = new CMomPointZoneBuilder;
+        pBuilder->LoadFromZone(this);
+        return pBuilder;
+    }
+    else
+    {
+        auto pBuilder = new CMomBoxZoneBuilder;
+        pBuilder->LoadFromZone(this);
+        return pBuilder;
+    }
+}
+
+bool CBaseMomentumTrigger::TestCollision(const Ray_t& ray, unsigned int mask, trace_t& tr)
+{
+    auto pPhys = VPhysicsGetObject();
+    Assert(pPhys);
+
+    physcollision->TraceBox(ray, pPhys->GetCollide(), GetAbsOrigin(), GetAbsAngles(), &tr);
+    
+
+    return true;
+}
+
+void CBaseMomentumTrigger::InitCustomCollision(CPhysCollide *pPhysCollide, const Vector &vecMins, const Vector &vecMaxs)
+{
+    // We are able to create a vphysics object just fine, but how physics work IN vphysics is no good for us.
+    // We'll have to use the same method triggers use,
+    // which is using partitions and waiting for engine->SolidMoved to call StartTouch/EndTouch for us
+    // from the object (player in our case)
+    // For that we need to insert ourselves to the partition system and
+    // do a custom collision test.
+    // The default collision test only works if the entity is a proper model or brush.
+    // In our case, we're neither.
+    objectparams_t params = { 0 };
+    params.enableCollisions = true;
+    params.pGameData = this;
+    params.pName = "";
+    params.mass = 1.0f;
+    params.volume = 1.0f;
+
+	auto pPhys = physenv->CreatePolyObject(pPhysCollide, 0, GetAbsOrigin(), GetAbsAngles(), &params);
+	Assert(pPhys);
+    
+    pPhys->EnableMotion(false);
+    pPhys->EnableGravity(false);
+    pPhys->SetContents(MASK_SOLID);
+
+	VPhysicsDestroyObject();
+	VPhysicsSetObject(pPhys);
+
+
+    if (CollisionProp()->GetPartitionHandle() == PARTITION_INVALID_HANDLE)
+        CollisionProp()->CreatePartitionHandle();
+    SetSolid(SOLID_VPHYSICS);
+
+    // We need to set the collision bounds manually
+    // The collision bound is used by the partition system.
+    SetCollisionBounds(vecMins, vecMaxs);
+
+
+    // If we ever need ray testing uncomment this.
+    AddSolidFlags(/*FSOLID_CUSTOMRAYTEST |*/ FSOLID_CUSTOMBOXTEST);
+}
+
 //---------- CTriggerStage -----------------------------------------------------------------
 LINK_ENTITY_TO_CLASS(trigger_momentum_timer_stage, CTriggerStage);
 

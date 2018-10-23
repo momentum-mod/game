@@ -12,11 +12,19 @@ static ConVar mom_zone_start_limitspdmethod("mom_zone_start_limitspdmethod", "1"
 static ConVar mom_zone_stage_num("mom_zone_stage_num", "0", FCVAR_CHEAT, "Set stage number. Should start from 2. 0 to automatically find one.\n", true, 0, false, 0);
 static ConVar mom_zone_start_maxbhopleavespeed("mom_zone_start_maxbhopleavespeed", "250", FCVAR_CHEAT, "Max leave speed if player bhopped. 0 to disable.\n", true, 0, false, 0);
 //static ConVar mom_zone_cp_num( "mom_zone_cp_num", "0", FCVAR_CHEAT, "Checkpoint number. 0 to automatically find one." );
+ConVar mom_zone_debug("mom_zone_debug", "0", FCVAR_CHEAT);
+ConVar mom_zone_usenewmethod("mom_zone_usenewmethod", "0", FCVAR_CHEAT, "Use the fancy new zone building method?\n");
+
+
+bool CMomZoneEdit::m_bFirstEdit = false;
+
+
+CMomZoneEdit g_MomZoneEdit;
 
 
 void CC_Mom_ZoneZoomIn()
 {
-    g_MapzoneEdit.DecreaseZoom((float) mom_zone_grid.GetInt());
+    g_MomZoneEdit.DecreaseZoom((float) mom_zone_grid.GetInt());
 }
 
 static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decrease reticle maximum distance.\n", FCVAR_CHEAT);
@@ -24,7 +32,7 @@ static ConCommand mom_zone_zoomin("mom_zone_zoomin", CC_Mom_ZoneZoomIn, "Decreas
 
 void CC_Mom_ZoneZoomOut()
 {
-    g_MapzoneEdit.IncreaseZoom((float) mom_zone_grid.GetInt());
+    g_MomZoneEdit.IncreaseZoom((float) mom_zone_grid.GetInt());
 }
 
 static ConCommand mom_zone_zoomout("mom_zone_zoomout", CC_Mom_ZoneZoomOut, "Increase reticle maximum distance.\n", FCVAR_CHEAT);
@@ -45,7 +53,7 @@ void CC_Mom_ZoneDelete(const CCommand &args)
         {
             CBaseEntity *pEnt = CBaseEntity::Instance(INDEXENT(entindex));
 
-            if (pEnt && g_MapzoneEdit.GetEntityZoneType(pEnt) != -1)
+            if (pEnt && g_MomZoneEdit.GetEntityZoneType(pEnt) != -1)
             {
                 UTIL_Remove(pEnt);
             }
@@ -53,7 +61,7 @@ void CC_Mom_ZoneDelete(const CCommand &args)
         else
         {
             char szDelete[64];
-            if (ZoneTypeToClass(g_MapzoneEdit.ShortNameToZoneType(args[1]), szDelete))
+            if (ZoneTypeToClass(g_MomZoneEdit.ShortNameToZoneType(args[1]), szDelete))
             {
                 CBaseEntity *pEnt = gEntList.FindEntityByClassname(nullptr, szDelete);
                 while (pEnt)
@@ -114,22 +122,17 @@ void CC_Mom_ZoneMark(const CCommand &args)
 {
     if (!mom_zone_edit.GetBool()) return;
 
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-
-    if (!pPlayer) return;
-
-
     int zonetype = -1;
 
-    if (g_MapzoneEdit.GetBuildStage() >= BUILDSTAGE_END)
+    //if (g_MapzoneEdit.GetBuildStage() >= BUILDSTAGE_END)
     {
         if (args.ArgC() > 1)
         {
-            zonetype = g_MapzoneEdit.ShortNameToZoneType(args[1]);
+            zonetype = g_MomZoneEdit.ShortNameToZoneType(args[1]);
         }
         else
         {
-            zonetype = g_MapzoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
+            zonetype = g_MomZoneEdit.ShortNameToZoneType(mom_zone_defzone.GetString());
         }
 
         if (zonetype == MOMZONETYPE_START || zonetype == MOMZONETYPE_STOP)
@@ -158,7 +161,7 @@ void CC_Mom_ZoneMark(const CCommand &args)
 
             if (!mom_zone_ignorewarning.GetBool() && startnum && endnum)
             {
-                g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
+                //g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
 
                 ConMsg("Map already has a start and an end! Use mom_zone_defzone to set another type.\n");
 
@@ -175,15 +178,7 @@ void CC_Mom_ZoneMark(const CCommand &args)
         }
     }
 
-    trace_t tr;
-    Vector vecFwd;
-
-    AngleVectors(pPlayer->EyeAngles(), &vecFwd);
-
-    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + vecFwd * g_MapzoneEdit.GetZoom(), MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
-
-
-    g_MapzoneEdit.Build(&tr.endpos, zonetype);
+    g_MomZoneEdit.OnMark(zonetype);
 }
 
 static ConCommand mom_zone_mark("mom_zone_mark", CC_Mom_ZoneMark, "Starts building a zone.\n", FCVAR_CHEAT);
@@ -193,77 +188,341 @@ void CC_Mom_ZoneCancel()
 {
     if (!mom_zone_edit.GetBool()) return;
 
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
 
-    if (!pPlayer) return;
-
-
-    g_MapzoneEdit.SetBuildStage(BUILDSTAGE_NONE);
+    g_MomZoneEdit.OnCancel();
 }
 
 static ConCommand mom_zone_cancel("mom_zone_cancel", CC_Mom_ZoneCancel, "Cancel the zone building.\n", FCVAR_CHEAT);
 
-void CMapzoneEdit::Build(Vector *aimpos, int type, int forcestage)
+
+void CC_Mom_ZoneBack()
 {
-    if (mom_zone_grid.GetInt() > 0)
-        VectorSnapToGrid(aimpos, (float) mom_zone_grid.GetInt());
+    if (!mom_zone_edit.GetBool()) return;
 
 
-    switch ((forcestage != BUILDSTAGE_NONE) ? forcestage : ++m_nBuildStage)
+    g_MomZoneEdit.OnRemove();
+}
+
+static ConCommand mom_zone_back("mom_zone_back", CC_Mom_ZoneBack, "Go back a step when zone building.\n", FCVAR_CHEAT);
+
+
+void CC_Mom_ZoneCreate()
+{
+    if (!mom_zone_edit.GetBool()) return;
+
+
+    g_MomZoneEdit.OnCreate(-1);
+}
+
+static ConCommand mom_zone_create("mom_zone_create", CC_Mom_ZoneCreate, "Create the zone.\n", FCVAR_CHEAT);
+
+
+CMomZoneEdit::CMomZoneEdit() : CAutoGameSystemPerFrame("MomentumZoneBuilder")
+{
+    m_bEditing = false;
+
+
+    m_flReticleDist = 1024.0f;
+
+
+    m_iPrevBuilder = -1;
+    m_pBuilder = nullptr;
+}
+
+CMomZoneEdit::~CMomZoneEdit()
+{
+}
+
+void CMomZoneEdit::StopEditing()
+{
+    m_bEditing = false;
+
+
+    mom_zone_edit.SetValue( 0 );
+
+
+    m_iPrevBuilder = -1;
+    delete m_pBuilder;
+    m_pBuilder = nullptr;
+}
+
+void CMomZoneEdit::OnMark(int zonetype)
+{
+    // Player wants to mark a point (ie. "next build step" in the old method)
+
+    auto pPlayer = GetPlayerBuilder();
+    if (!pPlayer)
+        return;
+
+
+    auto pBuilder = GetBuilder();
+
+    Vector pos;
+    GetCurrentBuildSpot(pPlayer, pos);
+
+
+    
+
+    if (pBuilder->IsDone())
+        pBuilder->Reset();
+
+    pBuilder->Add(pPlayer, pos);
+
+    // Builder may want to create the zone NOW, instead of manually.
+    if (pBuilder->CheckOnMark() && pBuilder->IsReady())
     {
-    case BUILDSTAGE_START:
-        m_vecBuildStart = *aimpos;
-        break;
-
-    case BUILDSTAGE_END:
-        m_vecBuildEnd = *aimpos;
-        break;
-
-    case BUILDSTAGE_HEIGHT:
-    {
-        char szClass[64];
-        if (ZoneTypeToClass(type, szClass))
-        {
-            CBaseEntity *pEnt = CreateEntityByName(szClass);
-            Vector vecOrigin, vecSize, vecMinsRel;
-            int i;
-
-            VectorMin(m_vecBuildStart, m_vecBuildEnd, vecMinsRel);
-            VectorMax(m_vecBuildStart, m_vecBuildEnd, vecSize);
-
-            for (i = 0; i < 3; i++)
-                vecSize[i] = (vecSize[i] - vecMinsRel[i]) / 2.0f;
-
-            for (i = 0; i < 3; i++)
-                vecOrigin[i] = vecMinsRel[i] + vecSize[i];
-
-            pEnt->Spawn();
-
-            pEnt->SetAbsOrigin(vecOrigin);
-            pEnt->SetSize(Vector(-vecSize.x, -vecSize.y, -vecSize.z), vecSize);
-            pEnt->SetEffects(EF_NODRAW);
-            pEnt->SetSolid(SOLID_BBOX);
-
-            pEnt->Activate();
-
-            SetZoneProps(pEnt);
-        }
-    }
-    default:
-        m_nBuildStage = BUILDSTAGE_NONE;
+        OnCreate(zonetype);
     }
 }
 
-void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
+void CMomZoneEdit::OnCreate(int zonetype)
+{
+    // Player wants to create the zone.
+
+    auto pPlayer = GetPlayerBuilder();
+    Vector pos;
+    GetCurrentBuildSpot(pPlayer, pos);
+
+
+    auto pBuild = GetBuilder();
+    if (!pBuild->BuildZone(pPlayer, &pos))
+    {
+        return;
+    }
+
+
+
+    DevMsg("Creating entity...\n");
+
+
+    int type = zonetype != -1 ? zonetype : ShortNameToZoneType(mom_zone_defzone.GetString());
+
+
+    auto pEnt = CreateZoneEntity(type);
+    if (!pEnt)
+    {
+        Warning("Couldn't create zone ent!\n");
+        return;
+    }
+
+    pEnt->Spawn();
+
+
+    pBuild->FinishZone(pEnt);
+
+    
+    pEnt->Activate();
+
+
+    SetZoneProps(pEnt);
+
+
+    DevMsg("Created zone entity %i.\n", pEnt->entindex());
+}
+
+void CMomZoneEdit::OnRemove()
+{
+    // Player wants to go back a step.
+    auto pPlayer = GetPlayerBuilder();
+    if (!pPlayer)
+        return;
+
+
+    Vector pos;
+    GetCurrentBuildSpot(pPlayer, pos);
+
+    GetBuilder()->Remove(pPlayer, pos);
+}
+
+
+void CMomZoneEdit::OnCancel()
+{
+    // Remove it completely
+    GetBuilder()->Reset();
+}
+
+bool CMomZoneEdit::GetCurrentBuildSpot(CMomentumPlayer *pPlayer, Vector &vecPos)
+{
+    trace_t tr;
+    Vector fwd;
+
+    pPlayer->EyeVectors(&fwd);
+
+    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + fwd * m_flReticleDist, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
+
+    vecPos = tr.endpos;
+
+
+    if (mom_zone_grid.GetInt() > 0)
+        VectorSnapToGrid(vecPos, (float)mom_zone_grid.GetInt());
+
+    return true;
+}
+
+CMomBaseZoneBuilder *CMomZoneEdit::GetBuilder()
+{
+    int method = mom_zone_usenewmethod.GetInt();
+
+    if (m_iPrevBuilder != method || !m_pBuilder)
+    {
+        delete m_pBuilder;
+
+        if (method)
+        {
+            m_pBuilder = new CMomPointZoneBuilder;
+        }
+        else
+        {
+            m_pBuilder = new CMomBoxZoneBuilder;
+        }
+    }
+
+    m_iPrevBuilder = method;
+
+    return m_pBuilder;
+}
+
+CMomentumPlayer *CMomZoneEdit::GetPlayerBuilder() const
+{
+    return static_cast<CMomentumPlayer *>(UTIL_GetLocalPlayer());
+}
+
+void CMomZoneEdit::LevelInitPostEntity()
+{
+    StopEditing();
+}
+
+void CMomZoneEdit::FrameUpdatePostEntityThink()
+{
+    if (mom_zone_edit.GetBool())
+    {
+        if (!IsEditing())
+        {
+            m_bEditing = true;
+
+            // Send message to client to excuse bad zone building
+            if (!m_bFirstEdit)
+            {
+                CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
+                filter.MakeReliable();
+                UserMessageBegin(filter, "MB_EditingZone");
+                MessageEnd();
+            }
+            m_bFirstEdit = true;
+        }
+    }
+    else
+    {
+        if ( IsEditing() )
+            StopEditing();
+
+        return;
+    }
+
+
+
+    auto pPlayer = GetPlayerBuilder();
+    if (!pPlayer)
+        return;
+
+    Vector vecAim;
+    if (!GetCurrentBuildSpot(pPlayer, vecAim))
+        return;
+
+
+    GetBuilder()->OnFrame(pPlayer, vecAim);
+    
+
+
+    DrawReticle(vecAim,8.0f);
+}
+
+void CMomZoneEdit::VectorSnapToGrid(Vector &dest, float gridsize)
+{
+    dest.x = SnapToGrid(dest.x, gridsize);
+    dest.y = SnapToGrid(dest.y, gridsize);
+    dest.z = SnapToGrid(dest.z, gridsize);
+}
+
+float CMomZoneEdit::SnapToGrid(float fl, float gridsize)
+{
+    float closest;
+    float dif;
+
+    closest = fl - fmodf(fl, gridsize);
+
+    dif = fl - closest;
+
+    if (dif > (gridsize / 2.0f))
+    {
+        closest += gridsize;
+    }
+    else if (dif < (-gridsize / 2.0f))
+    {
+        closest -= gridsize;
+    }
+
+    return closest;
+}
+
+void CMomZoneEdit::DrawReticle(const Vector &pos, float retsize)
+{
+    Vector p1, p2, p3, p4, p5, p6;
+
+    p1 = pos;
+    p1.x = pos.x + retsize;
+
+    p2 = pos;
+    p2.x = pos.x - retsize;
+
+    p3 = pos;
+    p3.y = pos.y + retsize;
+
+    p4 = pos;
+    p4.y = pos.y - retsize;
+
+    p5 = pos;
+    p5.z = pos.z + retsize;
+
+    p6 = pos;
+    p6.z = pos.z - retsize;
+
+    DebugDrawLine(p1, p2, 255, 0, 0, true, -1.0f);
+    DebugDrawLine(p3, p4, 0, 255, 0, true, -1.0f);
+    DebugDrawLine(p5, p6, 0, 0, 255, true, -1.0f);
+}
+
+extern bool ZoneTypeToClass(int type, char *dest);
+
+CBaseMomentumTrigger* CMomZoneEdit::CreateZoneEntity(int type)
+{
+    char szClass[64];
+    if (!ZoneTypeToClass(type, szClass))
+    {
+        return nullptr;
+    }
+
+    auto pEnt = CreateEntityByName(szClass);
+    auto pRet = dynamic_cast<CBaseMomentumTrigger*>(pEnt);
+
+    // Not a valid momentum trigger, delete it.
+    if (!pRet && pEnt)
+        UTIL_RemoveImmediate(pEnt);
+
+    return pRet;
+}
+
+void CMomZoneEdit::SetZoneProps(CBaseEntity *pEnt)
 {
     CTriggerTimerStart *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
     //validate pointers
     if (pStart)
     {
+        ConVarRef ref("mom_zone_start_maxbhopleavespeed");
         //bhop speed limit
-        if (mom_zone_start_maxbhopleavespeed.GetFloat() > 0.0)
+        if (ref.GetFloat() > 0.0)
         {
-            pStart->SetMaxLeaveSpeed(mom_zone_start_maxbhopleavespeed.GetFloat());
+            pStart->SetMaxLeaveSpeed(ref.GetFloat());
             pStart->SetIsLimitingSpeed(true);
         }
         else
@@ -276,9 +535,10 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
     CTriggerStage *pStage = dynamic_cast<CTriggerStage *>(pEnt);
     if (pStage)
     {
-        if (mom_zone_stage_num.GetInt() > 0)
+        ConVarRef ref("mom_zone_stage_num");
+        if (ref.GetInt() > 0)
         {
-            pStage->SetStageNumber(mom_zone_stage_num.GetInt());
+            pStage->SetStageNumber(ref.GetInt());
         }
         else
         {
@@ -303,41 +563,9 @@ void CMapzoneEdit::SetZoneProps(CBaseEntity *pEnt)
 
         return;
     }
-
-
-    /*CTriggerCheckpoint *pCP = dynamic_cast<CTriggerCheckpoint *>( pEnt );
-    if ( pCP )
-    {
-    if ( mom_zone_cpnum.GetInt() > 0 )
-    {
-    pCP->SetCheckpointNumber( mom_zone_cpnum.GetInt() );
-    }
-    else
-    {
-    int highestcp = 0;
-    CTriggerCheckpoint *pTempCP;
-
-    CBaseEntity *pTemp = gEntList.FindEntityByClassname( NULL, "trigger_momentum_timer_checkpoint" );
-    while ( pTemp )
-    {
-    pTempCP = dynamic_cast<CTriggerCheckpoint *>( pTemp );
-
-    if ( pTempCP && pTempCP->GetCheckpointNumber() > highestcp )
-    {
-    highestcp = pTempCP->GetCheckpointNumber();
-    }
-
-    pTemp = gEntList.FindEntityByClassname( pTemp, "trigger_momentum_timer_checkpoint" );
-    }
-
-    pStage->SetStageNumber( highestcp + 1 );
-    }
-
-    return;
-    }*/
 }
 
-int CMapzoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
+int CMomZoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
 {
     CTriggerTimerStart *pStart = dynamic_cast<CTriggerTimerStart *>(pEnt);
     if (pStart) return MOMZONETYPE_START;
@@ -354,188 +582,7 @@ int CMapzoneEdit::GetEntityZoneType(CBaseEntity *pEnt)
     return -1;
 }
 
-void CMapzoneEdit::Update()
-{
-    if (mom_zone_edit.GetBool())
-    {
-        if (!m_bEditing)
-        {
-            m_nBuildStage = BUILDSTAGE_NONE;
-            m_bEditing = true;
-            if (!m_bFirstEdit)
-            {
-                CSingleUserRecipientFilter filter(UTIL_GetLocalPlayer());
-                filter.MakeReliable();
-                UserMessageBegin(filter, "MB_EditingZone");
-                MessageEnd();
-            }
-            m_bFirstEdit = true;
-        }
-    }
-    else
-    {
-        if (m_bEditing)
-        {
-            m_nBuildStage = BUILDSTAGE_NONE;
-            m_bEditing = false;
-        }
-
-        return;
-    }
-
-    CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
-
-    if (!pPlayer) return;
-
-
-    trace_t tr;
-    Vector vecFwd;
-
-    AngleVectors(pPlayer->EyeAngles(), &vecFwd);
-
-    UTIL_TraceLine(pPlayer->EyePosition(), pPlayer->EyePosition() + vecFwd * m_flReticleDist, MASK_PLAYERSOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
-
-    Vector vecAim = tr.endpos;
-
-    if (mom_zone_grid.GetInt() > 0)
-        VectorSnapToGrid(&vecAim, (float) mom_zone_grid.GetInt());
-
-
-    if (m_nBuildStage >= BUILDSTAGE_START)
-    {
-        Vector vecP2, vecP3, vecP4;
-
-        if (m_nBuildStage >= BUILDSTAGE_END)
-        {
-            vecP3 = m_vecBuildEnd;
-        }
-        else
-        {
-            vecP3 = vecAim;
-        }
-
-        vecP3[2] = m_vecBuildStart[2];
-
-        // Bottom
-        vecP2[0] = m_vecBuildStart[0];
-        vecP2[1] = vecP3[1];
-        vecP2[2] = m_vecBuildStart[2];
-
-        vecP4[0] = vecP3[0];
-        vecP4[1] = m_vecBuildStart[1];
-        vecP4[2] = m_vecBuildStart[2];
-
-        DebugDrawLine(m_vecBuildStart, vecP2, 255, 255, 255, true, -1.0f);
-        DebugDrawLine(vecP2, vecP3, 255, 255, 255, true, -1.0f);
-        DebugDrawLine(vecP3, vecP4, 255, 255, 255, true, -1.0f);
-        DebugDrawLine(vecP4, m_vecBuildStart, 255, 255, 255, true, -1.0f);
-
-        if (m_nBuildStage >= BUILDSTAGE_END)
-        {
-            Vector vecP5, vecP6, vecP8;
-
-            m_vecBuildEnd[2] = SnapToGrid(m_vecBuildStart[2] + GetZoneHeightToPlayer(pPlayer), (float) mom_zone_grid.GetInt());
-
-            // Top
-            vecP5 = m_vecBuildStart;
-            vecP5.z = m_vecBuildEnd[2];
-
-            vecP6 = vecP2;
-            vecP6.z = m_vecBuildEnd[2];
-
-            vecP8 = vecP4;
-            vecP8.z = m_vecBuildEnd[2];
-
-            DebugDrawLine(vecP5, vecP6, 255, 255, 255, true, -1.0f);
-            DebugDrawLine(vecP6, m_vecBuildEnd, 255, 255, 255, true, -1.0f);
-            DebugDrawLine(m_vecBuildEnd, vecP8, 255, 255, 255, true, -1.0f);
-            DebugDrawLine(vecP8, vecP5, 255, 255, 255, true, -1.0f);
-
-            // Bottom to top
-            DebugDrawLine(m_vecBuildStart, vecP5, 255, 255, 255, true, -1.0f);
-            DebugDrawLine(vecP2, vecP6, 255, 255, 255, true, -1.0f);
-            DebugDrawLine(vecP3, m_vecBuildEnd, 255, 255, 255, true, -1.0f);
-            DebugDrawLine(vecP4, vecP8, 255, 255, 255, true, -1.0f);
-        }
-    }
-
-    // Draw surface normal. Makes it a bit easier to see where reticle is hitting.
-    if (tr.DidHit())
-    {
-        DebugDrawLine(vecAim, vecAim + tr.plane.normal * 24.0f, 0, 0, 255, true, -1.0f);
-    }
-
-    DrawReticle(&vecAim, (mom_zone_grid.GetInt() > 0) ? ((float) mom_zone_grid.GetInt() / 2.0f) : 8.0f);
-}
-
-void CMapzoneEdit::VectorSnapToGrid(Vector *dest, float gridsize)
-{
-    dest->x = SnapToGrid(dest->x, gridsize);
-    dest->y = SnapToGrid(dest->y, gridsize);
-    dest->z = SnapToGrid(dest->z, gridsize);
-}
-
-float CMapzoneEdit::SnapToGrid(float fl, float gridsize)
-{
-    float closest;
-    float dif;
-
-    closest = fl - fmodf(fl, gridsize);
-
-    dif = fl - closest;
-
-    if (dif > (gridsize / 2.0f))
-    {
-        closest += gridsize;
-    }
-    else if (dif < (-gridsize / 2.0f))
-    {
-        closest -= gridsize;
-    }
-
-    return closest;
-}
-
-float CMapzoneEdit::GetZoneHeightToPlayer(CBasePlayer *pPlayer)
-{
-    // It's good enough.
-    return pPlayer->GetAbsOrigin().DistTo(m_vecBuildStart) * tanf(DEG2RAD(-pPlayer->EyeAngles()[0])) + pPlayer->GetViewOffset()[2];
-}
-
-void CMapzoneEdit::DrawReticle(Vector *pos, float retsize)
-{
-    Vector p1, p2, p3, p4, p5, p6;
-
-    p1.x = pos->x + retsize;
-    p1.y = pos->y;
-    p1.z = pos->z;
-
-    p2.x = pos->x - retsize;
-    p2.y = pos->y;
-    p2.z = pos->z;
-
-    p3.x = pos->x;
-    p3.y = pos->y + retsize;
-    p3.z = pos->z;
-
-    p4.x = pos->x;
-    p4.y = pos->y - retsize;
-    p4.z = pos->z;
-
-    p5.x = pos->x;
-    p5.y = pos->y;
-    p5.z = pos->z + retsize;
-
-    p6.x = pos->x;
-    p6.y = pos->y;
-    p6.z = pos->z - retsize;
-
-    DebugDrawLine(p1, p2, 255, 0, 0, true, -1.0f);
-    DebugDrawLine(p3, p4, 255, 0, 0, true, -1.0f);
-    DebugDrawLine(p5, p6, 255, 0, 0, true, -1.0f);
-}
-
-int CMapzoneEdit::ShortNameToZoneType(const char *in)
+int CMomZoneEdit::ShortNameToZoneType(const char *in)
 {
     if (Q_stricmp(in, "start") == 0)
     {
@@ -552,13 +599,3 @@ int CMapzoneEdit::ShortNameToZoneType(const char *in)
 
     return -1;
 }
-
-void CMapzoneEdit::Reset()
-{
-    mom_zone_edit.SetValue(0);
-
-    m_nBuildStage = BUILDSTAGE_NONE;
-    m_bEditing = false;
-}
-
-CMapzoneEdit g_MapzoneEdit;
