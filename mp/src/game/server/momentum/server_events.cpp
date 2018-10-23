@@ -71,9 +71,6 @@ void CMOMServerEvents::LevelInitPreEntity()
 
 void CMOMServerEvents::LevelInitPostEntity()
 {
-    // Reset zone editing
-    g_MapzoneEdit.Reset();
-
     //disable point_servercommand
     ConVarRef servercommand("sv_allow_point_servercommand");
     servercommand.SetValue(0);
@@ -98,8 +95,6 @@ void CMOMServerEvents::LevelShutdownPostEntity()
 }
 void CMOMServerEvents::FrameUpdatePreEntityThink()
 {
-    g_MapzoneEdit.Update();
-
     if (!g_pMomentumTimer->GotCaughtCheating())
     {
         ConVarRef cheatsRef("sv_cheats");
