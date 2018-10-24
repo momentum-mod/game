@@ -1,0 +1,16 @@
+// envmaptint_fix
+"SDK_LightmappedGeneric"
+{
+	"$basetexture" "cubemaptest/plasterwall030a_parallax"
+	"$bumpmap" "cubemaptest/plasterwall030a_normal_parallax"
+	"$surfaceprop"  "plaster"
+	"$normalmapalphaenvmapmask" 1
+	"$detail" "detail\plaster_detail_01"
+	"$envmap" "env_cubemap"
+	"$detailscale" "6.783"
+	"$detailblendfactor" .8
+	"$detailblendmode" "0"
+	"$envmaptint" "[ .06 .06 .06 ]"
+
+	"%keywords" "c17downtown"
+}
