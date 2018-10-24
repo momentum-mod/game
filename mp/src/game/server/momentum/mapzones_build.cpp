@@ -70,6 +70,14 @@ void CMomBaseZoneBuilder::DrawZoneLine(const Vector &start, const Vector &end, f
 // Point
 CMomPointZoneBuilder::CMomPointZoneBuilder()
 {
+    m_bFreePhysCollide = false;
+    m_pPhysCollide = nullptr;
+
+    ResetMe();
+}
+
+CMomPointZoneBuilder::~CMomPointZoneBuilder()
+{
     ResetMe();
 }
 
@@ -271,8 +279,13 @@ void CMomPointZoneBuilder::Reset()
 
 void CMomPointZoneBuilder::ResetMe()
 {
-    m_pPhysCollide = nullptr;
+    if (m_bFreePhysCollide && m_pPhysCollide)
+    {
+        physcollision->DestroyCollide(m_pPhysCollide);
+    }
 
+    m_pPhysCollide = nullptr;
+    m_bFreePhysCollide = true;
 
     m_bGetHeight = false;
     m_flHeight = 0.0f;
@@ -288,7 +301,8 @@ void CMomPointZoneBuilder::FinishZone(CBaseMomentumTrigger *pEnt)
 {
     pEnt->SetAbsOrigin( m_vecCenter );
 
-
+    // We're handing the phys collide object to the entity now.
+    m_bFreePhysCollide = false;
     pEnt->InitCustomCollision(GetPhysCollide(), m_vecMins, m_vecMaxs);
 
     pEnt->m_vZonePoints.CopyArray( m_vPoints.Base(), m_vPoints.Count() );
