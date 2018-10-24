@@ -95,6 +95,7 @@ public:
 
 
     CMomPointZoneBuilder();
+    ~CMomPointZoneBuilder();
 
     virtual bool BuildZone(CBasePlayer *pPlayer = nullptr, const Vector *vecAim = nullptr) OVERRIDE;
     virtual void Add(CBasePlayer *pPlayer, const Vector &vecAim) OVERRIDE;
@@ -144,6 +145,7 @@ protected:
 
 private:
     CPhysCollide *m_pPhysCollide;
+    bool m_bFreePhysCollide;
 
 
     CUtlVector<Vector> m_vPoints;
