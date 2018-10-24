@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$basetexture" "cubemaptest/parallax-corrected-cubemaps-text"
+	"$translucent" 1
+}
