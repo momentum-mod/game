@@ -156,7 +156,6 @@ void CMapzone::SpawnZone()
             auto pBuilder = new CMomBoxZoneBuilder;
 
             pBuilder->SetBounds(*m_pos, *m_scaleMins, *m_scaleMaxs);
-            pBuilder->BuildZone();
 
             pBaseBuilder = pBuilder;
         }
