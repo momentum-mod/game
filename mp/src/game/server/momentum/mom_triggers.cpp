@@ -34,7 +34,7 @@ CMomBaseZoneBuilder* CBaseMomentumTrigger::GetZoneBuilder() const
     }
 }
 
-bool CBaseMomentumTrigger::TestCollision(const Ray_t& ray, unsigned int mask, trace_t& tr)
+bool CBaseMomentumTrigger::TestCollision(const Ray_t &ray, unsigned int mask, trace_t &tr)
 {
     auto pPhys = VPhysicsGetObject();
     Assert(pPhys);
@@ -62,15 +62,15 @@ void CBaseMomentumTrigger::InitCustomCollision(CPhysCollide *pPhysCollide, const
     params.mass = 1.0f;
     params.volume = 1.0f;
 
-	auto pPhys = physenv->CreatePolyObject(pPhysCollide, 0, GetAbsOrigin(), GetAbsAngles(), &params);
-	Assert(pPhys);
+    auto pPhys = physenv->CreatePolyObject(pPhysCollide, 0, GetAbsOrigin(), GetAbsAngles(), &params);
+    Assert(pPhys);
     
     pPhys->EnableMotion(false);
     pPhys->EnableGravity(false);
     pPhys->SetContents(MASK_SOLID);
 
-	VPhysicsDestroyObject();
-	VPhysicsSetObject(pPhys);
+    VPhysicsDestroyObject();
+    VPhysicsSetObject(pPhys);
 
 
     if (CollisionProp()->GetPartitionHandle() == PARTITION_INVALID_HANDLE)
