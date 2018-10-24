@@ -5,9 +5,9 @@
 #endif
 
 #include "mapzones_build.h"
-#include "mapzones.h"
-#include "mom_player.h"
-#include "mom_triggers.h"
+
+class CBaseMomentumTrigger;
+class CMomentumPlayer;
 
 class CMomZoneEdit : public CAutoGameSystemPerFrame
 {
