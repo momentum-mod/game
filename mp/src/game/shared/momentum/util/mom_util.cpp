@@ -29,42 +29,6 @@ inline void CleanupRequest(HTTPRequestCompleted_t *pCallback, uint8 *pData)
     pData = nullptr;
     SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
-
-bool MomentumUtil::CreateAndSendHTTPReqWithPost(const char *szURL,
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t> *callback,
-    CCallResult<MomentumUtil, HTTPRequestCompleted_t>::func_t func,
-    KeyValues *params)
-{
-    bool bSuccess = false;
-    if (steamapicontext && SteamHTTP())
-    {
-        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, szURL);
-        FOR_EACH_VALUE(params, p_value)
-        {
-            SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
-                p_value->GetString());
-        }
-
-        SteamAPICall_t apiHandle;
-
-        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            Warning("Report sent.\n");
-            callback->Set(apiHandle, this, func);
-            bSuccess = true;
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request to report bug online!\n");
-            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steamapicontext is not online!\n");
-    }
-    return bSuccess;
-}
 #if 0
 
 void MomentumUtil::DownloadMap(const char *szMapname)
