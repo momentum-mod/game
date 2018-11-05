@@ -38,6 +38,7 @@ private:
     HAuthTicket m_hAuthTicket;
     byte* m_bufAuthBuffer;
     uint32 m_iAuthActualSize;
+    char *m_pAPIKey;
 };
 
 

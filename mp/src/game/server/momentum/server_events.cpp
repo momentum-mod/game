@@ -4,10 +4,12 @@
 #include "tickset.h"
 #include "mapzones.h"
 #include "mom_timer.h"
-
-#include "tier0/memdbgon.h"
 #include "util/mom_util.h"
 #include "fmtstr.h"
+#include "gason.h"
+#include "util/jsontokv.h"
+
+#include "tier0/memdbgon.h"
 
 //This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
@@ -48,8 +50,8 @@ void Momentum::GameInit()
 }
 
 CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystemPerFrame(pName), zones(nullptr),
-                                                       m_hAuthTicket(k_HAuthTicketInvalid),
-                                                       m_iAuthActualSize(0)
+                                                       m_hAuthTicket(k_HAuthTicketInvalid), m_bufAuthBuffer(nullptr),
+                                                       m_iAuthActualSize(0), m_pAPIKey(nullptr)
 {
 }
 
@@ -128,12 +130,80 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
     }
 }
 
-void CMOMServerEvents::OnAuthHTTP(HTTPRequestCompleted_t* pParam, bool bIOFailure)
+void CMOMServerEvents::OnAuthHTTP(HTTPRequestCompleted_t* pCallback, bool bIOFailure)
 {
-    Msg("HTTP callback recv\n");
+    DevWarning(2, "%s - Callback received.\n", __FUNCTION__);
     if (bIOFailure)
-        Warning("IO failure!\n");
-    Msg("Status: %i\n", pParam->m_eStatusCode);
+    {
+        Warning("%s - bIOFailure is true!\n", __FUNCTION__);
+        return;
+    }
+
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode404NotFound)
+    {
+        Warning("%s - k_EHTTPStatusCode404NotFound !\n", __FUNCTION__);
+        return;
+    }
+
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode4xxUnknown)
+    {
+        Warning("%s - No friends found on this map. You must be a teapot!\n", __FUNCTION__);
+        return;
+    }
+
+    if (pCallback->m_eStatusCode == k_EHTTPStatusCode500InternalServerError)
+    {
+        Warning("%s - INTERNAL SERVER ERROR!\n", __FUNCTION__);
+        return;
+    }
+
+    uint32 size;
+    SteamHTTP()->GetHTTPResponseBodySize(pCallback->m_hRequest, &size);
+
+    if (size == 0)
+    {
+        Warning("%s - 0 body size!\n", __FUNCTION__);
+        return;
+    }
+
+    DevLog("Size of body: %u\n", size);
+    uint8 *pData = new uint8[size];
+    SteamHTTP()->GetHTTPResponseBodyData(pCallback->m_hRequest, pData, size);
+
+    JsonValue val; // Outer object
+    JsonAllocator alloc;
+    char *pDataPtr = reinterpret_cast<char *>(pData);
+    char *endPtr;
+    int status = jsonParse(pDataPtr, &endPtr, &val, alloc);
+
+    if (status == JSON_OK)
+    {
+        DevLog("JSON Parsed!\n");
+        if (val.getTag() == JSON_OBJECT) // Outer should be a JSON Object
+        {
+            KeyValues *pResponse = CJsonToKeyValues::ConvertJsonToKeyValues(val.toNode());
+            CKeyValuesDumpContextAsDevMsg dump;
+            pResponse->Dump(&dump);
+            KeyValues::AutoDelete ad(pResponse);
+
+            uint32 tokenLength = pResponse->GetInt("length");
+
+            if (tokenLength)
+            {
+                m_pAPIKey = new char[tokenLength + 1];
+                Q_strncpy(m_pAPIKey, pResponse->GetString("token"), tokenLength + 1);
+            }
+        }
+    }
+    else
+    {
+        Warning("%s at %zd\n", jsonStrError(status), endPtr - pDataPtr);
+    }
+
+    // Last but not least, free resources
+    delete[] pData;
+    pData = nullptr;
+    SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
 }
 
 void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
@@ -192,8 +262,12 @@ void CMOMServerEvents::OnAuthTicket(GetAuthSessionTicketResponse_t* pParam)
 void CMOMServerEvents::DoAuth()
 {
     Msg("Getting the ticket...\n");
+    if (m_pAPIKey)
+        delete[] m_pAPIKey;
+    m_pAPIKey = nullptr;
     if (m_bufAuthBuffer)
         delete[] m_bufAuthBuffer;
+    m_bufAuthBuffer = nullptr;
 
     m_bufAuthBuffer = new byte[1024];
     m_hAuthTicket = SteamUser()->GetAuthSessionTicket(m_bufAuthBuffer, 1024, &m_iAuthActualSize);
