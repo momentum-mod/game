@@ -2,9 +2,12 @@
 #include "server_events.h"
 #include "mom_shareddefs.h"
 #include "tickset.h"
+#include "mapzones.h"
+#include "mom_timer.h"
 
 #include "tier0/memdbgon.h"
-
+#include "util/mom_util.h"
+#include "fmtstr.h"
 
 //This is only called when "map ____" is called, if the user uses changelevel then...
 // \/(o_o)\/
@@ -44,15 +47,34 @@ void Momentum::GameInit()
     }
 }
 
+CMOMServerEvents::CMOMServerEvents(const char* pName): CAutoGameSystemPerFrame(pName), zones(nullptr),
+                                                       m_hAuthTicket(k_HAuthTicketInvalid),
+                                                       m_iAuthActualSize(0)
+{
+}
+
 void CMOMServerEvents::PostInit()
 {
     TickSet::TickInit();
     MountAdditionalContent();
+
+    DoAuth();
+
     // MOM_TODO: connect to site
     /*if (SteamAPI_IsSteamRunning())
     {
 
     }*/
+}
+
+void CMOMServerEvents::Shutdown()
+{
+
+    if (m_hAuthTicket != k_HAuthTicketInvalid)
+    {
+        SteamUser()->CancelAuthTicket(m_hAuthTicket);
+        delete[] m_bufAuthBuffer;
+    }
 }
 
 void CMOMServerEvents::LevelInitPreEntity()
@@ -106,9 +128,77 @@ void CMOMServerEvents::FrameUpdatePreEntityThink()
     }
 }
 
+void CMOMServerEvents::OnAuthHTTP(HTTPRequestCompleted_t* pParam, bool bIOFailure)
+{
+    Msg("HTTP callback recv\n");
+    if (bIOFailure)
+        Warning("IO failure!\n");
+    Msg("Status: %i\n", pParam->m_eStatusCode);
+}
+
 void CMOMServerEvents::OnGameOverlay(GameOverlayActivated_t* pParam)
 {
     engine->ServerCommand("unpause\n");
+}
+
+void CMOMServerEvents::OnAuthTicket(GetAuthSessionTicketResponse_t* pParam)
+{
+    Msg("Ticket callback!\n");
+    if (pParam->m_eResult == k_EResultOK)
+    {
+        Msg("Ticket okay!\n");
+        if (pParam->m_hAuthTicket == m_hAuthTicket)
+        {
+            Msg("It's our ticket, we should send it to the site now!\n");
+            // Send it to the site
+
+            bool bSuccess = false;
+            if (SteamHTTP())
+            {
+                HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, "http://localhost:3002/api/auth/steam/user");
+
+                uint64 id = SteamUser()->GetSteamID().ConvertToUint64();
+                CFmtStr idStr("%llu", id);
+                Msg("Sending ID %s\n", idStr.Get());
+                SteamHTTP()->SetHTTPRequestHeaderValue(handle, "id", idStr.Get());
+
+                if (SteamHTTP()->SetHTTPRequestRawPostBody(handle, "application/octet-stream", m_bufAuthBuffer, m_iAuthActualSize))
+                    Msg("Body Set!\n");
+
+                SteamAPICall_t apiHandle;
+
+                if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
+                {
+                    m_cAuthCallresult.Set(apiHandle, this, &CMOMServerEvents::OnAuthHTTP);
+                    bSuccess = true;
+                }
+                else
+                {
+                    Warning("Failed to send HTTP Request!\n");
+                    SteamHTTP()->ReleaseHTTPRequest(handle); // GC
+                }
+            }
+            else
+            {
+                Warning("Steampicontext failure.\nCould not find Steam Api Context active");
+            }
+
+            if (bSuccess)
+                Msg("Sent out the request!\n");
+        }
+    }
+}
+
+void CMOMServerEvents::DoAuth()
+{
+    Msg("Getting the ticket...\n");
+    if (m_bufAuthBuffer)
+        delete[] m_bufAuthBuffer;
+
+    m_bufAuthBuffer = new byte[1024];
+    m_hAuthTicket = SteamUser()->GetAuthSessionTicket(m_bufAuthBuffer, 1024, &m_iAuthActualSize);
+    if (m_hAuthTicket == k_HAuthTicketInvalid)
+        Warning("Initial call failed!\n");
 }
 
 
@@ -143,4 +233,10 @@ void CMOMServerEvents::MountAdditionalContent()
     }
     pMainFile->deleteThis();
 }
+
 CMOMServerEvents g_MOMServerEvents("CMOMServerEvents");
+
+CON_COMMAND(auth_test, "Auth test")
+{
+    g_MOMServerEvents.DoAuth();
+}
