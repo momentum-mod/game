@@ -244,21 +244,21 @@ void CLocalMaps::SetEmptyListText()
 void CLocalMaps::GetWorkshopItems()
 {
     //get a vector of all the item handles
-    const uint32 numItems = steamapicontext->SteamUGC()->GetNumSubscribedItems();
+    const uint32 numItems = SteamUGC()->GetNumSubscribedItems();
     const auto vecItems = new PublishedFileId_t[numItems];
-    steamapicontext->SteamUGC()->GetSubscribedItems(vecItems, numItems);
+    SteamUGC()->GetSubscribedItems(vecItems, numItems);
 
     //check them all
     for(uint32 i = 0; i < numItems; ++i)
     {
         const auto currentItem = vecItems[i];
-        const uint32 flags = steamapicontext->SteamUGC()->GetItemState(currentItem);
+        const uint32 flags = SteamUGC()->GetItemState(currentItem);
         if (!(flags & k_EItemStateSubscribed)) //we're not subscribed to this item - how did this even happen?
             continue;
             
         if (!(flags & k_EItemStateInstalled) || flags & k_EItemStateNeedsUpdate) //we're subscribed, but item is not installed, OR item requires an update
         {
-            const auto call = steamapicontext->SteamUGC()->DownloadItem(currentItem, true); 
+            const auto call = SteamUGC()->DownloadItem(currentItem, true); 
             if (call)
             {
                 m_DownloadCompleteCallback.Set(call, this, &CLocalMaps::OnWorkshopDownloadComplete);
@@ -292,7 +292,7 @@ void CLocalMaps::AddWorkshopItemToLocalMaps(PublishedFileId_t id)
     uint64 sizeOnDisk;
     char szFolder[MAX_PATH];
     uint32 timeStamp;
-    if (!steamapicontext->SteamUGC()->GetItemInstallInfo(id, &sizeOnDisk, szFolder, sizeof(szFolder), &timeStamp))
+    if (!SteamUGC()->GetItemInstallInfo(id, &sizeOnDisk, szFolder, sizeof(szFolder), &timeStamp))
     {
         Warning("Could not get content for workshop item %llu. The item has no content or is not installed!\n", id);
         return;

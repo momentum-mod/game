@@ -622,6 +622,7 @@ void CClientTimesDisplay::UpdatePlayerInfo(KeyValues *kv, bool fullUpdate)
                    GetSteamIDForPlayerIndex(GetLocalPlayerIndex()).ConvertToUint64());
         g_pMomentumUtil->CreateAndSendHTTPReq(requrl, &cbGetPlayerDataForMapCallback, &CClientTimesDisplay::GetPlayerDataForMapCallback, this);
         m_fLastHeaderUpdate = gpGlobals->curtime;
+#endif
     }
 
     kv->AddSubKey(playerData);
@@ -1005,6 +1006,7 @@ void CClientTimesDisplay::LoadOnlineTimes()
         m_flLastOnlineTimeUpdate = gpGlobals->curtime;
 
         m_pLoadingOnlineTimes->SetVisible(m_pOnlineLeaderboards->IsVisible() || m_pFriendsLeaderboards->IsVisible());
+#endif
     }
 }
 
