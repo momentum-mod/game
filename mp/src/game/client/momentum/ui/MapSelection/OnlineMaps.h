@@ -4,6 +4,11 @@
 #pragma once
 #endif
 
+namespace vgui
+{
+    class ImageList;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Internet games list
 //-----------------------------------------------------------------------------
@@ -88,7 +93,7 @@ private:
     char m_szMapName[MAX_PATH];
     char m_szImageUrl[MAX_PATH];
     int m_iTargetIndex;
-    ImageList *m_pImageList;
+    vgui::ImageList *m_pImageList;
 };
 
 class CMapDownloader
