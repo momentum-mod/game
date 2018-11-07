@@ -268,7 +268,8 @@ bool CBaseMapsPage::GetFilters(KeyValues *pKvOut) const
 {
     // MOM_TODO uncomment the other filters
     /*pKvOut->SetInt("gamemode", m_iGameModeFilter);*/
-    pKvOut->SetString("search", m_szMapFilter);
+    if (Q_strlen(m_szMapFilter))
+        pKvOut->SetString("search", m_szMapFilter);
     /*pKvOut->SetInt("difficulty", m_iDifficultyFilter);
     pKvOut->SetBool("completed", m_bFilterHideCompleted);
     pKvOut->SetInt("layout", m_iMapLayoutFilter);*/
