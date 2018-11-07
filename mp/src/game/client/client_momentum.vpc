@@ -174,11 +174,18 @@ $Project "Client (Momentum)"
                 $File "momentum\ui\MeasureTool.cpp"
             }
 
+            $Folder "API"
+            {
+                $File "momentum\mom_api_requests.h"
+                $File "momentum\mom_api_requests.cpp"
+                $File "momentum\mom_run_poster.h"
+                $File "momentum\mom_run_poster.cpp"
+            }
+
             $File   "momentum\client_events.h"
             $File   "momentum\client_events.cpp"
 
-            $File 	"momentum\mom_run_poster.h"
-            $File 	"momentum\mom_run_poster.cpp"
+
 
             $Folder "Weapons"
             {

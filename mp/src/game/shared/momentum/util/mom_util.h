@@ -1,22 +1,15 @@
 #pragma once
 
 #include "cbase.h"
-#include "steam/steam_api.h"
 
 class CMomReplayBase;
 class CMomRunStats;
 
-struct HTTPRequestCompleted_t;
 struct RunCompare_t;
 
 class MomentumUtil
 {
-  public:
-    template <class T>
-    bool CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t>* callback,
-                              typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller,
-                              const EHTTPMethod kReqMethod = k_EHTTPMethodGET, KeyValues* pParams = nullptr);
-
+public:
 #ifdef CLIENT_DLL
     void UpdatePaintDecalScale(float fNewScale);
 #endif
@@ -64,46 +57,5 @@ class MomentumUtil
     void KnifeTrace(const Vector &vecShootPos, const QAngle &lookAng, bool bStab, CBaseEntity *pAttacker, CBaseEntity *pSoundSource, trace_t *trOutput, Vector *vForwardOut);
     void KnifeSmack(const trace_t &tr_in, CBaseEntity *pSoundSource, const QAngle &lookAng, const bool bStab);
 };
-
-template <class T>
-bool MomentumUtil::CreateAndSendHTTPReq(const char* szURL, CCallResult<T, HTTPRequestCompleted_t>* callback,
-                                        typename CCallResult<T, HTTPRequestCompleted_t>::func_t func, T* pCaller,
-                                        const EHTTPMethod kReqMethod,
-                                        KeyValues* pParams)
-{
-    bool bSuccess = false;
-    if (SteamHTTP() && callback)
-    {
-        HTTPRequestHandle handle = SteamHTTP()->CreateHTTPRequest(kReqMethod, szURL);
-
-        if (pParams && (kReqMethod == k_EHTTPMethodPOST || kReqMethod == k_EHTTPMethodGET))
-        {
-            FOR_EACH_VALUE(pParams, p_value)
-            {
-                SteamHTTP()->SetHTTPRequestGetOrPostParameter(handle, p_value->GetName(),
-                                                              p_value->GetString());
-            }
-        }
-
-        SteamAPICall_t apiHandle;
-
-        if (SteamHTTP()->SendHTTPRequest(handle, &apiHandle))
-        {
-            callback->Set(apiHandle, pCaller, func);
-            bSuccess = true;
-        }
-        else
-        {
-            Warning("Failed to send HTTP Request!\n");
-            SteamHTTP()->ReleaseHTTPRequest(handle); // GC
-        }
-    }
-    else
-    {
-        Warning("Steampicontext failure.\nCould not find Steam Api Context active");
-    }
-
-    return bSuccess;
-}
 
 extern MomentumUtil *g_pMomentumUtil;
